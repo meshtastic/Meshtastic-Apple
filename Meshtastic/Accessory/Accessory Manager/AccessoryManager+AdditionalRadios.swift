@@ -88,6 +88,24 @@ extension AccessoryManager {
 		}
 	}
 
+	/// Releases radio `deviceId` for a firmware update (review V11 W1): its link closes so the
+	/// updater can reach it in update mode. Its window stays, it stays remembered, and the other
+	/// radios are left as they are. `reclaimRadioAfterUpdate(_:)` brings it back.
+	func releaseRadioForUpdate(_ deviceId: UUID) async throws {
+		if activeConnection?.device.id == deviceId {
+			try await disconnect(forUpdate: true)
+		} else {
+			await disconnectAdditionalRadio(deviceId, forUpdate: true)
+		}
+	}
+
+	/// After a firmware update of `device`: the preferred radio comes back through discovery, as a
+	/// single radio does (the updater restarts it); another through its reconnect.
+	func reclaimRadioAfterUpdate(_ device: Device) {
+		guard device.id.uuidString != PreferredRadio.peripheralId, !isRadioConnected(device.id) else { return }
+		scheduleAdditionalRadioReconnect(device)
+	}
+
 	/// The Disconnect command for radio `radioNum` (T320): the radio connected first disconnects
 	/// as it always has; another as Disconnect on its row does.
 	func disconnectRadio(nodeNum radioNum: Int64) async throws {
@@ -213,12 +231,13 @@ extension AccessoryManager {
 
 	/// Disconnects one additional radio. The focused radio and the others are unaffected.
 	/// `byUser` also stops any automatic reconnect for it, now and at the next launch.
-	func disconnectAdditionalRadio(_ deviceId: UUID, byUser: Bool = false) async {
-		// Its window on the Mac closes once it's disconnected (W-02).
+	func disconnectAdditionalRadio(_ deviceId: UUID, byUser: Bool = false, forUpdate: Bool = false) async {
+		// Its window on the Mac closes once it's disconnected (W-02); not when it's only released
+		// for a firmware update, which also keeps it remembered (review V11 W1).
 		defer {
-			if byUser { radioDisconnectedByUser.send(deviceId) }
+			if byUser, !forUpdate { radioDisconnectedByUser.send(deviceId) }
 		}
-		if byUser {
+		if byUser || forUpdate {
 			additionalRadioReconnects.removeValue(forKey: deviceId)?.cancel()
 			awaitedRememberedRadios.remove(deviceId)
 			radioConnectErrors.removeValue(forKey: deviceId)
@@ -235,7 +254,7 @@ extension AccessoryManager {
 			}
 			return
 		}
-		if byUser, let nodeNum = session.nodeNum {
+		if byUser, !forUpdate, let nodeNum = session.nodeNum {
 			await MeshPackets.shared.setRadioAutoConnect(nodeNum: nodeNum, false)
 		}
 		retiredAdditionalSessionIDs.insert(session.id)

@@ -806,12 +806,13 @@ class AccessoryManager: ObservableObject {
 	}
 	
 	// Should only be called by UI-facing callers.
-	func disconnect() async throws {
+	func disconnect(forUpdate: Bool = false) async throws {
 		guard !isClosingConnection else { return }
-		// Its window on the Mac closes once it's disconnected (W-02).
+		// Its window on the Mac closes once it's disconnected (W-02), unless it's only released
+		// for a firmware update (review V11 W1).
 		let disconnectedId = activeConnection?.device.id ?? connectAttempts.values.first(where: \.isFocused)?.device.id
 		defer {
-			if let disconnectedId { radioDisconnectedByUser.send(disconnectedId) }
+			if let disconnectedId, !forUpdate { radioDisconnectedByUser.send(disconnectedId) }
 		}
 		self.userRequestedConnectionCancellation = true
 		connectCancelGeneration &+= 1

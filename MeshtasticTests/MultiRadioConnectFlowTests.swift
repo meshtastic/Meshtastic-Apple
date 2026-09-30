@@ -228,6 +228,35 @@ struct MultiRadioConnectFlowTests {
 		#expect(manager.activeConnection == nil)
 	}
 
+	@Test("A firmware update releases only its radio, keeps its window, and brings it back")
+	func releaseForUpdate() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let radios = try await connectTwoRadios()
+		let manager = radios.manager
+		var disconnected: [UUID] = []
+		let subscription = manager.radioDisconnectedByUser.sink { disconnected.append($0) }
+		defer { subscription.cancel() }
+		let firstSession = try #require(manager.activeConnection)
+
+		try await manager.releaseRadioForUpdate(radios.secondDevice.id)
+		#expect(manager.additionalRadios[radios.secondDevice.id] == nil)
+		#expect(manager.activeConnection === firstSession, "the first radio isn't touched")
+		#expect(await radios.first.disconnects == 0)
+		#expect(disconnected.isEmpty, "its window stays open")
+		let secondNum = Int64(radios.secondNum)
+		let second = try PersistenceController.shared.context.fetch(FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == secondNum })).first
+		#expect(second?.autoConnect == true, "still remembered")
+
+		manager.reclaimRadioAfterUpdate(radios.secondDevice)
+		#expect(manager.additionalRadioReconnects[radios.secondDevice.id] != nil)
+		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
+
+		try await manager.releaseRadioForUpdate(radios.firstDevice.id)
+		#expect(manager.activeConnection == nil)
+		#expect(disconnected.isEmpty, "the first radio's window stays too")
+	}
+
 	@Test("The app's own connect work runs for a radio connected with no other")
 	func onlyConnectedRadio() async throws {
 		let saved = SavedDefaults()

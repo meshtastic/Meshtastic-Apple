@@ -95,12 +95,19 @@ struct ESP32WifiOTASheet: View {
 
 	/// Hand the radio back to the app: let discovery and auto-connect pick the device up once it
 	/// reboots into the new firmware.
+	/// The radio being updated, taken when the update claims it: its window's radio.
+	@State private var updatingDevice: Device?
+
 	private func releaseRadio() {
 		Logger.services.info("📡 [ESP32 WiFi OTA] Releasing the radio, restarting discovery")
 		accessoryManager.otaInProgress = false
 		accessoryManager.userRequestedConnectionCancellation = false
 		accessoryManager.shouldAutomaticallyConnectToPreferredPeripheralAfterError = true
 		accessoryManager.startDiscovery()
+		// A radio other than the one connected first comes back through its reconnect (W1).
+		if let updatingDevice {
+			accessoryManager.reclaimRadioAfterUpdate(updatingDevice)
+		}
 	}
 	
 	// MARK: - Logic
@@ -125,6 +132,7 @@ struct ESP32WifiOTASheet: View {
 						// the update — down with it, leaving the device waiting in OTA mode.
 						Logger.services.info("📡 [ESP32 WiFi OTA] Step 1: claiming the radio (node \(deviceNum), host \(host, privacy: .private))")
 						accessoryManager.otaInProgress = true
+					updatingDevice = accessoryManager.session(for: windowRadio)?.device
 						accessoryManager.shouldAutomaticallyConnectToPreferredPeripheralAfterError = false
 
 						// Move heavy file reading/hashing off the Main Actor
@@ -142,7 +150,10 @@ struct ESP32WifiOTASheet: View {
 						// Give the packet a moment to send before disconnecting
 						try await Task.sleep(for: .seconds(0.5))
 						Logger.services.info("📡 [ESP32 WiFi OTA] Step 3: disconnecting")
-						try await accessoryManager.disconnect()
+						// Only this window's radio, kept remembered and its window open (review V11 W1).
+					if let deviceId = updatingDevice?.id {
+						try await accessoryManager.releaseRadioForUpdate(deviceId)
+					}
 						Logger.services.info("📡 [ESP32 WiFi OTA] Disconnected")
 						alreadyRebooted = true
 					}
