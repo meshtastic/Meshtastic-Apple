@@ -27,29 +27,29 @@ enum GpsUpdateIntervals: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .thirtySeconds:
-			return "Thirty Seconds".localized
+			return String(localized: "Thirty Seconds", comment: "GpsUpdateIntervals.description")
 		case .oneMinute:
-			return "One Minute".localized
+			return String(localized: "One Minute", comment: "GpsUpdateIntervals.description")
 		case .twoMinutes:
-			return "Two Minutes".localized
+			return String(localized: "Two Minutes", comment: "GpsUpdateIntervals.description")
 		case .fiveMinutes:
-			return "Five Minutes".localized
+			return String(localized: "Five Minutes", comment: "GpsUpdateIntervals.description")
 		case .tenMinutes:
-			return "Ten Minutes".localized
+			return String(localized: "Ten Minutes", comment: "GpsUpdateIntervals.description")
 		case .fifteenMinutes:
-			return "Fifteen Minutes".localized
+			return String(localized: "Fifteen Minutes", comment: "GpsUpdateIntervals.description")
 		case .thirtyMinutes:
-			return "Thirty Minutes".localized
+			return String(localized: "Thirty Minutes", comment: "GpsUpdateIntervals.description")
 		case .oneHour:
-			return "One Hour".localized
+			return String(localized: "One Hour", comment: "GpsUpdateIntervals.description")
 		case .sixHours:
-			return "Six Hours".localized
+			return String(localized: "Six Hours", comment: "GpsUpdateIntervals.description")
 		case .twelveHours:
-			return "Twelve Hours".localized
+			return String(localized: "Twelve Hours", comment: "GpsUpdateIntervals.description")
 		case .twentyFourHours:
-			return "Twenty Four Hours".localized
+			return String(localized: "Twenty Four Hours", comment: "GpsUpdateIntervals.description")
 		case .maxInt32:
-			return "On Boot Only".localized
+			return String(localized: "On Boot Only", comment: "GpsUpdateIntervals.description")
 		}
 	}
 }

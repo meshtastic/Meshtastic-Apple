@@ -29,8 +29,11 @@ struct ContactURLHandler {
 		MeshContactURL.canHandle(url)
 	}
 
+	/// Parses a contact link for the window that received it. The caller presents
+	/// the confirmation sheet. Returns nil when the radio is too old or the
+	/// link does not parse; those cases alert on their own.
 	@MainActor
-	static func handleContactUrl(url: URL, accessoryManager: AccessoryManager) {
+	static func makePendingContact(from url: URL, accessoryManager: AccessoryManager) -> PendingContact? {
 		let supportedVersion = accessoryManager.checkIsVersionSupported(forVersion: minimumContactVersion)
 
 		if !supportedVersion {
@@ -49,23 +52,21 @@ struct ContactURLHandler {
 				rootViewController.present(alertController, animated: true)
 			}
 			Logger.services.debug("User Alerted that a firmware upgrade is required to import contacts.")
-		} else {
-			do {
-				let parsed = try MeshContactURL.parse(url.absoluteString)
-				guard let appState = accessoryManager.appState else {
-					Logger.services.error("Cannot present contact import: app state is not wired yet.")
-					return
-				}
-				appState.pendingContactToAdd = PendingContact(
-					contact: parsed.contact,
-					base64UrlString: parsed.payload,
-					exchangeRequested: parsed.exchangeRequested
-				)
-				Logger.services.debug("Validated a shared Meshtastic contact URL.")
-			} catch {
-				Logger.services.error("Failed to parse contact data: \(error.localizedDescription, privacy: .public)")
-				presentInvalidContactAlert()
-			}
+			return nil
+		}
+
+		do {
+			let parsed = try MeshContactURL.parse(url.absoluteString)
+			Logger.services.debug("Validated a shared Meshtastic contact URL.")
+			return PendingContact(
+				contact: parsed.contact,
+				base64UrlString: parsed.payload,
+				exchangeRequested: parsed.exchangeRequested
+			)
+		} catch {
+			Logger.services.error("Failed to parse contact data: \(error.localizedDescription, privacy: .public)")
+			presentInvalidContactAlert()
+			return nil
 		}
 	}
 

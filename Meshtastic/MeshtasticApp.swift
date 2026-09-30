@@ -20,11 +20,9 @@ struct MeshtasticAppleApp: App {
 #endif
 	@StateObject var appState: AppState
 	@StateObject private var lockdownCoordinator: LockdownCoordinator
-	private let persistenceController: PersistenceController
+	private let persistenceController: PersistenceController?
 	private let accessoryManager: AccessoryManager
 	@Environment(\.scenePhase) var scenePhase
-	@State var saveChannelLink: SaveChannelLinkData?
-	@State var incomingUrl: URL?
 	@State private var persistenceReady = false
 	@State private var didStartReadyServices = false
 
@@ -39,21 +37,16 @@ struct MeshtasticAppleApp: App {
 	private static var shouldInitializeAppServices: Bool {
 		!isRunningTests && !isChirpyOTADemo
 	}
-	/// TipKit configuration must run once per process; the owning `.task` re-runs whenever the
-	/// database-reset gate remounts the main tree after a node switch.
-	@MainActor private static var hasConfiguredTips = false
-
 	init() {
 
+		let persistenceController: PersistenceController? = Self.shouldInitializeAppServices ? PersistenceController.shared : nil
 #if DEBUG
 		if let performanceSeedConfiguration = PerformanceSeedData.configuration {
 			PerformanceSeedData.prepareDefaults(for: performanceSeedConfiguration)
 		}
 #endif
 
-		let appState = AppState(
-			router: Router()
-		)
+		let appState = AppState()
 
 		if Self.shouldInitializeAppServices {
 			// Initialize Datadog
@@ -115,17 +108,15 @@ struct MeshtasticAppleApp: App {
 		self._lockdownCoordinator = StateObject(wrappedValue: lockdown)
 
 		self._appState = StateObject(wrappedValue: appState)
-		self.persistenceController = PersistenceController.shared
-
-		// Wire up router
+		self.persistenceController = persistenceController
 #if os(iOS)
-		self.appDelegate.router = appState.router
+		self.appDelegate.appState = appState
 #endif
 
 	}
 
 	@MainActor
-	private func startReadyServicesIfNeeded() {
+	private func startReadyServicesIfNeeded(using persistenceController: PersistenceController) {
 		guard Self.shouldInitializeAppServices,
 			  persistenceReady,
 			  !didStartReadyServices else { return }
@@ -137,7 +128,7 @@ struct MeshtasticAppleApp: App {
 			PerformanceSeedData.seedIfNeeded(
 				using: persistenceController,
 				configuration: performanceSeedConfiguration,
-				router: appState.router
+				appState: appState
 			)
 		}
 		PerformanceSeedData.seedDiscoveryBeaconsIfRequested(using: persistenceController)
@@ -175,46 +166,46 @@ struct MeshtasticAppleApp: App {
 #endif
 	}
 
-	/// Single dispatch point for every URL the app receives — universal links
-	/// (user activities), custom-scheme opens, and file opens all route here.
-	private func dispatchIncomingURL(_ url: URL, fromActivity: Bool) {
-		if url.isFileURL {
-			// "Open in Meshtastic" from the Share Sheet / Files app / drag-and-drop —
-			// distinct from the meshtastic:// scheme handled below.
-			appState.router.importMapFile(url: url)
-		} else if ContactURLHandler.canHandle(url) {
-			ContactURLHandler.handleContactUrl(url: url, accessoryManager: accessoryManager)
-		} else if MeshtasticChannelURL.canHandle(url) {
-			handleChannelLinkURL(url, fromActivity: fromActivity)
-		} else if url.absoluteString.lowercased().contains("meshtastic:///") {
-			appState.router.route(url: url)
+	/// Runs the work the app owes at backgrounding — the main-context save, then the
+	/// entity-cap eviction — under one background task assertion.
+	///
+	/// `beginBackgroundTask` is what asks iOS for time to finish work after the app leaves
+	/// the screen. Both pieces need it: between them they are the app's heaviest SwiftData
+	/// work and they start at the moment iOS begins charging for background CPU. The
+	/// expiration handler fires shortly before the grant runs out and sets the flag the
+	/// chunked eviction checks, so the pass ends at a committed boundary and whatever is
+	/// left waits for the next background transition.
+	///
+	/// The save goes first and stays on the main actor: it is the one that must happen (it
+	/// is flushing edits the user just made), while the eviction is housekeeping that can
+	/// resume later.
+	///
+	/// On Mac Catalyst the assertion is a no-op the system accepts, so the same path runs
+	/// everywhere without a platform branch here.
+	private func startBackgroundMaintenance(_ persistenceController: PersistenceController) {
+		// Numbered, because backgrounding twice in quick succession leaves two passes in
+		// flight and each has its own grant. The handler quotes its own number so an older
+		// pass expiring cannot stop a newer one.
+		let generation = MeshPackets.beginMaintenance()
+		var taskID = UIBackgroundTaskIdentifier.invalid
+		taskID = UIApplication.shared.beginBackgroundTask(withName: "BackgroundMaintenance") {
+			MeshPackets.expireMaintenance(generation)
+			Logger.services.warning("🗄️ [Caps] Background time expired; eviction will stop at the next chunk")
 		}
-	}
-
-	@discardableResult
-	private func handleChannelLinkURL(_ url: URL, fromActivity: Bool) -> Bool {
-		// Reset the state before processing a new URL
-		self.saveChannelLink = nil
-
-		guard MeshtasticChannelURL.canHandle(url) else {
-			return false
+		Task { @MainActor in
+			do {
+				try persistenceController.container.mainContext.save()
+				Logger.services.info("💾 [App] Saved SwiftData context when the app went to the background.")
+			} catch {
+				Logger.services.error("💥 [App] Failed to save context when the app goes to the background.")
+			}
+			await MeshPackets.shared.enforceEntityCapsAndSave()
+			// Nothing to clear: the next pass takes a new number, which supersedes any
+			// expiry recorded against this one.
+			if taskID != .invalid {
+				UIApplication.shared.endBackgroundTask(taskID)
+			}
 		}
-
-		let channelLink: MeshtasticChannelURL
-		do {
-			channelLink = try MeshtasticChannelURL.parse(url.absoluteString)
-		} catch {
-			Logger.mesh.error("Could not parse channel URL: \(error.localizedDescription, privacy: .public)")
-			return false
-		}
-
-		self.saveChannelLink = SaveChannelLinkData(data: channelLink.payload, add: channelLink.addChannels)
-		Logger.services.debug("Add Channel \(channelLink.addChannels, privacy: .public)")
-
-		// Log based on the calling context
-		let source = fromActivity ? "User Activity" : "Open URL"
-		Logger.mesh.debug("User wants to open a Channel Settings URL (\(source, privacy: .public))")
-		return true
 	}
 
 	var body: some Scene {
@@ -233,19 +224,10 @@ struct MeshtasticAppleApp: App {
 				#endif
 			} else if !persistenceReady {
 				ProgressView("Updating local data…")
-			} else if appState.isDatabaseResetting {
-				// Unmount the WHOLE SwiftData-bound tree — including the `.modelContainer`
-				// modifier in mainAppContent — while a node switch clears the store. The
-				// modifier's SwiftData↔SwiftUI bridge observes save notifications process-wide
-				// and never rebinds (its attachment point is structurally stable, so
-				// `.id(databaseResetID)` deeper down can't recreate it); stale bridges from any
-				// container the app has moved off of trap on the next save callout (the "silent
-				// exit" flavor of Datadog 324bff02 — no crash report, EXC_BREAKPOINT in
-				// _SwiftData_SwiftUI, caught live in lldb). This gate plus the process-lifetime
-				// container (see backupCurrentAndRestoreDatabase) is the pair that ended it.
-				DatabaseResettingPlaceholder()
-			} else {
-				mainAppContent
+			} else if let persistenceController {
+				// Stays mounted across a node switch so this window's router survives.
+				// The SwiftData tree unmounts inside MainScene.
+				MainScene(persistenceController: persistenceController)
 			}
 			}
 			.onChange(of: lockdownCoordinator.state) { _, newState in
@@ -257,15 +239,15 @@ struct MeshtasticAppleApp: App {
 				}
 			}
 			.task {
-				guard Self.shouldInitializeAppServices else { return }
+				guard Self.shouldInitializeAppServices, let persistenceController else { return }
 				await persistenceController.bootstrap()
 				persistenceReady = true
-				startReadyServicesIfNeeded()
+				startReadyServicesIfNeeded(using: persistenceController)
 			}
 		}
 		.onChange(of: scenePhase) { (_, newScenePhase) in
 			// Do not touch SwiftData until startup finishes or in modes that skip app services.
-			guard Self.shouldInitializeAppServices, persistenceReady else { return }
+			guard Self.shouldInitializeAppServices, persistenceReady, let persistenceController else { return }
 			accessoryManager.isInBackground = (newScenePhase == .background)
 			switch newScenePhase {
 			case .background:
@@ -273,16 +255,15 @@ struct MeshtasticAppleApp: App {
 				accessoryManager.appDidEnterBackground()
 				// Entity-cap evictions run now, while no view is mid-render on the
 				// doomed entities. Foregrounded, the packet actor defers them.
+				//
+				// Held under a background task assertion: this is the app's heaviest
+				// SwiftData work and it starts at the moment iOS begins charging for
+				// background CPU. Without the assertion there is no time granted and no
+				// warning before the process is killed for the budget, which reads as a
+				// Background High CPU termination. The expiration handler stops the
+				// eviction on a committed chunk boundary instead.
 				MeshPackets.appIsActive = false
-				Task { await MeshPackets.shared.enforceEntityCapsAndSave() }
-				do {
-					try persistenceController.container.mainContext.save()
-					Logger.services.info("💾 [App] Saved SwiftData context when the app went to the background.")
-
-				} catch {
-
-					Logger.services.error("💥 [App] Failed to save context when the app goes to the background.")
-				}
+				startBackgroundMaintenance(persistenceController)
 			case .inactive:
 				Logger.services.info("🎬 [App] Scene is inactive")
 			case .active:
@@ -297,7 +278,7 @@ struct MeshtasticAppleApp: App {
 		.environmentObject(appState)
 		.environmentObject(accessoryManager)
 		.environmentObject(lockdownCoordinator)
-		.environmentObject(appState.router)
+		.environmentObject(MeshtasticAPI.shared)
 
 			WindowGroup("Mesh Map", id: "meshmap-window") {
 				// Gated on app-service startup so test and demo modes never mount SwiftData views.
@@ -305,6 +286,7 @@ struct MeshtasticAppleApp: App {
 				// window: this scene's .modelContainer must unmount during a container swap.
 				if Self.shouldInitializeAppServices,
 				   persistenceReady,
+				   let persistenceController,
 				   !appState.isDatabaseResetting {
 					EventFirmwareTintScope {
 						MapWindow()
@@ -314,7 +296,6 @@ struct MeshtasticAppleApp: App {
 					.environmentObject(appState)
 					.environmentObject(accessoryManager)
 					.environmentObject(lockdownCoordinator)
-					.environmentObject(appState.router)
 					.environmentObject(MeshtasticAPI.shared)
 				}
 			}
@@ -323,95 +304,5 @@ struct MeshtasticAppleApp: App {
 		#if os(visionOS)
 		.windowStyle(.plain)
 		#endif
-	}
-
-	/// The full SwiftData-bound app tree, extracted from the WindowGroup builder both to keep
-	/// the scene-level expression type-checkable in reasonable time (the four-branch builder
-	/// with this chain inlined blew Swift's type-check budget on CI) and so the database-reset
-	/// gate can unmount it — `.modelContainer` included — as one unit.
-	@ViewBuilder
-	private var mainAppContent: some View {
-		EventFirmwareTintScope {
-					ContentView(
-						appState: appState,
-						router: appState.router
-					)
-				// Rebuild the whole view tree (and re-run every @Query) after a node-switch
-				// restore so views drop the previous node's cached objects. See AppState.databaseResetID.
-				.id(appState.databaseResetID)
-				.sheet(item: $saveChannelLink
-				) { link in
-					SaveChannelQRCode(
-						channelSetLink: link.data,
-						addChannels: link.add, // <-- Uses the now reliable 'add' boolean
-						accessoryManager: accessoryManager				)
-					.trackScreen(.saveChannelQRCode)
-					.presentationDetents([.large])
-					#if !targetEnvironment(macCatalyst)
-					.presentationDragIndicator(.visible)
-					#endif
-					}
-					.sheet(item: $appState.pendingContactToAdd) { pendingContact in
-						AddContactConfirmationView(
-							pendingContact: pendingContact,
-							accessoryManager: accessoryManager
-						)
-						.trackScreen(.addContact)
-						.presentationDetents([.medium, .large])
-						#if !targetEnvironment(macCatalyst)
-						.presentationDragIndicator(.visible)
-						#endif
-					}
-					.onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { userActivity in
-						Logger.mesh.debug("Browsing web user activity received")
-						self.incomingUrl = userActivity.webpageURL
-						self.saveChannelLink = nil
-
-						if let url = userActivity.webpageURL {
-							dispatchIncomingURL(url, fromActivity: true)
-						}
-
-						if self.saveChannelLink != nil {
-							Logger.mesh.debug("User wants to open Channel Settings URL")
-						}
-					}
-					.onOpenURL(perform: { (url) in
-						Logger.mesh.debug("URL received")
-						self.incomingUrl = url
-
-						dispatchIncomingURL(url, fromActivity: false)
-					})
-					// Keep the badge in sync with read-state changes that happen outside
-					// the message lists (Siri/CarPlay read-aloud, background ingest) —
-					// previously those only reconciled on the next scene-active pass.
-					.onReceive(
-						NotificationCenter.default.publisher(for: .meshMessagesDidChange)
-							.debounce(for: .seconds(1), scheduler: DispatchQueue.main)
-					) { _ in
-						appState.refreshBadgeCount(context: persistenceController.container.mainContext)
-					}
-				}
-				.task {
-					// Skip TipKit entirely during marketing screenshot capture so tip popovers never
-					// appear in the shots (unconfigured TipKit displays nothing). The once-guard
-					// matters now that this branch remounts after every node switch (the database
-					// reset gate above) — Tips.configure must not re-run per switch.
-					if !Self.hasConfiguredTips, !CommandLine.arguments.contains("--marketing-capture") {
-						Self.hasConfiguredTips = true
-						try? Tips.configure(
-							[
-								.datastoreLocation(.applicationDefault),
-								// When should the tips be presented? If you use .immediate, they'll all be presented whenever a screen with a tip appears.
-								// You can adjust this on per tip level as well
-								.displayFrequency(.immediate)
-							]
-						)
-					}
-				}
-				.modelContainer(persistenceController.container)
-				.environmentObject(appState)
-				.environmentObject(accessoryManager)
-				.environmentObject(appState.router)
-				.environmentObject(MeshtasticAPI.shared)
 	}
 }

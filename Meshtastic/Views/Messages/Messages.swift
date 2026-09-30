@@ -46,7 +46,8 @@ struct Messages: View {
 	/// so the bound value always matches a `.channels()` / `.directMessages()` row and the
 	/// collapsed `NavigationSplitView` back stack stays intact. The setter only fires on a user tap
 	/// (selecting a different section), where we also reset the detail pane so the new section
-	/// starts with nothing selected — matching the behavior of a fresh sidebar navigation.
+	/// starts with nothing selected — matching the behavior of a fresh sidebar navigation — and
+	/// hide the sidebar so the channel or contact list is what's on screen.
 	private var sidebarSelection: Binding<MessagesNavigationState?> {
 		Binding(
 			get: { self.router.messagesSection },
@@ -54,6 +55,9 @@ struct Messages: View {
 				self.router.messagesSection = newValue
 				self.channelSelection = nil
 				self.userSelection = nil
+				if newValue != nil {
+					self.columnVisibility = .doubleColumn
+				}
 			}
 		)
 	}
@@ -154,9 +158,12 @@ struct Messages: View {
 					}
 				}
 			}
-		}.onAppear {
+		}
+		.navigationSplitViewStyle(.balanced)
+		.onAppear {
 			// Handles the deep link set by `route(url:)` before this view began observing.
 			consumeDeepLink(router.messagesState)
+			revealSidebarForEmptySelection()
 		}.onChange(of: router.messagesState) { _, newValue in
 			consumeDeepLink(newValue)
 		}.onChange(of: router.messagesSection) { _, newValue in
@@ -166,7 +173,24 @@ struct Messages: View {
 			if newValue == nil {
 				channelSelection = nil
 				userSelection = nil
+				revealSidebarForEmptySelection()
 			}
+		}
+	}
+
+	/// The empty split view otherwise lands on "Select a conversation type" with the
+	/// sidebar collapsed, and the only way forward is the sidebar button. Open it
+	/// while nothing is selected. A dismissal made after a conversation type is
+	/// chosen is left alone — this is not called in that case, and the follow-up
+	/// bails if a selection arrived in the meantime.
+	private func revealSidebarForEmptySelection() {
+		guard router.messagesSection == nil else { return }
+		columnVisibility = .all
+		// The split view writes its own visibility during the first layout pass and
+		// can collapse the sidebar again after the assignment above.
+		Task { @MainActor in
+			guard router.messagesSection == nil else { return }
+			columnVisibility = .all
 		}
 	}
 

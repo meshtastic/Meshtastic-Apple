@@ -246,7 +246,7 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
   case mmc5983Ma // = 52
 
   ///
-  /// ICM-42607-P 6‑Axis IMU
+  /// ICM-42607-P 6-Axis IMU
   case icm42607P // = 53
 
   ///
@@ -993,176 +993,208 @@ public struct EnvironmentMetrics: @unchecked Sendable {
   /// Clears the value of `lightningDistanceKm`. Subsequent reads from it will return its default value.
   public mutating func clearLightningDistanceKm() {_uniqueStorage()._lightningDistanceKm = nil}
 
-  ///
-  /// Soil pH, 0-14
-  public var soilPh: Float {
-    get {_storage._soilPh ?? 0}
-    set {_uniqueStorage()._soilPh = newValue}
-  }
-  /// Returns true if `soilPh` has been explicitly set.
-  public var hasSoilPh: Bool {_storage._soilPh != nil}
-  /// Clears the value of `soilPh`. Subsequent reads from it will return its default value.
-  public mutating func clearSoilPh() {_uniqueStorage()._soilPh = nil}
-
-  ///
-  /// pH of water or other solution, 0-14
-  public var ph: Float {
-    get {_storage._ph ?? 0}
-    set {_uniqueStorage()._ph = newValue}
-  }
-  /// Returns true if `ph` has been explicitly set.
-  public var hasPh: Bool {_storage._ph != nil}
-  /// Clears the value of `ph`. Subsequent reads from it will return its default value.
-  public mutating func clearPh() {_uniqueStorage()._ph = nil}
-
-  ///
-  /// Electrical conductivity in mS/cm
-  public var electricalConductivity: Float {
-    get {_storage._electricalConductivity ?? 0}
-    set {_uniqueStorage()._electricalConductivity = newValue}
-  }
-  /// Returns true if `electricalConductivity` has been explicitly set.
-  public var hasElectricalConductivity: Bool {_storage._electricalConductivity != nil}
-  /// Clears the value of `electricalConductivity`. Subsequent reads from it will return its default value.
-  public mutating func clearElectricalConductivity() {_uniqueStorage()._electricalConductivity = nil}
-
-  ///
-  /// Salinity in mg/l
-  public var salinity: Float {
-    get {_storage._salinity ?? 0}
-    set {_uniqueStorage()._salinity = newValue}
-  }
-  /// Returns true if `salinity` has been explicitly set.
-  public var hasSalinity: Bool {_storage._salinity != nil}
-  /// Clears the value of `salinity`. Subsequent reads from it will return its default value.
-  public mutating func clearSalinity() {_uniqueStorage()._salinity = nil}
-
-  ///
-  /// Nitrogen concentration in mg/kg
-  public var nitrogen: Float {
-    get {_storage._nitrogen ?? 0}
-    set {_uniqueStorage()._nitrogen = newValue}
-  }
-  /// Returns true if `nitrogen` has been explicitly set.
-  public var hasNitrogen: Bool {_storage._nitrogen != nil}
-  /// Clears the value of `nitrogen`. Subsequent reads from it will return its default value.
-  public mutating func clearNitrogen() {_uniqueStorage()._nitrogen = nil}
-
-  ///
-  /// Phosphorus concentration in mg/kg
-  public var phosphorus: Float {
-    get {_storage._phosphorus ?? 0}
-    set {_uniqueStorage()._phosphorus = newValue}
-  }
-  /// Returns true if `phosphorus` has been explicitly set.
-  public var hasPhosphorus: Bool {_storage._phosphorus != nil}
-  /// Clears the value of `phosphorus`. Subsequent reads from it will return its default value.
-  public mutating func clearPhosphorus() {_uniqueStorage()._phosphorus = nil}
-
-  ///
-  /// Potassium concentration in mg/kg
-  public var potassium: Float {
-    get {_storage._potassium ?? 0}
-    set {_uniqueStorage()._potassium = newValue}
-  }
-  /// Returns true if `potassium` has been explicitly set.
-  public var hasPotassium: Bool {_storage._potassium != nil}
-  /// Clears the value of `potassium`. Subsequent reads from it will return its default value.
-  public mutating func clearPotassium() {_uniqueStorage()._potassium = nil}
-
-  ///
-  /// Dissolved oxygen in mg/l
-  public var dissolvedOxygen: Float {
-    get {_storage._dissolvedOxygen ?? 0}
-    set {_uniqueStorage()._dissolvedOxygen = newValue}
-  }
-  /// Returns true if `dissolvedOxygen` has been explicitly set.
-  public var hasDissolvedOxygen: Bool {_storage._dissolvedOxygen != nil}
-  /// Clears the value of `dissolvedOxygen`. Subsequent reads from it will return its default value.
-  public mutating func clearDissolvedOxygen() {_uniqueStorage()._dissolvedOxygen = nil}
-
-  ///
-  /// Oxidation-reduction potential (ORP) in mV
-  public var orp: Float {
-    get {_storage._orp ?? 0}
-    set {_uniqueStorage()._orp = newValue}
-  }
-  /// Returns true if `orp` has been explicitly set.
-  public var hasOrp: Bool {_storage._orp != nil}
-  /// Clears the value of `orp`. Subsequent reads from it will return its default value.
-  public mutating func clearOrp() {_uniqueStorage()._orp = nil}
-
-  ///
-  /// Chemical oxygen demand in mg/l
-  public var chemicalOxygenDemand: Float {
-    get {_storage._chemicalOxygenDemand ?? 0}
-    set {_uniqueStorage()._chemicalOxygenDemand = newValue}
-  }
-  /// Returns true if `chemicalOxygenDemand` has been explicitly set.
-  public var hasChemicalOxygenDemand: Bool {_storage._chemicalOxygenDemand != nil}
-  /// Clears the value of `chemicalOxygenDemand`. Subsequent reads from it will return its default value.
-  public mutating func clearChemicalOxygenDemand() {_uniqueStorage()._chemicalOxygenDemand = nil}
-
-  ///
-  /// Turbidity in NTU
-  public var turbidity: Float {
-    get {_storage._turbidity ?? 0}
-    set {_uniqueStorage()._turbidity = newValue}
-  }
-  /// Returns true if `turbidity` has been explicitly set.
-  public var hasTurbidity: Bool {_storage._turbidity != nil}
-  /// Clears the value of `turbidity`. Subsequent reads from it will return its default value.
-  public mutating func clearTurbidity() {_uniqueStorage()._turbidity = nil}
-
-  ///
-  /// Nitrate concentration in ppm
-  public var nitrate: Float {
-    get {_storage._nitrate ?? 0}
-    set {_uniqueStorage()._nitrate = newValue}
-  }
-  /// Returns true if `nitrate` has been explicitly set.
-  public var hasNitrate: Bool {_storage._nitrate != nil}
-  /// Clears the value of `nitrate`. Subsequent reads from it will return its default value.
-  public mutating func clearNitrate() {_uniqueStorage()._nitrate = nil}
-
-  ///
-  /// Ammonium concentration in ppm
-  public var ammonium: Float {
-    get {_storage._ammonium ?? 0}
-    set {_uniqueStorage()._ammonium = newValue}
-  }
-  /// Returns true if `ammonium` has been explicitly set.
-  public var hasAmmonium: Bool {_storage._ammonium != nil}
-  /// Clears the value of `ammonium`. Subsequent reads from it will return its default value.
-  public mutating func clearAmmonium() {_uniqueStorage()._ammonium = nil}
-
-  ///
-  /// Biochemical oxygen demand in mg/l
-  public var biochemicalOxygenDemand: Float {
-    get {_storage._biochemicalOxygenDemand ?? 0}
-    set {_uniqueStorage()._biochemicalOxygenDemand = newValue}
-  }
-  /// Returns true if `biochemicalOxygenDemand` has been explicitly set.
-  public var hasBiochemicalOxygenDemand: Bool {_storage._biochemicalOxygenDemand != nil}
-  /// Clears the value of `biochemicalOxygenDemand`. Subsequent reads from it will return its default value.
-  public mutating func clearBiochemicalOxygenDemand() {_uniqueStorage()._biochemicalOxygenDemand = nil}
-
-  ///
-  /// Solar irradiance in W/m^2 (distinct from the radiation field's uR/h)
-  public var solarIrradiance: Float {
-    get {_storage._solarIrradiance ?? 0}
-    set {_uniqueStorage()._solarIrradiance = newValue}
-  }
-  /// Returns true if `solarIrradiance` has been explicitly set.
-  public var hasSolarIrradiance: Bool {_storage._solarIrradiance != nil}
-  /// Clears the value of `solarIrradiance`. Subsequent reads from it will return its default value.
-  public mutating func clearSolarIrradiance() {_uniqueStorage()._solarIrradiance = nil}
-
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
 
   fileprivate var _storage = _StorageClass.defaultInstance
+}
+
+///
+/// Soil and water probe metrics.
+///
+/// Chemistry reported by soil probes (RS-485/SDI-12 NPK probes) and by
+/// water-quality sondes. Split out of EnvironmentMetrics so that message stays
+/// within the mesh payload budget.
+public struct SoilWaterMetrics: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// Soil pH, 0-14
+  public var soilPh: Float {
+    get {_soilPh ?? 0}
+    set {_soilPh = newValue}
+  }
+  /// Returns true if `soilPh` has been explicitly set.
+  public var hasSoilPh: Bool {self._soilPh != nil}
+  /// Clears the value of `soilPh`. Subsequent reads from it will return its default value.
+  public mutating func clearSoilPh() {self._soilPh = nil}
+
+  ///
+  /// pH of water or other solution, 0-14
+  public var ph: Float {
+    get {_ph ?? 0}
+    set {_ph = newValue}
+  }
+  /// Returns true if `ph` has been explicitly set.
+  public var hasPh: Bool {self._ph != nil}
+  /// Clears the value of `ph`. Subsequent reads from it will return its default value.
+  public mutating func clearPh() {self._ph = nil}
+
+  ///
+  /// Electrical conductivity in mS/cm
+  public var electricalConductivity: Float {
+    get {_electricalConductivity ?? 0}
+    set {_electricalConductivity = newValue}
+  }
+  /// Returns true if `electricalConductivity` has been explicitly set.
+  public var hasElectricalConductivity: Bool {self._electricalConductivity != nil}
+  /// Clears the value of `electricalConductivity`. Subsequent reads from it will return its default value.
+  public mutating func clearElectricalConductivity() {self._electricalConductivity = nil}
+
+  ///
+  /// Salinity in mg/l
+  public var salinity: Float {
+    get {_salinity ?? 0}
+    set {_salinity = newValue}
+  }
+  /// Returns true if `salinity` has been explicitly set.
+  public var hasSalinity: Bool {self._salinity != nil}
+  /// Clears the value of `salinity`. Subsequent reads from it will return its default value.
+  public mutating func clearSalinity() {self._salinity = nil}
+
+  ///
+  /// Nitrogen concentration in mg/kg
+  public var nitrogen: Float {
+    get {_nitrogen ?? 0}
+    set {_nitrogen = newValue}
+  }
+  /// Returns true if `nitrogen` has been explicitly set.
+  public var hasNitrogen: Bool {self._nitrogen != nil}
+  /// Clears the value of `nitrogen`. Subsequent reads from it will return its default value.
+  public mutating func clearNitrogen() {self._nitrogen = nil}
+
+  ///
+  /// Phosphorus concentration in mg/kg
+  public var phosphorus: Float {
+    get {_phosphorus ?? 0}
+    set {_phosphorus = newValue}
+  }
+  /// Returns true if `phosphorus` has been explicitly set.
+  public var hasPhosphorus: Bool {self._phosphorus != nil}
+  /// Clears the value of `phosphorus`. Subsequent reads from it will return its default value.
+  public mutating func clearPhosphorus() {self._phosphorus = nil}
+
+  ///
+  /// Potassium concentration in mg/kg
+  public var potassium: Float {
+    get {_potassium ?? 0}
+    set {_potassium = newValue}
+  }
+  /// Returns true if `potassium` has been explicitly set.
+  public var hasPotassium: Bool {self._potassium != nil}
+  /// Clears the value of `potassium`. Subsequent reads from it will return its default value.
+  public mutating func clearPotassium() {self._potassium = nil}
+
+  ///
+  /// Dissolved oxygen in mg/l
+  public var dissolvedOxygen: Float {
+    get {_dissolvedOxygen ?? 0}
+    set {_dissolvedOxygen = newValue}
+  }
+  /// Returns true if `dissolvedOxygen` has been explicitly set.
+  public var hasDissolvedOxygen: Bool {self._dissolvedOxygen != nil}
+  /// Clears the value of `dissolvedOxygen`. Subsequent reads from it will return its default value.
+  public mutating func clearDissolvedOxygen() {self._dissolvedOxygen = nil}
+
+  ///
+  /// Oxidation-reduction potential (ORP) in mV
+  public var orp: Float {
+    get {_orp ?? 0}
+    set {_orp = newValue}
+  }
+  /// Returns true if `orp` has been explicitly set.
+  public var hasOrp: Bool {self._orp != nil}
+  /// Clears the value of `orp`. Subsequent reads from it will return its default value.
+  public mutating func clearOrp() {self._orp = nil}
+
+  ///
+  /// Chemical oxygen demand in mg/l
+  public var chemicalOxygenDemand: Float {
+    get {_chemicalOxygenDemand ?? 0}
+    set {_chemicalOxygenDemand = newValue}
+  }
+  /// Returns true if `chemicalOxygenDemand` has been explicitly set.
+  public var hasChemicalOxygenDemand: Bool {self._chemicalOxygenDemand != nil}
+  /// Clears the value of `chemicalOxygenDemand`. Subsequent reads from it will return its default value.
+  public mutating func clearChemicalOxygenDemand() {self._chemicalOxygenDemand = nil}
+
+  ///
+  /// Turbidity in NTU
+  public var turbidity: Float {
+    get {_turbidity ?? 0}
+    set {_turbidity = newValue}
+  }
+  /// Returns true if `turbidity` has been explicitly set.
+  public var hasTurbidity: Bool {self._turbidity != nil}
+  /// Clears the value of `turbidity`. Subsequent reads from it will return its default value.
+  public mutating func clearTurbidity() {self._turbidity = nil}
+
+  ///
+  /// Nitrate concentration in ppm
+  public var nitrate: Float {
+    get {_nitrate ?? 0}
+    set {_nitrate = newValue}
+  }
+  /// Returns true if `nitrate` has been explicitly set.
+  public var hasNitrate: Bool {self._nitrate != nil}
+  /// Clears the value of `nitrate`. Subsequent reads from it will return its default value.
+  public mutating func clearNitrate() {self._nitrate = nil}
+
+  ///
+  /// Ammonium concentration in ppm
+  public var ammonium: Float {
+    get {_ammonium ?? 0}
+    set {_ammonium = newValue}
+  }
+  /// Returns true if `ammonium` has been explicitly set.
+  public var hasAmmonium: Bool {self._ammonium != nil}
+  /// Clears the value of `ammonium`. Subsequent reads from it will return its default value.
+  public mutating func clearAmmonium() {self._ammonium = nil}
+
+  ///
+  /// Biochemical oxygen demand in mg/l
+  public var biochemicalOxygenDemand: Float {
+    get {_biochemicalOxygenDemand ?? 0}
+    set {_biochemicalOxygenDemand = newValue}
+  }
+  /// Returns true if `biochemicalOxygenDemand` has been explicitly set.
+  public var hasBiochemicalOxygenDemand: Bool {self._biochemicalOxygenDemand != nil}
+  /// Clears the value of `biochemicalOxygenDemand`. Subsequent reads from it will return its default value.
+  public mutating func clearBiochemicalOxygenDemand() {self._biochemicalOxygenDemand = nil}
+
+  ///
+  /// Solar irradiance in W/m^2 (distinct from the radiation field's uR/h)
+  public var solarIrradiance: Float {
+    get {_solarIrradiance ?? 0}
+    set {_solarIrradiance = newValue}
+  }
+  /// Returns true if `solarIrradiance` has been explicitly set.
+  public var hasSolarIrradiance: Bool {self._solarIrradiance != nil}
+  /// Clears the value of `solarIrradiance`. Subsequent reads from it will return its default value.
+  public mutating func clearSolarIrradiance() {self._solarIrradiance = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _soilPh: Float? = nil
+  fileprivate var _ph: Float? = nil
+  fileprivate var _electricalConductivity: Float? = nil
+  fileprivate var _salinity: Float? = nil
+  fileprivate var _nitrogen: Float? = nil
+  fileprivate var _phosphorus: Float? = nil
+  fileprivate var _potassium: Float? = nil
+  fileprivate var _dissolvedOxygen: Float? = nil
+  fileprivate var _orp: Float? = nil
+  fileprivate var _chemicalOxygenDemand: Float? = nil
+  fileprivate var _turbidity: Float? = nil
+  fileprivate var _nitrate: Float? = nil
+  fileprivate var _ammonium: Float? = nil
+  fileprivate var _biochemicalOxygenDemand: Float? = nil
+  fileprivate var _solarIrradiance: Float? = nil
 }
 
 ///
@@ -2029,6 +2061,16 @@ public struct Telemetry: @unchecked Sendable {
     set {_uniqueStorage()._variant = .trafficManagementStats(newValue)}
   }
 
+  ///
+  /// Soil and water probe metrics
+  public var soilWaterMetrics: SoilWaterMetrics {
+    get {
+      if case .soilWaterMetrics(let v)? = _storage._variant {return v}
+      return SoilWaterMetrics()
+    }
+    set {_uniqueStorage()._variant = .soilWaterMetrics(newValue)}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public enum OneOf_Variant: Equatable, Sendable {
@@ -2056,6 +2098,9 @@ public struct Telemetry: @unchecked Sendable {
     ///
     /// Traffic management statistics
     case trafficManagementStats(TrafficManagementStats)
+    ///
+    /// Soil and water probe metrics
+    case soilWaterMetrics(SoilWaterMetrics)
 
   }
 
@@ -2085,8 +2130,8 @@ public struct Nau7802Config: Sendable {
 }
 
 ///
-/// AS3935 lightning sensor configuration, for saving to flash
-public struct AS3935Config: Sendable {
+/// AS3935 lightning sensor state, for saving to flash
+public struct AS3935State: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2287,7 +2332,7 @@ extension DeviceMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
 
 extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".EnvironmentMetrics"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}temperature\0\u{3}relative_humidity\0\u{3}barometric_pressure\0\u{3}gas_resistance\0\u{1}voltage\0\u{1}current\0\u{1}iaq\0\u{1}distance\0\u{1}lux\0\u{3}white_lux\0\u{3}ir_lux\0\u{3}uv_lux\0\u{3}wind_direction\0\u{3}wind_speed\0\u{1}weight\0\u{3}wind_gust\0\u{3}wind_lull\0\u{1}radiation\0\u{3}rainfall_1h\0\u{3}rainfall_24h\0\u{3}soil_moisture\0\u{3}soil_temperature\0\u{3}one_wire_temperature\0\u{3}adc_voltage_ch0\0\u{3}adc_voltage_ch1\0\u{3}adc_voltage_ch2\0\u{3}adc_voltage_ch3\0\u{3}adc_voltage_ch4\0\u{3}adc_voltage_ch5\0\u{3}adc_voltage_ch6\0\u{3}adc_voltage_ch7\0\u{3}one_wire_temperature_ch0\0\u{3}one_wire_temperature_ch1\0\u{3}one_wire_temperature_ch2\0\u{3}one_wire_temperature_ch3\0\u{3}one_wire_temperature_ch4\0\u{3}one_wire_temperature_ch5\0\u{3}one_wire_temperature_ch6\0\u{3}one_wire_temperature_ch7\0\u{3}lightning_strike_count_1h\0\u{3}lightning_distance_km\0\u{3}soil_ph\0\u{1}ph\0\u{3}electrical_conductivity\0\u{1}salinity\0\u{1}nitrogen\0\u{1}phosphorus\0\u{1}potassium\0\u{3}dissolved_oxygen\0\u{1}orp\0\u{3}chemical_oxygen_demand\0\u{1}turbidity\0\u{1}nitrate\0\u{1}ammonium\0\u{3}biochemical_oxygen_demand\0\u{3}solar_irradiance\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}temperature\0\u{3}relative_humidity\0\u{3}barometric_pressure\0\u{3}gas_resistance\0\u{1}voltage\0\u{1}current\0\u{1}iaq\0\u{1}distance\0\u{1}lux\0\u{3}white_lux\0\u{3}ir_lux\0\u{3}uv_lux\0\u{3}wind_direction\0\u{3}wind_speed\0\u{1}weight\0\u{3}wind_gust\0\u{3}wind_lull\0\u{1}radiation\0\u{3}rainfall_1h\0\u{3}rainfall_24h\0\u{3}soil_moisture\0\u{3}soil_temperature\0\u{3}one_wire_temperature\0\u{3}adc_voltage_ch0\0\u{3}adc_voltage_ch1\0\u{3}adc_voltage_ch2\0\u{3}adc_voltage_ch3\0\u{3}adc_voltage_ch4\0\u{3}adc_voltage_ch5\0\u{3}adc_voltage_ch6\0\u{3}adc_voltage_ch7\0\u{3}one_wire_temperature_ch0\0\u{3}one_wire_temperature_ch1\0\u{3}one_wire_temperature_ch2\0\u{3}one_wire_temperature_ch3\0\u{3}one_wire_temperature_ch4\0\u{3}one_wire_temperature_ch5\0\u{3}one_wire_temperature_ch6\0\u{3}one_wire_temperature_ch7\0\u{3}lightning_strike_count_1h\0\u{3}lightning_distance_km\0\u{b}soil_ph\0\u{b}ph\0\u{b}electrical_conductivity\0\u{b}salinity\0\u{b}nitrogen\0\u{b}phosphorus\0\u{b}potassium\0\u{b}dissolved_oxygen\0\u{b}orp\0\u{b}chemical_oxygen_demand\0\u{b}turbidity\0\u{b}nitrate\0\u{b}ammonium\0\u{b}biochemical_oxygen_demand\0\u{b}solar_irradiance\0\u{c}*\u{f}")
 
   fileprivate class _StorageClass {
     var _temperature: Float? = nil
@@ -2331,21 +2376,6 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     var _oneWireTemperatureCh7: Float? = nil
     var _lightningStrikeCount1H: UInt32? = nil
     var _lightningDistanceKm: Float? = nil
-    var _soilPh: Float? = nil
-    var _ph: Float? = nil
-    var _electricalConductivity: Float? = nil
-    var _salinity: Float? = nil
-    var _nitrogen: Float? = nil
-    var _phosphorus: Float? = nil
-    var _potassium: Float? = nil
-    var _dissolvedOxygen: Float? = nil
-    var _orp: Float? = nil
-    var _chemicalOxygenDemand: Float? = nil
-    var _turbidity: Float? = nil
-    var _nitrate: Float? = nil
-    var _ammonium: Float? = nil
-    var _biochemicalOxygenDemand: Float? = nil
-    var _solarIrradiance: Float? = nil
 
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
@@ -2397,21 +2427,6 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
       _oneWireTemperatureCh7 = source._oneWireTemperatureCh7
       _lightningStrikeCount1H = source._lightningStrikeCount1H
       _lightningDistanceKm = source._lightningDistanceKm
-      _soilPh = source._soilPh
-      _ph = source._ph
-      _electricalConductivity = source._electricalConductivity
-      _salinity = source._salinity
-      _nitrogen = source._nitrogen
-      _phosphorus = source._phosphorus
-      _potassium = source._potassium
-      _dissolvedOxygen = source._dissolvedOxygen
-      _orp = source._orp
-      _chemicalOxygenDemand = source._chemicalOxygenDemand
-      _turbidity = source._turbidity
-      _nitrate = source._nitrate
-      _ammonium = source._ammonium
-      _biochemicalOxygenDemand = source._biochemicalOxygenDemand
-      _solarIrradiance = source._solarIrradiance
     }
   }
 
@@ -2471,21 +2486,6 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
         case 39: try { try decoder.decodeSingularFloatField(value: &_storage._oneWireTemperatureCh7) }()
         case 40: try { try decoder.decodeSingularUInt32Field(value: &_storage._lightningStrikeCount1H) }()
         case 41: try { try decoder.decodeSingularFloatField(value: &_storage._lightningDistanceKm) }()
-        case 42: try { try decoder.decodeSingularFloatField(value: &_storage._soilPh) }()
-        case 43: try { try decoder.decodeSingularFloatField(value: &_storage._ph) }()
-        case 44: try { try decoder.decodeSingularFloatField(value: &_storage._electricalConductivity) }()
-        case 45: try { try decoder.decodeSingularFloatField(value: &_storage._salinity) }()
-        case 46: try { try decoder.decodeSingularFloatField(value: &_storage._nitrogen) }()
-        case 47: try { try decoder.decodeSingularFloatField(value: &_storage._phosphorus) }()
-        case 48: try { try decoder.decodeSingularFloatField(value: &_storage._potassium) }()
-        case 49: try { try decoder.decodeSingularFloatField(value: &_storage._dissolvedOxygen) }()
-        case 50: try { try decoder.decodeSingularFloatField(value: &_storage._orp) }()
-        case 51: try { try decoder.decodeSingularFloatField(value: &_storage._chemicalOxygenDemand) }()
-        case 52: try { try decoder.decodeSingularFloatField(value: &_storage._turbidity) }()
-        case 53: try { try decoder.decodeSingularFloatField(value: &_storage._nitrate) }()
-        case 54: try { try decoder.decodeSingularFloatField(value: &_storage._ammonium) }()
-        case 55: try { try decoder.decodeSingularFloatField(value: &_storage._biochemicalOxygenDemand) }()
-        case 56: try { try decoder.decodeSingularFloatField(value: &_storage._solarIrradiance) }()
         default: break
         }
       }
@@ -2621,51 +2621,6 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
       try { if let v = _storage._lightningDistanceKm {
         try visitor.visitSingularFloatField(value: v, fieldNumber: 41)
       } }()
-      try { if let v = _storage._soilPh {
-        try visitor.visitSingularFloatField(value: v, fieldNumber: 42)
-      } }()
-      try { if let v = _storage._ph {
-        try visitor.visitSingularFloatField(value: v, fieldNumber: 43)
-      } }()
-      try { if let v = _storage._electricalConductivity {
-        try visitor.visitSingularFloatField(value: v, fieldNumber: 44)
-      } }()
-      try { if let v = _storage._salinity {
-        try visitor.visitSingularFloatField(value: v, fieldNumber: 45)
-      } }()
-      try { if let v = _storage._nitrogen {
-        try visitor.visitSingularFloatField(value: v, fieldNumber: 46)
-      } }()
-      try { if let v = _storage._phosphorus {
-        try visitor.visitSingularFloatField(value: v, fieldNumber: 47)
-      } }()
-      try { if let v = _storage._potassium {
-        try visitor.visitSingularFloatField(value: v, fieldNumber: 48)
-      } }()
-      try { if let v = _storage._dissolvedOxygen {
-        try visitor.visitSingularFloatField(value: v, fieldNumber: 49)
-      } }()
-      try { if let v = _storage._orp {
-        try visitor.visitSingularFloatField(value: v, fieldNumber: 50)
-      } }()
-      try { if let v = _storage._chemicalOxygenDemand {
-        try visitor.visitSingularFloatField(value: v, fieldNumber: 51)
-      } }()
-      try { if let v = _storage._turbidity {
-        try visitor.visitSingularFloatField(value: v, fieldNumber: 52)
-      } }()
-      try { if let v = _storage._nitrate {
-        try visitor.visitSingularFloatField(value: v, fieldNumber: 53)
-      } }()
-      try { if let v = _storage._ammonium {
-        try visitor.visitSingularFloatField(value: v, fieldNumber: 54)
-      } }()
-      try { if let v = _storage._biochemicalOxygenDemand {
-        try visitor.visitSingularFloatField(value: v, fieldNumber: 55)
-      } }()
-      try { if let v = _storage._solarIrradiance {
-        try visitor.visitSingularFloatField(value: v, fieldNumber: 56)
-      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -2716,25 +2671,114 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
         if _storage._oneWireTemperatureCh7 != rhs_storage._oneWireTemperatureCh7 {return false}
         if _storage._lightningStrikeCount1H != rhs_storage._lightningStrikeCount1H {return false}
         if _storage._lightningDistanceKm != rhs_storage._lightningDistanceKm {return false}
-        if _storage._soilPh != rhs_storage._soilPh {return false}
-        if _storage._ph != rhs_storage._ph {return false}
-        if _storage._electricalConductivity != rhs_storage._electricalConductivity {return false}
-        if _storage._salinity != rhs_storage._salinity {return false}
-        if _storage._nitrogen != rhs_storage._nitrogen {return false}
-        if _storage._phosphorus != rhs_storage._phosphorus {return false}
-        if _storage._potassium != rhs_storage._potassium {return false}
-        if _storage._dissolvedOxygen != rhs_storage._dissolvedOxygen {return false}
-        if _storage._orp != rhs_storage._orp {return false}
-        if _storage._chemicalOxygenDemand != rhs_storage._chemicalOxygenDemand {return false}
-        if _storage._turbidity != rhs_storage._turbidity {return false}
-        if _storage._nitrate != rhs_storage._nitrate {return false}
-        if _storage._ammonium != rhs_storage._ammonium {return false}
-        if _storage._biochemicalOxygenDemand != rhs_storage._biochemicalOxygenDemand {return false}
-        if _storage._solarIrradiance != rhs_storage._solarIrradiance {return false}
         return true
       }
       if !storagesAreEqual {return false}
     }
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension SoilWaterMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".SoilWaterMetrics"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}soil_ph\0\u{1}ph\0\u{3}electrical_conductivity\0\u{1}salinity\0\u{1}nitrogen\0\u{1}phosphorus\0\u{1}potassium\0\u{3}dissolved_oxygen\0\u{1}orp\0\u{3}chemical_oxygen_demand\0\u{1}turbidity\0\u{1}nitrate\0\u{1}ammonium\0\u{3}biochemical_oxygen_demand\0\u{3}solar_irradiance\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularFloatField(value: &self._soilPh) }()
+      case 2: try { try decoder.decodeSingularFloatField(value: &self._ph) }()
+      case 3: try { try decoder.decodeSingularFloatField(value: &self._electricalConductivity) }()
+      case 4: try { try decoder.decodeSingularFloatField(value: &self._salinity) }()
+      case 5: try { try decoder.decodeSingularFloatField(value: &self._nitrogen) }()
+      case 6: try { try decoder.decodeSingularFloatField(value: &self._phosphorus) }()
+      case 7: try { try decoder.decodeSingularFloatField(value: &self._potassium) }()
+      case 8: try { try decoder.decodeSingularFloatField(value: &self._dissolvedOxygen) }()
+      case 9: try { try decoder.decodeSingularFloatField(value: &self._orp) }()
+      case 10: try { try decoder.decodeSingularFloatField(value: &self._chemicalOxygenDemand) }()
+      case 11: try { try decoder.decodeSingularFloatField(value: &self._turbidity) }()
+      case 12: try { try decoder.decodeSingularFloatField(value: &self._nitrate) }()
+      case 13: try { try decoder.decodeSingularFloatField(value: &self._ammonium) }()
+      case 14: try { try decoder.decodeSingularFloatField(value: &self._biochemicalOxygenDemand) }()
+      case 15: try { try decoder.decodeSingularFloatField(value: &self._solarIrradiance) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._soilPh {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 1)
+    } }()
+    try { if let v = self._ph {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 2)
+    } }()
+    try { if let v = self._electricalConductivity {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 3)
+    } }()
+    try { if let v = self._salinity {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 4)
+    } }()
+    try { if let v = self._nitrogen {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 5)
+    } }()
+    try { if let v = self._phosphorus {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 6)
+    } }()
+    try { if let v = self._potassium {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 7)
+    } }()
+    try { if let v = self._dissolvedOxygen {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 8)
+    } }()
+    try { if let v = self._orp {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 9)
+    } }()
+    try { if let v = self._chemicalOxygenDemand {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 10)
+    } }()
+    try { if let v = self._turbidity {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 11)
+    } }()
+    try { if let v = self._nitrate {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 12)
+    } }()
+    try { if let v = self._ammonium {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 13)
+    } }()
+    try { if let v = self._biochemicalOxygenDemand {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 14)
+    } }()
+    try { if let v = self._solarIrradiance {
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 15)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: SoilWaterMetrics, rhs: SoilWaterMetrics) -> Bool {
+    if lhs._soilPh != rhs._soilPh {return false}
+    if lhs._ph != rhs._ph {return false}
+    if lhs._electricalConductivity != rhs._electricalConductivity {return false}
+    if lhs._salinity != rhs._salinity {return false}
+    if lhs._nitrogen != rhs._nitrogen {return false}
+    if lhs._phosphorus != rhs._phosphorus {return false}
+    if lhs._potassium != rhs._potassium {return false}
+    if lhs._dissolvedOxygen != rhs._dissolvedOxygen {return false}
+    if lhs._orp != rhs._orp {return false}
+    if lhs._chemicalOxygenDemand != rhs._chemicalOxygenDemand {return false}
+    if lhs._turbidity != rhs._turbidity {return false}
+    if lhs._nitrate != rhs._nitrate {return false}
+    if lhs._ammonium != rhs._ammonium {return false}
+    if lhs._biochemicalOxygenDemand != rhs._biochemicalOxygenDemand {return false}
+    if lhs._solarIrradiance != rhs._solarIrradiance {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -3374,7 +3418,7 @@ extension HostMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
 
 extension Telemetry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Telemetry"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}time\0\u{3}device_metrics\0\u{3}environment_metrics\0\u{3}air_quality_metrics\0\u{3}power_metrics\0\u{3}local_stats\0\u{3}health_metrics\0\u{3}host_metrics\0\u{3}traffic_management_stats\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}time\0\u{3}device_metrics\0\u{3}environment_metrics\0\u{3}air_quality_metrics\0\u{3}power_metrics\0\u{3}local_stats\0\u{3}health_metrics\0\u{3}host_metrics\0\u{3}traffic_management_stats\0\u{4}\u{2}soil_water_metrics\0")
 
   fileprivate class _StorageClass {
     var _time: UInt32 = 0
@@ -3514,6 +3558,19 @@ extension Telemetry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
             _storage._variant = .trafficManagementStats(v)
           }
         }()
+        case 11: try {
+          var v: SoilWaterMetrics?
+          var hadOneofValue = false
+          if let current = _storage._variant {
+            hadOneofValue = true
+            if case .soilWaterMetrics(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._variant = .soilWaterMetrics(v)
+          }
+        }()
         default: break
         }
       }
@@ -3561,6 +3618,10 @@ extension Telemetry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
       case .trafficManagementStats?: try {
         guard case .trafficManagementStats(let v)? = _storage._variant else { preconditionFailure() }
         try visitor.visitSingularMessageField(value: v, fieldNumber: 9)
+      }()
+      case .soilWaterMetrics?: try {
+        guard case .soilWaterMetrics(let v)? = _storage._variant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 11)
       }()
       case nil: break
       }
@@ -3619,8 +3680,8 @@ extension Nau7802Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
   }
 }
 
-extension AS3935Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  public static let protoMessageName: String = _protobuf_package + ".AS3935Config"
+extension AS3935State: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".AS3935State"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}tuning_cap_pf\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -3642,7 +3703,7 @@ extension AS3935Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: AS3935Config, rhs: AS3935Config) -> Bool {
+  public static func ==(lhs: AS3935State, rhs: AS3935State) -> Bool {
     if lhs.tuningCapPf != rhs.tuningCapPf {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true

@@ -7,7 +7,7 @@
 //  Pure, view-independent helpers for the Mesh Beacon module config editor
 //  (FR-009–FR-014). Kept free of SwiftUI / SwiftData so they can be unit-tested
 //  in isolation (MeshBeaconConfigEditorTests):
-//   - blocking validation for the beacon message (≤ 100 UTF-8 bytes) and
+//   - blocking validation for the beacon message (≤ 60 UTF-8 bytes) and
 //     interval (≥ 3600 s), which the editor uses to block saving (FR-011/FR-013);
 //   - flag bitfield get/set that preserves other bits — importantly the
 //     firmware-managed FLAG_LEGACY_SPLIT (bit 4) — when toggling
@@ -19,8 +19,10 @@ import Foundation
 /// Client-side, blocking validation limits for the beacon config (never silently
 /// truncate the message or clamp the interval — block the save and show why).
 enum MeshBeaconValidation {
-	/// Firmware caps the beacon text at 100 bytes.
-	static let maxMessageBytes = 100
+	/// Firmware caps the beacon text at 60 bytes. The nanopb `max_size` is 61
+	/// because it counts the terminator. Every beacon copy carries this text on
+	/// the air, which is why it came down from 100.
+	static let maxMessageBytes = 60
 	/// Firmware minimum (and default) broadcast interval, in seconds.
 	static let minIntervalSecs: Int32 = 3600
 
@@ -29,7 +31,7 @@ enum MeshBeaconValidation {
 		message.utf8.count
 	}
 
-	/// True when the message fits the firmware's byte limit (≤ 100 bytes).
+	/// True when the message fits the firmware's byte limit (≤ 60 bytes).
 	static func isMessageValid(_ message: String) -> Bool {
 		messageByteCount(message) <= maxMessageBytes
 	}

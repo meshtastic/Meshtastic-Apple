@@ -18,6 +18,22 @@ import OSLog
 /// Only ever an offer. The client node db is deliberately a superset of the radio's, so nothing is
 /// removed without the user asking — a node may simply be out of range rather than on another preset,
 /// and it comes back on its own when it is next heard.
+/// The banner's two counted strings.
+///
+/// They live here rather than inline so a test can resolve exactly what the view renders.
+/// Both once carried automatic grammar agreement markup, which only inflects when the
+/// string catalog has a value to compile — theirs had none, so the markup reached the
+/// screen. A test that restates the literal would not have noticed.
+enum UnheardNodesStrings {
+	static func headline(count: Int) -> String {
+		String(localized: "\(count) nodes not heard since you changed settings")
+	}
+
+	static func removeConfirmation(count: Int) -> String {
+		String(localized: "Remove \(count) nodes?", comment: "Confirmation title for removing nodes not heard since the settings changed")
+	}
+}
+
 struct UnheardNodesBanner: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject private var accessoryManager: AccessoryManager
@@ -52,7 +68,7 @@ struct UnheardNodesBanner: View {
 				// The honest claim: we know we have not heard them since the settings changed. We
 				// cannot know they moved to another preset — a radio cannot observe a channel it is
 				// not tuned to.
-				Text("^[\(unheardNodes.count) node](inflect: true) not heard since you changed settings")
+				Text(UnheardNodesStrings.headline(count: unheardNodes.count))
 					.font(.callout.weight(.semibold))
 				Text("They were heard on the old channel and cannot be reached from this one. Favorites and the connected node are kept.")
 					.font(.caption)
@@ -96,7 +112,7 @@ struct UnheardNodesBanner: View {
 		.padding(.horizontal)
 		.padding(.bottom, 4)
 		.confirmationDialog(
-			Text(AttributedString(localized: "Remove ^[\(unheardNodes.count) node](inflect: true)?", comment: "Confirmation title for removing nodes not heard since the settings changed")),
+			Text(UnheardNodesStrings.removeConfirmation(count: unheardNodes.count)),
 			isPresented: $isConfirming,
 			titleVisibility: .visible
 		) {

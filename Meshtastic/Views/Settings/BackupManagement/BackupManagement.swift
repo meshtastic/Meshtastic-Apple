@@ -12,6 +12,7 @@ import SwiftData
 /// Settings screen showing all node backups with total storage usage and swipe-to-delete.
 struct BackupManagement: View {
 	@EnvironmentObject private var accessoryManager: AccessoryManager
+	@EnvironmentObject private var router: Router
 	@State private var backups: [BackupEntry] = []
 	@State private var totalSize: Int64 = 0
 	@State private var showDeleteConfirmation = false
@@ -201,6 +202,7 @@ struct BackupManagement: View {
 			currentNodeNum: currentNodeNum,
 			accessoryManager: accessoryManager,
 			appState: accessoryManager.appState,
+			router: router,
 			selectedTab: .settings,
 			disconnectCurrentDevice: true
 		)

@@ -8,7 +8,15 @@ import Translation
 
 struct DocBrowserView: View {
 
-	@State private var searchText = ""
+	@State private var searchText: String
+
+	/// Opens with the browser already filtered. Settings search passes the query the
+	/// user typed, so a documentation result lands on the pages that matched rather
+	/// than at the top of the contents.
+	init(initialSearch: String = "") {
+		_searchText = State(initialValue: initialSearch)
+	}
+
 	/// Collapsible section state — User Guide expanded by default, Developer Guide collapsed.
 	@State private var expandedSections: Set<DocSection> = [.user]
 	@State private var translatedLabels: [String: String] = [:]

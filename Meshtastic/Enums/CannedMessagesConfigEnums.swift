@@ -19,11 +19,11 @@ enum ConfigPresets: Int, CaseIterable, Identifiable {
 		switch self {
 
 		case .unset:
-			return "Manual Configuration".localized
+			return String(localized: "Manual Configuration", comment: "ConfigPresets.description")
 		case .rakRotaryEncoder:
-			return "RAK Rotary Encoder".localized
+			return String(localized: "RAK Rotary Encoder", comment: "ConfigPresets.description")
 		case .cardKB:
-			return "M5 Stack Card KB / RAK Keypad".localized
+			return String(localized: "M5 Stack Card KB / RAK Keypad", comment: "ConfigPresets.description")
 		}
 	}
 }

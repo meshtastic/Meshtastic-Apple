@@ -183,14 +183,31 @@ extension NodeInfoEntity {
 		sessionPasskey?.isEmpty == false && (sessionExpiration ?? .distantPast) >= Date()
 	}
 
-	/// Whether this node's own reported firmware supports the Status Message module (2.8+,
-	/// the same floor as `AccessoryManager.supportsStatusMessage`). Permissive when the node
-	/// has no known firmware version, matching the capability gates' unknown-version behavior.
-	var firmwareSupportsStatusMessage: Bool {
-		guard let version = metadata?.firmwareVersion, !version.isEmpty else { return true }
-		let comparison = "2.8.0".compare(version, options: .numeric)
-		return comparison == .orderedAscending || comparison == .orderedSame
+	/// This node's own reported firmware version, when it has told us one. Under remote
+	/// admin this is the target's version, which is not the connected radio's.
+	var knownFirmwareVersion: String? {
+		guard let version = metadata?.firmwareVersion, !version.isEmpty else { return nil }
+		return version
 	}
+
+	/// Whether this node's own reported firmware is at least `version`. Permissive when
+	/// the node has never reported one, matching the capability gates' unknown-version
+	/// behavior.
+	func firmwareAtLeast(_ version: String) -> Bool {
+		Self.firmware(knownFirmwareVersion, isAtLeast: version)
+	}
+
+	/// The one version comparison, for callers that hold a reported version rather than
+	/// the entity: the settings list works from a snapshot. A nil or empty `reported`
+	/// means the node has never said, and every gate is permissive there.
+	static func firmware(_ reported: String?, isAtLeast required: String) -> Bool {
+		guard let reported, !reported.isEmpty else { return true }
+		return required.compare(reported, options: .numeric) != .orderedDescending
+	}
+
+	/// Whether this node's own reported firmware supports the Status Message module (2.8+,
+	/// the same floor as `AccessoryManager.supportsStatusMessage`).
+	var firmwareSupportsStatusMessage: Bool { firmwareAtLeast("2.8.0") }
 
 	/// The status message to render on read-only surfaces (node list card and node
 	/// details). Prefers the live broadcast value (`nodeStatus`, NODE_STATUS_APP) and

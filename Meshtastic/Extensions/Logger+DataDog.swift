@@ -23,6 +23,12 @@ enum DataDogLoggableAction {
 	}
 }
 
+/// The radio facts carried on every RUM event.
+enum RadioContextKey: String, CaseIterable {
+	case firmwareVersion
+	case hardwareModel
+}
+
 struct DatadogLogger {
 	private let osLogger: os.Logger
 	private let ddLogger: any DatadogLogs.LoggerProtocol
@@ -67,6 +73,35 @@ struct DatadogLogger {
 		ddLogger.error(message)
 	}
 	
+	// MARK: - Radio context
+
+	/// Facts about the radio the app is talking to, attached to every RUM event rather than
+	/// to one action.
+	///
+	/// These used to ride only on the `connect` action, which meant a crash, a hang or a view
+	/// carried no way to tell what the phone was connected to — the attributes existed on one
+	/// event per session and nowhere else. As global attributes they follow everything the SDK
+	/// reports until the radio goes away.
+	///
+	/// Set where each value becomes known rather than at the end of connect: the firmware
+	/// version arrives with the device metadata and the hardware model with the connected
+	/// node's info, and on a reconnect those can land after the connection is already up.
+	func setRadioContext(_ key: RadioContextKey, _ value: String?) {
+		guard let value, !value.isEmpty else {
+			RUMMonitor.shared().removeAttribute(forKey: key.rawValue)
+			return
+		}
+		RUMMonitor.shared().addAttribute(forKey: key.rawValue, value: value)
+	}
+
+	/// Drops the radio facts when the link goes away, so the next session does not inherit
+	/// the last radio's version and model.
+	func clearRadioContext() {
+		for key in RadioContextKey.allCases {
+			RUMMonitor.shared().removeAttribute(forKey: key.rawValue)
+		}
+	}
+
 	// MARK: - Methods for RUM actions
 	func action(_ action: DataDogLoggableAction) {
 		var attributes = [String: any Encodable]()
