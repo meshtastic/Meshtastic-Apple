@@ -228,6 +228,39 @@ struct MultiRadioConnectFlowTests {
 		#expect(manager.activeConnection == nil)
 	}
 
+	@Test("With the first radio gone, radios join the others and don't take its place")
+	func joinWhileFirstIsGone() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let firstNum = uniqueNodeNum()
+		let first = ScriptedRadio(nodeNum: firstNum)
+		let second = ScriptedRadio(nodeNum: firstNum &+ 0x400)
+		let third = ScriptedRadio(nodeNum: firstNum &+ 0x500)
+		let secondDevice = device(), thirdDevice = device()
+		let manager = makeManager(ScriptedTransport(radio: first, radiosByIdentifier: [secondDevice.identifier: second, thirdDevice.identifier: third]))
+		let firstDevice = device()
+		try await manager.connect(to: firstDevice)
+		try await manager.connectAdditionalRadio(secondDevice)
+		// The first radio drops; the second stays (D-19).
+		try await manager.closeConnection()
+		#expect(manager.activeConnection == nil)
+
+		// Added now, the third joins the second (W3) ...
+		try await manager.addRadio(thirdDevice)
+		#expect(manager.additionalRadios[thirdDevice.id] != nil)
+		#expect(manager.activeConnection == nil, "it doesn't take the first radio's place")
+		#expect(PreferredRadio.peripheralId == firstDevice.id.uuidString, "the first stays the preferred radio")
+
+		// ... and a radio alongside that drops is brought back while the first is still gone (W2).
+		await manager.disconnectAdditionalRadio(secondDevice.id)
+		manager.scheduleAdditionalRadioReconnect(secondDevice, firstDelay: .zero)
+		try await waitUntil { manager.additionalRadios[secondDevice.id] != nil }
+		#expect(manager.additionalRadios[secondDevice.id] != nil)
+		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
+		await manager.disconnectRadio(secondDevice.id)
+		await manager.disconnectRadio(thirdDevice.id)
+	}
+
 	@Test("A window whose radio is off still knows which radio it is, and sends through it")
 	func windowKeepsItsRadioWhileOff() async throws {
 		let saved = SavedDefaults()

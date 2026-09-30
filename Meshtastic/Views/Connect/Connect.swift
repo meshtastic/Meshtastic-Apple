@@ -439,7 +439,8 @@ struct Connect: View {
 						}
 						.textCase(nil)
 					}
-					if accessoryManager.isConnected {
+					// Any radio connected, the first one included or not (review V11 W3).
+					if accessoryManager.isConnected || !accessoryManager.additionalRadios.isEmpty {
 						Section(header: HStack {
 							Text("Add a Radio").font(.title)
 							Spacer()
@@ -463,7 +464,7 @@ struct Connect: View {
 						// again for each focused radio; scanning stops when the tab goes away.
 						.task(id: accessoryManager.nodeNum(for: windowRadio)) { accessoryManager.startDiscovery() }
 						.onDisappear {
-							if accessoryManager.isConnected {
+							if accessoryManager.isConnected || !accessoryManager.additionalRadios.isEmpty {
 								accessoryManager.stopDiscovery()
 							}
 						}
@@ -478,7 +479,7 @@ struct Connect: View {
 						.textCase(nil)
 					}
 					
-					if !(accessoryManager.isConnected || accessoryManager .isConnecting) {
+					if !(accessoryManager.isConnected || accessoryManager.isConnecting), accessoryManager.additionalRadios.isEmpty {
 						Group {
 							Section(header: HStack {
 								Text("Available Radios").font(.title)
@@ -1015,7 +1016,7 @@ struct ManualConnectionMenu: View {
 			Button("OK", action: {
 				if !connectionString.isEmpty {
 					if let device = selectedTransport.transport.device(forManualConnection: connectionString) {
-						if accessoryManager.activeConnection != nil {
+						if accessoryManager.connectedRadioCount > 0 {
 							// Entered under Add a Radio (T156, W-12).
 							addAlongside(device)
 						} else if PreferredRadio.peripheralId == device.id.uuidString {
@@ -1045,7 +1046,7 @@ struct DeviceConnectRow: View {
 	/// With a radio already connected, this one is added alongside it (W-12).
 	private func handleTap() {
 		guard !accessoryManager.isRadioConnected(device.id) else { return }
-		guard accessoryManager.activeConnection != nil else {
+		guard accessoryManager.connectedRadioCount > 0 else {
 			Task {
 				if PreferredRadio.peripheralId.count > 0 && device.id.uuidString != PreferredRadio.peripheralId {
 					await performRadioSwitch(device, isSwitchingRadio: $isSwitchingRadio, accessoryManager: accessoryManager)
@@ -1068,7 +1069,7 @@ struct DeviceConnectRow: View {
 
 	/// At the radio limit, the radios to add are disabled; the section says why.
 	private var isAtRadioLimit: Bool {
-		accessoryManager.activeConnection != nil && !accessoryManager.canConnectAnotherRadio
+		accessoryManager.connectedRadioCount > 0 && !accessoryManager.canConnectAnotherRadio
 	}
 
 	var body: some View {

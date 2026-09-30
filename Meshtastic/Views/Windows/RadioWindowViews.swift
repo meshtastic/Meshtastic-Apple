@@ -134,7 +134,7 @@ struct RadioListWindow: View {
 					Spacer()
 					ManualConnectionMenu(isSwitchingRadio: $isSwitchingRadio)
 				}) {
-					if accessoryManager.activeConnection != nil, !accessoryManager.canConnectAnotherRadio {
+					if accessoryManager.connectedRadioCount > 0, !accessoryManager.canConnectAnotherRadio {
 						Text("You can connect up to \(AccessoryManager.maxConnectedRadios) radios at once. Disconnect one to add another.")
 							.font(.callout)
 							.foregroundStyle(.secondary)

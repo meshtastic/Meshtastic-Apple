@@ -55,6 +55,12 @@ extension AccessoryManager {
 		(activeConnection == nil ? 0 : 1) + additionalRadios.count
 	}
 
+	/// A radio is connected, or the first one is connecting, for another to connect alongside
+	/// (review V11 W2). With none, a connect is the first radio's.
+	var hasRadioToJoin: Bool {
+		connectedRadioCount > 0 || hasFocusedConnectInProgress
+	}
+
 	var canConnectAnotherRadio: Bool {
 		connectedRadioCount < Self.maxConnectedRadios
 	}
@@ -154,7 +160,9 @@ extension AccessoryManager {
 	/// the focused one. `connectTimeout` bounds the transport connect for automatic attempts; a
 	/// user's tap waits as long as the transport does. Throws when the radio didn't connect.
 	func connectAdditionalRadio(_ device: Device, connectTimeout: Duration? = nil) async throws {
-		guard activeConnection != nil else {
+		// With the first radio gone and others connected, it joins them; it doesn't take the first
+		// radio's place, which stays the preferred radio's (review V11 W3).
+		guard hasRadioToJoin else {
 			try await connect(to: device)
 			return
 		}
@@ -297,7 +305,7 @@ extension AccessoryManager {
 				if self.isRadioConnected(device.id) { return }
 				// Wait for a focused radio and a free slot rather than taking over as the focused
 				// radio, which is the preferred radio's own reconnect to make.
-				if self.activeConnection != nil, self.canConnectAnotherRadio {
+				if self.hasRadioToJoin, self.canConnectAnotherRadio {
 					do {
 						try await self.connectAdditionalRadio(device, connectTimeout: Self.additionalReconnectTimeout)
 						Logger.transport.info("🔗🔁 [Additional] Reconnected \(device.name, privacy: .public)")
@@ -320,7 +328,7 @@ extension AccessoryManager {
 	/// it last time (`MyInfoEntity.autoConnect`). They go through the reconnect loop, so one
 	/// that's out of range keeps being tried without blocking the others.
 	func reconnectRememberedRadios() async {
-		guard activeConnection != nil else { return }
+		guard connectedRadioCount > 0 else { return }
 		let connectedNums = Set(connectedRadios.compactMap(\.num))
 		let remembered = await MeshPackets.shared.rememberedRadios(excluding: connectedNums)
 		for radio in remembered {

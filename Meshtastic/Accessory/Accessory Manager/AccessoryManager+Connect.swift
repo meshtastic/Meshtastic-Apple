@@ -116,7 +116,8 @@ extension AccessoryManager {
 		if asFocused, activeConnection != nil {
 			throw AccessoryError.connectionFailed("Already connected to a device")
 		}
-		if !asFocused, activeConnection == nil || !canConnectAnotherRadio {
+		// Alongside any connected radio, the first one included or not (review V11 W2).
+		if !asFocused, !hasRadioToJoin || !canConnectAnotherRadio {
 			updateDevice(deviceId: device.id, key: \.connectionState, value: .disconnected)
 			throw AccessoryError.connectionFailed("No longer room for this radio")
 		}
@@ -278,7 +279,7 @@ extension AccessoryManager {
 					} else {
 						connection = try await self.connectTransport(transport, to: device, within: connectTimeout)
 						// The connect can take a while (BLE waits for the radio). Re-check what it assumed.
-						guard self.activeConnection != nil, self.additionalRadios[device.id] == nil, self.canConnectAnotherRadio else {
+						guard self.hasRadioToJoin, self.additionalRadios[device.id] == nil, self.canConnectAnotherRadio else {
 							try? await connection.disconnect(withError: nil, shouldReconnect: false)
 							throw AccessoryError.connectionFailed("No longer room for this radio")
 						}
