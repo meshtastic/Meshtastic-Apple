@@ -55,7 +55,7 @@ Read this first if you are picking the work up. Update it in the same commit as 
 - Next up: the owner's device test (checklist below), which waits on hardware; don't rebuild
   Mesh Multi for it unless asked. Don't design around the focused/additional split: every radio
   works the same way (D-17). Removing the switch-era helpers (T066) waits for that test.
-- Baseline and latest: the full suite passes in the iOS Simulator (3,483 Swift Testing tests plus
+- Baseline and latest: the full suite passes in the iOS Simulator (3,489 Swift Testing tests plus
   the XCTests, about 55 seconds of test time). Run it with the simulator to itself: another
   session's test runs on the same simulator kill the test host partway.
 
@@ -100,11 +100,17 @@ Read this first if you are picking the work up. Update it in the same commit as 
 ## In progress
 
 - D-19 (2026-09-29): one window per radio, no app-wide focused radio; part of 021, same pull
-  request. Spec in `windows.md` (decisions W-01 to W-14), plan in plan.md › One window per radio,
+  request. Spec in `windows.md` (decisions W-01 to W-15), plan in plan.md › One window per radio,
   tasks in tasks.md › Phase 11 (T300–T325), all done 2026-09-29 except T315 (dropped, see its
   note). Nothing of the windows was run: the iOS Simulator suite and a Mac build (built, not run)
   pass; the device checklist below has what needs the owner's Mac, iPhone and Siri. Next: the
   owner's device test, then the full reviews of each area, then T122.
+- Review V11 and data V10 (2026-09-29/30): `review-connections-v11.md` (X1, W1–W7, minors) and
+  `review-data-v10.md` (R10-1–R10-8), checked in the files; all held. Fixed one commit each
+  (T330–T339 in tasks.md). R10-6 led to the owner's W-15: with several radios known, each service
+  in use must have a radio chosen, and a chosen radio that's off is waited for, never replaced.
+  Known and left as is: the Mac's Mesh Map window has no radio of its own, so it follows the radio
+  connected first (`.focused`, `appState.router`) even when opened from another radio's window.
 - Review V10 (2026-09-29): `review-connections-v10.md`, K1's fix and `connect(to:)` through
   Step 1 re-read whole; no findings. Next: one full review of each area after the device test,
   before T122; delta reviews only for fixes in that agent's area.
@@ -430,10 +436,14 @@ describes it well enough to rebuild.
   that reconnects has its window again; a notification tap opens the window of the radio it's
   about; the composer has no Via picker. With A's window and B's window open, navigating in one
   doesn't move the other.
-- [ ] Siri and CarPlay (W-09 to W-11): connecting B the first time while A is known asks once
-  whether to use B; "Set my Meshtastic radio" and "Make B my Meshtastic radio" set it; a Shortcuts
-  message without a radio, with A and B connected and none chosen, asks which; naming a radio
-  that's off fails without sending through the other.
+- [ ] Siri and CarPlay (W-10, W-11, W-15): connecting B the first time while A is known shows the
+  Choose Radios sheet, which doesn't close until CarPlay & Siri (and TAK if on, the Watch if
+  paired) has a radio; TAK can be turned off from it instead. "Set my Meshtastic radio" and "Make
+  B my Meshtastic radio" change it. A Shortcuts message without a radio goes via the chosen one;
+  with A connected and the chosen B off it says "That radio isn't connected." and sends nothing;
+  naming a radio that's off does the same. Siri's voice "send a message" goes via the chosen radio
+  and, with it off, fails asking to open the app, without sending through A. Factory reset and shut down name the radio in their confirmation.
+  Remove the chosen radio with two others left: the sheet asks again.
 - [ ] App Settings › TAK / CarPlay & Siri / Apple Watch: pick B. TAK CoT goes out from B (log
   `📻 [B] Sending TAKPacket…`); a Shortcuts "Send a Group Message" without a radio goes via B;
   with B's node number while B is off, it fails. Reply to a notification from B: the reply goes via B.

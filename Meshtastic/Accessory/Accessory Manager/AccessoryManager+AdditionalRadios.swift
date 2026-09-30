@@ -84,8 +84,9 @@ extension AccessoryManager {
 		try await connectAdditionalRadio(device)
 	}
 
-	/// Disconnects radio `deviceId` for the user, focused or not (D-19): it isn't brought back, and
-	/// its window on the Mac closes (W-02). The focused radio hands the focus to another first.
+	/// Disconnects radio `deviceId` for the user, the first radio or another (D-19): it isn't
+	/// brought back, and its window on the Mac closes (W-02). Without the first radio the others
+	/// stay connected and none takes its place (T316).
 	func disconnectRadio(_ deviceId: UUID) async {
 		if activeConnection?.device.id == deviceId || connectAttempts[deviceId]?.isFocused == true {
 			try? await disconnectFocusedRadio(accessoryManager: self)
