@@ -33,7 +33,7 @@ Set the device role in **Settings → Device**.
 
 ### TAK Identity
 
-The first section, **TAK Identity**, controls the firmware-level team and role identity the radio attaches to every position report:
+The first section, **TAK Identity**, controls the firmware-level team and role identity the radio attaches to every position report. It appears only on firmware **2.8.0 or later**, which is where the radio began reading its TAK configuration. On older firmware the section is hidden, because the radio would ignore anything set there. The rest of the screen still works: TAK traffic falls back to the legacy format described above.
 
 | Setting | Description |
 |---------|-------------|

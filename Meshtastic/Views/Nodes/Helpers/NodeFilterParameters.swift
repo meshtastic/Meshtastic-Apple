@@ -62,14 +62,14 @@ struct NodeDistanceFilterBounds {
 	}
 }
 
+/// One filter set for a window. The node list, the map, and the contact list
+/// in that window observe this object. Another window has its own.
+///
+/// Toggles still save to the `nodeFilter.*` keys, so a new window and the next
+/// launch start from the last saved set. A window does not reload those keys
+/// after it is created, so two open windows can diverge. Search text is not saved.
 @MainActor
 final class NodeFilterParameters: ObservableObject {
-
-	/// Shared, app-wide filter instance. `NodeList`, `MeshMap`, and `UserList` all observe this
-	/// single object, so a filter set on one screen applies across the app. Using one shared
-	/// instance — rather than three independent `@StateObject`s — keeps behavior consistent with
-	/// the global `nodeFilter.*` persisted keys, which are not namespaced per screen.
-	static let shared = NodeFilterParameters()
 
 	private enum Keys {
 		static let isOnline = "nodeFilter.isOnline"

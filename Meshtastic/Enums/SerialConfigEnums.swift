@@ -166,21 +166,21 @@ enum SerialTimeoutIntervals: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .unset:
-			return "Unset".localized
+			return String(localized: "Unset", comment: "SerialTimeoutIntervals.description")
 		case .oneSecond:
-			return "One Second".localized
+			return String(localized: "One Second", comment: "SerialTimeoutIntervals.description")
 		case .fiveSeconds:
-			return "Five Seconds".localized
+			return String(localized: "Five Seconds", comment: "SerialTimeoutIntervals.description")
 		case .tenSeconds:
-			return "Ten Seconds".localized
+			return String(localized: "Ten Seconds", comment: "SerialTimeoutIntervals.description")
 		case .fifteenSeconds:
-			return "Fifteen Seconds".localized
+			return String(localized: "Fifteen Seconds", comment: "SerialTimeoutIntervals.description")
 		case .thirtySeconds:
-			return "Thirty Seconds".localized
+			return String(localized: "Thirty Seconds", comment: "SerialTimeoutIntervals.description")
 		case .oneMinute:
-			return "One Minute".localized
+			return String(localized: "One Minute", comment: "SerialTimeoutIntervals.description")
 		case .fiveMinutes:
-			return "Five Minutes".localized
+			return String(localized: "Five Minutes", comment: "SerialTimeoutIntervals.description")
 		}
 	}
 }

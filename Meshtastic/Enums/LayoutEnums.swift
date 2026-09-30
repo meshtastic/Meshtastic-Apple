@@ -14,9 +14,9 @@ enum NodeListDensity: Int, CaseIterable, Identifiable {
     var description: String {
         switch self {
         case .standard:
-            return "Complete".localized
+            return String(localized: "Complete", comment: "NodeListDensity.description")
         case .compact:
-            return "Compact".localized
+            return String(localized: "Compact", comment: "NodeListDensity.description")
         }
     }
 }

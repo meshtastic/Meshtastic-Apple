@@ -20,34 +20,34 @@ enum ActivityType: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .walking:
-			return "Walking".localized
+			return String(localized: "Walking", comment: "ActivityType.description")
 		case .hiking:
-			return "Hiking".localized
+			return String(localized: "Hiking", comment: "ActivityType.description")
 		case .biking:
-			return "Biking".localized
+			return String(localized: "Biking", comment: "ActivityType.description")
 		case .driving:
-			return "Driving".localized
+			return String(localized: "Driving", comment: "ActivityType.description")
 		case .overlanding:
-			return "Overlanding".localized
+			return String(localized: "Overlanding", comment: "ActivityType.description")
 		case .skiing:
-			return "Skiing".localized
+			return String(localized: "Skiing", comment: "ActivityType.description")
 		}
 	}
 
 	var fileNameString: String {
 		switch self {
 		case .walking:
-			return "Walking".localized.lowercased()
+			return String(localized: "Walking", comment: "ActivityType.fileNameString").lowercased()
 		case .hiking:
-			return "Hiking".localized.lowercased()
+			return String(localized: "Hiking", comment: "ActivityType.fileNameString").lowercased()
 		case .biking:
-			return "Biking".localized.lowercased()
+			return String(localized: "Biking", comment: "ActivityType.fileNameString").lowercased()
 		case .driving:
-			return "Driving".localized.lowercased()
+			return String(localized: "Driving", comment: "ActivityType.fileNameString").lowercased()
 		case .overlanding:
-			return "Overlanding".localized.lowercased()
+			return String(localized: "Overlanding", comment: "ActivityType.fileNameString").lowercased()
 		case .skiing:
-			return "Skiing".localized.lowercased()
+			return String(localized: "Skiing", comment: "ActivityType.fileNameString").lowercased()
 		}
 	}
 }

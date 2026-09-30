@@ -205,8 +205,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// unmount those views first. Mirrors the node-switch flow in `backupCurrentAndRestoreDatabase`
 	/// (Views/Connect/Connect.swift).
 	func resetDatabaseAfterClear() async {
-		// `appState` (and its `router`) are wired up at launch and are required for the safety
-		// guarantee here. Bail loudly rather than recreating the container without first popping the
+		// `appState` is wired up at launch and is required for the safety guarantee
+		// here. Bail loudly rather than recreating the container without first popping the
 		// detail views: a half-done reset (container torn down, views still mounted) would
 		// reintroduce the exact ModelContext.reset crash this method exists to prevent. The data was
 		// already cleared by the preceding `clearDatabase`, so skipping the container swap is the
@@ -215,11 +215,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			Logger.data.error("💾 [Database] resetDatabaseAfterClear skipped: appState is nil — cannot pop views before recreating the container")
 			return
 		}
-		let router = appState.router
-		router.popToRoot(tab: .messages)
-		router.popToRoot(tab: .nodes)
-		router.popToRoot(tab: .map)
-		router.popToRoot(tab: .settings)
+		appState.sceneRouters.popAllStacks()
 		await Task.yield()
 		repointToFreshContainer()
 		appState.databaseResetID = UUID()
@@ -603,6 +599,12 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		defer { isClosingConnection = false }
 
 		Logger.transport.debug("[AccessoryManager] received disconnect request")
+
+		// Here rather than in `disconnect()`: an unexpected link loss, a failed connect and a
+		// retry all tear down through this function without going near `disconnect()`, and
+		// leaving the attributes set would report the old radio's version and model against
+		// whatever happens next.
+		Logger.datadog.clearRadioContext()
 
 		let closingNodeNum = activeConnection?.device.num ?? activeDeviceNum
 

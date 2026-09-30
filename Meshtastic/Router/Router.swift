@@ -30,6 +30,29 @@ class Router: ObservableObject {
 	@Published
 	var settingsPath: [SettingsNavigationState] = []
 
+	/// The control a search result asked for, cleared by the screen that honours it.
+	/// Separate from `settingsPath` because the path is also how deep links and restored
+	/// state name a screen, and neither singles out a control.
+	///
+	/// Set it through `navigate(toSetting:focusing:)` rather than directly: a request
+	/// left behind by navigation that never reached the screen owning that field would
+	/// be picked up later by whichever screen does own it.
+	@Published
+	private(set) var settingsFieldFocus: FieldIdentity?
+
+	/// Opens a settings screen, optionally asking it to single out one control.
+	/// Any earlier request is dropped, so only the most recent navigation can scroll.
+	func navigate(toSetting setting: SettingsNavigationState, focusing field: FieldIdentity? = nil) {
+		settingsFieldFocus = field
+		settingsPath = [setting]
+	}
+
+	/// Called by the screen that honoured the request, and by any navigation that did
+	/// not come from a search result.
+	func clearSettingsFieldFocus() {
+		settingsFieldFocus = nil
+	}
+
 	@Published
 	var discoveryShowHistory: Bool = false
 
@@ -53,8 +76,10 @@ class Router: ObservableObject {
 			mapState = newValue.map
 			if let setting = newValue.settings {
 				settingsPath = [setting]
+				settingsFieldFocus = nil
 			} else {
 				settingsPath = []
+				settingsFieldFocus = nil
 			}
 		}
 	}
@@ -109,6 +134,7 @@ class Router: ObservableObject {
 		self.mapState = navigationState.map
 		if let setting = navigationState.settings {
 			self.settingsPath = [setting]
+			settingsFieldFocus = nil
 		}
 
 		$selectedTab.sink { tab in
@@ -202,9 +228,21 @@ class Router: ObservableObject {
 			mapState = nil
 		case .settings:
 			settingsPath = []
+			settingsFieldFocus = nil
 		default:
 			break
 		}
+	}
+
+	/// Drops every detail stack in this window. Leaves `selectedTab` alone so a
+	/// store reset can unmount doomed model objects without dragging every
+	/// window onto the same tab.
+	func popAllStacks() {
+		popToRoot(tab: .messages)
+		popToRoot(tab: .nodes)
+		popToRoot(tab: .map)
+		popToRoot(tab: .settings)
+		discoveryShowHistory = false
 	}
 
 	private func routeMap(_ components: URLComponents) {
@@ -283,12 +321,49 @@ class Router: ObservableObject {
 		selectedTab = .settings
 		if let settingFromPath {
 			settingsPath = [settingFromPath]
+			settingsFieldFocus = nil
 		} else {
 			settingsPath = []
+			settingsFieldFocus = nil
 		}
 
 		if settingFromPath == .localMeshDiscovery && segments.count > 1 && segments[1] == "history" {
 			discoveryShowHistory = true
+		}
+	}
+}
+
+/// The open windows' routers.
+///
+/// A node switch has to pop detail views on every window before it touches the
+/// store, and that pop has to happen in the call, not on a later `onChange`:
+/// the views are still mounted, holding model objects the reset is about to
+/// destroy. Each window registers the router it owns. This does not own a tab.
+///
+/// Not itself main-actor isolated: `AppState` is created and passed into the
+/// packet actor, and a main-actor type cannot live on it. Every method hops
+/// to the main actor before touching a router. The dictionary is only used
+/// from those methods.
+final class SceneRouters: @unchecked Sendable {
+	private var routers: [UUID: Router] = [:]
+
+	@MainActor
+	@discardableResult
+	func register(_ router: Router) -> UUID {
+		let id = UUID()
+		routers[id] = router
+		return id
+	}
+
+	@MainActor
+	func unregister(_ id: UUID) {
+		routers.removeValue(forKey: id)
+	}
+
+	@MainActor
+	func popAllStacks() {
+		for router in Array(routers.values) {
+			router.popAllStacks()
 		}
 	}
 }

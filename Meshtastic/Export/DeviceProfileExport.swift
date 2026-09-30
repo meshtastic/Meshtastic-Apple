@@ -59,6 +59,7 @@ extension LoRaConfigEntity {
 		config.frequencyOffset = frequencyOffset
 		config.overrideFrequency = overrideFrequency
 		config.overrideDutyCycle = overrideDutyCycle
+		config.paFanDisabled = paFanDisabled
 		config.hopLimit = UInt32(truncatingIfNeeded: hopLimit)
 		config.txPower = txPower
 		config.txEnabled = txEnabled
