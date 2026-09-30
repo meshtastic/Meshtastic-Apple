@@ -1401,7 +1401,11 @@ extension AccessoryManager {
 		toRadio = ToRadio()
 		toRadio.packet = meshPacket
 		let logString = String.localizedStringWithFormat("📮 Sent a request for a Store & Forward Client History to \(toUser.num.toHex()) for the last \(120) minutes.")
-		try await send(toRadio, debugDescription: logString)
+		// On the connection of the radio it's from, which the router answers (review V11 R11-2).
+		guard let session = connectedSession(forRadio: fromUser.num) else {
+			throw AccessoryError.ioFailed("requestStoreAndForwardClientHistory: That radio isn't connected")
+		}
+		try await send(toRadio, via: session, debugDescription: logString)
 	}
 
 	public func setIgnoredNode(node: NodeInfoEntity, connectedNodeNum: Int64) async throws {

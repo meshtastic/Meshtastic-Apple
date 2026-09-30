@@ -616,6 +616,47 @@ struct MultiRadioConnectLifecycleTests {
 		#expect(try context.fetchCount(FetchDescriptor<NodeInfoEntity>()) == 0)
 	}
 
+	@Test("Client History from another radio goes out on that radio's connection, and not at all while it's off")
+	func clientHistoryOnItsRadio() async throws {
+		let firstNum: Int64 = 0x0A0A, extraNum: Int64 = 0x0B0B, routerNum: Int64 = 0x7E57_0355
+		let schema = Schema(versionedSchema: MeshtasticSchema.current)
+		let container = try ModelContainer(for: schema, configurations: ModelConfiguration("ClientHistory-\(UUID().uuidString)", schema: schema, isStoredInMemoryOnly: true, allowsSave: true))
+		let context = ModelContext(container)
+		var users: [Int64: UserEntity] = [:]
+		for num in [extraNum, routerNum, 0x0C0C] {
+			let user = UserEntity()
+			user.num = num
+			context.insert(user)
+			users[num] = user
+		}
+		try context.save()
+
+		let manager = AccessoryManager(transports: [])
+		manager.isSwitchingDevices = true
+		manager.context = context
+		let firstConnection = IdleConnection()
+		var firstDevice = device("First")
+		firstDevice.num = firstNum
+		manager.activeConnection = RadioSession(device: firstDevice, connection: firstConnection)
+		let extraConnection = IdleConnection()
+		var extraDevice = device("Extra")
+		extraDevice.num = extraNum
+		manager.additionalRadios[extraDevice.id] = RadioSession(device: extraDevice, connection: extraConnection)
+		let router = try #require(users[routerNum])
+
+		try await manager.requestStoreAndForwardClientHistory(fromUser: try #require(users[extraNum]), toUser: router, channel: 2)
+		let sent = await extraConnection.sent
+		#expect(sent.count == 1)
+		#expect(sent.first?.packet.from == UInt32(extraNum))
+		#expect(sent.first?.packet.channel == 2)
+		#expect(await firstConnection.sent.isEmpty)
+
+		await #expect(throws: AccessoryError.self, "its radio is off") {
+			try await manager.requestStoreAndForwardClientHistory(fromUser: try #require(users[0x0C0C]), toUser: router, channel: 0)
+		}
+		#expect(await firstConnection.sent.isEmpty, "never through another radio")
+	}
+
 	@Test("An encrypted DM via another radio refreshes the contact on that radio and pins the node on both")
 	func encryptedDirectMessageFollowUpsUseTheSendingRadio() async throws {
 		let firstNum: Int64 = 0x0A0A, extraNum: Int64 = 0x0B0B, remoteNum: Int64 = 0x7E57_0021
