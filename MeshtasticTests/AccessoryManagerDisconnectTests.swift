@@ -27,6 +27,7 @@ private actor DisconnectTestConnection: Connection {
 	private let disconnectError: DisconnectTestError?
 	private var onDisconnect: DisconnectCallback?
 	private var pausedConnect: CheckedContinuation<AsyncStream<ConnectionEvent>, Error>?
+	private var pendingConnectFailure: DisconnectTestError?
 	private var shouldPauseConnect = false
 	private(set) var connectCallCount = 0
 
@@ -40,14 +41,22 @@ private actor DisconnectTestConnection: Connection {
 
 	func pauseConnect() { shouldPauseConnect = true }
 	func failPausedConnect() {
-		pausedConnect?.resume(throwing: DisconnectTestError.transportFailure)
-		pausedConnect = nil
+		if let pausedConnect {
+			self.pausedConnect = nil
+			pausedConnect.resume(throwing: DisconnectTestError.transportFailure)
+		} else {
+			pendingConnectFailure = .transportFailure
+		}
 	}
 
 	func send(_ data: ToRadio) async throws {}
 
 	func connect() async throws -> AsyncStream<ConnectionEvent> {
 		connectCallCount += 1
+		if let pendingConnectFailure {
+			self.pendingConnectFailure = nil
+			throw pendingConnectFailure
+		}
 		if shouldPauseConnect {
 			return try await withCheckedThrowingContinuation { pausedConnect = $0 }
 		}
