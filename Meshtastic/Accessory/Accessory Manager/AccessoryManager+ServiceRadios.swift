@@ -165,12 +165,14 @@ enum IntentRadioChoice: Equatable {
 	case noRadio
 
 	/// The radio's node number, or the error for the command to throw: `noRadio` when nothing is
-	/// connected, else `needsValue` so Siri or Shortcuts asks for a radio.
-	func radioNum(noRadio: @autoclosure () -> Error, needsValue: @autoclosure () -> Error) throws -> Int64 {
+	/// connected, `notConnected` when the radio named or chosen is off (an error, not a new
+	/// question, review V10 R10-7), `needsValue` so Siri or Shortcuts asks when none is chosen.
+	func radioNum(noRadio: @autoclosure () -> Error, notConnected: @autoclosure () -> Error, needsValue: @autoclosure () -> Error) throws -> Int64 {
 		switch self {
 		case .radio(let radioNum): return radioNum
 		case .noRadio: throw noRadio()
-		case .notConnected, .needsChoice: throw needsValue()
+		case .notConnected: throw notConnected()
+		case .needsChoice: throw needsValue()
 		}
 	}
 }

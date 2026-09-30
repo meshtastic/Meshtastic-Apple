@@ -15,12 +15,17 @@ struct AddContactIntent: AppIntent {
 	@Parameter(title: "Contact URL", description: "The URL for the node to add")
 	var contactUrl: URL
 
+	@Parameter(title: "Radio", description: "The connected radio to use. Leave empty for the radio chosen for CarPlay & Siri, or the only one connected.")
+	var radio: RadioEntity?
+
 	// Define the function that performs the main logic
 	func perform() async throws -> some IntentResult {
-		// Ensure the BLE Manager is connected
-		if !(await AccessoryManager.shared.isConnected) {
-			throw AppIntentErrors.AppIntentError.notConnected
-		}
+		// The radio it names, the CarPlay & Siri radio, or the only one connected (T320).
+		let radioNum = try await AccessoryManager.shared.intentRadio(radio?.nodeNum).radioNum(
+			noRadio: AppIntentErrors.AppIntentError.notConnected,
+			notConnected: AppIntentErrors.AppIntentError.message("That radio isn't connected."),
+			needsValue: $radio.needsValueError("Which radio?")
+		)
 
 		if ContactURLHandler.canHandle(contactUrl) {
 			let parsed: MeshContactURL
@@ -36,7 +41,7 @@ struct AddContactIntent: AppIntent {
 				result: .result(dialog: "Add this Meshtastic contact to your nodes?")
 			)
 			do {
-				try await AccessoryManager.shared.addContactFromURL(base64UrlString: parsed.payload)
+				try await AccessoryManager.shared.addContactFromURL(base64UrlString: parsed.payload, viaRadio: radioNum)
 			} catch {
 				throw AppIntentErrors.AppIntentError.message("Failed to add/parse contact data: \(error.localizedDescription)")
 			}

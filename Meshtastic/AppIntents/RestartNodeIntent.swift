@@ -21,6 +21,7 @@ struct RestartNodeIntent: AppIntent {
 		// The radio it names, the CarPlay & Siri radio, or the only one connected (T320).
 		let radioNum = try await AccessoryManager.shared.intentRadio(radio?.nodeNum).radioNum(
 			noRadio: AppIntentErrors.AppIntentError.notConnected,
+			notConnected: AppIntentErrors.AppIntentError.message("That radio isn't connected."),
 			needsValue: $radio.needsValueError("Which radio?")
 		)
 		// Safely unwrap the connectedNode using if let

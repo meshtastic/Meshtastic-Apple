@@ -118,7 +118,7 @@ struct MultiRadioServiceRadioTests {
 	}
 
 	@Test("A Siri or Shortcuts command uses the radio it names or the CarPlay & Siri radio, never another; with none chosen it asks")
-	func intentRadio() {
+	func intentRadio() throws {
 		let store = makeStore()
 		let manager = makeManager().manager
 		knowBoth(manager)
@@ -132,9 +132,19 @@ struct MultiRadioServiceRadioTests {
 		#expect(manager.intentRadio(nil, store: store) == .notConnected, "the chosen radio is off: not swapped")
 		manager.activeConnection = nil
 		#expect(manager.intentRadio(nil, store: store) == .noRadio)
+		// Each case throws its own error: a radio that's off is said to be off, not asked for again.
+		struct Off: Error {}
+		struct Ask: Error {}
 		#expect(throws: AppIntentErrors.AppIntentError.self) {
-			try IntentRadioChoice.noRadio.radioNum(noRadio: AppIntentErrors.AppIntentError.notConnected, needsValue: AppIntentErrors.AppIntentError.message("which"))
+			try IntentRadioChoice.noRadio.radioNum(noRadio: AppIntentErrors.AppIntentError.notConnected, notConnected: Off(), needsValue: Ask())
 		}
+		#expect(throws: Off.self) {
+			try IntentRadioChoice.notConnected.radioNum(noRadio: AppIntentErrors.AppIntentError.notConnected, notConnected: Off(), needsValue: Ask())
+		}
+		#expect(throws: Ask.self) {
+			try IntentRadioChoice.needsChoice.radioNum(noRadio: AppIntentErrors.AppIntentError.notConnected, notConnected: Off(), needsValue: Ask())
+		}
+		#expect(try IntentRadioChoice.radio(7).radioNum(noRadio: Off(), notConnected: Off(), needsValue: Ask()) == 7)
 	}
 
 	// MARK: - Datadog (T107)

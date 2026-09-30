@@ -20,17 +20,18 @@ struct FactoryResetNodeIntent: AppIntent {
 	var radio: RadioEntity?
 
 	func perform() async throws -> some IntentResult {
-		// Request user confirmation before performing the factory reset
-		if provideConfirmation {
-			try await requestConfirmation(result: .result(dialog: "Are you sure you want to factory reset the node?"), confirmationActionName: ConfirmationActionName
-				.custom(acceptLabel: "Factory Reset", acceptAlternatives: [], denyLabel: "Cancel", denyAlternatives: [], destructive: true))
-		}
-
 		// The radio it names, the CarPlay & Siri radio, or the only one connected (T320).
 		let radioNum = try await AccessoryManager.shared.intentRadio(radio?.nodeNum).radioNum(
 			noRadio: AppIntentErrors.AppIntentError.notConnected,
+			notConnected: AppIntentErrors.AppIntentError.message("That radio isn't connected."),
 			needsValue: $radio.needsValueError("Which radio?")
 		)
+		// Confirmed once the radio is settled, naming it (review V10 R10-7).
+		if provideConfirmation {
+			let radioName = await AccessoryManager.shared.connectedSession(forRadio: radioNum)?.device.longName ?? radioNum.toHex()
+			try await requestConfirmation(result: .result(dialog: "Are you sure you want to factory reset \(radioName)?"), confirmationActionName: ConfirmationActionName
+				.custom(acceptLabel: "Factory Reset", acceptAlternatives: [], denyLabel: "Cancel", denyAlternatives: [], destructive: true))
+		}
 
 		// Safely unwrap the connected node information
 		let context = await MainActor.run { PersistenceController.shared.context }
