@@ -107,7 +107,8 @@ Read this first if you are picking the work up. Update it in the same commit as 
   owner's device test, then the full reviews of each area, then T122.
 - Review V11 and data V10 (2026-09-29/30): `review-connections-v11.md` (X1, W1–W7, minors) and
   `review-data-v10.md` (R10-1–R10-8), checked in the files; all held. Fixed one commit each
-  (T330–T340 in tasks.md). R10-6 led to the owner's W-15: with several radios known, each service
+  (T330–T340 in tasks.md); after them, T341 took "focused" out of the code and T342 fixed the
+  Settings note it turned up. R10-6 led to the owner's W-15: with several radios known, each service
   in use must have a radio chosen, and a chosen radio that's off is waited for, never replaced.
   Known and left as is: the Mac's Mesh Map window has no radio of its own, so it follows the radio
   connected first (`.focused`, `appState.router`) even when opened from another radio's window.
@@ -435,6 +436,8 @@ describes it well enough to rebuild.
   phone's position keeps going to B meanwhile.
 - [ ] Old firmware on B: B stays connected, its row says it needs an update, Update shows B in the
   window with the update screen; the update screen's Disconnect disconnects B only.
+- [ ] Settings with A and B connected, in B's window: the note says these settings configure B and
+  names A as the other radio (T342).
 - [ ] iPhone: with A and B connected, Connect › B › Show This Radio and the indicator's radio menu
   switch the window to B with no reconnect (both radios' logs quiet); relaunch opens on B (W-04).
 - [ ] Mac windows (D-19): each connected radio has its own window, the whole app for it; the

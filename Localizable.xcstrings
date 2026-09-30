@@ -131998,7 +131998,7 @@
         }
       }
     },
-    "These settings configure %1$@. To configure %2$@, focus it from the Connect tab or the radio menu." : {
+    "These settings configure %1$@. To configure %2$@, show it from the Connect tab or the radio menu." : {
       "extractionState" : "manual"
     },
     "These settings only apply when the device role is TAK or TAK Tracker." : {

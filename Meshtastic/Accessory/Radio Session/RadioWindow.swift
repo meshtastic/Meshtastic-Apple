@@ -111,6 +111,13 @@ extension AccessoryManager {
 		return additionalRadios[deviceId]
 	}
 
+	/// The connected radios other than `window`'s, starting with the first radio: the ones the
+	/// window can switch to, and the ones its Settings doesn't configure.
+	func otherConnectedRadios(than window: RadioWindow) -> [Device] {
+		let shown = session(for: window)?.device.id
+		return connectedRadios.filter { $0.id != shown }
+	}
+
 	/// The node number of `window`'s radio while it's connected; nil otherwise. For `.firstRadio`
 	/// it's `activeDeviceNum`.
 	func nodeNum(for window: RadioWindow) -> Int64? {

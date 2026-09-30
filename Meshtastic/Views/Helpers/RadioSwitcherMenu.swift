@@ -18,7 +18,7 @@ struct RadioSwitcherMenu<Content: View>: View {
 
 	var body: some View {
 		let shown = accessoryManager.session(for: windowRadio)?.device
-		let others = accessoryManager.connectedRadios.filter { $0.id != shown?.id }
+		let others = accessoryManager.otherConnectedRadios(than: windowRadio)
 		if others.isEmpty || shown == nil {
 			content()
 		} else {

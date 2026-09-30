@@ -329,6 +329,7 @@ time. To resume: the first unchecked item.
 - [X] T339 minor: `disconnectRadio`'s comment no longer says the first radio hands over to another (T316 removed that); the Mesh Map window following the first radio is noted as known in HANDOFF.
 - [X] T340 W-15 (missed in T338): the Choose Radios sheet lists the connected radios first (`knownRadiosConnectedFirst`). Verified: `MultiRadioServiceRadioTests.connectedRadiosFirst`.
 - [X] T341 "Focused" is gone from the code this branch added: names and comments say "the first radio" (the one in `activeConnection`) or "the window's radio", and comments that described the focus moving say what happens now. Names only, no behaviour change; `main`'s own uses (SwiftUI focus) are untouched. The old → new names are in HANDOFF › Gotchas. Verified: iOS suite and Mac build.
+- [X] T342 D-19 (found in T341): Settings' note about the other radios named the radios other than the first one, so in B's window it said it configures B and to configure B, show it, leaving A out; it also still said "focus it". It now names the connected radios other than the window's (`otherConnectedRadios(than:)`, which the radio menu uses too) and says "show it from the Connect tab or the radio menu". Verified: `MultiRadioConnectFlowTests.windowRadioLookups`.
 
 ## Phase 10: Hardening
 

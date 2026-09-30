@@ -199,6 +199,8 @@ struct MultiRadioConnectFlowTests {
 
 		#expect(manager.sendingRadio(for: .firstRadio) == nil, "the one window sends as before")
 		#expect(manager.sendingRadio(for: second) == Int64(radios.secondNum))
+		#expect(manager.otherConnectedRadios(than: second).map(\.id) == [radios.firstDevice.id], "B's Settings names A, not B")
+		#expect(manager.otherConnectedRadios(than: .firstRadio).map(\.id) == [radios.secondDevice.id])
 
 		let gone = RadioWindow(deviceId: UUID())
 		#expect(manager.session(for: gone) == nil)
