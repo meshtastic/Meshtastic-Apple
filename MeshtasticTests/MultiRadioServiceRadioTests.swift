@@ -117,6 +117,13 @@ struct MultiRadioServiceRadioTests {
 		#expect(manager.radioNum(for: .carPlay, store: store) == nil)
 	}
 
+	@Test("The choice sheet lists the connected radios first")
+	func connectedRadiosFirst() {
+		let manager = makeManager().manager
+		manager.knownRadios = [StoredRadio(nodeNum: offlineNum, name: "Offline"), StoredRadio(nodeNum: focusedNum, name: "Focused"), StoredRadio(nodeNum: extraNum, name: "Extra")]
+		#expect(manager.knownRadiosConnectedFirst.map(\.nodeNum) == [focusedNum, extraNum, offlineNum])
+	}
+
 	@Test("A Siri or Shortcuts command uses the radio it names or the CarPlay & Siri radio, never another; with none chosen it asks")
 	func intentRadio() throws {
 		let store = makeStore()

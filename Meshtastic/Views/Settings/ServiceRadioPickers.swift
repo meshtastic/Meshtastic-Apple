@@ -66,7 +66,7 @@ struct ServiceRadioChoiceSheet: View {
 				}
 				ForEach(needed) { service in
 					Section {
-						ForEach(accessoryManager.knownRadios, id: \.nodeNum) { radio in
+						ForEach(accessoryManager.knownRadiosConnectedFirst, id: \.nodeNum) { radio in
 							Button {
 								accessoryManager.chooseServiceRadio(radio.nodeNum, for: service)
 							} label: {

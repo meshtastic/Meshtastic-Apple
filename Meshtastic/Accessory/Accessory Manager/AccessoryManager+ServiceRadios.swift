@@ -76,6 +76,12 @@ extension AccessoryManager {
 		knownRadios.count > 1
 	}
 
+	/// `knownRadios` with the connected ones first, as the choice sheet lists them (W-15).
+	var knownRadiosConnectedFirst: [StoredRadio] {
+		let connected = knownRadios.filter { isRadioConnected(nodeNum: $0.nodeNum) }
+		return connected + knownRadios.filter { !isRadioConnected(nodeNum: $0.nodeNum) }
+	}
+
 	/// The radio `service` works with (W-15): with several radios known, the one chosen for it,
 	/// also while it's off (a service waits for its radio, never using another), or nil until one
 	/// is chosen; with one, the radio that's connected.

@@ -55,7 +55,7 @@ Read this first if you are picking the work up. Update it in the same commit as 
 - Next up: the owner's device test (checklist below), which waits on hardware; don't rebuild
   Mesh Multi for it unless asked. Don't design around the focused/additional split: every radio
   works the same way (D-17). Removing the switch-era helpers (T066) waits for that test.
-- Baseline and latest: the full suite passes in the iOS Simulator (3,489 Swift Testing tests plus
+- Baseline and latest: the full suite passes in the iOS Simulator (3,490 Swift Testing tests plus
   the XCTests, about 55 seconds of test time). Run it with the simulator to itself: another
   session's test runs on the same simulator kill the test host partway.
 
@@ -107,7 +107,7 @@ Read this first if you are picking the work up. Update it in the same commit as 
   owner's device test, then the full reviews of each area, then T122.
 - Review V11 and data V10 (2026-09-29/30): `review-connections-v11.md` (X1, W1–W7, minors) and
   `review-data-v10.md` (R10-1–R10-8), checked in the files; all held. Fixed one commit each
-  (T330–T339 in tasks.md). R10-6 led to the owner's W-15: with several radios known, each service
+  (T330–T340 in tasks.md). R10-6 led to the owner's W-15: with several radios known, each service
   in use must have a radio chosen, and a chosen radio that's off is waited for, never replaced.
   Known and left as is: the Mac's Mesh Map window has no radio of its own, so it follows the radio
   connected first (`.focused`, `appState.router`) even when opened from another radio's window.
