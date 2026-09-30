@@ -63,8 +63,10 @@ extension AccessoryManager {
 		clearServiceRadios(pointingAt: radioNum)
 		await refreshKnownRadios()
 		if PreferredRadio.nodeNum == radioNum {
-			if let first = activeConnection?.device {
-				PreferredRadio.set(first)
+			// The first radio, or with it removed another connected radio, as Disconnect on the
+			// first radio does (T352, review V13 Z2).
+			if let next = activeConnection?.device ?? connectedRadioAfterFirst {
+				PreferredRadio.set(next)
 			} else {
 				PreferredRadio.peripheralId = ""
 				PreferredRadio.nodeNum = 0

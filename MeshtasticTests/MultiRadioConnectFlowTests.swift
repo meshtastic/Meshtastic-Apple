@@ -719,6 +719,23 @@ struct MultiRadioConnectFlowTests {
 
 
 
+	@Test("Removing the first radio with another connected makes that one the preferred radio, as Disconnect does")
+	func removeFirstRadioHandsOverPreferred() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let radios = try await connectTwoRadios()
+		let manager = radios.manager
+		#expect(PreferredRadio.peripheralId == radios.firstDevice.id.uuidString)
+
+		await manager.removeRadio(Int64(radios.firstNum))
+
+		#expect(manager.activeConnection == nil)
+		#expect(manager.additionalRadios[radios.secondDevice.id] != nil, "the other stays")
+		#expect(PreferredRadio.peripheralId == radios.secondDevice.id.uuidString)
+		#expect(PreferredRadio.nodeNum == Int64(radios.secondNum))
+		await manager.disconnectRadio(radios.secondDevice.id)
+	}
+
 	@Test("A radio that isn't connected can be removed, and stops being the preferred one")
 	func removeOfflineRadio() async throws {
 		let saved = SavedDefaults()
