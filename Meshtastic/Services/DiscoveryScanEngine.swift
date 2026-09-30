@@ -188,7 +188,9 @@ final class DiscoveryScanEngine {
 
 	// MARK: - Start Scan (T014)
 
-	func startScan() async {
+	/// Runs the scan on radio `radio` (the window's, feature 021); nil is the radio connected
+	/// first, or offline the preferred one.
+	func startScan(radio: Int64? = nil) async {
 		guard currentState == .idle else {
 			Logger.discovery.warning("📡 [Discovery] Cannot start scan — not idle (state: \(self.currentState))")
 			return
@@ -202,7 +204,7 @@ final class DiscoveryScanEngine {
 		// entirely from local SwiftData and sends nothing to the radio, so it may run offline —
 		// e.g. reviewing your mesh with no radio connected. Only that seeded path is exempt from
 		// the connection requirement.
-		let isConnected = accessoryManager?.isConnected ?? false
+		let isConnected = radio.map { accessoryManager?.isRadioConnected(nodeNum: $0) ?? false } ?? (accessoryManager?.isConnected ?? false)
 		guard seedFromExistingData || isConnected else {
 			Logger.discovery.warning("📡 [Discovery] Cannot start scan — radio not connected")
 			return
@@ -216,7 +218,7 @@ final class DiscoveryScanEngine {
 		errorMessage = nil
 
 		// This scan's radio, for the whole scan (T016).
-		scanRadioNum = currentRadioNum
+		scanRadioNum = radio ?? currentRadioNum
 		let connectedNodeNum = scanRadioNum
 		let connectedNode = getNodeInfo(id: connectedNodeNum, context: context)
 
@@ -1145,7 +1147,7 @@ extension DiscoveryScanEngine {
 	/// reboot — the dwell begins immediately and `seedDiscoveredNodesFromDatabase()` folds in all
 	/// accumulated data so the run reflects "one long run" on the current preset, then live packets
 	/// during the dwell keep refining it.
-	func startCurrentPresetScan() async {
+	func startCurrentPresetScan(radio: Int64? = nil) async {
 		guard currentState == .idle else {
 			Logger.discovery.warning("📡 [Discovery] Cannot start current-preset scan — not idle")
 			return
@@ -1158,7 +1160,7 @@ extension DiscoveryScanEngine {
 		// Prefer the connected node's live LoRa preset. When no node/config is available — e.g.
 		// running offline with no radio connected — fall back to the last preset the app persisted
 		// in UserDefaults, then to LongFast. This lets "Analyze Current Preset" work fully offline.
-		scanRadioNum = currentRadioNum
+		scanRadioNum = radio ?? currentRadioNum
 		let connectedNodeNum = scanRadioNum
 		let preset = (getNodeInfo(id: connectedNodeNum, context: context)?.loRaConfig?.modemPreset)
 			.flatMap { ModemPresets(rawValue: Int($0)) }

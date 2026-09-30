@@ -262,7 +262,7 @@ struct WaypointForm: View {
 						
 						Task {
 							do {
-								try await accessoryManager.sendWaypoint(waypoint: newWaypoint)
+								try await accessoryManager.sendWaypoint(waypoint: newWaypoint, viaRadio: accessoryManager.sendingRadio(for: windowRadio))
 								dismiss()
 							} catch {
 								Logger.mesh.warning("Send waypoint failed: \(error)")
@@ -689,7 +689,7 @@ struct WaypointForm: View {
 		applyGeofence(to: &newWaypoint)
 		Task {
 			do {
-				try await accessoryManager.sendWaypoint(waypoint: newWaypoint)
+				try await accessoryManager.sendWaypoint(waypoint: newWaypoint, viaRadio: accessoryManager.sendingRadio(for: windowRadio))
 				await MainActor.run {
 					context.delete(waypoint)
 					do { try context.save() } catch { Logger.mesh.error("Failed to delete waypoint after mesh expire: \(error)") }

@@ -374,7 +374,7 @@ struct DiscoveryScanView: View {
 					engine.selectedPresets = Array(selectedPresets)
 					engine.selectedBeaconTargets = selectedChannels.map { $0.scanTarget }
 					engine.dwellDuration = TimeInterval(dwellMinutes * 60)
-					Task { await engine.startScan() }
+					Task { await engine.startScan(radio: accessoryManager.sendingRadio(for: windowRadio)) }
 				} label: {
 					Label("Start Scan", systemImage: "play.fill")
 				}
@@ -701,7 +701,7 @@ extension DiscoveryScanView {
 				.padding(.vertical, 2)
 			}
 			Button {
-				Task { await engine.startCurrentPresetScan() }
+				Task { await engine.startCurrentPresetScan(radio: accessoryManager.sendingRadio(for: windowRadio)) }
 			} label: {
 				Label("Analyze Current Preset", systemImage: "doc.text.magnifyingglass")
 			}

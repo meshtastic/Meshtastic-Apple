@@ -197,8 +197,12 @@ struct MultiRadioConnectFlowTests {
 		#expect(RadioLinkStatus(state: .retrying(attempt: 2, maxAttempts: 3), canDisconnect: true).isConnecting)
 		#expect(!RadioLinkStatus(state: .idle, canDisconnect: false).isConnected)
 
+		#expect(manager.sendingRadio(for: .focused) == nil, "the one window sends as before")
+		#expect(manager.sendingRadio(for: second) == Int64(radios.secondNum))
+
 		let gone = RadioWindow(deviceId: UUID())
 		#expect(manager.session(for: gone) == nil)
+		#expect(manager.sendingRadio(for: gone) != nil, "a window's send never falls back to another radio")
 		#expect(manager.nodeNum(for: gone) == nil)
 		#expect(!manager.isConnected(gone))
 		manager.additionalRadioReconnects.values.forEach { $0.cancel() }

@@ -128,7 +128,7 @@ struct DiscoverySummaryView: View {
 			titleVisibility: .visible,
 			presenting: beaconToReplace
 		) { beacon in
-			ForEach(accessoryManager.beaconReplaceableSecondaryChannels()) { channel in
+			ForEach(accessoryManager.beaconReplaceableSecondaryChannels(viaRadio: accessoryManager.sendingRadio(for: windowRadio))) { channel in
 				Button("\(channel.name) (slot \(channel.index))", role: .destructive) {
 					replaceBeaconChannel(beacon, atIndex: channel.index)
 				}
@@ -149,7 +149,8 @@ struct DiscoverySummaryView: View {
 					channelName: beacon.offerChannelName,
 					channelPSK: beacon.offerChannelPSK,
 					region: beacon.offeredRegion,
-					preset: beacon.offeredPreset
+					preset: beacon.offeredPreset,
+					viaRadio: accessoryManager.sendingRadio(for: windowRadio)
 				)
 			} catch {
 				joinErrorMessage = error.localizedDescription
@@ -845,7 +846,7 @@ extension DiscoverySummaryView {
 	func addBeaconChannel(_ beacon: DiscoveredBeaconEntity) {
 		beaconToAdd = nil
 		// No free slot → let the user choose an existing secondary to replace (never the primary).
-		guard accessoryManager.beaconHasFreeSecondarySlot() else {
+		guard accessoryManager.beaconHasFreeSecondarySlot(viaRadio: accessoryManager.sendingRadio(for: windowRadio)) else {
 			beaconToReplace = beacon
 			return
 		}
@@ -853,7 +854,8 @@ extension DiscoverySummaryView {
 			do {
 				try await accessoryManager.addBeaconChannel(
 					channelName: beacon.offerChannelName,
-					channelPSK: beacon.offerChannelPSK
+					channelPSK: beacon.offerChannelPSK,
+					viaRadio: accessoryManager.sendingRadio(for: windowRadio)
 				)
 			} catch {
 				addErrorMessage = error.localizedDescription
@@ -870,7 +872,8 @@ extension DiscoverySummaryView {
 				try await accessoryManager.addBeaconChannel(
 					channelName: beacon.offerChannelName,
 					channelPSK: beacon.offerChannelPSK,
-					replacingIndex: index
+					replacingIndex: index,
+					viaRadio: accessoryManager.sendingRadio(for: windowRadio)
 				)
 			} catch {
 				addErrorMessage = error.localizedDescription

@@ -361,7 +361,7 @@ struct AccessoryProfileApplyGateway: ProfileApplyGateway {
 		case .channelURL(let url):
 			// saveChannelSet sends the channels + LoRa config and already tolerates the resulting reboot
 			// (it swallows the post-reboot wantConfig internally), so a throw here is a real validation error.
-			try await accessoryManager.saveChannelSet(base64UrlString: url, addChannels: false)
+			try await accessoryManager.saveChannelSet(base64UrlString: url, addChannels: false, viaRadio: Int64(node.num))
 		case .loraConfig(let config):
 			// saveLoRaConfig has no built-in reboot tolerance: sending it reboots the radio and the trailing
 			// wantConfig/ack fails as the link drops. Only that reboot disconnect is expected success — so

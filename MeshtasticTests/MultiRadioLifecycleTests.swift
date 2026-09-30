@@ -184,6 +184,36 @@ struct MultiRadioConnectLifecycleTests {
 		#expect(manager.device(for: bad) == nil)
 	}
 
+	@Test("A window's sends go through its own radio, and fail rather than use another when it's off")
+	func windowSendsUseTheirRadio() async throws {
+		let manager = AccessoryManager(transports: [])
+		manager.isSwitchingDevices = true
+		var first = device("First")
+		first.num = 0x0A1A
+		first.connectionState = .connected
+		let firstConnection = IdleConnection()
+		manager.activeConnection = RadioSession(device: first, connection: firstConnection)
+		var second = device("Second")
+		second.num = 0x0B1B
+		second.connectionState = .connected
+		let secondConnection = IdleConnection()
+		manager.additionalRadios[second.id] = RadioSession(device: second, connection: secondConnection)
+		var waypoint = Waypoint()
+		waypoint.id = 0x5151
+		waypoint.latitudeI = 1
+		waypoint.longitudeI = 1
+
+		try await manager.sendTraceRouteRequest(destNum: 0x1234, wantResponse: true, viaRadio: 0x0B1B)
+		try await manager.sendWaypoint(waypoint: waypoint, viaRadio: 0x0B1B)
+		#expect(await secondConnection.sent.count == 2)
+		#expect(await firstConnection.sent.isEmpty)
+
+		await #expect(throws: (any Error).self) {
+			try await manager.sendWaypoint(waypoint: waypoint, viaRadio: 0x0C1C)
+		}
+		#expect(await firstConnection.sent.isEmpty, "never through another radio")
+	}
+
 	@Test("A remembered radio seen by discovery comes back while only radios other than the first are connected")
 	func rememberedRadioComesBackWithoutTheFirst() async throws {
 		var tcpDevice = device("Radio C")

@@ -137,6 +137,14 @@ extension AccessoryManager {
 		return session(for: window)?.nodeNum ?? 0
 	}
 
+	/// The radio a window's sends go through: nil, the radio connected first, for `.focused`;
+	/// otherwise the window's own radio, so a send while it's disconnected fails rather than going
+	/// through another radio (review V11 X1).
+	func sendingRadio(for window: RadioWindow) -> Int64? {
+		guard window.deviceId != nil else { return nil }
+		return radioNodeNum(for: window)
+	}
+
 	/// The peripheral id of `window`'s radio. For `.focused`, `PreferredRadio.peripheralId`.
 	func radioPeripheralId(for window: RadioWindow) -> String {
 		window.deviceId?.uuidString ?? PreferredRadio.peripheralId

@@ -6,6 +6,8 @@ struct ExchangePositionsButton: View {
 	var connectedNode: NodeInfoEntity
 
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 
 	@State private var isPresentingPositionSentAlert: Bool = false
 	@State private var isPresentingPositionFailedAlert: Bool = false
@@ -20,10 +22,11 @@ struct ExchangePositionsButton: View {
 			Task {
 				do {
 					try await accessoryManager.sendPosition(
-						channel: accessoryManager.channelSlot(toReach: node),
+						channel: accessoryManager.channelSlot(toReach: node, fromRadio: accessoryManager.sendingRadio(for: windowRadio)),
 						destNum: node.num,
 						hopsAway: hopsAway,
-						wantResponse: true
+						wantResponse: true,
+						viaRadio: accessoryManager.sendingRadio(for: windowRadio)
 					)
 					Task { @MainActor in
 						isPresentingPositionSentAlert = true

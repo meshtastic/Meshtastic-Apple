@@ -88,7 +88,8 @@ struct RequestLocalStatsButton: View {
 					destNum: node.user?.num ?? 0,
 					wantResponse: true,
 					transport: transport,
-					destinationPublicKey: node.user?.publicKey
+					destinationPublicKey: node.user?.publicKey,
+					viaRadio: accessoryManager.sendingRadio(for: windowRadio)
 				)
 				rateLimitStorage.actionOccured(forKey: "localstats", rateLimit: 30.0)
 				isPresentingLocalStatsSentAlert = true
@@ -102,6 +103,8 @@ struct RequestLocalStatsButton: View {
 private struct LocalStatsRequestMethodSheet: View {
 	@Environment(\.dismiss) private var dismiss
 	@EnvironmentObject private var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 
 	let node: NodeInfoEntity
 	@State private var errorMessage: String?
@@ -180,7 +183,8 @@ private struct LocalStatsRequestMethodSheet: View {
 					destNum: destination,
 					wantResponse: true,
 					transport: transport,
-					destinationPublicKey: destinationPublicKey
+					destinationPublicKey: destinationPublicKey,
+					viaRadio: accessoryManager.sendingRadio(for: windowRadio)
 				)
 				RateLimitStorage.shared.actionOccured(forKey: "localstats", rateLimit: 30.0)
 				dismiss()

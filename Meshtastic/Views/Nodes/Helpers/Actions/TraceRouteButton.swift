@@ -2,6 +2,8 @@ import SwiftUI
 import OSLog
 struct TraceRouteButton: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 
 	var node: NodeInfoEntity
 
@@ -14,7 +16,8 @@ struct TraceRouteButton: View {
 				do {
 					try await accessoryManager.sendTraceRouteRequest(
 						destNum: node.user?.num ?? 0,
-						wantResponse: true
+						wantResponse: true,
+						viaRadio: accessoryManager.sendingRadio(for: windowRadio)
 					)
 					Task {
 						isPresentingTraceRouteSentAlert = true

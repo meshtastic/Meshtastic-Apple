@@ -192,6 +192,7 @@ struct MeshBeaconConfig: View {
 					node: node,
 					context: context,
 					accessoryManager: accessoryManager,
+					window: windowRadio,
 					hasChanges: $hasChanges,
 					dismiss: goBack
 				) { fromUser, toUser in

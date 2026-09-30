@@ -266,7 +266,7 @@ struct SaveChannelQRCode: View {
 
 		Task {
 			do {
-				try await accessoryManager.saveChannelSet(channelSet: channelSet, addChannels: addChannels, okToMQTT: okToMQTT)
+				try await accessoryManager.saveChannelSet(channelSet: channelSet, addChannels: addChannels, okToMQTT: okToMQTT, viaRadio: accessoryManager.sendingRadio(for: windowRadio))
 				await MainActor.run {
 					dismiss()
 				}

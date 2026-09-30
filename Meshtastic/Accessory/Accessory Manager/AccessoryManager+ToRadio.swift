@@ -741,17 +741,20 @@ extension AccessoryManager {
 		return chan
 	}
 
-	public func saveChannelSet(base64UrlString: String, addChannels: Bool = false, okToMQTT: Bool = false) async throws {
+	public func saveChannelSet(base64UrlString: String, addChannels: Bool = false, okToMQTT: Bool = false, viaRadio: Int64? = nil) async throws {
 		let channelLink = try MeshtasticChannelURL.parse(base64UrlString, defaultAddChannels: addChannels)
 		try await saveChannelSet(
 			channelSet: channelLink.channelSet,
 			addChannels: channelLink.addChannels,
-			okToMQTT: okToMQTT
+			okToMQTT: okToMQTT,
+			viaRadio: viaRadio
 		)
 	}
 
-	public func saveChannelSet(channelSet incomingChannelSet: ChannelSet, addChannels: Bool = false, okToMQTT: Bool = false) async throws {
-		guard let deviceNum = self.activeConnection?.device.num else {
+	/// Saves a channel set to radio `viaRadio` (the window's, feature 021); nil is the radio
+	/// connected first. A radio that isn't connected isn't swapped for another.
+	public func saveChannelSet(channelSet incomingChannelSet: ChannelSet, addChannels: Bool = false, okToMQTT: Bool = false, viaRadio: Int64? = nil) async throws {
+		guard let session = connectedSession(forRadio: viaRadio), let deviceNum = session.device.num else {
 			Logger.services.error("Error while sending saveChannelSet request.  No active device.")
 			throw AccessoryError.ioFailed("No active device")
 		}
@@ -863,7 +866,7 @@ extension AccessoryManager {
 			toRadio.packet = meshPacket
 
 			let logString = String.localizedStringWithFormat("Sent a Channel for: %@ Channel Index %d".localized, String(deviceNum), chan.index)
-			try await send(toRadio, debugDescription: logString)
+			try await send(toRadio, via: session, debugDescription: logString)
 			deliveredChannels.append(chan)
 		}
 
@@ -892,7 +895,7 @@ extension AccessoryManager {
 			toRadio.packet = meshPacket
 
 			let logString = String.localizedStringWithFormat("Sent a LoRa.Config for: %@".localized, String(deviceNum))
-			try await send(toRadio, debugDescription: logString)
+			try await send(toRadio, via: session, debugDescription: logString)
 		}
 
 		// Mirror delivered channels locally only after channel and LoRa writes succeed, so a
@@ -927,13 +930,13 @@ extension AccessoryManager {
 		if didSendLoRaConfig && !appliesLoRaConfigWithoutReboot {
 			do {
 				Logger.transport.debug("[AccessoryManager] sending wantConfig after channel set (device may reboot)")
-				try await sendWantConfig()
+				try await sendWantConfig(on: session)
 			} catch {
 				Logger.transport.warning("[AccessoryManager] wantConfig after channel set did not complete; device is likely rebooting: \(error.localizedDescription, privacy: .public)")
 			}
 		} else {
 			Logger.transport.debug("[AccessoryManager] sending wantConfig for saveChannelSet (no reboot expected)")
-			try await sendWantConfig()
+			try await sendWantConfig(on: session)
 		}
 	}
 
@@ -1053,8 +1056,8 @@ extension AccessoryManager {
 	/// the radio's current values when the beacon didn't advertise them. `channelNum` is forced to 0
 	/// so the firmware derives the frequency from the new channel name + preset + region.
 	@MainActor
-	public func joinBeaconMesh(channelName: String, channelPSK: Data, region: RegionCodes?, preset: ModemPresets?) async throws {
-		guard let deviceNum = self.activeConnection?.device.num else {
+	public func joinBeaconMesh(channelName: String, channelPSK: Data, region: RegionCodes?, preset: ModemPresets?, viaRadio: Int64? = nil) async throws {
+		guard let deviceNum = connectedSession(forRadio: viaRadio)?.device.num else {
 			throw AccessoryError.ioFailed("No active device")
 		}
 		guard let node = getNodeInfo(id: Int64(deviceNum), context: context), let user = node.user else {
@@ -1156,8 +1159,8 @@ extension AccessoryManager {
 	/// no free slot is available (research D2). Never returns the primary (index 0); falls back to
 	/// "Channel N" for an unnamed slot.
 	@MainActor
-	public func beaconReplaceableSecondaryChannels() -> [BeaconSecondaryChannel] {
-		guard let deviceNum = self.activeConnection?.device.num,
+	public func beaconReplaceableSecondaryChannels(viaRadio: Int64? = nil) -> [BeaconSecondaryChannel] {
+		guard let deviceNum = connectedSession(forRadio: viaRadio)?.device.num,
 			  let node = getNodeInfo(id: Int64(deviceNum), context: context) else {
 			return []
 		}
@@ -1172,8 +1175,8 @@ extension AccessoryManager {
 
 	/// Whether at least one secondary slot (1–7) is free on the connected node.
 	@MainActor
-	public func beaconHasFreeSecondarySlot() -> Bool {
-		guard let deviceNum = self.activeConnection?.device.num,
+	public func beaconHasFreeSecondarySlot(viaRadio: Int64? = nil) -> Bool {
+		guard let deviceNum = connectedSession(forRadio: viaRadio)?.device.num,
 			  let node = getNodeInfo(id: Int64(deviceNum), context: context) else {
 			return false
 		}
@@ -1191,8 +1194,8 @@ extension AccessoryManager {
 	/// `replacingIndex` is provided, writes into that (secondary) slot, overwriting the channel there —
 	/// never the primary (index 0).
 	@MainActor
-	public func addBeaconChannel(channelName: String, channelPSK: Data, replacingIndex: Int32? = nil) async throws {
-		guard let deviceNum = self.activeConnection?.device.num else {
+	public func addBeaconChannel(channelName: String, channelPSK: Data, replacingIndex: Int32? = nil, viaRadio: Int64? = nil) async throws {
+		guard let deviceNum = connectedSession(forRadio: viaRadio)?.device.num else {
 			throw AccessoryError.ioFailed("No active device")
 		}
 		guard let node = getNodeInfo(id: Int64(deviceNum), context: context), let user = node.user else {
@@ -1234,8 +1237,8 @@ extension AccessoryManager {
 		Logger.mesh.info("➕ [Beacon] Added advertised channel '\(channelName, privacy: .private)' to secondary slot \(targetIndex, privacy: .public) — no reboot")
 	}
 
-	public func sendWaypoint(waypoint: Waypoint) async throws {
-		guard let deviceNum = self.activeConnection?.device.num else {
+	public func sendWaypoint(waypoint: Waypoint, viaRadio: Int64? = nil) async throws {
+		guard let session = connectedSession(forRadio: viaRadio), let deviceNum = session.device.num else {
 			Logger.services.error("Error while sending sendWaypoint request.  No active device.")
 			throw AccessoryError.ioFailed("No active device")
 		}
@@ -1263,7 +1266,7 @@ extension AccessoryManager {
 		toRadio.packet = meshPacket
 
 		let logString = String.localizedStringWithFormat("Sent a Waypoint Packet from: %@".localized, String(fromNodeNum))
-		try await send(toRadio, debugDescription: logString)
+		try await send(toRadio, via: session, debugDescription: logString)
 		Logger.mesh.info("📍 \(logString, privacy: .public)")
 
 			let wayPointEntity = getWaypoint(id: Int64(waypoint.id), context: context)
@@ -1314,8 +1317,8 @@ extension AccessoryManager {
 
 	}
 
-	func sendTraceRouteRequest(destNum: Int64, wantResponse: Bool) async throws {
-		guard let fromNodeNum = self.activeConnection?.device.num else {
+	func sendTraceRouteRequest(destNum: Int64, wantResponse: Bool, viaRadio: Int64? = nil) async throws {
+		guard let session = connectedSession(forRadio: viaRadio), let fromNodeNum = session.device.num else {
 			Logger.services.error("Error while sending traceroute request.  No active device.")
 			throw AccessoryError.ioFailed("No active device")
 		}
@@ -1340,7 +1343,7 @@ extension AccessoryManager {
 		toRadio.packet = meshPacket
 
 		let logString = String.localizedStringWithFormat("Sent a TraceRoute Packet from: %@ to: %@".localized, String(fromNodeNum), String(destNum))
-		try await send(toRadio, debugDescription: logString)
+		try await send(toRadio, via: session, debugDescription: logString)
 
 			let traceRoute = TraceRouteEntity()
 			context.insert(traceRoute)
@@ -3164,14 +3167,18 @@ extension AccessoryManager {
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority = MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-		meshPacket.channel = UInt32(toUser.userNode.map(channelSlot(toReach:)) ?? 0)
+		meshPacket.channel = UInt32(toUser.userNode.map { channelSlot(toReach: $0, fromRadio: Int64(fromUser.num)) } ?? 0)
 		meshPacket.decoded = dataMessage
 
 		var toRadio: ToRadio = ToRadio()
 		toRadio.packet = meshPacket
 
 		let logString = String.localizedStringWithFormat("Sent User Info Exchange request from %@ to %@".localized, fromUser.longName ?? "Unknown".localized, toUser.longName ?? "Unknown".localized)
-		try await send(toRadio, debugDescription: logString)
+		// On the connection of the radio it's from, the window's (feature 021).
+		guard let session = connectedSession(forRadio: Int64(fromUser.num)) ?? connectedSession(forRadio: nil) else {
+			throw AccessoryError.ioFailed("No active device")
+		}
+		try await send(toRadio, via: session, debugDescription: logString)
 
 		return Int64(meshPacket.id)
 	}
@@ -3180,9 +3187,10 @@ extension AccessoryManager {
 		destNum: Int64,
 		wantResponse: Bool,
 		transport: LocalStatsRequestTransport = .sharedChannel,
-		destinationPublicKey: Data? = nil
+		destinationPublicKey: Data? = nil,
+		viaRadio: Int64? = nil
 	) async throws {
-		guard let fromNodeNum = self.activeConnection?.device.num else {
+		guard let session = connectedSession(forRadio: viaRadio), let fromNodeNum = session.device.num else {
 			Logger.services.error("Error while sending local stats request.  No active device.")
 			throw AccessoryError.ioFailed("No active device")
 		}
@@ -3219,7 +3227,7 @@ extension AccessoryManager {
 		toRadio.packet = meshPacket
 
 		let logString = String.localizedStringWithFormat("📊 Sent Local Stats Request from: %@ to: %@".localized, String(fromNodeNum), String(destNum))
-		try await send(toRadio, debugDescription: logString)
+		try await send(toRadio, via: session, debugDescription: logString)
 
 		Logger.mesh.info("📊 \(logString, privacy: .public)")
 	}
