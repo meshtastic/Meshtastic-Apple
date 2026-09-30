@@ -438,6 +438,12 @@ describes it well enough to rebuild.
   phone's position keeps going to B meanwhile.
 - [ ] Old firmware on B: B stays connected, its row says it needs an update, Update shows B in the
   window with the update screen; the update screen's Disconnect disconnects B only.
+- [ ] One thing at a time on iPhone (T359). Add B for the first time while B is locked and the
+  window shows it: B's lock-down screen comes first, and the Choose Radios sheet comes up after B
+  is unlocked. Same with B on old firmware (the update screen first). With the Choose Radios sheet
+  up, lock or power-cycle a third radio C: C's prompt comes once the sheet is closed. With A's
+  lock-down screen up, B needing the user: B's prompt comes once A is unlocked. Nothing is lost:
+  each one appears in turn.
 - [ ] Settings with A and B connected, in B's window: the note says these settings configure B and
   names A as the other radio (T342).
 - [ ] iPhone: with A and B connected, Connect › B › Show This Radio and the indicator's radio menu

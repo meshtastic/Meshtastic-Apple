@@ -96,18 +96,59 @@ struct ServiceRadioChoiceSheet: View {
 
 /// Shows `ServiceRadioChoiceSheet` while a service in use has no radio (W-15). Mirrored into
 /// view state, as ContentView's gates are, so the presentation binding is plain state.
+///
+/// A view presents one sheet, cover or alert at a time, and one asked for while another is up can
+/// be lost (T359). So the sheet waits while `waits` says something else of the view is up, and
+/// comes up a moment after it closes; `isUp` tells the view it's up until it has closed, so what
+/// waits for it comes after, and `onClose` runs then.
 struct ServiceRadioChoiceGate: ViewModifier {
 	@ObservedObject private var accessoryManager = AccessoryManager.shared
 	@ObservedObject private var tak = TAKServerManager.shared
 	@State private var isShowing = false
+	@State private var isWaiting = false
+	var waits: Bool
+	@Binding var isUp: Bool
+	var onClose: () -> Void
+
+	init(waits: Bool = false, isUp: Binding<Bool> = .constant(false), onClose: @escaping () -> Void = {}) {
+		self.waits = waits
+		self._isUp = isUp
+		self.onClose = onClose
+	}
 
 	func body(content: Content) -> some View {
 		let needsChoice = !accessoryManager.servicesNeedingRadio().isEmpty
 		content
-			.onAppear { isShowing = needsChoice }
-			.onChange(of: needsChoice) { _, needed in isShowing = needed }
-			.sheet(isPresented: $isShowing) {
+			.onAppear {
+				isWaiting = waits
+				update(needsChoice: needsChoice)
+			}
+			.onChange(of: needsChoice) { _, needed in update(needsChoice: needed) }
+			.onChange(of: waits) { _, waiting in
+				isWaiting = waiting
+				update(needsChoice: needsChoice)
+			}
+			.sheet(isPresented: $isShowing, onDismiss: {
+				isUp = false
+				onClose()
+			}) {
 				ServiceRadioChoiceSheet()
 			}
+	}
+
+	/// Once up it stays until each service has a radio. It comes up only with nothing else up, a
+	/// moment later so what just closed is gone first (as the attention prompts do).
+	private func update(needsChoice: Bool) {
+		guard needsChoice else {
+			isShowing = false
+			return
+		}
+		guard !isShowing, !isWaiting else { return }
+		Task { @MainActor in
+			try? await Task.sleep(for: .milliseconds(600))
+			guard !isShowing, !isWaiting, !accessoryManager.servicesNeedingRadio().isEmpty else { return }
+			isUp = true
+			isShowing = true
+		}
 	}
 }
