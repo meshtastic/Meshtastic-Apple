@@ -55,7 +55,7 @@ Read this first if you are picking the work up. Update it in the same commit as 
 - Next up: the owner's device test (checklist below), which waits on hardware; don't rebuild
   Mesh Multi for it unless asked. Don't design around the focused/additional split: every radio
   works the same way (D-17). Removing the switch-era helpers (T066) waits for that test.
-- Baseline and latest: the full suite passes in the iOS Simulator (3,499 Swift Testing tests plus
+- Baseline and latest: the full suite passes in the iOS Simulator (3,505 Swift Testing tests plus
   the XCTests, about 55 seconds of test time). Run it with the simulator to itself: another
   session's test runs on the same simulator kill the test host partway.
 
@@ -105,6 +105,11 @@ Read this first if you are picking the work up. Update it in the same commit as 
   note). Nothing of the windows was run: the iOS Simulator suite and a Mac build (built, not run)
   pass; the device checklist below has what needs the owner's Mac, iPhone and Siri. Next: the
   owner's device test, then the full reviews of each area, then T122.
+- Review V13 and data V12 (2026-09-30): `review-connections-v13.md` (Z1–Z2) and
+  `review-data-v12.md` (R12-1), checked in the files; all held. Fixed one commit each (T360–T362
+  in tasks.md). Z1: the last radio left connected that drops comes back as the first radio once
+  discovery sees it, the previous first radio remembered to join unless the user disconnected it,
+  as the launch fallback has it. Z1's reboot and R12-1's sheet are on the device checklist.
 - Review V12 and data V11 (2026-09-30): `review-connections-v12.md` (Y1–Y4) and
   `review-data-v11.md` (R11-1–R11-3), checked in the files; all held. Fixed one commit each
   (T350–T359 in tasks.md). The owner's calls: Y3 as proposed (Disconnect on the first radio with
