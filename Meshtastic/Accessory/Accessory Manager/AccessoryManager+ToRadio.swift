@@ -1471,7 +1471,12 @@ extension AccessoryManager {
 		toRadio.packet = meshPacket
 
 		let logString = String.localizedStringWithFormat("🗑️ Sent a request to remove node \(node.num.toHex())")
-		try await send(toRadio, debugDescription: logString)
+		// On the connection of the radio it's removed from, not relayed by another radio, which it
+		// wouldn't take without that radio's session key (review V11 R11-1).
+		guard let session = connectedSession(forRadio: connectedNodeNum) else {
+			throw AccessoryError.ioFailed("removeNode: That radio isn't connected")
+		}
+		try await send(toRadio, via: session, debugDescription: logString)
 
 			do {
 				if let user = node.user {

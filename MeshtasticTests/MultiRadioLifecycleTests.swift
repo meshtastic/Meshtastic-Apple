@@ -577,6 +577,45 @@ struct MultiRadioConnectLifecycleTests {
 		}
 	}
 
+	@Test("Remove Node in another radio's window goes out on that radio's connection, and not at all while it's off")
+	func removeNodeOnItsRadio() async throws {
+		let firstNum: Int64 = 0x0A0A, extraNum: Int64 = 0x0B0B, remoteNum: Int64 = 0x7E57_0354
+		let schema = Schema(versionedSchema: MeshtasticSchema.current)
+		let container = try ModelContainer(for: schema, configurations: ModelConfiguration("RemoveNode-\(UUID().uuidString)", schema: schema, isStoredInMemoryOnly: true, allowsSave: true))
+		let context = ModelContext(container)
+		let node = NodeInfoEntity()
+		node.num = remoteNum
+		context.insert(node)
+		try context.save()
+
+		let manager = AccessoryManager(transports: [])
+		manager.isSwitchingDevices = true
+		manager.context = context
+		let firstConnection = IdleConnection()
+		var firstDevice = device("First")
+		firstDevice.num = firstNum
+		manager.activeConnection = RadioSession(device: firstDevice, connection: firstConnection)
+		let extraConnection = IdleConnection()
+		var extraDevice = device("Extra")
+		extraDevice.num = extraNum
+		manager.additionalRadios[extraDevice.id] = RadioSession(device: extraDevice, connection: extraConnection)
+
+		await #expect(throws: AccessoryError.self, "its radio is off") {
+			try await manager.removeNode(node: node, connectedNodeNum: 0x0C0C)
+		}
+		#expect(await firstConnection.sent.isEmpty, "never through another radio")
+		#expect(try context.fetchCount(FetchDescriptor<NodeInfoEntity>()) == 1, "kept while it can't be removed from the radio")
+
+		try await manager.removeNode(node: node, connectedNodeNum: extraNum)
+		let sent = await extraConnection.sent
+		#expect(sent.count == 1)
+		#expect(sent.first?.packet.to == UInt32(extraNum))
+		let admin = try AdminMessage(serializedBytes: sent.first?.packet.decoded.payload ?? Data())
+		#expect(admin.removeByNodenum == UInt32(remoteNum))
+		#expect(await firstConnection.sent.isEmpty)
+		#expect(try context.fetchCount(FetchDescriptor<NodeInfoEntity>()) == 0)
+	}
+
 	@Test("An encrypted DM via another radio refreshes the contact on that radio and pins the node on both")
 	func encryptedDirectMessageFollowUpsUseTheSendingRadio() async throws {
 		let firstNum: Int64 = 0x0A0A, extraNum: Int64 = 0x0B0B, remoteNum: Int64 = 0x7E57_0021
