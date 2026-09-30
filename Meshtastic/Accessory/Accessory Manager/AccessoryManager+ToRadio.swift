@@ -1498,7 +1498,9 @@ extension AccessoryManager {
 
 	func requestDeviceMetadata(fromUser: UserEntity? = nil, toUser: UserEntity? = nil) async throws -> Int64 {
 
-		guard isConnected else {
+		// The radio it's sent from, which needn't be the first one (review V11 R11-3); with none
+		// named, the first radio, as before.
+		guard fromUser.map({ isRadioConnected(nodeNum: $0.num) }) ?? isConnected else {
 			throw AccessoryError.ioFailed("No connected accessory")
 		}
 		

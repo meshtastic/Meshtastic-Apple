@@ -657,6 +657,42 @@ struct MultiRadioConnectLifecycleTests {
 		#expect(await firstConnection.sent.isEmpty, "never through another radio")
 	}
 
+	@Test("A metadata request from another radio needs that radio connected, not the first")
+	func metadataFromItsRadio() async throws {
+		let extraNum: Int64 = 0x0B0B, remoteNum: Int64 = 0x7E57_0357, offNum: Int64 = 0x0C0C
+		let schema = Schema(versionedSchema: MeshtasticSchema.current)
+		let container = try ModelContainer(for: schema, configurations: ModelConfiguration("Metadata-\(UUID().uuidString)", schema: schema, isStoredInMemoryOnly: true, allowsSave: true))
+		let context = ModelContext(container)
+		var users: [Int64: UserEntity] = [:]
+		for num in [extraNum, remoteNum, offNum] {
+			let user = UserEntity()
+			user.num = num
+			context.insert(user)
+			users[num] = user
+		}
+		try context.save()
+
+		// The first radio is gone; only B is connected.
+		let manager = AccessoryManager(transports: [])
+		manager.isSwitchingDevices = true
+		manager.context = context
+		let extraConnection = IdleConnection()
+		var extraDevice = device("Extra")
+		extraDevice.num = extraNum
+		extraDevice.connectionState = .connected
+		manager.additionalRadios[extraDevice.id] = RadioSession(device: extraDevice, connection: extraConnection)
+		#expect(!manager.isConnected)
+
+		_ = try await manager.requestDeviceMetadata(fromUser: try #require(users[extraNum]), toUser: try #require(users[remoteNum]))
+		let sent = await extraConnection.sent
+		#expect(sent.count == 1)
+		#expect(sent.first?.packet.to == UInt32(remoteNum))
+
+		await #expect(throws: AccessoryError.self, "a radio that's off") {
+			_ = try await manager.requestDeviceMetadata(fromUser: try #require(users[offNum]), toUser: try #require(users[remoteNum]))
+		}
+	}
+
 	@Test("An encrypted DM via another radio refreshes the contact on that radio and pins the node on both")
 	func encryptedDirectMessageFollowUpsUseTheSendingRadio() async throws {
 		let firstNum: Int64 = 0x0A0A, extraNum: Int64 = 0x0B0B, remoteNum: Int64 = 0x7E57_0021
