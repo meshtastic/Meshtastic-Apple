@@ -560,7 +560,9 @@ extension AccessoryManager {
 		// Below-minimum firmware keeps its connection on every radio (D-17). The focused radio
 		// shows the update gate; another radio is marked as needing an update, which prompts the
 		// user by name (T073).
-		if !attempt.isFocused, let session = attempt.session, let attention = firmwareAttention(for: session) {
+		// Every radio, the first included (review V11 W5): a window that shows another radio asks
+		// about it; the first radio's own window shows its gate.
+		if let session = attempt.session, let attention = firmwareAttention(for: session) {
 			setAttention(attention, for: session)
 		}
 		if attempt.isFocused {

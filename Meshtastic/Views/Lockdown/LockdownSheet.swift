@@ -98,7 +98,7 @@ struct RadioUnlockSheet: View {
 	@Environment(\.dismiss) private var dismiss
 
 	private var session: RadioSession? {
-		accessoryManager.additionalRadios[request.id]
+		accessoryManager.session(for: RadioWindow(deviceId: request.id))
 	}
 
 	var body: some View {

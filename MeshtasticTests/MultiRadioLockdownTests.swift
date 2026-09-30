@@ -274,6 +274,26 @@ struct MultiRadioLockdownTests {
 
 
 
+	@Test("The first radio locking is asked about when the window shows another radio, not when it shows it")
+	func firstRadioAskedAboutFromAnotherWindow() async throws {
+		let fixture = makeFixture()
+		let manager = fixture.manager, radio = fixture.radio
+		let first = try #require(manager.activeConnection)
+
+		// The window shows the first radio: its own sheet covers it, no prompt.
+		deliver(status(.locked), to: first, manager)
+		#expect(first.attention == .locked)
+		#expect(manager.radioAttentionPrompt == nil)
+		deliver(status(.unlocked), to: first, manager)
+		#expect(first.attention == nil)
+
+		// The window shows B: A is asked about by name, and its Unlock finds it.
+		manager.oneWindowShownRadio = radio.device.id
+		deliver(status(.locked), to: first, manager)
+		#expect(manager.radioAttentionPrompt?.id == first.device.id)
+		#expect(manager.session(for: RadioWindow(deviceId: first.device.id)) === first, "its passphrase sheet finds it")
+	}
+
 	@Test("A second radio needing the user waits for the first radio's prompt to close")
 	func promptsForSeveralRadiosQueue() async throws {
 		let fixture = makeFixture()

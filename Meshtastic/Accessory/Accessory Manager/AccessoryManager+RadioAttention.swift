@@ -99,7 +99,9 @@ extension AccessoryManager {
 		let name = session.device.longName ?? session.device.name
 		if let attention {
 			Logger.transport.info("⚠️ [Radios] \(name, privacy: .public): \(attention.shortCaption, privacy: .public)")
-			if session !== activeConnection, session.device.id != oneWindowShownRadio {
+			// Every radio but the one the window shows, which shows its own sheets (review V11 W5);
+			// before the window says, that's the radio connected first.
+			if session.device.id != (oneWindowShownRadio ?? activeConnection?.device.id) {
 				let prompt = RadioAttentionPrompt(id: session.device.id, radioName: name, attention: attention)
 				pendingAttentionPrompts.removeAll { $0.id == prompt.id }
 				if let shown = radioAttentionPrompt, shown.id != prompt.id {
@@ -122,10 +124,10 @@ extension AccessoryManager {
 	func showNextAttentionPrompt() {
 		while let next = pendingAttentionPrompts.first {
 			pendingAttentionPrompts.removeFirst()
-			guard additionalRadios[next.id]?.attention == next.attention else { continue }
+			guard session(for: RadioWindow(deviceId: next.id))?.attention == next.attention else { continue }
 			Task { @MainActor [weak self] in
 				try? await Task.sleep(for: .milliseconds(600))
-				guard let self, self.additionalRadios[next.id]?.attention == next.attention else { return }
+				guard let self, self.session(for: RadioWindow(deviceId: next.id))?.attention == next.attention else { return }
 				if self.radioAttentionPrompt == nil {
 					self.radioAttentionPrompt = next
 				} else if self.radioAttentionPrompt?.id != next.id {
@@ -184,12 +186,12 @@ extension AccessoryManager {
 	func lockdownStateChanged(_ session: RadioSession) {
 		let state = session.lockdown.state
 		let isFocused = session === activeConnection
-		if !isFocused {
-			if let attention = Self.attention(for: state) {
-				setAttention(attention, for: session)
-			} else if session.attention?.isLockdown == true {
-				setAttention(nil, for: session)
-			}
+		// Every radio, the first included: a window that shows another radio asks about it
+		// (review V11 W5).
+		if let attention = Self.attention(for: state) {
+			setAttention(attention, for: session)
+		} else if session.attention?.isLockdown == true {
+			setAttention(nil, for: session)
 		}
 		switch state {
 		case .unlocked:
