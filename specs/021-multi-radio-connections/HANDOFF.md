@@ -55,7 +55,7 @@ Read this first if you are picking the work up. Update it in the same commit as 
 - Next up: the owner's device test (checklist below), which waits on hardware; don't rebuild
   Mesh Multi for it unless asked. Don't design around the focused/additional split: every radio
   works the same way (D-17). Removing the switch-era helpers (T066) waits for that test.
-- Baseline and latest: the full suite passes in the iOS Simulator (3,490 Swift Testing tests plus
+- Baseline and latest: the full suite passes in the iOS Simulator (3,499 Swift Testing tests plus
   the XCTests, about 55 seconds of test time). Run it with the simulator to itself: another
   session's test runs on the same simulator kill the test host partway.
 
@@ -105,6 +105,12 @@ Read this first if you are picking the work up. Update it in the same commit as 
   note). Nothing of the windows was run: the iOS Simulator suite and a Mac build (built, not run)
   pass; the device checklist below has what needs the owner's Mac, iPhone and Siri. Next: the
   owner's device test, then the full reviews of each area, then T122.
+- Review V12 and data V11 (2026-09-30): `review-connections-v12.md` (Y1–Y4) and
+  `review-data-v11.md` (R11-1–R11-3), checked in the files; all held. Fixed one commit each
+  (T350–T359 in tasks.md). The owner's calls: Y3 as proposed (Disconnect on the first radio with
+  another connected makes that one the preferred radio), and the presentation order both reviews
+  left for the device done now (T359: the gates, then the Choose Radios sheet, then another
+  radio's prompt, one at a time). T359 and Y3's relaunch are on the device checklist.
 - Review V11 and data V10 (2026-09-29/30): `review-connections-v11.md` (X1, W1–W7, minors) and
   `review-data-v10.md` (R10-1–R10-8), checked in the files; all held. Fixed one commit each
   (T330–T340 in tasks.md); after them, T341 took "focused" out of the code and T342 fixed the
