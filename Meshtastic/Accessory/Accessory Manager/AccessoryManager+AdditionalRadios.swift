@@ -9,18 +9,18 @@ import Foundation
 import MeshtasticProtobufs
 import OSLog
 
-// MARK: - Radios connected alongside the focused one (feature 021)
+// MARK: - Radios connected alongside the first one (feature 021)
 
 // Every connected radio is a `RadioSession` and runs the same connect steps (D-17, plan.md ›
-// Every radio the same). One of them is focused (`AccessoryManager.activeConnection`); the others
-// are in `additionalRadios`, by device id. This file keeps track of the others: which are
+// Every radio the same). The one connected first is `AccessoryManager.activeConnection`; the
+// others are in `additionalRadios`, by device id. This file keeps track of the others: which are
 // connected, their events, disconnecting and reconnecting them, and the radios remembered from
-// last time. A locked or outdated radio that isn't focused is handled in
+// last time. A radio that's locked or needs a firmware update is asked about in
 // `AccessoryManager+RadioAttention.swift`.
 
 /// Lets one radio at a time run its config and node-DB handshake (T064).
 ///
-/// Two dumps at once double the ingest load, and the focused radio's connect recycles the
+/// Two dumps at once double the ingest load, and the first radio's connect recycles the
 /// ingest actor at its end (`MeshPackets.recreateShared()`), which must not happen in the
 /// middle of another radio's dump. Waiters are served in order.
 @MainActor
@@ -47,10 +47,10 @@ final class HandshakeGate {
 
 extension AccessoryManager {
 
-	/// At most this many radios at once, the focused one included (D-10).
+	/// At most this many radios at once, the first one included (D-10).
 	static let maxConnectedRadios = 4
 
-	/// Radios connected now: the focused one plus the additional ones.
+	/// Radios connected now: the first one plus the additional ones.
 	var connectedRadioCount: Int {
 		(activeConnection == nil ? 0 : 1) + additionalRadios.count
 	}
@@ -58,22 +58,22 @@ extension AccessoryManager {
 	/// A radio is connected, or the first one is connecting, for another to connect alongside
 	/// (review V11 W2). With none, a connect is the first radio's.
 	var hasRadioToJoin: Bool {
-		connectedRadioCount > 0 || hasFocusedConnectInProgress
+		connectedRadioCount > 0 || hasFirstConnectInProgress
 	}
 
 	var canConnectAnotherRadio: Bool {
 		connectedRadioCount < Self.maxConnectedRadios
 	}
 
-	/// True when `deviceId` is connected or connecting, focused or not.
+	/// True when `deviceId` is connected or connecting, the first radio or another.
 	func isRadioConnected(_ deviceId: UUID) -> Bool {
 		activeConnection?.device.id == deviceId || additionalRadios[deviceId] != nil || connectAttempts[deviceId] != nil
 	}
 
-	/// Every connected radio's device, the focused one first.
+	/// Every connected radio's device, starting with the first radio.
 	var connectedRadios: [Device] {
 		var result: [Device] = []
-		if let focused = activeConnection?.device { result.append(focused) }
+		if let first = activeConnection?.device { result.append(first) }
 		return result + additionalRadioDevices
 	}
 
@@ -88,8 +88,8 @@ extension AccessoryManager {
 	/// brought back, and its window on the Mac closes (W-02). Without the first radio the others
 	/// stay connected and none takes its place (T316).
 	func disconnectRadio(_ deviceId: UUID) async {
-		if activeConnection?.device.id == deviceId || connectAttempts[deviceId]?.isFocused == true {
-			try? await disconnectFocusedRadio(accessoryManager: self)
+		if activeConnection?.device.id == deviceId || connectAttempts[deviceId]?.isFirst == true {
+			try? await disconnectFirstRadio(accessoryManager: self)
 		} else {
 			await disconnectAdditionalRadio(deviceId, byUser: true)
 		}
@@ -149,16 +149,16 @@ extension AccessoryManager {
 			.sorted { ($0.longName ?? $0.name) < ($1.longName ?? $1.name) }
 	}
 
-	/// `session` when it's one of the radios connected alongside the focused one.
+	/// `session` when it's one of the radios connected alongside the first one.
 	func additionalRadio(for session: RadioSession) -> RadioSession? {
 		additionalRadios[session.device.id].flatMap { $0 === session ? $0 : nil }
 	}
 
 	// MARK: - Connect
 
-	/// Connects `device` alongside the focused radio, through the same connect steps as the
-	/// focused one (D-17). With no radio connected this is a normal connect, and the radio becomes
-	/// the focused one. `connectTimeout` bounds the transport connect for automatic attempts; a
+	/// Connects `device` alongside the first radio, through the same connect steps as the
+	/// first one (D-17). With no radio connected this is a normal connect, and the radio becomes
+	/// the first one. `connectTimeout` bounds the transport connect for automatic attempts; a
 	/// user's tap waits as long as the transport does. Throws when the radio didn't connect.
 	func connectAdditionalRadio(_ device: Device, connectTimeout: Duration? = nil) async throws {
 		// With the first radio gone and others connected, it joins them; it doesn't take the first
@@ -174,7 +174,7 @@ extension AccessoryManager {
 			throw AccessoryError.connectionFailed(String.localizedStringWithFormat("You can connect up to %d radios at once.".localized, Self.maxConnectedRadios))
 		}
 		Logger.transport.info("🔗➕ [Additional] Connecting \(device.name, privacy: .public) alongside \(self.activeConnection?.device.name ?? "?", privacy: .public)")
-		try await connect(to: device, asFocused: false, connectTimeout: connectTimeout)
+		try await connect(to: device, asFirst: false, connectTimeout: connectTimeout)
 		Logger.transport.info("🔗➕ [Additional] \(device.name, privacy: .public) connected; \(self.connectedRadioCount) radios connected")
 	}
 
@@ -212,7 +212,7 @@ extension AccessoryManager {
 	}
 
 	/// Runs the backfill for rows from before feature 021 when radio `radioNum` reports itself and
-	/// isn't the radio those rows belong to (`BackfillOwner`), focused or not: a radio added
+	/// isn't the radio those rows belong to (`BackfillOwner`), the first radio or another: a radio added
 	/// alongside, or one the user switched to (T186, T193). Run by connect Step 3c, once the
 	/// config is in and before the radio's node DB, and matched by node number (T203): a
 	/// peripheral id changes on a new phone, a node number doesn't. The store's own radio doesn't
@@ -247,7 +247,7 @@ extension AccessoryManager {
 
 	// MARK: - Disconnect
 
-	/// Disconnects one additional radio. The focused radio and the others are unaffected.
+	/// Disconnects one additional radio. The first radio and the others are unaffected.
 	/// `byUser` also stops any automatic reconnect for it, now and at the next launch.
 	func disconnectAdditionalRadio(_ deviceId: UUID, byUser: Bool = false, forUpdate: Bool = false) async {
 		// Its window on the Mac closes once it's disconnected (W-02); not when it's only released
@@ -262,7 +262,7 @@ extension AccessoryManager {
 		}
 		// A connect still in progress for it stops, whether it's waiting for the handshake gate
 		// or running its steps.
-		if let attempt = connectAttempts[deviceId], !attempt.isFocused {
+		if let attempt = connectAttempts[deviceId], !attempt.isFirst {
 			attempt.isCancelled = true
 			await attempt.stepper?.cancelCurrentlyExecutingStep(withError: AccessoryError.disconnected("Radio disconnected"), cancelFullProcess: true)
 		}
@@ -292,7 +292,7 @@ extension AccessoryManager {
 	// MARK: - Reconnect (T063)
 
 	/// Keeps trying to reconnect a radio that dropped, until it's back, the user disconnects
-	/// it, or it becomes the focused radio. Each attempt is bounded, so an out-of-range BLE radio
+	/// it, or it becomes the first radio. Each attempt is bounded, so an out-of-range BLE radio
 	/// doesn't hold the scan paused; attempts back off up to a minute.
 	func scheduleAdditionalRadioReconnect(_ device: Device, firstDelay: Duration = .seconds(5)) {
 		guard additionalRadioReconnects[device.id] == nil else { return }
@@ -304,7 +304,7 @@ extension AccessoryManager {
 				try? await Task.sleep(for: delay)
 				guard let self, !Task.isCancelled else { return }
 				if self.isRadioConnected(device.id) { return }
-				// Wait for a focused radio and a free slot rather than taking over as the focused
+				// Wait for a radio to join and a free slot rather than taking over as the first
 				// radio, which is the preferred radio's own reconnect to make.
 				if self.hasRadioToJoin, self.canConnectAnotherRadio {
 					do {
@@ -325,7 +325,7 @@ extension AccessoryManager {
 
 	// MARK: - Remembered radios (T063)
 
-	/// After the focused radio connects, brings back the radios that were connected alongside
+	/// After the first radio connects, brings back the radios that were connected alongside
 	/// it last time (`MyInfoEntity.autoConnect`). They go through the reconnect loop, so one
 	/// that's out of range keeps being tried without blocking the others.
 	func reconnectRememberedRadios() async {
@@ -362,9 +362,9 @@ extension AccessoryManager {
 
 	// MARK: - Events
 
-	/// Handles one event from a radio connected alongside the focused one. Its data takes the
-	/// same path as the focused radio's (`processFromRadio`, scoped to the session). An error or a
-	/// disconnect ends only this radio: a connect in progress retries or gives up as the focused
+	/// Handles one event from a radio connected alongside the first one. Its data takes the
+	/// same path as the first radio's (`processFromRadio`, scoped to the session). An error or a
+	/// disconnect ends only this radio: a connect in progress retries or gives up as the first
 	/// radio's would, and a connected radio is disconnected and, unless told otherwise,
 	/// reconnected when it's back.
 	func didReceiveAdditional(_ event: ConnectionEvent, session: RadioSession) async {

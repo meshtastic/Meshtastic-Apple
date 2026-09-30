@@ -25,9 +25,10 @@ struct UserMessageList: View {
 	@Bindable var user: UserEntity
 	@State private var replyMessageId: Int64 = 0
 	@State private var messageToHighlight: Int64 = 0
-	/// The focused radio, or offline the preferred one; -1 for none. Redraws with the manager.
+	/// The window's radio, also while it's off (`radioNodeNum`); -1 for none. Redraws with the
+	/// manager.
 	private var preferredPeripheralNum: Int {
-		if let focused = accessoryManager.nodeNum(for: windowRadio) { return Int(focused) }
+		if let radioNum = accessoryManager.nodeNum(for: windowRadio) { return Int(radioNum) }
 		return accessoryManager.radioNodeNum(for: windowRadio) > 0 ? Int(accessoryManager.radioNodeNum(for: windowRadio)) : -1
 	}
 	@State private var messageLimit: Int = 100
@@ -44,9 +45,9 @@ struct UserMessageList: View {
 	@State private var tapbackText = ""
 	@FocusState var tapbackFocused: Bool
 	/// Feature 021 (T085): a direct message is between one of the user's radios and this node.
-	/// The radios this conversation involves (connected, or in its history), the focused first.
+	/// The radios this conversation involves (connected, or in its history), the connected ones first.
 	@State private var conversationRadios: [Int64] = []
-	/// The radio picked in the "Via" control; nil follows the focused radio.
+	/// The radio picked in the "Via" control; nil follows the window's radio.
 	@State private var chosenRadio: Int64?
 	@State private var unreadByRadio: [Int64: Int] = [:]
 	/// Short and long names of the conversation's radios, looked up with them rather than while

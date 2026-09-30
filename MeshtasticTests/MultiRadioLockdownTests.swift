@@ -59,17 +59,17 @@ struct MultiRadioLockdownTests {
 		let store: InMemoryPassphraseStore
 	}
 
-	/// A manager with a focused radio and one connected alongside it, B, whose saved passphrases
+	/// A manager with a first radio and one connected alongside it, B, whose saved passphrases
 	/// are in `store`.
 	private func makeFixture(transports: [any Transport] = []) -> Fixture {
 		let manager = AccessoryManager(transports: transports)
 		manager.isSwitchingDevices = true
 		manager.context = PersistenceController.shared.context
 		manager.appState = AppState(router: Router())
-		var focused = Device(id: UUID(), name: "Focused", transportType: .tcp, identifier: "a.local:4403")
-		focused.num = 0x0A0A
+		var first = Device(id: UUID(), name: "First", transportType: .tcp, identifier: "a.local:4403")
+		first.num = 0x0A0A
 		let store = InMemoryPassphraseStore()
-		manager.activeConnection = RadioSession(device: focused, connection: RecordingIdleConnection(), passphraseStore: store)
+		manager.activeConnection = RadioSession(device: first, connection: RecordingIdleConnection(), passphraseStore: store)
 		let connection = RecordingIdleConnection()
 		var extra = Device(id: UUID(), name: "Extra", transportType: .tcp, identifier: "b.local:4403")
 		extra.num = extraNum
@@ -173,22 +173,22 @@ struct MultiRadioLockdownTests {
 		let scripted = ScriptedRadio(nodeNum: 0x5100_0005, afterConfig: [.lockdownStatus(locked)])
 		let fixture = makeFixture(transports: [ScriptedTransport(radio: scripted)])
 		let manager = fixture.manager
-		let focused = try #require(manager.activeConnection)
-		let focusedConnection = try #require(focused.connection as? RecordingIdleConnection)
+		let first = try #require(manager.activeConnection)
+		let firstConnection = try #require(first.connection as? RecordingIdleConnection)
 		let device = Device(id: UUID(), name: "Locked", transportType: .tcp, identifier: "locked3.local:4403")
 
 		let connect = Task { try await manager.connectAdditionalRadio(device) }
 		try await waitUntil { await MainActor.run { manager.radioAttentionPrompt?.id == device.id } }
 		#expect(manager.radioAttentionPrompt?.id == device.id)
-		#expect(manager.activeConnection === focused)
+		#expect(manager.activeConnection === first)
 		try await connect.value
-		#expect(manager.activeConnection === focused)
-		#expect(await focusedConnection.isConnected, "the focused radio isn't disconnected")
+		#expect(manager.activeConnection === first)
+		#expect(await firstConnection.isConnected, "the first radio isn't disconnected")
 		#expect(await scripted.disconnects == 0)
 	}
 
-	@Test("A passphrase entered for a radio that isn't focused goes out on its connection, and is saved once it unlocks")
-	func passphraseForARadioThatIsntFocused() async throws {
+	@Test("A passphrase entered for a radio other than the first goes out on its connection, and is saved once it unlocks")
+	func passphraseForAnotherRadio() async throws {
 		let fixture = makeFixture()
 		let manager = fixture.manager, radio = fixture.radio, connection = fixture.connection
 		let store = fixture.store
@@ -253,8 +253,8 @@ struct MultiRadioLockdownTests {
 		#expect(broken.lockdown.isBlockingSession)
 	}
 
-	@Test("Lock Now on a radio that isn't focused closes its connection once it locks, to be connected again")
-	func lockNowOnARadioThatIsntFocused() async throws {
+	@Test("Lock Now on a radio other than the first closes its connection once it locks, to be connected again")
+	func lockNowOnAnotherRadio() async throws {
 		let fixture = makeFixture()
 		let manager = fixture.manager, radio = fixture.radio, connection = fixture.connection
 
@@ -333,7 +333,7 @@ struct MultiRadioLockdownTests {
 		let session = try #require(manager.additionalRadios[device.id])
 		#expect(session.attention == .firmwareTooOld(version: "2.3.2.63df972"))
 		#expect(manager.radioAttentionPrompt?.attention.actionTitle == "Update")
-		#expect(!manager.firmwareUpdateRequired, "the focused radio's gate isn't raised for another radio")
+		#expect(!manager.firmwareUpdateRequired, "the first radio's gate isn't raised for another radio")
 	}
 
 	@Test("Unlocking a connected radio clears its prompt and fetches its config again")

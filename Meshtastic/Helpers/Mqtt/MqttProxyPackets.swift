@@ -9,7 +9,7 @@ import CocoaMQTT
 import Foundation
 import MeshtasticProtobufs
 
-/// The MQTT client proxy's packet handling, shared by the focused radio (`AccessoryManager`)
+/// The MQTT client proxy's packet handling, shared by the first radio (`AccessoryManager`)
 /// and each additional radio's bridge (feature 021, T100). Pure, so it's unit-testable without
 /// a broker or a radio.
 enum MqttProxyPackets {

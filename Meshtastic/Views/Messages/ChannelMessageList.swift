@@ -25,9 +25,10 @@ struct ChannelMessageList: View {
 	@Bindable var myInfo: MyInfoEntity
 	@Bindable var channel: ChannelEntity
 	@State private var replyMessageId: Int64 = 0
-	/// The focused radio, or offline the preferred one; -1 for none. Redraws with the manager.
+	/// The window's radio, also while it's off (`radioNodeNum`); -1 for none. Redraws with the
+	/// manager.
 	private var preferredPeripheralNum: Int {
-		if let focused = accessoryManager.nodeNum(for: windowRadio) { return Int(focused) }
+		if let radioNum = accessoryManager.nodeNum(for: windowRadio) { return Int(radioNum) }
 		return accessoryManager.radioNodeNum(for: windowRadio) > 0 ? Int(accessoryManager.radioNodeNum(for: windowRadio)) : -1
 	}
 	@State private var messageToHighlight: Int64 = 0

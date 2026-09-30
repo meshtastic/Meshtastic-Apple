@@ -305,7 +305,7 @@ extension MeshPackets {
 				}
 				let allObservations = observations.contains { $0 === observation } ? observations : observations + [observation]
 				if allObservations.count > 1 {
-					NodeObservationEntity.applyAggregate(allObservations, to: node, focusedRadio: PreferredRadio.nodeNum)
+					NodeObservationEntity.applyAggregate(allObservations, to: node, firstRadio: PreferredRadio.nodeNum)
 					Logger.data.debug("💾 [updateAnyPacketFrom] Aggregated node \(packet.from.toHex(), privacy: .public) across \(allObservations.count) radios")
 					return
 				}
@@ -768,7 +768,7 @@ extension MeshPackets {
 							}
 						}
 
-						// With several radios the slot is the aggregate's (the focused radio's), T204.
+						// With several radios the slot is the aggregate's (the first radio's), T204.
 						if !nodeFieldsAreAggregated(fetchedNode[0].num) {
 							fetchedNode[0].channel = Int32(truncatingIfNeeded: packet.channel)
 						}

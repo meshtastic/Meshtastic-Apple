@@ -172,7 +172,7 @@ extension AccessoryManager {
 		connectedSession(forRadio: radioNum)?.mqtt
 	}
 
-	/// True while `session` is the focused radio or one of the radios connected alongside it.
+	/// True while `session` is the first radio or one of the radios connected alongside it.
 	func isConnectedSession(_ session: RadioSession) -> Bool {
 		session === activeConnection || additionalRadio(for: session) != nil
 	}

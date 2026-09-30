@@ -79,7 +79,7 @@ extension MeshPackets {
 
 	/// Stores a remote-admin session passkey on the asking radio's observation of the node
 	/// (T045). The node's own `sessionPasskey`, written by the config handlers, stays the
-	/// focused radio's until the send path reads per radio (T060).
+	/// first radio's until the send path reads per radio (T060).
 	func recordAdminSession(passkey: Data, nodeNum: Int64, radioNum: Int64) {
 		guard nodeNum != radioNum else { return }
 		var descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == nodeNum })
@@ -140,8 +140,8 @@ extension MeshPackets {
 		savePendingChanges()
 	}
 
-	/// Remembers the radios on `peripheralIds` to come back alongside the focused one: radios iOS
-	/// restored that aren't the focused restore (T190). A radio only ever focused isn't
+	/// Remembers the radios on `peripheralIds` to come back alongside the first one: radios iOS
+	/// restored that aren't the first radio's restore (T190). A radio only ever connected first isn't
 	/// remembered otherwise, and the remembered-radio reconnect is what claims restored radios.
 	func rememberRadios(peripheralIds: [String]) {
 		guard !peripheralIds.isEmpty else { return }
@@ -186,7 +186,7 @@ extension MeshPackets {
 		savePendingChanges()
 	}
 
-	/// A radio to bring back alongside the focused one.
+	/// A radio to bring back alongside the first one.
 	struct RememberedRadio: Sendable, Equatable {
 		let nodeNum: Int64
 		let peripheralId: String
@@ -368,7 +368,7 @@ extension MeshPackets {
 			observation.isKeyManuallyVerified = nodeInfo.isKeyManuallyVerified
 			let all = existing.contains { $0 === observation } ? existing : existing + [observation]
 			if all.count > 1 {
-				NodeObservationEntity.applyAggregate(all, to: node, focusedRadio: PreferredRadio.nodeNum)
+				NodeObservationEntity.applyAggregate(all, to: node, firstRadio: PreferredRadio.nodeNum)
 				// FR-022: favorite, ignored and a verified key hold if any of the user's radios says
 				// so, not whichever radio's node DB came last (T164). Radios only a merged backup
 				// knows don't count; the radio this dump is from always does.
@@ -411,10 +411,10 @@ extension NodeObservationEntity {
 	/// - hops, signal and MQTT come from the best current path: among observations heard within
 	///   `currentWindow` of the newest, heard over RF rather than MQTT, then fewest hops, then
 	///   most recently. An old observation (a radio that's away, a merged backup) doesn't count;
-	/// - `channel` is a slot number on one radio, so it comes only from `focusedRadio`'s own
+	/// - `channel` is a slot number on one radio, so it comes only from `firstRadio`'s own
 	///   observation, the radio that sends to the node; without one it is left as it is (T143).
 	/// With a single observation its values are copied as they are.
-	static func applyAggregate(_ observations: [NodeObservationEntity], to node: NodeInfoEntity, focusedRadio: Int64) {
+	static func applyAggregate(_ observations: [NodeObservationEntity], to node: NodeInfoEntity, firstRadio: Int64) {
 		guard !observations.isEmpty else { return }
 		if observations.count == 1, let only = observations.first {
 			node.firstHeard = only.firstHeard
@@ -433,8 +433,8 @@ extension NodeObservationEntity {
 		node.snr = best.snr
 		node.rssi = best.rssi
 		node.viaMqtt = best.viaMqtt
-		if let focused = observations.first(where: { $0.radioNum == focusedRadio }) {
-			node.channel = focused.channel
+		if let own = observations.first(where: { $0.radioNum == firstRadio }) {
+			node.channel = own.channel
 		}
 	}
 

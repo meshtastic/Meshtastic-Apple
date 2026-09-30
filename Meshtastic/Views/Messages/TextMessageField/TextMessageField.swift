@@ -14,7 +14,7 @@ struct TextMessageField: View {
 	/// (poll-based) message list can reload immediately instead of waiting for
 	/// the next refresh tick.
 	var onMessageSent: (@MainActor () -> Void)?
-	/// The connected radio that sends (feature 021); nil means the focused radio.
+	/// The connected radio that sends (feature 021); nil means the radio connected first.
 	var viaRadio: Int64?
 	/// That radio's slot for the channel, when it differs from the destination's.
 	var viaChannel: Int32?

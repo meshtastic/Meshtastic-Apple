@@ -35,7 +35,7 @@ func performConfigSave(
 	node: NodeInfoEntity?,
 	context: ModelContext,
 	accessoryManager: AccessoryManager,
-	window: RadioWindow = .focused,
+	window: RadioWindow = .firstRadio,
 	hasChanges: Binding<Bool>,
 	dismiss: DismissAction,
 	onError: ((String) -> Void)? = nil,

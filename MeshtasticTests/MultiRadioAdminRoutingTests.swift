@@ -30,14 +30,14 @@ private actor AdminRecorder: Connection {
 @Suite("Multi-radio admin routing", .serialized)
 struct MultiRadioAdminRoutingTests {
 
-	private let focusedNum: Int64 = 0x0A0A
+	private let firstNum: Int64 = 0x0A0A
 	private let extraNum: Int64 = 0x0B0B
 	private let remoteNum: Int64 = 0x7E57_0200
 
 	private struct Fixture {
 		let manager: AccessoryManager
 		let context: ModelContext
-		let focused: AdminRecorder
+		let first: AdminRecorder
 		let extra: AdminRecorder
 		let extraSession: RadioSession
 	}
@@ -49,16 +49,16 @@ struct MultiRadioAdminRoutingTests {
 		let manager = AccessoryManager(transports: [])
 		manager.isSwitchingDevices = true
 		manager.context = context
-		let focused = AdminRecorder()
-		var focusedDevice = Device(id: UUID(), name: "Focused", transportType: .tcp, identifier: "a.local:4403")
-		focusedDevice.num = focusedNum
-		manager.activeConnection = RadioSession(device: focusedDevice, connection: focused)
+		let first = AdminRecorder()
+		var firstDevice = Device(id: UUID(), name: "First", transportType: .tcp, identifier: "a.local:4403")
+		firstDevice.num = firstNum
+		manager.activeConnection = RadioSession(device: firstDevice, connection: first)
 		let extra = AdminRecorder()
 		var extraDevice = Device(id: UUID(), name: "Extra", transportType: .tcp, identifier: "b.local:4403")
 		extraDevice.num = extraNum
 		let extraSession = RadioSession(device: extraDevice, connection: extra)
 		manager.additionalRadios[extraDevice.id] = extraSession
-		return Fixture(manager: manager, context: context, focused: focused, extra: extra, extraSession: extraSession)
+		return Fixture(manager: manager, context: context, first: first, extra: extra, extraSession: extraSession)
 	}
 
 	private func adminPacket(from: Int64, to: Int64, passkey: Data) throws -> MeshPacket {
@@ -77,13 +77,13 @@ struct MultiRadioAdminRoutingTests {
 	func routes() throws {
 		let fixture = try makeFixture()
 		let manager = fixture.manager
-		// Settings configuring radio B: from the focused radio, to B.
-		#expect(manager.adminRoute(for: try adminPacket(from: focusedNum, to: extraNum, passkey: Data())) === fixture.extraSession)
-		// Remote admin relayed by B, and by the focused radio.
+		// Settings configuring radio B: from the first radio, to B.
+		#expect(manager.adminRoute(for: try adminPacket(from: firstNum, to: extraNum, passkey: Data())) === fixture.extraSession)
+		// Remote admin relayed by B, and by the first radio.
 		#expect(manager.adminRoute(for: try adminPacket(from: extraNum, to: remoteNum, passkey: Data())) === fixture.extraSession)
-		#expect(manager.adminRoute(for: try adminPacket(from: focusedNum, to: remoteNum, passkey: Data())) === manager.activeConnection)
-		// The focused radio itself.
-		#expect(manager.adminRoute(for: try adminPacket(from: focusedNum, to: focusedNum, passkey: Data())) === manager.activeConnection)
+		#expect(manager.adminRoute(for: try adminPacket(from: firstNum, to: remoteNum, passkey: Data())) === manager.activeConnection)
+		// The first radio itself.
+		#expect(manager.adminRoute(for: try adminPacket(from: firstNum, to: firstNum, passkey: Data())) === manager.activeConnection)
 	}
 
 	@Test("Remote admin relayed by another radio carries that radio's passkey; local admin is untouched")
@@ -99,22 +99,22 @@ struct MultiRadioAdminRoutingTests {
 		#expect(try AdminMessage(serializedBytes: relayed.decoded.payload).sessionPasskey == Data([0xB0, 0xB1]))
 
 		// Addressed to B itself: local admin, left alone.
-		let local = try adminPacket(from: focusedNum, to: extraNum, passkey: Data([0xA0]))
+		let local = try adminPacket(from: firstNum, to: extraNum, passkey: Data([0xA0]))
 		#expect(manager.adminPacket(local, relayedBy: fixture.extraSession) == local)
 
-		// Through the focused radio: the node's own passkey, as before.
-		let focusedSession = try #require(manager.activeConnection)
-		let viaFocused = try adminPacket(from: focusedNum, to: remoteNum, passkey: Data([0xA0]))
-		#expect(manager.adminPacket(viaFocused, relayedBy: focusedSession) == viaFocused)
+		// Through the first radio: the node's own passkey, as before.
+		let firstSession = try #require(manager.activeConnection)
+		let viaFirst = try adminPacket(from: firstNum, to: remoteNum, passkey: Data([0xA0]))
+		#expect(manager.adminPacket(viaFirst, relayedBy: firstSession) == viaFirst)
 	}
 
-	@Test("A metadata request for radio B goes out on B's connection, not the focused radio's")
+	@Test("A metadata request for radio B goes out on B's connection, not the first radio's")
 	func requestReachesTheRadio() async throws {
 		let fixture = try makeFixture()
 		let manager = fixture.manager
 		manager.isConnected = true
 		let fromUser = UserEntity()
-		fromUser.num = focusedNum
+		fromUser.num = firstNum
 		let toUser = UserEntity()
 		toUser.num = extraNum
 
@@ -123,6 +123,6 @@ struct MultiRadioAdminRoutingTests {
 		let sent = await fixture.extra.sent
 		#expect(sent.count == 1)
 		#expect(sent.first?.packet.to == UInt32(extraNum))
-		#expect(await fixture.focused.sent.isEmpty)
+		#expect(await fixture.first.sent.isEmpty)
 	}
 }

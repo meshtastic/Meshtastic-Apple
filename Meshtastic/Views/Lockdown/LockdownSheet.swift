@@ -14,8 +14,8 @@ import OSLog
 
 struct LockdownSheet: View {
 
-	/// For a radio that isn't focused (feature 021, T188, T301): its name, shown at the top, and
-	/// what Cancel does. Nil for the focused radio's full-screen sheet, which has no Cancel.
+	/// For a radio other than the window's (feature 021, T188, T301): its name, shown at the top,
+	/// and what Cancel does. Nil for the window's radio's full-screen sheet, which has no Cancel.
 	var radioName: String?
 	var onCancel: (() -> Void)?
 
@@ -68,8 +68,8 @@ struct LockdownSheet: View {
 	}
 }
 
-/// With more than one radio connected, which radio a full-screen gate is about: the focused
-/// one (feature 021, T073). Shared by the lock-down sheet and the firmware update gate.
+/// With more than one radio connected, which radio a full-screen gate is about: the window's
+/// (feature 021, T073, D-19). Shared by the lock-down sheet and the firmware update gate.
 struct RadioNameBanner: View {
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 	/// The radio this window works with (feature 021, D-19).
@@ -87,8 +87,8 @@ struct RadioNameBanner: View {
 	}
 }
 
-/// The passphrase sheet for a locked radio that isn't focused (feature 021, T188): the same sheet
-/// as the focused radio's, on that radio's own coordinator (T301), so the passphrase goes out on
+/// The passphrase sheet for a locked radio other than the window's (feature 021, T188): the same
+/// sheet as the window's radio's, on that radio's own coordinator (T301), so the passphrase goes out on
 /// its own connection. It closes when the radio unlocks, stops needing a passphrase, or
 /// disconnects; a wrong passphrase, or one that couldn't be sent, shows in it.
 struct RadioUnlockSheet: View {

@@ -70,7 +70,7 @@ struct TAKServerConfig: View {
 		.navigationTitle("TAK Server")
 		.onAppear {
 			takServer.checkPrimaryChannelValidity()
-			// The TAK radio's identity, role and channels, whichever radio is focused (T161).
+			// The TAK radio's identity, role and channels, whichever radio the window shows (T161).
 			if let nodeNum = accessoryManager.radioNum(for: .tak) {
 				connectedNode = getNodeInfo(id: nodeNum, context: context)
 			}

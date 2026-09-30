@@ -35,7 +35,7 @@ actor MqttForwardGate {
 
 extension AccessoryManager {
 
-	/// Connect Step 8 for the focused radio: the unread badges. Its MQTT client proxy starts
+	/// Connect Step 8 for the first radio: the unread badges. Its MQTT client proxy starts
 	/// like every radio's (`startMqtt`, `AccessoryManager+RadioMQTT.swift`).
 	func initializeUnreadBadges() {
 		guard let deviceNum = activeConnection?.device.num else {
@@ -62,7 +62,7 @@ extension AccessoryManager {
 		}
 	}
 
-	/// The focused radio's MQTT client proxy state, for the MQTT icon (T071c).
+	/// The first radio's MQTT client proxy state, for the MQTT icon (T071c).
 	var mqttProxyConnected: Bool { activeConnection?.mqtt?.isConnected ?? false }
 	var mqttError: String { activeConnection?.mqtt?.errorMessage ?? "" }
 	var mqttTopics: [String] { activeConnection?.mqtt?.topics ?? [] }

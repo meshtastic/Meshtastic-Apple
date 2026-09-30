@@ -163,8 +163,8 @@ struct Messages: View {
 		}.onChange(of: router.messagesState) { _, newValue in
 			consumeDeepLink(newValue)
 		}.onChange(of: accessoryManager.nodeNum(for: windowRadio)) { _, newValue in
-			// The channel list is the focused radio's (T083). A focus change without reconnecting
-			// (T072) doesn't rebuild this view, so follow it here (T211). A channel picked on the
+			// The channel list is the window's radio's (T083). Switching the window's radio (W-13)
+			// doesn't rebuild this view, so follow it here (T211). A channel picked on the
 			// previous radio isn't this radio's; a DM contact is the same node on every radio.
 			guard let newValue, newValue != nodeNum else { return }
 			nodeNum = newValue

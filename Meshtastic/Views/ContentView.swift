@@ -74,8 +74,8 @@ struct ContentView: View {
 			.fullScreenCover(isPresented: $isShowingFirmwareGate) {
 				FirmwareUpdateGate()
 			}
-			// A locked radio that isn't focused enters its passphrase here, without taking the
-			// focus (feature 021, T188).
+			// A locked radio the window isn't showing enters its passphrase here, without the window
+			// switching to it (feature 021, T188).
 			// On the Mac each radio's own window shows its sheets instead (D-19).
 			.sheet(item: RadioWindows.areEnabled ? .constant(nil) : $accessoryManager.radioUnlockRequest) { request in
 				RadioUnlockSheet(request: request)

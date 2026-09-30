@@ -153,12 +153,12 @@ final class DiscoveryScanEngine {
 	/// Paces the animated reveal of seeded nodes onto the map during a current-preset scan.
 	private var seedTask: Task<Void, Never>?
 
-	/// The radio a scan runs on, fixed when it starts (feature 021, T016): a focus change mid-scan,
+	/// The radio a scan runs on, fixed when it starts (feature 021, T016): the window switching to another radio mid-scan,
 	/// or the reboot a preset change causes, must not move it to another radio, and only its own
 	/// packets are measured (`receivesPackets(from:)`).
 	private(set) var scanRadioNum: Int64 = 0
 
-	/// The focused radio, or offline the preferred one, whose saved config an offline analysis uses.
+	/// The first radio, or offline the preferred one, whose saved config an offline analysis uses.
 	private var currentRadioNum: Int64 {
 		accessoryManager?.activeDeviceNum ?? PreferredRadio.nodeNum
 	}
@@ -446,7 +446,7 @@ final class DiscoveryScanEngine {
 			Logger.discovery.info("📡 [Discovery] Sent LoRa config change to preset: \(preset.name)")
 
 			// Determine transport type for reconnection strategy
-			// The scan radio's link, focused or not (T160).
+			// The scan radio's link, the first radio's or another's (T160).
 			let transportType = await accessoryManager.connectedSession(forRadio: scanRadioNum)?.connection.type
 
 			// Mark that we're awaiting a disconnect — prevents premature reconnection detection
@@ -480,7 +480,7 @@ final class DiscoveryScanEngine {
 		}
 	}
 
-	/// The scan radio's link: the scan follows its own radio, which may not stay the focused one.
+	/// The scan radio's link: the scan follows its own radio, which may not stay the first one.
 	private var scanLink: (connected: Bool, subscribed: Bool) {
 		accessoryManager?.linkState(ofRadio: scanRadioNum) ?? (false, false)
 	}

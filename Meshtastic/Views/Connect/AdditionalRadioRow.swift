@@ -33,7 +33,7 @@ struct AdditionalRadioRow: View {
 	}
 
 	/// The radio's latest battery reading and its unread direct messages. On an interval rather
-	/// than in `body`, for the same reason as the focused radio's battery on the Connect tab.
+	/// than in `body`, for the same reason as the first radio's battery on the Connect tab.
 	private func refreshStatus() {
 		guard let radioNum = device.num else { return }
 		let deviceMetrics: Int32 = 0
@@ -77,7 +77,7 @@ struct AdditionalRadioRow: View {
 						.font(.caption)
 						.foregroundStyle(.orange)
 				}
-				// T081: battery, signal and unread direct messages, like the focused radio's row.
+				// T081: battery, signal and unread direct messages, like the first radio's row.
 				HStack(spacing: 10) {
 					if let batteryLevel {
 						BatteryCompact(batteryLevel: batteryLevel, font: .caption, iconFont: .callout, color: .accentColor)

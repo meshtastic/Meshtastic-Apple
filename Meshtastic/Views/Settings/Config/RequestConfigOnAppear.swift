@@ -17,7 +17,7 @@ func requestRemoteConfig(
 	node: NodeInfoEntity?,
 	context: ModelContext,
 	accessoryManager: AccessoryManager,
-	window: RadioWindow = .focused,
+	window: RadioWindow = .firstRadio,
 	configIsNil: @escaping (NodeInfoEntity) -> Bool,
 	request: @escaping (_ fromUser: UserEntity, _ toUser: UserEntity) async throws -> Void,
 	requestForConnectedNode: Bool = false

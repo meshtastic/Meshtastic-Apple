@@ -173,32 +173,32 @@ struct MultiRadioIngestTests {
 		let live = observation(radioA, hops: 3, snr: -5, heard: now, channel: 0)
 		let old = observation(radioB, hops: 0, snr: 8, heard: now.addingTimeInterval(-86_400), channel: 2)
 
-		NodeObservationEntity.applyAggregate([live, old], to: node, focusedRadio: radioA)
+		NodeObservationEntity.applyAggregate([live, old], to: node, firstRadio: radioA)
 
 		#expect(node.hopsAway == 3)
 		#expect(node.snr == -5)
 		#expect(node.lastHeard == now)
 	}
 
-	@Test("The node's channel slot comes only from the focused radio")
-	func channelFromFocusedRadio() {
+	@Test("The node's channel slot comes only from the first radio")
+	func channelFromFirstRadio() {
 		let now = Date(timeIntervalSince1970: 1_800_000_000)
 		let node = NodeInfoEntity()
 		node.channel = 1
-		let focused = observation(radioA, hops: 3, snr: -5, heard: now, channel: 0)
+		let first = observation(radioA, hops: 3, snr: -5, heard: now, channel: 0)
 		let better = observation(radioB, hops: 0, snr: 8, heard: now, channel: 2)
 
-		NodeObservationEntity.applyAggregate([focused, better], to: node, focusedRadio: radioA)
+		NodeObservationEntity.applyAggregate([first, better], to: node, firstRadio: radioA)
 		#expect(node.hopsAway == 0)
 		#expect(node.channel == 0)
 
-		// The focused radio hasn't heard the node: the slot is left as it was.
+		// The first radio hasn't heard the node: the slot is left as it was.
 		node.channel = 1
-		NodeObservationEntity.applyAggregate([focused, better], to: node, focusedRadio: 0x0C0C_0C0C)
+		NodeObservationEntity.applyAggregate([first, better], to: node, firstRadio: 0x0C0C_0C0C)
 		#expect(node.channel == 1)
 	}
 
-	@Test("Requests to a node go out on the focused radio's own slot for it")
+	@Test("Requests to a node go out on the first radio's own slot for it")
 	func channelSlotForSending() throws {
 		let container = try makeContainer()
 		try seedNodes([remote], in: container)
@@ -208,7 +208,7 @@ struct MultiRadioIngestTests {
 		let manager = AccessoryManager(transports: [])
 		manager.activeDeviceNum = radioA
 
-		// Nobody's observation, or only the focused radio's: `node.channel`, as before 021.
+		// Nobody's observation, or only the first radio's: `node.channel`, as before 021.
 		#expect(manager.channelSlot(toReach: node) == 2)
 		context.insert(observation(radioA, hops: 1, snr: 0, heard: .now, channel: 2))
 		#expect(manager.channelSlot(toReach: node) == 2)
@@ -315,7 +315,7 @@ struct MultiRadioIngestTests {
 		#expect(await packets.lookupRadios(first: nil) == [radioB], "not after the 5 s cache")
 	}
 
-	@Test("Radios iOS restored alongside the focused one are remembered to come back")
+	@Test("Radios iOS restored alongside the first one are remembered to come back")
 	func restoredRadiosAreRemembered() async throws {
 		let container = try makeContainer()
 		let context = ModelContext(container)
@@ -376,7 +376,7 @@ struct MultiRadioIngestTests {
 
 		let after = try #require(try fetch(NodeInfoEntity.self, in: container).first)
 		#expect(after.hopsAway == 0, "A hears it directly; B's 3 hops don't replace that")
-		#expect(after.channel == 0, "B's slot isn't the focused radio's")
+		#expect(after.channel == 0, "B's slot isn't the first radio's")
 	}
 
 	@Test("A radio's node database fills its observation")

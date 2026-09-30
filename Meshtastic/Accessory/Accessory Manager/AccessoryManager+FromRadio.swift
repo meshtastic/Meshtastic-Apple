@@ -168,12 +168,12 @@ extension AccessoryManager {
 		}
 		let connectedDeviceId = session.device.id.uuidString
 		Logger.services.info("handleMyInfo: \(myNodeInfo.debugDescription)")
-		let isFocused = session === activeConnection
+		let isFirst = session === activeConnection
 		// The same radio connected twice (over BLE and TCP, say): the second link goes, and isn't
 		// retried, without touching the radio's remembered state, which is the first link's (T154).
 		let reportedNum = Int64(myNodeInfo.myNodeNum)
 		let otherSessions = [activeConnection].compactMap { $0 } + Array(additionalRadios.values)
-		if !isFocused, otherSessions.contains(where: { $0 !== session && $0.device.num == reportedNum }) {
+		if !isFirst, otherSessions.contains(where: { $0 !== session && $0.device.num == reportedNum }) {
 			Logger.transport.error("🔗➕ [Additional] \(session.device.name, privacy: .public) reports the node number of a radio that's already connected; disconnecting it")
 			additionalRadioReconnects.removeValue(forKey: session.device.id)?.cancel()
 			await disconnectAdditionalRadio(session.device.id)
@@ -221,8 +221,8 @@ extension AccessoryManager {
 				update(session, \.expectedNodeDBSize, to: Int(myNodeInfo.nodedbCount))
 			}
 
-			// The preferred radio is the focused one.
-			if isFocused {
+			// The preferred radio is the first one.
+			if isFirst {
 				// Compare BEFORE persisting the new num — the previous code assigned first, so
 				// newConnection was always false and this hook was dead.
 				let newConnection = PreferredRadio.nodeNum != Int64(myInfo.myNodeNum)
@@ -238,7 +238,7 @@ extension AccessoryManager {
 		if session.device.longName == nil {
 			updateDevice(deviceId: session.device.id, key: \.longName, value: session.device.name)
 		}
-		guard isFocused else { return }
+		guard isFirst else { return }
 
 		// Auto-disable new-node notifications for event firmware editions
 		applyEventFirmwareNotificationDefaults(myNodeInfo.firmwareEdition)
@@ -407,7 +407,7 @@ extension AccessoryManager {
 			}
 		}
 
-		// Bump the nodeCount: the radio's own, and the focused radio's shown progress.
+		// Bump the nodeCount: the radio's own, and the first radio's shown progress.
 		session?.databaseNodeCount += 1
 		if session === activeConnection, case let .retrievingDatabase(nodeCount: nodeCount) = self.state {
 			updateState(.retrievingDatabase(nodeCount: nodeCount+1))

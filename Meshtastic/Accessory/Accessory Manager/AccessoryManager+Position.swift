@@ -23,7 +23,7 @@ extension AccessoryManager {
 				let sleepSeconds = Self.locationProviderSleepSeconds(configuredInterval: UserDefaults.provideLocationInterval)
 				try? await Task.sleep(for: .seconds(sleepSeconds)) // Throws if task is cancelled
 
-				// Every connected radio, the focused one first. With the focused radio gone and
+				// Every connected radio, starting with the first radio. With the first radio gone and
 				// others still connected, they keep getting it (T185).
 				guard !connectedRadioNums.isEmpty else {
 					return
@@ -38,19 +38,19 @@ extension AccessoryManager {
 
 	/// One round of the position loop: the phone's position to every connected radio, each on its
 	/// own connection (feature 021, T101). A radio's failed send is logged and the others still
-	/// get theirs. The focused radio's ends the loop when it's the only radio connected, as before;
+	/// get theirs. The first radio's ends the loop when it's the only radio connected, as before;
 	/// with others connected it doesn't, or none of them would get it again (T250).
 	func sharePhonePosition() async throws {
 		let radios = connectedRadioNums
-		let focusedNum = activeConnection?.device.num
-		if let focusedNum {
+		let firstNum = activeConnection?.device.num
+		if let firstNum {
 			do {
-				_ = try await sendPosition(channel: 0, destNum: focusedNum, wantResponse: false)
-			} catch where radios.contains(where: { $0 != focusedNum }) {
-				Logger.services.warning("📍 Could not share the phone's position with the focused radio \(focusedNum.toHex(), privacy: .public): \(error.localizedDescription, privacy: .public)")
+				_ = try await sendPosition(channel: 0, destNum: firstNum, wantResponse: false)
+			} catch where radios.contains(where: { $0 != firstNum }) {
+				Logger.services.warning("📍 Could not share the phone's position with the first radio \(firstNum.toHex(), privacy: .public): \(error.localizedDescription, privacy: .public)")
 			}
 		}
-		for radioNum in radios where radioNum != focusedNum {
+		for radioNum in radios where radioNum != firstNum {
 			do {
 				try await sendPosition(channel: 0, destNum: radioNum, wantResponse: false, viaRadio: radioNum)
 			} catch {
@@ -60,7 +60,7 @@ extension AccessoryManager {
 	}
 
 	/// Sends the phone's position. `viaRadio` picks the connected radio that sends it (feature
-	/// 021); nil is the focused radio.
+	/// 021); nil is the first radio.
 	public func sendPosition(channel: Int32, destNum: Int64, hopsAway: Int32 = 0, wantResponse: Bool, viaRadio: Int64? = nil) async throws {
 		guard let session = connectedSession(forRadio: viaRadio), let fromNodeNum = session.nodeNum else {
 			throw AccessoryError.ioFailed("Not connected to any device")

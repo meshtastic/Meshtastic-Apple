@@ -245,7 +245,7 @@ class AccessoryManager: ObservableObject {
 	@Published var lastConfigRefresh: Date?
 	@Published var isConnecting: Bool = false
 	@Published var isInBackground: Bool = false
-	/// The focused radio's firmware edition (kept on its `RadioSession`, T069).
+	/// The first radio's firmware edition (kept on its `RadioSession`, T069).
 	var firmwareEdition: FirmwareEditions {
 		get { activeConnection?.firmwareEdition ?? .vanilla }
 		set {
@@ -266,7 +266,7 @@ class AccessoryManager: ObservableObject {
 	/// want_config handshake (FromRadio.region_presets, 2.8+). Empty when the
 	/// firmware predates the feature or hasn't sent it yet — callers must treat an
 	/// absent region (or an empty map) as "no constraint". Reset on disconnect.
-	/// The focused radio's region → legal preset map (kept on its `RadioSession`, T069).
+	/// The first radio's region → legal preset map (kept on its `RadioSession`, T069).
 	var loRaRegionPresets: [Config.LoRaConfig.RegionCode: RegionPresetInfo] {
 		get { activeConnection?.loRaRegionPresets ?? [:] }
 		set {
@@ -280,15 +280,15 @@ class AccessoryManager: ObservableObject {
 	var activeConnection: RadioSession? {
 		didSet { Logger.datadog.setConnectedRadioCount(connectedRadioCount) }
 	}
-	/// Feature 021: radios connected alongside the focused one (`activeConnection`), by device
+	/// Feature 021: radios connected alongside the first one (`activeConnection`), by device
 	/// id. See `AccessoryManager+AdditionalRadios.swift`.
 	@Published var additionalRadios: [UUID: RadioSession] = [:] {
 		didSet { Logger.datadog.setConnectedRadioCount(connectedRadioCount) }
 	}
-	/// Connects in progress, focused or not, by device id (T071): one at a time per radio.
+	/// Connects in progress, the first radio's and others', by device id (T071): one at a time per radio.
 	var connectAttempts: [UUID: ConnectAttempt] = [:]
-	/// Why the last connect of a radio other than the focused one failed, by device id, until its
-	/// next connect starts or it's disconnected by the user (T300). The focused radio's is
+	/// Why the last connect of a radio other than the first one failed, by device id, until its
+	/// next connect starts or it's disconnected by the user (T300). The first radio's is
 	/// `lastConnectionError`.
 	@Published var radioConnectErrors: [UUID: Error] = [:]
 	/// Each radio's node number by device id, kept after it disconnects, so a window whose radio
@@ -305,7 +305,7 @@ class AccessoryManager: ObservableObject {
 	/// Each radio's firmware version as it last reported it this launch, by node number (T018):
 	/// what `checkIsVersionSupported` falls back to while a radio's live version is unknown.
 	var knownFirmwareVersions: [Int64: String] = [:]
-	/// A radio that isn't focused needs the user (locked, or firmware too old); ContentView asks
+	/// A radio the window isn't showing needs the user (locked, or firmware too old); ContentView asks
 	/// about it by name (T073). One at a time; when it's answered or dismissed, the next radio
 	/// waiting in `pendingAttentionPrompts` is asked about (T154).
 	@Published var radioAttentionPrompt: RadioAttentionPrompt? {
@@ -317,11 +317,11 @@ class AccessoryManager: ObservableObject {
 	}
 	/// Radios that needed the user while another radio's prompt was up, oldest first.
 	var pendingAttentionPrompts: [RadioAttentionPrompt] = []
-	/// A locked radio that isn't focused whose passphrase the user is entering; ContentView shows
+	/// A locked radio the window isn't showing, whose passphrase the user is entering; ContentView shows
 	/// its passphrase sheet (T188).
 	@Published var radioUnlockRequest: RadioUnlockRequest?
 	/// Sessions of additional radios that have been disconnected. Their late events are
-	/// dropped rather than mistaken for the focused radio's.
+	/// dropped rather than mistaken for the first radio's.
 	var retiredAdditionalSessionIDs: Set<UUID> = []
 	/// Reconnect loops for additional radios that dropped, by device id (T063).
 	var additionalRadioReconnects: [UUID: Task<Void, Never>] = [:]
@@ -329,15 +329,15 @@ class AccessoryManager: ObservableObject {
 	/// (`scheduleRememberedRadioFallback`).
 	var rememberedRadioFallbackTask: Task<Void, Never>?
 	/// Radios discovery has seen this launch, kept after `stopDiscovery()` empties `devices`, so a
-	/// remembered TCP radio found by Bonjour can still be brought back after the focused radio's
+	/// remembered TCP radio found by Bonjour can still be brought back after the first radio's
 	/// connect stops discovery (T156).
 	var recentlyDiscoveredDevices: [UUID: Device] = [:]
-	/// Remembered radios that weren't found when the focused radio connected; each is brought
+	/// Remembered radios that weren't found when the first radio connected; each is brought
 	/// back when discovery next sees it (T156).
 	var awaitedRememberedRadios: Set<UUID> = []
-	/// One radio's config and node-DB handshake at a time, focused or not (T064).
+	/// One radio's config and node-DB handshake at a time, the first radio's or another's (T064).
 	let handshakeGate = HandshakeGate()
-	/// Bumped by `disconnect()`, so a focused connect still waiting at `handshakeGate` sees the
+	/// Bumped by `disconnect()`, so the first radio's connect still waiting at `handshakeGate` sees the
 	/// user cancelled it (there is no `connectionStepper` to cancel yet).
 	var connectCancelGeneration = 0
 
@@ -432,7 +432,7 @@ class AccessoryManager: ObservableObject {
 	private var nextAutomaticConfigRefreshGeneration: UInt64 = 0
 
 	// Misc
-	/// How many nodes the focused radio said its node DB holds (kept on its `RadioSession`, T069).
+	/// How many nodes the first radio said its node DB holds (kept on its `RadioSession`, T069).
 	var expectedNodeDBSize: Int? {
 		get { activeConnection?.expectedNodeDBSize }
 		set {
@@ -441,7 +441,7 @@ class AccessoryManager: ObservableObject {
 		}
 	}
 
-	/// Sets a value on `session`, telling the views when it's the focused radio's (T069).
+	/// Sets a value on `session`, telling the views when it's the first radio's (T069).
 	func update<T>(_ session: RadioSession, _ keyPath: ReferenceWritableKeyPath<RadioSession, T>, to value: T) {
 		if session === activeConnection {
 			objectWillChange.send()
@@ -449,7 +449,7 @@ class AccessoryManager: ObservableObject {
 		session[keyPath: keyPath] = value
 	}
 	
-	/// The focused connection's heartbeat timers (on its `RadioSession`, T069).
+	/// The first radio's heartbeat timers (on its `RadioSession`, T069).
 	var heartbeatTimer: ResettableTimer? { activeConnection?.heartbeatTimer }
 	var heartbeatResponseTimer: ResettableTimer? { activeConnection?.heartbeatResponseTimer }
 	/// How long a TCP/serial connection may sit idle (no data or log packets) before we send a
@@ -517,7 +517,7 @@ class AccessoryManager: ObservableObject {
 		// A firmware update owns the radio: reconnecting mid-update fights the
 		// updater for the device while it is rebooting into its bootloader.
 		if otaInProgress { return }
-		if !self.isConnected && !self.isConnecting && !hasFocusedConnectInProgress,
+		if !self.isConnected && !self.isConnecting && !hasFirstConnectInProgress,
 		   let preferredDevice = device
 			?? self.devices.first(where: { $0.id.uuidString == PreferredRadio.peripheralId }),
 		   // Connected alongside already (the first radio dropped and this one stayed).
@@ -528,7 +528,7 @@ class AccessoryManager: ObservableObject {
 		}
 	}
 
-	/// Asks `session`'s radio (the focused one by default) for its config and waits for it.
+	/// Asks `session`'s radio (the first one by default) for its config and waits for it.
 	func sendWantConfig(on session: RadioSession? = nil) async throws {
 		guard let session = session ?? activeConnection else {
 			Logger.transport.error("Unable to send wantConfig (config): No device connected")
@@ -650,7 +650,7 @@ class AccessoryManager: ObservableObject {
 		}
 	}
 
-	/// Asks `session`'s radio (the focused one by default) for its node DB and waits for the first node.
+	/// Asks `session`'s radio (the first one by default) for its node DB and waits for the first node.
 	func sendWantDatabase(on session: RadioSession? = nil) async throws {
 		guard let session = session ?? activeConnection else {
 			Logger.transport.error("Unable to send wantConfig (Database): No device connected")
@@ -814,13 +814,13 @@ class AccessoryManager: ObservableObject {
 		guard !isClosingConnection else { return }
 		// Its window on the Mac closes once it's disconnected (W-02), unless it's only released
 		// for a firmware update (review V11 W1).
-		let disconnectedId = activeConnection?.device.id ?? connectAttempts.values.first(where: \.isFocused)?.device.id
+		let disconnectedId = activeConnection?.device.id ?? connectAttempts.values.first(where: \.isFirst)?.device.id
 		defer {
 			if let disconnectedId, !forUpdate { radioDisconnectedByUser.send(disconnectedId) }
 		}
 		self.userRequestedConnectionCancellation = true
 		connectCancelGeneration &+= 1
-		for attempt in connectAttempts.values where attempt.isFocused {
+		for attempt in connectAttempts.values where attempt.isFirst {
 			attempt.isCancelled = true
 		}
 		// Cancel ongoing connection task if it exists
@@ -870,7 +870,7 @@ class AccessoryManager: ObservableObject {
 			}
 		}
 
-		// Feature 021: an additional radio's session device, updated in place like the focused one.
+		// Feature 021: an additional radio's session device, updated in place like the first one.
 		if let additional = additionalRadios[deviceId], additional.device[keyPath: key] != value {
 			self.objectWillChange.send()
 			additional.device[keyPath: key] = value
@@ -934,8 +934,8 @@ class AccessoryManager: ObservableObject {
 	/// against whichever radio is connected now. Errors and disconnects are still handled as
 	/// before, since the connect retry flow depends on them.
 	func didReceive(_ event: ConnectionEvent, from session: RadioSession? = nil) async {
-		// Feature 021: an additional radio's events never reach the focused radio's handling,
-		// where an error or disconnect would tear the focused connection down.
+		// Feature 021: an additional radio's events never reach the first radio's handling,
+		// where an error or disconnect would tear the first radio's connection down.
 		if let session, session !== activeConnection {
 			if let radio = additionalRadio(for: session) {
 				await didReceiveAdditional(event, session: radio)
@@ -1379,7 +1379,7 @@ class AccessoryManager: ObservableObject {
 			// }
 
 			// Stamp the arrival so callers can tell a post-reboot refresh from a stale cache, on
-			// the radio's session; the manager's is the focused radio's.
+			// the radio's session; the manager's is the first radio's.
 			let refreshed = Date()
 			session.lastConfigRefresh = refreshed
 			if session === activeConnection {
@@ -1499,10 +1499,10 @@ extension AccessoryManager {
 	}
 
 	/// Whether radio `radioNum` is connected, and whether its connect has finished, for code that
-	/// follows one radio whichever is focused (the discovery scan, T160). The focused radio's are
+	/// follows one radio, the first or another (the discovery scan, T160). The first radio's are
 	/// `isConnected` and `.subscribed`.
 	func linkState(ofRadio radioNum: Int64) -> (connected: Bool, subscribed: Bool) {
-		if let focused = activeConnection, focused.nodeNum == radioNum {
+		if let first = activeConnection, first.nodeNum == radioNum {
 			return (isConnected, state == .subscribed)
 		}
 		guard let session = additionalRadios.values.first(where: { $0.nodeNum == radioNum }) else { return (false, false) }
@@ -1510,7 +1510,7 @@ extension AccessoryManager {
 		return (connected, connected && connectAttempts[session.device.id] == nil)
 	}
 
-	/// `checkIsVersionSupported` for one radio: the focused radio's is exactly that; another
+	/// `checkIsVersionSupported` for one radio: the first radio's is exactly that; another
 	/// radio's reads its own reported firmware, permissive while it's unknown (T150).
 	func isVersionSupported(forVersion version: String, on session: RadioSession) -> Bool {
 		guard session !== activeConnection else { return checkIsVersionSupported(forVersion: version) }
@@ -1623,7 +1623,7 @@ extension AccessoryManager {
 }
 
 extension AccessoryManager {
-	/// Starts `session`'s heartbeat (the focused radio's by default), for transports that need one.
+	/// Starts `session`'s heartbeat (the first radio's by default), for transports that need one.
 	func setupPeriodicHeartbeat(on session: RadioSession? = nil) async {
 		guard let session = session ?? activeConnection else { return }
 		if session.heartbeatTimer != nil {
@@ -1721,7 +1721,7 @@ extension AccessoryManager {
 	/// short window) so a beacon broadcast repeatedly doesn't spam the list.
 	///
 	/// `receivedBy` is the node number of the radio the beacon arrived on; nil (a radio whose
-	/// MyInfo hasn't arrived yet) falls back to the focused radio.
+	/// MyInfo hasn't arrived yet) falls back to the first radio.
 	func ingestPassiveBeacon(_ beacon: MeshBeacon, packet: MeshPacket, receivedBy: Int64? = nil) {
 		let fromNodeNum = Int64(packet.from)
 

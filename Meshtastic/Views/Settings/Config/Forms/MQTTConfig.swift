@@ -190,7 +190,7 @@ private struct MQTTProxyRows: View {
 						.foregroundColor(.red)
 				}
 			}
-			// The radio being configured, which may not be the focused one (feature 021).
+			// The radio being configured, which may not be the first one (feature 021).
 			.onAppear { connected = isProxyConnected }
 			.onChange(of: isProxyConnected) { _, now in connected = now }
 			.onChange(of: connected) { _, on in

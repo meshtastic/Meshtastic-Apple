@@ -12,10 +12,10 @@ import OSLog
 
 extension AccessoryManager {
 
-	/// A focused connect is running or waiting for the handshake gate. `isConnecting` only says so
+	/// The first radio's connect is running or waiting for the handshake gate. `isConnecting` only says so
 	/// once it has passed the gate (T152).
-	var hasFocusedConnectInProgress: Bool {
-		connectAttempts.values.contains { $0.isFocused && !$0.isCancelled }
+	var hasFirstConnectInProgress: Bool {
+		connectAttempts.values.contains { $0.isFirst && !$0.isCancelled }
 	}
 
 	// MARK: - Remembered radio when the preferred one is missing
@@ -30,7 +30,7 @@ extension AccessoryManager {
 		guard activeConnection == nil,
 			  additionalRadios.isEmpty,
 			  !isConnecting,
-			  !hasFocusedConnectInProgress,
+			  !hasFirstConnectInProgress,
 			  !isSwitchingDevices,
 			  !otaInProgress,
 			  !userRequestedConnectionCancellation,
@@ -46,7 +46,7 @@ extension AccessoryManager {
 
 	/// Started when discovery begins with nothing connected. If the preferred radio doesn't
 	/// connect within `rememberedRadioFallbackDelay`, a remembered radio that's in range becomes
-	/// the focused one, and the preferred radio is remembered so it joins when it shows up.
+	/// the first one, and the preferred radio is remembered so it joins when it shows up.
 	func scheduleRememberedRadioFallback(after delay: Duration = rememberedRadioFallbackDelay) {
 		rememberedRadioFallbackTask?.cancel()
 		rememberedRadioFallbackTask = Task { @MainActor [weak self] in

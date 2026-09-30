@@ -52,7 +52,7 @@ struct FavoriteNodeButton: View {
 
 	private func assignFavorite (node: NodeInfoEntity, setToFavorite: Bool, connectedNodeNum: Int64) async {
 		do {
-			// Feature 021 (D-11): on every connected radio, the focused one first.
+			// Feature 021 (D-11): on every connected radio, starting with the first radio.
 			try await accessoryManager.setFavorite(setToFavorite, node: node)
 
 			Task { @MainActor in

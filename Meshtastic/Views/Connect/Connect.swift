@@ -69,7 +69,7 @@ struct Connect: View {
 	}
 	/// This window's radio, to disconnect: its session's, or the one it's connecting.
 	private var radioDeviceId: UUID? {
-		radioSession?.device.id ?? windowRadio.deviceId ?? accessoryManager.focusedDeviceId
+		radioSession?.device.id ?? windowRadio.deviceId ?? accessoryManager.firstDeviceId
 	}
 
 	private var sortedAvailableDevices: [Device] {
@@ -429,7 +429,7 @@ struct Connect: View {
 					}
 					.textCase(nil)
 
-					// Feature 021: radios connected alongside the focused one, and radios that can be
+					// Feature 021: radios connected alongside the first one, and radios that can be
 					// added while connected.
 					if !otherConnectedRadios.isEmpty {
 						Section(header: Text("Also Connected").font(.title)) {
@@ -460,8 +460,8 @@ struct Connect: View {
 							}
 						}
 						.textCase(nil)
-						// The focused radio's connect stops discovery when it finishes, so start it
-						// again for each focused radio; scanning stops when the tab goes away.
+						// The first radio's connect stops discovery when it finishes, so start it
+						// again for each radio the window shows; scanning stops when the tab goes away.
 						.task(id: accessoryManager.nodeNum(for: windowRadio)) { accessoryManager.startDiscovery() }
 						.onDisappear {
 							if accessoryManager.isConnected || !accessoryManager.additionalRadios.isEmpty {
@@ -1286,7 +1286,7 @@ func backupCurrentAndRestoreDatabase(
 /// radio does, and isn't remembered, so it doesn't come straight back. The other radios stay as
 /// they are; nothing takes its place (D-19).
 @MainActor
-func disconnectFocusedRadio(accessoryManager: AccessoryManager) async throws {
+func disconnectFirstRadio(accessoryManager: AccessoryManager) async throws {
 	if let previousNum = accessoryManager.activeConnection?.nodeNum {
 		await MeshPackets.shared.setRadioAutoConnect(nodeNum: previousNum, false)
 	}
@@ -1295,12 +1295,12 @@ func disconnectFocusedRadio(accessoryManager: AccessoryManager) async throws {
 
 // MARK: - Node Switch Helper
 
-/// Makes `device` the focused radio (feature 021, T066).
+/// Makes `device` the first radio (feature 021, T066).
 ///
 /// The store is shared by every radio, so a switch no longer backs up, clears and restores
-/// it: the focused radio disconnects and `device` connects in its place. Additional radios
+/// it: the first radio disconnects and `device` connects in its place. Additional radios
 /// stay connected. If `device` is one of them, it is disconnected first and reconnects as the
-/// focused radio, and the previous focused radio comes back as an additional one.
+/// first radio, and the previous first radio comes back as an additional one.
 @MainActor
 func switchToDevice(
 	_ device: Device,
@@ -1309,7 +1309,7 @@ func switchToDevice(
 	keepPreviousRadio: Bool = true,
 	onRestoreComplete: (@MainActor () -> Void)? = nil
 ) async {
-	Logger.transport.info("🔀 Switching the focused radio from \(accessoryManager.activeConnection?.device.name ?? "none", privacy: .public) to \(device.name, privacy: .public)")
+	Logger.transport.info("🔀 Switching the first radio from \(accessoryManager.activeConnection?.device.name ?? "none", privacy: .public) to \(device.name, privacy: .public)")
 
 	// The user's explicit choice is the new preferred radio, recorded up front so an
 	// error-path auto-reconnect retries this radio rather than the previous one.
@@ -1326,7 +1326,7 @@ func switchToDevice(
 	}
 
 	if accessoryManager.additionalRadios[device.id] != nil || accessoryManager.additionalRadioReconnects[device.id] != nil {
-		// Focusing a radio that's connected alongside: the previous focused radio stays in the
+		// Making a radio connected alongside the first: the previous first radio stays in the
 		// set. Remembering it lets the connect below bring it back as an additional radio
 		// (`reconnectRememberedRadios`). A plain switch replaces it instead.
 		if keepPreviousRadio, let previousNum = accessoryManager.activeConnection?.nodeNum, previousNum != device.num {
@@ -1337,15 +1337,15 @@ func switchToDevice(
 	if accessoryManager.allowDisconnect {
 		try? await accessoryManager.disconnect()
 	}
-	// Settings screens describe the focused radio; leave them before it changes.
+	// Settings screens describe the first radio; leave them before it changes.
 	appState.router.popToRoot(tab: .settings)
 	onRestoreComplete?()
 
 	do {
 		try await accessoryManager.connect(to: device, refreshDeviceHardwareFromAPI: true)
-		Logger.transport.info("🔀 Connected to the new focused radio")
+		Logger.transport.info("🔀 Connected to the new first radio")
 	} catch {
-		Logger.transport.error("🔀 Failed to connect to the new focused radio: \(error.localizedDescription, privacy: .public)")
+		Logger.transport.error("🔀 Failed to connect to the new first radio: \(error.localizedDescription, privacy: .public)")
 	}
 }
 

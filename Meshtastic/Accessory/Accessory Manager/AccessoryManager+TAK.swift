@@ -218,7 +218,7 @@ extension AccessoryManager {
 	// MARK: - Send TAK V2 Packet to Mesh
 
 	/// Send a compressed TAK V2 wire payload to the mesh, through the radio chosen for TAK
-	/// (feature 021, T103; the focused radio unless the user picked another).
+	/// (feature 021, T103; the first radio unless the user picked another).
 	func sendTAKV2Packet(_ wirePayload: Data, channel: UInt32 = 0) async throws {
 		guard let takSession = session(for: .tak) else {
 			throw AccessoryError.connectionFailed("Not connected to Meshtastic device")

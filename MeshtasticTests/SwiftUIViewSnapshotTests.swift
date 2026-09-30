@@ -2791,7 +2791,7 @@ struct AdditionalRadioRowSnapshotTests {
 		return device
 	}
 
-	@Test("A radio connected alongside the focused one")
+	@Test("A radio connected alongside the first one")
 	@MainActor
 	func connected() async {
 		let view = List {

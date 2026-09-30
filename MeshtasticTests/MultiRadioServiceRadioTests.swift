@@ -28,7 +28,7 @@ private actor IdleConnection: Connection {
 @Suite("Multi-radio service radios", .serialized)
 struct MultiRadioServiceRadioTests {
 
-	private let focusedNum: Int64 = 0x0A0A
+	private let firstNum: Int64 = 0x0A0A
 	private let extraNum: Int64 = 0x0B0B
 	private let offlineNum: Int64 = 0x0C0C
 
@@ -41,22 +41,22 @@ struct MultiRadioServiceRadioTests {
 
 	private struct Radios {
 		let manager: AccessoryManager
-		let focused: RadioSession
+		let first: RadioSession
 		let extra: RadioSession
 	}
 
 	private func makeManager() -> Radios {
 		let manager = AccessoryManager(transports: [])
 		manager.isSwitchingDevices = true
-		var focusedDevice = Device(id: UUID(), name: "Focused", transportType: .tcp, identifier: "a.local:4403")
-		focusedDevice.num = focusedNum
-		let focused = RadioSession(device: focusedDevice, connection: IdleConnection())
-		manager.activeConnection = focused
+		var firstDevice = Device(id: UUID(), name: "First", transportType: .tcp, identifier: "a.local:4403")
+		firstDevice.num = firstNum
+		let first = RadioSession(device: firstDevice, connection: IdleConnection())
+		manager.activeConnection = first
 		var extraDevice = Device(id: UUID(), name: "Extra", transportType: .tcp, identifier: "b.local:4403")
 		extraDevice.num = extraNum
 		let extra = RadioSession(device: extraDevice, connection: IdleConnection())
 		manager.additionalRadios[extraDevice.id] = extra
-		return Radios(manager: manager, focused: focused, extra: extra)
+		return Radios(manager: manager, first: first, extra: extra)
 	}
 
 	@Test("A choice is saved per service; 0 clears it")
@@ -73,7 +73,7 @@ struct MultiRadioServiceRadioTests {
 
 	/// The two radios as known: connected with this version.
 	private func knowBoth(_ manager: AccessoryManager) {
-		manager.knownRadios = [StoredRadio(nodeNum: focusedNum, name: "Focused"), StoredRadio(nodeNum: extraNum, name: "Extra")]
+		manager.knownRadios = [StoredRadio(nodeNum: firstNum, name: "First"), StoredRadio(nodeNum: extraNum, name: "Extra")]
 	}
 
 	@Test("With one radio known every service uses the connected radio, as on main")
@@ -81,11 +81,11 @@ struct MultiRadioServiceRadioTests {
 		let store = makeStore()
 		let radios = makeManager()
 		let manager = radios.manager
-		manager.knownRadios = [StoredRadio(nodeNum: focusedNum, name: "Focused")]
+		manager.knownRadios = [StoredRadio(nodeNum: firstNum, name: "First")]
 		UserDefaults.setServiceRadio(extraNum, for: .tak, in: store)
-		#expect(manager.session(for: .tak, store: store) === radios.focused)
+		#expect(manager.session(for: .tak, store: store) === radios.first)
 		#expect(manager.servicesNeedingRadio(store: store, inUse: { _ in true }).isEmpty, "nothing to choose")
-		#expect(manager.intentRadio(nil, store: store) == .radio(focusedNum))
+		#expect(manager.intentRadio(nil, store: store) == .radio(firstNum))
 	}
 
 	@Test("With several radios known a service uses only its chosen radio, waits while it's off, and needs one when in use")
@@ -120,8 +120,8 @@ struct MultiRadioServiceRadioTests {
 	@Test("The choice sheet lists the connected radios first")
 	func connectedRadiosFirst() {
 		let manager = makeManager().manager
-		manager.knownRadios = [StoredRadio(nodeNum: offlineNum, name: "Offline"), StoredRadio(nodeNum: focusedNum, name: "Focused"), StoredRadio(nodeNum: extraNum, name: "Extra")]
-		#expect(manager.knownRadiosConnectedFirst.map(\.nodeNum) == [focusedNum, extraNum, offlineNum])
+		manager.knownRadios = [StoredRadio(nodeNum: offlineNum, name: "Offline"), StoredRadio(nodeNum: firstNum, name: "First"), StoredRadio(nodeNum: extraNum, name: "Extra")]
+		#expect(manager.knownRadiosConnectedFirst.map(\.nodeNum) == [firstNum, extraNum, offlineNum])
 	}
 
 	@Test("A Siri or Shortcuts command uses the radio it names or the CarPlay & Siri radio, never another; with none chosen it asks")
@@ -132,7 +132,7 @@ struct MultiRadioServiceRadioTests {
 		#expect(manager.intentRadio(nil, store: store) == .needsChoice, "several radios and none chosen")
 		UserDefaults.setServiceRadio(extraNum, for: .carPlay, in: store)
 		#expect(manager.intentRadio(nil, store: store) == .radio(extraNum))
-		#expect(manager.intentRadio(focusedNum, store: store) == .radio(focusedNum))
+		#expect(manager.intentRadio(firstNum, store: store) == .radio(firstNum))
 		#expect(manager.intentRadio(offlineNum, store: store) == .notConnected, "never sent from another radio")
 
 		manager.additionalRadios = [:]
@@ -244,7 +244,7 @@ struct MultiRadioServiceRadioTests {
 		let config = ModelConfiguration("TAKChannels-\(UUID().uuidString)", schema: schema, isStoredInMemoryOnly: true, allowsSave: true)
 		let context = ModelContext(try ModelContainer(for: schema, configurations: config))
 		var all: [ChannelEntity] = []
-		for (radio, names) in [(focusedNum, ["Primary", "Team"]), (extraNum, ["Primary", "Family"])] {
+		for (radio, names) in [(firstNum, ["Primary", "Team"]), (extraNum, ["Primary", "Family"])] {
 			let myInfo = MyInfoEntity()
 			myInfo.myNodeNum = radio
 			context.insert(myInfo)

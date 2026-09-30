@@ -756,7 +756,7 @@ final class TAKServerManager: ObservableObject {
 
 		let context = PersistenceController.shared.context
 
-		// Feature 021: the radio TAK goes through (the focused radio unless another was picked).
+		// Feature 021: the radio TAK goes through (the first radio unless another was picked).
 		guard let connectedNodeNum = accessoryManager.radioNum(for: .tak) else {
 			Logger.tak.error("Cannot fix channel: No active device number")
 			return false

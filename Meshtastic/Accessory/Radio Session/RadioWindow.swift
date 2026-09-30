@@ -12,13 +12,13 @@ import SwiftUI
 /// radio's settings, messages and connection. Named by its device id (its peripheral id), which
 /// is known before its node number.
 ///
-/// Until windows have their own radio (T310), there's one window and it follows the focused
-/// radio: `.focused`, whose lookups answer exactly as the manager's focused-radio properties do.
+/// `.firstRadio` is the window of the radio connected first, and its lookups answer exactly as the
+/// manager's own properties do, so one radio's one window works as on `main`.
 struct RadioWindow: Codable, Hashable, Sendable {
-	/// The radio's device id; nil is the focused radio.
+	/// The radio's device id; nil is the first radio.
 	var deviceId: UUID?
 
-	static let focused = RadioWindow(deviceId: nil)
+	static let firstRadio = RadioWindow(deviceId: nil)
 }
 
 /// Whether each radio gets its own window (feature 021, D-19): on the Mac. iPhone and iPad keep
@@ -32,7 +32,7 @@ enum RadioWindows {
 }
 
 private struct WindowRadioKey: EnvironmentKey {
-	static let defaultValue = RadioWindow.focused
+	static let defaultValue = RadioWindow.firstRadio
 }
 
 /// Shows another connected radio in this window (W-13): on iPhone and iPad the one window
@@ -88,7 +88,7 @@ extension AccessoryManager {
 
 	/// What the one window shows (iPhone, iPad; W-04), given the radio the user last picked
 	/// (`stored`): that radio while it's connected, connecting or being brought back; otherwise the
-	/// radio the app connects first (`.focused`), or, when the user disconnected that one and
+	/// radio the app connects first (`.firstRadio`), or, when the user disconnected that one and
 	/// another is still connected, the other one.
 	func oneWindowRadio(stored: UUID?) -> RadioWindow {
 		if let stored, stored != activeConnection?.device.id,
@@ -99,7 +99,7 @@ extension AccessoryManager {
 		   let other = additionalRadios.values.first(where: { $0.device.connectionState == .connected }) {
 			return RadioWindow(deviceId: other.device.id)
 		}
-		return .focused
+		return .firstRadio
 	}
 
 	/// The connected session of `window`'s radio, if it's connected.
@@ -111,33 +111,33 @@ extension AccessoryManager {
 		return additionalRadios[deviceId]
 	}
 
-	/// The node number of `window`'s radio while it's connected; nil otherwise. For `.focused`
+	/// The node number of `window`'s radio while it's connected; nil otherwise. For `.firstRadio`
 	/// it's `activeDeviceNum`.
 	func nodeNum(for window: RadioWindow) -> Int64? {
 		guard window.deviceId != nil else { return activeDeviceNum }
 		return session(for: window)?.nodeNum
 	}
 
-	/// Whether `window`'s radio is connected, as `isConnected` counts it for the focused radio.
+	/// Whether `window`'s radio is connected, as `isConnected` counts it for the first radio.
 	func isConnected(_ window: RadioWindow) -> Bool {
 		guard window.deviceId != nil else { return isConnected }
 		return linkStatus(for: window).isConnected
 	}
 
-	/// Whether `window`'s radio is connecting, as `isConnecting` counts it for the focused radio.
+	/// Whether `window`'s radio is connecting, as `isConnecting` counts it for the first radio.
 	func isConnecting(_ window: RadioWindow) -> Bool {
 		guard window.deviceId != nil else { return isConnecting }
 		return linkStatus(for: window).isConnecting
 	}
 
-	/// The node number of `window`'s radio, also while it's disconnected. For `.focused` the
+	/// The node number of `window`'s radio, also while it's disconnected. For `.firstRadio` the
 	/// preferred radio's, `PreferredRadio.nodeNum`.
 	func radioNodeNum(for window: RadioWindow) -> Int64 {
 		guard let deviceId = window.deviceId else { return PreferredRadio.nodeNum }
 		return session(for: window)?.nodeNum ?? knownNodeNums[deviceId] ?? 0
 	}
 
-	/// The radio a window's sends go through: nil, the radio connected first, for `.focused`;
+	/// The radio a window's sends go through: nil, the radio connected first, for `.firstRadio`;
 	/// otherwise the window's own radio, so a send while it's disconnected fails rather than going
 	/// through another radio (review V11 X1).
 	func sendingRadio(for window: RadioWindow) -> Int64? {
@@ -150,13 +150,13 @@ extension AccessoryManager {
 		connectedSession(forRadio: radioNum)?.device.id ?? knownNodeNums.first { $0.value == radioNum }?.key
 	}
 
-	/// The peripheral id of `window`'s radio. For `.focused`, `PreferredRadio.peripheralId`.
+	/// The peripheral id of `window`'s radio. For `.firstRadio`, `PreferredRadio.peripheralId`.
 	func radioPeripheralId(for window: RadioWindow) -> String {
 		window.deviceId?.uuidString ?? PreferredRadio.peripheralId
 	}
 
 	/// What `window`'s radio reported: its firmware edition, version and region presets. For
-	/// `.focused`, the manager's `firmwareEdition`, `connectedVersion` and `loRaRegionPresets`.
+	/// `.firstRadio`, the manager's `firmwareEdition`, `connectedVersion` and `loRaRegionPresets`.
 	func firmwareEdition(for window: RadioWindow) -> FirmwareEditions {
 		session(for: window)?.firmwareEdition ?? .vanilla
 	}
@@ -170,20 +170,20 @@ extension AccessoryManager {
 	}
 
 	/// Whether `window`'s radio's firmware is below the minimum, which puts the update gate over
-	/// the window. For `.focused`, `firmwareUpdateRequired`.
+	/// the window. For `.firstRadio`, `firmwareUpdateRequired`.
 	func firmwareUpdateRequired(for window: RadioWindow) -> Bool {
 		guard window.deviceId != nil else { return firmwareUpdateRequired }
 		return linkStatus(for: window).firmwareUpdateRequired
 	}
 
-	/// When `window`'s radio last finished sending its configuration. For `.focused`,
+	/// When `window`'s radio last finished sending its configuration. For `.firstRadio`,
 	/// `lastConfigRefresh`.
 	func lastConfigRefresh(for window: RadioWindow) -> Date? {
 		guard window.deviceId != nil else { return lastConfigRefresh }
 		return session(for: window)?.lastConfigRefresh
 	}
 
-	/// `window`'s radio's MQTT client proxy. For `.focused`, `mqttProxyConnected` and `mqttTopics`.
+	/// `window`'s radio's MQTT client proxy. For `.firstRadio`, `mqttProxyConnected` and `mqttTopics`.
 	func mqttProxyConnected(for window: RadioWindow) -> Bool {
 		session(for: window)?.mqtt?.isConnected ?? false
 	}
@@ -193,7 +193,7 @@ extension AccessoryManager {
 	}
 
 	/// `checkIsVersionSupported` for `window`'s radio: its own reported firmware
-	/// (`isVersionSupported(forVersion:on:)`); for `.focused`, exactly `checkIsVersionSupported`.
+	/// (`isVersionSupported(forVersion:on:)`); for `.firstRadio`, exactly `checkIsVersionSupported`.
 	func isVersionSupported(forVersion version: String, for window: RadioWindow) -> Bool {
 		guard window.deviceId != nil else { return checkIsVersionSupported(forVersion: version) }
 		guard let session = session(for: window) else {
@@ -203,10 +203,10 @@ extension AccessoryManager {
 		return isVersionSupported(forVersion: version, on: session)
 	}
 
-	/// `window`'s radio's connection (`linkStatus(of:)`). For `.focused` with no radio at all,
+	/// `window`'s radio's connection (`linkStatus(of:)`). For `.firstRadio` with no radio at all,
 	/// the manager's own state.
 	func linkStatus(for window: RadioWindow) -> RadioLinkStatus {
-		if let deviceId = window.deviceId ?? focusedDeviceId {
+		if let deviceId = window.deviceId ?? firstDeviceId {
 			return linkStatus(of: deviceId)
 		}
 		return RadioLinkStatus(state: state, canDisconnect: allowDisconnect, attention: nil, lastError: lastConnectionError)

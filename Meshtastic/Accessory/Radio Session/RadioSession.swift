@@ -13,9 +13,9 @@ import MeshtasticProtobufs
 /// lock-down state.
 ///
 /// Every connected radio has one and runs the same connect steps (feature 021, D-17). The
-/// focused radio's is `AccessoryManager.activeConnection`; the others are in
+/// first radio's is `AccessoryManager.activeConnection`; the others are in
 /// `AccessoryManager.additionalRadios`. Everything that arrives from a radio is handled against
-/// the session it came from, never against whichever radio happens to be focused.
+/// the session it came from, never against whichever radio happens to be first.
 ///
 /// A class so its identity can be compared: an event from a session that is no longer the
 /// active one (a late packet from a torn-down connection) can be told apart from a current one.
@@ -49,7 +49,7 @@ final class RadioSession: Identifiable {
 	// MARK: - Connection lifecycle (feature 021, T069)
 
 	// State that belongs to this one connection, so each connected radio has its own
-	// (plan.md › Every radio the same). `AccessoryManager` drives it for the focused radio.
+	// (plan.md › Every radio the same). `AccessoryManager` drives it for the first radio.
 
 	/// Delivers this connection's events to `AccessoryManager.didReceive(_:from:)`.
 	var eventTask: Task<Void, Error>?
@@ -77,7 +77,7 @@ final class RadioSession: Identifiable {
 	/// The firmware edition from its MyInfo (event firmware and the like).
 	var firmwareEdition: FirmwareEditions = .vanilla
 	/// When it last finished sending its configuration, to tell a fresh readback from a stale
-	/// cache (`AccessoryManager.lastConfigRefresh` is the focused radio's).
+	/// cache (`AccessoryManager.lastConfigRefresh` is the first radio's).
 	var lastConfigRefresh: Date?
 	/// The region → legal preset map it advertised in the config handshake (2.8+).
 	var loRaRegionPresets: [Config.LoRaConfig.RegionCode: RegionPresetInfo] = [:]

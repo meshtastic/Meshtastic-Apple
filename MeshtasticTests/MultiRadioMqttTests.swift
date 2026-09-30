@@ -101,7 +101,7 @@ struct MqttProxyPacketsTests {
 @Suite("Additional radio MQTT proxy", .serialized, .timeLimit(.minutes(1)))
 struct AdditionalRadioMqttTests {
 
-	@Test("Broker traffic goes to that radio's own connection, filtered like the focused radio's")
+	@Test("Broker traffic goes to that radio's own connection, filtered like the first radio's")
 	func downlinkReachesTheRadio() async throws {
 		let connection = SentRecorder()
 		var device = Device(id: UUID(), name: "Extra", transportType: .tcp, identifier: "b.local:4403")
@@ -145,14 +145,14 @@ struct AdditionalRadioMqttTests {
 		#expect(radio.mqtt == nil)
 	}
 
-	@Test("Each radio's MQTT state is its own; the MQTT icon shows the focused radio's")
+	@Test("Each radio's MQTT state is its own; the MQTT icon shows the first radio's")
 	func stateIsPerRadio() {
 		let manager = AccessoryManager(transports: [])
 		manager.isSwitchingDevices = true
-		var focusedDevice = Device(id: UUID(), name: "Focused", transportType: .tcp, identifier: "a.local:4403")
-		focusedDevice.num = 0x0A0A
-		let focused = RadioSession(device: focusedDevice, connection: SentRecorder())
-		manager.activeConnection = focused
+		var firstDevice = Device(id: UUID(), name: "First", transportType: .tcp, identifier: "a.local:4403")
+		firstDevice.num = 0x0A0A
+		let first = RadioSession(device: firstDevice, connection: SentRecorder())
+		manager.activeConnection = first
 		var extraDevice = Device(id: UUID(), name: "Extra", transportType: .tcp, identifier: "b.local:4403")
 		extraDevice.num = 0x0B0B
 		let extra = RadioSession(device: extraDevice, connection: SentRecorder())
@@ -167,17 +167,17 @@ struct AdditionalRadioMqttTests {
 		extra.mqtt = extraClient
 		extraClient.onMqttConnected()
 		#expect(redraws == 1, "its MQTT settings redraw")
-		#expect(!manager.mqttProxyConnected, "another radio's broker doesn't light the focused radio's icon")
+		#expect(!manager.mqttProxyConnected, "another radio's broker doesn't light the first radio's icon")
 		#expect(manager.mqttClient(forRadio: 0x0B0B)?.isConnected == true)
 
-		let focusedClient = RadioMqttClient(radio: focused)
-		focused.mqtt = focusedClient
-		focusedClient.onMqttError(message: "Refused")
+		let firstClient = RadioMqttClient(radio: first)
+		first.mqtt = firstClient
+		firstClient.onMqttError(message: "Refused")
 		#expect(manager.mqttError == "Refused")
-		focusedClient.onMqttConnected()
+		firstClient.onMqttConnected()
 		#expect(manager.mqttProxyConnected)
 		#expect(manager.mqttError.isEmpty)
 		extraClient.stop()
-		focusedClient.stop()
+		firstClient.stop()
 	}
 }

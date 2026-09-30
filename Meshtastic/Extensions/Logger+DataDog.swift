@@ -14,7 +14,7 @@ import SwiftUI
 
 enum DataDogLoggableAction {
 	// Add more cases as new loggable actions are required.
-	/// `additionalRadio`: a radio connected alongside the focused one (feature 021). Its
+	/// `additionalRadio`: a radio connected alongside the first one (feature 021). Its
 	/// attributes are that radio's, and override the global radio context on this event.
 	case connect(firmwareVersion: String?, transportType: String?, hardwareModel: String?, nodes: Int?, connectionRestored: Bool = false, additionalRadio: Bool = false)
 	
@@ -111,7 +111,7 @@ struct DatadogLogger {
 	}
 
 	/// How many radios are connected (feature 021), on every RUM event while at least one is.
-	/// The radio context above describes the focused radio; this says whether others were
+	/// The radio context above describes the first radio; this says whether others were
 	/// connected alongside it.
 	func setConnectedRadioCount(_ count: Int) {
 		guard Datadog.isInitialized() else { return }

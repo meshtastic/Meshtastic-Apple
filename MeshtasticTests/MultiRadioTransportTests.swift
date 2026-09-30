@@ -4,7 +4,7 @@
 //
 //  Feature 021: BLETransport keeps one connection per peripheral, so several radios can be
 //  connected at once, and AccessoryManager keeps an additional radio's events away from the
-//  focused radio.
+//  first radio.
 //
 
 @preconcurrency import CoreBluetooth
@@ -226,26 +226,26 @@ private struct IdentifiedPeripheral: RestoredPeripheral {
 @Suite("Multi-radio BLE restoration", .timeLimit(.minutes(1)))
 struct MultiRadioBLERestorationTests {
 
-	@Test("The preferred radio is restored as the focused one, or else the first")
-	func focusedPeripheralChoice() {
+	@Test("The preferred radio is restored as the first radio, or else the first one restored")
+	func firstPeripheralChoice() {
 		let first = IdentifiedPeripheral(identifier: UUID())
 		let preferred = IdentifiedPeripheral(identifier: UUID())
 		let restored = [first, preferred]
-		#expect(BLETransport.focusedPeripheral(among: restored, preferredId: preferred.identifier.uuidString)?.identifier == preferred.identifier)
-		#expect(BLETransport.focusedPeripheral(among: restored, preferredId: UUID().uuidString)?.identifier == first.identifier)
-		#expect(BLETransport.focusedPeripheral(among: [IdentifiedPeripheral](), preferredId: "") == nil)
+		#expect(BLETransport.firstPeripheral(among: restored, preferredId: preferred.identifier.uuidString)?.identifier == preferred.identifier)
+		#expect(BLETransport.firstPeripheral(among: restored, preferredId: UUID().uuidString)?.identifier == first.identifier)
+		#expect(BLETransport.firstPeripheral(among: [IdentifiedPeripheral](), preferredId: "") == nil)
 	}
 
-	@Test("A radio restored still connected is the focused one over a preferred radio still connecting")
-	func connectedRadioIsFocusedFirst() {
+	@Test("A radio restored still connected is the first one over a preferred radio still connecting")
+	func connectedRadioIsRestoredAsFirst() {
 		let preferred = IdentifiedPeripheral(identifier: UUID(), state: .connecting)
 		let connected = IdentifiedPeripheral(identifier: UUID(), state: .connected)
 		let alsoConnected = IdentifiedPeripheral(identifier: UUID(), state: .connected)
-		#expect(BLETransport.focusedPeripheral(among: [preferred, connected], preferredId: preferred.identifier.uuidString)?.identifier == connected.identifier)
-		#expect(BLETransport.focusedPeripheral(among: [connected, alsoConnected], preferredId: alsoConnected.identifier.uuidString)?.identifier == alsoConnected.identifier)
+		#expect(BLETransport.firstPeripheral(among: [preferred, connected], preferredId: preferred.identifier.uuidString)?.identifier == connected.identifier)
+		#expect(BLETransport.firstPeripheral(among: [connected, alsoConnected], preferredId: alsoConnected.identifier.uuidString)?.identifier == alsoConnected.identifier)
 	}
 
-	@Test("A standby radio that connects while the focused restore still waits takes over the restore")
+	@Test("A standby radio that connects while the first radio's restore still waits takes over the restore")
 	func standbyConnectingFirstTakesOver() async throws {
 		let peripheralA = PeripheralA.make()
 		let peripheralB = PeripheralB.make()
@@ -269,7 +269,7 @@ struct MultiRadioBLERestorationTests {
 		#expect(takenOverId.get() == PeripheralB.id)
 	}
 
-	@Test("Another radio's connect finishing doesn't end the focused restore's wait")
+	@Test("Another radio's connect finishing doesn't end the wait of the first radio's restore")
 	func restoreWaitIsPerPeripheral() async throws {
 		let peripheralA = PeripheralA.make()
 		let peripheralB = PeripheralB.make()
@@ -360,18 +360,18 @@ struct MultiRadioSessionTests {
 
 	private struct Fixture {
 		let manager: AccessoryManager
-		let focused: RadioSession
-		let focusedConnection: RecordingConnection
+		let first: RadioSession
+		let firstConnection: RecordingConnection
 	}
 
 	private func makeManager() -> Fixture {
-		let (focused, connection) = makeSession(name: "Focused", num: 0x0000_0A0A)
+		let (first, connection) = makeSession(name: "First", num: 0x0000_0A0A)
 		let manager = AccessoryManager(transports: [])
-		manager.activeConnection = focused
+		manager.activeConnection = first
 		manager.isSwitchingDevices = true
 		manager.context = PersistenceController.shared.context
 		manager.updateState(.subscribed)
-		return Fixture(manager: manager, focused: focused, focusedConnection: connection)
+		return Fixture(manager: manager, first: first, firstConnection: connection)
 	}
 
 	private func addRadio(to manager: AccessoryManager, num: Int64? = 0x0000_0B0B) -> (RadioSession, RecordingConnection) {
@@ -384,33 +384,33 @@ struct MultiRadioSessionTests {
 	@Test("An additional radio's error disconnects only that radio")
 	func errorStaysWithItsRadio() async {
 		let fixture = makeManager()
-		let manager = fixture.manager, focused = fixture.focused, focusedConnection = fixture.focusedConnection
+		let manager = fixture.manager, first = fixture.first, firstConnection = fixture.firstConnection
 		let (radio, extraConnection) = addRadio(to: manager)
 
 		await manager.didReceive(.error(AccessoryError.disconnected("lost")), from: radio)
 
-		#expect(manager.activeConnection === focused)
+		#expect(manager.activeConnection === first)
 		#expect(manager.additionalRadios.isEmpty)
 		#expect(await extraConnection.disconnects == 1)
-		#expect(await focusedConnection.disconnects == 0)
+		#expect(await firstConnection.disconnects == 0)
 	}
 
 	@Test("Late events from a disconnected additional radio are dropped")
 	func retiredSessionIsIgnored() async {
 		let fixture = makeManager()
-		let manager = fixture.manager, focused = fixture.focused, focusedConnection = fixture.focusedConnection
+		let manager = fixture.manager, first = fixture.first, firstConnection = fixture.firstConnection
 		let (radio, _) = addRadio(to: manager)
 		await manager.disconnectAdditionalRadio(radio.device.id)
 
 		await manager.didReceive(.disconnected(shouldReconnect: false), from: radio)
 		await manager.didReceive(.rssiUpdate(-30), from: radio)
 
-		#expect(manager.activeConnection === focused)
-		#expect(await focusedConnection.disconnects == 0)
-		#expect(focused.device.rssi != -30)
+		#expect(manager.activeConnection === first)
+		#expect(await firstConnection.disconnects == 0)
+		#expect(first.device.rssi != -30)
 	}
 
-	@Test("Another radio's config completion leaves the focused radio's refresh stamp alone")
+	@Test("Another radio's config completion leaves the first radio's refresh stamp alone")
 	func configCompleteGoesToTheAdditionalRadio() async {
 		let manager = makeManager().manager
 		let (radio, _) = addRadio(to: manager)
@@ -419,7 +419,7 @@ struct MultiRadioSessionTests {
 
 		await manager.didReceive(.data(fromRadio), from: radio)
 
-		// The focused radio's config-complete bookkeeping is untouched.
+		// The first radio's config-complete bookkeeping is untouched.
 		#expect(manager.lastConfigRefresh == nil)
 	}
 
@@ -450,10 +450,10 @@ struct MultiRadioSessionTests {
 		try? context.save()
 	}
 
-	@Test("A radio reporting the focused radio's number is dropped")
-	func duplicateOfFocusedIsDisconnected() async {
+	@Test("A radio reporting the first radio's number is dropped")
+	func duplicateOfFirstIsDisconnected() async {
 		let fixture = makeManager()
-		let manager = fixture.manager, focused = fixture.focused
+		let manager = fixture.manager, first = fixture.first
 		let (radio, _) = addRadio(to: manager, num: nil)
 		var myInfo = MyNodeInfo()
 		myInfo.myNodeNum = 0x0000_0A0A
@@ -463,7 +463,7 @@ struct MultiRadioSessionTests {
 		await manager.didReceive(.data(fromRadio), from: radio)
 
 		#expect(manager.additionalRadios.isEmpty)
-		#expect(manager.activeConnection === focused)
+		#expect(manager.activeConnection === first)
 	}
 
 	@Test("A dropped additional radio is reconnected; one the user disconnects is not")
@@ -493,7 +493,7 @@ struct MultiRadioSessionTests {
 		}
 		#expect(manager.connectedRadioCount == 4)
 		#expect(!manager.canConnectAnotherRadio)
-		#expect(manager.connectedRadios.first?.name == "Focused")
+		#expect(manager.connectedRadios.first?.name == "First")
 		#expect(manager.additionalRadioDevices.count == 3)
 	}
 }

@@ -29,7 +29,7 @@ extension AccessoryManager {
 
 	public func getCannedMessageModuleMessages(destNum: Int64, wantResponse: Bool) throws {
 		// Sent by the radio it's for when that's one of the connected radios (its own local admin),
-		// otherwise by the focused radio (feature 021, T071).
+		// otherwise by the first radio (feature 021, T071).
 		guard let deviceNum = (connectedSession(forRadio: destNum) ?? self.activeConnection)?.device.num else {
 			Logger.services.error("Error while sending CannedMessageModule request.  No active device.")
 			throw AccessoryError.ioFailed("No active device")
@@ -68,7 +68,7 @@ extension AccessoryManager {
 	
 	public func getRingtone(destNum: Int64, wantResponse: Bool) throws {
 		// Sent by the radio it's for when that's one of the connected radios (its own local admin),
-		// otherwise by the focused radio (feature 021, T071).
+		// otherwise by the first radio (feature 021, T071).
 		guard let deviceNum = (connectedSession(forRadio: destNum) ?? self.activeConnection)?.device.num else {
 			Logger.services.error("Error while sending RtttlConfig request.  No active device.")
 			throw AccessoryError.ioFailed("No active device")
@@ -200,7 +200,7 @@ extension AccessoryManager {
 	// Send an admin message to a radio, save a message to core data for logging
 	private func sendAdminMessageToRadio(meshPacket: MeshPacket, adminDescription: String?) async throws {
 		// Feature 021: the connected radio it goes through (`adminRoute(for:)`). With one radio
-		// that's always the focused radio, as before.
+		// that's always the first radio, as before.
 		guard let session = adminRoute(for: meshPacket) else {
 			var toRadio = ToRadio()
 			toRadio.packet = meshPacket
@@ -216,7 +216,7 @@ extension AccessoryManager {
 	}
 
 	/// Adds a shared contact to a radio. `viaRadio` picks the connected radio (feature 021); nil
-	/// means the focused radio.
+	/// means the first radio.
 	public func addContactFromURL(base64UrlString: String, viaRadio: Int64? = nil) async throws {
 		guard let session = connectedSession(forRadio: viaRadio), let deviceNum = session.device.num else {
 			Logger.services.error("Error while sending CannedMessageModule request.  No active device.")
@@ -294,7 +294,7 @@ extension AccessoryManager {
 	}
 	
 	// toConnection parameter can be used during connection process before the AccessoryManager is fully setup.
-	// `session` sends it through that radio (feature 021, T070); nil is the focused radio.
+	// `session` sends it through that radio (feature 021, T070); nil is the first radio.
 	public func sendHeartbeat(toConnection: Connection? = nil, on session: RadioSession? = nil) async throws {
 		var heartbeatToRadio: ToRadio = ToRadio()
 		var heartbeatPacket = Heartbeat()
@@ -315,7 +315,7 @@ extension AccessoryManager {
 		await (session ?? activeConnection)?.heartbeatResponseTimer?.reset(delay: .seconds(5.0))
 	}
 	
-	/// Sets the time on `session`'s radio (the focused one by default). Addressed to the radio
+	/// Sets the time on `session`'s radio (the first one by default). Addressed to the radio
 	/// itself, so the admin routing sends it over that radio's connection.
 	public func sendTime(on session: RadioSession? = nil) async throws {
 		let nodeNum = session == nil ? self.activeDeviceNum : session?.nodeNum
@@ -393,7 +393,7 @@ extension AccessoryManager {
 	}
 
 	/// Sends a text message. `viaRadio` picks the connected radio that sends it (feature 021);
-	/// nil means the focused radio.
+	/// nil means the first radio.
 	public func sendMessage(message: String, toUserNum: Int64, channel: Int32, isEmoji: Bool, replyID: Int64, viaRadio: Int64? = nil) async throws {
 		guard let sendingSession = connectedSession(forRadio: viaRadio), let fromUserNum = sendingSession.nodeNum else {
 			Logger.services.error("Error while sending CannedMessageModule request.  No active device.")
@@ -593,7 +593,7 @@ extension AccessoryManager {
 	public func resendMessage(_ message: MessageEntity) async throws {
 		// Feature 021: the same packet id only makes the same message from the same sender, so a
 		// resend goes through the radio that sent it. Rows from before the backfill use the
-		// focused radio, as before.
+		// first radio, as before.
 		let sendingRadio = message.localNodeNum ?? message.fromNum
 		guard let sendingSession = connectedSession(forRadio: sendingRadio), let fromUserNum = sendingSession.nodeNum else {
 			Logger.services.error("Error while resending a message. The radio that sent it isn't connected.")

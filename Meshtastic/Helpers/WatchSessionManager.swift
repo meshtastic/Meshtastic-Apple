@@ -133,8 +133,8 @@ final class WatchSessionManager: NSObject, ObservableObject {
 	private static let maxDistanceMeters: Double = 804.672
 
 	/// The radio picked for the Watch in App Settings (feature 021, T105), or nil to show every
-	/// node as the app does. Only an explicit choice narrows the list: "follow the focused radio"
-	/// keeps today's behaviour, since every node is already the focused radio's with one radio.
+	/// node as the app does. Only an explicit choice narrows the list: "follow the first radio"
+	/// keeps today's behaviour, since every node is already the first radio's with one radio.
 	static var watchRadio: Int64? {
 		let chosen = UserDefaults.serviceRadio(.watch)
 		return chosen == 0 ? nil : chosen

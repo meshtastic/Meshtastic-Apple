@@ -16,17 +16,17 @@ private let retryDelay: Duration = .seconds(2)
 
 /// One run of the connect steps for one radio (feature 021, T070). Holds the session Step 1
 /// makes, so every later step works on that radio's session and connection rather than on
-/// whichever radio is focused.
+/// the first radio's.
 @MainActor
 final class ConnectAttempt {
 	let device: Device
-	/// The focused radio's connect, which also does the app-wide work (preferred radio, update
+	/// The first radio's connect, which also does the app-wide work (preferred radio, update
 	/// gate, Messages snapshot, stopping discovery, stale-node prune, phone position, remembered
-	/// radios). Every connect is the focused radio's until other radios run these steps (T071).
-	let isFocused: Bool
+	/// radios). Every connect is the first radio's until other radios run these steps (T071).
+	let isFirst: Bool
 	var session: RadioSession?
 	/// This radio's connection status while it connects. The manager's `state` shows the
-	/// focused radio's (T071).
+	/// first radio's (T071).
 	var status: AccessoryManagerState = .connecting
 	/// Runs the steps. A disconnect, a heartbeat timeout or a link error cancels it.
 	var stepper: SequentialSteps?
@@ -36,9 +36,9 @@ final class ConnectAttempt {
 	/// packet, for the backfill before it joins (T230). Nil when no backfill owner is set.
 	var othersObservedBeforeJoin: Bool?
 
-	init(device: Device, isFocused: Bool = true) {
+	init(device: Device, isFirst: Bool = true) {
 		self.device = device
-		self.isFocused = isFocused
+		self.isFirst = isFirst
 	}
 
 	/// The session from Step 1. Throws if a later step runs without one.
@@ -51,8 +51,8 @@ final class ConnectAttempt {
 }
 
 extension AccessoryManager {
-	/// Connects `device` through the connect steps. `asFocused: false` connects it alongside the
-	/// focused radio (`connectAdditionalRadio`), with the same steps and without the app-wide work;
+	/// Connects `device` through the connect steps. `asFirst: false` connects it alongside the
+	/// first radio (`connectAdditionalRadio`), with the same steps and without the app-wide work;
 	/// that connect throws when it fails, and `connectTimeout` bounds its transport connect.
 	func connect(
 		to device: Device,
@@ -62,23 +62,23 @@ extension AccessoryManager {
 		versionCheck: Bool = true,
 		refreshDeviceHardwareFromAPI: Bool = false,
 		retries: Int? = nil,
-		asFocused: Bool = true,
+		asFirst: Bool = true,
 		connectTimeout: Duration? = nil
 	) async throws {
-		Logger.transport.info("AccessoryManager.connect(to: \(device.name, privacy: .public), withConnection: \(withConnection != nil), wantConfig: \(wantConfig), wantDatabase: \(wantDatabase), versionCheck: \(versionCheck), refreshDeviceHardwareFromAPI: \(refreshDeviceHardwareFromAPI), focused: \(asFocused))")
+		Logger.transport.info("AccessoryManager.connect(to: \(device.name, privacy: .public), withConnection: \(withConnection != nil), wantConfig: \(wantConfig), wantDatabase: \(wantDatabase), versionCheck: \(versionCheck), refreshDeviceHardwareFromAPI: \(refreshDeviceHardwareFromAPI), first: \(asFirst))")
 		// Prevent new connection if one is active
-		if asFocused, activeConnection != nil {
+		if asFirst, activeConnection != nil {
 			throw AccessoryError.connectionFailed("Already connected to a device")
 		}
 		// The first radio can drop while the others stay; one of them isn't connected again as
 		// the first (D-19).
-		if asFocused, additionalRadios[device.id] != nil {
+		if asFirst, additionalRadios[device.id] != nil {
 			throw AccessoryError.connectionFailed("This radio is already connected")
 		}
-		if !asFocused, additionalRadios[device.id] != nil {
+		if !asFirst, additionalRadios[device.id] != nil {
 			throw AccessoryError.connectionFailed("This radio is already connected")
 		}
-		// One connect per radio at a time, focused or not (T152). A focused connect waiting at the
+		// One connect per radio at a time, the first radio or another (T152). A connect as the first radio waiting at the
 		// handshake gate doesn't show as connecting yet, so discovery or a restore could start a
 		// second one for the same radio.
 		if let existing = connectAttempts[device.id], !existing.isCancelled {
@@ -89,7 +89,7 @@ extension AccessoryManager {
 			throw AccessoryError.connectionFailed("No transport for type")
 		}
 
-		let attempt = ConnectAttempt(device: device, isFocused: asFocused)
+		let attempt = ConnectAttempt(device: device, isFirst: asFirst)
 		connectAttempts[device.id] = attempt
 		defer {
 			if connectAttempts[device.id] === attempt {
@@ -109,20 +109,20 @@ extension AccessoryManager {
 		}
 		await handshakeGate.acquire()
 		defer { handshakeGate.release() }
-		if (asFocused && connectCancelGeneration != cancelGeneration) || attempt.isCancelled {
+		if (asFirst && connectCancelGeneration != cancelGeneration) || attempt.isCancelled {
 			updateDevice(deviceId: device.id, key: \.connectionState, value: .disconnected)
 			throw AccessoryError.connectionFailed("Connection cancelled")
 		}
-		if asFocused, activeConnection != nil {
+		if asFirst, activeConnection != nil {
 			throw AccessoryError.connectionFailed("Already connected to a device")
 		}
 		// Alongside any connected radio, the first one included or not (review V11 W2).
-		if !asFocused, !hasRadioToJoin || !canConnectAnotherRadio {
+		if !asFirst, !hasRadioToJoin || !canConnectAnotherRadio {
 			updateDevice(deviceId: device.id, key: \.connectionState, value: .disconnected)
 			throw AccessoryError.connectionFailed("No longer room for this radio")
 		}
 		
-		if attempt.isFocused {
+		if attempt.isFirst {
 			// Clear any errors and stale state from last connection
 			lastConnectionError = nil
 			firmwareUpdateRequired = false
@@ -172,7 +172,7 @@ extension AccessoryManager {
 			connectStepTimeout: connectStepTimeout
 		)
 
-		if attempt.isFocused {
+		if attempt.isFirst {
 			self.connectionStepper = attempt.stepper
 		}
 
@@ -191,11 +191,11 @@ extension AccessoryManager {
 			// Siri can name this radio now ("Make Base Station my Meshtastic radio", T320), and a
 			// second radio known makes the services in use ask for theirs (W-15).
 			ShortcutsProvider.updateAppShortcutParameters()
-			if attempt.isFocused, let focused = activeConnection, let nodeNum = focused.nodeNum {
-				await MeshPackets.shared.noteRadioConnected(nodeNum: nodeNum, transport: focused.device.transportType, autoConnect: nil)
+			if attempt.isFirst, let first = activeConnection, let nodeNum = first.nodeNum {
+				await MeshPackets.shared.noteRadioConnected(nodeNum: nodeNum, transport: first.device.transportType, autoConnect: nil)
 				await reconnectRememberedRadios()
-			} else if !attempt.isFocused, let session = attempt.session {
-				// Remembered, so it comes back next time alongside the focused radio.
+			} else if !attempt.isFirst, let session = attempt.session {
+				// Remembered, so it comes back next time alongside the first radio.
 				if let nodeNum = session.nodeNum {
 					await MeshPackets.shared.noteRadioConnected(nodeNum: nodeNum, transport: device.transportType, autoConnect: true)
 				}
@@ -206,7 +206,7 @@ extension AccessoryManager {
 			Logger.transport.error("🔗 [Connect] Error returned by connectionStepper: \(error, privacy: .public)")
 			attempt.stepper = nil
 			try await self.cleanUpAfterFailedConnect(attempt)
-			guard attempt.isFocused else {
+			guard attempt.isFirst else {
 				// The caller (the reconnect loop, the Connect tab) decides what to do next.
 				radioConnectErrors[device.id] = error
 				throw error
@@ -218,13 +218,13 @@ extension AccessoryManager {
 		
 		// All done, one way or another, clean up
 		attempt.stepper = nil
-		if attempt.isFocused {
+		if attempt.isFirst {
 			self.connectionStepper = nil
 		}
 	}
 
 	/// The connect steps for one radio (T070/T071): the same for every radio, with the app-wide
-	/// work only in the focused radio's (`attempt.isFocused`).
+	/// work only in the first radio's (`attempt.isFirst`).
 	// swiftlint:disable:next function_parameter_count
 	private func connectSteps(
 		_ attempt: ConnectAttempt,
@@ -247,7 +247,7 @@ extension AccessoryManager {
 				if retryAttempt > 0 {
 					try await self.cleanUpBeforeRetry(attempt) // clean-up before retries.
 					self.setStatus(.retrying(attempt: retryAttempt + 1, maxAttempts: retries ?? maxRetries), for: attempt)
-					if attempt.isFocused {
+					if attempt.isFirst {
 						self.allowDisconnect = true
 					}
 				} else {
@@ -272,7 +272,7 @@ extension AccessoryManager {
 					let connection: Connection
 					if let providedConnection = withConnection {
 						connection = providedConnection
-					} else if attempt.isFocused {
+					} else if attempt.isFirst {
 						connection = try await transport.connect(to: device)
 					} else {
 						connection = try await self.connectTransport(transport, to: device, within: connectTimeout)
@@ -297,7 +297,7 @@ extension AccessoryManager {
 					if let num = device.num, num != 0 {
 						self.knownNodeNums[device.id] = num
 					}
-					if attempt.isFocused {
+					if attempt.isFirst {
 						self.activeConnection = session
 						self.activeDeviceNum = device.num
 					} else {
@@ -402,9 +402,9 @@ extension AccessoryManager {
 			
 			// Step 5: Send WantConfig (database)
 			Step(timeout: .seconds(10.0), onFailure: .retryStep(attempts: 3)) { @MainActor _ in
-				// Recorded for every focused connect, a restore without a handshake too (T240): it's
-				// the focused radio either way.
-				if attempt.isFocused {
+				// Recorded for every connect as the first radio, a restore without a handshake too (T240): it's
+				// the first radio either way.
+				if attempt.isFirst {
 					Logger.transport.info("🔗 Saving preferredPeripheralId: \(device.id.uuidString)")
 					PreferredRadio.peripheralId = device.id.uuidString
 					if !wantConfig, let nodeNum = device.num {
@@ -429,7 +429,7 @@ extension AccessoryManager {
 				// Counted from here: the config handshake before it also carries the radio's own node.
 				session.databaseNodeCount = 0
 				self.setStatus(.retrievingDatabase(nodeCount: 0), for: attempt)
-				if attempt.isFocused {
+				if attempt.isFirst {
 					self.allowDisconnect = true
 				}
 
@@ -467,7 +467,7 @@ extension AccessoryManager {
 				try? await self.sendTime(on: attempt.requireSession())
 				
 				// Allow disconnect here too
-				if attempt.isFocused {
+				if attempt.isFirst {
 					self.allowDisconnect = true
 				}
 
@@ -539,7 +539,7 @@ extension AccessoryManager {
 												hardwareModel: session.device.hardwareModel,
 												nodes: session.expectedNodeDBSize,
 												connectionRestored: connectionWasRestored,
-												additionalRadio: !attempt.isFocused))
+												additionalRadio: !attempt.isFirst))
 			}
 				}
 	}
@@ -555,7 +555,7 @@ extension AccessoryManager {
 			throw AccessoryError.versionMismatch("🚨" + "Update Your Firmware".localized)
 		}
 
-		// Below-minimum firmware keeps its connection on every radio (D-17). The focused radio
+		// Below-minimum firmware keeps its connection on every radio (D-17). The first radio
 		// shows the update gate; another radio is marked as needing an update, which prompts the
 		// user by name (T073).
 		// Every radio, the first included (review V11 W5): a window that shows another radio asks
@@ -563,7 +563,7 @@ extension AccessoryManager {
 		if let session = attempt.session, let attention = firmwareAttention(for: session) {
 			setAttention(attention, for: session)
 		}
-		if attempt.isFocused {
+		if attempt.isFirst {
 			// Below-minimum firmware keeps its connection. Throwing here used to retry the
 			// whole process and then disconnect, which left the user no way to update the
 			// radio from the app. The gate in ContentView blocks everything but the
@@ -572,18 +572,18 @@ extension AccessoryManager {
 		}
 	}
 
-	/// Sets `attempt`'s status, and the manager's too when it's the focused radio's (T071).
+	/// Sets `attempt`'s status, and the manager's too when it's the first radio's (T071).
 	func setStatus(_ status: AccessoryManagerState, for attempt: ConnectAttempt) {
 		attempt.status = status
-		if attempt.isFocused {
+		if attempt.isFirst {
 			updateState(status)
 		}
 	}
 
-	/// Step 0 before a retry: the previous try's connection goes. For the focused radio that's
+	/// Step 0 before a retry: the previous try's connection goes. For the first radio that's
 	/// the whole `closeConnection()`, as before.
 	private func cleanUpBeforeRetry(_ attempt: ConnectAttempt) async throws {
-		if attempt.isFocused {
+		if attempt.isFirst {
 			try await closeConnection()
 		} else if let session = attempt.session {
 			attempt.session = nil
@@ -598,7 +598,7 @@ extension AccessoryManager {
 
 	/// After the steps gave up.
 	private func cleanUpAfterFailedConnect(_ attempt: ConnectAttempt) async throws {
-		if attempt.isFocused {
+		if attempt.isFirst {
 			try await closeConnection()
 			updateState(.discovering)
 		} else {

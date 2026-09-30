@@ -156,8 +156,8 @@ struct MultiRadioConnectLifecycleTests {
 		let manager = AccessoryManager(transports: [HangingTransport()])
 		manager.isSwitchingDevices = true
 		manager.context = PersistenceController.shared.context
-		let focusedDevice = device("Focused")
-		manager.activeConnection = RadioSession(device: focusedDevice, connection: IdleConnection())
+		let firstDevice = device("First")
+		manager.activeConnection = RadioSession(device: firstDevice, connection: IdleConnection())
 
 		let absent = device("Absent")
 		await #expect(throws: AccessoryError.self) {
@@ -242,7 +242,7 @@ struct MultiRadioConnectLifecycleTests {
 		var tcpDevice = device("Radio C")
 		tcpDevice.num = 0x0C0C
 		let manager = AccessoryManager(transports: [OneDeviceDiscoveryTransport(found: tcpDevice)])
-		manager.activeConnection = RadioSession(device: device("Focused"), connection: IdleConnection())
+		manager.activeConnection = RadioSession(device: device("First"), connection: IdleConnection())
 		let remembered = MeshPackets.RememberedRadio(nodeNum: 0x0C0C, peripheralId: tcpDevice.id.uuidString, name: "Radio C", transport: .tcp)
 
 		// Not seen yet: waited for, then brought back when discovery finds it.
@@ -299,10 +299,10 @@ struct MultiRadioConnectLifecycleTests {
 	}
 
 
-	@Test("The phone position loop keeps going for the other radios when the focused one closes")
-	func positionLoopOutlivesFocusedClose() async throws {
+	@Test("The phone position loop keeps going for the other radios when the first one closes")
+	func positionLoopOutlivesFirstClose() async throws {
 		let manager = AccessoryManager(transports: [])
-		manager.activeConnection = RadioSession(device: device("Focused"), connection: IdleConnection())
+		manager.activeConnection = RadioSession(device: device("First"), connection: IdleConnection())
 		var extra = device("Extra")
 		extra.num = 0x0B0C
 		extra.connectionState = .connected
@@ -318,13 +318,13 @@ struct MultiRadioConnectLifecycleTests {
 		#expect(manager.locationTask == nil, "with one radio it stops, as before")
 	}
 
-	@Test("A failed send to the focused radio doesn't end the position loop while other radios are connected")
-	func focusedPositionFailureKeepsLoop() async throws {
+	@Test("A failed send to the first radio doesn't end the position loop while other radios are connected")
+	func firstPositionFailureKeepsLoop() async throws {
 		let manager = AccessoryManager(transports: [])
-		var focused = device("Focused")
-		focused.num = 0x0A0B
-		focused.connectionState = .connected
-		manager.activeConnection = RadioSession(device: focused, connection: FailingConnection())
+		var first = device("First")
+		first.num = 0x0A0B
+		first.connectionState = .connected
+		manager.activeConnection = RadioSession(device: first, connection: FailingConnection())
 		// Fails whether or not the phone has a location: without one there's nothing to send.
 		await #expect(throws: (any Error).self, "with one radio it ends the loop, as before") {
 			try await manager.sharePhonePosition()
@@ -337,12 +337,12 @@ struct MultiRadioConnectLifecycleTests {
 		try await manager.sharePhonePosition()
 	}
 
-	@Test("Each radio's heartbeat timeout follows its own firmware, not the focused radio's")
+	@Test("Each radio's heartbeat timeout follows its own firmware, not the first radio's")
 	func heartbeatTimeoutPerRadio() async {
 		let manager = AccessoryManager(transports: [])
-		var focused = device("Focused")
-		focused.firmwareVersion = "2.7.15.abcdef0"
-		manager.activeConnection = RadioSession(device: focused, connection: IdleConnection())
+		var first = device("First")
+		first.firmwareVersion = "2.7.15.abcdef0"
+		manager.activeConnection = RadioSession(device: first, connection: IdleConnection())
 		var old = device("Old")
 		old.num = 0x0B0B
 		old.firmwareVersion = "2.6.11.1234567"
@@ -352,7 +352,7 @@ struct MultiRadioConnectLifecycleTests {
 		let unknownSession = RadioSession(device: unknown, connection: IdleConnection())
 
 		#expect(!manager.isVersionSupported(forVersion: "2.7.4", on: oldSession))
-		#expect(manager.isVersionSupported(forVersion: "2.7.4", on: unknownSession), "unknown is permissive, as for the focused radio")
+		#expect(manager.isVersionSupported(forVersion: "2.7.4", on: unknownSession), "unknown is permissive, as for the first radio")
 		manager.knownFirmwareVersions[0x0C0C] = "2.5.20.1234567"
 		#expect(!manager.isVersionSupported(forVersion: "2.7.4", on: unknownSession))
 
@@ -478,13 +478,13 @@ struct MultiRadioConnectLifecycleTests {
 
 	@Test("Favoriting a node reaches every connected radio, each on its own connection")
 	func favoriteOnEveryRadio() async throws {
-		let focusedNum: Int64 = 0x0A0A, extraNum: Int64 = 0x0B0B
+		let firstNum: Int64 = 0x0A0A, extraNum: Int64 = 0x0B0B
 		let manager = AccessoryManager(transports: [])
 		manager.isSwitchingDevices = true
-		let focusedConnection = IdleConnection()
-		var focusedDevice = device("Focused")
-		focusedDevice.num = focusedNum
-		manager.activeConnection = RadioSession(device: focusedDevice, connection: focusedConnection)
+		let firstConnection = IdleConnection()
+		var firstDevice = device("First")
+		firstDevice.num = firstNum
+		manager.activeConnection = RadioSession(device: firstDevice, connection: firstConnection)
 		let extraConnection = IdleConnection()
 		var extraDevice = device("Extra")
 		extraDevice.num = extraNum
@@ -494,7 +494,7 @@ struct MultiRadioConnectLifecycleTests {
 
 		try await manager.setFavorite(true, node: node)
 
-		for (connection, radioNum) in [(focusedConnection, focusedNum), (extraConnection, extraNum)] {
+		for (connection, radioNum) in [(firstConnection, firstNum), (extraConnection, extraNum)] {
 			let sent = await connection.sent
 			#expect(sent.count == 1)
 			#expect(sent.first?.packet.to == UInt32(radioNum))
@@ -505,11 +505,11 @@ struct MultiRadioConnectLifecycleTests {
 
 	@Test("A message sent via another radio goes out on that radio, as that radio")
 	func sendViaAdditionalRadio() async throws {
-		let focusedNum: Int64 = 0x0A0A, extraNum: Int64 = 0x0B0B, remoteNum: Int64 = 0x1234
+		let firstNum: Int64 = 0x0A0A, extraNum: Int64 = 0x0B0B, remoteNum: Int64 = 0x1234
 		let schema = Schema(versionedSchema: MeshtasticSchema.current)
 		let container = try ModelContainer(for: schema, configurations: ModelConfiguration("SendVia-\(UUID().uuidString)", schema: schema, isStoredInMemoryOnly: true, allowsSave: true))
 		let context = ModelContext(container)
-		for num in [focusedNum, extraNum, remoteNum] {
+		for num in [firstNum, extraNum, remoteNum] {
 			let user = UserEntity()
 			user.num = num
 			context.insert(user)
@@ -519,10 +519,10 @@ struct MultiRadioConnectLifecycleTests {
 		let manager = AccessoryManager(transports: [])
 		manager.isSwitchingDevices = true
 		manager.context = context
-		let focusedConnection = IdleConnection()
-		var focusedDevice = device("Focused")
-		focusedDevice.num = focusedNum
-		manager.activeConnection = RadioSession(device: focusedDevice, connection: focusedConnection)
+		let firstConnection = IdleConnection()
+		var firstDevice = device("First")
+		firstDevice.num = firstNum
+		manager.activeConnection = RadioSession(device: firstDevice, connection: firstConnection)
 		let extraConnection = IdleConnection()
 		var extraDevice = device("Extra")
 		extraDevice.num = extraNum
@@ -541,7 +541,7 @@ struct MultiRadioConnectLifecycleTests {
 		#expect(sent.count == 1)
 		#expect(sent.first?.packet.from == UInt32(extraNum))
 		#expect(sent.first?.packet.to == UInt32(remoteNum))
-		#expect(await focusedConnection.sent.isEmpty)
+		#expect(await firstConnection.sent.isEmpty)
 
 		let stored = try context.fetch(FetchDescriptor<MessageEntity>())
 		#expect(stored.count == 1)
@@ -557,11 +557,11 @@ struct MultiRadioConnectLifecycleTests {
 
 	@Test("An encrypted DM via another radio refreshes the contact on that radio and pins the node on both")
 	func encryptedDirectMessageFollowUpsUseTheSendingRadio() async throws {
-		let focusedNum: Int64 = 0x0A0A, extraNum: Int64 = 0x0B0B, remoteNum: Int64 = 0x7E57_0021
+		let firstNum: Int64 = 0x0A0A, extraNum: Int64 = 0x0B0B, remoteNum: Int64 = 0x7E57_0021
 		let schema = Schema(versionedSchema: MeshtasticSchema.current)
 		let container = try ModelContainer(for: schema, configurations: ModelConfiguration("SendViaPKI-\(UUID().uuidString)", schema: schema, isStoredInMemoryOnly: true, allowsSave: true))
 		let context = ModelContext(container)
-		for num in [focusedNum, extraNum] {
+		for num in [firstNum, extraNum] {
 			let user = UserEntity()
 			user.num = num
 			context.insert(user)
@@ -581,10 +581,10 @@ struct MultiRadioConnectLifecycleTests {
 		let manager = AccessoryManager(transports: [])
 		manager.isSwitchingDevices = true
 		manager.context = context
-		let focusedConnection = IdleConnection()
-		var focusedDevice = device("Focused")
-		focusedDevice.num = focusedNum
-		manager.activeConnection = RadioSession(device: focusedDevice, connection: focusedConnection)
+		let firstConnection = IdleConnection()
+		var firstDevice = device("First")
+		firstDevice.num = firstNum
+		manager.activeConnection = RadioSession(device: firstDevice, connection: firstConnection)
 		let extraConnection = IdleConnection()
 		var extraDevice = device("Extra")
 		extraDevice.num = extraNum
@@ -596,8 +596,8 @@ struct MultiRadioConnectLifecycleTests {
 		var waited = 0
 		while waited < 200 {
 			let extraCount = await extraConnection.sent.count
-			let focusedCount = await focusedConnection.sent.count
-			if extraCount >= 3 && focusedCount >= 1 { break }
+			let firstCount = await firstConnection.sent.count
+			if extraCount >= 3 && firstCount >= 1 { break }
 			try await Task.sleep(for: .milliseconds(10))
 			waited += 1
 		}
@@ -606,14 +606,14 @@ struct MultiRadioConnectLifecycleTests {
 				.compactMap { try? AdminMessage(serializedBytes: $0.packet.decoded.payload) }
 		}
 		let extraSent = await extraConnection.sent
-		let focusedSent = await focusedConnection.sent
+		let firstSent = await firstConnection.sent
 		#expect(extraSent.contains { $0.packet.decoded.portnum == .textMessageApp && $0.packet.pkiEncrypted })
 		#expect(admins(extraSent).contains { $0.addContact.nodeNum == UInt32(remoteNum) })
 		#expect(admins(extraSent).contains { $0.setFavoriteNode == UInt32(remoteNum) })
-		// The focused radio gets the pin, but not the contact or the text.
-		#expect(admins(focusedSent).contains { $0.setFavoriteNode == UInt32(remoteNum) })
-		#expect(!admins(focusedSent).contains { $0.addContact.nodeNum == UInt32(remoteNum) })
-		#expect(!focusedSent.contains { $0.packet.decoded.portnum == .textMessageApp })
+		// The first radio gets the pin, but not the contact or the text.
+		#expect(admins(firstSent).contains { $0.setFavoriteNode == UInt32(remoteNum) })
+		#expect(!admins(firstSent).contains { $0.addContact.nodeNum == UInt32(remoteNum) })
+		#expect(!firstSent.contains { $0.packet.decoded.portnum == .textMessageApp })
 	}
 }
 
@@ -658,7 +658,7 @@ struct MultiRadioRememberedTests {
 		#expect(remembered.first?.transport == .tcp)
 		#expect(await packets.rememberedRadios(excluding: [radioB]).isEmpty)
 
-		// A focused connect records the time but leaves the choice alone.
+		// A connect as the first radio records the time but leaves the choice alone.
 		await packets.noteRadioConnected(nodeNum: radioB, transport: .tcp, autoConnect: nil)
 		remembered = await packets.rememberedRadios(excluding: [])
 		#expect(remembered.map(\.nodeNum) == [radioB])

@@ -13,9 +13,10 @@ import OSLog
 
 /// Why a connected radio needs the user: a lock-down passphrase, or a firmware update.
 ///
-/// Every radio stays connected either way, like the focused radio always has (D-17). The focused
-/// radio shows the passphrase sheet or the update screen; another radio gets a prompt naming it,
-/// whose Unlock or Update focuses it (without reconnecting, T072), which shows those screens.
+/// Every radio stays connected either way, like the first radio always has (D-17). A window
+/// shows its own radio's passphrase sheet or update screen; a radio the window isn't showing gets
+/// a prompt naming it, whose Unlock opens that radio's passphrase sheet (T188) and whose Update
+/// shows the radio in a window (D-19).
 enum RadioAttention: Equatable {
 	/// Lock-down firmware, locked, and no saved passphrase unlocked it.
 	case locked
@@ -56,7 +57,8 @@ enum RadioAttention: Equatable {
 		}
 	}
 
-	/// What the prompt's button does: focus the radio, which shows its sheet or update screen.
+	/// What the prompt's button does: open the radio's passphrase sheet, or show the radio for its
+	/// update screen.
 	var actionTitle: String {
 		switch self {
 		case .locked, .unlockFailed, .needsPassphrase: return "Unlock".localized
@@ -73,14 +75,14 @@ enum RadioAttention: Equatable {
 	}
 }
 
-/// A locked radio that isn't focused, whose passphrase the user is entering (T188).
+/// A locked radio the window isn't showing, whose passphrase the user is entering (T188).
 struct RadioUnlockRequest: Identifiable, Equatable {
 	/// The radio's device id.
 	let id: UUID
 	let radioName: String
 }
 
-/// The prompt for a radio that isn't focused and needs the user (T073).
+/// The prompt for a radio the window isn't showing that needs the user (T073, T335).
 struct RadioAttentionPrompt: Identifiable, Equatable {
 	/// The radio's device id.
 	let id: UUID
@@ -90,8 +92,8 @@ struct RadioAttentionPrompt: Identifiable, Equatable {
 
 extension AccessoryManager {
 
-	/// Sets why `session`'s radio needs the user, or clears it. For a radio that isn't focused,
-	/// a new reason also prompts the user, naming the radio (`radioAttentionPrompt`).
+	/// Sets why `session`'s radio needs the user, or clears it. For a radio the window isn't
+	/// showing, a new reason also prompts the user, naming the radio (`radioAttentionPrompt`).
 	func setAttention(_ attention: RadioAttention?, for session: RadioSession) {
 		guard session.attention != attention else { return }
 		objectWillChange.send()
@@ -119,7 +121,7 @@ extension AccessoryManager {
 		}
 	}
 
-	/// After a prompt closes: the next waiting radio that still needs the user and isn't focused.
+	/// After a prompt closes: the next waiting radio that still needs the user.
 	/// A moment later, so the closing alert is gone before the next one is presented.
 	func showNextAttentionPrompt() {
 		while let next = pendingAttentionPrompts.first {
@@ -141,7 +143,7 @@ extension AccessoryManager {
 	// MARK: - Firmware (T065, T073)
 
 	/// True when `version` (from the radio's metadata) meets `minimumVersion`. Permissive without
-	/// a version, like `checkIsVersionSupported` for the focused radio.
+	/// a version, like `checkIsVersionSupported` for the first radio.
 	static func isFirmwareSupported(_ version: String?, minimum: String) -> Bool {
 		guard let version, !version.isEmpty else { return true }
 		let comparison = minimum.compare(version, options: .numeric)
@@ -149,7 +151,7 @@ extension AccessoryManager {
 	}
 
 	/// `.firmwareTooOld` when the radio's firmware is below `minimumVersion`, else nil. Connect
-	/// Step 6 sets it for a radio that isn't focused; the focused radio has the update gate.
+	/// Step 6 sets it on every radio (T335); the window showing the radio has the update gate.
 	func firmwareAttention(for session: RadioSession) -> RadioAttention? {
 		let version = session.device.firmwareVersion
 		guard !Self.isFirmwareSupported(version, minimum: minimumVersion) else { return nil }
@@ -175,9 +177,9 @@ extension AccessoryManager {
 	// MARK: - Lock-down (T065, T073, T188, T301)
 
 	/// After `session`'s coordinator took a lock-down status. Every radio's own coordinator runs
-	/// the same state machine, the focused radio's included: the saved passphrase is tried, and
+	/// the same state machine, the first radio's included: the saved passphrase is tried, and
 	/// the sheet shows when the user is needed. Here, what follows for the app:
-	/// - a radio that isn't focused and needs the user is asked about by name (`setAttention`),
+	/// - a radio the window isn't showing that needs the user is asked about by name (`setAttention`),
 	///   and its Unlock opens its own sheet (`radioUnlockRequest`);
 	/// - unlocked: that's cleared; a radio already connected alongside gets its config again (a
 	///   connect in progress carries on by itself);
@@ -185,7 +187,7 @@ extension AccessoryManager {
 	///   connect asks for the passphrase again.
 	func lockdownStateChanged(_ session: RadioSession) {
 		let state = session.lockdown.state
-		let isFocused = session === activeConnection
+		let isFirst = session === activeConnection
 		// Every radio, the first included: a window that shows another radio asks about it
 		// (review V11 W5).
 		if let attention = Self.attention(for: state) {
@@ -198,13 +200,13 @@ extension AccessoryManager {
 			if radioUnlockRequest?.id == session.device.id {
 				radioUnlockRequest = nil
 			}
-			guard !isFocused, additionalRadio(for: session) != nil, connectAttempts[session.device.id]?.session !== session else { return }
+			guard !isFirst, additionalRadio(for: session) != nil, connectAttempts[session.device.id]?.session !== session else { return }
 			Task { @MainActor [weak self] in
 				try? await self?.sendWantConfig(on: session)
 			}
 		case .lockNowAcknowledged:
 			Task { @MainActor [weak self] in
-				if isFocused {
+				if isFirst {
 					try? await self?.closeConnection()
 				} else {
 					try? await session.connection.disconnect(withError: nil, shouldReconnect: true)

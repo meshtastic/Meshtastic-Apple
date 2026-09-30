@@ -223,7 +223,7 @@ extension MeshPackets {
 			if let shown, newest < shown.addingTimeInterval(-NodeObservationEntity.currentWindow) { continue }
 			if remaining.count > 1 {
 				let firstHeard = node.firstHeard
-				NodeObservationEntity.applyAggregate(remaining, to: node, focusedRadio: PreferredRadio.nodeNum)
+				NodeObservationEntity.applyAggregate(remaining, to: node, firstRadio: PreferredRadio.nodeNum)
 				if let shown, (node.lastHeard ?? .distantPast) < shown { node.lastHeard = shown }
 				if let firstHeard, (node.firstHeard ?? .distantFuture) > firstHeard { node.firstHeard = firstHeard }
 				continue

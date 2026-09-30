@@ -243,6 +243,14 @@ describes it well enough to rebuild.
 
 ## Gotchas found so far
 
+- Since D-19 there's no focused radio. The code says "the first radio" for the one in
+  `activeConnection` (connected first, `main`'s path) and "the window's radio" for what a window
+  shows. Older notes and the review files still say "focused"; the names changed in T341:
+  `RadioWindow.focused` → `.firstRadio`, `ConnectAttempt.isFocused` → `isFirst`, `connect(to:asFocused:)`
+  → `asFirst:`, `disconnectFocusedRadio` → `disconnectFirstRadio`, `hasFocusedConnectInProgress`
+  → `hasFirstConnectInProgress`, `focusedDeviceId` → `firstDeviceId`, `BLETransport.focusedPeripheral`
+  → `firstPeripheral`, `restoreAsFocused` / `completeFocusedRestore` → `restoreAsFirst` /
+  `completeFirstRestore`, `applyAggregate(focusedRadio:)` → `firstRadio:`.
 - Schema changes: don't add a `VersionedSchema` or freeze V1 (D-16). Change the live models
   additively and keep `SchemaHistoryUpgradeTests` green. Any new unique attribute must be optional
   so existing rows migrate with NULL (proven in `MessageKeyMigrationSpikeTests`).

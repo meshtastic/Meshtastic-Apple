@@ -82,11 +82,11 @@ struct RadioSessionTests {
 		#expect(manager.activeDeviceNum == 0x1234)
 	}
 
-	/// T069: what a radio reports lives on its own session; the manager shows the focused one's.
+	/// T069: what a radio reports lives on its own session; the manager shows the first one's.
 	@Test func reportedValuesStayWithTheirRadio() {
-		let focused = makeSession()
+		let first = makeSession()
 		let other = makeSession(num: 0x0000_CAFE)
-		let manager = makeManager(active: focused)
+		let manager = makeManager(active: first)
 		var notifications = 0
 		let cancellable = manager.objectWillChange.sink { notifications += 1 }
 		defer { cancellable.cancel() }
@@ -96,9 +96,9 @@ struct RadioSessionTests {
 		#expect(other.firmwareEdition == .defcon)
 		#expect(manager.firmwareEdition == .vanilla)
 		#expect(manager.expectedNodeDBSize == nil)
-		#expect(notifications == 0, "another radio's values don't redraw the focused radio's views")
+		#expect(notifications == 0, "another radio's values don't redraw the first radio's views")
 
-		manager.update(focused, \.firmwareEdition, to: .burningMan)
+		manager.update(first, \.firmwareEdition, to: .burningMan)
 		#expect(manager.firmwareEdition == .burningMan)
 		#expect(notifications == 1)
 

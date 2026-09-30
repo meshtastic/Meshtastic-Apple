@@ -432,7 +432,7 @@ struct WindowRoutersTests {
 		let registry = WindowRouters(fallback: fallback)
 		#expect(registry.allRouters.map(ObjectIdentifier.init) == [ObjectIdentifier(fallback)])
 		let first = Router()
-		registry.register(.focused, router: first)
+		registry.register(.firstRadio, router: first)
 		let url = try #require(URL(string: "meshtastic:///messages?userNum=123&radio=456"))
 		#expect(registry.router(for: url, manager: AccessoryManager(transports: [])) === first)
 		let second = Router()

@@ -173,7 +173,7 @@ struct Notification {
 	var channel: Int32?
 	var userNum: Int64?
 	/// The radio the message came in on, when the user has more than one (feature 021). Quick
-	/// replies and tapbacks from the notification go out through it; nil means the focused radio.
+	/// replies and tapbacks from the notification go out through it; nil means the first radio.
 	var radioNum: Int64?
 	var critical: Bool = false
 	#if os(iOS)

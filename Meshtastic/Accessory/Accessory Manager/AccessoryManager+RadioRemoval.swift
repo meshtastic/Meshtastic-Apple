@@ -63,8 +63,8 @@ extension AccessoryManager {
 		clearServiceRadios(pointingAt: radioNum)
 		await refreshKnownRadios()
 		if PreferredRadio.nodeNum == radioNum {
-			if let focused = activeConnection?.device {
-				PreferredRadio.set(focused)
+			if let first = activeConnection?.device {
+				PreferredRadio.set(first)
 			} else {
 				PreferredRadio.peripheralId = ""
 				PreferredRadio.nodeNum = 0

@@ -16,7 +16,7 @@ struct IgnoreNodeButton: View {
 			guard accessoryManager.nodeNum(for: windowRadio) != nil else { return }
 			Task {
 				do {
-					// Feature 021 (D-11): on every connected radio, the focused one first.
+					// Feature 021 (D-11): on every connected radio, starting with the first radio.
 					try await accessoryManager.setIgnored(!node.ignored, node: node)
 					Task {@MainActor in
 						// CoreData Stuff
