@@ -145,6 +145,11 @@ extension AccessoryManager {
 		return radioNodeNum(for: window)
 	}
 
+	/// The device id of radio `radioNum`: its session's, or the last one it was connected on.
+	func deviceId(ofRadio radioNum: Int64) -> UUID? {
+		connectedSession(forRadio: radioNum)?.device.id ?? knownNodeNums.first { $0.value == radioNum }?.key
+	}
+
 	/// The peripheral id of `window`'s radio. For `.focused`, `PreferredRadio.peripheralId`.
 	func radioPeripheralId(for window: RadioWindow) -> String {
 		window.deviceId?.uuidString ?? PreferredRadio.peripheralId

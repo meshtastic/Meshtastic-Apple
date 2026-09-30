@@ -403,6 +403,29 @@ struct WindowRoutersTests {
 		#expect(WindowRouters.choose(windows: [], radio: 0x0A, channelRadios: nil, lastActive: nil) == nil)
 	}
 
+	@Test("A link about a radio with no window open opens its window, and goes there once it's open")
+	func opensTheRadiosWindow() throws {
+		let registry = WindowRouters(fallback: Router())
+		let manager = AccessoryManager(transports: [])
+		let radioB = UUID()
+		manager.knownNodeNums[radioB] = 456
+		let shown = Router()
+		registry.register(windowA, router: shown)
+		var opened: [RadioWindow] = []
+		registry.openWindowHandler = { opened.append($0) }
+		let url = try #require(URL(string: "meshtastic:///messages?userNum=123&radio=456"))
+
+		registry.route(url: url, manager: manager)
+		#expect(opened == [RadioWindow(deviceId: radioB)], "B's window opens (W-05)")
+		#expect(shown.selectedTab != .messages, "A's window isn't moved")
+		#expect(registry.pendingLinks[radioB] == url)
+
+		let bRouter = Router()
+		registry.register(RadioWindow(deviceId: radioB), router: bRouter)
+		#expect(bRouter.selectedTab == .messages)
+		#expect(registry.pendingLinks.isEmpty)
+	}
+
 	@Test("Windows register and leave; with one open, every link uses its router")
 	func registry() throws {
 		let fallback = Router()

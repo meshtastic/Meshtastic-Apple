@@ -45,7 +45,13 @@ struct RadioWindowOpener: ViewModifier {
 	func body(content: Content) -> some View {
 		if RadioWindows.areEnabled {
 			content
-				.onAppear(perform: openNewWindows)
+				.onAppear {
+					openNewWindows()
+					// A link about a radio whose window is hidden or closed opens it (W4).
+					AccessoryManager.shared.appState?.windows.openWindowHandler = { window in
+						openWindow(id: RadioWindows.radioWindowID, value: window)
+					}
+				}
 				.onChange(of: connectedRadios) { _, _ in openNewWindows() }
 				.onReceive(accessoryManager.radioDisconnectedByUser) { tracker.forget($0) }
 		} else {
