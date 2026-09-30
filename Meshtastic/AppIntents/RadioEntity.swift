@@ -61,8 +61,7 @@ struct SetMeshtasticRadioIntent: AppIntent {
 	}
 
 	func perform() async throws -> some IntentResult & ProvidesDialog {
-		UserDefaults.setServiceRadio(radio.nodeNum, for: .carPlay)
-		await AccessoryManager.shared.refreshShareSnapshot()
+		await AccessoryManager.shared.chooseServiceRadio(radio.nodeNum, for: .carPlay)
 		return .result(dialog: "\(radio.name) is now the radio for Siri and CarPlay.")
 	}
 }

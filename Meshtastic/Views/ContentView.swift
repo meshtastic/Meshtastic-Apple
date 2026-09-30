@@ -49,8 +49,8 @@ struct ContentView: View {
 
 	var body: some View {
 		gatedContent
-			// On the Mac the Connect window asks (T319).
-			.modifier(ServiceRadioQuestionAlertIfOneWindow())
+			// On the Mac the Connect window asks (W-15).
+			.modifier(ServiceRadioChoiceGateIfOneWindow())
 			// This window's router, which links and notification taps about its radio go to (T308).
 			.onAppear { appState.windows.register(windowRadio, router: router) }
 			.onDisappear { appState.windows.unregister(router: router) }
@@ -436,13 +436,13 @@ private struct LegacyTabContent<Content: View>: View {
 	}
 }
 
-/// The Siri and CarPlay question in the one window; on the Mac the Connect window has it.
-private struct ServiceRadioQuestionAlertIfOneWindow: ViewModifier {
+/// The services' required radio choice in the one window; on the Mac the Connect window has it.
+private struct ServiceRadioChoiceGateIfOneWindow: ViewModifier {
 	func body(content: Content) -> some View {
 		if RadioWindows.areEnabled {
 			content
 		} else {
-			content.modifier(ServiceRadioQuestionAlert())
+			content.modifier(ServiceRadioChoiceGate())
 		}
 	}
 }

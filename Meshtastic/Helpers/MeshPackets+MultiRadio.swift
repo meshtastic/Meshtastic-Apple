@@ -159,6 +159,17 @@ extension MeshPackets {
 		return (try? modelContext.fetch(descriptor))?.first?.peripheralId
 	}
 
+	/// The user's radios connected with this version (`lastConnected`), by node number: the ones
+	/// a service can be given (W-15). A merged backup's radio isn't one until it connects.
+	func radiosConnectedWithThisVersion() -> [StoredRadio] {
+		storedRadios().filter { radio in
+			let num = radio.nodeNum
+			var descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == num })
+			descriptor.fetchLimit = 1
+			return (try? modelContext.fetch(descriptor))?.first?.lastConnected != nil
+		}
+	}
+
 	/// Every radio in the store with the peripheral id it was last connected on.
 	func radioPeripheralIds() -> [(String, Int64)] {
 		((try? modelContext.fetch(FetchDescriptor<MyInfoEntity>())) ?? []).compactMap { myInfo in

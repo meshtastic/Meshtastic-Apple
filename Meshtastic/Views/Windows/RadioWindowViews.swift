@@ -165,7 +165,7 @@ struct RadioListWindow: View {
 			}
 			.navigationTitle("Radios")
 		}
-		.modifier(ServiceRadioQuestionAlert())
+		.modifier(ServiceRadioChoiceGate())
 		.onAppear {
 			accessoryManager.startDiscovery()
 			// The first-launch setup runs here on the Mac, as ContentView runs it elsewhere.

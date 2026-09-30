@@ -297,8 +297,9 @@ class AccessoryManager: ObservableObject {
 	/// The radio the one window shows (iPhone, iPad), set by `OneWindowRadioScope`: it isn't
 	/// asked about by name, since the window shows its own sheets (T314).
 	var oneWindowShownRadio: UUID?
-	/// Whether a radio that just connected should be the Siri and CarPlay radio (T319).
-	@Published var serviceRadioQuestion: ServiceRadioQuestion?
+	/// The user's radios connected with this version, for the services' radio choice (W-15).
+	/// Loaded at launch and after connects and removals (`refreshKnownRadios`).
+	@Published var knownRadios: [StoredRadio] = []
 	/// A radio the user disconnected, by device id: its window on the Mac closes (D-19, W-02).
 	let radioDisconnectedByUser = PassthroughSubject<UUID, Never>()
 	/// Each radio's firmware version as it last reported it this launch, by node number (T018):

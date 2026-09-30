@@ -8,8 +8,8 @@
 import Foundation
 import SwiftData
 
-/// A service that works through one radio (D-12, T102): the radio the user picks for it in App
-/// Settings, else the radio connected first (T321).
+/// A service that works through one radio (D-12, T102): with several radios known, the radio the
+/// user must choose for it while it's in use (W-15); with one, that radio.
 enum RadioService: String, CaseIterable, Identifiable {
 	/// The TAK bridge: CoT from TAK clients goes out through this radio.
 	case tak
@@ -39,27 +39,23 @@ enum RadioService: String, CaseIterable, Identifiable {
 	fileprivate var defaultsKey: String { "serviceRadio.\(rawValue)" }
 }
 
-/// Whether to make a radio that just connected the one Siri and CarPlay use (W-09, T319).
-struct ServiceRadioQuestion: Identifiable, Equatable {
-	/// The radio's device id.
-	let id: UUID
-	let nodeNum: Int64
-	let radioName: String
+extension RadioService {
+	/// In use, so it must have a radio chosen once two or more radios are known (W-15): TAK while
+	/// its server is on, the Watch with a paired watch that has the app, CarPlay & Siri always.
+	@MainActor
+	var isInUse: Bool {
+		switch self {
+		case .tak: return TAKServerManager.shared.enabled
+		case .watch: return WatchSessionManager.shared.isWatchAvailable
+		case .carPlay: return true
+		}
+	}
 }
 
 extension UserDefaults {
-	/// The radio chosen for `service`, 0 to follow the focused radio.
+	/// The radio chosen for `service`, 0 for none.
 	static func serviceRadio(_ service: RadioService, in store: UserDefaults = .standard) -> Int64 {
 		(store.object(forKey: service.defaultsKey) as? NSNumber)?.int64Value ?? 0
-	}
-
-	/// The radios already asked about for Siri and CarPlay (T319): each is asked once.
-	static func askedServiceRadios(in store: UserDefaults = .standard) -> Set<Int64> {
-		Set((store.array(forKey: "multiRadio.askedServiceRadios") as? [NSNumber] ?? []).map(\.int64Value))
-	}
-
-	static func setAskedServiceRadios(_ radios: Set<Int64>, in store: UserDefaults = .standard) {
-		store.set(radios.sorted().map { NSNumber(value: $0) }, forKey: "multiRadio.askedServiceRadios")
 	}
 
 	static func setServiceRadio(_ radioNum: Int64, for service: RadioService, in store: UserDefaults = .standard) {
@@ -73,22 +69,65 @@ extension UserDefaults {
 
 extension AccessoryManager {
 
-	/// The connected radio `service` uses (T321): the one chosen for it while that radio is
-	/// connected, otherwise the radio the app connected first, otherwise the one that's connected.
-	/// Nil with no radio connected. With one radio, that radio.
-	func session(for service: RadioService, store: UserDefaults = .standard) -> RadioSession? {
-		let chosen = UserDefaults.serviceRadio(service, in: store)
-		if chosen != 0, let session = connectedSession(forRadio: chosen) {
-			return session
-		}
-		return activeConnection
-			?? additionalRadios.values.first { $0.device.connectionState == .connected }
-			?? additionalRadios.values.first
+	/// Two or more of the user's radios are known (connected with this version): each service
+	/// in use then needs a radio chosen for it (W-15). With one, every service uses it, as on
+	/// `main`.
+	var hasSeveralRadios: Bool {
+		knownRadios.count > 1
 	}
 
-	/// The node number of `session(for:)`.
+	/// The radio `service` works with (W-15): with several radios known, the one chosen for it,
+	/// also while it's off (a service waits for its radio, never using another), or nil until one
+	/// is chosen; with one, the radio that's connected.
 	func radioNum(for service: RadioService, store: UserDefaults = .standard) -> Int64? {
-		session(for: service, store: store)?.nodeNum
+		guard hasSeveralRadios else {
+			return activeConnection?.nodeNum ?? additionalRadios.values.first { $0.device.connectionState == .connected }?.nodeNum
+		}
+		let chosen = UserDefaults.serviceRadio(service, in: store)
+		return chosen != 0 && knownRadios.contains { $0.nodeNum == chosen } ? chosen : nil
+	}
+
+	/// The connected session of `radioNum(for:)`: nil while that radio is off or none is chosen.
+	func session(for service: RadioService, store: UserDefaults = .standard) -> RadioSession? {
+		radioNum(for: service, store: store).flatMap { connectedSession(forRadio: $0) }
+	}
+
+	/// The services in use with no radio chosen, while several radios are known: the app asks
+	/// for them (`ServiceRadioChoiceSheet`, W-15). `inUse` is for tests.
+	func servicesNeedingRadio(store: UserDefaults = .standard, inUse: ((RadioService) -> Bool)? = nil) -> [RadioService] {
+		guard hasSeveralRadios else { return [] }
+		return RadioService.allCases.filter { (inUse?($0) ?? $0.isInUse) && radioNum(for: $0, store: store) == nil }
+	}
+
+	/// Makes `radioNum` the radio for `service`, and moves what follows it: TAK's channel, the
+	/// Watch's nodes, the Messages sharing snapshot.
+	func chooseServiceRadio(_ radioNum: Int64, for service: RadioService) {
+		let previousTAKRadio = self.radioNum(for: .tak)
+		UserDefaults.setServiceRadio(radioNum, for: service)
+		objectWillChange.send()
+		switch service {
+		case .watch: WatchSessionManager.shared.sendNodesToWatch()
+		case .tak:
+			TAKServerManager.shared.moveChannel(from: previousTAKRadio, to: self.radioNum(for: .tak))
+			TAKServerManager.shared.checkPrimaryChannelValidity()
+		case .carPlay: refreshShareSnapshot()
+		}
+	}
+
+	/// Radio `radioNum` was removed: every choice of it is cleared, so a service in use asks for
+	/// another when several radios remain (W-15).
+	func clearServiceRadios(pointingAt radioNum: Int64, store: UserDefaults = .standard) {
+		for service in RadioService.allCases where UserDefaults.serviceRadio(service, in: store) == radioNum {
+			UserDefaults.setServiceRadio(0, for: service, in: store)
+		}
+	}
+
+	/// Reloads `knownRadios` from the store: at launch, after a connect and after a removal.
+	func refreshKnownRadios() async {
+		let radios = await MeshPackets.shared.radiosConnectedWithThisVersion()
+		if radios != knownRadios {
+			knownRadios = radios
+		}
 	}
 
 	/// Refreshes the Messages sharing snapshot for the CarPlay & Siri radio, after that choice
@@ -98,43 +137,20 @@ extension AccessoryManager {
 		MeshShareSnapshotBuilder.refresh(nodeNum: radioNum, context: context)
 	}
 
-	/// Whether to ask about radio `radioNum`, just connected, for Siri and CarPlay (W-09): once
-	/// per radio, only when another of the user's radios is known (so never with one radio), and
-	/// not when it's already the one.
-	static func shouldAskAboutServiceRadio(_ radioNum: Int64, otherRadiosKnown: Bool, store: UserDefaults = .standard) -> Bool {
-		otherRadiosKnown
-			&& UserDefaults.serviceRadio(.carPlay, in: store) != radioNum
-			&& !UserDefaults.askedServiceRadios(in: store).contains(radioNum)
-	}
-
-	/// After `session`'s connect: asks, once, whether it should be the Siri and CarPlay radio.
-	/// While another radio's question is up, this one waits for its next connect.
-	func askAboutServiceRadioIfNeeded(_ session: RadioSession) async {
-		guard serviceRadioQuestion == nil, let radioNum = session.nodeNum else { return }
-		let otherRadiosKnown = await MeshPackets.shared.storedRadios().contains { $0.nodeNum != radioNum }
-		guard Self.shouldAskAboutServiceRadio(radioNum, otherRadiosKnown: otherRadiosKnown) else { return }
-		UserDefaults.setAskedServiceRadios(UserDefaults.askedServiceRadios().union([radioNum]))
-		serviceRadioQuestion = ServiceRadioQuestion(id: session.device.id, nodeNum: radioNum, radioName: session.device.longName ?? session.device.name)
-	}
-
-	/// The radio a Siri or Shortcuts command acts on (W-10, T320, T321): the one it names, else
-	/// the radio chosen for CarPlay & Siri while it's connected, else the only radio connected.
-	/// With several connected and none of those, the command asks which (`needsChoice`). A named
-	/// radio that isn't connected is never swapped for another (`notConnected`).
+	/// The radio a Siri or Shortcuts command acts on (W-10, W-15): the one it names; else, with
+	/// one radio, that radio; else the radio chosen for CarPlay & Siri. A radio named or chosen
+	/// that's off is never swapped for another (`notConnected`); with none chosen yet the command
+	/// asks which (`needsChoice`).
 	func intentRadio(_ requested: Int64?, store: UserDefaults = .standard) -> IntentRadioChoice {
 		if let requested {
 			return isRadioConnected(nodeNum: requested) ? .radio(requested) : .notConnected
 		}
-		let chosen = UserDefaults.serviceRadio(.carPlay, in: store)
-		if chosen != 0, isRadioConnected(nodeNum: chosen) {
-			return .radio(chosen)
+		guard connectedRadioCount > 0 else { return .noRadio }
+		guard hasSeveralRadios else {
+			return radioNum(for: .carPlay, store: store).map { .radio($0) } ?? .noRadio
 		}
-		let connected = connectedRadioNums
-		switch connected.count {
-		case 0: return .noRadio
-		case 1: return .radio(connected[0])
-		default: return .needsChoice
-		}
+		guard let chosen = radioNum(for: .carPlay, store: store) else { return .needsChoice }
+		return isRadioConnected(nodeNum: chosen) ? .radio(chosen) : .notConnected
 	}
 }
 

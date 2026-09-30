@@ -217,6 +217,11 @@ struct AppSettings: View {
 								await MeshPackets.shared.flushDebouncedSaves()
 								await MeshPackets.shared.clearDatabase(includeRoutes: true)
 								await AccessoryManager.shared.resetDatabaseAfterClear()
+								// No radios are known any more, so no service keeps one (W-15).
+								for service in RadioService.allCases {
+									UserDefaults.setServiceRadio(0, for: service)
+								}
+								await AccessoryManager.shared.refreshKnownRadios()
 								clearNotifications()
 								// Repopulate device catalog immediately — no reconnect happens after a full reset.
 								try? await MeshtasticAPI.shared.refreshBundledDevicesData()

@@ -59,6 +59,9 @@ extension AccessoryManager {
 		await takeRadioOffline(radioNum, reconnect: false)
 		await MeshPackets.shared.flushDebouncedSaves()
 		await MeshPackets.shared.removeRadioData(radioNum, .remove)
+		// A service that used it asks for another when several radios remain (W-15).
+		clearServiceRadios(pointingAt: radioNum)
+		await refreshKnownRadios()
 		if PreferredRadio.nodeNum == radioNum {
 			if let focused = activeConnection?.device {
 				PreferredRadio.set(focused)

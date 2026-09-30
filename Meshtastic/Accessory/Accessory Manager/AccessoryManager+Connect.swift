@@ -188,12 +188,9 @@ extension AccessoryManager {
 			}
 			// Feature 021 (T063): remember this connection, then bring back the radios that were
 			// connected alongside it. Their attempts queue on the handshake gate behind this one.
-			// Siri can name this radio now ("Make Base Station my Meshtastic radio", T320), and it's
-			// asked about once, with another radio known (T319).
+			// Siri can name this radio now ("Make Base Station my Meshtastic radio", T320), and a
+			// second radio known makes the services in use ask for theirs (W-15).
 			ShortcutsProvider.updateAppShortcutParameters()
-			if let session = attempt.session {
-				await askAboutServiceRadioIfNeeded(session)
-			}
 			if attempt.isFocused, let focused = activeConnection, let nodeNum = focused.nodeNum {
 				await MeshPackets.shared.noteRadioConnected(nodeNum: nodeNum, transport: focused.device.transportType, autoConnect: nil)
 				await reconnectRememberedRadios()
@@ -204,6 +201,7 @@ extension AccessoryManager {
 				}
 				WatchSessionManager.shared.sendNodesToWatch()
 			}
+			await refreshKnownRadios()
 		} catch {
 			Logger.transport.error("🔗 [Connect] Error returned by connectionStepper: \(error, privacy: .public)")
 			attempt.stepper = nil

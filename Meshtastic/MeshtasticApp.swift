@@ -158,7 +158,10 @@ struct MeshtasticAppleApp: App {
 			BackfillOwner.recordIfNeeded()
 			let manager = accessoryManager
 			// Each radio's node number, for a window whose radio isn't connected yet (review V11 W7).
-			Task { @MainActor in await manager.seedKnownNodeNums() }
+			Task { @MainActor in
+				await manager.seedKnownNodeNums()
+				await manager.refreshKnownRadios()
+			}
 			let mergesBackups = NodeBackupManager.shared.unmergedBackups.contains(where: { ($0.mergeAttempts ?? 0) < NodeBackupManager.maxMergeAttempts })
 			Task { @MainActor in
 				let packets = MeshPackets.shared
