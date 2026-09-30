@@ -89,13 +89,14 @@ extension AccessoryManager {
 	/// What the one window shows (iPhone, iPad; W-04), given the radio the user last picked
 	/// (`stored`): that radio while it's connected, connecting or being brought back; otherwise the
 	/// radio the app connects first (`.firstRadio`), or, when the user disconnected that one and
-	/// another is still connected, the other one.
+	/// another is still connected, the other one. A first radio released for a firmware update is
+	/// still shown.
 	func oneWindowRadio(stored: UUID?) -> RadioWindow {
 		if let stored, stored != activeConnection?.device.id,
 		   isRadioConnected(stored) || connectAttempts[stored] != nil || additionalRadioReconnects[stored] != nil {
 			return RadioWindow(deviceId: stored)
 		}
-		if activeConnection == nil, userRequestedConnectionCancellation,
+		if activeConnection == nil, userRequestedConnectionCancellation, !firstRadioReleasedForUpdate,
 		   let other = additionalRadios.values.first(where: { $0.device.connectionState == .connected }) {
 			return RadioWindow(deviceId: other.device.id)
 		}

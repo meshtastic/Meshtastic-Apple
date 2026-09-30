@@ -310,6 +310,24 @@ struct MultiRadioConnectFlowTests {
 		#expect(disconnected.isEmpty, "the first radio's window stays too")
 	}
 
+	@Test("The one window stays on the first radio while it's released for an update; a Disconnect still shows the other")
+	func updateKeepsTheOneWindow() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let radios = try await connectTwoRadios()
+		let manager = radios.manager
+
+		try await manager.releaseRadioForUpdate(radios.firstDevice.id)
+		#expect(manager.activeConnection == nil)
+		#expect(manager.additionalRadios[radios.secondDevice.id] != nil, "the other stays connected")
+		#expect(manager.oneWindowRadio(stored: nil) == .firstRadio, "not switched to the other radio")
+		#expect(manager.oneWindowRadio(stored: radios.firstDevice.id) == .firstRadio)
+
+		try await manager.disconnect()
+		#expect(manager.oneWindowRadio(stored: nil) == RadioWindow(deviceId: radios.secondDevice.id), "the user's Disconnect")
+		await manager.disconnectRadio(radios.secondDevice.id)
+	}
+
 	@Test("The app's own connect work runs for a radio connected with no other")
 	func onlyConnectedRadio() async throws {
 		let saved = SavedDefaults()

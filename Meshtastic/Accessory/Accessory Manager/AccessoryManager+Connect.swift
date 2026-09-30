@@ -132,6 +132,7 @@ extension AccessoryManager {
 
 			self.allowDisconnect = true
 			self.userRequestedConnectionCancellation = false
+			firstRadioReleasedForUpdate = false
 		} else {
 			radioConnectErrors.removeValue(forKey: device.id)
 		}

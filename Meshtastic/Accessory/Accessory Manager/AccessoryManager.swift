@@ -357,6 +357,10 @@ class AccessoryManager: ObservableObject {
 	/// fresh app launch clears this.
 	var autoReconnectSuspendedForSession = false
 	var userRequestedConnectionCancellation = false
+	/// The first radio's link was closed for a firmware update, not by the user (review V12 Y2):
+	/// the one window keeps showing it rather than another radio. Cleared when it connects again
+	/// or the user disconnects.
+	var firstRadioReleasedForUpdate = false
 
 	/// True while a device switch (backup → clear → restore → connect) is in flight.
 	/// Suppresses the discovery restart in `closeConnection()` and auto-connect on
@@ -819,6 +823,7 @@ class AccessoryManager: ObservableObject {
 			if let disconnectedId, !forUpdate { radioDisconnectedByUser.send(disconnectedId) }
 		}
 		self.userRequestedConnectionCancellation = true
+		firstRadioReleasedForUpdate = forUpdate
 		connectCancelGeneration &+= 1
 		for attempt in connectAttempts.values where attempt.isFirst {
 			attempt.isCancelled = true
