@@ -412,6 +412,28 @@ struct MultiRadioConnectLifecycleTests {
 		#expect(await MeshPackets.shared.recordReception(packet: packet, radioNum: 0x7E57_00BB) == .heardByAnotherRadio)
 	}
 
+	@Test("Analyze Current Preset from another radio's window runs on that radio, not the first")
+	func currentPresetScanKeepsItsRadio() async throws {
+		let manager = AccessoryManager(transports: [])
+		var firstDevice = device("First")
+		firstDevice.num = 0x5CA1_0011
+		firstDevice.connectionState = .connected
+		manager.activeConnection = RadioSession(device: firstDevice, connection: IdleConnection())
+		manager.activeDeviceNum = firstDevice.num
+		var otherDevice = device("Other")
+		otherDevice.num = 0x5CA1_0012
+		otherDevice.connectionState = .connected
+		manager.additionalRadios[otherDevice.id] = RadioSession(device: otherDevice, connection: IdleConnection())
+		let engine = DiscoveryScanEngine()
+		engine.configure(accessoryManager: manager, modelContext: sharedModelContainer.mainContext)
+		manager.discoveryScanEngine = engine
+		await engine.startCurrentPresetScan(radio: 0x5CA1_0012)
+		#expect(engine.currentState == .dwell)
+		#expect(engine.scanRadioNum == 0x5CA1_0012)
+		await engine.stopScan()
+		manager.discoveryScanEngine = nil
+	}
+
 	@Test("A discovery scan counts its radio's copy of a packet another radio delivered first")
 	func scanCountsItsOwnCopy() async throws {
 		let manager = AccessoryManager(transports: [])

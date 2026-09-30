@@ -338,7 +338,7 @@ another radio connected, disconnecting the first radio makes that one the prefer
 presentation order both reviews flagged for the device. One commit each, full suite and a Mac build
 each time. To resume: the first unchecked item.
 
-- [ ] T350 Y1: "Analyze Current Preset" keeps its radio: `startCurrentPresetScan(radio:)` passes it to `startScan(radio:)`.
+- [X] T350 Y1: "Analyze Current Preset" keeps its radio: `startCurrentPresetScan(radio:)` passes it to `startScan(radio:)`, so from another radio's window it measures that radio's packets and never switches the first radio's channel. Verified: `MultiRadioConnectLifecycleTests.currentPresetScanKeepsItsRadio`.
 - [ ] T351 Y2: releasing the first radio for a firmware update doesn't switch the one window to another radio.
 - [ ] T352 Y3: Disconnect on the first radio with another radio connected makes that radio the preferred one, so the disconnected radio stays off at the next launch; with one radio, as on `main`.
 - [ ] T353 Y4: on the Mac, a link that names no radio, with no radio window open, opens a connected radio's window and waits for it.

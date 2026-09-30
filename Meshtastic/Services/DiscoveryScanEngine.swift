@@ -1172,7 +1172,8 @@ extension DiscoveryScanEngine {
 		// The report comes from seeded history — only dwell briefly to fold in live packets.
 		dwellDuration = Self.currentPresetScanDwell
 		Logger.discovery.info("📡 [Discovery] Starting current-preset scan on \(preset.name, privacy: .public) (seeded; \(Int(Self.currentPresetScanDwell))s dwell)")
-		await startScan()
+		// The same radio for the scan itself (review V12 Y1).
+		await startScan(radio: radio)
 	}
 
 	/// Reveals a discovered node for every node already known in SwiftData onto the map
