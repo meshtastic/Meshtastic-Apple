@@ -3185,8 +3185,9 @@ extension AccessoryManager {
 		toRadio.packet = meshPacket
 
 		let logString = String.localizedStringWithFormat("Sent User Info Exchange request from %@ to %@".localized, fromUser.longName ?? "Unknown".localized, toUser.longName ?? "Unknown".localized)
-		// On the connection of the radio it's from, the window's (feature 021).
-		guard let session = connectedSession(forRadio: Int64(fromUser.num)) ?? connectedSession(forRadio: nil) else {
+		// On the connection of the radio it's from, the window's (feature 021); never another radio's
+		// while that one is off (review V11 R11-3).
+		guard let session = connectedSession(forRadio: Int64(fromUser.num)) else {
 			throw AccessoryError.ioFailed("No active device")
 		}
 		try await send(toRadio, via: session, debugDescription: logString)

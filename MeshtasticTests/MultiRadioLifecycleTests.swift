@@ -693,6 +693,44 @@ struct MultiRadioConnectLifecycleTests {
 		}
 	}
 
+	@Test("Exchange User Info goes out on the radio it's from, and not through the first radio while that one is off")
+	func exchangeUserInfoOnItsRadio() async throws {
+		let firstNum: Int64 = 0x0A0A, extraNum: Int64 = 0x0B0B, remoteNum: Int64 = 0x7E57_0358, offNum: Int64 = 0x0C0C
+		let schema = Schema(versionedSchema: MeshtasticSchema.current)
+		let container = try ModelContainer(for: schema, configurations: ModelConfiguration("UserInfo-\(UUID().uuidString)", schema: schema, isStoredInMemoryOnly: true, allowsSave: true))
+		let context = ModelContext(container)
+		var users: [Int64: UserEntity] = [:]
+		for num in [extraNum, remoteNum, offNum] {
+			let user = UserEntity()
+			user.num = num
+			context.insert(user)
+			users[num] = user
+		}
+		try context.save()
+
+		let manager = AccessoryManager(transports: [])
+		manager.isSwitchingDevices = true
+		manager.context = context
+		let firstConnection = IdleConnection()
+		var firstDevice = device("First")
+		firstDevice.num = firstNum
+		manager.activeConnection = RadioSession(device: firstDevice, connection: firstConnection)
+		let extraConnection = IdleConnection()
+		var extraDevice = device("Extra")
+		extraDevice.num = extraNum
+		manager.additionalRadios[extraDevice.id] = RadioSession(device: extraDevice, connection: extraConnection)
+		let remote = try #require(users[remoteNum])
+
+		_ = try await manager.exchangeUserInfo(fromUser: try #require(users[extraNum]), toUser: remote)
+		#expect(await extraConnection.sent.count == 1)
+		#expect(await firstConnection.sent.isEmpty)
+
+		await #expect(throws: AccessoryError.self, "its radio is off") {
+			_ = try await manager.exchangeUserInfo(fromUser: try #require(users[offNum]), toUser: remote)
+		}
+		#expect(await firstConnection.sent.isEmpty, "never through another radio")
+	}
+
 	@Test("An encrypted DM via another radio refreshes the contact on that radio and pins the node on both")
 	func encryptedDirectMessageFollowUpsUseTheSendingRadio() async throws {
 		let firstNum: Int64 = 0x0A0A, extraNum: Int64 = 0x0B0B, remoteNum: Int64 = 0x7E57_0021

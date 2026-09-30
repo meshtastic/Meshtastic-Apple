@@ -346,7 +346,7 @@ each time. To resume: the first unchecked item.
 - [X] T355 R11-2: Client History goes out on the connection of the radio it's from, on that radio's slot (`channelSlot(toReach:fromRadio:)`), and fails when that radio isn't connected. Verified: `MultiRadioConnectLifecycleTests.clientHistoryOnItsRadio`.
 - [X] T356 R11-3: a DM's radios always include the window's radio, so with it off a reply fails rather than going from another radio, and its own (possibly empty) thread shows (`DirectMessageQuery.conversationRadios`). One radio's conversation is unchanged. Verified: `DirectMessageQueryTests.conversationRadios`.
 - [X] T357 R11-3: the metadata request checks the radio it's sent from, not the first radio's flag, so Node Detail's metadata button and Settings' node pick work in another radio's window with the first radio gone; with no radio named (the RX/TX light), as before. Verified: `MultiRadioConnectLifecycleTests.metadataFromItsRadio`.
-- [ ] T358 R11-3: Exchange User Info fails when its radio isn't connected instead of using the first radio.
+- [X] T358 R11-3: Exchange User Info fails when its radio isn't connected instead of using the first radio (the button shows its failure alert). Verified: `MultiRadioConnectLifecycleTests.exchangeUserInfoOnItsRadio`.
 - [ ] T359 Device checks in both reviews: the one window's sheets, covers and alerts come up one at a time: the Choose Radios sheet waits for the others, the attention alert waits for it.
 
 ## Phase 10: Hardening
