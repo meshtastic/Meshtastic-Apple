@@ -100,11 +100,15 @@ struct ServiceRadioChoiceSheet: View {
 /// A view presents one sheet, cover or alert at a time, and one asked for while another is up can
 /// be lost (T359). So the sheet waits while `waits` says something else of the view is up, and
 /// comes up a moment after it closes; `isUp` tells the view it's up until it has closed, so what
-/// waits for it comes after, and `onClose` runs then.
+/// waits for it comes after, and `onClose` runs then. A sheet asked for that doesn't come up (a
+/// sheet opened further in is up) doesn't hold the others back: it's let go and asked for again
+/// (review V12 R12-1).
 struct ServiceRadioChoiceGate: ViewModifier {
 	@ObservedObject private var accessoryManager = AccessoryManager.shared
 	@ObservedObject private var tak = TAKServerManager.shared
 	@State private var isShowing = false
+	/// The sheet last asked for came up.
+	@State private var hasAppeared = false
 	@State private var isWaiting = false
 	var waits: Bool
 	@Binding var isUp: Bool
@@ -128,11 +132,9 @@ struct ServiceRadioChoiceGate: ViewModifier {
 				isWaiting = waiting
 				update(needsChoice: needsChoice)
 			}
-			.sheet(isPresented: $isShowing, onDismiss: {
-				isUp = false
-				onClose()
-			}) {
+			.sheet(isPresented: $isShowing, onDismiss: release) {
 				ServiceRadioChoiceSheet()
+					.onAppear { hasAppeared = true }
 			}
 	}
 
@@ -140,6 +142,10 @@ struct ServiceRadioChoiceGate: ViewModifier {
 	/// moment later so what just closed is gone first (as the attention prompts do).
 	private func update(needsChoice: Bool) {
 		guard needsChoice else {
+			// Chosen elsewhere (App Settings) while a sheet asked for hadn't come up.
+			if isShowing, !hasAppeared {
+				release()
+			}
 			isShowing = false
 			return
 		}
@@ -147,8 +153,23 @@ struct ServiceRadioChoiceGate: ViewModifier {
 		Task { @MainActor in
 			try? await Task.sleep(for: .milliseconds(600))
 			guard !isShowing, !isWaiting, !accessoryManager.servicesNeedingRadio().isEmpty else { return }
+			hasAppeared = false
 			isUp = true
 			isShowing = true
+			// Not shown while a sheet opened further in is up, and not shown later either: let the
+			// others go, and ask again in a moment (review V12 R12-1).
+			try? await Task.sleep(for: .seconds(2))
+			guard !hasAppeared else { return }
+			isShowing = false
+			release()
+			try? await Task.sleep(for: .seconds(2))
+			update(needsChoice: !accessoryManager.servicesNeedingRadio().isEmpty)
 		}
+	}
+
+	/// The sheet is no longer up, or never came up: what waited for it can come.
+	private func release() {
+		isUp = false
+		onClose()
 	}
 }
