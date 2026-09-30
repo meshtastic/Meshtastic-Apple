@@ -102,7 +102,8 @@ final class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
 	// MARK: - Confirmation
 
 	func confirm(intent: INSendMessageIntent) async -> INSendMessageIntentResponse {
-		let connected = await AccessoryManager.shared.isConnected
+		// Any radio connected (review V10 R10-5): the one it goes through is checked in handle.
+		let connected = await AccessoryManager.shared.connectedRadioCount > 0
 		guard connected else {
 			return INSendMessageIntentResponse(code: .failureRequiringAppLaunch, userActivity: nil)
 		}
@@ -112,7 +113,7 @@ final class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
 	// MARK: - Handling
 
 	func handle(intent: INSendMessageIntent) async -> INSendMessageIntentResponse {
-		let connected = await AccessoryManager.shared.isConnected
+		let connected = await AccessoryManager.shared.connectedRadioCount > 0
 		guard connected else {
 			return INSendMessageIntentResponse(code: .failureRequiringAppLaunch, userActivity: nil)
 		}
@@ -121,8 +122,16 @@ final class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
 			return INSendMessageIntentResponse(code: .failure, userActivity: nil)
 		}
 
-		// Feature 021 (T104): the radio chosen for CarPlay & Siri, the focused radio by default.
-		let carPlayRadio = await AccessoryManager.shared.radioNum(for: .carPlay)
+		// Feature 021 (T104, W-15): the radio chosen for CarPlay & Siri, or with one radio that one.
+		// It's never swapped for another: while it's off, or not chosen yet (the app asks), a send
+		// that needs it fails (review V10 R10-5).
+		let defaultRadio: Int64?
+		if case .radio(let radioNum) = await AccessoryManager.shared.intentRadio(nil) {
+			defaultRadio = radioNum
+		} else {
+			defaultRadio = nil
+		}
+		let noDefaultRadio = INSendMessageIntentResponse(code: .failureRequiringAppLaunch, userActivity: nil)
 		do {
 			if let conversationId = intent.conversationIdentifier,
 			   let conversation = IntentMessageConverters.conversation(fromIdentifier: conversationId),
@@ -152,7 +161,7 @@ final class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
 					return INSendMessageIntentResponse(code: .failure, userActivity: nil)
 				}
 				// A channel only another radio has goes out through that radio, on its slot.
-				let viaRadio = slot.radioNum ?? carPlayRadio
+				guard let viaRadio = slot.radioNum ?? defaultRadio else { return noDefaultRadio }
 				if let other = slot.radioNum, await !AccessoryManager.shared.isRadioConnected(nodeNum: other) {
 					Logger.services.error("CarPlay/Siri: \(groupName.spokenPhrase, privacy: .public) is on a radio that isn't connected")
 					return INSendMessageIntentResponse(code: .failure, userActivity: nil)
@@ -172,34 +181,37 @@ final class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
 				// "channel-<N>". Route by it — before this, the reply fell through to
 				// the recipient handle below, which is the message's SENDER, and the
 				// channel reply went out as a DM to that person.
+				guard let defaultRadio else { return noDefaultRadio }
 				try await AccessoryManager.shared.sendMessage(
 					message: content,
 					toUserNum: 0,
 					channel: Int32(channelIndex),
 					isEmoji: false,
 					replyID: 0,
-					viaRadio: carPlayRadio
+					viaRadio: defaultRadio
 				)
 			} else if let recipient = intent.recipients?.first,
 					  let handleValue = recipient.personHandle?.value {
 				if let channelIndex = IntentMessageConverters.channelIndex(fromHandleOrName: handleValue) {
+					guard let defaultRadio else { return noDefaultRadio }
 					try await AccessoryManager.shared.sendMessage(
 						message: content,
 						toUserNum: 0,
 						channel: Int32(channelIndex),
 						isEmoji: false,
 						replyID: 0,
-						viaRadio: carPlayRadio
+						viaRadio: defaultRadio
 					)
 				} else if let nodeNum = IntentMessageConverters.directMessageNodeNum(from: handleValue) {
 				// Direct message to a single node
+					guard let defaultRadio else { return noDefaultRadio }
 					try await AccessoryManager.shared.sendMessage(
 						message: content,
 						toUserNum: nodeNum,
 						channel: 0,
 						isEmoji: false,
 						replyID: 0,
-						viaRadio: carPlayRadio
+						viaRadio: defaultRadio
 					)
 				} else {
 					return INSendMessageIntentResponse(code: .failure, userActivity: nil)
