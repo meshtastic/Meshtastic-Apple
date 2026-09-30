@@ -331,6 +331,24 @@ time. To resume: the first unchecked item.
 - [X] T341 "Focused" is gone from the code this branch added: names and comments say "the first radio" (the one in `activeConnection`) or "the window's radio", and comments that described the focus moving say what happens now. Names only, no behaviour change; `main`'s own uses (SwiftUI focus) are untouched. The old → new names are in HANDOFF › Gotchas. Verified: iOS suite and Mac build.
 - [X] T342 D-19 (found in T341): Settings' note about the other radios named the radios other than the first one, so in B's window it said it configures B and to configure B, show it, leaving A out; it also still said "focus it". It now names the connected radios other than the window's (`otherConnectedRadios(than:)`, which the radio menu uses too) and says "show it from the Connect tab or the radio menu". Verified: `MultiRadioConnectFlowTests.windowRadioLookups`.
 
+## Review fixes after V12 (review-connections-v12.md Y1–Y4; review-data-v11.md R11-1–R11-3)
+
+All re-checked in the files and holding (2026-09-30); the owner approved, Y3 as proposed (with
+another radio connected, disconnecting the first radio makes that one the preferred radio) and the
+presentation order both reviews flagged for the device. One commit each, full suite and a Mac build
+each time. To resume: the first unchecked item.
+
+- [ ] T350 Y1: "Analyze Current Preset" keeps its radio: `startCurrentPresetScan(radio:)` passes it to `startScan(radio:)`.
+- [ ] T351 Y2: releasing the first radio for a firmware update doesn't switch the one window to another radio.
+- [ ] T352 Y3: Disconnect on the first radio with another radio connected makes that radio the preferred one, so the disconnected radio stays off at the next launch; with one radio, as on `main`.
+- [ ] T353 Y4: on the Mac, a link that names no radio, with no radio window open, opens a connected radio's window and waits for it.
+- [ ] T354 R11-1: Remove Node goes out on the window radio's own connection, and fails when it isn't connected.
+- [ ] T355 R11-2: Client History goes out on the connection of the radio it's from, on that radio's slot.
+- [ ] T356 R11-3: a DM's radios always include the window's radio, so with it off a reply fails rather than going from another radio.
+- [ ] T357 R11-3: the metadata request checks the radio it's sent from, not the first radio's flag.
+- [ ] T358 R11-3: Exchange User Info fails when its radio isn't connected instead of using the first radio.
+- [ ] T359 Device checks in both reviews: the one window's sheets, covers and alerts come up one at a time: the Choose Radios sheet waits for the others, the attention alert waits for it.
+
 ## Phase 10: Hardening
 
 - [ ] T130 Four BLE radios for 24 hours (device checklist in `HANDOFF.md`).
