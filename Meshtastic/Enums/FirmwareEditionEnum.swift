@@ -26,50 +26,50 @@ enum FirmwareEditions: Int, CaseIterable, Identifiable {
 	var name: String {
 		switch self {
 		case .vanilla:
-			return "Vanilla".localized
+			return String(localized: "Vanilla", comment: "FirmwareEditions.name")
 		case .smartCitizen:
-			return "Smart Citizen".localized
+			return String(localized: "Smart Citizen", comment: "FirmwareEditions.name")
 		case .openSauce:
-			return "Open Sauce".localized
+			return String(localized: "Open Sauce", comment: "FirmwareEditions.name")
 		case .defcon:
-			return "DEFCON".localized
+			return String(localized: "DEFCON", comment: "FirmwareEditions.name")
 		case .burningMan:
-			return "Burning Man".localized
+			return String(localized: "Burning Man", comment: "FirmwareEditions.name")
 		case .hamvention:
-			return "Hamvention".localized
+			return String(localized: "Hamvention", comment: "FirmwareEditions.name")
 		case .fab:
-			return "FAB".localized
+			return String(localized: "FAB", comment: "FirmwareEditions.name")
 		case .dragonCon:
-			return "Dragon Con".localized
+			return String(localized: "Dragon Con", comment: "FirmwareEditions.name")
 		case .ccc:
-			return "CCC".localized
+			return String(localized: "CCC", comment: "FirmwareEditions.name")
 		case .diyEdition:
-			return "DIY Edition".localized
+			return String(localized: "DIY Edition", comment: "FirmwareEditions.name")
 		}
 	}
 
 	var description: String {
 		switch self {
 		case .vanilla:
-			return "Standard Meshtastic firmware for everyday use.".localized
+			return String(localized: "Standard Meshtastic firmware for everyday use.", comment: "FirmwareEditions.description")
 		case .smartCitizen:
-			return "Firmware for the Smart Citizen environmental monitoring network.".localized
+			return String(localized: "Firmware for the Smart Citizen environmental monitoring network.", comment: "FirmwareEditions.description")
 		case .openSauce:
-			return "Event firmware for Open Sauce, the annual maker conference in California.".localized
+			return String(localized: "Event firmware for Open Sauce, the annual maker conference in California.", comment: "FirmwareEditions.description")
 		case .defcon:
-			return "Event firmware for DEFCON, the annual hacker conference in Las Vegas.".localized
+			return String(localized: "Event firmware for DEFCON, the annual hacker conference in Las Vegas.", comment: "FirmwareEditions.description")
 		case .burningMan:
-			return "Event firmware for Burning Man, the annual gathering in Black Rock Desert.".localized
+			return String(localized: "Event firmware for Burning Man, the annual gathering in Black Rock Desert.", comment: "FirmwareEditions.description")
 		case .hamvention:
-			return "Event firmware for Hamvention, the Dayton amateur radio convention.".localized
+			return String(localized: "Event firmware for Hamvention, the Dayton amateur radio convention.", comment: "FirmwareEditions.description")
 		case .fab:
-			return "Event firmware for FAB, the international Fab Lab digital fabrication conference.".localized
+			return String(localized: "Event firmware for FAB, the international Fab Lab digital fabrication conference.", comment: "FirmwareEditions.description")
 		case .dragonCon:
-			return "Event firmware for Dragon Con, the annual multigenre convention in Atlanta.".localized
+			return String(localized: "Event firmware for Dragon Con, the annual multigenre convention in Atlanta.", comment: "FirmwareEditions.description")
 		case .ccc:
-			return "Event firmware for the Chaos Communication Congress, the annual CCC hacker conference.".localized
+			return String(localized: "Event firmware for the Chaos Communication Congress, the annual CCC hacker conference.", comment: "FirmwareEditions.description")
 		case .diyEdition:
-			return "Firmware for DIY and unofficial community events.".localized
+			return String(localized: "Firmware for DIY and unofficial community events.", comment: "FirmwareEditions.description")
 		}
 	}
 

@@ -17,7 +17,7 @@ struct UserList: View {
 	@State private var editingFilters = false
 	@State private var showingHelp = false
 	@State private var showingTrustConfirm: Bool = false
-	@ObservedObject private var filters: NodeFilterParameters = .shared
+	@EnvironmentObject private var filters: NodeFilterParameters
 	@Binding var node: NodeInfoEntity?
 	@Binding var userSelection: UserEntity?
 

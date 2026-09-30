@@ -82,3 +82,19 @@ extension MetricsTableColumn: Identifiable, Hashable {
 		hasher.combine(id)
 	}
 }
+
+/// Wide or narrow cell content from the width available now. Both iPhone Duo
+/// displays report the phone idiom, so a pad check never sees the open display.
+struct MetricsColumnWidth<Regular: View, Compact: View>: View {
+	@Environment(\.horizontalSizeClass) private var horizontalSizeClass
+	@ViewBuilder var regular: () -> Regular
+	@ViewBuilder var compact: () -> Compact
+
+	var body: some View {
+		if horizontalSizeClass == .regular {
+			regular()
+		} else {
+			compact()
+		}
+	}
+}

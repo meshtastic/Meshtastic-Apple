@@ -43,7 +43,9 @@ enum MapNavigationState: Hashable {
 
 // MARK: Settings
 
-enum SettingsNavigationState: String {
+// CaseIterable so the settings-search drift test can enumerate destinations
+// instead of diffing against a hand-maintained list.
+enum SettingsNavigationState: String, CaseIterable {
 	case about
 	case appSettings
 	case routes

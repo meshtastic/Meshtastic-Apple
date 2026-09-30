@@ -2,7 +2,6 @@ import SwiftUI
 import OSLog
 
 struct RetryButton: View {
-	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 
 	let message: MessageEntity
@@ -44,34 +43,28 @@ struct RetryButton: View {
 		}
 	}
 
+	/// Sends the same message again rather than replacing it.
+	///
+	/// This used to delete the message and send a new one, which gave it a new id and a new
+	/// timestamp: the row disappeared from the conversation and a different one appeared at the
+	/// bottom. A send that threw left nothing behind at all, so the text was gone.
 	private func retryMessage() {
 		guard status.canRetry, accessoryManager.isConnected else {
 			return
 		}
 		let messageID = message.messageId
-		let payload = message.messagePayload ?? ""
-		let userNum = message.toUser?.num ?? 0
-		let channel = message.channel
-		let isEmoji = message.isEmoji
-		let replyID = message.replyID
-		context.delete(message)
-		do {
-			try context.save()
-		} catch {
-			Logger.data.error("Failed to delete message \(messageID, privacy: .public): \(error.localizedDescription, privacy: .public)")
-		}
+		let message = self.message
 		Task {
 			do {
-				try await accessoryManager.sendMessage(message: payload, toUserNum: userNum, channel: channel,
-													   isEmoji: isEmoji, replyID: replyID)
+				try await accessoryManager.resendMessage(message)
 				if case .channel = destination {
 					await MainActor.run { onMessageSent?() }
 				}
 			} catch {
-				// Best effort
-				Logger.services.warning("Failed to resend message \(messageID, privacy: .public)")
+				// The message keeps its row and its failed status, so there is something to
+				// try again on rather than a hole in the conversation.
+				Logger.services.warning("Failed to resend message \(messageID, privacy: .public): \(error.localizedDescription, privacy: .public)")
 			}
-
 		}
 	}
 }

@@ -96,7 +96,7 @@ struct ContentView: View {
 				// No-op unless launched with --marketing-capture (see MarketingCapture / PerformanceSeedData).
 				await MarketingCapture.runIfNeeded(router: router, accessoryManager: accessoryManager)
 				// No-op unless launched with `-switch-stress N` (node-switch crash harness).
-				await SwitchStress.runIfNeeded(accessoryManager: accessoryManager, appState: appState)
+				await SwitchStress.runIfNeeded(accessoryManager: accessoryManager, appState: appState, router: router)
 #endif
 			}
 	}
@@ -116,12 +116,12 @@ struct ContentView: View {
 	/// directly instead and forgoes tap-to-pop.
 	private var tabSelection: Binding<NavigationState.Tab> {
 		Binding(
-			get: { appState.router.selectedTab },
+			get: { router.selectedTab },
 			set: { newTab in
-				if newTab == appState.router.selectedTab {
-					appState.router.popToRoot(tab: newTab)
+				if newTab == router.selectedTab {
+					router.popToRoot(tab: newTab)
 				}
-				appState.router.selectedTab = newTab
+				router.selectedTab = newTab
 			}
 		)
 	}
@@ -244,7 +244,7 @@ struct ContentView: View {
 			TabView(selection: tabSelection) {
 				Tab("Messages", systemImage: "message", value: NavigationState.Tab.messages) {
 					Messages(
-						router: appState.router,
+						router: router,
 						unreadChannelMessages: $appState.unreadChannelMessages,
 						unreadDirectMessages: $appState.unreadDirectMessages
 					)
@@ -258,7 +258,7 @@ struct ContentView: View {
 				}
 
 				Tab("Map", systemImage: "map", value: NavigationState.Tab.map) {
-					MeshMapMK(router: appState.router)
+					MeshMapMK(router: router)
 						.trackScreen(NavigationState.Tab.map.screenName)
 				}
 
@@ -269,7 +269,7 @@ struct ContentView: View {
 
 				Tab("Connect", systemImage: "link", value: NavigationState.Tab.connect) {
 					Connect(
-						router: appState.router
+						router: router
 					)
 					.trackScreen(NavigationState.Tab.connect.screenName)
 				}
@@ -330,15 +330,15 @@ struct ContentView: View {
 		switch tab {
 		case .messages:
 			Messages(
-				router: appState.router,
+				router: router,
 				unreadChannelMessages: $appState.unreadChannelMessages,
 				unreadDirectMessages: $appState.unreadDirectMessages
 			)
 			.trackScreen(tab.value.screenName)
 		case .nodes: NodeList().trackScreen(tab.value.screenName)
-		case .map: MeshMapMK(router: appState.router).trackScreen(tab.value.screenName)
+		case .map: MeshMapMK(router: router).trackScreen(tab.value.screenName)
 		case .settings: Settings().trackScreen(tab.value.screenName)
-		case .connect: Connect(router: appState.router).trackScreen(tab.value.screenName)
+		case .connect: Connect(router: router).trackScreen(tab.value.screenName)
 		}
 	}
 

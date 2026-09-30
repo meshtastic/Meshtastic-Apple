@@ -389,16 +389,6 @@
 			path = Shared;
 			sourceTree = "<group>";
 		};
-		45E13146D2205510320B8EB5 /* MessageSharing */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			name = MessageSharing;
-			path = MessageSharing;
-			sourceTree = "<group>";
-		};
 		46D9EC9A9870D40B64CBD339 /* Accessory */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			explicitFileTypes = {
@@ -427,6 +417,15 @@
 			);
 			name = Enums;
 			path = Enums;
+			sourceTree = "<group>";
+		};
+		83CB79BBD726BE6611E018A7 /* Shared/MessageSharing */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = Shared/MessageSharing;
 			sourceTree = "<group>";
 		};
 		867FD80926C4A4286D635BAD /* MeshtasticTests */ = {
@@ -647,14 +646,6 @@
 			path = Transports;
 			sourceTree = "<group>";
 		};
-		5A09511A8EFEB6219741EDDB /* Shared */ = {
-			isa = PBXGroup;
-			children = (
-				45E13146D2205510320B8EB5 /* MessageSharing */,
-			);
-			path = Shared;
-			sourceTree = "<group>";
-		};
 		5D4AFA4225AF7D85EE343B80 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -757,6 +748,14 @@
 			path = Helpers;
 			sourceTree = "<group>";
 		};
+		B1164BC223065B49DA279E52 /* Message Sharing */ = {
+			isa = PBXGroup;
+			children = (
+				83CB79BBD726BE6611E018A7 /* Shared/MessageSharing */,
+			);
+			name = "Message Sharing";
+			sourceTree = "<group>";
+		};
 		B7D1F8CBD77A8C561E303582 /* Nodes */ = {
 			isa = PBXGroup;
 			children = (
@@ -783,11 +782,11 @@
 				E9F0C0CD7E869D2F9CBD57E6 /* MeshtasticMessages */,
 				867FD80926C4A4286D635BAD /* MeshtasticTests */,
 				9AE441C6AC684B0738ED364A /* MeshtasticTVUITests */,
+				B1164BC223065B49DA279E52 /* Message Sharing */,
 				8F644F7974EA8B14E77ED53A /* Packages */,
 				2A48F14E28F527FEDF8BDA62 /* research */,
 				F15A1577564640951AD3EA40 /* Settings.bundle */,
 				456E28D41A9B7B1788FEE0CD /* Shared */,
-				5A09511A8EFEB6219741EDDB /* Shared */,
 				7CF5820C55D8305FCC1F8A13 /* TV Test Support */,
 				0B1C4E352D6981242B97EF9C /* Widgets */,
 				5D4AFA4225AF7D85EE343B80 /* Products */,
@@ -989,7 +988,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				E9F0C0CD7E869D2F9CBD57E6 /* MeshtasticMessages */,
-				45E13146D2205510320B8EB5 /* MessageSharing */,
+				83CB79BBD726BE6611E018A7 /* Shared/MessageSharing */,
 			);
 			name = MeshtasticMessages;
 			packageProductDependencies = (
@@ -1391,7 +1390,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.7.23;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.TVUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
@@ -1414,7 +1413,7 @@
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.7.23;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.MeshtasticTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -1439,7 +1438,7 @@
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.7.23;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.MeshtasticTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -1642,8 +1641,8 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.7.20;
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Messages;
+				MARKETING_VERSION = 2.7.23;
+				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.MessagesExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -1726,8 +1725,8 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.7.20;
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Messages;
+				MARKETING_VERSION = 2.7.23;
+				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.MessagesExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -1815,7 +1814,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 2.7.23;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.TVUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
