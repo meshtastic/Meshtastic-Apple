@@ -276,12 +276,17 @@ extension AccessoryManager {
 			await attempt.stepper?.cancelCurrentlyExecutingStep(withError: AccessoryError.disconnected("Radio disconnected"), cancelFullProcess: true)
 		}
 		guard let session = additionalRadios.removeValue(forKey: deviceId) else {
+			// Not connected (dropped, or its connect not past Step 1): not brought back at the next
+			// launch either, by its known number (review V17 U2).
+			if byUser, !forUpdate, let nodeNum = knownNodeNums[deviceId] {
+				await MeshPackets.shared.setRadioAutoConnect(nodeNum: nodeNum, false)
+			}
 			if connectAttempts[deviceId] != nil {
 				updateDevice(deviceId: deviceId, key: \.connectionState, value: .disconnected)
 			}
 			return
 		}
-		if byUser, !forUpdate, let nodeNum = session.nodeNum {
+		if byUser, !forUpdate, let nodeNum = session.nodeNum ?? knownNodeNums[deviceId] {
 			await MeshPackets.shared.setRadioAutoConnect(nodeNum: nodeNum, false)
 		}
 		retiredAdditionalSessionIDs.insert(session.id)

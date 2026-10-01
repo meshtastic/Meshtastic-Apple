@@ -382,7 +382,7 @@ Re-checked in the files and holding (2026-10-01); the owner approved.
 Re-checked in the files and holding (2026-10-01); the owner approved.
 
 - [X] T372 U1: the stand-in restore (T371) runs only on the user's Disconnect or Remove of that radio, and only while the preferred radio is still the one it replaced or the stand-in and is still one of the user's radios. `restorePreferred(after:)`, called from `disconnectRadio` and `stopBringingBack`; `disconnect()` itself is as before T371, so Clear App Data, Restore Backup and a switch leave the flag set. Verified: `MultiRadioConnectFlowTests.cancelledStandInLeavesThePreferredRadio`, `.resetDuringAStandInKeepsTheFlag`, `.handedOnPreferredRadioStays`.
-- [ ] T373 U2: Disconnect turns off a radio's reconnect at launch by its known number when its connect doesn't know it yet.
+- [X] T373 U2: Disconnect turns off a radio's reconnect at launch by its known number when its connect doesn't know it yet: `disconnectFirstRadio` and `disconnectAdditionalRadio(byUser:)` (with or without a session) fall back to `knownNodeNums`. Verified: `MultiRadioConnectFlowTests.cancelledStandInLeavesThePreferredRadio`, `.disconnectDroppedRadioForgetsIt`.
 
 ## Phase 10: Hardening
 

@@ -1289,7 +1289,10 @@ func backupCurrentAndRestoreDatabase(
 /// (review V12 Y3); with one radio it stays the preferred one, as on `main`.
 @MainActor
 func disconnectFirstRadio(accessoryManager: AccessoryManager) async throws {
-	if let previousNum = accessoryManager.activeConnection?.nodeNum {
+	// By its known number when its connect doesn't have it yet (review V17 U2).
+	let deviceId = accessoryManager.activeConnection?.device.id
+		?? accessoryManager.connectAttempts.values.first(where: \.isFirst)?.device.id
+	if let previousNum = accessoryManager.activeConnection?.nodeNum ?? deviceId.flatMap({ accessoryManager.knownNodeNums[$0] }) {
 		await MeshPackets.shared.setRadioAutoConnect(nodeNum: previousNum, false)
 	}
 	try await accessoryManager.disconnect()

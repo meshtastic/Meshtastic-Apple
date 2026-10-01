@@ -364,7 +364,29 @@ struct MultiRadioConnectFlowTests {
 		#expect(PreferredRadio.peripheralId == radios.firstDevice.id.uuidString, "A is still the preferred radio")
 		#expect(!manager.userRequestedConnectionCancellation, "so discovery brings A back")
 		#expect(manager.standInConnect == nil)
+		// Disconnected before its connect knew its number, B isn't brought back at the next launch
+		// either (review V17 U2).
+		let secondNum = Int64(radios.secondNum)
+		let second = try PersistenceController.shared.context.fetch(FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == secondNum })).first
+		#expect(second?.autoConnect == false)
 		endDiscovery(manager)
+	}
+
+	@Test("Disconnect on a radio alongside that isn't connected turns off its reconnect at the next launch")
+	func disconnectDroppedRadioForgetsIt() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let radios = try await connectTwoRadios()
+		let manager = radios.manager
+		// B drops: it stays remembered, to come back.
+		await manager.disconnectAdditionalRadio(radios.secondDevice.id)
+		let secondNum = Int64(radios.secondNum)
+		let context = PersistenceController.shared.context
+		#expect(try context.fetch(FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == secondNum })).first?.autoConnect == true)
+
+		await manager.disconnectRadio(radios.secondDevice.id)
+		#expect(try context.fetch(FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == secondNum })).first?.autoConnect == false)
+		try await manager.disconnect()
 	}
 
 	@Test("Clear App Data or a restore during a stand-in's connect leaves nothing to reconnect, as on main")
