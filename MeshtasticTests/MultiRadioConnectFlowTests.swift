@@ -490,6 +490,14 @@ struct MultiRadioConnectFlowTests {
 		#expect(manager.oneWindowRadio(stored: nil) == .firstRadio, "not switched to the other radio")
 		#expect(manager.oneWindowRadio(stored: radios.firstDevice.id) == .firstRadio)
 
+		// The update sheet closes, whether the update worked or not, as its `releaseRadio()` does: the
+		// first radio's place isn't held any more (review V14 P4), and the window stays.
+		#expect(manager.firstRadioReleasedForUpdate)
+		manager.userRequestedConnectionCancellation = false
+		manager.reclaimRadioAfterUpdate(radios.firstDevice)
+		#expect(!manager.firstRadioReleasedForUpdate)
+		#expect(manager.oneWindowRadio(stored: nil) == .firstRadio, "still not switched")
+
 		try await manager.disconnect()
 		#expect(manager.oneWindowRadio(stored: nil) == RadioWindow(deviceId: radios.secondDevice.id), "the user's Disconnect")
 		await manager.disconnectRadio(radios.secondDevice.id)

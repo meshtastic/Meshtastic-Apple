@@ -115,9 +115,14 @@ extension AccessoryManager {
 		}
 	}
 
-	/// After a firmware update of `device`: the preferred radio comes back through discovery, as a
-	/// single radio does (the updater restarts it); another through its reconnect.
+	/// After a firmware update of `device`, done or not (its sheet closed): the preferred radio
+	/// comes back through discovery, as a single radio does (the updater restarts it); another
+	/// through its reconnect. The first radio no longer holds its place, so a radio alongside that
+	/// drops isn't held back if it doesn't come back (review V14 P4).
 	func reclaimRadioAfterUpdate(_ device: Device) {
+		if device.id.uuidString == PreferredRadio.peripheralId {
+			firstRadioReleasedForUpdate = false
+		}
 		guard device.id.uuidString != PreferredRadio.peripheralId, !isRadioConnected(device.id) else { return }
 		scheduleAdditionalRadioReconnect(device)
 	}
