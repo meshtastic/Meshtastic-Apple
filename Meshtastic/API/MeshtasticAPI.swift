@@ -274,6 +274,15 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 				}
 				if hasReleases {
 					Logger.services.debug("Firmware list unchanged (ETag match), skipping the upsert")
+					// The nightly comes from its own host and changes daily, so an unchanged
+					// release list says nothing about it.
+					if let nightlyRelease = await fetchNightlyRelease() {
+						await MainActor.run {
+							let context = container.mainContext
+							self.applyNightlyRelease(nightlyRelease, context: context)
+							try? context.save()
+						}
+					}
 					UserDefaults.lastFirmwareAPIUpdate = Date()
 					return
 				}
@@ -301,24 +310,9 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 				self.processFirmware(release: alphaRelease, releaseType: .alpha, context: context)
 			}
 
+			// Skipped when the index could not be read, or a failed fetch would empty the tab.
 			if let nightlyRelease {
-				self.processFirmware(release: nightlyRelease, releaseType: .nightly, context: context)
-
-				// Only one nightly exists at a time — the host overwrites the directory — so
-				// drop yesterday's row. Skipped when the index could not be read, or a failed
-				// fetch would empty the tab.
-				let nightlyRaw = ReleaseType.nightly.rawValue
-				let currentNightly = [nightlyRelease.id]
-				let staleNightlyDescriptor = FetchDescriptor<FirmwareReleaseEntity>(
-					predicate: #Predicate {
-						$0.releaseType == nightlyRaw && !currentNightly.contains($0.versionId)
-					}
-				)
-				if let staleNightlies = try? context.fetch(staleNightlyDescriptor) {
-					for staleNightly in staleNightlies {
-						context.delete(staleNightly)
-					}
-				}
+				self.applyNightlyRelease(nightlyRelease, context: context)
 			}
 
 			// Anything that's left in stableVersions and alphaVersions is no longer present in the API and should be deleted.
@@ -545,6 +539,26 @@ deviceEntity.architecture = device.architecture
 		return decoded
 	}
 	
+	/// Store the current nightly and drop yesterday's row: only one nightly exists at a
+	/// time, because the host overwrites it with each build.
+	@MainActor
+	private func applyNightlyRelease(_ nightlyRelease: FirmwareRelease, context: ModelContext) {
+		processFirmware(release: nightlyRelease, releaseType: .nightly, context: context)
+
+		let nightlyRaw = ReleaseType.nightly.rawValue
+		let currentNightly = [nightlyRelease.id]
+		let staleNightlyDescriptor = FetchDescriptor<FirmwareReleaseEntity>(
+			predicate: #Predicate {
+				$0.releaseType == nightlyRaw && !currentNightly.contains($0.versionId)
+			}
+		)
+		if let staleNightlies = try? context.fetch(staleNightlyDescriptor) {
+			for staleNightly in staleNightlies {
+				context.delete(staleNightly)
+			}
+		}
+	}
+
 	/// Read the nightly pointer file. Best effort on purpose: no nightly, or an
 	/// unreachable one, must not fail the stable and alpha list refresh.
 	private func fetchNightlyRelease() async -> FirmwareRelease? {

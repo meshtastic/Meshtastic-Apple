@@ -836,3 +836,50 @@ extension MeshtasticAPIBundledSeedTests {
 				"a cancelled pass must not arm the throttle — the restore is left for the next connect")
 	}
 }
+
+extension MeshtasticAPIBundledSeedTests {
+	/// The nightly is fetched from its own host and changes daily, so an unchanged firmware
+	/// list ETag must still pick up a new nightly and drop the old one.
+	@Test @MainActor func matchingFirmwareListETagStillRefreshesTheNightly() async throws {
+		let firmwareList = Data("""
+		{
+		  "releases": {
+		    "stable": [{"id": "v2.7.26.54e0d8d", "title": "Stable", "page_url": "", "zip_url": ""}],
+		    "alpha": []
+		  },
+		  "pullRequests": []
+		}
+		""".utf8)
+		func nightlyIndex(_ version: String) -> Data {
+			Data("""
+			{"version": "\(version)", "id": "v\(version)", "title": "Nightly \(version)", "commit": null}
+			""".utf8)
+		}
+		let eTagKey = "api.etag.\(MeshtasticAPI.firmwareListETagKey)"
+		UserDefaults.standard.removeObject(forKey: eTagKey)
+		defer { UserDefaults.standard.removeObject(forKey: eTagKey) }
+
+		let container = try makeContainer()
+		let api = makeAPI(container: container, startupRefresh: false)
+		let context = container.mainContext
+		func nightlyVersions() throws -> [String] {
+			let nightlyRaw = ReleaseType.nightly.rawValue
+			return try context.fetch(FetchDescriptor<FirmwareReleaseEntity>(
+				predicate: #Predicate { $0.releaseType == nightlyRaw })).map(\.versionId)
+		}
+
+		RequestRecordingURLProtocol.reset(stubs: [
+			"api.meshtastic.org/github/firmware/list": firmwareList,
+			"nightly.meshtastic.org/index.json": nightlyIndex("2.8.1.aaaaaaa")
+		], eTag: "v1")
+		try await api.refreshFirmwareAPIData()
+		#expect(try nightlyVersions() == ["v2.8.1.aaaaaaa"])
+
+		RequestRecordingURLProtocol.reset(stubs: [
+			"api.meshtastic.org/github/firmware/list": firmwareList,
+			"nightly.meshtastic.org/index.json": nightlyIndex("2.8.1.bbbbbbb")
+		], eTag: "v1")
+		try await api.refreshFirmwareAPIData()
+		#expect(try nightlyVersions() == ["v2.8.1.bbbbbbb"], "an unchanged release list must not freeze the nightly")
+	}
+}
