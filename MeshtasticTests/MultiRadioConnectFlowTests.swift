@@ -387,7 +387,25 @@ struct MultiRadioConnectFlowTests {
 		try await manager.disconnect()
 	}
 
-	@Test("A dropped radio waits rather than taking the first place during a switch, an OTA, an update of the first radio, or with another radio connected")
+	@Test("Disconnecting every radio alongside, for Clear App Data or a restore, also stops the ones being brought back")
+	func disconnectAllStopsTheDropped() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let radios = try await connectTwoRadios()
+		let manager = radios.manager
+		// B dropped and is being brought back; another radio is waited for by discovery.
+		await manager.disconnectAdditionalRadio(radios.secondDevice.id)
+		manager.scheduleAdditionalRadioReconnect(radios.secondDevice, firstDelay: .seconds(60))
+		let awaited = UUID()
+		manager.awaitedRememberedRadios.insert(awaited)
+
+		await manager.disconnectAllAdditionalRadios()
+		#expect(manager.additionalRadioReconnects.isEmpty)
+		#expect(manager.awaitedRememberedRadios.isEmpty)
+		try await manager.disconnect()
+	}
+
+	@Test("A dropped radio waits rather than taking the first place during a switch, an OTA, an update of the first radio, a store reset, or with another radio connected")
 	func droppedRadioWaitsWhenItShould() {
 		let manager = AccessoryManager(transports: [])
 		let dropped = device()
@@ -401,6 +419,11 @@ struct MultiRadioConnectFlowTests {
 		manager.firstRadioReleasedForUpdate = true
 		#expect(!manager.mayConnectAsFirst(dropped))
 		manager.firstRadioReleasedForUpdate = false
+		manager.appState = AppState(router: Router())
+		manager.appState.isDatabaseResetting = true
+		#expect(!manager.mayConnectAsFirst(dropped), "not while the store is replaced")
+		manager.appState.isDatabaseResetting = false
+		#expect(manager.mayConnectAsFirst(dropped))
 		var other = device()
 		other.num = 0x0A0A
 		manager.additionalRadios[other.id] = RadioSession(device: other, connection: ScriptedRadio(nodeNum: 0x0A0A))

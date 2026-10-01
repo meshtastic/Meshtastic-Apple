@@ -285,10 +285,18 @@ extension AccessoryManager {
 		Logger.transport.info("🔗➖ [Additional] Disconnected \(session.device.name, privacy: .public); \(self.connectedRadioCount) radios connected")
 	}
 
+	/// Disconnects every radio alongside the first, and stops bringing back the ones that dropped
+	/// or are connecting: their reconnect loops, their connects in progress, and the remembered
+	/// radios discovery waits for (review V14 P2). For Clear App Data and Restore Backup, which
+	/// replace the store, so nothing may connect into it meanwhile.
 	func disconnectAllAdditionalRadios() async {
-		for deviceId in Array(additionalRadios.keys) {
+		let radios = Set(additionalRadios.keys)
+			.union(additionalRadioReconnects.keys)
+			.union(connectAttempts.values.filter { !$0.isFirst }.map(\.device.id))
+		for deviceId in radios {
 			await disconnectAdditionalRadio(deviceId, byUser: true)
 		}
+		awaitedRememberedRadios.removeAll()
 	}
 
 	// MARK: - Reconnect (T063)
@@ -356,11 +364,12 @@ extension AccessoryManager {
 
 	/// Whether a radio alongside that dropped may come back as the first radio (review V13 Z1):
 	/// nothing else is connected or connecting, so it has no radio to join, and nothing is
-	/// connecting it already. Not during a device switch or an OTA, or while the first radio is out
-	/// for a firmware update, whose place that is. The caller checks that discovery sees it.
+	/// connecting it already. Not during a device switch or an OTA, while the first radio is out
+	/// for a firmware update, whose place that is, or while the store is being replaced (review
+	/// V14 P2). The caller checks that discovery sees it.
 	func mayConnectAsFirst(_ device: Device) -> Bool {
 		!hasRadioToJoin && !isSwitchingDevices && !otaInProgress && !firstRadioReleasedForUpdate
-			&& connectAttempts[device.id] == nil
+			&& !(appState?.isDatabaseResetting ?? false) && connectAttempts[device.id] == nil
 	}
 
 	/// Connects `device`, a radio alongside that dropped with no other radio left, as the first
