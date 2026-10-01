@@ -446,7 +446,8 @@ describes it well enough to rebuild.
   (T352). With only A, Disconnect and relaunch: A connects again, as on `main`.
 - [ ] Disconnect A, keep B, then make B reboot (save a LoRa setting in B's window): B comes back on
   its own, as the first radio, and A stays off (T360). Same with A dropped and away instead: B
-  comes back, and A joins it once it's back in range.
+  comes back, and A joins it once it's back in range. On iPhone with the window set to A, it shows
+  B while B connects, then A again, reconnecting (as the launch fallback does; review V13 R13-2).
 - [ ] A (connected first) out of range for minutes: B stays as it is, the window keeps showing A as
   reconnecting (nothing takes its place, D-19), A comes back on its own when it's in range, and the
   phone's position keeps going to B meanwhile.

@@ -287,6 +287,26 @@ struct RadioRemovalTests {
 		#expect(Set(try rows(MessageEntity.self, in: container).map(\.messageId)) == [2, 4])
 	}
 
+	@Test("A removed radio's kept channel messages go to the preferred radio's slot for the channel")
+	func keptMessagesGoToThePreferredRadio() async throws {
+		let container = try makeContainer()
+		let context = ModelContext(container)
+		let radioC: Int64 = 0x0C0C_0C0C
+		// "Team" on A at slot 3, on B (the lower number) at slot 1, on C at slot 2.
+		makeRadio(radioA, channels: [3: "Team"], in: context)
+		makeRadio(radioB, channels: [1: "Team"], in: context)
+		makeRadio(radioC, channels: [2: "Team"], in: context)
+		try context.save()
+		let team = try #require(try keys(of: radioA, in: context)[3])
+		message(1, radio: radioA, slot: 3, key: team, in: context)
+		try context.save()
+
+		await MeshPackets(modelContainer: container).removeRadioData(radioA, .remove, preferredRadio: radioC)
+		let kept = try #require(try rows(MessageEntity.self, in: container).first { $0.messageId == 1 })
+		#expect(kept.localNodeNum == radioC, "the preferred radio, not the lowest number")
+		#expect(kept.channel == 2)
+	}
+
 	@Test("A channel a merged backup's radio has keeps its history, by the key stored on its channel")
 	func backupRadioSharesByStoredKey() async throws {
 		let container = try makeContainer()

@@ -57,14 +57,10 @@ extension AccessoryManager {
 	/// data as a reset with messages deleted would, then forgets it.
 	func removeRadio(_ radioNum: Int64) async {
 		await takeRadioOffline(radioNum, reconnect: false)
-		await MeshPackets.shared.flushDebouncedSaves()
-		await MeshPackets.shared.removeRadioData(radioNum, .remove)
-		// A service that used it asks for another when several radios remain (W-15).
-		clearServiceRadios(pointingAt: radioNum)
-		await refreshKnownRadios()
+		// Handed on before its data is cleaned up, so what's kept goes to the new preferred radio
+		// (review V13 R13-2): the first radio, or with it removed another connected radio, as
+		// Disconnect on the first radio does (T352, review V13 Z2).
 		if PreferredRadio.nodeNum == radioNum {
-			// The first radio, or with it removed another connected radio, as Disconnect on the
-			// first radio does (T352, review V13 Z2).
 			if let next = activeConnection?.device ?? connectedRadioAfterFirst {
 				PreferredRadio.set(next)
 			} else {
@@ -72,5 +68,10 @@ extension AccessoryManager {
 				PreferredRadio.nodeNum = 0
 			}
 		}
+		await MeshPackets.shared.flushDebouncedSaves()
+		await MeshPackets.shared.removeRadioData(radioNum, .remove)
+		// A service that used it asks for another when several radios remain (W-15).
+		clearServiceRadios(pointingAt: radioNum)
+		await refreshKnownRadios()
 	}
 }

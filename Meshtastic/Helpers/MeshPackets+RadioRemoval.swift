@@ -68,8 +68,10 @@ extension MeshPackets {
 	///   whole history, including what only this radio heard.
 	/// - A removal also deletes its `MyInfoEntity` and channels, so it is no longer one of the
 	///   user's radios and isn't reconnected, and its own node unless another radio hears it.
+	/// `preferredRadio` is the radio whose channel slots and observations come first for what
+	/// stays (the preferred radio, already handed on when this one was it, review V13 R13-2).
 	@discardableResult
-	func removeRadioData(_ radioNum: Int64, _ removal: RadioDataRemoval) -> RadioDataRemovalResult {
+	func removeRadioData(_ radioNum: Int64, _ removal: RadioDataRemoval, preferredRadio: Int64 = PreferredRadio.nodeNum) -> RadioDataRemovalResult {
 		var result = RadioDataRemovalResult()
 		let deleteMessages: Bool
 		let keepFavorites: Bool
@@ -92,7 +94,7 @@ extension MeshPackets {
 			let ownRadios = Set(myInfos.map(\.myNodeNum)).union([radioNum])
 
 			if deleteMessages {
-				result.messages = try deleteMessagesOfRadio(radioNum, keepingChannelsOf: others, moveKept: removal == .remove)
+				result.messages = try deleteMessagesOfRadio(radioNum, keepingChannelsOf: others, moveKept: removal == .remove, preferredRadio: preferredRadio)
 				try modelContext.save()
 			}
 
@@ -140,7 +142,7 @@ extension MeshPackets {
 			}
 
 			// The nodes this radio heard that stay now show the other radios' view.
-			try reaggregate(Array(heardByRadio.intersection(heardByOthers)), from: otherObservations)
+			try reaggregate(Array(heardByRadio.intersection(heardByOthers)), from: otherObservations, preferredRadio: preferredRadio)
 			try modelContext.save()
 			lookupRadiosReadAt = .distantPast
 			Logger.data.info("🗑️ [MultiRadio] Removed radio \(radioNum.toHex(), privacy: .public)'s data (\(String(describing: removal), privacy: .public)): \(result.messages) messages, \(result.nodes) nodes, \(result.observations) observations, \(result.receptions) receptions; shares a network: \(sharesNetwork)")
@@ -158,7 +160,7 @@ extension MeshPackets {
 	/// has its channel: that radio, its slot for the channel, and the key if the row had none
 	/// (T222). Left on a radio that's gone, it would show in whatever channel has its slot number
 	/// once one radio is left, or in no channel at all.
-	private func deleteMessagesOfRadio(_ radioNum: Int64, keepingChannelsOf others: Set<Int64>, moveKept: Bool = false) throws -> Int {
+	private func deleteMessagesOfRadio(_ radioNum: Int64, keepingChannelsOf others: Set<Int64>, moveKept: Bool = false, preferredRadio: Int64) throws -> Int {
 		// Keys from each radio's LoRa settings, and the keys stored on its channels: a radio only
 		// a merged backup knows has no LoRa settings in the store, but its channels keep their
 		// keys (T177).
@@ -177,7 +179,7 @@ extension MeshPackets {
 		// Where each shared channel lives on the remaining radios: the preferred radio's slot
 		// first, then the lowest radio number's.
 		var slotForKey: [String: (radio: Int64, index: Int32)] = [:]
-		let preferred = PreferredRadio.nodeNum
+		let preferred = preferredRadio
 		for other in others.sorted(by: { ($0 == preferred ? 0 : 1, $0) < ($1 == preferred ? 0 : 1, $1) }) {
 			let keys = storedKeys(of: other).merging(
 				try MultiRadioBackfill.channelKeysByIndex(for: other, in: modelContext, updateStored: false)
@@ -209,7 +211,7 @@ extension MeshPackets {
 	}
 
 	/// Rewrites the node fields of `nodeNums` from the observations left in `observations`.
-	private func reaggregate(_ nodeNums: [Int64], from observations: [NodeObservationEntity]) throws {
+	private func reaggregate(_ nodeNums: [Int64], from observations: [NodeObservationEntity], preferredRadio: Int64) throws {
 		guard !nodeNums.isEmpty else { return }
 		let byNode = Dictionary(grouping: observations, by: \.nodeNum)
 		let nodes = try modelContext.fetch(FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { nodeNums.contains($0.num) }))
@@ -223,7 +225,7 @@ extension MeshPackets {
 			if let shown, newest < shown.addingTimeInterval(-NodeObservationEntity.currentWindow) { continue }
 			if remaining.count > 1 {
 				let firstHeard = node.firstHeard
-				NodeObservationEntity.applyAggregate(remaining, to: node, firstRadio: PreferredRadio.nodeNum)
+				NodeObservationEntity.applyAggregate(remaining, to: node, firstRadio: preferredRadio)
 				if let shown, (node.lastHeard ?? .distantPast) < shown { node.lastHeard = shown }
 				if let firstHeard, (node.firstHeard ?? .distantFuture) > firstHeard { node.firstHeard = firstHeard }
 				continue
@@ -233,7 +235,7 @@ extension MeshPackets {
 				node.snr = only.snr
 				node.rssi = only.rssi
 				node.viaMqtt = only.viaMqtt
-				if only.radioNum == PreferredRadio.nodeNum { node.channel = only.channel }
+				if only.radioNum == preferredRadio { node.channel = only.channel }
 			}
 		}
 	}
