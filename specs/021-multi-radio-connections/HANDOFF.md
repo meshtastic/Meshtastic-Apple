@@ -55,7 +55,7 @@ Read this first if you are picking the work up. Update it in the same commit as 
 - Next up: the owner's device test (checklist below), which waits on hardware; don't rebuild
   Mesh Multi for it unless asked. Don't design around the focused/additional split: every radio
   works the same way (D-17). Removing the switch-era helpers (T066) waits for that test.
-- Baseline and latest: the full suite passes in the iOS Simulator (3,513 Swift Testing tests plus
+- Baseline and latest: the full suite passes in the iOS Simulator (3,514 Swift Testing tests plus
   the XCTests, about 55 seconds of test time). Run it with the simulator to itself: another
   session's test runs on the same simulator kill the test host partway.
 
@@ -105,6 +105,9 @@ Read this first if you are picking the work up. Update it in the same commit as 
   note). Nothing of the windows was run: the iOS Simulator suite and a Mac build (built, not run)
   pass; the device checklist below has what needs the owner's Mac, iPhone and Siri. Next: the
   owner's device test, then the full reviews of each area, then T122.
+- Review V15 and data V14 (2026-10-01): `review-connections-v15.md` (Q1) and `review-data-v14.md`
+  (no findings), checked in the files; Q1 held and is fixed (T370). Its device check is on the
+  checklist.
 - Review V14 and data V13 (2026-09-30): `review-connections-v14.md` (P1–P4) and
   `review-data-v13.md` (R13-1–R13-2), checked in the files; all held. Fixed one commit each
   (T363–T368 in tasks.md). P3 and R13-1 were one problem, closed for every presentation of the one
@@ -471,7 +474,8 @@ describes it well enough to rebuild.
   sheet is closed, and A's lock-down screen or B's prompt still come up afterwards (T362, T367).
   With a channel link's save sheet open, power-cycle a locked B: B's prompt comes up once the save
   sheet is closed, and if A locks meanwhile, A's lock-down screen comes after B's prompt is
-  answered (T368).
+  answered (T368). While B's prompt is on screen it stays up steadily: it doesn't close and come
+  back every few seconds (the window check has to see the alert; review V15).
 - [ ] Settings with A and B connected, in B's window: the note says these settings configure B and
   names A as the other radio (T342).
 - [ ] iPhone: with A and B connected, Connect › B › Show This Radio and the indicator's radio menu

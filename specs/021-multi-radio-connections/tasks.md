@@ -370,6 +370,12 @@ suite and a Mac build each time. To resume: the first unchecked item.
 - [X] T367 R13-1: the Choose Radios sheet is asked for only when the window shows nothing else, and keeps its turn while it's asked for again. `WindowPresentationProbe` tells whether the window presents anything, a sheet the app opened further in included; ContentView keeps `isWindowFree` from it every half second while the sheet is needed (several radios, the one window only). The gate keeps its turn (`holdsTurn`) from being asked for until it has come up and closed, or the choice is made elsewhere; one that didn't come up is asked for again once the window is free, and nothing else is asked for meanwhile. While it holds its turn, only the window being free decides its re-ask, so it and a prompt waiting for it can't wait for each other. Not unit tested (presentation); on the device checklist (T362's line).
 - [X] T368 P3: another radio's prompt and passphrase sheet, and lock-down or firmware screens held back for them, wait until the window shows nothing else, and are asked for again if they didn't come up. `OtherRadioPresentation` decides which of the passphrase sheet and the prompt is asked for (one at a time, the sheet first, only with the window free and no gate up, again if nothing came up two seconds later); ContentView checks the window every half second while something waits (`checkTurns`), and with several radios the gates also wait for a free window. With one radio, and in the Mac's radio windows, nothing changes. Verified: `OtherRadioPresentationTests` (the view wiring on the device checklist).
 
+## Review fixes after V15 (review-connections-v15.md Q1; review-data-v14.md had no findings)
+
+Re-checked in the files and holding (2026-10-01); the owner approved.
+
+- [X] T370 Q1: Remove from the stored radios list also cancels a connect of that radio as the first radio, as Disconnect does: `stopBringingBack` cancels it through `disconnect()` before clearing the radio's loop and discovery wait. Verified: `MultiRadioConnectFlowTests.removeCancelsAConnectAsFirst`.
+
 ## Phase 10: Hardening
 
 - [ ] T130 Four BLE radios for 24 hours (device checklist in `HANDOFF.md`).

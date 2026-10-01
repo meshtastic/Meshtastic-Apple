@@ -312,6 +312,26 @@ struct MultiRadioConnectFlowTests {
 		endDiscovery(manager)
 	}
 
+	@Test("Removing a radio that isn't connected cancels a connect of it as the first radio")
+	func removeCancelsAConnectAsFirst() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let num = uniqueNodeNum()
+		let manager = makeManager(ScriptedTransport(radio: ScriptedRadio(nodeNum: num)))
+		var dropped = device()
+		dropped.num = Int64(num)
+		// Its connect as the first radio waits at the handshake gate, before Step 1.
+		await manager.handshakeGate.acquire()
+		let connecting = Task { try await manager.connect(to: dropped) }
+		try await waitUntil { manager.connectAttempts[dropped.id] != nil }
+		#expect(manager.connectAttempts[dropped.id]?.isFirst == true)
+
+		await manager.stopBringingBack(Int64(num))
+		manager.handshakeGate.release()
+		_ = try? await connecting.value
+		#expect(manager.activeConnection == nil, "it doesn't connect once the gate opens")
+	}
+
 	@Test("Disconnect stops a reconnect loop of the radio it disconnects")
 	func disconnectStopsItsLoop() async throws {
 		let saved = SavedDefaults()

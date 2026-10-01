@@ -49,6 +49,11 @@ extension AccessoryManager {
 			deviceIds.insert(id)
 		}
 		for deviceId in deviceIds {
+			// A connect of it as the first radio, which discovery starts when nothing else is
+			// connected (T360), is cancelled as Disconnect cancels it (review V15 Q1).
+			if connectAttempts[deviceId]?.isFirst == true {
+				try? await disconnect()
+			}
 			await disconnectAdditionalRadio(deviceId, byUser: true)
 		}
 	}
