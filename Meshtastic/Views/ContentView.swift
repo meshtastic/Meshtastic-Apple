@@ -48,12 +48,29 @@ struct ContentView: View {
 	/// sheet, then another radio's attention alert or passphrase sheet. Each comes up once what
 	/// it waits for has closed. With one radio only the gates and onboarding are used, as before.
 	@State private var isGateUp = false
+	/// Whether this window presents nothing, a sheet the app opened further in included, while
+	/// something of its own waits to be asked for (review V13 R13-1).
+	@State private var isWindowFree = true
+	@State private var windowProbe = WindowPresentationProbe()
 	@Environment(\.scenePhase) private var scenePhase
 	@Environment(\.selectWindowRadio) private var selectWindowRadio
 
 	init(appState: AppState, router: Router) {
 		self.appState = appState
 		self.router = router
+	}
+
+	/// With several radios, the one window's own sheets, gates and prompts take turns, and wait
+	/// for the window to be free (T359, review V13 R13-1). With one radio, and in the Mac's radio
+	/// windows, they're as before.
+	private var takesTurns: Bool {
+		!RadioWindows.areEnabled && (accessoryManager.hasSeveralRadios || accessoryManager.connectedRadioCount > 1)
+	}
+
+	/// Something waits to be asked for once the window is free, so `isWindowFree` is kept up to
+	/// date meanwhile.
+	private var watchesWindow: Bool {
+		takesTurns && !accessoryManager.servicesNeedingRadio().isEmpty
 	}
 
 	/// One of the gates, onboarding or the Choose Radios sheet is asked for (T359).
@@ -82,10 +99,22 @@ struct ContentView: View {
 
 	var body: some View {
 		gatedContent
-			// On the Mac the Connect window asks (W-15). It waits for the gates and for another
-			// radio's prompt (T359).
+			.background(WindowPresentationProbeView(probe: windowProbe))
+			.task(id: watchesWindow) {
+				guard watchesWindow else {
+					isWindowFree = true
+					return
+				}
+				while !Task.isCancelled {
+					let free = !windowProbe.isPresenting
+					if isWindowFree != free { isWindowFree = free }
+					try? await Task.sleep(for: .milliseconds(500))
+				}
+			}
+			// On the Mac the Connect window asks (W-15). It waits for the window to be free, and
+			// before its turn for the gates and for another radio's prompt (T359, review V13 R13-1).
 			.modifier(ServiceRadioChoiceGateIfOneWindow(
-				waits: (isGateUp && !isChoosingServiceRadios) || isAskingAboutAnotherRadio,
+				waits: !isWindowFree || (!isChoosingServiceRadios && (isGateUp || isAskingAboutAnotherRadio)),
 				isUp: $isChoosingServiceRadios,
 				onClose: {
 					updateGates()
