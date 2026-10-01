@@ -359,6 +359,14 @@ extension AccessoryManager {
 		additionalRadioReconnects[device.id] = loop
 	}
 
+	/// See `AccessoryManager.standInConnect`.
+	struct StandInConnect {
+		let deviceId: UUID
+		let preferredId: String
+		let preferredNum: Int64
+		let userCancelled: Bool
+	}
+
 	/// A reconnect loop's own task, set as it's created.
 	private final class ReconnectLoopHandle {
 		var task: Task<Void, Never>?
@@ -383,6 +391,17 @@ extension AccessoryManager {
 	/// is remembered so it joins when it's back. A connect that fails leaves its reconnect loop to
 	/// try again.
 	func connectAsFirst(_ device: Device) async {
+		// Claimed before any wait, so two tries at once don't overwrite each other's record.
+		guard standInConnect == nil, mayConnectAsFirst(device) else { return }
+		standInConnect = StandInConnect(
+			deviceId: device.id,
+			preferredId: PreferredRadio.peripheralId,
+			preferredNum: PreferredRadio.nodeNum,
+			userCancelled: userRequestedConnectionCancellation
+		)
+		defer {
+			if standInConnect?.deviceId == device.id { standInConnect = nil }
+		}
 		let preferredNum = PreferredRadio.nodeNum
 		if !userRequestedConnectionCancellation, preferredNum > 0, PreferredRadio.peripheralId != device.id.uuidString {
 			await MeshPackets.shared.setRadioAutoConnect(nodeNum: preferredNum, true)

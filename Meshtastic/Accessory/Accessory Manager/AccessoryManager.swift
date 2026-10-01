@@ -361,6 +361,11 @@ class AccessoryManager: ObservableObject {
 	/// the one window keeps showing it rather than another radio. Cleared when it connects again
 	/// or the user disconnects.
 	var firstRadioReleasedForUpdate = false
+	/// A radio alongside connecting as the first radio in the preferred radio's place (T360), with
+	/// the preferred radio and the user-disconnect flag from before it started. Cancelled before it
+	/// has connected, they're put back, so the cancelled radio stays off and the preferred radio
+	/// still comes back (review V16 S1).
+	var standInConnect: StandInConnect?
 
 	/// True while a device switch (backup → clear → restore → connect) is in flight.
 	/// Suppresses the discovery restart in `closeConnection()` and auto-connect on
@@ -819,7 +824,16 @@ class AccessoryManager: ObservableObject {
 		// Its window on the Mac closes once it's disconnected (W-02), unless it's only released
 		// for a firmware update (review V11 W1).
 		let disconnectedId = activeConnection?.device.id ?? connectAttempts.values.first(where: \.isFirst)?.device.id
+		let standIn = standInConnect.flatMap { $0.deviceId == disconnectedId ? $0 : nil }
 		defer {
+			// A stand-in cancelled while it connects: the preferred radio and the flag as they were
+			// (review V16 S1).
+			if let standIn {
+				PreferredRadio.peripheralId = standIn.preferredId
+				PreferredRadio.nodeNum = standIn.preferredNum
+				userRequestedConnectionCancellation = standIn.userCancelled
+				standInConnect = nil
+			}
 			if let disconnectedId, !forUpdate { radioDisconnectedByUser.send(disconnectedId) }
 		}
 		// Nor brought back by a reconnect loop: one connecting it as the first radio, or left from

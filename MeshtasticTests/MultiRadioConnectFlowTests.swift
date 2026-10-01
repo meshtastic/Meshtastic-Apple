@@ -332,6 +332,36 @@ struct MultiRadioConnectFlowTests {
 		#expect(manager.activeConnection == nil, "it doesn't connect once the gate opens")
 	}
 
+	@Test("Cancelling a radio connecting in the dropped preferred radio's place leaves the preferred radio to come back")
+	func cancelledStandInLeavesThePreferredRadio() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let radios = try await connectTwoRadios()
+		let manager = radios.manager
+		// A, the preferred radio, drops (not the user); then B drops.
+		try await manager.closeConnection()
+		await manager.disconnectAdditionalRadio(radios.secondDevice.id)
+		#expect(!manager.userRequestedConnectionCancellation)
+		allowDiscovery(manager)
+
+		// B's connect as the first radio waits at the gate, as if it had got as far as recording
+		// itself as the preferred radio.
+		await manager.handshakeGate.acquire()
+		let standIn = Task { await manager.connectAsFirst(radios.secondDevice) }
+		try await waitUntil { manager.connectAttempts[radios.secondDevice.id] != nil }
+		PreferredRadio.set(radios.secondDevice)
+
+		// The user disconnects B while it connects.
+		await manager.disconnectRadio(radios.secondDevice.id)
+		manager.handshakeGate.release()
+		await standIn.value
+		#expect(manager.activeConnection == nil)
+		#expect(PreferredRadio.peripheralId == radios.firstDevice.id.uuidString, "A is still the preferred radio")
+		#expect(!manager.userRequestedConnectionCancellation, "so discovery brings A back")
+		#expect(manager.standInConnect == nil)
+		endDiscovery(manager)
+	}
+
 	@Test("Disconnect stops a reconnect loop of the radio it disconnects")
 	func disconnectStopsItsLoop() async throws {
 		let saved = SavedDefaults()
