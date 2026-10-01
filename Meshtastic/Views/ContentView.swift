@@ -52,6 +52,9 @@ struct ContentView: View {
 	/// something of its own waits to be asked for (review V13 R13-1).
 	@State private var isWindowFree = true
 	@State private var windowProbe = WindowPresentationProbe()
+	/// Another radio's passphrase sheet and prompt, asked for when the window is free (review V14
+	/// P3).
+	@State private var otherRadio = OtherRadioPresentation()
 	@Environment(\.scenePhase) private var scenePhase
 	@Environment(\.selectWindowRadio) private var selectWindowRadio
 
@@ -67,10 +70,30 @@ struct ContentView: View {
 		!RadioWindows.areEnabled && (accessoryManager.hasSeveralRadios || accessoryManager.connectedRadioCount > 1)
 	}
 
-	/// Something waits to be asked for once the window is free, so `isWindowFree` is kept up to
-	/// date meanwhile.
+	/// Something waits to be asked for once the window is free, so the window is checked
+	/// meanwhile (`checkTurns`): the Choose Radios sheet, another radio's prompt or passphrase
+	/// sheet, or a gate held back for them.
 	private var watchesWindow: Bool {
-		takesTurns && !accessoryManager.servicesNeedingRadio().isEmpty
+		takesTurns && (!accessoryManager.servicesNeedingRadio().isEmpty
+			|| accessoryManager.radioAttentionPrompt != nil || accessoryManager.radioUnlockRequest != nil
+			|| (isLockdownGateActive && !isShowingLockdownGate)
+			|| (accessoryManager.firmwareUpdateRequired(for: windowRadio) && !isShowingFirmwareGate))
+	}
+
+	/// Whether the window is free, and what waited for it now that it is (review V13 R13-1, V14 P3).
+	private func checkTurns() {
+		let presenting = windowProbe.isPresenting
+		if isWindowFree == presenting { isWindowFree = !presenting }
+		updateGates()
+		var next = otherRadio
+		next.update(
+			unlockPending: accessoryManager.radioUnlockRequest != nil,
+			promptPending: accessoryManager.radioAttentionPrompt != nil,
+			windowPresenting: presenting,
+			gateUp: isGateUp || isShowingGate,
+			now: .now
+		)
+		if next != otherRadio { otherRadio = next }
 	}
 
 	/// One of the gates, onboarding or the Choose Radios sheet is asked for (T359).
@@ -84,10 +107,11 @@ struct ContentView: View {
 	}
 
 	/// Shows or hides the full-screen gates from the window radio's state. With several radios
-	/// they wait while the Choose Radios sheet or another radio's prompt is up, and come up once it
-	/// has closed; a gate that's up stays up (T359).
+	/// they wait while the Choose Radios sheet or another radio's prompt is up, or the window shows
+	/// anything else, and come up once it has closed; a gate that's up stays up (T359, review V14
+	/// P3).
 	private func updateGates() {
-		let waits = isChoosingServiceRadios || isAskingAboutAnotherRadio
+		let waits = isChoosingServiceRadios || isAskingAboutAnotherRadio || (takesTurns && windowProbe.isPresenting)
 		isShowingLockdownGate = isLockdownGateActive && (isShowingLockdownGate || !waits)
 		isShowingFirmwareGate = accessoryManager.firmwareUpdateRequired(for: windowRadio) && (isShowingFirmwareGate || !waits)
 	}
@@ -103,18 +127,18 @@ struct ContentView: View {
 			.task(id: watchesWindow) {
 				guard watchesWindow else {
 					isWindowFree = true
+					if otherRadio != OtherRadioPresentation() { otherRadio = OtherRadioPresentation() }
 					return
 				}
 				while !Task.isCancelled {
-					let free = !windowProbe.isPresenting
-					if isWindowFree != free { isWindowFree = free }
+					checkTurns()
 					try? await Task.sleep(for: .milliseconds(500))
 				}
 			}
 			// On the Mac the Connect window asks (W-15). It waits for the window to be free, and
 			// before its turn for the gates and for another radio's prompt (T359, review V13 R13-1).
 			.modifier(ServiceRadioChoiceGateIfOneWindow(
-				waits: !isWindowFree || (!isChoosingServiceRadios && (isGateUp || isAskingAboutAnotherRadio)),
+				waits: !isWindowFree || (!isChoosingServiceRadios && (isGateUp || isShowingGate || isAskingAboutAnotherRadio)),
 				isUp: $isChoosingServiceRadios,
 				onClose: {
 					updateGates()
@@ -151,14 +175,14 @@ struct ContentView: View {
 			// A locked radio the window isn't showing enters its passphrase here, without the window
 			// switching to it (feature 021, T188).
 			// On the Mac each radio's own window shows its sheets instead (D-19). It waits for the
-			// gates and the Choose Radios sheet (T359).
-			.sheet(item: RadioWindows.areEnabled || isGateUp ? .constant(nil) : $accessoryManager.radioUnlockRequest, onDismiss: updateGates) { request in
+			// gates, the Choose Radios sheet and a free window (T359, review V14 P3).
+			.sheet(item: RadioWindows.areEnabled || !otherRadio.showsUnlockSheet ? .constant(nil) : $accessoryManager.radioUnlockRequest, onDismiss: updateGates) { request in
 				RadioUnlockSheet(request: request)
 			}
 			// A radio this window doesn't show needs the user (feature 021, T073). Unlock opens its
 			// passphrase sheet above; Update shows it in the window, which shows the update screen
 			// (T324).
-			.alert(item: RadioWindows.areEnabled || isGateUp ? .constant(nil) : $accessoryManager.radioAttentionPrompt) { prompt in
+			.alert(item: RadioWindows.areEnabled || !otherRadio.showsPrompt ? .constant(nil) : $accessoryManager.radioAttentionPrompt) { prompt in
 				Alert(
 					title: Text(prompt.attention.title(radioName: prompt.radioName)),
 					message: Text(prompt.attention.message),

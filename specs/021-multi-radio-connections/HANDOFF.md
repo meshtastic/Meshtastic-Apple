@@ -460,7 +460,10 @@ describes it well enough to rebuild.
   lock-down screen up, B needing the user: B's prompt comes once A is unlocked. Nothing is lost:
   each one appears in turn. Then with a sheet of the app's own open (a channel link's save sheet)
   while B is added for the first time: the Choose Radios sheet comes up a few seconds after that
-  sheet is closed, and A's lock-down screen or B's prompt still come up afterwards (T362).
+  sheet is closed, and A's lock-down screen or B's prompt still come up afterwards (T362, T367).
+  With a channel link's save sheet open, power-cycle a locked B: B's prompt comes up once the save
+  sheet is closed, and if A locks meanwhile, A's lock-down screen comes after B's prompt is
+  answered (T368).
 - [ ] Settings with A and B connected, in B's window: the note says these settings configure B and
   names A as the other radio (T342).
 - [ ] iPhone: with A and B connected, Connect › B › Show This Radio and the indicator's radio menu
