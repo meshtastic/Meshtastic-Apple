@@ -377,6 +377,13 @@ Re-checked in the files and holding (2026-10-01); the owner approved.
 - [X] T370 Q1: Remove from the stored radios list also cancels a connect of that radio as the first radio, as Disconnect does: `stopBringingBack` cancels it through `disconnect()` before clearing the radio's loop and discovery wait. Verified: `MultiRadioConnectFlowTests.removeCancelsAConnectAsFirst`.
 - [X] T371 S1 (review-connections-v16.md): cancelling a radio connecting as the first radio in the dropped preferred radio's place (T360), by Disconnect or Remove, no longer keeps the preferred radio from coming back. `connectAsFirst` records the preferred radio and the user-disconnect flag before it starts (`standInConnect`, claimed before any wait); `disconnect()` of that radio before it has connected puts both back, so the cancelled radio stays off and discovery still brings the preferred radio back. A user's own connect of another radio, and one radio, behave as on `main`. Verified: `MultiRadioConnectFlowTests.cancelledStandInLeavesThePreferredRadio`.
 
+## Review fixes after V17 (review-connections-v17.md U1–U2)
+
+Re-checked in the files and holding (2026-10-01); the owner approved.
+
+- [X] T372 U1: the stand-in restore (T371) runs only on the user's Disconnect or Remove of that radio, and only while the preferred radio is still the one it replaced or the stand-in and is still one of the user's radios. `restorePreferred(after:)`, called from `disconnectRadio` and `stopBringingBack`; `disconnect()` itself is as before T371, so Clear App Data, Restore Backup and a switch leave the flag set. Verified: `MultiRadioConnectFlowTests.cancelledStandInLeavesThePreferredRadio`, `.resetDuringAStandInKeepsTheFlag`, `.handedOnPreferredRadioStays`.
+- [ ] T373 U2: Disconnect turns off a radio's reconnect at launch by its known number when its connect doesn't know it yet.
+
 ## Phase 10: Hardening
 
 - [ ] T130 Four BLE radios for 24 hours (device checklist in `HANDOFF.md`).

@@ -89,7 +89,9 @@ extension AccessoryManager {
 	/// stay connected and none takes its place (T316).
 	func disconnectRadio(_ deviceId: UUID) async {
 		if activeConnection?.device.id == deviceId || connectAttempts[deviceId]?.isFirst == true {
+			let standIn = standIn(for: deviceId)
 			try? await disconnectFirstRadio(accessoryManager: self)
+			restorePreferred(after: standIn)
 		} else {
 			await disconnectAdditionalRadio(deviceId, byUser: true)
 		}
@@ -357,6 +359,30 @@ extension AccessoryManager {
 		}
 		handle.task = loop
 		additionalRadioReconnects[device.id] = loop
+	}
+
+	/// The stand-in record for `deviceId`, while it's connecting as the first radio in the
+	/// preferred radio's place.
+	func standIn(for deviceId: UUID) -> StandInConnect? {
+		standInConnect?.deviceId == deviceId ? standInConnect : nil
+	}
+
+	/// After the user's Disconnect or Remove of `standIn`'s radio before it had connected (review
+	/// V16 S1): the preferred radio and the user-disconnect flag as they were before it started, so
+	/// the cancelled radio stays off and the preferred radio still comes back. Only while the
+	/// preferred radio is still that one or the stand-in, and is still one of the user's radios;
+	/// otherwise nothing auto-connects, as after any Disconnect (review V17 U1).
+	func restorePreferred(after standIn: StandInConnect?) {
+		guard let standIn else { return }
+		if standInConnect?.deviceId == standIn.deviceId {
+			standInConnect = nil
+		}
+		let current = PreferredRadio.peripheralId
+		guard current == standIn.preferredId || current == standIn.deviceId.uuidString,
+			  standIn.preferredNum > 0, knownRadios.contains(where: { $0.nodeNum == standIn.preferredNum }) else { return }
+		PreferredRadio.peripheralId = standIn.preferredId
+		PreferredRadio.nodeNum = standIn.preferredNum
+		userRequestedConnectionCancellation = standIn.userCancelled
 	}
 
 	/// See `AccessoryManager.standInConnect`.

@@ -52,7 +52,9 @@ extension AccessoryManager {
 			// A connect of it as the first radio, which discovery starts when nothing else is
 			// connected (T360), is cancelled as Disconnect cancels it (review V15 Q1).
 			if connectAttempts[deviceId]?.isFirst == true {
+				let standIn = standIn(for: deviceId)
 				try? await disconnect()
+				restorePreferred(after: standIn)
 			}
 			await disconnectAdditionalRadio(deviceId, byUser: true)
 		}
