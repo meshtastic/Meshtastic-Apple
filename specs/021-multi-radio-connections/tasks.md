@@ -358,6 +358,18 @@ suite and a Mac build each time. To resume: the first unchecked item.
 - [X] T361 Z2: Remove This Radio on the first radio with another connected makes that one the preferred radio, as Disconnect does (T352), so the next launch connects it at once instead of after the 30 s fallback; with no radio left the preference is cleared, as before. Verified: `MultiRadioConnectFlowTests.removeFirstRadioHandsOverPreferred`.
 - [X] T362 R12-1: a Choose Radios sheet that was asked for but never came up doesn't hold the other sheets, gates and prompts back, and is asked for again. The gate notes when the sheet appears (`hasAppeared`); two seconds after asking without it, it lets the others go (`release`) and asks again two seconds later; a choice made in App Settings meanwhile also lets them go. Not unit tested (presentation); on the device checklist.
 
+## Review fixes after V14 (review-connections-v14.md P1–P4; review-data-v13.md R13-1–R13-2)
+
+All re-checked in the files and holding (2026-09-30); the owner approved. One commit each, full
+suite and a Mac build each time. To resume: the first unchecked item.
+
+- [ ] T363 P1: a radio's reconnect loop ends once it connects as the first radio, and Disconnect (or Remove This Radio) on the first radio stops the loop of the radio it disconnects.
+- [ ] T364 P2: Clear App Data and Restore Backup stop every radio being brought back, not only the connected ones; nothing comes back as the first radio while the store is being reset.
+- [ ] T365 P4: closing the update sheet of the first radio clears its "released for update" mark, so a radio that drops after a failed update isn't held back.
+- [ ] T366 R13-2: Remove This Radio hands the preferred radio on before the removed radio's data is cleaned up.
+- [ ] T367 R13-1: the Choose Radios sheet is asked for only when the window shows nothing else, and keeps its turn while it's asked for again.
+- [ ] T368 P3: another radio's prompt and passphrase sheet, and lock-down or firmware screens held back for them, wait until the window shows nothing else, and are asked for again if they didn't come up.
+
 ## Phase 10: Hardening
 
 - [ ] T130 Four BLE radios for 24 hours (device checklist in `HANDOFF.md`).
