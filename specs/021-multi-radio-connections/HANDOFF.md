@@ -55,7 +55,7 @@ Read this first if you are picking the work up. Update it in the same commit as 
 - Next up: the owner's device test (checklist below), which waits on hardware; don't rebuild
   Mesh Multi for it unless asked. Don't design around the focused/additional split: every radio
   works the same way (D-17). Removing the switch-era helpers (T066) waits for that test.
-- Baseline and latest: the full suite passes in the iOS Simulator (3,505 Swift Testing tests plus
+- Baseline and latest: the full suite passes in the iOS Simulator (3,513 Swift Testing tests plus
   the XCTests, about 55 seconds of test time). Run it with the simulator to itself: another
   session's test runs on the same simulator kill the test host partway.
 
@@ -105,6 +105,14 @@ Read this first if you are picking the work up. Update it in the same commit as 
   note). Nothing of the windows was run: the iOS Simulator suite and a Mac build (built, not run)
   pass; the device checklist below has what needs the owner's Mac, iPhone and Siri. Next: the
   owner's device test, then the full reviews of each area, then T122.
+- Review V14 and data V13 (2026-09-30): `review-connections-v14.md` (P1–P4) and
+  `review-data-v13.md` (R13-1–R13-2), checked in the files; all held. Fixed one commit each
+  (T363–T368 in tasks.md). P3 and R13-1 were one problem, closed for every presentation of the one
+  window rather than one at a time: with several radios, each is asked for only when the window
+  shows nothing else (`WindowPresentationProbe`), keeps its turn, and is asked for again if it
+  didn't come up. Also found while fixing P1: the test radio didn't reconnect after a disconnect,
+  so the reconnect tests had only seen the first connect step; they now wait for the connect to
+  finish.
 - Review V13 and data V12 (2026-09-30): `review-connections-v13.md` (Z1–Z2) and
   `review-data-v12.md` (R12-1), checked in the files; all held. Fixed one commit each (T360–T362
   in tasks.md). Z1: the last radio left connected that drops comes back as the first radio once
