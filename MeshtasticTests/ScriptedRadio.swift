@@ -65,6 +65,9 @@ actor ScriptedRadio: Connection {
 	}
 
 	func connect() async throws -> AsyncStream<ConnectionEvent> {
+		// Connected again after a disconnect, as a transport's new connection would be, so a radio
+		// that dropped can come back.
+		isConnected = true
 		let (stream, continuation) = AsyncStream.makeStream(of: ConnectionEvent.self)
 		self.continuation = continuation
 		return stream

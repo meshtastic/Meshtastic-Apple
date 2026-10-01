@@ -299,12 +299,19 @@ extension AccessoryManager {
 	func scheduleAdditionalRadioReconnect(_ device: Device, firstDelay: Duration = .seconds(5)) {
 		guard additionalRadioReconnects[device.id] == nil else { return }
 		Logger.transport.info("🔗🔁 [Additional] Will reconnect \(device.name, privacy: .public) when it's back")
-		additionalRadioReconnects[device.id] = Task { @MainActor [weak self] in
+		// The loop knows its own task, so one whose entry was removed or replaced ends at its next
+		// wake, and its end doesn't remove a newer loop's entry (review V14 P1).
+		let handle = ReconnectLoopHandle()
+		let loop = Task { @MainActor [weak self] in
 			var delay = firstDelay
-			defer { self?.additionalRadioReconnects.removeValue(forKey: device.id) }
+			defer {
+				if let self, let thisLoop = handle.task, self.additionalRadioReconnects[device.id] == thisLoop {
+					self.additionalRadioReconnects.removeValue(forKey: device.id)
+				}
+			}
 			while !Task.isCancelled {
 				try? await Task.sleep(for: delay)
-				guard let self, !Task.isCancelled else { return }
+				guard let self, !Task.isCancelled, let thisLoop = handle.task, self.additionalRadioReconnects[device.id] == thisLoop else { return }
 				if self.activeConnection?.device.id == device.id || self.additionalRadios[device.id] != nil { return }
 				// A connect of it that's running (as the first radio, or the user's) is waited for
 				// rather than ending the loop, so one that fails is tried again (review V13 Z1).
@@ -335,6 +342,13 @@ extension AccessoryManager {
 				delay = min(max(delay, .seconds(5)) * 2, .seconds(60))
 			}
 		}
+		handle.task = loop
+		additionalRadioReconnects[device.id] = loop
+	}
+
+	/// A reconnect loop's own task, set as it's created.
+	private final class ReconnectLoopHandle {
+		var task: Task<Void, Never>?
 	}
 
 	/// How long one automatic connect attempt waits for the transport.

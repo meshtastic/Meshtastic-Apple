@@ -822,6 +822,12 @@ class AccessoryManager: ObservableObject {
 		defer {
 			if let disconnectedId, !forUpdate { radioDisconnectedByUser.send(disconnectedId) }
 		}
+		// Nor brought back by a reconnect loop: one connecting it as the first radio, or left from
+		// when it was a radio alongside (review V14 P1).
+		if let disconnectedId {
+			additionalRadioReconnects.removeValue(forKey: disconnectedId)?.cancel()
+			awaitedRememberedRadios.remove(disconnectedId)
+		}
 		self.userRequestedConnectionCancellation = true
 		firstRadioReleasedForUpdate = forUpdate
 		connectCancelGeneration &+= 1

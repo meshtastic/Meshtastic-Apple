@@ -256,8 +256,8 @@ struct MultiRadioConnectFlowTests {
 		// ... and a radio alongside that drops is brought back while the first is still gone (W2).
 		await manager.disconnectAdditionalRadio(secondDevice.id)
 		manager.scheduleAdditionalRadioReconnect(secondDevice, firstDelay: .zero)
-		try await waitUntil { manager.additionalRadios[secondDevice.id] != nil }
-		#expect(manager.additionalRadios[secondDevice.id] != nil)
+		try await waitUntil { manager.additionalRadios[secondDevice.id] != nil && manager.connectAttempts[secondDevice.id] == nil }
+		#expect(manager.additionalRadios[secondDevice.id] != nil, "connected, its connect finished")
 		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
 		await manager.disconnectRadio(secondDevice.id)
 		await manager.disconnectRadio(thirdDevice.id)
@@ -295,14 +295,45 @@ struct MultiRadioConnectFlowTests {
 
 		// Seen: back as the first radio.
 		manager.droppedRadioSeen(radios.secondDevice)
-		try await waitUntil { manager.activeConnection?.device.id == radios.secondDevice.id }
-		#expect(manager.activeConnection?.device.id == radios.secondDevice.id)
+		try await waitUntil { manager.activeConnection?.device.id == radios.secondDevice.id && manager.connectAttempts[radios.secondDevice.id] == nil }
+		#expect(manager.activeConnection?.device.id == radios.secondDevice.id, "connected, its connect finished")
+		#expect(manager.isConnected)
 		#expect(PreferredRadio.peripheralId == radios.secondDevice.id.uuidString)
 		let firstNum = Int64(radios.firstNum)
 		let first = try PersistenceController.shared.context.fetch(FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == firstNum })).first
 		#expect(first?.autoConnect == false, "the radio the user disconnected stays off")
+		#expect(manager.additionalRadioReconnects[radios.secondDevice.id] == nil, "its loop is done once it's connected")
+
+		// Disconnected now by the user, it stays off though discovery sees it again (review V14 P1).
+		try await disconnectFirstRadio(accessoryManager: manager)
+		manager.droppedRadioSeen(radios.secondDevice)
+		try await Task.sleep(for: .milliseconds(300))
+		#expect(manager.activeConnection == nil)
 		endDiscovery(manager)
-		try await manager.disconnect()
+	}
+
+	@Test("Disconnect stops a reconnect loop of the radio it disconnects")
+	func disconnectStopsItsLoop() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let manager = makeManager(ScriptedTransport(radio: ScriptedRadio(nodeNum: uniqueNodeNum())))
+		let only = device()
+		try await manager.connect(to: only)
+		manager.scheduleAdditionalRadioReconnect(only, firstDelay: .seconds(60))
+		try await disconnectFirstRadio(accessoryManager: manager)
+		#expect(manager.additionalRadioReconnects[only.id] == nil)
+	}
+
+	@Test("A reconnect loop that's replaced doesn't remove the new loop when it ends")
+	func replacedLoopKeepsTheNewOne() async throws {
+		let manager = AccessoryManager(transports: [])
+		let dropped = device()
+		manager.scheduleAdditionalRadioReconnect(dropped, firstDelay: .seconds(60))
+		manager.additionalRadioReconnects.removeValue(forKey: dropped.id)?.cancel()
+		manager.scheduleAdditionalRadioReconnect(dropped, firstDelay: .seconds(60))
+		try await Task.sleep(for: .milliseconds(200))
+		#expect(manager.additionalRadioReconnects[dropped.id] != nil)
+		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
 	}
 
 	@Test("With the first radio dropped, the other radio dropping comes back as the first radio, and the first is remembered to join it")
@@ -319,8 +350,9 @@ struct MultiRadioConnectFlowTests {
 		manager.devices = [radios.secondDevice]
 
 		manager.scheduleAdditionalRadioReconnect(radios.secondDevice, firstDelay: .zero)
-		try await waitUntil { manager.activeConnection?.device.id == radios.secondDevice.id }
-		#expect(manager.activeConnection?.device.id == radios.secondDevice.id)
+		try await waitUntil { manager.activeConnection?.device.id == radios.secondDevice.id && manager.connectAttempts[radios.secondDevice.id] == nil }
+		#expect(manager.activeConnection?.device.id == radios.secondDevice.id, "connected, its connect finished")
+		#expect(manager.isConnected)
 		let firstNum = Int64(radios.firstNum)
 		let first = try PersistenceController.shared.context.fetch(FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == firstNum })).first
 		#expect(first?.autoConnect == true, "the first radio joins when it's back, as the fallback has it")
@@ -345,8 +377,9 @@ struct MultiRadioConnectFlowTests {
 		manager.devices = [radios.secondDevice]
 
 		manager.scheduleAdditionalRadioReconnect(radios.secondDevice, firstDelay: .zero)
-		try await waitUntil { manager.activeConnection?.device.id == radios.secondDevice.id }
-		#expect(manager.activeConnection?.device.id == radios.secondDevice.id)
+		try await waitUntil { manager.activeConnection?.device.id == radios.secondDevice.id && manager.connectAttempts[radios.secondDevice.id] == nil }
+		#expect(manager.activeConnection?.device.id == radios.secondDevice.id, "connected, its connect finished")
+		#expect(manager.isConnected)
 		let firstNum = Int64(radios.firstNum)
 		let first = try PersistenceController.shared.context.fetch(FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == firstNum })).first
 		#expect(first?.autoConnect == false, "not remembered: the user disconnected it")

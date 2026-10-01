@@ -192,6 +192,12 @@ extension AccessoryManager {
 			// Siri can name this radio now ("Make Base Station my Meshtastic radio", T320), and a
 			// second radio known makes the services in use ask for theirs (W-15).
 			ShortcutsProvider.updateAppShortcutParameters()
+			// Connected as the first radio: a reconnect loop it had as a radio alongside is done, so a
+			// Disconnect from now on isn't undone by it (review V14 P1). Only its entry goes: the
+			// loop may be the task running this connect, and ends when it next wakes.
+			if attempt.isFirst {
+				additionalRadioReconnects.removeValue(forKey: device.id)
+			}
 			if attempt.isFirst, let first = activeConnection, let nodeNum = first.nodeNum {
 				await MeshPackets.shared.noteRadioConnected(nodeNum: nodeNum, transport: first.device.transportType, autoConnect: nil)
 				await reconnectRememberedRadios()
