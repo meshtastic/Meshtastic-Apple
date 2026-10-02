@@ -50,11 +50,22 @@ Read this first if you are picking the work up. Update it in the same commit as 
   passkey (T045, part of T089) in `8636d5f1`; the radio pickers for TAK, CarPlay & Siri and the
   Watch (T102–T105) in the commit after it. D-17 (every radio the same, T068–T074) and the
   review fixes (T140–T167, D-18 for resets) since. See tasks.md for the partial ones.
-- Mesh Multi (`~/Applications/Mesh Multi.app`, side-by-side, own container) is rebuilt from the
-  latest commit on this branch and ready for the first two-radio test below. Not yet run by anyone.
-- Next up: the owner's device test (checklist below), which waits on hardware; don't rebuild
-  Mesh Multi for it unless asked. Don't design around the focused/additional split: every radio
-  works the same way (D-17). Removing the switch-era helpers (T066) waits for that test.
+- Device testing is under way (2026-10-02), on the Mac, with Mesh Multi (`.local/side-by-side/sxs.sh
+  install-mac`; the owner tests on the Mac and installs when Mesh Multi is closed; never launch it).
+  Installed build: `3150c9ea`. Waiting on the owner's check of the last Mac fixes:
+  - the indicator's radio menu with two radios (`b8b0439d`: a UIKit pull-down on the Mac, because
+    the toolbar turned a SwiftUI menu into one icon);
+  - Connect window: Open only opens (`f53ad53a`); Radios › Add Radio… (⇧⌘N) brings the Connect
+    window forward; File has no New Window or Add Radio (`afdbfb92`);
+  - the tab control's place in tabbed radio windows (`3150c9ea`, `ToolbarLayoutNudge`: take it
+    out if it doesn't help).
+- Next: the rest of the device checklist below, then a full review of each area, then T122.
+- Noted, not for this branch: the BLE central queue's `.utility` QoS causes Xcode's priority
+  inversion warning at `BLEConnection.read()` (also on `main`); a separate PR against `main`.
+- Each Xcode build re-syncs `Localizable.xcstrings`; revert it (`git checkout -- Localizable.xcstrings`)
+  until the planned sync (T134).
+- Scratchpad scripts (`suite.sh`, `macbuild.sh`) aren't kept between sessions: the commands are in
+  Environment and commands below.
 - Baseline and latest: the full suite passes in the iOS Simulator (3,519 Swift Testing tests plus
   the XCTests, about 55 seconds of test time). Run it with the simulator to itself: another
   session's test runs on the same simulator kill the test host partway.
