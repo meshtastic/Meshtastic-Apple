@@ -105,6 +105,7 @@ Read this first if you are picking the work up. Update it in the same commit as 
   note). Nothing of the windows was run: the iOS Simulator suite and a Mac build (built, not run)
   pass; the device checklist below has what needs the owner's Mac, iPhone and Siri. Next: the
   owner's device test, then the full reviews of each area, then T122.
+- Review V19 (2026-10-01): `review-connections-v19.md`, checking T374; no findings.
 - Review V18 (2026-10-01): `review-connections-v18.md` (D1), checked in the files; held and fixed
   (T374).
 - Review V17 (2026-10-01): `review-connections-v17.md` (U1–U2), checked in the files; both held and
