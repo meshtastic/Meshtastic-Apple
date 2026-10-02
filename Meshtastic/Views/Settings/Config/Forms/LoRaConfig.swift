@@ -371,10 +371,12 @@ private struct BandwidthRow: View {
 private struct CodingRateRows: View {
 	@Binding var config: Config.LoRaConfig
 	@EnvironmentObject private var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 
 	private var preset: ModemPresets { ModemPresets(rawValue: config.modemPreset.rawValue) ?? .longFast }
 	private var supportsOverride: Bool {
-		accessoryManager.checkIsVersionSupported(forVersion: CodingRates.overrideFirmwareVersion)
+		accessoryManager.isVersionSupported(forVersion: CodingRates.overrideFirmwareVersion, for: windowRadio)
 	}
 	private var normalized: Int {
 		CodingRates.effective(
