@@ -226,9 +226,9 @@ private struct ConnectedRadioRow: View {
 	}
 }
 
-/// Menu bar commands for the radio windows (T311–T313): Add Radio… (in File, and in the Radios
-/// menu), and a Radios menu with Disconnect for the key window's radio (W-07) and the connected
-/// radios, each of which reopens its window when it was closed (W-01).
+/// Menu bar commands for the radio windows (T311–T313): a Radios menu with Add Radio…, Disconnect
+/// for the key window's radio (W-07) and the connected radios, each of which reopens its window
+/// when it was closed (W-01).
 struct RadioWindowCommands: Commands {
 	@ObservedObject var accessoryManager: AccessoryManager
 	@Environment(\.openWindow) private var openWindow
@@ -240,20 +240,39 @@ struct RadioWindowCommands: Commands {
 		return device.map { $0.longName ?? $0.name }
 	}
 
+	/// Brings the Connect window forward when it's open, else opens it: opening a window group by
+	/// its id makes a new window each time. SwiftUI names each window's session after its group.
+	private func showConnectWindow() {
+		let open = UIApplication.shared.connectedScenes.first {
+			$0.session.configuration.name == RadioWindows.mainWindowID && $0.activationState != .unattached
+		}
+		guard let open else {
+			openWindow(id: RadioWindows.mainWindowID)
+			return
+		}
+		if #available(iOS 17.0, *) {
+			UIApplication.shared.activateSceneSession(for: UISceneSessionActivationRequest(session: open.session))
+		} else {
+			UIApplication.shared.requestSceneSessionActivation(open.session, userActivity: nil, options: nil)
+		}
+	}
+
 	var body: some Commands {
-		CommandGroup(after: .newItem) {
-			if RadioWindows.areEnabled {
-				Button("Add Radio…") {
+		// File › New Window would only open another Connect window on the Mac, so it goes there;
+		// the iPad keeps it, as the way to open a second window.
+		CommandGroup(replacing: .newItem) {
+			if !RadioWindows.areEnabled {
+				Button("New Window") {
 					openWindow(id: RadioWindows.mainWindowID)
 				}
+				.keyboardShortcut("n")
 			}
 		}
 		CommandMenu("Radios") {
 			if RadioWindows.areEnabled {
-				// Also here, with the other radio commands: the File menu's new-item place doesn't
-				// always show on the Mac (W-02).
+				// Adding a radio is in the Connect window (W-02).
 				Button("Add Radio…") {
-					openWindow(id: RadioWindows.mainWindowID)
+					showConnectWindow()
 				}
 				.keyboardShortcut("n", modifiers: [.command, .shift])
 				Divider()

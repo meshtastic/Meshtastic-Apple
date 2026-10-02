@@ -490,7 +490,8 @@ describes it well enough to rebuild.
 - [ ] Mac windows (D-19): each connected radio has its own window, the whole app for it; the
   Connect window lists them with Open and Disconnect; closing a radio's window only hides it
   (still connected, Radios menu reopens it); Radios › Disconnect acts on the key window's radio and
-  closes its window; Radios › Add Radio… (⇧⌘N, also in File) opens the Connect window; in the
+  closes its window; Radios › Add Radio… (⇧⌘N) brings the Connect window forward, or opens it
+  when it's closed (never a second one); the File menu has no New Window or Add Radio; in the
   Connect window, Open on a radio only opens its window (it used to disconnect it too); after a relaunch each radio
   that reconnects has its window again; a notification tap opens the window of the radio it's
   about; the composer has no Via picker. With A's window and B's window open, navigating in one
