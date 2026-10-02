@@ -21,11 +21,17 @@ extension NodeBackupManager {
 			dst.favorite = src.favorite
 			dst.firstHeard = src.firstHeard
 			dst.hasBeenAdministered = src.hasBeenAdministered
+			dst.hasXeddsaSigned = src.hasXeddsaSigned
 			dst.hopsAway = src.hopsAway
+			dst.id = src.id
 			dst.ignored = src.ignored
+			dst.isKeyManuallyVerified = src.isKeyManuallyVerified
 			dst.lastHeard = src.lastHeard
+			dst.nodeStatus = src.nodeStatus
 			dst.num = src.num
 			dst.peripheralId = src.peripheralId
+			// User-edited and never re-sent by the radio, so a switch that dropped it lost it for good.
+			dst.powerChannelLabels = src.powerChannelLabels
 			dst.rssi = src.rssi
 			dst.sessionExpiration = src.sessionExpiration
 			dst.sessionPasskey = src.sessionPasskey
@@ -189,6 +195,12 @@ extension NodeBackupManager {
 			dst.numTxRelay = src.numTxRelay
 			dst.numTxRelayCanceled = src.numTxRelayCanceled
 			dst.noiseFloor = src.noiseFloor
+			dst.pm10Environmental = src.pm10Environmental
+			dst.pm10Standard = src.pm10Standard
+			dst.pm25Environmental = src.pm25Environmental
+			dst.pm25Standard = src.pm25Standard
+			dst.pm100Environmental = src.pm100Environmental
+			dst.pm100Standard = src.pm100Standard
 			dst.powerCh1Current = src.powerCh1Current
 			dst.powerCh1Voltage = src.powerCh1Voltage
 			dst.powerCh2Current = src.powerCh2Current
@@ -249,6 +261,7 @@ extension NodeBackupManager {
 			dst.rssi = src.rssi
 			dst.showTranslatedMessage = src.showTranslatedMessage
 			dst.snr = src.snr
+			dst.xeddsaSigned = src.xeddsaSigned
 			if let fromNum = src.fromUser?.num, let liveUser = usersByNum[fromNum] {
 				dst.fromUser = liveUser
 			}
@@ -272,9 +285,22 @@ extension NodeBackupManager {
 			dst.lastUpdatedBy = src.lastUpdatedBy
 			dst.latitudeI = src.latitudeI
 			dst.locked = src.locked
+			// Local-only flag: without it a restored private waypoint would be treated as a mesh
+			// waypoint and could be overwritten by ingest.
+			dst.isLocal = src.isLocal
 			dst.longDescription = src.longDescription
 			dst.longitudeI = src.longitudeI
 			dst.name = src.name
+			// Geofence settings are user-configured and not recoverable from the mesh.
+			dst.geofenceRadius = src.geofenceRadius
+			dst.hasBoundingBox = src.hasBoundingBox
+			dst.boundingBoxLatitudeNorthI = src.boundingBoxLatitudeNorthI
+			dst.boundingBoxLatitudeSouthI = src.boundingBoxLatitudeSouthI
+			dst.boundingBoxLongitudeEastI = src.boundingBoxLongitudeEastI
+			dst.boundingBoxLongitudeWestI = src.boundingBoxLongitudeWestI
+			dst.notifyOnEnter = src.notifyOnEnter
+			dst.notifyOnExit = src.notifyOnExit
+			dst.notifyFavoritesOnly = src.notifyFavoritesOnly
 			liveContext.insert(dst)
 		}
 	}
