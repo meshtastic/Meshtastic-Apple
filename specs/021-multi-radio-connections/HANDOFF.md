@@ -18,7 +18,8 @@ Read this first if you are picking the work up. Update it in the same commit as 
 
 ## Current state
 
-- Branch `feature/multi-radio`, based on `origin/main` `ed36762c` (2026-09-25). Not pushed; the owner pushes.
+- Branch `feature/multi-radio`, based on `origin/main` `ed36762c` (2026-09-25), with `main` up to
+  `c3bb355b` (v2.7.23) merged in on 2026-10-02 (`03632328`). Not pushed; the owner pushes.
 - Commits below the feature work, carried into the branch:
   - `15baebb0` Keep every stored field when restoring a radio's backup (fix + tests)
   - `67fba963` Sync the string catalog with the current source
@@ -50,22 +51,11 @@ Read this first if you are picking the work up. Update it in the same commit as 
   passkey (T045, part of T089) in `8636d5f1`; the radio pickers for TAK, CarPlay & Siri and the
   Watch (T102–T105) in the commit after it. D-17 (every radio the same, T068–T074) and the
   review fixes (T140–T167, D-18 for resets) since. See tasks.md for the partial ones.
-- Device testing is under way (2026-10-02), on the Mac, with Mesh Multi (`.local/side-by-side/sxs.sh
-  install-mac`; the owner tests on the Mac and installs when Mesh Multi is closed; never launch it).
-  Installed build: `3150c9ea`. Waiting on the owner's check of the last Mac fixes:
-  - the indicator's radio menu with two radios (`b8b0439d`: a UIKit pull-down on the Mac, because
-    the toolbar turned a SwiftUI menu into one icon);
-  - Connect window: Open only opens (`f53ad53a`); Radios › Add Radio… (⇧⌘N) brings the Connect
-    window forward; File has no New Window or Add Radio (`afdbfb92`);
-  - the tab control's place in tabbed radio windows (`3150c9ea`, `ToolbarLayoutNudge`: take it
-    out if it doesn't help).
-- Next: the rest of the device checklist below, then a full review of each area, then T122.
-- Noted, not for this branch: the BLE central queue's `.utility` QoS causes Xcode's priority
-  inversion warning at `BLEConnection.read()` (also on `main`); a separate PR against `main`.
-- Each Xcode build re-syncs `Localizable.xcstrings`; revert it (`git checkout -- Localizable.xcstrings`)
-  until the planned sync (T134).
-- Scratchpad scripts (`suite.sh`, `macbuild.sh`) aren't kept between sessions: the commands are in
-  Environment and commands below.
+- Mesh Multi (`~/Applications/Mesh Multi.app`, side-by-side, own container) is rebuilt from the
+  latest commit on this branch and ready for the first two-radio test below. Not yet run by anyone.
+- Next up: the owner's device test (checklist below), which waits on hardware; don't rebuild
+  Mesh Multi for it unless asked. Don't design around the focused/additional split: every radio
+  works the same way (D-17). Removing the switch-era helpers (T066) waits for that test.
 - Baseline and latest: the full suite passes in the iOS Simulator (3,519 Swift Testing tests plus
   the XCTests, about 55 seconds of test time). Run it with the simulator to itself: another
   session's test runs on the same simulator kill the test host partway.
@@ -116,6 +106,14 @@ Read this first if you are picking the work up. Update it in the same commit as 
   note). Nothing of the windows was run: the iOS Simulator suite and a Mac build (built, not run)
   pass; the device checklist below has what needs the owner's Mac, iPhone and Siri. Next: the
   owner's device test, then the full reviews of each area, then T122.
+- Merge of `main` (2026-10-02): merge commit `03632328` brought in `main`'s 11 commits up to
+  `c3bb355b` (v2.7.23); `backup/multi-radio-pre-rebase` keeps the branch as it was before
+  (`b13061ec`). Review V20 and data V15 (`review-connections-v20.md` M1–M2, `review-data-v15.md`
+  M-1–M-2, the same two findings), checked in the files; both held and are fixed, one commit each
+  (T375: the `protobufs` pointer back on `main`'s `ad0bf31e`; T376: the coding rate override reads
+  the window's radio). Left for the owner, from `main` #2545: each iPad window now has its own
+  tabs and filters, but 021 still treats the iPad as one window (W-04), so two iPad windows share
+  `oneWindowShownRadio` and the other radios' prompts.
 - Review V19 (2026-10-01): `review-connections-v19.md`, checking T374; no findings.
 - Review V18 (2026-10-01): `review-connections-v18.md` (D1), checked in the files; held and fixed
   (T374).
@@ -494,10 +492,6 @@ describes it well enough to rebuild.
   sheet is closed, and if A locks meanwhile, A's lock-down screen comes after B's prompt is
   answered (T368). While B's prompt is on screen it stays up steadily: it doesn't close and come
   back every few seconds (the window check has to see the alert; review V15).
-- [ ] Mac, two radio windows grouped as tabs: the Messages / Nodes / Map / Settings / Connect control
-  sits in the same place in both tabs right after a window opens, without toggling the sidebar (a
-  window lays out again a moment after it opens, by a one-point resize). If it doesn't, the nudge
-  in `RadioWindowViews.swift` (`ToolbarLayoutNudge`) comes out and this is a known macOS quirk.
 - [ ] Settings with A and B connected, in B's window: the note says these settings configure B and
   names A as the other radio (T342).
 - [ ] iPhone: with A and B connected, Connect › B › Show This Radio and the indicator's radio menu
@@ -505,9 +499,7 @@ describes it well enough to rebuild.
 - [ ] Mac windows (D-19): each connected radio has its own window, the whole app for it; the
   Connect window lists them with Open and Disconnect; closing a radio's window only hides it
   (still connected, Radios menu reopens it); Radios › Disconnect acts on the key window's radio and
-  closes its window; Radios › Add Radio… (⇧⌘N) brings the Connect window forward, or opens it
-  when it's closed (never a second one); the File menu has no New Window or Add Radio; in the
-  Connect window, Open on a radio only opens its window (it used to disconnect it too); after a relaunch each radio
+  closes its window; File › Add Radio… (⇧⌘N) opens the Connect window; after a relaunch each radio
   that reconnects has its window again; a notification tap opens the window of the radio it's
   about; the composer has no Via picker. With A's window and B's window open, navigating in one
   doesn't move the other.

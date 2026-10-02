@@ -390,6 +390,13 @@ Re-checked in the files and holding (2026-10-01); the owner approved.
 
 - [X] T374 D1: Remove This Radio (or a factory reset deleting bonds) on the stand-in from Device Config, during its node download, puts the preferred radio back as Disconnect does: `takeRadioOffline`'s first-radio branch takes the stand-in record before `disconnect()` and calls `restorePreferred(after:)` after it. Verified: `MultiRadioConnectFlowTests.removeStandInWhileItDownloads`.
 
+## Review fixes after the merge of main (review-connections-v20.md M1–M2; review-data-v15.md M-1–M-2, the same two)
+
+Re-checked in the files and holding (2026-10-02). Both are follow-ups to merge commit `03632328`.
+
+- [X] T375 M1 / M-1: the `protobufs` submodule points at `main`'s `ad0bf31e` (#2551) again; the merge had recorded the branch's stale `e6e1d1a9`. Verified: `scripts/gen_protos.sh --no-pull` against `ad0bf31e` leaves `MeshtasticProtobufs` unchanged, so pointer and generated code agree.
+- [X] T376 M2 / M-2: `CodingRateRows.supportsOverride` (`LoRaConfig.swift`, from `main`'s #2548) reads the window's radio with `isVersionSupported(forVersion:for:)`, as `supports2_8` does; it read the first radio's firmware. Same result with one radio. It was the only first-radio read in `main`'s new code left unadapted (the others, in `BackupRestoreSection`, were adapted in the merge). Verified: `CodingRatesTests`, `LoRaFirmwareGatingTests`, `LoRaPresetSelectionTests`, `MultiRadioConnectFlowTests` in the iOS Simulator.
+
 ## Phase 10: Hardening
 
 - [ ] T130 Four BLE radios for 24 hours (device checklist in `HANDOFF.md`).
