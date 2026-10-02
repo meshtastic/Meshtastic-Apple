@@ -213,10 +213,14 @@ private struct ConnectedRadioRow: View {
 				}
 			}
 			Spacer()
+			// Borderless, so each is its own click target: in a list row, buttons of the default
+			// style make the row one target, and a click on Open ran Disconnect too.
 			Button("Open", action: open)
+				.buttonStyle(.borderless)
 			Button("Disconnect", role: .destructive) {
 				Task { await accessoryManager.disconnectRadio(device.id) }
 			}
+			.buttonStyle(.borderless)
 		}
 		.padding(.vertical, 4)
 	}
