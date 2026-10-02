@@ -226,9 +226,9 @@ private struct ConnectedRadioRow: View {
 	}
 }
 
-/// Menu bar commands for the radio windows (T311–T313): File › Add Radio…, and a Radios menu
-/// with Disconnect for the key window's radio (W-07) and the connected radios, each of which
-/// reopens its window when it was closed (W-01).
+/// Menu bar commands for the radio windows (T311–T313): Add Radio… (in File, and in the Radios
+/// menu), and a Radios menu with Disconnect for the key window's radio (W-07) and the connected
+/// radios, each of which reopens its window when it was closed (W-01).
 struct RadioWindowCommands: Commands {
 	@ObservedObject var accessoryManager: AccessoryManager
 	@Environment(\.openWindow) private var openWindow
@@ -246,11 +246,17 @@ struct RadioWindowCommands: Commands {
 				Button("Add Radio…") {
 					openWindow(id: RadioWindows.mainWindowID)
 				}
-				.keyboardShortcut("n", modifiers: [.command, .shift])
 			}
 		}
 		CommandMenu("Radios") {
 			if RadioWindows.areEnabled {
+				// Also here, with the other radio commands: the File menu's new-item place doesn't
+				// always show on the Mac (W-02).
+				Button("Add Radio…") {
+					openWindow(id: RadioWindows.mainWindowID)
+				}
+				.keyboardShortcut("n", modifiers: [.command, .shift])
+				Divider()
 				Button(keyRadioName.map { String.localizedStringWithFormat("Disconnect %@".localized, $0) } ?? "Disconnect".localized) {
 					guard let deviceId = keyWindowRadio?.deviceId else { return }
 					Task { await accessoryManager.disconnectRadio(deviceId) }
