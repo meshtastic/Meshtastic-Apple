@@ -29,8 +29,12 @@ extension AccessoryManager {
 			if reconnect {
 				try? await session.connection.disconnect(withError: nil, shouldReconnect: true)
 			} else {
+				// A stand-in still connecting puts the preferred radio back, as Disconnect does
+				// (review V18 D1).
+				let standIn = standIn(for: device.id)
 				await MeshPackets.shared.setRadioAutoConnect(nodeNum: radioNum, false)
 				try? await disconnect()
+				restorePreferred(after: standIn)
 			}
 			return
 		}

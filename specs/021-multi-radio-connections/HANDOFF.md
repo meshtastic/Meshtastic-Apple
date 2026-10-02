@@ -55,7 +55,7 @@ Read this first if you are picking the work up. Update it in the same commit as 
 - Next up: the owner's device test (checklist below), which waits on hardware; don't rebuild
   Mesh Multi for it unless asked. Don't design around the focused/additional split: every radio
   works the same way (D-17). Removing the switch-era helpers (T066) waits for that test.
-- Baseline and latest: the full suite passes in the iOS Simulator (3,518 Swift Testing tests plus
+- Baseline and latest: the full suite passes in the iOS Simulator (3,519 Swift Testing tests plus
   the XCTests, about 55 seconds of test time). Run it with the simulator to itself: another
   session's test runs on the same simulator kill the test host partway.
 
@@ -105,6 +105,8 @@ Read this first if you are picking the work up. Update it in the same commit as 
   note). Nothing of the windows was run: the iOS Simulator suite and a Mac build (built, not run)
   pass; the device checklist below has what needs the owner's Mac, iPhone and Siri. Next: the
   owner's device test, then the full reviews of each area, then T122.
+- Review V18 (2026-10-01): `review-connections-v18.md` (D1), checked in the files; held and fixed
+  (T374).
 - Review V17 (2026-10-01): `review-connections-v17.md` (U1–U2), checked in the files; both held and
   are fixed (T372, T373).
 - Review V16 (2026-10-01): `review-connections-v16.md` (S1), checked in the files; held and fixed

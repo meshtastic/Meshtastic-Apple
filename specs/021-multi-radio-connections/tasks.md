@@ -384,6 +384,12 @@ Re-checked in the files and holding (2026-10-01); the owner approved.
 - [X] T372 U1: the stand-in restore (T371) runs only on the user's Disconnect or Remove of that radio, and only while the preferred radio is still the one it replaced or the stand-in and is still one of the user's radios. `restorePreferred(after:)`, called from `disconnectRadio` and `stopBringingBack`; `disconnect()` itself is as before T371, so Clear App Data, Restore Backup and a switch leave the flag set. Verified: `MultiRadioConnectFlowTests.cancelledStandInLeavesThePreferredRadio`, `.resetDuringAStandInKeepsTheFlag`, `.handedOnPreferredRadioStays`.
 - [X] T373 U2: Disconnect turns off a radio's reconnect at launch by its known number when its connect doesn't know it yet: `disconnectFirstRadio` and `disconnectAdditionalRadio(byUser:)` (with or without a session) fall back to `knownNodeNums`. Verified: `MultiRadioConnectFlowTests.cancelledStandInLeavesThePreferredRadio`, `.disconnectDroppedRadioForgetsIt`.
 
+## Review fix after V18 (review-connections-v18.md D1)
+
+Re-checked in the files and holding (2026-10-01); the owner approved.
+
+- [X] T374 D1: Remove This Radio (or a factory reset deleting bonds) on the stand-in from Device Config, during its node download, puts the preferred radio back as Disconnect does: `takeRadioOffline`'s first-radio branch takes the stand-in record before `disconnect()` and calls `restorePreferred(after:)` after it. Verified: `MultiRadioConnectFlowTests.removeStandInWhileItDownloads`.
+
 ## Phase 10: Hardening
 
 - [ ] T130 Four BLE radios for 24 hours (device checklist in `HANDOFF.md`).

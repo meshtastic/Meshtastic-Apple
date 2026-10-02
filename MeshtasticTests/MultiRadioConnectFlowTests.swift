@@ -372,6 +372,35 @@ struct MultiRadioConnectFlowTests {
 		endDiscovery(manager)
 	}
 
+	@Test("Removing the stand-in from Device Config while it downloads leaves the preferred radio to come back")
+	func removeStandInWhileItDownloads() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let firstNum = uniqueNodeNum(), standInNum = firstNum &+ 0x600
+		// B never answers the config request, so its connect stays in progress past Step 1.
+		var standInDevice = device()
+		standInDevice.num = Int64(standInNum)
+		let manager = makeManager(ScriptedTransport(radio: ScriptedRadio(nodeNum: firstNum), radiosByIdentifier: [standInDevice.identifier: ScriptedRadio(nodeNum: standInNum, answersConfig: false)]))
+		let firstDevice = device()
+		try await manager.connect(to: firstDevice)
+		// A, the preferred radio, drops (not the user).
+		try await manager.closeConnection()
+		#expect(PreferredRadio.peripheralId == firstDevice.id.uuidString)
+		allowDiscovery(manager)
+
+		let standIn = Task { await manager.connectAsFirst(standInDevice) }
+		try await waitUntil { manager.activeConnection?.device.id == standInDevice.id }
+		#expect(manager.connectAttempts[standInDevice.id] != nil, "still connecting")
+		PreferredRadio.set(standInDevice)
+
+		await manager.removeRadio(Int64(standInNum))
+		await standIn.value
+		#expect(manager.activeConnection == nil)
+		#expect(PreferredRadio.peripheralId == firstDevice.id.uuidString, "A is still the preferred radio")
+		#expect(!manager.userRequestedConnectionCancellation, "so discovery brings A back")
+		endDiscovery(manager)
+	}
+
 	@Test("Disconnect on a radio alongside that isn't connected turns off its reconnect at the next launch")
 	func disconnectDroppedRadioForgetsIt() async throws {
 		let saved = SavedDefaults()
