@@ -108,7 +108,7 @@ class ESP32WifiOTAViewModel: ObservableObject {
 			// 1. Discovery / Connection Phase
 			if let manualHost = WifiOTAHandoffAddress.ipv4Literal(host) {
 				// The address was taken from the live socket before the reboot. Dial it as written.
-				Logger.services.info("[ESP OTA] Using manual host: \(manualHost)")
+				Logger.services.info("[ESP OTA] Using manual host: \(manualHost, privacy: .private)")
 				targetEndpoint = NWEndpoint.hostPort(host: NWEndpoint.Host(manualHost), port: port)
 				
 				statusMessage = "Waiting for device..."
