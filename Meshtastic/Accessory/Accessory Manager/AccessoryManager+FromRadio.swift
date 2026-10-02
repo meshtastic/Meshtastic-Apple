@@ -301,14 +301,10 @@ extension AccessoryManager {
 		_ = await NodeBackupManager.shared.createBackup(forNode: oldNum, deviceId: deviceId, nodeName: previousName)
 
 		// Detail views bound to the old node have to unmount before its identity changes
-		// underneath them, the same reason the reset path pops first.
-		if let routers = appState?.windows.allRouters {
-			for router in routers {
-				router.popToRoot(tab: .messages)
-				router.popToRoot(tab: .nodes)
-				router.popToRoot(tab: .map)
-				router.popToRoot(tab: .settings)
-			}
+		// underneath them, the same reason the reset path pops first. Every open
+		// window has its own router; pop them all and leave each window's tab.
+		if let appState {
+			appState.windows.popAllStacks()
 			await Task.yield()
 		}
 
@@ -331,13 +327,12 @@ extension AccessoryManager {
 	/// Choices saved by a radio's node number follow it to its new number (T214): the radios TAK,
 	/// CarPlay & Siri and the Watch use, the Heard By filter, and the radio to connect first.
 	/// Otherwise they'd name a number no radio has and quietly fall back.
-	static func moveSavedRadioChoices(from oldNum: Int64, to newNum: Int64, store: UserDefaults = .standard, filters: NodeFilterParameters = .shared) {
+	/// `filters` defaults to every open window's.
+	static func moveSavedRadioChoices(from oldNum: Int64, to newNum: Int64, store: UserDefaults = .standard, filters: [NodeFilterParameters]? = nil) {
 		for service in RadioService.allCases where UserDefaults.serviceRadio(service, in: store) == oldNum {
 			UserDefaults.setServiceRadio(newNum, for: service, in: store)
 		}
-		if filters.heardByRadio == oldNum {
-			filters.heardByRadio = newNum
-		}
+		NodeFilterParameters.moveHeardByRadio(from: oldNum, to: newNum, store: store, filters: filters)
 	}
 
 	/// When event firmware is detected (DEFCON, BURNING_MAN, OPEN_SAUCE, etc.),

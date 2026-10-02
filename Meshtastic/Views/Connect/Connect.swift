@@ -136,8 +136,7 @@ struct Connect: View {
 
 	var body: some View {
 		NavigationStack {
-			VStack(spacing: 0) {
-				List {
+			List {
 					Section {
 						if let connectedDevice = radioSession?.device,
 						   isRadioConnected || isRadioConnecting {
@@ -533,33 +532,33 @@ struct Connect: View {
 						.textCase(nil)
 					}
 				}
-				HStack(alignment: .center) {
-					Spacer()
 #if targetEnvironment(macCatalyst)
-					// TODO: should this be allowDisconnect?
+				// A view under the list, even an empty one, lifts the list off the
+				// bottom safe area. The tab bar inset then shows as a blank strip.
+				.safeAreaInset(edge: .bottom, spacing: 0) {
 					if link.canDisconnect {
-						Button(role: .destructive, action: {
-							if link.canDisconnect {
-								Task {
-									if let radioDeviceId { await accessoryManager.disconnectRadio(radioDeviceId) }
+						HStack {
+							Spacer()
+							Button(role: .destructive, action: {
+								if link.canDisconnect {
+									Task {
+										if let radioDeviceId { await accessoryManager.disconnectRadio(radioDeviceId) }
+									}
 								}
+							}) {
+								Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 							}
-						}) {
-							Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
+							.buttonStyle(.bordered)
+							.buttonBorderShape(.capsule)
+							.controlSize(.large)
+							.padding()
+							Spacer()
 						}
-						.buttonStyle(.bordered)
-						.buttonBorderShape(.capsule)
-						.controlSize(.large)
-						.padding()
+						.padding(.bottom, 10)
+						.background(Color(.systemGroupedBackground))
 					}
-#endif
-					Spacer()
 				}
-				.padding(.bottom, 10)
-			}
-			.background {
-				Color(.systemGroupedBackground)
-			}
+#endif
 			.disabled(isSwitchingRadio)
 			.overlay {
 				if isSwitchingRadio {
@@ -593,7 +592,7 @@ struct Connect: View {
 					)
 				}
 			}
-			// Attached to the root VStack (not the connected-device subtree, which unmounts
+			// Attached to the list (not the connected-device subtree, which unmounts
 			// on disconnect) so the confirmation survives a connection state change between
 			// the long-press and the user tapping "Shutdown Node?".
 			.confirmationDialog(
@@ -934,6 +933,7 @@ private struct FirmwareUpdateConnectNotice: View {
 struct ManualConnectionMenu: View {
 
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	@EnvironmentObject private var router: Router
 	@Environment(\.modelContext) private var context
 	@Binding var isSwitchingRadio: Bool
 
@@ -1025,7 +1025,7 @@ struct ManualConnectionMenu: View {
 							}
 						} else {
 							Task {
-								await performRadioSwitch(device, isSwitchingRadio: $isSwitchingRadio, accessoryManager: accessoryManager)
+								await performRadioSwitch(device, isSwitchingRadio: $isSwitchingRadio, accessoryManager: accessoryManager, router: router)
 							}
 						}
 					}
@@ -1038,6 +1038,7 @@ struct ManualConnectionMenu: View {
 struct DeviceConnectRow: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	@EnvironmentObject private var router: Router
 	let device: Device
 	@Binding var isSwitchingRadio: Bool
 	@State private var connectError: String?
@@ -1049,7 +1050,7 @@ struct DeviceConnectRow: View {
 		guard accessoryManager.connectedRadioCount > 0 else {
 			Task {
 				if PreferredRadio.peripheralId.count > 0 && device.id.uuidString != PreferredRadio.peripheralId {
-					await performRadioSwitch(device, isSwitchingRadio: $isSwitchingRadio, accessoryManager: accessoryManager)
+					await performRadioSwitch(device, isSwitchingRadio: $isSwitchingRadio, accessoryManager: accessoryManager, router: router)
 				} else {
 					try? await accessoryManager.connect(to: device)
 				}
@@ -1125,13 +1126,14 @@ struct DeviceConnectRow: View {
 }
 
 @MainActor
-func performRadioSwitch(_ device: Device, isSwitchingRadio: Binding<Bool>, accessoryManager: AccessoryManager) async {
+func performRadioSwitch(_ device: Device, isSwitchingRadio: Binding<Bool>, accessoryManager: AccessoryManager, router: Router) async {
 	isSwitchingRadio.wrappedValue = true
 
 	await switchToDevice(
 		device,
 		accessoryManager: accessoryManager,
 		appState: accessoryManager.appState,
+		router: router,
 		onRestoreComplete: {
 			isSwitchingRadio.wrappedValue = false
 		}
@@ -1180,6 +1182,7 @@ func backupCurrentAndRestoreDatabase(
 	currentNodeNum: Int64?,
 	accessoryManager: AccessoryManager,
 	appState: AppState,
+	router: Router,
 	selectedTab: NavigationState.Tab,
 	disconnectCurrentDevice: Bool = false
 ) async -> NodeBackupResult {
@@ -1194,13 +1197,11 @@ func backupCurrentAndRestoreDatabase(
 		try? await accessoryManager.disconnect()
 	}
 
-	for router in appState.windows.allRouters {
-		router.popToRoot(tab: .messages)
-		router.popToRoot(tab: .nodes)
-		router.popToRoot(tab: .map)
-		router.popToRoot(tab: .settings)
-	}
-	appState.router.selectedTab = selectedTab
+	// Every window drops the detail views that are about to point at a destroyed
+	// store. Only the window that started the switch changes tab.
+	appState.windows.popAllStacks()
+	router.popAllStacks()
+	router.selectedTab = selectedTab
 
 	// Unmount every @Query holder (the gate replaces the tree AND the query-owning wrappers —
 	// see ContentView.gatedContent / EventFirmwareTintScope) before touching the store. Stale
@@ -1315,6 +1316,7 @@ func switchToDevice(
 	accessoryManager: AccessoryManager,
 	appState: AppState,
 	keepPreviousRadio: Bool = true,
+	router: Router,
 	onRestoreComplete: (@MainActor () -> Void)? = nil
 ) async {
 	Logger.transport.info("🔀 Switching the first radio from \(accessoryManager.activeConnection?.device.name ?? "none", privacy: .public) to \(device.name, privacy: .public)")
@@ -1346,7 +1348,7 @@ func switchToDevice(
 		try? await accessoryManager.disconnect()
 	}
 	// Settings screens describe the first radio; leave them before it changes.
-	appState.router.popToRoot(tab: .settings)
+	router.popToRoot(tab: .settings)
 	onRestoreComplete?()
 
 	do {

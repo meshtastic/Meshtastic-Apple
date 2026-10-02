@@ -103,6 +103,21 @@ Key model types:
 | `TraceRouteEntity` | A recorded trace route |
 | `WaypointEntity` | A shared map waypoint |
 | `EventFirmwareEntity` | Cached off-device event-firmware branding/lifecycle metadata |
+| `NodeObservationEntity` | One local radio's view of one node (signal, hops, last heard, admin session), unique on `"radio:node"` |
+| `PacketReceptionEntity` | One local radio's reception of one packet, unique on `"radio:sender:packet"`; kept for 30 days or 50,000 rows |
+
+### Multi-radio data (feature 021)
+
+Every connected radio writes to the same store. Rows say which radio they came through:
+
+- `MessageEntity.messageKey` (`"sender:packetId"`) is the unique key, since a packet id is only unique per sender. `messageId` is no longer unique; replies and tapbacks still refer to it. `fromNum`, `toNum`, `localNodeNum` (the radio that received or sent it) and `channelKey` (`ChannelIdentity`) are flat columns so queries don't join.
+- Resetting or removing one of several radios (D-18) goes through `MeshPackets.removeRadioData` (`MeshPackets+RadioRemoval.swift`), not `clearDatabase`, which stays the single-radio and Clear App Data path. "The user's radios" there is `storedRadios()`: radios connected with this version (`lastConnected`) or with observations, so stray `MyInfoEntity` rows in old stores don't count. Whether two radios are on one mesh is `MeshNetwork` (region, modulation, computed frequency).
+- Observations hold only node numbers, so nothing cascades: evicting, removing or purging a node deletes its observations explicitly.
+- `ChannelEntity.channelKey` is recomputed whenever a radio's channels or LoRa settings arrive (`MeshPackets.refreshChannelKeys`). With several radios, a channel with no key yet shows only its own radio's messages in its slot.
+- `NodeInfoEntity` keeps its signal, hops and last-heard fields. With one radio observing a node they are written directly, as before. With several, `NodeObservationEntity.applyAggregate` writes the best path (RF over MQTT, fewest hops, most recent) among the observations heard within an hour of the newest, and the latest last-heard. `channel` is a slot number on one radio, so it only comes from the focused radio's observation; requests to a node use `AccessoryManager.channelSlot(toReach:)`.
+- A broadcast another local radio already delivered records a reception and skips the packet handlers, so it is stored once.
+- A copy a radio couldn't decrypt (it doesn't have that channel) records nothing, so the decoded copy from another radio is still handled.
+- Rows from older builds get the new columns from `MultiRadioBackfill`, a resumable job. It runs to the end at launch when messages still wait for it and the store already holds several radios (holding the handshake gate, before the first radio connects), when a radio other than the store's own reports its node number, added alongside or switched to (`backfillBeforeAnotherRadioJoins`, connect Step 3c; the store's radio is `BackfillOwner`, recorded at launch before a switch can move `PreferredRadio`), and after a backup restore, attributed to the restored radio (`drainMultiRadioBackfill`, which yields the actor between chunks). A single-radio store doesn't wait for it at launch; the background maintenance pass picks up anything left. Readers must cope with nil in those columns until it has run. Its node observations are copied from the node's own fields, so it only makes them while no other radio has observations.
 
 ### `EventFirmwareEntity` — off-device event branding cache
 

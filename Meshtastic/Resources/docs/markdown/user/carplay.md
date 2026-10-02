@@ -57,6 +57,8 @@ Use these Siri voice commands in CarPlay to interact with Meshtastic:
 | Search Messages | "Search Meshtastic messages" | Searches message history |
 | Mark as Read | "Mark Meshtastic message as read" | Marks a conversation as read |
 
+With more than one radio, CarPlay and Siri use the focused radio unless you pick another in [Settings › App Settings](settings.md#tak-carplay--siri-and-apple-watch). A reply to a message Siri read out goes through the radio the message came in on, on that radio's channel, and a channel is announced by its name. CarPlay's lists count only the chosen radio's messages. The **Send a Direct Message** and **Send a Group Message** shortcuts also take an optional radio node number; a shortcut that names a radio that isn't connected fails rather than sending from another radio.
+
 > **Warning — Message Limits:**
 > Messages are limited to **200 bytes** (UTF-8). Siri will not send messages that exceed this limit. Only a **single recipient** per message is supported — no group direct messages. Emoji-only messages and admin messages are excluded from CarPlay.
 

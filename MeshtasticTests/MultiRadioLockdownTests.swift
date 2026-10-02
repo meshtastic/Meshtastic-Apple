@@ -65,7 +65,7 @@ struct MultiRadioLockdownTests {
 		let manager = AccessoryManager(transports: transports)
 		manager.isSwitchingDevices = true
 		manager.context = PersistenceController.shared.context
-		manager.appState = AppState(router: Router())
+		manager.appState = AppState()
 		var first = Device(id: UUID(), name: "First", transportType: .tcp, identifier: "a.local:4403")
 		first.num = 0x0A0A
 		let store = InMemoryPassphraseStore()

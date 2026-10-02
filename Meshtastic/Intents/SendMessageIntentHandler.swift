@@ -13,13 +13,64 @@ import OSLog
 
 final class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
 
+	/// Where a send intent is addressed. Resolution and handling have to read an
+	/// intent the same way: a resolver that asks for a value the handler would not
+	/// have used turns into a question the user cannot answer sensibly.
+	enum Destination: Equatable {
+		/// A channel Siri named. The index still needs a lookup against the store.
+		case namedChannel(String)
+		/// A channel the conversation identifier names outright.
+		case channel(Int)
+		/// One or more people to resolve.
+		case recipients
+		/// Nothing usable.
+		case unknown
+	}
+
+	/// Siri drops the speakable group name on some channel replies — notification
+	/// replies, and replying to a channel thread in CarPlay — but the conversation
+	/// identifier still carries "channel-<N>". Reading that here is what keeps a
+	/// channel reply from being asked who it is for.
+	static func destination(
+		speakableGroupName: String?,
+		conversationIdentifier: String?,
+		hasRecipients: Bool
+	) -> Destination {
+		if let speakableGroupName {
+			return .namedChannel(speakableGroupName)
+		}
+		if let conversationIdentifier,
+		   let index = IntentMessageConverters.channelIndex(fromHandleOrName: conversationIdentifier) {
+			return .channel(index)
+		}
+		return hasRecipients ? .recipients : .unknown
+	}
+
+	private static func destination(for intent: INSendMessageIntent) -> Destination {
+		destination(
+			speakableGroupName: intent.speakableGroupName?.spokenPhrase,
+			conversationIdentifier: intent.conversationIdentifier,
+			hasRecipients: !(intent.recipients ?? []).isEmpty
+		)
+	}
+
 	// MARK: - Resolution
 
 	func resolveRecipients(for intent: INSendMessageIntent) async -> [INSendMessageRecipientResolutionResult] {
+		switch Self.destination(for: intent) {
+		case .namedChannel, .channel:
+			// A channel message has no recipient. Resolving whoever Siri attached to
+			// the reply — the thread's sender — could only prompt: for one name it is
+			// noise, for several it is a disambiguation list, and the handler ignores
+			// the answer either way.
+			return []
+		case .unknown:
+			return [.needsValue()]
+		case .recipients:
+			break
+		}
+
 		guard let recipients = intent.recipients, !recipients.isEmpty else {
-			if intent.speakableGroupName != nil {
-				return []
-			}
 			return [.needsValue()]
 		}
 
@@ -70,10 +121,16 @@ final class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
 	}
 
 	func resolveSpeakableGroupName(for intent: INSendMessageIntent) async -> INSpeakableStringResolutionResult {
-		guard let groupName = intent.speakableGroupName else {
-			if let recipients = intent.recipients, !recipients.isEmpty {
-				return .notRequired()
-			}
+		let groupName: INSpeakableString
+		switch Self.destination(for: intent) {
+		case .namedChannel:
+			guard let named = intent.speakableGroupName else { return .needsValue() }
+			groupName = named
+		case .channel, .recipients:
+			// The channel is already known from the conversation identifier, or this is
+			// a direct message. Either way there is nothing to ask for.
+			return .notRequired()
+		case .unknown:
 			return .needsValue()
 		}
 
@@ -148,51 +205,40 @@ final class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
 				case let .directMessage(nodeNum, _):
 					try await AccessoryManager.shared.sendMessage(message: content, toUserNum: nodeNum, channel: 0, isEmoji: false, replyID: 0, viaRadio: radioNum)
 				}
-			} else if let groupName = intent.speakableGroupName {
-				// Channel message
-				let slot = await MainActor.run {
-					let context = PersistenceController.shared.context
-					return IntentMessageConverters.channelSlot(for: groupName.spokenPhrase, in: context)
-				}
-				// A group name that matches no channel is a failure — the old
-				// fallback to index 0 silently sent the reply to Primary instead.
-				guard let slot else {
-					Logger.services.error("CarPlay/Siri: No channel matches group name \(groupName.spokenPhrase, privacy: .public)")
-					return INSendMessageIntentResponse(code: .failure, userActivity: nil)
-				}
-				// A channel only another radio has goes out through that radio, on its slot.
-				guard let viaRadio = slot.radioNum ?? defaultRadio else { return noDefaultRadio }
-				if let other = slot.radioNum, await !AccessoryManager.shared.isRadioConnected(nodeNum: other) {
-					Logger.services.error("CarPlay/Siri: \(groupName.spokenPhrase, privacy: .public) is on a radio that isn't connected")
-					return INSendMessageIntentResponse(code: .failure, userActivity: nil)
-				}
-				try await AccessoryManager.shared.sendMessage(
-					message: content,
-					toUserNum: 0,
-					channel: Int32(slot.index),
-					isEmoji: false,
-					replyID: 0,
-					viaRadio: viaRadio
-				)
-			} else if let conversationId = intent.conversationIdentifier,
-					  let channelIndex = IntentMessageConverters.channelIndex(fromHandleOrName: conversationId) {
-				// Channel reply where Siri dropped the speakable group name (seen on
-				// notification replies): the conversation identifier still carries
-				// "channel-<N>". Route by it — before this, the reply fell through to
-				// the recipient handle below, which is the message's SENDER, and the
-				// channel reply went out as a DM to that person.
-				guard let defaultRadio else { return noDefaultRadio }
-				try await AccessoryManager.shared.sendMessage(
-					message: content,
-					toUserNum: 0,
-					channel: Int32(channelIndex),
-					isEmoji: false,
-					replyID: 0,
-					viaRadio: defaultRadio
-				)
-			} else if let recipient = intent.recipients?.first,
-					  let handleValue = recipient.personHandle?.value {
-				if let channelIndex = IntentMessageConverters.channelIndex(fromHandleOrName: handleValue) {
+			} else {
+				// Same order as resolution, through the same helper, so the two cannot drift.
+				switch Self.destination(for: intent) {
+				case .namedChannel(let name):
+					let slot = await MainActor.run {
+						let context = PersistenceController.shared.context
+						return IntentMessageConverters.channelSlot(for: name, in: context)
+					}
+					// A group name that matches no channel is a failure — the old
+					// fallback to index 0 silently sent the reply to Primary instead.
+					guard let slot else {
+						// The group name is whatever the user said, so it is redacted like
+						// message content is: it can carry a person, a place, anything.
+						Logger.services.error("CarPlay/Siri: No channel matches group name \(name, privacy: .private)")
+						return INSendMessageIntentResponse(code: .failure, userActivity: nil)
+					}
+					// A channel only another radio has goes out through that radio, on its slot.
+					guard let viaRadio = slot.radioNum ?? defaultRadio else { return noDefaultRadio }
+					if let other = slot.radioNum, await !AccessoryManager.shared.isRadioConnected(nodeNum: other) {
+						Logger.services.error("CarPlay/Siri: \(name, privacy: .private) is on a radio that isn't connected")
+						return INSendMessageIntentResponse(code: .failure, userActivity: nil)
+					}
+					try await AccessoryManager.shared.sendMessage(
+						message: content,
+						toUserNum: 0,
+						channel: Int32(slot.index),
+						isEmoji: false,
+						replyID: 0,
+						viaRadio: viaRadio
+					)
+				case .channel(let channelIndex):
+					// Siri dropped the group name but the conversation identifier still names
+					// the channel. Before this was read, the reply fell through to the recipient
+					// handle — the message's SENDER — and went out as a DM to that person.
 					guard let defaultRadio else { return noDefaultRadio }
 					try await AccessoryManager.shared.sendMessage(
 						message: content,
@@ -202,22 +248,36 @@ final class SendMessageIntentHandler: NSObject, INSendMessageIntentHandling {
 						replyID: 0,
 						viaRadio: defaultRadio
 					)
-				} else if let nodeNum = IntentMessageConverters.directMessageNodeNum(from: handleValue) {
-				// Direct message to a single node
-					guard let defaultRadio else { return noDefaultRadio }
-					try await AccessoryManager.shared.sendMessage(
-						message: content,
-						toUserNum: nodeNum,
-						channel: 0,
-						isEmoji: false,
-						replyID: 0,
-						viaRadio: defaultRadio
-					)
-				} else {
+				case .recipients:
+					guard let handleValue = intent.recipients?.first?.personHandle?.value else {
+						return INSendMessageIntentResponse(code: .failure, userActivity: nil)
+					}
+					if let channelIndex = IntentMessageConverters.channelIndex(fromHandleOrName: handleValue) {
+						guard let defaultRadio else { return noDefaultRadio }
+						try await AccessoryManager.shared.sendMessage(
+							message: content,
+							toUserNum: 0,
+							channel: Int32(channelIndex),
+							isEmoji: false,
+							replyID: 0,
+							viaRadio: defaultRadio
+						)
+					} else if let nodeNum = IntentMessageConverters.directMessageNodeNum(from: handleValue) {
+						guard let defaultRadio else { return noDefaultRadio }
+						try await AccessoryManager.shared.sendMessage(
+							message: content,
+							toUserNum: nodeNum,
+							channel: 0,
+							isEmoji: false,
+							replyID: 0,
+							viaRadio: defaultRadio
+						)
+					} else {
+						return INSendMessageIntentResponse(code: .failure, userActivity: nil)
+					}
+				case .unknown:
 					return INSendMessageIntentResponse(code: .failure, userActivity: nil)
 				}
-			} else {
-				return INSendMessageIntentResponse(code: .failure, userActivity: nil)
 			}
 
 			Logger.services.info("CarPlay/Siri: Message sent successfully")

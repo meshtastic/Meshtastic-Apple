@@ -117,6 +117,8 @@ Long-press any node in the list to access quick actions:
 - **Ignore / Remove from ignored** — hide this node from normal views
 - **Remove** — remove the node from your local database
 
+With more than one radio connected, favoriting or ignoring a node applies to every connected radio, so each radio keeps it the same way.
+
 ## Display Names
 
 You can give any node a local nickname that's shown throughout the app instead of its device long name — in the node list, node details, and messages. Set it from the node's long-press menu ("Display name") or from the **Name** row in Node Detail. The avatar circle always shows the node's actual short code, unaffected by the nickname.
@@ -137,6 +139,7 @@ Tap the filter icon above the list to narrow which nodes are shown. Filters appl
 | **Distance** | Limit to nodes within a chosen radius of your location. Falls back to the connected device's last position when phone location is unavailable. |
 | **Roles** | Show only the device roles you select. |
 | **Connection** | Show nodes reachable via LoRa, via MQTT, or both. At least one is always kept on. |
+| **Heard By** | Only shown when you use more than one radio. Pick one of your radios to see only the nodes it has heard; **Any Radio** shows every node. |
 
 Filters are **remembered between launches** — the app reopens with the same filters applied. Search text is the exception: it is intentionally cleared on relaunch so you never reopen into a stale search that hides most of your nodes. Use the **reset** affordance to clear every filter and the search text at once.
 
@@ -180,6 +183,10 @@ Tap any node to see the full detail view with hardware info, signal metrics, env
 ![Node Detail](../assets/screenshots/nodeDetail.png)
 
 For messageable nodes, use **Actions > Share Contact QR** to show a Meshtastic contact link and QR code that another device can scan.
+
+### Heard By
+
+When more than one of your radios has heard the node, a **Heard By** section lists each radio: how many hops away the node is from it (**Direct**, a hop count, or **MQTT**), the signal strength when it's heard directly, and how long ago that radio last heard it. **Offline** marks a radio that isn't connected now. The node list and map show the best of these: the fewest hops and the most recent time heard.
 
 ### Write a Contact to an NFC Tag
 

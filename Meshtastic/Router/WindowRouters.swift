@@ -12,6 +12,11 @@ import SwiftData
 /// The open windows and their routers (feature 021, D-19, T308). Each window navigates on its
 /// own, so opening a node in one doesn't move another. A deep link or a notification tap goes to
 /// the window whose radio it's about (W-05).
+///
+/// A node switch pops the detail views in every window before it touches the store, and that pop
+/// has to happen in the call, not on a later `onChange`: the views are still mounted, holding
+/// model objects the reset is about to destroy (`popAllStacks()`). Windows that show no radio's
+/// app, such as the Mesh Map window, register only for that.
 @MainActor
 final class WindowRouters {
 	struct Entry {
@@ -23,12 +28,13 @@ final class WindowRouters {
 	private(set) var entries: [Entry] = []
 	/// The window the user was last in.
 	private(set) var lastActive: RadioWindow?
-	/// Where a link goes with no window open: the app's first router.
-	let fallback: Router
+	/// Routers of windows that links don't go to (the Mesh Map window), popped with the rest.
+	private var popOnly: [UUID: Router] = [:]
+	/// A link that came with no window open (a notification tap that launched the app). The next
+	/// window to open takes it.
+	private(set) var heldLink: URL?
 
-	nonisolated init(fallback: Router) {
-		self.fallback = fallback
-	}
+	nonisolated init() {}
 
 	/// Opens a radio's window (on the Mac, set by its windows): a link about a radio whose window
 	/// is hidden or closed reopens it (W-05, review V11 W4).
@@ -41,6 +47,9 @@ final class WindowRouters {
 		entries.append(Entry(window: window, router: router))
 		if let deviceId = window.deviceId, let url = pendingLinks.removeValue(forKey: deviceId) {
 			router.route(url: url)
+		} else if let url = heldLink {
+			heldLink = nil
+			router.route(url: url)
 		}
 	}
 
@@ -48,14 +57,33 @@ final class WindowRouters {
 		entries.removeAll { $0.router === router }
 	}
 
+	/// A window that links don't go to, popped with the rest on a store reset.
+	@discardableResult
+	func registerPopOnly(_ router: Router) -> UUID {
+		let id = UUID()
+		popOnly[id] = router
+		return id
+	}
+
+	func unregisterPopOnly(_ id: UUID) {
+		popOnly.removeValue(forKey: id)
+	}
+
 	func activated(_ window: RadioWindow) {
 		lastActive = window
 	}
 
-	/// Every open window's router, for what applies to all of them (popping detail views before
-	/// a store reset). The fallback when none is open.
+	/// Every open window's router, for what applies to all of them.
 	var allRouters: [Router] {
-		entries.isEmpty ? [fallback] : entries.map(\.router)
+		entries.map(\.router) + popOnly.values
+	}
+
+	/// Drops every detail stack in every window and leaves each window on its tab, so a store
+	/// reset can unmount doomed model objects without moving every window to the same tab.
+	func popAllStacks() {
+		for router in allRouters {
+			router.popAllStacks()
+		}
 	}
 
 	/// The window whose radio a link is about (W-05), or nil when none is open:
@@ -120,15 +148,21 @@ final class WindowRouters {
 			return
 		}
 		let chosen = Self.fallback(windows: windows.map(\.window), lastActive: lastActive)
-		(entries.first { $0.window == chosen }?.router ?? fallback).route(url: url)
+		guard let router = entries.first(where: { $0.window == chosen })?.router else {
+			// No window open yet: the first one to open takes it.
+			heldLink = url
+			return
+		}
+		router.route(url: url)
 	}
 
-	/// The router `route(url:manager:)` would use now, without opening anything.
-	func router(for url: URL, manager: AccessoryManager) -> Router {
+	/// The router `route(url:manager:)` would use now, without opening anything; nil with no
+	/// window open.
+	func router(for url: URL, manager: AccessoryManager) -> Router? {
 		let (radio, channelRadios) = Self.radios(of: url, manager: manager)
 		let windows = entries.map { (window: $0.window, radioNum: Self.radioNum(of: $0.window, manager: manager)) }
 		let chosen = Self.choose(windows: windows, radio: radio, channelRadios: channelRadios, lastActive: lastActive)
-		return entries.first { $0.window == chosen }?.router ?? fallback
+		return entries.first { $0.window == chosen }?.router
 	}
 
 	/// A messages link names the radio it came in on (`radio=`); a channel's also counts every

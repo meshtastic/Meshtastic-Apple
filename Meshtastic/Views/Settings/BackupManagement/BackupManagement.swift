@@ -14,6 +14,7 @@ struct BackupManagement: View {
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 	/// The radio this window works with (feature 021, D-19).
 	@Environment(\.windowRadio) private var windowRadio
+	@EnvironmentObject private var router: Router
 	@State private var backups: [BackupEntry] = []
 	@State private var totalSize: Int64 = 0
 	@State private var showDeleteConfirmation = false
@@ -229,6 +230,7 @@ struct BackupManagement: View {
 			currentNodeNum: currentNodeNum,
 			accessoryManager: accessoryManager,
 			appState: accessoryManager.appState,
+			router: router,
 			selectedTab: .settings,
 			disconnectCurrentDevice: true
 		)

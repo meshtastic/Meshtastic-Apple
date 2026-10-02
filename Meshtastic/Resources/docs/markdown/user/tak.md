@@ -60,6 +60,8 @@ Below the identity section:
 - A **channel picker** for the LoRa channel the server bridges between TAK clients and the mesh.
 - **Read-only mode** (treat the app as a TAK observer that doesn't forward CoT to the mesh) and **mesh-to-CoT relay** toggles.
 
+With more than one radio, TAK goes through the focused radio unless you pick another in [Settings › App Settings](settings.md#tak-carplay--siri-and-apple-watch). The channel checks, **Fix Channel**, the channel picker, the **TAK Identity** section and the device role warning all apply to that radio.
+
 {: .tip }
 > **Tip — Primary channel requirements**
 > The TAK Server runs in **read-only mode** until your primary channel has a non-default name and a non-default 256-bit encryption key. Use the **Fix Channel** button on the warning banner to apply a recommended TAK preset (Short Fast, new AES key, name "TAK") in one tap.

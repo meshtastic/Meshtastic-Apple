@@ -817,6 +817,11 @@ extension Config.LoRaConfig.ModemPreset {
 enum CodingRates {
 	static let validRange = 5...8
 
+	/// The first firmware that uses `coding_rate` while a modem preset is on.
+	/// Before this, `applyModemConfig` took the coding rate from the preset and
+	/// ignored the field (meshtastic/firmware#9155).
+	static let overrideFirmwareVersion = "2.7.18"
+
 	static func options(usePreset: Bool, modemPreset: ModemPresets?) -> [Int] {
 		guard usePreset else {
 			return Array(validRange)
@@ -834,6 +839,19 @@ enum CodingRates {
 			return 0
 		}
 		return validRange.lowerBound
+	}
+
+	/// The coding rate the radio is actually using. On firmware that cannot take an
+	/// override the preset's own rate applies, whatever the field holds, so this
+	/// reports the preset rather than the stored value.
+	static func effective(
+		_ codingRate: Int,
+		usePreset: Bool,
+		modemPreset: ModemPresets?,
+		supportsOverride: Bool
+	) -> Int {
+		guard supportsOverride || !usePreset else { return 0 }
+		return normalized(codingRate, usePreset: usePreset, modemPreset: modemPreset)
 	}
 
 	static func description(for codingRate: Int, modemPreset: ModemPresets?) -> String {

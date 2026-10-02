@@ -12,7 +12,6 @@ import SwiftUI
 import MeshtasticProtobufs
 import OSLog
 
-@available(iOS 18, *)
 struct ImportDeviceProfileView: View {
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 	/// The radio this window works with (feature 021, D-19).

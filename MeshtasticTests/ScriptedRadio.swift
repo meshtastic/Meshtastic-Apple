@@ -279,7 +279,7 @@ enum ConnectFlowSupport {
 		let manager = AccessoryManager(transports: [transport])
 		manager.isSwitchingDevices = true
 		manager.context = PersistenceController.shared.context
-		manager.appState = AppState(router: Router())
+		manager.appState = AppState()
 		return manager
 	}
 

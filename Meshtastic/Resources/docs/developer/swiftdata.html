@@ -124,8 +124,28 @@ final class NodeInfoEntity {
 <td><code>EventFirmwareEntity</code></td>
 <td>Cached off-device event-firmware branding/lifecycle metadata</td>
 </tr>
+<tr>
+<td><code>NodeObservationEntity</code></td>
+<td>One local radio's view of one node (signal, hops, last heard, admin session), unique on <code>&quot;radio:node&quot;</code></td>
+</tr>
+<tr>
+<td><code>PacketReceptionEntity</code></td>
+<td>One local radio's reception of one packet, unique on <code>&quot;radio:sender:packet&quot;</code>; kept for 30 days or 50,000 rows</td>
+</tr>
 </tbody>
 </table>
+<h3>Multi-radio data (feature 021)</h3>
+<p>Every connected radio writes to the same store. Rows say which radio they came through:</p>
+<ul>
+<li><code>MessageEntity.messageKey</code> (<code>&quot;sender:packetId&quot;</code>) is the unique key, since a packet id is only unique per sender. <code>messageId</code> is no longer unique; replies and tapbacks still refer to it. <code>fromNum</code>, <code>toNum</code>, <code>localNodeNum</code> (the radio that received or sent it) and <code>channelKey</code> (<code>ChannelIdentity</code>) are flat columns so queries don't join.</li>
+<li>Resetting or removing one of several radios (D-18) goes through <code>MeshPackets.removeRadioData</code> (<code>MeshPackets+RadioRemoval.swift</code>), not <code>clearDatabase</code>, which stays the single-radio and Clear App Data path. &quot;The user's radios&quot; there is <code>storedRadios()</code>: radios connected with this version (<code>lastConnected</code>) or with observations, so stray <code>MyInfoEntity</code> rows in old stores don't count. Whether two radios are on one mesh is <code>MeshNetwork</code> (region, modulation, computed frequency).</li>
+<li>Observations hold only node numbers, so nothing cascades: evicting, removing or purging a node deletes its observations explicitly.</li>
+<li><code>ChannelEntity.channelKey</code> is recomputed whenever a radio's channels or LoRa settings arrive (<code>MeshPackets.refreshChannelKeys</code>). With several radios, a channel with no key yet shows only its own radio's messages in its slot.</li>
+<li><code>NodeInfoEntity</code> keeps its signal, hops and last-heard fields. With one radio observing a node they are written directly, as before. With several, <code>NodeObservationEntity.applyAggregate</code> writes the best path (RF over MQTT, fewest hops, most recent) among the observations heard within an hour of the newest, and the latest last-heard. <code>channel</code> is a slot number on one radio, so it only comes from the focused radio's observation; requests to a node use <code>AccessoryManager.channelSlot(toReach:)</code>.</li>
+<li>A broadcast another local radio already delivered records a reception and skips the packet handlers, so it is stored once.</li>
+<li>A copy a radio couldn't decrypt (it doesn't have that channel) records nothing, so the decoded copy from another radio is still handled.</li>
+<li>Rows from older builds get the new columns from <code>MultiRadioBackfill</code>, a resumable job. It runs to the end at launch when messages still wait for it and the store already holds several radios (holding the handshake gate, before the first radio connects), when a radio other than the store's own reports its node number, added alongside or switched to (<code>backfillBeforeAnotherRadioJoins</code>, connect Step 3c; the store's radio is <code>BackfillOwner</code>, recorded at launch before a switch can move <code>PreferredRadio</code>), and after a backup restore, attributed to the restored radio (<code>drainMultiRadioBackfill</code>, which yields the actor between chunks). A single-radio store doesn't wait for it at launch; the background maintenance pass picks up anything left. Readers must cope with nil in those columns until it has run. Its node observations are copied from the node's own fields, so it only makes them while no other radio has observations.</li>
+</ul>
 <h3><code>EventFirmwareEntity</code> — off-device event branding cache</h3>
 <p><code>EventFirmwareEntity</code> is a <strong>runtime cache</strong>, not user data. A device only reports <em>which</em>
 event edition it runs via the <code>MyNodeInfo.firmwareEdition</code> proto enum (mapped to the

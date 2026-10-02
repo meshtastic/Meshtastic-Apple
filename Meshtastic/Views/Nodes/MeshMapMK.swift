@@ -135,8 +135,7 @@ struct MeshMapMK: View {
 	/// Site Planner coverage-estimate flow: the headless WebView+bridge runner and the form seed.
 	@StateObject private var coverageRunner = CoverageEstimateRunner()
 	@State private var coverageSeed: CoverageEstimateSeed?
-	/// Filter
-	@ObservedObject var filters = NodeFilterParameters.shared
+	@EnvironmentObject private var filters: NodeFilterParameters
 	/// Track whether a detached Mesh Map window is currently open.
 	@State private var isMapWindowOpen = false
 
@@ -148,7 +147,7 @@ struct MeshMapMK: View {
 	}
 
 	/// Update the distance-filter fallback location ONLY when it actually changes. `fallbackLocation`
-	/// is `@Published` on the shared `filters` object, so an unconditional write publishes
+	/// is `@Published` on this window's `filters` object, so an unconditional write publishes
 	/// `objectWillChange` and re-renders `body` — which re-runs the heavy position filter and, because
 	/// the filter depends on `fallbackLocation`, can spiral to 100% CPU on Mac Catalyst.
 	private func syncFallbackLocation() {

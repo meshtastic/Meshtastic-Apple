@@ -8,7 +8,6 @@ import Translation
 struct MessageText: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	@EnvironmentObject var appState: AppState
 	/// This window's router (feature 021, T308).
 	@EnvironmentObject private var router: Router
 
@@ -19,6 +18,7 @@ struct MessageText: View {
 	let onTapback: () -> Void
 	// State for handling channel URL sheet
 	@State private var saveChannelLink: SaveChannelLinkData?
+	@State private var pendingContact: PendingContact?
 	@State private var isShowingDeleteConfirmation = false
 	@State private var isShowingTranslationPresentation = false
 
@@ -39,6 +39,7 @@ struct MessageText: View {
 				.presentationDragIndicator(.visible)
 				#endif
 			}
+			.contactImportSheet($pendingContact, accessoryManager: accessoryManager)
 			.confirmationDialog(
 				"Are you sure you want to delete this message?",
 				isPresented: $isShowingDeleteConfirmation,
@@ -234,8 +235,9 @@ struct MessageText: View {
 		}
 		var addChannels = false
 		if ContactURLHandler.canHandle(url) {
-			// Handle contact URL
-			ContactURLHandler.handleContactUrl(url: url, accessoryManager: AccessoryManager.shared)
+			if let pending = ContactURLHandler.makePendingContact(from: url, accessoryManager: accessoryManager) {
+				pendingContact = pending
+			}
 			return .handled // Prevent default browser opening
 		} else if MeshtasticChannelURL.canHandle(url) {
 			do {

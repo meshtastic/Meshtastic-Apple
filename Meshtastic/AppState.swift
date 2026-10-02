@@ -34,12 +34,13 @@ extension NSNotification.Name {
 
 class AppState: ObservableObject {
 
-	@Published var router: Router
-	/// The open windows' routers, which deep links and notification taps go through (T308).
-	/// `router` is the first window's.
-	let windows: WindowRouters
+	/// The open windows' routers, which deep links and notification taps go through (T308). A
+	/// store reset pops every one of them, and each window keeps its own tab.
+	let windows = WindowRouters()
 	/// Which radios' windows the Mac has opened (T310).
 	let radioWindowTracker = RadioWindowTracker()
+	/// Initial tab for a debug performance seed, applied once by the first main window.
+	var launchNavigation: NavigationState?
 	@Published var unreadChannelMessages: Int
 	@Published var unreadDirectMessages: Int
 	/// Bumped after a node-switch restore to force @Query-backed views to rebuild and
@@ -62,19 +63,12 @@ class AppState: ObservableObject {
 	/// tree: identity churn mid-switch is what produced the UIKit/CoreAnimation dead-view
 	/// SIGTRAPs on device, so container delivery must never ride on it.
 	@Published var containerStamp = UUID()
-	/// A contact parsed from a meshtastic.org/v/# URL (QR code, link, or NFC tag)
-	/// awaiting user confirmation. Presented as a sheet from MeshtasticApp, the
-	/// same pattern the channel-link import uses.
-	@Published var pendingContactToAdd: PendingContact?
-
 	var totalUnreadMessages: Int {
 		unreadChannelMessages + unreadDirectMessages
 	}
 	private var cancellables: Set<AnyCancellable> = []
 
-	init(router: Router) {
-		self.router = router
-		self.windows = WindowRouters(fallback: router)
+	init() {
 		self.unreadChannelMessages = 0
 		self.unreadDirectMessages = 0
 
@@ -110,5 +104,11 @@ class AppState: ObservableObject {
 			unreadDirectMessages = dmCount
 		}
 		Logger.data.debug("🔢 Badge refresh: \(channelCount) channel + \(dmCount) DM = \(channelCount + dmCount) total")
+	}
+
+	/// The first main window to appear takes the perf-seed tab. Later windows start on Connect.
+	func takeLaunchNavigation() -> NavigationState? {
+		defer { launchNavigation = nil }
+		return launchNavigation
 	}
 }

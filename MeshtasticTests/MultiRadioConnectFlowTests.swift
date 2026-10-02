@@ -560,7 +560,7 @@ struct MultiRadioConnectFlowTests {
 		manager.firstRadioReleasedForUpdate = true
 		#expect(!manager.mayConnectAsFirst(dropped))
 		manager.firstRadioReleasedForUpdate = false
-		manager.appState = AppState(router: Router())
+		manager.appState = AppState()
 		manager.appState.isDatabaseResetting = true
 		#expect(!manager.mayConnectAsFirst(dropped), "not while the store is replaced")
 		manager.appState.isDatabaseResetting = false
@@ -1053,7 +1053,7 @@ struct MultiRadioConnectFlowTests {
 		UserDefaults.setServiceRadio(0x0B0B, for: .watch, in: store)
 		filters.heardByRadio = 0x0A0A
 
-		AccessoryManager.moveSavedRadioChoices(from: 0x0A0A, to: 0x0D0D, store: store, filters: filters)
+		AccessoryManager.moveSavedRadioChoices(from: 0x0A0A, to: 0x0D0D, store: store, filters: [filters])
 
 		#expect(UserDefaults.serviceRadio(.tak, in: store) == 0x0D0D)
 		#expect(UserDefaults.serviceRadio(.watch, in: store) == 0x0B0B, "another radio's choice stays")

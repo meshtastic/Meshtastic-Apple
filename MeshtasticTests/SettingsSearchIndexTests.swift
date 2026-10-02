@@ -74,6 +74,7 @@ struct SettingsSearchIndexTests {
 		"health_screen_enabled": "no control - not yet offered by this client",
 		"air_quality_screen_enabled": "no control - not yet offered by this client",
 		"admin_channel_enabled": "no control - not yet offered by this client",
+		"broadcast_offer_frequency_slot": "no control - not yet offered by this client",
 		"device_battery_ina_address": "no control - not yet offered by this client",
 		"powermon_enables": "no control - diagnostics, not a user setting",
 

@@ -91,6 +91,7 @@
 </tr>
 </tbody>
 </table>
+<p>With more than one radio connected, each radio that has <strong>Proxy to Client</strong> on gets its own connection to its own broker, using that radio's MQTT settings and channels. A radio's MQTT traffic only ever goes to and from that radio. <strong>Settings → MQTT</strong> shows the radio picked in the <strong>Node</strong> picker under <strong>Configure</strong>, and its <strong>Connect to MQTT via Proxy</strong> switch connects or disconnects that radio's broker. The MQTT icon at the top of the screen shows the focused radio's.</p>
 <h2>Topic Structure</h2>
 <p>Meshtastic publishes to:</p>
 <pre><code>&lt;root_topic&gt;/&lt;region&gt;/&lt;channel_index&gt;/&lt;node_id&gt;/&lt;packet_type&gt;

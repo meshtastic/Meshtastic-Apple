@@ -163,11 +163,17 @@ extension LoRaChannelCalculator {
 	/// - Returns `.add` only when the offered preset + region match the radio **and** the
 	///   offered channel resolves to the radio's current operating frequency slot.
 	/// - Returns `.switchOnly` for any mismatch (or when the LoRa config isn't available to verify).
+	/// - Parameter offeredFrequencySlot: the slot the beacon pinned, when it carried one.
+	///   A mesh sends this only when it sits somewhere its channel name would not derive,
+	///   so it replaces the derivation rather than being checked against it. Deriving
+	///   anyway can agree with the radio by coincidence and offer Add for a mesh on a
+	///   different frequency, which adds a channel the radio will never hear.
 	static func beaconJoinOption(
 		hasOfferChannel: Bool,
 		offerChannelName: String,
 		offeredPreset: ModemPresets?,
 		offerRegion: Int,
+		offeredFrequencySlot: Int? = nil,
 		isConnected: Bool,
 		loRaConfig: LoRaConfigEntity?,
 		primaryChannelName: String
@@ -184,7 +190,7 @@ extension LoRaChannelCalculator {
 
 		let calculator = LoRaChannelCalculator(config: config)
 		let radioSlot = calculator.effectiveChannelSlot(primaryName: primaryChannelName)
-		let beaconSlot = calculator.slotForChannelName(offerChannelName)
+		let beaconSlot = offeredFrequencySlot ?? calculator.slotForChannelName(offerChannelName)
 
 		if presetOK && regionOK && radioSlot == beaconSlot {
 			return .add

@@ -247,6 +247,17 @@ class Router: ObservableObject {
 		}
 	}
 
+	/// Drops every detail stack in this window. Leaves `selectedTab` alone so a
+	/// store reset can unmount doomed model objects without dragging every
+	/// window onto the same tab.
+	func popAllStacks() {
+		popToRoot(tab: .messages)
+		popToRoot(tab: .nodes)
+		popToRoot(tab: .map)
+		popToRoot(tab: .settings)
+		discoveryShowHistory = false
+	}
+
 	private func routeMap(_ components: URLComponents) {
 		let nodeId = components.queryItems?
 			.first(where: { $0.name == "nodenum" })?

@@ -815,6 +815,7 @@ extension DiscoverySummaryView {
 			offerChannelName: beacon.offerChannelName,
 			offeredPreset: beacon.offeredPreset,
 			offerRegion: beacon.offerRegion,
+			offeredFrequencySlot: beacon.offeredFrequencySlot,
 			isConnected: accessoryManager.isConnected(windowRadio),
 			loRaConfig: node?.loRaConfig,
 			primaryChannelName: beaconPrimaryChannelName(for: node)

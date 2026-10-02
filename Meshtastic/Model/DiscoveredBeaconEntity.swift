@@ -32,6 +32,11 @@ final class DiscoveredBeaconEntity {
 	/// required to actually tune to / join the advertised mesh.
 	var offerChannelPSK: Data = Data()
 	var hasOfferChannel: Bool = false
+	/// Frequency slot the advertised mesh actually runs on, 1-based; 0 when the beacon
+	/// did not carry one. A beacon sends this only when the mesh deliberately sits on a
+	/// slot other than the one its region, channel name and preset would derive, so an
+	/// absent value means "derive it" and a present one has to win over the derivation.
+	var offerFrequencySlot: Int = 0
 	var snr: Float = 0.0
 	var rssi: Int = 0
 	var timestamp: Date = Date()
@@ -46,6 +51,11 @@ final class DiscoveredBeaconEntity {
 	/// The advertised modem preset, or `nil` when the beacon didn't offer one.
 	var offeredPreset: ModemPresets? {
 		offerPreset >= 0 ? ModemPresets(rawValue: offerPreset) : nil
+	}
+
+	/// The slot the beacon pinned, or `nil` when it left the slot to be derived.
+	var offeredFrequencySlot: Int? {
+		offerFrequencySlot > 0 ? offerFrequencySlot : nil
 	}
 
 	/// The advertised region, or `nil` when unset.

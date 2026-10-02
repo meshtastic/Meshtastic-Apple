@@ -75,6 +75,8 @@ struct RadioWindowRoot: View {
 	@Environment(\.dismissWindow) private var dismissWindow
 	@Environment(\.openWindow) private var openWindow
 	@StateObject private var router = Router()
+	/// This window's node filters: each window filters on its own.
+	@StateObject private var nodeFilters = NodeFilterParameters()
 
 	var body: some View {
 		if let window, window.deviceId != nil {
@@ -86,6 +88,7 @@ struct RadioWindowRoot: View {
 				.modifier(RadioWindowOpener(tracker: appState.radioWindowTracker))
 				.focusedSceneValue(\.windowRadio, window)
 				.environmentObject(router)
+				.environmentObject(nodeFilters)
 				.environment(\.windowRadio, window)
 				// Showing another radio opens its own window (W-13).
 				.environment(\.selectWindowRadio, SelectWindowRadioAction { deviceId in

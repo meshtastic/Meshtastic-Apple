@@ -62,14 +62,14 @@ struct NodeDistanceFilterBounds {
 	}
 }
 
+/// One filter set for a window. The node list, the map, and the contact list
+/// in that window observe this object. Another window has its own.
+///
+/// Toggles still save to the `nodeFilter.*` keys, so a new window and the next
+/// launch start from the last saved set. A window does not reload those keys
+/// after it is created, so two open windows can diverge. Search text is not saved.
 @MainActor
 final class NodeFilterParameters: ObservableObject {
-
-	/// Shared, app-wide filter instance. `NodeList`, `MeshMap`, and `UserList` all observe this
-	/// single object, so a filter set on one screen applies across the app. Using one shared
-	/// instance — rather than three independent `@StateObject`s — keeps behavior consistent with
-	/// the global `nodeFilter.*` persisted keys, which are not namespaced per screen.
-	static let shared = NodeFilterParameters()
 
 	private enum Keys {
 		static let isOnline = "nodeFilter.isOnline"
@@ -204,6 +204,22 @@ final class NodeFilterParameters: ObservableObject {
 		   let data = try? Data(contentsOf: heardByFileURL),
 		   let stored = try? JSONDecoder().decode([Int64].self, from: data) {
 			heardByNodeNums = Set(stored)
+		}
+		Self.live.add(self)
+	}
+
+	/// Every window's filter set, so a radio's new node number reaches the ones that are open.
+	private static let live = NSHashTable<NodeFilterParameters>.weakObjects()
+
+	/// A radio's node number changed (feature 021, T214): a Heard By choice of it follows it, in
+	/// each open window's filters and in the saved choice a new window starts from.
+	/// `filters` defaults to every open window's.
+	static func moveHeardByRadio(from oldNum: Int64, to newNum: Int64, store: UserDefaults = .standard, filters: [NodeFilterParameters]? = nil) {
+		for filter in filters ?? live.allObjects where filter.heardByRadio == oldNum {
+			filter.heardByRadio = newNum
+		}
+		if (store.object(forKey: Keys.heardByRadio) as? NSNumber)?.int64Value == oldNum {
+			store.set(newNum, forKey: Keys.heardByRadio)
 		}
 	}
 

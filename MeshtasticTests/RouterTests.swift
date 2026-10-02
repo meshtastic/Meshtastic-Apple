@@ -25,6 +25,51 @@ struct RouterTests {
 		#expect(state == custom)
 	}
 
+	@Test func popAllStacksKeepsTheTab() async {
+		let router = await Router(navigationState: NavigationState(
+			selectedTab: .settings,
+			messages: .channels(),
+			nodeListSelectedNodeNum: 5,
+			map: .waypoint(9),
+			settings: .lora
+		))
+		await router.popAllStacks()
+		let state = await router.navigationState
+		#expect(state.selectedTab == .settings)
+		#expect(state.messages == nil)
+		#expect(state.nodeListSelectedNodeNum == nil)
+		#expect(state.map == nil)
+		#expect(state.settings == nil)
+	}
+
+	@Test func poppingEverySceneKeepsEachTab() async {
+		let messages = await Router(navigationState: NavigationState(
+			selectedTab: .messages,
+			messages: .directMessages()
+		))
+		let nodes = await Router(navigationState: NavigationState(
+			selectedTab: .nodes,
+			nodeListSelectedNodeNum: 3
+		))
+		let mapWindow = await Router(navigationState: NavigationState(
+			selectedTab: .map,
+			map: .waypoint(9)
+		))
+		let registry = await WindowRouters()
+		await registry.register(.firstRadio, router: messages)
+		await registry.register(RadioWindow(deviceId: UUID()), router: nodes)
+		let mapToken = await registry.registerPopOnly(mapWindow)
+		await registry.popAllStacks()
+		#expect(await messages.selectedTab == .messages)
+		#expect(await messages.messagesState == nil)
+		#expect(await nodes.selectedTab == .nodes)
+		#expect(await nodes.selectedNodeNum == nil)
+		#expect(await mapWindow.selectedTab == .map)
+		#expect(await mapWindow.navigationState.map == nil, "the Mesh Map window is popped too")
+		await registry.unregisterPopOnly(mapToken)
+		#expect(await registry.allRouters.count == 2)
+	}
+
 	// MARK: - Invalid URL Handling
 
 	@Test func invalidSchemeIsIgnored() async throws {
@@ -405,7 +450,7 @@ struct WindowRoutersTests {
 
 	@Test("A link about a radio with no window open opens its window, and goes there once it's open")
 	func opensTheRadiosWindow() throws {
-		let registry = WindowRouters(fallback: Router())
+		let registry = WindowRouters()
 		let manager = AccessoryManager(transports: [])
 		let radioB = UUID()
 		manager.knownNodeNums[radioB] = 456
@@ -428,8 +473,7 @@ struct WindowRoutersTests {
 
 	@Test("On the Mac, a link about no radio with no window open opens a connected radio's window")
 	func radiolessLinkOpensAWindow() throws {
-		let fallback = Router()
-		let registry = WindowRouters(fallback: fallback)
+		let registry = WindowRouters()
 		let manager = AccessoryManager(transports: [])
 		var opened: [RadioWindow] = []
 		registry.openWindowHandler = { opened.append($0) }
@@ -447,9 +491,8 @@ struct WindowRoutersTests {
 
 	@Test("Windows register and leave; with one open, every link uses its router")
 	func registry() throws {
-		let fallback = Router()
-		let registry = WindowRouters(fallback: fallback)
-		#expect(registry.allRouters.map(ObjectIdentifier.init) == [ObjectIdentifier(fallback)])
+		let registry = WindowRouters()
+		#expect(registry.allRouters.isEmpty)
 		let first = Router()
 		registry.register(.firstRadio, router: first)
 		let url = try #require(URL(string: "meshtastic:///messages?userNum=123&radio=456"))
@@ -459,6 +502,26 @@ struct WindowRoutersTests {
 		#expect(registry.allRouters.count == 2)
 		registry.unregister(router: first)
 		#expect(registry.allRouters.map(ObjectIdentifier.init) == [ObjectIdentifier(second)])
+	}
+
+	@Test("A link with no window open waits for the first window, and goes there once")
+	func linkWaitsForAWindow() throws {
+		let registry = WindowRouters()
+		let manager = AccessoryManager(transports: [])
+		let url = try #require(URL(string: "meshtastic:///settings/lora"))
+
+		registry.route(url: url, manager: manager)
+		#expect(registry.heldLink == url)
+		#expect(registry.router(for: url, manager: manager) == nil)
+
+		let first = Router()
+		registry.register(.firstRadio, router: first)
+		#expect(first.selectedTab == .settings)
+		#expect(registry.heldLink == nil)
+
+		let second = Router()
+		registry.register(windowB, router: second)
+		#expect(second.selectedTab != .settings, "the link went to one window")
 	}
 }
 

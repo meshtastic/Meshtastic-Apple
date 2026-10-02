@@ -2802,3 +2802,75 @@ struct AdditionalRadioRowSnapshotTests {
 		await assertViewSnapshot(of: view, width: 390, height: 140, named: "additionalRadioRow_connected", forDocs: true)
 	}
 }
+
+// MARK: - BackupRestoreSection Snapshot Tests
+
+/// Backup and restore moved from Developers → Tools onto the Settings list, where
+/// Android has it. These render the section the two ways it can appear: ready, and
+/// disabled because a mesh administrator owns the radio's configuration.
+@Suite("BackupRestoreSection Snapshots")
+struct BackupRestoreSectionSnapshotTests {
+
+	private static let connectedNodeNum: Int64 = 0xBACC_0001
+
+	/// The section is only usable when the app is connected AND it can find the node
+	/// behind `activeDeviceNum`. Setting `isConnected` alone leaves it disabled, so
+	/// the "ready" snapshot would have documented the disabled state instead.
+	@MainActor
+	private func seedConnectedNode() {
+		let context = sharedModelContainer.mainContext
+		// `#Predicate` cannot reach through `Self.`, so bind it locally first.
+		let num = Self.connectedNodeNum
+		if let existing = try? context.fetch(
+			FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == num })), !existing.isEmpty {
+			return
+		}
+		let node = NodeInfoEntity()
+		node.num = num
+		context.insert(node)
+
+		let user = UserEntity()
+		user.num = node.num
+		user.longName = "Snapshot Backup Node"
+		user.shortName = "SBAK"
+		context.insert(user)
+		node.user = user
+
+		try? context.save()
+	}
+
+	/// `Section` is not standalone — SwiftUI needs a Form or List to host it.
+	@MainActor
+	private func wrap(isManaged: Bool) -> some View {
+		seedConnectedNode()
+		AccessoryManager.shared.isConnected = true
+		AccessoryManager.shared.activeDeviceNum = Self.connectedNodeNum
+		return Form {
+			BackupRestoreSection(isManaged: isManaged)
+		}
+		.environmentObject(AccessoryManager.shared)
+		.modelContainer(sharedModelContainer)
+	}
+
+	@Test
+	@MainActor
+	func backupRestoreSection() async {
+		await assertViewSnapshot(
+			of: wrap(isManaged: false),
+			width: 390,
+			height: 260,
+			colorScheme: .light,
+			named: "backupRestoreSection")
+	}
+
+	@Test
+	@MainActor
+	func backupRestoreSectionManaged() async {
+		await assertViewSnapshot(
+			of: wrap(isManaged: true),
+			width: 390,
+			height: 260,
+			colorScheme: .light,
+			named: "backupRestoreSection_managed")
+	}
+}

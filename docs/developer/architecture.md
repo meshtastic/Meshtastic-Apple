@@ -34,9 +34,23 @@ Router
 
 Deep links use the `meshtastic:///` URL scheme. `Router.route(url:)` parses the path and sets the appropriate navigation state. See [Deep Links](deep-links) for the full URL reference.
 
-## AppState
+## AppState and Windows
 
-`AppState` wraps `Router` and is injected as an `@EnvironmentObject` at the root of the SwiftUI view hierarchy. Views that need to navigate programmatically read `@EnvironmentObject var router: Router` directly — or more commonly `@EnvironmentObject var appState: AppState` and access `appState.router`.
+`AppState` holds what every window shares: the unread badge, the database-reset gate and `windows`, the open windows' routers. It is injected as an `@EnvironmentObject` at the root of each window.
+
+Each window owns its own `Router` and `NodeFilterParameters`, so tabs, detail views and node filters in one window don't move another. Views read them with `@EnvironmentObject var router: Router` and `@EnvironmentObject var filters: NodeFilterParameters`.
+
+| Window | Root view | Owns |
+|--------|-----------|------|
+| Main window (iPhone, iPad; the Connect window on the Mac) | `MainScene` | Router and filters, held above the database-reset gate so the window keeps its tab across a node switch |
+| A radio's window (Mac) | `RadioWindowRoot` | Router and filters for that radio |
+| Mesh Map window | `MapWindow` | Router and filters for the map |
+
+`AppState.windows` (`WindowRouters`) is the registry:
+
+- `ContentView` registers its router together with the window's radio. A deep link or notification tap goes through `windows.route(url:manager:)` to the window of the radio it is about, and on the Mac opens that radio's window when it's closed. A link that arrives with no window open (a notification tap that launches the app) waits for the first window to open.
+- The Mesh Map window registers with `registerPopOnly(_:)`: links don't go there, but it is popped with the rest.
+- Before a node switch or renumber touches the store, `windows.popAllStacks()` drops every window's detail views and leaves each window on its tab.
 
 ## AccessoryManager
 

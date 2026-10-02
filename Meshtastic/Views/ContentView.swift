@@ -239,7 +239,7 @@ struct ContentView: View {
 				// No-op unless launched with --marketing-capture (see MarketingCapture / PerformanceSeedData).
 				await MarketingCapture.runIfNeeded(router: router, accessoryManager: accessoryManager)
 				// No-op unless launched with `-switch-stress N` (node-switch crash harness).
-				await SwitchStress.runIfNeeded(accessoryManager: accessoryManager, appState: appState)
+				await SwitchStress.runIfNeeded(accessoryManager: accessoryManager, appState: appState, router: router)
 #endif
 			}
 	}

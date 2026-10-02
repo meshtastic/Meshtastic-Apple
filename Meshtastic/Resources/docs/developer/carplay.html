@@ -63,5 +63,17 @@
 <li>Declare the intent in <code>Meshtastic.entitlements</code> under <code>com.apple.developer.siri</code>.</li>
 <li>Add a usage description in <code>Info.plist</code> if the intent requires a new privacy permission.</li>
 </ol>
+<h2>Several radios (feature 021)</h2>
+<p>With more than one radio connected with this version, conversation identifiers name the radio
+the conversation is on: <code>channel-&lt;N&gt;:r&lt;radioNum&gt;</code> and <code>dm-&lt;nodeNum&gt;:r&lt;radioNum&gt;</code>
+(<code>IntentMessageConverters.channelConversationIdentifier</code> / <code>directMessageConversationIdentifier</code>,
+parsed by <code>conversation(fromIdentifier:)</code>). With one radio they stay <code>channel-&lt;N&gt;</code> / <code>dm-&lt;nodeNum&gt;</code>.
+<code>SendMessageIntentHandler</code> replies through the named radio on its own slot, and a spoken channel
+name matched only on another radio (<code>channelSlot(for:in:)</code>) goes out through that radio. Every
+incoming donation is built by <code>CarPlayIntentDonation.incomingMessageIntent(from:)</code>. The CarPlay
+lists are the CarPlay radio's view: their row ids name that radio, and Siri read-back
+(<code>SearchForMessagesIntentHandler</code>) and mark-as-read only take the named radio's messages: its DMs, and
+its channels' messages by channel key (<code>channelMessage(_:isInSlot:ofRadio:keys:)</code>), since a channel
+several radios have is stored once under whichever radio delivered it first.</p>
 </body>
 </html>

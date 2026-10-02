@@ -1998,11 +1998,19 @@ actor MeshPackets {
 				return
 			}
 			var storeForwardBroadcast = false
+			// The identity of the message being replayed. A router gives each replay a fresh
+			// outer packet id and carries the original in `original_id`, so that is what the
+			// message is stored and deduped under. Zero means a router that still reuses the
+			// outer id, where the outer id is the identity.
+			var storeForwardOriginalId: UInt32 = 0
 			if storeForward {
 				if let storeAndForwardMessage = try? StoreAndForward(serializedBytes: packet.decoded.payload) {
 					messageText = String(bytes: storeAndForwardMessage.text, encoding: .utf8)
 					if storeAndForwardMessage.rr == .routerTextBroadcast {
 						storeForwardBroadcast = true
+					}
+					if storeAndForwardMessage.rr == .routerTextBroadcast || storeAndForwardMessage.rr == .routerTextDirect {
+						storeForwardOriginalId = storeAndForwardMessage.originalID
 					}
 				}
 			}
@@ -2040,9 +2048,12 @@ actor MeshPackets {
 					// Without this guard the radio echo upserts onto the row sendMessage() wrote,
 					// resetting read/ACK state and triggering a phantom notification. Mirrors
 					// Android's findPacketsWithId(dataPacket.id) guard in rememberDataPacket.
-					// A packet id is only unique per sender (feature 021), so the match is on
-					// `messageKey`; rows not yet backfilled have no key and match on the id alone.
-					let packetId = Int64(packet.id)
+					// A replay stores under the message it replays, so a second replay — and a
+					// replay of something already received live — lands on this row instead of
+					// inserting another one. A packet id is only unique per sender (feature 021),
+					// so the match is on `messageKey`; rows not yet backfilled have no key and
+					// match on the id alone.
+					let packetId = Int64(storeForwardOriginalId != 0 ? storeForwardOriginalId : packet.id)
 					let messageKey = MessageEntity.key(fromNum: fromNum, messageId: packetId)
 					let existingDescriptor = FetchDescriptor<MessageEntity>(predicate: #Predicate {
 						$0.messageKey == messageKey || ($0.messageKey == nil && $0.messageId == packetId)
@@ -2062,7 +2073,7 @@ actor MeshPackets {
 
 					let newMessage = MessageEntity()
 					modelContext.insert(newMessage)
-					newMessage.messageId = Int64(packet.id)
+					newMessage.messageId = packetId
 					newMessage.messageKey = messageKey
 					newMessage.fromNum = fromNum
 					newMessage.toNum = storeForwardBroadcast ? MultiRadioBackfill.broadcastNum : toNum

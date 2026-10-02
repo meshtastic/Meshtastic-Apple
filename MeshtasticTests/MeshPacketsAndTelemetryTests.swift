@@ -107,6 +107,107 @@ struct MyInfoIngestionTests {
 	}
 }
 
+// MARK: - Store and forward replays
+
+/// A store-and-forward router replays a stored message with a fresh outer packet id and
+/// the message's own id in `StoreAndForward.original_id`. Deduping on the outer id
+/// therefore misses, and every replay lands as another bubble.
+@Suite("Store and forward replays", .serialized)
+@MainActor
+struct StoreAndForwardReplayTests {
+	private static let connectedNode: Int64 = 0x0AAA_0001
+	private static let sender: UInt32 = 0x0BBB_0002
+
+	private func freshMesh() throws -> (MeshPackets, ModelContainer) {
+		let container = try ModelContainer(
+			for: Schema(MeshtasticSchema.allModels),
+			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+		)
+		return (MeshPackets(modelContainer: container), container)
+	}
+
+	private func liveText(id: UInt32, _ text: String) -> MeshPacket {
+		var packet = MeshPacket()
+		packet.id = id
+		packet.from = Self.sender
+		packet.to = Constants.maximumNodeNum
+		packet.channel = 0
+		packet.decoded.portnum = .textMessageApp
+		packet.decoded.payload = Data(text.utf8)
+		return packet
+	}
+
+	private func replay(outerId: UInt32, originalId: UInt32, _ text: String) throws -> MeshPacket {
+		var stored = StoreAndForward()
+		stored.rr = .routerTextBroadcast
+		stored.text = Data(text.utf8)
+		stored.originalID = originalId
+
+		var packet = MeshPacket()
+		packet.id = outerId
+		packet.from = Self.sender
+		packet.to = UInt32(truncatingIfNeeded: Self.connectedNode)
+		packet.channel = 0
+		packet.decoded.portnum = .storeForwardApp
+		packet.decoded.payload = try stored.serializedData()
+		return packet
+	}
+
+	private func ingest(_ mesh: MeshPackets, _ packet: MeshPacket, storeForward: Bool) async {
+		await mesh.textMessageAppPacket(
+			packet: packet,
+			wantRangeTestPackets: false,
+			connectedNode: Self.connectedNode,
+			storeForward: storeForward,
+			appState: nil)
+	}
+
+	private func messageCount(in container: ModelContainer) throws -> Int {
+		try ModelContext(container).fetchCount(FetchDescriptor<MessageEntity>())
+	}
+
+	@Test func replayOfAMessageAlreadyReceivedLiveDoesNotAddABubble() async throws {
+		let (mesh, container) = try freshMesh()
+		await ingest(mesh, liveText(id: 0x1001, "hello"), storeForward: false)
+		#expect(try messageCount(in: container) == 1)
+
+		await ingest(mesh, try replay(outerId: 0x2001, originalId: 0x1001, "hello"), storeForward: true)
+		await ingest(mesh, try replay(outerId: 0x2002, originalId: 0x1001, "hello"), storeForward: true)
+
+		#expect(try messageCount(in: container) == 1, "two replays of one live message are still one message")
+	}
+
+	@Test func repeatedReplaysOfUnseenHistoryDoNotAddABubble() async throws {
+		let (mesh, container) = try freshMesh()
+		// Nothing was delivered live, so the first replay is what stores the message.
+		await ingest(mesh, try replay(outerId: 0x2003, originalId: 0x1002, "history"), storeForward: true)
+		#expect(try messageCount(in: container) == 1)
+
+		await ingest(mesh, try replay(outerId: 0x2004, originalId: 0x1002, "history"), storeForward: true)
+
+		#expect(try messageCount(in: container) == 1, "a second replay of the same stored message is not a new one")
+	}
+
+	@Test func aReplayIsStoredUnderTheMessageItReplays() async throws {
+		let (mesh, container) = try freshMesh()
+		await ingest(mesh, try replay(outerId: 0x2005, originalId: 0x1003, "history"), storeForward: true)
+
+		let stored = try ModelContext(container).fetch(FetchDescriptor<MessageEntity>())
+		#expect(stored.map(\.messageId) == [0x1003], "the outer id belongs to the replay, not the message")
+	}
+
+	@Test func aRouterThatSendsNoOriginalIdKeepsTheOuterIdBehavior() async throws {
+		let (mesh, container) = try freshMesh()
+		// Older routers reuse the stored message's id as the outer id and leave
+		// `original_id` at zero, so the outer id is still the identity there.
+		await ingest(mesh, try replay(outerId: 0x1004, originalId: 0, "legacy"), storeForward: true)
+		await ingest(mesh, try replay(outerId: 0x1004, originalId: 0, "legacy"), storeForward: true)
+
+		let stored = try ModelContext(container).fetch(FetchDescriptor<MessageEntity>())
+		#expect(stored.map(\.messageId) == [0x1004])
+	}
+}
+
 // MARK: - Automatic channel refresh staging
 
 @Suite("Automatic channel refresh staging", .serialized)

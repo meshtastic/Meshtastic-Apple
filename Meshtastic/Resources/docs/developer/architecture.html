@@ -28,10 +28,43 @@
     └── SettingsNavigationState   (tab 3)
 </code></pre>
 <p>Deep links use the <code>meshtastic:///</code> URL scheme. <code>Router.route(url:)</code> parses the path and sets the appropriate navigation state. See <a href="deep-links">Deep Links</a> for the full URL reference.</p>
-<h2>AppState</h2>
-<p><code>AppState</code> wraps <code>Router</code> and is injected as an <code>@EnvironmentObject</code> at the root of the SwiftUI view hierarchy. Views that need to navigate programmatically read <code>@EnvironmentObject var router: Router</code> directly — or more commonly <code>@EnvironmentObject var appState: AppState</code> and access <code>appState.router</code>.</p>
+<h2>AppState and Windows</h2>
+<p><code>AppState</code> holds what every window shares: the unread badge, the database-reset gate and <code>windows</code>, the open windows' routers. It is injected as an <code>@EnvironmentObject</code> at the root of each window.</p>
+<p>Each window owns its own <code>Router</code> and <code>NodeFilterParameters</code>, so tabs, detail views and node filters in one window don't move another. Views read them with <code>@EnvironmentObject var router: Router</code> and <code>@EnvironmentObject var filters: NodeFilterParameters</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Window</th>
+<th>Root view</th>
+<th>Owns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Main window (iPhone, iPad; the Connect window on the Mac)</td>
+<td><code>MainScene</code></td>
+<td>Router and filters, held above the database-reset gate so the window keeps its tab across a node switch</td>
+</tr>
+<tr>
+<td>A radio's window (Mac)</td>
+<td><code>RadioWindowRoot</code></td>
+<td>Router and filters for that radio</td>
+</tr>
+<tr>
+<td>Mesh Map window</td>
+<td><code>MapWindow</code></td>
+<td>Router and filters for the map</td>
+</tr>
+</tbody>
+</table>
+<p><code>AppState.windows</code> (<code>WindowRouters</code>) is the registry:</p>
+<ul>
+<li><code>ContentView</code> registers its router together with the window's radio. A deep link or notification tap goes through <code>windows.route(url:manager:)</code> to the window of the radio it is about, and on the Mac opens that radio's window when it's closed. A link that arrives with no window open (a notification tap that launches the app) waits for the first window to open.</li>
+<li>The Mesh Map window registers with <code>registerPopOnly(_:)</code>: links don't go there, but it is popped with the rest.</li>
+<li>Before a node switch or renumber touches the store, <code>windows.popAllStacks()</code> drops every window's detail views and leaves each window on its tab.</li>
+</ul>
 <h2>AccessoryManager</h2>
-<p><code>AccessoryManager</code> is the central connectivity manager split across extension files:</p>
+<p><code>AccessoryManager</code> is the central connectivity manager split across extension files. Up to four radios can be connected at once. Each has a <code>RadioSession</code> (<code>Meshtastic/Accessory/Radio Session/</code>) holding everything that belongs to that connection, and every radio runs the same connect steps and packet handling. One is focused (<code>activeConnection</code>): the default for Settings, sending and the services that follow it. The others are in <code>additionalRadios</code>. See <a href="transport.html">Transport Layer › Several Radios at Once</a> for the details.</p>
 <table>
 <thead>
 <tr>
@@ -46,7 +79,35 @@
 </tr>
 <tr>
 <td><code>AccessoryManager+Connect.swift</code></td>
-<td>Connection lifecycle, reconnect logic</td>
+<td>The connect steps every radio runs, reconnect logic</td>
+</tr>
+<tr>
+<td><code>AccessoryManager+AdditionalRadios.swift</code></td>
+<td>Radios connected alongside the focused one: events, disconnect, reconnect, remembered radios</td>
+</tr>
+<tr>
+<td><code>AccessoryManager+Focus.swift</code></td>
+<td>Moving the focus between connected radios without reconnecting</td>
+</tr>
+<tr>
+<td><code>AccessoryManager+FocusHandover.swift</code></td>
+<td>Another radio takes the focus when the focused one drops</td>
+</tr>
+<tr>
+<td><code>AccessoryManager+RadioAttention.swift</code></td>
+<td>A locked or outdated radio that isn't focused: the prompt naming it</td>
+</tr>
+<tr>
+<td><code>AccessoryManager+RadioRemoval.swift</code></td>
+<td>Resetting or removing one of several radios: it leaves while the others stay (D-18)</td>
+</tr>
+<tr>
+<td><code>AccessoryManager+RadioChoice.swift</code></td>
+<td>Sending, and admin messages, through a chosen radio</td>
+</tr>
+<tr>
+<td><code>AccessoryManager+ServiceRadios.swift</code></td>
+<td>The radio TAK, CarPlay &amp; Siri and the Watch use</td>
 </tr>
 <tr>
 <td><code>AccessoryManager+ToRadio.swift</code></td>
@@ -58,11 +119,11 @@
 </tr>
 <tr>
 <td><code>AccessoryManager+Position.swift</code></td>
-<td>GPS position sharing</td>
+<td>GPS position sharing, to every connected radio</td>
 </tr>
 <tr>
-<td><code>AccessoryManager+MQTT.swift</code></td>
-<td>MQTT proxy</td>
+<td><code>AccessoryManager+MQTT.swift</code>, <code>+RadioMQTT.swift</code></td>
+<td>Each radio's MQTT client proxy</td>
 </tr>
 <tr>
 <td><code>AccessoryManager+TAK.swift</code></td>
@@ -70,7 +131,7 @@
 </tr>
 </tbody>
 </table>
-<p>Transport protocols are in <code>Meshtastic/Accessory/Transports/</code>.</p>
+<p>Transport protocols are in <code>Meshtastic/Accessory/Transports/</code>. <code>PreferredRadio</code> is the radio reconnected at launch.</p>
 <h2>Persistence</h2>
 <p>SwiftData is the sole persistence layer. <code>PersistenceController.shared</code> owns the <code>ModelContainer</code>. Views use <code>@Environment(\.modelContext)</code> or <code>@Query</code>. Background writes use the <code>MeshPackets</code> <code>@ModelActor</code>.</p>
 <p>Model types are defined with <code>@Model</code> in <code>Meshtastic/Model/</code>. Schema evolution uses <code>VersionedSchema</code> and <code>SchemaMigrationPlan</code> in <code>MeshtasticSchema.swift</code>.</p>
