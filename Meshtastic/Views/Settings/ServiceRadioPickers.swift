@@ -26,7 +26,7 @@ struct ServiceRadioPickers: View {
 					Label(service.label, systemImage: service.systemImage)
 				}
 			}
-			Text("Which radio TAK, CarPlay & Siri and the Apple Watch use. A service in use must have one; while its radio is off it waits for it.")
+			Text("Choose the radio TAK, CarPlay & Siri and the Apple Watch use. A feature you use needs one. If its radio is off, the feature waits until it's back.")
 				.foregroundStyle(.secondary)
 				.font(.caption)
 		}
@@ -60,7 +60,7 @@ struct ServiceRadioChoiceSheet: View {
 		NavigationStack {
 			Form {
 				Section {
-					Text("You have more than one radio. Choose the one each of these uses; you can change it later in App Settings.")
+					Text("You have more than one radio. Pick the radio each feature below should use. You can change this later in App Settings.")
 						.font(.callout)
 						.foregroundStyle(.secondary)
 				}
