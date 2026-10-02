@@ -79,6 +79,9 @@ struct RadioWindowRoot: View {
 	var body: some View {
 		if let window, window.deviceId != nil {
 			ContentView(appState: appState, router: router)
+#if targetEnvironment(macCatalyst)
+				.background(ToolbarLayoutNudge())
+#endif
 				.modifier(WindowLockdownScope())
 				.modifier(RadioWindowOpener(tracker: appState.radioWindowTracker))
 				.focusedSceneValue(\.windowRadio, window)
@@ -106,6 +109,44 @@ struct RadioWindowRoot: View {
 		return device.longName ?? device.name
 	}
 }
+
+#if targetEnvironment(macCatalyst)
+/// After a radio window opens, macOS can pull it into a window tab group and resize it, and the
+/// toolbar keeps the layout from its first size until the window lays out again: the Messages,
+/// Nodes, Map, Settings and Connect control sits off centre until the sidebar is toggled. Once
+/// the window has settled, it's made a point narrower and back, which makes it lay out again.
+/// Once per window.
+private struct ToolbarLayoutNudge: UIViewRepresentable {
+	func makeUIView(context: Context) -> NudgeView { NudgeView() }
+	func updateUIView(_ uiView: NudgeView, context: Context) {}
+
+	final class NudgeView: UIView {
+		private var hasNudged = false
+
+		override func didMoveToWindow() {
+			super.didMoveToWindow()
+			guard !hasNudged, window != nil else { return }
+			hasNudged = true
+			isUserInteractionEnabled = false
+			Task { @MainActor [weak self] in
+				try? await Task.sleep(for: .milliseconds(800))
+				await self?.nudge()
+			}
+		}
+
+		private func nudge() async {
+			guard let scene = window?.windowScene else { return }
+			let frame = scene.effectiveGeometry.systemFrame
+			guard frame.width > 1 else { return }
+			var narrower = frame
+			narrower.size.width -= 1
+			scene.requestGeometryUpdate(.Mac(systemFrame: narrower)) { _ in }
+			try? await Task.sleep(for: .milliseconds(50))
+			scene.requestGeometryUpdate(.Mac(systemFrame: frame)) { _ in }
+		}
+	}
+}
+#endif
 
 /// The Connect window on the Mac (W-02): the connected radios, each opening its own window,
 /// and the radios that can be added. Adding one opens its window once it's connected.

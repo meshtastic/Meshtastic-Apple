@@ -483,6 +483,10 @@ describes it well enough to rebuild.
   sheet is closed, and if A locks meanwhile, A's lock-down screen comes after B's prompt is
   answered (T368). While B's prompt is on screen it stays up steadily: it doesn't close and come
   back every few seconds (the window check has to see the alert; review V15).
+- [ ] Mac, two radio windows grouped as tabs: the Messages / Nodes / Map / Settings / Connect control
+  sits in the same place in both tabs right after a window opens, without toggling the sidebar (a
+  window lays out again a moment after it opens, by a one-point resize). If it doesn't, the nudge
+  in `RadioWindowViews.swift` (`ToolbarLayoutNudge`) comes out and this is a known macOS quirk.
 - [ ] Settings with A and B connected, in B's window: the note says these settings configure B and
   names A as the other radio (T342).
 - [ ] iPhone: with A and B connected, Connect › B › Show This Radio and the indicator's radio menu
