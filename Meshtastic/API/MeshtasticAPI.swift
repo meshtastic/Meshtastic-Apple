@@ -73,9 +73,9 @@ struct FirmwareRelease: Codable {
 	}
 }
 
-/// Points at the current nightly build. Nightly artifacts live in one fixed
-/// `firmware-nightly` directory that is overwritten each build, so this file is the
-/// only way to learn which version is sitting in there right now.
+/// Points at the current nightly build. Nightly artifacts sit at the root of the
+/// nightly host and are overwritten each build, so this file is the only way to
+/// learn which version is sitting there right now.
 struct NightlyFirmwareIndex: Codable {
 	let version: String
 	let id: String
@@ -275,7 +275,8 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 				if hasReleases {
 					Logger.services.debug("Firmware list unchanged (ETag match), skipping the upsert")
 					// The nightly comes from its own host and changes daily, so an unchanged
-					// release list says nothing about it.
+					// release list says nothing about it. Same rule as the full path: only a
+					// successful read may replace the stored nightly.
 					if let nightlyRelease = await fetchNightlyRelease() {
 						await MainActor.run {
 							let context = container.mainContext
@@ -310,7 +311,9 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 				self.processFirmware(release: alphaRelease, releaseType: .alpha, context: context)
 			}
 
-			// Skipped when the index could not be read, or a failed fetch would empty the tab.
+			// Only on a successful read: applying the nightly deletes the rows for every other
+			// nightly version, so a failed fetch has to leave the stored one alone rather than
+			// empty the tab.
 			if let nightlyRelease {
 				self.applyNightlyRelease(nightlyRelease, context: context)
 			}
@@ -563,9 +566,18 @@ deviceEntity.architecture = device.architecture
 	/// unreachable one, must not fail the stable and alpha list refresh.
 	private func fetchNightlyRelease() async -> FirmwareRelease? {
 		do {
-			let (data, _) = try await urlSession.data(from: Self.nightlyIndexEndpoint)
+			// Both files are served with a four hour max-age, so the default policy would answer
+			// a refresh out of the cache and hide a nightly that had already been published.
+			// Revalidate instead: a 304 costs nothing and the build is only cut once a day.
+			var indexRequest = URLRequest(url: Self.nightlyIndexEndpoint)
+			indexRequest.cachePolicy = .reloadRevalidatingCacheData
+			let (data, _) = try await urlSession.data(for: indexRequest)
 			let index = try JSONDecoder().decode(NightlyFirmwareIndex.self, from: data)
-			let notesResponse = try? await urlSession.data(from: Self.nightlyReleaseNotesEndpoint)
+			// The notes are revalidated with the index so a fresh version never shows the
+			// previous build's notes.
+			var notesRequest = URLRequest(url: Self.nightlyReleaseNotesEndpoint)
+			notesRequest.cachePolicy = .reloadRevalidatingCacheData
+			let notesResponse = try? await urlSession.data(for: notesRequest)
 			let notes = notesResponse?.0
 			let pageURL = index.commit.map { "https://github.com/meshtastic/firmware/commit/\($0)" }
 				?? "https://github.com/meshtastic/firmware/commits/master"
