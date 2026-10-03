@@ -239,7 +239,12 @@ struct AddContactConfirmationView: View {
 		failureMessage = nil
 		Task {
 			do {
-				try await accessoryManager.addContactFromURL(base64UrlString: base64UrlString)
+				// The radio takes the new key from the add_contact regardless; passing the
+				// confirmation keeps the app's copy in step instead of flagging a mismatch for
+				// a replacement the person just approved.
+				try await accessoryManager.addContactFromURL(
+					base64UrlString: base64UrlString,
+					acceptsKeyReplacement: replacesStoredKey && confirmsKeyReplacement)
 				Logger.services.debug("Contact added from URL successfully")
 				if replyAfterAdding,
 				   let snapshot = MeshShareStore.load(),

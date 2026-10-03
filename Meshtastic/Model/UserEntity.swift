@@ -105,6 +105,26 @@ extension UserEntity {
 		return .stored
 	}
 
+	/// Accepts a public key the person deliberately imported, replacing the stored one.
+	///
+	/// First-wins exists because a key arriving over the mesh is unattested — nobody vouched for
+	/// it. A contact import is the opposite: the add-contact sheet showed that the key differs
+	/// from the one on file and the person confirmed the replacement. Refusing it here would
+	/// leave the radio holding the new key (the `add_contact` already applied it) while the app
+	/// kept the old one, which reads to the user as a permanent key mismatch and makes the sheet
+	/// warn again on every later import of the same contact.
+	///
+	/// Only ever called for an import the person confirmed; an unconfirmed one still goes through
+	/// `applyInboundPublicKey`.
+	func acceptImportedPublicKey(_ importedKey: Data) {
+		// Same well-formedness bar as the radio's own key: 32 bytes or nothing changes.
+		guard importedKey.count == 32 else { return }
+		publicKey = importedKey
+		pkiEncrypted = true
+		keyMatch = true
+		newPublicKey = nil
+	}
+
 	/// Accepts the connected radio's own public key as ground truth.
 	///
 	/// First-wins protects against a mesh peer substituting a contact's key, but the radio the

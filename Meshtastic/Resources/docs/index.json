@@ -358,23 +358,23 @@
         "keywords": [
             "node",
             "nodes",
-            "device",
-            "from",
             "contact",
+            "device",
             "key",
+            "from",
             "public",
             "only",
             "name",
-            "radio",
             "messages",
+            "radio",
             "shows",
             "firmware",
             "shown",
-            "links",
-            "packets",
             "one",
-            "heard",
+            "links",
             "direct",
+            "packets",
+            "heard",
             "detail",
             "channel",
             "remove",
@@ -387,7 +387,7 @@
             "section",
             "row"
         ],
-        "charCount": 13195
+        "charCount": 13671
     },
     {
         "id": "settings",

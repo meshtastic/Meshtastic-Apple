@@ -344,7 +344,12 @@ extension MeshPackets {
 	/// - Parameter overTheMesh: true when this NodeInfo arrived as an over-the-air packet from a
 	///   remote node — logged on .mesh so it appears in the Packet Stream. false for local updates
 	///   (e.g. the favorite action), which did not cross the mesh and log on .data.
-	func upsertNodeInfoPacket (packet: MeshPacket, favorite: Bool = false, overTheMesh: Bool = true) {
+	/// - Parameter acceptsKeyReplacement: Set only for a contact import where the person was shown
+	///   that the key differs from the stored one and confirmed the replacement. It lifts
+	///   first-wins for that one write, so the app ends up holding the same key the `add_contact`
+	///   just gave the radio. Every other path leaves it false and keeps first-wins.
+	func upsertNodeInfoPacket (packet: MeshPacket, favorite: Bool = false, overTheMesh: Bool = true,
+	                           acceptsKeyReplacement: Bool = false) {
 
 		let details = nodeInfoLogDetails(from: packet)
 		if overTheMesh {
@@ -583,8 +588,14 @@ extension MeshPackets {
 						let containsRole = roles.contains(Int(fetchedNode[0].user?.role ?? -1))
 						fetchedNode[0].user?.unmessagable = containsRole
 					}
-					// Security (finding H1): first-wins on the public key. See `applyInboundPublicKey`.
-					fetchedNode[0].user?.applyInboundPublicKey(userMessage.publicKey, nodeNum: Int64(packet.from))
+					if acceptsKeyReplacement {
+						// A confirmed import: the sheet showed the key differs and the person said to
+						// replace it, and the radio has already taken it. See `acceptImportedPublicKey`.
+						fetchedNode[0].user?.acceptImportedPublicKey(userMessage.publicKey)
+					} else {
+						// Security (finding H1): first-wins on the public key. See `applyInboundPublicKey`.
+						fetchedNode[0].user?.applyInboundPublicKey(userMessage.publicKey, nodeNum: Int64(packet.from))
+					}
 					if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
 						fetchedNode[0].hopsAway = Int32(truncatingIfNeeded: packet.hopStart - packet.hopLimit)
 					}

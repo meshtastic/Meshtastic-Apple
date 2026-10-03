@@ -120,3 +120,58 @@ struct SharedContactStoredKeyComparisonTests {
 		#expect(decoded.comparedWithStoredKey(otherKey) == .matchesStoredKey)
 	}
 }
+
+/// Covers what a *confirmed* key replacement does to the stored key. First-wins protects the
+/// mesh path, but an `add_contact` has already given the radio the new key, so refusing it in the
+/// app would leave the two disagreeing and flag a mismatch for a change the person asked for.
+@Suite("Imported public key acceptance")
+struct ImportedPublicKeyAcceptanceTests {
+
+	private let storedKey = Data(repeating: 0x2B, count: 32)
+	private let importedKey = Data(repeating: 0x7F, count: 32)
+
+	@MainActor
+	private func user(withKey key: Data) -> UserEntity {
+		let context = TestContainerProvider.shared.mainContext
+		let user = UserEntity()
+		user.num = 1_206_537_050
+		user.publicKey = key
+		user.pkiEncrypted = true
+		context.insert(user)
+		return user
+	}
+
+	@Test("a confirmed import replaces the stored key and clears the mismatch")
+	@MainActor
+	func acceptsConfirmedReplacement() {
+		let user = user(withKey: storedKey)
+		// A mismatch recorded earlier by the mesh path is what the UI shows as a key warning.
+		user.keyMatch = false
+		user.newPublicKey = importedKey
+
+		user.acceptImportedPublicKey(importedKey)
+
+		#expect(user.publicKey == importedKey)
+		#expect(user.keyMatch)
+		#expect(user.newPublicKey == nil)
+	}
+
+	@Test("an unconfirmed inbound key is still refused")
+	@MainActor
+	func stillFirstWinsOnTheMeshPath() {
+		let user = user(withKey: storedKey)
+		#expect(user.applyInboundPublicKey(importedKey, nodeNum: 1) == .mismatch)
+		#expect(user.publicKey == storedKey)
+		#expect(!user.keyMatch)
+	}
+
+	@Test("a malformed key changes nothing")
+	@MainActor
+	func ignoresMalformedKey() {
+		let user = user(withKey: storedKey)
+		for bad in [Data(), Data(repeating: 0x01, count: 31), Data(repeating: 0x01, count: 33)] {
+			user.acceptImportedPublicKey(bad)
+			#expect(user.publicKey == storedKey)
+		}
+	}
+}
