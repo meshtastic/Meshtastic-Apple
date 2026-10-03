@@ -57,3 +57,66 @@ struct SharedContactKeyGuardTests {
 		#expect(try SharedContact(serializedBytes: keyed).carriesPublicKey)
 	}
 }
+
+/// Covers `SharedContact.comparedWithStoredKey` — what the add-contact sheet uses to tell the
+/// person that importing is about to replace the key their node already holds for this contact.
+@Suite("SharedContact.comparedWithStoredKey")
+struct SharedContactStoredKeyComparisonTests {
+
+	private let storedKey = Data(repeating: 0x2B, count: 32)
+	private let otherKey = Data(repeating: 0x7F, count: 32)
+
+	private func contact(key: Data) -> SharedContact {
+		var user = User()
+		user.id = "!47ea4b5a"
+		user.longName = "Test Node"
+		user.shortName = "test"
+		user.publicKey = key
+
+		var contact = SharedContact()
+		contact.nodeNum = 1_206_537_050
+		contact.user = user
+		return contact
+	}
+
+	@Test("a node we hold no key for is establishing one")
+	func noStoredKey() {
+		#expect(contact(key: storedKey).comparedWithStoredKey(nil) == .establishesKey)
+	}
+
+	@Test("an empty stored key is the same as none")
+	func emptyStoredKey() {
+		// A node heard from but never identified has a row with no key on it.
+		#expect(contact(key: storedKey).comparedWithStoredKey(Data()) == .establishesKey)
+	}
+
+	@Test("re-importing the same contact changes nothing")
+	func sameKey() {
+		#expect(contact(key: storedKey).comparedWithStoredKey(storedKey) == .matchesStoredKey)
+	}
+
+	@Test("a different key for a known contact is a replacement")
+	func differentKey() {
+		// The case the warning exists for: firmware's addFromContact applies this without
+		// asking, and every later direct message is encrypted to the new key.
+		#expect(contact(key: otherKey).comparedWithStoredKey(storedKey) == .replacesStoredKey)
+	}
+
+	@Test("a keyless contact against a stored key still reads as a replacement")
+	func keylessContact() {
+		// carriesPublicKey refuses this one before it reaches the radio, so the comparison only
+		// has to avoid calling it a match — it must never report that nothing would change.
+		var keyless = contact(key: storedKey)
+		keyless.user.publicKey = Data()
+		#expect(keyless.comparedWithStoredKey(storedKey) == .replacesStoredKey)
+	}
+
+	@Test("survives a serialize and decode round trip")
+	func survivesRoundTrip() throws {
+		// The sheet compares the contact decoded from the URL, not the one we built here.
+		let encoded = try contact(key: otherKey).serializedData()
+		let decoded = try SharedContact(serializedBytes: encoded)
+		#expect(decoded.comparedWithStoredKey(storedKey) == .replacesStoredKey)
+		#expect(decoded.comparedWithStoredKey(otherKey) == .matchesStoredKey)
+	}
+}

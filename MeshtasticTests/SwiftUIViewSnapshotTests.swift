@@ -2846,3 +2846,117 @@ struct BackupRestoreSectionSnapshotTests {
 			named: "backupRestoreSection_managed")
 	}
 }
+
+// MARK: - AddContactConfirmationView Snapshot Tests
+
+/// The add-contact sheet in each state that changes what it asks of the person: a first import,
+/// a re-import of the same contact, one claiming an in-person exchange, and one that would
+/// replace a key the node already holds. The last is the one worth looking at — it adds a block
+/// to a sheet whose medium detent is already tight. Rendered at the large detent's height so the
+/// whole sheet is in frame; the scroll view it sits in has no intrinsic height to measure.
+@Suite("AddContactConfirmation Snapshots")
+struct AddContactConfirmationSnapshotTests {
+
+	private static let storedKey = Data(repeating: 0x2B, count: 32)
+	private static let differentKey = Data(repeating: 0x7F, count: 32)
+	private static let nodeNum: UInt32 = 1_206_537_050
+
+	@MainActor
+	private func container(storing key: Data?) throws -> ModelContainer {
+		let container = try ModelContainer(
+			for: Schema(MeshtasticSchema.allModels),
+			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+		)
+		if let key {
+			let context = container.mainContext
+			let user = UserEntity()
+			user.num = Int64(Self.nodeNum)
+			user.userId = "!47ea4b5a"
+			user.longName = "Bud"
+			user.shortName = "Bud"
+			user.publicKey = key
+			let node = NodeInfoEntity()
+			node.num = Int64(Self.nodeNum)
+			node.user = user
+			context.insert(node)
+			try context.save()
+		}
+		return container
+	}
+
+	@MainActor
+	private func sheet(contactKey: Data, claimsInPerson: Bool, storedKey: Data?) throws -> some View {
+		var user = User()
+		user.id = "!47ea4b5a"
+		user.longName = "Bud"
+		user.shortName = "Bud"
+		user.publicKey = contactKey
+		var contact = SharedContact()
+		contact.nodeNum = Self.nodeNum
+		contact.user = user
+		contact.manuallyVerified = claimsInPerson
+
+		return AddContactConfirmationView(
+			pendingContact: PendingContact(contact: contact, base64UrlString: "", exchangeRequested: false),
+			accessoryManager: AccessoryManager.shared
+		)
+		.modelContainer(try container(storing: storedKey))
+	}
+
+	@Test("a first import of a contact we hold no key for")
+	@MainActor
+	func establishesKey() async throws {
+		await assertViewSnapshot(
+			of: try sheet(contactKey: Self.storedKey, claimsInPerson: false, storedKey: nil),
+			width: 390,
+			height: 780,
+			colorScheme: .light,
+			named: "addContactEstablishesKey")
+	}
+
+	@Test("a contact claiming it was handed over in person")
+	@MainActor
+	func claimsInPersonExchange() async throws {
+		await assertViewSnapshot(
+			of: try sheet(contactKey: Self.storedKey, claimsInPerson: true, storedKey: nil),
+			width: 390,
+			height: 780,
+			colorScheme: .light,
+			named: "addContactClaimsInPerson")
+	}
+
+	@Test("a contact carrying a different key than the node holds")
+	@MainActor
+	func replacesStoredKey() async throws {
+		await assertViewSnapshot(
+			of: try sheet(contactKey: Self.differentKey, claimsInPerson: false, storedKey: Self.storedKey),
+			width: 390,
+			height: 780,
+			colorScheme: .light,
+			named: "addContactReplacesStoredKey")
+	}
+
+	@Test("a contact claiming an in-person exchange that also replaces the key")
+	@MainActor
+	func claimsInPersonAndReplacesStoredKey() async throws {
+		// Both blocks at once — the tallest the sheet gets, and the layout most likely to push
+		// the buttons out of the detent.
+		await assertViewSnapshot(
+			of: try sheet(contactKey: Self.differentKey, claimsInPerson: true, storedKey: Self.storedKey),
+			width: 390,
+			height: 780,
+			colorScheme: .light,
+			named: "addContactInPersonAndReplacesKey")
+	}
+
+	@Test("a re-import of the same contact says nothing about keys")
+	@MainActor
+	func matchesStoredKey() async throws {
+		await assertViewSnapshot(
+			of: try sheet(contactKey: Self.storedKey, claimsInPerson: false, storedKey: Self.storedKey),
+			width: 390,
+			height: 780,
+			colorScheme: .light,
+			named: "addContactMatchesStoredKey")
+	}
+}
