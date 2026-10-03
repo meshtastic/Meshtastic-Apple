@@ -62,11 +62,19 @@ enum ChannelChangeEvents {
 
 	/// Records that `radio` moved slot `slot` from channel `previous` to `key`. Returns 1 when a
 	/// row was written, changed or removed, 0 otherwise. Doesn't save.
+	///
+	/// No row when the slot's latest row already ends on `key`: the slot's history says it's on
+	/// that channel, so `previous` is a stale copy (a long-lived context that missed the save
+	/// that recorded the change), not a second change.
 	@discardableResult
 	static func record(radio: Int64, slot: Int32, from previous: String, to key: String, in context: ModelContext, now: Date = Date()) throws -> Int {
 		guard previous != key, !isPaused(radio: radio) else { return 0 }
 		let timestamp = Int32(clamping: Int64(now.timeIntervalSince1970))
-		if let latest = try latestEvent(radio: radio, slot: slot, in: context),
+		let latest = try latestEvent(radio: radio, slot: slot, in: context)
+		if latest?.channelKey == key {
+			return 0
+		}
+		if let latest,
 		   latest.channelKey == previous,
 		   timestamp - latest.messageTimestamp < coalesceWindow {
 			if latest.previousChannelKey == key {

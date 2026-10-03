@@ -28,29 +28,27 @@ extension ChannelEntity {
 	@MainActor
 	var mostRecentPrivateMessage: MessageEntity? {
 		let context = PersistenceController.shared.context
-		let channelIndex = self.index
-		// Fetch a small batch and find the first channel message in Swift. A channel-change row
-		// isn't a message, so it's never the preview (T377).
-		var descriptor = FetchDescriptor<MessageEntity>(
-			predicate: #Predicate<MessageEntity> { msg in
-				msg.channel == channelIndex && msg.isEmoji == false && msg.systemEvent == 0
-			},
-			sortBy: [SortDescriptor(\.messageTimestamp, order: .reverse)]
-		)
-		descriptor.fetchLimit = 10
-		let batch = (try? context.fetch(descriptor)) ?? []
-		return batch.first { $0.toUser == nil }
+		// The newest message of the channel's own conversation: with more than one radio a slot
+		// number alone also matched other radios' channels in that slot, so a radio that moved
+		// to LongTurbo previewed the LongFast message another radio sent. A channel-change row
+		// isn't a message, so it's never the preview (T377); `toUser` is tested in Swift.
+		let query = messageQuery(context: context)
+		let batch = (try? ChannelMessageQuery.fetch(query.messages(), limit: 10, in: context)) ?? []
+		return batch.first { !$0.isSystemEvent && $0.toUser == nil }
 	}
 
 	/// The query for this channel's timeline. Feature 021: with more than one radio, the
 	/// channel's messages are grouped by its key, following the slot's history on its radio
-	/// (T378); with one, it's the slot query it always was.
+	/// (T378); with one, it's the slot query it always was. The key is read as saved: this
+	/// object can be the main context's copy from before a preset change saved elsewhere.
 	@MainActor
 	func messageQuery(context: ModelContext) -> ChannelMessageQuery {
-		ChannelMessageQuery.make(
+		let radioNum = self.myInfoChannel?.myNodeNum ?? 0
+		let saved = radioNum == 0 ? nil : MultiRadioBackfill.storedChannelKeys(for: radioNum, container: context.container)[self.index]
+		return ChannelMessageQuery.make(
 			channelIndex: self.index,
-			channelKey: self.channelKey,
-			radioNum: self.myInfoChannel?.myNodeNum ?? 0,
+			channelKey: saved ?? self.channelKey,
+			radioNum: radioNum,
 			multiRadio: ChannelMessageQuery.isMultiRadio(in: context),
 			in: context
 		)
@@ -65,7 +63,8 @@ extension ChannelEntity {
 		guard query.multiRadio, let key = query.channelKey else { return false }
 		let historyKeys = Set(query.segments.isEmpty ? [key] : query.segments.map(\.key))
 		let radio = query.radioNum
-		let channels = (try? context.fetch(FetchDescriptor<ChannelEntity>())) ?? []
+		// As saved, like the query's own key.
+		let channels = (try? ModelContext(context.container).fetch(FetchDescriptor<ChannelEntity>())) ?? []
 		let sharedNow = channels.contains { channel in
 			guard let other = channel.myInfoChannel?.myNodeNum, other != radio,
 				  let otherKey = channel.channelKey else { return false }

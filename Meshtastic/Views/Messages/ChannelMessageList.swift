@@ -384,9 +384,16 @@ struct ChannelMessageList: View {
 // With more than one radio, a channel is one timeline across radios (grouped by `channelKey`),
 // and a message can go out through any connected radio that has the channel, in its own slot.
 private extension ChannelMessageList {
+	/// The slot's channel key as saved. `channel` is the main context's object, which can still
+	/// hold the key from before a preset change the packet actor saved (or be a row a channel
+	/// refresh replaced), and that showed the old channel's messages after the change.
+	var savedChannelKey: String? {
+		MultiRadioBackfill.storedChannelKeys(for: myInfo.myNodeNum, container: context.container)[channel.index] ?? channel.channelKey
+	}
+
 	var query: ChannelMessageQuery {
 		ChannelMessageQuery.make(
-			channelIndex: channel.index, channelKey: channel.channelKey, radioNum: myInfo.myNodeNum,
+			channelIndex: channel.index, channelKey: savedChannelKey, radioNum: myInfo.myNodeNum,
 			multiRadio: ownRadioNums.count > 1, in: context
 		)
 	}
@@ -414,7 +421,7 @@ private extension ChannelMessageList {
 			ownRadioNums = known
 		}
 		var slots: [ChannelSlot] = []
-		if let key = channel.channelKey {
+		if let key = savedChannelKey {
 			slots = ChannelMessageQuery.slots(for: key, among: accessoryManager.connectedRadioNums, in: context)
 		}
 		if slots != channelSlots {

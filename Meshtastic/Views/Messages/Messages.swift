@@ -258,9 +258,11 @@ struct Messages: View {
 	/// may keep it in another slot (feature 021, T091).
 	private func deepLinkedChannel(_ channelId: Int32) -> ChannelEntity? {
 		let channels = node?.myInfo?.channels ?? []
-		if let radio = router.messagesRadio, radio != node?.num,
-		   let key = (try? MultiRadioBackfill.channelKeysByIndex(for: radio, in: context, updateStored: false))?[channelId],
-		   let sameChannel = channels.first(where: { $0.channelKey == key }) {
+		// Keys as saved: this view's channel objects can predate a preset change.
+		if let radio = router.messagesRadio, radio != node?.num, let ownNum = node?.num,
+		   let key = MultiRadioBackfill.computedChannelKeys(for: radio, container: context.container)[channelId],
+		   let ownIndex = MultiRadioBackfill.storedChannelKeys(for: ownNum, container: context.container).first(where: { $0.value == key })?.key,
+		   let sameChannel = channels.first(where: { $0.index == ownIndex }) {
 			return sameChannel
 		}
 		return channels.first(where: { $0.id == channelId })

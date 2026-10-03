@@ -197,9 +197,11 @@ struct ChannelMessageQuery {
 	}
 
 	/// Of `radios` (in order), the ones that have the channel `key`, each with its slot for it.
+	/// Computed from what's saved: `context` may be the main context, whose LoRa settings can
+	/// predate a preset change, and then offered a radio that's on another mesh now.
 	static func slots(for key: String, among radios: [Int64], in context: ModelContext) -> [ChannelSlot] {
 		radios.compactMap { radio in
-			let keys = (try? MultiRadioBackfill.channelKeysByIndex(for: radio, in: context, updateStored: false)) ?? [:]
+			let keys = MultiRadioBackfill.computedChannelKeys(for: radio, container: context.container)
 			guard let index = keys.filter({ $0.value == key }).keys.min() else { return nil }
 			return ChannelSlot(radio: radio, index: index)
 		}

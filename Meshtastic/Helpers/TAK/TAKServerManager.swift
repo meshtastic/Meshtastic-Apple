@@ -83,10 +83,9 @@ final class TAKServerManager: ObservableObject {
 	}
 
 	static func slot(forChannel slot: Int, from oldRadio: Int64, to newRadio: Int64, in context: ModelContext) -> Int {
-		var descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == oldRadio })
-		descriptor.fetchLimit = 1
-		let stored = (try? context.fetch(descriptor))?.first?.channels.first { $0.index == Int32(slot) }?.channelKey
-		let computed = (try? MultiRadioBackfill.channelKeysByIndex(for: oldRadio, in: context, updateStored: false))?[Int32(slot)]
+		// As saved: `context` is the main context, which may predate a preset change.
+		let stored = MultiRadioBackfill.storedChannelKeys(for: oldRadio, container: context.container)[Int32(slot)]
+		let computed = MultiRadioBackfill.computedChannelKeys(for: oldRadio, container: context.container)[Int32(slot)]
 		guard let key = computed ?? stored else { return 0 }
 		return ChannelMessageQuery.slots(for: key, among: [newRadio], in: context).first.map { Int($0.index) } ?? 0
 	}

@@ -185,7 +185,8 @@ final class WindowRouters {
 	/// The radios among `radios` that have the channel radio `radio` has in slot `index`,
 	/// `radio` itself included.
 	private static func radiosWithChannel(_ index: Int32, of radio: Int64, among radios: [Int64], context: ModelContext) -> Set<Int64> {
-		let keys = (try? MultiRadioBackfill.channelKeysByIndex(for: radio, in: context, updateStored: false)) ?? [:]
+		// As saved: `context` is the main context, which may predate a preset change.
+		let keys = MultiRadioBackfill.computedChannelKeys(for: radio, container: context.container)
 		guard let key = keys[index] else { return [radio] }
 		return Set(ChannelMessageQuery.slots(for: key, among: radios, in: context).map(\.radio)).union([radio])
 	}

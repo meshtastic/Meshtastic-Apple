@@ -379,11 +379,10 @@ actor MeshPackets {
 				return
 			}
 			// The rows are replaced, so the keys they had are kept by slot: a slot whose channel
-			// changed then leaves a change row in the radio's thread (T377).
-			var previousKeys: [Int32: String] = [:]
-			for channel in myInfo.channels {
-				if let key = channel.channelKey { previousKeys[channel.index] = key }
-			}
+			// changed then leaves a change row in the radio's thread (T377). Read from the store:
+			// this context's rows can hold the key from before a change the packet actor saved,
+			// and writing that back recorded the change a second time.
+			let previousKeys = MultiRadioBackfill.storedChannelKeys(for: nodeNum, container: container)
 			for channel in myInfo.channels {
 				context.delete(channel)
 			}
@@ -398,10 +397,11 @@ actor MeshPackets {
 				channel.channelKey = previousKeys[channel.index]
 				myInfo.channels.append(channel)
 			}
+			try context.save()
 			// The timeline groups a channel's messages by key, so the key follows the channels
 			// the radio just sent (T144). Without LoRa settings yet, the LoRa config sets it.
-			let events = try MultiRadioBackfill.updateChannelKeys(for: nodeNum, in: context).events
-			try context.save()
+			// Computed from what's saved, not this context's possibly older LoRa settings.
+			let events = try MultiRadioBackfill.updateSavedChannelKeys(for: nodeNum, container: container)
 			if events > 0 {
 				NotificationCenter.default.post(name: .meshMessagesDidChange, object: nil)
 			}

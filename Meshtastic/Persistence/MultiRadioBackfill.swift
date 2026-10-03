@@ -36,8 +36,10 @@ enum MultiRadioBackfill {
 		var observations = 0
 		/// Messages whose `c1` channel key was converted to the current format (T379).
 		var rekeyed = 0
+		/// Change rows removed because the row before them already ended on their channel.
+		var duplicateEvents = 0
 
-		var total: Int { channels + messages + observations + rekeyed }
+		var total: Int { channels + messages + observations + rekeyed + duplicateEvents }
 	}
 
 	/// Runs one chunk of each step and saves. Returns what it filled; zero means done.
@@ -52,6 +54,7 @@ enum MultiRadioBackfill {
 		let channelKeys = try ownRadio == 0 ? [:] : channelKeysByIndex(for: ownRadio, in: context)
 		result.messages = try backfillMessages(in: context, ownRadio: ownRadio, channelKeys: channelKeys, limit: chunkSize)
 		result.rekeyed = try rekeyLegacyMessages(in: context, limit: chunkSize)
+		result.duplicateEvents = try removeDuplicateChangeRows(in: context)
 		if ownRadio != 0 {
 			result.observations = try backfillObservations(in: context, ownRadio: ownRadio, limit: chunkSize, othersObserved: othersObserved)
 		}
@@ -122,6 +125,42 @@ enum MultiRadioBackfill {
 		return (keys, events)
 	}
 
+	// MARK: - Fresh reads
+
+	// The main context is long-lived and doesn't take in what other contexts save: a channel or
+	// LoRa object it loaded before the packet actor stored a preset change keeps the old values.
+	// Keys read or computed there can be the channel before the change, so the conversation
+	// shows the wrong channel's messages, "Via" offers radios on the old mesh, and a refresh
+	// committed there writes the old key back and records the change twice. These read and
+	// write in a throwaway context, which loads from the store (see AccessoryManager+FromRadio).
+
+	/// `radioNum`'s stored channel keys by slot, as saved.
+	static func storedChannelKeys(for radioNum: Int64, container: ModelContainer) -> [Int32: String] {
+		let context = ModelContext(container)
+		let myInfos = (try? context.fetch(FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == radioNum }))) ?? []
+		var keys: [Int32: String] = [:]
+		for channel in myInfos.first?.channels ?? [] {
+			if let key = channel.channelKey { keys[channel.index] = key }
+		}
+		return keys
+	}
+
+	/// `radioNum`'s channel keys computed from its saved channels and LoRa settings.
+	static func computedChannelKeys(for radioNum: Int64, container: ModelContainer) -> [Int32: String] {
+		(try? channelKeysByIndex(for: radioNum, in: ModelContext(container), updateStored: false)) ?? [:]
+	}
+
+	/// `updateChannelKeys` from what's saved, then saved. Returns the change rows it wrote.
+	@discardableResult
+	static func updateSavedChannelKeys(for radioNum: Int64, container: ModelContainer, now: Date = Date()) throws -> Int {
+		let context = ModelContext(container)
+		let events = try updateChannelKeys(for: radioNum, in: context, now: now).events
+		if context.hasChanges {
+			try context.save()
+		}
+		return events
+	}
+
 	// MARK: - Legacy keys (T379)
 
 	/// Converts up to `limit` messages still keyed in the `c1` format, which had no mesh. Each goes
@@ -175,6 +214,32 @@ enum MultiRadioBackfill {
 			maps[myInfo.myNodeNum] = map
 		}
 		return maps
+	}
+
+	// MARK: - Duplicate change rows
+
+	/// Removes change rows whose radio's previous row for the slot already ended on the same
+	/// channel: the same change recorded twice, from a context that still had the key from before
+	/// it (fixed in `ChannelChangeEvents.record`; this cleans up stores that have them).
+	static func removeDuplicateChangeRows(in context: ModelContext) throws -> Int {
+		let eventRaw = MessageEntity.SystemEvent.channelChanged.rawValue
+		// Change rows are few.
+		let rows = try context.fetch(FetchDescriptor<MessageEntity>(
+			predicate: #Predicate { $0.systemEvent == eventRaw },
+			sortBy: [SortDescriptor(\.messageTimestamp), SortDescriptor(\.messageId)]
+		))
+		var lastKey: [String: String] = [:]
+		var removed = 0
+		for row in rows {
+			let slot = "\(row.localNodeNum ?? 0):\(row.channel)"
+			if let key = row.channelKey, lastKey[slot] == key {
+				context.delete(row)
+				removed += 1
+				continue
+			}
+			lastKey[slot] = row.channelKey
+		}
+		return removed
 	}
 
 	// MARK: - Messages

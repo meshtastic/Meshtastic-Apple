@@ -448,7 +448,10 @@ extension AccessoryManager {
 						newMessage.toNum = toUserNum
 					} else {
 						newMessage.toNum = MultiRadioBackfill.broadcastNum
-						newMessage.channelKey = (try? MultiRadioBackfill.channelKeysByIndex(for: fromUserNum, in: context, updateStored: false))?[channel]
+						// From the saved settings: this context's LoRa settings can predate a
+						// preset change the packet actor saved, which filed the message under the
+						// old channel and showed it in other radios' conversations.
+						newMessage.channelKey = MultiRadioBackfill.computedChannelKeys(for: fromUserNum, container: context.container)[channel]
 					}
 
 					let dataType = PortNum.textMessageApp

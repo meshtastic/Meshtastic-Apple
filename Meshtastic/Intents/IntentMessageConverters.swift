@@ -75,15 +75,11 @@ enum IntentMessageConverters {
 	}
 
 	/// `radioNum`'s channel keys by slot: from its LoRa settings, or the keys stored on its
-	/// channels when those aren't in the store.
+	/// channels when those aren't in the store. Both as saved (see `MultiRadioBackfill`'s fresh
+	/// reads): `context` can be the main context, which may predate a preset change.
 	static func channelKeys(ofRadio radioNum: Int64, in context: ModelContext) -> [Int32: String] {
-		var keys: [Int32: String] = [:]
-		var descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == radioNum })
-		descriptor.fetchLimit = 1
-		for channel in (try? context.fetch(descriptor))?.first?.channels ?? [] {
-			if let key = channel.channelKey { keys[channel.index] = key }
-		}
-		let computed = (try? MultiRadioBackfill.channelKeysByIndex(for: radioNum, in: context, updateStored: false)) ?? [:]
+		let keys = MultiRadioBackfill.storedChannelKeys(for: radioNum, container: context.container)
+		let computed = MultiRadioBackfill.computedChannelKeys(for: radioNum, container: context.container)
 		return keys.merging(computed) { _, fresh in fresh }
 	}
 
