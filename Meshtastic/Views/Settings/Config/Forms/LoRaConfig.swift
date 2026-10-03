@@ -134,10 +134,13 @@ struct LoRaConfig: View {
 				// so the radio wants it asked for explicitly rather than assumed.
 				.init(F.overrideDutyCycle, symbol: "clock.arrow.2.circlepath", shownWhen: hasDutyCycle),
 				.init(F.paFanDisabled, symbol: "fan", shownWhen: hasPAFan),
-				.init(F.overrideFrequency, symbol: "waveform.path.ecg", control: .preciseDecimal)
+				.init(F.overrideFrequency, symbol: "waveform.path.ecg", control: .preciseDecimal),
+				// Zero means the region's legal maximum, which the registry description says and
+				// which is what most radios should be left on. The rest of the range is for
+				// turning power down — a shared antenna, a bench test, a hot PA.
+				.init(F.txPower, symbol: "antenna.radiowaves.left.and.right")
 			])
 		], omitted: [
-			.init(F.txPower, "set by the radio for the region and preset; not offered by this client"),
 			// A repeated list of node numbers to ignore, with no editor on any client.
 			.init(Self.ignoreIncomingField, "a repeated node list; not offered by this client"),
 			.init(F.frequencyOffset, "not offered by this client; unlabelled upstream"),
