@@ -47,15 +47,17 @@ extension MeshPackets {
 			// which mustn't stop this radio's for the rest of the nodes (T220).
 			let othersObserved = try given ?? MultiRadioBackfill.otherRadiosHaveObservations(than: ownRadio, in: modelContext)
 			while !invalidated {
+				// Packets handled while the actor was given back (or before the drain began) wrote
+				// to this same context; save them before each chunk, so a chunk that fails only
+				// rolls back itself (T205), and so the chunk reads channel keys as saved rather
+				// than this context's copies (review V26).
+				savePendingChanges(caller: "drainMultiRadioBackfill")
 				let filled = try MultiRadioBackfill.runChunk(in: modelContext, ownRadio: ownRadio, chunkSize: 2000, othersObserved: othersObserved).total
 				guard filled > 0 else { break }
 				total += filled
 				chunks += 1
 				guard chunks < 10_000 else { break }
 				await Task.yield()
-				// Packets handled while the actor was given back wrote to this same context; save
-				// them before the next chunk, so a chunk that fails only rolls back itself (T205).
-				savePendingChanges(caller: "drainMultiRadioBackfill")
 			}
 		} catch {
 			modelContext.rollback()

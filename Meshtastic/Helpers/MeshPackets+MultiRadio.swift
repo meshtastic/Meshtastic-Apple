@@ -487,6 +487,9 @@ extension MeshPackets {
 		var backfilled = 0
 		while shouldContinue() {
 			do {
+				// Pending ingest (debounced position and telemetry saves) first, so the chunk reads
+				// channel keys as saved rather than this context's copies (review V26).
+				savePendingChanges(caller: "runMultiRadioMaintenance")
 				let result = try MultiRadioBackfill.runChunk(in: modelContext, ownRadio: ownRadio)
 				backfilled += result.total
 				guard result.total > 0 else { break }
