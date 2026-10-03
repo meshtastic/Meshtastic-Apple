@@ -94,17 +94,24 @@ enum MultiRadioBackfill {
 	/// `channelKeysByIndex`, also returning how many change rows it wrote, changed or removed
 	/// (T377), so the caller can tell the message lists to reload. A stored key that was missing
 	/// or in the `c1` format is filled in quietly: that isn't a change of channel. Doesn't save.
+	///
+	/// While the radio is paused (Local Mesh Discovery stepping presets), the keys are computed
+	/// but the stored ones are kept (V22-2): the slot's conversation stays on the channel it had
+	/// before the scan. A completed scan puts the radio back, so the first refresh after it finds
+	/// nothing changed. An interrupted one leaves the radio on a scan preset, and that refresh
+	/// records the change from the channel before the scan, so no stretch of history is lost.
 	@discardableResult
 	static func updateChannelKeys(for radioNum: Int64, in context: ModelContext, updateStored: Bool = true, now: Date = Date()) throws -> (keys: [Int32: String], events: Int) {
 		let myInfos = try context.fetch(FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == radioNum }))
 		guard let myInfo = myInfos.first, let lora = myInfo.myInfoNode?.loRaConfig else { return ([:], 0) }
 		let primaryPSK = myInfo.channels.first { $0.index == 0 }?.psk
 		let network = MeshNetwork(radio: myInfo)
+		let store = updateStored && !ChannelChangeEvents.isPaused(radio: radioNum)
 		var keys: [Int32: String] = [:]
 		var events = 0
 		for channel in myInfo.channels {
 			let key = channel.identityKey(primaryPSK: primaryPSK, usePreset: lora.usePreset, modemPreset: lora.modemPreset, network: network)
-			if updateStored, channel.channelKey != key {
+			if store, channel.channelKey != key {
 				if let previous = channel.channelKey, !ChannelIdentity.isLegacy(previous) {
 					events += try ChannelChangeEvents.record(radio: radioNum, slot: channel.index, from: previous, to: key, in: context, now: now)
 				}

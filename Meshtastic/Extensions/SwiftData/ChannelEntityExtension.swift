@@ -57,7 +57,8 @@ extension ChannelEntity {
 	}
 
 	/// True when deleting this channel's conversation also removes messages another of the
-	/// user's radios shows: some stretch of its history is a channel another radio has now.
+	/// user's radios shows: some stretch of its history is a channel another radio has now, or
+	/// had earlier (that radio's change rows, V22-3).
 	@MainActor
 	func sharesMessagesWithOtherRadios(context: ModelContext) -> Bool {
 		let query = messageQuery(context: context)
@@ -65,10 +66,19 @@ extension ChannelEntity {
 		let historyKeys = Set(query.segments.isEmpty ? [key] : query.segments.map(\.key))
 		let radio = query.radioNum
 		let channels = (try? context.fetch(FetchDescriptor<ChannelEntity>())) ?? []
-		return channels.contains { channel in
+		let sharedNow = channels.contains { channel in
 			guard let other = channel.myInfoChannel?.myNodeNum, other != radio,
 				  let otherKey = channel.channelKey else { return false }
 			return historyKeys.contains(otherKey)
+		}
+		if sharedNow { return true }
+		// Change rows are few; the radio test runs in Swift (an optional `!=` in a predicate
+		// also matches rows without a radio).
+		let eventRaw = MessageEntity.SystemEvent.channelChanged.rawValue
+		let events = (try? context.fetch(FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.systemEvent == eventRaw }))) ?? []
+		return events.contains { event in
+			guard let other = event.localNodeNum, other != radio else { return false }
+			return [event.channelKey, event.previousChannelKey].contains { $0.map(historyKeys.contains) ?? false }
 		}
 	}
 

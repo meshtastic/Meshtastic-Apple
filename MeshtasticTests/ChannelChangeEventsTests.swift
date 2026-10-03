@@ -214,6 +214,101 @@ struct ChannelChangeEventsTests {
 		])
 	}
 
+	// MARK: - Review V22
+
+	@Test("Messages a radio delivers at connect, dated before the change its settings produced, stay in its thread")
+	func queuedMessagesBeforeTheRowStayVisible() throws {
+		let context = try makeContext()
+		let radioAInfo = makeRadio(radioA, preset: longFast, in: context)
+		makeRadio(radioB, preset: longFast, in: context)
+		try MultiRadioBackfill.updateChannelKeys(for: radioA, in: context)
+		try MultiRadioBackfill.updateChannelKeys(for: radioB, in: context)
+		try context.save()
+		let longFastKey = try key(of: radioAInfo, slot: 0)
+		insertMessage(1, at: 50, key: longFastKey, radio: radioA, in: context)
+		try context.save()
+
+		// A was moved to LongTurbo while the app was away; its settings arrive first, at 100.
+		try setPreset(longTurbo, on: radioAInfo, at: 100, in: context)
+		let longTurboKey = try key(of: radioAInfo, slot: 0)
+		// Then the packets it queued: keyed for the slot now, dated when they were received.
+		insertMessage(2, at: 90, key: longTurboKey, radio: radioA, in: context)
+		// B, still on LongFast, keeps hearing it: not A's history after the change.
+		insertMessage(3, at: 150, key: longFastKey, radio: radioB, in: context)
+		insertMessage(4, at: 160, key: longTurboKey, radio: radioA, in: context)
+		try context.save()
+
+		// Before the fix, 2 was in neither stretch.
+		#expect(try thread(of: radioAInfo, in: context) == ["1", "2", "event", "4"])
+	}
+
+	@Test("A completed discovery scan leaves the slot's key and no row")
+	func completedScanKeepsTheKey() throws {
+		let context = try makeContext()
+		let scanning: Int64 = 0x0E0E_0E0E
+		let radio = makeRadio(scanning, preset: longFast, in: context)
+		try MultiRadioBackfill.updateChannelKeys(for: scanning, in: context)
+		try context.save()
+		let home = try key(of: radio, slot: 0)
+
+		ChannelChangeEvents.pause(radio: scanning)
+		try setPreset(longTurbo, on: radio, at: 10, in: context)
+		// Messages during the scan still get the scan preset's key...
+		let scanKeys = try MultiRadioBackfill.channelKeysByIndex(for: scanning, in: context)
+		#expect(scanKeys[0]?.hasSuffix(":LongTurbo") == true)
+		// ...but the conversation stays on the home channel.
+		#expect(try key(of: radio, slot: 0) == home)
+		try setPreset(longFast, on: radio, at: 20, in: context)
+		ChannelChangeEvents.resume(radio: scanning)
+
+		try setPreset(longFast, on: radio, at: 30, in: context)
+		#expect(try key(of: radio, slot: 0) == home)
+		#expect(try context.fetch(FetchDescriptor<MessageEntity>()).isEmpty)
+	}
+
+	@Test("An interrupted discovery scan is recorded from the channel before it, keeping that history")
+	func interruptedScanRecordsTheChange() throws {
+		let context = try makeContext()
+		let scanning: Int64 = 0x0F0F_0F0F
+		let radio = makeRadio(scanning, preset: longFast, in: context)
+		makeRadio(radioB, preset: longFast, in: context)
+		try MultiRadioBackfill.updateChannelKeys(for: scanning, in: context)
+		try context.save()
+		let home = try key(of: radio, slot: 0)
+		insertMessage(1, at: 5, key: home, radio: scanning, in: context)
+		try context.save()
+
+		ChannelChangeEvents.pause(radio: scanning)
+		try setPreset(longTurbo, on: radio, at: 10, in: context)
+		// The app is killed mid-scan: the pause is gone, and the radio is still on LongTurbo.
+		ChannelChangeEvents.resume(radio: scanning)
+		try setPreset(longTurbo, on: radio, at: 100, in: context)
+
+		let event = try #require(try ChannelChangeEvents.latestEvent(radio: scanning, slot: 0, in: context))
+		#expect(event.previousChannelKey == home)
+		#expect(ChannelChangeDescription.text(previous: event.previousChannelKey, current: event.channelKey) == "Switched from LongFast to LongTurbo.")
+		// Before the fix, the key moved without a row and 1 dropped out of the thread.
+		#expect(try thread(of: radio, in: context) == ["1", "event"])
+	}
+
+	@Test("The delete warning counts a channel another radio had earlier")
+	@MainActor
+	func deleteWarningFollowsOtherRadiosHistory() throws {
+		let context = try makeContext()
+		let radioAInfo = makeRadio(radioA, preset: longFast, in: context)
+		let radioBInfo = makeRadio(radioB, preset: longTurbo, in: context)
+		try MultiRadioBackfill.updateChannelKeys(for: radioA, in: context)
+		try MultiRadioBackfill.updateChannelKeys(for: radioB, in: context)
+		try context.save()
+		let primaryA = try #require(radioAInfo.channels.first { $0.index == 0 })
+		#expect(!primaryA.sharesMessagesWithOtherRadios(context: context))
+
+		// B spends a while on LongFast, then goes back: its thread shows LongFast messages from then.
+		try setPreset(longFast, on: radioBInfo, at: 10, in: context)
+		try setPreset(longTurbo, on: radioBInfo, at: 200, in: context)
+		#expect(primaryA.sharesMessagesWithOtherRadios(context: context))
+	}
+
 	// MARK: - Mesh in the identity (T379)
 
 	@Test("A named channel two radios share stops being shared when one moves to another mesh")

@@ -44,7 +44,14 @@ struct ChannelMessageQuery {
 
 	/// Real messages (not change rows) in any of `segments`, which mustn't be empty. Composed one
 	/// segment at a time: as one expression it's too much for the type checker.
-	private static func inSegments(_ segments: [ChannelChangeEvents.Segment]) -> Predicate<MessageEntity> {
+	///
+	/// Another radio's rows count only within the segment's time bounds: that radio heard the
+	/// channel, but this slot only had it for that stretch. `radio`'s own rows count whenever they
+	/// were sent or received (V22-1): each carries the key its slot had when it was stored, and the
+	/// radio delivers the packets it queued while the app was away after its settings, dated
+	/// before the change row that the settings produced.
+	private static func inSegments(_ segments: [ChannelChangeEvents.Segment], radio: Int64) -> Predicate<MessageEntity> {
+		let ownRadio: Int64? = radio
 		var combined: Predicate<MessageEntity>?
 		for segment in segments {
 			let key: String? = segment.key
@@ -53,9 +60,12 @@ struct ChannelMessageQuery {
 			let start = segment.start ?? Int32.min
 			let end = segment.end ?? Int32.max
 			let unboundedEnd = segment.end == nil
+			let inBounds = #Predicate<MessageEntity> {
+				$0.localNodeNum == ownRadio
+				|| ($0.messageTimestamp >= start && (unboundedEnd || $0.messageTimestamp < end))
+			}
 			let this = #Predicate<MessageEntity> {
-				($0.channelKey == key || $0.channelKey == legacy)
-				&& $0.messageTimestamp >= start && (unboundedEnd || $0.messageTimestamp < end)
+				($0.channelKey == key || $0.channelKey == legacy) && inBounds.evaluate($0)
 			}
 			if let previous = combined {
 				combined = #Predicate<MessageEntity> { previous.evaluate($0) || this.evaluate($0) }
@@ -107,7 +117,7 @@ struct ChannelMessageQuery {
 		let base = #Predicate<MessageEntity> {
 			$0.toUser == nil && $0.isEmoji == false && (!unreadOnly || $0.read == false)
 		}
-		let bySegment = Self.inSegments(effectiveSegments(key: key))
+		let bySegment = Self.inSegments(effectiveSegments(key: key), radio: radioNum)
 		let unkeyed = unkeyedInSlot()
 		let events = ownEvents()
 		return #Predicate<MessageEntity> {
@@ -159,7 +169,7 @@ struct ChannelMessageQuery {
 			}
 		}
 		let base = #Predicate<MessageEntity> { $0.isEmoji == false && $0.read == false }
-		let bySegment = Self.inSegments(effectiveSegments(key: key))
+		let bySegment = Self.inSegments(effectiveSegments(key: key), radio: radioNum)
 		let unkeyed = unkeyedInSlot()
 		return #Predicate<MessageEntity> {
 			base.evaluate($0) && (bySegment.evaluate($0) || unkeyed.evaluate($0))
