@@ -1173,11 +1173,14 @@ actor MeshPackets {
 					fetchedNode[0].favorite = nodeInfo.isFavorite
 					fetchedNode[0].ignored = nodeInfo.isIgnored
 					fetchedNode[0].hopsAway = Int32(truncatingIfNeeded: nodeInfo.hopsAway)
-					// has_xeddsa_signed means the node has signed ≥1 verified broadcast and persists; latch it
-					// so a later NodeInfo that omits the bit doesn't downgrade a node we've seen sign.
-					fetchedNode[0].hasXeddsaSigned = fetchedNode[0].hasXeddsaSigned || nodeInfo.hasXeddsaSigned_p
-					// The radio owns manual verification (in-person contact exchange or its own
-					// verify flow), so its DB dump overwrites rather than latches.
+					// Both trust flags come from the radio's node db, which is where they live: the
+					// firmware sets has_xeddsa_signed when it verifies a signature and
+					// is_key_manually_verified on a contact exchange, and persists both across its
+					// own cleanups. So the dump is taken verbatim, the same as favorite and ignored
+					// above. Latching either one would let the app go on showing a node as signed or
+					// verified after the radio had stopped saying so — claiming a trust level the
+					// radio that does the actual verifying no longer holds.
+					fetchedNode[0].hasXeddsaSigned = nodeInfo.hasXeddsaSigned_p
 					fetchedNode[0].isKeyManuallyVerified = nodeInfo.isKeyManuallyVerified
 
 					if nodeInfo.hasUser {
