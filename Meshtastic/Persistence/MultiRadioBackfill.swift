@@ -50,13 +50,17 @@ enum MultiRadioBackfill {
 	@discardableResult
 	static func runChunk(in context: ModelContext, ownRadio: Int64, chunkSize: Int = 500, othersObserved: Bool? = nil) throws -> ChunkResult {
 		var result = ChunkResult()
+		// Channels and LoRa settings to compute keys from, read before this chunk changes
+		// anything: as saved, unless `context` holds unsaved work it must see (a backup merge's
+		// staging context). The drain's context is the packet actor's long-lived one, whose
+		// copies can predate a change another context saved (review V25, note).
+		let reader = context.hasChanges ? context : ModelContext(context.container)
 		result.channels = try backfillChannels(in: context)
-		// Only read here, for filling old messages: the drain runs in the packet actor's
-		// long-lived context, and storing keys from it could write an old key back (review V24-2).
-		// Stored keys are kept up to date by the ingest's `refreshChannelKeys`.
-		let channelKeys = try ownRadio == 0 ? [:] : channelKeysByIndex(for: ownRadio, in: context, updateStored: false)
+		// Only read here, for filling old messages: storing keys from the drain could write an old
+		// key back (review V24-2). Stored keys are kept up to date by `refreshChannelKeys`.
+		let channelKeys = try ownRadio == 0 ? [:] : channelKeysByIndex(for: ownRadio, in: reader, updateStored: false)
 		result.messages = try backfillMessages(in: context, ownRadio: ownRadio, channelKeys: channelKeys, limit: chunkSize)
-		result.rekeyed = try rekeyLegacyMessages(in: context, limit: chunkSize)
+		result.rekeyed = try rekeyLegacyMessages(in: context, limit: chunkSize, reader: reader)
 		result.duplicateEvents = try removeDuplicateChangeRows(in: context)
 		if ownRadio != 0 {
 			result.observations = try backfillObservations(in: context, ownRadio: ownRadio, limit: chunkSize, othersObserved: othersObserved)
@@ -153,6 +157,17 @@ enum MultiRadioBackfill {
 		(try? channelKeysByIndex(for: radioNum, in: ModelContext(container), updateStored: false)) ?? [:]
 	}
 
+	/// Each radio's mesh, from its saved LoRa settings and primary channel (review V25-1).
+	static func savedNetworks(container: ModelContainer) -> [Int64: MeshNetwork] {
+		let context = ModelContext(container)
+		let myInfos = (try? context.fetch(FetchDescriptor<MyInfoEntity>())) ?? []
+		var networks: [Int64: MeshNetwork] = [:]
+		for myInfo in myInfos {
+			if let network = MeshNetwork(radio: myInfo) { networks[myInfo.myNodeNum] = network }
+		}
+		return networks
+	}
+
 	/// `updateChannelKeys` from what's saved, then saved. Returns the change rows it wrote.
 	@discardableResult
 	static func updateSavedChannelKeys(for radioNum: Int64, container: ModelContainer, now: Date = Date()) throws -> Int {
@@ -175,7 +190,7 @@ enum MultiRadioBackfill {
 	/// exception and aborts the app), so the fetch only filters out rows without a key and sorts
 	/// by key instead. Every key starts with its version, and `c1:` sorts before `c2:`, so any
 	/// `c1` rows left come first; the prefix itself is checked in Swift.
-	static func rekeyLegacyMessages(in context: ModelContext, limit: Int) throws -> Int {
+	static func rekeyLegacyMessages(in context: ModelContext, limit: Int, reader: ModelContext? = nil) throws -> Int {
 		var descriptor = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate { $0.channelKey != nil },
 			sortBy: [SortDescriptor(\.channelKey)]
@@ -185,7 +200,8 @@ enum MultiRadioBackfill {
 			message.channelKey.map(ChannelIdentity.isLegacy) ?? false
 		}
 		guard !pending.isEmpty else { return 0 }
-		let maps = try legacyKeyMaps(in: context)
+		// The channels' keys from `reader` (as saved, from `runChunk`), else this context.
+		let maps = try legacyKeyMaps(in: reader ?? context)
 		let radios = maps.keys.sorted()
 		for message in pending {
 			guard let legacy = message.channelKey else { continue }

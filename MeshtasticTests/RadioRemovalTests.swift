@@ -307,6 +307,40 @@ struct RadioRemovalTests {
 		#expect(kept.channel == 2)
 	}
 
+	@Test("Removal judges shared channels from what's saved, not the actor's older copy (review V25-1)")
+	func removalReadsChannelsAsSaved() async throws {
+		let container = try makeContainer()
+		let context = ModelContext(container)
+		makeRadio(radioA, channels: [3: "Team"], in: context)
+		makeRadio(radioB, channels: [1: "Other"], in: context)
+		try context.save()
+		let packets = MeshPackets(modelContainer: container)
+		// The actor loads B's channels into its own context.
+		var other = Channel()
+		other.index = 1
+		other.role = .secondary
+		other.settings.name = "Other"
+		other.settings.psk = Data(repeating: 7, count: 32)
+		await packets.channelPacket(channel: other, fromNum: radioB, stageIfRefreshing: false)
+
+		// The Channels editor (another context) renames B's slot 1 to A's "Team" and saves.
+		let editor = ModelContext(container)
+		let renamed = try #require(try editor.fetch(FetchDescriptor<ChannelEntity>()).first { $0.myInfoChannel?.myNodeNum == radioB && $0.index == 1 })
+		renamed.name = "Team"
+		try editor.save()
+		try MultiRadioBackfill.updateSavedChannelKeys(for: radioB, container: container)
+
+		let team = try #require(try keys(of: radioA, in: context)[3])
+		message(1, radio: radioA, slot: 3, key: team, in: context)
+		try context.save()
+
+		await packets.removeRadioData(radioA, .remove)
+		// B has "Team" now, so A's message on it stays, in B's slot.
+		let kept = try #require(try rows(MessageEntity.self, in: container).first { $0.messageId == 1 })
+		#expect(kept.localNodeNum == radioB)
+		#expect(kept.channel == 1)
+	}
+
 	@Test("A channel a merged backup's radio has keeps its history, by the key stored on its channel")
 	func backupRadioSharesByStoredKey() async throws {
 		let container = try makeContainer()

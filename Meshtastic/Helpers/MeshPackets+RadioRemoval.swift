@@ -87,10 +87,15 @@ extension MeshPackets {
 		do {
 			let others = Set(storedRadios().map(\.nodeNum)).subtracting([radioNum])
 			let myInfos = try modelContext.fetch(FetchDescriptor<MyInfoEntity>())
-			let network = myInfos.first { $0.myNodeNum == radioNum }.flatMap(MeshNetwork.init(radio:))
-			let sharesNetwork = network != nil && myInfos.contains { other in
-				others.contains(other.myNodeNum) && MeshNetwork(radio: other) == network
+			// Each radio's mesh as saved (review V25-1): this context's LoRa settings and primary
+			// channel can predate a change the main context saved, and the mesh decides which
+			// nodes go.
+			if modelContext.hasChanges {
+				try modelContext.save()
 			}
+			let networks = MultiRadioBackfill.savedNetworks(container: modelContext.container)
+			let network = networks[radioNum]
+			let sharesNetwork = network != nil && others.contains { networks[$0] == network }
 			let ownRadios = Set(myInfos.map(\.myNodeNum)).union([radioNum])
 
 			if deleteMessages {
@@ -163,27 +168,23 @@ extension MeshPackets {
 	private func deleteMessagesOfRadio(_ radioNum: Int64, keepingChannelsOf others: Set<Int64>, moveKept: Bool = false, preferredRadio: Int64) throws -> Int {
 		// Keys from each radio's LoRa settings, and the keys stored on its channels: a radio only
 		// a merged backup knows has no LoRa settings in the store, but its channels keep their
-		// keys (T177).
-		let myInfos = try modelContext.fetch(FetchDescriptor<MyInfoEntity>())
-		func storedKeys(of radio: Int64) -> [Int32: String] {
-			var keys: [Int32: String] = [:]
-			for channel in myInfos.first(where: { $0.myNodeNum == radio })?.channels ?? [] {
-				if let key = channel.channelKey { keys[channel.index] = key }
-			}
-			return keys
+		// keys (T177). Both as saved (review V25-1): this context's channels can predate a
+		// rename, key change or QR import the main context saved, and these decide which
+		// messages stay and where they move.
+		let container = modelContext.container
+		func radioKeys(of radio: Int64) -> [Int32: String] {
+			MultiRadioBackfill.storedChannelKeys(for: radio, container: container).merging(
+				MultiRadioBackfill.computedChannelKeys(for: radio, container: container)
+			) { _, computed in computed }
 		}
-		let ownKeys = storedKeys(of: radioNum).merging(
-			try MultiRadioBackfill.channelKeysByIndex(for: radioNum, in: modelContext, updateStored: false)
-		) { _, computed in computed }
+		let ownKeys = radioKeys(of: radioNum)
 		var sharedKeys: Set<String> = []
 		// Where each shared channel lives on the remaining radios: the preferred radio's slot
 		// first, then the lowest radio number's.
 		var slotForKey: [String: (radio: Int64, index: Int32)] = [:]
 		let preferred = preferredRadio
 		for other in others.sorted(by: { ($0 == preferred ? 0 : 1, $0) < ($1 == preferred ? 0 : 1, $1) }) {
-			let keys = storedKeys(of: other).merging(
-				try MultiRadioBackfill.channelKeysByIndex(for: other, in: modelContext, updateStored: false)
-			) { _, computed in computed }
+			let keys = radioKeys(of: other)
 			for (index, key) in keys.sorted(by: { $0.key < $1.key }) where slotForKey[key] == nil {
 				slotForKey[key] = (other, index)
 			}
