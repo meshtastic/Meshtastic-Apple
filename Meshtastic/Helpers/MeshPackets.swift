@@ -1052,6 +1052,10 @@ actor MeshPackets {
 					newNode.ignored = nodeInfo.isIgnored
 					newNode.hopsAway = Int32(truncatingIfNeeded: nodeInfo.hopsAway)
 					newNode.hasXeddsaSigned = nodeInfo.hasXeddsaSigned_p
+					// Was missing here while the update path below set it, so a node seen for the
+					// first time — every node on a fresh install or after a database reset — lost
+					// the radio's verification until some later NodeInfo happened to update it.
+					newNode.isKeyManuallyVerified = nodeInfo.isKeyManuallyVerified
 
 					if nodeInfo.hasDeviceMetrics {
 						let telemetry = TelemetryEntity()
