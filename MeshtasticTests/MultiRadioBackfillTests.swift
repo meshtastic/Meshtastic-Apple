@@ -98,7 +98,8 @@ struct MultiRadioBackfillTests {
 		let primary = try #require(own.myInfo.channels.first { $0.index == 0 })
 		let expected = ChannelIdentity.key(
 			name: nil, psk: Data([1]), isSecondary: false,
-			usePreset: true, modemPreset: Int32(Config.LoRaConfig.ModemPreset.longFast.rawValue)
+			usePreset: true, modemPreset: Int32(Config.LoRaConfig.ModemPreset.longFast.rawValue),
+			network: MeshNetwork(radio: own.myInfo)
 		)
 		#expect(primary.channelKey == expected)
 		#expect(primary.channelKey?.hasSuffix(":LongFast") == true)
@@ -162,14 +163,14 @@ struct MultiRadioBackfillTests {
 		message.messageId = 9
 		message.fromUser = other
 		message.localNodeNum = 0x0B0B_0B0B
-		message.channelKey = "c1:open:Elsewhere"
+		message.channelKey = "c2:?:open:Elsewhere"
 		context.insert(message)
 		try context.save()
 
 		_ = try drain(context, ownRadio: ownRadio)
 
 		#expect(message.localNodeNum == 0x0B0B_0B0B)
-		#expect(message.channelKey == "c1:open:Elsewhere")
+		#expect(message.channelKey == "c2:?:open:Elsewhere")
 		#expect(message.fromNum == remote)
 	}
 

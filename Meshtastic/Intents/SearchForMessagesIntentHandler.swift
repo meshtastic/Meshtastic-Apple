@@ -30,7 +30,8 @@ final class SearchForMessagesIntentHandler: NSObject, INSearchForMessagesIntentH
 				return []
 			}
 
-			var results = fetched.filter { !$0.admin && !$0.isEmoji }
+			// Channel-change rows are the app's own notes, not messages to read out (T377).
+			var results = fetched.filter { !$0.admin && !$0.isEmoji && !$0.isSystemEvent }
 
 			if let conversationIds = intent.conversationIdentifiers, !conversationIds.isEmpty {
 				// With several radios a conversation names its radio: only that radio's messages

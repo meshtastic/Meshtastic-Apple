@@ -192,6 +192,12 @@ extension MeshPackets {
 		let messages = try modelContext.fetch(FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.localNodeNum == radioNum }))
 		var deleted = 0
 		for message in messages {
+			// A channel-change row tells the history of this radio's slot, so it goes with it.
+			if message.isSystemEvent {
+				modelContext.delete(message)
+				deleted += 1
+				continue
+			}
 			let toNum = message.toNum ?? (message.toUser == nil ? MultiRadioBackfill.broadcastNum : 0)
 			if toNum == MultiRadioBackfill.broadcastNum {
 				// A row without a key is placed by its slot on this radio.

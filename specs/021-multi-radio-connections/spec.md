@@ -34,7 +34,7 @@ reception details) is kept per radio.
 | D-11 | Favorite and ignore apply to every connected radio that knows the node, with a per-radio override in node details. |
 | D-12 | Services: each radio runs its own MQTT proxy. Phone position goes to every radio. TAK, CarPlay, Siri and Watch use a radio the user picks, defaulting to "follow the focused radio". |
 | D-13 | Sending on a channel several radios share goes through the focused radio by default, with a "send via" picker. A DM reply always goes through the radio that is part of that conversation. |
-| D-14 | Two radios have "the same channel" when the display name and key match. For an unnamed primary channel the modem preset must also match. |
+| D-14 | Two radios have "the same channel" when the display name and key match and the radios are on the same network (D-18: region, modulation, frequency). For an unnamed primary channel the display name is the modem preset's. Changed 2026-10-02 (T379): the mesh used to count only through an unnamed primary's preset, so a named channel stayed "shared" after one radio moved to another mesh. A radio's slot keeps its conversation when its channel changes, with a change row in that radio's thread (T377/T378), as a single radio always did. |
 | D-15 | Test hardware: several BLE radios, possibly one TCP radio. Simulator covers unit, migration and replay tests. A manual checklist covers devices. All testing happens on the Mac; the owner's phones are never used. |
 | D-16 | Schema changes follow the project's existing pattern: one `VersionedSchema` (V1) whose models change additively, relying on SwiftData's lightweight migration and proven by `SchemaHistoryUpgradeTests`. No frozen copies, no custom migration stages. Data backfills run as resumable jobs in the app. Decided 2026-09-25 after the T020 spike. |
 | D-17 | Every connected radio works the same way: the same connect flow, services, prompts and handling. The focused radio is only the default for Settings, sending and the services that follow it. Decided 2026-09-26; replaces the focused/additional split of the first Phase 5 step. See plan.md › Every radio the same. |
@@ -60,7 +60,7 @@ Data
 - FR-020 One shared database for all radios. Switching or adding radios never clears data.
 - FR-021 Node identity (user, keys, positions, telemetry) is shared and stored once per originating packet.
 - FR-022 Per-radio view of each node: hops, SNR, RSSI, last heard, via MQTT, channel index, next hop, favorite, ignored, manually verified key, admin session. The node row keeps combined values: latest last heard, fewest hops, favorite or ignored if any radio says so.
-- FR-023 Channel messages are grouped by channel identity (D-14), not by index, and stored once.
+- FR-023 Channel messages are grouped by channel identity (D-14), not by index, and stored once. A radio's conversation for a slot follows the slot's history: each channel it had, for the time it had it, with a local change row at each change.
 - FR-024 Messages are unique by sender and packet id, not packet id alone.
 - FR-025 DMs are scoped to the local radio in the conversation.
 - FR-026 Each radio's reception of a packet (SNR, RSSI, hops, relay, rx time) is recorded, up to a retention cap.

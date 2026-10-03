@@ -1003,7 +1003,8 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				// The preset is part of every channel key (T144).
+				// The mesh (region, preset or modulation, frequency) is part of every channel key
+				// (T144, T379); a real change leaves a change row in each affected thread (T377).
 				refreshChannelKeys(radioNum: nodeNum)
 				savePendingChanges()
 					Logger.data.info("💾 [LoRaConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")

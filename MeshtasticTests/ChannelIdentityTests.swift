@@ -17,7 +17,7 @@ struct ChannelIdentityTests {
 	private let defaultShorthand = Data([0x01])
 
 	private func key(_ name: String?, _ psk: Data?, secondary: Bool = false, primary: Data? = nil, usePreset: Bool = true, preset: Int32? = nil) -> String {
-		ChannelIdentity.key(name: name, psk: psk, isSecondary: secondary, primaryPSK: primary, usePreset: usePreset, modemPreset: preset ?? longFast)
+		ChannelIdentity.key(name: name, psk: psk, isSecondary: secondary, primaryPSK: primary, usePreset: usePreset, modemPreset: preset ?? longFast, network: nil)
 	}
 
 	// MARK: - The default channel
@@ -112,6 +112,6 @@ struct ChannelIdentityTests {
 		channel.psk = nil
 		channel.role = Int32(Channel.Role.secondary.rawValue)
 		let primary = Data((0..<16).map { UInt8($0) })
-		#expect(channel.identityKey(primaryPSK: primary, usePreset: true, modemPreset: longFast) == key("Side", primary))
+		#expect(channel.identityKey(primaryPSK: primary, usePreset: true, modemPreset: longFast, network: nil) == key("Side", primary))
 	}
 }

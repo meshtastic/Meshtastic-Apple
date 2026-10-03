@@ -99,9 +99,11 @@ struct ChannelMessageQueryTests {
 		let query = ChannelMessageQuery(channelIndex: 1, channelKey: hikersKey, radioNum: radioA, multiRadio: true)
 
 		let timeline = try ChannelMessageQuery.fetch(query.messages(), limit: nil, in: context)
-		// Its key through either radio, plus A's own slot-1 rows (old key, not backfilled);
-		// never B's slot 1, which is another channel there.
-		#expect(ids(timeline) == [1, 2, 4, 5])
+		// Its key through either radio, plus A's own slot-1 row with no key yet; never B's slot 1,
+		// which is another channel there. Not 5 either: its key is another channel's, and no
+		// change row says the slot ever had it (T378), so matching it by slot alone would pull
+		// in whichever of that channel's messages this radio happened to store.
+		#expect(ids(timeline) == [1, 2, 4])
 		#expect(ids(try ChannelMessageQuery.fetch(query.messages(unreadOnly: true), limit: nil, in: context)) == [2])
 		// The badge's candidates are the same unread rows.
 		#expect(ids(try context.fetch(FetchDescriptor(predicate: query.unreadCandidates()))) == [2])
@@ -149,11 +151,19 @@ struct ChannelMessageQueryTests {
 		lora.usePreset = true
 		lora.modemPreset = .mediumFast
 		await packets.upsertLoRaConfigPacket(config: lora, nodeNum: radioA)
-		// The unnamed primary is named after the preset, so its key moves; named ones don't.
+		// The unnamed primary is named after the preset. Every key moves, named ones too: the
+		// mesh is part of a channel's identity (T379), and a radio on MediumFast can't hear
+		// LongFast traffic on any channel.
 		let afterLoRa = try storedKeys()
 		#expect(afterLoRa[0] != afterChannel[0])
 		#expect(afterLoRa[0]??.hasSuffix(":MediumFast") == true)
-		#expect(afterLoRa[1] == afterChannel[1])
+		#expect(afterLoRa[1] != afterChannel[1])
+		#expect(afterLoRa[1]??.hasSuffix(":Hikers") == true)
+
+		// Each slot's thread gets a change row (T377).
+		let rows = try ModelContext(context.container).fetch(FetchDescriptor<MessageEntity>()).filter(\.isSystemEvent)
+		#expect(Set(rows.map(\.channel)) == [0, 1, 2])
+		#expect(rows.allSatisfy { $0.localNodeNum == radioA && $0.read })
 	}
 
 	@Test("Deleting a channel's messages deletes what its timeline shows")
@@ -164,9 +174,10 @@ struct ChannelMessageQueryTests {
 
 		await packets.deleteChannelMessages(query: ChannelMessageQuery(channelIndex: 1, channelKey: hikersKey, radioNum: radioA, multiRadio: true))
 
-		// B's Cyclists in slot 1 stays; Hikers through B in slot 2 goes; the tapback stays.
+		// B's Cyclists in slot 1 stays; Hikers through B in slot 2 goes; the tapback stays; and
+		// 5, which the thread doesn't show (see `groupedByKey`), isn't deleted with it.
 		let left = try ModelContext(context.container).fetch(FetchDescriptor<MessageEntity>())
-		#expect(ids(left) == [3, 6])
+		#expect(ids(left) == [3, 5, 6])
 	}
 
 	@Test("The TAK channel follows its channel to the new TAK radio's slot, or goes to primary")

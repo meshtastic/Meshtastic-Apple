@@ -258,6 +258,8 @@ extension NodeBackupManager {
 		dst.localNodeNum = src.localNodeNum
 		dst.channelKey = src.channelKey
 		dst.messageKey = src.messageKey
+		dst.systemEvent = src.systemEvent
+		dst.previousChannelKey = src.previousChannelKey
 		return dst
 	}
 

@@ -390,4 +390,25 @@ struct MeshNetwork: Equatable {
 		let primary = myInfo.channels.first { $0.index == 0 }
 		self.init(lora: myInfo.myInfoNode?.loRaConfig, primaryChannelName: primary?.name)
 	}
+
+	/// This network as text, for the mesh part of a channel key (`ChannelIdentity`, T379):
+	/// `r<region>.p<preset>.<kHz>` with a preset, `r<region>.b<bw>s<sf>c<cr>.<kHz>` without.
+	/// No colons, which separate the parts of the key.
+	var identity: String {
+		let modulationPart: String
+		switch modulation {
+		case let .preset(preset):
+			modulationPart = "p\(preset)"
+		case let .custom(bandwidth, spreadFactor, codingRate):
+			modulationPart = "b\(bandwidth)s\(spreadFactor)c\(codingRate)"
+		}
+		return "r\(region).\(modulationPart).\(frequencyKHz)"
+	}
+
+	/// The preset in an `identity`, when it names one.
+	static func modemPreset(fromIdentity identity: String) -> Int32? {
+		let parts = identity.split(separator: ".")
+		guard parts.count == 3, parts[1].hasPrefix("p") else { return nil }
+		return Int32(parts[1].dropFirst())
+	}
 }

@@ -157,6 +157,8 @@ final class DiscoveryScanEngine {
 	/// or the reboot a preset change causes, must not move it to another radio, and only its own
 	/// packets are measured (`receivesPackets(from:)`).
 	private(set) var scanRadioNum: Int64 = 0
+	/// The radio whose channel-change rows this scan paused, until it puts the radio back.
+	private var pausedChangeRadio: Int64?
 
 	/// The first radio, or offline the preferred one, whose saved config an offline analysis uses.
 	private var currentRadioNum: Int64 {
@@ -226,6 +228,10 @@ final class DiscoveryScanEngine {
 		// the primary channel to the default public channel. Skipped entirely when running offline —
 		// the seeded pass never sends config, so there is nothing to snapshot, switch, or restore.
 		if isConnected {
+			// The scan steps the radio through presets and puts its own back: none of that is the
+			// user moving a channel, so it leaves no change rows in the conversations (T377).
+			ChannelChangeEvents.pause(radio: connectedNodeNum)
+			pausedChangeRadio = connectedNodeNum
 			// Record home preset from current LoRa config
 			if let loraConfig = connectedNode?.loRaConfig, !loraConfig.isDeleted {
 				homePreset = ModemPresets(rawValue: Int(loraConfig.modemPreset))
@@ -1039,6 +1045,10 @@ extension DiscoveryScanEngine {
 	}
 
 	private func cleanupAndIdle() {
+		if let pausedChangeRadio {
+			ChannelChangeEvents.resume(radio: pausedChangeRadio)
+			self.pausedChangeRadio = nil
+		}
 		dwellTask?.cancel()
 		reconnectTimeoutTask?.cancel()
 		connectionObserver?.cancel()

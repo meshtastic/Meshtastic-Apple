@@ -12,16 +12,80 @@ import SwiftData
 ///
 /// A channel's slot number is only meaningful on one radio: two radios can hold the same channel
 /// in different slots, or different channels in the same slot. With more than one radio
-/// (`multiRadio`) and a known `channelKey`, the timeline is every message with that key, plus this
-/// radio's messages in this slot (which covers rows from before the channel was renamed or rekeyed,
-/// and rows the backfill hasn't reached). Without a key yet, it's this radio's messages in this
-/// slot. With one radio it's the single-radio query by slot, as before.
+/// (`multiRadio`) and a known `channelKey`, the timeline is the slot's history on this radio
+/// (T378): each channel the slot has had, for the time the slot had it (`segments`), with the
+/// change rows between them, plus this radio's rows in the slot the backfill hasn't keyed yet.
+/// Each segment is every message with that channel's key, whichever radio heard it. Without a key
+/// yet, it's this radio's messages in this slot. With one radio it's the single-radio query by
+/// slot, as before.
 struct ChannelMessageQuery {
 	let channelIndex: Int32
 	let channelKey: String?
 	/// The radio whose channel list this channel is from.
 	let radioNum: Int64
 	let multiRadio: Bool
+	/// The slot's history on this radio, oldest first (`ChannelChangeEvents.segments`). Empty is
+	/// one unbounded segment of `channelKey`.
+	var segments: [ChannelChangeEvents.Segment] = []
+
+	/// The query for `channelIndex` on `radioNum`, with the slot's history read from `context`.
+	static func make(channelIndex: Int32, channelKey: String?, radioNum: Int64, multiRadio: Bool, in context: ModelContext) -> ChannelMessageQuery {
+		var query = ChannelMessageQuery(channelIndex: channelIndex, channelKey: channelKey, radioNum: radioNum, multiRadio: multiRadio)
+		if multiRadio, let channelKey {
+			query.segments = ChannelChangeEvents.segments(radio: radioNum, slot: channelIndex, currentKey: channelKey, in: context)
+		}
+		return query
+	}
+
+	/// `segments`, or one unbounded segment of `key`.
+	private func effectiveSegments(key: String) -> [ChannelChangeEvents.Segment] {
+		segments.isEmpty ? [ChannelChangeEvents.Segment(key: key, start: nil, end: nil)] : segments
+	}
+
+	/// Real messages (not change rows) in any of `segments`, which mustn't be empty. Composed one
+	/// segment at a time: as one expression it's too much for the type checker.
+	private static func inSegments(_ segments: [ChannelChangeEvents.Segment]) -> Predicate<MessageEntity> {
+		var combined: Predicate<MessageEntity>?
+		for segment in segments {
+			let key: String? = segment.key
+			// A row still keyed in the old format belongs to the same channel until it's converted.
+			let legacy: String? = segment.legacyKey ?? segment.key
+			let start = segment.start ?? Int32.min
+			let end = segment.end ?? Int32.max
+			let unboundedEnd = segment.end == nil
+			let this = #Predicate<MessageEntity> {
+				($0.channelKey == key || $0.channelKey == legacy)
+				&& $0.messageTimestamp >= start && (unboundedEnd || $0.messageTimestamp < end)
+			}
+			if let previous = combined {
+				combined = #Predicate<MessageEntity> { previous.evaluate($0) || this.evaluate($0) }
+			} else {
+				combined = this
+			}
+		}
+		let noEvent = #Predicate<MessageEntity> { $0.systemEvent == 0 }
+		guard let anySegment = combined else { return noEvent }
+		return #Predicate<MessageEntity> { noEvent.evaluate($0) && anySegment.evaluate($0) }
+	}
+
+	/// This radio's change rows for the slot.
+	private func ownEvents() -> Predicate<MessageEntity> {
+		let channelIndex = channelIndex
+		let radio: Int64? = radioNum
+		let eventRaw = MessageEntity.SystemEvent.channelChanged.rawValue
+		return #Predicate<MessageEntity> {
+			$0.systemEvent == eventRaw && $0.localNodeNum == radio && $0.channel == channelIndex
+		}
+	}
+
+	/// This radio's rows in the slot that have no key yet (the backfill hasn't reached them).
+	private func unkeyedInSlot() -> Predicate<MessageEntity> {
+		let channelIndex = channelIndex
+		let radioNum = radioNum
+		return #Predicate<MessageEntity> {
+			$0.channelKey == nil && $0.channel == channelIndex && ($0.localNodeNum ?? radioNum) == radioNum
+		}
+	}
 
 	/// The channel's messages, or only its unread ones.
 	func messages(unreadOnly: Bool = false) -> Predicate<MessageEntity> {
@@ -43,12 +107,11 @@ struct ChannelMessageQuery {
 		let base = #Predicate<MessageEntity> {
 			$0.toUser == nil && $0.isEmoji == false && (!unreadOnly || $0.read == false)
 		}
-		let byKey = #Predicate<MessageEntity> { $0.channelKey == key }
-		let bySlot = #Predicate<MessageEntity> {
-			$0.channel == channelIndex && ($0.localNodeNum ?? radioNum) == radioNum
-		}
+		let bySegment = Self.inSegments(effectiveSegments(key: key))
+		let unkeyed = unkeyedInSlot()
+		let events = ownEvents()
 		return #Predicate<MessageEntity> {
-			base.evaluate($0) && (byKey.evaluate($0) || bySlot.evaluate($0))
+			base.evaluate($0) && (bySegment.evaluate($0) || unkeyed.evaluate($0) || events.evaluate($0))
 		}
 	}
 
@@ -96,12 +159,10 @@ struct ChannelMessageQuery {
 			}
 		}
 		let base = #Predicate<MessageEntity> { $0.isEmoji == false && $0.read == false }
-		let byKey = #Predicate<MessageEntity> { $0.channelKey == key }
-		let bySlot = #Predicate<MessageEntity> {
-			$0.channel == channelIndex && ($0.localNodeNum ?? radioNum) == radioNum
-		}
+		let bySegment = Self.inSegments(effectiveSegments(key: key))
+		let unkeyed = unkeyedInSlot()
 		return #Predicate<MessageEntity> {
-			base.evaluate($0) && (byKey.evaluate($0) || bySlot.evaluate($0))
+			base.evaluate($0) && (bySegment.evaluate($0) || unkeyed.evaluate($0))
 		}
 	}
 

@@ -29,10 +29,11 @@ extension ChannelEntity {
 	var mostRecentPrivateMessage: MessageEntity? {
 		let context = PersistenceController.shared.context
 		let channelIndex = self.index
-		// Fetch a small batch and find the first channel message in Swift.
+		// Fetch a small batch and find the first channel message in Swift. A channel-change row
+		// isn't a message, so it's never the preview (T377).
 		var descriptor = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate<MessageEntity> { msg in
-				msg.channel == channelIndex && msg.isEmoji == false
+				msg.channel == channelIndex && msg.isEmoji == false && msg.systemEvent == 0
 			},
 			sortBy: [SortDescriptor(\.messageTimestamp, order: .reverse)]
 		)
@@ -42,15 +43,33 @@ extension ChannelEntity {
 	}
 
 	/// The query for this channel's timeline. Feature 021: with more than one radio, the
-	/// channel's messages are grouped by its key; with one, it's the slot query it always was.
+	/// channel's messages are grouped by its key, following the slot's history on its radio
+	/// (T378); with one, it's the slot query it always was.
 	@MainActor
 	func messageQuery(context: ModelContext) -> ChannelMessageQuery {
-		ChannelMessageQuery(
+		ChannelMessageQuery.make(
 			channelIndex: self.index,
 			channelKey: self.channelKey,
 			radioNum: self.myInfoChannel?.myNodeNum ?? 0,
-			multiRadio: ChannelMessageQuery.isMultiRadio(in: context)
+			multiRadio: ChannelMessageQuery.isMultiRadio(in: context),
+			in: context
 		)
+	}
+
+	/// True when deleting this channel's conversation also removes messages another of the
+	/// user's radios shows: some stretch of its history is a channel another radio has now.
+	@MainActor
+	func sharesMessagesWithOtherRadios(context: ModelContext) -> Bool {
+		let query = messageQuery(context: context)
+		guard query.multiRadio, let key = query.channelKey else { return false }
+		let historyKeys = Set(query.segments.isEmpty ? [key] : query.segments.map(\.key))
+		let radio = query.radioNum
+		let channels = (try? context.fetch(FetchDescriptor<ChannelEntity>())) ?? []
+		return channels.contains { channel in
+			guard let other = channel.myInfoChannel?.myNodeNum, other != radio,
+				  let otherKey = channel.channelKey else { return false }
+			return historyKeys.contains(otherKey)
+		}
 	}
 
 	@MainActor

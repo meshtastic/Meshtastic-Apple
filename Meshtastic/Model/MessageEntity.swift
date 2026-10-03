@@ -59,6 +59,12 @@ final class MessageEntity {
 	/// (ingest and send), so a sent message and its mesh echo merge on it. Nil on rows the
 	/// backfill hasn't reached yet; SQLite allows any number of NULLs under the unique index.
 	@Attribute(.unique) var messageKey: String?
+	/// A `SystemEvent` raw value. 0 is a real message; anything else is a row the app wrote into a
+	/// conversation itself, never sent or received (T377).
+	var systemEvent: Int32 = 0
+	/// For a `.channelChanged` row: the channel's key before the change. `channelKey` is the key
+	/// after it.
+	var previousChannelKey: String?
 
 	var fromUser: UserEntity?
 	var toUser: UserEntity?
@@ -68,6 +74,16 @@ final class MessageEntity {
 	static func key(fromNum: Int64, messageId: Int64) -> String {
 		"\(fromNum):\(messageId)"
 	}
+
+	/// Rows the app writes into a conversation itself (T377).
+	enum SystemEvent: Int32 {
+		/// One of the user's radios moved a channel slot to a different channel: another preset,
+		/// name, key or mesh. Shown in that radio's thread between the history before and after.
+		case channelChanged = 1
+	}
+
+	/// True for a row the app wrote itself rather than a message sent or received.
+	var isSystemEvent: Bool { systemEvent != 0 }
 }
 
 extension MessageEntity {

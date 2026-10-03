@@ -225,6 +225,9 @@ struct ChannelMessageList: View {
 						.padding(.vertical, 8)
 					}
 					ForEach(messages, id: \.messageId) { message in
+						if message.isSystemEvent {
+							ChannelChangeRow(message: message)
+						} else {
 						  ChannelMessageRow(
 							  message: message,
 							  replyMessage: repliesByID[message.replyID],
@@ -258,6 +261,7 @@ struct ChannelMessageList: View {
 							  },
 							  ownRadioNums: ownRadioNums
 						  )
+						}
 
 					}
 					Color.clear
@@ -381,7 +385,10 @@ struct ChannelMessageList: View {
 // and a message can go out through any connected radio that has the channel, in its own slot.
 private extension ChannelMessageList {
 	var query: ChannelMessageQuery {
-		ChannelMessageQuery(channelIndex: channel.index, channelKey: channel.channelKey, radioNum: myInfo.myNodeNum, multiRadio: ownRadioNums.count > 1)
+		ChannelMessageQuery.make(
+			channelIndex: channel.index, channelKey: channel.channelKey, radioNum: myInfo.myNodeNum,
+			multiRadio: ownRadioNums.count > 1, in: context
+		)
 	}
 
 	/// The radio the next message goes out through: the picked slot's, else the window's radio

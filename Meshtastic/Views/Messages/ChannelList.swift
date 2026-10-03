@@ -184,6 +184,11 @@ struct ChannelList: View {
 				} label: {
 					Text("Delete")
 				}
+			} message: {
+				// A channel's messages are stored once for all the user's radios (T378).
+				if channelToDeleteMessages?.sharesMessagesWithOtherRadios(context: context) == true {
+					Text("Some of these messages are also in your other radios' conversations, and are deleted there too.")
+				}
 			}
 	}
 

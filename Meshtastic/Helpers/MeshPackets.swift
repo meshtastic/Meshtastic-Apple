@@ -378,6 +378,12 @@ actor MeshPackets {
 				Logger.data.info("💾 Discarded staged channel refresh after a serialized local channel change for: \(nodeNum.toHex(), privacy: .public)")
 				return
 			}
+			// The rows are replaced, so the keys they had are kept by slot: a slot whose channel
+			// changed then leaves a change row in the radio's thread (T377).
+			var previousKeys: [Int32: String] = [:]
+			for channel in myInfo.channels {
+				if let key = channel.channelKey { previousKeys[channel.index] = key }
+			}
 			for channel in myInfo.channels {
 				context.delete(channel)
 			}
@@ -389,12 +395,16 @@ actor MeshPackets {
 				let channel = ChannelEntity()
 				context.insert(channel)
 				apply(stagedChannel: staged, to: channel)
+				channel.channelKey = previousKeys[channel.index]
 				myInfo.channels.append(channel)
 			}
 			// The timeline groups a channel's messages by key, so the key follows the channels
 			// the radio just sent (T144). Without LoRa settings yet, the LoRa config sets it.
-			_ = try MultiRadioBackfill.channelKeysByIndex(for: nodeNum, in: context)
+			let events = try MultiRadioBackfill.updateChannelKeys(for: nodeNum, in: context).events
 			try context.save()
+			if events > 0 {
+				NotificationCenter.default.post(name: .meshMessagesDidChange, object: nil)
+			}
 			Logger.data.info("💾 Committed \(enabledChannels.count, privacy: .public) staged channel(s) for: \(nodeNum, privacy: .public)")
 		} catch {
 			context.rollback()
