@@ -25,33 +25,37 @@ extension ChannelEntity {
 		return messages.filter { $0.toUser == nil }
 	}
 
-	@MainActor
-	var mostRecentPrivateMessage: MessageEntity? {
-		let context = PersistenceController.shared.context
-		// The newest message of the channel's own conversation: with more than one radio a slot
-		// number alone also matched other radios' channels in that slot, so a radio that moved
-		// to LongTurbo previewed the LongFast message another radio sent. A channel-change row
-		// isn't a message, so it's never the preview (T377); `toUser` is tested in Swift.
-		let query = messageQuery(context: context)
-		let batch = (try? ChannelMessageQuery.fetch(query.messages(), limit: 10, in: context)) ?? []
-		return batch.first { !$0.isSystemEvent && $0.toUser == nil }
-	}
-
 	/// The query for this channel's timeline. Feature 021: with more than one radio, the
 	/// channel's messages are grouped by its key, following the slot's history on its radio
 	/// (T378); with one, it's the slot query it always was. The key is read as saved: this
-	/// object can be the main context's copy from before a preset change saved elsewhere.
+	/// object can be the main context's copy from before a preset change saved elsewhere. With
+	/// one radio the query doesn't use the key, so it isn't read (review V24-3).
 	@MainActor
 	func messageQuery(context: ModelContext) -> ChannelMessageQuery {
 		let radioNum = self.myInfoChannel?.myNodeNum ?? 0
-		let saved = radioNum == 0 ? nil : MultiRadioBackfill.storedChannelKeys(for: radioNum, container: context.container)[self.index]
+		let multiRadio = ChannelMessageQuery.isMultiRadio(in: context)
+		let saved = !multiRadio || radioNum == 0 ? nil : MultiRadioBackfill.storedChannelKeys(for: radioNum, container: context.container)[self.index]
 		return ChannelMessageQuery.make(
 			channelIndex: self.index,
 			channelKey: saved ?? self.channelKey,
 			radioNum: radioNum,
-			multiRadio: ChannelMessageQuery.isMultiRadio(in: context),
+			multiRadio: multiRadio,
 			in: context
 		)
+	}
+
+	/// What a channel-list row shows: the newest message and the unread count, from one query
+	/// (review V24-3: the row used to build it three times per render). The preview is the
+	/// conversation's own newest message: by slot number alone, a radio that moved to LongTurbo
+	/// previewed the LongFast message another radio sent (T382). A change row is never the preview.
+	@MainActor
+	func listSummary(context: ModelContext) -> (latest: MessageEntity?, unread: Int) {
+		let query = messageQuery(context: context)
+		let batch = (try? ChannelMessageQuery.fetch(query.messages(), limit: 10, in: context)) ?? []
+		let latest = batch.first { !$0.isSystemEvent && $0.toUser == nil }
+		guard latest != nil else { return (nil, 0) }
+		let candidates = (try? context.fetch(FetchDescriptor<MessageEntity>(predicate: query.unreadCandidates()))) ?? []
+		return (latest, candidates.filter { $0.toUser == nil }.count)
 	}
 
 	/// True when deleting this channel's conversation also removes messages another of the

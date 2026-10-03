@@ -51,7 +51,10 @@ enum MultiRadioBackfill {
 	static func runChunk(in context: ModelContext, ownRadio: Int64, chunkSize: Int = 500, othersObserved: Bool? = nil) throws -> ChunkResult {
 		var result = ChunkResult()
 		result.channels = try backfillChannels(in: context)
-		let channelKeys = try ownRadio == 0 ? [:] : channelKeysByIndex(for: ownRadio, in: context)
+		// Only read here, for filling old messages: the drain runs in the packet actor's
+		// long-lived context, and storing keys from it could write an old key back (review V24-2).
+		// Stored keys are kept up to date by the ingest's `refreshChannelKeys`.
+		let channelKeys = try ownRadio == 0 ? [:] : channelKeysByIndex(for: ownRadio, in: context, updateStored: false)
 		result.messages = try backfillMessages(in: context, ownRadio: ownRadio, channelKeys: channelKeys, limit: chunkSize)
 		result.rekeyed = try rekeyLegacyMessages(in: context, limit: chunkSize)
 		result.duplicateEvents = try removeDuplicateChangeRows(in: context)

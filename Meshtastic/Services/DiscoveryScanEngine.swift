@@ -232,14 +232,15 @@ final class DiscoveryScanEngine {
 			// user moving a channel, so it leaves no change rows in the conversations (T377).
 			ChannelChangeEvents.pause(radio: connectedNodeNum)
 			pausedChangeRadio = connectedNodeNum
-			// Record home preset from current LoRa config
-			if let loraConfig = connectedNode?.loRaConfig, !loraConfig.isDeleted {
-				homePreset = ModemPresets(rawValue: Int(loraConfig.modemPreset))
+			// Record home preset from the saved LoRa config, not the view context's copy, which
+			// can predate a preset change (review V24-1).
+			if let saved = savedLoRaConfig(connectedNodeNum) {
+				homePreset = saved.preset
 				// Snapshot the complete config so restore puts back the frequency slot and all
 				// other LoRa settings exactly — not just the modem preset (#1952). Each scan preset
 				// is sent on the default frequency slot (see sendPresetChange); this snapshot is what
 				// returns the user to their real slot when the scan finishes.
-				homeLoRaConfig = loRaConfigProto(from: loraConfig, presetOverride: nil)
+				homeLoRaConfig = saved.config
 			}
 
 			// If the primary channel isn't the default public channel, temporarily switch it (key + name)
@@ -351,11 +352,8 @@ final class DiscoveryScanEngine {
 
 		// Skip the config change only for a plain public target we're already sitting on (no region
 		// override, no custom channel). Custom-channel / region-override targets always re-send.
-		if !target.isCustomChannel, target.regionRaw == nil, accessoryManager != nil, let context = modelContext {
-			let connectedNodeNum = scanRadioNum
-			let node = getNodeInfo(id: connectedNodeNum, context: context)
-			if let currentModemPreset = node?.loRaConfig?.modemPreset,
-			   ModemPresets(rawValue: Int(currentModemPreset)) == nextPreset {
+		if !target.isCustomChannel, target.regionRaw == nil, accessoryManager != nil {
+			if savedLoRaConfig(scanRadioNum)?.preset == nextPreset {
 				Logger.discovery.info("📡 [Discovery] Already on preset \(nextPreset.name) — skipping config change")
 				transitionTo(.dwell)
 				startDwellTimer()
@@ -403,6 +401,37 @@ final class DiscoveryScanEngine {
 		return config
 	}
 
+	// MARK: - Saved settings (review V24-1)
+
+	/// Runs `body` on `radio`'s node as saved, in a throwaway context kept alive for the call.
+	/// The engine's context is the view's main context, which can still hold the LoRa settings and
+	/// channels from before a preset or channel change the packet actor saved; a scan that
+	/// snapshotted those as "home" would put the old preset back when it finished.
+	private func withSavedNode<T>(_ radio: Int64, _ body: (NodeInfoEntity) -> T?) -> T? {
+		guard let container = modelContext?.container else { return nil }
+		let saved = ModelContext(container)
+		return withExtendedLifetime(saved) {
+			guard let node = getNodeInfo(id: radio, context: saved) else { return nil }
+			return body(node)
+		}
+	}
+
+	/// `radio`'s LoRa settings as saved, as a complete proto, and its preset.
+	private func savedLoRaConfig(_ radio: Int64) -> (config: Config.LoRaConfig, preset: ModemPresets?)? {
+		withSavedNode(radio) { node in
+			guard let lora = node.loRaConfig, !lora.isDeleted else { return nil }
+			return (loRaConfigProto(from: lora, presetOverride: nil), ModemPresets(rawValue: Int(lora.modemPreset)))
+		}
+	}
+
+	/// `radio`'s primary channel as saved, and whether it's the default public channel.
+	private func savedPrimaryChannel(_ radio: Int64) -> (channel: Channel, isDefaultPublic: Bool)? {
+		withSavedNode(radio) { node in
+			guard let primary = node.myInfo?.channels.first(where: { $0.role == 1 }) else { return nil }
+			return (channelProto(from: primary), Self.isDefaultPublicChannel(primary))
+		}
+	}
+
 	// MARK: - Send Preset Change
 
 	private func sendPresetChange(for target: ScanTarget) async {
@@ -428,8 +457,9 @@ final class DiscoveryScanEngine {
 		// so scanning on it would listen on the wrong frequency and find nothing. The user's real
 		// slot is snapshotted in `homeLoRaConfig` and restored verbatim when the scan finishes.
 		let loraConfig: Config.LoRaConfig
-		if let existingConfig = connectedNode.loRaConfig, !existingConfig.isDeleted {
-			var scanConfig = loRaConfigProto(from: existingConfig, presetOverride: preset)
+		// As saved (review V24-1): the view context's copy can carry fields from before a change.
+		if var scanConfig = savedLoRaConfig(connectedNodeNum)?.config {
+			scanConfig.modemPreset = preset.protoEnumValue()
 			scanConfig.channelNum = 0
 			// A beacon may advertise the region its mesh runs in; apply it so the derived frequency
 			// matches. Manual/public targets carry no override and keep the user's current region.
@@ -1347,14 +1377,15 @@ extension DiscoveryScanEngine {
 		guard let accessoryManager,
 			  let connectedNode,
 			  let fromUser = connectedNode.user,
-			  let primary = connectedNode.myInfo?.channels.first(where: { $0.role == 1 }) else { return }
+			  // As saved (review V24-1): restore sends this snapshot back verbatim.
+			  let primary = savedPrimaryChannel(connectedNode.num) else { return }
 
-		guard !Self.isDefaultPublicChannel(primary) else { return }
+		guard !primary.isDefaultPublic else { return }
 
 		// Snapshot the real primary channel so it can be restored verbatim after the scan.
-		homePrimaryChannel = channelProto(from: primary)
+		homePrimaryChannel = primary.channel
 
-		var scanChannel = channelProto(from: primary)
+		var scanChannel = primary.channel
 		scanChannel.settings.psk = Self.defaultChannelKey
 		scanChannel.settings.name = ""
 		do {
@@ -1377,13 +1408,14 @@ extension DiscoveryScanEngine {
 		let connectedNodeNum = scanRadioNum
 		guard let connectedNode = getNodeInfo(id: connectedNodeNum, context: context),
 			  let fromUser = connectedNode.user,
-			  let primary = connectedNode.myInfo?.channels.first(where: { $0.role == 1 }) else { return }
+			  // As saved (review V24-1).
+			  let primary = savedPrimaryChannel(connectedNodeNum)?.channel else { return }
 
 		if target.isCustomChannel, let name = target.channelName, let psk = target.channelPSK {
 			// Snapshot the real primary once so restore returns to it, even if we began the scan on
 			// the default public channel (where prepareDefaultPublicChannel took no snapshot).
-			if homePrimaryChannel == nil { homePrimaryChannel = channelProto(from: primary) }
-			var channel = channelProto(from: primary)
+			if homePrimaryChannel == nil { homePrimaryChannel = primary }
+			var channel = primary
 			channel.settings.name = name
 			channel.settings.psk = psk
 			do {
@@ -1396,7 +1428,7 @@ extension DiscoveryScanEngine {
 		} else if scanChannelIsCustom {
 			// Public/manual target following a custom one: revert to the default public channel so the
 			// dwell hears the public mesh again.
-			var channel = channelProto(from: primary)
+			var channel = primary
 			channel.settings.name = ""
 			channel.settings.psk = Self.defaultChannelKey
 			do {

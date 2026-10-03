@@ -386,9 +386,11 @@ struct ChannelMessageList: View {
 private extension ChannelMessageList {
 	/// The slot's channel key as saved. `channel` is the main context's object, which can still
 	/// hold the key from before a preset change the packet actor saved (or be a row a channel
-	/// refresh replaced), and that showed the old channel's messages after the change.
+	/// refresh replaced), and that showed the old channel's messages after the change. With one
+	/// radio the query doesn't use the key, so the store isn't read (review V24-3).
 	var savedChannelKey: String? {
-		MultiRadioBackfill.storedChannelKeys(for: myInfo.myNodeNum, container: context.container)[channel.index] ?? channel.channelKey
+		guard ownRadioNums.count > 1 else { return channel.channelKey }
+		return MultiRadioBackfill.storedChannelKeys(for: myInfo.myNodeNum, container: context.container)[channel.index] ?? channel.channelKey
 	}
 
 	var query: ChannelMessageQuery {

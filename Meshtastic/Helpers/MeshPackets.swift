@@ -2089,7 +2089,9 @@ actor MeshPackets {
 					newMessage.toNum = storeForwardBroadcast ? MultiRadioBackfill.broadcastNum : toNum
 					newMessage.localNodeNum = connectedNode
 					if isBroadcastMessage {
-						newMessage.channelKey = (try? MultiRadioBackfill.channelKeysByIndex(for: connectedNode, in: modelContext))?[Int32(truncatingIfNeeded: packet.channel)]
+						// From the saved channels and LoRa settings (review V24-2): this context's
+						// copies can predate a rename, key change or QR import the main context saved.
+						newMessage.channelKey = MultiRadioBackfill.computedChannelKeys(for: connectedNode, container: modelContext.container)[Int32(truncatingIfNeeded: packet.channel)]
 					}
 					if packet.rxTime > 0 {
 						newMessage.messageTimestamp = Int32(bitPattern: packet.rxTime)

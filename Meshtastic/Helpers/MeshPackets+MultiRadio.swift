@@ -59,12 +59,23 @@ extension MeshPackets {
 	/// Recomputes `radioNum`'s stored channel keys from its channels and LoRa settings, after
 	/// either changes (T144). A channel without a key would show every radio's messages in its
 	/// slot; a stale key another channel's. A real change of channel leaves a row in the radio's
-	/// thread (T377), so the message lists reload on the next save. Doesn't save; the caller does.
+	/// thread (T377), and the message lists are told to reload.
+	///
+	/// Saves this ingest first, then computes from what's saved in a throwaway context (review
+	/// V24-2): this context is long-lived, and the main context replaces channel rows (staged
+	/// refresh, QR import, the Channels editor) without this one seeing it, so computing here
+	/// could write an old key back, as T382 found in the other direction.
 	func refreshChannelKeys(radioNum: Int64) {
+		guard !invalidated else { return }
 		do {
-			let result = try MultiRadioBackfill.updateChannelKeys(for: radioNum, in: modelContext)
-			if result.events > 0 {
-				noteMessageChange()
+			if modelContext.hasChanges {
+				try modelContext.save()
+			}
+			let events = try MultiRadioBackfill.updateSavedChannelKeys(for: radioNum, container: modelContext.container)
+			if events > 0 {
+				Task { @MainActor in
+					NotificationCenter.default.post(name: .meshMessagesDidChange, object: nil)
+				}
 			}
 		} catch {
 			Logger.data.error("💥 [MultiRadio] Channel keys failed: \(error.localizedDescription, privacy: .public)")

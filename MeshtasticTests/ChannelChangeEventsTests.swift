@@ -16,12 +16,12 @@ import Testing
 @Suite("Channel change rows and slot history")
 struct ChannelChangeEventsTests {
 
-	private let radioA: Int64 = 0x0A0A_0A0A
-	private let radioB: Int64 = 0x0B0B_0B0B
-	private let longFast = Int32(Config.LoRaConfig.ModemPreset.longFast.rawValue)
-	private let longTurbo = Int32(Config.LoRaConfig.ModemPreset.longTurbo.rawValue)
+	let radioA: Int64 = 0x0A0A_0A0A
+	let radioB: Int64 = 0x0B0B_0B0B
+	let longFast = Int32(Config.LoRaConfig.ModemPreset.longFast.rawValue)
+	let longTurbo = Int32(Config.LoRaConfig.ModemPreset.longTurbo.rawValue)
 
-	private func makeContext() throws -> ModelContext {
+	func makeContext() throws -> ModelContext {
 		let schema = Schema(versionedSchema: MeshtasticSchema.current)
 		let config = ModelConfiguration("ChannelChangeEventsTests-\(UUID().uuidString)", schema: schema, isStoredInMemoryOnly: true, allowsSave: true)
 		return ModelContext(try ModelContainer(for: schema, configurations: config))
@@ -29,7 +29,7 @@ struct ChannelChangeEventsTests {
 
 	/// A radio on `preset` with the default unnamed primary and the given named secondaries.
 	@discardableResult
-	private func makeRadio(_ num: Int64, preset: Int32, secondaries: [Int32: String] = [:], in context: ModelContext) -> MyInfoEntity {
+	func makeRadio(_ num: Int64, preset: Int32, secondaries: [Int32: String] = [:], in context: ModelContext) -> MyInfoEntity {
 		let node = NodeInfoEntity()
 		node.num = num
 		node.id = num
@@ -61,17 +61,17 @@ struct ChannelChangeEventsTests {
 		return myInfo
 	}
 
-	private func setPreset(_ preset: Int32, on radio: MyInfoEntity, at seconds: Int, in context: ModelContext) throws {
+	func setPreset(_ preset: Int32, on radio: MyInfoEntity, at seconds: Int, in context: ModelContext) throws {
 		radio.myInfoNode?.loRaConfig?.modemPreset = preset
 		try MultiRadioBackfill.updateChannelKeys(for: radio.myNodeNum, in: context, now: Date(timeIntervalSince1970: TimeInterval(seconds)))
 		try context.save()
 	}
 
-	private func key(of radio: MyInfoEntity, slot: Int32) throws -> String {
+	func key(of radio: MyInfoEntity, slot: Int32) throws -> String {
 		try #require(radio.channels.first { $0.index == slot }?.channelKey)
 	}
 
-	private func insertMessage(_ id: Int64, at seconds: Int32, key: String, radio: Int64, in context: ModelContext) {
+	func insertMessage(_ id: Int64, at seconds: Int32, key: String, radio: Int64, in context: ModelContext) {
 		let message = MessageEntity()
 		message.messageId = id
 		message.messageTimestamp = seconds
@@ -84,7 +84,7 @@ struct ChannelChangeEventsTests {
 	}
 
 	/// The thread for `radio`'s slot 0, oldest first: real messages by id, change rows as "event".
-	private func thread(of radio: MyInfoEntity, in context: ModelContext) throws -> [String] {
+	func thread(of radio: MyInfoEntity, in context: ModelContext) throws -> [String] {
 		let current = try key(of: radio, slot: 0)
 		let query = ChannelMessageQuery.make(channelIndex: 0, channelKey: current, radioNum: radio.myNodeNum, multiRadio: true, in: context)
 		return try ChannelMessageQuery.fetch(query.messages(), limit: nil, in: context)
@@ -309,78 +309,6 @@ struct ChannelChangeEventsTests {
 		#expect(primaryA.sharesMessagesWithOtherRadios(context: context))
 	}
 
-	// MARK: - Stale contexts (one radio switched, the other not)
-
-	@Test("The same change seen again from an older key leaves no second row")
-	func staleChangeIsNotRecordedTwice() throws {
-		let context = try makeContext()
-		let at = { (seconds: Int) in Date(timeIntervalSince1970: TimeInterval(seconds)) }
-		#expect(try ChannelChangeEvents.record(radio: radioA, slot: 0, from: "c2:lf:k:", to: "c2:lt:k:", in: context, now: at(100)) == 1)
-		// A context that still had the LongFast key commits the radio's channels a minute later.
-		#expect(try ChannelChangeEvents.record(radio: radioA, slot: 0, from: "c2:lf:k:", to: "c2:lt:k:", in: context, now: at(200)) == 0)
-		#expect(try context.fetch(FetchDescriptor<MessageEntity>()).filter(\.isSystemEvent).count == 1)
-	}
-
-	@Test("A view's context from before the switch still shows the switched radio's new channel")
-	@MainActor
-	func staleContextReadsSavedKey() throws {
-		let viewContext = try makeContext()
-		let radioAInfo = makeRadio(radioA, preset: longFast, in: viewContext)
-		makeRadio(radioB, preset: longFast, in: viewContext)
-		try MultiRadioBackfill.updateChannelKeys(for: radioA, in: viewContext)
-		try MultiRadioBackfill.updateChannelKeys(for: radioB, in: viewContext)
-		try viewContext.save()
-		let longFastKey = try key(of: radioAInfo, slot: 0)
-		// The view holds B's primary channel, as loaded before the switch.
-		let viewChannel = try #require(try viewContext.fetch(FetchDescriptor<ChannelEntity>()).first { $0.myInfoChannel?.myNodeNum == radioB && $0.index == 0 })
-		_ = viewChannel.channelKey
-
-		// The packet actor's context saves B's move to LongTurbo.
-		let packetContext = ModelContext(viewContext.container)
-		let radioBInPackets = try #require(try packetContext.fetch(FetchDescriptor<MyInfoEntity>()).first { $0.myNodeNum == radioB })
-		try setPreset(longTurbo, on: radioBInPackets, at: 100, in: packetContext)
-		// A sends on LongFast afterwards.
-		insertMessage(1, at: 200, key: longFastKey, radio: radioA, in: packetContext)
-		try packetContext.save()
-
-		let query = viewChannel.messageQuery(context: viewContext)
-		#expect(query.channelKey?.hasSuffix(":LongTurbo") == true)
-		let ids = try ChannelMessageQuery.fetch(query.messages(), limit: nil, in: viewContext).filter { !$0.isSystemEvent }.map(\.messageId)
-		// Before the fix, B's conversation could show A's LongFast message.
-		#expect(!ids.contains(1))
-		// And "Via" on A's LongFast channel no longer offers B.
-		#expect(ChannelMessageQuery.slots(for: longFastKey, among: [radioA, radioB], in: viewContext) == [ChannelSlot(radio: radioA, index: 0)])
-	}
-
-	@Test("The backfill removes a change row recorded twice")
-	func duplicateRowsRemoved() throws {
-		let context = try makeContext()
-		let at = { (seconds: Int) in Date(timeIntervalSince1970: TimeInterval(seconds)) }
-		try ChannelChangeEvents.record(radio: radioA, slot: 0, from: "c2:lf:k:", to: "c2:lt:k:", in: context, now: at(100))
-		// The duplicate as stores written before the fix have it.
-		let duplicate = MessageEntity()
-		duplicate.systemEvent = MessageEntity.SystemEvent.channelChanged.rawValue
-		duplicate.messageId = -2
-		duplicate.messageTimestamp = 160
-		duplicate.channel = 0
-		duplicate.previousChannelKey = "c2:lf:k:"
-		duplicate.channelKey = "c2:lt:k:"
-		duplicate.localNodeNum = radioA
-		context.insert(duplicate)
-		// Another radio's row with the same keys isn't a duplicate.
-		try ChannelChangeEvents.record(radio: radioB, slot: 0, from: "c2:lf:k:", to: "c2:lt:k:", in: context, now: at(170))
-		// A real change back and forth stays.
-		try ChannelChangeEvents.record(radio: radioA, slot: 0, from: "c2:lt:k:", to: "c2:lf:k:", in: context, now: at(500))
-		try ChannelChangeEvents.record(radio: radioA, slot: 0, from: "c2:lf:k:", to: "c2:lt:k:", in: context, now: at(900))
-		try context.save()
-
-		#expect(try MultiRadioBackfill.removeDuplicateChangeRows(in: context) == 1)
-		let left = try context.fetch(FetchDescriptor<MessageEntity>()).filter(\.isSystemEvent)
-		#expect(left.count == 4)
-		#expect(!left.contains { $0.messageId == -2 })
-		#expect(try MultiRadioBackfill.removeDuplicateChangeRows(in: context) == 0)
-	}
-
 	// MARK: - Mesh in the identity (T379)
 
 	@Test("A named channel two radios share stops being shared when one moves to another mesh")
@@ -464,5 +392,170 @@ struct ChannelChangeEventsTests {
 		#expect(try context.fetch(FetchDescriptor(predicate: query.unreadCandidates())).isEmpty)
 		#expect(try ChannelMessageQuery.fetch(query.messages(unreadOnly: true), limit: nil, in: context).isEmpty)
 		#expect(try ChannelMessageQuery.fetch(query.messages(), limit: nil, in: context).count == 1)
+	}
+}
+
+/// Channel keys read as saved, not from a long-lived context's older copies (T382, review V24).
+@Suite("Channel keys read as saved across contexts")
+struct ChannelChangeStaleContextTests {
+	private let base = ChannelChangeEventsTests()
+	private var radioA: Int64 { base.radioA }
+	private var radioB: Int64 { base.radioB }
+	private var longFast: Int32 { base.longFast }
+	private var longTurbo: Int32 { base.longTurbo }
+
+	private func makeContext() throws -> ModelContext { try base.makeContext() }
+
+	@discardableResult
+	private func makeRadio(_ num: Int64, preset: Int32, secondaries: [Int32: String] = [:], in context: ModelContext) -> MyInfoEntity {
+		base.makeRadio(num, preset: preset, secondaries: secondaries, in: context)
+	}
+
+	private func setPreset(_ preset: Int32, on radio: MyInfoEntity, at seconds: Int, in context: ModelContext) throws {
+		try base.setPreset(preset, on: radio, at: seconds, in: context)
+	}
+
+	private func key(of radio: MyInfoEntity, slot: Int32) throws -> String { try base.key(of: radio, slot: slot) }
+
+	private func insertMessage(_ id: Int64, at seconds: Int32, key: String, radio: Int64, in context: ModelContext) {
+		base.insertMessage(id, at: seconds, key: key, radio: radio, in: context)
+	}
+
+	@Test("The same change seen again from an older key leaves no second row")
+	func staleChangeIsNotRecordedTwice() throws {
+		let context = try makeContext()
+		let at = { (seconds: Int) in Date(timeIntervalSince1970: TimeInterval(seconds)) }
+		#expect(try ChannelChangeEvents.record(radio: radioA, slot: 0, from: "c2:lf:k:", to: "c2:lt:k:", in: context, now: at(100)) == 1)
+		// A context that still had the LongFast key commits the radio's channels a minute later.
+		#expect(try ChannelChangeEvents.record(radio: radioA, slot: 0, from: "c2:lf:k:", to: "c2:lt:k:", in: context, now: at(200)) == 0)
+		#expect(try context.fetch(FetchDescriptor<MessageEntity>()).filter(\.isSystemEvent).count == 1)
+	}
+
+	@Test("A view's context from before the switch still shows the switched radio's new channel")
+	@MainActor
+	func staleContextReadsSavedKey() throws {
+		let viewContext = try makeContext()
+		let radioAInfo = makeRadio(radioA, preset: longFast, in: viewContext)
+		makeRadio(radioB, preset: longFast, in: viewContext)
+		try MultiRadioBackfill.updateChannelKeys(for: radioA, in: viewContext)
+		try MultiRadioBackfill.updateChannelKeys(for: radioB, in: viewContext)
+		try viewContext.save()
+		let longFastKey = try key(of: radioAInfo, slot: 0)
+		// The view holds B's primary channel, as loaded before the switch.
+		let viewChannel = try #require(try viewContext.fetch(FetchDescriptor<ChannelEntity>()).first { $0.myInfoChannel?.myNodeNum == radioB && $0.index == 0 })
+		_ = viewChannel.channelKey
+
+		// The packet actor's context saves B's move to LongTurbo.
+		let packetContext = ModelContext(viewContext.container)
+		let radioBInPackets = try #require(try packetContext.fetch(FetchDescriptor<MyInfoEntity>()).first { $0.myNodeNum == radioB })
+		try setPreset(longTurbo, on: radioBInPackets, at: 100, in: packetContext)
+		// A sends on LongFast afterwards.
+		insertMessage(1, at: 200, key: longFastKey, radio: radioA, in: packetContext)
+		try packetContext.save()
+
+		let query = viewChannel.messageQuery(context: viewContext)
+		#expect(query.channelKey?.hasSuffix(":LongTurbo") == true)
+		let ids = try ChannelMessageQuery.fetch(query.messages(), limit: nil, in: viewContext).filter { !$0.isSystemEvent }.map(\.messageId)
+		// Before the fix, B's conversation could show A's LongFast message.
+		#expect(!ids.contains(1))
+		// And "Via" on A's LongFast channel no longer offers B.
+		#expect(ChannelMessageQuery.slots(for: longFastKey, among: [radioA, radioB], in: viewContext) == [ChannelSlot(radio: radioA, index: 0)])
+	}
+
+	@Test("A LoRa change ingested after a rename saved elsewhere keeps the new name's key")
+	func actorDoesNotWriteBackARenamedChannel() async throws {
+		let context = try makeContext()
+		makeRadio(radioA, preset: longFast, secondaries: [1: "Hikers"], in: context)
+		try MultiRadioBackfill.updateChannelKeys(for: radioA, in: context)
+		try context.save()
+		let packets = MeshPackets(modelContainer: context.container)
+		var lora = Config.LoRaConfig()
+		lora.usePreset = true
+		lora.modemPreset = .longFast
+		// The actor loads A's channels into its own context.
+		await packets.upsertLoRaConfigPacket(config: lora, nodeNum: radioA)
+
+		// The Channels editor (main context) renames slot 1 and saves.
+		let editor = ModelContext(context.container)
+		let hikers = try #require(try editor.fetch(FetchDescriptor<ChannelEntity>()).first { $0.index == 1 })
+		hikers.name = "Bikers"
+		try editor.save()
+		try MultiRadioBackfill.updateSavedChannelKeys(for: radioA, container: context.container, now: Date(timeIntervalSince1970: 100))
+
+		// Then the radio's LoRa config arrives with a new preset.
+		lora.modemPreset = .longTurbo
+		await packets.upsertLoRaConfigPacket(config: lora, nodeNum: radioA)
+
+		let stored = MultiRadioBackfill.storedChannelKeys(for: radioA, container: context.container)
+		#expect(stored[1]?.hasSuffix(":Bikers") == true)
+		#expect(stored[1].flatMap(ChannelIdentity.parts(of:))?.modemPreset == longTurbo)
+		// No row puts "Hikers" back.
+		let rows = try ModelContext(context.container).fetch(FetchDescriptor<MessageEntity>()).filter { $0.isSystemEvent && $0.channel == 1 }
+		#expect(!rows.contains { $0.channelKey?.hasSuffix(":Hikers") == true })
+	}
+
+	@Test("A channel-list row reads its preview and unread count from the conversation")
+	@MainActor
+	func listSummaryFollowsTheConversation() throws {
+		let context = try makeContext()
+		let radioAInfo = makeRadio(radioA, preset: longFast, in: context)
+		let radioBInfo = makeRadio(radioB, preset: longFast, in: context)
+		try MultiRadioBackfill.updateChannelKeys(for: radioA, in: context)
+		try MultiRadioBackfill.updateChannelKeys(for: radioB, in: context)
+		try context.save()
+		let longFastKey = try key(of: radioAInfo, slot: 0)
+		try setPreset(longTurbo, on: radioBInfo, at: 100, in: context)
+		let longTurboKey = try key(of: radioBInfo, slot: 0)
+		insertMessage(1, at: 150, key: longTurboKey, radio: radioB, in: context)
+		insertMessage(2, at: 200, key: longFastKey, radio: radioA, in: context)
+		let unread = MessageEntity()
+		unread.messageId = 3
+		unread.messageTimestamp = 210
+		unread.channel = 0
+		unread.channelKey = longFastKey
+		unread.localNodeNum = radioA
+		unread.read = false
+		unread.messagePayload = "m3"
+		context.insert(unread)
+		try context.save()
+
+		let primaryB = try #require(radioBInfo.channels.first { $0.index == 0 })
+		let summaryB = primaryB.listSummary(context: context)
+		// Not A's LongFast messages in the same slot number (T382).
+		#expect(summaryB.latest?.messageId == 1)
+		#expect(summaryB.unread == 0)
+		let primaryA = try #require(radioAInfo.channels.first { $0.index == 0 })
+		let summaryA = primaryA.listSummary(context: context)
+		#expect(summaryA.latest?.messageId == 3)
+		#expect(summaryA.unread == 1)
+	}
+
+	@Test("The backfill removes a change row recorded twice")
+	func duplicateRowsRemoved() throws {
+		let context = try makeContext()
+		let at = { (seconds: Int) in Date(timeIntervalSince1970: TimeInterval(seconds)) }
+		try ChannelChangeEvents.record(radio: radioA, slot: 0, from: "c2:lf:k:", to: "c2:lt:k:", in: context, now: at(100))
+		// The duplicate as stores written before the fix have it.
+		let duplicate = MessageEntity()
+		duplicate.systemEvent = MessageEntity.SystemEvent.channelChanged.rawValue
+		duplicate.messageId = -2
+		duplicate.messageTimestamp = 160
+		duplicate.channel = 0
+		duplicate.previousChannelKey = "c2:lf:k:"
+		duplicate.channelKey = "c2:lt:k:"
+		duplicate.localNodeNum = radioA
+		context.insert(duplicate)
+		// Another radio's row with the same keys isn't a duplicate.
+		try ChannelChangeEvents.record(radio: radioB, slot: 0, from: "c2:lf:k:", to: "c2:lt:k:", in: context, now: at(170))
+		// A real change back and forth stays.
+		try ChannelChangeEvents.record(radio: radioA, slot: 0, from: "c2:lt:k:", to: "c2:lf:k:", in: context, now: at(500))
+		try ChannelChangeEvents.record(radio: radioA, slot: 0, from: "c2:lf:k:", to: "c2:lt:k:", in: context, now: at(900))
+		try context.save()
+
+		#expect(try MultiRadioBackfill.removeDuplicateChangeRows(in: context) == 1)
+		let left = try context.fetch(FetchDescriptor<MessageEntity>()).filter(\.isSystemEvent)
+		#expect(left.count == 4)
+		#expect(!left.contains { $0.messageId == -2 })
+		#expect(try MultiRadioBackfill.removeDuplicateChangeRows(in: context) == 0)
 	}
 }

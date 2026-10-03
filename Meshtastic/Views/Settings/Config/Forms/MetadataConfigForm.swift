@@ -5,6 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 9/18/26.
 //
 import OSLog
+import SwiftData
 import SwiftUI
 import MeshtasticProtobufs
 
@@ -269,10 +270,23 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 
 	private func load() {
 		guard let entity = node?[keyPath: M.entityKeyPath] else { return }
-		let message = normalize(M(entity: entity))
+		let message = normalize(savedMessage() ?? M(entity: entity))
 		config = message
 		original = message
 		loaded = true
+	}
+
+	/// The config as saved, read in a throwaway context. `node` is the main context's object,
+	/// which can still hold settings from before a change the packet actor saved (a preset
+	/// switch: review V24); the form would show the old values and, saved with any other edit,
+	/// send them back to the radio. Nil when the store has no such config.
+	private func savedMessage() -> M? {
+		guard let num = node?.num else { return nil }
+		let saved = ModelContext(context.container)
+		return withExtendedLifetime(saved) {
+			guard let entity = getNodeInfo(id: num, context: saved)?[keyPath: M.entityKeyPath] else { return nil }
+			return M(entity: entity)
+		}
 	}
 
 	private func performSave() {
