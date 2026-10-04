@@ -411,6 +411,12 @@ actor MeshPackets {
 		pendingMessageChange = true
 	}
 
+	private func postMessageChange() {
+		Task { @MainActor in
+			NotificationCenter.default.post(name: .meshMessagesDidChange, object: nil)
+		}
+	}
+
 	func savePendingChanges(caller: String = #function) {
 		guard !invalidated else {
 			Logger.data.warning("💾 [\(caller, privacy: .public)] Dropped save on retired MeshPackets instance")
@@ -430,9 +436,7 @@ actor MeshPackets {
 			Logger.data.debug("💾 [\(caller, privacy: .public)] Saved pending changes")
 			if pendingMessageChange {
 				pendingMessageChange = false
-				Task { @MainActor in
-					NotificationCenter.default.post(name: .meshMessagesDidChange, object: nil)
-				}
+				postMessageChange()
 			}
 		} catch {
 			Logger.data.error("💥 [\(caller, privacy: .public)] Error saving: \(error.localizedDescription, privacy: .public)")
@@ -2067,9 +2071,10 @@ actor MeshPackets {
 						CarPlayIntentDonation.donateReceivedMessage(newMessage)
 						#endif
 
-						// Let the message lists and unread-displaying surfaces refresh. The
-						// notification is posted once per save, from savePendingChanges.
-						noteMessageChange()
+						// Let the message lists and unread-displaying surfaces refresh. The message
+						// was saved directly above, not through savePendingChanges, so post now
+						// instead of waiting for the next save.
+						postMessageChange()
 
 						// Self-originated messages and muted detection-sensor packets skip
 						// all notification work (no badge recount, no local notification).
