@@ -53,6 +53,9 @@ struct NodeListRowSummary {
 	let statusMessage: String?
 	let lastHeard: Date?
 	let isOnline: Bool
+	/// Not heard over RF on the radio's current LoRa settings (firmware 2.8.1+). A different claim
+	/// from offline, so the row shows it separately.
+	let isUnheardOnCurrentLora: Bool
 	let hopsAway: Int32
 	let snr: Float
 	let rssi: Int32
@@ -96,6 +99,7 @@ struct NodeListRowSummary {
 		statusMessage = node.statusMessageDisplay
 		lastHeard = node.lastHeard
 		isOnline = node.isOnline
+		isUnheardOnCurrentLora = node.isUnheardOnCurrentLora
 		hopsAway = node.hopsAway
 		snr = node.snr
 		rssi = node.rssi
@@ -171,6 +175,9 @@ struct NodeListItem: View {
 			desc += ", online"
 		} else {
 			desc += ", offline"
+		}
+		if summary.isUnheardOnCurrentLora {
+			desc += ", " + UnheardOnCurrentLora.label
 		}
 		if let roleName = summary.role?.name {
 			desc += ", role: \(roleName)"
@@ -326,6 +333,11 @@ struct NodeListItem: View {
 						IconAndText(systemName: summary.isOnline ? "checkmark.circle.fill" : "moon.circle.fill",
 									imageColor: summary.isOnline ? .green : .orange,
 							text: summary.lastHeard?.formatted(date: .numeric, time: .shortened) ?? "Unknown Age".localized)
+					}
+					if summary.isUnheardOnCurrentLora {
+						IconAndText(systemName: UnheardOnCurrentLora.systemImage,
+									imageColor: .secondary,
+									text: UnheardOnCurrentLora.shortLabel)
 					}
 					IconAndText(systemName: summary.role?.systemName ?? "figure",
 								text: "Role: \(summary.role?.name ?? "Unknown".localized)")

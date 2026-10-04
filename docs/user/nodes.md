@@ -104,6 +104,8 @@ After you change the radio's LoRa settings, the Nodes tab may show a notice for 
 
 Choose **Remove Them** to open a confirmation that includes the number of nodes, such as **Remove 1 node?** or **Remove 10 nodes?**. Confirming removes those nodes from this app and the connected radio. A node returns if it is heard again. Choose **Keep** to dismiss the notice without removing nodes.
 
+On firmware 2.8.1 and later, the radio reports for each node whether it has heard that node over LoRa on the settings it is using now, and the app uses that instead of its own record of the change. That includes changes made from the device's menu or the CLI. A node it has not heard shows **Not heard on current LoRa** under its last-heard time, separately from online and offline, since a node can be online over another path and still not heard on these settings. When most of the list is in that state, the notice reads **N nodes not heard on your current LoRa settings**, and **Keep** hides it until more nodes join that count. Nodes known only over MQTT are never marked: they don't reach your radio over LoRa, so it can't report hearing them. Nothing is ever removed unless you choose to.
+
 ## Context Menu Actions
 
 Long-press any node in the list to access quick actions:
@@ -130,6 +132,7 @@ Tap the filter icon above the list to narrow which nodes are shown. Filters appl
 | Filter | What it shows |
 |--------|---------------|
 | **Online** | Only nodes heard in the last two hours. |
+| **Hide Not Heard on Current LoRa** | Hides nodes your radio has not heard on its current LoRa settings. Needs firmware 2.8.1 or later. |
 | **Favorites** | Only nodes you have starred. |
 | **Public Key Encryption** | Only nodes using PKI-encrypted direct messages. |
 | **Environment** | Only nodes reporting environment telemetry (temperature, humidity, pressure). |

@@ -39,6 +39,12 @@ struct NodeListFilter: View {
 					.toggleStyle(.switch)
 					.listRowSeparator(.visible)
 
+					Toggle(isOn: $filters.hidesUnheardOnCurrentLora) {
+						Label("Hide Not Heard on Current LoRa", systemImage: UnheardOnCurrentLora.systemImage)
+					}
+					.toggleStyle(.switch)
+					.listRowSeparator(.visible)
+
 					if showsEncryptedFilter {
 						Toggle(isOn: $filters.isSigned) {
 							Label { Text("Signed") } icon: { SignedNodeIcon.image }
