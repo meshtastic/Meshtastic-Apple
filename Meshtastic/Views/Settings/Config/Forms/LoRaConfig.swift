@@ -165,6 +165,11 @@ struct LoRaConfig: View {
 				}
 
 				_ = try await accessoryManager.saveLoRaConfig(config: config, fromUser: from, toUser: to)
+				// A change to the connected radio applies without a reboot on 2.8, so ask it for the
+				// node database to pick up its answers for the new settings.
+				if to.num == accessoryManager.activeDeviceNum {
+					accessoryManager.refreshNodeDatabaseAfterLoRaChange()
+				}
 				onSuccessfulSave(to.num, region)
 			})
 		.navigationTitle("LoRa Config")

@@ -555,6 +555,26 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		}
 	}
 
+	/// Asks the connected radio for its node database again after its LoRa settings changed.
+	///
+	/// Firmware 2.8 applies a LoRa change without rebooting, so there is no reconnect and no fresh
+	/// node database, and the radio's NodeInfo.heard_on_current_lora answers for the new settings
+	/// never reach the app. The database completion saves the dump and publishes
+	/// `nodeDatabaseSavedAt`, which is what the unheard notice and node rows refresh on.
+	func refreshNodeDatabaseAfterLoRaChange() {
+		guard reportsHeardOnCurrentLora, isConnected else { return }
+		Task { @MainActor in
+			// Let the radio finish reprogramming the modem before asking.
+			try? await Task.sleep(for: .seconds(2))
+			guard self.isConnected else { return }
+			do {
+				try await self.sendWantDatabase()
+			} catch {
+				Logger.transport.error("[LoRa] Could not refresh the node database after a settings change: \(error.localizedDescription, privacy: .public)")
+			}
+		}
+	}
+
 	func sendWantDatabase() async throws {
 		if let firstDatabaseNodeInfoContinuation = firstDatabaseNodeInfoContinuation {
 			Logger.transport.info("[Accessory] Existing continuation for firstDatabaseNodeInfo. Cancelling.")

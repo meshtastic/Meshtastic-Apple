@@ -1078,6 +1078,7 @@ extension AccessoryManager {
 		lora.channelNum = 0
 		do {
 			_ = try await saveLoRaConfig(config: lora, fromUser: user, toUser: user)
+			refreshNodeDatabaseAfterLoRaChange()
 		} catch {
 			// Roll the primary channel back so we don't strand the radio between meshes. The channel
 			// write doesn't reboot, so this restore is safe.
