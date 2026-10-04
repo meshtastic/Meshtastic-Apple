@@ -144,6 +144,14 @@ struct UnheardOnCurrentLoraTests {
 
 	// MARK: Aggregate offer
 
+	/// From a real store after a preset change: the radio reported on about 120 of the app's 260
+	/// nodes. Counting all 260 hid the notice with 118 of the 120 unheard.
+	@Test func mostOfTheListCountsOnlyNodesTheRadioReportedOn() {
+		#expect(UnheardOnCurrentLoraOffer.isMostOfList(unheard: 118, reported: 120))
+		#expect(!UnheardOnCurrentLoraOffer.isMostOfList(unheard: 10, reported: 120))
+		#expect(!UnheardOnCurrentLoraOffer.isMostOfList(unheard: 0, reported: 0))
+	}
+
 	@Test func keepHidesTheOfferUntilTheCountGrows() throws {
 		let store = try #require(UserDefaults(suiteName: "UnheardOnCurrentLoraTests.offer"))
 		store.removePersistentDomain(forName: "UnheardOnCurrentLoraTests.offer")

@@ -42,7 +42,9 @@ struct UnheardNodesBanner: View {
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 
 	@State private var unheardNodes: [NodeInfoEntity] = []
-	/// Nodes the radio could hear directly (not MQTT), the denominator for "most of the list".
+	/// Nodes the radio has given an answer for, the denominator for "most of the list". The app keeps
+	/// more nodes than the radio does; the ones it never reported on are unknown, not heard, and
+	/// counting them hid the notice even when nearly every reported node was unheard.
 	@State private var radioNodeCount = 0
 	@State private var isConfirming = false
 	@State private var isRemoving = false
@@ -68,7 +70,7 @@ struct UnheardNodesBanner: View {
 	/// One aggregate when most of the list is unheard; the rows carry the marker otherwise.
 	private func shouldOffer(connectedNodeNum: Int64) -> Bool {
 		accessoryManager.reportsHeardOnCurrentLora
-			&& unheardNodes.count * 2 >= radioNodeCount
+			&& UnheardOnCurrentLoraOffer.isMostOfList(unheard: unheardNodes.count, reported: radioNodeCount)
 			&& UnheardOnCurrentLoraOffer.shouldOffer(count: unheardNodes.count, forNode: connectedNodeNum)
 	}
 
@@ -167,7 +169,7 @@ struct UnheardNodesBanner: View {
 			unheardNodes = []
 			return
 		}
-		radioNodeCount = candidates.filter { !$0.viaMqtt }.count
+		radioNodeCount = candidates.filter { !$0.viaMqtt && $0.heardOnCurrentLora != nil }.count
 		unheardNodes = candidates.filter(\.isUnheardOnCurrentLora)
 	}
 
