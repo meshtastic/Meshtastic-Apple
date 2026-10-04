@@ -33,7 +33,7 @@ struct MapDataFiles: View {
 					}
 					.frame(maxWidth: .infinity)
 					.padding()
-					.background(Color.accentColor)
+					.background(Color.accentFill)
 					.foregroundColor(.white)
 					.cornerRadius(10)
 				}

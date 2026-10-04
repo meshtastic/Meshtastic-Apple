@@ -378,6 +378,7 @@ struct DocBrowserView: View {
 			} else {
 				Button("Download") { downloadingLanguage = languageCode }
 					.buttonStyle(.borderedProminent)
+					.tint(.accentFill)
 			}
 		}
 		.padding(.horizontal)

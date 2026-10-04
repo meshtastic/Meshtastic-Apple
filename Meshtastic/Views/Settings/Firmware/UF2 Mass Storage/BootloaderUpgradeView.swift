@@ -166,6 +166,7 @@ struct BootloaderUpgradeView: View {
 			Label("Send Reboot into DFU", systemImage: "square.and.arrow.down")
 		}
 		.buttonStyle(.borderedProminent)
+		.tint(.accentFill)
 		.controlSize(.large)
 		.frame(maxWidth: .infinity)
 		.disabled(accessoryManager.activeDeviceNum == nil)
@@ -179,6 +180,7 @@ struct BootloaderUpgradeView: View {
 			Label("Choose Bootloader Drive", systemImage: "externaldrive")
 		}
 		.buttonStyle(.borderedProminent)
+		.tint(.accentFill)
 		.controlSize(.large)
 		.frame(maxWidth: .infinity)
 		.disabled(phase == .installing)
@@ -209,6 +211,7 @@ struct BootloaderUpgradeView: View {
 					Label("Install Bootloader Update", systemImage: "arrow.down.circle.fill")
 				}
 				.buttonStyle(.borderedProminent)
+				.tint(.accentFill)
 				.controlSize(.large)
 				.frame(maxWidth: .infinity)
 			}

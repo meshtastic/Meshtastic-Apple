@@ -109,6 +109,7 @@ struct ESP32OTAIntroSheet: View {
 									.frame(maxWidth: .infinity)
 							}
 							.buttonStyle(.borderedProminent)
+							.tint(.accentFill)
 							.controlSize(.large)
 							.clipShape(RoundedRectangle(cornerRadius: 10))
 							.disabled(accessoryManager.activeDeviceNum == nil || !firmwareSupportsOTA)
@@ -146,6 +147,7 @@ struct ESP32OTAIntroSheet: View {
 									.frame(maxWidth: .infinity)
 							}
 							.buttonStyle(.borderedProminent)
+							.tint(.accentFill)
 							.controlSize(.large)
 							.clipShape(RoundedRectangle(cornerRadius: 10))
 							.disabled(accessoryManager.activeDeviceNum == nil || !firmwareSupportsOTA)

@@ -98,11 +98,15 @@ The signal meter shown here (and on a node's detail screen) rates link quality f
   <img src="../assets/screenshots/compact_mqtt.png" alt="MQTT-bridged node" />
 </picture>
 
-## Nodes Not Heard After a Settings Change
+## Nodes Not Heard on Your Current LoRa Settings
 
-After you change the radio's LoRa settings, the Nodes tab may show a notice for nodes that were heard on the old channel but have not been heard on the new one. Favorite nodes and the connected node are excluded.
+Changing the radio's preset, region or frequency slot moves it to a different channel, and nodes it heard before may no longer be reachable. On firmware 2.8.1 and later, the radio reports for each node whether it has heard that node over LoRa on the settings it is using now, including after changes made from the device's menu or the CLI.
 
-Choose **Remove Them** to open a confirmation that includes the number of nodes, such as **Remove 1 node?** or **Remove 10 nodes?**. Confirming removes those nodes from this app and the connected radio. A node returns if it is heard again. Choose **Keep** to dismiss the notice without removing nodes.
+A node the radio has not heard shows **Not heard on current LoRa** under its last-heard time. That is separate from online and offline: a node can be online and still not heard on these settings. Nodes known only over MQTT are never marked, because they don't reach your radio over LoRa. Switching back to the earlier settings brings back the earlier answers on their own.
+
+When most of the list is in that state, the Nodes tab shows a notice such as **87 nodes not heard on your current LoRa settings**. Choose **Remove Them** to open a confirmation that includes the number of nodes, such as **Remove 1 node?** or **Remove 10 nodes?**. Confirming removes those nodes from this app and the connected radio, and keeps favorites and the connected node. A node returns if it is heard again. Choose **Keep** to dismiss the notice until more nodes join that count. Nothing is removed unless you choose to.
+
+Older firmware doesn't report this, so the marker and the notice don't appear.
 
 ## Context Menu Actions
 
@@ -130,6 +134,7 @@ Tap the filter icon above the list to narrow which nodes are shown. Filters appl
 | Filter | What it shows |
 |--------|---------------|
 | **Online** | Only nodes heard in the last two hours. |
+| **Hide Not Heard on Current LoRa** | Hides nodes your radio has not heard on its current LoRa settings. Needs firmware 2.8.1 or later. |
 | **Favorites** | Only nodes you have starred. |
 | **Public Key Encryption** | Only nodes using PKI-encrypted direct messages. |
 | **Environment** | Only nodes reporting environment telemetry (temperature, humidity, pressure). |

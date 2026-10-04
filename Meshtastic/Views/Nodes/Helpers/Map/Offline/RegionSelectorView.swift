@@ -551,6 +551,7 @@ struct RegionSelectorView: View {
 					Text("Download").frame(maxWidth: .infinity)
 				}
 				.buttonStyle(.borderedProminent)
+				.tint(.accentFill)
 				.disabled(!canDownload)
 			}
 		}

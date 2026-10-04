@@ -12,16 +12,16 @@ import UIKit
 #endif
 @testable import Meshtastic
 
-/// The app carries two accents on purpose: one to fill a shape under white text, one to draw text
-/// on a surface. They agree in light mode and must not in dark.
+/// The app carries two accents on purpose: `accentColor` to draw text and glyphs on a surface, and
+/// `accentFill` to fill a shape under white text. They agree in light mode and must not in dark.
 @Suite("Accent tint")
 struct AccentTintTests {
 
 	#if canImport(UIKit)
-	/// The fill accent by asset name rather than through `Color.accentColor`. The brand extension
+	/// The text accent by asset name rather than through `Color.accentColor`. The brand extension
 	/// shadows SwiftUI's `accentColor`, which resolves inside the app but is ambiguous from here,
-	/// where both declarations are visible. `accentTint` has no such clash and is read directly.
-	private static let fillAccentAsset = "Colors/MeshtasticAccent"
+	/// where both declarations are visible. `accentFill` has no such clash and is read directly.
+	private static let textAccentAsset = "AccentColor"
 
 	private func resolved(_ color: Color, dark: Bool) -> UIColor {
 		UIColor(color).resolvedColor(with: UITraitCollection(userInterfaceStyle: dark ? .dark : .light))
@@ -40,36 +40,35 @@ struct AccentTintTests {
 
 	@Test("the fill accent stays dark in both appearances")
 	func fillAccentDoesNotLighten() {
-		// Message bubbles and prominent buttons paint white text on this, so it has to stay dark in
-		// dark mode. Lightening it is the tempting one-line fix that breaks them.
-		guard let light = resolved(asset: Self.fillAccentAsset, dark: false),
-			  let dark = resolved(asset: Self.fillAccentAsset, dark: true) else {
-			Issue.record("\(Self.fillAccentAsset) missing"); return
+		// Reads Color.accentFill itself. Message bubbles and prominent buttons paint white text on
+		// it, so it has to stay dark in dark mode; white on the light blue is about 1.8:1.
+		let light = luminance(resolved(.accentFill, dark: false))
+		let dark = luminance(resolved(.accentFill, dark: true))
+		#expect(abs(light - dark) < 0.01)
+		#expect(dark < 0.2)
+	}
+
+	@Test("the text accent lightens in dark so tinted labels stay readable")
+	func textAccentLightensInDark() {
+		// The app-wide tint. Cobalt on a dark sheet measures about 1.8:1, which made every plain
+		// button, menu row and map control hard to read in dark mode.
+		guard let light = resolved(asset: Self.textAccentAsset, dark: false),
+			  let dark = resolved(asset: Self.textAccentAsset, dark: true) else {
+			Issue.record("\(Self.textAccentAsset) missing"); return
 		}
-		#expect(abs(luminance(light) - luminance(dark)) < 0.01)
-		#expect(luminance(dark) < 0.2)
+		#expect(luminance(dark) > luminance(light))
+		#expect(luminance(dark) > 0.4)
 	}
 
-	@Test("the on-surface accent lightens in dark so tinted labels stay readable")
-	func tintAccentLightensInDark() {
-		// Reads Color.accentTint itself, so repointing it at another asset fails here. Cobalt on a
-		// dark sheet measures about 1.7:1, which is why the save confirmation was unreadable.
-		let light = luminance(resolved(.accentTint, dark: false))
-		let dark = luminance(resolved(.accentTint, dark: true))
-		#expect(dark > light)
-		#expect(dark > 0.4)
-	}
-
-	@Test("the tint token agrees with the fill accent in light and diverges in dark")
+	@Test("the two accents agree in light and diverge in dark")
 	func accentsSplitOnlyInDark() {
-		// The whole point of the split, and the assertion that catches `accentTint` being pointed
-		// back at the fill accent: the dark values would collapse together.
-		guard let fillLight = resolved(asset: Self.fillAccentAsset, dark: false),
-			  let fillDark = resolved(asset: Self.fillAccentAsset, dark: true) else {
-			Issue.record("\(Self.fillAccentAsset) missing"); return
+		// Catches either token being pointed at the other: the dark values would collapse together.
+		guard let textLight = resolved(asset: Self.textAccentAsset, dark: false),
+			  let textDark = resolved(asset: Self.textAccentAsset, dark: true) else {
+			Issue.record("\(Self.textAccentAsset) missing"); return
 		}
-		#expect(abs(luminance(resolved(.accentTint, dark: false)) - luminance(fillLight)) < 0.01)
-		#expect(luminance(resolved(.accentTint, dark: true)) > luminance(fillDark) + 0.2)
+		#expect(abs(luminance(textLight) - luminance(resolved(.accentFill, dark: false))) < 0.01)
+		#expect(luminance(textDark) > luminance(resolved(.accentFill, dark: true)) + 0.2)
 	}
 	#endif
 }

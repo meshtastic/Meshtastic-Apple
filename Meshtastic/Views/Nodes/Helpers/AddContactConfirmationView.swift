@@ -183,6 +183,7 @@ struct AddContactConfirmationView: View {
 						.frame(maxWidth: .infinity)
 				}
 				.buttonStyle(.borderedProminent)
+				.tint(.accentFill)
 				.controlSize(.large)
 				.disabled(isAdding || !canSubmit || !hasShareableSnapshot)
 				Button {
@@ -202,6 +203,7 @@ struct AddContactConfirmationView: View {
 						.frame(maxWidth: .infinity)
 				}
 				.buttonStyle(.borderedProminent)
+				.tint(.accentFill)
 				.controlSize(.large)
 				.disabled(isAdding || !canSubmit)
 			}

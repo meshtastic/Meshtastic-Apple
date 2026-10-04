@@ -946,7 +946,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			meshTrafficMonitor.recordInboundPacket()
 			// All received packets get passed through updateAnyPacketFrom to update lastHeard, rxSnr, etc. (like firmware's NodeDB::updateFrom).
 			if let connectedNodeNum = self.activeDeviceNum {
-				await MeshPackets.shared.updateAnyPacketFrom(packet: packet, activeDeviceNum: connectedNodeNum)
+				await MeshPackets.shared.updateAnyPacketFrom(packet: packet, activeDeviceNum: connectedNodeNum,
+				                                             reportsHeardOnCurrentLora: reportsHeardOnCurrentLora)
 			} else {
 				Logger.mesh.error("🕸️ Unable to determine connectedNodeNum for updateAnyPacketFrom. Skipping.")
 			}
@@ -1182,9 +1183,6 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			// Logger.mesh.error("✅ [Accessory] Unknown UNHANDLED confligCompleteID: \(configCompleteID)")
 			// }
 
-			// Stamp the arrival so callers can tell a post-reboot refresh from a stale cache.
-			lastConfigRefresh = Date()
-
 			Logger.transport.info("✅ [Accessory] Notifying completions that have completed for configCompleteID: \(configCompleteID)")
 			switch configCompleteID {
 			case UInt32(NONCE_ONLY_CONFIG):
@@ -1193,6 +1191,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					Logger.transport.warning("[Accessory] Ignoring config completion without its active refresh owner")
 					break
 				}
+				// Only an owned config completion proves the cached configuration is fresh.
+				lastConfigRefresh = Date()
 				if let completedNodeNum = refresh.nodeNum {
 					await MeshPackets.shared.commitChannelRefreshStage(for: completedNodeNum, owner: refresh.owner)
 					MeshShareSnapshotBuilder.refresh(nodeNum: completedNodeNum, context: context)
@@ -1315,6 +1315,22 @@ extension AccessoryManager {
 	///
 	var supportsTAKv2: Bool {
 		Self.isTAKv2Supported(firmwareVersion: connectedVersion)
+	}
+
+	/// Whether the connected radio reports NodeInfo.heard_on_current_lora (firmware 2.8.1+).
+	var reportsHeardOnCurrentLora: Bool {
+		Self.reportsHeardOnCurrentLora(firmwareVersion: connectedVersion)
+	}
+
+	/// Strict on purpose: unlike `checkIsVersionSupported`, an unknown version is false. Older firmware
+	/// never sends the field, so reading it there would mark every node unheard.
+	nonisolated static func reportsHeardOnCurrentLora(firmwareVersion: String?) -> Bool {
+		guard let firmwareVersion else { return false }
+		let parts = firmwareVersion.split(separator: ".").prefix(3).map { Int($0) }
+		guard parts.count == 3, let major = parts[0], let minor = parts[1], let patch = parts[2] else {
+			return false
+		}
+		return (major, minor, patch) >= (2, 8, 1)
 	}
 
 	static func isTAKv2Supported(firmwareVersion: String?) -> Bool {

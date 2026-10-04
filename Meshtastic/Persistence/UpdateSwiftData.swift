@@ -262,7 +262,7 @@ extension MeshPackets {
 		}
 	}
 	
-	func updateAnyPacketFrom (packet: MeshPacket, activeDeviceNum: Int64) {
+	func updateAnyPacketFrom (packet: MeshPacket, activeDeviceNum: Int64, reportsHeardOnCurrentLora: Bool = false) {
 		// Update NodeInfoEntity for any packet received. This mirrors the firmware's NodeDB::updateFrom, which sniffs ALL received packets and updates the radio's nodeDB with packet.from's:
 		// - last_heard (from rxTime)
 		// - snr
@@ -301,6 +301,11 @@ extension MeshPackets {
 				node.snr = packet.rxSnr
 				node.rssi = packet.rxRssi
 				node.viaMqtt = packet.viaMqtt
+				// Heard over RF just now, so heard on the current settings. Mirrors the firmware, which
+				// sets the flag when it hears the node, so the row clears before the next node db dump.
+				if reportsHeardOnCurrentLora && !isImplicitAck && !packet.viaMqtt {
+					node.heardOnCurrentLora = true
+				}
 				
 				if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
 					node.hopsAway = Int32(truncatingIfNeeded: packet.hopStart - packet.hopLimit)

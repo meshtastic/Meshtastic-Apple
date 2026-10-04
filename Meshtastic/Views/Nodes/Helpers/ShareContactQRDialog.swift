@@ -110,9 +110,6 @@ struct ShareContactQRDialog: View {
 		}
 		.padding()
 		.frame(maxWidth: 350)
-		// Share and the NFC button are plain labels on the sheet, so they read as text and need
-		// the on-surface accent; the inherited fill accent is close to unreadable here in dark.
-		.tint(.accentTint)
 		#if targetEnvironment(macCatalyst)
 		// Catalyst has no drag-to-dismiss, so it gets the close button the other sheets use.
 		// Widened first, or the overlay would anchor to the 350pt content rather than the sheet.

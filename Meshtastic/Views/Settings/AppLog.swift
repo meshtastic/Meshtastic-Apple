@@ -361,6 +361,7 @@ struct AppLog: View {
 								.padding(.vertical, 5)
 						}
 						.buttonStyle(.borderedProminent)
+						.tint(.accentFill)
 					}
 					// Filter button — also the way back to turn Packet Stream off.
 					Button {

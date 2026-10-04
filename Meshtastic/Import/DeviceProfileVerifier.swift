@@ -49,6 +49,24 @@ enum VerificationOutcome: Equatable {
 	case notComparable(reason: String)
 }
 
+/// Determines whether a post-import readback can be verified exactly once.
+///
+/// `refreshNotBefore` is recorded before the import begins. This lets a config refresh that arrives
+/// while the import is still sending count as a readback, without accepting the cache from before it.
+struct DeviceProfileVerificationReadiness: Equatable {
+	let expectsReconnect: Bool
+	let refreshNotBefore: Date?
+	let lastConfigRefresh: Date?
+	let hasVerification: Bool
+
+	var shouldVerify: Bool {
+		guard expectsReconnect, !hasVerification,
+			  let refreshNotBefore, let lastConfigRefresh
+		else { return false }
+		return lastConfigRefresh >= refreshNotBefore
+	}
+}
+
 struct DeviceProfileVerification: Equatable {
 	var outcomes: [(kind: ImportItemKind, outcome: VerificationOutcome)] = []
 	/// Set when verification could not run at all, with the reason.
@@ -96,7 +114,7 @@ enum DeviceProfileVerifier {
 		plan: DeviceProfileImportPlan,
 		before: [ImportItemKind: ImportPayload],
 		source: ProfileConfigSource,
-		importFinishedAt: Date
+		readbackNotBefore: Date
 	) -> DeviceProfileVerification {
 		var report = DeviceProfileVerification()
 
@@ -106,8 +124,8 @@ enum DeviceProfileVerifier {
 			report.unavailable = "The app has not received a configuration from the radio yet."
 			return report
 		}
-		guard refreshed >= importFinishedAt else {
-			report.unavailable = "The radio has not sent its configuration since the import finished."
+		guard refreshed >= readbackNotBefore else {
+			report.unavailable = "The radio has not sent its configuration since the import began."
 			return report
 		}
 
