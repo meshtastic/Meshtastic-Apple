@@ -695,6 +695,8 @@ fileprivate extension NodeFilterParameters {
 			if lastHeard < threshold { return false }
 		}
 
+		if hidesUnheardOnCurrentLora && node.isUnheardOnCurrentLora { return false }
+
 		// Signed filter
 		if isSigned {
 			if !node.hasXeddsaSigned { return false }

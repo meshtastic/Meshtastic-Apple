@@ -68,6 +68,9 @@ struct NodeListItemCompact: View {
 		} else {
 			desc += ", offline"
 		}
+		if summary.isUnheardOnCurrentLora {
+			desc += ", " + UnheardOnCurrentLora.label
+		}
 		if let roleName = summary.role?.name {
 			desc += ", role: \(roleName)"
 		}
@@ -248,6 +251,13 @@ struct NodeListItemCompact: View {
 							systemName: summary.isOnline ? "checkmark.circle.fill" : "moon.circle.fill",
 							imageColor: summary.isOnline ? .green : .orange,
 							text: lastHeardText ?? "Unknown Age".localized
+						)
+					}
+					if summary.isUnheardOnCurrentLora {
+						IconAndText(
+							systemName: UnheardOnCurrentLora.systemImage,
+							imageColor: .secondary,
+							text: UnheardOnCurrentLora.shortLabel
 						)
 					}
 					// Distance, bearing, hops, signal, role, telemetry row

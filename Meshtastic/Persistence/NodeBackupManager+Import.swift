@@ -22,6 +22,7 @@ extension NodeBackupManager {
 			dst.firstHeard = src.firstHeard
 			dst.hasBeenAdministered = src.hasBeenAdministered
 			dst.hasXeddsaSigned = src.hasXeddsaSigned
+			dst.heardOnCurrentLora = src.heardOnCurrentLora
 			dst.hopsAway = src.hopsAway
 			dst.id = src.id
 			dst.ignored = src.ignored

@@ -26,6 +26,11 @@ final class NodeInfoEntity {
 	/// (SharedContact.manually_verified) or the radio's own verification flow. Reported by the
 	/// connected radio's node DB (NodeInfo.is_key_manually_verified); the radio owns the flag.
 	var isKeyManuallyVerified: Bool = false
+	/// Whether the connected radio has heard this node over RF on the LoRa settings it is using now
+	/// (NodeInfo.heard_on_current_lora, firmware 2.8.1+, meshtastic/design#146). Nil when unknown:
+	/// older firmware never sends it and a proto3 bool reads false when absent, so it is only stored
+	/// from a radio known to send it.
+	var heardOnCurrentLora: Bool?
 	var hopsAway: Int32 = 0
 	var id: Int64 = 0
 	var ignored: Bool = false

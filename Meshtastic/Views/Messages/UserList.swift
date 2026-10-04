@@ -495,6 +495,7 @@ fileprivate extension NodeFilterParameters {
 			}
 			if lastHeard < onlineThreshold { return false }
 		}
+		if hidesUnheardOnCurrentLora && user.userNode?.isUnheardOnCurrentLora == true { return false }
 		// Favorites
 		if isFavorite {
 			if user.userNode?.favorite != true { return false }
