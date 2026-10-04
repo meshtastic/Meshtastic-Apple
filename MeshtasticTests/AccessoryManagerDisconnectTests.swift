@@ -23,8 +23,13 @@ private actor DisconnectTestConnection: Connection {
 	let type: TransportType = .ble
 	var isConnected = true
 	private(set) var disconnectCallCount = 0
+	private(set) var disconnectReconnectValues: [Bool] = []
 	private let disconnectError: DisconnectTestError?
 	private var onDisconnect: DisconnectCallback?
+	private var pausedConnect: CheckedContinuation<AsyncStream<ConnectionEvent>, Error>?
+	private var pendingConnectFailure: DisconnectTestError?
+	private var shouldPauseConnect = false
+	private(set) var connectCallCount = 0
 
 	init(disconnectError: DisconnectTestError? = nil) {
 		self.disconnectError = disconnectError
@@ -34,14 +39,33 @@ private actor DisconnectTestConnection: Connection {
 		onDisconnect = callback
 	}
 
+	func pauseConnect() { shouldPauseConnect = true }
+	func failPausedConnect() {
+		if let pausedConnect {
+			self.pausedConnect = nil
+			pausedConnect.resume(throwing: DisconnectTestError.transportFailure)
+		} else {
+			pendingConnectFailure = .transportFailure
+		}
+	}
+
 	func send(_ data: ToRadio) async throws {}
 
 	func connect() async throws -> AsyncStream<ConnectionEvent> {
-		AsyncStream { $0.finish() }
+		connectCallCount += 1
+		if let pendingConnectFailure {
+			self.pendingConnectFailure = nil
+			throw pendingConnectFailure
+		}
+		if shouldPauseConnect {
+			return try await withCheckedThrowingContinuation { pausedConnect = $0 }
+		}
+		return AsyncStream { $0.finish() }
 	}
 
 	func disconnect(withError: Error?, shouldReconnect: Bool) async throws {
 		disconnectCallCount += 1
+		disconnectReconnectValues.append(shouldReconnect)
 		isConnected = false
 		await onDisconnect?()
 		if let disconnectError {
@@ -56,6 +80,19 @@ private actor DisconnectTestConnection: Connection {
 }
 
 // MARK: - Disconnect Lifecycle Tests
+
+private struct DisconnectTestTransport: Transport {
+	let type: TransportType = .ble
+	var status: TransportStatus { get async { .ready } }
+	let requiresPeriodicHeartbeat = false
+	let supportsManualConnection = false
+	func discoverDevices() async -> AsyncStream<DiscoveryEvent> { AsyncStream { $0.finish() } }
+	func connect(to device: Device) async throws -> any Connection {
+		throw AccessoryError.connectionFailed("Unexpected transport dial")
+	}
+	func device(forManualConnection: String) -> Device? { nil }
+	func manuallyConnect(toDevice: Device) async throws {}
+}
 
 @MainActor
 @Suite("AccessoryManager disconnect lifecycle", .serialized)
@@ -119,5 +156,37 @@ struct AccessoryManagerDisconnectTests {
 		await expectTornDown(manager, connection: connection)
 		#expect(manager.packetsReceived == 1)
 		#expect(manager.shouldAutomaticallyConnectToPreferredPeripheralAfterError)
+	}
+
+	@Test func overlappingConnectDoesNotDialOrOrphanFirstConnection() async throws {
+		let first = DisconnectTestConnection()
+		await first.pauseConnect()
+		let second = DisconnectTestConnection()
+		let manager = AccessoryManager(transports: [DisconnectTestTransport()])
+		manager.isSwitchingDevices = true
+		let device = Device(id: UUID(), name: "Test Radio", transportType: .ble,
+		                    identifier: "test-radio", connectionState: .disconnected)
+
+		let firstAttempt = Task {
+			try await manager.connect(to: device, withConnection: first,
+				wantConfig: false, wantDatabase: false, versionCheck: false, retries: 1)
+		}
+		let deadline = ContinuousClock.now + .seconds(3)
+		while await first.connectCallCount == 0 && ContinuousClock.now < deadline {
+			try await Task.sleep(for: .milliseconds(10))
+		}
+		#expect(await first.connectCallCount == 1)
+		await #expect(throws: AccessoryError.self) {
+			try await manager.connect(to: device, withConnection: second,
+					wantConfig: false, wantDatabase: false, versionCheck: false, retries: 1)
+		}
+		await first.failPausedConnect()
+		try await firstAttempt.value
+
+		#expect(await second.connectCallCount == 0)
+		#expect(await first.isConnected == false)
+		#expect(await first.disconnectCallCount == 1)
+		#expect(await first.disconnectReconnectValues == [false])
+		#expect(manager.activeConnection == nil)
 	}
 }
