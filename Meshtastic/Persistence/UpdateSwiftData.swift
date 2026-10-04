@@ -699,11 +699,7 @@ extension MeshPackets {
 						position.altitude = positionMessage.altitude
 						position.satsInView = Int32(truncatingIfNeeded: positionMessage.satsInView)
 						position.speed = Int32(truncatingIfNeeded: positionMessage.groundSpeed)
-						// Range-check on the UInt32 before converting — the old code converted first,
-						// so an oversized groundTrack trapped before this guard could run.
-						if positionMessage.groundTrack <= 360 {
-							position.heading = Int32(positionMessage.groundTrack)
-						}
+						position.heading = positionMessage.groundTrackDegrees ?? 0
 						// Clamp to the valid maximum (32 = full precision) instead of truncatingIfNeeded: an
 						// oversized UInt32 would wrap to a negative/garbage Int32 that the reduced-precision
 						// prune below (precisionBits != 32 && != 0) would treat as reduced accuracy and erase
