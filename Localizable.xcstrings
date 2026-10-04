@@ -333,6 +333,12 @@
         }
       }
     },
+    "Maker" : {
+      "comment" : "Accessibility name for the maker hardware mark"
+    },
+    "Maker Hardware" : {
+      "comment" : "Node detail section title for independent maker hardware"
+    },
     "—" : {
       "localizations" : {
         "de" : {

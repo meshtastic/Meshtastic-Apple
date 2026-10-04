@@ -78,7 +78,19 @@ private struct NodeInfoHardwareSection: View {
 
 	private var supportRosette: some View {
 		Image(systemName: isActivelySupported ? "checkmark.seal.fill" : "xmark.seal.fill")
-			.foregroundStyle(isActivelySupported ? .green : .secondary)
+			.foregroundStyle(isActivelySupported ? Color.tierSupported : .secondary)
+	}
+
+	/// The rung's color for the section heading, per meshtastic/design#160. Legacy, discontinued
+	/// and unknown hardware keep the plain heading.
+	private var tierColor: Color? {
+		if isPortduino { return .tierCommunity }
+		switch displayTier {
+		case .supported: return .tierSupported
+		case .maker: return .tierMaker
+		case .niche: return .tierCommunity
+		default: return nil
+		}
 	}
 
 	private var modelName: String {
@@ -118,7 +130,7 @@ private struct NodeInfoHardwareSection: View {
 		case .supported:
 			return "Supported Hardware"
 		case .maker:
-			return "Maker Hardware"
+			return String(localized: "Maker Hardware")
 		case .niche:
 			return "Niche Hardware"
 		case .legacy:
@@ -129,7 +141,7 @@ private struct NodeInfoHardwareSection: View {
 	}
 
 	var body: some View {
-		Section(sectionTitle) {
+		Section {
 			if summary.hwModel == "UNSET" {
 				// MARK: - Unset / Incomplete
 				HStack {
@@ -162,8 +174,8 @@ private struct NodeInfoHardwareSection: View {
 						.font(.title2)
 					Image(systemName: "wrench.adjustable")
 						.font(.title2)
-						.foregroundStyle(Color.maker)
-						.accessibilityLabel("Maker")
+						.foregroundStyle(Color.tierMaker)
+						.accessibilityLabel(String(localized: "Maker", comment: "Accessibility name for the maker hardware mark"))
 				}
 				.listRowSeparator(.hidden)
 			} else if hasDevice && displayTier == .supported {
@@ -240,6 +252,9 @@ private struct NodeInfoHardwareSection: View {
 				}
 				.listRowSeparator(.hidden)
 			}
+		} header: {
+			Text(sectionTitle)
+				.foregroundStyle(tierColor ?? .secondary)
 		}
 		.accessibilityElement(children: .combine)
 

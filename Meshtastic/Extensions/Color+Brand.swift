@@ -55,9 +55,15 @@ extension Color {
 	/// Info #5C6BC0 both modes
 	static let blue = Color("Colors/MeshtasticInfo")
 
-	/// Independent maker hardware mark.
-	/// Sky #075985 light / #7DD3FC dark — the darker sky is the light-mode glyph.
-	static let maker = Color("Colors/MeshtasticMaker")
+	/// Hardware rung colors, one per rung, shared by the section heading and the item's mark
+	/// (meshtastic/design#160). Declared rather than derived from the accent, which event
+	/// editions re-tint.
+	/// Supported: #137136 light / #67EA94 dark.
+	static let tierSupported = Color("Colors/MeshtasticTierSupported")
+	/// Maker: sky #075985 light / #7DD3FC dark.
+	static let tierMaker = Color("Colors/MeshtasticTierMaker")
+	/// Community: #A16207 light / #E8A33E dark.
+	static let tierCommunity = Color("Colors/MeshtasticTierCommunity")
 
 	/// Message search/jump highlight wash — warning amber #E8A33E with baked
 	/// per-mode alpha (0.20 light / 0.32 dark) so it composites to a warm cream

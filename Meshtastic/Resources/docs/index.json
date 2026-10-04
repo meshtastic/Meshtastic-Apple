@@ -370,6 +370,7 @@
             "firmware",
             "shows",
             "messages",
+            "hardware",
             "shown",
             "links",
             "direct",
@@ -381,13 +382,12 @@
             "remove",
             "lora",
             "link",
-            "hardware",
             "broadcasts",
             "tag",
             "settings",
             "section"
         ],
-        "charCount": 14605
+        "charCount": 14711
     },
     {
         "id": "settings",
