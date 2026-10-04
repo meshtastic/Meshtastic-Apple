@@ -126,41 +126,28 @@ struct DirectMessageSummaryTests {
 		#expect(original != replacement)
 	}
 
-	@Test("actor cache follows container identity and generation")
+	@Test("a change saved on the main context shows on the next refresh")
 	@MainActor
-	func actorCacheFollowsContainerIdentityAndGeneration() throws {
-		let firstContainer = try makeContainer()
-		let secondContainer = try makeContainer()
-		var cache = DirectMessageSummaryActorCache()
+	func changeSavedOnMainContextShowsOnNextRefresh() async throws {
+		let container = try makeContainer()
+		let context = container.mainContext
+		let local = insertUser(num: 130, into: context)
+		let peer = insertUser(num: 230, into: context)
+		insertMessage(id: 30, timestamp: 100, payload: "first", participants: (peer, local), read: false, into: context)
+		try context.save()
 
-		let original = cache.actor(for: firstContainer, generation: 10)
-		let reused = cache.actor(for: firstContainer, generation: 10)
-		let newGeneration = cache.actor(for: firstContainer, generation: 11)
-		let newContainer = cache.actor(for: secondContainer, generation: 11)
+		let before = try await DirectMessageSummaryActor(modelContainer: container).summaries(for: [peer.num])[peer.num]
+		#expect(before?.unreadCount == 1)
 
-		#expect(original === reused)
-		#expect(original !== newGeneration)
-		#expect(newGeneration !== newContainer)
-		#expect(cache.generation == 11)
-	}
+		// Opening the conversation marks it read and saves; a new reply arrives.
+		let first = try #require(try context.fetch(FetchDescriptor<MessageEntity>()).first)
+		first.read = true
+		insertMessage(id: 31, timestamp: 200, payload: "second", participants: (peer, local), read: true, into: context)
+		try context.save()
 
-	@Test("cancelled burst refresh never reaches fetch phase")
-	func cancelledBurstRefreshNeverReachesFetchPhase() async {
-		let recorder = RefreshInvocationRecorder()
-		let superseded = Task {
-			withUnsafeCurrentTask { $0?.cancel() }
-			try await DirectMessageSummaryRefreshLifecycle.waitForBurstToSettle(
-				for: .zero,
-				sleep: { _ in }
-			)
-			await recorder.record(1)
-		}
-
-		await #expect(throws: CancellationError.self) {
-			try await superseded.value
-		}
-		let invocations = await recorder.invocations
-		#expect(invocations.isEmpty)
+		let after = try await DirectMessageSummaryActor(modelContainer: container).summaries(for: [peer.num])[peer.num]
+		#expect(after?.unreadCount == 0)
+		#expect(after?.payload == "second")
 	}
 
 	@Test("in-flight reduction observes cancellation")
@@ -245,13 +232,5 @@ struct DirectMessageSummaryTests {
 		message.admin = admin
 		message.portNum = portNum
 		context.insert(message)
-	}
-}
-
-private actor RefreshInvocationRecorder {
-	private(set) var invocations: [Int] = []
-
-	func record(_ invocation: Int) {
-		invocations.append(invocation)
 	}
 }

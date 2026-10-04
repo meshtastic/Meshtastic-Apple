@@ -98,7 +98,6 @@ private struct FilteredUserList: View {
 	@State private var isPresentingDeleteUserMessagesConfirm: Bool = false
 	@State private var userToDeleteMessages: UserEntity?
 	@State private var directMessageSummaries: [Int64: DirectMessageSummary] = [:]
-	@State private var summaryActorCache = DirectMessageSummaryActorCache()
 	private var filters: NodeFilterParameters
 
 	init(withFilters: NodeFilterParameters, node: Binding<NodeInfoEntity?>, userSelection: Binding<UserEntity?>) {
@@ -187,11 +186,14 @@ private struct FilteredUserList: View {
 		}
 
 		do {
-			try await DirectMessageSummaryRefreshLifecycle.waitForBurstToSettle()
+			// Coalesce a burst of refresh triggers; a newer one cancels this task during the wait.
+			try await Task.sleep(for: .milliseconds(100))
 			guard containerGeneration == PersistenceController.shared.containerGeneration else { return }
 			let currentContainer = PersistenceController.shared.container
 			guard context.container === currentContainer else { return }
-			let actor = summaryActorCache.actor(for: currentContainer, generation: containerGeneration)
+			// Built per refresh: it costs little next to the fetch, and nothing has to track the
+			// container it was made for.
+			let actor = DirectMessageSummaryActor(modelContainer: currentContainer)
 			let summaries = try await actor.summaries(for: userNums)
 			guard !Task.isCancelled,
 				  containerGeneration == PersistenceController.shared.containerGeneration else { return }

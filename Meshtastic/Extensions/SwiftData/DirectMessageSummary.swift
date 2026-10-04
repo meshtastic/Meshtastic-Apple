@@ -29,37 +29,6 @@ struct DirectMessageSummaryRefreshID: Equatable {
 	let containerGeneration: Int
 }
 
-struct DirectMessageSummaryActorCache {
-	private var actor: DirectMessageSummaryActor?
-	private var containerIdentifier: ObjectIdentifier?
-	private(set) var generation: Int?
-
-	mutating func actor(for container: ModelContainer, generation: Int) -> DirectMessageSummaryActor {
-		let identifier = ObjectIdentifier(container)
-		if let actor, self.generation == generation, containerIdentifier == identifier {
-			return actor
-		}
-
-		let replacement = DirectMessageSummaryActor(modelContainer: container)
-		actor = replacement
-		self.generation = generation
-		containerIdentifier = identifier
-		return replacement
-	}
-}
-
-enum DirectMessageSummaryRefreshLifecycle {
-	static let burstDelay: Duration = .milliseconds(100)
-
-	static func waitForBurstToSettle(
-		for delay: Duration = burstDelay,
-		sleep: @Sendable (Duration) async throws -> Void = { try await Task.sleep(for: $0) }
-	) async throws {
-		try await sleep(delay)
-		try Task.checkCancellation()
-	}
-}
-
 enum DirectMessageSummaryReducer {
 	static func summaries<Messages: Sequence>(
 		for peerNums: Set<Int64>,
@@ -123,7 +92,7 @@ private struct DirectMessageSummaryAccumulator {
 /// Fetches direct-message summaries on a background context. Only value types cross
 /// the actor boundary; SwiftData entities remain isolated to this actor's context.
 /// `ModelContext.fetch` is synchronous and cannot be interrupted once entered, so the
-/// view coalesces bursts before calling here and this actor serializes calls as backpressure.
+/// view coalesces bursts before calling here. The view builds one per refresh.
 @ModelActor
 actor DirectMessageSummaryActor {
 	func summaries(for peerNums: Set<Int64>) throws -> [Int64: DirectMessageSummary] {
