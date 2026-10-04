@@ -32,6 +32,12 @@ enum UnheardOnCurrentLoraOffer {
 		"unheardOnCurrentLoraDismissedCount.\(nodeNum)"
 	}
 
+	/// Whether unheard nodes are most of the nodes the radio reported on. Nodes it never reported on
+	/// are unknown and don't count either way.
+	static func isMostOfList(unheard: Int, reported: Int) -> Bool {
+		unheard > 0 && unheard * 2 >= reported
+	}
+
 	static func shouldOffer(count: Int, forNode nodeNum: Int64, store: UserDefaults = .standard) -> Bool {
 		count > store.integer(forKey: key(forNode: nodeNum))
 	}

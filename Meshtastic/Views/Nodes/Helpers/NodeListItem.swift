@@ -31,6 +31,18 @@ struct NodeListRowRefreshGate {
 /// The row memoizes one of these snapshots in `@State` (see `NodeListItem.body`) and renders from
 /// it, so a re-evaluation after the model dies never touches the live object. Value types can't
 /// fault.
+/// What a node row watches to rebuild its snapshot: the last-heard time, and the radio's answer on
+/// whether it heard the node on the current LoRa settings, which can change without a new packet.
+struct NodeRowRefreshKey: Equatable {
+	let lastHeard: Date?
+	let heardOnCurrentLora: Bool?
+
+	@MainActor init(_ node: NodeInfoEntity) {
+		lastHeard = node.lastHeard
+		heardOnCurrentLora = node.heardOnCurrentLora
+	}
+}
+
 struct NodeListRowSummary {
 	#if DEBUG
 	@MainActor static var testInitializationObserver: (() -> Void)?
@@ -426,13 +438,14 @@ struct NodeListItem: View {
 		}
 		.padding(.top, 3)
 		.padding(.bottom, 3)
-		// Gate the identity on liveness too: `.task(id:)` reads `node.lastHeard` during body
-		// construction, which would fault on an invalidated model before the body's guard runs.
-		.task(id: (node.modelContext != nil && !node.isDeleted) ? node.lastHeard : nil) {
+		// Gate the identity on liveness too: `.task(id:)` reads the node during body construction,
+		// which would fault on an invalidated model before the body's guard runs.
+		.task(id: (node.modelContext != nil && !node.isDeleted) ? NodeRowRefreshKey(node) : nil) {
 			// Refresh the snapshot when the node changes, but only while it is still live.
 			guard node.modelContext != nil && !node.isDeleted else { return }
 			// The initial snapshot was just built synchronously; later task runs represent a
-			// timestamp change or row reappearance and must refresh all snapshotted fields.
+			// last-heard or heard-on-current-LoRa change, or the row reappearing, and must refresh
+			// all snapshotted fields.
 			guard refreshGate.shouldRefresh() else { return }
 			rowSummary = NodeListRowSummary(node: node)
 		}

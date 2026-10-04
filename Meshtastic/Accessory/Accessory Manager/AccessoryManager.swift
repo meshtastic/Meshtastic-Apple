@@ -239,6 +239,14 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// against entities that still hold pre-import values: every item would look dropped. See
 	/// `DeviceProfileVerifier`.
 	@Published var lastConfigRefresh: Date?
+	/// When the radio's node database was last saved after a connect. Views that read values the
+	/// dump brings in (the unheard-on-current-LoRa notice) refresh on this, because the connect
+	/// reaches `.subscribed` before that save lands.
+	@Published var nodeDatabaseSavedAt: Date?
+	/// Node numbers in the node database download in progress. When it completes, nodes the radio
+	/// left out are marked unknown for heard-on-current-LoRa: the radio no longer has them.
+	var nodeDatabaseDumpNums: Set<Int64> = []
+	var nodeDatabaseDumpInProgress = false
 	@Published var isConnecting: Bool = false
 	@Published var isInBackground: Bool = false
 	@Published var firmwareEdition: FirmwareEditions = .vanilla
@@ -551,7 +559,29 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		}
 	}
 
+	/// Asks the connected radio for its node database again after its LoRa settings changed.
+	///
+	/// Firmware 2.8 applies a LoRa change without rebooting, so there is no reconnect and no fresh
+	/// node database, and the radio's NodeInfo.heard_on_current_lora answers for the new settings
+	/// never reach the app. The database completion saves the dump and publishes
+	/// `nodeDatabaseSavedAt`, which is what the unheard notice and node rows refresh on.
+	func refreshNodeDatabaseAfterLoRaChange() {
+		guard reportsHeardOnCurrentLora, isConnected else { return }
+		Task { @MainActor in
+			// Let the radio finish reprogramming the modem before asking.
+			try? await Task.sleep(for: .seconds(2))
+			guard self.isConnected else { return }
+			do {
+				try await self.sendWantDatabase()
+			} catch {
+				Logger.transport.error("[LoRa] Could not refresh the node database after a settings change: \(error.localizedDescription, privacy: .public)")
+			}
+		}
+	}
+
 	func sendWantDatabase() async throws {
+		nodeDatabaseDumpNums = []
+		nodeDatabaseDumpInProgress = true
 		if let firstDatabaseNodeInfoContinuation = firstDatabaseNodeInfoContinuation {
 			Logger.transport.info("[Accessory] Existing continuation for firstDatabaseNodeInfo. Cancelling.")
 			self.firstDatabaseNodeInfoContinuation = nil
@@ -1212,13 +1242,20 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 				// Perform a single batch save after database retrieval completes
 				// This significantly improves performance on reconnect
+				let dumpNums = nodeDatabaseDumpNums
+				let dumpWasRequested = nodeDatabaseDumpInProgress
+				nodeDatabaseDumpInProgress = false
 				Task {
 					// The dump was ingested with deferred saves on the MeshPackets actor
 					// (see handleNodeInfo); flush it so every node from the dump is persisted
 					// now rather than waiting on the debounce timer.
 					await MeshPackets.shared.flushDebouncedSaves()
+					if dumpWasRequested, !dumpNums.isEmpty, reportsHeardOnCurrentLora {
+						await MeshPackets.shared.markAbsentFromRadio(presentNums: dumpNums)
+					}
 					do {
 						try context.save()
+						nodeDatabaseSavedAt = Date()
 						Logger.data.info("💾 [Database] Batch saved all node info after database retrieval")
 						if let activeDeviceNum {
 							MeshShareSnapshotBuilder.refresh(
