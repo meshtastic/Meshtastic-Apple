@@ -30,7 +30,6 @@ extension NodeBackupManager {
 			dst.nodeStatus = src.nodeStatus
 			dst.num = src.num
 			dst.peripheralId = src.peripheralId
-			// User-edited and never re-sent by the radio, so a switch that dropped it lost it for good.
 			dst.powerChannelLabels = src.powerChannelLabels
 			dst.rssi = src.rssi
 			dst.sessionExpiration = src.sessionExpiration
@@ -285,13 +284,10 @@ extension NodeBackupManager {
 			dst.lastUpdatedBy = src.lastUpdatedBy
 			dst.latitudeI = src.latitudeI
 			dst.locked = src.locked
-			// Local-only flag: without it a restored private waypoint would be treated as a mesh
-			// waypoint and could be overwritten by ingest.
 			dst.isLocal = src.isLocal
 			dst.longDescription = src.longDescription
 			dst.longitudeI = src.longitudeI
 			dst.name = src.name
-			// Geofence settings are user-configured and not recoverable from the mesh.
 			dst.geofenceRadius = src.geofenceRadius
 			dst.hasBoundingBox = src.hasBoundingBox
 			dst.boundingBoxLatitudeNorthI = src.boundingBoxLatitudeNorthI
