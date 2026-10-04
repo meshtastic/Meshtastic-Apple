@@ -108,6 +108,19 @@ struct UnheardOnCurrentLoraTests {
 		#expect(fetchNode(num)?.heardOnCurrentLora == true)
 	}
 
+	// MARK: Row refresh
+
+	/// The row rebuilds its snapshot when this key changes. The radio's answer can change on
+	/// reconnect without a new packet, so the marker would otherwise stay stale.
+	@Test @MainActor func theRowRefreshKeyFollowsTheRadiosAnswer() {
+		let node = NodeInfoEntity()
+		node.lastHeard = Date(timeIntervalSince1970: 1_000)
+		node.heardOnCurrentLora = true
+		let before = NodeRowRefreshKey(node)
+		node.heardOnCurrentLora = false
+		#expect(NodeRowRefreshKey(node) != before)
+	}
+
 	// MARK: Filter
 
 	@Test @MainActor func theFilterHidesOnlyMarkedNodes() throws {

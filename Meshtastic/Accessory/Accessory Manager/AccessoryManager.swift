@@ -239,6 +239,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// against entities that still hold pre-import values: every item would look dropped. See
 	/// `DeviceProfileVerifier`.
 	@Published var lastConfigRefresh: Date?
+	/// When the radio's node database was last saved after a connect. Views that read values the
+	/// dump brings in (the unheard-on-current-LoRa notice) refresh on this, because the connect
+	/// reaches `.subscribed` before that save lands.
+	@Published var nodeDatabaseSavedAt: Date?
 	@Published var isConnecting: Bool = false
 	@Published var isInBackground: Bool = false
 	@Published var firmwareEdition: FirmwareEditions = .vanilla
@@ -1219,6 +1223,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					await MeshPackets.shared.flushDebouncedSaves()
 					do {
 						try context.save()
+						nodeDatabaseSavedAt = Date()
 						Logger.data.info("💾 [Database] Batch saved all node info after database retrieval")
 						if let activeDeviceNum {
 							MeshShareSnapshotBuilder.refresh(

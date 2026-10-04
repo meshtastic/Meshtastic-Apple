@@ -60,8 +60,9 @@ struct UnheardNodesBanner: View {
 		}
 		.onAppear(perform: refresh)
 		.onChange(of: accessoryManager.activeDeviceNum) { _, _ in refresh() }
-		// The radio's answers arrive with its node db, after the device number is known.
-		.onChange(of: accessoryManager.state == .subscribed) { _, _ in refresh() }
+		// The radio's answers arrive with its node db. The connect reports subscribed before that
+		// db is saved, so refresh once the save lands rather than on the state change.
+		.onChange(of: accessoryManager.nodeDatabaseSavedAt) { _, _ in refresh() }
 	}
 
 	/// One aggregate when most of the list is unheard; the rows carry the marker otherwise.
