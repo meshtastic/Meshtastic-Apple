@@ -10,9 +10,8 @@ struct TextMessageField: View {
 	let destination: MessageDestination
 	@Binding var replyMessageId: Int64
 	@FocusState.Binding var isFocused: Bool
-	/// Called on the main actor after a message is successfully sent, so the
-	/// (poll-based) message list can reload immediately instead of waiting for
-	/// the next refresh tick.
+	/// Called on the main actor after the sent message is saved so the list can
+	/// reload immediately and show the new bubble.
 	var onMessageSent: (@MainActor () -> Void)?
 
 	@State private var typingMessage: String = ""
@@ -161,6 +160,7 @@ struct TextMessageField: View {
 				typingMessage = ""
 				isFocused = false
 				replyMessageId = 0
+				await MainActor.run { onMessageSent?() }
 
 				if sendPositionWithMessage {
 					try await accessoryManager.sendPosition(
@@ -171,7 +171,6 @@ struct TextMessageField: View {
 					Logger.mesh.info("Location Sent")
 				}
 
-				await MainActor.run { onMessageSent?() }
 			} catch {
 				Logger.mesh.info("Error sending message")
 			}
