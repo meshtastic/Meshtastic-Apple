@@ -130,6 +130,7 @@ struct FirmwareOTAUpdateSheet: View {
 								}
 							}
 							.buttonStyle(.borderedProminent)
+							.tint(.accentFill)
 							.controlSize(.large)
 							.disabled(isStartDisabled)
 							.padding(.horizontal, 24)

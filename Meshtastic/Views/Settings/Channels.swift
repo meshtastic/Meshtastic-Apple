@@ -539,7 +539,7 @@ private struct ChannelRow: View {
 
 	var body: some View {
 		HStack(alignment: .center, spacing: 10) {
-			CircleText(text: String(channel.index), color: .accentColor, circleSize: 45)
+			CircleText(text: String(channel.index), color: .accentFill, circleSize: 45)
 				.padding(.trailing, 5)
 				.brightness(0.1)
 			VStack(alignment: .leading, spacing: 3) {

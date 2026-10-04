@@ -70,6 +70,7 @@ struct SecurityVersionNag: View {
 								.frame(maxWidth: .infinity)
 						}
 						.buttonStyle(.borderedProminent)
+						.tint(.accentFill)
 						.controlSize(.regular)
 						.buttonBorderShape(.capsule)
 						Link(destination: URL(string: "https://meshtastic.org/docs/getting-started/flashing-firmware/")!) {
@@ -95,6 +96,7 @@ struct SecurityVersionNag: View {
 					.frame(maxWidth: .infinity)
 			}
 			.buttonStyle(.borderedProminent)
+			.tint(.accentFill)
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)
 			.padding()
