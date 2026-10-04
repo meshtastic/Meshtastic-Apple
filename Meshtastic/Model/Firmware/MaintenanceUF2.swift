@@ -212,6 +212,7 @@ final class MaintenanceUf2ManifestStore: @unchecked Sendable {
 	private var _imagesByBoardID: [String: MaintenanceUF2]
 	private var _supportedTargets: Set<String>
 	private var _eraseSet: MaintenanceUf2EraseSet
+	private var lastRefreshAttempt: Date = .distantPast
 
 	private init() {
 		_releaseTag = OTAFIXBootloader.bundledReleaseTag
@@ -239,6 +240,15 @@ final class MaintenanceUf2ManifestStore: @unchecked Sendable {
 		_supportedTargets = Set(decoded.otafixSupportedTargets)
 		_eraseSet = decoded.eraseSet()
 		lock.unlock()
+		return true
+	}
+
+	/// Records a refresh attempt and returns whether one is due. Kept in memory with the manifest:
+	/// a saved throttle would outlive the fetched manifest and keep a relaunched app on the seed.
+	func claimRefreshAttempt(now: Date = Date()) -> Bool {
+		lock.lock(); defer { lock.unlock() }
+		guard MaintenanceUf2RefreshPolicy.shouldRefresh(lastAttempt: lastRefreshAttempt, now: now) else { return false }
+		lastRefreshAttempt = now
 		return true
 	}
 

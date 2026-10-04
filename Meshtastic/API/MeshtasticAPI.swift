@@ -1260,9 +1260,8 @@ extension MeshtasticAPI {
 
 enum MaintenanceUf2RefreshPolicy {
 
-	/// Same interval class as `EventFirmwareRefreshPolicy` — this data "only changes via a
-	/// committed edit + redeploy" per the api repo's own doc comment, so there is nothing to gain
-	/// from checking more often.
+	/// Same interval as `EventFirmwareRefreshPolicy`. The data only changes when the api repo
+	/// is edited and redeployed, so there is nothing to gain from checking more often.
 	static let minimumAttemptInterval: TimeInterval = 6 * 60 * 60
 
 	static func shouldRefresh(lastAttempt: Date, now: Date = Date()) -> Bool {
@@ -1277,7 +1276,9 @@ extension MeshtasticAPI {
 	///
 	/// Unlike `refreshDevicesAPIData`/`refreshEventFirmwareAPIData`, this has no SwiftData entity
 	/// to write — `MaintenanceUf2ManifestStore` (see MaintenanceUF2.swift) is an in-memory, lock-protected
-	/// cache, since nothing in the UI observes this data via `@Query`. `guard container != nil`
+	/// cache, since nothing in the UI observes this data via `@Query`. Because the manifest is not
+	/// saved, the throttle is not either: each launch starts from the bundled seed and fetches once.
+	/// `guard container != nil`
 	/// mirrors every other refresh's no-op-in-seed/test-mode contract even though this function
 	/// never touches the container itself, so `MeshtasticAPIBundledSeedTests`' "no network in seed
 	/// mode" assertion still holds for this resource too.
@@ -1287,14 +1288,7 @@ extension MeshtasticAPI {
 	/// manifest over a bad response.
 	func refreshMaintenanceUf2APIData() async {
 		guard container != nil else { return }
-		let attemptDate = Date()
-		guard MaintenanceUf2RefreshPolicy.shouldRefresh(
-			lastAttempt: UserDefaults.lastMaintenanceUf2APIAttempt,
-			now: attemptDate
-		) else {
-			return
-		}
-		UserDefaults.lastMaintenanceUf2APIAttempt = attemptDate
+		guard MaintenanceUf2ManifestStore.shared.claimRefreshAttempt() else { return }
 
 		guard let (data, response) = try? await URLSession.shared.data(from: Self.maintenanceUf2URLEndpoint),
 			  let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode),
@@ -1307,7 +1301,6 @@ extension MeshtasticAPI {
 			// MaintenanceUf2ManifestStore.apply already logs the decode failure.
 			return
 		}
-		UserDefaults.lastMaintenanceUf2APIUpdate = attemptDate
 		Logger.services.info("Refreshed maintenanceUf2 manifest from API")
 	}
 }

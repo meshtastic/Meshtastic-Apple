@@ -62,6 +62,16 @@ struct MaintenanceUf2ManifestStoreTests {
 		#expect(store.eraseSet == NRF52FactoryErase.bundledEraseSet)
 	}
 
+	/// The throttle lives with the manifest, so a new store (a relaunch) always fetches once.
+	@Test func aNewStoreAlwaysAllowsOneRefreshThenThrottles() {
+		let store = MaintenanceUf2ManifestStore.isolatedForTesting()
+		let start = Date()
+		#expect(store.claimRefreshAttempt(now: start))
+		#expect(!store.claimRefreshAttempt(now: start.addingTimeInterval(60)))
+		#expect(store.claimRefreshAttempt(now: start.addingTimeInterval(MaintenanceUf2RefreshPolicy.minimumAttemptInterval)))
+		#expect(MaintenanceUf2ManifestStore.isolatedForTesting().claimRefreshAttempt(now: start.addingTimeInterval(60)))
+	}
+
 	@Test func eraseRowsResolveToTheAPIAssetRoute() throws {
 		let store = MaintenanceUf2ManifestStore.isolatedForTesting()
 		#expect(store.apply(rawBytes: Data(validPayload(erase: Self.eraseBlock).utf8)))
