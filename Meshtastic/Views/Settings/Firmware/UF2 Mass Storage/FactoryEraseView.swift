@@ -167,6 +167,7 @@ struct FactoryEraseView: View {
 			Label("Send Reboot into DFU", systemImage: "square.and.arrow.down")
 		}
 		.buttonStyle(.borderedProminent)
+		.tint(.accentFill)
 		.controlSize(.large)
 		.frame(maxWidth: .infinity)
 		.disabled(accessoryManager.activeDeviceNum == nil)
@@ -180,6 +181,7 @@ struct FactoryEraseView: View {
 			Label("Choose Bootloader Drive", systemImage: "externaldrive")
 		}
 		.buttonStyle(.borderedProminent)
+		.tint(.accentFill)
 		.controlSize(.large)
 		.frame(maxWidth: .infinity)
 		.disabled(phase == .installing)

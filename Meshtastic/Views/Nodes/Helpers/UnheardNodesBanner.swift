@@ -93,6 +93,7 @@ struct UnheardNodesBanner: View {
 								.frame(minWidth: 48, minHeight: 48)
 						}
 						.buttonStyle(.borderedProminent)
+						.tint(.accentFill)
 
 						Button {
 							LoRaConfigChange.dismissOffer(forNode: connectedNodeNum)

@@ -123,7 +123,7 @@ struct MessageText: View {
 			.padding(.vertical, 10)
 			.padding(.horizontal, 8)
 			.foregroundColor(isCurrentUser ? .white : Color("Colors/MeshtasticBubbleText"))
-			.background(isCurrentUser ? .accentColor : Color("Colors/MeshtasticBubble"))
+			.background(isCurrentUser ? Color.accentFill : Color("Colors/MeshtasticBubble"))
 			.cornerRadius(15)
 			.overlay(messageOverlays)
 			.contextMenu {
