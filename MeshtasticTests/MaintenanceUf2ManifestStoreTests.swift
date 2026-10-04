@@ -108,6 +108,24 @@ struct MaintenanceUf2ManifestStoreTests {
 		#expect(store.eraseSet.nrf52Bootloader == nil)
 	}
 
+	/// The start address is pinned per SoftDevice in code. A 7.3.0 row carrying 6.1.1's address
+	/// (0x26000) is internally consistent but would erase part of the SoftDevice, so it is dropped.
+	@Test func aSoftDeviceRowWithTheWrongStartAddressIsDropped() {
+		let store = MaintenanceUf2ManifestStore.isolatedForTesting()
+		let swapped = validPayload(erase: Self.eraseBlock)
+			.replacingOccurrences(of: "\"expectedFirstTargetAddress\": 159744", with: "\"expectedFirstTargetAddress\": 155648")
+		#expect(store.apply(rawBytes: Data(swapped.utf8)))
+		#expect(store.eraseSet.nrf52BySoftDevice["7.3.0"] == nil)
+		#expect(store.eraseSet.nrf52Bootloader != nil)
+	}
+
+	@Test func aRowForAnUnknownSoftDeviceIsDropped() {
+		let store = MaintenanceUf2ManifestStore.isolatedForTesting()
+		let unknown = validPayload(erase: Self.eraseBlock).replacingOccurrences(of: "\"7.3.0\"", with: "\"7.4.0\"")
+		#expect(store.apply(rawBytes: Data(unknown.utf8)))
+		#expect(store.eraseSet.nrf52BySoftDevice.isEmpty)
+	}
+
 	@Test func garbageAndInvalidPayloadsAreNoOps() {
 		let store = MaintenanceUf2ManifestStore.isolatedForTesting()
 		let before = store.releaseTag

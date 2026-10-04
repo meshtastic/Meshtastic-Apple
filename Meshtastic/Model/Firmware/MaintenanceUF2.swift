@@ -151,9 +151,12 @@ private struct MaintenanceUf2ManifestPayload: Decodable {
 		}
 		var bySoftDevice: [String: EraseEntry] = [:]
 		for (version, row) in erase?.nrf52 ?? [:] {
-			// A SoftDevice row with no address cannot be cross-checked against the bytes, and the
-			// wrong image erases part of the SoftDevice — so it is dropped rather than trusted.
-			guard let resolved = entry(row), resolved.expectedFirstTargetAddress != nil else { continue }
+			// The start address belongs to the SoftDevice, not the manifest, so it is pinned in
+			// code. A row for a SoftDevice we don't know, or whose address disagrees with the
+			// pinned one, is dropped: the wrong image erases part of the SoftDevice.
+			guard let variant = NRF52FactoryErase.SoftDeviceVariant(rawValue: version),
+				  let resolved = entry(row),
+				  resolved.expectedFirstTargetAddress == variant.applicationStartAddress else { continue }
 			bySoftDevice[version] = resolved
 		}
 		// Likewise the bootloader row without a family ID: the family is the only contract that
@@ -303,6 +306,16 @@ enum NRF52FactoryErase {
 	enum SoftDeviceVariant: String, Sendable, CaseIterable {
 		case s140_6_1_1 = "6.1.1"
 		case s140_7_3_0 = "7.3.0"
+
+		/// Where the application region starts for this SoftDevice, and so the address the first
+		/// block of its erase image must write to. Fixed by the SoftDevice's flash layout, so it
+		/// stays in code rather than coming from the manifest.
+		var applicationStartAddress: UInt32 {
+			switch self {
+			case .s140_6_1_1: 0x26000
+			case .s140_7_3_0: 0x27000
+			}
+		}
 	}
 
 	// MARK: Bundled audited seed
@@ -324,12 +337,12 @@ enum NRF52FactoryErase {
 		nrf52BySoftDevice: [
 			"6.1.1": EraseEntry(
 				image: eraseAsset(fileName: "nrf_erase2.uf2", sha256: "4b778a3def19854415db64cb51bfd29c15b11cc46006353dd518f62d09efe3fe"),
-				expectedFirstTargetAddress: 0x26000,
+				expectedFirstTargetAddress: SoftDeviceVariant.s140_6_1_1.applicationStartAddress,
 				expectedFamilyID: nil
 			),
 			"7.3.0": EraseEntry(
 				image: eraseAsset(fileName: "nrf_erase_sd7_3.uf2", sha256: "13941bedce009e61255c37b1524d11ca604e88c38e7588bb8b391e2998da468f"),
-				expectedFirstTargetAddress: 0x27000,
+				expectedFirstTargetAddress: SoftDeviceVariant.s140_7_3_0.applicationStartAddress,
 				expectedFamilyID: nil
 			)
 		],

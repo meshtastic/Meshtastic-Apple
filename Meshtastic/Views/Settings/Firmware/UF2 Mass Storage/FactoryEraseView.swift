@@ -346,8 +346,7 @@ struct FactoryEraseView: View {
 						return
 					}
 				case .softDevice(let variant):
-					guard let expected = entry.expectedFirstTargetAddress,
-						  NRF52FactoryErase.uf2FirstTargetAddress(data) == expected else {
+					guard NRF52FactoryErase.uf2FirstTargetAddress(data) == variant.applicationStartAddress else {
 						Logger.services.error("Factory erase image start address does not match SoftDevice S140 \(variant.rawValue, privacy: .public)")
 						phase = .failed(String(localized: "The erase image does not match the radio's SoftDevice. Nothing was written."))
 						return
