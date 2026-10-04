@@ -7,6 +7,7 @@
 //
 
 import SwiftUI
+import SwiftData
 import UIKit
 import MeshtasticProtobufs
 import OSLog
@@ -20,6 +21,19 @@ struct AddContactConfirmationView: View {
 	@State private var replyShareItem: ContactReplyShareItem?
 	@State private var hasShareableSnapshot = false
 	@State private var confirmsInPersonExchange = false
+	@State private var confirmsKeyReplacement = false
+
+	/// The node db row for the contact being imported, if we hold one. A query rather than a
+	/// lookup in `onAppear` so the key warning is part of the sheet's first layout rather than
+	/// something that appears a beat after it has already been sized and shown.
+	@Query private var storedNodes: [NodeInfoEntity]
+
+	init(pendingContact: PendingContact, accessoryManager: AccessoryManager) {
+		self.pendingContact = pendingContact
+		self.accessoryManager = accessoryManager
+		let num = Int64(pendingContact.contact.nodeNum)
+		_storedNodes = Query(filter: #Predicate<NodeInfoEntity> { $0.num == num })
+	}
 
 	private var shortName: String {
 		let name = pendingContact.contact.user.shortName
@@ -39,7 +53,45 @@ struct AddContactConfirmationView: View {
 		pendingContact.contact.manuallyVerified
 	}
 
+	/// Importing would re-point this contact at a different public key than the node holds.
+	///
+	/// The node db mirrors the radio's, so the key stored here is the one the import would
+	/// replace. A node we have never heard from has no row and no key, which reads as
+	/// establishing one rather than replacing it.
+	private var replacesStoredKey: Bool {
+		pendingContact.contact.comparedWithStoredKey(storedNodes.first?.user?.publicKey) == .replacesStoredKey
+	}
+
+	/// A key replacement is gated on the person saying they expected it, the same shape as the
+	/// in-person attestation and for the same reason — the link cannot vouch for itself, and the
+	/// radio applies an `add_contact` without asking.
+	private var keyReplacementAcknowledged: Bool {
+		!replacesStoredKey || confirmsKeyReplacement
+	}
+
+	/// Everything that has to be true before the contact may go to the radio.
+	private var canSubmit: Bool {
+		canAdd && keyReplacementAcknowledged
+	}
+
 	var body: some View {
+		// The sheet opens at the medium detent, which is shorter than this content once a
+		// warning block is showing. Without the scroll view the buttons below the warning are
+		// cut off, leaving no way to act on what the sheet is asking. `basedOnSize` keeps the
+		// shorter states from bouncing like a scrollable list.
+		ScrollView {
+			content
+		}
+		.scrollBounceBehavior(.basedOnSize)
+		.sheet(item: $replyShareItem, onDismiss: { dismiss() }) { item in
+			ContactReplyActivityView(url: item.url)
+		}
+		.onAppear {
+			hasShareableSnapshot = MeshShareStore.load() != nil
+		}
+	}
+
+	private var content: some View {
 		VStack(spacing: 20) {
 			Text("Add Contact")
 				.font(.title2)
@@ -82,6 +134,29 @@ struct AddContactConfirmationView: View {
 				.frame(maxWidth: .infinity, alignment: .leading)
 				.background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
 			}
+			if replacesStoredKey && canAdd {
+				VStack(alignment: .leading, spacing: 8) {
+					Label {
+						Text("This replaces a key you already have")
+							.font(.footnote.weight(.medium))
+					} icon: {
+						Image(systemName: "exclamationmark.triangle.fill")
+							.foregroundStyle(.orange)
+					}
+					Text("Your node already holds a different public key for this contact. Adding it replaces that key, and your messages to them will be encrypted to the new one. Continue only if you expected it to change — they reset their node or set it up again.")
+						.font(.caption2)
+						.foregroundColor(.secondary)
+						.fixedSize(horizontal: false, vertical: true)
+					Toggle(isOn: $confirmsKeyReplacement) {
+						Text("Replace the stored key")
+							.font(.footnote.weight(.medium))
+					}
+					.tint(.orange)
+				}
+				.padding(16)
+				.frame(maxWidth: .infinity, alignment: .leading)
+				.background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+			}
 			if !canAdd {
 				Text("This contact does not include a public key, so it cannot be added.")
 					.font(.subheadline)
@@ -109,7 +184,7 @@ struct AddContactConfirmationView: View {
 				}
 				.buttonStyle(.borderedProminent)
 				.controlSize(.large)
-				.disabled(isAdding || !canAdd || !hasShareableSnapshot)
+				.disabled(isAdding || !canSubmit || !hasShareableSnapshot)
 				Button {
 					addContact()
 				} label: {
@@ -118,7 +193,7 @@ struct AddContactConfirmationView: View {
 				}
 				.buttonStyle(.bordered)
 				.controlSize(.large)
-				.disabled(isAdding || !canAdd)
+				.disabled(isAdding || !canSubmit)
 			} else {
 				Button {
 					addContact()
@@ -128,7 +203,7 @@ struct AddContactConfirmationView: View {
 				}
 				.buttonStyle(.borderedProminent)
 				.controlSize(.large)
-				.disabled(isAdding || !canAdd)
+				.disabled(isAdding || !canSubmit)
 			}
 			Button("Cancel") { dismiss() }
 				.controlSize(.large)
@@ -136,12 +211,6 @@ struct AddContactConfirmationView: View {
 		}
 		.padding()
 		.frame(maxWidth: 350)
-		.sheet(item: $replyShareItem, onDismiss: { dismiss() }) { item in
-			ContactReplyActivityView(url: item.url)
-		}
-		.onAppear {
-			hasShareableSnapshot = MeshShareStore.load() != nil
-		}
 	}
 
 	/// Imports the contact, dismissing only once it actually succeeds so a
@@ -170,7 +239,12 @@ struct AddContactConfirmationView: View {
 		failureMessage = nil
 		Task {
 			do {
-				try await accessoryManager.addContactFromURL(base64UrlString: base64UrlString)
+				// The radio takes the new key from the add_contact regardless; passing the
+				// confirmation keeps the app's copy in step instead of flagging a mismatch for
+				// a replacement the person just approved.
+				try await accessoryManager.addContactFromURL(
+					base64UrlString: base64UrlString,
+					acceptsKeyReplacement: replacesStoredKey && confirmsKeyReplacement)
 				Logger.services.debug("Contact added from URL successfully")
 				if replyAfterAdding,
 				   let snapshot = MeshShareStore.load(),
@@ -247,6 +321,9 @@ struct AddContactConfirmationView_Previews: PreviewProvider {
 			),
 			accessoryManager: AccessoryManager.shared
 		)
+		// The sheet reads the node db to see whether the import would replace a stored key,
+		// so the preview needs a container the way the app's scene provides one.
+		.modelContainer(PersistenceController.preview.container)
 	}
 }
 #endif
