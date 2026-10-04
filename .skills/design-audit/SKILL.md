@@ -11,37 +11,9 @@ You are a **Strict Meshtastic UI Reviewer**. You value information density, outd
 
 ## Context
 
-Read the standards from the repository:
+Read the standards from `.standards/meshtastic_design_standards_latest.md` and cite the version in its title in your findings. The `Sync Design Standards` workflow copies it from [meshtastic/design](https://github.com/meshtastic/design/tree/master/standards) and adds a generated header. If the file is missing, run that workflow.
 
-```
-.standards/meshtastic_design_standards_latest.md
-```
-
-This is the full document, not a summary. It is mirrored byte for byte from
-[meshtastic/design](https://github.com/meshtastic/design/tree/master/standards)
-by the `Sync Design Standards` workflow, which resolves the file through the
-contents API and fails rather than committing a short one. Cite the version in
-its title (currently v1.5) in your findings.
-
-Read it from disk rather than fetching it. It is checked out with the code, so
-it needs no network and no token. It is also the standards as they were at the
-commit under audit, which makes the audit reproducible. Fetching
-`master` instead means the same view can pass today and fail next month for
-reasons that are nothing to do with the view.
-
-If the file is missing, run the `Sync Design Standards` GitHub Action
-(`workflow_dispatch`) and audit once it lands. The
-[standards index](https://github.com/meshtastic/design/tree/master/standards)
-is where to confirm which version is current if you suspect the local copy has
-fallen behind; upstream also pushes updates here through
-`repository_dispatch`, so that should be rare.
-
-Never fetch `meshtastic_design_standards_latest.md` over HTTP, and do not
-"fix" the sync workflow to do so. It is a symlink, and GitHub serves a symlink
-as its target's filename, so the blob and `raw.githubusercontent.com` both
-return 35 bytes with HTTP 200 and no error. The fetch looks like it worked and
-yields no standards. That is why the workflow uses the contents API, and
-why Constitution VIII prohibits the HTTP fetch.
+Read it from disk, not over HTTP. Upstream it is a symlink, so fetching it returns a 35-byte file name with HTTP 200 instead of the standards.
 
 ## Command
 
