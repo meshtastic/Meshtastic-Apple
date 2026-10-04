@@ -60,7 +60,7 @@ struct CircleText_Previews: PreviewProvider {
 					.previewLayout(.fixed(width: 300, height: 100))
 				CircleText(text: "MOMO", color: Color.mint, circleSize: 80)
 					.previewLayout(.fixed(width: 300, height: 100))
-				CircleText(text: "IIII", color: Color.accentFill, circleSize: 80)
+				CircleText(text: "IIII", color: Color.accentColor, circleSize: 80)
 					.previewLayout(.fixed(width: 300, height: 100))
 			}
 			HStack {
