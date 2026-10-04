@@ -134,6 +134,27 @@ struct AccessoryManagerChannelRefreshLifecycleTests {
 		await manager.didReceive(.data(fromRadio))
 	}
 
+	@Test("Database completion saves before opening the gate without marking the configuration as refreshed")
+	func databaseCompletionSavesBeforeOpeningGate() async throws {
+		resetSharedStore()
+		let manager = makeManager()
+		let previousRefresh = Date(timeIntervalSince1970: 1)
+		manager.lastConfigRefresh = previousRefresh
+		manager.context.insert(NodeInfoEntity())
+		#expect(manager.context.hasChanges)
+
+		let contextHadChangesWhenGateOpened = Task { @MainActor in
+			try await manager.wantDatabaseGate.wait()
+			return manager.context.hasChanges
+		}
+		await Task.yield()
+		await completeConfig(manager, id: UInt32(manager.NONCE_ONLY_DB))
+
+		#expect(!manager.context.hasChanges)
+		#expect(try await contextHadChangesWhenGateOpened.value == false)
+		#expect(manager.lastConfigRefresh == previousRefresh)
+	}
+
 	private func stageDisabledSlots(_ manager: AccessoryManager, excluding: Set<Int32> = []) async {
 		for index in Int32(1)...Int32(7) where !excluding.contains(index) {
 			var disabled = Channel()
