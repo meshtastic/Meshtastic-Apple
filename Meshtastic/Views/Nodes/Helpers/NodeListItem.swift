@@ -9,6 +9,15 @@ import SwiftUI
 import CoreLocation
 import Foundation
 
+struct NodeListRowRefreshGate {
+	private var hasRunTask = false
+
+	mutating func shouldRefresh() -> Bool {
+		defer { hasRunTask = true }
+		return hasRunTask
+	}
+}
+
 /// A complete, value-type snapshot of everything a node-list row renders, captured from the live
 /// `NodeInfoEntity` (and its `user` relationship) while it is valid.
 ///
@@ -23,6 +32,10 @@ import Foundation
 /// it, so a re-evaluation after the model dies never touches the live object. Value types can't
 /// fault.
 struct NodeListRowSummary {
+	#if DEBUG
+	@MainActor static var testInitializationObserver: (() -> Void)?
+	#endif
+
 	// Identity / name
 	let num: Int64
 	let shortName: String?
@@ -63,6 +76,10 @@ struct NodeListRowSummary {
 		includePosition: Bool = true,
 		includeLogAvailability: Bool = true
 	) {
+		#if DEBUG
+		Self.testInitializationObserver?()
+		#endif
+
 		num = node.num
 		let user = node.user
 		shortName = user?.shortName
@@ -212,6 +229,7 @@ struct NodeListItem: View {
 	/// never re-derived from the live model during a plain re-evaluation, so a retained row can't
 	/// fault on a zombie @Model. Refreshed (guarded) when the node's `lastHeard` changes.
 	@State private var rowSummary: NodeListRowSummary?
+	@State private var refreshGate = NodeListRowRefreshGate()
 	var isDirectlyConnected: Bool
 	var connectedNode: Int64
 	var modemPreset: ModemPresets = ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast
@@ -237,12 +255,14 @@ struct NodeListItem: View {
 		// @Model, so a row retained past the node's deletion (nodes/positions are pruned constantly;
 		// bulk deletes leave zombies that `isDeleted` doesn't flag) can't fault. Only the first
 		// appearance reads the live node, and only while it's still valid.
-		if let rowSummary {
-			rowContent(rowSummary)
-		} else if node.modelContext != nil && !node.isDeleted {
-			let summary = NodeListRowSummary(node: node)
+		if rowSummary != nil || (node.modelContext != nil && !node.isDeleted) {
+			let summary = rowSummary ?? NodeListRowSummary(node: node)
 			rowContent(summary)
-				.onAppear { rowSummary = summary }
+				.onAppear {
+					if rowSummary == nil {
+						rowSummary = summary
+					}
+				}
 		} else {
 			EmptyView()
 		}
@@ -399,6 +419,9 @@ struct NodeListItem: View {
 		.task(id: (node.modelContext != nil && !node.isDeleted) ? node.lastHeard : nil) {
 			// Refresh the snapshot when the node changes, but only while it is still live.
 			guard node.modelContext != nil && !node.isDeleted else { return }
+			// The initial snapshot was just built synchronously; later task runs represent a
+			// timestamp change or row reappearance and must refresh all snapshotted fields.
+			guard refreshGate.shouldRefresh() else { return }
 			rowSummary = NodeListRowSummary(node: node)
 		}
 		.accessibilityElement(children: .ignore)
