@@ -384,16 +384,25 @@ struct ImportDeviceProfileView: View {
 							verificationRow(entry.kind, entry.outcome)
 						}
 					}
-				} else if result.transactionCommitted {
+				} else if result.rebooting {
 					Label("Waiting for the radio to reconnect", systemImage: "antenna.radiowaves.left.and.right")
 						.foregroundStyle(.secondary)
 					Text("Results will appear here automatically after the radio sends its configuration.")
 						.font(.caption)
 						.foregroundStyle(.secondary)
+					// The automatic check fires once, when the readback arrives. If it could not run then
+					// (no node yet), this lets the person try again.
+					if verificationReadiness(for: result).shouldVerify {
+						Button {
+							runVerification(result)
+						} label: {
+							Label("Verify Against the Radio", systemImage: "checkmark.shield")
+						}
+					}
 				} else {
 					Label("Verification unavailable", systemImage: "minus.circle")
 						.foregroundStyle(.secondary)
-					Text("The radio did not confirm a reboot, so automatic verification is unavailable.")
+					Text("The radio did not reboot, so there is no fresh configuration to check against.")
 						.font(.caption)
 						.foregroundStyle(.secondary)
 				}
@@ -502,7 +511,7 @@ struct ImportDeviceProfileView: View {
 
 	private func verificationReadiness(for result: DeviceProfileImportResult) -> DeviceProfileVerificationReadiness {
 		DeviceProfileVerificationReadiness(
-			expectsReconnect: result.transactionCommitted,
+			expectsReconnect: result.rebooting,
 			refreshNotBefore: verificationRefreshNotBefore,
 			lastConfigRefresh: accessoryManager.lastConfigRefresh,
 			hasVerification: verification != nil

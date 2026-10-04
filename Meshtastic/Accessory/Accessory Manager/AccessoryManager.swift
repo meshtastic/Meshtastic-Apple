@@ -1199,6 +1199,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				await finishAutomaticConfigRefresh(owner: refresh.owner, error: nil)
 				
 			case UInt32(NONCE_ONLY_DB):
+				// Open the gate for the wantDatabaseContinuation
+				Task { await wantDatabaseGate.open() }
+
 				// If we get the "done" for NONCE_ONLY_DB, but are still waiting for the first NodeInfo,
 				// Then the database is probably empty, and can continue
 				if let firstDatabaseNodeInfoContinuation {
@@ -1208,29 +1211,28 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 				// Perform a single batch save after database retrieval completes
 				// This significantly improves performance on reconnect
-				// The dump was ingested with deferred saves on the MeshPackets actor
-				// (see handleNodeInfo); flush it so every node from the dump is persisted
-				// now rather than waiting on the debounce timer.
-				await MeshPackets.shared.flushDebouncedSaves()
-				do {
-					try context.save()
-					Logger.data.info("💾 [Database] Batch saved all node info after database retrieval")
-					if let activeDeviceNum {
-						MeshShareSnapshotBuilder.refresh(
-							nodeNum: activeDeviceNum,
-							context: context
-						)
+				Task {
+					// The dump was ingested with deferred saves on the MeshPackets actor
+					// (see handleNodeInfo); flush it so every node from the dump is persisted
+					// now rather than waiting on the debounce timer.
+					await MeshPackets.shared.flushDebouncedSaves()
+					do {
+						try context.save()
+						Logger.data.info("💾 [Database] Batch saved all node info after database retrieval")
+						if let activeDeviceNum {
+							MeshShareSnapshotBuilder.refresh(
+								nodeNum: activeDeviceNum,
+								context: context
+							)
+						}
+
+						// Push updated node data to the companion Watch app
+						WatchSessionManager.shared.sendNodesToWatch()
+					} catch {
+						let nsError = error as NSError
+						Logger.data.error("💥 [Database] Error saving batch node info: \(nsError, privacy: .public)")
 					}
-
-					// Push updated node data to the companion Watch app
-					WatchSessionManager.shared.sendNodesToWatch()
-				} catch {
-					let nsError = error as NSError
-					Logger.data.error("💥 [Database] Error saving batch node info: \(nsError, privacy: .public)")
 				}
-
-				// Step 5a must not advance until the retrieved database has been saved.
-				await wantDatabaseGate.open()
 				
 			default:
 				Logger.transport.error("[Accessory] Unknown nonce completed: \(configCompleteID)")
