@@ -323,7 +323,7 @@ struct UserMessageList: View {
 					}
 				}
 				.trackMessageScrollViewport(scrollTracker)
-				.messageBottomScrollPosition(request: bottomScrollRequest)
+				.messageBottomScrollPosition(request: bottomScrollRequest, tracker: scrollTracker)
 				.defaultScrollAnchor(.bottom)
 				.defaultScrollAnchorBottomSizeChanges()
 				.scrollDismissesKeyboard(.immediately)
