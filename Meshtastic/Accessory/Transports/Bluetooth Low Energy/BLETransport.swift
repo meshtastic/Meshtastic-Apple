@@ -22,7 +22,10 @@ actor BLETransport: Transport {
 	/// Using a serial queue (instead of `.global()`) guarantees that delegate
 	/// callbacks arrive in the order CoreBluetooth fires them, so the
 	/// `Task { await … }` hops to the actor preserve that ordering.
-	private let centralQueue = DispatchQueue(label: "com.meshtastic.ble.central", qos: .utility)
+	///
+	/// CoreBluetooth calls wait on this queue, and they come from user-initiated tasks,
+	/// so it runs at the same QoS to avoid a priority inversion.
+	private let centralQueue = DispatchQueue(label: "com.meshtastic.ble.central", qos: .userInitiated)
 	private var discoveredPeripherals: [UUID: (peripheral: CBPeripheral, lastSeen: Date)] = [:]
 	private var discoveredDeviceContinuation: AsyncStream<DiscoveryEvent>.Continuation?
 	private let delegate: BLEDelegate
