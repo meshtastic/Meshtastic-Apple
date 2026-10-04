@@ -84,9 +84,12 @@ struct Connect: View {
 	}
 
 	/// The connected radio's LoRa preset, or "Custom" when it uses its own modem settings.
-	/// Nil until the radio has sent its LoRa config.
+	/// Nil until the radio has sent its LoRa config, or if `node` is not the active radio.
 	private var presetName: String? {
-		guard let loRaConfig = safeNode?.loRaConfig, loRaConfig.modelContext != nil else { return nil }
+		guard let node = safeNode,
+			  node.num == accessoryManager.activeDeviceNum,
+			  let loRaConfig = node.loRaConfig,
+			  loRaConfig.modelContext != nil else { return nil }
 		if !loRaConfig.usePreset {
 			return String(localized: "Custom", comment: "LoRa preset shown when the radio uses its own modem settings")
 		}
