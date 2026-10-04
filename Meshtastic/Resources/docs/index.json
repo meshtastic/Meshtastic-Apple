@@ -396,8 +396,8 @@
         "navOrder": 7,
         "keywords": [
             "radio",
-            "node",
             "app",
+            "node",
             "settings",
             "firmware",
             "device",
@@ -426,7 +426,7 @@
             "lora",
             "direct"
         ],
-        "charCount": 20449
+        "charCount": 20560
     },
     {
         "id": "signal-meter",
