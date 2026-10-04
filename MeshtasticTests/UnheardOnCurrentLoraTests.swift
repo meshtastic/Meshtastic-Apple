@@ -121,6 +121,28 @@ struct UnheardOnCurrentLoraTests {
 		#expect(NodeRowRefreshKey(node) != before)
 	}
 
+	@Test @MainActor func aNodeMissingFromTheDumpLosesItsAnswer() async throws {
+		// Own container: the sweep touches every node, so it must not see other tests' nodes.
+		let container = try ModelContainer(
+			for: Schema(MeshtasticSchema.allModels),
+			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+		)
+		let mp = MeshPackets(modelContainer: container)
+		let kept: Int64 = 0x00E0_0203
+		let gone: Int64 = 0x00E0_0204
+		for num in [kept, gone] {
+			_ = await mp.nodeInfoPacket(nodeInfo: nodeInfo(num: UInt32(num), heard: true), channel: 0,
+										reportsHeardOnCurrentLora: true)
+		}
+
+		await mp.markAbsentFromRadio(presentNums: [kept])
+		let ctx = ModelContext(container)
+		let nodes = try ctx.fetch(FetchDescriptor<NodeInfoEntity>())
+		#expect(nodes.count == 2, "only the answer is cleared; the node stays")
+		#expect(nodes.first { $0.num == kept }?.heardOnCurrentLora == true)
+		#expect(nodes.first { $0.num == gone }?.heardOnCurrentLora == nil)
+	}
+
 	// MARK: Filter
 
 	@Test @MainActor func theFilterHidesOnlyMarkedNodes() throws {

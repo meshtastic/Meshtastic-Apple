@@ -374,6 +374,9 @@ extension AccessoryManager {
 			Logger.services.error("NodeInfo packet with a zero nodeNum")
 			return
 		}
+		if nodeDatabaseDumpInProgress {
+			nodeDatabaseDumpNums.insert(Int64(nodeInfo.num))
+		}
 
 		// TODO: nodeInfoPacket's channel: parameter is not used
 		// Defer the save: during the node-DB dump this handler runs once per node, and a

@@ -243,6 +243,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// dump brings in (the unheard-on-current-LoRa notice) refresh on this, because the connect
 	/// reaches `.subscribed` before that save lands.
 	@Published var nodeDatabaseSavedAt: Date?
+	/// Node numbers in the node database download in progress. When it completes, nodes the radio
+	/// left out are marked unknown for heard-on-current-LoRa: the radio no longer has them.
+	var nodeDatabaseDumpNums: Set<Int64> = []
+	var nodeDatabaseDumpInProgress = false
 	@Published var isConnecting: Bool = false
 	@Published var isInBackground: Bool = false
 	@Published var firmwareEdition: FirmwareEditions = .vanilla
@@ -576,6 +580,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	}
 
 	func sendWantDatabase() async throws {
+		nodeDatabaseDumpNums = []
+		nodeDatabaseDumpInProgress = true
 		if let firstDatabaseNodeInfoContinuation = firstDatabaseNodeInfoContinuation {
 			Logger.transport.info("[Accessory] Existing continuation for firstDatabaseNodeInfo. Cancelling.")
 			self.firstDatabaseNodeInfoContinuation = nil
@@ -1236,11 +1242,17 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 				// Perform a single batch save after database retrieval completes
 				// This significantly improves performance on reconnect
+				let dumpNums = nodeDatabaseDumpNums
+				let dumpWasRequested = nodeDatabaseDumpInProgress
+				nodeDatabaseDumpInProgress = false
 				Task {
 					// The dump was ingested with deferred saves on the MeshPackets actor
 					// (see handleNodeInfo); flush it so every node from the dump is persisted
 					// now rather than waiting on the debounce timer.
 					await MeshPackets.shared.flushDebouncedSaves()
+					if dumpWasRequested, !dumpNums.isEmpty, reportsHeardOnCurrentLora {
+						await MeshPackets.shared.markAbsentFromRadio(presentNums: dumpNums)
+					}
 					do {
 						try context.save()
 						nodeDatabaseSavedAt = Date()

@@ -46,6 +46,9 @@ struct UnheardNodesBanner: View {
 	/// more nodes than the radio does; the ones it never reported on are unknown, not heard, and
 	/// counting them hid the notice even when nearly every reported node was unheard.
 	@State private var radioNodeCount = 0
+	/// Of `unheardNodes`, the ones the radio reported unheard. Only these decide whether to offer:
+	/// most apps keep more nodes than the radio, so counting the rest would offer all the time.
+	@State private var reportedUnheardCount = 0
 	@State private var isConfirming = false
 	@State private var isRemoving = false
 
@@ -70,7 +73,7 @@ struct UnheardNodesBanner: View {
 	/// One aggregate when most of the list is unheard; the rows carry the marker otherwise.
 	private func shouldOffer(connectedNodeNum: Int64) -> Bool {
 		accessoryManager.reportsHeardOnCurrentLora
-			&& UnheardOnCurrentLoraOffer.isMostOfList(unheard: unheardNodes.count, reported: radioNodeCount)
+			&& UnheardOnCurrentLoraOffer.isMostOfList(unheard: reportedUnheardCount, reported: radioNodeCount)
 			&& UnheardOnCurrentLoraOffer.shouldOffer(count: unheardNodes.count, forNode: connectedNodeNum)
 	}
 
@@ -89,7 +92,7 @@ struct UnheardNodesBanner: View {
 				// they moved to another preset — a radio cannot observe a channel it is not tuned to.
 				Text(UnheardNodesStrings.headline(count: unheardNodes.count))
 					.font(.callout.weight(.semibold))
-				Text("Your radio has not heard them on the settings it is using now. Favorites and the connected node are kept.")
+				Text("Your radio has not heard them on the settings it is using now, or no longer has them. Favorites and the connected node are kept.")
 					.font(.caption)
 					.foregroundStyle(.secondary)
 
@@ -145,11 +148,23 @@ struct UnheardNodesBanner: View {
 				Text("Cancel")
 			}
 		} message: {
-			Text("They are removed from this app and from the radio. Any that are still out there come back when they are next heard.")
+			Text("They are removed from this app, and from the radio if it still has them. Any that are still out there come back when they are next heard.")
 		}
 	}
 
-	/// Nodes the radio reports unheard on its current settings, excluding favorites and the radio itself.
+	/// A node the radio no longer has: it sends the field, a node database has been saved this
+	/// session (so absent nodes have been marked), and it gave no answer for this node. The radio
+	/// adds every node it hears, so it has not heard these on its current settings either.
+	private func isAppOnly(_ node: NodeInfoEntity) -> Bool {
+		accessoryManager.nodeDatabaseSavedAt != nil && node.heardOnCurrentLora == nil && !node.viaMqtt
+	}
+
+	private func isRemovable(_ node: NodeInfoEntity) -> Bool {
+		node.isUnheardOnCurrentLora || isAppOnly(node)
+	}
+
+	/// Nodes the radio reports unheard on its current settings, plus nodes only the app still has,
+	/// excluding favorites and the radio itself.
 	private func refresh() {
 		guard let connectedNodeNum, accessoryManager.reportsHeardOnCurrentLora else {
 			unheardNodes = []
@@ -170,7 +185,8 @@ struct UnheardNodesBanner: View {
 			return
 		}
 		radioNodeCount = candidates.filter { !$0.viaMqtt && $0.heardOnCurrentLora != nil }.count
-		unheardNodes = candidates.filter(\.isUnheardOnCurrentLora)
+		reportedUnheardCount = candidates.filter(\.isUnheardOnCurrentLora).count
+		unheardNodes = candidates.filter(isRemovable)
 	}
 
 	private func removeUnheardNodes(connectedNodeNum: Int64) async {
@@ -185,12 +201,19 @@ struct UnheardNodesBanner: View {
 		var recovered = 0
 
 		for node in unheardNodes {
-			guard node.isUnheardOnCurrentLora else {
+			guard isRemovable(node) else {
 				recovered += 1
 				continue
 			}
 			do {
-				try await accessoryManager.removeNode(node: node, connectedNodeNum: connectedNodeNum)
+				if isAppOnly(node) {
+					// The radio doesn't have it, so there is nothing to remove there.
+					if let user = node.user { context.delete(user) }
+					context.delete(node)
+					try context.save()
+				} else {
+					try await accessoryManager.removeNode(node: node, connectedNodeNum: connectedNodeNum)
+				}
 				removed += 1
 				unheardNodes.removeAll { $0.num == node.num }
 			} catch {
