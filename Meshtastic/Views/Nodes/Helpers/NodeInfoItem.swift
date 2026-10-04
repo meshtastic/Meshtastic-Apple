@@ -93,6 +93,14 @@ private struct NodeInfoHardwareSection: View {
 		hardwarePresentation?.supportLevel
 	}
 
+	private var displayTier: HardwareDisplayTier? {
+		guard let supportLevel else { return nil }
+		return HardwareDisplayTier.resolve(
+			supportLevel: supportLevel,
+			isMaker: hardwarePresentation?.isMaker ?? false
+		)
+	}
+
 	private var hardwareDescription: String {
 		if let supportLevel {
 			return supportLevel.description
@@ -105,10 +113,12 @@ private struct NodeInfoHardwareSection: View {
 	private var sectionTitle: String {
 		if summary.hwModel == "UNSET" { return "Hardware" }
 		if isPortduino { return "Community Hardware" }
-		guard let supportLevel else { return "Hardware" }
-		switch supportLevel {
-		case .flagship:
+		guard let displayTier else { return "Hardware" }
+		switch displayTier {
+		case .supported:
 			return "Supported Hardware"
+		case .maker:
+			return "Maker Hardware"
 		case .niche:
 			return "Niche Hardware"
 		case .legacy:
@@ -139,7 +149,24 @@ private struct NodeInfoHardwareSection: View {
 						.foregroundStyle(.secondary)
 				}
 				.listRowSeparator(.hidden)
-			} else if hasDevice && supportLevel == .flagship {
+			} else if hasDevice && !isPortduino && displayTier == .maker {
+				// MARK: - Maker Device
+				HStack(spacing: 16) {
+					DeviceHardwareImage(hwId: Int32(summary.hwModelId))
+						.frame(width: 60, height: 60)
+						.cornerRadius(8)
+					Text(modelName)
+						.font(.subheadline)
+					Spacer()
+					supportRosette
+						.font(.title2)
+					Image(systemName: "wrench.adjustable")
+						.font(.title2)
+						.foregroundStyle(Color.maker)
+						.accessibilityLabel("Maker")
+				}
+				.listRowSeparator(.hidden)
+			} else if hasDevice && displayTier == .supported {
 				// MARK: - Flagship Device (Hero Layout)
 				VStack(spacing: 12) {
 					ZStack(alignment: .bottomTrailing) {
@@ -156,7 +183,7 @@ private struct NodeInfoHardwareSection: View {
 						.frame(maxWidth: .infinity, alignment: .center)
 				}
 				.listRowSeparator(.hidden)
-			} else if hasDevice && (supportLevel == .niche || supportLevel == .legacy) {
+			} else if hasDevice && (displayTier == .niche || displayTier == .legacy) {
 				// MARK: - Niche / Legacy Device
 				HStack(spacing: 16) {
 					DeviceHardwareImage(hwId: Int32(summary.hwModelId))

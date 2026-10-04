@@ -368,6 +368,7 @@
             "messages",
             "radio",
             "shows",
+            "hardware",
             "firmware",
             "shown",
             "one",
@@ -380,14 +381,13 @@
             "remove",
             "list",
             "link",
-            "hardware",
             "broadcasts",
             "tag",
             "show",
             "section",
             "row"
         ],
-        "charCount": 13671
+        "charCount": 13777
     },
     {
         "id": "settings",
@@ -1062,21 +1062,22 @@
             "perf",
             "seed",
             "node",
+            "schema",
             "model",
             "stats",
             "simctl",
             "nodes",
             "local",
             "app",
-            "schema",
-            "packet",
+            "device",
             "context",
             "store",
-            "device",
+            "packet",
             "data",
             "history",
             "child",
             "swift",
+            "before",
             "nodeinfoentity",
             "launch",
             "var",
@@ -1086,10 +1087,9 @@
             "reset",
             "position",
             "per",
-            "new",
-            "messages"
+            "new"
         ],
-        "charCount": 13639
+        "charCount": 13834
     },
     {
         "id": "tak-protocol",

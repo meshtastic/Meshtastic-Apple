@@ -41,6 +41,7 @@ private struct DeviceHardware: Codable {
 	let activelySupported: Bool
 	let displayName: String
 	let supportLevel: Int?
+	let isMaker: Bool?
 	let tags: [String]?
 	let images: [String]?
 	let requiresDfu: Bool?
@@ -405,6 +406,7 @@ deviceEntity.architecture = device.architecture
 				deviceEntity.activelySupported = device.activelySupported
 				deviceEntity.displayName = device.displayName
 				deviceEntity.supportLevel = device.supportLevel ?? 0
+				deviceEntity.isMaker = device.isMaker ?? false
 				deviceEntity.requiresDfu = device.requiresDfu ?? false
 				deviceEntity.hasInkHud = device.hasInkHud ?? false
 				deviceEntity.partitionScheme = device.partitionScheme
@@ -797,6 +799,7 @@ extension MeshtasticAPI {
 				deviceEntity.activelySupported = device.activelySupported
 				deviceEntity.displayName = device.displayName
 				deviceEntity.supportLevel = device.supportLevel ?? 0
+				deviceEntity.isMaker = device.isMaker ?? false
 				deviceEntity.requiresDfu = device.requiresDfu ?? false
 				deviceEntity.hasInkHud = device.hasInkHud ?? false
 				deviceEntity.partitionScheme = device.partitionScheme

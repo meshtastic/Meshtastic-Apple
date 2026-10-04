@@ -122,14 +122,14 @@ Theme colors are stored individually as `themePrimaryColor`, `themeSecondaryColo
 `themeAccentColor`, with the authored palette in `themePalette`. Executable firmware URLs are
 not stored in this display cache; event OTA uses a separate signed artifact contract. The model
 previously had an experimental `firmwareZipUrl` field before V1 shipped; it was removed while
-the schema was still unreleased. The model remains in the unreleased **V1** schema, so these
-changes required no new `VersionedSchema`/`MigrationStage` (see below).
+the schema was still unreleased. That landed before V1 shipped in v2.7.13, so it did not need
+a `VersionedSchema` or `MigrationStage`.
 
 ## Schema Migrations
 
 When you add, rename, or remove properties on a `@Model` type, you must provide a migration. Schema files live in `Meshtastic/Model/Schema/`.
 
-> **Note — V1 is unreleased.** While `MeshtasticSchemaV1` remains the initial, unshipped version, additive `@Model` changes go **directly into V1** rather than a new versioned schema + stage (see the comment in `MeshtasticMigrationPlan.swift`). For example, the air-quality particulate-matter fields on `TelemetryEntity` (`pm10/25/100Standard`, `pm10/25/100Environmental`) were added in place, as were `SecurityConfigEntity.packetSignaturePolicy` and `DeviceMetadataEntity.hasXeddsa` for the packet authenticity policy. Start adding `VersionedSchema` versions and migration stages only once V1 has shipped.
+> **Note — V1 shipped in v2.7.13 and is frozen.** Do not add fields to `MeshtasticSchemaV1`. Additive `@Model` changes need a new versioned schema and a migration stage (see `MeshtasticMigrationPlan.swift`). `DeviceHardwareEntity.isMaker` is the first of these, on `MeshtasticSchemaV2` (`Schema.Version(2, 0, 0)`), migrated from V1 with a lightweight stage. The stored default is `false`, which is what an absent registry key means, so a row written before the column existed and a device that omits the key agree. Fields added before V1 shipped — the air-quality particulate-matter fields on `TelemetryEntity` (`pm10/25/100Standard`, `pm10/25/100Environmental`), `SecurityConfigEntity.packetSignaturePolicy`, and `DeviceMetadataEntity.hasXeddsa` — stayed on V1.
 
 Give an added property a default that matches what an absent value means on the wire, so a row
 written before the property existed and a device that never reported it agree. `packetSignaturePolicy`
@@ -138,29 +138,31 @@ unconfigured row is not silently treated as running a stricter receive policy th
 
 ### Adding a New Schema Version
 
-1. Create `Meshtastic/Model/Schema/MeshtasticSchemaV2.swift` with the updated models:
+The current schema is `MeshtasticSchemaV2`. The next change uses the next number:
+
+1. Create `Meshtastic/Model/Schema/MeshtasticSchemaV3.swift` with the updated models:
 
 ```swift
-enum MeshtasticSchemaV2: VersionedSchema {
-    static var versionIdentifier = Schema.Version(2, 0, 0)
+enum MeshtasticSchemaV3: VersionedSchema {
+    static var versionIdentifier = Schema.Version(3, 0, 0)
     static var models: [any PersistentModel.Type] { ... }
 }
 ```
 
-2. Append `MeshtasticSchemaV2.self` to `MeshtasticMigrationPlan.schemas` (newest last).
+2. Append `MeshtasticSchemaV3.self` to `MeshtasticMigrationPlan.schemas` (newest last).
 3. Add a migration stage to `MeshtasticMigrationPlan.stages`:
 
 ```swift
-// Lightweight — SwiftData infers additive changes automatically (new optional properties)
-static let migrateV1toV2 = MigrationStage.lightweight(
-    fromVersion: MeshtasticSchemaV1.self,
-    toVersion: MeshtasticSchemaV2.self
+// Lightweight — SwiftData infers additive changes automatically (new properties with defaults)
+static let migrateV2toV3 = MigrationStage.lightweight(
+    fromVersion: MeshtasticSchemaV2.self,
+    toVersion: MeshtasticSchemaV3.self
 )
 
 // Custom — when you need to transform or backfill data
-static let migrateV1toV2 = MigrationStage.custom(
-    fromVersion: MeshtasticSchemaV1.self,
-    toVersion: MeshtasticSchemaV2.self,
+static let migrateV2toV3 = MigrationStage.custom(
+    fromVersion: MeshtasticSchemaV2.self,
+    toVersion: MeshtasticSchemaV3.self,
     willMigrate: { context in },
     didMigrate: { context in
         // Transform data, populate new fields, etc.
@@ -169,13 +171,13 @@ static let migrateV1toV2 = MigrationStage.custom(
 )
 ```
 
-4. Update `MeshtasticSchema.current` to point to the new version.
+4. Update `MeshtasticSchema.current` and `allModels` to point to the new version.
 
 > **Warning — Never delete a `VersionedSchema`.** Migration history must be preserved or the migration plan will fail on devices that skipped intermediate versions.
 
 ### Deprecated Properties
 
-When a proto field is deprecated upstream and the app stops using it, **do not remove the corresponding `@Model` property** — deleting a stored property is a schema change that would require a migration, and while V1 is unreleased there is nowhere to migrate from. Instead, retain the property as-is so:
+When a proto field is deprecated upstream and the app stops using it, **do not remove the corresponding `@Model` property** — deleting a stored property is a schema change that needs a new versioned schema and a migration stage. Instead, retain the property as-is so:
 
 - the SwiftData schema is unchanged, and
 - any values already persisted on-device remain readable.

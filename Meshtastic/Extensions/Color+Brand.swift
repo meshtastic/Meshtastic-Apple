@@ -57,6 +57,10 @@ extension Color {
 	/// Info #5C6BC0 both modes
 	static let blue = Color("Colors/MeshtasticInfo")
 
+	/// Independent maker hardware mark.
+	/// Sky #075985 light / #7DD3FC dark — the darker sky is the light-mode glyph.
+	static let maker = Color("Colors/MeshtasticMaker")
+
 	/// Message search/jump highlight wash — warning amber #E8A33E with baked
 	/// per-mode alpha (0.20 light / 0.32 dark) so it composites to a warm cream
 	/// on light lists and a readable gold on dark, instead of the muddy olive

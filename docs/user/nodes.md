@@ -216,6 +216,7 @@ The hardware section shows information about the physical device running the nod
 | Status | Meaning |
 |--------|---------|
 | **Supported Hardware** | Device is actively supported with firmware updates. |
+| **Maker Hardware** | Independent maker hardware that is built and tested, but not Backer or Partner hardware. |
 | **Discontinued Hardware** | Device is no longer supported and does not receive firmware updates. |
 
 For supported devices, the support tier is shown below the hardware name:
