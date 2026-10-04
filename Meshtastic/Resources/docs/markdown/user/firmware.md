@@ -74,8 +74,11 @@ While a supported OTA transfer is active, the update screen rotates short tips, 
 |---------|-------------|
 | Stable | Recommended for most users. Tested releases. |
 | Alpha | Early access — may contain bugs. Use on secondary/test devices only. |
+| Nightly | The latest development build, rebuilt every day and untested. Use on a spare or test radio. |
 
-Select the update channel in **Settings → App Settings → Firmware Channel**.
+Choose a channel with the tabs in the **Firmware Releases** section of the Firmware Updates screen. A fourth tab, **Downloaded**, lists the firmware files already on this device, so you can reinstall one without downloading it again.
+
+Stable and alpha releases come from meshtastic.github.io, where every version keeps its own folder. Nightly builds come from nightly.meshtastic.org, which holds one build at a time — publishing a new one replaces the old one, so the Nightly tab shows the current build and nothing older. The app rechecks the nightly every time it refreshes, including when the stable and alpha lists have not changed.
 
 ## Event Firmware
 
