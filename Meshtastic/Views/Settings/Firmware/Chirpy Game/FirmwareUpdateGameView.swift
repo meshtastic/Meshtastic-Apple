@@ -13,6 +13,7 @@ struct FirmwareUpdateGameButton: View {
 				.frame(maxWidth: .infinity)
 		}
 		.buttonStyle(.borderedProminent)
+		.tint(.accentFill)
 		.controlSize(.large)
 		.disabled(!status.canPlay)
 		.accessibilityIdentifier("chirpy-ota-game-button")
@@ -170,6 +171,7 @@ private struct FirmwareUpdateFinishedOverlay: View {
 
 			Button("Back to Update", action: onClose)
 				.buttonStyle(.borderedProminent)
+				.tint(.accentFill)
 				.controlSize(.large)
 		}
 		.padding(24)

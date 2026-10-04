@@ -11,6 +11,7 @@ import SwiftUI
 
 struct DiscoveryHistoryView: View {
 	@Environment(\.modelContext) private var context
+	@Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
 	@Query(sort: \DiscoverySessionEntity.timestamp, order: .reverse)
 	private var sessions: [DiscoverySessionEntity]
@@ -39,6 +40,7 @@ struct DiscoveryHistoryView: View {
 				ForEach(sessions, id: \.timestamp) { session in
 					NavigationLink {
 						sessionDetailView(session)
+							.trackScreen(.discoverySession)
 					} label: {
 						sessionRow(session)
 					}
@@ -101,7 +103,7 @@ struct DiscoveryHistoryView: View {
 				#if targetEnvironment(macCatalyst)
 				.frame(height: 600)
 				#else
-				.frame(height: UIDevice.current.userInterfaceIdiom == .pad ? 450 : 300)
+				.frame(height: horizontalSizeClass == .regular ? 450 : 300)
 				#endif
 				.listRowInsets(EdgeInsets())
 			}

@@ -5,7 +5,7 @@
 //   - Config.SecurityConfig.packet_signature_policy (field 9) → SecurityConfigEntity.packetSignaturePolicy
 //   - DeviceMetadata.has_xeddsa (field 14)                    → DeviceMetadataEntity.hasXeddsa
 // The behavioral expectations mirror Android's PacketAuthenticitySettingTest (Meshtastic-Android#6178)
-// so the two clients cannot drift apart on the wire contract or the Strict confirmation flow.
+// so the two clients cannot drift apart on the wire contract.
 
 import Testing
 import Foundation
@@ -217,77 +217,6 @@ struct PacketAuthenticityIngestionTests {
 		config.packetSignaturePolicy = .compatible
 		await MeshPackets.shared.upsertSecurityConfigPacket(config: config, nodeNum: nodeNum)
 		#expect(try storedPolicy(nodeNum) == .compatible)
-	}
-}
-
-@Suite("Packet authenticity selection")
-struct PacketAuthenticitySelectionStateTests {
-
-	@Test func defaultsToCompatibleWithNothingPending() {
-		let state = PacketAuthenticitySelectionState()
-		#expect(state.selected == .compatible)
-		#expect(!state.pendingStrict)
-	}
-
-	@Test func selectingBalancedCommitsImmediately() {
-		var state = PacketAuthenticitySelectionState()
-		state.propose(.balanced)
-		#expect(state.selected == .balanced)
-		#expect(!state.pendingStrict)
-	}
-
-	@Test func selectingStrictRequiresConfirmationBeforeCommitting() {
-		var state = PacketAuthenticitySelectionState(selected: .balanced)
-		state.propose(.strict)
-		#expect(state.pendingStrict)
-		#expect(state.selected == .balanced)
-	}
-
-	@Test func confirmingStrictCommitsIt() {
-		var state = PacketAuthenticitySelectionState(selected: .balanced)
-		state.propose(.strict)
-		state.confirmStrict()
-		#expect(state.selected == .strict)
-		#expect(!state.pendingStrict)
-	}
-
-	@Test func cancellingStrictLeavesThePolicyUnchanged() {
-		var state = PacketAuthenticitySelectionState(selected: .balanced)
-		state.propose(.strict)
-		state.cancelStrict()
-		#expect(state.selected == .balanced)
-		#expect(!state.pendingStrict)
-	}
-
-	@Test func confirmingWithNothingPendingIsANoOp() {
-		// Guards the disconnect/capability-loss race: the section cancels the prompt, so a late
-		// confirmation must not be able to enable Strict behind the user's back.
-		var state = PacketAuthenticitySelectionState(selected: .compatible)
-		state.confirmStrict()
-		#expect(state.selected == .compatible)
-		#expect(!state.pendingStrict)
-	}
-
-	@Test func reselectingTheCurrentStrictPolicyDoesNotPromptAgain() {
-		var state = PacketAuthenticitySelectionState(selected: .strict)
-		state.propose(.strict)
-		#expect(!state.pendingStrict)
-		#expect(state.selected == .strict)
-	}
-
-	@Test func leavingStrictCommitsWithoutPrompting() {
-		var state = PacketAuthenticitySelectionState(selected: .strict)
-		state.propose(.compatible)
-		#expect(state.selected == .compatible)
-		#expect(!state.pendingStrict)
-	}
-
-	@Test func proposingAnotherPolicyClearsAPendingStrictPrompt() {
-		var state = PacketAuthenticitySelectionState(selected: .compatible)
-		state.propose(.strict)
-		state.propose(.balanced)
-		#expect(state.selected == .balanced)
-		#expect(!state.pendingStrict)
 	}
 }
 

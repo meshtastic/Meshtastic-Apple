@@ -1,6 +1,13 @@
 # Exclude automatically generated Swift files
 excluded:
   - MeshtasticProtobufs
+  # Generated: one entry per annotated proto field, far past line_length.
+  - Meshtastic/Model/FieldMetadataRegistry.swift
+  - Meshtastic/Model/ConfigForms/ConfigFormSchema.swift
+  - scripts/protoc-gen-configform-swift
+  # The protobufs submodule is upstream code, and building the field-metadata
+  # plugin leaves a SwiftPM checkout of swift-protobuf's tests under it.
+  - protobufs
   - build
 
 line_length: 400

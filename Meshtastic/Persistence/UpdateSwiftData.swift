@@ -262,7 +262,7 @@ extension MeshPackets {
 		}
 	}
 	
-	func updateAnyPacketFrom (packet: MeshPacket, activeDeviceNum: Int64) {
+	func updateAnyPacketFrom (packet: MeshPacket, activeDeviceNum: Int64, reportsHeardOnCurrentLora: Bool = false) {
 		// Update NodeInfoEntity for any packet received. This mirrors the firmware's NodeDB::updateFrom, which sniffs ALL received packets and updates the radio's nodeDB with packet.from's:
 		// - last_heard (from rxTime)
 		// - snr
@@ -301,6 +301,11 @@ extension MeshPackets {
 				node.snr = packet.rxSnr
 				node.rssi = packet.rxRssi
 				node.viaMqtt = packet.viaMqtt
+				// Heard over RF just now, so heard on the current settings. Mirrors the firmware, which
+				// sets the flag when it hears the node, so the row clears before the next node db dump.
+				if reportsHeardOnCurrentLora && !isImplicitAck && !packet.viaMqtt {
+					node.heardOnCurrentLora = true
+				}
 				
 				if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
 					node.hopsAway = Int32(truncatingIfNeeded: packet.hopStart - packet.hopLimit)
@@ -344,7 +349,12 @@ extension MeshPackets {
 	/// - Parameter overTheMesh: true when this NodeInfo arrived as an over-the-air packet from a
 	///   remote node — logged on .mesh so it appears in the Packet Stream. false for local updates
 	///   (e.g. the favorite action), which did not cross the mesh and log on .data.
-	func upsertNodeInfoPacket (packet: MeshPacket, favorite: Bool = false, overTheMesh: Bool = true) {
+	/// - Parameter acceptsKeyReplacement: Set only for a contact import where the person was shown
+	///   that the key differs from the stored one and confirmed the replacement. It lifts
+	///   first-wins for that one write, so the app ends up holding the same key the `add_contact`
+	///   just gave the radio. Every other path leaves it false and keeps first-wins.
+	func upsertNodeInfoPacket (packet: MeshPacket, favorite: Bool = false, overTheMesh: Bool = true,
+	                           acceptsKeyReplacement: Bool = false) {
 
 		let details = nodeInfoLogDetails(from: packet)
 		if overTheMesh {
@@ -583,8 +593,14 @@ extension MeshPackets {
 						let containsRole = roles.contains(Int(fetchedNode[0].user?.role ?? -1))
 						fetchedNode[0].user?.unmessagable = containsRole
 					}
-					// Security (finding H1): first-wins on the public key. See `applyInboundPublicKey`.
-					fetchedNode[0].user?.applyInboundPublicKey(userMessage.publicKey, nodeNum: Int64(packet.from))
+					if acceptsKeyReplacement {
+						// A confirmed import: the sheet showed the key differs and the person said to
+						// replace it, and the radio has already taken it. See `acceptImportedPublicKey`.
+						fetchedNode[0].user?.acceptImportedPublicKey(userMessage.publicKey)
+					} else {
+						// Security (finding H1): first-wins on the public key. See `applyInboundPublicKey`.
+						fetchedNode[0].user?.applyInboundPublicKey(userMessage.publicKey, nodeNum: Int64(packet.from))
+					}
 					if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
 						fetchedNode[0].hopsAway = Int32(truncatingIfNeeded: packet.hopStart - packet.hopLimit)
 					}
@@ -688,11 +704,7 @@ extension MeshPackets {
 						position.altitude = positionMessage.altitude
 						position.satsInView = Int32(truncatingIfNeeded: positionMessage.satsInView)
 						position.speed = Int32(truncatingIfNeeded: positionMessage.groundSpeed)
-						// Range-check on the UInt32 before converting — the old code converted first,
-						// so an oversized groundTrack trapped before this guard could run.
-						if positionMessage.groundTrack <= 360 {
-							position.heading = Int32(positionMessage.groundTrack)
-						}
+						position.heading = positionMessage.groundTrackDegrees ?? 0
 						// Clamp to the valid maximum (32 = full precision) instead of truncatingIfNeeded: an
 						// oversized UInt32 would wrap to a negative/garbage Int32 that the reduced-precision
 						// prune below (precisionBits != 32 && != 0) would treat as reduced accuracy and erase
@@ -941,6 +953,7 @@ extension MeshPackets {
 					newLoRaConfig.frequencyOffset = config.frequencyOffset
 					newLoRaConfig.overrideFrequency = config.overrideFrequency
 					newLoRaConfig.overrideDutyCycle = config.overrideDutyCycle
+					newLoRaConfig.paFanDisabled = config.paFanDisabled
 					newLoRaConfig.hopLimit = Int32(truncatingIfNeeded: config.hopLimit)
 					newLoRaConfig.txPower = Int32(truncatingIfNeeded: config.txPower)
 					newLoRaConfig.txEnabled = config.txEnabled
@@ -959,6 +972,7 @@ extension MeshPackets {
 					fetchedNode[0].loRaConfig?.frequencyOffset = config.frequencyOffset
 					fetchedNode[0].loRaConfig?.overrideFrequency = config.overrideFrequency
 					fetchedNode[0].loRaConfig?.overrideDutyCycle = config.overrideDutyCycle
+					fetchedNode[0].loRaConfig?.paFanDisabled = config.paFanDisabled
 					fetchedNode[0].loRaConfig?.hopLimit = Int32(truncatingIfNeeded: config.hopLimit)
 					fetchedNode[0].loRaConfig?.txPower = Int32(truncatingIfNeeded: config.txPower)
 					fetchedNode[0].loRaConfig?.txEnabled = config.txEnabled
@@ -1263,28 +1277,16 @@ extension MeshPackets {
 			// Found a node, save Ambient Lighting Config
 			if !fetchedNode.isEmpty {
 				
-				if fetchedNode[0].cannedMessageConfig == nil {
-					let newAmbientLightingConfig = AmbientLightingConfigEntity()
-					modelContext.insert(newAmbientLightingConfig)
-					newAmbientLightingConfig.ledState = config.ledState
-					newAmbientLightingConfig.current = Int32(truncatingIfNeeded: config.current)
-					newAmbientLightingConfig.red = Int32(truncatingIfNeeded: config.red)
-					newAmbientLightingConfig.green = Int32(truncatingIfNeeded: config.green)
-					newAmbientLightingConfig.blue = Int32(truncatingIfNeeded: config.blue)
-					fetchedNode[0].ambientLightingConfig = newAmbientLightingConfig
-				} else {
-					
-					if fetchedNode[0].ambientLightingConfig == nil {
-						let newAmbientLighting = AmbientLightingConfigEntity()
-						modelContext.insert(newAmbientLighting)
-						fetchedNode[0].ambientLightingConfig = newAmbientLighting
-					}
-					fetchedNode[0].ambientLightingConfig?.ledState = config.ledState
-					fetchedNode[0].ambientLightingConfig?.current = Int32(truncatingIfNeeded: config.current)
-					fetchedNode[0].ambientLightingConfig?.red = Int32(truncatingIfNeeded: config.red)
-					fetchedNode[0].ambientLightingConfig?.green = Int32(truncatingIfNeeded: config.green)
-					fetchedNode[0].ambientLightingConfig?.blue = Int32(truncatingIfNeeded: config.blue)
+				if fetchedNode[0].ambientLightingConfig == nil {
+					let newAmbientLighting = AmbientLightingConfigEntity()
+					modelContext.insert(newAmbientLighting)
+					fetchedNode[0].ambientLightingConfig = newAmbientLighting
 				}
+				fetchedNode[0].ambientLightingConfig?.ledState = config.ledState
+				fetchedNode[0].ambientLightingConfig?.current = Int32(truncatingIfNeeded: config.current)
+				fetchedNode[0].ambientLightingConfig?.red = Int32(truncatingIfNeeded: config.red)
+				fetchedNode[0].ambientLightingConfig?.green = Int32(truncatingIfNeeded: config.green)
+				fetchedNode[0].ambientLightingConfig?.blue = Int32(truncatingIfNeeded: config.blue)
 				if sessionPasskey != nil {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)

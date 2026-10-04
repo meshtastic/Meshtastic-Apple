@@ -57,7 +57,7 @@ struct MapSettingsForm: View {
 						ForEach(MapLayer.allCases, id: \.self) { layer in
 							// `.offline` is an overlay toggle now, not a base layer — keep it out of the base picker.
 							if layer != MapLayer.offline {
-								Text(layer.localized.capitalized)
+								Text(layer.localized)
 							}
 						}
 					}

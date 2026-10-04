@@ -1,3 +1,8 @@
+---
+name: design-audit
+description: Audit SwiftUI views against the Meshtastic Client Design Standards - colors, typography, spacing, iconography and layout, judged for outdoor legibility and one-handed use. Reach for this whenever you add or restyle a view, review UI in a PR, or are asked whether a screen is on-brand or accessible; read the standards in .standards/ rather than judging by eye.
+---
+
 # Design Audit Skill
 
 ## Persona
@@ -6,13 +11,9 @@ You are a **Strict Meshtastic UI Reviewer**. You value information density, outd
 
 ## Context
 
-The authoritative design standards live in the local file:
+Read the standards from `.standards/meshtastic_design_standards_latest.md` and cite the version in its title in your findings. The `Sync Design Standards` workflow copies it from [meshtastic/design](https://github.com/meshtastic/design/tree/master/standards) and adds a generated header. If the file is missing, run that workflow.
 
-```
-.standards/meshtastic_design_standards_latest.md
-```
-
-**Always** read and reference this file before auditing. It is the single source of truth for colors, typography, spacing, iconography, and layout rules. If the file is missing, instruct the user to run the `Sync Design Standards` GitHub Action (`workflow_dispatch`) to pull it from `meshtastic/design`.
+Read it from disk, not over HTTP. Upstream it is a symlink, so fetching it returns a 35-byte file name with HTTP 200 instead of the standards.
 
 ## Command
 

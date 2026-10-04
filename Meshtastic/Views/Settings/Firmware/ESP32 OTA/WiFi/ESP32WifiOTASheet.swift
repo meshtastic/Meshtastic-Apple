@@ -62,12 +62,6 @@ struct ESP32WifiOTASheet: View {
 			},
 			gameTitle: "ESP32 Wi-Fi OTA"
 		)
-		.task {
-			// Attempt to grab host from current TCP connection if available
-			if let connection = accessoryManager.activeConnection?.connection as? TCPConnection {
-				self.host = await connection.host.stringValue
-			}
-		}
 		.onReceive(NotificationCenter.default.publisher(for: .otaDeviceNotice)) { notice in
 			guard let message = notice.object as? String else { return }
 			ota.handleDeviceNotice(message)
@@ -112,61 +106,68 @@ struct ESP32WifiOTASheet: View {
 		
 		otaTask = Task {
 			do {
-				if let host {
-					let device = accessoryManager.activeConnection?.device
-					
-					if !alreadyRebooted {
-						// Claim the radio before the reboot command goes out. The device reboots
-						// into OTA mode as soon as it lands and the connection drops with it; the
-						// Firmware screen keys its content off otaInProgress, so without this it
-						// swaps to the "please reconnect" placeholder and takes this sheet — and
-						// the update — down with it, leaving the device waiting in OTA mode.
-						Logger.services.info("📡 [ESP32 WiFi OTA] Step 1: claiming the radio (node \(deviceNum), host \(host, privacy: .private))")
-						accessoryManager.otaInProgress = true
-						accessoryManager.shouldAutomaticallyConnectToPreferredPeripheralAfterError = false
+				// Read before Step 2. The reboot drops this socket, and the loader has no name to look up.
+				let otaHost = try await handoffIPv4Address()
+				host = otaHost
+				let device = accessoryManager.activeConnection?.device
 
-						// Move heavy file reading/hashing off the Main Actor
-						let sha256Digest = try await Task.detached(priority: .userInitiated) {
-							let data = try Data(contentsOf: binFileURL)
-							return Data(SHA256.hash(data: data))
-						}.value
-						
-						Logger.services.debug("Requesting reboot for OTA with hash: \(sha256Digest as NSData)")
-						
-						Logger.services.info("📡 [ESP32 WiFi OTA] Step 2: sending reboot into OTA mode")
-						try await accessoryManager.sendRebootOta(fromUser: user, toUser: user, mode: .otaWifi, otaHash: sha256Digest)
-						Logger.services.info("📡 [ESP32 WiFi OTA] Reboot command accepted")
-						
-						// Give the packet a moment to send before disconnecting
-						try await Task.sleep(for: .seconds(0.5))
-						Logger.services.info("📡 [ESP32 WiFi OTA] Step 3: disconnecting")
-						try await accessoryManager.disconnect()
-						Logger.services.info("📡 [ESP32 WiFi OTA] Disconnected")
-						alreadyRebooted = true
-					}
-					
-					// The sheet can be dismissed while the reboot settles, which cancels this task
-					// and hands the radio back. Do not start a transfer after that.
-					guard !Task.isCancelled else {
-						Logger.services.info("📡 [ESP32 WiFi OTA] Cancelled before the transfer — sheet was dismissed")
-						return
-					}
+				if !alreadyRebooted {
+					// Claim the radio before the reboot command goes out. The device reboots
+					// into OTA mode as soon as it lands and the connection drops with it; the
+					// Firmware screen keys its content off otaInProgress, so without this it
+					// swaps to the "please reconnect" placeholder and takes this sheet — and
+					// the update — down with it, leaving the device waiting in OTA mode.
+					Logger.services.info("📡 [ESP32 WiFi OTA] Step 1: claiming the radio (node \(deviceNum), host \(otaHost, privacy: .private))")
+					accessoryManager.otaInProgress = true
+					accessoryManager.shouldAutomaticallyConnectToPreferredPeripheralAfterError = false
 
-					// Begin the HTTP update
-					Logger.services.info("📡 [ESP32 WiFi OTA] Step 4: starting the transfer")
-					await ota.startUpdate(host: host, firmwareUrl: self.binFileURL)
-					Logger.services.info("📡 [ESP32 WiFi OTA] Transfer returned, state \(ota.otaState.rawValue, privacy: .public) error \(ota.errorMessage ?? "none", privacy: .public)")
-					
-					// Attempt to reconnect after update. The reconnect needs the gate open, but
-					// the sheet stays up: releaseRadio only restores discovery and auto-connect,
-					// and the Firmware screen behind it rebuilds once the node is back.
-					if let device {
-						accessoryManager.otaInProgress = false
-						accessoryManager.userRequestedConnectionCancellation = false
-						accessoryManager.shouldAutomaticallyConnectToPreferredPeripheralAfterError = true
-						try await Task.sleep(for: .seconds(3))
-						try await accessoryManager.connect(to: device, retries: 5)
-					}
+					// Move heavy file reading/hashing off the Main Actor
+					let sha256Digest = try await Task.detached(priority: .userInitiated) {
+						let data = try Data(contentsOf: binFileURL)
+						return Data(SHA256.hash(data: data))
+					}.value
+
+					Logger.services.debug("Requesting reboot for OTA with hash: \(sha256Digest as NSData)")
+
+					Logger.services.info("📡 [ESP32 WiFi OTA] Step 2: sending reboot into OTA mode")
+					try await accessoryManager.sendRebootOta(fromUser: user, toUser: user, mode: .otaWifi, otaHash: sha256Digest)
+					Logger.services.info("📡 [ESP32 WiFi OTA] Reboot command accepted")
+
+					// Give the packet a moment to send before disconnecting
+					try await Task.sleep(for: .seconds(0.5))
+					Logger.services.info("📡 [ESP32 WiFi OTA] Step 3: disconnecting")
+					try await accessoryManager.disconnect()
+					Logger.services.info("📡 [ESP32 WiFi OTA] Disconnected")
+					alreadyRebooted = true
+				}
+
+				// The sheet can be dismissed while the reboot settles, which cancels this task
+				// and hands the radio back. Do not start a transfer after that.
+				guard !Task.isCancelled else {
+					Logger.services.info("📡 [ESP32 WiFi OTA] Cancelled before the transfer — sheet was dismissed")
+					return
+				}
+
+				// Begin the HTTP update
+				Logger.services.info("📡 [ESP32 WiFi OTA] Step 4: starting the transfer")
+				await ota.startUpdate(host: otaHost, firmwareUrl: self.binFileURL)
+				Logger.services.info("📡 [ESP32 WiFi OTA] Transfer returned, state \(ota.otaState.rawValue, privacy: .public) error \(ota.errorMessage ?? "none", privacy: .public)")
+
+				// Attempt to reconnect after update. The reconnect needs the gate open, but
+				// the sheet stays up: releaseRadio only restores discovery and auto-connect,
+				// and the Firmware screen behind it rebuilds once the node is back.
+				if let device {
+					accessoryManager.otaInProgress = false
+					accessoryManager.userRequestedConnectionCancellation = false
+					accessoryManager.shouldAutomaticallyConnectToPreferredPeripheralAfterError = true
+					try await Task.sleep(for: .seconds(3))
+					try await accessoryManager.connect(to: device, retries: 5)
+				}
+			} catch OTAError.notAnIPv4Address {
+				Logger.services.error("📡 [ESP32 WiFi OTA] Failed: \(OTAError.missingIPv4Address, privacy: .public)")
+				ota.reportFailure(OTAError.missingIPv4Address)
+				if accessoryManager.otaInProgress {
+					releaseRadio()
 				}
 			} catch is CancellationError {
 				// Dismissing the sheet cancels this task mid-sleep, which arrives here as a
@@ -178,6 +179,21 @@ struct ESP32WifiOTASheet: View {
 				releaseRadio()
 			}
 		}
+	}
+
+	/// IPv4 address to dial after the reboot. See `WifiOTAHandoffAddress`.
+	private func handoffIPv4Address() async throws -> String {
+		let peer: String?
+		if WifiOTAHandoffAddress.ipv4Literal(host) == nil,
+		   let tcp = accessoryManager.activeConnection?.connection as? TCPConnection {
+			peer = await tcp.connectedIPv4Address()
+		} else {
+			peer = nil
+		}
+		guard let address = WifiOTAHandoffAddress.resolve(providedHost: host, connectedPeerIPv4: peer) else {
+			throw OTAError.notAnIPv4Address
+		}
+		return address
 	}
 }
 

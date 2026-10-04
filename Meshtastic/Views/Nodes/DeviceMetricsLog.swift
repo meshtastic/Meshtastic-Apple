@@ -12,7 +12,12 @@ struct DeviceMetricsLog: View {
 
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
+	@Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
+	/// Table on iPhone shows only its first column, even in a regular size class.
+	private var showsStackedReadings: Bool {
+		horizontalSizeClass != .regular || UIDevice.current.userInterfaceIdiom == .phone
+	}
 
 	@State private var isPresentingClearLogConfirm: Bool = false
 	@State var isExporting = false
@@ -96,7 +101,7 @@ struct DeviceMetricsLog: View {
 						.chartXSelection(value: $chartSelection)
 						.chartYScale(domain: 0...100)
 						.chartForegroundStyleScale([
-							(idiom == .phone ? "Battery".localized : "Battery Level".localized): batteryChartColor,
+							(horizontalSizeClass == .regular ? "Battery Level".localized : "Battery".localized): batteryChartColor,
 							"Channel Utilization".localized: channelUtilizationChartColor,
 							"Airtime".localized: airtimeChartColor
 						])
@@ -104,8 +109,8 @@ struct DeviceMetricsLog: View {
 					}
 					.frame(minHeight: 240)
 				}
-				if idiom == .phone {
-					/// Single Cell Compact display for phones
+				if showsStackedReadings {
+					/// Single cell. On iPhone this is the only column Table draws.
 					Table(deviceMetrics, selection: $selection, sortOrder: $sortOrder) {
 						TableColumn("Battery Level") { dm in
 							Group {
@@ -142,7 +147,7 @@ struct DeviceMetricsLog: View {
 						.width(ideal: 200, max: .infinity)
 					}
 				} else {
-					/// Multi Column table for ipads and mac
+					/// Columns for iPad and Mac, where Table shows them.
 					Table(deviceMetrics, selection: $selection, sortOrder: $sortOrder) {
 						TableColumn("Battery Level") { dm in
 							if dm.batteryLevel ?? 0 > 100 {
@@ -192,7 +197,7 @@ struct DeviceMetricsLog: View {
 					}
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
-					.controlSize(idiom == .phone ? .regular : .large)
+					.controlSize(horizontalSizeClass == .regular ? .large : .regular)
 					.padding(.bottom)
 					.padding(.leading)
 					.confirmationDialog(
@@ -223,7 +228,7 @@ struct DeviceMetricsLog: View {
 					}
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
-					.controlSize(idiom == .phone ? .regular : .large)
+					.controlSize(horizontalSizeClass == .regular ? .large : .regular)
 					.padding(.bottom)
 					.padding(.trailing)
 				}

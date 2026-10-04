@@ -1,15 +1,16 @@
 <!--
 Sync Impact Report
-  Version change: 1.3.1 → 1.3.2
-  Modified principles: none
+  Version change: 1.3.3 → 1.4.0
+  Modified principles:
+    - VIII (Meshtastic Design Standards Compliance): repointed at the
+      standards index, because the old raw link returned 35 bytes with
+      HTTP 200 — GitHub serves a symlink as its target's filename.
+      Adds a requirement: agents and contributors MUST NOT fetch
+      meshtastic_design_standards_latest.md over HTTP. MINOR rather than
+      PATCH because a new prohibition is expanded guidance, not a
+      clarification.
   Updated sections:
-    - Development Workflow → Documentation: changes are now recorded in a
-      per-guide "What's New" page (docs/user/whats-new.md,
-      docs/developer/whats-new.md) — the first item in each guide, rendered
-      in-app and on the website — using the shared
-      `**Month YYYY** — [Page](path.md) — sentence` format showing ~12 months;
-      docs/index.md is a Quick Links hub; no release notes / RELEASENOTES.md;
-      rebuild in-app HTML after editing docs
+    - Technology Constraints → Design Standards: same repoint
   Added sections: none
   Removed sections: N/A
   Templates requiring updates:
@@ -131,11 +132,25 @@ capabilities.
 ### VIII. Meshtastic Design Standards Compliance
 
 All UI work MUST comply with the
-[Meshtastic Client Design Standards](https://raw.githubusercontent.com/meshtastic/design/refs/heads/master/standards/meshtastic_design_standards_latest.md).
-This is the canonical, authoritative source for all visual and
+[Meshtastic Client Design Standards](https://github.com/meshtastic/design/tree/master/standards).
+That link is the standards index, which names the current version.
+It is the canonical, authoritative source for all visual and
 interaction design requirements. Agents and contributors MUST fetch
-and review this document before making UI changes. Do not rely on
-summaries — always consult the latest version at the URL above.
+and review the version it names before making UI changes, and MUST
+NOT rely on summaries.
+
+Agents and contributors MUST NOT fetch
+`meshtastic_design_standards_latest.md` over HTTP. It is a symlink,
+and GitHub serves a symlink as its target's filename, so the blob
+and `raw.githubusercontent.com` views return 35 bytes with HTTP 200
+and no error. A fetch that appears to have succeeded yields no
+standards. Where a tool needs that file over HTTP, the contents API
+resolves it:
+
+```shell
+gh api repos/meshtastic/design/contents/standards/meshtastic_design_standards_latest.md \
+  -H "Accept: application/vnd.github.raw"
+```
 
 **Rationale**: A single canonical design standards document prevents
 drift between inline summaries and the authoritative source, ensuring
@@ -166,7 +181,7 @@ cross-platform consistency as standards evolve.
 - **CI/CD**: Xcode Cloud with pre-build secrets injection
 - **IDE**: Latest release version of Xcode
 - **License**: GPL v3
-- **Design Standards**: [Meshtastic Client Design Standards](https://raw.githubusercontent.com/meshtastic/design/refs/heads/master/standards/meshtastic_design_standards_latest.md)
+- **Design Standards**: [Meshtastic Client Design Standards](https://github.com/meshtastic/design/tree/master/standards)
 - **Deep Links**: `meshtastic:///` URL scheme for navigation,
   shortcuts, and widget integration
 
@@ -242,4 +257,4 @@ with these principles.
   MUST be justified in the PR description and approved by a
   maintainer.
 
-**Version**: 1.3.2 | **Ratified**: 2026-04-15 | **Last Amended**: 2026-06-03
+**Version**: 1.4.0 | **Ratified**: 2026-04-15 | **Last Amended**: 2026-09-15

@@ -109,6 +109,7 @@ struct ESP32OTAIntroSheet: View {
 									.frame(maxWidth: .infinity)
 							}
 							.buttonStyle(.borderedProminent)
+							.tint(.accentFill)
 							.controlSize(.large)
 							.clipShape(RoundedRectangle(cornerRadius: 10))
 							.disabled(accessoryManager.activeDeviceNum == nil || !firmwareSupportsOTA)
@@ -146,6 +147,7 @@ struct ESP32OTAIntroSheet: View {
 									.frame(maxWidth: .infinity)
 							}
 							.buttonStyle(.borderedProminent)
+							.tint(.accentFill)
 							.controlSize(.large)
 							.clipShape(RoundedRectangle(cornerRadius: 10))
 							.disabled(accessoryManager.activeDeviceNum == nil || !firmwareSupportsOTA)
@@ -194,11 +196,13 @@ struct ESP32OTAIntroSheet: View {
 				let _ = Logger.services.info("📡 [ESP32 OTA] Wi-Fi path, file \(binFileURL.lastPathComponent, privacy: .public)")
 				ESP32WifiOTASheet(binFileURL: binFileURL, host: theHost, onUpdateComplete: { dismiss() })
 					.environmentObject(accessoryManager)
+					.trackScreen(.esp32WiFiUpdate)
 			}
 			.sheet(isPresented: $showBLEUpdater) {
 				let _ = Logger.services.info("📡 [ESP32 OTA] BLE path, file \(binFileURL.lastPathComponent, privacy: .public)")
 				ESP32BLEOTASheet(binFileURL: binFileURL, onUpdateComplete: { dismiss() })
 					.environmentObject(accessoryManager)
+					.trackScreen(.esp32BLEUpdate)
 			}
 			.navigationTitle("ESP32 Update")
 			.navigationBarTitleDisplayMode(.inline)

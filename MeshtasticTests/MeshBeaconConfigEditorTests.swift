@@ -2,7 +2,7 @@
 //
 //  Locks down the blocking client-side validation and flag-bitfield handling for the
 //  Mesh Beacon module config editor (contract C2, FR-010/FR-011/FR-013, research D4):
-//   - the beacon message is capped at 100 UTF-8 bytes (100 ok, 101 blocks save);
+//   - the beacon message is capped at 60 UTF-8 bytes (60 ok, 61 blocks save);
 //   - the broadcast interval must be ≥ 3600 s (3600 ok, 3599 blocks save);
 //   - toggling FLAG_LISTEN_ENABLED / FLAG_BROADCAST_ENABLED preserves every other bit,
 //     including the firmware-managed FLAG_LEGACY_SPLIT.
@@ -17,23 +17,30 @@ struct MeshBeaconConfigEditorTests {
 
 	// MARK: - Message length (FR-011)
 
-	@Test func message100BytesIsValid() {
-		let message = String(repeating: "a", count: 100)
-		#expect(MeshBeaconValidation.messageByteCount(message) == 100)
+	@Test func message60BytesIsValid() {
+		let message = String(repeating: "a", count: 60)
+		#expect(MeshBeaconValidation.messageByteCount(message) == 60)
 		#expect(MeshBeaconValidation.isMessageValid(message))
 	}
 
-	@Test func message101BytesBlocksSave() {
-		let message = String(repeating: "a", count: 101)
-		#expect(MeshBeaconValidation.messageByteCount(message) == 101)
+	@Test func message61BytesBlocksSave() {
+		let message = String(repeating: "a", count: 61)
+		#expect(MeshBeaconValidation.messageByteCount(message) == 61)
+		#expect(!MeshBeaconValidation.isMessageValid(message))
+	}
+
+	@Test func aMessageThatFitTheOldLimitCanBeTooLongNow() {
+		// The limit came down from 100. A radio configured before that still reports
+		// the longer text, and the editor has to block the save rather than truncate.
+		let message = String(repeating: "a", count: 100)
 		#expect(!MeshBeaconValidation.isMessageValid(message))
 	}
 
 	@Test func messageByteCountUsesUTF8NotCharacters() {
-		// A 4-byte emoji: 25 of them = 100 bytes (valid), 26 = 104 bytes (blocks).
-		let ok = String(repeating: "😀", count: 25)
-		let tooBig = String(repeating: "😀", count: 26)
-		#expect(MeshBeaconValidation.messageByteCount(ok) == 100)
+		// A 4-byte emoji: 15 of them = 60 bytes (valid), 16 = 64 bytes (blocks).
+		let ok = String(repeating: "😀", count: 15)
+		let tooBig = String(repeating: "😀", count: 16)
+		#expect(MeshBeaconValidation.messageByteCount(ok) == 60)
 		#expect(MeshBeaconValidation.isMessageValid(ok))
 		#expect(!MeshBeaconValidation.isMessageValid(tooBig))
 	}

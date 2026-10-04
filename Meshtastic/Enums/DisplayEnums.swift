@@ -17,9 +17,9 @@ enum ScreenUnits: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .metric:
-		   return "Metric"
+		   return String(localized: "Metric", comment: "ScreenUnits.description")
 		case .imperial:
-		   return "Imperial"
+		   return String(localized: "Imperial", comment: "ScreenUnits.description")
 		}
 	}
 	func protoEnumValue() -> Config.DisplayConfig.DisplayUnits {
@@ -49,23 +49,23 @@ enum ScreenOnIntervals: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .fifteenSeconds:
-			return "Fifteen Seconds".localized
+			return String(localized: "Fifteen Seconds", comment: "ScreenOnIntervals.description")
 		case .thirtySeconds:
-			return "Thirty Seconds".localized
+			return String(localized: "Thirty Seconds", comment: "ScreenOnIntervals.description")
 		case .oneMinute:
-			return "One Minute".localized
+			return String(localized: "One Minute", comment: "ScreenOnIntervals.description")
 		case .fiveMinutes:
-			return "Five Minutes".localized
+			return String(localized: "Five Minutes", comment: "ScreenOnIntervals.description")
 		case .tenMinutes:
-			return "Ten Minutes".localized
+			return String(localized: "Ten Minutes", comment: "ScreenOnIntervals.description")
 		case .fifteenMinutes:
-			return "Fifteen Minutes".localized
+			return String(localized: "Fifteen Minutes", comment: "ScreenOnIntervals.description")
 		case .thirtyMinutes:
-			return "Thirty Minutes".localized
+			return String(localized: "Thirty Minutes", comment: "ScreenOnIntervals.description")
 		case .oneHour:
-			return "One Hour".localized
+			return String(localized: "One Hour", comment: "ScreenOnIntervals.description")
 		case .max:
-			return "Always On".localized
+			return String(localized: "Always On", comment: "ScreenOnIntervals.description")
 		}
 	}
 }
@@ -85,19 +85,19 @@ enum ScreenCarouselIntervals: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .off:
-			return "off".localized.capitalized
+			return String(localized: "Off", comment: "ScreenCarouselIntervals.description")
 		case .fifteenSeconds:
-			return "Fifteen Seconds".localized
+			return String(localized: "Fifteen Seconds", comment: "ScreenCarouselIntervals.description")
 		case .thirtySeconds:
-			return "Thirty Seconds".localized
+			return String(localized: "Thirty Seconds", comment: "ScreenCarouselIntervals.description")
 		case .oneMinute:
-			return "One Minute".localized
+			return String(localized: "One Minute", comment: "ScreenCarouselIntervals.description")
 		case .fiveMinutes:
-			return "Five Minutes".localized
+			return String(localized: "Five Minutes", comment: "ScreenCarouselIntervals.description")
 		case .tenMinutes:
-			return "Ten Minutes".localized
+			return String(localized: "Ten Minutes", comment: "ScreenCarouselIntervals.description")
 		case .fifteenMinutes:
-			return "Fifteen Minutes".localized
+			return String(localized: "Fifteen Minutes", comment: "ScreenCarouselIntervals.description")
 		}
 	}
 }

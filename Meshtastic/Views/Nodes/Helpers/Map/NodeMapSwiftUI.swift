@@ -34,6 +34,7 @@ struct NodeMapSwiftUI: View {
 	private let visiblePositionLimit = 1_000
 
 	@Environment(\.modelContext) private var context
+	@Environment(\.horizontalSizeClass) private var horizontalSizeClass
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	/// Parameters
 	@Bindable var node: NodeInfoEntity
@@ -111,6 +112,7 @@ struct NodeMapSwiftUI: View {
 			}
 			.sheet(isPresented: $isShowingLegend) {
 				MapLegend(isMeshMap: false)
+					.trackScreen(.mapLegend)
 					.presentationDetents([.medium, .large])
 					.presentationContentInteraction(.scrolls)
 					#if !targetEnvironment(macCatalyst)
@@ -172,7 +174,7 @@ struct NodeMapSwiftUI: View {
 		Group {
 			if scene != nil && isLookingAround {
 				LookAroundPreview(initialScene: scene)
-					.frame(height: UIDevice.current.userInterfaceIdiom == .phone ? 250 : 400)
+					.frame(height: horizontalSizeClass == .regular ? 400 : 250)
 					.clipShape(RoundedRectangle(cornerRadius: 12))
 					.padding(.horizontal, 20)
 			}
@@ -183,7 +185,7 @@ struct NodeMapSwiftUI: View {
 		Group {
 			if !isLookingAround && isShowingAltitude {
 				PositionAltitudeChart(node: node)
-					.frame(height: UIDevice.current.userInterfaceIdiom == .phone ? 250 : 400)
+					.frame(height: horizontalSizeClass == .regular ? 400 : 250)
 					.clipShape(RoundedRectangle(cornerRadius: 12))
 					.padding(.horizontal, 20)
 			}

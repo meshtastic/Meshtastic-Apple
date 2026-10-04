@@ -185,14 +185,27 @@ everyone else's radio even when your own keeps it.</p>
 </tbody>
 </table>
 <h3>Network</h3>
-<p>Wi-Fi SSID/password for TCP connection, NTP server, and Ethernet (supported hardware only).</p>
+<p>Wi-Fi SSID/password for TCP connection, NTP and syslog servers, UDP broadcast, and
+Ethernet. Each section appears only on hardware that has the radio it configures, so a
+board with neither Wi-Fi nor Ethernet shows nothing here.</p>
+<p><strong>Address Mode</strong> chooses between DHCP and a static address. On DHCP the radio asks the
+network for its address and the static fields are not shown.</p>
+<p>Choosing <strong>Static</strong> reveals four address fields. Address, gateway and subnet are
+required: a static setup missing any of them leaves the node unreachable, so Save stays
+disabled until all three are complete and well formed. A malformed entry is shown in
+red. <strong>DNS is optional</strong> and may be left blank, which stores it as unset.</p>
 <h3>Position</h3>
 <p>GPS update interval, position precision, and smart position broadcasting. Enable <strong>Broadcast Position</strong> to share your location with the mesh.</p>
 <p>The <strong>GPS Mode</strong> selector (Enabled / Disabled / Not Present) is the single source of truth for the GPS state that the app writes to the radio. The older on/off <code>gpsEnabled</code> field it replaced is deprecated: the app no longer writes it, but still reads it from older firmware so existing devices keep working. No action is needed when upgrading — your GPS setting is preserved.</p>
 <h3>Power</h3>
 <p>Battery saving profiles, sleep modes, and minimum wake time. Critical for solar-powered router nodes.</p>
 <h2>Module Configuration</h2>
-<p>Optional feature modules. Only available when your connected node supports the module.</p>
+<p>Optional feature modules. A module's settings appear only when your connected node
+can actually use them, which means two things: the radio's firmware build did not
+leave the module out, and the firmware is new enough to have it at all. Where a
+module needs a particular firmware version, it is noted in the table below.</p>
+<p>A node that has not yet reported its firmware version is offered everything, so a
+screen may briefly appear before the radio finishes identifying itself.</p>
 <table>
 <thead>
 <tr>
@@ -415,7 +428,7 @@ Importing writes the selected settings — including any secrets in the file —
 <p>Every non-empty import commits the selected settings and reboots the radio, so it briefly disconnects; the app reports this so you can reconnect. Settings are applied in order and the import stops at the first failure, telling you exactly what was and wasn't sent. Settings unsupported by the connected radio appear under <strong>Not Supported by This Radio</strong> instead of being sent.</p>
 <p>MQTT and Serial settings are applied after the main transaction because either can drop the Bluetooth link before the transaction is committed. If that disconnect interrupts them, the result shows <strong>Needs a Second Pass</strong> so you can reconnect and apply those sections separately. If the radio disconnects before acknowledging the commit, the result warns that saving was not confirmed.</p>
 <p>You can cancel while a setting is being sent over Bluetooth or TCP; cancellation typically completes quickly. The app stops sending additional sections, then commits the sections already applied so the radio does not remain in an unfinished edit transaction. If the transport callback does not settle, the sheet allows dismissal after 15 seconds. A write already handed to the operating system may still reach the radio, so review the result before retrying.</p>
-<p>Because the radio can silently discard settings it accepts, the result screen also offers <strong>Verify Against the Radio</strong>: once the radio reconnects and sends its configuration back, it compares each imported section against what the radio actually holds. Re-running an import is safe.</p>
+<p>Because the radio can silently discard settings it accepts, imports that reboot the radio show <strong>Check What Applied</strong> while the app waits for it to reconnect. Once the radio sends its configuration back, the app automatically compares each imported section against what the radio actually holds. If that check can't run, tap <strong>Verify Against the Radio</strong> to try again. Re-running an import is safe.</p>
 <h2>Automatic Documentation Translation</h2>
 <p>On devices running iOS 26 or later, the in-app documentation is automatically translated to your device language when it differs from English.</p>
 <h3>How It Works</h3>

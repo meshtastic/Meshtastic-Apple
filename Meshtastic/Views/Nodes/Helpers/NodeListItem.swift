@@ -9,6 +9,15 @@ import SwiftUI
 import CoreLocation
 import Foundation
 
+struct NodeListRowRefreshGate {
+	private var hasRunTask = false
+
+	mutating func shouldRefresh() -> Bool {
+		defer { hasRunTask = true }
+		return hasRunTask
+	}
+}
+
 /// A complete, value-type snapshot of everything a node-list row renders, captured from the live
 /// `NodeInfoEntity` (and its `user` relationship) while it is valid.
 ///
@@ -23,6 +32,10 @@ import Foundation
 /// it, so a re-evaluation after the model dies never touches the live object. Value types can't
 /// fault.
 struct NodeListRowSummary {
+	#if DEBUG
+	@MainActor static var testInitializationObserver: (() -> Void)?
+	#endif
+
 	// Identity / name
 	let num: Int64
 	let shortName: String?
@@ -40,6 +53,9 @@ struct NodeListRowSummary {
 	let statusMessage: String?
 	let lastHeard: Date?
 	let isOnline: Bool
+	/// Not heard over RF on the radio's current LoRa settings (firmware 2.8.1+). A different claim
+	/// from offline, so the row shows it separately.
+	let isUnheardOnCurrentLora: Bool
 	let hopsAway: Int32
 	let snr: Float
 	let rssi: Int32
@@ -63,6 +79,10 @@ struct NodeListRowSummary {
 		includePosition: Bool = true,
 		includeLogAvailability: Bool = true
 	) {
+		#if DEBUG
+		Self.testInitializationObserver?()
+		#endif
+
 		num = node.num
 		let user = node.user
 		shortName = user?.shortName
@@ -79,6 +99,7 @@ struct NodeListRowSummary {
 		statusMessage = node.statusMessageDisplay
 		lastHeard = node.lastHeard
 		isOnline = node.isOnline
+		isUnheardOnCurrentLora = node.isUnheardOnCurrentLora
 		hopsAway = node.hopsAway
 		snr = node.snr
 		rssi = node.rssi
@@ -155,6 +176,9 @@ struct NodeListItem: View {
 		} else {
 			desc += ", offline"
 		}
+		if summary.isUnheardOnCurrentLora {
+			desc += ", " + UnheardOnCurrentLora.label
+		}
 		if let roleName = summary.role?.name {
 			desc += ", role: \(roleName)"
 		}
@@ -212,6 +236,7 @@ struct NodeListItem: View {
 	/// never re-derived from the live model during a plain re-evaluation, so a retained row can't
 	/// fault on a zombie @Model. Refreshed (guarded) when the node's `lastHeard` changes.
 	@State private var rowSummary: NodeListRowSummary?
+	@State private var refreshGate = NodeListRowRefreshGate()
 	var isDirectlyConnected: Bool
 	var connectedNode: Int64
 	var modemPreset: ModemPresets = ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast
@@ -237,12 +262,14 @@ struct NodeListItem: View {
 		// @Model, so a row retained past the node's deletion (nodes/positions are pruned constantly;
 		// bulk deletes leave zombies that `isDeleted` doesn't flag) can't fault. Only the first
 		// appearance reads the live node, and only while it's still valid.
-		if let rowSummary {
-			rowContent(rowSummary)
-		} else if node.modelContext != nil && !node.isDeleted {
-			let summary = NodeListRowSummary(node: node)
+		if rowSummary != nil || (node.modelContext != nil && !node.isDeleted) {
+			let summary = rowSummary ?? NodeListRowSummary(node: node)
 			rowContent(summary)
-				.onAppear { rowSummary = summary }
+				.onAppear {
+					if rowSummary == nil {
+						rowSummary = summary
+					}
+				}
 		} else {
 			EmptyView()
 		}
@@ -306,6 +333,11 @@ struct NodeListItem: View {
 						IconAndText(systemName: summary.isOnline ? "checkmark.circle.fill" : "moon.circle.fill",
 									imageColor: summary.isOnline ? .green : .orange,
 							text: summary.lastHeard?.formatted(date: .numeric, time: .shortened) ?? "Unknown Age".localized)
+					}
+					if summary.isUnheardOnCurrentLora {
+						IconAndText(systemName: UnheardOnCurrentLora.systemImage,
+									imageColor: .secondary,
+									text: UnheardOnCurrentLora.shortLabel)
 					}
 					IconAndText(systemName: summary.role?.systemName ?? "figure",
 								text: "Role: \(summary.role?.name ?? "Unknown".localized)")
@@ -399,6 +431,9 @@ struct NodeListItem: View {
 		.task(id: (node.modelContext != nil && !node.isDeleted) ? node.lastHeard : nil) {
 			// Refresh the snapshot when the node changes, but only while it is still live.
 			guard node.modelContext != nil && !node.isDeleted else { return }
+			// The initial snapshot was just built synchronously; later task runs represent a
+			// timestamp change or row reappearance and must refresh all snapshotted fields.
+			guard refreshGate.shouldRefresh() else { return }
 			rowSummary = NodeListRowSummary(node: node)
 		}
 		.accessibilityElement(children: .ignore)

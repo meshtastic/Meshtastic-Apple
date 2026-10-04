@@ -62,17 +62,18 @@ struct NodeDistanceFilterBounds {
 	}
 }
 
+/// One filter set for a window. The node list, the map, and the contact list
+/// in that window observe this object. Another window has its own.
+///
+/// Toggles still save to the `nodeFilter.*` keys, so a new window and the next
+/// launch start from the last saved set. A window does not reload those keys
+/// after it is created, so two open windows can diverge. Search text is not saved.
 @MainActor
 final class NodeFilterParameters: ObservableObject {
 
-	/// Shared, app-wide filter instance. `NodeList`, `MeshMap`, and `UserList` all observe this
-	/// single object, so a filter set on one screen applies across the app. Using one shared
-	/// instance — rather than three independent `@StateObject`s — keeps behavior consistent with
-	/// the global `nodeFilter.*` persisted keys, which are not namespaced per screen.
-	static let shared = NodeFilterParameters()
-
 	private enum Keys {
 		static let isOnline = "nodeFilter.isOnline"
+		static let hidesUnheardOnCurrentLora = "nodeFilter.hidesUnheardOnCurrentLora"
 		static let isSigned = "nodeFilter.isSigned"
 		static let isPkiEncrypted = "nodeFilter.isPkiEncrypted"
 		static let isFavorite = "nodeFilter.isFavorite"
@@ -95,6 +96,10 @@ final class NodeFilterParameters: ObservableObject {
 	// `@AppStorage` property inside an `ObservableObject` reads/writes `UserDefaults` but does NOT
 	// fire `objectWillChange`) and mirrors its value to `store` in `didSet` so it survives relaunch.
 	@Published var isOnline: Bool { didSet { store.set(isOnline, forKey: Keys.isOnline) } }
+	/// Hides nodes the radio has not heard on its current LoRa settings (firmware 2.8.1+).
+	@Published var hidesUnheardOnCurrentLora: Bool {
+		didSet { store.set(hidesUnheardOnCurrentLora, forKey: Keys.hidesUnheardOnCurrentLora) }
+	}
 	@Published var isSigned: Bool { didSet { store.set(isSigned, forKey: Keys.isSigned) } }
 	@Published var isPkiEncrypted: Bool { didSet { store.set(isPkiEncrypted, forKey: Keys.isPkiEncrypted) } }
 	@Published var isFavorite: Bool { didSet { store.set(isFavorite, forKey: Keys.isFavorite) } }
@@ -148,6 +153,7 @@ final class NodeFilterParameters: ObservableObject {
 		// Property observers do not fire for assignments made inside `init`, so loading persisted
 		// values here reads from `store` without writing back to it.
 		isOnline = store.object(forKey: Keys.isOnline) as? Bool ?? false
+		hidesUnheardOnCurrentLora = store.object(forKey: Keys.hidesUnheardOnCurrentLora) as? Bool ?? false
 		isSigned = store.object(forKey: Keys.isSigned) as? Bool ?? false
 		isPkiEncrypted = store.object(forKey: Keys.isPkiEncrypted) as? Bool ?? false
 		isFavorite = store.object(forKey: Keys.isFavorite) as? Bool ?? false
@@ -170,6 +176,7 @@ final class NodeFilterParameters: ObservableObject {
 	func reset() {
 		searchText = ""
 		isOnline = false
+		hidesUnheardOnCurrentLora = false
 		isSigned = false
 		isPkiEncrypted = false
 		isFavorite = false
@@ -186,7 +193,7 @@ final class NodeFilterParameters: ObservableObject {
 
 	/// Whether any filter is actively narrowing results (ignoring search text).
 	var isFiltering: Bool {
-		isOnline || isSigned || isPkiEncrypted || isFavorite || isIgnored || isEnvironment ||
+		isOnline || hidesUnheardOnCurrentLora || isSigned || isPkiEncrypted || isFavorite || isIgnored || isEnvironment ||
 		distanceFilter || hopsAway >= 0.0 || (roleFilter && !deviceRoles.isEmpty) ||
 		(viaLora && !viaMqtt) || (!viaLora && viaMqtt)
 	}
@@ -266,6 +273,8 @@ final class NodeFilterParameters: ObservableObject {
 			let threshold = onlineThreshold ?? Date().addingTimeInterval(-7_200)
 			if lastHeard < threshold { return false }
 		}
+
+		if hidesUnheardOnCurrentLora && node.isUnheardOnCurrentLora { return false }
 
 		// Signed filter
 		if isSigned {

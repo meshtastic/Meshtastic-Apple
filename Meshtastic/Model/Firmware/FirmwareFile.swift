@@ -66,6 +66,16 @@ extension FirmwareFile {
 	
 	static let localFirmwareStorageURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
 	static let remoteFirmwareURLPrefix = URL(string: "https://raw.githubusercontent.com/meshtastic/meshtastic.github.io/master/")!
+	/// Nightly builds are served flat at the root of their own host, which each build overwrites.
+	static let nightlyFirmwareURLPrefix = URL(string: "https://nightly.meshtastic.org/")!
+
+	/// Where a release's artifacts live: a directory per version for tagged releases,
+	/// the root of the nightly host for the nightly.
+	static func remoteDirectory(for releaseType: ReleaseType, version: String) -> URL {
+		releaseType == .nightly
+			? nightlyFirmwareURLPrefix
+			: remoteFirmwareURLPrefix.appendingPathComponent("firmware-\(version)")
+	}
 }
 
 class FirmwareFile: ObservableObject, Hashable, Equatable {
@@ -137,11 +147,8 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 		let fileNameVersion = versionId.hasPrefix("v") ? String(versionId.dropFirst()) : versionId
 		let fileName = "firmware-\(target)-\(fileNameVersion)\(firmwareType)"
 		self.localUrl = FirmwareFile.localFirmwareStorageURL.appendingPathComponent(fileName)
-		// Tagged releases get a directory per version; the nightly is one fixed directory
-		// that each build overwrites.
-		let directoryName = releaseType == .nightly ? "firmware-nightly" : "firmware-\(fileNameVersion)"
 		self.remoteUrlCandidates = Self.makeRemoteURLCandidates(
-			directoryName: directoryName,
+			directory: Self.remoteDirectory(for: releaseType, version: fileNameVersion),
 			target: target,
 			version: fileNameVersion,
 			firmwareType: firmwareType,
@@ -262,8 +269,7 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 		self.releaseNotes = releaseNotes
 		
 		let fileNameVersion = versionId.hasPrefix("v") ? String(versionId.dropFirst()) : versionId
-		self.remoteUrl = FirmwareFile.remoteFirmwareURLPrefix
-			.appendingPathComponent("firmware-\(fileNameVersion)")
+		self.remoteUrl = FirmwareFile.remoteDirectory(for: releaseType, version: fileNameVersion)
 			.appendingPathComponent(fileName)
 		self.remoteUrlCandidates = [self.remoteUrl].compactMap { $0 }
 	}
@@ -364,13 +370,12 @@ class FirmwareFile: ObservableObject, Hashable, Equatable {
 	}
 
 	private static func makeRemoteURLCandidates(
-		directoryName: String,
+		directory: URL,
 		target: String,
 		version: String,
 		firmwareType: FirmwareType,
 		localeTags: [String]
 	) -> [URL] {
-		let directory = remoteFirmwareURLPrefix.appendingPathComponent(directoryName)
 		var fileNames: [String] = []
 		var seen = Set<String>()
 		func append(_ value: String) {

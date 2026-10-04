@@ -189,4 +189,74 @@ struct BeaconAddVsSwitchTests {
 		)
 		#expect(option == .none)
 	}
+
+	// MARK: - A beacon that pins its own frequency slot
+
+	/// Computed the same way the decision computes it, so these cases do not hard-code
+	/// a hash result that a region-table change would quietly invalidate.
+	private func usLongFastRadioSlot() -> Int {
+		LoRaChannelCalculator(config: usLongFastConfig()).effectiveChannelSlot(primaryName: "MyMesh")
+	}
+
+	@Test func aPinnedSlotAwayFromTheRadioBlocksAdd() {
+		// The offered name derives to the radio's own slot, so before the pin was read
+		// this said Add — and the added channel would have sat on a frequency the mesh
+		// is not on, with nothing on screen to say so.
+		let option = LoRaChannelCalculator.beaconJoinOption(
+			hasOfferChannel: true,
+			offerChannelName: "MyMesh",
+			offeredPreset: .longFast,
+			offerRegion: RegionCodes.us.rawValue,
+			offeredFrequencySlot: usLongFastRadioSlot() + 1,
+			isConnected: true,
+			loRaConfig: usLongFastConfig(),
+			primaryChannelName: "MyMesh"
+		)
+		#expect(option == .switchOnly)
+	}
+
+	@Test func aPinnedSlotOnTheRadioAllowsAdd() {
+		let calculator = LoRaChannelCalculator(config: usLongFastConfig())
+		#expect(
+			calculator.slotForChannelName("SomeOtherMesh") != usLongFastRadioSlot(),
+			"this case only means something while the offered name derives somewhere else")
+
+		let option = LoRaChannelCalculator.beaconJoinOption(
+			hasOfferChannel: true,
+			offerChannelName: "SomeOtherMesh",
+			offeredPreset: .longFast,
+			offerRegion: RegionCodes.us.rawValue,
+			offeredFrequencySlot: usLongFastRadioSlot(),
+			isConnected: true,
+			loRaConfig: usLongFastConfig(),
+			primaryChannelName: "MyMesh"
+		)
+		#expect(option == .add)
+	}
+
+	@Test func noPinKeepsTheDerivedSlot() {
+		// The common case: a beacon that sends no slot still resolves by name.
+		let option = LoRaChannelCalculator.beaconJoinOption(
+			hasOfferChannel: true,
+			offerChannelName: "MyMesh",
+			offeredPreset: .longFast,
+			offerRegion: RegionCodes.us.rawValue,
+			offeredFrequencySlot: nil,
+			isConnected: true,
+			loRaConfig: usLongFastConfig(),
+			primaryChannelName: "MyMesh"
+		)
+		#expect(option == .add)
+	}
+
+	@Test func aBeaconReadsZeroAsNoPinAtAll() {
+		// The proto says 0 means the same as omitting the field, so the entity must not
+		// hand a 0 to the decision as if it were slot zero.
+		let beacon = DiscoveredBeaconEntity()
+		beacon.offerFrequencySlot = 0
+		#expect(beacon.offeredFrequencySlot == nil)
+
+		beacon.offerFrequencySlot = 42
+		#expect(beacon.offeredFrequencySlot == 42)
+	}
 }

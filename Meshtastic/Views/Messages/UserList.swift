@@ -17,7 +17,7 @@ struct UserList: View {
 	@State private var editingFilters = false
 	@State private var showingHelp = false
 	@State private var showingTrustConfirm: Bool = false
-	@ObservedObject private var filters: NodeFilterParameters = .shared
+	@EnvironmentObject private var filters: NodeFilterParameters
 	@Binding var node: NodeInfoEntity?
 	@Binding var userSelection: UserEntity?
 
@@ -447,6 +447,7 @@ fileprivate extension NodeFilterParameters {
 			}
 			if lastHeard < onlineThreshold { return false }
 		}
+		if hidesUnheardOnCurrentLora && user.userNode?.isUnheardOnCurrentLora == true { return false }
 		// Favorites
 		if isFavorite {
 			if user.userNode?.favorite != true { return false }

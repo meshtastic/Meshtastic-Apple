@@ -259,6 +259,7 @@ struct WifiProvisioningView: View {
 					.padding()
 			}
 			.buttonStyle(.borderedProminent)
+			.tint(.accentFill)
 			.buttonBorderShape(.capsule)
 			.padding(.horizontal, 32)
 
@@ -446,6 +447,7 @@ struct WifiProvisioningView: View {
 					.padding()
 			}
 			.buttonStyle(.borderedProminent)
+			.tint(.accentFill)
 			.buttonBorderShape(.capsule)
 			.padding(.horizontal, 32)
 			.padding(.bottom, 24)
@@ -531,6 +533,7 @@ struct WifiProvisioningView: View {
 					.padding()
 			}
 			.buttonStyle(.borderedProminent)
+			.tint(.accentFill)
 			.buttonBorderShape(.capsule)
 			.padding(.horizontal, 32)
 

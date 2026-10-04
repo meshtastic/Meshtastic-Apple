@@ -78,6 +78,15 @@ struct SelfOriginatedMessageEchoTests {
 		return mp
 	}
 
+	@MainActor
+	private func makeMeshPackets(notificationRecorder: NotificationRecorder) async -> MeshPackets {
+		let mp = MeshPackets(modelContainer: sharedModelContainer)
+		await mp.replaceNotificationScheduler { @MainActor @Sendable notifications in
+			notificationRecorder.record(notifications)
+		}
+		return mp
+	}
+
 	// MARK: - Existing repro tests
 
 	/// The exact user-reported symptom: a broadcast we originated comes back from the radio and is
@@ -314,6 +323,44 @@ struct SelfOriginatedMessageEchoTests {
 		#expect(stored.first?.read == true, "detection-sensor with notifications disabled must be read")
 	}
 
+	/// Detection-sensor packets are intentionally omitted from Direct Messages and live in the
+	/// sender node's Detection Sensor Log. When their notifications are enabled, opening one must
+	/// therefore select that node rather than navigating to an empty DM conversation.
+	@Test @MainActor func directDetectionSensor_notificationOpensSenderNode() async throws {
+		let previousValue = UserDefaults.enableDetectionNotifications
+		UserDefaults.enableDetectionNotifications = true
+		defer { UserDefaults.enableDetectionNotifications = previousValue }
+
+		let notificationRecorder = NotificationRecorder()
+		let mp = await makeMeshPackets(notificationRecorder: notificationRecorder)
+		let id: Int64 = 0x00C0_0031
+
+		let ctx = ModelContext(sharedModelContainer)
+		let sender = UserEntity()
+		ctx.insert(sender)
+		sender.num = peerNode
+		sender.longName = "Sensor"
+		sender.shortName = "SN"
+		sender.mute = false
+
+		let receiver = UserEntity()
+		ctx.insert(receiver)
+		receiver.num = connectedNode
+		receiver.longName = "Me"
+		receiver.shortName = "ME"
+		try ctx.save()
+
+		await mp.textMessageAppPacket(
+			packet: detectionSensorPacket(id: UInt32(id), from: UInt32(peerNode), to: UInt32(connectedNode)),
+			wantRangeTestPackets: true,
+			connectedNode: connectedNode,
+			appState: nil
+		)
+
+		await notificationRecorder.waitForNextNotification()
+		#expect(notificationRecorder.notifications.first?.path == "meshtastic:///nodes?nodenum=\(peerNode)")
+	}
+
 	// MARK: - Self-originated DM
 
 	/// A self-originated DM (not just broadcast) should schedule no notification.
@@ -364,8 +411,8 @@ struct SelfOriginatedMessageEchoTests {
 	/// Uses a DM (not broadcast) so the notification path only needs fromUser + toUser,
 	/// avoiding the MyInfoEntity/channel setup the channel branch requires.
 	@Test @MainActor func normalPeerDM_isUnreadAndNotifies() async {
-		let notifications = MainActorBox<[MeshNotification]>([])
-		let mp = await makeMeshPackets(scheduledNotifications: notifications)
+		let notificationRecorder = NotificationRecorder()
+		let mp = await makeMeshPackets(notificationRecorder: notificationRecorder)
 		let id: Int64 = 0x00C0_0050
 		let noAppState: AppState? = nil
 
@@ -395,9 +442,9 @@ struct SelfOriginatedMessageEchoTests {
 		let stored = messages(withId: id)
 		#expect(stored.first?.read != true, "peer DM must land unread")
 
-		// Give the notification Task time to fire.
-		try? await Task.sleep(for: .milliseconds(100))
-		#expect(!notifications.value.isEmpty, "peer DM must schedule a notification")
+		await notificationRecorder.waitForNextNotification()
+		#expect(!notificationRecorder.notifications.isEmpty, "peer DM must schedule a notification")
+		#expect(notificationRecorder.notifications.first?.path == "meshtastic:///messages?userNum=\(peerNode)&messageId=\(id)")
 	}
 }
 

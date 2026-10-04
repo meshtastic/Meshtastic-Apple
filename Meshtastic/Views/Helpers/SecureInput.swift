@@ -64,6 +64,10 @@ struct SecureInput: View {
 				}) {
 					Image(systemName: self.isSecure.wrappedValue ? "eye.slash" : "eye")
 						.accentColor(.secondary)
+						// The glyph alone is a small target, and the trailing padding
+						// belongs to the text field rather than to this button.
+						.frame(minWidth: 48, minHeight: 48)
+						.contentShape(Rectangle())
 				}.buttonStyle(BorderlessButtonStyle())
 				.accessibilityLabel(self.isSecure.wrappedValue ? String(localized: "Show password", comment: "VoiceOver label for the button that reveals a masked password field") : String(localized: "Hide password", comment: "VoiceOver label for the button that masks a revealed password field"))
 			}

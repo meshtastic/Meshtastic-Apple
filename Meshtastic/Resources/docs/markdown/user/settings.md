@@ -132,7 +132,17 @@ Controls which direction the on-device compass points when the screen is at rest
 
 ### Network
 
-Wi-Fi SSID/password for TCP connection, NTP server, and Ethernet (supported hardware only).
+Wi-Fi SSID/password for TCP connection, NTP and syslog servers, UDP broadcast, and
+Ethernet. Each section appears only on hardware that has the radio it configures, so a
+board with neither Wi-Fi nor Ethernet shows nothing here.
+
+**Address Mode** chooses between DHCP and a static address. On DHCP the radio asks the
+network for its address and the static fields are not shown.
+
+Choosing **Static** reveals four address fields. Address, gateway and subnet are
+required: a static setup missing any of them leaves the node unreachable, so Save stays
+disabled until all three are complete and well formed. A malformed entry is shown in
+red. **DNS is optional** and may be left blank, which stores it as unset.
 
 ### Position
 
@@ -146,7 +156,13 @@ Battery saving profiles, sleep modes, and minimum wake time. Critical for solar-
 
 ## Module Configuration
 
-Optional feature modules. Only available when your connected node supports the module.
+Optional feature modules. A module's settings appear only when your connected node
+can actually use them, which means two things: the radio's firmware build did not
+leave the module out, and the firmware is new enough to have it at all. Where a
+module needs a particular firmware version, it is noted in the table below.
+
+A node that has not yet reported its firmware version is offered everything, so a
+screen may briefly appear before the radio finishes identifying itself.
 
 | Module | Description |
 |--------|-------------|
@@ -249,7 +265,7 @@ MQTT and Serial settings are applied after the main transaction because either c
 
 You can cancel while a setting is being sent over Bluetooth or TCP; cancellation typically completes quickly. The app stops sending additional sections, then commits the sections already applied so the radio does not remain in an unfinished edit transaction. If the transport callback does not settle, the sheet allows dismissal after 15 seconds. A write already handed to the operating system may still reach the radio, so review the result before retrying.
 
-Because the radio can silently discard settings it accepts, the result screen also offers **Verify Against the Radio**: once the radio reconnects and sends its configuration back, it compares each imported section against what the radio actually holds. Re-running an import is safe.
+Because the radio can silently discard settings it accepts, imports that reboot the radio show **Check What Applied** while the app waits for it to reconnect. Once the radio sends its configuration back, the app automatically compares each imported section against what the radio actually holds. If that check can't run, tap **Verify Against the Radio** to try again. Re-running an import is safe.
 
 ## Automatic Documentation Translation
 

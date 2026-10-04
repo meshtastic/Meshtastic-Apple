@@ -23,6 +23,12 @@ enum DataDogLoggableAction {
 	}
 }
 
+/// The radio facts carried on every RUM event.
+enum RadioContextKey: String, CaseIterable {
+	case firmwareVersion
+	case hardwareModel
+}
+
 struct DatadogLogger {
 	private let osLogger: os.Logger
 	private let ddLogger: any DatadogLogs.LoggerProtocol
@@ -67,6 +73,35 @@ struct DatadogLogger {
 		ddLogger.error(message)
 	}
 	
+	// MARK: - Radio context
+
+	/// Facts about the radio the app is talking to, attached to every RUM event rather than
+	/// to one action.
+	///
+	/// These used to ride only on the `connect` action, which meant a crash, a hang or a view
+	/// carried no way to tell what the phone was connected to — the attributes existed on one
+	/// event per session and nowhere else. As global attributes they follow everything the SDK
+	/// reports until the radio goes away.
+	///
+	/// Set where each value becomes known rather than at the end of connect: the firmware
+	/// version arrives with the device metadata and the hardware model with the connected
+	/// node's info, and on a reconnect those can land after the connection is already up.
+	func setRadioContext(_ key: RadioContextKey, _ value: String?) {
+		guard let value, !value.isEmpty else {
+			RUMMonitor.shared().removeAttribute(forKey: key.rawValue)
+			return
+		}
+		RUMMonitor.shared().addAttribute(forKey: key.rawValue, value: value)
+	}
+
+	/// Drops the radio facts when the link goes away, so the next session does not inherit
+	/// the last radio's version and model.
+	func clearRadioContext() {
+		for key in RadioContextKey.allCases {
+			RUMMonitor.shared().removeAttribute(forKey: key.rawValue)
+		}
+	}
+
 	// MARK: - Methods for RUM actions
 	func action(_ action: DataDogLoggableAction) {
 		var attributes = [String: any Encodable]()
@@ -93,6 +128,73 @@ extension os.Logger {
 	static let datadog = DatadogLogger(subsystem: "datadog", category: "🐶 DataDog")
 }
 
+/// Decides which of the SDK's auto-detected SwiftUI view names are worth reporting.
+///
+/// The SDK names a view by reflecting over the hosting controller that is appearing. When the
+/// reflection lands on something that is not a screen it reports a name anyway, and that name
+/// takes over: the `trackScreen` modifier reports from `onAppear`, the controller reports from
+/// `viewDidAppear`, and the later one sits on top of RUM's view stack for as long as the screen
+/// is up. That is why every pushed screen was filed under
+/// `NavigationStackHostingController<AnyView>` and everything at the app root under `EmptyView`
+/// (the root window's controller — the same problem the `FirmwareUpdateGameDemoHost` name had,
+/// with a different accidental type), while the screens we had named held the view for a few
+/// milliseconds each.
+///
+/// Returning nil skips the report and leaves the last real screen on top. Names that do identify
+/// a screen are passed through unchanged, so screens that reflection already names keep the name
+/// they have in Error Tracking.
+struct MeshtasticSwiftUIViewsPredicate: SwiftUIRUMViewsPredicate {
+	/// Types the reflection reaches that are not screens: SwiftUI value types and preference
+	/// keys, our own tracking modifier, and app objects that happen to sit where a view was
+	/// expected.
+	private static let notScreens: Set<String> = [
+		"AnyView",
+		"AccessoryManager",
+		"EmptyView",
+		"EnabledTextSelectability",
+		"Font",
+		"MeshMapItem",
+		"NavigationTitleKey",
+		"Never",
+		"NodeInfoEntity",
+		"PresentationOptionsPreferenceKey",
+		"RUMViewModifier",
+		"Text",
+		"TextAlignment",
+		"UUID"
+	]
+
+	/// View types the reflection does name, but for screens that now name themselves. Two of
+	/// them stood in for more than the screen they are named after: `AppSettings` was reported
+	/// for pushes all over the Settings stack, and `DeviceOnboarding` is the sheet the setup
+	/// steps live in rather than any one step. Dropping these keeps one name per screen.
+	private static let namedElsewhere: Set<String> = [
+		"AppSettings",
+		"DeviceOnboarding",
+		"LoRaConfig",
+		"ShareChannels"
+	]
+
+	func rumView(for extractedViewName: String) -> RUMView? {
+		// A container's own description rather than a name: `NavigationStackHostingController<AnyView>`,
+		// `UIHostingController<AnyView>`, or a half-parsed type such as `Text)`.
+		guard !extractedViewName.isEmpty,
+			  extractedViewName.allSatisfy({ $0.isLetter || $0.isNumber || $0 == "_" }) else {
+			return nil
+		}
+		// SwiftUI internals (`_PaddingLayout`, `_ViewList_View`) and the SDK's own
+		// `AutoTracked_…_Fallback` placeholders.
+		guard !extractedViewName.hasPrefix("_"), !extractedViewName.hasPrefix("AutoTracked_") else {
+			return nil
+		}
+		guard !Self.notScreens.contains(extractedViewName),
+			  !Self.namedElsewhere.contains(extractedViewName) else {
+			return nil
+		}
+		return RUMView(name: extractedViewName)
+	}
+}
+
 extension View {
 	/// Names this screen for RUM, so crashes and hangs that happen on it are filed under it.
 	///
@@ -104,9 +206,10 @@ extension View {
 	/// `NavigationStackHostingController<AnyView>`, so nothing could be attributed to a
 	/// screen at all.
 	///
-	/// A name set here wins: an error is attributed to the innermost view that has started.
-	/// Keep the names stable — renaming one splits that screen's history in Error Tracking.
-	func trackScreen(_ name: String) -> some View {
-		trackRUMView(name: name)
+	/// A name set here only wins while no hosting controller reports over it, which is what
+	/// `MeshtasticSwiftUIViewsPredicate` above is for. The names live in `ScreenName` so that no
+	/// two screens can share one.
+	func trackScreen(_ screen: ScreenName) -> some View {
+		trackRUMView(name: screen.rawValue)
 	}
 }

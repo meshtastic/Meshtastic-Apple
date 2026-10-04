@@ -262,6 +262,7 @@ struct Channels: View {
 					.padding()
 				#endif
 				ChannelForm(channelIndex: $channelIndex, channelName: $channelName, channelKeySize: $channelKeySize, channelKey: $channelKey, channelRole: $channelRole, uplink: $uplink, downlink: $downlink, positionPrecision: $positionPrecision, preciseLocation: $preciseLocation, positionsEnabled: $positionsEnabled, hasChanges: $hasChanges, hasValidKey: $hasValidKey, supportedVersion: $supportedVersion)
+					.trackScreen(.channelEditor)
 					.presentationDetents([.large])
 					#if !targetEnvironment(macCatalyst)
 					.presentationDragIndicator(.visible)
@@ -338,7 +339,12 @@ struct Channels: View {
 							}
 						}
 						Task {
-							_ = try await accessoryManager.saveChannel(channel: channel, fromUser: node.user!, toUser: node.user!)
+							_ = try await accessoryManager.saveChannel(
+								channel: channel,
+								fromUser: node.user!,
+								toUser: node.user!,
+								refreshShareSnapshot: true
+							)
 							Task { @MainActor in
 								selectedChannel = nil
 								channelName = ""
@@ -371,6 +377,7 @@ struct Channels: View {
 		}
 		.sheet(isPresented: $showingHelp) {
 			ChannelsHelp()
+				.trackScreen(.channelsHelp)
 				.presentationDetents([.large])
 				#if !targetEnvironment(macCatalyst)
 				.presentationDragIndicator(.visible)
@@ -532,7 +539,7 @@ private struct ChannelRow: View {
 
 	var body: some View {
 		HStack(alignment: .center, spacing: 10) {
-			CircleText(text: String(channel.index), color: .accentColor, circleSize: 45)
+			CircleText(text: String(channel.index), color: .accentFill, circleSize: 45)
 				.padding(.trailing, 5)
 				.brightness(0.1)
 			VStack(alignment: .leading, spacing: 3) {
