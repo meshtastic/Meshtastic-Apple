@@ -23,11 +23,8 @@ actor BLETransport: Transport {
 	/// callbacks arrive in the order CoreBluetooth fires them, so the
 	/// `Task { await … }` hops to the actor preserve that ordering.
 	///
-	/// QoS is `.userInitiated` because every `CBPeripheral` / `CBCentralManager` call
-	/// (read, write, readRSSI, discover, setNotifyValue, connect, scan/stopScan) performs a
-	/// synchronous XPC barrier (`-[CBXpcConnection _sendBarrier]`) onto this queue. Those calls
-	/// are made from Swift Concurrency tasks running at user-initiated QoS, so a lower QoS here
-	/// causes a priority inversion that Xcode reports as a "Hang Risk".
+	/// CoreBluetooth calls wait on this queue, and they come from user-initiated tasks,
+	/// so it runs at the same QoS to avoid a priority inversion.
 	private let centralQueue = DispatchQueue(label: "com.meshtastic.ble.central", qos: .userInitiated)
 	private var discoveredPeripherals: [UUID: (peripheral: CBPeripheral, lastSeen: Date)] = [:]
 	private var discoveredDeviceContinuation: AsyncStream<DiscoveryEvent>.Continuation?
