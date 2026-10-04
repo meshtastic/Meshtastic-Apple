@@ -362,19 +362,19 @@
             "device",
             "from",
             "key",
-            "heard",
+            "radio",
             "public",
             "only",
-            "radio",
+            "heard",
             "name",
-            "messages",
             "firmware",
             "shows",
+            "messages",
             "shown",
-            "one",
             "links",
             "direct",
             "packets",
+            "one",
             "list",
             "detail",
             "channel",
@@ -383,11 +383,11 @@
             "link",
             "hardware",
             "broadcasts",
-            "app",
             "tag",
-            "show"
+            "settings",
+            "section"
         ],
-        "charCount": 14586
+        "charCount": 14605
     },
     {
         "id": "settings",

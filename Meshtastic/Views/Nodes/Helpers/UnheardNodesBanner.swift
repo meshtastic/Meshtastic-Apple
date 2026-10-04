@@ -9,11 +9,12 @@ import SwiftUI
 import SwiftData
 import OSLog
 
-/// Offered after the radio's LoRa settings move it to a different channel.
+/// Offered when most of the node list is nodes the radio has not heard on its current LoRa settings
+/// (NodeInfo.heard_on_current_lora, firmware 2.8.1+, meshtastic/design#146).
 ///
-/// The node db does not move with the radio: every node in the list was heard on the old channel and
-/// has no channel in common with this radio any more. Sends to them fail, and for channel broadcasts
-/// they fail silently, because a broadcast carries no ack.
+/// After a preset, region or frequency slot change the node db does not move with the radio, and
+/// sends to those nodes fail, silently for channel broadcasts. The radio decides what counts as
+/// heard; the app never works it out itself, so older firmware gets no offer.
 ///
 /// Only ever an offer. The client node db is deliberately a superset of the radio's, so nothing is
 /// removed without the user asking — a node may simply be out of range rather than on another preset,
@@ -25,18 +26,14 @@ import OSLog
 /// string catalog has a value to compile — theirs had none, so the markup reached the
 /// screen. A test that restates the literal would not have noticed.
 enum UnheardNodesStrings {
+	/// Says only what the radio knows, per meshtastic/design#146: it does not know a setting changed
+	/// or why.
 	static func headline(count: Int) -> String {
-		String(localized: "\(count) nodes not heard since you changed settings")
-	}
-
-	/// The headline when the radio reports the answer itself (firmware 2.8.1+). It says only what the
-	/// radio knows, per meshtastic/design#146: it does not know a setting changed or why.
-	static func headlineOnCurrentLora(count: Int) -> String {
 		String(localized: "\(count) nodes not heard on your current LoRa settings")
 	}
 
 	static func removeConfirmation(count: Int) -> String {
-		String(localized: "Remove \(count) nodes?", comment: "Confirmation title for removing nodes not heard since the settings changed")
+		String(localized: "Remove \(count) nodes?", comment: "Confirmation title for removing nodes not heard on the current LoRa settings")
 	}
 }
 
@@ -67,31 +64,15 @@ struct UnheardNodesBanner: View {
 		.onChange(of: accessoryManager.state == .subscribed) { _, _ in refresh() }
 	}
 
-	/// On 2.8.1+ the radio answers per node, so this follows its flag instead of the app's own
-	/// record of a settings change. Older firmware keeps the app-derived offer.
-	private var usesRadioReport: Bool { accessoryManager.reportsHeardOnCurrentLora }
-
+	/// One aggregate when most of the list is unheard; the rows carry the marker otherwise.
 	private func shouldOffer(connectedNodeNum: Int64) -> Bool {
-		if usesRadioReport {
-			// One aggregate when most of the list is unheard; the rows carry the marker otherwise.
-			return unheardNodes.count * 2 >= radioNodeCount
-				&& UnheardOnCurrentLoraOffer.shouldOffer(count: unheardNodes.count, forNode: connectedNodeNum)
-		}
-		return LoRaConfigChange.shouldOfferCleanup(forNode: connectedNodeNum)
-	}
-
-	private func isStillUnheard(_ node: NodeInfoEntity, changedAt: Date?) -> Bool {
-		usesRadioReport
-			? node.isUnheardOnCurrentLora
-			: LoRaConfigChange.isUnheard(lastHeard: node.lastHeard, viaMqtt: node.viaMqtt, changedAt: changedAt)
+		accessoryManager.reportsHeardOnCurrentLora
+			&& unheardNodes.count * 2 >= radioNodeCount
+			&& UnheardOnCurrentLoraOffer.shouldOffer(count: unheardNodes.count, forNode: connectedNodeNum)
 	}
 
 	private func dismiss(connectedNodeNum: Int64) {
-		if usesRadioReport {
-			UnheardOnCurrentLoraOffer.dismiss(count: unheardNodes.count, forNode: connectedNodeNum)
-		} else {
-			LoRaConfigChange.dismissOffer(forNode: connectedNodeNum)
-		}
+		UnheardOnCurrentLoraOffer.dismiss(count: unheardNodes.count, forNode: connectedNodeNum)
 	}
 
 	private func content(connectedNodeNum: Int64) -> some View {
@@ -101,16 +82,11 @@ struct UnheardNodesBanner: View {
 				.foregroundStyle(.orange)
 
 			VStack(alignment: .leading, spacing: 6) {
-				// The honest claim: we know we have not heard them since the settings changed. We
-				// cannot know they moved to another preset — a radio cannot observe a channel it is
-				// not tuned to.
-				Text(usesRadioReport
-					 ? UnheardNodesStrings.headlineOnCurrentLora(count: unheardNodes.count)
-					 : UnheardNodesStrings.headline(count: unheardNodes.count))
+				// The honest claim: the radio has not heard them on these settings. It cannot know
+				// they moved to another preset — a radio cannot observe a channel it is not tuned to.
+				Text(UnheardNodesStrings.headline(count: unheardNodes.count))
 					.font(.callout.weight(.semibold))
-				Text(usesRadioReport
-					 ? "Your radio has not heard them on the settings it is using now. Favorites and the connected node are kept."
-					 : "They were heard on the old channel and cannot be reached from this one. Favorites and the connected node are kept.")
+				Text("Your radio has not heard them on the settings it is using now. Favorites and the connected node are kept.")
 					.font(.caption)
 					.foregroundStyle(.secondary)
 
@@ -160,7 +136,7 @@ struct UnheardNodesBanner: View {
 			Button(role: .destructive) {
 				Task { await removeUnheardNodes(connectedNodeNum: connectedNodeNum) }
 			} label: {
-				Text("Remove", comment: "Confirms removing nodes not heard since the settings changed")
+				Text("Remove", comment: "Confirms removing nodes not heard on the current LoRa settings")
 			}
 			Button(role: .cancel) { } label: {
 				Text("Cancel")
@@ -170,15 +146,9 @@ struct UnheardNodesBanner: View {
 		}
 	}
 
-	/// Unheard nodes, excluding favorites and the radio itself: from the radio's own report on
-	/// 2.8.1+, otherwise those heard before the recorded settings change and not since.
+	/// Nodes the radio reports unheard on its current settings, excluding favorites and the radio itself.
 	private func refresh() {
-		guard let connectedNodeNum else {
-			unheardNodes = []
-			return
-		}
-		let changedAt = LoRaConfigChange.changedAt(forNode: connectedNodeNum)
-		guard usesRadioReport || changedAt != nil else {
+		guard let connectedNodeNum, accessoryManager.reportsHeardOnCurrentLora else {
 			unheardNodes = []
 			return
 		}
@@ -192,12 +162,12 @@ struct UnheardNodesBanner: View {
 		do {
 			candidates = try context.fetch(descriptor)
 		} catch {
-			Logger.data.error("Could not read nodes to flag after a channel change: \(error.localizedDescription, privacy: .public)")
+			Logger.data.error("Could not read nodes not heard on the current LoRa settings: \(error.localizedDescription, privacy: .public)")
 			unheardNodes = []
 			return
 		}
 		radioNodeCount = candidates.filter { !$0.viaMqtt }.count
-		unheardNodes = candidates.filter { isStillUnheard($0, changedAt: changedAt) }
+		unheardNodes = candidates.filter(\.isUnheardOnCurrentLora)
 	}
 
 	private func removeUnheardNodes(connectedNodeNum: Int64) async {
@@ -206,14 +176,13 @@ struct UnheardNodesBanner: View {
 
 		// The list was built when the banner appeared. A node can be heard again between then and the
 		// confirmation, and removing one that has just come back is the one outcome worth avoiding
-		// here — so each is re-checked against the current lastHeard rather than trusted.
-		let changedAt = LoRaConfigChange.changedAt(forNode: connectedNodeNum)
+		// here — so each is re-checked rather than trusted.
 		var removed = 0
 		var failed = 0
 		var recovered = 0
 
 		for node in unheardNodes {
-			guard isStillUnheard(node, changedAt: changedAt) else {
+			guard node.isUnheardOnCurrentLora else {
 				recovered += 1
 				continue
 			}
@@ -227,7 +196,7 @@ struct UnheardNodesBanner: View {
 				Logger.data.error("Could not remove unheard node \(node.num.toHex(), privacy: .public): \(error.localizedDescription, privacy: .public)")
 			}
 		}
-		Logger.data.info("Removed \(removed, privacy: .public) nodes not heard since the channel changed, \(failed, privacy: .public) failed, \(recovered, privacy: .public) heard again before removal")
+		Logger.data.info("Removed \(removed, privacy: .public) nodes not heard on the current LoRa settings, \(failed, privacy: .public) failed, \(recovered, privacy: .public) heard again before removal")
 
 		// Only stand the offer down once nothing is left to remove. Dismissing after a partial
 		// failure would hide the banner and take the retry with it.
