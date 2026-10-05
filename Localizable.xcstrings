@@ -310,6 +310,9 @@
         }
       }
     },
+    "%lld could not be removed." : {
+      "comment" : "Result after removing unheard nodes: nodes the radio refused to remove"
+    },
     "%lld nodes not heard on your current LoRa settings" : {
       "comment" : "Banner headline: the number of nodes the radio has not heard on the LoRa settings it is using now",
       "localizations" : {
@@ -332,6 +335,15 @@
           }
         }
       }
+    },
+    "%lld were heard on the current settings before they were removed and were kept." : {
+      "comment" : "Result after removing unheard nodes: nodes the radio reported heard again"
+    },
+    "Removed %lld nodes." : {
+      "comment" : "Result after removing nodes not heard on the current LoRa settings"
+    },
+    "Unheard Nodes" : {
+      "comment" : "Title of the result shown after removing nodes not heard on the current LoRa settings"
     },
     "—" : {
       "localizations" : {

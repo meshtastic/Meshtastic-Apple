@@ -35,10 +35,24 @@ enum UnheardNodesStrings {
 	static func removeConfirmation(count: Int) -> String {
 		String(localized: "Remove \(count) nodes?", comment: "Confirmation title for removing nodes not heard on the current LoRa settings")
 	}
+
+	/// Shown after a removal that didn't remove everything it offered, so a smaller result isn't silent.
+	static func removalResult(removed: Int, keptAsHeard: Int, failed: Int) -> String? {
+		guard keptAsHeard > 0 || failed > 0 else { return nil }
+		var parts = [String(localized: "Removed \(removed) nodes.", comment: "Result after removing nodes not heard on the current LoRa settings")]
+		if keptAsHeard > 0 {
+			parts.append(String(localized: "\(keptAsHeard) were heard on the current settings before they were removed and were kept.", comment: "Result after removing unheard nodes: nodes the radio reported heard again"))
+		}
+		if failed > 0 {
+			parts.append(String(localized: "\(failed) could not be removed.", comment: "Result after removing unheard nodes: nodes the radio refused to remove"))
+		}
+		return parts.joined(separator: " ")
+	}
 }
 
 struct UnheardNodesBanner: View {
 	@Environment(\.modelContext) private var context
+	@Environment(\.scenePhase) private var scenePhase
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 
 	@State private var unheardNodes: [NodeInfoEntity] = []
@@ -51,6 +65,7 @@ struct UnheardNodesBanner: View {
 	@State private var reportedUnheardCount = 0
 	@State private var isConfirming = false
 	@State private var isRemoving = false
+	@State private var removalResult: String?
 
 	/// Resolved here rather than passed in. A parent that only builds this view once a radio is
 	/// connected has to be re-evaluated when one arrives, and inside a `safeAreaInset` that
@@ -63,11 +78,24 @@ struct UnheardNodesBanner: View {
 				content(connectedNodeNum: connectedNodeNum)
 			}
 		}
+		.alert(
+			Text("Unheard Nodes", comment: "Title of the result shown after removing nodes not heard on the current LoRa settings"),
+			isPresented: Binding(get: { removalResult != nil }, set: { if !$0 { removalResult = nil } })
+		) {
+			Button("OK", role: .cancel) { }
+		} message: {
+			Text(removalResult ?? "")
+		}
 		.onAppear(perform: refresh)
 		.onChange(of: accessoryManager.activeDeviceNum) { _, _ in refresh() }
 		// The radio's answers arrive with its node db. The connect reports subscribed before that
 		// db is saved, so refresh once the save lands rather than on the state change.
 		.onChange(of: accessoryManager.nodeDatabaseSavedAt) { _, _ in refresh() }
+		// Views don't refresh in the background, so a node database saved meanwhile can leave the
+		// count behind until the app is back.
+		.onChange(of: scenePhase) { _, phase in
+			if phase == .active { refresh() }
+		}
 	}
 
 	/// One aggregate when most of the list is unheard; the rows carry the marker otherwise.
@@ -110,7 +138,12 @@ struct UnheardNodesBanner: View {
 				} else {
 					HStack(spacing: 12) {
 						Button(role: .destructive) {
-							isConfirming = true
+							// Count again so the confirmation matches what will be removed; the shown
+							// count can be older than the radio's latest answers.
+							refresh()
+							if !unheardNodes.isEmpty, shouldOffer(connectedNodeNum: connectedNodeNum) {
+								isConfirming = true
+							}
 						} label: {
 							Text("Remove Them")
 								.frame(minWidth: 48, minHeight: 48)
@@ -229,6 +262,8 @@ struct UnheardNodesBanner: View {
 			}
 		}
 		Logger.data.info("Removed \(removed, privacy: .public) nodes not heard on the current LoRa settings, \(failed, privacy: .public) failed, \(recovered, privacy: .public) heard again before removal")
+
+		removalResult = UnheardNodesStrings.removalResult(removed: removed, keptAsHeard: recovered, failed: failed)
 
 		// Only stand the offer down once nothing is left to remove. Dismissing after a partial
 		// failure would hide the banner and take the retry with it.

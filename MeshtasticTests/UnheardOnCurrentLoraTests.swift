@@ -240,4 +240,12 @@ struct UnheardOnCurrentLoraTests {
 		tracker.reset()
 		#expect(!tracker.isAwaiting)
 	}
+
+	@Test func aFullRemovalSaysNothingAndAPartialOneSaysWhy() {
+		#expect(UnheardNodesStrings.removalResult(removed: 40, keptAsHeard: 0, failed: 0) == nil)
+		let partial = UnheardNodesStrings.removalResult(removed: 19, keptAsHeard: 63, failed: 0)
+		#expect(partial?.contains("19") == true)
+		#expect(partial?.contains("63") == true)
+		#expect(UnheardNodesStrings.removalResult(removed: 0, keptAsHeard: 0, failed: 2) != nil)
+	}
 }
