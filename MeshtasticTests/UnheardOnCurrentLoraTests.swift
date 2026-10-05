@@ -198,4 +198,46 @@ struct UnheardOnCurrentLoraTests {
 		UnheardOnCurrentLoraOffer.lowerDismissal(toCount: 60, forNode: 7, store: store)
 		#expect(UnheardOnCurrentLoraOffer.shouldOffer(count: 1, forNode: 7, store: store))
 	}
+
+	// MARK: LoRa change in progress
+
+	@Test func aBurstOfChangesWaitsForTheNewestDownload() {
+		var tracker = LoRaChangeNodeDatabaseTracker()
+		#expect(!tracker.isAwaiting)
+
+		let first = tracker.changed()
+		#expect(tracker.isAwaiting)
+		let askedFirst = tracker.request(first)
+		#expect(askedFirst)
+
+		// Changed again while the first download runs.
+		let second = tracker.changed()
+		let third = tracker.changed()
+		tracker.finished()
+		#expect(tracker.isAwaiting, "the first download was for older settings")
+
+		let askedSecond = tracker.request(second)
+		#expect(!askedSecond, "a newer change asks instead")
+		let askedThird = tracker.request(third)
+		#expect(askedThird)
+		#expect(tracker.isAwaiting)
+		tracker.finished()
+		#expect(!tracker.isAwaiting)
+	}
+
+	@Test func aConnectDownloadDoesNotEndTheWait() {
+		var tracker = LoRaChangeNodeDatabaseTracker()
+		_ = tracker.changed()
+		tracker.finished()
+		#expect(tracker.isAwaiting)
+	}
+
+	@Test func disconnectingEndsTheWait() {
+		var tracker = LoRaChangeNodeDatabaseTracker()
+		let change = tracker.changed()
+		let asked = tracker.request(change)
+		#expect(asked)
+		tracker.reset()
+		#expect(!tracker.isAwaiting)
+	}
 }

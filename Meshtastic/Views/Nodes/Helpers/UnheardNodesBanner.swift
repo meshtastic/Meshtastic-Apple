@@ -73,6 +73,7 @@ struct UnheardNodesBanner: View {
 	/// One aggregate when most of the list is unheard; the rows carry the marker otherwise.
 	private func shouldOffer(connectedNodeNum: Int64) -> Bool {
 		accessoryManager.reportsHeardOnCurrentLora
+			&& !accessoryManager.awaitingNodeDatabaseAfterLoRaChange
 			&& UnheardOnCurrentLoraOffer.isMostOfList(unheard: reportedUnheardCount, reported: radioNodeCount)
 			&& UnheardOnCurrentLoraOffer.shouldOffer(count: unheardNodes.count, forNode: connectedNodeNum)
 	}

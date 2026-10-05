@@ -250,6 +250,13 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// left out are marked unknown for heard-on-current-LoRa: the radio no longer has them.
 	var nodeDatabaseDumpNums: Set<Int64> = []
 	var nodeDatabaseDumpInProgress = false
+	/// True from an app-initiated LoRa change until the node database asked for after the latest
+	/// one is saved. Until then the radio's heard-on-current-LoRa answers are for older settings,
+	/// so the unheard notice stays hidden rather than offering to remove nodes from them.
+	@Published private(set) var awaitingNodeDatabaseAfterLoRaChange = false
+	private var loraChangeTracker = LoRaChangeNodeDatabaseTracker() {
+		didSet { awaitingNodeDatabaseAfterLoRaChange = loraChangeTracker.isAwaiting }
+	}
 	@Published var isConnecting: Bool = false
 	@Published var isInBackground: Bool = false
 	@Published var firmwareEdition: FirmwareEditions = .vanilla
@@ -570,14 +577,21 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// `nodeDatabaseSavedAt`, which is what the unheard notice and node rows refresh on.
 	func refreshNodeDatabaseAfterLoRaChange() {
 		guard reportsHeardOnCurrentLora, isConnected else { return }
+		let generation = loraChangeTracker.changed()
 		Task { @MainActor in
 			// Let the radio finish reprogramming the modem before asking.
 			try? await Task.sleep(for: .seconds(2))
-			guard self.isConnected else { return }
+			guard self.isConnected else {
+				self.loraChangeTracker.reset()
+				return
+			}
+			// A newer change is waiting its turn and will ask instead.
+			guard self.loraChangeTracker.request(generation) else { return }
 			do {
 				try await self.sendWantDatabase()
 			} catch {
 				Logger.transport.error("[LoRa] Could not refresh the node database after a settings change: \(error.localizedDescription, privacy: .public)")
+				self.loraChangeTracker.finished()
 			}
 		}
 	}
@@ -652,6 +666,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		}
 		self.activeDeviceNum = nil
 		self.firmwareUpdateRequired = false
+		// A dropped connection never finishes its download; the reconnect brings a fresh one.
+		loraChangeTracker.reset()
 		if let refresh = activeAutomaticConfigRefresh {
 			automaticConfigRefreshTask?.cancel()
 			await finishAutomaticConfigRefresh(owner: refresh.owner, error: CancellationError())
@@ -1264,6 +1280,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					}
 					do {
 						try context.save()
+						loraChangeTracker.finished()
 						if nodeDatabaseSaveGeneration == saveGeneration {
 							nodeDatabaseSavedAt = Date()
 						}
