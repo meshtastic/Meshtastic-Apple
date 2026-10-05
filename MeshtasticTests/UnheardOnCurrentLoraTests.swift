@@ -183,4 +183,19 @@ struct UnheardOnCurrentLoraTests {
 		#expect(!UnheardOnCurrentLoraOffer.shouldOffer(count: 12, forNode: 7, store: store))
 		#expect(UnheardOnCurrentLoraOffer.shouldOffer(count: 41, forNode: 7, store: store))
 	}
+
+	@Test func keepResetsOnceFewerNodesAreUnheard() throws {
+		let store = try #require(UserDefaults(suiteName: "UnheardOnCurrentLoraTests.lower"))
+		store.removePersistentDomain(forName: "UnheardOnCurrentLoraTests.lower")
+		UnheardOnCurrentLoraOffer.dismiss(count: 208, forNode: 7, store: store)
+		#expect(!UnheardOnCurrentLoraOffer.shouldOffer(count: 60, forNode: 7, store: store))
+
+		// Back on a preset the nodes are heard on.
+		UnheardOnCurrentLoraOffer.lowerDismissal(toCount: 0, forNode: 7, store: store)
+		#expect(UnheardOnCurrentLoraOffer.shouldOffer(count: 60, forNode: 7, store: store))
+
+		// A higher count never raises it.
+		UnheardOnCurrentLoraOffer.lowerDismissal(toCount: 60, forNode: 7, store: store)
+		#expect(UnheardOnCurrentLoraOffer.shouldOffer(count: 1, forNode: 7, store: store))
+	}
 }
