@@ -187,6 +187,11 @@ struct UnheardNodesBanner: View {
 		radioNodeCount = candidates.filter { !$0.viaMqtt && $0.heardOnCurrentLora != nil }.count
 		reportedUnheardCount = candidates.filter(\.isUnheardOnCurrentLora).count
 		unheardNodes = candidates.filter(isRemovable)
+		// Only once this session's node database is saved: before that, nodes the radio no longer
+		// has aren't counted yet, and a low early count would bring the offer back after every launch.
+		if accessoryManager.nodeDatabaseSavedAt != nil {
+			UnheardOnCurrentLoraOffer.lowerDismissal(toCount: unheardNodes.count, forNode: connectedNodeNum)
+		}
 	}
 
 	private func removeUnheardNodes(connectedNodeNum: Int64) async {

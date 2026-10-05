@@ -45,4 +45,14 @@ enum UnheardOnCurrentLoraOffer {
 	static func dismiss(count: Int, forNode nodeNum: Int64, store: UserDefaults = .standard) {
 		store.set(count, forKey: key(forNode: nodeNum))
 	}
+
+	/// Lowers a kept count when fewer nodes are unheard now, so the next rise offers again.
+	/// Without this, switching back to a preset the nodes are heard on and then away again
+	/// would need more unheard nodes than last time before offering.
+	static func lowerDismissal(toCount count: Int, forNode nodeNum: Int64, store: UserDefaults = .standard) {
+		let key = key(forNode: nodeNum)
+		if count < store.integer(forKey: key) {
+			store.set(count, forKey: key)
+		}
+	}
 }
