@@ -169,8 +169,8 @@ struct Connect: View {
 												.font(.callout).foregroundColor(Color.gray)
 										}
 										if let presetName {
-											Text("Preset").font(.callout)+Text(": \(presetName)")
-												.font(.callout).foregroundColor(Color.gray)
+											Text("Preset").font(.caption)+Text(": \(presetName)")
+												.font(.caption).foregroundColor(Color.gray)
 										}
 										if accessoryManager.firmwareEdition.isEvent {
 											// Event branding lives here, in the Connect device box — never in the
