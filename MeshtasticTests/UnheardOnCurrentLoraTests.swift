@@ -213,7 +213,7 @@ struct UnheardOnCurrentLoraTests {
 		// Changed again while the first download runs.
 		let second = tracker.changed()
 		let third = tracker.changed()
-		tracker.finished()
+		tracker.finished(first)
 		#expect(tracker.isAwaiting, "the first download was for older settings")
 
 		let askedSecond = tracker.request(second)
@@ -221,15 +221,20 @@ struct UnheardOnCurrentLoraTests {
 		let askedThird = tracker.request(third)
 		#expect(askedThird)
 		#expect(tracker.isAwaiting)
-		tracker.finished()
+		tracker.finished(third)
 		#expect(!tracker.isAwaiting)
 	}
 
-	@Test func aConnectDownloadDoesNotEndTheWait() {
+	@Test func onlyTheNewestRequestEndsTheWait() {
 		var tracker = LoRaChangeNodeDatabaseTracker()
-		_ = tracker.changed()
-		tracker.finished()
+		let change = tracker.changed()
+		// Its wait isn't over yet, so a completion for it doesn't count.
+		tracker.finished(change)
 		#expect(tracker.isAwaiting)
+		let asked = tracker.request(change)
+		#expect(asked)
+		tracker.finished(change)
+		#expect(!tracker.isAwaiting)
 	}
 
 	@Test func disconnectingEndsTheWait() {
@@ -238,6 +243,22 @@ struct UnheardOnCurrentLoraTests {
 		let asked = tracker.request(change)
 		#expect(asked)
 		tracker.reset()
+		#expect(!tracker.isAwaiting)
+	}
+
+	@Test func aSaveFinishingAfterADisconnectDoesNotEndANewWait() {
+		var tracker = LoRaChangeNodeDatabaseTracker()
+		let beforeDisconnect = tracker.changed()
+		let askedBefore = tracker.request(beforeDisconnect)
+		#expect(askedBefore)
+		tracker.reset()
+
+		let afterReconnect = tracker.changed()
+		let askedAfter = tracker.request(afterReconnect)
+		#expect(askedAfter)
+		tracker.finished(beforeDisconnect)
+		#expect(tracker.isAwaiting)
+		tracker.finished(afterReconnect)
 		#expect(!tracker.isAwaiting)
 	}
 
