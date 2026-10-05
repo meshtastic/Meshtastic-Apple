@@ -119,7 +119,8 @@ Read this first if you are picking the work up. Update it in the same commit as 
   files (V27–V32). T390 (removing the only radio is Clear App Data) and T393 (the Connect window
   takes the last window's place on the Mac) are done, owner's calls of 2026-10-05
   (`d9e0a5e8`). Review V33 (`review-connections-v33.md`, V33-1 and minors) of them, checked in
-  the files; all held and are fixed (T396).
+  the files; all held and are fixed (T396). Review V34 (`review-connections-v34.md`) of T396
+  found nothing new (T397).
 - Merge of `main` (2026-10-02): merge commit `03632328` brought in `main`'s 11 commits up to
   `c3bb355b` (v2.7.23); `backup/multi-radio-pre-rebase` keeps the branch as it was before
   (`b13061ec`). Review V20 and data V15 (`review-connections-v20.md` M1–M2, `review-data-v15.md`
@@ -542,7 +543,9 @@ describes it well enough to rebuild.
   Data, a full factory reset) was the only one open, the Connect window opens in its place;
   with two radio windows, Clear App Data leaves exactly one Connect window; with the Connect
   window already open, no second one opens. After Reset NodeDB with A alone, connect B, then
-  remove B: A's window stays and no Connect window opens (review V33-1).
+  remove B: A's window stays and no Connect window opens (review V33-1). With radio windows
+  merged into one tabbed window, removing the front tab's radio closes that tab and opens no
+  Connect window while another tab remains (review V34).
 - [ ] Disconnect and Remove, reviews V28 and V29 (T388, T389). iPhone with A (connected first)
   and B, the window on A: Disconnect A from the Connect tab, Settings › Device, the update screen
   and Shortcuts in turn (reconnect A between): the window stays on A, off, and doesn't show B for
