@@ -56,3 +56,42 @@ enum UnheardOnCurrentLoraOffer {
 		}
 	}
 }
+
+/// Whether the node database asked for after the latest app-initiated LoRa change has been saved.
+///
+/// Each change asks again after a short wait. When changes come quickly, only the newest one asks.
+/// A completion only counts when it belongs to the newest change's request, so a connect-time
+/// download, an older change's download, or a save that finishes after a disconnect can't end the wait.
+struct LoRaChangeNodeDatabaseTracker {
+	private var generation = 0
+	private var requestedGeneration = 0
+	private var completedGeneration = 0
+
+	var isAwaiting: Bool { completedGeneration != generation }
+
+	/// Records a change and returns its number, to pass to `request` once the wait is over.
+	mutating func changed() -> Int {
+		generation += 1
+		return generation
+	}
+
+	/// Whether `changeNumber` is still the newest change and should ask for the node database.
+	mutating func request(_ changeNumber: Int) -> Bool {
+		guard changeNumber == generation else { return false }
+		requestedGeneration = changeNumber
+		return true
+	}
+
+	/// The download asked for by `changeNumber` was saved, or the ask failed. Ignored unless it is
+	/// the newest change's request.
+	mutating func finished(_ changeNumber: Int) {
+		guard changeNumber == generation, changeNumber == requestedGeneration else { return }
+		completedGeneration = changeNumber
+	}
+
+	/// A dropped connection never finishes its download; the reconnect brings a fresh one anyway.
+	mutating func reset() {
+		requestedGeneration = generation
+		completedGeneration = generation
+	}
+}

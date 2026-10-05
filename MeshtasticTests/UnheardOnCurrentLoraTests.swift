@@ -198,4 +198,75 @@ struct UnheardOnCurrentLoraTests {
 		UnheardOnCurrentLoraOffer.lowerDismissal(toCount: 60, forNode: 7, store: store)
 		#expect(UnheardOnCurrentLoraOffer.shouldOffer(count: 1, forNode: 7, store: store))
 	}
+
+	// MARK: LoRa change in progress
+
+	@Test func aBurstOfChangesWaitsForTheNewestDownload() {
+		var tracker = LoRaChangeNodeDatabaseTracker()
+		#expect(!tracker.isAwaiting)
+
+		let first = tracker.changed()
+		#expect(tracker.isAwaiting)
+		let askedFirst = tracker.request(first)
+		#expect(askedFirst)
+
+		// Changed again while the first download runs.
+		let second = tracker.changed()
+		let third = tracker.changed()
+		tracker.finished(first)
+		#expect(tracker.isAwaiting, "the first download was for older settings")
+
+		let askedSecond = tracker.request(second)
+		#expect(!askedSecond, "a newer change asks instead")
+		let askedThird = tracker.request(third)
+		#expect(askedThird)
+		#expect(tracker.isAwaiting)
+		tracker.finished(third)
+		#expect(!tracker.isAwaiting)
+	}
+
+	@Test func onlyTheNewestRequestEndsTheWait() {
+		var tracker = LoRaChangeNodeDatabaseTracker()
+		let change = tracker.changed()
+		// Its wait isn't over yet, so a completion for it doesn't count.
+		tracker.finished(change)
+		#expect(tracker.isAwaiting)
+		let asked = tracker.request(change)
+		#expect(asked)
+		tracker.finished(change)
+		#expect(!tracker.isAwaiting)
+	}
+
+	@Test func disconnectingEndsTheWait() {
+		var tracker = LoRaChangeNodeDatabaseTracker()
+		let change = tracker.changed()
+		let asked = tracker.request(change)
+		#expect(asked)
+		tracker.reset()
+		#expect(!tracker.isAwaiting)
+	}
+
+	@Test func aSaveFinishingAfterADisconnectDoesNotEndANewWait() {
+		var tracker = LoRaChangeNodeDatabaseTracker()
+		let beforeDisconnect = tracker.changed()
+		let askedBefore = tracker.request(beforeDisconnect)
+		#expect(askedBefore)
+		tracker.reset()
+
+		let afterReconnect = tracker.changed()
+		let askedAfter = tracker.request(afterReconnect)
+		#expect(askedAfter)
+		tracker.finished(beforeDisconnect)
+		#expect(tracker.isAwaiting)
+		tracker.finished(afterReconnect)
+		#expect(!tracker.isAwaiting)
+	}
+
+	@Test func aFullRemovalSaysNothingAndAPartialOneSaysWhy() {
+		#expect(UnheardNodesStrings.removalResult(removed: 40, keptAsHeard: 0, failed: 0) == nil)
+		let partial = UnheardNodesStrings.removalResult(removed: 19, keptAsHeard: 63, failed: 0)
+		#expect(partial?.contains("19") == true)
+		#expect(partial?.contains("63") == true)
+		#expect(UnheardNodesStrings.removalResult(removed: 0, keptAsHeard: 0, failed: 2) != nil)
+	}
 }
