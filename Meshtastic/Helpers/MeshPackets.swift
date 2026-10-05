@@ -1028,6 +1028,18 @@ actor MeshPackets {
 		}
 	}
 
+	/// After a full node database download: nodes the radio did not include are ones it no longer
+	/// has, so it has no answer for them. Their stored heard-on-current-LoRa goes back to unknown,
+	/// rather than keeping an answer from an earlier download.
+	func markAbsentFromRadio(presentNums: Set<Int64>) {
+		let descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.heardOnCurrentLora != nil })
+		guard let nodes = try? modelContext.fetch(descriptor) else { return }
+		for node in nodes where !presentNums.contains(node.num) {
+			node.heardOnCurrentLora = nil
+		}
+		savePendingChanges()
+	}
+
 	/// What to store for NodeInfo.heard_on_current_lora. Nil unless the radio is known to send it,
 	/// which also clears a value left by a newer firmware if the radio is downgraded. The radio's own
 	/// entry is left nil: it is not something it hears.

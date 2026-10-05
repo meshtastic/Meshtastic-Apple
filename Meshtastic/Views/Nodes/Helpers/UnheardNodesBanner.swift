@@ -35,17 +35,37 @@ enum UnheardNodesStrings {
 	static func removeConfirmation(count: Int) -> String {
 		String(localized: "Remove \(count) nodes?", comment: "Confirmation title for removing nodes not heard on the current LoRa settings")
 	}
+
+	/// Shown after a removal that didn't remove everything it offered, so a smaller result isn't silent.
+	static func removalResult(removed: Int, keptAsHeard: Int, failed: Int) -> String? {
+		guard keptAsHeard > 0 || failed > 0 else { return nil }
+		var parts = [String(localized: "Removed \(removed) nodes.", comment: "Result after removing nodes not heard on the current LoRa settings")]
+		if keptAsHeard > 0 {
+			parts.append(String(localized: "\(keptAsHeard) were heard on the current settings before they were removed and were kept.", comment: "Result after removing unheard nodes: nodes the radio reported heard again"))
+		}
+		if failed > 0 {
+			parts.append(String(localized: "\(failed) could not be removed.", comment: "Result after removing unheard nodes: nodes the radio refused to remove"))
+		}
+		return parts.joined(separator: " ")
+	}
 }
 
 struct UnheardNodesBanner: View {
 	@Environment(\.modelContext) private var context
+	@Environment(\.scenePhase) private var scenePhase
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 
 	@State private var unheardNodes: [NodeInfoEntity] = []
-	/// Nodes the radio could hear directly (not MQTT), the denominator for "most of the list".
+	/// Nodes the radio has given an answer for, the denominator for "most of the list". The app keeps
+	/// more nodes than the radio does; the ones it never reported on are unknown, not heard, and
+	/// counting them hid the notice even when nearly every reported node was unheard.
 	@State private var radioNodeCount = 0
+	/// Of `unheardNodes`, the ones the radio reported unheard. Only these decide whether to offer:
+	/// most apps keep more nodes than the radio, so counting the rest would offer all the time.
+	@State private var reportedUnheardCount = 0
 	@State private var isConfirming = false
 	@State private var isRemoving = false
+	@State private var removalResult: String?
 
 	/// Resolved here rather than passed in. A parent that only builds this view once a radio is
 	/// connected has to be re-evaluated when one arrives, and inside a `safeAreaInset` that
@@ -58,16 +78,31 @@ struct UnheardNodesBanner: View {
 				content(connectedNodeNum: connectedNodeNum)
 			}
 		}
+		.alert(
+			Text("Unheard Nodes", comment: "Title of the result shown after removing nodes not heard on the current LoRa settings"),
+			isPresented: Binding(get: { removalResult != nil }, set: { if !$0 { removalResult = nil } })
+		) {
+			Button("OK", role: .cancel) { }
+		} message: {
+			Text(removalResult ?? "")
+		}
 		.onAppear(perform: refresh)
 		.onChange(of: accessoryManager.activeDeviceNum) { _, _ in refresh() }
-		// The radio's answers arrive with its node db, after the device number is known.
-		.onChange(of: accessoryManager.state == .subscribed) { _, _ in refresh() }
+		// The radio's answers arrive with its node db. The connect reports subscribed before that
+		// db is saved, so refresh once the save lands rather than on the state change.
+		.onChange(of: accessoryManager.nodeDatabaseSavedAt) { _, _ in refresh() }
+		// Views don't refresh in the background, so a node database saved meanwhile can leave the
+		// count behind until the app is back.
+		.onChange(of: scenePhase) { _, phase in
+			if phase == .active { refresh() }
+		}
 	}
 
 	/// One aggregate when most of the list is unheard; the rows carry the marker otherwise.
 	private func shouldOffer(connectedNodeNum: Int64) -> Bool {
 		accessoryManager.reportsHeardOnCurrentLora
-			&& unheardNodes.count * 2 >= radioNodeCount
+			&& !accessoryManager.awaitingNodeDatabaseAfterLoRaChange
+			&& UnheardOnCurrentLoraOffer.isMostOfList(unheard: reportedUnheardCount, reported: radioNodeCount)
 			&& UnheardOnCurrentLoraOffer.shouldOffer(count: unheardNodes.count, forNode: connectedNodeNum)
 	}
 
@@ -86,7 +121,7 @@ struct UnheardNodesBanner: View {
 				// they moved to another preset — a radio cannot observe a channel it is not tuned to.
 				Text(UnheardNodesStrings.headline(count: unheardNodes.count))
 					.font(.callout.weight(.semibold))
-				Text("Your radio has not heard them on the settings it is using now. Favorites and the connected node are kept.")
+				Text("Your radio has not heard them on the settings it is using now, or no longer has them. Favorites and the connected node are kept.")
 					.font(.caption)
 					.foregroundStyle(.secondary)
 
@@ -103,7 +138,12 @@ struct UnheardNodesBanner: View {
 				} else {
 					HStack(spacing: 12) {
 						Button(role: .destructive) {
-							isConfirming = true
+							// Count again so the confirmation matches what will be removed; the shown
+							// count can be older than the radio's latest answers.
+							refresh()
+							if !unheardNodes.isEmpty, shouldOffer(connectedNodeNum: connectedNodeNum) {
+								isConfirming = true
+							}
 						} label: {
 							Text("Remove Them")
 								.frame(minWidth: 48, minHeight: 48)
@@ -142,11 +182,23 @@ struct UnheardNodesBanner: View {
 				Text("Cancel")
 			}
 		} message: {
-			Text("They are removed from this app and from the radio. Any that are still out there come back when they are next heard.")
+			Text("They are removed from this app, and from the radio if it still has them. Any that are still out there come back when they are next heard.")
 		}
 	}
 
-	/// Nodes the radio reports unheard on its current settings, excluding favorites and the radio itself.
+	/// A node the radio no longer has: it sends the field, a node database has been saved this
+	/// session (so absent nodes have been marked), and it gave no answer for this node. The radio
+	/// adds every node it hears, so it has not heard these on its current settings either.
+	private func isAppOnly(_ node: NodeInfoEntity) -> Bool {
+		accessoryManager.nodeDatabaseSavedAt != nil && node.heardOnCurrentLora == nil && !node.viaMqtt
+	}
+
+	private func isRemovable(_ node: NodeInfoEntity) -> Bool {
+		node.isUnheardOnCurrentLora || isAppOnly(node)
+	}
+
+	/// Nodes the radio reports unheard on its current settings, plus nodes only the app still has,
+	/// excluding favorites and the radio itself.
 	private func refresh() {
 		guard let connectedNodeNum, accessoryManager.reportsHeardOnCurrentLora else {
 			unheardNodes = []
@@ -166,8 +218,14 @@ struct UnheardNodesBanner: View {
 			unheardNodes = []
 			return
 		}
-		radioNodeCount = candidates.filter { !$0.viaMqtt }.count
-		unheardNodes = candidates.filter(\.isUnheardOnCurrentLora)
+		radioNodeCount = candidates.filter { !$0.viaMqtt && $0.heardOnCurrentLora != nil }.count
+		reportedUnheardCount = candidates.filter(\.isUnheardOnCurrentLora).count
+		unheardNodes = candidates.filter(isRemovable)
+		// Only once this session's node database is saved: before that, nodes the radio no longer
+		// has aren't counted yet, and a low early count would bring the offer back after every launch.
+		if accessoryManager.nodeDatabaseSavedAt != nil {
+			UnheardOnCurrentLoraOffer.lowerDismissal(toCount: unheardNodes.count, forNode: connectedNodeNum)
+		}
 	}
 
 	private func removeUnheardNodes(connectedNodeNum: Int64) async {
@@ -182,12 +240,19 @@ struct UnheardNodesBanner: View {
 		var recovered = 0
 
 		for node in unheardNodes {
-			guard node.isUnheardOnCurrentLora else {
+			guard isRemovable(node) else {
 				recovered += 1
 				continue
 			}
 			do {
-				try await accessoryManager.removeNode(node: node, connectedNodeNum: connectedNodeNum)
+				if isAppOnly(node) {
+					// The radio doesn't have it, so there is nothing to remove there.
+					if let user = node.user { context.delete(user) }
+					context.delete(node)
+					try context.save()
+				} else {
+					try await accessoryManager.removeNode(node: node, connectedNodeNum: connectedNodeNum)
+				}
 				removed += 1
 				unheardNodes.removeAll { $0.num == node.num }
 			} catch {
@@ -197,6 +262,8 @@ struct UnheardNodesBanner: View {
 			}
 		}
 		Logger.data.info("Removed \(removed, privacy: .public) nodes not heard on the current LoRa settings, \(failed, privacy: .public) failed, \(recovered, privacy: .public) heard again before removal")
+
+		removalResult = UnheardNodesStrings.removalResult(removed: removed, keptAsHeard: recovered, failed: failed)
 
 		// Only stand the offer down once nothing is left to remove. Dismissing after a partial
 		// failure would hide the banner and take the retry with it.

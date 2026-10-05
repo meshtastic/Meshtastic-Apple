@@ -165,6 +165,11 @@ struct LoRaConfig: View {
 				}
 
 				_ = try await accessoryManager.saveLoRaConfig(config: config, fromUser: from, toUser: to)
+				// A change to the connected radio applies without a reboot on 2.8, so ask it for the
+				// node database to pick up its answers for the new settings.
+				if to.num == accessoryManager.activeDeviceNum {
+					accessoryManager.refreshNodeDatabaseAfterLoRaChange()
+				}
 				onSuccessfulSave(to.num, region)
 			})
 		.navigationTitle("LoRa Config")
@@ -275,6 +280,10 @@ private struct ModemPresetRow: View {
 		   let info = accessoryManager.loRaRegionPresets[code], !info.presets.isEmpty {
 			let constrained = base.filter { info.presets.contains($0.protoEnumValue()) }
 			if !constrained.isEmpty { presets = constrained }
+		} else if RegionCodes(rawValue: config.region.rawValue)?.allowsBandLimitedPresets != true {
+			// No map from the radio (it is sent with the config, which some reconnects skip).
+			// Lite, Narrow and Tiny are never legal outside their regions, so don't offer them.
+			presets = presets.filter { !$0.isBandLimited }
 		}
 		// Whatever the radio is actually set to stays visible, whether it was filtered out
 		// for being deprecated or for being Turbo in a region that forbids it. Otherwise

@@ -607,8 +607,10 @@ actor BLETransport: Transport {
 				self.activeConnection = restoredConnection
 				Logger.transport.error("🛜 [BLE] Peripheral Connection found and state is connected setting this connection as the activeConnection.")
 				let connectTask = Task { @MainActor in
-					// In this case we need a full reconnect, so do the wantConfig, wantDatabase, and versionCheck
-					try await AccessoryManager.shared.connect(to: device, withConnection: restoredConnection, wantConfig: false, wantDatabase: false, versionCheck: false)
+					// The link survived but this process is new, so everything the radio sends only with
+					// its config (region preset map, firmware edition, metadata) is missing. Ask for the
+					// config; the node database is already in the store.
+					try await AccessoryManager.shared.connect(to: device, withConnection: restoredConnection, wantConfig: true, wantDatabase: false, versionCheck: false)
 				}
 				do {
 					try await connectTask.value
