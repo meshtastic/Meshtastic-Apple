@@ -280,11 +280,11 @@ extension AccessoryManager {
 					ManualConnectionList.shared.insert(device: activeDevice)
 				}
 
-				// Refresh the Messages sharing snapshot here rather than only off the config and
-				// database completions: a background BLE restoration of an already-connected
-				// peripheral reconnects with wantConfig and wantDatabase false (BLETransport's
-				// `.connected` case), so neither completion fires and the extension is left
-				// reporting no radio. Every connect path reaches this step.
+				// Refresh the Messages sharing snapshot here rather than only off the database
+				// completion: a background BLE restoration of an already-connected peripheral
+				// reconnects with wantDatabase false (BLETransport's `.connected` case), so that
+				// completion never fires and the extension is left reporting no radio. Every
+				// connect path reaches this step.
 				if let activeDeviceNum = self.activeDeviceNum {
 					MeshShareSnapshotBuilder.refresh(nodeNum: activeDeviceNum, context: self.context)
 				}
