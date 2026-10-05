@@ -243,6 +243,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// dump brings in (the unheard-on-current-LoRa notice) refresh on this, because the connect
 	/// reaches `.subscribed` before that save lands.
 	@Published var nodeDatabaseSavedAt: Date?
+	/// Bumped on each node database request and on disconnect, so a save finishing late for an
+	/// earlier request doesn't report the new one as saved.
+	private var nodeDatabaseSaveGeneration = 0
 	/// Node numbers in the node database download in progress. When it completes, nodes the radio
 	/// left out are marked unknown for heard-on-current-LoRa: the radio no longer has them.
 	var nodeDatabaseDumpNums: Set<Int64> = []
@@ -580,6 +583,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	}
 
 	func sendWantDatabase() async throws {
+		nodeDatabaseSaveGeneration += 1
+		nodeDatabaseSavedAt = nil
 		nodeDatabaseDumpNums = []
 		nodeDatabaseDumpInProgress = true
 		if let firstDatabaseNodeInfoContinuation = firstDatabaseNodeInfoContinuation {
@@ -627,6 +632,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		}
 		isClosingConnection = true
 		defer { isClosingConnection = false }
+
+		nodeDatabaseSaveGeneration += 1
+		nodeDatabaseSavedAt = nil
 
 		Logger.transport.debug("[AccessoryManager] received disconnect request")
 
@@ -1245,6 +1253,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				let dumpNums = nodeDatabaseDumpNums
 				let dumpWasRequested = nodeDatabaseDumpInProgress
 				nodeDatabaseDumpInProgress = false
+				let saveGeneration = nodeDatabaseSaveGeneration
 				Task {
 					// The dump was ingested with deferred saves on the MeshPackets actor
 					// (see handleNodeInfo); flush it so every node from the dump is persisted
@@ -1255,7 +1264,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					}
 					do {
 						try context.save()
-						nodeDatabaseSavedAt = Date()
+						if nodeDatabaseSaveGeneration == saveGeneration {
+							nodeDatabaseSavedAt = Date()
+						}
 						Logger.data.info("💾 [Database] Batch saved all node info after database retrieval")
 						if let activeDeviceNum {
 							MeshShareSnapshotBuilder.refresh(
