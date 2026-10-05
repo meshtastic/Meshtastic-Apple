@@ -59,4 +59,13 @@ struct LoRaPresetRegionTests {
 		#expect(!warned.contains(.longTurbo))
 		#expect(warned.count == ModemPresets.allCases.count - 3)
 	}
+
+	@Test func bandLimitedPresetsBelongOnlyToTheirRegions() {
+		#expect(!RegionCodes.us.allowsBandLimitedPresets)
+		#expect(!RegionCodes.anz.allowsBandLimitedPresets)
+		#expect(RegionCodes.euN868.allowsBandLimitedPresets)
+		#expect(RegionCodes.itu22M.allowsBandLimitedPresets)
+		let bandLimited = ModemPresets.allCases.filter(\.isBandLimited)
+		#expect(Set(bandLimited) == [.liteFast, .liteSlow, .narrowFast, .narrowSlow, .tinyFast, .tinySlow])
+	}
 }

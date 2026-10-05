@@ -217,7 +217,11 @@ extension AccessoryManager {
 
 	/// Adds a shared contact to a radio. `viaRadio` picks the connected radio (feature 021); nil
 	/// means the first radio.
-	public func addContactFromURL(base64UrlString: String, viaRadio: Int64? = nil) async throws {
+	/// - Parameter acceptsKeyReplacement: Only true when the add-contact sheet showed that this
+	///   contact's key differs from the one the node holds and the person confirmed replacing it.
+	///   The radio applies the new key either way, so without this the app would keep the old one
+	///   and show a key mismatch for a change the person asked for.
+	public func addContactFromURL(base64UrlString: String, viaRadio: Int64? = nil, acceptsKeyReplacement: Bool = false) async throws {
 		guard let session = connectedSession(forRadio: viaRadio), let deviceNum = session.device.num else {
 			Logger.services.error("Error while sending CannedMessageModule request.  No active device.")
 			throw AccessoryError.ioFailed("No active device")
@@ -284,7 +288,8 @@ extension AccessoryManager {
 				// Update local database with the new node info
 				// Do not auto-favorite when using CLIENT_BASE role to avoid creating routing issues
 				let shouldFavorite = radioRole(for: Int64(deviceNum)) != .clientBase
-				await MeshPackets.shared.upsertNodeInfoPacket(packet: nodeMeshPacket, favorite: shouldFavorite, overTheMesh: false, receivedBy: Int64(deviceNum))
+				await MeshPackets.shared.upsertNodeInfoPacket(packet: nodeMeshPacket, favorite: shouldFavorite, overTheMesh: false, receivedBy: Int64(deviceNum),
+				                                             acceptsKeyReplacement: acceptsKeyReplacement)
 			}
 		} catch {
 			// The contact decoded fine and carries a key; this is the radio send failing.
@@ -1120,6 +1125,7 @@ extension AccessoryManager {
 		lora.channelNum = 0
 		do {
 			_ = try await saveLoRaConfig(config: lora, fromUser: user, toUser: user)
+			refreshNodeDatabaseAfterLoRaChange(forRadio: Int64(deviceNum))
 		} catch {
 			// Roll the primary channel back so we don't strand the radio between meshes. The channel
 			// write doesn't reboot, so this restore is safe.

@@ -100,6 +100,34 @@ struct FirmwareArtifactTargetTests {
 		])
 	}
 
+	@Test func nightlyArtifactsResolveAtTheNightlyHostRoot() throws {
+		let hardware = DeviceHardwareEntity()
+		hardware.platformioTarget = "heltec-v3"
+		hardware.architecture = "esp32-s3"
+
+		let release = FirmwareReleaseEntity()
+		release.versionId = "v2.8.1.778184c"
+		release.releaseType = ReleaseType.nightly.rawValue
+
+		let firmware = try FirmwareFile(firmware: release, hardware: hardware, type: .bin)
+
+		#expect(firmware.remoteUrl?.absoluteString == "https://nightly.meshtastic.org/firmware-heltec-v3-2.8.1.778184c.bin")
+	}
+
+	@Test func taggedReleaseArtifactsKeepTheirVersionDirectory() throws {
+		let hardware = DeviceHardwareEntity()
+		hardware.platformioTarget = "heltec-v3"
+		hardware.architecture = "esp32-s3"
+
+		let release = FirmwareReleaseEntity()
+		release.versionId = "v2.7.26.54e0d8d"
+		release.releaseType = ReleaseType.stable.rawValue
+
+		let firmware = try FirmwareFile(firmware: release, hardware: hardware, type: .bin)
+
+		#expect(firmware.remoteUrl?.absoluteString == "https://raw.githubusercontent.com/meshtastic/meshtastic.github.io/master/firmware-2.7.26.54e0d8d/firmware-heltec-v3-2.7.26.54e0d8d.bin")
+	}
+
 	@MainActor
 	@Test func refreshIncludesLocalFlavorFileUsingMetadataArchitecture() throws {
 		let directory = FileManager.default.temporaryDirectory.appendingPathComponent(

@@ -45,6 +45,7 @@ extension View {
 			.controlSize(.large)
 			.padding(.horizontal)
 			.buttonStyle(.borderedProminent)
+			.tint(.accentFill)
 	}
 
 	@ViewBuilder

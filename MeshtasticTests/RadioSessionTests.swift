@@ -49,12 +49,27 @@ struct RadioSessionTests {
 		return manager
 	}
 
-	/// A config-complete with a nonce nothing waits on: it only stamps `lastConfigRefresh`, which
-	/// makes it a side-effect-free probe of whether a data event was handled.
+	/// A region preset map: it only sets the radio's `loRaRegionPresets`, which makes it a
+	/// side-effect-free probe of whether a data event was handled, and for which radio. (A
+	/// config-complete nothing waits on was the probe until #2404, which stamps
+	/// `lastConfigRefresh` only on a completion a refresh owns.)
 	private func probeEvent() -> ConnectionEvent {
+		var group = LoRaPresetGroup()
+		group.presets = [.longFast]
+		group.defaultPreset = .longFast
+		var entry = LoRaRegionPresets()
+		entry.region = .us
+		entry.groupIndex = 0
+		var map = LoRaRegionPresetMap()
+		map.groups = [group]
+		map.regionGroups = [entry]
 		var fromRadio = FromRadio()
-		fromRadio.payloadVariant = .configCompleteID(12_345)
+		fromRadio.payloadVariant = .regionPresets(map)
 		return .data(fromRadio)
+	}
+
+	private func wasHandled(by session: RadioSession) -> Bool {
+		session.loRaRegionPresets[.us] != nil
 	}
 
 	@Test func sessionsAreDistinctPerConnectionAttempt() {
@@ -124,22 +139,37 @@ struct RadioSessionTests {
 	@Test func dataFromTheActiveSessionIsHandled() async {
 		let session = makeSession()
 		let manager = makeManager(active: session)
-		#expect(manager.lastConfigRefresh == nil)
+		#expect(!wasHandled(by: session))
 		await manager.didReceive(probeEvent(), from: session)
-		#expect(manager.lastConfigRefresh != nil)
+		#expect(wasHandled(by: session))
 	}
 
 	@Test func dataWithoutASessionStillGoesToTheActiveOne() async {
-		let manager = makeManager(active: makeSession())
+		let session = makeSession()
+		let manager = makeManager(active: session)
 		await manager.didReceive(probeEvent())
-		#expect(manager.lastConfigRefresh != nil)
+		#expect(wasHandled(by: session))
 	}
 
 	@Test func dataFromAStaleSessionIsDropped() async {
 		let stale = makeSession(num: 0x0000_0001)
-		let manager = makeManager(active: makeSession(num: 0x0000_0002))
+		let active = makeSession(num: 0x0000_0002)
+		let manager = makeManager(active: active)
 		await manager.didReceive(probeEvent(), from: stale)
+		#expect(!wasHandled(by: stale))
+		#expect(!wasHandled(by: active))
+	}
+
+	/// #2404: only a config completion a refresh owns proves the cached config is fresh, so one
+	/// nothing waits on stamps neither the radio's session nor the manager.
+	@Test func anUnownedConfigCompletionDoesNotStampTheRefresh() async {
+		let session = makeSession()
+		let manager = makeManager(active: session)
+		var fromRadio = FromRadio()
+		fromRadio.payloadVariant = .configCompleteID(12_345)
+		await manager.didReceive(.data(fromRadio), from: session)
 		#expect(manager.lastConfigRefresh == nil)
+		#expect(session.lastConfigRefresh == nil)
 	}
 
 	@Test func rssiFromAStaleSessionDoesNotTouchTheActiveRadio() async {

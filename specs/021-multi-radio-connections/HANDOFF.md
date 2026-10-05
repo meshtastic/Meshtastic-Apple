@@ -121,6 +121,12 @@ Read this first if you are picking the work up. Update it in the same commit as 
   (`d9e0a5e8`). Review V33 (`review-connections-v33.md`, V33-1 and minors) of them, checked in
   the files; all held and are fixed (T396). Review V34 (`review-connections-v34.md`) of T396
   found nothing new (T397).
+- Merge of `main` (2026-10-05, T398): `main`'s 25 commits up to `8425daa6` (#2584), 22 files in
+  conflict. `main`'s #2575 stores heard-on-current-LoRa on the shared node rows from the one
+  radio; here only the only radio connected answers it, and a second radio puts the answers
+  back to unknown (`heardOnCurrentLoraSession`). Per-radio answers (on
+  `NodeObservationEntity`) are left for the owner. #2404 stamps `lastConfigRefresh` only on an
+  owned config completion, per session here. #2584's restore always asks for the config.
 - Merge of `main` (2026-10-02): merge commit `03632328` brought in `main`'s 11 commits up to
   `c3bb355b` (v2.7.23); `backup/multi-radio-pre-rebase` keeps the branch as it was before
   (`b13061ec`). Review V20 and data V15 (`review-connections-v20.md` M1–M2, `review-data-v15.md`

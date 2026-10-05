@@ -80,28 +80,42 @@ class TCPTransport: NSObject, Transport, NetServiceBrowserDelegate, NetServiceDe
 		// Save the resolved service locally for later
 		services[service.name] = ResolvedService(id: idString, service: service, host: host, port: port)
 		
-		let name: String
-		if let txtRecords = service.txtRecordData().map({NetService.dictionary(fromTXTRecord: $0)}) {
-			var nodeNameString = ""
-			if let shortNameData = txtRecords["shortname"] {
-				nodeNameString += String(data: shortNameData, encoding: .utf8) ?? ""
-			}
-			if let nodeId = txtRecords["id"], nodeId.count > 4 {
-				if nodeNameString.count > 0 {
-					nodeNameString += "_"
-				}
-				nodeNameString += String(data: Data(nodeId.suffix(4)), encoding: .utf8) ?? ""
-			}
-			name = nodeNameString
-		} else {
-			name = "\(service.name) (\(ip))"
-		}
+		let name = Self.discoveryName(
+			serviceName: service.name,
+			host: host,
+			ip: service.ipv4Address,
+			port: port,
+			txtRecords: service.txtRecordData().map(NetService.dictionary(fromTXTRecord:))
+		)
 		let device = Device(id: idString,
 							name: name,
 							transportType: .tcp,
 							identifier: "\(host):\(port)")
 		Logger.transport.debug("TCP found: \(name) \(host):\(port)")
 		continuation?.yield(.deviceFound(device))
+	}
+
+	static func discoveryName(serviceName: String, host: String, ip: String?, port: Int, txtRecords: [String: Data]?) -> String {
+		var nodeName = ""
+		if let shortNameData = txtRecords?["shortname"] {
+			nodeName = String(data: shortNameData, encoding: .utf8) ?? ""
+		}
+		if let nodeId = txtRecords?["id"], nodeId.count > 4,
+		   let suffix = String(data: Data(nodeId.suffix(4)), encoding: .utf8),
+		   !suffix.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+			if !nodeName.isEmpty {
+				nodeName += "_"
+			}
+			nodeName += suffix
+		}
+		if !nodeName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+			return nodeName
+		}
+
+		let displayHost = host.hasSuffix(".") ? String(host.dropLast()) : host
+		let address = ip ?? displayHost
+		let name = serviceName.trimmingCharacters(in: .whitespacesAndNewlines)
+		return "\(name.isEmpty ? displayHost : name) (\(address):\(port))"
 	}
 
 	func netService(_ sender: NetService, didNotResolve errorDict: [String: NSNumber]) {

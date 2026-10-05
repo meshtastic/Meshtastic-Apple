@@ -199,6 +199,7 @@ struct UserConfig: View {
 					.padding(.bottom)
 					.controlSize(.large)
 					.buttonStyle(.borderedProminent)
+					.tint(.accentFill)
 					.buttonBorderShape(.capsule)
 					.confirmationDialog(
 						"Are you sure?",

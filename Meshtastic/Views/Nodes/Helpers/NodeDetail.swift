@@ -521,6 +521,15 @@ struct NodeDetail: View {
 					dateFormatRelative.toggle()
 				}
 			}
+			if node.isUnheardOnCurrentLora {
+				Label {
+					Text(UnheardOnCurrentLora.label)
+				} icon: {
+					Image(systemName: UnheardOnCurrentLora.systemImage)
+						.foregroundStyle(.secondary)
+						.accessibilityHidden(true)
+				}
+			}
 		}
 	}
 

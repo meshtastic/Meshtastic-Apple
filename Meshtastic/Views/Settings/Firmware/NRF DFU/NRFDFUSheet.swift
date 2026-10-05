@@ -82,6 +82,7 @@ struct NRFDFUSheet: View {
 									.frame(maxWidth: .infinity, minHeight: 48)
 									.clipShape(RoundedRectangle(cornerRadius: 10))
 									.buttonStyle(.borderedProminent)
+									.tint(.accentFill)
 
 								case .uploading, .starting, .success:
 									Text(dfuViewModel.rotatingMessage)

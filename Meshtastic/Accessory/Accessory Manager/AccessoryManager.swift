@@ -238,6 +238,27 @@ class AccessoryManager: ObservableObject {
 	/// against entities that still hold pre-import values: every item would look dropped. See
 	/// `DeviceProfileVerifier`.
 	@Published var lastConfigRefresh: Date?
+	/// When the radio's node database was last saved after a connect. Views that read values the
+	/// dump brings in (the unheard-on-current-LoRa notice) refresh on this, because the connect
+	/// reaches `.subscribed` before that save lands.
+	@Published var nodeDatabaseSavedAt: Date?
+	/// Bumped on each node database request and on disconnect, so a save finishing late for an
+	/// earlier request doesn't report the new one as saved.
+	private var nodeDatabaseSaveGeneration = 0
+	/// Node numbers in the node database download in progress. When it completes, nodes the radio
+	/// left out are marked unknown for heard-on-current-LoRa: the radio no longer has them.
+	var nodeDatabaseDumpNums: Set<Int64> = []
+	var nodeDatabaseDumpInProgress = false
+	/// The LoRa change the node database download in progress was asked for, or nil when it was
+	/// asked for by something else (the connect).
+	private var nodeDatabaseRequestLoRaChange: Int?
+	/// True from an app-initiated LoRa change until the node database asked for after the latest
+	/// one is saved. Until then the radio's heard-on-current-LoRa answers are for older settings,
+	/// so the unheard notice stays hidden rather than offering to remove nodes from them.
+	@Published private(set) var awaitingNodeDatabaseAfterLoRaChange = false
+	private var loraChangeTracker = LoRaChangeNodeDatabaseTracker() {
+		didSet { awaitingNodeDatabaseAfterLoRaChange = loraChangeTracker.isAwaiting }
+	}
 	@Published var isConnecting: Bool = false
 	@Published var isInBackground: Bool = false
 	/// The first radio's firmware edition (kept on its `RadioSession`, T069).
@@ -669,11 +690,51 @@ class AccessoryManager: ObservableObject {
 		}
 	}
 
+	/// Asks the radio for its node database again after its LoRa settings changed.
+	///
+	/// Firmware 2.8 applies a LoRa change without rebooting, so there is no reconnect and no fresh
+	/// node database, and the radio's NodeInfo.heard_on_current_lora answers for the new settings
+	/// never reach the app. The database completion saves the dump and publishes
+	/// `nodeDatabaseSavedAt`, which is what the unheard notice and node rows refresh on. Only for the
+	/// radio whose answers the store keeps (`heardOnCurrentLoraSession`, feature 021).
+	func refreshNodeDatabaseAfterLoRaChange(forRadio radioNum: Int64?) {
+		guard let session = heardOnCurrentLoraSession, let radioNum, session.nodeNum == radioNum else { return }
+		let generation = loraChangeTracker.changed()
+		Task { @MainActor in
+			// Let the radio finish reprogramming the modem before asking.
+			try? await Task.sleep(for: .seconds(2))
+			// One download at a time: the completion doesn't say which request it answers.
+			while self.nodeDatabaseDumpInProgress, self.heardOnCurrentLoraSession === session {
+				try? await Task.sleep(for: .milliseconds(250))
+			}
+			guard self.heardOnCurrentLoraSession === session else {
+				self.loraChangeTracker.reset()
+				return
+			}
+			// A newer change is waiting its turn and will ask instead.
+			guard self.loraChangeTracker.request(generation) else { return }
+			do {
+				try await self.sendWantDatabase(on: session, forLoRaChange: generation)
+			} catch {
+				Logger.transport.error("[LoRa] Could not refresh the node database after a settings change: \(error.localizedDescription, privacy: .public)")
+				self.loraChangeTracker.finished(generation)
+			}
+		}
+	}
+
 	/// Asks `session`'s radio (the first one by default) for its node DB and waits for the first node.
-	func sendWantDatabase(on session: RadioSession? = nil) async throws {
+	func sendWantDatabase(on session: RadioSession? = nil, forLoRaChange loraChange: Int? = nil) async throws {
 		guard let session = session ?? activeConnection else {
 			Logger.transport.error("Unable to send wantConfig (Database): No device connected")
 			return
+		}
+		// Only the only connected radio's dump answers heard-on-current-LoRa (feature 021).
+		if session === soleConnectedSession {
+			nodeDatabaseRequestLoRaChange = loraChange
+			nodeDatabaseSaveGeneration += 1
+			nodeDatabaseSavedAt = nil
+			nodeDatabaseDumpNums = []
+			nodeDatabaseDumpInProgress = true
 		}
 		if let firstDatabaseNodeInfoContinuation = session.firstDatabaseNodeInfoContinuation {
 			Logger.transport.info("[Accessory] Existing continuation for firstDatabaseNodeInfo. Cancelling.")
@@ -763,6 +824,9 @@ class AccessoryManager: ObservableObject {
 		isClosingConnection = true
 		defer { isClosingConnection = false }
 
+		nodeDatabaseSaveGeneration += 1
+		nodeDatabaseSavedAt = nil
+
 		Logger.transport.debug("[AccessoryManager] received disconnect request")
 
 		// Here rather than in `disconnect()`: an unexpected link loss, a failed connect and a
@@ -783,6 +847,10 @@ class AccessoryManager: ObservableObject {
 		// back by discovery, as a single radio is (D-19: nothing takes its place).
 		self.activeDeviceNum = nil
 		self.firmwareUpdateRequired = false
+		// A dropped connection never finishes its download; the reconnect brings a fresh one.
+		loraChangeTracker.reset()
+		nodeDatabaseDumpInProgress = false
+		nodeDatabaseRequestLoRaChange = nil
 		if let closing {
 			await tearDown(closing)
 		} else if let closingNodeNum {
@@ -1150,7 +1218,8 @@ class AccessoryManager: ObservableObject {
 			}
 			// All received packets get passed through updateAnyPacketFrom to update lastHeard, rxSnr, etc. (like firmware's NodeDB::updateFrom).
 			if let connectedNodeNum = session.nodeNum {
-				await MeshPackets.shared.updateAnyPacketFrom(packet: packet, activeDeviceNum: connectedNodeNum)
+				await MeshPackets.shared.updateAnyPacketFrom(packet: packet, activeDeviceNum: connectedNodeNum,
+				                                             reportsHeardOnCurrentLora: reportsHeardOnCurrentLora(on: session))
 			} else {
 				Logger.mesh.error("🕸️ Unable to determine connectedNodeNum for updateAnyPacketFrom. Skipping.")
 			}
@@ -1406,14 +1475,6 @@ class AccessoryManager: ObservableObject {
 			// Logger.mesh.error("✅ [Accessory] Unknown UNHANDLED confligCompleteID: \(configCompleteID)")
 			// }
 
-			// Stamp the arrival so callers can tell a post-reboot refresh from a stale cache, on
-			// the radio's session; the manager's is the first radio's.
-			let refreshed = Date()
-			session.lastConfigRefresh = refreshed
-			if session === activeConnection {
-				lastConfigRefresh = refreshed
-			}
-
 			Logger.transport.info("✅ [Accessory] Notifying completions that have completed for configCompleteID: \(configCompleteID)")
 			switch configCompleteID {
 			case UInt32(NONCE_ONLY_CONFIG):
@@ -1421,6 +1482,16 @@ class AccessoryManager: ObservableObject {
 					  refresh.sessionID == session.device.id else {
 					Logger.transport.warning("[Accessory] Ignoring config completion without its active refresh owner")
 					break
+				}
+				// Only an owned config completion proves the cached configuration is fresh (#2404),
+				// on the radio's session; the manager's is the first radio's.
+				let refreshed = Date()
+				session.lastConfigRefresh = refreshed
+				if session === activeConnection {
+					lastConfigRefresh = refreshed
+				} else {
+					// Sessions aren't observed: tell the views reading it (the import's automatic check).
+					objectWillChange.send()
 				}
 				if let completedNodeNum = refresh.nodeNum {
 					await MeshPackets.shared.commitChannelRefreshStage(for: completedNodeNum, owner: refresh.owner)
@@ -1445,13 +1516,32 @@ class AccessoryManager: ObservableObject {
 
 				// Perform a single batch save after database retrieval completes
 				// This significantly improves performance on reconnect
+				// Only the only connected radio's dump answers heard-on-current-LoRa (feature 021).
+				let isSoleRadio = session === soleConnectedSession
+				let dumpNums = nodeDatabaseDumpNums
+				let dumpWasRequested = isSoleRadio && nodeDatabaseDumpInProgress
+				let saveGeneration = nodeDatabaseSaveGeneration
+				let loraChange = isSoleRadio ? nodeDatabaseRequestLoRaChange : nil
+				if isSoleRadio {
+					nodeDatabaseDumpInProgress = false
+					nodeDatabaseRequestLoRaChange = nil
+				}
 				Task {
 					// The dump was ingested with deferred saves on the MeshPackets actor
 					// (see handleNodeInfo); flush it so every node from the dump is persisted
 					// now rather than waiting on the debounce timer.
 					await MeshPackets.shared.flushDebouncedSaves()
+					if dumpWasRequested, !dumpNums.isEmpty, reportsHeardOnCurrentLora(on: session) {
+						await MeshPackets.shared.markAbsentFromRadio(presentNums: dumpNums)
+					}
 					do {
 						try context.save()
+						if let loraChange {
+							loraChangeTracker.finished(loraChange)
+						}
+						if dumpWasRequested, nodeDatabaseSaveGeneration == saveGeneration {
+							nodeDatabaseSavedAt = Date()
+						}
 						Logger.data.info("💾 [Database] Batch saved all node info after database retrieval")
 						if session === self.session(for: .carPlay), let completedNodeNum = session.nodeNum {
 							MeshShareSnapshotBuilder.refresh(
@@ -1586,6 +1676,61 @@ extension AccessoryManager {
 			return Self.isTAKv2Supported(firmwareVersion: takSession.device.firmwareVersion)
 		}
 		return Self.isTAKv2Supported(firmwareVersion: connectedVersion)
+	}
+
+	/// Whether the connected radio reports NodeInfo.heard_on_current_lora (firmware 2.8.1+).
+	/// The only radio connected (feature 021). Its node database answers heard-on-current-LoRa
+	/// for the shared node rows, as the one radio does on `main`. Nil with none or several.
+	var soleConnectedSession: RadioSession? {
+		let sessions = [activeConnection].compactMap { $0 } + Array(additionalRadios.values)
+		return sessions.count == 1 ? sessions.first : nil
+	}
+
+	/// `soleConnectedSession`, when its firmware sends NodeInfo.heard_on_current_lora. With several
+	/// radios each would overwrite the others' answers on the shared node rows, so none is kept and
+	/// the field stays unknown, as it is for firmware that doesn't send it.
+	var heardOnCurrentLoraSession: RadioSession? {
+		guard let session = soleConnectedSession else { return nil }
+		let version = session.device.firmwareVersion ?? session.nodeNum.flatMap { knownFirmwareVersions[$0] }
+		return Self.reportsHeardOnCurrentLora(firmwareVersion: version) ? session : nil
+	}
+
+	var reportsHeardOnCurrentLora: Bool { heardOnCurrentLoraSession != nil }
+
+	/// Whether what `session`'s radio reports is stored as heard-on-current-LoRa.
+	func reportsHeardOnCurrentLora(on session: RadioSession?) -> Bool {
+		session != nil && heardOnCurrentLoraSession === session
+	}
+
+	/// Whether the stored answers are `radioNum`'s, for its window's unheard notice.
+	func reportsHeardOnCurrentLora(forRadio radioNum: Int64?) -> Bool {
+		radioNum != nil && heardOnCurrentLoraSession?.nodeNum == radioNum
+	}
+
+	/// A radio connected alongside another (feature 021). Neither radio's heard-on-current-LoRa
+	/// answers stand for the other's on the shared node rows, so those on the nodes they've
+	/// observed go back to unknown and the download tracking stands down. Nothing is stored again
+	/// until one radio is left and it sends its node database.
+	func clearHeardOnCurrentLoraForSeveralRadios() {
+		guard connectedRadioCount > 1 else { return }
+		loraChangeTracker.reset()
+		nodeDatabaseDumpInProgress = false
+		nodeDatabaseRequestLoRaChange = nil
+		nodeDatabaseSaveGeneration += 1
+		nodeDatabaseSavedAt = nil
+		let radios = Set(([activeConnection] + additionalRadios.values.map { $0 }).compactMap { $0?.nodeNum })
+		Task { await MeshPackets.shared.clearHeardOnCurrentLora(observedBy: radios) }
+	}
+
+	/// Strict on purpose: unlike `checkIsVersionSupported`, an unknown version is false. Older firmware
+	/// never sends the field, so reading it there would mark every node unheard.
+	nonisolated static func reportsHeardOnCurrentLora(firmwareVersion: String?) -> Bool {
+		guard let firmwareVersion else { return false }
+		let parts = firmwareVersion.split(separator: ".").prefix(3).map { Int($0) }
+		guard parts.count == 3, let major = parts[0], let minor = parts[1], let patch = parts[2] else {
+			return false
+		}
+		return (major, minor, patch) >= (2, 8, 1)
 	}
 
 	static func isTAKv2Supported(firmwareVersion: String?) -> Bool {

@@ -73,9 +73,9 @@ struct FirmwareRelease: Codable {
 	}
 }
 
-/// Points at the current nightly build. Nightly artifacts live in one fixed
-/// `firmware-nightly` directory that is overwritten each build, so this file is the
-/// only way to learn which version is sitting in there right now.
+/// Points at the current nightly build. Nightly artifacts sit at the root of the
+/// nightly host and are overwritten each build, so this file is the only way to
+/// learn which version is sitting there right now.
 struct NightlyFirmwareIndex: Codable {
 	let version: String
 	let id: String
@@ -182,13 +182,14 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 	static let imageURLPrefix = URL(string: "https://flasher.meshtastic.org/img/devices/")!
 	static let firmwareURLEndpoint = URL(string: "https://api.meshtastic.org/github/firmware/list")!
 	static let firmwareGitHubURLEndpoint = URL(string: "https://api.github.com/repos/meshtastic/firmware/releases?per_page=100")!
-	static let nightlyIndexEndpoint = URL(string: "https://raw.githubusercontent.com/meshtastic/meshtastic.github.io/master/firmware-nightly/index.json")!
+	static let nightlyIndexEndpoint = URL(string: "https://nightly.meshtastic.org/index.json")!
 
 	static let deviceCatalogETagKey = "deviceCatalog"
 	static let firmwareListETagKey = "firmwareReleaseList"
 
-	static let nightlyReleaseNotesEndpoint = URL(string: "https://raw.githubusercontent.com/meshtastic/meshtastic.github.io/master/firmware-nightly/release_notes.md")!
+	static let nightlyReleaseNotesEndpoint = URL(string: "https://nightly.meshtastic.org/release_notes.md")!
 	static let eventFirmwareURLEndpoint = URL(string: "https://api.meshtastic.org/resource/eventFirmware")!
+	static let maintenanceUf2URLEndpoint = URL(string: "https://api.meshtastic.org/resource/maintenanceUf2")!
 
 	/// How long a completed device image + msh.to link pass stays fresh before another network pass
 	/// is allowed. `processImage` revalidates every image, so running the pass on every reconnect is
@@ -247,6 +248,9 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 			Task.detached(priority: .utility) {
 				await self.refreshEventFirmwareAPIData()
 			}
+			Task.detached(priority: .utility) {
+				await self.refreshMaintenanceUf2APIData()
+			}
 		}
 	}
 	
@@ -274,6 +278,16 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 				}
 				if hasReleases {
 					Logger.services.debug("Firmware list unchanged (ETag match), skipping the upsert")
+					// The nightly comes from its own host and changes daily, so an unchanged
+					// release list says nothing about it. Same rule as the full path: only a
+					// successful read may replace the stored nightly.
+					if let nightlyRelease = await fetchNightlyRelease() {
+						await MainActor.run {
+							let context = container.mainContext
+							self.applyNightlyRelease(nightlyRelease, context: context)
+							try? context.save()
+						}
+					}
 					UserDefaults.lastFirmwareAPIUpdate = Date()
 					return
 				}
@@ -301,24 +315,11 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 				self.processFirmware(release: alphaRelease, releaseType: .alpha, context: context)
 			}
 
+			// Only on a successful read: applying the nightly deletes the rows for every other
+			// nightly version, so a failed fetch has to leave the stored one alone rather than
+			// empty the tab.
 			if let nightlyRelease {
-				self.processFirmware(release: nightlyRelease, releaseType: .nightly, context: context)
-
-				// Only one nightly exists at a time — the host overwrites the directory — so
-				// drop yesterday's row. Skipped when the index could not be read, or a failed
-				// fetch would empty the tab.
-				let nightlyRaw = ReleaseType.nightly.rawValue
-				let currentNightly = [nightlyRelease.id]
-				let staleNightlyDescriptor = FetchDescriptor<FirmwareReleaseEntity>(
-					predicate: #Predicate {
-						$0.releaseType == nightlyRaw && !currentNightly.contains($0.versionId)
-					}
-				)
-				if let staleNightlies = try? context.fetch(staleNightlyDescriptor) {
-					for staleNightly in staleNightlies {
-						context.delete(staleNightly)
-					}
-				}
+				self.applyNightlyRelease(nightlyRelease, context: context)
 			}
 
 			// Anything that's left in stableVersions and alphaVersions is no longer present in the API and should be deleted.
@@ -545,13 +546,42 @@ deviceEntity.architecture = device.architecture
 		return decoded
 	}
 	
+	/// Store the current nightly and drop yesterday's row: only one nightly exists at a
+	/// time, because the host overwrites it with each build.
+	@MainActor
+	private func applyNightlyRelease(_ nightlyRelease: FirmwareRelease, context: ModelContext) {
+		processFirmware(release: nightlyRelease, releaseType: .nightly, context: context)
+
+		let nightlyRaw = ReleaseType.nightly.rawValue
+		let currentNightly = [nightlyRelease.id]
+		let staleNightlyDescriptor = FetchDescriptor<FirmwareReleaseEntity>(
+			predicate: #Predicate {
+				$0.releaseType == nightlyRaw && !currentNightly.contains($0.versionId)
+			}
+		)
+		if let staleNightlies = try? context.fetch(staleNightlyDescriptor) {
+			for staleNightly in staleNightlies {
+				context.delete(staleNightly)
+			}
+		}
+	}
+
 	/// Read the nightly pointer file. Best effort on purpose: no nightly, or an
 	/// unreachable one, must not fail the stable and alpha list refresh.
 	private func fetchNightlyRelease() async -> FirmwareRelease? {
 		do {
-			let (data, _) = try await urlSession.data(from: Self.nightlyIndexEndpoint)
+			// Both files are served with a four hour max-age, so the default policy would answer
+			// a refresh out of the cache and hide a nightly that had already been published.
+			// Revalidate instead: a 304 costs nothing and the build is only cut once a day.
+			var indexRequest = URLRequest(url: Self.nightlyIndexEndpoint)
+			indexRequest.cachePolicy = .reloadRevalidatingCacheData
+			let (data, _) = try await urlSession.data(for: indexRequest)
 			let index = try JSONDecoder().decode(NightlyFirmwareIndex.self, from: data)
-			let notesResponse = try? await urlSession.data(from: Self.nightlyReleaseNotesEndpoint)
+			// The notes are revalidated with the index so a fresh version never shows the
+			// previous build's notes.
+			var notesRequest = URLRequest(url: Self.nightlyReleaseNotesEndpoint)
+			notesRequest.cachePolicy = .reloadRevalidatingCacheData
+			let notesResponse = try? await urlSession.data(for: notesRequest)
 			let notes = notesResponse?.0
 			let pageURL = index.commit.map { "https://github.com/meshtastic/firmware/commit/\($0)" }
 				?? "https://github.com/meshtastic/firmware/commits/master"
@@ -1249,5 +1279,54 @@ extension MeshtasticAPI {
 	static func setLastETag(_ eTag: String?, for key: String) {
 		guard let eTag else { return }
 		UserDefaults.standard.set(eTag, forKey: "api.etag.\(key)")
+	}
+}
+
+// MARK: - Maintenance UF2 Manifest (OTAFIX bootloader map)
+
+enum MaintenanceUf2RefreshPolicy {
+
+	/// Same interval as `EventFirmwareRefreshPolicy`. The data only changes when the api repo
+	/// is edited and redeployed, so there is nothing to gain from checking more often.
+	static let minimumAttemptInterval: TimeInterval = 6 * 60 * 60
+
+	static func shouldRefresh(lastAttempt: Date, now: Date = Date()) -> Bool {
+		let elapsed = now.timeIntervalSince(lastAttempt)
+		return elapsed < 0 || elapsed >= minimumAttemptInterval
+	}
+}
+
+extension MeshtasticAPI {
+
+	/// Silently refresh the OTAFIX bootloader manifest from the live API.
+	///
+	/// Unlike `refreshDevicesAPIData`/`refreshEventFirmwareAPIData`, this has no SwiftData entity
+	/// to write — `MaintenanceUf2ManifestStore` (see MaintenanceUF2.swift) is an in-memory, lock-protected
+	/// cache, since nothing in the UI observes this data via `@Query`. Because the manifest is not
+	/// saved, the throttle is not either: each launch starts from the bundled seed and fetches once.
+	/// `guard container != nil`
+	/// mirrors every other refresh's no-op-in-seed/test-mode contract even though this function
+	/// never touches the container itself, so `MeshtasticAPIBundledSeedTests`' "no network in seed
+	/// mode" assertion still holds for this resource too.
+	///
+	/// Same fail-safe shape as the other refreshes: a network failure, non-2xx, or decode failure
+	/// is a no-op that leaves the store exactly as it was, never destroying an already-loaded
+	/// manifest over a bad response.
+	func refreshMaintenanceUf2APIData() async {
+		guard container != nil else { return }
+		guard MaintenanceUf2ManifestStore.shared.claimRefreshAttempt() else { return }
+
+		guard let (data, response) = try? await URLSession.shared.data(from: Self.maintenanceUf2URLEndpoint),
+			  let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode),
+			  !data.isEmpty else {
+			Logger.services.warning("maintenanceUf2 API fetch failed or empty — keeping current manifest")
+			return
+		}
+
+		guard MaintenanceUf2ManifestStore.shared.apply(rawBytes: data) else {
+			// MaintenanceUf2ManifestStore.apply already logs the decode failure.
+			return
+		}
+		Logger.services.info("Refreshed maintenanceUf2 manifest from API")
 	}
 }

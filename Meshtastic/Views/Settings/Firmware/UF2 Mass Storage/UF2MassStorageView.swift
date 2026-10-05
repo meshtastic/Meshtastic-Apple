@@ -142,6 +142,7 @@ struct UF2MassStorageView: View {
 			Label("Send Reboot into DFU", systemImage: "square.and.arrow.down")
 		}
 		.buttonStyle(.borderedProminent)
+		.tint(.accentFill)
 		.controlSize(.large)
 		.frame(maxWidth: .infinity)
 		.clipShape(RoundedRectangle(cornerRadius: 10))
@@ -156,6 +157,7 @@ struct UF2MassStorageView: View {
 			Label("Save Firmware to USB", systemImage: "externaldrive.fill")
 		}
 		.buttonStyle(.borderedProminent)
+		.tint(.accentFill)
 		.controlSize(.large)
 		.frame(maxWidth: .infinity)
 	}

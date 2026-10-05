@@ -319,6 +319,9 @@ extension AccessoryManager {
 						// handling rather than being dropped as a stale connection's.
 						self.additionalRadios[device.id] = session
 					}
+					// With another radio connected, neither one's heard-on-current-LoRa answers stand
+					// for the shared node rows (main's #2575 assumes one radio).
+					self.clearHeardOnCurrentLoraForSeveralRadios()
 					// The mesh-traffic monitor (map flyover gate) self-starts its decay timer on the
 					// first inbound packet and is cleared by Step 0's closeConnection() reset(), so
 					// there's no explicit start to make here — it stays correct across connect retries.
@@ -504,11 +507,11 @@ extension AccessoryManager {
 					ManualConnectionList.shared.insert(device: radioDevice)
 				}
 
-				// Refresh the Messages sharing snapshot here rather than only off the config and
-				// database completions: a background BLE restoration of an already-connected
-				// peripheral reconnects with wantConfig and wantDatabase false (BLETransport's
-				// `.connected` case), so neither completion fires and the extension is left
-				// reporting no radio. Every connect path reaches this step.
+				// Refresh the Messages sharing snapshot here rather than only off the database
+				// completion: a background BLE restoration of an already-connected peripheral
+				// reconnects with wantDatabase false (BLETransport's `.connected` case), so that
+				// completion never fires and the extension is left reporting no radio. Every
+				// connect path reaches this step.
 				// The snapshot is the CarPlay & Siri radio's (T106, T321).
 				if let session = attempt.session, session === self.session(for: .carPlay), let radioNum = session.nodeNum {
 					MeshShareSnapshotBuilder.refresh(nodeNum: radioNum, context: self.context)

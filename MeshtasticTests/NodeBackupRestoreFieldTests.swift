@@ -2,11 +2,7 @@
 //  NodeBackupRestoreFieldTests.swift
 //  MeshtasticTests
 //
-//  A radio switch backs up the store, clears it, then rebuilds the next radio's data by copying
-//  entities field by field (NodeBackupManager+Import). A stored field the importer forgets is
-//  silently wiped on every switch. These tests pin the fields that used to be dropped: they are
-//  either user-edited (power channel labels, waypoint geofences, local-only waypoints) or not
-//  resent by the radio (air-quality telemetry history, message signature flags).
+//  Fields the backup restore used to drop.
 //
 
 import Foundation

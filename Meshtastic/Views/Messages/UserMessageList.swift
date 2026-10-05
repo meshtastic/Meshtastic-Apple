@@ -33,6 +33,8 @@ struct UserMessageList: View {
 	}
 	@State private var messageLimit: Int = 100
 	@State private var messages: [MessageEntity] = []
+	@State private var bottomScrollRequest = 0
+	@State private var scrollTracker = MessageScrollTracker()
 	@State private var searchQuery = ""
 	@State private var searchMatches: [MessageSearchMatch] = []
 	@State private var currentMatchIndex = -1
@@ -98,6 +100,10 @@ struct UserMessageList: View {
 	private func loadMessages(markReadAfterLoad: Bool = false) {
 		do {
 			refreshConversationRadios()
+			let previousLastID = messages.last?.messageId
+			// Read before the fetch. New rows move the marker, so a later read would
+			// describe the layout this reload is about to change.
+			let followNewMessage = scrollTracker.isNearBottom
 			let fetchedMessages = try fetchMessages(limit: messageLimit + 1)
 			hasEarlierMessages = fetchedMessages.count > messageLimit
 
@@ -112,6 +118,13 @@ struct UserMessageList: View {
 			let previousMessage = hasEarlierMessages ? fetchedMessages[messageLimit] : nil
 
 			messages = visibleMessages
+			if MessageScrollTracker.shouldFollowReload(
+				nearBottomBeforeFetch: followNewMessage,
+				previousLastID: previousLastID,
+				newLastID: visibleMessages.last?.messageId
+			) {
+				bottomScrollRequest &+= 1
+			}
 			previousByID = buildPreviousByID(for: visibleMessages, previousMessage: previousMessage)
 			repliesByID = try fetchReplies(for: visibleMessages)
 			replaceTapbacks(try fetchTapbacks(for: visibleMessages))
@@ -291,15 +304,22 @@ struct UserMessageList: View {
 						// Invisible spacer to detect reaching bottom
 						Color.clear
 							.frame(height: 1)
+							.trackMessageBottomPosition(scrollTracker)
 							.id("bottomAnchor")
 					}
 				}
+				.trackMessageScrollViewport(scrollTracker)
+				.messageBottomScrollPosition(request: bottomScrollRequest, tracker: scrollTracker)
 				.defaultScrollAnchor(.bottom)
 				.defaultScrollAnchorBottomSizeChanges()
 				.scrollDismissesKeyboard(.immediately)
 				.onAppear {
 					DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-						scrollView.scrollTo("bottomAnchor", anchor: .bottom)
+						if #available(iOS 18.0, macOS 15.0, *) {
+							bottomScrollRequest &+= 1
+						} else {
+							scrollView.scrollTo("bottomAnchor", anchor: .bottom)
+						}
 					}
 				}
 				.task(id: "\(routerIsShowingThisUser())-\(user.num)") {
@@ -320,9 +340,11 @@ struct UserMessageList: View {
 						loadMessages(markReadAfterLoad: routerIsShowingThisUser())
 					}
 				}
-				.onChange(of: messages.last?.messageId) {
-					DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-						scrollView.scrollTo("bottomAnchor", anchor: .bottom)
+				.onChange(of: bottomScrollRequest) {
+					// On iOS 17, follow the real message row only when loadMessages saw
+					// the reader near the bottom, or after the reader sends a message.
+					if #unavailable(iOS 18.0, macOS 15.0), let lastID = messages.last?.messageId {
+						scrollView.scrollTo(lastID, anchor: .bottom)
 					}
 				}
 				// Message writes happen on the packet actor's own context, which SwiftData does
@@ -338,7 +360,11 @@ struct UserMessageList: View {
 				.onChange(of: messageFieldFocused) {
 					if messageFieldFocused {
 						DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-							scrollView.scrollTo("bottomAnchor", anchor: .bottom)
+							if #available(iOS 18.0, macOS 15.0, *) {
+								bottomScrollRequest &+= 1
+							} else {
+								scrollView.scrollTo("bottomAnchor", anchor: .bottom)
+							}
 						}
 					}
 				}
@@ -376,7 +402,15 @@ struct UserMessageList: View {
 					destination: .user(user),
 					replyMessageId: $replyMessageId,
 					isFocused: $messageFieldFocused,
-					onMessageSent: { loadMessages(markReadAfterLoad: routerIsShowingThisUser()) },
+					onMessageSent: {
+						let previousScrollRequest = bottomScrollRequest
+						loadMessages(markReadAfterLoad: routerIsShowingThisUser())
+						if MessageScrollTracker.shouldFollowSend(
+							scrollRequestChangedDuringLoad: bottomScrollRequest != previousScrollRequest
+						) {
+							bottomScrollRequest &+= 1
+						}
+					},
 					viaRadio: sendingRadio
 				)
 				.fixedSize(horizontal: false, vertical: true)

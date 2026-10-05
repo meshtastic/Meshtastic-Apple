@@ -483,6 +483,12 @@ actor MeshPackets {
 		pendingMessageChange = true
 	}
 
+	private func postMessageChange() {
+		Task { @MainActor in
+			NotificationCenter.default.post(name: .meshMessagesDidChange, object: nil)
+		}
+	}
+
 	func savePendingChanges(caller: String = #function) {
 		guard !invalidated else {
 			Logger.data.warning("💾 [\(caller, privacy: .public)] Dropped save on retired MeshPackets instance")
@@ -502,9 +508,7 @@ actor MeshPackets {
 			Logger.data.debug("💾 [\(caller, privacy: .public)] Saved pending changes")
 			if pendingMessageChange {
 				pendingMessageChange = false
-				Task { @MainActor in
-					NotificationCenter.default.post(name: .meshMessagesDidChange, object: nil)
-				}
+				postMessageChange()
 			}
 		} catch {
 			Logger.data.error("💥 [\(caller, privacy: .public)] Error saving: \(error.localizedDescription, privacy: .public)")
@@ -1158,7 +1162,44 @@ actor MeshPackets {
 		}
 	}
 
-	func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, deferSave: Bool = false, connectedNodeNum: Int64? = nil) -> PersistentIdentifier? {
+	/// After a full node database download: nodes the radio did not include are ones it no longer
+	/// has, so it has no answer for them. Their stored heard-on-current-LoRa goes back to unknown,
+	/// rather than keeping an answer from an earlier download.
+	/// A second radio connected (feature 021): the answers on the nodes `radios` have observed
+	/// were one radio's, and don't stand for the others', so they go back to unknown.
+	func clearHeardOnCurrentLora(observedBy radios: Set<Int64>) {
+		guard !radios.isEmpty else { return }
+		let radioNums = Array(radios)
+		let observed = FetchDescriptor<NodeObservationEntity>(predicate: #Predicate { radioNums.contains($0.radioNum) })
+		guard let observations = try? modelContext.fetch(observed) else { return }
+		let nodeNums = Array(Set(observations.map(\.nodeNum)).union(radios))
+		let descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { nodeNums.contains($0.num) && $0.heardOnCurrentLora != nil })
+		guard let nodes = try? modelContext.fetch(descriptor), !nodes.isEmpty else { return }
+		for node in nodes {
+			node.heardOnCurrentLora = nil
+		}
+		savePendingChanges()
+	}
+
+	func markAbsentFromRadio(presentNums: Set<Int64>) {
+		let descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.heardOnCurrentLora != nil })
+		guard let nodes = try? modelContext.fetch(descriptor) else { return }
+		for node in nodes where !presentNums.contains(node.num) {
+			node.heardOnCurrentLora = nil
+		}
+		savePendingChanges()
+	}
+
+	/// What to store for NodeInfo.heard_on_current_lora. Nil unless the radio is known to send it,
+	/// which also clears a value left by a newer firmware if the radio is downgraded. The radio's own
+	/// entry is left nil: it is not something it hears.
+	static func heardOnCurrentLora(_ nodeInfo: NodeInfo, reported: Bool, connectedNodeNum: Int64?) -> Bool? {
+		guard reported, Int64(nodeInfo.num) != connectedNodeNum else { return nil }
+		return nodeInfo.heardOnCurrentLora
+	}
+
+	func nodeInfoPacket (nodeInfo: NodeInfo, channel: UInt32, deferSave: Bool = false, connectedNodeNum: Int64? = nil,
+	                     reportsHeardOnCurrentLora: Bool = false) -> PersistentIdentifier? {
 		// This path handles the connected device's local node-DB dump during wantConfig
 		// (FromRadio.nodeInfo), not packets that crossed the mesh — log it as admin/setup.
 		// Over-the-air NodeInfo arrives via upsertNodeInfoPacket and stays on .mesh.
@@ -1186,6 +1227,11 @@ actor MeshPackets {
 					newNode.ignored = nodeInfo.isIgnored
 					newNode.hopsAway = Int32(truncatingIfNeeded: nodeInfo.hopsAway)
 					newNode.hasXeddsaSigned = nodeInfo.hasXeddsaSigned_p
+					// Was missing here while the update path below set it, so a node seen for the
+					// first time — every node on a fresh install or after a database reset — lost
+					// the radio's verification until some later NodeInfo happened to update it.
+					newNode.isKeyManuallyVerified = nodeInfo.isKeyManuallyVerified
+					newNode.heardOnCurrentLora = Self.heardOnCurrentLora(nodeInfo, reported: reportsHeardOnCurrentLora, connectedNodeNum: connectedNodeNum)
 
 					if nodeInfo.hasDeviceMetrics {
 						let telemetry = TelemetryEntity()
@@ -1261,11 +1307,7 @@ actor MeshPackets {
 						position.altitude = nodeInfo.position.altitude
 						position.satsInView = Int32(truncatingIfNeeded: nodeInfo.position.satsInView)
 						position.speed = Int32(truncatingIfNeeded: nodeInfo.position.groundSpeed)
-						// Range-check the UInt32 before converting (mirrors upsertPositionPacket) so a garbage
-						// groundTrack does not persist as an invalid heading.
-						if nodeInfo.position.groundTrack <= 360 {
-							position.heading = Int32(nodeInfo.position.groundTrack)
-						}
+						position.heading = nodeInfo.position.groundTrackDegrees ?? 0
 						position.time = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.position.time)))
 						position.nodePosition = newNode
 						newNode.latestPositionCache = position
@@ -1309,13 +1351,17 @@ actor MeshPackets {
 					fetchedNode[0].favorite = nodeInfo.isFavorite
 					fetchedNode[0].ignored = nodeInfo.isIgnored
 					fetchedNode[0].hopsAway = Int32(truncatingIfNeeded: nodeInfo.hopsAway)
-					// has_xeddsa_signed means the node has signed ≥1 verified broadcast and persists; latch it
-					// so a later NodeInfo that omits the bit doesn't downgrade a node we've seen sign.
-					fetchedNode[0].hasXeddsaSigned = fetchedNode[0].hasXeddsaSigned || nodeInfo.hasXeddsaSigned_p
-					// The radio owns manual verification (in-person contact exchange or its own
-					// verify flow), so its DB dump overwrites rather than latches.
+					// Both trust flags come from the radio's node db, which is where they live: the
+					// firmware sets has_xeddsa_signed when it verifies a signature and
+					// is_key_manually_verified on a contact exchange, and persists both across its
+					// own cleanups. So the dump is taken verbatim, the same as favorite and ignored
+					// above. Latching either one would let the app go on showing a node as signed or
+					// verified after the radio had stopped saying so — claiming a trust level the
+					// radio that does the actual verifying no longer holds.
+					fetchedNode[0].hasXeddsaSigned = nodeInfo.hasXeddsaSigned_p
 					fetchedNode[0].isKeyManuallyVerified = nodeInfo.isKeyManuallyVerified
 					recordNodeDBObservation(nodeInfo, node: fetchedNode[0], radioNum: connectedNodeNum)
+					fetchedNode[0].heardOnCurrentLora = Self.heardOnCurrentLora(nodeInfo, reported: reportsHeardOnCurrentLora, connectedNodeNum: connectedNodeNum)
 
 					if nodeInfo.hasUser {
 						if fetchedNode[0].user == nil {
@@ -2232,9 +2278,10 @@ actor MeshPackets {
 						CarPlayIntentDonation.donateReceivedMessage(newMessage)
 						#endif
 
-						// Let the message lists and unread-displaying surfaces refresh. The
-						// notification is posted once per save, from savePendingChanges.
-						noteMessageChange()
+						// Let the message lists and unread-displaying surfaces refresh. The message
+						// was saved directly above, not through savePendingChanges, so post now
+						// instead of waiting for the next save.
+						postMessageChange()
 
 						// Self-originated messages and muted detection-sensor packets skip
 						// all notification work (no badge recount, no local notification).

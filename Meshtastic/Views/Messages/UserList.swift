@@ -136,9 +136,16 @@ private struct FilteredUserList: View {
 		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMdd", options: 0, locale: Locale.current)
 		let dateFormatString = (localeDateFormat ?? "MM/dd/YY")
 		let activeDeviceNum = Int64(accessoryManager.nodeNum(for: windowRadio) ?? 0)
+		let containerGeneration = PersistenceController.shared.containerGeneration
 		let visibleUsers = users.filter { $0.num != activeDeviceNum }
-		let summaryUsers = visibleUsers.filter { $0.lastMessage != nil }
-		let summaryRefreshKey = directMessageSummaryRefreshKey(for: summaryUsers)
+		let summaryUsers = allUsers.filter { $0.num != activeDeviceNum && $0.lastMessage != nil }
+		let summaryUserNums = Set(summaryUsers.map(\.num))
+		let summaryRefreshID = DirectMessageSummaryRefreshID(
+			usersKey: directMessageSummaryRefreshKey(for: summaryUsers),
+			unreadCount: appState.unreadDirectMessages,
+			activeDeviceNum: activeDeviceNum,
+			containerGeneration: containerGeneration
+		)
 		let currentDay = Calendar.current.dateComponents([.day], from: Date()).day ?? 0
 
 		List(visibleUsers, selection: $userSelection) { user in
@@ -154,14 +161,11 @@ private struct FilteredUserList: View {
 		}
 		.listStyle(.plain)
 		.navigationTitle(String.localizedStringWithFormat("Contacts (%@)".localized, String(visibleUsers.count)))
-		.onAppear {
-			refreshDirectMessageSummaries(for: summaryUsers)
-		}
-		.onChange(of: summaryRefreshKey) {
-			refreshDirectMessageSummaries(for: summaryUsers)
-		}
-		.onChange(of: appState.unreadDirectMessages) {
-			refreshDirectMessageSummaries(for: summaryUsers)
+		.task(id: summaryRefreshID) {
+			await refreshDirectMessageSummaries(
+				for: summaryUserNums,
+				containerGeneration: containerGeneration
+			)
 		}
 	}
 
@@ -176,84 +180,34 @@ private struct FilteredUserList: View {
 		return key
 	}
 
-	private func refreshDirectMessageSummaries(for users: [UserEntity]) {
-		let userNums = Set(users.map(\.num))
+	@MainActor
+	private func refreshDirectMessageSummaries(
+		for userNums: Set<Int64>,
+		containerGeneration: Int
+	) async {
+		guard containerGeneration == PersistenceController.shared.containerGeneration else { return }
 		guard !userNums.isEmpty else {
 			directMessageSummaries = [:]
 			return
 		}
 
 		do {
-			let detectionSensorPortNum: Int32 = 10
-			let descriptor = FetchDescriptor<MessageEntity>(
-				predicate: #Predicate<MessageEntity> {
-					$0.toUser != nil
-					&& $0.isEmoji == false && $0.admin == false && $0.portNum != detectionSensorPortNum
-				},
-				sortBy: [
-					SortDescriptor(\MessageEntity.messageTimestamp, order: .reverse),
-					SortDescriptor(\MessageEntity.messageId, order: .reverse)
-				]
-			)
-			let messages = try context.fetch(descriptor)
-			var accumulators = [Int64: DirectMessageSummaryAccumulator](minimumCapacity: userNums.count)
-			for message in messages {
-				let fromNum = message.fromUser?.num
-				record(message, peerNum: fromNum, userNums: userNums, accumulators: &accumulators)
-				let toNum = message.toUser?.num
-				if toNum != fromNum {
-					record(message, peerNum: toNum, userNums: userNums, accumulators: &accumulators)
-				}
-			}
-			directMessageSummaries = accumulators.compactMapValues(\.summary)
+			// Coalesce a burst of refresh triggers; a newer one cancels this task during the wait.
+			try await Task.sleep(for: .milliseconds(100))
+			guard containerGeneration == PersistenceController.shared.containerGeneration else { return }
+			let currentContainer = PersistenceController.shared.container
+			guard context.container === currentContainer else { return }
+			// Built per refresh: it costs little next to the fetch, and nothing has to track the
+			// container it was made for.
+			let actor = DirectMessageSummaryActor(modelContainer: currentContainer)
+			let summaries = try await actor.summaries(for: userNums)
+			guard !Task.isCancelled,
+				  containerGeneration == PersistenceController.shared.containerGeneration else { return }
+			directMessageSummaries = summaries
+		} catch is CancellationError {
+			return
 		} catch {
 			Logger.data.error("Failed to load direct message summaries: \(error.localizedDescription, privacy: .public)")
-		}
-	}
-
-	private func record(
-		_ message: MessageEntity,
-		peerNum: Int64?,
-		userNums: Set<Int64>,
-		accumulators: inout [Int64: DirectMessageSummaryAccumulator]
-	) {
-		guard let peerNum, userNums.contains(peerNum) else { return }
-		accumulators[peerNum, default: DirectMessageSummaryAccumulator()].record(message)
-	}
-}
-
-private struct DirectMessageSummary: Equatable {
-	let messageId: Int64
-	let timestamp: Int32
-	let payload: String
-	let unreadCount: Int
-}
-
-private struct DirectMessageSummaryAccumulator {
-	private var latestMessageId: Int64 = Int64.min
-	private var latestTimestamp: Int32 = Int32.min
-	private var latestPayload: String = " "
-	private var unreadCount = 0
-
-	var summary: DirectMessageSummary? {
-		guard latestMessageId != Int64.min else { return nil }
-		return DirectMessageSummary(
-			messageId: latestMessageId,
-			timestamp: latestTimestamp,
-			payload: latestPayload,
-			unreadCount: unreadCount
-		)
-	}
-
-	mutating func record(_ message: MessageEntity) {
-		if !message.read {
-			unreadCount += 1
-		}
-		if message.messageTimestamp > latestTimestamp
-			|| (message.messageTimestamp == latestTimestamp && message.messageId > latestMessageId) {
-			latestMessageId = message.messageId
-			latestTimestamp = message.messageTimestamp
-			latestPayload = message.messagePayload ?? " "
 		}
 	}
 }
@@ -514,6 +468,7 @@ fileprivate extension NodeFilterParameters {
 			}
 			if lastHeard < onlineThreshold { return false }
 		}
+		if hidesUnheardOnCurrentLora && user.userNode?.isUnheardOnCurrentLora == true { return false }
 		// Favorites
 		if isFavorite {
 			if user.userNode?.favorite != true { return false }

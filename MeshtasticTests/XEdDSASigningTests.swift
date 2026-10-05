@@ -110,7 +110,7 @@ struct XEdDSASigningTests {
 // MARK: - Ingestion behavior
 
 /// Exercises the actual packet→entity ingestion logic that the UI depends on:
-/// the broadcast-only gate for the message shield and the latch for the node row.
+/// the broadcast-only gate for the message shield and the node row following the radio's flags.
 @Suite("XEdDSA ingestion")
 struct XEdDSAIngestionTests {
 
@@ -126,10 +126,11 @@ struct XEdDSAIngestionTests {
 		return try? ctx.fetch(FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.messageId == id })).first
 	}
 
-	private func nodeInfo(num: UInt32, signed: Bool) -> NodeInfo {
+	private func nodeInfo(num: UInt32, signed: Bool, manuallyVerified: Bool = false) -> NodeInfo {
 		var ni = NodeInfo()
 		ni.num = num
 		ni.hasXeddsaSigned_p = signed
+		ni.isKeyManuallyVerified = manuallyVerified
 		return ni
 	}
 
@@ -179,14 +180,28 @@ struct XEdDSAIngestionTests {
 		#expect(fetchNode(num)?.hasXeddsaSigned == false)
 	}
 
-	/// The node flag means "≥1 verified" and persists — a later NodeInfo that omits the bit
-	/// must not downgrade a node we've already seen sign.
-	@Test @MainActor func nodeInfoPacket_latchesFlag_acrossUpdates() async {
+	/// Both trust flags follow the radio's node db rather than latching. The firmware is what
+	/// verifies signatures and records contact exchanges, and it persists both bits across its
+	/// own cleanups, so when it stops reporting one the app stops showing it. Latching would
+	/// leave the app asserting a trust level the radio no longer holds.
+	@Test @MainActor func nodeInfoPacket_followsRadioSigningFlag_acrossUpdates() async {
 		let mp = MeshPackets(modelContainer: sharedModelContainer)
 		let num: Int64 = 0x00E0_0103
 		_ = await mp.nodeInfoPacket(nodeInfo: nodeInfo(num: UInt32(num), signed: true), channel: 0)
-		_ = await mp.nodeInfoPacket(nodeInfo: nodeInfo(num: UInt32(num), signed: false), channel: 0)
 		#expect(fetchNode(num)?.hasXeddsaSigned == true)
+		_ = await mp.nodeInfoPacket(nodeInfo: nodeInfo(num: UInt32(num), signed: false), channel: 0)
+		#expect(fetchNode(num)?.hasXeddsaSigned == false)
+	}
+
+	@Test @MainActor func nodeInfoPacket_followsRadioVerifiedFlag_acrossUpdates() async {
+		let mp = MeshPackets(modelContainer: sharedModelContainer)
+		let num: Int64 = 0x00E0_0104
+		_ = await mp.nodeInfoPacket(
+			nodeInfo: nodeInfo(num: UInt32(num), signed: false, manuallyVerified: true), channel: 0)
+		#expect(fetchNode(num)?.isKeyManuallyVerified == true)
+		_ = await mp.nodeInfoPacket(
+			nodeInfo: nodeInfo(num: UInt32(num), signed: false, manuallyVerified: false), channel: 0)
+		#expect(fetchNode(num)?.isKeyManuallyVerified == false)
 	}
 
 	// MARK: per-message flag — broadcast only, never DMs (MeshPacket.xeddsa_signed)

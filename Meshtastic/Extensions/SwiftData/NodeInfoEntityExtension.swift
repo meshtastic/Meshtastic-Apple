@@ -329,6 +329,12 @@ extension NodeInfoEntity {
 		return (try? ctx.fetch(descriptor)) ?? []
 	}
 
+	/// The radio has not heard this node on its current LoRa settings. MQTT nodes are left out: they
+	/// never reach the radio over RF, so the radio can never report them heard.
+	var isUnheardOnCurrentLora: Bool {
+		heardOnCurrentLora == false && !viaMqtt
+	}
+
 	var isOnline: Bool {
 		let twoHoursAgo = Calendar.current.date(byAdding: .minute, value: -120, to: Date())
 		if lastHeard?.compare(twoHoursAgo!) == .orderedDescending {

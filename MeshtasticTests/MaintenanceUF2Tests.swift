@@ -23,10 +23,15 @@ struct MaintenanceUF2Tests {
 	/// A row appearing or vanishing here must be a deliberate change.
 	private static let auditedBoardIDs: Set<String> = [
 		"HT-n5262",
+		"Heltec-T096-v1",
+		"Heltec-T1",
 		"MinewSemi-MX25LE01",
 		"TRACKER L1",
+		"WisBlock-RAK3401-Board",
 		"WisBlock-RAK4631-Board",
 		"WisMesh-Tag",
+		"muzi-Base-Board",
+		"nRF52840-MeshTracker-X1",
 		"nRF52840-SeeedSenseCAPSolarP1-v1",
 		"nRF52840-SeeedXiao-v1",
 		"nRF52840-SeeedXiaoSense-v1",
@@ -47,20 +52,25 @@ struct MaintenanceUF2Tests {
 	/// against the release assets. A swapped pairing passes every structural check yet
 	/// writes a bootloader built for other hardware — this fixture is what fails then.
 	private static let auditedPairings: [String: (board: String, sha256Prefix: String)] = [
-		"HT-n5262": ("heltec_t114", "ae92d357"),
-		"MinewSemi-MX25LE01": ("minewsemi_mx25le01", "e09564fd"),
-		"TRACKER L1": ("wio_tracker_l1", "70fbce0e"),
-		"WisBlock-RAK4631-Board": ("wiscore_rak4631_board", "8741bc67"),
-		"WisMesh-Tag": ("wismesh_tag", "96d42e19"),
-		"nRF52840-SeeedSenseCAPSolarP1-v1": ("sensecap_solar_p1", "9b4bce48"),
-		"nRF52840-SeeedXiao-v1": ("xiao_nrf52840_ble", "ff8a0916"),
-		"nRF52840-SeeedXiaoSense-v1": ("xiao_nrf52840_ble_sense", "fc233d83"),
-		"nRF52840-T1000-E-v1": ("t1000_e", "5c065e11"),
-		"nRF52840-TEcho-v1": ("lilygo_techo", "2ddb3618"),
-		"nRF52840-ThinkNode-M3-v1": ("thinknode_m3", "bf90979f"),
-		"nRF52840-ThinkNodeM1-v1": ("thinknode_m1", "aa0721b5"),
-		"nRF52840-ThinkNodeM6-v1": ("thinknode_m6", "aaf94953"),
-		"nRF52840-promicro": ("promicro_nrf52840", "46ef3440")
+		"HT-n5262": ("heltec_t114", "96a461dc"),
+		"Heltec-T096-v1": ("heltec_t096", "e81ca347"),
+		"Heltec-T1": ("heltec_t1", "112fa1f7"),
+		"MinewSemi-MX25LE01": ("minewsemi_mx25le01", "301937aa"),
+		"TRACKER L1": ("wio_tracker_l1", "4eb3c0aa"),
+		"WisBlock-RAK3401-Board": ("wiscore_rak3401", "33d1d5f4"),
+		"WisBlock-RAK4631-Board": ("wiscore_rak4631_board", "20044aef"),
+		"WisMesh-Tag": ("wismesh_tag", "22854589"),
+		"muzi-Base-Board": ("muzi_base", "bee189b0"),
+		"nRF52840-MeshTracker-X1": ("mesh_tracker_x1", "52764ebe"),
+		"nRF52840-SeeedSenseCAPSolarP1-v1": ("sensecap_solar_p1", "99bf9035"),
+		"nRF52840-SeeedXiao-v1": ("xiao_nrf52840_ble", "678a68ef"),
+		"nRF52840-SeeedXiaoSense-v1": ("xiao_nrf52840_ble_sense", "4a44832e"),
+		"nRF52840-T1000-E-v1": ("t1000_e", "58e30432"),
+		"nRF52840-TEcho-v1": ("lilygo_techo", "aea201b9"),
+		"nRF52840-ThinkNode-M3-v1": ("thinknode_m3", "fe810492"),
+		"nRF52840-ThinkNodeM1-v1": ("thinknode_m1", "0173e789"),
+		"nRF52840-ThinkNodeM6-v1": ("thinknode_m6", "17525b78"),
+		"nRF52840-promicro": ("promicro_nrf52840", "c5b3af91")
 	]
 
 	@Test func everyPairingMatchesTheAuditedFixture() throws {
@@ -89,7 +99,11 @@ struct MaintenanceUF2Tests {
 			"seeed_wio_tracker_L1",
 			"seeed_wio_tracker_L1_eink",
 			"seeed_solar_node",
-			"seeed_xiao_nrf52840_kit"
+			"seeed_xiao_nrf52840_kit",
+			"seeed_mesh_tracker_X1",
+			"muzi-base",
+			"heltec-mesh-node-t096",
+			"heltec-mesh-node-t1"
 		])
 	}
 

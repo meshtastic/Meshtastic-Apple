@@ -268,6 +268,7 @@ struct DiscoveryScanView: View {
 				Label("Stop Scan", systemImage: "stop.fill")
 			}
 			.buttonStyle(.borderedProminent)
+			.tint(.accentFill)
 		} else if engine.currentState == .complete, let session = engine.session {
 			HStack(spacing: 8) {
 				NavigationLink {
@@ -610,7 +611,7 @@ extension DiscoveryScanView {
 			.foregroundStyle(isSelected ? Color.white : Color.primary)
 			.background {
 				RoundedRectangle(cornerRadius: 12, style: .continuous)
-					.fill(isSelected ? AnyShapeStyle(Color.accentColor) : AnyShapeStyle(.quaternary))
+					.fill(isSelected ? AnyShapeStyle(Color.accentFill) : AnyShapeStyle(.quaternary))
 			}
 			.overlay {
 				RoundedRectangle(cornerRadius: 12, style: .continuous)

@@ -163,6 +163,19 @@ struct Connect: View {
 		Connect.liveNode(node)
 	}
 
+	/// This window's radio's LoRa preset, or "Custom" when it uses its own modem settings.
+	/// Nil until the radio has sent its LoRa config, or if `node` is not the window's radio.
+	private var presetName: String? {
+		guard let node = safeNode,
+			  node.num == accessoryManager.nodeNum(for: windowRadio),
+			  let loRaConfig = node.loRaConfig,
+			  loRaConfig.modelContext != nil else { return nil }
+		if !loRaConfig.usePreset {
+			return String(localized: "Custom", comment: "LoRa preset shown when the radio uses its own modem settings")
+		}
+		return ModemPresets(rawValue: Int(loRaConfig.modemPreset))?.description
+	}
+
 	private var loRaConfigDestination: some View {
 		LoRaConfig(node: safeNode, onSuccessfulSave: handleSuccessfulLoRaSave)
 			.trackScreen(SettingsNavigationState.lora.screenName)
@@ -233,6 +246,10 @@ struct Connect: View {
 										.padding(0)
 										if safeNode != nil {
 											Text("Firmware Version").font(.callout)+Text(": \(safeNode?.metadata?.firmwareVersion ?? "Unknown".localized)")
+												.font(.callout).foregroundColor(Color.gray)
+										}
+										if let presetName {
+											Text("Preset").font(.callout)+Text(": \(presetName)")
 												.font(.callout).foregroundColor(Color.gray)
 										}
 										if radioFirmwareEdition.isEvent {

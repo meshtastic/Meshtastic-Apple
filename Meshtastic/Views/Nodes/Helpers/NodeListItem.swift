@@ -9,6 +9,15 @@ import SwiftUI
 import CoreLocation
 import Foundation
 
+struct NodeListRowRefreshGate {
+	private var hasRunTask = false
+
+	mutating func shouldRefresh() -> Bool {
+		defer { hasRunTask = true }
+		return hasRunTask
+	}
+}
+
 /// A complete, value-type snapshot of everything a node-list row renders, captured from the live
 /// `NodeInfoEntity` (and its `user` relationship) while it is valid.
 ///
@@ -22,7 +31,23 @@ import Foundation
 /// The row memoizes one of these snapshots in `@State` (see `NodeListItem.body`) and renders from
 /// it, so a re-evaluation after the model dies never touches the live object. Value types can't
 /// fault.
+/// What a node row watches to rebuild its snapshot: the last-heard time, and the radio's answer on
+/// whether it heard the node on the current LoRa settings, which can change without a new packet.
+struct NodeRowRefreshKey: Equatable {
+	let lastHeard: Date?
+	let heardOnCurrentLora: Bool?
+
+	@MainActor init(_ node: NodeInfoEntity) {
+		lastHeard = node.lastHeard
+		heardOnCurrentLora = node.heardOnCurrentLora
+	}
+}
+
 struct NodeListRowSummary {
+	#if DEBUG
+	@MainActor static var testInitializationObserver: (() -> Void)?
+	#endif
+
 	// Identity / name
 	let num: Int64
 	let shortName: String?
@@ -40,6 +65,9 @@ struct NodeListRowSummary {
 	let statusMessage: String?
 	let lastHeard: Date?
 	let isOnline: Bool
+	/// Not heard over RF on the radio's current LoRa settings (firmware 2.8.1+). A different claim
+	/// from offline, so the row shows it separately.
+	let isUnheardOnCurrentLora: Bool
 	let hopsAway: Int32
 	let snr: Float
 	let rssi: Int32
@@ -63,6 +91,10 @@ struct NodeListRowSummary {
 		includePosition: Bool = true,
 		includeLogAvailability: Bool = true
 	) {
+		#if DEBUG
+		Self.testInitializationObserver?()
+		#endif
+
 		num = node.num
 		let user = node.user
 		shortName = user?.shortName
@@ -79,6 +111,7 @@ struct NodeListRowSummary {
 		statusMessage = node.statusMessageDisplay
 		lastHeard = node.lastHeard
 		isOnline = node.isOnline
+		isUnheardOnCurrentLora = node.isUnheardOnCurrentLora
 		hopsAway = node.hopsAway
 		snr = node.snr
 		rssi = node.rssi
@@ -155,6 +188,9 @@ struct NodeListItem: View {
 		} else {
 			desc += ", offline"
 		}
+		if summary.isUnheardOnCurrentLora {
+			desc += ", " + UnheardOnCurrentLora.label
+		}
 		if let roleName = summary.role?.name {
 			desc += ", role: \(roleName)"
 		}
@@ -212,6 +248,7 @@ struct NodeListItem: View {
 	/// never re-derived from the live model during a plain re-evaluation, so a retained row can't
 	/// fault on a zombie @Model. Refreshed (guarded) when the node's `lastHeard` changes.
 	@State private var rowSummary: NodeListRowSummary?
+	@State private var refreshGate = NodeListRowRefreshGate()
 	var isDirectlyConnected: Bool
 	var connectedNode: Int64
 	var modemPreset: ModemPresets = ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast
@@ -237,12 +274,14 @@ struct NodeListItem: View {
 		// @Model, so a row retained past the node's deletion (nodes/positions are pruned constantly;
 		// bulk deletes leave zombies that `isDeleted` doesn't flag) can't fault. Only the first
 		// appearance reads the live node, and only while it's still valid.
-		if let rowSummary {
-			rowContent(rowSummary)
-		} else if node.modelContext != nil && !node.isDeleted {
-			let summary = NodeListRowSummary(node: node)
+		if rowSummary != nil || (node.modelContext != nil && !node.isDeleted) {
+			let summary = rowSummary ?? NodeListRowSummary(node: node)
 			rowContent(summary)
-				.onAppear { rowSummary = summary }
+				.onAppear {
+					if rowSummary == nil {
+						rowSummary = summary
+					}
+				}
 		} else {
 			EmptyView()
 		}
@@ -306,6 +345,11 @@ struct NodeListItem: View {
 						IconAndText(systemName: summary.isOnline ? "checkmark.circle.fill" : "moon.circle.fill",
 									imageColor: summary.isOnline ? .green : .orange,
 							text: summary.lastHeard?.formatted(date: .numeric, time: .shortened) ?? "Unknown Age".localized)
+					}
+					if summary.isUnheardOnCurrentLora {
+						IconAndText(systemName: UnheardOnCurrentLora.systemImage,
+									imageColor: .secondary,
+									text: UnheardOnCurrentLora.shortLabel)
 					}
 					IconAndText(systemName: summary.role?.systemName ?? "figure",
 								text: "Role: \(summary.role?.name ?? "Unknown".localized)")
@@ -394,11 +438,15 @@ struct NodeListItem: View {
 		}
 		.padding(.top, 3)
 		.padding(.bottom, 3)
-		// Gate the identity on liveness too: `.task(id:)` reads `node.lastHeard` during body
-		// construction, which would fault on an invalidated model before the body's guard runs.
-		.task(id: (node.modelContext != nil && !node.isDeleted) ? node.lastHeard : nil) {
+		// Gate the identity on liveness too: `.task(id:)` reads the node during body construction,
+		// which would fault on an invalidated model before the body's guard runs.
+		.task(id: (node.modelContext != nil && !node.isDeleted) ? NodeRowRefreshKey(node) : nil) {
 			// Refresh the snapshot when the node changes, but only while it is still live.
 			guard node.modelContext != nil && !node.isDeleted else { return }
+			// The initial snapshot was just built synchronously; later task runs represent a
+			// last-heard or heard-on-current-LoRa change, or the row reappearing, and must refresh
+			// all snapshotted fields.
+			guard refreshGate.shouldRefresh() else { return }
 			rowSummary = NodeListRowSummary(node: node)
 		}
 		.accessibilityElement(children: .ignore)

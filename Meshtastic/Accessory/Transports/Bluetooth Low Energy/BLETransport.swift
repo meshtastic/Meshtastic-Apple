@@ -667,7 +667,9 @@ actor BLETransport: Transport {
 				let restoredConnection = BLEConnection(peripheral: peripheral, central: central, transport: self)
 				self.activeConnections[id] = restoredConnection
 				Logger.transport.error("🛜 [BLE] Peripheral Connection found and state is connected setting this connection as the activeConnection.")
-				// iOS kept the link, so the radio has no new config to send.
+				// The link survived but this process is new, so everything the radio sends only with
+				// its config (region preset map, firmware edition, metadata) is missing. Ask for the
+				// config; the node database is already in the store (#2584).
 				await self.completeFirstRestore(device: device, connection: restoredConnection, fullHandshake: false)
 				Logger.transport.error("🛜 [BLE] Connection state successfully restored in the background.")
 			default:
@@ -680,10 +682,11 @@ actor BLETransport: Transport {
 
 	/// Runs the first radio's connect over a restored link, then lets discovery run again. The
 	/// connect records it as the preferred radio (connect Step 5); the radios restored alongside
-	/// come back as they were (D-19).
+	/// come back as they were (D-19). The config is always asked for (#2584); a link iOS kept
+	/// (`fullHandshake` false) skips only the node database and the version check.
 	private func completeFirstRestore(device: Device, connection: BLEConnection, fullHandshake: Bool) async {
 		let connectTask = Task { @MainActor in
-			try await AccessoryManager.shared.connect(to: device, withConnection: connection, wantConfig: fullHandshake, wantDatabase: fullHandshake, versionCheck: fullHandshake)
+			try await AccessoryManager.shared.connect(to: device, withConnection: connection, wantConfig: true, wantDatabase: fullHandshake, versionCheck: fullHandshake)
 		}
 		do {
 			try await connectTask.value

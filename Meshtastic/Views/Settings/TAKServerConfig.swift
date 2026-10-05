@@ -178,6 +178,7 @@ struct TAKServerConfig: View {
 							.frame(maxWidth: .infinity)
 					}
 					.buttonStyle(.borderedProminent)
+					.tint(.accentFill)
 					.controlSize(.large)
 					.disabled(isFixingChannel)
 
