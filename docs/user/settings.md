@@ -39,7 +39,7 @@ A chosen radio that's off is never replaced by another: the feature waits until 
 
 ### Data Management
 
-- **Erase All App Data** — clears the local database (favorites and saved routes included), every saved backup and the translation cache, then immediately reloads the bundled device hardware catalog. Your app settings are kept; **Reset App Settings** resets those. Use this as a last resort. With more than one radio, the confirmation names every radio whose data it erases, and they all disconnect first. Removing your only radio does the same (see [Resetting or Removing a Radio](bluetooth.md#resetting-or-removing-a-radio)).
+- **Clear App Data** — clears the local database (favorites and saved routes included), every saved backup and the translation cache, then immediately reloads the bundled device hardware catalog. Your app settings are kept; **Reset App Settings** resets those. Use this as a last resort. With more than one radio, the confirmation names every radio whose data it erases, and they all disconnect first. Removing your only radio does the same (see [Resetting or Removing a Radio](bluetooth.md#resetting-or-removing-a-radio)).
 - **NodeDB Reset** — resets the node database on your connected radio. When prompted, you can choose to **Preserve Favorites** so your starred nodes are retained after the reset. With more than one radio, only that radio's data is cleared; see [Resetting or Removing a Radio](bluetooth.md#resetting-or-removing-a-radio).
 - **Reset App Settings** — restores default app preferences without affecting your node database.
 

@@ -50,19 +50,33 @@ final class RadioWindowTracker {
 
 	// MARK: The last window (T393)
 
-	/// The radios whose window is on screen. A window closed by hand is hidden (W-01), not here.
-	private(set) var shownWindows: Set<UUID> = []
+	/// How many views each radio's window has on screen. A store reset or a renumber swaps a
+	/// window's view for a new one for the same radio (`.id(databaseResetID)`), and the new one
+	/// appears before the old one goes, so a set would lose the window (review V33-1).
+	private var windowViews: [UUID: Int] = [:]
 	/// Radio windows told to close because their radio was removed or forgotten.
 	private var closingWindows: Set<UUID> = []
 
+	/// The radios whose window is on screen. A window closed by hand is hidden (W-01), not here.
+	var shownWindows: Set<UUID> { Set(windowViews.keys) }
+
 	func windowAppeared(_ deviceId: UUID) {
-		shownWindows.insert(deviceId)
-		closingWindows.remove(deviceId)
+		let views = windowViews[deviceId, default: 0] + 1
+		windowViews[deviceId] = views
+		// A window opening again isn't closing; a swap of a closing window's view still is.
+		if views == 1 {
+			closingWindows.remove(deviceId)
+		}
 	}
 
 	func windowDisappeared(_ deviceId: UUID) {
-		shownWindows.remove(deviceId)
-		closingWindows.remove(deviceId)
+		let views = windowViews[deviceId, default: 0] - 1
+		if views > 0 {
+			windowViews[deviceId] = views
+		} else {
+			windowViews[deviceId] = nil
+			closingWindows.remove(deviceId)
+		}
 	}
 
 	/// `deviceId`'s window closes because its radio was removed or forgotten. Whether no window is

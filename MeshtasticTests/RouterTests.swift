@@ -593,4 +593,38 @@ struct RadioWindowTrackerTests {
 		tracker.windowAppeared(a)
 		#expect(!tracker.closesLastWindow(b, connectWindows: 0), "A's window is open again")
 	}
+
+	@Test("A store reset swapping a window's view keeps the window counted (review V33-1)")
+	func viewSwapKeepsTheWindow() {
+		let tracker = RadioWindowTracker()
+		let a = UUID(), b = UUID()
+		// A's view swapped under `.id(databaseResetID)`: the new one appears before the old one goes.
+		tracker.windowAppeared(a)
+		tracker.windowAppeared(a)
+		tracker.windowDisappeared(a)
+		#expect(tracker.shownWindows == [a])
+		tracker.windowAppeared(b)
+		#expect(!tracker.closesLastWindow(b, connectWindows: 0), "A's window is still open")
+		tracker.windowDisappeared(b)
+
+		// Clear App Data with two windows: both views swap, then both are told.
+		tracker.windowAppeared(b)
+		for id in [a, b] {
+			tracker.windowAppeared(id)
+			tracker.windowDisappeared(id)
+		}
+		#expect(!tracker.closesLastWindow(a, connectWindows: 0), "B's window is still open")
+		#expect(tracker.closesLastWindow(b, connectWindows: 0), "one Connect window, from the last one told")
+		tracker.windowDisappeared(a)
+		tracker.windowDisappeared(b)
+		#expect(tracker.shownWindows.isEmpty)
+
+		// A closing window whose view swaps is still closing.
+		tracker.windowAppeared(a)
+		tracker.windowAppeared(b)
+		#expect(!tracker.closesLastWindow(a, connectWindows: 0))
+		tracker.windowAppeared(a)
+		tracker.windowDisappeared(a)
+		#expect(tracker.closesLastWindow(b, connectWindows: 0), "A's window is still closing")
+	}
 }

@@ -117,7 +117,9 @@ Read this first if you are picking the work up. Update it in the same commit as 
   (`review-connections-v32.md`) of T394 found nothing new (T395). T391 rewrote the user docs
   for one window per radio. T386–T395 and T391 are committed (`f1f01d02`) with the six review
   files (V27–V32). T390 (removing the only radio is Clear App Data) and T393 (the Connect window
-  takes the last window's place on the Mac) are done, owner's calls of 2026-10-05.
+  takes the last window's place on the Mac) are done, owner's calls of 2026-10-05
+  (`d9e0a5e8`). Review V33 (`review-connections-v33.md`, V33-1 and minors) of them, checked in
+  the files; all held and are fixed (T396).
 - Merge of `main` (2026-10-02): merge commit `03632328` brought in `main`'s 11 commits up to
   `c3bb355b` (v2.7.23); `backup/multi-radio-pre-rebase` keeps the branch as it was before
   (`b13061ec`). Review V20 and data V15 (`review-connections-v20.md` M1–M2, `review-data-v15.md`
@@ -539,7 +541,8 @@ describes it well enough to rebuild.
   connected at the next launch. Mac (T393): when the window that closes (Remove, Clear App
   Data, a full factory reset) was the only one open, the Connect window opens in its place;
   with two radio windows, Clear App Data leaves exactly one Connect window; with the Connect
-  window already open, no second one opens.
+  window already open, no second one opens. After Reset NodeDB with A alone, connect B, then
+  remove B: A's window stays and no Connect window opens (review V33-1).
 - [ ] Disconnect and Remove, reviews V28 and V29 (T388, T389). iPhone with A (connected first)
   and B, the window on A: Disconnect A from the Connect tab, Settings › Device, the update screen
   and Shortcuts in turn (reconnect A between): the window stays on A, off, and doesn't show B for
@@ -564,7 +567,8 @@ describes it well enough to rebuild.
   B my Meshtastic radio" change it. A Shortcuts message without a radio goes via the chosen one;
   with A connected and the chosen B off it says "That radio isn't connected." and sends nothing;
   naming a radio that's off does the same. Siri's voice "send a message" goes via the chosen radio
-  and, with it off, fails asking to open the app, without sending through A. Factory reset and shut down name the radio in their confirmation.
+  and, with it off, fails asking to open the app, without sending through A. Factory reset and
+  shut down name the radio in their confirmation.
   Remove the chosen radio with two others left: the sheet asks again.
 - [ ] App Settings › TAK / CarPlay & Siri / Apple Watch: pick B. TAK CoT goes out from B (log
   `📻 [B] Sending TAKPacket…`); a Shortcuts "Send a Group Message" without a radio goes via B;
