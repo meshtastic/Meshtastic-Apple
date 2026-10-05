@@ -101,8 +101,18 @@ struct UnheardOnCurrentLoraTests {
 		await mp.flushDebouncedSaves()
 		#expect(fetchNode(num)?.heardOnCurrentLora == false, "MQTT says nothing about the radio's channel")
 
-		var overRF = viaMqtt
-		overRF.viaMqtt = false
+		// The radio replays stored packets after a node db download: marked LoRa, but no RSSI.
+		var replayed = viaMqtt
+		replayed.viaMqtt = false
+		replayed.transportMechanism = .transportLora
+		await mp.updateAnyPacketFrom(packet: replayed, activeDeviceNum: 1, reportsHeardOnCurrentLora: true)
+		await mp.flushDebouncedSaves()
+		#expect(fetchNode(num)?.heardOnCurrentLora == false, "a replayed packet was heard earlier, not now")
+
+		// A measured 0 dBm is a real reception.
+		var overRF = replayed
+		overRF.rxRssi = 0
+		#expect(overRF.hasRxRssi)
 		await mp.updateAnyPacketFrom(packet: overRF, activeDeviceNum: 1, reportsHeardOnCurrentLora: true)
 		await mp.flushDebouncedSaves()
 		#expect(fetchNode(num)?.heardOnCurrentLora == true)
