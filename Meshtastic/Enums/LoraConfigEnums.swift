@@ -491,6 +491,17 @@ enum RegionCodes: Int, CaseIterable, Identifiable {
 			return false
 		}
 	}
+
+	/// Regions whose firmware profiles include the Lite, Narrow or Tiny presets: the EU 868
+	/// family and the ham bands. Used only when the radio hasn't sent its region preset map.
+	var allowsBandLimitedPresets: Bool {
+		switch self {
+		case .eu868, .eu866, .euN868, .itu12M, .itu22M, .itu32M, .itu170Cm, .itu270Cm, .itu370Cm, .itu2125Cm:
+			return true
+		default:
+			return false
+		}
+	}
 }
 
 enum ModemPresets: Int, CaseIterable, Identifiable {
@@ -545,6 +556,17 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 	var isTurbo: Bool {
 		switch self {
 		case .longTurbo, .shortTurbo, .mediumTurbo:
+			return true
+		default:
+			return false
+		}
+	}
+
+	/// Lite (125 kHz), Narrow (62.5 kHz) and Tiny (20 kHz): legal only in the regions that
+	/// `RegionCodes.allowsBandLimitedPresets` lists.
+	var isBandLimited: Bool {
+		switch self {
+		case .liteFast, .liteSlow, .narrowFast, .narrowSlow, .tinyFast, .tinySlow:
 			return true
 		default:
 			return false
