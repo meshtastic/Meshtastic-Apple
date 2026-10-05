@@ -303,7 +303,9 @@ extension MeshPackets {
 				node.viaMqtt = packet.viaMqtt
 				// Heard over RF just now, so heard on the current settings. Mirrors the firmware, which
 				// sets the flag when it hears the node, so the row clears before the next node db dump.
-				if reportsHeardOnCurrentLora && !isImplicitAck && !packet.viaMqtt {
+				// After a node db download the radio replays stored packets marked as LoRa but without
+				// RSSI, which every real reception has; those were heard earlier, maybe on other settings.
+				if reportsHeardOnCurrentLora && !isImplicitAck && !packet.viaMqtt && packet.rxRssi != 0 {
 					node.heardOnCurrentLora = true
 				}
 				
