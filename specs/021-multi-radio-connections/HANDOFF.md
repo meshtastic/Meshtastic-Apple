@@ -115,8 +115,9 @@ Read this first if you are picking the work up. Update it in the same commit as 
   (`review-connections-v31.md`, V31-1) of V30's, checked in the files; all held and are fixed
   (T388, T389, T392, T394). Their device checks are on the checklist below. Review V32
   (`review-connections-v32.md`) of T394 found nothing new (T395). T391 rewrote the user docs
-  for one window per radio. Not committed yet: T386–T395 and T391 are uncommitted on top of
-  `a00e58ca`; commit the six review files (V27–V32) with them, as V24–V26 were.
+  for one window per radio. T386–T395 and T391 are committed (`f1f01d02`) with the six review
+  files (V27–V32). T390 (removing the only radio is Clear App Data) and T393 (the Connect window
+  takes the last window's place on the Mac) are done, owner's calls of 2026-10-05.
 - Merge of `main` (2026-10-02): merge commit `03632328` brought in `main`'s 11 commits up to
   `c3bb355b` (v2.7.23); `backup/multi-radio-pre-rebase` keeps the branch as it was before
   (`b13061ec`). Review V20 and data V15 (`review-connections-v20.md` M1–M2, `review-data-v15.md`
@@ -197,7 +198,7 @@ Read this first if you are picking the work up. Update it in the same commit as 
   owner should confirm:
   - Remove This Radio keeps favorites (D-18 gives the choice only for a reset). For a connected
     radio it sits beside Disconnect and with the resets in Settings › Device, for a single radio
-    too since T386 (a single radio's removal clears the store as its reset does); a radio that
+    too since T386 (removing the only radio is Clear App Data since T390); a radio that
     isn't connected is removed from its row, or from App Settings › Your Radios (T187, the
     owner's call: a radio can die and leave a ghost).
   - The node's hops and signal use observations heard within an hour of the newest
@@ -221,18 +222,6 @@ Read this first if you are picking the work up. Update it in the same commit as 
 
 ## Blocked / waiting on the owner
 
-- Single-radio resets (review V29 minor 2, T390): Reset NodeDB and Factory Reset with one radio
-  clear the store as on `main`, outside the handshake gate, deciding from `storedRadios` and the
-  connected radios (`DeviceResetSection.hasOtherRadios`). Remove Radio's clear has more checks
-  since T387: under the gate, so a connect starting meanwhile waits (V27-1), and data
-  `storedRadios` doesn't count stops it (V27-3). Predates T386 (T147). Owner (2026-10-05): stay
-  as close to the stock single-radio behaviour as possible; proposal pending the owner's go.
-- The last window on the Mac (review V30 minor 1, T393): when a radio's window closes because the
-  radio is removed or forgotten (Remove Radio, Clear App Data, a full factory reset) and it was
-  the only window open, the app has no window; Radios › Add Radio… and the Dock icon bring the
-  user back. Friendlier: open the Connect window in its place (`showConnectWindow()`'s check in
-  `RadioWindowCommands`, before `dismissWindow()`, when no other window is attached). Owner
-  (2026-10-05): as close to stock as possible; proposal pending the owner's go.
 - Real-radio testing: the owner is preparing two more radios and will test on the Mac when ready.
 - The radio menu in the status indicator (`RadioSwitcherMenu` wrapping `ConnectedDevice`,
   `bca4ecef`, T082) goes against CLAUDE.md: the indicator is full and gets no controls. The owner
@@ -544,11 +533,13 @@ describes it well enough to rebuild.
   opens on it, off, every launch until another is picked; check that's wanted with A connected
   and listed under Also Connected. Disconnect a stand-in (the radio connecting in the preferred
   radio's place): the window stays on it while the preferred radio comes back. During a radio's
-  firmware update its window doesn't offer Connect. Remove the only radio: the app's data clears
-  (favorites kept), its notifications go, and the hardware list is there right away. Mac: when
-  the window that closes (Remove, Clear App Data, a full factory reset) was the only one open,
-  the app is left with no window until Radios › Add Radio… or the Dock icon (review V30 minor 1,
-  T393): check it's acceptable.
+  firmware update its window doesn't offer Connect. Remove the only radio (T390): everything
+  Clear App Data erases goes (favorites, saved routes, Settings › Backups empty), app settings
+  stay, its notifications go, the hardware list is there right away, and the radio isn't
+  connected at the next launch. Mac (T393): when the window that closes (Remove, Clear App
+  Data, a full factory reset) was the only one open, the Connect window opens in its place;
+  with two radio windows, Clear App Data leaves exactly one Connect window; with the Connect
+  window already open, no second one opens.
 - [ ] Disconnect and Remove, reviews V28 and V29 (T388, T389). iPhone with A (connected first)
   and B, the window on A: Disconnect A from the Connect tab, Settings › Device, the update screen
   and Shortcuts in turn (reconnect A between): the window stays on A, off, and doesn't show B for

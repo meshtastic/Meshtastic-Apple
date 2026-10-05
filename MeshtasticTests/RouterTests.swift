@@ -560,4 +560,37 @@ struct RadioWindowTrackerTests {
 		tracker.forgetOnceGone(a, connected: [b, c])
 		#expect(tracker.toOpen(connected: [a, b, c]) == [a])
 	}
+
+	@Test("The last window closing because its radio was removed opens the Connect window, once when several close together (T393)")
+	func lastWindowClosing() {
+		let tracker = RadioWindowTracker()
+		let a = UUID(), b = UUID()
+		tracker.windowAppeared(a)
+		tracker.windowAppeared(b)
+		// Clear App Data with two radio windows: told one after the other, before either has gone.
+		#expect(!tracker.closesLastWindow(a, connectWindows: 0), "B's window is still open")
+		#expect(tracker.closesLastWindow(b, connectWindows: 0), "the last one told, with A's closing")
+		tracker.windowDisappeared(a)
+		tracker.windowDisappeared(b)
+
+		// The Connect window is open: nothing more opens.
+		tracker.windowAppeared(a)
+		#expect(!tracker.closesLastWindow(a, connectWindows: 1))
+		tracker.windowDisappeared(a)
+
+		// A window closed by hand is hidden (W-01), so it doesn't count as open.
+		tracker.windowAppeared(a)
+		tracker.windowAppeared(b)
+		tracker.windowDisappeared(b)
+		#expect(tracker.closesLastWindow(a, connectWindows: 0))
+		tracker.windowDisappeared(a)
+
+		// A window that closed and opened again isn't still counted as closing.
+		tracker.windowAppeared(a)
+		tracker.windowAppeared(b)
+		#expect(!tracker.closesLastWindow(a, connectWindows: 0))
+		tracker.windowDisappeared(a)
+		tracker.windowAppeared(a)
+		#expect(!tracker.closesLastWindow(b, connectWindows: 0), "A's window is open again")
+	}
 }

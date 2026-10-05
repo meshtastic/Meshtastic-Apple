@@ -88,7 +88,7 @@ extension AccessoryManager {
 	/// Remove Radio (D-18): disconnects `radioNum` without resetting it, removes its data and
 	/// forgets it, and its window closes (W-02). With other radios' data in the store only its own
 	/// goes, as a reset with messages deleted would. As the only radio the app knows its data is
-	/// the whole store, which clears as a single radio's reset does, favorites kept.
+	/// the whole store, and the app's data is erased as Clear App Data does (`eraseAppData`, T390).
 	///
 	/// One removal of a radio at a time, and nothing connects it meanwhile (review V27-1, V27-2).
 	/// Its data goes under the handshake gate, where whether the store clears is decided.
@@ -134,9 +134,7 @@ extension AccessoryManager {
 			}
 		}
 		if await removeData(ofRemovedRadio: radioNum, wasConnected: wasConnected, backfillOwner: backfillOwner) {
-			// As Clear App Data does: no reconnect follows to refill the device catalog (review V27-9).
-			clearNotifications()
-			try? await MeshtasticAPI.shared.refreshBundledDevicesData()
+			Logger.data.info("🗑️ [MultiRadio] Removed the only radio \(radioNum.toHex(), privacy: .public): app data erased as Clear App Data does")
 		}
 		// A service that used it asks for another when several radios remain (W-15).
 		clearServiceRadios(pointingAt: radioNum)
@@ -168,8 +166,10 @@ extension AccessoryManager {
 			await packets.removeRadioData(radioNum, .remove)
 			return false
 		}
-		let cleared = await packets.clearDatabase(includeRoutes: false, preserveFavorites: true)
-		await resetDatabaseAfterClear()
+		// The only radio: the app goes back to its defaults, as Clear App Data does on `main`
+		// (T390, the owner's call: as close to a single radio's behaviour as possible). That
+		// includes favorites, saved routes and every saved backup; app settings are kept.
+		let cleared = await eraseAppData()
 		if !cleared {
 			// Stopped part-way, so its MyInfo may be left (review V27-9): its own data goes as with
 			// other radios' data in the store, on the fresh store's actor.

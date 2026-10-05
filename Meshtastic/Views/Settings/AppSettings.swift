@@ -205,34 +205,8 @@ struct AppSettings: View {
 								// cleared store. With one radio there are none alongside it.
 								await accessoryManager.disconnectAllAdditionalRadios()
 								try await accessoryManager.disconnect()
-								
-								/// Clear translation cache
-								await TranslationCache.shared.clearAll()
-								await DocTranslationService.shared.clearUIStringCache()
-								
-								/// Delete any node database backups too.
-								for entry in NodeBackupManager.shared.listBackups() {
-									_ = NodeBackupManager.shared.deleteBackup(forKey: entry.key)
-								}
-								await MeshPackets.shared.flushDebouncedSaves()
-								await MeshPackets.shared.clearDatabase(includeRoutes: true)
-								await AccessoryManager.shared.resetDatabaseAfterClear()
-								// No radios are known any more, so no service keeps one (W-15), and their
-								// windows close (review V27-4).
-								for service in RadioService.allCases {
-									UserDefaults.setServiceRadio(0, for: service)
-								}
-								await AccessoryManager.shared.forgetRadiosNotInStore()
-								clearNotifications()
-								// Repopulate device catalog immediately — no reconnect happens after a full reset.
-								try? await MeshtasticAPI.shared.refreshBundledDevicesData()
-								// Images and msh.to links are network-backed, so they run in their own task
-								// rather than blocking the reset from completing. `Task` rather than
-								// `Task.detached` per the repo concurrency guideline; the pass handles its
-								// own cancellation.
-								Task(priority: .utility) {
-									await MeshtasticAPI.shared.refreshDevicesPreferringAPI()
-								}
+								// The same erase as removing the only radio (T390).
+								await accessoryManager.eraseAppData()
 							}
 						}
 					} message: {

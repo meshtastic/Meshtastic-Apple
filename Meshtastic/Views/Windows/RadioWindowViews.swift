@@ -47,6 +47,32 @@ final class RadioWindowTracker {
 			forget(deviceId)
 		}
 	}
+
+	// MARK: The last window (T393)
+
+	/// The radios whose window is on screen. A window closed by hand is hidden (W-01), not here.
+	private(set) var shownWindows: Set<UUID> = []
+	/// Radio windows told to close because their radio was removed or forgotten.
+	private var closingWindows: Set<UUID> = []
+
+	func windowAppeared(_ deviceId: UUID) {
+		shownWindows.insert(deviceId)
+		closingWindows.remove(deviceId)
+	}
+
+	func windowDisappeared(_ deviceId: UUID) {
+		shownWindows.remove(deviceId)
+		closingWindows.remove(deviceId)
+	}
+
+	/// `deviceId`'s window closes because its radio was removed or forgotten. Whether no window is
+	/// left once it has, so the Connect window opens in its place, as the one window on `main`
+	/// stays (T393). `connectWindows` counts the Connect windows open. When several close at once
+	/// (Clear App Data with several radios), the last one told opens it, once.
+	func closesLastWindow(_ deviceId: UUID, connectWindows: Int) -> Bool {
+		closingWindows.insert(deviceId)
+		return connectWindows == 0 && shownWindows.subtracting(closingWindows).isEmpty
+	}
 }
 
 /// Opens each radio's window when it connects (T310). In every window on the Mac, so one is
@@ -119,14 +145,27 @@ struct RadioWindowRoot: View {
 				})
 				.navigationTitle(accessoryManager.radioName(of: deviceId) ?? "Meshtastic")
 				.removeRadioConfirmation($radioToRemove)
+				.onAppear { appState.radioWindowTracker.windowAppeared(deviceId) }
+				.onDisappear { appState.radioWindowTracker.windowDisappeared(deviceId) }
 				.onReceive(accessoryManager.radioRemoved) { removed in
-					if removed == deviceId {
-						dismissWindow()
+					guard removed == deviceId else { return }
+					// The last window open: the Connect window takes its place (T393).
+					if appState.radioWindowTracker.closesLastWindow(deviceId, connectWindows: Self.connectWindowCount) {
+						openWindow(id: RadioWindows.mainWindowID)
 					}
+					dismissWindow()
 				}
 		} else {
 			Color.clear.onAppear { dismissWindow() }
 		}
+	}
+
+	/// The Connect windows open, as `RadioWindowCommands.showConnectWindow()` finds them. The Mesh
+	/// Map window doesn't count: it closes itself when it's the only window left.
+	private static var connectWindowCount: Int {
+		UIApplication.shared.connectedScenes.filter {
+			$0.session.configuration.name == RadioWindows.mainWindowID && $0.activationState != .unattached
+		}.count
 	}
 
 	/// Radios › Remove for this window's radio: once it has reported its node number, while it's

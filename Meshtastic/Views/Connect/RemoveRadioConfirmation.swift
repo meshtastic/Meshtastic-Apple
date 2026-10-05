@@ -50,7 +50,8 @@ struct RemoveRadioConfirmation: ViewModifier {
 				if accessoryManager.hasSeveralRadios {
 					Text("Removes \(radio.name) and the messages and nodes only it has from this device. Anything your other radios also have is kept. The radio itself isn't changed, and you can add it again later.")
 				} else {
-					Text("Removes \(radio.name) and its messages and nodes from this device. Favorites are kept. The radio itself isn't changed, and you can add it again later.")
+					// The only radio: removing it erases the app's data, as Clear App Data does (T390).
+					Text("Removes \(radio.name) and erases all app data on this device, as Clear App Data does: messages, nodes, favorites, saved routes and backups. App settings are kept. The radio itself isn't changed, and you can add it again later.")
 				}
 			}
 	}
