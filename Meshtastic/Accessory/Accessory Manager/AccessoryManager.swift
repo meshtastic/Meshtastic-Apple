@@ -295,8 +295,23 @@ class AccessoryManager: ObservableObject {
 	/// The user's radios connected with this version, for the services' radio choice (W-15).
 	/// Loaded at launch and after connects and removals (`refreshKnownRadios`).
 	@Published var knownRadios: [StoredRadio] = []
-	/// A radio the user disconnected, by device id: its window on the Mac closes (D-19, W-02).
+	/// The device each radio in the store last connected on (its `peripheralId`), by node number:
+	/// the window a radio known on several devices has (W-03). Loaded with `knownRadios`.
+	@Published var radioLastDeviceIds: [Int64: UUID] = [:]
+	/// A radio the user disconnected, by device id. Its window stays, showing it off with Connect
+	/// (W-02); on the Mac it opens again the next time the radio connects, if it was closed. Sent
+	/// as the Disconnect starts, before the radio's link closes (review V28-1).
 	let radioDisconnectedByUser = PassthroughSubject<UUID, Never>()
+	/// A radio the user removed, by each device id it was known by: its window closes (W-02).
+	let radioRemoved = PassthroughSubject<UUID, Never>()
+	/// Radios being removed, by node number (review V27-2): not offered again, nor listed as off.
+	@Published var radiosBeingRemoved: Set<Int64> = []
+	/// The device ids of the radios being removed: `connect(to:)` refuses them meanwhile (review
+	/// V27-1), so neither discovery, a reconnect loop nor a tap brings one back mid-removal.
+	var deviceIdsBeingRemoved: Set<UUID> = []
+	/// Radios whose link is closed for a firmware update, by device id, until the update's sheet
+	/// hands them back (`reclaimRadioAfterUpdate`): not shown as off with Connect (review V27-6).
+	var radiosReleasedForUpdate: Set<UUID> = []
 	/// Each radio's firmware version as it last reported it this launch, by node number (T018):
 	/// what `checkIsVersionSupported` falls back to while a radio's live version is unknown.
 	var knownFirmwareVersions: [Int64: String] = [:]
@@ -816,12 +831,7 @@ class AccessoryManager: ObservableObject {
 	// Should only be called by UI-facing callers.
 	func disconnect(forUpdate: Bool = false) async throws {
 		guard !isClosingConnection else { return }
-		// Its window on the Mac closes once it's disconnected (W-02), unless it's only released
-		// for a firmware update (review V11 W1).
 		let disconnectedId = activeConnection?.device.id ?? connectAttempts.values.first(where: \.isFirst)?.device.id
-		defer {
-			if let disconnectedId, !forUpdate { radioDisconnectedByUser.send(disconnectedId) }
-		}
 		// Nor brought back by a reconnect loop: one connecting it as the first radio, or left from
 		// when it was a radio alongside (review V14 P1).
 		if let disconnectedId {
@@ -830,6 +840,13 @@ class AccessoryManager: ObservableObject {
 		}
 		self.userRequestedConnectionCancellation = true
 		firstRadioReleasedForUpdate = forUpdate
+		// Its window shows it off (W-02), unless it's only released for a firmware update
+		// (review V11 W1). Told before the teardown, while the one window still shows it: once
+		// `activeConnection` is nil the window can show another radio for a moment, and would no
+		// longer match this one as its radio (review V28-1).
+		if let disconnectedId, !forUpdate {
+			radioDisconnectedByUser.send(disconnectedId)
+		}
 		connectCancelGeneration &+= 1
 		for attempt in connectAttempts.values where attempt.isFirst {
 			attempt.isCancelled = true

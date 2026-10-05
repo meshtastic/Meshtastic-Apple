@@ -85,8 +85,8 @@ extension AccessoryManager {
 	}
 
 	/// Disconnects radio `deviceId` for the user, the first radio or another (D-19): it isn't
-	/// brought back, and its window on the Mac closes (W-02). Without the first radio the others
-	/// stay connected and none takes its place (T316).
+	/// brought back, and its window stays, showing it off with Connect (W-02). Without the first
+	/// radio the others stay connected and none takes its place (T316).
 	func disconnectRadio(_ deviceId: UUID) async {
 		if activeConnection?.device.id == deviceId || connectAttempts[deviceId]?.isFirst == true {
 			let standIn = standIn(for: deviceId)
@@ -106,10 +106,28 @@ extension AccessoryManager {
 		}
 	}
 
+	/// After the store was cleared or replaced (Clear App Data, a backup restore): the radios it
+	/// no longer has are forgotten and their windows close (review V27-4), as Remove Radio does;
+	/// the ones it has stay known. A radio connected or connecting stays as it is. Not while
+	/// `AppState.isDatabaseResetting` is up: the Mac's radio windows are unmounted then, and
+	/// wouldn't close (review V28-2).
+	func forgetRadiosNotInStore() async {
+		await refreshKnownRadios()
+		let stored = Set(await MeshPackets.shared.radioPeripheralIds().map(\.1)).union(knownRadios.map(\.nodeNum))
+		let gone = knownNodeNums.filter { !stored.contains($0.value) && !isRadioConnected($0.key) }.map(\.key)
+		for deviceId in gone.sorted(by: { $0.uuidString < $1.uuidString }) {
+			knownNodeNums.removeValue(forKey: deviceId)
+			radioRemoved.send(deviceId)
+		}
+		await seedKnownNodeNums()
+	}
+
 	/// Releases radio `deviceId` for a firmware update (review V11 W1): its link closes so the
 	/// updater can reach it in update mode. Its window stays, it stays remembered, and the other
-	/// radios are left as they are. `reclaimRadioAfterUpdate(_:)` brings it back.
+	/// radios are left as they are. `reclaimRadioAfterUpdate(_:)` brings it back. Until then it
+	/// isn't shown as off with Connect, which would race the update (review V27-6).
 	func releaseRadioForUpdate(_ deviceId: UUID) async throws {
+		radiosReleasedForUpdate.insert(deviceId)
 		if activeConnection?.device.id == deviceId {
 			try await disconnect(forUpdate: true)
 		} else {
@@ -122,6 +140,7 @@ extension AccessoryManager {
 	/// through its reconnect. The first radio no longer holds its place, so a radio alongside that
 	/// drops isn't held back if it doesn't come back (review V14 P4).
 	func reclaimRadioAfterUpdate(_ device: Device) {
+		radiosReleasedForUpdate.remove(device.id)
 		if device.id.uuidString == PreferredRadio.peripheralId {
 			firstRadioReleasedForUpdate = false
 		}
@@ -259,10 +278,11 @@ extension AccessoryManager {
 	/// Disconnects one additional radio. The first radio and the others are unaffected.
 	/// `byUser` also stops any automatic reconnect for it, now and at the next launch.
 	func disconnectAdditionalRadio(_ deviceId: UUID, byUser: Bool = false, forUpdate: Bool = false) async {
-		// Its window on the Mac closes once it's disconnected (W-02); not when it's only released
-		// for a firmware update, which also keeps it remembered (review V11 W1).
-		defer {
-			if byUser, !forUpdate { radioDisconnectedByUser.send(deviceId) }
+		// Its window learns it was the user (W-02); not when it's only released for a firmware
+		// update, which also keeps it remembered (review V11 W1). Before the teardown, as for the
+		// first radio (review V28-1).
+		if byUser, !forUpdate {
+			radioDisconnectedByUser.send(deviceId)
 		}
 		if byUser || forUpdate {
 			additionalRadioReconnects.removeValue(forKey: deviceId)?.cancel()

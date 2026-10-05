@@ -34,7 +34,7 @@ window owns one value, its radio, and nothing hands it over.
 | ID | Decision |
 |---|---|
 | W-01 | Closing a radio's window only hides it. The radio stays connected; it's disconnected the usual way (Disconnect in Connect or Settings). A hidden window is reopened from the Window menu. |
-| W-02 | Disconnecting a radio closes its window. Another radio is added from a dedicated Connect window, opened from a menu. |
+| W-02 | Disconnecting a radio keeps its window, showing the radio off with Connect and Remove Radio (revised 2026-10-04; it used to close the window). Remove Radio closes it. On iPhone and iPad with several radios the one window keeps showing the radio it disconnected until the user picks another. The Mac's Connect window and Radios menu list every one of the user's radios, connected or off, each opening its window. Remove Radio sits beside Disconnect everywhere, and is offered for a single radio too; its confirmation says the radio itself isn't changed. Another radio is added from a dedicated Connect window, opened from a menu. |
 | W-03 | One radio per window. A radio already open in a window is never opened in a second one; its window comes to the front instead. |
 | W-04 | iPhone has one window. The other radios stay connected in the background and the window switches between them. |
 | W-05 | Tapping a notification: a direct message opens the window of the radio that received it; a channel message opens the channel in the first open window whose radio has that channel. |
@@ -132,8 +132,9 @@ Neither is hard; it's a list of places to change, each small.
    override and `radiosFocusedThisRun` go. `PreferredRadio` becomes the list of radios to reconnect
    (`MyInfoEntity.autoConnect` already holds that).
 5. **Windows.** The Connect window (W-02), each radio's window opened when it connects, hidden on
-   close (W-01), reopened at launch for every radio that reconnects, and the Window menu listing
-   the connected radios.
+   close (W-01), kept showing the radio off when it's disconnected and closed when it's removed
+   (W-02), brought back at launch by macOS window restoration and for every radio that reconnects,
+   and the Radios menu listing the user's radios, connected or off.
 6. **Siri and CarPlay** as W-09 to W-11.
 7. **Adding and switching** as W-12 and W-13; the composer's picker as W-14.
 

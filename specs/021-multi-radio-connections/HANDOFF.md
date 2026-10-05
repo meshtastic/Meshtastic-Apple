@@ -106,6 +106,17 @@ Read this first if you are picking the work up. Update it in the same commit as 
   note). Nothing of the windows was run: the iOS Simulator suite and a Mac build (built, not run)
   pass; the device checklist below has what needs the owner's Mac, iPhone and Siri. Next: the
   owner's device test, then the full reviews of each area, then T122.
+- W-02 revised (2026-10-04, T386): Disconnect keeps the radio's window, showing it off with
+  Connect and Remove Radio; Remove Radio closes it, and is offered for a single radio too.
+  Review V27 (`review-connections-v27.md`, V27-1–V27-9 and minors), checked in the files; all
+  held and are fixed (T387). Review V28 (`review-connections-v28.md`, V28-1–V28-4 and minors) of
+  those fixes, review V29 (`review-connections-v29.md`, V29-1 and minors) of V28's, and review
+  V30 (`review-connections-v30.md`, V30-1 and minors) of V29's, and review V31
+  (`review-connections-v31.md`, V31-1) of V30's, checked in the files; all held and are fixed
+  (T388, T389, T392, T394). Their device checks are on the checklist below. Review V32
+  (`review-connections-v32.md`) of T394 found nothing new (T395). T391 rewrote the user docs
+  for one window per radio. Not committed yet: T386–T395 and T391 are uncommitted on top of
+  `a00e58ca`; commit the six review files (V27–V32) with them, as V24–V26 were.
 - Merge of `main` (2026-10-02): merge commit `03632328` brought in `main`'s 11 commits up to
   `c3bb355b` (v2.7.23); `backup/multi-radio-pre-rebase` keeps the branch as it was before
   (`b13061ec`). Review V20 and data V15 (`review-connections-v20.md` M1–M2, `review-data-v15.md`
@@ -185,9 +196,10 @@ Read this first if you are picking the work up. Update it in the same commit as 
   (T167; a check for it is in the device test checklist). Choices made along the way that the
   owner should confirm:
   - Remove This Radio keeps favorites (D-18 gives the choice only for a reset). For a connected
-    radio it sits with the resets in Settings › Device (only offered with several radios); a radio
-    that isn't connected is removed from App Settings › Your Radios (T187, the owner's call:
-    a radio can die and leave a ghost).
+    radio it sits beside Disconnect and with the resets in Settings › Device, for a single radio
+    too since T386 (a single radio's removal clears the store as its reset does); a radio that
+    isn't connected is removed from its row, or from App Settings › Your Radios (T187, the
+    owner's call: a radio can die and leave a ghost).
   - The node's hops and signal use observations heard within an hour of the newest
     (`NodeObservationEntity.currentWindow`); the channel slot comes only from the focused radio.
   - Favorite / ignored / verified: a radio only a merged backup knows doesn't vote.
@@ -209,6 +221,18 @@ Read this first if you are picking the work up. Update it in the same commit as 
 
 ## Blocked / waiting on the owner
 
+- Single-radio resets (review V29 minor 2, T390): Reset NodeDB and Factory Reset with one radio
+  clear the store as on `main`, outside the handshake gate, deciding from `storedRadios` and the
+  connected radios (`DeviceResetSection.hasOtherRadios`). Remove Radio's clear has more checks
+  since T387: under the gate, so a connect starting meanwhile waits (V27-1), and data
+  `storedRadios` doesn't count stops it (V27-3). Predates T386 (T147). Owner (2026-10-05): stay
+  as close to the stock single-radio behaviour as possible; proposal pending the owner's go.
+- The last window on the Mac (review V30 minor 1, T393): when a radio's window closes because the
+  radio is removed or forgotten (Remove Radio, Clear App Data, a full factory reset) and it was
+  the only window open, the app has no window; Radios › Add Radio… and the Dock icon bring the
+  user back. Friendlier: open the Connect window in its place (`showConnectWindow()`'s check in
+  `RadioWindowCommands`, before `dismissWindow()`, when no other window is attached). Owner
+  (2026-10-05): as close to stock as possible; proposal pending the owner's go.
 - Real-radio testing: the owner is preparing two more radios and will test on the Mac when ready.
 - The radio menu in the status indicator (`RadioSwitcherMenu` wrapping `ConnectedDevice`,
   `bca4ecef`, T082) goes against CLAUDE.md: the indicator is full and gets no controls. The owner
@@ -424,6 +448,14 @@ describes it well enough to rebuild.
 - Editing tools: after changing a file with a script (`python3 /tmp/x.py`), re-read it before
   using the editor's find-and-replace on it. Once the editor applied an edit to its own stale
   copy of `UserMessageList.swift` and silently undid a script's refactor; `git diff` caught it.
+  It happened twice more (reviews V28-4 and T388): a rename in `MeshPackets+RadioRemoval.swift`
+  undone, then an edit-with-context insert that changed an unrelated test line and dropped the
+  file's last newline. The find-and-replace tool dropped `MultiRadioConnectFlowTests.swift`'s last
+  newline again in T392, from an edit nowhere near the end (SwiftLint's `trailing_newline` caught
+  it). After every edit, `git diff -U0 <file> | grep '^-'` lists what went, and `tail -c1 <file>`
+  must be a newline; check that each removed line was meant. Very long lines (tasks.md) can
+  defeat find-and-replace; a script that asserts its anchor occurs once is safer there. Rewrap
+  any line an edit takes past 100 characters.
 - "Mine" in the views: channel rows use `ownRadioNums` (every `MyInfoEntity`); DM rows use the
   selected radio of the thread. `UserDefaults.preferredPeripheralNum` is only the fallback.
 - Commit messages: write each to a new, unique file (`/tmp/mr-<topic>.txt`). `create_file`
@@ -498,11 +530,43 @@ describes it well enough to rebuild.
   switch the window to B with no reconnect (both radios' logs quiet); relaunch opens on B (W-04).
 - [ ] Mac windows (D-19): each connected radio has its own window, the whole app for it; the
   Connect window lists them with Open and Disconnect; closing a radio's window only hides it
-  (still connected, Radios menu reopens it); Radios › Disconnect acts on the key window's radio and
-  closes its window; File › Add Radio… (⇧⌘N) opens the Connect window; after a relaunch each radio
-  that reconnects has its window again; a notification tap opens the window of the radio it's
-  about; the composer has no Via picker. With A's window and B's window open, navigating in one
-  doesn't move the other.
+  (still connected, Radios menu reopens it); Radios › Disconnect acts on the key window's radio
+  and keeps its window, showing the radio off (W-02 revised, T386); File › Add Radio… (⇧⌘N)
+  opens the Connect window; after a relaunch each radio that reconnects has its window again; a
+  notification tap opens the window of the radio it's about; the composer has no Via picker.
+  With A's window and B's window open, navigating in one doesn't move the other.
+- [ ] Disconnect and Remove (T386, T387, review V27). Mac: macOS window restoration brings back
+  the windows open at quit; a restored window for a radio that then connects isn't duplicated; a
+  window restored before the store's radios are read shows its radio once they are. Disconnect
+  keeps the window with Connect and Remove; Remove (row, Radios menu, Settings › Device) closes
+  it. Clear App Data with two radios: every radio window closes. iPhone with A and B: the window
+  on a radio the user disconnected (Connect tab, Settings › Device, update screen, or Shortcuts)
+  opens on it, off, every launch until another is picked; check that's wanted with A connected
+  and listed under Also Connected. Disconnect a stand-in (the radio connecting in the preferred
+  radio's place): the window stays on it while the preferred radio comes back. During a radio's
+  firmware update its window doesn't offer Connect. Remove the only radio: the app's data clears
+  (favorites kept), its notifications go, and the hardware list is there right away. Mac: when
+  the window that closes (Remove, Clear App Data, a full factory reset) was the only one open,
+  the app is left with no window until Radios › Add Radio… or the Dock icon (review V30 minor 1,
+  T393): check it's acceptable.
+- [ ] Disconnect and Remove, reviews V28 and V29 (T388, T389). iPhone with A (connected first)
+  and B, the window on A: Disconnect A from the Connect tab, Settings › Device, the update screen
+  and Shortcuts in turn (reconnect A between): the window stays on A, off, and doesn't show B for
+  a moment. Mac: Disconnect a radio from the Connect window while another connects: its window
+  doesn't come forward; close it, reconnect the radio, and its window opens again. Mac with A and
+  B known: restore A's backup (Settings › Backup Management): B's window closes once the restore
+  is done, rather than staying as "No device connected" (V28-2). Mac with one radio: Factory
+  Reset › Delete all config, keys and BLE bonds: its window closes, and isn't brought back at the
+  next launch (V29-1); the config-only factory reset and Reset NodeDB keep the window, and the
+  radio reconnects into it. Same with A removed and B, connected alongside, now the only radio:
+  B's full factory reset disconnects B, isn't followed by B's reconnect attempts, and closes its
+  window (V30-1). With A and B connected, A's full factory reset (Delete all config, keys and BLE
+  bonds, then Keep or Delete Messages): B stays connected, the app doesn't try to connect A again
+  when it comes back up (no pairing prompt, no repeated connects), the window stays on A, off,
+  and the next launch connects B without waiting for A (V31-1). Before the update's first
+  connect (a store from `main`), App Settings › Your Radios › Remove on the radio listed "Not
+  connected since the update": the app's data clears (V28-3). A radio known over BLE and TCP: the
+  Connect window lists it once, and Open brings the window it last connected in.
 - [ ] Siri and CarPlay (W-10, W-11, W-15): connecting B the first time while A is known shows the
   Choose Radios sheet, which doesn't close until CarPlay & Siri (and TAK if on, the Watch if
   paired) has a radio; TAK can be turned off from it instead. "Set my Meshtastic radio" and "Make

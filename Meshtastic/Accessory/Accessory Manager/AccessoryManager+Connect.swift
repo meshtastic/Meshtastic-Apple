@@ -78,6 +78,11 @@ extension AccessoryManager {
 		if !asFirst, additionalRadios[device.id] != nil {
 			throw AccessoryError.connectionFailed("This radio is already connected")
 		}
+		// A radio being removed isn't connected again before it's gone (review V27-1): not by
+		// discovery's preferred-radio connect, its reconnect loop, or a tap on it.
+		if deviceIdsBeingRemoved.contains(device.id) || device.num.map(radiosBeingRemoved.contains) == true {
+			throw AccessoryError.connectionFailed("This radio is being removed")
+		}
 		// One connect per radio at a time, the first radio or another (T152). A connect as the first radio waiting at the
 		// handshake gate doesn't show as connecting yet, so discovery or a restore could start a
 		// second one for the same radio.

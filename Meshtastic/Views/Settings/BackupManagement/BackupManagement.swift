@@ -252,6 +252,12 @@ struct BackupManagement: View {
 		case .noBackupFound:
 			restoreErrorMessage = "No backup was found for this node."
 		}
+		// The radios the restored store doesn't have are forgotten, and their windows close
+		// (review V27-4). Only now the reset gate has dropped (review V28-2): while it was up the
+		// Mac's radio windows were unmounted and wouldn't hear it. A settle first, as the gate's
+		// own sequencing has, so they're mounted again.
+		try? await Task.sleep(for: .milliseconds(300))
+		await accessoryManager.forgetRadiosNotInStore()
 	}
 
 	@MainActor

@@ -295,7 +295,8 @@ radio is the focused one, so nothing changes for the user.
    the position loop, remembered-radio reconnect), run by whichever connect finishes first, and
    the per-radio state from step 1.
 5. **Windows on the Mac and iPad.** A radio's window opens when it connects; closing it only hides
-   it (W-01); disconnecting closes it (W-02); the Window menu lists the connected radios, and
+   it (W-01); disconnecting keeps it, showing the radio off, and removing the radio closes it
+   (W-02, revised 2026-10-04); the Radios menu lists the user's radios, connected or off, and
    reopens a hidden one; at launch each radio that reconnects gets its window back.
 6. **No app-wide focus.** `activeConnection` and `additionalRadios` become one dictionary of
    sessions. `focusConnectedRadio`, `+FocusHandover`, `restoreDisplacedPreferred`,

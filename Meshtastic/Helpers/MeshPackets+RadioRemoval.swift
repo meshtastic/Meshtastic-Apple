@@ -56,6 +56,42 @@ extension MeshPackets {
 		.sorted { $0.nodeNum < $1.nodeNum }
 	}
 
+	/// Whether the store holds data of a radio other than `radioNum` that `storedRadios` doesn't
+	/// count (review V27-3), so removing `radioNum` mustn't clear the store:
+	/// - rows still waiting for the backfill whose radio is another (`backfillOwner`);
+	/// - messages on another radio's number from a radio that hasn't connected since the update
+	///   and has no observations (T230).
+	/// A stray `MyInfoEntity` without data still doesn't count. A fetch that fails counts as data.
+	func holdsUncountedData(ofRadiosOtherThan radioNum: Int64, backfillOwner: Int64) -> Bool {
+		if backfillOwner != 0, backfillOwner != radioNum, hasPendingBackfill() {
+			return true
+		}
+		do {
+			let others = Set(try modelContext.fetch(FetchDescriptor<MyInfoEntity>()).map(\.myNodeNum)).subtracting([0, radioNum])
+			for num in others {
+				var owned = FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.localNodeNum == num })
+				owned.fetchLimit = 1
+				if try modelContext.fetchCount(owned) > 0 {
+					return true
+				}
+			}
+			return false
+		} catch {
+			Logger.data.error("💥 [MultiRadio] Checking other radios' data before removing \(radioNum.toHex(), privacy: .public) failed: \(error.localizedDescription, privacy: .public)")
+			return true
+		}
+	}
+
+	/// Whether `radioNum` is the radio the store's rows from before feature 021 belong to
+	/// (`backfillOwner`) and some still wait for the backfill (review V28-3). Before its first
+	/// connect since the update it has no `lastConnected` and no observations, so `storedRadios`
+	/// doesn't count it, but the store is its data: removing it clears the store, or its old rows
+	/// would stay with no radio and go to the next radio to join. A ghost after Clear App Data has
+	/// nothing pending, and a stray radio row isn't the owner.
+	func ownsPendingBackfill(_ radioNum: Int64, backfillOwner: Int64) -> Bool {
+		radioNum != 0 && backfillOwner == radioNum && hasPendingBackfill()
+	}
+
 	/// Removes radio `radioNum`'s data from a store that holds other radios too (D-18). The
 	/// caller has already disconnected it; a store holding only this radio is cleared as before
 	/// (`clearDatabase`) instead.

@@ -128,7 +128,9 @@ struct MultiRadioConnectFlowTests {
 		#expect(manager.oneWindowRadio(stored: radios.secondDevice.id) == RadioWindow(deviceId: radios.secondDevice.id))
 		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
 		manager.additionalRadioReconnects.removeAll()
-		#expect(manager.oneWindowRadio(stored: radios.secondDevice.id) == .firstRadio, "not coming back")
+		#expect(manager.oneWindowRadio(stored: radios.secondDevice.id) == RadioWindow(deviceId: radios.secondDevice.id), "off and not coming back, it stays until the user picks another (W-02)")
+		manager.knownNodeNums.removeValue(forKey: radios.secondDevice.id)
+		#expect(manager.oneWindowRadio(stored: radios.secondDevice.id) == .firstRadio, "removed")
 		try await manager.disconnect()
 	}
 
@@ -211,7 +213,7 @@ struct MultiRadioConnectFlowTests {
 		try await manager.disconnect()
 	}
 
-	@Test("Disconnecting a radio, the first or another, says so, so its window on the Mac closes")
+	@Test("Disconnecting a radio, the first or another, says so, so its window learns it was the user")
 	func disconnectRadioSaysSo() async throws {
 		let saved = SavedDefaults()
 		defer { saved.restore() }
@@ -839,6 +841,227 @@ struct MultiRadioConnectFlowTests {
 		try await manager.disconnect()
 	}
 
+	@Test("A radio disconnected stays listed as off with its window; removed, its window closes and it's forgotten")
+	func disconnectKeepsWindowRemoveClosesIt() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let radios = try await connectTwoRadios()
+		let manager = radios.manager
+		var removed: [UUID] = []
+		let subscription = manager.radioRemoved.sink { removed.append($0) }
+		defer { subscription.cancel() }
+
+		await manager.disconnectRadio(radios.secondDevice.id)
+		await manager.refreshKnownRadios()
+		#expect(removed.isEmpty, "a Disconnect keeps its window (W-02)")
+		#expect(manager.offlineRadio(radios.secondDevice.id)?.nodeNum == Int64(radios.secondNum))
+		#expect(manager.offlineKnownRadios.contains { $0.deviceId == radios.secondDevice.id }, "the Mac lists it")
+		#expect(manager.offlineRadio(radios.firstDevice.id) == nil, "connected")
+		#expect(manager.oneWindowRadio(stored: radios.secondDevice.id) == RadioWindow(deviceId: radios.secondDevice.id))
+
+		await manager.removeRadio(Int64(radios.secondNum))
+
+		#expect(removed == [radios.secondDevice.id])
+		#expect(manager.knownNodeNums[radios.secondDevice.id] == nil)
+		#expect(manager.offlineRadio(radios.secondDevice.id) == nil)
+		#expect(!manager.offlineKnownRadios.contains { $0.deviceId == radios.secondDevice.id })
+		#expect(manager.oneWindowRadio(stored: radios.secondDevice.id) == .firstRadio)
+		#expect(manager.activeConnection != nil, "the other stays")
+		try await manager.disconnect()
+	}
+
+	@Test("Removing the only radio clears the store; with another radio's data, or another radio connected or connecting, only its own goes")
+	func removalClearsStoreOnlyForTheOnlyRadio() {
+		func clears(_ stored: [Int64], wasConnected: Bool = false, ownsPendingBackfill: Bool = false, otherRadioActive: Bool = false, othersHoldData: Bool = false) -> Bool {
+			AccessoryManager.removalClearsStore(1, storedRadios: stored, wasConnected: wasConnected, ownsPendingBackfill: ownsPendingBackfill, otherRadioActive: otherRadioActive, othersHoldData: othersHoldData)
+		}
+		#expect(clears([1]))
+		#expect(clears([], wasConnected: true), "connected, in its first download")
+		#expect(!clears([]), "a radio the store doesn't have is only forgotten (review V27-4)")
+		#expect(clears([], ownsPendingBackfill: true), "the store's own radio before its first connect since the update (review V28-3)")
+		#expect(!clears([1, 2], wasConnected: true))
+		#expect(!clears([2], ownsPendingBackfill: true), "another radio's data")
+		#expect(!clears([1], wasConnected: true, otherRadioActive: true), "another radio connected or connecting")
+		#expect(!clears([1], wasConnected: true, othersHoldData: true), "another radio's data storedRadios doesn't count (review V27-3)")
+		#expect(!clears([], ownsPendingBackfill: true, othersHoldData: true))
+	}
+
+	@Test("Disconnect on the first radio with another connected says so before its link closes, and the window picked on it shows it off")
+	func firstRadioDisconnectPinsTheWindow() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let radios = try await connectTwoRadios()
+		let manager = radios.manager
+		await manager.refreshKnownRadios()
+		#expect(manager.hasSeveralRadios)
+		var told: [(deviceId: UUID, stillConnected: Bool)] = []
+		let subscription = manager.radioDisconnectedByUser.sink { deviceId in
+			told.append((deviceId, manager.isRadioConnected(deviceId)))
+		}
+		defer { subscription.cancel() }
+		let secondDevice = try #require(manager.additionalRadios[radios.secondDevice.id]?.device)
+
+		// As from Settings, the update screen or Shortcuts: `PreferredRadio` only moves to the
+		// other radio once the Disconnect is done (`disconnectFirstRadio`).
+		try await manager.disconnect()
+
+		// Told while the window still showed it, so it matched its radio (review V28-1).
+		#expect(told.map { $0.deviceId } == [radios.firstDevice.id])
+		#expect(told.first?.stillConnected == true)
+		#expect(manager.activeConnection == nil)
+		#expect(PreferredRadio.peripheralId == radios.firstDevice.id.uuidString)
+		#expect(manager.oneWindowRadio(stored: radios.firstDevice.id) == RadioWindow(deviceId: radios.firstDevice.id), "off, not the other radio for a moment")
+		#expect(manager.oneWindowRadio(stored: nil) == RadioWindow(deviceId: radios.secondDevice.id), "a window not picked on it shows the other, as before")
+		PreferredRadio.set(secondDevice)
+		#expect(manager.oneWindowRadio(stored: radios.firstDevice.id) == RadioWindow(deviceId: radios.firstDevice.id), "and once the other is the preferred radio")
+
+		// A radio alongside is told before its link closes too.
+		await manager.disconnectRadio(radios.secondDevice.id)
+		#expect(told.map { $0.deviceId } == [radios.firstDevice.id, radios.secondDevice.id])
+		#expect(told.last?.stillConnected == true)
+	}
+
+	@Test("A radio's data goes once no handshake runs; meanwhile it isn't offered, listed or connected")
+	func removalWaitsForTheHandshakeGate() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let radios = try await connectTwoRadios()
+		let manager = radios.manager
+		let secondNum = Int64(radios.secondNum)
+		await manager.disconnectRadio(radios.secondDevice.id)
+		await manager.refreshKnownRadios()
+		#expect(manager.canRemoveRadio(secondNum))
+		func storedMyInfos() throws -> Int {
+			try ModelContext(PersistenceController.shared.container).fetchCount(FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == secondNum }))
+		}
+
+		// Another radio's handshake holds the gate (review V27-1).
+		await manager.handshakeGate.acquire()
+		let removal = Task { await manager.removeRadio(secondNum) }
+		try await waitUntil { manager.knownNodeNums[radios.secondDevice.id] == nil }
+		#expect(manager.radiosBeingRemoved.contains(secondNum))
+		#expect(!manager.canRemoveRadio(secondNum), "not offered twice (review V27-2)")
+		#expect(manager.offlineRadio(radios.secondDevice.id) == nil)
+		await #expect(throws: AccessoryError.self) { try await manager.connectAdditionalRadio(radios.secondDevice) }
+		#expect(try storedMyInfos() == 1, "its data waits for the gate")
+
+		manager.handshakeGate.release()
+		await removal.value
+		#expect(try storedMyInfos() == 0)
+		#expect(manager.radiosBeingRemoved.isEmpty)
+		#expect(manager.deviceIdsBeingRemoved.isEmpty)
+		#expect(manager.activeConnection != nil, "the other stays")
+		try await manager.disconnect()
+	}
+
+	@Test("Remove isn't offered for a radio while it connects")
+	func removeNotOfferedWhileConnecting() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let num = uniqueNodeNum()
+		let manager = makeManager(ScriptedTransport(radio: ScriptedRadio(nodeNum: num)))
+		let target = device()
+		manager.knownNodeNums[target.id] = Int64(num)
+		#expect(!manager.canRemoveRadio(0))
+		await manager.handshakeGate.acquire()
+
+		let connecting = Task { try await manager.connect(to: target) }
+		try await waitUntil { manager.connectAttempts[target.id] != nil }
+		#expect(!manager.canRemoveRadio(Int64(num)), "a packet of its handshake could land after its data is gone (review V27-5)")
+
+		manager.handshakeGate.release()
+		try await connecting.value
+		#expect(manager.canRemoveRadio(Int64(num)))
+		try await manager.disconnect()
+	}
+
+	@Test("A radio that's off is shown so only while the store has it, it isn't connected elsewhere, removed or updated")
+	func offlineRadioExclusions() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let radios = try await connectTwoRadios()
+		let manager = radios.manager
+		let secondNum = Int64(radios.secondNum)
+		await manager.disconnectRadio(radios.secondDevice.id)
+		await manager.refreshKnownRadios()
+		#expect(manager.offlineRadio(radios.secondDevice.id)?.nodeNum == secondNum)
+
+		manager.radiosReleasedForUpdate.insert(radios.secondDevice.id)
+		#expect(manager.offlineRadio(radios.secondDevice.id) == nil, "released for a firmware update (review V27-6)")
+		#expect(manager.oneWindowRadio(stored: radios.secondDevice.id) == .firstRadio, "as before W-02 while it's updated")
+		manager.reclaimRadioAfterUpdate(radios.secondDevice)
+		#expect(!manager.radiosReleasedForUpdate.contains(radios.secondDevice.id))
+		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
+		manager.additionalRadioReconnects.removeAll()
+
+		manager.radiosBeingRemoved.insert(secondNum)
+		#expect(manager.offlineRadio(radios.secondDevice.id) == nil, "being removed (review V27-2)")
+		manager.radiosBeingRemoved.removeAll()
+
+		// The first radio, known on another device id too (TCP and BLE), is connected (review V27-8).
+		let otherId = UUID()
+		manager.knownNodeNums[otherId] = Int64(radios.firstNum)
+		#expect(manager.offlineRadio(otherId) == nil)
+
+		// A radio the store no longer has, after Clear App Data or a restore (review V27-4).
+		manager.knownRadios.removeAll { $0.nodeNum == secondNum }
+		#expect(manager.offlineRadio(radios.secondDevice.id) == nil)
+		#expect(manager.oneWindowRadio(stored: radios.secondDevice.id) == .firstRadio)
+		await manager.refreshKnownRadios()
+		#expect(manager.offlineRadio(radios.secondDevice.id) != nil)
+		manager.knownNodeNums.removeValue(forKey: otherId)
+		try await manager.disconnect()
+	}
+
+	@Test("A radio known on several devices is listed and opened by the one it last connected on")
+	func offlineRadioByLastDevice() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let radios = try await connectTwoRadios()
+		let manager = radios.manager
+		let secondNum = Int64(radios.secondNum)
+		await manager.disconnectRadio(radios.secondDevice.id)
+		await manager.refreshKnownRadios()
+		#expect(manager.radioLastDeviceIds[secondNum] == radios.secondDevice.id)
+
+		// Also known over TCP, by ids sorting before and after its BLE one (W-03, review V28 minor 2).
+		let others = [try #require(UUID(uuidString: "00000000-0000-0000-0000-000000000001")), try #require(UUID(uuidString: "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"))]
+		for id in others {
+			manager.knownNodeNums[id] = secondNum
+		}
+		#expect(manager.deviceId(ofRadio: secondNum) == radios.secondDevice.id)
+		#expect(manager.offlineKnownRadios.filter { $0.nodeNum == secondNum }.map(\.deviceId) == [radios.secondDevice.id])
+		// Without the store's, the same one every time.
+		manager.radioLastDeviceIds.removeValue(forKey: secondNum)
+		#expect(manager.deviceId(ofRadio: secondNum) == others[0])
+		for id in others {
+			manager.knownNodeNums.removeValue(forKey: id)
+		}
+		try await manager.disconnect()
+	}
+
+	@Test("After the store is replaced, the radios it no longer has are forgotten and their windows close")
+	func radiosNotInStoreAreForgotten() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let radios = try await connectTwoRadios()
+		let manager = radios.manager
+		await manager.disconnectRadio(radios.secondDevice.id)
+		let ghostId = UUID()
+		manager.knownNodeNums[ghostId] = Int64(uniqueNodeNum())
+		var removed: [UUID] = []
+		let subscription = manager.radioRemoved.sink { removed.append($0) }
+		defer { subscription.cancel() }
+
+		await manager.forgetRadiosNotInStore()
+
+		#expect(removed == [ghostId])
+		#expect(manager.knownNodeNums[ghostId] == nil)
+		#expect(manager.knownNodeNums[radios.secondDevice.id] == Int64(radios.secondNum), "the store still has it")
+		#expect(manager.knownNodeNums[radios.firstDevice.id] == Int64(radios.firstNum))
+		try await manager.disconnect()
+	}
+
 	@Test("A radio that answers the node-DB request straight away doesn't stall the connect")
 	func immediateNodeDBAnswer() async throws {
 		let saved = SavedDefaults()
@@ -941,6 +1164,87 @@ struct MultiRadioConnectFlowTests {
 		await manager.disconnectRadio(radios.secondDevice.id)
 	}
 
+	@Test("A factory reset that clears its bonds takes the only radio offline for good, also when it's connected alongside with no first radio")
+	func factoryResetOfTheOnlyRadioAlongside() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let radios = try await connectTwoRadios()
+		let manager = radios.manager
+		let secondNum = Int64(radios.secondNum)
+		// A removed: B is the only radio, alongside with no first radio (T316), and preferred.
+		await manager.removeRadio(Int64(radios.firstNum))
+		#expect(manager.activeConnection == nil)
+		#expect(manager.additionalRadios[radios.secondDevice.id] != nil)
+
+		await manager.disconnectAfterFactoryReset(secondNum)
+
+		#expect(manager.additionalRadios[radios.secondDevice.id] == nil, "disconnected, though it isn't the first radio (review V30-1)")
+		#expect(manager.additionalRadioReconnects[radios.secondDevice.id] == nil, "and not brought back")
+		#expect(await radios.second.disconnects == 1)
+
+		// The reset clears the store; then it's forgotten, rather than skipped as connected (review V29-1).
+		await MeshPackets.shared.removeRadioData(secondNum, .remove)
+		var removed: [UUID] = []
+		let subscription = manager.radioRemoved.sink { removed.append($0) }
+		defer { subscription.cancel() }
+		await manager.forgetRadiosNotInStore()
+		#expect(removed.contains(radios.secondDevice.id))
+		#expect(manager.knownNodeNums[radios.secondDevice.id] == nil)
+		#expect(manager.offlineRadio(radios.secondDevice.id) == nil)
+	}
+
+	@Test("A factory reset that clears its bonds stops a radio whose link already dropped as it reset coming back")
+	func factoryResetAfterTheLinkDropped() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let radios = try await connectTwoRadios()
+		let manager = radios.manager
+		let firstNum = Int64(radios.firstNum)
+
+		// B's link drops as it resets (the firmware turns Bluetooth off), not by the user: its
+		// reconnect loop starts.
+		await manager.disconnectAdditionalRadio(radios.secondDevice.id)
+		manager.scheduleAdditionalRadioReconnect(radios.secondDevice, firstDelay: .seconds(3600))
+		await manager.disconnectAfterFactoryReset(Int64(radios.secondNum))
+		#expect(manager.additionalRadioReconnects[radios.secondDevice.id] == nil, "its loop stops")
+		#expect(manager.activeConnection != nil, "the other radio stays")
+
+		// The same for the first radio, the preferred one: discovery doesn't connect it again, as
+		// after its Disconnect on `main`.
+		try await manager.closeConnection()
+		#expect(!manager.userRequestedConnectionCancellation)
+		#expect(PreferredRadio.nodeNum == firstNum)
+		await manager.disconnectAfterFactoryReset(firstNum)
+		#expect(manager.userRequestedConnectionCancellation)
+		#expect(manager.activeConnection == nil)
+	}
+
+	@Test("With another radio connected, a factory reset that clears the first radio's bonds stops discovery connecting it though its link dropped already, and hands the preferred radio on")
+	func factoryResetOfTheFirstWithAnotherConnected() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let radios = try await connectTwoRadios()
+		let manager = radios.manager
+		let secondSession = try #require(manager.additionalRadios[radios.secondDevice.id])
+		var told: [UUID] = []
+		let subscription = manager.radioDisconnectedByUser.sink { told.append($0) }
+		defer { subscription.cancel() }
+
+		// A's link drops as it resets (the firmware turns Bluetooth off), not by the user.
+		try await manager.closeConnection()
+		#expect(!manager.userRequestedConnectionCancellation)
+
+		await manager.disconnectAfterFactoryReset(Int64(radios.firstNum))
+
+		#expect(manager.userRequestedConnectionCancellation, "discovery doesn't connect it again (review V31-1)")
+		#expect(manager.additionalRadios[radios.secondDevice.id] === secondSession, "B is untouched")
+		#expect(await radios.second.disconnects == 0)
+		#expect(told == [radios.firstDevice.id], "its window stays on it, as for a Disconnect")
+		#expect(PreferredRadio.peripheralId == radios.secondDevice.id.uuidString, "as after Disconnect on the first radio (review V12 Y3)")
+		#expect(PreferredRadio.nodeNum == Int64(radios.secondNum))
+		await manager.disconnectRadio(radios.secondDevice.id)
+	}
+
 	@Test("A radio that isn't connected can be removed, and stops being the preferred one")
 	func removeOfflineRadio() async throws {
 		let saved = SavedDefaults()
@@ -952,7 +1256,17 @@ struct MultiRadioConnectFlowTests {
 		dead.myNodeNum = deadNum
 		dead.lastConnected = .now
 		context.insert(dead)
+		// Another radio's data, so only the dead radio's goes: the only radio's removal clears the
+		// whole store, which other suites share.
+		let other = MyInfoEntity()
+		other.myNodeNum = Int64(uniqueNodeNum())
+		other.lastConnected = .now
+		context.insert(other)
 		try context.save()
+		defer {
+			context.delete(other)
+			try? context.save()
+		}
 		PreferredRadio.peripheralId = UUID().uuidString
 		PreferredRadio.nodeNum = deadNum
 

@@ -128,9 +128,19 @@ extension AccessoryManager {
 		}
 	}
 
-	/// Reloads `knownRadios` from the store: at launch, after a connect and after a removal.
+	/// Reloads `knownRadios` from the store: at launch, after a connect and after a removal. With
+	/// it, the device each radio last connected on (`radioLastDeviceIds`).
 	func refreshKnownRadios() async {
 		let radios = await MeshPackets.shared.radiosConnectedWithThisVersion()
+		var lastDeviceIds: [Int64: UUID] = [:]
+		for (peripheralId, nodeNum) in await MeshPackets.shared.radioPeripheralIds() {
+			if let id = UUID(uuidString: peripheralId) {
+				lastDeviceIds[nodeNum] = id
+			}
+		}
+		if lastDeviceIds != radioLastDeviceIds {
+			radioLastDeviceIds = lastDeviceIds
+		}
 		if radios != knownRadios {
 			knownRadios = radios
 		}

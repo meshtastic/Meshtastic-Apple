@@ -25,19 +25,9 @@ Which alerts the app raises is set per type in the iOS Settings app, under **Set
 
 Turning a toggle off suppresses only the alert — messages, reactions, waypoints, and nodes are still received and still appear in the app. Muting a channel or a sender in the app silences that conversation regardless of these settings.
 
-### Connecting Another Radio
-
-What happens when you tap a radio on the Connect tab while another one is connected. See [Managing Multiple Radios](bluetooth.md#managing-multiple-radios).
-
-| Option | Behavior |
-|--------|----------|
-| Ask Each Time | Asks whether to keep the connected radio and add the new one, or switch to it. This is the default. |
-| Keep Both Connected | Adds the new radio without asking, up to four radios. At four, the app asks. |
-| Switch Radios | Disconnects the focused radio and connects the new one without asking. |
-
 ### TAK, CarPlay & Siri, and Apple Watch
 
-With more than one radio, App Settings has a picker for each of these. **Follow Focused Radio** (the default) uses whichever radio is focused. Pick one of your radios to keep that service on it:
+With one radio, each of these uses it. With more than one of your radios, each one you use needs a radio, and App Settings has a picker for each. When you add a second radio, a **Choose Radios** sheet asks you to pick: for CarPlay & Siri always, for TAK while its server is on (or turn TAK off instead), and for the Apple Watch when one is paired. One you don't use shows **Not Set**.
 
 | Service | What the chosen radio does |
 |---------|----------------------------|
@@ -45,12 +35,12 @@ With more than one radio, App Settings has a picker for each of these. **Follow 
 | CarPlay & Siri | Sends messages from CarPlay, Siri and Shortcuts, and supplies the channels and contacts CarPlay lists. |
 | Apple Watch | The Watch lists only the nodes this radio has heard, with its own signal and last heard time. |
 
-A chosen radio that isn't connected falls back to the focused radio, except on the Watch, which keeps showing what the chosen radio heard. Replies and reactions sent from a message notification always go through the radio the message came in on.
+A chosen radio that's off is never replaced by another: the feature waits until it's back. Siri and Shortcuts say the radio isn't connected rather than sending through another radio, and the Watch keeps showing what the chosen radio heard. Removing the chosen radio clears the choice, and the app asks again while you have more than one radio. Replies and reactions sent from a message notification always go through the radio the message came in on.
 
 ### Data Management
 
 - **Erase All App Data** — clears the local database, translation cache, and all stored settings, then immediately reloads the bundled device hardware catalog. Use this as a last resort. With more than one radio, the confirmation names every radio whose data it erases, and they all disconnect first.
-- **NodeDB Reset** — resets the node database on your connected radio. When prompted, you can choose to **Preserve Favorites** so your starred nodes are retained after the reset. With more than one radio, only that radio's data is cleared; see [Resetting or Removing One of Several Radios](bluetooth.md#resetting-or-removing-one-of-several-radios).
+- **NodeDB Reset** — resets the node database on your connected radio. When prompted, you can choose to **Preserve Favorites** so your starred nodes are retained after the reset. With more than one radio, only that radio's data is cleared; see [Resetting or Removing a Radio](bluetooth.md#resetting-or-removing-a-radio).
 - **Reset App Settings** — restores default app preferences without affecting your node database.
 
 ## Radio Configuration
@@ -61,7 +51,7 @@ Radio configuration requires a connected node. Select your node from the **Confi
 
 The Configure picker lists live nodes from the current node database, with favorites first. If the node database is reset or the selected node disappears, Settings clears that selection instead of opening configuration for a stale node. Reconnect to a radio or choose a currently listed node to continue configuring it.
 
-With more than one radio connected, Settings starts on the focused radio. The other connected radios are listed as **Connected** in the **Node** picker under **Configure**; pick one to configure it. The app talks to it over its own connection, so it doesn't need remote admin set up. If your radio doesn't offer the Node picker, focus the other radio from the Connect tab or the radio indicator at the top of the screen instead; the note under **Configure** says which.
+With more than one radio connected, Settings shows the window's radio. The other connected radios are listed as **Connected** in the **Node** picker under **Configure**; pick one to configure it. The app talks to it over its own connection, so it doesn't need remote admin set up. If your radio doesn't offer the Node picker, show the other radio in the window from the Connect tab or the radio indicator at the top of the screen instead (on the Mac, open its window); the note under **Configure** says which.
 
 ### LoRa
 

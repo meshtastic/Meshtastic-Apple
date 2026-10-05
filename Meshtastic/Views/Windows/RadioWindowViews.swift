@@ -11,23 +11,41 @@ import SwiftUI
 
 /// Which radios' windows to open. A radio's window opens once when it connects; closing it only
 /// hides it (W-01), so it isn't opened again while the radio stays connected. Disconnecting the
-/// radio (W-02) forgets it, so it opens again the next time it connects.
+/// radio (W-02) keeps its window, showing it off, and forgets it here, so a window closed since
+/// opens again the next time it connects. Removing it forgets it too.
 @MainActor
 final class RadioWindowTracker {
 	private(set) var opened: Set<UUID> = []
+	/// Radios the user disconnected that were still connected when told (review V28-1): forgotten
+	/// once they've gone, so a change of another radio meanwhile doesn't open their window again.
+	private var leaving: Set<UUID> = []
 
 	nonisolated init() {}
 
 	/// The radios among `connected` whose window should open now, and marks them opened.
 	func toOpen(connected: Set<UUID>) -> [UUID] {
+		let gone = leaving.subtracting(connected)
+		opened.subtract(gone)
+		leaving.subtract(gone)
 		let new = connected.subtracting(opened)
 		opened.formUnion(new)
 		return new.sorted { $0.uuidString < $1.uuidString }
 	}
 
-	/// `deviceId` was disconnected by the user: its window opens again when it's back.
+	/// `deviceId` was removed by the user, or has gone: its window opens again when it's back.
 	func forget(_ deviceId: UUID) {
 		opened.remove(deviceId)
+		leaving.remove(deviceId)
+	}
+
+	/// `deviceId` was disconnected by the user. The Disconnect says so before the link closes
+	/// (review V28-1), so while it's still among `connected` it's forgotten once it has gone.
+	func forgetOnceGone(_ deviceId: UUID, connected: Set<UUID>) {
+		if connected.contains(deviceId) {
+			leaving.insert(deviceId)
+		} else {
+			forget(deviceId)
+		}
 	}
 }
 
@@ -53,7 +71,8 @@ struct RadioWindowOpener: ViewModifier {
 					}
 				}
 				.onChange(of: connectedRadios) { _, _ in openNewWindows() }
-				.onReceive(accessoryManager.radioDisconnectedByUser) { tracker.forget($0) }
+				.onReceive(accessoryManager.radioDisconnectedByUser) { tracker.forgetOnceGone($0, connected: connectedRadios) }
+				.onReceive(accessoryManager.radioRemoved) { tracker.forget($0) }
 		} else {
 			content
 		}
@@ -66,8 +85,9 @@ struct RadioWindowOpener: ViewModifier {
 	}
 }
 
-/// A radio's own window on the Mac: the whole app, for that radio (T310). Closes when the user
-/// disconnects the radio (W-02); closing it by hand only hides it (W-01).
+/// A radio's own window on the Mac: the whole app, for that radio (T310). It stays when the user
+/// disconnects the radio, showing it off with Connect (W-02), and closes when they remove it;
+/// closing it by hand only hides it (W-01). macOS brings back the windows open at quit.
 struct RadioWindowRoot: View {
 	let window: RadioWindow?
 	@EnvironmentObject private var appState: AppState
@@ -77,9 +97,11 @@ struct RadioWindowRoot: View {
 	@StateObject private var router = Router()
 	/// This window's node filters: each window filters on its own.
 	@StateObject private var nodeFilters = NodeFilterParameters()
+	/// This window's radio, when Radios › Remove asks to remove it (D-18).
+	@State private var radioToRemove: RadioToRemove?
 
 	var body: some View {
-		if let window, window.deviceId != nil {
+		if let window, let deviceId = window.deviceId {
 			ContentView(appState: appState, router: router)
 #if targetEnvironment(macCatalyst)
 				.background(ToolbarLayoutNudge())
@@ -87,6 +109,7 @@ struct RadioWindowRoot: View {
 				.modifier(WindowLockdownScope())
 				.modifier(RadioWindowOpener(tracker: appState.radioWindowTracker))
 				.focusedSceneValue(\.windowRadio, window)
+				.focusedSceneValue(\.removeWindowRadio, removeAction(for: deviceId))
 				.environmentObject(router)
 				.environmentObject(nodeFilters)
 				.environment(\.windowRadio, window)
@@ -94,9 +117,10 @@ struct RadioWindowRoot: View {
 				.environment(\.selectWindowRadio, SelectWindowRadioAction { deviceId in
 					openWindow(id: RadioWindows.radioWindowID, value: RadioWindow(deviceId: deviceId))
 				})
-				.navigationTitle(title(for: window))
-				.onReceive(accessoryManager.radioDisconnectedByUser) { deviceId in
-					if deviceId == window.deviceId {
+				.navigationTitle(accessoryManager.radioName(of: deviceId) ?? "Meshtastic")
+				.removeRadioConfirmation($radioToRemove)
+				.onReceive(accessoryManager.radioRemoved) { removed in
+					if removed == deviceId {
 						dismissWindow()
 					}
 				}
@@ -105,11 +129,18 @@ struct RadioWindowRoot: View {
 		}
 	}
 
-	private func title(for window: RadioWindow) -> String {
-		guard let device = accessoryManager.session(for: window)?.device ?? accessoryManager.devices.first(where: { $0.id == window.deviceId }) else {
-			return "Meshtastic"
+	/// Radios › Remove for this window's radio: once it has reported its node number, while it's
+	/// connected with its connect done or it's one of the user's radios that's off (review V27-4,
+	/// V27-5).
+	private func removeAction(for deviceId: UUID) -> RemoveWindowRadioAction? {
+		let num = accessoryManager.session(for: RadioWindow(deviceId: deviceId))?.nodeNum ?? accessoryManager.offlineRadio(deviceId)?.nodeNum
+		guard let radioNum = num, accessoryManager.canRemoveRadio(radioNum) else {
+			return nil
 		}
-		return device.longName ?? device.name
+		let name = accessoryManager.radioName(of: deviceId) ?? radioNum.toHex()
+		return RemoveWindowRadioAction(name: name) {
+			radioToRemove = RadioToRemove(nodeNum: radioNum, name: name)
+		}
 	}
 }
 
@@ -151,30 +182,51 @@ private struct ToolbarLayoutNudge: UIViewRepresentable {
 }
 #endif
 
-/// The Connect window on the Mac (W-02): the connected radios, each opening its own window,
-/// and the radios that can be added. Adding one opens its window once it's connected.
+/// The Connect window on the Mac (W-02): the user's radios, connected or off, each opening its
+/// own window, and the radios that can be added. Adding one opens its window once it's connected.
 struct RadioListWindow: View {
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 	@ObservedObject private var manualConnections = ManualConnectionList.shared
 	@Environment(\.openWindow) private var openWindow
 	@State private var isSwitchingRadio = false
 	@State private var isShowingDeviceOnboardingFlow = false
+	/// A radio the user asked to remove; the list asks, so the dialog outlives the row.
+	@State private var radioToRemove: RadioToRemove?
+	/// Why a radio that's off didn't connect; its row is gone by then.
+	@State private var connectError: String?
 
+	/// Neither connected nor one of the user's radios that's off, which are listed above, nor one
+	/// being removed.
 	private var addableDevices: [Device] {
 		let discovered = accessoryManager.devices.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
 		let manual = manualConnections.connectionsList.filter { saved in !discovered.contains { $0.id == saved.id } }
-		return (discovered + manual).filter { !accessoryManager.isRadioConnected($0.id) }
+		let offline = Set(accessoryManager.offlineKnownRadios.map(\.deviceId))
+		return (discovered + manual).filter {
+			!accessoryManager.isRadioConnected($0.id) && !offline.contains($0.id) && !accessoryManager.deviceIdsBeingRemoved.contains($0.id)
+		}
+	}
+
+	private func openRadioWindow(_ deviceId: UUID) {
+		openWindow(id: RadioWindows.radioWindowID, value: RadioWindow(deviceId: deviceId))
 	}
 
 	var body: some View {
 		NavigationStack {
 			List {
-				if !accessoryManager.connectedRadios.isEmpty {
-					Section(header: Text("Connected Radios").font(.title)) {
+				if !accessoryManager.connectedRadios.isEmpty || !accessoryManager.offlineKnownRadios.isEmpty {
+					Section(header: Text("Your Radios").font(.title)) {
 						ForEach(accessoryManager.connectedRadios, id: \.id) { device in
 							ConnectedRadioRow(device: device) {
-								openWindow(id: RadioWindows.radioWindowID, value: RadioWindow(deviceId: device.id))
+								openRadioWindow(device.id)
 							}
+						}
+						ForEach(accessoryManager.offlineKnownRadios) { radio in
+							OfflineRadioRow(
+								radio: radio,
+								isSwitchingRadio: $isSwitchingRadio,
+								open: { openRadioWindow(radio.deviceId) },
+								connectFailed: { connectError = $0 }
+							)
 						}
 					}
 					.textCase(nil)
@@ -208,6 +260,12 @@ struct RadioListWindow: View {
 				}
 			}
 			.navigationTitle("Radios")
+			.removeRadioConfirmation($radioToRemove)
+			.alert("Couldn't Connect", isPresented: Binding(get: { connectError != nil }, set: { if !$0 { connectError = nil } })) {
+				Button("OK", role: .cancel) {}
+			} message: {
+				Text(connectError ?? "")
+			}
 		}
 		.modifier(ServiceRadioChoiceGate())
 		.onAppear {
@@ -228,21 +286,31 @@ struct RadioListWindow: View {
 	}
 }
 
-/// A connected radio in the Connect window: its state, and Open and Disconnect.
+/// A connected radio in the Connect window: its state, and Open, Disconnect and Remove.
 private struct ConnectedRadioRow: View {
 	@EnvironmentObject private var accessoryManager: AccessoryManager
+	/// Remove asks through the Connect window's confirmation, which outlives this row.
+	@Environment(\.askToRemoveRadio) private var askToRemoveRadio
 	let device: Device
 	let open: () -> Void
 
+	/// Its node number once it has reported it and its connect is done: what Remove removes
+	/// (D-18). Not while it connects (review V27-5).
+	private var removableRadioNum: Int64? {
+		guard let num = device.num ?? accessoryManager.knownNodeNums[device.id], accessoryManager.canRemoveRadio(num) else { return nil }
+		return num
+	}
+
 	var body: some View {
 		let link = accessoryManager.linkStatus(of: device.id)
+		let name = device.longName ?? device.name
 		HStack(spacing: 12) {
 			Image(systemName: link.isConnected ? "antenna.radiowaves.left.and.right.circle.fill" : "antenna.radiowaves.left.and.right")
 				.font(.title2)
 				.foregroundStyle(link.isConnected ? Color.green : Color.orange)
 				.accessibilityHidden(true)
 			VStack(alignment: .leading, spacing: 2) {
-				Text(device.longName ?? device.name)
+				Text(name)
 					.font(.headline)
 				HStack(spacing: 6) {
 					TransportIcon(transportType: device.transportType)
@@ -261,23 +329,34 @@ private struct ConnectedRadioRow: View {
 			// style make the row one target, and a click on Open ran Disconnect too.
 			Button("Open", action: open)
 				.buttonStyle(.borderless)
+				.accessibilityLabel(Text("Open \(name)"))
 			Button("Disconnect", role: .destructive) {
 				Task { await accessoryManager.disconnectRadio(device.id) }
 			}
 			.buttonStyle(.borderless)
+			.accessibilityLabel(Text("Disconnect \(name)"))
+			if let askToRemoveRadio, let radioNum = removableRadioNum {
+				Button("Remove", role: .destructive) {
+					askToRemoveRadio(RadioToRemove(nodeNum: radioNum, name: name))
+				}
+				.buttonStyle(.borderless)
+				.accessibilityLabel(Text("Remove \(name)"))
+			}
 		}
 		.padding(.vertical, 4)
 	}
 }
 
 /// Menu bar commands for the radio windows (T311–T313): a Radios menu with Add Radio…, Disconnect
-/// for the key window's radio (W-07) and the connected radios, each of which reopens its window
-/// when it was closed (W-01).
+/// and Remove for the key window's radio (W-07, D-18), and the user's radios, connected or off,
+/// each of which opens its window, or brings it back when it was closed (W-01, W-02).
 struct RadioWindowCommands: Commands {
 	@ObservedObject var accessoryManager: AccessoryManager
 	@Environment(\.openWindow) private var openWindow
 	@FocusedValue(\.windowRadio) private var keyWindowRadio: RadioWindow?
+	@FocusedValue(\.removeWindowRadio) private var removeKeyWindowRadio: RemoveWindowRadioAction?
 
+	/// The key window's radio's name while it's connected: what Disconnect disconnects.
 	private var keyRadioName: String? {
 		guard let keyWindowRadio, keyWindowRadio.deviceId != nil else { return nil }
 		let device = accessoryManager.session(for: keyWindowRadio)?.device
@@ -325,10 +404,19 @@ struct RadioWindowCommands: Commands {
 					Task { await accessoryManager.disconnectRadio(deviceId) }
 				}
 				.disabled(keyRadioName == nil)
+				Button(removeKeyWindowRadio.map { String.localizedStringWithFormat("Remove %@…".localized, $0.name) } ?? "Remove Radio…".localized) {
+					removeKeyWindowRadio?.ask()
+				}
+				.disabled(removeKeyWindowRadio == nil)
 				Divider()
 				ForEach(accessoryManager.connectedRadios, id: \.id) { device in
 					Button(device.longName ?? device.name) {
 						openWindow(id: RadioWindows.radioWindowID, value: RadioWindow(deviceId: device.id))
+					}
+				}
+				ForEach(accessoryManager.offlineKnownRadios) { radio in
+					Button(String.localizedStringWithFormat("%@ (Not Connected)".localized, radio.name)) {
+						openWindow(id: RadioWindows.radioWindowID, value: RadioWindow(deviceId: radio.deviceId))
 					}
 				}
 			}
@@ -342,10 +430,26 @@ private struct WindowRadioFocusedKey: FocusedValueKey {
 	typealias Value = RadioWindow
 }
 
+/// Radios › Remove for the key window's radio (D-18): its window asks first.
+struct RemoveWindowRadioAction {
+	let name: String
+	let ask: () -> Void
+}
+
+private struct RemoveWindowRadioFocusedKey: FocusedValueKey {
+	typealias Value = RemoveWindowRadioAction
+}
+
 extension FocusedValues {
 	/// The radio of the key window, for menu bar commands.
 	var windowRadio: RadioWindow? {
 		get { self[WindowRadioFocusedKey.self] }
 		set { self[WindowRadioFocusedKey.self] = newValue }
+	}
+
+	/// Removes the key window's radio, after asking; nil until it has reported its node number.
+	var removeWindowRadio: RemoveWindowRadioAction? {
+		get { self[RemoveWindowRadioFocusedKey.self] }
+		set { self[RemoveWindowRadioFocusedKey.self] = newValue }
 	}
 }

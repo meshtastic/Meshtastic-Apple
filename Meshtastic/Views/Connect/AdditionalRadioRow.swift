@@ -12,7 +12,7 @@ import SwiftUI
 ///
 /// "Show This Radio" shows it in the window (W-13), without disconnecting anything. Every
 /// connected radio keeps receiving into the shared store either way, and runs its own MQTT
-/// client proxy when its config asks for one.
+/// client proxy when its config asks for one. Disconnect and Remove Radio (D-18) are beside it.
 struct AdditionalRadioRow: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.modelContext) private var context
@@ -20,9 +20,18 @@ struct AdditionalRadioRow: View {
 	@Binding var isSwitchingRadio: Bool
 	@State private var batteryLevel: Int32?
 	@State private var unreadDirectMessages = 0
+	/// Remove Radio asks through the Connect tab's confirmation, which outlives this row.
+	@Environment(\.askToRemoveRadio) private var askToRemoveRadio
 
 	private var isConnecting: Bool {
 		device.connectionState == .connecting
+	}
+
+	/// Its node number once it has reported it and its connect is done: what Remove Radio removes
+	/// (D-18). Not while it connects (review V27-5).
+	private var removableRadioNum: Int64? {
+		guard let num = device.num ?? accessoryManager.knownNodeNums[device.id], accessoryManager.canRemoveRadio(num) else { return nil }
+		return num
 	}
 
 	@Environment(\.selectWindowRadio) private var selectWindowRadio
@@ -121,6 +130,13 @@ struct AdditionalRadioRow: View {
 					Task { await accessoryManager.disconnectRadio(device.id) }
 				} label: {
 					Label("Disconnect", systemImage: "xmark.circle")
+				}
+				if let askToRemoveRadio, let radioNum = removableRadioNum {
+					Button(role: .destructive) {
+						askToRemoveRadio(RadioToRemove(nodeNum: radioNum, name: device.longName ?? device.name))
+					} label: {
+						Label("Remove Radio…", systemImage: "trash")
+					}
 				}
 			} label: {
 				Image(systemName: "ellipsis.circle")

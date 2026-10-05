@@ -21,6 +21,17 @@ struct RadioWindow: Codable, Hashable, Sendable {
 	static let firstRadio = RadioWindow(deviceId: nil)
 }
 
+/// One of the user's radios that's off (W-02): its window shows it with Connect and Remove Radio,
+/// and the Mac lists it with the connected radios.
+struct OfflineRadio: Identifiable, Equatable, Sendable {
+	/// The device it was last connected on.
+	let deviceId: UUID
+	let nodeNum: Int64
+	let name: String
+
+	var id: UUID { deviceId }
+}
+
 /// Whether each radio gets its own window (feature 021, D-19): on the Mac. iPhone and iPad keep
 /// one window that switches between radios (W-04; iPad decided 2026-09-29).
 enum RadioWindows {
@@ -70,6 +81,9 @@ extension EnvironmentValues {
 struct OneWindowRadioScope<Content: View>: View {
 	@SceneStorage("windowRadioId") private var storedId = ""
 	@ObservedObject private var accessoryManager = AccessoryManager.shared
+	/// The radio the window last showed with a session. A radio's Disconnect is told before its
+	/// link closes, so a window showing it still has it here (review V28-1).
+	@State private var lastShown: UUID?
 	@ViewBuilder let content: () -> Content
 
 	var body: some View {
@@ -80,6 +94,17 @@ struct OneWindowRadioScope<Content: View>: View {
 			.environment(\.selectWindowRadio, SelectWindowRadioAction { storedId = $0.uuidString })
 			.onChange(of: accessoryManager.session(for: window)?.device.id, initial: true) { _, shown in
 				accessoryManager.oneWindowShownRadio = shown
+				if let shown {
+					lastShown = shown
+				}
+			}
+			// With several radios, the window keeps the radio the user disconnected, shown off,
+			// until they pick another (W-02); whichever Disconnect it was: the Connect tab's, the
+			// update screen's or Shortcuts' (review V27-7).
+			.onReceive(accessoryManager.radioDisconnectedByUser) { deviceId in
+				if accessoryManager.hasSeveralRadios, deviceId == lastShown || deviceId == window.deviceId {
+					storedId = deviceId.uuidString
+				}
 			}
 	}
 }
@@ -87,14 +112,24 @@ struct OneWindowRadioScope<Content: View>: View {
 extension AccessoryManager {
 
 	/// What the one window shows (iPhone, iPad; W-04), given the radio the user last picked
-	/// (`stored`): that radio while it's connected, connecting or being brought back; otherwise the
-	/// radio the app connects first (`.firstRadio`), or, when the user disconnected that one and
-	/// another is still connected, the other one. A first radio released for a firmware update is
-	/// still shown.
+	/// (`stored`): that radio while it's one of theirs. Off, it shows off with Connect until they
+	/// pick another (W-02); removed, it's gone. Otherwise the radio the app connects first
+	/// (`.firstRadio`), or, when the user disconnected that one and another is still connected,
+	/// the other one. A first radio released for a firmware update is still shown; another radio
+	/// released for one isn't, as before W-02 (review V27-6).
 	func oneWindowRadio(stored: UUID?) -> RadioWindow {
-		if let stored, stored != activeConnection?.device.id,
-		   isRadioConnected(stored) || connectAttempts[stored] != nil || additionalRadioReconnects[stored] != nil {
-			return RadioWindow(deviceId: stored)
+		if let stored, stored != activeConnection?.device.id {
+			if isRadioConnected(stored) || connectAttempts[stored] != nil || additionalRadioReconnects[stored] != nil {
+				return RadioWindow(deviceId: stored)
+			}
+			// Off. The radio the app connects first stays `.firstRadio`, as while it's released
+			// for a firmware update or dropped, to come back. With several radios, one the user
+			// disconnected shows off from the moment its link is gone, before `PreferredRadio`
+			// moves to another radio, rather than that other radio for a moment (review V28-1).
+			let userDisconnectedFirst = hasSeveralRadios && userRequestedConnectionCancellation && !firstRadioReleasedForUpdate
+			if stored != firstDeviceId || userDisconnectedFirst, offlineRadio(stored) != nil {
+				return RadioWindow(deviceId: stored)
+			}
 		}
 		if activeConnection == nil, userRequestedConnectionCancellation, !firstRadioReleasedForUpdate,
 		   let other = connectedRadioAfterFirst {
@@ -153,9 +188,59 @@ extension AccessoryManager {
 		return radioNodeNum(for: window)
 	}
 
-	/// The device id of radio `radioNum`: its session's, or the last one it was connected on.
+	/// The device id of radio `radioNum`: its session's; else the one it last connected on, the
+	/// store's `peripheralId`, which its window was opened for; else the first of the ones it's
+	/// known by, in a fixed order. A radio known over BLE and TCP has one window (W-03, review
+	/// V28 minor 2).
 	func deviceId(ofRadio radioNum: Int64) -> UUID? {
-		connectedSession(forRadio: radioNum)?.device.id ?? knownNodeNums.first { $0.value == radioNum }?.key
+		if let session = connectedSession(forRadio: radioNum) {
+			return session.device.id
+		}
+		if let last = radioLastDeviceIds[radioNum], knownNodeNums[last] == radioNum {
+			return last
+		}
+		return knownNodeNums.filter { $0.value == radioNum }.keys.min { $0.uuidString < $1.uuidString }
+	}
+
+	// MARK: - Radios that are off (W-02)
+
+	/// The name of radio `deviceId`, connected or not: its long name while it's connected, else the
+	/// name the store has for it, else what discovery calls it.
+	func radioName(of deviceId: UUID) -> String? {
+		if let device = connectedRadios.first(where: { $0.id == deviceId }) {
+			return device.longName ?? device.name
+		}
+		if let num = knownNodeNums[deviceId], let known = knownRadios.first(where: { $0.nodeNum == num }) {
+			return known.name
+		}
+		return devices.first { $0.id == deviceId }.map { $0.longName ?? $0.name }
+	}
+
+	/// Radio `deviceId` when it's one of the user's and is off: what its window shows (W-02). Not:
+	/// - a radio the store no longer has (`knownRadios`), after Clear App Data or a restore
+	///   (review V27-4);
+	/// - one connected on another device id, such as over TCP instead of BLE (W-03, review V27-8);
+	/// - one being removed (review V27-2), or released for a firmware update (review V27-6).
+	func offlineRadio(_ deviceId: UUID) -> OfflineRadio? {
+		guard !isRadioConnected(deviceId), !radiosReleasedForUpdate.contains(deviceId), let num = knownNodeNums[deviceId],
+			  knownRadios.contains(where: { $0.nodeNum == num }), !isRadioConnected(nodeNum: num), !radiosBeingRemoved.contains(num) else {
+			return nil
+		}
+		return OfflineRadio(deviceId: deviceId, nodeNum: num, name: radioName(of: deviceId) ?? num.toHex())
+	}
+
+	/// The user's radios that are off, by name, each with the device it was last connected on: the
+	/// Mac lists them with the connected ones, to open, connect or remove (W-02).
+	var offlineKnownRadios: [OfflineRadio] {
+		knownRadios
+			.compactMap { radio in deviceId(ofRadio: radio.nodeNum).flatMap(offlineRadio) }
+			.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+	}
+
+	/// The device to connect radio `deviceId` with: discovery's, or a saved manual connection.
+	/// Nil until discovery sees it.
+	func connectableDevice(_ deviceId: UUID) -> Device? {
+		devices.first { $0.id == deviceId } ?? ManualConnectionList.shared.connectionsList.first { $0.id == deviceId }
 	}
 
 	/// The peripheral id of `window`'s radio. For `.firstRadio`, `PreferredRadio.peripheralId`.

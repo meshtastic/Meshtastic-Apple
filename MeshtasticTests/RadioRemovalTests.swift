@@ -148,6 +148,61 @@ struct RadioRemovalTests {
 		#expect(await packets.storedRadios().map(\.nodeNum) == [radioA, radioB])
 	}
 
+	@Test("Another radio's data that storedRadios doesn't count keeps the only radio's removal from clearing the store")
+	func uncountedDataOfOtherRadios() async throws {
+		let container = try makeContainer()
+		let context = ModelContext(container)
+		makeRadio(radioA, in: context)
+		makeRadio(radioB, connected: false, in: context)
+		try context.save()
+		let packets = MeshPackets(modelContainer: container)
+		#expect(await packets.storedRadios().map(\.nodeNum) == [radioA])
+		#expect(!(await packets.holdsUncountedData(ofRadiosOtherThan: radioA, backfillOwner: radioA)), "a stray radio row without data doesn't count")
+
+		// B hasn't connected since the update and has no observations, but rows are attributed to
+		// it (T230, review V27-3).
+		message(1, radio: radioB, in: context)
+		try context.save()
+		#expect(await packets.storedRadios().map(\.nodeNum) == [radioA])
+		#expect(await packets.holdsUncountedData(ofRadiosOtherThan: radioA, backfillOwner: radioA))
+		#expect(!(await packets.holdsUncountedData(ofRadiosOtherThan: radioB, backfillOwner: radioB)), "its own rows")
+
+		// Rows from before feature 021 are the backfill owner's.
+		let old = MessageEntity()
+		old.messageId = 2
+		context.insert(old)
+		try context.save()
+		#expect(await packets.holdsUncountedData(ofRadiosOtherThan: radioB, backfillOwner: radioA))
+		#expect(!(await packets.holdsUncountedData(ofRadiosOtherThan: radioB, backfillOwner: radioB)))
+		#expect(!(await packets.holdsUncountedData(ofRadiosOtherThan: radioB, backfillOwner: 0)), "no owner known")
+	}
+
+	@Test("The store's own radio, before its first connect since the update, owns the rows waiting for the backfill, so removing it clears the store")
+	func ownRadioBeforeItsFirstConnect() async throws {
+		let container = try makeContainer()
+		let context = ModelContext(container)
+		// A store from before feature 021: its radio hasn't connected since the update, and its rows
+		// have no radio recorded yet.
+		makeRadio(radioA, connected: false, in: context)
+		let old = MessageEntity()
+		old.messageId = 1
+		context.insert(old)
+		try context.save()
+		let packets = MeshPackets(modelContainer: container)
+		#expect(await packets.storedRadios().isEmpty, "storedRadios doesn't count it")
+		#expect(await packets.ownsPendingBackfill(radioA, backfillOwner: radioA))
+		#expect(!(await packets.ownsPendingBackfill(radioB, backfillOwner: radioA)), "a stray radio row isn't the owner")
+		#expect(!(await packets.ownsPendingBackfill(radioA, backfillOwner: 0)), "no owner known")
+		#expect(!(await packets.holdsUncountedData(ofRadiosOtherThan: radioA, backfillOwner: radioA)))
+		#expect(AccessoryManager.removalClearsStore(radioA, storedRadios: [], wasConnected: false, ownsPendingBackfill: true, otherRadioActive: false, othersHoldData: false), "review V28-3")
+
+		// Backfilled, nothing waits: as for a ghost after Clear App Data, the decision is the store's.
+		old.fromNum = radioA
+		old.localNodeNum = radioA
+		try context.save()
+		#expect(!(await packets.ownsPendingBackfill(radioA, backfillOwner: radioA)))
+	}
+
 	// MARK: - Same mesh
 
 	@Test("Radios are on the same mesh with the same region, modulation and frequency")

@@ -9,14 +9,14 @@ import SwiftData
 import SwiftUI
 
 /// App Settings › Your Radios (feature 021, T187): the user's radios that aren't connected, with
-/// Remove This Radio for each. A radio that died, was given away, or is only known from an old
-/// backup would otherwise stay one of the user's radios for good: its broadcasts are stored as
-/// the user's own and never notify. A connected radio is removed from Settings › Device.
-/// Only shown once the app knows more than one radio.
+/// Remove for each. A radio that died, was given away, or is only known from an old backup would
+/// otherwise stay one of the user's radios for good: its broadcasts are stored as the user's own
+/// and never notify. A connected radio is removed beside its Disconnect, or from Settings › Device.
+/// Shown for a single radio too (D-18).
 struct StoredRadiosSection: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Query(sort: \MyInfoEntity.myNodeNum) private var radios: [MyInfoEntity]
-	@State private var radioToRemove: MyInfoEntity?
+	@State private var radioToRemove: RadioToRemove?
 	@State private var removing: Set<Int64> = []
 
 	/// Radios neither connected nor connecting (T197): removing one that's connecting would delete
@@ -36,7 +36,7 @@ struct StoredRadiosSection: View {
 	}
 
 	var body: some View {
-		if radios.filter({ $0.myNodeNum != 0 }).count > 1, !offlineRadios.isEmpty {
+		if !offlineRadios.isEmpty {
 			Section {
 				ForEach(offlineRadios, id: \.myNodeNum) { radio in
 					HStack {
@@ -55,11 +55,14 @@ struct StoredRadiosSection: View {
 							}
 						}
 						Spacer()
-						if removing.contains(radio.myNodeNum) {
+						// Also one being removed from elsewhere, such as the Mac's Radios menu.
+						if removing.contains(radio.myNodeNum) || accessoryManager.radiosBeingRemoved.contains(radio.myNodeNum) {
 							ProgressView()
 						} else {
-							Button("Remove", role: .destructive) { radioToRemove = radio }
-								.buttonStyle(.borderless)
+							Button("Remove", role: .destructive) {
+								radioToRemove = RadioToRemove(nodeNum: radio.myNodeNum, name: name(radio))
+							}
+							.buttonStyle(.borderless)
 						}
 					}
 				}
@@ -68,16 +71,7 @@ struct StoredRadiosSection: View {
 			} footer: {
 				Text("Radios the app knows that aren't connected now. Remove one you no longer have, such as a radio that stopped working or that you gave away.")
 			}
-			.confirmationDialog(
-				"Remove \(radioToRemove.map(name) ?? "")?",
-				isPresented: Binding(get: { radioToRemove != nil }, set: { if !$0 { radioToRemove = nil } }),
-				titleVisibility: .visible,
-				presenting: radioToRemove
-			) { radio in
-				Button("Remove This Radio", role: .destructive) { remove(radio.myNodeNum) }
-			} message: { _ in
-				Text("It's no longer one of your radios and isn't reconnected. Its direct messages go, and messages on channels none of your other radios has. When it was on a mesh of its own, the nodes only it heard go too.")
-			}
+			.removeRadioConfirmation($radioToRemove) { remove($0.nodeNum) }
 		}
 	}
 

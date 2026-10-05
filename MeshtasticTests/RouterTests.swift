@@ -544,4 +544,20 @@ struct RadioWindowTrackerTests {
 		tracker.forget(a)
 		#expect(tracker.toOpen(connected: [a, b]) == [a])
 	}
+
+	@Test("A radio the user disconnects is forgotten once it has gone, so its window doesn't open again while it disconnects")
+	func forgetOnceGone() {
+		let tracker = RadioWindowTracker()
+		let a = UUID(), b = UUID(), c = UUID()
+		#expect(tracker.toOpen(connected: [a, b]) == [a, b].sorted { $0.uuidString < $1.uuidString })
+		// Told before its link closes (review V28-1); another radio connecting meanwhile.
+		tracker.forgetOnceGone(a, connected: [a, b])
+		#expect(tracker.toOpen(connected: [a, b, c]) == [c], "not opened again while it's still connected")
+		// Gone, then back: its window opens again.
+		#expect(tracker.toOpen(connected: [b, c]).isEmpty)
+		#expect(tracker.toOpen(connected: [a, b, c]) == [a])
+		// Told once it's gone already (a radio still connecting): forgotten straight away.
+		tracker.forgetOnceGone(a, connected: [b, c])
+		#expect(tracker.toOpen(connected: [a, b, c]) == [a])
+	}
 }
