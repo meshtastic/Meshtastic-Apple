@@ -109,8 +109,10 @@ struct UnheardOnCurrentLoraTests {
 		await mp.flushDebouncedSaves()
 		#expect(fetchNode(num)?.heardOnCurrentLora == false, "a replayed packet was heard earlier, not now")
 
+		// A measured 0 dBm is a real reception.
 		var overRF = replayed
-		overRF.rxRssi = -60
+		overRF.rxRssi = 0
+		#expect(overRF.hasRxRssi)
 		await mp.updateAnyPacketFrom(packet: overRF, activeDeviceNum: 1, reportsHeardOnCurrentLora: true)
 		await mp.flushDebouncedSaves()
 		#expect(fetchNode(num)?.heardOnCurrentLora == true)
