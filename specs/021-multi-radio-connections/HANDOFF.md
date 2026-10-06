@@ -133,6 +133,9 @@ Read this first if you are picking the work up. Update it in the same commit as 
   (`HeardOnCurrentLoraAnswers`), cleared when another radio is next connected on its own.
   Remove Them follows D-18 (T400, owner's call of 2026-10-05): a node another radio has heard
   stays in the app, and only the window's radio drops it. Delete Node is unchanged (T146).
+  Review V36 (`review-connections-v36.md`): V36-1 held and is fixed (T401). Remove Them's app
+  side runs on the packet actor (`MeshPackets.removeUnheardNode`), from the observations as
+  they are now, and stops when the window's radio's answers are no longer kept.
 - Merge of `main` (2026-10-02): merge commit `03632328` brought in `main`'s 11 commits up to
   `c3bb355b` (v2.7.23); `backup/multi-radio-pre-rebase` keeps the branch as it was before
   (`b13061ec`). Review V20 and data V15 (`review-connections-v20.md` M1–M2, `review-data-v15.md`
@@ -602,3 +605,5 @@ describes it well enough to rebuild.
   markers go as soon as B connects, and B's come with its node list. Connect A alongside B:
   every marker goes, on nodes only a third radio heard too, and comes back for the radio left
   on its own once it sends its node list again (a reconnect, or a LoRa change in its window).
+  With A alone and many unheard nodes, connect B while Remove Them runs: it stops (log
+  `Stopped removing unheard nodes`), and the nodes it hadn't reached stay (V36-1).

@@ -251,16 +251,19 @@ struct MultiRadioUnheardOnCurrentLoraTests {
 	}
 
 	@Test("Remove Them deletes a node only this radio heard, and keeps one another radio heard (D-18)")
-	func removalKeepsNodesAnotherRadioHeard() throws {
-		let context = ModelContext(try isolatedContainer("UnheardRemoval"))
+	func removalKeepsNodesAnotherRadioHeard() async throws {
+		let container = try isolatedContainer("UnheardRemoval")
+		let setup = ModelContext(container)
 		let radioA: Int64 = 0x0A0A, radioB: Int64 = 0x0B0B
 		let onlyA: Int64 = 0x7E57_0405, alsoB: Int64 = 0x7E57_0407
+		insertRadio(radioA, in: setup)
+		insertRadio(radioB, in: setup)
 		let user = UserEntity()
 		user.num = onlyA
-		context.insert(user)
-		insertNode(onlyA, in: context).user = user
-		context.insert(NodeObservationEntity(radioNum: radioA, nodeNum: onlyA))
-		let shared = insertNode(alsoB, in: context)
+		setup.insert(user)
+		insertNode(onlyA, in: setup).user = user
+		setup.insert(NodeObservationEntity(radioNum: radioA, nodeNum: onlyA))
+		let shared = insertNode(alsoB, in: setup)
 		shared.heardOnCurrentLora = false
 		shared.hopsAway = 1
 		shared.lastHeard = Date()
@@ -268,16 +271,17 @@ struct MultiRadioUnheardOnCurrentLoraTests {
 			let observation = NodeObservationEntity(radioNum: radio, nodeNum: alsoB)
 			observation.hopsAway = hops
 			observation.lastHeard = Date()
-			context.insert(observation)
+			setup.insert(observation)
 		}
-		try context.save()
+		try setup.save()
 
-		let others = try UnheardNodesRemoval.otherRadiosObservations(than: radioA, in: context)
-		for node in try context.fetch(FetchDescriptor<NodeInfoEntity>()) {
-			try UnheardNodesRemoval.remove(node, ofRadio: radioA, otherRadiosObservations: others, in: context)
-		}
-		try context.save()
+		let packets = MeshPackets(modelContainer: container)
+		let onlyAStayed = try await packets.removeUnheardNode(onlyA, ofRadio: radioA)
+		let alsoBStayed = try await packets.removeUnheardNode(alsoB, ofRadio: radioA)
+		#expect(!onlyAStayed)
+		#expect(alsoBStayed)
 
+		let context = ModelContext(container)
 		let left = try context.fetch(FetchDescriptor<NodeInfoEntity>())
 		#expect(left.map(\.num) == [alsoB], "the node B heard stays in the app")
 		#expect(left.first?.heardOnCurrentLora == nil, "its answer was A's")
@@ -285,6 +289,59 @@ struct MultiRadioUnheardOnCurrentLoraTests {
 		let observations = try context.fetch(FetchDescriptor<NodeObservationEntity>())
 		#expect(observations.map(\.radioNum) == [radioB], "A's part goes; left behind, it would bring A's Heard By back")
 		#expect(try context.fetchCount(FetchDescriptor<UserEntity>()) == 0, "the node only A heard goes with its user")
+	}
+
+	@Test("Remove Them works from the observations as they are now, saved or not (review V36-1)")
+	func removalUsesCurrentObservations() async throws {
+		let container = try isolatedContainer("UnheardRemovalCurrent")
+		let setup = ModelContext(container)
+		let radioA: Int64 = 0x0A0A, radioB: Int64 = 0x0B0B
+		let kept: Int64 = 0x7E57_0408, newlyHeardByA: Int64 = 0x7E57_0409
+		insertRadio(radioA, in: setup)
+		insertRadio(radioB, in: setup)
+		let node = insertNode(kept, in: setup)
+		node.heardOnCurrentLora = false
+		node.lastHeard = Date()
+		for (radio, hops) in [(radioA, Int32(1)), (radioB, Int32(5))] {
+			let observation = NodeObservationEntity(radioNum: radio, nodeNum: kept)
+			observation.hopsAway = hops
+			observation.lastHeard = Date().addingTimeInterval(-600)
+			setup.insert(observation)
+		}
+		_ = insertNode(newlyHeardByA, in: setup)
+		let heardByB = NodeObservationEntity(radioNum: radioB, nodeNum: newlyHeardByA)
+		heardByB.lastHeard = Date()
+		setup.insert(heardByB)
+		try setup.save()
+
+		let packets = MeshPackets(modelContainer: container)
+		// B hears the kept node again, two hops away, and A hears the other node for the first
+		// time. Neither is saved yet: the packet handlers' saves are debounced.
+		await packets.updateAnyPacketFrom(packet: heard(from: kept, hops: 2), activeDeviceNum: radioB)
+		await packets.updateAnyPacketFrom(packet: heard(from: newlyHeardByA, hops: 0), activeDeviceNum: radioA)
+
+		let keptStayed = try await packets.removeUnheardNode(kept, ofRadio: radioA)
+		let newlyHeardStayed = try await packets.removeUnheardNode(newlyHeardByA, ofRadio: radioA)
+		#expect(keptStayed)
+		#expect(newlyHeardStayed)
+
+		let context = ModelContext(container)
+		let stored = try context.fetch(FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == kept })).first
+		#expect(stored?.hopsAway == 2, "B's latest, not what B had saved")
+		let observations = try context.fetch(FetchDescriptor<NodeObservationEntity>())
+		#expect(observations.count == 2)
+		#expect(observations.allSatisfy { $0.radioNum == radioB }, "A's observations go, the unsaved one too")
+	}
+
+	/// A packet heard over LoRa just now, `hops` away.
+	private func heard(from num: Int64, hops: UInt32) -> MeshPacket {
+		var packet = MeshPacket()
+		packet.from = UInt32(num)
+		packet.rxTime = UInt32(Date().timeIntervalSince1970)
+		packet.rxRssi = -90
+		packet.hopStart = 3
+		packet.hopLimit = 3 - hops
+		return packet
 	}
 
 	// MARK: Heard now

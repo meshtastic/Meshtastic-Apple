@@ -253,6 +253,45 @@ extension MeshPackets {
 		return deleted
 	}
 
+	/// The app side of the unheard notice's Remove Them for one node, once radio `radioNum` has
+	/// been asked to drop it (T400): `removeRadioData`'s rule for one node. On this actor, which
+	/// writes the observations, so it works from them as they are now (review V36-1).
+	/// - Another of the user's radios has observed the node: it stays in the app (D-18).
+	///   `radioNum`'s observation goes, and its heard-on-current-LoRa answer, which was this
+	///   radio's; the node is rewritten from the others' observations.
+	/// - Otherwise it goes, with its user and its observations, as Delete Node does (T146).
+	/// Saves. Returns whether the node stayed; false too when it's gone already.
+	@discardableResult
+	func removeUnheardNode(_ nodeNum: Int64, ofRadio radioNum: Int64, preferredRadio: Int64 = PreferredRadio.nodeNum) throws -> Bool {
+		// Pending writes first (saves are debounced): an observation not saved yet is found and
+		// goes with the rest, rather than being saved later and bringing the node back.
+		if modelContext.hasChanges {
+			try modelContext.save()
+		}
+		var byNum = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == nodeNum })
+		byNum.fetchLimit = 1
+		guard let node = try modelContext.fetch(byNum).first else { return false }
+		let observations = try modelContext.fetch(FetchDescriptor<NodeObservationEntity>(predicate: #Predicate { $0.nodeNum == nodeNum }))
+		let others = observations.filter { $0.radioNum != radioNum }
+		if others.isEmpty {
+			if let user = node.user {
+				modelContext.delete(user)
+			}
+			for observation in observations {
+				modelContext.delete(observation)
+			}
+			modelContext.delete(node)
+		} else {
+			for observation in observations where observation.radioNum == radioNum {
+				modelContext.delete(observation)
+			}
+			node.heardOnCurrentLora = nil
+			NodeObservationEntity.reaggregate(node, from: others, preferredRadio: preferredRadio)
+		}
+		try modelContext.save()
+		return !others.isEmpty
+	}
+
 	/// Rewrites the node fields of `nodeNums` from the observations left in `observations`.
 	private func reaggregate(_ nodeNums: [Int64], from observations: [NodeObservationEntity], preferredRadio: Int64) throws {
 		guard !nodeNums.isEmpty else { return }
