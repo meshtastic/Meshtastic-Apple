@@ -400,9 +400,11 @@ struct MultiRadioIngestTests {
 		#expect(observation.favorite)
 		#expect(observation.lastHeard == Date(timeIntervalSince1970: 1_800_000_000))
 	}
+}
 
-	// MARK: - Messages
+// MARK: - Messages
 
+extension MultiRadioIngestTests {
 	@Test("A received message gets its sender, recipient, local radio and key")
 	func messageColumns() async throws {
 		let container = try makeContainer()

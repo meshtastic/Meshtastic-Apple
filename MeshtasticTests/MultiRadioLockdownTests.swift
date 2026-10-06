@@ -271,9 +271,6 @@ struct MultiRadioLockdownTests {
 		#expect(radio.attention == nil, "nothing to ask: the user locked it")
 	}
 
-
-
-
 	@Test("The first radio locking is asked about when the window shows another radio, not when it shows it")
 	func firstRadioAskedAboutFromAnotherWindow() async throws {
 		let fixture = makeFixture()

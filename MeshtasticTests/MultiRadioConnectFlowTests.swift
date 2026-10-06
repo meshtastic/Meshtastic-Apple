@@ -402,7 +402,11 @@ struct MultiRadioConnectFlowTests {
 		#expect(!manager.userRequestedConnectionCancellation, "so discovery brings A back")
 		endDiscovery(manager)
 	}
+}
 
+// MARK: - Dropped radios, reconnect loops and updates
+
+extension MultiRadioConnectFlowTests {
 	@Test("Disconnect on a radio alongside that isn't connected turns off its reconnect at the next launch")
 	func disconnectDroppedRadioForgetsIt() async throws {
 		let saved = SavedDefaults()
@@ -699,9 +703,11 @@ struct MultiRadioConnectFlowTests {
 		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
 		try await manager.disconnect()
 	}
+}
 
-	// MARK: - Showing another radio without reconnecting (T072)
+// MARK: - Showing another radio without reconnecting (T072)
 
+extension MultiRadioConnectFlowTests {
 	private struct TwoRadios {
 		let manager: AccessoryManager
 		let first: ScriptedRadio
@@ -1061,7 +1067,11 @@ struct MultiRadioConnectFlowTests {
 		#expect(manager.knownNodeNums[radios.firstDevice.id] == Int64(radios.firstNum))
 		try await manager.disconnect()
 	}
+}
 
+// MARK: - Handshakes, resets, removal and backfill
+
+extension MultiRadioConnectFlowTests {
 	@Test("A radio that answers the node-DB request straight away doesn't stall the connect")
 	func immediateNodeDBAnswer() async throws {
 		let saved = SavedDefaults()
@@ -1122,7 +1132,6 @@ struct MultiRadioConnectFlowTests {
 		await manager.disconnectRadio(radios.secondDevice.id)
 	}
 
-
 	@Test("A connect as the first radio without a handshake, as a restore of a radio iOS kept connected, makes it the preferred radio")
 	func restoreWithoutHandshakeIsPreferred() async throws {
 		let saved = SavedDefaults()
@@ -1144,8 +1153,6 @@ struct MultiRadioConnectFlowTests {
 		#expect(!(await radio.sent.map(describe).contains(.wantConfig(69420))), "no handshake")
 		try await manager.disconnect()
 	}
-
-
 
 	@Test("Removing the first radio with another connected makes that one the preferred radio, as Disconnect does")
 	func removeFirstRadioHandsOverPreferred() async throws {
@@ -1406,8 +1413,6 @@ struct MultiRadioConnectFlowTests {
 		#expect(try localNodeNum(ofMessage: old.messageId) == ownerNum, "A's, not B's")
 		try await manager.disconnect()
 	}
-
-
 
 	@Test("While the first radio's live version is unknown, version checks use its own stored one")
 	func versionCheckUsesTheFirstRadiosOwnVersion() async throws {

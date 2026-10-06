@@ -311,7 +311,6 @@ struct MultiRadioConnectLifecycleTests {
 		#expect(manager.rememberedRadioFallbackCandidate(from: remembered) == nil)
 	}
 
-
 	@Test("The phone position loop keeps going for the other radios when the first one closes")
 	func positionLoopOutlivesFirstClose() async throws {
 		let manager = AccessoryManager(transports: [])
@@ -487,7 +486,11 @@ struct MultiRadioConnectLifecycleTests {
 		await engine.stopScan()
 		manager.discoveryScanEngine = nil
 	}
+}
 
+// MARK: - Favorites and sends on each radio's own connection
+
+extension MultiRadioConnectLifecycleTests {
 	@Test("Un-favoriting a node clears every radio's observation of it, so no radio's old view brings it back")
 	func unfavoriteRecordsOnEveryObservation() async throws {
 		let schema = Schema(versionedSchema: MeshtasticSchema.current)
