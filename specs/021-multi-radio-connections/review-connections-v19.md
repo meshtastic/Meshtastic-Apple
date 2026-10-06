@@ -1,10 +1,10 @@
 # Review V19: connections, focus and windows (feature/multi-radio)
 
-Branch `feature/multi-radio` at `9d50c4e4`. V18 (`review-connections-v18.md`) was at `af19fa29`.
+Branch `feature/multi-radio` at `dee5b4d0`. V18 (`review-connections-v18.md`) was at `5d6c975b`.
 This round checks the one fix since: T374, where Remove This Radio, or a factory reset that deletes
 bonds, on the stand-in from Device Config during its node download puts the preferred radio back.
 
-Files read (diff since `af19fa29`, then the code around it): `+RadioRemoval`
+Files read (diff since `5d6c975b`, then the code around it): `+RadioRemoval`
 (`takeRadioOffline`, `stopBringingBack`, `removeRadio`), `+AdditionalRadios` (`disconnectRadio`,
 `standIn(for:)`, `restorePreferred(after:)`, `reclaimRadioAfterUpdate`), `AccessoryManager.swift`
 (`disconnect()`), `DeviceConfig.swift`, `Connect.swift`, `AppSettings.swift`, the ESP32 OTA sheets,

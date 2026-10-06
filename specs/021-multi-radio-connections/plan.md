@@ -61,7 +61,7 @@ retry and teardown flow twice.
 
 ## Every radio the same (D-17, decided 2026-09-26)
 
-The first multi-radio step (`40605d38`) made one radio "focused", with the full connect flow on
+The first multi-radio step (`2ab476ab`) made one radio "focused", with the full connect flow on
 `AccessoryManager`, and every other radio an `AdditionalRadio` with a shorter flow of its own
 (`AccessoryManager+AdditionalRadios.swift`). That was a shortcut, not the design: the owner
 needs every connected radio to work the same way. Focus only picks the default for Settings,
@@ -249,7 +249,7 @@ Nothing below is committed: `.local/` and `MeshtasticSxS.xcodeproj/` are listed 
 ## One window per radio (D-19, decided 2026-09-29)
 
 Spec: [windows.md](./windows.md). This replaces the focused radio. Numbers below were counted on
-`feature/multi-radio` at `9787c7a1`.
+`feature/multi-radio` at `5ce2634d`.
 
 ### The window's radio
 

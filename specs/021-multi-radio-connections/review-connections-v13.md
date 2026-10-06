@@ -1,6 +1,6 @@
 # Review V13: connections, focus and windows (feature/multi-radio)
 
-Branch `feature/multi-radio` at `049c59d4`. V12 (`review-connections-v12.md`) was at `1ede1bbe`.
+Branch `feature/multi-radio` at `fb719385`. V12 (`review-connections-v12.md`) was at `cf26aa79`.
 This round checks the fixes since (T350–T359) and what they touch:
 - the scan's radio;
 - the first radio released for an update;
@@ -10,7 +10,7 @@ This round checks the fixes since (T350–T359) and what they touch:
 - the DM conversation's radios;
 - the one window's presentation order.
 
-Files read (diff since `1ede1bbe`, then the code around it): `+AdditionalRadios`, `+Connect`,
+Files read (diff since `cf26aa79`, then the code around it): `+AdditionalRadios`, `+Connect`,
 `AccessoryManager.swift`, `+ToRadio`, `+RadioRemoval`, `+LaunchFallback`, `+Discovery`,
 `RadioWindow.swift`, `WindowRouters.swift`, `DiscoveryScanEngine`, `Connect.swift`,
 `ContentView.swift`, `ServiceRadioPickers.swift`, `DirectMessageQuery.swift`,

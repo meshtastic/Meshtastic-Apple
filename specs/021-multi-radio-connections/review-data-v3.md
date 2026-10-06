@@ -1,8 +1,8 @@
 # Review V3: data, messages and services (feature/multi-radio)
 
-Branch `feature/multi-radio` at `23d68e36`. This pass re-checks the fixes for `review-data-v2.md`
+Branch `feature/multi-radio` at `2957d36f`. This pass re-checks the fixes for `review-data-v2.md`
 (V2-1–V2-8, T170 and T173–T177, T184, T186, T187) and reviews what changed in my area since
-`2e029fab`: the reset gating in `DeviceConfig.swift`, `StoredRadiosSection.swift`, the per-backup
+`dc63a31d`: the reset gating in `DeviceConfig.swift`, `StoredRadiosSection.swift`, the per-backup
 merge attempts, the Purge Stale Nodes cleanup, `reaggregate`, the stored-key sharing rule, the
 CarPlay list and Siri search scoping, the TAK channel move, the persisted Heard By set, the radio
 cache reset, the recycled actor's saves, and the backfill that now waits for a second radio
@@ -125,7 +125,7 @@ Ranked most serious first. "Sure" is how confident I am that it happens as descr
 
 ## Tests
 
-Full suite in the iOS Simulator (iPhone 17 Pro), `xcodebuild test` at `23d68e36`: 3,486 of 3,488
+Full suite in the iOS Simulator (iPhone 17 Pro), `xcodebuild test` at `2957d36f`: 3,486 of 3,488
 tests passed; none failed an assertion. The other two ended with "Test crashed with signal kill".
 Another session was running its own test runs on the same Simulator at the same time (its result
 bundles are in the same DerivedData, started 18:57:36, 18:58:19, 19:02:09 and 19:04:26), and each of its runs

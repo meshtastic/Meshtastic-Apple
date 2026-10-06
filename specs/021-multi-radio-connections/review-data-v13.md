@@ -1,7 +1,7 @@
 # Review V13: data, messages and services (feature/multi-radio)
 
-Branch `feature/multi-radio` at `29e68b26`. This pass re-checks the fix for `review-data-v12.md`
-(R12-1 → T362) and the data and service side of the connection fixes since `049c59d4` (T360, a
+Branch `feature/multi-radio` at `af926ebe`. This pass re-checks the fix for `review-data-v12.md`
+(R12-1 → T362) and the data and service side of the connection fixes since `fb719385` (T360, a
 dropped radio coming back as the first radio; T361, Remove This Radio handing the preferred radio
 on). I read the tasks.md and HANDOFF.md changes first and re-read every claim below in the files.
 Nothing else in my area changed.

@@ -1,13 +1,13 @@
 # Review V11: data, messages and services (feature/multi-radio)
 
-Branch `feature/multi-radio` at `1ede1bbe`. This pass re-checks the fixes for `review-data-v10.md`
+Branch `feature/multi-radio` at `cf26aa79`. This pass re-checks the fixes for `review-data-v10.md`
 (R10-1 to R10-8 → T330, T332, T336–T338, T340) and W-15 (a required radio choice for services in
 use, replacing W-09 and the "radio connected first" fallback), and goes over what else changed in
-my area since `6aa5ea48`. I read the tasks.md, windows.md and HANDOFF.md changes first and
+my area since `d038d296`. I read the tasks.md, windows.md and HANDOFF.md changes first and
 re-read every claim below in the files. The ingest and storage code only had names changed
 (`firstRadio:` for `focusedRadio:`, T341).
 
-Tests: the full suite passes in the iOS Simulator (iPhone 17 Pro) at `1ede1bbe`: 3,490 Swift
+Tests: the full suite passes in the iOS Simulator (iPhone 17 Pro) at `cf26aa79`: 3,490 Swift
 Testing tests in 601 suites and 32 XCTests, started once no other `xcodebuild` was running. The
 Mac Catalyst build succeeds (own derived data, signing off; built, not run). No tracked file
 changed. None of the findings below is covered by a test.

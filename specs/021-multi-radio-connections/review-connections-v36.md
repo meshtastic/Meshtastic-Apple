@@ -1,11 +1,11 @@
 # Review V36: the V35 fixes (T399) and Remove Them under D-18 (T400)
 
-Branch `feature/multi-radio` at `0cf439a2`, working tree clean. This review checks the two commits
+Branch `feature/multi-radio` at `93dbe4ef`, working tree clean. This review checks the two commits
 since V35 against the files.
 
 ## What changed since V35
 
-- **`f42c06cc` (T399), the V35 fixes.**
+- **`951802a2` (T399), the V35 fixes.**
   - `HeardOnCurrentLoraAnswers` records which radio the stored answers belong to, across launches.
   - `claimHeardOnCurrentLora(for:)` makes them the radio's own when it's connected alone,
     clearing another radio's first. It runs at MyInfo, before its NodeInfo and before each packet.
@@ -13,7 +13,7 @@ since V35 against the files.
   - The notice's candidates (`UnheardNodesRemoval.candidates`) leave out the user's radios. In a
     store with other radios' observations, only nodes the window's radio has observed count.
   - Also: the heard-now answer is now set on the aggregated path of `updateAnyPacketFrom` too.
-- **`0cf439a2` (T400), the owner's call.**
+- **`93dbe4ef` (T400), the owner's call.**
   - **Remove Them** follows D-18: a node another radio has observed stays in the app. Only the
     window's radio's observation and answer go, and `NodeObservationEntity.reaggregate` (moved
     out of `removeRadioData`) rewrites the node.
@@ -26,7 +26,7 @@ since V35 against the files.
   `RadioRemovalTests`, `MultiRadioConnectFlowTests`, `MultiRadioConnectLifecycleTests` and
   `MultiRadioIngestTests` in the iOS Simulator. 132 tests in 6 suites, all passed. The build
   changed no tracked files.
-- **SwiftLint:** the changed Swift files linted at `1efbaf6d` and at HEAD give the same
+- **SwiftLint:** the changed Swift files linted at `2cbbc821` and at HEAD give the same
   violations.
 - **Removed lines:** the 72 app-code lines removed are the old observed-only clear, the
   notice's old predicate and delete, `removeNode`'s body (now split in two) and `reaggregate`'s

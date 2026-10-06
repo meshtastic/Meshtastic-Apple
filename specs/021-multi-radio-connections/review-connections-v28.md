@@ -1,6 +1,6 @@
 # Review V28: the V27 fixes (T387)
 
-Branch `feature/multi-radio`, uncommitted work on top of `a00e58ca`. Checks T387, the fixes for
+Branch `feature/multi-radio`, uncommitted work on top of `58671b92`. Checks T387, the fixes for
 review V27, against the files. One run: `MultiRadioConnectFlowTests` and `RadioRemovalTests` in the
 iOS Simulator (60 tests, all passed, the six new ones included). SwiftLint run on the changed files.
 
@@ -85,7 +85,7 @@ SwiftLint: no new violations. `Connect` body is 696 → 706 lines and `MultiRadi
 ### V28-4. An unrelated rename in `MeshPackets+RadioRemoval.swift` reverts V25's naming (low, hygiene)
 
 - The diff renames `radioKeys(of:)` back to `keys(of:)` (`MeshPackets+RadioRemoval.swift:201-213`),
-  which brings back `let keys = keys(of: other)`. Commit `04825b20` (the V25-1 fix) had introduced
+  which brings back `let keys = keys(of: other)`. Commit `896c3d02` (the V25-1 fix) had introduced
   `radioKeys`. T387 doesn't mention the rename, and behaviour doesn't change.
 - This looks like the stale-editor-copy gotcha in HANDOFF (lines 430-431). Revert the hunk. Before
   committing, check `git diff` for other undone lines. A pass over the removed lines in this diff

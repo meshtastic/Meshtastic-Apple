@@ -1,10 +1,10 @@
 # Review V8: connections and focus (feature/multi-radio)
 
-Branch `feature/multi-radio` at `e87e884e`. V7 (`review-connections-v7.md`) reviewed `d89664e6`;
+Branch `feature/multi-radio` at `e1f27349`. V7 (`review-connections-v7.md`) reviewed `81456eb5`;
 this pass checks the fixes since (T230–T232). T232 (per-radio message pruning) is data handling,
 left to the data review.
 
-Files read (diff since `d89664e6`, then the code around it): `+Connect` (Step 0, Step 3c, Step 5),
+Files read (diff since `81456eb5`, then the code around it): `+Connect` (Step 0, Step 3c, Step 5),
 `+AdditionalRadios`, `+Discovery`, `+Focus`, `AccessoryManager.swift`, `PreferredRadio.swift`;
 `MeshPackets+BackupMerge.swift`; `BLETransport.swift` (the restore choice and
 `completeFocusedRestore`); `Settings.swift` and the aggregate's callers for what reads

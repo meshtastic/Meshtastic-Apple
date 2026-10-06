@@ -1,11 +1,11 @@
 # Review V38: the V37 fix (T404)
 
-Branch `feature/multi-radio` at `d58c7711`, working tree clean. This review checks the one commit
+Branch `feature/multi-radio` at `d2e23291`, working tree clean. This review checks the one commit
 since V37 against the files.
 
 ## What changed since V37
 
-`d58c7711` (T404) fixes V37-1 and the four minors:
+`d2e23291` (T404) fixes V37-1 and the four minors:
 - **V37-1.** Node detail's heard-on-current-LoRa lookup is keyed on the node too
   (`NodeLoraAnswerKey`, `AccessoryManager.nodeLoraAnswerKey(of:for:)`, `NodeDetail.swift:180`).
 - **Minor 1.** The comments in `LoRaConfig`, `UnheardNodesRemoval`, `removeUnheardNode`,
@@ -22,7 +22,7 @@ since V37 against the files.
   `RadioRemovalTests`, `NodeListRowRefreshDecisionTests` and `MultiRadioIngestTests` in the iOS
   Simulator. 72 tests in 5 suites, all passed, including the three new ones. The build recompiled
   the touched files with no compiler warnings and changed no tracked files.
-- **SwiftLint:** the 9 Swift files changed, linted at `b9801569` and `d58c7711`, give the same
+- **SwiftLint:** the 9 Swift files changed, linted at `c9d28f4f` and `d2e23291`, give the same
   violations (one: `NodeDetail`'s existing type body length).
 - **Removed lines:** only the replaced comments, the old task key, the old row key line and the old
   re-check. Nothing else is undone. Every touched file ends in a newline. No docs changed, so the
@@ -88,7 +88,7 @@ None.
 ## Still open
 
 - Strings: T134 (with T400/T403's confirmation text).
-- T122: the bundle matches its sources at `d58c7711`. Rebuild once more as the last step before the
+- T122: the bundle matches its sources at `d2e23291`. Rebuild once more as the last step before the
   PR if docs change again.
 - The device checklist (T399–T404).
 - Committing this review.

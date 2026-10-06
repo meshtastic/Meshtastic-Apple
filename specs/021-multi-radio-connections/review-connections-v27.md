@@ -1,6 +1,6 @@
 # Review V27: W-02 revised (T386)
 
-Branch `feature/multi-radio`, uncommitted work on top of `a00e58ca`. Checks T386: Disconnect keeps
+Branch `feature/multi-radio`, uncommitted work on top of `58671b92`. Checks T386: Disconnect keeps
 the radio's window, Remove Radio closes it, and a single radio can be removed. Read in the files,
 plus one run: `MultiRadioConnectFlowTests` and `RadioRemovalTests` in the iOS Simulator (55 tests,
 all passed, the new ones included; no compiler warnings in the changed files; no tracked file

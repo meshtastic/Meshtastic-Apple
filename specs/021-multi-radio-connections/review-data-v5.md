@@ -1,11 +1,11 @@
 # Review V5: data, messages and services (feature/multi-radio)
 
-Branch `feature/multi-radio` at `7fbaf895`. This pass re-checks the fixes for `review-data-v4.md`
+Branch `feature/multi-radio` at `33d4d030`. This pass re-checks the fixes for `review-data-v4.md`
 (R4-1 → T204, R4-2 → T205), the backfill change that came with the connection fixes (T203: the
 check moved into `handleMyInfo` and matches by node number), and the rest of what changed in my
-area since `5ff31a3b`. I read the HANDOFF.md and tasks.md changes first.
+area since `831df2a7`. I read the HANDOFF.md and tasks.md changes first.
 
-Tests: the full suite passes in the iOS Simulator (iPhone 17 Pro) at `7fbaf895`: 3,468 Swift
+Tests: the full suite passes in the iOS Simulator (iPhone 17 Pro) at `33d4d030`: 3,468 Swift
 Testing tests in 599 suites and 29 XCTests, on a quiet Simulator. No tracked file changed. Neither
 finding below is covered by a test.
 

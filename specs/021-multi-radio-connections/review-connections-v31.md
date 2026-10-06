@@ -1,6 +1,6 @@
 # Review V31: the V30 fixes (T392)
 
-Branch `feature/multi-radio`, uncommitted work on top of `a00e58ca`. This review checks T392, the
+Branch `feature/multi-radio`, uncommitted work on top of `58671b92`. This review checks T392, the
 fixes for review V30, against the files.
 
 ## What changed since V30

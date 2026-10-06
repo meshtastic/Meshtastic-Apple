@@ -1,11 +1,11 @@
 # Review V8: data, messages and services (feature/multi-radio)
 
-Branch `feature/multi-radio` at `e87e884e`. This pass re-checks the fix for `review-data-v7.md`
+Branch `feature/multi-radio` at `e1f27349`. This pass re-checks the fix for `review-data-v7.md`
 (R7-1 → T232, per-radio message pruning, the owner's choice) and the backfill change that came
 with the connection fixes (T230), re-reading each in the files. I read the HANDOFF.md and
 tasks.md changes first.
 
-Tests: the full suite passes in the iOS Simulator (iPhone 17 Pro) at `e87e884e`: 3,476 Swift
+Tests: the full suite passes in the iOS Simulator (iPhone 17 Pro) at `e1f27349`: 3,476 Swift
 Testing tests in 599 suites and 29 XCTests. I started it only once no other `xcodebuild` was
 running, and ran it once. No tracked file changed.
 

@@ -1,13 +1,13 @@
 # Review V33: T390 and T393
 
-Branch `feature/multi-radio` at `81f03b4c`, working tree clean. This review checks the two commits
+Branch `feature/multi-radio` at `bd35aa80`, working tree clean. This review checks the two commits
 since V32 against the files.
 
 ## What changed since V32
 
-- `f1f01d02` commits T386–T395 and T391 with the review files V27–V32. Nothing new in it beyond
+- `a5e5a360` commits T386–T395 and T391 with the review files V27–V32. Nothing new in it beyond
   what V27–V32 reviewed.
-- `d9e0a5e8` is new code, the owner's calls of 2026-10-05:
+- `5305ba12` is new code, the owner's calls of 2026-10-05:
   - **T390:** removing the only radio erases the app's data as Clear App Data does. Both call the
     new `AccessoryManager.eraseAppData()` (`AccessoryManager+AppData.swift`). The removal still
     runs it under the handshake gate. The only-radio confirmation says what it erases.
@@ -15,7 +15,7 @@ since V32 against the files.
     and it was the last window open, the Connect window opens in its place
     (`RadioWindowTracker.closesLastWindow`, `RadioWindowRoot`).
   - Docs (`bluetooth.md`, `settings.md`), spec D-18, W-02, HANDOFF and tasks.
-- `21dac497` (Xcode Cloud manifest) and `81f03b4c` (hang-risk notes) aren't part of this work.
+- `577b17f2` (Xcode Cloud manifest) and `bd35aa80` (hang-risk notes) aren't part of this work.
 
 ## How it was checked
 
@@ -25,19 +25,19 @@ since V32 against the files.
 - **Probe:** a temporary test hosted a view under `.id(token)` in a window and changed the token
   three times, recording `onAppear` and `onDisappear`. It was deleted after the run. Result under
   V33-1.
-- **SwiftLint:** clean on the six Swift files `d9e0a5e8` changed.
-- **Removed lines:** the 37 Swift lines `d9e0a5e8` removes all belong to T390 or T393: the Clear
+- **SwiftLint:** clean on the six Swift files `5305ba12` changed.
+- **Removed lines:** the 37 Swift lines `5305ba12` removes all belong to T390 or T393: the Clear
   App Data body that moved to `eraseAppData`, the removal's old clear, the old dialog text and
   the old `radioRemoved` handler. Nothing earlier is undone.
-- **Editor:** early in this review the editor served `f1f01d02` copies of two of the changed
-  files while the disk had `d9e0a5e8`. It matches the disk now (see minor 4).
+- **Editor:** early in this review the editor served `a5e5a360` copies of two of the changed
+  files while the disk had `5305ba12`. It matches the disk now (see minor 4).
 
 ## The V32 minors
 
 | Minor | Status | Notes |
 |---|---|---|
 | 1 `HANDOFF.md:567` is 124 characters | Open | It's 142 now (see minor 1). |
-| 2 The status note counts the review files | Done | It now says they're committed with T386–T395 (`f1f01d02`). |
+| 2 The status note counts the review files | Done | It now says they're committed with T386–T395 (`a5e5a360`). |
 
 ## Findings
 
@@ -106,7 +106,7 @@ then `closesLastWindow(b, connectWindows: 0)` is false.
    saying that removing the only radio erases favorites. Scope it to the case where other radios'
    data is kept.
 4. The editor's stale copies: before the next edit in Xcode, make sure it has reloaded the files
-   `d9e0a5e8` changed. Saving a stale buffer would quietly revert T390 or T393, as HANDOFF warns
+   `5305ba12` changed. Saving a stale buffer would quietly revert T390 or T393, as HANDOFF warns
    (V28-4, T389).
 
 ## Checked and found fine

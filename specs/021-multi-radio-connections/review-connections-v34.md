@@ -1,6 +1,6 @@
 # Review V34: the V33 fix (T396)
 
-Branch `feature/multi-radio` at `aa8acdac`, working tree clean. This review checks T396, the fix
+Branch `feature/multi-radio` at `8b32240b`, working tree clean. This review checks T396, the fix
 for review V33, against the files.
 
 ## What changed since V33

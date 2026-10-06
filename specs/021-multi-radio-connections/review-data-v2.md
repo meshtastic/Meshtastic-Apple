@@ -1,13 +1,13 @@
 # Review V2: data, messages and services (feature/multi-radio)
 
-Branch `feature/multi-radio` at `2e029fab`. This pass re-checks the fixes for
-`review-data.md` (D1–D19, commits `8fac5ca7` … `512dcb1c`, T140–T166) and reviews the new code in
+Branch `feature/multi-radio` at `dc63a31d`. This pass re-checks the fixes for
+`review-data.md` (D1–D19, commits `d79580f0` … `5e1e5b78`, T140–T166) and reviews the new code in
 the same area: `MeshPackets+RadioRemoval.swift`, `AccessoryManager+RadioRemoval.swift`, the D-18
 reset / remove / clear flows in `DeviceConfig.swift`, `AppSettings.swift` and
 `BackupManagement.swift`, `MeshNetwork` in `LoRaChannelCalculator.swift`, the Siri / CarPlay
 conversation changes, the key lookups, the aggregate window, the favorite vote, the Heard By
 refresh, and the backup-merge and backfill changes. I read HANDOFF.md, tasks.md, plan.md and
-spec.md again (D-18 is new), and the diff `d9ccf477..HEAD` for my area.
+spec.md again (D-18 is new), and the diff `bdca4708..HEAD` for my area.
 
 Tests: the full suite passes in the iOS Simulator (iPhone 17 Pro): 3,442 Swift Testing tests in
 598 suites, and 29 XCTests. No tracked file changed. None of the findings below is covered by a

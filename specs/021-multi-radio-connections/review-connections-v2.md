@@ -1,12 +1,12 @@
 # Review V2: connections and focus (feature/multi-radio)
 
-Branch `feature/multi-radio` at `2e029fab`. V1 (`review-connections.md`) reviewed `d9ccf477`; this
+Branch `feature/multi-radio` at `dc63a31d`. V1 (`review-connections.md`) reviewed `bdca4708`; this
 pass checks the fixes made since (T148–T156, recorded in tasks.md and HANDOFF.md) and looks again
 at the connection code as it is now, including what's new: radio reset and removal (D-18,
 `AccessoryManager+RadioRemoval.swift` and its callers in `DeviceConfig.swift`), the per-radio
 attention queue, the launch backfill, and the discovery scan following its own radio.
 
-Files read (diff since `d9ccf477`, then the surrounding code): `AccessoryManager.swift`,
+Files read (diff since `bdca4708`, then the surrounding code): `AccessoryManager.swift`,
 `+Connect`, `+AdditionalRadios`, `+Focus`, `+FocusHandover`, `+RadioAttention`, `+RadioChoice`,
 `+RadioRemoval`, `+Discovery`, `+Position`, `+FromRadio`, `+ToRadio`; `RadioSession.swift`;
 `BLETransport.swift`; `Connect.swift`, `AdditionalRadioRow.swift`, `ContentView.swift`;

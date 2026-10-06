@@ -1,11 +1,11 @@
 # Review V9: connections and focus (feature/multi-radio)
 
-Branch `feature/multi-radio` at `e5fd2ec1`. V8 (`review-connections-v8.md`) reviewed `e87e884e`;
+Branch `feature/multi-radio` at `1b300de9`. V8 (`review-connections-v8.md`) reviewed `e1f27349`;
 this pass checks the fixes since (T240–T242): the focused-radio bookkeeping moved ahead of Step 5's
 no-handshake exit, the connect-first override set back on both restore paths, and the merge tests'
 store settled before hashing.
 
-Files read (diff since `e87e884e`, then the code around it): `+Connect` (Step 5),
+Files read (diff since `e1f27349`, then the code around it): `+Connect` (Step 5),
 `PreferredRadio.swift`, `BLETransport.swift` (`handleWillRestoreState`, `restoreAsFocused`,
 `completeFocusedRestore`, `handOverRestore`, `restoredNodeNum`), `+Position`;
 `MultiRadioConnectFlowTests.restoreWithoutHandshakeIsPreferred`; `BackupMergeTests` (`settle`).

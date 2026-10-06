@@ -1,6 +1,6 @@
 # Review V15: connections, focus and windows (feature/multi-radio)
 
-Branch `feature/multi-radio` at `ebf1a07e`. V14 (`review-connections-v14.md`) was at `29e68b26`.
+Branch `feature/multi-radio` at `7796736b`. V14 (`review-connections-v14.md`) was at `af926ebe`.
 This round checks the fixes since (T363–T368) and what they touch:
 - a radio's reconnect loop ends once it's connected as the first radio, or disconnected (T363);
 - Clear App Data and Restore Backup stop every radio coming back (T364);
@@ -9,7 +9,7 @@ This round checks the fixes since (T363–T368) and what they touch:
 - the one window's Choose Radios sheet, other radios' prompts and passphrase sheet, and gates wait
   for the window to be free, and are asked for again if they didn't come up (T367, T368).
 
-Files read (diff since `29e68b26`, then the code around it): `+AdditionalRadios`, `+Connect`,
+Files read (diff since `af926ebe`, then the code around it): `+AdditionalRadios`, `+Connect`,
 `+RadioRemoval`, `AccessoryManager.swift`, `MeshPackets+RadioRemoval`, `ContentView.swift`,
 `OtherRadioPresentation.swift`, `WindowPresentationProbe.swift`, `ServiceRadioPickers.swift`,
 `StoredRadiosSection.swift`, `DeviceConfig.swift`, `AppSettings.swift`, `Connect.swift`, the ESP32

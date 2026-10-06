@@ -1,7 +1,7 @@
 # Review V26: the V25 fixes
 
-Branch `feature/multi-radio` at `8b601696`. Checks `04825b20` (removal and the backfill drain read
-channels as saved). `8b601696` only commits the V21 and V23 reports. Read only; nothing built or
+Branch `feature/multi-radio` at `8ee8902b`. Checks `896c3d02` (removal and the backfill drain read
+channels as saved). `8ee8902b` only commits the V21 and V23 reports. Read only; nothing built or
 run.
 
 ## Where the V25 findings stand

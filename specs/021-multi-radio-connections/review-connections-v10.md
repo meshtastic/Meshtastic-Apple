@@ -1,6 +1,6 @@
 # Review V10: connections and focus (feature/multi-radio)
 
-Branch `feature/multi-radio` at `8f4569be`. V9 (`review-connections-v9.md`) reviewed `e5fd2ec1`;
+Branch `feature/multi-radio` at `904b08ce`. V9 (`review-connections-v9.md`) reviewed `1b300de9`;
 this pass checks the one fix since (T250), and re-reads `connect(to:)` and its first steps whole,
 since ten rounds of fixes have landed in it one at a time.
 

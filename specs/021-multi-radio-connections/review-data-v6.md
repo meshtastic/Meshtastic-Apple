@@ -1,11 +1,11 @@
 # Review V6: data, messages and services (feature/multi-radio)
 
-Branch `feature/multi-radio` at `1e8a6ac9`. This pass re-checks the fixes for `review-data-v5.md`
+Branch `feature/multi-radio` at `ef91643c`. This pass re-checks the fixes for `review-data-v5.md`
 (R5-1 → T213, R5-2 → T214), the data side of the connection fixes (T210: the join backfill as
 connect Step 3c; T211: Messages follows the focused radio), and takes another look at what the
 removal code leaves behind. I read the HANDOFF.md and tasks.md changes first.
 
-Tests: the full suite passes in the iOS Simulator (iPhone 17 Pro) at `1e8a6ac9`: 3,471 Swift
+Tests: the full suite passes in the iOS Simulator (iPhone 17 Pro) at `ef91643c`: 3,471 Swift
 Testing tests in 599 suites and 29 XCTests. I started it only once no other `xcodebuild` was
 running and ran it once, since another review was using the same Simulator. No tracked file
 changed. The finding below isn't covered by a test.

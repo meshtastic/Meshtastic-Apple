@@ -1,11 +1,11 @@
 # Review V7: data, messages and services (feature/multi-radio)
 
-Branch `feature/multi-radio` at `d89664e6`. This pass re-checks the fix for `review-data-v6.md`
+Branch `feature/multi-radio` at `81456eb5`. This pass re-checks the fix for `review-data-v6.md`
 (R6-1 → T222) and the backfill change that came with the connection fixes (T220), and takes a
 fresh look at how the store-wide limits behave now that every radio shares one store. I read the
 HANDOFF.md and tasks.md changes first, and every claim below was re-read in the files.
 
-Tests: the full suite passes in the iOS Simulator (iPhone 17 Pro) at `d89664e6`: 3,473 Swift
+Tests: the full suite passes in the iOS Simulator (iPhone 17 Pro) at `81456eb5`: 3,473 Swift
 Testing tests in 599 suites and 29 XCTests. I started it only once no other `xcodebuild` was
 running, and ran it once. No tracked file changed. The finding below isn't covered by a test.
 

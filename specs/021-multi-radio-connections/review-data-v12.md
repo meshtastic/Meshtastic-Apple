@@ -1,8 +1,8 @@
 # Review V12: data, messages and services (feature/multi-radio)
 
-Branch `feature/multi-radio` at `049c59d4`. This pass re-checks the fixes for `review-data-v11.md`
+Branch `feature/multi-radio` at `fb719385`. This pass re-checks the fixes for `review-data-v11.md`
 (R11-1 → T354, R11-2 → T355, R11-3 → T356–T359) and the data and service side of the connection
-fixes since `1ede1bbe` (T350 Analyze Current Preset, T352 Disconnect on the first radio, T359 the
+fixes since `cf26aa79` (T350 Analyze Current Preset, T352 Disconnect on the first radio, T359 the
 one window's presentation order, which now gates the Choose Radios sheet). I read the tasks.md
 and HANDOFF.md changes first and re-read every claim below in the files.
 

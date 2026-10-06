@@ -1,6 +1,6 @@
 # Review V25: the V24 fixes (T383)
 
-Branch `feature/multi-radio` at `6e0c7d53`. Checks the fixes for V24-1 to V24-3 and the
+Branch `feature/multi-radio` at `a7df3c42`. Checks the fixes for V24-1 to V24-3 and the
 settings-form device item, and looks again for the stale-context cause (T382) in the preset-change
 flow. Read only; nothing built or run.
 

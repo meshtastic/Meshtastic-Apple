@@ -19,38 +19,41 @@ Read this first if you are picking the work up. Update it in the same commit as 
 ## Current state
 
 - Branch `feature/multi-radio`, based on `origin/main` `ed36762c` (2026-09-25), with `main` merged
-  in up to `c3bb355b` (v2.7.23) on 2026-10-02 (`03632328`) and up to `8425daa6` on 2026-10-05
+  in up to `c3bb355b` (v2.7.23) on 2026-10-02 (`3e3d204c`) and up to `8425daa6` on 2026-10-05
   (T398). Pushed to the owner's fork (`fork`, `ChDel/Meshtastic-Apple`) on 2026-10-06, at the
-  owner's request, for the pull request.
+  owner's request, for the pull request. The same day the commits made with `cd@cdfilmmaker.com`
+  were rewritten to ChDel's noreply address (T406), so every hash on the branch changed and the
+  docs cite the new ones. The history before is on `backup/multi-radio-before-email-rewrite`;
+  the two small branches have their own `backup/…-before-email-rewrite`.
 - Commits below the feature work, carried into the branch:
-  - `15baebb0` Keep every stored field when restoring a radio's backup (fix + tests)
-  - `67fba963` Sync the string catalog with the current source
-  - `d913970a`, `230eda8c` Research report and recommendation
+  - `183de839` Keep every stored field when restoring a radio's backup (fix + tests)
+  - `924041a3` Sync the string catalog with the current source
+  - `9696b6c4`, `e6664bc0` Research report and recommendation
 - Done: tracking docs; split pull request branches (T005); side-by-side Mac tooling (T003/T004,
-  local only). Phase 2 receive path (T010–T012, T019, part of T016) in `5671f9d2`; channel
-  identity (T027) in `2a3e3653`; uniqueness spike (T020) in `6c173b7c`, which led to D-16.
-  Phase 3 schema (T023–T025, T028, T029) in `7cf22678` and `3579188b`. Phase 4 ingest
-  (T041–T049) in `10b6cba4`, `35a0936c`, `5ea963bd`. Phase 5 first step (additional radio
+  local only). Phase 2 receive path (T010–T012, T019, part of T016) in `44fc9584`; channel
+  identity (T027) in `7ac7c684`; uniqueness spike (T020) in `4614501e`, which led to D-16.
+  Phase 3 schema (T023–T025, T028, T029) in `71dd6d99` and `49e03e7a`. Phase 4 ingest
+  (T041–T049) in `252b17bc`, `737b2f11`, `c223a254`. Phase 5 first step (additional radio
   sessions, per-peripheral BLE, no more store wipe on switch) and the connect dialog in
-  `40605d38`; reconnect after a drop in `adfaad63`. Handshake gate (T064), remembered radios
-  (rest of T063), bounded automatic connects and per-radio ACK matching in `5754e69b`. Per-radio
+  `2ab476ab`; reconnect after a drop in `02659e90`. Handshake gate (T064), remembered radios
+  (rest of T063), bounded automatic connects and per-radio ACK matching in `cfc51696`. Per-radio
   direct messages with a "Via" picker, and sending/resending through a chosen radio (T085, send
-  half of T084) in `2f5dcf6a`. Channels as one timeline across radios by `channelKey`, with a
-  "Via" picker that sends in each radio's own slot (T083, T084) in `df9649f9`. Battery, signal
+  half of T084) in `9161dd9a`. Channels as one timeline across radios by `channelKey`, with a
+  "Via" picker that sends in each radio's own slot (T083, T084) in `6e6e3c97`. Battery, signal
   and unread on connected-radio rows, and "via B" on your channel messages (T081, T086) in
-  `d08fde38`. Node detail "Heard By" and favorite/ignore on every radio (T088, D-11) in
-  `2af545de`. Focus keeps the previous radio (`6ae292ca`). Toolbar radio menu, Settings note and
-  "on <radio>" in notifications (T082, T089, T091) in `bca4ecef`; the DM badge totals every radio
-  (T090) in `2d7ab3fa`. Notification links open the right radio's thread (T091) in `d22f9206`;
-  phone position to every radio (T101) in `3cb4e11a`; Disconnect on the focused radio hands the
-  focus to another connected radio in `721bc873`; focus handover after a drop and the
-  remembered-radio fallback at launch in `81b204a0`; connected-row snapshot (T092) in
-  `42663087`; old per-radio backups merged into the shared store at launch (T030) in
-  `e29241dc` and `6a050ce5`. The pre-DM contact refresh and auto-favorite through the sending
-  radio in `da10664f`; the Heard By filter (T087) in `ec1437de`; lock-down and the firmware check
-  on additional radios (T065) in `a32319ad`; an MQTT client proxy per additional radio (T100) in
-  `8849b76f`; admin messages routed through the radio they concern, with the relaying radio's own
-  passkey (T045, part of T089) in `8636d5f1`; the radio pickers for TAK, CarPlay & Siri and the
+  `81a144d9`. Node detail "Heard By" and favorite/ignore on every radio (T088, D-11) in
+  `68c9a0aa`. Focus keeps the previous radio (`568d2e60`). Toolbar radio menu, Settings note and
+  "on <radio>" in notifications (T082, T089, T091) in `80d08af8`; the DM badge totals every radio
+  (T090) in `23037bde`. Notification links open the right radio's thread (T091) in `6e9c717a`;
+  phone position to every radio (T101) in `4c4b4b55`; Disconnect on the focused radio hands the
+  focus to another connected radio in `6cc8ceee`; focus handover after a drop and the
+  remembered-radio fallback at launch in `2118dc79`; connected-row snapshot (T092) in
+  `711291b1`; old per-radio backups merged into the shared store at launch (T030) in
+  `892ed50f` and `c7bfe87b`. The pre-DM contact refresh and auto-favorite through the sending
+  radio in `8bb0cbe5`; the Heard By filter (T087) in `d932afc3`; lock-down and the firmware check
+  on additional radios (T065) in `04b69fd9`; an MQTT client proxy per additional radio (T100) in
+  `59d0245b`; admin messages routed through the radio they concern, with the relaying radio's own
+  passkey (T045, part of T089) in `c9abb02a`; the radio pickers for TAK, CarPlay & Siri and the
   Watch (T102–T105) in the commit after it. D-17 (every radio the same, T068–T074) and the
   review fixes (T140–T167, D-18 for resets) since. See tasks.md for the partial ones.
 - Mesh Multi (`~/Applications/Mesh Multi.app`, side-by-side, own container) is rebuilt from the
@@ -120,10 +123,10 @@ Read this first if you are picking the work up. Update it in the same commit as 
   (`review-connections-v31.md`, V31-1) of V30's, checked in the files; all held and are fixed
   (T388, T389, T392, T394). Their device checks are on the checklist below. Review V32
   (`review-connections-v32.md`) of T394 found nothing new (T395). T391 rewrote the user docs
-  for one window per radio. T386–T395 and T391 are committed (`f1f01d02`) with the six review
+  for one window per radio. T386–T395 and T391 are committed (`a5e5a360`) with the six review
   files (V27–V32). T390 (removing the only radio is Clear App Data) and T393 (the Connect window
   takes the last window's place on the Mac) are done, owner's calls of 2026-10-05
-  (`d9e0a5e8`). Review V33 (`review-connections-v33.md`, V33-1 and minors) of them, checked in
+  (`5305ba12`). Review V33 (`review-connections-v33.md`, V33-1 and minors) of them, checked in
   the files; all held and are fixed (T396). Review V34 (`review-connections-v34.md`) of T396
   found nothing new (T397).
 - Merge of `main` (2026-10-05, T398): `main`'s 25 commits up to `8425daa6` (#2584), 22 files in
@@ -141,9 +144,9 @@ Read this first if you are picking the work up. Update it in the same commit as 
   checked in the files; all held and are fixed (T399, T401, T404). V37-1: node detail on iPad
   and the Mac looks the marker up again when another node is selected. Review V38
   (`review-connections-v38.md`) of T404 found nothing new (T405).
-- Merge of `main` (2026-10-02): merge commit `03632328` brought in `main`'s 11 commits up to
+- Merge of `main` (2026-10-02): merge commit `3e3d204c` brought in `main`'s 11 commits up to
   `c3bb355b` (v2.7.23); `backup/multi-radio-pre-rebase` keeps the branch as it was before
-  (`b13061ec`). Review V20 and data V15 (`review-connections-v20.md` M1–M2, `review-data-v15.md`
+  (`8eb367a5`). Review V20 and data V15 (`review-connections-v20.md` M1–M2, `review-data-v15.md`
   M-1–M-2, the same two findings), checked in the files; both held and are fixed, one commit each
   (T375: the `protobufs` pointer back on `main`'s `ad0bf31e`; T376: the coding rate override reads
   the window's radio). Left for the owner, from `main` #2545: each iPad window now has its own
@@ -201,21 +204,21 @@ Read this first if you are picking the work up. Update it in the same commit as 
   checked in the files; all held. Fixed one commit each (T220–T222 in tasks.md).
 - Review V5 (2026-09-28): `review-connections-v5.md` (G1–G4) and `review-data-v5.md`
   (R5-1–R5-2; G4 and R5-1 are the same), checked in the files; all held. Fixed one commit each
-  (`2f150709` … `48628ca7`, T210–T214 in tasks.md).
+  (`0d977062` … `31fc60b9`, T210–T214 in tasks.md).
 - Review V4 (2026-09-27/28): `review-connections-v4.md` (F1–F4) and `review-data-v4.md`
-  (R4-1–R4-2), checked in the files; all held. Fixed one commit each (`39ece463` … `f1cff86b`,
+  (R4-1–R4-2), checked in the files; all held. Fixed one commit each (`d55b60ad` … `5520dd7b`,
   T200–T205 in tasks.md).
 - Review V3 (2026-09-27): `review-connections-v3.md` (R1–R4) and `review-data-v3.md`
-  (R3-1–R3-5), checked in the files; all held. Fixed one commit each (`c0000d3b` … `1b8ef1b8`,
+  (R3-1–R3-5), checked in the files; all held. Fixed one commit each (`7995bc0d` … `40c2200e`,
   T190–T198 in tasks.md). Both reviewers' full runs were disturbed by another session's tests on
   the same simulator; a quiet run passed.
 - Review V2 (2026-09-27): `review-connections-v2.md` (N1–N10) and `review-data-v2.md`
-  (V2-1–V2-8), checked in the files; all held. Fixed one commit each (`5d517b58` … `dfc22694`,
+  (V2-1–V2-8), checked in the files; all held. Fixed one commit each (`e76bcce9` … `16873958`,
   T170–T187 in tasks.md), including the owner's calls: no launch wait for a single-radio store
   (T186), removing a radio that isn't connected (T187), and N1: a locked radio that isn't
   focused gets its own passphrase sheet rather than waiting for the focus (T188).
 - Review fixes (2026-09-27): every finding in `review-connections.md` (C1–C14) and
-  `review-data.md` (D1–D19) is fixed, one commit each (`8fac5ca7` … `512dcb1c`, T140–T166 in
+  `review-data.md` (D1–D19) is fixed, one commit each (`d79580f0` … `5e1e5b78`, T140–T166 in
   tasks.md), except C13, which is `main`'s behaviour for the focused radio and is left as is
   (T167; a check for it is in the device test checklist). Choices made along the way that the
   owner should confirm:
@@ -236,7 +239,7 @@ Read this first if you are picking the work up. Update it in the same commit as 
 - D-17 (every radio the same) is done through T073: one connect flow, focus without
   reconnecting, and lock-down / old firmware prompting by name on any radio. Next: the device
   test when the owner's hardware is ready (checklist below). Also done since: T016, T018, T110,
-  most of T111, T120, T121 and the string catalog sync (`30924072`). Left: T066 and the rest of
+  most of T111, T120, T121 and the string catalog sync (`b552f43a`). Left: T066 and the rest of
   T111 after the device test; more doc snapshots (T092); T130–T133 (devices and the real
   store). T122, T134 and T135 are done (2026-10-06, before the pull request): the bundled HTML
   matched its sources and three missing screenshots were added; the string catalog is synced;
@@ -248,7 +251,7 @@ Read this first if you are picking the work up. Update it in the same commit as 
 
 - Real-radio testing: the owner is preparing two more radios and will test on the Mac when ready.
 - The radio menu in the status indicator (`RadioSwitcherMenu` wrapping `ConnectedDevice`,
-  `bca4ecef`, T082) goes against CLAUDE.md: the indicator is full and gets no controls. The owner
+  `80d08af8`, T082) goes against CLAUDE.md: the indicator is full and gets no controls. The owner
   is asking the project admin whether multiple radios justify an exception. Options: keep the
   menu and the "+N" badge; keep the menu without the badge (no extra width, but still a control);
   or remove both and change focus from the Connect tab (Focus This Radio, already there), later
@@ -350,7 +353,7 @@ describes it well enough to rebuild.
   lines to each. Splitting them up is part of T060.
 - `MeshtasticSchemaV1` lists the live model types, and that is intended (D-16): every release since
   2.7.13 has changed them additively.
-- `MessageEntity.messageId` is no longer unique (`10b6cba4`); `messageKey` ("sender:packetId")
+- `MessageEntity.messageId` is no longer unique (`252b17bc`); `messageKey` ("sender:packetId")
   is. Both insert paths (ingest, `sendMessage`) set it, so a sent message and its echo still merge.
   ACKs and admin response ACKs try the delivering radio's key first
   (`MeshPackets.sentMessage(requestID:radioNum:)`). Tapback and reply lookups still go by
@@ -484,7 +487,9 @@ describes it well enough to rebuild.
   selected radio of the thread. `UserDefaults.preferredPeripheralNum` is only the fallback.
 - Commit messages: write each to a new, unique file (`/tmp/mr-<topic>.txt`). `create_file`
   refuses to overwrite, and an old `/tmp/msgN.txt` from an earlier session once went into a
-  commit unnoticed (fixed with `--amend`). Check `git log -1` after every commit.
+  commit unnoticed (fixed with `--amend`). Check `git log -1` after every commit. Commit as
+  ChDel's noreply address (`70300403+ChDel@users.noreply.github.com`, the global git config),
+  never `cd@cdfilmmaker.com`: GitHub doesn't link that one to ChDel (T406).
 - Heard on current LoRa (`main` #2575, T403): each radio's answers are on its own
   `NodeObservationEntity.heardOnCurrentLora`; `NodeInfoEntity.heardOnCurrentLora` is still
   written as on `main`, but nothing shows it. Views read the window's radio's answers through

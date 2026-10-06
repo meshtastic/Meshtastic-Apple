@@ -1,6 +1,6 @@
 # Review V35: the merge of `main` (T398)
 
-Branch `feature/multi-radio` at `1efbaf6d`, the merge of `main` up to `8425daa6` (#2584), working
+Branch `feature/multi-radio` at `2cbbc821`, the merge of `main` up to `8425daa6` (#2584), working
 tree clean. This review checks how the conflicts were resolved, and whether `main`'s new code that
 merged without a conflict still holds with several radios.
 

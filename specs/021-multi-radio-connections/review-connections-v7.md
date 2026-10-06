@@ -1,10 +1,10 @@
 # Review V7: connections and focus (feature/multi-radio)
 
-Branch `feature/multi-radio` at `d89664e6`. V6 (`review-connections-v6.md`) reviewed `1e8a6ac9`;
+Branch `feature/multi-radio` at `81456eb5`. V6 (`review-connections-v6.md`) reviewed `ef91643c`;
 this pass checks the fixes since (T220–T222). T222 (a removed radio's kept channel messages) is data
 handling, left to the data review; the connection side of removal is unchanged.
 
-Files read (diff since `1e8a6ac9`, then the code around it): `+Discovery`, `AccessoryManager.swift`
+Files read (diff since `ef91643c`, then the code around it): `+Discovery`, `AccessoryManager.swift`
 (`connectToPreferredDevice`, the event loop's `updateAnyPacketFrom` call), `+Connect` (Steps 3–5),
 `PreferredRadio.swift`; `MeshPackets+BackupMerge.swift` (`drainMultiRadioBackfill`),
 `MultiRadioBackfill.swift` (`runChunk`, `backfillObservations`, `otherRadiosHaveObservations`),

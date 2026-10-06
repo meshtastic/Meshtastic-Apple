@@ -1,14 +1,14 @@
 # Review V4: data, messages and services (feature/multi-radio)
 
-Branch `feature/multi-radio` at `5ff31a3b`. This pass re-checks the fixes for `review-data-v3.md`
-(R3-1–R3-5, T192–T195, T197, T198) and reviews what changed in my area since `23d68e36`:
+Branch `feature/multi-radio` at `831df2a7`. This pass re-checks the fixes for `review-data-v3.md`
+(R3-1–R3-5, T192–T195, T197, T198) and reviews what changed in my area since `2957d36f`:
 channel matching by key for CarPlay and Siri (`IntentMessageConverters.channelMessage`),
 `BackfillOwner` and the backfill before any other radio connects, the async backfill drain and
 merge, `reaggregate`, Your Radios, the Heard By file, the retiring actor's saves, and the two
 data-side pieces of the connection fixes (`rememberRadios`, `stopBringingBack`). I read the
 HANDOFF.md and tasks.md changes first.
 
-Tests: the full suite passes in the iOS Simulator (iPhone 17 Pro) at `5ff31a3b`: 3,465 Swift
+Tests: the full suite passes in the iOS Simulator (iPhone 17 Pro) at `831df2a7`: 3,465 Swift
 Testing tests in 599 suites and 29 XCTests, on a quiet Simulator this time (I waited until no
 other `xcodebuild` was running). No tracked file changed. Neither finding below is covered by a
 test.

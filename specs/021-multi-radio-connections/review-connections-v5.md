@@ -1,12 +1,12 @@
 # Review V5: connections and focus (feature/multi-radio)
 
-Branch `feature/multi-radio` at `7fbaf895`. V4 (`review-connections-v4.md`) reviewed `5ff31a3b`;
+Branch `feature/multi-radio` at `33d4d030`. V4 (`review-connections-v4.md`) reviewed `831df2a7`;
 this pass checks the fixes since (T200–T205) and what they touch: the restore's give-back marker
 expiring, the preferred radio kept after a restore hand-over, the handover reading its radio when
 it fires, the backfill moved into `handleMyInfo` and matched by node number, and the drain saving
 between chunks.
 
-Files read (diff since `5ff31a3b`, then the code around it): `+AdditionalRadios`, `+Connect`,
+Files read (diff since `831df2a7`, then the code around it): `+AdditionalRadios`, `+Connect`,
 `+Focus`, `+FocusHandover`, `+FromRadio` (`handleMyInfo`, `renumberStore`), `+RadioRemoval`;
 `BackfillOwner.swift`, `PreferredRadio.swift`; `BLETransport.swift`; the views that read
 `PreferredRadio` (`Settings.swift`, `Messages.swift`, `ChannelList.swift`, `UserMessageList.swift`),

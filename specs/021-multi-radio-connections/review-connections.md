@@ -1,6 +1,6 @@
 # Review: connections and focus (feature/multi-radio)
 
-Branch `feature/multi-radio` at `d9ccf477`, compared with `origin/main...HEAD`. I read HANDOFF.md,
+Branch `feature/multi-radio` at `bdca4708`, compared with `origin/main...HEAD`. I read HANDOFF.md,
 plan.md, spec.md, tasks.md and CLAUDE.md first, then the connection code: `AccessoryManager.swift`
 and its `+Connect`, `+AdditionalRadios`, `+Focus`, `+FocusHandover`, `+RadioAttention`,
 `+RadioChoice`, `+RadioMQTT`, `+MQTT`, `+Lockdown`, `+Position`, `+Discovery`, `+FromRadio`,

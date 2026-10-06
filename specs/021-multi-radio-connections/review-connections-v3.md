@@ -1,13 +1,13 @@
 # Review V3: connections and focus (feature/multi-radio)
 
-Branch `feature/multi-radio` at `23d68e36`. V2 (`review-connections-v2.md`) reviewed `2e029fab`;
+Branch `feature/multi-radio` at `2957d36f`. V2 (`review-connections-v2.md`) reviewed `dc63a31d`;
 this pass checks the fixes since (T170–T188) and the code they added: the passphrase sheet for a
 radio that isn't focused (`RadioUnlockSheet`, `submitPassphrase(_:…toRadio:)`), the BLE restore
 hand-over, the handover's memory of the dropped radio, the recycle's extra saves, the
 backfill before a second radio joins, the position loop through a handover, and Remove for a
 radio that isn't connected (App Settings › Your Radios).
 
-Files read (diff since `2e029fab`, then the code around it): `AccessoryManager.swift`, `+Connect`,
+Files read (diff since `dc63a31d`, then the code around it): `AccessoryManager.swift`, `+Connect`,
 `+AdditionalRadios`, `+Focus`, `+FocusHandover`, `+Position`, `+RadioAttention`,
 `+RadioRemoval`; `RadioSession.swift`; `BLETransport.swift`; `Connect.swift`, `ContentView.swift`,
 `LockdownSheet.swift`, `StoredRadiosSection.swift`; `MeshtasticApp.swift`; in `MeshPackets` the

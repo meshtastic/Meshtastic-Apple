@@ -1,6 +1,6 @@
 # Review V29: the V28 fixes (T388)
 
-Branch `feature/multi-radio`, uncommitted work on top of `a00e58ca`. This review checks T388, the
+Branch `feature/multi-radio`, uncommitted work on top of `58671b92`. This review checks T388, the
 fixes for review V28, against the files. Tests: one run of `MultiRadioConnectFlowTests`,
 `RadioRemovalTests` and `RadioWindowTrackerTests` in the iOS Simulator. All 65 passed, including
 the four new tests, and the build changed no tracked files. SwiftLint was run on the changed files.

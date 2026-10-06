@@ -1,6 +1,6 @@
 # Review: data, messages and services (feature/multi-radio)
 
-Branch `feature/multi-radio` at `d9ccf477`, compared with `origin/main...HEAD`. I read HANDOFF.md,
+Branch `feature/multi-radio` at `bdca4708`, compared with `origin/main...HEAD`. I read HANDOFF.md,
 plan.md, spec.md, tasks.md and CLAUDE.md first, then: `MeshPackets.swift` (the diff and the
 text, node-DB, admin and routing handlers around it), `MeshPackets+MultiRadio.swift`,
 `MeshPackets+BackupMerge.swift`, `UpdateSwiftData.swift`, `MultiRadioBackfill.swift`,

@@ -1,11 +1,11 @@
 # Review V6: connections and focus (feature/multi-radio)
 
-Branch `feature/multi-radio` at `1e8a6ac9`. V5 (`review-connections-v5.md`) reviewed `7fbaf895`;
+Branch `feature/multi-radio` at `ef91643c`. V5 (`review-connections-v5.md`) reviewed `33d4d030`;
 this pass checks the fixes since (T210–T214): the backfill as connect Step 3c, Messages following
 the focused radio, the connect-first override kept apart from the preferred radio, and the
 backfill owner and saved radio choices following a renumber.
 
-Files read (diff since `7fbaf895`, then the code around it): `+Connect` (Step 3c, Step 5),
+Files read (diff since `33d4d030`, then the code around it): `+Connect` (Step 3c, Step 5),
 `+AdditionalRadios`, `+Discovery`, `+Focus`, `+FocusHandover`, `+FromRadio` (`renumberStore`,
 `moveSavedRadioChoices`), `+RadioRemoval`; `PreferredRadio.swift`, `BackfillOwner.swift`;
 `BLETransport.swift`; `Messages.swift`; and for Step 3c, `MultiRadioBackfill.runChunk` /

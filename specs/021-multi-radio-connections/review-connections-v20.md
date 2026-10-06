@@ -1,9 +1,9 @@
 # Review V20: merge of main into feature/multi-radio
 
-Merge commit `03632328` ("Merge main into feature/multi-radio"), 2026-10-02. Its parents are
-`b13061ec` (the branch) and `c3bb355b` (main, v2.7.23 docs rebuild). The merge base is `ed36762c`.
+Merge commit `3e3d204c` ("Merge main into feature/multi-radio"), 2026-10-02. Its parents are
+`8eb367a5` (the branch) and `c3bb355b` (main, v2.7.23 docs rebuild). The merge base is `ed36762c`.
 Main brought 11 commits since then. Not pushed; `feature/multi-radio` has no upstream.
-`backup/multi-radio-pre-rebase` still points at `b13061ec`. The earlier rebase attempt is gone and
+`backup/multi-radio-pre-rebase` still points at `8eb367a5`. The earlier rebase attempt is gone and
 the working tree is clean.
 
 Checked in the files only; nothing built or run, nothing changed.

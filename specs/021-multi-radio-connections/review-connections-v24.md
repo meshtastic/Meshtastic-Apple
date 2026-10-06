@@ -1,7 +1,7 @@
 # Review V24: preset changes, after the stale-context fix (T377–T382)
 
-Branch `feature/multi-radio` at `2ab1ceed`. A full pass over what happens when a radio changes
-preset (LongFast → LongTurbo or any other), now including `2ab1ceed` (T382). That commit fixes what
+Branch `feature/multi-radio` at `4cf4ed9b`. A full pass over what happens when a radio changes
+preset (LongFast → LongTurbo or any other), now including `4cf4ed9b` (T382). That commit fixes what
 the owner's device test found: two "Switched" notes, and the other radio's LongFast message in
 GoDG's LongTurbo conversation and preview.
 
@@ -81,7 +81,7 @@ Nothing built or run.
   re-renders (message traffic does that). Before, the preview was one small fetch.
 - Line 47 reads the saved key even with one radio, where the query never uses it. So the
   single-radio list pays for it too: a change to `main`'s path, against the earlier "keep the
-  multi-radio lookups out of view rendering" work (`afa9d9de`).
+  multi-radio lookups out of view rendering" work (`809d635d`).
 - Fix:
   - read the saved key only with several radios;
   - build each row's query once and reuse it for the preview and the count, or move both to a task.

@@ -1,6 +1,6 @@
 # Review V30: the V29 fixes (T389)
 
-Branch `feature/multi-radio`, uncommitted work on top of `a00e58ca`. This review checks T389, the
+Branch `feature/multi-radio`, uncommitted work on top of `58671b92`. This review checks T389, the
 fixes for review V29, against the files.
 
 Since V29 there is one code change, in `DeviceConfig.swift` (`DeviceResetSection.factoryReset`),

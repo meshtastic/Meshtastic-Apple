@@ -1,18 +1,18 @@
 # Review V37: the V36 fix (T401), T402, and per-radio heard-on-current-LoRa (T403)
 
-Branch `feature/multi-radio` at `b9801569`, working tree clean. This review checks the three commits
-since V36 (`0cf439a2`) against the files.
+Branch `feature/multi-radio` at `c9d28f4f`, working tree clean. This review checks the three commits
+since V36 (`93dbe4ef`) against the files.
 
 ## What changed since V36
 
-- **`4c44a75e` (T401), the V36 fix.** Remove Them's app side runs on the packet actor
+- **`9f16ac79` (T401), the V36 fix.** Remove Them's app side runs on the packet actor
   (`MeshPackets.removeUnheardNode`): it saves pending writes, reads the node's observations as they
   are now, and either deletes the node with its user and every observation, or deletes only this
   radio's observation and rewrites the node (`NodeObservationEntity.reaggregate`). The loop stops
   once the window's radio no longer counts.
-- **`42bbf6d9` (T402).** Remove Them also kept a node when another stored radio was on the window's
+- **`c7f1796d` (T402).** Remove Them also kept a node when another stored radio was on the window's
   radio's network, D-18's second half.
-- **`b9801569` (T403), the owner's call.** Each radio's answer lives on its own
+- **`c9d28f4f` (T403), the owner's call.** Each radio's answer lives on its own
   `NodeObservationEntity.heardOnCurrentLora`, a new optional field:
   - it comes from the radio's node database (`recordNodeDBObservation`);
   - it's set true when the radio hears the node over LoRa (`updateAnyPacketFrom`);
@@ -37,9 +37,9 @@ since V36 (`0cf439a2`) against the files.
   window whose detail column shows the same child view type for the selected item, as
   `NodeList.detailContent` does. After the selection changed from 1 to 2, the child's body ran with
   2, but its `.task(id:)` keyed without the item didn't run again (`shown=[1]`, `bodies=[1, 1, 2]`).
-- **SwiftLint:** the 25 Swift files changed since `0cf439a2`, linted at both commits, give the same
+- **SwiftLint:** the 25 Swift files changed since `93dbe4ef`, linted at both commits, give the same
   violations (body lengths that were already over).
-- **Removed lines:** every app-code line removed since `0cf439a2` belongs to T401–T403: the claim,
+- **Removed lines:** every app-code line removed since `93dbe4ef` belongs to T401–T403: the claim,
   `HeardOnCurrentLoraAnswers`, `soleConnectedSession`, `heardOnCurrentLoraSession`, the
   several-radio clear, the manager-wide download tracking, T402's `sharesNetworkWithAnotherRadio`,
   and the views' reads of the node's own answer. Nothing else is undone.
@@ -177,7 +177,7 @@ on iPad, select a node with the marker, then one without it.
 
 - V37-1 and the minors.
 - Strings: T134 (with T400/T403's confirmation text).
-- T122: the bundle matches its sources at `b9801569`. The owner's "rebuild as the last step before
+- T122: the bundle matches its sources at `c9d28f4f`. The owner's "rebuild as the last step before
   the PR" still applies to any later doc change.
 - The device checklist (T399–T403), plus V37-1's check if fixed.
 - Committing this review.

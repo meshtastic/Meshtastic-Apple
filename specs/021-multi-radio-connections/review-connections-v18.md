@@ -1,10 +1,10 @@
 # Review V18: connections, focus and windows (feature/multi-radio)
 
-Branch `feature/multi-radio` at `af19fa29`. V17 (`review-connections-v17.md`) was at `6526fd4b`.
+Branch `feature/multi-radio` at `5d6c975b`. V17 (`review-connections-v17.md`) was at `4f07da18`.
 This round checks the two fixes since: T372 (the stand-in restore only for the user's own cancel)
 and T373 (Disconnect forgets a radio by its known number).
 
-Files read (diff since `6526fd4b`, then the code around it): `+AdditionalRadios`
+Files read (diff since `4f07da18`, then the code around it): `+AdditionalRadios`
 (`disconnectRadio`, `disconnectAdditionalRadio`, `standIn(for:)`, `restorePreferred(after:)`),
 `+RadioRemoval`, `AccessoryManager.swift` (`disconnect()`), `+RadioChoice`, `RadioWindow.swift`,
 `Connect.swift` (`disconnectFirstRadio`, `switchToDevice`), `DeviceConfig.swift`, `AppSettings.swift`,

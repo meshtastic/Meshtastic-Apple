@@ -1,11 +1,11 @@
 # Data review V15: the merge of main into feature/multi-radio
 
-Merge commit `03632328` ("Merge main into feature/multi-radio"), parents `b13061ec` (the branch)
+Merge commit `3e3d204c` ("Merge main into feature/multi-radio"), parents `8eb367a5` (the branch)
 and `c3bb355b` (`main`, docs rebuild for v2.7.23). The repo has no `develop` branch; `main` is the
 upstream. The merge base is `ed36762c`. Not pushed yet (the branch has no upstream).
 
 An earlier attempt rebased the branch onto `main` and stopped on conflicts at commit 176 of 240.
-It was aborted, so the branch went back to `b13061ec` before the merge. Nothing from the rebase
+It was aborted, so the branch went back to `8eb367a5` before the merge. Nothing from the rebase
 is left in the history.
 
 This is the data reviewer's check. The other reviewer's is `review-merge-main.md`.
@@ -19,7 +19,7 @@ Read only: no tracked file changed.
 - `protobufs` at the merge base and on the branch is `e6e1d1a9`. `main` moved it to `ad0bf31e`
   (#2551, "Bump the protobufs and hold the beacon message to 60 bytes": the beacon frequency slots
   and `ack_proof_status`). Only `main` changed it, so the merge should have taken `ad0bf31e`. It
-  records `e6e1d1a9` instead (`git show --remerge-diff 03632328 -- protobufs`).
+  records `e6e1d1a9` instead (`git show --remerge-diff 3e3d204c -- protobufs`).
 - The submodule folder on disk was still at `e6e1d1a9`, so this most likely came from staging
   everything for the merge commit, which records what's checked out.
 - The generated Swift in `MeshtasticProtobufs/` is `main`'s, generated from `ad0bf31e`, so the app
@@ -60,7 +60,7 @@ Read only: no tracked file changed.
 - The bundled docs under `Meshtastic/Resources/docs/markdown` match their sources in `docs/`.
 - No conflict markers anywhere. The changed JSON is valid. `Localizable.xcstrings` is the branch's,
   and `main` didn't change it.
-- Every conflict resolution, read in `git show --remerge-diff 03632328`:
+- Every conflict resolution, read in `git show --remerge-diff 3e3d204c`:
   - Window routing: `main`'s `SceneRouters`, `AppState.router` and `pendingRoute` are folded into
     `WindowRouters`. That means `popAllStacks()` across windows, pop-only registration for the Mesh
     Map window, and a link that arrives with no window open waiting for the first window.
@@ -82,7 +82,7 @@ Read only: no tracked file changed.
   - A radio renumber moves Heard By in every open window's filters and in the saved choice.
   - The sent-message save posts `meshMessagesDidChange` (`main`) and logs the sending radio
     (branch).
-- Mac Catalyst build at `03632328`: succeeds (own build folder, signing off; built, not run). This
+- Mac Catalyst build at `3e3d204c`: succeeds (own build folder, signing off; built, not run). This
   matters because the merge commit's test run (3,550 tests, iPhone 17 Pro simulator) doesn't
   compile the Mac-only code it touched, such as the Disconnect bar in `Connect.swift`. I didn't
   re-run the tests.

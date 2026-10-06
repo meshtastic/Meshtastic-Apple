@@ -1,10 +1,10 @@
 # Review V17: connections, focus and windows (feature/multi-radio)
 
-Branch `feature/multi-radio` at `6526fd4b`. V16 (`review-connections-v16.md`) was at `a4c6ab64`.
+Branch `feature/multi-radio` at `4f07da18`. V16 (`review-connections-v16.md`) was at `d35836a6`.
 This round checks the one fix since (T371: cancelling a radio that's connecting in the dropped
 preferred radio's place leaves the preferred radio to come back) and what it touches.
 
-Files read (diff since `a4c6ab64`, then the code around it): `+AdditionalRadios`
+Files read (diff since `d35836a6`, then the code around it): `+AdditionalRadios`
 (`connectAsFirst`, `StandInConnect`, `disconnectAdditionalRadio`), `AccessoryManager.swift`
 (`disconnect()`, `standInConnect`), `+RadioRemoval`, `+Discovery`, `+LaunchFallback`,
 `+RadioChoice` (`linkStatus`), `RadioSession.swift`, `Connect.swift` (`disconnectFirstRadio`,

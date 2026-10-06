@@ -1,6 +1,6 @@
 # Review V11: connections, focus and windows (feature/multi-radio)
 
-Branch `feature/multi-radio` at `6aa5ea48`. V10 was at `8f4569be`. A full review of the area after
+Branch `feature/multi-radio` at `d038d296`. V10 was at `904b08ce`. A full review of the area after
 D-19 (one window per radio, no app-wide focus), not only the diff.
 
 Read first: `windows.md` (W-01 to W-14), plan.md › One window per radio, tasks.md › Phase 11

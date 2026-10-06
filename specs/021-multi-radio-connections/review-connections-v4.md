@@ -1,13 +1,13 @@
 # Review V4: connections and focus (feature/multi-radio)
 
-Branch `feature/multi-radio` at `5ff31a3b`. V3 (`review-connections-v3.md`) reviewed `23d68e36`;
+Branch `feature/multi-radio` at `831df2a7`. V3 (`review-connections-v3.md`) reviewed `2957d36f`;
 this pass checks the fixes since (T190–T198) and the code they added: the restore remembering
 the radios alongside it and giving the preferred radio its focus back (`noteRestoredAlongside`,
 `restoreDisplacedPreferred`), `stopBringingBack` for a removed radio, `BackfillOwner` and the
 backfill before any other radio connects, the chunked drain, the unlock sheet's backoff and send
 errors, Your Radios leaving out connecting radios, and the recycle's retiring flag.
 
-Files read (diff since `23d68e36`, then the code around it): `AccessoryManager.swift`, `+Connect`,
+Files read (diff since `2957d36f`, then the code around it): `AccessoryManager.swift`, `+Connect`,
 `+AdditionalRadios`, `+FocusHandover`, `+RadioAttention`, `+RadioRemoval`; `BackfillOwner.swift`,
 `RadioSession.swift`; `BLETransport.swift`; `LockdownSheet.swift`, `StoredRadiosSection.swift`;
 `MeshtasticApp.swift`; in `MeshPackets` `rememberRadios`, `peripheralId(ofRadio:)`,

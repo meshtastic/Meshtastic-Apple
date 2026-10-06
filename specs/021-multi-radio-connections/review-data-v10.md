@@ -1,13 +1,13 @@
 # Review V10: data, messages and services (feature/multi-radio)
 
-Branch `feature/multi-radio` at `6aa5ea48`. A full review of the area after D-19 (one window per
+Branch `feature/multi-radio` at `d038d296`. A full review of the area after D-19 (one window per
 radio), not only the diff. I read windows.md (W-01 to W-14), plan.md › One window per radio,
 tasks.md › Phase 11 (T300–T325) and the HANDOFF.md changes first, and re-read every claim below in
 the files. The ingest and storage code (`MeshPackets*`, `Persistence/`, the SwiftData models)
-hasn't changed since `e5fd2ec1`, so V1–V9 still cover it; this round is about which radio each
+hasn't changed since `1b300de9`, so V1–V9 still cover it; this round is about which radio each
 send, save and service uses now that there's no focused radio.
 
-Tests: the full suite passes in the iOS Simulator (iPhone 17 Pro) at `6aa5ea48`: 3,483 Swift
+Tests: the full suite passes in the iOS Simulator (iPhone 17 Pro) at `d038d296`: 3,483 Swift
 Testing tests in 601 suites and 32 XCTests, started once no other `xcodebuild` was running. The
 Mac Catalyst build succeeds (own derived data, signing off; built, not run). No tracked file
 changed. None of the findings below is covered by a test.

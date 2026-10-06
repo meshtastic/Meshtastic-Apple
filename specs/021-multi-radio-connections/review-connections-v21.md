@@ -1,10 +1,10 @@
 # Review V21: quick check after the merge fixes (feature/multi-radio)
 
-Branch `feature/multi-radio` at `d6c27ea1`. V20 (`review-connections-v20.md`) checked the merge
-commit `03632328`. Since then:
-- `7f9da58d` points the protobufs submodule back at main's commit;
-- `fa48a711` checks the window's radio for the coding-rate override;
-- `d6c27ea1` records V20 and data V15.
+Branch `feature/multi-radio` at `503e2210`. V20 (`review-connections-v20.md`) checked the merge
+commit `3e3d204c`. Since then:
+- `bc10c084` points the protobufs submodule back at main's commit;
+- `e75ddbcf` checks the window's radio for the coding-rate override;
+- `503e2210` records V20 and data V15.
 
 Not pushed (no upstream). Working tree clean apart from two untracked files that aren't part of
 this (`xcodecloud/`, `research/hang-risks-2026-10-02.md`). No merge or rebase in progress.
@@ -39,8 +39,8 @@ reviewer's file, so I left it alone.
   - The generated protobuf Swift is identical to main's, and matches the pointer again (the fix
     commit says regenerating against `ad0bf31e` changes nothing).
   - No first-radio version check is left in main's new code.
-- `fa48a711` only adds `@Environment(\.windowRadio)` and swaps the one call. With one radio, or in
+- `e75ddbcf` only adds `@Environment(\.windowRadio)` and swaps the one call. With one radio, or in
   the first radio's window, `isVersionSupported(forVersion:for:)` is exactly
   `checkIsVersionSupported`, so nothing changes there.
-- `d6c27ea1` commits `review-connections-v20.md` as written, `review-data-v15.md`, T375 and T376,
+- `503e2210` commits `review-connections-v20.md` as written, `review-data-v15.md`, T375 and T376,
   and the handoff note. The tasks describe both fixes as they are in the code.

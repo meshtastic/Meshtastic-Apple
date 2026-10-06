@@ -1,7 +1,7 @@
 # Review V14: data, messages and services (feature/multi-radio)
 
-Branch `feature/multi-radio` at `ebf1a07e`. This pass re-checks the fixes for `review-data-v13.md`
-(R13-1 → T367, R13-2 → T366) and the parts of the other fixes since `29e68b26` that touch my
+Branch `feature/multi-radio` at `7796736b`. This pass re-checks the fixes for `review-data-v13.md`
+(R13-1 → T367, R13-2 → T366) and the parts of the other fixes since `af926ebe` that touch my
 area. T368 has the other radios' prompts take turns too. T364 stops every radio coming back
 before Clear App Data or a restore. T363 ends reconnect loops. I read the tasks.md and HANDOFF.md
 changes first and re-read every claim below in the files. Nothing else in my area changed.

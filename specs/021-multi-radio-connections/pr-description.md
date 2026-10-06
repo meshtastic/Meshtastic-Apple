@@ -36,7 +36,7 @@ The app can stay connected to up to four radios at once, over any mix of BLE, TC
   - Removing the only radio is Clear App Data, as on `main`.
 
 ### Also in this branch
-- `15baebb0` Keep every stored field when restoring a radio's backup (a fix to `main`'s restore importer, with tests).
+- `183de839` Keep every stored field when restoring a radio's backup (a fix to `main`'s restore importer, with tests).
 - The string catalog is synced with the source: the feature's new strings, plus the drift since the last sync. No translation is lost.
 - User and developer docs are updated (Bluetooth, Messages, Nodes, Map, Settings, MQTT, CarPlay, TAK, Watch, Lock-down, What's New; architecture, transport, SwiftData, CarPlay, deep links, LoRa region presets). The bundled HTML is rebuilt.
 

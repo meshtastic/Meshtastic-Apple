@@ -1,12 +1,12 @@
 # Review V14: connections, focus and windows (feature/multi-radio)
 
-Branch `feature/multi-radio` at `29e68b26`. V13 (`review-connections-v13.md`) was at `049c59d4`.
+Branch `feature/multi-radio` at `af926ebe`. V13 (`review-connections-v13.md`) was at `fb719385`.
 This round checks the fixes since (T360–T362) and what they touch:
 - a radio alongside that drops with no other radio left comes back as the first radio (T360);
 - Remove This Radio on the first radio hands the preferred radio on (T361);
 - a Choose Radios sheet that never came up doesn't hold the others back (T362).
 
-Files read (diff since `049c59d4`, then the code around it): `+AdditionalRadios`, `+Connect`,
+Files read (diff since `fb719385`, then the code around it): `+AdditionalRadios`, `+Connect`,
 `+Discovery`, `+RadioRemoval`, `+LaunchFallback`, `+RadioAttention`, `+FromRadio`,
 `+RadioChoice`, `AccessoryManager.swift`, `RadioWindow.swift`, `BLETransport`, `TCPTransport`,
 `SerialTransport`, `Connect.swift`, `AppSettings.swift` (Clear App Data), `BackupManagement.swift`,

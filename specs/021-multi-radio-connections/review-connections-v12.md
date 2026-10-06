@@ -1,6 +1,6 @@
 # Review V12: connections, focus and windows (feature/multi-radio)
 
-Branch `feature/multi-radio` at `1ede1bbe`. V11 (`review-connections-v11.md`) was at `6aa5ea48`.
+Branch `feature/multi-radio` at `cf26aa79`. V11 (`review-connections-v11.md`) was at `d038d296`.
 This round checks the fixes since (T330–T342) and what they touch:
 - window sends through their radio (`sendingRadio(for:)`, `viaRadio:` on the senders);
 - the ESP32 update's release and reclaim;
@@ -11,7 +11,7 @@ This round checks the fixes since (T330–T342) and what they touch:
 - W-15 (a required radio for each service in use, `knownRadios`, the choice sheet);
 - the renames of T341.
 
-Files read (diff since `6aa5ea48`, then the code around it): `+AdditionalRadios`, `+Connect`,
+Files read (diff since `d038d296`, then the code around it): `+AdditionalRadios`, `+Connect`,
 `AccessoryManager.swift`, `+RadioAttention`, `+ServiceRadios`, `RadioWindow.swift`,
 `WindowRouters.swift`, `RadioWindowViews.swift`, `ContentView.swift`, `Connect.swift`,
 `LockdownSheet.swift`, `ServiceRadioPickers.swift`, the ESP32 OTA sheets, `DiscoveryScanEngine`

@@ -1,6 +1,6 @@
 # Review V9: data, messages and services (feature/multi-radio)
 
-Branch `feature/multi-radio` at `e5fd2ec1`. Since `e87e884e` the commits are: the connection fix
+Branch `feature/multi-radio` at `1b300de9`. Since `e1f27349` the commits are: the connection fix
 J1 (a focused connect without a handshake, a BLE restore iOS kept connected, is now recorded as
 the preferred radio; `AccessoryManager+Connect.swift`, `PreferredRadio.swift`,
 `BLETransport.swift`), a test-only fix for the backup merge tests (`BackupMergeTests.settle`),
@@ -8,7 +8,7 @@ and notes for review-data-v8's R8-1 (under T132) and the connection review's edg
 gotchas). Nothing in the data, message or service code changed. I read the HANDOFF.md and
 tasks.md changes and the code diff.
 
-Tests: the full suite passes in the iOS Simulator (iPhone 17 Pro) at `e5fd2ec1`: 3,477 Swift
+Tests: the full suite passes in the iOS Simulator (iPhone 17 Pro) at `1b300de9`: 3,477 Swift
 Testing tests in 599 suites and 29 XCTests. I started it only once no other `xcodebuild` was
 running, and ran it once. No tracked file changed.
 

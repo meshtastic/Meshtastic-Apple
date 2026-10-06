@@ -1,10 +1,10 @@
 # Review V16: connections, focus and windows (feature/multi-radio)
 
-Branch `feature/multi-radio` at `a4c6ab64`. V15 (`review-connections-v15.md`) was at `ebf1a07e`.
+Branch `feature/multi-radio` at `d35836a6`. V15 (`review-connections-v15.md`) was at `7796736b`.
 This round checks the one fix since (T370: Remove cancels a connect of the radio as the first
 radio) and what it touches.
 
-Files read (diff since `ebf1a07e`, then the code around it): `+RadioRemoval`, `+AdditionalRadios`,
+Files read (diff since `7796736b`, then the code around it): `+RadioRemoval`, `+AdditionalRadios`,
 `+Connect`, `+Discovery`, `+LaunchFallback`, `AccessoryManager.swift` (`disconnect()`),
 `RadioWindow.swift`, `Connect.swift` (`disconnectFirstRadio`), `StoredRadiosSection.swift`,
 `DeviceConfig.swift`, and the new test.

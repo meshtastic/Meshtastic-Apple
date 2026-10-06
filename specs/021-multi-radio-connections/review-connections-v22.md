@@ -1,7 +1,7 @@
 # Review V22: a channel's history across preset and channel changes (T377–T380)
 
-Branch `feature/multi-radio` at `2c173885`. This reviews `9efd65fa` ("Keep a channel's history
-across preset and channel changes", T377–T379) and `2c173885` (snapshot and docs, T380): what
+Branch `feature/multi-radio` at `4efc1c74`. This reviews `ced7aa3b` ("Keep a channel's history
+across preset and channel changes", T377–T379) and `4efc1c74` (snapshot and docs, T380): what
 happens to a radio's conversations when it moves from LongFast to LongTurbo, or changes region,
 frequency, channel name or key.
 
