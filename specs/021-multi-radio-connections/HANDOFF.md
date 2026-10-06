@@ -18,8 +18,10 @@ Read this first if you are picking the work up. Update it in the same commit as 
 
 ## Current state
 
-- Branch `feature/multi-radio`, based on `origin/main` `ed36762c` (2026-09-25), with `main` up to
-  `c3bb355b` (v2.7.23) merged in on 2026-10-02 (`03632328`). Not pushed; the owner pushes.
+- Branch `feature/multi-radio`, based on `origin/main` `ed36762c` (2026-09-25), with `main` merged
+  in up to `c3bb355b` (v2.7.23) on 2026-10-02 (`03632328`) and up to `8425daa6` on 2026-10-05
+  (T398). Pushed to the owner's fork (`fork`, `ChDel/Meshtastic-Apple`) on 2026-10-06, at the
+  owner's request, for the pull request.
 - Commits below the feature work, carried into the branch:
   - `15baebb0` Keep every stored field when restoring a radio's backup (fix + tests)
   - `67fba963` Sync the string catalog with the current source
@@ -134,7 +136,8 @@ Read this first if you are picking the work up. Update it in the same commit as 
   (T403, which undid T402; D-18 in spec.md). It stops when the window's radio goes. Delete Node
   is unchanged (T146). Reviews V35, V36 and V37 (`review-connections-v35.md` to `-v37.md`),
   checked in the files; all held and are fixed (T399, T401, T404). V37-1: node detail on iPad
-  and the Mac looks the marker up again when another node is selected.
+  and the Mac looks the marker up again when another node is selected. Review V38
+  (`review-connections-v38.md`) of T404 found nothing new (T405).
 - Merge of `main` (2026-10-02): merge commit `03632328` brought in `main`'s 11 commits up to
   `c3bb355b` (v2.7.23); `backup/multi-radio-pre-rebase` keeps the branch as it was before
   (`b13061ec`). Review V20 and data V15 (`review-connections-v20.md` M1–M2, `review-data-v15.md`
