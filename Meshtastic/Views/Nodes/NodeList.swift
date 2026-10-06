@@ -119,6 +119,7 @@ struct NodeList: View {
 			}
 		}
 		.refreshesHeardBy(filters)
+		.refreshesUnheardOnCurrentLora(filters)
 		.onAppear {
 			filters.fallbackLocation = connectedNode?.latestPosition?.nodeCoordinate
 		}
@@ -148,7 +149,8 @@ struct NodeList: View {
 			nodeForDisplayNameEdit: $nodeForDisplayNameEdit,
 			nodeForStatusMessageEdit: $nodeForStatusMessageEdit,
 			nodeListDensity: $nodeListDensity,
-			selectedNodeNum: $router.selectedNodeNum
+			selectedNodeNum: $router.selectedNodeNum,
+			unheardOnCurrentLora: filters.unheardOnCurrentLoraNodeNums
 		)
 		.sheet(isPresented: $isEditingFilters) {
 			NodeListFilter(
@@ -309,6 +311,8 @@ private struct FilteredNodeList: View {
 	@Binding var nodeListDensity: NodeListDensity
 	@Binding var selectedNodeNum: Int64?
 	var filters: NodeFilterParameters
+	/// The window's radio's unheard nodes, passed by value so the rows redraw when they change.
+	var unheardOnCurrentLora: Set<Int64>
 
 	init(
 		withFilters: NodeFilterParameters,
@@ -319,9 +323,11 @@ private struct FilteredNodeList: View {
 		nodeForDisplayNameEdit: Binding<NodeInfoEntity?>,
 		nodeForStatusMessageEdit: Binding<NodeInfoEntity?>,
 		nodeListDensity: Binding<NodeListDensity>,
-		selectedNodeNum: Binding<Int64?>
+		selectedNodeNum: Binding<Int64?>,
+		unheardOnCurrentLora: Set<Int64> = []
 	) {
 		self.filters = withFilters
+		self.unheardOnCurrentLora = unheardOnCurrentLora
 		self.connectedNode = connectedNode
 		self._isPresentingDeleteNodeAlert = isPresentingDeleteNodeAlert
 		self._deleteNodeId = deleteNodeId
@@ -441,12 +447,14 @@ private struct FilteredNodeList: View {
 						NodeListItemCompact(
 							node: entry.node,
 							isDirectlyConnected: entry.id == accessoryManager.nodeNum(for: windowRadio),
-							connectedNode: accessoryManager.session(for: windowRadio)?.device.num ?? -1)
+							connectedNode: accessoryManager.session(for: windowRadio)?.device.num ?? -1,
+							unheardOnCurrentLora: unheardOnCurrentLora.contains(entry.id))
 					case .standard:
 						NodeListItem(
 							node: entry.node,
 							isDirectlyConnected: entry.id == accessoryManager.nodeNum(for: windowRadio),
-							connectedNode: accessoryManager.session(for: windowRadio)?.device.num ?? -1
+							connectedNode: accessoryManager.session(for: windowRadio)?.device.num ?? -1,
+							unheardOnCurrentLora: unheardOnCurrentLora.contains(entry.id)
 						)
 					}
 				}
@@ -702,7 +710,7 @@ fileprivate extension NodeFilterParameters {
 			if lastHeard < threshold { return false }
 		}
 
-		if hidesUnheardOnCurrentLora && node.isUnheardOnCurrentLora { return false }
+		if hidesUnheardOnCurrentLora && isUnheardOnCurrentLora(node.num) { return false }
 
 		// Signed filter
 		if isSigned {

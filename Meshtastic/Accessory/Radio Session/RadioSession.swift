@@ -82,6 +82,26 @@ final class RadioSession: Identifiable {
 	/// The region → legal preset map it advertised in the config handshake (2.8+).
 	var loRaRegionPresets: [Config.LoRaConfig.RegionCode: RegionPresetInfo] = [:]
 
+	// MARK: - Node database downloads (feature 021)
+
+	// Each radio's dump answers heard-on-current-LoRa for its own observations, so each
+	// connection tracks its own downloads. `AccessoryManager.nodeDatabaseSavedAt` publishes
+	// when one is saved.
+
+	/// Bumped on each node database request, so a save finishing late for an earlier request
+	/// doesn't report the new one as saved.
+	var nodeDatabaseSaveGeneration = 0
+	/// Node numbers in the node database download in progress. When it completes, nodes the radio
+	/// left out are marked unknown for heard-on-current-LoRa: the radio no longer has them.
+	var nodeDatabaseDumpNums: Set<Int64> = []
+	var nodeDatabaseDumpInProgress = false
+	/// The LoRa change the node database download in progress was asked for, or nil when it was
+	/// asked for by something else (the connect).
+	var nodeDatabaseRequestLoRaChange: Int?
+	/// Whether the node database asked for after the latest app-initiated LoRa change is saved
+	/// (`AccessoryManager.updateLoRaChangeTracker`).
+	var loraChangeTracker = LoRaChangeNodeDatabaseTracker()
+
 	// MARK: - Services (T100, T071c)
 
 	/// Its MQTT client proxy, when its config asks for one.

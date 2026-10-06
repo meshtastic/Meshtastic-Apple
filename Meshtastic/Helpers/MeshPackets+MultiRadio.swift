@@ -362,8 +362,9 @@ extension MeshPackets {
 
 	/// Mirrors a radio's node-DB entry into that radio's observation, after `nodeInfoPacket` has
 	/// written the node directly. With other radios observing the node too, the node then takes
-	/// their aggregate instead.
-	func recordNodeDBObservation(_ nodeInfo: NodeInfo, node: NodeInfoEntity, radioNum: Int64?) {
+	/// their aggregate instead. Its heard-on-current-LoRa answer stays the radio's own: each
+	/// radio answers for its own settings.
+	func recordNodeDBObservation(_ nodeInfo: NodeInfo, node: NodeInfoEntity, radioNum: Int64?, reportsHeardOnCurrentLora: Bool = false) {
 		guard let radioNum, radioNum != 0, node.num != radioNum else { return }
 		do {
 			let existing = try observations(ofNode: node.num, radioNum: radioNum)
@@ -381,6 +382,12 @@ extension MeshPackets {
 			observation.favorite = nodeInfo.isFavorite
 			observation.ignored = nodeInfo.isIgnored
 			observation.isKeyManuallyVerified = nodeInfo.isKeyManuallyVerified
+			// Nil unless the radio sends the field, as on the node (`MeshPackets.heardOnCurrentLora`).
+			let answer: Bool? = reportsHeardOnCurrentLora ? nodeInfo.heardOnCurrentLora : nil
+			if observation.heardOnCurrentLora != answer {
+				observation.heardOnCurrentLora = answer
+				noteHeardOnCurrentLoraChange()
+			}
 			let all = existing.contains { $0 === observation } ? existing : existing + [observation]
 			if all.count > 1 {
 				NodeObservationEntity.applyAggregate(all, to: node, firstRadio: PreferredRadio.nodeNum)

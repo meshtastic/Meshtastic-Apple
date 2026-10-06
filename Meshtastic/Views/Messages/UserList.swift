@@ -25,6 +25,7 @@ struct UserList: View {
 		VStack {
 			FilteredUserList(withFilters: filters, node: $node, userSelection: $userSelection)
 			.refreshesHeardBy(filters)
+			.refreshesUnheardOnCurrentLora(filters)
 			.sheet(isPresented: $editingFilters) {
 				NodeListFilter(filterTitle: "Contact Filters", showsEncryptedFilter: false, filters: filters)
 			}
@@ -468,7 +469,7 @@ fileprivate extension NodeFilterParameters {
 			}
 			if lastHeard < onlineThreshold { return false }
 		}
-		if hidesUnheardOnCurrentLora && user.userNode?.isUnheardOnCurrentLora == true { return false }
+		if hidesUnheardOnCurrentLora && isUnheardOnCurrentLora(user.num) { return false }
 		// Favorites
 		if isFavorite {
 			if user.userNode?.favorite != true { return false }

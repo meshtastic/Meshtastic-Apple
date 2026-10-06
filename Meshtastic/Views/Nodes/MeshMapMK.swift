@@ -778,6 +778,7 @@ struct MeshMapMK: View {
 	private var mapWithDataHooks: some View {
 		mapNavigation
 			.refreshesHeardBy(filters)
+			.refreshesUnheardOnCurrentLora(filters)
 			.task(id: isMapVisible) {
 				// Throttled position refresh: re-derive the visible positions on a gentle
 				// cadence instead of on every SwiftData write (see `allLatestPositions`).
@@ -968,6 +969,9 @@ struct MeshMapMK: View {
 		combine(&key, stableStringKey(filters.searchText.lowercased()))
 		combine(&key, filters.isOnline ? 1 : 0)
 		combine(&key, filters.hidesUnheardOnCurrentLora ? 1 : 0)
+		if filters.hidesUnheardOnCurrentLora {
+			combine(&key, Int64(filters.unheardOnCurrentLoraNodeNums.hashValue))
+		}
 		combine(&key, filters.isSigned ? 1 : 0)
 		combine(&key, filters.isPkiEncrypted ? 1 : 0)
 		combine(&key, filters.isFavorite ? 1 : 0)
@@ -1029,7 +1033,8 @@ struct MeshMapMK: View {
 				NodeListItem(
 					node: node,
 					isDirectlyConnected: snapshot.nodeNum == accessoryManager.nodeNum(for: windowRadio),
-					connectedNode: accessoryManager.session(for: windowRadio)?.device.num ?? -1
+					connectedNode: accessoryManager.session(for: windowRadio)?.device.num ?? -1,
+					unheardOnCurrentLora: filters.isUnheardOnCurrentLora(snapshot.nodeNum)
 				)
 			} else {
 				Text(snapshot.longName)

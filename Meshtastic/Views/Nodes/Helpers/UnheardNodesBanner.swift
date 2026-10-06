@@ -109,6 +109,9 @@ struct UnheardNodesBanner: View {
 	/// Another of the user's radios has nodes in the app, so Remove Them keeps the ones it heard
 	/// (D-18) and the confirmation says so.
 	@State private var otherRadiosKeepNodes = false
+	/// The window's radio's answers, by node (feature 021: each radio answers for its own
+	/// settings, so a node another radio still hears isn't counted here).
+	@State private var answers: [Int64: RadioLoraAnswers.Answer] = [:]
 
 	/// Resolved here rather than passed in. A parent that only builds this view once a radio is
 	/// connected has to be re-evaluated when one arrives, and inside a `safeAreaInset` that
@@ -144,7 +147,7 @@ struct UnheardNodesBanner: View {
 	/// One aggregate when most of the list is unheard; the rows carry the marker otherwise.
 	private func shouldOffer(connectedNodeNum: Int64) -> Bool {
 		accessoryManager.reportsHeardOnCurrentLora(forRadio: connectedNodeNum)
-			&& !accessoryManager.awaitingNodeDatabaseAfterLoRaChange
+			&& !accessoryManager.radiosAwaitingNodeDatabaseAfterLoRaChange.contains(connectedNodeNum)
 			&& UnheardOnCurrentLoraOffer.isMostOfList(unheard: reportedUnheardCount, reported: radioNodeCount)
 			&& UnheardOnCurrentLoraOffer.shouldOffer(count: unheardNodes.count, forNode: connectedNodeNum)
 	}
@@ -226,7 +229,7 @@ struct UnheardNodesBanner: View {
 			}
 		} message: {
 			if otherRadiosKeepNodes {
-				Text("They are removed from this radio if it still has them, and from this app unless another of your radios has heard them or is on the same mesh. Any that are still out there come back when they are next heard.")
+				Text("They are removed from this radio if it still has them, and from this app unless another of your radios has heard them. Any that are still out there come back when they are next heard.")
 			} else {
 				Text("They are removed from this app, and from the radio if it still has them. Any that are still out there come back when they are next heard.")
 			}
@@ -236,12 +239,12 @@ struct UnheardNodesBanner: View {
 	/// A node the radio no longer has: it sends the field, a node database has been saved this
 	/// session (so absent nodes have been marked), and it gave no answer for this node. The radio
 	/// adds every node it hears, so it has not heard these on its current settings either.
-	private func isAppOnly(_ node: NodeInfoEntity) -> Bool {
-		accessoryManager.nodeDatabaseSavedAt != nil && node.heardOnCurrentLora == nil && !node.viaMqtt
+	private func isAppOnly(_ node: NodeInfoEntity, radioNum: Int64, answer: RadioLoraAnswers.Answer?) -> Bool {
+		accessoryManager.nodeDatabaseSavedAt[radioNum] != nil && answer?.heard == nil && !(answer?.viaMqtt ?? node.viaMqtt)
 	}
 
-	private func isRemovable(_ node: NodeInfoEntity) -> Bool {
-		node.isUnheardOnCurrentLora || isAppOnly(node)
+	private func isRemovable(_ node: NodeInfoEntity, radioNum: Int64, answer: RadioLoraAnswers.Answer?) -> Bool {
+		(answer?.isUnheard ?? false) || isAppOnly(node, radioNum: radioNum, answer: answer)
 	}
 
 	/// Nodes the radio reports unheard on its current settings, plus nodes only the app still has,
@@ -255,17 +258,18 @@ struct UnheardNodesBanner: View {
 		do {
 			candidates = try UnheardNodesRemoval.candidates(forRadio: connectedNodeNum, in: context)
 			otherRadiosKeepNodes = try UnheardNodesRemoval.hasOtherRadios(than: connectedNodeNum, in: context)
+			answers = RadioLoraAnswers.answers(ofRadio: connectedNodeNum, container: context.container)
 		} catch {
 			Logger.data.error("Could not read nodes not heard on the current LoRa settings: \(error.localizedDescription, privacy: .public)")
 			unheardNodes = []
 			return
 		}
-		radioNodeCount = candidates.filter { !$0.viaMqtt && $0.heardOnCurrentLora != nil }.count
-		reportedUnheardCount = candidates.filter(\.isUnheardOnCurrentLora).count
-		unheardNodes = candidates.filter(isRemovable)
+		radioNodeCount = candidates.filter { answers[$0.num].map { !$0.viaMqtt && $0.heard != nil } ?? false }.count
+		reportedUnheardCount = candidates.filter { answers[$0.num]?.isUnheard ?? false }.count
+		unheardNodes = candidates.filter { isRemovable($0, radioNum: connectedNodeNum, answer: answers[$0.num]) }
 		// Only once this session's node database is saved: before that, nodes the radio no longer
 		// has aren't counted yet, and a low early count would bring the offer back after every launch.
-		if accessoryManager.nodeDatabaseSavedAt != nil {
+		if accessoryManager.nodeDatabaseSavedAt[connectedNodeNum] != nil {
 			UnheardOnCurrentLoraOffer.lowerDismissal(toCount: unheardNodes.count, forNode: connectedNodeNum)
 		}
 	}
@@ -283,21 +287,23 @@ struct UnheardNodesBanner: View {
 
 		let nodes = unheardNodes
 		for (index, node) in nodes.enumerated() {
-			// Each node waits for the radio, so the loop can take a while. A second radio connecting,
-			// or this one going, ends what its answers stood for (review V36-1).
+			// Each node waits for the radio, so the loop can take a while. The radio going ends it
+			// (review V36-1).
 			guard accessoryManager.reportsHeardOnCurrentLora(forRadio: connectedNodeNum) else {
 				failed += nodes.count - index
-				Logger.data.info("Stopped removing unheard nodes: the answers of \(connectedNodeNum.toHex(), privacy: .public) are no longer kept")
+				Logger.data.info("Stopped removing unheard nodes: \(connectedNodeNum.toHex(), privacy: .public) is no longer connected")
 				break
 			}
-			guard isRemovable(node) else {
+			let nodeNum = node.num
+			// Its answer as saved now, not as counted: it may have been heard since.
+			let answer = RadioLoraAnswers.answer(of: nodeNum, radioNum: connectedNodeNum, container: context.container)
+			guard isRemovable(node, radioNum: connectedNodeNum, answer: answer) else {
 				recovered += 1
 				continue
 			}
-			let nodeNum = node.num
 			do {
 				// A node only the app has: the radio doesn't have it, so there is nothing to remove there.
-				if !isAppOnly(node) {
+				if !isAppOnly(node, radioNum: connectedNodeNum, answer: answer) {
 					try await accessoryManager.sendRemoveNode(nodeNum, toRadio: connectedNodeNum)
 				}
 				// On the packet actor, from the observations as they are now; a node another radio

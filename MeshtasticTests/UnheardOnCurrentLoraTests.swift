@@ -161,8 +161,12 @@ struct UnheardOnCurrentLoraTests {
 		let filters = NodeFilterParameters(store: store)
 
 		let unheard = NodeInfoEntity()
+		unheard.num = 1
 		unheard.heardOnCurrentLora = false
 		let unknown = NodeInfoEntity()
+		unknown.num = 2
+		// The window's radio's answers (feature 021), as `UnheardOnCurrentLoraRefresh` looks them up.
+		filters.setUnheardOnCurrentLoraNodeNums([unheard.num])
 
 		#expect(filters.matches(unheard))
 		filters.hidesUnheardOnCurrentLora = true

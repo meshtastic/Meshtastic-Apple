@@ -40,6 +40,11 @@ final class NodeObservationEntity {
 	/// Remote-admin session with this node, held by the observing radio.
 	var sessionPasskey: Data?
 	var sessionExpiration: Date?
+	/// The observing radio's NodeInfo.heard_on_current_lora (firmware 2.8.1+): whether it has
+	/// heard the node on its current LoRa settings. Nil when it doesn't send the field or no
+	/// longer has the node. Each radio answers for its own settings, so this isn't aggregated:
+	/// a window shows its radio's (`NodeInfoEntity.heardOnCurrentLora` is `main`'s one-radio copy).
+	var heardOnCurrentLora: Bool?
 
 	init() {}
 

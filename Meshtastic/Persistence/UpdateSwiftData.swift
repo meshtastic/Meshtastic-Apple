@@ -304,11 +304,14 @@ extension MeshPackets {
 					observation.hopsAway = Int32(truncatingIfNeeded: packet.hopStart - packet.hopLimit)
 				}
 				let allObservations = observations.contains { $0 === observation } ? observations : observations + [observation]
-				// Heard over RF just now, so heard on the current settings (see below). The answer
-				// isn't per radio, so it's set on the aggregated path too: otherwise a node several
-				// radios observed keeps its marker until the next download, and Remove Them's
-				// re-check doesn't see it was heard (review V35).
+				// Heard over RF just now, so heard on the current settings (see below). On the
+				// receiving radio's observation, which is what its window shows (feature 021), and on
+				// the node as on `main`, the aggregated path included.
 				let heardOnCurrentLoraNow = reportsHeardOnCurrentLora && !isImplicitAck && !packet.viaMqtt && packet.hasRxRssi
+				if heardOnCurrentLoraNow, observation.heardOnCurrentLora != true {
+					observation.heardOnCurrentLora = true
+					noteHeardOnCurrentLoraChange()
+				}
 				if allObservations.count > 1 {
 					NodeObservationEntity.applyAggregate(allObservations, to: node, firstRadio: PreferredRadio.nodeNum)
 					if heardOnCurrentLoraNow {

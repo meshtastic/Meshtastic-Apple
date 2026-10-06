@@ -135,8 +135,9 @@ Read this first if you are picking the work up. Update it in the same commit as 
   stays in the app, and only the window's radio drops it. Delete Node is unchanged (T146).
   Review V36 (`review-connections-v36.md`): V36-1 held and is fixed (T401). Remove Them's app
   side runs on the packet actor (`MeshPackets.removeUnheardNode`), from the observations as
-  they are now, and stops when the window's radio's answers are no longer kept.
-  T402: it also keeps every node when another radio is on the same network (D-18).
+  they are now, and stops when the window's radio goes.
+  T403 (owner's call, 2026-10-05): each radio's answers are kept on its own observations, and
+  each window shows its radio's; the one-radio claim (T399) and T402's same-network keep are gone.
 - Merge of `main` (2026-10-02): merge commit `03632328` brought in `main`'s 11 commits up to
   `c3bb355b` (v2.7.23); `backup/multi-radio-pre-rebase` keeps the branch as it was before
   (`b13061ec`). Review V20 and data V15 (`review-connections-v20.md` M1–M2, `review-data-v15.md`
@@ -469,12 +470,10 @@ describes it well enough to rebuild.
 - Commit messages: write each to a new, unique file (`/tmp/mr-<topic>.txt`). `create_file`
   refuses to overwrite, and an old `/tmp/msgN.txt` from an earlier session once went into a
   commit unnoticed (fixed with `--amend`). Check `git log -1` after every commit.
-- Heard on current LoRa (`main` #2575, T398, T399): the answers on the node rows are one radio's,
-  recorded in `HeardOnCurrentLoraAnswers`. Anything that stores them goes through
-  `claimHeardOnCurrentLora(for:)` first, or passes `reportsHeardOnCurrentLora(on:)`, which needs the
-  claim. Known and left: a restore from Settings › Backups brings the backup's answers in
-  without changing whose they're recorded as; a radio connecting alone that isn't the recorded
-  one clears them anyway.
+- Heard on current LoRa (`main` #2575, T403): each radio's answers are on its own
+  `NodeObservationEntity.heardOnCurrentLora`; `NodeInfoEntity.heardOnCurrentLora` is still
+  written as on `main`, but nothing shows it. Views read the window's radio's answers through
+  `RadioLoraAnswers` (a fresh context). Node database downloads are tracked per `RadioSession`.
 - Lock-down on a radio that isn't focused (`AccessoryManager+RadioAttention.swift`) is untested on
   real lock-down firmware. Since T073 a locked or outdated radio stays connected with a
   `RadioAttention` and a prompt naming it; nothing turns it away. What the code can't tell: whether
@@ -598,14 +597,10 @@ describes it well enough to rebuild.
 - [ ] App Settings › TAK / CarPlay & Siri / Apple Watch: pick B. TAK CoT goes out from B (log
   `📻 [B] Sending TAKPacket…`); a Shortcuts "Send a Group Message" without a radio goes via B;
   with B's node number while B is off, it fails. Reply to a notification from B: the reply goes via B.
-- [ ] Heard on current LoRa (T398, review V35), radios on firmware 2.8.1 or later. A alone after a
-  preset change: the notice counts only nodes A has heard; B's own node and a node only B has
-  heard aren't offered, and stay after Remove Them. A node both heard that A reports unheard is
-  offered, and after Remove Them it's still in the app, with only B under Heard By (T400).
-  Disconnect A and connect B alone: A's
-  markers go as soon as B connects, and B's come with its node list. Connect A alongside B:
-  every marker goes, on nodes only a third radio heard too, and comes back for the radio left
-  on its own once it sends its node list again (a reconnect, or a LoRa change in its window).
-  With A alone and many unheard nodes, connect B while Remove Them runs: it stops (log
-  `Stopped removing unheard nodes`), and the nodes it hadn't reached stay (V36-1).
-  With B stored on A's mesh, Remove Them on A keeps the nodes only A heard in the app (T402).
+- [ ] Heard on current LoRa (T403), radios on firmware 2.8.1 or later. A and B on LongFast, both
+  connected; move A to LongTurbo in A's window. A's list marks the nodes A no longer hears and
+  A's notice offers them; B's list doesn't mark them. Remove Them in A's window: the nodes B has
+  stay, with only B under Heard By. Move B to LongTurbo: B's window marks and offers them, and
+  Remove Them there deletes them from the app. B's own node and nodes only B heard are never
+  offered in A's window. With many unheard nodes, disconnect A while Remove Them runs: it stops
+  (log `Stopped removing unheard nodes`), and the nodes it hadn't reached stay (V36-1).

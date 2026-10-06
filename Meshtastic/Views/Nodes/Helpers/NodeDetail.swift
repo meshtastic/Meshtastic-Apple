@@ -128,6 +128,14 @@ struct NodeDetail: View {
 		return node.hasBeenAdministered && node.firmwareSupportsStatusMessage
 	}
 	@State var showingCompassSheet = false
+	/// The window's radio reports the node not heard on its current LoRa settings (feature 021:
+	/// each radio answers for its own).
+	@State private var isUnheardOnCurrentLora = false
+
+	private func refreshUnheardOnCurrentLora() {
+		let radioNum = accessoryManager.answeringRadioNum(for: windowRadio)
+		isUnheardOnCurrentLora = RadioLoraAnswers.answer(of: nodeNum, radioNum: radioNum, container: context.container)?.isUnheard ?? false
+	}
 	@State private var nodeForDisplayNameEdit: NodeInfoEntity?
 	@State private var nodeForStatusMessageEdit: NodeInfoEntity?
 	/// Bumped whenever a local display name is set/cleared to force this view to re-render —
@@ -167,6 +175,12 @@ struct NodeDetail: View {
 					}
 						.onChange(of: node.lastHeard) {
 							refreshNodeSummary()
+						}
+						.task(id: accessoryManager.radioLoraAnswersKey(for: windowRadio)) {
+							refreshUnheardOnCurrentLora()
+						}
+						.onReceive(NotificationCenter.default.publisher(for: .heardOnCurrentLoraDidChange)) { _ in
+							refreshUnheardOnCurrentLora()
 						}
 						.onReceive(NotificationCenter.default.publisher(for: .nodeLogAvailabilityDidChange)) { notification in
 							guard notification.object as? Int64 == nodeNum else { return }
@@ -521,7 +535,7 @@ struct NodeDetail: View {
 					dateFormatRelative.toggle()
 				}
 			}
-			if node.isUnheardOnCurrentLora {
+			if isUnheardOnCurrentLora {
 				Label {
 					Text(UnheardOnCurrentLora.label)
 				} icon: {

@@ -319,9 +319,6 @@ extension AccessoryManager {
 						// handling rather than being dropped as a stale connection's.
 						self.additionalRadios[device.id] = session
 					}
-					// With another radio connected, neither one's heard-on-current-LoRa answers stand
-					// for the shared node rows (main's #2575 assumes one radio).
-					self.clearHeardOnCurrentLoraForSeveralRadios()
 					// The mesh-traffic monitor (map flyover gate) self-starts its decay timer on the
 					// first inbound packet and is cleared by Step 0's closeConnection() reset(), so
 					// there's no explicit start to make here — it stays correct across connect retries.

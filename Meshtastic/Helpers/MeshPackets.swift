@@ -489,6 +489,21 @@ actor MeshPackets {
 		}
 	}
 
+	/// Set when a radio's heard-on-current-LoRa answer on one of its observations changes; posted
+	/// as `heardOnCurrentLoraDidChange` after the save, so a lookup from another context sees it.
+	private var pendingHeardOnCurrentLoraChange = false
+
+	func noteHeardOnCurrentLoraChange() {
+		pendingHeardOnCurrentLoraChange = true
+	}
+
+	func postHeardOnCurrentLoraChange() {
+		pendingHeardOnCurrentLoraChange = false
+		Task { @MainActor in
+			NotificationCenter.default.post(name: .heardOnCurrentLoraDidChange, object: nil)
+		}
+	}
+
 	func savePendingChanges(caller: String = #function) {
 		guard !invalidated else {
 			Logger.data.warning("💾 [\(caller, privacy: .public)] Dropped save on retired MeshPackets instance")
@@ -509,6 +524,9 @@ actor MeshPackets {
 			if pendingMessageChange {
 				pendingMessageChange = false
 				postMessageChange()
+			}
+			if pendingHeardOnCurrentLoraChange {
+				postHeardOnCurrentLoraChange()
 			}
 		} catch {
 			Logger.data.error("💥 [\(caller, privacy: .public)] Error saving: \(error.localizedDescription, privacy: .public)")
@@ -1162,28 +1180,20 @@ actor MeshPackets {
 		}
 	}
 
-	/// Puts every stored heard-on-current-LoRa answer back to unknown (feature 021). They're one
-	/// radio's: once a second radio connects, or another radio is next connected on its own, they
-	/// don't stand for what's connected, whichever nodes they're on (review V35-2).
-	func clearHeardOnCurrentLora() {
-		// Saved first: the fetch only sees answers already in the store.
-		savePendingChanges()
-		let descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.heardOnCurrentLora != nil })
-		guard let nodes = try? modelContext.fetch(descriptor), !nodes.isEmpty else { return }
-		for node in nodes {
-			node.heardOnCurrentLora = nil
-		}
-		savePendingChanges()
-	}
-
 	/// After a full node database download: nodes the radio did not include are ones it no longer
 	/// has, so it has no answer for them. Their stored heard-on-current-LoRa goes back to unknown,
-	/// rather than keeping an answer from an earlier download.
-	func markAbsentFromRadio(presentNums: Set<Int64>) {
+	/// rather than keeping an answer from an earlier download. On the node rows, as on `main`, and
+	/// on radio `radioNum`'s observations, which are what its window shows (feature 021).
+	func markAbsentFromRadio(presentNums: Set<Int64>, radioNum: Int64? = nil) {
 		let descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.heardOnCurrentLora != nil })
-		guard let nodes = try? modelContext.fetch(descriptor) else { return }
-		for node in nodes where !presentNums.contains(node.num) {
+		for node in (try? modelContext.fetch(descriptor)) ?? [] where !presentNums.contains(node.num) {
 			node.heardOnCurrentLora = nil
+		}
+		if let radioNum {
+			let answered = FetchDescriptor<NodeObservationEntity>(predicate: #Predicate { $0.radioNum == radioNum && $0.heardOnCurrentLora != nil })
+			for observation in (try? modelContext.fetch(answered)) ?? [] where !presentNums.contains(observation.nodeNum) {
+				observation.heardOnCurrentLora = nil
+			}
 		}
 		savePendingChanges()
 	}
@@ -1311,7 +1321,7 @@ actor MeshPackets {
 						newNode.latestPositionCache = position
 					}
 
-					recordNodeDBObservation(nodeInfo, node: newNode, radioNum: connectedNodeNum)
+					recordNodeDBObservation(nodeInfo, node: newNode, radioNum: connectedNodeNum, reportsHeardOnCurrentLora: reportsHeardOnCurrentLora)
 
 					// Look for a MyInfo
 					let myInfoNodeNum = Int64(nodeInfo.num)
@@ -1358,7 +1368,7 @@ actor MeshPackets {
 					// radio that does the actual verifying no longer holds.
 					fetchedNode[0].hasXeddsaSigned = nodeInfo.hasXeddsaSigned_p
 					fetchedNode[0].isKeyManuallyVerified = nodeInfo.isKeyManuallyVerified
-					recordNodeDBObservation(nodeInfo, node: fetchedNode[0], radioNum: connectedNodeNum)
+					recordNodeDBObservation(nodeInfo, node: fetchedNode[0], radioNum: connectedNodeNum, reportsHeardOnCurrentLora: reportsHeardOnCurrentLora)
 					fetchedNode[0].heardOnCurrentLora = Self.heardOnCurrentLora(nodeInfo, reported: reportsHeardOnCurrentLora, connectedNodeNum: connectedNodeNum)
 
 					if nodeInfo.hasUser {

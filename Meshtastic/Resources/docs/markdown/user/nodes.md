@@ -108,6 +108,8 @@ When most of the list is in that state, the Nodes tab shows a notice such as **8
 
 Older firmware doesn't report this, so the marker and the notice don't appear.
 
+Each radio answers for its own settings, and each window shows its own radio's answers. If two of your radios heard a node on LongFast and one of them moves to LongTurbo, only that radio's window marks the node. When the app holds nodes from several of your radios, the notice only counts nodes the radio in that window has heard, and never your other radios themselves. **Remove Them** keeps a node another of your radios still has: the radio in that window drops it, and the node stays in the app for the others, as when you remove a radio. Once the last radio that had it removes it too, it leaves the app.
+
 ## Context Menu Actions
 
 Long-press any node in the list to access quick actions:

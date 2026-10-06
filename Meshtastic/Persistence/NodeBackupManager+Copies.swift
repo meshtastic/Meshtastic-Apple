@@ -338,6 +338,7 @@ extension NodeBackupManager {
 		dst.isKeyManuallyVerified = src.isKeyManuallyVerified
 		dst.sessionPasskey = src.sessionPasskey
 		dst.sessionExpiration = src.sessionExpiration
+		dst.heardOnCurrentLora = src.heardOnCurrentLora
 		return dst
 	}
 

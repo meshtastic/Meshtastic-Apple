@@ -143,6 +143,22 @@ final class NodeFilterParameters: ObservableObject {
 		}
 	}
 
+	/// The nodes the window's radio reports not heard on its current LoRa settings, looked up by
+	/// `UnheardOnCurrentLoraRefresh` from a view's task, never while a list or the map renders.
+	/// Each radio answers for its own settings (feature 021), so it's the window's radio's.
+	@Published private(set) var unheardOnCurrentLoraNodeNums: Set<Int64> = []
+
+	func setUnheardOnCurrentLoraNodeNums(_ nodeNums: Set<Int64>) {
+		if nodeNums != unheardOnCurrentLoraNodeNums {
+			unheardOnCurrentLoraNodeNums = nodeNums
+		}
+	}
+
+	/// Whether the window's radio reports `nodeNum` not heard on its current LoRa settings.
+	func isUnheardOnCurrentLora(_ nodeNum: Int64) -> Bool {
+		unheardOnCurrentLoraNodeNums.contains(nodeNum)
+	}
+
 	@Published var deviceRoles: Set<Int> = [] {
 		didSet { store.set(Array(deviceRoles), forKey: Keys.deviceRoles) }
 	}
@@ -337,7 +353,7 @@ final class NodeFilterParameters: ObservableObject {
 			if lastHeard < threshold { return false }
 		}
 
-		if hidesUnheardOnCurrentLora && node.isUnheardOnCurrentLora { return false }
+		if hidesUnheardOnCurrentLora && isUnheardOnCurrentLora(node.num) { return false }
 
 		// Signed filter
 		if isSigned {

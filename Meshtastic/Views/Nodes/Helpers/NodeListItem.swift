@@ -36,10 +36,13 @@ struct NodeListRowRefreshGate {
 struct NodeRowRefreshKey: Equatable {
 	let lastHeard: Date?
 	let heardOnCurrentLora: Bool?
+	/// The window's radio's answer (feature 021), which its node list passes in.
+	let unheardOnCurrentLora: Bool?
 
-	@MainActor init(_ node: NodeInfoEntity) {
+	@MainActor init(_ node: NodeInfoEntity, unheardOnCurrentLora: Bool? = nil) {
 		lastHeard = node.lastHeard
 		heardOnCurrentLora = node.heardOnCurrentLora
+		self.unheardOnCurrentLora = unheardOnCurrentLora
 	}
 }
 
@@ -89,7 +92,8 @@ struct NodeListRowSummary {
 		node: NodeInfoEntity,
 		includeDeviceMetrics: Bool = true,
 		includePosition: Bool = true,
-		includeLogAvailability: Bool = true
+		includeLogAvailability: Bool = true,
+		isUnheardOnCurrentLora unheardOnCurrentLora: Bool? = nil
 	) {
 		#if DEBUG
 		Self.testInitializationObserver?()
@@ -111,7 +115,8 @@ struct NodeListRowSummary {
 		statusMessage = node.statusMessageDisplay
 		lastHeard = node.lastHeard
 		isOnline = node.isOnline
-		isUnheardOnCurrentLora = node.isUnheardOnCurrentLora
+		// The window's radio's answer (feature 021); the node's, as on `main`, when none is given.
+		isUnheardOnCurrentLora = unheardOnCurrentLora ?? node.isUnheardOnCurrentLora
 		hopsAway = node.hopsAway
 		snr = node.snr
 		rssi = node.rssi
@@ -252,6 +257,9 @@ struct NodeListItem: View {
 	var isDirectlyConnected: Bool
 	var connectedNode: Int64
 	var modemPreset: ModemPresets = ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast
+	/// Whether the window's radio reports the node not heard on its current LoRa settings
+	/// (feature 021); nil shows the node's own answer.
+	var unheardOnCurrentLora: Bool?
 
 	func locationData(for nodeCoordinate: CLLocationCoordinate2D?) -> (nodeLocation: CLLocation, myLocation: CLLocation)? {
 		guard let nodeCoordinate else {
@@ -275,7 +283,7 @@ struct NodeListItem: View {
 		// bulk deletes leave zombies that `isDeleted` doesn't flag) can't fault. Only the first
 		// appearance reads the live node, and only while it's still valid.
 		if rowSummary != nil || (node.modelContext != nil && !node.isDeleted) {
-			let summary = rowSummary ?? NodeListRowSummary(node: node)
+			let summary = rowSummary ?? NodeListRowSummary(node: node, isUnheardOnCurrentLora: unheardOnCurrentLora)
 			rowContent(summary)
 				.onAppear {
 					if rowSummary == nil {
@@ -440,14 +448,14 @@ struct NodeListItem: View {
 		.padding(.bottom, 3)
 		// Gate the identity on liveness too: `.task(id:)` reads the node during body construction,
 		// which would fault on an invalidated model before the body's guard runs.
-		.task(id: (node.modelContext != nil && !node.isDeleted) ? NodeRowRefreshKey(node) : nil) {
+		.task(id: (node.modelContext != nil && !node.isDeleted) ? NodeRowRefreshKey(node, unheardOnCurrentLora: unheardOnCurrentLora) : nil) {
 			// Refresh the snapshot when the node changes, but only while it is still live.
 			guard node.modelContext != nil && !node.isDeleted else { return }
 			// The initial snapshot was just built synchronously; later task runs represent a
 			// last-heard or heard-on-current-LoRa change, or the row reappearing, and must refresh
 			// all snapshotted fields.
 			guard refreshGate.shouldRefresh() else { return }
-			rowSummary = NodeListRowSummary(node: node)
+			rowSummary = NodeListRowSummary(node: node, isUnheardOnCurrentLora: unheardOnCurrentLora)
 		}
 		.accessibilityElement(children: .ignore)
 		.accessibilityLabel(accessibilityDescription(summary, cachedLocationData: cachedLocationData))

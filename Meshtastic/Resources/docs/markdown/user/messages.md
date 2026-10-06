@@ -21,11 +21,26 @@ Channel conversations load the most recent **50 messages** by default. Scroll to
 | **0** (primary circle) | Primary channel — broadcast packets are sent here. Location data is broadcast from the first channel where it is enabled (firmware 2.7+). |
 | **1–7** | Secondary channels — separate messaging groups, each secured by their own key. |
 
+### When a Channel Changes
+
+A channel conversation keeps its history when you change the radio's channel: a new LoRa preset (for example LongFast to LongTurbo), region or frequency, or a new channel name or key. A note in the conversation marks where it happened, such as **Switched from LongFast to LongTurbo**, so you can tell what came before and after. A preset or region change moves every channel on that radio, so each of its conversations gets a note.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../assets/screenshots/channel_change_note_dark.png">
+  <img src="../assets/screenshots/channel_change_note_light.png" alt="A conversation note reading Switched from LongFast to LongTurbo, with the date it happened">
+</picture>
+
+The note is only in that radio's conversation. It isn't a message: it's never sent, doesn't count as unread and doesn't notify you.
+
 ### Channels on More Than One Radio
 
-A channel is the same channel on two radios when its name and key match (and, for an unnamed primary channel, the LoRa preset), even if the radios keep it in different slots. With more than one radio, a channel's conversation shows its messages from every radio, stored once.
+A channel is the same channel on two radios when its name and key match and the radios are on the same mesh (region, preset or radio settings, and frequency), even if the radios keep it in different slots. With more than one radio, a channel's conversation shows its messages from every radio, stored once.
 
-When more than one connected radio has the channel, a **Via** control above the message field picks the radio that sends. A number after a radio's name is that radio's slot for the channel, when it differs. Your own messages show **via** and the radio that sent them.
+When one radio moves to another mesh, its channels stop being shared with radios that stayed. Its conversation keeps the history from before the change, then continues on the new mesh; the other radios' conversations carry on unchanged.
+
+When more than one connected radio has the channel, a **Via** control above the message field picks the radio that sends. A number after a radio's name is that radio's slot for the channel, when it differs. Your own messages show **via** and the radio that sent them. Only radios that can hear the channel are offered.
+
+Deleting a channel's messages also removes them from your other radios' conversations that show them. The confirmation says so when that's the case.
 
 ### Channel Configuration
 

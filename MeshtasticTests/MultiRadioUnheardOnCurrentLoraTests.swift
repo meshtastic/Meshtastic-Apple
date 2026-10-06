@@ -3,10 +3,10 @@
 //  MeshtasticTests
 //
 //  main's #2575 stores NodeInfo.heard_on_current_lora on the shared node rows, from the one
-//  connected radio. Feature 021: only the only radio connected answers it, once the stored
-//  answers are its own, and a second radio puts every answer back to unknown, so no window shows
-//  another radio's answers. The unheard notice offers only nodes the window's radio had (review
-//  V35). Scripted radios as in `MultiRadioConnectFlowTests`.
+//  connected radio. Feature 021: each radio answers for its own LoRa settings, so its answers are
+//  kept on its own observations and each window shows its radio's. The unheard notice offers only
+//  nodes the window's radio had (review V35), and Remove Them keeps a node another of the user's
+//  radios still has (D-18). Scripted radios as in `MultiRadioConnectFlowTests`.
 //
 
 import Foundation
@@ -23,22 +23,9 @@ struct MultiRadioUnheardOnCurrentLoraTests {
 	/// Firmware that sends NodeInfo.heard_on_current_lora (2.8.1+).
 	private let reportingFirmware = "2.8.1.abcdef0"
 
-	private func node(_ num: UInt32) -> NodeInfoEntity? {
-		let context = ModelContext(PersistenceController.shared.container)
-		let nodeNum = Int64(num)
-		return try? context.fetch(FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == nodeNum })).first
-	}
-
-	/// A node in the shared store with an answer no connected radio gave: one left by a radio
-	/// connected on its own earlier, on a node only that radio observed.
-	private func storeAnswer(_ heard: Bool, onNode num: UInt32) throws {
-		let context = ModelContext(PersistenceController.shared.container)
-		let node = NodeInfoEntity()
-		node.id = Int64(num)
-		node.num = Int64(num)
-		node.heardOnCurrentLora = heard
-		context.insert(node)
-		try context.save()
+	/// Radio `radioNum`'s answer for node `num` in the shared store; nil without an observation.
+	private func answer(_ num: UInt32, by radioNum: UInt32) -> Bool? {
+		RadioLoraAnswers.answer(of: Int64(num), radioNum: Int64(radioNum), container: PersistenceController.shared.container)?.heard
 	}
 
 	/// A store of its own, for tests that read every node or observation in it.
@@ -62,22 +49,6 @@ struct MultiRadioUnheardOnCurrentLoraTests {
 		context.insert(myInfo)
 	}
 
-	/// One of the user's radios, connected before, on the US `preset` mesh.
-	private func insertRadio(_ num: Int64, preset: Config.LoRaConfig.ModemPreset, in context: ModelContext) {
-		let lora = LoRaConfigEntity()
-		lora.regionCode = Int32(Config.LoRaConfig.RegionCode.us.rawValue)
-		lora.usePreset = true
-		lora.modemPreset = Int32(preset.rawValue)
-		context.insert(lora)
-		let node = insertNode(num, in: context)
-		node.loRaConfig = lora
-		let myInfo = MyInfoEntity()
-		myInfo.myNodeNum = num
-		myInfo.myInfoNode = node
-		myInfo.lastConnected = .now
-		context.insert(myInfo)
-	}
-
 	private struct Radios {
 		let manager: AccessoryManager
 		let firstNum: UInt32
@@ -94,140 +65,133 @@ struct MultiRadioUnheardOnCurrentLoraTests {
 		let secondDevice = ConnectFlowSupport.device()
 		let manager = ConnectFlowSupport.makeManager(ScriptedTransport(radio: first, radiosByIdentifier: [secondDevice.identifier: second]))
 		try await manager.connect(to: ConnectFlowSupport.device())
-		try await ConnectFlowSupport.waitUntil { manager.nodeDatabaseSavedAt != nil || !manager.reportsHeardOnCurrentLora }
+		try await ConnectFlowSupport.waitUntil { manager.nodeDatabaseSavedAt[Int64(firstNum)] != nil }
 		return Radios(manager: manager, firstNum: firstNum, secondNum: secondNum, secondDevice: secondDevice)
 	}
 
-	@Test("The only radio's answers are stored, as on main; a second radio puts every answer back to unknown")
-	func secondRadioClearsTheAnswers() async throws {
+	// MARK: Each radio's own answers
+
+	@Test("Two radios connected keep their own answers, side by side")
+	func eachRadioKeepsItsOwnAnswers() async throws {
 		let saved = SavedDefaults()
 		defer { saved.restore() }
 		let radios = try await connectFirst(firmware: reportingFirmware)
 		let manager = radios.manager
-		let heardByFirst = radios.firstNum &+ 1
-		let onlyAnOfflineRadio = radios.firstNum &+ 0x200
-
-		#expect(manager.heardOnCurrentLoraSession === manager.activeConnection)
-		#expect(HeardOnCurrentLoraAnswers.radioNum() == Int64(radios.firstNum), "claimed when it connected on its own")
-		#expect(manager.reportsHeardOnCurrentLora(forRadio: Int64(radios.firstNum)))
-		#expect(!manager.reportsHeardOnCurrentLora(forRadio: Int64(radios.secondNum)))
-		#expect(manager.nodeDatabaseSavedAt != nil)
+		let firstNum = Int64(radios.firstNum), secondNum = Int64(radios.secondNum)
 		// The scripted dump leaves the field at its default, false: not heard on these settings.
-		try await ConnectFlowSupport.waitUntil { node(heardByFirst)?.heardOnCurrentLora == false }
-		#expect(node(heardByFirst)?.heardOnCurrentLora == false)
-		try storeAnswer(false, onNode: onlyAnOfflineRadio)
+		try await ConnectFlowSupport.waitUntil { answer(radios.firstNum &+ 1, by: radios.firstNum) == false }
 
 		try await manager.connectAdditionalRadio(radios.secondDevice)
-		#expect(manager.soleConnectedSession == nil)
-		#expect(manager.heardOnCurrentLoraSession == nil)
-		#expect(!manager.reportsHeardOnCurrentLora)
-		#expect(!manager.reportsHeardOnCurrentLora(forRadio: Int64(radios.firstNum)), "no window offers the notice")
-		#expect(manager.nodeDatabaseSavedAt == nil)
-		#expect(HeardOnCurrentLoraAnswers.radioNum() == 0, "no radio's answers are kept")
-		try await ConnectFlowSupport.waitUntil {
-			node(heardByFirst)?.heardOnCurrentLora == nil && node(onlyAnOfflineRadio)?.heardOnCurrentLora == nil
-		}
-		#expect(node(heardByFirst)?.heardOnCurrentLora == nil, "the first radio's answer doesn't stand for the second's")
-		#expect(node(radios.secondNum &+ 1)?.heardOnCurrentLora == nil, "the second radio's answers aren't stored")
-		#expect(node(onlyAnOfflineRadio)?.heardOnCurrentLora == nil, "nor a radio's that isn't connected (review V35-2)")
+		try await ConnectFlowSupport.waitUntil { manager.nodeDatabaseSavedAt[secondNum] != nil }
+		#expect(manager.reportsHeardOnCurrentLora(forRadio: firstNum), "a second radio doesn't stand the first one's answers down")
+		#expect(manager.reportsHeardOnCurrentLora(forRadio: secondNum))
+		#expect(manager.nodeDatabaseSavedAt[firstNum] != nil)
+		#expect(answer(radios.firstNum &+ 1, by: radios.firstNum) == false, "the first radio's answer is kept")
+		#expect(answer(radios.secondNum &+ 1, by: radios.secondNum) == false, "the second radio's is stored too")
+		let container = PersistenceController.shared.container
+		#expect(RadioLoraAnswers.unheardNodeNums(ofRadio: firstNum, container: container).contains(firstNum &+ 1))
+		#expect(!RadioLoraAnswers.unheardNodeNums(ofRadio: firstNum, container: container).contains(secondNum &+ 1), "only the window's radio's answers")
+
+		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
+		try await manager.disconnect()
+		#expect(manager.nodeDatabaseSavedAt[firstNum] == nil, "a disconnected radio's download state goes")
+		#expect(answer(radios.firstNum &+ 1, by: radios.firstNum) == false, "its answers stay with its observations, as on main")
+	}
+
+	@Test("A LoRa change asks the changed radio for its node database again, whichever it is")
+	func loraChangeRefreshForEachRadio() async throws {
+		let saved = SavedDefaults()
+		defer { saved.restore() }
+		let radios = try await connectFirst(firmware: reportingFirmware)
+		let manager = radios.manager
+		let firstNum = Int64(radios.firstNum), secondNum = Int64(radios.secondNum)
+
+		manager.refreshNodeDatabaseAfterLoRaChange(forRadio: secondNum)
+		#expect(manager.radiosAwaitingNodeDatabaseAfterLoRaChange.isEmpty, "not connected")
+		try await manager.connectAdditionalRadio(radios.secondDevice)
+		try await ConnectFlowSupport.waitUntil { manager.nodeDatabaseSavedAt[secondNum] != nil }
+
+		manager.refreshNodeDatabaseAfterLoRaChange(forRadio: secondNum)
+		#expect(manager.radiosAwaitingNodeDatabaseAfterLoRaChange == [secondNum], "only the radio that changed waits")
+		manager.refreshNodeDatabaseAfterLoRaChange(forRadio: firstNum)
+		#expect(manager.radiosAwaitingNodeDatabaseAfterLoRaChange == [firstNum, secondNum])
+		try await ConnectFlowSupport.waitUntil { manager.radiosAwaitingNodeDatabaseAfterLoRaChange.isEmpty }
+		#expect(manager.nodeDatabaseSavedAt[firstNum] != nil && manager.nodeDatabaseSavedAt[secondNum] != nil, "each asked again and saved")
+
 		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
 		try await manager.disconnect()
 	}
 
-	@Test("A LoRa change asks for the node database again only from the only radio connected")
-	func loraChangeRefreshOnlyForTheOnlyRadio() async throws {
-		let saved = SavedDefaults()
-		defer { saved.restore() }
-		let radios = try await connectFirst(firmware: reportingFirmware)
-		let manager = radios.manager
-
-		manager.refreshNodeDatabaseAfterLoRaChange(forRadio: Int64(radios.secondNum))
-		#expect(!manager.awaitingNodeDatabaseAfterLoRaChange, "not the radio whose answers are kept")
-		manager.refreshNodeDatabaseAfterLoRaChange(forRadio: Int64(radios.firstNum))
-		#expect(manager.awaitingNodeDatabaseAfterLoRaChange, "the one radio, as on main")
-
-		try await manager.connectAdditionalRadio(radios.secondDevice)
-		#expect(!manager.awaitingNodeDatabaseAfterLoRaChange, "a second radio stands the wait down")
-		manager.refreshNodeDatabaseAfterLoRaChange(forRadio: Int64(radios.firstNum))
-		#expect(!manager.awaitingNodeDatabaseAfterLoRaChange)
-	}
-
-	@Test("A radio whose firmware doesn't send the field answers nothing, alone or not")
+	@Test("A radio whose firmware doesn't send the field answers nothing")
 	func olderFirmwareAnswersNothing() async throws {
 		let saved = SavedDefaults()
 		defer { saved.restore() }
 		let radios = try await connectFirst(firmware: "2.7.15.567b8ea")
 		let manager = radios.manager
 
-		#expect(manager.soleConnectedSession === manager.activeConnection)
-		#expect(manager.heardOnCurrentLoraSession == nil)
 		#expect(!manager.reportsHeardOnCurrentLora(forRadio: Int64(radios.firstNum)))
-		#expect(node(radios.firstNum &+ 1)?.heardOnCurrentLora == nil)
-		#expect(HeardOnCurrentLoraAnswers.radioNum() == Int64(radios.firstNum), "it still takes the answers over, so its window shows none of another radio's")
-	}
-
-	@Test("Another radio connected on its own doesn't take the answers of the radio that was")
-	func anotherRadioAloneClearsTheAnswers() async throws {
-		let saved = SavedDefaults()
-		defer { saved.restore() }
-		let radios = try await connectFirst(firmware: reportingFirmware)
-		let manager = radios.manager
-		let heardByFirst = radios.firstNum &+ 1
-		try await ConnectFlowSupport.waitUntil { node(heardByFirst)?.heardOnCurrentLora == false }
-
-		try await manager.disconnect()
-		#expect(node(heardByFirst)?.heardOnCurrentLora == false, "kept while nothing else connects, as on main")
-		#expect(HeardOnCurrentLoraAnswers.radioNum() == Int64(radios.firstNum))
-
-		try await manager.connect(to: radios.secondDevice)
-		try await ConnectFlowSupport.waitUntil { manager.nodeDatabaseSavedAt != nil }
-		#expect(HeardOnCurrentLoraAnswers.radioNum() == Int64(radios.secondNum))
-		#expect(manager.reportsHeardOnCurrentLora(forRadio: Int64(radios.secondNum)))
-		#expect(!manager.reportsHeardOnCurrentLora(forRadio: Int64(radios.firstNum)))
-		#expect(node(heardByFirst)?.heardOnCurrentLora == nil, "the first radio's answer isn't the second's")
-		#expect(node(radios.secondNum &+ 1)?.heardOnCurrentLora == false, "the second radio's own answers are stored")
+		#expect(answer(radios.firstNum &+ 1, by: radios.firstNum) == nil)
 		try await manager.disconnect()
 	}
 
-	@Test("A radio on its own answers once the stored answers are its own; claiming them clears another's")
-	func answersNeedTheClaim() async throws {
-		let saved = SavedDefaults()
-		defer { saved.restore() }
-		let radioNum = ConnectFlowSupport.uniqueNodeNum()
-		let leftOver = radioNum &+ 0x200
-		var device = ConnectFlowSupport.device()
-		device.num = Int64(radioNum)
-		device.firmwareVersion = reportingFirmware
-		let radio = ScriptedRadio(nodeNum: radioNum, firmwareVersion: reportingFirmware)
-		let manager = ConnectFlowSupport.makeManager(ScriptedTransport(radio: radio))
-		let session = RadioSession(device: device, connection: radio)
-		manager.activeConnection = session
-		HeardOnCurrentLoraAnswers.set(Int64(radioNum &+ 0x300))
-		try storeAnswer(false, onNode: leftOver)
+	@Test("A and B heard C on LongFast; A moves to LongTurbo: only A's window marks C, and Remove Them there keeps C for B")
+	func presetChangeOnOneRadio() async throws {
+		let container = try isolatedContainer("UnheardPresetChange")
+		let setup = ModelContext(container)
+		let radioA: Int64 = 0x0A0A, radioB: Int64 = 0x0B0B, nodeC: Int64 = 0x7E57_0410
+		insertRadio(radioA, in: setup)
+		insertRadio(radioB, in: setup)
+		try setup.save()
+		let packets = MeshPackets(modelContainer: container)
+		func report(_ heard: Bool, by radio: Int64) async {
+			var info = NodeInfo()
+			info.num = UInt32(nodeC)
+			info.heardOnCurrentLora = heard
+			_ = await packets.nodeInfoPacket(nodeInfo: info, channel: 0, connectedNodeNum: radio, reportsHeardOnCurrentLora: true)
+			await packets.flushDebouncedSaves()
+		}
+		func unheard(by radio: Int64) -> Set<Int64> {
+			RadioLoraAnswers.unheardNodeNums(ofRadio: radio, container: container)
+		}
 
-		#expect(manager.heardOnCurrentLoraSession == nil, "the stored answers are another radio's")
-		#expect(!manager.reportsHeardOnCurrentLora(forRadio: Int64(radioNum)), "so its window offers nothing by them")
+		// A is on LongTurbo now and hasn't heard C there; B, still on LongFast, has.
+		await report(false, by: radioA)
+		await report(true, by: radioB)
+		#expect(unheard(by: radioA) == [nodeC], "A's window marks C")
+		#expect(unheard(by: radioB).isEmpty, "B's doesn't")
 
-		await manager.claimHeardOnCurrentLora(for: session)
-		#expect(HeardOnCurrentLoraAnswers.radioNum() == Int64(radioNum))
-		#expect(manager.heardOnCurrentLoraSession === session)
-		#expect(manager.reportsHeardOnCurrentLora(forRadio: Int64(radioNum)))
-		#expect(node(leftOver)?.heardOnCurrentLora == nil, "the other radio's answers go first")
+		// Remove Them in A's window: A drops C, and C stays in the app for B.
+		#expect(try await packets.removeUnheardNode(nodeC, ofRadio: radioA))
+		#expect(unheard(by: radioA).isEmpty)
+		#expect(RadioLoraAnswers.answer(of: nodeC, radioNum: radioB, container: container)?.heard == true, "B's list keeps C, unmarked")
+
+		// B moves to LongTurbo too and hasn't heard C there: main's rules, C goes.
+		await report(false, by: radioB)
+		#expect(unheard(by: radioB) == [nodeC], "now B's window marks it")
+		#expect(try await packets.removeUnheardNode(nodeC, ofRadio: radioB) == false)
+		let left = try ModelContext(container).fetchCount(FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == nodeC }))
+		#expect(left == 0, "no radio has it any more")
 	}
 
-	@Test("A renumbered radio keeps its answers")
-	func renumberKeepsTheAnswers() throws {
-		let store = try #require(UserDefaults(suiteName: "MultiRadioUnheardOnCurrentLoraTests.renumber"))
-		store.removePersistentDomain(forName: "MultiRadioUnheardOnCurrentLoraTests.renumber")
-		HeardOnCurrentLoraAnswers.recordIfNeeded(in: store)
-		#expect(HeardOnCurrentLoraAnswers.radioNum(in: store) == PreferredRadio.nodeNum, "a store from before 021 holds the preferred radio's")
-		HeardOnCurrentLoraAnswers.set(0x0A0A, in: store)
-		HeardOnCurrentLoraAnswers.recordIfNeeded(in: store)
-		#expect(HeardOnCurrentLoraAnswers.radioNum(in: store) == 0x0A0A, "recorded once")
-		HeardOnCurrentLoraAnswers.renumber(from: 0x0B0B, to: 0x0C0C, in: store)
-		#expect(HeardOnCurrentLoraAnswers.radioNum(in: store) == 0x0A0A, "another radio's renumber leaves it")
-		HeardOnCurrentLoraAnswers.renumber(from: 0x0A0A, to: 0x0D0D, in: store)
-		#expect(HeardOnCurrentLoraAnswers.radioNum(in: store) == 0x0D0D)
+	@Test("A download's missing nodes lose that radio's answer only")
+	func markAbsentIsPerRadio() async throws {
+		let container = try isolatedContainer("UnheardMarkAbsent")
+		let setup = ModelContext(container)
+		let radioA: Int64 = 0x0A0A, radioB: Int64 = 0x0B0B, kept: Int64 = 0x7E57_0411, dropped: Int64 = 0x7E57_0412
+		for num in [kept, dropped] {
+			_ = insertNode(num, in: setup)
+			for radio in [radioA, radioB] {
+				let observation = NodeObservationEntity(radioNum: radio, nodeNum: num)
+				observation.heardOnCurrentLora = false
+				setup.insert(observation)
+			}
+		}
+		try setup.save()
+
+		await MeshPackets(modelContainer: container).markAbsentFromRadio(presentNums: [kept], radioNum: radioA)
+		#expect(RadioLoraAnswers.answer(of: kept, radioNum: radioA, container: container)?.heard == false)
+		#expect(RadioLoraAnswers.answer(of: dropped, radioNum: radioA, container: container)?.heard == nil, "A no longer has it")
+		#expect(RadioLoraAnswers.answer(of: dropped, radioNum: radioB, container: container)?.heard == false, "B's answer isn't A's")
 	}
 
 	// MARK: The unheard notice (review V35-1)
@@ -300,7 +264,6 @@ struct MultiRadioUnheardOnCurrentLoraTests {
 		let context = ModelContext(container)
 		let left = try context.fetch(FetchDescriptor<NodeInfoEntity>())
 		#expect(left.map(\.num) == [alsoB], "the node B heard stays in the app")
-		#expect(left.first?.heardOnCurrentLora == nil, "its answer was A's")
 		#expect(left.first?.hopsAway == 3, "it shows B's view")
 		let observations = try context.fetch(FetchDescriptor<NodeObservationEntity>())
 		#expect(observations.map(\.radioNum) == [radioB], "A's part goes; left behind, it would bring A's Heard By back")
@@ -349,27 +312,6 @@ struct MultiRadioUnheardOnCurrentLoraTests {
 		#expect(observations.allSatisfy { $0.radioNum == radioB }, "A's observations go, the unsaved one too")
 	}
 
-	@Test("Remove Them keeps a node only this radio heard when another radio is on its mesh (D-18)")
-	func removalKeepsNodesOnASharedMesh() async throws {
-		let radioA: Int64 = 0x0A0A, radioB: Int64 = 0x0B0B, onlyA: Int64 = 0x7E57_040A
-		for (presetOfB, staysInApp) in [(Config.LoRaConfig.ModemPreset.longFast, true), (.longTurbo, false)] {
-			let container = try isolatedContainer("UnheardRemovalMesh")
-			let setup = ModelContext(container)
-			insertRadio(radioA, preset: .longFast, in: setup)
-			insertRadio(radioB, preset: presetOfB, in: setup)
-			_ = insertNode(onlyA, in: setup)
-			setup.insert(NodeObservationEntity(radioNum: radioA, nodeNum: onlyA))
-			try setup.save()
-
-			let stayed = try await MeshPackets(modelContainer: container).removeUnheardNode(onlyA, ofRadio: radioA)
-			#expect(stayed == staysInApp, "B on \(presetOfB)")
-			let context = ModelContext(container)
-			let left = try context.fetchCount(FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == onlyA }))
-			#expect(left == (staysInApp ? 1 : 0), "B on \(presetOfB)")
-			#expect(try context.fetchCount(FetchDescriptor<NodeObservationEntity>()) == 0, "A's observation goes either way")
-		}
-	}
-
 	/// A packet heard over LoRa just now, `hops` away.
 	private func heard(from num: Int64, hops: UInt32) -> MeshPacket {
 		var packet = MeshPacket()
@@ -383,27 +325,25 @@ struct MultiRadioUnheardOnCurrentLoraTests {
 
 	// MARK: Heard now
 
-	@Test("A node several radios observed loses its marker when the radio whose answers are kept hears it")
-	func aggregatedNodeHeardNowIsMarkedHeard() async throws {
-		let container = try isolatedContainer("UnheardAggregated")
+	@Test("A node heard over LoRa loses its marker for the radio that heard it, not for the others")
+	func heardNowIsPerRadio() async throws {
+		let container = try isolatedContainer("UnheardHeardNow")
 		let radioA: Int64 = 0x0A0A, radioB: Int64 = 0x0B0B, num: Int64 = 0x7E57_0406
 		let setup = ModelContext(container)
 		for radio in [radioA, radioB] {
 			insertRadio(radio, in: setup)
-			setup.insert(NodeObservationEntity(radioNum: radio, nodeNum: num))
+			let observation = NodeObservationEntity(radioNum: radio, nodeNum: num)
+			observation.heardOnCurrentLora = false
+			setup.insert(observation)
 		}
 		insertNode(num, in: setup).heardOnCurrentLora = false
 		try setup.save()
 
 		let packets = MeshPackets(modelContainer: container)
-		var packet = MeshPacket()
-		packet.from = UInt32(num)
-		packet.rxTime = UInt32(Date().timeIntervalSince1970)
-		packet.rxRssi = -90
-		await packets.updateAnyPacketFrom(packet: packet, activeDeviceNum: radioA, reportsHeardOnCurrentLora: true)
+		await packets.updateAnyPacketFrom(packet: heard(from: num, hops: 0), activeDeviceNum: radioA, reportsHeardOnCurrentLora: true)
 		await packets.flushDebouncedSaves()
 
-		let stored = try ModelContext(container).fetch(FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == num })).first
-		#expect(stored?.heardOnCurrentLora == true, "Remove Them's re-check must see it was heard")
+		#expect(RadioLoraAnswers.answer(of: num, radioNum: radioA, container: container)?.heard == true, "Remove Them's re-check must see it was heard")
+		#expect(RadioLoraAnswers.answer(of: num, radioNum: radioB, container: container)?.heard == false, "B hasn't heard it")
 	}
 }

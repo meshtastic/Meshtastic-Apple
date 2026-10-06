@@ -24,6 +24,12 @@ extension NSNotification.Name {
 	/// `Notification` model type which shadows Foundation's in some files.)
 	static let meshMessagesDidChange = NSNotification.Name("MeshMessagesDidChange")
 
+	/// Posted once a change to a radio's heard-on-current-LoRa answers is saved outside a node
+	/// database download (heard again over LoRa, Remove Them), so the window showing that
+	/// radio's markers looks them up again (feature 021). A download's save publishes
+	/// `AccessoryManager.nodeDatabaseSavedAt` instead.
+	static let heardOnCurrentLoraDidChange = NSNotification.Name("HeardOnCurrentLoraDidChange")
+
 	/// Posted when the radio reports something about a firmware update it was asked to start.
 	/// The firmware answers an OTA request with a client notification saying what it did —
 	/// rebooting into update mode, or why it would not: no OTA loader, a loader that does not
