@@ -131,6 +131,8 @@ Read this first if you are picking the work up. Update it in the same commit as 
   the files; all held and are fixed (T399): the unheard notice offers only nodes the window's
   radio had, never the user's radios, and the stored answers are recorded as one radio's
   (`HeardOnCurrentLoraAnswers`), cleared when another radio is next connected on its own.
+  Remove Them follows D-18 (T400, owner's call of 2026-10-05): a node another radio has heard
+  stays in the app, and only the window's radio drops it. Delete Node is unchanged (T146).
 - Merge of `main` (2026-10-02): merge commit `03632328` brought in `main`'s 11 commits up to
   `c3bb355b` (v2.7.23); `backup/multi-radio-pre-rebase` keeps the branch as it was before
   (`b13061ec`). Review V20 and data V15 (`review-connections-v20.md` M1–M2, `review-data-v15.md`
@@ -466,8 +468,9 @@ describes it well enough to rebuild.
 - Heard on current LoRa (`main` #2575, T398, T399): the answers on the node rows are one radio's,
   recorded in `HeardOnCurrentLoraAnswers`. Anything that stores them goes through
   `claimHeardOnCurrentLora(for:)` first, or passes `reportsHeardOnCurrentLora(on:)`, which needs the
-  claim. Known and left: a backup restore brings the backup's answers in without changing whose
-  they're recorded as; a radio connecting alone that isn't the recorded one clears them anyway.
+  claim. Known and left: a restore from Settings › Backups brings the backup's answers in
+  without changing whose they're recorded as; a radio connecting alone that isn't the recorded
+  one clears them anyway.
 - Lock-down on a radio that isn't focused (`AccessoryManager+RadioAttention.swift`) is untested on
   real lock-down firmware. Since T073 a locked or outdated radio stays connected with a
   `RadioAttention` and a prompt naming it; nothing turns it away. What the code can't tell: whether
@@ -593,7 +596,9 @@ describes it well enough to rebuild.
   with B's node number while B is off, it fails. Reply to a notification from B: the reply goes via B.
 - [ ] Heard on current LoRa (T398, review V35), radios on firmware 2.8.1 or later. A alone after a
   preset change: the notice counts only nodes A has heard; B's own node and a node only B has
-  heard aren't offered, and stay after Remove Them. Disconnect A and connect B alone: A's
+  heard aren't offered, and stay after Remove Them. A node both heard that A reports unheard is
+  offered, and after Remove Them it's still in the app, with only B under Heard By (T400).
+  Disconnect A and connect B alone: A's
   markers go as soon as B connects, and B's come with its node list. Connect A alongside B:
   every marker goes, on nodes only a third radio heard too, and comes back for the radio left
   on its own once it sends its node list again (a reconnect, or a LoRa change in its window).

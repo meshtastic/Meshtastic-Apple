@@ -50,12 +50,13 @@ enum UnheardNodesStrings {
 	}
 }
 
-/// What the unheard notice may offer to remove, and how a node only the app has goes (feature
-/// 021, review V35-1).
+/// What the unheard notice may offer to remove, and how a node goes (feature 021, review V35).
 ///
 /// On `main` the store is one radio's, so a node with no answer after its node database is one
-/// the radio dropped. Here the store holds every radio's nodes, and only the radio connected on
-/// its own has answers, so the other radios' nodes would all look like nodes this radio dropped.
+/// the radio dropped, and Remove Them deletes nodes from the app. Here the store holds every
+/// radio's nodes, and only the radio connected on its own has answers, so the other radios' nodes
+/// would all look like nodes this radio dropped. And as when a radio is removed (D-18), a node
+/// another of the user's radios has heard stays in the app: only this radio's part of it goes.
 enum UnheardNodesRemoval {
 	/// Nodes that aren't favorites, the window's radio or another of the user's radios. Once
 	/// another radio has observations, only the nodes this radio has observed: the ones it had,
@@ -69,9 +70,7 @@ enum UnheardNodesRemoval {
 			predicate: #Predicate { $0.favorite == false && $0.num != excludedNum }
 		))
 		let ownRadios = try Set(context.fetch(FetchDescriptor<MyInfoEntity>()).map(\.myNodeNum))
-		var byOtherRadios = FetchDescriptor<NodeObservationEntity>(predicate: #Predicate { $0.radioNum != excludedNum })
-		byOtherRadios.fetchLimit = 1
-		guard try context.fetchCount(byOtherRadios) > 0 else {
+		guard try hasOtherRadios(than: radioNum, in: context) else {
 			return nodes.filter { !ownRadios.contains($0.num) }
 		}
 		let observed = try Set(context.fetch(FetchDescriptor<NodeObservationEntity>(
@@ -80,10 +79,56 @@ enum UnheardNodesRemoval {
 		return nodes.filter { observed.contains($0.num) && !ownRadios.contains($0.num) }
 	}
 
-	/// Deletes a node only the app still has, with its user and every radio's observation of it,
+	/// Whether another of the user's radios has observations: its nodes are in the app too.
+	static func hasOtherRadios(than radioNum: Int64, in context: ModelContext) throws -> Bool {
+		let excludedNum = radioNum
+		var byOtherRadios = FetchDescriptor<NodeObservationEntity>(predicate: #Predicate { $0.radioNum != excludedNum })
+		byOtherRadios.fetchLimit = 1
+		return try context.fetchCount(byOtherRadios) > 0
+	}
+
+	/// The other radios' observations, by node. A node with any stays in the app (D-18).
+	static func otherRadiosObservations(than radioNum: Int64, in context: ModelContext) throws -> [Int64: [NodeObservationEntity]] {
+		let excludedNum = radioNum
+		let observations = try context.fetch(FetchDescriptor<NodeObservationEntity>(
+			predicate: #Predicate { $0.radioNum != excludedNum }
+		))
+		return Dictionary(grouping: observations, by: \.nodeNum)
+	}
+
+	/// Takes `node` out of radio `radioNum`'s view, once the radio has been asked to drop it.
+	/// - Another of the user's radios has heard it (`otherRadiosObservations`): it stays in the
+	///   app, as when a radio is removed (D-18). This radio's observation goes, and its
+	///   heard-on-current-LoRa answer, which was this radio's; the node shows the others' view.
+	/// - Otherwise it's deleted from the app (`deleteFromApp`).
+	/// Returns whether it stayed. Doesn't save.
+	@discardableResult
+	static func remove(
+		_ node: NodeInfoEntity,
+		ofRadio radioNum: Int64,
+		otherRadiosObservations: [Int64: [NodeObservationEntity]],
+		in context: ModelContext,
+		preferredRadio: Int64 = PreferredRadio.nodeNum
+	) throws -> Bool {
+		guard let others = otherRadiosObservations[node.num], !others.isEmpty else {
+			deleteFromApp(node, in: context)
+			return false
+		}
+		let key = NodeObservationEntity.key(radioNum: radioNum, nodeNum: node.num)
+		var own = FetchDescriptor<NodeObservationEntity>(predicate: #Predicate { $0.key == key })
+		own.fetchLimit = 1
+		for observation in try context.fetch(own) {
+			context.delete(observation)
+		}
+		node.heardOnCurrentLora = nil
+		NodeObservationEntity.reaggregate(node, from: others, preferredRadio: preferredRadio)
+		return true
+	}
+
+	/// Deletes a node no other radio has heard from the app, with its user and its observations,
 	/// as Delete Node does (T146): left behind, the observations would bring its Heard By back
 	/// when it's next heard. Doesn't save.
-	static func deleteAppOnly(_ node: NodeInfoEntity, in context: ModelContext) {
+	static func deleteFromApp(_ node: NodeInfoEntity, in context: ModelContext) {
 		if let user = node.user {
 			context.delete(user)
 		}
@@ -110,6 +155,9 @@ struct UnheardNodesBanner: View {
 	@State private var isConfirming = false
 	@State private var isRemoving = false
 	@State private var removalResult: String?
+	/// Another of the user's radios has nodes in the app, so Remove Them keeps the ones it heard
+	/// (D-18) and the confirmation says so.
+	@State private var otherRadiosKeepNodes = false
 
 	/// Resolved here rather than passed in. A parent that only builds this view once a radio is
 	/// connected has to be re-evaluated when one arrives, and inside a `safeAreaInset` that
@@ -226,7 +274,11 @@ struct UnheardNodesBanner: View {
 				Text("Cancel")
 			}
 		} message: {
-			Text("They are removed from this app, and from the radio if it still has them. Any that are still out there come back when they are next heard.")
+			if otherRadiosKeepNodes {
+				Text("They are removed from this radio if it still has them, and from this app unless another of your radios has heard them. Any that are still out there come back when they are next heard.")
+			} else {
+				Text("They are removed from this app, and from the radio if it still has them. Any that are still out there come back when they are next heard.")
+			}
 		}
 	}
 
@@ -251,6 +303,7 @@ struct UnheardNodesBanner: View {
 		let candidates: [NodeInfoEntity]
 		do {
 			candidates = try UnheardNodesRemoval.candidates(forRadio: connectedNodeNum, in: context)
+			otherRadiosKeepNodes = try UnheardNodesRemoval.hasOtherRadios(than: connectedNodeNum, in: context)
 		} catch {
 			Logger.data.error("Could not read nodes not heard on the current LoRa settings: \(error.localizedDescription, privacy: .public)")
 			unheardNodes = []
@@ -276,6 +329,16 @@ struct UnheardNodesBanner: View {
 		var removed = 0
 		var failed = 0
 		var recovered = 0
+		// A node another of the user's radios has heard stays in the app (D-18).
+		let otherRadiosObservations: [Int64: [NodeObservationEntity]]
+		do {
+			otherRadiosObservations = try UnheardNodesRemoval.otherRadiosObservations(than: connectedNodeNum, in: context)
+		} catch {
+			// Without them, a node another radio heard could go from the app, so nothing is removed.
+			Logger.data.error("Could not read the other radios' nodes before removing unheard nodes: \(error.localizedDescription, privacy: .public)")
+			removalResult = UnheardNodesStrings.removalResult(removed: 0, keptAsHeard: 0, failed: unheardNodes.count)
+			return
+		}
 
 		for node in unheardNodes {
 			guard isRemovable(node) else {
@@ -283,13 +346,12 @@ struct UnheardNodesBanner: View {
 				continue
 			}
 			do {
-				if isAppOnly(node) {
-					// The radio doesn't have it, so there is nothing to remove there.
-					UnheardNodesRemoval.deleteAppOnly(node, in: context)
-					try context.save()
-				} else {
-					try await accessoryManager.removeNode(node: node, connectedNodeNum: connectedNodeNum)
+				// A node only the app has: the radio doesn't have it, so there is nothing to remove there.
+				if !isAppOnly(node) {
+					try await accessoryManager.sendRemoveNode(node.num, toRadio: connectedNodeNum)
 				}
+				try UnheardNodesRemoval.remove(node, ofRadio: connectedNodeNum, otherRadiosObservations: otherRadiosObservations, in: context)
+				try context.save()
 				removed += 1
 				unheardNodes.removeAll { $0.num == node.num }
 			} catch {

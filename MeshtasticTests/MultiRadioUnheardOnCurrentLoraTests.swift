@@ -250,25 +250,41 @@ struct MultiRadioUnheardOnCurrentLoraTests {
 		#expect(candidates == [olderNode], "a row from before feature 021 has no observation yet")
 	}
 
-	@Test("Removing a node only the app has takes every radio's observation of it")
-	func appOnlyRemovalTakesTheObservations() throws {
-		let context = ModelContext(try isolatedContainer("UnheardAppOnly"))
-		let num: Int64 = 0x7E57_0405
+	@Test("Remove Them deletes a node only this radio heard, and keeps one another radio heard (D-18)")
+	func removalKeepsNodesAnotherRadioHeard() throws {
+		let context = ModelContext(try isolatedContainer("UnheardRemoval"))
+		let radioA: Int64 = 0x0A0A, radioB: Int64 = 0x0B0B
+		let onlyA: Int64 = 0x7E57_0405, alsoB: Int64 = 0x7E57_0407
 		let user = UserEntity()
-		user.num = num
+		user.num = onlyA
 		context.insert(user)
-		let node = insertNode(num, in: context)
-		node.user = user
-		for radio in [Int64(0x0A0A), 0x0B0B] {
-			context.insert(NodeObservationEntity(radioNum: radio, nodeNum: num))
+		insertNode(onlyA, in: context).user = user
+		context.insert(NodeObservationEntity(radioNum: radioA, nodeNum: onlyA))
+		let shared = insertNode(alsoB, in: context)
+		shared.heardOnCurrentLora = false
+		shared.hopsAway = 1
+		shared.lastHeard = Date()
+		for (radio, hops) in [(radioA, Int32(1)), (radioB, Int32(3))] {
+			let observation = NodeObservationEntity(radioNum: radio, nodeNum: alsoB)
+			observation.hopsAway = hops
+			observation.lastHeard = Date()
+			context.insert(observation)
 		}
 		try context.save()
 
-		UnheardNodesRemoval.deleteAppOnly(node, in: context)
+		let others = try UnheardNodesRemoval.otherRadiosObservations(than: radioA, in: context)
+		for node in try context.fetch(FetchDescriptor<NodeInfoEntity>()) {
+			try UnheardNodesRemoval.remove(node, ofRadio: radioA, otherRadiosObservations: others, in: context)
+		}
 		try context.save()
-		#expect(try context.fetchCount(FetchDescriptor<NodeInfoEntity>()) == 0)
-		#expect(try context.fetchCount(FetchDescriptor<UserEntity>()) == 0)
-		#expect(try context.fetchCount(FetchDescriptor<NodeObservationEntity>()) == 0, "left behind, they'd bring Heard By back")
+
+		let left = try context.fetch(FetchDescriptor<NodeInfoEntity>())
+		#expect(left.map(\.num) == [alsoB], "the node B heard stays in the app")
+		#expect(left.first?.heardOnCurrentLora == nil, "its answer was A's")
+		#expect(left.first?.hopsAway == 3, "it shows B's view")
+		let observations = try context.fetch(FetchDescriptor<NodeObservationEntity>())
+		#expect(observations.map(\.radioNum) == [radioB], "A's part goes; left behind, it would bring A's Heard By back")
+		#expect(try context.fetchCount(FetchDescriptor<UserEntity>()) == 0, "the node only A heard goes with its user")
 	}
 
 	// MARK: Heard now

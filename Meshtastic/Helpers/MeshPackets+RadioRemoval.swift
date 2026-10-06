@@ -259,27 +259,37 @@ extension MeshPackets {
 		let byNode = Dictionary(grouping: observations, by: \.nodeNum)
 		let nodes = try modelContext.fetch(FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { nodeNums.contains($0.num) }))
 		for node in nodes {
-			guard let remaining = byNode[node.num], !remaining.isEmpty else { continue }
-			// What's left may be merged backups' observations from months ago: they only take over
-			// the path when they're current next to what the node last showed, and never move the
-			// node's last heard back (T176 for one left, T195 for several).
-			let shown = node.lastHeard
-			let newest = remaining.compactMap(\.lastHeard).max() ?? .distantPast
-			if let shown, newest < shown.addingTimeInterval(-NodeObservationEntity.currentWindow) { continue }
-			if remaining.count > 1 {
-				let firstHeard = node.firstHeard
-				NodeObservationEntity.applyAggregate(remaining, to: node, firstRadio: preferredRadio)
-				if let shown, (node.lastHeard ?? .distantPast) < shown { node.lastHeard = shown }
-				if let firstHeard, (node.firstHeard ?? .distantFuture) > firstHeard { node.firstHeard = firstHeard }
-				continue
-			}
-			if let only = remaining.first {
-				node.hopsAway = only.hopsAway
-				node.snr = only.snr
-				node.rssi = only.rssi
-				node.viaMqtt = only.viaMqtt
-				if only.radioNum == preferredRadio { node.channel = only.channel }
-			}
+			guard let remaining = byNode[node.num] else { continue }
+			NodeObservationEntity.reaggregate(node, from: remaining, preferredRadio: preferredRadio)
+		}
+	}
+}
+
+extension NodeObservationEntity {
+	/// Rewrites `node`'s fields from the observations left once one radio's went: a radio removed
+	/// (D-18), or the unheard notice taking a node out of one radio's view (review V35). Nothing
+	/// with none left.
+	static func reaggregate(_ node: NodeInfoEntity, from remaining: [NodeObservationEntity], preferredRadio: Int64) {
+		guard !remaining.isEmpty else { return }
+		// What's left may be merged backups' observations from months ago: they only take over
+		// the path when they're current next to what the node last showed, and never move the
+		// node's last heard back (T176 for one left, T195 for several).
+		let shown = node.lastHeard
+		let newest = remaining.compactMap(\.lastHeard).max() ?? .distantPast
+		if let shown, newest < shown.addingTimeInterval(-currentWindow) { return }
+		if remaining.count > 1 {
+			let firstHeard = node.firstHeard
+			applyAggregate(remaining, to: node, firstRadio: preferredRadio)
+			if let shown, (node.lastHeard ?? .distantPast) < shown { node.lastHeard = shown }
+			if let firstHeard, (node.firstHeard ?? .distantFuture) > firstHeard { node.firstHeard = firstHeard }
+			return
+		}
+		if let only = remaining.first {
+			node.hopsAway = only.hopsAway
+			node.snr = only.snr
+			node.rssi = only.rssi
+			node.viaMqtt = only.viaMqtt
+			if only.radioNum == preferredRadio { node.channel = only.channel }
 		}
 	}
 }

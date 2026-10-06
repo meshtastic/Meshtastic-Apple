@@ -1468,8 +1468,26 @@ extension AccessoryManager {
 	}
 
 	public func removeNode(node: NodeInfoEntity, connectedNodeNum: Int64) async throws {
+		try await sendRemoveNode(node.num, toRadio: connectedNodeNum)
+		do {
+			if let user = node.user {
+				context.delete(user)
+			}
+			NodeObservationEntity.delete(ofNodes: [node.num], in: context)
+			context.delete(node)
+			try context.save()
+		} catch {
+			let nsError = error as NSError
+			Logger.data.error("🚫 Error deleting node: \(nsError, privacy: .public)")
+		}
+	}
+
+	/// Asks radio `connectedNodeNum` to drop `nodeNum` from its node database. Changes nothing in
+	/// the app: Delete Node deletes the node too (`removeNode`), the unheard notice decides itself
+	/// (`UnheardNodesRemoval`). Throws when the radio isn't connected.
+	func sendRemoveNode(_ nodeNum: Int64, toRadio connectedNodeNum: Int64) async throws {
 		var adminPacket = AdminMessage()
-		adminPacket.removeByNodenum = UInt32(node.num)
+		adminPacket.removeByNodenum = UInt32(nodeNum)
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(connectedNodeNum)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
@@ -1487,26 +1505,13 @@ extension AccessoryManager {
 		toRadio = ToRadio()
 		toRadio.packet = meshPacket
 
-		let logString = String.localizedStringWithFormat("🗑️ Sent a request to remove node \(node.num.toHex())")
+		let logString = String.localizedStringWithFormat("🗑️ Sent a request to remove node \(nodeNum.toHex())")
 		// On the connection of the radio it's removed from, not relayed by another radio, which it
 		// wouldn't take without that radio's session key (review V11 R11-1).
 		guard let session = connectedSession(forRadio: connectedNodeNum) else {
 			throw AccessoryError.ioFailed("removeNode: That radio isn't connected")
 		}
 		try await send(toRadio, via: session, debugDescription: logString)
-
-			do {
-				if let user = node.user {
-					context.delete(user)
-				}
-				NodeObservationEntity.delete(ofNodes: [node.num], in: context)
-				context.delete(node)
-				try context.save()
-			} catch {
-				let nsError = error as NSError
-				Logger.data.error("🚫 Error deleting node: \(nsError, privacy: .public)")
-			}
-
 	}
 
 	func requestDeviceMetadata(fromUser: UserEntity? = nil, toUser: UserEntity? = nil) async throws -> Int64 {
