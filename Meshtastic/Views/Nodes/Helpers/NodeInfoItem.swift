@@ -94,8 +94,16 @@ private struct NodeInfoHardwareSection: View {
 		summary.hwModel == "PORTDUINO"
 	}
 
+	private let supportedVendorTags = ["RAK", "B&Q", "LilyGo", "Seeed", "Heltec", "DIY", "Elecrow", "M5Stack", "NomadStar", "muzi"]
+
+	private var isBackerOrPartner: Bool {
+		guard let tags = hardwarePresentation?.tags else { return false }
+		let supportedLower = supportedVendorTags.map { $0.lowercased() }
+		return tags.contains { supportedLower.contains($0.lowercased()) }
+	}
+
 	private var isMaker: Bool {
-		hardwarePresentation?.isMaker == true
+		hardwarePresentation?.isMaker == true && !isBackerOrPartner
 	}
 
 	private var supportLevel: SupportLevel? {
@@ -105,7 +113,7 @@ private struct NodeInfoHardwareSection: View {
 	private var hardwareDescription: String {
 		if let supportLevel {
 			if isMaker && supportLevel != .legacy && supportLevel != .discontinued {
-				return "Independent maker hardware, built and tested."
+				return String(localized: "Independent maker hardware, built and tested.", comment: "Maker hardware description")
 			}
 			return supportLevel.description
 		}
@@ -169,7 +177,7 @@ private struct NodeInfoHardwareSection: View {
 						.frame(maxWidth: .infinity, alignment: .center)
 				}
 				.listRowSeparator(.hidden)
-			} else if hasDevice && (supportLevel == .niche || supportLevel == .legacy || isMaker) {
+			} else if hasDevice && (supportLevel == .niche || supportLevel == .legacy || (isMaker && supportLevel != .discontinued)) {
 				// MARK: - Niche / Legacy / Maker Device
 				HStack(spacing: 16) {
 					DeviceHardwareImage(hwId: Int32(summary.hwModelId))

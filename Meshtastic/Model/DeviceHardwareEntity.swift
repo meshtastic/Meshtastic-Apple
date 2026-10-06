@@ -47,6 +47,7 @@ struct HardwareCatalogRecord: Equatable {
 	let supportLevel: SupportLevel
 	let isMaker: Bool
 	let architecture: String?
+	let tags: [String]
 
 	init(
 		hwModel: Int64,
@@ -56,7 +57,8 @@ struct HardwareCatalogRecord: Equatable {
 		activelySupported: Bool,
 		supportLevel: SupportLevel,
 		isMaker: Bool = false,
-		architecture: String? = nil
+		architecture: String? = nil,
+		tags: [String] = []
 	) {
 		self.hwModel = hwModel
 		self.hwModelSlug = hwModelSlug
@@ -66,6 +68,7 @@ struct HardwareCatalogRecord: Equatable {
 		self.supportLevel = supportLevel
 		self.isMaker = isMaker
 		self.architecture = architecture
+		self.tags = tags
 	}
 
 	init(_ entity: DeviceHardwareEntity) {
@@ -77,7 +80,8 @@ struct HardwareCatalogRecord: Equatable {
 			activelySupported: entity.activelySupported,
 			supportLevel: SupportLevel(rawValue: entity.supportLevel) ?? .discontinued,
 			isMaker: entity.isMaker,
-			architecture: entity.architecture
+			architecture: entity.architecture,
+			tags: entity.tags.compactMap { $0.tag }
 		)
 	}
 }
@@ -92,6 +96,7 @@ struct HardwareCatalogPresentation: Equatable {
 	let supportLevel: SupportLevel?
 	let isMaker: Bool?
 	let architecture: String?
+	let tags: [String]?
 }
 
 enum HardwareCatalogResolver {
@@ -133,7 +138,8 @@ enum HardwareCatalogResolver {
 			activelySupported: record.activelySupported,
 			supportLevel: record.supportLevel,
 			isMaker: record.isMaker,
-			architecture: record.architecture
+			architecture: record.architecture,
+			tags: record.tags
 		)
 	}
 
