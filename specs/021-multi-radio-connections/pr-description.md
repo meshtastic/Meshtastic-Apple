@@ -74,5 +74,6 @@ More screenshots (the Via picker, Heard By, the connect dialog, the attention pr
 - [x] My code adheres to the project's coding and style guidelines.
 - [x] I have conducted a self-review of my code.
 - [x] I have commented my code, particularly in complex areas.
-- [x] I have verified whether these changes require updates to the in-app documentation under `docs/user/` or `docs/developer/`, and updated accordingly.
-- [ ] I have tested the change to ensure that it works as intended. (Simulator and unit tests: yes. Real radios: pending, see above.)
+- [x] I have verified whether these changes require updates to the in-app documentation under `docs/user/` or `docs/developer/`, and updated accordingly (see [copilot-instructions.md](../.github/copilot-instructions.md#in-app-documentation) for the view → doc page mapping). If no doc update is needed, add the **`skip-docs-check`** label.
+- [ ] I have tested the change to ensure that it works as intended.
+  - Simulator and unit tests: yes. Real radios: pending (see How is this tested?).
