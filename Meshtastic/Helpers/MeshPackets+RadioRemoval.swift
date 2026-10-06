@@ -256,9 +256,10 @@ extension MeshPackets {
 	/// The app side of the unheard notice's Remove Them for one node, once radio `radioNum` has
 	/// been asked to drop it (T400): `removeRadioData`'s rule for one node. On this actor, which
 	/// writes the observations, so it works from them as they are now (review V36-1).
-	/// - Another of the user's radios has observed the node: it stays in the app (D-18).
-	///   `radioNum`'s observation goes, and its heard-on-current-LoRa answer, which was this
-	///   radio's; the node is rewritten from the others' observations.
+	/// - Another of the user's radios has observed the node, or is on this radio's network (its
+	///   local mesh): it stays in the app (D-18). `radioNum`'s observation goes, and its
+	///   heard-on-current-LoRa answer, which was this radio's; the node is rewritten from the
+	///   others' observations.
 	/// - Otherwise it goes, with its user and its observations, as Delete Node does (T146).
 	/// Saves. Returns whether the node stayed; false too when it's gone already.
 	@discardableResult
@@ -273,7 +274,8 @@ extension MeshPackets {
 		guard let node = try modelContext.fetch(byNum).first else { return false }
 		let observations = try modelContext.fetch(FetchDescriptor<NodeObservationEntity>(predicate: #Predicate { $0.nodeNum == nodeNum }))
 		let others = observations.filter { $0.radioNum != radioNum }
-		if others.isEmpty {
+		let stays = !others.isEmpty || sharesNetworkWithAnotherRadio(radioNum)
+		if !stays {
 			if let user = node.user {
 				modelContext.delete(user)
 			}
@@ -289,7 +291,15 @@ extension MeshPackets {
 			NodeObservationEntity.reaggregate(node, from: others, preferredRadio: preferredRadio)
 		}
 		try modelContext.save()
-		return !others.isEmpty
+		return stays
+	}
+
+	/// Whether another of the user's radios is on `radioNum`'s network, as saved (D-18).
+	private func sharesNetworkWithAnotherRadio(_ radioNum: Int64) -> Bool {
+		let networks = MultiRadioBackfill.savedNetworks(container: modelContext.container)
+		guard let network = networks[radioNum] else { return false }
+		let others = Set(storedRadios().map(\.nodeNum)).subtracting([radioNum])
+		return others.contains { networks[$0] == network }
 	}
 
 	/// Rewrites the node fields of `nodeNums` from the observations left in `observations`.

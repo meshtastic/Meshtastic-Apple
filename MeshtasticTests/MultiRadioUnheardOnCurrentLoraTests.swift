@@ -62,6 +62,22 @@ struct MultiRadioUnheardOnCurrentLoraTests {
 		context.insert(myInfo)
 	}
 
+	/// One of the user's radios, connected before, on the US `preset` mesh.
+	private func insertRadio(_ num: Int64, preset: Config.LoRaConfig.ModemPreset, in context: ModelContext) {
+		let lora = LoRaConfigEntity()
+		lora.regionCode = Int32(Config.LoRaConfig.RegionCode.us.rawValue)
+		lora.usePreset = true
+		lora.modemPreset = Int32(preset.rawValue)
+		context.insert(lora)
+		let node = insertNode(num, in: context)
+		node.loRaConfig = lora
+		let myInfo = MyInfoEntity()
+		myInfo.myNodeNum = num
+		myInfo.myInfoNode = node
+		myInfo.lastConnected = .now
+		context.insert(myInfo)
+	}
+
 	private struct Radios {
 		let manager: AccessoryManager
 		let firstNum: UInt32
@@ -331,6 +347,27 @@ struct MultiRadioUnheardOnCurrentLoraTests {
 		let observations = try context.fetch(FetchDescriptor<NodeObservationEntity>())
 		#expect(observations.count == 2)
 		#expect(observations.allSatisfy { $0.radioNum == radioB }, "A's observations go, the unsaved one too")
+	}
+
+	@Test("Remove Them keeps a node only this radio heard when another radio is on its mesh (D-18)")
+	func removalKeepsNodesOnASharedMesh() async throws {
+		let radioA: Int64 = 0x0A0A, radioB: Int64 = 0x0B0B, onlyA: Int64 = 0x7E57_040A
+		for (presetOfB, staysInApp) in [(Config.LoRaConfig.ModemPreset.longFast, true), (.longTurbo, false)] {
+			let container = try isolatedContainer("UnheardRemovalMesh")
+			let setup = ModelContext(container)
+			insertRadio(radioA, preset: .longFast, in: setup)
+			insertRadio(radioB, preset: presetOfB, in: setup)
+			_ = insertNode(onlyA, in: setup)
+			setup.insert(NodeObservationEntity(radioNum: radioA, nodeNum: onlyA))
+			try setup.save()
+
+			let stayed = try await MeshPackets(modelContainer: container).removeUnheardNode(onlyA, ofRadio: radioA)
+			#expect(stayed == staysInApp, "B on \(presetOfB)")
+			let context = ModelContext(container)
+			let left = try context.fetchCount(FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == onlyA }))
+			#expect(left == (staysInApp ? 1 : 0), "B on \(presetOfB)")
+			#expect(try context.fetchCount(FetchDescriptor<NodeObservationEntity>()) == 0, "A's observation goes either way")
+		}
 	}
 
 	/// A packet heard over LoRa just now, `hops` away.

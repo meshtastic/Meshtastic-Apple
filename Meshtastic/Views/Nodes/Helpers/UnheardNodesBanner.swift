@@ -226,7 +226,7 @@ struct UnheardNodesBanner: View {
 			}
 		} message: {
 			if otherRadiosKeepNodes {
-				Text("They are removed from this radio if it still has them, and from this app unless another of your radios has heard them. Any that are still out there come back when they are next heard.")
+				Text("They are removed from this radio if it still has them, and from this app unless another of your radios has heard them or is on the same mesh. Any that are still out there come back when they are next heard.")
 			} else {
 				Text("They are removed from this app, and from the radio if it still has them. Any that are still out there come back when they are next heard.")
 			}
