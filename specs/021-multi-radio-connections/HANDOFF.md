@@ -56,9 +56,9 @@ Read this first if you are picking the work up. Update it in the same commit as 
 - Next up: the owner's device test (checklist below), which waits on hardware; don't rebuild
   Mesh Multi for it unless asked. Don't design around the focused/additional split: every radio
   works the same way (D-17). Removing the switch-era helpers (T066) waits for that test.
-- Baseline and latest: the full suite passes in the iOS Simulator (3,709 Swift Testing tests plus
-  32 XCTests, about 90 seconds of test time, T399). Run it with the simulator to itself: another
-  session's test runs on the same simulator kill the test host partway.
+- Baseline and latest: the full suite passes in the iOS Simulator (3,712 Swift Testing tests in
+  625 suites plus 32 XCTests, about 90 seconds of test time, T404). Run it with the simulator to
+  itself: another session's test runs on the same simulator kill the test host partway.
 
 ## First two-radio test (Mesh Multi, Mac)
 
@@ -122,22 +122,19 @@ Read this first if you are picking the work up. Update it in the same commit as 
   the files; all held and are fixed (T396). Review V34 (`review-connections-v34.md`) of T396
   found nothing new (T397).
 - Merge of `main` (2026-10-05, T398): `main`'s 25 commits up to `8425daa6` (#2584), 22 files in
-  conflict. `main`'s #2575 stores heard-on-current-LoRa on the shared node rows from the one
-  radio; here only the only radio connected answers it, and a second radio puts the answers
-  back to unknown (`heardOnCurrentLoraSession`). Per-radio answers (on
-  `NodeObservationEntity`) are left for the owner. #2404 stamps `lastConfigRefresh` only on an
-  owned config completion, per session here. #2584's restore always asks for the config.
-  Review V35 (`review-connections-v35.md`, V35-1–V35-2 and minors) of the merge, checked in
-  the files; all held and are fixed (T399): the unheard notice offers only nodes the window's
-  radio had, never the user's radios, and the stored answers are recorded as one radio's
-  (`HeardOnCurrentLoraAnswers`), cleared when another radio is next connected on its own.
-  Remove Them follows D-18 (T400, owner's call of 2026-10-05): a node another radio has heard
-  stays in the app, and only the window's radio drops it. Delete Node is unchanged (T146).
-  Review V36 (`review-connections-v36.md`): V36-1 held and is fixed (T401). Remove Them's app
-  side runs on the packet actor (`MeshPackets.removeUnheardNode`), from the observations as
-  they are now, and stops when the window's radio goes.
-  T403 (owner's call, 2026-10-05): each radio's answers are kept on its own observations, and
-  each window shows its radio's; the one-radio claim (T399) and T402's same-network keep are gone.
+  conflict. #2404 stamps `lastConfigRefresh` only on an owned config completion, per session
+  here. #2584's restore always asks for the config. `main`'s #2575 stores heard-on-current-LoRa
+  on the shared node rows, from the one radio. Here each radio's answers are kept on its own
+  observations (`NodeObservationEntity.heardOnCurrentLora`) and each window shows its radio's
+  (T403, owner's call of 2026-10-05; it replaced T399, which recorded the answers as one
+  radio's). The unheard notice offers only nodes the window's radio had, never the user's
+  radios (T399). Remove Them runs on the packet actor (`MeshPackets.removeUnheardNode`), from
+  the observations as they are now (T401): a node another of the user's radios still has stays
+  in the app, and only the window's radio drops it (T400); a shared network doesn't keep it
+  (T403, which undid T402; D-18 in spec.md). It stops when the window's radio goes. Delete Node
+  is unchanged (T146). Reviews V35, V36 and V37 (`review-connections-v35.md` to `-v37.md`),
+  checked in the files; all held and are fixed (T399, T401, T404). V37-1: node detail on iPad
+  and the Mac looks the marker up again when another node is selected.
 - Merge of `main` (2026-10-02): merge commit `03632328` brought in `main`'s 11 commits up to
   `c3bb355b` (v2.7.23); `backup/multi-radio-pre-rebase` keeps the branch as it was before
   (`b13061ec`). Review V20 and data V15 (`review-connections-v20.md` M1–M2, `review-data-v15.md`
@@ -474,6 +471,9 @@ describes it well enough to rebuild.
   `NodeObservationEntity.heardOnCurrentLora`; `NodeInfoEntity.heardOnCurrentLora` is still
   written as on `main`, but nothing shows it. Views read the window's radio's answers through
   `RadioLoraAnswers` (a fresh context). Node database downloads are tracked per `RadioSession`.
+  A view that looks one node's answer up keys the lookup on the node too: the split view's
+  detail column keeps one `NodeDetail` across selections (V37-1). Remove Them's re-check asks
+  the packet actor (`MeshPackets.loraAnswer`), which saves pending writes first (T404).
 - Lock-down on a radio that isn't focused (`AccessoryManager+RadioAttention.swift`) is untested on
   real lock-down firmware. Since T073 a locked or outdated radio stays connected with a
   `RadioAttention` and a prompt naming it; nothing turns it away. What the code can't tell: whether
@@ -604,3 +604,5 @@ describes it well enough to rebuild.
   Remove Them there deletes them from the app. B's own node and nodes only B heard are never
   offered in A's window. With many unheard nodes, disconnect A while Remove Them runs: it stops
   (log `Stopped removing unheard nodes`), and the nodes it hadn't reached stay (V36-1).
+  On iPad at regular width, or the Mac, in A's window select a node A marks, then one it
+  doesn't: node detail shows "Not heard on current LoRa" for the first only (V37-1).

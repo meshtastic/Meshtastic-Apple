@@ -53,10 +53,10 @@ enum UnheardNodesStrings {
 /// What the unheard notice may offer to remove (feature 021, review V35).
 ///
 /// On `main` the store is one radio's, so a node with no answer after its node database is one
-/// the radio dropped. Here the store holds every radio's nodes, and only the radio connected on
-/// its own has answers, so the other radios' nodes would all look like nodes this radio dropped.
-/// Remove Them itself runs on the packet actor (`MeshPackets.removeUnheardNode`): as when a radio
-/// is removed (D-18), a node another of the user's radios has heard stays in the app.
+/// the radio dropped. Here the store holds every radio's nodes, and each radio answers only for
+/// the nodes it has, so the other radios' nodes would all look like nodes this radio dropped.
+/// Remove Them itself runs on the packet actor (`MeshPackets.removeUnheardNode`): a node another
+/// of the user's radios still has stays in the app (D-18, T403).
 enum UnheardNodesRemoval {
 	/// Nodes that aren't favorites, the window's radio or another of the user's radios. Once
 	/// another radio has observations, only the nodes this radio has observed: the ones it had,
@@ -295,8 +295,9 @@ struct UnheardNodesBanner: View {
 				break
 			}
 			let nodeNum = node.num
-			// Its answer as saved now, not as counted: it may have been heard since.
-			let answer = RadioLoraAnswers.answer(of: nodeNum, radioNum: connectedNodeNum, container: context.container)
+			// Its answer as it is now, not as counted: it may have been heard since, and the packet
+			// actor may not have saved that yet (review V37).
+			let answer = await MeshPackets.shared.loraAnswer(of: nodeNum, radioNum: connectedNodeNum)
 			guard isRemovable(node, radioNum: connectedNodeNum, answer: answer) else {
 				recovered += 1
 				continue

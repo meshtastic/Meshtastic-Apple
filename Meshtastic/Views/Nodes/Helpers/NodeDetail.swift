@@ -129,7 +129,8 @@ struct NodeDetail: View {
 	}
 	@State var showingCompassSheet = false
 	/// The window's radio reports the node not heard on its current LoRa settings (feature 021:
-	/// each radio answers for its own).
+	/// each radio answers for its own). Looked up again when the shown node changes too: a split
+	/// view's detail column keeps this view, and its state, across selections (review V37-1).
 	@State private var isUnheardOnCurrentLora = false
 
 	private func refreshUnheardOnCurrentLora() {
@@ -176,7 +177,7 @@ struct NodeDetail: View {
 						.onChange(of: node.lastHeard) {
 							refreshNodeSummary()
 						}
-						.task(id: accessoryManager.radioLoraAnswersKey(for: windowRadio)) {
+						.task(id: accessoryManager.nodeLoraAnswerKey(of: nodeNum, for: windowRadio)) {
 							refreshUnheardOnCurrentLora()
 						}
 						.onReceive(NotificationCenter.default.publisher(for: .heardOnCurrentLoraDidChange)) { _ in

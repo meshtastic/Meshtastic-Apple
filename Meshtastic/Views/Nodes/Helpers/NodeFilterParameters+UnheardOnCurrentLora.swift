@@ -62,6 +62,14 @@ struct RadioLoraAnswersKey: Equatable {
 	let savedAt: Date?
 }
 
+/// When node detail looks its node's answer up again: the window's radio's key, and the node. A
+/// split view's detail column keeps one `NodeDetail`, and its state, across selections, so a key
+/// without the node left the previous node's marker up (review V37-1).
+struct NodeLoraAnswerKey: Equatable {
+	let nodeNum: Int64
+	let radio: RadioLoraAnswersKey
+}
+
 extension AccessoryManager {
 	/// The radio whose answers `window` shows: its radio, also while it's disconnected, since the
 	/// answers stay with its observations.
@@ -72,6 +80,10 @@ extension AccessoryManager {
 	func radioLoraAnswersKey(for window: RadioWindow) -> RadioLoraAnswersKey {
 		let radioNum = answeringRadioNum(for: window)
 		return RadioLoraAnswersKey(radioNum: radioNum, savedAt: nodeDatabaseSavedAt[radioNum])
+	}
+
+	func nodeLoraAnswerKey(of nodeNum: Int64, for window: RadioWindow) -> NodeLoraAnswerKey {
+		NodeLoraAnswerKey(nodeNum: nodeNum, radio: radioLoraAnswersKey(for: window))
 	}
 }
 

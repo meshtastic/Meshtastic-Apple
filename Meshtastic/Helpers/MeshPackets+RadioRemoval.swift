@@ -253,9 +253,20 @@ extension MeshPackets {
 		return deleted
 	}
 
+	/// Radio `radioNum`'s heard-on-current-LoRa answer for `nodeNum`, with pending writes saved
+	/// first, so Remove Them's re-check sees a node the radio heard moments ago, whose answer is
+	/// still waiting in the debounced save (review V37). Nil when the radio has no observation of it.
+	func loraAnswer(of nodeNum: Int64, radioNum: Int64) -> RadioLoraAnswers.Answer? {
+		flushDebouncedSaves()
+		let observation = (try? observations(ofNode: nodeNum, radioNum: radioNum))?.first { $0.radioNum == radioNum }
+		return observation.map { RadioLoraAnswers.Answer(heard: $0.heardOnCurrentLora, viaMqtt: $0.viaMqtt) }
+	}
+
 	/// The app side of the unheard notice's Remove Them for one node, once radio `radioNum` has
-	/// been asked to drop it (T400): `removeRadioData`'s rule for one node. On this actor, which
-	/// writes the observations, so it works from them as they are now (review V36-1).
+	/// been asked to drop it (T400): `removeRadioData`'s rule for a radio on a network of its own,
+	/// for one node. A shared network doesn't keep the node, as it does there: a node the radio
+	/// doesn't hear on its settings isn't part of that mesh (T403). On this actor, which writes
+	/// the observations, so it works from them as they are now (review V36-1).
 	/// - Another of the user's radios has observed the node: it stays in the app (D-18), for the
 	///   radios that still have it. `radioNum`'s observation goes, with its heard-on-current-LoRa
 	///   answer; the node is rewritten from the others' observations.

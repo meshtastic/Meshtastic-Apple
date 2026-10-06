@@ -35,13 +35,15 @@ struct NodeListRowRefreshGate {
 /// whether it heard the node on the current LoRa settings, which can change without a new packet.
 struct NodeRowRefreshKey: Equatable {
 	let lastHeard: Date?
+	/// The node's own answer, as on `main`, only when no window's answer is given (previews). With
+	/// several radios it's whichever radio wrote last, which the row doesn't show (review V37).
 	let heardOnCurrentLora: Bool?
 	/// The window's radio's answer (feature 021), which its node list passes in.
 	let unheardOnCurrentLora: Bool?
 
 	@MainActor init(_ node: NodeInfoEntity, unheardOnCurrentLora: Bool? = nil) {
 		lastHeard = node.lastHeard
-		heardOnCurrentLora = node.heardOnCurrentLora
+		heardOnCurrentLora = unheardOnCurrentLora == nil ? node.heardOnCurrentLora : nil
 		self.unheardOnCurrentLora = unheardOnCurrentLora
 	}
 }

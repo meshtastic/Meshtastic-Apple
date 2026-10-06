@@ -346,4 +346,47 @@ struct MultiRadioUnheardOnCurrentLoraTests {
 		#expect(RadioLoraAnswers.answer(of: num, radioNum: radioA, container: container)?.heard == true, "Remove Them's re-check must see it was heard")
 		#expect(RadioLoraAnswers.answer(of: num, radioNum: radioB, container: container)?.heard == false, "B hasn't heard it")
 	}
+
+	@Test("Remove Them's re-check asks the packet actor, so an answer it hasn't saved yet counts (review V37)")
+	func recheckSeesUnsavedAnswer() async throws {
+		let container = try isolatedContainer("UnheardRecheck")
+		let radioA: Int64 = 0x0A0A, num: Int64 = 0x7E57_0413
+		let setup = ModelContext(container)
+		insertRadio(radioA, in: setup)
+		let observation = NodeObservationEntity(radioNum: radioA, nodeNum: num)
+		observation.heardOnCurrentLora = false
+		setup.insert(observation)
+		_ = insertNode(num, in: setup)
+		try setup.save()
+
+		let packets = MeshPackets(modelContainer: container)
+		await packets.updateAnyPacketFrom(packet: heard(from: num, hops: 0), activeDeviceNum: radioA, reportsHeardOnCurrentLora: true)
+		#expect(RadioLoraAnswers.answer(of: num, radioNum: radioA, container: container)?.heard == false, "not saved yet")
+		#expect(await packets.loraAnswer(of: num, radioNum: radioA)?.heard == true, "heard moments ago: not removed")
+		#expect(RadioLoraAnswers.answer(of: num, radioNum: radioA, container: container)?.heard == true, "saved on the way")
+		#expect(await packets.loraAnswer(of: num &+ 1, radioNum: radioA) == nil, "no observation, no answer")
+	}
+
+	// MARK: Node detail and rows (review V37)
+
+	@Test("Node detail looks its answer up again when the shown node changes, its radio unchanged (V37-1)")
+	func nodeDetailKeyFollowsTheNode() {
+		let manager = AccessoryManager(transports: [])
+		let shown = manager.nodeLoraAnswerKey(of: 0x7E57_0415, for: .firstRadio)
+		#expect(manager.nodeLoraAnswerKey(of: 0x7E57_0415, for: .firstRadio) == shown)
+		#expect(manager.nodeLoraAnswerKey(of: 0x7E57_0416, for: .firstRadio) != shown, "a split view's detail keeps the view across selections")
+		manager.nodeDatabaseSavedAt[manager.answeringRadioNum(for: .firstRadio)] = Date()
+		#expect(manager.nodeLoraAnswerKey(of: 0x7E57_0415, for: .firstRadio) != shown, "and again when its radio's node database is saved")
+	}
+
+	@Test("A row given the window's answer re-keys on that answer, not on the node's own copy")
+	func rowKeyFollowsTheWindowsAnswer() {
+		let node = NodeInfoEntity()
+		node.lastHeard = Date(timeIntervalSince1970: 1_000)
+		node.heardOnCurrentLora = true
+		let before = NodeRowRefreshKey(node, unheardOnCurrentLora: false)
+		node.heardOnCurrentLora = false
+		#expect(NodeRowRefreshKey(node, unheardOnCurrentLora: false) == before, "another radio's download rewrote the node's copy")
+		#expect(NodeRowRefreshKey(node, unheardOnCurrentLora: true) != before)
+	}
 }

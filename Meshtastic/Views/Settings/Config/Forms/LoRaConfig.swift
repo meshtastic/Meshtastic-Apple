@@ -168,8 +168,8 @@ struct LoRaConfig: View {
 
 				_ = try await accessoryManager.saveLoRaConfig(config: config, fromUser: from, toUser: to)
 				// A change to the connected radio applies without a reboot on 2.8, so ask it for the
-				// node database to pick up its answers for the new settings (only when it's the only
-				// radio connected, feature 021).
+				// node database to pick up its answers for the new settings. Each connected radio answers
+				// for its own settings (feature 021), so it's this radio that's asked.
 				accessoryManager.refreshNodeDatabaseAfterLoRaChange(forRadio: to.num)
 				onSuccessfulSave(to.num, region)
 			})

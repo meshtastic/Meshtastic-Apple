@@ -330,7 +330,9 @@ extension NodeInfoEntity {
 	}
 
 	/// The radio has not heard this node on its current LoRa settings. MQTT nodes are left out: they
-	/// never reach the radio over RF, so the radio can never report them heard.
+	/// never reach the radio over RF, so the radio can never report them heard. From `main`'s copy
+	/// (`heardOnCurrentLora`), whichever radio wrote it last (feature 021): a row shows the window's
+	/// radio's answer instead, and this only when it's given none (previews).
 	var isUnheardOnCurrentLora: Bool {
 		heardOnCurrentLora == false && !viaMqtt
 	}
