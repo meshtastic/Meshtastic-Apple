@@ -59,8 +59,11 @@ Read this first if you are picking the work up. Update it in the same commit as 
   Mesh Multi for it unless asked. Don't design around the focused/additional split: every radio
   works the same way (D-17). Removing the switch-era helpers (T066) waits for that test.
 - Baseline and latest: the full suite passes in the iOS Simulator (3,712 Swift Testing tests in
-  625 suites plus 32 XCTests, about 90 seconds of test time, T404). Run it with the simulator to
+  625 suites plus 32 XCTests, about 90 seconds of test time, T134). Run it with the simulator to
   itself: another session's test runs on the same simulator kill the test host partway.
+  SwiftLint over the whole repo: no errors, and no warnings beyond `main`'s. A test suite that
+  grows past 400 lines continues in a same-file `extension` of the suite type, which keeps its
+  tests in the suite and under its traits (`.serialized`, the time limit).
 
 ## First two-radio test (Mesh Multi, Mac)
 
@@ -234,9 +237,10 @@ Read this first if you are picking the work up. Update it in the same commit as 
   reconnecting, and lock-down / old firmware prompting by name on any radio. Next: the device
   test when the owner's hardware is ready (checklist below). Also done since: T016, T018, T110,
   most of T111, T120, T121 and the string catalog sync (`30924072`). Left: T066 and the rest of
-  T111 after the device test; more doc snapshots (T092); Phase 10 (T130–T135). T122 (bundled HTML)
-  is the last step right before opening the pull request, by the owner's decision; `cmark-gfm`
-  is installed.
+  T111 after the device test; more doc snapshots (T092); T130–T133 (devices and the real
+  store). T122, T134 and T135 are done (2026-10-06, before the pull request): the bundled HTML
+  matched its sources and three missing screenshots were added; the string catalog is synced;
+  the description is `pr-description.md`. Rebuild the docs bundle again if docs change.
   a test that has to change there means behaviour changed, so say why in the commit.
   When you start a task, mark it `[~]` in tasks.md and note it here.
 
@@ -306,10 +310,21 @@ describes it well enough to rebuild.
   `scripts/gen_protos.sh --no-pull` regenerates the Swift sources against it.
 - Claude Code: `xcodebuild` and `swiftlint` fail inside its sandbox ("failed with exit code 0 but
   produced no further output"); run them with the sandbox off.
-- String catalog: the feature's new strings aren't in `Localizable.xcstrings` yet (no feature
-  commit has touched it). Sync it once near the end (T134). When a build changes `Localizable.xcstrings`, run
-  `python3 scripts/copy-registry-translations.py` so the new `meshtastic.*` keys pick up the
-  existing translations. Don't commit reordered or pruned catalogs without checking them.
+- String catalog: synced for T134 (2026-10-06). `xcodebuild` doesn't sync it; Xcode's IDE does.
+  How it was done from the command line, to repeat after more string changes:
+  - Build clean into a separate DerivedData folder outside the repo, so every `.stringsdata` is
+    current; the usual folder keeps ones from deleted files and older sources.
+  - `xcrun xcstringstool sync Localizable.xcstrings --stringsdata …` with the app's (one
+    architecture), the iMessage extension's and the TV app's `.stringsdata`, plus the one
+    `ExtractedAppShortcutsMetadata.stringsdata` (App Intents; written to one architecture only,
+    and without it the intents' summaries are marked stale).
+  - `xcstringstool` re-sorts every key, which rewrites nearly the whole file. Keep the
+    committed order: write the synced entries back into the existing order (Xcode's layout:
+    `" : "`, an empty object as `{`, a blank line and `}`, no final newline) and check that
+    the catalog at HEAD round-trips byte for byte first.
+  - Then `python3 scripts/copy-registry-translations.py`, so new `meshtastic.*` keys pick up
+    existing translations. Check what's removed (only untranslated keys nothing uses) and
+    that no translation is lost.
 - Terminal quirk in this environment: heredocs and multi-line quoted strings sometimes hang the
   shell. Write scripts and commit messages to files and pass the path.
 
@@ -547,9 +562,10 @@ describes it well enough to rebuild.
 - [ ] Mac windows (D-19): each connected radio has its own window, the whole app for it; the
   Connect window lists them with Open and Disconnect; closing a radio's window only hides it
   (still connected, Radios menu reopens it); Radios › Disconnect acts on the key window's radio
-  and keeps its window, showing the radio off (W-02 revised, T386); File › Add Radio… (⇧⌘N)
-  opens the Connect window; after a relaunch each radio that reconnects has its window again; a
-  notification tap opens the window of the radio it's about; the composer has no Via picker.
+  and keeps its window, showing the radio off (W-02 revised, T386); Radios › Add Radio…
+  (⇧⌘N) opens the Connect window; after a relaunch each radio that reconnects has its window
+  again; a notification tap opens the window of the radio it's about; the composer has no Via
+  picker.
   With A's window and B's window open, navigating in one doesn't move the other.
 - [ ] Disconnect and Remove (T386, T387, review V27). Mac: macOS window restoration brings back
   the windows open at quit; a restored window for a radio that then connects isn't duplicated; a
