@@ -22,6 +22,7 @@ final class DeviceHardwareEntity {
 	var platformioTarget: String?
 	var requiresDfu: Bool = false
 	var supportLevel: Int = 0
+	var isMaker: Bool = false
 	var variant: String?
 
 	@Relationship(deleteRule: .nullify, inverse: \DeviceHardwareImageEntity.device)
@@ -44,6 +45,7 @@ struct HardwareCatalogRecord: Equatable {
 	let displayName: String?
 	let activelySupported: Bool
 	let supportLevel: SupportLevel
+	let isMaker: Bool
 	let architecture: String?
 
 	init(
@@ -53,6 +55,7 @@ struct HardwareCatalogRecord: Equatable {
 		displayName: String?,
 		activelySupported: Bool,
 		supportLevel: SupportLevel,
+		isMaker: Bool = false,
 		architecture: String? = nil
 	) {
 		self.hwModel = hwModel
@@ -61,6 +64,7 @@ struct HardwareCatalogRecord: Equatable {
 		self.displayName = displayName
 		self.activelySupported = activelySupported
 		self.supportLevel = supportLevel
+		self.isMaker = isMaker
 		self.architecture = architecture
 	}
 
@@ -72,6 +76,7 @@ struct HardwareCatalogRecord: Equatable {
 			displayName: entity.displayName,
 			activelySupported: entity.activelySupported,
 			supportLevel: SupportLevel(rawValue: entity.supportLevel) ?? .discontinued,
+			isMaker: entity.isMaker,
 			architecture: entity.architecture
 		)
 	}
@@ -85,6 +90,7 @@ struct HardwareCatalogPresentation: Equatable {
 	let platformioTarget: String?
 	let activelySupported: Bool?
 	let supportLevel: SupportLevel?
+	let isMaker: Bool?
 	let architecture: String?
 }
 
@@ -126,6 +132,7 @@ enum HardwareCatalogResolver {
 			platformioTarget: record.platformioTarget,
 			activelySupported: record.activelySupported,
 			supportLevel: record.supportLevel,
+			isMaker: record.isMaker,
 			architecture: record.architecture
 		)
 	}

@@ -77,8 +77,13 @@ private struct NodeInfoHardwareSection: View {
 	}
 
 	private var supportRosette: some View {
-		Image(systemName: isActivelySupported ? "checkmark.seal.fill" : "xmark.seal.fill")
-			.foregroundStyle(isActivelySupported ? .green : .secondary)
+		if isMaker && supportLevel != .legacy && supportLevel != .discontinued {
+			Image(systemName: "wrench.adjustable.fill")
+				.foregroundStyle(.cyan)
+		} else {
+			Image(systemName: isActivelySupported ? "checkmark.seal.fill" : "xmark.seal.fill")
+				.foregroundStyle(isActivelySupported ? .green : .secondary)
+		}
 	}
 
 	private var modelName: String {
@@ -89,12 +94,19 @@ private struct NodeInfoHardwareSection: View {
 		summary.hwModel == "PORTDUINO"
 	}
 
+	private var isMaker: Bool {
+		hardwarePresentation?.isMaker == true
+	}
+
 	private var supportLevel: SupportLevel? {
 		hardwarePresentation?.supportLevel
 	}
 
 	private var hardwareDescription: String {
 		if let supportLevel {
+			if isMaker && supportLevel != .legacy && supportLevel != .discontinued {
+				return "Independent maker hardware, built and tested."
+			}
 			return supportLevel.description
 		}
 		return hasDevice
@@ -106,15 +118,16 @@ private struct NodeInfoHardwareSection: View {
 		if summary.hwModel == "UNSET" { return "Hardware" }
 		if isPortduino { return "Community Hardware" }
 		guard let supportLevel else { return "Hardware" }
+		if supportLevel == .legacy { return "Legacy Hardware" }
+		if supportLevel == .discontinued { return "Discontinued Hardware" }
+		if isMaker { return "Maker Hardware" }
 		switch supportLevel {
 		case .flagship:
 			return "Supported Hardware"
 		case .niche:
 			return "Niche Hardware"
-		case .legacy:
-			return "Legacy Hardware"
-		case .discontinued:
-			return "Discontinued Hardware"
+		default:
+			return "Hardware"
 		}
 	}
 
@@ -139,7 +152,7 @@ private struct NodeInfoHardwareSection: View {
 						.foregroundStyle(.secondary)
 				}
 				.listRowSeparator(.hidden)
-			} else if hasDevice && supportLevel == .flagship {
+			} else if hasDevice && supportLevel == .flagship && !isMaker {
 				// MARK: - Flagship Device (Hero Layout)
 				VStack(spacing: 12) {
 					ZStack(alignment: .bottomTrailing) {
@@ -156,8 +169,8 @@ private struct NodeInfoHardwareSection: View {
 						.frame(maxWidth: .infinity, alignment: .center)
 				}
 				.listRowSeparator(.hidden)
-			} else if hasDevice && (supportLevel == .niche || supportLevel == .legacy) {
-				// MARK: - Niche / Legacy Device
+			} else if hasDevice && (supportLevel == .niche || supportLevel == .legacy || isMaker) {
+				// MARK: - Niche / Legacy / Maker Device
 				HStack(spacing: 16) {
 					DeviceHardwareImage(hwId: Int32(summary.hwModelId))
 						.frame(width: 60, height: 60)
