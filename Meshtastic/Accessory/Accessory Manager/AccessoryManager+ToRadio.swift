@@ -380,12 +380,19 @@ extension AccessoryManager {
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 	}
 
+	/// Leading and trailing spaces and blank lines (often a stray Return before sending) would be
+	/// sent and shown as part of the message. Line breaks inside it are kept.
+	nonisolated static func outgoingMessageText(_ text: String) -> String {
+		text.trimmingCharacters(in: .whitespacesAndNewlines)
+	}
+
 	public func sendMessage(message: String, toUserNum: Int64, channel: Int32, isEmoji: Bool, replyID: Int64) async throws {
 		guard let fromUserNum = self.activeConnection?.device.num else {
 			Logger.services.error("Error while sending CannedMessageModule request.  No active device.")
 			throw AccessoryError.ioFailed("No active device")
 		}
 
+		let message = Self.outgoingMessageText(message)
 		guard message.count > 0 else {
 			// Don't send an empty message
 			Logger.mesh.info("🚫 Don't Send an Empty Message")
