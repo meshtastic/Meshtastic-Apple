@@ -193,6 +193,9 @@ extension AccessoryManager {
 			incomingDeviceId: myNodeInfo.deviceID,
 			peripheralId: connectedDeviceId
 		)
+		// The stored heard-on-current-LoRa answers are another radio's until this one, on its own,
+		// claims them (review V35-2). After the renumber, which moves them with the radio.
+		await claimHeardOnCurrentLora(for: session)
 
 		let myInfoId = await MeshPackets.shared.myInfoPacket(myInfo: myNodeInfo, peripheralId: connectedDeviceId)
 
@@ -320,6 +323,7 @@ extension AccessoryManager {
 		}
 		// The radio the store's old rows belong to, if it's this one (T213).
 		BackfillOwner.renumber(from: oldNum, to: newNum)
+		HeardOnCurrentLoraAnswers.renumber(from: oldNum, to: newNum)
 		Self.moveSavedRadioChoices(from: oldNum, to: newNum)
 		appState?.databaseResetID = UUID()
 	}
@@ -371,6 +375,9 @@ extension AccessoryManager {
 		}
 		if nodeDatabaseDumpInProgress, let session, session === soleConnectedSession {
 			nodeDatabaseDumpNums.insert(Int64(nodeInfo.num))
+		}
+		if let session {
+			await claimHeardOnCurrentLora(for: session)
 		}
 
 		// TODO: nodeInfoPacket's channel: parameter is not used

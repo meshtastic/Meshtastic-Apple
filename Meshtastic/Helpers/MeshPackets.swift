@@ -1162,18 +1162,13 @@ actor MeshPackets {
 		}
 	}
 
-	/// After a full node database download: nodes the radio did not include are ones it no longer
-	/// has, so it has no answer for them. Their stored heard-on-current-LoRa goes back to unknown,
-	/// rather than keeping an answer from an earlier download.
-	/// A second radio connected (feature 021): the answers on the nodes `radios` have observed
-	/// were one radio's, and don't stand for the others', so they go back to unknown.
-	func clearHeardOnCurrentLora(observedBy radios: Set<Int64>) {
-		guard !radios.isEmpty else { return }
-		let radioNums = Array(radios)
-		let observed = FetchDescriptor<NodeObservationEntity>(predicate: #Predicate { radioNums.contains($0.radioNum) })
-		guard let observations = try? modelContext.fetch(observed) else { return }
-		let nodeNums = Array(Set(observations.map(\.nodeNum)).union(radios))
-		let descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { nodeNums.contains($0.num) && $0.heardOnCurrentLora != nil })
+	/// Puts every stored heard-on-current-LoRa answer back to unknown (feature 021). They're one
+	/// radio's: once a second radio connects, or another radio is next connected on its own, they
+	/// don't stand for what's connected, whichever nodes they're on (review V35-2).
+	func clearHeardOnCurrentLora() {
+		// Saved first: the fetch only sees answers already in the store.
+		savePendingChanges()
+		let descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.heardOnCurrentLora != nil })
 		guard let nodes = try? modelContext.fetch(descriptor), !nodes.isEmpty else { return }
 		for node in nodes {
 			node.heardOnCurrentLora = nil
@@ -1181,6 +1176,9 @@ actor MeshPackets {
 		savePendingChanges()
 	}
 
+	/// After a full node database download: nodes the radio did not include are ones it no longer
+	/// has, so it has no answer for them. Their stored heard-on-current-LoRa goes back to unknown,
+	/// rather than keeping an answer from an earlier download.
 	func markAbsentFromRadio(presentNums: Set<Int64>) {
 		let descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.heardOnCurrentLora != nil })
 		guard let nodes = try? modelContext.fetch(descriptor) else { return }

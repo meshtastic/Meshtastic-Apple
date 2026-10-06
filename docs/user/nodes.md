@@ -108,7 +108,7 @@ When most of the list is in that state, the Nodes tab shows a notice such as **8
 
 Older firmware doesn't report this, so the marker and the notice don't appear.
 
-With more than one radio connected, each radio would answer for its own settings, so the app keeps no answers while several are connected: the marker and the notice don't appear until only one radio is left and it has sent its node list again.
+Each radio answers for its own settings, so the app keeps one radio's answers at a time: those of a radio connected on its own. When a second radio connects, or a different radio is next connected on its own, the answers are cleared, and the marker and the notice come back once a radio connected on its own has sent its node list. When the app holds nodes from several of your radios, the notice only counts nodes the radio in that window has heard, and never your other radios themselves.
 
 ## Context Menu Actions
 

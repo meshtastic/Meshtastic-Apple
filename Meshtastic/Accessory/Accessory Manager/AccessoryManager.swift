@@ -1218,6 +1218,8 @@ class AccessoryManager: ObservableObject {
 			}
 			// All received packets get passed through updateAnyPacketFrom to update lastHeard, rxSnr, etc. (like firmware's NodeDB::updateFrom).
 			if let connectedNodeNum = session.nodeNum {
+				// A radio left on its own stores its answers once they're its own (review V35-2).
+				await claimHeardOnCurrentLora(for: session)
 				await MeshPackets.shared.updateAnyPacketFrom(packet: packet, activeDeviceNum: connectedNodeNum,
 				                                             reportsHeardOnCurrentLora: reportsHeardOnCurrentLora(on: session))
 			} else {
@@ -1678,7 +1680,6 @@ extension AccessoryManager {
 		return Self.isTAKv2Supported(firmwareVersion: connectedVersion)
 	}
 
-	/// Whether the connected radio reports NodeInfo.heard_on_current_lora (firmware 2.8.1+).
 	/// The only radio connected (feature 021). Its node database answers heard-on-current-LoRa
 	/// for the shared node rows, as the one radio does on `main`. Nil with none or several.
 	var soleConnectedSession: RadioSession? {
@@ -1686,15 +1687,18 @@ extension AccessoryManager {
 		return sessions.count == 1 ? sessions.first : nil
 	}
 
-	/// `soleConnectedSession`, when its firmware sends NodeInfo.heard_on_current_lora. With several
+	/// `soleConnectedSession`, when its firmware sends NodeInfo.heard_on_current_lora and the
+	/// stored answers are its own (`claimHeardOnCurrentLora(for:)`, review V35-2). With several
 	/// radios each would overwrite the others' answers on the shared node rows, so none is kept and
 	/// the field stays unknown, as it is for firmware that doesn't send it.
 	var heardOnCurrentLoraSession: RadioSession? {
-		guard let session = soleConnectedSession else { return nil }
-		let version = session.device.firmwareVersion ?? session.nodeNum.flatMap { knownFirmwareVersions[$0] }
+		guard let session = soleConnectedSession, let radioNum = session.nodeNum, HeardOnCurrentLoraAnswers.radioNum() == radioNum else { return nil }
+		let version = session.device.firmwareVersion ?? knownFirmwareVersions[radioNum]
 		return Self.reportsHeardOnCurrentLora(firmwareVersion: version) ? session : nil
 	}
 
+	/// Whether the connected radio reports NodeInfo.heard_on_current_lora (firmware 2.8.1+) and the
+	/// stored answers are its own.
 	var reportsHeardOnCurrentLora: Bool { heardOnCurrentLoraSession != nil }
 
 	/// Whether what `session`'s radio reports is stored as heard-on-current-LoRa.
@@ -1708,9 +1712,9 @@ extension AccessoryManager {
 	}
 
 	/// A radio connected alongside another (feature 021). Neither radio's heard-on-current-LoRa
-	/// answers stand for the other's on the shared node rows, so those on the nodes they've
-	/// observed go back to unknown and the download tracking stands down. Nothing is stored again
-	/// until one radio is left and it sends its node database.
+	/// answers stand for the other's on the shared node rows, so every stored answer goes back to
+	/// unknown, those of a radio that isn't connected now included (review V35-2), and the download
+	/// tracking stands down. Nothing is stored again until one radio is left and claims them.
 	func clearHeardOnCurrentLoraForSeveralRadios() {
 		guard connectedRadioCount > 1 else { return }
 		loraChangeTracker.reset()
@@ -1718,8 +1722,24 @@ extension AccessoryManager {
 		nodeDatabaseRequestLoRaChange = nil
 		nodeDatabaseSaveGeneration += 1
 		nodeDatabaseSavedAt = nil
-		let radios = Set(([activeConnection] + additionalRadios.values.map { $0 }).compactMap { $0?.nodeNum })
-		Task { await MeshPackets.shared.clearHeardOnCurrentLora(observedBy: radios) }
+		HeardOnCurrentLoraAnswers.set(0)
+		Task { await MeshPackets.shared.clearHeardOnCurrentLora() }
+	}
+
+	/// Makes the stored heard-on-current-LoRa answers `session`'s radio's when it's the only radio
+	/// connected and they're another's (review V35-2). They're cleared first: until its own node
+	/// database arrives they would show the other radio's markers in this radio's window, and the
+	/// unheard notice would offer to remove nodes by them. Called once its node number is known
+	/// and before anything it reports is stored; a no-op once they're its own.
+	func claimHeardOnCurrentLora(for session: RadioSession) async {
+		guard session === soleConnectedSession, let radioNum = session.nodeNum, radioNum != 0 else { return }
+		let previous = HeardOnCurrentLoraAnswers.radioNum()
+		guard previous != radioNum else { return }
+		Logger.data.info("📻 [LoRa] \(radioNum.toHex(), privacy: .public) is the only radio connected; clearing the heard-on-current-LoRa answers kept for \(previous.toHex(), privacy: .public)")
+		await MeshPackets.shared.clearHeardOnCurrentLora()
+		// A radio connecting meanwhile leaves none kept.
+		guard session === soleConnectedSession else { return }
+		HeardOnCurrentLoraAnswers.set(radioNum)
 	}
 
 	/// Strict on purpose: unlike `checkIsVersionSupported`, an unknown version is false. Older firmware

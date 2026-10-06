@@ -56,8 +56,8 @@ Read this first if you are picking the work up. Update it in the same commit as 
 - Next up: the owner's device test (checklist below), which waits on hardware; don't rebuild
   Mesh Multi for it unless asked. Don't design around the focused/additional split: every radio
   works the same way (D-17). Removing the switch-era helpers (T066) waits for that test.
-- Baseline and latest: the full suite passes in the iOS Simulator (3,519 Swift Testing tests plus
-  the XCTests, about 55 seconds of test time). Run it with the simulator to itself: another
+- Baseline and latest: the full suite passes in the iOS Simulator (3,709 Swift Testing tests plus
+  32 XCTests, about 90 seconds of test time, T399). Run it with the simulator to itself: another
   session's test runs on the same simulator kill the test host partway.
 
 ## First two-radio test (Mesh Multi, Mac)
@@ -127,6 +127,10 @@ Read this first if you are picking the work up. Update it in the same commit as 
   back to unknown (`heardOnCurrentLoraSession`). Per-radio answers (on
   `NodeObservationEntity`) are left for the owner. #2404 stamps `lastConfigRefresh` only on an
   owned config completion, per session here. #2584's restore always asks for the config.
+  Review V35 (`review-connections-v35.md`, V35-1–V35-2 and minors) of the merge, checked in
+  the files; all held and are fixed (T399): the unheard notice offers only nodes the window's
+  radio had, never the user's radios, and the stored answers are recorded as one radio's
+  (`HeardOnCurrentLoraAnswers`), cleared when another radio is next connected on its own.
 - Merge of `main` (2026-10-02): merge commit `03632328` brought in `main`'s 11 commits up to
   `c3bb355b` (v2.7.23); `backup/multi-radio-pre-rebase` keeps the branch as it was before
   (`b13061ec`). Review V20 and data V15 (`review-connections-v20.md` M1–M2, `review-data-v15.md`
@@ -459,6 +463,11 @@ describes it well enough to rebuild.
 - Commit messages: write each to a new, unique file (`/tmp/mr-<topic>.txt`). `create_file`
   refuses to overwrite, and an old `/tmp/msgN.txt` from an earlier session once went into a
   commit unnoticed (fixed with `--amend`). Check `git log -1` after every commit.
+- Heard on current LoRa (`main` #2575, T398, T399): the answers on the node rows are one radio's,
+  recorded in `HeardOnCurrentLoraAnswers`. Anything that stores them goes through
+  `claimHeardOnCurrentLora(for:)` first, or passes `reportsHeardOnCurrentLora(on:)`, which needs the
+  claim. Known and left: a backup restore brings the backup's answers in without changing whose
+  they're recorded as; a radio connecting alone that isn't the recorded one clears them anyway.
 - Lock-down on a radio that isn't focused (`AccessoryManager+RadioAttention.swift`) is untested on
   real lock-down firmware. Since T073 a locked or outdated radio stays connected with a
   `RadioAttention` and a prompt naming it; nothing turns it away. What the code can't tell: whether
@@ -582,3 +591,9 @@ describes it well enough to rebuild.
 - [ ] App Settings › TAK / CarPlay & Siri / Apple Watch: pick B. TAK CoT goes out from B (log
   `📻 [B] Sending TAKPacket…`); a Shortcuts "Send a Group Message" without a radio goes via B;
   with B's node number while B is off, it fails. Reply to a notification from B: the reply goes via B.
+- [ ] Heard on current LoRa (T398, review V35), radios on firmware 2.8.1 or later. A alone after a
+  preset change: the notice counts only nodes A has heard; B's own node and a node only B has
+  heard aren't offered, and stay after Remove Them. Disconnect A and connect B alone: A's
+  markers go as soon as B connects, and B's come with its node list. Connect A alongside B:
+  every marker goes, on nodes only a third radio heard too, and comes back for the radio left
+  on its own once it sends its node list again (a reconnect, or a LoRa change in its window).

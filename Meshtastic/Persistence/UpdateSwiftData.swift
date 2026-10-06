@@ -304,8 +304,16 @@ extension MeshPackets {
 					observation.hopsAway = Int32(truncatingIfNeeded: packet.hopStart - packet.hopLimit)
 				}
 				let allObservations = observations.contains { $0 === observation } ? observations : observations + [observation]
+				// Heard over RF just now, so heard on the current settings (see below). The answer
+				// isn't per radio, so it's set on the aggregated path too: otherwise a node several
+				// radios observed keeps its marker until the next download, and Remove Them's
+				// re-check doesn't see it was heard (review V35).
+				let heardOnCurrentLoraNow = reportsHeardOnCurrentLora && !isImplicitAck && !packet.viaMqtt && packet.hasRxRssi
 				if allObservations.count > 1 {
 					NodeObservationEntity.applyAggregate(allObservations, to: node, firstRadio: PreferredRadio.nodeNum)
+					if heardOnCurrentLoraNow {
+						node.heardOnCurrentLora = true
+					}
 					Logger.data.debug("💾 [updateAnyPacketFrom] Aggregated node \(packet.from.toHex(), privacy: .public) across \(allObservations.count) radios")
 					return
 				}
@@ -325,7 +333,7 @@ extension MeshPackets {
 				// After a node db download the radio replays stored packets marked as LoRa but without
 				// RSSI, which every real reception has (0 dBm included); those were heard earlier, maybe
 				// on other settings.
-				if reportsHeardOnCurrentLora && !isImplicitAck && !packet.viaMqtt && packet.hasRxRssi {
+				if heardOnCurrentLoraNow {
 					node.heardOnCurrentLora = true
 				}
 				

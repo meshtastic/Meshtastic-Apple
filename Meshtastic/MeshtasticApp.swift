@@ -147,6 +147,8 @@ struct MeshtasticAppleApp: App {
 			// user's launch doesn't wait, as on `main`.
 			// Before anything connects: the radio the store's old rows belong to (T193).
 			BackfillOwner.recordIfNeeded()
+			// And the radio the stored heard-on-current-LoRa answers are (review V35-2).
+			HeardOnCurrentLoraAnswers.recordIfNeeded()
 			let manager = accessoryManager
 			// Each radio's node number, for a window whose radio isn't connected yet (review V11 W7).
 			Task { @MainActor in

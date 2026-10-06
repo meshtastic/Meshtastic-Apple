@@ -265,11 +265,14 @@ enum ConnectFlowSupport {
 		let preferredPeripheralId = UserDefaults.preferredPeripheralId
 		let preferredPeripheralNum = UserDefaults.preferredPeripheralNum
 		let lastFirmwareAPIUpdate = UserDefaults.lastFirmwareAPIUpdate
+		/// Whose heard-on-current-LoRa answers the store holds (review V35-2); nil when none is recorded.
+		let heardOnCurrentLoraRadio = UserDefaults.standard.object(forKey: HeardOnCurrentLoraAnswers.nodeNumKey)
 
 		func restore() {
 			UserDefaults.preferredPeripheralId = preferredPeripheralId
 			UserDefaults.preferredPeripheralNum = preferredPeripheralNum
 			UserDefaults.lastFirmwareAPIUpdate = lastFirmwareAPIUpdate
+			UserDefaults.standard.set(heardOnCurrentLoraRadio, forKey: HeardOnCurrentLoraAnswers.nodeNumKey)
 		}
 	}
 

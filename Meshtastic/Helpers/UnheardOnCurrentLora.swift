@@ -57,6 +57,40 @@ enum UnheardOnCurrentLoraOffer {
 	}
 }
 
+/// The radio whose heard-on-current-LoRa answers the shared node rows hold (feature 021,
+/// review V35-2).
+///
+/// `main`'s #2575 stores one radio's answers on the node rows, and they outlast its connection.
+/// When a different radio is next connected on its own they aren't its answers, so they're
+/// cleared before it stores or shows any (`AccessoryManager.claimHeardOnCurrentLora(for:)`), and
+/// none are kept while several radios are connected. Recorded at launch, like `BackfillOwner`: a
+/// store from before feature 021 holds the preferred radio's answers.
+enum HeardOnCurrentLoraAnswers {
+	static let nodeNumKey = "multiRadio.heardOnCurrentLoraRadioNum"
+
+	/// The radio the stored answers are, 0 for none; the preferred radio when none is recorded.
+	static func radioNum(in store: UserDefaults = .standard) -> Int64 {
+		(store.object(forKey: nodeNumKey) as? NSNumber)?.int64Value ?? PreferredRadio.nodeNum
+	}
+
+	static func set(_ radioNum: Int64, in store: UserDefaults = .standard) {
+		store.set(NSNumber(value: radioNum), forKey: nodeNumKey)
+	}
+
+	/// Records the preferred radio, unless a radio is recorded already. At launch, before a
+	/// connect can change the preferred radio.
+	static func recordIfNeeded(in store: UserDefaults = .standard) {
+		guard store.object(forKey: nodeNumKey) == nil else { return }
+		set(PreferredRadio.nodeNum, in: store)
+	}
+
+	/// The store was renumbered (the 2.8 node number change): the radio's answers are still its own.
+	static func renumber(from oldNum: Int64, to newNum: Int64, in store: UserDefaults = .standard) {
+		guard (store.object(forKey: nodeNumKey) as? NSNumber)?.int64Value == oldNum else { return }
+		set(newNum, in: store)
+	}
+}
+
 /// Whether the node database asked for after the latest app-initiated LoRa change has been saved.
 ///
 /// Each change asks again after a short wait. When changes come quickly, only the newest one asks.

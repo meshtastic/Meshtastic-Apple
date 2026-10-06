@@ -50,6 +50,48 @@ enum UnheardNodesStrings {
 	}
 }
 
+/// What the unheard notice may offer to remove, and how a node only the app has goes (feature
+/// 021, review V35-1).
+///
+/// On `main` the store is one radio's, so a node with no answer after its node database is one
+/// the radio dropped. Here the store holds every radio's nodes, and only the radio connected on
+/// its own has answers, so the other radios' nodes would all look like nodes this radio dropped.
+enum UnheardNodesRemoval {
+	/// Nodes that aren't favorites, the window's radio or another of the user's radios. Once
+	/// another radio has observations, only the nodes this radio has observed: the ones it had,
+	/// and may have dropped. Otherwise `main`'s list, because rows from before feature 021 have no
+	/// observation until a second radio joins the store.
+	static func candidates(forRadio radioNum: Int64, in context: ModelContext) throws -> [NodeInfoEntity] {
+		// Bound to a local first: a #Predicate that reaches through self for the node number throws
+		// at fetch time, and the failure is invisible — it just yields no nodes and no banner.
+		let excludedNum = radioNum
+		let nodes = try context.fetch(FetchDescriptor<NodeInfoEntity>(
+			predicate: #Predicate { $0.favorite == false && $0.num != excludedNum }
+		))
+		let ownRadios = try Set(context.fetch(FetchDescriptor<MyInfoEntity>()).map(\.myNodeNum))
+		var byOtherRadios = FetchDescriptor<NodeObservationEntity>(predicate: #Predicate { $0.radioNum != excludedNum })
+		byOtherRadios.fetchLimit = 1
+		guard try context.fetchCount(byOtherRadios) > 0 else {
+			return nodes.filter { !ownRadios.contains($0.num) }
+		}
+		let observed = try Set(context.fetch(FetchDescriptor<NodeObservationEntity>(
+			predicate: #Predicate { $0.radioNum == excludedNum }
+		)).map(\.nodeNum))
+		return nodes.filter { observed.contains($0.num) && !ownRadios.contains($0.num) }
+	}
+
+	/// Deletes a node only the app still has, with its user and every radio's observation of it,
+	/// as Delete Node does (T146): left behind, the observations would bring its Heard By back
+	/// when it's next heard. Doesn't save.
+	static func deleteAppOnly(_ node: NodeInfoEntity, in context: ModelContext) {
+		if let user = node.user {
+			context.delete(user)
+		}
+		NodeObservationEntity.delete(ofNodes: [node.num], in: context)
+		context.delete(node)
+	}
+}
+
 struct UnheardNodesBanner: View {
 	@Environment(\.modelContext) private var context
 	@Environment(\.scenePhase) private var scenePhase
@@ -200,21 +242,15 @@ struct UnheardNodesBanner: View {
 	}
 
 	/// Nodes the radio reports unheard on its current settings, plus nodes only the app still has,
-	/// excluding favorites and the radio itself.
+	/// excluding favorites and the user's radios (`UnheardNodesRemoval.candidates`).
 	private func refresh() {
 		guard let connectedNodeNum, accessoryManager.reportsHeardOnCurrentLora(forRadio: connectedNodeNum) else {
 			unheardNodes = []
 			return
 		}
-		// Bound to a local first: a #Predicate that reaches through self for the node number throws
-		// at fetch time, and the failure is invisible — it just yields no nodes and no banner.
-		let excludedNum = connectedNodeNum
-		let descriptor = FetchDescriptor<NodeInfoEntity>(
-			predicate: #Predicate { $0.favorite == false && $0.num != excludedNum }
-		)
 		let candidates: [NodeInfoEntity]
 		do {
-			candidates = try context.fetch(descriptor)
+			candidates = try UnheardNodesRemoval.candidates(forRadio: connectedNodeNum, in: context)
 		} catch {
 			Logger.data.error("Could not read nodes not heard on the current LoRa settings: \(error.localizedDescription, privacy: .public)")
 			unheardNodes = []
@@ -249,8 +285,7 @@ struct UnheardNodesBanner: View {
 			do {
 				if isAppOnly(node) {
 					// The radio doesn't have it, so there is nothing to remove there.
-					if let user = node.user { context.delete(user) }
-					context.delete(node)
+					UnheardNodesRemoval.deleteAppOnly(node, in: context)
 					try context.save()
 				} else {
 					try await accessoryManager.removeNode(node: node, connectedNodeNum: connectedNodeNum)
