@@ -433,7 +433,7 @@ Re-checked in the files and holding (2026-10-02). Both are follow-ups to merge c
 One commit each, full suite and a Mac build each time. To resume: the first unchecked item.
 
 - [X] T408 Discovery's RSSI reports update the radio list only when the RSSI moved 5 dB or 5 s have passed for that radio, not on every advertisement (`showsDiscoveryRssi`, `shownDiscoveryRssi`; forgotten when the radio is lost). Scanning allows duplicates, so it reported every advertisement, and each write to `devices` redrew every view observing the manager, in every window. Verified: `DiscoveryRssiTests`.
-- [ ] T409 The Mac's Connect window closes once a connected radio's window has opened (not while first-launch setup, the Choose Radios sheet, a connect error or a Remove confirmation is up), and stops scanning when it closes unless no radio is connected or a remembered radio waits to be found.
+- [X] T409 The Mac's Connect window closes once a connected radio's window has opened (not while first-launch setup, the Choose Radios sheet, a connect error or a Remove confirmation is up), and stops scanning when it closes unless no radio is connected or a remembered radio waits to be found. It closes a moment after a radio window that wasn't there when it opened appears (a radio added, or connected at launch), so a radio reconnecting into its own window doesn't close it; Radios › Add Radio… brings it back. `stopDiscoveryWhenUnneeded()` on its disappearance. Verified: `DiscoveryAfterConnectScreenTests`; the window's closing on the device checklist.
 - [ ] T410 A connect's config download saves once, at its end, instead of once per record.
 
 ## Phase 10: Hardening

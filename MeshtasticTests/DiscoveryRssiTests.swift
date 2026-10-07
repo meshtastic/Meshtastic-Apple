@@ -82,3 +82,31 @@ struct DiscoveryRssiTests {
 		#expect(shown == [-60, -61, -70], "-63 and -62 are within 5 dB of -61, a moment later")
 	}
 }
+
+@MainActor
+@Suite("Discovery after the Connect screen")
+struct DiscoveryAfterConnectScreenTests {
+	@Test("Discovery stops with the Connect screen once a radio is connected and no remembered radio waits to be found")
+	func stopsWhenUnneeded() {
+		let manager = AccessoryManager(transports: [ScriptedDiscoveryTransport(events: [])])
+		manager.isSwitchingDevices = true
+		manager.startDiscovery()
+		defer {
+			manager.rememberedRadioFallbackTask?.cancel()
+			manager.stopDiscovery()
+		}
+		manager.stopDiscoveryWhenUnneeded()
+		#expect(manager.discoveryTask != nil, "nothing connected: it goes on, as on main")
+
+		var radio = Device(id: UUID(), name: "Near", transportType: .tcp, identifier: "near.local:4403")
+		radio.num = 0x0A0A
+		manager.additionalRadios[radio.id] = RadioSession(device: radio, connection: ScriptedRadio(nodeNum: 0x0A0A))
+		manager.awaitedRememberedRadios.insert(UUID())
+		manager.stopDiscoveryWhenUnneeded()
+		#expect(manager.discoveryTask != nil, "a remembered radio still waits to be found")
+
+		manager.awaitedRememberedRadios.removeAll()
+		manager.stopDiscoveryWhenUnneeded()
+		#expect(manager.discoveryTask == nil)
+	}
+}

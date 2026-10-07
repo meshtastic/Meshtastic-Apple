@@ -239,8 +239,14 @@ private struct ToolbarLayoutNudge: UIViewRepresentable {
 /// own window, and the radios that can be added. Adding one opens its window once it's connected.
 struct RadioListWindow: View {
 	@EnvironmentObject private var accessoryManager: AccessoryManager
+	@EnvironmentObject private var appState: AppState
 	@ObservedObject private var manualConnections = ManualConnectionList.shared
 	@Environment(\.openWindow) private var openWindow
+	@Environment(\.dismissWindow) private var dismissWindow
+	/// The radio windows on screen when this window opened. One that opens later, for a radio
+	/// added or connected at launch, closes this window (`closeIfDone`); a radio reconnecting into
+	/// its existing window doesn't.
+	@State private var radioWindowsWhenOpened: Set<UUID> = []
 	@State private var isSwitchingRadio = false
 	@State private var isShowingDeviceOnboardingFlow = false
 	/// A radio the user asked to remove; the list asks, so the dialog outlives the row.
@@ -261,6 +267,31 @@ struct RadioListWindow: View {
 
 	private func openRadioWindow(_ deviceId: UUID) {
 		openWindow(id: RadioWindows.radioWindowID, value: RadioWindow(deviceId: deviceId))
+	}
+
+	/// The radios connected with their connect done, whose windows open (`RadioWindowOpener`).
+	private var connectedRadioIDs: Set<UUID> {
+		Set(accessoryManager.connectedRadios.map(\.id).filter { accessoryManager.linkStatus(of: $0).isConnected })
+	}
+
+	/// Nothing in this window waits for the user: first-launch setup, the Choose Radios sheet
+	/// (W-15, which on the Mac shows here), a connect error or a Remove confirmation.
+	private var isFree: Bool {
+		!isShowingDeviceOnboardingFlow && radioToRemove == nil && connectError == nil
+			&& accessoryManager.servicesNeedingRadio().isEmpty
+	}
+
+	/// Once a radio's window has opened since this window did, this one closes, as the Connect
+	/// screen gives way once a radio is connected; Radios › Add Radio… brings it back (review
+	/// V39). Not while something in it waits for the user; it closes when that's done. A moment
+	/// after the connect, so the radio's window has opened.
+	private func closeIfDone() {
+		Task { @MainActor in
+			try? await Task.sleep(for: .seconds(1))
+			let opened = appState.radioWindowTracker.shownWindows.subtracting(radioWindowsWhenOpened)
+			guard !opened.isEmpty, isFree else { return }
+			dismissWindow()
+		}
 	}
 
 	var body: some View {
@@ -322,6 +353,7 @@ struct RadioListWindow: View {
 		}
 		.modifier(ServiceRadioChoiceGate())
 		.onAppear {
+			radioWindowsWhenOpened = appState.radioWindowTracker.shownWindows
 			accessoryManager.startDiscovery()
 			// The first-launch setup runs here on the Mac, as ContentView runs it elsewhere.
 			if UserDefaults.firstLaunch && UIApplication.shared.isProtectedDataAvailable {
@@ -336,6 +368,14 @@ struct RadioListWindow: View {
 		})
 		// A connect stops discovery when it finishes; keep looking while this window is open.
 		.onChange(of: accessoryManager.connectedRadioCount) { _, _ in accessoryManager.startDiscovery() }
+		.onChange(of: connectedRadioIDs) { old, new in
+			if !new.subtracting(old).isEmpty { closeIfDone() }
+		}
+		.onChange(of: isFree) { _, free in
+			if free { closeIfDone() }
+		}
+		// Scanning is for this window: it stops with it, unless nothing is connected (review V39).
+		.onDisappear { accessoryManager.stopDiscoveryWhenUnneeded() }
 	}
 }
 

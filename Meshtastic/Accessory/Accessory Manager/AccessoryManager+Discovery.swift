@@ -130,6 +130,15 @@ extension AccessoryManager {
 		return abs(rssi - last.rssi) >= discoveryRssiStep || now - last.at >= discoveryRssiInterval
 	}
 
+	/// Stops discovery once the Connect screen has gone and nothing else needs it (review V39): a
+	/// radio is connected, so it isn't needed to find the preferred radio, and no remembered radio
+	/// waits for discovery to find it (T156). With no radio connected it goes on, as on `main`.
+	/// Radios that drop reconnect by their own id and don't need it.
+	func stopDiscoveryWhenUnneeded() {
+		guard connectedRadioCount > 0, awaitedRememberedRadios.isEmpty else { return }
+		stopDiscovery()
+	}
+
 	func stopDiscovery() {
 		devices.removeAll()
 		discoveryTask?.cancel()
