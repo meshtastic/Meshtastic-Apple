@@ -594,6 +594,8 @@ class AccessoryManager: ObservableObject {
 
 	private func runAutomaticConfigRefresh(owner: AutomaticChannelRefreshOwner, session: RadioSession, connection: Connection) async {
 		guard !Task.isCancelled, session.automaticConfigRefresh?.owner == owner else { return }
+		// Its records save together when the config completes or the download ends (review V39).
+		await MeshPackets.shared.beginConfigDownload(owner.sessionID)
 		do {
 			try Task.checkCancellation()
 			var toRadio: ToRadio = ToRadio()
@@ -648,6 +650,8 @@ class AccessoryManager: ObservableObject {
 		guard let refresh = session.automaticConfigRefresh, refresh.owner == owner else { return }
 		session.automaticConfigRefresh = nil
 		session.automaticConfigRefreshTask = nil
+		// The download's records, saved together before whatever waits on it reads them.
+		await MeshPackets.shared.endConfigDownload(owner.sessionID)
 		if let error {
 			if let nodeNum = refresh.nodeNum {
 				await MeshPackets.shared.discardChannelRefreshStage(for: nodeNum, owner: owner)
@@ -1510,6 +1514,9 @@ class AccessoryManager: ObservableObject {
 					// Sessions aren't observed: tell the views reading it (the import's automatic check).
 					objectWillChange.send()
 				}
+				// The download's records are saved first: the channel commit computes the channel keys
+				// from the saved LoRa settings, and the snapshot reads them too.
+				await MeshPackets.shared.endConfigDownload(refresh.owner.sessionID)
 				if let completedNodeNum = refresh.nodeNum {
 					await MeshPackets.shared.commitChannelRefreshStage(for: completedNodeNum, owner: refresh.owner)
 					// The Messages snapshot is the CarPlay & Siri radio's (T106, T321).

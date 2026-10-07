@@ -822,6 +822,41 @@ actor MeshPackets {
 		lastDebouncedSaveTime = .now
 	}
 
+	// MARK: - A connect's config download (review V39)
+
+	/// Config downloads in progress, by the radio's device id, and when each began. While one
+	/// runs, config records save with the debounced save instead of one by one: a connect's
+	/// download is 30 to 40 records, and each save is merged into the main context and fetched
+	/// again by every window's views. Its end flushes them. One older than a minute is taken as
+	/// over, so a download that never reports its end can't hold saves back.
+	private var configDownloads: [UUID: ContinuousClock.Instant] = [:]
+	private static let configDownloadTimeout: Duration = .seconds(60)
+
+	func beginConfigDownload(_ deviceId: UUID) {
+		configDownloads[deviceId] = .now
+	}
+
+	/// The download for `deviceId` is over, done or not: its records are saved now.
+	func endConfigDownload(_ deviceId: UUID) {
+		guard configDownloads.removeValue(forKey: deviceId) != nil else { return }
+		flushDebouncedSaves()
+	}
+
+	var isDownloadingConfig: Bool {
+		let now = ContinuousClock.now
+		return configDownloads.values.contains { now - $0 < Self.configDownloadTimeout }
+	}
+
+	/// Saves a config record: with the debounced save while a connect's config download runs, at
+	/// once otherwise, so the answer to a Settings change shows at once.
+	func saveConfigRecord(caller: String = #function) {
+		if isDownloadingConfig {
+			scheduleDebouncedSave()
+		} else {
+			savePendingChanges(caller: caller)
+		}
+	}
+
 	/// Last time the channel-unread badge count was recomputed (an O(unread) scan).
 	private var lastChannelUnreadRecompute: ContinuousClock.Instant?
 	/// Rate-limits the per-message channel-unread recompute to at most ~1/sec so a burst
@@ -999,6 +1034,8 @@ actor MeshPackets {
 					myInfoEntity.pioEnv = myInfo.pioEnv
 				}
 				Logger.data.info("💾 Saved a new myInfo for node: \(myInfo.myNodeNum.toHex(), privacy: .public)")
+				// Saved at once, even during a config download: `handleMyInfo` reads it back by
+				// this id in another context, and an unsaved insert's id traps there.
 				savePendingChanges()
 				return myInfoEntity.persistentModelID
 			} else {
@@ -1080,7 +1117,7 @@ actor MeshPackets {
 						if let existing {
 							modelContext.delete(existing)
 							refreshChannelKeys(radioNum: fromNum)
-							savePendingChanges()
+							saveConfigRecord()
 							Logger.data.info("💾 Deleted MyInfo channel \(channel.index, privacy: .public) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum, privacy: .public)")
 						}
 						return
@@ -1095,7 +1132,7 @@ actor MeshPackets {
 					}
 					apply(stagedChannel: stagedChannel(from: channel), to: newChannel)
 					refreshChannelKeys(radioNum: fromNum)
-					savePendingChanges()
+					saveConfigRecord()
 					Logger.data.info("💾 Updated MyInfo channel \(channel.index, privacy: .public) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum, privacy: .public)")
 				} else if channel.role.rawValue > 0 {
 					Logger.data.error("💥Trying to save a channel to a MyInfo that does not exist: \(fromNum.toHex(), privacy: .public)")
