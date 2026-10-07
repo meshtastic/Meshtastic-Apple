@@ -352,6 +352,8 @@ class AccessoryManager: ObservableObject {
 	/// remembered TCP radio found by Bonjour can still be brought back after the first radio's
 	/// connect stops discovery (T156).
 	var recentlyDiscoveredDevices: [UUID: Device] = [:]
+	/// The RSSI discovery last showed for each radio, and when (`showsDiscoveryRssi`).
+	var shownDiscoveryRssi: [UUID: ShownRssi] = [:]
 	/// Remembered radios that weren't found when the first radio connected; each is brought
 	/// back when discovery next sees it (T156).
 	var awaitedRememberedRadios: Set<UUID> = []

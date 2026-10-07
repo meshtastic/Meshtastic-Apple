@@ -428,6 +428,14 @@ Re-checked in the files and holding (2026-10-02). Both are follow-ups to merge c
 - [X] T406 Commit emails rewritten (owner's request, 2026-10-06): GitHub didn't link the 242 commits made with `cd@cdfilmmaker.com` (2026-09-25 to 2026-10-02) to ChDel, and that address can't be added to the account. `git filter-repo --refs origin/main..feature/multi-radio` set author and committer email to `70300403+ChDel@users.noreply.github.com` (the same for the one commit on each of `fix/restore-dropped-backup-fields` and `chore/sync-string-catalog`); names, dates, messages and files are unchanged, and the five messages that cited branch commits cite the new hashes. Every one of the 272 commits was checked against a snapshot taken before: same tree at every commit, same parents (mapped), same names and dates, only the email changed. All branch hashes changed, so the spec folder's 280 citations of 99 commits were updated to the new hashes (every change a hash swap; the hashes of `main` and the `protobufs` submodule are unchanged). The fork's branch was force-pushed with a lease. Old history: `backup/multi-radio-before-email-rewrite` and the two small branches' `backup/…-before-email-rewrite`.
 - [X] T407 Working notes kept out of the pull request (owner's request, 2026-10-06): other contributors' spec folders hold only the spec-kit files, so `HANDOFF.md`, `pr-description.md` and the 53 review files are untracked and listed in `.git/info/exclude`; they stay on the owner's Mac. The HANDOFF links in the `spec.md`, `plan.md` and `tasks.md` headers and the HANDOFF line in `.github/copilot-instructions.md` are removed; D-03 records the rule. Also untracked: the Xcode Cloud manifest and `research/hang-risks-2026-10-02.md` (not part of the feature). References to review files and HANDOFF in the entries above are history and point to the local copies.
 
+## Performance fixes after V39 (the UI slow with three radios, one dropping; owner's go, 2026-10-07)
+
+One commit each, full suite and a Mac build each time. To resume: the first unchecked item.
+
+- [X] T408 Discovery's RSSI reports update the radio list only when the RSSI moved 5 dB or 5 s have passed for that radio, not on every advertisement (`showsDiscoveryRssi`, `shownDiscoveryRssi`; forgotten when the radio is lost). Scanning allows duplicates, so it reported every advertisement, and each write to `devices` redrew every view observing the manager, in every window. Verified: `DiscoveryRssiTests`.
+- [ ] T409 The Mac's Connect window closes once a connected radio's window has opened (not while first-launch setup, the Choose Radios sheet, a connect error or a Remove confirmation is up), and stops scanning when it closes unless no radio is connected or a remembered radio waits to be found.
+- [ ] T410 A connect's config download saves once, at its end, instead of once per record.
+
 ## Phase 10: Hardening
 
 - [ ] T130 Four BLE radios for 24 hours (device checklist in `HANDOFF.md`).
