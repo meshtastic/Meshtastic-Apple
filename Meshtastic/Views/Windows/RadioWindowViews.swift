@@ -269,9 +269,11 @@ struct RadioListWindow: View {
 		openWindow(id: RadioWindows.radioWindowID, value: RadioWindow(deviceId: deviceId))
 	}
 
-	/// The radios connected with their connect done, whose windows open (`RadioWindowOpener`).
+	/// The radios whose connect has finished. A radio's window opens earlier, when its node
+	/// download starts (`RadioWindowOpener`), but whether a service needs a radio chosen is only
+	/// known once the connect is done, and the choice shows in this window (review V40-1).
 	private var connectedRadioIDs: Set<UUID> {
-		Set(accessoryManager.connectedRadios.map(\.id).filter { accessoryManager.linkStatus(of: $0).isConnected })
+		Set(accessoryManager.connectedRadios.map(\.id).filter(accessoryManager.hasFinishedConnecting))
 	}
 
 	/// Nothing in this window waits for the user: first-launch setup, the Choose Radios sheet

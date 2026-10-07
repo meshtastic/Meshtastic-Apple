@@ -58,6 +58,13 @@ extension AccessoryManager {
 			?? UUID(uuidString: PreferredRadio.peripheralId)
 	}
 
+	/// Radio `deviceId` is connected and its connect has finished. It counts as connected from the
+	/// start of its node download, but the radios known, and so whether a service needs one chosen,
+	/// are refreshed at the connect's end (`refreshKnownRadios`), just before its attempt goes.
+	func hasFinishedConnecting(_ deviceId: UUID) -> Bool {
+		linkStatus(of: deviceId).isConnected && connectAttempts[deviceId] == nil
+	}
+
 	/// Radio `deviceId`'s connection. The first radio's comes from the manager's fields, any
 	/// other's from its connect attempt, its session and `radioConnectErrors`. The first radio's
 	/// stay on the manager, as on `main` (T315 dropped); windows read this rather than either.

@@ -436,6 +436,16 @@ One commit each, full suite and a Mac build each time. To resume: the first unch
 - [X] T409 The Mac's Connect window closes once a connected radio's window has opened (not while first-launch setup, the Choose Radios sheet, a connect error or a Remove confirmation is up), and stops scanning when it closes unless no radio is connected or a remembered radio waits to be found. It closes a moment after a radio window that wasn't there when it opened appears (a radio added, or connected at launch), so a radio reconnecting into its own window doesn't close it; Radios › Add Radio… brings it back. `stopDiscoveryWhenUnneeded()` on its disappearance. Verified: `DiscoveryAfterConnectScreenTests`; the window's closing on the device checklist.
 - [X] T410 A connect's config download saves once, at its end, instead of once per record. While a radio's config download runs (`beginConfigDownload` in `runAutomaticConfigRefresh`), the config, module config and channel upserts save with the debounced save (`saveConfigRecord`). The config's completion flushes them before the channel commit, which computes channel keys from the saved LoRa settings; `finishAutomaticConfigRefresh`, which the teardown also reaches, flushes them before whatever waits on the download resumes. Outside a download they save at once, as before, and a download older than a minute no longer holds saves back. MyInfo still saves at once: `handleMyInfo` reads it back by its id in another context, and an unsaved insert's id traps there (the first version deferred it and crashed every connect in the suite). Each of the 30 to 40 saves was merged into the main context and fetched again by every window's views. While another radio is downloading its config, the local copy of a setting changed in Settings is saved up to 5 s later. Verified: `ConfigDownloadSaveTests`; full suite.
 
+## Fixes after V40 (review of T408–T410, 2026-10-07)
+
+Review V40's findings, checked in the files; all held. One commit each.
+
+- [X] T411 (V40-1) The Mac's Connect window closes once a radio's connect has finished (`hasFinishedConnecting`: connected, and its connect attempt gone), not when its node download starts. The radios known are refreshed at the connect's end, so the Choose Radios sheet a second radio makes needed (W-15) shows in that window instead of being skipped when it closed during the download. Verified: `ConnectWindowCloseTests` (fails without the attempt check).
+- [ ] T412 (V40-2) Scanning stops once nothing needs it, whichever way it started.
+- [ ] T413 (V40-3) A radio's RSSI from discovery shows at most every 2 s, however far it moves.
+- [ ] T414 (V40-4) The Dock badge follows reads with the Connect window closed.
+- [ ] T415 (V40-5) Only the downloading radio's config records wait to be saved.
+
 ## Phase 10: Hardening
 
 - [ ] T130 Four BLE radios for 24 hours (device checklist in `HANDOFF.md`).
