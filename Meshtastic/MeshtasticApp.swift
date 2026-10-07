@@ -103,6 +103,9 @@ struct MeshtasticAppleApp: App {
 		self._appState = StateObject(wrappedValue: appState)
 
 		self.persistenceController = persistenceController
+		if let persistenceController {
+			appState.refreshBadgeOnMessageChanges(persistenceController)
+		}
 #if os(iOS)
 		self.appDelegate.windows = appState.windows
 #endif

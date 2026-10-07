@@ -112,6 +112,23 @@ class AppState: ObservableObject {
 		Logger.data.debug("🔢 Badge refresh: \(channelCount) channel + \(dmCount) DM = \(channelCount + dmCount) total")
 	}
 
+	/// Recounts unread messages a second after they change (message lists, Siri and CarPlay post
+	/// `meshMessagesDidChange`), for as long as the app runs. It was in the main scene, which on
+	/// the Mac is the Connect window, and that closes once a radio's window opens (review V40-4).
+	/// Not while the store is being reset, when it mustn't be read.
+	@MainActor
+	func refreshBadgeOnMessageChanges(_ persistenceController: PersistenceController) {
+		NotificationCenter.default.publisher(for: .meshMessagesDidChange)
+			.debounce(for: .seconds(1), scheduler: DispatchQueue.main)
+			.sink { [weak self] _ in
+				MainActor.assumeIsolated {
+					guard let self, !self.isDatabaseResetting else { return }
+					self.refreshBadgeCount(context: persistenceController.container.mainContext)
+				}
+			}
+			.store(in: &cancellables)
+	}
+
 	/// The first main window to appear takes the perf-seed tab. Later windows start on Connect.
 	func takeLaunchNavigation() -> NavigationState? {
 		defer { launchNavigation = nil }

@@ -107,15 +107,6 @@ struct MainScene: View {
 				#endif
 			}
 			.contactImportSheet($pendingContact, accessoryManager: accessoryManager)
-			// Badge refresh reads the store, so it has to unmount with the
-			// container during a node switch. Message lists, Siri, and CarPlay
-			// all post this.
-			.onReceive(
-				NotificationCenter.default.publisher(for: .meshMessagesDidChange)
-					.debounce(for: .seconds(1), scheduler: DispatchQueue.main)
-			) { _ in
-				appState.refreshBadgeCount(context: persistenceController.container.mainContext)
-			}
 		}
 		.modelContainer(persistenceController.container)
 		.environmentObject(appState)
