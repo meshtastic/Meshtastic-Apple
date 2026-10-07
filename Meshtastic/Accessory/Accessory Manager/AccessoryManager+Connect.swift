@@ -531,11 +531,9 @@ extension AccessoryManager {
 					// handshake on the ingestion actor. Post-dump lastHeard values also make the
 					// pruning decisions more accurate.
 					_ = await MeshPackets.shared.clearStaleNodes(nodeExpireDays: Int(UserDefaults.purgeStaleNodeDays))
-				} else {
-					// With other radios connected, discovery started by the first radio's drop, or
-					// left by a Connect screen, stops once nothing needs it (review V40-2).
-					self.stopDiscoveryWhenUnneeded()
-				}
+				// With other radios connected, discovery started by the first radio's drop, or left by
+				// a Connect screen, stops once nothing needs it (review V40-2).
+				} else { self.stopDiscoveryWhenUnneeded() }
 				// Every radio's own module settings and MQTT client proxy (T071c).
 				self.applyModuleSettings(session)
 				Task { await self.startMqtt(session) }
