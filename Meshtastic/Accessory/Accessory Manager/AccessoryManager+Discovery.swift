@@ -130,13 +130,33 @@ extension AccessoryManager {
 		return abs(rssi - last.rssi) >= discoveryRssiStep || now - last.at >= discoveryRssiInterval
 	}
 
-	/// Stops discovery once the Connect screen has gone and nothing else needs it (review V39): a
-	/// radio is connected, so it isn't needed to find the preferred radio, and no remembered radio
-	/// waits for discovery to find it (T156). With no radio connected it goes on, as on `main`.
-	/// Radios that drop reconnect by their own id and don't need it.
+	/// Stops discovery once nothing needs it (reviews V39, V40-2): no Connect screen shows, a radio
+	/// is connected, the first radio isn't waiting for discovery to bring it back, and no
+	/// remembered radio waits for discovery to find it (T156). With no radio connected it goes on,
+	/// as on `main`. A radio alongside that drops reconnects by its own id; with no other radio
+	/// left it needs discovery, and then none is connected.
 	func stopDiscoveryWhenUnneeded() {
-		guard connectedRadioCount > 0, awaitedRememberedRadios.isEmpty else { return }
+		guard connectScreens.isEmpty, connectedRadioCount > 0, !awaitsFirstRadio, awaitedRememberedRadios.isEmpty else { return }
 		stopDiscovery()
+	}
+
+	/// The first radio is away and discovery would connect it when it sees it (the auto-connect of
+	/// the preferred radio above): after a drop, not after the user's Disconnect.
+	var awaitsFirstRadio: Bool {
+		!isConnected && !PreferredRadio.peripheralId.isEmpty && UserDefaults.autoconnectOnDiscovery
+			&& shouldAutomaticallyConnectToPreferredPeripheralAfterError && !userRequestedConnectionCancellation
+			&& !autoReconnectSuspendedForSession
+	}
+
+	/// A Connect screen shows: discovery goes on while it does.
+	func connectScreenAppeared(_ id: UUID) {
+		connectScreens.insert(id)
+	}
+
+	/// A Connect screen has gone: discovery stops if nothing else needs it.
+	func connectScreenDisappeared(_ id: UUID) {
+		connectScreens.remove(id)
+		stopDiscoveryWhenUnneeded()
 	}
 
 	func stopDiscovery() {

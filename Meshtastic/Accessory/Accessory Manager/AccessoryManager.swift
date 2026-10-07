@@ -354,6 +354,9 @@ class AccessoryManager: ObservableObject {
 	var recentlyDiscoveredDevices: [UUID: Device] = [:]
 	/// The RSSI discovery last showed for each radio, and when (`showsDiscoveryRssi`).
 	var shownDiscoveryRssi: [UUID: ShownRssi] = [:]
+	/// The Connect screens showing (the Mac's Connect window, the Connect tab's radio list), which
+	/// keep discovery going (`stopDiscoveryWhenUnneeded`).
+	var connectScreens: Set<UUID> = []
 	/// Remembered radios that weren't found when the first radio connected; each is brought
 	/// back when discovery next sees it (T156).
 	var awaitedRememberedRadios: Set<UUID> = []

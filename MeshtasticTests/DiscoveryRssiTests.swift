@@ -84,10 +84,16 @@ struct DiscoveryRssiTests {
 }
 
 @MainActor
-@Suite("Discovery after the Connect screen")
+@Suite("Discovery after the Connect screen", .serialized)
 struct DiscoveryAfterConnectScreenTests {
-	@Test("Discovery stops with the Connect screen once a radio is connected and no remembered radio waits to be found")
+	@Test("Discovery stops once nothing needs it: no Connect screen, a radio connected, the first radio not awaited, no remembered radio awaited")
 	func stopsWhenUnneeded() {
+		let saved = ConnectFlowSupport.SavedDefaults()
+		let autoconnect = UserDefaults.autoconnectOnDiscovery
+		defer {
+			saved.restore()
+			UserDefaults.autoconnectOnDiscovery = autoconnect
+		}
 		let manager = AccessoryManager(transports: [ScriptedDiscoveryTransport(events: [])])
 		manager.isSwitchingDevices = true
 		manager.startDiscovery()
@@ -98,15 +104,70 @@ struct DiscoveryAfterConnectScreenTests {
 		manager.stopDiscoveryWhenUnneeded()
 		#expect(manager.discoveryTask != nil, "nothing connected: it goes on, as on main")
 
+		// A radio alongside connected, the first radio away after a drop.
 		var radio = Device(id: UUID(), name: "Near", transportType: .tcp, identifier: "near.local:4403")
 		radio.num = 0x0A0A
 		manager.additionalRadios[radio.id] = RadioSession(device: radio, connection: ScriptedRadio(nodeNum: 0x0A0A))
+		PreferredRadio.peripheralId = UUID().uuidString
+		UserDefaults.autoconnectOnDiscovery = true
+		manager.stopDiscoveryWhenUnneeded()
+		#expect(manager.discoveryTask != nil, "the first radio comes back through it")
+
+		manager.userRequestedConnectionCancellation = true
+		manager.stopDiscoveryWhenUnneeded()
+		#expect(manager.discoveryTask == nil, "the user disconnected the first radio")
+		manager.userRequestedConnectionCancellation = false
+		manager.startDiscovery()
+
+		// The first radio connected.
+		manager.updateState(.subscribed)
 		manager.awaitedRememberedRadios.insert(UUID())
 		manager.stopDiscoveryWhenUnneeded()
 		#expect(manager.discoveryTask != nil, "a remembered radio still waits to be found")
-
 		manager.awaitedRememberedRadios.removeAll()
+
+		let screen = UUID()
+		manager.connectScreenAppeared(screen)
 		manager.stopDiscoveryWhenUnneeded()
+		#expect(manager.discoveryTask != nil, "a Connect screen shows")
+		manager.connectScreenDisappeared(screen)
+		#expect(manager.discoveryTask == nil, "it stops with the screen")
+	}
+}
+
+@MainActor
+@Suite("Discovery after a connect alongside", .serialized, .timeLimit(.minutes(1)))
+struct DiscoveryAfterConnectTests {
+	@Test("A radio connecting alongside stops discovery once nothing needs it, as the only radio's connect does")
+	func connectAlongsideStopsIt() async throws {
+		let saved = ConnectFlowSupport.SavedDefaults()
+		defer { saved.restore() }
+		let firstNum = ConnectFlowSupport.uniqueNodeNum()
+		let secondDevice = ConnectFlowSupport.device()
+		let thirdDevice = ConnectFlowSupport.device()
+		let transport = ScriptedTransport(radio: ScriptedRadio(nodeNum: firstNum), radiosByIdentifier: [
+			secondDevice.identifier: ScriptedRadio(nodeNum: firstNum &+ 0x100),
+			thirdDevice.identifier: ScriptedRadio(nodeNum: firstNum &+ 0x200)
+		])
+		let manager = ConnectFlowSupport.makeManager(transport)
+		try await manager.connect(to: ConnectFlowSupport.device())
+		manager.awaitedRememberedRadios.removeAll()
+
+		// Started again by the first radio's drop, or left by a Connect screen.
+		manager.startDiscovery()
+		try await manager.connectAdditionalRadio(secondDevice)
 		#expect(manager.discoveryTask == nil)
+
+		let screen = UUID()
+		manager.connectScreenAppeared(screen)
+		manager.startDiscovery()
+		try await manager.connectAdditionalRadio(thirdDevice)
+		#expect(manager.discoveryTask != nil, "not while a Connect screen shows")
+		manager.connectScreenDisappeared(screen)
+		#expect(manager.discoveryTask == nil)
+
+		await manager.disconnectAdditionalRadio(secondDevice.id, byUser: true)
+		await manager.disconnectAdditionalRadio(thirdDevice.id, byUser: true)
+		try await manager.disconnect()
 	}
 }

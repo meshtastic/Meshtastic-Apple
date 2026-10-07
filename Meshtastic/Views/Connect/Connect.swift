@@ -61,6 +61,8 @@ struct Connect: View {
 	@Environment(\.selectWindowRadio) private var selectWindowRadio
 	/// The window's radio, when the user asks to remove it (D-18).
 	@State private var radioToRemove: RadioToRemove?
+	/// This tab's radio list, among the Connect screens that keep discovery going.
+	@State private var connectScreenID = UUID()
 	private var radioSession: RadioSession? { accessoryManager.session(for: windowRadio) }
 	private var link: RadioLinkStatus { accessoryManager.linkStatus(for: windowRadio) }
 	private var isRadioConnected: Bool { accessoryManager.isConnected(windowRadio) }
@@ -536,13 +538,11 @@ struct Connect: View {
 						}
 						.textCase(nil)
 						// The first radio's connect stops discovery when it finishes, so start it
-						// again for each radio the window shows; scanning stops when the tab goes away.
+						// again for each radio the window shows; scanning stops when the tab goes away,
+						// unless something else needs it (review V40-2).
 						.task(id: accessoryManager.nodeNum(for: windowRadio)) { accessoryManager.startDiscovery() }
-						.onDisappear {
-							if accessoryManager.isConnected || !accessoryManager.additionalRadios.isEmpty {
-								accessoryManager.stopDiscovery()
-							}
-						}
+						.onAppear { accessoryManager.connectScreenAppeared(connectScreenID) }
+						.onDisappear { accessoryManager.connectScreenDisappeared(connectScreenID) }
 					}
 
 					if let firmwareUpdateNotice, accessoryManager.isConnected {

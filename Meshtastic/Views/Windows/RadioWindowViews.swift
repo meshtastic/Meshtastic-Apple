@@ -247,6 +247,8 @@ struct RadioListWindow: View {
 	/// added or connected at launch, closes this window (`closeIfDone`); a radio reconnecting into
 	/// its existing window doesn't.
 	@State private var radioWindowsWhenOpened: Set<UUID> = []
+	/// This window, among the Connect screens that keep discovery going.
+	@State private var connectScreenID = UUID()
 	@State private var isSwitchingRadio = false
 	@State private var isShowingDeviceOnboardingFlow = false
 	/// A radio the user asked to remove; the list asks, so the dialog outlives the row.
@@ -356,6 +358,7 @@ struct RadioListWindow: View {
 		.modifier(ServiceRadioChoiceGate())
 		.onAppear {
 			radioWindowsWhenOpened = appState.radioWindowTracker.shownWindows
+			accessoryManager.connectScreenAppeared(connectScreenID)
 			accessoryManager.startDiscovery()
 			// The first-launch setup runs here on the Mac, as ContentView runs it elsewhere.
 			if UserDefaults.firstLaunch && UIApplication.shared.isProtectedDataAvailable {
@@ -376,8 +379,8 @@ struct RadioListWindow: View {
 		.onChange(of: isFree) { _, free in
 			if free { closeIfDone() }
 		}
-		// Scanning is for this window: it stops with it, unless nothing is connected (review V39).
-		.onDisappear { accessoryManager.stopDiscoveryWhenUnneeded() }
+		// Scanning is for this window: it stops with it, unless something else needs it (review V39).
+		.onDisappear { accessoryManager.connectScreenDisappeared(connectScreenID) }
 	}
 }
 
