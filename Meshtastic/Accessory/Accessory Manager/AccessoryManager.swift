@@ -598,7 +598,7 @@ class AccessoryManager: ObservableObject {
 	private func runAutomaticConfigRefresh(owner: AutomaticChannelRefreshOwner, session: RadioSession, connection: Connection) async {
 		guard !Task.isCancelled, session.automaticConfigRefresh?.owner == owner else { return }
 		// Its records save together when the config completes or the download ends (review V39).
-		await MeshPackets.shared.beginConfigDownload(owner.sessionID)
+		await MeshPackets.shared.beginConfigDownload(owner.sessionID, nodeNum: session.device.num)
 		do {
 			try Task.checkCancellation()
 			var toRadio: ToRadio = ToRadio()

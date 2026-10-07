@@ -824,16 +824,24 @@ actor MeshPackets {
 
 	// MARK: - A connect's config download (review V39)
 
-	/// Config downloads in progress, by the radio's device id, and when each began. While one
-	/// runs, config records save with the debounced save instead of one by one: a connect's
-	/// download is 30 to 40 records, and each save is merged into the main context and fetched
-	/// again by every window's views. Its end flushes them. One older than a minute is taken as
-	/// over, so a download that never reports its end can't hold saves back.
-	private var configDownloads: [UUID: ContinuousClock.Instant] = [:]
+	/// Config downloads in progress, by the radio's device id: when each began, and the radio's
+	/// node number once known. While one runs, that radio's config records save with the debounced
+	/// save instead of one by one: a connect's download is 30 to 40 records, and each save is
+	/// merged into the main context and fetched again by every window's views. Its end flushes
+	/// them. Another radio's records, such as the local copy of a setting saved for it, save at
+	/// once (review V40-5). One older than a minute is taken as over, so a download that never
+	/// reports its end can't hold saves back.
+	private struct ConfigDownload {
+		let began: ContinuousClock.Instant
+		var nodeNum: Int64?
+	}
+	private var configDownloads: [UUID: ConfigDownload] = [:]
 	private static let configDownloadTimeout: Duration = .seconds(60)
 
-	func beginConfigDownload(_ deviceId: UUID) {
-		configDownloads[deviceId] = .now
+	/// `nodeNum` is nil for a radio the app doesn't know yet; its MyInfo, the download's first
+	/// record, gives it (`myInfoPacket`).
+	func beginConfigDownload(_ deviceId: UUID, nodeNum: Int64?) {
+		configDownloads[deviceId] = ConfigDownload(began: .now, nodeNum: nodeNum)
 	}
 
 	/// The download for `deviceId` is over, done or not: its records are saved now.
@@ -842,15 +850,15 @@ actor MeshPackets {
 		flushDebouncedSaves()
 	}
 
-	var isDownloadingConfig: Bool {
+	func isDownloadingConfig(of nodeNum: Int64) -> Bool {
 		let now = ContinuousClock.now
-		return configDownloads.values.contains { now - $0 < Self.configDownloadTimeout }
+		return configDownloads.values.contains { $0.nodeNum == nodeNum && now - $0.began < Self.configDownloadTimeout }
 	}
 
-	/// Saves a config record: with the debounced save while a connect's config download runs, at
-	/// once otherwise, so the answer to a Settings change shows at once.
-	func saveConfigRecord(caller: String = #function) {
-		if isDownloadingConfig {
+	/// Saves a config record of radio `nodeNum`: with the debounced save while that radio's config
+	/// download runs, at once otherwise, so the answer to a Settings change shows at once.
+	func saveConfigRecord(for nodeNum: Int64, caller: String = #function) {
+		if isDownloadingConfig(of: nodeNum) {
 			scheduleDebouncedSave()
 		} else {
 			savePendingChanges(caller: caller)
@@ -1014,6 +1022,10 @@ actor MeshPackets {
 		Logger.admin.info("ℹ️ \(logString, privacy: .public)")
 
 		let myNodeNum = Int64(myInfo.myNodeNum)
+		// The radio downloading its config is this one: its records wait for the download's end.
+		if let deviceId = UUID(uuidString: peripheralId), configDownloads[deviceId] != nil {
+			configDownloads[deviceId]?.nodeNum = myNodeNum
+		}
 		let fetchDescriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == myNodeNum })
 
 		do {
@@ -1117,7 +1129,7 @@ actor MeshPackets {
 						if let existing {
 							modelContext.delete(existing)
 							refreshChannelKeys(radioNum: fromNum)
-							saveConfigRecord()
+							saveConfigRecord(for: fromNum)
 							Logger.data.info("💾 Deleted MyInfo channel \(channel.index, privacy: .public) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum, privacy: .public)")
 						}
 						return
@@ -1132,7 +1144,7 @@ actor MeshPackets {
 					}
 					apply(stagedChannel: stagedChannel(from: channel), to: newChannel)
 					refreshChannelKeys(radioNum: fromNum)
-					saveConfigRecord()
+					saveConfigRecord(for: fromNum)
 					Logger.data.info("💾 Updated MyInfo channel \(channel.index, privacy: .public) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum, privacy: .public)")
 				} else if channel.role.rawValue > 0 {
 					Logger.data.error("💥Trying to save a channel to a MyInfo that does not exist: \(fromNum.toHex(), privacy: .public)")
