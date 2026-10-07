@@ -1,6 +1,6 @@
 # Spec: Multiple Radios Connected at Once
 
-**Feature**: 021-multi-radio-connections | **Plan**: [plan.md](./plan.md) | **Tasks**: [tasks.md](./tasks.md) | **Handoff**: [HANDOFF.md](./HANDOFF.md)
+**Feature**: 021-multi-radio-connections | **Plan**: [plan.md](./plan.md) | **Tasks**: [tasks.md](./tasks.md)
 **Branch**: `feature/multi-radio` (single pull request, opened only when the feature is complete)
 **Background research**: [research/multi-radio-connections-report.md](../../research/multi-radio-connections-report.md), §13 is the chosen design.
 
@@ -23,7 +23,7 @@ reception details) is kept per radio.
 |---|---|
 | D-01 | Work on `feature/multi-radio`, rebased onto `origin/main`. Commit locally; the owner pushes. |
 | D-02 | One pull request for the whole feature. Nothing ships until all of it is done. |
-| D-03 | Tracking lives in this folder (`spec.md`, `plan.md`, `tasks.md`, `HANDOFF.md`). |
+| D-03 | Tracking lives in this folder (`spec.md`, `plan.md`, `tasks.md`, `windows.md`). Working notes (the handoff, review rounds, the PR text) stay local and are not part of the pull request (T407). |
 | D-04 | Implementation order and bundling are up to the implementer. No intermediate releases. |
 | D-05 | No global feature flag. When a radio is already connected and the user connects another, ask: keep both connected, or switch. A setting remembers the answer (Ask / Keep both / Switch). |
 | D-06 | Deployment targets stay as they are (iOS 17.5, Mac Catalyst 14.6). No iOS 18-only SwiftData APIs (`#Unique`, `#Index`). |

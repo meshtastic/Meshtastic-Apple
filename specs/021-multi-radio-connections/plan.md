@@ -1,6 +1,6 @@
 # Plan: Multiple Radios Connected at Once
 
-**Feature**: 021-multi-radio-connections | **Spec**: [spec.md](./spec.md) | **Tasks**: [tasks.md](./tasks.md) | **Handoff**: [HANDOFF.md](./HANDOFF.md)
+**Feature**: 021-multi-radio-connections | **Spec**: [spec.md](./spec.md) | **Tasks**: [tasks.md](./tasks.md)
 
 The design is §13 of [the research report](../../research/multi-radio-connections-report.md).
 This file records how it is built here, and where it differs from the report because of the
@@ -13,7 +13,7 @@ decisions in [spec.md](./spec.md).
   `#Index` (iOS 18) are not available, so uniqueness is enforced in code or with `@Attribute(.unique)`.
 - Project file is generated: edit `project.yml`, then run the pinned XcodeGen (`.xcodegen-version`,
   2.46.0). CI fails on drift.
-- Tests: Swift Testing only. See `HANDOFF.md` for build and test commands.
+- Tests: Swift Testing only. See `docs/developer/testing.md`.
 
 ## Architecture
 
@@ -333,7 +333,7 @@ only one radio known; the services use the only radio.
   cases; the V1 → V2 migration against `research/schema-history` fixtures; backup merge.
 - Replay: feed captured `FromRadio` streams from two radios into one store and assert on the results.
 - Snapshot: connect dialog, radio switcher, composer "via" control, per-radio node table.
-- Manual device checklist in `HANDOFF.md`.
+- Manual tests with real radios (T130–T133 in `tasks.md`).
 
 ## Docs to update (repo policy)
 
