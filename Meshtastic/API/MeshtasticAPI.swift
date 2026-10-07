@@ -422,7 +422,7 @@ deviceEntity.architecture = device.architecture
 				var tags = [DeviceHardwareTagEntity]()
 				if let tagList = device.tags {
 					for tagString in tagList {
-						if let tagEntity = try? Self.findOrCreateTag(tag: tagString, context: context) {
+						if let tagEntity = try? Self.findOrCreateTag(tagName: tagString, context: context) {
 							tags.append(tagEntity)
 						}
 					}
@@ -732,9 +732,9 @@ deviceEntity.architecture = device.architecture
 
 	// MARK: - Helpers
 	
-	private static func findOrCreateTag(tag: String, context: ModelContext) throws -> DeviceHardwareTagEntity {
+	private static func findOrCreateTag(tagName: String, context: ModelContext) throws -> DeviceHardwareTagEntity {
 		var descriptor = FetchDescriptor<DeviceHardwareTagEntity>(
-			predicate: #Predicate { $0.tag == tag }
+			predicate: #Predicate { $0.tag == tagName }
 		)
 		descriptor.fetchLimit = 1
 		
@@ -813,7 +813,7 @@ extension MeshtasticAPI {
 				var tags = [DeviceHardwareTagEntity]()
 				if let tagList = device.tags {
 					for tagString in tagList {
-						if let tagEntity = try? Self.findOrCreateTag(tag: tagString, context: context) {
+						if let tagEntity = try? Self.findOrCreateTag(tagName: tagString, context: context) {
 							tags.append(tagEntity)
 						}
 					}

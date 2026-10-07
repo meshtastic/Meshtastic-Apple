@@ -94,7 +94,7 @@ private struct NodeInfoHardwareSection: View {
 		summary.hwModel == "PORTDUINO"
 	}
 
-	private let supportedVendorTags = ["RAK", "B&Q", "LilyGo", "Seeed", "Heltec", "DIY", "Elecrow", "M5Stack", "NomadStar", "muzi"]
+	private let supportedVendorTags = ["RAK", "B&Q", "LilyGo", "Seeed", "Heltec", "Elecrow", "M5Stack", "NomadStar", "muzi"]
 
 	private var isBackerOrPartner: Bool {
 		guard let tags = hardwarePresentation?.tags else { return false }

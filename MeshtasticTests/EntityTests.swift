@@ -32,7 +32,9 @@ struct HardwareCatalogPresentationTests {
 		displayName: String,
 		activelySupported: Bool,
 		supportLevel: SupportLevel,
-		architecture: String? = nil
+		isMaker: Bool = false,
+		architecture: String? = nil,
+		tags: [String] = []
 	) -> HardwareCatalogRecord {
 		HardwareCatalogRecord(
 			hwModel: model,
@@ -41,7 +43,9 @@ struct HardwareCatalogPresentationTests {
 			displayName: displayName,
 			activelySupported: activelySupported,
 			supportLevel: supportLevel,
-			architecture: architecture
+			isMaker: isMaker,
+			architecture: architecture,
+			tags: tags
 		)
 	}
 
@@ -101,6 +105,22 @@ struct HardwareCatalogPresentationTests {
 		#expect(record.hwModelSlug == nil)
 		#expect(record.platformioTarget == nil)
 		#expect(record.displayName == nil)
+		#expect(record.isMaker == false)
+	}
+
+	@Test func parsesIsMakerCorrectly() {
+		let entity = DeviceHardwareEntity()
+		entity.hwModel = 148
+		entity.displayName = "Axiometa Genesis Mini"
+		entity.supportLevel = 1
+		entity.isMaker = true
+		
+		let record = HardwareCatalogRecord(entity)
+		let presentation = HardwareCatalogResolver.presentation(for: 148, in: [record])
+		
+		#expect(presentation?.displayName == "Axiometa Genesis Mini")
+		#expect(presentation?.isMaker == true)
+		#expect(presentation?.supportLevel == .flagship)
 	}
 
 	@Test func usesRawStringOrderingForEqualPriorityRecords() {
