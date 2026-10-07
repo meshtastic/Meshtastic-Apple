@@ -121,13 +121,18 @@ extension AccessoryManager {
 	/// How far a radio's RSSI must move, or how long must pass, before discovery shows a new
 	/// value (review V39). Scanning reports every advertisement, several a second per radio, and
 	/// each write to `devices` redraws every view that observes the manager, in every window.
+	/// A move shows after `discoveryRssiMinInterval` at the soonest: a weak, distant radio's RSSI
+	/// often swings by the step between advertisements (review V40-3).
 	nonisolated static let discoveryRssiStep = 5
+	nonisolated static let discoveryRssiMinInterval: Duration = .seconds(2)
 	nonisolated static let discoveryRssiInterval: Duration = .seconds(5)
 
 	/// Whether a sighting's RSSI is worth showing, `last` being the one shown before.
 	nonisolated static func showsDiscoveryRssi(_ rssi: Int, at now: ContinuousClock.Instant, after last: ShownRssi?) -> Bool {
 		guard let last else { return true }
-		return abs(rssi - last.rssi) >= discoveryRssiStep || now - last.at >= discoveryRssiInterval
+		let elapsed = now - last.at
+		return elapsed >= discoveryRssiInterval
+			|| (elapsed >= discoveryRssiMinInterval && abs(rssi - last.rssi) >= discoveryRssiStep)
 	}
 
 	/// Stops discovery once nothing needs it (reviews V39, V40-2): no Connect screen shows, a radio

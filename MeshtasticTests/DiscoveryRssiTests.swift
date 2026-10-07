@@ -43,26 +43,30 @@ struct DiscoveryRssiTests {
 		start.advanced(by: .milliseconds(Int(seconds * 1000)))
 	}
 
-	@Test("A radio's RSSI is shown when it moved 5 dB or 5 s have passed, not on every report")
+	@Test("A radio's RSSI is shown when it moved 5 dB after 2 s, or after 5 s, not on every report")
 	func showsRssi() {
 		let shown = AccessoryManager.ShownRssi(rssi: -60, at: at(0))
 		#expect(AccessoryManager.showsDiscoveryRssi(-60, at: at(0), after: nil), "the first one")
 		#expect(!AccessoryManager.showsDiscoveryRssi(-62, at: at(1), after: shown))
 		#expect(!AccessoryManager.showsDiscoveryRssi(-56, at: at(4.9), after: shown))
-		#expect(AccessoryManager.showsDiscoveryRssi(-65, at: at(1), after: shown), "moved 5 dB")
-		#expect(AccessoryManager.showsDiscoveryRssi(-55, at: at(1), after: shown))
+		#expect(!AccessoryManager.showsDiscoveryRssi(-80, at: at(1.9), after: shown), "not within 2 s, however far it moved")
+		#expect(AccessoryManager.showsDiscoveryRssi(-65, at: at(2), after: shown), "moved 5 dB")
+		#expect(AccessoryManager.showsDiscoveryRssi(-55, at: at(2), after: shown))
 		#expect(AccessoryManager.showsDiscoveryRssi(-61, at: at(5), after: shown), "5 s passed")
 	}
 
 	@Test("Discovery writes only the RSSIs worth showing into the radio list")
 	func discoveryListThrottled() async throws {
 		let radio = Device(id: UUID(), name: "Far", transportType: .tcp, identifier: "far.local:4403", rssi: -60)
+		// Found after the others, so once it's listed they've all been handled.
+		let last = Device(id: UUID(), name: "Last", transportType: .tcp, identifier: "last.local:4403", rssi: -50)
 		let manager = AccessoryManager(transports: [ScriptedDiscoveryTransport(events: [
 			.deviceFound(radio),
 			.deviceReportedRssi(radio.id, -61),
 			.deviceReportedRssi(radio.id, -63),
 			.deviceReportedRssi(radio.id, -62),
-			.deviceReportedRssi(radio.id, -70)
+			.deviceReportedRssi(radio.id, -70),
+			.deviceFound(last)
 		])])
 		manager.isSwitchingDevices = true
 		var shown: [Int?] = []
@@ -76,10 +80,11 @@ struct DiscoveryRssiTests {
 			manager.stopDiscovery()
 		}
 		manager.startDiscovery()
-		for _ in 0..<200 where manager.devices.first?.rssi != -70 {
+		for _ in 0..<200 where !manager.devices.contains(where: { $0.id == last.id }) {
 			try await Task.sleep(for: .milliseconds(10))
 		}
-		#expect(shown == [-60, -61, -70], "-63 and -62 are within 5 dB of -61, a moment later")
+		#expect(manager.devices.contains { $0.id == last.id })
+		#expect(shown == [-60, -61], "-63 and -62 are within 5 dB of -61, and -70 came within 2 s")
 	}
 }
 
