@@ -450,6 +450,10 @@ Review V40's findings, checked in the files; all held. One commit each.
 
 - [X] T416 (V41-1) The first radio's teardown and the app becoming active, the two places that start scanning with no first radio, apply `stopDiscoveryWhenUnneeded` right after. With other radios connected and the first one off on purpose (Disconnect, Remove, a cancelled stand-in) scanning ran on, and on the Mac started again at every return to the app. After a drop it goes on, to bring the first radio back. Verified: `DiscoveryAfterConnectTests` (`disconnectFirstStopsIt` fails without either stop, `firstDropKeepsIt`).
 
+## Fixes after V42 (review of T416, 2026-10-07)
+
+- [X] T417 (V42-1) `awaitsFirstRadio` is false when the preferred radio is connected alongside, as `connectToPreferredDevice` requires. After Disconnect on the first radio the preferred radio is the one alongside, and a firmware update's end clears the user-disconnect flag, so scanning ran on for a first radio nothing would connect. Verified: `DiscoveryAfterConnectScreenTests` (fails without the check).
+
 ## Phase 10: Hardening
 
 - [ ] T130 Four BLE radios for 24 hours (device checklist in `HANDOFF.md`).

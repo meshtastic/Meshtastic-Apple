@@ -118,6 +118,15 @@ struct DiscoveryAfterConnectScreenTests {
 		manager.stopDiscoveryWhenUnneeded()
 		#expect(manager.discoveryTask != nil, "the first radio comes back through it")
 
+		// After Disconnect on the first radio the preferred radio is the one alongside; a firmware
+		// update's end clears the user-disconnect flag, and nothing would connect it from discovery.
+		let preferred = PreferredRadio.peripheralId
+		PreferredRadio.peripheralId = radio.id.uuidString
+		manager.stopDiscoveryWhenUnneeded()
+		#expect(manager.discoveryTask == nil, "the preferred radio is connected alongside")
+		PreferredRadio.peripheralId = preferred
+		manager.startDiscovery()
+
 		manager.userRequestedConnectionCancellation = true
 		manager.stopDiscoveryWhenUnneeded()
 		#expect(manager.discoveryTask == nil, "the user disconnected the first radio")
