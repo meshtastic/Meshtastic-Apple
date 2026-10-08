@@ -107,6 +107,17 @@ private final class RestoredPeripheralE: FakePeripheral, @unchecked Sendable {
 	override var name: String? { "E" }
 }
 
+/// The transports these tests make, kept for the whole run. Their fake centrals are real
+/// `CBCentralManager`s, and one freed by a task that outlived its test, off the main thread while
+/// other tests run, aborts the test host.
+private enum KeptForTheRun {
+	private static let lock = NSLock()
+	nonisolated(unsafe) private static var transports: [BLETransport] = []
+	static func keep(_ transport: BLETransport) {
+		lock.withLock { transports.append(transport) }
+	}
+}
+
 /// Records which peripherals had their link cancelled.
 private final class CancelRecordingCentral: CBCentralManager, @unchecked Sendable {
 	private let peripherals: [CBPeripheral]
@@ -153,6 +164,7 @@ struct MultiRadioBLETransportTests {
 		let connects = Reached()
 		let central = TwoPeripheralCentral(peripherals: [peripheralA, peripheralB], connects: connects)
 		let transport = BLETransport(createCentralManagerImmediately: false, centralManager: central)
+		KeptForTheRun.keep(transport)
 
 		let first = Task { try await transport.connect(to: device(for: peripheralA, name: "A")) }
 		let second = Task { try await transport.connect(to: device(for: peripheralB, name: "B")) }
@@ -174,6 +186,7 @@ struct MultiRadioBLETransportTests {
 		let connects = Reached()
 		let central = TwoPeripheralCentral(peripherals: [peripheralA], connects: connects)
 		let transport = BLETransport(createCentralManagerImmediately: false, centralManager: central)
+		KeptForTheRun.keep(transport)
 		let radio = device(for: peripheralA, name: "A")
 
 		let first = Task { try await transport.connect(to: radio) }
@@ -193,6 +206,7 @@ struct MultiRadioBLETransportTests {
 		let connects = Reached()
 		let central = TwoPeripheralCentral(peripherals: [peripheralA, peripheralB], connects: connects)
 		let transport = BLETransport(createCentralManagerImmediately: false, centralManager: central)
+		KeptForTheRun.keep(transport)
 		let radioA = device(for: peripheralA, name: "A")
 		let radioB = device(for: peripheralB, name: "B")
 
@@ -262,6 +276,7 @@ struct MultiRadioBLERestorationTests {
 		let connects = Reached()
 		let central = TwoPeripheralCentral(peripherals: [peripheralA, peripheralB], connects: connects)
 		let transport = BLETransport(createCentralManagerImmediately: false, centralManager: central)
+		KeptForTheRun.keep(transport)
 		let tookOver = Reached()
 		let takenOverId = TakeoverRecord<UUID?>(nil)
 		await transport.setRestoreTakeover { peripheral, _ in
@@ -286,6 +301,7 @@ struct MultiRadioBLERestorationTests {
 		let connects = Reached()
 		let central = TwoPeripheralCentral(peripherals: [peripheralA, peripheralB], connects: connects)
 		let transport = BLETransport(createCentralManagerImmediately: false, centralManager: central)
+		KeptForTheRun.keep(transport)
 		let finished = Reached()
 
 		let restore = Task {
@@ -311,6 +327,7 @@ struct MultiRadioBLERestorationTests {
 		let connects = Reached()
 		let central = CancelRecordingCentral(peripherals: [restored], connects: connects)
 		let transport = BLETransport(createCentralManagerImmediately: false, centralManager: central)
+		KeptForTheRun.keep(transport)
 		await transport.holdRestoredPeripherals([restored], gracePeriod: .seconds(60))
 
 		let connection = try #require(try await transport.connect(to: device(for: restored, name: "C")) as? BLEConnection)
@@ -330,6 +347,7 @@ struct MultiRadioBLERestorationTests {
 		let restored = RestoredPeripheralE.make()
 		let central = CancelRecordingCentral(peripherals: [restored], connects: Reached())
 		let transport = BLETransport(createCentralManagerImmediately: false, centralManager: central)
+		KeptForTheRun.keep(transport)
 		await transport.holdRestoredPeripherals([restored], gracePeriod: .seconds(60))
 		// CoreBluetooth completes its pending connect on its own.
 		RestoredPeripheralE.currentState = .connected
@@ -346,6 +364,7 @@ struct MultiRadioBLERestorationTests {
 		let connects = Reached()
 		let central = CancelRecordingCentral(peripherals: [claimed, unclaimed], connects: connects)
 		let transport = BLETransport(createCentralManagerImmediately: false, centralManager: central)
+		KeptForTheRun.keep(transport)
 		await transport.holdRestoredPeripherals([claimed, unclaimed], gracePeriod: .milliseconds(50))
 		_ = try await transport.connect(to: device(for: claimed, name: "C"))
 

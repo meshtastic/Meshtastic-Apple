@@ -762,9 +762,10 @@ actor BLETransport: Transport {
 			}
 			discoveredPeripherals[peripheral.identifier] = (peripheral: peripheral, lastSeen: Date())
 		}
-		Task {
+		// Not keeping the transport alive meanwhile.
+		Task { [weak self] in
 			try? await Task.sleep(for: gracePeriod)
-			self.releaseUnclaimedRestoredPeripherals()
+			await self?.releaseUnclaimedRestoredPeripherals()
 		}
 	}
 
