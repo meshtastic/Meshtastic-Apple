@@ -89,10 +89,10 @@ extension AccessoryManager {
 							self.awaitedRememberedRadios.remove(newDevice.id)
 							if !self.isRadioConnected(newDevice.id) {
 								Logger.transport.info("🔗🔁 [Additional] Remembered radio \(newDevice.name, privacy: .public) found; bringing it back")
-								self.scheduleAdditionalRadioReconnect(newDevice, firstDelay: .zero)
+								self.scheduleAdditionalRadioReconnect(newDevice)
 							}
 						}
-						self.droppedRadioSeen(newDevice)
+						self.radioSeen(newDevice.id)
 						
 					case .deviceLost(let deviceId):
 						devices = devices.filter { $0.id != deviceId }
@@ -100,6 +100,8 @@ extension AccessoryManager {
 						shownDiscoveryRssi.removeValue(forKey: deviceId)
 					
 					case .deviceReportedRssi(let deviceId, let newRssi):
+						// Seen advertising: a radio waiting to come back connects now.
+						radioSeen(deviceId)
 						let now = ContinuousClock.now
 						guard Self.showsDiscoveryRssi(newRssi, at: now, after: shownDiscoveryRssi[deviceId]) else { break }
 						shownDiscoveryRssi[deviceId] = ShownRssi(rssi: newRssi, at: now)
@@ -136,12 +138,12 @@ extension AccessoryManager {
 	}
 
 	/// Stops discovery once nothing needs it (reviews V39, V40-2): no Connect screen shows, a radio
-	/// is connected, the first radio isn't waiting for discovery to bring it back, and no
-	/// remembered radio waits for discovery to find it (T156). With no radio connected it goes on,
-	/// as on `main`. A radio alongside that drops reconnects by its own id; with no other radio
-	/// left it needs discovery, and then none is connected.
+	/// is connected, and no radio waits for discovery to bring it back: the first radio
+	/// (`awaitsFirstRadio`), a radio alongside that dropped (review V45-2), or a remembered radio
+	/// (T156). With no radio connected it goes on, as on `main`.
 	func stopDiscoveryWhenUnneeded() {
-		guard connectScreens.isEmpty, connectedRadioCount > 0, !awaitsFirstRadio, awaitedRememberedRadios.isEmpty else { return }
+		guard connectScreens.isEmpty, connectedRadioCount > 0, !awaitsFirstRadio, additionalRadioReconnects.isEmpty,
+			  awaitedRememberedRadios.isEmpty else { return }
 		stopDiscovery()
 	}
 

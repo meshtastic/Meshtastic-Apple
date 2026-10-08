@@ -529,7 +529,8 @@ extension AccessoryManager {
 				// App-wide: a connect with no other radio connected does it (T309).
 				let isOnlyRadio = self.isOnlyConnectedRadio(session)
 				if isOnlyRadio {
-					self.stopDiscovery()
+					// Not while a radio waits for discovery to bring it back (review V45-2).
+					if self.additionalRadioReconnects.isEmpty { self.stopDiscovery() }
 					// Prune stale nodes now that the dump is in, instead of at the head of
 					// sendWantConfig where the fetch+delete+save serialized ahead of the whole
 					// handshake on the ingestion actor. Post-dump lastHeard values also make the

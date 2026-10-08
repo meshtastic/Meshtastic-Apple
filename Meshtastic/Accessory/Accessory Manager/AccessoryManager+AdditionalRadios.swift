@@ -331,59 +331,78 @@ extension AccessoryManager {
 		awaitedRememberedRadios.removeAll()
 	}
 
-	// MARK: - Reconnect (T063)
+	// MARK: - Reconnect (T063, review V45-2)
 
-	/// Keeps trying to reconnect a radio that dropped, until it's back, alongside or as the first
-	/// radio, or the user disconnects it. Each attempt is bounded, so an out-of-range BLE radio
-	/// doesn't hold the scan paused; attempts back off up to a minute.
-	func scheduleAdditionalRadioReconnect(_ device: Device, firstDelay: Duration = .seconds(5)) {
+	/// Brings back a radio that dropped as `main` brings back its radio: it connects when discovery
+	/// lists it, alongside the connected radios, or as the first radio when there's none to join,
+	/// until it's back or the user disconnects it. Discovery goes on while it waits
+	/// (`stopDiscoveryWhenUnneeded`). A connect that fails tries again a moment later while discovery
+	/// still lists it, as `main`'s restarted discovery reports the radios it knows again. Nothing
+	/// connects while automatic connecting is off, as on `main`.
+	func scheduleAdditionalRadioReconnect(_ device: Device) {
 		guard additionalRadioReconnects[device.id] == nil else { return }
-		Logger.transport.info("🔗🔁 [Additional] Will reconnect \(device.name, privacy: .public) when it's back")
+		Logger.transport.info("🔗🔁 [Additional] Will reconnect \(device.name, privacy: .public) when discovery sees it")
+		let (sightings, sighting) = AsyncStream<Void>.makeStream(bufferingPolicy: .bufferingNewest(1))
 		// The loop knows its own task, so one whose entry was removed or replaced ends at its next
 		// wake, and its end doesn't remove a newer loop's entry (review V14 P1).
 		let handle = ReconnectLoopHandle()
 		let loop = Task { @MainActor [weak self] in
-			var delay = firstDelay
 			defer {
-				if let self, let thisLoop = handle.task, self.additionalRadioReconnects[device.id] == thisLoop {
+				sighting.finish()
+				if let self, self.additionalRadioReconnects[device.id] == nil || self.additionalRadioReconnects[device.id] == handle.task {
 					self.additionalRadioReconnects.removeValue(forKey: device.id)
+					self.radioSightings.removeValue(forKey: device.id)
+					// Discovery went on for it.
+					self.stopDiscoveryWhenUnneeded()
 				}
 			}
+			var nextSighting = sightings.makeAsyncIterator()
 			while !Task.isCancelled {
-				try? await Task.sleep(for: delay)
-				guard let self, !Task.isCancelled, let thisLoop = handle.task, self.additionalRadioReconnects[device.id] == thisLoop else { return }
+				guard let self else { return }
+				if !self.devices.contains(where: { $0.id == device.id }) || !UserDefaults.autoconnectOnDiscovery {
+					guard await nextSighting.next() != nil else { return }
+				}
+				guard !Task.isCancelled, let thisLoop = handle.task, self.additionalRadioReconnects[device.id] == thisLoop else { return }
 				if self.activeConnection?.device.id == device.id || self.additionalRadios[device.id] != nil { return }
+				guard UserDefaults.autoconnectOnDiscovery else { continue }
+				// As discovery knows it now: a TCP radio's current address, say.
+				let target = self.devices.first { $0.id == device.id } ?? self.recentlyDiscoveredDevices[device.id] ?? device
 				// A connect of it that's running (as the first radio, or the user's) is waited for
 				// rather than ending the loop, so one that fails is tried again (review V13 Z1).
 				if self.connectAttempts[device.id] == nil {
-					if self.hasRadioToJoin, self.canConnectAnotherRadio {
-						// Alongside the connected radios, rather than taking over as the first radio,
-						// which is the preferred radio's own reconnect to make.
-						do {
-							try await self.connectAdditionalRadio(device, connectTimeout: Self.additionalReconnectTimeout)
-							Logger.transport.info("🔗🔁 [Additional] Reconnected \(device.name, privacy: .public)")
-							return
-						} catch {
-							Logger.transport.info("🔗🔁 [Additional] Reconnect to \(device.name, privacy: .public) failed: \(error.localizedDescription, privacy: .public)")
+					if self.hasRadioToJoin {
+						if self.canConnectAnotherRadio {
+							do {
+								try await self.connectAdditionalRadio(target, connectTimeout: Self.additionalReconnectTimeout)
+								Logger.transport.info("🔗🔁 [Additional] Reconnected \(device.name, privacy: .public)")
+								return
+							} catch {
+								Logger.transport.info("🔗🔁 [Additional] Reconnect to \(device.name, privacy: .public) failed: \(error.localizedDescription, privacy: .public)")
+							}
 						}
-					} else if !self.hasRadioToJoin {
-						// No radio left for it to join (review V13 Z1): it comes back as the first
-						// radio once discovery can see it. Discovery also brings it back as soon as it
-						// sees it (`droppedRadioSeen`), rather than at this loop's next try.
-						if !self.isSwitchingDevices {
-							self.startDiscovery()
-						}
-						if self.mayConnectAsFirst(device), self.devices.contains(where: { $0.id == device.id }) {
-							await self.connectAsFirst(device)
-							if self.activeConnection?.device.id == device.id { return }
-						}
+					} else if self.mayConnectAsFirst(target) {
+						// No radio left for it to join (review V13 Z1): it comes back as the first radio.
+						await self.connectAsFirst(target)
+						if self.activeConnection?.device.id == device.id { return }
 					}
 				}
-				delay = min(max(delay, .seconds(5)) * 2, .seconds(60))
+				try? await Task.sleep(for: Self.reconnectRetryPause)
 			}
 		}
 		handle.task = loop
 		additionalRadioReconnects[device.id] = loop
+		radioSightings[device.id] = sighting
+		if !isSwitchingDevices {
+			startDiscovery()
+		}
+	}
+
+	/// How long a radio waiting to come back waits after a connect of it that didn't get it back.
+	static let reconnectRetryPause: Duration = .seconds(1)
+
+	/// Discovery saw radio `deviceId`: one waiting to come back connects now (review V45-2).
+	func radioSeen(_ deviceId: UUID) {
+		radioSightings[deviceId]?.yield()
 	}
 
 	/// The stand-in record for `deviceId`, while it's connecting as the first radio in the
@@ -461,13 +480,6 @@ extension AccessoryManager {
 		try? await connect(to: device, connectTimeout: Self.additionalReconnectTimeout)
 	}
 
-	/// Discovery saw `device`. A radio alongside that dropped with no other radio left comes back
-	/// as the first radio now, rather than at its reconnect loop's next try (review V13 Z1).
-	func droppedRadioSeen(_ device: Device) {
-		guard additionalRadioReconnects[device.id] != nil, mayConnectAsFirst(device) else { return }
-		Task { @MainActor in await connectAsFirst(device) }
-	}
-
 	// MARK: - Remembered radios (T063)
 
 	/// After the first radio connects, brings back the radios that were connected alongside
@@ -486,7 +498,7 @@ extension AccessoryManager {
 				continue
 			}
 			guard !isRadioConnected(device.id) else { continue }
-			scheduleAdditionalRadioReconnect(device, firstDelay: .zero)
+			scheduleAdditionalRadioReconnect(device)
 		}
 	}
 

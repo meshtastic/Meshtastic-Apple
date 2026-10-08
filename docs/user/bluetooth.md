@@ -68,7 +68,7 @@ With more than one radio connected, the passphrase sheet and the update screen s
 
 ### Reconnecting
 
-A radio you've connected is remembered. If it drops out of range or restarts, the app keeps trying to reconnect it, and its window keeps showing it meanwhile. When you open the app and your usual radio connects, the other remembered radios are connected again too. A network radio that isn't found right then is connected when the app next sees it. Choosing **Disconnect** on a radio stops this until you connect it again yourself.
+A radio you've connected is remembered. If it drops out of range or restarts, the app reconnects it as soon as it sees it again, and its window keeps showing it meanwhile. When you open the app and your usual radio connects, the other remembered radios are connected again too. A network radio that isn't found right then is connected when the app next sees it. Choosing **Disconnect** on a radio stops this until you connect it again yourself.
 
 If iOS closes the app in the background while Bluetooth radios are connected, it relaunches the app when one of them has something to send. The app reconnects your radios, and the window keeps the radio it was showing. A radio the app doesn't bring back within a few minutes is let go, so it's free for another connection.
 

@@ -123,7 +123,7 @@ struct MultiRadioConnectFlowTests {
 		#expect(manager.oneWindowRadio(stored: UUID()) == .firstRadio, "a radio that's gone")
 
 		// Dropped, and being brought back: the window keeps it.
-		manager.scheduleAdditionalRadioReconnect(radios.secondDevice, firstDelay: .seconds(3600))
+		manager.scheduleAdditionalRadioReconnect(radios.secondDevice)
 		manager.additionalRadios.removeValue(forKey: radios.secondDevice.id)
 		#expect(manager.oneWindowRadio(stored: radios.secondDevice.id) == RadioWindow(deviceId: radios.secondDevice.id))
 		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
@@ -257,7 +257,8 @@ struct MultiRadioConnectFlowTests {
 
 		// ... and a radio alongside that drops is brought back while the first is still gone (W2).
 		await manager.disconnectAdditionalRadio(secondDevice.id)
-		manager.scheduleAdditionalRadioReconnect(secondDevice, firstDelay: .zero)
+		manager.scheduleAdditionalRadioReconnect(secondDevice)
+		manager.radioSeen(secondDevice.id)
 		try await waitUntil { manager.additionalRadios[secondDevice.id] != nil && manager.connectAttempts[secondDevice.id] == nil }
 		#expect(manager.additionalRadios[secondDevice.id] != nil, "connected, its connect finished")
 		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
@@ -290,13 +291,13 @@ struct MultiRadioConnectFlowTests {
 		allowDiscovery(manager)
 
 		// Not seen by discovery: its loop doesn't connect it blind.
-		manager.scheduleAdditionalRadioReconnect(radios.secondDevice, firstDelay: .zero)
+		manager.scheduleAdditionalRadioReconnect(radios.secondDevice)
 		try await Task.sleep(for: .milliseconds(300))
 		#expect(manager.activeConnection == nil)
 		#expect(manager.additionalRadioReconnects[radios.secondDevice.id] != nil, "still waiting for it")
 
 		// Seen: back as the first radio.
-		manager.droppedRadioSeen(radios.secondDevice)
+		manager.radioSeen(radios.secondDevice.id)
 		try await waitUntil { manager.activeConnection?.device.id == radios.secondDevice.id && manager.connectAttempts[radios.secondDevice.id] == nil }
 		#expect(manager.activeConnection?.device.id == radios.secondDevice.id, "connected, its connect finished")
 		#expect(manager.isConnected)
@@ -308,7 +309,7 @@ struct MultiRadioConnectFlowTests {
 
 		// Disconnected now by the user, it stays off though discovery sees it again (review V14 P1).
 		try await disconnectFirstRadio(accessoryManager: manager)
-		manager.droppedRadioSeen(radios.secondDevice)
+		manager.radioSeen(radios.secondDevice.id)
 		try await Task.sleep(for: .milliseconds(300))
 		#expect(manager.activeConnection == nil)
 		endDiscovery(manager)
@@ -466,7 +467,7 @@ extension MultiRadioConnectFlowTests {
 		let manager = makeManager(ScriptedTransport(radio: ScriptedRadio(nodeNum: uniqueNodeNum())))
 		let only = device()
 		try await manager.connect(to: only)
-		manager.scheduleAdditionalRadioReconnect(only, firstDelay: .seconds(60))
+		manager.scheduleAdditionalRadioReconnect(only)
 		try await disconnectFirstRadio(accessoryManager: manager)
 		#expect(manager.additionalRadioReconnects[only.id] == nil)
 	}
@@ -475,9 +476,9 @@ extension MultiRadioConnectFlowTests {
 	func replacedLoopKeepsTheNewOne() async throws {
 		let manager = AccessoryManager(transports: [])
 		let dropped = device()
-		manager.scheduleAdditionalRadioReconnect(dropped, firstDelay: .seconds(60))
+		manager.scheduleAdditionalRadioReconnect(dropped)
 		manager.additionalRadioReconnects.removeValue(forKey: dropped.id)?.cancel()
-		manager.scheduleAdditionalRadioReconnect(dropped, firstDelay: .seconds(60))
+		manager.scheduleAdditionalRadioReconnect(dropped)
 		try await Task.sleep(for: .milliseconds(200))
 		#expect(manager.additionalRadioReconnects[dropped.id] != nil)
 		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
@@ -496,7 +497,7 @@ extension MultiRadioConnectFlowTests {
 		allowDiscovery(manager)
 		manager.devices = [radios.secondDevice]
 
-		manager.scheduleAdditionalRadioReconnect(radios.secondDevice, firstDelay: .zero)
+		manager.scheduleAdditionalRadioReconnect(radios.secondDevice)
 		try await waitUntil { manager.activeConnection?.device.id == radios.secondDevice.id && manager.connectAttempts[radios.secondDevice.id] == nil }
 		#expect(manager.activeConnection?.device.id == radios.secondDevice.id, "connected, its connect finished")
 		#expect(manager.isConnected)
@@ -523,7 +524,7 @@ extension MultiRadioConnectFlowTests {
 		allowDiscovery(manager)
 		manager.devices = [radios.secondDevice]
 
-		manager.scheduleAdditionalRadioReconnect(radios.secondDevice, firstDelay: .zero)
+		manager.scheduleAdditionalRadioReconnect(radios.secondDevice)
 		try await waitUntil { manager.activeConnection?.device.id == radios.secondDevice.id && manager.connectAttempts[radios.secondDevice.id] == nil }
 		#expect(manager.activeConnection?.device.id == radios.secondDevice.id, "connected, its connect finished")
 		#expect(manager.isConnected)
@@ -542,7 +543,7 @@ extension MultiRadioConnectFlowTests {
 		let manager = radios.manager
 		// B dropped and is being brought back; another radio is waited for by discovery.
 		await manager.disconnectAdditionalRadio(radios.secondDevice.id)
-		manager.scheduleAdditionalRadioReconnect(radios.secondDevice, firstDelay: .seconds(60))
+		manager.scheduleAdditionalRadioReconnect(radios.secondDevice)
 		let awaited = UUID()
 		manager.awaitedRememberedRadios.insert(awaited)
 
@@ -1211,7 +1212,7 @@ extension MultiRadioConnectFlowTests {
 		// B's link drops as it resets (the firmware turns Bluetooth off), not by the user: its
 		// reconnect loop starts.
 		await manager.disconnectAdditionalRadio(radios.secondDevice.id)
-		manager.scheduleAdditionalRadioReconnect(radios.secondDevice, firstDelay: .seconds(3600))
+		manager.scheduleAdditionalRadioReconnect(radios.secondDevice)
 		await manager.disconnectAfterFactoryReset(Int64(radios.secondNum))
 		#expect(manager.additionalRadioReconnects[radios.secondDevice.id] == nil, "its loop stops")
 		#expect(manager.activeConnection != nil, "the other radio stays")
@@ -1281,7 +1282,7 @@ extension MultiRadioConnectFlowTests {
 		let deadId = UUID()
 		dead.peripheralId = deadId.uuidString
 		try context.save()
-		manager.scheduleAdditionalRadioReconnect(Device(id: deadId, name: "Dead", transportType: .tcp, identifier: "dead.local:4403", num: deadNum), firstDelay: .seconds(3600))
+		manager.scheduleAdditionalRadioReconnect(Device(id: deadId, name: "Dead", transportType: .tcp, identifier: "dead.local:4403", num: deadNum))
 		manager.awaitedRememberedRadios.insert(deadId)
 
 		await manager.removeRadio(deadNum)

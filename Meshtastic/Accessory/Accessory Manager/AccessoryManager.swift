@@ -345,6 +345,8 @@ class AccessoryManager: ObservableObject {
 	var retiredAdditionalSessionIDs: Set<UUID> = []
 	/// Reconnect loops for additional radios that dropped, by device id (T063).
 	var additionalRadioReconnects: [UUID: Task<Void, Never>] = [:]
+	/// Each loop's wake-up for discovery seeing its radio (`radioSeen`).
+	var radioSightings: [UUID: AsyncStream<Void>.Continuation] = [:]
 	/// Connects a remembered radio when the preferred one doesn't show up
 	/// (`scheduleRememberedRadioFallback`).
 	var rememberedRadioFallbackTask: Task<Void, Never>?
