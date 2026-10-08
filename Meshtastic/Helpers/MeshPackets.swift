@@ -674,7 +674,8 @@ actor MeshPackets {
 	}
 
 	/// Nodes: cap the total, evicting least-recently-heard first. Never evict favorites — the user
-	/// explicitly kept those. Among already-persisted rows, `lastHeard` is optional; nil sorts first
+	/// explicitly kept those — nor the user's own radios, which keep their node and the config
+	/// stored with it however long they've been off (as the stale-node prune, T425). Among already-persisted rows, `lastHeard` is optional; nil sorts first
 	/// (ascending), so never-heard stubs go before any dated node, which is the correct "stalest
 	/// first" order.
 	/// `limit` bounds a single pass, for the chunked background path; nil evicts the whole
@@ -684,8 +685,9 @@ actor MeshPackets {
 	func evictNodesIfOverCap(_ cap: Int, limit: Int? = nil) -> Int {
 		guard let nodeCount = try? modelContext.fetchCount(FetchDescriptor<NodeInfoEntity>()),
 			  nodeCount > cap else { return 0 }
+		let radioNums = ((try? modelContext.fetch(FetchDescriptor<MyInfoEntity>())) ?? []).map(\.myNodeNum)
 		var descriptor = FetchDescriptor<NodeInfoEntity>(
-			predicate: #Predicate { $0.favorite == false },
+			predicate: #Predicate { $0.favorite == false && !radioNums.contains($0.num) },
 			sortBy: [SortDescriptor(\.lastHeard, order: .forward)]
 		)
 		let overage = nodeCount - cap

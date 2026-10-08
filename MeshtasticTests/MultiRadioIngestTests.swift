@@ -302,6 +302,30 @@ struct MultiRadioIngestTests {
 		#expect(try fetch(NodeObservationEntity.self, in: container).isEmpty)
 	}
 
+	@Test("Eviction at the node cap spares the user's own radios, however long they've been off")
+	func evictionSparesTheRadios() async throws {
+		let container = try makeContainer()
+		let context = ModelContext(container)
+		let radio = NodeInfoEntity()
+		radio.num = radioB
+		radio.lastHeard = Date(timeIntervalSinceNow: -400 * 86_400)
+		context.insert(radio)
+		let myInfo = MyInfoEntity()
+		myInfo.myNodeNum = radioB
+		context.insert(myInfo)
+		let heard = NodeInfoEntity()
+		heard.num = remote
+		heard.lastHeard = Date(timeIntervalSinceNow: -86_400)
+		context.insert(heard)
+		try context.save()
+		let packets = await makePackets(container)
+
+		#expect(await packets.evictNodesIfOverCap(1) == 1)
+		await packets.savePendingChanges()
+
+		#expect(try fetch(NodeInfoEntity.self, in: container).map(\.num) == [radioB], "the radio stays, though heard longest ago")
+	}
+
 	@Test("Purging stale nodes spares the user's own radios, however long they've been off")
 	func purgeSparesTheRadios() async throws {
 		let container = try makeContainer()
