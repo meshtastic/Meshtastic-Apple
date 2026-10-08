@@ -38,7 +38,12 @@ extension AccessoryManager {
 		// The connection state then stays as it is.
 		if activeConnection == nil {
 			updateState(.discovering)
-			scheduleRememberedRadioFallback()
+			// No first radio: the remembered radios come back as they're seen, as at launch. Not
+			// after the user's Disconnect, nor during a switch or an update, when nothing connects
+			// on its own.
+			if !userRequestedConnectionCancellation, !isSwitchingDevices, !otaInProgress {
+				Task { await awaitRememberedRadios() }
+			}
 		}
 
 		discoveryTask = Task { @MainActor in
@@ -81,17 +86,9 @@ extension AccessoryManager {
 						// in the user interface
 						self.devices = devices.sorted { $0.name < $1.name }
 
-						// Feature 021 (T156): a remembered radio that wasn't around when the first radio
-						// connected comes back alongside the connected radios now, the first one
-						// included or not (T317).
+						// Feature 021 (T156): kept after discovery stops, so a remembered TCP radio found by
+						// Bonjour can still be connected.
 						self.recentlyDiscoveredDevices[newDevice.id] = newDevice
-						if self.awaitedRememberedRadios.contains(newDevice.id), self.connectedRadioCount > 0 {
-							self.awaitedRememberedRadios.remove(newDevice.id)
-							if !self.isRadioConnected(newDevice.id) {
-								Logger.transport.info("🔗🔁 [Additional] Remembered radio \(newDevice.name, privacy: .public) found; bringing it back")
-								self.scheduleAdditionalRadioReconnect(newDevice)
-							}
-						}
 						self.radioSeen(newDevice.id)
 						
 					case .deviceLost(let deviceId):
@@ -139,11 +136,10 @@ extension AccessoryManager {
 
 	/// Stops discovery once nothing needs it (reviews V39, V40-2): no Connect screen shows, a radio
 	/// is connected, and no radio waits for discovery to bring it back: the first radio
-	/// (`awaitsFirstRadio`), a radio alongside that dropped (review V45-2), or a remembered radio
-	/// (T156). With no radio connected it goes on, as on `main`.
+	/// (`awaitsFirstRadio`), or another that dropped or is remembered (review V45-2, V45-3). With
+	/// no radio connected it goes on, as on `main`.
 	func stopDiscoveryWhenUnneeded() {
-		guard connectScreens.isEmpty, connectedRadioCount > 0, !awaitsFirstRadio, additionalRadioReconnects.isEmpty,
-			  awaitedRememberedRadios.isEmpty else { return }
+		guard connectScreens.isEmpty, connectedRadioCount > 0, !awaitsFirstRadio, additionalRadioReconnects.isEmpty else { return }
 		stopDiscovery()
 	}
 

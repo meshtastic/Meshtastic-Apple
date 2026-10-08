@@ -76,7 +76,6 @@ struct DiscoveryRssiTests {
 		}
 		defer {
 			subscription.cancel()
-			manager.rememberedRadioFallbackTask?.cancel()
 			manager.stopDiscovery()
 		}
 		manager.startDiscovery()
@@ -103,7 +102,6 @@ struct DiscoveryAfterConnectScreenTests {
 		manager.isSwitchingDevices = true
 		manager.startDiscovery()
 		defer {
-			manager.rememberedRadioFallbackTask?.cancel()
 			manager.stopDiscovery()
 		}
 		manager.stopDiscoveryWhenUnneeded()
@@ -142,10 +140,11 @@ struct DiscoveryAfterConnectScreenTests {
 
 		// The first radio connected.
 		manager.updateState(.subscribed)
-		manager.awaitedRememberedRadios.insert(UUID())
+		manager.scheduleAdditionalRadioReconnect(Device(id: UUID(), name: "Remembered", transportType: .tcp, identifier: "remembered.local:4403"))
 		manager.stopDiscoveryWhenUnneeded()
-		#expect(manager.discoveryTask != nil, "a remembered radio still waits to be found")
-		manager.awaitedRememberedRadios.removeAll()
+		#expect(manager.discoveryTask != nil, "another radio still waits to be seen")
+		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
+		manager.additionalRadioReconnects.removeAll()
 
 		let screen = UUID()
 		manager.connectScreenAppeared(screen)
@@ -172,7 +171,10 @@ struct DiscoveryAfterConnectTests {
 		])
 		let manager = ConnectFlowSupport.makeManager(transport)
 		try await manager.connect(to: ConnectFlowSupport.device())
-		manager.awaitedRememberedRadios.removeAll()
+		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
+		manager.additionalRadioReconnects.removeAll()
+		// Their ends run before the test goes on.
+		try await Task.sleep(for: .milliseconds(50))
 
 		// Started again by the first radio's drop, or left by a Connect screen.
 		manager.startDiscovery()
@@ -202,13 +204,15 @@ struct DiscoveryAfterConnectTests {
 		let manager = ConnectFlowSupport.makeManager(transport)
 		try await manager.connect(to: ConnectFlowSupport.device())
 		try await manager.connectAdditionalRadio(secondDevice)
-		manager.awaitedRememberedRadios.removeAll()
+		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
+		manager.additionalRadioReconnects.removeAll()
+		// Their ends run before the test goes on.
+		try await Task.sleep(for: .milliseconds(50))
 		return (manager, secondDevice)
 	}
 
 	private func cleanUp(_ manager: AccessoryManager, second: Device) async {
 		manager.isSwitchingDevices = true
-		manager.rememberedRadioFallbackTask?.cancel()
 		manager.stopDiscovery()
 		await manager.disconnectAdditionalRadio(second.id, byUser: true)
 	}

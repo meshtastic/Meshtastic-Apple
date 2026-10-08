@@ -286,7 +286,6 @@ extension AccessoryManager {
 		}
 		if byUser || forUpdate {
 			additionalRadioReconnects.removeValue(forKey: deviceId)?.cancel()
-			awaitedRememberedRadios.remove(deviceId)
 			radioConnectErrors.removeValue(forKey: deviceId)
 		}
 		// A connect still in progress for it stops, whether it's waiting for the handshake gate
@@ -328,7 +327,6 @@ extension AccessoryManager {
 		for deviceId in radios {
 			await disconnectAdditionalRadio(deviceId, byUser: true)
 		}
-		awaitedRememberedRadios.removeAll()
 	}
 
 	// MARK: - Reconnect (T063, review V45-2)
@@ -455,10 +453,9 @@ extension AccessoryManager {
 			&& !(appState?.isDatabaseResetting ?? false) && connectAttempts[device.id] == nil
 	}
 
-	/// Connects `device`, a radio alongside that dropped with no other radio left, as the first
-	/// radio (review V13 Z1), bounded as its reconnect attempts are. As the remembered-radio
-	/// fallback does, the preferred radio, when it's another one and the user didn't disconnect it,
-	/// is remembered so it joins when it's back. A connect that fails leaves its reconnect loop to
+	/// Connects `device`, a radio waiting to come back with no radio to join, as the first radio
+	/// (review V13 Z1, V45-3), bounded as its other connects are. The preferred radio, when it's
+	/// another one and the user didn't disconnect it, is remembered so it joins when it's back. A connect that fails leaves its reconnect loop to
 	/// try again.
 	func connectAsFirst(_ device: Device) async {
 		// Claimed before any wait, so two tries at once don't overwrite each other's record.
@@ -483,23 +480,31 @@ extension AccessoryManager {
 	// MARK: - Remembered radios (T063)
 
 	/// After the first radio connects, brings back the radios that were connected alongside
-	/// it last time (`MyInfoEntity.autoConnect`). They go through the reconnect loop, so one
-	/// that's out of range keeps being tried without blocking the others.
+	/// it last time (`MyInfoEntity.autoConnect`): each waits for discovery to see it, as a radio
+	/// that dropped does.
 	func reconnectRememberedRadios() async {
 		guard connectedRadioCount > 0 else { return }
+		await awaitRememberedRadios()
+	}
+
+	/// Every remembered radio that isn't connected waits for discovery to see it (review V45-3), as
+	/// `main`'s radio does at launch: with no radio connected the first one seen connects as the
+	/// first radio, the others alongside. The preferred radio comes back through discovery's own
+	/// auto-connect.
+	func awaitRememberedRadios() async {
 		let connectedNums = Set(connectedRadios.compactMap(\.num))
 		let remembered = await MeshPackets.shared.rememberedRadios(excluding: connectedNums)
-		for radio in remembered {
-			guard let device = device(for: radio) else {
-				Logger.transport.info("🔗🔁 [Additional] Can't bring back \(radio.name, privacy: .public) yet: not found on \(radio.transport.rawValue, privacy: .public); waiting for discovery to see it")
-				if let id = UUID(uuidString: radio.peripheralId) {
-					awaitedRememberedRadios.insert(id)
-				}
-				continue
-			}
-			guard !isRadioConnected(device.id) else { continue }
+		for radio in remembered where radio.peripheralId != PreferredRadio.peripheralId {
+			guard let device = device(for: radio) ?? placeholderDevice(for: radio), !isRadioConnected(device.id) else { continue }
 			scheduleAdditionalRadioReconnect(device)
 		}
+	}
+
+	/// A remembered radio discovery hasn't seen and that has no saved address, until it does: its
+	/// wait connects the device discovery reports.
+	private func placeholderDevice(for remembered: MeshPackets.RememberedRadio) -> Device? {
+		guard let id = UUID(uuidString: remembered.peripheralId) else { return nil }
+		return Device(id: id, name: remembered.name, transportType: remembered.transport, identifier: id.uuidString, num: remembered.nodeNum)
 	}
 
 	/// A `Device` the transports can connect for a remembered radio: the discovered one, a saved

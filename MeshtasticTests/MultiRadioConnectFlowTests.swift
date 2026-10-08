@@ -273,7 +273,6 @@ struct MultiRadioConnectFlowTests {
 
 	private func endDiscovery(_ manager: AccessoryManager) {
 		manager.isSwitchingDevices = true
-		manager.rememberedRadioFallbackTask?.cancel()
 		manager.stopDiscovery()
 		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
 	}
@@ -541,15 +540,13 @@ extension MultiRadioConnectFlowTests {
 		defer { saved.restore() }
 		let radios = try await connectTwoRadios()
 		let manager = radios.manager
-		// B dropped and is being brought back; another radio is waited for by discovery.
+		// B dropped and is being brought back; a remembered radio waits to be seen.
 		await manager.disconnectAdditionalRadio(radios.secondDevice.id)
 		manager.scheduleAdditionalRadioReconnect(radios.secondDevice)
-		let awaited = UUID()
-		manager.awaitedRememberedRadios.insert(awaited)
+		manager.scheduleAdditionalRadioReconnect(device())
 
 		await manager.disconnectAllAdditionalRadios()
 		#expect(manager.additionalRadioReconnects.isEmpty)
-		#expect(manager.awaitedRememberedRadios.isEmpty)
 		try await manager.disconnect()
 	}
 
@@ -839,7 +836,7 @@ extension MultiRadioConnectFlowTests {
 
 		#expect(manager.activeConnection === firstSession)
 		#expect(manager.additionalRadios.isEmpty)
-		#expect(manager.additionalRadioReconnects.isEmpty)
+		#expect(manager.additionalRadioReconnects[radios.secondDevice.id] == nil)
 		#expect(await radios.second.disconnects == 1)
 		#expect(await radios.first.disconnects == 0)
 		let secondNum = Int64(radios.secondNum)
@@ -1283,12 +1280,10 @@ extension MultiRadioConnectFlowTests {
 		dead.peripheralId = deadId.uuidString
 		try context.save()
 		manager.scheduleAdditionalRadioReconnect(Device(id: deadId, name: "Dead", transportType: .tcp, identifier: "dead.local:4403", num: deadNum))
-		manager.awaitedRememberedRadios.insert(deadId)
 
 		await manager.removeRadio(deadNum)
 
 		#expect(manager.additionalRadioReconnects[deadId] == nil, "it isn't brought back")
-		#expect(!manager.awaitedRememberedRadios.contains(deadId))
 		let fresh = ModelContext(PersistenceController.shared.container)
 		#expect(try fresh.fetchCount(FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == deadNum })) == 0)
 		#expect(PreferredRadio.nodeNum == 0)

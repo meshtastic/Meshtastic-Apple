@@ -227,7 +227,14 @@ struct MultiRadioConnectLifecycleTests {
 		#expect(await firstConnection.sent.isEmpty, "never through another radio")
 	}
 
-	@Test("A remembered radio seen by discovery comes back while only radios other than the first are connected")
+	/// Waits up to two seconds for `condition`.
+	private func waitFor(_ condition: () -> Bool) async throws {
+		for _ in 0..<200 where !condition() {
+			try await Task.sleep(for: .milliseconds(10))
+		}
+	}
+
+	@Test("A remembered radio waiting to be seen is connected when discovery finds it, while only radios other than the first are connected")
 	func rememberedRadioComesBackWithoutTheFirst() async throws {
 		var tcpDevice = device("Radio C")
 		tcpDevice.num = 0x0C0D
@@ -237,20 +244,15 @@ struct MultiRadioConnectLifecycleTests {
 		other.num = 0x0B0E
 		other.connectionState = .connected
 		manager.additionalRadios[other.id] = RadioSession(device: other, connection: IdleConnection())
-		manager.awaitedRememberedRadios.insert(tcpDevice.id)
+		manager.scheduleAdditionalRadioReconnect(tcpDevice)
 
-		manager.startDiscovery()
-		var waited = 0
-		while manager.additionalRadioReconnects[tcpDevice.id] == nil, waited < 200 {
-			try await Task.sleep(for: .milliseconds(10))
-			waited += 1
-		}
-		#expect(manager.additionalRadioReconnects[tcpDevice.id] != nil)
-		manager.stopDiscovery()
+		try await waitFor { manager.connectAttempts[tcpDevice.id] != nil }
+		#expect(manager.connectAttempts[tcpDevice.id]?.isFirst == false, "alongside the radio that's connected")
 		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
+		manager.stopDiscovery()
 	}
 
-	@Test("A remembered TCP radio seen by discovery is brought back, even after discovery stopped")
+	@Test("A remembered TCP radio is connected at the address discovery finds, and stays resolvable after discovery stops")
 	func rememberedTCPRadioComesBack() async throws {
 		var tcpDevice = device("Radio C")
 		tcpDevice.num = 0x0C0C
@@ -258,17 +260,11 @@ struct MultiRadioConnectLifecycleTests {
 		manager.activeConnection = RadioSession(device: device("First"), connection: IdleConnection())
 		let remembered = MeshPackets.RememberedRadio(nodeNum: 0x0C0C, peripheralId: tcpDevice.id.uuidString, name: "Radio C", transport: .tcp)
 
-		// Not seen yet: waited for, then brought back when discovery finds it.
+		// Not seen yet, and no saved address: it waits under its id alone.
 		#expect(manager.device(for: remembered) == nil)
-		manager.awaitedRememberedRadios.insert(tcpDevice.id)
-		manager.startDiscovery()
-		var waited = 0
-		while manager.additionalRadioReconnects[tcpDevice.id] == nil, waited < 200 {
-			try await Task.sleep(for: .milliseconds(10))
-			waited += 1
-		}
-		#expect(manager.additionalRadioReconnects[tcpDevice.id] != nil)
-		#expect(manager.awaitedRememberedRadios.isEmpty)
+		manager.scheduleAdditionalRadioReconnect(Device(id: tcpDevice.id, name: "Radio C", transportType: .tcp, identifier: tcpDevice.id.uuidString, num: 0x0C0C))
+		try await waitFor { manager.connectAttempts[tcpDevice.id] != nil }
+		#expect(manager.connectAttempts[tcpDevice.id]?.device.identifier == tcpDevice.identifier, "at the address discovery found")
 
 		// Seen before discovery stopped: still resolvable.
 		manager.stopDiscovery()
@@ -277,38 +273,45 @@ struct MultiRadioConnectLifecycleTests {
 		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
 	}
 
-	@Test("A remembered radio in range stands in for a missing preferred radio")
-	func rememberedRadioFallback() {
+	@Test("With no first radio, a remembered radio connects as the first radio when it's seen, without waiting for the preferred one; not after the user's Disconnect")
+	func rememberedRadioConnectsWhenSeen() async throws {
+		let saved = ConnectFlowSupport.SavedDefaults()
 		let previousAuto = UserDefaults.autoconnectOnDiscovery
-		let previousPreferred = UserDefaults.preferredPeripheralId
+		var inRange = device("In range")
+		inRange.num = Int64.random(in: 0x6000_0000...0x6FFF_FFFF)
+		let context = PersistenceController.shared.context
+		let myInfo = MyInfoEntity()
+		myInfo.myNodeNum = inRange.num ?? 0
+		myInfo.peripheralId = inRange.id.uuidString
+		myInfo.autoConnect = true
+		myInfo.transport = TransportType.tcp.rawValue
+		context.insert(myInfo)
+		try context.save()
 		defer {
 			UserDefaults.autoconnectOnDiscovery = previousAuto
-			UserDefaults.preferredPeripheralId = previousPreferred
+			saved.restore()
+			context.delete(myInfo)
+			try? context.save()
 		}
 		UserDefaults.autoconnectOnDiscovery = true
-		let preferred = device("Preferred", transport: .ble)
-		let inRange = device("In range", transport: .ble)
-		let away = UUID()
-		UserDefaults.preferredPeripheralId = preferred.id.uuidString
-		let manager = AccessoryManager(transports: [])
-		manager.devices = [preferred, inRange]
-		let remembered = [
-			MeshPackets.RememberedRadio(nodeNum: 1, peripheralId: preferred.id.uuidString, name: "Preferred", transport: .ble),
-			MeshPackets.RememberedRadio(nodeNum: 2, peripheralId: away.uuidString, name: "Away", transport: .ble),
-			MeshPackets.RememberedRadio(nodeNum: 3, peripheralId: inRange.id.uuidString, name: "In range", transport: .ble)
-		]
+		UserDefaults.preferredPeripheralId = UUID().uuidString
+		UserDefaults.preferredPeripheralNum = 0
 
-		// Not the preferred radio (its own auto-connect handles it), not one that's out of range.
-		#expect(manager.rememberedRadioFallbackCandidate(from: remembered)?.id == inRange.id)
+		// After the user's Disconnect nothing comes back on its own.
+		let disconnected = AccessoryManager(transports: [OneDeviceDiscoveryTransport(found: inRange)])
+		disconnected.userRequestedConnectionCancellation = true
+		disconnected.startDiscovery()
+		try await Task.sleep(for: .milliseconds(300))
+		#expect(disconnected.additionalRadioReconnects[inRange.id] == nil)
+		#expect(disconnected.connectAttempts[inRange.id] == nil)
+		disconnected.stopDiscovery()
 
-		manager.userRequestedConnectionCancellation = true
-		#expect(manager.rememberedRadioFallbackCandidate(from: remembered) == nil)
-		manager.userRequestedConnectionCancellation = false
-		UserDefaults.autoconnectOnDiscovery = false
-		#expect(manager.rememberedRadioFallbackCandidate(from: remembered) == nil)
-		UserDefaults.autoconnectOnDiscovery = true
-		manager.activeConnection = RadioSession(device: preferred, connection: IdleConnection())
-		#expect(manager.rememberedRadioFallbackCandidate(from: remembered) == nil)
+		let manager = AccessoryManager(transports: [OneDeviceDiscoveryTransport(found: inRange)])
+		manager.startDiscovery()
+		try await waitFor { manager.connectAttempts[inRange.id] != nil }
+		#expect(manager.connectAttempts[inRange.id]?.isFirst == true, "as the first radio, at once")
+		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
+		manager.stopDiscovery()
 	}
 
 	@Test("The phone position loop keeps going for the other radios when the first one closes")

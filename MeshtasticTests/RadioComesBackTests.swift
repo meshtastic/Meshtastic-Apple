@@ -26,7 +26,8 @@ struct RadioComesBackTests {
 		try await manager.connectAdditionalRadio(second)
 		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
 		manager.additionalRadioReconnects.removeAll()
-		manager.awaitedRememberedRadios.removeAll()
+		// Their ends run before the test goes on.
+		try await Task.sleep(for: .milliseconds(50))
 		return (manager, second)
 	}
 

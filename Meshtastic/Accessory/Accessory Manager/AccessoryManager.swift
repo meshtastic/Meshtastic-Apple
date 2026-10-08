@@ -347,9 +347,6 @@ class AccessoryManager: ObservableObject {
 	var additionalRadioReconnects: [UUID: Task<Void, Never>] = [:]
 	/// Each loop's wake-up for discovery seeing its radio (`radioSeen`).
 	var radioSightings: [UUID: AsyncStream<Void>.Continuation] = [:]
-	/// Connects a remembered radio when the preferred one doesn't show up
-	/// (`scheduleRememberedRadioFallback`).
-	var rememberedRadioFallbackTask: Task<Void, Never>?
 	/// Radios discovery has seen this launch, kept after `stopDiscovery()` empties `devices`, so a
 	/// remembered TCP radio found by Bonjour can still be brought back after the first radio's
 	/// connect stops discovery (T156).
@@ -359,9 +356,6 @@ class AccessoryManager: ObservableObject {
 	/// The Connect screens showing (the Mac's Connect window, the Connect tab's radio list), which
 	/// keep discovery going (`stopDiscoveryWhenUnneeded`).
 	var connectScreens: Set<UUID> = []
-	/// Remembered radios that weren't found when the first radio connected; each is brought
-	/// back when discovery next sees it (T156).
-	var awaitedRememberedRadios: Set<UUID> = []
 	/// One radio's config and node-DB handshake at a time, the first radio's or another's (T064).
 	let handshakeGate = HandshakeGate()
 	/// Bumped by `disconnect()`, so the first radio's connect still waiting at `handshakeGate` sees the
@@ -933,7 +927,6 @@ class AccessoryManager: ObservableObject {
 		// when it was a radio alongside (review V14 P1).
 		if let disconnectedId {
 			additionalRadioReconnects.removeValue(forKey: disconnectedId)?.cancel()
-			awaitedRememberedRadios.remove(disconnectedId)
 		}
 		self.userRequestedConnectionCancellation = true
 		firstRadioReleasedForUpdate = forUpdate
