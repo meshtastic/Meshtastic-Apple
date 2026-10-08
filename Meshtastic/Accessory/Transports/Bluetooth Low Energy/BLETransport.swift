@@ -45,6 +45,10 @@ actor BLETransport: Transport {
 	/// remembered-radio reconnect claims each through `connect(to:)`; any left unclaimed are
 	/// released so a radio isn't held by a link nobody uses.
 	private var restoredStandby: [UUID: CBPeripheral] = [:]
+	/// The standby radios iOS restored still connected. Only their links are kept links
+	/// (`BLEConnection.isKeptByRestore`): one restored while connecting may have connected since,
+	/// but was off the link meanwhile, so it gets the full handshake, as on `main` (review V45-1).
+	private var restoredKeptConnected: Set<UUID> = []
 	private var setupCompleteGate: AsyncGate
 	private var restoreInProgress: Bool = false
 	var status: TransportStatus = .uninitialized {
@@ -431,9 +435,10 @@ actor BLETransport: Transport {
 		// and its connect asks only for the config, as the first radio's restore does (#2584). One
 		// restored while connecting goes through the normal connect, which CoreBluetooth completes
 		// with the pending attempt, and a full handshake, as on `main`.
+		let keptConnected = restoredKeptConnected.remove(id) != nil
 		if let restored = restoredStandby.removeValue(forKey: id), restored.state == .connected, centralManager != nil {
 			Logger.transport.info("🛜 [BLE] Taking over the restored link to \(restored.name ?? "Unknown", privacy: .public)")
-			let connection = BLEConnection(peripheral: restored, central: centralManager, transport: self, keptByRestore: true)
+			let connection = BLEConnection(peripheral: restored, central: centralManager, transport: self, keptByRestore: keptConnected)
 			activeConnections[id] = connection
 			return connection
 		}
@@ -712,6 +717,7 @@ actor BLETransport: Transport {
 	private func handOverRestore(to peripheral: CBPeripheral, central: CBCentralManager) -> Bool {
 		guard let pending = restoredConnect, pending.peripheralId != peripheral.identifier,
 			  let standby = restoredStandby.removeValue(forKey: peripheral.identifier) else { return false }
+		restoredKeptConnected.remove(peripheral.identifier)
 		restoredConnect = nil
 		activeConnections.removeValue(forKey: pending.peripheralId)
 		if let waiting = discoveredPeripherals[pending.peripheralId]?.peripheral {
@@ -751,6 +757,9 @@ actor BLETransport: Transport {
 		for peripheral in peripherals {
 			Logger.transport.info("🛜 [BLE] Restored \(peripheral.name ?? "Unknown", privacy: .public) (\(cbPeripheralStateDescription(peripheral.state), privacy: .public)) to reconnect alongside the first radio")
 			restoredStandby[peripheral.identifier] = peripheral
+			if peripheral.state == .connected {
+				restoredKeptConnected.insert(peripheral.identifier)
+			}
 			discoveredPeripherals[peripheral.identifier] = (peripheral: peripheral, lastSeen: Date())
 		}
 		Task {
@@ -795,6 +804,7 @@ actor BLETransport: Transport {
 	func releaseUnclaimedRestoredPeripherals() {
 		let unclaimed = restoredStandby
 		restoredStandby.removeAll()
+		restoredKeptConnected.removeAll()
 		for (id, peripheral) in unclaimed where activeConnections[id] == nil && connectContinuations[id] == nil {
 			Logger.transport.info("🛜 [BLE] Releasing the unclaimed restored link to \(peripheral.name ?? "Unknown", privacy: .public)")
 			centralManager?.cancelPeripheralConnection(peripheral)

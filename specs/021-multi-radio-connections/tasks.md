@@ -461,6 +461,7 @@ Review V40's findings, checked in the files; all held. One commit each.
 ## Every radio as `main` (owner, 2026-10-08)
 
 - [X] T419 A radio whose link iOS kept connected through a restore connects asking only for its config, not its node database or the version check, whichever radio it is: `main`'s restore (#2584, merged in T398). Before, only the first radio did; the radios restored alongside took over their kept link through a normal connect and downloaded their node database again. The connection says it was kept (`Connection.isKeptByRestore`, set by `BLETransport` where it takes over a kept link), and the connect steps skip the node database and the version check for it (`ConnectAttempt.isKeptByRestore`). A link restored while still connecting gets the full handshake, as on `main`. Verified: `RestoredLinkConnectTests` (fails without reading the kept link), and `MultiRadioBLERestorationTests` (the takeover marks the link kept).
+- [X] T420 (V45-1) Only a standby radio iOS restored still connected is a kept link (`restoredKeptConnected`, recorded in `holdRestoredPeripherals`). One restored while connecting whose pending connect CoreBluetooth completed before it was claimed reads `.connected` then, and T419 took it as kept and skipped its node database; it was off the link meanwhile, and `main` gives a radio restored connecting the full handshake. Verified: `MultiRadioBLERestorationTests` (`connectingRestoredRadioIsNotKept` fails with T419's takeover).
 
 ## Phase 10: Hardening
 

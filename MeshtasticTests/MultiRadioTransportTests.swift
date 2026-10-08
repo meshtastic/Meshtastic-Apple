@@ -97,6 +97,16 @@ private final class RestoredPeripheralD: FakePeripheral, @unchecked Sendable {
 	override var name: String? { "D" }
 }
 
+/// A radio iOS restored while still connecting, whose pending connect CoreBluetooth may complete
+/// before it's claimed.
+private final class RestoredPeripheralE: FakePeripheral, @unchecked Sendable {
+	static let id = UUID()
+	nonisolated(unsafe) static var currentState: CBPeripheralState = .connecting
+	override static var fakeIdentifier: UUID { id }
+	override var state: CBPeripheralState { Self.currentState }
+	override var name: String? { "E" }
+}
+
 /// Records which peripherals had their link cancelled.
 private final class CancelRecordingCentral: CBCentralManager, @unchecked Sendable {
 	private let peripherals: [CBPeripheral]
@@ -312,6 +322,21 @@ struct MultiRadioBLERestorationTests {
 		}
 		await transport.releaseUnclaimedRestoredPeripherals()
 		#expect(central.cancelled.isEmpty, "a claimed radio keeps its link")
+	}
+
+	@Test("A radio restored while connecting, connected by the time it's claimed, isn't a kept link: it gets the full handshake, as on main")
+	func connectingRestoredRadioIsNotKept() async throws {
+		RestoredPeripheralE.currentState = .connecting
+		let restored = RestoredPeripheralE.make()
+		let central = CancelRecordingCentral(peripherals: [restored], connects: Reached())
+		let transport = BLETransport(createCentralManagerImmediately: false, centralManager: central)
+		await transport.holdRestoredPeripherals([restored], gracePeriod: .seconds(60))
+		// CoreBluetooth completes its pending connect on its own.
+		RestoredPeripheralE.currentState = .connected
+
+		let connection = try #require(try await transport.connect(to: device(for: restored, name: "E")) as? BLEConnection)
+		#expect(await connection.peripheral.identifier == RestoredPeripheralE.id)
+		#expect(await !connection.isKeptByRestore)
 	}
 
 	@Test("A restored radio nobody claims is released")
