@@ -458,6 +458,10 @@ Review V40's findings, checked in the files; all held. One commit each.
 
 - [X] T418 (V43-1) `awaitsFirstRadio` checks that the preferred radio is connected alongside (`additionalRadios`), not `isRadioConnected`, which also counts a connect attempt. A failed connect of the first radio tears down while its attempt is still registered, so with other radios connected the teardown stopped the scanning that would try it again, and it stayed off. Verified: `DiscoveryAfterConnectScreenTests` (fails with T417's check).
 
+## Every radio as `main` (owner, 2026-10-08)
+
+- [X] T419 A radio whose link iOS kept connected through a restore connects asking only for its config, not its node database or the version check, whichever radio it is: `main`'s restore (#2584, merged in T398). Before, only the first radio did; the radios restored alongside took over their kept link through a normal connect and downloaded their node database again. The connection says it was kept (`Connection.isKeptByRestore`, set by `BLETransport` where it takes over a kept link), and the connect steps skip the node database and the version check for it (`ConnectAttempt.isKeptByRestore`). A link restored while still connecting gets the full handshake, as on `main`. Verified: `RestoredLinkConnectTests` (fails without reading the kept link), and `MultiRadioBLERestorationTests` (the takeover marks the link kept).
+
 ## Phase 10: Hardening
 
 - [ ] T130 Four BLE radios for 24 hours (device checklist in `HANDOFF.md`).

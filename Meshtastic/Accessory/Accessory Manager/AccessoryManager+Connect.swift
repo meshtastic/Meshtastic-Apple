@@ -32,6 +32,9 @@ final class ConnectAttempt {
 	var stepper: SequentialSteps?
 	/// Set when the radio is disconnected while its connect is still waiting to start.
 	var isCancelled = false
+	/// Step 1's link is one iOS kept connected through a restore: the node database and the
+	/// version check are skipped, for every radio, as `main` does for its restored radio (#2584).
+	var isKeptByRestore = false
 	/// Whether radios other than the backfill owner had observations before this radio's first
 	/// packet, for the backfill before it joins (T230). Nil when no backfill owner is set.
 	var othersObservedBeforeJoin: Bool?
@@ -296,6 +299,7 @@ extension AccessoryManager {
 							throw AccessoryError.connectionFailed("No longer room for this radio")
 						}
 					}
+					attempt.isKeptByRestore = await connection.isKeptByRestore
 					let eventStream = try await connection.connect()
 					self.setStatus(.communicating, for: attempt)
 					// Every event is tagged with the session it came from, so a late event from an
@@ -406,7 +410,7 @@ extension AccessoryManager {
 
 			// Step 4: Send Heartbeat before wantConfig (database)
 			Step { @MainActor _ in
-				guard wantDatabase else {
+				guard wantDatabase, !attempt.isKeptByRestore else {
 					Logger.transport.info("👟 [Connect] Step 4: wantDatabase = false, skipping heartbeat")
 					return
 				}
@@ -426,7 +430,7 @@ extension AccessoryManager {
 						PreferredRadio.nodeNum = nodeNum
 					}
 				}
-				guard wantDatabase else {
+				guard wantDatabase, !attempt.isKeptByRestore else {
 					Logger.transport.info("👟 [Connect] Step 5: wantDatabase = false, skipping wantDatabase")
 					return
 				}
@@ -456,7 +460,7 @@ extension AccessoryManager {
 			// connect flow in .retrievingDatabase forever (no watchdog until Step 8). 120s is
 			// generous for a large legitimate node-DB dump.
 			Step(timeout: .seconds(120)) { @MainActor _ in
-				guard wantDatabase else {
+				guard wantDatabase, !attempt.isKeptByRestore else {
 					Logger.transport.info("👟 [Connect] Step 4: wantDatabase = false, skipping waitForWantDatabase")
 					return
 				}
@@ -466,7 +470,7 @@ extension AccessoryManager {
 			
 			// Step 6: Version check
 			Step { @MainActor _ in
-				guard versionCheck else {
+				guard versionCheck, !attempt.isKeptByRestore else {
 					Logger.transport.info("👟 [Connect] Step 6: versionCheck = false, skipping version check")
 					return
 				}
@@ -549,7 +553,7 @@ extension AccessoryManager {
 					await self.setupPeriodicHeartbeat(on: session)
 				}
 				
-				let connectionWasRestored = (withConnection != nil)
+				let connectionWasRestored = withConnection != nil || attempt.isKeptByRestore
 				Logger.datadog.action(.connect(firmwareVersion: self.reportedFirmwareVersion(for: session.device),
 												transportType: session.device.transportType.rawValue,
 												hardwareModel: session.device.hardwareModel,

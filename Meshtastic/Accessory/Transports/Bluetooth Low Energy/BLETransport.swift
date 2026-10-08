@@ -427,12 +427,13 @@ actor BLETransport: Transport {
 			throw AccessoryError.connectionFailed("Peripheral not found")
 		}
 		let id = peripheral.identifier
-		// A radio iOS restored still connected: take over its link rather than connecting again.
-		// One restored while connecting goes through the normal connect, which CoreBluetooth
-		// completes with the pending attempt.
+		// A radio iOS restored still connected: take over its link rather than connecting again,
+		// and its connect asks only for the config, as the first radio's restore does (#2584). One
+		// restored while connecting goes through the normal connect, which CoreBluetooth completes
+		// with the pending attempt, and a full handshake, as on `main`.
 		if let restored = restoredStandby.removeValue(forKey: id), restored.state == .connected, centralManager != nil {
 			Logger.transport.info("🛜 [BLE] Taking over the restored link to \(restored.name ?? "Unknown", privacy: .public)")
-			let connection = BLEConnection(peripheral: restored, central: centralManager, transport: self)
+			let connection = BLEConnection(peripheral: restored, central: centralManager, transport: self, keptByRestore: true)
 			activeConnections[id] = connection
 			return connection
 		}
@@ -664,7 +665,7 @@ actor BLETransport: Transport {
 				}
 
 			case .connected:
-				let restoredConnection = BLEConnection(peripheral: peripheral, central: central, transport: self)
+				let restoredConnection = BLEConnection(peripheral: peripheral, central: central, transport: self, keptByRestore: true)
 				self.activeConnections[id] = restoredConnection
 				Logger.transport.error("🛜 [BLE] Peripheral Connection found and state is connected setting this connection as the activeConnection.")
 				// The link survived but this process is new, so everything the radio sends only with

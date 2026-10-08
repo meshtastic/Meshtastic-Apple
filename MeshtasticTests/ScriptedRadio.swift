@@ -34,6 +34,8 @@ actor ScriptedRadio: Connection {
 	let afterConfig: [FromRadio.OneOf_PayloadVariant]
 	/// How long a want-config takes to be answered; zero answers inside `send`.
 	let replyDelay: Duration
+	/// A link iOS kept connected through a restore of the app.
+	let isKeptByRestore: Bool
 
 	init(
 		nodeNum: UInt32,
@@ -43,7 +45,8 @@ actor ScriptedRadio: Connection {
 		timezone: String = "UTC0",
 		cannedMessages: Bool = false,
 		afterConfig: [FromRadio.OneOf_PayloadVariant] = [],
-		replyDelay: Duration = .milliseconds(20)
+		replyDelay: Duration = .milliseconds(20),
+		keptByRestore: Bool = false
 	) {
 		self.nodeNum = nodeNum
 		self.firmwareVersion = firmwareVersion
@@ -53,6 +56,7 @@ actor ScriptedRadio: Connection {
 		self.cannedMessages = cannedMessages
 		self.afterConfig = afterConfig
 		self.replyDelay = replyDelay
+		self.isKeptByRestore = keptByRestore
 	}
 
 	/// Sends an event as if the link produced it.

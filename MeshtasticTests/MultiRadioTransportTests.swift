@@ -305,6 +305,7 @@ struct MultiRadioBLERestorationTests {
 
 		let connection = try #require(try await transport.connect(to: device(for: restored, name: "C")) as? BLEConnection)
 		#expect(await connection.peripheral.identifier == RestoredPeripheralC.id)
+		#expect(await connection.isKeptByRestore, "its connect asks only for the config (#2584)")
 		// Claimed once: a second connect is the ordinary busy case.
 		await #expect(throws: AccessoryError.self) {
 			_ = try await transport.connect(to: device(for: restored, name: "C"))
