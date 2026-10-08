@@ -148,10 +148,11 @@ extension AccessoryManager {
 	/// The first radio is away and discovery would connect it when it sees it (the auto-connect of
 	/// the preferred radio above, `connectToPreferredDevice`): after a drop, not after the user's
 	/// Disconnect, and not when the preferred radio is connected alongside, as it is after
-	/// Disconnect on the first radio (review V42-1).
+	/// Disconnect on the first radio (review V42-1). A connect of it that's failing still counts as
+	/// away: its teardown checks this while the attempt is registered (review V43-1).
 	var awaitsFirstRadio: Bool {
 		guard !isConnected, let preferredId = UUID(uuidString: PreferredRadio.peripheralId) else { return false }
-		return !isRadioConnected(preferredId) && UserDefaults.autoconnectOnDiscovery
+		return additionalRadios[preferredId] == nil && UserDefaults.autoconnectOnDiscovery
 			&& shouldAutomaticallyConnectToPreferredPeripheralAfterError && !userRequestedConnectionCancellation
 			&& !autoReconnectSuspendedForSession
 	}

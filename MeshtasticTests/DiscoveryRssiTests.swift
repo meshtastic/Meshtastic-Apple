@@ -92,7 +92,7 @@ struct DiscoveryRssiTests {
 @Suite("Discovery after the Connect screen", .serialized)
 struct DiscoveryAfterConnectScreenTests {
 	@Test("Discovery stops once nothing needs it: no Connect screen, a radio connected, the first radio not awaited, no remembered radio awaited")
-	func stopsWhenUnneeded() {
+	func stopsWhenUnneeded() throws {
 		let saved = ConnectFlowSupport.SavedDefaults()
 		let autoconnect = UserDefaults.autoconnectOnDiscovery
 		defer {
@@ -117,6 +117,13 @@ struct DiscoveryAfterConnectScreenTests {
 		UserDefaults.autoconnectOnDiscovery = true
 		manager.stopDiscoveryWhenUnneeded()
 		#expect(manager.discoveryTask != nil, "the first radio comes back through it")
+
+		// A connect of it failing tears down while its attempt is still registered.
+		let preferredDevice = Device(id: try #require(UUID(uuidString: PreferredRadio.peripheralId)), name: "Far", transportType: .tcp, identifier: "far.local:4403")
+		manager.connectAttempts[preferredDevice.id] = ConnectAttempt(device: preferredDevice, isFirst: true)
+		manager.stopDiscoveryWhenUnneeded()
+		#expect(manager.discoveryTask != nil, "still away: it comes back through it")
+		manager.connectAttempts.removeAll()
 
 		// After Disconnect on the first radio the preferred radio is the one alongside; a firmware
 		// update's end clears the user-disconnect flag, and nothing would connect it from discovery.

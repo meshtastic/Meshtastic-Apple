@@ -454,6 +454,10 @@ Review V40's findings, checked in the files; all held. One commit each.
 
 - [X] T417 (V42-1) `awaitsFirstRadio` is false when the preferred radio is connected alongside, as `connectToPreferredDevice` requires. After Disconnect on the first radio the preferred radio is the one alongside, and a firmware update's end clears the user-disconnect flag, so scanning ran on for a first radio nothing would connect. Verified: `DiscoveryAfterConnectScreenTests` (fails without the check).
 
+## Fixes after V43 (review of T417, 2026-10-07)
+
+- [X] T418 (V43-1) `awaitsFirstRadio` checks that the preferred radio is connected alongside (`additionalRadios`), not `isRadioConnected`, which also counts a connect attempt. A failed connect of the first radio tears down while its attempt is still registered, so with other radios connected the teardown stopped the scanning that would try it again, and it stayed off. Verified: `DiscoveryAfterConnectScreenTests` (fails with T417's check).
+
 ## Phase 10: Hardening
 
 - [ ] T130 Four BLE radios for 24 hours (device checklist in `HANDOFF.md`).
