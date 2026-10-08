@@ -42,6 +42,10 @@ extension AccessoryManager {
 			// after the user's Disconnect, nor during a switch or an update, when nothing connects
 			// on its own.
 			if !userRequestedConnectionCancellation, !isSwitchingDevices, !otaInProgress {
+				// With nothing connected, the preferred radio gets a head start for the first place.
+				if connectedRadioCount == 0 {
+					firstPlaceOpensAt = .now + firstPlaceHeadStart
+				}
 				Task { await awaitRememberedRadios() }
 			}
 		}

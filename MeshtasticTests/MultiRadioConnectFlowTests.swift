@@ -495,6 +495,9 @@ extension MultiRadioConnectFlowTests {
 		#expect(manager.connectedRadioCount == 0)
 		allowDiscovery(manager)
 		manager.devices = [radios.secondDevice]
+		// In the app discovery already runs from the first radio's drop; here it starts with nothing
+		// connected, which gives the preferred radio a head start (tested on its own).
+		manager.firstPlaceHeadStart = .zero
 
 		manager.scheduleAdditionalRadioReconnect(radios.secondDevice)
 		try await waitUntil { manager.activeConnection?.device.id == radios.secondDevice.id && manager.connectAttempts[radios.secondDevice.id] == nil }
@@ -502,7 +505,7 @@ extension MultiRadioConnectFlowTests {
 		#expect(manager.isConnected)
 		let firstNum = Int64(radios.firstNum)
 		let first = try PersistenceController.shared.context.fetch(FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == firstNum })).first
-		#expect(first?.autoConnect == true, "the first radio joins when it's back, as the fallback has it")
+		#expect(first?.autoConnect == true, "the first radio joins when it's back")
 		endDiscovery(manager)
 		for deviceId in Array(manager.additionalRadios.keys) {
 			await manager.disconnectRadio(deviceId)

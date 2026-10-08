@@ -273,7 +273,7 @@ struct MultiRadioConnectLifecycleTests {
 		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
 	}
 
-	@Test("With no first radio, a remembered radio connects as the first radio when it's seen, without waiting for the preferred one; not after the user's Disconnect")
+	@Test("With no radio connected, a remembered radio takes the first place once the preferred radio's head start is over; not after the user's Disconnect")
 	func rememberedRadioConnectsWhenSeen() async throws {
 		let saved = ConnectFlowSupport.SavedDefaults()
 		let previousAuto = UserDefaults.autoconnectOnDiscovery
@@ -307,9 +307,12 @@ struct MultiRadioConnectLifecycleTests {
 		disconnected.stopDiscovery()
 
 		let manager = AccessoryManager(transports: [OneDeviceDiscoveryTransport(found: inRange)])
+		manager.firstPlaceHeadStart = .milliseconds(500)
 		manager.startDiscovery()
+		try await Task.sleep(for: .milliseconds(200))
+		#expect(manager.connectAttempts[inRange.id] == nil, "the preferred radio's head start")
 		try await waitFor { manager.connectAttempts[inRange.id] != nil }
-		#expect(manager.connectAttempts[inRange.id]?.isFirst == true, "as the first radio, at once")
+		#expect(manager.connectAttempts[inRange.id]?.isFirst == true, "as the first radio, once it's over")
 		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
 		manager.stopDiscovery()
 	}

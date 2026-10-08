@@ -350,6 +350,10 @@ class AccessoryManager: ObservableObject {
 	/// Radios iOS restored alongside the first one, until its restore has started
 	/// (`claimRestoredRadios`).
 	var restoredRadiosToClaim: [Device] = []
+	/// When discovery starts with no radio connected, the preferred radio's head start for the first
+	/// place: until this, another radio waiting to come back doesn't take it (review V46-1).
+	var firstPlaceOpensAt: ContinuousClock.Instant?
+	var firstPlaceHeadStart: Duration = .seconds(5)
 	/// Radios discovery has seen this launch, kept after `stopDiscovery()` empties `devices`, so a
 	/// remembered TCP radio found by Bonjour can still be brought back after the first radio's
 	/// connect stops discovery (T156).
