@@ -917,6 +917,9 @@ class AccessoryManager: ObservableObject {
 		// radio's data. The switch flow restarts discovery itself if its connect fails.
 		if !isSwitchingDevices {
 			self.startDiscovery()
+			// With other radios connected and the first one off on purpose (the user's Disconnect or
+			// Remove), nothing needs it (review V41-1).
+			self.stopDiscoveryWhenUnneeded()
 		}
 	}
 	
@@ -1876,6 +1879,7 @@ extension AccessoryManager {
 			if self.discoveryTask == nil {
 				Logger.transport.info("[AccessoryManager] Previosuly in the background but not scanning, starting scanning again")
 				self.startDiscovery()
+				self.stopDiscoveryWhenUnneeded()
 			}
 		}
 	}

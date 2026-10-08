@@ -446,6 +446,10 @@ Review V40's findings, checked in the files; all held. One commit each.
 - [X] T414 (V40-4) The Dock badge follows reads with the Connect window closed. The recount on `meshMessagesDidChange` moved from the main scene, which on the Mac is the Connect window, to `AppState` (`refreshBadgeOnMessageChanges`), which lasts as long as the app; it skips a store reset, as the scene's unmounting did. Verified: `BadgeRefreshTests` (fails without the reset check).
 - [X] T415 (V40-5) Only the downloading radio's config records wait to be saved. A download is registered with the radio's node number (`beginConfigDownload(_:nodeNum:)`), or with none for a radio the app doesn't know yet, which its MyInfo, the download's first record, then gives (`myInfoPacket`). `saveConfigRecord(for:)` waits only for that radio. Before, the local copy of a setting saved for another radio waited up to 5 s, and a settings form reopened meanwhile loaded the old value, which saving another field there sent back to the radio. Verified: `ConfigDownloadSaveTests` (`otherRadioSavesAtOnce` fails without the node check, `numberFromMyInfo` without MyInfo's number).
 
+## Fixes after V41 (review of T411–T415, 2026-10-07)
+
+- [X] T416 (V41-1) The first radio's teardown and the app becoming active, the two places that start scanning with no first radio, apply `stopDiscoveryWhenUnneeded` right after. With other radios connected and the first one off on purpose (Disconnect, Remove, a cancelled stand-in) scanning ran on, and on the Mac started again at every return to the app. After a drop it goes on, to bring the first radio back. Verified: `DiscoveryAfterConnectTests` (`disconnectFirstStopsIt` fails without either stop, `firstDropKeepsIt`).
+
 ## Phase 10: Hardening
 
 - [ ] T130 Four BLE radios for 24 hours (device checklist in `HANDOFF.md`).

@@ -175,4 +175,57 @@ struct DiscoveryAfterConnectTests {
 		await manager.disconnectAdditionalRadio(thirdDevice.id, byUser: true)
 		try await manager.disconnect()
 	}
+
+	/// The first radio connected, and another alongside it.
+	private func connectTwoRadios() async throws -> (manager: AccessoryManager, second: Device) {
+		let firstNum = ConnectFlowSupport.uniqueNodeNum()
+		let secondDevice = ConnectFlowSupport.device()
+		let transport = ScriptedTransport(radio: ScriptedRadio(nodeNum: firstNum), radiosByIdentifier: [
+			secondDevice.identifier: ScriptedRadio(nodeNum: firstNum &+ 0x100)
+		])
+		let manager = ConnectFlowSupport.makeManager(transport)
+		try await manager.connect(to: ConnectFlowSupport.device())
+		try await manager.connectAdditionalRadio(secondDevice)
+		manager.awaitedRememberedRadios.removeAll()
+		return (manager, secondDevice)
+	}
+
+	private func cleanUp(_ manager: AccessoryManager, second: Device) async {
+		manager.isSwitchingDevices = true
+		manager.rememberedRadioFallbackTask?.cancel()
+		manager.stopDiscovery()
+		await manager.disconnectAdditionalRadio(second.id, byUser: true)
+	}
+
+	@Test("Disconnect on the first radio with another connected leaves no scanning on, nor does returning to the app")
+	func disconnectFirstStopsIt() async throws {
+		let saved = ConnectFlowSupport.SavedDefaults()
+		defer { saved.restore() }
+		let (manager, second) = try await connectTwoRadios()
+		// The teardown starts discovery, as in the app.
+		manager.isSwitchingDevices = false
+		try await manager.disconnect()
+		#expect(manager.activeConnection == nil)
+		#expect(manager.discoveryTask == nil, "the user disconnected it: nothing waits for it")
+		manager.appDidBecomeActive()
+		#expect(manager.discoveryTask == nil)
+		await cleanUp(manager, second: second)
+	}
+
+	@Test("The first radio dropping with another connected leaves scanning on to bring it back")
+	func firstDropKeepsIt() async throws {
+		let saved = ConnectFlowSupport.SavedDefaults()
+		let autoconnect = UserDefaults.autoconnectOnDiscovery
+		defer {
+			saved.restore()
+			UserDefaults.autoconnectOnDiscovery = autoconnect
+		}
+		UserDefaults.autoconnectOnDiscovery = true
+		let (manager, second) = try await connectTwoRadios()
+		manager.isSwitchingDevices = false
+		try await manager.closeConnection()
+		#expect(manager.activeConnection == nil)
+		#expect(manager.discoveryTask != nil)
+		await cleanUp(manager, second: second)
+	}
 }
