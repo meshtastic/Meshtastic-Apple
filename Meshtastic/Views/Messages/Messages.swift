@@ -141,9 +141,12 @@ struct Messages: View {
 				Group {
 					if let myInfo = node?.myInfo, let channelSelection {
 						ChannelMessageList(myInfo: myInfo, channel: channelSelection)
+							// Keep conversation state separate when the split view reuses its detail pane.
+							.id(channelSelection.persistentModelID)
 							.trackScreen(.channelMessages)
 					} else if let userSelection {
 						UserMessageList(user: userSelection)
+							.id(userSelection.persistentModelID)
 							.trackScreen(.directMessages)
 					} else if case .channels = router.messagesSection {
 						Text("Select a channel")
