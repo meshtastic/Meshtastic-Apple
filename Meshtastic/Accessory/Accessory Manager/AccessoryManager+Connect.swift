@@ -535,14 +535,14 @@ extension AccessoryManager {
 				if isOnlyRadio {
 					// Not while a radio waits for discovery to bring it back (review V45-2).
 					if self.additionalRadioReconnects.isEmpty { self.stopDiscovery() }
-					// Prune stale nodes now that the dump is in, instead of at the head of
-					// sendWantConfig where the fetch+delete+save serialized ahead of the whole
-					// handshake on the ingestion actor. Post-dump lastHeard values also make the
-					// pruning decisions more accurate.
-					_ = await MeshPackets.shared.clearStaleNodes(nodeExpireDays: Int(UserDefaults.purgeStaleNodeDays))
 				// With other radios connected, discovery started by the first radio's drop, or left by
 				// a Connect screen, stops once nothing needs it (review V40-2).
 				} else { self.stopDiscoveryWhenUnneeded() }
+				// Prune stale nodes now that the dump is in, instead of at the head of sendWantConfig
+				// where the fetch+delete+save serialized ahead of the whole handshake on the ingestion
+				// actor. Post-dump lastHeard values also make the pruning decisions more accurate. After
+				// every radio's connect, as `main` prunes after its radio's (review V45).
+				_ = await MeshPackets.shared.clearStaleNodes(nodeExpireDays: Int(UserDefaults.purgeStaleNodeDays))
 				// Every radio's own module settings and MQTT client proxy (T071c).
 				self.applyModuleSettings(session)
 				Task { await self.startMqtt(session) }
