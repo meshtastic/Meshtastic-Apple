@@ -362,6 +362,8 @@ extension AccessoryManager {
 	/// connects while automatic connecting is off, as on `main`.
 	func scheduleAdditionalRadioReconnect(_ device: Device) {
 		guard additionalRadioReconnects[device.id] == nil else { return }
+		// A wake-up left from an earlier wait for it ends that wait (review V46-3).
+		radioSightings.removeValue(forKey: device.id)?.finish()
 		Logger.transport.info("🔗🔁 [Additional] Will reconnect \(device.name, privacy: .public) when discovery sees it")
 		let (sightings, sighting) = AsyncStream<Void>.makeStream(bufferingPolicy: .bufferingNewest(1))
 		// The loop knows its own task, so one whose entry was removed or replaced ends at its next

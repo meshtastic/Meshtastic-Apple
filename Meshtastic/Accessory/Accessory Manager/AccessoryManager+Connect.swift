@@ -205,10 +205,12 @@ extension AccessoryManager {
 			// second radio known makes the services in use ask for theirs (W-15).
 			ShortcutsProvider.updateAppShortcutParameters()
 			// Connected as the first radio: a reconnect loop it had as a radio alongside is done, so a
-			// Disconnect from now on isn't undone by it (review V14 P1). Only its entry goes: the
-			// loop may be the task running this connect, and ends when it next wakes.
+			// Disconnect from now on isn't undone by it (review V14 P1). Its entry goes, not cancelled:
+			// the loop may be the task running this connect. Its wake-up ends too, so one waiting for
+			// a sighting ends now rather than staying suspended (review V46-3).
 			if attempt.isFirst {
 				additionalRadioReconnects.removeValue(forKey: device.id)
+				radioSightings.removeValue(forKey: device.id)?.finish()
 			}
 			if attempt.isFirst, let first = activeConnection, let nodeNum = first.nodeNum {
 				await MeshPackets.shared.noteRadioConnected(nodeNum: nodeNum, transport: first.device.transportType, autoConnect: nil)

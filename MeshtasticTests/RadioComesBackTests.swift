@@ -10,6 +10,13 @@ import Foundation
 import Testing
 @testable import Meshtastic
 
+/// Set once a task has ended.
+@MainActor
+private final class Ended {
+	private(set) var isSet = false
+	func set() { isSet = true }
+}
+
 @MainActor
 @Suite("A radio coming back after a drop", .serialized, .timeLimit(.minutes(1)))
 struct RadioComesBackTests {
@@ -55,6 +62,43 @@ struct RadioComesBackTests {
 		#expect(manager.additionalRadios[second.id] != nil)
 		#expect(manager.additionalRadioReconnects[second.id] == nil, "its wait is over")
 		try await cleanUp(manager, second: second)
+	}
+
+	@Test("A radio's wait ends when the radio connects as the first radio another way, rather than staying suspended")
+	func waitEndsWhenConnectedAsFirst() async throws {
+		let saved = ConnectFlowSupport.SavedDefaults()
+		defer { saved.restore() }
+		let radio = ConnectFlowSupport.device()
+		let manager = ConnectFlowSupport.makeManager(ScriptedTransport(radio: ScriptedRadio(nodeNum: ConnectFlowSupport.uniqueNodeNum())))
+		manager.scheduleAdditionalRadioReconnect(radio)
+		let wait = try #require(manager.additionalRadioReconnects[radio.id])
+		let ended = Ended()
+		Task { await wait.value; ended.set() }
+
+		// The user connects it, as the first radio, not through its wait.
+		try await manager.connect(to: radio)
+		try await ConnectFlowSupport.waitUntil { ended.isSet }
+		#expect(ended.isSet, "its wait ended")
+		#expect(manager.radioSightings[radio.id] == nil)
+		try await manager.disconnect()
+	}
+
+	@Test("A new wait for a radio ends an earlier one left without its entry")
+	func newWaitEndsAnOrphan() async throws {
+		let manager = AccessoryManager(transports: [])
+		let radio = ConnectFlowSupport.device()
+		manager.scheduleAdditionalRadioReconnect(radio)
+		let old = try #require(manager.additionalRadioReconnects[radio.id])
+		manager.additionalRadioReconnects.removeValue(forKey: radio.id)
+		let ended = Ended()
+		Task { await old.value; ended.set() }
+
+		manager.scheduleAdditionalRadioReconnect(radio)
+		try await ConnectFlowSupport.waitUntil { ended.isSet }
+		#expect(ended.isSet, "the earlier wait ended")
+		#expect(manager.additionalRadioReconnects[radio.id] != nil, "the new one goes on")
+		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
+		manager.stopDiscovery()
 	}
 
 	@Test("Discovery goes on while a radio waits to come back, and stops once it's back")

@@ -469,6 +469,10 @@ Review V40's findings, checked in the files; all held. One commit each.
 - [X] T425 (owner, 2026-10-08) The stale-node prune spares the user's own radios: a node with a `MyInfoEntity` is never pruned, so a radio that's been off longer than Clear Stale Nodes keeps its node and the config stored with it. With one radio, as on `main`, that's the connected radio. Verified: `MultiRadioIngestTests.purgeSparesTheRadios` (fails without the check).
 - [X] T426 (owner, 2026-10-08) Eviction at the node cap (`evictNodesIfOverCap`, least recently heard first) spares the user's own radios too, as it spares favorites. Verified: `MultiRadioIngestTests.evictionSparesTheRadios` (fails without the check).
 
+## Fixes after V46 (review of T420–T426, 2026-10-08)
+
+- [X] T427 (V46-3) A radio's wait ends when the radio connects as the first radio another way: that connect removes the wait's entry and now also finishes its wake-up (`radioSightings`), and a new wait for a radio finishes any wake-up left from an earlier one. Before, a wait left without its entry stayed suspended until the radio's next sighting, and for good if a new wait replaced its wake-up. Verified: `RadioComesBackTests` (`waitEndsWhenConnectedAsFirst`, `newWaitEndsAnOrphan`; each fails without its part).
+
 ## Phase 10: Hardening
 
 - [ ] T130 Four BLE radios for 24 hours (device checklist in `HANDOFF.md`).
