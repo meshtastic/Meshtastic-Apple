@@ -347,6 +347,9 @@ class AccessoryManager: ObservableObject {
 	var additionalRadioReconnects: [UUID: Task<Void, Never>] = [:]
 	/// Each loop's wake-up for discovery seeing its radio (`radioSeen`).
 	var radioSightings: [UUID: AsyncStream<Void>.Continuation] = [:]
+	/// Radios iOS restored alongside the first one, until its restore has started
+	/// (`claimRestoredRadios`).
+	var restoredRadiosToClaim: [Device] = []
 	/// Radios discovery has seen this launch, kept after `stopDiscovery()` empties `devices`, so a
 	/// remembered TCP radio found by Bonjour can still be brought back after the first radio's
 	/// connect stops discovery (T156).

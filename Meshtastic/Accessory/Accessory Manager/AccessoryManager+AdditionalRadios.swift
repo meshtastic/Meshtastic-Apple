@@ -266,11 +266,34 @@ extension AccessoryManager {
 		}
 	}
 
-	/// A BLE restore (T190): the radios restored alongside the first one are remembered, so the
-	/// remembered-radio reconnect after its connect claims them. Each comes back as it was; none
-	/// takes another's place (D-19).
-	func noteRestoredAlongside(peripheralIds: [UUID]) async {
-		await MeshPackets.shared.rememberRadios(peripheralIds: peripheralIds.map(\.uuidString))
+	/// A BLE restore (T190, review V45-4): the radios restored alongside the first one are
+	/// remembered, and each is connected at once, as `main` restores its radio, through its own
+	/// connect alongside the first radio's restore; the handshake gate takes them in turn. Once the
+	/// first radio's restore has started, so none takes its place (D-19).
+	func noteRestoredAlongside(_ devices: [Device]) async {
+		await MeshPackets.shared.rememberRadios(peripheralIds: devices.map(\.id.uuidString))
+		restoredRadiosToClaim.append(contentsOf: devices)
+		claimRestoredRadios()
+	}
+
+	/// Starts the connects of the radios restored alongside, once the first radio's restore has
+	/// started (`connect(to:)` calls this as it starts). One whose connect fails waits for
+	/// discovery, as a radio that dropped does.
+	func claimRestoredRadios() {
+		guard hasRadioToJoin, !restoredRadiosToClaim.isEmpty else { return }
+		let devices = restoredRadiosToClaim
+		restoredRadiosToClaim.removeAll()
+		for device in devices where !isRadioConnected(device.id) {
+			Task { @MainActor [weak self] in
+				guard let self else { return }
+				do {
+					try await self.connectAdditionalRadio(device, connectTimeout: Self.additionalReconnectTimeout)
+				} catch {
+					Logger.transport.info("🔗🔁 [Additional] Restoring \(device.name, privacy: .public) failed: \(error.localizedDescription, privacy: .public)")
+					self.scheduleAdditionalRadioReconnect(device)
+				}
+			}
+		}
 	}
 
 	// MARK: - Disconnect

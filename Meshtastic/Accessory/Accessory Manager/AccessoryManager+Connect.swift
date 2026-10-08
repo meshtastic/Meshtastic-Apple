@@ -99,6 +99,10 @@ extension AccessoryManager {
 
 		let attempt = ConnectAttempt(device: device, isFirst: asFirst)
 		connectAttempts[device.id] = attempt
+		// The radios restored alongside the first one connect alongside it now (review V45-4).
+		if asFirst {
+			claimRestoredRadios()
+		}
 		defer {
 			if connectAttempts[device.id] === attempt {
 				connectAttempts.removeValue(forKey: device.id)

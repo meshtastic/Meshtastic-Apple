@@ -36,4 +36,32 @@ struct RestoredLinkConnectTests {
 		await manager.disconnectAdditionalRadio(secondDevice.id, byUser: true)
 		try await manager.disconnect()
 	}
+
+	@Test("A radio restored alongside starts connecting as soon as the first radio's restore starts, not after it")
+	func restoredAlongsideConnectsAtOnce() async throws {
+		let saved = ConnectFlowSupport.SavedDefaults()
+		defer { saved.restore() }
+		let firstNum = ConnectFlowSupport.uniqueNodeNum()
+		let second = ScriptedRadio(nodeNum: firstNum &+ 0x100, keptByRestore: true)
+		let secondDevice = ConnectFlowSupport.device()
+		let firstDevice = ConnectFlowSupport.device()
+		let manager = ConnectFlowSupport.makeManager(ScriptedTransport(radio: ScriptedRadio(nodeNum: firstNum, keptByRestore: true), radiosByIdentifier: [secondDevice.identifier: second]))
+
+		// Told before the first radio's restore has started: it waits, so it doesn't take its place.
+		await manager.noteRestoredAlongside([secondDevice])
+		#expect(manager.connectAttempts[secondDevice.id] == nil)
+
+		let first = Task { try await manager.connect(to: firstDevice) }
+		try await ConnectFlowSupport.waitUntil { manager.connectAttempts[secondDevice.id] != nil }
+		#expect(manager.connectAttempts[secondDevice.id]?.isFirst == false, "alongside")
+		#expect(manager.connectAttempts[firstDevice.id] != nil, "while the first radio's restore still runs")
+
+		try await first.value
+		try await ConnectFlowSupport.waitUntil { manager.additionalRadios[secondDevice.id] != nil && manager.connectAttempts[secondDevice.id] == nil }
+		#expect(manager.additionalRadios[secondDevice.id] != nil)
+		#expect(!(await second.sent.map(describe).contains(.wantConfig(69421))), "its config only, as a kept link")
+		manager.additionalRadioReconnects.values.forEach { $0.cancel() }
+		await manager.disconnectAdditionalRadio(secondDevice.id, byUser: true)
+		try await manager.disconnect()
+	}
 }

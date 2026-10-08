@@ -584,10 +584,15 @@ actor BLETransport: Transport {
 		}
 		let alongside = peripherals.filter { $0.identifier != peripheral.identifier }
 		holdRestoredPeripherals(alongside)
-		// Remembered so they're claimed after the first restore, each as it was (T190, D-19).
-		await AccessoryManager.shared.noteRestoredAlongside(peripheralIds: alongside.map(\.identifier))
 		let device = await restoredDevice(for: peripheral)
 		restoreAsFirst(peripheral, central: central, device: device)
+		// Remembered, and each connected alongside the first radio's restore as it starts, as it
+		// was (T190, D-19, review V45-4).
+		var alongsideDevices: [Device] = []
+		for restored in alongside {
+			alongsideDevices.append(await restoredDevice(for: restored))
+		}
+		await AccessoryManager.shared.noteRestoredAlongside(alongsideDevices)
 	}
 
 	/// The `Device` for a peripheral iOS restored: its node number and names from the store.
@@ -726,8 +731,10 @@ actor BLETransport: Transport {
 		pending.continuation.resume(throwing: RestoreHandedOver())
 		let displacedId = pending.peripheralId
 		Task {
-			// The radio it took over from is remembered and claimed after this restore (T190).
-			await AccessoryManager.shared.noteRestoredAlongside(peripheralIds: [displacedId])
+			// The radio it took over from is remembered and connected alongside this restore (T190).
+			if let displaced = self.restoredStandby[displacedId] {
+				await AccessoryManager.shared.noteRestoredAlongside([await self.restoredDevice(for: displaced)])
+			}
 			if let restoreTakeover = self.restoreTakeover {
 				await restoreTakeover(standby, central)
 				return
