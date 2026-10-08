@@ -302,6 +302,29 @@ struct MultiRadioIngestTests {
 		#expect(try fetch(NodeObservationEntity.self, in: container).isEmpty)
 	}
 
+	@Test("Purging stale nodes spares the user's own radios, however long they've been off")
+	func purgeSparesTheRadios() async throws {
+		let container = try makeContainer()
+		let context = ModelContext(container)
+		let radio = NodeInfoEntity()
+		radio.num = radioB
+		radio.lastHeard = Date(timeIntervalSinceNow: -40 * 86_400)
+		context.insert(radio)
+		let myInfo = MyInfoEntity()
+		myInfo.myNodeNum = radioB
+		context.insert(myInfo)
+		let stale = NodeInfoEntity()
+		stale.num = remote
+		stale.lastHeard = Date(timeIntervalSinceNow: -40 * 86_400)
+		context.insert(stale)
+		try context.save()
+		let packets = await makePackets(container)
+
+		#expect(await packets.clearStaleNodes(nodeExpireDays: 30))
+
+		#expect(try fetch(NodeInfoEntity.self, in: container).map(\.num) == [radioB], "the radio stays; the other node goes")
+	}
+
 	@Test("A radio that joins is in the keyed lookups from its first packet")
 	func newRadioJoinsLookupsAtOnce() async throws {
 		let container = try makeContainer()

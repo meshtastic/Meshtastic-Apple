@@ -32,8 +32,11 @@ extension MeshPackets {
 		do {
 			Logger.data.info("💾 [NodeInfoEntity] Clearing nodes older than \(nodeExpireDays) days")
 			let candidates = try modelContext.fetch(descriptor)
+			// The user's own radios stay: one that's been off a while keeps its node and the config
+			// stored with it. With one radio, as on `main`, it's the connected one.
+			let radioNums = Set(try modelContext.fetch(FetchDescriptor<MyInfoEntity>()).map(\.myNodeNum))
 			let staleNodes = candidates.filter { node in
-				guard let lastHeard = node.lastHeard else { return false }
+				guard !radioNums.contains(node.num), let lastHeard = node.lastHeard else { return false }
 				if node.user?.pkiEncrypted == true {
 					return lastHeard < pkiExpireDate
 				} else {
