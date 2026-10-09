@@ -127,6 +127,22 @@ struct RadioComesBackTests {
 		try await cleanUp(manager, second: other)
 	}
 
+	@Test("With no preferred radio set, there's no head start to wait for")
+	func noPreferredRadioNoHeadStart() {
+		let saved = ConnectFlowSupport.SavedDefaults()
+		defer { saved.restore() }
+		let manager = AccessoryManager(transports: [])
+		PreferredRadio.peripheralId = UUID().uuidString
+		manager.startDiscovery()
+		#expect(manager.firstPlaceOpensAt != nil, "the preferred radio's head start")
+		manager.stopDiscovery()
+
+		PreferredRadio.peripheralId = ""
+		manager.startDiscovery()
+		#expect(manager.firstPlaceOpensAt == nil)
+		manager.stopDiscovery()
+	}
+
 	@Test("Discovery goes on while a radio waits to come back, and stops once it's back")
 	func scanningWhileWaiting() async throws {
 		let saved = ConnectFlowSupport.SavedDefaults()
