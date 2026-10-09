@@ -44,6 +44,7 @@ window owns one value, its radio, and nothing hands it over.
 | W-12 | Adding a radio always keeps the others connected: "Add a Radio" means add. The Keep Both / Switch question (D-05) and its App Settings choice go. The new radio opens in its own window on the Mac and iPad; on iPhone the window shows it, and the previous radio stays connected. At four radios, the radios to add are disabled with the reason shown; the app never disconnects one on its own. |
 | W-13 | Switching the window's radio (iPhone, or an iPad window) is from Connect or from the connection indicator's radio menu (`RadioSwitcherMenu`). Switching never disconnects anything; disconnecting is always its own action. |
 | W-14 | The composer's "Via" picker (sending on a shared channel through another connected radio that has it) stays on iPhone and iPad, defaulting to the window's radio, and goes on the Mac, where that radio has its own window. The choice lasts while the conversation is open, as today. |
+| W-16 | On the Mac, with every window closed, clicking the app in the Dock opens a radio's window: the one closed last while its radio is connected, else the first connected radio. The Connect window opens only when no radio is connected, or from Radios › Add Radio… (owner, 2026-10-09). |
 
 ## What's shared and what's per window
 

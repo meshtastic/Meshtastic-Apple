@@ -486,6 +486,7 @@ BLE radios advertise at their own pace, so nobody expects them to connect in a s
 ## Mac windows (owner, 2026-10-09)
 
 - [X] T433 The Window menu lists each of the user's radios whose window is hidden (W-01 said so; the items were only in the Radios menu), connected or not, and choosing one brings its window back. macOS lists the windows on screen itself. The window tracker is observable, so the menu follows windows closing and opening.
+- [X] T434 (W-16) With every window closed, clicking the app in the Dock opens a radio's window rather than the Connect window: the one closed last while its radio is connected, else the first connected radio (`RadioWindowTracker.windowToReopen`). The Connect window opens as it is with no radio connected, or from Radios › Add Radio… (`requestConnectWindow`). Verified: `RadioWindowTrackerTests` (`reopensTheWindowClosedLast`, `removedWindowIsNotReopened`, `connectWindowRequestedOnce`; each fails without its part). The menu and the Dock need a check on the Mac.
 
 ## Phase 10: Hardening
 

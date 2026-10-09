@@ -56,6 +56,10 @@ final class RadioWindowTracker: ObservableObject {
 	@Published private var windowViews: [UUID: Int] = [:]
 	/// Radio windows told to close because their radio was removed or forgotten.
 	private var closingWindows: Set<UUID> = []
+	/// The radio whose window was closed last by hand: the one the Dock brings back (W-16).
+	private(set) var lastClosed: UUID?
+	/// Radios › Add Radio… asked for the Connect window, which then opens as it is (W-16).
+	private var connectWindowRequested = false
 
 	/// The radios whose window is on screen. A window closed by hand is hidden (W-01), not here.
 	var shownWindows: Set<UUID> { Set(windowViews.keys) }
@@ -75,8 +79,34 @@ final class RadioWindowTracker: ObservableObject {
 			windowViews[deviceId] = views
 		} else {
 			windowViews[deviceId] = nil
+			if !closingWindows.contains(deviceId) {
+				lastClosed = deviceId
+			}
 			closingWindows.remove(deviceId)
 		}
+	}
+
+	// MARK: Reopening from the Dock (W-16)
+
+	func requestConnectWindow() {
+		connectWindowRequested = true
+	}
+
+	/// Whether the Connect window opening now was asked for. Asked once.
+	func takeConnectWindowRequest() -> Bool {
+		defer { connectWindowRequested = false }
+		return connectWindowRequested
+	}
+
+	/// With no radio window on screen, the radio whose window opens instead of the Connect window:
+	/// the one closed last while it's connected, else the first of `connected`. Nil with none
+	/// connected, when the Connect window is the one wanted.
+	func windowToReopen(connected: [UUID]) -> UUID? {
+		guard shownWindows.isEmpty, let first = connected.first else { return nil }
+		if let lastClosed, connected.contains(lastClosed) {
+			return lastClosed
+		}
+		return first
 	}
 
 	/// `deviceId`'s window closes because its radio was removed or forgotten. Whether no window is
@@ -278,6 +308,13 @@ struct RadioListWindow: View {
 		Set(accessoryManager.connectedRadios.map(\.id).filter(accessoryManager.hasFinishedConnecting))
 	}
 
+	/// The connected radios whose window the Dock can bring back (W-16), the first radio first.
+	private var reopenableRadioIDs: [UUID] {
+		accessoryManager.connectedRadios.map(\.id).filter {
+			accessoryManager.linkStatus(of: $0).isConnected && !accessoryManager.deviceIdsBeingRemoved.contains($0)
+		}
+	}
+
 	/// Nothing in this window waits for the user: first-launch setup, the Choose Radios sheet
 	/// (W-15, which on the Mac shows here), a connect error or a Remove confirmation.
 	private var isFree: Bool {
@@ -357,6 +394,15 @@ struct RadioListWindow: View {
 		}
 		.modifier(ServiceRadioChoiceGate())
 		.onAppear {
+			// Opened with no radio window on screen, as from the Dock, while a radio is connected:
+			// a radio's window instead (W-16). This window is for adding radios, and for when none
+			// is connected; Radios › Add Radio… opens it as it is.
+			if !appState.radioWindowTracker.takeConnectWindowRequest(),
+			   let radio = appState.radioWindowTracker.windowToReopen(connected: reopenableRadioIDs) {
+				openWindow(id: RadioWindows.radioWindowID, value: RadioWindow(deviceId: radio))
+				dismissWindow()
+				return
+			}
 			radioWindowsWhenOpened = appState.radioWindowTracker.shownWindows
 			accessoryManager.connectScreenAppeared(connectScreenID)
 			accessoryManager.startDiscovery()
@@ -469,6 +515,7 @@ struct RadioWindowCommands: Commands {
 			$0.session.configuration.name == RadioWindows.mainWindowID && $0.activationState != .unattached
 		}
 		guard let open else {
+			tracker.requestConnectWindow()
 			openWindow(id: RadioWindows.mainWindowID)
 			return
 		}

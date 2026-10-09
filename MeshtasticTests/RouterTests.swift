@@ -530,6 +530,41 @@ struct WindowRoutersTests {
 @MainActor
 @Suite("Radio window tracker")
 struct RadioWindowTrackerTests {
+	@Test("With every window closed, the Dock brings back the radio window closed last while its radio is connected, else the first connected one (W-16)")
+	func reopensTheWindowClosedLast() {
+		let tracker = RadioWindowTracker()
+		let a = UUID(), b = UUID()
+		#expect(tracker.windowToReopen(connected: []) == nil, "none connected: the Connect window")
+		tracker.windowAppeared(a)
+		tracker.windowAppeared(b)
+		#expect(tracker.windowToReopen(connected: [a, b]) == nil, "a radio window is on screen")
+		tracker.windowDisappeared(b)
+		tracker.windowDisappeared(a)
+		#expect(tracker.windowToReopen(connected: [b, a]) == a, "the one closed last")
+		#expect(tracker.windowToReopen(connected: [b]) == b, "the one closed last isn't connected: the first that is")
+	}
+
+	@Test("A window that closed because its radio was removed isn't the one the Dock brings back")
+	func removedWindowIsNotReopened() {
+		let tracker = RadioWindowTracker()
+		let a = UUID(), b = UUID()
+		tracker.windowAppeared(a)
+		tracker.windowAppeared(b)
+		tracker.windowDisappeared(a)
+		_ = tracker.closesLastWindow(b, connectWindows: 0)
+		tracker.windowDisappeared(b)
+		#expect(tracker.windowToReopen(connected: [b, a]) == a)
+	}
+
+	@Test("Radios › Add Radio… asks for the Connect window once (W-16)")
+	func connectWindowRequestedOnce() {
+		let tracker = RadioWindowTracker()
+		#expect(!tracker.takeConnectWindowRequest())
+		tracker.requestConnectWindow()
+		#expect(tracker.takeConnectWindowRequest())
+		#expect(!tracker.takeConnectWindowRequest(), "the next opening, from the Dock, isn't asked for")
+	}
+
 	@Test("A radio's window opens once when it connects, and again only after the user disconnects it")
 	func opensOnce() {
 		let tracker = RadioWindowTracker()
