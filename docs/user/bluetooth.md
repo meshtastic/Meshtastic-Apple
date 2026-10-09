@@ -40,7 +40,7 @@ You can connect up to four radios at once, over Bluetooth, TCP, or serial in any
 Each window works with one radio, as if it were its own copy of the app. That radio is the one at the top of the window's Connect tab, the one whose settings you see and change, and the one its messages go through. A channel your radios share shows the same history in every window; direct messages belong to the radio that sent or received them. With **Share Location** on, every connected radio gets your phone's position, and each radio with MQTT **Proxy to Client** on gets its own MQTT connection (see [MQTT](mqtt.md)).
 
 - **iPhone and iPad:** the window shows one radio at a time. The other connected radios keep receiving in the background and are listed under **Also Connected**, with their battery, Bluetooth signal and unread direct messages. In a conversation on a channel several of your radios share, **Via** sends through another of them (see [Messages](messages.md)).
-- **Mac:** each radio has its own window, so your radios can sit side by side. Closing a radio's window only hides it: the radio stays connected, and the **Radios** menu or the Connect window opens it again.
+- **Mac:** each radio has its own window, so your radios can sit side by side. Closing a radio's window only hides it: the radio stays connected, and the **Window** menu, the **Radios** menu or the Connect window brings it back.
 
 ![A radio listed under Also Connected](../assets/screenshots/additionalRadioRow_connected.png)
 

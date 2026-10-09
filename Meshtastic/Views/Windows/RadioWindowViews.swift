@@ -14,7 +14,7 @@ import SwiftUI
 /// radio (W-02) keeps its window, showing it off, and forgets it here, so a window closed since
 /// opens again the next time it connects. Removing it forgets it too.
 @MainActor
-final class RadioWindowTracker {
+final class RadioWindowTracker: ObservableObject {
 	private(set) var opened: Set<UUID> = []
 	/// Radios the user disconnected that were still connected when told (review V28-1): forgotten
 	/// once they've gone, so a change of another radio meanwhile doesn't open their window again.
@@ -53,7 +53,7 @@ final class RadioWindowTracker {
 	/// How many views each radio's window has on screen. A store reset or a renumber swaps a
 	/// window's view for a new one for the same radio (`.id(databaseResetID)`), and the new one
 	/// appears before the old one goes, so a set would lose the window (review V33-1).
-	private var windowViews: [UUID: Int] = [:]
+	@Published private var windowViews: [UUID: Int] = [:]
 	/// Radio windows told to close because their radio was removed or forgotten.
 	private var closingWindows: Set<UUID> = []
 
@@ -450,6 +450,7 @@ private struct ConnectedRadioRow: View {
 /// each of which opens its window, or brings it back when it was closed (W-01, W-02).
 struct RadioWindowCommands: Commands {
 	@ObservedObject var accessoryManager: AccessoryManager
+	@ObservedObject var tracker: RadioWindowTracker
 	@Environment(\.openWindow) private var openWindow
 	@FocusedValue(\.windowRadio) private var keyWindowRadio: RadioWindow?
 	@FocusedValue(\.removeWindowRadio) private var removeKeyWindowRadio: RemoveWindowRadioAction?
@@ -478,7 +479,37 @@ struct RadioWindowCommands: Commands {
 		}
 	}
 
+	/// A radio whose window is hidden (W-01), as the Window menu lists it.
+	private struct HiddenRadioWindow: Identifiable {
+		let id: UUID
+		let title: String
+	}
+
+	/// The user's radios, connected or off, whose window isn't on screen.
+	private var hiddenRadioWindows: [HiddenRadioWindow] {
+		let shown = tracker.shownWindows
+		let connected = accessoryManager.connectedRadios.filter { !shown.contains($0.id) }.map {
+			HiddenRadioWindow(id: $0.id, title: $0.longName ?? $0.name)
+		}
+		let off = accessoryManager.offlineKnownRadios.filter { !shown.contains($0.deviceId) }.map {
+			HiddenRadioWindow(id: $0.deviceId, title: String.localizedStringWithFormat("%@ (Not Connected)".localized, $0.name))
+		}
+		return connected + off
+	}
+
 	var body: some Commands {
+		// A hidden radio window comes back from the Window menu (W-01). macOS lists the windows on
+		// screen itself.
+		CommandGroup(after: .windowArrangement) {
+			if RadioWindows.areEnabled, !hiddenRadioWindows.isEmpty {
+				Divider()
+				ForEach(hiddenRadioWindows) { radio in
+					Button(radio.title) {
+						openWindow(id: RadioWindows.radioWindowID, value: RadioWindow(deviceId: radio.id))
+					}
+				}
+			}
+		}
 		// File › New Window would only open another Connect window on the Mac, so it goes there;
 		// the iPad keeps it, as the way to open a second window.
 		CommandGroup(replacing: .newItem) {

@@ -483,6 +483,10 @@ BLE radios advertise at their own pace, so nobody expects them to connect in a s
 - [X] T431 The iPhone window remembers the radio it last showed (`lastShownRadioId`, with the window, as the picked radio is). At launch it waits for that radio, or the picked one (`OneWindowRadioScope.waitingFor`): while it's on its way back (`isComingBack`) and another radio has connected, the window shows the radio that connected first (`oneWindowRadio(stored:waitingFor:)`); once it's back the window switches to it, unless the user picked a radio meanwhile (an explicit pick only, owner's call). A radio the user disconnected isn't on its way back, so it's shown off as before (W-02). One radio works as before: its window stays `.firstRadio`. User docs say so. Verified: `RadioComesBackTests.windowWaitsForTheRadioUsedLast` (fails when the window ignores the wait).
 - [X] T432 (V48-1, and its note) While the window waits, it shows what it shows with no radio picked (`oneWindowRadio(stored: nil)`), so the first radio dropping keeps its place, shown reconnecting (D-19), rather than the window switching to another connected radio; the user's Disconnect of it still shows the other one, as before. The radio shown only while the wait lasts isn't recorded as the one used last, so the next launch waits for the usual radio again. Verified: `RadioComesBackTests.waitKeepsTheDroppedFirstRadio` (fails with T431's choice).
 
+## Mac windows (owner, 2026-10-09)
+
+- [X] T433 The Window menu lists each of the user's radios whose window is hidden (W-01 said so; the items were only in the Radios menu), connected or not, and choosing one brings its window back. macOS lists the windows on screen itself. The window tracker is observable, so the menu follows windows closing and opening.
+
 ## Phase 10: Hardening
 
 - [ ] T130 Four BLE radios for 24 hours (device checklist in `HANDOFF.md`).

@@ -312,7 +312,7 @@ struct MeshtasticAppleApp: App {
 		.environmentObject(accessoryManager)
 		.environmentObject(MeshtasticAPI.shared)
 		.commands {
-			RadioWindowCommands(accessoryManager: accessoryManager)
+			RadioWindowCommands(accessoryManager: accessoryManager, tracker: appState.radioWindowTracker)
 		}
 
 			// A radio's own window on the Mac (feature 021, D-19, T310): opened when the radio
