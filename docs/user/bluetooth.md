@@ -52,7 +52,7 @@ While a radio is connected, the Connect tab lists nearby radios and your saved m
 
 ### Showing Another Radio
 
-On iPhone and iPad, the window switches between your connected radios. Switching never disconnects anything.
+On iPhone and iPad, the window switches between your connected radios. Switching never disconnects anything. When you open the app, the window goes back to the radio it showed last as soon as that radio connects; until then it shows the first radio to connect, unless you pick one yourself.
 
 > **Tip — Show another radio**
 > In **Also Connected**, tap the **⋯** button next to a radio and choose **Show This Radio**. The window switches to it, and the radio it showed before moves to **Also Connected**. Both keep receiving.

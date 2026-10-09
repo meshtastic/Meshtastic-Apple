@@ -480,7 +480,7 @@ Review V40's findings, checked in the files; all held. One commit each.
 BLE radios advertise at their own pace, so nobody expects them to connect in a set order; what matters is which radio the iPhone window shows.
 
 - [X] T430 The 5 s head start (T428, T429) is removed: whichever radio discovery sees first takes the empty first place again, as with T422.
-- [ ] T431 The iPhone window remembers the radio it last showed. At launch, until that radio connects, it shows the radio that connected first, then switches to it, unless the user picked another radio meanwhile (an explicit pick only).
+- [X] T431 The iPhone window remembers the radio it last showed (`lastShownRadioId`, with the window, as the picked radio is). At launch it waits for that radio, or the picked one (`OneWindowRadioScope.waitingFor`): while it's on its way back (`isComingBack`) and another radio has connected, the window shows the radio that connected first (`oneWindowRadio(stored:waitingFor:)`); once it's back the window switches to it, unless the user picked a radio meanwhile (an explicit pick only, owner's call). A radio the user disconnected isn't on its way back, so it's shown off as before (W-02). One radio works as before: its window stays `.firstRadio`. User docs say so. Verified: `RadioComesBackTests.windowWaitsForTheRadioUsedLast` (fails when the window ignores the wait).
 
 ## Phase 10: Hardening
 

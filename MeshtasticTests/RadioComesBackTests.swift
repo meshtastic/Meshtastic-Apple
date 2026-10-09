@@ -101,6 +101,29 @@ struct RadioComesBackTests {
 		manager.stopDiscovery()
 	}
 
+	@Test("After a launch the one window shows the radio that connected first until the one used last is back, then that one")
+	func windowWaitsForTheRadioUsedLast() async throws {
+		let saved = ConnectFlowSupport.SavedDefaults()
+		defer { saved.restore() }
+		let (manager, second) = try await connectTwoRadios()
+		// The radio used last is on its way back; the first radio is connected.
+		await manager.disconnectAdditionalRadio(second.id)
+		manager.scheduleAdditionalRadioReconnect(second)
+		#expect(manager.oneWindowRadio(stored: nil, waitingFor: second.id) == .firstRadio, "the radio that connected, meanwhile")
+		#expect(manager.oneWindowRadio(stored: second.id, waitingFor: second.id) == .firstRadio, "also when it was picked")
+		#expect(manager.oneWindowRadio(stored: second.id, waitingFor: nil) == RadioWindow(deviceId: second.id), "a pick since: the picked radio, coming back")
+
+		manager.radioSeen(second.id)
+		try await ConnectFlowSupport.waitUntil { manager.additionalRadios[second.id] != nil && manager.connectAttempts[second.id] == nil }
+		#expect(manager.oneWindowRadio(stored: second.id, waitingFor: second.id) == RadioWindow(deviceId: second.id), "back: shown")
+
+		// One the user disconnected isn't coming back: it's shown off, as before (W-02).
+		await manager.disconnectAdditionalRadio(second.id, byUser: true)
+		#expect(!manager.isComingBack(second.id))
+		#expect(manager.oneWindowRadio(stored: second.id, waitingFor: second.id) == RadioWindow(deviceId: second.id))
+		try await cleanUp(manager, second: second)
+	}
+
 	@Test("Discovery goes on while a radio waits to come back, and stops once it's back")
 	func scanningWhileWaiting() async throws {
 		let saved = ConnectFlowSupport.SavedDefaults()

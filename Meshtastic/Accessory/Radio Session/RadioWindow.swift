@@ -78,25 +78,56 @@ extension EnvironmentValues {
 /// The one window on iPhone and iPad (W-04): shows the radio the user last picked, kept with the
 /// window, and switches when they pick another (T314, T324). With one radio the user never picks
 /// one, so the window follows the radio the app connects, as before.
+///
+/// After a launch it waits for the radio it showed last (T431): until that one is back, it shows
+/// the radio that connected first, then switches to it, unless the user picks a radio meanwhile.
+/// Radios connect in whatever order they're seen.
 struct OneWindowRadioScope<Content: View>: View {
 	@SceneStorage("windowRadioId") private var storedId = ""
+	/// The radio the window last showed with a session, kept with the window.
+	@SceneStorage("lastShownRadioId") private var lastShownId = ""
 	@ObservedObject private var accessoryManager = AccessoryManager.shared
 	/// The radio the window last showed with a session. A radio's Disconnect is told before its
 	/// link closes, so a window showing it still has it here (review V28-1).
 	@State private var lastShown: UUID?
+	/// After a launch, the radio used last, until it's back or the user picks a radio.
+	@State private var waitingFor: UUID?
+	@State private var tookLaunchRadio = false
 	@ViewBuilder let content: () -> Content
 
+	/// The radio to wait for, read once, before the window records the radio it shows now.
+	private func takeLaunchRadio() {
+		guard !tookLaunchRadio else { return }
+		tookLaunchRadio = true
+		waitingFor = UUID(uuidString: storedId.isEmpty ? lastShownId : storedId)
+	}
+
 	var body: some View {
-		let window = accessoryManager.oneWindowRadio(stored: UUID(uuidString: storedId))
+		let window = accessoryManager.oneWindowRadio(stored: UUID(uuidString: storedId), waitingFor: waitingFor)
 		content()
 			.modifier(WindowLockdownScope())
 			.environment(\.windowRadio, window)
-			.environment(\.selectWindowRadio, SelectWindowRadioAction { storedId = $0.uuidString })
+			.environment(\.selectWindowRadio, SelectWindowRadioAction {
+				storedId = $0.uuidString
+				waitingFor = nil
+			})
+			.onAppear { takeLaunchRadio() }
 			.onChange(of: accessoryManager.session(for: window)?.device.id, initial: true) { _, shown in
+				takeLaunchRadio()
 				accessoryManager.oneWindowShownRadio = shown
 				if let shown {
 					lastShown = shown
+					lastShownId = shown.uuidString
 				}
+			}
+			// The radio used last is back: the window shows it. As the first radio, `.firstRadio`
+			// already does.
+			.onChange(of: waitingFor.flatMap { accessoryManager.session(for: RadioWindow(deviceId: $0))?.device.id }) { _, arrived in
+				guard let arrived else { return }
+				if arrived != accessoryManager.activeConnection?.device.id {
+					storedId = arrived.uuidString
+				}
+				waitingFor = nil
 			}
 			// With several radios, the window keeps the radio the user disconnected, shown off,
 			// until they pick another (W-02); whichever Disconnect it was: the Connect tab's, the
@@ -136,6 +167,31 @@ extension AccessoryManager {
 			return RadioWindow(deviceId: other.id)
 		}
 		return .firstRadio
+	}
+
+	/// What the one window shows while it waits, after a launch, for `waiting`, the radio it showed
+	/// last (T431): the radio that connected first, so the window has one to work with, rather than
+	/// the waited one still reconnecting. Before any radio has connected, once the waited one is
+	/// back, or for one that isn't coming back on its own (one the user disconnected, W-02), as
+	/// `oneWindowRadio(stored:)`.
+	func oneWindowRadio(stored: UUID?, waitingFor waiting: UUID?) -> RadioWindow {
+		guard let waiting, session(for: RadioWindow(deviceId: waiting)) == nil, isComingBack(waiting) else {
+			return oneWindowRadio(stored: stored)
+		}
+		if activeConnection != nil {
+			return .firstRadio
+		}
+		if let other = connectedRadioAfterFirst {
+			return RadioWindow(deviceId: other.id)
+		}
+		return oneWindowRadio(stored: stored)
+	}
+
+	/// Radio `deviceId` is on its way back on its own: connecting, waiting for discovery to see it,
+	/// or the first radio, which discovery connects when it sees it.
+	func isComingBack(_ deviceId: UUID) -> Bool {
+		connectAttempts[deviceId] != nil || additionalRadioReconnects[deviceId] != nil
+			|| (deviceId.uuidString == PreferredRadio.peripheralId && awaitsFirstRadio)
 	}
 
 	/// The connected session of `window`'s radio, if it's connected.
