@@ -101,48 +101,6 @@ struct RadioComesBackTests {
 		manager.stopDiscovery()
 	}
 
-	@Test("During the preferred radio's head start another radio waits, and joins the preferred radio when it connects")
-	func waitsForThePreferredRadio() async throws {
-		let saved = ConnectFlowSupport.SavedDefaults()
-		defer { saved.restore() }
-		let firstNum = ConnectFlowSupport.uniqueNodeNum()
-		let preferred = ConnectFlowSupport.device()
-		let other = ConnectFlowSupport.device()
-		let manager = ConnectFlowSupport.makeManager(ScriptedTransport(radio: ScriptedRadio(nodeNum: firstNum), radiosByIdentifier: [
-			other.identifier: ScriptedRadio(nodeNum: firstNum &+ 0x100)
-		]))
-		manager.isSwitchingDevices = false
-		manager.firstPlaceHeadStart = .milliseconds(500)
-		manager.devices = [other]
-		manager.startDiscovery()
-		manager.scheduleAdditionalRadioReconnect(other)
-		try await Task.sleep(for: .milliseconds(200))
-		#expect(manager.connectAttempts[other.id] == nil, "it waits for the preferred radio")
-
-		// The preferred radio connects within its head start.
-		try await manager.connect(to: preferred)
-		try await ConnectFlowSupport.waitUntil { manager.additionalRadios[other.id] != nil && manager.connectAttempts[other.id] == nil }
-		#expect(manager.activeConnection?.device.id == preferred.id, "the preferred radio is first")
-		#expect(manager.additionalRadios[other.id] != nil, "the other joined it")
-		try await cleanUp(manager, second: other)
-	}
-
-	@Test("With no preferred radio set, there's no head start to wait for")
-	func noPreferredRadioNoHeadStart() {
-		let saved = ConnectFlowSupport.SavedDefaults()
-		defer { saved.restore() }
-		let manager = AccessoryManager(transports: [])
-		PreferredRadio.peripheralId = UUID().uuidString
-		manager.startDiscovery()
-		#expect(manager.firstPlaceOpensAt != nil, "the preferred radio's head start")
-		manager.stopDiscovery()
-
-		PreferredRadio.peripheralId = ""
-		manager.startDiscovery()
-		#expect(manager.firstPlaceOpensAt == nil)
-		manager.stopDiscovery()
-	}
-
 	@Test("Discovery goes on while a radio waits to come back, and stops once it's back")
 	func scanningWhileWaiting() async throws {
 		let saved = ConnectFlowSupport.SavedDefaults()

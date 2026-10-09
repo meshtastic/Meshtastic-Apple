@@ -495,9 +495,6 @@ extension MultiRadioConnectFlowTests {
 		#expect(manager.connectedRadioCount == 0)
 		allowDiscovery(manager)
 		manager.devices = [radios.secondDevice]
-		// In the app discovery already runs from the first radio's drop; here it starts with nothing
-		// connected, which gives the preferred radio a head start (tested on its own).
-		manager.firstPlaceHeadStart = .zero
 
 		manager.scheduleAdditionalRadioReconnect(radios.secondDevice)
 		try await waitUntil { manager.activeConnection?.device.id == radios.secondDevice.id && manager.connectAttempts[radios.secondDevice.id] == nil }

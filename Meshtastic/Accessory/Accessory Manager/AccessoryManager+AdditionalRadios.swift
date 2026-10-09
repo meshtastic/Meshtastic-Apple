@@ -404,12 +404,6 @@ extension AccessoryManager {
 							}
 						}
 					} else if self.mayConnectAsFirst(target) {
-						// The preferred radio's head start (review V46-1): this one waits it out, and joins
-						// the preferred radio if it has connected meanwhile.
-						if let opens = self.firstPlaceOpensAt, ContinuousClock.now < opens {
-							try? await Task.sleep(until: opens, clock: .continuous)
-							continue
-						}
 						// No radio left for it to join (review V13 Z1): it comes back as the first radio.
 						await self.connectAsFirst(target)
 						if self.activeConnection?.device.id == device.id { return }
@@ -520,8 +514,8 @@ extension AccessoryManager {
 
 	/// Every remembered radio that isn't connected waits for discovery to see it (review V45-3), as
 	/// `main`'s radio does at launch: with no radio connected the first one seen connects as the
-	/// first radio, after the preferred radio's head start (`firstPlaceOpensAt`), and the others
-	/// alongside it. The preferred radio comes back through discovery's own auto-connect.
+	/// first radio, the others alongside. The preferred radio comes back through discovery's own
+	/// auto-connect.
 	func awaitRememberedRadios() async {
 		let connectedNums = Set(connectedRadios.compactMap(\.num))
 		let remembered = await MeshPackets.shared.rememberedRadios(excluding: connectedNums)

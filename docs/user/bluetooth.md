@@ -72,7 +72,7 @@ A radio you've connected is remembered. If it drops out of range or restarts, th
 
 If iOS closes the app in the background while Bluetooth radios are connected, it relaunches the app when one of them has something to send. The app reconnects your radios, and the window keeps the radio it was showing. A radio the app doesn't bring back within a few minutes is let go, so it's free for another connection.
 
-If your usual radio isn't around when you open the app, the others wait a few seconds for it, then connect without it, and it joins them when it appears.
+If your usual radio isn't around when you open the app, the others don't wait for it, and it joins them when it appears.
 
 ### Disconnecting a Radio
 

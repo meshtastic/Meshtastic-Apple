@@ -475,6 +475,13 @@ Review V40's findings, checked in the files; all held. One commit each.
 - [X] T428 (V46-1, owner's call: a 5 s head start) When discovery starts with no radio connected (not after the user's Disconnect, a switch or an update), the preferred radio gets a 5 s head start for the first place (`firstPlaceOpensAt`, `firstPlaceHeadStart`). A remembered radio seen meanwhile with nothing to join waits it out, then joins the preferred radio if it has connected, or takes the first place if not. So the radio used last stays the first and preferred radio whenever it's nearby, rather than whichever discovery reports first. User docs say so. Verified: `RadioComesBackTests.waitsForThePreferredRadio` and `MultiRadioConnectLifecycleTests.rememberedRadioConnectsWhenSeen` (both fail without the wait or without the head start being set).
 - [X] T429 (V47 note) No head start when no preferred radio is set (after removing it, say): there's no one to wait for. Verified: `RadioComesBackTests.noPreferredRadioNoHeadStart` (fails without the check).
 
+## The window follows the radio used last (owner, 2026-10-08)
+
+BLE radios advertise at their own pace, so nobody expects them to connect in a set order; what matters is which radio the iPhone window shows.
+
+- [X] T430 The 5 s head start (T428, T429) is removed: whichever radio discovery sees first takes the empty first place again, as with T422.
+- [ ] T431 The iPhone window remembers the radio it last showed. At launch, until that radio connects, it shows the radio that connected first, then switches to it, unless the user picked another radio meanwhile (an explicit pick only).
+
 ## Phase 10: Hardening
 
 - [ ] T130 Four BLE radios for 24 hours (device checklist in `HANDOFF.md`).
