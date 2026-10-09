@@ -124,6 +124,24 @@ struct RadioComesBackTests {
 		try await cleanUp(manager, second: second)
 	}
 
+	@Test("While the window waits for the radio used last, the first radio dropping keeps its place in the window (D-19)")
+	func waitKeepsTheDroppedFirstRadio() async throws {
+		let saved = ConnectFlowSupport.SavedDefaults()
+		defer { saved.restore() }
+		let (manager, alongside) = try await connectTwoRadios()
+		// The radio used last is away and waited for.
+		let away = ConnectFlowSupport.device()
+		manager.scheduleAdditionalRadioReconnect(away)
+		#expect(manager.oneWindowRadio(stored: nil, waitingFor: away.id) == .firstRadio)
+
+		// The first radio drops, not by the user; the other stays connected.
+		try await manager.closeConnection()
+		#expect(manager.activeConnection == nil)
+		#expect(manager.additionalRadios[alongside.id] != nil)
+		#expect(manager.oneWindowRadio(stored: nil, waitingFor: away.id) == .firstRadio, "shown reconnecting, not replaced by the other")
+		try await cleanUp(manager, second: alongside)
+	}
+
 	@Test("Discovery goes on while a radio waits to come back, and stops once it's back")
 	func scanningWhileWaiting() async throws {
 		let saved = ConnectFlowSupport.SavedDefaults()

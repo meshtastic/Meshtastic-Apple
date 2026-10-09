@@ -117,7 +117,11 @@ struct OneWindowRadioScope<Content: View>: View {
 				accessoryManager.oneWindowShownRadio = shown
 				if let shown {
 					lastShown = shown
-					lastShownId = shown.uuidString
+					// Not a radio shown only while the wait lasts: the next launch waits for the one
+					// used last again (review V48).
+					if waitingFor == nil {
+						lastShownId = shown.uuidString
+					}
 				}
 			}
 			// The radio used last is back: the window shows it. As the first radio, `.firstRadio`
@@ -128,6 +132,7 @@ struct OneWindowRadioScope<Content: View>: View {
 					storedId = arrived.uuidString
 				}
 				waitingFor = nil
+				lastShownId = arrived.uuidString
 			}
 			// With several radios, the window keeps the radio the user disconnected, shown off,
 			// until they pick another (W-02); whichever Disconnect it was: the Connect tab's, the
@@ -170,21 +175,17 @@ extension AccessoryManager {
 	}
 
 	/// What the one window shows while it waits, after a launch, for `waiting`, the radio it showed
-	/// last (T431): the radio that connected first, so the window has one to work with, rather than
-	/// the waited one still reconnecting. Before any radio has connected, once the waited one is
-	/// back, or for one that isn't coming back on its own (one the user disconnected, W-02), as
-	/// `oneWindowRadio(stored:)`.
+	/// last (T431): once a radio has connected, what it shows with no radio picked, the radio that
+	/// connected first, so the window has one to work with, rather than the waited one still
+	/// reconnecting. That one dropping keeps it, shown reconnecting (D-19, review V48-1). Before
+	/// any radio has connected, once the waited one is back, or for one that isn't coming back on
+	/// its own (one the user disconnected, W-02), as `oneWindowRadio(stored:)`.
 	func oneWindowRadio(stored: UUID?, waitingFor waiting: UUID?) -> RadioWindow {
-		guard let waiting, session(for: RadioWindow(deviceId: waiting)) == nil, isComingBack(waiting) else {
+		guard let waiting, session(for: RadioWindow(deviceId: waiting)) == nil, isComingBack(waiting),
+			  connectedRadioCount > 0 else {
 			return oneWindowRadio(stored: stored)
 		}
-		if activeConnection != nil {
-			return .firstRadio
-		}
-		if let other = connectedRadioAfterFirst {
-			return RadioWindow(deviceId: other.id)
-		}
-		return oneWindowRadio(stored: stored)
+		return oneWindowRadio(stored: nil)
 	}
 
 	/// Radio `deviceId` is on its way back on its own: connecting, waiting for discovery to see it,
