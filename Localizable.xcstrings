@@ -336,6 +336,12 @@
         }
       }
     },
+    "Maker" : {
+      "comment" : "Accessibility name for the maker hardware mark"
+    },
+    "Maker Hardware" : {
+      "comment" : "Node detail section title for independent maker hardware"
+    },
     "%lld were heard on the current settings before they were removed and were kept." : {
       "comment" : "Result after removing unheard nodes: nodes the radio reported heard again"
     },

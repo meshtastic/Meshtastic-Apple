@@ -78,7 +78,19 @@ private struct NodeInfoHardwareSection: View {
 
 	private var supportRosette: some View {
 		Image(systemName: isActivelySupported ? "checkmark.seal.fill" : "xmark.seal.fill")
-			.foregroundStyle(isActivelySupported ? .green : .secondary)
+			.foregroundStyle(isActivelySupported ? Color.tierSupported : .secondary)
+	}
+
+	/// The rung's color for the section heading, per meshtastic/design#160. Legacy, discontinued
+	/// and unknown hardware keep the plain heading.
+	private var tierColor: Color? {
+		if isPortduino { return .tierCommunity }
+		switch displayTier {
+		case .supported: return .tierSupported
+		case .maker: return .tierMaker
+		case .niche: return .tierCommunity
+		default: return nil
+		}
 	}
 
 	private var modelName: String {
@@ -93,6 +105,14 @@ private struct NodeInfoHardwareSection: View {
 		hardwarePresentation?.supportLevel
 	}
 
+	private var displayTier: HardwareDisplayTier? {
+		guard let supportLevel else { return nil }
+		return HardwareDisplayTier.resolve(
+			supportLevel: supportLevel,
+			isMaker: hardwarePresentation?.isMaker ?? false
+		)
+	}
+
 	private var hardwareDescription: String {
 		if let supportLevel {
 			return supportLevel.description
@@ -105,10 +125,12 @@ private struct NodeInfoHardwareSection: View {
 	private var sectionTitle: String {
 		if summary.hwModel == "UNSET" { return "Hardware" }
 		if isPortduino { return "Community Hardware" }
-		guard let supportLevel else { return "Hardware" }
-		switch supportLevel {
-		case .flagship:
+		guard let displayTier else { return "Hardware" }
+		switch displayTier {
+		case .supported:
 			return "Supported Hardware"
+		case .maker:
+			return String(localized: "Maker Hardware")
 		case .niche:
 			return "Niche Hardware"
 		case .legacy:
@@ -119,7 +141,7 @@ private struct NodeInfoHardwareSection: View {
 	}
 
 	var body: some View {
-		Section(sectionTitle) {
+		Section {
 			if summary.hwModel == "UNSET" {
 				// MARK: - Unset / Incomplete
 				HStack {
@@ -139,7 +161,24 @@ private struct NodeInfoHardwareSection: View {
 						.foregroundStyle(.secondary)
 				}
 				.listRowSeparator(.hidden)
-			} else if hasDevice && supportLevel == .flagship {
+			} else if hasDevice && !isPortduino && displayTier == .maker {
+				// MARK: - Maker Device
+				HStack(spacing: 16) {
+					DeviceHardwareImage(hwId: Int32(summary.hwModelId))
+						.frame(width: 60, height: 60)
+						.cornerRadius(8)
+					Text(modelName)
+						.font(.subheadline)
+					Spacer()
+					supportRosette
+						.font(.title2)
+					Image(systemName: "wrench.adjustable")
+						.font(.title2)
+						.foregroundStyle(Color.tierMaker)
+						.accessibilityLabel(String(localized: "Maker", comment: "Accessibility name for the maker hardware mark"))
+				}
+				.listRowSeparator(.hidden)
+			} else if hasDevice && displayTier == .supported {
 				// MARK: - Flagship Device (Hero Layout)
 				VStack(spacing: 12) {
 					ZStack(alignment: .bottomTrailing) {
@@ -156,7 +195,7 @@ private struct NodeInfoHardwareSection: View {
 						.frame(maxWidth: .infinity, alignment: .center)
 				}
 				.listRowSeparator(.hidden)
-			} else if hasDevice && (supportLevel == .niche || supportLevel == .legacy) {
+			} else if hasDevice && (displayTier == .niche || displayTier == .legacy) {
 				// MARK: - Niche / Legacy Device
 				HStack(spacing: 16) {
 					DeviceHardwareImage(hwId: Int32(summary.hwModelId))
@@ -213,6 +252,9 @@ private struct NodeInfoHardwareSection: View {
 				}
 				.listRowSeparator(.hidden)
 			}
+		} header: {
+			Text(sectionTitle)
+				.foregroundStyle(tierColor ?? .secondary)
 		}
 		.accessibilityElement(children: .combine)
 

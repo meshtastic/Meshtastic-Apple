@@ -51,3 +51,29 @@ enum SupportLevel: Int, CaseIterable, Identifiable {
 		}
 	}
 }
+
+/// Node-detail rung for one catalog entry.
+///
+/// `supportLevel` is a capability grade. `isMaker` is the registry's relationship bit:
+/// true means independent maker hardware, not Backer or Partner. Legacy and discontinued
+/// keep their own rungs. Maker applies only to flagship and niche grades.
+enum HardwareDisplayTier: Equatable {
+	case supported
+	case maker
+	case niche
+	case legacy
+	case discontinued
+
+	static func resolve(supportLevel: SupportLevel, isMaker: Bool) -> HardwareDisplayTier {
+		switch supportLevel {
+		case .legacy:
+			return .legacy
+		case .discontinued:
+			return .discontinued
+		case .flagship:
+			return isMaker ? .maker : .supported
+		case .niche:
+			return isMaker ? .maker : .niche
+		}
+	}
+}

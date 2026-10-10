@@ -41,6 +41,7 @@ private struct DeviceHardware: Codable {
 	let activelySupported: Bool
 	let displayName: String
 	let supportLevel: Int?
+	let isMaker: Bool?
 	let tags: [String]?
 	let images: [String]?
 	let requiresDfu: Bool?
@@ -184,7 +185,9 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 	static let firmwareGitHubURLEndpoint = URL(string: "https://api.github.com/repos/meshtastic/firmware/releases?per_page=100")!
 	static let nightlyIndexEndpoint = URL(string: "https://nightly.meshtastic.org/index.json")!
 
-	static let deviceCatalogETagKey = "deviceCatalog"
+	/// Bump the suffix when the catalog gains a field the app stores. An unchanged ETag skips the
+	/// upsert, so without a new key an existing install never writes the new field (v2: isMaker).
+	static let deviceCatalogETagKey = "deviceCatalog.v2"
 	static let firmwareListETagKey = "firmwareReleaseList"
 
 	static let nightlyReleaseNotesEndpoint = URL(string: "https://nightly.meshtastic.org/release_notes.md")!
@@ -409,6 +412,7 @@ deviceEntity.architecture = device.architecture
 				deviceEntity.activelySupported = device.activelySupported
 				deviceEntity.displayName = device.displayName
 				deviceEntity.supportLevel = device.supportLevel ?? 0
+				deviceEntity.isMaker = device.isMaker ?? false
 				deviceEntity.requiresDfu = device.requiresDfu ?? false
 				deviceEntity.hasInkHud = device.hasInkHud ?? false
 				deviceEntity.partitionScheme = device.partitionScheme
@@ -801,6 +805,7 @@ extension MeshtasticAPI {
 				deviceEntity.activelySupported = device.activelySupported
 				deviceEntity.displayName = device.displayName
 				deviceEntity.supportLevel = device.supportLevel ?? 0
+				deviceEntity.isMaker = device.isMaker ?? false
 				deviceEntity.requiresDfu = device.requiresDfu ?? false
 				deviceEntity.hasInkHud = device.hasInkHud ?? false
 				deviceEntity.partitionScheme = device.partitionScheme
