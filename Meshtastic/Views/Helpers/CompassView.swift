@@ -46,8 +46,7 @@ struct CompassView: View {
 		if diff <= alignmentTolerance {
 			if !inAlignment {
 				inAlignment = true
-				let generator = UIImpactFeedbackGenerator(style: .heavy)
-				generator.impactOccurred()
+				Haptics.impact(.heavy)
 			}
 		} else {
 			inAlignment = false

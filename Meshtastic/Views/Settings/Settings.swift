@@ -636,7 +636,7 @@ struct Settings: View {
 			// NFC actions only, now that backup and restore live on the Settings list. The
 			// entry point was widened to "or connected" while import/export were in here,
 			// because this gate otherwise hid them entirely on iPad, Mac and the Simulator.
-			#if !targetEnvironment(macCatalyst)
+			#if !targetEnvironment(macCatalyst) && !os(visionOS)
 			if #available(iOS 18, *) {
 				if NFCReader.isAvailable {
 					NavigationLink(value: SettingsNavigationState.tools) {

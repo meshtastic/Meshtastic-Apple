@@ -33,6 +33,8 @@ struct PositionPopover: View {
 				Divider()
 				HStack(alignment: .center) {
 					VStack(alignment: .leading) {
+						// No heading on visionOS, so the compass would never turn.
+						#if !os(visionOS)
 						if position.isPreciseLocation {
 							Button {
 								navigateToCompass = true
@@ -47,6 +49,7 @@ struct PositionPopover: View {
 							}
 							.padding(.bottom, 5)
 						}
+						#endif
 						
 						/// Time
 						Label {

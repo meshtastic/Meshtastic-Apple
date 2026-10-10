@@ -129,7 +129,12 @@ enum UserTrackingModes: Int, CaseIterable, Identifiable {
 		case .follow:
 			return MKUserTrackingMode.follow
 		case .followWithHeading:
+			#if os(visionOS)
+			// No compass heading on visionOS; the nearest mode.
+			return MKUserTrackingMode.follow
+			#else
 			return MKUserTrackingMode.followWithHeading
+			#endif
 		}
 	}
 }

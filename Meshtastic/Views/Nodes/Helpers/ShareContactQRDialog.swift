@@ -99,7 +99,7 @@ struct ShareContactQRDialog: View {
 						image: Image(uiImage: qrImage)
 					  )
 			)
-			#if !targetEnvironment(macCatalyst)
+			#if !targetEnvironment(macCatalyst) && !os(visionOS)
 			if #available(iOS 18, *) {
 				NFCWriteButton(
 					payload: qrString,

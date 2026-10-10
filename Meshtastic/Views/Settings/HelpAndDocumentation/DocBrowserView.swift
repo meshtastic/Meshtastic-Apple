@@ -2,7 +2,7 @@
 
 import SwiftUI
 import OSLog
-#if !targetEnvironment(macCatalyst)
+#if !targetEnvironment(macCatalyst) && !os(visionOS)
 import Translation
 #endif
 
@@ -402,7 +402,7 @@ private struct LanguagePackDownloadModifier: ViewModifier {
 	let onDownloaded: () -> Void
 
 	func body(content: Content) -> some View {
-		#if !targetEnvironment(macCatalyst)
+		#if !targetEnvironment(macCatalyst) && !os(visionOS)
 		if #available(iOS 26, *) {
 			content.translationTask(
 				downloadingLanguage.map {

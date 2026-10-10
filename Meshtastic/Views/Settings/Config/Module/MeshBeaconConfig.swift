@@ -182,7 +182,7 @@ struct MeshBeaconConfig: View {
 				broadcastSection
 			}
 		}
-		.scrollDismissesKeyboard(.interactively)
+		.dismissesKeyboardOnScroll(.interactively)
 		.disabled(!accessoryManager.isConnected || node?.meshBeaconConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {

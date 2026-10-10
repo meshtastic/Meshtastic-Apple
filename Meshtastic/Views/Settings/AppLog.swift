@@ -344,7 +344,7 @@ struct AppLog: View {
 				.padding(.horizontal, 8)
 			}
 			.monospaced()
-			.scrollDismissesKeyboard(.immediately)
+			.dismissesKeyboardOnScroll()
 			.overlay {
 				if entries.isEmpty {
 					ContentUnavailableView("Waiting for packets…", systemImage: "dot.radiowaves.left.and.right")
