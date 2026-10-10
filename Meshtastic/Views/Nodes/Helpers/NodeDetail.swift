@@ -871,7 +871,8 @@ struct NodeDetail: View {
 					// if ingestion deleted the row since the last refresh, reading a persisted
 					// property on it traps in SwiftData. Skip rendering until the next refresh.
 					if let latestPosition, latestPosition.modelContext != nil, !latestPosition.isDeleted {
-					#if !targetEnvironment(macCatalyst)
+					// No heading on visionOS, so the compass would never turn.
+					#if !targetEnvironment(macCatalyst) && !os(visionOS)
 						if latestPosition.isPreciseLocation {
 							Button {
 								showingCompassSheet = true

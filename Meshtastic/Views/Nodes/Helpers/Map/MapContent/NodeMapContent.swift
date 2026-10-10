@@ -12,6 +12,9 @@ struct NodeMapContent: MapContent {
 
 	@Bindable var node: NodeInfoEntity
 	let positions: [PositionEntity]
+	/// Pixel scale for the prerendered history markers, from the view's environment: this is
+	/// evaluated during map content construction, where `UITraitCollection.current` is undefined.
+	let displayScale: CGFloat
 	/// Map State User Defaults
 	@AppStorage("meshMapShowNodeHistory") private var showNodeHistory = false
 	@AppStorage("meshMapShowRouteLines") private var showRouteLines = false
@@ -184,19 +187,10 @@ struct NodeMapContent: MapContent {
 			.strokeBorder(stroke, lineWidth: 2)
 			.frame(width: 12, height: 12)
 		let renderer = ImageRenderer(content: content)
-		renderer.scale = NodeMapContent.displayScale
+		renderer.scale = displayScale
 		let image = renderer.uiImage!
 		NodeMapContent.circleImageCache.setObject(image, forKey: key)
 		return image
-	}
-
-	/// Pixel scale for prerendered marker images. visionOS has no `UIScreen`.
-	private static var displayScale: CGFloat {
-		#if os(visionOS)
-		UITraitCollection.current.displayScale
-		#else
-		UIScreen.main.scale
-		#endif
 	}
 
 	private func prerenderHistoryPointArrow(fill: Color, stroke: Color) -> UIImage {
@@ -210,7 +204,7 @@ struct NodeMapContent: MapContent {
 			.clipShape(Circle())
 			.frame(width: 16, height: 16)
 		let renderer = ImageRenderer(content: content)
-		renderer.scale = NodeMapContent.displayScale
+		renderer.scale = displayScale
 		let image = renderer.uiImage!
 		NodeMapContent.arrowImageCache.setObject(image, forKey: key)
 		return image
