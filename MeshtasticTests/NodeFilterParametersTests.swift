@@ -93,6 +93,32 @@ struct NodeFilterParametersTests {
 		#expect(filters2.searchText == "")
 	}
 
+	@Test("Search text reaches the lists 150 ms after the last keystroke")
+	func searchTextIsDebounced() async throws {
+		let filters = NodeFilterParameters(store: defaults)
+		filters.searchText = "n"
+		filters.searchText = "no"
+		filters.searchText = "node"
+		#expect(filters.debouncedSearchText == "")
+		try await Task.sleep(for: .milliseconds(400))
+		#expect(filters.debouncedSearchText == "node")
+	}
+
+	@Test("Clearing the search applies at once and drops a pending keystroke")
+	func clearingSearchIsImmediate() async throws {
+		let filters = NodeFilterParameters(store: defaults)
+		filters.searchText = "node"
+		try await Task.sleep(for: .milliseconds(400))
+		#expect(filters.debouncedSearchText == "node")
+
+		filters.searchText = "pending"
+		filters.reset()
+		#expect(filters.searchText == "")
+		#expect(filters.debouncedSearchText == "")
+		try await Task.sleep(for: .milliseconds(400))
+		#expect(filters.debouncedSearchText == "")
+	}
+
 	@Test("Boolean filters persist across instances")
 	func booleanFiltersPersistence() {
 		let filters1 = NodeFilterParameters(store: defaults)
@@ -457,6 +483,19 @@ struct NodeFilterParametersMatchesTests {
 		user.pkiEncrypted = pkiEncrypted
 		context.insert(user)
 		node.user = user
+	}
+
+	@Test("Node matching uses the debounced search text")
+	func nodeMatchingUsesDebouncedSearchText() async throws {
+		let filters = NodeFilterParameters(store: defaults)
+		let node = makeNode(sharedModelContainer.mainContext, num: 9_900_001)
+		attachUser(sharedModelContainer.mainContext, to: node)
+		node.user?.longName = "Matching Node"
+
+		filters.searchText = "different"
+		#expect(filters.matches(node), "not applied until the debounce elapses")
+		try await Task.sleep(for: .milliseconds(400))
+		#expect(!filters.matches(node))
 	}
 
 	// MARK: Online filter

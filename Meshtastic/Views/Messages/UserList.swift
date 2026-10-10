@@ -107,7 +107,7 @@ private struct FilteredUserList: View {
 	}
 
 	private var users: [UserEntity] {
-		let searchText = filters.searchText.lowercased()
+		let searchText = filters.debouncedSearchText.lowercased()
 		let onlineThreshold = filters.isOnline ? Date().addingTimeInterval(-7_200) : nil
 		let distanceBounds = filters.currentPreciseDistanceBounds
 		let filterLookup = UserListFilterLookup(

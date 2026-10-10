@@ -5,6 +5,7 @@
 //  Created by jake on 9/4/25.
 //
 
+import Combine
 import CoreLocation
 import SwiftUI
 
@@ -91,6 +92,9 @@ final class NodeFilterParameters: ObservableObject {
 	/// Search text is intentionally **not** persisted — relaunching into a stale search that hides
 	/// most nodes is confusing. It lives in memory for the app session only.
 	@Published var searchText = ""
+	/// `searchText` 150 ms after the last keystroke, or at once when cleared. The node list, the
+	/// contact list and the map filter on this, so typing doesn't filter thousands of rows per key.
+	@Published private(set) var debouncedSearchText = ""
 
 	// Each filter is `@Published` (so SwiftUI observers update live when it toggles — an
 	// `@AppStorage` property inside an `ObservableObject` reads/writes `UserDefaults` but does NOT
@@ -169,6 +173,18 @@ final class NodeFilterParameters: ObservableObject {
 		if let storedRoles = store.array(forKey: Keys.deviceRoles) as? [Int] {
 			deviceRoles = Set(storedRoles)
 		}
+
+		// Hold each keystroke for 150 ms and drop it when the next one arrives. Clearing goes
+		// through immediately so a reset doesn't leave the lists filtered for a moment.
+		$searchText
+			.removeDuplicates()
+			.map { text in
+				text.isEmpty
+					? Just(text).eraseToAnyPublisher()
+					: Just(text).delay(for: .milliseconds(150), scheduler: DispatchQueue.main).eraseToAnyPublisher()
+			}
+			.switchToLatest()
+			.assign(to: &$debouncedSearchText)
 	}
 
 	/// Restores every filter to its default and clears the search text. Backs the reset affordance
@@ -232,7 +248,7 @@ final class NodeFilterParameters: ObservableObject {
 		distanceBounds: NodeDistanceFilterBounds? = nil
 	) -> Bool {
 		// Search text
-		let text = normalizedSearchText ?? searchText.lowercased()
+		let text = normalizedSearchText ?? debouncedSearchText.lowercased()
 		if !text.isEmpty {
 			let matchesSearch = [
 				node.user?.userId,
