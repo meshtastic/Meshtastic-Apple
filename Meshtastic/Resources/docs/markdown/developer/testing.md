@@ -36,8 +36,8 @@ struct MyFeatureTests {
 
 ## Running Tests
 
-Run with ⌘U in Xcode, or from the command line with `xcodebuild test` — see "Running UI Tests"
-below for the exact invocation `MeshtasticUITests` uses.
+Select the `Meshtastic` scheme and run with ⌘U in Xcode, or use `xcodebuild test -scheme Meshtastic`.
+This runs `MeshtasticTests`, not the opt-in UI tests described below.
 
 Ensure all existing tests pass before opening a PR. SwiftLint runs on every commit; tests failing due to lint errors will block CI.
 
@@ -107,7 +107,7 @@ Swift Testing has no UI-automation equivalent to `XCUIApplication`.
 ### AccessibilityDriver
 
 `AccessibilityDriver.swift` provides `NavigationStep` (`tab`, `tapIdentifier`,
-`tapButtonLabeled`, `waitForIdentifier`, `pause`) and a `run(_:app:)` that fails the calling test
+`tapButtonLabeled`, `waitForIdentifier`) and a `run(_:app:)` that fails the calling test
 immediately — not silently — when a step's target never appears, since an unreachable target is
 itself the finding:
 
@@ -125,7 +125,7 @@ final class MyFeatureUITests: XCTestCase {
         // Pin the locale so tab-title matching in AccessibilityDriver (see the note below)
         // doesn't flake on a non-English simulator/device.
         app.launchArguments += [
-            "--meshtastic-marketing-seed",  // skip onboarding, seed demo data
+            "--meshtastic-marketing-seed",  // replaces the app store with demo data
             "-AppleLanguages", "(en)",
             "-AppleLocale", "en_US"
         ]
@@ -136,25 +136,25 @@ final class MyFeatureUITests: XCTestCase {
 }
 ```
 
-Note on tab lookup: `ContentView` tags each root tab bar button with a stable
-`.accessibilityIdentifier("tab-*")`, but as of Xcode 26.6 / iOS 18+ that identifier does not
-propagate to the underlying `UITabBarButton` through SwiftUI's value-based `Tab(value:)` API
-(confirmed by dumping the live accessibility hierarchy during a real run — the button exposes a
-`label:` but no `identifier:` at all). `NavigationStep.tab` therefore matches on the visible
-title as a working fallback, which means tab lookup is currently locale-dependent — unlike
-`.tapIdentifier`, which is genuinely identifier-based and locale-independent. See the doc comment
-on `NavigationStep.tab` for the full story.
+`NavigationStep.tab` matches the visible tab title because SwiftUI does not pass tab identifiers
+to the underlying button. Pin the app language to match those titles, as shown above.
+`.tapIdentifier` uses stable identifiers and does not depend on the app language.
 
 ### Running UI Tests
 
+UI tests are opt-in. Select the `Meshtastic UI Tests` scheme and a disposable simulator, then
+press ⌘U. The normal `Meshtastic` scheme does not include this test target.
+
+**The marketing seed launch argument replaces the app's stored data with demo data.** Do not run
+these tests on a simulator or device whose Meshtastic data you want to keep.
+
 ```bash
-xcodebuild -project Meshtastic.xcodeproj -scheme Meshtastic \
-  -destination 'platform=iOS Simulator,name=<device>' \
-  -only-testing:MeshtasticUITests/<SuiteName> test
+xcodebuild -project Meshtastic.xcodeproj -scheme "Meshtastic UI Tests" \
+  -destination 'platform=iOS Simulator,name=<disposable-simulator>' \
+  -only-testing:MeshtasticUITests/TabBarNavigationUITests test
 ```
 
-⌘U also runs them from Xcode alongside `MeshtasticTests`, since both are wired into the
-`Meshtastic` scheme's test action.
+These UI tests do not run in CI. `.github/workflows/unit-tests.yml` runs only `MeshtasticTests`.
 
 ## Async Tests
 

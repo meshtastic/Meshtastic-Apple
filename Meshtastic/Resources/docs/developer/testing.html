@@ -34,8 +34,8 @@ struct MyFeatureTests {
 <li>Do not use <code>XCTAssert*</code> in new test files.</li>
 </ul>
 <h2>Running Tests</h2>
-<p>Run with ⌘U in Xcode, or from the command line with <code>xcodebuild test</code> — see &quot;Running UI Tests&quot;
-below for the exact invocation <code>MeshtasticUITests</code> uses.</p>
+<p>Select the <code>Meshtastic</code> scheme and run with ⌘U in Xcode, or use <code>xcodebuild test -scheme Meshtastic</code>.
+This runs <code>MeshtasticTests</code>, not the opt-in UI tests described below.</p>
 <p>Ensure all existing tests pass before opening a PR. SwiftLint runs on every commit; tests failing due to lint errors will block CI.</p>
 <h2>Snapshot Tests</h2>
 <p>Snapshot tests for SwiftUI views live in <code>MeshtasticTests/SwiftUIViewSnapshotTests.swift</code>.</p>
@@ -88,7 +88,7 @@ necessary exception to the &quot;no <code>XCTAssert*</code> in new test files&qu
 Swift Testing has no UI-automation equivalent to <code>XCUIApplication</code>.</p>
 <h3>AccessibilityDriver</h3>
 <p><code>AccessibilityDriver.swift</code> provides <code>NavigationStep</code> (<code>tab</code>, <code>tapIdentifier</code>,
-<code>tapButtonLabeled</code>, <code>waitForIdentifier</code>, <code>pause</code>) and a <code>run(_:app:)</code> that fails the calling test
+<code>tapButtonLabeled</code>, <code>waitForIdentifier</code>) and a <code>run(_:app:)</code> that fails the calling test
 immediately — not silently — when a step's target never appears, since an unreachable target is
 itself the finding:</p>
 <pre><code class="language-swift">import XCTest
@@ -104,7 +104,7 @@ final class MyFeatureUITests: XCTestCase {
         // Pin the locale so tab-title matching in AccessibilityDriver (see the note below)
         // doesn't flake on a non-English simulator/device.
         app.launchArguments += [
-            &quot;--meshtastic-marketing-seed&quot;,  // skip onboarding, seed demo data
+            &quot;--meshtastic-marketing-seed&quot;,  // replaces the app store with demo data
             &quot;-AppleLanguages&quot;, &quot;(en)&quot;,
             &quot;-AppleLocale&quot;, &quot;en_US&quot;
         ]
@@ -114,21 +114,19 @@ final class MyFeatureUITests: XCTestCase {
     }
 }
 </code></pre>
-<p>Note on tab lookup: <code>ContentView</code> tags each root tab bar button with a stable
-<code>.accessibilityIdentifier(&quot;tab-*&quot;)</code>, but as of Xcode 26.6 / iOS 18+ that identifier does not
-propagate to the underlying <code>UITabBarButton</code> through SwiftUI's value-based <code>Tab(value:)</code> API
-(confirmed by dumping the live accessibility hierarchy during a real run — the button exposes a
-<code>label:</code> but no <code>identifier:</code> at all). <code>NavigationStep.tab</code> therefore matches on the visible
-title as a working fallback, which means tab lookup is currently locale-dependent — unlike
-<code>.tapIdentifier</code>, which is genuinely identifier-based and locale-independent. See the doc comment
-on <code>NavigationStep.tab</code> for the full story.</p>
+<p><code>NavigationStep.tab</code> matches the visible tab title because SwiftUI does not pass tab identifiers
+to the underlying button. Pin the app language to match those titles, as shown above.
+<code>.tapIdentifier</code> uses stable identifiers and does not depend on the app language.</p>
 <h3>Running UI Tests</h3>
-<pre><code class="language-bash">xcodebuild -project Meshtastic.xcodeproj -scheme Meshtastic \
-  -destination 'platform=iOS Simulator,name=&lt;device&gt;' \
-  -only-testing:MeshtasticUITests/&lt;SuiteName&gt; test
+<p>UI tests are opt-in. Select the <code>Meshtastic UI Tests</code> scheme and a disposable simulator, then
+press ⌘U. The normal <code>Meshtastic</code> scheme does not include this test target.</p>
+<p><strong>The marketing seed launch argument replaces the app's stored data with demo data.</strong> Do not run
+these tests on a simulator or device whose Meshtastic data you want to keep.</p>
+<pre><code class="language-bash">xcodebuild -project Meshtastic.xcodeproj -scheme &quot;Meshtastic UI Tests&quot; \
+  -destination 'platform=iOS Simulator,name=&lt;disposable-simulator&gt;' \
+  -only-testing:MeshtasticUITests/TabBarNavigationUITests test
 </code></pre>
-<p>⌘U also runs them from Xcode alongside <code>MeshtasticTests</code>, since both are wired into the
-<code>Meshtastic</code> scheme's test action.</p>
+<p>These UI tests do not run in CI. <code>.github/workflows/unit-tests.yml</code> runs only <code>MeshtasticTests</code>.</p>
 <h2>Async Tests</h2>
 <p>For tests involving <code>async/await</code>:</p>
 <pre><code class="language-swift">@Test func asyncOperation() async throws {

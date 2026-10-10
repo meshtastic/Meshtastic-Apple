@@ -2,6 +2,8 @@
 //  TabBarNavigationUITests.swift
 //  MeshtasticUITests
 //
+//  Copyright(c) Meshtastic 2026.
+//
 //  Regression coverage for the root tab bar: every tab must actually be reachable through the
 //  accessibility tree (the same path VoiceOver and a real user's tap take). Also doubles as the
 //  first real exercise of AccessibilityDriver — if a future change breaks TabView (removes a
@@ -22,9 +24,8 @@ final class TabBarNavigationUITests: XCTestCase {
 	@MainActor
 	func testAllRootTabsAreReachable() {
 		let app = XCUIApplication()
-		// Skips onboarding/tips and disables BLE discovery/autoconnect so tab switches aren't
-		// racing a connect attempt or blocked behind a first-launch sheet — see
-		// Meshtastic/Persistence/PerformanceSeedData.swift.
+		// Replaces the app store with demo data and disables onboarding, tips, and BLE discovery.
+		// Run only on a disposable simulator.
 		// Pin the locale so NavigationStep.tab's title-based lookup (see AccessibilityDriver.swift)
 		// doesn't flake when the simulator/device isn't running in English.
 		app.launchArguments += [
@@ -34,9 +35,7 @@ final class TabBarNavigationUITests: XCTestCase {
 		]
 		app.launch()
 
-		// English titles: see NavigationStep.tab's doc comment for why tab lookup currently
-		// matches on the visible label rather than the tab-* accessibilityIdentifier already
-		// set on each tab in ContentView.swift.
+		// Match the English tab titles using the language pinned above.
 		for title in ["Messages", "Nodes", "Map", "Settings", "Connect"] {
 			AccessibilityDriver.run([.tab(title)], app: app)
 		}
