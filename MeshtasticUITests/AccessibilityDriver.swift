@@ -2,6 +2,8 @@
 //  AccessibilityDriver.swift
 //  MeshtasticUITests
 //
+//  Copyright(c) Meshtastic 2026.
+//
 //  A small, reusable accessibility-tree-driven navigator for the Meshtastic app: drives
 //  XCUIApplication through real element queries and taps — the same path VoiceOver and a real
 //  user's touches take — rather than tapping into the app's internals.
@@ -20,21 +22,8 @@ import XCTest
 
 /// One step in an accessibility-driven navigation sequence.
 enum NavigationStep {
-	/// Tap a root tab bar button. `ContentView` tags each tab with a stable
-	/// `.accessibilityIdentifier("tab-*")`, but as of Xcode 26.6 / iOS 18+ that identifier does
-	/// NOT propagate to the underlying `UITabBarButton` through either form of SwiftUI's
-	/// value-based `Tab(value:)` API (confirmed empirically: dumping the live accessibility
-	/// hierarchy during a real run shows the button with a `label:` but no `identifier:` at all,
-	/// whether the identifier is set on the `Tab` itself or inside its `label: { }` closure) —
-	/// this is a known SwiftUI/UIKit-bridge gap, not a bug in this app. `XCUIElementQuery`'s
-	/// string subscript matches on `identifier` OR falls back to the element's accessibility
-	/// label when no true identifier is present, so passing the tab's visible title ("Connect",
-	/// "Messages", "Nodes", "Map", "Settings") works today. That means tab lookup is currently
-	/// **locale-dependent** — capture runs in whatever locale the simulator/device is set to
-	/// (English by default) — unlike `.tapIdentifier`, which is genuinely identifier-based and
-	/// locale-independent. If a future SwiftUI version fixes identifier propagation for `Tab`,
-	/// this can switch back to the `tab-*` identifiers already present in `ContentView` with no
-	/// call-site changes needed elsewhere.
+	/// Tap a root tab bar button by its visible title. SwiftUI does not pass tab identifiers
+	/// to the underlying button, so callers must pin the app language to match these titles.
 	case tab(String)
 	/// Tap the first element (any type — button, row, icon) matching an accessibility
 	/// identifier.
@@ -47,11 +36,6 @@ enum NavigationStep {
 	/// Use after a navigation step whose destination needs a moment to mount, fetch, or
 	/// transition in.
 	case waitForIdentifier(String, timeout: TimeInterval = 5)
-	/// Fixed pause. Use sparingly and only when there's no reliable "done" element to wait on
-	/// (e.g. a MapKit tile load, a spring animation) — prefer `.waitForIdentifier` everywhere
-	/// else, since a fixed pause is either wastefully slow or a source of flakiness depending on
-	/// which side of "long enough" the runner lands on.
-	case pause(TimeInterval)
 }
 
 @MainActor
@@ -99,9 +83,6 @@ enum AccessibilityDriver {
 					XCTFail("Element '\(identifier)' never appeared within \(timeout)s", file: file, line: line)
 					return
 				}
-
-			case .pause(let seconds):
-				Thread.sleep(forTimeInterval: seconds)
 			}
 		}
 	}
