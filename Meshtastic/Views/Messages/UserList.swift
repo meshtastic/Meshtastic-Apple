@@ -23,12 +23,7 @@ struct UserList: View {
 
 	var body: some View {
 		VStack {
-			FilteredUserList(
-				withFilters: filters,
-				committedSearchText: filters.debouncedSearchText,
-				node: $node,
-				userSelection: $userSelection
-			)
+			FilteredUserList(withFilters: filters, node: $node, userSelection: $userSelection)
 			.sheet(isPresented: $editingFilters) {
 				NodeListFilter(filterTitle: "Contact Filters", showsEncryptedFilter: false, filters: filters)
 			}
@@ -89,15 +84,6 @@ struct UserList: View {
 	}
 }
 
-func filterContacts<Contact>(
-	_ contacts: [Contact],
-	committedSearchText: String,
-	matches: (Contact, String) -> Bool
-) -> [Contact] {
-	let normalizedSearchText = committedSearchText.lowercased()
-	return contacts.filter { matches($0, normalizedSearchText) }
-}
-
 private struct FilteredUserList: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@EnvironmentObject var appState: AppState
@@ -113,21 +99,15 @@ private struct FilteredUserList: View {
 	@State private var userToDeleteMessages: UserEntity?
 	@State private var directMessageSummaries: [Int64: DirectMessageSummary] = [:]
 	private var filters: NodeFilterParameters
-	private let committedSearchText: String
 
-	init(
-		withFilters: NodeFilterParameters,
-		committedSearchText: String,
-		node: Binding<NodeInfoEntity?>,
-		userSelection: Binding<UserEntity?>
-	) {
+	init(withFilters: NodeFilterParameters, node: Binding<NodeInfoEntity?>, userSelection: Binding<UserEntity?>) {
 		self.filters = withFilters
-		self.committedSearchText = committedSearchText
 		self._node = node
 		self._userSelection = userSelection
 	}
 
 	private var users: [UserEntity] {
+		let searchText = filters.debouncedSearchText.lowercased()
 		let onlineThreshold = filters.isOnline ? Date().addingTimeInterval(-7_200) : nil
 		let distanceBounds = filters.currentPreciseDistanceBounds
 		let filterLookup = UserListFilterLookup(
@@ -135,9 +115,9 @@ private struct FilteredUserList: View {
 			distanceBounds: filters.distanceFilter ? distanceBounds : nil,
 			context: context
 		)
-		return filterContacts(allUsers, committedSearchText: committedSearchText) { user, searchText in
+		return allUsers.filter {
 			filters.matches(
-				user: user,
+				user: $0,
 				normalizedSearchText: searchText,
 				onlineThreshold: onlineThreshold,
 				distanceBounds: distanceBounds,

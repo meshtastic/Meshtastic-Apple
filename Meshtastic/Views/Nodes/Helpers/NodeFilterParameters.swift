@@ -5,6 +5,7 @@
 //  Created by jake on 9/4/25.
 //
 
+import Combine
 import CoreLocation
 import SwiftUI
 
@@ -89,11 +90,10 @@ final class NodeFilterParameters: ObservableObject {
 	}
 
 	/// Search text is intentionally **not** persisted — relaunching into a stale search that hides
-	/// most nodes is confusing. The draft is shared immediately but does not invalidate filtering.
-	var searchText = "" {
-		didSet { debounceSearchText() }
-	}
-	/// The value used by expensive node and contact filtering.
+	/// most nodes is confusing. It lives in memory for the app session only.
+	@Published var searchText = ""
+	/// `searchText` 150 ms after the last keystroke, or at once when cleared. The node list, the
+	/// contact list and the map filter on this, so typing doesn't filter thousands of rows per key.
 	@Published private(set) var debouncedSearchText = ""
 
 	// Each filter is `@Published` (so SwiftUI observers update live when it toggles — an
@@ -127,8 +127,6 @@ final class NodeFilterParameters: ObservableObject {
 	/// Backing store for all persisted filter values. Defaults to `.standard`; tests inject an
 	/// isolated suite so they don't read or clobber the shared `UserDefaults.standard` domain.
 	private let store: UserDefaults
-	private let searchDebounceSleep: @MainActor @Sendable (Duration) async throws -> Void
-	private var searchDebounceTask: Task<Void, Never>?
 
 	// Public computed wrappers with enforcement
 	var viaLora: Bool {
@@ -153,12 +151,8 @@ final class NodeFilterParameters: ObservableObject {
 
 	/// - Parameter store: The `UserDefaults` instance backing all persisted filter values.
 	///   Defaults to `.standard`; pass an isolated suite in tests.
-	init(
-		store: UserDefaults = .standard,
-		searchDebounceSleep: @escaping @MainActor @Sendable (Duration) async throws -> Void = { try await Task.sleep(for: $0) }
-	) {
+	init(store: UserDefaults = .standard) {
 		self.store = store
-		self.searchDebounceSleep = searchDebounceSleep
 
 		// Property observers do not fire for assignments made inside `init`, so loading persisted
 		// values here reads from `store` without writing back to it.
@@ -179,26 +173,18 @@ final class NodeFilterParameters: ObservableObject {
 		if let storedRoles = store.array(forKey: Keys.deviceRoles) as? [Int] {
 			deviceRoles = Set(storedRoles)
 		}
-	}
 
-	private func debounceSearchText() {
-		searchDebounceTask?.cancel()
-		guard !searchText.isEmpty else {
-			debouncedSearchText = ""
-			return
-		}
-
-		let pendingSearchText = searchText
-		let sleep = searchDebounceSleep
-		searchDebounceTask = Task { @MainActor [weak self] in
-			do {
-				try await sleep(.milliseconds(150))
-			} catch {
-				return
+		// Hold each keystroke for 150 ms and drop it when the next one arrives. Clearing goes
+		// through immediately so a reset doesn't leave the lists filtered for a moment.
+		$searchText
+			.removeDuplicates()
+			.map { text in
+				text.isEmpty
+					? Just(text).eraseToAnyPublisher()
+					: Just(text).delay(for: .milliseconds(150), scheduler: DispatchQueue.main).eraseToAnyPublisher()
 			}
-			guard !Task.isCancelled, self?.searchText == pendingSearchText else { return }
-			self?.debouncedSearchText = pendingSearchText
-		}
+			.switchToLatest()
+			.assign(to: &$debouncedSearchText)
 	}
 
 	/// Restores every filter to its default and clears the search text. Backs the reset affordance
