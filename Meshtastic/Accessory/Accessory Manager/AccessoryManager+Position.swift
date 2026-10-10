@@ -84,14 +84,7 @@ extension AccessoryManager {
 		positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
 		positionPacket.altitude = Int32(lastLocation.altitude)
 		positionPacket.satsInView = UInt32(LocationsHandler.satsInView)
-		let currentSpeed = lastLocation.speed
-		if currentSpeed > 0 && (!currentSpeed.isNaN || !currentSpeed.isInfinite) {
-			positionPacket.groundSpeed = UInt32(currentSpeed)
-		}
-		let currentHeading = lastLocation.course
-		if (currentHeading > 0  && currentHeading <= 360) && (!currentHeading.isNaN || !currentHeading.isInfinite) {
-			positionPacket.groundTrack = UInt32(currentHeading)
-		}
+		positionPacket.setSpeedTrackAndHae(from: lastLocation)
 		/// Set location source for time
 		if !fixedPosition {
 			/// From GPS treat time as good

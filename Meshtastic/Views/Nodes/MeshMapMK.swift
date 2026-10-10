@@ -133,8 +133,7 @@ struct MeshMapMK: View {
 	/// Site Planner coverage-estimate flow: the headless WebView+bridge runner and the form seed.
 	@StateObject private var coverageRunner = CoverageEstimateRunner()
 	@State private var coverageSeed: CoverageEstimateSeed?
-	/// Filter
-	@ObservedObject var filters = NodeFilterParameters.shared
+	@EnvironmentObject private var filters: NodeFilterParameters
 	/// Track whether a detached Mesh Map window is currently open.
 	@State private var isMapWindowOpen = false
 
@@ -146,7 +145,7 @@ struct MeshMapMK: View {
 	}
 
 	/// Update the distance-filter fallback location ONLY when it actually changes. `fallbackLocation`
-	/// is `@Published` on the shared `filters` object, so an unconditional write publishes
+	/// is `@Published` on this window's `filters` object, so an unconditional write publishes
 	/// `objectWillChange` and re-renders `body` — which re-runs the heavy position filter and, because
 	/// the filter depends on `fallbackLocation`, can spiral to 100% CPU on Mac Catalyst.
 	private func syncFallbackLocation() {
@@ -482,7 +481,7 @@ struct MeshMapMK: View {
 					if let node = getNodeInfo(id: selection.id, context: context) {
 						NavigationStack {
 							NodeDetail(node: node, nodeNum: selection.id, showMapLink: false)
-								.trackScreen("Node Detail")
+								.trackScreen(.nodeDetail)
 						}
 						#if targetEnvironment(macCatalyst)
 							.overlay(alignment: .topLeading) {
@@ -538,6 +537,7 @@ struct MeshMapMK: View {
 							}
 						}
 					}
+					.trackScreen(.mapItemPicker)
 					.presentationDetents([.medium, .large])
 					#if !targetEnvironment(macCatalyst)
 					.presentationDragIndicator(.visible)
@@ -546,6 +546,7 @@ struct MeshMapMK: View {
 				.sheet(item: $selectedWaypoint) { selection in
 					WaypointForm(waypoint: selection)
 						.environmentObject(accessoryManager)
+						.trackScreen(.waypoint)
 						.presentationDetents([.large]) // full screen
 						#if !targetEnvironment(macCatalyst)
 						.presentationDragIndicator(.visible)
@@ -554,6 +555,7 @@ struct MeshMapMK: View {
 				.sheet(item: $editingWaypoint) { selection in
 					WaypointForm(waypoint: selection, editMode: true)
 						.environmentObject(accessoryManager)
+						.trackScreen(.waypoint)
 						.presentationDetents([.large])
 						#if !targetEnvironment(macCatalyst)
 						.presentationDragIndicator(.visible)
@@ -592,6 +594,7 @@ struct MeshMapMK: View {
 				}
 				.sheet(isPresented: $showLegend) {
 					MapLegend(isMeshMap: true)
+						.trackScreen(.mapLegend)
 						.presentationDetents([.large])
 						.presentationContentInteraction(.scrolls)
 						#if !targetEnvironment(macCatalyst)
@@ -601,6 +604,7 @@ struct MeshMapMK: View {
 				}
 				.sheet(item: $coverageSeed) { seed in
 					CoverageEstimateForm(seed: seed, runner: coverageRunner)
+						.trackScreen(.coverageEstimate)
 						.presentationDetents([.large])
 						#if !targetEnvironment(macCatalyst)
 						.presentationDragIndicator(.visible)
@@ -958,6 +962,7 @@ struct MeshMapMK: View {
 		combine(&key, preciseLocationsOnly ? 1 : 0)
 		combine(&key, stableStringKey(filters.debouncedSearchText.lowercased()))
 		combine(&key, filters.isOnline ? 1 : 0)
+		combine(&key, filters.hidesUnheardOnCurrentLora ? 1 : 0)
 		combine(&key, filters.isSigned ? 1 : 0)
 		combine(&key, filters.isPkiEncrypted ? 1 : 0)
 		combine(&key, filters.isFavorite ? 1 : 0)

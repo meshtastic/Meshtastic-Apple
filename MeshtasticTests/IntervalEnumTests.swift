@@ -43,6 +43,13 @@ struct IntervalConfigurationTests {
 		#expect(cases.contains(.fifteenSeconds))
 	}
 
+	@Test func waitBluetooth_staysShort() {
+		let cases = IntervalConfiguration.waitBluetooth.allowedCases
+		// Zero leads, which is the firmware default of one minute, and nothing reaches an hour.
+		#expect(cases == [.unset, .fifteenSeconds, .thirtySeconds, .oneMinute,
+						  .twoMinutes, .fiveMinutes, .tenMinutes, .fifteenMinutes])
+	}
+
 	@Test func allConfigurations_haveNonEmptyAllowedCases() {
 		for config in IntervalConfiguration.allCases {
 			#expect(!config.allowedCases.isEmpty, "\(config) has empty allowed cases")

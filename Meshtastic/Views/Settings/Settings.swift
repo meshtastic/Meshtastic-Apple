@@ -26,10 +26,14 @@ struct SettingsNodeSnapshot: Identifiable, Equatable {
 	let hasTAKConfig: Bool
 	let userLongName: String?
 	let userIsLicensed: Bool
+	/// Hardware model slug, for the DIY check in settings search.
+	let hwModelSlug: String?
 	let userIsPkiEncrypted: Bool
 	let role: Int32?
 	let regionCode: Int?
 	let excludedModules: Int
+	/// The node's own reported firmware, for the module version gates.
+	let firmwareVersion: String?
 	let isManaged: Bool
 
 	var id: Int64 { num }
@@ -42,33 +46,51 @@ struct SettingsNodeSnapshot: Identifiable, Equatable {
 		canRemoteAdmin = node.canRemoteAdmin
 		hasSessionPasskey = node.sessionPasskey != nil
 
+		// `SecurityConfig.is_managed` is where this lives now — `DeviceConfig.is_managed`
+		// is deprecated upstream and marked "Moved to SecurityConfig", so reading only the
+		// device copy misses a radio that sets the current field. Android reads security.
+		//
+		// A radio that sends a SecurityConfig at all has the field, so its answer is the
+		// answer, including `false`. OR-ing the two would let a stale `true` left in the
+		// device copy keep saying managed after it was turned off. Only a radio too old to
+		// send SecurityConfig falls back to the deprecated field.
+		var managed = false
+		if let securityConfig = node.securityConfig,
+			securityConfig.modelContext != nil,
+			!securityConfig.isDeleted {
+			managed = securityConfig.isManaged
+		} else if let deviceConfig = node.deviceConfig,
+			deviceConfig.modelContext != nil,
+			!deviceConfig.isDeleted {
+			managed = deviceConfig.isManaged
+		}
+		isManaged = managed
+
 		if let user = node.user,
 			user.modelContext != nil,
 			!user.isDeleted {
 			userLongName = user.longName
+			hwModelSlug = user.hwModel
 			userIsLicensed = user.isLicensed
 			userIsPkiEncrypted = user.pkiEncrypted
 			let userRole = user.role
 			if let deviceConfig = node.deviceConfig,
 				deviceConfig.modelContext != nil,
 				!deviceConfig.isDeleted {
-				isManaged = deviceConfig.isManaged
 				role = deviceConfig.role
 			} else {
-				isManaged = false
 				role = userRole
 			}
 		} else {
 			userLongName = nil
+			hwModelSlug = nil
 			userIsLicensed = false
 			userIsPkiEncrypted = false
 			if let deviceConfig = node.deviceConfig,
 				deviceConfig.modelContext != nil,
 				!deviceConfig.isDeleted {
-				isManaged = deviceConfig.isManaged
 				role = deviceConfig.role
 			} else {
-				isManaged = false
 				role = nil
 			}
 		}
@@ -86,9 +108,11 @@ struct SettingsNodeSnapshot: Identifiable, Equatable {
 			!metadata.isDeleted {
 			hasMetadata = true
 			excludedModules = Int(metadata.excludedModules)
+			firmwareVersion = metadata.firmwareVersion
 		} else {
 			hasMetadata = false
 			excludedModules = 0
+			firmwareVersion = nil
 		}
 
 		if let takConfig = node.takConfig,
@@ -138,6 +162,7 @@ struct Settings: View {
 		return node
 	}
 
+	@State private var searchText = ""
 	@State private var selectedNode: Int = 0
 	@State private var preferredNodeNum: Int = 0
 
@@ -176,13 +201,45 @@ struct Settings: View {
 			|| isMeshBeaconModuleSupported(node)
 	}
 
-	private func isMeshBeaconModuleSupported(_ node: SettingsNodeSnapshot?) -> Bool {
-		guard node != nil else { return false }
-		return accessoryManager.checkIsVersionSupported(forVersion: "2.8.0")
+	/// The `ModuleConfig` field tag for each module whose settings this screen offers.
+	/// The schema states on that field which firmware first reads the module, so the
+	/// version lives upstream instead of being written out here.
+	private enum ModuleField {
+		static let statusMessage = 14
+		static let trafficManagement = 15
+		static let tak = 16
+		static let meshBeacon = 17
 	}
 
-	private func isModuleSupported(_ module: ExcludedModules, excludedModules: Int) -> Bool {
-		return excludedModules & module.rawValue == 0
+	private func isMeshBeaconModuleSupported(_ node: SettingsNodeSnapshot?) -> Bool {
+		guard node != nil else { return false }
+		return firmwareReadsModule(tag: ModuleField.meshBeacon, node: node)
+	}
+
+	/// Whether a module's settings belong on this node's list. Two separate questions:
+	/// whether the build left the module out, which is the `excluded_modules` bitmask,
+	/// and whether the firmware is new enough to read it at all, which is the schema's
+	/// `since_firmware`. Neither substitutes for the other - firmware older than a
+	/// module has no bit for it either way - and a module needs both to pass.
+	private func isModuleSupported(
+		_ module: ExcludedModules,
+		excludedModules: Int,
+		tag: Int? = nil,
+		node: SettingsNodeSnapshot? = nil
+	) -> Bool {
+		guard excludedModules & module.rawValue == 0 else { return false }
+		guard let tag else { return true }
+		return firmwareReadsModule(tag: tag, node: node)
+	}
+
+	/// Whether the node's firmware reads this module, from the version the schema puts
+	/// on its `ModuleConfig` field. A module with no annotation, or a node that has
+	/// never reported a version, is offered: hiding settings on a guess is worse than
+	/// offering ones the radio ignores.
+	private func firmwareReadsModule(tag: Int, node: SettingsNodeSnapshot?) -> Bool {
+		guard let since = FieldMetadataRegistry.get("meshtastic.ModuleConfig", tag: tag)?.sinceFirmware
+		else { return true }
+		return NodeInfoEntity.firmware(node?.firmwareVersion, isAtLeast: since)
 	}
 
 	private func isAnySupported(_ modules: [ExcludedModules], excludedModules: Int) -> Bool {
@@ -191,6 +248,10 @@ struct Settings: View {
 
 	private func isTAKModuleSupported(_ node: SettingsNodeSnapshot?) -> Bool {
 		guard let node else { return false }
+		// The role says whether TAK is relevant to this node; the schema says whether the
+		// firmware reads the config at all. Without the second, setting the role on an
+		// older radio opened a screen whose settings it ignores.
+		guard firmwareReadsModule(tag: ModuleField.tak, node: node) else { return false }
 		if node.hasTAKConfig {
 			return true
 		}
@@ -205,7 +266,7 @@ struct Settings: View {
 
 	private func isTrafficManagementModuleSupported(_ node: SettingsNodeSnapshot?) -> Bool {
 		guard node != nil else { return false }
-		return accessoryManager.checkIsVersionSupported(forVersion: "2.8.0")
+		return firmwareReadsModule(tag: ModuleField.trafficManagement, node: node)
 	}
 
 	private var showsDevelopersSection: Bool {
@@ -514,6 +575,15 @@ struct Settings: View {
 		}
 	}
 
+	/// Android shows this only while the local radio is the target; a remote admin
+	/// session backs up nothing this phone is holding.
+	@ViewBuilder
+	var backupRestoreSection: some View {
+		if selectedNode == 0 || selectedNode == preferredNodeNum {
+			BackupRestoreSection(isManaged: connectedNodeIsManaged)
+		}
+	}
+
 	var loggingSection: some View {
 		Section(header: Text("Logging")) {
 			NavigationLink(value: SettingsNavigationState.debugLogs) {
@@ -563,13 +633,12 @@ struct Settings: View {
 					Image(systemName: "folder")
 				}
 			}
-			// Tools hosts NFC actions AND device-configuration import/export. Gating the whole entry
-			// point on NFC hardware made sense while it was NFC-only, but it now hides import/export
-			// completely on iPad, Mac Catalyst, and the Simulator, with no other way to reach them.
-			// Show it when either capability is usable; Tools itself hides the sections that are not.
+			// NFC actions only, now that backup and restore live on the Settings list. The
+			// entry point was widened to "or connected" while import/export were in here,
+			// because this gate otherwise hid them entirely on iPad, Mac and the Simulator.
 			#if !targetEnvironment(macCatalyst)
 			if #available(iOS 18, *) {
-				if NFCReader.isAvailable || accessoryManager.isConnected {
+				if NFCReader.isAvailable {
 					NavigationLink(value: SettingsNavigationState.tools) {
 						Label {
 							Text("Tools")
@@ -583,22 +652,40 @@ struct Settings: View {
 		}
 	}
 
-	var takSection: some View {
-		Section(header: Text("TAK")) {
-			// Routes to the same combined TAK Server page reached via the
-			// Module Configuration section above. Both entry points are kept
-			// because users naturally look in both places when configuring
-			// TAK — the Module Config link discovers the feature alongside
-			// other module configs, and the dedicated TAK section advertises
-			// the TAK Server functionality at a glance.
-			NavigationLink(value: SettingsNavigationState.tak) {
-				Label {
-					Text("TAK Server")
-				} icon: {
-					Image(systemName: "target")
-				}
-			}
-		}
+	private var isSearching: Bool {
+		searchText.trimmingCharacters(in: .whitespacesAndNewlines).count
+			>= SettingsSearchEngine.minimumQueryLength
+	}
+
+	/// Recomputed per keystroke. The index is static; only availability moves.
+	private var searchResults: [SettingsSearchResult] {
+		SettingsSearchEngine.search(
+			searchText,
+			in: SettingsSearchIndex.entries,
+			availability: searchAvailability
+		)
+	}
+
+	private var searchAvailability: SettingsSearchEngine.Availability {
+		SettingsSearchEngine.Availability(
+			isConnected: accessoryManager.isConnected,
+			// The DIY tag marks a product line rather than how a unit was built, so
+			// this is a hint and not a fact. See spec 019 FR-012a.
+			isDIYHardware: connectedHardwareIsDIY,
+			isManaged: connectedNodeIsManaged,
+			// The same condition the Developers section itself renders on, so search
+			// never offers a screen this build does not show.
+			showsDeveloperSettings: showsDevelopersSection
+		)
+	}
+
+	private var connectedNodeIsManaged: Bool {
+		nodes.first(where: { $0.num == Int64(preferredNodeNum) })?.isManaged ?? false
+	}
+
+	private var connectedHardwareIsDIY: Bool {
+		guard let node = nodes.first(where: { $0.num == Int64(preferredNodeNum) }) else { return false }
+		return DIYHardware.isDIY(slug: node.hwModelSlug)
 	}
 
 	var body: some View {
@@ -607,6 +694,20 @@ struct Settings: View {
 		) {
 			let node = nodeSnapshot(for: preferredNodeNum)
 			List {
+				if isSearching {
+					// Results replace the whole list, not just the config sections.
+					// Leaving the standalone links and the node picker above them
+					// pushed results off the top of the screen and read as broken.
+					SettingsSearchResultsView(
+						results: searchResults,
+						docs: DocumentationSearch.search(searchText),
+						onSelect: { entry in
+							// The screen scrolls to the control the result named; screens
+							// that are still hand-written just open as before.
+							router.navigate(toSetting: entry.destination, focusing: entry.field)
+						}
+					)
+				} else {
 				NavigationLink(value: SettingsNavigationState.about) {
 					Label {
 						Text("About Meshtastic")
@@ -670,6 +771,10 @@ struct Settings: View {
 							.font(.callout)
 							.foregroundStyle(.orange)
 					}
+					// The configuration sections are hidden on a managed radio, but backup and
+					// restore still belong on screen: Android shows them disabled with the
+					// reason rather than leaving the user to wonder where they went.
+					backupRestoreSection
 				}
 				if let node, !node.isManaged {
 					if accessoryManager.isConnected {
@@ -738,107 +843,127 @@ struct Settings: View {
 					radioConfigurationSection
 					deviceConfigurationSection
 					moduleConfigurationSection
+					backupRestoreSection
 					loggingSection
 					if showsDevelopersSection {
-					developersSection
+						developersSection
 					}
 				}
+				}
 			}
+			.searchable(
+				text: $searchText,
+				placement: .navigationBarDrawer(displayMode: .always),
+				prompt: "Search settings"
+			)
 			.navigationDestination(for: SettingsNavigationState.self) { destination in
 				let node = liveNode(for: preferredNodeNum)
 				let configNode = liveNode(for: selectedNode)
-				switch destination {
-				case .about:
-					AboutMeshtastic()
-				case .appSettings:
-					AppSettings()
-				case .routes:
-					Routes()
-				case .routeRecorder:
-					RouteRecorder()
-				case .lora:
-					LoRaConfig(node: configNode)
-				case .channels:
-					if let node = node {
-						Channels(node: node)
-					} else {
-						Text("Loading...")
+				Group {
+					switch destination {
+					case .about:
+						AboutMeshtastic()
+					case .appSettings:
+						AppSettings()
+					case .routes:
+						Routes()
+					case .routeRecorder:
+						RouteRecorder()
+					case .lora:
+						LoRaConfig(node: configNode)
+					case .channels:
+						if let node = node {
+							Channels(node: node)
+						} else {
+							Text("Loading...")
+						}
+					case .shareQRCode:
+						ShareChannels(node: node)
+					case .user:
+						UserConfig(node: configNode)
+					case .bluetooth:
+						BluetoothConfig(node: configNode)
+					case .device:
+						DeviceConfig(node: configNode)
+					case .display:
+						DisplayConfig(node: configNode)
+					case .network:
+						NetworkConfig(node: configNode)
+					case .position:
+						PositionConfig(node: configNode)
+					case .power:
+						PowerConfig(node: configNode)
+					case .ambientLighting:
+						AmbientLightingConfig(node: configNode)
+					case .audio:
+						AudioConfig(node: configNode)
+					case .cannedMessages:
+						CannedMessagesConfig(node: configNode)
+					case .detectionSensor:
+						DetectionSensorConfig(node: configNode)
+					case .meshBeacon:
+						MeshBeaconConfig(node: configNode)
+					case .externalNotification:
+						ExternalNotificationConfig(node: configNode)
+					case .mqtt:
+						MQTTConfig(node: configNode)
+					case .neighborInfo:
+						NeighborInfoConfig(node: configNode)
+					case .rangeTest:
+						RangeTestConfig(node: configNode)
+					case .paxCounter:
+						PaxCounterConfig(node: configNode)
+					case .ringtone:
+						RtttlConfig(node: configNode)
+					case .security:
+						SecurityConfig(node: configNode)
+					case .serial:
+						SerialConfig(node: configNode)
+					case .storeAndForward:
+						StoreForwardConfig(node: configNode)
+					case .telemetry:
+						TelemetryConfig(node: configNode)
+					case .trafficManagement:
+						TrafficManagementConfig(node: configNode)
+					case .debugLogs:
+						AppLog()
+					case .traceRoutes:
+						AllTraceRoutesLog()
+					case .appFiles:
+						AppData()
+					case .firmwareUpdates:
+						Firmware(node: node)
+					case .deviceLinks:
+						DeviceLinkDirectory()
+					case .tools:
+						if #available(iOS 18, *) {
+							Tools()
+						}
+					case .tak:
+						TAKServerConfig()
+					case .takConfig:
+						TAKModuleConfig(node: configNode)
+					case .coreDataBrowser:
+						CoreDataBrowser()
+					case .localMeshDiscovery:
+						DiscoveryScanView()
+					case .helpDocs:
+						// Carries the settings-search query through, so a documentation
+						// result opens filtered. Empty when reached from the list row.
+						DocBrowserView(initialSearch: searchText)
+					case .backupManagement:
+						BackupManagement()
 					}
-				case .shareQRCode:
-					ShareChannels(node: node)
-				case .user:
-					UserConfig(node: configNode)
-				case .bluetooth:
-					BluetoothConfig(node: configNode)
-				case .device:
-					DeviceConfig(node: configNode)
-				case .display:
-					DisplayConfig(node: configNode)
-				case .network:
-					NetworkConfig(node: configNode)
-				case .position:
-					PositionConfig(node: configNode)
-				case .power:
-					PowerConfig(node: configNode)
-				case .ambientLighting:
-					AmbientLightingConfig(node: configNode)
-				case .audio:
-					AudioConfig(node: configNode)
-				case .cannedMessages:
-					CannedMessagesConfig(node: configNode)
-				case .detectionSensor:
-					DetectionSensorConfig(node: configNode)
-				case .meshBeacon:
-					MeshBeaconConfig(node: configNode)
-				case .externalNotification:
-					ExternalNotificationConfig(node: configNode)
-				case .mqtt:
-					MQTTConfig(node: configNode)
-				case .neighborInfo:
-					NeighborInfoConfig(node: configNode)
-				case .rangeTest:
-					RangeTestConfig(node: configNode)
-				case .paxCounter:
-					PaxCounterConfig(node: configNode)
-				case .ringtone:
-					RtttlConfig(node: configNode)
-				case .security:
-					SecurityConfig(node: configNode)
-				case .serial:
-					SerialConfig(node: configNode)
-				case .storeAndForward:
-					StoreForwardConfig(node: configNode)
-				case .telemetry:
-					TelemetryConfig(node: configNode)
-				case .trafficManagement:
-					TrafficManagementConfig(node: configNode)
-				case .debugLogs:
-					AppLog()
-				case .traceRoutes:
-					AllTraceRoutesLog()
-				case .appFiles:
-					AppData()
-				case .firmwareUpdates:
-					Firmware(node: node)
-				case .deviceLinks:
-					DeviceLinkDirectory()
-				case .tools:
-					if #available(iOS 18, *) {
-						Tools()
-					}
-				case .tak:
-					TAKServerConfig()
-				case .takConfig:
-					TAKModuleConfig(node: configNode)
-				case .coreDataBrowser:
-					CoreDataBrowser()
-				case .localMeshDiscovery:
-					DiscoveryScanView()
-				case .helpDocs:
-					DocBrowserView()
-				case .backupManagement:
-					BackupManagement()
 				}
+				.trackScreen(destination.screenName)
+				// Handed to the pushed screen itself: the schema-driven ones scroll to
+				// the control a search result named and take it, so going back and
+				// returning does not scroll again. Set on the destination rather than on
+				// the stack's content, which does not reliably reach a pushed screen.
+				.environment(\.settingsFieldFocus, SettingsFieldFocus(
+					target: router.settingsFieldFocus,
+					clear: { router.clearSettingsFieldFocus() }
+				))
 			}
 			.onChange(of: UserDefaults.preferredPeripheralNum ) { _, newConnectedNode in
 				// If the preferred node changes, then select the newly preferred node
@@ -856,8 +981,14 @@ struct Settings: View {
 			}
 			.onChange(of: accessoryManager.activeDeviceNum) { oldDevice, newDevice in
 				if newDevice == nil {
+					// The transport dropped — often just the radio rebooting after a config
+					// save, not a real device change. preferredNodeNum tracks
+					// UserDefaults.preferredPeripheralNum (see the onChange above), which a
+					// reboot doesn't touch, so leave it alone: zeroing it here collapsed the
+					// Configure/Radio/Device/Module/Logging sections every time a save
+					// rebooted the node, even though it's still the preferred node. Only the
+					// remote-admin target is genuinely invalid without a live link.
 					selectedNode = 0
-					preferredNodeNum = 0
 				} else if oldDevice != newDevice {
 					// Physical connection changed — any prior remote admin session is invalid
 					preferredNodeNum = Int(newDevice!)

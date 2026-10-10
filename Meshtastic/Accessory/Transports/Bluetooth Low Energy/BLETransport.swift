@@ -22,7 +22,10 @@ actor BLETransport: Transport {
 	/// Using a serial queue (instead of `.global()`) guarantees that delegate
 	/// callbacks arrive in the order CoreBluetooth fires them, so the
 	/// `Task { await … }` hops to the actor preserve that ordering.
-	private let centralQueue = DispatchQueue(label: "com.meshtastic.ble.central", qos: .utility)
+	///
+	/// CoreBluetooth calls wait on this queue, and they come from user-initiated tasks,
+	/// so it runs at the same QoS to avoid a priority inversion.
+	private let centralQueue = DispatchQueue(label: "com.meshtastic.ble.central", qos: .userInitiated)
 	private var discoveredPeripherals: [UUID: (peripheral: CBPeripheral, lastSeen: Date)] = [:]
 	private var discoveredDeviceContinuation: AsyncStream<DiscoveryEvent>.Continuation?
 	private let delegate: BLEDelegate
@@ -604,8 +607,10 @@ actor BLETransport: Transport {
 				self.activeConnection = restoredConnection
 				Logger.transport.error("🛜 [BLE] Peripheral Connection found and state is connected setting this connection as the activeConnection.")
 				let connectTask = Task { @MainActor in
-					// In this case we need a full reconnect, so do the wantConfig, wantDatabase, and versionCheck
-					try await AccessoryManager.shared.connect(to: device, withConnection: restoredConnection, wantConfig: false, wantDatabase: false, versionCheck: false)
+					// The link survived but this process is new, so everything the radio sends only with
+					// its config (region preset map, firmware edition, metadata) is missing. Ask for the
+					// config; the node database is already in the store.
+					try await AccessoryManager.shared.connect(to: device, withConnection: restoredConnection, wantConfig: true, wantDatabase: false, versionCheck: false)
 				}
 				do {
 					try await connectTask.value

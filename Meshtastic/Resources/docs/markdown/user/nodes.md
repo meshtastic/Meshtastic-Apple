@@ -98,6 +98,16 @@ The signal meter shown here (and on a node's detail screen) rates link quality f
   <img src="../assets/screenshots/compact_mqtt.png" alt="MQTT-bridged node" />
 </picture>
 
+## Nodes Not Heard on Your Current LoRa Settings
+
+Changing the radio's preset, region or frequency slot moves it to a different channel, and nodes it heard before may no longer be reachable. On firmware 2.8.1 and later, the radio reports for each node whether it has heard that node over LoRa on the settings it is using now, including after changes made from the device's menu or the CLI.
+
+A node the radio has not heard shows **Not heard on current LoRa** under its last-heard time. That is separate from online and offline: a node can be online and still not heard on these settings. Nodes known only over MQTT are never marked, because they don't reach your radio over LoRa. Switching back to the earlier settings brings back the earlier answers on their own.
+
+When most of the list is in that state, the Nodes tab shows a notice such as **87 nodes not heard on your current LoRa settings**. Choose **Remove Them** to open a confirmation that includes the number of nodes, such as **Remove 1 node?** or **Remove 10 nodes?**. Confirming removes those nodes from this app and the connected radio, and keeps favorites and the connected node. A node returns if it is heard again. Choose **Keep** to dismiss the notice until more nodes join that count. Nothing is removed unless you choose to.
+
+Older firmware doesn't report this, so the marker and the notice don't appear.
+
 ## Context Menu Actions
 
 Long-press any node in the list to access quick actions:
@@ -124,6 +134,7 @@ Tap the filter icon above the list to narrow which nodes are shown. Filters appl
 | Filter | What it shows |
 |--------|---------------|
 | **Online** | Only nodes heard in the last two hours. |
+| **Hide Not Heard on Current LoRa** | Hides nodes your radio has not heard on its current LoRa settings. Needs firmware 2.8.1 or later. |
 | **Favorites** | Only nodes you have starred. |
 | **Public Key Encryption** | Only nodes using PKI-encrypted direct messages. |
 | **Environment** | Only nodes reporting environment telemetry (temperature, humidity, pressure). |
@@ -185,6 +196,8 @@ Opening a Meshtastic contact link — by scanning a QR code, tapping a shared li
 
 If the import fails — most often because the radio disconnected — the sheet stays open and shows the reason so you can reconnect and tap **Add Contact** again. It closes only once the contact has actually been sent to your node. A link that is damaged or truncated is reported as an invalid format instead of being imported.
 
+If the contact carries a different public key than your node already holds for that node number, the sheet says so and **Add Contact** stays disabled until you turn on **Replace the stored key**. Importing replaces the key your node encrypts direct messages to that contact with, so only continue if you expected it to change — they reset their node, or set it up again. A contact you have never added, or one carrying the same key you already hold, imports without the extra step.
+
 A contact that carries no public key cannot be added. **Add Contact** is disabled and the sheet says the contact does not include one. The key is the point of a shared contact — it is what lets your node send direct messages to that contact — and applying a keyless one would clear the key your node already held, breaking direct messages that used to work. For the same reason, a node you have no public key for cannot be shared from this app.
 
 Importing a contact requires firmware 2.6.9 or later on the connected node.
@@ -208,6 +221,7 @@ The hardware section shows information about the physical device running the nod
 | Status | Meaning |
 |--------|---------|
 | **Supported Hardware** | Device is actively supported with firmware updates. |
+| **Maker Hardware** | Independent maker hardware that is built and tested, but not Backer or Partner hardware. |
 | **Discontinued Hardware** | Device is no longer supported and does not receive firmware updates. |
 
 For supported devices, the support tier is shown below the hardware name:

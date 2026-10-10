@@ -54,6 +54,23 @@ actor TCPConnection: Connection {
 		return nwHost
 	}
 
+	/// IPv4 address of the peer this socket is already connected to.
+	///
+	/// This is the remote endpoint of `NWConnection.currentPath`, the address the
+	/// connection is using. It does not look the hostname up again. Nil when the
+	/// socket is down or the peer is not an IPv4 address.
+	func connectedIPv4Address() -> String? {
+		guard let endpoint = connection?.currentPath?.remoteEndpoint else { return nil }
+		return Self.ipv4Address(of: endpoint)
+	}
+
+	/// Dotted IPv4 address from an endpoint, or nil for a name, IPv6, or anything else.
+	static func ipv4Address(of endpoint: NWEndpoint) -> String? {
+		guard case .hostPort(let host, _) = endpoint else { return nil }
+		guard case .ipv4(let address) = host else { return nil }
+		return String(describing: address)
+	}
+
 	private func waitForMagicBytes() async throws -> Bool {
 		let startOfFrame: [UInt8] = [0x94, 0xc3]
 		var waitingOnByte = 0

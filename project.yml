@@ -253,6 +253,9 @@ targets:
       - target: WidgetsExtension
         embed: true
         platformFilter: iOS
+      - target: MeshtasticMessages
+        embed: true
+        platformFilter: iOS
       - target: "Meshtastic Watch App"
         embed: true
         platformFilter: iOS
@@ -304,6 +307,7 @@ targets:
           - "$(SRCROOT)/Meshtastic Watch App"
           - "$(SRCROOT)/MeshtasticTests"
           - "$(SRCROOT)/MeshtasticUITests"
+          - "$(SRCROOT)/MeshtasticMessages"
           - "$(SRCROOT)/Shared"
           - "$(SRCROOT)/Widgets"
         basedOnDependencyAnalysis: false
@@ -340,7 +344,7 @@ targets:
             - "$(inherited)"
             - "@executable_path/Frameworks"
           MACOSX_DEPLOYMENT_TARGET: "14.6"
-          MARKETING_VERSION: "2.7.22"
+          MARKETING_VERSION: "2.7.25"
           OTHER_LDFLAGS:
             - "-weak_framework"
             - "SwiftUI"
@@ -383,7 +387,7 @@ targets:
             - "$(inherited)"
             - "@executable_path/Frameworks"
           MACOSX_DEPLOYMENT_TARGET: "14.6"
-          MARKETING_VERSION: "2.7.22"
+          MARKETING_VERSION: "2.7.25"
           OTHER_LDFLAGS:
             - "-weak_framework"
             - "SwiftUI"
@@ -429,7 +433,7 @@ targets:
             - "@executable_path/Frameworks"
             - "@executable_path/../../Frameworks"
           MACOSX_DEPLOYMENT_TARGET: "14.6"
-          MARKETING_VERSION: "2.7.22"
+          MARKETING_VERSION: "2.7.25"
           PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.Widgets"
           PRODUCT_NAME: "$(TARGET_NAME)"
           PROVISIONING_PROFILE_SPECIFIER: ""
@@ -458,13 +462,87 @@ targets:
             - "@executable_path/Frameworks"
             - "@executable_path/../../Frameworks"
           MACOSX_DEPLOYMENT_TARGET: "14.6"
-          MARKETING_VERSION: "2.7.22"
+          MARKETING_VERSION: "2.7.25"
           PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.Widgets"
           PRODUCT_NAME: "$(TARGET_NAME)"
           PROVISIONING_PROFILE_SPECIFIER: ""
           SKIP_INSTALL: "YES"
           SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
           SUPPORTS_MACCATALYST: "YES"
+          SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: "NO"
+          SWIFT_EMIT_LOC_STRINGS: "YES"
+          SWIFT_VERSION: "5.0"
+          TARGETED_DEVICE_FAMILY: "1,2"
+
+  MeshtasticMessages:
+    type: app-extension.messages
+    platform: iOS
+    sources:
+      - path: "Shared/MessageSharing"
+        group: "Message Sharing"
+        type: syncedFolder
+      - path: "MeshtasticMessages"
+        type: syncedFolder
+        excludes:
+          - "Info.plist"
+          - "MeshtasticMessages.entitlements"
+      - path: "Localizable.xcstrings"
+    dependencies:
+      - package: MeshtasticProtobufs
+        product: MeshtasticProtobufs
+    settings:
+      configs:
+        Debug:
+          APPLICATION_EXTENSION_API_ONLY: "YES"
+          ASSETCATALOG_COMPILER_APPICON_NAME: "iMessage App Icon"
+          CLANG_CXX_LANGUAGE_STANDARD: "gnu++20"
+          CODE_SIGN_ENTITLEMENTS: "MeshtasticMessages/MeshtasticMessages.entitlements"
+          CODE_SIGN_IDENTITY: "Apple Development"
+          CODE_SIGN_STYLE: "Automatic"
+          CURRENT_PROJECT_VERSION: "1"
+          DEVELOPMENT_TEAM: "GCH7VS5Y9R"
+          GENERATE_INFOPLIST_FILE: "YES"
+          INFOPLIST_FILE: "MeshtasticMessages/Info.plist"
+          INFOPLIST_KEY_CFBundleDisplayName: "Meshtastic"
+          IPHONEOS_DEPLOYMENT_TARGET: "17.5"
+          LD_RUNPATH_SEARCH_PATHS:
+            - "$(inherited)"
+            - "@executable_path/Frameworks"
+            - "@executable_path/../../Frameworks"
+          MARKETING_VERSION: "2.7.25"
+          PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.MessagesExtension"
+          PRODUCT_NAME: "$(TARGET_NAME)"
+          SKIP_INSTALL: "YES"
+          SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
+          SUPPORTS_MACCATALYST: "NO"
+          SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: "NO"
+          SWIFT_EMIT_LOC_STRINGS: "YES"
+          SWIFT_OPTIMIZATION_LEVEL: "-Onone"
+          SWIFT_VERSION: "5.0"
+          TARGETED_DEVICE_FAMILY: "1,2"
+        Release:
+          APPLICATION_EXTENSION_API_ONLY: "YES"
+          ASSETCATALOG_COMPILER_APPICON_NAME: "iMessage App Icon"
+          CLANG_CXX_LANGUAGE_STANDARD: "gnu++20"
+          CODE_SIGN_ENTITLEMENTS: "MeshtasticMessages/MeshtasticMessages.entitlements"
+          CODE_SIGN_IDENTITY: "Apple Development"
+          CODE_SIGN_STYLE: "Automatic"
+          CURRENT_PROJECT_VERSION: "1"
+          DEVELOPMENT_TEAM: "GCH7VS5Y9R"
+          GENERATE_INFOPLIST_FILE: "YES"
+          INFOPLIST_FILE: "MeshtasticMessages/Info.plist"
+          INFOPLIST_KEY_CFBundleDisplayName: "Meshtastic"
+          IPHONEOS_DEPLOYMENT_TARGET: "17.5"
+          LD_RUNPATH_SEARCH_PATHS:
+            - "$(inherited)"
+            - "@executable_path/Frameworks"
+            - "@executable_path/../../Frameworks"
+          MARKETING_VERSION: "2.7.25"
+          PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.MessagesExtension"
+          PRODUCT_NAME: "$(TARGET_NAME)"
+          SKIP_INSTALL: "YES"
+          SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
+          SUPPORTS_MACCATALYST: "NO"
           SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: "NO"
           SWIFT_EMIT_LOC_STRINGS: "YES"
           SWIFT_VERSION: "5.0"
@@ -495,7 +573,7 @@ targets:
           GCC_C_LANGUAGE_STANDARD: "gnu17"
           GENERATE_INFOPLIST_FILE: "YES"
           IPHONEOS_DEPLOYMENT_TARGET: "17.5"
-          MARKETING_VERSION: "1.0"
+          MARKETING_VERSION: "2.7.25"
           PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.MeshtasticTests"
           PRODUCT_NAME: "$(TARGET_NAME)"
           SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
@@ -515,7 +593,7 @@ targets:
           GCC_C_LANGUAGE_STANDARD: "gnu17"
           GENERATE_INFOPLIST_FILE: "YES"
           IPHONEOS_DEPLOYMENT_TARGET: "17.5"
-          MARKETING_VERSION: "1.0"
+          MARKETING_VERSION: "2.7.25"
           PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.MeshtasticTests"
           PRODUCT_NAME: "$(TARGET_NAME)"
           SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
@@ -555,7 +633,7 @@ targets:
           LD_RUNPATH_SEARCH_PATHS:
             - "$(inherited)"
             - "@executable_path/Frameworks"
-          MARKETING_VERSION: "2.7.22"
+          MARKETING_VERSION: "2.7.25"
           PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.watchkitapp"
           PRODUCT_NAME: "$(TARGET_NAME)"
           SDKROOT: "watchos"
@@ -583,7 +661,7 @@ targets:
           LD_RUNPATH_SEARCH_PATHS:
             - "$(inherited)"
             - "@executable_path/Frameworks"
-          MARKETING_VERSION: "2.7.22"
+          MARKETING_VERSION: "2.7.25"
           PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.watchkitapp"
           PRODUCT_NAME: "$(TARGET_NAME)"
           SDKROOT: "watchos"
@@ -644,7 +722,7 @@ targets:
           LD_RUNPATH_SEARCH_PATHS:
             - "$(inherited)"
             - "@executable_path/Frameworks"
-          MARKETING_VERSION: "2.7.22"
+          MARKETING_VERSION: "2.7.25"
           PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient"
           PRODUCT_NAME: "$(TARGET_NAME)"
           SDKROOT: "appletvos"
@@ -663,7 +741,7 @@ targets:
           LD_RUNPATH_SEARCH_PATHS:
             - "$(inherited)"
             - "@executable_path/Frameworks"
-          MARKETING_VERSION: "2.7.22"
+          MARKETING_VERSION: "2.7.25"
           PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient"
           PRODUCT_NAME: "$(TARGET_NAME)"
           SDKROOT: "appletvos"
@@ -688,7 +766,7 @@ targets:
           CURRENT_PROJECT_VERSION: "1"
           DEVELOPMENT_TEAM: "GCH7VS5Y9R"
           GENERATE_INFOPLIST_FILE: "YES"
-          MARKETING_VERSION: "1.0"
+          MARKETING_VERSION: "2.7.25"
           PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.TVUITests"
           PRODUCT_NAME: "$(TARGET_NAME)"
           SDKROOT: "appletvos"
@@ -701,7 +779,7 @@ targets:
           CURRENT_PROJECT_VERSION: "1"
           DEVELOPMENT_TEAM: "GCH7VS5Y9R"
           GENERATE_INFOPLIST_FILE: "YES"
-          MARKETING_VERSION: "1.0"
+          MARKETING_VERSION: "2.7.25"
           PRODUCT_BUNDLE_IDENTIFIER: "gvh.MeshtasticClient.TVUITests"
           PRODUCT_NAME: "$(TARGET_NAME)"
           SDKROOT: "appletvos"
@@ -803,4 +881,3 @@ schemes:
       config: Debug
     archive:
       config: Release
-

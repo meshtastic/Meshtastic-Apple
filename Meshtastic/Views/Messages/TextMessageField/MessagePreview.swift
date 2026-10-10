@@ -15,7 +15,7 @@ struct MessagePreview: View {
 						.padding(.vertical, 10)
 						.padding(.horizontal, 8)
 						.foregroundColor(.white)
-						.background(Color.accentColor)
+						.background(Color.accentFill)
 						.cornerRadius(15)
 				} else {
 					Text(LocalizedStringKey(text))
@@ -23,7 +23,7 @@ struct MessagePreview: View {
 						.padding(.vertical, 10)
 						.padding(.horizontal, 8)
 						.foregroundColor(.white)
-						.background(Color.accentColor)
+						.background(Color.accentFill)
 						.cornerRadius(15)
 				}
 			}

@@ -40,10 +40,26 @@ else
 	echo "WhatToTest: no release tag found, falling back to the last 10 merges."
 fi
 
-# GitHub merge commits carry the PR title in the body. Take the first line of each
-# body, drop empties/trailers and the version bump, de-duplicate.
-NOTES=$(git -C "$CI_PRIMARY_REPOSITORY_PATH" log --merges ${RANGE:--10} --pretty=format:"%b%n---" 2>/dev/null \
-	| awk '/^---$/{first=0; next} !first++ && NF && !/^Co-authored|^Signed-off/ {print "• " $0}' \
+# A pull request lands one of two ways and the title sits in a different place in
+# each. A merge commit carries it in the body; a squash carries it in the subject
+# with "(#1234)" appended. Reading only merges, as this did, silently dropped every
+# squashed pull request - which is most of them - so builds described older work.
+# One pass over both, newest first, trailers and the version bump dropped.
+NOTES=$(git -C "$CI_PRIMARY_REPOSITORY_PATH" log ${RANGE:---max-count=40} \
+	--pretty=format:'%x1e%p%x1f%s%x1f%b' 2>/dev/null \
+	| awk -v RS='\036' -F'\037' '
+		NF < 3 { next }
+		{
+			parents = $1; subject = $2; body = $3; line = ""
+			if (parents ~ / /) {
+				n = split(body, b, "\n")
+				for (i = 1; i <= n; i++) if (b[i] != "") { line = b[i]; break }
+			} else if (subject ~ /\(#[0-9]+\)[ \t]*$/) {
+				line = subject
+				sub(/[ \t]*\(#[0-9]+\)[ \t]*$/, "", line)
+			}
+			if (line != "" && line !~ /^Co-authored/ && line !~ /^Signed-off/) print "• " line
+		}' \
 	| grep -v -i '^• Bump version' \
 	| awk '!seen[$0]++' | head -12)
 if [ -z "$NOTES" ]; then

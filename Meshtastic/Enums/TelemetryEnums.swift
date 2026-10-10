@@ -20,17 +20,17 @@ enum Aqi: Int, CaseIterable, Identifiable {
 	var description: String {
 		switch self {
 		case .good:
-			return "Good".localized
+			return String(localized: "Good", comment: "Aqi.description")
 		case .moderate:
-			return "Moderate".localized
+			return String(localized: "Moderate", comment: "Aqi.description")
 		case .sensitive:
-			return "Unhealthy for Sensitive Groups".localized
+			return String(localized: "Unhealthy for Sensitive Groups", comment: "Aqi.description")
 		case .unhealthy:
-			return "Unhealthy".localized
+			return String(localized: "Unhealthy", comment: "Aqi.description")
 		case .veryUnhealthy:
-			return "Very Unhealthy".localized
+			return String(localized: "Very Unhealthy", comment: "Aqi.description")
 		case .hazardous:
-			return "Hazardous".localized
+			return String(localized: "Hazardous", comment: "Aqi.description")
 		}
 	}
 	var color: Color {

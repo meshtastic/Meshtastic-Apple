@@ -1,0 +1,352 @@
+//
+//  MetadataConfigForm.swift
+//  Meshtastic
+//
+//  Copyright(c) Garth Vander Houwen 9/18/26.
+//
+import OSLog
+import SwiftUI
+import MeshtasticProtobufs
+
+/// A configuration screen driven by the schema.
+///
+/// Holds the whole message as state, lays it out from the screen's overlay, and reads
+/// every label, description and unit from the registry. It keeps the contract the
+/// hand-written screens share - `ConfigHeader` loads the values, the form is disabled
+/// without a radio or a stored config, `SaveConfigButton` appears only with changes,
+/// `performConfigSave` sends and dismisses, `requestRemoteConfig` asks a remote node -
+/// with two differences worth knowing. Changes are tracked by comparing the message to
+/// what was loaded, so reverting an edit makes the Save button disappear again; and a
+/// failed save shows an alert instead of only logging.
+struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: View {
+	@Environment(\.modelContext) private var context
+	@EnvironmentObject private var accessoryManager: AccessoryManager
+	@Environment(\.dismiss) private var goBack
+
+	let node: NodeInfoEntity?
+	/// The `ConfigHeader` title, e.g. "Serial".
+	let title: String
+	let overlay: ConfigFormOverlay<M>
+	/// Load-time migrations the old screen's `setXValues()` did: an interval floor, a
+	/// retired enum value mapped forward. Applied to the in-memory copy, never the entity.
+	var normalize: (M) -> M = { $0 }
+	/// Runs after every edit, for one field's change to adjust another.
+	var reconcile: ((inout M, ConfigFormEnvironment) -> Void)?
+	/// Gate on the Save button beyond "something changed".
+	var canSave: (M) -> Bool = { _ in true }
+	/// Replaces the default "the node will reboot" confirmation.
+	var confirmationMessage: String?
+	/// A change the message does not hold - text sent in a separate admin message, say -
+	/// so the Save button appears for it too.
+	var externalChanges = false
+	let request: (UserEntity, UserEntity) async throws -> Void
+	let save: (M, UserEntity, UserEntity) async throws -> Void
+	/// Bespoke content above the sections: warnings, a placement summary, a control
+	/// that edits several fields at once.
+	@ViewBuilder let leading: (Binding<M>) -> Leading
+	/// Bespoke content below them: reset buttons, app-local toggles, anything the
+	/// schema does not hold.
+	@ViewBuilder let trailing: (Binding<M>) -> Trailing
+
+	@State private var config = M()
+	@State private var original = M()
+	@State private var loaded = false
+	@State private var saveError: String?
+	/// The message as it was when Save was tapped. The form is locked while this is
+	/// set, and on success it - not whatever `config` holds by then - becomes the
+	/// new baseline, so nothing typed mid-flight is ever marked as saved.
+	@State private var inFlight: M?
+	/// The row a search result asked for, marked briefly so the eye lands on it.
+	@State private var highlightedRow: String?
+	@Environment(\.settingsFieldFocus) private var settingsFieldFocus
+
+	init(
+		node: NodeInfoEntity?,
+		title: String,
+		overlay: ConfigFormOverlay<M>,
+		normalize: @escaping (M) -> M = { $0 },
+		reconcile: ((inout M, ConfigFormEnvironment) -> Void)? = nil,
+		canSave: @escaping (M) -> Bool = { _ in true },
+		confirmationMessage: String? = nil,
+		externalChanges: Bool = false,
+		request: @escaping (UserEntity, UserEntity) async throws -> Void,
+		save: @escaping (M, UserEntity, UserEntity) async throws -> Void,
+		@ViewBuilder leading: @escaping (Binding<M>) -> Leading,
+		@ViewBuilder trailing: @escaping (Binding<M>) -> Trailing
+	) {
+		self.node = node
+		self.title = title
+		self.overlay = overlay
+		self.normalize = normalize
+		self.reconcile = reconcile
+		self.canSave = canSave
+		self.confirmationMessage = confirmationMessage
+		self.externalChanges = externalChanges
+		self.request = request
+		self.save = save
+		self.leading = leading
+		self.trailing = trailing
+	}
+
+	/// `SaveConfigButton` and `performConfigSave` want a binding. Setting it false is
+	/// how a successful save resets the baseline.
+	private var hasChanges: Binding<Bool> {
+		Binding(
+			get: { loaded && (config != original || externalChanges) },
+			set: { changed in
+				guard !changed else { return }
+				original = inFlight ?? config
+				inFlight = nil
+			}
+		)
+	}
+
+	/// Whether the controls accept input. Without a radio, or before its config has
+	/// arrived, the screen still renders what it knows and can be read and scrolled -
+	/// only the controls are inert. Disabling the `Form` itself would take the scroll
+	/// gesture with it and leave the screen unreadable below the fold.
+	private var isEditable: Bool {
+		accessoryManager.isConnected && node?[keyPath: M.entityKeyPath] != nil && inFlight == nil
+	}
+
+	private var environment: ConfigFormEnvironment {
+		let isConnectedNode = node != nil && node?.num == accessoryManager.activeDeviceNum
+		return ConfigFormEnvironment(
+			node: node,
+			isConnected: accessoryManager.isConnected,
+			isConnectedNode: isConnectedNode,
+			isDIYHardware: DIYHardware.isDIY(slug: node?.user?.hwModel),
+			hasWifi: node?.metadata?.hasWifi ?? false,
+			hasEthernet: node?.metadata?.hasEthernet ?? false,
+			hasXeddsa: node?.metadata?.hasXeddsa ?? false,
+			// The connected radio answers for itself, because its live version is fresher
+			// than anything stored. A remote admin target answers from its own metadata:
+			// asking the gateway would gate the wrong radio's fields.
+			firmwareAtLeast: { version in
+				isConnectedNode
+					? accessoryManager.checkIsVersionSupported(forVersion: version)
+					: node?.firmwareAtLeast(version) ?? true
+			},
+			isFirmwareKnown: isConnectedNode ? accessoryManager.isConnected : node?.knownFirmwareVersion != nil
+		)
+	}
+
+	var body: some View {
+		let env = environment
+		ScrollViewReader { proxy in
+		Form {
+			ConfigHeader(title: title, config: M.entityKeyPath, node: node, onAppear: load)
+			leading($config)
+				.disabled(!isEditable)
+			ForEach(overlay.sections) { section in
+				if section.shownWhen?.evaluate(config, env) ?? true {
+					let visible = section.fields.filter { isVisible($0, env) }
+					if !visible.isEmpty {
+						Section {
+							ForEach(visible) { field in
+								ConfigFormFieldRow(field: field, config: $config, environment: env)
+									.id(field.id)
+									.listRowBackground(highlightedRow == field.id ? Color.accentColor.opacity(0.15) : nil)
+									.disabled(!isEditable || !(field.enabledWhen?.evaluate(config, env) ?? true))
+							}
+						} header: {
+							if let title = section.title { Text(title) }
+						} footer: {
+							if let footer = section.footer { Text(footer) }
+						}
+						.disabled(!(section.enabledWhen?.evaluate(config, env) ?? true))
+					}
+				}
+			}
+			trailing($config)
+				.disabled(!isEditable)
+		}
+		.scrollDismissesKeyboard(.immediately)
+		.safeAreaInset(edge: .bottom, alignment: .center) {
+			HStack(spacing: 0) {
+				if let confirmationMessage {
+					SaveConfigButton(node: node, hasChanges: hasChanges, confirmationMessage: confirmationMessage) { performSave() }
+						.disabled(!canSave(config) || inFlight != nil)
+				} else {
+					SaveConfigButton(node: node, hasChanges: hasChanges) { performSave() }
+						.disabled(!canSave(config) || inFlight != nil)
+				}
+			}
+		}
+		.alert(String(localized: "Save failed", comment: "Config save error title"),
+			   isPresented: Binding(get: { saveError != nil }, set: { if !$0 { saveError = nil } })) {
+			Button(String(localized: "OK", comment: "Dismiss")) { saveError = nil }
+		} message: {
+			Text(saveError ?? "")
+		}
+		.toolbar {
+			ToolbarItem(placement: .topBarTrailing) {
+				ConnectedDevice(deviceConnected: accessoryManager.isConnected,
+								name: accessoryManager.activeConnection?.device.shortName ?? "?")
+			}
+		}
+		.onFirstAppear {
+			requestRemoteConfig(node: node, context: context, accessoryManager: accessoryManager,
+								configIsNil: { $0[keyPath: M.entityKeyPath] == nil }, request: request)
+		}
+		.onChange(of: config) { _, _ in
+			guard let reconcile else { return }
+			var adjusted = config
+			reconcile(&adjusted, env)
+			if adjusted != config { config = adjusted }
+		}
+		// A view-bound task, so leaving the screen mid-scroll cancels it rather than
+		// letting it move a form the reader has already navigated away from.
+		.task { await focusSearchedControl(using: proxy) }
+		}
+	}
+
+	/// A search result names one control, so scroll to it and mark it rather than leaving
+	/// the reader to pick it out of rows that all look alike.
+	@MainActor
+	/// What to do about a focus request, given what the screen knows so far.
+	enum FocusReadiness: Equatable {
+		/// The rows on screen are the ones to scroll to.
+		case resolveNow
+		/// A stored config is still on its way; which rows exist depends on it.
+		case waitForValues
+		/// It never came. Leave the request alone so the next appearance can honour it,
+		/// rather than scrolling to a row the arriving values may remove.
+		case leaveForLater
+	}
+
+	static func readiness(hasStoredConfig: Bool, loaded: Bool, waitedOut: Bool) -> FocusReadiness {
+		// Nothing stored means nothing will arrive: the empty message is what the form
+		// is showing, so its rows are the right ones to scroll to.
+		if !hasStoredConfig || loaded { return .resolveNow }
+		return waitedOut ? .leaveForLater : .waitForValues
+	}
+
+	private func focusSearchedControl(using proxy: ScrollViewProxy) async {
+		guard let target = settingsFieldFocus.target else { return }
+		// Only take a request this screen can answer. Another screen's field must be
+		// left for the screen that owns it, even though both are on the same stack.
+		guard overlay.rowID(for: target) != nil else { return }
+
+		// Which rows exist depends on the radio's values: MQTT drops the credential
+		// rows on the public server, NeighborInfo hides its interval while the module
+		// is off. Deciding before they arrive picks a row that is about to disappear.
+		let hasStoredConfig = node?[keyPath: M.entityKeyPath] != nil
+		var waited = 0
+		while Self.readiness(hasStoredConfig: hasStoredConfig, loaded: loaded, waitedOut: waited >= 14) == .waitForValues {
+			do { try await Task.sleep(for: .milliseconds(150)) } catch { return }
+			waited += 1
+		}
+		// Untaken, so a later appearance of this screen can still honour it.
+		guard Self.readiness(hasStoredConfig: hasStoredConfig, loaded: loaded, waitedOut: true) == .resolveNow else { return }
+		settingsFieldFocus.clear()
+
+		// Then let the list lay the rows out; it has not measured anything below the
+		// fold yet, and a scroll asked for now lands short of a distant row.
+		do { try await Task.sleep(for: .milliseconds(300)) } catch { return }
+		guard let row = overlay.focusRowID(for: target, in: config, environment) else { return }
+		do {
+			withAnimation { proxy.scrollTo(row, anchor: .center) }
+			// That scroll creates the rows it passed over; ask again now they have a
+			// measured height so the target lands where it belongs.
+			try await Task.sleep(for: .milliseconds(150))
+			withAnimation { proxy.scrollTo(row, anchor: .center) }
+			highlightedRow = row
+			try await Task.sleep(for: .seconds(2))
+			withAnimation { highlightedRow = nil }
+		} catch {
+			// Cancelled by leaving the screen; the mark goes with it.
+			highlightedRow = nil
+		}
+	}
+
+	/// The overlay's condition, then the schema's own hiding rules: a DIY-only field on
+	/// hardware not tagged DIY, and a field the connected firmware does not read.
+	private func isVisible(_ field: ConfigFormField<M>, _ env: ConfigFormEnvironment) -> Bool {
+		overlay.isVisible(field, in: config, env)
+	}
+
+	private func load() {
+		guard let entity = node?[keyPath: M.entityKeyPath] else { return }
+		let message = normalize(M(entity: entity))
+		config = message
+		original = message
+		loaded = true
+	}
+
+	private func performSave() {
+		let sent = config
+		inFlight = sent
+		performConfigSave(node: node, context: context, accessoryManager: accessoryManager,
+						  hasChanges: hasChanges, dismiss: goBack,
+						  onError: { message in
+							  saveError = message
+							  inFlight = nil
+						  }) { fromUser, toUser in
+			try await save(sent, fromUser, toUser)
+		}
+	}
+}
+// Swift will not default a generic view-builder parameter, so the common shapes -
+// no bespoke content, or only one side of it - get their own initialisers.
+extension MetadataConfigForm where Leading == EmptyView, Trailing == EmptyView {
+	init(
+		node: NodeInfoEntity?, title: String, overlay: ConfigFormOverlay<M>,
+		normalize: @escaping (M) -> M = { $0 },
+		reconcile: ((inout M, ConfigFormEnvironment) -> Void)? = nil,
+		canSave: @escaping (M) -> Bool = { _ in true },
+		confirmationMessage: String? = nil,
+		externalChanges: Bool = false,
+		request: @escaping (UserEntity, UserEntity) async throws -> Void,
+		save: @escaping (M, UserEntity, UserEntity) async throws -> Void
+	) {
+		self.init(
+			node: node, title: title, overlay: overlay, normalize: normalize, reconcile: reconcile,
+			canSave: canSave, confirmationMessage: confirmationMessage, externalChanges: externalChanges,
+			request: request, save: save,
+			leading: { _ in EmptyView() }, trailing: { _ in EmptyView() }
+		)
+	}
+}
+
+extension MetadataConfigForm where Trailing == EmptyView {
+	init(
+		node: NodeInfoEntity?, title: String, overlay: ConfigFormOverlay<M>,
+		normalize: @escaping (M) -> M = { $0 },
+		reconcile: ((inout M, ConfigFormEnvironment) -> Void)? = nil,
+		canSave: @escaping (M) -> Bool = { _ in true },
+		confirmationMessage: String? = nil,
+		externalChanges: Bool = false,
+		request: @escaping (UserEntity, UserEntity) async throws -> Void,
+		save: @escaping (M, UserEntity, UserEntity) async throws -> Void,
+		@ViewBuilder leading: @escaping (Binding<M>) -> Leading
+	) {
+		self.init(
+			node: node, title: title, overlay: overlay, normalize: normalize, reconcile: reconcile,
+			canSave: canSave, confirmationMessage: confirmationMessage, externalChanges: externalChanges,
+			request: request, save: save,
+			leading: leading, trailing: { _ in EmptyView() }
+		)
+	}
+}
+
+extension MetadataConfigForm where Leading == EmptyView {
+	init(
+		node: NodeInfoEntity?, title: String, overlay: ConfigFormOverlay<M>,
+		normalize: @escaping (M) -> M = { $0 },
+		reconcile: ((inout M, ConfigFormEnvironment) -> Void)? = nil,
+		canSave: @escaping (M) -> Bool = { _ in true },
+		confirmationMessage: String? = nil,
+		externalChanges: Bool = false,
+		request: @escaping (UserEntity, UserEntity) async throws -> Void,
+		save: @escaping (M, UserEntity, UserEntity) async throws -> Void,
+		@ViewBuilder trailing: @escaping (Binding<M>) -> Trailing
+	) {
+		self.init(
+			node: node, title: title, overlay: overlay, normalize: normalize, reconcile: reconcile,
+			canSave: canSave, confirmationMessage: confirmationMessage, externalChanges: externalChanges,
+			request: request, save: save,
+			leading: { _ in EmptyView() }, trailing: trailing
+		)
+	}
+}

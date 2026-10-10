@@ -19,7 +19,9 @@ struct EventFirmwareInfoView: View {
 	@Environment(\.dismiss) private var dismiss
 	@AppStorage("useEventTheme") private var useEventTheme: Bool = true
 
-	private var accent: Color { info.accentColorValue ?? .accentColor }
+	/// The header fill. The fallback is the cobalt fill accent, because `headerForeground` puts white
+	/// text on it when the edition carries no color of its own.
+	private var accent: Color { info.accentColorValue ?? .accentFill }
 	private var displayName: String { info.displayName ?? edition.name }
 	private var highlight: Color {
 		info.accessibleTintHex(for: colorScheme)

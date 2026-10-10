@@ -205,6 +205,14 @@ public enum Language: SwiftProtobuf.Enum, Swift.CaseIterable {
   case danish // = 19
 
   ///
+  /// Hungarian
+  case hungarian // = 20
+
+  ///
+  /// Azerbaijani
+  case azerbaijani // = 21
+
+  ///
   /// Simplified Chinese (experimental)
   case simplifiedChinese // = 30
 
@@ -239,6 +247,8 @@ public enum Language: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 17: self = .bulgarian
     case 18: self = .czech
     case 19: self = .danish
+    case 20: self = .hungarian
+    case 21: self = .azerbaijani
     case 30: self = .simplifiedChinese
     case 31: self = .traditionalChinese
     default: self = .UNRECOGNIZED(rawValue)
@@ -267,6 +277,8 @@ public enum Language: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .bulgarian: return 17
     case .czech: return 18
     case .danish: return 19
+    case .hungarian: return 20
+    case .azerbaijani: return 21
     case .simplifiedChinese: return 30
     case .traditionalChinese: return 31
     case .UNRECOGNIZED(let i): return i
@@ -295,6 +307,8 @@ public enum Language: SwiftProtobuf.Enum, Swift.CaseIterable {
     .bulgarian,
     .czech,
     .danish,
+    .hungarian,
+    .azerbaijani,
     .simplifiedChinese,
     .traditionalChinese,
   ]
@@ -671,7 +685,7 @@ extension Theme: SwiftProtobuf._ProtoNameProviding {
 }
 
 extension Language: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0ENGLISH\0\u{1}FRENCH\0\u{1}GERMAN\0\u{1}ITALIAN\0\u{1}PORTUGUESE\0\u{1}SPANISH\0\u{1}SWEDISH\0\u{1}FINNISH\0\u{1}POLISH\0\u{1}TURKISH\0\u{1}SERBIAN\0\u{1}RUSSIAN\0\u{1}DUTCH\0\u{1}GREEK\0\u{1}NORWEGIAN\0\u{1}SLOVENIAN\0\u{1}UKRAINIAN\0\u{1}BULGARIAN\0\u{1}CZECH\0\u{1}DANISH\0\u{2}\u{b}SIMPLIFIED_CHINESE\0\u{1}TRADITIONAL_CHINESE\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0ENGLISH\0\u{1}FRENCH\0\u{1}GERMAN\0\u{1}ITALIAN\0\u{1}PORTUGUESE\0\u{1}SPANISH\0\u{1}SWEDISH\0\u{1}FINNISH\0\u{1}POLISH\0\u{1}TURKISH\0\u{1}SERBIAN\0\u{1}RUSSIAN\0\u{1}DUTCH\0\u{1}GREEK\0\u{1}NORWEGIAN\0\u{1}SLOVENIAN\0\u{1}UKRAINIAN\0\u{1}BULGARIAN\0\u{1}CZECH\0\u{1}DANISH\0\u{1}HUNGARIAN\0\u{1}AZERBAIJANI\0\u{2}\u{9}SIMPLIFIED_CHINESE\0\u{1}TRADITIONAL_CHINESE\0")
 }
 
 extension DeviceUIConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {

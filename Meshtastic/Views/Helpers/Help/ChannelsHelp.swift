@@ -16,7 +16,7 @@ struct ChannelsHelp: View {
 				Section {
 					HelpItem(
 						symbol: AnyView(
-							CircleText(text: String(0), color: .accentColor)
+							CircleText(text: String(0), color: .accentFill)
 								.brightness(0.2)
 						),
 						title: String(localized: "Primary Channel"),

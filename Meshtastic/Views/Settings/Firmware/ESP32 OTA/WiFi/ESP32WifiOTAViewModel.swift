@@ -44,6 +44,14 @@ class ESP32WifiOTAViewModel: ObservableObject {
 		self.otaState = .idle
 	}
 
+	/// End the update before any bytes are sent, and say why. The sheet shows
+	/// `statusMessage`, so the reason has to land there and not only in the log.
+	func reportFailure(_ message: String) {
+		errorMessage = message
+		statusMessage = message
+		otaState = .error
+	}
+
 	func handleDeviceNotice(_ message: String) {
 		guard otaState != .completed, otaState != .error else { return }
 		lastDeviceNotice = message
@@ -64,6 +72,16 @@ class ESP32WifiOTAViewModel: ObservableObject {
 	
 	func startUpdate(host: String? = nil, firmwareUrl: URL, password: String? = nil) async {
 		guard otaState == .idle || otaState == .error else { return }
+
+		// A hostname here would be resolved again. Every node answers Meshtastic.local,
+		// and the loader does not answer mDNS, so only an IPv4 literal is dialed.
+		if let manualHost = host,
+		   !manualHost.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+		   WifiOTAHandoffAddress.ipv4Literal(manualHost) == nil {
+			Logger.services.error("[ESP OTA] \(OTAError.missingIPv4Address, privacy: .public)")
+			reportFailure(OTAError.missingIPv4Address)
+			return
+		}
 		
 		UIApplication.shared.isIdleTimerDisabled = true
 		defer {
@@ -88,8 +106,9 @@ class ESP32WifiOTAViewModel: ObservableObject {
 			let targetEndpoint: NWEndpoint
 			
 			// 1. Discovery / Connection Phase
-			if let manualHost = host, !manualHost.isEmpty {
-				Logger.services.info("[ESP OTA] Using manual host: \(manualHost)")
+			if let manualHost = WifiOTAHandoffAddress.ipv4Literal(host) {
+				// The address was taken from the live socket before the reboot. Dial it as written.
+				Logger.services.info("[ESP OTA] Using manual host: \(manualHost, privacy: .private)")
 				targetEndpoint = NWEndpoint.hostPort(host: NWEndpoint.Host(manualHost), port: port)
 				
 				statusMessage = "Waiting for device..."
@@ -441,12 +460,38 @@ actor AsyncLineReader {
 	}
 }
 
+/// Which address to dial on port 3232 after the radio reboots into the loader.
+///
+/// An IPv4 literal is used as given (the debug Device IP field). Otherwise the
+/// address is the peer of the socket that is already connected. A hostname is
+/// never returned: looking up Meshtastic.local again can reach a different radio,
+/// and the loader does not answer that name.
+enum WifiOTAHandoffAddress {
+	static func resolve(providedHost: String?, connectedPeerIPv4: String?) -> String? {
+		if let literal = ipv4Literal(providedHost) {
+			return literal
+		}
+		return ipv4Literal(connectedPeerIPv4)
+	}
+
+	static func ipv4Literal(_ host: String?) -> String? {
+		guard let host else { return nil }
+		let trimmed = host.trimmingCharacters(in: .whitespacesAndNewlines)
+		guard !trimmed.isEmpty, Network.IPv4Address(trimmed) != nil else { return nil }
+		return trimmed
+	}
+}
+
 // MARK: - Extensions & Errors
 enum OTAError: Error, LocalizedError {
+	/// Shown when the handoff has no IPv4 address to dial. Not a hostname fallback.
+	static let missingIPv4Address = "This connection has no IPv4 address. Wi-Fi update dials that address after the radio reboots, so the update was not started."
+
 	case connectionFailed
 	case unexpectedResponse(String)
 	case discoveryFailed
 	case timeout
+	case notAnIPv4Address
 	
 	var errorDescription: String? {
 		switch self {
@@ -454,6 +499,7 @@ enum OTAError: Error, LocalizedError {
 		case .connectionFailed: return "Failed to establish connection."
 		case .discoveryFailed: return "Could not discover ESP32."
 		case .unexpectedResponse(let r): return "Error from device: \(r)"
+		case .notAnIPv4Address: return Self.missingIPv4Address
 		}
 	}
 }

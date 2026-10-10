@@ -206,7 +206,11 @@ extension AccessoryManager {
 		}
 	}
 
-	public func addContactFromURL(base64UrlString: String) async throws {
+	/// - Parameter acceptsKeyReplacement: Only true when the add-contact sheet showed that this
+	///   contact's key differs from the one the node holds and the person confirmed replacing it.
+	///   The radio applies the new key either way, so without this the app would keep the old one
+	///   and show a key mismatch for a change the person asked for.
+	public func addContactFromURL(base64UrlString: String, acceptsKeyReplacement: Bool = false) async throws {
 		guard let deviceNum = self.activeConnection?.device.num else {
 			Logger.services.error("Error while sending CannedMessageModule request.  No active device.")
 			throw AccessoryError.ioFailed("No active device")
@@ -273,7 +277,8 @@ extension AccessoryManager {
 				// Update local database with the new node info
 				// Do not auto-favorite when using CLIENT_BASE role to avoid creating routing issues
 				let shouldFavorite = connectedDeviceRole != .clientBase
-				await MeshPackets.shared.upsertNodeInfoPacket(packet: nodeMeshPacket, favorite: shouldFavorite, overTheMesh: false)
+				await MeshPackets.shared.upsertNodeInfoPacket(packet: nodeMeshPacket, favorite: shouldFavorite, overTheMesh: false,
+				                                             acceptsKeyReplacement: acceptsKeyReplacement)
 			}
 		} catch {
 			// The contact decoded fine and carries a key; this is the radio send failing.
@@ -514,6 +519,10 @@ extension AccessoryManager {
 						// the List's collection-view diff (the 2.7.19 SIGABRT batch-update crash).
 						try context.save()
 						Logger.data.info("💾 Saved a new sent message from \(self.activeDeviceNum?.toHex() ?? "0", privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
+						// Each open conversation keeps its own fetched snapshot. The
+						// window that sent already reloads; the others only hear
+						// about a save through this notification.
+						NotificationCenter.default.post(name: .meshMessagesDidChange, object: nil)
 						Task {
 							let logString = String.localizedStringWithFormat("Sent message %@ from %@ to %@".localized, String(newMessage.messageId), fromUserNum.toHex(), toUserNum.toHex())
 							try await send(toRadio, debugDescription: logString)
@@ -540,6 +549,101 @@ extension AccessoryManager {
 				throw error
 			}
 
+	}
+
+	/// Sends a message that already exists again, keeping its row.
+	///
+	/// Retry used to delete the message and call `sendMessage`, which builds a new entity with a
+	/// new id and a new timestamp. The row vanished from the conversation and a different one
+	/// appeared at the bottom a moment later, and if the send threw — no active device, users not
+	/// found — the original was already gone and nothing replaced it, so the text was lost.
+	///
+	/// Reusing the entity keeps the message where it is, keeps replies pointing at it, and means
+	/// a failed retry leaves the message exactly as it was. The delivery state is reset first so
+	/// the row shows "Sending…" again: `messageTimestamp` has to move with it, because the status
+	/// is derived from how long ago the message was sent.
+	public func resendMessage(_ message: MessageEntity) async throws {
+		guard let fromUserNum = self.activeConnection?.device.num else {
+			Logger.services.error("Error while resending a message. No active device.")
+			throw AccessoryError.ioFailed("No active device")
+		}
+		// Not a silent return the way the first send treats an empty draft: there is no draft
+		// here, just a stored message with nothing in it. Returning would tell the caller the
+		// resend succeeded, and the channel path would report the message as sent.
+		guard let payload = message.messagePayload, !payload.isEmpty else {
+			Logger.mesh.error("🚫 Cannot resend \(message.messageId, privacy: .public); it has no payload")
+			throw AccessoryError.ioFailed("Cannot resend a message with no payload")
+		}
+
+		let toUserNum = message.toUser?.num ?? 0
+		let messageId = message.messageId
+
+		// Kept so the row can go back to failed if the transmit never leaves: otherwise the
+		// message sits in "Sending…" with no retry action until the ack timeout turns it into
+		// "Not delivered", which is five minutes of looking like it is still on its way.
+		let previousAckError = message.ackError
+		let previousTimestamp = message.messageTimestamp
+
+		// The row goes back to "Sending…" and stays in place. Saved before the transmit for the
+		// same reason the first send is: the mesh echoes the packet back within seconds and the
+		// ingest actor's duplicate guard reads the store, so a transmit that beats the save can
+		// re-insert the echo under this same id.
+		message.markResending()
+		do {
+			try context.save()
+		} catch {
+			Logger.data.error("💥 Could not reset \(messageId, privacy: .public) before resending: \(error.localizedDescription, privacy: .public)")
+			throw error
+		}
+
+		var messageQuotesReplaced = payload.replacingOccurrences(of: "’", with: "'")
+		messageQuotesReplaced = messageQuotesReplaced.replacingOccurrences(of: "”", with: "\"")
+		guard let payloadData = messageQuotesReplaced.data(using: .utf8) else {
+			throw AccessoryError.ioFailed("Could not encode the message payload")
+		}
+
+		var dataMessage = DataMessage()
+		dataMessage.payload = payloadData
+		dataMessage.portnum = PortNum.textMessageApp
+		dataMessage.emoji = message.isEmoji ? 1 : 0
+		if message.replyID > 0 {
+			dataMessage.replyID = UInt32(message.replyID)
+		}
+
+		var meshPacket = MeshPacket()
+		// The same id as the first attempt, which is what keeps this one message rather than two.
+		meshPacket.id = UInt32(messageId)
+		meshPacket.from = UInt32(fromUserNum)
+		if toUserNum > 0 {
+			meshPacket.to = UInt32(toUserNum)
+			let hopsAway = message.toUser?.userNode?.hopsAway ?? 0
+			if hopsAway > Int32(truncatingIfNeeded: message.fromUser?.userNode?.loRaConfig?.hopLimit ?? 0) {
+				meshPacket.hopLimit = UInt32(truncatingIfNeeded: hopsAway)
+			}
+			if message.toUser?.pkiEncrypted ?? false {
+				meshPacket.pkiEncrypted = true
+				meshPacket.publicKey = message.toUser?.publicKey ?? Data()
+			}
+		} else {
+			meshPacket.to = Constants.maximumNodeNum
+		}
+		meshPacket.channel = UInt32(message.channel)
+		meshPacket.decoded = dataMessage
+		meshPacket.wantAck = true
+
+		var toRadio = ToRadio()
+		toRadio.packet = meshPacket
+		let logString = String.localizedStringWithFormat(
+			"Resent message %@ from %@ to %@".localized, String(messageId), fromUserNum.toHex(), toUserNum.toHex())
+		do {
+			try await send(toRadio, debugDescription: logString)
+		} catch {
+			message.markResendFailed(ackError: previousAckError, timestamp: previousTimestamp)
+			try? context.save()
+			Logger.mesh.error("💥 Could not resend \(messageId, privacy: .public): \(error.localizedDescription, privacy: .public)")
+			throw error
+		}
+		Logger.mesh.info("💬 \(logString, privacy: .public)")
 	}
 
 	public func setFavoriteNode(node: NodeInfoEntity, connectedNodeNum: Int64) async throws {
@@ -878,7 +982,12 @@ extension AccessoryManager {
 		}
 	}
 
-	public func saveChannel(channel: Channel, fromUser: UserEntity, toUser: UserEntity) async throws -> Int64 {
+	public func saveChannel(
+		channel: Channel,
+		fromUser: UserEntity,
+		toUser: UserEntity,
+		refreshShareSnapshot: Bool = false
+	) async throws -> Int64 {
 		var adminPacket = AdminMessage()
 		adminPacket.setChannel = channel
 		var meshPacket: MeshPacket = MeshPacket()
@@ -897,6 +1006,12 @@ extension AccessoryManager {
 
 		let messageDescription = "🛟 Saved Channel \(channel.index) for \(toUser.longName ?? "Unknown".localized)"
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
+		if refreshShareSnapshot,
+		   let activeDeviceNum,
+		   fromUser.num == activeDeviceNum,
+		   toUser.num == activeDeviceNum {
+			MeshShareSnapshotBuilder.refresh(nodeNum: activeDeviceNum, context: context)
+		}
 		return Int64(meshPacket.id)
 	}
 
@@ -949,6 +1064,7 @@ extension AccessoryManager {
 			lora.frequencyOffset = existing.frequencyOffset
 			lora.overrideFrequency = existing.overrideFrequency
 			lora.overrideDutyCycle = existing.overrideDutyCycle
+			lora.paFanDisabled = existing.paFanDisabled
 			lora.sx126XRxBoostedGain = existing.sx126xRxBoostedGain
 			lora.ignoreMqtt = existing.ignoreMqtt
 			lora.configOkToMqtt = existing.okToMqtt
@@ -962,6 +1078,7 @@ extension AccessoryManager {
 		lora.channelNum = 0
 		do {
 			_ = try await saveLoRaConfig(config: lora, fromUser: user, toUser: user)
+			refreshNodeDatabaseAfterLoRaChange()
 		} catch {
 			// Roll the primary channel back so we don't strand the radio between meshes. The channel
 			// write doesn't reboot, so this restore is safe.

@@ -1148,7 +1148,7 @@ struct ClusterBadge: View {
 			.padding(8)
 			.frame(minWidth: 34, minHeight: 34)
 			.background(
-				Circle().fill(Color.accentColor)
+				Circle().fill(Color.accentFill)
 					.overlay(Circle().stroke(.white.opacity(0.9), lineWidth: 2))
 			)
 			.shadow(color: .black.opacity(0.25), radius: 2, y: 1)

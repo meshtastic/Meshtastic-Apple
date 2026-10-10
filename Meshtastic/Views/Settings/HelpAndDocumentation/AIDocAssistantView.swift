@@ -202,7 +202,7 @@ struct AIDocAssistantView: View {
 					Text(message.text)
 						.padding(.horizontal, 14)
 						.padding(.vertical, 10)
-						.background(Color.accentColor)
+						.background(Color.accentFill)
 						.foregroundStyle(.white)
 						.clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
 						.textSelection(.enabled)

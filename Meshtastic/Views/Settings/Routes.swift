@@ -14,6 +14,7 @@ struct Routes: View {
 
 	@State private var columnVisibility = NavigationSplitViewVisibility.doubleColumn
 	@Environment(\.modelContext) private var context
+	@Environment(\.horizontalSizeClass) private var horizontalSizeClass
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State private var selectedRoute: RouteEntity?
 	@State private var importing = false
@@ -283,7 +284,7 @@ struct Routes: View {
 								.stroke(Color(UIColor(hex: UInt32(selectedRoute?.color ?? 0))), style: solid)
 						}
 						.frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
-						.safeAreaInset(edge: .bottom, alignment: UIDevice.current.userInterfaceIdiom == .phone ? .leading : .trailing) {
+						.safeAreaInset(edge: .bottom, alignment: horizontalSizeClass == .regular ? .trailing : .leading) {
 							Button {
 								exportString = routeToCsvFile(locations: selectedRoute?.locations ?? [])
 								isExporting = true

@@ -205,8 +205,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// unmount those views first. Mirrors the node-switch flow in `backupCurrentAndRestoreDatabase`
 	/// (Views/Connect/Connect.swift).
 	func resetDatabaseAfterClear() async {
-		// `appState` (and its `router`) are wired up at launch and are required for the safety
-		// guarantee here. Bail loudly rather than recreating the container without first popping the
+		// `appState` is wired up at launch and is required for the safety guarantee
+		// here. Bail loudly rather than recreating the container without first popping the
 		// detail views: a half-done reset (container torn down, views still mounted) would
 		// reintroduce the exact ModelContext.reset crash this method exists to prevent. The data was
 		// already cleared by the preceding `clearDatabase`, so skipping the container swap is the
@@ -215,11 +215,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			Logger.data.error("💾 [Database] resetDatabaseAfterClear skipped: appState is nil — cannot pop views before recreating the container")
 			return
 		}
-		let router = appState.router
-		router.popToRoot(tab: .messages)
-		router.popToRoot(tab: .nodes)
-		router.popToRoot(tab: .map)
-		router.popToRoot(tab: .settings)
+		appState.sceneRouters.popAllStacks()
 		await Task.yield()
 		repointToFreshContainer()
 		appState.databaseResetID = UUID()
@@ -243,6 +239,27 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// against entities that still hold pre-import values: every item would look dropped. See
 	/// `DeviceProfileVerifier`.
 	@Published var lastConfigRefresh: Date?
+	/// When the radio's node database was last saved after a connect. Views that read values the
+	/// dump brings in (the unheard-on-current-LoRa notice) refresh on this, because the connect
+	/// reaches `.subscribed` before that save lands.
+	@Published var nodeDatabaseSavedAt: Date?
+	/// Bumped on each node database request and on disconnect, so a save finishing late for an
+	/// earlier request doesn't report the new one as saved.
+	private var nodeDatabaseSaveGeneration = 0
+	/// Node numbers in the node database download in progress. When it completes, nodes the radio
+	/// left out are marked unknown for heard-on-current-LoRa: the radio no longer has them.
+	var nodeDatabaseDumpNums: Set<Int64> = []
+	var nodeDatabaseDumpInProgress = false
+	/// The LoRa change the node database download in progress was asked for, or nil when it was
+	/// asked for by something else (the connect).
+	private var nodeDatabaseRequestLoRaChange: Int?
+	/// True from an app-initiated LoRa change until the node database asked for after the latest
+	/// one is saved. Until then the radio's heard-on-current-LoRa answers are for older settings,
+	/// so the unheard notice stays hidden rather than offering to remove nodes from them.
+	@Published private(set) var awaitingNodeDatabaseAfterLoRaChange = false
+	private var loraChangeTracker = LoRaChangeNodeDatabaseTracker() {
+		didSet { awaitingNodeDatabaseAfterLoRaChange = loraChangeTracker.isAwaiting }
+	}
 	@Published var isConnecting: Bool = false
 	@Published var isInBackground: Bool = false
 	@Published var firmwareEdition: FirmwareEditions = .vanilla
@@ -555,7 +572,43 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		}
 	}
 
-	func sendWantDatabase() async throws {
+	/// Asks the connected radio for its node database again after its LoRa settings changed.
+	///
+	/// Firmware 2.8 applies a LoRa change without rebooting, so there is no reconnect and no fresh
+	/// node database, and the radio's NodeInfo.heard_on_current_lora answers for the new settings
+	/// never reach the app. The database completion saves the dump and publishes
+	/// `nodeDatabaseSavedAt`, which is what the unheard notice and node rows refresh on.
+	func refreshNodeDatabaseAfterLoRaChange() {
+		guard reportsHeardOnCurrentLora, isConnected else { return }
+		let generation = loraChangeTracker.changed()
+		Task { @MainActor in
+			// Let the radio finish reprogramming the modem before asking.
+			try? await Task.sleep(for: .seconds(2))
+			// One download at a time: the completion doesn't say which request it answers.
+			while self.nodeDatabaseDumpInProgress, self.isConnected {
+				try? await Task.sleep(for: .milliseconds(250))
+			}
+			guard self.isConnected else {
+				self.loraChangeTracker.reset()
+				return
+			}
+			// A newer change is waiting its turn and will ask instead.
+			guard self.loraChangeTracker.request(generation) else { return }
+			do {
+				try await self.sendWantDatabase(forLoRaChange: generation)
+			} catch {
+				Logger.transport.error("[LoRa] Could not refresh the node database after a settings change: \(error.localizedDescription, privacy: .public)")
+				self.loraChangeTracker.finished(generation)
+			}
+		}
+	}
+
+	func sendWantDatabase(forLoRaChange loraChange: Int? = nil) async throws {
+		nodeDatabaseRequestLoRaChange = loraChange
+		nodeDatabaseSaveGeneration += 1
+		nodeDatabaseSavedAt = nil
+		nodeDatabaseDumpNums = []
+		nodeDatabaseDumpInProgress = true
 		if let firstDatabaseNodeInfoContinuation = firstDatabaseNodeInfoContinuation {
 			Logger.transport.info("[Accessory] Existing continuation for firstDatabaseNodeInfo. Cancelling.")
 			self.firstDatabaseNodeInfoContinuation = nil
@@ -602,7 +655,16 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		isClosingConnection = true
 		defer { isClosingConnection = false }
 
+		nodeDatabaseSaveGeneration += 1
+		nodeDatabaseSavedAt = nil
+
 		Logger.transport.debug("[AccessoryManager] received disconnect request")
+
+		// Here rather than in `disconnect()`: an unexpected link loss, a failed connect and a
+		// retry all tear down through this function without going near `disconnect()`, and
+		// leaving the attributes set would report the old radio's version and model against
+		// whatever happens next.
+		Logger.datadog.clearRadioContext()
 
 		let closingNodeNum = activeConnection?.device.num ?? activeDeviceNum
 
@@ -612,6 +674,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		}
 		self.activeDeviceNum = nil
 		self.firmwareUpdateRequired = false
+		// A dropped connection never finishes its download; the reconnect brings a fresh one.
+		loraChangeTracker.reset()
+		nodeDatabaseDumpInProgress = false
+		nodeDatabaseRequestLoRaChange = nil
 		if let refresh = activeAutomaticConfigRefresh {
 			automaticConfigRefreshTask?.cancel()
 			await finishAutomaticConfigRefresh(owner: refresh.owner, error: CancellationError())
@@ -944,7 +1010,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			meshTrafficMonitor.recordInboundPacket()
 			// All received packets get passed through updateAnyPacketFrom to update lastHeard, rxSnr, etc. (like firmware's NodeDB::updateFrom).
 			if let connectedNodeNum = self.activeDeviceNum {
-				await MeshPackets.shared.updateAnyPacketFrom(packet: packet, activeDeviceNum: connectedNodeNum)
+				await MeshPackets.shared.updateAnyPacketFrom(packet: packet, activeDeviceNum: connectedNodeNum,
+				                                             reportsHeardOnCurrentLora: reportsHeardOnCurrentLora)
 			} else {
 				Logger.mesh.error("🕸️ Unable to determine connectedNodeNum for updateAnyPacketFrom. Skipping.")
 			}
@@ -1180,9 +1247,6 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			// Logger.mesh.error("✅ [Accessory] Unknown UNHANDLED confligCompleteID: \(configCompleteID)")
 			// }
 
-			// Stamp the arrival so callers can tell a post-reboot refresh from a stale cache.
-			lastConfigRefresh = Date()
-
 			Logger.transport.info("✅ [Accessory] Notifying completions that have completed for configCompleteID: \(configCompleteID)")
 			switch configCompleteID {
 			case UInt32(NONCE_ONLY_CONFIG):
@@ -1191,8 +1255,11 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					Logger.transport.warning("[Accessory] Ignoring config completion without its active refresh owner")
 					break
 				}
+				// Only an owned config completion proves the cached configuration is fresh.
+				lastConfigRefresh = Date()
 				if let completedNodeNum = refresh.nodeNum {
 					await MeshPackets.shared.commitChannelRefreshStage(for: completedNodeNum, owner: refresh.owner)
+					MeshShareSnapshotBuilder.refresh(nodeNum: completedNodeNum, context: context)
 				}
 				await finishAutomaticConfigRefresh(owner: refresh.owner, error: nil)
 				
@@ -1209,14 +1276,35 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 				// Perform a single batch save after database retrieval completes
 				// This significantly improves performance on reconnect
+				let dumpNums = nodeDatabaseDumpNums
+				let dumpWasRequested = nodeDatabaseDumpInProgress
+				nodeDatabaseDumpInProgress = false
+				let saveGeneration = nodeDatabaseSaveGeneration
+				let loraChange = nodeDatabaseRequestLoRaChange
+				nodeDatabaseRequestLoRaChange = nil
 				Task {
 					// The dump was ingested with deferred saves on the MeshPackets actor
 					// (see handleNodeInfo); flush it so every node from the dump is persisted
 					// now rather than waiting on the debounce timer.
 					await MeshPackets.shared.flushDebouncedSaves()
+					if dumpWasRequested, !dumpNums.isEmpty, reportsHeardOnCurrentLora {
+						await MeshPackets.shared.markAbsentFromRadio(presentNums: dumpNums)
+					}
 					do {
 						try context.save()
+						if let loraChange {
+							loraChangeTracker.finished(loraChange)
+						}
+						if nodeDatabaseSaveGeneration == saveGeneration {
+							nodeDatabaseSavedAt = Date()
+						}
 						Logger.data.info("💾 [Database] Batch saved all node info after database retrieval")
+						if let activeDeviceNum {
+							MeshShareSnapshotBuilder.refresh(
+								nodeNum: activeDeviceNum,
+								context: context
+							)
+						}
 
 						// Push updated node data to the companion Watch app
 						WatchSessionManager.shared.sendNodesToWatch()
@@ -1306,6 +1394,22 @@ extension AccessoryManager {
 	///
 	var supportsTAKv2: Bool {
 		Self.isTAKv2Supported(firmwareVersion: connectedVersion)
+	}
+
+	/// Whether the connected radio reports NodeInfo.heard_on_current_lora (firmware 2.8.1+).
+	var reportsHeardOnCurrentLora: Bool {
+		Self.reportsHeardOnCurrentLora(firmwareVersion: connectedVersion)
+	}
+
+	/// Strict on purpose: unlike `checkIsVersionSupported`, an unknown version is false. Older firmware
+	/// never sends the field, so reading it there would mark every node unheard.
+	nonisolated static func reportsHeardOnCurrentLora(firmwareVersion: String?) -> Bool {
+		guard let firmwareVersion else { return false }
+		let parts = firmwareVersion.split(separator: ".").prefix(3).map { Int($0) }
+		guard parts.count == 3, let major = parts[0], let minor = parts[1], let patch = parts[2] else {
+			return false
+		}
+		return (major, minor, patch) >= (2, 8, 1)
 	}
 
 	static func isTAKv2Supported(firmwareVersion: String?) -> Bool {

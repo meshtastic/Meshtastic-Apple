@@ -325,12 +325,10 @@ extension AccessoryManager {
 		_ = await NodeBackupManager.shared.createBackup(forNode: oldNum, deviceId: deviceId, nodeName: previousName)
 
 		// Detail views bound to the old node have to unmount before its identity changes
-		// underneath them, the same reason the reset path pops first.
-		if let router = appState?.router {
-			router.popToRoot(tab: .messages)
-			router.popToRoot(tab: .nodes)
-			router.popToRoot(tab: .map)
-			router.popToRoot(tab: .settings)
+		// underneath them, the same reason the reset path pops first. Every open
+		// window has its own router; pop them all and leave each window's tab.
+		if let appState {
+			appState.sceneRouters.popAllStacks()
 			await Task.yield()
 		}
 
@@ -376,6 +374,9 @@ extension AccessoryManager {
 			Logger.services.error("NodeInfo packet with a zero nodeNum")
 			return
 		}
+		if nodeDatabaseDumpInProgress {
+			nodeDatabaseDumpNums.insert(Int64(nodeInfo.num))
+		}
 
 		// TODO: nodeInfoPacket's channel: parameter is not used
 		// Defer the save: during the node-DB dump this handler runs once per node, and a
@@ -383,7 +384,8 @@ extension AccessoryManager {
 		// throughput cliff behind slow/hung connects on large meshes. Deferred writes are
 		// flushed by the actor's debounced save (at most every 5s) and finally at
 		// configCompleteID (NONCE_ONLY_DB), which also batch-saves the main context.
-		_ = await MeshPackets.shared.nodeInfoPacket(nodeInfo: nodeInfo, channel: 0, deferSave: true, connectedNodeNum: activeConnection?.device.num)
+		_ = await MeshPackets.shared.nodeInfoPacket(nodeInfo: nodeInfo, channel: 0, deferSave: true, connectedNodeNum: activeConnection?.device.num,
+		                                           reportsHeardOnCurrentLora: reportsHeardOnCurrentLora)
 
 		// Update the connected device's display metadata straight from the protobuf — the
 		// previous code resolved the just-inserted entity on a fresh ModelContext for every
@@ -395,6 +397,7 @@ extension AccessoryManager {
 			updateDevice(deviceId: activeDevice.id, key: \.shortName, value: shortName.isEmpty ? "?" : shortName)
 			updateDevice(deviceId: activeDevice.id, key: \.longName, value: longName.isEmpty ? "Unknown".localized : longName)
 			updateDevice(deviceId: activeDevice.id, key: \.hardwareModel, value: hwModel)
+			Logger.datadog.setRadioContext(.hardwareModel, hwModel)
 
 			if activeDevice.isManualConnection {
 				// We just received a NodeInfo for the currently connected node and this is a
@@ -481,6 +484,7 @@ extension AccessoryManager {
 		Logger.transport.debug("[Version] handleDeviceMetadata returned version: \(metadata.firmwareVersion)")
 
 		updateDevice(key: \.firmwareVersion, value: metadata.firmwareVersion)
+		Logger.datadog.setRadioContext(.firmwareVersion, metadata.firmwareVersion)
 
 		await MeshPackets.shared.deviceMetadataPacket(metadata: metadata, fromNum: deviceNum)
 		Logger.transport.info("✅ [handleDeviceMetadata] deviceMetadataPacket completed for \(deviceNum.toHex(), privacy: .public)")

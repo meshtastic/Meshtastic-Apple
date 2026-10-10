@@ -15,19 +15,17 @@ import SwiftUI
 
 extension Color {
 
-	/// Branded accent — shadows SwiftUI `Color.accentColor`
-	/// Cobalt #2855A8 both modes
-	static var accentColor: Color { Color("Colors/MeshtasticAccent") }
-
-	/// The accent for text and glyphs that sit *on* a surface: the `AccentColor` asset, Cobalt
+	/// Branded accent — shadows SwiftUI `Color.accentColor`. The `AccentColor` asset: Cobalt
 	/// #2855A8 light / Blue 300 #B0BFF0 dark.
 	///
-	/// Separate from `accentColor` because the two roles need opposite things in dark mode.
-	/// `accentColor` is a *fill* drawn under white text — message bubbles, prominent buttons —
-	/// so it has to stay dark. A tinted label is the reverse: cobalt on a dark sheet is about
-	/// 1.7:1, so it needs the palette's light blue. Using one color for both is what made the
-	/// save confirmation unreadable in dark mode.
-	static let accentTint = Color("AccentColor")
+	/// This is the accent for text and glyphs, and it is the app-wide tint, so plain buttons,
+	/// toolbar items, links and tab labels all use it. Cobalt on a dark surface is about 1.8:1,
+	/// so dark mode needs the light blue.
+	static var accentColor: Color { Color("AccentColor") }
+
+	/// The accent as a fill under white text: prominent buttons, message bubbles, badges.
+	/// Cobalt #2855A8 in both modes, because white on Blue 300 is about 1.8:1.
+	static let accentFill = Color("Colors/MeshtasticAccent")
 
 	/// Branded primary text — shadows SwiftUI `Color.primary`
 	/// Neutral 700 #3D3E50 light / Neutral 50 #F5F6FA dark
@@ -56,6 +54,16 @@ extension Color {
 	/// Branded blue — shadows SwiftUI `Color.blue`
 	/// Info #5C6BC0 both modes
 	static let blue = Color("Colors/MeshtasticInfo")
+
+	/// Hardware rung colors, one per rung, shared by the section heading and the item's mark
+	/// (meshtastic/design#160). Declared rather than derived from the accent, which event
+	/// editions re-tint.
+	/// Supported: #137136 light / #67EA94 dark.
+	static let tierSupported = Color("Colors/MeshtasticTierSupported")
+	/// Maker: sky #075985 light / #7DD3FC dark.
+	static let tierMaker = Color("Colors/MeshtasticTierMaker")
+	/// Community: #A16207 light / #E8A33E dark.
+	static let tierCommunity = Color("Colors/MeshtasticTierCommunity")
 
 	/// Message search/jump highlight wash — warning amber #E8A33E with baked
 	/// per-mode alpha (0.20 light / 0.32 dark) so it composites to a warm cream

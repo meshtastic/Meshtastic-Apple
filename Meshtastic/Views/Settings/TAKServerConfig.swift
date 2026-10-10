@@ -129,6 +129,7 @@ struct TAKServerConfig: View {
 		.navigationDestination(isPresented: $showShareChannels) {
 			if let node = connectedNode {
 				ShareChannels(node: node)
+					.trackScreen(SettingsNavigationState.shareQRCode.screenName)
 			}
 		}
 	}
@@ -164,6 +165,7 @@ struct TAKServerConfig: View {
 							.frame(maxWidth: .infinity)
 					}
 					.buttonStyle(.borderedProminent)
+					.tint(.accentFill)
 					.controlSize(.large)
 					.disabled(isFixingChannel)
 

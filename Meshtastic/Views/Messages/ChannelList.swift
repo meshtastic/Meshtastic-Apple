@@ -65,7 +65,7 @@ struct ChannelList: View {
 			}
 			.accessibilityHidden(!hasUnreadMessages)
 			.accessibilityLabel(String(localized: "\(unreadCount) unread", comment: "VoiceOver: number of unread messages in a channel"))
-			CircleText(text: String(channel.index), color: .accentColor)
+			CircleText(text: String(channel.index), color: .accentFill)
 				.brightness(0.2)
 
 			VStack(alignment: .leading) {
@@ -147,7 +147,12 @@ struct ChannelList: View {
 					channel.mute.toggle()
 					Task {
 						do {
-							_ = try await accessoryManager.saveChannel(channel: channel.protoBuf, fromUser: node.user!, toUser: node.user!)
+							_ = try await accessoryManager.saveChannel(
+								channel: channel.protoBuf,
+								fromUser: node.user!,
+								toUser: node.user!,
+								refreshShareSnapshot: true
+							)
 							Task { @MainActor in
 								do {
 									try context.save()
@@ -197,6 +202,7 @@ struct ChannelList: View {
 		}
 		.sheet(isPresented: $showingHelp) {
 			ChannelsHelp()
+				.trackScreen(.channelsHelp)
 				.presentationDetents([.large])
 				#if !targetEnvironment(macCatalyst)
 				.presentationDragIndicator(.visible)

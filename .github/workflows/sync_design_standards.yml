@@ -21,11 +21,25 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Download design standards
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         mkdir -p .standards
-        curl -sSfL \
-          "https://raw.githubusercontent.com/meshtastic/design/master/standards/meshtastic_design_standards_latest.md" \
-          -o .standards/meshtastic_design_standards_latest.md
+        # meshtastic_design_standards_latest.md is a symlink. raw.githubusercontent.com
+        # serves a symlink as its target's filename, returning ~35 bytes with HTTP 200
+        # and no error, so it cannot be used here. The contents API resolves it.
+        gh api \
+          repos/meshtastic/design/contents/standards/meshtastic_design_standards_latest.md \
+          -H "Accept: application/vnd.github.raw" \
+          > .standards/meshtastic_design_standards_latest.md
+
+        # Fail loudly rather than opening a PR that empties the file.
+        SIZE=$(wc -c < .standards/meshtastic_design_standards_latest.md)
+        if [ "$SIZE" -lt 10000 ]; then
+          echo "::error::Design standards fetch returned $SIZE bytes, expected a full document."
+          head -c 200 .standards/meshtastic_design_standards_latest.md
+          exit 1
+        fi
 
     - name: Add auto-generation header
       run: |
@@ -48,7 +62,7 @@ jobs:
           This PR automatically syncs the Meshtastic design standards from the
           [meshtastic/design](https://github.com/meshtastic/design) repository.
 
-          **Source file:** [`standards/meshtastic_design_standards_latest.md`](https://github.com/meshtastic/design/blob/master/standards/meshtastic_design_standards_latest.md)
+          **Source:** [`standards/`](https://github.com/meshtastic/design/tree/master/standards), which always names the current version
 
           Automatically synced by workflow run [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
         branch: chore/sync-design-standards
