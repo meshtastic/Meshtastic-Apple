@@ -490,6 +490,7 @@ BLE radios advertise at their own pace, so nobody expects them to connect in a s
 - [X] T435 (V50-1) Removing the radio of the last open window opens another connected radio's window directly (the one closed last while it's connected, else the first; `reopenCandidate`), as W-16 has it, else the Connect window, asked for so it opens as it is. Before, which of the two opened depended on whether the removed window had gone when the Connect window appeared. Verified: `RadioWindowTrackerTests.reopenCandidateIgnoresTheClosingWindow`.
 - [X] T436 (V50-2) On the Mac the Choose Radios sheet (W-15) shows in the Connect window, which T409 and T434 now keep closed while radios are connected. When a radio choice becomes needed (TAK turned on with several radios known, say) and no Connect window is open, a radio window opens it for the choice (`ConnectWindowRequest.radioChoice`), once, a moment later; it closes once the choice is made. Verified: `RadioWindowTrackerTests.connectWindowRequestedOnce`; the window opening needs a check on the Mac.
 - [X] T437 (V50-3) "%@ (Not Connected)" and "Remove %@…", looked up with `.localized` in the Mac menus, are in the string catalog (manual), as "Disconnect %@" is.
+- [X] T438 (V51-1) The window opener observes `TAKServerManager` as the Choose Radios gate does, so turning TAK on with several radios known opens the Connect window for the choice at once, not at the manager's next change. Needs the check on the Mac (T436's).
 
 ## Phase 10: Hardening
 

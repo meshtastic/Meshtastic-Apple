@@ -138,6 +138,9 @@ final class RadioWindowTracker: ObservableObject {
 /// always there to do it; the tracker makes sure a radio's window is opened only once.
 struct RadioWindowOpener: ViewModifier {
 	@ObservedObject private var accessoryManager = AccessoryManager.shared
+	/// TAK being on is one of the services that need a radio chosen, as the Choose Radios gate
+	/// observes it (review V51-1).
+	@ObservedObject private var tak = TAKServerManager.shared
 	let tracker: RadioWindowTracker
 	@Environment(\.openWindow) private var openWindow
 
