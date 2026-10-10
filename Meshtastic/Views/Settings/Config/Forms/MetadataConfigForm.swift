@@ -161,7 +161,7 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 			trailing($config)
 				.disabled(!isEditable)
 		}
-		.scrollDismissesKeyboard(.immediately)
+		.dismissesKeyboardOnScroll()
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
 				if let confirmationMessage {

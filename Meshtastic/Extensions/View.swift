@@ -63,7 +63,28 @@ extension View {
 	@available(iOS 26.0, macOS 26.0, *)
 	@ViewBuilder
 	private func glassButtonStyleOS26() -> some View {
+		#if os(visionOS)
+		self.buttonStyle(.bordered)
+		#else
 		self.buttonStyle(.glass)
+		#endif
+	}
+}
+
+/// How a scroll dismisses the keyboard. Our own type because SwiftUI's `ScrollDismissesKeyboardMode`
+/// doesn't exist on visionOS, where there is no on-screen keyboard to dismiss.
+enum KeyboardScrollDismissal {
+	case immediately, interactively
+}
+
+extension View {
+	/// `.scrollDismissesKeyboard`, as a no-op on visionOS.
+	func dismissesKeyboardOnScroll(_ mode: KeyboardScrollDismissal = .immediately) -> some View {
+		#if os(visionOS)
+		self
+		#else
+		self.scrollDismissesKeyboard(mode == .immediately ? .immediately : .interactively)
+		#endif
 	}
 }
 

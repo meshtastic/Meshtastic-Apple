@@ -72,7 +72,11 @@ import OSLog
 			self.permissionContinuation = continuation
 
 			// Request authorization. The response will come via `locationManagerDidChangeAuthorization`.
+			#if os(visionOS)
+			manager.requestWhenInUseAuthorization()
+			#else
 			manager.requestAlwaysAuthorization()
+			#endif
 
 			// Add a timeout to ensure the continuation is always resumed.
 			// If the delegate method doesn't fire within a reasonable time (e.g., 10 seconds),
@@ -128,23 +132,27 @@ import OSLog
 	override init() {
 		super.init()
 		self.manager.delegate = self
+		#if !os(visionOS)
 		// Allow background location updates for continuous tracking.
 		self.manager.allowsBackgroundLocationUpdates = true
+		#endif
 		// Set desired accuracy for location updates.
 		// Use HundredMeters by default to save battery; escalate to Best during route recording.
 		self.manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
 		// Only deliver updates when the device has moved at least 10 meters.
 		self.manager.distanceFilter = 10
+		#if !os(visionOS)
 		if CLLocationManager.headingAvailable() {
 				self.manager.headingFilter = 1 // Update heading when it changes by 1 degree
 				self.manager.headingOrientation = .portrait // Adjust based on device orientation
 			}
+		#endif
 	}
 
 	func startLocationUpdates() {
 		let status = self.manager.authorizationStatus
 		// Guard against starting updates without proper authorization.
-		guard status == .authorizedAlways || status == .authorizedWhenInUse else {
+		guard status.allowsLocationUse else {
 			Logger.services.warning("📍 [App] Cannot start location updates: insufficient authorization status: \(status.rawValue)")
 			return
 		}
@@ -161,12 +169,15 @@ import OSLog
 
 	// New method to start heading updates
 	func startHeadingUpdates() {
+		#if os(visionOS)
+		Logger.services.warning("📍 [App] Heading updates are not available on visionOS.")
+		#else
 		guard CLLocationManager.headingAvailable() else {
 			Logger.services.warning("📍 [App] Heading updates not available on this device.")
 			return
 		}
 
-		guard manager.authorizationStatus == .authorizedAlways || manager.authorizationStatus == .authorizedWhenInUse else {
+		guard manager.authorizationStatus.allowsLocationUse else {
 			Logger.services.warning("📍 [App] Cannot start heading updates: insufficient authorization status.")
 			return
 		}
@@ -174,15 +185,19 @@ import OSLog
 		Logger.services.info("📍 [App] Starting heading updates")
 		manager.startUpdatingHeading()
 		headingUpdatesStarted = true
+		#endif
 	}
 
 	// New method to stop heading updates
 	func stopHeadingUpdates() {
+		#if !os(visionOS)
 		Logger.services.info("🛑 [App] Stopping heading updates")
 		manager.stopUpdatingHeading()
+		#endif
 		headingUpdatesStarted = false
 	}
 
+	#if !os(visionOS)
 	// Implement the CLLocationManagerDelegate method for heading updates
 	func locationManager(_ manager: CLLocationManager, didUpdateHeading newHeading: CLHeading) {
 		// Update heading on the main thread
@@ -190,6 +205,7 @@ import OSLog
 			self.heading = newHeading.trueHeading >= 0 ? newHeading.trueHeading : newHeading.magneticHeading
 		}
 	}
+	#endif
 
 	func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
 		Task { @MainActor in
@@ -316,5 +332,16 @@ import OSLog
 			}
 		}
 		return sats
+	}
+}
+
+extension CLAuthorizationStatus {
+	/// Whether the app may read the location at all. visionOS has no "Always" authorization.
+	var allowsLocationUse: Bool {
+		#if os(visionOS)
+		self == .authorizedWhenInUse
+		#else
+		self == .authorizedWhenInUse || self == .authorizedAlways
+		#endif
 	}
 }

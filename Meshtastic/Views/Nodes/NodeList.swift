@@ -209,7 +209,7 @@ struct NodeList: View {
 		}
 		.searchable(text: $filters.searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Find a node")
 		.autocorrectionDisabled(true)
-		.scrollDismissesKeyboard(.immediately)
+		.dismissesKeyboardOnScroll()
 		.listStyle(.plain)
 		.alert("Position Exchange Requested", isPresented: $isPresentingPositionSentAlert) {
 			Button("OK") { }.keyboardShortcut(.defaultAction)

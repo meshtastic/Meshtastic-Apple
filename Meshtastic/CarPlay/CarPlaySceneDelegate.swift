@@ -10,6 +10,8 @@
 //
 
 #if os(iOS) && canImport(CarPlay)
+// CarPlay does not exist on visionOS; the scene delegate is only instantiated on iOS.
+#if !os(visionOS)
 import CarPlay
 import Combine
 import Intents
@@ -806,4 +808,5 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 	private func endLiveActivity() {}
 #endif
 }
+#endif
 #endif

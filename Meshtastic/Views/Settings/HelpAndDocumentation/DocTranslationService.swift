@@ -8,7 +8,7 @@
 
 import Foundation
 import OSLog
-#if !targetEnvironment(macCatalyst)
+#if !targetEnvironment(macCatalyst) && !os(visionOS)
 import Translation
 #endif
 #if canImport(FoundationModels)
@@ -585,7 +585,7 @@ actor DocTranslationService {
 	/// Posted when nav label translations complete so DocBrowserView can refresh.
 	static let navLabelsDidFinishNotification = Foundation.Notification.Name("DocTranslationServiceNavLabelsDidFinish")
 
-	#if !targetEnvironment(macCatalyst)
+	#if !targetEnvironment(macCatalyst) && !os(visionOS)
 	/// Translate a page using a provided TranslationSession (from .translationTask modifier).
 	@available(iOS 26, *)
 	func translateWithSession(_ session: TranslationSession, page: DocPage) async -> String? {
@@ -758,7 +758,7 @@ actor DocTranslationService {
 			return .available
 		}
 		#endif
-		#if !targetEnvironment(macCatalyst)
+		#if !targetEnvironment(macCatalyst) && !os(visionOS)
 		if #available(iOS 26, *) {
 			let status = await LanguageAvailability().status(
 				from: Locale.Language(identifier: "en"),
@@ -832,13 +832,13 @@ actor DocTranslationService {
 				return viaFM
 			}
 			#endif
-			#if !targetEnvironment(macCatalyst)
+			#if !targetEnvironment(macCatalyst) && !os(visionOS)
 			if #available(iOS 26, *) {
 				return await translateWithTranslationFramework(text: text, targetLanguage: targetLanguage)
 			}
 			#endif
 		} else {
-			#if !targetEnvironment(macCatalyst)
+			#if !targetEnvironment(macCatalyst) && !os(visionOS)
 			if #available(iOS 26, *),
 			   let viaTF = await translateWithTranslationFramework(text: text, targetLanguage: targetLanguage) {
 				return viaTF
@@ -861,13 +861,13 @@ actor DocTranslationService {
 				return viaFM
 			}
 			#endif
-			#if !targetEnvironment(macCatalyst)
+			#if !targetEnvironment(macCatalyst) && !os(visionOS)
 			if #available(iOS 26, *) {
 				return await translateWithTranslationFramework(text: text, targetLanguage: targetLanguage)
 			}
 			#endif
 		} else {
-			#if !targetEnvironment(macCatalyst)
+			#if !targetEnvironment(macCatalyst) && !os(visionOS)
 			if #available(iOS 26, *),
 			   let viaTF = await translateWithTranslationFramework(text: text, targetLanguage: targetLanguage) {
 				return viaTF
@@ -905,7 +905,7 @@ actor DocTranslationService {
 		}
 		#endif
 
-		#if !targetEnvironment(macCatalyst)
+		#if !targetEnvironment(macCatalyst) && !os(visionOS)
 		if #available(iOS 26, *) {
 			let source = Locale.Language(identifier: "en")
 			let target = Locale.Language(identifier: targetLanguage)
@@ -1016,7 +1016,7 @@ actor DocTranslationService {
 			.replacingOccurrences(of: ">", with: "&gt;")
 	}
 
-	#if !targetEnvironment(macCatalyst)
+	#if !targetEnvironment(macCatalyst) && !os(visionOS)
 	// MARK: - Translation Framework (iOS 26+)
 
 	@available(iOS 26, *)

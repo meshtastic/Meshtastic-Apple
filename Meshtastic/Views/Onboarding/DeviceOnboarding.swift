@@ -471,7 +471,7 @@ struct DeviceOnboarding: View {
 		case .localNetwork:
 			return .notifications
 		case .notifications:
-			if locationStatus == .authorizedWhenInUse || locationStatus == .authorizedAlways {
+			if locationStatus.allowsLocationUse {
 				return .siri
 			}
 			return .location

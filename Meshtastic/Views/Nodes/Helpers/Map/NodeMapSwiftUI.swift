@@ -35,6 +35,7 @@ struct NodeMapSwiftUI: View {
 
 	@Environment(\.modelContext) private var context
 	@Environment(\.horizontalSizeClass) private var horizontalSizeClass
+	@Environment(\.displayScale) private var displayScale
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	/// Parameters
 	@Bindable var node: NodeInfoEntity
@@ -149,7 +150,7 @@ struct NodeMapSwiftUI: View {
 	private var baseMap: some View {
 		NodeMapContentEquatableWrapper(signature: mapContentSignature) {
 			Map(position: $position, bounds: MapCameraBounds(minimumDistance: 0, maximumDistance: .infinity), scope: mapScope) {
-				NodeMapContent(node: node, positions: positions)
+				NodeMapContent(node: node, positions: positions, displayScale: displayScale)
 			}
 		}
 		.mapScope(mapScope)

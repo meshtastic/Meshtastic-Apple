@@ -163,6 +163,7 @@ struct UserConfig: View {
 							Label("Frequency", systemImage: "waveform.path.ecg")
 							Spacer()
 							TextField("Frequency Override", value: $overrideFrequency, formatter: floatFormatter)
+								#if !os(visionOS)
 								.toolbar {
 									ToolbarItemGroup(placement: .keyboard) {
 										Button("Dismiss") {
@@ -171,8 +172,9 @@ struct UserConfig: View {
 										.font(.subheadline)
 									}
 								}
+								#endif
 								.keyboardType(.decimalPad)
-								.scrollDismissesKeyboard(.immediately)
+								.dismissesKeyboardOnScroll()
 								.focused($focusedField, equals: .frequencyOverride)
 						}
 						HStack {

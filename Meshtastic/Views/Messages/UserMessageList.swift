@@ -327,7 +327,7 @@ struct UserMessageList: View {
 				.messageBottomScrollPosition(request: bottomScrollRequest, tracker: scrollTracker)
 				.defaultScrollAnchor(.bottom)
 				.defaultScrollAnchorBottomSizeChanges()
-				.scrollDismissesKeyboard(.immediately)
+				.dismissesKeyboardOnScroll()
 				.onAppear {
 					DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
 						if #available(iOS 18.0, macOS 15.0, *) {

@@ -62,7 +62,7 @@ struct CoverageEstimateForm: View {
 				simulationSection
 				displaySection
 			}
-			.scrollDismissesKeyboard(.immediately)
+			.dismissesKeyboardOnScroll()
 			.navigationTitle("Estimate Coverage")
 			.navigationBarTitleDisplayMode(.inline)
 			.toolbar {

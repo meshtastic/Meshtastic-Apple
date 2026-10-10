@@ -143,7 +143,7 @@ struct ShareChannels: View {
 									.controlSize(.large)
 									.padding(.bottom)
 
-								#if !targetEnvironment(macCatalyst)
+								#if !targetEnvironment(macCatalyst) && !os(visionOS)
 								if #available(iOS 18, *) {
 									NFCWriteButton(
 										payload: channelsUrl,

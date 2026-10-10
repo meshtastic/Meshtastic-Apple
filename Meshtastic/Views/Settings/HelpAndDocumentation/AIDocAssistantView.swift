@@ -106,7 +106,7 @@ struct AIDocAssistantView: View {
 						}
 						.padding(.bottom, 4)
 					}
-					.scrollDismissesKeyboard(.interactively)
+					.dismissesKeyboardOnScroll(.interactively)
 					.onChange(of: messages.count) { _, _ in
 						withAnimation(.easeOut(duration: 0.25)) { proxy.scrollTo("bottom", anchor: .bottom) }
 					}

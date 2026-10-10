@@ -1,7 +1,7 @@
 import MeshtasticProtobufs
 import OSLog
 import SwiftUI
-#if !targetEnvironment(macCatalyst)
+#if !targetEnvironment(macCatalyst) && !os(visionOS)
 import Translation
 #endif
 
@@ -34,7 +34,7 @@ struct MessageText: View {
 				)
 				.trackScreen(.saveChannelQRCode)
 				.presentationDetents([.large])
-				#if !targetEnvironment(macCatalyst)
+				#if !targetEnvironment(macCatalyst) && !os(visionOS)
 				.presentationDragIndicator(.visible)
 				#endif
 			}
@@ -63,7 +63,7 @@ struct MessageText: View {
 
 	private var canTranslate: Bool {
 		guard !sourceMessageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return false }
-		#if targetEnvironment(macCatalyst)
+		#if targetEnvironment(macCatalyst) || os(visionOS)
 		return false
 		#else
 		if #available(iOS 17.4, macOS 14.4, *) {
@@ -74,7 +74,7 @@ struct MessageText: View {
 	}
 
 	private var messageContent: some View {
-		#if !targetEnvironment(macCatalyst)
+		#if !targetEnvironment(macCatalyst) && !os(visionOS)
 		if #available(iOS 17.4, macOS 14.4, *), canTranslate {
 			return AnyView(
 				baseMessageContent
