@@ -184,10 +184,19 @@ struct NodeMapContent: MapContent {
 			.strokeBorder(stroke, lineWidth: 2)
 			.frame(width: 12, height: 12)
 		let renderer = ImageRenderer(content: content)
-		renderer.scale = UIScreen.main.scale
+		renderer.scale = NodeMapContent.displayScale
 		let image = renderer.uiImage!
 		NodeMapContent.circleImageCache.setObject(image, forKey: key)
 		return image
+	}
+
+	/// Pixel scale for prerendered marker images. visionOS has no `UIScreen`.
+	private static var displayScale: CGFloat {
+		#if os(visionOS)
+		UITraitCollection.current.displayScale
+		#else
+		UIScreen.main.scale
+		#endif
 	}
 
 	private func prerenderHistoryPointArrow(fill: Color, stroke: Color) -> UIImage {
@@ -201,7 +210,7 @@ struct NodeMapContent: MapContent {
 			.clipShape(Circle())
 			.frame(width: 16, height: 16)
 		let renderer = ImageRenderer(content: content)
-		renderer.scale = UIScreen.main.scale
+		renderer.scale = NodeMapContent.displayScale
 		let image = renderer.uiImage!
 		NodeMapContent.arrowImageCache.setObject(image, forKey: key)
 		return image

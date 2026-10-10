@@ -355,7 +355,10 @@ targets:
           SWIFT_EMIT_LOC_STRINGS: "YES"
           SWIFT_OPTIMIZATION_LEVEL: "-Onone"
           SWIFT_VERSION: "5.0"
-          TARGETED_DEVICE_FAMILY: "1,2"
+          TARGETED_DEVICE_FAMILY: "1,2,7"
+          SUPPORTED_PLATFORMS: "iphoneos iphonesimulator xros xrsimulator"
+          SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: "NO"
+          XROS_DEPLOYMENT_TARGET: "26.0"
         Release:
           ASSETCATALOG_COMPILER_APPICON_NAME: "AppIcon"
           ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: "AccentColor"
@@ -397,7 +400,10 @@ targets:
           SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: "NO"
           SWIFT_EMIT_LOC_STRINGS: "YES"
           SWIFT_VERSION: "5.0"
-          TARGETED_DEVICE_FAMILY: "1,2"
+          TARGETED_DEVICE_FAMILY: "1,2,7"
+          SUPPORTED_PLATFORMS: "iphoneos iphonesimulator xros xrsimulator"
+          SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: "NO"
+          XROS_DEPLOYMENT_TARGET: "26.0"
 
   WidgetsExtension:
     type: app-extension

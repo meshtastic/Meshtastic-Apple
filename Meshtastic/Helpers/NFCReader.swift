@@ -9,11 +9,11 @@
 
 import SwiftUI
 import OSLog
-#if !targetEnvironment(macCatalyst)
+#if !targetEnvironment(macCatalyst) && !os(visionOS)
 import CoreNFC
 #endif
 
-#if !targetEnvironment(macCatalyst)
+#if !targetEnvironment(macCatalyst) && !os(visionOS)
 @available(iOS 18, *)
 final class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate {
 
@@ -242,7 +242,7 @@ final class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate 
 }
 #endif
 
-#if !targetEnvironment(macCatalyst)
+#if !targetEnvironment(macCatalyst) && !os(visionOS)
 /// A "Write to NFC Tag" button with a plain-language caption underneath.
 /// Callers must additionally gate on `#available(iOS 18, *)`; the button
 /// hides itself entirely on devices without NFC hardware.

@@ -69,7 +69,6 @@ struct MapWindow: View {
 	private var mapRoot: some View {
 		#if os(visionOS)
 		MeshMapMK(router: router, showOpenWindowButton: false)
-			.toolbar(.hidden, for: .windowToolbar)
 			.persistentSystemOverlays(.hidden)
 		#else
 		MeshMapMK(router: router, showOpenWindowButton: false)

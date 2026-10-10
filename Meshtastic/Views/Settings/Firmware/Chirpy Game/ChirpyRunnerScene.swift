@@ -78,7 +78,7 @@ final class ChirpyRunnerScene: SKScene {
 
 		prompt.isHidden = runner.phase != .ready
 		if runner.phase == .running {
-			UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+			Haptics.impact(.soft)
 		}
 	}
 
@@ -114,7 +114,7 @@ final class ChirpyRunnerScene: SKScene {
 			scoreLabel.text = String(format: "%05d", runner.score)
 			storeBestScore()
 			buildObstacle()
-			UIImpactFeedbackGenerator(style: .light).impactOccurred()
+			Haptics.impact(.light)
 		}
 
 		if previousPhase != .gameOver, runner.phase == .gameOver {
@@ -388,7 +388,7 @@ private extension ChirpyRunnerScene {
 	}
 
 	func showGameOver() {
-		UIImpactFeedbackGenerator(style: .rigid).impactOccurred()
+		Haptics.impact(.rigid)
 		chirpy.texture = idleTexture
 
 		let message = SKNode()

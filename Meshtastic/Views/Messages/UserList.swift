@@ -79,7 +79,7 @@ struct UserList: View {
 			.padding(.bottom, 5)
 			.searchable(text: $filters.searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Find a contact")
 			.autocorrectionDisabled(true)
-			.scrollDismissesKeyboard(.immediately)
+			.dismissesKeyboardOnScroll()
 		}
 	}
 }

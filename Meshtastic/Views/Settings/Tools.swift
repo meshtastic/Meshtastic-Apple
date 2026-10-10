@@ -14,7 +14,7 @@ struct Tools: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Environment(\.modelContext) private var context
 
-	#if !targetEnvironment(macCatalyst)
+	#if !targetEnvironment(macCatalyst) && !os(visionOS)
 	@StateObject private var nfcReader = NFCReader()
 	#endif
 	@State private var saveChannelLink: SaveChannelLinkData?
@@ -40,7 +40,7 @@ struct Tools: View {
 	var body: some View {
 		VStack {
 			List {
-				#if !targetEnvironment(macCatalyst)
+				#if !targetEnvironment(macCatalyst) && !os(visionOS)
 				if NFCReader.isAvailable {
 					Section(header: Text("NFC Tags")) {
 						if let node = connectedNode {

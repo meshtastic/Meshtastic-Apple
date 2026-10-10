@@ -491,9 +491,7 @@ struct WifiProvisioningView: View {
 	private func copy(_ value: String, label: String) {
 		UIPasteboard.general.string = value
 		toastMessage = "\(label) copied"
-#if !targetEnvironment(macCatalyst)
-		UIImpactFeedbackGenerator(style: .light).impactOccurred()
-#endif
+		Haptics.impact(.light)
 		Task {
 			try? await Task.sleep(nanoseconds: 1_500_000_000)
 			await MainActor.run {

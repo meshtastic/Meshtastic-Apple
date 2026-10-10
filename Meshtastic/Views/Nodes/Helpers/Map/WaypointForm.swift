@@ -210,7 +210,7 @@ struct WaypointForm: View {
 				}
 			}
 			.scrollContentBackground(.hidden)
-			.scrollDismissesKeyboard(.immediately)
+			.dismissesKeyboardOnScroll()
 			HStack {
 				Button {
 					if local {
