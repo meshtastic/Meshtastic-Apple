@@ -17,7 +17,7 @@ struct ClientHistoryButton: View {
 					try await accessoryManager.requestStoreAndForwardClientHistory(
 						fromUser: connectedNode.user!,
 						toUser: node.user!,
-						channel: node.channel
+						channel: accessoryManager.channelSlot(toReach: node, fromRadio: connectedNode.num)
 					)
 					Task { @MainActor in
 						isPresentingAlert = true

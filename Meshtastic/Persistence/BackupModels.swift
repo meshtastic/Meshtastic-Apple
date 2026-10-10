@@ -56,6 +56,19 @@ struct BackupEntry: Codable, Sendable {
 	var checksum: String
 	/// Relative path from `NodeBackups/` to backup directory
 	var backupPath: String
+	/// The checksum of this backup when it was merged into the shared store (feature 021, D-09),
+	/// or when the merge found the store already held its radio. Nil until then. A backup whose
+	/// checksum differs was re-taken since, and is looked at again.
+	var mergedChecksum: String?
+	/// How many launches have started merging this backup without finishing (T159). Counted
+	/// before each attempt, so a merge the system kills for memory counts too. A re-taken backup
+	/// is a new entry and starts again at nil.
+	var mergeAttempts: Int?
+
+	/// Whether this backup, as it is now, has been merged into the shared store.
+	var isMerged: Bool {
+		mergedChecksum == checksum
+	}
 
 	/// Where this entry belongs in the index.
 	var key: String {

@@ -20,6 +20,8 @@ import UniformTypeIdentifiers
 
 struct BackupRestoreSection: View {
 	@EnvironmentObject private var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@Environment(\.modelContext) private var context
 
 	/// True when the radio says a mesh administrator owns its configuration. The rows
@@ -45,12 +47,12 @@ struct BackupRestoreSection: View {
 	}
 
 	private var connectedNode: NodeInfoEntity? {
-		guard let num = accessoryManager.activeDeviceNum else { return nil }
+		guard let num = accessoryManager.nodeNum(for: windowRadio) else { return nil }
 		return getNodeInfo(id: num, context: context)
 	}
 
 	private var isEnabled: Bool {
-		accessoryManager.isConnected && connectedNode != nil && !isManaged
+		accessoryManager.isConnected(windowRadio) && connectedNode != nil && !isManaged
 	}
 
 	var body: some View {
@@ -75,7 +77,7 @@ struct BackupRestoreSection: View {
 			}
 			.disabled(!isEnabled)
 
-			if !accessoryManager.isConnected || connectedNode == nil {
+			if !accessoryManager.isConnected(windowRadio) || connectedNode == nil {
 				Text("Connect to a node to back up or restore its configuration.")
 					.font(.caption)
 					.foregroundColor(.secondary)
@@ -173,7 +175,7 @@ struct BackupRestoreSection: View {
 				// than sent into a silent no-op (the firmware acks unknown module configs as success).
 				let plan = try DeviceProfileImportPlan(profile: profile, currentUser: currentUser,
 													   currentSecurity: node.securityConfig?.protoConfig,
-													   firmwareVersion: accessoryManager.connectedVersion)
+													   firmwareVersion: accessoryManager.firmwareVersion(for: windowRadio))
 				pendingImport = PendingImport(plan: plan)
 			} catch DeviceProfileImportError.nothingToImport {
 				importFailedMessage = "This configuration file doesn't contain anything to import."

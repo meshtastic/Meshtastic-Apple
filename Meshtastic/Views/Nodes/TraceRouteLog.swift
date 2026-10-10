@@ -263,7 +263,7 @@ struct TraceRouteLog: View {
 		}
 		.toolbar {
 			ToolbarItem(placement: .topBarTrailing) {
-				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+				WindowConnectedDevice()
 			}
 		}
 	}

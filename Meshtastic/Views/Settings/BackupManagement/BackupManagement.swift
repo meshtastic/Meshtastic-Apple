@@ -12,6 +12,8 @@ import SwiftData
 /// Settings screen showing all node backups with total storage usage and swipe-to-delete.
 struct BackupManagement: View {
 	@EnvironmentObject private var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@EnvironmentObject private var router: Router
 	@State private var backups: [BackupEntry] = []
 	@State private var totalSize: Int64 = 0
@@ -19,6 +21,9 @@ struct BackupManagement: View {
 	@State private var entryToDelete: BackupEntry?
 	@State private var isRestoringBackup = false
 	@State private var restoreErrorMessage: String?
+	/// A restore waiting for the user to confirm it replaces several radios' data (T166).
+	@State private var entryToRestore: BackupEntry?
+	@State private var radiosReplacedByRestore: [StoredRadio] = []
 	@State private var isBackingUp = false
 	@State private var backupErrorMessage: String?
 
@@ -68,7 +73,7 @@ struct BackupManagement: View {
 							showDeleteButton: showsInlineDeleteButton,
 							onRestore: {
 								Task {
-									await restoreBackup(entry)
+									await requestRestore(entry)
 								}
 							},
 							onDelete: {
@@ -79,7 +84,7 @@ struct BackupManagement: View {
 						.contextMenu {
 							Button {
 								Task {
-									await restoreBackup(entry)
+									await requestRestore(entry)
 								}
 							} label: {
 								Label("Restore", systemImage: "arrow.counterclockwise")
@@ -96,7 +101,7 @@ struct BackupManagement: View {
 							.swipeActions(edge: .trailing, allowsFullSwipe: false) {
 								Button {
 									Task {
-										await restoreBackup(entry)
+										await requestRestore(entry)
 									}
 								} label: {
 									Label("Restore", systemImage: "arrow.counterclockwise")
@@ -158,6 +163,17 @@ struct BackupManagement: View {
 				}
 			}
 		}
+		.alert("Restore Backup?", isPresented: Binding(
+			get: { entryToRestore != nil },
+			set: { if !$0 { entryToRestore = nil } }
+		), presenting: entryToRestore) { entry in
+			Button("Restore", role: .destructive) {
+				Task { await restoreBackup(entry) }
+			}
+			Button("Cancel", role: .cancel) {}
+		} message: { entry in
+			Text("Restoring \(entry.nodeName ?? "Node \(entry.nodeNum)")'s backup replaces the data of all your radios: \(ListFormatter.localizedString(byJoining: radiosReplacedByRestore.map(\.name))). They disconnect first.")
+		}
 		.alert("Delete Backup?", isPresented: $showDeleteConfirmation, presenting: entryToDelete) { entry in
 			Button("Delete", role: .destructive) {
 				Task { @MainActor in
@@ -186,6 +202,18 @@ struct BackupManagement: View {
 	}
 
 	@MainActor
+	/// With one radio's data in the store a restore starts straight away, as it always has.
+	/// With several, the user first confirms that every radio's data is replaced (T166).
+	private func requestRestore(_ entry: BackupEntry) async {
+		let radios = await MeshPackets.shared.storedRadios()
+		guard radios.count > 1 else {
+			await restoreBackup(entry)
+			return
+		}
+		radiosReplacedByRestore = radios
+		entryToRestore = entry
+	}
+
 	private func restoreBackup(_ entry: BackupEntry) async {
 		isRestoringBackup = true
 		defer {
@@ -193,8 +221,8 @@ struct BackupManagement: View {
 		}
 
 		// Resolve the outgoing node before the flow disconnects anything.
-		let currentNodeNum = accessoryManager.activeDeviceNum ?? {
-			let num = Int64(UserDefaults.preferredPeripheralNum)
+		let currentNodeNum = accessoryManager.nodeNum(for: windowRadio) ?? {
+			let num = accessoryManager.radioNodeNum(for: windowRadio)
 			return num > 0 ? num : nil
 		}()
 		let restoreResult = await backupCurrentAndRestoreDatabase(
@@ -209,18 +237,33 @@ struct BackupManagement: View {
 
 		switch restoreResult {
 		case .success:
+			// The restored rows are that radio's; attribute them now, before a background pass
+			// could credit them to whichever radio is preferred then (T162).
+			await accessoryManager.handshakeGate.acquire()
+			do {
+				try await MeshPackets.shared.drainMultiRadioBackfill(ownRadio: entry.nodeNum)
+			} catch {
+				Logger.data.error("💥 [MultiRadio] Backfill after restore failed: \(error.localizedDescription, privacy: .public)")
+			}
+			accessoryManager.handshakeGate.release()
 			refreshBackups()
 		case .skipped(let reason):
 			restoreErrorMessage = reason
 		case .noBackupFound:
 			restoreErrorMessage = "No backup was found for this node."
 		}
+		// The radios the restored store doesn't have are forgotten, and their windows close
+		// (review V27-4). Only now the reset gate has dropped (review V28-2): while it was up the
+		// Mac's radio windows were unmounted and wouldn't hear it. A settle first, as the gate's
+		// own sequencing has, so they're mounted again.
+		try? await Task.sleep(for: .milliseconds(300))
+		await accessoryManager.forgetRadiosNotInStore()
 	}
 
 	@MainActor
 	private func backupNow() async {
-		let nodeNum: Int64? = accessoryManager.activeDeviceNum ?? {
-			let num = Int64(UserDefaults.preferredPeripheralNum)
+		let nodeNum: Int64? = accessoryManager.nodeNum(for: windowRadio) ?? {
+			let num = accessoryManager.radioNodeNum(for: windowRadio)
 			return num > 0 ? num : nil
 		}()
 		guard let nodeNum else {

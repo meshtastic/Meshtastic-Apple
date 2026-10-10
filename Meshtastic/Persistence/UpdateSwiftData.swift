@@ -32,8 +32,11 @@ extension MeshPackets {
 		do {
 			Logger.data.info("💾 [NodeInfoEntity] Clearing nodes older than \(nodeExpireDays) days")
 			let candidates = try modelContext.fetch(descriptor)
+			// The user's own radios stay: one that's been off a while keeps its node and the config
+			// stored with it. With one radio, as on `main`, it's the connected one.
+			let radioNums = Set(try modelContext.fetch(FetchDescriptor<MyInfoEntity>()).map(\.myNodeNum))
 			let staleNodes = candidates.filter { node in
-				guard let lastHeard = node.lastHeard else { return false }
+				guard !radioNums.contains(node.num), let lastHeard = node.lastHeard else { return false }
 				if node.user?.pkiEncrypted == true {
 					return lastHeard < pkiExpireDate
 				} else {
@@ -48,6 +51,9 @@ extension MeshPackets {
 			for node in staleNodes {
 				modelContext.delete(node)
 			}
+			// Observations only hold the node number, so they go explicitly (T173, as T146 for
+			// eviction and Remove Node).
+			deleteObservations(ofNodes: staleNodes.map(\.num))
 			try modelContext.save()
 			Logger.data.info("💾 [NodeInfoEntity] Cleared \(deletedNodes) stale nodes")
 			return true
@@ -114,13 +120,11 @@ extension MeshPackets {
 		return false
 	}
 	
-	public func deleteChannelMessages(channel: ChannelEntity) {
-		let channelIndex = channel.index
-		let descriptor = FetchDescriptor<MessageEntity>(
-			predicate: #Predicate<MessageEntity> { msg in
-				msg.channel == channelIndex && msg.isEmoji == false
-			}
-		)
+	/// Deletes what the channel's timeline shows (`query.messages()`): with several radios, the
+	/// channel's messages through every radio and in any slot, and nothing of another channel
+	/// that shares the slot number on another radio (T145). Tapbacks stay, as before.
+	func deleteChannelMessages(query: ChannelMessageQuery) {
+		let descriptor = FetchDescriptor<MessageEntity>(predicate: query.messages())
 		do {
 			let objects = try modelContext.fetch(descriptor)
 			for object in objects where object.toUser == nil {
@@ -263,6 +267,8 @@ extension MeshPackets {
 	}
 	
 	func updateAnyPacketFrom (packet: MeshPacket, activeDeviceNum: Int64, reportsHeardOnCurrentLora: Bool = false) {
+		// It doesn't save; on an instance a recycle retired, that has to happen now (T198).
+		defer { saveIfRetiring() }
 		// Update NodeInfoEntity for any packet received. This mirrors the firmware's NodeDB::updateFrom, which sniffs ALL received packets and updates the radio's nodeDB with packet.from's:
 		// - last_heard (from rxTime)
 		// - snr
@@ -286,16 +292,43 @@ extension MeshPackets {
 			if let node = try modelContext.fetch(descriptor).first {
 				node.id = Int64(packet.from)
 				node.num = Int64(packet.from)
+
+				// Feature 021: the packet updates the receiving radio's observation. With that
+				// the only one, the node is written directly exactly as before; with several
+				// radios hearing the node, the node holds their aggregate instead.
+				let observations = try self.observations(ofNode: node.num, radioNum: activeDeviceNum)
+				let observation = self.observation(of: node, by: activeDeviceNum, among: observations)
+				let heardTime: Date? = isImplicitAck ? nil : (packet.rxTime > 0 ? Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime))) : Date())
+				if let heardTime { observation.lastHeard = heardTime }
+				observation.snr = packet.rxSnr
+				observation.rssi = packet.rxRssi
+				observation.viaMqtt = packet.viaMqtt
+				if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
+					observation.hopsAway = Int32(truncatingIfNeeded: packet.hopStart - packet.hopLimit)
+				}
+				let allObservations = observations.contains { $0 === observation } ? observations : observations + [observation]
+				// Heard over RF just now, so heard on the current settings (see below). On the
+				// receiving radio's observation, which is what its window shows (feature 021), and on
+				// the node as on `main`, the aggregated path included.
+				let heardOnCurrentLoraNow = reportsHeardOnCurrentLora && !isImplicitAck && !packet.viaMqtt && packet.hasRxRssi
+				if heardOnCurrentLoraNow, observation.heardOnCurrentLora != true {
+					observation.heardOnCurrentLora = true
+					noteHeardOnCurrentLoraChange()
+				}
+				if allObservations.count > 1 {
+					NodeObservationEntity.applyAggregate(allObservations, to: node, firstRadio: PreferredRadio.nodeNum)
+					if heardOnCurrentLoraNow {
+						node.heardOnCurrentLora = true
+					}
+					Logger.data.debug("💾 [updateAnyPacketFrom] Aggregated node \(packet.from.toHex(), privacy: .public) across \(allObservations.count) radios")
+					return
+				}
 				
 				// Single source of truth for lastHeard on received packets: this runs for
 				// every packet (mirroring firmware NodeDB::updateFrom), so the per-packet
 				// handlers no longer touch lastHeard for remote nodes.
-				if !isImplicitAck {
-					if packet.rxTime > 0 {
-						node.lastHeard = Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime)))
-					} else {
-						node.lastHeard = Date()
-					}
+				if let heardTime {
+					node.lastHeard = heardTime
 				}
 				
 				node.snr = packet.rxSnr
@@ -306,7 +339,7 @@ extension MeshPackets {
 				// After a node db download the radio replays stored packets marked as LoRa but without
 				// RSSI, which every real reception has (0 dBm included); those were heard earlier, maybe
 				// on other settings.
-				if reportsHeardOnCurrentLora && !isImplicitAck && !packet.viaMqtt && packet.hasRxRssi {
+				if heardOnCurrentLoraNow {
 					node.heardOnCurrentLora = true
 				}
 				
@@ -352,12 +385,16 @@ extension MeshPackets {
 	/// - Parameter overTheMesh: true when this NodeInfo arrived as an over-the-air packet from a
 	///   remote node — logged on .mesh so it appears in the Packet Stream. false for local updates
 	///   (e.g. the favorite action), which did not cross the mesh and log on .data.
+	/// - Parameter receivedBy: node number of the local radio the packet arrived on (or, for a
+	///   local update, the radio it's for), used to tell whether it was addressed to us.
 	/// - Parameter acceptsKeyReplacement: Set only for a contact import where the person was shown
 	///   that the key differs from the stored one and confirmed the replacement. It lifts
 	///   first-wins for that one write, so the app ends up holding the same key the `add_contact`
 	///   just gave the radio. Every other path leaves it false and keeps first-wins.
-	func upsertNodeInfoPacket (packet: MeshPacket, favorite: Bool = false, overTheMesh: Bool = true,
+	func upsertNodeInfoPacket (packet: MeshPacket, favorite: Bool = false, overTheMesh: Bool = true, receivedBy: Int64,
 	                           acceptsKeyReplacement: Bool = false) {
+		let localNodeNum = receivedBy
+		let isForUs = packet.to == Constants.maximumNodeNum || Int64(packet.to) == localNodeNum
 
 		let details = nodeInfoLogDetails(from: packet)
 		if overTheMesh {
@@ -395,7 +432,7 @@ extension MeshPackets {
 				newNode.rssi = packet.rxRssi
 				newNode.viaMqtt = packet.viaMqtt
 				
-				if packet.to == Constants.maximumNodeNum || packet.to == UserDefaults.preferredPeripheralNum {
+				if isForUs {
 					newNode.channel = Int32(truncatingIfNeeded: packet.channel)
 				}
 				if let nodeInfoMessage = try? NodeInfo(serializedBytes: packet.decoded.payload) {
@@ -519,8 +556,10 @@ extension MeshPackets {
 				Logger.data.debug("💾 [Node Info] Buffered a Node Info for node number: \(packet.from.toHex(), privacy: .public)")
 				
 			} else {
-				// Update an existing node
-				if packet.to == Constants.maximumNodeNum || packet.to == UserDefaults.preferredPeripheralNum {
+				// Update an existing node. With several radios hearing it, its hops and channel slot
+				// are the aggregate's, not this packet's radio's (T204).
+				let aggregated = nodeFieldsAreAggregated(fetchedNode[0].num)
+				if isForUs, !aggregated {
 					fetchedNode[0].channel = Int32(truncatingIfNeeded: packet.channel)
 				}
 				
@@ -604,11 +643,11 @@ extension MeshPackets {
 						// Security (finding H1): first-wins on the public key. See `applyInboundPublicKey`.
 						fetchedNode[0].user?.applyInboundPublicKey(userMessage.publicKey, nodeNum: Int64(packet.from))
 					}
-					if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
+					if !aggregated, packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
 						fetchedNode[0].hopsAway = Int32(truncatingIfNeeded: packet.hopStart - packet.hopLimit)
 					}
 
-				} else if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
+				} else if !aggregated, packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
 					fetchedNode[0].hopsAway = Int32(truncatingIfNeeded: packet.hopStart - packet.hopLimit)
 				}
 				if fetchedNode[0].user == nil {
@@ -696,6 +735,7 @@ extension MeshPackets {
 							modelContext.insert(position)
 						}
 						position.latest = true
+						position.packetId = Int64(packet.id)
 						position.snr = packet.rxSnr
 						position.rssi = packet.rxRssi
 						// All of these protobuf fields are UInt32; convert with truncatingIfNeeded
@@ -757,7 +797,10 @@ extension MeshPackets {
 							}
 						}
 
-						fetchedNode[0].channel = Int32(truncatingIfNeeded: packet.channel)
+						// With several radios the slot is the aggregate's (the first radio's), T204.
+						if !nodeFieldsAreAggregated(fetchedNode[0].num) {
+							fetchedNode[0].channel = Int32(truncatingIfNeeded: packet.channel)
+						}
 						
 						scheduleDebouncedSave()
 						Logger.data.debug("📍 [Position] buffered for Node: \(fetchedNode[0].num.toHex(), privacy: .public)")
@@ -814,7 +857,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 					Logger.data.info("💾 [BluetoothConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [BluetoothConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Bluetooth Config")
@@ -866,7 +909,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 					Logger.data.info("💾 [DeviceConfigEntity] Updated Device Config for node number: \(nodeNum.toHex(), privacy: .public)")
 			}
 		} catch {
@@ -919,7 +962,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 				Logger.data.info("💾 [DisplayConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [DisplayConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Display Config")
@@ -989,7 +1032,10 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				// The mesh (region, preset or modulation, frequency) is part of every channel key
+				// (T144, T379); a real change leaves a change row in each affected thread (T377).
+				refreshChannelKeys(radioNum: nodeNum)
+				saveConfigRecord(for: nodeNum)
 					Logger.data.info("💾 [LoRaConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [LoRaConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Lora Config")
@@ -1046,7 +1092,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 				Logger.data.info("💾 [NetworkConfigEntity] Updated Network Config for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [NetworkConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Network Config")
@@ -1105,7 +1151,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 					Logger.data.info("💾 [PositionConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [PositionConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Position Config")
@@ -1151,7 +1197,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 					Logger.data.info("💾 [PowerConfigEntity] Updated Power Config for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [PowerConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Power Config")
@@ -1210,7 +1256,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 				Logger.data.info("💾 [SecurityConfigEntity] Updated Security Config for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [SecurityConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Security Config")
@@ -1256,7 +1302,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 					Logger.data.info("💾 [AudioConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [AudioConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Audio Module Config")
@@ -1294,7 +1340,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 					Logger.data.info("💾 [AmbientLightingConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [AmbientLightingConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Ambient Lighting Module Config")
@@ -1349,7 +1395,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 					Logger.data.info("💾 [CannedMessageConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [CannedMessageConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Canned Message Module Config")
@@ -1398,7 +1444,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 				Logger.data.info("💾 [DetectionSensorConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 				
 			} else {
@@ -1457,7 +1503,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 				Logger.data.info("💾 [MeshBeaconConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 
 			} else {
@@ -1523,7 +1569,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 					Logger.data.info("💾 [ExternalNotificationConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [ExternalNotificationConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save External Notification Module Config")
@@ -1561,7 +1607,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 					Logger.data.info("💾 [NeighborInfoConfigEntity] Updated for node number: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [NeighborInfoConfigEntity] No Nodes found in local database matching node number \(nodeNum.toHex(), privacy: .public) unable to save Neighbor Info Module Config")
@@ -1602,7 +1648,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 					Logger.data.info("💾 [PaxCounterConfigEntity] Updated for node number: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [PaxCounterConfigEntity] No Nodes found in local database matching node number \(nodeNum.toHex(), privacy: .public) unable to save PAX Counter Module Config")
@@ -1637,7 +1683,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 					Logger.data.info("💾 [RtttlConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [RtttlConfigEntity] No nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save RTTTL Ringtone Config")
@@ -1696,7 +1742,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 					Logger.data.info("💾 [MQTTConfigEntity] Updated for node number: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [MQTTConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save MQTT Module Config")
@@ -1735,7 +1781,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 					Logger.data.info("💾 [RangeTestConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [RangeTestConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Range Test Module Config")
@@ -1782,7 +1828,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 				Logger.data.info("💾 [SerialConfigEntity]Updated Serial Module Config for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [SerialConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Serial Module Config")
@@ -1821,7 +1867,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 					Logger.data.info("💾 [StatusMessageConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [StatusMessageConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Status Message Module Config")
@@ -1899,7 +1945,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 					Logger.data.info("💾 [StoreForwardConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [StoreForwardConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Store & Forward Module Config")
@@ -1954,7 +2000,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 				Logger.data.info("💾 [TelemetryConfigEntity] Updated Telemetry Module Config for node: \(nodeNum.toHex(), privacy: .public)")
 				
 			} else {
@@ -1992,7 +2038,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 					Logger.data.info("💾 [TAKConfigEntity] Updated TAK Module Config for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [TAKConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save TAK Module Config")
@@ -2046,7 +2092,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 				Logger.data.info("💾 [TrafficManagementConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [TrafficManagementConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Traffic Management Module Config")

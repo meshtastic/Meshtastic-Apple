@@ -138,7 +138,7 @@ struct BLETransportPeripheralResolutionTests {
 		)
 
 		await transport.handleCentralState(.poweredOn, central: centralManager)
-		await transport.pauseScanningForConnection()
+		await transport.pauseScanningForConnection(to: UUID())
 
 		let discovery = await transport.discoverDevices()
 		await discoverySetupSignal.wait()
@@ -167,18 +167,43 @@ struct BLETransportPeripheralResolutionTests {
 		)
 
 		await transport.handleCentralState(.poweredOn, central: centralManager)
-		await transport.pauseScanningForConnection()
+		let radio = UUID()
+		await transport.pauseScanningForConnection(to: radio)
 
 		let discovery = await transport.discoverDevices()
 		await discoverySetupSignal.wait()
 		#expect(centralManager.calls.isEmpty, "the pause must hold through the handshake")
 
-		await transport.resumeScanningAfterConnectionEstablished()
+		await transport.resumeScanningAfterConnectionEstablished(for: radio)
 
 		#expect(
 			centralManager.calls == [.startScan],
 			"An established connection must resume the waiting discovery subscriber so Available Radios stays live while connected"
 		)
+		withExtendedLifetime(discovery) {}
+	}
+
+	@Test func scanStaysPausedWhileAnotherRadioIsPairing() async {
+		let centralManager = RecordingCentralManager(scanning: false)
+		let discoverySetupSignal = Signal()
+		let transport = BLETransport(
+			createCentralManagerImmediately: false,
+			centralManager: centralManager,
+			discoverySetupHandler: { await discoverySetupSignal.markReached() }
+		)
+
+		await transport.handleCentralState(.poweredOn, central: centralManager)
+		let first = UUID(), second = UUID()
+		await transport.pauseScanningForConnection(to: first)
+		await transport.pauseScanningForConnection(to: second)
+		let discovery = await transport.discoverDevices()
+		await discoverySetupSignal.wait()
+
+		await transport.resumeScanningAfterConnectionEstablished(for: first)
+		#expect(centralManager.calls.isEmpty, "the second radio is still in its pairing window")
+
+		await transport.resumeScanningAfterConnectionEstablished(for: second)
+		#expect(centralManager.calls == [.startScan])
 		withExtendedLifetime(discovery) {}
 	}
 

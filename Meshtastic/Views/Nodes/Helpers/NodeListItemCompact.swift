@@ -131,6 +131,9 @@ struct NodeListItemCompact: View {
 		var isDirectlyConnected: Bool
 		var connectedNode: Int64
 	var modemPreset: ModemPresets = ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast
+	/// Whether the window's radio reports the node not heard on its current LoRa settings
+	/// (feature 021); nil shows the node's own answer.
+	var unheardOnCurrentLora: Bool?
 
 	func locationData(for nodeCoordinate: CLLocationCoordinate2D?) -> (nodeLocation: CLLocation, myLocation: CLLocation)? {
 		guard let nodeCoordinate else {
@@ -173,7 +176,8 @@ struct NodeListItemCompact: View {
 				node: node,
 				includeDeviceMetrics: shouldShowPower || shouldShowTelemetry,
 				includePosition: shouldShowTelemetry || (shouldShowLocation && connectedNode != node.num),
-				includeLogAvailability: shouldShowTelemetry
+				includeLogAvailability: shouldShowTelemetry,
+				isUnheardOnCurrentLora: unheardOnCurrentLora
 			)
 			rowContent(summary)
 				.onAppear {
@@ -344,7 +348,7 @@ struct NodeListItemCompact: View {
 			.padding(.bottom, 2)
 			// Gate the identity on liveness too: `.task(id:)` reads the node during body construction,
 			// which would fault on an invalidated model before the body's guard runs.
-			.task(id: (node.modelContext != nil && !node.isDeleted) ? NodeRowRefreshKey(node) : nil) {
+			.task(id: (node.modelContext != nil && !node.isDeleted) ? NodeRowRefreshKey(node, unheardOnCurrentLora: unheardOnCurrentLora) : nil) {
 				// Refresh the snapshot when the node changes, but only while it is still live.
 				guard node.modelContext != nil && !node.isDeleted else { return }
 				// The initial snapshot was just built synchronously; later task runs represent a
@@ -355,7 +359,8 @@ struct NodeListItemCompact: View {
 					node: node,
 					includeDeviceMetrics: shouldShowPower || shouldShowTelemetry,
 					includePosition: needsLatestPosition,
-					includeLogAvailability: shouldShowTelemetry
+					includeLogAvailability: shouldShowTelemetry,
+					isUnheardOnCurrentLora: unheardOnCurrentLora
 				)
 			}
 			.accessibilityElement(children: .ignore)

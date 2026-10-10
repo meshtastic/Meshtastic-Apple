@@ -11,6 +11,8 @@ import OSLog
 struct RtttlConfig: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@Environment(\.dismiss) private var goBack
 	
 	let node: NodeInfoEntity?
@@ -47,7 +49,7 @@ struct RtttlConfig: View {
 					.font(.callout)
 			}
 		}
-		.disabled(!accessoryManager.isConnected || node?.rtttlConfig == nil)
+		.disabled(!accessoryManager.isConnected(windowRadio) || node?.rtttlConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {
@@ -55,6 +57,7 @@ struct RtttlConfig: View {
 					node: node,
 					context: context,
 					accessoryManager: accessoryManager,
+					window: windowRadio,
 					hasChanges: $hasChanges,
 					dismiss: goBack
 				) { fromUser, toUser in
@@ -66,14 +69,14 @@ struct RtttlConfig: View {
 		.navigationTitle("Ringtone Config")
 		.toolbar {
 			ToolbarItem(placement: .topBarTrailing) {
-				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+				WindowConnectedDevice()
 			}
 		}
 		.onFirstAppear {
 			requestRemoteConfig(
 				node: node,
 				context: context,
-				accessoryManager: accessoryManager,
+				accessoryManager: accessoryManager, window: windowRadio,
 				configIsNil: { $0.rtttlConfig == nil },
 				request: accessoryManager.requestRtttlConfig
 			)

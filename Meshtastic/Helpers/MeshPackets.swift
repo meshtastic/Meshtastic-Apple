@@ -124,6 +124,13 @@ actor MeshPackets {
 	/// Periodically recreated to release accumulated ModelContext memory.
 	nonisolated(unsafe) private static var _shared: MeshPackets = MeshPackets(modelContainer: _container)
 	private static let _lock = NSLock()
+	/// Instances retired by a memory recycle, still saving the writes that were in flight
+	/// (`recreateShared(invalidatingPrevious: false)`). Weak, so they go once those finish.
+	nonisolated(unsafe) private static var _recycled: [WeakMeshPackets] = []
+
+	private struct WeakMeshPackets {
+		weak var instance: MeshPackets?
+	}
 
 	/// Staged automatic channel refreshes, keyed by node number. Deliberately static rather
 	/// than actor state: `recreateShared()` swaps the shared instance to release memory, and a
@@ -200,19 +207,47 @@ actor MeshPackets {
 	}
 
 	/// Discards the current actor and creates a fresh one with a new ModelContext.
-	/// Call after DB retrieval completes or periodically to release accumulated memory.
-	static func recreateShared() {
+	///
+	/// After a data clear (`invalidatingPrevious`, the default) the retired instance never saves
+	/// again. In-flight tasks that captured `MeshPackets.shared` before the swap (a debounced
+	/// save, a late packet) still hold the old actor, whose context points at the SAME on-disk
+	/// store; letting those writes land after a clearDatabase resurrects cleared rows (nodes
+	/// bleeding across devices) and can trip reused-rowid "destroyed by ModelContext.reset" traps.
+	/// Instances an earlier memory recycle retired are invalidated then too.
+	///
+	/// A memory recycle (`invalidatingPrevious: false`: after a connect's node dump, or every
+	/// `ingestRecycleInterval` packets) clears nothing, so the retired instance keeps saving what
+	/// was in flight. Other radios keep receiving through it, and dropping their writes lost
+	/// positions and telemetry (T151).
+	static func recreateShared(invalidatingPrevious: Bool = true) {
 		_lock.lock()
 		let previous = _shared
 		_shared = MeshPackets(modelContainer: _container)
+		var retired: [MeshPackets] = []
+		if invalidatingPrevious {
+			retired = [previous] + _recycled.compactMap(\.instance)
+			_recycled.removeAll()
+		} else {
+			_recycled = _recycled.filter { $0.instance != nil } + [WeakMeshPackets(instance: previous)]
+			// Before anything else runs on it: from here on its writes save as they happen.
+			previous.retiring.set()
+		}
 		_lock.unlock()
-		// Invalidate the retired instance. In-flight tasks that captured `MeshPackets.shared`
-		// before the swap (a debounced save, a late packet for the previous radio) still hold
-		// the old actor, whose context is bound to the old container — which points at the SAME
-		// on-disk store as the new one. Letting those writes land after a device-switch
-		// clearDatabase resurrects the previous radio's rows (nodes bleeding across devices)
-		// and can trip reused-rowid "destroyed by ModelContext.reset" traps.
-		Task { await previous.invalidate() }
+		if !invalidatingPrevious {
+			// Calls queued on the old instance before the swap still write to it after, and some
+			// never save themselves: `updateAnyPacketFrom` and `recordReception` rely on the save at
+			// the end of `processFromRadio`, which now goes to the new instance. A save queued now
+			// runs after them, and a second one catches anything slower, so their writes land and
+			// the two contexts overlap for a couple of seconds at most (T172).
+			Task {
+				await previous.flushDebouncedSaves()
+				try? await Task.sleep(for: .seconds(2))
+				await previous.flushDebouncedSaves()
+			}
+		}
+		for instance in retired {
+			Task { await instance.invalidate() }
+		}
 		Logger.data.info("♻️ [MeshPackets] Recreated shared instance to release ModelContext memory")
 	}
 
@@ -220,7 +255,31 @@ actor MeshPackets {
 
 	/// Set when this instance has been replaced by `recreateShared()`. A retired instance must
 	/// never persist again — see `recreateShared()`.
-	private var invalidated = false
+	private(set) var invalidated = false
+
+	/// Set, from any thread, when a memory recycle retires this instance (T198). A retired
+	/// instance saves each write that doesn't save itself (`recordReception`, `updateAnyPacketFrom`)
+	/// straight away, so the new instance sees it: another radio's copy of the same packet must
+	/// find its reception.
+	final class RetiringFlag: @unchecked Sendable {
+		private let lock = NSLock()
+		private var value = false
+		var isSet: Bool { lock.withLock { value } }
+		func set() { lock.withLock { value = true } }
+	}
+	nonisolated let retiring = RetiringFlag()
+
+	/// Saves now when this instance is retired by a memory recycle (T198).
+	func saveIfRetiring() {
+		if retiring.isSet { savePendingChanges(caller: "retiring") }
+	}
+
+	/// The user's radios for keyed lookups, re-read every few seconds (`lookupRadios(first:)`).
+	var cachedLookupRadios: Set<Int64> = []
+	/// Of those, the radios connected with this version (`MyInfoEntity.lastConnected`), read with
+	/// them: a merged backup's radio doesn't vote on favorite / ignored (T164).
+	var cachedConnectedRadios: Set<Int64> = []
+	var lookupRadiosReadAt = Date.distantPast
 
 	func invalidate() {
 		invalidated = true
@@ -319,6 +378,11 @@ actor MeshPackets {
 				Logger.data.info("💾 Discarded staged channel refresh after a serialized local channel change for: \(nodeNum.toHex(), privacy: .public)")
 				return
 			}
+			// The rows are replaced, so the keys they had are kept by slot: a slot whose channel
+			// changed then leaves a change row in the radio's thread (T377). Read from the store:
+			// this context's rows can hold the key from before a change the packet actor saved,
+			// and writing that back recorded the change a second time.
+			let previousKeys = MultiRadioBackfill.storedChannelKeys(for: nodeNum, container: container)
 			for channel in myInfo.channels {
 				context.delete(channel)
 			}
@@ -330,9 +394,17 @@ actor MeshPackets {
 				let channel = ChannelEntity()
 				context.insert(channel)
 				apply(stagedChannel: staged, to: channel)
+				channel.channelKey = previousKeys[channel.index]
 				myInfo.channels.append(channel)
 			}
 			try context.save()
+			// The timeline groups a channel's messages by key, so the key follows the channels
+			// the radio just sent (T144). Without LoRa settings yet, the LoRa config sets it.
+			// Computed from what's saved, not this context's possibly older LoRa settings.
+			let events = try MultiRadioBackfill.updateSavedChannelKeys(for: nodeNum, container: container)
+			if events > 0 {
+				NotificationCenter.default.post(name: .meshMessagesDidChange, object: nil)
+			}
 			Logger.data.info("💾 Committed \(enabledChannels.count, privacy: .public) staged channel(s) for: \(nodeNum, privacy: .public)")
 		} catch {
 			context.rollback()
@@ -417,6 +489,21 @@ actor MeshPackets {
 		}
 	}
 
+	/// Set when a radio's heard-on-current-LoRa answer on one of its observations changes; posted
+	/// as `heardOnCurrentLoraDidChange` after the save, so a lookup from another context sees it.
+	private var pendingHeardOnCurrentLoraChange = false
+
+	func noteHeardOnCurrentLoraChange() {
+		pendingHeardOnCurrentLoraChange = true
+	}
+
+	func postHeardOnCurrentLoraChange() {
+		pendingHeardOnCurrentLoraChange = false
+		Task { @MainActor in
+			NotificationCenter.default.post(name: .heardOnCurrentLoraDidChange, object: nil)
+		}
+	}
+
 	func savePendingChanges(caller: String = #function) {
 		guard !invalidated else {
 			Logger.data.warning("💾 [\(caller, privacy: .public)] Dropped save on retired MeshPackets instance")
@@ -438,6 +525,9 @@ actor MeshPackets {
 				pendingMessageChange = false
 				postMessageChange()
 			}
+			if pendingHeardOnCurrentLoraChange {
+				postHeardOnCurrentLoraChange()
+			}
 		} catch {
 			Logger.data.error("💥 [\(caller, privacy: .public)] Error saving: \(error.localizedDescription, privacy: .public)")
 		}
@@ -452,6 +542,13 @@ actor MeshPackets {
 		let multiplier = Self.appIsActive ? 2 : 1
 		evictNodesIfOverCap(Self.maxTotalNodes * multiplier)
 		evictWaypointsIfOverCap(Self.maxTotalWaypoints * multiplier)
+		// Feature 021: receptions grow with every packet. Nothing renders them yet, so trimming
+		// them in the foreground can't pull rows from under a view (revisit with T087/T088).
+		do {
+			try PacketReceptionEntity.prune(in: modelContext, rowLimit: PacketReceptionEntity.retentionRowLimit * multiplier)
+		} catch {
+			Logger.data.error("💥 [Caps] Reception prune failed: \(error.localizedDescription, privacy: .public)")
+		}
 	}
 
 	/// Evict down to the strict caps and commit. Called on the background transition —
@@ -541,7 +638,8 @@ actor MeshPackets {
 	func watchNodeSnapshot(
 		userLatitude: Double,
 		userLongitude: Double,
-		maxDistanceMeters: Double
+		maxDistanceMeters: Double,
+		heardBy radioNum: Int64? = nil
 	) -> [WatchNode] {
 		// A retired instance's container may already be torn down (see recreateShared()).
 		guard !invalidated else { return [] }
@@ -556,13 +654,28 @@ actor MeshPackets {
 			return []
 		}
 		let userLocation = CLLocation(latitude: userLatitude, longitude: userLongitude)
-		return results.compactMap {
+		let nodes = results.compactMap {
 			WatchNode.make(from: $0, userLocation: userLocation, maxDistanceMeters: maxDistanceMeters)
+		}
+		// Feature 021 (T105): with a radio picked for the Watch, the nodes it heard, as it heard them.
+		// A radio that's no longer one of the user's radios shows every node, like the Heard By filter.
+		guard let radioNum,
+			  ((try? modelContext.fetchCount(FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == radioNum }))) ?? 0) > 0 else {
+			return nodes
+		}
+		let observations = FetchDescriptor<NodeObservationEntity>(predicate: #Predicate { $0.radioNum == radioNum })
+		let byNode = Dictionary(
+			((try? modelContext.fetch(observations)) ?? []).map { ($0.nodeNum, $0) },
+			uniquingKeysWith: { first, _ in first }
+		)
+		return nodes.compactMap { node in
+			byNode[Int64(node.num)].map { node.heard(by: $0) }
 		}
 	}
 
 	/// Nodes: cap the total, evicting least-recently-heard first. Never evict favorites — the user
-	/// explicitly kept those. Among already-persisted rows, `lastHeard` is optional; nil sorts first
+	/// explicitly kept those — nor the user's own radios, which keep their node and the config
+	/// stored with it however long they've been off (as the stale-node prune, T425). Among already-persisted rows, `lastHeard` is optional; nil sorts first
 	/// (ascending), so never-heard stubs go before any dated node, which is the correct "stalest
 	/// first" order.
 	/// `limit` bounds a single pass, for the chunked background path; nil evicts the whole
@@ -572,8 +685,9 @@ actor MeshPackets {
 	func evictNodesIfOverCap(_ cap: Int, limit: Int? = nil) -> Int {
 		guard let nodeCount = try? modelContext.fetchCount(FetchDescriptor<NodeInfoEntity>()),
 			  nodeCount > cap else { return 0 }
+		let radioNums = ((try? modelContext.fetch(FetchDescriptor<MyInfoEntity>())) ?? []).map(\.myNodeNum)
 		var descriptor = FetchDescriptor<NodeInfoEntity>(
-			predicate: #Predicate { $0.favorite == false },
+			predicate: #Predicate { $0.favorite == false && !radioNums.contains($0.num) },
 			sortBy: [SortDescriptor(\.lastHeard, order: .forward)]
 		)
 		let overage = nodeCount - cap
@@ -586,6 +700,7 @@ actor MeshPackets {
 		descriptor.includePendingChanges = false
 		guard let stale = try? modelContext.fetch(descriptor), !stale.isEmpty else { return 0 }
 		for node in stale { modelContext.delete(node) }
+		deleteObservations(ofNodes: stale.map(\.num))
 		Logger.data.info("🗄️ [Caps] Evicted \(stale.count, privacy: .public) least-recently-heard node(s) (was \(nodeCount, privacy: .public), cap \(cap, privacy: .public))")
 		return stale.count
 	}
@@ -709,6 +824,49 @@ actor MeshPackets {
 		lastDebouncedSaveTime = .now
 	}
 
+	// MARK: - A connect's config download (review V39)
+
+	/// Config downloads in progress, by the radio's device id: when each began, and the radio's
+	/// node number once known. While one runs, that radio's config records save with the debounced
+	/// save instead of one by one: a connect's download is 30 to 40 records, and each save is
+	/// merged into the main context and fetched again by every window's views. Its end flushes
+	/// them. Another radio's records, such as the local copy of a setting saved for it, save at
+	/// once (review V40-5). One older than a minute is taken as over, so a download that never
+	/// reports its end can't hold saves back.
+	private struct ConfigDownload {
+		let began: ContinuousClock.Instant
+		var nodeNum: Int64?
+	}
+	private var configDownloads: [UUID: ConfigDownload] = [:]
+	private static let configDownloadTimeout: Duration = .seconds(60)
+
+	/// `nodeNum` is nil for a radio the app doesn't know yet; its MyInfo, the download's first
+	/// record, gives it (`myInfoPacket`).
+	func beginConfigDownload(_ deviceId: UUID, nodeNum: Int64?) {
+		configDownloads[deviceId] = ConfigDownload(began: .now, nodeNum: nodeNum)
+	}
+
+	/// The download for `deviceId` is over, done or not: its records are saved now.
+	func endConfigDownload(_ deviceId: UUID) {
+		guard configDownloads.removeValue(forKey: deviceId) != nil else { return }
+		flushDebouncedSaves()
+	}
+
+	func isDownloadingConfig(of nodeNum: Int64) -> Bool {
+		let now = ContinuousClock.now
+		return configDownloads.values.contains { $0.nodeNum == nodeNum && now - $0.began < Self.configDownloadTimeout }
+	}
+
+	/// Saves a config record of radio `nodeNum`: with the debounced save while that radio's config
+	/// download runs, at once otherwise, so the answer to a Settings change shows at once.
+	func saveConfigRecord(for nodeNum: Int64, caller: String = #function) {
+		if isDownloadingConfig(of: nodeNum) {
+			scheduleDebouncedSave()
+		} else {
+			savePendingChanges(caller: caller)
+		}
+	}
+
 	/// Last time the channel-unread badge count was recomputed (an O(unread) scan).
 	private var lastChannelUnreadRecompute: ContinuousClock.Instant?
 	/// Rate-limits the per-message channel-unread recompute to at most ~1/sec so a burst
@@ -759,6 +917,40 @@ actor MeshPackets {
 			return true
 		}
 		return false
+	}
+
+	/// Deletes the oldest messages over `cap`. With several of the user's radios in the store,
+	/// each radio keeps its newest `cap`, and the rows on none of them (still waiting for the
+	/// backfill) count together, so one radio's traffic or a merged backup doesn't push out another
+	/// radio's history (T232). With one radio, the whole table counts, as before.
+	func pruneMessageHistory(cap: Int = MeshPackets.maxTotalMessages) throws {
+		let radios = storedRadios().map(\.nodeNum)
+		guard radios.count > 1 else {
+			try pruneOldestMessages(matching: nil, cap: cap)
+			return
+		}
+		for radio in radios {
+			try pruneOldestMessages(matching: #Predicate { $0.localNodeNum == radio }, cap: cap)
+		}
+		// Optional elements, so the store can compare the optional column (`??` has no SQL form).
+		let onRadios: [Int64?] = radios
+		try pruneOldestMessages(matching: #Predicate { $0.localNodeNum == nil || !onRadios.contains($0.localNodeNum) }, cap: cap)
+	}
+
+	private func pruneOldestMessages(matching predicate: Predicate<MessageEntity>?, cap: Int) throws {
+		let total = (try? modelContext.fetchCount(FetchDescriptor<MessageEntity>(predicate: predicate))) ?? 0
+		guard total > cap else { return }
+		var oldestDescriptor = FetchDescriptor<MessageEntity>(
+			predicate: predicate,
+			sortBy: [SortDescriptor(\MessageEntity.messageTimestamp, order: .forward)]
+		)
+		oldestDescriptor.fetchLimit = total - cap
+		guard let oldMessages = try? modelContext.fetch(oldestDescriptor) else { return }
+		for old in oldMessages {
+			modelContext.delete(old)
+		}
+		try modelContext.save()
+		Logger.data.info("🗑️ Pruned \(oldMessages.count) old messages (cap: \(cap))")
 	}
 
 	func localConfig (config: Config, nodeNum: Int64, nodeLongName: String) {
@@ -832,6 +1024,10 @@ actor MeshPackets {
 		Logger.admin.info("ℹ️ \(logString, privacy: .public)")
 
 		let myNodeNum = Int64(myInfo.myNodeNum)
+		// The radio downloading its config is this one: its records wait for the download's end.
+		if let deviceId = UUID(uuidString: peripheralId), configDownloads[deviceId] != nil {
+			configDownloads[deviceId]?.nodeNum = myNodeNum
+		}
 		let fetchDescriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == myNodeNum })
 
 		do {
@@ -841,6 +1037,9 @@ actor MeshPackets {
 
 				let myInfoEntity = MyInfoEntity()
 				modelContext.insert(myInfoEntity)
+				// A new radio: keyed lookups must try it from its first packet on, not after the
+				// cached list next expires (T184).
+				lookupRadiosReadAt = .distantPast
 				myInfoEntity.peripheralId = peripheralId
 				myInfoEntity.myNodeNum = Int64(myInfo.myNodeNum)
 				myInfoEntity.rebootCount = Int32(truncatingIfNeeded: myInfo.rebootCount)
@@ -849,6 +1048,8 @@ actor MeshPackets {
 					myInfoEntity.pioEnv = myInfo.pioEnv
 				}
 				Logger.data.info("💾 Saved a new myInfo for node: \(myInfo.myNodeNum.toHex(), privacy: .public)")
+				// Saved at once, even during a config download: `handleMyInfo` reads it back by
+				// this id in another context, and an unsaved insert's id traps there.
 				savePendingChanges()
 				return myInfoEntity.persistentModelID
 			} else {
@@ -929,7 +1130,8 @@ actor MeshPackets {
 					if channel.role == Channel.Role.disabled {
 						if let existing {
 							modelContext.delete(existing)
-							savePendingChanges()
+							refreshChannelKeys(radioNum: fromNum)
+							saveConfigRecord(for: fromNum)
 							Logger.data.info("💾 Deleted MyInfo channel \(channel.index, privacy: .public) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum, privacy: .public)")
 						}
 						return
@@ -943,7 +1145,8 @@ actor MeshPackets {
 						fetchedMyInfo[0].channels.append(newChannel)
 					}
 					apply(stagedChannel: stagedChannel(from: channel), to: newChannel)
-					savePendingChanges()
+					refreshChannelKeys(radioNum: fromNum)
+					saveConfigRecord(for: fromNum)
 					Logger.data.info("💾 Updated MyInfo channel \(channel.index, privacy: .public) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum, privacy: .public)")
 				} else if channel.role.rawValue > 0 {
 					Logger.data.error("💥Trying to save a channel to a MyInfo that does not exist: \(fromNum.toHex(), privacy: .public)")
@@ -1030,12 +1233,18 @@ actor MeshPackets {
 
 	/// After a full node database download: nodes the radio did not include are ones it no longer
 	/// has, so it has no answer for them. Their stored heard-on-current-LoRa goes back to unknown,
-	/// rather than keeping an answer from an earlier download.
-	func markAbsentFromRadio(presentNums: Set<Int64>) {
+	/// rather than keeping an answer from an earlier download. On the node rows, as on `main`, and
+	/// on radio `radioNum`'s observations, which are what its window shows (feature 021).
+	func markAbsentFromRadio(presentNums: Set<Int64>, radioNum: Int64? = nil) {
 		let descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.heardOnCurrentLora != nil })
-		guard let nodes = try? modelContext.fetch(descriptor) else { return }
-		for node in nodes where !presentNums.contains(node.num) {
+		for node in (try? modelContext.fetch(descriptor)) ?? [] where !presentNums.contains(node.num) {
 			node.heardOnCurrentLora = nil
+		}
+		if let radioNum {
+			let answered = FetchDescriptor<NodeObservationEntity>(predicate: #Predicate { $0.radioNum == radioNum && $0.heardOnCurrentLora != nil })
+			for observation in (try? modelContext.fetch(answered)) ?? [] where !presentNums.contains(observation.nodeNum) {
+				observation.heardOnCurrentLora = nil
+			}
 		}
 		savePendingChanges()
 	}
@@ -1163,6 +1372,8 @@ actor MeshPackets {
 						newNode.latestPositionCache = position
 					}
 
+					recordNodeDBObservation(nodeInfo, node: newNode, radioNum: connectedNodeNum, reportsHeardOnCurrentLora: reportsHeardOnCurrentLora)
+
 					// Look for a MyInfo
 					let myInfoNodeNum = Int64(nodeInfo.num)
 					let fetchMyInfoDescriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == myInfoNodeNum })
@@ -1208,6 +1419,7 @@ actor MeshPackets {
 					// radio that does the actual verifying no longer holds.
 					fetchedNode[0].hasXeddsaSigned = nodeInfo.hasXeddsaSigned_p
 					fetchedNode[0].isKeyManuallyVerified = nodeInfo.isKeyManuallyVerified
+					recordNodeDBObservation(nodeInfo, node: fetchedNode[0], radioNum: connectedNodeNum, reportsHeardOnCurrentLora: reportsHeardOnCurrentLora)
 					fetchedNode[0].heardOnCurrentLora = Self.heardOnCurrentLora(nodeInfo, reported: reportsHeardOnCurrentLora, connectedNodeNum: connectedNodeNum)
 
 					if nodeInfo.hasUser {
@@ -1430,16 +1642,20 @@ actor MeshPackets {
 					break
 				}
 			}
+			// Feature 021 (T045): the passkey belongs to the session between this node and the
+			// radio that asked; another local radio administering the same node gets its own.
+			if let connectedNodeNum, Int64(packet.to) == connectedNodeNum, !adminMessage.sessionPasskey.isEmpty {
+				recordAdminSession(passkey: adminMessage.sessionPasskey, nodeNum: Int64(packet.from), radioNum: connectedNodeNum)
+			}
 			// Save an ack for the admin message log for each admin message response received as we stopped sending acks if there is also a response to reduce airtime.
-			self.adminResponseAck(packet: packet)
+			self.adminResponseAck(packet: packet, radioNum: connectedNodeNum)
 		}
 	}
 
-	private func adminResponseAck (packet: MeshPacket) {
+	private func adminResponseAck (packet: MeshPacket, radioNum: Int64?) {
 		let requestID = Int64(packet.decoded.requestID)
-		let fetchDescriptor = FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.messageId == requestID })
 		do {
-			let fetchedMessage = try modelContext.fetch(fetchDescriptor)
+			let fetchedMessage = try sentMessage(requestID: requestID, radioNum: radioNum).map { [$0] } ?? []
 			if fetchedMessage.count > 0 {
 				fetchedMessage[0].ackTimestamp = Int32(Date().timeIntervalSince1970)
 				fetchedMessage[0].ackError = Int32(RoutingError.none.rawValue)
@@ -1496,10 +1712,9 @@ actor MeshPackets {
 			Logger.mesh.info("🕸️ \(logString, privacy: .public)")
 
 			let requestID = Int64(packet.decoded.requestID)
-			let fetchDescriptor = FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.messageId == requestID })
 
 			do {
-				let fetchedMessage = try modelContext.fetch(fetchDescriptor)
+				let fetchedMessage = try sentMessage(requestID: requestID, radioNum: connectedNodeNum).map { [$0] } ?? []
 				if fetchedMessage.count > 0 {
 					if fetchedMessage[0].toUser != nil {
 						// Real ACK from DM Recipient
@@ -1614,6 +1829,7 @@ actor MeshPackets {
 			let node = findOrCreateNode(num: packetFrom, context: modelContext)
 			let telemetry = TelemetryEntity()
 			modelContext.insert(telemetry)
+			telemetry.packetId = Int64(packet.id)
 			/// Currently only Device Metrics and Environment Telemetry are supported in the app
 			if telemetryMessage.variant == Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) {
 				// Device Metrics
@@ -1841,10 +2057,22 @@ actor MeshPackets {
 		critical: Bool,
 		replyMessageId: Int64? = nil
 	) -> Notification {
+		var subtitle = "AKA \(message.fromUser?.shortName ?? "?")"
+		var path = path
+		var replyRadio: Int64?
+		if let radioName = receivingRadioName(for: message), let radioNum = message.localNodeNum {
+			// Feature 021 (T091): with several radios, which one it came in on, and a deep link
+			// that opens that radio's thread. Quick replies go out through it too.
+			subtitle += " · " + String.localizedStringWithFormat("on %@".localized, radioName)
+			if path.hasPrefix("meshtastic:///messages") {
+				path += "&radio=\(radioNum)"
+			}
+			replyRadio = radioNum
+		}
 		var notification = Notification(
 			id: ("notification.id.\(message.messageId)"),
 			title: "\(message.fromUser?.longName ?? "Unknown".localized)",
-			subtitle: "AKA \(message.fromUser?.shortName ?? "?")",
+			subtitle: subtitle,
 			content: content,
 			target: "messages",
 			path: path,
@@ -1854,6 +2082,7 @@ actor MeshPackets {
 			userNum: userNum,
 			critical: critical
 		)
+		notification.radioNum = replyRadio
 		#if os(iOS) && !targetEnvironment(macCatalyst)
 		notification.senderIntent = CarPlayIntentDonation.incomingMessageIntent(from: message)
 		#endif
@@ -1930,16 +2159,20 @@ actor MeshPackets {
 				do {
 					let fetchedUsers = try modelContext.fetch(fetchDescriptor)
 
-					// Dedupe: if we already have a row with this messageId, skip re-ingestion.
-					// messageId is @Attribute(.unique), so without this guard the radio echo
-					// upserts onto the row sendMessage() wrote, resetting read/ACK state and
-					// triggering a phantom notification. Mirrors Android's
-					// findPacketsWithId(dataPacket.id) guard in rememberDataPacket.
+					// Dedupe: if we already have a row for this packet, skip re-ingestion.
+					// Without this guard the radio echo upserts onto the row sendMessage() wrote,
+					// resetting read/ACK state and triggering a phantom notification. Mirrors
+					// Android's findPacketsWithId(dataPacket.id) guard in rememberDataPacket.
 					// A replay stores under the message it replays, so a second replay — and a
 					// replay of something already received live — lands on this row instead of
-					// inserting another one.
+					// inserting another one. A packet id is only unique per sender (feature 021),
+					// so the match is on `messageKey`; rows not yet backfilled have no key and
+					// match on the id alone.
 					let packetId = Int64(storeForwardOriginalId != 0 ? storeForwardOriginalId : packet.id)
-					let existingDescriptor = FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.messageId == packetId })
+					let messageKey = MessageEntity.key(fromNum: fromNum, messageId: packetId)
+					let existingDescriptor = FetchDescriptor<MessageEntity>(predicate: #Predicate {
+						$0.messageKey == messageKey || ($0.messageKey == nil && $0.messageId == packetId)
+					})
 					if let existing = try? modelContext.fetch(existingDescriptor), !existing.isEmpty {
 						Logger.data.debug("Skipping duplicate text message, messageId \(packetId, privacy: .public) already stored")
 						return
@@ -1949,12 +2182,22 @@ actor MeshPackets {
 					// Android marks these read = fromLocal; we go further and also suppress the
 					// notification (Android's handlePacketNotification has no fromLocal guard and
 					// relies on dedupe alone, but that still fires for S&F replays of our own
-					// messages that were never locally stored).
-					let isFromSelf = Int64(packet.from) == connectedNode
+					// messages that were never locally stored). Any of the user's radios counts as
+					// self (feature 021): radio B hearing what the user sent through radio A.
+					let isFromSelf = fromNum == connectedNode || localRadioNums().contains(fromNum)
 
 					let newMessage = MessageEntity()
 					modelContext.insert(newMessage)
 					newMessage.messageId = packetId
+					newMessage.messageKey = messageKey
+					newMessage.fromNum = fromNum
+					newMessage.toNum = storeForwardBroadcast ? MultiRadioBackfill.broadcastNum : toNum
+					newMessage.localNodeNum = connectedNode
+					if isBroadcastMessage {
+						// From the saved channels and LoRa settings (review V24-2): this context's
+						// copies can predate a rename, key change or QR import the main context saved.
+						newMessage.channelKey = MultiRadioBackfill.computedChannelKeys(for: connectedNode, container: modelContext.container)[Int32(truncatingIfNeeded: packet.channel)]
+					}
 					if packet.rxTime > 0 {
 						newMessage.messageTimestamp = Int32(bitPattern: packet.rxTime)
 					} else {
@@ -2081,21 +2324,7 @@ actor MeshPackets {
 						// Keep message storage bounded without scanning the whole table
 						// after every incoming text.
 						if shouldPruneMessageHistory() {
-							let countDescriptor = FetchDescriptor<MessageEntity>()
-							let totalMessages = (try? modelContext.fetchCount(countDescriptor)) ?? 0
-							if totalMessages > MeshPackets.maxTotalMessages {
-								var oldestDescriptor = FetchDescriptor<MessageEntity>(
-									sortBy: [SortDescriptor(\MessageEntity.messageTimestamp, order: .forward)]
-								)
-								oldestDescriptor.fetchLimit = totalMessages - MeshPackets.maxTotalMessages
-								if let oldMessages = try? modelContext.fetch(oldestDescriptor) {
-									for old in oldMessages {
-										modelContext.delete(old)
-									}
-									try modelContext.save()
-									Logger.data.info("🗑️ Pruned \(oldMessages.count) old messages (cap: \(MeshPackets.maxTotalMessages))")
-								}
-							}
+							try pruneMessageHistory()
 						}
 					} catch {
 						Logger.data.error("💥 Failed to save new MessageEntity: \(error.localizedDescription, privacy: .public)")
@@ -2126,7 +2355,9 @@ actor MeshPackets {
 							// channel badge, recomputing it for every incoming DM turns a burst into
 							// quadratic work, so it gets the same ~1/sec rate limit.
 							if packet.to == connectedNode, shouldRecomputeDirectUnread() {
-								let unreadCount = await newMessage.toUser?.unreadMessages(context: modelContext, skipLastMessageCheck: true) ?? 0 // skipLastMessageCheck=true because we don't update lastMessage on our own connected node
+								var unreadCount = await newMessage.toUser?.unreadMessages(context: modelContext, skipLastMessageCheck: true) ?? 0 // skipLastMessageCheck=true because we don't update lastMessage on our own connected node
+								// Feature 021 (T090): the badge counts direct messages to every radio.
+								unreadCount += unreadDirectMessageCount(toRadiosOtherThan: connectedNode)
 								Task { @MainActor in
 									appState?.unreadDirectMessages = unreadCount
 								}
@@ -2187,13 +2418,19 @@ actor MeshPackets {
 									// to ~1/sec — the badge tolerates brief lag and resyncs on app-active and on read.
 									let recountUnread = shouldRecomputeChannelUnread()
 									let connectedNodeNum = connectedNode
+									// Feature 021 (T158): a message heard by several radios is handled by the
+									// first to deliver it, so mute and mentions can't depend on which that was.
+									// The channel is muted if the user muted it on any radio that has it, and
+									// a mention of any of the user's radios counts.
+									let receivingChannel = myInfo.channels.first { $0.index == newMessage.channel }
 									let channelNotificationsEnabled = UserDefaults.channelMessageNotifications
 										&& !(newMessage.fromUser?.mute ?? false)
-										&& myInfo.channels.contains(where: { $0.index == newMessage.channel && !$0.mute })
+										&& receivingChannel.map { !$0.mute } == true
+										&& !isChannelMutedOnAnyRadio(key: newMessage.channelKey ?? receivingChannel?.channelKey)
 									// A message that @mentions the local node notifies even when channel
 									// notifications are off or the channel is muted; a muted sender still wins.
 									let isSelfMentioned = !(newMessage.fromUser?.mute ?? false)
-										&& MentionParser.containsMention(of: connectedNode, in: messageText ?? "")
+										&& lookupRadios(first: connectedNode).contains { MentionParser.containsMention(of: $0, in: messageText ?? "") }
 									let senderName = newMessage.fromUser?.longName ?? "Unknown".localized
 									let channelUserNum = Int64(newMessage.fromUser?.userId ?? "0")
 									var channelNotification: Notification?

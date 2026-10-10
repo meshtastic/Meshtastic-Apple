@@ -29,7 +29,9 @@ final class NodeInfoEntity {
 	/// Whether the connected radio has heard this node over RF on the LoRa settings it is using now
 	/// (NodeInfo.heard_on_current_lora, firmware 2.8.1+, meshtastic/design#146). Nil when unknown:
 	/// older firmware never sends it and a proto3 bool reads false when absent, so it is only stored
-	/// from a radio known to send it.
+	/// from a radio known to send it. `main`'s copy (feature 021): every connected radio writes it,
+	/// so with several it's whichever wrote last. Views show the window's radio's answer, from its
+	/// `NodeObservationEntity.heardOnCurrentLora` (`RadioLoraAnswers`).
 	var heardOnCurrentLora: Bool?
 	var hopsAway: Int32 = 0
 	var id: Int64 = 0

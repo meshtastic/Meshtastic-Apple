@@ -162,6 +162,31 @@ struct AckErrorsSnapshotTests {
 	}
 }
 
+// MARK: - ChannelChangeNote Snapshot Tests
+
+@Suite("ChannelChangeNote Snapshots")
+struct ChannelChangeNoteSnapshotTests {
+
+	/// A fixed date, so the row's timestamp doesn't change the reference.
+	private let date = Date(timeIntervalSince1970: 1_790_000_000)
+
+	@Test("Channel change note, light")
+	func channelChangeLight() async {
+		await assertViewSnapshot(
+			of: ChannelChangeNote(text: "Switched from LongFast to LongTurbo.", date: date),
+			width: 350, colorScheme: .light, named: "channel_change_note_light", forDocs: true
+		)
+	}
+
+	@Test("Channel change note, dark")
+	func channelChangeDark() async {
+		await assertViewSnapshot(
+			of: ChannelChangeNote(text: "Switched from LongFast to LongTurbo.", date: date),
+			width: 350, colorScheme: .dark, named: "channel_change_note_dark", forDocs: true
+		)
+	}
+}
+
 // MARK: - LockLegend Snapshot Tests
 
 @Suite("LockLegend Snapshots")
@@ -2634,7 +2659,7 @@ struct DeviceConfigSnapshotTests {
 			connectionState: .connected,
 			num: node.num
 		)
-		AccessoryManager.shared.activeConnection = (device: device, connection: SnapshotIdleConnection())
+		AccessoryManager.shared.activeConnection = RadioSession(device: device, connection: SnapshotIdleConnection())
 		defer { AccessoryManager.shared.activeConnection = nil }
 		let view = NavigationView {
 			DeviceConfig(node: node)
@@ -2775,6 +2800,34 @@ struct CannedMessagesConfigSnapshotTests {
 	}
 }
 
+// MARK: - AdditionalRadioRow Snapshot Tests (feature 021)
+
+@Suite("AdditionalRadioRow Snapshots")
+struct AdditionalRadioRowSnapshotTests {
+
+	@MainActor
+	private func radio(_ state: ConnectionState) -> Device {
+		var device = Device(id: UUID(uuidString: "00000000-0000-0000-0000-00000000021B")!, name: "Meshtastic_b0b0", transportType: .ble, identifier: "00000000-0000-0000-0000-00000000021B")
+		device.num = 0x0B0B_0B0B
+		device.longName = "Hilltop Relay"
+		device.shortName = "HILL"
+		device.rssi = -67
+		device.connectionState = state
+		return device
+	}
+
+	@Test("A radio connected alongside the first one")
+	@MainActor
+	func connected() async {
+		let view = List {
+			AdditionalRadioRow(device: radio(.connected), isSwitchingRadio: .constant(false))
+		}
+		.environmentObject(AccessoryManager.shared)
+		.modelContainer(sharedModelContainer)
+		await assertViewSnapshot(of: view, width: 390, height: 140, named: "additionalRadioRow_connected", forDocs: true)
+	}
+}
+
 // MARK: - BackupRestoreSection Snapshot Tests
 
 /// Backup and restore moved from Developers → Tools onto the Settings list, where
@@ -2854,38 +2907,42 @@ struct BackupRestoreSectionSnapshotTests {
 /// replace a key the node already holds. The last is the one worth looking at — it adds a block
 /// to a sheet whose medium detent is already tight. Rendered at the large detent's height so the
 /// whole sheet is in frame; the scroll view it sits in has no intrinsic height to measure.
-@Suite("AddContactConfirmation Snapshots")
+@Suite("AddContactConfirmation Snapshots", .serialized)
 struct AddContactConfirmationSnapshotTests {
 
 	private static let storedKey = Data(repeating: 0x2B, count: 32)
 	private static let differentKey = Data(repeating: 0x7F, count: 32)
 	private static let nodeNum: UInt32 = 1_206_537_050
 
+	/// The sheet's snapshot, with the node holding `storedKey` while it renders. In the shared
+	/// container, as the other suites: a save in a container of its own reached the SwiftData
+	/// bridges of views rendered from another and trapped, aborting the test host.
 	@MainActor
-	private func container(storing key: Data?) throws -> ModelContainer {
-		let container = try ModelContainer(
-			for: Schema(MeshtasticSchema.allModels),
-			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
-		)
-		if let key {
-			let context = container.mainContext
+	private func assertSheet(contactKey: Data, claimsInPerson: Bool, storedKey: Data?, named name: String) async throws {
+		let context = sharedModelContainer.mainContext
+		var stored: NodeInfoEntity?
+		if let storedKey {
 			let user = UserEntity()
 			user.num = Int64(Self.nodeNum)
 			user.userId = "!47ea4b5a"
 			user.longName = "Bud"
 			user.shortName = "Bud"
-			user.publicKey = key
+			user.publicKey = storedKey
 			let node = NodeInfoEntity()
 			node.num = Int64(Self.nodeNum)
 			node.user = user
 			context.insert(node)
 			try context.save()
+			stored = node
 		}
-		return container
-	}
+		defer {
+			if let stored {
+				if let user = stored.user { context.delete(user) }
+				context.delete(stored)
+				try? context.save()
+			}
+		}
 
-	@MainActor
-	private func sheet(contactKey: Data, claimsInPerson: Bool, storedKey: Data?) throws -> some View {
 		var user = User()
 		user.id = "!47ea4b5a"
 		user.longName = "Bud"
@@ -2895,45 +2952,30 @@ struct AddContactConfirmationSnapshotTests {
 		contact.nodeNum = Self.nodeNum
 		contact.user = user
 		contact.manuallyVerified = claimsInPerson
-
-		return AddContactConfirmationView(
+		let sheet = AddContactConfirmationView(
 			pendingContact: PendingContact(contact: contact, base64UrlString: "", exchangeRequested: false),
 			accessoryManager: AccessoryManager.shared
 		)
-		.modelContainer(try container(storing: storedKey))
+		.modelContainer(sharedModelContainer)
+		await assertViewSnapshot(of: sheet, width: 390, height: 780, colorScheme: .light, named: name)
 	}
 
 	@Test("a first import of a contact we hold no key for")
 	@MainActor
 	func establishesKey() async throws {
-		await assertViewSnapshot(
-			of: try sheet(contactKey: Self.storedKey, claimsInPerson: false, storedKey: nil),
-			width: 390,
-			height: 780,
-			colorScheme: .light,
-			named: "addContactEstablishesKey")
+		try await assertSheet(contactKey: Self.storedKey, claimsInPerson: false, storedKey: nil, named: "addContactEstablishesKey")
 	}
 
 	@Test("a contact claiming it was handed over in person")
 	@MainActor
 	func claimsInPersonExchange() async throws {
-		await assertViewSnapshot(
-			of: try sheet(contactKey: Self.storedKey, claimsInPerson: true, storedKey: nil),
-			width: 390,
-			height: 780,
-			colorScheme: .light,
-			named: "addContactClaimsInPerson")
+		try await assertSheet(contactKey: Self.storedKey, claimsInPerson: true, storedKey: nil, named: "addContactClaimsInPerson")
 	}
 
 	@Test("a contact carrying a different key than the node holds")
 	@MainActor
 	func replacesStoredKey() async throws {
-		await assertViewSnapshot(
-			of: try sheet(contactKey: Self.differentKey, claimsInPerson: false, storedKey: Self.storedKey),
-			width: 390,
-			height: 780,
-			colorScheme: .light,
-			named: "addContactReplacesStoredKey")
+		try await assertSheet(contactKey: Self.differentKey, claimsInPerson: false, storedKey: Self.storedKey, named: "addContactReplacesStoredKey")
 	}
 
 	@Test("a contact claiming an in-person exchange that also replaces the key")
@@ -2941,22 +2983,12 @@ struct AddContactConfirmationSnapshotTests {
 	func claimsInPersonAndReplacesStoredKey() async throws {
 		// Both blocks at once — the tallest the sheet gets, and the layout most likely to push
 		// the buttons out of the detent.
-		await assertViewSnapshot(
-			of: try sheet(contactKey: Self.differentKey, claimsInPerson: true, storedKey: Self.storedKey),
-			width: 390,
-			height: 780,
-			colorScheme: .light,
-			named: "addContactInPersonAndReplacesKey")
+		try await assertSheet(contactKey: Self.differentKey, claimsInPerson: true, storedKey: Self.storedKey, named: "addContactInPersonAndReplacesKey")
 	}
 
 	@Test("a re-import of the same contact says nothing about keys")
 	@MainActor
 	func matchesStoredKey() async throws {
-		await assertViewSnapshot(
-			of: try sheet(contactKey: Self.storedKey, claimsInPerson: false, storedKey: Self.storedKey),
-			width: 390,
-			height: 780,
-			colorScheme: .light,
-			named: "addContactMatchesStoredKey")
+		try await assertSheet(contactKey: Self.storedKey, claimsInPerson: false, storedKey: Self.storedKey, named: "addContactMatchesStoredKey")
 	}
 }

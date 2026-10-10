@@ -115,7 +115,8 @@ final class WatchSessionManager: NSObject, ObservableObject {
 		let nodes = await MeshPackets.shared.watchNodeSnapshot(
 			userLatitude: userLocation.coordinate.latitude,
 			userLongitude: userLocation.coordinate.longitude,
-			maxDistanceMeters: Self.maxDistanceMeters
+			maxDistanceMeters: Self.maxDistanceMeters,
+			heardBy: Self.watchRadio
 		)
 		guard !nodes.isEmpty else { return }
 
@@ -130,6 +131,14 @@ final class WatchSessionManager: NSObject, ObservableObject {
 
 	/// Maximum distance in meters to include a node (0.5 miles).
 	private static let maxDistanceMeters: Double = 804.672
+
+	/// The radio picked for the Watch in App Settings (feature 021, T105), or nil to show every
+	/// node as the app does. Only an explicit choice narrows the list: "follow the first radio"
+	/// keeps today's behaviour, since every node is already the first radio's with one radio.
+	static var watchRadio: Int64? {
+		let chosen = UserDefaults.serviceRadio(.watch)
+		return chosen == 0 ? nil : chosen
+	}
 }
 
 // MARK: - WCSessionDelegate
@@ -203,6 +212,22 @@ struct WatchNode: Codable, Sendable {
 			lastPositionTime: pos.time,
 			lastHeard: nodeInfo.lastHeard,
 			snr: nodeInfo.snr != 0 ? nodeInfo.snr : nil
+		)
+	}
+
+	/// This node as one radio heard it (feature 021, T105): that radio's last-heard time and
+	/// signal in place of the node's, which aggregate every radio.
+	func heard(by observation: NodeObservationEntity) -> WatchNode {
+		WatchNode(
+			num: num,
+			longName: longName,
+			shortName: shortName,
+			latitude: latitude,
+			longitude: longitude,
+			altitude: altitude,
+			lastPositionTime: lastPositionTime,
+			lastHeard: observation.lastHeard ?? lastHeard,
+			snr: observation.snr != 0 ? observation.snr : nil
 		)
 	}
 }

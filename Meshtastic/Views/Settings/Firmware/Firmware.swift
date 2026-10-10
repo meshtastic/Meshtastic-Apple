@@ -643,6 +643,8 @@ struct FirmwareTagView: View {
 private struct FirmwareRow: View {
 
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 
 	@ObservedObject var firmwareFile: FirmwareFile
 
@@ -678,7 +680,7 @@ private struct FirmwareRow: View {
 						FirmwareTagView("UNLISTED", color: Color.orange)
 					}
 				}
-				if firmwareFile.firmwareType == .bin && !accessoryManager.checkIsVersionSupported(forVersion: minimumESP32OTAVersion) {
+				if firmwareFile.firmwareType == .bin && !accessoryManager.isVersionSupported(forVersion: minimumESP32OTAVersion, for: windowRadio) {
 					FirmwareTagView("Requires \(minimumESP32OTAVersion)+", color: .orange)
 				}
 			}
@@ -701,7 +703,7 @@ private struct FirmwareRow: View {
 				.buttonStyle(.bordered)
 				.buttonBorderShape(.capsule)
 				.controlSize(.small)
-				.disabled(firmwareFile.firmwareType == .bin && !accessoryManager.checkIsVersionSupported(forVersion: minimumESP32OTAVersion))
+				.disabled(firmwareFile.firmwareType == .bin && !accessoryManager.isVersionSupported(forVersion: minimumESP32OTAVersion, for: windowRadio))
 
 			case .notDownloaded:
 				Button {

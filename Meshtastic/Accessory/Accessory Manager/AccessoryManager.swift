@@ -129,7 +129,8 @@ enum AccessoryManagerState: Equatable {
 	}
 }
 
-private struct AutomaticConfigRefresh {
+/// A config-only want-config running on one connection (`RadioSession.automaticConfigRefresh`).
+struct AutomaticConfigRefresh {
 	let owner: AutomaticChannelRefreshOwner
 	let sessionID: UUID
 	let channelRefreshBaselineByNode: [Int64: [ChannelRefreshSnapshot]]
@@ -138,7 +139,7 @@ private struct AutomaticConfigRefresh {
 }
 
 @MainActor
-class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
+class AccessoryManager: ObservableObject {
 	// Singleton Access.  Conditionally compiled
 #if targetEnvironment(macCatalyst)
 	static let shared = AccessoryManager(transports: [BLETransport(), TCPTransport(), SerialTransport()])
@@ -166,7 +167,6 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	static let firmwareNoticeBackoff: [TimeInterval] = [0, 300, 1_800, 7_200, 43_200]
 	/// A notice unseen for this long is forgotten, so it alerts immediately if it returns.
 	static let firmwareNoticeForgetAfter: TimeInterval = 86_400
-	let mqttManager = MqttClientProxyManager.shared
 
 	// MARK: - Database reset
 
@@ -215,17 +215,16 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			Logger.data.error("💾 [Database] resetDatabaseAfterClear skipped: appState is nil — cannot pop views before recreating the container")
 			return
 		}
-		appState.sceneRouters.popAllStacks()
+		// Every window's; each keeps its tab (T308).
+		appState.windows.popAllStacks()
 		await Task.yield()
 		repointToFreshContainer()
 		appState.databaseResetID = UUID()
 	}
 
 	// Published Stuff
-	@Published var mqttProxyConnected: Bool = false
 	@Published var devices: [Device] = []
 	@Published var state: AccessoryManagerState
-	@Published var mqttError: String = ""
 	@Published var activeDeviceNum: Int64?
 	@Published var allowDisconnect = false
 	@Published var lastConnectionError: Error?
@@ -239,30 +238,26 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// against entities that still hold pre-import values: every item would look dropped. See
 	/// `DeviceProfileVerifier`.
 	@Published var lastConfigRefresh: Date?
-	/// When the radio's node database was last saved after a connect. Views that read values the
-	/// dump brings in (the unheard-on-current-LoRa notice) refresh on this, because the connect
-	/// reaches `.subscribed` before that save lands.
-	@Published var nodeDatabaseSavedAt: Date?
-	/// Bumped on each node database request and on disconnect, so a save finishing late for an
-	/// earlier request doesn't report the new one as saved.
-	private var nodeDatabaseSaveGeneration = 0
-	/// Node numbers in the node database download in progress. When it completes, nodes the radio
-	/// left out are marked unknown for heard-on-current-LoRa: the radio no longer has them.
-	var nodeDatabaseDumpNums: Set<Int64> = []
-	var nodeDatabaseDumpInProgress = false
-	/// The LoRa change the node database download in progress was asked for, or nil when it was
-	/// asked for by something else (the connect).
-	private var nodeDatabaseRequestLoRaChange: Int?
-	/// True from an app-initiated LoRa change until the node database asked for after the latest
-	/// one is saved. Until then the radio's heard-on-current-LoRa answers are for older settings,
-	/// so the unheard notice stays hidden rather than offering to remove nodes from them.
-	@Published private(set) var awaitingNodeDatabaseAfterLoRaChange = false
-	private var loraChangeTracker = LoRaChangeNodeDatabaseTracker() {
-		didSet { awaitingNodeDatabaseAfterLoRaChange = loraChangeTracker.isAwaiting }
-	}
+	/// When each connected radio's node database was last saved after it was asked for, by node
+	/// number. Views that read values the dump brings in (the unheard-on-current-LoRa notice and
+	/// markers) refresh on this, because the connect reaches `.subscribed` before that save lands.
+	/// Per radio (feature 021): each radio's dump answers for its own settings. The download
+	/// itself is tracked on its `RadioSession`.
+	@Published var nodeDatabaseSavedAt: [Int64: Date] = [:]
+	/// Radios from an app-initiated LoRa change until the node database asked for after the
+	/// latest one is saved. Until then the radio's heard-on-current-LoRa answers are for older
+	/// settings, so its unheard notice stays hidden rather than offering to remove nodes from them.
+	@Published private(set) var radiosAwaitingNodeDatabaseAfterLoRaChange: Set<Int64> = []
 	@Published var isConnecting: Bool = false
 	@Published var isInBackground: Bool = false
-	@Published var firmwareEdition: FirmwareEditions = .vanilla
+	/// The first radio's firmware edition (kept on its `RadioSession`, T069).
+	var firmwareEdition: FirmwareEditions {
+		get { activeConnection?.firmwareEdition ?? .vanilla }
+		set {
+			objectWillChange.send()
+			activeConnection?.firmwareEdition = newValue
+		}
+	}
 	/// Mirrors the BLE transport's `TransportStatus`, most notably `.error(BLETransport.
 	/// poweredOffStatusMessage)` when CoreBluetooth reports `.poweredOff`. Nothing read
 	/// `BLETransport.status` before this (#2175): with the system "Bluetooth is turned off"
@@ -272,18 +267,103 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// another round of plumbing. See `isBluetoothPoweredOff` below and `observeBLETransportStatus()`.
 	@Published var bleTransportStatus: TransportStatus = .uninitialized
 
-	/// MESHTASTIC_LOCKDOWN-hardened firmware state machine. See
-	/// Meshtastic/Helpers/LockdownCoordinator.swift and
-	/// specs/007-lockdown-mode/. Set by MeshtasticApp at startup.
-	var lockdownCoordinator: LockdownCoordinator?
-
 	/// Region → legal-preset lookup advertised by the connected radio during the
 	/// want_config handshake (FromRadio.region_presets, 2.8+). Empty when the
 	/// firmware predates the feature or hasn't sent it yet — callers must treat an
 	/// absent region (or an empty map) as "no constraint". Reset on disconnect.
-	@Published var loRaRegionPresets: [Config.LoRaConfig.RegionCode: RegionPresetInfo] = [:]
+	/// The first radio's region → legal preset map (kept on its `RadioSession`, T069).
+	var loRaRegionPresets: [Config.LoRaConfig.RegionCode: RegionPresetInfo] {
+		get { activeConnection?.loRaRegionPresets ?? [:] }
+		set {
+			objectWillChange.send()
+			activeConnection?.loRaRegionPresets = newValue
+		}
+	}
 
-	var activeConnection: (device: Device, connection: any Connection)?
+	/// The live connection, if any. A `RadioSession` rather than a bare (device, connection) pair
+	/// so every event and handler can carry which connection it belongs to (feature 021).
+	var activeConnection: RadioSession? {
+		didSet { Logger.datadog.setConnectedRadioCount(connectedRadioCount) }
+	}
+	/// Feature 021: radios connected alongside the first one (`activeConnection`), by device
+	/// id. See `AccessoryManager+AdditionalRadios.swift`.
+	@Published var additionalRadios: [UUID: RadioSession] = [:] {
+		didSet { Logger.datadog.setConnectedRadioCount(connectedRadioCount) }
+	}
+	/// Connects in progress, the first radio's and others', by device id (T071): one at a time per radio.
+	var connectAttempts: [UUID: ConnectAttempt] = [:]
+	/// Why the last connect of a radio other than the first one failed, by device id, until its
+	/// next connect starts or it's disconnected by the user (T300). The first radio's is
+	/// `lastConnectionError`.
+	@Published var radioConnectErrors: [UUID: Error] = [:]
+	/// Each radio's node number by device id, kept after it disconnects, so a window whose radio
+	/// is off still knows which radio it is (review V11 W7). Seeded at launch from the store.
+	var knownNodeNums: [UUID: Int64] = [:]
+	/// The radio the one window shows (iPhone, iPad), set by `OneWindowRadioScope`: it isn't
+	/// asked about by name, since the window shows its own sheets (T314).
+	var oneWindowShownRadio: UUID?
+	/// The user's radios connected with this version, for the services' radio choice (W-15).
+	/// Loaded at launch and after connects and removals (`refreshKnownRadios`).
+	@Published var knownRadios: [StoredRadio] = []
+	/// The device each radio in the store last connected on (its `peripheralId`), by node number:
+	/// the window a radio known on several devices has (W-03). Loaded with `knownRadios`.
+	@Published var radioLastDeviceIds: [Int64: UUID] = [:]
+	/// A radio the user disconnected, by device id. Its window stays, showing it off with Connect
+	/// (W-02); on the Mac it opens again the next time the radio connects, if it was closed. Sent
+	/// as the Disconnect starts, before the radio's link closes (review V28-1).
+	let radioDisconnectedByUser = PassthroughSubject<UUID, Never>()
+	/// A radio the user removed, by each device id it was known by: its window closes (W-02).
+	let radioRemoved = PassthroughSubject<UUID, Never>()
+	/// Radios being removed, by node number (review V27-2): not offered again, nor listed as off.
+	@Published var radiosBeingRemoved: Set<Int64> = []
+	/// The device ids of the radios being removed: `connect(to:)` refuses them meanwhile (review
+	/// V27-1), so neither discovery, a reconnect loop nor a tap brings one back mid-removal.
+	var deviceIdsBeingRemoved: Set<UUID> = []
+	/// Radios whose link is closed for a firmware update, by device id, until the update's sheet
+	/// hands them back (`reclaimRadioAfterUpdate`): not shown as off with Connect (review V27-6).
+	var radiosReleasedForUpdate: Set<UUID> = []
+	/// Each radio's firmware version as it last reported it this launch, by node number (T018):
+	/// what `checkIsVersionSupported` falls back to while a radio's live version is unknown.
+	var knownFirmwareVersions: [Int64: String] = [:]
+	/// A radio the window isn't showing needs the user (locked, or firmware too old); ContentView asks
+	/// about it by name (T073). One at a time; when it's answered or dismissed, the next radio
+	/// waiting in `pendingAttentionPrompts` is asked about (T154).
+	@Published var radioAttentionPrompt: RadioAttentionPrompt? {
+		didSet {
+			if radioAttentionPrompt == nil, oldValue != nil {
+				showNextAttentionPrompt()
+			}
+		}
+	}
+	/// Radios that needed the user while another radio's prompt was up, oldest first.
+	var pendingAttentionPrompts: [RadioAttentionPrompt] = []
+	/// A locked radio the window isn't showing, whose passphrase the user is entering; ContentView shows
+	/// its passphrase sheet (T188).
+	@Published var radioUnlockRequest: RadioUnlockRequest?
+	/// Sessions of additional radios that have been disconnected. Their late events are
+	/// dropped rather than mistaken for the first radio's.
+	var retiredAdditionalSessionIDs: Set<UUID> = []
+	/// Reconnect loops for additional radios that dropped, by device id (T063).
+	var additionalRadioReconnects: [UUID: Task<Void, Never>] = [:]
+	/// Each loop's wake-up for discovery seeing its radio (`radioSeen`).
+	var radioSightings: [UUID: AsyncStream<Void>.Continuation] = [:]
+	/// Radios iOS restored alongside the first one, until its restore has started
+	/// (`claimRestoredRadios`).
+	var restoredRadiosToClaim: [Device] = []
+	/// Radios discovery has seen this launch, kept after `stopDiscovery()` empties `devices`, so a
+	/// remembered TCP radio found by Bonjour can still be brought back after the first radio's
+	/// connect stops discovery (T156).
+	var recentlyDiscoveredDevices: [UUID: Device] = [:]
+	/// The RSSI discovery last showed for each radio, and when (`showsDiscoveryRssi`).
+	var shownDiscoveryRssi: [UUID: ShownRssi] = [:]
+	/// The Connect screens showing (the Mac's Connect window, the Connect tab's radio list), which
+	/// keep discovery going (`stopDiscoveryWhenUnneeded`).
+	var connectScreens: Set<UUID> = []
+	/// One radio's config and node-DB handshake at a time, the first radio's or another's (T064).
+	let handshakeGate = HandshakeGate()
+	/// Bumped by `disconnect()`, so the first radio's connect still waiting at `handshakeGate` sees the
+	/// user cancelled it (there is no `connectionStepper` to cancel yet).
+	var connectCancelGeneration = 0
 
 	/// Reference to the active discovery scan engine, if any
 	var discoveryScanEngine: DiscoveryScanEngine?
@@ -294,8 +374,6 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	let transports: [any Transport]
 
 	// Config
-	public var wantRangeTestPackets = false
-	var wantStoreAndForwardPackets = false
 	var shouldAutomaticallyConnectToPreferredPeripheralAfterError = true
 	/// Set when a lost bond ends a connect. Auto-reconnect stays off for the rest of the app
 	/// session — reconnecting can never fix a lost bond, and any later transient error would
@@ -303,6 +381,15 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// fresh app launch clears this.
 	var autoReconnectSuspendedForSession = false
 	var userRequestedConnectionCancellation = false
+	/// The first radio's link was closed for a firmware update, not by the user (review V12 Y2):
+	/// the one window keeps showing it rather than another radio. Cleared when it connects again
+	/// or the user disconnects.
+	var firstRadioReleasedForUpdate = false
+	/// A radio alongside connecting as the first radio in the preferred radio's place (T360), with
+	/// the preferred radio and the user-disconnect flag from before it started. The user's
+	/// Disconnect or Remove of it before it has connected puts them back (`restorePreferred`), so the
+	/// cancelled radio stays off and the preferred radio still comes back (review V16 S1, V17 U1).
+	var standInConnect: StandInConnect?
 
 	/// True while a device switch (backup → clear → restore → connect) is in flight.
 	/// Suppresses the discovery restart in `closeConnection()` and auto-connect on
@@ -321,7 +408,6 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// Consumes `BLETransport.statusUpdates()` for the lifetime of this manager; see
 	/// `observeBLETransportStatus()`.
 	var bleStatusTask: Task<Void, Never>?
-	var connectionEventTask: Task <Void, Error>?
 	var locationTask: Task<Void, Error>?
 	/// The detached device image/link pass spawned by connect Step 3b. Held so a disconnect can
 	/// cancel it — otherwise, on a captive portal, its ~78 image HEADs hang ~60s each (no request
@@ -346,12 +432,13 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	@Published private(set) var isHighMeshTraffic = false
 	private var meshTrafficCancellable: AnyCancellable?
 
-	/// Packet count at the last periodic MeshPackets recycle (see `didReceive`). The ingest
-	/// actor's ModelContext registers every entity it inserts or faults and never lets go, so a
-	/// long high-traffic session accumulates them without bound (a sustained TCP stress replay
-	/// reached millions of live model objects / multi-GB RSS). Recreating the actor releases
-	/// them; connect-time recreation alone doesn't help a session that stays connected.
-	var packetsAtLastIngestRecycle: Int = 0
+	/// Data packets from every radio since the last periodic MeshPackets recycle
+	/// (`noteIngestedPacket`). The ingest actor's ModelContext registers every entity it inserts
+	/// or faults and never lets go, so a long high-traffic session accumulates them without bound
+	/// (a sustained TCP stress replay reached millions of live model objects / multi-GB RSS).
+	/// Recreating the actor releases them; connect-time recreation alone doesn't help a session
+	/// that stays connected. Every radio's packets go through the same actor, so all count (T151).
+	var ingestPacketsSinceRecycle: Int = 0
 	/// How many packets between recycles. Each processed packet leaves a handful of registered
 	/// objects behind, so this bounds the ingest context's working set to a few hundred MB at
 	/// worst. Under a saturating TCP replay this fires every couple of minutes; on a busy real
@@ -360,25 +447,44 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// plus cold caches on the next few fetches.
 	static let ingestRecycleInterval = 5_000
 
-	// Debug counter: MQTT client-proxy downlink packets dropped before forwarding
-	// to the device because they carried no payload (see MqttForwardFilter). NOT
-	// @Published — read only for debug logging, so it needn't drive view updates.
-	// Mutated on the main actor: CocoaMQTT delivers delegate callbacks on its
-	// default main delegateQueue, so onMqttMessageReceived runs on MainActor.
-	var mqttProxyDroppedNoPayload: Int = 0
+	/// Counts one handled data packet, from any radio, and every `ingestRecycleInterval` of them
+	/// recycles the ingest actor so its ModelContext releases accumulated registered objects.
+	/// Never during a radio's handshake (its node dump runs on the actor, T064); between packets
+	/// otherwise, flushing first. The retired actor keeps saving writes still in flight from
+	/// other radios (`recreateShared(invalidatingPrevious: false)`).
+	func noteIngestedPacket() async {
+		ingestPacketsSinceRecycle += 1
+		guard ingestPacketsSinceRecycle >= Self.ingestRecycleInterval, !handshakeGate.isBusy else { return }
+		ingestPacketsSinceRecycle = 0
+		await MeshPackets.shared.flushDebouncedSaves()
+		MeshPackets.recreateShared(invalidatingPrevious: false)
+	}
 	
-	// Continuations
-	private var activeAutomaticConfigRefresh: AutomaticConfigRefresh?
-	private var automaticConfigRefreshTask: Task<Void, Never>?
+	// Continuations. The config refresh, the first-node wait and the node-DB gate belong to one
+	// connection and live on its `RadioSession` (feature 021, T069).
 	private var nextAutomaticConfigRefreshGeneration: UInt64 = 0
-	var firstDatabaseNodeInfoContinuation: CheckedContinuation<Void, Error>?
-	var wantDatabaseGate: AsyncGate = AsyncGate()
 
 	// Misc
-	@Published var expectedNodeDBSize: Int?
+	/// How many nodes the first radio said its node DB holds (kept on its `RadioSession`, T069).
+	var expectedNodeDBSize: Int? {
+		get { activeConnection?.expectedNodeDBSize }
+		set {
+			objectWillChange.send()
+			activeConnection?.expectedNodeDBSize = newValue
+		}
+	}
+
+	/// Sets a value on `session`, telling the views when it's the first radio's (T069).
+	func update<T>(_ session: RadioSession, _ keyPath: ReferenceWritableKeyPath<RadioSession, T>, to value: T) {
+		if session === activeConnection {
+			objectWillChange.send()
+		}
+		session[keyPath: keyPath] = value
+	}
 	
-	var heartbeatTimer: ResettableTimer?
-	var heartbeatResponseTimer: ResettableTimer?
+	/// The first radio's heartbeat timers (on its `RadioSession`, T069).
+	var heartbeatTimer: ResettableTimer? { activeConnection?.heartbeatTimer }
+	var heartbeatResponseTimer: ResettableTimer? { activeConnection?.heartbeatResponseTimer }
 	/// How long a TCP/serial connection may sit idle (no data or log packets) before we send a
 	/// keep-alive heartbeat. The timer is resettable, so an active link never sends one — heartbeats
 	/// only fire after this much silence. BLE does not use this at all (Core Bluetooth manages the
@@ -389,7 +495,6 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	init(transports: [any Transport] = [BLETransport(), TCPTransport()]) {
 		self.transports = transports
 		self.state = .uninitialized
-		self.mqttManager.delegate = self
 
 		// Listen for system memory warnings to proactively save pending changes
 		if ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil {
@@ -445,22 +550,27 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		// A firmware update owns the radio: reconnecting mid-update fights the
 		// updater for the device while it is rebooting into its bootloader.
 		if otaInProgress { return }
-		if !self.isConnected && !self.isConnecting,
-		   let preferredDevice = device ?? self.devices.first(where: { $0.id.uuidString == UserDefaults.preferredPeripheralId }) {
+		if !self.isConnected && !self.isConnecting && !hasFirstConnectInProgress,
+		   let preferredDevice = device
+			?? self.devices.first(where: { $0.id.uuidString == PreferredRadio.peripheralId }),
+		   // Connected alongside already (the first radio dropped and this one stayed).
+		   !isRadioConnected(preferredDevice.id) {
 			Task {
 				try await self.connect(to: preferredDevice)
 			}
 		}
 	}
 
-	func sendWantConfig() async throws {
-		if let activeAutomaticConfigRefresh {
-			return try await waitForAutomaticConfigRefresh(activeAutomaticConfigRefresh.owner)
-		}
-		guard let connection = activeConnection?.connection else {
+	/// Asks `session`'s radio (the first one by default) for its config and waits for it.
+	func sendWantConfig(on session: RadioSession? = nil) async throws {
+		guard let session = session ?? activeConnection else {
 			Logger.transport.error("Unable to send wantConfig (config): No device connected")
 			return
 		}
+		if let refresh = session.automaticConfigRefresh {
+			return try await waitForAutomaticConfigRefresh(refresh.owner, session: session)
+		}
+		let connection = session.connection
 
 		// Note: stale-node pruning used to run here, serializing a full fetch+delete+save on the
 		// ingestion actor ahead of the config handshake and node-DB dump (one cause of slow/hung
@@ -468,46 +578,48 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		// also prunes against post-dump lastHeard values instead of pre-dump ones.
 		nextAutomaticConfigRefreshGeneration &+= 1
 		let owner = AutomaticChannelRefreshOwner(
-			sessionID: activeConnection?.device.id ?? UUID(),
+			sessionID: session.device.id,
 			generation: nextAutomaticConfigRefreshGeneration
 		)
 		let channelRefreshBaselineByNode = MeshPackets.captureChannelRefreshBaselines(in: context)
-		activeAutomaticConfigRefresh = AutomaticConfigRefresh(
+		session.automaticConfigRefresh = AutomaticConfigRefresh(
 			owner: owner,
 			sessionID: owner.sessionID,
 			channelRefreshBaselineByNode: channelRefreshBaselineByNode,
-			nodeNum: activeConnection?.device.num ?? activeDeviceNum
+			nodeNum: session.device.num ?? activeDeviceNum
 		)
-		automaticConfigRefreshTask = Task { @MainActor [weak self] in
-			await self?.runAutomaticConfigRefresh(owner: owner, connection: connection)
+		session.automaticConfigRefreshTask = Task { @MainActor [weak self] in
+			await self?.runAutomaticConfigRefresh(owner: owner, session: session, connection: connection)
 		}
-		try await waitForAutomaticConfigRefresh(owner)
+		try await waitForAutomaticConfigRefresh(owner, session: session)
 	}
 
-	private func runAutomaticConfigRefresh(owner: AutomaticChannelRefreshOwner, connection: Connection) async {
-		guard !Task.isCancelled, activeAutomaticConfigRefresh?.owner == owner else { return }
+	private func runAutomaticConfigRefresh(owner: AutomaticChannelRefreshOwner, session: RadioSession, connection: Connection) async {
+		guard !Task.isCancelled, session.automaticConfigRefresh?.owner == owner else { return }
+		// Its records save together when the config completes or the download ends (review V39).
+		await MeshPackets.shared.beginConfigDownload(owner.sessionID, nodeNum: session.device.num)
 		do {
 			try Task.checkCancellation()
 			var toRadio: ToRadio = ToRadio()
 			toRadio.wantConfigID = UInt32(NONCE_ONLY_CONFIG)
-			try await send(toRadio)
+			try await send(toRadio, via: session)
 			try Task.checkCancellation()
 			try await connection.startDrainPendingPackets()
 			try Task.checkCancellation()
 		} catch {
-			await finishAutomaticConfigRefresh(owner: owner, error: error)
+			await finishAutomaticConfigRefresh(owner: owner, session: session, error: error)
 		}
 	}
 
-	private func waitForAutomaticConfigRefresh(_ owner: AutomaticChannelRefreshOwner) async throws {
+	private func waitForAutomaticConfigRefresh(_ owner: AutomaticChannelRefreshOwner, session: RadioSession) async throws {
 		let waiterID = UUID()
 		try await withTaskCancellationHandler {
 			try await withCheckedThrowingContinuation { continuation in
-				registerAutomaticConfigRefreshWaiter(continuation, id: waiterID, owner: owner)
+				registerAutomaticConfigRefreshWaiter(continuation, id: waiterID, owner: owner, session: session)
 			}
 		} onCancel: {
 			Task { @MainActor in
-				self.cancelAutomaticConfigRefreshWaiter(id: waiterID, owner: owner)
+				self.cancelAutomaticConfigRefreshWaiter(id: waiterID, owner: owner, session: session)
 			}
 		}
 	}
@@ -515,30 +627,33 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	private func registerAutomaticConfigRefreshWaiter(
 		_ continuation: CheckedContinuation<Void, Error>,
 		id: UUID,
-		owner: AutomaticChannelRefreshOwner
+		owner: AutomaticChannelRefreshOwner,
+		session: RadioSession
 	) {
 		guard !Task.isCancelled,
-			  var refresh = activeAutomaticConfigRefresh,
+			  var refresh = session.automaticConfigRefresh,
 			  refresh.owner == owner else {
 			continuation.resume(throwing: CancellationError())
 			return
 		}
 		refresh.waiters[id] = continuation
-		activeAutomaticConfigRefresh = refresh
+		session.automaticConfigRefresh = refresh
 	}
 
-	private func cancelAutomaticConfigRefreshWaiter(id: UUID, owner: AutomaticChannelRefreshOwner) {
-		guard var refresh = activeAutomaticConfigRefresh,
+	private func cancelAutomaticConfigRefreshWaiter(id: UUID, owner: AutomaticChannelRefreshOwner, session: RadioSession) {
+		guard var refresh = session.automaticConfigRefresh,
 			  refresh.owner == owner,
 			  let continuation = refresh.waiters.removeValue(forKey: id) else { return }
-		activeAutomaticConfigRefresh = refresh
+		session.automaticConfigRefresh = refresh
 		continuation.resume(throwing: CancellationError())
 	}
 
-	private func finishAutomaticConfigRefresh(owner: AutomaticChannelRefreshOwner, error: Error?) async {
-		guard let refresh = activeAutomaticConfigRefresh, refresh.owner == owner else { return }
-		activeAutomaticConfigRefresh = nil
-		automaticConfigRefreshTask = nil
+	private func finishAutomaticConfigRefresh(owner: AutomaticChannelRefreshOwner, session: RadioSession, error: Error?) async {
+		guard let refresh = session.automaticConfigRefresh, refresh.owner == owner else { return }
+		session.automaticConfigRefresh = nil
+		session.automaticConfigRefreshTask = nil
+		// The download's records, saved together before whatever waits on it reads them.
+		await MeshPackets.shared.endConfigDownload(owner.sessionID)
 		if let error {
 			if let nodeNum = refresh.nodeNum {
 				await MeshPackets.shared.discardChannelRefreshStage(for: nodeNum, owner: owner)
@@ -553,18 +668,18 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		}
 	}
 
-	func beginAutomaticChannelRefreshStageIfNeeded(for nodeNum: Int64) async {
-		guard var refresh = activeAutomaticConfigRefresh,
-			  refresh.sessionID == activeConnection?.device.id else { return }
+	func beginAutomaticChannelRefreshStageIfNeeded(for nodeNum: Int64, session: RadioSession) async {
+		guard var refresh = session.automaticConfigRefresh,
+			  refresh.sessionID == session.device.id else { return }
 		refresh.nodeNum = nodeNum
-		activeAutomaticConfigRefresh = refresh
+		session.automaticConfigRefresh = refresh
 		let owner = refresh.owner
 		let didBegin = await MeshPackets.shared.beginChannelRefreshStage(
 			for: nodeNum,
 			owner: owner,
 			baseline: refresh.channelRefreshBaselineByNode[nodeNum] ?? []
 		)
-		guard didBegin, activeAutomaticConfigRefresh?.owner == owner else {
+		guard didBegin, session.automaticConfigRefresh?.owner == owner else {
 			if didBegin {
 				await MeshPackets.shared.discardChannelRefreshStage(for: nodeNum, owner: owner)
 			}
@@ -572,76 +687,159 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		}
 	}
 
-	/// Asks the connected radio for its node database again after its LoRa settings changed.
+	/// Asks the radio for its node database again after its LoRa settings changed.
 	///
 	/// Firmware 2.8 applies a LoRa change without rebooting, so there is no reconnect and no fresh
 	/// node database, and the radio's NodeInfo.heard_on_current_lora answers for the new settings
 	/// never reach the app. The database completion saves the dump and publishes
-	/// `nodeDatabaseSavedAt`, which is what the unheard notice and node rows refresh on.
-	func refreshNodeDatabaseAfterLoRaChange() {
-		guard reportsHeardOnCurrentLora, isConnected else { return }
-		let generation = loraChangeTracker.changed()
+	/// `nodeDatabaseSavedAt`, which is what the unheard notice and node rows refresh on. For radio
+	/// `radioNum`, whichever of the connected radios it is (feature 021: each answers for its own
+	/// settings).
+	func refreshNodeDatabaseAfterLoRaChange(forRadio radioNum: Int64?) {
+		guard let session = connectedSession(forRadio: radioNum), reportsHeardOnCurrentLora(on: session) else { return }
+		let generation = updateLoRaChangeTracker(of: session) { $0.changed() }
 		Task { @MainActor in
 			// Let the radio finish reprogramming the modem before asking.
 			try? await Task.sleep(for: .seconds(2))
 			// One download at a time: the completion doesn't say which request it answers.
-			while self.nodeDatabaseDumpInProgress, self.isConnected {
+			while session.nodeDatabaseDumpInProgress, self.isStillConnected(session) {
 				try? await Task.sleep(for: .milliseconds(250))
 			}
-			guard self.isConnected else {
-				self.loraChangeTracker.reset()
+			guard self.isStillConnected(session) else {
+				self.updateLoRaChangeTracker(of: session) { $0.reset() }
 				return
 			}
 			// A newer change is waiting its turn and will ask instead.
-			guard self.loraChangeTracker.request(generation) else { return }
+			guard self.updateLoRaChangeTracker(of: session, { $0.request(generation) }) else { return }
 			do {
-				try await self.sendWantDatabase(forLoRaChange: generation)
+				try await self.sendWantDatabase(on: session, forLoRaChange: generation)
 			} catch {
 				Logger.transport.error("[LoRa] Could not refresh the node database after a settings change: \(error.localizedDescription, privacy: .public)")
-				self.loraChangeTracker.finished(generation)
+				self.updateLoRaChangeTracker(of: session) { $0.finished(generation) }
 			}
 		}
 	}
 
-	func sendWantDatabase(forLoRaChange loraChange: Int? = nil) async throws {
-		nodeDatabaseRequestLoRaChange = loraChange
-		nodeDatabaseSaveGeneration += 1
-		nodeDatabaseSavedAt = nil
-		nodeDatabaseDumpNums = []
-		nodeDatabaseDumpInProgress = true
-		if let firstDatabaseNodeInfoContinuation = firstDatabaseNodeInfoContinuation {
-			Logger.transport.info("[Accessory] Existing continuation for firstDatabaseNodeInfo. Cancelling.")
-			self.firstDatabaseNodeInfoContinuation = nil
-			firstDatabaseNodeInfoContinuation.resume(throwing: CancellationError())
+	/// Changes `session`'s LoRa-change tracker and publishes whether its radio is waiting for its
+	/// node database (`radiosAwaitingNodeDatabaseAfterLoRaChange`).
+	@discardableResult
+	func updateLoRaChangeTracker<Result>(of session: RadioSession, _ change: (inout LoRaChangeNodeDatabaseTracker) -> Result) -> Result {
+		let result = change(&session.loraChangeTracker)
+		if let radioNum = session.nodeNum {
+			if session.loraChangeTracker.isAwaiting {
+				radiosAwaitingNodeDatabaseAfterLoRaChange.insert(radioNum)
+			} else {
+				radiosAwaitingNodeDatabaseAfterLoRaChange.remove(radioNum)
+			}
 		}
-		
-		guard let connection = activeConnection?.connection else {
+		return result
+	}
+
+	/// Whether `session` is still its radio's connection: not torn down, not replaced.
+	func isStillConnected(_ session: RadioSession) -> Bool {
+		guard let radioNum = session.nodeNum else { return false }
+		return connectedSession(forRadio: radioNum) === session
+	}
+
+	/// Asks `session`'s radio (the first one by default) for its node DB and waits for the first node.
+	func sendWantDatabase(on session: RadioSession? = nil, forLoRaChange loraChange: Int? = nil) async throws {
+		guard let session = session ?? activeConnection else {
 			Logger.transport.error("Unable to send wantConfig (Database): No device connected")
 			return
 		}
+		// Each radio's dump answers heard-on-current-LoRa for its own observations (feature 021).
+		session.nodeDatabaseRequestLoRaChange = loraChange
+		session.nodeDatabaseSaveGeneration += 1
+		if let radioNum = session.nodeNum {
+			nodeDatabaseSavedAt[radioNum] = nil
+		}
+		session.nodeDatabaseDumpNums = []
+		session.nodeDatabaseDumpInProgress = true
+		if let firstDatabaseNodeInfoContinuation = session.firstDatabaseNodeInfoContinuation {
+			Logger.transport.info("[Accessory] Existing continuation for firstDatabaseNodeInfo. Cancelling.")
+			session.firstDatabaseNodeInfoContinuation = nil
+			firstDatabaseNodeInfoContinuation.resume(throwing: CancellationError())
+		}
+		let connection = session.connection
 		
 		try await withTaskCancellationHandler {
 			var toRadio: ToRadio = ToRadio()
 			toRadio.wantConfigID = UInt32(NONCE_ONLY_DB)
-			try await self.send(toRadio)
+			session.databaseResponseArrived = false
+			try await self.send(toRadio, via: session)
 			try await connection.startDrainPendingPackets()
-			try await withCheckedThrowingContinuation { cont in
-				firstDatabaseNodeInfoContinuation = cont
+			// An empty node DB can be answered before this point; then there's nothing to wait for.
+			if !session.databaseResponseArrived {
+				try await withCheckedThrowingContinuation { cont in
+					session.firstDatabaseNodeInfoContinuation = cont
+				}
 			}
-			firstDatabaseNodeInfoContinuation = nil
+			session.firstDatabaseNodeInfoContinuation = nil
 			Logger.transport.info("✅ [Accessory] NONCE_ONLY_DB first NodeInfo received.")
 		} onCancel: {
 			Task { @MainActor in
-				if let continuation = firstDatabaseNodeInfoContinuation {
-					firstDatabaseNodeInfoContinuation = nil
+				if let continuation = session.firstDatabaseNodeInfoContinuation {
+					session.firstDatabaseNodeInfoContinuation = nil
 					continuation.resume(throwing: CancellationError())
 				}
 			}
 		}
 	}
 	
-	func waitForWantDatabaseResponse() async throws {
-		try await wantDatabaseGate.wait()
+	func waitForWantDatabaseResponse(on session: RadioSession? = nil) async throws {
+		guard let session = session ?? activeConnection else {
+			throw AccessoryError.disconnected("No device connected")
+		}
+		try await session.wantDatabaseGate.wait()
+	}
+
+	/// Tears down what belongs to one connection (feature 021, T070): its config refresh (or a
+	/// channel refresh stage left open), its event loop, heartbeats and handshake waits. The
+	/// caller has already taken it out of `activeConnection`, so none of its events are handled
+	/// any more. Everything app-wide stays in `closeConnection()`.
+	func tearDown(_ session: RadioSession) async {
+		// Its MQTT client proxy goes first, so broker packets stop coming in for it.
+		stopMqtt(session)
+		// Lock-down: clear its per-connection state. If a Lock Now was in flight, the
+		// disconnect resolves its coordinator to `.lockNowAcknowledged`.
+		session.lockdown.onDisconnect()
+		// A prompt about a radio that's gone no longer applies (T073).
+		if radioAttentionPrompt?.id == session.device.id {
+			radioAttentionPrompt = nil
+		}
+		if let refresh = session.automaticConfigRefresh {
+			session.automaticConfigRefreshTask?.cancel()
+			await finishAutomaticConfigRefresh(owner: refresh.owner, session: session, error: CancellationError())
+		} else if let nodeNum = session.nodeNum {
+			await MeshPackets.shared.discardChannelRefreshStage(for: nodeNum)
+		}
+
+		session.eventTask?.cancel()
+		session.eventTask = nil
+
+		await session.heartbeatTimer?.cancel(withReason: "Closing connection")
+		await session.heartbeatResponseTimer?.cancel(withReason: "Closing connection")
+		session.heartbeatTimer = nil
+		session.heartbeatResponseTimer = nil
+
+		// Clean up continuations — nil before resume to prevent double-resume races
+		if let continuation = session.firstDatabaseNodeInfoContinuation {
+			session.firstDatabaseNodeInfoContinuation = nil
+			continuation.resume(throwing: CancellationError())
+		}
+
+		await session.wantDatabaseGate.cancelAll()
+		await session.wantDatabaseGate.reset()
+		// A dropped connection never finishes its download; the reconnect brings a fresh one.
+		if let radioNum = session.nodeNum {
+			forgetNodeDatabaseState(ofRadio: radioNum)
+		}
+	}
+
+	/// Clears what's published about radio `radioNum`'s node database downloads.
+	func forgetNodeDatabaseState(ofRadio radioNum: Int64) {
+		nodeDatabaseSavedAt[radioNum] = nil
+		radiosAwaitingNodeDatabaseAfterLoRaChange.remove(radioNum)
 	}
 
 	// Fully tears down a connection and sets up the AccessoryManager for the next.
@@ -655,9 +853,6 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		isClosingConnection = true
 		defer { isClosingConnection = false }
 
-		nodeDatabaseSaveGeneration += 1
-		nodeDatabaseSavedAt = nil
-
 		Logger.transport.debug("[AccessoryManager] received disconnect request")
 
 		// Here rather than in `disconnect()`: an unexpected link loss, a failed connect and a
@@ -667,62 +862,40 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		Logger.datadog.clearRadioContext()
 
 		let closingNodeNum = activeConnection?.device.num ?? activeDeviceNum
+		// The connection's own state lives on its session (T069); keep hold of it while it's torn down.
+		let closing = activeConnection
 
 		if let activeConnection {
 			updateDevice(deviceId: activeConnection.device.id, key: \.connectionState, value: .disconnected)
 			self.activeConnection = nil
 		}
+		// Feature 021: other radios stay connected and keep their windows; this one is brought
+		// back by discovery, as a single radio is (D-19: nothing takes its place).
 		self.activeDeviceNum = nil
 		self.firmwareUpdateRequired = false
-		// A dropped connection never finishes its download; the reconnect brings a fresh one.
-		loraChangeTracker.reset()
-		nodeDatabaseDumpInProgress = false
-		nodeDatabaseRequestLoRaChange = nil
-		if let refresh = activeAutomaticConfigRefresh {
-			automaticConfigRefreshTask?.cancel()
-			await finishAutomaticConfigRefresh(owner: refresh.owner, error: CancellationError())
+		if let closing {
+			await tearDown(closing)
 		} else if let closingNodeNum {
+			forgetNodeDatabaseState(ofRadio: closingNodeNum)
 			await MeshPackets.shared.discardChannelRefreshStage(for: closingNodeNum)
 		}
-
-		// Lockdown: clear per-connection state. If a Lock Now was in flight, the
-		// disconnect resolves the coordinator to `.lockNowAcknowledged`.
-		lockdownCoordinator?.onDisconnect()
 
 		// Stop sampling and clear the traffic gate so a stale "high traffic" flag can't linger and
 		// keep the map flyover paused after the mesh goes quiet on disconnect.
 		meshTrafficMonitor.reset()
 
-		connectionEventTask?.cancel()
-		connectionEventTask = nil
-
-		locationTask?.cancel()
-		locationTask = nil
+		// With other radios still connected the loop keeps sharing the phone's position with
+		// them (T185); with none, it stops as before.
+		if additionalRadios.isEmpty {
+			locationTask?.cancel()
+			locationTask = nil
+		}
 
 		// Cancel the detached device image/link pass so its outstanding image HEADs unwind instead of
 		// hanging past teardown. The pass leaves the throttle un-armed when cancelled, so the next
 		// connect still runs a real restore.
 		deviceRefreshTask?.cancel()
 		deviceRefreshTask = nil
-		
-		await heartbeatTimer?.cancel(withReason: "Closing connection")
-		await heartbeatResponseTimer?.cancel(withReason: "Closing connection")
-		heartbeatTimer = nil
-		heartbeatResponseTimer = nil
-		
-		// Clean up continuations — nil before resume to prevent double-resume races
-		if let continuation = firstDatabaseNodeInfoContinuation {
-			firstDatabaseNodeInfoContinuation = nil
-			continuation.resume(throwing: CancellationError())
-		}
-		
-		await wantDatabaseGate.cancelAll()
-		await wantDatabaseGate.reset()
-
-		// Stop the MQTT proxy so it doesn't forward broker packets over BLE during reconnect,
-		// which would starve the wantConfig handshake. initializeMqtt() restarts it in Step 8.
-		// Disconnect unconditionally — mqttProxyConnected can be stale during a teardown race.
-		mqttManager.mqttClientProxy?.disconnect()
 
 		// Save any pending changes and let SwiftData manage object lifecycle on disconnect.
 		try? context.save()
@@ -743,13 +916,34 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		// radio's data. The switch flow restarts discovery itself if its connect fails.
 		if !isSwitchingDevices {
 			self.startDiscovery()
+			// With other radios connected and the first one off on purpose (the user's Disconnect or
+			// Remove), nothing needs it (review V41-1).
+			self.stopDiscoveryWhenUnneeded()
 		}
 	}
 	
 	// Should only be called by UI-facing callers.
-	func disconnect() async throws {
+	func disconnect(forUpdate: Bool = false) async throws {
 		guard !isClosingConnection else { return }
+		let disconnectedId = activeConnection?.device.id ?? connectAttempts.values.first(where: \.isFirst)?.device.id
+		// Nor brought back by a reconnect loop: one connecting it as the first radio, or left from
+		// when it was a radio alongside (review V14 P1).
+		if let disconnectedId {
+			additionalRadioReconnects.removeValue(forKey: disconnectedId)?.cancel()
+		}
 		self.userRequestedConnectionCancellation = true
+		firstRadioReleasedForUpdate = forUpdate
+		// Its window shows it off (W-02), unless it's only released for a firmware update
+		// (review V11 W1). Told before the teardown, while the one window still shows it: once
+		// `activeConnection` is nil the window can show another radio for a moment, and would no
+		// longer match this one as its radio (review V28-1).
+		if let disconnectedId, !forUpdate {
+			radioDisconnectedByUser.send(disconnectedId)
+		}
+		connectCancelGeneration &+= 1
+		for attempt in connectAttempts.values where attempt.isFirst {
+			attempt.isCancelled = true
+		}
 		// Cancel ongoing connection task if it exists
 		await self.connectionStepper?.cancel()
 
@@ -780,22 +974,27 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			Logger.transport.error("updateDevice<T> with nil deviceId")
 			return
 		}
+		if (key as AnyKeyPath) == \Device.num, let num = value as? Int64, num != 0 {
+			knownNodeNums[deviceId] = num
+		}
 		
 		// Update the active device if the UUID's match
 		if let activeConnection, activeConnection.device.id == deviceId {
-			var device = activeConnection.device
-			if device[keyPath: key] != value {
+			if activeConnection.device[keyPath: key] != value {
 				// Update the @Published stuff for the UI
 				self.objectWillChange.send()
-
-				device[keyPath: key] = value
-				self.activeConnection = (device: device, connection: activeConnection.connection)
-				
+				activeConnection.device[keyPath: key] = value
 			}
 			// Make sure activeDeviceNum is up to date.
-			if key == \.num, self.activeDeviceNum != device.num {
-				self.activeDeviceNum = device.num
+			if key == \.num, self.activeDeviceNum != activeConnection.device.num {
+				self.activeDeviceNum = activeConnection.device.num
 			}
+		}
+
+		// Feature 021: an additional radio's session device, updated in place like the first one.
+		if let additional = additionalRadios[deviceId], additional.device[keyPath: key] != value {
+			self.objectWillChange.send()
+			additional.device[keyPath: key] = value
 		}
 		
 		// Update the device in the devices array if it exists
@@ -848,8 +1047,29 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		}
 	}
 
-	func didReceive(_ event: ConnectionEvent) async {
+	/// Handles one event from a connection. `session` is the connection it came from; nil means
+	/// the active one (tests and older call sites).
+	///
+	/// Data, log and RSSI events from a session that is no longer the active one are dropped:
+	/// they are late arrivals from a torn-down connection, and handling them would store them
+	/// against whichever radio is connected now. Errors and disconnects are still handled as
+	/// before, since the connect retry flow depends on them.
+	func didReceive(_ event: ConnectionEvent, from session: RadioSession? = nil) async {
+		// Feature 021: an additional radio's events never reach the first radio's handling,
+		// where an error or disconnect would tear the first radio's connection down.
+		if let session, session !== activeConnection {
+			if let radio = additionalRadio(for: session) {
+				await didReceiveAdditional(event, session: radio)
+				return
+			}
+			if retiredAdditionalSessionIDs.contains(session.id) {
+				Logger.transport.debug("[Accessory] Dropping an event from a disconnected additional radio")
+				return
+			}
+		}
 		let shouldIgnoreTransientEvent = isClosingConnection || userRequestedConnectionCancellation || activeConnection == nil
+		let isFromStaleSession = session.map { $0 !== activeConnection } ?? false
+		let source = session ?? activeConnection
 
 		packetsReceived += 1
 
@@ -859,40 +1079,35 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				Logger.transport.debug("[Accessory] Dropping data event during disconnect teardown")
 				return
 			}
-			// Logger.transport.info("✅ [Accessory] didReceive: \(fromRadio.payloadVariant.debugDescription)")
-			await self.processFromRadio(fromRadio)
-			// Periodically recycle the ingest actor so its ModelContext releases accumulated
-			// registered objects (see packetsAtLastIngestRecycle). Only while subscribed —
-			// never mid node-DB retrieval — and only here, between packets, where no in-flight
-			// handler still holds the retiring instance. Flush first: recreateShared's
-			// invalidate deliberately drops a retired instance's pending writes.
-			if case .subscribed = state, packetsReceived - packetsAtLastIngestRecycle >= Self.ingestRecycleInterval {
-				packetsAtLastIngestRecycle = packetsReceived
-				await MeshPackets.shared.flushDebouncedSaves()
-				MeshPackets.recreateShared()
+			guard !isFromStaleSession, let source else {
+				Logger.transport.debug("[Accessory] Dropping data event from a connection that is no longer active")
+				return
 			}
+			// Logger.transport.info("✅ [Accessory] didReceive: \(fromRadio.payloadVariant.debugDescription)")
+			await self.processFromRadio(fromRadio, session: source)
+			await noteIngestedPacket()
 			Task {
-				await self.heartbeatResponseTimer?.cancel(withReason: "Data packet received")
-				await self.heartbeatTimer?.reset(delay: .seconds(Self.heartbeatInterval))
+				await source.heartbeatResponseTimer?.cancel(withReason: "Data packet received")
+				await source.heartbeatTimer?.reset(delay: .seconds(Self.heartbeatInterval))
 			}
 
 		case .logMessage(let message):
-			guard !shouldIgnoreTransientEvent else {
+			guard !shouldIgnoreTransientEvent, !isFromStaleSession else {
 				Logger.transport.debug("[Accessory] Dropping log event during disconnect teardown")
 				return
 			}
 			self.didReceiveLog(message: message)
 			Task {
-				await self.heartbeatResponseTimer?.cancel(withReason: "Log message packet received")
-				await self.heartbeatTimer?.reset(delay: .seconds(Self.heartbeatInterval))
+				await source?.heartbeatResponseTimer?.cancel(withReason: "Log message packet received")
+				await source?.heartbeatTimer?.reset(delay: .seconds(Self.heartbeatInterval))
 			}
 		
 		case .rssiUpdate(let rssi):
-			guard !shouldIgnoreTransientEvent else {
+			guard !shouldIgnoreTransientEvent, !isFromStaleSession else {
 				Logger.transport.debug("[Accessory] Dropping RSSI update during disconnect teardown")
 				return
 			}
-			guard let deviceId = self.activeConnection?.device.id else {
+			guard let deviceId = source?.device.id else {
 				Logger.transport.error("Could not update RSSI, no active connection")
 				return
 			}
@@ -992,40 +1207,78 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		}
 	}
 
-	private func processFromRadio(_ decodedInfo: FromRadio) async {
+	/// Routes one `FromRadio` to its handler. Everything here is about `session`, the radio the
+	/// packet arrived on — never "whichever radio is current" (feature 021).
+	func processFromRadio(_ decodedInfo: FromRadio, session: RadioSession) async {
 		// Logger.transport.info("📻 [processFromRadio] Processing: \(String(describing: decodedInfo.payloadVariant), privacy: .public)")
 		switch decodedInfo.payloadVariant {
 		case .mqttClientProxyMessage(let mqttClientProxyMessage):
-			handleMqttClientProxyMessage(mqttClientProxyMessage)
+			// Each radio's MQTT client proxy carries only that radio's traffic (T100, T071c).
+			session.mqtt?.publish(mqttClientProxyMessage)
 
 		case .clientNotification(let clientNotification):
-			handleClientNotification(clientNotification)
+			handleClientNotification(clientNotification, session: session)
 
 		case .myInfo(let myNodeInfo):
-			await handleMyInfo(myNodeInfo)
+			await handleMyInfo(myNodeInfo, session: session)
 
 		case .packet(let packet):
+			// Feature 021: note which local radio heard this packet. When another of the user's
+			// radios already delivered the same broadcast, its handlers already stored it, so
+			// only this radio's reception and observation are recorded. Packets addressed to a
+			// radio only ever arrive through that radio, and are always handled.
+			var reception = ReceptionOutcome.untracked
+			if let radioNum = session.nodeNum {
+				reception = await MeshPackets.shared.recordReception(packet: packet, radioNum: radioNum)
+			}
+			let handledByAnotherRadio = reception == .heardByAnotherRadio && packet.to == Constants.maximumNodeNum
 			// Feed the traffic-rate estimator one tick per inbound mesh packet — this is the busy path
 			// whose re-renders make the map flyover stutter, so it's exactly what we want to measure.
-			meshTrafficMonitor.recordInboundPacket()
+			// A copy another radio already delivered causes no re-render, so it isn't counted (T166).
+			if !handledByAnotherRadio {
+				meshTrafficMonitor.recordInboundPacket()
+			}
+			if handledByAnotherRadio {
+				Logger.mesh.debug("🕸️ Packet \(packet.id.toHex(), privacy: .public) from \(packet.from.toHex(), privacy: .public) already handled through another radio")
+			}
 			// All received packets get passed through updateAnyPacketFrom to update lastHeard, rxSnr, etc. (like firmware's NodeDB::updateFrom).
-			if let connectedNodeNum = self.activeDeviceNum {
+			if let connectedNodeNum = session.nodeNum {
 				await MeshPackets.shared.updateAnyPacketFrom(packet: packet, activeDeviceNum: connectedNodeNum,
-				                                             reportsHeardOnCurrentLora: reportsHeardOnCurrentLora)
+				                                             reportsHeardOnCurrentLora: reportsHeardOnCurrentLora(on: session))
 			} else {
 				Logger.mesh.error("🕸️ Unable to determine connectedNodeNum for updateAnyPacketFrom. Skipping.")
 			}
 
-			// Dispatch based on packet contents.
-			if case let .decoded(data) = packet.payloadVariant {
-				// Forward packets to discovery scan engine if active
-				if let engine = discoveryScanEngine, engine.isScanning {
-					engine.handleMeshPacket(packet, portNum: data.portnum)
+			// A discovery scan counts every packet its own radio heard, even one another radio
+			// delivered first and whose handlers already ran (T160).
+			if case let .decoded(data) = packet.payloadVariant,
+			   let engine = discoveryScanEngine, engine.isScanning, engine.receivesPackets(from: session.nodeNum) {
+				engine.handleMeshPacket(packet, portNum: data.portnum)
+				if handledByAnotherRadio {
+					switch data.portnum {
+					case .neighborinfoApp:
+						if let neighborInfo = try? NeighborInfo(serializedBytes: data.payload) {
+							engine.handleNeighborInfo(neighborInfo, packet: packet)
+						}
+					case .meshBeaconApp:
+						if let beacon = try? MeshBeacon(serializedBytes: data.payload) {
+							engine.handleBeacon(beacon, packet: packet)
+						}
+					default:
+						break
+					}
 				}
+			}
+			// A range test packet goes to this radio's handler when this radio wants range test
+			// packets, whether or not the radio that delivered it first did (T160). The handler
+			// stores a packet once, by sender and id.
+			let isOwnRangeTest = packet.decoded.portnum == .rangeTestApp && session.wantRangeTestPackets
 
+			// Dispatch based on packet contents.
+			if case let .decoded(data) = packet.payloadVariant, !handledByAnotherRadio || isOwnRangeTest {
 				switch data.portnum {
 				case .textMessageApp, .detectionSensorApp, .alertApp:
-					await handleTextMessageAppPacket(packet)
+					await handleTextMessageAppPacket(packet, session: session)
 					// Broadcast text message to TAK clients
 					if let text = String(bytes: data.payload, encoding: .utf8) {
 						Logger.tak.debug("Text message received, calling broadcast")
@@ -1061,46 +1314,46 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 						}
 					}
 				case .nodeinfoApp:
-					guard let connectedNodeNum = self.activeDeviceNum else {
+					guard let connectedNodeNum = session.nodeNum else {
 						Logger.mesh.error("🕸️ Unable to determine connectedNodeNum for node info upsert.")
 						return
 					}
 					if packet.from != connectedNodeNum {
-						await MeshPackets.shared.upsertNodeInfoPacket(packet: packet)
+						await MeshPackets.shared.upsertNodeInfoPacket(packet: packet, receivedBy: connectedNodeNum)
 					} else {
 						Logger.mesh.error("🕸️ Received a node info packet from ourselves over the mesh. Dropping.")
 					}
 				case .routingApp:
-					guard let deviceNum = activeConnection?.device.num else {
+					guard let deviceNum = session.nodeNum else {
 						Logger.mesh.error("🕸️ No active connection. Unable to determine connectedNodeNum for routingPacket.")
 						return
 					}
 					await MeshPackets.shared.routingPacket(packet: packet, connectedNodeNum: deviceNum)
 				case .adminApp:
-					await MeshPackets.shared.adminAppPacket(packet: packet, connectedNodeNum: self.activeDeviceNum)
+					await MeshPackets.shared.adminAppPacket(packet: packet, connectedNodeNum: session.nodeNum)
 				case .replyApp:
 					Logger.mesh.info("[Reply] packet received from \(packet.from.toHex(), privacy: .public)")
-					guard let deviceNum = activeConnection?.device.num else {
+					guard let deviceNum = session.nodeNum else {
 						Logger.mesh.error("🕸️ No active connection. Unable to determine connectedNodeNum for replyApp.")
 						return
 					}
-					await MeshPackets.shared.textMessageAppPacket(packet: packet, wantRangeTestPackets: wantRangeTestPackets, connectedNode: deviceNum, appState: appState)
+					await MeshPackets.shared.textMessageAppPacket(packet: packet, wantRangeTestPackets: session.wantRangeTestPackets, connectedNode: deviceNum, appState: appState)
 				case .ipTunnelApp:
 					Logger.mesh.info("[IP Tunnel] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .serialApp:
 					Logger.mesh.info("[Serial] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .storeForwardApp:
-					guard let deviceNum = activeConnection?.device.num else {
+					guard let deviceNum = session.nodeNum else {
 						Logger.mesh.error("🕸️ No active connection. Unable to determine connectedNodeNum for storeAndForward.")
 						return
 					}
 					storeAndForwardPacket(packet: decodedInfo.packet, connectedNodeNum: deviceNum)
 				case .rangeTestApp:
-					guard let deviceNum = activeConnection?.device.num else {
+					guard let deviceNum = session.nodeNum else {
 						Logger.mesh.error("🕸️ No active connection. Unable to determine connectedNodeNum for rangeTestApp.")
 						return
 					}
-					if wantRangeTestPackets {
+					if session.wantRangeTestPackets {
 						await MeshPackets.shared.textMessageAppPacket(
 							packet: packet,
 							wantRangeTestPackets: true,
@@ -1111,7 +1364,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 						Logger.mesh.info("[Range Test] packet received from \(packet.from.toHex(), privacy: .public)")
 					}
 				case .telemetryApp:
-					guard let deviceNum = activeConnection?.device.num else {
+					guard let deviceNum = session.nodeNum else {
 						Logger.mesh.error("🕸️ No active connection. Unable to determine connectedNodeNum for telemetryApp.")
 						return
 					}
@@ -1133,10 +1386,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				case .nodeStatusApp:
 					await MeshPackets.shared.upsertNodeStatusPacket(packet: packet)
 				case .tracerouteApp:
-					handleTraceRouteApp(packet)
+					handleTraceRouteApp(packet, session: session)
 				case .neighborinfoApp:
 					if let neighborInfo = try? NeighborInfo(serializedBytes: decodedInfo.packet.decoded.payload) {
-						if let engine = discoveryScanEngine, engine.isScanning {
+						if let engine = discoveryScanEngine, engine.isScanning, engine.receivesPackets(from: session.nodeNum) {
 							engine.handleNeighborInfo(neighborInfo, packet: decodedInfo.packet)
 						} else {
 							Logger.mesh.info("[Neighbor Info] packet received from \(packet.from.toHex(), privacy: .public) — \(neighborInfo.neighbors.count, privacy: .public) neighbors")
@@ -1148,14 +1401,14 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					Logger.mesh.info("[Map Report] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .meshBeaconApp:
 					if let beacon = try? MeshBeacon(serializedBytes: decodedInfo.packet.decoded.payload) {
-						if let engine = discoveryScanEngine, engine.isScanning {
+						if let engine = discoveryScanEngine, engine.isScanning, engine.receivesPackets(from: session.nodeNum) {
 							engine.handleBeacon(beacon, packet: decodedInfo.packet)
 						} else {
 							// No active scan: passively capture the beacon as a session-less record so it
 							// shows in the Beacons list and feeds the next scan setup (FR-015). Two gates
 							// apply: "no active scan" here, plus the connected node's MeshBeaconConfig
 							// FLAG_LISTEN_ENABLED enforced inside ingestPassiveBeacon.
-							ingestPassiveBeacon(beacon, packet: decodedInfo.packet)
+							ingestPassiveBeacon(beacon, packet: decodedInfo.packet, receivedBy: session.nodeNum)
 						}
 					} else {
 						Logger.mesh.info("[Mesh Beacon] packet received from \(packet.from.toHex(), privacy: .public) — failed to decode payload")
@@ -1199,22 +1452,22 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			await MeshPackets.shared.scheduleDebouncedSave()
 
 		case .nodeInfo(let nodeInfo):
-			await handleNodeInfo(nodeInfo)
+			await handleNodeInfo(nodeInfo, session: session)
 
 		case .channel(let channel):
-			await handleChannel(channel)
+			await handleChannel(channel, session: session)
 
 		case .config(let config):
-			await handleConfig(config)
+			await handleConfig(config, session: session)
 
 		case .moduleConfig(let moduleConfig):
-			await handleModuleConfig(moduleConfig)
+			await handleModuleConfig(moduleConfig, session: session)
 
 		case .metadata(let metadata):
-			await handleDeviceMetadata(metadata)
+			await handleDeviceMetadata(metadata, session: session)
 
 		case .regionPresets(let regionPresets):
-			handleRegionPresets(regionPresets)
+			handleRegionPresets(regionPresets, session: session)
 
 		case .deviceuiConfig:
 #if DEBUG
@@ -1250,58 +1503,76 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			Logger.transport.info("✅ [Accessory] Notifying completions that have completed for configCompleteID: \(configCompleteID)")
 			switch configCompleteID {
 			case UInt32(NONCE_ONLY_CONFIG):
-				guard let refresh = activeAutomaticConfigRefresh,
-					  refresh.sessionID == activeConnection?.device.id else {
+				guard let refresh = session.automaticConfigRefresh,
+					  refresh.sessionID == session.device.id else {
 					Logger.transport.warning("[Accessory] Ignoring config completion without its active refresh owner")
 					break
 				}
-				// Only an owned config completion proves the cached configuration is fresh.
-				lastConfigRefresh = Date()
+				// Only an owned config completion proves the cached configuration is fresh (#2404),
+				// on the radio's session; the manager's is the first radio's.
+				let refreshed = Date()
+				session.lastConfigRefresh = refreshed
+				if session === activeConnection {
+					lastConfigRefresh = refreshed
+				} else {
+					// Sessions aren't observed: tell the views reading it (the import's automatic check).
+					objectWillChange.send()
+				}
+				// The download's records are saved first: the channel commit computes the channel keys
+				// from the saved LoRa settings, and the snapshot reads them too.
+				await MeshPackets.shared.endConfigDownload(refresh.owner.sessionID)
 				if let completedNodeNum = refresh.nodeNum {
 					await MeshPackets.shared.commitChannelRefreshStage(for: completedNodeNum, owner: refresh.owner)
-					MeshShareSnapshotBuilder.refresh(nodeNum: completedNodeNum, context: context)
+					// The Messages snapshot is the CarPlay & Siri radio's (T106, T321).
+					if session === self.session(for: .carPlay) {
+						MeshShareSnapshotBuilder.refresh(nodeNum: completedNodeNum, context: context)
+					}
 				}
-				await finishAutomaticConfigRefresh(owner: refresh.owner, error: nil)
+				await finishAutomaticConfigRefresh(owner: refresh.owner, session: session, error: nil)
 				
 			case UInt32(NONCE_ONLY_DB):
 				// Open the gate for the wantDatabaseContinuation
-				Task { await wantDatabaseGate.open() }
+				Task { await session.wantDatabaseGate.open() }
 
 				// If we get the "done" for NONCE_ONLY_DB, but are still waiting for the first NodeInfo,
 				// Then the database is probably empty, and can continue
-				if let firstDatabaseNodeInfoContinuation {
-					self.firstDatabaseNodeInfoContinuation = nil
+				session.databaseResponseArrived = true
+				if let firstDatabaseNodeInfoContinuation = session.firstDatabaseNodeInfoContinuation {
+					session.firstDatabaseNodeInfoContinuation = nil
 					firstDatabaseNodeInfoContinuation.resume()
 				}
 
 				// Perform a single batch save after database retrieval completes
 				// This significantly improves performance on reconnect
-				let dumpNums = nodeDatabaseDumpNums
-				let dumpWasRequested = nodeDatabaseDumpInProgress
-				nodeDatabaseDumpInProgress = false
-				let saveGeneration = nodeDatabaseSaveGeneration
-				let loraChange = nodeDatabaseRequestLoRaChange
-				nodeDatabaseRequestLoRaChange = nil
+				// Each radio's dump answers heard-on-current-LoRa for its own observations (feature 021).
+				let dumpNums = session.nodeDatabaseDumpNums
+				let dumpWasRequested = session.nodeDatabaseDumpInProgress
+				let saveGeneration = session.nodeDatabaseSaveGeneration
+				let loraChange = session.nodeDatabaseRequestLoRaChange
+				session.nodeDatabaseDumpInProgress = false
+				session.nodeDatabaseRequestLoRaChange = nil
 				Task {
 					// The dump was ingested with deferred saves on the MeshPackets actor
 					// (see handleNodeInfo); flush it so every node from the dump is persisted
 					// now rather than waiting on the debounce timer.
 					await MeshPackets.shared.flushDebouncedSaves()
-					if dumpWasRequested, !dumpNums.isEmpty, reportsHeardOnCurrentLora {
-						await MeshPackets.shared.markAbsentFromRadio(presentNums: dumpNums)
+					if dumpWasRequested, !dumpNums.isEmpty, reportsHeardOnCurrentLora(on: session) {
+						await MeshPackets.shared.markAbsentFromRadio(presentNums: dumpNums, radioNum: session.nodeNum)
 					}
 					do {
 						try context.save()
 						if let loraChange {
-							loraChangeTracker.finished(loraChange)
+							updateLoRaChangeTracker(of: session) { $0.finished(loraChange) }
 						}
-						if nodeDatabaseSaveGeneration == saveGeneration {
-							nodeDatabaseSavedAt = Date()
+						// Not for a connection torn down meanwhile, nor a later request's download.
+						if dumpWasRequested, session.nodeDatabaseSaveGeneration == saveGeneration, isStillConnected(session),
+						   let radioNum = session.nodeNum {
+							nodeDatabaseSavedAt[radioNum] = Date()
 						}
 						Logger.data.info("💾 [Database] Batch saved all node info after database retrieval")
-						if let activeDeviceNum {
+						if session === self.session(for: .carPlay), let completedNodeNum = session.nodeNum {
 							MeshShareSnapshotBuilder.refresh(
-								nodeNum: activeDeviceNum,
+								nodeNum: completedNodeNum,
 								context: context
 							)
 						}
@@ -1320,15 +1591,23 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			
 		case .rebooted:
 			// If we had an existing connection, then we can probably get away with just a wantConfig?
-			if state == .subscribed {
-				Task { try? await sendWantConfig() }
+			let isUp = session === activeConnection ? state == .subscribed : (additionalRadio(for: session) != nil && session.device.connectionState == .connected)
+			if isUp {
+				Logger.transport.info("🔗 \(session.device.name, privacy: .public) rebooted; refreshing its config")
+				Task {
+					try? await sendWantConfig(on: session)
+					// Its MQTT and module settings may have changed with the reboot.
+					applyModuleSettings(session)
+					await startMqtt(session)
+				}
 			}
 
 		case .lockdownStatus(let status):
 			// MESHTASTIC_LOCKDOWN-hardened firmware reports state after config_complete_id
-			// (and again in response to each LockdownAuth admin command). Route to the
-			// coordinator, which owns the per-connection state machine + passphrase cache.
-			lockdownCoordinator?.handle(status)
+			// (and again in response to each LockdownAuth admin command). Route to the radio's
+			// own coordinator, which owns its state machine + passphrase cache (T301).
+			session.lockdown.handle(status)
+			lockdownStateChanged(session)
 
 		default:
 			Logger.transport.error("Unknown FromRadio variant: \(decodedInfo.payloadVariant.debugDescription)")
@@ -1354,25 +1633,51 @@ extension AccessoryManager {
 
 	var connectedDeviceRole: DeviceRoles? {
 		guard let connectedNodeNum = activeDeviceNum else { return nil }
-		guard let connectedNode = getNodeInfo(id: connectedNodeNum, context: context) else { return nil }
-		guard let connectedNodeUser = connectedNode.user else { return nil }
-		return DeviceRoles(rawValue: Int(connectedNodeUser.role))
+		return radioRole(for: connectedNodeNum)
+	}
+
+	/// The role of one of the user's radios, from its node's user record (feature 021).
+	func radioRole(for radioNum: Int64) -> DeviceRoles? {
+		guard let radioNode = getNodeInfo(id: radioNum, context: context) else { return nil }
+		guard let radioUser = radioNode.user else { return nil }
+		return DeviceRoles(rawValue: Int(radioUser.role))
+	}
+
+	/// Whether radio `radioNum` is connected, and whether its connect has finished, for code that
+	/// follows one radio, the first or another (the discovery scan, T160). The first radio's are
+	/// `isConnected` and `.subscribed`.
+	func linkState(ofRadio radioNum: Int64) -> (connected: Bool, subscribed: Bool) {
+		if let first = activeConnection, first.nodeNum == radioNum {
+			return (isConnected, state == .subscribed)
+		}
+		guard let session = additionalRadios.values.first(where: { $0.nodeNum == radioNum }) else { return (false, false) }
+		let connected = session.device.connectionState == .connected
+		return (connected, connected && connectAttempts[session.device.id] == nil)
+	}
+
+	/// `checkIsVersionSupported` for one radio: the first radio's is exactly that; another
+	/// radio's reads its own reported firmware, permissive while it's unknown (T150).
+	func isVersionSupported(forVersion version: String, on session: RadioSession) -> Bool {
+		guard session !== activeConnection else { return checkIsVersionSupported(forVersion: version) }
+		let reported = session.device.firmwareVersion ?? session.nodeNum.flatMap { knownFirmwareVersions[$0] }
+		return Self.isFirmwareSupported(reported, minimum: version)
 	}
 
 	func checkIsVersionSupported(forVersion: String) -> Bool {
 		// Prefer the live `connectedVersion` (full string including build hash,
-		// e.g. "2.8.0.3a0c08b"). Fall back to the persisted UserDefaults value
-		// (stripped of trailing hash, e.g. "2.8.0") because
-		// `activeConnection?.device.firmwareVersion` is briefly nil during
-		// reconnects before `handleDeviceMetadata` repopulates it — using only
-		// `connectedVersion` in that window collapses `myVersion` to "0.0.0"
-		// and incorrectly returns false for every capability check.
-		let storedVersion = UserDefaults.firmwareVersion
+		// e.g. "2.8.0.3a0c08b"). Fall back to the version this radio last reported this launch
+		// (`knownFirmwareVersions`), because `activeConnection?.device.firmwareVersion` is briefly
+		// nil during reconnects before `handleDeviceMetadata` repopulates it — using only
+		// `connectedVersion` in that window collapses `myVersion` to "0.0.0" and incorrectly
+		// returns false for every capability check. Offline, the preferred radio's. It used to
+		// read one app-wide stored version, which with several radios was whichever was checked
+		// last (T018). In memory on purpose: views call this while rendering, and a SwiftData
+		// fetch there traps once a view's store has gone (it crashed NodeDetail's snapshot test).
 		let myVersion: String
 		if let live = connectedVersion, !live.isEmpty {
 			myVersion = live
-		} else if storedVersion != "0.0.0" {
-			myVersion = storedVersion
+		} else if let known = knownFirmwareVersions[activeConnection?.nodeNum ?? activeDeviceNum ?? PreferredRadio.nodeNum] {
+			myVersion = known
 		} else {
 			// No firmware info at all — be permissive (matches the prior
 			// "first-launch" behavior; newer firmware is the common case).
@@ -1393,12 +1698,26 @@ extension AccessoryManager {
 	/// supports PLI and GeoChat (no shapes, markers, routes, etc.).
 	///
 	var supportsTAKv2: Bool {
-		Self.isTAKv2Supported(firmwareVersion: connectedVersion)
+		// Feature 021 (T103): the firmware of the radio TAK goes through.
+		if let takSession = session(for: .tak), takSession !== activeConnection {
+			return Self.isTAKv2Supported(firmwareVersion: takSession.device.firmwareVersion)
+		}
+		return Self.isTAKv2Supported(firmwareVersion: connectedVersion)
 	}
 
-	/// Whether the connected radio reports NodeInfo.heard_on_current_lora (firmware 2.8.1+).
-	var reportsHeardOnCurrentLora: Bool {
-		Self.reportsHeardOnCurrentLora(firmwareVersion: connectedVersion)
+	/// Whether `session`'s radio sends NodeInfo.heard_on_current_lora (firmware 2.8.1+). Each radio
+	/// answers for its own LoRa settings, stored on its own observations (feature 021), so every
+	/// connected radio's answers are kept, side by side.
+	func reportsHeardOnCurrentLora(on session: RadioSession?) -> Bool {
+		guard let session else { return false }
+		let version = session.device.firmwareVersion ?? session.nodeNum.flatMap { knownFirmwareVersions[$0] }
+		return Self.reportsHeardOnCurrentLora(firmwareVersion: version)
+	}
+
+	/// Whether radio `radioNum` is connected and reports heard-on-current-LoRa, for its window's
+	/// unheard notice.
+	func reportsHeardOnCurrentLora(forRadio radioNum: Int64?) -> Bool {
+		reportsHeardOnCurrentLora(on: connectedSession(forRadio: radioNum))
 	}
 
 	/// Strict on purpose: unlike `checkIsVersionSupported`, an unknown version is false. Older firmware
@@ -1456,8 +1775,8 @@ extension AccessoryManager {
 	/// satisfies.
 	///
 	/// Deliberately conservative where the other gates here are permissive, and read from the live
-	/// connection only. `UserDefaults.firmwareVersion` is global rather than per radio, so falling
-	/// back to it right after switching radios answers for the *previous* radio — and assuming
+	/// connection only. A stored version could answer for the *previous* radio right after
+	/// switching radios — and assuming
 	/// "no reboot" on the wrong radio is the direction that hurts: it warns nobody before a reboot
 	/// they did not expect, and turns a real post-save failure into a shrug. No live version means
 	/// assume it may reboot, which merely restores the old forgiving behavior for that window.
@@ -1475,42 +1794,48 @@ extension AccessoryManager {
 }
 
 extension AccessoryManager {
-	func setupPeriodicHeartbeat() async {
-		if heartbeatTimer != nil {
+	/// Starts `session`'s heartbeat (the first radio's by default), for transports that need one.
+	func setupPeriodicHeartbeat(on session: RadioSession? = nil) async {
+		guard let session = session ?? activeConnection else { return }
+		if session.heartbeatTimer != nil {
 			Logger.transport.debug("💓 [Heartbeat] Cancelling existing heartbeat timer")
-			await self.heartbeatTimer?.cancel(withReason: "Duplicate setup, cancelling previous timer")
-			self.heartbeatTimer = nil
+			await session.heartbeatTimer?.cancel(withReason: "Duplicate setup, cancelling previous timer")
+			session.heartbeatTimer = nil
 		}
 		
 		// No debugName: this timer is reset on every received data/log packet, so a per-reset debug
 		// line would flood the log on busy TCP/serial links. The meaningful "heartbeat sent" log
 		// below still fires only when a heartbeat is actually sent (i.e. after an idle interval).
-		self.heartbeatTimer = ResettableTimer(isRepeating: true) {
+		session.heartbeatTimer = ResettableTimer(isRepeating: true) { [weak session] in
 			Logger.transport.debug("💓 [Heartbeat] Sending periodic heartbeat")
-			try? await self.sendHeartbeat()
+			guard let session else { return }
+			try? await self.sendHeartbeat(on: session)
 		}
 		
 		// We can send heartbeats for older versions just fine, but only 2.7.4 and up will respond with
-		// a definite queueStatus packet.
-		if self.checkIsVersionSupported(forVersion: "2.7.4") {
+		// a definite queueStatus packet. Decided by this radio's own firmware (T150).
+		if self.isVersionSupported(forVersion: "2.7.4", on: session) {
 			// No debugName: this timer is cancelled on every received data/log packet, so a per-cancel
 			// debug line would flood the log on busy links. The timeout error below still fires if a
 			// heartbeat truly goes unanswered.
-			self.heartbeatResponseTimer = ResettableTimer(isRepeating: false) { @MainActor in
+			session.heartbeatResponseTimer = ResettableTimer(isRepeating: false) { @MainActor [weak session] in
 				Logger.transport.error("💓 [Heartbeat] Connection Timeout: Did not receive a packet after heartbeat.")
-				// If we're in the middle of a connection cancel it.
-				await self.connectionStepper?.cancel()
+				// If this radio's connect is still running, cancel it.
+				if let session {
+					await self.connectAttempts[session.device.id]?.stepper?.cancel()
+				}
 				
-				// Close out the connection
-				if let activeConnection = self.activeConnection {
-					try? await activeConnection.connection.disconnect(withError: AccessoryError.timeout, shouldReconnect: true)
+				// Close out this radio's connection. Its timers stop when it's torn down, so the
+				// session is the one that timed out.
+				if let session {
+					try? await session.connection.disconnect(withError: AccessoryError.timeout, shouldReconnect: true)
 				} else {
 					self.lastConnectionError = AccessoryError.timeout
 					try? await self.closeConnection()
 				}
 			}
 		}
-		await self.heartbeatTimer?.reset(delay: .seconds(Self.heartbeatInterval))
+		await session.heartbeatTimer?.reset(delay: .seconds(Self.heartbeatInterval))
 	}
 }
 
@@ -1525,6 +1850,11 @@ extension AccessoryManager {
 		// Persist any debounced position/telemetry/nodeinfo changes before suspension,
 		// since the debounce timer may not fire while backgrounded.
 		Task { await MeshPackets.shared.flushDebouncedSaves() }
+		// Every radio's connection, so BLE radios alongside stop polling RSSI too (T154).
+		for session in additionalRadios.values {
+			let connection = session.connection
+			Task { await connection.appDidEnterBackground() }
+		}
 		if let connection = self.activeConnection?.connection {
 			Logger.transport.info("[AccessoryManager] informing active connection that we are entering the background")
 			Task { await connection.appDidEnterBackground() }
@@ -1536,6 +1866,10 @@ extension AccessoryManager {
 	
 	func appDidBecomeActive() {
 		if self.state == .uninitialized { return }
+		for session in additionalRadios.values {
+			let connection = session.connection
+			Task { await connection.appDidBecomeActive() }
+		}
 		if let connection = self.activeConnection?.connection {
 			Logger.transport.info("[AccessoryManager] informing previously active connection that we are active again")
 			Task { await connection.appDidBecomeActive() }
@@ -1543,6 +1877,7 @@ extension AccessoryManager {
 			if self.discoveryTask == nil {
 				Logger.transport.info("[AccessoryManager] Previosuly in the background but not scanning, starting scanning again")
 				self.startDiscovery()
+				self.stopDiscoveryWhenUnneeded()
 			}
 		}
 	}
@@ -1553,14 +1888,17 @@ extension AccessoryManager {
 extension AccessoryManager {
 
 	/// Persist a `MESH_BEACON_APP` beacon heard outside an active scan as a session-less
-	/// `DiscoveredBeaconEntity` (session / presetResult nil). Ignores beacons from the connected
-	/// node itself and de-dupes against a recent identical capture (same node + channel within a
+	/// `DiscoveredBeaconEntity` (session / presetResult nil). Ignores beacons from the radio that
+	/// heard it and de-dupes against a recent identical capture (same node + channel within a
 	/// short window) so a beacon broadcast repeatedly doesn't spam the list.
-	func ingestPassiveBeacon(_ beacon: MeshBeacon, packet: MeshPacket) {
+	///
+	/// `receivedBy` is the node number of the radio the beacon arrived on; nil (a radio whose
+	/// MyInfo hasn't arrived yet) falls back to the first radio.
+	func ingestPassiveBeacon(_ beacon: MeshBeacon, packet: MeshPacket, receivedBy: Int64? = nil) {
 		let fromNodeNum = Int64(packet.from)
 
 		// Ignore self-beacons (FR-001/FR-002).
-		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+		let connectedNodeNum = receivedBy ?? activeDeviceNum ?? 0
 		guard fromNodeNum != connectedNodeNum else { return }
 
 		// FR-015: only capture passive beacons when the connected node is configured to listen

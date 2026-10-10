@@ -156,36 +156,150 @@ private struct DeviceRolePicker: View {
 	}
 }
 
-/// Reset NodeDB and Factory Reset, for the connected radio only. Not configuration -
-/// these are admin commands - so they sit below the form rather than in it.
+/// Reset NodeDB and Factory Reset, for a connected radio. Not configuration - these are admin
+/// commands - so they sit below the form rather than in it.
+///
+/// Feature 021 (D-18): when the store holds only this radio, a reset clears the app's data as it
+/// always did. With other radios' data in the store, only this radio disconnects and only its
+/// data goes (`MeshPackets.removeRadioData`), after asking whether its messages go too; and
+/// Remove This Radio takes it out of the app without resetting it, a single radio too.
 private struct DeviceResetSection: View {
 	@EnvironmentObject private var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	let node: NodeInfoEntity?
 	@Binding var isResetting: Bool
 	let dismiss: DismissAction
 	@State private var confirmNodeDB = false
 	@State private var confirmFactory = false
+	/// The user's other radios whose data is in the store; empty for a single-radio user, nil
+	/// until looked up. The resets wait for it: an empty list means the full wipe (V2-1).
+	@State private var otherRadios: [StoredRadio]?
+	@State private var pendingReset: PendingReset?
+	@State private var confirmMessages = false
+	@State private var radioToRemove: RadioToRemove?
+
+	private enum PendingReset {
+		case nodeDB(preserveFavorites: Bool)
+		case factory(resetDevice: Bool)
+	}
 
 	private var isConnectedNode: Bool {
-		accessoryManager.isConnected && node?.num == accessoryManager.activeConnection?.device.num
+		guard let num = node?.num else { return false }
+		if accessoryManager.isConnected(windowRadio) && num == accessoryManager.session(for: windowRadio)?.device.num {
+			return true
+		}
+		return accessoryManager.additionalRadioDevices.contains { $0.num == num && $0.connectionState == .connected }
+	}
+
+	/// Other radios' data in the store, or another radio connected that hasn't stored anything
+	/// yet (still in its first config download): either way a reset mustn't wipe the store.
+	private var hasOtherRadios: Bool {
+		let num = node?.num
+		return !(otherRadios ?? []).isEmpty || accessoryManager.connectedRadioNums.contains { $0 != num }
+	}
+
+	private var radioName: String {
+		node?.user?.longName ?? node?.user?.shortName ?? String(localized: "This radio")
 	}
 
 	var body: some View {
 		if isConnectedNode {
 			Section {
 				Button("Reset NodeDB", role: .destructive) { confirmNodeDB = true }
-					.disabled(node?.user == nil)
+					.disabled(node?.user == nil || otherRadios == nil)
 					.confirmationDialog("Are you sure?", isPresented: $confirmNodeDB, titleVisibility: .visible) {
-						Button("Reset node database, preserving favorites?") { reset(preserveFavorites: true) }
-						Button("Reset node database and favorites?", role: .destructive) { reset(preserveFavorites: false) }
+						Button("Reset node database, preserving favorites?") { start(.nodeDB(preserveFavorites: true)) }
+						Button("Reset node database and favorites?", role: .destructive) { start(.nodeDB(preserveFavorites: false)) }
 					}
 				Button("Factory Reset", role: .destructive) { confirmFactory = true }
-					.disabled(node?.user == nil)
+					.disabled(node?.user == nil || otherRadios == nil)
 					.confirmationDialog("Factory reset will delete device and app data.", isPresented: $confirmFactory, titleVisibility: .visible) {
-						Button("Delete all config? ", role: .destructive) { factoryReset(resetDevice: false) }
-						Button("Delete all config, keys and BLE bonds? ", role: .destructive) { factoryReset(resetDevice: true) }
+						Button("Delete all config? ", role: .destructive) { start(.factory(resetDevice: false)) }
+						Button("Delete all config, keys and BLE bonds? ", role: .destructive) { start(.factory(resetDevice: true)) }
 					}
+				Button("Remove This Radio", role: .destructive) {
+					if let radioNum = node?.num {
+						radioToRemove = RadioToRemove(nodeNum: radioNum, name: radioName)
+					}
+				}
+				// Not while it's still connecting (review V27-5).
+				.disabled(!accessoryManager.canRemoveRadio(node?.num ?? 0))
+				// The number the dialog was opened for, not `node` read again, which can fault while
+				// the dialog is up (#2006).
+				.removeRadioConfirmation($radioToRemove) { remove($0.nodeNum) }
 			}
+			.confirmationDialog("Also delete \(radioName)'s messages?", isPresented: $confirmMessages, titleVisibility: .visible) {
+				Button("Delete Messages", role: .destructive) { resetOneOfSeveral(deleteMessages: true) }
+				Button("Keep Messages") { resetOneOfSeveral(deleteMessages: false) }
+			} message: {
+				Text("Only \(radioName) disconnects, and your other radios' data stays. Nodes stay when another of your radios is on the same mesh; otherwise the nodes only \(radioName) heard go. If you delete its messages, its direct messages go, and messages on channels none of your other radios has.")
+			}
+			.task(id: node?.num) {
+				let num = node?.num
+				otherRadios = await MeshPackets.shared.storedRadios().filter { $0.nodeNum != num }
+			}
+		}
+	}
+
+	/// A single-radio user's reset runs as it always did; with other radios, the user is asked
+	/// about this radio's messages first.
+	private func start(_ reset: PendingReset) {
+		guard otherRadios != nil else { return }
+		guard hasOtherRadios else {
+			switch reset {
+			case let .nodeDB(preserveFavorites): self.reset(preserveFavorites: preserveFavorites)
+			case let .factory(resetDevice): factoryReset(resetDevice: resetDevice)
+			}
+			return
+		}
+		pendingReset = reset
+		confirmMessages = true
+	}
+
+	/// Resets this radio while other radios' data is in the store: only this radio disconnects
+	/// (and comes back unless its bonds were reset), and only its data goes.
+	private func resetOneOfSeveral(deleteMessages: Bool) {
+		guard let reset = pendingReset, let user = node?.user, let radioNum = node?.num else { return }
+		pendingReset = nil
+		isResetting = true
+		Task {
+			do {
+				let preserveFavorites: Bool
+				let reconnect: Bool
+				switch reset {
+				case let .nodeDB(preserve):
+					try await accessoryManager.sendNodeDBReset(fromUser: user, toUser: user, preserveFavorites: preserve)
+					preserveFavorites = preserve
+					reconnect = true
+				case let .factory(resetDevice):
+					try await accessoryManager.sendFactoryReset(fromUser: user, toUser: user, resetDevice: resetDevice)
+					preserveFavorites = false
+					reconnect = !resetDevice
+				}
+				try? await Task.sleep(for: .seconds(1))
+				if reconnect {
+					await accessoryManager.takeRadioOffline(radioNum, reconnect: true)
+				} else {
+					// Its bonds cleared, it isn't brought back: as the first radio either, also when its
+					// link dropped already as it reset (review V31-1).
+					await accessoryManager.disconnectAfterFactoryReset(radioNum)
+				}
+				dismiss()
+				await MeshPackets.shared.flushDebouncedSaves()
+				await MeshPackets.shared.removeRadioData(radioNum, .reset(preserveFavorites: preserveFavorites, deleteMessages: deleteMessages))
+			} catch {
+				Logger.mesh.error("Reset of one of several radios failed: \(error.localizedDescription, privacy: .public)")
+				isResetting = false
+			}
+		}
+	}
+
+	private func remove(_ radioNum: Int64) {
+		isResetting = true
+		Task {
+			await accessoryManager.removeRadio(radioNum)
+			dismiss()
 		}
 	}
 
@@ -196,7 +310,7 @@ private struct DeviceResetSection: View {
 			do {
 				try await accessoryManager.sendNodeDBReset(fromUser: user, toUser: user, preserveFavorites: preserveFavorites)
 				try await Task.sleep(for: .seconds(1))
-				if let conn = accessoryManager.activeConnection {
+				if let conn = accessoryManager.session(for: windowRadio) {
 					try await conn.connection.disconnect(withError: nil, shouldReconnect: true)
 				}
 				dismiss()
@@ -213,15 +327,16 @@ private struct DeviceResetSection: View {
 	}
 
 	private func factoryReset(resetDevice: Bool) {
-		guard let user = node?.user else { return }
+		guard let user = node?.user, let radioNum = node?.num else { return }
 		isResetting = true
 		Task {
 			do {
 				try await accessoryManager.sendFactoryReset(fromUser: user, toUser: user, resetDevice: resetDevice)
 				try? await Task.sleep(for: .seconds(1))
 				if resetDevice {
-					try await accessoryManager.disconnect()
-				} else if let conn = accessoryManager.activeConnection {
+					// This radio, also when it's connected alongside with no first radio (review V30-1).
+					await accessoryManager.disconnectAfterFactoryReset(radioNum)
+				} else if let conn = accessoryManager.session(for: windowRadio) {
 					try await conn.connection.disconnect(withError: nil, shouldReconnect: true)
 				}
 				dismiss()
@@ -230,6 +345,12 @@ private struct DeviceResetSection: View {
 				await MeshPackets.shared.clearDatabase(includeRoutes: false)
 				await AccessoryManager.shared.resetDatabaseAfterClear()
 				clearNotifications()
+				// With its bonds reset it doesn't come back, and the store no longer has it: it's
+				// forgotten and its window on the Mac closes, as after Clear App Data (review
+				// V29-1). Not after a reset it reconnects from, which stores it again.
+				if resetDevice {
+					await AccessoryManager.shared.forgetRadiosNotInStore()
+				}
 			} catch {
 				Logger.mesh.error("Factory Reset Failed")
 				isResetting = false

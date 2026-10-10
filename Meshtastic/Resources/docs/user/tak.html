@@ -74,6 +74,7 @@ The pickers stay disabled until the connected radio reports its TAK module confi
 <li>A <strong>channel picker</strong> for the LoRa channel the server bridges between TAK clients and the mesh.</li>
 <li><strong>Read-only mode</strong> (treat the app as a TAK observer that doesn't forward CoT to the mesh) and <strong>mesh-to-CoT relay</strong> toggles.</li>
 </ul>
+<p>With more than one radio, TAK goes through the radio chosen for it in <a href="settings.md#tak-carplay--siri-and-apple-watch">Settings › App Settings</a>; turning the TAK server on asks for one if none is chosen. While that radio is off, TAK waits for it rather than using another radio. The channel checks, <strong>Fix Channel</strong>, the channel picker, the <strong>TAK Identity</strong> section and the device role warning all apply to that radio.</p>
 <div class="tips-callout"><strong>Tip — Primary channel requirements</strong>
 The TAK Server runs in <strong>read-only mode</strong> until your primary channel has a non-default name and a non-default 256-bit encryption key. Use the <strong>Fix Channel</strong> button on the warning banner to apply a recommended TAK preset (Short Fast, new AES key, name &quot;TAK&quot;) in one tap.</div>
 <h3>Certificates</h3>

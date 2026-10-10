@@ -24,6 +24,13 @@ class Router: ObservableObject {
 	@Published
 	var messagesSection: MessagesNavigationState?
 
+	/// The radio a Messages deep link names with `radio=` (feature 021, T091): the radio the
+	/// message came in on. Read once by the conversation it opens, which then clears it. Kept out
+	/// of `MessagesNavigationState` so the sidebar's payload-free values and their matches stay
+	/// as they are.
+	@Published
+	var messagesRadio: Int64?
+
 	@Published
 	var mapState: MapNavigationState?
 
@@ -184,6 +191,10 @@ class Router: ObservableObject {
 			.first(where: { $0.name == "messageId" })?
 			.value
 			.flatMap(Int64.init)
+		let radio = components.queryItems?
+			.first(where: { $0.name == "radio" })?
+			.value
+			.flatMap(Int64.init)
 
 		let state: MessagesNavigationState? = if let channelId {
 			.channels(channelId: channelId, messageId: messageId)
@@ -193,6 +204,7 @@ class Router: ObservableObject {
 			nil
 		}
 		selectedTab = .messages
+		messagesRadio = state == nil ? nil : radio
 		messagesState = state
 		messagesSection = state?.sidebarSection
 	}
@@ -222,6 +234,7 @@ class Router: ObservableObject {
 		case .messages:
 			messagesState = nil
 			messagesSection = nil
+			messagesRadio = nil
 		case .nodes:
 			selectedNodeNum = nil
 		case .map:
@@ -329,41 +342,6 @@ class Router: ObservableObject {
 
 		if settingFromPath == .localMeshDiscovery && segments.count > 1 && segments[1] == "history" {
 			discoveryShowHistory = true
-		}
-	}
-}
-
-/// The open windows' routers.
-///
-/// A node switch has to pop detail views on every window before it touches the
-/// store, and that pop has to happen in the call, not on a later `onChange`:
-/// the views are still mounted, holding model objects the reset is about to
-/// destroy. Each window registers the router it owns. This does not own a tab.
-///
-/// Not itself main-actor isolated: `AppState` is created and passed into the
-/// packet actor, and a main-actor type cannot live on it. Every method hops
-/// to the main actor before touching a router. The dictionary is only used
-/// from those methods.
-final class SceneRouters: @unchecked Sendable {
-	private var routers: [UUID: Router] = [:]
-
-	@MainActor
-	@discardableResult
-	func register(_ router: Router) -> UUID {
-		let id = UUID()
-		routers[id] = router
-		return id
-	}
-
-	@MainActor
-	func unregister(_ id: UUID) {
-		routers.removeValue(forKey: id)
-	}
-
-	@MainActor
-	func popAllStacks() {
-		for router in Array(routers.values) {
-			router.popAllStacks()
 		}
 	}
 }

@@ -36,6 +36,10 @@
 <td><code>meshtastic:///messages?userNum={userNum}&amp;messageId={messageId}</code></td>
 <td>Direct messages (<code>messageId</code> is optional)</td>
 </tr>
+<tr>
+<td><code>…&amp;radio={nodeNum}</code> on either Messages link</td>
+<td>The radio the message came in on (optional, added to notifications when more than one radio is known). A direct message opens that radio's thread; a channel's <code>channelId</code> is read as that radio's slot and mapped to the same channel (by <code>channelKey</code>) on the focused radio. Held in <code>Router.messagesRadio</code>, outside <code>MessagesNavigationState</code>.</td>
+</tr>
 </tbody>
 </table>
 <h2>Connect</h2>

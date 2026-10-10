@@ -20,6 +20,8 @@ struct ESP32OTAIntroSheet: View {
 	private let minimumOTAVersion = "2.7.18"
 
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@Environment(\.dismiss) var dismiss
 	@Environment(\.modelContext) var context
 
@@ -31,7 +33,7 @@ struct ESP32OTAIntroSheet: View {
 
 	/// True when the connected device's firmware supports the OTAEvent protocol.
 	private var firmwareSupportsOTA: Bool {
-		accessoryManager.checkIsVersionSupported(forVersion: minimumOTAVersion)
+		accessoryManager.isVersionSupported(forVersion: minimumOTAVersion, for: windowRadio)
 	}
 
 	var body: some View {
@@ -112,7 +114,7 @@ struct ESP32OTAIntroSheet: View {
 							.tint(.accentFill)
 							.controlSize(.large)
 							.clipShape(RoundedRectangle(cornerRadius: 10))
-							.disabled(accessoryManager.activeDeviceNum == nil || !firmwareSupportsOTA)
+							.disabled(accessoryManager.nodeNum(for: windowRadio) == nil || !firmwareSupportsOTA)
 						}
 						.padding()
 						.listRowBackground(Color(UIColor.tertiarySystemBackground))
@@ -150,7 +152,7 @@ struct ESP32OTAIntroSheet: View {
 							.tint(.accentFill)
 							.controlSize(.large)
 							.clipShape(RoundedRectangle(cornerRadius: 10))
-							.disabled(accessoryManager.activeDeviceNum == nil || !firmwareSupportsOTA)
+							.disabled(accessoryManager.nodeNum(for: windowRadio) == nil || !firmwareSupportsOTA)
 						}
 						.padding()
 						.listRowBackground(Color(UIColor.tertiarySystemBackground))
@@ -227,7 +229,7 @@ struct ESP32OTAIntroSheet: View {
 	}
 
 	private var OTAMode: SupportedOTAMode {
-		guard let connection = accessoryManager.activeConnection?.connection else {
+		guard let connection = accessoryManager.session(for: windowRadio)?.connection else {
 			Logger.services.info("📡 [ESP32 OTA] No active connection — no OTA path available")
 			return .none
 		}

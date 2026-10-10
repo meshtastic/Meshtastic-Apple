@@ -34,7 +34,17 @@ extension AccessoryManager {
 			return
 		}
 		if otaInProgress { return }
-		updateState(.discovering)
+		// Feature 021: discovery also runs while radios are connected, to add another one.
+		// The connection state then stays as it is.
+		if activeConnection == nil {
+			updateState(.discovering)
+			// No first radio: the remembered radios come back as they're seen, as at launch. Not
+			// after the user's Disconnect, nor during a switch or an update, when nothing connects
+			// on its own.
+			if !userRequestedConnectionCancellation, !isSwitchingDevices, !otaInProgress {
+				Task { await awaitRememberedRadios() }
+			}
+		}
 
 		discoveryTask = Task { @MainActor in
 			for await event in self.discoverAllDevices() {
@@ -67,7 +77,7 @@ extension AccessoryManager {
 						if self.shouldAutomaticallyConnectToPreferredPeripheralAfterError, !userRequestedConnectionCancellation,
 						   !self.autoReconnectSuspendedForSession,
 						   !self.isSwitchingDevices,
-						   UserDefaults.autoconnectOnDiscovery, UserDefaults.preferredPeripheralId == newDevice.id.uuidString {
+						   UserDefaults.autoconnectOnDiscovery, PreferredRadio.peripheralId == newDevice.id.uuidString {
 							Logger.transport.debug("🔎 [Discovery] Found preferred peripheral \(newDevice.name)")
 							self.connectToPreferredDevice(device: newDevice)
 						}
@@ -75,11 +85,23 @@ extension AccessoryManager {
 						// Update the list of discovered devices on the main thread for presentation
 						// in the user interface
 						self.devices = devices.sorted { $0.name < $1.name }
+
+						// Feature 021 (T156): kept after discovery stops, so a remembered TCP radio found by
+						// Bonjour can still be connected.
+						self.recentlyDiscoveredDevices[newDevice.id] = newDevice
+						self.radioSeen(newDevice.id)
 						
 					case .deviceLost(let deviceId):
 						devices = devices.filter { $0.id != deviceId }
+						recentlyDiscoveredDevices.removeValue(forKey: deviceId)
+						shownDiscoveryRssi.removeValue(forKey: deviceId)
 					
 					case .deviceReportedRssi(let deviceId, let newRssi):
+						// Seen advertising: a radio waiting to come back connects now.
+						radioSeen(deviceId)
+						let now = ContinuousClock.now
+						guard Self.showsDiscoveryRssi(newRssi, at: now, after: shownDiscoveryRssi[deviceId]) else { break }
+						shownDiscoveryRssi[deviceId] = ShownRssi(rssi: newRssi, at: now)
 						updateDevice(deviceId: deviceId, key: \.rssi, value: newRssi)
 					}
 				} catch {
@@ -87,6 +109,61 @@ extension AccessoryManager {
 				}
 			}
 		}
+	}
+
+	/// An RSSI discovery showed for a radio, and when.
+	struct ShownRssi: Equatable, Sendable {
+		let rssi: Int
+		let at: ContinuousClock.Instant
+	}
+
+	/// How far a radio's RSSI must move, or how long must pass, before discovery shows a new
+	/// value (review V39). Scanning reports every advertisement, several a second per radio, and
+	/// each write to `devices` redraws every view that observes the manager, in every window.
+	/// A move shows after `discoveryRssiMinInterval` at the soonest: a weak, distant radio's RSSI
+	/// often swings by the step between advertisements (review V40-3).
+	nonisolated static let discoveryRssiStep = 5
+	nonisolated static let discoveryRssiMinInterval: Duration = .seconds(2)
+	nonisolated static let discoveryRssiInterval: Duration = .seconds(5)
+
+	/// Whether a sighting's RSSI is worth showing, `last` being the one shown before.
+	nonisolated static func showsDiscoveryRssi(_ rssi: Int, at now: ContinuousClock.Instant, after last: ShownRssi?) -> Bool {
+		guard let last else { return true }
+		let elapsed = now - last.at
+		return elapsed >= discoveryRssiInterval
+			|| (elapsed >= discoveryRssiMinInterval && abs(rssi - last.rssi) >= discoveryRssiStep)
+	}
+
+	/// Stops discovery once nothing needs it (reviews V39, V40-2): no Connect screen shows, a radio
+	/// is connected, and no radio waits for discovery to bring it back: the first radio
+	/// (`awaitsFirstRadio`), or another that dropped or is remembered (review V45-2, V45-3). With
+	/// no radio connected it goes on, as on `main`.
+	func stopDiscoveryWhenUnneeded() {
+		guard connectScreens.isEmpty, connectedRadioCount > 0, !awaitsFirstRadio, additionalRadioReconnects.isEmpty else { return }
+		stopDiscovery()
+	}
+
+	/// The first radio is away and discovery would connect it when it sees it (the auto-connect of
+	/// the preferred radio above, `connectToPreferredDevice`): after a drop, not after the user's
+	/// Disconnect, and not when the preferred radio is connected alongside, as it is after
+	/// Disconnect on the first radio (review V42-1). A connect of it that's failing still counts as
+	/// away: its teardown checks this while the attempt is registered (review V43-1).
+	var awaitsFirstRadio: Bool {
+		guard !isConnected, let preferredId = UUID(uuidString: PreferredRadio.peripheralId) else { return false }
+		return additionalRadios[preferredId] == nil && UserDefaults.autoconnectOnDiscovery
+			&& shouldAutomaticallyConnectToPreferredPeripheralAfterError && !userRequestedConnectionCancellation
+			&& !autoReconnectSuspendedForSession
+	}
+
+	/// A Connect screen shows: discovery goes on while it does.
+	func connectScreenAppeared(_ id: UUID) {
+		connectScreens.insert(id)
+	}
+
+	/// A Connect screen has gone: discovery stops if nothing else needs it.
+	func connectScreenDisappeared(_ id: UUID) {
+		connectScreens.remove(id)
+		stopDiscoveryWhenUnneeded()
 	}
 
 	func stopDiscovery() {

@@ -14,6 +14,11 @@ import OSLog
 
 struct LockdownSheet: View {
 
+	/// For a radio other than the window's (feature 021, T188, T301): its name, shown at the top,
+	/// and what Cancel does. Nil for the window's radio's full-screen sheet, which has no Cancel.
+	var radioName: String?
+	var onCancel: (() -> Void)?
+
 	@EnvironmentObject private var lockdown: LockdownCoordinator
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 
@@ -22,21 +27,104 @@ struct LockdownSheet: View {
 			Group {
 				switch lockdown.state {
 				case .needsProvision:
-					PassphraseEntryContent(mode: .provision)
+					PassphraseEntryContent(mode: .provision, inlineError: lockdown.sendError)
 				case .locked(let reason):
-					PassphraseEntryContent(mode: .unlock(reason: reason))
+					PassphraseEntryContent(mode: .unlock(reason: reason), inlineError: lockdown.sendError)
 				case .unlockFailed:
 					PassphraseEntryContent(mode: .unlock(reason: "auto_replay_wrong_passphrase"),
-										   inlineError: "lockdown.passphrase.wrong".localized)
+										   inlineError: lockdown.sendError ?? "lockdown.passphrase.wrong".localized)
 				case .unlockBackoff(let deadline):
 					BackoffCountdownContent(deadline: deadline)
+				case .none where lockdown.isWaitingForAnswer:
+					// A radio's own sheet stays up while it answers (T301).
+					ProgressView()
+						.frame(maxWidth: .infinity, maxHeight: .infinity)
 				case .none, .unlocked, .lockNowAcknowledged:
 					// Sheet should already be dismissed by ContentView's cover binding.
 					EmptyView()
 				}
 			}
-			.interactiveDismissDisabled(true)
+			.interactiveDismissDisabled(onCancel == nil)
+			.toolbar {
+				if let onCancel {
+					ToolbarItem(placement: .cancellationAction) {
+						Button("Cancel", action: onCancel)
+					}
+				}
+			}
+			.safeAreaInset(edge: .top) {
+				if let radioName {
+					Label(radioName, systemImage: "antenna.radiowaves.left.and.right")
+						.font(.headline)
+						.frame(maxWidth: .infinity)
+						.padding(.vertical, 8)
+						.background(.regularMaterial)
+						.accessibilityLabel(String.localizedStringWithFormat("Radio: %@".localized, radioName))
+				} else {
+					RadioNameBanner()
+				}
+			}
 		}
+	}
+}
+
+/// With more than one radio connected, which radio a full-screen gate is about: the window's
+/// (feature 021, T073, D-19). Shared by the lock-down sheet and the firmware update gate.
+struct RadioNameBanner: View {
+	@EnvironmentObject private var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
+
+	var body: some View {
+		if accessoryManager.connectedRadioCount > 1, let device = accessoryManager.session(for: windowRadio)?.device {
+			Label(device.longName ?? device.name, systemImage: "antenna.radiowaves.left.and.right")
+				.font(.headline)
+				.frame(maxWidth: .infinity)
+				.padding(.vertical, 8)
+				.background(.regularMaterial)
+				.accessibilityLabel(String.localizedStringWithFormat("Radio: %@".localized, device.longName ?? device.name))
+		}
+	}
+}
+
+/// The passphrase sheet for a locked radio other than the window's (feature 021, T188): the same
+/// sheet as the window's radio's, on that radio's own coordinator (T301), so the passphrase goes out on
+/// its own connection. It closes when the radio unlocks, stops needing a passphrase, or
+/// disconnects; a wrong passphrase, or one that couldn't be sent, shows in it.
+struct RadioUnlockSheet: View {
+	let request: RadioUnlockRequest
+
+	@EnvironmentObject private var accessoryManager: AccessoryManager
+	@Environment(\.dismiss) private var dismiss
+
+	private var session: RadioSession? {
+		accessoryManager.session(for: RadioWindow(deviceId: request.id))
+	}
+
+	var body: some View {
+		if let session, session.lockdown.isBlockingSession || session.lockdown.isWaitingForAnswer {
+			RadioLockdownSheet(lockdown: session.lockdown, radioName: request.radioName, onCancel: { dismiss() })
+		} else {
+			Color.clear.onAppear { dismiss() }
+		}
+	}
+}
+
+/// Observes one radio's coordinator, so its sheet follows that radio's state.
+private struct RadioLockdownSheet: View {
+	@ObservedObject var lockdown: LockdownCoordinator
+	let radioName: String
+	let onCancel: () -> Void
+	@Environment(\.dismiss) private var dismiss
+
+	var body: some View {
+		LockdownSheet(radioName: radioName, onCancel: onCancel)
+			.environmentObject(lockdown)
+			.onChange(of: lockdown.state) { _, _ in
+				// Stays up while a passphrase it sent waits for the answer, and shows why when it
+				// couldn't be sent.
+				if !lockdown.isBlockingSession, !lockdown.isWaitingForAnswer { dismiss() }
+			}
 	}
 }
 
@@ -90,7 +178,7 @@ private struct PassphraseEntryContent: View {
 	}
 
 	private var coordinatorReady: Bool {
-		accessoryManager.activeConnection?.device.num != nil
+		lockdown.canSend
 	}
 
 	private var isSubmitEnabled: Bool {

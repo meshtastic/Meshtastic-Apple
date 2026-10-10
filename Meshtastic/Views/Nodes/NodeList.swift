@@ -14,6 +14,8 @@ struct NodeList: View {
 	@Environment(\.modelContext) private var context
 	@Environment(\.horizontalSizeClass) private var horizontalSizeClass
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@EnvironmentObject var router: Router
 	@AppStorage("nodeListDensity") private var nodeListDensity: NodeListDensity = .standard
 	@State private var isPresentingTraceRouteSentAlert = false
@@ -30,7 +32,7 @@ struct NodeList: View {
 	@SceneStorage("selectedDetailView") var selectedDetailView: String?
 
 	var connectedNode: NodeInfoEntity? {
-		if let num = accessoryManager.activeDeviceNum {
+		if let num = accessoryManager.nodeNum(for: windowRadio) {
 			return getNodeInfo(id: num, context: context)
 		}
 		return nil
@@ -116,10 +118,12 @@ struct NodeList: View {
 				.navigationSplitViewStyle(.balanced)
 			}
 		}
+		.refreshesHeardBy(filters)
+		.refreshesUnheardOnCurrentLora(filters)
 		.onAppear {
 			filters.fallbackLocation = connectedNode?.latestPosition?.nodeCoordinate
 		}
-		.onChange(of: accessoryManager.activeDeviceNum) {
+		.onChange(of: accessoryManager.nodeNum(for: windowRadio)) {
 			filters.fallbackLocation = connectedNode?.latestPosition?.nodeCoordinate
 		}
 	}
@@ -145,7 +149,8 @@ struct NodeList: View {
 			nodeForDisplayNameEdit: $nodeForDisplayNameEdit,
 			nodeForStatusMessageEdit: $nodeForStatusMessageEdit,
 			nodeListDensity: $nodeListDensity,
-			selectedNodeNum: $router.selectedNodeNum
+			selectedNodeNum: $router.selectedNodeNum,
+			unheardOnCurrentLora: filters.unheardOnCurrentLoraNodeNums
 		)
 		.sheet(isPresented: $isEditingFilters) {
 			NodeListFilter(
@@ -233,7 +238,7 @@ struct NodeList: View {
 			// Mirror NodeDetail's rule: only your own (connected) node is marked
 			// manually verified when shared.
 			ShareContactQRDialog(
-				manuallyVerified: selectedNode.num == accessoryManager.activeDeviceNum,
+				manuallyVerified: selectedNode.num == accessoryManager.nodeNum(for: windowRadio),
 				node: selectedNode.toProto()
 			)
 		}
@@ -245,11 +250,7 @@ struct NodeList: View {
 				MeshtasticLogo()
 			}
 			ToolbarItem(placement: .topBarTrailing) {
-				ConnectedDevice(
-					deviceConnected: accessoryManager.isConnected,
-					name: accessoryManager.activeConnection?.device.shortName ?? "?",
-					phoneOnly: true
-				)
+				WindowConnectedDevice(phoneOnly: true)
 				.accessibilityElement(children: .contain)
 			}
 		}
@@ -263,7 +264,7 @@ struct NodeList: View {
 				if let node = deleteNode {
 					Task {
 						do {
-							try await accessoryManager.removeNode(node: node, connectedNodeNum: accessoryManager.activeDeviceNum ?? -1)
+							try await accessoryManager.removeNode(node: node, connectedNodeNum: accessoryManager.nodeNum(for: windowRadio) ?? -1)
 						} catch {
 							let nodeName = node.user?.longName ?? "Unknown"
 							Logger.data.error("Failed to delete node \(nodeName, privacy: .public)")
@@ -289,6 +290,8 @@ private struct NodeListEntry: Identifiable {
 
 private struct FilteredNodeList: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@EnvironmentObject var router: Router
 	@Environment(\.modelContext) private var context
 	/// Throttled snapshot of the filtered/sorted nodes actually shown. Recomputed on a gentle
@@ -308,6 +311,8 @@ private struct FilteredNodeList: View {
 	@Binding var nodeListDensity: NodeListDensity
 	@Binding var selectedNodeNum: Int64?
 	var filters: NodeFilterParameters
+	/// The window's radio's unheard nodes, passed by value so the rows redraw when they change.
+	var unheardOnCurrentLora: Set<Int64>
 
 	init(
 		withFilters: NodeFilterParameters,
@@ -318,9 +323,11 @@ private struct FilteredNodeList: View {
 		nodeForDisplayNameEdit: Binding<NodeInfoEntity?>,
 		nodeForStatusMessageEdit: Binding<NodeInfoEntity?>,
 		nodeListDensity: Binding<NodeListDensity>,
-		selectedNodeNum: Binding<Int64?>
+		selectedNodeNum: Binding<Int64?>,
+		unheardOnCurrentLora: Set<Int64> = []
 	) {
 		self.filters = withFilters
+		self.unheardOnCurrentLora = unheardOnCurrentLora
 		self.connectedNode = connectedNode
 		self._isPresentingDeleteNodeAlert = isPresentingDeleteNodeAlert
 		self._deleteNodeId = deleteNodeId
@@ -370,12 +377,13 @@ private struct FilteredNodeList: View {
 		let searchText = filters.searchText.lowercased()
 		let onlineThreshold = filters.isOnline ? Date().addingTimeInterval(-7_200) : nil
 		let distanceBounds = filters.currentDistanceBounds
-		let filterLookup = NodeListFilterLookup(
+		var filterLookup = NodeListFilterLookup(
 			nodes: allNodes,
 			needsEnvironment: filters.isEnvironment,
 			distanceBounds: filters.distanceFilter ? distanceBounds : nil,
 			context: context
 		)
+		filterLookup.heardByNodeNums = filters.heardByNodeNums
 		var seenNodeNums = Set<Int64>()
 		seenNodeNums.reserveCapacity(allNodes.count)
 		var connectedNode: NodeInfoEntity?
@@ -438,13 +446,15 @@ private struct FilteredNodeList: View {
 					case .compact:
 						NodeListItemCompact(
 							node: entry.node,
-							isDirectlyConnected: entry.id == accessoryManager.activeDeviceNum,
-							connectedNode: accessoryManager.activeConnection?.device.num ?? -1)
+							isDirectlyConnected: entry.id == accessoryManager.nodeNum(for: windowRadio),
+							connectedNode: accessoryManager.session(for: windowRadio)?.device.num ?? -1,
+							unheardOnCurrentLora: unheardOnCurrentLora.contains(entry.id))
 					case .standard:
 						NodeListItem(
 							node: entry.node,
-							isDirectlyConnected: entry.id == accessoryManager.activeDeviceNum,
-							connectedNode: accessoryManager.activeConnection?.device.num ?? -1
+							isDirectlyConnected: entry.id == accessoryManager.nodeNum(for: windowRadio),
+							connectedNode: accessoryManager.session(for: windowRadio)?.device.num ?? -1,
+							unheardOnCurrentLora: unheardOnCurrentLora.contains(entry.id)
 						)
 					}
 				}
@@ -494,7 +504,7 @@ private struct FilteredNodeList: View {
 		guard boundContainerGeneration == PersistenceController.shared.containerGeneration else { return }
 		guard router.selectedTab == .nodes else { return }
 		let allNodes = (try? context.fetch(makeNodeFetchDescriptor())) ?? []
-		replaceDisplayedNodesIfNeeded(with: displayNodes(from: allNodes, activeNodeNum: accessoryManager.activeDeviceNum))
+		replaceDisplayedNodesIfNeeded(with: displayNodes(from: allNodes, activeNodeNum: accessoryManager.nodeNum(for: windowRadio)))
 		router.updateNodeIndex(from: allNodes)
 	}
 
@@ -570,6 +580,8 @@ private struct NodeListFilterLookup {
 	/// so that nodes with no position data pass through the distance filter rather than
 	/// being silently excluded.
 	private let positionedNodeNums: Set<Int64>?
+	/// Nodes the "Heard By" radio has heard (feature 021); nil when not filtering by radio.
+	var heardByNodeNums: Set<Int64>?
 
 	init(
 		nodes: [NodeInfoEntity],
@@ -667,6 +679,9 @@ fileprivate extension NodeFilterParameters {
 		distanceBounds: NodeDistanceFilterBounds?,
 		lookup: NodeListFilterLookup
 	) -> Bool {
+		// Heard-by filter (feature 021): nil when not filtering by radio
+		if let heardByNodeNums = lookup.heardByNodeNums, !heardByNodeNums.contains(node.num) { return false }
+
 		// Search text (requires relationship traversal)
 		if !normalizedSearchText.isEmpty {
 			let matchesSearch = [
@@ -695,7 +710,7 @@ fileprivate extension NodeFilterParameters {
 			if lastHeard < threshold { return false }
 		}
 
-		if hidesUnheardOnCurrentLora && node.isUnheardOnCurrentLora { return false }
+		if hidesUnheardOnCurrentLora && isUnheardOnCurrentLora(node.num) { return false }
 
 		// Signed filter
 		if isSigned {

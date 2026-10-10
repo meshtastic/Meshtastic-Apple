@@ -28,7 +28,9 @@ extension LocalStatsRequestTransport {
 extension AccessoryManager {
 
 	public func getCannedMessageModuleMessages(destNum: Int64, wantResponse: Bool) throws {
-		guard let deviceNum = self.activeConnection?.device.num else {
+		// Sent by the radio it's for when that's one of the connected radios (its own local admin),
+		// otherwise by the first radio (feature 021, T071).
+		guard let deviceNum = (connectedSession(forRadio: destNum) ?? self.activeConnection)?.device.num else {
 			Logger.services.error("Error while sending CannedMessageModule request.  No active device.")
 			throw AccessoryError.ioFailed("No active device")
 		}
@@ -60,12 +62,14 @@ extension AccessoryManager {
 
 		let logString = String.localizedStringWithFormat("Requested Canned Messages Module Messages for node: %@".localized, String(deviceNum))
 		Task {
-			try await send(toRadio, debugDescription: logString)
+			try await sendAdminMessageToRadio(meshPacket: toRadio.packet, adminDescription: logString)
 		}
 	}
 	
 	public func getRingtone(destNum: Int64, wantResponse: Bool) throws {
-		guard let deviceNum = self.activeConnection?.device.num else {
+		// Sent by the radio it's for when that's one of the connected radios (its own local admin),
+		// otherwise by the first radio (feature 021, T071).
+		guard let deviceNum = (connectedSession(forRadio: destNum) ?? self.activeConnection)?.device.num else {
 			Logger.services.error("Error while sending RtttlConfig request.  No active device.")
 			throw AccessoryError.ioFailed("No active device")
 		}
@@ -97,7 +101,7 @@ extension AccessoryManager {
 
 		let logString = String.localizedStringWithFormat("Requested RTTTL Config Module ringtone for node: %@".localized, String(deviceNum))
 		Task {
-			try await send(toRadio, debugDescription: logString)
+			try await sendAdminMessageToRadio(meshPacket: toRadio.packet, adminDescription: logString)
 		}
 	}
 
@@ -195,23 +199,30 @@ extension AccessoryManager {
 
 	// Send an admin message to a radio, save a message to core data for logging
 	private func sendAdminMessageToRadio(meshPacket: MeshPacket, adminDescription: String?) async throws {
-
-		var toRadio: ToRadio!
-		toRadio = ToRadio()
-		toRadio.packet = meshPacket
-
-		try await send(toRadio)
+		// Feature 021: the connected radio it goes through (`adminRoute(for:)`). With one radio
+		// that's always the first radio, as before.
+		guard let session = adminRoute(for: meshPacket) else {
+			var toRadio = ToRadio()
+			toRadio.packet = meshPacket
+			try await send(toRadio)
+			return
+		}
+		var toRadio = ToRadio()
+		toRadio.packet = adminPacket(meshPacket, relayedBy: session)
+		try await send(toRadio, via: session)
 		if let adminDescription {
 			Logger.admin.debug("\(adminDescription, privacy: .public)")
 		}
 	}
 
+	/// Adds a shared contact to a radio. `viaRadio` picks the connected radio (feature 021); nil
+	/// means the first radio.
 	/// - Parameter acceptsKeyReplacement: Only true when the add-contact sheet showed that this
 	///   contact's key differs from the one the node holds and the person confirmed replacing it.
 	///   The radio applies the new key either way, so without this the app would keep the old one
 	///   and show a key mismatch for a change the person asked for.
-	public func addContactFromURL(base64UrlString: String, acceptsKeyReplacement: Bool = false) async throws {
-		guard let deviceNum = self.activeConnection?.device.num else {
+	public func addContactFromURL(base64UrlString: String, viaRadio: Int64? = nil, acceptsKeyReplacement: Bool = false) async throws {
+		guard let session = connectedSession(forRadio: viaRadio), let deviceNum = session.device.num else {
 			Logger.services.error("Error while sending CannedMessageModule request.  No active device.")
 			throw AccessoryError.ioFailed("No active device")
 		}
@@ -261,7 +272,7 @@ extension AccessoryManager {
 			toRadio.packet = meshPacket
 
 			let logString = String.localizedStringWithFormat("Added contact %@ to device".localized, contact.user.longName)
-			try await send(toRadio, debugDescription: logString)
+			try await send(toRadio, via: session, debugDescription: logString)
 
 			// Create a NodeInfo (User) packet for the newly added contact
 			var dataNodeMessage = DataMessage()
@@ -276,8 +287,8 @@ extension AccessoryManager {
 
 				// Update local database with the new node info
 				// Do not auto-favorite when using CLIENT_BASE role to avoid creating routing issues
-				let shouldFavorite = connectedDeviceRole != .clientBase
-				await MeshPackets.shared.upsertNodeInfoPacket(packet: nodeMeshPacket, favorite: shouldFavorite, overTheMesh: false,
+				let shouldFavorite = radioRole(for: Int64(deviceNum)) != .clientBase
+				await MeshPackets.shared.upsertNodeInfoPacket(packet: nodeMeshPacket, favorite: shouldFavorite, overTheMesh: false, receivedBy: Int64(deviceNum),
 				                                             acceptsKeyReplacement: acceptsKeyReplacement)
 			}
 		} catch {
@@ -287,8 +298,9 @@ extension AccessoryManager {
 		}
 	}
 	
-	// toConnection parameter can be used during connection process before the AccessoryManager is fully setup
-	public func sendHeartbeat(toConnection: Connection? = nil) async throws {
+	// toConnection parameter can be used during connection process before the AccessoryManager is fully setup.
+	// `session` sends it through that radio (feature 021, T070); nil is the first radio.
+	public func sendHeartbeat(toConnection: Connection? = nil, on session: RadioSession? = nil) async throws {
 		var heartbeatToRadio: ToRadio = ToRadio()
 		var heartbeatPacket = Heartbeat()
 		
@@ -300,14 +312,19 @@ extension AccessoryManager {
 		heartbeatToRadio.payloadVariant = .heartbeat(heartbeatPacket)
 		if let toConnection {
 			try await toConnection.send(heartbeatToRadio)
+		} else if let session {
+			try await self.send(heartbeatToRadio, via: session)
 		} else {
 			try await self.send(heartbeatToRadio)
 		}
-		await self.heartbeatResponseTimer?.reset(delay: .seconds(5.0))
+		await (session ?? activeConnection)?.heartbeatResponseTimer?.reset(delay: .seconds(5.0))
 	}
 	
-	public func sendTime() async throws {
-		guard let deviceNum = self.activeDeviceNum.map({ UInt32($0) }) else {
+	/// Sets the time on `session`'s radio (the first one by default). Addressed to the radio
+	/// itself, so the admin routing sends it over that radio's connection.
+	public func sendTime(on session: RadioSession? = nil) async throws {
+		let nodeNum = session == nil ? self.activeDeviceNum : session?.nodeNum
+		guard let deviceNum = nodeNum.map({ UInt32($0) }) else {
 			Logger.mesh.error("🚫 Unable to send time, connected node is disconnected or invalid")
 			return
 		}
@@ -380,8 +397,10 @@ extension AccessoryManager {
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 	}
 
-	public func sendMessage(message: String, toUserNum: Int64, channel: Int32, isEmoji: Bool, replyID: Int64) async throws {
-		guard let fromUserNum = self.activeConnection?.device.num else {
+	/// Sends a text message. `viaRadio` picks the connected radio that sends it (feature 021);
+	/// nil means the first radio.
+	public func sendMessage(message: String, toUserNum: Int64, channel: Int32, isEmoji: Bool, replyID: Int64, viaRadio: Int64? = nil) async throws {
+		guard let sendingSession = connectedSession(forRadio: viaRadio), let fromUserNum = sendingSession.nodeNum else {
 			Logger.services.error("Error while sending CannedMessageModule request.  No active device.")
 			throw AccessoryError.ioFailed("No active device")
 		}
@@ -425,6 +444,20 @@ extension AccessoryManager {
 					newMessage.messagePayload = message
 					newMessage.messagePayloadMarkdown = generateMessageMarkdown(message: message)
 					newMessage.read = true
+					// Feature 021: the sending radio owns the message, and the key matches the
+					// radio's echo of it (same sender, same packet id), so the two merge.
+					newMessage.fromNum = fromUserNum
+					newMessage.messageKey = MessageEntity.key(fromNum: fromUserNum, messageId: newMessage.messageId)
+					newMessage.localNodeNum = fromUserNum
+					if toUserNum > 0 {
+						newMessage.toNum = toUserNum
+					} else {
+						newMessage.toNum = MultiRadioBackfill.broadcastNum
+						// From the saved settings: this context's LoRa settings can predate a
+						// preset change the packet actor saved, which filed the message under the
+						// old channel and showed it in other radios' conversations.
+						newMessage.channelKey = MultiRadioBackfill.computedChannelKeys(for: fromUserNum, container: context.container)[channel]
+					}
 
 					let dataType = PortNum.textMessageApp
 					var messageQuotesReplaced = message.replacingOccurrences(of: "’", with: "'")
@@ -441,7 +474,10 @@ extension AccessoryManager {
 						meshPacket.publicKey = newMessage.toUser?.publicKey ?? Data()
 						// Send a contact to the phone every time we send a dm so that any nodes that have rolled out of the db are there and we don't get a PKI Failed error
 						Task { @MainActor in
-							let am = AccessoryManager.shared
+							// Both follow-ups below are admin messages to the sending radio, so a DM
+							// through another radio refreshes and pins the contact on that radio
+							// (feature 021).
+							let am = self
 							if let user = newMessage.toUser {
 								var contact = SharedContact()
 								contact.manuallyVerified = false
@@ -453,7 +489,7 @@ extension AccessoryManager {
 									if contact.carriesPublicKey {
 										let contactString = try contact.serializedData().base64EncodedString()
 										do {
-											try await am.addContactFromURL(base64UrlString: contactString)
+											try await am.addContactFromURL(base64UrlString: contactString, viaRadio: fromUserNum)
 										} catch {
 											// Best effort. The message still goes out, and the radio may
 											// already hold the key, so a failure here is not fatal — but it
@@ -468,14 +504,17 @@ extension AccessoryManager {
 									// message: setting the local flag alone is overwritten by the next
 									// NodeInfo, so the star would appear and then quietly revert.
 									if let node = user.userNode,
-									   let connectedNodeNum = am.activeDeviceNum,
 									   AutoFavoriteRule.shouldFavorite(
 										destinationRole: node.deviceConfig?.role,
-										connectedRole: am.connectedDeviceRole,
+										connectedRole: am.radioRole(for: fromUserNum),
 										isAlreadyFavorite: node.favorite
 									   ) {
 										do {
-											try await am.setFavoriteNode(node: node, connectedNodeNum: Int64(connectedNodeNum))
+											// Favorited on every connected radio that isn't a client base:
+											// each radio's node DB writes the shared star, so pinning it on
+											// the sending radio alone would flip back.
+											let pinningRadios = am.connectedRadioNums.filter { am.radioRole(for: $0) != .clientBase }
+											try await am.setFavorite(true, node: node, radios: pinningRadios)
 											node.favorite = true
 										} catch {
 											Logger.services.error("Could not favorite \(user.num, privacy: .public) while sending a direct message: \(error.localizedDescription, privacy: .public)")
@@ -518,21 +557,22 @@ extension AccessoryManager {
 						// message list briefly renders duplicate ForEach ids, which corrupts
 						// the List's collection-view diff (the 2.7.19 SIGABRT batch-update crash).
 						try context.save()
-						Logger.data.info("💾 Saved a new sent message from \(self.activeDeviceNum?.toHex() ?? "0", privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
+						Logger.data.info("💾 Saved a new sent message from \(fromUserNum.toHex(), privacy: .public) to \(toUserNum.toHex(), privacy: .public)")
 						// Each open conversation keeps its own fetched snapshot. The
 						// window that sent already reloads; the others only hear
 						// about a save through this notification.
 						NotificationCenter.default.post(name: .meshMessagesDidChange, object: nil)
 						Task {
 							let logString = String.localizedStringWithFormat("Sent message %@ from %@ to %@".localized, String(newMessage.messageId), fromUserNum.toHex(), toUserNum.toHex())
-							try await send(toRadio, debugDescription: logString)
+							try await send(toRadio, via: sendingSession, debugDescription: logString)
 							Logger.mesh.info("💬 \(logString, privacy: .public)")
 						}
 						// Donate outgoing message to SiriKit for CarPlay
 						// (CarPlay is iPhone-only, so skip on Mac Catalyst).
 						if !isEmoji {
 							#if os(iOS) && !targetEnvironment(macCatalyst)
-							CarPlayIntentDonation.donateOutgoingMessage(content: message, toUserNum: toUserNum, channel: channel)
+							let donatedRadio = IntentMessageConverters.isMultiRadio(in: context) ? sendingSession.nodeNum : nil
+							CarPlayIntentDonation.donateOutgoingMessage(content: message, toUserNum: toUserNum, channel: channel, radioNum: donatedRadio)
 							#endif
 						}
 					} catch {
@@ -563,8 +603,12 @@ extension AccessoryManager {
 	/// the row shows "Sending…" again: `messageTimestamp` has to move with it, because the status
 	/// is derived from how long ago the message was sent.
 	public func resendMessage(_ message: MessageEntity) async throws {
-		guard let fromUserNum = self.activeConnection?.device.num else {
-			Logger.services.error("Error while resending a message. No active device.")
+		// Feature 021: the same packet id only makes the same message from the same sender, so a
+		// resend goes through the radio that sent it. Rows from before the backfill use the
+		// first radio, as before.
+		let sendingRadio = message.localNodeNum ?? message.fromNum
+		guard let sendingSession = connectedSession(forRadio: sendingRadio), let fromUserNum = sendingSession.nodeNum else {
+			Logger.services.error("Error while resending a message. The radio that sent it isn't connected.")
 			throw AccessoryError.ioFailed("No active device")
 		}
 		// Not a silent return the way the first send treats an empty draft: there is no draft
@@ -636,7 +680,7 @@ extension AccessoryManager {
 		let logString = String.localizedStringWithFormat(
 			"Resent message %@ from %@ to %@".localized, String(messageId), fromUserNum.toHex(), toUserNum.toHex())
 		do {
-			try await send(toRadio, debugDescription: logString)
+			try await send(toRadio, via: sendingSession, debugDescription: logString)
 		} catch {
 			message.markResendFailed(ackError: previousAckError, timestamp: previousTimestamp)
 			try? context.save()
@@ -666,7 +710,7 @@ extension AccessoryManager {
 		toRadio.packet = meshPacket
 
 		let logString = String.localizedStringWithFormat("Set node %@ as favorite on %@".localized, node.num.toHex(), connectedNodeNum.toHex())
-		try await send(toRadio, debugDescription: logString)
+		try await sendLocalAdmin(toRadio, to: connectedNodeNum, debugDescription: logString)
 	}
 
 	public func removeFavoriteNode(node: NodeInfoEntity, connectedNodeNum: Int64) async throws {
@@ -689,7 +733,7 @@ extension AccessoryManager {
 		toRadio.packet = meshPacket
 
 		let logString = String.localizedStringWithFormat("Remove node %@ as favorite on %@".localized, node.num.toHex(), connectedNodeNum.toHex())
-		try await send(toRadio, debugDescription: logString)
+		try await sendLocalAdmin(toRadio, to: connectedNodeNum, debugDescription: logString)
 	}
 
 	/// Builds one channel write. Role comes from the slot: index 0 is the primary, the rest are
@@ -709,17 +753,20 @@ extension AccessoryManager {
 		return chan
 	}
 
-	public func saveChannelSet(base64UrlString: String, addChannels: Bool = false, okToMQTT: Bool = false) async throws {
+	public func saveChannelSet(base64UrlString: String, addChannels: Bool = false, okToMQTT: Bool = false, viaRadio: Int64? = nil) async throws {
 		let channelLink = try MeshtasticChannelURL.parse(base64UrlString, defaultAddChannels: addChannels)
 		try await saveChannelSet(
 			channelSet: channelLink.channelSet,
 			addChannels: channelLink.addChannels,
-			okToMQTT: okToMQTT
+			okToMQTT: okToMQTT,
+			viaRadio: viaRadio
 		)
 	}
 
-	public func saveChannelSet(channelSet incomingChannelSet: ChannelSet, addChannels: Bool = false, okToMQTT: Bool = false) async throws {
-		guard let deviceNum = self.activeConnection?.device.num else {
+	/// Saves a channel set to radio `viaRadio` (the window's, feature 021); nil is the radio
+	/// connected first. A radio that isn't connected isn't swapped for another.
+	public func saveChannelSet(channelSet incomingChannelSet: ChannelSet, addChannels: Bool = false, okToMQTT: Bool = false, viaRadio: Int64? = nil) async throws {
+		guard let session = connectedSession(forRadio: viaRadio), let deviceNum = session.device.num else {
 			Logger.services.error("Error while sending saveChannelSet request.  No active device.")
 			throw AccessoryError.ioFailed("No active device")
 		}
@@ -831,7 +878,7 @@ extension AccessoryManager {
 			toRadio.packet = meshPacket
 
 			let logString = String.localizedStringWithFormat("Sent a Channel for: %@ Channel Index %d".localized, String(deviceNum), chan.index)
-			try await send(toRadio, debugDescription: logString)
+			try await send(toRadio, via: session, debugDescription: logString)
 			deliveredChannels.append(chan)
 		}
 
@@ -860,7 +907,7 @@ extension AccessoryManager {
 			toRadio.packet = meshPacket
 
 			let logString = String.localizedStringWithFormat("Sent a LoRa.Config for: %@".localized, String(deviceNum))
-			try await send(toRadio, debugDescription: logString)
+			try await send(toRadio, via: session, debugDescription: logString)
 		}
 
 		// Mirror delivered channels locally only after channel and LoRa writes succeed, so a
@@ -895,13 +942,13 @@ extension AccessoryManager {
 		if didSendLoRaConfig && !appliesLoRaConfigWithoutReboot {
 			do {
 				Logger.transport.debug("[AccessoryManager] sending wantConfig after channel set (device may reboot)")
-				try await sendWantConfig()
+				try await sendWantConfig(on: session)
 			} catch {
 				Logger.transport.warning("[AccessoryManager] wantConfig after channel set did not complete; device is likely rebooting: \(error.localizedDescription, privacy: .public)")
 			}
 		} else {
 			Logger.transport.debug("[AccessoryManager] sending wantConfig for saveChannelSet (no reboot expected)")
-			try await sendWantConfig()
+			try await sendWantConfig(on: session)
 		}
 	}
 
@@ -1007,10 +1054,10 @@ extension AccessoryManager {
 		let messageDescription = "🛟 Saved Channel \(channel.index) for \(toUser.longName ?? "Unknown".localized)"
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 		if refreshShareSnapshot,
-		   let activeDeviceNum,
-		   fromUser.num == activeDeviceNum,
-		   toUser.num == activeDeviceNum {
-			MeshShareSnapshotBuilder.refresh(nodeNum: activeDeviceNum, context: context)
+		   let sharingRadio = radioNum(for: .carPlay),
+		   fromUser.num == sharingRadio,
+		   toUser.num == sharingRadio {
+			MeshShareSnapshotBuilder.refresh(nodeNum: sharingRadio, context: context)
 		}
 		return Int64(meshPacket.id)
 	}
@@ -1021,8 +1068,8 @@ extension AccessoryManager {
 	/// the radio's current values when the beacon didn't advertise them. `channelNum` is forced to 0
 	/// so the firmware derives the frequency from the new channel name + preset + region.
 	@MainActor
-	public func joinBeaconMesh(channelName: String, channelPSK: Data, region: RegionCodes?, preset: ModemPresets?) async throws {
-		guard let deviceNum = self.activeConnection?.device.num else {
+	public func joinBeaconMesh(channelName: String, channelPSK: Data, region: RegionCodes?, preset: ModemPresets?, viaRadio: Int64? = nil) async throws {
+		guard let deviceNum = connectedSession(forRadio: viaRadio)?.device.num else {
 			throw AccessoryError.ioFailed("No active device")
 		}
 		guard let node = getNodeInfo(id: Int64(deviceNum), context: context), let user = node.user else {
@@ -1078,7 +1125,7 @@ extension AccessoryManager {
 		lora.channelNum = 0
 		do {
 			_ = try await saveLoRaConfig(config: lora, fromUser: user, toUser: user)
-			refreshNodeDatabaseAfterLoRaChange()
+			refreshNodeDatabaseAfterLoRaChange(forRadio: Int64(deviceNum))
 		} catch {
 			// Roll the primary channel back so we don't strand the radio between meshes. The channel
 			// write doesn't reboot, so this restore is safe.
@@ -1125,8 +1172,8 @@ extension AccessoryManager {
 	/// no free slot is available (research D2). Never returns the primary (index 0); falls back to
 	/// "Channel N" for an unnamed slot.
 	@MainActor
-	public func beaconReplaceableSecondaryChannels() -> [BeaconSecondaryChannel] {
-		guard let deviceNum = self.activeConnection?.device.num,
+	public func beaconReplaceableSecondaryChannels(viaRadio: Int64? = nil) -> [BeaconSecondaryChannel] {
+		guard let deviceNum = connectedSession(forRadio: viaRadio)?.device.num,
 			  let node = getNodeInfo(id: Int64(deviceNum), context: context) else {
 			return []
 		}
@@ -1141,8 +1188,8 @@ extension AccessoryManager {
 
 	/// Whether at least one secondary slot (1–7) is free on the connected node.
 	@MainActor
-	public func beaconHasFreeSecondarySlot() -> Bool {
-		guard let deviceNum = self.activeConnection?.device.num,
+	public func beaconHasFreeSecondarySlot(viaRadio: Int64? = nil) -> Bool {
+		guard let deviceNum = connectedSession(forRadio: viaRadio)?.device.num,
 			  let node = getNodeInfo(id: Int64(deviceNum), context: context) else {
 			return false
 		}
@@ -1160,8 +1207,8 @@ extension AccessoryManager {
 	/// `replacingIndex` is provided, writes into that (secondary) slot, overwriting the channel there —
 	/// never the primary (index 0).
 	@MainActor
-	public func addBeaconChannel(channelName: String, channelPSK: Data, replacingIndex: Int32? = nil) async throws {
-		guard let deviceNum = self.activeConnection?.device.num else {
+	public func addBeaconChannel(channelName: String, channelPSK: Data, replacingIndex: Int32? = nil, viaRadio: Int64? = nil) async throws {
+		guard let deviceNum = connectedSession(forRadio: viaRadio)?.device.num else {
 			throw AccessoryError.ioFailed("No active device")
 		}
 		guard let node = getNodeInfo(id: Int64(deviceNum), context: context), let user = node.user else {
@@ -1203,8 +1250,8 @@ extension AccessoryManager {
 		Logger.mesh.info("➕ [Beacon] Added advertised channel '\(channelName, privacy: .private)' to secondary slot \(targetIndex, privacy: .public) — no reboot")
 	}
 
-	public func sendWaypoint(waypoint: Waypoint) async throws {
-		guard let deviceNum = self.activeConnection?.device.num else {
+	public func sendWaypoint(waypoint: Waypoint, viaRadio: Int64? = nil) async throws {
+		guard let session = connectedSession(forRadio: viaRadio), let deviceNum = session.device.num else {
 			Logger.services.error("Error while sending sendWaypoint request.  No active device.")
 			throw AccessoryError.ioFailed("No active device")
 		}
@@ -1232,7 +1279,7 @@ extension AccessoryManager {
 		toRadio.packet = meshPacket
 
 		let logString = String.localizedStringWithFormat("Sent a Waypoint Packet from: %@".localized, String(fromNodeNum))
-		try await send(toRadio, debugDescription: logString)
+		try await send(toRadio, via: session, debugDescription: logString)
 		Logger.mesh.info("📍 \(logString, privacy: .public)")
 
 			let wayPointEntity = getWaypoint(id: Int64(waypoint.id), context: context)
@@ -1283,8 +1330,8 @@ extension AccessoryManager {
 
 	}
 
-	func sendTraceRouteRequest(destNum: Int64, wantResponse: Bool) async throws {
-		guard let fromNodeNum = self.activeConnection?.device.num else {
+	func sendTraceRouteRequest(destNum: Int64, wantResponse: Bool, viaRadio: Int64? = nil) async throws {
+		guard let session = connectedSession(forRadio: viaRadio), let fromNodeNum = session.device.num else {
 			Logger.services.error("Error while sending traceroute request.  No active device.")
 			throw AccessoryError.ioFailed("No active device")
 		}
@@ -1309,7 +1356,7 @@ extension AccessoryManager {
 		toRadio.packet = meshPacket
 
 		let logString = String.localizedStringWithFormat("Sent a TraceRoute Packet from: %@ to: %@".localized, String(fromNodeNum), String(destNum))
-		try await send(toRadio, debugDescription: logString)
+		try await send(toRadio, via: session, debugDescription: logString)
 
 			let traceRoute = TraceRouteEntity()
 			context.insert(traceRoute)
@@ -1367,7 +1414,11 @@ extension AccessoryManager {
 		toRadio = ToRadio()
 		toRadio.packet = meshPacket
 		let logString = String.localizedStringWithFormat("📮 Sent a request for a Store & Forward Client History to \(toUser.num.toHex()) for the last \(120) minutes.")
-		try await send(toRadio, debugDescription: logString)
+		// On the connection of the radio it's from, which the router answers (review V11 R11-2).
+		guard let session = connectedSession(forRadio: fromUser.num) else {
+			throw AccessoryError.ioFailed("requestStoreAndForwardClientHistory: That radio isn't connected")
+		}
+		try await send(toRadio, via: session, debugDescription: logString)
 	}
 
 	public func setIgnoredNode(node: NodeInfoEntity, connectedNodeNum: Int64) async throws {
@@ -1390,7 +1441,7 @@ extension AccessoryManager {
 		toRadio.packet = meshPacket
 
 		let logString = String.localizedStringWithFormat("📮 Sent a request to  ignore \(node.num.toHex())")
-		try await send(toRadio, debugDescription: logString)
+		try await sendLocalAdmin(toRadio, to: connectedNodeNum, debugDescription: logString)
 	}
 
 	public func removeIgnoredNode(node: NodeInfoEntity, connectedNodeNum: Int64) async throws {
@@ -1413,12 +1464,30 @@ extension AccessoryManager {
 		toRadio.packet = meshPacket
 
 		let logString = String.localizedStringWithFormat("📮 Sent a request to un-ignore \(node.num.toHex())")
-		try await send(toRadio, debugDescription: logString)
+		try await sendLocalAdmin(toRadio, to: connectedNodeNum, debugDescription: logString)
 	}
 
 	public func removeNode(node: NodeInfoEntity, connectedNodeNum: Int64) async throws {
+		try await sendRemoveNode(node.num, toRadio: connectedNodeNum)
+		do {
+			if let user = node.user {
+				context.delete(user)
+			}
+			NodeObservationEntity.delete(ofNodes: [node.num], in: context)
+			context.delete(node)
+			try context.save()
+		} catch {
+			let nsError = error as NSError
+			Logger.data.error("🚫 Error deleting node: \(nsError, privacy: .public)")
+		}
+	}
+
+	/// Asks radio `connectedNodeNum` to drop `nodeNum` from its node database. Changes nothing in
+	/// the app: Delete Node deletes the node too (`removeNode`), the unheard notice decides itself
+	/// (`UnheardNodesRemoval`). Throws when the radio isn't connected.
+	func sendRemoveNode(_ nodeNum: Int64, toRadio connectedNodeNum: Int64) async throws {
 		var adminPacket = AdminMessage()
-		adminPacket.removeByNodenum = UInt32(node.num)
+		adminPacket.removeByNodenum = UInt32(nodeNum)
 		var meshPacket: MeshPacket = MeshPacket()
 		meshPacket.to = UInt32(connectedNodeNum)
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
@@ -1436,25 +1505,20 @@ extension AccessoryManager {
 		toRadio = ToRadio()
 		toRadio.packet = meshPacket
 
-		let logString = String.localizedStringWithFormat("🗑️ Sent a request to remove node \(node.num.toHex())")
-		try await send(toRadio, debugDescription: logString)
-
-			do {
-				if let user = node.user {
-					context.delete(user)
-				}
-				context.delete(node)
-				try context.save()
-			} catch {
-				let nsError = error as NSError
-				Logger.data.error("🚫 Error deleting node: \(nsError, privacy: .public)")
-			}
-
+		let logString = String.localizedStringWithFormat("🗑️ Sent a request to remove node \(nodeNum.toHex())")
+		// On the connection of the radio it's removed from, not relayed by another radio, which it
+		// wouldn't take without that radio's session key (review V11 R11-1).
+		guard let session = connectedSession(forRadio: connectedNodeNum) else {
+			throw AccessoryError.ioFailed("removeNode: That radio isn't connected")
+		}
+		try await send(toRadio, via: session, debugDescription: logString)
 	}
 
 	func requestDeviceMetadata(fromUser: UserEntity? = nil, toUser: UserEntity? = nil) async throws -> Int64 {
 
-		guard isConnected else {
+		// The radio it's sent from, which needn't be the first one (review V11 R11-3); with none
+		// named, the first radio, as before.
+		guard fromUser.map({ isRadioConnected(nodeNum: $0.num) }) ?? isConnected else {
 			throw AccessoryError.ioFailed("No connected accessory")
 		}
 		
@@ -3132,14 +3196,19 @@ extension AccessoryManager {
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.priority = MeshPacket.Priority.reliable
 		meshPacket.wantAck = true
-		meshPacket.channel = UInt32(toUser.userNode?.channel ?? 0)
+		meshPacket.channel = UInt32(toUser.userNode.map { channelSlot(toReach: $0, fromRadio: Int64(fromUser.num)) } ?? 0)
 		meshPacket.decoded = dataMessage
 
 		var toRadio: ToRadio = ToRadio()
 		toRadio.packet = meshPacket
 
 		let logString = String.localizedStringWithFormat("Sent User Info Exchange request from %@ to %@".localized, fromUser.longName ?? "Unknown".localized, toUser.longName ?? "Unknown".localized)
-		try await send(toRadio, debugDescription: logString)
+		// On the connection of the radio it's from, the window's (feature 021); never another radio's
+		// while that one is off (review V11 R11-3).
+		guard let session = connectedSession(forRadio: Int64(fromUser.num)) else {
+			throw AccessoryError.ioFailed("No active device")
+		}
+		try await send(toRadio, via: session, debugDescription: logString)
 
 		return Int64(meshPacket.id)
 	}
@@ -3148,9 +3217,10 @@ extension AccessoryManager {
 		destNum: Int64,
 		wantResponse: Bool,
 		transport: LocalStatsRequestTransport = .sharedChannel,
-		destinationPublicKey: Data? = nil
+		destinationPublicKey: Data? = nil,
+		viaRadio: Int64? = nil
 	) async throws {
-		guard let fromNodeNum = self.activeConnection?.device.num else {
+		guard let session = connectedSession(forRadio: viaRadio), let fromNodeNum = session.device.num else {
 			Logger.services.error("Error while sending local stats request.  No active device.")
 			throw AccessoryError.ioFailed("No active device")
 		}
@@ -3187,7 +3257,7 @@ extension AccessoryManager {
 		toRadio.packet = meshPacket
 
 		let logString = String.localizedStringWithFormat("📊 Sent Local Stats Request from: %@ to: %@".localized, String(fromNodeNum), String(destNum))
-		try await send(toRadio, debugDescription: logString)
+		try await send(toRadio, via: session, debugDescription: logString)
 
 		Logger.mesh.info("📊 \(logString, privacy: .public)")
 	}

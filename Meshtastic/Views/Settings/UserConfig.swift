@@ -12,6 +12,8 @@ struct UserConfig: View {
 	
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@Environment(\.dismiss) private var goBack
 	
 	var node: NodeInfoEntity?
@@ -43,7 +45,7 @@ struct UserConfig: View {
 	/// Bytes the radio being edited will keep of a long name.
 	private var longNameLimit: Int {
 		NodeNameLimits.longNameBytes(
-			storesCompactNames: accessoryManager.checkIsVersionSupported(forVersion: minimumCompactNameVersion)
+			storesCompactNames: accessoryManager.isVersionSupported(forVersion: minimumCompactNameVersion, for: windowRadio)
 		)
 	}
 
@@ -137,7 +139,7 @@ struct UserConfig: View {
 					Text("The last 4 of the device MAC address will be appended to the short name to set the device's BLE Name.  Short name can be up to 4 bytes long.")
 						.foregroundColor(.gray)
 						.font(.callout)
-					let supportedVersion = accessoryManager.checkIsVersionSupported(forVersion: minimumVersion)
+					let supportedVersion = accessoryManager.isVersionSupported(forVersion: minimumVersion, for: windowRadio)
 					Toggle(isOn: $isUnmessagable) {
 						Label("Unmessagable", systemImage: "iphone.slash")
 						Text("Used to identify unmonitored or infrastructure nodes so that messaging is not avaliable to nodes that will never respond.")
@@ -147,7 +149,7 @@ struct UserConfig: View {
 					.disabled(!supportedVersion)
 				}
 				// Only manage ham mode for the locally connected node
-				if node?.num ?? 0 > 0 && node?.num ?? 0 == accessoryManager.activeDeviceNum ?? 0 {
+				if node?.num ?? 0 > 0 && node?.num ?? 0 == accessoryManager.nodeNum(for: windowRadio) ?? 0 {
 					Toggle(isOn: $isLicensed) {
 						Label("Licensed Operator", systemImage: "person.text.rectangle")
 					}
@@ -185,10 +187,10 @@ struct UserConfig: View {
 				}
 			}
 		}
-		.disabled(!accessoryManager.isConnected)
+		.disabled(!accessoryManager.isConnected(windowRadio))
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
-				if accessoryManager.isConnected && hasChanges {
+				if accessoryManager.isConnected(windowRadio) && hasChanges {
 					Button {
 						isPresentingSaveConfirm = true
 					} label: {
@@ -209,8 +211,8 @@ struct UserConfig: View {
 								return
 							}
 							
-							let connectedUser = getUser(id: accessoryManager.activeDeviceNum ?? -1, context: context)
-							let connectedNode = getNodeInfo(id: accessoryManager.activeDeviceNum ?? -1, context: context)
+							let connectedUser = getUser(id: accessoryManager.nodeNum(for: windowRadio) ?? -1, context: context)
+							let connectedNode = getNodeInfo(id: accessoryManager.nodeNum(for: windowRadio) ?? -1, context: context)
 							if node != nil && connectedNode != nil {
 								
 								if !isLicensed {
@@ -253,7 +255,7 @@ struct UserConfig: View {
 		.navigationTitle("User Config")
 		.toolbar {
 			ToolbarItem(placement: .topBarTrailing) {
-				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+				WindowConnectedDevice()
 			}
 		}
 		.onAppear {

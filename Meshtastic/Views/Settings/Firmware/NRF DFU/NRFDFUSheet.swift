@@ -11,6 +11,8 @@ import OSLog
 struct NRFDFUSheet: View {
 	@Environment(\.dismiss) var dismiss
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@State var showWarningAlert = true
 	@StateObject private var dfuViewModel = DFUViewModel()
 	@State private var showChirpyGame = false
@@ -61,7 +63,7 @@ struct NRFDFUSheet: View {
 								case .idle:
 									Button("Begin Update") {
 										Task {
-											guard let connection = accessoryManager.activeConnection?.connection as? BLEConnection else {
+											guard let connection = accessoryManager.session(for: windowRadio)?.connection as? BLEConnection else {
 												Logger.services.error("NRF DFU: no active BLE connection, cannot start")
 												return
 											}

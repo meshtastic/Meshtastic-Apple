@@ -342,7 +342,10 @@ final class NodeBackupManager: NodeBackupManaging {
 			createdAt: .now,
 			fileSize: fileSize,
 			checksum: checksum,
-			backupPath: nodeDirName
+			backupPath: nodeDirName,
+			// A copy of the shared store holds nothing the store lacks, so there is nothing to merge
+			// (feature 021, D-09).
+			mergedChecksum: checksum
 		)
 		backupIndex.entries[nodeDirName] = entry
 
@@ -402,6 +405,9 @@ final class NodeBackupManager: NodeBackupManaging {
 		var compactedEntry = entry
 		compactedEntry.fileSize = compactedSize
 		compactedEntry.checksum = compactedChecksum
+		if entry.isMerged {
+			compactedEntry.mergedChecksum = compactedChecksum
+		}
 		return compactedEntry
 	}
 
@@ -727,6 +733,8 @@ final class NodeBackupManager: NodeBackupManaging {
 				try Self.importWaypoints(from: backupContext, into: liveContext)
 				try Self.importTraceRoutes(from: backupContext, into: liveContext, nodesByNum: nodesByNum)
 				try Self.importPaxCounters(from: backupContext, into: liveContext, nodesByNum: nodesByNum)
+				try Self.importNodeObservations(from: backupContext, into: liveContext)
+				try Self.importPacketReceptions(from: backupContext, into: liveContext)
 
 				try liveContext.save()
 				Logger.backup.info("💾 Full restore complete for node \(nodeNum)")
@@ -747,6 +755,69 @@ final class NodeBackupManager: NodeBackupManaging {
 			throw BackupError.checksumMismatch
 		}
 	}
+}
+
+// MARK: - Merge into the shared store (feature 021, D-09, T030)
+
+extension NodeBackupManager {
+
+	/// How many launches may try to merge one backup.
+	static let maxMergeAttempts = 3
+
+	/// Backups not yet merged into the shared store, oldest first.
+	var unmergedBackups: [BackupEntry] {
+		backupIndex.entries.values.filter { !$0.isMerged }.sorted { $0.createdAt < $1.createdAt }
+	}
+
+	/// Merges every backup not yet merged into the shared store, through `packets` (the ingest actor).
+	///
+	/// Each backup is checked against its checksum first. Unlike a restore, a mismatch only skips
+	/// it: the file is left in place, since nothing is lost by not merging it. The backup files are
+	/// never changed, and stay until the user deletes them.
+	/// - Returns: The number of backups merged.
+	///
+	/// A backup gets `maxMergeAttempts` launches (T159). Its attempt is counted and saved right
+	/// before it merges, one backup at a time (T174), so a merge that fails every time, or that
+	/// the system kills, stops being retried at every launch, and doesn't use up the attempts of
+	/// the backups after it (each attempt holds the handshake gate, so no radio connects
+	/// meanwhile). The backup stays, for a restore from Settings › Backups.
+	@discardableResult
+	func mergePendingBackups(using packets: MeshPackets, ownRadio: Int64) async -> Int {
+		var merged = 0
+		for entry in unmergedBackups {
+			let attempts = entry.mergeAttempts ?? 0
+			guard attempts < Self.maxMergeAttempts else {
+				Logger.backup.warning("💾 [Merge] Not merging the backup of \(entry.nodeNum.toHex(), privacy: .public): \(attempts) attempts didn't finish; it stays for a restore")
+				continue
+			}
+			let storeURL = backupBaseURL
+				.appendingPathComponent(entry.backupPath, isDirectory: true)
+				.appendingPathComponent(Self.storeFileName)
+			guard fileManager.fileExists(atPath: storeURL.path) else { continue }
+			backupIndex.entries[entry.key]?.mergeAttempts = attempts + 1
+			// On disk before the merge, which is what can crash.
+			saveIndex()
+			guard let checksum = try? await computeChecksum(for: storeURL), checksum == entry.checksum else {
+				Logger.backup.error("💾 [Merge] Skipping the backup of \(entry.nodeNum.toHex(), privacy: .public): its checksum doesn't match")
+				continue
+			}
+			let pending = MeshPackets.PendingBackupMerge(key: entry.key, radioNum: entry.nodeNum, storeURL: storeURL)
+			let outcomes = await packets.mergeBackups([pending], ownRadio: ownRadio)
+			switch outcomes[entry.key] {
+			case .merged(let rows):
+				merged += 1
+				Logger.backup.info("💾 [Merge] Merged backup \(entry.key, privacy: .public): \(rows) rows added")
+			case .alreadyKnown:
+				Logger.backup.info("💾 [Merge] Backup \(entry.key, privacy: .public) is of a radio the store already holds; not merged")
+			case .failed, .none:
+				continue // Left unmerged, so the next launch tries again.
+			}
+			backupIndex.entries[entry.key]?.mergedChecksum = checksum
+			saveIndex()
+		}
+		return merged
+	}
+
 }
 
 // MARK: - Errors

@@ -21,9 +21,12 @@ struct ChannelMessageRow: View {
 	let scrollView: ScrollViewProxy
 	let onTapback: (MessageEntity) -> Void
 	let onMessageRetried: () -> Void
+	/// The user's other radios (feature 021): their messages are the user's own too.
+	let ownRadioNums: Set<Int64>
 
 	private var isCurrentUser: Bool {
-		Int64(preferredPeripheralNum) == message.fromUser?.num
+		guard let fromNum = message.fromUser?.num else { return false }
+		return Int64(preferredPeripheralNum) == fromNum || ownRadioNums.contains(fromNum)
 	}
 
 	/// A single, natural-language description of the message bubble so VoiceOver reads one element
@@ -60,7 +63,8 @@ struct ChannelMessageRow: View {
 	     messageToHighlight: Binding<Int64>,
 	     scrollView: ScrollViewProxy,
 	     onTapback: @escaping (MessageEntity) -> Void,
-	     onMessageRetried: @escaping () -> Void = {}) {
+	     onMessageRetried: @escaping () -> Void = {},
+	     ownRadioNums: Set<Int64> = []) {
 		// Initialize ObservedObject with the concrete instance
 		self.message = message
 		self.replyMessage = replyMessage
@@ -74,6 +78,7 @@ struct ChannelMessageRow: View {
 		self.scrollView = scrollView
 		self.onTapback = onTapback
 		self.onMessageRetried = onMessageRetried
+		self.ownRadioNums = ownRadioNums
 	}
 
 	var body: some View {
@@ -158,6 +163,10 @@ struct ChannelMessageRow: View {
 						Text("\(message.fromUser?.longName ?? "Unknown".localized ) (\(message.fromUser?.userId ?? "?"))")
 							.font(.caption).foregroundColor(.gray).offset(y: 8)
 							.accessibilityHidden(true) // Folded into the message bubble's combined label
+					} else if isCurrentUser, ownRadioNums.count > 1, let sender = message.fromUser {
+						// Feature 021 (T086): with several radios, which one sent it.
+						Text(String.localizedStringWithFormat("via %@".localized, sender.shortName ?? sender.longName ?? "?"))
+							.font(.caption).foregroundColor(.gray).offset(y: 8)
 					}
 					
 					// Message Bubble

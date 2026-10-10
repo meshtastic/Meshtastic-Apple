@@ -34,25 +34,46 @@ Router
 
 Deep links use the `meshtastic:///` URL scheme. `Router.route(url:)` parses the path and sets the appropriate navigation state. See [Deep Links](deep-links) for the full URL reference.
 
-## AppState
+## AppState and Windows
 
-`AppState` wraps `Router` and is injected as an `@EnvironmentObject` at the root of the SwiftUI view hierarchy. Views that need to navigate programmatically read `@EnvironmentObject var router: Router` directly — or more commonly `@EnvironmentObject var appState: AppState` and access `appState.router`.
+`AppState` holds what every window shares: the unread badge, the database-reset gate and `windows`, the open windows' routers. It is injected as an `@EnvironmentObject` at the root of each window.
+
+Each window owns its own `Router` and `NodeFilterParameters`, so tabs, detail views and node filters in one window don't move another. Views read them with `@EnvironmentObject var router: Router` and `@EnvironmentObject var filters: NodeFilterParameters`.
+
+| Window | Root view | Owns |
+|--------|-----------|------|
+| Main window (iPhone, iPad; the Connect window on the Mac) | `MainScene` | Router and filters, held above the database-reset gate so the window keeps its tab across a node switch |
+| A radio's window (Mac) | `RadioWindowRoot` | Router and filters for that radio |
+| Mesh Map window | `MapWindow` | Router and filters for the map |
+
+`AppState.windows` (`WindowRouters`) is the registry:
+
+- `ContentView` registers its router together with the window's radio. A deep link or notification tap goes through `windows.route(url:manager:)` to the window of the radio it is about, and on the Mac opens that radio's window when it's closed. A link that arrives with no window open (a notification tap that launches the app) waits for the first window to open.
+- The Mesh Map window registers with `registerPopOnly(_:)`: links don't go there, but it is popped with the rest.
+- Before a node switch or renumber touches the store, `windows.popAllStacks()` drops every window's detail views and leaves each window on its tab.
 
 ## AccessoryManager
 
-`AccessoryManager` is the central connectivity manager split across extension files:
+`AccessoryManager` is the central connectivity manager split across extension files. Up to four radios can be connected at once. Each has a `RadioSession` (`Meshtastic/Accessory/Radio Session/`) holding everything that belongs to that connection, and every radio runs the same connect steps and packet handling. One is focused (`activeConnection`): the default for Settings, sending and the services that follow it. The others are in `additionalRadios`. See [Transport Layer › Several Radios at Once](transport.md) for the details.
 
 | File | Responsibility |
 |------|---------------|
 | `AccessoryManager+Discovery.swift` | BLE scanning, device discovery |
-| `AccessoryManager+Connect.swift` | Connection lifecycle, reconnect logic |
+| `AccessoryManager+Connect.swift` | The connect steps every radio runs, reconnect logic |
+| `AccessoryManager+AdditionalRadios.swift` | Radios connected alongside the focused one: events, disconnect, reconnect, remembered radios |
+| `AccessoryManager+Focus.swift` | Moving the focus between connected radios without reconnecting |
+| `AccessoryManager+FocusHandover.swift` | Another radio takes the focus when the focused one drops |
+| `AccessoryManager+RadioAttention.swift` | A locked or outdated radio that isn't focused: the prompt naming it |
+| `AccessoryManager+RadioRemoval.swift` | Resetting or removing one of several radios: it leaves while the others stay (D-18) |
+| `AccessoryManager+RadioChoice.swift` | Sending, and admin messages, through a chosen radio |
+| `AccessoryManager+ServiceRadios.swift` | The radio TAK, CarPlay & Siri and the Watch use |
 | `AccessoryManager+ToRadio.swift` | Packets sent to the radio |
 | `AccessoryManager+FromRadio.swift` | Packets received from the radio |
-| `AccessoryManager+Position.swift` | GPS position sharing |
-| `AccessoryManager+MQTT.swift` | MQTT proxy |
+| `AccessoryManager+Position.swift` | GPS position sharing, to every connected radio |
+| `AccessoryManager+MQTT.swift`, `+RadioMQTT.swift` | Each radio's MQTT client proxy |
 | `AccessoryManager+TAK.swift` | TAK/CoT integration |
 
-Transport protocols are in `Meshtastic/Accessory/Transports/`.
+Transport protocols are in `Meshtastic/Accessory/Transports/`. `PreferredRadio` is the radio reconnected at launch.
 
 ## Persistence
 

@@ -205,7 +205,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 
 	private func fetchFavoriteContactItems() -> [CPMessageListItem] {
 		do {
-			let activeNum = Int64(AccessoryManager.shared.activeDeviceNum ?? 0)
+			let activeNum = Int64(AccessoryManager.shared.radioNum(for: .carPlay) ?? 0)
 			var descriptor = FetchDescriptor<NodeInfoEntity>(
 				predicate: #Predicate<NodeInfoEntity> { $0.favorite == true && $0.num != activeNum },
 				sortBy: [SortDescriptor(\.lastHeard, order: .reverse)]
@@ -214,6 +214,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 			let nodes = try context.fetch(descriptor)
 			let nodeNums = nodes.compactMap { $0.user != nil ? $0.num : nil as Int64? }
 			let unreadCounts = fetchUnreadCountsForDMs(nodeNums: nodeNums)
+			let listRadio = carPlayMessageRadio
 			let now = Date()
 
 			return nodes.compactMap { node -> CPMessageListItem? in
@@ -221,7 +222,9 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 				let name = user.longName ?? user.shortName ?? "Unknown"
 				let unreadCount = unreadCounts[node.num] ?? 0
 				let hasUnread = unreadCount > 0
-				let convId = "dm-\(node.num)"
+				// The CarPlay list is the CarPlay radio's view; with several radios its rows name it,
+				// so read-back, mark-as-read and replies stay on that radio (T175).
+				let convId = IntentMessageConverters.directMessageConversationIdentifier(nodeNum: node.num, radioNum: listRadio)
 
 				let leadingConfig = CPMessageListItemLeadingConfiguration(
 					leadingItem: .star,
@@ -267,7 +270,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 	}
 
 	private func fetchChannelItems() -> [CPMessageListItem] {
-		guard let connectedNum = AccessoryManager.shared.activeDeviceNum,
+		guard let connectedNum = AccessoryManager.shared.radioNum(for: .carPlay),
 			  let connectedNode = getNodeInfo(id: connectedNum, context: context),
 			  let myInfo = connectedNode.myInfo else {
 			return []
@@ -278,6 +281,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 			.sorted { $0.index < $1.index }
 		let channelIndices = activeChannels.map { $0.index }
 		let unreadCounts = fetchUnreadCountsForChannels(channelIndices: channelIndices)
+		let listRadio = carPlayMessageRadio
 
 		return activeChannels.compactMap { channel -> CPMessageListItem? in
 			let name = (channel.name?.isEmpty ?? true)
@@ -286,7 +290,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 			let channelIndex = Int(channel.index)
 			let unreadCount = unreadCounts[channel.index] ?? 0
 			let hasUnread = unreadCount > 0
-			let convId = "channel-\(channelIndex)"
+			let convId = IntentMessageConverters.channelConversationIdentifier(index: channel.index, radioNum: listRadio)
 
 			let leadingConfig = CPMessageListItemLeadingConfiguration(
 				leadingItem: .none,
@@ -333,7 +337,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 			)
 			descriptor.fetchLimit = 200
 			let users = try context.fetch(descriptor)
-			let connectedNum = AccessoryManager.shared.activeDeviceNum ?? 0
+			let connectedNum = AccessoryManager.shared.radioNum(for: .carPlay) ?? 0
 			let filteredUsers = users
 				.filter { user in
 					guard let node = user.userNode else { return false }
@@ -359,6 +363,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 				.prefix(24)
 			let nodeNums = filteredUsers.compactMap { $0.userNode?.num }
 			let unreadCounts = fetchUnreadCountsForDMs(nodeNums: nodeNums)
+			let listRadio = carPlayMessageRadio
 			let now = Date()
 
 			return filteredUsers.compactMap { user -> CPMessageListItem? in
@@ -367,7 +372,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 				let nodeNum = node.num
 				let unreadCount = unreadCounts[nodeNum] ?? 0
 				let hasUnread = unreadCount > 0
-				let convId = "dm-\(nodeNum)"
+				let convId = IntentMessageConverters.directMessageConversationIdentifier(nodeNum: nodeNum, radioNum: listRadio)
 
 				let leadingConfig = CPMessageListItemLeadingConfiguration(
 					leadingItem: .none,
@@ -413,6 +418,21 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 
 	// MARK: - Unread Count Batch Fetching
 
+	/// With several radios, the CarPlay radio: slot numbers and DM conversations are per radio,
+	/// so CarPlay's lists count and read back only that radio's messages (T157). nil with one
+	/// radio, where every message counts as before.
+	private var carPlayMessageRadio: Int64? {
+		guard IntentMessageConverters.isMultiRadio(in: context) else { return nil }
+		return AccessoryManager.shared.radioNum(for: .carPlay)
+	}
+
+	/// True when `message` is `radio`'s, or there's no radio to scope to. Rows the backfill
+	/// hasn't reached (no `localNodeNum`) count everywhere.
+	private func belongs(_ message: MessageEntity, to radio: Int64?) -> Bool {
+		guard let radio, let local = message.localNodeNum else { return true }
+		return local == radio
+	}
+
 	/// Fetches unread message counts for multiple DM node numbers in a single query,
 	/// then groups the results in-memory. This avoids the N+1 count-per-row pattern
 	/// while staying compatible with Core Data's relationship keypath restrictions.
@@ -432,7 +452,8 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 		// sender's DM badge — diverging from the in-app DM counts, which have
 		// always excluded channel traffic. (Checked in Swift, not the predicate:
 		// optional-relationship nil compares in #Predicate crash on iOS 26.)
-		for message in results where message.toUser != nil {
+		let radio = carPlayMessageRadio
+		for message in results where message.toUser != nil && belongs(message, to: radio) {
 			if let num = message.fromUser?.num, nodeNumSet.contains(num) {
 				counts[num, default: 0] += 1
 			}
@@ -453,8 +474,18 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 		)
 		let results = (try? context.fetch(descriptor)) ?? []
 		var counts = [Int32: Int]()
-		for message in results where message.toUser == nil && channelSet.contains(message.channel) {
-			counts[message.channel, default: 0] += 1
+		let radio = carPlayMessageRadio
+		guard let radio else {
+			for message in results where message.toUser == nil && channelSet.contains(message.channel) {
+				counts[message.channel, default: 0] += 1
+			}
+			return counts
+		}
+		// With several radios, a channel's messages go by its key, not the slot or radio they came
+		// in through (T192).
+		let keys = IntentMessageConverters.channelKeys(ofRadio: radio, in: context)
+		for index in channelSet {
+			counts[index] = results.filter { IntentMessageConverters.channelMessage($0, isInSlot: index, ofRadio: radio, keys: keys) }.count
 		}
 		return counts
 	}
@@ -532,20 +563,35 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 	/// Posts a Communication Notification for the most recent unread channel message.
 	/// This is required for CarPlay to offer read-back instead of compose when tapped.
 	private func donateLatestIncomingChannelMessage(channelIndex: Int32, conversationId: String, channelName: String) {
-		var descriptor = FetchDescriptor<MessageEntity>(
-			predicate: #Predicate { message in
-				message.read == false &&
-				message.admin == false &&
-				message.isEmoji == false &&
-				message.channel == channelIndex
-			},
-			sortBy: [SortDescriptor(\MessageEntity.messageTimestamp, order: .reverse)]
-		)
-		// toUser == nil intentionally absent from predicate (crashes SwiftData on iOS 26).
-		// Fetch a small batch and pick the first channel message in Swift.
-		descriptor.fetchLimit = 5
-
-		guard let message = (try? context.fetch(descriptor))?.first(where: { $0.toUser == nil }),
+		let radio = carPlayMessageRadio
+		var descriptor: FetchDescriptor<MessageEntity>
+		if radio == nil {
+			descriptor = FetchDescriptor<MessageEntity>(
+				predicate: #Predicate { message in
+					message.read == false &&
+					message.admin == false &&
+					message.isEmoji == false &&
+					message.channel == channelIndex
+				},
+				sortBy: [SortDescriptor(\MessageEntity.messageTimestamp, order: .reverse)]
+			)
+			// toUser == nil intentionally absent from predicate (crashes SwiftData on iOS 26).
+			// Fetch a small batch and pick the first channel message in Swift.
+			descriptor.fetchLimit = 5
+		} else {
+			// With several radios the channel's messages can sit in another radio's slot (T192).
+			descriptor = FetchDescriptor<MessageEntity>(
+				predicate: #Predicate { message in
+					message.read == false && message.admin == false && message.isEmoji == false
+				},
+				sortBy: [SortDescriptor(\MessageEntity.messageTimestamp, order: .reverse)]
+			)
+			descriptor.fetchLimit = 50
+		}
+		let keys = radio.map { IntentMessageConverters.channelKeys(ofRadio: $0, in: context) } ?? [:]
+		guard let message = (try? context.fetch(descriptor))?.first(where: {
+				IntentMessageConverters.channelMessage($0, isInSlot: channelIndex, ofRadio: radio, keys: keys)
+			  }),
 			  let fromUser = message.fromUser else { return }
 		// Dedup AFTER resolving the message, keyed by conversation + message, so a
 		// newer unread message re-donates and stays readable by Siri.
@@ -575,7 +621,8 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 		// don't belong to this conversation.
 		descriptor.fetchLimit = 5
 
-		guard let message = (try? context.fetch(descriptor))?.first(where: { $0.toUser != nil }),
+		let radio = carPlayMessageRadio
+		guard let message = (try? context.fetch(descriptor))?.first(where: { $0.toUser != nil && belongs($0, to: radio) }),
 			  let fromUser = message.fromUser else { return }
 		// Dedup AFTER resolving the message, keyed by conversation + message, so a
 		// newer unread message re-donates and stays readable by Siri.
@@ -671,43 +718,10 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 
 			guard let messages = try? context.fetch(descriptor) else { return }
 			for message in messages {
-				guard let fromUser = message.fromUser else { continue }
-
-				let sender = IntentMessageConverters.inPerson(from: fromUser)
-				let me = CarPlayIntentDonation.mePerson()
-
-				let conversationId: String
-				let intent: INSendMessageIntent
-
-				if message.toUser != nil {
-					// DM
-					conversationId = "dm-\(fromUser.num)"
-					intent = INSendMessageIntent(
-						recipients: [me],
-						outgoingMessageType: .outgoingMessageText,
-						content: message.messagePayload,
-						speakableGroupName: nil,
-						conversationIdentifier: conversationId,
-						serviceName: "Meshtastic",
-						sender: sender,
-						attachments: nil
-					)
-				} else {
-					// Channel message
-					conversationId = "channel-\(message.channel)"
-					let channelName = CarPlayIntentDonation.channelDisplayName(for: message.channel)
-					let groupName = INSpeakableString(spokenPhrase: channelName)
-					intent = INSendMessageIntent(
-						recipients: [me],
-						outgoingMessageType: .outgoingMessageText,
-						content: message.messagePayload,
-						speakableGroupName: groupName,
-						conversationIdentifier: conversationId,
-						serviceName: "Meshtastic",
-						sender: sender,
-						attachments: nil
-					)
-				}
+				// The same intent a live donation makes, so the conversation (and, with several
+				// radios, the radio it's on) matches the one a reply resolves (T157).
+				guard let intent = CarPlayIntentDonation.incomingMessageIntent(from: message),
+					  let conversationId = intent.conversationIdentifier else { continue }
 
 				// Shared dedup with the per-row donations: skip if this exact
 				// message has already been donated this session (e.g. a reconnect).
@@ -756,7 +770,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 			return
 		}
 
-		guard let connectedNum = AccessoryManager.shared.activeDeviceNum else { return }
+		guard let connectedNum = AccessoryManager.shared.radioNum(for: .carPlay) else { return }
 		let connectedNode = getNodeInfo(id: connectedNum, context: context)
 		let nodeName = connectedNode?.user?.longName ?? "Meshtastic"
 		let nodeShortName = connectedNode?.user?.shortName ?? "?"

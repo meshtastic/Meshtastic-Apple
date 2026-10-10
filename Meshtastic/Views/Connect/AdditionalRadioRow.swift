@@ -1,0 +1,148 @@
+//
+//  AdditionalRadioRow.swift
+//  Meshtastic
+//
+//  Copyright(c) Meshtastic 2026.
+//
+
+import SwiftData
+import SwiftUI
+
+/// A connected radio this window doesn't show (feature 021), on the Connect tab.
+///
+/// "Show This Radio" shows it in the window (W-13), without disconnecting anything. Every
+/// connected radio keeps receiving into the shared store either way, and runs its own MQTT
+/// client proxy when its config asks for one. Disconnect and Remove Radio (D-18) are beside it.
+struct AdditionalRadioRow: View {
+	@EnvironmentObject var accessoryManager: AccessoryManager
+	@Environment(\.modelContext) private var context
+	let device: Device
+	@Binding var isSwitchingRadio: Bool
+	@State private var batteryLevel: Int32?
+	@State private var unreadDirectMessages = 0
+	/// Remove Radio asks through the Connect tab's confirmation, which outlives this row.
+	@Environment(\.askToRemoveRadio) private var askToRemoveRadio
+
+	private var isConnecting: Bool {
+		device.connectionState == .connecting
+	}
+
+	/// Its node number once it has reported it and its connect is done: what Remove Radio removes
+	/// (D-18). Not while it connects (review V27-5).
+	private var removableRadioNum: Int64? {
+		guard let num = device.num ?? accessoryManager.knownNodeNums[device.id], accessoryManager.canRemoveRadio(num) else { return nil }
+		return num
+	}
+
+	@Environment(\.selectWindowRadio) private var selectWindowRadio
+
+	/// Why this radio needs the user, if it does (T073).
+	private var attention: RadioAttention? {
+		accessoryManager.linkStatus(of: device.id).attention
+	}
+
+	/// The radio's latest battery reading and its unread direct messages. On an interval rather
+	/// than in `body`, for the same reason as the first radio's battery on the Connect tab.
+	private func refreshStatus() {
+		guard let radioNum = device.num else { return }
+		let deviceMetrics: Int32 = 0
+		var latest = FetchDescriptor<TelemetryEntity>(
+			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == radioNum && $0.metricsType == deviceMetrics },
+			sortBy: [SortDescriptor(\TelemetryEntity.time, order: .reverse)]
+		)
+		latest.fetchLimit = 1
+		let level = (try? context.fetch(latest).first)?.batteryLevel ?? 0
+		batteryLevel = level > 0 ? level : nil
+		// Addressed to this radio: a direct message it received.
+		let unread = FetchDescriptor<MessageEntity>(predicate: #Predicate<MessageEntity> {
+			$0.toNum == radioNum && $0.read == false && $0.isEmoji == false
+		})
+		unreadDirectMessages = (try? context.fetchCount(unread)) ?? 0
+	}
+
+	var body: some View {
+		HStack(spacing: 12) {
+			Image(systemName: isConnecting ? "antenna.radiowaves.left.and.right" : "antenna.radiowaves.left.and.right.circle.fill")
+				.font(.title2)
+				.foregroundStyle(isConnecting ? Color.orange : Color.green)
+				.symbolEffect(.pulse, isActive: isConnecting)
+				.accessibilityHidden(true)
+			VStack(alignment: .leading, spacing: 2) {
+				Text(device.longName ?? device.name)
+					.font(.headline)
+				HStack(spacing: 6) {
+					TransportIcon(transportType: device.transportType)
+					Text(isConnecting ? "Connecting…" : "Connected")
+						.font(.caption)
+						.foregroundStyle(.secondary)
+					if let shortName = device.shortName {
+						Text(shortName)
+							.font(.caption.monospaced())
+							.foregroundStyle(.secondary)
+					}
+				}
+				if let attention {
+					Label(attention.shortCaption, systemImage: attention.isLockdown ? "lock.fill" : "exclamationmark.triangle.fill")
+						.font(.caption)
+						.foregroundStyle(.orange)
+				}
+				// T081: battery, signal and unread direct messages, like the first radio's row.
+				HStack(spacing: 10) {
+					if let batteryLevel {
+						BatteryCompact(batteryLevel: batteryLevel, font: .caption, iconFont: .callout, color: .accentColor)
+					}
+					if let rssi = device.rssi, device.transportType == .ble {
+						Label("\(rssi) dBm", systemImage: "cellularbars")
+							.font(.caption)
+							.foregroundStyle(.secondary)
+					}
+					if unreadDirectMessages > 0 {
+						Label("\(unreadDirectMessages)", systemImage: "bubble.left.fill")
+							.font(.caption)
+							.foregroundStyle(.secondary)
+							.accessibilityLabel(String.localizedStringWithFormat("%d unread direct messages".localized, unreadDirectMessages))
+					}
+				}
+			}
+			.task(id: device.num) {
+				while !Task.isCancelled {
+					refreshStatus()
+					try? await Task.sleep(for: .seconds(15))
+				}
+			}
+			Spacer()
+			Menu {
+				Button {
+					if let attention, attention.isLockdown {
+						accessoryManager.radioUnlockRequest = RadioUnlockRequest(id: device.id, radioName: device.longName ?? device.name)
+					} else {
+						selectWindowRadio(device.id)
+					}
+				} label: {
+					// Showing it shows its passphrase sheet or update screen (T073, T324).
+					if let attention {
+						Label(attention.actionTitle, systemImage: attention.isLockdown ? "lock.open" : "arrow.down.circle")
+					} else {
+						Label("Show This Radio", systemImage: "scope")
+					}
+				}
+				Button(role: .destructive) {
+					Task { await accessoryManager.disconnectRadio(device.id) }
+				} label: {
+					Label("Disconnect", systemImage: "xmark.circle")
+				}
+				if let askToRemoveRadio, let radioNum = removableRadioNum {
+					Button(role: .destructive) {
+						askToRemoveRadio(RadioToRemove(nodeNum: radioNum, name: device.longName ?? device.name))
+					} label: {
+						Label("Remove Radio…", systemImage: "trash")
+					}
+				}
+			} label: {
+				Image(systemName: "ellipsis.circle")
+					.font(.title3)
+			}
+			.accessibilityLabel("Actions for \(device.longName ?? device.name)")
+		}
+	}
+}

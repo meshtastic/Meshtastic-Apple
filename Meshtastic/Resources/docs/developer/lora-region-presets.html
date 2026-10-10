@@ -58,10 +58,12 @@ extension LoRaRegionPresetMap {
 <p>A <code>region_groups</code> entry whose <code>group_index</code> is out of range is skipped defensively,
 which tolerates malformed or forward-compatible data.</p>
 <p><code>AccessoryManager.processFromRadio(_:)</code> dispatches the new <code>.regionPresets</code> variant to
-<code>handleRegionPresets(_:)</code> (in <code>AccessoryManager+FromRadio.swift</code>), which stores the
-decoded lookup on the connection model:</p>
-<pre><code class="language-swift">@Published var loRaRegionPresets: [Config.LoRaConfig.RegionCode: RegionPresetInfo] = [:]
+<code>handleRegionPresets(_:session:)</code> (in <code>AccessoryManager+FromRadio.swift</code>), which stores the
+decoded lookup on the radio's <code>RadioSession</code>:</p>
+<pre><code class="language-swift">var loRaRegionPresets: [Config.LoRaConfig.RegionCode: RegionPresetInfo] = [:]
 </code></pre>
+<p><code>AccessoryManager.loRaRegionPresets</code> reads the focused radio's, so the views below see the radio
+they configure.</p>
 <p>It is <strong>reset to empty on disconnect</strong> (<code>updateState</code> → <code>.idle</code>/<code>.discovering</code>), so the
 map always reflects the currently connected radio. There is no SwiftData persistence —
 the radio re-sends it every handshake, and the LoRa screen only edits a connected node.</p>
@@ -150,7 +152,7 @@ from the map and carry no constraint.</p>
 </tr>
 <tr>
 <td><code>Meshtastic/Accessory/Accessory Manager/AccessoryManager+FromRadio.swift</code></td>
-<td><code>handleRegionPresets(_:)</code></td>
+<td><code>handleRegionPresets(_:session:)</code></td>
 </tr>
 <tr>
 <td><code>Meshtastic/Views/Settings/Config/LoRaConfig.swift</code></td>

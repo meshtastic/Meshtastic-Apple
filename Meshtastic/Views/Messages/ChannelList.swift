@@ -40,17 +40,17 @@ struct ChannelList: View {
 	@ViewBuilder
 	private func makeChannelRow(
 		myInfo: MyInfoEntity,
-		channel: ChannelEntity
+		channel: ChannelEntity,
+		summary: (latest: MessageEntity?, unread: Int)
 	) -> some View {
 		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMdd", options: 0, locale: Locale.current)
 		let dateFormatString = (localeDateFormat ?? "MM/dd/YY")
 
 		NavigationLink(value: channel) {
-			let mostRecent = channel.mostRecentPrivateMessage
+			let mostRecent = summary.latest
 			let hasMessages = mostRecent != nil
-			// `channel.unreadMessages` runs a FetchRequest; fetch once and reuse for both the
-			// indicator and its VoiceOver label instead of hitting Core Data twice per row.
-			let unreadCount = channel.unreadMessages
+			// Read once per row with the preview (`listSummary`), not once per use.
+			let unreadCount = summary.unread
 			let hasUnreadMessages = hasMessages && (unreadCount > 0)
 			let lastMessageTime = Date(timeIntervalSince1970: TimeInterval(Int64((mostRecent?.messageTimestamp ?? 0 ))))
 			let lastMessageDay = Calendar.current.dateComponents([.day], from: lastMessageTime).day ?? 0
@@ -128,8 +128,10 @@ struct ChannelList: View {
 		myInfo: MyInfoEntity,
 		channel: ChannelEntity
 	) -> some View {
-		let hasMessages = channel.mostRecentPrivateMessage != nil
-		makeChannelRow(myInfo: myInfo, channel: channel)
+		// One query per row for the preview, the unread count and the menu (review V24-3).
+		let summary = channel.listSummary(context: PersistenceController.shared.context)
+		let hasMessages = summary.latest != nil
+		makeChannelRow(myInfo: myInfo, channel: channel, summary: summary)
 			.alignmentGuide(.listRowSeparatorLeading) {
 				$0[.leading]
 			}
@@ -175,13 +177,19 @@ struct ChannelList: View {
 			) {
 				Button(role: .destructive) {
 					Task {
-						await MeshPackets.shared.deleteChannelMessages(channel: channelToDeleteMessages!)
+						guard let channel = channelToDeleteMessages else { return }
+						await MeshPackets.shared.deleteChannelMessages(query: channel.messageQuery(context: context))
 						await MainActor.run {
 							channelToDeleteMessages = nil
 						}
 					}
 				} label: {
 					Text("Delete")
+				}
+			} message: {
+				// A channel's messages are stored once for all the user's radios (T378).
+				if channelToDeleteMessages?.sharesMessagesWithOtherRadios(context: context) == true {
+					Text("Some of these messages are also in your other radios' conversations, and are deleted there too.")
 				}
 			}
 	}

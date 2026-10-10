@@ -14,6 +14,8 @@ import OSLog
 /// app is blocked. The only ways out are a successful update or disconnecting.
 struct FirmwareUpdateGate: View {
 	@EnvironmentObject private var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@Environment(\.modelContext) private var context
 
 	@State private var node: NodeInfoEntity?
@@ -21,25 +23,33 @@ struct FirmwareUpdateGate: View {
 	var body: some View {
 		NavigationStack {
 			Firmware(node: node)
-				.safeAreaInset(edge: .top) { header }
+				.safeAreaInset(edge: .top) {
+					VStack(spacing: 0) {
+						RadioNameBanner()
+						header
+					}
+				}
 				.navigationTitle("Update Your Firmware")
 				.navigationBarTitleDisplayMode(.inline)
 				.toolbar {
 					ToolbarItem(placement: .topBarTrailing) {
 						Button("Disconnect", role: .destructive) {
-							Task { try? await accessoryManager.disconnect() }
+							// The other radios stay as they are (feature 021, D-19).
+							if let deviceId = accessoryManager.session(for: windowRadio)?.device.id {
+								Task { await accessoryManager.disconnectRadio(deviceId) }
+							}
 						}
 					}
 				}
 		}
 		.interactiveDismissDisabled()
 		.onAppear(perform: resolveNode)
-		.onChange(of: accessoryManager.activeDeviceNum) { _, _ in resolveNode() }
+		.onChange(of: accessoryManager.nodeNum(for: windowRadio)) { _, _ in resolveNode() }
 	}
 
 	private var header: some View {
 		Label {
-			Text("Firmware \(accessoryManager.activeConnection?.device.firmwareVersion ?? "?.?.?") is no longer supported. Version \(accessoryManager.minimumVersion) or later is required to use the app. The radio stays connected so you can update it here.")
+			Text("Firmware \(accessoryManager.session(for: windowRadio)?.device.firmwareVersion ?? "?.?.?") is no longer supported. Version \(accessoryManager.minimumVersion) or later is required to use the app. The radio stays connected so you can update it here.")
 				.font(.callout)
 		} icon: {
 			Image(systemName: "exclamationmark.triangle.fill")
@@ -53,7 +63,7 @@ struct FirmwareUpdateGate: View {
 	private func resolveNode() {
 		// Bound to a local first: a #Predicate that reaches through self throws at fetch time
 		// and the failure is silent.
-		guard let num = accessoryManager.activeDeviceNum else {
+		guard let num = accessoryManager.nodeNum(for: windowRadio) else {
 			node = nil
 			return
 		}

@@ -34,6 +34,7 @@ Tap the **filter button** (funnel icon, `line.3.horizontal.decrease.circle`) in 
 | Distance | Limit to nodes within a chosen radius of your current location |
 | Hops Away | Slider from **All** to **7** — restricts by hop count (0 = direct only) |
 | Roles | Filter by one or more device roles (e.g. Router, Client, Repeater) |
+| Heard By | With more than one radio, show only the nodes one of your radios has heard |
 
 > **Tip — Checking LoRa range**
 > Enable the **Via LoRa** filter and disable **Via MQTT** to see only nodes reachable directly over radio, which is useful for assessing whether a direct LoRa link is feasible.

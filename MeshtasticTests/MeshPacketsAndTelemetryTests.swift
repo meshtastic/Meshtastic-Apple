@@ -1490,7 +1490,7 @@ struct SignedShieldAuthenticityTests {
 		let num: UInt32 = 0x20DE_FC50
 		// Attacker claims signed IN THE PAYLOAD, but the radio did NOT verify a signature.
 		let packet = try makeNodeInfoPacket(from: num, payloadClaimsSigned: true, transportVerified: false)
-		await mesh.upsertNodeInfoPacket(packet: packet)
+		await mesh.upsertNodeInfoPacket(packet: packet, receivedBy: 0x0A0A_0A0A)
 		await mesh.flushDebouncedSaves()
 
 		let node = try fetchNode(num, in: container)
@@ -1504,7 +1504,7 @@ struct SignedShieldAuthenticityTests {
 		// Payload omits the claim, but the radio VERIFIED the packet's signature — any node we hear
 		// signing (not just the connected one) should legitimately show the shield.
 		let packet = try makeNodeInfoPacket(from: num, payloadClaimsSigned: false, transportVerified: true)
-		await mesh.upsertNodeInfoPacket(packet: packet)
+		await mesh.upsertNodeInfoPacket(packet: packet, receivedBy: 0x0A0A_0A0A)
 		await mesh.flushDebouncedSaves()
 
 		#expect(try fetchNode(num, in: container)?.hasXeddsaSigned == true)
@@ -1515,9 +1515,9 @@ struct SignedShieldAuthenticityTests {
 		let num: UInt32 = 0x20DE_FC52
 		// First a radio-verified signed packet marks the node, then a spoofed/unverified one must
 		// neither downgrade it (latch) nor be able to forge it in the first place.
-		await mesh.upsertNodeInfoPacket(packet: try makeNodeInfoPacket(from: num, payloadClaimsSigned: false, transportVerified: true))
+		await mesh.upsertNodeInfoPacket(packet: try makeNodeInfoPacket(from: num, payloadClaimsSigned: false, transportVerified: true), receivedBy: 0x0A0A_0A0A)
 		await mesh.flushDebouncedSaves()
-		await mesh.upsertNodeInfoPacket(packet: try makeNodeInfoPacket(from: num, payloadClaimsSigned: false, transportVerified: false))
+		await mesh.upsertNodeInfoPacket(packet: try makeNodeInfoPacket(from: num, payloadClaimsSigned: false, transportVerified: false), receivedBy: 0x0A0A_0A0A)
 		await mesh.flushDebouncedSaves()
 
 		#expect(try fetchNode(num, in: container)?.hasXeddsaSigned == true)   // latched, not downgraded

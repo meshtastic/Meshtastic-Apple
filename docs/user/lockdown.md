@@ -22,6 +22,8 @@ Pick a passphrase you can re-enter — it protects the device's storage, and the
 
 When you connect to a locked device, the app shows a full-screen **Unlock device** prompt. Enter the passphrase and tap **Unlock**. The prompt can't be swiped away — the device requires authentication before the app can talk to it.
 
+With more than one radio connected, a locked radio the window isn't showing is unlocked from its own passphrase sheet, opened with **Unlock** from its prompt or its row under **Also Connected** (see [Managing Multiple Radios](bluetooth.md#managing-multiple-radios)). It can be closed with **Cancel**, since the other radios keep working. On the Mac, each radio's own window shows its sheet.
+
 After a successful unlock, the app stores the passphrase for that specific radio in the iOS Keychain (on this device only — it is never synced to iCloud) and silently replays it on future connections, so you normally only type it once per device. If the stored passphrase stops working (for example, it was changed elsewhere), the app clears it and asks you to enter the current one.
 
 ### Wrong Passphrase and Rate Limiting

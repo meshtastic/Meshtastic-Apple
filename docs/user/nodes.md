@@ -108,6 +108,8 @@ When most of the list is in that state, the Nodes tab shows a notice such as **8
 
 Older firmware doesn't report this, so the marker and the notice don't appear.
 
+Each radio answers for its own settings, and each window shows its own radio's answers. If two of your radios heard a node on LongFast and one of them moves to LongTurbo, only that radio's window marks the node. When the app holds nodes from several of your radios, the notice only counts nodes the radio in that window has heard, and never your other radios themselves. **Remove Them** keeps a node another of your radios still has: the radio in that window drops it, and the node stays in the app for the others, as when you remove a radio. Once the last radio that had it removes it too, it leaves the app.
+
 ## Context Menu Actions
 
 Long-press any node in the list to access quick actions:
@@ -120,6 +122,8 @@ Long-press any node in the list to access quick actions:
 - **Trace Route** — discover the path messages take to reach this node
 - **Ignore / Remove from ignored** — hide this node from normal views
 - **Remove** — remove the node from your local database
+
+With more than one radio connected, favoriting or ignoring a node applies to every connected radio, so each radio keeps it the same way.
 
 ## Display Names
 
@@ -142,6 +146,7 @@ Tap the filter icon above the list to narrow which nodes are shown. Filters appl
 | **Distance** | Limit to nodes within a chosen radius of your location. Falls back to the connected device's last position when phone location is unavailable. |
 | **Roles** | Show only the device roles you select. |
 | **Connection** | Show nodes reachable via LoRa, via MQTT, or both. At least one is always kept on. |
+| **Heard By** | Only shown when you use more than one radio. Pick one of your radios to see only the nodes it has heard; **Any Radio** shows every node. |
 
 Filters are **remembered between launches** — the app reopens with the same filters applied. Search text is the exception: it is intentionally cleared on relaunch so you never reopen into a stale search that hides most of your nodes. Use the **reset** affordance to clear every filter and the search text at once.
 
@@ -185,6 +190,10 @@ Tap any node to see the full detail view with hardware info, signal metrics, env
 ![Node Detail](../assets/screenshots/nodeDetail.png)
 
 For messageable nodes, use **Actions > Share Contact QR** to show a Meshtastic contact link and QR code that another device can scan.
+
+### Heard By
+
+When more than one of your radios has heard the node, a **Heard By** section lists each radio: how many hops away the node is from it (**Direct**, a hop count, or **MQTT**), the signal strength when it's heard directly, and how long ago that radio last heard it. **Offline** marks a radio that isn't connected now. The node list and map show the best of these: the fewest hops and the most recent time heard.
 
 ### Write a Contact to an NFC Tag
 

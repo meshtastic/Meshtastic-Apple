@@ -17,6 +17,8 @@ struct DiscoverySummaryView: View {
 	let session: DiscoverySessionEntity
 
 	@EnvironmentObject private var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@Environment(\.modelContext) private var context
 
 	@State private var aiSummary: String = ""
@@ -126,7 +128,7 @@ struct DiscoverySummaryView: View {
 			titleVisibility: .visible,
 			presenting: beaconToReplace
 		) { beacon in
-			ForEach(accessoryManager.beaconReplaceableSecondaryChannels()) { channel in
+			ForEach(accessoryManager.beaconReplaceableSecondaryChannels(viaRadio: accessoryManager.sendingRadio(for: windowRadio))) { channel in
 				Button("\(channel.name) (slot \(channel.index))", role: .destructive) {
 					replaceBeaconChannel(beacon, atIndex: channel.index)
 				}
@@ -147,7 +149,8 @@ struct DiscoverySummaryView: View {
 					channelName: beacon.offerChannelName,
 					channelPSK: beacon.offerChannelPSK,
 					region: beacon.offeredRegion,
-					preset: beacon.offeredPreset
+					preset: beacon.offeredPreset,
+					viaRadio: accessoryManager.sendingRadio(for: windowRadio)
 				)
 			} catch {
 				joinErrorMessage = error.localizedDescription
@@ -288,7 +291,7 @@ struct DiscoverySummaryView: View {
 						}
 						.buttonStyle(.bordered)
 						.controlSize(.small)
-						.disabled(!accessoryManager.isConnected)
+						.disabled(!accessoryManager.isConnected(windowRadio))
 					}
 					Button {
 						beaconToJoin = beacon
@@ -298,7 +301,7 @@ struct DiscoverySummaryView: View {
 					}
 					.buttonStyle(.bordered)
 					.controlSize(.small)
-					.disabled(!accessoryManager.isConnected)
+					.disabled(!accessoryManager.isConnected(windowRadio))
 				}
 				.padding(.top, 2)
 			}
@@ -805,7 +808,7 @@ extension DiscoverySummaryView {
 	/// connected node's LoRa config + primary channel and delegates to the pure decision in
 	/// `LoRaChannelCalculator`.
 	func beaconJoinOption(for beacon: DiscoveredBeaconEntity) -> BeaconJoinOption {
-		let num = Int64(UserDefaults.preferredPeripheralNum)
+		let num = accessoryManager.radioNodeNum(for: windowRadio)
 		let node = getNodeInfo(id: num, context: context)
 		return LoRaChannelCalculator.beaconJoinOption(
 			hasOfferChannel: beacon.hasOfferChannel,
@@ -813,7 +816,7 @@ extension DiscoverySummaryView {
 			offeredPreset: beacon.offeredPreset,
 			offerRegion: beacon.offerRegion,
 			offeredFrequencySlot: beacon.offeredFrequencySlot,
-			isConnected: accessoryManager.isConnected,
+			isConnected: accessoryManager.isConnected(windowRadio),
 			loRaConfig: node?.loRaConfig,
 			primaryChannelName: beaconPrimaryChannelName(for: node)
 		)
@@ -844,7 +847,7 @@ extension DiscoverySummaryView {
 	func addBeaconChannel(_ beacon: DiscoveredBeaconEntity) {
 		beaconToAdd = nil
 		// No free slot → let the user choose an existing secondary to replace (never the primary).
-		guard accessoryManager.beaconHasFreeSecondarySlot() else {
+		guard accessoryManager.beaconHasFreeSecondarySlot(viaRadio: accessoryManager.sendingRadio(for: windowRadio)) else {
 			beaconToReplace = beacon
 			return
 		}
@@ -852,7 +855,8 @@ extension DiscoverySummaryView {
 			do {
 				try await accessoryManager.addBeaconChannel(
 					channelName: beacon.offerChannelName,
-					channelPSK: beacon.offerChannelPSK
+					channelPSK: beacon.offerChannelPSK,
+					viaRadio: accessoryManager.sendingRadio(for: windowRadio)
 				)
 			} catch {
 				addErrorMessage = error.localizedDescription
@@ -869,7 +873,8 @@ extension DiscoverySummaryView {
 				try await accessoryManager.addBeaconChannel(
 					channelName: beacon.offerChannelName,
 					channelPSK: beacon.offerChannelPSK,
-					replacingIndex: index
+					replacingIndex: index,
+					viaRadio: accessoryManager.sendingRadio(for: windowRadio)
 				)
 			} catch {
 				addErrorMessage = error.localizedDescription

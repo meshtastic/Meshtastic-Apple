@@ -217,12 +217,13 @@ extension AccessoryManager {
 
 	// MARK: - Send TAK V2 Packet to Mesh
 
-	/// Send a compressed TAK V2 wire payload to the mesh
+	/// Send a compressed TAK V2 wire payload to the mesh, through the radio chosen for TAK
+	/// (feature 021, T103; the first radio unless the user picked another).
 	func sendTAKV2Packet(_ wirePayload: Data, channel: UInt32 = 0) async throws {
-		guard let activeConnection else {
+		guard let takSession = session(for: .tak) else {
 			throw AccessoryError.connectionFailed("Not connected to Meshtastic device")
 		}
-		guard let deviceNum = activeConnection.device.num else {
+		guard let deviceNum = takSession.device.num else {
 			throw AccessoryError.connectionFailed("No device number available")
 		}
 
@@ -248,7 +249,7 @@ extension AccessoryManager {
 		var toRadio = ToRadio()
 		toRadio.packet = meshPacket
 
-		try await send(toRadio, debugDescription: "Sending TAKPacket V2 to mesh")
+		try await send(toRadio, via: takSession, debugDescription: "Sending TAKPacket V2 to mesh")
 		Logger.tak.info("Sent TAK V2 packet to mesh (port=78, channel=\(channel), size=\(wirePayload.count) bytes, hopLimit=\(meshPacket.hopLimit))")
 	}
 
@@ -300,10 +301,10 @@ extension AccessoryManager {
 	/// port 78. The V1 schema supports only PLI and GeoChat — callers must
 	/// drop any other CoT type before reaching this method.
 	func sendTAKPacket(_ takPacket: MeshtasticProtobufs.TAKPacket, channel: UInt32 = 0) async throws {
-		guard let activeConnection else {
+		guard let takSession = session(for: .tak) else {
 			throw AccessoryError.connectionFailed("Not connected to Meshtastic device")
 		}
-		guard let deviceNum = activeConnection.device.num else {
+		guard let deviceNum = takSession.device.num else {
 			throw AccessoryError.connectionFailed("No device number available")
 		}
 
@@ -334,7 +335,7 @@ extension AccessoryManager {
 		var toRadio = ToRadio()
 		toRadio.packet = meshPacket
 
-		try await send(toRadio, debugDescription: "Sending legacy V1 TAKPacket to mesh")
+		try await send(toRadio, via: takSession, debugDescription: "Sending legacy V1 TAKPacket to mesh")
 		Logger.tak.info("Sent V1 TAK packet to mesh (port=72, channel=\(channel), size=\(payload.count) bytes, hopLimit=\(meshPacket.hopLimit))")
 	}
 

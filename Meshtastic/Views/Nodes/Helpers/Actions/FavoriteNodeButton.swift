@@ -5,6 +5,8 @@ import SwiftUI
 struct FavoriteNodeButton: View {
 
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@Environment(\.modelContext) private var context
 
 	@Bindable var node: NodeInfoEntity
@@ -19,7 +21,7 @@ struct FavoriteNodeButton: View {
 				return
 			}
 			// Normal case: perform action immediately
-			guard let connectedNodeNum = accessoryManager.activeDeviceNum else { return }
+			guard let connectedNodeNum = accessoryManager.nodeNum(for: windowRadio) else { return }
 			Task {
 				await assignFavorite(node: node, setToFavorite: !node.favorite, connectedNodeNum: Int64(connectedNodeNum))
 			}
@@ -37,7 +39,7 @@ struct FavoriteNodeButton: View {
 			titleVisibility: .visible
 		) {
 			Button("Yes, I control this node") {
-				guard let connectedNodeNum = accessoryManager.activeDeviceNum else { return }
+				guard let connectedNodeNum = accessoryManager.nodeNum(for: windowRadio) else { return }
 				Task {
 					await assignFavorite(node: node, setToFavorite: true, connectedNodeNum: Int64(connectedNodeNum))
 				}
@@ -50,17 +52,8 @@ struct FavoriteNodeButton: View {
 
 	private func assignFavorite (node: NodeInfoEntity, setToFavorite: Bool, connectedNodeNum: Int64) async {
 		do {
-			if setToFavorite {
-				try await accessoryManager.setFavoriteNode(
-					node: node,
-					connectedNodeNum: Int64(connectedNodeNum)
-				)
-			} else {
-				try await accessoryManager.removeFavoriteNode(
-					node: node,
-					connectedNodeNum: Int64(connectedNodeNum)
-				)
-			}
+			// Feature 021 (D-11): on every connected radio, starting with the first radio.
+			try await accessoryManager.setFavorite(setToFavorite, node: node)
 
 			Task { @MainActor in
 				// Update CoreData

@@ -5,6 +5,22 @@
 
 import SwiftUI
 
+/// The indicator for the window's radio (feature 021, D-19, T303): its short name and whether it's
+/// connected. Screens use this rather than reading the manager's first radio.
+struct WindowConnectedDevice: View {
+	@EnvironmentObject private var accessoryManager: AccessoryManager
+	@Environment(\.windowRadio) private var windowRadio
+	var phoneOnly = false
+
+	var body: some View {
+		ConnectedDevice(
+			deviceConnected: accessoryManager.isConnected(windowRadio),
+			name: accessoryManager.session(for: windowRadio)?.device.shortName ?? "?",
+			phoneOnly: phoneOnly
+		)
+	}
+}
+
 struct ConnectedDevice: View {
 
 	let deviceConnected: Bool
@@ -44,23 +60,25 @@ struct ConnectedDevice: View {
 			if (phoneOnly && UIDevice.current.userInterfaceIdiom == .phone) || !phoneOnly {
 				if deviceConnected {
 					// Create an HStack for connected state with proper accessibility
-					HStack {
-						if mqttUplinkEnabled || mqttDownlinkEnabled {
-							MQTTIcon(connected: mqttProxyConnected, uplink: mqttUplinkEnabled, downlink: mqttDownlinkEnabled, topic: mqttTopic)
+					RadioSwitcherMenu {
+						HStack {
+							if mqttUplinkEnabled || mqttDownlinkEnabled {
+								MQTTIcon(connected: mqttProxyConnected, uplink: mqttUplinkEnabled, downlink: mqttDownlinkEnabled, topic: mqttTopic)
+									.accessibilityHidden(true)
+							}
+							Image(systemName: "link.circle.fill")
+								.imageScale(.large)
+								.foregroundColor(.green)
+								.symbolRenderingMode(.hierarchical)
+								.accessibilityHidden(true)
+							Text(name.addingVariationSelectors)
+								.font(name.isEmoji() ? .title : .callout)
+								.foregroundColor(.gray)
 								.accessibilityHidden(true)
 						}
-						Image(systemName: "link.circle.fill")
-							.imageScale(.large)
-							.foregroundColor(.green)
-							.symbolRenderingMode(.hierarchical)
-							.accessibilityHidden(true)
-						Text(name.addingVariationSelectors)
-							.font(name.isEmoji() ? .title : .callout)
-							.foregroundColor(.gray)
-							.accessibilityHidden(true)
+						.accessibilityElement(children: .ignore)
+						.accessibilityLabel(String(localized: "Connected to Bluetooth device", comment: "VoiceOver label for a connected Bluetooth device") + ", " + name.formatNodeNameForVoiceOver())
 					}
-					.accessibilityElement(children: .ignore)
-					.accessibilityLabel(String(localized: "Connected to Bluetooth device", comment: "VoiceOver label for a connected Bluetooth device") + ", " + name.formatNodeNameForVoiceOver())
 				} else {
 					// Create a container for disconnected state
 					HStack {

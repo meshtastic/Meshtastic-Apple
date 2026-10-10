@@ -115,7 +115,7 @@ enum PerformanceSeedData {
 			configuration.compactNodeList ? NodeListDensity.compact.rawValue : NodeListDensity.standard.rawValue,
 			forKey: "nodeListDensity"
 		)
-		UserDefaults.standard.set(Int(0x0A00_0000), forKey: "preferredPeripheralNum")
+		PreferredRadio.nodeNum = 0x0A00_0000
 		if configuration.style == .marketing {
 			// Show individual colored node pins on the map (not count bubbles) so it reads as a real
 			// mesh. All node positions are on land.

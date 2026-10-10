@@ -153,6 +153,24 @@ final class DiscoveryScanEngine {
 	/// Paces the animated reveal of seeded nodes onto the map during a current-preset scan.
 	private var seedTask: Task<Void, Never>?
 
+	/// The radio a scan runs on, fixed when it starts (feature 021, T016): the window switching to another radio mid-scan,
+	/// or the reboot a preset change causes, must not move it to another radio, and only its own
+	/// packets are measured (`receivesPackets(from:)`).
+	private(set) var scanRadioNum: Int64 = 0
+	/// The radio whose channel-change rows this scan paused, until it puts the radio back.
+	private var pausedChangeRadio: Int64?
+
+	/// The first radio, or offline the preferred one, whose saved config an offline analysis uses.
+	private var currentRadioNum: Int64 {
+		accessoryManager?.activeDeviceNum ?? PreferredRadio.nodeNum
+	}
+
+	/// True for packets `radioNum` received when it's this scan's radio. Other connected radios
+	/// are on their own presets and meshes.
+	func receivesPackets(from radioNum: Int64?) -> Bool {
+		radioNum == scanRadioNum
+	}
+
 	var isScanning: Bool {
 		switch currentState {
 		case .shifting, .reconnecting, .dwell, .paused, .restoring:
@@ -172,7 +190,9 @@ final class DiscoveryScanEngine {
 
 	// MARK: - Start Scan (T014)
 
-	func startScan() async {
+	/// Runs the scan on radio `radio` (the window's, feature 021); nil is the radio connected
+	/// first, or offline the preferred one.
+	func startScan(radio: Int64? = nil) async {
 		guard currentState == .idle else {
 			Logger.discovery.warning("📡 [Discovery] Cannot start scan — not idle (state: \(self.currentState))")
 			return
@@ -186,7 +206,7 @@ final class DiscoveryScanEngine {
 		// entirely from local SwiftData and sends nothing to the radio, so it may run offline —
 		// e.g. reviewing your mesh with no radio connected. Only that seeded path is exempt from
 		// the connection requirement.
-		let isConnected = accessoryManager?.isConnected ?? false
+		let isConnected = radio.map { accessoryManager?.isRadioConnected(nodeNum: $0) ?? false } ?? (accessoryManager?.isConnected ?? false)
 		guard seedFromExistingData || isConnected else {
 			Logger.discovery.warning("📡 [Discovery] Cannot start scan — radio not connected")
 			return
@@ -199,21 +219,28 @@ final class DiscoveryScanEngine {
 		// Clear any previous error
 		errorMessage = nil
 
-		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+		// This scan's radio, for the whole scan (T016).
+		scanRadioNum = radio ?? currentRadioNum
+		let connectedNodeNum = scanRadioNum
 		let connectedNode = getNodeInfo(id: connectedNodeNum, context: context)
 
 		// Connection-only setup: snapshot the home LoRa config and, if needed, temporarily switch
 		// the primary channel to the default public channel. Skipped entirely when running offline —
 		// the seeded pass never sends config, so there is nothing to snapshot, switch, or restore.
 		if isConnected {
-			// Record home preset from current LoRa config
-			if let loraConfig = connectedNode?.loRaConfig, !loraConfig.isDeleted {
-				homePreset = ModemPresets(rawValue: Int(loraConfig.modemPreset))
+			// The scan steps the radio through presets and puts its own back: none of that is the
+			// user moving a channel, so it leaves no change rows in the conversations (T377).
+			ChannelChangeEvents.pause(radio: connectedNodeNum)
+			pausedChangeRadio = connectedNodeNum
+			// Record home preset from the saved LoRa config, not the view context's copy, which
+			// can predate a preset change (review V24-1).
+			if let saved = savedLoRaConfig(connectedNodeNum) {
+				homePreset = saved.preset
 				// Snapshot the complete config so restore puts back the frequency slot and all
 				// other LoRa settings exactly — not just the modem preset (#1952). Each scan preset
 				// is sent on the default frequency slot (see sendPresetChange); this snapshot is what
 				// returns the user to their real slot when the scan finishes.
-				homeLoRaConfig = loRaConfigProto(from: loraConfig, presetOverride: nil)
+				homeLoRaConfig = saved.config
 			}
 
 			// If the primary channel isn't the default public channel, temporarily switch it (key + name)
@@ -325,11 +352,8 @@ final class DiscoveryScanEngine {
 
 		// Skip the config change only for a plain public target we're already sitting on (no region
 		// override, no custom channel). Custom-channel / region-override targets always re-send.
-		if !target.isCustomChannel, target.regionRaw == nil, accessoryManager != nil, let context = modelContext {
-			let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
-			let node = getNodeInfo(id: connectedNodeNum, context: context)
-			if let currentModemPreset = node?.loRaConfig?.modemPreset,
-			   ModemPresets(rawValue: Int(currentModemPreset)) == nextPreset {
+		if !target.isCustomChannel, target.regionRaw == nil, accessoryManager != nil {
+			if savedLoRaConfig(scanRadioNum)?.preset == nextPreset {
 				Logger.discovery.info("📡 [Discovery] Already on preset \(nextPreset.name) — skipping config change")
 				transitionTo(.dwell)
 				startDwellTimer()
@@ -377,13 +401,44 @@ final class DiscoveryScanEngine {
 		return config
 	}
 
+	// MARK: - Saved settings (review V24-1)
+
+	/// Runs `body` on `radio`'s node as saved, in a throwaway context kept alive for the call.
+	/// The engine's context is the view's main context, which can still hold the LoRa settings and
+	/// channels from before a preset or channel change the packet actor saved; a scan that
+	/// snapshotted those as "home" would put the old preset back when it finished.
+	private func withSavedNode<T>(_ radio: Int64, _ body: (NodeInfoEntity) -> T?) -> T? {
+		guard let container = modelContext?.container else { return nil }
+		let saved = ModelContext(container)
+		return withExtendedLifetime(saved) {
+			guard let node = getNodeInfo(id: radio, context: saved) else { return nil }
+			return body(node)
+		}
+	}
+
+	/// `radio`'s LoRa settings as saved, as a complete proto, and its preset.
+	private func savedLoRaConfig(_ radio: Int64) -> (config: Config.LoRaConfig, preset: ModemPresets?)? {
+		withSavedNode(radio) { node in
+			guard let lora = node.loRaConfig, !lora.isDeleted else { return nil }
+			return (loRaConfigProto(from: lora, presetOverride: nil), ModemPresets(rawValue: Int(lora.modemPreset)))
+		}
+	}
+
+	/// `radio`'s primary channel as saved, and whether it's the default public channel.
+	private func savedPrimaryChannel(_ radio: Int64) -> (channel: Channel, isDefaultPublic: Bool)? {
+		withSavedNode(radio) { node in
+			guard let primary = node.myInfo?.channels.first(where: { $0.role == 1 }) else { return nil }
+			return (channelProto(from: primary), Self.isDefaultPublicChannel(primary))
+		}
+	}
+
 	// MARK: - Send Preset Change
 
 	private func sendPresetChange(for target: ScanTarget) async {
 		let preset = target.preset
 		guard let accessoryManager, let context = modelContext else { return }
 
-		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+		let connectedNodeNum = scanRadioNum
 		guard let connectedNode = getNodeInfo(id: connectedNodeNum, context: context),
 			  let fromUser = connectedNode.user,
 			  let toUser = connectedNode.user else {
@@ -402,8 +457,9 @@ final class DiscoveryScanEngine {
 		// so scanning on it would listen on the wrong frequency and find nothing. The user's real
 		// slot is snapshotted in `homeLoRaConfig` and restored verbatim when the scan finishes.
 		let loraConfig: Config.LoRaConfig
-		if let existingConfig = connectedNode.loRaConfig, !existingConfig.isDeleted {
-			var scanConfig = loRaConfigProto(from: existingConfig, presetOverride: preset)
+		// As saved (review V24-1): the view context's copy can carry fields from before a change.
+		if var scanConfig = savedLoRaConfig(connectedNodeNum)?.config {
+			scanConfig.modemPreset = preset.protoEnumValue()
 			scanConfig.channelNum = 0
 			// A beacon may advertise the region its mesh runs in; apply it so the derived frequency
 			// matches. Manual/public targets carry no override and keep the user's current region.
@@ -426,7 +482,8 @@ final class DiscoveryScanEngine {
 			Logger.discovery.info("📡 [Discovery] Sent LoRa config change to preset: \(preset.name)")
 
 			// Determine transport type for reconnection strategy
-			let transportType = await accessoryManager.activeConnection?.connection.type
+			// The scan radio's link, the first radio's or another's (T160).
+			let transportType = await accessoryManager.connectedSession(forRadio: scanRadioNum)?.connection.type
 
 			// Mark that we're awaiting a disconnect — prevents premature reconnection detection
 			awaitingDisconnect = true
@@ -459,32 +516,38 @@ final class DiscoveryScanEngine {
 		}
 	}
 
+	/// The scan radio's link: the scan follows its own radio, which may not stay the first one.
+	private var scanLink: (connected: Bool, subscribed: Bool) {
+		accessoryManager?.linkState(ofRadio: scanRadioNum) ?? (false, false)
+	}
+
 	private func handleConnectionStateChange() {
-		guard let accessoryManager else { return }
+		guard accessoryManager != nil else { return }
+		let link = scanLink
 
 		switch currentState {
 		case .reconnecting:
-			if !accessoryManager.isConnected {
+			if !link.connected {
 				// Device has actually disconnected — clear the flag so we accept the next reconnection
 				if awaitingDisconnect {
 					awaitingDisconnect = false
 					Logger.discovery.info("📡 [Discovery] Device disconnected after config change — awaiting reconnection")
 				}
-			} else if accessoryManager.isConnected && accessoryManager.state == .subscribed && !awaitingDisconnect {
+			} else if link.connected && link.subscribed && !awaitingDisconnect {
 				Logger.discovery.info("📡 [Discovery] Reconnected after preset change → Dwell")
 				reconnectTimeoutTask?.cancel()
 				transitionTo(.dwell)
 				startDwellTimer()
 			}
 		case .paused:
-			if accessoryManager.isConnected && accessoryManager.state == .subscribed {
+			if link.connected && link.subscribed {
 				Logger.discovery.info("📡 [Discovery] Connection restored while paused → Resuming dwell")
 				awaitingDisconnect = false
 				transitionTo(.dwell)
 				startDwellTimer()
 			}
 		case .dwell:
-			if !accessoryManager.isConnected {
+			if !link.connected {
 				// Save remaining time so we can resume if connection is restored
 				interruptedDwellRemaining = dwellTimeRemaining
 				Logger.discovery.warning("📡 [Discovery] Connection lost during dwell (\(Int(self.dwellTimeRemaining))s remaining) — entering reconnecting state")
@@ -530,9 +593,8 @@ final class DiscoveryScanEngine {
 			// out the full timeout. (Checked regardless of awaitingDisconnect: the observer
 			// clears it on the disconnect edge, so gating this on it would skip the fast path in
 			// exactly the missed-subscribe-edge case it exists to handle.)
-			let connected = self.accessoryManager?.isConnected ?? false
-			let subscribed = self.accessoryManager.map { $0.state == .subscribed } ?? false
-			if connected && subscribed {
+			let link = self.scanLink
+			if link.connected && link.subscribed {
 				Logger.discovery.info("📡 [Discovery] Connected & subscribed after grace → Dwell")
 				self.transitionTo(.dwell)
 				self.startDwellTimer()
@@ -546,8 +608,8 @@ final class DiscoveryScanEngine {
 			do { try await Task.sleep(for: .seconds(remaining)) } catch { return }
 			guard self.currentState == .reconnecting else { return }
 			let resolution = Self.reconnectTimeoutResolution(
-				isConnected: self.accessoryManager?.isConnected ?? false,
-				isSubscribed: self.accessoryManager.map { $0.state == .subscribed } ?? false
+				isConnected: self.scanLink.connected,
+				isSubscribed: self.scanLink.subscribed
 			)
 			Logger.discovery.warning("📡 [Discovery] Reconnect window elapsed (\(Self.reconnectTimeoutSeconds)s) → \(resolution)")
 			self.transitionTo(resolution)
@@ -562,7 +624,7 @@ final class DiscoveryScanEngine {
 			do {
 				try await Task.sleep(for: .seconds(60))
 				guard let self, self.currentState == .reconnecting else { return }
-				guard let accessoryManager, accessoryManager.isConnected else {
+				guard self.scanLink.connected else {
 					Logger.discovery.warning("📡 [Discovery] TCP/Serial not connected after reboot wait → Paused")
 					self.transitionTo(.paused)
 					return
@@ -634,7 +696,7 @@ final class DiscoveryScanEngine {
 
 		Logger.discovery.info("📡 [Discovery] NeighborInfo from node \(neighborInfo.nodeID): \(neighborInfo.neighbors.count) neighbors")
 
-		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+		let connectedNodeNum = scanRadioNum
 		for neighbor in neighborInfo.neighbors {
 			let nodeNum = Int64(neighbor.nodeID)
 			// Skip the scanning node itself
@@ -676,7 +738,7 @@ final class DiscoveryScanEngine {
 
 		let fromNodeNum = Int64(packet.from)
 		// Skip beacons from the scanning node itself.
-		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+		let connectedNodeNum = scanRadioNum
 		guard fromNodeNum != connectedNodeNum else { return }
 
 		let hasCustomChannel = beacon.hasOfferChannel && !beacon.offerChannel.name.isEmpty
@@ -745,7 +807,7 @@ final class DiscoveryScanEngine {
 		let fromNodeNum = Int64(packet.from)
 
 		// Skip packets from the scanning node itself
-		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+		let connectedNodeNum = scanRadioNum
 		guard fromNodeNum != connectedNodeNum else { return }
 
 		let hopLimit = Int(packet.hopLimit)
@@ -900,7 +962,7 @@ extension DiscoveryScanEngine {
 			return
 		}
 
-		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+		let connectedNodeNum = scanRadioNum
 		guard let connectedNode = getNodeInfo(id: connectedNodeNum, context: context),
 			  let fromUser = connectedNode.user,
 			  let toUser = connectedNode.user else {
@@ -1013,6 +1075,10 @@ extension DiscoveryScanEngine {
 	}
 
 	private func cleanupAndIdle() {
+		if let pausedChangeRadio {
+			ChannelChangeEvents.resume(radio: pausedChangeRadio)
+			self.pausedChangeRadio = nil
+		}
 		dwellTask?.cancel()
 		reconnectTimeoutTask?.cancel()
 		connectionObserver?.cancel()
@@ -1040,7 +1106,7 @@ extension DiscoveryScanEngine {
 	private func captureLocalStats() {
 		guard let context = modelContext, let result = currentPresetResult else { return }
 
-		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+		let connectedNodeNum = scanRadioNum
 		guard let connectedNode = getNodeInfo(id: connectedNodeNum, context: context) else {
 			Logger.discovery.warning("📡 [Discovery] Cannot read local stats — no connected node")
 			return
@@ -1124,7 +1190,7 @@ extension DiscoveryScanEngine {
 	/// reboot — the dwell begins immediately and `seedDiscoveredNodesFromDatabase()` folds in all
 	/// accumulated data so the run reflects "one long run" on the current preset, then live packets
 	/// during the dwell keep refining it.
-	func startCurrentPresetScan() async {
+	func startCurrentPresetScan(radio: Int64? = nil) async {
 		guard currentState == .idle else {
 			Logger.discovery.warning("📡 [Discovery] Cannot start current-preset scan — not idle")
 			return
@@ -1137,7 +1203,8 @@ extension DiscoveryScanEngine {
 		// Prefer the connected node's live LoRa preset. When no node/config is available — e.g.
 		// running offline with no radio connected — fall back to the last preset the app persisted
 		// in UserDefaults, then to LongFast. This lets "Analyze Current Preset" work fully offline.
-		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+		scanRadioNum = radio ?? currentRadioNum
+		let connectedNodeNum = scanRadioNum
 		let preset = (getNodeInfo(id: connectedNodeNum, context: context)?.loRaConfig?.modemPreset)
 			.flatMap { ModemPresets(rawValue: Int($0)) }
 			?? ModemPresets(rawValue: UserDefaults.modemPreset)
@@ -1148,7 +1215,8 @@ extension DiscoveryScanEngine {
 		// The report comes from seeded history — only dwell briefly to fold in live packets.
 		dwellDuration = Self.currentPresetScanDwell
 		Logger.discovery.info("📡 [Discovery] Starting current-preset scan on \(preset.name, privacy: .public) (seeded; \(Int(Self.currentPresetScanDwell))s dwell)")
-		await startScan()
+		// The same radio for the scan itself (review V12 Y1).
+		await startScan(radio: radio)
 	}
 
 	/// Reveals a discovered node for every node already known in SwiftData onto the map
@@ -1159,7 +1227,7 @@ extension DiscoveryScanEngine {
 	func revealSeededNodesFromDatabase() async {
 		guard let context = modelContext, let session, let result = currentPresetResult else { return }
 		let presetName = activePreset?.name ?? result.presetName
-		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+		let connectedNodeNum = scanRadioNum
 
 		// Per-node text-message counts (single fetch, grouped by sender).
 		var messageCounts: [Int64: Int] = [:]
@@ -1309,14 +1377,15 @@ extension DiscoveryScanEngine {
 		guard let accessoryManager,
 			  let connectedNode,
 			  let fromUser = connectedNode.user,
-			  let primary = connectedNode.myInfo?.channels.first(where: { $0.role == 1 }) else { return }
+			  // As saved (review V24-1): restore sends this snapshot back verbatim.
+			  let primary = savedPrimaryChannel(connectedNode.num) else { return }
 
-		guard !Self.isDefaultPublicChannel(primary) else { return }
+		guard !primary.isDefaultPublic else { return }
 
 		// Snapshot the real primary channel so it can be restored verbatim after the scan.
-		homePrimaryChannel = channelProto(from: primary)
+		homePrimaryChannel = primary.channel
 
-		var scanChannel = channelProto(from: primary)
+		var scanChannel = primary.channel
 		scanChannel.settings.psk = Self.defaultChannelKey
 		scanChannel.settings.name = ""
 		do {
@@ -1336,16 +1405,17 @@ extension DiscoveryScanEngine {
 	/// snapshotted the first time we tune away and restored verbatim in `restorePrimaryChannel()`.
 	private func applyChannel(for target: ScanTarget) async {
 		guard let accessoryManager, let context = modelContext else { return }
-		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+		let connectedNodeNum = scanRadioNum
 		guard let connectedNode = getNodeInfo(id: connectedNodeNum, context: context),
 			  let fromUser = connectedNode.user,
-			  let primary = connectedNode.myInfo?.channels.first(where: { $0.role == 1 }) else { return }
+			  // As saved (review V24-1).
+			  let primary = savedPrimaryChannel(connectedNodeNum)?.channel else { return }
 
 		if target.isCustomChannel, let name = target.channelName, let psk = target.channelPSK {
 			// Snapshot the real primary once so restore returns to it, even if we began the scan on
 			// the default public channel (where prepareDefaultPublicChannel took no snapshot).
-			if homePrimaryChannel == nil { homePrimaryChannel = channelProto(from: primary) }
-			var channel = channelProto(from: primary)
+			if homePrimaryChannel == nil { homePrimaryChannel = primary }
+			var channel = primary
 			channel.settings.name = name
 			channel.settings.psk = psk
 			do {
@@ -1358,7 +1428,7 @@ extension DiscoveryScanEngine {
 		} else if scanChannelIsCustom {
 			// Public/manual target following a custom one: revert to the default public channel so the
 			// dwell hears the public mesh again.
-			var channel = channelProto(from: primary)
+			var channel = primary
 			channel.settings.name = ""
 			channel.settings.psk = Self.defaultChannelKey
 			do {
@@ -1376,7 +1446,7 @@ extension DiscoveryScanEngine {
 	/// while the link is up.
 	private func restorePrimaryChannel() async {
 		guard let homePrimaryChannel, let accessoryManager, let context = modelContext else { return }
-		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+		let connectedNodeNum = scanRadioNum
 		guard let connectedNode = getNodeInfo(id: connectedNodeNum, context: context),
 			  let fromUser = connectedNode.user else {
 			Logger.discovery.error("📡 [Discovery] Cannot restore primary channel — no connected node")

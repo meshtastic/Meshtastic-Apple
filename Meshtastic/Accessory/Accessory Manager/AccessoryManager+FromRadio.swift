@@ -14,32 +14,8 @@ import OSLog
 
 extension AccessoryManager {
 
-	func handleMqttClientProxyMessage(_ mqttClientProxyMessage: MqttClientProxyMessage) {
-		Logger.services.info("handleMqttClientProxyMessage topic: \(mqttClientProxyMessage.topic, privacy: .public)")
-
-		// MqttClientProxyMessage carries its payload in a oneof — either binary
-		// `data` (service envelope / map report protobuf) or `text` (JSON / stat
-		// topics).  Previously this always read `.data`, which silently produced
-		// an empty payload whenever the firmware used the `.text` variant — the
-		// root cause of map-report packets never reaching the MQTT broker.
-		let payload: [UInt8]
-		switch mqttClientProxyMessage.payloadVariant {
-		case .data(let bytes):
-			payload = [UInt8](bytes)
-		case .text(let string):
-			payload = [UInt8](string.utf8)
-		case .none:
-			Logger.services.warning("📲 [MQTT Client Proxy] received proxy message with no payload on topic: \(mqttClientProxyMessage.topic, privacy: .public)")
-			return
-		}
-
-		let message = CocoaMQTTMessage(topic: mqttClientProxyMessage.topic,
-									   payload: payload,
-									   retained: mqttClientProxyMessage.retained)
-		MqttClientProxyManager.shared.mqttClientProxy?.publish(message)
-	}
-
-	func handleClientNotification(_ clientNotification: ClientNotification) {
+	/// `session`: the radio it came from. With other radios connected, the notice names it.
+	func handleClientNotification(_ clientNotification: ClientNotification, session: RadioSession? = nil) {
 		Logger.services.info("handleClientNotification: \(clientNotification.debugDescription)")
 		var path = "meshtastic:///settings/debugLogs"
 		if clientNotification.hasReplyID {
@@ -93,13 +69,20 @@ extension AccessoryManager {
 				// security warning that was still pending.
 				id: "client.notification.\(Self.noticeIdentifierFragment(key))",
 				title: "Firmware Notification".localized,
-				subtitle: "\(clientNotification.level)".capitalized,
+				subtitle: firmwareNoticeSubtitle(level: clientNotification.level, session: session),
 				content: clientNotification.message,
 				target: "settings",
 				path: path
 			)
 		]
 		manager.schedule()
+	}
+
+	/// The level, and the radio's name when more than one radio is connected (T071).
+	func firmwareNoticeSubtitle(level: LogRecord.Level, session: RadioSession?) -> String {
+		let levelText = "\(level)".capitalized
+		guard connectedRadioCount > 1, let device = session?.device else { return levelText }
+		return levelText + " · " + String.localizedStringWithFormat("on %@".localized, device.shortName ?? device.longName ?? device.name)
 	}
 
 	// MARK: - Firmware notification backoff
@@ -176,32 +159,40 @@ extension AccessoryManager {
 		return String(String(allowed).prefix(55)) + "_" + digest
 	}
 
-	func handleMyInfo(_ myNodeInfo: MyNodeInfo) async {
+	/// `session` is the connection the MyInfo arrived on; nil means the active one.
+	func handleMyInfo(_ myNodeInfo: MyNodeInfo, session: RadioSession? = nil) async {
 		// TODO: this works for connections like BLE that have a uniqueId, but what about ones like serial?
-		guard let connectedDeviceId = activeConnection?.device.id.uuidString else {
+		guard let session = session ?? activeConnection else {
 			Logger.services.error("⚠️ Failed to decode MyInfo, no connected device ID")
 			return
 		}
+		let connectedDeviceId = session.device.id.uuidString
 		Logger.services.info("handleMyInfo: \(myNodeInfo.debugDescription)")
+		let isFirst = session === activeConnection
+		// The same radio connected twice (over BLE and TCP, say): the second link goes, and isn't
+		// retried, without touching the radio's remembered state, which is the first link's (T154).
+		let reportedNum = Int64(myNodeInfo.myNodeNum)
+		let otherSessions = [activeConnection].compactMap { $0 } + Array(additionalRadios.values)
+		if !isFirst, otherSessions.contains(where: { $0 !== session && $0.device.num == reportedNum }) {
+			Logger.transport.error("🔗➕ [Additional] \(session.device.name, privacy: .public) reports the node number of a radio that's already connected; disconnecting it")
+			additionalRadioReconnects.removeValue(forKey: session.device.id)?.cancel()
+			await disconnectAdditionalRadio(session.device.id)
+			return
+		}
 
-		updateDevice(key: \.num, value: Int64(myNodeInfo.myNodeNum))
+		updateDevice(deviceId: session.device.id, key: \.num, value: Int64(myNodeInfo.myNodeNum))
 
-		// Defensive cross-device guard: if this connect landed on another radio's database
-		// without going through the switch flow's clear+restore, reset before ingesting
-		// anything for the new radio. Nodes carry no owner column — the store is global — so
-		// any path that reaches here with a different radio's data (switch to a never-seen
-		// radio, interrupted switch + auto-reconnect, BLE restore) would otherwise merge the
-		// two node sets ("nodes bleeding across databases").
-		//
-		// Trigger only when the store has a MyInfoEntity for a DIFFERENT node and NONE for the
-		// connecting one. A backup restored for this radio always contains its own MyInfo row,
-		// so a legitimate switch+restore never trips this — including legacy backups that may
-		// carry extra foreign rows from the pre-fix bleed era.
-		await defensiveResetIfForeignDatabase(
+		// Feature 021 (shared store, T066): a radio the store hasn't seen before simply joins it;
+		// every row is scoped to the radio it came through (observations, receptions,
+		// `localNodeNum`). The one case still handled here is the same radio reporting a new
+		// node number (2.8 upgrade), which renumbers the store instead of adding a stranger.
+		// This used to back up and wipe the store for any unfamiliar radio, which would now
+		// erase the other connected radios' data.
+		await renumberIfSameRadio(
 			incomingNodeNum: Int64(myNodeInfo.myNodeNum),
-			incomingDeviceId: myNodeInfo.deviceID
+			incomingDeviceId: myNodeInfo.deviceID,
+			peripheralId: connectedDeviceId
 		)
-
 		let myInfoId = await MeshPackets.shared.myInfoPacket(myInfo: myNodeInfo, peripheralId: connectedDeviceId)
 
 		// Move this radio's backup onto its device id if it is still filed under a node number, and
@@ -221,94 +212,78 @@ extension AccessoryManager {
 		let myInfoResolveContext = ModelContext(context.container)
 		if let myInfoId, let myInfo = try? myInfoResolveContext.model(for: myInfoId) as? MyInfoEntity {
 			if let bleName = myInfo.bleName {
-				updateDevice(key: \.name, value: bleName)
-				updateDevice(key: \.longName, value: bleName)
+				updateDevice(deviceId: session.device.id, key: \.name, value: bleName)
+				updateDevice(deviceId: session.device.id, key: \.longName, value: bleName)
 			}
 
 			if myNodeInfo.nodedbCount > 0 {
-				expectedNodeDBSize = Int(myNodeInfo.nodedbCount)
+				update(session, \.expectedNodeDBSize, to: Int(myNodeInfo.nodedbCount))
 			}
 
-			// Compare BEFORE persisting the new num — the previous code assigned first, so
-			// newConnection was always false and this hook was dead.
-			let newConnection = Int64(UserDefaults.preferredPeripheralNum) != Int64(myInfo.myNodeNum)
-			UserDefaults.preferredPeripheralNum = Int(myInfo.myNodeNum)
-			if newConnection {
-				// Onboard a new device connection here
+			// The preferred radio is the first one.
+			if isFirst {
+				// Compare BEFORE persisting the new num — the previous code assigned first, so
+				// newConnection was always false and this hook was dead.
+				let newConnection = PreferredRadio.nodeNum != Int64(myInfo.myNodeNum)
+				PreferredRadio.nodeNum = Int64(myInfo.myNodeNum)
+				if newConnection {
+					// Onboard a new device connection here
+				}
 			}
 		}
-		await beginAutomaticChannelRefreshStageIfNeeded(for: Int64(myNodeInfo.myNodeNum))
+		await beginAutomaticChannelRefreshStageIfNeeded(for: Int64(myNodeInfo.myNodeNum), session: session)
+
+		update(session, \.firmwareEdition, to: FirmwareEditions(from: myNodeInfo.firmwareEdition))
+		if session.device.longName == nil {
+			updateDevice(deviceId: session.device.id, key: \.longName, value: session.device.name)
+		}
+		guard isFirst else { return }
 
 		// Auto-disable new-node notifications for event firmware editions
 		applyEventFirmwareNotificationDefaults(myNodeInfo.firmwareEdition)
-		firmwareEdition = FirmwareEditions(from: myNodeInfo.firmwareEdition)
 
 		// Initialize TAK bridge for TAK integration
 		initializeTAKBridge()
 	}
 
-	/// Detects a connect that landed on a different radio's database (no MyInfo row for the
-	/// connecting node, but rows for other nodes) and resets: back up the foreign radio's data
-	/// so nothing is lost, clear the store, repoint the container, and refresh the UI. See the
-	/// call site in `handleMyInfo` for when this can happen. No-ops for a fresh install (no
-	/// MyInfo rows) and for reconnects/restores (a MyInfo row for the incoming node exists).
-	private func defensiveResetIfForeignDatabase(incomingNodeNum: Int64, incomingDeviceId: Data) async {
+	/// Renumbers the store when the connecting radio is one it already knows under another
+	/// node number (a 2.8 firmware upgrade changes the number a radio reports). Any other radio
+	/// joins the shared store as it is (feature 021): no backup, no reset.
+	private func renumberIfSameRadio(incomingNodeNum: Int64, incomingDeviceId: Data, peripheralId: String) async {
 		// Fresh throwaway context: no stale registrations, and this runs before any ingest for
-		// the new radio, so what it sees is exactly what the previous session left behind.
+		// the connecting radio, so what it sees is exactly what earlier sessions left behind.
 		let checkContext = ModelContext(context.container)
 		guard let myInfos = try? checkContext.fetch(FetchDescriptor<MyInfoEntity>()), !myInfos.isEmpty else {
-			return // Fresh/empty store — nothing to protect.
+			return // Fresh/empty store.
 		}
-		let nums = myInfos.map(\.myNodeNum)
-		guard !nums.contains(incomingNodeNum) else {
-			return // The store already belongs to (or was restored for) this radio.
+		guard !myInfos.contains(where: { $0.myNodeNum == incomingNodeNum }) else {
+			return // A radio the store already knows under this number.
 		}
 
-		// Same radio, new number. A firmware upgrade to 2.8 changes the node number a radio
-		// reports, and everything the app stored is keyed to the old one. A match means this is that
-		// radio under a new number rather than a different radio — renumber the store instead of
-		// throwing it away.
-		//
-		// device_id is the radio's own hardware identifier, so it holds over TCP and serial where
-		// there is no BLE identifier, and it survives a re-pair. The MyInfo row also records the
-		// peripheral it came from, which is the fallback for radios that report no device id.
-		if !incomingDeviceId.isEmpty,
-		   let sameRadio = myInfos.first(where: { $0.deviceId == incomingDeviceId }) {
-			await renumberStore(from: sameRadio.myNodeNum, to: incomingNodeNum, deviceId: incomingDeviceId)
-			return
-		}
-		if let connectedDeviceId = activeConnection?.device.id.uuidString,
-		   let sameRadio = myInfos.first(where: { $0.peripheralId == connectedDeviceId }) {
+		if let sameRadio = Self.sameRadio(among: myInfos, incomingDeviceId: incomingDeviceId, peripheralId: peripheralId) {
 			await renumberStore(from: sameRadio.myNodeNum, to: incomingNodeNum, deviceId: incomingDeviceId)
 			return
 		}
 
-		Logger.data.warning("💾 [Database] Connected to node \(incomingNodeNum.toHex(), privacy: .public) but the store belongs to \(nums.map { $0.toHex() }.joined(separator: ", "), privacy: .public) — backing up and resetting to prevent cross-device node bleed")
+		let known = myInfos.map { $0.myNodeNum.toHex() }.joined(separator: ", ")
+		Logger.data.info("💾 [Database] Node \(incomingNodeNum.toHex(), privacy: .public) joins the shared store (already holds \(known, privacy: .public))")
+	}
 
-		// Preserve the previous radio's data exactly like the switch flow would have. Flush before
-		// copying the store files or the backup misses anything still waiting on a debounced save.
-		await MeshPackets.shared.flushDebouncedSaves()
-		if let previousNum = nums.first {
-			let previousName = devices.first(where: { $0.num == previousNum })?.longName
-			// The outgoing radio's own device id, not the one now connected.
-			let previousDeviceId = myInfos.first(where: { $0.myNodeNum == previousNum })?.deviceId
-			_ = await NodeBackupManager.shared.createBackup(
-				forNode: previousNum,
-				deviceId: previousDeviceId,
-				nodeName: previousName
-			)
+	/// The radio the store knows that the connecting one is, under an old node number.
+	///
+	/// device_id is the radio's own hardware identifier, so it holds over TCP and serial where
+	/// there is no BLE identifier, and it survives a re-pair. The MyInfo row also records the
+	/// peripheral it came from, which is the fallback only when a device id is missing on either
+	/// side (T165): serial ids hash the port path and manual TCP ids hash host:port, so a different
+	/// radio on the same port or address has the same peripheral id, and with two device ids that
+	/// differ it is another radio, whose history mustn't be renamed.
+	static func sameRadio(among myInfos: [MyInfoEntity], incomingDeviceId: Data, peripheralId: String) -> MyInfoEntity? {
+		if !incomingDeviceId.isEmpty, let match = myInfos.first(where: { $0.deviceId == incomingDeviceId }) {
+			return match
 		}
-
-		let cleared = await MeshPackets.shared.clearDatabase(includeRoutes: false)
-		if !cleared {
-			// A half-cleared store must not receive this radio's dump (that IS the bleed).
-			// Escalate to a guaranteed-empty store; the foreign radio's data was backed up above.
-			Logger.data.error("💾 [Database] clearDatabase failed during cross-device reset — escalating to store destruction")
-			PersistenceController.shared.destroyStoreAndRecreateContainer()
+		return myInfos.first { myInfo in
+			myInfo.peripheralId == peripheralId && (incomingDeviceId.isEmpty || (myInfo.deviceId ?? Data()).isEmpty)
 		}
-		// Pops views, repoints the container (recreating the MeshPackets actor), and bumps
-		// databaseResetID so @Query views rebind before the new radio's data starts landing.
-		await resetDatabaseAfterClear()
 	}
 
 	/// Rewrites the store from the node number this radio used to report to the one it reports
@@ -328,7 +303,7 @@ extension AccessoryManager {
 		// underneath them, the same reason the reset path pops first. Every open
 		// window has its own router; pop them all and leave each window's tab.
 		if let appState {
-			appState.sceneRouters.popAllStacks()
+			appState.windows.popAllStacks()
 			await Task.yield()
 		}
 
@@ -338,14 +313,31 @@ extension AccessoryManager {
 			Logger.data.error("💾 [Database] Renumbering failed, leaving the store as it is")
 			return
 		}
-		UserDefaults.preferredPeripheralNum = Int(newNum)
+		// With several radios, only the preferred radio's own renumber moves the preference.
+		if PreferredRadio.nodeNum == oldNum {
+			PreferredRadio.nodeNum = newNum
+		}
+		// The radio the store's old rows belong to, if it's this one (T213).
+		BackfillOwner.renumber(from: oldNum, to: newNum)
+		Self.moveSavedRadioChoices(from: oldNum, to: newNum)
 		appState?.databaseResetID = UUID()
+	}
+
+	/// Choices saved by a radio's node number follow it to its new number (T214): the radios TAK,
+	/// CarPlay & Siri and the Watch use, the Heard By filter, and the radio to connect first.
+	/// Otherwise they'd name a number no radio has and quietly fall back.
+	/// `filters` defaults to every open window's.
+	static func moveSavedRadioChoices(from oldNum: Int64, to newNum: Int64, store: UserDefaults = .standard, filters: [NodeFilterParameters]? = nil) {
+		for service in RadioService.allCases where UserDefaults.serviceRadio(service, in: store) == oldNum {
+			UserDefaults.setServiceRadio(newNum, for: service, in: store)
+		}
+		NodeFilterParameters.moveHeardByRadio(from: oldNum, to: newNum, store: store, filters: filters)
 	}
 
 	/// When event firmware is detected (DEFCON, BURNING_MAN, OPEN_SAUCE, etc.),
 	/// auto-disable new-node notifications on first connection when the user has them enabled.
 	/// Reconnecting to vanilla firmware restores only a preference that the app changed.
-	private func applyEventFirmwareNotificationDefaults(_ edition: FirmwareEdition) {
+	func applyEventFirmwareNotificationDefaults(_ edition: FirmwareEdition) {
 		let current = EventFirmwareNotificationSettings(
 			newNodeNotifications: UserDefaults.newNodeNotifications,
 			autoDisabledForEvent: UserDefaults.nodeNotificationsAutoDisabledForEvent,
@@ -364,9 +356,11 @@ extension AccessoryManager {
 		}
 	}
 
-	func handleNodeInfo(_ nodeInfo: NodeInfo) async {
-		if let continuation = self.firstDatabaseNodeInfoContinuation {
-			self.firstDatabaseNodeInfoContinuation = nil
+	func handleNodeInfo(_ nodeInfo: NodeInfo, session: RadioSession? = nil) async {
+		let session = session ?? activeConnection
+		session?.databaseResponseArrived = true
+		if let continuation = session?.firstDatabaseNodeInfoContinuation {
+			session?.firstDatabaseNodeInfoContinuation = nil
 			continuation.resume()
 		}
 
@@ -374,8 +368,8 @@ extension AccessoryManager {
 			Logger.services.error("NodeInfo packet with a zero nodeNum")
 			return
 		}
-		if nodeDatabaseDumpInProgress {
-			nodeDatabaseDumpNums.insert(Int64(nodeInfo.num))
+		if let session, session.nodeDatabaseDumpInProgress {
+			session.nodeDatabaseDumpNums.insert(Int64(nodeInfo.num))
 		}
 
 		// TODO: nodeInfoPacket's channel: parameter is not used
@@ -384,20 +378,22 @@ extension AccessoryManager {
 		// throughput cliff behind slow/hung connects on large meshes. Deferred writes are
 		// flushed by the actor's debounced save (at most every 5s) and finally at
 		// configCompleteID (NONCE_ONLY_DB), which also batch-saves the main context.
-		_ = await MeshPackets.shared.nodeInfoPacket(nodeInfo: nodeInfo, channel: 0, deferSave: true, connectedNodeNum: activeConnection?.device.num,
-		                                           reportsHeardOnCurrentLora: reportsHeardOnCurrentLora)
+		_ = await MeshPackets.shared.nodeInfoPacket(nodeInfo: nodeInfo, channel: 0, deferSave: true, connectedNodeNum: session?.nodeNum,
+		                                           reportsHeardOnCurrentLora: reportsHeardOnCurrentLora(on: session))
 
 		// Update the connected device's display metadata straight from the protobuf — the
 		// previous code resolved the just-inserted entity on a fresh ModelContext for every
 		// node in the dump only to read fields the proto already carries.
-		if let activeDevice = activeConnection?.device, activeDevice.num == Int64(nodeInfo.num), nodeInfo.hasUser {
+		if let activeDevice = session?.device, activeDevice.num == Int64(nodeInfo.num), nodeInfo.hasUser {
 			let shortName = nodeInfo.user.shortName
 			let longName = nodeInfo.user.longName
 			let hwModel = String(describing: nodeInfo.user.hwModel).uppercased()
 			updateDevice(deviceId: activeDevice.id, key: \.shortName, value: shortName.isEmpty ? "?" : shortName)
 			updateDevice(deviceId: activeDevice.id, key: \.longName, value: longName.isEmpty ? "Unknown".localized : longName)
 			updateDevice(deviceId: activeDevice.id, key: \.hardwareModel, value: hwModel)
-			Logger.datadog.setRadioContext(.hardwareModel, hwModel)
+			if session === activeConnection {
+				Logger.datadog.setRadioContext(.hardwareModel, hwModel)
+			}
 
 			if activeDevice.isManualConnection {
 				// We just received a NodeInfo for the currently connected node and this is a
@@ -409,15 +405,16 @@ extension AccessoryManager {
 			}
 		}
 
-		// Bump the nodeCount
-		if case let .retrievingDatabase(nodeCount: nodeCount) = self.state {
+		// Bump the nodeCount: the radio's own, and the first radio's shown progress.
+		session?.databaseNodeCount += 1
+		if session === activeConnection, case let .retrievingDatabase(nodeCount: nodeCount) = self.state {
 			updateState(.retrievingDatabase(nodeCount: nodeCount+1))
 		}
 
 	}
 
-	func handleChannel(_ channel: Channel) async {
-		guard let deviceNum = activeConnection?.device.num else {
+	func handleChannel(_ channel: Channel, session: RadioSession? = nil) async {
+		guard let deviceNum = (session ?? activeConnection)?.device.num else {
 			Logger.data.error("Attempt to process channel information when no connected device.")
 			return
 		}
@@ -426,8 +423,8 @@ extension AccessoryManager {
 
 	}
 
-	func handleConfig(_ config: Config) async {
-		guard let device = activeConnection?.device, let deviceNum = device.num, let longName = device.longName else {
+	func handleConfig(_ config: Config, session: RadioSession? = nil) async {
+		guard let device = (session ?? activeConnection)?.device, let deviceNum = device.num, let longName = device.longName else {
 			Logger.data.error("Attempt to process channel information when no connected device.")
 			return
 		}
@@ -447,8 +444,8 @@ extension AccessoryManager {
 		}
 	}
 
-	func handleModuleConfig(_ moduleConfigPacket: ModuleConfig) async {
-		guard let device = activeConnection?.device, let deviceNum = device.num, let longName = device.longName else {
+	func handleModuleConfig(_ moduleConfigPacket: ModuleConfig, session: RadioSession? = nil) async {
+		guard let device = (session ?? activeConnection)?.device, let deviceNum = device.num, let longName = device.longName else {
 			Logger.services.error("Attempt to process channel information when no connected device.")
 			return
 		}
@@ -468,23 +465,28 @@ extension AccessoryManager {
 	/// config screen can constrain its preset picker to the selected region's
 	/// legal set. Older firmware never sends this; the map simply stays empty and
 	/// the UI falls back to its unconstrained behavior.
-	func handleRegionPresets(_ regionPresets: LoRaRegionPresetMap) {
+	func handleRegionPresets(_ regionPresets: LoRaRegionPresetMap, session: RadioSession) {
 		let decoded = regionPresets.decoded()
-		loRaRegionPresets = decoded
+		update(session, \.loRaRegionPresets, to: decoded)
 		Logger.services.info("✅ [handleRegionPresets] decoded \(decoded.count, privacy: .public) region(s) from \(regionPresets.groups.count, privacy: .public) preset group(s)")
 	}
 
-	func handleDeviceMetadata(_ metadata: DeviceMetadata) async {
+	func handleDeviceMetadata(_ metadata: DeviceMetadata, session: RadioSession? = nil) async {
 		// Note: moved firmware version check to be inline with connection process
-		guard let device = activeConnection?.device, let deviceNum = device.num else {
+		guard let session = session ?? activeConnection, let deviceNum = session.device.num else {
 			Logger.services.error("Attempt to process device metadata information when no connected device.")
 			return
 		}
 
 		Logger.transport.debug("[Version] handleDeviceMetadata returned version: \(metadata.firmwareVersion)")
 
-		updateDevice(key: \.firmwareVersion, value: metadata.firmwareVersion)
-		Logger.datadog.setRadioContext(.firmwareVersion, metadata.firmwareVersion)
+		updateDevice(deviceId: session.device.id, key: \.firmwareVersion, value: metadata.firmwareVersion)
+		if !metadata.firmwareVersion.isEmpty {
+			knownFirmwareVersions[deviceNum] = metadata.firmwareVersion
+		}
+		if session === activeConnection {
+			Logger.datadog.setRadioContext(.firmwareVersion, metadata.firmwareVersion)
+		}
 
 		await MeshPackets.shared.deviceMetadataPacket(metadata: metadata, fromNum: deviceNum)
 		Logger.transport.info("✅ [handleDeviceMetadata] deviceMetadataPacket completed for \(deviceNum.toHex(), privacy: .public)")
@@ -527,15 +529,15 @@ extension AccessoryManager {
 
 	}
 
-	func handleTextMessageAppPacket(_ packet: MeshPacket) async {
-		guard let device = activeConnection?.device, let deviceNum = device.num else {
+	func handleTextMessageAppPacket(_ packet: MeshPacket, session: RadioSession? = nil) async {
+		guard let device = (session ?? activeConnection)?.device, let deviceNum = device.num else {
 			Logger.services.error("Attempt to handle text message when no connected device.")
 			return
 		}
 
 		await MeshPackets.shared.textMessageAppPacket(
 			packet: packet,
-			wantRangeTestPackets: wantRangeTestPackets,
+			wantRangeTestPackets: (session ?? activeConnection)?.wantRangeTestPackets ?? false,
 			connectedNode: deviceNum,
 			appState: appState
 		)
@@ -646,8 +648,8 @@ extension AccessoryManager {
 		}
 	}
 
-	func handleTraceRouteApp(_ packet: MeshPacket) {
-		guard let device = activeConnection?.device, let deviceNum = device.num else {
+	func handleTraceRouteApp(_ packet: MeshPacket, session: RadioSession? = nil) {
+		guard let device = (session ?? activeConnection)?.device, let deviceNum = device.num else {
 			Logger.services.error("Attempt to handle trace route when no connected device.")
 			return
 		}

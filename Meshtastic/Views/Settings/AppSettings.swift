@@ -12,6 +12,9 @@ struct AppSettings: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State var totalDownloadedTileSize = ""
 	@State private var isPresentingCoreDataResetConfirm = false
+	/// The user's radios whose data Clear App Data erases; named in its confirmation when there
+	/// are several (feature 021, D-18).
+	@State private var radiosToErase: [StoredRadio] = []
 	@State private var isPresentingDeleteMapTilesConfirm = false
 	@State private var isPresentingAppIconSheet = false
 	@State private var purgeStaleNodes: Bool = false
@@ -65,6 +68,7 @@ struct AppSettings: View {
 							Label("Automatically Connect", systemImage: "app.connected.to.app.below.fill")
 						}
 					}
+					ServiceRadioPickers()
 #if targetEnvironment(macCatalyst)
 					// App Icon Picker is disabled on macOS Catalyst
 #else
@@ -80,6 +84,7 @@ struct AppSettings: View {
 					}
 #endif
 				}
+				StoredRadiosSection()
 				Section(header: Text("Node Layout")) {
 					List {
 						Picker("Node List Density", selection: $nodeListDensity.animation()) {
@@ -181,7 +186,10 @@ struct AppSettings: View {
 							.font(idiom == .phone ? .caption : .callout)
 					}
 					Button {
-						isPresentingCoreDataResetConfirm = true
+						Task {
+							radiosToErase = await MeshPackets.shared.storedRadios()
+							isPresentingCoreDataResetConfirm = true
+						}
 					} label: {
 						Label("Clear App Data", systemImage: "trash")
 							.foregroundColor(.red)
@@ -193,30 +201,17 @@ struct AppSettings: View {
 					) {
 						Button("Erase all app data?", role: .destructive) {
 							Task {
+								// Every radio disconnects first, so none keeps writing into the
+								// cleared store. With one radio there are none alongside it.
+								await accessoryManager.disconnectAllAdditionalRadios()
 								try await accessoryManager.disconnect()
-								
-								/// Clear translation cache
-								await TranslationCache.shared.clearAll()
-								await DocTranslationService.shared.clearUIStringCache()
-								
-								/// Delete any node database backups too.
-								for entry in NodeBackupManager.shared.listBackups() {
-									_ = NodeBackupManager.shared.deleteBackup(forKey: entry.key)
-								}
-								await MeshPackets.shared.flushDebouncedSaves()
-								await MeshPackets.shared.clearDatabase(includeRoutes: true)
-								await AccessoryManager.shared.resetDatabaseAfterClear()
-								clearNotifications()
-								// Repopulate device catalog immediately — no reconnect happens after a full reset.
-								try? await MeshtasticAPI.shared.refreshBundledDevicesData()
-								// Images and msh.to links are network-backed, so they run in their own task
-								// rather than blocking the reset from completing. `Task` rather than
-								// `Task.detached` per the repo concurrency guideline; the pass handles its
-								// own cancellation.
-								Task(priority: .utility) {
-									await MeshtasticAPI.shared.refreshDevicesPreferringAPI()
-								}
+								// The same erase as removing the only radio (T390).
+								await accessoryManager.eraseAppData()
 							}
+						}
+					} message: {
+						if radiosToErase.count > 1 {
+							Text("This erases the data of all your radios: \(ListFormatter.localizedString(byJoining: radiosToErase.map(\.name))). They all disconnect.")
 						}
 					}
 					Button {
@@ -239,7 +234,7 @@ struct AppSettings: View {
 		.navigationTitle("App Settings")
 		.toolbar {
 			ToolbarItem(placement: .topBarTrailing) {
-				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+				WindowConnectedDevice()
 			}
 		}
 	}

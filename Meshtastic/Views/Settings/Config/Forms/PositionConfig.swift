@@ -135,6 +135,8 @@ struct PositionConfig: View {
 /// declined. The toggle itself still saves with the rest of the form.
 private struct FixedPositionRow: View {
 	@EnvironmentObject private var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@Binding var config: Config.PositionConfig
 	let node: NodeInfoEntity?
 	@State private var confirming = false
@@ -185,7 +187,7 @@ private struct FixedPositionRow: View {
 	/// or node deletion mid-flow leaves it nil or invalidated, which crashed here in the
 	/// field under Swift Concurrency.
 	private func send(fixed: Bool) {
-		guard let nodeNum = accessoryManager.activeDeviceNum, nodeNum > 0,
+		guard let nodeNum = accessoryManager.nodeNum(for: windowRadio), nodeNum > 0,
 			  let user = node?.user, user.modelContext != nil else {
 			Logger.mesh.error("Fixed position change failed - no live user for the connected node")
 			config.fixedPosition = !fixed

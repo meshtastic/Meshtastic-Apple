@@ -12,6 +12,8 @@ import CryptoKit
 
 struct ESP32BLEOTASheet: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@Environment(\.dismiss) var dismiss
 	@Environment(\.modelContext) var context
 	@StateObject var ota = ESP32BLEOTAViewModel()
@@ -37,7 +39,7 @@ struct ESP32BLEOTASheet: View {
 			statusState: ota.otaStatus,
 			statusMessage: ota.statusMessage,
 			inRetryWorkflow: inRetryWorkflow,
-			isStartDisabled: accessoryManager.activeDeviceNum == nil,
+			isStartDisabled: accessoryManager.nodeNum(for: windowRadio) == nil,
 			onStart: { startBLEProcess() },
 			onRetry: {
 				inRetryWorkflow = true
@@ -58,7 +60,7 @@ struct ESP32BLEOTASheet: View {
 		)
 		.task {
 			// Attempt to grab peripheral from current BLE connection
-			if let connection = accessoryManager.activeConnection?.connection as? BLEConnection {
+			if let connection = accessoryManager.session(for: windowRadio)?.connection as? BLEConnection {
 				self.peripheral = await connection.peripheral
 			}
 		}
@@ -89,19 +91,26 @@ struct ESP32BLEOTASheet: View {
 
 	/// Hand the radio back to the app: restart discovery and let auto-connect pick the device up
 	/// once it reboots into the new firmware.
+	/// The radio being updated, taken when the update claims it: its window's radio.
+	@State private var updatingDevice: Device?
+
 	private func releaseRadio() {
 		Logger.services.info("📡 [ESP32 BLE OTA] Releasing the radio, restarting discovery")
 		accessoryManager.otaInProgress = false
 		accessoryManager.userRequestedConnectionCancellation = false
 		accessoryManager.shouldAutomaticallyConnectToPreferredPeripheralAfterError = true
 		accessoryManager.startDiscovery()
+		// A radio other than the one connected first comes back through its reconnect (W1).
+		if let updatingDevice {
+			accessoryManager.reclaimRadioAfterUpdate(updatingDevice)
+		}
 	}
 	
 	// MARK: - Logic
 	
 	private func startBLEProcess() {
 		// Safe unwrap of required data
-		guard let deviceNum = accessoryManager.activeDeviceNum,
+		guard let deviceNum = accessoryManager.nodeNum(for: windowRadio),
 			  let connectedNode = getNodeInfo(id: deviceNum, context: context),
 			  let user = connectedNode.user else {
 			return
@@ -117,6 +126,7 @@ struct ESP32BLEOTASheet: View {
 					// it. Stopping discovery here also keeps the teardown from re-arming it.
 					Logger.services.info("📡 [ESP32 BLE OTA] Step 1: claiming the radio (node \(deviceNum), peripheral \(peripheral?.identifier.uuidString ?? "nil", privacy: .private))")
 					accessoryManager.otaInProgress = true
+					updatingDevice = accessoryManager.session(for: windowRadio)?.device
 					accessoryManager.shouldAutomaticallyConnectToPreferredPeripheralAfterError = false
 					accessoryManager.stopDiscovery()
 
@@ -138,7 +148,10 @@ struct ESP32BLEOTASheet: View {
 
 					// 3. Disconnect app so the ViewModel can grab the new OTA-Mode advertisement
 					Logger.services.info("📡 [ESP32 BLE OTA] Step 3: disconnecting")
-					try await accessoryManager.disconnect()
+					// Only this window's radio, kept remembered and its window open (review V11 W1).
+					if let deviceId = updatingDevice?.id {
+						try await accessoryManager.releaseRadioForUpdate(deviceId)
+					}
 					Logger.services.info("📡 [ESP32 BLE OTA] Disconnected")
 
 					// 4. Wait briefly for device to reboot

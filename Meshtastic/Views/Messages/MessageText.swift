@@ -8,6 +8,7 @@ import Translation
 struct MessageText: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// This window's router (feature 021, T308).
 	@EnvironmentObject private var router: Router
 
 	let message: MessageEntity

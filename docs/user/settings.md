@@ -25,10 +25,22 @@ Which alerts the app raises is set per type in the iOS Settings app, under **Set
 
 Turning a toggle off suppresses only the alert — messages, reactions, waypoints, and nodes are still received and still appear in the app. Muting a channel or a sender in the app silences that conversation regardless of these settings.
 
+### TAK, CarPlay & Siri, and Apple Watch
+
+With one radio, each of these uses it. With more than one of your radios, each one you use needs a radio, and App Settings has a picker for each. When you add a second radio, a **Choose Radios** sheet asks you to pick: for CarPlay & Siri always, for TAK while its server is on (or turn TAK off instead), and for the Apple Watch when one is paired. One you don't use shows **Not Set**.
+
+| Service | What the chosen radio does |
+|---------|----------------------------|
+| TAK | Carries CoT from TAK clients to the mesh. The primary channel check and **Fix Channel** apply to it. |
+| CarPlay & Siri | Sends messages from CarPlay, Siri and Shortcuts, and supplies the channels and contacts CarPlay lists. |
+| Apple Watch | The Watch lists only the nodes this radio has heard, with its own signal and last heard time. |
+
+A chosen radio that's off is never replaced by another: the feature waits until it's back. Siri and Shortcuts say the radio isn't connected rather than sending through another radio, and the Watch keeps showing what the chosen radio heard. Removing the chosen radio clears the choice, and the app asks again while you have more than one radio. Replies and reactions sent from a message notification always go through the radio the message came in on.
+
 ### Data Management
 
-- **Erase All App Data** — clears the local database, translation cache, and all stored settings, then immediately reloads the bundled device hardware catalog. Use this as a last resort.
-- **NodeDB Reset** — resets the node database on your connected radio. When prompted, you can choose to **Preserve Favorites** so your starred nodes are retained after the reset.
+- **Clear App Data** — clears the local database (favorites and saved routes included), every saved backup and the translation cache, then immediately reloads the bundled device hardware catalog. Your app settings are kept; **Reset App Settings** resets those. Use this as a last resort. With more than one radio, the confirmation names every radio whose data it erases, and they all disconnect first. Removing your only radio does the same (see [Resetting or Removing a Radio](bluetooth.md#resetting-or-removing-a-radio)).
+- **NodeDB Reset** — resets the node database on your connected radio. When prompted, you can choose to **Preserve Favorites** so your starred nodes are retained after the reset. With more than one radio, only that radio's data is cleared; see [Resetting or Removing a Radio](bluetooth.md#resetting-or-removing-a-radio).
 - **Reset App Settings** — restores default app preferences without affecting your node database.
 
 ## Radio Configuration
@@ -38,6 +50,8 @@ Radio configuration requires a connected node. Select your node from the **Confi
 ### Node selection
 
 The Configure picker lists live nodes from the current node database, with favorites first. If the node database is reset or the selected node disappears, Settings clears that selection instead of opening configuration for a stale node. Reconnect to a radio or choose a currently listed node to continue configuring it.
+
+With more than one radio connected, Settings shows the window's radio. The other connected radios are listed as **Connected** in the **Node** picker under **Configure**; pick one to configure it. The app talks to it over its own connection, so it doesn't need remote admin set up. If your radio doesn't offer the Node picker, show the other radio in the window from the Connect tab or the radio indicator at the top of the screen instead (on the Mac, open its window); the note under **Configure** says which.
 
 ### LoRa
 

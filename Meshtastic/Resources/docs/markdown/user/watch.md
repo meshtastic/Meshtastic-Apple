@@ -27,6 +27,8 @@ The Watch app uses a vertical page layout. Swipe up or down to switch between th
 
 The Foxhunt tab lists mesh nodes that are within **½ mile (≈ 800 m)** of your current Watch location and have a known GPS position. Nodes marked as foxhunt targets from the iPhone app always appear at the top of the list, regardless of distance.
 
+With more than one radio, the Watch uses the radio chosen for it in [Settings › App Settings](settings.md#tak-carplay--siri-and-apple-watch); the app asks for one when a Watch is paired. The list then shows only the nodes that radio has heard, with its signal and last heard time, also while that radio is off.
+
 Each row shows:
 
 | Element | Meaning |

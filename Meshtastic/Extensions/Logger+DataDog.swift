@@ -7,13 +7,16 @@
 
 import Foundation
 import os.log
+import DatadogCore
 import DatadogRUM
 import DatadogLogs
 import SwiftUI
 
 enum DataDogLoggableAction {
 	// Add more cases as new loggable actions are required.
-	case connect(firmwareVersion: String?, transportType: String?, hardwareModel: String?, nodes: Int?, connectionRestored: Bool = false)
+	/// `additionalRadio`: a radio connected alongside the first one (feature 021). Its
+	/// attributes are that radio's, and override the global radio context on this event.
+	case connect(firmwareVersion: String?, transportType: String?, hardwareModel: String?, nodes: Int?, connectionRestored: Bool = false, additionalRadio: Bool = false)
 	
 	var name: String {
 		switch self {
@@ -75,6 +78,9 @@ struct DatadogLogger {
 	
 	// MARK: - Radio context
 
+	// Every RUM call below returns early when the SDK isn't set up (tests, and the Chirpy OTA
+	// demo), where the SDK would otherwise log a usage error for each one.
+
 	/// Facts about the radio the app is talking to, attached to every RUM event rather than
 	/// to one action.
 	///
@@ -87,6 +93,7 @@ struct DatadogLogger {
 	/// version arrives with the device metadata and the hardware model with the connected
 	/// node's info, and on a reconnect those can land after the connection is already up.
 	func setRadioContext(_ key: RadioContextKey, _ value: String?) {
+		guard Datadog.isInitialized() else { return }
 		guard let value, !value.isEmpty else {
 			RUMMonitor.shared().removeAttribute(forKey: key.rawValue)
 			return
@@ -97,22 +104,41 @@ struct DatadogLogger {
 	/// Drops the radio facts when the link goes away, so the next session does not inherit
 	/// the last radio's version and model.
 	func clearRadioContext() {
+		guard Datadog.isInitialized() else { return }
 		for key in RadioContextKey.allCases {
 			RUMMonitor.shared().removeAttribute(forKey: key.rawValue)
 		}
 	}
 
+	/// How many radios are connected (feature 021), on every RUM event while at least one is.
+	/// The radio context above describes the first radio; this says whether others were
+	/// connected alongside it.
+	func setConnectedRadioCount(_ count: Int) {
+		guard Datadog.isInitialized() else { return }
+		if count > 0 {
+			RUMMonitor.shared().addAttribute(forKey: Self.connectedRadiosKey, value: count)
+		} else {
+			RUMMonitor.shared().removeAttribute(forKey: Self.connectedRadiosKey)
+		}
+	}
+
+	static let connectedRadiosKey = "connectedRadios"
+
 	// MARK: - Methods for RUM actions
 	func action(_ action: DataDogLoggableAction) {
+		guard Datadog.isInitialized() else { return }
 		var attributes = [String: any Encodable]()
 		switch action {
-		case .connect(let firmwareVersion, let transportType, let hardwareModel, let nodes, let connectionRestored):
+		case .connect(let firmwareVersion, let transportType, let hardwareModel, let nodes, let connectionRestored, let additionalRadio):
 			attributes["firmwareVersion"] = firmwareVersion
 			attributes["transportType"] = transportType
 			attributes["hardwareModel"] = hardwareModel
 			attributes["nodes"] = nodes
 			if connectionRestored {
 				attributes["connectionRestored"] = true
+			}
+			if additionalRadio {
+				attributes["additionalRadio"] = true
 			}
 		}
 		

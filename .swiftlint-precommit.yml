@@ -65,3 +65,10 @@ custom_rules:
       regex: "((\\bprint)|(Swift\\.print))\\s*\\("
       message: "Consider using a dedicated log message or the Xcode debugger instead of using `print`. ex. logger.debug(...)"
       severity: warning
+    preferred_radio_defaults:
+      included: ".*\\.swift"
+      excluded: ".*(PreferredRadio\\.swift|Extensions/UserDefaults\\.swift|MeshtasticTests/.*)"
+      name: "Preferred radio through PreferredRadio"
+      regex: "UserDefaults\\.preferredPeripheral(Id|Num)|\"preferredPeripheral(Id|Num)\""
+      message: "The preferred radio is `PreferredRadio` (feature 021). For the radio you're working with, use its `RadioSession`, or `AccessoryManager.activeDeviceNum` for the focused one."
+      severity: error

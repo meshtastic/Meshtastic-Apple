@@ -16,6 +16,8 @@ struct SaveChannelLinkData: Identifiable {
 }
 
 struct SaveChannelQRCode: View {
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@Environment(\.dismiss) private var dismiss
 	@Environment(\.modelContext) private var context
 
@@ -54,7 +56,7 @@ struct SaveChannelQRCode: View {
 
 	private var saveDisabled: Bool {
 		channelLink == nil ||
-		!accessoryManager.isConnected ||
+		!accessoryManager.isConnected(windowRadio) ||
 		isSaving ||
 		selectedChannelIndices.isEmpty ||
 		selectedTotal > 8 ||
@@ -113,7 +115,7 @@ struct SaveChannelQRCode: View {
 			Text(channelQRMode.consequence)
 				.foregroundStyle(.secondary)
 
-			if !accessoryManager.isConnected {
+			if !accessoryManager.isConnected(windowRadio) {
 				Label("Connect to a radio before saving.", systemImage: "antenna.radiowaves.left.and.right.slash")
 					.foregroundStyle(.orange)
 			}
@@ -264,7 +266,7 @@ struct SaveChannelQRCode: View {
 
 		Task {
 			do {
-				try await accessoryManager.saveChannelSet(channelSet: channelSet, addChannels: addChannels, okToMQTT: okToMQTT)
+				try await accessoryManager.saveChannelSet(channelSet: channelSet, addChannels: addChannels, okToMQTT: okToMQTT, viaRadio: accessoryManager.sendingRadio(for: windowRadio))
 				await MainActor.run {
 					dismiss()
 				}
@@ -279,7 +281,7 @@ struct SaveChannelQRCode: View {
 	}
 
 	private func currentRadioState() -> (channelNames: Set<String>, channelCount: Int, loraConfig: Config.LoRaConfig?) {
-		guard let activeDeviceNum = accessoryManager.activeDeviceNum else {
+		guard let activeDeviceNum = accessoryManager.nodeNum(for: windowRadio) else {
 			return ([], 0, nil)
 		}
 		let activeNum = Int64(activeDeviceNum)

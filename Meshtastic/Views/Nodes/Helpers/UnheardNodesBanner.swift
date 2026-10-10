@@ -50,10 +50,50 @@ enum UnheardNodesStrings {
 	}
 }
 
+/// What the unheard notice may offer to remove (feature 021, review V35).
+///
+/// On `main` the store is one radio's, so a node with no answer after its node database is one
+/// the radio dropped. Here the store holds every radio's nodes, and each radio answers only for
+/// the nodes it has, so the other radios' nodes would all look like nodes this radio dropped.
+/// Remove Them itself runs on the packet actor (`MeshPackets.removeUnheardNode`): a node another
+/// of the user's radios still has stays in the app (D-18, T403).
+enum UnheardNodesRemoval {
+	/// Nodes that aren't favorites, the window's radio or another of the user's radios. Once
+	/// another radio has observations, only the nodes this radio has observed: the ones it had,
+	/// and may have dropped. Otherwise `main`'s list, because rows from before feature 021 have no
+	/// observation until a second radio joins the store.
+	static func candidates(forRadio radioNum: Int64, in context: ModelContext) throws -> [NodeInfoEntity] {
+		// Bound to a local first: a #Predicate that reaches through self for the node number throws
+		// at fetch time, and the failure is invisible — it just yields no nodes and no banner.
+		let excludedNum = radioNum
+		let nodes = try context.fetch(FetchDescriptor<NodeInfoEntity>(
+			predicate: #Predicate { $0.favorite == false && $0.num != excludedNum }
+		))
+		let ownRadios = try Set(context.fetch(FetchDescriptor<MyInfoEntity>()).map(\.myNodeNum))
+		guard try hasOtherRadios(than: radioNum, in: context) else {
+			return nodes.filter { !ownRadios.contains($0.num) }
+		}
+		let observed = try Set(context.fetch(FetchDescriptor<NodeObservationEntity>(
+			predicate: #Predicate { $0.radioNum == excludedNum }
+		)).map(\.nodeNum))
+		return nodes.filter { observed.contains($0.num) && !ownRadios.contains($0.num) }
+	}
+
+	/// Whether another of the user's radios has observations: its nodes are in the app too.
+	static func hasOtherRadios(than radioNum: Int64, in context: ModelContext) throws -> Bool {
+		let excludedNum = radioNum
+		var byOtherRadios = FetchDescriptor<NodeObservationEntity>(predicate: #Predicate { $0.radioNum != excludedNum })
+		byOtherRadios.fetchLimit = 1
+		return try context.fetchCount(byOtherRadios) > 0
+	}
+}
+
 struct UnheardNodesBanner: View {
 	@Environment(\.modelContext) private var context
 	@Environment(\.scenePhase) private var scenePhase
 	@EnvironmentObject private var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 
 	@State private var unheardNodes: [NodeInfoEntity] = []
 	/// Nodes the radio has given an answer for, the denominator for "most of the list". The app keeps
@@ -66,11 +106,17 @@ struct UnheardNodesBanner: View {
 	@State private var isConfirming = false
 	@State private var isRemoving = false
 	@State private var removalResult: String?
+	/// Another of the user's radios has nodes in the app, so Remove Them keeps the ones it heard
+	/// (D-18) and the confirmation says so.
+	@State private var otherRadiosKeepNodes = false
+	/// The window's radio's answers, by node (feature 021: each radio answers for its own
+	/// settings, so a node another radio still hears isn't counted here).
+	@State private var answers: [Int64: RadioLoraAnswers.Answer] = [:]
 
 	/// Resolved here rather than passed in. A parent that only builds this view once a radio is
 	/// connected has to be re-evaluated when one arrives, and inside a `safeAreaInset` that
 	/// evaluates during layout — before the connection is established — it simply stays empty.
-	private var connectedNodeNum: Int64? { accessoryManager.activeDeviceNum }
+	private var connectedNodeNum: Int64? { accessoryManager.nodeNum(for: windowRadio) }
 
 	var body: some View {
 		Group {
@@ -87,7 +133,7 @@ struct UnheardNodesBanner: View {
 			Text(removalResult ?? "")
 		}
 		.onAppear(perform: refresh)
-		.onChange(of: accessoryManager.activeDeviceNum) { _, _ in refresh() }
+		.onChange(of: accessoryManager.nodeNum(for: windowRadio)) { _, _ in refresh() }
 		// The radio's answers arrive with its node db. The connect reports subscribed before that
 		// db is saved, so refresh once the save lands rather than on the state change.
 		.onChange(of: accessoryManager.nodeDatabaseSavedAt) { _, _ in refresh() }
@@ -100,8 +146,8 @@ struct UnheardNodesBanner: View {
 
 	/// One aggregate when most of the list is unheard; the rows carry the marker otherwise.
 	private func shouldOffer(connectedNodeNum: Int64) -> Bool {
-		accessoryManager.reportsHeardOnCurrentLora
-			&& !accessoryManager.awaitingNodeDatabaseAfterLoRaChange
+		accessoryManager.reportsHeardOnCurrentLora(forRadio: connectedNodeNum)
+			&& !accessoryManager.radiosAwaitingNodeDatabaseAfterLoRaChange.contains(connectedNodeNum)
 			&& UnheardOnCurrentLoraOffer.isMostOfList(unheard: reportedUnheardCount, reported: radioNodeCount)
 			&& UnheardOnCurrentLoraOffer.shouldOffer(count: unheardNodes.count, forNode: connectedNodeNum)
 	}
@@ -182,48 +228,48 @@ struct UnheardNodesBanner: View {
 				Text("Cancel")
 			}
 		} message: {
-			Text("They are removed from this app, and from the radio if it still has them. Any that are still out there come back when they are next heard.")
+			if otherRadiosKeepNodes {
+				Text("They are removed from this radio if it still has them, and from this app unless another of your radios has heard them. Any that are still out there come back when they are next heard.")
+			} else {
+				Text("They are removed from this app, and from the radio if it still has them. Any that are still out there come back when they are next heard.")
+			}
 		}
 	}
 
 	/// A node the radio no longer has: it sends the field, a node database has been saved this
 	/// session (so absent nodes have been marked), and it gave no answer for this node. The radio
 	/// adds every node it hears, so it has not heard these on its current settings either.
-	private func isAppOnly(_ node: NodeInfoEntity) -> Bool {
-		accessoryManager.nodeDatabaseSavedAt != nil && node.heardOnCurrentLora == nil && !node.viaMqtt
+	private func isAppOnly(_ node: NodeInfoEntity, radioNum: Int64, answer: RadioLoraAnswers.Answer?) -> Bool {
+		accessoryManager.nodeDatabaseSavedAt[radioNum] != nil && answer?.heard == nil && !(answer?.viaMqtt ?? node.viaMqtt)
 	}
 
-	private func isRemovable(_ node: NodeInfoEntity) -> Bool {
-		node.isUnheardOnCurrentLora || isAppOnly(node)
+	private func isRemovable(_ node: NodeInfoEntity, radioNum: Int64, answer: RadioLoraAnswers.Answer?) -> Bool {
+		(answer?.isUnheard ?? false) || isAppOnly(node, radioNum: radioNum, answer: answer)
 	}
 
 	/// Nodes the radio reports unheard on its current settings, plus nodes only the app still has,
-	/// excluding favorites and the radio itself.
+	/// excluding favorites and the user's radios (`UnheardNodesRemoval.candidates`).
 	private func refresh() {
-		guard let connectedNodeNum, accessoryManager.reportsHeardOnCurrentLora else {
+		guard let connectedNodeNum, accessoryManager.reportsHeardOnCurrentLora(forRadio: connectedNodeNum) else {
 			unheardNodes = []
 			return
 		}
-		// Bound to a local first: a #Predicate that reaches through self for the node number throws
-		// at fetch time, and the failure is invisible — it just yields no nodes and no banner.
-		let excludedNum = connectedNodeNum
-		let descriptor = FetchDescriptor<NodeInfoEntity>(
-			predicate: #Predicate { $0.favorite == false && $0.num != excludedNum }
-		)
 		let candidates: [NodeInfoEntity]
 		do {
-			candidates = try context.fetch(descriptor)
+			candidates = try UnheardNodesRemoval.candidates(forRadio: connectedNodeNum, in: context)
+			otherRadiosKeepNodes = try UnheardNodesRemoval.hasOtherRadios(than: connectedNodeNum, in: context)
+			answers = RadioLoraAnswers.answers(ofRadio: connectedNodeNum, container: context.container)
 		} catch {
 			Logger.data.error("Could not read nodes not heard on the current LoRa settings: \(error.localizedDescription, privacy: .public)")
 			unheardNodes = []
 			return
 		}
-		radioNodeCount = candidates.filter { !$0.viaMqtt && $0.heardOnCurrentLora != nil }.count
-		reportedUnheardCount = candidates.filter(\.isUnheardOnCurrentLora).count
-		unheardNodes = candidates.filter(isRemovable)
+		radioNodeCount = candidates.filter { answers[$0.num].map { !$0.viaMqtt && $0.heard != nil } ?? false }.count
+		reportedUnheardCount = candidates.filter { answers[$0.num]?.isUnheard ?? false }.count
+		unheardNodes = candidates.filter { isRemovable($0, radioNum: connectedNodeNum, answer: answers[$0.num]) }
 		// Only once this session's node database is saved: before that, nodes the radio no longer
 		// has aren't counted yet, and a low early count would bring the offer back after every launch.
-		if accessoryManager.nodeDatabaseSavedAt != nil {
+		if accessoryManager.nodeDatabaseSavedAt[connectedNodeNum] != nil {
 			UnheardOnCurrentLoraOffer.lowerDismissal(toCount: unheardNodes.count, forNode: connectedNodeNum)
 		}
 	}
@@ -239,26 +285,37 @@ struct UnheardNodesBanner: View {
 		var failed = 0
 		var recovered = 0
 
-		for node in unheardNodes {
-			guard isRemovable(node) else {
+		let nodes = unheardNodes
+		for (index, node) in nodes.enumerated() {
+			// Each node waits for the radio, so the loop can take a while. The radio going ends it
+			// (review V36-1).
+			guard accessoryManager.reportsHeardOnCurrentLora(forRadio: connectedNodeNum) else {
+				failed += nodes.count - index
+				Logger.data.info("Stopped removing unheard nodes: \(connectedNodeNum.toHex(), privacy: .public) is no longer connected")
+				break
+			}
+			let nodeNum = node.num
+			// Its answer as it is now, not as counted: it may have been heard since, and the packet
+			// actor may not have saved that yet (review V37).
+			let answer = await MeshPackets.shared.loraAnswer(of: nodeNum, radioNum: connectedNodeNum)
+			guard isRemovable(node, radioNum: connectedNodeNum, answer: answer) else {
 				recovered += 1
 				continue
 			}
 			do {
-				if isAppOnly(node) {
-					// The radio doesn't have it, so there is nothing to remove there.
-					if let user = node.user { context.delete(user) }
-					context.delete(node)
-					try context.save()
-				} else {
-					try await accessoryManager.removeNode(node: node, connectedNodeNum: connectedNodeNum)
+				// A node only the app has: the radio doesn't have it, so there is nothing to remove there.
+				if !isAppOnly(node, radioNum: connectedNodeNum, answer: answer) {
+					try await accessoryManager.sendRemoveNode(nodeNum, toRadio: connectedNodeNum)
 				}
+				// On the packet actor, from the observations as they are now; a node another radio
+				// heard stays in the app (D-18). This context's copy isn't touched again.
+				try await MeshPackets.shared.removeUnheardNode(nodeNum, ofRadio: connectedNodeNum)
 				removed += 1
-				unheardNodes.removeAll { $0.num == node.num }
+				unheardNodes.removeAll { $0 === node }
 			} catch {
 				// Keep going: one node the radio refuses should not strand the rest.
 				failed += 1
-				Logger.data.error("Could not remove unheard node \(node.num.toHex(), privacy: .public): \(error.localizedDescription, privacy: .public)")
+				Logger.data.error("Could not remove unheard node \(nodeNum.toHex(), privacy: .public): \(error.localizedDescription, privacy: .public)")
 			}
 		}
 		Logger.data.info("Removed \(removed, privacy: .public) nodes not heard on the current LoRa settings, \(failed, privacy: .public) failed, \(recovered, privacy: .public) heard again before removal")

@@ -13,7 +13,8 @@ import OSLog
 
 class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate, ObservableObject {
 
-	var appState: AppState?
+	/// The open windows' routers: a notification tap goes to the window it's about (T308).
+	var windows: WindowRouters?
 
 	func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
 		guard NSClassFromString("XCTestCase") == nil && ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else {
@@ -68,7 +69,14 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 		let context = PersistenceController.shared.context
 		do {
 			var readMessageIDs = [Int64]()
-			if conversationId.hasPrefix("dm-"), let nodeNum = Int64(conversationId.replacingOccurrences(of: "dm-", with: "")) {
+			// With several radios the conversation names its radio; only that radio's messages
+			// were read out (T157).
+			let conversation = IntentMessageConverters.conversation(fromIdentifier: conversationId)
+			func onRadio(_ message: MessageEntity) -> Bool {
+				guard let radio = conversation?.radioNum, let local = message.localNodeNum else { return true }
+				return local == radio
+			}
+			if case let .directMessage(nodeNum, _) = conversation {
 				let descriptor = FetchDescriptor<MessageEntity>(
 					predicate: #Predicate { message in
 						message.read == false && message.fromUser?.num == nodeNum
@@ -78,18 +86,21 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 				// toUser != nil: this is a DM conversation — without the filter,
 				// reading a DM aloud also silently marked the sender's unread
 				// CHANNEL messages as read.
-				for message in messages where message.toUser != nil {
+				for message in messages where message.toUser != nil && onRadio(message) {
 					message.read = true
 					readMessageIDs.append(message.messageId)
 				}
-			} else if conversationId.hasPrefix("channel-"), let channelIndex = Int32(conversationId.replacingOccurrences(of: "channel-", with: "")) {
-				let descriptor = FetchDescriptor<MessageEntity>(
-					predicate: #Predicate { message in
+			} else if case let .channel(index, radioNum) = conversation {
+				let channelIndex = Int32(index)
+				// With several radios, the channel's messages go by its key (T192).
+				let descriptor = radioNum == nil
+					? FetchDescriptor<MessageEntity>(predicate: #Predicate { message in
 						message.read == false && message.channel == channelIndex
-					}
-				)
+					})
+					: FetchDescriptor<MessageEntity>(predicate: #Predicate { message in message.read == false })
+				let keys = radioNum.map { IntentMessageConverters.channelKeys(ofRadio: $0, in: context) } ?? [:]
 				let messages = try context.fetch(descriptor)
-				for message in messages where message.toUser == nil {
+				for message in messages where IntentMessageConverters.channelMessage(message, isInSlot: channelIndex, ofRadio: radioNum, keys: keys) {
 					message.read = true
 					readMessageIDs.append(message.messageId)
 				}
@@ -145,7 +156,8 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 							toUserNum: userInfo["userNum"] as? Int64 ?? 0,
 							channel: channel,
 							isEmoji: true,
-							replyID: replyID
+							replyID: replyID,
+							viaRadio: userInfo["radioNum"] as? Int64
 						)
 						Logger.services.info("Tapback response sent")
 					} catch {
@@ -163,7 +175,8 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 							toUserNum: userInfo["userNum"] as? Int64 ?? 0,
 							channel: channel,
 							isEmoji: true,
-							replyID: replyID
+							replyID: replyID,
+							viaRadio: userInfo["radioNum"] as? Int64
 						)
 						Logger.services.info("Tapback response sent")
 					} catch {
@@ -182,7 +195,8 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 							toUserNum: userInfo["userNum"] as? Int64 ?? 0,
 							channel: channel,
 							isEmoji: false,
-							replyID: replyID
+							replyID: replyID,
+							viaRadio: userInfo["radioNum"] as? Int64
 						)
 
 						Logger.services.info("Actionable notification reply sent")
@@ -200,7 +214,7 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 		   let url = URL(string: deepLink) {
 			Logger.services.info("userNotificationCenter didReceiveResponse handling deeplink: \(targetValue, privacy: .public) \(deepLink, privacy: .public)")
 			if url.scheme == "meshtastic" {
-				appState?.pendingRoute = PendingRoute(url: url)
+				windows?.route(url: url, manager: AccessoryManager.shared)
 			} else if targetValue == FirmwareUpdateNotifier.flasherTarget && url.absoluteString == FirmwareUpdateNotifier.flasherPath {
 				UIApplication.shared.open(url)
 			} else {

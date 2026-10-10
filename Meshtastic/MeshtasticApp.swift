@@ -19,7 +19,6 @@ struct MeshtasticAppleApp: App {
 	@UIApplicationDelegateAdaptor(MeshtasticAppDelegate.self) private var appDelegate
 #endif
 	@StateObject var appState: AppState
-	@StateObject private var lockdownCoordinator: LockdownCoordinator
 	private let persistenceController: PersistenceController?
 	private let accessoryManager: AccessoryManager
 	@Environment(\.scenePhase) var scenePhase
@@ -101,19 +100,14 @@ struct MeshtasticAppleApp: App {
 		accessoryManager = AccessoryManager.shared
 		accessoryManager.appState = appState
 
-		// Lockdown coordinator. Constructed here so it lives at app scope and is
-		// injected into the SwiftUI environment for views to observe. The sender
-		// is wired after construction to avoid an init-time cycle with AccessoryManager.
-		let lockdown = LockdownCoordinator()
-		lockdown.setSender(accessoryManager)
-		accessoryManager.lockdownCoordinator = lockdown
-		self._lockdownCoordinator = StateObject(wrappedValue: lockdown)
-
 		self._appState = StateObject(wrappedValue: appState)
 
 		self.persistenceController = persistenceController
+		if let persistenceController {
+			appState.refreshBadgeOnMessageChanges(persistenceController)
+		}
 #if os(iOS)
-		self.appDelegate.appState = appState
+		self.appDelegate.windows = appState.windows
 #endif
 
 #if DEBUG
@@ -145,6 +139,43 @@ struct MeshtasticAppleApp: App {
 				try? Tips.resetDatastore()
 			}
 #endif
+			// Feature 021 (D-09): bring each radio's old backup into the shared store, once. It holds
+			// the handshake gate, so a radio connecting meanwhile waits rather than timing out behind
+			// the ingest actor, and the actor isn't recycled mid-merge.
+			// The merge drains the store's own backfill first. Without backups to merge, a store
+			// that already holds several radios and still has rows waiting is backfilled now too,
+			// attributed to the radio it belongs to, rather than only in background passes a Mac in
+			// front may never get (T162). A single-radio store isn't: the old rows only matter once
+			// another radio's data joins them, and the backfill runs then (T186), so a single-radio
+			// user's launch doesn't wait, as on `main`.
+			// Before anything connects: the radio the store's old rows belong to (T193).
+			BackfillOwner.recordIfNeeded()
+			let manager = accessoryManager
+			// Each radio's node number, for a window whose radio isn't connected yet (review V11 W7).
+			Task { @MainActor in
+				await manager.seedKnownNodeNums()
+				await manager.refreshKnownRadios()
+			}
+			let mergesBackups = NodeBackupManager.shared.unmergedBackups.contains(where: { ($0.mergeAttempts ?? 0) < NodeBackupManager.maxMergeAttempts })
+			Task { @MainActor in
+				let packets = MeshPackets.shared
+				let pendingBackfill = await packets.hasPendingBackfill()
+				let severalRadios = await packets.storedRadios().count > 1
+				let backfills = pendingBackfill && severalRadios
+				guard mergesBackups || backfills else { return }
+				await manager.handshakeGate.acquire()
+				defer { manager.handshakeGate.release() }
+				if mergesBackups {
+					await NodeBackupManager.shared.mergePendingBackups(using: packets, ownRadio: BackfillOwner.current().nodeNum)
+				} else {
+					do {
+						let filled = try await packets.drainMultiRadioBackfill(ownRadio: BackfillOwner.current().nodeNum)
+						Logger.data.info("🧭 [MultiRadio] Backfilled \(filled) rows at launch")
+					} catch {
+						Logger.data.error("💥 [MultiRadio] Launch backfill failed: \(error.localizedDescription, privacy: .public)")
+					}
+				}
+			}
 			if !UserDefaults.firstLaunch {
 				// If this is first launch, we will show onboarding screens which
 				// Step through the authorization process. Do not start discovery
@@ -209,6 +240,11 @@ struct MeshtasticAppleApp: App {
 				Logger.services.error("💥 [App] Failed to save context when the app goes to the background.")
 			}
 			await MeshPackets.shared.enforceEntityCapsAndSave()
+			// The backfill attributes old rows to the radio the store belongs to, so it must
+			// not run while a switch is swapping the store for another radio's.
+			if !accessoryManager.isSwitchingDevices {
+				await MeshPackets.shared.runMultiRadioMaintenance(ownRadio: BackfillOwner.current().nodeNum)
+			}
 			// Nothing to clear: the next pass takes a new number, which supersedes any
 			// expiry recorded against this one.
 			if taskID != .invalid {
@@ -218,7 +254,8 @@ struct MeshtasticAppleApp: App {
 	}
 
 	var body: some Scene {
-		WindowGroup {
+		// The one window; on the Mac, the Connect window, beside each radio's own (D-19).
+		WindowGroup(id: RadioWindows.mainWindowID) {
 			Group {
 			if Self.isRunningTests {
 				Color.clear
@@ -237,14 +274,8 @@ struct MeshtasticAppleApp: App {
 				MainScene(persistenceController: persistenceController)
 			}
 			}
-			.onChange(of: lockdownCoordinator.state) { _, newState in
-				// US-3: when the coordinator resolves to .lockNowAcknowledged
-				// (either via inbound LOCKED status or a BLE disconnect race),
-				// tear down the connection so the next reconnect re-auths.
-				if case .lockNowAcknowledged = newState {
-					Task { try? await accessoryManager.closeConnection() }
-				}
-			}
+			// The window's radio's lock-down state (T301).
+			.modifier(WindowLockdownScope())
 		}
 		.onChange(of: scenePhase) { (_, newScenePhase) in
 			// Also skipped in Chirpy OTA demo mode, where persistenceController is nil —
@@ -279,8 +310,26 @@ struct MeshtasticAppleApp: App {
 		}
 		.environmentObject(appState)
 		.environmentObject(accessoryManager)
-		.environmentObject(lockdownCoordinator)
 		.environmentObject(MeshtasticAPI.shared)
+		.commands {
+			RadioWindowCommands(accessoryManager: accessoryManager, tracker: appState.radioWindowTracker)
+		}
+
+			// A radio's own window on the Mac (feature 021, D-19, T310): opened when the radio
+			// connects, and from the Window menu.
+			WindowGroup(id: RadioWindows.radioWindowID, for: RadioWindow.self) { $window in
+				if Self.shouldInitializeAppServices, let persistenceController, !appState.isDatabaseResetting {
+					EventFirmwareTintScope {
+						RadioWindowRoot(window: window)
+							.id(appState.databaseResetID)
+					}
+					.modelContainer(persistenceController.container)
+					.environmentObject(appState)
+					.environmentObject(accessoryManager)
+					.environmentObject(MeshtasticAPI.shared)
+				}
+			}
+			.handlesExternalEvents(matching: [])
 
 			WindowGroup("Mesh Map", id: "meshmap-window") {
 				// Gated on shouldInitializeAppServices (not just tests): in Chirpy OTA demo mode
@@ -295,7 +344,7 @@ struct MeshtasticAppleApp: App {
 					.modelContainer(persistenceController.container)
 					.environmentObject(appState)
 					.environmentObject(accessoryManager)
-					.environmentObject(lockdownCoordinator)
+					.modifier(WindowLockdownScope())
 					.environmentObject(MeshtasticAPI.shared)
 				}
 			}

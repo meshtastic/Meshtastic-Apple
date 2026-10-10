@@ -29,6 +29,15 @@ protocol Connection: Actor {
 	
 	func appDidEnterBackground()
 	func appDidBecomeActive()
+
+	/// A link iOS kept connected while the app was terminated and restored. The radio's node
+	/// database is already in the store, so its connect asks only for the config, as #2584 does for
+	/// a restored radio.
+	var isKeptByRestore: Bool { get }
+}
+
+extension Connection {
+	var isKeptByRestore: Bool { false }
 }
 
 enum ConnectionEvent {

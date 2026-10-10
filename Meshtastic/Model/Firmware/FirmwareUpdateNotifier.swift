@@ -151,12 +151,14 @@ enum FirmwareUpdateNotifier {
 		)
 	}
 
+	/// Notifies once about an update for `window`'s radio (feature 021: each radio's connect asks
+	/// about its own).
 	@MainActor
-	static func notifyIfNeeded(accessoryManager: AccessoryManager) async {
+	static func notifyIfNeeded(accessoryManager: AccessoryManager, window: RadioWindow = .firstRadio) async {
 		await refreshFirmwareDataIfStale()
 		guard !Task.isCancelled else { return }
 
-		guard let candidate = candidate(accessoryManager: accessoryManager),
+		guard let candidate = candidate(accessoryManager: accessoryManager, window: window),
 		      let notification = notification(
 			      for: candidate,
 			      alreadyNotified: UserDefaults.firmwareUpdateNotificationKeySet
@@ -171,9 +173,10 @@ enum FirmwareUpdateNotifier {
 		UserDefaults.recordFirmwareUpdateNotificationKey(notification.id)
 	}
 
+	/// The update notice for `window`'s radio (feature 021, D-19); `.firstRadio` is the first radio.
 	@MainActor
-	static func notice(accessoryManager: AccessoryManager) -> FirmwareUpdateNotice? {
-		guard let candidate = candidate(accessoryManager: accessoryManager) else { return nil }
+	static func notice(accessoryManager: AccessoryManager, window: RadioWindow = .firstRadio) -> FirmwareUpdateNotice? {
+		guard let candidate = candidate(accessoryManager: accessoryManager, window: window) else { return nil }
 		return notice(for: candidate)
 	}
 
@@ -206,8 +209,9 @@ enum FirmwareUpdateNotifier {
 	}
 
 	@MainActor
-	private static func candidate(accessoryManager: AccessoryManager) -> FirmwareUpdateNotificationCandidate? {
-		guard let nodeNum = accessoryManager.activeDeviceNum,
+	private static func candidate(accessoryManager: AccessoryManager, window: RadioWindow = .firstRadio) -> FirmwareUpdateNotificationCandidate? {
+		let session = accessoryManager.session(for: window)
+		guard let nodeNum = accessoryManager.nodeNum(for: window),
 		      let node = getNodeInfo(id: nodeNum, context: accessoryManager.context),
 		      let rawPlatformioTarget = node.myInfo?.pioEnv else {
 			return nil
@@ -224,11 +228,11 @@ enum FirmwareUpdateNotifier {
 
 		return candidate(from: FirmwareUpdateNotificationSource(
 			nodeNum: node.num,
-			deviceName: node.user?.longName ?? accessoryManager.activeConnection?.device.longName ?? accessoryManager.activeConnection?.device.name,
+			deviceName: node.user?.longName ?? session?.device.longName ?? session?.device.name,
 			platformioTarget: platformioTarget,
 			architecture: hardware.architecture,
 			metadataVersion: node.metadata?.firmwareVersion,
-			connectedVersion: accessoryManager.connectedVersion,
+			connectedVersion: session?.device.firmwareVersion,
 			latestStableVersion: latestStableFirmwareVersion(context: accessoryManager.context)
 		))
 	}

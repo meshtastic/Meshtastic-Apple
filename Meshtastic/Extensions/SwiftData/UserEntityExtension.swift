@@ -75,6 +75,24 @@ extension UserEntity {
 	@MainActor
 	var unreadMessages: Int { unreadMessages(context: PersistenceController.shared.context) }
 
+	/// Feature 021 (T090): unread direct messages to every one of the user's radios, for the
+	/// Messages badge. With one radio it's that radio's `unreadMessages`, as before.
+	@MainActor
+	static func unreadDirectMessages(toRadios radios: Set<Int64>, context: ModelContext) -> Int {
+		radios.reduce(0) { total, radioNum in
+			var descriptor = FetchDescriptor<UserEntity>(predicate: #Predicate { $0.num == radioNum })
+			descriptor.fetchLimit = 1
+			guard let radioUser = try? context.fetch(descriptor).first else { return total }
+			return total + radioUser.unreadMessages(context: context, skipLastMessageCheck: true)
+		}
+	}
+
+	/// The user's radios known to the store (their `MyInfoEntity` rows).
+	@MainActor
+	static func localRadioNums(context: ModelContext) -> Set<Int64> {
+		Set(((try? context.fetch(FetchDescriptor<MyInfoEntity>())) ?? []).map(\.myNodeNum).filter { $0 != 0 })
+	}
+
 	@MainActor
 	private func fetchIncomingMessages(context: ModelContext, limit: Int? = nil) throws -> [MessageEntity] {
 		let userNum = self.num

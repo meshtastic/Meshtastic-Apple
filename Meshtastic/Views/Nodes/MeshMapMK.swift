@@ -24,6 +24,8 @@ struct MeshMapMK: View {
 	@Environment(\.supportsMultipleWindows) private var supportsMultipleWindows
 	@Environment(\.openWindow) private var openWindow
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 
 	@ObservedObject
 	var router: Router
@@ -140,7 +142,7 @@ struct MeshMapMK: View {
 	/// The connected device's latest coordinate, used as a fallback origin
 	/// for distance filtering when the phone's location services are unavailable.
 	private var activeDeviceCoordinate: CLLocationCoordinate2D? {
-		guard let num = accessoryManager.activeDeviceNum else { return nil }
+		guard let num = accessoryManager.nodeNum(for: windowRadio) else { return nil }
 		return getNodeInfo(id: num, context: context)?.latestPosition?.nodeCoordinate
 	}
 
@@ -206,6 +208,7 @@ struct MeshMapMK: View {
 		let searchText = filters.searchText.lowercased()
 		let onlineThreshold = filters.isOnline ? Date().addingTimeInterval(-7_200) : nil
 		let distanceBounds = filters.currentDistanceBounds
+		let heardByNodeNums = filters.heardByNodeNums
 		return positions.filter { position in
 			guard let node = position.nodePosition else { return false }
 			return filters.matches(
@@ -213,7 +216,8 @@ struct MeshMapMK: View {
 				latestPosition: position,
 				normalizedSearchText: searchText,
 				onlineThreshold: onlineThreshold,
-				distanceBounds: distanceBounds
+				distanceBounds: distanceBounds,
+				heardByNodeNums: heardByNodeNums
 			)
 		}
 	}
@@ -675,7 +679,7 @@ struct MeshMapMK: View {
 				// Remember where the user is looking so the map reopens here next launch.
 				persistVisibleRegion()
 			}
-			.onChange(of: accessoryManager.activeDeviceNum) {
+			.onChange(of: accessoryManager.nodeNum(for: windowRadio)) {
 				syncFallbackLocation()
 			}
 			.onChange(of: accessoryManager.isInBackground) {
@@ -773,6 +777,8 @@ struct MeshMapMK: View {
 
 	private var mapWithDataHooks: some View {
 		mapNavigation
+			.refreshesHeardBy(filters)
+			.refreshesUnheardOnCurrentLora(filters)
 			.task(id: isMapVisible) {
 				// Throttled position refresh: re-derive the visible positions on a gentle
 				// cadence instead of on every SwiftData write (see `allLatestPositions`).
@@ -817,7 +823,7 @@ struct MeshMapMK: View {
 							}
 							.accessibilityLabel(String(localized: "Open map in new window", comment: "VoiceOver label for the open map in a new window button"))
 						}
-						ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+						WindowConnectedDevice()
 					}
 				}
 			}
@@ -867,13 +873,13 @@ struct MeshMapMK: View {
 
 	/// The connected radio's LoRa config, used to prefill frequency / power / sensitivity.
 	private var connectedLoRaConfig: LoRaConfigEntity? {
-		guard let num = accessoryManager.activeDeviceNum else { return nil }
+		guard let num = accessoryManager.nodeNum(for: windowRadio) else { return nil }
 		return getNodeInfo(id: num, context: context)?.loRaConfig
 	}
 
 	/// The connected radio's primary channel name (for the firmware-accurate frequency-slot hash).
 	private var connectedPrimaryChannelName: String {
-		guard let num = accessoryManager.activeDeviceNum,
+		guard let num = accessoryManager.nodeNum(for: windowRadio),
 			  let node = getNodeInfo(id: num, context: context) else { return "LongFast" }
 		if let primary = node.myInfo?.channels.first(where: { $0.index == 0 || $0.role == 1 }),
 		   let name = primary.name, !name.isEmpty {
@@ -963,6 +969,9 @@ struct MeshMapMK: View {
 		combine(&key, stableStringKey(filters.searchText.lowercased()))
 		combine(&key, filters.isOnline ? 1 : 0)
 		combine(&key, filters.hidesUnheardOnCurrentLora ? 1 : 0)
+		if filters.hidesUnheardOnCurrentLora {
+			combine(&key, Int64(filters.unheardOnCurrentLoraNodeNums.hashValue))
+		}
 		combine(&key, filters.isSigned ? 1 : 0)
 		combine(&key, filters.isPkiEncrypted ? 1 : 0)
 		combine(&key, filters.isFavorite ? 1 : 0)
@@ -1023,8 +1032,9 @@ struct MeshMapMK: View {
 			if let node = getNodeInfo(id: snapshot.nodeNum, context: context) {
 				NodeListItem(
 					node: node,
-					isDirectlyConnected: snapshot.nodeNum == accessoryManager.activeDeviceNum,
-					connectedNode: accessoryManager.activeConnection?.device.num ?? -1
+					isDirectlyConnected: snapshot.nodeNum == accessoryManager.nodeNum(for: windowRadio),
+					connectedNode: accessoryManager.session(for: windowRadio)?.device.num ?? -1,
+					unheardOnCurrentLora: filters.isUnheardOnCurrentLora(snapshot.nodeNum)
 				)
 			} else {
 				Text(snapshot.longName)
@@ -1832,7 +1842,7 @@ struct MeshMapMK: View {
 
 	private func densityLimitedPositions(_ positions: [PositionEntity]) -> [PositionEntity] {
 		guard positions.count > denseMapPositionLimit else { return positions }
-		let activeNodeNum = Int64(accessoryManager.activeDeviceNum ?? 0)
+		let activeNodeNum = Int64(accessoryManager.nodeNum(for: windowRadio) ?? 0)
 		var pinnedPositions: [PositionEntity] = []
 		var onlinePositions: [PositionEntity] = []
 		var regularPositions: [PositionEntity] = []

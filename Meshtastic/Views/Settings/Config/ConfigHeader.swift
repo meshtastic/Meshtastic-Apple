@@ -3,6 +3,8 @@ import SwiftData
 
 struct ConfigHeader<T>: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 
 	let title: String
 	let config: KeyPath<NodeInfoEntity, T?>
@@ -10,12 +12,12 @@ struct ConfigHeader<T>: View {
 	let onAppear: () -> Void
 
 	var body: some View {
-		if node != nil && node?.metadata == nil && node?.num ?? 0 != accessoryManager.activeDeviceNum ?? 0 {
+		if node != nil && node?.metadata == nil && node?.num ?? 0 != accessoryManager.nodeNum(for: windowRadio) ?? 0 {
 			Text("There has been no response to a request for device metadata via PKC admin for this node.")
 				.font(.callout)
 				.foregroundColor(.orange)
 
-		} else if node != nil && node?.num ?? 0 != accessoryManager.activeDeviceNum ?? 0 {
+		} else if node != nil && node?.num ?? 0 != accessoryManager.nodeNum(for: windowRadio) ?? 0 {
 			// Let users know what is going on if they are using remote admin and don't have the config yet
 			let expiration = node?.sessionExpiration ?? Date()
 			if node?[keyPath: config] == nil  || expiration < node?.sessionExpiration ?? Date() {
@@ -27,7 +29,7 @@ struct ConfigHeader<T>: View {
 					.onFirstAppear(onAppear)
 					.font(.title3)
 			}
-		} else if node != nil && node?.num ?? 0 == accessoryManager.activeDeviceNum ?? -1 {
+		} else if node != nil && node?.num ?? 0 == accessoryManager.nodeNum(for: windowRadio) ?? -1 {
 			Text("Configuration for: \(node?.user?.longName ?? "Unknown")")
 				.onFirstAppear(onAppear)
 		} else {

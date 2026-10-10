@@ -24,6 +24,8 @@ struct UserList: View {
 	var body: some View {
 		VStack {
 			FilteredUserList(withFilters: filters, node: $node, userSelection: $userSelection)
+			.refreshesHeardBy(filters)
+			.refreshesUnheardOnCurrentLora(filters)
 			.sheet(isPresented: $editingFilters) {
 				NodeListFilter(filterTitle: "Contact Filters", showsEncryptedFilter: false, filters: filters)
 			}
@@ -86,6 +88,8 @@ struct UserList: View {
 
 private struct FilteredUserList: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@EnvironmentObject var appState: AppState
 	@Environment(\.modelContext) private var context
 
@@ -115,13 +119,16 @@ private struct FilteredUserList: View {
 			distanceBounds: filters.distanceFilter ? distanceBounds : nil,
 			context: context
 		)
+		let heardByNodeNums = filters.heardByNodeNums
 		return allUsers.filter {
 			filters.matches(
 				user: $0,
 				normalizedSearchText: searchText,
 				onlineThreshold: onlineThreshold,
 				distanceBounds: distanceBounds,
-				lookup: filterLookup
+				lookup: filterLookup,
+				heardByNodeNums: heardByNodeNums,
+				radioNum: accessoryManager.radioNodeNum(for: windowRadio)
 			)
 		}
 	}
@@ -129,7 +136,7 @@ private struct FilteredUserList: View {
 	var body: some View {
 		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMdd", options: 0, locale: Locale.current)
 		let dateFormatString = (localeDateFormat ?? "MM/dd/YY")
-		let activeDeviceNum = Int64(accessoryManager.activeDeviceNum ?? 0)
+		let activeDeviceNum = Int64(accessoryManager.nodeNum(for: windowRadio) ?? 0)
 		let containerGeneration = PersistenceController.shared.containerGeneration
 		let visibleUsers = users.filter { $0.num != activeDeviceNum }
 		let summaryUsers = allUsers.filter { $0.num != activeDeviceNum && $0.lastMessage != nil }
@@ -217,6 +224,8 @@ private struct DirectMessageUserRow: View {
 	let currentDay: Int
 	@Binding var isPresentingDeleteUserMessagesConfirm: Bool
 	@Binding var userToDeleteMessages: UserEntity?
+	/// With several radios, the delete confirmation says the conversation goes on all of them.
+	@State private var deletesOnAllRadios = false
 
 	private var hasMessages: Bool { summary != nil }
 	private var unreadCount: Int { summary?.unreadCount ?? 0 }
@@ -283,17 +292,18 @@ private struct DirectMessageUserRow: View {
 		}
 		.contextMenu {
 			Button {
-				guard let userNode = user.userNode, let node else { return }
+				guard let userNode = user.userNode, node != nil else { return }
 				if !(userNode.favorite) {
 					userNode.favorite = true
 					Task {
-						try await accessoryManager.setFavoriteNode(node: userNode, connectedNodeNum: Int64(node.num))
+						// Feature 021 (D-11): on every connected radio.
+						try await accessoryManager.setFavorite(true, node: userNode)
 						Logger.data.info("Favorited a node")
 					}
 				} else {
 					userNode.favorite = false
 					Task {
-						try await accessoryManager.removeFavoriteNode(node: userNode, connectedNodeNum: Int64(node.num))
+						try await accessoryManager.setFavorite(false, node: userNode)
 						Logger.data.info("Unfavorited a node")
 					}
 				}
@@ -317,6 +327,7 @@ private struct DirectMessageUserRow: View {
 			}
 			if hasMessages {
 				Button(role: .destructive) {
+					deletesOnAllRadios = IntentMessageConverters.isMultiRadio(in: context)
 					isPresentingDeleteUserMessagesConfirm = true
 					userToDeleteMessages = user
 				} label: {
@@ -340,6 +351,11 @@ private struct DirectMessageUserRow: View {
 				}
 			} label: {
 				Text("Delete")
+			}
+		} message: {
+			// The contact row is per node, so the conversation goes on every radio (T166).
+			if deletesOnAllRadios {
+				Text("It is deleted on all your radios.")
 			}
 		}
 	}
@@ -412,8 +428,12 @@ fileprivate extension NodeFilterParameters {
 		normalizedSearchText: String,
 		onlineThreshold: Date?,
 		distanceBounds: NodeDistanceFilterBounds?,
-		lookup: UserListFilterLookup
+		lookup: UserListFilterLookup,
+		heardByNodeNums: Set<Int64>? = nil,
+		radioNum: Int64 = PreferredRadio.nodeNum
 	) -> Bool {
+		// Heard-by filter (feature 021): nil when not filtering by radio
+		if let heardByNodeNums, !heardByNodeNums.contains(user.num) { return false }
 		// Search text
 		if !normalizedSearchText.isEmpty {
 			let matchesSearch = [user.userId, user.numString, user.hwModel, user.hwDisplayName, user.longName, user.shortName]
@@ -449,7 +469,7 @@ fileprivate extension NodeFilterParameters {
 			}
 			if lastHeard < onlineThreshold { return false }
 		}
-		if hidesUnheardOnCurrentLora && user.userNode?.isUnheardOnCurrentLora == true { return false }
+		if hidesUnheardOnCurrentLora && isUnheardOnCurrentLora(user.num) { return false }
 		// Favorites
 		if isFavorite {
 			if user.userNode?.favorite != true { return false }
@@ -467,7 +487,7 @@ fileprivate extension NodeFilterParameters {
 		// Ignored
 		if user.userNode?.ignored == true { return false }
 		// Connected node
-		if user.numString == String(UserDefaults.preferredPeripheralNum) { return false }
+		if user.numString == String(radioNum) { return false }
 		return true
 	}
 }

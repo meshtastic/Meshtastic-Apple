@@ -13,17 +13,23 @@ struct ShutDownNodeIntent: AppIntent {
 
 	static let description: IntentDescription = "Send a shutdown to the node you are connected to"
 
-	func perform() async throws -> some IntentResult {
-		try await requestConfirmation(result: .result(dialog: "Shut Down Node?"))
+	@Parameter(title: "Radio", description: "The connected radio to use. Leave empty for the radio chosen for CarPlay & Siri, or the only one connected.")
+	var radio: RadioEntity?
 
-		if !(await AccessoryManager.shared.isConnected) {
-			throw AppIntentErrors.AppIntentError.notConnected
-		}
+	func perform() async throws -> some IntentResult {
+		// The radio it names, the CarPlay & Siri radio, or the only one connected (T320).
+		let radioNum = try await AccessoryManager.shared.intentRadio(radio?.nodeNum).radioNum(
+			noRadio: AppIntentErrors.AppIntentError.notConnected,
+			notConnected: AppIntentErrors.AppIntentError.message("That radio isn't connected."),
+			needsValue: $radio.needsValueError("Which radio?")
+		)
+		// Confirmed once the radio is settled, naming it (review V10 R10-7).
+		let radioName = await AccessoryManager.shared.connectedSession(forRadio: radioNum)?.device.longName ?? radioNum.toHex()
+		try await requestConfirmation(result: .result(dialog: "Shut down \(radioName)?"))
 
 		// Safely unwrap the connectedNode using if let
 		let context = await MainActor.run { PersistenceController.shared.context }
-		if let connectedPeripheralNum = await AccessoryManager.shared.activeDeviceNum,
-		   let connectedNode = getNodeInfo(id: connectedPeripheralNum, context: context),
+		if let connectedNode = getNodeInfo(id: radioNum, context: context),
 		   let fromUser = connectedNode.user,
 		   let toUser = connectedNode.user {
 

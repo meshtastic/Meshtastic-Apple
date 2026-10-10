@@ -14,6 +14,8 @@ import OSLog
 
 struct ImportDeviceProfileView: View {
 	@EnvironmentObject private var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@Environment(\.modelContext) private var context
 	@Environment(\.dismiss) private var dismiss
 
@@ -57,14 +59,14 @@ struct ImportDeviceProfileView: View {
 	}
 
 	private var connectedNode: NodeInfoEntity? {
-		guard let num = accessoryManager.activeDeviceNum else { return nil }
+		guard let num = accessoryManager.nodeNum(for: windowRadio) else { return nil }
 		return getNodeInfo(id: num, context: context)
 	}
 
 	private var isApplying: Bool { phase == .applying }
 
 	private var canImport: Bool {
-		accessoryManager.isConnected && !selection.isEmpty && !isApplying
+		accessoryManager.isConnected(windowRadio) && !selection.isEmpty && !isApplying
 	}
 
 	var body: some View {
@@ -140,7 +142,7 @@ struct ImportDeviceProfileView: View {
 			Section {
 				Text("Apply this saved configuration to \(connectedNode?.user?.longName ?? "the connected node").")
 					.font(.callout)
-				if !accessoryManager.isConnected {
+				if !accessoryManager.isConnected(windowRadio) {
 					Label("Connect to a radio before importing.", systemImage: "antenna.radiowaves.left.and.right.slash")
 						.font(.caption)
 						.foregroundColor(.orange)
@@ -470,7 +472,7 @@ struct ImportDeviceProfileView: View {
 		verification = nil
 		// Snapshot what the radio holds now. The import cannot be verified from the sends alone: firmware
 		// acks writes it discards, so only a later readback distinguishes applied from lost.
-		let source = NodeProfileConfigSource(node: node, lastConfigRefresh: accessoryManager.lastConfigRefresh)
+		let source = NodeProfileConfigSource(node: node, lastConfigRefresh: accessoryManager.lastConfigRefresh(for: windowRadio))
 		configBeforeImport = Dictionary(
 			uniqueKeysWithValues: plan.items(for: selection).compactMap { item in
 				source.currentPayload(for: item.kind).map { (item.kind, $0) }
@@ -513,7 +515,7 @@ struct ImportDeviceProfileView: View {
 		DeviceProfileVerificationReadiness(
 			expectsReconnect: result.rebooting,
 			refreshNotBefore: verificationRefreshNotBefore,
-			lastConfigRefresh: accessoryManager.lastConfigRefresh,
+			lastConfigRefresh: accessoryManager.lastConfigRefresh(for: windowRadio),
 			hasVerification: verification != nil
 		)
 	}
@@ -521,7 +523,7 @@ struct ImportDeviceProfileView: View {
 	private func runVerification(_ result: DeviceProfileImportResult) {
 		guard verificationReadiness(for: result).shouldVerify, let node = connectedNode else { return }
 		let source = NodeProfileConfigSource(node: node,
-											 lastConfigRefresh: accessoryManager.lastConfigRefresh)
+											 lastConfigRefresh: accessoryManager.lastConfigRefresh(for: windowRadio))
 		verification = DeviceProfileVerifier.verify(
 			applied: result.applied,
 			plan: plan,

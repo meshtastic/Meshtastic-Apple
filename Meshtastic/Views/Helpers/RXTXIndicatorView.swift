@@ -11,6 +11,8 @@ import OSLog
 
 struct RXTXIndicatorWidget: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@State private var isPopoverOpen = false
 	@State private var localSent: Int = 0
 	@State private var localReceived: Int = 0
@@ -19,11 +21,11 @@ struct RXTXIndicatorWidget: View {
 	let fontSize: CGFloat = 7.0
 	var body: some View {
 		Button( action: {
-			if !isPopoverOpen && accessoryManager.isConnected {
+			if !isPopoverOpen && accessoryManager.isConnected(windowRadio) {
 				Task {
 					// TODO: replace with a heartbeat when the heartbeat works
 					try await Task.sleep(for: .seconds(0.5)) // little delay for user affordance
-					if accessoryManager.checkIsVersionSupported(forVersion: "2.7.4") {
+					if accessoryManager.isVersionSupported(forVersion: "2.7.4", for: windowRadio) {
 						Logger.transport.debug("[RXTXIndicator] sending heartbeat (2.7.4+)")
 						try await accessoryManager.sendHeartbeat()
 					} else {

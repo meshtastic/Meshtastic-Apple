@@ -89,7 +89,7 @@ struct LocalStatsLog: View {
 		.navigationBarTitleDisplayMode(.inline)
 		.toolbar {
 			ToolbarItem(placement: .topBarTrailing) {
-				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+				WindowConnectedDevice()
 			}
 			ToolbarItem(placement: .topBarLeading) {
 				Button {

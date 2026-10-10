@@ -16,6 +16,8 @@ struct DiscoveryScanView: View {
 	@Environment(\.modelContext) private var context
 	@Environment(\.horizontalSizeClass) private var horizontalSizeClass
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 
 	@State private var selectedPresets: Set<ModemPresets> = []
 	/// Custom-channel targets (from beacons that advertised a channel) the user has selected to scan.
@@ -34,9 +36,9 @@ struct DiscoveryScanView: View {
 		// When connected to a 2.8 radio that advertised a region→preset map, show exactly that
 		// region's legal presets. This is the ONLY case where the 2.8-only Lite/Narrow/Tiny presets
 		// can appear — and only where the region actually permits them.
-		if accessoryManager.checkIsVersionSupported(forVersion: "2.8.0"),
+		if accessoryManager.isVersionSupported(forVersion: "2.8.0", for: windowRadio),
 		   let regionCode = connectedRegionCode,
-		   let info = accessoryManager.loRaRegionPresets[regionCode], !info.presets.isEmpty {
+		   let info = accessoryManager.loRaRegionPresets(for: windowRadio)[regionCode], !info.presets.isEmpty {
 			let constrained = ModemPresets.selectable(supports2_8: true)
 				.filter { info.presets.contains($0.protoEnumValue()) }
 			if !constrained.isEmpty { return constrained }
@@ -50,7 +52,7 @@ struct DiscoveryScanView: View {
 	/// The connected radio's region as the protobuf enum used to key `loRaRegionPresets`, derived the
 	/// same way as the LoRa Config screen (`RegionCodes(rawValue:)` on the stored region code).
 	private var connectedRegionCode: Config.LoRaConfig.RegionCode? {
-		let num = Int64(UserDefaults.preferredPeripheralNum)
+		let num = accessoryManager.radioNodeNum(for: windowRadio)
 		var descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == num })
 		descriptor.fetchLimit = 1
 		guard let raw = (try? context.fetch(descriptor))?.first?.loRaConfig?.regionCode,
@@ -375,11 +377,11 @@ struct DiscoveryScanView: View {
 					engine.selectedPresets = Array(selectedPresets)
 					engine.selectedBeaconTargets = selectedChannels.map { $0.scanTarget }
 					engine.dwellDuration = TimeInterval(dwellMinutes * 60)
-					Task { await engine.startScan() }
+					Task { await engine.startScan(radio: accessoryManager.sendingRadio(for: windowRadio)) }
 				} label: {
 					Label("Start Scan", systemImage: "play.fill")
 				}
-				.disabled((selectedPresets.isEmpty && selectedChannels.isEmpty) || !accessoryManager.isConnected)
+				.disabled((selectedPresets.isEmpty && selectedChannels.isEmpty) || !accessoryManager.isConnected(windowRadio))
 			} else if engine.isScanning {
 				Button(role: .destructive) {
 					Task { await engine.stopScan() }
@@ -444,7 +446,7 @@ extension DiscoveryScanView {
 		let descriptor = FetchDescriptor<DiscoveredBeaconEntity>()
 		guard let beacons = try? context.fetch(descriptor) else { return [] }
 		// Offers for channels the radio already has are not invitations (design#140).
-		let joined = configuredChannelOfferKeys(context: context)
+		let joined = configuredChannelOfferKeys(context: context, radioNum: accessoryManager.radioNodeNum(for: windowRadio))
 		var seen = Set<String>()
 		var channels: [BeaconChannel] = []
 		for beacon in beacons where beacon.hasOfferChannel && !beacon.offerChannelName.isEmpty {
@@ -702,7 +704,7 @@ extension DiscoveryScanView {
 				.padding(.vertical, 2)
 			}
 			Button {
-				Task { await engine.startCurrentPresetScan() }
+				Task { await engine.startCurrentPresetScan(radio: accessoryManager.sendingRadio(for: windowRadio)) }
 			} label: {
 				Label("Analyze Current Preset", systemImage: "doc.text.magnifyingglass")
 			}

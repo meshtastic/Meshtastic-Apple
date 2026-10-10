@@ -30,25 +30,33 @@ final class SearchForMessagesIntentHandler: NSObject, INSearchForMessagesIntentH
 				return []
 			}
 
-			var results = fetched.filter { !$0.admin && !$0.isEmoji }
+			// Channel-change rows are the app's own notes, not messages to read out (T377).
+			var results = fetched.filter { !$0.admin && !$0.isEmoji && !$0.isSystemEvent }
 
 			if let conversationIds = intent.conversationIdentifiers, !conversationIds.isEmpty {
-				let dmNums = Set(conversationIds.compactMap { convId -> Int64? in
-					guard convId.hasPrefix("dm-") else { return nil }
-					return Int64(convId.dropFirst("dm-".count))
-				})
-				let channelNums = Set(conversationIds.compactMap { convId -> Int32? in
-					guard convId.hasPrefix("channel-") else { return nil }
-					return Int32(convId.dropFirst("channel-".count))
-				})
-
+				// With several radios a conversation names its radio: only that radio's messages
+				// belong to it (T175). Rows the backfill hasn't reached count everywhere.
+				let conversations = conversationIds.compactMap(IntentMessageConverters.conversation(fromIdentifier:))
+				func onRadio(_ message: MessageEntity, _ radioNum: Int64?) -> Bool {
+					guard let radioNum, let local = message.localNodeNum else { return true }
+					return local == radioNum
+				}
+				// A channel's messages go by its key on the named radio (T192).
+				var keysByRadio: [Int64: [Int32: String]] = [:]
+				for case let .channel(_, radioNum?) in conversations where keysByRadio[radioNum] == nil {
+					keysByRadio[radioNum] = IntentMessageConverters.channelKeys(ofRadio: radioNum, in: context)
+				}
 				results = results.filter { message in
-					let isDM = message.toUser != nil && (
-						message.fromUser.map { dmNums.contains($0.num) } ?? false ||
-						message.toUser.map { dmNums.contains($0.num) } ?? false
-					)
-					let isChannel = message.toUser == nil && channelNums.contains(message.channel)
-					return isDM || isChannel
+					conversations.contains { conversation in
+						switch conversation {
+						case let .directMessage(nodeNum, radioNum):
+							return message.toUser != nil
+								&& (message.fromUser?.num == nodeNum || message.toUser?.num == nodeNum)
+								&& onRadio(message, radioNum)
+						case let .channel(index, radioNum):
+							return IntentMessageConverters.channelMessage(message, isInSlot: Int32(index), ofRadio: radioNum, keys: radioNum.flatMap { keysByRadio[$0] } ?? [:])
+						}
+					}
 				}
 			}
 

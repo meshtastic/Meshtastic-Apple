@@ -24,6 +24,12 @@ extension NSNotification.Name {
 	/// `Notification` model type which shadows Foundation's in some files.)
 	static let meshMessagesDidChange = NSNotification.Name("MeshMessagesDidChange")
 
+	/// Posted once a change to a radio's heard-on-current-LoRa answers is saved outside a node
+	/// database download (heard again over LoRa, Remove Them), so the window showing that
+	/// radio's markers looks them up again (feature 021). A download's save publishes
+	/// `AccessoryManager.nodeDatabaseSavedAt` instead.
+	static let heardOnCurrentLoraDidChange = NSNotification.Name("HeardOnCurrentLoraDidChange")
+
 	/// Posted when the radio reports something about a firmware update it was asked to start.
 	/// The firmware answers an OTA request with a client notification saying what it did —
 	/// rebooting into update mode, or why it would not: no OTA loader, a loader that does not
@@ -32,19 +38,13 @@ extension NSNotification.Name {
 	static let otaDeviceNotice = NSNotification.Name("OTADeviceNotice")
 }
 
-/// A notification tap has no scene of its own. The active main window takes it.
-struct PendingRoute: Equatable {
-	let id = UUID()
-	let url: URL
-}
-
 class AppState: ObservableObject {
 
-	/// One router per open window. A store reset pops every registered router;
-	/// each window keeps its own tab. See `SceneRouters`.
-	let sceneRouters = SceneRouters()
-	/// Set by a notification response. Claimed by the active main window.
-	@Published var pendingRoute: PendingRoute?
+	/// The open windows' routers, which deep links and notification taps go through (T308). A
+	/// store reset pops every one of them, and each window keeps its own tab.
+	let windows = WindowRouters()
+	/// Which radios' windows the Mac has opened (T310).
+	let radioWindowTracker = RadioWindowTracker()
 	/// Initial tab for a debug performance seed, applied once by the first main window.
 	var launchNavigation: NavigationState?
 	@Published var unreadChannelMessages: Int
@@ -112,17 +112,26 @@ class AppState: ObservableObject {
 		Logger.data.debug("🔢 Badge refresh: \(channelCount) channel + \(dmCount) DM = \(channelCount + dmCount) total")
 	}
 
+	/// Recounts unread messages a second after they change (message lists, Siri and CarPlay post
+	/// `meshMessagesDidChange`), for as long as the app runs. It was in the main scene, which on
+	/// the Mac is the Connect window, and that closes once a radio's window opens (review V40-4).
+	/// Not while the store is being reset, when it mustn't be read.
+	@MainActor
+	func refreshBadgeOnMessageChanges(_ persistenceController: PersistenceController) {
+		NotificationCenter.default.publisher(for: .meshMessagesDidChange)
+			.debounce(for: .seconds(1), scheduler: DispatchQueue.main)
+			.sink { [weak self] _ in
+				MainActor.assumeIsolated {
+					guard let self, !self.isDatabaseResetting else { return }
+					self.refreshBadgeCount(context: persistenceController.container.mainContext)
+				}
+			}
+			.store(in: &cancellables)
+	}
+
 	/// The first main window to appear takes the perf-seed tab. Later windows start on Connect.
 	func takeLaunchNavigation() -> NavigationState? {
 		defer { launchNavigation = nil }
 		return launchNavigation
-	}
-
-	/// Hands the pending notification route to one window. The caller must already
-	/// be the window that should navigate; a second caller sees nil.
-	func claimPendingRoute() -> URL? {
-		guard let pendingRoute else { return nil }
-		self.pendingRoute = nil
-		return pendingRoute.url
 	}
 }

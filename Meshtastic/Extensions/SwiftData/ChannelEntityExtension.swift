@@ -25,30 +25,70 @@ extension ChannelEntity {
 		return messages.filter { $0.toUser == nil }
 	}
 
+	/// The query for this channel's timeline. Feature 021: with more than one radio, the
+	/// channel's messages are grouped by its key, following the slot's history on its radio
+	/// (T378); with one, it's the slot query it always was. The key is read as saved: this
+	/// object can be the main context's copy from before a preset change saved elsewhere. With
+	/// one radio the query doesn't use the key, so it isn't read (review V24-3).
 	@MainActor
-	var mostRecentPrivateMessage: MessageEntity? {
-		let context = PersistenceController.shared.context
-		let channelIndex = self.index
-		// Fetch a small batch and find the first channel message in Swift.
-		var descriptor = FetchDescriptor<MessageEntity>(
-			predicate: #Predicate<MessageEntity> { msg in
-				msg.channel == channelIndex && msg.isEmoji == false
-			},
-			sortBy: [SortDescriptor(\.messageTimestamp, order: .reverse)]
+	func messageQuery(context: ModelContext) -> ChannelMessageQuery {
+		let radioNum = self.myInfoChannel?.myNodeNum ?? 0
+		let multiRadio = ChannelMessageQuery.isMultiRadio(in: context)
+		let saved = !multiRadio || radioNum == 0 ? nil : MultiRadioBackfill.storedChannelKeys(for: radioNum, container: context.container)[self.index]
+		return ChannelMessageQuery.make(
+			channelIndex: self.index,
+			channelKey: saved ?? self.channelKey,
+			radioNum: radioNum,
+			multiRadio: multiRadio,
+			in: context
 		)
-		descriptor.fetchLimit = 10
-		let batch = (try? context.fetch(descriptor)) ?? []
-		return batch.first { $0.toUser == nil }
+	}
+
+	/// What a channel-list row shows: the newest message and the unread count, from one query
+	/// (review V24-3: the row used to build it three times per render). The preview is the
+	/// conversation's own newest message: by slot number alone, a radio that moved to LongTurbo
+	/// previewed the LongFast message another radio sent (T382). A change row is never the preview.
+	@MainActor
+	func listSummary(context: ModelContext) -> (latest: MessageEntity?, unread: Int) {
+		let query = messageQuery(context: context)
+		let batch = (try? ChannelMessageQuery.fetch(query.messages(), limit: 10, in: context)) ?? []
+		let latest = batch.first { !$0.isSystemEvent && $0.toUser == nil }
+		guard latest != nil else { return (nil, 0) }
+		let candidates = (try? context.fetch(FetchDescriptor<MessageEntity>(predicate: query.unreadCandidates()))) ?? []
+		return (latest, candidates.filter { $0.toUser == nil }.count)
+	}
+
+	/// True when deleting this channel's conversation also removes messages another of the
+	/// user's radios shows: some stretch of its history is a channel another radio has now, or
+	/// had earlier (that radio's change rows, V22-3).
+	@MainActor
+	func sharesMessagesWithOtherRadios(context: ModelContext) -> Bool {
+		let query = messageQuery(context: context)
+		guard query.multiRadio, let key = query.channelKey else { return false }
+		let historyKeys = Set(query.segments.isEmpty ? [key] : query.segments.map(\.key))
+		let radio = query.radioNum
+		// As saved, like the query's own key.
+		let channels = (try? ModelContext(context.container).fetch(FetchDescriptor<ChannelEntity>())) ?? []
+		let sharedNow = channels.contains { channel in
+			guard let other = channel.myInfoChannel?.myNodeNum, other != radio,
+				  let otherKey = channel.channelKey else { return false }
+			return historyKeys.contains(otherKey)
+		}
+		if sharedNow { return true }
+		// Change rows are few; the radio test runs in Swift (an optional `!=` in a predicate
+		// also matches rows without a radio).
+		let eventRaw = MessageEntity.SystemEvent.channelChanged.rawValue
+		let events = (try? context.fetch(FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.systemEvent == eventRaw }))) ?? []
+		return events.contains { event in
+			guard let other = event.localNodeNum, other != radio else { return false }
+			return [event.channelKey, event.previousChannelKey].contains { $0.map(historyKeys.contains) ?? false }
+		}
 	}
 
 	@MainActor
 	func unreadMessages(context: ModelContext) -> Int {
-		let channelIndex = self.index
-		let descriptor = FetchDescriptor<MessageEntity>(
-			predicate: #Predicate<MessageEntity> { msg in
-				msg.channel == channelIndex && msg.isEmoji == false && msg.read == false
-			}
-		)
+		let query = messageQuery(context: context)
+		let descriptor = FetchDescriptor<MessageEntity>(predicate: query.unreadCandidates())
 		let messages = (try? context.fetch(descriptor)) ?? []
 		return messages.filter { $0.toUser == nil }.count
 	}

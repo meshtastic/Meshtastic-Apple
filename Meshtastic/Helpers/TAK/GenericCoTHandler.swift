@@ -111,11 +111,12 @@ final class GenericCoTHandler {
 
 	/// Send small payload directly (no fountain coding)
 	private func sendDirect(_ payload: Data, channel: UInt32) async throws {
-		guard let accessoryManager, let activeConnection = accessoryManager.activeConnection else {
+		// Feature 021 (T103): through the radio chosen for TAK.
+		guard let accessoryManager, let takSession = accessoryManager.session(for: .tak) else {
 			throw GenericCoTError.notConnected
 		}
 
-		guard let deviceNum = activeConnection.device.num else {
+		guard let deviceNum = takSession.device.num else {
 			throw GenericCoTError.noDeviceNumber
 		}
 
@@ -133,18 +134,19 @@ final class GenericCoTHandler {
 		var toRadio = ToRadio()
 		toRadio.packet = meshPacket
 
-		try await accessoryManager.send(toRadio, debugDescription: "Generic CoT (direct)")
+		try await accessoryManager.send(toRadio, via: takSession, debugDescription: "Generic CoT (direct)")
 
 		Logger.tak.info("Sent generic CoT directly: \(payload.count) bytes on port 257")
 	}
 
 	/// Send large payload using fountain coding
 	private func sendFountainCoded(_ payload: Data, channel: UInt32) async throws {
-		guard let accessoryManager, let activeConnection = accessoryManager.activeConnection else {
+		// Feature 021 (T103): through the radio chosen for TAK.
+		guard let accessoryManager, let takSession = accessoryManager.session(for: .tak) else {
 			throw GenericCoTError.notConnected
 		}
 
-		guard let deviceNum = activeConnection.device.num else {
+		guard let deviceNum = takSession.device.num else {
 			throw GenericCoTError.noDeviceNumber
 		}
 
@@ -176,7 +178,7 @@ final class GenericCoTHandler {
 			var toRadio = ToRadio()
 			toRadio.packet = meshPacket
 
-			try await accessoryManager.send(toRadio, debugDescription: "Fountain block \(index + 1)/\(packets.count)")
+			try await accessoryManager.send(toRadio, via: takSession, debugDescription: "Fountain block \(index + 1)/\(packets.count)")
 
 			// Inter-packet delay (100ms default, could be adjusted based on modem preset)
 			if index < packets.count - 1 {
@@ -301,11 +303,12 @@ final class GenericCoTHandler {
 
 	/// Send fountain ACK
 	private func sendFountainAck(transferId: UInt32, hash: Data, to nodeNum: UInt32) async {
-		guard let accessoryManager, let activeConnection = accessoryManager.activeConnection else {
+		// Feature 021 (T103): through the radio chosen for TAK.
+		guard let accessoryManager, let takSession = accessoryManager.session(for: .tak) else {
 			return
 		}
 
-		guard let deviceNum = activeConnection.device.num else {
+		guard let deviceNum = takSession.device.num else {
 			return
 		}
 
@@ -331,7 +334,7 @@ final class GenericCoTHandler {
 		toRadio.packet = meshPacket
 
 		do {
-			try await accessoryManager.send(toRadio, debugDescription: "Fountain ACK")
+			try await accessoryManager.send(toRadio, via: takSession, debugDescription: "Fountain ACK")
 			Logger.tak.debug("Sent fountain ACK for transfer \(transferId)")
 		} catch {
 			Logger.tak.warning("Failed to send fountain ACK: \(error.localizedDescription)")

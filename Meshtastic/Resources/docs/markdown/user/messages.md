@@ -21,6 +21,27 @@ Channel conversations load the most recent **50 messages** by default. Scroll to
 | **0** (primary circle) | Primary channel — broadcast packets are sent here. Location data is broadcast from the first channel where it is enabled (firmware 2.7+). |
 | **1–7** | Secondary channels — separate messaging groups, each secured by their own key. |
 
+### When a Channel Changes
+
+A channel conversation keeps its history when you change the radio's channel: a new LoRa preset (for example LongFast to LongTurbo), region or frequency, or a new channel name or key. A note in the conversation marks where it happened, such as **Switched from LongFast to LongTurbo**, so you can tell what came before and after. A preset or region change moves every channel on that radio, so each of its conversations gets a note.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../assets/screenshots/channel_change_note_dark.png">
+  <img src="../assets/screenshots/channel_change_note_light.png" alt="A conversation note reading Switched from LongFast to LongTurbo, with the date it happened">
+</picture>
+
+The note is only in that radio's conversation. It isn't a message: it's never sent, doesn't count as unread and doesn't notify you.
+
+### Channels on More Than One Radio
+
+A channel is the same channel on two radios when its name and key match and the radios are on the same mesh (region, preset or radio settings, and frequency), even if the radios keep it in different slots. With more than one radio, a channel's conversation shows its messages from every radio, stored once.
+
+When one radio moves to another mesh, its channels stop being shared with radios that stayed. Its conversation keeps the history from before the change, then continues on the new mesh; the other radios' conversations carry on unchanged.
+
+When more than one connected radio has the channel, a **Via** control above the message field picks the radio that sends. A number after a radio's name is that radio's slot for the channel, when it differs. Your own messages show **via** and the radio that sent them. Only radios that can hear the channel are offered.
+
+Deleting a channel's messages also removes them from your other radios' conversations that show them. The confirmation says so when that's the case.
+
 ### Channel Configuration
 
 ![Channel form](../assets/screenshots/channelForm_primary.png)
@@ -71,6 +92,21 @@ The contact list shows the contacts you can actually direct message. Nodes that 
 unmessagable, and nodes no public key has been received for, are left out — the radio would refuse to
 send to them. A contact you already have a conversation with stays in the list either way, so an
 existing thread is never hidden.
+
+### Conversations With More Than One Radio
+
+A direct message is between one of your radios and the other node: only that radio can read it or reply as the node it was sent to. When a conversation involves more than one of your radios — because several are connected, or because you've messaged this node from another radio before — a **Via** control appears above the message field. Each segment is one of your radios:
+
+- Pick a radio to see only its messages with this node. Your replies, reactions and "mark as read" go through that radio.
+- A number after a radio's name is how many unread messages it has in this conversation.
+- **Offline** means the radio isn't connected. You can read its messages, but you need to connect it to reply from it.
+
+With one radio, the control doesn't appear and conversations work as before. Retrying a message that failed always uses the radio that sent it.
+
+With more than one radio, a message notification ends with **on** and the radio it came in on, and the Messages badge counts unread direct messages to all of your radios.
+
+> **Tip — Sharing your position**
+> The position button in the message field sends your phone's position through the same radio as the message.
 
 ### Encryption
 

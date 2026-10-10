@@ -94,7 +94,7 @@ struct NodeMapSwiftUI: View {
 		.navigationBarTitle(String((node.user?.shortName ?? "Unknown".localized) + (" \(totalPositionCount) points")), displayMode: .inline)
 		.toolbar {
 			ToolbarItem(placement: .topBarTrailing) {
-				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+				WindowConnectedDevice()
 			}
 		}
 	}

@@ -86,6 +86,16 @@ final class NodeFilterParameters: ObservableObject {
 		static let deviceRoles = "nodeFilter.deviceRoles"
 		static let viaLora = "nodeFilter.viaLora"
 		static let viaMqtt = "nodeFilter.viaMqtt"
+		static let heardByRadio = "nodeFilter.heardByRadio"
+		/// The radio the saved Heard By set is for (T184); the set itself is in `heardByFileURL`.
+		static let heardByNodeNumsRadio = "nodeFilter.heardByNodeNumsRadio"
+	}
+
+	/// Where the last looked-up Heard By set is kept between launches: a small file rather than
+	/// UserDefaults, which loads all of its contents at launch and would rewrite a list of up to
+	/// every node each time it changes (T198).
+	nonisolated static var defaultHeardByFileURL: URL {
+		FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0].appendingPathComponent("heard-by-node-nums.json")
 	}
 
 	/// Search text is intentionally **not** persisted — relaunching into a stale search that hides
@@ -109,6 +119,45 @@ final class NodeFilterParameters: ObservableObject {
 	@Published var maxDistance: Double { didSet { store.set(maxDistance, forKey: Keys.maxDistance) } }
 	@Published var hopsAway: Double { didSet { store.set(hopsAway, forKey: Keys.hopsAway) } }
 	@Published var roleFilter: Bool { didSet { store.set(roleFilter, forKey: Keys.roleFilter) } }
+	/// Only nodes this one of the user's radios has heard (feature 021, T087); 0 means any radio.
+	@Published var heardByRadio: Int64 {
+		didSet {
+			store.set(heardByRadio, forKey: Keys.heardByRadio)
+			if heardByRadio != oldValue { setHeardByNodeNums(nil) }
+		}
+	}
+	/// The nodes `heardByRadio` has heard, looked up by `refreshHeardByNodeNums(in:)` from a
+	/// view's `.task` (`HeardByRefresh`), never while a list or the map renders (T163). Nil when
+	/// the filter is off or not looked up yet. Kept across launches, so a list opened with Heard
+	/// By set doesn't show every node until the first lookup (T184).
+	@Published private(set) var heardByNodeNums: Set<Int64>?
+
+	func setHeardByNodeNums(_ nodeNums: Set<Int64>?) {
+		heardByNodeNums = nodeNums
+		if let nodeNums, let data = try? JSONEncoder().encode(nodeNums.sorted()) {
+			try? data.write(to: heardByFileURL, options: .atomic)
+			store.set(heardByRadio, forKey: Keys.heardByNodeNumsRadio)
+		} else {
+			try? FileManager.default.removeItem(at: heardByFileURL)
+			store.removeObject(forKey: Keys.heardByNodeNumsRadio)
+		}
+	}
+
+	/// The nodes the window's radio reports not heard on its current LoRa settings, looked up by
+	/// `UnheardOnCurrentLoraRefresh` from a view's task, never while a list or the map renders.
+	/// Each radio answers for its own settings (feature 021), so it's the window's radio's.
+	@Published private(set) var unheardOnCurrentLoraNodeNums: Set<Int64> = []
+
+	func setUnheardOnCurrentLoraNodeNums(_ nodeNums: Set<Int64>) {
+		if nodeNums != unheardOnCurrentLoraNodeNums {
+			unheardOnCurrentLoraNodeNums = nodeNums
+		}
+	}
+
+	/// Whether the window's radio reports `nodeNum` not heard on its current LoRa settings.
+	func isUnheardOnCurrentLora(_ nodeNum: Int64) -> Bool {
+		unheardOnCurrentLoraNodeNums.contains(nodeNum)
+	}
 
 	@Published var deviceRoles: Set<Int> = [] {
 		didSet { store.set(Array(deviceRoles), forKey: Keys.deviceRoles) }
@@ -123,6 +172,7 @@ final class NodeFilterParameters: ObservableObject {
 	/// Backing store for all persisted filter values. Defaults to `.standard`; tests inject an
 	/// isolated suite so they don't read or clobber the shared `UserDefaults.standard` domain.
 	private let store: UserDefaults
+	private let heardByFileURL: URL
 
 	// Public computed wrappers with enforcement
 	var viaLora: Bool {
@@ -147,8 +197,9 @@ final class NodeFilterParameters: ObservableObject {
 
 	/// - Parameter store: The `UserDefaults` instance backing all persisted filter values.
 	///   Defaults to `.standard`; pass an isolated suite in tests.
-	init(store: UserDefaults = .standard) {
+	init(store: UserDefaults = .standard, heardByFileURL: URL = NodeFilterParameters.defaultHeardByFileURL) {
 		self.store = store
+		self.heardByFileURL = heardByFileURL
 
 		// Property observers do not fire for assignments made inside `init`, so loading persisted
 		// values here reads from `store` without writing back to it.
@@ -163,11 +214,34 @@ final class NodeFilterParameters: ObservableObject {
 		maxDistance = store.object(forKey: Keys.maxDistance) as? Double ?? 800_000
 		hopsAway = store.object(forKey: Keys.hopsAway) as? Double ?? -1.0
 		roleFilter = store.object(forKey: Keys.roleFilter) as? Bool ?? false
+		heardByRadio = (store.object(forKey: Keys.heardByRadio) as? NSNumber)?.int64Value ?? 0
 		_viaLora = store.object(forKey: Keys.viaLora) as? Bool ?? true
 		_viaMqtt = store.object(forKey: Keys.viaMqtt) as? Bool ?? true
 
 		if let storedRoles = store.array(forKey: Keys.deviceRoles) as? [Int] {
 			deviceRoles = Set(storedRoles)
+		}
+		if self.heardByRadio != 0,
+		   (store.object(forKey: Keys.heardByNodeNumsRadio) as? NSNumber)?.int64Value == self.heardByRadio,
+		   let data = try? Data(contentsOf: heardByFileURL),
+		   let stored = try? JSONDecoder().decode([Int64].self, from: data) {
+			heardByNodeNums = Set(stored)
+		}
+		Self.live.add(self)
+	}
+
+	/// Every window's filter set, so a radio's new node number reaches the ones that are open.
+	private static let live = NSHashTable<NodeFilterParameters>.weakObjects()
+
+	/// A radio's node number changed (feature 021, T214): a Heard By choice of it follows it, in
+	/// each open window's filters and in the saved choice a new window starts from.
+	/// `filters` defaults to every open window's.
+	static func moveHeardByRadio(from oldNum: Int64, to newNum: Int64, store: UserDefaults = .standard, filters: [NodeFilterParameters]? = nil) {
+		for filter in filters ?? live.allObjects where filter.heardByRadio == oldNum {
+			filter.heardByRadio = newNum
+		}
+		if (store.object(forKey: Keys.heardByRadio) as? NSNumber)?.int64Value == oldNum {
+			store.set(newNum, forKey: Keys.heardByRadio)
 		}
 	}
 
@@ -186,6 +260,7 @@ final class NodeFilterParameters: ObservableObject {
 		maxDistance = 800_000
 		hopsAway = -1.0
 		roleFilter = false
+		heardByRadio = 0
 		deviceRoles = []
 		_viaLora = true
 		_viaMqtt = true
@@ -195,7 +270,7 @@ final class NodeFilterParameters: ObservableObject {
 	var isFiltering: Bool {
 		isOnline || hidesUnheardOnCurrentLora || isSigned || isPkiEncrypted || isFavorite || isIgnored || isEnvironment ||
 		distanceFilter || hopsAway >= 0.0 || (roleFilter && !deviceRoles.isEmpty) ||
-		(viaLora && !viaMqtt) || (!viaLora && viaMqtt)
+		(viaLora && !viaMqtt) || (!viaLora && viaMqtt) || heardByRadio != 0
 	}
 
 	/// Fallback origin for distance filtering when the phone's location services are
@@ -229,8 +304,12 @@ final class NodeFilterParameters: ObservableObject {
 		latestPosition: PositionEntity? = nil,
 		normalizedSearchText: String? = nil,
 		onlineThreshold: Date? = nil,
-		distanceBounds: NodeDistanceFilterBounds? = nil
+		distanceBounds: NodeDistanceFilterBounds? = nil,
+		heardByNodeNums: Set<Int64>? = nil
 	) -> Bool {
+		// Heard-by filter: `heardByNodeNums`, nil when not filtering by radio
+		if let heardByNodeNums, !heardByNodeNums.contains(node.num) { return false }
+
 		// Search text
 		let text = normalizedSearchText ?? searchText.lowercased()
 		if !text.isEmpty {
@@ -274,7 +353,7 @@ final class NodeFilterParameters: ObservableObject {
 			if lastHeard < threshold { return false }
 		}
 
-		if hidesUnheardOnCurrentLora && node.isUnheardOnCurrentLora { return false }
+		if hidesUnheardOnCurrentLora && isUnheardOnCurrentLora(node.num) { return false }
 
 		// Signed filter
 		if isSigned {

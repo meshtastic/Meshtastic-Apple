@@ -51,16 +51,23 @@ struct RouterTests {
 			selectedTab: .nodes,
 			nodeListSelectedNodeNum: 3
 		))
-		let registry = SceneRouters()
-		let messagesToken = await registry.register(messages)
-		let nodesToken = await registry.register(nodes)
+		let mapWindow = await Router(navigationState: NavigationState(
+			selectedTab: .map,
+			map: .waypoint(9)
+		))
+		let registry = await WindowRouters()
+		await registry.register(.firstRadio, router: messages)
+		await registry.register(RadioWindow(deviceId: UUID()), router: nodes)
+		let mapToken = await registry.registerPopOnly(mapWindow)
 		await registry.popAllStacks()
 		#expect(await messages.selectedTab == .messages)
 		#expect(await messages.messagesState == nil)
 		#expect(await nodes.selectedTab == .nodes)
 		#expect(await nodes.selectedNodeNum == nil)
-		await registry.unregister(messagesToken)
-		await registry.unregister(nodesToken)
+		#expect(await mapWindow.selectedTab == .map)
+		#expect(await mapWindow.navigationState.map == nil, "the Mesh Map window is popped too")
+		await registry.unregisterPopOnly(mapToken)
+		#expect(await registry.allRouters.count == 2)
 	}
 
 	// MARK: - Invalid URL Handling
@@ -408,5 +415,269 @@ struct RouterTests {
 		await router.route(url: url)
 		let state = await router.navigationState
 		#expect(state == destination)
+	}
+}
+
+// MARK: - One router per window (feature 021, D-19, T308)
+
+@MainActor
+@Suite("Window routers")
+struct WindowRoutersTests {
+	private let windowA = RadioWindow(deviceId: UUID())
+	private let windowB = RadioWindow(deviceId: UUID())
+
+	@Test("A direct message goes to the window of the radio that received it")
+	func directMessageGoesToItsRadio() {
+		let windows = [(window: windowA, radioNum: Int64?(0x0A)), (window: windowB, radioNum: Int64?(0x0B))]
+		#expect(WindowRouters.choose(windows: windows, radio: 0x0B, channelRadios: nil, lastActive: windowA) == windowB)
+		#expect(WindowRouters.choose(windows: windows, radio: 0x0A, channelRadios: nil, lastActive: windowB) == windowA)
+	}
+
+	@Test("A channel message goes to the first window, in the order they opened, whose radio has the channel")
+	func channelMessageGoesToTheFirstWindowWithIt() {
+		let windows = [(window: windowB, radioNum: Int64?(0x0B)), (window: windowA, radioNum: Int64?(0x0A))]
+		#expect(WindowRouters.choose(windows: windows, radio: 0x0A, channelRadios: [0x0A, 0x0B], lastActive: windowA) == windowB)
+		#expect(WindowRouters.choose(windows: windows, radio: 0x0A, channelRadios: [0x0A], lastActive: windowB) == windowA)
+	}
+
+	@Test("With no window for its radio, a link goes to the window last used, then the first")
+	func fallsBackToTheLastWindow() {
+		let windows = [(window: windowA, radioNum: Int64?(0x0A)), (window: windowB, radioNum: Int64?(0x0B))]
+		#expect(WindowRouters.choose(windows: windows, radio: 0x0C, channelRadios: nil, lastActive: windowB) == windowB)
+		#expect(WindowRouters.choose(windows: windows, radio: nil, channelRadios: nil, lastActive: nil) == windowA)
+		#expect(WindowRouters.choose(windows: [], radio: 0x0A, channelRadios: nil, lastActive: nil) == nil)
+	}
+
+	@Test("A link about a radio with no window open opens its window, and goes there once it's open")
+	func opensTheRadiosWindow() throws {
+		let registry = WindowRouters()
+		let manager = AccessoryManager(transports: [])
+		let radioB = UUID()
+		manager.knownNodeNums[radioB] = 456
+		let shown = Router()
+		registry.register(windowA, router: shown)
+		var opened: [RadioWindow] = []
+		registry.openWindowHandler = { opened.append($0) }
+		let url = try #require(URL(string: "meshtastic:///messages?userNum=123&radio=456"))
+
+		registry.route(url: url, manager: manager)
+		#expect(opened == [RadioWindow(deviceId: radioB)], "B's window opens (W-05)")
+		#expect(shown.selectedTab != .messages, "A's window isn't moved")
+		#expect(registry.pendingLinks[radioB] == url)
+
+		let bRouter = Router()
+		registry.register(RadioWindow(deviceId: radioB), router: bRouter)
+		#expect(bRouter.selectedTab == .messages)
+		#expect(registry.pendingLinks.isEmpty)
+	}
+
+	@Test("On the Mac, a link about no radio with no window open opens a connected radio's window")
+	func radiolessLinkOpensAWindow() throws {
+		let registry = WindowRouters()
+		let manager = AccessoryManager(transports: [])
+		var opened: [RadioWindow] = []
+		registry.openWindowHandler = { opened.append($0) }
+		let url = try #require(URL(string: "meshtastic:///settings/debugLogs"))
+
+		registry.route(url: url, manager: manager)
+		#expect(opened.isEmpty, "nothing connected: no window to show it in")
+
+		let device = Device(id: UUID(), name: "A", transportType: .tcp, identifier: "a.local:4403")
+		manager.activeConnection = RadioSession(device: device, connection: ScriptedRadio(nodeNum: 0x1234))
+		registry.route(url: url, manager: manager)
+		#expect(opened == [RadioWindow(deviceId: device.id)])
+		#expect(registry.pendingLinks[device.id] == url)
+	}
+
+	@Test("Windows register and leave; with one open, every link uses its router")
+	func registry() throws {
+		let registry = WindowRouters()
+		#expect(registry.allRouters.isEmpty)
+		let first = Router()
+		registry.register(.firstRadio, router: first)
+		let url = try #require(URL(string: "meshtastic:///messages?userNum=123&radio=456"))
+		#expect(registry.router(for: url, manager: AccessoryManager(transports: [])) === first)
+		let second = Router()
+		registry.register(windowB, router: second)
+		#expect(registry.allRouters.count == 2)
+		registry.unregister(router: first)
+		#expect(registry.allRouters.map(ObjectIdentifier.init) == [ObjectIdentifier(second)])
+	}
+
+	@Test("A link with no window open waits for the first window, and goes there once")
+	func linkWaitsForAWindow() throws {
+		let registry = WindowRouters()
+		let manager = AccessoryManager(transports: [])
+		let url = try #require(URL(string: "meshtastic:///settings/lora"))
+
+		registry.route(url: url, manager: manager)
+		#expect(registry.heldLink == url)
+		#expect(registry.router(for: url, manager: manager) == nil)
+
+		let first = Router()
+		registry.register(.firstRadio, router: first)
+		#expect(first.selectedTab == .settings)
+		#expect(registry.heldLink == nil)
+
+		let second = Router()
+		registry.register(windowB, router: second)
+		#expect(second.selectedTab != .settings, "the link went to one window")
+	}
+}
+
+// MARK: - Radio windows on the Mac (feature 021, D-19, T310)
+
+@MainActor
+@Suite("Radio window tracker")
+struct RadioWindowTrackerTests {
+	@Test("With every window closed, the Dock brings back the radio window closed last while its radio is connected, else the first connected one (W-16)")
+	func reopensTheWindowClosedLast() {
+		let tracker = RadioWindowTracker()
+		let a = UUID(), b = UUID()
+		#expect(tracker.windowToReopen(connected: []) == nil, "none connected: the Connect window")
+		tracker.windowAppeared(a)
+		tracker.windowAppeared(b)
+		#expect(tracker.windowToReopen(connected: [a, b]) == nil, "a radio window is on screen")
+		tracker.windowDisappeared(b)
+		tracker.windowDisappeared(a)
+		#expect(tracker.windowToReopen(connected: [b, a]) == a, "the one closed last")
+		#expect(tracker.windowToReopen(connected: [b]) == b, "the one closed last isn't connected: the first that is")
+	}
+
+	@Test("A window that closed because its radio was removed isn't the one the Dock brings back")
+	func removedWindowIsNotReopened() {
+		let tracker = RadioWindowTracker()
+		let a = UUID(), b = UUID()
+		tracker.windowAppeared(a)
+		tracker.windowAppeared(b)
+		tracker.windowDisappeared(a)
+		_ = tracker.closesLastWindow(b, connectWindows: 0)
+		tracker.windowDisappeared(b)
+		#expect(tracker.windowToReopen(connected: [b, a]) == a)
+	}
+
+	@Test("The Connect window is asked for once, by Radios › Add Radio… or for a radio choice (W-16, review V50-2)")
+	func connectWindowRequestedOnce() {
+		let tracker = RadioWindowTracker()
+		#expect(tracker.takeConnectWindowRequest() == nil)
+		tracker.requestConnectWindow()
+		#expect(tracker.hasConnectWindowRequest)
+		#expect(tracker.takeConnectWindowRequest() == .addRadio)
+		#expect(tracker.takeConnectWindowRequest() == nil, "the next opening, from the Dock, isn't asked for")
+		tracker.requestConnectWindow(.radioChoice)
+		#expect(tracker.takeConnectWindowRequest() == .radioChoice)
+		#expect(!tracker.hasConnectWindowRequest)
+	}
+
+	@Test("Removing the last open window's radio opens the window closed last while it's connected, whatever's on screen (review V50-1)")
+	func reopenCandidateIgnoresTheClosingWindow() {
+		let tracker = RadioWindowTracker()
+		let a = UUID(), b = UUID(), c = UUID()
+		tracker.windowAppeared(a)
+		tracker.windowAppeared(b)
+		tracker.windowDisappeared(a)
+		// b's window, the last one open, is closing as b is removed.
+		#expect(tracker.windowToReopen(connected: [c, a]) == nil, "b's window is still on screen")
+		#expect(tracker.reopenCandidate(connected: [c, a]) == a, "the one closed last")
+		#expect(tracker.reopenCandidate(connected: [c]) == c)
+		#expect(tracker.reopenCandidate(connected: []) == nil, "none connected: the Connect window")
+	}
+
+	@Test("A radio's window opens once when it connects, and again only after the user disconnects it")
+	func opensOnce() {
+		let tracker = RadioWindowTracker()
+		let a = UUID(), b = UUID()
+		#expect(tracker.toOpen(connected: [a]) == [a])
+		#expect(tracker.toOpen(connected: [a]).isEmpty, "closing the window only hid it (W-01)")
+		#expect(tracker.toOpen(connected: [a, b]) == [b])
+		// Dropped and back: its window is still open or hidden, so nothing opens.
+		#expect(tracker.toOpen(connected: [b]).isEmpty)
+		#expect(tracker.toOpen(connected: [a, b]).isEmpty)
+		// Disconnected by the user (W-02): its window opens the next time it connects.
+		tracker.forget(a)
+		#expect(tracker.toOpen(connected: [a, b]) == [a])
+	}
+
+	@Test("A radio the user disconnects is forgotten once it has gone, so its window doesn't open again while it disconnects")
+	func forgetOnceGone() {
+		let tracker = RadioWindowTracker()
+		let a = UUID(), b = UUID(), c = UUID()
+		#expect(tracker.toOpen(connected: [a, b]) == [a, b].sorted { $0.uuidString < $1.uuidString })
+		// Told before its link closes (review V28-1); another radio connecting meanwhile.
+		tracker.forgetOnceGone(a, connected: [a, b])
+		#expect(tracker.toOpen(connected: [a, b, c]) == [c], "not opened again while it's still connected")
+		// Gone, then back: its window opens again.
+		#expect(tracker.toOpen(connected: [b, c]).isEmpty)
+		#expect(tracker.toOpen(connected: [a, b, c]) == [a])
+		// Told once it's gone already (a radio still connecting): forgotten straight away.
+		tracker.forgetOnceGone(a, connected: [b, c])
+		#expect(tracker.toOpen(connected: [a, b, c]) == [a])
+	}
+
+	@Test("The last window closing because its radio was removed opens the Connect window, once when several close together (T393)")
+	func lastWindowClosing() {
+		let tracker = RadioWindowTracker()
+		let a = UUID(), b = UUID()
+		tracker.windowAppeared(a)
+		tracker.windowAppeared(b)
+		// Clear App Data with two radio windows: told one after the other, before either has gone.
+		#expect(!tracker.closesLastWindow(a, connectWindows: 0), "B's window is still open")
+		#expect(tracker.closesLastWindow(b, connectWindows: 0), "the last one told, with A's closing")
+		tracker.windowDisappeared(a)
+		tracker.windowDisappeared(b)
+
+		// The Connect window is open: nothing more opens.
+		tracker.windowAppeared(a)
+		#expect(!tracker.closesLastWindow(a, connectWindows: 1))
+		tracker.windowDisappeared(a)
+
+		// A window closed by hand is hidden (W-01), so it doesn't count as open.
+		tracker.windowAppeared(a)
+		tracker.windowAppeared(b)
+		tracker.windowDisappeared(b)
+		#expect(tracker.closesLastWindow(a, connectWindows: 0))
+		tracker.windowDisappeared(a)
+
+		// A window that closed and opened again isn't still counted as closing.
+		tracker.windowAppeared(a)
+		tracker.windowAppeared(b)
+		#expect(!tracker.closesLastWindow(a, connectWindows: 0))
+		tracker.windowDisappeared(a)
+		tracker.windowAppeared(a)
+		#expect(!tracker.closesLastWindow(b, connectWindows: 0), "A's window is open again")
+	}
+
+	@Test("A store reset swapping a window's view keeps the window counted (review V33-1)")
+	func viewSwapKeepsTheWindow() {
+		let tracker = RadioWindowTracker()
+		let a = UUID(), b = UUID()
+		// A's view swapped under `.id(databaseResetID)`: the new one appears before the old one goes.
+		tracker.windowAppeared(a)
+		tracker.windowAppeared(a)
+		tracker.windowDisappeared(a)
+		#expect(tracker.shownWindows == [a])
+		tracker.windowAppeared(b)
+		#expect(!tracker.closesLastWindow(b, connectWindows: 0), "A's window is still open")
+		tracker.windowDisappeared(b)
+
+		// Clear App Data with two windows: both views swap, then both are told.
+		tracker.windowAppeared(b)
+		for id in [a, b] {
+			tracker.windowAppeared(id)
+			tracker.windowDisappeared(id)
+		}
+		#expect(!tracker.closesLastWindow(a, connectWindows: 0), "B's window is still open")
+		#expect(tracker.closesLastWindow(b, connectWindows: 0), "one Connect window, from the last one told")
+		tracker.windowDisappeared(a)
+		tracker.windowDisappeared(b)
+		#expect(tracker.shownWindows.isEmpty)
+
+		// A closing window whose view swaps is still closing.
+		tracker.windowAppeared(a)
+		tracker.windowAppeared(b)
+		#expect(!tracker.closesLastWindow(a, connectWindows: 0))
+		tracker.windowAppeared(a)
+		tracker.windowDisappeared(a)
+		#expect(tracker.closesLastWindow(b, connectWindows: 0), "A's window is still closing")
 	}
 }

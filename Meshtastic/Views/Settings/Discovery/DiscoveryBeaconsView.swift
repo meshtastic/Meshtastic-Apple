@@ -17,6 +17,9 @@ import SwiftUI
 
 struct DiscoveryBeaconsView: View {
 	@Environment(\.modelContext) private var context
+	@EnvironmentObject private var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 
 	/// All beacons, newest first; passive (session-less) ones are filtered in memory to avoid a
 	/// relationship-based SwiftData predicate.
@@ -40,7 +43,7 @@ struct DiscoveryBeaconsView: View {
 			} else {
 				// Resolved once per render — the per-row chip builder must not re-fetch
 				// the radio's channels for every beacon.
-				let joinedChannelKeys = configuredChannelOfferKeys(context: context)
+				let joinedChannelKeys = configuredChannelOfferKeys(context: context, radioNum: accessoryManager.radioNodeNum(for: windowRadio))
 				Section {
 					ForEach(passiveBeacons) { beacon in
 						beaconRow(beacon, joinedChannelKeys: joinedChannelKeys)

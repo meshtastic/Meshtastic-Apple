@@ -14,15 +14,23 @@ import SwiftUI
 
 struct ChannelMessageList: View {
 	@EnvironmentObject var appState: AppState
+	/// This window's router (feature 021, T308).
 	@EnvironmentObject private var router: Router
 	@Environment(\.scenePhase) var scenePhase
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@FocusState var messageFieldFocused: Bool
 	@Bindable var myInfo: MyInfoEntity
 	@Bindable var channel: ChannelEntity
 	@State private var replyMessageId: Int64 = 0
-	@AppStorage("preferredPeripheralNum") private var preferredPeripheralNum = -1
+	/// The window's radio, also while it's off (`radioNodeNum`); -1 for none. Redraws with the
+	/// manager.
+	private var preferredPeripheralNum: Int {
+		if let radioNum = accessoryManager.nodeNum(for: windowRadio) { return Int(radioNum) }
+		return accessoryManager.radioNodeNum(for: windowRadio) > 0 ? Int(accessoryManager.radioNodeNum(for: windowRadio)) : -1
+	}
 	@State private var messageToHighlight: Int64 = 0
 	@State private var messageLimit: Int = 100
 	@State private var messages: [MessageEntity] = []
@@ -39,6 +47,12 @@ struct ChannelMessageList: View {
 	@State private var tapbackTargetMessage: MessageEntity?
 	@State private var tapbackText = ""
 	@FocusState var tapbackFocused: Bool
+	/// Feature 021 (T083/T084): every radio the user has, and the connected ones that have this
+	/// channel (each with its own slot for it).
+	@State private var ownRadioNums: Set<Int64> = []
+	@State private var channelSlots: [ChannelSlot] = []
+	/// The radio picked in the "Via" control; nil is this channel list's radio.
+	@State private var chosenRadio: Int64?
 
 	init(myInfo: MyInfoEntity, channel: ChannelEntity) {
 		self.myInfo = myInfo
@@ -47,13 +61,7 @@ struct ChannelMessageList: View {
 
 	func markMessagesAsRead() {
 		do {
-			let channelIndex = channel.index
-			let descriptor = FetchDescriptor<MessageEntity>(
-				predicate: #Predicate<MessageEntity> {
-					$0.channel == channelIndex && $0.toUser == nil && $0.isEmoji == false && $0.read == false
-				}
-			)
-			let unreadMessages = try context.fetch(descriptor)
+			let unreadMessages = try context.fetch(FetchDescriptor<MessageEntity>(predicate: query.messages(unreadOnly: true)))
 			let notificationManager = LocalNotificationManager()
 			var readMessageIDs = [Int64]()
 			for unreadMessage in unreadMessages {
@@ -84,6 +92,7 @@ struct ChannelMessageList: View {
 	@MainActor
 	private func loadMessages(markReadAfterLoad: Bool = false) {
 		do {
+			refreshChannelRadios()
 			let previousLastID = messages.last?.messageId
 			// Read before the fetch. New rows move the marker, so a later read would
 			// describe the layout this reload is about to change.
@@ -122,18 +131,7 @@ struct ChannelMessageList: View {
 	}
 
 	private func fetchMessages(limit: Int) throws -> [MessageEntity] {
-		let channelIndex = channel.index
-		var descriptor = FetchDescriptor<MessageEntity>(
-			predicate: #Predicate<MessageEntity> {
-				$0.channel == channelIndex && $0.toUser == nil && $0.isEmoji == false
-			},
-			sortBy: [
-				SortDescriptor(\MessageEntity.messageTimestamp, order: .reverse),
-				SortDescriptor(\MessageEntity.messageId, order: .reverse)
-			]
-		)
-		descriptor.fetchLimit = limit
-		return try context.fetch(descriptor)
+		try ChannelMessageQuery.fetch(query.messages(), limit: limit, in: context)
 	}
 
 
@@ -177,13 +175,8 @@ struct ChannelMessageList: View {
 			return []
 		}
 
-		let channelIndex = channel.index
 		let descriptor = FetchDescriptor<MessageEntity>(
-			predicate: #Predicate<MessageEntity> { message in
-				message.channel == channelIndex
-				&& message.isEmoji == true
-				&& visibleMessageIDs.contains(message.replyID)
-			},
+			predicate: query.tapbacks(to: visibleMessageIDs),
 			sortBy: [SortDescriptor(\MessageEntity.messageTimestamp, order: .forward)]
 		)
 		return try context.fetch(descriptor)
@@ -210,9 +203,10 @@ struct ChannelMessageList: View {
 				try await accessoryManager.sendMessage(
 					message: emojiToSend,
 					toUserNum: destination.userNum,
-					channel: destination.channelNum,
+					channel: sendingSlot?.index ?? destination.channelNum,
 					isEmoji: true,
-					replyID: target.messageId
+					replyID: target.messageId,
+					viaRadio: sendingRadio
 				)
 				await MainActor.run { loadMessages(markReadAfterLoad: routerIsShowingThisChannel()) }
 			} catch {
@@ -244,6 +238,9 @@ struct ChannelMessageList: View {
 						.padding(.vertical, 8)
 					}
 					ForEach(messages, id: \.messageId) { message in
+						if message.isSystemEvent {
+							ChannelChangeRow(message: message)
+						} else {
 						  ChannelMessageRow(
 							  message: message,
 							  replyMessage: repliesByID[message.replyID],
@@ -274,8 +271,10 @@ struct ChannelMessageList: View {
 							  },
 							  onMessageRetried: {
 								  loadMessages(markReadAfterLoad: routerIsShowingThisChannel())
-							  }
+							  },
+							  ownRadioNums: ownRadioNums
 						  )
+						}
 
 					}
 					Color.clear
@@ -358,6 +357,10 @@ struct ChannelMessageList: View {
 						processTapback()
 					}
 			}
+			// On the Mac each radio has its own window to send from (W-14).
+			if channelSlots.count > 1, !RadioWindows.areEnabled {
+				radioPicker
+			}
 			TextMessageField(
 				destination: .channel(channel),
 				replyMessageId: $replyMessageId,
@@ -370,11 +373,14 @@ struct ChannelMessageList: View {
 					) {
 						bottomScrollRequest &+= 1
 					}
-				}
+				},
+				viaRadio: sendingRadio,
+				viaChannel: sendingSlot?.index
 			)
 			.fixedSize(horizontal: false, vertical: true)
 		}
 		}
+		.onChange(of: accessoryManager.connectedRadioNums) { loadMessages(markReadAfterLoad: routerIsShowingThisChannel()) }
 		.navigationBarTitleDisplayMode(.inline)
 		.searchable(text: $searchQuery, placement: .navigationBarDrawer(displayMode: .always), prompt: "Find in conversation")
 		.autocorrectionDisabled()
@@ -389,22 +395,95 @@ struct ChannelMessageList: View {
 			ToolbarItem(placement: .navigationBarTrailing) {
 				ZStack {
 					ConnectedDevice(
-						deviceConnected: accessoryManager.isConnected,
-						name: accessoryManager.activeConnection?.device.shortName ?? "?",
-						mqttProxyConnected: accessoryManager.mqttProxyConnected && (channel.uplinkEnabled || channel.downlinkEnabled),
+						deviceConnected: accessoryManager.isConnected(windowRadio),
+						name: accessoryManager.session(for: windowRadio)?.device.shortName ?? "?",
+						mqttProxyConnected: accessoryManager.mqttProxyConnected(for: windowRadio) && (channel.uplinkEnabled || channel.downlinkEnabled),
 						mqttUplinkEnabled: channel.uplinkEnabled,
 						mqttDownlinkEnabled: channel.downlinkEnabled,
 						mqttTopic: {
 								let name = channel.name ?? ""
 								if name.isEmpty {
-									return accessoryManager.mqttManager.topics.first ?? ""
+									return accessoryManager.mqttTopics(for: windowRadio).first ?? ""
 								}
-								return accessoryManager.mqttManager.topics.first(where: { $0.contains("/2/e/\(name)/") }) ?? accessoryManager.mqttManager.topics.first ?? ""
+								return accessoryManager.mqttTopics(for: windowRadio).first(where: { $0.contains("/2/e/\(name)/") }) ?? accessoryManager.mqttTopics(for: windowRadio).first ?? ""
 							}()
 					)
 				}
 			}
 		}
+	}
+}
+
+// MARK: - Radios (feature 021, T083/T084)
+// With more than one radio, a channel is one timeline across radios (grouped by `channelKey`),
+// and a message can go out through any connected radio that has the channel, in its own slot.
+private extension ChannelMessageList {
+	/// The slot's channel key as saved. `channel` is the main context's object, which can still
+	/// hold the key from before a preset change the packet actor saved (or be a row a channel
+	/// refresh replaced), and that showed the old channel's messages after the change. With one
+	/// radio the query doesn't use the key, so the store isn't read (review V24-3).
+	var savedChannelKey: String? {
+		guard ownRadioNums.count > 1 else { return channel.channelKey }
+		return MultiRadioBackfill.storedChannelKeys(for: myInfo.myNodeNum, container: context.container)[channel.index] ?? channel.channelKey
+	}
+
+	var query: ChannelMessageQuery {
+		ChannelMessageQuery.make(
+			channelIndex: channel.index, channelKey: savedChannelKey, radioNum: myInfo.myNodeNum,
+			multiRadio: ownRadioNums.count > 1, in: context
+		)
+	}
+
+	/// The radio the next message goes out through: the picked slot's, else the window's radio
+	/// (D-19), which for the one window on one radio is the radio as before. A window whose radio
+	/// is off sends through it and fails, never through another radio (review V10 R10-3).
+	var sendingRadio: Int64? {
+		sendingSlot?.radio ?? accessoryManager.sendingRadio(for: windowRadio)
+	}
+
+	/// The slot the next message uses; nil (one radio with the channel, or the window's radio off)
+	/// is the window's radio.
+	var sendingSlot: ChannelSlot? {
+		guard channelSlots.count > 1 else { return nil }
+		let windowNum = accessoryManager.nodeNum(for: windowRadio)
+		return channelSlots.first { $0.radio == chosenRadio }
+			?? channelSlots.first { $0.radio == windowNum }
+			?? channelSlots.first { $0.radio == myInfo.myNodeNum }
+	}
+
+	func refreshChannelRadios() {
+		let known = Set(((try? context.fetch(FetchDescriptor<MyInfoEntity>())) ?? []).map(\.myNodeNum))
+		if known != ownRadioNums {
+			ownRadioNums = known
+		}
+		var slots: [ChannelSlot] = []
+		if let key = savedChannelKey {
+			slots = ChannelMessageQuery.slots(for: key, among: accessoryManager.connectedRadioNums, in: context)
+		}
+		if slots != channelSlots {
+			channelSlots = slots
+		}
+	}
+
+	func slotLabel(_ slot: ChannelSlot) -> String {
+		let device = accessoryManager.connectedSession(forRadio: slot.radio)?.device
+		let name = device?.shortName ?? device?.name ?? slot.radio.toHex()
+		return slot.index == channel.index ? name : "\(name) · \(slot.index)"
+	}
+
+	@ViewBuilder var radioPicker: some View {
+		Picker("Via", selection: Binding(
+			get: { sendingSlot?.radio ?? 0 },
+			set: { chosenRadio = $0 }
+		)) {
+			ForEach(channelSlots, id: \.radio) { slot in
+				Text(slotLabel(slot)).tag(slot.radio)
+			}
+		}
+		.pickerStyle(.segmented)
+		.padding(.horizontal)
+		.padding(.vertical, 4)
+		.accessibilityLabel("Radio that sends on this channel")
 	}
 }
 

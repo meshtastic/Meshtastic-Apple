@@ -38,10 +38,16 @@ struct SendWaypointIntent: AppIntent {
 	@Parameter(title: "Expiration")
 	var expiration: Date?
 
+	@Parameter(title: "Radio", description: "The connected radio to use. Leave empty for the radio chosen for CarPlay & Siri, or the only one connected.")
+	var radio: RadioEntity?
+
 	func perform() async throws -> some IntentResult {
-		if !(await AccessoryManager.shared.isConnected) {
-			throw AppIntentErrors.AppIntentError.notConnected
-		}
+		// The radio it names, the CarPlay & Siri radio, or the only one connected (T320).
+		let radioNum = try await AccessoryManager.shared.intentRadio(radio?.nodeNum).radioNum(
+			noRadio: AppIntentErrors.AppIntentError.notConnected,
+			notConnected: AppIntentErrors.AppIntentError.message("That radio isn't connected."),
+			needsValue: $radio.needsValueError("Which radio?")
+		)
 
 		// Provide default values if parameters are nil
 		let name = nameParameter ?? "Dropped Pin"
@@ -87,15 +93,11 @@ struct SendWaypointIntent: AppIntent {
 			newWaypoint.expire = UInt32(expirationDate.timeIntervalSince1970)
 		}
 		if isLocked {
-			if let deviceNum = await AccessoryManager.shared.activeDeviceNum {
-				newWaypoint.lockedTo = UInt32(deviceNum)
-			} else {
-				throw AppIntentErrors.AppIntentError.notConnected
-			}
+			newWaypoint.lockedTo = UInt32(truncatingIfNeeded: radioNum)
 		}
 
 		do {
-			try await AccessoryManager.shared.sendWaypoint(waypoint: newWaypoint)
+			try await AccessoryManager.shared.sendWaypoint(waypoint: newWaypoint, viaRadio: radioNum)
 		} catch {
 			throw AppIntentErrors.AppIntentError.message("Failed to Send Waypoint")
 		}

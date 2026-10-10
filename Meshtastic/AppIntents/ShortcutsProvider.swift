@@ -32,6 +32,14 @@ struct ShortcutsProvider: AppShortcutsProvider {
 							  "Send a \(.applicationName) group message"],
 					shortTitle: "Group Message",
 					systemImageName: "message")
+		// Feature 021 (W-11): the radio a command uses when it doesn't name one.
+		AppShortcut(intent: SetMeshtasticRadioIntent(),
+					phrases: ["Set my \(.applicationName) radio",
+							  "Change my \(.applicationName) radio",
+							  "Make \(\.$radio) my \(.applicationName) radio",
+							  "Use \(\.$radio) for \(.applicationName)"],
+					shortTitle: "Set Radio",
+					systemImageName: "antenna.radiowaves.left.and.right")
 		AppShortcut(intent: DisconnectNodeIntent(),
 					phrases: ["Disconnect \(.applicationName) node",
 							  "Disconnect my \(.applicationName) node",

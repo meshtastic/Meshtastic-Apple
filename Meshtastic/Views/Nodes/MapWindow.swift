@@ -35,7 +35,7 @@ struct MapWindow: View {
 		}
 		.onAppear {
 			if routerToken == nil {
-				routerToken = appState.sceneRouters.register(router)
+				routerToken = appState.windows.registerPopOnly(router)
 			}
 			// If the map window is restored on launch without the main window, dismiss it
 			let mainScenes = UIApplication.shared.connectedScenes.filter {
@@ -47,7 +47,7 @@ struct MapWindow: View {
 		}
 		.onDisappear {
 			guard let routerToken else { return }
-			appState.sceneRouters.unregister(routerToken)
+			appState.windows.unregisterPopOnly(routerToken)
 			self.routerToken = nil
 		}
 		.onReceive(NotificationCenter.default.publisher(for: UIScene.didDisconnectNotification)) { _ in

@@ -12,6 +12,8 @@ import OSLog
 @available(iOS 18, *)
 struct Tools: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@Environment(\.modelContext) private var context
 
 	#if !targetEnvironment(macCatalyst)
@@ -22,7 +24,7 @@ struct Tools: View {
 	@State private var scanErrorMessage: String?
 
 	var connectedNode: NodeInfoEntity? {
-		if let num = accessoryManager.activeDeviceNum {
+		if let num = accessoryManager.nodeNum(for: windowRadio) {
 			return getNodeInfo(id: num, context: context)
 		}
 		return nil

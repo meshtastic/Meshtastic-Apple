@@ -44,6 +44,8 @@ extension Config.LoRaConfig: ConfigFormMessage {
 struct LoRaConfig: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject private var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	let node: NodeInfoEntity?
 	/// Connect.swift follows a successful save to re-read the channel it just moved to.
 	let onSuccessfulSave: (_ nodeNum: Int64, _ region: RegionCodes) -> Void
@@ -158,7 +160,7 @@ struct LoRaConfig: View {
 			request: accessoryManager.requestLoRaConfig,
 			save: { config, from, to in
 				guard let region = Self.supportedRegion(config) else { return }
-				if let deviceNum = accessoryManager.activeDeviceNum,
+				if let deviceNum = accessoryManager.nodeNum(for: windowRadio),
 				   let connectedNode = getNodeInfo(id: deviceNum, context: context),
 				   connectedNode.num == node?.user?.num ?? 0 {
 					UserDefaults.modemPreset = config.modemPreset.rawValue
@@ -166,10 +168,9 @@ struct LoRaConfig: View {
 
 				_ = try await accessoryManager.saveLoRaConfig(config: config, fromUser: from, toUser: to)
 				// A change to the connected radio applies without a reboot on 2.8, so ask it for the
-				// node database to pick up its answers for the new settings.
-				if to.num == accessoryManager.activeDeviceNum {
-					accessoryManager.refreshNodeDatabaseAfterLoRaChange()
-				}
+				// node database to pick up its answers for the new settings. Each connected radio answers
+				// for its own settings (feature 021), so it's this radio that's asked.
+				accessoryManager.refreshNodeDatabaseAfterLoRaChange(forRadio: to.num)
 				onSuccessfulSave(to.num, region)
 			})
 		.navigationTitle("LoRa Config")
@@ -182,12 +183,14 @@ private struct RegionRow: View {
 	@Binding var config: Config.LoRaConfig
 	let node: NodeInfoEntity?
 	@EnvironmentObject private var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 
 	private static let metadata = FieldMetadataRegistry.get("meshtastic.Config.LoRaConfig", tag: 7)
 
 	/// The 2.8 rework added ham and narrow-band regions. Older firmware has no band table
 	/// for them, so they are not offered there.
-	private var supports2_8: Bool { accessoryManager.checkIsVersionSupported(forVersion: "2.8.0") }
+	private var supports2_8: Bool { accessoryManager.isVersionSupported(forVersion: "2.8.0", for: windowRadio) }
 
 	private var selection: Binding<Int> {
 		Binding(get: { config.region.rawValue },
@@ -196,7 +199,7 @@ private struct RegionRow: View {
 
 	private var presetInfo: RegionPresetInfo? {
 		guard supports2_8, let code = RegionCodes(rawValue: config.region.rawValue)?.protoEnumValue() else { return nil }
-		return accessoryManager.loRaRegionPresets[code]
+		return accessoryManager.loRaRegionPresets(for: windowRadio)[code]
 	}
 
 	var body: some View {
@@ -257,10 +260,12 @@ private struct ModemPresetRow: View {
 	@Binding var config: Config.LoRaConfig
 	let node: NodeInfoEntity?
 	@EnvironmentObject private var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 
 	private static let metadata = FieldMetadataRegistry.get("meshtastic.Config.LoRaConfig", tag: 2)
 
-	private var supports2_8: Bool { accessoryManager.checkIsVersionSupported(forVersion: "2.8.0") }
+	private var supports2_8: Bool { accessoryManager.isVersionSupported(forVersion: "2.8.0", for: windowRadio) }
 
 	private var selection: Binding<Int> {
 		Binding(get: { config.modemPreset.rawValue },
@@ -277,7 +282,7 @@ private struct ModemPresetRow: View {
 		var presets = base
 		if supports2_8,
 		   let code = RegionCodes(rawValue: config.region.rawValue)?.protoEnumValue(),
-		   let info = accessoryManager.loRaRegionPresets[code], !info.presets.isEmpty {
+		   let info = accessoryManager.loRaRegionPresets(for: windowRadio)[code], !info.presets.isEmpty {
 			let constrained = base.filter { info.presets.contains($0.protoEnumValue()) }
 			if !constrained.isEmpty { presets = constrained }
 		} else if RegionCodes(rawValue: config.region.rawValue)?.allowsBandLimitedPresets != true {
@@ -354,10 +359,12 @@ private struct BandwidthRow: View {
 private struct CodingRateRows: View {
 	@Binding var config: Config.LoRaConfig
 	@EnvironmentObject private var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 
 	private var preset: ModemPresets { ModemPresets(rawValue: config.modemPreset.rawValue) ?? .longFast }
 	private var supportsOverride: Bool {
-		accessoryManager.checkIsVersionSupported(forVersion: CodingRates.overrideFirmwareVersion)
+		accessoryManager.isVersionSupported(forVersion: CodingRates.overrideFirmwareVersion, for: windowRadio)
 	}
 	private var normalized: Int {
 		CodingRates.effective(

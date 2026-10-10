@@ -19,7 +19,8 @@ struct NodePositionIntent: AppIntent {
 	static let description: IntentDescription = "Fetch the latest position of a cetain node"
 
 	func perform() async throws -> some IntentResult & ReturnsValue<CLPlacemark> {
-		if !(await AccessoryManager.shared.isConnected) {
+		// Any connected radio: this only reads the store (feature 021).
+		if await AccessoryManager.shared.connectedRadioCount == 0 {
 			throw AppIntentErrors.AppIntentError.notConnected
 		}
 		let nodeNumInt64 = Int64(nodeNum)

@@ -13,14 +13,19 @@ struct DisconnectNodeIntent: AppIntent {
 
 	static let description: IntentDescription = "Disconnect the currently connected node"
 
+	@Parameter(title: "Radio", description: "The connected radio to use. Leave empty for the radio chosen for CarPlay & Siri, or the only one connected.")
+	var radio: RadioEntity?
+
 	func perform() async throws -> some IntentResult {
-		let isConnected = await AccessoryManager.shared.isConnected
-		if !isConnected {
-			throw AppIntentErrors.AppIntentError.notConnected
-		}
+		// The radio it names, the CarPlay & Siri radio, or the only one connected (T320).
+		let radioNum = try await AccessoryManager.shared.intentRadio(radio?.nodeNum).radioNum(
+			noRadio: AppIntentErrors.AppIntentError.notConnected,
+			notConnected: AppIntentErrors.AppIntentError.message("That radio isn't connected."),
+			needsValue: $radio.needsValueError("Which radio?")
+		)
 
 		do {
-			try await AccessoryManager.shared.disconnect()
+			try await AccessoryManager.shared.disconnectRadio(nodeNum: radioNum)
 		} catch {
 			throw AppIntentErrors.AppIntentError.message("Error disconnecting node")
 		}

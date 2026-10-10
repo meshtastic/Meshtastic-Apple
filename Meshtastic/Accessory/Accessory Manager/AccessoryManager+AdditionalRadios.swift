@@ -1,0 +1,597 @@
+//
+//  AccessoryManager+AdditionalRadios.swift
+//  Meshtastic
+//
+//  Copyright(c) Meshtastic 2026.
+//
+
+import Foundation
+import MeshtasticProtobufs
+import OSLog
+
+// MARK: - Radios connected alongside the first one (feature 021)
+
+// Every connected radio is a `RadioSession` and runs the same connect steps (D-17, plan.md ›
+// Every radio the same). The one connected first is `AccessoryManager.activeConnection`; the
+// others are in `additionalRadios`, by device id. This file keeps track of the others: which are
+// connected, their events, disconnecting and reconnecting them, and the radios remembered from
+// last time. A radio that's locked or needs a firmware update is asked about in
+// `AccessoryManager+RadioAttention.swift`.
+
+/// Lets one radio at a time run its config and node-DB handshake (T064).
+///
+/// Two dumps at once double the ingest load, and the first radio's connect recycles the
+/// ingest actor at its end (`MeshPackets.recreateShared()`), which must not happen in the
+/// middle of another radio's dump. Waiters are served in order.
+@MainActor
+final class HandshakeGate {
+	private(set) var isBusy = false
+	private var waiters: [CheckedContinuation<Void, Never>] = []
+
+	func acquire() async {
+		guard isBusy else {
+			isBusy = true
+			return
+		}
+		await withCheckedContinuation { waiters.append($0) }
+	}
+
+	func release() {
+		if waiters.isEmpty {
+			isBusy = false
+		} else {
+			waiters.removeFirst().resume()
+		}
+	}
+}
+
+extension AccessoryManager {
+
+	/// At most this many radios at once, the first one included (D-10).
+	static let maxConnectedRadios = 4
+
+	/// Radios connected now: the first one plus the additional ones.
+	var connectedRadioCount: Int {
+		(activeConnection == nil ? 0 : 1) + additionalRadios.count
+	}
+
+	/// A radio is connected, or the first one is connecting, for another to connect alongside
+	/// (review V11 W2). With none, a connect is the first radio's.
+	var hasRadioToJoin: Bool {
+		connectedRadioCount > 0 || hasFirstConnectInProgress
+	}
+
+	var canConnectAnotherRadio: Bool {
+		connectedRadioCount < Self.maxConnectedRadios
+	}
+
+	/// True when `deviceId` is connected or connecting, the first radio or another.
+	func isRadioConnected(_ deviceId: UUID) -> Bool {
+		activeConnection?.device.id == deviceId || additionalRadios[deviceId] != nil || connectAttempts[deviceId] != nil
+	}
+
+	/// Every connected radio's device, starting with the first radio.
+	var connectedRadios: [Device] {
+		var result: [Device] = []
+		if let first = activeConnection?.device { result.append(first) }
+		return result + additionalRadioDevices
+	}
+
+	/// Adds `device` alongside the connected radios (W-12): the others stay connected. The caller
+	/// shows it (`selectWindowRadio`): the one window switches to it on iPhone and iPad; on the Mac
+	/// it opens in its own window once connected. Throws when it can't connect.
+	func addRadio(_ device: Device) async throws {
+		try await connectAdditionalRadio(device)
+	}
+
+	/// Disconnects radio `deviceId` for the user, the first radio or another (D-19): it isn't
+	/// brought back, and its window stays, showing it off with Connect (W-02). Without the first
+	/// radio the others stay connected and none takes its place (T316).
+	func disconnectRadio(_ deviceId: UUID) async {
+		if activeConnection?.device.id == deviceId || connectAttempts[deviceId]?.isFirst == true {
+			let standIn = standIn(for: deviceId)
+			try? await disconnectFirstRadio(accessoryManager: self)
+			restorePreferred(after: standIn)
+		} else {
+			await disconnectAdditionalRadio(deviceId, byUser: true)
+		}
+	}
+
+	/// Fills `knownNodeNums` from the store's radios, at launch (review V11 W7).
+	func seedKnownNodeNums() async {
+		for (peripheralId, nodeNum) in await MeshPackets.shared.radioPeripheralIds() {
+			if let id = UUID(uuidString: peripheralId), knownNodeNums[id] == nil {
+				knownNodeNums[id] = nodeNum
+			}
+		}
+	}
+
+	/// After the store was cleared or replaced (Clear App Data, a backup restore): the radios it
+	/// no longer has are forgotten and their windows close (review V27-4), as Remove Radio does;
+	/// the ones it has stay known. A radio connected or connecting stays as it is. Not while
+	/// `AppState.isDatabaseResetting` is up: the Mac's radio windows are unmounted then, and
+	/// wouldn't close (review V28-2).
+	func forgetRadiosNotInStore() async {
+		await refreshKnownRadios()
+		let stored = Set(await MeshPackets.shared.radioPeripheralIds().map(\.1)).union(knownRadios.map(\.nodeNum))
+		let gone = knownNodeNums.filter { !stored.contains($0.value) && !isRadioConnected($0.key) }.map(\.key)
+		for deviceId in gone.sorted(by: { $0.uuidString < $1.uuidString }) {
+			knownNodeNums.removeValue(forKey: deviceId)
+			radioRemoved.send(deviceId)
+		}
+		await seedKnownNodeNums()
+	}
+
+	/// Releases radio `deviceId` for a firmware update (review V11 W1): its link closes so the
+	/// updater can reach it in update mode. Its window stays, it stays remembered, and the other
+	/// radios are left as they are. `reclaimRadioAfterUpdate(_:)` brings it back. Until then it
+	/// isn't shown as off with Connect, which would race the update (review V27-6).
+	func releaseRadioForUpdate(_ deviceId: UUID) async throws {
+		radiosReleasedForUpdate.insert(deviceId)
+		if activeConnection?.device.id == deviceId {
+			try await disconnect(forUpdate: true)
+		} else {
+			await disconnectAdditionalRadio(deviceId, forUpdate: true)
+		}
+	}
+
+	/// After a firmware update of `device`, done or not (its sheet closed): the preferred radio
+	/// comes back through discovery, as a single radio does (the updater restarts it); another
+	/// through its reconnect. The first radio no longer holds its place, so a radio alongside that
+	/// drops isn't held back if it doesn't come back (review V14 P4).
+	func reclaimRadioAfterUpdate(_ device: Device) {
+		radiosReleasedForUpdate.remove(device.id)
+		if device.id.uuidString == PreferredRadio.peripheralId {
+			firstRadioReleasedForUpdate = false
+		}
+		guard device.id.uuidString != PreferredRadio.peripheralId, !isRadioConnected(device.id) else { return }
+		scheduleAdditionalRadioReconnect(device)
+	}
+
+	/// The Disconnect command for radio `radioNum` (T320): the same as Disconnect on its row.
+	func disconnectRadio(nodeNum radioNum: Int64) async throws {
+		guard let session = connectedSession(forRadio: radioNum) else { return }
+		await disconnectRadio(session.device.id)
+	}
+
+	/// With the first radio disconnected by the user, the connected radio that stands in for it:
+	/// the one window shows it (T314), and it's the preferred radio from then on (review V12 Y3).
+	/// The first by name, so both are the same radio.
+	var connectedRadioAfterFirst: Device? {
+		additionalRadioDevices.first { $0.connectionState == .connected }
+	}
+
+	/// Whether `session` is the only radio connected: a connect that does the app's own work
+	/// (device catalog, stale-node prune, unread badges, T309) is one with no other radio connected.
+	/// With one radio that's every connect, as before.
+	func isOnlyConnectedRadio(_ session: RadioSession?) -> Bool {
+		guard let session else { return false }
+		return (activeConnection == nil || activeConnection === session)
+			&& additionalRadios.values.allSatisfy { $0 === session }
+	}
+
+	/// The additional radios' devices, by name.
+	var additionalRadioDevices: [Device] {
+		additionalRadios.values
+			.map(\.device)
+			.sorted { ($0.longName ?? $0.name) < ($1.longName ?? $1.name) }
+	}
+
+	/// `session` when it's one of the radios connected alongside the first one.
+	func additionalRadio(for session: RadioSession) -> RadioSession? {
+		additionalRadios[session.device.id].flatMap { $0 === session ? $0 : nil }
+	}
+
+	// MARK: - Connect
+
+	/// Connects `device` alongside the first radio, through the same connect steps as the
+	/// first one (D-17). With no radio connected this is a normal connect, and the radio becomes
+	/// the first one. `connectTimeout` bounds the transport connect for automatic attempts; a
+	/// user's tap waits as long as the transport does. Throws when the radio didn't connect.
+	func connectAdditionalRadio(_ device: Device, connectTimeout: Duration? = nil) async throws {
+		// With the first radio gone and others connected, it joins them; it doesn't take the first
+		// radio's place, which stays the preferred radio's (review V11 W3).
+		guard hasRadioToJoin else {
+			try await connect(to: device)
+			return
+		}
+		guard !isRadioConnected(device.id) else {
+			throw AccessoryError.connectionFailed("This radio is already connected")
+		}
+		guard canConnectAnotherRadio else {
+			throw AccessoryError.connectionFailed(String.localizedStringWithFormat("You can connect up to %d radios at once.".localized, Self.maxConnectedRadios))
+		}
+		Logger.transport.info("🔗➕ [Additional] Connecting \(device.name, privacy: .public) alongside \(self.activeConnection?.device.name ?? "?", privacy: .public)")
+		try await connect(to: device, asFirst: false, connectTimeout: connectTimeout)
+		Logger.transport.info("🔗➕ [Additional] \(device.name, privacy: .public) connected; \(self.connectedRadioCount) radios connected")
+	}
+
+	/// `transport.connect(to:)`, given up after `timeout` when there is one. A BLE connect to an
+	/// out-of-range radio otherwise waits indefinitely, holding the scan paused.
+	func connectTransport(_ transport: any Transport, to device: Device, within timeout: Duration?) async throws -> any Connection {
+		guard let timeout else {
+			return try await transport.connect(to: device)
+		}
+		let connection = try await withThrowingTaskGroup(of: (any Connection)?.self) { group -> (any Connection)? in
+			group.addTask { try await transport.connect(to: device) }
+			group.addTask {
+				try? await Task.sleep(for: timeout)
+				return nil
+			}
+			let first = try await group.next() ?? nil
+			group.cancelAll()
+			if first == nil {
+				// Timed out. The connect may still finish as it is cancelled; close anything it made.
+				while let late = try? await group.next() {
+					if let late {
+						try? await late.disconnect(withError: nil, shouldReconnect: false)
+					}
+				}
+			}
+			return first
+		}
+		guard let connection else {
+			if let bleTransport = transport as? BLETransport {
+				await bleTransport.abandonPendingConnect(to: device.id)
+			}
+			throw AccessoryError.timeout
+		}
+		return connection
+	}
+
+	/// Runs the backfill for rows from before feature 021 when radio `radioNum` reports itself and
+	/// isn't the radio those rows belong to (`BackfillOwner`), the first radio or another: a radio added
+	/// alongside, or one the user switched to (T186, T193). Run by connect Step 3c, once the
+	/// config is in and before the radio's node DB, and matched by node number (T203): a
+	/// peripheral id changes on a new phone, a node number doesn't. The store's own radio doesn't
+	/// wait for it, so a single-radio user's connect doesn't either. Its connect holds the
+	/// handshake gate, so no node dump runs meanwhile, and the drain lets packets through between
+	/// chunks. `othersObserved` is what its connect found before the radio's first packet (T230).
+	func backfillBeforeAnotherRadioJoins(radioNum: Int64, name: String, othersObserved: Bool? = nil) async {
+		let packets = MeshPackets.shared
+		guard await packets.hasPendingBackfill() else {
+			BackfillOwner.clear()
+			return
+		}
+		let owner = BackfillOwner.current()
+		guard owner.nodeNum != 0, radioNum != owner.nodeNum else { return }
+		do {
+			let filled = try await packets.drainMultiRadioBackfill(ownRadio: owner.nodeNum, othersObserved: othersObserved)
+			Logger.data.info("🧭 [MultiRadio] Backfilled \(filled) rows for \(owner.nodeNum.toHex(), privacy: .public) before \(name, privacy: .public) joined")
+			if await !packets.hasPendingBackfill() {
+				BackfillOwner.clear()
+			}
+		} catch {
+			Logger.data.error("💥 [MultiRadio] Backfill before \(name, privacy: .public) joined failed: \(error.localizedDescription, privacy: .public)")
+		}
+	}
+
+	/// A BLE restore (T190, review V45-4): the radios restored alongside the first one are
+	/// remembered, and each is connected at once, as `main` restores its radio, through its own
+	/// connect alongside the first radio's restore; the handshake gate takes them in turn. Once the
+	/// first radio's restore has started, so none takes its place (D-19).
+	func noteRestoredAlongside(_ devices: [Device]) async {
+		await MeshPackets.shared.rememberRadios(peripheralIds: devices.map(\.id.uuidString))
+		restoredRadiosToClaim.append(contentsOf: devices)
+		claimRestoredRadios()
+	}
+
+	/// Starts the connects of the radios restored alongside, once the first radio's restore has
+	/// started (`connect(to:)` calls this as it starts). One whose connect fails waits for
+	/// discovery, as a radio that dropped does.
+	func claimRestoredRadios() {
+		guard hasRadioToJoin, !restoredRadiosToClaim.isEmpty else { return }
+		let devices = restoredRadiosToClaim
+		restoredRadiosToClaim.removeAll()
+		for device in devices where !isRadioConnected(device.id) {
+			Task { @MainActor [weak self] in
+				guard let self else { return }
+				do {
+					try await self.connectAdditionalRadio(device, connectTimeout: Self.additionalReconnectTimeout)
+				} catch {
+					Logger.transport.info("🔗🔁 [Additional] Restoring \(device.name, privacy: .public) failed: \(error.localizedDescription, privacy: .public)")
+					self.scheduleAdditionalRadioReconnect(device)
+				}
+			}
+		}
+	}
+
+	// MARK: - Disconnect
+
+	/// Disconnects one additional radio. The first radio and the others are unaffected.
+	/// `byUser` also stops any automatic reconnect for it, now and at the next launch.
+	func disconnectAdditionalRadio(_ deviceId: UUID, byUser: Bool = false, forUpdate: Bool = false) async {
+		// Its window learns it was the user (W-02); not when it's only released for a firmware
+		// update, which also keeps it remembered (review V11 W1). Before the teardown, as for the
+		// first radio (review V28-1).
+		if byUser, !forUpdate {
+			radioDisconnectedByUser.send(deviceId)
+		}
+		if byUser || forUpdate {
+			additionalRadioReconnects.removeValue(forKey: deviceId)?.cancel()
+			radioConnectErrors.removeValue(forKey: deviceId)
+		}
+		// A connect still in progress for it stops, whether it's waiting for the handshake gate
+		// or running its steps.
+		if let attempt = connectAttempts[deviceId], !attempt.isFirst {
+			attempt.isCancelled = true
+			await attempt.stepper?.cancelCurrentlyExecutingStep(withError: AccessoryError.disconnected("Radio disconnected"), cancelFullProcess: true)
+		}
+		guard let session = additionalRadios.removeValue(forKey: deviceId) else {
+			// Not connected (dropped, or its connect not past Step 1): not brought back at the next
+			// launch either, by its known number (review V17 U2).
+			if byUser, !forUpdate, let nodeNum = knownNodeNums[deviceId] {
+				await MeshPackets.shared.setRadioAutoConnect(nodeNum: nodeNum, false)
+			}
+			if connectAttempts[deviceId] != nil {
+				updateDevice(deviceId: deviceId, key: \.connectionState, value: .disconnected)
+			}
+			return
+		}
+		if byUser, !forUpdate, let nodeNum = session.nodeNum ?? knownNodeNums[deviceId] {
+			await MeshPackets.shared.setRadioAutoConnect(nodeNum: nodeNum, false)
+		}
+		retiredAdditionalSessionIDs.insert(session.id)
+		await MeshPackets.shared.flushDebouncedSaves()
+		await tearDown(session)
+		try? await session.connection.disconnect(withError: nil, shouldReconnect: false)
+		updateDevice(deviceId: deviceId, key: \.connectionState, value: .disconnected)
+		Logger.transport.info("🔗➖ [Additional] Disconnected \(session.device.name, privacy: .public); \(self.connectedRadioCount) radios connected")
+	}
+
+	/// Disconnects every radio alongside the first, and stops bringing back the ones that dropped
+	/// or are connecting: their reconnect loops, their connects in progress, and the remembered
+	/// radios discovery waits for (review V14 P2). For Clear App Data and Restore Backup, which
+	/// replace the store, so nothing may connect into it meanwhile.
+	func disconnectAllAdditionalRadios() async {
+		let radios = Set(additionalRadios.keys)
+			.union(additionalRadioReconnects.keys)
+			.union(connectAttempts.values.filter { !$0.isFirst }.map(\.device.id))
+		for deviceId in radios {
+			await disconnectAdditionalRadio(deviceId, byUser: true)
+		}
+	}
+
+	// MARK: - Reconnect (T063, review V45-2)
+
+	/// Brings back a radio that dropped as `main` brings back its radio: it connects when discovery
+	/// lists it, alongside the connected radios, or as the first radio when there's none to join,
+	/// until it's back or the user disconnects it. Discovery goes on while it waits
+	/// (`stopDiscoveryWhenUnneeded`). A connect that fails tries again a moment later while discovery
+	/// still lists it, as `main`'s restarted discovery reports the radios it knows again. Nothing
+	/// connects while automatic connecting is off, as on `main`.
+	func scheduleAdditionalRadioReconnect(_ device: Device) {
+		guard additionalRadioReconnects[device.id] == nil else { return }
+		// A wake-up left from an earlier wait for it ends that wait (review V46-3).
+		radioSightings.removeValue(forKey: device.id)?.finish()
+		Logger.transport.info("🔗🔁 [Additional] Will reconnect \(device.name, privacy: .public) when discovery sees it")
+		let (sightings, sighting) = AsyncStream<Void>.makeStream(bufferingPolicy: .bufferingNewest(1))
+		// The loop knows its own task, so one whose entry was removed or replaced ends at its next
+		// wake, and its end doesn't remove a newer loop's entry (review V14 P1).
+		let handle = ReconnectLoopHandle()
+		let loop = Task { @MainActor [weak self] in
+			defer {
+				sighting.finish()
+				if let self, self.additionalRadioReconnects[device.id] == nil || self.additionalRadioReconnects[device.id] == handle.task {
+					self.additionalRadioReconnects.removeValue(forKey: device.id)
+					self.radioSightings.removeValue(forKey: device.id)
+					// Discovery went on for it.
+					self.stopDiscoveryWhenUnneeded()
+				}
+			}
+			var nextSighting = sightings.makeAsyncIterator()
+			while !Task.isCancelled {
+				guard let self else { return }
+				if !self.devices.contains(where: { $0.id == device.id }) || !UserDefaults.autoconnectOnDiscovery {
+					guard await nextSighting.next() != nil else { return }
+				}
+				guard !Task.isCancelled, let thisLoop = handle.task, self.additionalRadioReconnects[device.id] == thisLoop else { return }
+				if self.activeConnection?.device.id == device.id || self.additionalRadios[device.id] != nil { return }
+				guard UserDefaults.autoconnectOnDiscovery else { continue }
+				// As discovery knows it now: a TCP radio's current address, say.
+				let target = self.devices.first { $0.id == device.id } ?? self.recentlyDiscoveredDevices[device.id] ?? device
+				// A connect of it that's running (as the first radio, or the user's) is waited for
+				// rather than ending the loop, so one that fails is tried again (review V13 Z1).
+				if self.connectAttempts[device.id] == nil {
+					if self.hasRadioToJoin {
+						if self.canConnectAnotherRadio {
+							do {
+								try await self.connectAdditionalRadio(target, connectTimeout: Self.additionalReconnectTimeout)
+								Logger.transport.info("🔗🔁 [Additional] Reconnected \(device.name, privacy: .public)")
+								return
+							} catch {
+								Logger.transport.info("🔗🔁 [Additional] Reconnect to \(device.name, privacy: .public) failed: \(error.localizedDescription, privacy: .public)")
+							}
+						}
+					} else if self.mayConnectAsFirst(target) {
+						// No radio left for it to join (review V13 Z1): it comes back as the first radio.
+						await self.connectAsFirst(target)
+						if self.activeConnection?.device.id == device.id { return }
+					}
+				}
+				try? await Task.sleep(for: Self.reconnectRetryPause)
+			}
+		}
+		handle.task = loop
+		additionalRadioReconnects[device.id] = loop
+		radioSightings[device.id] = sighting
+		if !isSwitchingDevices {
+			startDiscovery()
+		}
+	}
+
+	/// How long a radio waiting to come back waits after a connect of it that didn't get it back.
+	static let reconnectRetryPause: Duration = .seconds(1)
+
+	/// Discovery saw radio `deviceId`: one waiting to come back connects now (review V45-2).
+	func radioSeen(_ deviceId: UUID) {
+		radioSightings[deviceId]?.yield()
+	}
+
+	/// The stand-in record for `deviceId`, while it's connecting as the first radio in the
+	/// preferred radio's place.
+	func standIn(for deviceId: UUID) -> StandInConnect? {
+		standInConnect?.deviceId == deviceId ? standInConnect : nil
+	}
+
+	/// After the user's Disconnect or Remove of `standIn`'s radio before it had connected (review
+	/// V16 S1): the preferred radio and the user-disconnect flag as they were before it started, so
+	/// the cancelled radio stays off and the preferred radio still comes back. Only while the
+	/// preferred radio is still that one or the stand-in, and is still one of the user's radios;
+	/// otherwise nothing auto-connects, as after any Disconnect (review V17 U1).
+	func restorePreferred(after standIn: StandInConnect?) {
+		guard let standIn else { return }
+		if standInConnect?.deviceId == standIn.deviceId {
+			standInConnect = nil
+		}
+		let current = PreferredRadio.peripheralId
+		guard current == standIn.preferredId || current == standIn.deviceId.uuidString,
+			  standIn.preferredNum > 0, knownRadios.contains(where: { $0.nodeNum == standIn.preferredNum }) else { return }
+		PreferredRadio.peripheralId = standIn.preferredId
+		PreferredRadio.nodeNum = standIn.preferredNum
+		userRequestedConnectionCancellation = standIn.userCancelled
+	}
+
+	/// See `AccessoryManager.standInConnect`.
+	struct StandInConnect {
+		let deviceId: UUID
+		let preferredId: String
+		let preferredNum: Int64
+		let userCancelled: Bool
+	}
+
+	/// A reconnect loop's own task, set as it's created.
+	private final class ReconnectLoopHandle {
+		var task: Task<Void, Never>?
+	}
+
+	/// How long one automatic connect attempt waits for the transport.
+	static let additionalReconnectTimeout: Duration = .seconds(20)
+
+	/// Whether a radio alongside that dropped may come back as the first radio (review V13 Z1):
+	/// nothing else is connected or connecting, so it has no radio to join, and nothing is
+	/// connecting it already. Not during a device switch or an OTA, while the first radio is out
+	/// for a firmware update, whose place that is, or while the store is being replaced (review
+	/// V14 P2). The caller checks that discovery sees it.
+	func mayConnectAsFirst(_ device: Device) -> Bool {
+		!hasRadioToJoin && !isSwitchingDevices && !otaInProgress && !firstRadioReleasedForUpdate
+			&& !(appState?.isDatabaseResetting ?? false) && connectAttempts[device.id] == nil
+	}
+
+	/// Connects `device`, a radio waiting to come back with no radio to join, as the first radio
+	/// (review V13 Z1, V45-3), bounded as its other connects are. The preferred radio, when it's
+	/// another one and the user didn't disconnect it, is remembered so it joins when it's back. A connect that fails leaves its reconnect loop to
+	/// try again.
+	func connectAsFirst(_ device: Device) async {
+		// Claimed before any wait, so two tries at once don't overwrite each other's record.
+		guard standInConnect == nil, mayConnectAsFirst(device) else { return }
+		standInConnect = StandInConnect(
+			deviceId: device.id,
+			preferredId: PreferredRadio.peripheralId,
+			preferredNum: PreferredRadio.nodeNum,
+			userCancelled: userRequestedConnectionCancellation
+		)
+		defer {
+			if standInConnect?.deviceId == device.id { standInConnect = nil }
+		}
+		let preferredNum = PreferredRadio.nodeNum
+		if !userRequestedConnectionCancellation, preferredNum > 0, PreferredRadio.peripheralId != device.id.uuidString {
+			await MeshPackets.shared.setRadioAutoConnect(nodeNum: preferredNum, true)
+		}
+		Logger.transport.info("🔗🔁 [Additional] No radio left for \(device.name, privacy: .public) to join; connecting it as the first radio")
+		try? await connect(to: device, connectTimeout: Self.additionalReconnectTimeout)
+	}
+
+	// MARK: - Remembered radios (T063)
+
+	/// After the first radio connects, brings back the radios that were connected alongside
+	/// it last time (`MyInfoEntity.autoConnect`): each waits for discovery to see it, as a radio
+	/// that dropped does.
+	func reconnectRememberedRadios() async {
+		guard connectedRadioCount > 0 else { return }
+		await awaitRememberedRadios()
+	}
+
+	/// Every remembered radio that isn't connected waits for discovery to see it (review V45-3), as
+	/// `main`'s radio does at launch: with no radio connected the first one seen connects as the
+	/// first radio, the others alongside. The preferred radio comes back through discovery's own
+	/// auto-connect.
+	func awaitRememberedRadios() async {
+		let connectedNums = Set(connectedRadios.compactMap(\.num))
+		let remembered = await MeshPackets.shared.rememberedRadios(excluding: connectedNums)
+		for radio in remembered where radio.peripheralId != PreferredRadio.peripheralId {
+			guard let device = device(for: radio) ?? placeholderDevice(for: radio), !isRadioConnected(device.id) else { continue }
+			scheduleAdditionalRadioReconnect(device)
+		}
+	}
+
+	/// A remembered radio discovery hasn't seen and that has no saved address, until it does: its
+	/// wait connects the device discovery reports.
+	private func placeholderDevice(for remembered: MeshPackets.RememberedRadio) -> Device? {
+		guard let id = UUID(uuidString: remembered.peripheralId) else { return nil }
+		return Device(id: id, name: remembered.name, transportType: remembered.transport, identifier: id.uuidString, num: remembered.nodeNum)
+	}
+
+	/// A `Device` the transports can connect for a remembered radio: the discovered one, a saved
+	/// manual (TCP) connection, or for BLE the peripheral id alone, which CoreBluetooth resolves
+	/// without a scan.
+	func device(for remembered: MeshPackets.RememberedRadio) -> Device? {
+		guard let id = UUID(uuidString: remembered.peripheralId) else { return nil }
+		if let discovered = devices.first(where: { $0.id == id }) ?? recentlyDiscoveredDevices[id] {
+			return discovered
+		}
+		if let manual = ManualConnectionList.shared.connectionsList.first(where: { $0.id == id }) {
+			return manual
+		}
+		guard remembered.transport == .ble else { return nil }
+		return Device(id: id, name: remembered.name, transportType: .ble, identifier: id.uuidString, num: remembered.nodeNum)
+	}
+
+	// MARK: - Events
+
+	/// Handles one event from a radio connected alongside the first one. Its data takes the
+	/// same path as the first radio's (`processFromRadio`, scoped to the session). An error or a
+	/// disconnect ends only this radio: a connect in progress retries or gives up as the first
+	/// radio's would, and a connected radio is disconnected and, unless told otherwise,
+	/// reconnected when it's back.
+	func didReceiveAdditional(_ event: ConnectionEvent, session: RadioSession) async {
+		switch event {
+		case .data(let fromRadio):
+			await processFromRadio(fromRadio, session: session)
+			await noteIngestedPacket()
+			Task {
+				await session.heartbeatResponseTimer?.cancel(withReason: "Data packet received")
+				await session.heartbeatTimer?.reset(delay: .seconds(Self.heartbeatInterval))
+			}
+		case .logMessage(let message):
+			didReceiveLog(message: message)
+			Task {
+				await session.heartbeatResponseTimer?.cancel(withReason: "Log message packet received")
+				await session.heartbeatTimer?.reset(delay: .seconds(Self.heartbeatInterval))
+			}
+		case .rssiUpdate(let rssi):
+			updateDevice(deviceId: session.device.id, key: \.rssi, value: rssi)
+		case .error(let error), .errorWithoutReconnect(let error):
+			Logger.transport.error("🔗➕ [Additional] \(session.device.name, privacy: .public) reported: \(error.localizedDescription, privacy: .public)")
+			let reconnect: Bool
+			if case .errorWithoutReconnect = event { reconnect = false } else { reconnect = true }
+			if let attempt = connectAttempts[session.device.id], attempt.session === session, let stepper = attempt.stepper {
+				await stepper.cancelCurrentlyExecutingStep(withError: error, cancelFullProcess: !reconnect)
+				return
+			}
+			await disconnectAdditionalRadio(session.device.id)
+			if reconnect {
+				scheduleAdditionalRadioReconnect(session.device)
+			}
+		case .disconnected(let shouldReconnect):
+			if let attempt = connectAttempts[session.device.id], attempt.session === session, let stepper = attempt.stepper {
+				await stepper.cancelCurrentlyExecutingStep(withError: AccessoryError.disconnected("Radio disconnected"), cancelFullProcess: !shouldReconnect)
+				return
+			}
+			await disconnectAdditionalRadio(session.device.id)
+			if shouldReconnect {
+				scheduleAdditionalRadioReconnect(session.device)
+			}
+		}
+	}
+}

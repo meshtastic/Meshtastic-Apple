@@ -26,6 +26,8 @@ struct DeviceOnboarding: View {
 	}
 	
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@ObservedObject private var locationsHandler: LocationsHandler = .shared
 	@State var navigationPath: [SetupGuide] = []
 	@State var locationStatus = LocationsHandler.shared.manager.authorizationStatus
@@ -42,7 +44,7 @@ struct DeviceOnboarding: View {
 			set: { value in
 				let updated = EventFirmwareNotificationPolicy.userUpdatedSettings(
 					newNodeNotifications: value,
-					isEventFirmware: accessoryManager.firmwareEdition.isEvent
+					isEventFirmware: accessoryManager.firmwareEdition(for: windowRadio).isEvent
 				)
 				newNodeNotifications = updated.newNodeNotifications
 				UserDefaults.nodeNotificationsAutoDisabledForEvent = updated.autoDisabledForEvent

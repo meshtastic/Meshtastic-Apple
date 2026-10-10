@@ -33,6 +33,8 @@ extension ModuleConfig.MQTTConfig: ConfigFormMessage {
 
 struct MQTTConfig: View {
 	@EnvironmentObject private var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	let node: NodeInfoEntity?
 
 	private typealias F = ModuleConfig.MQTTConfig.Fields
@@ -129,7 +131,7 @@ struct MQTTConfig: View {
 	}
 
 	var body: some View {
-		let tlsRequired = accessoryManager.checkIsVersionSupported(forVersion: Self.tlsRequiredFirmware)
+		let tlsRequired = accessoryManager.isVersionSupported(forVersion: Self.tlsRequiredFirmware, for: windowRadio)
 		MetadataConfigForm(
 			node: node, title: "MQTT", overlay: Self.overlay(node: node),
 			normalize: { Self.normalize($0, tlsRequired: tlsRequired) },
@@ -161,6 +163,11 @@ private struct MQTTProxyRows: View {
 	let node: NodeInfoEntity?
 	@State private var connected = false
 
+	/// This radio's own MQTT client proxy is connected (feature 021: each radio has its own).
+	private var isProxyConnected: Bool {
+		accessoryManager.mqttClient(forRadio: node?.num)?.isConnected ?? false
+	}
+
 	private static let metadata = FieldMetadataRegistry.get("meshtastic.ModuleConfig.MQTTConfig", tag: 9)
 
 	var body: some View {
@@ -177,19 +184,21 @@ private struct MQTTProxyRows: View {
 		if config.enabled, config.proxyToClientEnabled, node?.mqttConfig?.proxyToClientEnabled == true {
 			Toggle(isOn: $connected) {
 				Label("Connect to MQTT via Proxy", systemImage: "server.rack")
-				if !accessoryManager.mqttError.isEmpty {
-					Text(accessoryManager.mqttError)
+				if let error = accessoryManager.mqttClient(forRadio: node?.num)?.errorMessage, !error.isEmpty {
+					Text(error)
 						.fixedSize(horizontal: false, vertical: true)
 						.foregroundColor(.red)
 				}
 			}
-			.onAppear { connected = accessoryManager.mqttProxyConnected }
-			.onChange(of: accessoryManager.mqttProxyConnected) { _, now in connected = now }
+			// The radio being configured, which may not be the first one (feature 021).
+			.onAppear { connected = isProxyConnected }
+			.onChange(of: isProxyConnected) { _, now in connected = now }
 			.onChange(of: connected) { _, on in
+				guard let radioNum = node?.num else { return }
 				if on {
-					if !accessoryManager.mqttProxyConnected, let node { accessoryManager.mqttManager.connectFromConfigSettings(node: node) }
-				} else if accessoryManager.mqttProxyConnected {
-					accessoryManager.mqttManager.disconnect()
+					if !isProxyConnected { Task { await accessoryManager.startMqtt(forRadio: radioNum) } }
+				} else if isProxyConnected {
+					accessoryManager.stopMqtt(forRadio: radioNum)
 				}
 			}
 		}

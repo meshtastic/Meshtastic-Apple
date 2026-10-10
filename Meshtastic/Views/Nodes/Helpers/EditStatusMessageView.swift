@@ -26,6 +26,8 @@ extension View {
 private struct StatusMessageAlertModifier: ViewModifier {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@Binding var node: NodeInfoEntity?
 	@State private var status = ""
 	/// The value loaded when the alert appeared, so Save is only enabled on a real edit.
@@ -81,7 +83,7 @@ private struct StatusMessageAlertModifier: ViewModifier {
 	/// refresh the config screens use (`requestRemoteConfig`).
 	private func refreshRemoteSessionIfNeeded() {
 		guard let presentedNode = node,
-			  let deviceNum = accessoryManager.activeDeviceNum,
+			  let deviceNum = accessoryManager.nodeNum(for: windowRadio),
 			  presentedNode.num != deviceNum,
 			  !presentedNode.hasLiveAdminSession,
 			  let connectedNode = getNodeInfo(id: deviceNum, context: context),
@@ -112,7 +114,7 @@ private struct StatusMessageAlertModifier: ViewModifier {
 	/// `saveStatusMessageModuleConfig` attaches the session passkey when they differ. The presented
 	/// node must be the connected node or one we have successfully administered before.
 	private func save(for presentedNode: NodeInfoEntity) {
-		guard let deviceNum = accessoryManager.activeDeviceNum,
+		guard let deviceNum = accessoryManager.nodeNum(for: windowRadio),
 			  presentedNode.num == deviceNum || presentedNode.hasBeenAdministered,
 			  let connectedNode = getNodeInfo(id: deviceNum, context: context),
 			  let fromUser = connectedNode.user,

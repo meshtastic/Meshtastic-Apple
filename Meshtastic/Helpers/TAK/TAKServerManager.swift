@@ -74,6 +74,22 @@ final class TAKServerManager: ObservableObject {
 
 	@AppStorage("takServerChannel") var channel: Int = 0
 
+	/// The TAK channel is a slot number on the TAK radio, and on another radio that slot can be
+	/// another channel. When the TAK radio changes, the setting follows the channel to its slot on
+	/// the new radio, or goes to primary when the new radio doesn't have it (T184).
+	func moveChannel(from oldRadio: Int64?, to newRadio: Int64?) {
+		guard let oldRadio, let newRadio, oldRadio != newRadio else { return }
+		channel = Self.slot(forChannel: channel, from: oldRadio, to: newRadio, in: PersistenceController.shared.context)
+	}
+
+	static func slot(forChannel slot: Int, from oldRadio: Int64, to newRadio: Int64, in context: ModelContext) -> Int {
+		// As saved: `context` is the main context, which may predate a preset change.
+		let stored = MultiRadioBackfill.storedChannelKeys(for: oldRadio, container: context.container)[Int32(slot)]
+		let computed = MultiRadioBackfill.computedChannelKeys(for: oldRadio, container: context.container)[Int32(slot)]
+		guard let key = computed ?? stored else { return 0 }
+		return ChannelMessageQuery.slots(for: key, among: [newRadio], in: context).first.map { Int($0.index) } ?? 0
+	}
+
 	@AppStorage("takServerEnabled") var enabled = false {
 		didSet {
 			Task {
@@ -162,7 +178,10 @@ final class TAKServerManager: ObservableObject {
 	/// Returns true if the primary channel is valid for TAK server operation
 	func checkPrimaryChannelValidity() {
 		let context = PersistenceController.shared.context
-		var descriptor = FetchDescriptor<MyInfoEntity>()
+		// Feature 021: the radio TAK goes through. The shared store holds a MyInfo per radio,
+		// so an unfiltered fetch could check another radio's channels.
+		let takRadioNum = AccessoryManager.shared.radioNum(for: .tak) ?? PreferredRadio.nodeNum
+		var descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == takRadioNum })
 		descriptor.fetchLimit = 1
 		
 		var issues: [PrimaryChannelIssue] = []
@@ -736,7 +755,8 @@ final class TAKServerManager: ObservableObject {
 
 		let context = PersistenceController.shared.context
 
-		guard let connectedNodeNum = accessoryManager.activeDeviceNum else {
+		// Feature 021: the radio TAK goes through (the first radio unless another was picked).
+		guard let connectedNodeNum = accessoryManager.radioNum(for: .tak) else {
 			Logger.tak.error("Cannot fix channel: No active device number")
 			return false
 		}
@@ -747,7 +767,9 @@ final class TAKServerManager: ObservableObject {
 			return false
 		}
 
-		var descriptor = FetchDescriptor<MyInfoEntity>()
+		// That radio's own MyInfo: the shared store holds one per radio, so an unfiltered fetch
+		// could return another radio's channels.
+		var descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == connectedNodeNum })
 		descriptor.fetchLimit = 1
 
 		do {

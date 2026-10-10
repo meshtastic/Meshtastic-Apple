@@ -13,6 +13,10 @@ struct TextMessageField: View {
 	/// Called on the main actor after the sent message is saved so the list can
 	/// reload immediately and show the new bubble.
 	var onMessageSent: (@MainActor () -> Void)?
+	/// The connected radio that sends (feature 021); nil means the radio connected first.
+	var viaRadio: Int64?
+	/// That radio's slot for the channel, when it differs from the destination's.
+	var viaChannel: Int32?
 
 	@State private var typingMessage: String = ""
 	@State private var totalBytes = 0
@@ -142,7 +146,7 @@ struct TextMessageField: View {
 	}
 
 	private func requestPosition() {
-		let userLongName = accessoryManager.activeConnection?.device.longName ?? "Unknown"
+		let userLongName = accessoryManager.connectedSession(forRadio: viaRadio)?.device.longName ?? "Unknown"
 		sendPositionWithMessage = true
 		typingMessage = "📍 " + userLongName + " \(destination.positionShareMessage)."
 	}
@@ -153,20 +157,23 @@ struct TextMessageField: View {
 				try await accessoryManager.sendMessage(
 					message: typingMessage,
 					toUserNum: destination.userNum,
-					channel: destination.channelNum,
+					channel: viaChannel ?? destination.channelNum,
 					isEmoji: false,
-					replyID: replyMessageId)
+					replyID: replyMessageId,
+					viaRadio: viaRadio)
 
 				typingMessage = ""
 				isFocused = false
 				replyMessageId = 0
 				await MainActor.run { onMessageSent?() }
 
+				// Through the radio that sent the message, in its slot for the channel (feature 021).
 				if sendPositionWithMessage {
 					try await accessoryManager.sendPosition(
-						channel: destination.channelNum,
+						channel: viaChannel ?? destination.channelNum,
 						destNum: destination.positionDestNum,
-						wantResponse: destination.wantPositionResponse
+						wantResponse: destination.wantPositionResponse,
+						viaRadio: viaRadio
 					)
 					Logger.mesh.info("Location Sent")
 				}

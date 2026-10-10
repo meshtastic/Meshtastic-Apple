@@ -5,16 +5,20 @@ import TipKit
 
 /// One main window. Owns that window's navigation. The database, the radio,
 /// and the badge stay on `AppState` and are shared with every other window.
+///
+/// On the Mac with radio windows (feature 021, D-19) this is the Connect window, and each
+/// radio has its own window (`RadioWindowRoot`). Elsewhere it shows the app for the radio
+/// this window works with (`OneWindowRadioScope`); `ContentView` registers the router with
+/// `AppState.windows`, which deep links and notification taps go through (T308).
 struct MainScene: View {
 	let persistenceController: PersistenceController
 	@StateObject private var router = Router()
 	@StateObject private var nodeFilters = NodeFilterParameters()
 	@EnvironmentObject private var appState: AppState
 	@EnvironmentObject private var accessoryManager: AccessoryManager
-	@Environment(\.scenePhase) private var scenePhase
 	@State private var saveChannelLink: SaveChannelLinkData?
 	@State private var pendingContact: PendingContact?
-	@State private var routerToken: UUID?
+	@State private var tookLaunchNavigation = false
 
 	/// TipKit configuration must run once per process. This view stays mounted
 	/// across node switches; the flag is a backstop if a window is recreated.
@@ -25,20 +29,12 @@ struct MainScene: View {
 			.environmentObject(router)
 			.environmentObject(nodeFilters)
 			.onAppear {
-				if routerToken == nil {
-					routerToken = appState.sceneRouters.register(router)
+				if !tookLaunchNavigation {
+					tookLaunchNavigation = true
 					if let launch = appState.takeLaunchNavigation() {
 						router.navigationState = launch
 					}
 				}
-				// A notification can arrive before this window exists. `onChange`
-				// does not replay the value it already holds.
-				claimPendingRoute()
-			}
-			.onDisappear {
-				guard let routerToken else { return }
-				appState.sceneRouters.unregister(routerToken)
-				self.routerToken = nil
 			}
 			.onOpenURL { url in
 				Logger.mesh.debug("URL received")
@@ -49,14 +45,6 @@ struct MainScene: View {
 				saveChannelLink = nil
 				if let url = userActivity.webpageURL {
 					dispatchIncomingURL(url, fromActivity: true)
-				}
-			}
-			.onChange(of: appState.pendingRoute?.id) { _, _ in
-				claimPendingRoute()
-			}
-			.onChange(of: scenePhase) { _, phase in
-				if phase == .active {
-					claimPendingRoute()
 				}
 			}
 			.task {
@@ -91,10 +79,20 @@ struct MainScene: View {
 
 	private var loadedContent: some View {
 		EventFirmwareTintScope {
-			ContentView(
-				appState: appState,
-				router: router
-			)
+			Group {
+				if RadioWindows.areEnabled {
+					// On the Mac this is the Connect window; each radio has its own (W-02).
+					RadioListWindow()
+						.modifier(RadioWindowOpener(tracker: appState.radioWindowTracker))
+				} else {
+					OneWindowRadioScope {
+						ContentView(
+							appState: appState,
+							router: router
+						)
+					}
+				}
+			}
 			.id(appState.databaseResetID)
 			.sheet(item: $saveChannelLink) { link in
 				SaveChannelQRCode(
@@ -109,15 +107,6 @@ struct MainScene: View {
 				#endif
 			}
 			.contactImportSheet($pendingContact, accessoryManager: accessoryManager)
-			// Badge refresh reads the store, so it has to unmount with the
-			// container during a node switch. Message lists, Siri, and CarPlay
-			// all post this.
-			.onReceive(
-				NotificationCenter.default.publisher(for: .meshMessagesDidChange)
-					.debounce(for: .seconds(1), scheduler: DispatchQueue.main)
-			) { _ in
-				appState.refreshBadgeCount(context: persistenceController.container.mainContext)
-			}
 		}
 		.modelContainer(persistenceController.container)
 		.environmentObject(appState)
@@ -127,18 +116,11 @@ struct MainScene: View {
 		.environmentObject(MeshtasticAPI.shared)
 	}
 
-	/// Notification taps land on `AppState` because the app delegate has no
-	/// window. This window takes the route only while it is active, and clears
-	/// it so another window does not navigate too.
-	private func claimPendingRoute() {
-		guard scenePhase == .active else { return }
-		guard let url = appState.claimPendingRoute() else { return }
-		dispatchIncomingURL(url, fromActivity: false)
-	}
-
 	private func dispatchIncomingURL(_ url: URL, fromActivity: Bool) {
 		if url.isFileURL {
-			router.importMapFile(url: url)
+			// "Open in Meshtastic" from the Share Sheet, Files or drag and drop: the window the
+			// user was last in, which on the Mac is a radio's window rather than this one.
+			(appState.windows.router(for: url, manager: accessoryManager) ?? router).importMapFile(url: url)
 		} else if ContactURLHandler.canHandle(url) {
 			if let pending = ContactURLHandler.makePendingContact(from: url, accessoryManager: accessoryManager) {
 				pendingContact = pending
@@ -146,7 +128,8 @@ struct MainScene: View {
 		} else if MeshtasticChannelURL.canHandle(url) {
 			handleChannelLinkURL(url, fromActivity: fromActivity)
 		} else if url.absoluteString.lowercased().contains("meshtastic:///") {
-			router.route(url: url)
+			// The window of the radio the link is about (W-05).
+			appState.windows.route(url: url, manager: accessoryManager)
 		}
 	}
 

@@ -14,15 +14,23 @@ import MeshtasticProtobufs // Added to ensure RoutingError is accessible if need
 
 struct UserMessageList: View {
 	@EnvironmentObject var appState: AppState
+	/// This window's router (feature 021, T308).
 	@EnvironmentObject private var router: Router
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@Environment(\.scenePhase) var scenePhase
 	@Environment(\.modelContext) private var context
 	@FocusState var messageFieldFocused: Bool
 	@Bindable var user: UserEntity
 	@State private var replyMessageId: Int64 = 0
 	@State private var messageToHighlight: Int64 = 0
-	@AppStorage("preferredPeripheralNum") private var preferredPeripheralNum = -1
+	/// The window's radio, also while it's off (`radioNodeNum`); -1 for none. Redraws with the
+	/// manager.
+	private var preferredPeripheralNum: Int {
+		if let radioNum = accessoryManager.nodeNum(for: windowRadio) { return Int(radioNum) }
+		return accessoryManager.radioNodeNum(for: windowRadio) > 0 ? Int(accessoryManager.radioNodeNum(for: windowRadio)) : -1
+	}
 	@State private var messageLimit: Int = 100
 	@State private var messages: [MessageEntity] = []
 	@State private var bottomScrollRequest = 0
@@ -38,6 +46,15 @@ struct UserMessageList: View {
 	@State private var tapbackTargetMessage: MessageEntity?
 	@State private var tapbackText = ""
 	@FocusState var tapbackFocused: Bool
+	/// Feature 021 (T085): a direct message is between one of the user's radios and this node.
+	/// The radios this conversation involves (connected, or in its history), the connected ones first.
+	@State private var conversationRadios: [Int64] = []
+	/// The radio picked in the "Via" control; nil follows the window's radio.
+	@State private var chosenRadio: Int64?
+	@State private var unreadByRadio: [Int64: Int] = [:]
+	/// Short and long names of the conversation's radios, looked up with them rather than while
+	/// the picker renders (T163).
+	@State private var storedRadioNames: [Int64: (short: String?, long: String?)] = [:]
 
 	init(user: UserEntity) {
 		self.user = user
@@ -62,10 +79,11 @@ struct UserMessageList: View {
 			}
 			Logger.data.info("📖 [App] All unread direct messages marked as read for user \(user.num, privacy: .public).")
 
-			if let connectedPeripheralNum = accessoryManager.activeDeviceNum,
-			   let connectedNode = getNodeInfo(id: connectedPeripheralNum, context: context),
-			   let connectedUser = connectedNode.user {
-				appState.unreadDirectMessages = connectedUser.unreadMessages(context: context, skipLastMessageCheck: true) // skipLastMessageCheck=true because we don't update lastMessage on our own connected node
+			if let connectedPeripheralNum = accessoryManager.nodeNum(for: windowRadio) {
+				// Feature 021 (T090): the badge counts direct messages to every radio.
+				var radios = UserEntity.localRadioNums(context: context)
+				radios.insert(connectedPeripheralNum)
+				appState.unreadDirectMessages = UserEntity.unreadDirectMessages(toRadios: radios, context: context)
 			}
 			// Refresh other unread surfaces (CarPlay templates) too. Only when something was
 			// actually marked read: this view reloads on that notification, and an unconditional
@@ -81,6 +99,7 @@ struct UserMessageList: View {
 	@MainActor
 	private func loadMessages(markReadAfterLoad: Bool = false) {
 		do {
+			refreshConversationRadios()
 			let previousLastID = messages.last?.messageId
 			// Read before the fetch. New rows move the marker, so a later read would
 			// describe the layout this reload is about to change.
@@ -141,49 +160,14 @@ struct UserMessageList: View {
 
 
 	private func fetchIncomingMessages(limit: Int? = nil, unreadOnly: Bool) throws -> [MessageEntity] {
-		let userNum = user.num
-		let detectionSensorPortNum: Int32 = 10
-		var descriptor = FetchDescriptor<MessageEntity>(
-			predicate: #Predicate<MessageEntity> {
-				$0.fromUser?.num == userNum
-				&& $0.toUser != nil
-				&& $0.isEmoji == false && $0.admin == false && $0.portNum != detectionSensorPortNum
-				&& (!unreadOnly || $0.read == false)
-			},
-			sortBy: [
-				SortDescriptor(\MessageEntity.messageTimestamp, order: .reverse),
-				SortDescriptor(\MessageEntity.messageId, order: .reverse)
-			]
-		)
-		if let limit {
-			descriptor.fetchLimit = limit
-		}
-		return try context.fetch(descriptor)
+		let query = DirectMessageQuery(userNum: user.num, radio: radioFilter)
+		return try DirectMessageQuery.fetch(query.incoming(unreadOnly: unreadOnly), limit: limit, in: context)
 	}
 
 	private func fetchOutgoingMessages(limit: Int? = nil, unreadOnly: Bool) throws -> [MessageEntity] {
-		let userNum = user.num
-		let detectionSensorPortNum: Int32 = 10
-		var descriptor = FetchDescriptor<MessageEntity>(
-			predicate: #Predicate<MessageEntity> {
-				$0.toUser?.num == userNum
-				&& $0.isEmoji == false && $0.admin == false && $0.portNum != detectionSensorPortNum
-				&& (!unreadOnly || $0.read == false)
-			},
-			sortBy: [
-				SortDescriptor(\MessageEntity.messageTimestamp, order: .reverse),
-				SortDescriptor(\MessageEntity.messageId, order: .reverse)
-			]
-		)
-		if let limit {
-			descriptor.fetchLimit = limit
-		}
-		return try context.fetch(descriptor)
+		let query = DirectMessageQuery(userNum: user.num, radio: radioFilter)
+		return try DirectMessageQuery.fetch(query.outgoing(unreadOnly: unreadOnly), limit: limit, in: context)
 	}
-
-
-
-
 
 	private func buildPreviousByID(for visibleMessages: [MessageEntity], previousMessage: MessageEntity?) -> [Int64: MessageEntity] {
 		var result: [Int64: MessageEntity] = [:]
@@ -253,7 +237,8 @@ struct UserMessageList: View {
 					toUserNum: destination.userNum,
 					channel: destination.channelNum,
 					isEmoji: true,
-					replyID: target.messageId
+					replyID: target.messageId,
+					viaRadio: sendingRadio
 				)
 				await MainActor.run { loadMessages(markReadAfterLoad: routerIsShowingThisUser()) }
 			} catch {
@@ -290,7 +275,7 @@ struct UserMessageList: View {
 								replyMessage: repliesByID[message.replyID],
 								tapbacks: tapbacksByReplyID[message.messageId] ?? [],
 								previousMessage: previousByID[message.messageId],
-								preferredPeripheralNum: preferredPeripheralNum,
+								preferredPeripheralNum: rowOwnerNum,
 								user: user,
 								replyMessageId: $replyMessageId,
 								messageFieldFocused: $messageFieldFocused,
@@ -338,6 +323,12 @@ struct UserMessageList: View {
 					}
 				}
 				.task(id: "\(routerIsShowingThisUser())-\(user.num)") {
+					// Feature 021 (T091): a notification's deep link names the radio the message came
+					// in on; open that radio's thread.
+					if let radio = router.messagesRadio {
+						chosenRadio = radio
+						router.messagesRadio = nil
+					}
 					let isVisible = routerIsShowingThisUser()
 					loadMessages(markReadAfterLoad: isVisible)
 					guard isVisible else { return }
@@ -398,22 +389,35 @@ struct UserMessageList: View {
 						}
 				}
 			}
-			TextMessageField(
-				destination: .user(user),
-				replyMessageId: $replyMessageId,
-				isFocused: $messageFieldFocused,
-				onMessageSent: {
-					let previousScrollRequest = bottomScrollRequest
-					loadMessages(markReadAfterLoad: routerIsShowingThisUser())
-					if MessageScrollTracker.shouldFollowSend(
-						scrollRequestChangedDuringLoad: bottomScrollRequest != previousScrollRequest
-					) {
-						bottomScrollRequest &+= 1
-					}
-				}
-			)
-			.fixedSize(horizontal: false, vertical: true)
+			if showsRadioPicker {
+				radioPicker
+			}
+			if let sendingRadio, !accessoryManager.isRadioConnected(nodeNum: sendingRadio) {
+				Label(String.localizedStringWithFormat("Connect %@ to reply from it.".localized, radioName(sendingRadio)), systemImage: "antenna.radiowaves.left.and.right.slash")
+					.font(.footnote)
+					.foregroundStyle(.secondary)
+					.padding(.vertical, 12)
+			} else {
+				TextMessageField(
+					destination: .user(user),
+					replyMessageId: $replyMessageId,
+					isFocused: $messageFieldFocused,
+					onMessageSent: {
+						let previousScrollRequest = bottomScrollRequest
+						loadMessages(markReadAfterLoad: routerIsShowingThisUser())
+						if MessageScrollTracker.shouldFollowSend(
+							scrollRequestChangedDuringLoad: bottomScrollRequest != previousScrollRequest
+						) {
+							bottomScrollRequest &+= 1
+						}
+					},
+					viaRadio: sendingRadio
+				)
+				.fixedSize(horizontal: false, vertical: true)
+			}
 		}
+		.onChange(of: chosenRadio) { loadMessages(markReadAfterLoad: routerIsShowingThisUser()) }
+		.onChange(of: accessoryManager.connectedRadioNums) { loadMessages(markReadAfterLoad: routerIsShowingThisUser()) }
 		.navigationBarTitleDisplayMode(.inline)
 		.searchable(text: $searchQuery, placement: .navigationBarDrawer(displayMode: .always), prompt: "Find in conversation")
 		.autocorrectionDisabled()
@@ -448,12 +452,116 @@ struct UserMessageList: View {
 			}
 			ToolbarItem(placement: .navigationBarTrailing) {
 				ZStack {
-					ConnectedDevice(
-						deviceConnected: accessoryManager.isConnected,
-						name: accessoryManager.activeConnection?.device.shortName ?? "?")
+					WindowConnectedDevice()
 				}
 			}
 		}
+	}
+}
+
+// MARK: - Radio choice (feature 021, T085)
+// A direct message is between one of the user's radios and this node: only that radio can
+// decrypt it or reply as the node it was sent to. With more than one radio in the conversation,
+// the list shows one radio's thread at a time and replies go out through it.
+private extension UserMessageList {
+	/// The radio whose thread is shown, when the conversation involves more than one.
+	var selectedRadio: Int64? {
+		if let chosenRadio, conversationRadios.contains(chosenRadio) {
+			return chosenRadio
+		}
+		// The window's radio, also while it's off: its thread stays, and a reply fails rather than
+		// going from another radio (review V10 R10-3).
+		if conversationRadios.contains(windowRadioNum) {
+			return windowRadioNum
+		}
+		return conversationRadios.first
+	}
+
+	/// The window's radio, also while it's off; 0 when none is known.
+	var windowRadioNum: Int64 {
+		accessoryManager.nodeNum(for: windowRadio) ?? accessoryManager.radioNodeNum(for: windowRadio)
+	}
+
+	/// Only filtered when there's a choice; with one radio the queries are exactly as before.
+	var radioFilter: Int64? {
+		conversationRadios.count > 1 ? selectedRadio : nil
+	}
+
+	/// The radio replies go out through: the shown thread's, else the window's radio (D-19).
+	var sendingRadio: Int64? { radioFilter ?? accessoryManager.sendingRadio(for: windowRadio) }
+
+	var showsRadioPicker: Bool { conversationRadios.count > 1 }
+
+	/// Which sender's bubbles are "mine" in the shown thread: the thread's radio. With nothing
+	/// connected and the history on one radio only, that radio rather than the preferred one,
+	/// whose sent messages would otherwise show as incoming (T166).
+	var rowOwnerNum: Int {
+		if let radioFilter { return Int(radioFilter) }
+		if conversationRadios.count == 1, let only = conversationRadios.first { return Int(only) }
+		return preferredPeripheralNum
+	}
+
+	/// Connected radios, plus the user's other radios that have messages with this node, and the
+	/// window's radio (`DirectMessageQuery.conversationRadios`). Uses counts per radio (a handful
+	/// at most), so a long conversation isn't loaded to find them.
+	func refreshConversationRadios() {
+		let userNum = user.num
+		let known = ((try? context.fetch(FetchDescriptor<MyInfoEntity>())) ?? []).map(\.myNodeNum)
+		let (withHistory, unread) = DirectMessageQuery.radiosWithHistory(userNum: userNum, among: Set(known), in: context)
+		let radios = DirectMessageQuery.conversationRadios(
+			connected: accessoryManager.connectedRadioNums,
+			withHistory: withHistory,
+			windowRadio: windowRadioNum,
+			userNum: userNum
+		)
+		if radios != conversationRadios {
+			conversationRadios = radios
+		}
+		if unread != unreadByRadio {
+			unreadByRadio = unread
+		}
+		var names: [Int64: (short: String?, long: String?)] = [:]
+		for radioNum in radios where storedRadioNames[radioNum] == nil {
+			let user = getNodeInfo(id: radioNum, context: context)?.user
+			names[radioNum] = (user?.shortName, user?.longName)
+		}
+		if !names.isEmpty {
+			storedRadioNames.merge(names) { _, new in new }
+		}
+	}
+
+	func radioName(_ radioNum: Int64, short: Bool = false) -> String {
+		if let device = accessoryManager.connectedSession(forRadio: radioNum)?.device {
+			return (short ? device.shortName : device.longName) ?? device.name
+		}
+		let stored = storedRadioNames[radioNum]
+		return (short ? stored?.short : stored?.long) ?? radioNum.toHex()
+	}
+
+	func radioLabel(_ radioNum: Int64) -> String {
+		var label = radioName(radioNum, short: true)
+		if !accessoryManager.isRadioConnected(nodeNum: radioNum) {
+			label += " · " + "Offline".localized
+		}
+		if radioNum != selectedRadio, let count = unreadByRadio[radioNum], count > 0 {
+			label += " (\(count))"
+		}
+		return label
+	}
+
+	@ViewBuilder var radioPicker: some View {
+		Picker("Via", selection: Binding(
+			get: { selectedRadio ?? 0 },
+			set: { chosenRadio = $0 }
+		)) {
+			ForEach(conversationRadios, id: \.self) { radioNum in
+				Text(radioLabel(radioNum)).tag(radioNum)
+			}
+		}
+		.pickerStyle(.segmented)
+		.padding(.horizontal)
+		.padding(.vertical, 4)
+		.accessibilityLabel("Radio for this conversation")
 	}
 }
 

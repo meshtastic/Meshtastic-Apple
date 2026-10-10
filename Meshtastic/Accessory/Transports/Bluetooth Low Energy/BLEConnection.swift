@@ -67,11 +67,13 @@ actor BLEConnection: Connection {
 	
 	var isConnected: Bool { peripheral.state == .connected }
 	var transport: BLETransport?
+	let isKeptByRestore: Bool
 	
-	init(peripheral: CBPeripheral, central: CBCentralManager, transport: BLETransport) {
+	init(peripheral: CBPeripheral, central: CBCentralManager, transport: BLETransport, keptByRestore: Bool = false) {
 		self.peripheral = peripheral
 		self.central = central
 		self.transport = transport
+		self.isKeptByRestore = keptByRestore
 		self.delegate = BLEConnectionDelegate(peripheral: peripheral)
 		self.writeContinuations = WriteContinuationStore()
 		self.readContinuations = []

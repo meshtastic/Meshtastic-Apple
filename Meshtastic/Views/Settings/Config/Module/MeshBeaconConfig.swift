@@ -23,6 +23,8 @@ struct MeshBeaconConfig: View {
 
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@Environment(\.dismiss) private var goBack
 	let node: NodeInfoEntity?
 
@@ -47,7 +49,7 @@ struct MeshBeaconConfig: View {
 	}
 
 	private var supports2_8: Bool {
-		accessoryManager.checkIsVersionSupported(forVersion: "2.8.0")
+		accessoryManager.isVersionSupported(forVersion: "2.8.0", for: windowRadio)
 	}
 
 	/// The radio's configured LoRa region. Every part of the beacon — the offered
@@ -147,7 +149,7 @@ struct MeshBeaconConfig: View {
 		.navigationTitle("Mesh Beacon Config")
 		.toolbar {
 			ToolbarItem(placement: .topBarTrailing) {
-				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+				WindowConnectedDevice()
 			}
 		}
 	}
@@ -183,13 +185,14 @@ struct MeshBeaconConfig: View {
 			}
 		}
 		.scrollDismissesKeyboard(.interactively)
-		.disabled(!accessoryManager.isConnected || node?.meshBeaconConfig == nil)
+		.disabled(!accessoryManager.isConnected(windowRadio) || node?.meshBeaconConfig == nil)
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {
 				performConfigSave(
 					node: node,
 					context: context,
 					accessoryManager: accessoryManager,
+					window: windowRadio,
 					hasChanges: $hasChanges,
 					dismiss: goBack
 				) { fromUser, toUser in
@@ -330,7 +333,7 @@ struct MeshBeaconConfig: View {
 		var presets = ModemPresets.userSelectable
 		if supports2_8,
 		   let code = RegionCodes(rawValue: Int(nodeRegion))?.protoEnumValue(),
-		   let info = accessoryManager.loRaRegionPresets[code],
+		   let info = accessoryManager.loRaRegionPresets(for: windowRadio)[code],
 		   !info.presets.isEmpty {
 			let constrained = ModemPresets.selectable(supports2_8: true)
 				.filter { info.presets.contains($0.protoEnumValue()) }

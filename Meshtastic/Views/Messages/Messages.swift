@@ -14,6 +14,9 @@ struct Messages: View {
 
 	@Environment(\.modelContext) private var context
 	@Environment(\.colorScheme) private var colorScheme
+	@EnvironmentObject private var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@ObservedObject	var router: Router
 	@Binding var unreadChannelMessages: Int
 	@Binding var unreadDirectMessages: Int
@@ -166,6 +169,13 @@ struct Messages: View {
 			revealSidebarForEmptySelection()
 		}.onChange(of: router.messagesState) { _, newValue in
 			consumeDeepLink(newValue)
+		}.onChange(of: accessoryManager.nodeNum(for: windowRadio)) { _, newValue in
+			// The channel list is the window's radio's (T083). Switching the window's radio (W-13)
+			// doesn't rebuild this view, so follow it here (T211). A channel picked on the
+			// previous radio isn't this radio's; a DM contact is the same node on every radio.
+			guard let newValue, newValue != nodeNum else { return }
+			nodeNum = newValue
+			channelSelection = nil
 		}.onChange(of: router.messagesSection) { _, newValue in
 			// A reset (e.g. `popToRoot` on disconnect) nils the section; clear the detail pane to
 			// match. Section *changes* between .channels/.directMessages are reset by the sidebar
@@ -195,7 +205,7 @@ struct Messages: View {
 	}
 
 	private func bootstrapNodeNum() {
-		let nodeId = Int64(UserDefaults.preferredPeripheralNum)
+		let nodeId = accessoryManager.nodeNum(for: windowRadio) ?? accessoryManager.radioNodeNum(for: windowRadio)
 		if nodeId > 0 && nodeNum == nil {
 			nodeNum = nodeId
 		}
@@ -218,9 +228,10 @@ struct Messages: View {
 				userSelection = nil
 				break
 			}
-			guard let channel = node?.myInfo?.channels.first(where: { $0.id == channelId }) else {
+			guard let channel = deepLinkedChannel(channelId) else {
 				return // Not resolvable yet — keep the payload and retry on the next appear.
 			}
+			router.messagesRadio = nil
 			channelSelection = channel
 			// Clear the sibling DM selection so the detail pane (which prioritizes
 			// channelSelection) can't surface a stale conversation under the Channels section.
@@ -240,5 +251,20 @@ struct Messages: View {
 		}
 
 		router.messagesState = nil // Consumed — prevents a re-appear from re-resolving it.
+	}
+
+	/// The channel a deep link's `channelId` names. With `radio=` from another radio, the id is
+	/// that radio's slot; the same channel (by `channelKey`) is found in this radio's list, which
+	/// may keep it in another slot (feature 021, T091).
+	private func deepLinkedChannel(_ channelId: Int32) -> ChannelEntity? {
+		let channels = node?.myInfo?.channels ?? []
+		// Keys as saved: this view's channel objects can predate a preset change.
+		if let radio = router.messagesRadio, radio != node?.num, let ownNum = node?.num,
+		   let key = MultiRadioBackfill.computedChannelKeys(for: radio, container: context.container)[channelId],
+		   let ownIndex = MultiRadioBackfill.storedChannelKeys(for: ownNum, container: context.container).first(where: { $0.value == key })?.key,
+		   let sameChannel = channels.first(where: { $0.index == ownIndex }) {
+			return sameChannel
+		}
+		return channels.first(where: { $0.id == channelId })
 	}
 }

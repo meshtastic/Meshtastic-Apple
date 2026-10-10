@@ -28,6 +28,8 @@ extension ModuleConfig.TelemetryConfig: ConfigFormMessage {
 
 struct TelemetryConfig: View {
 	@EnvironmentObject private var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	let node: NodeInfoEntity?
 
 	private typealias F = ModuleConfig.TelemetryConfig.Fields
@@ -86,8 +88,8 @@ struct TelemetryConfig: View {
 	}
 
 	var body: some View {
-		let legacy = Self.isLegacy(isConnected: accessoryManager.isConnected) {
-			accessoryManager.checkIsVersionSupported(forVersion: $0)
+		let legacy = Self.isLegacy(isConnected: accessoryManager.isConnected(windowRadio)) {
+			accessoryManager.isVersionSupported(forVersion: $0, for: windowRadio)
 		}
 		MetadataConfigForm(
 			node: node, title: "Telemetry", overlay: Self.overlay(),

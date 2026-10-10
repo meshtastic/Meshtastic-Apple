@@ -4,6 +4,8 @@
 #if os(iOS)
 import Testing
 import Foundation
+import SwiftData
+import Intents
 @testable import Meshtastic
 
 // MARK: - IntentMessageConverters Pure Logic Tests
@@ -120,6 +122,125 @@ struct IntentChannelDisplayNameTests {
 }
 
 // MARK: - meshtasticDomain constant
+
+// MARK: - Conversations with a radio (feature 021, T157)
+
+@Suite("IntentMessageConverters conversations across radios")
+struct IntentConversationRadioTests {
+
+	@Test func identifiersCarryTheRadioOnlyWhenGiven() {
+		#expect(IntentMessageConverters.channelConversationIdentifier(index: 2, radioNum: nil) == "channel-2")
+		#expect(IntentMessageConverters.directMessageConversationIdentifier(nodeNum: 42, radioNum: nil) == "dm-42")
+		let channel = IntentMessageConverters.channelConversationIdentifier(index: 2, radioNum: 0x0A0A)
+		let dm = IntentMessageConverters.directMessageConversationIdentifier(nodeNum: 42, radioNum: 0x0B0B)
+		#expect(IntentMessageConverters.conversation(fromIdentifier: channel) == .channel(index: 2, radioNum: 0x0A0A))
+		#expect(IntentMessageConverters.conversation(fromIdentifier: dm) == .directMessage(nodeNum: 42, radioNum: 0x0B0B))
+		#expect(IntentMessageConverters.conversation(fromIdentifier: "channel-3") == .channel(index: 3, radioNum: nil))
+		#expect(IntentMessageConverters.conversation(fromIdentifier: "channel-9") == nil)
+		#expect(IntentMessageConverters.conversation(fromIdentifier: "other") == nil)
+		// The older parser still finds the slot in the new form.
+		#expect(IntentMessageConverters.channelIndex(fromHandleOrName: channel) == 2)
+	}
+
+	@Test @MainActor func radioNamedOnlyWithSeveralRadios() throws {
+		let schema = Schema(versionedSchema: MeshtasticSchema.current)
+		let config = ModelConfiguration("IntentConversationRadioTests-\(UUID().uuidString)", schema: schema, isStoredInMemoryOnly: true, allowsSave: true)
+		let context = ModelContext(try ModelContainer(for: schema, configurations: config))
+		func radio(_ num: Int64, channel name: String) {
+			let myInfo = MyInfoEntity()
+			myInfo.myNodeNum = num
+			myInfo.lastConnected = .now
+			context.insert(myInfo)
+			let channel = ChannelEntity()
+			channel.index = 2
+			channel.name = name
+			channel.myInfoChannel = myInfo
+			context.insert(channel)
+		}
+		radio(0x0A0A, channel: "Hiking")
+		let message = MessageEntity()
+		message.localNodeNum = 0x0B0B
+		message.channel = 2
+		context.insert(message)
+		try context.save()
+		#expect(IntentMessageConverters.conversationRadio(for: message) == nil, "one radio: identifiers as before")
+
+		radio(0x0B0B, channel: "Family")
+		try context.save()
+		#expect(IntentMessageConverters.conversationRadio(for: message) == 0x0B0B)
+		#expect(IntentMessageConverters.conversationIdentifier(for: message) == "channel-2:r\(Int64(0x0B0B))")
+		#expect(IntentMessageConverters.channelSpokenName(index: 2, radioNum: 0x0B0B, in: context) == "Family")
+		#expect(IntentMessageConverters.channelSpokenName(index: 2, radioNum: nil, in: context) == "Channel 2")
+	}
+}
+
+@Suite("Siri read-back across radios", .serialized)
+struct SearchMessagesRadioTests {
+
+	@Test @MainActor func readBackStaysOnTheConversationsRadio() async throws {
+		let context = PersistenceController.shared.context
+		let radioA: Int64 = 0x5EA0_000A, radioB: Int64 = 0x5EA0_000B
+		let base = Int64.random(in: 1_000_000...9_000_000)
+		var inserted: [MessageEntity] = []
+		for (offset, radio) in [radioA, radioB].enumerated() {
+			let message = MessageEntity()
+			message.messageId = base + Int64(offset)
+			message.channel = 2
+			message.localNodeNum = radio
+			message.messagePayload = "slot 2 on \(radio)"
+			context.insert(message)
+			inserted.append(message)
+		}
+		try context.save()
+		defer {
+			inserted.forEach(context.delete)
+			try? context.save()
+		}
+
+		let ids = inserted.map { String($0.messageId) }
+		func search(_ conversation: String) async -> [String] {
+			let intent = INSearchForMessagesIntent(recipients: nil, senders: nil, searchTerms: nil, attributes: [], dateTime: nil,
+				identifiers: ids, notificationIdentifiers: nil, speakableGroupNames: nil, conversationIdentifiers: [conversation])
+			return (await SearchForMessagesIntentHandler().handle(intent: intent)).messages?.map(\.identifier) ?? []
+		}
+		#expect(await search(IntentMessageConverters.channelConversationIdentifier(index: 2, radioNum: radioA)) == [String(base)])
+		#expect(Set(await search("channel-2")) == Set(ids), "without a radio, as before")
+	}
+
+	@Test @MainActor func sharedChannelMessagesDeliveredByAnotherRadioAreFound() async throws {
+		let context = PersistenceController.shared.context
+		let radioA: Int64 = 0x5EA1_000A, radioB: Int64 = 0x5EA1_000B
+		let key = "c1:test:\(UUID().uuidString)"
+		// A has the channel in slot 2; B delivered one of its messages first, from B's slot 4.
+		let myInfo = MyInfoEntity()
+		myInfo.myNodeNum = radioA
+		context.insert(myInfo)
+		let channel = ChannelEntity()
+		channel.index = 2
+		channel.channelKey = key
+		channel.myInfoChannel = myInfo
+		context.insert(channel)
+		let viaB = MessageEntity()
+		viaB.messageId = Int64.random(in: 10_000_000...90_000_000)
+		viaB.channel = 4
+		viaB.channelKey = key
+		viaB.localNodeNum = radioB
+		context.insert(viaB)
+		try context.save()
+		defer {
+			context.delete(viaB)
+			context.delete(channel)
+			context.delete(myInfo)
+			try? context.save()
+		}
+
+		let intent = INSearchForMessagesIntent(recipients: nil, senders: nil, searchTerms: nil, attributes: [], dateTime: nil,
+			identifiers: [String(viaB.messageId)], notificationIdentifiers: nil, speakableGroupNames: nil,
+			conversationIdentifiers: [IntentMessageConverters.channelConversationIdentifier(index: 2, radioNum: radioA)])
+		let found = (await SearchForMessagesIntentHandler().handle(intent: intent)).messages?.map(\.identifier) ?? []
+		#expect(found == [String(viaB.messageId)])
+	}
+}
 
 @Suite("IntentMessageConverters Constants")
 struct IntentConverterConstantsTests {

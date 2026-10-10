@@ -40,16 +40,42 @@
 </tbody>
 </table>
 <p>Turning a toggle off suppresses only the alert — messages, reactions, waypoints, and nodes are still received and still appear in the app. Muting a channel or a sender in the app silences that conversation regardless of these settings.</p>
+<h3>TAK, CarPlay &amp; Siri, and Apple Watch</h3>
+<p>With one radio, each of these uses it. With more than one of your radios, each one you use needs a radio, and App Settings has a picker for each. When you add a second radio, a <strong>Choose Radios</strong> sheet asks you to pick: for CarPlay &amp; Siri always, for TAK while its server is on (or turn TAK off instead), and for the Apple Watch when one is paired. One you don't use shows <strong>Not Set</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>What the chosen radio does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TAK</td>
+<td>Carries CoT from TAK clients to the mesh. The primary channel check and <strong>Fix Channel</strong> apply to it.</td>
+</tr>
+<tr>
+<td>CarPlay &amp; Siri</td>
+<td>Sends messages from CarPlay, Siri and Shortcuts, and supplies the channels and contacts CarPlay lists.</td>
+</tr>
+<tr>
+<td>Apple Watch</td>
+<td>The Watch lists only the nodes this radio has heard, with its own signal and last heard time.</td>
+</tr>
+</tbody>
+</table>
+<p>A chosen radio that's off is never replaced by another: the feature waits until it's back. Siri and Shortcuts say the radio isn't connected rather than sending through another radio, and the Watch keeps showing what the chosen radio heard. Removing the chosen radio clears the choice, and the app asks again while you have more than one radio. Replies and reactions sent from a message notification always go through the radio the message came in on.</p>
 <h3>Data Management</h3>
 <ul>
-<li><strong>Erase All App Data</strong> — clears the local database, translation cache, and all stored settings, then immediately reloads the bundled device hardware catalog. Use this as a last resort.</li>
-<li><strong>NodeDB Reset</strong> — resets the node database on your connected radio. When prompted, you can choose to <strong>Preserve Favorites</strong> so your starred nodes are retained after the reset.</li>
+<li><strong>Clear App Data</strong> — clears the local database (favorites and saved routes included), every saved backup and the translation cache, then immediately reloads the bundled device hardware catalog. Your app settings are kept; <strong>Reset App Settings</strong> resets those. Use this as a last resort. With more than one radio, the confirmation names every radio whose data it erases, and they all disconnect first. Removing your only radio does the same (see <a href="bluetooth.md#resetting-or-removing-a-radio">Resetting or Removing a Radio</a>).</li>
+<li><strong>NodeDB Reset</strong> — resets the node database on your connected radio. When prompted, you can choose to <strong>Preserve Favorites</strong> so your starred nodes are retained after the reset. With more than one radio, only that radio's data is cleared; see <a href="bluetooth.md#resetting-or-removing-a-radio">Resetting or Removing a Radio</a>.</li>
 <li><strong>Reset App Settings</strong> — restores default app preferences without affecting your node database.</li>
 </ul>
 <h2>Radio Configuration</h2>
 <p>Radio configuration requires a connected node. Select your node from the <strong>Configure</strong> section if you have multiple nodes.</p>
 <h3>Node selection</h3>
 <p>The Configure picker lists live nodes from the current node database, with favorites first. If the node database is reset or the selected node disappears, Settings clears that selection instead of opening configuration for a stale node. Reconnect to a radio or choose a currently listed node to continue configuring it.</p>
+<p>With more than one radio connected, Settings shows the window's radio. The other connected radios are listed as <strong>Connected</strong> in the <strong>Node</strong> picker under <strong>Configure</strong>; pick one to configure it. The app talks to it over its own connection, so it doesn't need remote admin set up. If your radio doesn't offer the Node picker, show the other radio in the window from the Connect tab or the radio indicator at the top of the screen instead (on the Mac, open its window); the note under <strong>Configure</strong> says which.</p>
 <h3>LoRa</h3>
 <p>LoRa settings control how your radio communicates on the mesh:</p>
 <table>

@@ -1,0 +1,85 @@
+//
+//  StoredRadiosSection.swift
+//  Meshtastic
+//
+//  Copyright(c) Meshtastic 2026.
+//
+
+import SwiftData
+import SwiftUI
+
+/// App Settings › Your Radios (feature 021, T187): the user's radios that aren't connected, with
+/// Remove for each. A radio that died, was given away, or is only known from an old backup would
+/// otherwise stay one of the user's radios for good: its broadcasts are stored as the user's own
+/// and never notify. A connected radio is removed beside its Disconnect, or from Settings › Device.
+/// Shown for a single radio too (D-18).
+struct StoredRadiosSection: View {
+	@EnvironmentObject var accessoryManager: AccessoryManager
+	@Query(sort: \MyInfoEntity.myNodeNum) private var radios: [MyInfoEntity]
+	@State private var radioToRemove: RadioToRemove?
+	@State private var removing: Set<Int64> = []
+
+	/// Radios neither connected nor connecting (T197): removing one that's connecting would delete
+	/// its data while its connect goes on writing for it.
+	private var offlineRadios: [MyInfoEntity] {
+		let connecting = accessoryManager.connectAttempts.values
+		return radios.filter { radio in
+			radio.myNodeNum != 0
+				&& !accessoryManager.isRadioConnected(nodeNum: radio.myNodeNum)
+				&& !connecting.contains { $0.device.num == radio.myNodeNum || $0.device.id.uuidString == radio.peripheralId }
+		}
+	}
+
+	private func name(_ radio: MyInfoEntity) -> String {
+		let user = radio.myInfoNode?.user
+		return user?.longName ?? user?.shortName ?? radio.bleName ?? radio.myNodeNum.toHex()
+	}
+
+	var body: some View {
+		if !offlineRadios.isEmpty {
+			Section {
+				ForEach(offlineRadios, id: \.myNodeNum) { radio in
+					HStack {
+						VStack(alignment: .leading, spacing: 2) {
+							Text(name(radio))
+							if let lastConnected = radio.lastConnected {
+								Text("Last connected \(lastConnected.formatted(date: .abbreviated, time: .shortened))")
+									.font(.caption)
+									.foregroundStyle(.secondary)
+							} else {
+								// The store's own radio before its first connect since the update, a
+								// merged backup's radio, or a row an older version left (T197).
+								Text("Not connected since the update")
+									.font(.caption)
+									.foregroundStyle(.secondary)
+							}
+						}
+						Spacer()
+						// Also one being removed from elsewhere, such as the Mac's Radios menu.
+						if removing.contains(radio.myNodeNum) || accessoryManager.radiosBeingRemoved.contains(radio.myNodeNum) {
+							ProgressView()
+						} else {
+							Button("Remove", role: .destructive) {
+								radioToRemove = RadioToRemove(nodeNum: radio.myNodeNum, name: name(radio))
+							}
+							.buttonStyle(.borderless)
+						}
+					}
+				}
+			} header: {
+				Text("Your Radios")
+			} footer: {
+				Text("Radios the app knows that aren't connected now. Remove one you no longer have, such as a radio that stopped working or that you gave away.")
+			}
+			.removeRadioConfirmation($radioToRemove) { remove($0.nodeNum) }
+		}
+	}
+
+	private func remove(_ radioNum: Int64) {
+		removing.insert(radioNum)
+		Task {
+			await accessoryManager.removeRadio(radioNum)
+			removing.remove(radioNum)
+		}
+	}
+}

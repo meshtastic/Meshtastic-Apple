@@ -15,6 +15,8 @@ import SwiftUI
 struct WaypointForm: View {
 
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@Environment(\.modelContext) private var context
 	@Environment(\.dismiss) private var dismiss
 	@State var waypoint: WaypointEntity
@@ -218,11 +220,11 @@ struct WaypointForm: View {
 						commitLocal()
 						return
 					}
-					guard let deviceNum = accessoryManager.activeDeviceNum else {
+					guard let deviceNum = accessoryManager.nodeNum(for: windowRadio) else {
 						Logger.mesh.warning("Send waypoint failed: No deviceNum")
 						return
 					}
-					if accessoryManager.isConnected {
+					if accessoryManager.isConnected(windowRadio) {
 						/// Send a new or exiting waypoint
 						var newWaypoint = Waypoint()
 						// Sending publishes it to the mesh, so it is no longer local-only. Clear the
@@ -260,7 +262,7 @@ struct WaypointForm: View {
 						
 						Task {
 							do {
-								try await accessoryManager.sendWaypoint(waypoint: newWaypoint)
+								try await accessoryManager.sendWaypoint(waypoint: newWaypoint, viaRadio: accessoryManager.sendingRadio(for: windowRadio))
 								dismiss()
 							} catch {
 								Logger.mesh.warning("Send waypoint failed: \(error)")
@@ -278,7 +280,7 @@ struct WaypointForm: View {
 				.buttonStyle(.bordered)
 				.buttonBorderShape(.capsule)
 				.controlSize(.regular)
-				.disabled(!local && !accessoryManager.isConnected)
+				.disabled(!local && !accessoryManager.isConnected(windowRadio))
 				.padding(.bottom)
 				
 				Button(role: .cancel) {
@@ -296,7 +298,7 @@ struct WaypointForm: View {
 						Button(role: .destructive, action: deleteForMe) {
 							Label("Remove from this device", systemImage: "trash")
 						}
-						if accessoryManager.isConnected && !local && !waypoint.locked {
+						if accessoryManager.isConnected(windowRadio) && !local && !waypoint.locked {
 							Button(role: .destructive, action: deleteForEveryone) {
 								Label("Delete for everyone", systemImage: "trash.slash")
 							}
@@ -479,7 +481,7 @@ struct WaypointForm: View {
 							Button(role: .destructive, action: deleteForMe) {
 								Label("Remove from this device", systemImage: "trash")
 							}
-							if accessoryManager.isConnected && !waypoint.isLocal && !waypoint.locked {
+							if accessoryManager.isConnected(windowRadio) && !waypoint.isLocal && !waypoint.locked {
 								Button(role: .destructive, action: deleteForEveryone) {
 									Label("Delete for everyone", systemImage: "trash.slash")
 								}
@@ -607,7 +609,7 @@ struct WaypointForm: View {
 		WaypointEntity.canEditNotifyPreferencesLocally(
 			isLocalWaypoint: waypoint.isLocal,
 			createdBy: waypoint.createdBy,
-			activeDeviceNum: accessoryManager.activeDeviceNum,
+			activeDeviceNum: accessoryManager.nodeNum(for: windowRadio),
 			hasGeofence: waypoint.hasGeofence
 		)
 	}
@@ -630,10 +632,10 @@ struct WaypointForm: View {
 		if waypoint.id == 0 {
 			waypoint.id = Int64(UInt32.random(in: UInt32(UInt8.max)..<UInt32.max))
 			waypoint.created = Date()
-			waypoint.createdBy = Int64(accessoryManager.activeDeviceNum ?? 0)
+			waypoint.createdBy = Int64(accessoryManager.nodeNum(for: windowRadio) ?? 0)
 		} else {
 			waypoint.lastUpdated = Date()
-			waypoint.lastUpdatedBy = Int64(accessoryManager.activeDeviceNum ?? 0)
+			waypoint.lastUpdatedBy = Int64(accessoryManager.nodeNum(for: windowRadio) ?? 0)
 		}
 		waypoint.isLocal = true
 		waypoint.locked = false
@@ -670,7 +672,7 @@ struct WaypointForm: View {
 	/// Expire the waypoint mesh-wide, then remove it locally. Only offered for shared
 	/// waypoints you can edit (connected, not local, not locked to another node).
 	private func deleteForEveryone() {
-		guard accessoryManager.activeDeviceNum != nil else {
+		guard accessoryManager.nodeNum(for: windowRadio) != nil else {
 			Logger.mesh.error("Unable to delete waypoint: not connected to a device")
 			return
 		}
@@ -687,7 +689,7 @@ struct WaypointForm: View {
 		applyGeofence(to: &newWaypoint)
 		Task {
 			do {
-				try await accessoryManager.sendWaypoint(waypoint: newWaypoint)
+				try await accessoryManager.sendWaypoint(waypoint: newWaypoint, viaRadio: accessoryManager.sendingRadio(for: windowRadio))
 				await MainActor.run {
 					context.delete(waypoint)
 					do { try context.save() } catch { Logger.mesh.error("Failed to delete waypoint after mesh expire: \(error)") }
@@ -711,7 +713,7 @@ struct WaypointForm: View {
 			isAuthor: WaypointEntity.isAuthoredLocally(
 				waypointId: waypoint.id,
 				createdBy: waypoint.createdBy,
-				activeDeviceNum: accessoryManager.activeDeviceNum
+				activeDeviceNum: accessoryManager.nodeNum(for: windowRadio)
 			),
 			hasGeofence: geofenceRadius > 0 || geofenceBounds != nil,
 			notifyOnEnter: notifyOnEnter,

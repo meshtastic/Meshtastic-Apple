@@ -33,6 +33,8 @@ struct NodeListFilter: View {
 					.toggleStyle(.switch)
 					.listRowSeparator(.visible)
 
+					NodeHeardByFilterPicker(filters: filters)
+
 					Toggle(isOn: $filters.isOnline) {
 						Label("Online", systemImage: "checkmark.circle.fill")
 					}
@@ -196,4 +198,5 @@ struct NodeListFilter: View {
 
 #Preview {
 	NodeListFilter(filters: NodeFilterParameters())
+		.environmentObject(AccessoryManager.shared)
 }

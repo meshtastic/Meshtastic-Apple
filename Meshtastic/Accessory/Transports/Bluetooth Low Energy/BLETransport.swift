@@ -23,16 +23,32 @@ actor BLETransport: Transport {
 	/// callbacks arrive in the order CoreBluetooth fires them, so the
 	/// `Task { await … }` hops to the actor preserve that ordering.
 	///
-	/// CoreBluetooth calls wait on this queue, and they come from user-initiated tasks,
-	/// so it runs at the same QoS to avoid a priority inversion.
+	/// QoS is `.userInitiated` because every `CBPeripheral` / `CBCentralManager` call
+	/// (read, write, readRSSI, discover, setNotifyValue, connect, scan/stopScan) performs a
+	/// synchronous XPC barrier (`-[CBXpcConnection _sendBarrier]`) onto this queue. Those calls
+	/// are made from Swift Concurrency tasks running at user-initiated QoS, so a lower QoS here
+	/// causes a priority inversion that Xcode reports as a "Hang Risk".
 	private let centralQueue = DispatchQueue(label: "com.meshtastic.ble.central", qos: .userInitiated)
 	private var discoveredPeripherals: [UUID: (peripheral: CBPeripheral, lastSeen: Date)] = [:]
 	private var discoveredDeviceContinuation: AsyncStream<DiscoveryEvent>.Continuation?
 	private let delegate: BLEDelegate
-	private var connectingPeripheral: CBPeripheral?
-	private var activeConnection: BLEConnection?
-	private var connectContinuation: CheckedContinuation<BLEConnection, Error>?
-	private var restoredConnectContinuation: CheckedContinuation<Void, Error>?
+	// Feature 021: one entry per peripheral, so several radios can connect and stay connected at
+	// once. Every CoreBluetooth callback is routed by the peripheral's identifier.
+	private var connectingPeripherals: [UUID: CBPeripheral] = [:]
+	private var activeConnections: [UUID: BLEConnection] = [:]
+	private var connectContinuations: [UUID: CheckedContinuation<BLEConnection, Error>] = [:]
+	/// The first radio's restore waiting for its peripheral's pending connect to finish. Only that
+	/// peripheral's didConnect / didFailToConnect resumes it: restored radios alongside can have
+	/// CoreBluetooth connects pending too (feature 021, T155).
+	private var restoredConnect: (peripheralId: UUID, continuation: CheckedContinuation<Void, Error>)?
+	/// Feature 021 (T062): peripherals iOS restored along with the first one. The
+	/// remembered-radio reconnect claims each through `connect(to:)`; any left unclaimed are
+	/// released so a radio isn't held by a link nobody uses.
+	private var restoredStandby: [UUID: CBPeripheral] = [:]
+	/// The standby radios iOS restored still connected. Only their links are kept links
+	/// (`BLEConnection.isKeptByRestore`): one restored while connecting may have connected since,
+	/// but was off the link meanwhile, so it gets the full handshake, as on `main` (review V45-1).
+	private var restoredKeptConnected: Set<UUID> = []
 	private var setupCompleteGate: AsyncGate
 	private var restoreInProgress: Bool = false
 	var status: TransportStatus = .uninitialized {
@@ -57,7 +73,10 @@ actor BLETransport: Transport {
 	static let poweredOffStatusMessage = "Bluetooth is powered off"
 
 	private var cleanupTask: Task<Void, Never>?
-	private var scanningPausedForConnection = false
+	/// The radios whose connect has the scan paused (feature 021, T154): with several radios, one
+	/// finishing or failing mustn't resume the scan while another is still in its pairing window.
+	private var scanPausedForConnections: Set<UUID> = []
+	private var scanningPausedForConnection: Bool { !scanPausedForConnections.isEmpty }
 	private let discoverySetupHandler: (@Sendable () async -> Void)?
 	
 	// Transport properties
@@ -212,7 +231,7 @@ actor BLETransport: Transport {
 
 	private func stopScanning() {
 		Logger.transport.debug("🛜 [BLE] Stop Scanning: BLE Discovery has been stopped.")
-		scanningPausedForConnection = false
+		scanPausedForConnections.removeAll()
 		guard centralManager != nil else {
 			discoveredPeripherals.removeAll()
 			discoveredDeviceContinuation = nil
@@ -236,8 +255,8 @@ actor BLETransport: Transport {
 		Logger.transport.error("🛜 [BLE] State has transitioned to: \(cbManagerStateDescription(state), privacy: .public)")
 		switch state {
 		case .poweredOn:
-			if activeConnection != nil {
-				Logger.transport.info("🛜 [BLE] CBManager has poweredOn with an already active connection")
+			if !activeConnections.isEmpty {
+				Logger.transport.info("🛜 [BLE] CBManager has poweredOn with \(self.activeConnections.count) already active connection(s)")
 			}
 			status = .discovering
 			
@@ -260,11 +279,13 @@ actor BLETransport: Transport {
 			// the opposite of, so `.error` here also matches this file's own convention for
 			// every other non-powered-on state (.unauthorized, .unsupported, .resetting, etc.).
 			status = .error(Self.poweredOffStatusMessage)
-			if let continuation = connectContinuation {
-				connectContinuation = nil
+			let pending = connectContinuations
+			connectContinuations.removeAll()
+			connectingPeripherals.removeAll()
+			for continuation in pending.values {
 				continuation.resume(throwing: AccessoryError.disconnected("Bluetooth powered off"))
 			}
-			if let connection = activeConnection {
+			for connection in activeConnections.values {
 				Task {
 					Logger.transport.error("🛜 [BLE] Bluetooth has powered off during active connection. Cleaning up.")
 					try await connection.disconnect(withError: AccessoryError.disconnected("Bluetooth powered off"), shouldReconnect: true)
@@ -321,17 +342,36 @@ actor BLETransport: Transport {
 	}
 
 	func cancelConnectContinuation(for peripheral: CBPeripheral) {
-		guard connectingPeripheral?.identifier == peripheral.identifier,
-			  let connectContinuation else { return }
-		connectContinuation.resume(throwing: CancellationError())
-		self.connectContinuation = nil
+		let id = peripheral.identifier
+		guard let continuation = connectContinuations.removeValue(forKey: id) else { return }
+		connectingPeripherals.removeValue(forKey: id)
+		continuation.resume(throwing: CancellationError())
+	}
+
+	/// Feature 021 (T063): gives up a connect CoreBluetooth still has pending, after a
+	/// bounded reconnect attempt to an out-of-range radio timed out. Cancelling the task only
+	/// resumes the waiter; without this, CoreBluetooth would complete the link later with nobody
+	/// owning it. Leaves the peripheral alone if a newer attempt or a live connection has it.
+	func abandonPendingConnect(to deviceId: UUID) {
+		guard activeConnections[deviceId] == nil, connectContinuations[deviceId] == nil else { return }
+		connectingPeripherals.removeValue(forKey: deviceId)
+		guard let peripheral = discoveredPeripherals[deviceId]?.peripheral
+				?? centralManager?.retrievePeripherals(withIdentifiers: [deviceId]).first else { return }
+		Logger.transport.debug("🛜 [BLE] Abandoning the pending connect to \(deviceId.uuidString, privacy: .public)")
+		centralManager?.cancelPeripheralConnection(peripheral)
+		resumeScanningAfterFailedConnection(for: deviceId)
+	}
+
+	/// True while this peripheral is connecting or connected (feature 021: other peripherals can be).
+	private func isBusy(_ id: UUID) -> Bool {
+		activeConnections[id] != nil || connectContinuations[id] != nil
 	}
 
 	/// Stops duplicate-advertisement scanning before CoreBluetooth starts a connection. Keeping the
 	/// discovery stream and cache alive preserves the selected peripheral while the pairing sheet is
 	/// active. A failed attempt restarts the scan so normal discovery and retries can continue.
-	func pauseScanningForConnection() {
-		scanningPausedForConnection = true
+	func pauseScanningForConnection(to deviceId: UUID) {
+		scanPausedForConnections.insert(deviceId)
 		guard centralManager?.isScanning == true else { return }
 		centralManager.stopScan()
 	}
@@ -340,18 +380,24 @@ actor BLETransport: Transport {
 	/// window, which runs through the notify subscription — after the link itself comes
 	/// up. Once the handshake is fully established, resume so the Available Radios list
 	/// stays live for device switching while connected.
-	func resumeScanningAfterConnectionEstablished() {
-		resumeScanningIfPaused()
+	func resumeScanningAfterConnectionEstablished(for deviceId: UUID) {
+		resumeScanningIfPaused(for: deviceId)
 	}
 
-	private func resumeScanningAfterFailedConnection() {
-		resumeScanningIfPaused()
+	private func resumeScanningAfterFailedConnection(for deviceId: UUID?) {
+		resumeScanningIfPaused(for: deviceId)
 	}
 
-	private func resumeScanningIfPaused() {
+	/// Ends `deviceId`'s pause (every pause when nil) and scans again once no connect holds one.
+	private func resumeScanningIfPaused(for deviceId: UUID?) {
 		guard scanningPausedForConnection else { return }
-		scanningPausedForConnection = false
-		guard discoveredDeviceContinuation != nil,
+		if let deviceId {
+			scanPausedForConnections.remove(deviceId)
+		} else {
+			scanPausedForConnections.removeAll()
+		}
+		guard !scanningPausedForConnection,
+			  discoveredDeviceContinuation != nil,
 			  centralManager?.state == .poweredOn,
 			  !restoreInProgress else { return }
 		centralManager.scanForPeripherals(
@@ -374,33 +420,47 @@ actor BLETransport: Transport {
 	}
 
 	func connect(to device: Device) async throws -> any Connection {
-		guard activeConnection == nil, connectContinuation == nil else {
+		if let id = UUID(uuidString: device.identifier), isBusy(id) {
 			throw AccessoryError.connectionFailed("BLE transport is busy: already connecting or connected")
 		}
 
-		pauseScanningForConnection()
+		let pauseId = UUID(uuidString: device.identifier) ?? device.id
+		pauseScanningForConnection(to: pauseId)
 		guard let peripheral = resolvePeripheral(for: device) else {
-			resumeScanningAfterFailedConnection()
+			resumeScanningAfterFailedConnection(for: pauseId)
 			throw AccessoryError.connectionFailed("Peripheral not found")
 		}
-		
+		let id = peripheral.identifier
+		// A radio iOS restored still connected: take over its link rather than connecting again,
+		// and its connect asks only for the config, as the first radio's restore does (#2584). One
+		// restored while connecting goes through the normal connect, which CoreBluetooth completes
+		// with the pending attempt, and a full handshake, as on `main`.
+		let keptConnected = restoredKeptConnected.remove(id) != nil
+		if let restored = restoredStandby.removeValue(forKey: id), restored.state == .connected, centralManager != nil {
+			Logger.transport.info("🛜 [BLE] Taking over the restored link to \(restored.name ?? "Unknown", privacy: .public)")
+			let connection = BLEConnection(peripheral: restored, central: centralManager, transport: self, keptByRestore: keptConnected)
+			activeConnections[id] = connection
+			return connection
+		}
+
 		do {
 			let returnConnection = try await withTaskCancellationHandler {
 				let newConnection: BLEConnection = try await withCheckedThrowingContinuation { cont in
-					if self.connectContinuation != nil || self.activeConnection != nil {
+					if self.isBusy(id) {
 						cont.resume(throwing: AccessoryError.connectionFailed("BLE transport is busy: already connecting or connected"))
 						return
 					}
-					self.connectContinuation = cont
-					self.connectingPeripheral = peripheral
+					self.connectContinuations[id] = cont
+					self.connectingPeripherals[id] = peripheral
 					guard centralManager != nil else {
-						self.connectContinuation = nil
+						self.connectContinuations.removeValue(forKey: id)
+						self.connectingPeripherals.removeValue(forKey: id)
 						cont.resume(throwing: AccessoryError.connectionFailed("Bluetooth not initialized"))
 						return
 					}
 					centralManager.connect(peripheral)
 				}
-				self.activeConnection = newConnection
+				self.activeConnections[id] = newConnection
 				return newConnection
 			} onCancel: {
 				Task {
@@ -416,23 +476,20 @@ actor BLETransport: Transport {
 	}
 
 	func handlePeripheralDisconnect(peripheral: CBPeripheral) {
-		if let continuation = self.connectContinuation,
-		   self.connectingPeripheral?.identifier == peripheral.identifier {
+		let id = peripheral.identifier
+		if let continuation = connectContinuations.removeValue(forKey: id) {
 			// Disconnect arrived while still waiting for didConnect — resume the
 			// pending continuation so the caller doesn't hang.
 			Logger.transport.debug("🛜 [BLETransport] Clean disconnect during connection phase. Resuming continuation with error.")
+			connectingPeripherals.removeValue(forKey: id)
 			continuation.resume(throwing: AccessoryError.connectionFailed("Peripheral disconnected before connection completed"))
-			self.connectContinuation = nil
-			self.connectingPeripheral = nil
-			discoveredPeripherals.removeValue(forKey: peripheral.identifier)
-			discoveredDeviceContinuation?.yield(.deviceLost(peripheral.identifier))
-		} else if let connection = self.activeConnection {
-			discoveredPeripherals.removeValue(forKey: peripheral.identifier)
-			discoveredDeviceContinuation?.yield(.deviceLost(peripheral.identifier))
+			discoveredPeripherals.removeValue(forKey: id)
+			discoveredDeviceContinuation?.yield(.deviceLost(id))
+		} else if let connection = activeConnections[id] {
+			discoveredPeripherals.removeValue(forKey: id)
+			discoveredDeviceContinuation?.yield(.deviceLost(id))
 			Task {
-				if await connection.peripheral.identifier == peripheral.identifier {
-					try await connection.disconnect(withError: AccessoryError.disconnected("BLE connection lost"), shouldReconnect: true)
-				}
+				try await connection.disconnect(withError: AccessoryError.disconnected("BLE connection lost"), shouldReconnect: true)
 			}
 		}
 	}
@@ -460,12 +517,12 @@ actor BLETransport: Transport {
 			Logger.transport.error("🛜 [BLETransport] Disconnected with non-CBError: \(otherError.localizedDescription, privacy: .public)")
 		}
 		
-		if let continuation = self.connectContinuation {
+		let id = peripheral.identifier
+		if let continuation = connectContinuations.removeValue(forKey: id) {
 			Logger.transport.debug("🛜 [BLETransport] Error while connecting. Resuming connection continuation with error.")
+			connectingPeripherals.removeValue(forKey: id)
 			continuation.resume(throwing: error)
-			self.connectContinuation = nil
-			self.connectingPeripheral = nil
-		} else if let activeConnection = self.activeConnection {
+		} else if let activeConnection = activeConnections[id] {
 			// Inform the active connection that there was an error and it should disconnect
 			Logger.transport.debug("🛜 [BLETransport] Error on active connection. Disconnecting.")
 			Task {
@@ -478,38 +535,37 @@ actor BLETransport: Transport {
 	}
 
 	func handleDidConnect(peripheral: CBPeripheral, central: CBCentralManager) {
-		if let restoredConnectContinuation {
-			restoredConnectContinuation.resume()
-			self.restoredConnectContinuation = nil
+		if let restoredConnect, restoredConnect.peripheralId == peripheral.identifier {
+			self.restoredConnect = nil
+			restoredConnect.continuation.resume()
+			return
+		}
+		if handOverRestore(to: peripheral, central: central) {
 			return
 		}
 		Logger.transport.debug("🛜 [BLE] Handle Did Connect Connected to peripheral \(peripheral.name ?? "Unknown", privacy: .public)")
-		guard let cont = connectContinuation,
-			  let connPeripheral = connectingPeripheral,
-			  peripheral.identifier == connPeripheral.identifier else {
+		let id = peripheral.identifier
+		guard let cont = connectContinuations.removeValue(forKey: id) else {
 			return
 		}
+		connectingPeripherals.removeValue(forKey: id)
 		let connection = BLEConnection(peripheral: peripheral, central: central, transport: self)
 		cont.resume(returning: connection)
-		self.connectContinuation = nil
-		self.connectingPeripheral = nil
 	}
 
 	func handleDidFailToConnect(peripheral: CBPeripheral, error: Error?) {
-		if let restoredConnectContinuation {
-			restoredConnectContinuation.resume(throwing: AccessoryError.connectionFailed("Connection failed during restoration"))
-			self.restoredConnectContinuation = nil
+		if let restoredConnect, restoredConnect.peripheralId == peripheral.identifier {
+			self.restoredConnect = nil
+			restoredConnect.continuation.resume(throwing: AccessoryError.connectionFailed("Connection failed during restoration"))
 			return
 		}
 		
-		guard let cont = connectContinuation,
-			  let connPeripheral = connectingPeripheral,
-			  peripheral.identifier == connPeripheral.identifier else {
+		let id = peripheral.identifier
+		guard let cont = connectContinuations.removeValue(forKey: id) else {
 			return
 		}
+		connectingPeripherals.removeValue(forKey: id)
 		cont.resume(throwing: error ?? AccessoryError.connectionFailed("Connection failed"))
-		self.connectContinuation = nil
-		self.connectingPeripheral = nil
 	}
 	
 	func handleWillRestoreState(dict: [String: Any], central: CBCentralManager) async {
@@ -518,22 +574,34 @@ actor BLETransport: Transport {
 		/// look in the logs for the messages below.
 		Logger.transport.error("🛜 [BLE] Will Restore State was called. Attempting to restore connection.")
 		
-		/// Find the peripheral that was connected before
+		/// Find the peripherals that were connected before. Feature 021 (T062): the preferred radio,
+		/// or else the first, is restored as the first radio; the others wait in
+		/// `restoredStandby` for the remembered-radio reconnect that follows the first radio's connect.
 		guard let peripherals = dict[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral],
-			  let peripheral = peripherals.first else {
+			  let peripheral = Self.firstPeripheral(among: peripherals, preferredId: PreferredRadio.peripheralId) else {
 			Logger.transport.error("🛜 [BLE] No peripherals found in restore state dictionary.")
 			return
 		}
-		
-		// Prevent device discovery during the restore process
-		restoreInProgress = true
+		let alongside = peripherals.filter { $0.identifier != peripheral.identifier }
+		holdRestoredPeripherals(alongside)
+		let device = await restoredDevice(for: peripheral)
+		restoreAsFirst(peripheral, central: central, device: device)
+		// Remembered, and each connected alongside the first radio's restore as it starts, as it
+		// was (T190, D-19, review V45-4).
+		var alongsideDevices: [Device] = []
+		for restored in alongside {
+			alongsideDevices.append(await restoredDevice(for: restored))
+		}
+		await AccessoryManager.shared.noteRestoredAlongside(alongsideDevices)
+	}
 
-		// Create a device object
+	/// The `Device` for a peripheral iOS restored: its node number and names from the store.
+	func restoredDevice(for peripheral: CBPeripheral) async -> Device {
 		// TODO: maybe serialize the whole device into UserDefaults on connect?
 		let id = peripheral.identifier
-		let nodeNum = UserDefaults.preferredPeripheralNum != 0 ? Int64(UserDefaults.preferredPeripheralNum) : nil
+		let nodeNum = await Self.restoredNodeNum(peripheralId: id)
 		var device = Device(id: id, name: peripheral.name ?? "Unknown", transportType: .ble, identifier: id.uuidString, num: nodeNum, wasRestored: true)
-		
+
 		// Get the device name
 		if let nodeNum {
 			let nodeNumVal = Int64(nodeNum)
@@ -559,7 +627,19 @@ actor BLETransport: Transport {
 				device.shortName = shortName
 			}
 		}
-		
+		return device
+	}
+
+	/// The first radio's restore still waiting was given up because a standby radio connected first
+	/// (T178); that radio is the first radio's restore now.
+	struct RestoreHandedOver: Error {}
+
+	/// Restores `peripheral` as the first radio: taken over if iOS kept it connected, or its
+	/// pending connect completed and then a full handshake.
+	func restoreAsFirst(_ peripheral: CBPeripheral, central: CBCentralManager, device: Device) {
+		// Prevent device discovery during the restore process
+		restoreInProgress = true
+		let id = peripheral.identifier
 		discoveredPeripherals[id] = (peripheral: peripheral, lastSeen: Date())
 	
 		Logger.transport.error("🛜 [BLE] Found peripheral to restore: \(peripheral.name ?? "Unknown", privacy: .public) ID: \(peripheral.identifier, privacy: .public) State: \(cbPeripheralStateDescription(peripheral.state), privacy: .public).")
@@ -570,7 +650,7 @@ actor BLETransport: Transport {
 			switch peripheral.state {
 			case .connecting:
 				let restoredConnection = BLEConnection(peripheral: peripheral, central: central, transport: self)
-				self.activeConnection = restoredConnection
+				self.activeConnections[id] = restoredConnection
 				Task {
 					do {
 						// Make sure we're in poweredOn before continuing
@@ -579,22 +659,14 @@ actor BLETransport: Transport {
 						Logger.transport.error("🛜 [BLE] Restoring peripheral in connecting state.  Waiting for didConnect from delegate.")
 						
 						// Complete the connect with centralManager.connect and wait for the didConnect.
-						try await withCheckedThrowingContinuation { cont in
-							self.restoredConnectContinuation = cont
-							centralManager.connect(peripheral)
-						}
+						try await self.waitForRestoredConnect(of: peripheral)
 						
 						Logger.transport.error("🛜 [BLE] Restoring peripheral in connecting state.  ✅ didConnect Received!")
-						let connectTask = Task { @MainActor in
-							try await AccessoryManager.shared.connect(to: device, withConnection: restoredConnection, wantConfig: true, wantDatabase: true, versionCheck: true)
-						}
-						
-						do {
-							try await connectTask.value
-						} catch {
-							Logger.transport.error("🛜 [BLE] Error connecting during state restoration: \(error, privacy: .public)")
-						}
-						self.restoreInProgress = false
+						await self.completeFirstRestore(device: device, connection: restoredConnection, fullHandshake: true)
+					} catch is RestoreHandedOver {
+						// Another restored radio connected first and is the first radio's restore now; this
+						// one waits with the others (T178). `restoreInProgress` is that restore's.
+						Logger.transport.info("🛜 [BLE] \(device.name, privacy: .public) is still connecting; another restored radio connects first")
 					} catch {
 						// We had a connection failure during restoration.
 						Logger.transport.error("🛜 [BLE] Error restoring peripheral in connecting state. \(error, privacy: .public)")
@@ -603,22 +675,13 @@ actor BLETransport: Transport {
 				}
 
 			case .connected:
-				let restoredConnection = BLEConnection(peripheral: peripheral, central: central, transport: self)
-				self.activeConnection = restoredConnection
+				let restoredConnection = BLEConnection(peripheral: peripheral, central: central, transport: self, keptByRestore: true)
+				self.activeConnections[id] = restoredConnection
 				Logger.transport.error("🛜 [BLE] Peripheral Connection found and state is connected setting this connection as the activeConnection.")
-				let connectTask = Task { @MainActor in
-					// The link survived but this process is new, so everything the radio sends only with
-					// its config (region preset map, firmware edition, metadata) is missing. Ask for the
-					// config; the node database is already in the store.
-					try await AccessoryManager.shared.connect(to: device, withConnection: restoredConnection, wantConfig: true, wantDatabase: false, versionCheck: false)
-				}
-				do {
-					try await connectTask.value
-				} catch {
-					Logger.transport.error("🛜 [BLE] Error connecting during state restoration: \(error, privacy: .public)")
-				}
-
-				self.restoreInProgress = false
+				// The link survived but this process is new, so everything the radio sends only with
+				// its config (region preset map, firmware edition, metadata) is missing. Ask for the
+				// config; the node database is already in the store (#2584).
+				await self.completeFirstRestore(device: device, connection: restoredConnection, fullHandshake: false)
 				Logger.transport.error("🛜 [BLE] Connection state successfully restored in the background.")
 			default:
 				// Since we're not going to attempt to reconnect in then allow normal device discovery
@@ -626,7 +689,134 @@ actor BLETransport: Transport {
 				self.restoreInProgress = false
 			}
 		}
-		
+	}
+
+	/// Runs the first radio's connect over a restored link, then lets discovery run again. The
+	/// connect records it as the preferred radio (connect Step 5); the radios restored alongside
+	/// come back as they were (D-19). The config is always asked for (#2584); a link iOS kept
+	/// (`fullHandshake` false) skips only the node database and the version check.
+	private func completeFirstRestore(device: Device, connection: BLEConnection, fullHandshake: Bool) async {
+		let connectTask = Task { @MainActor in
+			try await AccessoryManager.shared.connect(to: device, withConnection: connection, wantConfig: true, wantDatabase: fullHandshake, versionCheck: fullHandshake)
+		}
+		do {
+			try await connectTask.value
+		} catch {
+			Logger.transport.error("🛜 [BLE] Error connecting during state restoration: \(error, privacy: .public)")
+		}
+		restoreInProgress = false
+	}
+
+	/// Test seam for `handleDidConnect`'s hand-over (T178): what happens to the standby radio
+	/// that connected first. Nil runs the first radio's restore.
+	private(set) var restoreTakeover: (@Sendable (CBPeripheral, CBCentralManager) async -> Void)?
+
+	func setRestoreTakeover(_ takeover: (@Sendable (CBPeripheral, CBCentralManager) async -> Void)?) {
+		restoreTakeover = takeover
+	}
+
+	/// A standby radio's didConnect while the first radio's restore still waits: that radio, which is
+	/// the one in range, becomes the first radio's restore, and the waiting one joins the standby radios
+	/// so the remembered-radio reconnect claims it when it connects (T178). Returns false when
+	/// this isn't that case.
+	private func handOverRestore(to peripheral: CBPeripheral, central: CBCentralManager) -> Bool {
+		guard let pending = restoredConnect, pending.peripheralId != peripheral.identifier,
+			  let standby = restoredStandby.removeValue(forKey: peripheral.identifier) else { return false }
+		restoredKeptConnected.remove(peripheral.identifier)
+		restoredConnect = nil
+		activeConnections.removeValue(forKey: pending.peripheralId)
+		if let waiting = discoveredPeripherals[pending.peripheralId]?.peripheral {
+			restoredStandby[pending.peripheralId] = waiting
+		}
+		pending.continuation.resume(throwing: RestoreHandedOver())
+		let displacedId = pending.peripheralId
+		Task {
+			// The radio it took over from is remembered and connected alongside this restore (T190).
+			if let displaced = self.restoredStandby[displacedId] {
+				await AccessoryManager.shared.noteRestoredAlongside([await self.restoredDevice(for: displaced)])
+			}
+			if let restoreTakeover = self.restoreTakeover {
+				await restoreTakeover(standby, central)
+				return
+			}
+			let device = await self.restoredDevice(for: standby)
+			self.restoreInProgress = true
+			let connection = BLEConnection(peripheral: standby, central: central, transport: self)
+			self.activeConnections[standby.identifier] = connection
+			await self.completeFirstRestore(device: device, connection: connection, fullHandshake: true)
+		}
+		return true
+	}
+
+	/// Completes the pending connect of `peripheral`, restored while connecting, and waits for its
+	/// own didConnect.
+	func waitForRestoredConnect(of peripheral: CBPeripheral) async throws {
+		try await withCheckedThrowingContinuation { cont in
+			restoredConnect = (peripheral.identifier, cont)
+			centralManager.connect(peripheral)
+		}
+	}
+
+	/// Keeps restored radios other than the first one for the remembered-radio reconnect to
+	/// claim (`connect(to:)`), and releases whatever is left after `gracePeriod`.
+	func holdRestoredPeripherals(_ peripherals: [CBPeripheral], gracePeriod: Duration = restoredStandbyGracePeriod) {
+		guard !peripherals.isEmpty else { return }
+		for peripheral in peripherals {
+			Logger.transport.info("🛜 [BLE] Restored \(peripheral.name ?? "Unknown", privacy: .public) (\(cbPeripheralStateDescription(peripheral.state), privacy: .public)) to reconnect alongside the first radio")
+			restoredStandby[peripheral.identifier] = peripheral
+			if peripheral.state == .connected {
+				restoredKeptConnected.insert(peripheral.identifier)
+			}
+			discoveredPeripherals[peripheral.identifier] = (peripheral: peripheral, lastSeen: Date())
+		}
+		// Not keeping the transport alive meanwhile.
+		Task { [weak self] in
+			try? await Task.sleep(for: gracePeriod)
+			await self?.releaseUnclaimedRestoredPeripherals()
+		}
+	}
+
+	/// How long restored radios wait to be claimed. Covers the first radio's restore, including
+	/// a full handshake when it was restored while connecting.
+	static let restoredStandbyGracePeriod: Duration = .seconds(180)
+
+	/// The peripheral restored as the first radio. A radio iOS restored still connected comes
+	/// first, the preferred one among them: one still connecting may never come back (it was left
+	/// at home), and waiting for it would drop the connected one that woke the app (T155). Then
+	/// the preferred one, otherwise the first.
+	static func firstPeripheral<P: RestoredPeripheral>(among peripherals: [P], preferredId: String) -> P? {
+		let connected = peripherals.filter { $0.state == .connected }
+		return connected.first { $0.identifier.uuidString == preferredId }
+			?? connected.first
+			?? peripherals.first { $0.identifier.uuidString == preferredId }
+			?? peripherals.first
+	}
+
+	/// The node number of the radio on `peripheralId`, from its `MyInfoEntity`. Before this
+	/// feature every restore assumed the preferred radio; with several radios that's only true
+	/// for one of them.
+	@MainActor
+	static func restoredNodeNum(peripheralId: UUID) -> Int64? {
+		let idString = peripheralId.uuidString
+		var descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.peripheralId == idString })
+		descriptor.fetchLimit = 1
+		if let myNodeNum = (try? PersistenceController.shared.context.fetch(descriptor))?.first?.myNodeNum, myNodeNum != 0 {
+			return myNodeNum
+		}
+		guard idString == PreferredRadio.peripheralId, PreferredRadio.nodeNum != 0 else { return nil }
+		return PreferredRadio.nodeNum
+	}
+
+	/// Drops the CoreBluetooth link of every restored radio nobody claimed (not remembered, or
+	/// the first radio's restore failed), so the radio is free for a later connect or another phone.
+	func releaseUnclaimedRestoredPeripherals() {
+		let unclaimed = restoredStandby
+		restoredStandby.removeAll()
+		restoredKeptConnected.removeAll()
+		for (id, peripheral) in unclaimed where activeConnections[id] == nil && connectContinuations[id] == nil {
+			Logger.transport.info("🛜 [BLE] Releasing the unclaimed restored link to \(peripheral.name ?? "Unknown", privacy: .public)")
+			centralManager?.cancelPeripheralConnection(peripheral)
+		}
 	}
 	
 	nonisolated func device(forManualConnection: String) -> Device? {
@@ -641,15 +831,16 @@ actor BLETransport: Transport {
 	func connectionDidDisconnect(fromPeripheral peripheral: CBPeripheral?) {
 		// Make sure we remove this device from the discovered list so that we send a
 		// new discovery event in when it is next seen.
+		// Only this peripheral's bookkeeping goes; other radios stay connected (feature 021).
 		if let peripheral {
-			discoveredPeripherals.removeValue(forKey: peripheral.identifier)
-			discoveredDeviceContinuation?.yield(.deviceLost(peripheral.identifier))
+			let id = peripheral.identifier
+			discoveredPeripherals.removeValue(forKey: id)
+			discoveredDeviceContinuation?.yield(.deviceLost(id))
+			activeConnections.removeValue(forKey: id)
+			connectingPeripherals.removeValue(forKey: id)
 		}
-		
-		self.activeConnection = nil
-		self.connectingPeripheral = nil
 		restoreInProgress = false
-		resumeScanningAfterFailedConnection()
+		resumeScanningAfterFailedConnection(for: peripheral?.identifier)
 	}
 }
 
@@ -723,3 +914,11 @@ func cbPeripheralStateDescription(_ state: CBPeripheralState) -> String {
 		return "unhandled state"
 	}
 }
+
+/// What `BLETransport.firstPeripheral(among:preferredId:)` needs from a restored peripheral.
+protocol RestoredPeripheral {
+	var identifier: UUID { get }
+	var state: CBPeripheralState { get }
+}
+
+extension CBPeripheral: RestoredPeripheral {}

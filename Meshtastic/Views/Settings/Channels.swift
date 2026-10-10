@@ -32,8 +32,7 @@ func projectedDisplayChannels(from channels: [ChannelEntity]) -> [ChannelEntity]
 /// every offer stays visible, which is the pre-suppression behavior and the safe
 /// direction — hiding an offer on bad data would be the harmful failure.
 @MainActor
-func configuredChannelOfferKeys(context: ModelContext) -> Set<String> {
-	let num = Int64(UserDefaults.preferredPeripheralNum)
+func configuredChannelOfferKeys(context: ModelContext, radioNum num: Int64 = PreferredRadio.nodeNum) -> Set<String> {
 	guard num > 0 else { return [] }
 	var descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == num })
 	descriptor.fetchLimit = 1
@@ -87,6 +86,8 @@ struct Channels: View {
 
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@Environment(\.dismiss) private var goBack
 	@Environment(\.sizeCategory) var sizeCategory
 	@Environment(\.colorScheme) private var colorScheme
@@ -119,7 +120,7 @@ struct Channels: View {
 	}
 
 	private var locationSharingChannelIndex: Int32? {
-		if accessoryManager.checkIsVersionSupported(forVersion: "2.6.10") {
+		if accessoryManager.isVersionSupported(forVersion: "2.6.10", for: windowRadio) {
 			return displayChannels.first { $0.positionPrecision > 0 }?.index
 		}
 		guard let primary = displayChannels.first(where: { $0.index == 0 || $0.role == 1 }),
@@ -268,7 +269,7 @@ struct Channels: View {
 					.presentationDragIndicator(.visible)
 					#endif
 				.onFirstAppear {
-					supportedVersion = accessoryManager.checkIsVersionSupported(forVersion: minimumVersion)
+					supportedVersion = accessoryManager.isVersionSupported(forVersion: minimumVersion, for: windowRadio)
 				}
 				HStack {
 					Button {
@@ -310,6 +311,14 @@ struct Channels: View {
 							do {
 								try context.save()
 								Logger.data.info("💾 Saved Channel: \(channel.settings.name, privacy: .public)")
+								// The slot's key follows the edit now, not when the radio next sends its
+								// channels, so the change row sits where the conversation changed and what
+								// is sent from here on is already in the new stretch (T377). Computed from
+								// what was just saved: this context's LoRa settings can predate a preset
+								// change saved elsewhere.
+								if try MultiRadioBackfill.updateSavedChannelKeys(for: node.num, container: context.container) > 0 {
+									NotificationCenter.default.post(name: .meshMessagesDidChange, object: nil)
+								}
 							} catch {
 								let nsError = error as NSError
 								Logger.data.error("Unresolved Core Data error in the channel editor. Error: \(nsError, privacy: .public)")
@@ -351,12 +360,13 @@ struct Channels: View {
 								channelRole	= 2
 								hasChanges = false
 							}
-							accessoryManager.mqttManager.connectFromConfigSettings(node: node)
+							// Its MQTT client proxy subscribes by channel; restart it with the new ones.
+							await accessoryManager.startMqtt(forRadio: node.num)
 						}
 					} label: {
 						Label("Save", systemImage: "square.and.arrow.down")
 					}
-					.disabled(!accessoryManager.isConnected)// || !hasChanges)// !hasValidKey)
+					.disabled(!accessoryManager.isConnected(windowRadio))// || !hasChanges)// !hasValidKey)
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
 					.controlSize(.large)
@@ -406,7 +416,7 @@ struct Channels: View {
 		.navigationTitle("Channels")
 		.toolbar {
 			ToolbarItem(placement: .topBarTrailing) {
-				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+				WindowConnectedDevice()
 			}
 		}
 	}

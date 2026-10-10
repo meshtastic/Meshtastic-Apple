@@ -2,6 +2,8 @@ import SwiftUI
 
 struct SaveConfigButton: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@State private var isPresentingSaveConfirm = false
 	let node: NodeInfoEntity?
 	@Binding var hasChanges: Bool
@@ -21,7 +23,7 @@ struct SaveConfigButton: View {
 	}
 	
 	var body: some View {
-		if accessoryManager.isConnected && hasChanges {
+		if accessoryManager.isConnected(windowRadio) && hasChanges {
 			if #available(iOS 26.0, *) {
 				Button {
 					isPresentingSaveConfirm = true

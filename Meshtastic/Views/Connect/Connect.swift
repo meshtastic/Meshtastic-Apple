@@ -56,9 +56,69 @@ struct Connect: View {
 	/// or updates a row, with no manual re-fetch wiring on connect or appear.
 	@Query private var eventFirmwareEditions: [EventFirmwareEntity]
 
+	/// The radio this window works with (feature 021, D-19, T303), and what it reads about it.
+	@Environment(\.windowRadio) private var windowRadio
+	@Environment(\.selectWindowRadio) private var selectWindowRadio
+	/// The window's radio, when the user asks to remove it (D-18).
+	@State private var radioToRemove: RadioToRemove?
+	/// This tab's radio list, among the Connect screens that keep discovery going.
+	@State private var connectScreenID = UUID()
+	private var radioSession: RadioSession? { accessoryManager.session(for: windowRadio) }
+	private var link: RadioLinkStatus { accessoryManager.linkStatus(for: windowRadio) }
+	private var isRadioConnected: Bool { accessoryManager.isConnected(windowRadio) }
+	private var isRadioConnecting: Bool { accessoryManager.isConnecting(windowRadio) }
+	private var radioFirmwareEdition: FirmwareEditions { radioSession?.firmwareEdition ?? .vanilla }
+	/// The connected radios this window doesn't show; tapping one shows it (W-13).
+	private var otherConnectedRadios: [Device] {
+		accessoryManager.connectedRadios.filter { $0.id != radioSession?.device.id }
+	}
+	/// This window's radio, to disconnect: its session's, or the one it's connecting.
+	private var radioDeviceId: UUID? {
+		radioSession?.device.id ?? windowRadio.deviceId ?? accessoryManager.firstDeviceId
+	}
+	/// This window's radio when it's one of the user's and is off: shown with Connect (W-02). For
+	/// the one window's first radio, the preferred radio once the user has several; a single
+	/// radio's window is as before, and one released for a firmware update isn't offered.
+	private var offlineWindowRadio: OfflineRadio? {
+		if let deviceId = windowRadio.deviceId {
+			return accessoryManager.offlineRadio(deviceId)
+		}
+		guard accessoryManager.hasSeveralRadios, !accessoryManager.firstRadioReleasedForUpdate, !isRadioConnected, !isRadioConnecting,
+			  let preferred = UUID(uuidString: PreferredRadio.peripheralId) else {
+			return nil
+		}
+		return accessoryManager.offlineRadio(preferred)
+	}
+
+	/// Disconnects this window's radio. On iPhone and iPad with several radios the window keeps
+	/// showing it, off, until the user picks another (W-02); a single radio's window is as before.
+	/// `OneWindowRadioScope` keeps it for every Disconnect, told before the link closes (review
+	/// V27-7, V28-1); picking it here first also covers a radio still connecting, which the window
+	/// hasn't shown connected, so the scope wouldn't know it as its radio.
+	private func disconnectWindowRadio() {
+		guard link.canDisconnect, let radioDeviceId else { return }
+		if !RadioWindows.areEnabled, accessoryManager.hasSeveralRadios {
+			selectWindowRadio(radioDeviceId)
+		}
+		Task { await accessoryManager.disconnectRadio(radioDeviceId) }
+	}
+
+	/// This window's radio's number while Remove Radio can be offered for it: connected with its
+	/// connect done (review V27-5).
+	private var removableRadioNum: Int64? {
+		guard let num = radioSession?.nodeNum, accessoryManager.canRemoveRadio(num) else { return nil }
+		return num
+	}
+
+	/// Asks to remove this window's connected radio (D-18).
+	private func askToRemoveWindowRadio(_ device: Device) {
+		guard let radioNum = removableRadioNum else { return }
+		radioToRemove = RadioToRemove(nodeNum: radioNum, name: device.longName ?? device.name)
+	}
+
 	private var sortedAvailableDevices: [Device] {
 		accessoryManager.devices.sorted { lhs, rhs in
-			let preferredId = UserDefaults.preferredPeripheralId
+			let preferredId = PreferredRadio.peripheralId
 			let lhsIsPreferred = lhs.id.uuidString == preferredId
 			let rhsIsPreferred = rhs.id.uuidString == preferredId
 
@@ -68,6 +128,28 @@ struct Connect: View {
 
 			return lhs.name.localizedCaseInsensitiveCompare(rhs.name) == .orderedAscending
 		}
+	}
+
+	/// Discovered radios that aren't connected yet (feature 021).
+	/// Radios that can be added while connected: the discovered ones, and saved manual
+	/// connections (a TCP radio Bonjour doesn't find), none of them already connected (T156), nor
+	/// the window's own radio that's off, which shows above with its own Connect, nor one being
+	/// removed.
+	private var addableDevices: [Device] {
+		let discovered = sortedAvailableDevices
+		let manual = manualConnections.connectionsList.filter { saved in !discovered.contains { $0.id == saved.id } }
+		return (discovered + manual).filter { !accessoryManager.isRadioConnected($0.id) && isOfferedToConnect($0) }
+	}
+
+	/// The discovered radios with no radio connected, but for the window's own radio that's off,
+	/// shown above, and one being removed.
+	private var availableDevices: [Device] {
+		sortedAvailableDevices.filter(isOfferedToConnect)
+	}
+
+	/// Not the window's own radio that's off, nor a radio being removed (review V27-2).
+	private func isOfferedToConnect(_ device: Device) -> Bool {
+		device.id != offlineWindowRadio?.deviceId && !accessoryManager.deviceIdsBeingRemoved.contains(device.id)
 	}
 
 	/// The connected node, but only while it's still a live SwiftData object.
@@ -83,11 +165,11 @@ struct Connect: View {
 		Connect.liveNode(node)
 	}
 
-	/// The connected radio's LoRa preset, or "Custom" when it uses its own modem settings.
-	/// Nil until the radio has sent its LoRa config, or if `node` is not the active radio.
+	/// This window's radio's LoRa preset, or "Custom" when it uses its own modem settings.
+	/// Nil until the radio has sent its LoRa config, or if `node` is not the window's radio.
 	private var presetName: String? {
 		guard let node = safeNode,
-			  node.num == accessoryManager.activeDeviceNum,
+			  node.num == accessoryManager.nodeNum(for: windowRadio),
 			  let loRaConfig = node.loRaConfig,
 			  loRaConfig.modelContext != nil else { return nil }
 		if !loRaConfig.usePreset {
@@ -126,8 +208,8 @@ struct Connect: View {
 		NavigationStack {
 			List {
 					Section {
-						if let connectedDevice = accessoryManager.activeConnection?.device,
-						   accessoryManager.isConnected || accessoryManager.isConnecting {
+						if let connectedDevice = radioSession?.device,
+						   isRadioConnected || isRadioConnecting {
 							TipView(ConnectionTip(), arrowEdge: .bottom)
 										.tipViewStyle(PersistentTipStyle())
 								.tipBackground(colorScheme == .dark ? Color(.systemBackground) : Color(.secondarySystemBackground))
@@ -172,7 +254,7 @@ struct Connect: View {
 											Text("Preset").font(.callout)+Text(": \(presetName)")
 												.font(.callout).foregroundColor(Color.gray)
 										}
-										if accessoryManager.firmwareEdition.isEvent {
+										if radioFirmwareEdition.isEvent {
 											// Event branding lives here, in the Connect device box — never in the
 											// top-left nav logo. When event metadata is available the edition row
 											// becomes the tappable entry to the event info sheet, with the event icon.
@@ -182,7 +264,7 @@ struct Connect: View {
 												} label: {
 													VStack(alignment: .leading, spacing: 6) {
 														HStack(spacing: 4) {
-															Text(eventPresentation.info.displayName ?? accessoryManager.firmwareEdition.name)
+															Text(eventPresentation.info.displayName ?? radioFirmwareEdition.name)
 																.font(.headline)
 															Image(systemName: "chevron.right")
 																.font(.caption2)
@@ -204,12 +286,12 @@ struct Connect: View {
 												)
 											} else {
 												Text("Firmware Edition").font(.callout)
-													+ Text(": \(eventFirmware?.displayName ?? accessoryManager.firmwareEdition.name)")
+													+ Text(": \(eventFirmware?.displayName ?? radioFirmwareEdition.name)")
 													.font(.callout)
 													.foregroundColor(Color.gray)
 											}
 										}
-										switch accessoryManager.state {
+										switch link.state {
 										case .subscribed:
 											Text("Subscribed").font(.callout)
 												.foregroundColor(.green)
@@ -219,7 +301,7 @@ struct Connect: View {
 													.symbolRenderingMode(.multicolor)
 													.symbolEffect(.variableColor.reversing.cumulative, options: .repeat(20).speed(3))
 													.foregroundColor(.teal)
-												if let expectedNodeDBSize = accessoryManager.expectedNodeDBSize {
+												if let expectedNodeDBSize = radioSession?.expectedNodeDBSize {
 													if UIDevice.current.userInterfaceIdiom == .phone {
 														VStack(alignment: .leading, spacing: 2.0) {
 															Text("Retrieving nodes").font(.callout)
@@ -270,11 +352,9 @@ struct Connect: View {
 							.foregroundColor(Color.gray)
 							.padding([.top])
 							.swipeActions {
-								if accessoryManager.allowDisconnect {
+								if link.canDisconnect {
 									Button(role: .destructive) {
-										Task {
-											try await accessoryManager.disconnect()
-										}
+										disconnectWindowRadio()
 									} label: {
 										Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 									}
@@ -289,7 +369,7 @@ struct Connect: View {
 								if let node = safeNode {
 									Label("\(String(node.num))", systemImage: "number")
 #if !targetEnvironment(macCatalyst)
-									if accessoryManager.state == .subscribed {
+									if link.state == .subscribed {
 										Button {
 											if !liveActivityStarted {
 #if canImport(ActivityKit)
@@ -322,15 +402,18 @@ struct Connect: View {
 											Label("Share Contact", systemImage: "qrcode")
 										}
 									}
-									if accessoryManager.allowDisconnect {
+									if link.canDisconnect {
 										Button(role: .destructive) {
-											if accessoryManager.allowDisconnect {
-												Task {
-													try await accessoryManager.disconnect()
-												}
-											}
+											disconnectWindowRadio()
 										} label: {
 											Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
+										}
+										if removableRadioNum != nil {
+											Button(role: .destructive) {
+												askToRemoveWindowRadio(connectedDevice)
+											} label: {
+												Label("Remove Radio…", systemImage: "trash")
+											}
 										}
 										Button(role: .destructive) {
 											// Re-check liveness at tap time: the menu-captured `node` can fault if
@@ -361,7 +444,7 @@ struct Connect: View {
 								}
 							}
 						} else {
-							if accessoryManager.isConnecting {
+							if isRadioConnecting {
 								HStack {
 									Image(systemName: "antenna.radiowaves.left.and.right")
 										.resizable()
@@ -369,7 +452,7 @@ struct Connect: View {
 										.foregroundColor(.orange)
 										.frame(width: 60, height: 60)
 										.padding(.trailing)
-									switch accessoryManager.state {
+									switch link.state {
 									case .connecting, .communicating:
 										Text("Connecting . .")
 											.font(.title2)
@@ -388,11 +471,9 @@ struct Connect: View {
 								}
 								.padding()
 								.swipeActions {
-									if accessoryManager.allowDisconnect {
+									if link.canDisconnect {
 										Button(role: .destructive) {
-											Task {
-												try await accessoryManager.disconnect()
-											}
+											disconnectWindowRadio()
 										} label: {
 											Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 										}
@@ -402,23 +483,67 @@ struct Connect: View {
 								
 							} else {
 								
-								if let lastError = accessoryManager.lastConnectionError as? Error {
+								if let lastError = link.lastError {
 									Text(lastError.localizedDescription).font(.callout).foregroundColor(.red)
 								}
-								HStack {
-									Image("custom.link.slash")
-										.resizable()
-										.symbolRenderingMode(.hierarchical)
-										.foregroundColor(.red)
-										.frame(width: 60, height: 60)
-										.padding(.trailing)
-									Text("No device connected").font(.title3)
+								if let offlineWindowRadio {
+									// The window's radio, off: it stays until the user picks another (W-02).
+									OfflineRadioRow(radio: offlineWindowRadio, isSwitchingRadio: $isSwitchingRadio)
+								} else {
+									HStack {
+										Image("custom.link.slash")
+											.resizable()
+											.symbolRenderingMode(.hierarchical)
+											.foregroundColor(.red)
+											.frame(width: 60, height: 60)
+											.padding(.trailing)
+										Text("No device connected").font(.title3)
+									}
+									.padding()
 								}
-								.padding()
 							}
 						}
 					}
 					.textCase(nil)
+
+					// Feature 021: radios connected alongside the first one, and radios that can be
+					// added while connected.
+					if !otherConnectedRadios.isEmpty {
+						Section(header: Text("Also Connected").font(.title)) {
+							ForEach(otherConnectedRadios, id: \.id) { device in
+								AdditionalRadioRow(device: device, isSwitchingRadio: $isSwitchingRadio)
+							}
+						}
+						.textCase(nil)
+					}
+					// Any radio connected, the first one included or not (review V11 W3).
+					if accessoryManager.isConnected || !accessoryManager.additionalRadios.isEmpty {
+						Section(header: HStack {
+							Text("Add a Radio").font(.title)
+							Spacer()
+							ManualConnectionMenu(isSwitchingRadio: $isSwitchingRadio)
+						}) {
+							if !accessoryManager.canConnectAnotherRadio {
+								Text("You can connect up to \(AccessoryManager.maxConnectedRadios) radios at once. Disconnect one to add another.")
+									.font(.callout)
+									.foregroundStyle(.secondary)
+							} else if addableDevices.isEmpty {
+								Label("Looking for radios…", systemImage: "antenna.radiowaves.left.and.right")
+									.font(.callout)
+									.foregroundStyle(.secondary)
+							}
+							ForEach(addableDevices) { device in
+								DeviceConnectRow(device: device, isSwitchingRadio: $isSwitchingRadio)
+							}
+						}
+						.textCase(nil)
+						// The first radio's connect stops discovery when it finishes, so start it
+						// again for each radio the window shows; scanning stops when the tab goes away,
+						// unless something else needs it (review V40-2).
+						.task(id: accessoryManager.nodeNum(for: windowRadio)) { accessoryManager.startDiscovery() }
+						.onAppear { accessoryManager.connectScreenAppeared(connectScreenID) }
+						.onDisappear { accessoryManager.connectScreenDisappeared(connectScreenID) }
+					}
 
 					if let firmwareUpdateNotice, accessoryManager.isConnected {
 						Section {
@@ -429,7 +554,7 @@ struct Connect: View {
 						.textCase(nil)
 					}
 					
-					if !(accessoryManager.isConnected || accessoryManager .isConnecting) {
+					if !(accessoryManager.isConnected || accessoryManager.isConnecting), accessoryManager.additionalRadios.isEmpty {
 						Group {
 							Section(header: HStack {
 								Text("Available Radios").font(.title)
@@ -443,7 +568,7 @@ struct Connect: View {
 									if accessoryManager.isBluetoothPoweredOff {
 										BluetoothPoweredOffRow()
 									}
-									ForEach(sortedAvailableDevices) { device in
+									ForEach(availableDevices) { device in
 										DeviceConnectRow(device: device, isSwitchingRadio: $isSwitchingRadio)
 								}
 							}
@@ -487,16 +612,10 @@ struct Connect: View {
 				// A view under the list, even an empty one, lifts the list off the
 				// bottom safe area. The tab bar inset then shows as a blank strip.
 				.safeAreaInset(edge: .bottom, spacing: 0) {
-					if accessoryManager.allowDisconnect {
+					if link.canDisconnect {
 						HStack {
 							Spacer()
-							Button(role: .destructive, action: {
-								if accessoryManager.allowDisconnect {
-									Task {
-										try await accessoryManager.disconnect()
-									}
-								}
-							}) {
+							Button(role: .destructive, action: disconnectWindowRadio) {
 								Label("Disconnect", systemImage: "antenna.radiowaves.left.and.right.slash")
 							}
 							.buttonStyle(.bordered)
@@ -536,10 +655,10 @@ struct Connect: View {
 				}
 				ToolbarItem(placement: .topBarTrailing) {
 					ConnectedDevice(
-						deviceConnected: accessoryManager.isConnected,
-						name: accessoryManager.activeConnection?.device.shortName ?? "?",
-						mqttProxyConnected: accessoryManager.mqttProxyConnected,
-						mqttTopic: accessoryManager.mqttManager.topics.first ?? ""
+						deviceConnected: isRadioConnected,
+						name: radioSession?.device.shortName ?? "?",
+						mqttProxyConnected: radioSession?.mqtt?.isConnected ?? false,
+						mqttTopic: radioSession?.mqtt?.topics.first ?? ""
 					)
 				}
 			}
@@ -573,6 +692,7 @@ struct Connect: View {
 			}
 			// Attached here for the same reason as the dialog above: the connected-device
 			// row unmounts on disconnect, which would tear the sheet down with it.
+			.removeRadioConfirmation($radioToRemove)
 			.sheet(isPresented: $showingShareContactQR) {
 				if let shareContactNode {
 					// This menu only ever shows on the connected radio, which is verified by
@@ -582,12 +702,12 @@ struct Connect: View {
 			}
 		}
 		.sheet(isPresented: $showSecurityVersionNag) {
-			SecurityVersionNag(minimumSecureVersion: accessoryManager.securityVersion, version: accessoryManager.activeConnection?.device.firmwareVersion ?? "?.?.?")
+			SecurityVersionNag(minimumSecureVersion: accessoryManager.securityVersion, version: radioSession?.device.firmwareVersion ?? "?.?.?")
 				.trackScreen(.firmwareSecurityWarning)
 				.presentationDetents([.large])
 				.presentationDragIndicator(.automatic)
 		}
-		.onChange(of: self.accessoryManager.state) { _, state in
+		.onChange(of: link.state) { _, state in
 			if state != .subscribed {
 				node = nil
 				firmwareUpdateNotice = nil
@@ -625,10 +745,10 @@ struct Connect: View {
 	/// connected edition changes.
 	private var eventFirmware: EventFirmwareEntity? {
 		EventFirmwarePresentation.resolve(
-			isConnected: accessoryManager.isConnected,
-			edition: accessoryManager.firmwareEdition,
+			isConnected: isRadioConnected,
+			edition: radioFirmwareEdition,
 			metadata: eventFirmwareEditions,
-			deviceFirmwareVersion: accessoryManager.connectedVersion
+			deviceFirmwareVersion: radioSession?.device.firmwareVersion
 		)?.info
 	}
 
@@ -662,16 +782,16 @@ struct Connect: View {
 	}
 
 	private func handleSuccessfulLoRaSave(_ savedNodeNum: Int64, _ savedRegion: RegionCodes) {
-		guard accessoryManager.state == .subscribed,
-			  savedNodeNum == accessoryManager.activeDeviceNum else { return }
+		guard link.state == .subscribed,
+			  savedNodeNum == accessoryManager.nodeNum(for: windowRadio) else { return }
 		isUnsetRegion = savedRegion == .unset
 	}
 
 	@MainActor
 	private func refreshConnectedNodeState() {
-		guard let deviceNum = accessoryManager.activeDeviceNum,
-		      UserDefaults.preferredPeripheralId.count > 0,
-		      accessoryManager.state == .subscribed else {
+		guard let deviceNum = accessoryManager.nodeNum(for: windowRadio),
+		      PreferredRadio.peripheralId.count > 0,
+		      link.state == .subscribed else {
 			firmwareUpdateNotice = nil
 			return
 		}
@@ -696,16 +816,16 @@ struct Connect: View {
 		}
 
 		refreshFirmwareUpdateNotice()
-		if let firmwareVersion = accessoryManager.activeConnection?.device.firmwareVersion, firmwareVersion != "?.?.?" && !firmwareVersion.isEmpty {
-			let meetsMinimumVersion = accessoryManager.checkIsVersionSupported(forVersion: accessoryManager.minimumVersion)
-			let meetsSecurityVersion = accessoryManager.checkIsVersionSupported(forVersion: accessoryManager.securityVersion)
+		if let firmwareVersion = radioSession?.device.firmwareVersion, firmwareVersion != "?.?.?" && !firmwareVersion.isEmpty {
+			let meetsMinimumVersion = accessoryManager.isVersionSupported(forVersion: accessoryManager.minimumVersion, for: windowRadio)
+			let meetsSecurityVersion = accessoryManager.isVersionSupported(forVersion: accessoryManager.securityVersion, for: windowRadio)
 			showSecurityVersionNag = meetsMinimumVersion && !meetsSecurityVersion
 		}
 	}
 
 	@MainActor
 	private func refreshFirmwareUpdateNotice() {
-		firmwareUpdateNotice = FirmwareUpdateNotifier.notice(accessoryManager: accessoryManager)
+		firmwareUpdateNotice = FirmwareUpdateNotifier.notice(accessoryManager: accessoryManager, window: windowRadio)
 	}
 
 	@MainActor
@@ -907,8 +1027,39 @@ struct ManualConnectionMenu: View {
 	@State private var selectedTransport: IterableTransport?
 	@State private var showAlert: Bool = false
 	@State private var connectionString = ""
+	/// Why connecting the entered radio failed, as the other rows under Add a Radio show.
+	@State private var connectError: String?
+	@Environment(\.selectWindowRadio) private var selectWindowRadio
+	@Environment(\.windowRadio) private var windowRadio
+
+	/// Entered by hand: connected as picking a radio from the list does (`connectPickedRadio`):
+	/// the first radio, through a switch when another is the preferred one, or added alongside the
+	/// others (W-12). Either way a window showing a radio that's off shows it (review V27-7).
+	private func connectEntered(_ device: Device) {
+		guard !accessoryManager.isRadioConnected(device.id) else { return }
+		guard accessoryManager.connectedRadioCount == 0 || accessoryManager.canConnectAnotherRadio else {
+			connectError = String.localizedStringWithFormat("You can connect up to %lld radios at once. Disconnect one to add another.".localized, AccessoryManager.maxConnectedRadios)
+			return
+		}
+		Task {
+			do {
+				try await accessoryManager.connectPickedRadio(device, isSwitchingRadio: $isSwitchingRadio, router: router, windowRadio: windowRadio, selectWindowRadio: selectWindowRadio)
+			} catch {
+				connectError = error.localizedDescription
+			}
+		}
+	}
 
 	var body: some View {
+		menu
+			.alert("Couldn't Connect", isPresented: Binding(get: { connectError != nil }, set: { if !$0 { connectError = nil } })) {
+				Button("OK", role: .cancel) {}
+			} message: {
+				Text(connectError ?? "")
+			}
+	}
+
+	private var menu: some View {
 		Menu {
 			ForEach(transports) { transport in
 				Button {
@@ -936,18 +1087,8 @@ struct ManualConnectionMenu: View {
 				}
 			
 			Button("OK", action: {
-				if !connectionString.isEmpty {
-					if let device = selectedTransport.transport.device(forManualConnection: connectionString) {
-						if UserDefaults.preferredPeripheralId == device.id.uuidString {
-							Task {
-								try await selectedTransport.transport.manuallyConnect(toDevice: device)
-							}
-						} else {
-							Task {
-								await performRadioSwitch(device, isSwitchingRadio: $isSwitchingRadio, accessoryManager: accessoryManager, router: router)
-							}
-						}
-					}
+				if !connectionString.isEmpty, let device = selectedTransport.transport.device(forManualConnection: connectionString) {
+					connectEntered(device)
 				}
 			})
 		}
@@ -960,10 +1101,30 @@ struct DeviceConnectRow: View {
 	@EnvironmentObject private var router: Router
 	let device: Device
 	@Binding var isSwitchingRadio: Bool
-	
+	@State private var connectError: String?
+	@Environment(\.selectWindowRadio) private var selectWindowRadio
+	@Environment(\.windowRadio) private var windowRadio
+
+	/// With a radio already connected, this one is added alongside it (W-12).
+	private func handleTap() {
+		guard !accessoryManager.isRadioConnected(device.id), !isAtRadioLimit else { return }
+		Task {
+			do {
+				try await accessoryManager.connectPickedRadio(device, isSwitchingRadio: $isSwitchingRadio, router: router, windowRadio: windowRadio, selectWindowRadio: selectWindowRadio)
+			} catch {
+				connectError = error.localizedDescription
+			}
+		}
+	}
+
+	/// At the radio limit, the radios to add are disabled; the section says why.
+	private var isAtRadioLimit: Bool {
+		accessoryManager.connectedRadioCount > 0 && !accessoryManager.canConnectAnotherRadio
+	}
+
 	var body: some View {
 		HStack {
-			if UserDefaults.preferredPeripheralId == device.id.uuidString {
+			if PreferredRadio.peripheralId == device.id.uuidString {
 				Image(systemName: "star.fill")
 					.imageScale(.large).foregroundColor(.yellow)
 					.padding(.trailing)
@@ -973,18 +1134,14 @@ struct DeviceConnectRow: View {
 					.padding(.trailing)
 			}
 			VStack(alignment: .leading) {
-				Button(action: {
-					if UserDefaults.preferredPeripheralId.count > 0 && device.id.uuidString != UserDefaults.preferredPeripheralId {
-						Task {
-							await performRadioSwitch(device, isSwitchingRadio: $isSwitchingRadio, accessoryManager: accessoryManager, router: router)
-						}
-					} else {
-						Task {
-							try? await accessoryManager.connect(to: device)
-						}
-					}
-				}) {
+				Button(action: handleTap) {
 					Text(device.name).font(.callout)
+				}
+				.disabled(isAtRadioLimit)
+				.alert("Couldn't Connect", isPresented: Binding(get: { connectError != nil }, set: { if !$0 { connectError = nil } })) {
+					Button("OK", role: .cancel) {}
+				} message: {
+					Text(connectError ?? "")
 				}
 				// Show transport type
 #if !targetEnvironment(macCatalyst)
@@ -1030,6 +1187,37 @@ func performRadioSwitch(_ device: Device, isSwitchingRadio: Binding<Bool>, acces
 			isSwitchingRadio.wrappedValue = false
 		}
 	)
+}
+
+extension AccessoryManager {
+	/// Connects `device`, picked by the user from the radios found or as one of theirs that's off
+	/// (W-02). With no radio connected it becomes the first radio, through a switch when another
+	/// radio is the preferred one. Otherwise it's added alongside the connected radios (W-12) and
+	/// shown (`selectWindowRadio`). A window showing another radio that's off shows `device` once
+	/// it's connected. Throws when a radio added alongside can't connect.
+	func connectPickedRadio(
+		_ device: Device,
+		isSwitchingRadio: Binding<Bool>,
+		router: Router,
+		windowRadio: RadioWindow,
+		selectWindowRadio: SelectWindowRadioAction
+	) async throws {
+		guard !isRadioConnected(device.id) else { return }
+		guard connectedRadioCount > 0 else {
+			if PreferredRadio.peripheralId.count > 0 && device.id.uuidString != PreferredRadio.peripheralId {
+				await performRadioSwitch(device, isSwitchingRadio: isSwitchingRadio, accessoryManager: self, router: router)
+			} else {
+				try? await connect(to: device)
+			}
+			if let shown = windowRadio.deviceId, shown != device.id, isRadioConnected(device.id) {
+				selectWindowRadio(device.id)
+			}
+			return
+		}
+		guard canConnectAnotherRadio else { return }
+		try await addRadio(device)
+		selectWindowRadio(device.id)
+	}
 }
 
 // The caller resolves `currentNodeNum` BEFORE starting its switch flow. Re-deriving it
@@ -1080,6 +1268,10 @@ func backupCurrentAndRestoreDatabase(
 ) async -> NodeBackupResult {
 	await backupCurrentDatabase(forTargetNode: targetNodeNum, currentNodeNum: currentNodeNum, accessoryManager: accessoryManager)
 
+	// A restore replaces the whole shared store, so no other radio may keep writing to it
+	// (feature 021). The user reconnects them afterwards.
+	await accessoryManager.disconnectAllAdditionalRadios()
+
 	if disconnectCurrentDevice, accessoryManager.allowDisconnect {
 		Logger.backup.info("💾 Disconnecting current device before restore")
 		try? await accessoryManager.disconnect()
@@ -1087,7 +1279,7 @@ func backupCurrentAndRestoreDatabase(
 
 	// Every window drops the detail views that are about to point at a destroyed
 	// store. Only the window that started the switch changes tab.
-	appState.sceneRouters.popAllStacks()
+	appState.windows.popAllStacks()
 	router.popAllStacks()
 	router.selectedTab = selectedTab
 
@@ -1165,96 +1357,88 @@ func backupCurrentAndRestoreDatabase(
 	// still shows the other node's map pins). Bumping databaseResetID re-identifies the root
 	// view, forcing every @Query to re-execute its fetch and return only the restored data.
 	appState.databaseResetID = UUID()
+	// The caller forgets the radios the restored store doesn't have, once the gate has dropped
+	// (`forgetRadiosNotInStore`, review V28-2): while it's up the Mac's radio windows are
+	// unmounted, and wouldn't hear that they close.
 
 	return restoreResult
 }
 
+// MARK: - Disconnect Helper
+
+/// Disconnect on the radio the app connected first (feature 021): it disconnects as a single
+/// radio does, and isn't remembered, so it doesn't come straight back. The other radios stay as
+/// they are; nothing takes its place (D-19). With another radio connected, that one becomes the
+/// preferred radio, so the next launch doesn't bring this one back either, as for any other radio
+/// (review V12 Y3); with one radio it stays the preferred one, as on `main`.
+@MainActor
+func disconnectFirstRadio(accessoryManager: AccessoryManager) async throws {
+	// By its known number when its connect doesn't have it yet (review V17 U2).
+	let deviceId = accessoryManager.activeConnection?.device.id
+		?? accessoryManager.connectAttempts.values.first(where: \.isFirst)?.device.id
+	if let previousNum = accessoryManager.activeConnection?.nodeNum ?? deviceId.flatMap({ accessoryManager.knownNodeNums[$0] }) {
+		await MeshPackets.shared.setRadioAutoConnect(nodeNum: previousNum, false)
+	}
+	try await accessoryManager.disconnect()
+	if let other = accessoryManager.connectedRadioAfterFirst {
+		PreferredRadio.set(other)
+	}
+}
+
 // MARK: - Node Switch Helper
 
-/// Handles the full node-switch lifecycle: backup, clear, restore, connect.
+/// Makes `device` the first radio (feature 021, T066).
 ///
-/// Flow:
-/// 1. Capture current node number
-/// 2. Flush pending writes
-/// 3. Create backup of current node's database (full SQLite file copy)
-/// 4. Disconnect from current device
-/// 5. Clear database via MeshPackets actor (empties @Query results safely)
-/// 6. Swap database files and recreate ModelContainer (full restore)
-/// 7. Trigger UI reset so views rebind to the new container
-/// 8. Connect to new device (radio sends updates on top of restored data)
+/// The store is shared by every radio, so a switch no longer backs up, clears and restores
+/// it: the first radio disconnects and `device` connects in its place. Additional radios
+/// stay connected. If `device` is one of them, it is disconnected first and reconnects as the
+/// first radio, and the previous first radio comes back as an additional one.
 @MainActor
 func switchToDevice(
 	_ device: Device,
 	accessoryManager: AccessoryManager,
 	appState: AppState,
+	keepPreviousRadio: Bool = true,
 	router: Router,
 	onRestoreComplete: (@MainActor () -> Void)? = nil
 ) async {
-	let resolvedTargetNodeNum = await NodeBackupManager.shared.resolveNodeNum(forPeripheralId: device.id.uuidString)
-	let targetNodeNum = device.num ?? resolvedTargetNodeNum
-	let currentNodeNum = accessoryManager.activeDeviceNum ?? {
-		let num = Int64(UserDefaults.preferredPeripheralNum)
-		return num > 0 ? num : nil
-	}()
-	Logger.backup.info("💾 Node switch — current: \(currentNodeNum.map { String($0) } ?? "nil", privacy: .public), target: \(targetNodeNum.map { String($0) } ?? "unknown", privacy: .public)")
+	Logger.transport.info("🔀 Switching the first radio from \(accessoryManager.activeConnection?.device.name ?? "none", privacy: .public) to \(device.name, privacy: .public)")
 
-	// The user's explicit choice IS the new preferred radio — record it at switch
-	// initiation, not only deep in the connect flow (Step 5 writes it again on success).
-	// When it moved only on a fully-successful connect, any failed switch left the OLD
-	// preferred in place, so the error-path auto-reconnect bounced back to the previous
-	// radio instead of retrying the node the user asked for — and that reconnect
-	// (a plain connect, no clear) dumped the previous radio's nodes on top of the target's
-	// freshly restored database. The node num moves with it (0 = unknown for a never-seen
-	// radio) so nothing keyed on the num keeps pointing at the abandoned node.
-	UserDefaults.preferredPeripheralId = device.id.uuidString
-	UserDefaults.preferredPeripheralNum = Int(targetNodeNum ?? 0)
+	// The user's explicit choice is the new preferred radio, recorded up front so an
+	// error-path auto-reconnect retries this radio rather than the previous one.
+	PreferredRadio.peripheralId = device.id.uuidString
+	PreferredRadio.nodeNum = device.num ?? 0
 
-	// Mark the switch in flight so the disconnect's teardown doesn't re-arm discovery and
-	// auto-connect can't launch a second connect + node dump while the store is mid-reset.
+	// Keeps the disconnect's teardown from re-arming discovery and auto-connect mid-switch.
 	accessoryManager.isSwitchingDevices = true
 	defer {
 		accessoryManager.isSwitchingDevices = false
-		// closeConnection suppressed its usual discovery restart during the switch; if the
-		// switch's connect didn't succeed, restart discovery now so devices reappear.
 		if !accessoryManager.isConnected {
 			accessoryManager.startDiscovery()
 		}
 	}
 
-	// 4. Disconnect from current device
+	if accessoryManager.additionalRadios[device.id] != nil || accessoryManager.additionalRadioReconnects[device.id] != nil {
+		// Making a radio connected alongside the first: the previous first radio stays in the
+		// set. Remembering it lets the connect below bring it back as an additional radio
+		// (`reconnectRememberedRadios`). A plain switch replaces it instead.
+		if keepPreviousRadio, let previousNum = accessoryManager.activeConnection?.nodeNum, previousNum != device.num {
+			await MeshPackets.shared.setRadioAutoConnect(nodeNum: previousNum, true)
+		}
+		await accessoryManager.disconnectAdditionalRadio(device.id, byUser: true)
+	}
 	if accessoryManager.allowDisconnect {
 		try? await accessoryManager.disconnect()
 	}
-
-	// Clear (always) and restore (when the target has a backup). Runs even when the target
-	// node number is unknown — a switch to a never-seen radio previously skipped the clear
-	// and dumped the new radio's nodes on top of the old radio's data.
-	let restoreResult = await backupCurrentAndRestoreDatabase(
-		forNode: targetNodeNum,
-		currentNodeNum: currentNodeNum,
-		accessoryManager: accessoryManager,
-		appState: appState,
-		router: router,
-		selectedTab: .connect
-	)
-	switch restoreResult {
-	case .success:
-		Logger.backup.info("💾 Backup restored for target node \(targetNodeNum.map { String($0) } ?? "?", privacy: .public)")
-	case .skipped(let reason):
-		Logger.backup.warning("💾 Restore skipped: \(reason, privacy: .public)")
-	case .noBackupFound:
-		Logger.backup.info("💾 No backup for target node \(targetNodeNum.map { String($0) } ?? "unknown", privacy: .public) — radio will populate fresh data")
-	}
-
+	// Settings screens describe the first radio; leave them before it changes.
+	router.popToRoot(tab: .settings)
 	onRestoreComplete?()
 
-	// 8. Clear notifications and connect to new device
-	clearNotifications()
 	do {
 		try await accessoryManager.connect(to: device, refreshDeviceHardwareFromAPI: true)
-		Logger.backup.info("💾 Connected to target device successfully")
+		Logger.transport.info("🔀 Connected to the new first radio")
 	} catch {
-		Logger.backup.error("💾 Failed to connect to target: \(error.localizedDescription, privacy: .public)")
+		Logger.transport.error("🔀 Failed to connect to the new first radio: \(error.localizedDescription, privacy: .public)")
 	}
 }
 

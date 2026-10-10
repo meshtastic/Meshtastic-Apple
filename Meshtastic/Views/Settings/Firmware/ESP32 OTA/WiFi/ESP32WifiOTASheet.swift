@@ -11,6 +11,8 @@ import CryptoKit
 
 struct ESP32WifiOTASheet: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@Environment(\.dismiss) var dismiss
 	@Environment(\.modelContext) var context
 	@StateObject var ota = ESP32WifiOTAViewModel()
@@ -43,7 +45,7 @@ struct ESP32WifiOTASheet: View {
 			statusState: ota.otaState,
 			statusMessage: ota.statusMessage,
 			inRetryWorkflow: inRetryWorkflow,
-			isStartDisabled: accessoryManager.activeDeviceNum == nil,
+			isStartDisabled: accessoryManager.nodeNum(for: windowRadio) == nil,
 			onStart: { startWifiProcess() },
 			onRetry: {
 				inRetryWorkflow = true
@@ -87,18 +89,25 @@ struct ESP32WifiOTASheet: View {
 
 	/// Hand the radio back to the app: let discovery and auto-connect pick the device up once it
 	/// reboots into the new firmware.
+	/// The radio being updated, taken when the update claims it: its window's radio.
+	@State private var updatingDevice: Device?
+
 	private func releaseRadio() {
 		Logger.services.info("📡 [ESP32 WiFi OTA] Releasing the radio, restarting discovery")
 		accessoryManager.otaInProgress = false
 		accessoryManager.userRequestedConnectionCancellation = false
 		accessoryManager.shouldAutomaticallyConnectToPreferredPeripheralAfterError = true
 		accessoryManager.startDiscovery()
+		// A radio other than the one connected first comes back through its reconnect (W1).
+		if let updatingDevice {
+			accessoryManager.reclaimRadioAfterUpdate(updatingDevice)
+		}
 	}
 	
 	// MARK: - Logic
 	
 	private func startWifiProcess() {
-		guard let deviceNum = accessoryManager.activeDeviceNum,
+		guard let deviceNum = accessoryManager.nodeNum(for: windowRadio),
 			  let connectedNode = getNodeInfo(id: deviceNum, context: context),
 			  let user = connectedNode.user else {
 			return
@@ -109,7 +118,7 @@ struct ESP32WifiOTASheet: View {
 				// Read before Step 2. The reboot drops this socket, and the loader has no name to look up.
 				let otaHost = try await handoffIPv4Address()
 				host = otaHost
-				let device = accessoryManager.activeConnection?.device
+				let device = accessoryManager.session(for: windowRadio)?.device
 
 				if !alreadyRebooted {
 					// Claim the radio before the reboot command goes out. The device reboots
@@ -119,6 +128,7 @@ struct ESP32WifiOTASheet: View {
 					// the update — down with it, leaving the device waiting in OTA mode.
 					Logger.services.info("📡 [ESP32 WiFi OTA] Step 1: claiming the radio (node \(deviceNum), host \(otaHost, privacy: .private))")
 					accessoryManager.otaInProgress = true
+					updatingDevice = accessoryManager.session(for: windowRadio)?.device
 					accessoryManager.shouldAutomaticallyConnectToPreferredPeripheralAfterError = false
 
 					// Move heavy file reading/hashing off the Main Actor
@@ -136,7 +146,10 @@ struct ESP32WifiOTASheet: View {
 					// Give the packet a moment to send before disconnecting
 					try await Task.sleep(for: .seconds(0.5))
 					Logger.services.info("📡 [ESP32 WiFi OTA] Step 3: disconnecting")
-					try await accessoryManager.disconnect()
+					// Only this window's radio, kept remembered and its window open (review V11 W1).
+					if let deviceId = updatingDevice?.id {
+						try await accessoryManager.releaseRadioForUpdate(deviceId)
+					}
 					Logger.services.info("📡 [ESP32 WiFi OTA] Disconnected")
 					alreadyRebooted = true
 				}
@@ -185,7 +198,7 @@ struct ESP32WifiOTASheet: View {
 	private func handoffIPv4Address() async throws -> String {
 		let peer: String?
 		if WifiOTAHandoffAddress.ipv4Literal(host) == nil,
-		   let tcp = accessoryManager.activeConnection?.connection as? TCPConnection {
+		   let tcp = accessoryManager.session(for: windowRadio)?.connection as? TCPConnection {
 			peer = await tcp.connectedIPv4Address()
 		} else {
 			peer = nil

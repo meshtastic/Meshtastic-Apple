@@ -52,6 +52,8 @@ struct NodeDetail: View {
 	) ?? ModemPresets.longFast
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	/// The radio this window works with (feature 021, D-19).
+	@Environment(\.windowRadio) private var windowRadio
 	@EnvironmentObject var router: Router
 	@State private var showingShutdownConfirm: Bool = false
 	@State private var showingRebootConfirm: Bool = false
@@ -77,9 +79,9 @@ struct NodeDetail: View {
 	}
 
 	/// The currently BLE-connected (or remotely administered) node, derived reactively
-	/// from accessoryManager.activeDeviceNum so it stays current if the connection changes.
+	/// from the window's radio (`nodeNum(for:)`) so it stays current if the connection changes.
 	private var connectedNode: NodeInfoEntity? {
-		guard let num = accessoryManager.activeDeviceNum else { return nil }
+		guard let num = accessoryManager.nodeNum(for: windowRadio) else { return nil }
 		return getNodeInfo(id: num, context: context)
 	}
 	/// Resolve the current user independently of `node.user`. A node detail can remain in a
@@ -93,7 +95,7 @@ struct NodeDetail: View {
 		return user
 	}
 	private var connectedUser: UserEntity? {
-		guard let num = accessoryManager.activeDeviceNum else { return nil }
+		guard let num = accessoryManager.nodeNum(for: windowRadio) else { return nil }
 		let descriptor = FetchDescriptor<UserEntity>(predicate: #Predicate { $0.num == num })
 		guard let user = try? context.fetch(descriptor).first,
 			user.modelContext != nil,
@@ -122,10 +124,19 @@ struct NodeDetail: View {
 	/// reported metadata (permissive when unknown, matching the house capability gates).
 	private var canEditStatusMessage: Bool {
 		guard accessoryManager.supportsStatusMessage else { return false }
-		if accessoryManager.activeDeviceNum == nodeNum { return true }
+		if accessoryManager.nodeNum(for: windowRadio) == nodeNum { return true }
 		return node.hasBeenAdministered && node.firmwareSupportsStatusMessage
 	}
 	@State var showingCompassSheet = false
+	/// The window's radio reports the node not heard on its current LoRa settings (feature 021:
+	/// each radio answers for its own). Looked up again when the shown node changes too: a split
+	/// view's detail column keeps this view, and its state, across selections (review V37-1).
+	@State private var isUnheardOnCurrentLora = false
+
+	private func refreshUnheardOnCurrentLora() {
+		let radioNum = accessoryManager.answeringRadioNum(for: windowRadio)
+		isUnheardOnCurrentLora = RadioLoraAnswers.answer(of: nodeNum, radioNum: radioNum, container: context.container)?.isUnheard ?? false
+	}
 	@State private var nodeForDisplayNameEdit: NodeInfoEntity?
 	@State private var nodeForStatusMessageEdit: NodeInfoEntity?
 	/// Bumped whenever a local display name is set/cleared to force this view to re-render —
@@ -145,7 +156,7 @@ struct NodeDetail: View {
 						}
 						.sheet(isPresented: $showingShareContactQR) {
 							ShareContactQRDialog(
-								manuallyVerified: nodeNum == accessoryManager.activeDeviceNum,
+								manuallyVerified: nodeNum == accessoryManager.nodeNum(for: windowRadio),
 								node: shareContactNode
 							)
 						}
@@ -165,6 +176,12 @@ struct NodeDetail: View {
 					}
 						.onChange(of: node.lastHeard) {
 							refreshNodeSummary()
+						}
+						.task(id: accessoryManager.nodeLoraAnswerKey(of: nodeNum, for: windowRadio)) {
+							refreshUnheardOnCurrentLora()
+						}
+						.onReceive(NotificationCenter.default.publisher(for: .heardOnCurrentLoraDidChange)) { _ in
+							refreshUnheardOnCurrentLora()
 						}
 						.onReceive(NotificationCenter.default.publisher(for: .nodeLogAvailabilityDidChange)) { notification in
 							guard notification.object as? Int64 == nodeNum else { return }
@@ -189,6 +206,7 @@ struct NodeDetail: View {
 			NodeInfoItem(nodeNum: nodeNum)
 				.id(nodeNum)
 			nodeSection
+			NodeHeardBySection(nodeNum: nodeNum, lastHeard: node.lastHeard)
 			environmentSection
 			airQualitySection
 			powerSection
@@ -299,7 +317,7 @@ struct NodeDetail: View {
 			// One trust row, the strongest that applies, resolved the same way the node list
 			// resolves its glyph — showing both at once said the node was vouched for twice.
 			// Affirmative only: a node that has earned none of these gets no row.
-			if nodeNum == accessoryManager.activeDeviceNum {
+			if nodeNum == accessoryManager.nodeNum(for: windowRadio) {
 				// You hold this radio, so neither of the other two describes it: you did not
 				// meet yourself in person, and its signature is not what makes it trusted.
 				trustRow(
@@ -323,7 +341,7 @@ struct NodeDetail: View {
 				)
 			}
 			if let user = currentUser, user.keyMatch {
-				let publicKey = nodeNum == accessoryManager.activeDeviceNum
+				let publicKey = nodeNum == accessoryManager.nodeNum(for: windowRadio)
 				? node.securityConfig?.publicKey?.base64EncodedString() ?? ""
 				: user.publicKey?.base64EncodedString() ?? ""
 				if publicKey.isEmpty {
@@ -518,7 +536,7 @@ struct NodeDetail: View {
 					dateFormatRelative.toggle()
 				}
 			}
-			if node.isUnheardOnCurrentLora {
+			if isUnheardOnCurrentLora {
 				Label {
 					Text(UnheardOnCurrentLora.label)
 				} icon: {
@@ -700,7 +718,7 @@ struct NodeDetail: View {
 			.disabled(!hasDeviceMetrics)
 			if showMapLink {
 				NavigationLink {
-					NodeMapSwiftUI(node: node, showUserLocation: accessoryManager.activeDeviceNum == nodeNum)
+					NodeMapSwiftUI(node: node, showUserLocation: accessoryManager.nodeNum(for: windowRadio) == nodeNum)
 				} label: {
 					Label {
 						Text("Node Map")
@@ -839,7 +857,7 @@ struct NodeDetail: View {
 				FavoriteNodeButton(
 					node: node
 				)
-				if accessoryManager.activeDeviceNum != nodeNum {
+				if accessoryManager.nodeNum(for: windowRadio) != nodeNum {
 					if currentUser?.showsDirectMessageAction == true {
 						Button(action: {
 							if let url = URL(string: "meshtastic:///messages?userNum=\(nodeNum)") {
@@ -917,7 +935,7 @@ struct NodeDetail: View {
 	private var administrationSection: some View {
 		if let metadata = node.metadata,
 		   connectedNode != nil,
-		   accessoryManager.isConnected {
+		   accessoryManager.isConnected(windowRadio) {
 			Section("Administration") {
 				let administrationUserPair = self.administrationUserPair
 				if UserDefaults.enableAdministration {
