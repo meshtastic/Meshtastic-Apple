@@ -317,26 +317,8 @@ private struct RootTopicField: View {
 				.presentationDragIndicator(.visible)
 				#endif
 		}
-#if DEBUG
-		.onAppear(perform: presentFinderFromLaunchArgument)
-#endif
 		Text("See which root topics are active on your broker near you, and pick one.")
 			.foregroundColor(.gray)
 			.font(.callout)
 	}
-
-#if DEBUG
-	/// `--meshtastic-open-mqtt-topics` presents the finder the first time this row appears, so a
-	/// scripted simulator run can screenshot a live sample. DEBUG-only, like the other launch hooks.
-	private static var finderLaunchArgumentConsumed = false
-
-	private func presentFinderFromLaunchArgument() {
-		guard CommandLine.arguments.contains("--meshtastic-open-mqtt-topics"), !Self.finderLaunchArgumentConsumed else { return }
-		Self.finderLaunchArgumentConsumed = true
-		Task {
-			try? await Task.sleep(for: .seconds(1))
-			showFinder = true
-		}
-	}
-#endif
 }

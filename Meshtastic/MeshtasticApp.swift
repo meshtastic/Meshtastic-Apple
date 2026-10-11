@@ -218,17 +218,6 @@ struct MeshtasticAppleApp: App {
 				}
 			}
 			#endif
-			// `--meshtastic-open-mqtt-topics` opens Settings > MQTT once the radio's config has had
-			// time to arrive, scrolled to the root topic row, which then presents the Find Topics
-			// sheet. For screenshots of a live broker sample without tapping the simulator.
-			if arguments.contains("--meshtastic-open-mqtt-topics") {
-				let state = appState
-				Task {
-					try? await Task.sleep(for: .seconds(8))
-					Logger.services.info("🧪 [App] Opening Settings > MQTT for the topic finder (launch argument)")
-					state.sceneRouters.navigate(toSetting: .mqtt, focusing: FieldIdentity(messageName: "meshtastic.ModuleConfig.MQTTConfig", tag: 8))
-				}
-			}
 #endif
 		}
 	}
