@@ -28140,6 +28140,9 @@
         }
       }
     },
+    "Could not connect to %@." : {
+      "comment" : "Topic finder: sampler error"
+    },
     "Could not connect to the device." : {
       "comment" : "OTA failed to connect to the device in update mode",
       "localizations" : {
@@ -123940,6 +123943,18 @@
           }
         }
       }
+    },
+    "The broker closed the connection." : {
+      "comment" : "Topic finder: sampler error"
+    },
+    "The broker did not confirm the subscription." : {
+      "comment" : "Topic finder: sampler error"
+    },
+    "The broker does not allow these topic filters." : {
+      "comment" : "Topic finder: sampler error"
+    },
+    "The broker refused the connection: %@." : {
+      "comment" : "Topic finder: sampler error"
     },
     "The channel and preset the beacon transmits on. Add a target to broadcast on more channels." : {
       "localizations" : {
