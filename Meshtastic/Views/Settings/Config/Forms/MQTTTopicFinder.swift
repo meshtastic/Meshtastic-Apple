@@ -122,7 +122,7 @@ struct MQTTTopicFinder: View {
 			case .failed(let message):
 				Label(message, systemImage: "exclamationmark.triangle")
 					.foregroundStyle(.red)
-				Button("Try again") { startSampling() }
+				Button("Try Again") { startSampling() }
 			}
 		} footer: {
 			Text("Listens to \(settings.host) for one minute and publishes nothing. The broker sees your IP address and a random client ID, not your node. Your location is never sent to the broker; Apple's geocoder turns it into the state and city names on the rows. Picking a row fills in the Root Topic field; nothing is sent to the radio until you tap Save.")
@@ -305,7 +305,7 @@ private struct TopicRow: View {
 				}
 				Spacer()
 				VStack {
-					Text(truncated ? "\(count)+" : "\(count)")
+					Text(verbatim: truncated ? "\(count)+" : "\(count)")
 						.font(.title3.weight(.semibold))
 						.monospacedDigit()
 						.foregroundStyle(count > 0 ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))

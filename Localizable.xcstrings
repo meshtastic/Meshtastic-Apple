@@ -132225,9 +132225,6 @@
         }
       }
     },
-    "Try again" : {
-      "comment" : "Topic finder: retry after a failed sample"
-    },
     "Try Again" : {
       "localizations" : {
         "da" : {
