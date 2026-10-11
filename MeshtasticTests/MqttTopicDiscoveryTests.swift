@@ -307,4 +307,22 @@ struct MqttTopicDiscoveryTests {
 		#expect(match?.activity.nodeCount == 2)
 		#expect(Discovery.ranked(activity, ladder: ladder, from: nil).isEmpty)
 	}
+
+	@Test func rungPrefersItsOwnSpellingAndKeepsTheOther() {
+		let ladder = Discovery.ladder(regionTopic: "msh/US", regionName: "United States", state: "KS", city: "Topeka")
+		let activity = [
+			"msh/US/KS/Topeka": self.activity(nodes: 5),
+			"msh/US/KS/topeka": self.activity(nodes: 2)
+		]
+		let match = Discovery.activity(forRung: ladder[2], in: activity)
+		#expect(match?.topic == "msh/US/KS/topeka")
+		#expect(match?.activity.nodeCount == 2)
+		let ranked = Discovery.ranked(activity, ladder: ladder, from: nil)
+		#expect(ranked.map(\.root) == ["msh/US/KS/Topeka"])
+		#expect(ranked.first?.activity.nodeCount == 5)
+
+		let variants = ["msh/US/KS/TOPEKA": self.activity(nodes: 1), "msh/US/KS/Topeka": self.activity(nodes: 3)]
+		#expect(Discovery.activity(forRung: ladder[2], in: variants)?.topic == "msh/US/KS/TOPEKA")
+		#expect(Discovery.ranked(variants, ladder: ladder, from: nil).map(\.root) == ["msh/US/KS/Topeka"])
+	}
 }

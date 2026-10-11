@@ -327,12 +327,15 @@ enum MqttTopicDiscovery {
 		var id: String { root }
 	}
 
-	/// Discovered roots that are not rungs, ranked: more ladder rungs as a prefix first, then roots with a
-	/// map-reported position by distance, then node count, message count and name. The view caps the list.
+	/// Discovered roots that are not shown on a rung, ranked: more ladder rungs as a prefix first, then
+	/// roots with a map-reported position by distance, then node count, message count and name. The
+	/// view caps the list. Only the spelling a rung shows is left out; another case variant of the same
+	/// root is a separate topic on the broker and keeps its own row here.
 	static func ranked(_ activity: [String: Activity], ladder: [Rung], from: CLLocationCoordinate2D?) -> [RankedRoot] {
+		let shown = Set(ladder.compactMap { self.activity(forRung: $0, in: activity)?.topic })
 		var roots: [RankedRoot] = []
 		for (root, entry) in activity {
-			if ladder.contains(where: { MqttRootTopic.rootsMatch($0.topic, root) }) { continue }
+			if shown.contains(root) { continue }
 			if MqttRootTopic.problem(in: root) != nil { continue }
 			let depth = ladder.filter { MqttRootTopic.root(root, hasPrefix: $0.topic) }.count
 			roots.append(RankedRoot(root: root, activity: entry, ladderDepth: depth, distance: entry.nearestDistance(from: from)))
@@ -353,10 +356,14 @@ enum MqttTopicDiscovery {
 		return lhs.root.caseInsensitiveCompare(rhs.root) == .orderedAscending
 	}
 
-	/// The activity recorded for a rung, matched case-insensitively, with the spelling the broker used
-	/// ("msh/US/KS/Topeka" for the rung "msh/US/KS/topeka"), so the row shows and fills the live topic.
+	/// The activity recorded for a rung, with the spelling the broker used, so the row shows and fills
+	/// the live topic. The rung's own spelling wins when the broker carries it; otherwise the lowest
+	/// case-insensitive match ("msh/US/KS/Topeka" for the rung "msh/US/KS/topeka"), so the row does
+	/// not flip between variants from one snapshot to the next.
 	static func activity(forRung rung: Rung, in activity: [String: Activity]) -> (topic: String, activity: Activity)? {
-		guard let match = activity.first(where: { MqttRootTopic.rootsMatch($0.key, rung.topic) }) else { return nil }
-		return (match.key, match.value)
+		if let exact = activity[rung.topic] { return (rung.topic, exact) }
+		guard let key = activity.keys.filter({ MqttRootTopic.rootsMatch($0, rung.topic) }).min(),
+			  let entry = activity[key] else { return nil }
+		return (key, entry)
 	}
 }
