@@ -177,6 +177,10 @@ struct MqttTopicDiscoveryTests {
 		#expect(bayern.last?.topic == "msh/EU_868/Bayern/munchen")
 		#expect(Discovery.segment(from: "St. John's", lowercased: true) == "stjohns")
 		#expect(Discovery.segment(from: "Coeur d'Alene", lowercased: true) == "coeurdalene")
+		// Letters with no decomposition need the Latin-ASCII fold; without it they would be dropped.
+		#expect(Discovery.segment(from: "Łódź", lowercased: true) == "lodz")
+		#expect(Discovery.segment(from: "Straße", lowercased: true) == "strasse")
+		#expect(Discovery.segment(from: "Ørsta", lowercased: true) == "orsta")
 		let longCity = String(repeating: "x", count: 40)
 		let trimmed = Discovery.ladder(regionTopic: "msh/US", regionName: "United States", state: "WA", city: longCity)
 		#expect(trimmed.count == 3)
