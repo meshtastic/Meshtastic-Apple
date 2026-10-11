@@ -66,7 +66,7 @@ enum SpatialRouteSource {
 				back = ([point(route.toNum, snr: 0)] + backHops.map { point($0.num, snr: $0.snr) } + [point(route.fromNum, snr: last.snr)]).compactMap { $0 }
 			}
 			guard forward.count >= 2 else { return nil }
-			let name = route.node?.user?.longName ?? String(format: "!%2x", route.toNum)
+			let name = route.node?.user?.longName ?? route.toNum.toHex()
 			return SpatialRouteSnapshot(id: route.id, fromNum: route.fromNum, toNum: route.toNum, targetName: name, time: route.time, forward: forward, back: back)
 		}
 	}
