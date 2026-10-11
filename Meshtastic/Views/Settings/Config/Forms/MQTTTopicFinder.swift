@@ -125,7 +125,7 @@ struct MQTTTopicFinder: View {
 				Button("Try again") { startSampling() }
 			}
 		} footer: {
-			Text("Listens to \(settings.host) for one minute and publishes nothing. The broker sees your IP address and a random client ID, not your node. Your location stays on the phone and only names the rows. Picking a row fills in the Root Topic field; nothing is sent to the radio until you tap Save.")
+			Text("Listens to \(settings.host) for one minute and publishes nothing. The broker sees your IP address and a random client ID, not your node. Your location is never sent to the broker; Apple's geocoder turns it into the state and city names on the rows. Picking a row fills in the Root Topic field; nothing is sent to the radio until you tap Save.")
 		}
 	}
 
