@@ -74,11 +74,13 @@ final class SpatialMapModel {
 
 	func select(_ nodeNum: Int64?) {
 		guard selectedNodeNum != nodeNum else { return }
+		// A pin lasts only while the node is selected, so the box can shrink back afterwards.
+		if let selectedNodeNum { pinnedNodeNums.remove(selectedNodeNum) }
 		selectedNodeNum = nodeNum
 		updateLabels()
 	}
 
-	/// Selects a node and keeps it in the box even when the node cap would drop it.
+	/// Selects a node and keeps it on the terrain even when it lies outside the box.
 	func focus(on nodeNum: Int64) {
 		pinnedNodeNums.insert(nodeNum)
 		select(nodeNum)
@@ -89,19 +91,23 @@ final class SpatialMapModel {
 		var fetched = SpatialMapNodeSource.snapshots(context: context, filters: filters, preciseOnly: preciseOnly, connectedNodeNum: connectedNodeNum)
 		let anchor = fetched.first { $0.isConnectedRadio }?.coordinate
 		let selection = SpatialMapArea.select(fetched.map(\.coordinate), anchor: anchor)
+		var outside = 0
 		if selection.outsideCount > 0 {
 			let frame = anchor.map { SpatialFrame(bounds: GeoBounds(minLon: $0.longitude, minLat: $0.latitude, maxLon: $0.longitude, maxLat: $0.latitude)) }
+			let total = fetched.count
 			fetched = fetched.filter { node in
+				if pinnedNodeNums.contains(node.id) { return true }
 				guard let frame else { return true }
 				let p = frame.localPosition(node.coordinate, altitude: 0)
 				return Double((p.x * p.x + p.z * p.z).squareRoot()) <= SpatialMapArea.maxRadiusMeters
 			}
+			outside = total - fetched.count
 		}
 		if fetched != nodes {
 			nodes = fetched
 			nodesByNum = Dictionary(fetched.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
 		}
-		if outsideCount != selection.outsideCount { outsideCount = selection.outsideCount }
+		if outsideCount != outside { outsideCount = outside }
 		if let selectedNodeNum, nodesByNum[selectedNodeNum] == nil { select(nil) }
 
 		if let candidate = GeoBounds.around(fetched.map(\.coordinate)),
