@@ -125,4 +125,13 @@ class AppState: ObservableObject {
 		self.pendingRoute = nil
 		return pendingRoute.url
 	}
+
+	/// A node the spatial map volume should select once it is showing; claimed the same way.
+	@Published var spatialMapFocus: SpatialMapFocusRequest?
+
+	func claimSpatialMapFocus() -> Int64? {
+		guard let spatialMapFocus else { return nil }
+		self.spatialMapFocus = nil
+		return spatialMapFocus.nodeNum
+	}
 }

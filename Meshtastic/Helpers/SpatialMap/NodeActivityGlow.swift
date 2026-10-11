@@ -31,9 +31,9 @@ enum NodeActivityGlow {
 	static func baseOpacity(_ tier: Tier) -> Float {
 		switch tier {
 		case .off: 0
-		case .stale: 0.2
-		case .recent: 0.55
-		case .live: 0.9
+		case .stale: 0.12
+		case .recent: 0.3
+		case .live: 0.5
 		}
 	}
 

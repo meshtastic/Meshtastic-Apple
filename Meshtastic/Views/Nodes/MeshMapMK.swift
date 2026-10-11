@@ -613,6 +613,18 @@ struct MeshMapMK: View {
 				.safeAreaInset(edge: .bottom, alignment: .trailing) {
 					HStack(spacing: 12) {
 						Spacer()
+						#if os(visionOS)
+						if supportsMultipleWindows {
+							Button(action: {
+								openWindow(id: SpatialMapScene.id, value: SpatialMapSceneKey.shared)
+							}) {
+								Image(systemName: "cube")
+							}
+							.accessibilityLabel(String(localized: "Open 3D map", comment: "VoiceOver label for the button that opens the spatial map volume"))
+							.accessibilityHint(String(localized: "Shows the mesh on a terrain model in a volume.", comment: "VoiceOver hint for the button that opens the spatial map volume"))
+							.glassButtonStyle()
+						}
+						#endif
 						Button(action: {
 							presentCoverageEstimateFromMap()
 						}) {
