@@ -1,0 +1,169 @@
+//
+//  SpatialTerrainTests.swift
+//  MeshtasticTests
+//
+//  Copyright(c) Garth Vander Houwen 10/10/26.
+//
+import CoreLocation
+import Foundation
+import simd
+import Testing
+@testable import Meshtastic
+
+/// Elevation from a closure, so the grid and mesh can be checked against known ground.
+struct SyntheticElevationSource: ElevationTileSource {
+	let coverage: GeoBounds?
+	var maxZoom = 12
+	let height: @Sendable (_ latitude: Double, _ longitude: Double) -> Float
+
+	private func intersects(z: Int, x: Int, y: Int) -> GeoBounds? {
+		guard let coverage else { return nil }
+		let tile = TerrainStore.tileBounds(z: z, x: x, y: y)
+		guard tile.maxLon > coverage.minLon, tile.minLon < coverage.maxLon,
+			  tile.maxLat > coverage.minLat, tile.minLat < coverage.maxLat else { return nil }
+		return coverage
+	}
+
+	func elevationTile(z: Int, x: Int, y: Int, margin: Int) async -> ElevationTile? {
+		guard intersects(z: z, x: x, y: y) != nil else { return nil }
+		let size = TerrainStore.tileSize
+		let grid = size + 2 * margin
+		let n = Double(1 << z)
+		var elevations = [Float](repeating: 0, count: grid * grid)
+		for gy in 0..<grid {
+			let latitude = atan(sinh(.pi * (1 - 2 * (Double(y) + (Double(gy - margin) + 0.5) / Double(size)) / n))) * 180 / .pi
+			for gx in 0..<grid {
+				let longitude = (Double(x) + (Double(gx - margin) + 0.5) / Double(size)) / n * 360 - 180
+				elevations[gy * grid + gx] = height(latitude, longitude)
+			}
+		}
+		return ElevationTile(z: z, x: x, y: y, size: size, margin: margin, elevations: elevations)
+	}
+
+	func coverage(z: Int, x: Int, y: Int) async -> GeoBounds? { intersects(z: z, x: x, y: y) }
+
+	func finestDataZoom() async -> Int? { coverage == nil ? nil : maxZoom }
+}
+
+@Suite("Spatial terrain")
+struct SpatialTerrainTests {
+	let seattle = GeoBounds(minLon: -122.45, minLat: 47.55, maxLon: -122.25, maxLat: 47.70)
+
+	@Test func planStaysUnderBudgetAndNearTheData() {
+		let frame = SpatialFrame(bounds: seattle)
+		let plan = SpatialHeightGrid.plan(frame: frame, maxTriangles: 100_000, dataMaxZoom: 12)
+		#expect(plan.triangleCount <= 100_000)
+		#expect(plan.columns >= 2 && plan.rows >= 2)
+		#expect(plan.samplingZoom <= 14)
+		// A tiny box is limited by the data, not the budget.
+		let tiny = SpatialFrame(bounds: GeoBounds(minLon: -122.30, minLat: 47.60, maxLon: -122.29, maxLat: 47.61))
+		let tinyPlan = SpatialHeightGrid.plan(frame: tiny, maxTriangles: 100_000, dataMaxZoom: 12)
+		#expect(tinyPlan.triangleCount < 100_000 / 4)
+	}
+
+	@Test func samplingReproducesASlope() async throws {
+		let bounds = seattle
+		let source = SyntheticElevationSource(coverage: bounds) { latitude, _ in
+			Float(100 + (latitude - bounds.minLat) / (bounds.maxLat - bounds.minLat) * 1000)
+		}
+		let frame = SpatialFrame(bounds: bounds)
+		let plan = SpatialHeightGrid.Plan(columns: 21, rows: 31, samplingZoom: 12)
+		let grid = try await SpatialHeightGrid.sample(frame: frame, plan: plan, source: source)
+		#expect(grid.covered.allSatisfy { $0 })
+		// North row is the top of the slope, south row the bottom.
+		#expect(abs(grid.heights[0] - 1100) < 2)
+		#expect(abs(grid.heights[(plan.rows - 1) * plan.columns] - 100) < 2)
+		#expect(abs(grid.heights[15 * plan.columns + 10] - 600) < 2)
+	}
+
+	@Test func uncoveredGroundSitsAtTheLowestCoveredHeight() async throws {
+		let bounds = seattle
+		let west = GeoBounds(minLon: bounds.minLon, minLat: bounds.minLat, maxLon: (bounds.minLon + bounds.maxLon) / 2, maxLat: bounds.maxLat)
+		let source = SyntheticElevationSource(coverage: west) { _, _ in 300 }
+		let frame = SpatialFrame(bounds: bounds)
+		let plan = SpatialHeightGrid.Plan(columns: 41, rows: 11, samplingZoom: 12)
+		let grid = try await SpatialHeightGrid.sample(frame: frame, plan: plan, source: source).cleaned(featherCells: 3)
+		#expect(grid.hasAnyTerrain)
+		#expect(grid.baseElevation == 300)
+		#expect(!grid.covered[40], "the east edge is outside the download")
+		#expect(grid.heights[40] == 300, "uncovered cells take the base height")
+		#expect(grid.covered[0] && grid.heights[0] == 300)
+	}
+
+	@Test func cleaningRemovesSpikesAndFlattensWater() {
+		let columns = 9, rows = 9
+		var heights = [Float](repeating: 0.3, count: columns * rows)
+		heights[4 * columns + 4] = 12
+		heights[2 * columns + 2] = -20
+		let grid = SpatialHeightGrid(columns: columns, rows: rows, heights: heights, covered: [Bool](repeating: true, count: columns * rows), baseElevation: 0, maxElevation: 0)
+		let cleaned = grid.cleaned(featherCells: 0)
+		#expect(cleaned.heights.allSatisfy { $0 == 0 }, "a lone spike, a negative sample and shallow noise all become flat water")
+		#expect(cleaned.baseElevation == 0 && cleaned.maxElevation == 0)
+
+		var step = [Float](repeating: 100, count: columns * rows)
+		for j in 0..<rows { for i in 5..<columns { step[j * columns + i] = 150 } }
+		let stepped = SpatialHeightGrid(columns: columns, rows: rows, heights: step, covered: [Bool](repeating: true, count: columns * rows), baseElevation: 0, maxElevation: 0).cleaned(featherCells: 0)
+		#expect(stepped.heights[4 * columns + 4] == 100 && stepped.heights[4 * columns + 5] == 150, "a real edge survives the median")
+		#expect(stepped.baseElevation == 100 && stepped.maxElevation == 150)
+	}
+
+	@Test func meshIsClosedAndFacesUp() {
+		let columns = 5, rows = 4
+		let heights = (0..<(columns * rows)).map { Float($0 % columns) * 10 }
+		let grid = SpatialHeightGrid(columns: columns, rows: rows, heights: heights, covered: [Bool](repeating: true, count: columns * rows), baseElevation: 0, maxElevation: 40)
+		let transform = SpatialModelTransform(frame: SpatialFrame(bounds: seattle), baseElevation: 0, maxElevation: 40)
+		let geometry = SpatialTerrainGeometry(grid: grid, transform: transform, skirtDepth: 0.02)
+		let perimeter = 2 * (columns + rows - 2)
+		#expect(geometry.positions.count == columns * rows + perimeter)
+		#expect(geometry.surfaceTriangleCount == 2 * (columns - 1) * (rows - 1))
+		#expect(geometry.indices.count / 3 == geometry.surfaceTriangleCount + 2 * perimeter)
+		#expect(geometry.indices.allSatisfy { Int($0) < geometry.positions.count })
+		#expect(geometry.normals.count == geometry.positions.count && geometry.textureCoordinates.count == geometry.positions.count)
+
+		for t in 0..<(geometry.indices.count / 3) {
+			let a = geometry.positions[Int(geometry.indices[t * 3])]
+			let b = geometry.positions[Int(geometry.indices[t * 3 + 1])]
+			let c = geometry.positions[Int(geometry.indices[t * 3 + 2])]
+			let normal = simd_cross(b - a, c - a)
+			if t < geometry.surfaceTriangleCount {
+				#expect(normal.y > 0, "surface triangle \(t) winds counter-clockwise seen from above")
+			} else {
+				let centroid = (a + b + c) / 3
+				#expect(normal.x * centroid.x + normal.z * centroid.z > 0, "skirt triangle \(t) faces outward")
+			}
+		}
+		// Texture: u runs west to east, v = 1 on the north edge (RealityKit's image origin is the bottom).
+		#expect(geometry.textureCoordinates[0] == SIMD2(0, 1))
+		#expect(abs(geometry.textureCoordinates[(rows - 1) * columns + columns - 1].x - 1) < 1e-6)
+		#expect(abs(geometry.textureCoordinates[(rows - 1) * columns + columns - 1].y) < 1e-6)
+		// The slope rises to the east, so normals lean west.
+		#expect(geometry.normals[columns + 2].x < 0)
+		// The box's longer side fills the model footprint.
+		#expect(abs(max(transform.footprint.x, transform.footprint.y) - 1) < 1e-5)
+	}
+
+	@Test func nodesSitOnTheGroundUnlessClearlyAbove() {
+		let columns = 3, rows = 3
+		let grid = SpatialHeightGrid(columns: columns, rows: rows, heights: [Float](repeating: 500, count: 9), covered: [Bool](repeating: true, count: 9), baseElevation: 500, maxElevation: 500)
+		let transform = SpatialModelTransform(frame: SpatialFrame(bounds: seattle), baseElevation: 500, maxElevation: 500)
+		let geometry = SpatialTerrainGeometry(grid: grid, transform: transform, skirtDepth: 0)
+		let center = CLLocationCoordinate2D(latitude: 47.625, longitude: -122.35)
+		#expect(abs(geometry.groundHeight(at: center)) < 1e-6)
+		#expect(abs(geometry.nodePosition(for: center, reportedAltitude: nil).y) < 1e-6)
+		#expect(abs(geometry.nodePosition(for: center, reportedAltitude: 520).y) < 1e-6, "GPS noise stays on the ground")
+		#expect(geometry.nodePosition(for: center, reportedAltitude: 900).y > 0, "a tower stands above the ground")
+		#expect(abs(geometry.nodePosition(for: center, reportedAltitude: 900).y - transform.height(forAltitude: 900)) < 1e-6)
+
+		let flat = SpatialHeightGrid(columns: 2, rows: 2, heights: [0, 0, 0, 0], covered: [false, false, false, false], baseElevation: 0, maxElevation: 0)
+		let flatGeometry = SpatialTerrainGeometry(grid: flat, transform: SpatialModelTransform(frame: SpatialFrame(bounds: seattle), baseElevation: 0, maxElevation: 0), skirtDepth: 0)
+		#expect(flatGeometry.nodePosition(for: center, reportedAltitude: 900).y == 0, "without terrain there is nothing to be above")
+	}
+
+	@Test func textureSizeFollowsTheBox() {
+		let size = SpatialTextureRenderer.pixelSize(for: SpatialFrame(bounds: seattle), maxEdge: 2048)
+		#expect(max(size.width, size.height) == 2048)
+		#expect(size.height > size.width, "the Seattle box is taller than it is wide once Mercator stretches latitude")
+		let crop = SpatialTextureRenderer.cropRect(northWest: CGPoint(x: 10.4, y: 5.6), southEast: CGPoint(x: 510.4, y: 405.6), scale: 2, imageWidth: 1040, imageHeight: 820)
+		#expect(crop == CGRect(x: 21, y: 11, width: 1000, height: 800))
+	}
+}

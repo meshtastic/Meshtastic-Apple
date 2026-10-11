@@ -1011,7 +1011,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			// Feed the traffic-rate estimator one tick per inbound mesh packet — this is the busy path
 			// whose re-renders make the map flyover stutter, so it's exactly what we want to measure.
 			meshTrafficMonitor.recordInboundPacket()
-			if let event = MeshPacketEvent(packet: packet) {
+			// Not during a node database download: nothing in it is live traffic.
+			if !nodeDatabaseDumpInProgress, let event = MeshPacketEvent(packet: packet) {
 				packetEvents.send(event)
 			}
 			// All received packets get passed through updateAnyPacketFrom to update lastHeard, rxSnr, etc. (like firmware's NodeDB::updateFrom).

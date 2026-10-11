@@ -76,5 +76,15 @@ struct SpatialFrameTests {
 		#expect(event?.hopsTraveled == 2)
 		#expect(event?.isBroadcast == true)
 		#expect(event?.rxSnr == 5.5)
+
+		var mqtt = MeshPacket()
+		mqtt.from = 0x1234
+		mqtt.viaMqtt = true
+		#expect(MeshPacketEvent(packet: mqtt) != nil, "MQTT receptions have no RSSI but are live")
+
+		var ack = packet
+		ack.decoded.portnum = .routingApp
+		ack.rxTime = 0
+		#expect(MeshPacketEvent(packet: ack) == nil, "a routing packet with no receive time is the radio's own ACK")
 	}
 }

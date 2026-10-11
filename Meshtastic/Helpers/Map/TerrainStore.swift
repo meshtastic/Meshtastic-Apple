@@ -67,6 +67,11 @@ actor TerrainStore {
 
 	var hasSources: Bool { !sources.isEmpty }
 
+	/// The finest zoom any configured archive carries, nil with no archives.
+	func finestDataZoom() -> Int? {
+		sources.map(\.maxZoom).max()
+	}
+
 	/// Whether any configured region covers the given tile at all.
 	func covers(z: Int, x: Int, y: Int) -> Bool {
 		source(covering: z, x: x, y: y) != nil
