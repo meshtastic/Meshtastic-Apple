@@ -398,4 +398,16 @@ final class SceneRouters: @unchecked Sendable {
 			router.popAllStacks()
 		}
 	}
+
+#if DEBUG
+	/// For the launch-argument hooks: opens a settings screen in every window, scrolled to one
+	/// control the way a search result would be.
+	@MainActor
+	func navigate(toSetting setting: SettingsNavigationState, focusing field: FieldIdentity?) {
+		for router in Array(routers.values) {
+			router.selectedTab = .settings
+			router.navigate(toSetting: setting, focusing: field)
+		}
+	}
+#endif
 }

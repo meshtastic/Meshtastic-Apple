@@ -1658,6 +1658,44 @@ struct MQTTConfigSnapshotTests {
 		}
 		await assertViewSnapshot(of: view, width: 390, height: 900, named: "mqttConfig", forDocs: true)
 	}
+
+	@Test("Topic finder sheet, finished sample")
+	@MainActor
+	func topicFinderSheet() async throws {
+		let node = try makeNode()
+		let lora = LoRaConfigEntity()
+		lora.regionCode = 1
+		sharedModelContainer.mainContext.insert(lora)
+		node.loRaConfig = lora
+		let mqtt = try #require(node.mqttConfig)
+		let config = ModuleConfig.MQTTConfig(entity: mqtt)
+		// A finished sample with two roots and one map report, driven through the handlers: no socket.
+		let sampler = MqttTopicSampler()
+		sampler.beginConnecting(settings: .init(config: config), regionTopic: "msh/US")
+		sampler.handleConnAck(accepted: true, description: "")
+		sampler.handleSubAck(granted: sampler.filters, failed: [])
+		sampler.handleMessage(topic: "msh/US/WA/2/e/LongFast/!a1b2c3d4", payload: Data())
+		sampler.handleMessage(topic: "msh/US/WA/seattle/2/e/LongFast/!0badf00d", payload: Data())
+		var report = MapReport()
+		report.latitudeI = 476_062_000
+		report.longitudeI = -1_223_321_000
+		report.numOnlineLocalNodes = 12
+		var data = DataMessage()
+		data.portnum = .mapReportApp
+		data.payload = try report.serializedData()
+		var envelope = ServiceEnvelope()
+		envelope.gatewayID = "!0badf00d"
+		envelope.channelID = "LongFast"
+		var packet = MeshPacket()
+		packet.payloadVariant = .decoded(data)
+		envelope.packet = packet
+		sampler.handleMessage(topic: "msh/US/WA/seattle/2/map/", payload: try envelope.serializedData())
+		sampler.stop()
+		let view = MQTTTopicFinder(config: .constant(config), node: node, autoStart: false, sampler: sampler)
+			.environmentObject(AccessoryManager.shared)
+			.modelContainer(sharedModelContainer)
+		await assertViewSnapshot(of: view, width: 390, height: 1200, named: "mqttTopicFinder")
+	}
 }
 
 // MARK: - TelemetryConfig Snapshot Tests
