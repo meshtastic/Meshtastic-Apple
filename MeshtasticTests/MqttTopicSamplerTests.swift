@@ -186,6 +186,14 @@ struct MqttTopicSamplerTests {
 		#expect(sampler.activity["msh/US"]?.packets == MqttTopicSampler.regionPacketCap)
 	}
 
+	@Test func disconnectWhileConnectingShowsTheHostNotTheSocketError() {
+		let sampler = makeSampler()
+		sampler.beginConnecting(settings: settings(address: "nope.invalid", tls: false), regionTopic: region)
+		let socketError = NSError(domain: NSPOSIXErrorDomain, code: Int(ECONNREFUSED), userInfo: [NSLocalizedDescriptionKey: "Connection refused"])
+		sampler.handleDisconnect(error: socketError)
+		#expect(sampler.phase == .failed("Could not connect to nope.invalid."))
+	}
+
 	@Test func disconnectWhileSubscribingIsARefusal() {
 		let sampler = makeSampler()
 		sampler.beginConnecting(settings: settings(), regionTopic: region)

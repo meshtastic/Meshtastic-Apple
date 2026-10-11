@@ -225,8 +225,13 @@ final class MqttTopicSampler: NSObject, ObservableObject {
 	func handleDisconnect(error: Error?) {
 		switch phase {
 		case .connecting:
+			// The socket's own text ("nodename nor servname provided", "Connection refused") goes
+			// to the log; the user sees the same message as the connect deadline.
 			let host = settings?.host ?? ""
-			fail(error?.localizedDescription ?? String(localized: "Could not connect to \(host).", comment: "Topic finder: sampler error"))
+			if let error {
+				Logger.mqtt.error("🔎 [MQTT Topics] connect to \(host, privacy: .public) failed: \(error.localizedDescription, privacy: .public)")
+			}
+			fail(String(localized: "Could not connect to \(host).", comment: "Topic finder: sampler error"))
 		case .subscribing:
 			// This is how mqtt.meshtastic.org says no: socket closed, no SUBACK.
 			fail(String(localized: "The broker does not allow these topic filters.", comment: "Topic finder: sampler error"))
