@@ -268,7 +268,7 @@ final class SpatialSceneController {
 	// MARK: Links and routes
 
 	func apply(links: [SpatialLinkSnapshot], preset: ModemPresets) {
-		guard let placement else { return }
+		guard placement != nil else { return }
 		var wanted = Set<String>()
 		for link in links {
 			guard let a = pins[link.a]?.holder.position, let b = pins[link.b]?.holder.position else { continue }
@@ -293,7 +293,6 @@ final class SpatialSceneController {
 			entity.removeFromParent()
 			linkEntities[key] = nil
 		}
-		_ = placement
 	}
 
 	static func lay(_ entity: ModelEntity, from: SIMD3<Float>, to: SIMD3<Float>) {
