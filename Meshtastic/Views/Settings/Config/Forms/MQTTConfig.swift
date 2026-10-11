@@ -135,8 +135,10 @@ struct MQTTConfig: View {
 			node: node, title: "MQTT", overlay: Self.overlay(node: node),
 			normalize: { Self.normalize($0, tlsRequired: tlsRequired) },
 			reconcile: { config, env in Self.reconcile(&config, tlsRequired: env.firmwareAtLeast(Self.tlsRequiredFirmware)) },
-			// Empty is allowed: the firmware reads it as "msh".
-			canSave: { $0.root.isEmpty || MqttRootTopic.problem(in: $0.root) == nil },
+			// Empty is allowed: the firmware reads it as "msh". A stored root that breaks a rule
+			// (the old picker could write "msh/US/") is let through unchanged: re-saving it writes
+			// nothing new to the radio, and the row's rule text shows how to fix it.
+			canSave: { $0.root.isEmpty || $0.root == node?.mqttConfig?.root || MqttRootTopic.problem(in: $0.root) == nil },
 			request: accessoryManager.requestMqttModuleConfig,
 			save: { config, from, to in
 				_ = try await accessoryManager.saveMQTTConfig(config: config, fromUser: from, toUser: to)
