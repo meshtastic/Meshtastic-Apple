@@ -228,6 +228,13 @@ struct MqttTopicDiscoveryTests {
 		}
 		#expect(crowded.activity["msh/US"]?.packets == Discovery.Activity.maxNodes + 1)
 		#expect(crowded.activity["msh/US"]?.nodeCount == Discovery.Activity.maxNodes)
+
+		var noisy = Discovery.Tally()
+		for i in 0..<(Discovery.Activity.maxChannels + 1) {
+			noisy.record(topic: "msh/US/2/e/ch\(i)/!00000001", payload: Data())
+		}
+		#expect(noisy.activity["msh/US"]?.packets == Discovery.Activity.maxChannels + 1)
+		#expect(noisy.activity["msh/US"]?.channels.count == Discovery.Activity.maxChannels)
 	}
 
 	// MARK: Map reports

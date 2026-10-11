@@ -232,10 +232,12 @@ enum MqttTopicDiscovery {
 	struct Activity {
 		static let maxNodes = 256
 		static let maxPositions = 32
+		static let maxChannels = 32
 		var packets = 0
 		var mapReports = 0
 		/// Sender ids from MeshPacket.from plus gateway ids, capped.
 		var nodes: Set<String> = []
+		/// Channel names from the topic, capped; the row shows the first three.
 		var channels: Set<String> = []
 		/// By reporter, last report wins, capped.
 		var positions: [String: CLLocationCoordinate2D] = [:]
@@ -258,7 +260,9 @@ enum MqttTopicDiscovery {
 			switch kind {
 			case .packet(let channel, let gateway):
 				packets += 1
-				channels.insert(channel)
+				if channels.contains(channel) || channels.count < Self.maxChannels {
+					channels.insert(channel)
+				}
 				addNode(gateway)
 				if let sender { addNode(sender) }
 			case .mapReport:
