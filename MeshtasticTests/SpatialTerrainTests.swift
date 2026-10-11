@@ -8,6 +8,7 @@ import CoreLocation
 import Foundation
 import simd
 import Testing
+import UIKit
 @testable import Meshtastic
 
 /// Elevation from a closure, so the grid and mesh can be checked against known ground.
@@ -165,5 +166,56 @@ struct SpatialTerrainTests {
 		#expect(size.height > size.width, "the Seattle box is taller than it is wide once Mercator stretches latitude")
 		let crop = SpatialTextureRenderer.cropRect(northWest: CGPoint(x: 10.4, y: 5.6), southEast: CGPoint(x: 510.4, y: 405.6), scale: 2, imageWidth: 1040, imageHeight: 820)
 		#expect(crop == CGRect(x: 21, y: 11, width: 1000, height: 800))
+	}
+
+	@Test func canvasPointsFollowTheMercatorMapping() {
+		let frame = SpatialFrame(bounds: seattle)
+		let size = CGSize(width: 200, height: 100)
+		let northWest = SpatialTextureRenderer.canvasPoint(CLLocationCoordinate2D(latitude: seattle.maxLat, longitude: seattle.minLon), frame: frame, size: size)
+		let southEast = SpatialTextureRenderer.canvasPoint(CLLocationCoordinate2D(latitude: seattle.minLat, longitude: seattle.maxLon), frame: frame, size: size)
+		#expect(abs(northWest.x) < 1e-9 && abs(northWest.y - 100) < 1e-9, "north-west is the top-left corner, with y measured from the bottom")
+		#expect(abs(southEast.x - 200) < 1e-9 && abs(southEast.y) < 1e-9)
+		let middle = SpatialTextureRenderer.canvasPoint(CLLocationCoordinate2D(latitude: frame.latitude(atMercatorFraction: 0.5), longitude: frame.centerLongitude), frame: frame, size: size)
+		#expect(abs(middle.x - 100) < 1e-9 && abs(middle.y - 50) < 1e-9)
+		let midLatitude = SpatialTextureRenderer.canvasPoint(CLLocationCoordinate2D(latitude: (seattle.minLat + seattle.maxLat) / 2, longitude: seattle.minLon), frame: frame, size: size)
+		#expect(midLatitude.y < 50, "the middle latitude sits south of the Mercator middle")
+	}
+
+	@Test func waterIsFilledWhereThePolygonIsAndHolesStayLand() throws {
+		let frame = SpatialFrame(bounds: seattle)
+		let width = 64, height = 64
+		let context = try #require(CGContext(data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: 0,
+											 space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
+		context.clear(CGRect(x: 0, y: 0, width: width, height: height))
+		// The north-west quarter of the box, with a hole in it.
+		let midLat = frame.latitude(atMercatorFraction: 0.5), midLon = frame.centerLongitude
+		let outer = [(seattle.maxLat, seattle.minLon), (seattle.maxLat, midLon), (midLat, midLon), (midLat, seattle.minLon)]
+		let holeTop = frame.latitude(atMercatorFraction: 0.2), holeBottom = frame.latitude(atMercatorFraction: 0.3)
+		let holeLeft = frame.longitude(atFraction: 0.2), holeRight = frame.longitude(atFraction: 0.3)
+		let hole = [(holeTop, holeLeft), (holeTop, holeRight), (holeBottom, holeRight), (holeBottom, holeLeft)]
+		let polygon = OfflineMapPolygon(
+			id: "lake", role: .water,
+			coordinates: outer.map { CLLocationCoordinate2D(latitude: $0.0, longitude: $0.1) },
+			interiorRings: [hole.map { CLLocationCoordinate2D(latitude: $0.0, longitude: $0.1) }]
+		)
+		SpatialTextureRenderer.drawWater([polygon], frame: frame, size: CGSize(width: width, height: height), dark: false, in: context)
+
+		let data = try #require(context.data?.assumingMemoryBound(to: UInt8.self))
+		// Rows are stored top-down, so (x, y) here counts from the top-left of the image.
+		func pixel(_ x: Int, _ y: Int) -> [Int] {
+			let offset = y * context.bytesPerRow + x * 4
+			return (0..<4).map { Int(data[offset + $0]) }
+		}
+		var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+		OfflineMapPalette.fill(.water, dark: false)?.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+		let water = pixel(8, 8)
+		#expect(abs(water[0] - Int(red * 255)) <= 2 && abs(water[1] - Int(green * 255)) <= 2 && abs(water[2] - Int(blue * 255)) <= 2 && water[3] == 255)
+		#expect(pixel(16, 16)[3] == 0, "the island inside the hole is not painted")
+		#expect(pixel(48, 48)[3] == 0, "the south-east quarter is land")
+		#expect(pixel(48, 8)[3] == 0 && pixel(8, 48)[3] == 0)
+	}
+
+	@Test func offlineWaterWithNoBasemapIsEmpty() {
+		#expect(SpatialTextureRenderer.offlineWater(frame: SpatialFrame(bounds: seattle), width: 1024, files: []).isEmpty)
 	}
 }

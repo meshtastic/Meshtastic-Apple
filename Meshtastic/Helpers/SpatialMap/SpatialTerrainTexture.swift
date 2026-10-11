@@ -86,8 +86,64 @@ enum SpatialTextureRenderer {
 		return CGRect(x: x0, y: y0, width: max(0, x1 - x0), height: max(0, y1 - y0))
 	}
 
-	/// Hillshade stitched over flat land color, from the downloaded terrain only. Water is not
-	/// drawn: the offline basemap is vector data, and 0 m does not mean water.
+	/// Where a coordinate lands on the texture: x from the longitude fraction, y from the Mercator
+	/// fraction, measured from the bottom the way CoreGraphics does.
+	static func canvasPoint(_ coordinate: CLLocationCoordinate2D, frame: SpatialFrame, size: CGSize) -> CGPoint {
+		let fraction = frame.mercatorFraction(latitude: coordinate.latitude, longitude: coordinate.longitude)
+		return CGPoint(x: fraction.x * size.width, y: (1 - fraction.y) * size.height)
+	}
+
+	/// Fills water bodies in the basemap's water color. Each polygon is filled on its own with the
+	/// even-odd rule: its islands stay land, and neighbors that overlap in the tile buffers do not
+	/// cancel each other out.
+	static func drawWater(_ polygons: [OfflineMapPolygon], frame: SpatialFrame, size: CGSize, dark: Bool, in context: CGContext) {
+		guard !polygons.isEmpty, let color = OfflineMapPalette.fill(.water, dark: dark) else { return }
+		context.setFillColor(color.cgColor)
+		for polygon in polygons {
+			let path = CGMutablePath()
+			for ring in [polygon.coordinates] + polygon.interiorRings where ring.count >= 3 {
+				path.addLines(between: ring.map { canvasPoint($0, frame: frame, size: size) })
+				path.closeSubpath()
+			}
+			guard !path.isEmpty else { continue }
+			context.addPath(path)
+			context.fillPath(using: .evenOdd)
+		}
+	}
+
+	/// Water from the downloaded basemaps that cover the box, decoded at a zoom where one vector
+	/// tile is a few hundred texels across. Empty when no basemap covers the box.
+	static func offlineWater(frame: SpatialFrame, width: Int, files: [OfflineMapRegionFile] = OfflineMapManager.persistedRegionFiles()) -> [OfflineMapPolygon] {
+		let bounds = frame.bounds
+		let lonSpan = max(bounds.maxLon - bounds.minLon, 1e-9)
+		var polygons: [OfflineMapPolygon] = []
+		var tileCount = 0
+		for file in files where file.region.hasBasemap && file.region.bounds.intersects(bounds) {
+			guard let source = OfflineTileSourceFactory.source(for: file.url), source.isVectorTiles else { continue }
+			let coverage = source.geographicBounds ?? file.region.bounds
+			guard coverage.intersects(bounds) else { continue }
+			// One vector tile per 256–512 texels across the box.
+			let wanted = Double(width) / 256 * 360 / lonSpan
+			let zoom = min(max(Int(log2(wanted).rounded(.down)), Int(source.tileMinZoom)), Int(source.tileMaxZoom))
+			let northWest = TerrainStore.tilePixel(latitude: bounds.maxLat, longitude: bounds.minLon, z: zoom, size: 256)
+			let southEast = TerrainStore.tilePixel(latitude: bounds.minLat, longitude: bounds.maxLon, z: zoom, size: 256)
+			for y in northWest.y...southEast.y {
+				for x in northWest.x...southEast.x {
+					if Task.isCancelled { return [] }
+					guard TerrainStore.tileBounds(z: zoom, x: x, y: y).intersects(coverage) else { continue }
+					tileCount += 1
+					polygons += OfflineVectorTileProvider.waterPolygons(tile: .init(z: zoom, x: x, y: y), source: source, clippedTo: bounds)
+				}
+			}
+		}
+		if tileCount > 0 {
+			Logger.services.info("🧊 [Spatial] Offline water: \(polygons.count) polygons from \(tileCount) tiles")
+		}
+		return polygons
+	}
+
+	/// Flat land color, the downloaded basemap's water when one covers the box, then the hillshade
+	/// from the downloaded terrain. Nothing is fetched.
 	static func offlineComposite(frame: SpatialFrame, pixelSize: CGSize, dark: Bool, source: any ElevationTileSource) async -> CGImage? {
 		let width = Int(pixelSize.width), height = Int(pixelSize.height)
 		let colorSpace = CGColorSpaceCreateDeviceRGB()
@@ -95,6 +151,8 @@ enum SpatialTextureRenderer {
 									  space: colorSpace, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
 		context.setFillColor(OfflineMapPalette.earth(dark: dark).cgColor)
 		context.fill(CGRect(x: 0, y: 0, width: width, height: height))
+		drawWater(offlineWater(frame: frame, width: width), frame: frame, size: pixelSize, dark: dark, in: context)
+		if Task.isCancelled { return nil }
 
 		let bounds = frame.bounds
 		let tileSize = TerrainStore.tileSize

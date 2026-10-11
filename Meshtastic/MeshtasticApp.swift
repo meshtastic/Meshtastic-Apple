@@ -190,6 +190,24 @@ struct MeshtasticAppleApp: App {
 					}
 				}
 			}
+			// Simulator basemap: `--meshtastic-download-basemap minLon,minLat,maxLon,maxLat` downloads
+			// a basemap with terrain for the box, replacing the region it overlaps.
+			if let flagIndex = arguments.firstIndex(of: "--meshtastic-download-basemap"),
+			   arguments.indices.contains(flagIndex + 1) {
+				let parts = arguments[flagIndex + 1].split(separator: ",").compactMap { Double($0) }
+				if parts.count == 4 {
+					let bounds = GeoBounds(minLon: parts[0], minLat: parts[1], maxLon: parts[2], maxLat: parts[3])
+					Task {
+						try? await Task.sleep(for: .seconds(2))
+						let manager = OfflineMapManager.shared
+						manager.loadIfNeeded()
+						let replacing = manager.overlappingRegion(with: bounds)
+						manager.startDownload(name: "Basemap", bounds: bounds, detail: .standard, replacing: replacing) { region in
+							Logger.services.info("🧪 [App] Basemap download \(region != nil ? "finished" : "failed", privacy: .public) (launch argument)")
+						}
+					}
+				}
+			}
 			#if os(visionOS)
 			// Simulator screenshots: open the spatial map volume without tapping through the map.
 			if arguments.contains("--meshtastic-open-spatial-map") {
