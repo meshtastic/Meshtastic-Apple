@@ -12,6 +12,7 @@ struct MainScene: View {
 	@EnvironmentObject private var appState: AppState
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 	@Environment(\.scenePhase) private var scenePhase
+	@Environment(\.openWindow) private var openWindow
 	@State private var saveChannelLink: SaveChannelLinkData?
 	@State private var pendingContact: PendingContact?
 	@State private var routerToken: UUID?
@@ -59,6 +60,15 @@ struct MainScene: View {
 					claimPendingRoute()
 				}
 			}
+			#if os(visionOS)
+			.onChange(of: router.spatialMapRequest?.id) { _, _ in
+				guard let request = router.claimSpatialMapRequest() else { return }
+				if let nodeNum = request.nodeNum {
+					appState.spatialMapFocus = SpatialMapFocusRequest(nodeNum: nodeNum)
+				}
+				openWindow(id: SpatialMapScene.id, value: SpatialMapSceneKey.shared)
+			}
+			#endif
 			.task {
 				// Skip TipKit during marketing screenshot capture so tip popovers never
 				// appear in the shots (unconfigured TipKit displays nothing).

@@ -21,3 +21,10 @@ struct SpatialMapFocusRequest: Equatable {
 	let id = UUID()
 	let nodeNum: Int64
 }
+
+/// A one-shot ask to open the volume, from `meshtastic:///map?spatial=1[&nodenum=N]`. The router
+/// publishes it; the main window claims it and opens the volume, since only a view can.
+struct SpatialMapOpenRequest: Equatable {
+	let id = UUID()
+	let nodeNum: Int64?
+}
