@@ -45,9 +45,18 @@ struct MQTTTopicFinder: View {
 		node?.latestPosition?.nodeCoordinate ?? LocationsHandler.currentLocation
 	}
 
+	/// Two decimals (about a kilometer): a live GPS fix drifting a few meters must not re-geocode
+	/// once a second while the sample runs.
 	private var coordinateKey: String {
 		guard let coordinate else { return "none" }
-		return String(format: "%.3f,%.3f", coordinate.latitude, coordinate.longitude)
+		return String(format: "%.2f,%.2f", coordinate.latitude, coordinate.longitude)
+	}
+
+	private var isSampling: Bool {
+		switch sampler.phase {
+		case .connecting, .subscribing, .sampling: return true
+		case .idle, .finished, .failed: return false
+		}
 	}
 
 	private var ranked: [MqttTopicDiscovery.RankedRoot] {
@@ -58,8 +67,12 @@ struct MQTTTopicFinder: View {
 		NavigationStack {
 			List {
 				statusSection
-				ladderSection
-				activeSection
+				// Without a region there is no ladder and nothing is sampled; only the status row
+				// and the custom field make sense.
+				if region != nil {
+					ladderSection
+					activeSection
+				}
 				customSection
 			}
 			.navigationTitle("Find Topics")
@@ -161,12 +174,16 @@ struct MQTTTopicFinder: View {
 			let roots = ranked.prefix(30)
 			if roots.isEmpty {
 				if sampler.phase == .finished {
-					ContentUnavailableView(
-						"No local topics heard",
-						systemImage: "antenna.radiowaves.left.and.right.slash",
-						description: Text("Only the region topic was active during the sample.")
-					)
-				} else {
+					ContentUnavailableView {
+						Label("No local topics heard", systemImage: "antenna.radiowaves.left.and.right.slash")
+					} description: {
+						if sampler.activity.isEmpty {
+							Text("Nothing was heard during the sample.")
+						} else {
+							Text("Only the topics above were active during the sample.")
+						}
+					}
+				} else if isSampling {
 					Text("Nothing heard yet")
 						.foregroundStyle(.secondary)
 				}
@@ -255,10 +272,14 @@ struct MQTTTopicFinder: View {
 	}
 
 	/// One geocoder call per coordinate; `.task(id:)` cancels and replaces on change and on dismiss.
+	/// The previous ladder stays on screen until the new one arrives. Only a locality makes a city
+	/// rung: a county is not a city, and the local roots come from discovery anyway.
 	private func geocode() async {
-		ladder = []
 		geocodeFailed = false
-		guard let region else { return }
+		guard let region else {
+			ladder = []
+			return
+		}
 		let regionTopic = "msh/" + region.topic
 		let regionName = region.description
 		guard let coordinate, autoStart else {
@@ -273,7 +294,7 @@ struct MQTTTopicFinder: View {
 			regionTopic: regionTopic,
 			regionName: regionName,
 			state: placemark?.administrativeArea,
-			city: placemark?.locality ?? placemark?.subAdministrativeArea
+			city: placemark?.locality
 		)
 	}
 }

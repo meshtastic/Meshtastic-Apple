@@ -89127,6 +89127,9 @@
     "Nothing heard yet" : {
       "comment" : "Topic finder: discovered section while sampling"
     },
+    "Nothing was heard during the sample." : {
+      "comment" : "Topic finder: empty discovered section"
+    },
     "Notifications for channel and direct messages." : {
       "localizations" : {
         "de" : {
@@ -90806,7 +90809,7 @@
         }
       }
     },
-    "Only the region topic was active during the sample." : {
+    "Only the topics above were active during the sample." : {
       "comment" : "Topic finder: empty discovered section"
     },
     "Open %@ documentation" : {
