@@ -14,6 +14,9 @@ struct NodePinComponent: Component {
 	let nodeNum: Int64
 }
 
+/// The bar on the front edge of the terrain. Dragging it slides the map; dragging anywhere else turns it.
+struct GrabHandleComponent: Component {}
+
 /// Owns the entities in the volume and diffs the model's snapshots into them, so the RealityView
 /// update closure stays a dispatcher. Everything hangs off `terrainAnchor`, which sits on the
 /// volume floor; `model` carries the user's rotation and zoom.
@@ -46,8 +49,10 @@ final class SpatialSceneController {
 	private static let ringMesh = MeshResource.generateCylinder(height: 0.0012, radius: 0.02)
 	private static let tetherMesh = MeshResource.generateCylinder(height: 1, radius: 0.0006)
 	private static let linkMesh = MeshResource.generateBox(size: [0.0016, 0.0016, 1])
+	private static let handleMesh = MeshResource.generateBox(size: [0.08, 0.006, 0.018], cornerRadius: 0.003)
 
 	private var placeholder: ModelEntity
+	private let handle: ModelEntity
 	private var terrainEntity: ModelEntity?
 	private var pins: [Int64: Pin] = [:]
 	private var applied: [Int64: SpatialNodeSnapshot] = [:]
@@ -69,10 +74,23 @@ final class SpatialSceneController {
 		tether = ModelEntity(mesh: Self.tetherMesh, materials: [Self.transparentMaterial(.white, opacity: 0.7)])
 		ring.isEnabled = false
 		tether.isEnabled = false
+		handle = ModelEntity(mesh: Self.handleMesh, materials: [Self.transparentMaterial(.white, opacity: 0.85)])
+		handle.name = "grab-handle"
+		// A collision box bigger than the bar, so it is easy to take hold of.
+		handle.components.set(CollisionComponent(shapes: [.generateBox(size: [0.12, 0.03, 0.05])]))
+		handle.components.set(InputTargetComponent())
+		handle.components.set(HoverEffectComponent())
+		handle.components.set(GrabHandleComponent())
+		var accessibility = AccessibilityComponent()
+		accessibility.isAccessibilityElement = true
+		accessibility.label = LocalizedStringResource("Move the map", comment: "VoiceOver label for the spatial map grab handle")
+		handle.components.set(accessibility)
 		NodePinComponent.registerComponent()
+		GrabHandleComponent.registerComponent()
 		root.addChild(model)
 		model.addChild(terrainAnchor)
 		terrainAnchor.addChild(placeholder)
+		terrainAnchor.addChild(handle)
 		terrainAnchor.addChild(nodesContainer)
 		terrainAnchor.addChild(linksContainer)
 		terrainAnchor.addChild(selectionContainer)
@@ -102,6 +120,7 @@ final class SpatialSceneController {
 		guard let placement, placement.revision != self.placement?.revision else { return }
 		self.placement = placement
 		placeholder.scale = [placement.footprint.x, 1, placement.footprint.y]
+		handle.position = [0, 0.004, placement.footprint.y / 2 + 0.03]
 	}
 
 	func apply(terrainEntity entity: ModelEntity?, building: Bool) {
@@ -336,6 +355,7 @@ final class SpatialSceneController {
 		guard counter != counterScale else { return }
 		counterScale = counter
 		for pin in pins.values { pin.holder.scale = SIMD3(repeating: counter) }
+		handle.scale = SIMD3(repeating: counter)
 	}
 }
 #endif

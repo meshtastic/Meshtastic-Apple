@@ -372,6 +372,9 @@
     "Map layer" : {
       "comment" : "VoiceOver label for the spatial map layer menu"
     },
+    "Move the map" : {
+      "comment" : "VoiceOver label for the spatial map grab handle"
+    },
     "No traceroutes with positions" : {
       "comment" : "Spatial map: flyover menu is empty"
     },

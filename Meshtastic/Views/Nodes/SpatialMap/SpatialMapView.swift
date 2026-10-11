@@ -9,7 +9,7 @@ import RealityKit
 import SwiftUI
 
 /// The RealityView in the volume: hands the model's state to the scene controller and turns
-/// taps, drags and pinches into selection, rotation and zoom.
+/// taps, drags and pinches into selection, rotation, sliding (on the grab handle) and zoom.
 struct SpatialMapView: View {
 	let model: SpatialMapModel
 	let scene: SpatialSceneController
@@ -23,6 +23,7 @@ struct SpatialMapView: View {
 	@State private var zoom: Float = 1
 	@State private var startZoom: Float?
 	@State private var pan: SIMD2<Float> = .zero
+	@State private var startPan: SIMD2<Float>?
 
 	/// Points per meter in a volume, for turning a drag into a rotation.
 	private static let pointsPerMeter: Double = 1360
@@ -78,6 +79,7 @@ struct SpatialMapView: View {
 		SpatialTapGesture()
 			.targetedToAnyEntity()
 			.onEnded { value in
+				guard !Self.isGrabHandle(value.entity) else { return }
 				model.select(Self.nodeNum(of: value.entity))
 			}
 	}
@@ -86,21 +88,33 @@ struct SpatialMapView: View {
 		SpatialTapGesture(count: 2)
 			.targetedToAnyEntity()
 			.onEnded { value in
+				guard !Self.isGrabHandle(value.entity) else { return }
 				if Self.nodeNum(of: value.entity) == nil { reset(animated: true) }
 			}
 	}
 
+	/// On the grab handle a drag slides the map; anywhere else it turns the map.
 	private var drag: some Gesture {
 		DragGesture()
 			.targetedToAnyEntity()
 			.onChanged { value in
-				let start = startYaw ?? yaw
-				startYaw = start
-				// A drag across the volume's width is one full turn.
-				yaw = start + Float(value.translation3D.x / Self.pointsPerMeter) * 2 * .pi
+				if Self.isGrabHandle(value.entity) {
+					let start = startPan ?? pan
+					startPan = start
+					let delta = value.convert(value.translation3D, from: .local, to: .scene)
+					pan = Self.clampPan(start + SIMD2(delta.x, delta.z), zoom: zoom)
+				} else {
+					let start = startYaw ?? yaw
+					startYaw = start
+					// A drag across the volume's width is one full turn.
+					yaw = start + Float(value.translation3D.x / Self.pointsPerMeter) * 2 * .pi
+				}
 				scene.setTransform(yaw: yaw, scale: zoom, pan: pan)
 			}
-			.onEnded { _ in startYaw = nil }
+			.onEnded { _ in
+				startYaw = nil
+				startPan = nil
+			}
 	}
 
 	private var magnify: some Gesture {
@@ -144,6 +158,15 @@ struct SpatialMapView: View {
 			current = entity.parent
 		}
 		return nil
+	}
+
+	private static func isGrabHandle(_ entity: Entity) -> Bool {
+		var current: Entity? = entity
+		while let entity = current {
+			if entity.components.has(GrabHandleComponent.self) { return true }
+			current = entity.parent
+		}
+		return false
 	}
 }
 
