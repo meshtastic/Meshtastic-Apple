@@ -1656,7 +1656,8 @@ struct MQTTConfigSnapshotTests {
 				.environmentObject(AccessoryManager.shared)
 				.modelContainer(PersistenceController.preview.container)
 		}
-		await assertViewSnapshot(of: view, width: 390, height: 900, named: "mqttConfig", forDocs: true)
+		// Tall enough to show the Find Topics button the guide describes.
+		await assertViewSnapshot(of: view, width: 390, height: 1040, named: "mqttConfig", forDocs: true)
 	}
 
 	@Test("Topic finder sheet, finished sample")
