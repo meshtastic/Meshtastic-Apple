@@ -8,20 +8,25 @@ import Foundation
 
 /// How much of a box the downloaded terrain covers.
 enum SpatialTerrainCoverage {
-	/// Fraction of `box` covered by any of `sources`, sampled at the centers of an n×n lattice.
+	/// Fraction of `box` covered by any of `sources`, sampled on an (n+1)×(n+1) lattice that
+	/// includes the box's edges, so a thin uncovered strip along an edge is never missed.
 	static func fraction(of box: GeoBounds, covered sources: [GeoBounds], samples: Int = 24) -> Double {
 		guard samples > 0, !sources.isEmpty else { return 0 }
+		// The last sample is the edge itself, not min + span, which can land a hair outside.
+		func position(_ index: Int, _ low: Double, _ high: Double) -> Double {
+			index == samples ? high : low + (high - low) * Double(index) / Double(samples)
+		}
 		var hits = 0
-		for j in 0..<samples {
-			let lat = box.minLat + (box.maxLat - box.minLat) * (Double(j) + 0.5) / Double(samples)
-			for i in 0..<samples {
-				let lon = box.minLon + (box.maxLon - box.minLon) * (Double(i) + 0.5) / Double(samples)
+		for j in 0...samples {
+			let lat = position(j, box.minLat, box.maxLat)
+			for i in 0...samples {
+				let lon = position(i, box.minLon, box.maxLon)
 				if sources.contains(where: { lon >= $0.minLon && lon <= $0.maxLon && lat >= $0.minLat && lat <= $0.maxLat }) {
 					hits += 1
 				}
 			}
 		}
-		return Double(hits) / Double(samples * samples)
+		return Double(hits) / Double((samples + 1) * (samples + 1))
 	}
 }
 
@@ -37,7 +42,7 @@ enum SpatialTerrainBlock: Equatable {
 /// terrain-only region of its own ("Spatial Map terrain") and grows or moves it as the mesh
 /// changes; the user's regions count as coverage but are never changed.
 enum SpatialTerrainAutoDecision: Equatable {
-	/// Covered enough, busy, or the backoff says not now.
+	/// Covered, busy, or the backoff says not now.
 	case none
 	/// No managed region yet: download one for this area.
 	case create(GeoBounds)
@@ -45,7 +50,8 @@ enum SpatialTerrainAutoDecision: Equatable {
 	case expand(GeoBounds, replacing: UUID)
 	case blocked(SpatialTerrainBlock)
 
-	static let coverageThreshold = 0.98
+	/// Every sample must have terrain: the volume should show relief edge to edge.
+	static let coverageThreshold = 1.0
 	static let maxSpanMeters: Double = 350_000
 	/// Rough size of global z0–12 terrain per km². The manager re-checks the real plan.
 	static let bytesPerSquareKm: Int64 = 4_096

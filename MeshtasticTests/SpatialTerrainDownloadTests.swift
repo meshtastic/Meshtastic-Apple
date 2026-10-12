@@ -87,6 +87,18 @@ struct SpatialTerrainDownloadTests {
 		#expect(decide(box, [user]) == .none)
 	}
 
+	@Test func aThinUncoveredStripAlongAnEdgeStillDownloads() {
+		// The user's terrain stops 1% short of the box's east edge.
+		let user = region(GeoBounds(minLon: -122.55, minLat: 47.4, maxLon: box.maxLon - 0.003, maxLat: 47.85), terrain: true)
+		#expect(SpatialTerrainCoverage.fraction(of: box, covered: [user.bounds]) < 1)
+		#expect(decide(box, [user]) == .create(box.expandedForTerrain()))
+	}
+
+	@Test func aRegionExactlyTheBoxCoversIt() {
+		let odd = GeoBounds(minLon: -122.123456789, minLat: 47.1, maxLon: -121.987654321, maxLat: 47.3)
+		#expect(SpatialTerrainCoverage.fraction(of: odd, covered: [odd]) == 1)
+	}
+
 	@Test func partlyCoveredCreatesAManagedRegionForTheWholeBox() {
 		let user = region(GeoBounds(minLon: -122.55, minLat: 47.4, maxLon: -122.25, maxLat: 47.85), terrain: true)
 		let decision = decide(box, [user])
