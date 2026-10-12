@@ -156,10 +156,11 @@ enum SpatialTextureRenderer {
 
 		let bounds = frame.bounds
 		let tileSize = TerrainStore.tileSize
-		// One hillshade tile per ~256 texels across the box.
+		// One hillshade tile per 256-512 texels across the box: shading a tile is the slow part of the
+		// build, and the coarser zoom quarters the tile count with no visible loss on a one-meter model.
 		let lonSpan = bounds.maxLon - bounds.minLon
 		let wanted = Double(width) / Double(tileSize) * 360 / max(lonSpan, 1e-9)
-		let zoom = min(max(Int(log2(wanted).rounded(.up)), 0), 16)
+		let zoom = min(max(Int(log2(wanted).rounded(.down)), 0), 16)
 		let northWest = TerrainStore.tilePixel(latitude: bounds.maxLat, longitude: bounds.minLon, z: zoom, size: tileSize)
 		let southEast = TerrainStore.tilePixel(latitude: bounds.minLat, longitude: bounds.maxLon, z: zoom, size: tileSize)
 		let top = SpatialFrame.mercatorY(bounds.maxLat), bottom = SpatialFrame.mercatorY(bounds.minLat)
