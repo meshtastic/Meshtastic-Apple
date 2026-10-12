@@ -89,7 +89,10 @@ struct ConfigFormOverlay<M: ConfigSchemaMessage> {
 }
 
 struct ConfigFormSection<M: ConfigSchemaMessage>: Identifiable {
-	let id = UUID()
+	/// Forms rebuild their overlay on every render, so the id has to come from the content. A fresh
+	/// id each time made the list throw away every row, and any sheet or state a row held, whenever
+	/// the screen redrew. Each field is laid out once, so the first field names the section.
+	var id: String { fields.first?.id ?? title ?? "" }
 	var title: String?
 	var footer: String?
 	var shownWhen: ConfigFormCondition<M>?
