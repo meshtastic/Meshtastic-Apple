@@ -35,6 +35,19 @@ struct TerrainContourLabel: Identifiable, Equatable {
 	static func == (lhs: TerrainContourLabel, rhs: TerrainContourLabel) -> Bool { lhs.id == rhs.id }
 }
 
+extension ContourLine {
+	/// The line's points as map coordinates, for the tile it was generated from.
+	func coordinates(z: Int, x: Int, y: Int) -> [CLLocationCoordinate2D] {
+		let n = Double(1 << z)
+		return points.map { point in
+			let wx = (Double(x) + point.x) / n
+			let wy = (Double(y) + point.y) / n
+			let lat = atan(sinh(.pi * (1 - 2 * wy))) * 180 / .pi
+			return CLLocationCoordinate2D(latitude: lat, longitude: wx * 360 - 180)
+		}
+	}
+}
+
 @MainActor
 final class TerrainContourProvider: ObservableObject {
 
@@ -114,14 +127,6 @@ final class TerrainContourProvider: ObservableObject {
 			// the longest lines win the bounded label budget.
 			var labelCandidates: [(pointCount: Int, label: TerrainContourLabel)] = []
 			for entry in perTile {
-				let n = Double(1 << entry.tile.z)
-				func coordinate(_ point: CGPoint) -> CLLocationCoordinate2D {
-					let wx = (Double(entry.tile.x) + point.x) / n
-					let wy = (Double(entry.tile.y) + point.y) / n
-					let lon = wx * 360 - 180
-					let lat = atan(sinh(.pi * (1 - 2 * wy))) * 180 / .pi
-					return CLLocationCoordinate2D(latitude: lat, longitude: lon)
-				}
 				let coverage = coverageByTile["\(entry.tile.z)/\(entry.tile.x)/\(entry.tile.y)"]
 				func insideCoverage(_ c: CLLocationCoordinate2D) -> Bool {
 					guard let coverage else { return true }
@@ -129,7 +134,7 @@ final class TerrainContourProvider: ObservableObject {
 						c.latitude >= coverage.minLat && c.latitude <= coverage.maxLat
 				}
 				for (lineIndex, line) in entry.lines.enumerated() where line.points.count >= 2 {
-					let coordinates = line.points.map(coordinate)
+					let coordinates = line.coordinates(z: entry.tile.z, x: entry.tile.x, y: entry.tile.y)
 					// Clip to the downloaded boundary: split into in-bounds runs so
 					// contours end at the region edge instead of spilling past it.
 					var runs: [[CLLocationCoordinate2D]] = []

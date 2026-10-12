@@ -218,4 +218,86 @@ struct SpatialTerrainTests {
 	@Test func offlineWaterWithNoBasemapIsEmpty() {
 		#expect(SpatialTextureRenderer.offlineWater(frame: SpatialFrame(bounds: seattle), width: 1024, files: []).isEmpty)
 	}
+
+	@Test func contourSpacingFitsTheRelief() {
+		let hills = SpatialTerrainContours.intervals(relief: 1500, metric: true)
+		#expect(hills.minor == 50 && hills.index == 250)
+		let flat = SpatialTerrainContours.intervals(relief: 80, metric: true)
+		#expect(flat.minor == 10 && flat.index == 50, "low relief gets the finest spacing")
+		let peaks = SpatialTerrainContours.intervals(relief: 4000, metric: true)
+		#expect(peaks.minor == 100 && peaks.index == 500)
+		#expect(SpatialTerrainContours.intervals(relief: 100_000, metric: true).minor == 1000, "the coarsest step caps the ladder")
+		let feet = SpatialTerrainContours.intervals(relief: 1500, metric: false)
+		#expect(abs(feet.minor - 200 * 0.3048) < 1e-9 && abs(feet.index - 1000 * 0.3048) < 1e-9)
+		for relief in [50.0, 300, 900, 2500, 6000] {
+			for metric in [true, false] {
+				let intervals = SpatialTerrainContours.intervals(relief: relief, metric: metric)
+				#expect(relief / intervals.minor <= 40)
+				#expect(abs((intervals.index / intervals.minor) - 5) < 1e-9)
+			}
+		}
+	}
+
+	@Test func contoursOfASlopeLandOnTheRightRows() async throws {
+		let bounds = seattle
+		let source = SyntheticElevationSource(coverage: bounds) { latitude, _ in
+			Float(100 + (latitude - bounds.minLat) / (bounds.maxLat - bounds.minLat) * 1000)
+		}
+		let frame = SpatialFrame(bounds: bounds)
+		let size = CGSize(width: 1000, height: 1000)
+		let intervals = ContourIntervals(minor: 100, index: 500)
+		let tiles = await SpatialTerrainContours.tiles(frame: frame, width: Int(size.width), dataZoom: 12, intervals: intervals, source: source)
+		#expect(!tiles.isEmpty)
+		#expect(tiles.allSatisfy { $0.clip.minLon >= bounds.minLon - 1e-9 && $0.clip.maxLat <= bounds.maxLat + 1e-9 }, "lines are clipped to the download")
+		var levelsSeen = Set<Int>()
+		for tile in tiles {
+			for (lines, isIndex) in [(tile.minor, false), (tile.index, true)] {
+				for line in lines {
+					let start = SpatialTextureRenderer.canvasPoint(line[0], frame: frame, size: size)
+					// Which level this line is, from where it starts; then every point must sit on that level's row.
+					let elevation = 100 + (line[0].latitude - bounds.minLat) / (bounds.maxLat - bounds.minLat) * 1000
+					let level = (elevation / 100).rounded() * 100
+					#expect(isIndex == (Int(level) % 500 == 0), "level \(level) is classed as index only on multiples of 500")
+					let latitude = bounds.minLat + (level - 100) / 1000 * (bounds.maxLat - bounds.minLat)
+					let row = SpatialTextureRenderer.canvasPoint(CLLocationCoordinate2D(latitude: latitude, longitude: bounds.minLon), frame: frame, size: size).y
+					#expect(abs(start.y - row) < 2)
+					for coordinate in line {
+						let point = SpatialTextureRenderer.canvasPoint(coordinate, frame: frame, size: size)
+						#expect(abs(point.y - row) < 2, "a contour of an east-west slope runs along one row")
+					}
+					// Tiles reach past the box, where the synthetic slope keeps going; count only what gets drawn.
+					let clip = tile.clip
+					if line.contains(where: { $0.longitude > clip.minLon && $0.longitude < clip.maxLon && $0.latitude > clip.minLat && $0.latitude < clip.maxLat }) {
+						levelsSeen.insert(Int(level))
+					}
+				}
+			}
+		}
+		#expect(levelsSeen.isSuperset(of: [200, 300, 400, 500, 600, 700, 800, 900, 1000]))
+		#expect(levelsSeen.allSatisfy { (100...1100).contains($0) }, "nothing drawn inside the box lies off the slope")
+	}
+
+	@Test func contoursAreStrokedOntoTheTexture() async throws {
+		let bounds = seattle
+		let source = SyntheticElevationSource(coverage: bounds) { latitude, _ in
+			Float(100 + (latitude - bounds.minLat) / (bounds.maxLat - bounds.minLat) * 1000)
+		}
+		let frame = SpatialFrame(bounds: bounds)
+		let width = 256, height = 256
+		let blank = try #require(CGContext(data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: width * 4,
+										   space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
+		blank.setFillColor(UIColor.black.cgColor)
+		blank.fill(CGRect(x: 0, y: 0, width: width, height: height))
+		let base = try #require(blank.makeImage())
+		let tiles = await SpatialTerrainContours.tiles(frame: frame, width: width, dataZoom: 12, intervals: ContourIntervals(minor: 100, index: 500), source: source)
+		let image = try #require(SpatialTerrainContours.draw(tiles, over: base, frame: frame, imagery: true))
+		let data = try #require(image.dataProvider?.data as Data?)
+		// The 500 m index line: image rows count from the top.
+		let latitude = bounds.minLat + 0.4 * (bounds.maxLat - bounds.minLat)
+		let row = Int((Double(height) - SpatialTextureRenderer.canvasPoint(CLLocationCoordinate2D(latitude: latitude, longitude: bounds.minLon), frame: frame, size: CGSize(width: width, height: height)).y).rounded(.down))
+		func brightness(_ x: Int, _ y: Int) -> Int { Int(data[y * image.bytesPerRow + x * 4]) }
+		let onLine = (max(0, row - 1)...min(height - 1, row + 1)).map { brightness(width / 2, $0) }.max() ?? 0
+		#expect(onLine > 150, "a white index line crosses the slope at 500 m")
+		#expect(brightness(width / 2, max(0, row - 10)) < 10, "between levels the image is untouched")
+	}
 }

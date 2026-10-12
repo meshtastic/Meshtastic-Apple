@@ -16,6 +16,10 @@ struct SpatialTerrainOptions: Equatable, Sendable {
 	var textureEdge = 2048
 	var modelSize: SIMD3<Float> = [1, 0.3, 1]
 	var allowNetwork = true
+	/// Stroke contour lines from the downloaded terrain onto the texture.
+	var contours = false
+	/// Contour spacing in round meters rather than round feet.
+	var metric = true
 }
 
 enum SpatialTextureSource: Equatable, Sendable {
@@ -72,7 +76,17 @@ final class SpatialTerrainBuilder: Sendable {
 			texture = await SpatialTextureRenderer.offlineComposite(frame: frame, pixelSize: pixelSize, dark: options.dark, source: elevation)
 		}
 		try Task.checkCancellation()
-		guard let texture else { throw CancellationError() }
+		guard var texture else { throw CancellationError() }
+		if options.contours, let dataZoom, grid.hasAnyTerrain {
+			let relief = Double(grid.maxElevation) - max(Double(grid.baseElevation), 0)
+			let intervals = SpatialTerrainContours.intervals(relief: relief, metric: options.metric)
+			let tiles = await SpatialTerrainContours.tiles(frame: frame, width: texture.width, dataZoom: dataZoom, intervals: intervals, source: elevation)
+			try Task.checkCancellation()
+			let imagery = textureSource == .appleMaps(.satellite) || textureSource == .appleMaps(.hybrid)
+			if let contoured = SpatialTerrainContours.draw(tiles, over: texture, frame: frame, imagery: imagery) {
+				texture = contoured
+			}
+		}
 		Logger.services.info("🧊 [Spatial] Built terrain \(grid.columns)x\(grid.rows) (\(geometry.surfaceTriangleCount) triangles, terrain: \(grid.hasAnyTerrain), \(String(describing: textureSource), privacy: .public)) in \(String(format: "%.2f", Date().timeIntervalSince(started)), privacy: .public)s")
 		return SpatialTerrainModel(bounds: bounds, geometry: geometry, texture: texture, textureSource: textureSource)
 	}

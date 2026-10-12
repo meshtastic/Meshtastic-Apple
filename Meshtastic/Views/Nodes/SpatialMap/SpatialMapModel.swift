@@ -58,6 +58,7 @@ final class SpatialMapModel {
 	var connectedNodeNum: Int64?
 	var showLabels = true { didSet { updateLabels() } }
 	var showLinks = true
+	var showContours = false
 
 	private var pinnedNodeNums: Set<Int64> = []
 	private let terrainStore = TerrainStore()
@@ -118,7 +119,7 @@ final class SpatialMapModel {
 			placement = SpatialPlacement(bounds: next, geometry: nil, flat: SpatialModelTransform(frame: frame, baseElevation: 0, maxElevation: 0), revision: placementRevision)
 		}
 		if let placement {
-			rebuildTerrainIfNeeded(bounds: placement.bounds, layer: layer, dark: dark)
+			rebuildTerrainIfNeeded(bounds: placement.bounds, layer: layer, dark: dark, contours: showContours)
 		}
 
 		if showLinks, refreshCount % 10 == 1 {
@@ -134,14 +135,15 @@ final class SpatialMapModel {
 		updateLabels()
 	}
 
-	private func rebuildTerrainIfNeeded(bounds: GeoBounds, layer: MapLayer, dark: Bool) {
+	private func rebuildTerrainIfNeeded(bounds: GeoBounds, layer: MapLayer, dark: Bool, contours: Bool) {
 		// The terrain generation (every region's download stamp) is part of the key, so a terrain
 		// download or delete rebuilds the model.
 		let generation = OfflineMapManager.shared.regions
 			.compactMap { $0.terrain.map { String(Int($0.downloadedAt.timeIntervalSince1970)) } }
 			.sorted()
 			.joined(separator: ",")
-		let key = "\(bounds.minLon),\(bounds.minLat),\(bounds.maxLon),\(bounds.maxLat)|\(layer.rawValue)|\(dark)|\(generation)"
+		let metric = Locale.current.measurementSystem == .metric
+		let key = "\(bounds.minLon),\(bounds.minLat),\(bounds.maxLon),\(bounds.maxLat)|\(layer.rawValue)|\(dark)|\(contours)|\(metric)|\(generation)"
 		guard key != buildKey else { return }
 		buildKey = key
 		buildTask?.cancel()
@@ -151,6 +153,8 @@ final class SpatialMapModel {
 		var options = SpatialTerrainOptions()
 		options.layer = layer
 		options.dark = dark
+		options.contours = contours
+		options.metric = metric
 		let builder = builder
 		let store = terrainStore
 		buildTask = Task {

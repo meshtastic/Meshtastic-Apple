@@ -25,6 +25,8 @@ struct SpatialMapWindow: View {
 	@AppStorage("mapLayer") private var mapLayer: MapLayer = .standard
 	@AppStorage("enableMapPreciseLocationsOnly") private var preciseLocationsOnly = false
 	@AppStorage("spatialMapDark") private var darkMap = true
+	/// Shared with the 2D map's Contour Lines setting.
+	@AppStorage("meshMapShowContours") private var showContours = false
 	@AppStorage("spatialMapShowLabels") private var showLabels = true
 	@AppStorage("spatialMapShowLinks") private var showLinks = true
 	@AppStorage("spatialMapShowTraffic") private var showTraffic = true
@@ -38,7 +40,7 @@ struct SpatialMapWindow: View {
 	private var preset: ModemPresets { ModemPresets(rawValue: UserDefaults.modemPreset) ?? .longFast }
 
 	private var refreshKey: String {
-		"\(mapLayer.rawValue)|\(darkMap)|\(preciseLocationsOnly)|\(showLinks)|\(accessoryManager.activeDeviceNum ?? 0)|\(accessoryManager.isInBackground)"
+		"\(mapLayer.rawValue)|\(darkMap)|\(showContours)|\(preciseLocationsOnly)|\(showLinks)|\(accessoryManager.activeDeviceNum ?? 0)|\(accessoryManager.isInBackground)"
 	}
 
 	var body: some View {
@@ -50,7 +52,7 @@ struct SpatialMapWindow: View {
 		.volumeBaseplateVisibility(.visible)
 		.ornament(attachmentAnchor: .scene(.bottomFront)) {
 			SpatialMapOrnament(
-				model: model, traffic: traffic, mapLayer: $mapLayer, darkMap: $darkMap,
+				model: model, traffic: traffic, mapLayer: $mapLayer, darkMap: $darkMap, showContours: $showContours,
 				showLabels: $showLabels, showLinks: $showLinks, showTraffic: $showTraffic
 			)
 		}
@@ -101,6 +103,7 @@ struct SpatialMapWindow: View {
 		traffic.connectedNodeNum = accessoryManager.activeDeviceNum
 		traffic.preset = preset
 		model.showLinks = showLinks
+		model.showContours = showContours
 		model.refresh(context: context, filters: nodeFilters, preciseOnly: preciseLocationsOnly, layer: mapLayer, dark: darkMap)
 		// The distance filter measures from the connected radio.
 		if let num = accessoryManager.activeDeviceNum, let coordinate = model.nodesByNum[num]?.coordinate {
@@ -133,6 +136,7 @@ struct SpatialMapOrnament: View {
 	let traffic: SpatialTrafficController
 	@Binding var mapLayer: MapLayer
 	@Binding var darkMap: Bool
+	@Binding var showContours: Bool
 	@Binding var showLabels: Bool
 	@Binding var showLinks: Bool
 	@Binding var showTraffic: Bool
@@ -147,6 +151,9 @@ struct SpatialMapOrnament: View {
 				}
 				Toggle(isOn: $darkMap) {
 					Label(String(localized: "Dark Map", comment: "Spatial map: draw the map in its dark appearance"), systemImage: "moon")
+				}
+				Toggle(isOn: $showContours) {
+					Label(String(localized: "Contour Lines"), systemImage: "point.topleft.down.to.point.bottomright.curvepath")
 				}
 			} label: {
 				Image(systemName: "map")
