@@ -117,8 +117,8 @@ struct SpatialTerrainTests {
 		let geometry = SpatialTerrainGeometry(grid: grid, transform: transform, skirtDepth: 0.02)
 		let radius = transform.diskRadius
 		#expect(abs(radius - 0.5) < 1e-5, "the disk fills the one meter footprint")
-		let ring = SpatialTerrainGeometry.ringSegments
-		#expect(geometry.skirtRingCount == ring)
+		let ring = geometry.skirtRingCount
+		#expect(ring > 100)
 		#expect(geometry.positions.count == columns * rows + 2 * ring)
 		#expect(geometry.indices.count / 3 == geometry.surfaceTriangleCount + 2 * ring)
 		#expect(geometry.surfaceTriangleCount < 2 * (columns - 1) * (rows - 1), "cells outside the circle are dropped")
@@ -143,8 +143,30 @@ struct SpatialTerrainTests {
 			}
 		}
 
-		// The skirt ring sits on the circle, ground height on top, normals pointing straight out.
+		// The skirt hangs from the surface's own edge: its top edges are exactly the surface edges
+		// that only one triangle uses, so there is no gap between them.
 		let top = columns * rows
+		var surfaceEdgeUses: [SIMD2<UInt32>: Int] = [:]
+		for t in 0..<geometry.surfaceTriangleCount {
+			for e in 0..<3 {
+				let p = geometry.indices[t * 3 + e], q = geometry.indices[t * 3 + (e + 1) % 3]
+				surfaceEdgeUses[SIMD2(min(p, q), max(p, q)), default: 0] += 1
+			}
+		}
+		let surfaceEdge = Set(surfaceEdgeUses.filter { $0.value == 1 }.map { $0.key })
+		var rimVertex: [SIMD3<Float>: UInt32] = [:]
+		for edge in surfaceEdge { for v in [edge.x, edge.y] { rimVertex[geometry.positions[Int(v)]] = v } }
+		var skirtTopEdge = Set<SIMD2<UInt32>>()
+		for t in stride(from: geometry.surfaceTriangleCount, to: geometry.indices.count / 3, by: 2) {
+			let tops = (0..<3).map { geometry.indices[t * 3 + $0] }.filter { geometry.positions[Int($0)].y > -0.02 }
+			let mapped = tops.compactMap { rimVertex[geometry.positions[Int($0)]] }
+			#expect(mapped.count == 2, "skirt quad \(t) hangs from two surface vertices")
+			if mapped.count == 2 { skirtTopEdge.insert(SIMD2(min(mapped[0], mapped[1]), max(mapped[0], mapped[1]))) }
+		}
+		#expect(skirtTopEdge == surfaceEdge)
+		#expect(surfaceEdge.count == ring, "the edge is one closed loop")
+
+		// The skirt ring sits on the circle, ground height on top, normals pointing straight out.
 		for k in 0..<ring {
 			let p = geometry.positions[top + k], below = geometry.positions[top + ring + k]
 			#expect(abs(simd_length(SIMD2(p.x, p.z)) - radius) < 1e-5)

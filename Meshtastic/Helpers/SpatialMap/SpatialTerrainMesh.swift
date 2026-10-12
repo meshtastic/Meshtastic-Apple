@@ -59,8 +59,6 @@ struct SpatialModelTransform: Equatable, Sendable {
 struct SpatialTerrainGeometry: Sendable {
 	/// RealityKit samples textures with v = 0 at the bottom of the image, so the north edge is v = 1.
 	static let flipTextureV = true
-	/// Points around the skirt.
-	static let ringSegments = 256
 	/// Coarser grids are resampled to this many vertices across, so the edge still has enough
 	/// vertices to look round.
 	static let minimumGridSize = 97
@@ -77,7 +75,7 @@ struct SpatialTerrainGeometry: Sendable {
 	let textureCoordinates: [SIMD2<Float>]
 	let indices: [UInt32]
 	let surfaceTriangleCount: Int
-	/// Vertices on the top of the skirt; the same number again sit below them.
+	/// Vertices on the top of the skirt, copies of the surface's edge; the same number again sit below them.
 	let skirtRingCount: Int
 
 	init(grid source: SpatialHeightGrid, transform: SpatialModelTransform, skirtDepth: Float = 0.02) {
@@ -161,48 +159,74 @@ struct SpatialTerrainGeometry: Sendable {
 		let minimumArea = dx * dz * 1e-3
 		var indices: [UInt32] = []
 		indices.reserveCapacity((columns - 1) * (rows - 1) * 6)
-		func add(_ a: UInt32, _ b: UInt32, _ c: UInt32) {
-			if moved[Int(a)], moved[Int(b)], moved[Int(c)] { return }
+		func add(_ a: UInt32, _ b: UInt32, _ c: UInt32) -> Bool {
+			if moved[Int(a)], moved[Int(b)], moved[Int(c)] { return false }
 			let pa = positions[Int(a)], pb = positions[Int(b)], pc = positions[Int(c)]
 			let doubleArea = (pb.z - pa.z) * (pc.x - pa.x) - (pb.x - pa.x) * (pc.z - pa.z)
-			guard doubleArea > minimumArea else { return }
+			guard doubleArea > minimumArea else { return false }
 			indices.append(contentsOf: [a, b, c])
+			return true
 		}
+		// Which of each cell's two triangles were kept: [cell * 2] is a-c-b, [cell * 2 + 1] is b-c-d.
+		var kept = [Bool](repeating: false, count: (columns - 1) * (rows - 1) * 2)
 		for j in 0..<(rows - 1) {
 			for i in 0..<(columns - 1) {
 				let a = UInt32(j * columns + i), b = a + 1
 				let c = a + UInt32(columns), d = c + 1
-				add(a, c, b)
-				add(b, c, d)
+				let cell = j * (columns - 1) + i
+				kept[cell * 2] = add(a, c, b)
+				kept[cell * 2 + 1] = add(b, c, d)
 			}
 		}
 		surfaceTriangleCount = indices.count / 3
 
-		// A round skirt: a ring on the circle at ground height, duplicated below it, facing out.
+		// A round skirt hung from the surface's own edge, so the two meet with no gap: every kept
+		// triangle edge with no kept triangle across it gets a wall down to below the ground.
 		if skirtDepth > 0 {
-			let n = Self.ringSegments
+			func isKept(_ i: Int, _ j: Int, _ second: Int) -> Bool {
+				i >= 0 && j >= 0 && i < columns - 1 && j < rows - 1 && kept[(j * (columns - 1) + i) * 2 + second]
+			}
+			// Edges in the order their triangle lists them, which runs counter-clockwise seen from above.
+			var edges: [(UInt32, UInt32)] = []
+			for j in 0..<(rows - 1) {
+				for i in 0..<(columns - 1) {
+					let a = UInt32(j * columns + i), b = a + 1
+					let c = a + UInt32(columns), d = c + 1
+					if isKept(i, j, 0) {
+						if !isKept(i - 1, j, 1) { edges.append((a, c)) }
+						if !isKept(i, j, 1) { edges.append((c, b)) }
+						if !isKept(i, j - 1, 1) { edges.append((b, a)) }
+					}
+					if isKept(i, j, 1) {
+						if !isKept(i, j, 0) { edges.append((b, c)) }
+						if !isKept(i, j + 1, 0) { edges.append((c, d)) }
+						if !isKept(i + 1, j, 0) { edges.append((d, b)) }
+					}
+				}
+			}
+			var ring = [UInt32](repeating: UInt32.max, count: count)
+			var ringVertices: [UInt32] = []
+			for (p, q) in edges {
+				for v in [p, q] where ring[Int(v)] == UInt32.max {
+					ring[Int(v)] = UInt32(ringVertices.count)
+					ringVertices.append(v)
+				}
+			}
+			let n = ringVertices.count
 			let base = UInt32(positions.count)
-			var outward: [SIMD3<Float>] = []
-			for k in 0..<n {
-				let angle = 2 * Float.pi * Float(k) / Float(n)
-				let direction = SIMD3<Float>(cos(angle), 0, sin(angle))
-				let point = surfacePoint(x: radius * direction.x, z: radius * direction.z)
-				positions.append(point.position)
-				normals.append(direction)
-				uvs.append(point.uv)
-				outward.append(direction)
+			for below in [false, true] {
+				for v in ringVertices {
+					var p = positions[Int(v)]
+					normals.append(simd_normalize(SIMD3(p.x, 0, p.z)))
+					uvs.append(uvs[Int(v)])
+					if below { p.y = -skirtDepth }
+					positions.append(p)
+				}
 			}
-			for k in 0..<n {
-				var p = positions[Int(base) + k]
-				p.y = -skirtDepth
-				positions.append(p)
-				normals.append(outward[k])
-				uvs.append(uvs[Int(base) + k])
-			}
-			for k in 0..<n {
-				let p = base + UInt32(k), q = base + UInt32((k + 1) % n)
-				let pBelow = p + UInt32(n), qBelow = q + UInt32(n)
-				indices.append(contentsOf: [p, q, pBelow, q, qBelow, pBelow])
+			for (p, q) in edges {
+				let pTop = base + ring[Int(p)], qTop = base + ring[Int(q)]
+				let pBelow = pTop + UInt32(n), qBelow = qTop + UInt32(n)
+				indices.append(contentsOf: [qTop, pTop, qBelow, pTop, pBelow, qBelow])
 			}
 			skirtRingCount = n
 		} else {
