@@ -63,6 +63,7 @@ final class SpatialMapModel {
 	var terrainDownloadError: String?
 	private var terrainDownloadCancelled = false
 	private var terrainDownloadStarted = false
+	private var terrainDownloadAttempt = 0
 
 	private var pinnedNodeNums: Set<Int64> = []
 	private let terrainStore = TerrainStore()
@@ -232,6 +233,8 @@ final class SpatialMapModel {
 		terrainDownloadCancelled = false
 		terrainDownloadStarted = false
 		terrainDownloadError = nil
+		terrainDownloadAttempt += 1
+		let attempt = terrainDownloadAttempt
 		Logger.services.info("🧊 [Spatial] Terrain download: \(String(describing: plan), privacy: .public)")
 		Task {
 			switch plan {
@@ -247,7 +250,8 @@ final class SpatialMapModel {
 				let center = CLLocationCoordinate2D(latitude: (bounds.minLat + bounds.maxLat) / 2, longitude: (bounds.minLon + bounds.maxLon) / 2)
 				let name = await DownloadNewMapView.placeName(for: center)
 					?? String(localized: "Spatial Map", comment: "Title of the visionOS spatial map volume")
-				guard !terrainDownloadCancelled else { return finishTerrainDownload(success: false) }
+				// Cancelled while naming the place: cancel already finished this attempt.
+				guard attempt == terrainDownloadAttempt, isDownloadingTerrain, !terrainDownloadCancelled else { return }
 				terrainDownloadStarted = true
 				manager.startDownload(name: name, bounds: bounds, detail: .standard, replacing: replacing, includeBasemap: false, includeTerrain: true) { [weak self] region in
 					self?.finishTerrainDownload(success: region != nil)
@@ -261,8 +265,13 @@ final class SpatialMapModel {
 	func cancelTerrainDownload() {
 		guard isDownloadingTerrain else { return }
 		terrainDownloadCancelled = true
-		// Before the manager has the download (still naming the place) there is nothing of ours to cancel.
-		if terrainDownloadStarted { OfflineMapManager.shared.cancelDownload() }
+		// Before the manager has the download (still naming the place) there is nothing to cancel
+		// there, so finish now rather than wait for the place lookup.
+		if terrainDownloadStarted {
+			OfflineMapManager.shared.cancelDownload()
+		} else {
+			finishTerrainDownload(success: false)
+		}
 	}
 
 	private func finishTerrainDownload(success: Bool) {
