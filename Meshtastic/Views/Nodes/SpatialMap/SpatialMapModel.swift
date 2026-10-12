@@ -69,6 +69,8 @@ final class SpatialMapModel {
 	var autoDownloadTerrain = true
 	private var terrainDownloadCancelled = false
 	private var terrainDownloadAutomatic = false
+	/// The manager took the download (it didn't refuse it up front).
+	private var terrainDownloadBegan = false
 	private var terrainDownloadTarget: GeoBounds?
 	private(set) var backoff = SpatialTerrainBackoff()
 	/// The box and region set the automatic check last ran for, so it runs once per settled box.
@@ -230,6 +232,8 @@ final class SpatialMapModel {
 		let retryDue = backoff.target.map { !backoff.gaveUp(on: $0) } == true && backoff.retryAfter.map { Date() >= $0 } == true
 		guard key != autoCheckKey || retryDue else { return }
 		autoCheckKey = key
+		// The wait is over: check once, not on every refresh until the next attempt.
+		if retryDue { backoff.retryAfter = nil }
 		startTerrainDownload(automatic: true)
 	}
 
@@ -255,11 +259,14 @@ final class SpatialMapModel {
 		terrainDownloadTarget = target
 		terrainDownloadError = nil
 		terrainDownloadNote = nil
+		terrainDownloadBegan = false
 		let estimate = ByteCountFormatter.string(fromByteCount: SpatialTerrainAutoDecision.estimatedBytes(target), countStyle: .file)
 		Logger.services.info("🧊 [Spatial] Terrain download (\(automatic ? "automatic" : "manual", privacy: .public)): \(String(describing: decision), privacy: .public), about \(estimate, privacy: .public)")
 		manager.downloadManagedTerrain(bounds: target, includeRegional: SpatialTerrainAutoDecision.includesRegional(target)) { [weak self] success in
 			self?.finishTerrainDownload(success: success)
 		}
+		// Set after the call: a refusal up front completes synchronously, before this line.
+		if isDownloadingTerrain, manager.activeDownload != nil { terrainDownloadBegan = true }
 	}
 
 	func cancelTerrainDownload() {
@@ -278,17 +285,16 @@ final class SpatialMapModel {
 			backoff = SpatialTerrainBackoff()
 			return
 		}
-		if terrainDownloadCancelled {
+		let manager = OfflineMapManager.shared
+		let failed: String? = if case .failed(let message) = manager.activeDownload?.state { message } else { nil }
+		// A download that started and ended without failing was cancelled, here or in Offline Maps.
+		if terrainDownloadCancelled || (terrainDownloadBegan && failed == nil) {
 			if let target { backoff.recordCancel(target) }
 			return
 		}
 		if let target { backoff.recordFailure(target, now: Date()) }
-		let manager = OfflineMapManager.shared
-		var message = String(localized: "The terrain download could not start.", comment: "Spatial map: alert message when the manager refuses the terrain download")
-		if case .failed(let failure) = manager.activeDownload?.state {
-			message = failure
-			manager.dismissDownload()
-		}
+		if failed != nil { manager.dismissDownload() }
+		let message = failed ?? String(localized: "The terrain download could not start.", comment: "Spatial map: alert message when the manager refuses the terrain download")
 		if terrainDownloadAutomatic {
 			terrainDownloadNote = message
 		} else {
