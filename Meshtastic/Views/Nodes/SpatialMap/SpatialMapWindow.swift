@@ -140,6 +140,8 @@ struct SpatialMapOrnament: View {
 	@Binding var showLabels: Bool
 	@Binding var showLinks: Bool
 	@Binding var showTraffic: Bool
+	@ObservedObject private var offline = OfflineMapManager.shared
+	@State private var confirmingTerrainDownload = false
 
 	var body: some View {
 		HStack(spacing: 10) {
@@ -193,6 +195,8 @@ struct SpatialMapOrnament: View {
 				.disabled(model.routes.isEmpty)
 			}
 
+			terrainDownload
+
 			Divider().frame(height: 20)
 
 			HStack(spacing: 6) {
@@ -217,6 +221,72 @@ struct SpatialMapOrnament: View {
 		.padding(.horizontal, 16)
 		.padding(.vertical, 10)
 		.glassBackgroundEffect()
+		.alert(
+			String(localized: "Terrain Download Failed", comment: "Spatial map: alert title when downloading terrain for the volume fails"),
+			isPresented: Binding(get: { model.terrainDownloadError != nil }, set: { if !$0 { model.terrainDownloadError = nil } })
+		) {
+			Button("OK") {}
+		} message: {
+			Text(model.terrainDownloadError ?? "")
+		}
+	}
+
+	/// Offered while the box has no terrain: without it the volume is a flat slab. Downloads are
+	/// per device, so a Vision Pro has none until one is made on it.
+	@ViewBuilder private var terrainDownload: some View {
+		if model.isDownloadingTerrain {
+			HStack(spacing: 6) {
+				if let fraction = offline.activeDownload?.fractionCompleted {
+					ProgressView(value: fraction)
+						.frame(width: 80)
+				} else {
+					ProgressView().controlSize(.small)
+				}
+				Button {
+					model.cancelTerrainDownload()
+				} label: {
+					Image(systemName: "xmark.circle")
+				}
+				.accessibilityLabel(String(localized: "Cancel terrain download", comment: "VoiceOver label to stop the spatial map terrain download"))
+			}
+			.accessibilityElement(children: .contain)
+			.accessibilityLabel(String(localized: "Downloading terrain", comment: "VoiceOver label for the spatial map terrain download progress"))
+		} else if let plan = model.terrainDownloadPlan(regions: offline.regions) {
+			let reason = model.terrainDownloadBlockReason(plan, manager: offline)
+			Button {
+				confirmingTerrainDownload = true
+			} label: {
+				Label(String(localized: "Download Terrain", comment: "Spatial map: button that downloads elevation data so the volume shows relief"), systemImage: "arrow.down.circle")
+					.labelStyle(.titleAndIcon)
+			}
+			.disabled(reason != nil)
+			.help(reason ?? "")
+			.accessibilityHint(reason ?? String(localized: "Downloads elevation data so the map shows hills and valleys.", comment: "VoiceOver hint for the spatial map terrain download button"))
+			.confirmationDialog(
+				String(localized: "Download terrain for this area?", comment: "Spatial map: title of the terrain download confirmation"),
+				isPresented: $confirmingTerrainDownload,
+				titleVisibility: .visible
+			) {
+				Button("Download") { model.startTerrainDownload() }
+				Button("Cancel", role: .cancel) {}
+			} message: {
+				Text(terrainDownloadMessage(plan))
+			}
+			if let reason {
+				Text(reason)
+					.font(.caption)
+					.foregroundStyle(.secondary)
+					.lineLimit(2)
+					.frame(maxWidth: 220)
+			}
+		}
+	}
+
+	private func terrainDownloadMessage(_ plan: SpatialTerrainDownloadPlan) -> String {
+		let area = model.terrainDownloadArea(plan, regions: offline.regions)?.sizeInMeters ?? (width: 0, height: 0)
+		let style = Measurement<UnitLength>.FormatStyle(width: .abbreviated, usage: .road, numberFormatStyle: .number.precision(.fractionLength(0)))
+		let size = "\(Measurement(value: area.width, unit: UnitLength.meters).formatted(style)) × \(Measurement(value: area.height, unit: UnitLength.meters).formatted(style))"
+		return String(localized: "Downloads elevation data for a \(size) area. This uses network data and storage on this device.", comment: "Spatial map: terrain download confirmation; the argument is the area's width × height, e.g. 49 km × 50 km")
 	}
 }
 #endif
