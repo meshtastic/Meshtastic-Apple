@@ -24,7 +24,8 @@ enum SpatialTerrainEntity {
 
 		var textureOptions = TextureResource.CreateOptions(semantic: .color)
 		textureOptions.mipmapsMode = .allocateAndGenerateAll
-		let texture = try await TextureResource(image: model.texture, withName: "terrain-texture", options: textureOptions)
+		// No resource name: RealityKit reuses a named texture, so every rebuild would keep the first image.
+		let texture = try await TextureResource(image: model.texture, options: textureOptions)
 		let sampler = MTLSamplerDescriptor()
 		sampler.sAddressMode = .clampToEdge
 		sampler.tAddressMode = .clampToEdge
