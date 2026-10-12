@@ -143,21 +143,19 @@ struct SpatialTerrainTests {
 		#expect(abs(max(transform.footprint.x, transform.footprint.y) - 1) < 1e-5)
 	}
 
-	@Test func nodesSitOnTheGroundUnlessClearlyAbove() {
+	@Test func nodesSitOnTheGround() {
 		let columns = 3, rows = 3
 		let grid = SpatialHeightGrid(columns: columns, rows: rows, heights: [Float](repeating: 500, count: 9), covered: [Bool](repeating: true, count: 9), baseElevation: 500, maxElevation: 500)
 		let transform = SpatialModelTransform(frame: SpatialFrame(bounds: seattle), baseElevation: 500, maxElevation: 500)
 		let geometry = SpatialTerrainGeometry(grid: grid, transform: transform, skirtDepth: 0)
 		let center = CLLocationCoordinate2D(latitude: 47.625, longitude: -122.35)
 		#expect(abs(geometry.groundHeight(at: center)) < 1e-6)
-		#expect(abs(geometry.nodePosition(for: center, reportedAltitude: nil).y) < 1e-6)
-		#expect(abs(geometry.nodePosition(for: center, reportedAltitude: 520).y) < 1e-6, "GPS noise stays on the ground")
-		#expect(geometry.nodePosition(for: center, reportedAltitude: 900).y > 0, "a tower stands above the ground")
-		#expect(abs(geometry.nodePosition(for: center, reportedAltitude: 900).y - transform.height(forAltitude: 900)) < 1e-6)
+		#expect(abs(geometry.surfacePosition(for: center).y) < 1e-6)
+		#expect(abs(geometry.surfacePosition(for: center, clearance: 0.01).y - 0.01) < 1e-6)
 
 		let flat = SpatialHeightGrid(columns: 2, rows: 2, heights: [0, 0, 0, 0], covered: [false, false, false, false], baseElevation: 0, maxElevation: 0)
 		let flatGeometry = SpatialTerrainGeometry(grid: flat, transform: SpatialModelTransform(frame: SpatialFrame(bounds: seattle), baseElevation: 0, maxElevation: 0), skirtDepth: 0)
-		#expect(flatGeometry.nodePosition(for: center, reportedAltitude: 900).y == 0, "without terrain there is nothing to be above")
+		#expect(flatGeometry.surfacePosition(for: center).y == 0)
 	}
 
 	@Test func textureSizeFollowsTheBox() {

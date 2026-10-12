@@ -168,17 +168,4 @@ struct SpatialTerrainGeometry: Sendable {
 		p.y = groundHeight(at: coordinate) + clearance
 		return p
 	}
-
-	/// Where to put a node: on the ground unless it reports an altitude well above the ground
-	/// (a tower, a balloon), since GPS altitude is noisy and often on another datum.
-	func nodePosition(for coordinate: CLLocationCoordinate2D, reportedAltitude: Double?, clearance: Float = 0) -> SIMD3<Float> {
-		var p = surfacePosition(for: coordinate, clearance: clearance)
-		if hasAnyTerrain, let reportedAltitude {
-			let ground = transform.altitude(forHeight: p.y - clearance)
-			if reportedAltitude > ground + 50 {
-				p.y = transform.height(forAltitude: reportedAltitude) + clearance
-			}
-		}
-		return p
-	}
 }

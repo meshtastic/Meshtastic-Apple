@@ -23,9 +23,10 @@ struct SpatialPlacement {
 	var transform: SpatialModelTransform { geometry?.transform ?? flat }
 	var footprint: SIMD2<Float> { transform.footprint }
 
-	func position(_ coordinate: CLLocationCoordinate2D, altitude: Double?) -> SIMD3<Float> {
-		if let geometry { return geometry.nodePosition(for: coordinate, reportedAltitude: altitude) }
-		return flat.position(coordinate, altitude: flat.baseElevation)
+	/// Nodes sit on the ground. Reported GPS altitude is too noisy, and often on another datum,
+	/// to lift a pin off the terrain without it reading as a second layer floating over the map.
+	func position(_ coordinate: CLLocationCoordinate2D) -> SIMD3<Float> {
+		surface(coordinate)
 	}
 
 	func surface(_ coordinate: CLLocationCoordinate2D, clearance: Float = 0) -> SIMD3<Float> {

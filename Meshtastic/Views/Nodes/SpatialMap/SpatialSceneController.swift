@@ -148,14 +148,14 @@ final class SpatialSceneController {
 			let previous = applied[node.id]
 			if var pin = pins[node.id] {
 				if replaceAll || previous == nil || !Self.samePlace(previous!, node) {
-					pin.holder.position = placement.position(node.coordinate, altitude: node.altitude)
+					pin.holder.position = placement.position(node.coordinate)
 				}
 				if previous == nil || !Self.sameLook(previous!, node) { style(pin, for: node) }
 				pin.baseGlow = NodeActivityGlow.baseOpacity(NodeActivityGlow.tier(lastHeard: node.lastHeard, now: now))
 				pins[node.id] = pin
 			} else {
 				var pin = makePin(node)
-				pin.holder.position = placement.position(node.coordinate, altitude: node.altitude)
+				pin.holder.position = placement.position(node.coordinate)
 				pin.holder.scale = SIMD3(repeating: counterScale)
 				pin.baseGlow = NodeActivityGlow.baseOpacity(NodeActivityGlow.tier(lastHeard: node.lastHeard, now: now))
 				pins[node.id] = pin
