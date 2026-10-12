@@ -543,16 +543,16 @@ private struct ChannelRow: View {
 			return name
 		}
 		if channel.role == 1 {
-			return "Primary Channel"
+			return String(localized: "Primary Channel")
 		}
-		return "Channel \(channel.index)"
+		return String(localized: "Channel \(channel.index)")
 	}
 
 	private var subtitle: String {
 		if channel.role == 1 {
-			return "Primary channel"
+			return String(localized: "Primary channel")
 		}
-		return "Channel \(channel.index)"
+		return String(localized: "Channel \(channel.index)")
 	}
 
 	var body: some View {

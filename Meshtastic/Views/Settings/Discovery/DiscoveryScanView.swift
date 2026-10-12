@@ -552,7 +552,7 @@ extension DiscoveryScanView {
 			.padding(.vertical, 4)
 			.listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
 		} header: {
-			sectionHeader("Modem Presets", systemImage: "antenna.radiowaves.left.and.right")
+			sectionHeader("Modem Presets".localized, systemImage: "antenna.radiowaves.left.and.right")
 		} footer: {
 			VStack(alignment: .leading, spacing: 4) {
 				if availablePresets.contains(where: { popular.contains($0) }) {
@@ -661,7 +661,7 @@ extension DiscoveryScanView {
 					.foregroundStyle(.primary)
 				}
 			} header: {
-				sectionHeader("Beacon Channels", systemImage: "dot.radiowaves.left.and.right")
+				sectionHeader("Beacon Channels".localized, systemImage: "dot.radiowaves.left.and.right")
 			} footer: {
 				Text("Private channels advertised by beacons. Selecting one tunes the scan to that mesh so its traffic can be decoded.")
 			}

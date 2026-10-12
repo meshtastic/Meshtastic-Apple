@@ -4,3 +4,37 @@
 "Name" = "名稱";
 "none given" = "未提供";
 "Enabled" = "已啟用";
+
+/* Location sharing */
+"Will share your phone GPS location with your node." = "將與您的節點分享手機 GPS 位置。";
+"Share Location" = "分享位置";
+"Interval" = "間隔";
+"Accurate Locations Only" = "僅精確位置";
+
+/* Interval options */
+"Ten Seconds" = "十秒";
+"Fifteen Seconds" = "十五秒";
+"Thirty Seconds" = "三十秒";
+"Forty Five Seconds" = "四十五秒";
+"One Minute" = "一分鐘";
+"Five Minutes" = "五分鐘";
+"Ten Minutes" = "十分鐘";
+"Fifteen Minutes" = "十五分鐘";
+"10s" = "10秒";
+"15s" = "15秒";
+"30s" = "30秒";
+"45s" = "45秒";
+"1m" = "1分鐘";
+"5m" = "5分鐘";
+"10m" = "10分鐘";
+"15m" = "15分鐘";
+
+/* Notifications */
+"Notifications" = "通知";
+"Channel Messages" = "頻道訊息";
+"New Waypoints" = "新路徑點";
+"New Nodes" = "新節點";
+"Low Battery" = "電池電量低";
+
+/* Acknowledgments */
+"Acknowledgments" = "致謝";

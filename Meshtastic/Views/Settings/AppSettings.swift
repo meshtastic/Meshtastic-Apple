@@ -361,11 +361,11 @@ private struct BuildTestNodeStandardRow: View {
 								imageColor: node.isOnline ? .green : .orange,
 								text: node.lastHeardText)
 					IconAndText(systemName: node.roleSystemName,
-								text: "Role: \(node.roleName)")
+								text: String(localized: "Role: \(node.roleName)"))
 					if node.isUnmonitored {
 						IconAndText(systemName: "iphone.slash",
 									renderingMode: .multicolor,
-									text: "Unmonitored")
+									text: "Unmonitored".localized)
 					}
 					if node.isStoreForwardRouter {
 						IconAndText(systemName: "envelope.arrow.triangle.branch",
@@ -374,7 +374,7 @@ private struct BuildTestNodeStandardRow: View {
 					}
 					HStack {
 						if node.channel > 0 {
-							IconAndText(systemName: "\(node.channel).circle.fill", text: "Channel")
+							IconAndText(systemName: "\(node.channel).circle.fill", text: "Channel".localized)
 						}
 						if node.viaMqtt {
 							IconAndText(systemName: "dot.radiowaves.up.forward",
@@ -384,7 +384,7 @@ private struct BuildTestNodeStandardRow: View {
 					}
 					if node.hopsAway > 0 {
 						HStack {
-							IconAndText(systemName: "hare", text: "Hops Away:")
+							IconAndText(systemName: "hare", text: "Hops Away:".localized)
 							Image(systemName: "\(node.hopsAway).square")
 								.font(.title2)
 						}

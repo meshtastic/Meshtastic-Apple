@@ -73,9 +73,9 @@ enum AccessoryError: Error, LocalizedError {
 			// Map specific CBATTError values to a more user-friendly message
 			switch attError.code {
 			case .insufficientAuthentication: // 5
-				return "Bluetooth \(attError.localizedDescription) Please try connecting again and check the BLE PIN carefully.".localized
+				return String(localized: "Bluetooth \(attError.localizedDescription) Please try connecting again and check the BLE PIN carefully.")
 			case .insufficientEncryption: // 15
-				return "Bluetooth \(attError.localizedDescription) Please try connecting again and check the BLE PIN carefully.".localized
+				return String(localized: "Bluetooth \(attError.localizedDescription) Please try connecting again and check the BLE PIN carefully.")
 			default:
 				// Fallback for other CBError codes
 				return "A Bluetooth Attribute Protocol error occurred: \(attError.localizedDescription)"

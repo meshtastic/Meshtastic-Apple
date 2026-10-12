@@ -49,12 +49,12 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 	/// Returns a human-readable "last heard" string.
 	/// `now` is passed in so all rows in a single render share one `Date()` allocation.
 	private func lastHeardText(_ date: Date?, now: Date) -> String {
-		guard let date else { return "Never heard" }
+		guard let date else { return String(localized: "Never heard") }
 		let interval = now.timeIntervalSince(date)
-		if interval < 60 { return "Just now" }
-		if interval < 3600 { return "\(Int(interval / 60))m ago" }
-		if interval < 86400 { return "\(Int(interval / 3600))h ago" }
-		return "\(Int(interval / 86400))d ago"
+		if interval < 60 { return String(localized: "Just now") }
+		if interval < 3600 { return String(localized: "\(Int(interval / 60))m ago") }
+		if interval < 86400 { return String(localized: "\(Int(interval / 3600))h ago") }
+		return String(localized: "\(Int(interval / 86400))d ago")
 	}
 
 	// MARK: - CPTemplateApplicationSceneDelegate
@@ -241,7 +241,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 						text: name,
 						leadingConfiguration: leadingConfig,
 						trailingConfiguration: nil,
-						detailText: "\(unreadCount) unread",
+						detailText: String(localized: "\(unreadCount) unread"),
 						trailingText: lastHeardText(node.lastHeard, now: now)
 					)
 					donateLatestIncomingDM(nodeNum: node.num, conversationId: convId, name: name)
@@ -305,7 +305,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 					text: name,
 					leadingConfiguration: leadingConfig,
 					trailingConfiguration: nil,
-					detailText: "\(unreadCount) unread",
+					detailText: String(localized: "\(unreadCount) unread"),
 					trailingText: nil
 				)
 				donateLatestIncomingChannelMessage(channelIndex: Int32(channelIndex), conversationId: convId, channelName: name)
@@ -386,7 +386,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 						text: name,
 						leadingConfiguration: leadingConfig,
 						trailingConfiguration: nil,
-						detailText: "\(unreadCount) unread",
+						detailText: String(localized: "\(unreadCount) unread"),
 						trailingText: lastHeardText(node.lastHeard, now: now)
 					)
 					donateLatestIncomingDM(nodeNum: nodeNum, conversationId: convId, name: name)

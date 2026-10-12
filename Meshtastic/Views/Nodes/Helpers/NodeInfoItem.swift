@@ -123,20 +123,20 @@ private struct NodeInfoHardwareSection: View {
 	}
 
 	private var sectionTitle: String {
-		if summary.hwModel == "UNSET" { return "Hardware" }
-		if isPortduino { return "Community Hardware" }
-		guard let displayTier else { return "Hardware" }
+		if summary.hwModel == "UNSET" { return String(localized: "Hardware") }
+		if isPortduino { return String(localized: "Community Hardware") }
+		guard let displayTier else { return String(localized: "Hardware") }
 		switch displayTier {
 		case .supported:
-			return "Supported Hardware"
+			return String(localized: "Supported Hardware")
 		case .maker:
 			return String(localized: "Maker Hardware")
 		case .niche:
-			return "Niche Hardware"
+			return String(localized: "Niche Hardware")
 		case .legacy:
-			return "Legacy Hardware"
+			return String(localized: "Legacy Hardware")
 		case .discontinued:
-			return "Discontinued Hardware"
+			return String(localized: "Discontinued Hardware")
 		}
 	}
 

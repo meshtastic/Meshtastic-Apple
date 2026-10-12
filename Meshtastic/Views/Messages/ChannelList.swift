@@ -73,14 +73,14 @@ struct ChannelList: View {
 					ChannelLock(channel: channel)
 					if channel.name?.isEmpty ?? false {
 						if channel.role == 1 {
-							Text(String("Primary Channel"))
+							Text(String(localized: "Primary Channel"))
 								.font(.headline)
 						} else {
-							Text(String("Channel \(channel.index)"))
+							Text(String(localized: "Channel \(channel.index)"))
 								.font(.headline)
 						}
 					} else {
-						Text(String(channel.name ?? "Channel \(channel.index)"))
+						Text(String(channel.name ?? String(localized: "Channel \(channel.index)")))
 							.font(.headline)
 					}
 

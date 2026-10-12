@@ -179,9 +179,9 @@ enum CarPlayIntentDonation {
 
 	static func channelDisplayName(for index: Int32) -> String {
 		if index == 0 {
-			return "Primary Channel"
+			return String(localized: "Primary Channel")
 		}
-		return "Channel \(index)"
+		return String(localized: "Channel \(index)")
 	}
 }
 #endif

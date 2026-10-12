@@ -134,7 +134,7 @@ struct MapDataFiles: View {
 				}
 			}
 		} catch {
-			errorMessage = "Failed to access file: \(error.localizedDescription)".localized
+			errorMessage = String(localized: "Failed to access file: \(error.localizedDescription)")
 			showError = true
 		}
 	}
@@ -154,7 +154,7 @@ struct MapDataFiles: View {
 				try await mapDataManager.deleteFile(file)
 			} catch {
 				await MainActor.run {
-					errorMessage = "Failed to delete file: \(error.localizedDescription)".localized
+					errorMessage = String(localized: "Failed to delete file: \(error.localizedDescription)")
 					showError = true
 				}
 			}
