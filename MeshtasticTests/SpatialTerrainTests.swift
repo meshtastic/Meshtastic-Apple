@@ -108,24 +108,33 @@ struct SpatialTerrainTests {
 		#expect(stepped.baseElevation == 100 && stepped.maxElevation == 150)
 	}
 
-	@Test func meshIsClosedAndFacesUp() {
-		let columns = 5, rows = 4
-		let heights = (0..<(columns * rows)).map { Float($0 % columns) * 10 }
-		let grid = SpatialHeightGrid(columns: columns, rows: rows, heights: heights, covered: [Bool](repeating: true, count: columns * rows), baseElevation: 0, maxElevation: 40)
-		let transform = SpatialModelTransform(frame: SpatialFrame(bounds: seattle), baseElevation: 0, maxElevation: 40)
+	@Test func meshIsAClosedDiskThatFacesUp() {
+		let columns = 120, rows = 120
+		let heights = (0..<(columns * rows)).map { Float($0 % columns) * 2 }
+		let grid = SpatialHeightGrid(columns: columns, rows: rows, heights: heights, covered: [Bool](repeating: true, count: columns * rows), baseElevation: 0, maxElevation: 238)
+		let circle = SpatialCircle(latitude: 47.6, longitude: -122.33, radiusMeters: 8_000)
+		let transform = SpatialModelTransform(frame: SpatialFrame(bounds: circle.bounds), baseElevation: 0, maxElevation: 238)
 		let geometry = SpatialTerrainGeometry(grid: grid, transform: transform, skirtDepth: 0.02)
-		let perimeter = 2 * (columns + rows - 2)
-		#expect(geometry.positions.count == columns * rows + perimeter)
-		#expect(geometry.surfaceTriangleCount == 2 * (columns - 1) * (rows - 1))
-		#expect(geometry.indices.count / 3 == geometry.surfaceTriangleCount + 2 * perimeter)
+		let radius = transform.diskRadius
+		#expect(abs(radius - 0.5) < 1e-5, "the disk fills the one meter footprint")
+		let ring = SpatialTerrainGeometry.ringSegments
+		#expect(geometry.skirtRingCount == ring)
+		#expect(geometry.positions.count == columns * rows + 2 * ring)
+		#expect(geometry.indices.count / 3 == geometry.surfaceTriangleCount + 2 * ring)
+		#expect(geometry.surfaceTriangleCount < 2 * (columns - 1) * (rows - 1), "cells outside the circle are dropped")
+		#expect(geometry.surfaceTriangleCount > Int(Double(2 * (columns - 1) * (rows - 1)) * .pi / 4 * 0.95), "the disk keeps about pi/4 of the grid")
 		#expect(geometry.indices.allSatisfy { Int($0) < geometry.positions.count })
 		#expect(geometry.normals.count == geometry.positions.count && geometry.textureCoordinates.count == geometry.positions.count)
+
+		// Every vertex is on the disk.
+		#expect(geometry.positions.allSatisfy { simd_length(SIMD2($0.x, $0.z)) <= radius + 1e-5 })
 
 		for t in 0..<(geometry.indices.count / 3) {
 			let a = geometry.positions[Int(geometry.indices[t * 3])]
 			let b = geometry.positions[Int(geometry.indices[t * 3 + 1])]
 			let c = geometry.positions[Int(geometry.indices[t * 3 + 2])]
 			let normal = simd_cross(b - a, c - a)
+			#expect(simd_length(normal) > 1e-9, "triangle \(t) is not degenerate")
 			if t < geometry.surfaceTriangleCount {
 				#expect(normal.y > 0, "surface triangle \(t) winds counter-clockwise seen from above")
 			} else {
@@ -133,14 +142,53 @@ struct SpatialTerrainTests {
 				#expect(normal.x * centroid.x + normal.z * centroid.z > 0, "skirt triangle \(t) faces outward")
 			}
 		}
-		// Texture: u runs west to east, v = 1 on the north edge (RealityKit's image origin is the bottom).
-		#expect(geometry.textureCoordinates[0] == SIMD2(0, 1))
-		#expect(abs(geometry.textureCoordinates[(rows - 1) * columns + columns - 1].x - 1) < 1e-6)
-		#expect(abs(geometry.textureCoordinates[(rows - 1) * columns + columns - 1].y) < 1e-6)
-		// The slope rises to the east, so normals lean west.
-		#expect(geometry.normals[columns + 2].x < 0)
-		// The box's longer side fills the model footprint.
-		#expect(abs(max(transform.footprint.x, transform.footprint.y) - 1) < 1e-5)
+
+		// The skirt ring sits on the circle, ground height on top, normals pointing straight out.
+		let top = columns * rows
+		for k in 0..<ring {
+			let p = geometry.positions[top + k], below = geometry.positions[top + ring + k]
+			#expect(abs(simd_length(SIMD2(p.x, p.z)) - radius) < 1e-5)
+			#expect(below.y == -0.02 && below.x == p.x && below.z == p.z)
+			let n = geometry.normals[top + k]
+			#expect(abs(n.y) < 1e-6 && simd_dot(SIMD2(n.x, n.z), simd_normalize(SIMD2(p.x, p.z))) > 0.9999)
+			#expect(abs(p.y - geometry.groundHeight(at: transform.coordinate(x: p.x, z: p.z))) < 1e-4)
+		}
+
+		// Vertices moved onto the edge carry the texture coordinate and height of where they are now.
+		var edgeVertices = 0
+		for index in 0..<top where abs(simd_length(SIMD2(geometry.positions[index].x, geometry.positions[index].z)) - radius) < 1e-5 {
+			edgeVertices += 1
+			let p = geometry.positions[index]
+			let coordinate = transform.coordinate(x: p.x, z: p.z)
+			let fraction = transform.frame.mercatorFraction(latitude: coordinate.latitude, longitude: coordinate.longitude)
+			let uv = geometry.textureCoordinates[index]
+			#expect(abs(Double(uv.x) - fraction.x) < 1e-4 && abs(Double(uv.y) - (1 - fraction.y)) < 1e-4)
+			#expect(abs(p.y - geometry.groundHeight(at: coordinate)) < 1e-4)
+		}
+		#expect(edgeVertices > 100)
+
+		// The center vertex is untouched: u, v = 0.5 there, and the eastward slope leans the normal west.
+		let middle = (rows / 2) * columns + columns / 2
+		#expect(geometry.normals[middle].x < 0)
+		#expect(abs(geometry.textureCoordinates[middle].x - Float(columns / 2) / Float(columns - 1)) < 1e-6)
+	}
+
+	@Test func aCoarseGridStillMakesARoundDisk() {
+		let flat = SpatialHeightGrid(columns: 2, rows: 2, heights: [0, 0, 0, 0], covered: [false, false, false, false], baseElevation: 0, maxElevation: 0)
+		let circle = SpatialCircle(latitude: 47.6, longitude: -122.33, radiusMeters: 1_000)
+		let geometry = SpatialTerrainGeometry(grid: flat, transform: SpatialModelTransform(frame: SpatialFrame(bounds: circle.bounds), baseElevation: 0, maxElevation: 0))
+		#expect(geometry.columns == SpatialTerrainGeometry.minimumGridSize && geometry.rows == SpatialTerrainGeometry.minimumGridSize)
+		#expect(geometry.surfaceTriangleCount > 10_000)
+		// The surface covers the disk: its triangles add up to nearly pi r^2.
+		var area: Float = 0
+		for t in 0..<geometry.surfaceTriangleCount {
+			let a = geometry.positions[Int(geometry.indices[t * 3])]
+			let b = geometry.positions[Int(geometry.indices[t * 3 + 1])]
+			let c = geometry.positions[Int(geometry.indices[t * 3 + 2])]
+			area += simd_length(simd_cross(b - a, c - a)) / 2
+		}
+		let disk = Float.pi * 0.25
+		#expect(abs(area - disk) / disk < 0.002, "surface area \(area) vs the disk's \(disk)")
 	}
 
 	@Test func nodesSitOnTheGround() {

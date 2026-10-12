@@ -68,7 +68,8 @@ final class SpatialSceneController {
 	private(set) var counterScale: Float = 1
 
 	init() {
-		placeholder = ModelEntity(mesh: .generatePlane(width: 1, depth: 1), materials: [Self.transparentMaterial(.systemGray, opacity: 0.25)])
+		// A flat disk of radius 0.5, scaled to the map once there is one.
+		placeholder = ModelEntity(mesh: .generateCylinder(height: 0.001, radius: 0.5), materials: [Self.transparentMaterial(.systemGray, opacity: 0.25)])
 		placeholder.name = "placeholder"
 		ring = ModelEntity(mesh: Self.ringMesh, materials: [UnlitMaterial(color: .white)])
 		tether = ModelEntity(mesh: Self.tetherMesh, materials: [Self.transparentMaterial(.white, opacity: 0.7)])
@@ -119,8 +120,10 @@ final class SpatialSceneController {
 	func apply(placement: SpatialPlacement?) {
 		guard let placement, placement.revision != self.placement?.revision else { return }
 		self.placement = placement
-		placeholder.scale = [placement.footprint.x, 1, placement.footprint.y]
-		handle.position = [0, 0.004, placement.footprint.y / 2 + 0.03]
+		let radius = placement.diskRadius
+		placeholder.scale = [2 * radius, 1, 2 * radius]
+		// Just outside the front of the disk, along its edge.
+		handle.position = [0, 0.004, radius + 0.03]
 	}
 
 	func apply(terrainEntity entity: ModelEntity?, building: Bool) {

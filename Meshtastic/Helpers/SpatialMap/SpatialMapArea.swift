@@ -7,8 +7,8 @@
 import CoreLocation
 import Foundation
 
-/// Which box the spatial map shows. The box is rebuilt only when it has to be: a node outside
-/// it, or the mesh having shrunk to a corner of it, so the terrain is not rebuilt on every refresh.
+/// Which circle the spatial map shows. The circle is rebuilt only when it has to be: a node
+/// outside it, or the mesh having shrunk well inside it, so the terrain is not rebuilt on every refresh.
 enum SpatialMapArea {
 	/// Nodes farther than this from the anchor are left out: a mesh with MQTT nodes on another
 	/// continent cannot be a one-meter model.
@@ -36,20 +36,14 @@ enum SpatialMapArea {
 		return Selection(coordinates: inside, outsideCount: coordinates.count - inside.count)
 	}
 
-	/// The box to use next: nil to keep the current one.
-	static func next(current: GeoBounds?, candidate: GeoBounds, nodes: [CLLocationCoordinate2D], lastChange: Date?, now: Date) -> GeoBounds? {
+	/// The circle to use next: nil to keep the current one.
+	static func next(current: SpatialCircle?, candidate: SpatialCircle, nodes: [CLLocationCoordinate2D], lastChange: Date?, now: Date) -> SpatialCircle? {
 		guard let current else { return candidate }
 		if nodes.contains(where: { !current.contains($0) }) { return candidate }
-		let currentSpan = span(current), candidateSpan = span(candidate)
-		if candidateSpan < currentSpan * shrinkRatio,
+		if candidate.radiusMeters < current.radiusMeters * shrinkRatio,
 		   lastChange.map({ now.timeIntervalSince($0) >= minimumRebuildInterval }) ?? true {
 			return candidate
 		}
 		return nil
-	}
-
-	static func span(_ bounds: GeoBounds) -> Double {
-		let frame = SpatialFrame(bounds: bounds)
-		return max(frame.widthMeters, frame.depthMeters)
 	}
 }

@@ -173,6 +173,24 @@ struct SpatialHeightGrid: Equatable, Sendable {
 		return SpatialHeightGrid(columns: columns, rows: rows, heights: filtered, covered: covered, baseElevation: base, maxElevation: max(top, base))
 	}
 
+	/// The same ground on a grid at least `minimum` vertices across and down, read bilinearly.
+	func upsampled(toAtLeast minimum: Int) -> SpatialHeightGrid {
+		guard columns < minimum || rows < minimum else { return self }
+		let newColumns = max(columns, minimum), newRows = max(rows, minimum)
+		var newHeights = [Float](repeating: 0, count: newColumns * newRows)
+		var newCovered = [Bool](repeating: false, count: newColumns * newRows)
+		for j in 0..<newRows {
+			let v = Double(j) / Double(newRows - 1)
+			for i in 0..<newColumns {
+				let u = Double(i) / Double(newColumns - 1)
+				newHeights[j * newColumns + i] = height(u: u, v: v)
+				let nearest = Int((v * Double(rows - 1)).rounded()) * columns + Int((u * Double(columns - 1)).rounded())
+				newCovered[j * newColumns + i] = covered[nearest]
+			}
+		}
+		return SpatialHeightGrid(columns: newColumns, rows: newRows, heights: newHeights, covered: newCovered, baseElevation: baseElevation, maxElevation: maxElevation)
+	}
+
 	/// Bilinear height at a fraction across the grid (0...1 west to east, 0...1 north to south).
 	func height(u: Double, v: Double) -> Float {
 		let x = min(max(u, 0), 1) * Double(columns - 1)

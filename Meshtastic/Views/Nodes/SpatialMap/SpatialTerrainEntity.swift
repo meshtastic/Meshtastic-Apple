@@ -10,7 +10,7 @@ import RealityKit
 import UIKit
 
 /// Turns a built terrain into a RealityKit entity: the mesh, the map image as a lit material
-/// with a clamped sampler so the border texels never wrap, and a collision box for taps.
+/// with a clamped sampler so the border texels never wrap, and a round collision shape for taps.
 enum SpatialTerrainEntity {
 	@MainActor
 	static func make(_ model: SpatialTerrainModel) async throws -> ModelEntity {
@@ -41,9 +41,15 @@ enum SpatialTerrainEntity {
 
 		let entity = ModelEntity(mesh: mesh, materials: [material])
 		entity.name = "terrain"
-		let footprint = geometry.transform.footprint
+		// A round prism over the disk, so taps outside the map's edge miss it.
+		let radius = geometry.transform.diskRadius
 		let height: Float = 0.3
-		entity.components.set(CollisionComponent(shapes: [.generateBox(size: [footprint.x, height, footprint.y]).offsetBy(translation: [0, height / 2 - 0.02, 0])]))
+		let outline = (0..<64).map { k -> SIMD2<Float> in
+			let angle = 2 * Float.pi * Float(k) / 64
+			return SIMD2(radius * cos(angle), radius * sin(angle))
+		}
+		let points = outline.map { SIMD3($0.x, -0.02, $0.y) } + outline.map { SIMD3($0.x, height - 0.02, $0.y) }
+		entity.components.set(CollisionComponent(shapes: [try await ShapeResource.generateConvex(from: points)]))
 		entity.components.set(InputTargetComponent())
 		return entity
 	}

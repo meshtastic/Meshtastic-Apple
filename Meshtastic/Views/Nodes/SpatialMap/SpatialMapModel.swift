@@ -13,7 +13,7 @@ import RealityKit
 import SwiftData
 
 /// Where things sit in the model: on the built terrain when it matches the current box, on a flat
-/// plane while the terrain is still building.
+/// disk while the terrain is still building. The box is the square around the map's circle.
 struct SpatialPlacement {
 	let bounds: GeoBounds
 	let geometry: SpatialTerrainGeometry?
@@ -22,6 +22,8 @@ struct SpatialPlacement {
 
 	var transform: SpatialModelTransform { geometry?.transform ?? flat }
 	var footprint: SIMD2<Float> { transform.footprint }
+	/// Radius of the round map in model units.
+	var diskRadius: Float { transform.diskRadius }
 
 	/// Nodes sit on the ground. Reported GPS altitude is too noisy, and often on another datum,
 	/// to lift a pin off the terrain without it reading as a second layer floating over the map.
@@ -84,6 +86,8 @@ final class SpatialMapModel {
 	private var buildTask: Task<Void, Never>?
 	private var buildKey: String?
 	private var placementRevision = 0
+	/// The area shown; the placement's bounds are the square around it.
+	private var circle: SpatialCircle?
 	private var lastBoundsChange: Date?
 	private var refreshCount = 0
 
@@ -129,12 +133,13 @@ final class SpatialMapModel {
 		if outsideCount != outside { outsideCount = outside }
 		if let selectedNodeNum, nodesByNum[selectedNodeNum] == nil { select(nil) }
 
-		if let candidate = GeoBounds.around(fetched.map(\.coordinate)),
-		   let next = SpatialMapArea.next(current: placement?.bounds, candidate: candidate, nodes: fetched.map(\.coordinate), lastChange: lastBoundsChange, now: Date()) {
+		if let candidate = SpatialCircle.around(fetched.map(\.coordinate)),
+		   let next = SpatialMapArea.next(current: circle, candidate: candidate, nodes: fetched.map(\.coordinate), lastChange: lastBoundsChange, now: Date()) {
+			circle = next
 			lastBoundsChange = Date()
 			placementRevision += 1
-			let frame = SpatialFrame(bounds: next)
-			placement = SpatialPlacement(bounds: next, geometry: nil, flat: SpatialModelTransform(frame: frame, baseElevation: 0, maxElevation: 0), revision: placementRevision)
+			let frame = SpatialFrame(bounds: next.bounds)
+			placement = SpatialPlacement(bounds: next.bounds, geometry: nil, flat: SpatialModelTransform(frame: frame, baseElevation: 0, maxElevation: 0), revision: placementRevision)
 		}
 		if let placement {
 			rebuildTerrainIfNeeded(bounds: placement.bounds, layer: layer, dark: dark, contours: showContours)

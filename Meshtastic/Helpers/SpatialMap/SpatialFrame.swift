@@ -85,10 +85,16 @@ struct SpatialFrame: Equatable, Sendable {
 	}
 }
 
-extension GeoBounds {
-	/// A box around the given coordinates, padded by a fraction of its size on every side and never
-	/// smaller than `minimumSpanMeters` across. Nil when there are no coordinates.
-	static func around(_ coordinates: [CLLocationCoordinate2D], padding: Double = 0.15, minimumSpanMeters: Double = 2_000) -> GeoBounds? {
+/// The round area the spatial map shows. The terrain is a disk of this radius; the elevation
+/// grid, the map image and terrain downloads cover `bounds`, the square around it.
+struct SpatialCircle: Equatable, Sendable {
+	let latitude: Double
+	let longitude: Double
+	let radiusMeters: Double
+
+	/// A circle centered on the middle of the coordinates' extent, reaching the farthest one plus
+	/// `padding` of that distance, and never smaller than `minimumRadiusMeters`. Nil when empty.
+	static func around(_ coordinates: [CLLocationCoordinate2D], padding: Double = 0.15, minimumRadiusMeters: Double = 1_000) -> SpatialCircle? {
 		guard let first = coordinates.first else { return nil }
 		var minLat = first.latitude, maxLat = first.latitude
 		var minLon = first.longitude, maxLon = first.longitude
@@ -96,22 +102,36 @@ extension GeoBounds {
 			minLat = min(minLat, c.latitude); maxLat = max(maxLat, c.latitude)
 			minLon = min(minLon, c.longitude); maxLon = max(maxLon, c.longitude)
 		}
-		let centerLat = (minLat + maxLat) / 2
-		let metersPerDegreeLon = SpatialFrame.metersPerDegreeLatitude * cos(centerLat * .pi / 180)
-		var latSpan = max((maxLat - minLat) * (1 + 2 * padding), minimumSpanMeters / SpatialFrame.metersPerDegreeLatitude)
-		var lonSpan = max((maxLon - minLon) * (1 + 2 * padding), minimumSpanMeters / metersPerDegreeLon)
-		// Keep the box roughly square in meters so the model isn't a sliver.
-		let latMeters = latSpan * SpatialFrame.metersPerDegreeLatitude
-		let lonMeters = lonSpan * metersPerDegreeLon
-		if latMeters < lonMeters * 0.5 { latSpan = lonMeters * 0.5 / SpatialFrame.metersPerDegreeLatitude }
-		if lonMeters < latMeters * 0.5 { lonSpan = latMeters * 0.5 / metersPerDegreeLon }
-		let centerLon = (minLon + maxLon) / 2
-		return GeoBounds(
-			minLon: centerLon - lonSpan / 2, minLat: max(centerLat - latSpan / 2, -85),
-			maxLon: centerLon + lonSpan / 2, maxLat: min(centerLat + latSpan / 2, 85)
-		)
+		let unpadded = SpatialCircle(latitude: (minLat + maxLat) / 2, longitude: (minLon + maxLon) / 2, radiusMeters: 0)
+		let farthest = coordinates.map { unpadded.distanceMeters(to: $0) }.max() ?? 0
+		return SpatialCircle(latitude: unpadded.latitude, longitude: unpadded.longitude, radiusMeters: max(farthest * (1 + padding), minimumRadiusMeters))
 	}
 
+	var metersPerDegreeLongitude: Double { SpatialFrame.metersPerDegreeLatitude * cos(latitude * .pi / 180) }
+
+	/// Ground distance from the center, flat-earth in the same frame the model is built in.
+	func distanceMeters(to coordinate: CLLocationCoordinate2D) -> Double {
+		let x = (coordinate.longitude - longitude) * metersPerDegreeLongitude
+		let z = (coordinate.latitude - latitude) * SpatialFrame.metersPerDegreeLatitude
+		return (x * x + z * z).squareRoot()
+	}
+
+	func contains(_ coordinate: CLLocationCoordinate2D) -> Bool {
+		distanceMeters(to: coordinate) <= radiusMeters
+	}
+
+	/// The square around the circle.
+	var bounds: GeoBounds {
+		let latSpan = radiusMeters / SpatialFrame.metersPerDegreeLatitude
+		let lonSpan = radiusMeters / metersPerDegreeLongitude
+		return GeoBounds(
+			minLon: longitude - lonSpan, minLat: max(latitude - latSpan, -85),
+			maxLon: longitude + lonSpan, maxLat: min(latitude + latSpan, 85)
+		)
+	}
+}
+
+extension GeoBounds {
 	func contains(_ coordinate: CLLocationCoordinate2D) -> Bool {
 		coordinate.latitude >= minLat && coordinate.latitude <= maxLat
 			&& coordinate.longitude >= minLon && coordinate.longitude <= maxLon

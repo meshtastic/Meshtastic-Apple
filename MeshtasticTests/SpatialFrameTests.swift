@@ -7,6 +7,7 @@
 import CoreLocation
 import Foundation
 import MeshtasticProtobufs
+import simd
 import Testing
 @testable import Meshtastic
 
@@ -47,20 +48,48 @@ struct SpatialFrameTests {
 		#expect(abs(frame.mercatorFraction(latitude: midLat, longitude: seattle.minLon).y - 0.5) < 1e-9)
 	}
 
-	@Test func aBoxAroundNodesIsPaddedAndNeverASliver() throws {
-		let nodes = [CLLocationCoordinate2D(latitude: 47.60, longitude: -122.33), CLLocationCoordinate2D(latitude: 47.61, longitude: -122.20)]
-		let box = try #require(GeoBounds.around(nodes, padding: 0.1, minimumSpanMeters: 2_000))
-		#expect(box.minLon < -122.33 && box.maxLon > -122.20)
-		let frame = SpatialFrame(bounds: box)
-		#expect(frame.depthMeters >= frame.widthMeters * 0.5)
-		#expect(box.contains(nodes[0]) && box.contains(nodes[1]))
-		#expect(GeoBounds.around([]) == nil)
+	@Test func aCircleAroundNodesHoldsThemAllWithPadding() throws {
+		let nodes = [
+			CLLocationCoordinate2D(latitude: 47.60, longitude: -122.33),
+			CLLocationCoordinate2D(latitude: 47.61, longitude: -122.20),
+			CLLocationCoordinate2D(latitude: 47.70, longitude: -122.25)
+		]
+		let circle = try #require(SpatialCircle.around(nodes, padding: 0.15))
+		#expect(abs(circle.latitude - 47.65) < 1e-9 && abs(circle.longitude - -122.265) < 1e-9, "centered on the middle of the nodes' extent")
+		#expect(nodes.allSatisfy { circle.contains($0) })
+		let farthest = nodes.map { circle.distanceMeters(to: $0) }.max() ?? 0
+		#expect(abs(circle.radiusMeters - farthest * 1.15) < 1e-6)
+		#expect(SpatialCircle.around([]) == nil)
 	}
 
-	@Test func aSingleNodeGetsTheMinimumBox() throws {
-		let box = try #require(GeoBounds.around([CLLocationCoordinate2D(latitude: 47.6, longitude: -122.3)], minimumSpanMeters: 2_000))
-		let frame = SpatialFrame(bounds: box)
-		#expect(abs(frame.depthMeters - 2_000) < 1 && abs(frame.widthMeters - 2_000) < 1)
+	@Test func aSingleNodeGetsTheMinimumRadius() throws {
+		let node = CLLocationCoordinate2D(latitude: 47.6, longitude: -122.3)
+		let circle = try #require(SpatialCircle.around([node], minimumRadiusMeters: 1_000))
+		#expect(circle.radiusMeters == 1_000)
+		#expect(circle.distanceMeters(to: node) < 1e-6)
+	}
+
+	@Test func theBoundsAreTheSquareAroundTheCircle() throws {
+		let circle = SpatialCircle(latitude: 47.6, longitude: -122.3, radiusMeters: 5_000)
+		let frame = SpatialFrame(bounds: circle.bounds)
+		#expect(abs(frame.widthMeters - 10_000) < 1 && abs(frame.depthMeters - 10_000) < 1)
+		#expect(abs(frame.centerLatitude - 47.6) < 1e-9 && abs(frame.centerLongitude - -122.3) < 1e-9)
+		let transform = SpatialModelTransform(frame: frame, baseElevation: 0, maxElevation: 0)
+		#expect(abs(transform.diskRadius - 0.5) < 1e-5, "the disk fills the one meter footprint")
+		// A point on the circle is on the disk's edge in the model.
+		let east = CLLocationCoordinate2D(latitude: 47.6, longitude: -122.3 + 5_000 / circle.metersPerDegreeLongitude)
+		#expect(abs(simd_length(SIMD2(transform.position(east, altitude: 0).x, transform.position(east, altitude: 0).z)) - transform.diskRadius) < 1e-4)
+	}
+
+	@Test func nodesFarFromTheAnchorStayOutOfTheCircle() throws {
+		// The 125 km rule drops far nodes before the circle is fitted, so the circle stays tabletop sized.
+		let anchor = CLLocationCoordinate2D(latitude: 47.6, longitude: -122.3)
+		let far = CLLocationCoordinate2D(latitude: 52.5, longitude: 13.4)
+		let near = CLLocationCoordinate2D(latitude: 47.9, longitude: -122.2)
+		let selection = SpatialMapArea.select([anchor, near, far], anchor: anchor)
+		let circle = try #require(SpatialCircle.around(selection.coordinates))
+		#expect(!circle.contains(far))
+		#expect(circle.radiusMeters <= SpatialMapArea.maxRadiusMeters * 1.15)
 	}
 
 	@Test func packetEventsComeOnlyFromLiveReceptions() {

@@ -145,10 +145,12 @@ struct SpatialMapView: View {
 		scene.setTransform(yaw: 0, scale: 1, pan: .zero, animated: animated)
 	}
 
-	/// Keeps part of the terrain inside the volume.
+	/// Keeps part of the round terrain inside the volume: the disk's center stays within a circle
+	/// that grows with the zoom.
 	private static func clampPan(_ pan: SIMD2<Float>, zoom: Float) -> SIMD2<Float> {
 		let limit = max(zoom - 0.5, 0) * 0.5
-		return SIMD2(min(max(pan.x, -limit), limit), min(max(pan.y, -limit), limit))
+		let length = simd_length(pan)
+		return length > limit ? (limit > 0 ? pan * (limit / length) : .zero) : pan
 	}
 
 	private static func nodeNum(of entity: Entity) -> Int64? {

@@ -21,16 +21,29 @@ struct SpatialMapAreaTests {
 		#expect(selection.outsideCount == 1)
 	}
 
-	@Test func boxIsKeptUntilANodeLeavesOrTheMeshShrinks() {
+	@Test func circleIsKeptUntilANodeLeavesOrTheMeshShrinks() {
 		let now = Date()
-		let wide = GeoBounds.around([seattle, CLLocationCoordinate2D(latitude: 47.9, longitude: -122.0)])!
-		let tight = GeoBounds.around([seattle])!
+		let wide = SpatialCircle.around([seattle, CLLocationCoordinate2D(latitude: 47.9, longitude: -122.0)])!
+		let tight = SpatialCircle.around([seattle])!
 		#expect(SpatialMapArea.next(current: nil, candidate: wide, nodes: [seattle], lastChange: nil, now: now) == wide)
 		#expect(SpatialMapArea.next(current: wide, candidate: wide, nodes: [seattle], lastChange: now, now: now) == nil, "nothing changed")
 		let outside = CLLocationCoordinate2D(latitude: 48.5, longitude: -122.33)
 		#expect(SpatialMapArea.next(current: wide, candidate: wide, nodes: [outside], lastChange: now, now: now) == wide, "a node outside forces a rebuild")
 		#expect(SpatialMapArea.next(current: wide, candidate: tight, nodes: [seattle], lastChange: now, now: now) == nil, "a shrink waits")
 		#expect(SpatialMapArea.next(current: wide, candidate: tight, nodes: [seattle], lastChange: now.addingTimeInterval(-60), now: now) == tight, "a shrink rebuilds after the interval")
+	}
+
+	@Test func aNodeInTheBoxCornerButOutsideTheCircleRebuilds() {
+		let now = Date()
+		let circle = SpatialCircle(latitude: 47.6, longitude: -122.33, radiusMeters: 10_000)
+		// Northeast, inside the square around the circle but about 13 km from its center.
+		let corner = CLLocationCoordinate2D(latitude: 47.6 + 9_000 / SpatialFrame.metersPerDegreeLatitude, longitude: -122.33 + 9_000 / circle.metersPerDegreeLongitude)
+		#expect(circle.bounds.contains(corner))
+		#expect(!circle.contains(corner))
+		#expect(SpatialMapArea.next(current: circle, candidate: circle, nodes: [seattle, corner], lastChange: now, now: now) != nil)
+		// Shrinking to just over half does not rebuild, even after the interval.
+		let slightlySmaller = SpatialCircle(latitude: 47.6, longitude: -122.33, radiusMeters: 5_500)
+		#expect(SpatialMapArea.next(current: circle, candidate: slightlySmaller, nodes: [seattle], lastChange: now.addingTimeInterval(-60), now: now) == nil)
 	}
 
 	@Test func linksKeepTheLatestSnrPerDirection() {

@@ -20,6 +20,8 @@ struct SpatialModelTransform: Equatable, Sendable {
 	let baseElevation: Double
 	/// x and z extents of the ground in model units.
 	let footprint: SIMD2<Float>
+	/// Radius of the round map, the circle inscribed in the footprint, in model units.
+	var diskRadius: Float { min(footprint.x, footprint.y) / 2 }
 
 	init(frame: SpatialFrame, baseElevation: Double, maxElevation: Double, verticalExaggeration: Double = 1.5, modelSize: SIMD3<Float> = [1, 0.3, 1]) {
 		self.frame = frame
@@ -51,10 +53,17 @@ struct SpatialModelTransform: Equatable, Sendable {
 	}
 }
 
-/// The terrain mesh plus the height field it was built from, in model units.
+/// The terrain mesh plus the height field it was built from, in model units. The mesh is a disk
+/// inscribed in the box: a regular grid with the vertices outside the circle moved onto it, and a
+/// round skirt below the edge so the model reads as a solid table.
 struct SpatialTerrainGeometry: Sendable {
 	/// RealityKit samples textures with v = 0 at the bottom of the image, so the north edge is v = 1.
 	static let flipTextureV = true
+	/// Points around the skirt.
+	static let ringSegments = 256
+	/// Coarser grids are resampled to this many vertices across, so the edge still has enough
+	/// vertices to look round.
+	static let minimumGridSize = 97
 
 	let transform: SpatialModelTransform
 	let columns: Int
@@ -68,38 +77,28 @@ struct SpatialTerrainGeometry: Sendable {
 	let textureCoordinates: [SIMD2<Float>]
 	let indices: [UInt32]
 	let surfaceTriangleCount: Int
+	/// Vertices on the top of the skirt; the same number again sit below them.
+	let skirtRingCount: Int
 
-	init(grid: SpatialHeightGrid, transform: SpatialModelTransform, skirtDepth: Float = 0.02) {
+	init(grid source: SpatialHeightGrid, transform: SpatialModelTransform, skirtDepth: Float = 0.02) {
+		let grid = source.upsampled(toAtLeast: Self.minimumGridSize)
 		self.transform = transform
-		columns = grid.columns
-		rows = grid.rows
+		let columns = grid.columns, rows = grid.rows
+		self.columns = columns
+		self.rows = rows
 		covered = grid.covered
 		hasAnyTerrain = grid.hasAnyTerrain
 		let frame = transform.frame
 		let bounds = frame.bounds
+		let radius = transform.diskRadius
 		let count = columns * rows
-		var heights = [Float](repeating: 0, count: count)
-		var positions = [SIMD3<Float>](repeating: .zero, count: count)
-		var uvs = [SIMD2<Float>](repeating: .zero, count: count)
-		for j in 0..<rows {
-			let latitude = bounds.maxLat - (bounds.maxLat - bounds.minLat) * Double(j) / Double(rows - 1)
-			let v = frame.mercatorFraction(latitude: latitude, longitude: bounds.minLon).y
-			for i in 0..<columns {
-				let longitude = bounds.minLon + (bounds.maxLon - bounds.minLon) * Double(i) / Double(columns - 1)
-				let index = j * columns + i
-				let y = transform.height(forAltitude: Double(grid.heights[index]))
-				heights[index] = y
-				positions[index] = transform.position(CLLocationCoordinate2D(latitude: latitude, longitude: longitude), altitude: Double(grid.heights[index]))
-				let u = Float(i) / Float(columns - 1)
-				uvs[index] = SIMD2(u, Float(Self.flipTextureV ? 1 - v : v))
-			}
-		}
+		let heights = grid.heights.map { transform.height(forAltitude: Double($0)) }
 		groundHeights = heights
 
 		// Surface normals from the height field: (-dh/dx, 1, -dh/dz), one-sided at the edges.
 		let dx = transform.footprint.x / Float(columns - 1)
 		let dz = transform.footprint.y / Float(rows - 1)
-		var normals = [SIMD3<Float>](repeating: SIMD3(0, 1, 0), count: count)
+		var gridNormals = [SIMD3<Float>](repeating: SIMD3(0, 1, 0), count: count)
 		for j in 0..<rows {
 			for i in 0..<columns {
 				let left = heights[j * columns + max(i - 1, 0)]
@@ -108,44 +107,106 @@ struct SpatialTerrainGeometry: Sendable {
 				let south = heights[min(j + 1, rows - 1) * columns + i]
 				let spanX = Float(min(i + 1, columns - 1) - max(i - 1, 0)) * dx
 				let spanZ = Float(min(j + 1, rows - 1) - max(j - 1, 0)) * dz
-				normals[j * columns + i] = simd_normalize(SIMD3(-(right - left) / spanX, 1, -(south - north) / spanZ))
+				gridNormals[j * columns + i] = simd_normalize(SIMD3(-(right - left) / spanX, 1, -(south - north) / spanZ))
 			}
 		}
 
-		// Two counter-clockwise (seen from above) triangles per cell.
+		// A point on the ground at a model x/z: height and normal read bilinearly off the grid,
+		// texture coordinate from its coordinate in the Mercator image.
+		struct SurfacePoint { let position: SIMD3<Float>; let normal: SIMD3<Float>; let uv: SIMD2<Float> }
+		func surfacePoint(x: Float, z: Float) -> SurfacePoint {
+			let coordinate = transform.coordinate(x: x, z: z)
+			let u = (coordinate.longitude - bounds.minLon) / (bounds.maxLon - bounds.minLon)
+			let v = (bounds.maxLat - coordinate.latitude) / (bounds.maxLat - bounds.minLat)
+			let gx = min(max(u, 0), 1) * Double(columns - 1)
+			let gy = min(max(v, 0), 1) * Double(rows - 1)
+			let x0 = min(Int(gx), columns - 2), y0 = min(Int(gy), rows - 2)
+			let tx = Float(gx - Double(x0)), ty = Float(gy - Double(y0))
+			let i00 = y0 * columns + x0, i10 = i00 + 1, i01 = i00 + columns, i11 = i01 + 1
+			let w00 = (1 - tx) * (1 - ty), w10 = tx * (1 - ty), w01 = (1 - tx) * ty, w11 = tx * ty
+			let height = heights[i00] * w00 + heights[i10] * w10 + heights[i01] * w01 + heights[i11] * w11
+			let normal = simd_normalize(gridNormals[i00] * w00 + gridNormals[i10] * w10 + gridNormals[i01] * w01 + gridNormals[i11] * w11)
+			let mercatorV = frame.mercatorFraction(latitude: coordinate.latitude, longitude: coordinate.longitude).y
+			return SurfacePoint(position: SIMD3(x, height, z), normal: normal, uv: SIMD2(Float(u), Float(Self.flipTextureV ? 1 - mercatorV : mercatorV)))
+		}
+
+		var positions = [SIMD3<Float>](repeating: .zero, count: count)
+		var normals = gridNormals
+		var uvs = [SIMD2<Float>](repeating: .zero, count: count)
+		var moved = [Bool](repeating: false, count: count)
+		for j in 0..<rows {
+			let latitude = bounds.maxLat - (bounds.maxLat - bounds.minLat) * Double(j) / Double(rows - 1)
+			let v = frame.mercatorFraction(latitude: latitude, longitude: bounds.minLon).y
+			for i in 0..<columns {
+				let longitude = bounds.minLon + (bounds.maxLon - bounds.minLon) * Double(i) / Double(columns - 1)
+				let index = j * columns + i
+				let p = transform.position(CLLocationCoordinate2D(latitude: latitude, longitude: longitude), altitude: Double(grid.heights[index]))
+				let distance = (p.x * p.x + p.z * p.z).squareRoot()
+				if distance > radius {
+					// Outside the circle: onto it at the same angle, with the ground found there.
+					let point = surfacePoint(x: p.x * radius / distance, z: p.z * radius / distance)
+					positions[index] = point.position
+					normals[index] = point.normal
+					uvs[index] = point.uv
+					moved[index] = true
+				} else {
+					positions[index] = p
+					uvs[index] = SIMD2(Float(i) / Float(columns - 1), Float(Self.flipTextureV ? 1 - v : v))
+				}
+			}
+		}
+
+		// Two counter-clockwise (seen from above) triangles per cell. Triangles squeezed onto the
+		// edge (every corner moved) or folded flat by the move are left out.
+		let minimumArea = dx * dz * 1e-3
 		var indices: [UInt32] = []
 		indices.reserveCapacity((columns - 1) * (rows - 1) * 6)
+		func add(_ a: UInt32, _ b: UInt32, _ c: UInt32) {
+			if moved[Int(a)], moved[Int(b)], moved[Int(c)] { return }
+			let pa = positions[Int(a)], pb = positions[Int(b)], pc = positions[Int(c)]
+			let doubleArea = (pb.z - pa.z) * (pc.x - pa.x) - (pb.x - pa.x) * (pc.z - pa.z)
+			guard doubleArea > minimumArea else { return }
+			indices.append(contentsOf: [a, b, c])
+		}
 		for j in 0..<(rows - 1) {
 			for i in 0..<(columns - 1) {
 				let a = UInt32(j * columns + i), b = a + 1
 				let c = a + UInt32(columns), d = c + 1
-				indices.append(contentsOf: [a, c, b, b, c, d])
+				add(a, c, b)
+				add(b, c, d)
 			}
 		}
 		surfaceTriangleCount = indices.count / 3
 
-		// A skirt: the perimeter duplicated below the ground so the model reads as a solid slab.
+		// A round skirt: a ring on the circle at ground height, duplicated below it, facing out.
 		if skirtDepth > 0 {
-			var perimeter: [Int] = []
-			for i in 0..<columns { perimeter.append(i) }
-			for j in 1..<rows { perimeter.append(j * columns + columns - 1) }
-			for i in stride(from: columns - 2, through: 0, by: -1) { perimeter.append((rows - 1) * columns + i) }
-			for j in stride(from: rows - 2, through: 1, by: -1) { perimeter.append(j * columns) }
+			let n = Self.ringSegments
 			let base = UInt32(positions.count)
-			let center = SIMD2<Float>(0, 0)
-			for index in perimeter {
-				var p = positions[index]
+			var outward: [SIMD3<Float>] = []
+			for k in 0..<n {
+				let angle = 2 * Float.pi * Float(k) / Float(n)
+				let direction = SIMD3<Float>(cos(angle), 0, sin(angle))
+				let point = surfacePoint(x: radius * direction.x, z: radius * direction.z)
+				positions.append(point.position)
+				normals.append(direction)
+				uvs.append(point.uv)
+				outward.append(direction)
+			}
+			for k in 0..<n {
+				var p = positions[Int(base) + k]
 				p.y = -skirtDepth
 				positions.append(p)
-				uvs.append(uvs[index])
-				let outward = SIMD2(p.x, p.z) - center
-				normals.append(simd_normalize(SIMD3(outward.x, 0, outward.y)))
+				normals.append(outward[k])
+				uvs.append(uvs[Int(base) + k])
 			}
-			for k in 0..<perimeter.count {
-				let p = UInt32(perimeter[k]), q = UInt32(perimeter[(k + 1) % perimeter.count])
-				let pBelow = base + UInt32(k), qBelow = base + UInt32((k + 1) % perimeter.count)
+			for k in 0..<n {
+				let p = base + UInt32(k), q = base + UInt32((k + 1) % n)
+				let pBelow = p + UInt32(n), qBelow = q + UInt32(n)
 				indices.append(contentsOf: [p, q, pBelow, q, qBelow, pBelow])
 			}
+			skirtRingCount = n
+		} else {
+			skirtRingCount = 0
 		}
 		self.positions = positions
 		self.normals = normals
