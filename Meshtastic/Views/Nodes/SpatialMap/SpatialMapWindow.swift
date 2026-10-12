@@ -302,8 +302,8 @@ struct SpatialMapOrnament: View {
 		Text(text)
 			.font(.caption)
 			.foregroundStyle(.secondary)
-			.lineLimit(2)
-			.frame(maxWidth: 220)
+			.fixedSize(horizontal: false, vertical: true)
+			.frame(maxWidth: 260)
 	}
 
 	private func terrainDownloadMessage(_ target: GeoBounds) -> String {
