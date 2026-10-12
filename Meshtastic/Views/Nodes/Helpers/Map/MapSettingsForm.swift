@@ -162,7 +162,7 @@ struct MapSettingsForm: View {
 											.font(.caption)
 											.foregroundColor(.secondary)
 									} else {
-										Text("\(offlineMapManager.regions.count) downloaded · \(offlineMapManager.formattedTotalSize)")
+										Text("\(offlineMapManager.userRegionCount) downloaded · \(offlineMapManager.formattedTotalSize)")
 											.font(.caption)
 											.foregroundColor(.secondary)
 									}

@@ -51,8 +51,18 @@ struct OfflineMapRegion: Identifiable, Codable, Hashable {
 	/// Terrain elevation extracts for the same bounds, when downloaded.
 	/// Optional and additive: manifests written before terrain support decode with `nil`.
 	var terrain: OfflineMapTerrain?
+	/// Set when the app made and maintains this region itself (for example the spatial map's
+	/// terrain), nil for the user's own regions. A string, not an enum, so a value written by a
+	/// newer build still decodes here. Optional and additive: older manifests decode with `nil`.
+	var managedBy: String?
+
+	/// `managedBy` value for the terrain the visionOS spatial map keeps up to date.
+	static let spatialMapManager = "spatialMap"
 
 	var hasBasemap: Bool { includesBasemap ?? true }
+	/// True for regions the app downloads and replaces on its own. They never count toward the
+	/// region limit and never block the user's own downloads.
+	var isAppManaged: Bool { managedBy != nil }
 
 	init(
 		id: UUID = UUID(),
@@ -66,7 +76,8 @@ struct OfflineMapRegion: Identifiable, Codable, Hashable {
 		updatedDate: Date = .now,
 		sourceBuild: String,
 		includesBasemap: Bool = true,
-		terrain: OfflineMapTerrain? = nil
+		terrain: OfflineMapTerrain? = nil,
+		managedBy: String? = nil
 	) {
 		self.id = id
 		self.name = name
@@ -83,6 +94,7 @@ struct OfflineMapRegion: Identifiable, Codable, Hashable {
 		self.sourceBuild = sourceBuild
 		self.includesBasemap = includesBasemap
 		self.terrain = terrain
+		self.managedBy = managedBy
 	}
 
 	var bounds: GeoBounds {

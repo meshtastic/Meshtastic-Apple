@@ -13876,9 +13876,6 @@
         }
       }
     },
-    "Another map download is in progress." : {
-      "comment" : "Spatial map: the terrain download button is disabled while another offline map download runs"
-    },
     "Answer NodeInfo requests from the local cache." : {
       "localizations" : {
         "es" : {
@@ -37101,6 +37098,9 @@
     "Download Terrain" : {
       "comment" : "Spatial map: button that downloads elevation data so the volume shows relief"
     },
+    "Download Terrain Automatically" : {
+      "comment" : "Spatial map menu: keep the volume's area covered by elevation data without asking"
+    },
     "Download terrain for this area?" : {
       "comment" : "Spatial map: title of the terrain download confirmation"
     },
@@ -37243,8 +37243,8 @@
         }
       }
     },
-    "Downloads elevation data for a %@ area. This uses network data and storage on this device." : {
-      "comment" : "Spatial map: terrain download confirmation; the argument is the area's width × height, e.g. 49 km × 50 km"
+    "Downloads about %@ of elevation data for a %@ area around the mesh." : {
+      "comment" : "Spatial map: terrain download confirmation; the arguments are the download size, e.g. 40 MB, and the area's width × height, e.g. 98 km × 104 km"
     },
     "Downloads elevation data so the map shows hills and valleys." : {
       "comment" : "VoiceOver hint for the spatial map terrain download button"
@@ -56117,6 +56117,9 @@
           }
         }
       }
+    },
+    "Kept up to date by the Spatial Map. Delete it any time; it is downloaded again when the volume needs it (turn off Download Terrain Automatically to stop that)." : {
+      "comment" : "Offline map row caption for the terrain region the visionOS spatial map manages"
     },
     "key" : {
       "comment" : "Search keyword"
@@ -89887,6 +89890,9 @@
         }
       }
     },
+    "Offline map storage is full. Delete a map in Offline Maps to download terrain for the whole mesh." : {
+      "comment" : "Spatial map: terrain for the whole mesh does not fit in the offline map storage limit"
+    },
     "Offline Maps" : {
       "localizations" : {
         "ko" : {
@@ -105053,6 +105059,9 @@
         }
       }
     },
+    "Retry terrain download" : {
+      "comment" : "VoiceOver label to retry the spatial map terrain download after it failed"
+    },
     "Retry Update" : {
       "localizations" : {
         "de" : {
@@ -119767,6 +119776,9 @@
         }
       }
     },
+    "Spatial Map terrain" : {
+      "comment" : "Name of the terrain-only offline map the visionOS spatial map downloads and keeps up to date"
+    },
     "Speed" : {
       "localizations" : {
         "da" : {
@@ -125115,6 +125127,9 @@
           }
         }
       }
+    },
+    "The mesh is too spread out to download terrain for all of it." : {
+      "comment" : "Spatial map: the area around the mesh is over the per-map download limit"
     },
     "The Meshtastic Apple app requires firmware version %@ or later. Older firmware versions are no longer supported and may have compatibility issues or missing features." : {
       "comment" : "A body text that explains that the app requires a certain version of the firmware.",

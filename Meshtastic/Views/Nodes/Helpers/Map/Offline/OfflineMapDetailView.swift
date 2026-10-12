@@ -39,20 +39,25 @@ struct OfflineMapDetailView: View {
 					.listRowInsets(EdgeInsets())
 					.listRowBackground(Color.clear)
 
-				NavigationLink {
-					RegionSelectorView(target: OfflineRegionTarget(name: current.name, region: current.region), replacing: current)
-				} label: {
-					Label("Resize Area", systemImage: "arrow.up.left.and.arrow.down.right")
+				// The app sizes and names its own regions; it would undo a resize or rename.
+				if !current.isAppManaged {
+					NavigationLink {
+						RegionSelectorView(target: OfflineRegionTarget(name: current.name, region: current.region), replacing: current)
+					} label: {
+						Label("Resize Area", systemImage: "arrow.up.left.and.arrow.down.right")
+					}
 				}
 			}
 
 			Section {
 				LabeledContent("Name", value: current.name)
-				Button {
-					draftName = current.name
-					renaming = true
-				} label: {
-					Label("Rename", systemImage: "pencil")
+				if !current.isAppManaged {
+					Button {
+						draftName = current.name
+						renaming = true
+					} label: {
+						Label("Rename", systemImage: "pencil")
+					}
 				}
 				// Basemap facts don't apply to terrain-only regions — the Terrain
 				// section below carries their size and source.

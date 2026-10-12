@@ -61,10 +61,20 @@ final class SpatialMapModel {
 	var showLinks = true
 	var showContours = false
 	private(set) var isDownloadingTerrain = false
+	/// Alert text for a failed download the user started.
 	var terrainDownloadError: String?
+	/// Caption for a failed automatic download, shown in the ornament with a retry button.
+	private(set) var terrainDownloadNote: String?
+	/// Keep the box covered by terrain without asking. Set from the window's setting.
+	var autoDownloadTerrain = true
 	private var terrainDownloadCancelled = false
-	private var terrainDownloadStarted = false
-	private var terrainDownloadAttempt = 0
+	private var terrainDownloadAutomatic = false
+	private var terrainDownloadTarget: GeoBounds?
+	private(set) var backoff = SpatialTerrainBackoff()
+	/// The box and region set the automatic check last ran for, so it runs once per settled box.
+	private var autoCheckKey: String?
+	/// How long the box must stay put before an automatic download starts.
+	static let autoDownloadSettleInterval: TimeInterval = 20
 
 	private var pinnedNodeNums: Set<Int64> = []
 	private let terrainStore = TerrainStore()
@@ -127,6 +137,7 @@ final class SpatialMapModel {
 		if let placement {
 			rebuildTerrainIfNeeded(bounds: placement.bounds, layer: layer, dark: dark, contours: showContours)
 		}
+		autoDownloadIfNeeded()
 
 		if showLinks, refreshCount % 10 == 1 {
 			let fresh = SpatialRouteSource.routes(context: context)
@@ -190,102 +201,98 @@ final class SpatialMapModel {
 
 	// MARK: - Terrain download
 
-	/// The terrain download the ornament offers: nil while the terrain is building, when the
-	/// box already has relief, or when a region with terrain reaches into it even partly.
-	func terrainDownloadPlan(regions: [OfflineMapRegion]) -> SpatialTerrainDownloadPlan? {
-		guard let placement, let geometry = placement.geometry, !geometry.hasAnyTerrain else { return nil }
-		let plan = SpatialTerrainDownloadPlan.make(box: placement.bounds, regions: regions)
-		return plan.canDownload ? plan : nil
+	/// What it would take to cover the box with terrain, ignoring the automatic retry rules. Nil
+	/// while there is no box or its terrain is still building.
+	func terrainDecision(manager: OfflineMapManager) -> SpatialTerrainAutoDecision? {
+		guard let placement, placement.geometry != nil, !isBuildingTerrain else { return nil }
+		return SpatialTerrainAutoDecision.make(
+			box: placement.bounds, regions: manager.regions,
+			isBusy: manager.isBusy, backoff: SpatialTerrainBackoff(), now: Date()
+		)
 	}
 
-	/// The area the plan downloads: the existing region's box when adding terrain to it, else the volume's box.
-	func terrainDownloadArea(_ plan: SpatialTerrainDownloadPlan, regions: [OfflineMapRegion]) -> GeoBounds? {
-		if case .addTerrain(let id) = plan, let region = regions.first(where: { $0.id == id }) { return region.bounds }
-		return placement?.bounds
+	/// Whether automatic downloads have stopped for this area (cancelled or failed too often).
+	func autoDownloadGaveUp(on target: GeoBounds) -> Bool {
+		backoff.gaveUp(on: target)
 	}
 
-	/// Why the download can't start right now, or nil.
-	func terrainDownloadBlockReason(_ plan: SpatialTerrainDownloadPlan, manager: OfflineMapManager) -> String? {
-		if manager.isBusy {
-			return String(localized: "Another map download is in progress.", comment: "Spatial map: the terrain download button is disabled while another offline map download runs")
-		}
-		switch plan {
-		case .addTerrain:
-			return manager.totalSize >= OfflineMapManager.maxTotalBytes
-				? String(localized: "Terrain would exceed the offline map storage limit.") : nil
-		case .replace(let id):
-			return manager.downloadBlockReason(estimatedBytes: 0, replacing: manager.regions.first { $0.id == id })
-		case .newRegion:
-			return manager.downloadBlockReason(estimatedBytes: 0, replacing: nil)
-		case .covered, .unavailable:
-			return nil
-		}
+	/// Starts a download by itself once the box has settled and the terrain doesn't cover it.
+	private func autoDownloadIfNeeded() {
+		guard autoDownloadTerrain, !isBuildingTerrain, !isDownloadingTerrain,
+			  let placement, placement.geometry != nil,
+			  let lastBoundsChange, Date().timeIntervalSince(lastBoundsChange) >= Self.autoDownloadSettleInterval else { return }
+		let manager = OfflineMapManager.shared
+		guard !manager.isBusy else { return }
+		// The region set is part of the key: deleting a map (or the managed terrain) checks again.
+		let regionKey = manager.regions.map { "\($0.id)\($0.terrain != nil)" }.joined(separator: ",")
+		let bounds = placement.bounds
+		let key = "\(bounds.minLon),\(bounds.minLat),\(bounds.maxLon),\(bounds.maxLat)|\(regionKey)"
+		let retryDue = backoff.target.map { !backoff.gaveUp(on: $0) } == true && backoff.retryAfter.map { Date() >= $0 } == true
+		guard key != autoCheckKey || retryDue else { return }
+		autoCheckKey = key
+		startTerrainDownload(automatic: true)
 	}
 
-	/// Downloads terrain for the volume's box. When it finishes, the terrain generation in the
-	/// build key changes and the next refresh rebuilds the model with relief.
-	func startTerrainDownload() {
+	/// Downloads terrain so it covers the volume's box: a new app-managed region, or a bigger one
+	/// that replaces it. When it finishes, the terrain generation in the build key changes and the
+	/// next refresh rebuilds the model with relief. A manual start ignores the retry rules.
+	func startTerrainDownload(automatic: Bool = false) {
 		guard !isDownloadingTerrain, let bounds = placement?.bounds else { return }
 		let manager = OfflineMapManager.shared
 		manager.loadIfNeeded()
-		let plan = SpatialTerrainDownloadPlan.make(box: bounds, regions: manager.regions)
-		guard plan.canDownload, !manager.isBusy else { return }
+		if !automatic { backoff = SpatialTerrainBackoff() }
+		let decision = SpatialTerrainAutoDecision.make(
+			box: bounds, regions: manager.regions,
+			isBusy: manager.isBusy, backoff: backoff, now: Date()
+		)
+		guard let target = decision.target else {
+			Logger.services.debug("🧊 [Spatial] Terrain check: \(String(describing: decision), privacy: .public)")
+			return
+		}
 		isDownloadingTerrain = true
 		terrainDownloadCancelled = false
-		terrainDownloadStarted = false
+		terrainDownloadAutomatic = automatic
+		terrainDownloadTarget = target
 		terrainDownloadError = nil
-		terrainDownloadAttempt += 1
-		let attempt = terrainDownloadAttempt
-		Logger.services.info("🧊 [Spatial] Terrain download: \(String(describing: plan), privacy: .public)")
-		Task {
-			switch plan {
-			case .addTerrain(let id):
-				guard let region = manager.regions.first(where: { $0.id == id }) else { return finishTerrainDownload(success: false) }
-				terrainDownloadStarted = true
-				manager.downloadTerrain(for: region) { [weak self] success in
-					self?.finishTerrainDownload(success: success)
-				}
-			case .replace, .newRegion:
-				var replacing: OfflineMapRegion?
-				if case .replace(let id) = plan { replacing = manager.regions.first { $0.id == id } }
-				let center = CLLocationCoordinate2D(latitude: (bounds.minLat + bounds.maxLat) / 2, longitude: (bounds.minLon + bounds.maxLon) / 2)
-				let name = await DownloadNewMapView.placeName(for: center)
-					?? String(localized: "Spatial Map", comment: "Title of the visionOS spatial map volume")
-				// Cancelled while naming the place: cancel already finished this attempt.
-				guard attempt == terrainDownloadAttempt, isDownloadingTerrain, !terrainDownloadCancelled else { return }
-				terrainDownloadStarted = true
-				manager.startDownload(name: name, bounds: bounds, detail: .standard, replacing: replacing, includeBasemap: false, includeTerrain: true) { [weak self] region in
-					self?.finishTerrainDownload(success: region != nil)
-				}
-			case .covered, .unavailable:
-				finishTerrainDownload(success: false)
-			}
+		terrainDownloadNote = nil
+		let estimate = ByteCountFormatter.string(fromByteCount: SpatialTerrainAutoDecision.estimatedBytes(target), countStyle: .file)
+		Logger.services.info("🧊 [Spatial] Terrain download (\(automatic ? "automatic" : "manual", privacy: .public)): \(String(describing: decision), privacy: .public), about \(estimate, privacy: .public)")
+		manager.downloadManagedTerrain(bounds: target, includeRegional: SpatialTerrainAutoDecision.includesRegional(target)) { [weak self] success in
+			self?.finishTerrainDownload(success: success)
 		}
 	}
 
 	func cancelTerrainDownload() {
 		guard isDownloadingTerrain else { return }
 		terrainDownloadCancelled = true
-		// Before the manager has the download (still naming the place) there is nothing to cancel
-		// there, so finish now rather than wait for the place lookup.
-		if terrainDownloadStarted {
-			OfflineMapManager.shared.cancelDownload()
-		} else {
-			finishTerrainDownload(success: false)
-		}
+		OfflineMapManager.shared.cancelDownload()
 	}
 
 	private func finishTerrainDownload(success: Bool) {
 		guard isDownloadingTerrain else { return }
 		isDownloadingTerrain = false
 		Logger.services.info("🧊 [Spatial] Terrain download \(success ? "finished" : (self.terrainDownloadCancelled ? "cancelled" : "failed"), privacy: .public)")
-		guard !success, !terrainDownloadCancelled else { return }
+		let target = terrainDownloadTarget
+		terrainDownloadTarget = nil
+		if success {
+			backoff = SpatialTerrainBackoff()
+			return
+		}
+		if terrainDownloadCancelled {
+			if let target { backoff.recordCancel(target) }
+			return
+		}
+		if let target { backoff.recordFailure(target, now: Date()) }
 		let manager = OfflineMapManager.shared
-		if case .failed(let message) = manager.activeDownload?.state {
-			terrainDownloadError = message
+		var message = String(localized: "The terrain download could not start.", comment: "Spatial map: alert message when the manager refuses the terrain download")
+		if case .failed(let failure) = manager.activeDownload?.state {
+			message = failure
 			manager.dismissDownload()
+		}
+		if terrainDownloadAutomatic {
+			terrainDownloadNote = message
 		} else {
-			terrainDownloadError = String(localized: "The terrain download could not start.", comment: "Spatial map: alert message when the manager refuses the terrain download")
+			terrainDownloadError = message
 		}
 	}
 

@@ -30,6 +30,7 @@ struct SpatialMapWindow: View {
 	@AppStorage("spatialMapShowLabels") private var showLabels = true
 	@AppStorage("spatialMapShowLinks") private var showLinks = true
 	@AppStorage("spatialMapShowTraffic") private var showTraffic = true
+	@AppStorage("spatialMapAutoTerrain") private var autoTerrain = true
 
 	init() {
 		let scene = SpatialSceneController()
@@ -53,7 +54,7 @@ struct SpatialMapWindow: View {
 		.ornament(attachmentAnchor: .scene(.bottomFront)) {
 			SpatialMapOrnament(
 				model: model, traffic: traffic, mapLayer: $mapLayer, darkMap: $darkMap, showContours: $showContours,
-				showLabels: $showLabels, showLinks: $showLinks, showTraffic: $showTraffic
+				showLabels: $showLabels, showLinks: $showLinks, showTraffic: $showTraffic, autoTerrain: $autoTerrain
 			)
 		}
 		.task(id: refreshKey) {
@@ -104,6 +105,7 @@ struct SpatialMapWindow: View {
 		traffic.preset = preset
 		model.showLinks = showLinks
 		model.showContours = showContours
+		model.autoDownloadTerrain = autoTerrain
 		model.refresh(context: context, filters: nodeFilters, preciseOnly: preciseLocationsOnly, layer: mapLayer, dark: darkMap)
 		// The distance filter measures from the connected radio.
 		if let num = accessoryManager.activeDeviceNum, let coordinate = model.nodesByNum[num]?.coordinate {
@@ -140,6 +142,7 @@ struct SpatialMapOrnament: View {
 	@Binding var showLabels: Bool
 	@Binding var showLinks: Bool
 	@Binding var showTraffic: Bool
+	@Binding var autoTerrain: Bool
 	@ObservedObject private var offline = OfflineMapManager.shared
 	@State private var confirmingTerrainDownload = false
 
@@ -156,6 +159,9 @@ struct SpatialMapOrnament: View {
 				}
 				Toggle(isOn: $showContours) {
 					Label(String(localized: "Contour Lines"), systemImage: "point.topleft.down.to.point.bottomright.curvepath")
+				}
+				Toggle(isOn: $autoTerrain) {
+					Label(String(localized: "Download Terrain Automatically", comment: "Spatial map menu: keep the volume's area covered by elevation data without asking"), systemImage: "arrow.down.circle.dotted")
 				}
 			} label: {
 				Image(systemName: "map")
@@ -231,8 +237,9 @@ struct SpatialMapOrnament: View {
 		}
 	}
 
-	/// Offered while the box has no terrain: without it the volume is a flat slab. Downloads are
-	/// per device, so a Vision Pro has none until one is made on it.
+	/// Progress while terrain downloads. Otherwise, when the terrain doesn't cover the box: the
+	/// Download Terrain button if automatic downloads are off or have given up on this area, a
+	/// retry after an automatic download failed, or why terrain can't be downloaded.
 	@ViewBuilder private var terrainDownload: some View {
 		if model.isDownloadingTerrain {
 			HStack(spacing: 6) {
@@ -251,42 +258,60 @@ struct SpatialMapOrnament: View {
 			}
 			.accessibilityElement(children: .contain)
 			.accessibilityLabel(String(localized: "Downloading terrain", comment: "VoiceOver label for the spatial map terrain download progress"))
-		} else if let plan = model.terrainDownloadPlan(regions: offline.regions) {
-			let reason = model.terrainDownloadBlockReason(plan, manager: offline)
-			Button {
-				confirmingTerrainDownload = true
-			} label: {
-				Label(String(localized: "Download Terrain", comment: "Spatial map: button that downloads elevation data so the volume shows relief"), systemImage: "arrow.down.circle")
-					.labelStyle(.titleAndIcon)
-			}
-			.disabled(reason != nil)
-			.help(reason ?? "")
-			.accessibilityHint(reason ?? String(localized: "Downloads elevation data so the map shows hills and valleys.", comment: "VoiceOver hint for the spatial map terrain download button"))
-			.confirmationDialog(
-				String(localized: "Download terrain for this area?", comment: "Spatial map: title of the terrain download confirmation"),
-				isPresented: $confirmingTerrainDownload,
-				titleVisibility: .visible
-			) {
-				Button("Download") { model.startTerrainDownload() }
-				Button("Cancel", role: .cancel) {}
-			} message: {
-				Text(terrainDownloadMessage(plan))
-			}
-			if let reason {
-				Text(reason)
-					.font(.caption)
-					.foregroundStyle(.secondary)
-					.lineLimit(2)
-					.frame(maxWidth: 220)
+		} else if let decision = model.terrainDecision(manager: offline) {
+			if let target = decision.target {
+				if let note = model.terrainDownloadNote {
+					caption(note)
+					Button {
+						model.startTerrainDownload()
+					} label: {
+						Image(systemName: "arrow.clockwise")
+					}
+					.accessibilityLabel(String(localized: "Retry terrain download", comment: "VoiceOver label to retry the spatial map terrain download after it failed"))
+				} else if !autoTerrain || model.autoDownloadGaveUp(on: target) {
+					Button {
+						confirmingTerrainDownload = true
+					} label: {
+						Label(String(localized: "Download Terrain", comment: "Spatial map: button that downloads elevation data so the volume shows relief"), systemImage: "arrow.down.circle")
+							.labelStyle(.titleAndIcon)
+					}
+					.accessibilityHint(String(localized: "Downloads elevation data so the map shows hills and valleys.", comment: "VoiceOver hint for the spatial map terrain download button"))
+					.confirmationDialog(
+						String(localized: "Download terrain for this area?", comment: "Spatial map: title of the terrain download confirmation"),
+						isPresented: $confirmingTerrainDownload,
+						titleVisibility: .visible
+					) {
+						Button("Download") { model.startTerrainDownload() }
+						Button("Cancel", role: .cancel) {}
+					} message: {
+						Text(terrainDownloadMessage(target))
+					}
+				}
+			} else if case .blocked(let block) = decision {
+				switch block {
+				case .storage:
+					caption(String(localized: "Offline map storage is full. Delete a map in Offline Maps to download terrain for the whole mesh.", comment: "Spatial map: terrain for the whole mesh does not fit in the offline map storage limit"))
+				case .tooLarge:
+					caption(String(localized: "The mesh is too spread out to download terrain for all of it.", comment: "Spatial map: the area around the mesh is over the per-map download limit"))
+				}
 			}
 		}
 	}
 
-	private func terrainDownloadMessage(_ plan: SpatialTerrainDownloadPlan) -> String {
-		let area = model.terrainDownloadArea(plan, regions: offline.regions)?.sizeInMeters ?? (width: 0, height: 0)
+	private func caption(_ text: String) -> some View {
+		Text(text)
+			.font(.caption)
+			.foregroundStyle(.secondary)
+			.lineLimit(2)
+			.frame(maxWidth: 220)
+	}
+
+	private func terrainDownloadMessage(_ target: GeoBounds) -> String {
+		let area = target.sizeInMeters
 		let style = Measurement<UnitLength>.FormatStyle(width: .abbreviated, usage: .road, numberFormatStyle: .number.precision(.fractionLength(0)))
 		let size = "\(Measurement(value: area.width, unit: UnitLength.meters).formatted(style)) × \(Measurement(value: area.height, unit: UnitLength.meters).formatted(style))"
-		return String(localized: "Downloads elevation data for a \(size) area. This uses network data and storage on this device.", comment: "Spatial map: terrain download confirmation; the argument is the area's width × height, e.g. 49 km × 50 km")
+		let bytes = ByteCountFormatter.string(fromByteCount: SpatialTerrainAutoDecision.estimatedBytes(target), countStyle: .file)
+		return String(localized: "Downloads about \(bytes) of elevation data for a \(size) area around the mesh.", comment: "Spatial map: terrain download confirmation; the arguments are the download size, e.g. 40 MB, and the area's width × height, e.g. 98 km × 104 km")
 	}
 }
 #endif
