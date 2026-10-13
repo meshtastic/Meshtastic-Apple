@@ -26,6 +26,11 @@ struct TraceRouteChart: View {
 	private var backName: String { String(localized: "Return hops", comment: "Trace route: hop count on the way back") }
 	private var roundTripName: String { String(localized: "Round trip", comment: "Trace route: time from sending the request to getting the response") }
 
+	/// Times of day when the points fall within a day, dates otherwise.
+	private var dateFormat: Date.FormatStyle {
+		TraceRouteChartPoint.showsTimeOfDay(points) ? .dateTime.hour().minute() : .dateTime.month(.abbreviated).day()
+	}
+
 	var body: some View {
 		let scale = scale
 		Chart {
@@ -74,11 +79,13 @@ struct TraceRouteChart: View {
 					}
 				}
 			}
-			AxisMarks(position: .trailing, values: scale.roundTripTicks) { value in
-				AxisValueLabel {
-					if let plotted = value.as(Double.self) {
-						Text(TraceRouteCardModel.formattedRoundTrip(scale.roundTrip(atPlotted: plotted), trimsWholeSeconds: true))
-							.foregroundStyle(TraceRouteColors.roundTrip)
+			if scale.hasRoundTrip {
+				AxisMarks(position: .trailing, values: scale.roundTripTicks) { value in
+					AxisValueLabel {
+						if let plotted = value.as(Double.self) {
+							Text(TraceRouteCardModel.formattedRoundTrip(scale.roundTrip(atPlotted: plotted), trimsWholeSeconds: true))
+								.foregroundStyle(TraceRouteColors.roundTrip)
+						}
 					}
 				}
 			}
@@ -86,7 +93,7 @@ struct TraceRouteChart: View {
 		.chartXAxis {
 			AxisMarks(values: .automatic(desiredCount: 3)) { _ in
 				AxisGridLine()
-				AxisValueLabel(format: .dateTime.month(.abbreviated).day(), collisionResolution: .greedy(minimumSpacing: 8))
+				AxisValueLabel(format: dateFormat, collisionResolution: .greedy(minimumSpacing: 8))
 			}
 		}
 		.chartLegend(position: .bottom, alignment: .leading)

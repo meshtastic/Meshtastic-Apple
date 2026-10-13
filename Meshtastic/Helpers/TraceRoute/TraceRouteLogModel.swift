@@ -167,6 +167,13 @@ struct TraceRouteChartPoint: Equatable, Identifiable {
 		.sorted { $0.date < $1.date }
 	}
 
+	/// Whether the points fall within a day, so the time axis shows the time of day rather than
+	/// the date. Expects `points` oldest first, as `points(from:)` returns them.
+	static func showsTimeOfDay(_ points: [TraceRouteChartPoint]) -> Bool {
+		guard let first = points.first?.date, let last = points.last?.date else { return true }
+		return last.timeIntervalSince(first) < 86_400
+	}
+
 	/// The point closest in time to `date`, for chart selection.
 	static func nearest(to date: Date, in points: [TraceRouteChartPoint]) -> TraceRouteChartPoint? {
 		points.min { abs($0.date.timeIntervalSince(date)) < abs($1.date.timeIntervalSince(date)) }
@@ -180,11 +187,15 @@ struct TraceRouteChartScale: Equatable {
 	let maxHops: Double
 	/// Top of the round trip axis, in seconds.
 	let maxRoundTrip: Double
+	/// Whether any point has a round trip; without one the round trip axis is left off.
+	let hasRoundTrip: Bool
 
 	init(points: [TraceRouteChartPoint]) {
 		let hops = points.flatMap { [$0.forwardHops, $0.backHops ?? 0] }.max() ?? 0
 		maxHops = Double(max(hops, 1))
-		let longest = points.compactMap(\.roundTrip).max() ?? 0
+		let roundTrips = points.compactMap(\.roundTrip)
+		hasRoundTrip = !roundTrips.isEmpty
+		let longest = roundTrips.max() ?? 0
 		maxRoundTrip = Self.roundTripStep(for: longest) * 4
 	}
 

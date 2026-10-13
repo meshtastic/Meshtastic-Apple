@@ -148,5 +148,16 @@ struct TraceRouteChartTests {
 		let scale = TraceRouteChartScale(points: TraceRouteChartPoint.points(from: [entry(1, 0, .complete, towards: 0, back: 0)]))
 		#expect(scale.maxHops == 1)
 		#expect(scale.maxRoundTrip == 1)
+		#expect(!scale.hasRoundTrip)
+		#expect(TraceRouteChartScale(points: TraceRouteChartPoint.points(from: [entry(1, 0, .complete, roundTrip: 3)])).hasRoundTrip)
+	}
+
+	@Test("The time axis shows the time of day for points within a day")
+	func timeAxis() {
+		let sameDay = TraceRouteChartPoint.points(from: [entry(1, 0, .complete), entry(2, 20 * 3_600, .complete)])
+		#expect(TraceRouteChartPoint.showsTimeOfDay(sameDay))
+		let twoDays = TraceRouteChartPoint.points(from: [entry(1, 0, .complete), entry(2, 30 * 3_600, .complete)])
+		#expect(!TraceRouteChartPoint.showsTimeOfDay(twoDays))
+		#expect(TraceRouteChartPoint.showsTimeOfDay([]))
 	}
 }
