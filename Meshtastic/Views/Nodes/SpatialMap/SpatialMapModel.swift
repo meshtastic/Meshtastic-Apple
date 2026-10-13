@@ -5,6 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 10/10/26.
 //
 #if os(visionOS)
+import CoreGraphics
 import CoreLocation
 import Foundation
 import Observation
@@ -41,6 +42,18 @@ struct SpatialPlacement {
 	}
 }
 
+/// The newest Site Planner estimate for a node, for the card's coverage menu.
+struct SpatialCoverageFile: Equatable {
+	let fileID: UUID
+	let isActive: Bool
+	let created: Date
+}
+
+/// A finished coverage image; CGImage is immutable, just not marked Sendable.
+private struct SpatialCoverageImage: @unchecked Sendable {
+	let image: CGImage
+}
+
 /// State for one spatial map volume: the nodes in the box, the terrain for it, routes and the
 /// selection. Reads SwiftData on the main actor every couple of seconds like the 2D map does;
 /// the scene only ever sees snapshots.
@@ -64,6 +77,22 @@ final class SpatialMapModel {
 	var showLabels = true { didSet { updateLabels() } }
 	var showLinks = true
 	var showContours = false
+	/// Which Site Planner estimates are draped on the terrain. Set from the window's setting.
+	var coverageMode: SpatialCoverageMode = .selected { didSet { rebuildCoverageIfNeeded() } }
+	/// How see-through the coverage overlay is; changing it never rebuilds the overlay.
+	var coverageOpacity: Float = 0.55
+	private(set) var coverageEntity: ModelEntity?
+	/// The placement the coverage overlay was built for.
+	private(set) var coverageRevision: Int?
+	private(set) var coverageLegend: [SpatialCoverageLegendEntry] = []
+	/// The newest estimate per node, whether it is shown or not.
+	private(set) var coverageByNode: [Int64: SpatialCoverageFile] = [:]
+	/// Parsed estimates by file ID, so zooming never parses a file again.
+	private var coverageCache: [UUID: SpatialCoverageEstimate] = [:]
+	/// Files that held no estimate, so they are not read again.
+	private var coverageUnreadable: Set<UUID> = []
+	private var coverageKey: String?
+	private var coverageTask: Task<Void, Never>?
 	private(set) var isDownloadingTerrain = false
 	/// Alert text for a failed download the user started.
 	var terrainDownloadError: String?
@@ -112,6 +141,7 @@ final class SpatialMapModel {
 		if let selectedNodeNum { pinnedNodeNums.remove(selectedNodeNum) }
 		selectedNodeNum = nodeNum
 		updateLabels()
+		rebuildCoverageIfNeeded()
 	}
 
 	/// Selects a node, keeps it on the terrain even when it lies outside the box, and zooms in on it.
@@ -238,6 +268,7 @@ final class SpatialMapModel {
 			links = []
 		}
 		updateLabels()
+		rebuildCoverageIfNeeded()
 	}
 
 	private func rebuildTerrainIfNeeded(circle: SpatialCircle, layer: MapLayer, dark: Bool, contours: Bool) {
@@ -278,6 +309,7 @@ final class SpatialMapModel {
 					revision: placementRevision
 				)
 				isBuildingTerrain = false
+				rebuildCoverageIfNeeded()
 			} catch is CancellationError {
 			} catch {
 				guard buildKey == key else { return }
@@ -293,6 +325,101 @@ final class SpatialMapModel {
 				}
 			}
 		}
+	}
+
+	// MARK: - Coverage
+
+	/// Rebuilds the coverage overlay when the terrain, the mode, the selection (in Selected mode)
+	/// or the Site Planner files change. Files are parsed once and cached; the image is drawn off
+	/// the main actor. Opacity is not part of the key: it only changes the material.
+	private func rebuildCoverageIfNeeded() {
+		let files = MapDataManager.shared.getUploadedFiles().filter { $0.source == .sitePlanner }
+		updateCoverageByNode(files)
+		let ids = Set(files.map(\.id))
+		coverageCache = coverageCache.filter { ids.contains($0.key) }
+		coverageUnreadable.formIntersection(ids)
+
+		guard let placement, let geometry = placement.geometry else { return }
+		let mode = coverageMode
+		let selected = selectedNodeNum
+		let fingerprint = files.map { "\($0.id)\($0.isActive)" }.joined(separator: ",")
+		let key = "\(placement.revision)|\(mode.rawValue)|\(mode == .selected ? String(selected ?? 0) : "")|\(fingerprint)"
+		guard key != coverageKey else { return }
+		coverageKey = key
+		coverageTask?.cancel()
+
+		// In Selected mode only the selected node's files are worth reading.
+		let candidates = files.filter { file in
+			file.isActive && (mode == .all || (mode == .selected && selected != nil && file.coverage?.nodeNum == selected))
+		}
+		guard !candidates.isEmpty else {
+			clearCoverage()
+			return
+		}
+		let missing = candidates.filter { coverageCache[$0.id] == nil && !coverageUnreadable.contains($0.id) }
+		let opacity = coverageOpacity
+		coverageTask = Task {
+			if !missing.isEmpty {
+				let parsed = await Task.detached(priority: .userInitiated) { () -> [UUID: SpatialCoverageEstimate?] in
+					// A fresh manager only to read the files: it holds nothing but the storage paths.
+					let reader = MapDataManager()
+					var parsed: [UUID: SpatialCoverageEstimate?] = [:]
+					for file in missing {
+						guard !Task.isCancelled else { break }
+						parsed[file.id] = reader.loadFeatureCollectionForFiles([file]).flatMap { SpatialCoverageParser.estimate(collection: $0, metadata: file) }
+					}
+					return parsed
+				}.value
+				for (id, estimate) in parsed {
+					if let estimate { coverageCache[id] = estimate } else { coverageUnreadable.insert(id) }
+				}
+			}
+			guard !Task.isCancelled, coverageKey == key else { return }
+			let estimates = candidates.compactMap { coverageCache[$0.id] }
+			let visible = SpatialCoverageVisibility.visible(estimates, mode: mode, selected: selected, box: placement.bounds)
+			guard !visible.isEmpty else {
+				clearCoverage()
+				return
+			}
+			let frame = geometry.transform.frame
+			let rendered = await Task.detached(priority: .userInitiated) { () -> SpatialCoverageImage? in
+				let size = SpatialTextureRenderer.pixelSize(for: frame, maxEdge: 1024)
+				return SpatialCoverageTexture.render(visible, frame: frame, size: size).map(SpatialCoverageImage.init)
+			}.value
+			guard !Task.isCancelled, coverageKey == key, let rendered else { return }
+			do {
+				let entity = try await SpatialCoverageEntity.make(geometry: geometry, image: rendered.image, opacity: opacity)
+				guard !Task.isCancelled, coverageKey == key else { return }
+				coverageEntity = entity
+				coverageRevision = placement.revision
+				let legend = SpatialCoverageLegend.entries(visible)
+				if legend != coverageLegend { coverageLegend = legend }
+			} catch {
+				Logger.services.error("🧊 [Spatial] Coverage overlay failed: \(error.localizedDescription, privacy: .public)")
+			}
+		}
+	}
+
+	private func clearCoverage() {
+		if coverageEntity != nil { coverageEntity = nil }
+		if coverageRevision != nil { coverageRevision = nil }
+		if !coverageLegend.isEmpty { coverageLegend = [] }
+	}
+
+	/// The newest estimate per node, preferring one that is shown.
+	private func updateCoverageByNode(_ files: [MapDataMetadata]) {
+		var byNode: [Int64: SpatialCoverageFile] = [:]
+		for file in files {
+			guard let node = file.coverage?.nodeNum else { continue }
+			let candidate = SpatialCoverageFile(fileID: file.id, isActive: file.isActive, created: file.uploadDate)
+			if let current = byNode[node] {
+				let better = (candidate.isActive && !current.isActive)
+					|| (candidate.isActive == current.isActive && candidate.created > current.created)
+				if !better { continue }
+			}
+			byNode[node] = candidate
+		}
+		if byNode != coverageByNode { coverageByNode = byNode }
 	}
 
 	// MARK: - Terrain download
