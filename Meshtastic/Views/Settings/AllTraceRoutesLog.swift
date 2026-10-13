@@ -44,24 +44,8 @@ struct AllTraceRoutesLog: View {
 					ContentUnavailableView("No Trace Routes", systemImage: "point.3.connected.trianglepath.dotted")
 				} else {
 					List(traceRoutes, id: \.persistentModelID, selection: $selectedRouteID) { route in
-						Label {
-							VStack(alignment: .leading, spacing: 2) {
-								Text("\(name(for: route.fromNum)) → \(name(for: route.toNum))")
-									.font(.callout)
-									.fontWeight(.medium)
-								let routeTime = route.time?.formatted(date: .numeric, time: .shortened) ?? "Unknown".localized
-								let hopTowards = String(localized: "\(route.hopsTowards) Hops")
-								let hopBack = route.hopsBack >= 0 ? String(localized: "\(route.hopsBack) Hops") : "Unknown".localized
-								Text("\(routeTime) • \(hopTowards) Towards • \(hopBack) Back")
-									.font(.caption)
-									.foregroundStyle(.secondary)
-								Text(route.observed ? "Observed" : "Requested")
-									.font(.caption2)
-									.foregroundStyle(route.observed ? Color.orange : Color.accentColor)
-							}
-						} icon: {
-							Image(systemName: route.hopsTowards == 0 ? "person.line.dotted.person" : "point.3.connected.trianglepath.dotted")
-								.symbolRenderingMode(.hierarchical)
+						TraceRouteStateTimeline(route: route) { now in
+							row(for: route, now: now)
 						}
 						.swipeActions {
 							Button(role: .destructive) {
@@ -93,35 +77,74 @@ struct AllTraceRoutesLog: View {
 	}
 
 	@ViewBuilder
+	private func row(for route: TraceRouteEntity, now: Date) -> some View {
+		Label {
+			VStack(alignment: .leading, spacing: 2) {
+				Text("\(name(for: route.fromNum)) → \(name(for: route.toNum))")
+					.font(.callout)
+					.fontWeight(.medium)
+				let routeTime = route.time?.formatted(date: .numeric, time: .shortened) ?? "Unknown".localized
+				if let stateLabel = route.state(now: now).label {
+					Text("\(routeTime) - \(stateLabel)")
+						.font(.caption)
+						.foregroundStyle(.secondary)
+				} else {
+					let hopTowards = String(localized: "\(route.hopsTowards) Hops")
+					let hopBack = route.hopsBack >= 0 ? String(localized: "\(route.hopsBack) Hops") : "Unknown".localized
+					Text("\(routeTime) • \(hopTowards) Towards • \(hopBack) Back")
+						.font(.caption)
+						.foregroundStyle(.secondary)
+				}
+				Text(route.observed ? "Observed" : "Requested")
+					.font(.caption2)
+					.foregroundStyle(route.observed ? Color.orange : Color.accentColor)
+			}
+		} icon: {
+			Image(systemName: route.rowSystemImage(now: now))
+				.symbolRenderingMode(.hierarchical)
+		}
+	}
+
+	@ViewBuilder
 	private func detail(for route: TraceRouteEntity) -> some View {
 		VStack(alignment: .leading, spacing: 12) {
-			Label {
-				Text("Route: \(route.routeText ?? "Unknown".localized)")
-			} icon: {
-				Image(systemName: "signpost.right")
-					.symbolRenderingMode(.hierarchical)
-			}
-			.font(.title3)
-			Label {
-				Text("Route Back: \(route.routeBackText ?? "Unknown".localized)")
-			} icon: {
-				Image(systemName: "signpost.left")
-					.symbolRenderingMode(.hierarchical)
-			}
-			.font(.title3)
-			if route.hasPositions {
-				Button {
-					router.selectedTab = .map
-					router.mapState = .traceRoute(route.id)
-				} label: {
-					Label("Show on Map", systemImage: "map")
-				}
-				.buttonStyle(.bordered)
-				.padding(.top, 4)
+			if let stateLabel = route.state().label {
+				Label(stateLabel, systemImage: route.state().systemImage)
+					.font(.title3)
+			} else {
+				routeText(for: route)
 			}
 		}
 		.frame(maxWidth: .infinity, alignment: .leading)
 		.padding(.vertical)
+	}
+
+	@ViewBuilder
+	private func routeText(for route: TraceRouteEntity) -> some View {
+		Label {
+			Text("Route: \(route.routeText ?? "Unknown".localized)")
+		} icon: {
+			Image(systemName: "signpost.right")
+				.symbolRenderingMode(.hierarchical)
+		}
+		.font(.title3)
+		Label {
+			Text("Route Back: \(route.routeBackText ?? "Unknown".localized)")
+		} icon: {
+			Image(systemName: "signpost.left")
+				.symbolRenderingMode(.hierarchical)
+		}
+		.font(.title3)
+		if route.hasPositions {
+			Button {
+				router.selectedTab = .map
+				router.mapState = .traceRoute(route.id)
+			} label: {
+				Label("Show on Map", systemImage: "map")
+			}
+			.buttonStyle(.bordered)
+			.padding(.top, 4)
+		}
 	}
 
 	private func delete(_ route: TraceRouteEntity) {

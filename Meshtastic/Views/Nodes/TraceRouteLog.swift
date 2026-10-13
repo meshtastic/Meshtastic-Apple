@@ -8,30 +8,15 @@
 import SwiftUI
 import SwiftData
 import OSLog
-import MapKit
 
 struct TraceRouteLog: View {
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
-	@ObservedObject var locationsHandler = LocationsHandler.shared
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var router: Router
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	@State private var isPresentingClearLogConfirm: Bool = false
-	@State var isExporting = false
-	@State var exportString = ""
 	@Bindable var node: NodeInfoEntity
 	@State private var traceRoutes: [TraceRouteEntity] = []
 	@State private var selectedRouteID: PersistentIdentifier?
-	// Map Configuration
-	@Namespace var mapScope
-	@State var mapStyle: MapStyle = MapStyle.standard(elevation: .realistic, emphasis: MapStyle.StandardEmphasis.muted, pointsOfInterest: .all, showsTraffic: true)
-	@State var position = MapCameraPosition.automatic
-	let distanceFormatter = MKDistanceFormatter()
-	/// State for the circle of routes
-	var modemPreset: ModemPresets = ModemPresets(rawValue: UserDefaults.modemPreset) ?? ModemPresets.longFast
-	@State private var indexes: Int = 0
-	@State var angle: Angle = .zero
-	@State var animation: Animation?
 
 	private var selectedRoute: TraceRouteEntity? {
 		guard let selectedRouteID else { return nil }
@@ -43,27 +28,8 @@ struct TraceRouteLog: View {
 			VStack {
 				VStack {
 					List(traceRoutes, id: \.persistentModelID, selection: $selectedRouteID) { route in
-						Label {
-							let routeTime = route.time?.formatted(date: .numeric, time: .shortened) ?? "Unknown".localized
-							if route.response && route.hopsTowards == route.hopsBack {
-								let hopString = String(localized: "\(route.hopsTowards) Hops")
-								Text("\(routeTime) - \(hopString)")
-									.font(.caption)
-							} else if route.response {
-								let hopTowardsString = String(localized: "\(route.hopsTowards) Hops")
-								let hopBackString = route.hopsBack >= 0 ? String(localized: "\(route.hopsBack) Hops") : String(localized: "Unknown")
-								Text("\(routeTime) - \(hopTowardsString) Towards  \(hopBackString) Back")
-									.font(.caption)
-							} else if route.sent {
-								Text("\(routeTime) - No Response")
-									.font(.caption)
-							} else {
-								Text("\(routeTime) - Not Sent")
-									.font(.caption)
-							}
-						} icon: {
-							Image(systemName: route.response ? (route.hopsTowards == 0 && route.response ? "person.line.dotted.person" : "point.3.connected.trianglepath.dotted") : "person.slash")
-								.symbolRenderingMode(.hierarchical)
+						TraceRouteStateTimeline(route: route) { now in
+							row(for: route, now: now)
 						}
 						.swipeActions {
 							Button(role: .destructive) {
@@ -87,7 +53,8 @@ struct TraceRouteLog: View {
 				Divider()
 				ScrollView {
 					if selectedRoute != nil {
-						if selectedRoute?.response ?? false && selectedRoute?.hopsTowards ?? 0 >= 0 {
+						let selectedState = selectedRoute?.state()
+						if selectedState == .complete || selectedState == .observed {
 							let routeValue = selectedRoute?.routeText ?? "Unknown".localized
 							let routeBackValue = selectedRoute?.routeBackText ?? "Unknown".localized
 							Label {
@@ -130,123 +97,39 @@ struct TraceRouteLog: View {
 								.buttonStyle(.bordered)
 								.padding(.top, 4)
 							}
-						} else if !(selectedRoute?.sent ?? true) {
-								Label {
-									VStack {
-										Text("Trace route to \(selectedRoute?.node?.user?.longName ?? "Unknown".localized) was not sent.")
-											.font(idiom == .phone ? .body : .largeTitle)
-											.fontWeight(.semibold)
-										Text("Trace Route was rate limited. You can send a trace route a maximum of once every thirty seconds.")
-											.font(idiom == .phone ? .caption : .body)
-											.foregroundStyle(.secondary)
-											.padding()
-									}
-								} icon: {
-									Image(systemName: "square.and.arrow.up.trianglebadge.exclamationmark")
-										.symbolRenderingMode(.hierarchical)
+						} else if selectedState == .rateLimited {
+							Label {
+								VStack {
+									Text("Trace route to \(selectedRoute?.node?.user?.longName ?? "Unknown".localized) was not sent.")
+										.font(idiom == .phone ? .body : .largeTitle)
+										.fontWeight(.semibold)
+									Text("Trace Route was rate limited. You can send a trace route a maximum of once every thirty seconds.")
+										.font(idiom == .phone ? .caption : .body)
+										.foregroundStyle(.secondary)
+										.padding()
 								}
+							} icon: {
+								Image(systemName: "square.and.arrow.up.trianglebadge.exclamationmark")
+									.symbolRenderingMode(.hierarchical)
+							}
 						} else {
-							   Label {
-								   VStack {
-									   Text("Trace route sent to \(selectedRoute?.node?.user?.longName ?? "Unknown".localized)")
-										   .font(idiom == .phone ? .body : .largeTitle)
-										   .fontWeight(.semibold)
-									   Text("A Trace Route was sent, no response has been received.")
-										   .font(idiom == .phone ? .caption : .body)
-										   .foregroundStyle(.secondary)
-										   .padding()
-								   }
-							   } icon: {
-								   Image(systemName: "signpost.right.and.left")
-									   .symbolRenderingMode(.hierarchical)
-							   }
-						}
-						if false {// selectedRoute?.hops?.count ?? 0 >= 3 {
-							HStack(alignment: .center) {
-								GeometryReader { geometry in
-									let size = ((geometry.size.width >= geometry.size.height ? geometry.size.height : geometry.size.width) / 2) - (idiom == .phone ? 45 : 85)
-									Spacer()
-									TraceRoute(radius: size < 600 ? size : 600, rotation: angle) {
-										contents()
-									}
-									.padding(.leading, idiom == .phone ? 0 : 20)
-									Spacer()
+							Label {
+								VStack {
+									Text("Trace route sent to \(selectedRoute?.node?.user?.longName ?? "Unknown".localized)")
+										.font(idiom == .phone ? .body : .largeTitle)
+										.fontWeight(.semibold)
+									Text("A Trace Route was sent, no response has been received.")
+										.font(idiom == .phone ? .caption : .body)
+										.foregroundStyle(.secondary)
+										.padding()
 								}
-								.scaledToFit()
-							}
-							.onAppear {
-								// Set the view rotation animation after the view appeared,
-								// to avoid animating initial rotation
-								DispatchQueue.main.async {
-									indexes = (selectedRoute?.hops.count ?? 0) * 2
-									animation = .easeInOut(duration: 1.0)
-									withAnimation(.easeInOut(duration: 2.0)) {
-										angle = (angle == .degrees(-90) ? .degrees(-90) : .degrees(-90))
-									}
-								}
-							}
-							.onTapGesture {
-								withAnimation(.easeInOut(duration: 2.0)) {
-									angle = (angle == .degrees(-90) ? .degrees(90) : .degrees(-90))
-								}
+							} icon: {
+								Image(systemName: "signpost.right.and.left")
+									.symbolRenderingMode(.hierarchical)
 							}
 						}
-						if selectedRoute?.hasPositions ?? false {
-//							Map(position: $position, bounds: MapCameraBounds(minimumDistance: 1, maximumDistance: .infinity), scope: mapScope) {
-//								Annotation("You", coordinate: selectedRoute?.coordinate ?? LocationHelper.DefaultLocation) {
-//									ZStack {
-//										Circle()
-//											.fill(Color(.green))
-//											.strokeBorder(.white, lineWidth: 3)
-//											.frame(width: 15, height: 15)
-//									}
-//								}
-//								.annotationTitles(.automatic)
-//								// Direct Trace Route
-//								if selectedRoute?.response ?? false && selectedRoute?.hops?.count ?? 0 == 0 {
-//									if selectedRoute?.node?.positions?.count ?? 0 > 0, let mostRecent = selectedRoute?.node?.positions?.last {
-//										let traceRouteCoords: [CLLocationCoordinate2D] = [selectedRoute?.coordinate ?? LocationsHandler.DefaultLocation, mostRecent.coordinate]
-//										Annotation(selectedRoute?.node?.user?.shortName ?? "???", coordinate: mostRecent.nodeCoordinate ?? LocationHelper.DefaultLocation) {
-//											ZStack {
-//												Circle()
-//													.fill(Color(.black))
-//													.strokeBorder(.white, lineWidth: 3)
-//													.frame(width: 15, height: 15)
-//											}
-//										}
-//										let dashed = StrokeStyle(
-//											lineWidth: 2,
-//											lineCap: .round, lineJoin: .round, dash: [7, 10]
-//										)
-//										MapPolyline(coordinates: traceRouteCoords)
-//											.stroke(.blue, style: dashed)
-//									}
-//								}
-//							}
-//							.frame(maxWidth: .infinity, minHeight: 250)
-//							if selectedRoute?.response ?? false {
-//								VStack {
-//									/// Distance
-//									if selectedRoute?.node?.positions?.count ?? 0 > 0,
-//									   selectedRoute?.coordinate != nil,
-//									   let mostRecent = selectedRoute?.node?.positions?.last {
-//										let startPoint = CLLocation(latitude: selectedRoute?.coordinate?.latitude ?? LocationsHandler.DefaultLocation.latitude, longitude: selectedRoute?.coordinate?.longitude ?? LocationsHandler.DefaultLocation.longitude)
-//										if startPoint.distance(from: CLLocation(latitude: LocationsHandler.DefaultLocation.latitude, longitude: LocationsHandler.DefaultLocation.longitude)) > 0.0 {
-//											let metersAway = selectedRoute?.coordinate?.distance(from: CLLocationCoordinate2D(latitude: mostRecent.latitude ?? LocationsHandler.DefaultLocation.latitude, longitude: mostRecent.longitude ?? LocationsHandler.DefaultLocation.longitude))
-//											Label {
-//												Text("distance".localized + ": \(distanceFormatter.string(fromDistance: Double(metersAway ?? 0)))")
-//													.foregroundColor(.primary)
-//											} icon: {
-//												Image(systemName: "lines.measurement.horizontal")
-//													.symbolRenderingMode(.hierarchical)
-//											}
-//										}
-//									}
-//								}
-//							}
-							Spacer()
-								.padding(.bottom, 125)
-						}
+						Spacer()
+							.padding(.bottom, 125)
 					} else {
 						ContentUnavailableView("Select a Trace Route", systemImage: "signpost.right.and.left")
 					}
@@ -275,78 +158,29 @@ struct TraceRouteLog: View {
 		}
 	}
 
-	@ViewBuilder func contents(animation: Animation? = nil) -> some View {
-		ForEach(0..<indexes, id: \.self) { idx in
-			TraceRouteComponent(animation: animation) {
-				let hops = selectedRoute?.hops ?? []
-				if idx % 2 == 0 {
-					let i = idx / 2
-					let snrColor = getSnrColor(snr: hops[i].snr, preset: modemPreset)
-					VStack {
-						let nodeColor = UIColor(hex: UInt32(truncatingIfNeeded: hops[i].num))
-						CircleText(text: String(hops[i].num.toHex().suffix(4)), color: Color(nodeColor), circleSize: idiom == .phone ? 70 : 125)
-							Text("\(String(format: "%.2f", hops[i].snr)) dB")
-								.font(idiom == .phone ? .caption2 : .headline)
-								.foregroundColor(snrColor)
-								.allowsTightening(true)
-								.fontWeight(.semibold)
-					}
-				} else {
-					let i = (idx - 1) / 2
-					let snrColor = getSnrColor(snr: hops[i].snr, preset: modemPreset)
-					let signalTier = getLoRaSignalStrength(snr: hops[i].snr, rssi: 0, preset: modemPreset)
-					Image(systemName: "arrowshape.right.fill")
-						.resizable()
-						.frame(width: idiom == .phone ? 25 : 60, height: idiom == .phone ? 25 : 60)
-						.foregroundColor(snrColor.opacity(0.7))
-						.accessibilityLabel(
-							String(
-								localized: "Signal \(signalTier.description)",
-								comment: "VoiceOver: signal quality of this trace route hop"
-							)
-						)
-				}
+	@ViewBuilder
+	private func row(for route: TraceRouteEntity, now: Date) -> some View {
+		let state = route.state(now: now)
+		Label {
+			let routeTime = route.time?.formatted(date: .numeric, time: .shortened) ?? "Unknown".localized
+			if let stateLabel = state.label {
+				Text("\(routeTime) - \(stateLabel)")
+					.font(.caption)
+			} else if route.hopsTowards == route.hopsBack {
+				let hopString = String(localized: "\(route.hopsTowards) Hops")
+				Text("\(routeTime) - \(hopString)")
+					.font(.caption)
+			} else {
+				let hopTowardsString = String(localized: "\(route.hopsTowards) Hops")
+				let hopBackString = route.hopsBack >= 0 ? String(localized: "\(route.hopsBack) Hops") : String(localized: "Unknown")
+				Text("\(routeTime) - \(hopTowardsString) Towards  \(hopBackString) Back")
+					.font(.caption)
 			}
+		} icon: {
+			Image(systemName: route.rowSystemImage(now: now))
+				.symbolRenderingMode(.hierarchical)
 		}
 	}
-}
-
-func getTraceRouteHops(context: ModelContext) -> [TraceRouteHopEntity] {
-	///	static let context = PersistenceController.preview.context
-	var array = [TraceRouteHopEntity]()
-	let trh1 = TraceRouteHopEntity()
-	trh1.num = 366311664
-	trh1.snr = 12.5
-	let trh2 = TraceRouteHopEntity()
-	trh2.num = 3662955168
-	trh2.snr = -115.00
-	let trh3 = TraceRouteHopEntity()
-	trh3.num = 3663982804
-	trh3.snr = 17.5
-	let trh4 = TraceRouteHopEntity()
-	trh4.num = 4202719792
-	trh4.snr = 7.0
-	let trh5 = TraceRouteHopEntity()
-	trh5.num = 603700594
-	trh5.snr = 8.9
-	let trh6 = TraceRouteHopEntity()
-	trh6.num = 836212501
-	trh6.snr = -24.0
-	let trh7 = TraceRouteHopEntity()
-	trh7.num = 3663116644
-	trh7.snr = -6.0
-	let trh8 = TraceRouteHopEntity()
-	trh8.num = 8362955168
-	trh8.snr = 7.5
-	array.append(trh1)
-	array.append(trh2)
-	array.append(trh3)
-	array.append(trh4)
-	array.append(trh5)
-	array.append(trh6)
-	array.append(trh7)
-	array.append(trh8)
-	return array
 }
 
 // TODO: Fix preview for SwiftData

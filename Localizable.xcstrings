@@ -87003,6 +87003,9 @@
         }
       }
     },
+    "No response" : {
+      "comment" : "Trace route state: request sent, nothing came back"
+    },
     "No route to the destination node was found in the mesh. Try again when more nodes are reachable." : {
       "comment" : "RoutingError.description"
     },
@@ -131106,6 +131109,9 @@
         }
       }
     },
+    "Traceroute Complete" : {
+      "comment" : "Notification title when a trace route you sent gets a response"
+    },
     "track" : {
       "comment" : "Search keyword"
     },
@@ -138336,6 +138342,9 @@
           }
         }
       }
+    },
+    "Waiting for response" : {
+      "comment" : "Trace route state: request sent, no answer yet"
     },
     "Waiting to be acknowledged. . ." : {
       "extractionState" : "stale",

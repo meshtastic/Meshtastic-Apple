@@ -15,6 +15,8 @@ final class TraceRouteEntity {
 	var hopsTowards: Int32 = 0
 	var id: Int64 = 0
 	var response: Bool = false
+	/// The radio refused to send this request because of its trace route cooldown.
+	var rateLimited: Bool = false
 	var routeBackText: String?
 	var routeText: String?
 	var sent: Bool = false

@@ -232,6 +232,23 @@ struct TraceRouteParsingTests {
 		#expect(try context.fetch(FetchDescriptor<TraceRouteHopEntity>()).count == 4)
 	}
 
+	@Test("A rate-limit notice keeps the request ours and marks it rate limited")
+	func rateLimitKeepsSent() throws {
+		let (manager, context) = try makeManager()
+		let route = try insertSentRequest(id: 106, context: context)
+
+		var notice = ClientNotification()
+		notice.replyID = 106
+		notice.level = .warning
+		notice.message = "TraceRoute can only be sent once every 30 seconds"
+		manager.handleClientNotification(notice)
+
+		#expect(route.sent)
+		#expect(route.rateLimited)
+		#expect(!route.observed)
+		#expect(route.state() == .rateLimited)
+	}
+
 	@Test("A request with no request id is ignored")
 	func requestIsIgnored() throws {
 		let (manager, context) = try makeManager()

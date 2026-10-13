@@ -43,12 +43,10 @@ extension AccessoryManager {
 		Logger.services.info("handleClientNotification: \(clientNotification.debugDescription)")
 		var path = "meshtastic:///settings/debugLogs"
 		if clientNotification.hasReplyID {
-			/// Set Sent bool on TraceRouteEntity to false if we got rate limited
+			/// Mark the trace route as rate limited. It stays a request we made, not an observed route.
 			if clientNotification.message.starts(with: "TraceRoute") {
-				// CoreData operation happens on the Main Actor
-
 				let traceRoute = getTraceRoute(id: Int64(clientNotification.replyID), context: context)
-				traceRoute?.sent = false
+				traceRoute?.rateLimited = true
 				do {
 					try context.save()
 					Logger.data.info("💾 [TraceRouteEntity] Trace Route Rate Limited")
@@ -803,7 +801,7 @@ extension AccessoryManager {
 				manager.notifications = [
 					Notification(
 						id: (UUID().uuidString),
-						title: "Traceroute Complete",
+						title: String(localized: "Traceroute Complete", comment: "Notification title when a trace route you sent gets a response"),
 						subtitle: "TR received back from \(destinationHop.name ?? "unknown")",
 						content: "Hops from: \(traceRoute.hopsTowards), Hops back: \(traceRoute.hopsBack)\n\(traceRoute.routeText ?? "Unknown".localized)\n\(traceRoute.routeBackText ?? "Unknown".localized)",
 						target: "nodes",
