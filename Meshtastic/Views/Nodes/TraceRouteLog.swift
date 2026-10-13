@@ -10,139 +10,92 @@ import SwiftData
 import OSLog
 
 struct TraceRouteLog: View {
-	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 	@Environment(\.modelContext) private var context
-	@EnvironmentObject var router: Router
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Bindable var node: NodeInfoEntity
-	@State private var traceRoutes: [TraceRouteEntity] = []
-	@State private var selectedRouteID: PersistentIdentifier?
+	@Query private var traceRoutes: [TraceRouteEntity]
+	/// The route picked on the chart, highlighted in the list.
+	@State private var highlightedID: Int64?
+	@State private var openRouteID: PersistentIdentifier?
+	@SceneStorage("traceRouteLogWindow") private var windowRawValue = TraceRouteTimeWindow.all.rawValue
+	@SceneStorage("traceRouteLogChartExpanded") private var chartExpanded = true
 
-	private var selectedRoute: TraceRouteEntity? {
-		guard let selectedRouteID else { return nil }
-		return traceRoutes.first { $0.persistentModelID == selectedRouteID }
+	init(node: NodeInfoEntity) {
+		self.node = node
+		let nodeNum = node.num
+		var descriptor = FetchDescriptor<TraceRouteEntity>(
+			predicate: #Predicate<TraceRouteEntity> { $0.node?.num == nodeNum },
+			sortBy: [SortDescriptor(\TraceRouteEntity.time, order: .reverse)]
+		)
+		descriptor.fetchLimit = 500
+		_traceRoutes = Query(descriptor)
+	}
+
+	private var availableWindows: [TraceRouteTimeWindow] {
+		TraceRouteTimeWindow.available(oldest: traceRoutes.compactMap { $0.time ?? $0.sentAt }.min())
+	}
+
+	/// The stored window, or `all` when the log no longer reaches back past it.
+	private var window: TraceRouteTimeWindow {
+		let stored = TraceRouteTimeWindow(rawValue: windowRawValue) ?? .all
+		return availableWindows.contains(stored) ? stored : .all
+	}
+
+	private var visibleRoutes: [TraceRouteEntity] {
+		let window = window
+		return traceRoutes.filter { window.contains($0.time ?? $0.sentAt) }
+	}
+
+	private var canTrace: Bool {
+		accessoryManager.isConnected && node.num != accessoryManager.activeDeviceNum
 	}
 
 	var body: some View {
-		HStack(alignment: .top) {
-			VStack {
-				VStack {
-					List(traceRoutes, id: \.persistentModelID, selection: $selectedRouteID) { route in
-						TraceRouteStateTimeline(route: route) { now in
-							row(for: route, now: now)
-						}
-						.swipeActions {
-							Button(role: .destructive) {
-								if selectedRouteID == route.persistentModelID {
-									selectedRouteID = nil
+		ScrollViewReader { proxy in
+			List {
+				if canTrace {
+					Section {
+						TraceRouteButton(node: node)
+					}
+				}
+				if traceRoutes.isEmpty {
+					ContentUnavailableView("No Trace Routes", systemImage: "signpost.right.and.left")
+				} else {
+					header
+					Section {
+						ForEach(visibleRoutes, id: \.persistentModelID) { route in
+							TraceRouteStateTimeline(route: route) { now in
+								Button {
+									openRouteID = route.persistentModelID
+								} label: {
+									TraceRouteCard(model: TraceRouteCardModel(route: route, now: now))
+										.contentShape(Rectangle())
 								}
-								context.delete(route)
-								do {
-									try context.save()
-									refreshTraceRoutes()
-								} catch let error as NSError {
-									Logger.data.error("\(error.localizedDescription, privacy: .public)")
+								.buttonStyle(.plain)
+							}
+							.id(route.id)
+							.listRowBackground(route.id == highlightedID ? Color.accentColor.opacity(0.15) : nil)
+							.swipeActions {
+								Button(role: .destructive) {
+									delete(route)
+								} label: {
+									Label("Delete", systemImage: "trash")
 								}
-							} label: {
-								Label("Delete", systemImage: "trash")
 							}
 						}
 					}
-					.listStyle(.plain)
 				}
-				Divider()
-				ScrollView {
-					if selectedRoute != nil {
-						let selectedState = selectedRoute?.state()
-						if selectedState == .complete || selectedState == .observed {
-							let routeValue = selectedRoute?.routeText ?? "Unknown".localized
-							let routeBackValue = selectedRoute?.routeBackText ?? "Unknown".localized
-							Label {
-								Text("Route: \(routeValue)")
-									.textSelection(.enabled)
-							} icon: {
-								Image(systemName: "signpost.right")
-									.symbolRenderingMode(.hierarchical)
-							}
-							.font(.title3)
-							.contextMenu {
-								Button {
-									UIPasteboard.general.string = String(localized: "Route: \(routeValue)")
-								} label: {
-									Label("Copy", systemImage: "doc.on.doc")
-								}
-							}
-							Label {
-								Text("Route Back: \(routeBackValue)")
-									.textSelection(.enabled)
-							} icon: {
-								Image(systemName: "signpost.left")
-									.symbolRenderingMode(.hierarchical)
-							}
-							.font(.title3)
-							.contextMenu {
-								Button {
-									UIPasteboard.general.string = String(localized: "Route Back: \(routeBackValue)")
-								} label: {
-									Label("Copy", systemImage: "doc.on.doc")
-								}
-							}
-							if selectedRoute?.hasPositions ?? false, let routeID = selectedRoute?.id {
-								Button {
-									router.selectedTab = .map
-									router.mapState = .traceRoute(routeID)
-								} label: {
-									Label("Show on Map", systemImage: "map")
-								}
-								.buttonStyle(.bordered)
-								.padding(.top, 4)
-							}
-						} else if selectedState == .rateLimited {
-							Label {
-								VStack {
-									Text("Trace route to \(selectedRoute?.node?.user?.longName ?? "Unknown".localized) was not sent.")
-										.font(idiom == .phone ? .body : .largeTitle)
-										.fontWeight(.semibold)
-									Text("Trace Route was rate limited. You can send a trace route a maximum of once every thirty seconds.")
-										.font(idiom == .phone ? .caption : .body)
-										.foregroundStyle(.secondary)
-										.padding()
-								}
-							} icon: {
-								Image(systemName: "square.and.arrow.up.trianglebadge.exclamationmark")
-									.symbolRenderingMode(.hierarchical)
-							}
-						} else {
-							Label {
-								VStack {
-									Text("Trace route sent to \(selectedRoute?.node?.user?.longName ?? "Unknown".localized)")
-										.font(idiom == .phone ? .body : .largeTitle)
-										.fontWeight(.semibold)
-									Text("A Trace Route was sent, no response has been received.")
-										.font(idiom == .phone ? .caption : .body)
-										.foregroundStyle(.secondary)
-										.padding()
-								}
-							} icon: {
-								Image(systemName: "signpost.right.and.left")
-									.symbolRenderingMode(.hierarchical)
-							}
-						}
-						Spacer()
-							.padding(.bottom, 125)
-					} else {
-						ContentUnavailableView("Select a Trace Route", systemImage: "signpost.right.and.left")
-					}
-				}
-				.edgesIgnoringSafeArea(.bottom)
 			}
-			.navigationTitle("Trace Route Log")
+			.onChange(of: highlightedID) { _, id in
+				guard let id else { return }
+				withAnimation { proxy.scrollTo(id, anchor: .center) }
+			}
 		}
-		.onAppear {
-			refreshTraceRoutes()
-		}
-		.onChange(of: node.lastHeard) {
-			refreshTraceRoutes()
+		.navigationTitle("Trace Route Log")
+		.navigationDestination(item: $openRouteID) { id in
+			if let route = traceRoutes.first(where: { $0.persistentModelID == id }) {
+				TraceRouteDetail(route: route)
+			}
 		}
 		.toolbar {
 			ToolbarItem(placement: .topBarTrailing) {
@@ -151,49 +104,46 @@ struct TraceRouteLog: View {
 		}
 	}
 
-	private func refreshTraceRoutes() {
-		traceRoutes = node.safeTraceRoutes()
-		if let selectedRouteID, !traceRoutes.contains(where: { $0.persistentModelID == selectedRouteID }) {
-			self.selectedRouteID = nil
-		}
-	}
-
 	@ViewBuilder
-	private func row(for route: TraceRouteEntity, now: Date) -> some View {
-		let state = route.state(now: now)
-		Label {
-			let routeTime = route.time?.formatted(date: .numeric, time: .shortened) ?? "Unknown".localized
-			if let stateLabel = state.label {
-				Text("\(routeTime) - \(stateLabel)")
-					.font(.caption)
-			} else if route.hopsTowards == route.hopsBack {
-				let hopString = String(localized: "\(route.hopsTowards) Hops")
-				Text("\(routeTime) - \(hopString)")
-					.font(.caption)
-			} else {
-				let hopTowardsString = String(localized: "\(route.hopsTowards) Hops")
-				let hopBackString = route.hopsBack >= 0 ? String(localized: "\(route.hopsBack) Hops") : String(localized: "Unknown")
-				Text("\(routeTime) - \(hopTowardsString) Towards  \(hopBackString) Back")
-					.font(.caption)
+	private var header: some View {
+		let windows = availableWindows
+		if windows.count > 1 {
+			Section {
+				Picker(String(localized: "Time window", comment: "Trace route log: how far back the chart and list go"), selection: $windowRawValue) {
+					ForEach(windows) { window in
+						Text(window.label).tag(window.rawValue)
+					}
+				}
+				.pickerStyle(.segmented)
+				.listRowBackground(Color.clear)
+				.listRowInsets(EdgeInsets())
 			}
-		} icon: {
-			Image(systemName: route.rowSystemImage(now: now))
-				.symbolRenderingMode(.hierarchical)
+		}
+		let points = TraceRouteChartPoint.points(from: visibleRoutes.map { (id: $0.id, card: TraceRouteCardModel(route: $0)) })
+		if !points.isEmpty {
+			Section {
+				DisclosureGroup(isExpanded: $chartExpanded) {
+					TraceRouteChart(points: points, selectedID: $highlightedID)
+						.padding(.vertical, 8)
+				} label: {
+					Label("Hops", systemImage: "chart.xyaxis.line")
+				}
+			}
+		}
+	}
+
+	private func delete(_ route: TraceRouteEntity) {
+		if highlightedID == route.id {
+			highlightedID = nil
+		}
+		if openRouteID == route.persistentModelID {
+			openRouteID = nil
+		}
+		context.delete(route)
+		do {
+			try context.save()
+		} catch let error as NSError {
+			Logger.data.error("\(error.localizedDescription, privacy: .public)")
 		}
 	}
 }
-
-// TODO: Fix preview for SwiftData
-/*
-#Preview {
-	let node = NodeInfoEntity()
-	node.num = 123456789
-	let user = UserEntity()
-	user.longName = "Test Node"
-	user.shortName = "TN"
-	node.user = user
-	TraceRouteLog(node: node)
-		.environmentObject(AccessoryManager.shared)
-		.modelContainer(PersistenceController.preview.container)
-}
-*/
