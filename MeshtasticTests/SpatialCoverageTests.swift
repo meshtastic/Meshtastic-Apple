@@ -145,6 +145,25 @@ struct SpatialCoverageTests {
 		}
 	}
 
+	// MARK: Overlay mesh
+
+	@Test func overlaySurfaceIsTheRaisedSurfaceWithoutTheSkirt() {
+		let frame = SpatialFrame(bounds: box)
+		let grid = SpatialHeightGrid(columns: 3, rows: 3, heights: [0, 50, 0, 50, 200, 50, 0, 50, 0], covered: Array(repeating: true, count: 9), baseElevation: 0, maxElevation: 200)
+		let geometry = SpatialTerrainGeometry(grid: grid, transform: SpatialModelTransform(frame: frame, baseElevation: 0, maxElevation: 200))
+		let count = geometry.columns * geometry.rows
+		#expect(geometry.positions.count > count, "the terrain has a skirt to leave out")
+		let overlay = geometry.overlaySurface(lift: 0.003)
+		#expect(overlay.positions.count == count)
+		#expect(overlay.uvs.count == count && overlay.normals.count == count)
+		#expect(overlay.indices.count == geometry.surfaceTriangleCount * 3)
+		#expect(overlay.indices.allSatisfy { Int($0) < count })
+		for index in stride(from: 0, to: count, by: 37) {
+			#expect(abs(overlay.positions[index].y - (geometry.positions[index].y + 0.003)) < 1e-6)
+			#expect(overlay.uvs[index] == geometry.textureCoordinates[index])
+		}
+	}
+
 	// MARK: Parser
 
 	private let collectionJSON = """

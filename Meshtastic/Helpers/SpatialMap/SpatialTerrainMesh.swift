@@ -260,3 +260,28 @@ struct SpatialTerrainGeometry: Sendable {
 		return p
 	}
 }
+
+/// The buffers of a mesh drawn over the terrain.
+struct SpatialOverlayMesh: Sendable {
+	let positions: [SIMD3<Float>]
+	let normals: [SIMD3<Float>]
+	let uvs: [SIMD2<Float>]
+	let indices: [UInt32]
+}
+
+extension SpatialTerrainGeometry {
+	/// How far an overlay floats over the ground, in model units: a couple of millimeters on the table.
+	static let overlayLift: Float = 0.003
+
+	/// The top surface alone, raised by `lift`, for an overlay drawn over the terrain with the same
+	/// texture coordinates. The skirt's vertices and triangles come after the surface's, so the
+	/// first `columns * rows` vertices and `surfaceTriangleCount` triangles are the surface.
+	func overlaySurface(lift: Float = overlayLift) -> SpatialOverlayMesh {
+		let count = columns * rows
+		let positions = positions.prefix(count).map { SIMD3($0.x, $0.y + lift, $0.z) }
+		return SpatialOverlayMesh(
+			positions: positions, normals: Array(normals.prefix(count)),
+			uvs: Array(textureCoordinates.prefix(count)), indices: Array(indices.prefix(surfaceTriangleCount * 3))
+		)
+	}
+}
