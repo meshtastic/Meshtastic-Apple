@@ -100,4 +100,13 @@ struct SpatialZoomTests {
 		#expect(simd_length(roomy.apply(x: 0.1, z: 0)) < 1e-5)
 		#expect(SpatialZoom.Preview(offset: .zero, scale: .nan, diskRadius: 0.5, maxRadius: 0.55) == .identity)
 	}
+
+	@Test func flyoverPointsPastTheRimEndAtIt() {
+		let past = SpatialZoom.clampToDisk([0.6, 0.04, -0.8], diskRadius: 0.5)
+		#expect(abs((past.x * past.x + past.z * past.z).squareRoot() - 0.5) < 1e-5)
+		#expect(past.y == 0.04)
+		#expect(past.x > 0 && past.z < 0)
+		let inside = SIMD3<Float>(0.1, 0.02, 0.2)
+		#expect(SpatialZoom.clampToDisk(inside, diskRadius: 0.5) == inside)
+	}
 }

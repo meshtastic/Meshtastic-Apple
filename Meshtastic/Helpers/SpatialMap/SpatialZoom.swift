@@ -59,6 +59,15 @@ enum SpatialZoom {
 		x * x + z * z <= diskRadius * diskRadius * 1.0001
 	}
 
+	/// A point pulled in flat to the disk's rim when it lies past it, keeping its height. Used for
+	/// flyover paths through nodes outside the zoomed circle, so they end at the rim.
+	static func clampToDisk(_ point: SIMD3<Float>, diskRadius: Float) -> SIMD3<Float> {
+		let distance = (point.x * point.x + point.z * point.z).squareRoot()
+		guard distance > diskRadius, distance > 0 else { return point }
+		let factor = diskRadius / distance
+		return SIMD3(point.x * factor, point.y, point.z * factor)
+	}
+
 	/// While a zoom is waiting for its terrain, the built terrain is shown scaled and shifted
 	/// toward what the new circle will show. `offset` is the new center's position on the current
 	/// disk and `scale` how much bigger the new circle draws the ground, both in model units.

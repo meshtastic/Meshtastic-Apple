@@ -78,7 +78,9 @@ final class SpatialTrafficController {
 	func startFlyover(_ route: SpatialRouteSnapshot) {
 		guard let placement = scene.placement else { return }
 		let legs = [route.forward, route.back].map { path in
-			path.map { placement.surface($0.coordinate, clearance: SpatialSceneController.flyHeight) }
+			path.map {
+				SpatialZoom.clampToDisk(placement.surface($0.coordinate, clearance: SpatialSceneController.flyHeight), diskRadius: placement.diskRadius)
+			}
 		}
 		let flyover = SpatialFlyover(legs: legs)
 		guard !flyover.legs.isEmpty else { return }
