@@ -50138,6 +50138,9 @@
         }
       }
     },
+    "Hop Numbers and Signal" : {
+      "comment" : "Map legend title for the trace route hop number badges and SNR labels"
+    },
     "hops" : {
       "comment" : "Search keyword"
     },
@@ -101948,6 +101951,9 @@
           }
         }
       }
+    },
+    "Relays are numbered in order, filled on the way out and outlined on the way back. Zoom in to see each leg's SNR." : {
+      "comment" : "Map legend description of the trace route hop number badges and SNR labels"
     },
     "Release Notes" : {
       "localizations" : {

@@ -153,6 +153,8 @@ A trace route can be drawn on the map to show the path a packet took through the
 - **Solid vs. dashed** — the **solid** line is the outbound path toward the target; the **dashed** line is the return path back to the originator.
 - **Arrows** — chevrons along each line point in the direction of travel.
 - **Endpoints** — a **green** marker is the originator; a **red** marker is the target.
+- **Hop numbers** — each relay gets a small numbered badge in the order the packet reached it, the same order as the hop timeline. Badges on the way out are filled and sit above the node; badges on the way back are outlined and sit below it. A relay that didn't add its number, or has no known position, gets no badge.
+- **Signal labels** — zoom in and each leg shows its SNR (for example "7.0 dB") in the leg's color. Labels and badges that would overlap at the current zoom are hidden until there's room.
 
 ### 3D Flyover
 

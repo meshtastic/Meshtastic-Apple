@@ -160,25 +160,4 @@ extension TraceRouteEntity {
 			}
 		}
 	}
-
-	/// Ordered `(coordinate, snr)` toward the target, for per-leg signal coloring. Drops hops we
-	/// have no snapshotted position for so coordinate and snr stay aligned.
-	var forwardSignalPath: [(coordinate: CLLocationCoordinate2D, snr: Float)] {
-		let byNum = nodePositionsByNum
-		return hops.filter { !$0.back }
-			.sorted { $0.index < $1.index }
-			.compactMap { hop in byNum[hop.num]?.coordinate.map { (coordinate: $0, snr: hop.snr) } }
-	}
-
-	/// Ordered `(coordinate, snr)` along the return path. Return hops exclude the endpoints, so the
-	/// target/originator are bracketed in; each leg is colored by the snr of the node it arrives at.
-	var backSignalPath: [(coordinate: CLLocationCoordinate2D, snr: Float)] {
-		let backHops = hops.filter { $0.back }.sorted { $0.index < $1.index }
-		guard let lastSnr = backHops.last?.snr else { return [] }
-		let byNum = nodePositionsByNum
-		var entries: [(num: Int64, snr: Float)] = [(toNum, 0)]
-		entries += backHops.map { (num: $0.num, snr: $0.snr) }
-		entries.append((num: fromNum, snr: lastSnr))
-		return entries.compactMap { entry in byNum[entry.num]?.coordinate.map { (coordinate: $0, snr: entry.snr) } }
-	}
 }
