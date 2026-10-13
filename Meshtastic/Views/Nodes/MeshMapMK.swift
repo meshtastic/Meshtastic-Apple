@@ -1300,7 +1300,7 @@ struct MeshMapMK: View {
 									guard isMapVisible else { return [] }
 									var result = routeDecorations
 									result += tracerouteDecorations
-		result += traceRouteLabelDecorations
+									result += traceRouteLabelDecorations
 									result += geoJSONDecorations
 									result += terrainLabelDecorations
 									return result
@@ -1981,9 +1981,8 @@ private struct MeshMapMKNodePin: View, Equatable {
 	}
 }
 
-// MARK: - Route start/finish marker
+// MARK: - Trace route hop badges and SNR labels
 
-/// Small filled circle with a white border marking a route's start (green) or finish (black).
 /// Numbered badge for a trace route relay. It sits up and to the right of the node on the way out
 /// (filled), and down and to the right on the way back (outlined, like the dashed return line), so
 /// a node on both paths shows both numbers.
@@ -2028,6 +2027,9 @@ private struct TraceRouteSnrLabel: View {
 	}
 }
 
+// MARK: - Route start/finish marker
+
+/// Small filled circle with a white border marking a route's start (green) or finish (black).
 private struct RouteEndpointMarker: View {
 	let color: Color
 
