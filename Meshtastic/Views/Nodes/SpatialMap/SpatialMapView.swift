@@ -25,6 +25,10 @@ struct SpatialMapView: View {
 	@State private var liveZoom: Double?
 	@State private var pinchStartZoom: Double?
 	@State private var pinchSettle: Task<Void, Never>?
+	/// True while a drag or pinch is in progress. A cancelled gesture doesn't call onEnded but does
+	/// reset these, so the next gesture never starts from a stale one.
+	@GestureState private var isDragging = false
+	@GestureState private var isPinching = false
 	/// The volume's size, so a resize runs the update closure and refits the map.
 	@State private var volumeSize: Size3D = .zero
 
@@ -76,6 +80,12 @@ struct SpatialMapView: View {
 			.onChange(of: proxy.size, initial: true) { _, size in
 				volumeSize = size
 			}
+			.onChange(of: isDragging) { _, dragging in
+				if !dragging { wheelDrag = nil }
+			}
+			.onChange(of: isPinching) { _, pinching in
+				if !pinching { endPinch() }
+			}
 		}
 	}
 
@@ -103,6 +113,7 @@ struct SpatialMapView: View {
 	private var drag: some Gesture {
 		DragGesture()
 			.targetedToAnyEntity()
+			.updating($isDragging) { _, state, _ in state = true }
 			.onChanged { value in
 				let point = scene.tablePoint(value.convert(value.location3D, from: .local, to: .scene))
 				if var drag = wheelDrag {
@@ -126,6 +137,7 @@ struct SpatialMapView: View {
 	private var pinch: some Gesture {
 		MagnifyGesture()
 			.targetedToAnyEntity()
+			.updating($isPinching) { _, state, _ in state = true }
 			.onChanged { value in
 				let start = pinchStartZoom ?? model.zoom
 				pinchStartZoom = start
@@ -140,12 +152,17 @@ struct SpatialMapView: View {
 				}
 			}
 			.onEnded { _ in
-				pinchSettle?.cancel()
-				pinchSettle = nil
-				if let liveZoom { model.setZoom(liveZoom) }
-				liveZoom = nil
-				pinchStartZoom = nil
+				endPinch()
 			}
+	}
+
+	/// Builds the zoom the pinch reached; also runs when the pinch is cancelled.
+	private func endPinch() {
+		pinchSettle?.cancel()
+		pinchSettle = nil
+		if let liveZoom { model.setZoom(liveZoom) }
+		liveZoom = nil
+		pinchStartZoom = nil
 	}
 
 	/// Back to north at the back and the whole mesh.
