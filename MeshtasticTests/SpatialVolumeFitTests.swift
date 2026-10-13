@@ -53,23 +53,4 @@ struct SpatialVolumeFitTests {
 			#expect(size[axis] >= SpatialVolumeFit.minimumSize[axis] && size[axis] <= SpatialVolumeFit.maximumSize[axis])
 		}
 	}
-
-	@Test func turningANodeToTheFrontTakesTheShortWay() throws {
-		// Already at the front.
-		#expect(try #require(SpatialVolumeFit.yawBringingToFront(x: 0, z: 0.3, from: 0)) == 0)
-		// East of center turns a quarter turn clockwise seen from above (negative yaw).
-		let east = try #require(SpatialVolumeFit.yawBringingToFront(x: 0.3, z: 0, from: 0))
-		#expect(abs(east + .pi / 2) < 1e-5)
-		// After many turns it still lands within half a turn of where it was.
-		let current: Float = 6 * .pi + 0.2
-		let back = try #require(SpatialVolumeFit.yawBringingToFront(x: 0, z: -0.3, from: current))
-		#expect(abs(back - current) <= .pi + 1e-4)
-		// The node ends up in front: rotating it by the yaw puts it on +z.
-		let x: Float = 0.2, z: Float = -0.1
-		let yaw = try #require(SpatialVolumeFit.yawBringingToFront(x: x, z: z, from: 1))
-		let rotatedX = x * cos(yaw) + z * sin(yaw)
-		let rotatedZ = -x * sin(yaw) + z * cos(yaw)
-		#expect(abs(rotatedX) < 1e-5 && rotatedZ > 0)
-		#expect(SpatialVolumeFit.yawBringingToFront(x: 0, z: 0, from: 0) == nil)
-	}
 }

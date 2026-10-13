@@ -9,7 +9,8 @@ import RealityKit
 import SwiftUI
 
 /// The RealityView in the volume: hands the model's state to the scene controller, keeps the map
-/// fitted to the volume as it is resized, and turns taps and drags into selection and rotation.
+/// fitted to the volume as it is resized, and turns taps, drags and pinches into selection,
+/// rotation and zoom.
 struct SpatialMapView: View {
 	let model: SpatialMapModel
 	let scene: SpatialSceneController
@@ -20,6 +21,10 @@ struct SpatialMapView: View {
 
 	@State private var yaw: Float = 0
 	@State private var wheelDrag: SpatialWheelDrag?
+	/// The zoom a pinch has reached, shown as a preview until its terrain is built.
+	@State private var liveZoom: Double?
+	@State private var pinchStartZoom: Double?
+	@State private var pinchSettle: Task<Void, Never>?
 	/// The volume's size, so a resize runs the update closure and refits the map.
 	@State private var volumeSize: Size3D = .zero
 
@@ -37,6 +42,7 @@ struct SpatialMapView: View {
 				scene.apply(placement: model.placement)
 				scene.apply(terrainEntity: model.terrainEntity, building: model.isBuildingTerrain)
 				scene.apply(nodes: model.nodes)
+				scene.apply(target: liveZoom.flatMap { model.circle(forZoom: $0) } ?? model.targetCircle)
 				traffic.applyBaseGlow()
 				scene.apply(links: showLinks ? model.links : [], preset: preset)
 				scene.apply(labels: model.labeledNodeNums, attachments: attachments)
@@ -56,7 +62,7 @@ struct SpatialMapView: View {
 						SpatialNodeDetailPanel(node: node, preset: preset) {
 							onOpenNode(node.id)
 						} onCenter: {
-							turnToFront(node.id)
+							model.zoomIn(on: node.id)
 						} onClose: {
 							model.select(nil)
 						}
@@ -66,12 +72,10 @@ struct SpatialMapView: View {
 			.gesture(tap)
 			.gesture(doubleTap)
 			.gesture(drag)
+			.gesture(pinch)
 			.onChange(of: proxy.size, initial: true) { _, size in
 				volumeSize = size
 			}
-		}
-		.onChange(of: model.placement?.revision) {
-			reset(animated: false)
 		}
 	}
 
@@ -90,7 +94,7 @@ struct SpatialMapView: View {
 		SpatialTapGesture(count: 2)
 			.targetedToAnyEntity()
 			.onEnded { value in
-				if Self.nodeNum(of: value.entity) == nil { reset(animated: true) }
+				if Self.nodeNum(of: value.entity) == nil { reset() }
 			}
 	}
 
@@ -117,17 +121,38 @@ struct SpatialMapView: View {
 			}
 	}
 
-	/// Turns the map the short way round so a node faces the viewer.
-	private func turnToFront(_ nodeNum: Int64) {
-		guard let position = scene.pinPosition(nodeNum),
-			  let target = SpatialVolumeFit.yawBringingToFront(x: position.x, z: position.z, from: yaw) else { return }
-		yaw = target
-		scene.setYaw(yaw, animated: true)
+	/// Pinching zooms the geography: the table stays the same size and shows a smaller area around
+	/// its center in more detail. The terrain is rebuilt when the pinch ends or pauses.
+	private var pinch: some Gesture {
+		MagnifyGesture()
+			.targetedToAnyEntity()
+			.onChanged { value in
+				let start = pinchStartZoom ?? model.zoom
+				pinchStartZoom = start
+				let zoom = model.clampedZoom(start * value.magnification)
+				guard zoom != liveZoom else { return }
+				liveZoom = zoom
+				pinchSettle?.cancel()
+				pinchSettle = Task {
+					try? await Task.sleep(for: .milliseconds(500))
+					guard !Task.isCancelled else { return }
+					model.setZoom(zoom)
+				}
+			}
+			.onEnded { _ in
+				pinchSettle?.cancel()
+				pinchSettle = nil
+				if let liveZoom { model.setZoom(liveZoom) }
+				liveZoom = nil
+				pinchStartZoom = nil
+			}
 	}
 
-	private func reset(animated: Bool) {
+	/// Back to north at the back and the whole mesh.
+	private func reset() {
 		yaw = 0
-		scene.setYaw(0, animated: animated)
+		scene.setYaw(0, animated: true)
+		model.resetZoom()
 	}
 
 	private static func isWheel(_ entity: Entity) -> Bool {

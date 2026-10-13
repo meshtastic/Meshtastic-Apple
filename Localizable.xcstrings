@@ -104170,6 +104170,9 @@
         }
       }
     },
+    "Reset zoom" : {
+      "comment" : "Spatial map: button showing how far the map is zoomed in; tapping it zooms back out to the whole mesh"
+    },
     "Resetting…" : {
       "localizations" : {
         "ko" : {

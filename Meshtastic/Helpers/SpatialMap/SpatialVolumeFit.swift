@@ -30,15 +30,4 @@ struct SpatialVolumeFit: Equatable, Sendable {
 		diskRadius = max(radius, Self.minimumDiskRadius)
 		scale = modelDiskRadius > 0 && modelDiskRadius.isFinite ? diskRadius / modelDiskRadius : 1
 	}
-
-	/// The yaw that turns a point at model x/z to the front of the table (+z, toward the viewer),
-	/// taking the shorter way round from `current`. Nil for a point at the center.
-	static func yawBringingToFront(x: Float, z: Float, from current: Float) -> Float? {
-		guard x * x + z * z > 1e-8 else { return nil }
-		let target = atan2(-x, z)
-		var delta = (target - current).truncatingRemainder(dividingBy: 2 * .pi)
-		if delta > .pi { delta -= 2 * .pi }
-		if delta < -.pi { delta += 2 * .pi }
-		return current + delta
-	}
 }

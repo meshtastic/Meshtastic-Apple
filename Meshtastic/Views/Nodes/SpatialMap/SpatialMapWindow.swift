@@ -214,6 +214,23 @@ struct SpatialMapOrnament: View {
 
 			terrainDownload
 
+			if model.zoom > 1.01 {
+				Button {
+					model.resetZoom()
+				} label: {
+					Label {
+						Text(verbatim: "\(model.zoom.formatted(.number.precision(.fractionLength(0...1))))×")
+					} icon: {
+						Image(systemName: "plus.magnifyingglass")
+					}
+					.labelStyle(.titleAndIcon)
+					.fixedSize()
+				}
+				.help(String(localized: "Reset zoom", comment: "Spatial map: button showing how far the map is zoomed in; tapping it zooms back out to the whole mesh"))
+				.accessibilityLabel(String(localized: "Reset zoom", comment: "Spatial map: button showing how far the map is zoomed in; tapping it zooms back out to the whole mesh"))
+				.accessibilityValue(Text(verbatim: "\(model.zoom.formatted(.number.precision(.fractionLength(0...1))))×"))
+			}
+
 			Divider().frame(height: 20)
 
 			HStack(spacing: 6) {

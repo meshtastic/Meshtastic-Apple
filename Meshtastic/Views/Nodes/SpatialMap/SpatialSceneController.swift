@@ -16,7 +16,8 @@ struct NodePinComponent: Component {
 
 /// Owns the entities in the volume and diffs the model's snapshots into them, so the RealityView
 /// update closure stays a dispatcher. `root` sits on the middle of the volume floor; `model`
-/// carries the user's rotation and the scale that makes the disk fill the volume's footprint.
+/// carries the user's rotation and the scale that makes the disk fill the volume's footprint;
+/// `terrainAnchor` carries the preview of a zoom whose terrain is still building.
 @MainActor
 final class SpatialSceneController {
 	static let pinRadius: Float = 0.006
@@ -42,6 +43,8 @@ final class SpatialSceneController {
 		/// Distance to the nearest other pin in model units.
 		var gap: Float = .infinity
 		var hitShape: HitShapeKey?
+		/// On the disk, so drawn. Pins outside the circle shown are hidden.
+		var shown = true
 	}
 
 	/// A pin's hit radius in half millimeters and the head's size in percent.
@@ -76,9 +79,15 @@ final class SpatialSceneController {
 	private let tether: ModelEntity
 	private var detailEntity: Entity?
 	private var appliedSelection: Int64?
+	/// Model units per meter for everything under the terrain anchor, so pins, labels and the card
+	/// keep the same size in the room whatever the table's size and the zoom preview.
 	private(set) var counterScale: Float = 1
 	/// The volume's bounds in scene space, once known.
 	private var volume: BoundingBox?
+	private var currentFit: SpatialVolumeFit?
+	/// The built terrain scaled and shifted toward a zoom that is still building.
+	private var preview = SpatialZoom.Preview.identity
+	private var previewTarget: SpatialCircle?
 
 	init() {
 		// A flat disk of radius 0.5, scaled to the map once there is one.
@@ -123,15 +132,20 @@ final class SpatialSceneController {
 	private func applyFit() {
 		guard let volume else { return }
 		let fit = SpatialVolumeFit(volumeWidth: volume.extents.x, volumeDepth: volume.extents.z, modelDiskRadius: placement?.diskRadius ?? 0.5)
+		currentFit = fit
 		model.scale = SIMD3(repeating: fit.scale)
 		updateWheel(fit)
-		// Pins, labels and the card keep the same size in the room whatever the table's size.
-		let counter = 1 / fit.scale
+		updatePreview()
+	}
+
+	private func updateCounterScale() {
+		guard let fit = currentFit else { return }
+		let counter = 1 / (fit.scale * preview.scale)
 		guard counter != counterScale else { return }
 		counterScale = counter
 		for pin in pins.values { pin.holder.scale = SIMD3(repeating: counter) }
 		updateHitShapes()
-		if let selection = appliedSelection, let pin = pins[selection] {
+		if let selection = appliedSelection, let pin = pins[selection], pin.shown {
 			placeSelection(at: pin.holder.position)
 		}
 	}
@@ -157,15 +171,63 @@ final class SpatialSceneController {
 	}
 
 	func apply(terrainEntity entity: ModelEntity?, building: Bool) {
-		if let entity, entity !== terrainEntity {
+		if entity !== terrainEntity {
 			terrainEntity?.removeFromParent()
-			terrainAnchor.addChild(entity)
+			if let entity { terrainAnchor.addChild(entity) }
 			terrainEntity = entity
 		}
-		// While a new box builds, the old terrain is in the old frame: show the plane instead.
-		let showTerrain = terrainEntity != nil && !building
-		terrainEntity?.isEnabled = showTerrain
-		placeholder.isEnabled = !showTerrain
+		// While a new circle builds, the old terrain stays up with the zoom previewed on it.
+		terrainEntity?.isEnabled = terrainEntity != nil
+		placeholder.isEnabled = terrainEntity == nil
+	}
+
+	/// Shows the circle the map is heading for on the terrain that is built: scaled about the new
+	/// center and held under the bezel, with pins past the rim hidden. Identity once it is built.
+	func apply(target: SpatialCircle?) {
+		guard target != previewTarget else { return }
+		previewTarget = target
+		updatePreview()
+	}
+
+	private func updatePreview() {
+		var next = SpatialZoom.Preview.identity
+		if let placement, let fit = currentFit, let target = previewTarget, target != placement.circle, target.radiusMeters > 0 {
+			let center = placement.transform.position(CLLocationCoordinate2D(latitude: target.latitude, longitude: target.longitude), altitude: placement.transform.baseElevation)
+			let maxRadius = (fit.diskRadius + SpatialWheelLayout.gap + SpatialWheelLayout.bezelWidth) / fit.scale
+			next = SpatialZoom.Preview(
+				offset: SIMD2(center.x, center.z),
+				scale: Float(placement.circle.radiusMeters / target.radiusMeters),
+				diskRadius: placement.diskRadius, maxRadius: maxRadius
+			)
+		}
+		if next != preview {
+			preview = next
+			terrainAnchor.scale = SIMD3(repeating: next.scale)
+			terrainAnchor.position = [next.translation.x, 0, next.translation.y]
+		}
+		updateCounterScale()
+		updatePinVisibility()
+	}
+
+	/// Hides pins that would stand past the rim, with their labels, links and selection.
+	private func updatePinVisibility() {
+		guard let placement else { return }
+		var changed = false
+		for (num, pin) in pins {
+			let p = preview.apply(x: pin.holder.position.x, z: pin.holder.position.z)
+			let shown = SpatialZoom.isOnDisk(x: p.x, z: p.y, diskRadius: placement.diskRadius)
+			guard shown != pin.shown else { continue }
+			pin.holder.isEnabled = shown
+			pins[num]?.shown = shown
+			changed = true
+		}
+		if changed, let selection = appliedSelection {
+			if let pin = pins[selection], pin.shown {
+				placeSelection(at: pin.holder.position)
+			} else {
+				hideSelection()
+			}
+		}
 	}
 
 	// MARK: Nodes
@@ -210,7 +272,10 @@ final class SpatialSceneController {
 			labelEntities[num] = nil
 			moved = true
 		}
-		if moved { measureGaps() }
+		if moved {
+			measureGaps()
+			updatePinVisibility()
+		}
 		if moved || restyled { updateHitShapes() }
 	}
 
@@ -292,8 +357,9 @@ final class SpatialSceneController {
 		pin.pin.components.set(OpacityComponent(opacity: node.isOnline ? 1 : 0.6))
 	}
 
+	/// Where a shown pin's head is, under the terrain anchor; nil for a hidden one.
 	func pinPosition(_ nodeNum: Int64) -> SIMD3<Float>? {
-		guard let pin = pins[nodeNum] else { return nil }
+		guard let pin = pins[nodeNum], pin.shown else { return nil }
 		return pin.holder.position + [0, Self.pinTop * counterScale, 0]
 	}
 
@@ -302,7 +368,7 @@ final class SpatialSceneController {
 	func nearestPin(toScenePoint point: SIMD3<Float>) -> Int64? {
 		let local = nodesContainer.convert(position: point, from: nil)
 		var best: (num: Int64, distance: Float)?
-		for (num, pin) in pins {
+		for (num, pin) in pins where pin.shown {
 			let base = pin.holder.position
 			let y = min(max(local.y - base.y, 0), Self.pinTop * counterScale)
 			let distance = simd_distance(local, base + [0, y, 0])
@@ -351,8 +417,7 @@ final class SpatialSceneController {
 
 	func apply(selection: Int64?, attachments: RealityViewAttachments) {
 		guard let selection, let pin = pins[selection] else {
-			ring.isEnabled = false
-			tether.isEnabled = false
+			hideSelection()
 			detailEntity?.removeFromParent()
 			detailEntity = nil
 			appliedSelection = nil
@@ -367,7 +432,17 @@ final class SpatialSceneController {
 			}
 			detailEntity = entity
 		}
-		placeSelection(at: pin.holder.position)
+		if pin.shown {
+			placeSelection(at: pin.holder.position)
+		} else {
+			hideSelection()
+		}
+	}
+
+	private func hideSelection() {
+		ring.isEnabled = false
+		tether.isEnabled = false
+		detailEntity?.isEnabled = false
 	}
 
 	/// The ring at the pin's foot, the card above its head and the line between them.
@@ -379,6 +454,7 @@ final class SpatialSceneController {
 		let card = top + [0, 0.11 * counterScale, 0]
 		detailEntity?.position = card
 		detailEntity?.scale = SIMD3(repeating: counterScale)
+		detailEntity?.isEnabled = true
 		let direction = card - top
 		let length = simd_length(direction)
 		tether.position = top + direction / 2
@@ -386,14 +462,17 @@ final class SpatialSceneController {
 		tether.orientation = simd_quatf(from: [0, 1, 0], to: simd_normalize(direction))
 		tether.isEnabled = true
 	}
+}
 
+extension SpatialSceneController {
 	// MARK: Links and routes
 
 	func apply(links: [SpatialLinkSnapshot], preset: ModemPresets) {
 		guard placement != nil else { return }
 		var wanted = Set<String>()
 		for link in links {
-			guard let a = pins[link.a]?.holder.position, let b = pins[link.b]?.holder.position else { continue }
+			guard let pinA = pins[link.a], let pinB = pins[link.b], pinA.shown, pinB.shown else { continue }
+			let a = pinA.holder.position, b = pinB.holder.position
 			let lift = SIMD3<Float>(0, Self.pinTop * counterScale, 0)
 			let start = a + lift, end = b + lift
 			for (suffix, from, to, snr) in [(">", start, end, link.snrAtoB), ("<", end, start, link.snrBtoA)] {

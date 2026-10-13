@@ -15,7 +15,9 @@ import SwiftData
 /// Where things sit in the model: on the built terrain when it matches the current box, on a flat
 /// disk while the terrain is still building. The box is the square around the map's circle.
 struct SpatialPlacement {
-	let bounds: GeoBounds
+	/// The circle the terrain was built for: the whole mesh, or a zoomed part of it.
+	let circle: SpatialCircle
+	var bounds: GeoBounds { circle.bounds }
 	let geometry: SpatialTerrainGeometry?
 	let flat: SpatialModelTransform
 	let revision: Int
@@ -86,8 +88,17 @@ final class SpatialMapModel {
 	private var buildTask: Task<Void, Never>?
 	private var buildKey: String?
 	private var placementRevision = 0
-	/// The area shown; the placement's bounds are the square around it.
-	private var circle: SpatialCircle?
+	/// The circle around the whole mesh. Terrain downloads cover the square around it, so zooming
+	/// in never starts a download.
+	private(set) var fullCircle: SpatialCircle?
+	/// How far the map is zoomed into the geography: 1 shows the whole mesh.
+	private(set) var zoom: Double = 1
+	/// What the zoomed circle is centered on; nil is the full circle's center.
+	private(set) var zoomCenter: CLLocationCoordinate2D?
+	/// A node to zoom in on once the next refresh has its position (Show in 3D).
+	private var pendingFocusNodeNum: Int64?
+	private var buildLayer: MapLayer = .standard
+	private var buildDark = true
 	private var lastBoundsChange: Date?
 	private var refreshCount = 0
 
@@ -103,10 +114,76 @@ final class SpatialMapModel {
 		updateLabels()
 	}
 
-	/// Selects a node and keeps it on the terrain even when it lies outside the box.
+	/// Selects a node, keeps it on the terrain even when it lies outside the box, and zooms in on it.
 	func focus(on nodeNum: Int64) {
 		pinnedNodeNums.insert(nodeNum)
 		select(nodeNum)
+		pendingFocusNodeNum = nodeNum
+	}
+
+	// MARK: - Zoom
+
+	var maximumZoom: Double {
+		fullCircle.map { SpatialZoom.maximumZoom(fullRadiusMeters: $0.radiusMeters) } ?? 1
+	}
+
+	/// The circle the map should show now.
+	var targetCircle: SpatialCircle? { circle(forZoom: zoom) }
+
+	/// The circle a zoom would show around the current zoom center.
+	func circle(forZoom zoom: Double) -> SpatialCircle? {
+		fullCircle.map { SpatialZoom.circle(full: $0, zoom: zoom, center: zoomCenter) }
+	}
+
+	func clampedZoom(_ zoom: Double) -> Double {
+		SpatialZoom.clamp(zoom, fullRadiusMeters: fullCircle?.radiusMeters ?? 0)
+	}
+
+	/// Zooms around the current center and rebuilds the terrain for the smaller circle. The center
+	/// is kept where the circle actually ends up, so zooming back in carries on from what is shown.
+	func setZoom(_ zoom: Double) {
+		let zoom = clampedZoom(zoom)
+		guard zoom != self.zoom else { return }
+		self.zoom = zoom
+		if zoom > 1, let circle = targetCircle {
+			zoomCenter = CLLocationCoordinate2D(latitude: circle.latitude, longitude: circle.longitude)
+		} else {
+			zoomCenter = nil
+		}
+		applyArea()
+	}
+
+	/// Centers the map on a node, zoomed in at least as far as `SpatialZoom.focusZoom`.
+	func zoomIn(on nodeNum: Int64) {
+		guard let coordinate = nodesByNum[nodeNum]?.coordinate else { return }
+		zoomCenter = coordinate
+		zoom = clampedZoom(max(zoom, SpatialZoom.focusZoom))
+		if zoom <= 1 { zoomCenter = nil }
+		applyArea()
+	}
+
+	func resetZoom() {
+		guard zoom != 1 || zoomCenter != nil else { return }
+		zoom = 1
+		zoomCenter = nil
+		applyArea()
+	}
+
+	/// Starts building the terrain for the circle to show. Until it is built, the scene keeps the
+	/// old terrain and previews the new circle on it; a first circle gets a flat disk right away.
+	private func applyArea() {
+		guard let target = targetCircle else { return }
+		if placement == nil {
+			placementRevision += 1
+			placement = Self.flatPlacement(target, revision: placementRevision)
+		}
+		rebuildTerrainIfNeeded(circle: target, layer: buildLayer, dark: buildDark, contours: showContours)
+		updateLabels()
+	}
+
+	private static func flatPlacement(_ circle: SpatialCircle, revision: Int) -> SpatialPlacement {
+		let frame = SpatialFrame(bounds: circle.bounds)
+		return SpatialPlacement(circle: circle, geometry: nil, flat: SpatialModelTransform(frame: frame, baseElevation: 0, maxElevation: 0), revision: revision)
 	}
 
 	func refresh(context: ModelContext, filters: NodeFilterParameters, preciseOnly: Bool, layer: MapLayer, dark: Bool) {
@@ -134,16 +211,20 @@ final class SpatialMapModel {
 		if let selectedNodeNum, nodesByNum[selectedNodeNum] == nil { select(nil) }
 
 		if let candidate = SpatialCircle.around(fetched.map(\.coordinate)),
-		   let next = SpatialMapArea.next(current: circle, candidate: candidate, nodes: fetched.map(\.coordinate), lastChange: lastBoundsChange, now: Date()) {
-			circle = next
+		   let next = SpatialMapArea.next(current: fullCircle, candidate: candidate, nodes: fetched.map(\.coordinate), lastChange: lastBoundsChange, now: Date()) {
+			fullCircle = next
 			lastBoundsChange = Date()
-			placementRevision += 1
-			let frame = SpatialFrame(bounds: next.bounds)
-			placement = SpatialPlacement(bounds: next.bounds, geometry: nil, flat: SpatialModelTransform(frame: frame, baseElevation: 0, maxElevation: 0), revision: placementRevision)
+			// The zoom is relative to the full circle; keep it within the new one's limits.
+			zoom = clampedZoom(zoom)
+			if zoom <= 1 { zoomCenter = nil }
 		}
-		if let placement {
-			rebuildTerrainIfNeeded(bounds: placement.bounds, layer: layer, dark: dark, contours: showContours)
+		if let pending = pendingFocusNodeNum, nodesByNum[pending] != nil {
+			pendingFocusNodeNum = nil
+			zoomIn(on: pending)
 		}
+		buildLayer = layer
+		buildDark = dark
+		applyArea()
 		autoDownloadIfNeeded()
 
 		if showLinks, refreshCount % 10 == 1 {
@@ -159,7 +240,8 @@ final class SpatialMapModel {
 		updateLabels()
 	}
 
-	private func rebuildTerrainIfNeeded(bounds: GeoBounds, layer: MapLayer, dark: Bool, contours: Bool) {
+	private func rebuildTerrainIfNeeded(circle: SpatialCircle, layer: MapLayer, dark: Bool, contours: Bool) {
+		let bounds = circle.bounds
 		// The terrain generation (every region's download stamp) is part of the key, so a terrain
 		// download or delete rebuilds the model.
 		let generation = OfflineMapManager.shared.regions
@@ -191,7 +273,7 @@ final class SpatialMapModel {
 				textureSource = model.textureSource
 				placementRevision += 1
 				placement = SpatialPlacement(
-					bounds: bounds, geometry: model.geometry,
+					circle: circle, geometry: model.geometry,
 					flat: SpatialModelTransform(frame: model.geometry.transform.frame, baseElevation: 0, maxElevation: 0),
 					revision: placementRevision
 				)
@@ -202,6 +284,13 @@ final class SpatialMapModel {
 				Logger.services.error("🧊 [Spatial] Terrain build failed: \(error.localizedDescription, privacy: .public)")
 				terrainMessage = error.localizedDescription
 				isBuildingTerrain = false
+				// Without terrain, put the pins on a flat disk for the circle they belong to.
+				if placement?.circle != circle {
+					// The old terrain is for another circle.
+					terrainEntity = nil
+					placementRevision += 1
+					placement = Self.flatPlacement(circle, revision: placementRevision)
+				}
 			}
 		}
 	}
@@ -211,9 +300,9 @@ final class SpatialMapModel {
 	/// What it would take to cover the box with terrain, ignoring the automatic retry rules. Nil
 	/// while there is no box or its terrain is still building.
 	func terrainDecision(manager: OfflineMapManager) -> SpatialTerrainAutoDecision? {
-		guard let placement, placement.geometry != nil, !isBuildingTerrain else { return nil }
+		guard let placement, placement.geometry != nil, !isBuildingTerrain, let fullCircle else { return nil }
 		return SpatialTerrainAutoDecision.make(
-			box: placement.bounds, regions: manager.regions,
+			box: fullCircle.bounds, regions: manager.regions,
 			isBusy: manager.isBusy, backoff: SpatialTerrainBackoff(), now: Date()
 		)
 	}
@@ -226,13 +315,13 @@ final class SpatialMapModel {
 	/// Starts a download by itself once the box has settled and the terrain doesn't cover it.
 	private func autoDownloadIfNeeded() {
 		guard autoDownloadTerrain, !isBuildingTerrain, !isDownloadingTerrain,
-			  let placement, placement.geometry != nil,
+			  let placement, placement.geometry != nil, let fullCircle,
 			  let lastBoundsChange, Date().timeIntervalSince(lastBoundsChange) >= Self.autoDownloadSettleInterval else { return }
 		let manager = OfflineMapManager.shared
 		guard !manager.isBusy else { return }
 		// The region set is part of the key: deleting a map (or the managed terrain) checks again.
 		let regionKey = manager.regions.map { "\($0.id)\($0.terrain != nil)" }.joined(separator: ",")
-		let bounds = placement.bounds
+		let bounds = fullCircle.bounds
 		let key = "\(bounds.minLon),\(bounds.minLat),\(bounds.maxLon),\(bounds.maxLat)|\(regionKey)"
 		let retryDue = backoff.target.map { !backoff.gaveUp(on: $0) } == true && backoff.retryAfter.map { Date() >= $0 } == true
 		guard key != autoCheckKey || retryDue else { return }
@@ -246,7 +335,8 @@ final class SpatialMapModel {
 	/// that replaces it. When it finishes, the terrain generation in the build key changes and the
 	/// next refresh rebuilds the model with relief. A manual start ignores the retry rules.
 	func startTerrainDownload(automatic: Bool = false) {
-		guard !isDownloadingTerrain, let bounds = placement?.bounds else { return }
+		// The square around the whole mesh, whatever the zoom.
+		guard !isDownloadingTerrain, let bounds = fullCircle?.bounds else { return }
 		let manager = OfflineMapManager.shared
 		manager.loadIfNeeded()
 		if !automatic { backoff = SpatialTerrainBackoff() }
@@ -311,7 +401,10 @@ final class SpatialMapModel {
 	private func updateLabels() {
 		var ordered: [Int64] = []
 		if showLabels {
-			let ranked = nodes.sorted { a, b in
+			// Only nodes on the disk: the rest are hidden, and would take label slots for nothing.
+			let target = targetCircle
+			let shown = target.map { circle in nodes.filter { SpatialZoom.isShown($0.coordinate, in: circle) } } ?? nodes
+			let ranked = shown.sorted { a, b in
 				if a.isConnectedRadio != b.isConnectedRadio { return a.isConnectedRadio }
 				if a.isFavorite != b.isFavorite { return a.isFavorite }
 				if a.isOnline != b.isOnline { return a.isOnline }
