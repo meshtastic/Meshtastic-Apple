@@ -709,6 +709,49 @@ actor MeshPackets {
 		lastDebouncedSaveTime = .now
 	}
 
+	// MARK: - A connect's config download
+
+	/// Config downloads in progress, by the radio's device id: when each began, and the radio's
+	/// node number once known. While one runs, that radio's config records save with the debounced
+	/// save instead of one by one: a connect's download is 30 to 40 records, and each save is
+	/// merged into the main context and fetched again by the views. Its end flushes them. Another
+	/// radio's records, such as the local copy of a setting saved for a remote node, save at once.
+	/// One older than a minute is taken as over, so a download that never reports its end can't
+	/// hold saves back.
+	private struct ConfigDownload {
+		let began: ContinuousClock.Instant
+		var nodeNum: Int64?
+	}
+	private var configDownloads: [UUID: ConfigDownload] = [:]
+	private static let configDownloadTimeout: Duration = .seconds(60)
+
+	/// `nodeNum` is nil for a radio the app doesn't know yet; its MyInfo, the download's first
+	/// record, gives it (`myInfoPacket`).
+	func beginConfigDownload(_ deviceId: UUID, nodeNum: Int64?) {
+		configDownloads[deviceId] = ConfigDownload(began: .now, nodeNum: nodeNum)
+	}
+
+	/// The download for `deviceId` is over, done or not: its records are saved now.
+	func endConfigDownload(_ deviceId: UUID) {
+		guard configDownloads.removeValue(forKey: deviceId) != nil else { return }
+		flushDebouncedSaves()
+	}
+
+	func isDownloadingConfig(of nodeNum: Int64) -> Bool {
+		let now = ContinuousClock.now
+		return configDownloads.values.contains { $0.nodeNum == nodeNum && now - $0.began < Self.configDownloadTimeout }
+	}
+
+	/// Saves a config record of radio `nodeNum`: with the debounced save while that radio's config
+	/// download runs, at once otherwise, so the answer to a Settings change shows at once.
+	func saveConfigRecord(for nodeNum: Int64, caller: String = #function) {
+		if isDownloadingConfig(of: nodeNum) {
+			scheduleDebouncedSave()
+		} else {
+			savePendingChanges(caller: caller)
+		}
+	}
+
 	/// Last time the channel-unread badge count was recomputed (an O(unread) scan).
 	private var lastChannelUnreadRecompute: ContinuousClock.Instant?
 	/// Rate-limits the per-message channel-unread recompute to at most ~1/sec so a burst
@@ -832,6 +875,10 @@ actor MeshPackets {
 		Logger.admin.info("ℹ️ \(logString, privacy: .public)")
 
 		let myNodeNum = Int64(myInfo.myNodeNum)
+		// The radio downloading its config is this one: its records wait for the download's end.
+		if let deviceId = UUID(uuidString: peripheralId), configDownloads[deviceId] != nil {
+			configDownloads[deviceId]?.nodeNum = myNodeNum
+		}
 		let fetchDescriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == myNodeNum })
 
 		do {
@@ -849,6 +896,8 @@ actor MeshPackets {
 					myInfoEntity.pioEnv = myInfo.pioEnv
 				}
 				Logger.data.info("💾 Saved a new myInfo for node: \(myInfo.myNodeNum.toHex(), privacy: .public)")
+				// Saved at once, even during a config download: `handleMyInfo` reads it back by
+				// this id in another context, and an unsaved insert's id traps there.
 				savePendingChanges()
 				return myInfoEntity.persistentModelID
 			} else {
@@ -929,7 +978,7 @@ actor MeshPackets {
 					if channel.role == Channel.Role.disabled {
 						if let existing {
 							modelContext.delete(existing)
-							savePendingChanges()
+							saveConfigRecord(for: fromNum)
 							Logger.data.info("💾 Deleted MyInfo channel \(channel.index, privacy: .public) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum, privacy: .public)")
 						}
 						return
@@ -943,7 +992,7 @@ actor MeshPackets {
 						fetchedMyInfo[0].channels.append(newChannel)
 					}
 					apply(stagedChannel: stagedChannel(from: channel), to: newChannel)
-					savePendingChanges()
+					saveConfigRecord(for: fromNum)
 					Logger.data.info("💾 Updated MyInfo channel \(channel.index, privacy: .public) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum, privacy: .public)")
 				} else if channel.role.rawValue > 0 {
 					Logger.data.error("💥Trying to save a channel to a MyInfo that does not exist: \(fromNum.toHex(), privacy: .public)")

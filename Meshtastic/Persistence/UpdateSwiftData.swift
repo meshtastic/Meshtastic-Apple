@@ -814,7 +814,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 					Logger.data.info("💾 [BluetoothConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [BluetoothConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Bluetooth Config")
@@ -866,7 +866,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 					Logger.data.info("💾 [DeviceConfigEntity] Updated Device Config for node number: \(nodeNum.toHex(), privacy: .public)")
 			}
 		} catch {
@@ -919,7 +919,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 				Logger.data.info("💾 [DisplayConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [DisplayConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Display Config")
@@ -989,7 +989,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 					Logger.data.info("💾 [LoRaConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [LoRaConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Lora Config")
@@ -1046,7 +1046,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 				Logger.data.info("💾 [NetworkConfigEntity] Updated Network Config for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [NetworkConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Network Config")
@@ -1105,7 +1105,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 					Logger.data.info("💾 [PositionConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [PositionConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Position Config")
@@ -1151,7 +1151,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 					Logger.data.info("💾 [PowerConfigEntity] Updated Power Config for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [PowerConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Power Config")
@@ -1210,7 +1210,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 				Logger.data.info("💾 [SecurityConfigEntity] Updated Security Config for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [SecurityConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Security Config")
@@ -1256,7 +1256,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 					Logger.data.info("💾 [AudioConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [AudioConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Audio Module Config")
@@ -1294,7 +1294,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 					Logger.data.info("💾 [AmbientLightingConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [AmbientLightingConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Ambient Lighting Module Config")
@@ -1349,7 +1349,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 					Logger.data.info("💾 [CannedMessageConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [CannedMessageConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Canned Message Module Config")
@@ -1398,7 +1398,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 				Logger.data.info("💾 [DetectionSensorConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 				
 			} else {
@@ -1457,7 +1457,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 				Logger.data.info("💾 [MeshBeaconConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 
 			} else {
@@ -1523,7 +1523,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 					Logger.data.info("💾 [ExternalNotificationConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [ExternalNotificationConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save External Notification Module Config")
@@ -1561,7 +1561,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 					Logger.data.info("💾 [NeighborInfoConfigEntity] Updated for node number: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [NeighborInfoConfigEntity] No Nodes found in local database matching node number \(nodeNum.toHex(), privacy: .public) unable to save Neighbor Info Module Config")
@@ -1602,7 +1602,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 					Logger.data.info("💾 [PaxCounterConfigEntity] Updated for node number: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [PaxCounterConfigEntity] No Nodes found in local database matching node number \(nodeNum.toHex(), privacy: .public) unable to save PAX Counter Module Config")
@@ -1637,7 +1637,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 					Logger.data.info("💾 [RtttlConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [RtttlConfigEntity] No nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save RTTTL Ringtone Config")
@@ -1696,7 +1696,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 					Logger.data.info("💾 [MQTTConfigEntity] Updated for node number: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [MQTTConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save MQTT Module Config")
@@ -1735,7 +1735,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 					Logger.data.info("💾 [RangeTestConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [RangeTestConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Range Test Module Config")
@@ -1782,7 +1782,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 				Logger.data.info("💾 [SerialConfigEntity]Updated Serial Module Config for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [SerialConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Serial Module Config")
@@ -1821,7 +1821,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 					Logger.data.info("💾 [StatusMessageConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [StatusMessageConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Status Message Module Config")
@@ -1899,7 +1899,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 					Logger.data.info("💾 [StoreForwardConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [StoreForwardConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Store & Forward Module Config")
@@ -1954,7 +1954,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 				Logger.data.info("💾 [TelemetryConfigEntity] Updated Telemetry Module Config for node: \(nodeNum.toHex(), privacy: .public)")
 				
 			} else {
@@ -1992,7 +1992,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 					Logger.data.info("💾 [TAKConfigEntity] Updated TAK Module Config for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [TAKConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save TAK Module Config")
@@ -2046,7 +2046,7 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
-				savePendingChanges()
+				saveConfigRecord(for: nodeNum)
 				Logger.data.info("💾 [TrafficManagementConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {
 				Logger.data.error("💥 [TrafficManagementConfigEntity] No Nodes found in local database matching node \(nodeNum.toHex(), privacy: .public) unable to save Traffic Management Module Config")

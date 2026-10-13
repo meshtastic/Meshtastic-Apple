@@ -486,6 +486,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 	private func runAutomaticConfigRefresh(owner: AutomaticChannelRefreshOwner, connection: Connection) async {
 		guard !Task.isCancelled, activeAutomaticConfigRefresh?.owner == owner else { return }
+		// Its records save together when the config completes or the download ends.
+		await MeshPackets.shared.beginConfigDownload(owner.sessionID, nodeNum: activeConnection?.device.num ?? activeDeviceNum)
 		do {
 			try Task.checkCancellation()
 			var toRadio: ToRadio = ToRadio()
@@ -539,6 +541,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		guard let refresh = activeAutomaticConfigRefresh, refresh.owner == owner else { return }
 		activeAutomaticConfigRefresh = nil
 		automaticConfigRefreshTask = nil
+		// The download's records, saved together before whatever waits on it reads them.
+		await MeshPackets.shared.endConfigDownload(owner.sessionID)
 		if let error {
 			if let nodeNum = refresh.nodeNum {
 				await MeshPackets.shared.discardChannelRefreshStage(for: nodeNum, owner: owner)
@@ -1257,6 +1261,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				}
 				// Only an owned config completion proves the cached configuration is fresh.
 				lastConfigRefresh = Date()
+				// The download's records are saved first: the channel commit and the share snapshot
+				// read them.
+				await MeshPackets.shared.endConfigDownload(refresh.owner.sessionID)
 				if let completedNodeNum = refresh.nodeNum {
 					await MeshPackets.shared.commitChannelRefreshStage(for: completedNodeNum, owner: refresh.owner)
 					MeshShareSnapshotBuilder.refresh(nodeNum: completedNodeNum, context: context)
