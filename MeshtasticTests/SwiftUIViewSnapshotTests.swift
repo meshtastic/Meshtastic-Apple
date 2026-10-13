@@ -2634,7 +2634,7 @@ struct DeviceConfigSnapshotTests {
 			connectionState: .connected,
 			num: node.num
 		)
-		AccessoryManager.shared.activeConnection = (device: device, connection: SnapshotIdleConnection())
+		AccessoryManager.shared.activeConnection = RadioSession(device: device, connection: SnapshotIdleConnection())
 		defer { AccessoryManager.shared.activeConnection = nil }
 		let view = NavigationView {
 			DeviceConfig(node: node)
