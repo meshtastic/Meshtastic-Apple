@@ -78,9 +78,17 @@ enum TraceRouteState: Equatable {
 
 extension TraceRouteEntity {
 
-	/// When the request went out, as far as this record knows. Before a response arrives `time`
-	/// is the send time.
-	private var requestTime: Date? { time }
+	/// When the request went out. Older records have no `sentAt`; before a response arrives their
+	/// `time` is the send time.
+	private var requestTime: Date? { sentAt ?? time }
+
+	/// Seconds from sending the request to getting the response; nil for observed routes, requests
+	/// without a response and older records that didn't keep the send time.
+	var roundTrip: TimeInterval? {
+		guard sent, response, let sentAt, let time else { return nil }
+		let interval = time.timeIntervalSince(sentAt)
+		return interval >= 0 ? interval : nil
+	}
 
 	/// The state of this trace route at `now`.
 	func state(now: Date = .now) -> TraceRouteState {

@@ -316,6 +316,8 @@ extension NodeBackupManager {
 			dst.sent = src.sent
 			dst.snr = src.snr
 			dst.time = src.time
+			dst.sentAt = src.sentAt
+			dst.rateLimited = src.rateLimited
 			dst.fromNum = src.fromNum
 			dst.toNum = src.toNum
 			if let srcNode = src.node, let liveNode = nodesByNum[srcNode.num] {

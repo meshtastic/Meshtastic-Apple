@@ -21,7 +21,10 @@ final class TraceRouteEntity {
 	var routeText: String?
 	var sent: Bool = false
 	var snr: Float = 0.0
+	/// When the response arrived (or, before one does, when the request was sent).
 	var time: Date?
+	/// When we sent the request. Nil for routes observed on the mesh and for older records.
+	var sentAt: Date?
 	/// Node num that originated the trace route request (our connected node for requests we
 	/// initiated, otherwise the requester of a trace route we observed on the mesh).
 	var fromNum: Int64 = 0

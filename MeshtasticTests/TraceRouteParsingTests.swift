@@ -98,7 +98,8 @@ struct TraceRouteParsingTests {
 		let route = TraceRouteEntity()
 		route.id = Int64(id)
 		route.sent = true
-		route.time = Date()
+		route.sentAt = Date().addingTimeInterval(-8)
+		route.time = route.sentAt
 		route.node = getNodeInfo(id: targetNum, context: context)
 		context.insert(route)
 		try context.save()
@@ -194,6 +195,8 @@ struct TraceRouteParsingTests {
 		#expect(route.node?.num == targetNum)
 		#expect(route.hopsTowards == 0)
 		#expect(route.hopsBack == 0)
+		let roundTrip = try #require(route.roundTrip)
+		#expect(roundTrip >= 8 && roundTrip < 60)
 	}
 
 	@Test("A response seen on the mesh is stored as observed")
@@ -213,6 +216,8 @@ struct TraceRouteParsingTests {
 		#expect(route.fromNum == requester)
 		#expect(route.toNum == targetNum)
 		#expect(route.node == nil)
+		#expect(route.sentAt == nil)
+		#expect(route.roundTrip == nil)
 	}
 
 	@Test("Seeing the same response again updates the record in place")
