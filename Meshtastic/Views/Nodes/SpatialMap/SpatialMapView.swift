@@ -18,6 +18,7 @@ struct SpatialMapView: View {
 	let preset: ModemPresets
 	let showLinks: Bool
 	let onOpenNode: (Int64) -> Void
+	let onCoverage: (Int64, SpatialCoverageAction) -> Void
 
 	@State private var yaw: Float = 0
 	@State private var dragStart: (yaw: Float, point: SIMD2<Float>)?
@@ -64,10 +65,12 @@ struct SpatialMapView: View {
 				}
 				if let selected = model.selectedNodeNum, let node = model.nodesByNum[selected] {
 					Attachment(id: "detail") {
-						SpatialNodeDetailPanel(node: node, preset: preset) {
+						SpatialNodeDetailPanel(node: node, preset: preset, coverage: coverageState(node.id)) {
 							onOpenNode(node.id)
 						} onCenter: {
 							model.zoomIn(on: node.id)
+						} onCoverage: { action in
+							onCoverage(node.id, action)
 						} onClose: {
 							model.select(nil)
 						}
@@ -158,6 +161,12 @@ struct SpatialMapView: View {
 		if let liveZoom { model.setZoom(liveZoom) }
 		liveZoom = nil
 		pinchStartZoom = nil
+	}
+
+	/// Shown only when the estimate is active and coverage isn't switched off.
+	private func coverageState(_ nodeNum: Int64) -> SpatialCoverageCardState {
+		guard let file = model.coverageByNode[nodeNum] else { return .none }
+		return file.isActive && model.coverageMode != .off ? .shown(file.created) : .hidden(file.created)
 	}
 
 	/// Back to north at the back and the whole mesh.

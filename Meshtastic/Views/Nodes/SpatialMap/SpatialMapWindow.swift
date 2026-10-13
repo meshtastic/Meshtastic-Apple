@@ -52,6 +52,8 @@ struct SpatialMapWindow: View {
 			if let url = URL(string: "meshtastic:///nodes?nodenum=\(nodeNum)") {
 				UIApplication.shared.open(url)
 			}
+		} onCoverage: { nodeNum, action in
+			handleCoverage(action, nodeNum: nodeNum)
 		}
 		// The window takes its size limits from these, so the user can resize the table between them.
 		.frame(
@@ -131,6 +133,25 @@ struct SpatialMapWindow: View {
 			if current == nil || abs(current!.latitude - coordinate.latitude) > 1e-7 || abs(current!.longitude - coordinate.longitude) > 1e-7 {
 				nodeFilters.fallbackLocation = coordinate
 			}
+		}
+	}
+
+	/// The estimate runs in the main window's form, which has the antenna settings and a full-size
+	/// window for the planner. Show and hide flip the file's visibility, shared with the 2D map.
+	private func handleCoverage(_ action: SpatialCoverageAction, nodeNum: Int64) {
+		switch action {
+		case .estimate:
+			if let url = URL(string: "meshtastic:///map?coverage=1&nodenum=\(nodeNum)") {
+				UIApplication.shared.open(url)
+			}
+		case .show, .hide:
+			guard let file = model.coverageByNode[nodeNum] else { return }
+			GeoJSONOverlayManager.shared.setFileActive(file.fileID, action == .show)
+			if action == .show, coverageMode == .off {
+				coverageMode = .selected
+				model.coverageMode = .selected
+			}
+			model.coverageFilesChanged()
 		}
 	}
 

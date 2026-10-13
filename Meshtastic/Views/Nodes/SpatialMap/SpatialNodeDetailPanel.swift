@@ -8,12 +8,28 @@
 import CoreLocation
 import SwiftUI
 
+/// The node's newest coverage estimate as the card shows it.
+enum SpatialCoverageCardState: Equatable {
+	case none
+	case shown(Date)
+	case hidden(Date)
+}
+
+enum SpatialCoverageAction {
+	/// Open the estimate form for the node in the main window.
+	case estimate
+	case show
+	case hide
+}
+
 /// The card tethered to the selected node. Reads only the snapshot, never SwiftData.
 struct SpatialNodeDetailPanel: View {
 	let node: SpatialNodeSnapshot
 	let preset: ModemPresets
+	var coverage: SpatialCoverageCardState = .none
 	let onOpenNode: () -> Void
 	let onCenter: () -> Void
+	var onCoverage: ((SpatialCoverageAction) -> Void)?
 	let onClose: () -> Void
 
 	var body: some View {
@@ -89,10 +105,59 @@ struct SpatialNodeDetailPanel: View {
 			}
 			.font(.caption)
 			.buttonStyle(.bordered)
+			if let onCoverage {
+				coverageMenu(onCoverage)
+					.font(.caption)
+					.buttonStyle(.bordered)
+			}
 		}
 		.padding(12)
 		.frame(width: 270)
 		.glassBackgroundEffect()
+	}
+
+	/// On its own row: the button row has no room for a third button.
+	private func coverageMenu(_ action: @escaping (SpatialCoverageAction) -> Void) -> some View {
+		Menu {
+			switch coverage {
+			case .shown:
+				Button {
+					action(.hide)
+				} label: {
+					Label(String(localized: "Hide Coverage", comment: "Spatial map card: stop showing this node's coverage estimate"), systemImage: "eye.slash")
+				}
+			case .hidden:
+				Button {
+					action(.show)
+				} label: {
+					Label(String(localized: "Show Coverage", comment: "Spatial map card: show this node's coverage estimate on the terrain"), systemImage: "eye")
+				}
+			case .none:
+				EmptyView()
+			}
+			Button {
+				action(.estimate)
+			} label: {
+				if coverage == .none {
+					Label(String(localized: "Estimate Coverage…", comment: "Spatial map card: open the coverage estimate form for this node"), systemImage: "antenna.radiowaves.left.and.right")
+				} else {
+					Label(String(localized: "Re-estimate Coverage…", comment: "Spatial map card: run a new coverage estimate for this node"), systemImage: "arrow.clockwise")
+				}
+			}
+			if let date = estimateDate {
+				Text("Estimated \(date.formatted(.relative(presentation: .named)))", comment: "Spatial map card: when this node's coverage estimate was made, e.g. Estimated 2 days ago")
+			}
+		} label: {
+			Label(String(localized: "Coverage", comment: "Spatial map menu: which Site Planner coverage estimates to show on the terrain"), systemImage: "antenna.radiowaves.left.and.right")
+		}
+		.accessibilityLabel(String(localized: "Coverage estimate", comment: "VoiceOver label for the spatial map card's coverage menu"))
+	}
+
+	private var estimateDate: Date? {
+		switch coverage {
+		case .shown(let date), .hidden(let date): date
+		case .none: nil
+		}
 	}
 }
 #endif
