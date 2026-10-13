@@ -501,7 +501,8 @@ struct DeviceOnboarding: View {
 	// MARK: Formatting
 	func createNotificationsString() -> AttributedString {
 		var fullText = AttributedString(localized: "Allow Meshtastic to send you notifications for messages, node events, and critical alerts. You can update notification permissions at any time from settings.")
-		if let range = fullText.range(of: String(localized: "settings")) {
+		if let range = fullText.range(of: String(localized: "settings"))
+			?? fullText.range(of: "settings") {
 			fullText[range].link = URL(string: UIApplication.openSettingsURLString)!
 			fullText[range].foregroundColor = .blue
 		}
@@ -519,7 +520,8 @@ struct DeviceOnboarding: View {
 	
 	func createLocalNetworkString() -> AttributedString {
 		var fullText = AttributedString(localized: "Meshtastic accesses your local network to connect to TCP-based accessories.  You can update the local network permissions at any time from settings.")
-		if let range = fullText.range(of: String(localized: "settings")) {
+		if let range = fullText.range(of: String(localized: "settings"))
+			?? fullText.range(of: "settings") {
 			fullText[range].link = URL(string: UIApplication.openSettingsURLString)!
 			fullText[range].foregroundColor = .blue
 		}
@@ -528,7 +530,8 @@ struct DeviceOnboarding: View {
 	
 	func createBluetoothString() -> AttributedString {
 		var fullText = AttributedString(localized: "Meshtastic uses Bluetooth to connect to BLE-based accessories.  You can update the permissions at any time from settings.")
-		if let range = fullText.range(of: String(localized: "settings")) {
+		if let range = fullText.range(of: String(localized: "settings"))
+			?? fullText.range(of: "settings") {
 			fullText[range].link = URL(string: UIApplication.openSettingsURLString)!
 			fullText[range].foregroundColor = .blue
 		}
@@ -537,7 +540,8 @@ struct DeviceOnboarding: View {
 	
 	func createSiriString() -> AttributedString {
 		var fullText = AttributedString(localized: "Meshtastic supports Siri, Shortcuts, and CarPlay so you can send and receive messages hands-free. You can update Siri permissions at any time from settings.")
-		if let range = fullText.range(of: String(localized: "settings")) {
+		if let range = fullText.range(of: String(localized: "settings"))
+			?? fullText.range(of: "settings") {
 			fullText[range].link = URL(string: UIApplication.openSettingsURLString)!
 			fullText[range].foregroundColor = .blue
 		}
