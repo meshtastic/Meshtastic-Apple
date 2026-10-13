@@ -32,6 +32,8 @@ struct SpatialMapWindow: View {
 	@AppStorage("spatialMapShowLinks") private var showLinks = true
 	@AppStorage("spatialMapShowTraffic") private var showTraffic = true
 	@AppStorage("spatialMapAutoTerrain") private var autoTerrain = true
+	@AppStorage("spatialMapCoverage") private var coverageMode: SpatialCoverageMode = .selected
+	@AppStorage("spatialMapCoverageOpacity") private var coverageOpacity = 0.55
 
 	init() {
 		let scene = SpatialSceneController()
@@ -42,7 +44,7 @@ struct SpatialMapWindow: View {
 	private var preset: ModemPresets { ModemPresets(rawValue: UserDefaults.modemPreset) ?? .longFast }
 
 	private var refreshKey: String {
-		"\(mapLayer.rawValue)|\(darkMap)|\(showContours)|\(preciseLocationsOnly)|\(showLinks)|\(accessoryManager.activeDeviceNum ?? 0)|\(accessoryManager.isInBackground)"
+		"\(mapLayer.rawValue)|\(darkMap)|\(showContours)|\(preciseLocationsOnly)|\(showLinks)|\(coverageMode.rawValue)|\(accessoryManager.activeDeviceNum ?? 0)|\(accessoryManager.isInBackground)"
 	}
 
 	var body: some View {
@@ -61,7 +63,8 @@ struct SpatialMapWindow: View {
 		.ornament(attachmentAnchor: .scene(.bottomFront)) {
 			SpatialMapOrnament(
 				model: model, traffic: traffic, mapLayer: $mapLayer, darkMap: $darkMap, showContours: $showContours,
-				showLabels: $showLabels, showLinks: $showLinks, showTraffic: $showTraffic, autoTerrain: $autoTerrain
+				showLabels: $showLabels, showLinks: $showLinks, showTraffic: $showTraffic, autoTerrain: $autoTerrain,
+				coverageMode: $coverageMode, coverageOpacity: $coverageOpacity
 			)
 		}
 		.task(id: refreshKey) {
@@ -83,6 +86,9 @@ struct SpatialMapWindow: View {
 		}
 		.onChange(of: showLabels, initial: true) { _, show in
 			model.showLabels = show
+		}
+		.onChange(of: coverageOpacity, initial: true) { _, opacity in
+			model.coverageOpacity = Float(opacity)
 		}
 		.onChange(of: appState.spatialMapFocus?.id) {
 			claimFocus()
@@ -117,6 +123,7 @@ struct SpatialMapWindow: View {
 		model.showLinks = showLinks
 		model.showContours = showContours
 		model.autoDownloadTerrain = autoTerrain
+		model.coverageMode = coverageMode
 		model.refresh(context: context, filters: nodeFilters, preciseOnly: preciseLocationsOnly, layer: mapLayer, dark: darkMap)
 		// The distance filter measures from the connected radio.
 		if let num = accessoryManager.activeDeviceNum, let coordinate = model.nodesByNum[num]?.coordinate {
@@ -154,6 +161,8 @@ struct SpatialMapOrnament: View {
 	@Binding var showLinks: Bool
 	@Binding var showTraffic: Bool
 	@Binding var autoTerrain: Bool
+	@Binding var coverageMode: SpatialCoverageMode
+	@Binding var coverageOpacity: Double
 	@ObservedObject private var offline = OfflineMapManager.shared
 	@State private var confirmingTerrainDownload = false
 
@@ -171,6 +180,7 @@ struct SpatialMapOrnament: View {
 				Toggle(isOn: $showContours) {
 					Label(String(localized: "Contour Lines"), systemImage: "point.topleft.down.to.point.bottomright.curvepath")
 				}
+				coverageMenu
 				Toggle(isOn: $autoTerrain) {
 					Label(String(localized: "Download Terrain Automatically", comment: "Spatial map menu: keep the volume's area covered by elevation data without asking"), systemImage: "arrow.down.circle.dotted")
 				}
@@ -256,6 +266,9 @@ struct SpatialMapOrnament: View {
 					Text("· \(model.outsideCount) outside", comment: "Spatial map: nodes too far away to fit on the terrain")
 						.foregroundStyle(.secondary)
 				}
+				if !model.coverageLegend.isEmpty {
+					SpatialCoverageLegendStrip(entries: model.coverageLegend)
+				}
 				if model.textureSource == .offline, mapLayer != .offline {
 					Image(systemName: "wifi.slash")
 						.foregroundStyle(.secondary)
@@ -340,6 +353,28 @@ struct SpatialMapOrnament: View {
 		}
 	}
 
+	/// Which estimates to drape and how strongly. A picker rather than a slider, since sliders work
+	/// poorly inside a menu.
+	@ViewBuilder private var coverageMenu: some View {
+		Picker(selection: $coverageMode) {
+			Text(String(localized: "Off")).tag(SpatialCoverageMode.off)
+			Text(String(localized: "Selected Node", comment: "Spatial map coverage option: show the selected node's coverage estimate")).tag(SpatialCoverageMode.selected)
+			Text(String(localized: "All Estimates", comment: "Spatial map coverage option: show every coverage estimate in the area")).tag(SpatialCoverageMode.all)
+		} label: {
+			Label(String(localized: "Coverage", comment: "Spatial map menu: which Site Planner coverage estimates to show on the terrain"), systemImage: "antenna.radiowaves.left.and.right")
+		}
+		.pickerStyle(.menu)
+		Picker(selection: $coverageOpacity) {
+			Text(String(localized: "Light", comment: "Spatial map coverage opacity option: most see-through")).tag(0.35)
+			Text(String(localized: "Medium", comment: "Spatial map coverage opacity option")).tag(0.55)
+			Text(String(localized: "Strong", comment: "Spatial map coverage opacity option: least see-through")).tag(0.8)
+		} label: {
+			Label(String(localized: "Coverage Opacity", comment: "Spatial map menu: how see-through the coverage overlay is"), systemImage: "circle.lefthalf.filled")
+		}
+		.pickerStyle(.menu)
+		.disabled(coverageMode == .off)
+	}
+
 	private func caption(_ text: String) -> some View {
 		Text(text)
 			.font(.caption)
@@ -354,6 +389,48 @@ struct SpatialMapOrnament: View {
 		let size = "\(Measurement(value: area.width, unit: UnitLength.meters).formatted(style)) × \(Measurement(value: area.height, unit: UnitLength.meters).formatted(style))"
 		let bytes = ByteCountFormatter.string(fromByteCount: SpatialTerrainAutoDecision.estimatedBytes(target), countStyle: .file)
 		return String(localized: "Downloads about \(bytes) of elevation data for a \(size) area around the mesh.", comment: "Spatial map: terrain download confirmation; the arguments are the download size, e.g. 40 MB, and the area's width × height, e.g. 98 km × 104 km")
+	}
+}
+
+/// The coverage colors in the ornament: a swatch per signal level, strongest first, the range of
+/// levels, and the dark "no signal" shade. The full labels are in the tooltip.
+struct SpatialCoverageLegendStrip: View {
+	let entries: [SpatialCoverageLegendEntry]
+	static let maximumSwatches = 6
+
+	var body: some View {
+		let shown = Array(entries.prefix(Self.maximumSwatches))
+		HStack(spacing: 4) {
+			Divider().frame(height: 14)
+			HStack(spacing: 1) {
+				ForEach(shown) { entry in
+					swatch(Color(.sRGB, red: entry.rgba.x, green: entry.rgba.y, blue: entry.rgba.z))
+				}
+			}
+			if let strongest = shown.first, let weakest = shown.last {
+				Text(verbatim: strongest.dbm == weakest.dbm
+					 ? "\(Self.level(strongest.dbm)) dBm"
+					 : "\(Self.level(strongest.dbm))…\(Self.level(weakest.dbm)) dBm")
+					.monospacedDigit()
+			}
+			swatch(Color.black.opacity(SpatialCoverageTexture.shadow.w))
+			Text("No signal", comment: "Spatial map legend: the dark shade where a coverage estimate found no signal")
+				.foregroundStyle(.secondary)
+		}
+		.help(entries.map(\.label).joined(separator: "\n"))
+		.accessibilityElement(children: .ignore)
+		.accessibilityLabel(String(localized: "Coverage legend", comment: "VoiceOver label for the spatial map coverage colors"))
+		.accessibilityValue(entries.map(\.label).joined(separator: ", "))
+	}
+
+	private func swatch(_ color: Color) -> some View {
+		RoundedRectangle(cornerRadius: 2)
+			.fill(color)
+			.frame(width: 10, height: 10)
+	}
+
+	private static func level(_ dbm: Double) -> String {
+		dbm.formatted(.number.precision(.fractionLength(0)))
 	}
 }
 #endif
