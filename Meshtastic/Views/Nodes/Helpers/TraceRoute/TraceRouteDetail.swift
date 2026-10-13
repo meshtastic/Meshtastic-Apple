@@ -22,11 +22,11 @@ struct TraceRouteDetail: View {
 	private var preset: ModemPresets { ModemPresets(rawValue: UserDefaults.modemPreset) ?? .longFast }
 
 	var body: some View {
-		TimelineView(.periodic(from: .now, by: 10)) { timeline in
-			let state = route.state(now: timeline.date)
+		TraceRouteStateTimeline(route: route) { now in
+			let state = route.state(now: now)
 			List {
 				Section {
-					TraceRouteCard(model: TraceRouteCardModel(route: route, title: title, now: timeline.date))
+					TraceRouteCard(model: TraceRouteCardModel(route: route, title: title, now: now))
 				}
 				switch state {
 				case .complete, .observed:

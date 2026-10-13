@@ -118,6 +118,8 @@ private struct TraceRouteStopRow: View {
 						.foregroundStyle(.secondary)
 				}
 				.frame(width: stopCircleSize, height: stopCircleSize)
+				// The long name already says "Unknown repeater"; don't read the "?" first.
+				.accessibilityHidden(true)
 			} else {
 				CircleText(text: stop.shortName, color: Color(UIColor(hex: UInt32(truncatingIfNeeded: stop.num))), circleSize: stopCircleSize)
 			}
@@ -137,6 +139,7 @@ private struct TraceRouteStopRow: View {
 				Image(systemName: "chevron.right")
 					.font(.caption.weight(.semibold))
 					.foregroundStyle(.tertiary)
+					.accessibilityHidden(true)
 			}
 		}
 		.contentShape(Rectangle())
@@ -181,6 +184,7 @@ private struct TraceRouteLegConnector: View {
 				Text("SNR \(value) dB")
 				Text(verbatim: "·")
 					.foregroundStyle(.secondary)
+					.accessibilityHidden(true)
 				Text(quality.description)
 			}
 			.foregroundStyle(color)
