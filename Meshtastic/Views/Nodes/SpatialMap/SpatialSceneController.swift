@@ -323,6 +323,8 @@ final class SpatialSceneController {
 			guard let pin = pins[num], let entity = attachments.entity(for: num) else { continue }
 			if entity.parent !== pin.holder {
 				entity.components.set(BillboardComponent())
+				// So a tap the label's button doesn't take still selects this node, not whatever is nearby.
+				entity.components.set(NodePinComponent(nodeNum: num))
 				entity.position = [0, Self.pinTop + 0.018, 0]
 				pin.holder.addChild(entity)
 			}
