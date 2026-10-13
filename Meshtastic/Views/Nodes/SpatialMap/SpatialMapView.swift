@@ -49,7 +49,9 @@ struct SpatialMapView: View {
 				ForEach(model.labeledNodeNums, id: \.self) { num in
 					Attachment(id: num) {
 						if let node = model.nodesByNum[num] {
-							SpatialNodeLabel(node: node, isSelected: num == model.selectedNodeNum)
+							SpatialNodeLabel(node: node, isSelected: num == model.selectedNodeNum) {
+								model.select(num)
+							}
 						}
 					}
 				}
@@ -80,7 +82,8 @@ struct SpatialMapView: View {
 			.targetedToAnyEntity()
 			.onEnded { value in
 				guard !Self.isGrabHandle(value.entity) else { return }
-				model.select(Self.nodeNum(of: value.entity))
+				let point = value.convert(value.location3D, from: .local, to: .scene)
+				model.select(Self.nodeNum(of: value.entity) ?? scene.nearestPin(toScenePoint: point))
 			}
 	}
 
@@ -175,14 +178,21 @@ struct SpatialMapView: View {
 struct SpatialNodeLabel: View {
 	let node: SpatialNodeSnapshot
 	let isSelected: Bool
+	let onSelect: () -> Void
 
+	/// The label is a button too, since it is a bigger thing to look at than the pin.
 	var body: some View {
-		Text(node.shortName)
-			.font(.caption2.bold())
-			.padding(.horizontal, 7)
-			.padding(.vertical, 3)
-			.glassBackgroundEffect(in: .capsule)
-			.opacity(node.isOnline || isSelected ? 1 : 0.65)
+		Button(action: onSelect) {
+			Text(node.shortName)
+				.font(.caption2.bold())
+				.padding(.horizontal, 7)
+				.padding(.vertical, 3)
+		}
+		.buttonStyle(.plain)
+		.contentShape(.hoverEffect, .capsule)
+		.hoverEffect(.highlight)
+		.glassBackgroundEffect(in: .capsule)
+		.opacity(node.isOnline || isSelected ? 1 : 0.65)
 	}
 }
 #endif
