@@ -465,3 +465,23 @@ struct RouterURLRoutingTests {
 		#expect(router.settingsPath.isEmpty)
 	}
 }
+
+extension RouterURLRoutingTests {
+	@Test @MainActor func route_map_coverageEstimate() {
+		let router = Router()
+		router.route(url: URL(string: "meshtastic:///map?coverage=1&nodenum=5")!)
+		#expect(router.selectedTab == .map)
+		if case .coverageEstimate(let id) = router.mapState {
+			#expect(id == 5)
+		} else {
+			#expect(Bool(false), "Expected coverageEstimate state")
+		}
+	}
+
+	@Test @MainActor func route_map_coverageWithoutNodeSelectsNothing() {
+		let router = Router()
+		router.route(url: URL(string: "meshtastic:///map?coverage=1")!)
+		#expect(router.selectedTab == .map)
+		#expect(router.mapState == nil)
+	}
+}

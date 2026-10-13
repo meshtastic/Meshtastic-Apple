@@ -286,8 +286,13 @@ class Router: ObservableObject {
 			.value
 			.flatMap(Int64.init)
 
+		// `coverage=1` opens the coverage estimate form for the node.
+		let wantsCoverage = components.queryItems?.contains { $0.name == "coverage" && $0.value == "1" } == true
+
 		selectedTab = .map
-		mapState = if let nodeId {
+		mapState = if let nodeId, wantsCoverage {
+			.coverageEstimate(nodeId)
+		} else if let nodeId {
 			.selectedNode(nodeId)
 		} else if let waypointId {
 			.waypoint(waypointId)
