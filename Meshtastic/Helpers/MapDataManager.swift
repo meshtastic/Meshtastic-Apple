@@ -57,7 +57,7 @@ class MapDataManager: ObservableObject {
 	// MARK: - File Upload & Processing
 
 	/// Process and store an uploaded file
-	func processUploadedFile(from sourceURL: URL, source: MapDataSource = .manualUpload) async throws -> MapDataMetadata {
+	func processUploadedFile(from sourceURL: URL, source: MapDataSource = .manualUpload, coverage: SitePlannerCoverageInfo? = nil) async throws -> MapDataMetadata {
 
 		// 1. Start accessing security-scoped resource
 		let isAccessing = sourceURL.startAccessingSecurityScopedResource()
@@ -89,19 +89,17 @@ class MapDataManager: ObservableObject {
 		try FileManager.default.copyItem(at: sourceURL, to: destURL)
 
 		// 5. Process and validate content
-		let metadata = try await processFileContent(at: destURL, originalName: originalName, source: source)
+		let metadata = try await processFileContent(at: destURL, originalName: originalName, source: source, coverage: coverage)
 
 		// 6. Save metadata and update UI on main thread
 		await MainActor.run {
 			uploadedFiles.append(metadata)
-			// A new Site Planner run replaces the previous one on the map: only the
-			// newest planner file stays active. Manual uploads are never touched —
-			// their visibility belongs to the user.
-			if metadata.source == .sitePlanner {
-				for index in uploadedFiles.indices
-				where uploadedFiles[index].source == .sitePlanner && uploadedFiles[index].id != metadata.id {
-					uploadedFiles[index].isActive = false
-				}
+			// A new Site Planner run replaces the previous run from the same transmitter,
+			// so estimates for different nodes can show together. Manual uploads are never
+			// touched — their visibility belongs to the user.
+			for index in uploadedFiles.indices
+			where uploadedFiles[index].id != metadata.id && Self.replaces(metadata, uploadedFiles[index]) {
+				uploadedFiles[index].isActive = false
 			}
 			// Clear cached configuration to force reload
 			activeFeatureCollection = nil
@@ -115,7 +113,8 @@ class MapDataManager: ObservableObject {
 	/// the Site Planner's native bridge) through the same pipeline as `processUploadedFile`, so it
 	/// reuses the exact validation + render + styling path with no round-trip to the share sheet.
 	/// `name` becomes the on-disk file / layer name; a `.geojson` extension is enforced.
-	func importFromString(_ geoJSON: String, name: String, source: MapDataSource = .manualUpload) async throws -> MapDataMetadata {
+	/// `coverage` describes the transmitter of a Site Planner run and is saved with the file.
+	func importFromString(_ geoJSON: String, name: String, source: MapDataSource = .manualUpload, coverage: SitePlannerCoverageInfo? = nil) async throws -> MapDataMetadata {
 		guard let data = geoJSON.data(using: .utf8) else {
 			throw MapDataError.invalidContent
 		}
@@ -138,7 +137,14 @@ class MapDataManager: ObservableObject {
 		try data.write(to: tempURL)
 		defer { try? FileManager.default.removeItem(at: tempURL) }
 
-		return try await processUploadedFile(from: tempURL, source: source)
+		return try await processUploadedFile(from: tempURL, source: source, coverage: coverage)
+	}
+
+	/// Whether a new file switches an older one off: only Site Planner runs from the same node, or
+	/// from no node (a map-center run, or a file saved before the node was recorded).
+	static func replaces(_ newer: MapDataMetadata, _ older: MapDataMetadata) -> Bool {
+		newer.source == .sitePlanner && older.source == .sitePlanner
+			&& newer.coverage?.nodeNum == older.coverage?.nodeNum
 	}
 
 	/// Validate uploaded file
@@ -164,7 +170,7 @@ class MapDataManager: ObservableObject {
 	}
 
 	/// Process file content and extract metadata
-	private func processFileContent(at url: URL, originalName: String, source: MapDataSource) async throws -> MapDataMetadata {
+	private func processFileContent(at url: URL, originalName: String, source: MapDataSource, coverage: SitePlannerCoverageInfo?) async throws -> MapDataMetadata {
 		let fileAttributes = try url.resourceValues(forKeys: [.fileSizeKey, .creationDateKey])
 		let fileSize = fileAttributes.fileSize ?? 0
 		let uploadDate = fileAttributes.creationDate ?? Date()
@@ -216,7 +222,8 @@ class MapDataManager: ObservableObject {
 			// (older planner files are deactivated by the caller), and a manual
 			// upload shows immediately with its visibility toggle in the user's hands.
 			isActive: true,
-			source: source
+			source: source,
+			coverage: coverage
 		)
 	}
 
@@ -455,11 +462,24 @@ class MapDataManager: ObservableObject {
 // MARK: - Supporting Types
 
 /// Where a map data file came from. Site Planner coverage runs are managed
-/// automatically (only the newest stays active); manual uploads keep whatever
-/// visibility the user set.
+/// automatically (only the newest per transmitter stays active); manual uploads
+/// keep whatever visibility the user set.
 enum MapDataSource: String, Codable, Sendable {
 	case manualUpload
 	case sitePlanner
+}
+
+/// Where and how a Site Planner estimate was computed, saved with its file so the estimate can be
+/// tied back to its node and transmitter.
+struct SitePlannerCoverageInfo: Codable, Equatable, Sendable {
+	/// The node the estimate was run for; nil when it was run for another location.
+	var nodeNum: Int64?
+	var latitude: Double
+	var longitude: Double
+	var maxRangeKm: Double
+	var txHeightMeters: Double
+	var colorScale: String
+	var bounds: CoverageBounds?
 }
 
 /// Metadata for uploaded map data files
@@ -475,8 +495,10 @@ struct MapDataMetadata: Codable, Identifiable {
 	let overlayCount: Int
 	var isActive: Bool
 	var source: MapDataSource
+	/// The transmitter of a Site Planner estimate; nil for uploads and older planner files.
+	var coverage: SitePlannerCoverageInfo?
 
-	init(filename: String, originalName: String, uploadDate: Date, fileSize: Int64, format: String, license: String?, attribution: String?, overlayCount: Int, isActive: Bool, source: MapDataSource = .manualUpload) {
+	init(filename: String, originalName: String, uploadDate: Date, fileSize: Int64, format: String, license: String?, attribution: String?, overlayCount: Int, isActive: Bool, source: MapDataSource = .manualUpload, coverage: SitePlannerCoverageInfo? = nil) {
 		self.id = UUID()
 		self.filename = filename
 		self.originalName = originalName
@@ -488,6 +510,7 @@ struct MapDataMetadata: Codable, Identifiable {
 		self.overlayCount = overlayCount
 		self.isActive = isActive
 		self.source = source
+		self.coverage = coverage
 	}
 
 	/// Manifests written before `source` existed decode as manual uploads — every
@@ -505,6 +528,7 @@ struct MapDataMetadata: Codable, Identifiable {
 		overlayCount = try container.decode(Int.self, forKey: .overlayCount)
 		isActive = try container.decode(Bool.self, forKey: .isActive)
 		source = try container.decodeIfPresent(MapDataSource.self, forKey: .source) ?? .manualUpload
+		coverage = try container.decodeIfPresent(SitePlannerCoverageInfo.self, forKey: .coverage)
 	}
 
 	var fileSizeString: String {

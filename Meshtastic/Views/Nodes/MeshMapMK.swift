@@ -937,7 +937,7 @@ struct MeshMapMK: View {
 			loRaConfig: connectedLoRaConfig,
 			primaryChannelName: connectedPrimaryChannelName
 		)
-		coverageSeed = CoverageEstimateSeed(parameters: params, nodeCoordinate: coordinate, nodeAltitude: altitude, mapCenter: visibleRegion?.center)
+		coverageSeed = CoverageEstimateSeed(parameters: params, nodeCoordinate: coordinate, nodeAltitude: altitude, mapCenter: visibleRegion?.center, nodeNum: nodeNum)
 		if let coordinate {
 			cameraCommand = ClusterMapCameraCommand(
 				id: UUID(),

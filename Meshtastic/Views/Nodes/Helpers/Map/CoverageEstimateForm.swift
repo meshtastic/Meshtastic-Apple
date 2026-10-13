@@ -26,6 +26,8 @@ struct CoverageEstimateSeed: Identifiable {
 	var nodeAltitude: Double?
 	/// The current map centre, when launched from the map toolbar.
 	var mapCenter: CLLocationCoordinate2D?
+	/// The node the form was opened for, saved with the estimate while it runs at the node's position.
+	var nodeNum: Int64?
 }
 
 struct CoverageEstimateForm: View {
@@ -48,6 +50,14 @@ struct CoverageEstimateForm: View {
 		self.seed = seed
 		self.runner = runner
 		_params = State(initialValue: seed.parameters)
+	}
+
+	/// The seed's node while the coordinate is still the node's own; a run moved elsewhere is not
+	/// that node's coverage.
+	private var runNodeNum: Int64? {
+		guard let nodeNum = seed.nodeNum, let node = seed.nodeCoordinate,
+			  params.latitude == node.latitude, params.longitude == node.longitude else { return nil }
+		return nodeNum
 	}
 
 	private var deviceLocation: CLLocationCoordinate2D? {
@@ -77,7 +87,7 @@ struct CoverageEstimateForm: View {
 				}
 				ToolbarItem(placement: .confirmationAction) {
 					Button("Estimate") {
-						runner.start(params: params)
+						runner.start(params: params, nodeNum: runNodeNum)
 					}
 					.disabled(!params.isValid || runner.isRunning)
 				}
