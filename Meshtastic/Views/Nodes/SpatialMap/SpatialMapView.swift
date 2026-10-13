@@ -20,7 +20,7 @@ struct SpatialMapView: View {
 	let onOpenNode: (Int64) -> Void
 
 	@State private var yaw: Float = 0
-	@State private var wheelDrag: SpatialWheelDrag?
+	@State private var dragStart: (yaw: Float, point: SIMD2<Float>)?
 	/// The zoom a pinch has reached, shown as a preview until its terrain is built.
 	@State private var liveZoom: Double?
 	@State private var pinchStartZoom: Double?
@@ -81,7 +81,7 @@ struct SpatialMapView: View {
 				volumeSize = size
 			}
 			.onChange(of: isDragging) { _, dragging in
-				if !dragging { wheelDrag = nil }
+				if !dragging { dragStart = nil }
 			}
 			.onChange(of: isPinching) { _, pinching in
 				if !pinching { endPinch() }
@@ -116,19 +116,13 @@ struct SpatialMapView: View {
 			.updating($isDragging) { _, state, _ in state = true }
 			.onChanged { value in
 				let point = scene.tablePoint(value.convert(value.location3D, from: .local, to: .scene))
-				if var drag = wheelDrag {
-					yaw = drag.update(x: point.x, z: point.y)
-					wheelDrag = drag
-				} else {
-					let start = scene.tablePoint(value.convert(value.startLocation3D, from: .local, to: .scene))
-					var drag = SpatialWheelDrag(startYaw: yaw, x: start.x, z: start.y)
-					yaw = drag.update(x: point.x, z: point.y)
-					wheelDrag = drag
-				}
+				let start = dragStart ?? (yaw, scene.tablePoint(value.convert(value.startLocation3D, from: .local, to: .scene)))
+				dragStart = start
+				yaw = start.yaw + SpatialWheelSpin.yawDelta(start: start.point, current: point, diskRadius: scene.currentFit?.diskRadius ?? 0.5)
 				scene.setYaw(yaw)
 			}
 			.onEnded { _ in
-				wheelDrag = nil
+				dragStart = nil
 			}
 	}
 

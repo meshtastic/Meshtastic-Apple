@@ -84,7 +84,7 @@ final class SpatialSceneController {
 	private(set) var counterScale: Float = 1
 	/// The volume's bounds in scene space, once known.
 	private var volume: BoundingBox?
-	private var currentFit: SpatialVolumeFit?
+	private(set) var currentFit: SpatialVolumeFit?
 	/// The built terrain scaled and shifted toward a zoom that is still building.
 	private var preview = SpatialZoom.Preview.identity
 	private var previewTarget: SpatialCircle?
@@ -125,7 +125,10 @@ final class SpatialSceneController {
 	func fit(volume bounds: BoundingBox) {
 		guard bounds != volume else { return }
 		volume = bounds
-		root.position = [bounds.center.x, bounds.min.y + 0.03, bounds.center.z]
+		// The RealityView's origin is the middle of the volume. The converted frame's z range doesn't
+		// start there (its center sits half a depth toward the viewer), so only its size is used:
+		// placing the disk at its center put the front half past the volume's front wall.
+		root.position = [0, -bounds.extents.y / 2 + 0.03, 0]
 		applyFit()
 	}
 

@@ -214,6 +214,20 @@ struct SpatialMapOrnament: View {
 
 			terrainDownload
 
+			Button {
+				model.setZoom(model.clampedZoom(model.zoom / 2))
+			} label: {
+				Image(systemName: "minus.magnifyingglass")
+			}
+			.disabled(model.zoom <= 1.01)
+			.accessibilityLabel(String(localized: "Zoom out", comment: "Spatial map: show a wider area on the table"))
+			Button {
+				model.setZoom(model.clampedZoom(model.zoom * 2))
+			} label: {
+				Image(systemName: "plus.magnifyingglass")
+			}
+			.disabled(model.clampedZoom(model.zoom * 2) <= model.zoom + 0.01)
+			.accessibilityLabel(String(localized: "Zoom in", comment: "Spatial map: show a smaller area on the table in more detail"))
 			if model.zoom > 1.01 {
 				Button {
 					model.resetZoom()

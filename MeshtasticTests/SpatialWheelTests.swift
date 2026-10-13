@@ -105,4 +105,17 @@ struct SpatialWheelTests {
 		#expect(abs((radii.max() ?? 0) - 0.422) < 1e-4)
 		#expect(abs((mesh.positions.map(\.y).max() ?? 0) - 0.01) < 1e-6)
 	}
+
+	@Test func spinCarriesTheGrabbedPointWithTheHand() {
+		// Near half (toward the viewer): moving right turns the map so that point moves right.
+		let near = SpatialWheelSpin.yawDelta(start: [0, 0.3], current: [0.1, 0.3], diskRadius: 0.5)
+		#expect(near > 0)
+		let point = simd_quatf(angle: near, axis: [0, 1, 0]).act(SIMD3<Float>(0, 0, 0.3))
+		#expect(point.x > 0)
+		// Far half: the same hand movement turns it the other way.
+		#expect(SpatialWheelSpin.yawDelta(start: [0, -0.3], current: [0.1, -0.3], diskRadius: 0.5) < 0)
+		// Ten centimeters of hand travel on a half-meter table is a useful turn (about 23 degrees).
+		#expect(abs(near - 0.4) < 1e-5)
+		#expect(SpatialWheelSpin.yawDelta(start: [0, 0.3], current: [.nan, 0.3], diskRadius: 0.5) == 0)
+	}
 }

@@ -9,6 +9,24 @@ import simd
 
 /// Turns a drag into a rotation that follows the hand around the middle of the table, like
 /// turning a wheel. Points are x/z in the table's own unrotated frame, centered on the disk.
+/// Turns a sideways hand movement into a spin. A look-and-pinch drag moves the hand only a few
+/// centimeters, so following its angle around the middle barely turned the map; this turns the map
+/// by the distance moved, in the direction that carries the grabbed point along with the hand.
+enum SpatialWheelSpin {
+	/// Radians per meter of hand travel, per meter of disk radius: twice the rim's own arc.
+	static let gain: Float = 2
+
+	/// Yaw change for a drag that started at `start` and is now at `current` (table x/z, meters,
+	/// +z toward the viewer). Grabbing the near half and moving right turns the map the other way
+	/// from grabbing the far half, the way a wheel turns under the hand.
+	static func yawDelta(start: SIMD2<Float>, current: SIMD2<Float>, diskRadius: Float) -> Float {
+		let dx = current.x - start.x
+		guard dx.isFinite else { return 0 }
+		let side: Float = start.y >= 0 ? 1 : -1
+		return side * dx * gain / max(diskRadius, 0.1)
+	}
+}
+
 struct SpatialWheelDrag: Equatable, Sendable {
 	/// Points closer to the center than this, in meters, give no usable angle and are skipped.
 	static let deadZone: Float = 0.03

@@ -142889,6 +142889,12 @@
           }
         }
       }
+    },
+    "Zoom in" : {
+      "comment" : "Spatial map: show a smaller area on the table in more detail"
+    },
+    "Zoom out" : {
+      "comment" : "Spatial map: show a wider area on the table"
     }
   },
   "version" : "1.1"
