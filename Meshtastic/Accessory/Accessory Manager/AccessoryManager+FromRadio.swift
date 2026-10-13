@@ -716,10 +716,7 @@ extension AccessoryManager {
 			hopNodes.append(connectedHop)
 			traceRoute.hopsTowards = Int32(routingMessage.route.count)
 			for (index, node) in routingMessage.route.enumerated() {
-				var hopNode = getNodeInfo(id: Int64(node), context: context)
-				if hopNode == nil && hopNode?.num ?? 0 > 0 && node != 4294967295 {
-					hopNode = findOrCreateNode(num: Int64(node), context: context)
-				}
+				let hopNode = traceRouteHopNode(num: node)
 				let traceRouteHop = TraceRouteHopEntity()
 				context.insert(traceRouteHop)
 				traceRouteHop.time = Date()
@@ -729,7 +726,7 @@ extension AccessoryManager {
 					// If no snr in route, set unknown
 					traceRouteHop.snr = -32
 				}
-				traceRouteHop.num = hopNode?.num ?? 0
+				traceRouteHop.num = Int64(node)
 				traceRouteHop.index = Int32(index + 1)
 				if hopNode != nil {
 					if packet.rxTime > 0 {
@@ -762,10 +759,7 @@ extension AccessoryManager {
 				traceRoute.hopsBack = Int32(routingMessage.routeBack.count)
 				var routeBackString = "\(targetNodeInfo?.user?.longName ?? "Unknown".localized) \(targetNum.toHex()) --> "
 				for (index, node) in routingMessage.routeBack.enumerated() {
-					var hopNode = getNodeInfo(id: Int64(node), context: context)
-					if hopNode == nil && hopNode?.num ?? 0 > 0 && node != 4294967295 {
-						hopNode = findOrCreateNode(num: Int64(node), context: context)
-					}
+					let hopNode = traceRouteHopNode(num: node)
 					let traceRouteHop = TraceRouteHopEntity()
 					context.insert(traceRouteHop)
 					traceRouteHop.time = Date()
@@ -776,7 +770,7 @@ extension AccessoryManager {
 						// If no snr in route, set to unknown
 						traceRouteHop.snr = -32
 					}
-					traceRouteHop.num = hopNode?.num ?? 0
+					traceRouteHop.num = Int64(node)
 					traceRouteHop.index = Int32(index)
 					if hopNode != nil {
 						if packet.rxTime > 0 {
@@ -829,6 +823,13 @@ extension AccessoryManager {
 			let logString = String.localizedStringWithFormat("Trace Route request returned: %@".localized, routeString)
 			Logger.mesh.info("🪧 \(logString, privacy: .public)")
 		}
+	}
+
+	/// The node for a trace route hop, created when it isn't in the node DB yet so the hop keeps
+	/// its real number. `0xFFFFFFFF` marks a repeater that didn't add its number; it has no node.
+	private func traceRouteHopNode(num: UInt32) -> NodeInfoEntity? {
+		guard num != 0, num != UInt32.max else { return nil }
+		return findOrCreateNode(num: Int64(num), context: context)
 	}
 
 	/// Captures a point-in-time snapshot of the current position of every node involved in a trace
