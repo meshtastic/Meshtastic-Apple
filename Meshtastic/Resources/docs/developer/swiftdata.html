@@ -124,8 +124,27 @@ final class NodeInfoEntity {
 <td><code>EventFirmwareEntity</code></td>
 <td>Cached off-device event-firmware branding/lifecycle metadata</td>
 </tr>
+<tr>
+<td><code>NodeObservationEntity</code></td>
+<td>One local radio's view of one node (signal, hops, last heard, favorite, ignored, key verification, heard on current LoRa), unique on <code>&quot;radio:node&quot;</code></td>
+</tr>
+<tr>
+<td><code>PacketReceptionEntity</code></td>
+<td>One local radio's reception of one packet, unique on <code>&quot;radio:sender:packet&quot;</code>; kept for 30 days or 50,000 rows</td>
+</tr>
 </tbody>
 </table>
+<h3>Per-radio data (feature 021)</h3>
+<p>Groundwork for connecting several radios at once (<code>specs/021-multi-radio-connections</code>). With one radio the app behaves as before, apart from the two points marked below.</p>
+<ul>
+<li><code>MessageEntity.messageKey</code> (<code>&quot;sender:packetId&quot;</code>) is the unique key, since a packet id is only unique per sender: two senders' messages that share a packet id are both kept and both shown (the message lists key their rows on <code>listID</code>). <code>messageId</code> is no longer unique; replies and tapbacks still refer to it, so they attach to the first of two such messages. Routing and admin ACKs look the sent message up by the radio's own key (<code>MeshPackets.sentMessage</code>). <code>fromNum</code>, <code>toNum</code>, <code>localNodeNum</code> (the radio that received or sent it) and <code>channelKey</code> are flat columns so queries don't join.</li>
+<li><code>receivedBy</code> on messages, positions, telemetry, PAX, waypoints and trace routes lists the radios that received the row (<code>&quot;,r1,r2,&quot;</code>, <code>ReceivedBy</code>), written when the row is stored. Nothing reads it yet. <code>packetId</code> is stored on positions, telemetry and PAX.</li>
+<li>Every packet records a <code>PacketReceptionEntity</code> for the radio that received it (<code>recordReception</code>), and updates that radio's <code>NodeObservationEntity</code> of the sender (<code>updateAnyPacketFrom</code>), as the node database download does (<code>recordNodeDBObservation</code>). With one radio the observation mirrors the node row, which is still written as before. Observations hold only node numbers, so nothing cascades: evicting or purging a node deletes its observations explicitly. Receptions are pruned with the entity caps and in the background pass.</li>
+<li><code>ChannelEntity.channelKey</code> (<code>ChannelIdentity</code>, format <code>c2:&lt;mesh&gt;:&lt;key digest&gt;:&lt;name&gt;</code>) identifies a channel by its name and key as the firmware resolves them, and the radio's mesh (<code>MeshNetwork.identity</code>: region, preset or modulation, frequency). It's recomputed whenever the radio's channels or LoRa settings arrive (<code>MeshPackets.refreshChannelKeys</code>), and after the Channels editor saves.</li>
+<li>A slot keeps its conversation when its channel changes, with a note. A real change (not a key filled in for the first time) writes a change row: a <code>MessageEntity</code> with <code>systemEvent == .channelChanged</code>, <code>previousChannelKey</code> and <code>channelKey</code>, the radio in <code>localNodeNum</code>, saved as read, never sent (<code>ChannelChangeEvents.record</code>; a change undone within 60 seconds removes its row). The channel list draws it with <code>ChannelChangeRow</code>; the preview and Siri's message search skip it. While Local Mesh Discovery steps the radio through presets, recording is paused.</li>
+<li>Channel keys and LoRa settings are read as saved. Long-lived contexts (the main context, and the packet actor's) don't take in what other contexts save, so their channel and LoRa objects can still describe the channel before a preset change, rename or QR import. Keys are only stored by <code>MultiRadioBackfill.updateSavedChannelKeys</code>, which computes from what's saved in a throwaway <code>ModelContext</code>: the staged channel refresh and the Channels editor call it after their save, and <code>refreshChannelKeys</code> saves the packet actor's ingest first. Local Mesh Discovery snapshots the home LoRa settings and primary channel as saved, and settings forms (<code>MetadataConfigForm</code>) load their values as saved, so neither sends old settings back.</li>
+<li>Rows from older builds get the new columns from <code>MultiRadioBackfill</code>, a resumable job, attributed to the store's radio: in the background maintenance pass, and after a backup restore (<code>drainMultiRadioBackfill</code>). Readers must cope with nil or empty values in those columns until it has run.</li>
+</ul>
 <h3><code>EventFirmwareEntity</code> — off-device event branding cache</h3>
 <p><code>EventFirmwareEntity</code> is a <strong>runtime cache</strong>, not user data. A device only reports <em>which</em>
 event edition it runs via the <code>MyNodeInfo.firmwareEdition</code> proto enum (mapped to the

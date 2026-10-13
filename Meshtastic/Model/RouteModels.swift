@@ -46,6 +46,11 @@ final class PaxCounterEntity {
 	var time: Date?
 	var uptime: Int32 = 0
 	var wifi: Int32 = 0
+	/// Mesh packet id this count arrived in, 0 when unknown (feature 021).
+	var packetId: Int64 = 0
+	/// The local radios that received this row (`ReceivedBy`, D-21): with one radio at a time the
+	/// app shows only that radio's rows. Empty when not known yet, which shows for every radio.
+	var receivedBy: String = ""
 
 	var paxNode: NodeInfoEntity?
 

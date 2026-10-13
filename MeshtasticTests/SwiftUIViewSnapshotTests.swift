@@ -162,6 +162,31 @@ struct AckErrorsSnapshotTests {
 	}
 }
 
+// MARK: - ChannelChangeNote Snapshot Tests
+
+@Suite("ChannelChangeNote Snapshots")
+struct ChannelChangeNoteSnapshotTests {
+
+	/// A fixed date, so the row's timestamp doesn't change the reference.
+	private let date = Date(timeIntervalSince1970: 1_790_000_000)
+
+	@Test("Channel change note, light")
+	func channelChangeLight() async {
+		await assertViewSnapshot(
+			of: ChannelChangeNote(text: "Switched from LongFast to LongTurbo.", date: date),
+			width: 350, colorScheme: .light, named: "channel_change_note_light", forDocs: true
+		)
+	}
+
+	@Test("Channel change note, dark")
+	func channelChangeDark() async {
+		await assertViewSnapshot(
+			of: ChannelChangeNote(text: "Switched from LongFast to LongTurbo.", date: date),
+			width: 350, colorScheme: .dark, named: "channel_change_note_dark", forDocs: true
+		)
+	}
+}
+
 // MARK: - LockLegend Snapshot Tests
 
 @Suite("LockLegend Snapshots")

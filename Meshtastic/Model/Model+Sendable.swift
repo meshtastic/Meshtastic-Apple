@@ -35,6 +35,8 @@ extension MessageEntity: @unchecked Sendable {}
 extension MyInfoEntity: @unchecked Sendable {}
 extension NetworkConfigEntity: @unchecked Sendable {}
 extension NodeInfoEntity: @unchecked Sendable {}
+extension NodeObservationEntity: @unchecked Sendable {}
+extension PacketReceptionEntity: @unchecked Sendable {}
 extension PaxCounterConfigEntity: @unchecked Sendable {}
 extension PaxCounterEntity: @unchecked Sendable {}
 extension PositionConfigEntity: @unchecked Sendable {}

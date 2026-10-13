@@ -22,6 +22,9 @@ final class WaypointEntity {
 	/// A local-only waypoint the user created on this device: it is never broadcast
 	/// over the mesh, and the mesh ingest never overwrites it (see MeshPackets.waypointPacket).
 	var isLocal: Bool = false
+	/// The local radios that received this row (`ReceivedBy`, D-21): with one radio at a time the
+	/// app shows only that radio's rows. Empty when not known yet, which shows for every radio.
+	var receivedBy: String = ""
 	var longDescription: String?
 	var longitudeI: Int32 = 0
 	var name: String?

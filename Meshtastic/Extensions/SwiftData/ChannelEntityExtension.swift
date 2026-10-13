@@ -38,7 +38,8 @@ extension ChannelEntity {
 		)
 		descriptor.fetchLimit = 10
 		let batch = (try? context.fetch(descriptor)) ?? []
-		return batch.first { $0.toUser == nil }
+		// A channel-change row is the app's own note, never the preview (T377).
+		return batch.first { $0.toUser == nil && !$0.isSystemEvent }
 	}
 
 	@MainActor

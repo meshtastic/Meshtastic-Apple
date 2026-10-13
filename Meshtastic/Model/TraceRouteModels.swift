@@ -25,6 +25,9 @@ final class TraceRouteEntity {
 	var fromNum: Int64 = 0
 	/// Node num of the trace route target/responder (matches `node.num` for requests we initiated).
 	var toNum: Int64 = 0
+	/// The local radios that received this row (`ReceivedBy`, D-21): with one radio at a time the
+	/// app shows only that radio's rows. Empty when not known yet, which shows for every radio.
+	var receivedBy: String = ""
 
 	@Relationship(deleteRule: .cascade, inverse: \TraceRouteHopEntity.traceRoute)
 	var hops: [TraceRouteHopEntity] = []

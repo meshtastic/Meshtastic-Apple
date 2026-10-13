@@ -168,6 +168,20 @@ struct SchemaHistoryUpgradeTests {
 			#expect(message.toUser?.num == receiverNumber)
 			#expect(message.fromUser?.sentMessages.contains { $0.messageId == messageID } == true)
 			#expect(message.toUser?.receivedMessages.contains { $0.messageId == messageID } == true)
+
+			// Feature 021: the new columns arrive empty, and the backfill fills them on the
+			// upgraded store (which also proves the new unique columns accept a save there).
+			#expect(message.fromNum == nil)
+			#expect(message.messageKey == nil)
+			#expect(try context.fetchCount(FetchDescriptor<NodeObservationEntity>()) == 0)
+			while try MultiRadioBackfill.runChunk(in: context, ownRadio: receiverNumber).total > 0 {}
+			#expect(message.fromNum == senderNumber)
+			#expect(message.toNum == receiverNumber)
+			#expect(message.localNodeNum == receiverNumber)
+			#expect(message.messageKey == MessageEntity.key(fromNum: senderNumber, messageId: messageID))
+			let observations = try context.fetch(FetchDescriptor<NodeObservationEntity>())
+			#expect(observations.map(\.key) == [NodeObservationEntity.key(radioNum: receiverNumber, nodeNum: senderNumber)])
+			#expect(observations.first?.favorite == true)
 		}
 
 		let directoryContents = try FileManager.default.contentsOfDirectory(atPath: storeURL.deletingLastPathComponent().path)

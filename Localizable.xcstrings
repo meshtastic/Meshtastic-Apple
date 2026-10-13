@@ -5600,6 +5600,37 @@
         }
       }
     },
+    "Channel renamed from %@ to %@." : {
+      "comment" : "Conversation note when the channel in this slot got a new name",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Channel renamed from %1$@ to %2$@."
+          }
+        }
+      }
+    },
+    "Moved to a different mesh." : {
+      "comment" : "Conversation note when the radio's region, frequency or radio settings changed"
+    },
+    "Switched from %@ to %@." : {
+      "comment" : "Conversation note when the radio's modem preset changed, e.g. LongFast to LongTurbo",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Switched from %1$@ to %2$@."
+          }
+        }
+      }
+    },
+    "The channel changed." : {
+      "comment" : "Conversation note when a radio's channel slot changed in an unknown way"
+    },
+    "The channel key changed." : {
+      "comment" : "Conversation note when the channel's encryption key changed"
+    },
     "•" : {
       "comment" : "A separator between date and time.",
       "extractionState" : "stale",

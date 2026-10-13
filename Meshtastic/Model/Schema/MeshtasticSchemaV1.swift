@@ -67,7 +67,10 @@ enum MeshtasticSchemaV1: VersionedSchema {
 			DiscoverySessionEntity.self,
 			DiscoveryPresetResultEntity.self,
 			DiscoveredNodeEntity.self,
-			DiscoveredBeaconEntity.self
+			DiscoveredBeaconEntity.self,
+			// Multi-radio entities (feature 021)
+			NodeObservationEntity.self,
+			PacketReceptionEntity.self
 		]
 	}
 }

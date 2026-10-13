@@ -209,6 +209,14 @@ struct MeshtasticAppleApp: App {
 				Logger.services.error("💥 [App] Failed to save context when the app goes to the background.")
 			}
 			await MeshPackets.shared.enforceEntityCapsAndSave()
+			// Feature 021: fills the per-radio columns on rows stored before they existed, and
+			// trims old receptions. Not while a switch swaps the store for another radio's: the
+			// rows are credited to the radio the store belongs to.
+			if !accessoryManager.isSwitchingDevices {
+				let packets = MeshPackets.shared
+				let ownRadio = await packets.storeRadio(connected: accessoryManager.activeDeviceNum, preferred: Int64(UserDefaults.preferredPeripheralNum))
+				await packets.runMultiRadioMaintenance(ownRadio: ownRadio)
+			}
 			// Nothing to clear: the next pass takes a new number, which supersedes any
 			// expiry recorded against this one.
 			if taskID != .invalid {

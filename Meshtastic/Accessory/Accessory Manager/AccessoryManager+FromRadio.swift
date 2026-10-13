@@ -691,6 +691,7 @@ extension AccessoryManager {
 			traceRoute.response = true
 			traceRoute.fromNum = originatorNum
 			traceRoute.toNum = targetNum
+			traceRoute.receivedBy = ReceivedBy.adding(deviceNum, to: traceRoute.receivedBy)
 
 			// Used for display/position lookups. The `node` relationship stays set only for routes we
 			// initiated; observed routes are surfaced in the global trace route log instead.
