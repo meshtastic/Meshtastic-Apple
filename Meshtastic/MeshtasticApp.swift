@@ -369,7 +369,7 @@ struct MeshtasticAppleApp: App {
 			}
 		}
 		.windowStyle(.volumetric)
-		.defaultSize(width: 1.1, height: 0.7, depth: 1.1, in: .meters)
+		.defaultSize(width: SpatialVolumeFit.defaultSize.x, height: SpatialVolumeFit.defaultSize.y, depth: SpatialVolumeFit.defaultSize.z, in: .meters)
 		.windowResizability(.contentSize)
 		.volumeWorldAlignment(.gravityAligned)
 		.restorationBehavior(.disabled)

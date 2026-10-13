@@ -8,8 +8,8 @@
 import RealityKit
 import SwiftUI
 
-/// The RealityView in the volume: hands the model's state to the scene controller and turns
-/// taps, drags and pinches into selection, rotation, sliding (on the grab handle) and zoom.
+/// The RealityView in the volume: hands the model's state to the scene controller, keeps the map
+/// fitted to the volume as it is resized, and turns taps and drags into selection and rotation.
 struct SpatialMapView: View {
 	let model: SpatialMapModel
 	let scene: SpatialSceneController
@@ -20,10 +20,8 @@ struct SpatialMapView: View {
 
 	@State private var yaw: Float = 0
 	@State private var startYaw: Float?
-	@State private var zoom: Float = 1
-	@State private var startZoom: Float?
-	@State private var pan: SIMD2<Float> = .zero
-	@State private var startPan: SIMD2<Float>?
+	/// The volume's size, so a resize runs the update closure and refits the map.
+	@State private var volumeSize: Size3D = .zero
 
 	/// Points per meter in a volume, for turning a drag into a rotation.
 	private static let pointsPerMeter: Double = 1360
@@ -31,13 +29,14 @@ struct SpatialMapView: View {
 	var body: some View {
 		GeometryReader3D { proxy in
 			RealityView { content, _ in
-				let bounds = content.convert(proxy.frame(in: .local), from: .local, to: .scene)
-				scene.install(floorY: bounds.min.y)
+				scene.fit(volume: content.convert(proxy.frame(in: .local), from: .local, to: .scene))
 				content.add(scene.root)
 				scene.updateSubscription = content.subscribe(to: SceneEvents.Update.self) { event in
 					traffic.step(deltaTime: event.deltaTime)
 				}
-			} update: { _, attachments in
+			} update: { content, attachments in
+				_ = volumeSize
+				scene.fit(volume: content.convert(proxy.frame(in: .local), from: .local, to: .scene))
 				scene.apply(placement: model.placement)
 				scene.apply(terrainEntity: model.terrainEntity, building: model.isBuildingTerrain)
 				scene.apply(nodes: model.nodes)
@@ -60,7 +59,7 @@ struct SpatialMapView: View {
 						SpatialNodeDetailPanel(node: node, preset: preset) {
 							onOpenNode(node.id)
 						} onCenter: {
-							center(on: node.id)
+							turnToFront(node.id)
 						} onClose: {
 							model.select(nil)
 						}
@@ -70,7 +69,9 @@ struct SpatialMapView: View {
 			.gesture(tap)
 			.gesture(doubleTap)
 			.gesture(drag)
-			.simultaneousGesture(magnify)
+			.onChange(of: proxy.size, initial: true) { _, size in
+				volumeSize = size
+			}
 		}
 		.onChange(of: model.placement?.revision) {
 			reset(animated: false)
@@ -81,7 +82,6 @@ struct SpatialMapView: View {
 		SpatialTapGesture()
 			.targetedToAnyEntity()
 			.onEnded { value in
-				guard !Self.isGrabHandle(value.entity) else { return }
 				let point = value.convert(value.location3D, from: .local, to: .scene)
 				model.select(Self.nodeNum(of: value.entity) ?? scene.nearestPin(toScenePoint: point))
 			}
@@ -91,69 +91,37 @@ struct SpatialMapView: View {
 		SpatialTapGesture(count: 2)
 			.targetedToAnyEntity()
 			.onEnded { value in
-				guard !Self.isGrabHandle(value.entity) else { return }
 				if Self.nodeNum(of: value.entity) == nil { reset(animated: true) }
 			}
 	}
 
-	/// On the grab handle a drag slides the map; anywhere else it turns the map.
+	/// Dragging anywhere on the map turns it.
 	private var drag: some Gesture {
 		DragGesture()
 			.targetedToAnyEntity()
 			.onChanged { value in
-				if Self.isGrabHandle(value.entity) {
-					let start = startPan ?? pan
-					startPan = start
-					let delta = value.convert(value.translation3D, from: .local, to: .scene)
-					pan = Self.clampPan(start + SIMD2(delta.x, delta.z), zoom: zoom)
-				} else {
-					let start = startYaw ?? yaw
-					startYaw = start
-					// A drag across the volume's width is one full turn.
-					yaw = start + Float(value.translation3D.x / Self.pointsPerMeter) * 2 * .pi
-				}
-				scene.setTransform(yaw: yaw, scale: zoom, pan: pan)
+				let start = startYaw ?? yaw
+				startYaw = start
+				// A drag across the volume's width is one full turn.
+				yaw = start + Float(value.translation3D.x / Self.pointsPerMeter) * 2 * .pi
+				scene.setYaw(yaw)
 			}
 			.onEnded { _ in
 				startYaw = nil
-				startPan = nil
 			}
 	}
 
-	private var magnify: some Gesture {
-		MagnifyGesture()
-			.targetedToAnyEntity()
-			.onChanged { value in
-				let start = startZoom ?? zoom
-				startZoom = start
-				zoom = min(max(start * Float(value.magnification), 0.5), 2.5)
-				pan = Self.clampPan(pan, zoom: zoom)
-				scene.setTransform(yaw: yaw, scale: zoom, pan: pan)
-			}
-			.onEnded { _ in startZoom = nil }
-	}
-
-	/// Slides the map so a node sits under the volume's center, at the current zoom.
-	private func center(on nodeNum: Int64) {
-		guard let position = scene.pinPosition(nodeNum) else { return }
-		let rotated = simd_quatf(angle: yaw, axis: [0, 1, 0]).act(position)
-		pan = Self.clampPan(SIMD2(-rotated.x, -rotated.z) * zoom, zoom: zoom)
-		scene.setTransform(yaw: yaw, scale: zoom, pan: pan, animated: true)
+	/// Turns the map the short way round so a node faces the viewer.
+	private func turnToFront(_ nodeNum: Int64) {
+		guard let position = scene.pinPosition(nodeNum),
+			  let target = SpatialVolumeFit.yawBringingToFront(x: position.x, z: position.z, from: yaw) else { return }
+		yaw = target
+		scene.setYaw(yaw, animated: true)
 	}
 
 	private func reset(animated: Bool) {
 		yaw = 0
-		zoom = 1
-		pan = .zero
-		scene.setTransform(yaw: 0, scale: 1, pan: .zero, animated: animated)
-	}
-
-	/// Keeps part of the round terrain inside the volume: the disk's center stays within a circle
-	/// that grows with the zoom.
-	private static func clampPan(_ pan: SIMD2<Float>, zoom: Float) -> SIMD2<Float> {
-		let limit = max(zoom - 0.5, 0) * 0.5
-		let length = simd_length(pan)
-		return length > limit ? (limit > 0 ? pan * (limit / length) : .zero) : pan
+		scene.setYaw(0, animated: animated)
 	}
 
 	private static func nodeNum(of entity: Entity) -> Int64? {
@@ -163,15 +131,6 @@ struct SpatialMapView: View {
 			current = entity.parent
 		}
 		return nil
-	}
-
-	private static func isGrabHandle(_ entity: Entity) -> Bool {
-		var current: Entity? = entity
-		while let entity = current {
-			if entity.components.has(GrabHandleComponent.self) { return true }
-			current = entity.parent
-		}
-		return false
 	}
 }
 

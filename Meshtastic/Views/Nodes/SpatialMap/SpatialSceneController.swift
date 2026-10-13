@@ -14,12 +14,9 @@ struct NodePinComponent: Component {
 	let nodeNum: Int64
 }
 
-/// The bar on the front edge of the terrain. Dragging it slides the map; dragging anywhere else turns it.
-struct GrabHandleComponent: Component {}
-
 /// Owns the entities in the volume and diffs the model's snapshots into them, so the RealityView
-/// update closure stays a dispatcher. Everything hangs off `terrainAnchor`, which sits on the
-/// volume floor; `model` carries the user's rotation and zoom.
+/// update closure stays a dispatcher. `root` sits on the middle of the volume floor; `model`
+/// carries the user's rotation and the scale that makes the disk fill the volume's footprint.
 @MainActor
 final class SpatialSceneController {
 	static let pinRadius: Float = 0.006
@@ -63,10 +60,8 @@ final class SpatialSceneController {
 	/// narrow where pins crowd together so neighbors don't take each other's taps.
 	private static let maxHitRadius: Float = 0.0125
 	private static let minHitRadius: Float = pinRadius * 1.2
-	private static let handleMesh = MeshResource.generateBox(size: [0.08, 0.006, 0.018], cornerRadius: 0.003)
 
 	private var placeholder: ModelEntity
-	private let handle: ModelEntity
 	private var terrainEntity: ModelEntity?
 	private var pins: [Int64: Pin] = [:]
 	private var hitShapes: [HitShapeKey: [ShapeResource]] = [:]
@@ -81,6 +76,8 @@ final class SpatialSceneController {
 	private var detailEntity: Entity?
 	private var appliedSelection: Int64?
 	private(set) var counterScale: Float = 1
+	/// The volume's bounds in scene space, once known.
+	private var volume: BoundingBox?
 
 	init() {
 		// A flat disk of radius 0.5, scaled to the map once there is one.
@@ -90,23 +87,10 @@ final class SpatialSceneController {
 		tether = ModelEntity(mesh: Self.tetherMesh, materials: [Self.transparentMaterial(.white, opacity: 0.7)])
 		ring.isEnabled = false
 		tether.isEnabled = false
-		handle = ModelEntity(mesh: Self.handleMesh, materials: [Self.transparentMaterial(.white, opacity: 0.85)])
-		handle.name = "grab-handle"
-		// A collision box bigger than the bar, so it is easy to take hold of.
-		handle.components.set(CollisionComponent(shapes: [.generateBox(size: [0.12, 0.03, 0.05])]))
-		handle.components.set(InputTargetComponent())
-		handle.components.set(HoverEffectComponent())
-		handle.components.set(GrabHandleComponent())
-		var accessibility = AccessibilityComponent()
-		accessibility.isAccessibilityElement = true
-		accessibility.label = LocalizedStringResource("Move the map", comment: "VoiceOver label for the spatial map grab handle")
-		handle.components.set(accessibility)
 		NodePinComponent.registerComponent()
-		GrabHandleComponent.registerComponent()
 		root.addChild(model)
 		model.addChild(terrainAnchor)
 		terrainAnchor.addChild(placeholder)
-		terrainAnchor.addChild(handle)
 		terrainAnchor.addChild(nodesContainer)
 		terrainAnchor.addChild(linksContainer)
 		terrainAnchor.addChild(selectionContainer)
@@ -125,9 +109,28 @@ final class SpatialSceneController {
 		UIColor(hex: UInt32(truncatingIfNeeded: nodeNum))
 	}
 
-	/// Places the terrain origin a little above the volume floor.
-	func install(floorY: Float) {
-		terrainAnchor.position = [0, floorY + 0.03, 0]
+	/// Sets the map on the middle of the volume floor, a little above it, and scales it so the disk
+	/// fills the footprint. Called again whenever the volume is resized.
+	func fit(volume bounds: BoundingBox) {
+		guard bounds != volume else { return }
+		volume = bounds
+		root.position = [bounds.center.x, bounds.min.y + 0.03, bounds.center.z]
+		applyFit()
+	}
+
+	private func applyFit() {
+		guard let volume else { return }
+		let fit = SpatialVolumeFit(volumeWidth: volume.extents.x, volumeDepth: volume.extents.z, modelDiskRadius: placement?.diskRadius ?? 0.5)
+		model.scale = SIMD3(repeating: fit.scale)
+		// Pins, labels and the card keep the same size in the room whatever the table's size.
+		let counter = 1 / fit.scale
+		guard counter != counterScale else { return }
+		counterScale = counter
+		for pin in pins.values { pin.holder.scale = SIMD3(repeating: counter) }
+		updateHitShapes()
+		if let selection = appliedSelection, let pin = pins[selection] {
+			placeSelection(at: pin.holder.position)
+		}
 	}
 
 	// MARK: Placement and terrain
@@ -137,8 +140,7 @@ final class SpatialSceneController {
 		self.placement = placement
 		let radius = placement.diskRadius
 		placeholder.scale = [2 * radius, 1, 2 * radius]
-		// Just outside the front of the disk, along its edge.
-		handle.position = [0, 0.004, radius + 0.03]
+		applyFit()
 	}
 
 	func apply(terrainEntity entity: ModelEntity?, building: Bool) {
@@ -344,22 +346,26 @@ final class SpatialSceneController {
 			return
 		}
 		appliedSelection = selection
-		let base = pin.holder.position
-		ring.position = base + [0, 0.0007, 0]
-		ring.scale = SIMD3(repeating: counterScale)
 		ring.model?.materials = [UnlitMaterial(color: Self.nodeColor(selection))]
-		ring.isEnabled = true
-		let top = base + [0, Self.pinTop * counterScale, 0]
-		let card = top + [0, 0.11 * counterScale, 0]
 		if let entity = attachments.entity(for: "detail") {
 			if entity.parent !== selectionContainer {
 				entity.components.set(BillboardComponent())
 				selectionContainer.addChild(entity)
 			}
-			entity.position = card
-			entity.scale = SIMD3(repeating: counterScale)
 			detailEntity = entity
 		}
+		placeSelection(at: pin.holder.position)
+	}
+
+	/// The ring at the pin's foot, the card above its head and the line between them.
+	private func placeSelection(at base: SIMD3<Float>) {
+		ring.position = base + [0, 0.0007, 0]
+		ring.scale = SIMD3(repeating: counterScale)
+		ring.isEnabled = true
+		let top = base + [0, Self.pinTop * counterScale, 0]
+		let card = top + [0, 0.11 * counterScale, 0]
+		detailEntity?.position = card
+		detailEntity?.scale = SIMD3(repeating: counterScale)
 		let direction = card - top
 		let length = simd_length(direction)
 		tether.position = top + direction / 2
@@ -425,22 +431,15 @@ final class SpatialSceneController {
 
 	// MARK: User transform
 
-	func setTransform(yaw: Float, scale: Float, pan: SIMD2<Float>, animated: Bool = false) {
-		var transform = Transform()
-		transform.rotation = simd_quatf(angle: yaw, axis: [0, 1, 0])
-		transform.scale = SIMD3(repeating: scale)
-		transform.translation = [pan.x, 0, pan.y]
+	/// Turns the map about the middle of the table. It never moves off it.
+	func setYaw(_ yaw: Float, animated: Bool = false) {
+		let rotation = simd_quatf(angle: yaw, axis: [0, 1, 0])
 		if animated {
+			let transform = Transform(scale: model.scale, rotation: rotation, translation: .zero)
 			model.move(to: transform, relativeTo: root, duration: 0.35, timingFunction: .easeInOut)
 		} else {
-			model.transform = transform
+			model.orientation = rotation
 		}
-		let counter = 1 / scale
-		guard counter != counterScale else { return }
-		counterScale = counter
-		for pin in pins.values { pin.holder.scale = SIMD3(repeating: counter) }
-		handle.scale = SIMD3(repeating: counter)
-		updateHitShapes()
 	}
 }
 #endif

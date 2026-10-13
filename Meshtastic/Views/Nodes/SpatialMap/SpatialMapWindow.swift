@@ -18,6 +18,7 @@ struct SpatialMapWindow: View {
 	@Environment(\.modelContext) private var context
 	@Environment(\.dismissWindow) private var dismissWindow
 	@Environment(\.scenePhase) private var scenePhase
+	@Environment(\.physicalMetrics) private var metrics
 	@StateObject private var nodeFilters = NodeFilterParameters()
 	@State private var model = SpatialMapModel()
 	@State private var scene: SpatialSceneController
@@ -50,6 +51,12 @@ struct SpatialMapWindow: View {
 				UIApplication.shared.open(url)
 			}
 		}
+		// The window takes its size limits from these, so the user can resize the table between them.
+		.frame(
+			minWidth: points(SpatialVolumeFit.minimumSize.x), maxWidth: points(SpatialVolumeFit.maximumSize.x),
+			minHeight: points(SpatialVolumeFit.minimumSize.y), maxHeight: points(SpatialVolumeFit.maximumSize.y)
+		)
+		.frame(minDepth: points(SpatialVolumeFit.minimumSize.z), maxDepth: points(SpatialVolumeFit.maximumSize.z))
 		.volumeBaseplateVisibility(.visible)
 		.ornament(attachmentAnchor: .scene(.bottomFront)) {
 			SpatialMapOrnament(
@@ -97,6 +104,10 @@ struct SpatialMapWindow: View {
 			}
 		}
 		.trackScreen(.spatialMap)
+	}
+
+	private func points(_ meters: Double) -> CGFloat {
+		metrics.convert(CGFloat(meters), from: .meters)
 	}
 
 	private func refresh() {
