@@ -78,8 +78,12 @@ extension AccessoryManager {
 						
 					case .deviceLost(let deviceId):
 						devices = devices.filter { $0.id != deviceId }
+						shownDiscoveryRssi.removeValue(forKey: deviceId)
 					
 					case .deviceReportedRssi(let deviceId, let newRssi):
+						let now = ContinuousClock.now
+						guard Self.showsDiscoveryRssi(newRssi, at: now, after: shownDiscoveryRssi[deviceId]) else { break }
+						shownDiscoveryRssi[deviceId] = ShownRssi(rssi: newRssi, at: now)
 						updateDevice(deviceId: deviceId, key: \.rssi, value: newRssi)
 					}
 				} catch {
@@ -87,6 +91,29 @@ extension AccessoryManager {
 				}
 			}
 		}
+	}
+
+	/// An RSSI discovery showed for a radio, and when.
+	struct ShownRssi: Equatable, Sendable {
+		let rssi: Int
+		let at: ContinuousClock.Instant
+	}
+
+	/// How far a radio's RSSI must move, or how long must pass, before discovery shows a new
+	/// value. Scanning reports every advertisement, several a second per radio, and each write to
+	/// `devices` redraws every view that observes the manager. A move shows after
+	/// `discoveryRssiMinInterval` at the soonest: a weak, distant radio's RSSI often swings by the
+	/// step between advertisements.
+	nonisolated static let discoveryRssiStep = 5
+	nonisolated static let discoveryRssiMinInterval: Duration = .seconds(2)
+	nonisolated static let discoveryRssiInterval: Duration = .seconds(5)
+
+	/// Whether a sighting's RSSI is worth showing, `last` being the one shown before.
+	nonisolated static func showsDiscoveryRssi(_ rssi: Int, at now: ContinuousClock.Instant, after last: ShownRssi?) -> Bool {
+		guard let last else { return true }
+		let elapsed = now - last.at
+		return elapsed >= discoveryRssiInterval
+			|| (elapsed >= discoveryRssiMinInterval && abs(rssi - last.rssi) >= discoveryRssiStep)
 	}
 
 	func stopDiscovery() {

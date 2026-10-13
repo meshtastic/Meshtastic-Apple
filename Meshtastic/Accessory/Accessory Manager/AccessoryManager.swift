@@ -224,6 +224,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	// Published Stuff
 	@Published var mqttProxyConnected: Bool = false
 	@Published var devices: [Device] = []
+	/// The RSSI discovery last showed for each radio, and when (`showsDiscoveryRssi`).
+	var shownDiscoveryRssi: [UUID: ShownRssi] = [:]
 	@Published var state: AccessoryManagerState
 	@Published var mqttError: String = ""
 	@Published var activeDeviceNum: Int64?
