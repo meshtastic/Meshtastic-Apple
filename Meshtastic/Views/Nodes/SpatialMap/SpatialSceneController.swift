@@ -215,7 +215,11 @@ final class SpatialSceneController {
 
 	private func updatePreview() {
 		var next = SpatialZoom.Preview.identity
-		if let placement, let fit = currentFit, let target = previewTarget, target != placement.circle, target.radiusMeters > 0 {
+		// Only a zoom in is previewed by enlarging the built terrain. Zooming out would have to shrink
+		// it, leaving a bare ring inside the bezel until the rebuild; the table keeps its size and
+		// the wider area replaces it when it is built.
+		if let placement, let fit = currentFit, let target = previewTarget, target != placement.circle,
+		   target.radiusMeters > 0, target.radiusMeters < placement.circle.radiusMeters {
 			let center = placement.transform.position(CLLocationCoordinate2D(latitude: target.latitude, longitude: target.longitude), altitude: placement.transform.baseElevation)
 			let maxRadius = (fit.diskRadius + SpatialWheelLayout.gap + SpatialWheelLayout.bezelWidth) / fit.scale
 			next = SpatialZoom.Preview(
