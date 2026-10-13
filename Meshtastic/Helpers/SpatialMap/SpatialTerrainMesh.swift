@@ -62,6 +62,8 @@ struct SpatialTerrainGeometry: Sendable {
 	/// Coarser grids are resampled to this many vertices across, so the edge still has enough
 	/// vertices to look round.
 	static let minimumGridSize = 97
+	/// How far the skirt hangs below y = 0, in model units.
+	static let defaultSkirtDepth: Float = 0.02
 
 	let transform: SpatialModelTransform
 	let columns: Int
@@ -77,8 +79,10 @@ struct SpatialTerrainGeometry: Sendable {
 	let surfaceTriangleCount: Int
 	/// Vertices on the top of the skirt, copies of the surface's edge; the same number again sit below them.
 	let skirtRingCount: Int
+	/// Height of the highest point on the map's edge, in model units, so the bezel can stand above it.
+	let rimTop: Float
 
-	init(grid source: SpatialHeightGrid, transform: SpatialModelTransform, skirtDepth: Float = 0.02) {
+	init(grid source: SpatialHeightGrid, transform: SpatialModelTransform, skirtDepth: Float = defaultSkirtDepth) {
 		let grid = source.upsampled(toAtLeast: Self.minimumGridSize)
 		self.transform = transform
 		let columns = grid.columns, rows = grid.rows
@@ -229,8 +233,10 @@ struct SpatialTerrainGeometry: Sendable {
 				indices.append(contentsOf: [qTop, pTop, qBelow, pTop, pBelow, qBelow])
 			}
 			skirtRingCount = n
+			rimTop = ringVertices.map { positions[Int($0)].y }.max() ?? 0
 		} else {
 			skirtRingCount = 0
+			rimTop = (0..<count).filter { moved[$0] }.map { positions[$0].y }.max() ?? 0
 		}
 		self.positions = positions
 		self.normals = normals

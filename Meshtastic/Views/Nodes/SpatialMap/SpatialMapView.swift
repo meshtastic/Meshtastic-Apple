@@ -19,12 +19,9 @@ struct SpatialMapView: View {
 	let onOpenNode: (Int64) -> Void
 
 	@State private var yaw: Float = 0
-	@State private var startYaw: Float?
+	@State private var wheelDrag: SpatialWheelDrag?
 	/// The volume's size, so a resize runs the update closure and refits the map.
 	@State private var volumeSize: Size3D = .zero
-
-	/// Points per meter in a volume, for turning a drag into a rotation.
-	private static let pointsPerMeter: Double = 1360
 
 	var body: some View {
 		GeometryReader3D { proxy in
@@ -82,6 +79,8 @@ struct SpatialMapView: View {
 		SpatialTapGesture()
 			.targetedToAnyEntity()
 			.onEnded { value in
+				// The bezel and handles are for turning; a tap on them keeps the selection.
+				guard !Self.isWheel(value.entity) else { return }
 				let point = value.convert(value.location3D, from: .local, to: .scene)
 				model.select(Self.nodeNum(of: value.entity) ?? scene.nearestPin(toScenePoint: point))
 			}
@@ -95,19 +94,26 @@ struct SpatialMapView: View {
 			}
 	}
 
-	/// Dragging anywhere on the map turns it.
+	/// Dragging the map, the bezel or a handle turns the map, following the hand around the middle
+	/// like a wheel.
 	private var drag: some Gesture {
 		DragGesture()
 			.targetedToAnyEntity()
 			.onChanged { value in
-				let start = startYaw ?? yaw
-				startYaw = start
-				// A drag across the volume's width is one full turn.
-				yaw = start + Float(value.translation3D.x / Self.pointsPerMeter) * 2 * .pi
+				let point = scene.tablePoint(value.convert(value.location3D, from: .local, to: .scene))
+				if var drag = wheelDrag {
+					yaw = drag.update(x: point.x, z: point.y)
+					wheelDrag = drag
+				} else {
+					let start = scene.tablePoint(value.convert(value.startLocation3D, from: .local, to: .scene))
+					var drag = SpatialWheelDrag(startYaw: yaw, x: start.x, z: start.y)
+					yaw = drag.update(x: point.x, z: point.y)
+					wheelDrag = drag
+				}
 				scene.setYaw(yaw)
 			}
 			.onEnded { _ in
-				startYaw = nil
+				wheelDrag = nil
 			}
 	}
 
@@ -122,6 +128,15 @@ struct SpatialMapView: View {
 	private func reset(animated: Bool) {
 		yaw = 0
 		scene.setYaw(0, animated: animated)
+	}
+
+	private static func isWheel(_ entity: Entity) -> Bool {
+		var current: Entity? = entity
+		while let entity = current {
+			if entity.components.has(SpatialWheelComponent.self) { return true }
+			current = entity.parent
+		}
+		return false
 	}
 
 	private static func nodeNum(of entity: Entity) -> Int64? {

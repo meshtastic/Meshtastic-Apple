@@ -31,6 +31,7 @@ final class SpatialSceneController {
 	let linksContainer = Entity()
 	let selectionContainer = Entity()
 	let trafficContainer = Entity()
+	let wheel = SpatialWheelEntity()
 	var updateSubscription: EventSubscription?
 
 	private struct Pin {
@@ -90,6 +91,7 @@ final class SpatialSceneController {
 		NodePinComponent.registerComponent()
 		root.addChild(model)
 		model.addChild(terrainAnchor)
+		model.addChild(wheel.root)
 		terrainAnchor.addChild(placeholder)
 		terrainAnchor.addChild(nodesContainer)
 		terrainAnchor.addChild(linksContainer)
@@ -122,6 +124,7 @@ final class SpatialSceneController {
 		guard let volume else { return }
 		let fit = SpatialVolumeFit(volumeWidth: volume.extents.x, volumeDepth: volume.extents.z, modelDiskRadius: placement?.diskRadius ?? 0.5)
 		model.scale = SIMD3(repeating: fit.scale)
+		updateWheel(fit)
 		// Pins, labels and the card keep the same size in the room whatever the table's size.
 		let counter = 1 / fit.scale
 		guard counter != counterScale else { return }
@@ -131,6 +134,16 @@ final class SpatialSceneController {
 		if let selection = appliedSelection, let pin = pins[selection] {
 			placeSelection(at: pin.holder.position)
 		}
+	}
+
+	/// The bezel hugs the rim and stands just above its highest point; it is built in meters, so
+	/// it is counter-scaled against the model.
+	private func updateWheel(_ fit: SpatialVolumeFit) {
+		let skirtDepth = SpatialTerrainGeometry.defaultSkirtDepth
+		let rimTop = placement?.geometry?.rimTop ?? 0
+		let top = min(rimTop * fit.scale + SpatialWheelLayout.bezelLift, SpatialWheelLayout.maximumTop)
+		wheel.root.scale = SIMD3(repeating: 1 / fit.scale)
+		wheel.update(diskRadius: fit.diskRadius, bottom: -skirtDepth * fit.scale, top: top)
 	}
 
 	// MARK: Placement and terrain
@@ -430,6 +443,13 @@ final class SpatialSceneController {
 	}
 
 	// MARK: User transform
+
+	/// A point in scene space as x/z in meters from the middle of the table, in the table's
+	/// unrotated frame, for following a drag around the center.
+	func tablePoint(_ scenePoint: SIMD3<Float>) -> SIMD2<Float> {
+		let local = root.convert(position: scenePoint, from: nil)
+		return SIMD2(local.x, local.z)
+	}
 
 	/// Turns the map about the middle of the table. It never moves off it.
 	func setYaw(_ yaw: Float, animated: Bool = false) {
