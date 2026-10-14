@@ -272,4 +272,16 @@ struct TraceRouteShareModelTests {
 		#expect(text.hasSuffix("meshtastic.org"))
 		#expect(!Fixtures.model(hasBack: false).plainText.contains("Ballard Harbor → Queen Anne Ridge"))
 	}
+
+	@Test func shareFileNamesAreDistinctAndSafe() {
+		let date = Date(timeIntervalSince1970: 1_791_000_000)
+		let name = TraceRouteShareImage.fileName(origin: "CHB", destination: "GGS", date: date)
+		#expect(name.hasPrefix("Trace Route CHB-GGS "))
+		#expect(name.hasSuffix(".png"))
+		let later = TraceRouteShareImage.fileName(origin: "CHB", destination: "GGS", date: date.addingTimeInterval(1))
+		#expect(name != later, "a second later is a different file")
+		let odd = TraceRouteShareImage.fileName(origin: "A/B", destination: "C:D", date: date)
+		#expect(!odd.contains("/") && !odd.contains(":"))
+		#expect(TraceRouteShareImage.fileName(origin: nil, destination: nil, date: date).hasPrefix("Trace Route 20"))
+	}
 }

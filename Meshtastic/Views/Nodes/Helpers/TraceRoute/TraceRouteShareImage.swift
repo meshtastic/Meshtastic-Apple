@@ -11,19 +11,45 @@ import OSLog
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// A rendered trace route share image, with the route as plain text for apps that only take text.
+/// A rendered trace route share image.
+///
+/// Shared as a real PNG file rather than as data plus text: actions such as Make PDF and Save to
+/// Files only handle the image when it arrives as one file, and offering the route text alongside
+/// made them pick up the text instead. Copy on the card still gives the route as text.
 struct TraceRouteShareImage: Transferable {
 	let image: UIImage
 	let text: String
 	let title: String
+	/// "Trace Route CHB-GGS 2026-10-13 at 22.05.12.png": unique per route and time, so saved images
+	/// sit side by side instead of replacing each other.
+	let fileName: String
 
 	static var transferRepresentation: some TransferRepresentation {
-		DataRepresentation(exportedContentType: .png) { item in
+		FileRepresentation(exportedContentType: .png) { item in
 			guard let data = item.image.pngData() else { throw CocoaError(.fileWriteUnknown) }
-			return data
+			let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+			try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+			let url = folder.appendingPathComponent(item.fileName)
+			try data.write(to: url, options: .atomic)
+			return SentTransferredFile(url)
 		}
-		.suggestedFileName { _ in "Trace Route.png" }
-		ProxyRepresentation(exporting: \.text)
+		.suggestedFileName { $0.fileName }
+	}
+
+	/// File name for a route between two short names at a time. Characters a file name can't hold
+	/// are replaced; the time uses dots so it sorts and stays valid everywhere.
+	static func fileName(origin: String?, destination: String?, date: Date?) -> String {
+		var parts = [String(localized: "Trace Route")]
+		if let origin, let destination {
+			parts.append("\(origin)-\(destination)")
+		}
+		let formatter = DateFormatter()
+		formatter.locale = Locale(identifier: "en_US_POSIX")
+		formatter.dateFormat = "yyyy-MM-dd 'at' HH.mm.ss"
+		parts.append(formatter.string(from: date ?? Date()))
+		let name = parts.joined(separator: " ")
+			.components(separatedBy: CharacterSet(charactersIn: "/\\:?%*|\"<>")).joined(separator: "-")
+		return name + ".png"
 	}
 }
 
@@ -91,7 +117,8 @@ enum TraceRouteShareRenderer {
 		} else {
 			title = String(localized: "Trace Route")
 		}
-		return TraceRouteShareImage(image: image, text: model.plainText, title: title)
+		let fileName = TraceRouteShareImage.fileName(origin: model.origin?.shortName, destination: model.destination?.shortName, date: model.date)
+		return TraceRouteShareImage(image: image, text: model.plainText, title: title, fileName: fileName)
 	}
 
 	/// Dark, muted map tiles for an area without points of interest, drawn off the main thread.
