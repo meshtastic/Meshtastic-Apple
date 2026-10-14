@@ -310,6 +310,14 @@ struct Channels: View {
 							do {
 								try context.save()
 								Logger.data.info("💾 Saved Channel: \(channel.settings.name, privacy: .public)")
+								// The slot's key follows the edit now, not when the radio next sends its
+								// channels, so the change row sits where the conversation changed and what
+								// is sent from here on is already in the new stretch (T377). Computed from
+								// what was just saved: this context's LoRa settings can predate a preset
+								// change saved elsewhere.
+								if try MultiRadioBackfill.updateSavedChannelKeys(for: node.num, container: context.container) > 0 {
+									NotificationCenter.default.post(name: .meshMessagesDidChange, object: nil)
+								}
 							} catch {
 								let nsError = error as NSError
 								Logger.data.error("Unresolved Core Data error in the channel editor. Error: \(nsError, privacy: .public)")

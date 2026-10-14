@@ -21,6 +21,17 @@ Channel conversations load the most recent **50 messages** by default. Scroll to
 | **0** (primary circle) | Primary channel — broadcast packets are sent here. Location data is broadcast from the first channel where it is enabled (firmware 2.7+). |
 | **1–7** | Secondary channels — separate messaging groups, each secured by their own key. |
 
+### When a Channel Changes
+
+A channel conversation keeps its history when you change the radio's channel: a new LoRa preset (for example LongFast to LongTurbo), region or frequency, or a new channel name or key. A note in the conversation marks where it happened, such as **Switched from LongFast to LongTurbo**, so you can tell what came before and after. A preset or region change moves every channel on that radio, so each of its conversations gets a note.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="../assets/screenshots/channel_change_note_dark.png">
+  <img src="../assets/screenshots/channel_change_note_light.png" alt="A conversation note reading Switched from LongFast to LongTurbo, with the date it happened">
+</picture>
+
+The note isn't a message: it's never sent, doesn't count as unread and doesn't notify you. A Local Mesh Discovery scan, which steps the radio through presets and back, leaves no note.
+
 ### Channel Configuration
 
 ![Channel form](../assets/screenshots/channelForm_primary.png)

@@ -1164,6 +1164,18 @@ func backupCurrentAndRestoreDatabase(
 	// results (the previous node's nodes/pins linger; e.g. switching back to a local node
 	// still shows the other node's map pins). Bumping databaseResetID re-identifies the root
 	// view, forcing every @Query to re-execute its fetch and return only the restored data.
+	// Feature 021: a backup from an older version has rows without the per-radio columns, which
+	// all belong to the restored radio. Filled while the reset gate still hides the views.
+	if case .success = restoreResult, let targetNodeNum {
+		do {
+			let filled = try await MeshPackets.shared.drainMultiRadioBackfill(ownRadio: targetNodeNum)
+			if filled > 0 {
+				Logger.backup.info("💾 Backfilled \(filled) restored rows for \(targetNodeNum.toHex(), privacy: .public)")
+			}
+		} catch {
+			Logger.backup.error("💥 Backfill after restore failed: \(error.localizedDescription, privacy: .public)")
+		}
+	}
 	appState.databaseResetID = UUID()
 
 	return restoreResult

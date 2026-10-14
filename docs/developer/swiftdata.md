@@ -103,6 +103,20 @@ Key model types:
 | `TraceRouteEntity` | A recorded trace route |
 | `WaypointEntity` | A shared map waypoint |
 | `EventFirmwareEntity` | Cached off-device event-firmware branding/lifecycle metadata |
+| `NodeObservationEntity` | One local radio's view of one node (signal, hops, last heard, favorite, ignored, key verification, heard on current LoRa), unique on `"radio:node"` |
+| `PacketReceptionEntity` | One local radio's reception of one packet, unique on `"radio:sender:packet"`; kept for 30 days or 50,000 rows |
+
+### Per-radio data (feature 021)
+
+Groundwork for connecting several radios at once (`specs/021-multi-radio-connections`). With one radio the app behaves as before, apart from the two points marked below.
+
+- `MessageEntity.messageKey` (`"sender:packetId"`) is the unique key, since a packet id is only unique per sender: two senders' messages that share a packet id are both kept and both shown (the message lists key their rows on `listID`). `messageId` is no longer unique; replies and tapbacks still refer to it, so they attach to the first of two such messages. Routing and admin ACKs look the sent message up by the radio's own key (`MeshPackets.sentMessage`). `fromNum`, `toNum`, `localNodeNum` (the radio that received or sent it) and `channelKey` are flat columns so queries don't join.
+- `receivedBy` on messages, positions, telemetry, PAX, waypoints and trace routes lists the radios that received the row (`",r1,r2,"`, `ReceivedBy`), written when the row is stored. Nothing reads it yet. `packetId` is stored on positions, telemetry and PAX.
+- Every packet records a `PacketReceptionEntity` for the radio that received it (`recordReception`), and updates that radio's `NodeObservationEntity` of the sender (`updateAnyPacketFrom`), as the node database download does (`recordNodeDBObservation`). With one radio the observation mirrors the node row, which is still written as before. Observations hold only node numbers, so nothing cascades: evicting or purging a node deletes its observations explicitly. Receptions are pruned with the entity caps and in the background pass.
+- `ChannelEntity.channelKey` (`ChannelIdentity`, format `c2:<mesh>:<key digest>:<name>`) identifies a channel by its name and key as the firmware resolves them, and the radio's mesh (`MeshNetwork.identity`: region, preset or modulation, frequency). It's recomputed whenever the radio's channels or LoRa settings arrive (`MeshPackets.refreshChannelKeys`), and after the Channels editor saves.
+- A slot keeps its conversation when its channel changes, with a note. A real change (not a key filled in for the first time) writes a change row: a `MessageEntity` with `systemEvent == .channelChanged`, `previousChannelKey` and `channelKey`, the radio in `localNodeNum`, saved as read, never sent (`ChannelChangeEvents.record`; a change undone within 60 seconds removes its row). The channel list draws it with `ChannelChangeRow`; the preview and Siri's message search skip it. While Local Mesh Discovery steps the radio through presets, recording is paused.
+- Channel keys and LoRa settings are read as saved. Long-lived contexts (the main context, and the packet actor's) don't take in what other contexts save, so their channel and LoRa objects can still describe the channel before a preset change, rename or QR import. Keys are only stored by `MultiRadioBackfill.updateSavedChannelKeys`, which computes from what's saved in a throwaway `ModelContext`: the staged channel refresh and the Channels editor call it after their save, and `refreshChannelKeys` saves the packet actor's ingest first. Local Mesh Discovery snapshots the home LoRa settings and primary channel as saved, and settings forms (`MetadataConfigForm`) load their values as saved, so neither sends old settings back.
+- Rows from older builds get the new columns from `MultiRadioBackfill`, a resumable job, attributed to the store's radio: in the background maintenance pass, and after a backup restore (`drainMultiRadioBackfill`). Readers must cope with nil or empty values in those columns until it has run.
 
 ### `EventFirmwareEntity` — off-device event branding cache
 

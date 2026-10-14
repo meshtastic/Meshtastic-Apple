@@ -115,7 +115,9 @@ struct UserMessageRow: View {
 							withAnimation(.easeInOut(duration: 0.5)) {
 								messageToHighlight = messageNum
 							}
-							scrollView.scrollTo(messageNum, anchor: .center)
+							if let target = replyMessage?.listID {
+								scrollView.scrollTo(target, anchor: .center)
+							}
 							Task {
 								DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
 									// Only clear if this jump's highlight is still the active one — a search
@@ -202,7 +204,7 @@ struct UserMessageRow: View {
 			.frame(maxWidth: .infinity)
 			
 		}
-		.id(message.messageId)
+		.id(message.listID) // ID for scrolling: unique, where two senders can share a packet id
 		.background(
 			RoundedRectangle(cornerRadius: 8)
 				.fill(Color.messageHighlight.opacity(messageToHighlight == message.messageId ? 1 : 0))

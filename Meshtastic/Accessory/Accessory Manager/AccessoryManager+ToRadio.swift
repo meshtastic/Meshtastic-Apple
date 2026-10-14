@@ -425,6 +425,20 @@ extension AccessoryManager {
 					newMessage.messagePayload = message
 					newMessage.messagePayloadMarkdown = generateMessageMarkdown(message: message)
 					newMessage.read = true
+					// Feature 021: the sending radio owns the message, and the key matches the
+					// radio's echo of it (same sender, same packet id), so the two merge.
+					newMessage.fromNum = fromUserNum
+					newMessage.messageKey = MessageEntity.key(fromNum: fromUserNum, messageId: newMessage.messageId)
+					newMessage.localNodeNum = fromUserNum
+					newMessage.receivedBy = ReceivedBy.adding(fromUserNum, to: "")
+					if toUserNum > 0 {
+						newMessage.toNum = toUserNum
+					} else {
+						newMessage.toNum = MultiRadioBackfill.broadcastNum
+						// From the saved settings: this context's LoRa settings can predate a
+						// preset change the packet actor saved.
+						newMessage.channelKey = MultiRadioBackfill.computedChannelKeys(for: fromUserNum, container: context.container)[channel]
+					}
 
 					let dataType = PortNum.textMessageApp
 					var messageQuotesReplaced = message.replacingOccurrences(of: "’", with: "'")
@@ -1237,6 +1251,7 @@ extension AccessoryManager {
 
 			let wayPointEntity = getWaypoint(id: Int64(waypoint.id), context: context)
 			wayPointEntity.id = Int64(waypoint.id)
+			wayPointEntity.receivedBy = ReceivedBy.adding(deviceNum, to: wayPointEntity.receivedBy)
 			wayPointEntity.name = waypoint.name.count >= 1 ? waypoint.name : "Dropped Pin"
 			wayPointEntity.longDescription = waypoint.description_p
 			wayPointEntity.icon	= Int64(waypoint.icon)
@@ -1322,6 +1337,7 @@ extension AccessoryManager {
 				traceRoute.id = Int64(meshPacket.id)
 				traceRoute.time = Date()
 				traceRoute.node = receivingNode
+				traceRoute.receivedBy = ReceivedBy.adding(Int64(fromNodeNum), to: "")
 				do {
 					try context.save()
 					Logger.data.info("💾 Saved TraceRoute sent to node: \(String(receivingNode?.user?.longName ?? "Unknown".localized), privacy: .public)")

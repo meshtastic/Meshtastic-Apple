@@ -220,7 +220,7 @@ actor MeshPackets {
 
 	/// Set when this instance has been replaced by `recreateShared()`. A retired instance must
 	/// never persist again — see `recreateShared()`.
-	private var invalidated = false
+	private(set) var invalidated = false
 
 	func invalidate() {
 		invalidated = true
@@ -319,6 +319,11 @@ actor MeshPackets {
 				Logger.data.info("💾 Discarded staged channel refresh after a serialized local channel change for: \(nodeNum.toHex(), privacy: .public)")
 				return
 			}
+			// The rows are replaced, so the keys they had are kept by slot: a slot whose channel
+			// changed then leaves a change row in the radio's thread (T377). Read from the store:
+			// this context's rows can hold the key from before a change the packet actor saved,
+			// and writing that back recorded the change a second time.
+			let previousKeys = MultiRadioBackfill.storedChannelKeys(for: nodeNum, container: container)
 			for channel in myInfo.channels {
 				context.delete(channel)
 			}
@@ -330,9 +335,17 @@ actor MeshPackets {
 				let channel = ChannelEntity()
 				context.insert(channel)
 				apply(stagedChannel: staged, to: channel)
+				channel.channelKey = previousKeys[channel.index]
 				myInfo.channels.append(channel)
 			}
 			try context.save()
+			// The keys follow the channels the radio just sent (T144). Without LoRa settings yet,
+			// the LoRa config sets them. Computed from what's saved, not this context's possibly
+			// older LoRa settings.
+			let events = try MultiRadioBackfill.updateSavedChannelKeys(for: nodeNum, container: container)
+			if events > 0 {
+				NotificationCenter.default.post(name: .meshMessagesDidChange, object: nil)
+			}
 			Logger.data.info("💾 Committed \(enabledChannels.count, privacy: .public) staged channel(s) for: \(nodeNum, privacy: .public)")
 		} catch {
 			context.rollback()
@@ -452,6 +465,13 @@ actor MeshPackets {
 		let multiplier = Self.appIsActive ? 2 : 1
 		evictNodesIfOverCap(Self.maxTotalNodes * multiplier)
 		evictWaypointsIfOverCap(Self.maxTotalWaypoints * multiplier)
+		// Receptions grow with every packet. Nothing renders them yet, so trimming them in the
+		// foreground can't pull rows from under a view.
+		do {
+			try PacketReceptionEntity.prune(in: modelContext, rowLimit: PacketReceptionEntity.retentionRowLimit * multiplier)
+		} catch {
+			Logger.data.error("💥 [Caps] Reception prune failed: \(error.localizedDescription, privacy: .public)")
+		}
 	}
 
 	/// Evict down to the strict caps and commit. Called on the background transition —
@@ -586,6 +606,7 @@ actor MeshPackets {
 		descriptor.includePendingChanges = false
 		guard let stale = try? modelContext.fetch(descriptor), !stale.isEmpty else { return 0 }
 		for node in stale { modelContext.delete(node) }
+		deleteObservations(ofNodes: stale.map(\.num))
 		Logger.data.info("🗄️ [Caps] Evicted \(stale.count, privacy: .public) least-recently-heard node(s) (was \(nodeCount, privacy: .public), cap \(cap, privacy: .public))")
 		return stale.count
 	}
@@ -929,6 +950,7 @@ actor MeshPackets {
 					if channel.role == Channel.Role.disabled {
 						if let existing {
 							modelContext.delete(existing)
+							refreshChannelKeys(radioNum: fromNum)
 							savePendingChanges()
 							Logger.data.info("💾 Deleted MyInfo channel \(channel.index, privacy: .public) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum, privacy: .public)")
 						}
@@ -943,6 +965,7 @@ actor MeshPackets {
 						fetchedMyInfo[0].channels.append(newChannel)
 					}
 					apply(stagedChannel: stagedChannel(from: channel), to: newChannel)
+					refreshChannelKeys(radioNum: fromNum)
 					savePendingChanges()
 					Logger.data.info("💾 Updated MyInfo channel \(channel.index, privacy: .public) from Channel App Packet For: \(fetchedMyInfo[0].myNodeNum, privacy: .public)")
 				} else if channel.role.rawValue > 0 {
@@ -1030,12 +1053,18 @@ actor MeshPackets {
 
 	/// After a full node database download: nodes the radio did not include are ones it no longer
 	/// has, so it has no answer for them. Their stored heard-on-current-LoRa goes back to unknown,
-	/// rather than keeping an answer from an earlier download.
-	func markAbsentFromRadio(presentNums: Set<Int64>) {
+	/// rather than keeping an answer from an earlier download. On the node rows, and on radio
+	/// `radioNum`'s observations (feature 021).
+	func markAbsentFromRadio(presentNums: Set<Int64>, radioNum: Int64? = nil) {
 		let descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.heardOnCurrentLora != nil })
-		guard let nodes = try? modelContext.fetch(descriptor) else { return }
-		for node in nodes where !presentNums.contains(node.num) {
+		for node in (try? modelContext.fetch(descriptor)) ?? [] where !presentNums.contains(node.num) {
 			node.heardOnCurrentLora = nil
+		}
+		if let radioNum {
+			let answered = FetchDescriptor<NodeObservationEntity>(predicate: #Predicate { $0.radioNum == radioNum && $0.heardOnCurrentLora != nil })
+			for observation in (try? modelContext.fetch(answered)) ?? [] where !presentNums.contains(observation.nodeNum) {
+				observation.heardOnCurrentLora = nil
+			}
 		}
 		savePendingChanges()
 	}
@@ -1091,6 +1120,7 @@ actor MeshPackets {
 						telemetry.channelUtilization = nodeInfo.deviceMetrics.channelUtilization
 						telemetry.airUtilTx = nodeInfo.deviceMetrics.airUtilTx
 						telemetry.nodeTelemetry = newNode
+						telemetry.receivedBy = ReceivedBy.adding(connectedNodeNum ?? 0, to: "")
 					}
 					if nodeInfo.lastHeard > 0 {
 						newNode.firstHeard = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.lastHeard)))
@@ -1160,8 +1190,11 @@ actor MeshPackets {
 						position.heading = nodeInfo.position.groundTrackDegrees ?? 0
 						position.time = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.position.time)))
 						position.nodePosition = newNode
+						position.receivedBy = ReceivedBy.adding(connectedNodeNum ?? 0, to: "")
 						newNode.latestPositionCache = position
 					}
+
+					recordNodeDBObservation(nodeInfo, node: newNode, radioNum: connectedNodeNum, reportsHeardOnCurrentLora: reportsHeardOnCurrentLora)
 
 					// Look for a MyInfo
 					let myInfoNodeNum = Int64(nodeInfo.num)
@@ -1208,6 +1241,7 @@ actor MeshPackets {
 					// radio that does the actual verifying no longer holds.
 					fetchedNode[0].hasXeddsaSigned = nodeInfo.hasXeddsaSigned_p
 					fetchedNode[0].isKeyManuallyVerified = nodeInfo.isKeyManuallyVerified
+					recordNodeDBObservation(nodeInfo, node: fetchedNode[0], radioNum: connectedNodeNum, reportsHeardOnCurrentLora: reportsHeardOnCurrentLora)
 					fetchedNode[0].heardOnCurrentLora = Self.heardOnCurrentLora(nodeInfo, reported: reportsHeardOnCurrentLora, connectedNodeNum: connectedNodeNum)
 
 					if nodeInfo.hasUser {
@@ -1279,6 +1313,7 @@ actor MeshPackets {
 						newTelemetry.channelUtilization = nodeInfo.deviceMetrics.channelUtilization
 						newTelemetry.airUtilTx = nodeInfo.deviceMetrics.airUtilTx
 						newTelemetry.nodeTelemetry = fetchedNode[0]
+						newTelemetry.receivedBy = ReceivedBy.adding(connectedNodeNum ?? 0, to: "")
 					}
 
 					if nodeInfo.hasPosition {
@@ -1293,6 +1328,7 @@ actor MeshPackets {
 							position.satsInView = Int32(truncatingIfNeeded: nodeInfo.position.satsInView)
 							position.time = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.position.time)))
 							position.nodePosition = fetchedNode[0]
+							position.receivedBy = ReceivedBy.adding(connectedNodeNum ?? 0, to: "")
 						}
 
 					}
@@ -1431,15 +1467,14 @@ actor MeshPackets {
 				}
 			}
 			// Save an ack for the admin message log for each admin message response received as we stopped sending acks if there is also a response to reduce airtime.
-			self.adminResponseAck(packet: packet)
+			self.adminResponseAck(packet: packet, radioNum: connectedNodeNum)
 		}
 	}
 
-	private func adminResponseAck (packet: MeshPacket) {
+	private func adminResponseAck (packet: MeshPacket, radioNum: Int64?) {
 		let requestID = Int64(packet.decoded.requestID)
-		let fetchDescriptor = FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.messageId == requestID })
 		do {
-			let fetchedMessage = try modelContext.fetch(fetchDescriptor)
+			let fetchedMessage = try sentMessage(requestID: requestID, radioNum: radioNum).map { [$0] } ?? []
 			if fetchedMessage.count > 0 {
 				fetchedMessage[0].ackTimestamp = Int32(Date().timeIntervalSince1970)
 				fetchedMessage[0].ackError = Int32(RoutingError.none.rawValue)
@@ -1456,7 +1491,7 @@ actor MeshPackets {
 		}
 	}
 
-	func paxCounterPacket (packet: MeshPacket) {
+	func paxCounterPacket (packet: MeshPacket, radioNum: Int64? = nil) {
 		let paxDetail = (try? Paxcount(serializedBytes: packet.decoded.payload)).map { " — \($0.wifi) wifi \($0.ble) ble" } ?? ""
 		Logger.mesh.info("[PAX Counter] packet received from \(packet.from.toHex(), privacy: .public)\(paxDetail, privacy: .public)")
 
@@ -1478,6 +1513,8 @@ actor MeshPackets {
 				newPax.wifi = Int32(truncatingIfNeeded: paxMessage.wifi)
 				newPax.uptime = Int32(truncatingIfNeeded: paxMessage.uptime)
 				newPax.time = Date()
+				newPax.packetId = Int64(packet.id)
+				newPax.receivedBy = ReceivedBy.adding(radioNum ?? 0, to: "")
 				newPax.paxNode = node
 				scheduleDebouncedSave()
 			}
@@ -1496,10 +1533,9 @@ actor MeshPackets {
 			Logger.mesh.info("🕸️ \(logString, privacy: .public)")
 
 			let requestID = Int64(packet.decoded.requestID)
-			let fetchDescriptor = FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.messageId == requestID })
 
 			do {
-				let fetchedMessage = try modelContext.fetch(fetchDescriptor)
+				let fetchedMessage = try sentMessage(requestID: requestID, radioNum: connectedNodeNum).map { [$0] } ?? []
 				if fetchedMessage.count > 0 {
 					if fetchedMessage[0].toUser != nil {
 						// Real ACK from DM Recipient
@@ -1614,6 +1650,8 @@ actor MeshPackets {
 			let node = findOrCreateNode(num: packetFrom, context: modelContext)
 			let telemetry = TelemetryEntity()
 			modelContext.insert(telemetry)
+			telemetry.packetId = Int64(packet.id)
+			telemetry.receivedBy = ReceivedBy.adding(connectedNode, to: "")
 			/// Currently only Device Metrics and Environment Telemetry are supported in the app
 			if telemetryMessage.variant == Telemetry.OneOf_Variant.deviceMetrics(telemetryMessage.deviceMetrics) {
 				// Device Metrics
@@ -1930,16 +1968,20 @@ actor MeshPackets {
 				do {
 					let fetchedUsers = try modelContext.fetch(fetchDescriptor)
 
-					// Dedupe: if we already have a row with this messageId, skip re-ingestion.
-					// messageId is @Attribute(.unique), so without this guard the radio echo
-					// upserts onto the row sendMessage() wrote, resetting read/ACK state and
-					// triggering a phantom notification. Mirrors Android's
-					// findPacketsWithId(dataPacket.id) guard in rememberDataPacket.
+					// Dedupe: if we already have a row for this packet, skip re-ingestion.
+					// Without this guard the radio echo upserts onto the row sendMessage() wrote,
+					// resetting read/ACK state and triggering a phantom notification. Mirrors
+					// Android's findPacketsWithId(dataPacket.id) guard in rememberDataPacket.
 					// A replay stores under the message it replays, so a second replay — and a
 					// replay of something already received live — lands on this row instead of
-					// inserting another one.
+					// inserting another one. A packet id is only unique per sender (feature 021),
+					// so the match is on `messageKey`; rows not yet backfilled have no key and
+					// match on the id alone.
 					let packetId = Int64(storeForwardOriginalId != 0 ? storeForwardOriginalId : packet.id)
-					let existingDescriptor = FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.messageId == packetId })
+					let messageKey = MessageEntity.key(fromNum: fromNum, messageId: packetId)
+					let existingDescriptor = FetchDescriptor<MessageEntity>(predicate: #Predicate {
+						$0.messageKey == messageKey || ($0.messageKey == nil && $0.messageId == packetId)
+					})
 					if let existing = try? modelContext.fetch(existingDescriptor), !existing.isEmpty {
 						Logger.data.debug("Skipping duplicate text message, messageId \(packetId, privacy: .public) already stored")
 						return
@@ -1955,6 +1997,16 @@ actor MeshPackets {
 					let newMessage = MessageEntity()
 					modelContext.insert(newMessage)
 					newMessage.messageId = packetId
+					newMessage.messageKey = messageKey
+					newMessage.fromNum = fromNum
+					newMessage.toNum = storeForwardBroadcast ? MultiRadioBackfill.broadcastNum : toNum
+					newMessage.localNodeNum = connectedNode
+					newMessage.receivedBy = ReceivedBy.adding(connectedNode, to: "")
+					if isBroadcastMessage {
+						// From the saved channels and LoRa settings: this context's copies can predate
+						// a rename, key change or QR import the main context saved.
+						newMessage.channelKey = MultiRadioBackfill.computedChannelKeys(for: connectedNode, container: modelContext.container)[Int32(truncatingIfNeeded: packet.channel)]
+					}
 					if packet.rxTime > 0 {
 						newMessage.messageTimestamp = Int32(bitPattern: packet.rxTime)
 					} else {
@@ -2251,7 +2303,8 @@ actor MeshPackets {
 		}
 	}
 
-	func waypointPacket (packet: MeshPacket) {
+	/// `radioNum` is the radio that received it, recorded on the waypoint (`receivedBy`).
+	func waypointPacket (packet: MeshPacket, radioNum: Int64? = nil) {
 		let waypointDetail = (try? Waypoint(serializedBytes: packet.decoded.payload)).map { w -> String in
 			var parts: [String] = []
 			let name = w.name.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -2290,6 +2343,7 @@ actor MeshPackets {
 					let waypoint = WaypointEntity()
 					modelContext.insert(waypoint)
 					waypoint.id = Int64(waypointMessage.id) // Use waypointMessage.id
+					waypoint.receivedBy = ReceivedBy.adding(radioNum ?? 0, to: "")
 					waypoint.name = waypointMessage.name
 					waypoint.longDescription = waypointMessage.description_p
 					waypoint.latitudeI = waypointMessage.latitudeI
@@ -2342,6 +2396,7 @@ actor MeshPackets {
 							savePendingChanges()
 							Logger.data.info("💾 Deleted a waypoint")
 						} else {
+							existingWaypoint.receivedBy = ReceivedBy.adding(radioNum ?? 0, to: existingWaypoint.receivedBy)
 							existingWaypoint.name = waypointMessage.name
 							existingWaypoint.longDescription = waypointMessage.description_p
 							existingWaypoint.latitudeI = waypointMessage.latitudeI

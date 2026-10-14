@@ -32,7 +32,7 @@ struct ChannelMessageList: View {
 	@State private var searchMatches: [MessageSearchMatch] = []
 	@State private var currentMatchIndex = -1
 	@State private var searchActor: MessageSearchActor?
-	@State private var previousByID: [Int64: MessageEntity] = [:]
+	@State private var previousByID: [String: MessageEntity] = [:]
 	@State private var repliesByID: [Int64: MessageEntity] = [:]
 	@State private var tapbacksByReplyID: [Int64: [MessageEntity]] = [:]
 	@State private var hasEarlierMessages = false
@@ -91,12 +91,11 @@ struct ChannelMessageList: View {
 			let fetchedMessages = try fetchMessages(limit: messageLimit + 1)
 			hasEarlierMessages = fetchedMessages.count > messageLimit
 
-			// The ForEach below keys on messageId. The store can transiently hold two
-			// rows with the same messageId (a sent message and its mesh echo, racing
-			// across contexts before the unique constraint merges them) — duplicate
-			// ForEach ids corrupt the List's collection-view diff and crash. Keep the
-			// first occurrence; the merge collapses the rows moments later.
-			let visibleMessages = MessageEntity.deduplicatedByMessageId(
+			// The ForEach below keys on `listID` (sender and packet id). A sent message and its
+			// mesh echo can briefly be two rows, racing across contexts before the unique
+			// constraint merges them, and duplicate ForEach ids corrupt the List's diff and crash.
+			// Keep the first occurrence.
+			let visibleMessages = MessageEntity.deduplicatedByListID(
 				Array(fetchedMessages.prefix(messageLimit).reversed())
 			)
 			let previousMessage = hasEarlierMessages ? fetchedMessages[messageLimit] : nil
@@ -141,12 +140,12 @@ struct ChannelMessageList: View {
 
 
 
-	private func buildPreviousByID(for visibleMessages: [MessageEntity], previousMessage: MessageEntity?) -> [Int64: MessageEntity] {
-		var result: [Int64: MessageEntity] = [:]
+	private func buildPreviousByID(for visibleMessages: [MessageEntity], previousMessage: MessageEntity?) -> [String: MessageEntity] {
+		var result: [String: MessageEntity] = [:]
 		var previous = previousMessage
 		for message in visibleMessages {
 			if let previous {
-				result[message.messageId] = previous
+				result[message.listID] = previous
 			}
 			previous = message
 		}
@@ -154,7 +153,9 @@ struct ChannelMessageList: View {
 	}
 
 	private func fetchReplies(for visibleMessages: [MessageEntity]) throws -> [Int64: MessageEntity] {
-		var result = Dictionary(uniqueKeysWithValues: visibleMessages.map { ($0.messageId, $0) })
+		// A reply names its target by packet id alone (the protocol carries no sender), so with two
+		// messages sharing an id it attaches to the first, as before.
+		var result = Dictionary(visibleMessages.map { ($0.messageId, $0) }, uniquingKeysWith: { first, _ in first })
 		let missingReplyIDs = Array(Set(visibleMessages.map(\.replyID).filter { $0 > 0 && result[$0] == nil }))
 		guard !missingReplyIDs.isEmpty else {
 			return result
@@ -243,12 +244,15 @@ struct ChannelMessageList: View {
 						.buttonStyle(.borderless)
 						.padding(.vertical, 8)
 					}
-					ForEach(messages, id: \.messageId) { message in
+					ForEach(messages, id: \.listID) { message in
+						if message.isSystemEvent {
+							ChannelChangeRow(message: message)
+						} else {
 						  ChannelMessageRow(
 							  message: message,
 							  replyMessage: repliesByID[message.replyID],
 							  tapbacks: tapbacksByReplyID[message.messageId] ?? [],
-							  previousMessage: previousByID[message.messageId],
+							  previousMessage: previousByID[message.listID],
 							  preferredPeripheralNum: preferredPeripheralNum,
 							  channel: channel,
 							  replyMessageId: $replyMessageId,
@@ -276,6 +280,7 @@ struct ChannelMessageList: View {
 								  loadMessages(markReadAfterLoad: routerIsShowingThisChannel())
 							  }
 						  )
+						}
 
 					}
 					Color.clear
@@ -313,7 +318,7 @@ struct ChannelMessageList: View {
 			.onChange(of: bottomScrollRequest) {
 				// On iOS 17, follow the real message row only when loadMessages saw
 				// the reader near the bottom, or after the reader sends a message.
-				if #unavailable(iOS 18.0, macOS 15.0), let lastID = messages.last?.messageId {
+				if #unavailable(iOS 18.0, macOS 15.0), let lastID = messages.last?.listID {
 					scrollView.scrollTo(lastID, anchor: .bottom)
 				}
 			}
@@ -342,7 +347,7 @@ struct ChannelMessageList: View {
 				if tapbackFocused, let target = tapbackTargetMessage {
 					DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
 						withAnimation {
-							scrollView.scrollTo(target.messageId, anchor: .center)
+							scrollView.scrollTo(target.listID, anchor: .center)
 						}
 					}
 				}
@@ -426,7 +431,9 @@ private extension ChannelMessageList {
 	func scrollToHighlighted(_ proxy: ScrollViewProxy) {
 		guard messageToHighlight > 0 else { return }
 		DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-			withAnimation { proxy.scrollTo(messageToHighlight, anchor: .center) }
+			// Rows scroll by `listID`; the highlight names a packet id.
+			guard let target = messages.first(where: { $0.messageId == messageToHighlight })?.listID else { return }
+			withAnimation { proxy.scrollTo(target, anchor: .center) }
 		}
 	}
 

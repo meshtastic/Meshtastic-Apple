@@ -353,3 +353,62 @@ extension ModemPresets {
 		}
 	}
 }
+
+// MARK: - Same mesh (feature 021, D-18)
+
+/// What makes two radios part of the same mesh, for resetting or removing one of several radios
+/// (D-18): the region, the modulation (the preset when "use preset" is on, otherwise bandwidth,
+/// spreading factor and coding rate) and the frequency the firmware computes, which covers the
+/// slot from the primary channel's name and a frequency override. Channel keys don't count: two
+/// radios on the same frequency hear the same nodes whatever channels they have.
+struct MeshNetwork: Equatable {
+	enum Modulation: Equatable {
+		case preset(Int32)
+		case custom(bandwidth: Int32, spreadFactor: Int32, codingRate: Int32)
+	}
+
+	let region: Int32
+	let modulation: Modulation
+	/// The operating frequency in kHz, so rounding in the calculation can't split one mesh.
+	let frequencyKHz: Int
+
+	/// Nil without LoRa settings: the network isn't known, so it matches nothing.
+	init?(lora: LoRaConfigEntity?, primaryChannelName: String?) {
+		guard let lora else { return nil }
+		region = lora.regionCode
+		modulation = lora.usePreset
+			? .preset(lora.modemPreset)
+			: .custom(bandwidth: lora.bandwidth, spreadFactor: lora.spreadFactor, codingRate: lora.codingRate)
+		let calculator = LoRaChannelCalculator(config: lora)
+		let name = ChannelIdentity.resolvedName(name: primaryChannelName, usePreset: lora.usePreset, modemPreset: lora.modemPreset)
+		let slot = calculator.effectiveChannelSlot(primaryName: name)
+		frequencyKHz = Int((calculator.radioFrequencyMHz(slot: slot) * 1000).rounded())
+	}
+
+	/// The network of the user's radio `myInfo`, from its LoRa settings and primary channel.
+	init?(radio myInfo: MyInfoEntity) {
+		let primary = myInfo.channels.first { $0.index == 0 }
+		self.init(lora: myInfo.myInfoNode?.loRaConfig, primaryChannelName: primary?.name)
+	}
+
+	/// This network as text, for the mesh part of a channel key (`ChannelIdentity`, T379):
+	/// `r<region>.p<preset>.<kHz>` with a preset, `r<region>.b<bw>s<sf>c<cr>.<kHz>` without.
+	/// No colons, which separate the parts of the key.
+	var identity: String {
+		let modulationPart: String
+		switch modulation {
+		case let .preset(preset):
+			modulationPart = "p\(preset)"
+		case let .custom(bandwidth, spreadFactor, codingRate):
+			modulationPart = "b\(bandwidth)s\(spreadFactor)c\(codingRate)"
+		}
+		return "r\(region).\(modulationPart).\(frequencyKHz)"
+	}
+
+	/// The preset in an `identity`, when it names one.
+	static func modemPreset(fromIdentity identity: String) -> Int32? {
+		let parts = identity.split(separator: ".")
+		guard parts.count == 3, parts[1].hasPrefix("p") else { return nil }
+		return Int32(parts[1].dropFirst())
+	}
+}

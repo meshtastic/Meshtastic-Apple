@@ -48,6 +48,8 @@ extension MeshPackets {
 			for node in staleNodes {
 				modelContext.delete(node)
 			}
+			// Observations only hold the node number, so they go explicitly (T173).
+			deleteObservations(ofNodes: staleNodes.map(\.num))
 			try modelContext.save()
 			Logger.data.info("💾 [NodeInfoEntity] Cleared \(deletedNodes) stale nodes")
 			return true
@@ -315,6 +317,18 @@ extension MeshPackets {
 					Logger.data.debug("💾 [updateAnyPacketFrom] Updating node \(packet.from.toHex(), privacy: .public) hopsAway=\(node.hopsAway)")
 				}
 				
+				// Feature 021: the receiving radio's observation of the node mirrors what the node
+				// row holds, which with one radio is that radio's view.
+				let observation = try self.observation(of: node, by: activeDeviceNum)
+				observation.lastHeard = node.lastHeard
+				observation.snr = node.snr
+				observation.rssi = node.rssi
+				observation.viaMqtt = node.viaMqtt
+				observation.hopsAway = node.hopsAway
+				if reportsHeardOnCurrentLora && !isImplicitAck && !packet.viaMqtt && packet.hasRxRssi {
+					observation.heardOnCurrentLora = true
+				}
+
 				// Changes are saved by the subsequent packet handler's save call
 				Logger.data.debug("💾 [updateAnyPacketFrom] Updated node \(node.num.toHex(), privacy: .public) snr=\(node.snr), rssi=\(node.rssi) from packet \(packet.id.toHex(), privacy: .public)")
 			}
@@ -540,6 +554,7 @@ extension MeshPackets {
 						telemetry.channelUtilization = nodeInfoMessage.deviceMetrics.channelUtilization
 						telemetry.airUtilTx = nodeInfoMessage.deviceMetrics.airUtilTx
 						telemetry.nodeTelemetry = fetchedNode[0]
+						telemetry.receivedBy = ReceivedBy.adding(Int64(UserDefaults.preferredPeripheralNum), to: "")
 					}
 					if nodeInfoMessage.hasUser {
 						fetchedNode[0].user?.userId = nodeInfoMessage.num.toHex()
@@ -644,7 +659,8 @@ extension MeshPackets {
 		return parts.isEmpty ? "" : " — " + parts.joined(separator: " ")
 	}
 
-	func upsertPositionPacket (packet: MeshPacket) {
+	/// `radioNum` is the radio that received it, recorded on the position (`receivedBy`).
+	func upsertPositionPacket (packet: MeshPacket, radioNum: Int64? = nil) {
 
 		Logger.mesh.info("📍 [Position] packet received from \(packet.from.toHex(), privacy: .public)\(self.positionLogDetails(from: packet), privacy: .public)")
 		
@@ -696,6 +712,8 @@ extension MeshPackets {
 							modelContext.insert(position)
 						}
 						position.latest = true
+						position.packetId = Int64(packet.id)
+						position.receivedBy = ReceivedBy.adding(radioNum ?? 0, to: position.receivedBy)
 						position.snr = packet.rxSnr
 						position.rssi = packet.rxRssi
 						// All of these protobuf fields are UInt32; convert with truncatingIfNeeded
@@ -989,6 +1007,9 @@ extension MeshPackets {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
+				// The mesh (region, preset or modulation, frequency) is part of every channel key
+				// (T144, T379); a real change leaves a change row in each affected thread (T377).
+				refreshChannelKeys(radioNum: nodeNum)
 				savePendingChanges()
 					Logger.data.info("💾 [LoRaConfigEntity] Updated for node: \(nodeNum.toHex(), privacy: .public)")
 			} else {

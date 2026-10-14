@@ -1005,6 +1005,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			await handleMyInfo(myNodeInfo)
 
 		case .packet(let packet):
+			// Feature 021: which radio heard the packet, with its signal and hops.
+			if let radioNum = self.activeDeviceNum {
+				await MeshPackets.shared.recordReception(packet: packet, radioNum: radioNum)
+			}
 			// Feed the traffic-rate estimator one tick per inbound mesh packet — this is the busy path
 			// whose re-renders make the map flyover stutter, so it's exactly what we want to measure.
 			meshTrafficMonitor.recordInboundPacket()
@@ -1037,7 +1041,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				case .remoteHardwareApp:
 					Logger.mesh.info("[Remote Hardware] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .positionApp:
-					await MeshPackets.shared.upsertPositionPacket(packet: packet)
+					await MeshPackets.shared.upsertPositionPacket(packet: packet, radioNum: self.activeDeviceNum)
 					WatchSessionManager.shared.sendNodesToWatch()
 					// Broadcast position to TAK clients
 					if let position = try? Position(serializedBytes: data.payload) {
@@ -1049,7 +1053,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					}
 				case .waypointApp:
 					Logger.tak.info("WAYPOINT APP CASE REACHED")
-					await MeshPackets.shared.waypointPacket(packet: packet)
+					await MeshPackets.shared.waypointPacket(packet: packet, radioNum: self.activeDeviceNum)
 					// Broadcast waypoint to TAK clients
 					if let waypoint = try? Waypoint(serializedBytes: data.payload) {
 						Logger.tak.info("WAYPOINT PARSED: \(waypoint.name)")
@@ -1143,7 +1147,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 						}
 					}
 				case .paxcounterApp:
-					await MeshPackets.shared.paxCounterPacket(packet: decodedInfo.packet)
+					await MeshPackets.shared.paxCounterPacket(packet: decodedInfo.packet, radioNum: self.activeDeviceNum)
 				case .mapReportApp:
 					Logger.mesh.info("[Map Report] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .meshBeaconApp:
@@ -1288,7 +1292,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					// now rather than waiting on the debounce timer.
 					await MeshPackets.shared.flushDebouncedSaves()
 					if dumpWasRequested, !dumpNums.isEmpty, reportsHeardOnCurrentLora {
-						await MeshPackets.shared.markAbsentFromRadio(presentNums: dumpNums)
+						await MeshPackets.shared.markAbsentFromRadio(presentNums: dumpNums, radioNum: self.activeDeviceNum)
 					}
 					do {
 						try context.save()
