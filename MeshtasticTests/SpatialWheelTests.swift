@@ -151,6 +151,13 @@ struct SpatialWheelMotionTests {
 		#expect(SpatialWheelMotion.velocity(of: [(1, 1)], at: 1) == 0)
 	}
 
+	@Test func velocityDropsWhenTheHandStoppedBeforeLettingGo() {
+		// Fast until 1.0 s, then held still with no new samples until the release at 1.08 s.
+		let samples: [(time: Double, yaw: Float)] = [(0.96, 0), (0.98, 0.06), (1.0, 0.12)]
+		#expect(abs(SpatialWheelMotion.velocity(of: samples, at: 1.0) - 3) < 1e-3)
+		#expect(SpatialWheelMotion.velocity(of: samples, at: 1.08) < 1.1)
+	}
+
 	@Test func decayStopsWithinASecond() {
 		var velocity = SpatialWheelMotion.maximumSpeed
 		var time = 0.0
@@ -226,6 +233,20 @@ struct SpatialWheelMotionTests {
 		while motion.isMoving, frames < 500 { _ = motion.step(dt: frame); frames += 1 }
 		#expect(motion.shown == 0)
 		#expect(!motion.isResetting)
+	}
+
+	@Test func aTapDoesNotCancelAReset() {
+		var motion = SpatialWheelMotion()
+		_ = motion.grab()
+		motion.drag(to: 1, at: 0)
+		while motion.shown != motion.target { _ = motion.step(dt: frame) }
+		motion.reset()
+		motion.stop()
+		#expect(motion.target == 0)
+		#expect(motion.isResetting)
+		var frames = 0
+		while motion.isMoving, frames < 500 { _ = motion.step(dt: frame); frames += 1 }
+		#expect(motion.shown == 0)
 	}
 
 	@Test func dragDirectionHoldsThroughTheCenterLine() {

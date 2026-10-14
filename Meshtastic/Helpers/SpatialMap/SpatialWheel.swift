@@ -209,11 +209,11 @@ struct SpatialWheelMotion: Equatable, Sendable {
 	}
 
 	/// The speed over the samples in the last `window` before `now`, zero without enough of them.
+	/// The span runs to `now`, so a hand that stopped before letting go reads as slower.
 	static func velocity(of samples: [(time: Double, yaw: Float)], at now: Double, window: Double = velocityWindow) -> Float {
 		let recent = samples.filter { $0.time >= now - window }
-		guard let first = recent.first, let last = recent.last else { return 0 }
-		let span = last.time - first.time
-		guard span >= 0.01 else { return 0 }
+		guard let first = recent.first, let last = recent.last, last.time - first.time >= 0.01 else { return 0 }
+		let span = max(last.time, now) - first.time
 		return (last.yaw - first.yaw) / Float(span)
 	}
 
@@ -246,8 +246,10 @@ struct SpatialWheelMotion: Equatable, Sendable {
 		velocity = abs(speed) < Self.minimumFlickSpeed ? 0 : min(max(speed, -Self.maximumSpeed), Self.maximumSpeed)
 	}
 
-	/// Stops a coast where it is.
+	/// Stops a coast where it is. A swing back to north carries on, since the taps of the double
+	/// tap that started it also arrive here.
 	mutating func stop() {
+		guard !isResetting else { return }
 		velocity = 0
 		isResetting = false
 		target = shown
