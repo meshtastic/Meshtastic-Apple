@@ -43,12 +43,10 @@ extension AccessoryManager {
 		Logger.services.info("handleClientNotification: \(clientNotification.debugDescription)")
 		var path = "meshtastic:///settings/debugLogs"
 		if clientNotification.hasReplyID {
-			/// Set Sent bool on TraceRouteEntity to false if we got rate limited
+			/// Mark the trace route as rate limited. It stays a request we made, not an observed route.
 			if clientNotification.message.starts(with: "TraceRoute") {
-				// CoreData operation happens on the Main Actor
-
 				let traceRoute = getTraceRoute(id: Int64(clientNotification.replyID), context: context)
-				traceRoute?.sent = false
+				traceRoute?.rateLimited = true
 				do {
 					try context.save()
 					Logger.data.info("💾 [TraceRouteEntity] Trace Route Rate Limited")
@@ -716,10 +714,7 @@ extension AccessoryManager {
 			hopNodes.append(connectedHop)
 			traceRoute.hopsTowards = Int32(routingMessage.route.count)
 			for (index, node) in routingMessage.route.enumerated() {
-				var hopNode = getNodeInfo(id: Int64(node), context: context)
-				if hopNode == nil && hopNode?.num ?? 0 > 0 && node != 4294967295 {
-					hopNode = findOrCreateNode(num: Int64(node), context: context)
-				}
+				let hopNode = traceRouteHopNode(num: node)
 				let traceRouteHop = TraceRouteHopEntity()
 				context.insert(traceRouteHop)
 				traceRouteHop.time = Date()
@@ -729,7 +724,7 @@ extension AccessoryManager {
 					// If no snr in route, set unknown
 					traceRouteHop.snr = -32
 				}
-				traceRouteHop.num = hopNode?.num ?? 0
+				traceRouteHop.num = Int64(node)
 				traceRouteHop.index = Int32(index + 1)
 				if hopNode != nil {
 					if packet.rxTime > 0 {
@@ -762,10 +757,7 @@ extension AccessoryManager {
 				traceRoute.hopsBack = Int32(routingMessage.routeBack.count)
 				var routeBackString = "\(targetNodeInfo?.user?.longName ?? "Unknown".localized) \(targetNum.toHex()) --> "
 				for (index, node) in routingMessage.routeBack.enumerated() {
-					var hopNode = getNodeInfo(id: Int64(node), context: context)
-					if hopNode == nil && hopNode?.num ?? 0 > 0 && node != 4294967295 {
-						hopNode = findOrCreateNode(num: Int64(node), context: context)
-					}
+					let hopNode = traceRouteHopNode(num: node)
 					let traceRouteHop = TraceRouteHopEntity()
 					context.insert(traceRouteHop)
 					traceRouteHop.time = Date()
@@ -776,7 +768,7 @@ extension AccessoryManager {
 						// If no snr in route, set to unknown
 						traceRouteHop.snr = -32
 					}
-					traceRouteHop.num = hopNode?.num ?? 0
+					traceRouteHop.num = Int64(node)
 					traceRouteHop.index = Int32(index)
 					if hopNode != nil {
 						if packet.rxTime > 0 {
@@ -809,7 +801,7 @@ extension AccessoryManager {
 				manager.notifications = [
 					Notification(
 						id: (UUID().uuidString),
-						title: "Traceroute Complete",
+						title: String(localized: "Traceroute Complete", comment: "Notification title when a trace route you sent gets a response"),
 						subtitle: "TR received back from \(destinationHop.name ?? "unknown")",
 						content: "Hops from: \(traceRoute.hopsTowards), Hops back: \(traceRoute.hopsBack)\n\(traceRoute.routeText ?? "Unknown".localized)\n\(traceRoute.routeBackText ?? "Unknown".localized)",
 						target: "nodes",
@@ -829,6 +821,14 @@ extension AccessoryManager {
 			let logString = String.localizedStringWithFormat("Trace Route request returned: %@".localized, routeString)
 			Logger.mesh.info("🪧 \(logString, privacy: .public)")
 		}
+	}
+
+	/// The known node for a trace route hop, if any. The hop row keeps the raw number itself, so a
+	/// hop we haven't heard from isn't added to the node DB. `0xFFFFFFFF` marks a repeater that
+	/// didn't add its number; it has no node.
+	private func traceRouteHopNode(num: UInt32) -> NodeInfoEntity? {
+		guard num != 0, num != UInt32.max else { return nil }
+		return getNodeInfo(id: Int64(num), context: context)
 	}
 
 	/// Captures a point-in-time snapshot of the current position of every node involved in a trace

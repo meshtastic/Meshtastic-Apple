@@ -4,6 +4,8 @@ struct TraceRouteButton: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 
 	var node: NodeInfoEntity
+	/// An icon over a short title, for a row of equal action tiles.
+	var compact = false
 
 	@State
 	private var isPresentingTraceRouteSentAlert: Bool = false
@@ -24,7 +26,17 @@ struct TraceRouteButton: View {
 				}
 			}
 		} label: { completion in
-			if let completion, completion.percentComplete > 0.0 {
+			if compact {
+				if let completion, completion.percentComplete > 0.0 {
+					TraceRouteActionLabel(
+						title: "\(completion.secondsRemaining.formatted(.number.precision(.fractionLength(0))))s",
+						systemImage: "signpost.right.and.left"
+					)
+					.foregroundStyle(.secondary)
+				} else {
+					TraceRouteActionLabel(title: String(localized: "Trace Route"), systemImage: "signpost.right.and.left")
+				}
+			} else if let completion, completion.percentComplete > 0.0 {
 				Label {
 					Text("Trace Route (in \(completion.secondsRemaining.formatted(.number.precision(.fractionLength(0))))s)")
 						.foregroundStyle(.secondary)

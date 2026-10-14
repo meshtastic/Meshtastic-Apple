@@ -187,6 +187,11 @@ struct MapLegend: View {
 				subtitle: String(localized: "Dashed line back to the originator.")
 			)
 			MapLegendItem(
+				symbol: AnyView(traceRouteHopLabelsSymbol),
+				title: String(localized: "Hop Numbers and Signal"),
+				subtitle: String(localized: "Relays are numbered in order, filled on the way out and outlined on the way back. Zoom in to see each leg's SNR.")
+			)
+			MapLegendItem(
 				symbol: AnyView(traceRouteEndpointsSymbol),
 				title: String(localized: "Origin & Target"),
 				subtitle: String(localized: "Green marks the originator, red marks the target node.")
@@ -323,13 +328,42 @@ struct MapLegend: View {
 				path.move(to: CGPoint(x: 2, y: 20))
 				path.addLine(to: CGPoint(x: 38, y: 20))
 			}
-			.stroke(style: StrokeStyle(lineWidth: 3, lineCap: .round, dash: [2, 4]))
-			.foregroundStyle(Color.teal)
+			.stroke(style: StrokeStyle(lineWidth: 3, lineCap: .round, dash: [2, 8]))
+			.foregroundStyle(Color.green)
+			// The map colors the return path by SNR like the outbound one, with chevrons in the line color.
 			Image(systemName: "chevron.right")
-				.font(.system(size: 9, weight: .heavy))
-				.foregroundStyle(.white)
+				.font(.system(size: 11, weight: .heavy))
+				.foregroundStyle(Color.green)
 				.offset(x: 4)
 		}
+	}
+
+	private var traceRouteHopLabelsSymbol: some View {
+		VStack(spacing: 3) {
+			HStack(spacing: 4) {
+				hopBadge("1", isBack: false)
+				hopBadge("1", isBack: true)
+			}
+			Text(verbatim: "7.0 dB")
+				.font(.system(size: 8, weight: .semibold))
+				.foregroundStyle(.black)
+				.padding(.horizontal, 3)
+				.background(Capsule().fill(Color.green))
+		}
+	}
+
+	private func hopBadge(_ number: String, isBack: Bool) -> some View {
+		Text(verbatim: number)
+			.font(.system(size: 9, weight: .bold, design: .rounded))
+			.foregroundStyle(isBack ? Color.black : Color.white)
+			.frame(width: 15, height: 15)
+			.background(Circle().fill(isBack ? Color.white : Color.black.opacity(0.85)))
+			.overlay(
+				Circle().strokeBorder(
+					isBack ? Color.black : Color.white,
+					style: StrokeStyle(lineWidth: 1.2, dash: isBack ? [2, 2] : [])
+				)
+			)
 	}
 
 	private var traceRouteEndpointsSymbol: some View {

@@ -40,7 +40,75 @@ extension TraceRouteNodePositionEntity {
 	}
 }
 
+/// Where a trace route stands, for the log rows.
+enum TraceRouteState: Equatable {
+	/// A response we saw on the mesh for someone else's request.
+	case observed
+	/// We sent the request and are still inside the wait window.
+	case pending
+	/// We sent the request and nothing came back in time.
+	case noResponse
+	/// The radio refused to send the request because of its cooldown.
+	case rateLimited
+	/// We sent the request and got the route back.
+	case complete
+
+	/// How long to wait for a response before calling it no response.
+	static let responseWindow: TimeInterval = 120
+
+	/// Short text for the state; nil for `complete` and `observed`, whose rows show the hops.
+	var label: String? {
+		switch self {
+		case .pending: String(localized: "Waiting for response", comment: "Trace route state: request sent, no answer yet")
+		case .noResponse: String(localized: "No response", comment: "Trace route state: request sent, nothing came back")
+		case .rateLimited: String(localized: "Rate limited")
+		case .observed, .complete: nil
+		}
+	}
+
+	var systemImage: String {
+		switch self {
+		case .observed, .complete: "point.3.connected.trianglepath.dotted"
+		case .pending: "hourglass"
+		case .noResponse: "person.slash"
+		case .rateLimited: "square.and.arrow.up.trianglebadge.exclamationmark"
+		}
+	}
+}
+
 extension TraceRouteEntity {
+
+	/// When the request went out. Older records have no `sentAt`; before a response arrives their
+	/// `time` is the send time.
+	private var requestTime: Date? { sentAt ?? time }
+
+	/// Seconds from sending the request to getting the response; nil for observed routes, requests
+	/// without a response and older records that didn't keep the send time.
+	var roundTrip: TimeInterval? {
+		guard sent, response, let sentAt, let time else { return nil }
+		let interval = time.timeIntervalSince(sentAt)
+		return interval >= 0 ? interval : nil
+	}
+
+	/// The state of this trace route at `now`.
+	func state(now: Date = .now) -> TraceRouteState {
+		if rateLimited { return .rateLimited }
+		if response { return sent ? .complete : .observed }
+		// Older records marked a rate-limited request by clearing `sent`; observed routes are only
+		// ever stored with a response, so an unsent record without one was rate limited.
+		guard sent else { return .rateLimited }
+		guard let requestTime else { return .noResponse }
+		return now.timeIntervalSince(requestTime) < TraceRouteState.responseWindow ? .pending : .noResponse
+	}
+
+	/// The icon for a log row: a direct route gets the two-person symbol.
+	func rowSystemImage(now: Date = .now) -> String {
+		let state = state(now: now)
+		if (state == .complete || state == .observed) && hopsTowards == 0 {
+			return "person.line.dotted.person"
+		}
+		return state.systemImage
+	}
 
 	/// Snapshotted node positions keyed by node num for quick lookup when rendering a route.
 	var nodePositionsByNum: [Int64: TraceRouteNodePositionEntity] {
@@ -91,26 +159,5 @@ extension TraceRouteEntity {
 				pos.coordinate.map { (coordinate: $0, altitude: CLLocationDistance(pos.altitude)) }
 			}
 		}
-	}
-
-	/// Ordered `(coordinate, snr)` toward the target, for per-leg signal coloring. Drops hops we
-	/// have no snapshotted position for so coordinate and snr stay aligned.
-	var forwardSignalPath: [(coordinate: CLLocationCoordinate2D, snr: Float)] {
-		let byNum = nodePositionsByNum
-		return hops.filter { !$0.back }
-			.sorted { $0.index < $1.index }
-			.compactMap { hop in byNum[hop.num]?.coordinate.map { (coordinate: $0, snr: hop.snr) } }
-	}
-
-	/// Ordered `(coordinate, snr)` along the return path. Return hops exclude the endpoints, so the
-	/// target/originator are bracketed in; each leg is colored by the snr of the node it arrives at.
-	var backSignalPath: [(coordinate: CLLocationCoordinate2D, snr: Float)] {
-		let backHops = hops.filter { $0.back }.sorted { $0.index < $1.index }
-		guard let lastSnr = backHops.last?.snr else { return [] }
-		let byNum = nodePositionsByNum
-		var entries: [(num: Int64, snr: Float)] = [(toNum, 0)]
-		entries += backHops.map { (num: $0.num, snr: $0.snr) }
-		entries.append((num: fromNum, snr: lastSnr))
-		return entries.compactMap { entry in byNum[entry.num]?.coordinate.map { (coordinate: $0, snr: entry.snr) } }
 	}
 }

@@ -747,6 +747,8 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 					withIdentifier: HostingDecorationView.reuseID, for: deco)
 				(view as? HostingDecorationView)?.configure(content: deco.content)
 				view.isEnabled = (deco.onTap != nil) // tappable for waypoints; route markers stay inert
+				// Inert markers (trace route badges and labels) let taps through to the node pins under them.
+				view.isUserInteractionEnabled = (deco.onTap != nil)
 				return view
 			}
 

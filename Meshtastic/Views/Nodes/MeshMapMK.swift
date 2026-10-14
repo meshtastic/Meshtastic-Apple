@@ -93,6 +93,9 @@ struct MeshMapMK: View {
 	@State private var selectedTraceRoute: TraceRouteEntity?
 	@State private var tracerouteOverlays: [ClusterMapOverlay] = []
 	@State private var tracerouteDecorations: [ClusterMapDecoration] = []
+	/// Hop badges and SNR labels for the drawn trace route; which ones show depends on the zoom.
+	@State private var tracerouteLayout: TraceRouteMapLayout?
+	@State private var tracerouteLayoutKey = ""
 	@State private var lastTraceRouteKey = "init"
 	/// Drives the guided 3D camera flythrough along the selected trace route.
 	@StateObject private var flyover = TraceRouteFlyover()
@@ -1309,6 +1312,7 @@ struct MeshMapMK: View {
 									guard isMapVisible else { return [] }
 									var result = routeDecorations
 									result += tracerouteDecorations
+									result += traceRouteLabelDecorations
 									result += geoJSONDecorations
 									result += terrainLabelDecorations
 									return result
@@ -1556,9 +1560,10 @@ struct MeshMapMK: View {
 	}
 
 	/// Build the forward (solid) + return (dashed) polylines and origin/target markers for the
-	/// selected trace route. Each leg is colored by that hop's SNR using the same signal-meter math
-	/// as the LoRa signal indicator (green/yellow/orange/red), and its width/dash rhythm now varies
-	/// with the same tier so signal quality isn't encoded by hue alone. Limited to nodes with a snapshot.
+	/// selected trace route, and the layout the hop badges and SNR labels come from. Each leg is
+	/// colored by that hop's SNR using the same signal-meter math as the LoRa signal indicator
+	/// (green/yellow/orange/red), and its width/dash rhythm varies with the same tier so signal
+	/// quality isn't encoded by hue alone. Limited to nodes with a snapshot.
 	private func rebuildTraceRouteContent() {
 		let key = selectedTraceRoute.map { "\($0.id)|\($0.nodePositions.count)" } ?? "none"
 		guard key != lastTraceRouteKey else { return }
@@ -1566,54 +1571,37 @@ struct MeshMapMK: View {
 		guard let route = selectedTraceRoute else {
 			if !tracerouteOverlays.isEmpty { tracerouteOverlays = [] }
 			if !tracerouteDecorations.isEmpty { tracerouteDecorations = [] }
+			tracerouteLayout = nil
 			return
 		}
 		var overlays: [ClusterMapOverlay] = []
 		var decorations: [ClusterMapDecoration] = []
 		let idKey = route.persistentModelID.hashValue
 		let modemPreset = ModemPresets(rawValue: UserDefaults.modemPreset) ?? .longFast
+		let legs = TraceRouteLegs(route: route, preset: modemPreset, lookup: { _ in nil })
+		let layout = TraceRouteMapLayout(legs: legs, positions: route.nodePositionsByNum.compactMapValues { $0.coordinate })
 
-		// Forward (solid) — one polyline per leg, colored by the SNR measured at the node it arrives at.
-		let forward = route.forwardSignalPath
-		if forward.count >= 2 {
-			for i in 1..<forward.count {
-				var seg = [forward[i - 1].coordinate, forward[i].coordinate]
-				let style = traceRouteLineStyle(snr: forward[i].snr, preset: modemPreset, baseWidth: 4, baseDash: nil)
-				overlays.append(ClusterMapOverlay(
-					id: "traceroute-fwd-\(idKey)-\(i)",
-					overlay: MKPolyline(coordinates: &seg, count: 2),
-					style: ClusterMapOverlayStyle(
-						strokeUIColor: UIColor(getSnrColor(snr: forward[i].snr, preset: modemPreset)),
-						fillUIColor: nil,
-						lineWidth: style.width,
-						lineDash: style.dash,
-						lineDashPhase: style.phase,
-						lineCap: .round,
-						directional: true
-					)
-				))
-			}
-		}
-		// Return (dashed) — same per-leg signal coloring, plus the same tier-driven shape variation.
-		let back = route.backSignalPath
-		if back.count >= 2 {
-			for i in 1..<back.count {
-				var seg = [back[i - 1].coordinate, back[i].coordinate]
-				let style = traceRouteLineStyle(snr: back[i].snr, preset: modemPreset, baseWidth: 3, baseDash: [2, 8])
-				overlays.append(ClusterMapOverlay(
-					id: "traceroute-back-\(idKey)-\(i)",
-					overlay: MKPolyline(coordinates: &seg, count: 2),
-					style: ClusterMapOverlayStyle(
-						strokeUIColor: UIColor(getSnrColor(snr: back[i].snr, preset: modemPreset)),
-						fillUIColor: nil,
-						lineWidth: style.width,
-						lineDash: style.dash,
-						lineDashPhase: style.phase,
-						lineCap: .round,
-						directional: true
-					)
-				))
-			}
+		// One polyline per leg, colored by the SNR measured at the node it arrives at. Forward is
+		// solid, return dashed; both get thinner and more dashed as the signal drops.
+		for segment in layout.segments {
+			var seg = [segment.from, segment.to]
+			let snr = segment.snr ?? TraceRouteLegs.unknownSnr
+			let style = segment.isBack
+				? traceRouteLineStyle(snr: snr, preset: modemPreset, baseWidth: 3, baseDash: [2, 8])
+				: traceRouteLineStyle(snr: snr, preset: modemPreset, baseWidth: 4, baseDash: nil)
+			overlays.append(ClusterMapOverlay(
+				id: "traceroute-\(segment.id)-\(idKey)",
+				overlay: MKPolyline(coordinates: &seg, count: 2),
+				style: ClusterMapOverlayStyle(
+					strokeUIColor: UIColor(getSnrColor(snr: snr, preset: modemPreset)),
+					fillUIColor: nil,
+					lineWidth: style.width,
+					lineDash: style.dash,
+					lineDashPhase: style.phase,
+					lineCap: .round,
+					directional: true
+				)
+			))
 		}
 		let byNum = route.nodePositionsByNum
 		if let origin = byNum[route.fromNum]?.coordinate {
@@ -1626,6 +1614,31 @@ struct MeshMapMK: View {
 		}
 		tracerouteOverlays = overlays
 		tracerouteDecorations = decorations
+		tracerouteLayout = layout
+		tracerouteLayoutKey = "\(idKey)"
+	}
+
+	/// Hop number badges and SNR labels for the drawn trace route, limited to the ones that fit at
+	/// the current zoom. Labels go first so the badges sit on top of them.
+	private var traceRouteLabelDecorations: [ClusterMapDecoration] {
+		guard let layout = tracerouteLayout, let region = visibleRegion else { return [] }
+		let rect = TraceRouteMapLayout.mapRect(for: region)
+		let preset = ModemPresets(rawValue: UserDefaults.modemPreset) ?? .longFast
+		let labels = layout.visibleLabels(in: rect).map { label in
+			ClusterMapDecoration(
+				id: "traceroute-label-\(label.id)-\(tracerouteLayoutKey)",
+				coordinate: label.coordinate,
+				content: AnyView(TraceRouteSnrLabel(snr: label.snr, color: getSnrColor(snr: label.snr, preset: preset)))
+			)
+		}
+		let badges = layout.visibleBadges(in: rect).map { badge in
+			ClusterMapDecoration(
+				id: "traceroute-badge-\(badge.id)-\(tracerouteLayoutKey)",
+				coordinate: badge.coordinate,
+				content: AnyView(TraceRouteHopBadge(number: badge.number, isBack: badge.isBack))
+			)
+		}
+		return labels + badges
 	}
 
 	/// Center/zoom the camera to fit the selected trace route's nodes. Drives the MKMapView directly
@@ -1977,6 +1990,52 @@ private struct MeshMapMKNodePin: View, Equatable {
 				showsPulse: true
 			)
 		}
+	}
+}
+
+// MARK: - Trace route hop badges and SNR labels
+
+/// Numbered badge for a trace route relay. It sits up and to the right of the node on the way out
+/// (filled), and down and to the right on the way back (outlined, like the dashed return line), so
+/// a node on both paths shows both numbers.
+private struct TraceRouteHopBadge: View {
+	let number: Int
+	let isBack: Bool
+
+	var body: some View {
+		Text(verbatim: "\(number)")
+			.font(.system(size: 11, weight: .bold, design: .rounded))
+			.monospacedDigit()
+			.foregroundStyle(isBack ? Color.black : Color.white)
+			.frame(minWidth: 18, minHeight: 18)
+			.background(Circle().fill(isBack ? Color.white : Color.black.opacity(0.85)))
+			.overlay(
+				Circle().strokeBorder(
+					isBack ? Color.black : Color.white,
+					style: StrokeStyle(lineWidth: 1.5, dash: isBack ? [2, 2] : [])
+				)
+			)
+			.padding(.leading, 30)
+			.padding(isBack ? .top : .bottom, 30)
+			.accessibilityHidden(true)
+	}
+}
+
+/// SNR of one trace route leg, drawn on the line in the leg's color.
+private struct TraceRouteSnrLabel: View {
+	let snr: Float
+	let color: Color
+
+	var body: some View {
+		Text("\(snr.formatted(.number.precision(.fractionLength(1)))) dB")
+			.font(.system(size: 10, weight: .semibold))
+			.monospacedDigit()
+			.foregroundStyle(.black)
+			.padding(.horizontal, 5)
+			.padding(.vertical, 1.5)
+			.background(Capsule().fill(color))
+			.overlay(Capsule().strokeBorder(.white, lineWidth: 1))
+			.accessibilityHidden(true)
 	}
 }
 

@@ -1320,7 +1320,11 @@ extension AccessoryManager {
 				let fetchedNodes = try context.fetch(nodes)
 				let receivingNode = fetchedNodes.first(where: { $0.num == destNum })
 				traceRoute.id = Int64(meshPacket.id)
-				traceRoute.time = Date()
+				let sentAt = Date()
+				traceRoute.sentAt = sentAt
+				traceRoute.time = sentAt
+				traceRoute.fromNum = fromNodeNum
+				traceRoute.toNum = destNum
 				traceRoute.node = receivingNode
 				do {
 					try context.save()

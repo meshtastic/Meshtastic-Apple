@@ -156,4 +156,32 @@ struct NodeBackupRestoreFieldTests {
 		#expect(dst.messageId == 123_456)
 		#expect(dst.xeddsaSigned)
 	}
+
+	// MARK: - TraceRouteEntity
+
+	@Test("Trace route restore keeps the send time and rate-limited flag")
+	func traceRouteFieldsSurviveRestore() throws {
+		let backup = try makeContext()
+		let live = try makeContext()
+
+		let sentAt = Date(timeIntervalSince1970: 1_800_000_000)
+		let route = TraceRouteEntity()
+		route.id = 4242
+		route.sent = true
+		route.response = true
+		route.sentAt = sentAt
+		route.time = sentAt.addingTimeInterval(9)
+		route.rateLimited = true
+		backup.insert(route)
+		try backup.save()
+
+		try NodeBackupManager.importTraceRoutes(from: backup, into: live, nodesByNum: [:])
+		try live.save()
+
+		let dst = try #require(try live.fetch(FetchDescriptor<TraceRouteEntity>()).first)
+		#expect(dst.id == 4242)
+		#expect(dst.sentAt == sentAt)
+		#expect(dst.roundTrip == 9)
+		#expect(dst.rateLimited)
+	}
 }
