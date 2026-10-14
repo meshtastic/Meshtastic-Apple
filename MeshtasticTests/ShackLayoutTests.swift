@@ -35,27 +35,25 @@ struct ShackLayoutTests {
 		layout.slots.values.reduce(into: [:]) { $0[$1.tier, default: 0] += 1 }
 	}
 
-	@Test("Ten nodes: the radio on the desk, favorites beside it, online nodes on the shelves, the rest in the rack")
+	@Test("Ten nodes: the radio on the desk, everyone else in the rack, favorites included")
 	func tenNodes() {
 		var layout = ShackLayout(grid: Self.grid)
 		layout.update(mesh(count: 10, online: 6), now: Self.now)
 		#expect(layout.slots[1] == .deskRadio)
-		#expect(layout.slots[2] == .desk(0))
-		#expect(layout.slots[3] == .desk(1))
-		#expect(tiers(layout) == [.deskRadio: 1, .desk: 2, .shelf: 3, .rack: 4])
+		#expect(layout.slots[2] == .rack(0))
+		#expect(layout.slots[3] == .rack(1))
+		#expect(tiers(layout) == [.deskRadio: 1, .rack: 9])
 		#expect(layout.overflow == 0)
 		#expect(layout.rackPageCount == 1)
 	}
 
-	@Test("Fifty nodes fill the shelves before the rack")
-	func fiftyNodes() {
+	@Test("With no radio connected the desk stays empty")
+	func noConnectedRadio() {
 		var layout = ShackLayout(grid: Self.grid)
-		layout.update(mesh(count: 50, favorites: 6, online: 40), now: Self.now)
-		#expect(layout.slots[1] == .deskRadio)
-		#expect(tiers(layout) == [.deskRadio: 1, .desk: 4, .shelf: ShackLayout.shelfCapacity, .rack: 50 - 29])
-		// The two favorites past the desk's four go on the shelves first.
-		#expect(layout.slots[6]?.tier == .shelf)
-		#expect(layout.slots[7]?.tier == .shelf)
+		let nodes = (1...5).map { node(Int64($0)) }
+		layout.update(nodes, now: Self.now)
+		#expect(layout.node(in: .deskRadio) == nil)
+		#expect(tiers(layout) == [.rack: 5])
 	}
 
 	@Test("Five hundred nodes page through the rack and overflow when it is full")
@@ -65,7 +63,7 @@ struct ShackLayoutTests {
 		#expect(layout.slots[1] == .deskRadio)
 		#expect(layout.rackPageCount == 4)
 		#expect(tiers(layout)[.rack] == 400)
-		#expect(layout.overflow == 500 - 400 - 1 - 2 - ShackLayout.shelfCapacity)
+		#expect(layout.overflow == 500 - 400 - 1)
 		#expect(layout.rackPage(0).count == 100)
 		#expect(layout.rackPage(3).count == 100)
 
@@ -111,35 +109,6 @@ struct ShackLayoutTests {
 		#expect(layout.slots[999] == .rack(freed))
 	}
 
-	@Test("Tier changes wait for the promotion interval")
-	func promotionInterval() {
-		var layout = ShackLayout(grid: Self.grid)
-		var nodes = mesh(count: 10, favorites: 0, online: 9)
-		layout.update(nodes, now: Self.now)
-		#expect(layout.slots[10]?.tier == .rack)
-		// Node 10 becomes a favorite: it waits for the next promotion to reach the desk.
-		nodes[9] = node(10, online: false, favorite: true)
-		let reordered = [nodes[0], nodes[9]] + nodes[1..<9]
-		layout.update(Array(reordered), now: Self.now.addingTimeInterval(10))
-		#expect(layout.slots[10]?.tier == .rack)
-		layout.update(Array(reordered), now: Self.now.addingTimeInterval(ShackLayout.promotionInterval))
-		#expect(layout.slots[10] == .desk(0))
-	}
-
-	@Test("A full shelf keeps its nodes when last-heard order changes")
-	func fullShelfStaysPut() {
-		var layout = ShackLayout(grid: Self.grid)
-		let nodes = mesh(count: 60, favorites: 0, online: 40)
-		layout.update(nodes, now: Self.now)
-		let shelved = Set(layout.slots.filter { $0.value.tier == .shelf }.keys)
-		#expect(shelved.count == ShackLayout.shelfCapacity)
-		// The online nodes on the rack are now heard more recently than those on the shelves.
-		let online = nodes[1..<40]
-		let reordered = [nodes[0]] + online.filter { !shelved.contains($0.id) } + online.filter { shelved.contains($0.id) } + nodes[40...]
-		layout.update(reordered, now: Self.now.addingTimeInterval(ShackLayout.promotionInterval))
-		#expect(Set(layout.slots.filter { $0.value.tier == .shelf }.keys) == shelved)
-	}
-
 	@Test("Online and offline change only after the hysteresis")
 	func hysteresis() {
 		var layout = ShackLayout(grid: Self.grid)
@@ -173,13 +142,11 @@ struct ShackLayoutTests {
 		#expect(grid.center(ofCellOnPage: 0).y > 0)
 	}
 
-	@Test("Shelf places sit on their shelf, spread across it")
+	@Test("The desk radio sits on its anchor and rack cells on the rack's wall")
 	func placement() {
 		let grid = ShackRackGrid.forRoom(rack: ShackRoomGeometry.defaultPose(.wallRack))
-		let first = ShackPlacement.pose(of: .shelf(1, 0), grid: grid, anchor: ShackRoomGeometry.defaultPose)
-		let last = ShackPlacement.pose(of: .shelf(1, ShackLayout.perShelf - 1), grid: grid, anchor: ShackRoomGeometry.defaultPose)
-		#expect(first.position.y == ShackRoomGeometry.defaultPose(.shelf1).position.y)
-		#expect(last.position.x - first.position.x > ShackRoomGeometry.shelfLength * 0.8)
+		let desk = ShackPlacement.pose(of: .deskRadio, grid: grid, anchor: ShackRoomGeometry.defaultPose)
+		#expect(desk == ShackRoomGeometry.defaultPose(.deskRadio))
 		let rack = ShackPlacement.pose(of: .rack(0), grid: grid, anchor: ShackRoomGeometry.defaultPose)
 		// The rack is on the right wall, so its cells share the anchor's x.
 		#expect(abs(rack.position.x - ShackRoomGeometry.defaultPose(.wallRack).position.x) < 1e-4)

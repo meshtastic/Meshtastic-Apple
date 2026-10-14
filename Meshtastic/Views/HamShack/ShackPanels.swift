@@ -99,8 +99,74 @@ struct ShackNodeCard: View {
 	}
 }
 
-/// The panel by the desk: how many radios are in the room, the rack's pages, seated or standing,
-/// and the way out.
+/// The card for a model on the shelf: what it is, who makes it, and where to buy one. The model is
+/// an example of the device, not a node on the mesh.
+struct ShackModelCard: View {
+	struct Link: Identifiable, Equatable {
+		let id: String
+		let title: String
+		/// The maker's own store rather than a reseller.
+		let isVendor: Bool
+		let url: URL
+	}
+
+	let item: ShackShowroomItem
+	let links: [Link]
+	let onClose: () -> Void
+
+	var body: some View {
+		VStack(alignment: .leading, spacing: 10) {
+			HStack(alignment: .top, spacing: 10) {
+				VStack(alignment: .leading, spacing: 2) {
+					Text(item.title)
+						.font(.headline)
+					Text("Made by \(item.vendor.rawValue)", comment: "Ham shack model card: the device's maker")
+						.font(.caption)
+						.foregroundStyle(.secondary)
+				}
+				Spacer(minLength: 0)
+				Button(action: onClose) {
+					Image(systemName: "xmark")
+				}
+				.buttonStyle(.borderless)
+				.accessibilityLabel(String(localized: "Close"))
+			}
+			if item.deviceNames.count > 1 {
+				Text("Also: \(item.deviceNames.dropFirst().formatted(.list(type: .and)))", comment: "Ham shack model card: other devices drawn with the same model; the argument is a list of device names")
+					.font(.caption)
+					.foregroundStyle(.secondary)
+			}
+			Label(String(localized: "Pinch and hold to pick it up. It's real size.", comment: "Ham shack model card: how to hold the model"), systemImage: "hand.pinch")
+				.font(.caption)
+			if !links.isEmpty {
+				VStack(alignment: .leading, spacing: 6) {
+					Text("Where to buy", comment: "Ham shack model card: heading for the purchase links")
+						.font(.caption.weight(.semibold))
+					ForEach(links) { link in
+						SwiftUI.Link(destination: link.url) {
+							Label(link.title, systemImage: link.isVendor ? "checkmark.seal" : "cart")
+								.frame(maxWidth: .infinity, alignment: .leading)
+						}
+						.font(.caption)
+						.buttonStyle(.bordered)
+					}
+					Text("Product links may be affiliate links — purchases may earn Meshtastic a commission.")
+						.font(.caption2)
+						.foregroundStyle(.secondary)
+				}
+			}
+			Text("3D model © Meshtastic LLC. The product and its name, logos and marks belong to \(item.vendor.rawValue).", comment: "Ham shack model card: who owns the model and who owns the product; the argument is the maker")
+				.font(.caption2)
+				.foregroundStyle(.tertiary)
+		}
+		.padding(12)
+		.frame(width: 300)
+		.glassBackgroundEffect()
+	}
+}
+
+/// The panel by the desk: how many radios are on the rack, its pages, seated or standing, and the
+/// way out.
 struct ShackControlPanel: View {
 	let scene: ShackSceneController
 	@Binding var seated: Bool

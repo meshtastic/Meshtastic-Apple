@@ -10,10 +10,10 @@ import RealityKit
 import SwiftData
 import SwiftUI
 
-/// Root of the ham shack immersive space: the room with the viewer's seat at the origin, the mesh's
-/// radios on the desk, shelves and wall rack, the control panel by the desk, and the card for a
-/// tapped radio. Reads the nodes every few seconds and closes itself when the app goes to the
-/// background.
+/// Root of the ham shack immersive space: the room with the viewer's seat at the origin, the
+/// connected radio on the desk, the mesh on the wall rack, a showroom of device models on the
+/// shelves, the control panel by the desk, and the card for whatever was tapped. Reads the nodes
+/// every few seconds and closes itself when the app goes to the background.
 struct HamShackSpace: View {
 	@EnvironmentObject private var appState: AppState
 	@EnvironmentObject private var accessoryManager: AccessoryManager
@@ -24,6 +24,7 @@ struct HamShackSpace: View {
 	@Environment(\.accessibilityReduceMotion) private var reduceMotion
 	@AppStorage("hamShackSeated") private var seated = true
 	@State private var scene = ShackSceneController()
+	@Query(sort: [SortDescriptor(\DeviceLinkEntity.shortCode)]) private var deviceLinks: [DeviceLinkEntity]
 
 	static let refreshInterval: Duration = .seconds(5)
 
@@ -42,11 +43,13 @@ struct HamShackSpace: View {
 			scene.updateSubscription = content.subscribe(to: SceneEvents.Update.self) { event in
 				scene.step(deltaTime: event.deltaTime)
 			}
+			Task { await scene.loadShowroomIfReady() }
 		} update: { _, attachments in
 			if let panel = attachments.entity(for: Attachments.controls) {
 				placeControls(panel)
 			}
 			placeCard(attachments.entity(for: Attachments.card))
+			placeItemCard(attachments.entity(for: Attachments.itemCard))
 		} attachments: {
 			Attachment(id: Attachments.controls) {
 				ShackControlPanel(scene: scene, seated: $seated) {
@@ -62,8 +65,20 @@ struct HamShackSpace: View {
 					}
 				}
 			}
+			if let id = scene.selectedItem, let item = scene.showroom.items.first(where: { $0.id == id }) {
+				Attachment(id: Attachments.itemCard) {
+					ShackModelCard(item: item, links: links(for: item)) {
+						scene.selectedItem = nil
+					}
+				}
+			}
 		}
 		.gesture(tap)
+		.task {
+			// The context is read here, not in the RealityView's make, where SwiftData traps.
+			let hardware = await ShackShowroomCatalog.hardware(in: context.container)
+			await scene.setShowroomHardware(hardware)
+		}
 		.task(id: accessoryManager.activeDeviceNum) {
 			// Made off the main thread: a model actor made on it runs its fetches there too.
 			let container = context.container
@@ -104,12 +119,17 @@ struct HamShackSpace: View {
 	private enum Attachments {
 		static let controls = "controls"
 		static let card = "card"
+		static let itemCard = "itemCard"
 	}
 
 	private var tap: some Gesture {
 		SpatialTapGesture()
 			.targetedToAnyEntity()
 			.onEnded { value in
+				if let item = scene.showroom.item(tappedOn: value.entity) {
+					scene.selectedItem = scene.selectedItem == item ? nil : item
+					return
+				}
 				let point = value.convert(value.location3D, from: .local, to: .scene)
 				guard let num = scene.node(tappedOn: value.entity, scenePoint: point) else { return }
 				scene.selected = scene.selected == num ? nil : num
@@ -136,6 +156,37 @@ struct HamShackSpace: View {
 		}
 		card.position = position
 		card.isEnabled = true
+	}
+
+	private func placeItemCard(_ card: Entity?) {
+		guard let card else { return }
+		guard let id = scene.selectedItem, let position = scene.showroom.cardPosition(forItem: id) else {
+			card.isEnabled = false
+			return
+		}
+		if card.parent !== scene.world {
+			card.components.set(BillboardComponent())
+			scene.world.addChild(card)
+		}
+		card.position = position
+		card.isEnabled = true
+	}
+
+	/// Where to buy the model's devices: the maker's own links first, then shops that ship to the
+	/// viewer's region, as on a node's detail screen.
+	private func links(for item: ShackShowroomItem) -> [ShackModelCard.Link] {
+		let region = Locale.current.region?.identifier ?? ""
+		return deviceLinks
+			.filter { link in item.targets.contains { link.isVisible(forTarget: $0, userRegion: region) } }
+			.sorted { lhs, rhs in
+				if lhs.isMarketplace != rhs.isMarketplace { return !lhs.isMarketplace }
+				return (lhs.linkDescription ?? lhs.shortCode) < (rhs.linkDescription ?? rhs.shortCode)
+			}
+			.compactMap { link in
+				URL(string: "https://msh.to/\(link.shortCode)").map {
+					ShackModelCard.Link(id: link.shortCode, title: link.linkDescription ?? link.shortCode, isVendor: link.isVendor, url: $0)
+				}
+			}
 	}
 
 	/// Hands the node to the main window, opening one if there is none.

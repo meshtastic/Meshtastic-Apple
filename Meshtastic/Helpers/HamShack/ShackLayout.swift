@@ -11,25 +11,19 @@ import simd
 enum ShackSlot: Hashable, Sendable {
 	/// The connected radio, in the middle of the desk.
 	case deskRadio
-	/// One of the favorites beside it.
-	case desk(Int)
-	/// A place on a hutch shelf: shelf 0 is the lowest.
-	case shelf(Int, Int)
 	/// A cell in the wall rack, counted across pages.
 	case rack(Int)
 
 	var tier: ShackTier {
 		switch self {
 		case .deskRadio: .deskRadio
-		case .desk: .desk
-		case .shelf: .shelf
 		case .rack: .rack
 		}
 	}
 }
 
 enum ShackTier: Int, Comparable, Sendable {
-	case deskRadio, desk, shelf, rack
+	case deskRadio, rack
 	static func < (lhs: Self, rhs: Self) -> Bool { lhs.rawValue < rhs.rawValue }
 }
 
@@ -77,20 +71,13 @@ struct ShackRackGrid: Equatable, Sendable {
 	}
 }
 
-/// Decides which node goes where. The connected radio takes the middle of the desk and up to four
-/// favorites sit beside it; the shelves hold the remaining favorites and then online nodes; the
-/// rest go into the wall rack, page by page, until it is full.
+/// Decides which node goes where. The connected radio takes the desk; everyone else goes into the
+/// wall rack, page by page, until it is full. The shelves hold the device showroom, not nodes.
 ///
-/// Nodes keep their place: a new node takes the first free place in its tier straight away, but
-/// nodes only move between tiers every `promotionInterval`, and a node counts as online or offline
-/// only after it has stayed that way for `hysteresis`, so the room doesn't shuffle.
+/// Nodes keep their cell: a new node takes the first free one, and a node counts as online or
+/// offline only after it has stayed that way for `hysteresis`, so the rack doesn't flicker.
 struct ShackLayout {
 	static let onlineWindow: TimeInterval = 2 * 60 * 60
-	static let deskSlots = 4
-	static let shelfCount = 3
-	static let perShelf = 8
-	static let shelfCapacity = shelfCount * perShelf
-	static let promotionInterval: TimeInterval = 30
 	static let hysteresis: TimeInterval = 2 * 60
 	static let maxRackPages = 4
 
@@ -100,7 +87,6 @@ struct ShackLayout {
 	/// Nodes there was no place for.
 	private(set) var overflow = 0
 	private var onlineStates: [Int64: OnlineState] = [:]
-	private var lastPromotion: Date?
 
 	private struct OnlineState {
 		var isOnline: Bool
@@ -149,23 +135,21 @@ struct ShackLayout {
 		onlineStates = onlineStates.filter { present.contains($0.key) }
 		for node in nodes { updateOnline(node, now: now) }
 
-		let promote = lastPromotion.map { now.timeIntervalSince($0) >= Self.promotionInterval } ?? true
-		if promote { lastPromotion = now }
-		let desired = desiredTiers(nodes)
-
-		for (num, slot) in slots {
-			let tier = desired[num] ?? .rack
-			// The desk radio follows the connection at once; other moves wait for a promotion.
-			if (slot.tier == .deskRadio) != (tier == .deskRadio) || (promote && slot.tier != tier) {
-				slots[num] = nil
-			}
+		// The desk follows the connection at once, both ways.
+		for node in nodes where (slots[node.id] == .deskRadio) != node.isConnectedRadio {
+			slots[node.id] = nil
 		}
 
-		var free = FreePlaces(layout: self)
+		let taken = Set(slots.values)
+		var deskFree = !taken.contains(.deskRadio)
+		var rackFree = (0..<rackCapacity).filter { !taken.contains(.rack($0)) }[...]
 		overflow = 0
 		for node in nodes where slots[node.id] == nil {
-			if let slot = free.take(from: desired[node.id] ?? .rack) {
-				slots[node.id] = slot
+			if node.isConnectedRadio, deskFree {
+				deskFree = false
+				slots[node.id] = .deskRadio
+			} else if let index = rackFree.popFirst() {
+				slots[node.id] = .rack(index)
 			} else {
 				overflow += 1
 			}
@@ -189,103 +173,15 @@ struct ShackLayout {
 		}
 		onlineStates[node.id] = state
 	}
-
-	/// The tier each node should be in. Nodes already on the desk or a shelf keep it while they
-	/// still qualify, so a full desk or shelf doesn't swap nodes each time last-heard order shifts.
-	private func desiredTiers(_ nodes: [ShackNodeSnapshot]) -> [Int64: ShackTier] {
-		var result: [Int64: ShackTier] = [:]
-		var favorites: [ShackNodeSnapshot] = []
-		var online: [ShackNodeSnapshot] = []
-		for node in nodes {
-			if node.isConnectedRadio {
-				result[node.id] = .deskRadio
-			} else if node.isFavorite {
-				favorites.append(node)
-			} else if isOnline(node.id) {
-				online.append(node)
-			} else {
-				result[node.id] = .rack
-			}
-		}
-		let desk = stickyFirst(favorites, in: .desk)
-		for node in desk.prefix(Self.deskSlots) { result[node.id] = .desk }
-		let shelf = stickyFirst(Array(desk.dropFirst(Self.deskSlots)), in: .shelf) + stickyFirst(online, in: .shelf)
-		for (index, node) in shelf.enumerated() {
-			result[node.id] = index < Self.shelfCapacity ? .shelf : .rack
-		}
-		return result
-	}
-
-	/// `nodes` with those already in `tier` first, each group keeping its order.
-	private func stickyFirst(_ nodes: [ShackNodeSnapshot], in tier: ShackTier) -> [ShackNodeSnapshot] {
-		let holding = nodes.filter { slots[$0.id]?.tier == tier }
-		return holding + nodes.filter { slots[$0.id]?.tier != tier }
-	}
-
-	/// The free places in each tier, lowest first. A node whose tier is full drops to the next.
-	private struct FreePlaces {
-		var deskRadio: Bool
-		var desk: [Int]
-		var shelf: [(Int, Int)]
-		var rack: [Int]
-
-		init(layout: ShackLayout) {
-			let taken = Set(layout.slots.values)
-			deskRadio = !taken.contains(.deskRadio)
-			desk = (0..<ShackLayout.deskSlots).filter { !taken.contains(.desk($0)) }
-			shelf = (0..<ShackLayout.shelfCount).flatMap { shelf in
-				(0..<ShackLayout.perShelf).map { (shelf, $0) }
-			}.filter { !taken.contains(.shelf($0.0, $0.1)) }
-			rack = (0..<layout.rackCapacity).filter { !taken.contains(.rack($0)) }
-		}
-
-		mutating func take(from tier: ShackTier) -> ShackSlot? {
-			switch tier {
-			case .deskRadio:
-				if deskRadio {
-					deskRadio = false
-					return .deskRadio
-				}
-				return take(from: .desk)
-			case .desk:
-				if !desk.isEmpty { return .desk(desk.removeFirst()) }
-				return take(from: .shelf)
-			case .shelf:
-				if !shelf.isEmpty {
-					let place = shelf.removeFirst()
-					return .shelf(place.0, place.1)
-				}
-				return take(from: .rack)
-			case .rack:
-				return rack.isEmpty ? nil : .rack(rack.removeFirst())
-			}
-		}
-	}
 }
 
 /// Where each place is in the room, from the room's anchors.
 enum ShackPlacement {
-	/// Shelf places are spread evenly along the shelf.
-	static var shelfPitch: Float { ShackRoomGeometry.shelfLength / Float(ShackLayout.perShelf) }
-
-	/// The favorites stand in a two-by-two block to the right of the desk radio.
-	static let deskOffsets: [SIMD3<Float>] = [
-		SIMD3(0.25, 0, -0.08), SIMD3(0.43, 0, -0.08),
-		SIMD3(0.25, 0, 0.13), SIMD3(0.43, 0, 0.13)
-	]
-
 	/// The place's position and facing in the room. Rack cells are on the face of the panel.
 	static func pose(of slot: ShackSlot, grid: ShackRackGrid, anchor: (ShackAnchor) -> ShackAnchorPose) -> ShackAnchorPose {
 		switch slot {
 		case .deskRadio:
 			return anchor(.deskRadio)
-		case .desk(let index):
-			let base = anchor(.deskRadio)
-			return ShackAnchorPose(base.position + base.orientation.act(deskOffsets[index % deskOffsets.count]), orientation: base.orientation)
-		case .shelf(let shelf, let index):
-			let base = anchor(ShackAnchor.shelves[min(max(shelf, 0), ShackAnchor.shelves.count - 1)])
-			let x = -ShackRoomGeometry.shelfLength / 2 + shelfPitch * (Float(index) + 0.5)
-			return ShackAnchorPose(base.position + base.orientation.act(SIMD3(x, 0, 0)), orientation: base.orientation)
 		case .rack(let index):
 			let base = anchor(.wallRack)
 			let center = grid.center(ofCellOnPage: index % grid.perPage)
