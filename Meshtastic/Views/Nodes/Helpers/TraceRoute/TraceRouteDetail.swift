@@ -18,6 +18,8 @@ struct TraceRouteDetail: View {
 	let route: TraceRouteEntity
 
 	@State private var selectedNodeNum: Int64?
+	@State private var shareImage: TraceRouteShareImage?
+	@State private var isRenderingShareImage = false
 
 	private var preset: ModemPresets { ModemPresets(rawValue: UserDefaults.modemPreset) ?? .longFast }
 
@@ -27,6 +29,11 @@ struct TraceRouteDetail: View {
 			List {
 				Section {
 					TraceRouteCard(model: TraceRouteCardModel(route: route, title: title, now: now))
+						.contextMenu {
+							if let shareImage {
+								shareLink(shareImage)
+							}
+						}
 				}
 				switch state {
 				case .complete, .observed:
@@ -49,6 +56,9 @@ struct TraceRouteDetail: View {
 		}
 		.navigationTitle("Trace Route")
 		.navigationBarTitleDisplayMode(.inline)
+		.task(id: shareImageKey) {
+			await renderShareImage()
+		}
 		.navigationDestination(item: $selectedNodeNum) { num in
 			if let node = findNode(num) {
 				NodeDetail(node: node, nodeNum: num)
@@ -68,6 +78,33 @@ struct TraceRouteDetail: View {
 	private var legs: TraceRouteLegs {
 		TraceRouteLegs(route: route, preset: preset) { num in
 			findNode(num).map(TraceRouteLegs.NodeDetails.init(node:))
+		}
+	}
+
+	/// Changes when the route gets its response or position snapshots, so the image is redrawn.
+	private var shareImageKey: String {
+		"\(route.id)|\(route.response)|\(route.nodePositions.count)"
+	}
+
+	private func renderShareImage() async {
+		let state = route.state()
+		guard state == .complete || state == .observed else {
+			shareImage = nil
+			return
+		}
+		isRenderingShareImage = true
+		defer { isRenderingShareImage = false }
+		let model = TraceRouteShareModel(route: route, legs: legs, mapWidth: TraceRouteShareStyle.contentWidth)
+		shareImage = await TraceRouteShareRenderer.render(model: model)
+	}
+
+	private func shareLink(_ image: TraceRouteShareImage) -> some View {
+		ShareLink(
+			item: image,
+			subject: Text(image.title),
+			preview: SharePreview(image.title, image: Image(uiImage: image.image))
+		) {
+			Label("Share", systemImage: "square.and.arrow.up")
 		}
 	}
 
@@ -139,6 +176,22 @@ struct TraceRouteDetail: View {
 					router.mapState = .traceRoute(route.id)
 				} label: {
 					Label("Show on Map", systemImage: "map")
+				}
+			}
+			if state == .complete || state == .observed {
+				if let shareImage {
+					shareLink(shareImage)
+				} else if isRenderingShareImage {
+					Label {
+						HStack {
+							Text("Share")
+							Spacer()
+							ProgressView()
+						}
+					} icon: {
+						Image(systemName: "square.and.arrow.up")
+					}
+					.foregroundStyle(.secondary)
 				}
 			}
 			if let routeText = route.routeText {

@@ -17166,6 +17166,9 @@
         }
       }
     },
+    "Best / worst SNR" : {
+      "comment" : "Trace route share image: the highest and lowest SNR of the legs"
+    },
     "Biking" : {
       "comment" : "ActivityType.description\nActivityType.fileNameString"
     },
@@ -86894,6 +86897,9 @@
     "No response" : {
       "comment" : "Trace route state: request sent, nothing came back"
     },
+    "No return route was reported." : {
+      "comment" : "Trace route share image: the response didn't include the path back"
+    },
     "No route to the destination node was found in the mesh. Try again when more nodes are reachable." : {
       "comment" : "RoutingError.description"
     },
@@ -115172,6 +115178,9 @@
     },
     "share" : {
       "comment" : "Search keyword"
+    },
+    "Share" : {
+      "comment" : "Button that shares the trace route image"
     },
     "Share Channels" : {
       "comment" : "A tip that explains how to share channels.",
