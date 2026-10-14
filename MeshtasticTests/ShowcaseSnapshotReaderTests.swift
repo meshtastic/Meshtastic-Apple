@@ -118,8 +118,10 @@ struct ShowcaseSnapshotReaderTests {
 		let rack = ShowcaseMeshGeometry.rackCells(grid: grid)
 		#expect(rack.triangleCount == grid.perPage * 12)
 		expectOutward(rack)
+		// Cell 0 is the top row, so its texel is in the top row of the texture (v = 0 at the bottom).
 		let texel = ShowcaseMeshGeometry.rackTexel(0, grid: grid)
-		#expect(texel.y > 0.9)
+		#expect(abs(texel.y - (1 - 0.5 / Float(grid.rows))) < 1e-5)
+		#expect(texel.y > 0.5)
 	}
 
 	/// Every triangle winds counterclockwise seen from the side its normals face.

@@ -45,15 +45,15 @@ enum ShowcaseRoomGeometry {
 	static let riserHeight: Float = 0.05
 	static let riserOffset: Float = -0.2
 	/// The wall rack, hung above the back table: wide and short, so it clears the devices below.
-	static let rackSize = SIMD2<Float>(2.8, 1.25)
+	static let rackSize = SIMD2<Float>(2.8, 1.065)
 	/// Eye height for someone sitting in the chair at the origin.
 	static let seatedEye = SIMD3<Float>(0, 1.2, 0)
 
 	static func defaultPose(_ anchor: ShowcaseAnchor) -> ShowcaseAnchorPose {
 		switch anchor {
-		case .tableFront: ShowcaseAnchorPose(SIMD3(0, 0.82, -0.95))
+		case .tableFront: ShowcaseAnchorPose(SIMD3(0, 0.82, -1.3))
 		case .tableBack: ShowcaseAnchorPose(SIMD3(0, 0.95, -2.0))
-		case .wallRack: ShowcaseAnchorPose(SIMD3(0, 2.025, -2.555))
+		case .wallRack: ShowcaseAnchorPose(SIMD3(0, 1.9325, -2.555))
 		}
 	}
 
