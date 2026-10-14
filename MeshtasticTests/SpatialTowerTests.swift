@@ -135,7 +135,7 @@ struct SpatialSignalRingTests {
 
 	@Test("a tower ripples at most every couple of seconds")
 	func rateLimit() {
-		var limiter = PulseRateLimiter(capacity: 4, refillPerSecond: 2, perSenderInterval: 2.5)
+		var limiter = SpatialSignalRings.limiter()
 		let first = limiter.admit(sender: 1, now: 0, highTraffic: false)
 		let soon = limiter.admit(sender: 1, now: 1, highTraffic: false)
 		let later = limiter.admit(sender: 1, now: 3, highTraffic: false)

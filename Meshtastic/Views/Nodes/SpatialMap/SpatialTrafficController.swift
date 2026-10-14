@@ -40,8 +40,7 @@ final class SpatialTrafficController {
 	private var limiter = PulseRateLimiter()
 	private var idleRings: [ModelEntity] = []
 	private var bursts: [RingBurst] = []
-	/// A tower ripples at most every couple of seconds, and only a few start each second.
-	private var ringLimiter = PulseRateLimiter(capacity: 4, refillPerSecond: 2, perSenderInterval: 2.5)
+	private var ringLimiter = SpatialSignalRings.limiter()
 	private var boosts: [Int64: (start: TimeInterval, initial: Float)] = [:]
 	private var clock: TimeInterval = 0
 	private var flyover: SpatialFlyover?
@@ -81,7 +80,7 @@ final class SpatialTrafficController {
 
 	func handle(_ event: MeshPacketEvent) {
 		if showGlow { boosts[event.from] = (clock, 1) }
-		if showPulses, !event.viaMqtt { ripple(from: event.from) }
+		if showPulses, !event.viaMqtt, event.from != connectedNodeNum { ripple(from: event.from) }
 		guard showPulses, !event.viaMqtt, let connectedNodeNum, event.from != connectedNodeNum,
 			  limiter.admit(sender: event.from, now: clock, highTraffic: isHighTraffic),
 			  let from = scene.pinPosition(event.from), let to = scene.pinPosition(connectedNodeNum),

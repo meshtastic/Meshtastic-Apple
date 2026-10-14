@@ -210,6 +210,11 @@ enum SpatialSignalRings {
 
 	static var burstDuration: Double { stagger * Double(count - 1) + duration }
 
+	/// A tower ripples at most every couple of seconds, and only a few start each second.
+	static func limiter() -> PulseRateLimiter {
+		PulseRateLimiter(capacity: 4, refillPerSecond: 2, perSenderInterval: 2.5)
+	}
+
 	/// Ring `index`'s radius and opacity `elapsed` seconds into a burst; nil before it starts and
 	/// once it has faded.
 	static func ring(_ index: Int, elapsed: Double) -> (radius: Float, opacity: Float)? {
