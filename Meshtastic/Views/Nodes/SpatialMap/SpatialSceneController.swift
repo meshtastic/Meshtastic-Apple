@@ -116,6 +116,14 @@ final class SpatialSceneController {
 	private var detailEntity: Entity?
 	private var appliedSelection: Int64?
 	private var towerFacing = simd_quatf(angle: 0, axis: [0, 1, 0])
+	/// The towers' turning parts, kept so a turn of the table touches only them.
+	private var towerTargets: [Entity] = []
+	private var towerTargetsStale = false
+	/// The table's turn, eased and coasting frame by frame. Kept here rather than in view state so
+	/// a drag never makes SwiftUI evaluate the view again.
+	private var wheelMotion = SpatialWheelMotion()
+	/// The turn and table point a drag started from.
+	private var wheelDragStart: (yaw: Float, point: SIMD2<Float>)?
 	/// Model units per meter for everything under the terrain anchor, so pins, labels and the card
 	/// keep the same size in the room whatever the table's size and the zoom preview.
 	private(set) var counterScale: Float = 1
@@ -339,6 +347,7 @@ final class SpatialSceneController {
 			moved = true
 		}
 		if moved {
+			towerTargetsStale = true
 			measureGaps()
 			updatePinVisibility()
 		}
@@ -596,12 +605,16 @@ extension SpatialSceneController {
 	}
 
 	/// Keeps towers facing the front of the volume as the table turns, so their outline always
-	/// reads. Called every frame; does nothing unless the table's turn has changed.
-	func faceTowers() {
+	/// reads. Runs when the turn changes.
+	fileprivate func faceTowers() {
+		if towerTargetsStale {
+			towerTargetsStale = false
+			towerTargets = pins.values.compactMap { $0.isTower ? $0.target : nil }
+		}
 		let facing = model.orientation.inverse
 		guard facing != towerFacing else { return }
 		towerFacing = facing
-		for pin in pins.values where pin.isTower { pin.target.orientation = facing }
+		for target in towerTargets { target.orientation = facing }
 	}
 }
 
@@ -670,15 +683,43 @@ extension SpatialSceneController {
 		return SIMD2(local.x, local.z)
 	}
 
-	/// Turns the map about the middle of the table. It never moves off it.
-	func setYaw(_ yaw: Float, animated: Bool = false) {
-		let rotation = simd_quatf(angle: yaw, axis: [0, 1, 0])
-		if animated {
-			let transform = Transform(scale: model.scale, rotation: rotation, translation: .zero)
-			model.move(to: transform, relativeTo: root, duration: 0.35, timingFunction: .easeInOut)
-		} else {
-			model.orientation = rotation
-		}
+	/// The table's turn as shown.
+	var currentYaw: Float { wheelMotion.shown }
+
+	/// Follows a drag that started at `start` and is now at `current` (table points), at `time`
+	/// seconds. The first call of a drag stops any coast and starts from where the table is.
+	func dragWheel(start: SIMD2<Float>, current: SIMD2<Float>, time: Double) {
+		let begin = wheelDragStart ?? (wheelMotion.grab(), start)
+		wheelDragStart = begin
+		let delta = SpatialWheelSpin.yawDelta(start: begin.point, current: current, diskRadius: currentFit?.diskRadius ?? 0.5)
+		wheelMotion.drag(to: begin.yaw + delta, at: time)
+	}
+
+	/// Ends a drag. Let go at `time` with some speed and the table keeps spinning; a cancelled
+	/// drag (no time) just settles where it is heading.
+	func endWheelDrag(at time: Double?) {
+		guard wheelDragStart != nil else { return }
+		wheelDragStart = nil
+		if let time { wheelMotion.release(at: time) }
+	}
+
+	/// Stops a coasting table where it is.
+	func stopWheel() {
+		wheelMotion.stop()
+	}
+
+	/// Swings the table back to north the short way round.
+	func resetYaw() {
+		wheelDragStart = nil
+		wheelMotion.reset()
+	}
+
+	/// Moves the table's turn on by one frame. Touches only the table and the towers, and only
+	/// when the turn changed.
+	func stepWheel(deltaTime: Double) {
+		guard wheelMotion.step(dt: deltaTime) else { return }
+		model.orientation = simd_quatf(angle: wheelMotion.shown, axis: [0, 1, 0])
+		faceTowers()
 	}
 }
 #endif

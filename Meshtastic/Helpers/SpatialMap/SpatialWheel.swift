@@ -162,3 +162,117 @@ struct SpatialBezelMesh: Sendable {
 		self.indices = indices
 	}
 }
+
+/// The wheel's turn as it is shown, stepped once per frame. A drag sets where the wheel is
+/// heading; each frame eases the shown turn toward it, and a release with some speed keeps the
+/// wheel spinning until friction stops it. Times are in seconds, angles in radians.
+struct SpatialWheelMotion: Equatable, Sendable {
+	/// How quickly the shown turn catches up with the hand. Short enough not to feel like lag,
+	/// long enough to smooth out uneven hand samples.
+	static let followTimeConstant: Double = 0.07
+	/// The slower ease a double tap uses to swing back to north.
+	static let resetTimeConstant: Double = 0.1
+	/// How quickly a released spin slows; it is all but stopped within a second.
+	static let frictionTimeConstant: Double = 0.22
+	/// The span of hand movement the release speed is measured over.
+	static let velocityWindow: Double = 0.1
+	/// Releases slower than this don't coast, so letting go of a held wheel leaves it still.
+	static let minimumFlickSpeed: Float = 0.6
+	/// A coast slows to this and stops.
+	static let stopSpeed: Float = 0.15
+	static let maximumSpeed: Float = 8
+
+	/// The turn on screen.
+	private(set) var shown: Float = 0
+	/// Where the shown turn is heading.
+	private(set) var target: Float = 0
+	/// Speed of a released spin, zero when not coasting.
+	private(set) var velocity: Float = 0
+	private(set) var isResetting = false
+	private var samples: [(time: Double, yaw: Float)] = []
+
+	var isCoasting: Bool { velocity != 0 }
+	/// True while there is still something to move.
+	var isMoving: Bool { isCoasting || shown != target }
+
+	static func == (lhs: Self, rhs: Self) -> Bool {
+		lhs.shown == rhs.shown && lhs.target == rhs.target && lhs.velocity == rhs.velocity && lhs.isResetting == rhs.isResetting
+	}
+
+	/// Moves `current` toward `target` by the share of the gap one step of `dt` closes, the same
+	/// at any frame rate.
+	static func eased(_ current: Float, toward target: Float, dt: Double, timeConstant: Double) -> Float {
+		guard dt > 0, timeConstant > 0 else { return target }
+		let share = Float(1 - exp(-dt / timeConstant))
+		let next = current + (target - current) * share
+		return abs(target - next) < 1e-4 ? target : next
+	}
+
+	/// The speed over the samples in the last `window` before `now`, zero without enough of them.
+	static func velocity(of samples: [(time: Double, yaw: Float)], at now: Double, window: Double = velocityWindow) -> Float {
+		let recent = samples.filter { $0.time >= now - window }
+		guard let first = recent.first, let last = recent.last else { return 0 }
+		let span = last.time - first.time
+		guard span >= 0.01 else { return 0 }
+		return (last.yaw - first.yaw) / Float(span)
+	}
+
+	/// A coasting speed after friction has acted for `dt`, zero once it is slow enough to stop.
+	static func decayed(_ velocity: Float, dt: Double) -> Float {
+		let next = velocity * Float(exp(-max(dt, 0) / frictionTimeConstant))
+		return abs(next) < stopSpeed ? 0 : next
+	}
+
+	/// Halts the wheel where it is and returns the turn a drag should start from.
+	mutating func grab() -> Float {
+		velocity = 0
+		isResetting = false
+		target = shown
+		samples.removeAll(keepingCapacity: true)
+		return target
+	}
+
+	/// The hand has moved the wheel to `yaw` at `time`.
+	mutating func drag(to yaw: Float, at time: Double) {
+		target = yaw
+		samples.append((time, yaw))
+		if let first = samples.first, first.time < time - Self.velocityWindow * 2 { samples.removeFirst() }
+	}
+
+	/// The hand let go at `time`: a quick enough spin carries on.
+	mutating func release(at time: Double) {
+		let speed = Self.velocity(of: samples, at: time)
+		samples.removeAll(keepingCapacity: true)
+		velocity = abs(speed) < Self.minimumFlickSpeed ? 0 : min(max(speed, -Self.maximumSpeed), Self.maximumSpeed)
+	}
+
+	/// Stops a coast where it is.
+	mutating func stop() {
+		velocity = 0
+		isResetting = false
+		target = shown
+	}
+
+	/// Swings back to north the short way round.
+	mutating func reset() {
+		velocity = 0
+		samples.removeAll(keepingCapacity: true)
+		let turns = (shown / (2 * .pi)).rounded()
+		shown -= turns * 2 * .pi
+		target = 0
+		isResetting = true
+	}
+
+	/// Advances one frame and returns true when the shown turn changed.
+	mutating func step(dt: Double) -> Bool {
+		guard isMoving, dt > 0 else { return false }
+		if isCoasting {
+			target += velocity * Float(dt)
+			velocity = Self.decayed(velocity, dt: dt)
+		}
+		let before = shown
+		shown = Self.eased(shown, toward: target, dt: dt, timeConstant: isResetting ? Self.resetTimeConstant : Self.followTimeConstant)
+		if shown == target, !isCoasting { isResetting = false }
+		return shown != before
+	}
+}

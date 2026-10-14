@@ -119,3 +119,122 @@ struct SpatialWheelTests {
 		#expect(SpatialWheelSpin.yawDelta(start: [0, 0.3], current: [.nan, 0.3], diskRadius: 0.5) == 0)
 	}
 }
+
+@Suite("Spatial map wheel motion")
+struct SpatialWheelMotionTests {
+	private let frame = 1.0 / 90
+
+	@Test func easingIsTheSameAtAnyFrameRate() {
+		var fast: Float = 0, slow: Float = 0
+		for _ in 0..<12 { fast = SpatialWheelMotion.eased(fast, toward: 1, dt: 1.0 / 120, timeConstant: 0.07) }
+		for _ in 0..<6 { slow = SpatialWheelMotion.eased(slow, toward: 1, dt: 1.0 / 60, timeConstant: 0.07) }
+		#expect(abs(fast - slow) < 1e-4)
+		// One time constant closes about 63% of the gap.
+		let one = SpatialWheelMotion.eased(0, toward: 1, dt: 0.07, timeConstant: 0.07)
+		#expect(abs(one - 0.632) < 0.001)
+	}
+
+	@Test func easingSnapsOnceClose() {
+		#expect(SpatialWheelMotion.eased(0.99995, toward: 1, dt: frame, timeConstant: 0.07) == 1)
+		#expect(SpatialWheelMotion.eased(0.3, toward: 1, dt: 0, timeConstant: 0.07) == 1)
+	}
+
+	@Test func velocityUsesOnlyTheLastWindow() {
+		// A slow start, then 2 rad/s over the last 100 ms.
+		let samples: [(time: Double, yaw: Float)] = [(0, 0), (0.5, 0.1), (0.9, 0.2), (0.95, 0.3), (1.0, 0.4)]
+		#expect(abs(SpatialWheelMotion.velocity(of: samples, at: 1.0) - 2) < 1e-4)
+	}
+
+	@Test func velocityIsZeroWhenTheHandHeldStill() {
+		let samples: [(time: Double, yaw: Float)] = [(0, 0), (0.05, 0.5), (0.1, 1)]
+		#expect(SpatialWheelMotion.velocity(of: samples, at: 0.5) == 0)
+		#expect(SpatialWheelMotion.velocity(of: [(1, 1)], at: 1) == 0)
+	}
+
+	@Test func decayStopsWithinASecond() {
+		var velocity = SpatialWheelMotion.maximumSpeed
+		var time = 0.0
+		while velocity != 0, time < 3 {
+			velocity = SpatialWheelMotion.decayed(velocity, dt: frame)
+			time += frame
+		}
+		#expect(velocity == 0)
+		#expect(time < 1)
+	}
+
+	@Test func aFlickCoastsInTheSameDirectionAndStops() {
+		var motion = SpatialWheelMotion()
+		_ = motion.grab()
+		for i in 0...10 { motion.drag(to: Float(i) * 0.03, at: Double(i) * 0.01) }
+		while motion.shown != motion.target { _ = motion.step(dt: frame) }
+		motion.release(at: 0.1)
+		#expect(motion.isCoasting)
+		#expect(abs(motion.velocity - 3) < 1e-3)
+		var last = motion.shown
+		var frames = 0
+		while motion.isMoving, frames < 500 {
+			_ = motion.step(dt: frame)
+			#expect(motion.shown >= last)
+			last = motion.shown
+			frames += 1
+		}
+		#expect(!motion.isMoving)
+		#expect(motion.shown > 0.3)
+		#expect(Double(frames) * frame < 1.5)
+	}
+
+	@Test func aSlowReleaseDoesNotCoast() {
+		var motion = SpatialWheelMotion()
+		_ = motion.grab()
+		for i in 0...10 { motion.drag(to: Float(i) * 0.001, at: Double(i) * 0.01) }
+		motion.release(at: 0.1)
+		#expect(!motion.isCoasting)
+	}
+
+	@Test func releaseSpeedIsCapped() {
+		var motion = SpatialWheelMotion()
+		_ = motion.grab()
+		motion.drag(to: 0, at: 0)
+		motion.drag(to: 5, at: 0.05)
+		motion.release(at: 0.05)
+		#expect(motion.velocity == SpatialWheelMotion.maximumSpeed)
+	}
+
+	@Test func grabbingStopsACoastWhereItIs() {
+		var motion = SpatialWheelMotion()
+		_ = motion.grab()
+		motion.drag(to: 0, at: 0)
+		motion.drag(to: 0.3, at: 0.1)
+		motion.release(at: 0.1)
+		for _ in 0..<10 { _ = motion.step(dt: frame) }
+		let shown = motion.shown
+		let grabbed = motion.grab()
+		#expect(grabbed == shown)
+		#expect(!motion.isMoving)
+		let changed = motion.step(dt: frame)
+		#expect(!changed)
+	}
+
+	@Test func resetGoesBackTheShortWay() {
+		var motion = SpatialWheelMotion()
+		_ = motion.grab()
+		motion.drag(to: 2 * .pi + 0.4, at: 0)
+		while motion.shown != motion.target { _ = motion.step(dt: frame) }
+		motion.reset()
+		#expect(abs(motion.shown - 0.4) < 1e-4)
+		var frames = 0
+		while motion.isMoving, frames < 500 { _ = motion.step(dt: frame); frames += 1 }
+		#expect(motion.shown == 0)
+		#expect(!motion.isResetting)
+	}
+
+	@Test func dragDirectionHoldsThroughTheCenterLine() {
+		// The side is taken from where the drag started, so crossing to the other half of the table
+		// mid-drag doesn't reverse the turn.
+		let start = SIMD2<Float>(0, 0.05)
+		let before = SpatialWheelSpin.yawDelta(start: start, current: SIMD2(0.05, 0.02), diskRadius: 0.4)
+		let after = SpatialWheelSpin.yawDelta(start: start, current: SIMD2(0.1, -0.2), diskRadius: 0.4)
+		#expect(before > 0)
+		#expect(after > before)
+	}
+}

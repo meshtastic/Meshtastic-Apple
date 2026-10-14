@@ -20,8 +20,6 @@ struct SpatialMapView: View {
 	let onOpenNode: (Int64) -> Void
 	let onCoverage: (Int64, SpatialCoverageAction) -> Void
 
-	@State private var yaw: Float = 0
-	@State private var dragStart: (yaw: Float, point: SIMD2<Float>)?
 	/// The zoom a pinch has reached, shown as a preview until its terrain is built.
 	@State private var liveZoom: Double?
 	@State private var pinchStartZoom: Double?
@@ -40,7 +38,7 @@ struct SpatialMapView: View {
 				content.add(scene.root)
 				scene.updateSubscription = content.subscribe(to: SceneEvents.Update.self) { event in
 					traffic.step(deltaTime: event.deltaTime)
-					scene.faceTowers()
+					scene.stepWheel(deltaTime: event.deltaTime)
 				}
 			} update: { content, attachments in
 				_ = volumeSize
@@ -86,7 +84,7 @@ struct SpatialMapView: View {
 				volumeSize = size
 			}
 			.onChange(of: isDragging) { _, dragging in
-				if !dragging { dragStart = nil }
+				if !dragging { scene.endWheelDrag(at: nil) }
 			}
 			.onChange(of: isPinching) { _, pinching in
 				if !pinching { endPinch() }
@@ -98,6 +96,7 @@ struct SpatialMapView: View {
 		SpatialTapGesture()
 			.targetedToAnyEntity()
 			.onEnded { value in
+				scene.stopWheel()
 				// The bezel and handles are for turning; a tap on them keeps the selection.
 				guard !Self.isWheel(value.entity) else { return }
 				let point = value.convert(value.location3D, from: .local, to: .scene)
@@ -113,21 +112,21 @@ struct SpatialMapView: View {
 			}
 	}
 
-	/// Dragging the map, the bezel or a handle turns the map, following the hand around the middle
-	/// like a wheel.
+	/// Dragging the map, the bezel or a handle turns the map like a wheel. The scene controller keeps
+	/// the turn, eases it each frame and lets a flick coast.
 	private var drag: some Gesture {
 		DragGesture()
 			.targetedToAnyEntity()
 			.updating($isDragging) { _, state, _ in state = true }
 			.onChanged { value in
-				let point = scene.tablePoint(value.convert(value.location3D, from: .local, to: .scene))
-				let start = dragStart ?? (yaw, scene.tablePoint(value.convert(value.startLocation3D, from: .local, to: .scene)))
-				dragStart = start
-				yaw = start.yaw + SpatialWheelSpin.yawDelta(start: start.point, current: point, diskRadius: scene.currentFit?.diskRadius ?? 0.5)
-				scene.setYaw(yaw)
+				scene.dragWheel(
+					start: scene.tablePoint(value.convert(value.startLocation3D, from: .local, to: .scene)),
+					current: scene.tablePoint(value.convert(value.location3D, from: .local, to: .scene)),
+					time: value.gestureValue.time.timeIntervalSinceReferenceDate
+				)
 			}
-			.onEnded { _ in
-				dragStart = nil
+			.onEnded { value in
+				scene.endWheelDrag(at: value.gestureValue.time.timeIntervalSinceReferenceDate)
 			}
 	}
 
@@ -172,8 +171,7 @@ struct SpatialMapView: View {
 
 	/// Back to north at the back and the whole mesh.
 	private func reset() {
-		yaw = 0
-		scene.setYaw(0, animated: true)
+		scene.resetYaw()
 		model.resetZoom()
 	}
 
