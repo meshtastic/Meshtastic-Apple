@@ -76,6 +76,9 @@ struct ShackRoom {
 
 	// MARK: Lighting
 
+	/// The entity carrying the room's image-based light; things added later receive it too.
+	static let environmentLightName = "ShackEnvironment"
+
 	private static let lampColor = UIColor(red: 1.0, green: 0.78, blue: 0.52, alpha: 1)
 
 	/// A warm point light at the lamp's bulb, a spot from the lamp onto the desk with shadows, a
@@ -106,7 +109,7 @@ struct ShackRoom {
 		guard let image = Self.environmentImage(),
 			  let environment = try? await EnvironmentResource(equirectangular: image, withName: "ShackEnvironment") else { return }
 		let light = Entity()
-		light.name = "ShackEnvironment"
+		light.name = Self.environmentLightName
 		light.components.set(ImageBasedLightComponent(source: .single(environment), intensityExponent: -1.5))
 		root.addChild(light)
 		for entity in Self.modelEntities(in: root) {
