@@ -99,7 +99,7 @@ struct ShowcaseNodeCard: View {
 	}
 }
 
-/// The card for a model on the shelf: what it is, who makes it, and where to buy one. The model is
+/// The card for a model on a display table: what it is, who makes it, and where to buy one. The model is
 /// an example of the device, not a node on the mesh.
 struct ShowcaseModelCard: View {
 	struct Link: Identifiable, Equatable {
@@ -165,8 +165,8 @@ struct ShowcaseModelCard: View {
 	}
 }
 
-/// The panel by the desk: how many radios are on the rack, its pages, seated or standing, and the
-/// way out.
+/// The control panel by the front table: how many radios are on the rack, its pages, seated or
+/// standing, and the way out.
 struct ShowcaseControlPanel: View {
 	let scene: ShowcaseSceneController
 	@Binding var seated: Bool
@@ -197,7 +197,7 @@ struct ShowcaseControlPanel: View {
 						.foregroundStyle(.secondary)
 				}
 				if !scene.hasConnectedRadio {
-					Text("· No radio connected", comment: "Showcase: the desk has no connected radio on it")
+					Text("· No radio connected", comment: "Showcase: no radio is connected, so none stands on the front table")
 						.foregroundStyle(.secondary)
 				}
 				Spacer(minLength: 0)

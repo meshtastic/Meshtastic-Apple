@@ -29,12 +29,12 @@ struct ShowcaseCatalogTests {
 		]
 	}
 
-	@Test("A model lists every device drawn with it, and goes on its vendor's shelf")
+	@Test("A model lists every device drawn with it, front row first")
 	func items() {
 		let models: Set<String> = ["rak4631", "rak4631_case", "rak_wismesh_pocket", "thinknode_m1", "tracker-t1000-e", "tbeam", "orphan"]
 		let items = ShowcaseCatalog.items(models: models, hardware: hardware)
 		// T-Beam is another maker's and "orphan" has no device, so both are left out.
-		#expect(items.map(\.id) == ["thinknode_m1", "rak4631", "rak4631_case", "rak_wismesh_pocket", "tracker-t1000-e"])
+		#expect(items.map(\.id) == ["rak4631", "rak4631_case", "rak_wismesh_pocket", "tracker-t1000-e", "thinknode_m1"])
 		// The board's case is the board's own variant, so the board is listed under it.
 		#expect(items.first { $0.id == "rak4631_case" }?.title == "RAK WisBlock 4631 (case)")
 		let board = items.first { $0.id == "rak4631" }
@@ -45,7 +45,7 @@ struct ShowcaseCatalogTests {
 		let pocket = items.first { $0.id == "rak_wismesh_pocket" }
 		#expect(pocket?.deviceNames == ["RAK WisMesh Pocket V3"])
 		#expect(items.first { $0.id == "thinknode_m1" }?.deviceNames == ["ThinkNode M1", "ThinkNode M5"])
-		#expect(items.map(\.vendor.shelf) == [0, 1, 1, 1, 2])
+		#expect(items.map(\.vendor.displayOrder) == [0, 0, 0, 1, 2])
 	}
 
 	@Test("Firmware targets match whatever their case, and models drawn for one device are told apart")
@@ -81,18 +81,18 @@ struct ShowcaseCatalogTests {
 		#expect(hardware.contains { $0.platformioTarget == "thinknode_m1" })
 	}
 
-	@Test("Models share a shelf's spare room evenly, between them and at the ends")
+	@Test("Models share a row's spare room evenly, between them and at the ends")
 	func packing() {
-		let centers = ShowcaseShelfPacking.centers(widths: [0.1, 0.2, 0.1], length: 1.0)
+		let centers = ShowcaseRowPacking.centers(widths: [0.1, 0.2, 0.1], length: 1.0)
 		// 0.6 m spare over four gaps: 0.15 m each.
 		#expect(centers.count == 3)
 		#expect(abs(centers[0] - (-0.5 + 0.15 + 0.05)) < 1e-5)
 		#expect(abs(centers[1]) < 1e-5)
 		#expect(abs(centers[2] - (0.5 - 0.15 - 0.05)) < 1e-5)
-		// Too wide for the shelf: they touch, centered.
-		let crowded = ShowcaseShelfPacking.centers(widths: [0.6, 0.6], length: 1.0)
+		// Too wide for the row: they touch, centered.
+		let crowded = ShowcaseRowPacking.centers(widths: [0.6, 0.6], length: 1.0)
 		#expect(abs(crowded[0] + 0.3) < 1e-5)
 		#expect(abs(crowded[1] - 0.3) < 1e-5)
-		#expect(ShowcaseShelfPacking.centers(widths: [], length: 1).isEmpty)
+		#expect(ShowcaseRowPacking.centers(widths: [], length: 1).isEmpty)
 	}
 }

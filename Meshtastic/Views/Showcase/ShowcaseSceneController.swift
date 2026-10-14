@@ -10,7 +10,7 @@ import OSLog
 import RealityKit
 import SwiftUI
 
-/// Marks a device on the desk or a shelf, so a tap on any of its parts finds the node.
+/// Marks the connected radio's device, so a tap on any of its parts finds the node.
 struct ShowcaseNodeComponent: Component {
 	let nodeNum: Int64
 }
@@ -18,8 +18,8 @@ struct ShowcaseNodeComponent: Component {
 /// Marks the wall rack's panel; a tap on it is turned into a cell from where it landed.
 struct ShowcaseRackComponent: Component {}
 
-/// Owns the showcase's entities: the room, the connected radio on the desk, the device showroom on
-/// the shelves, and the wall rack, whose cells are one mesh colored by a small texture, one texel
+/// Owns the showcase's entities: the room, the device models and the connected radio on the
+/// display tables, and the wall rack, whose cells are one mesh colored by a small texture, one texel
 /// per cell. Takes the reader's snapshots, places them with `ShowcaseLayout`, glows senders as
 /// packets arrive, and keeps the state the control panel and cards show.
 @MainActor @Observable
@@ -40,9 +40,9 @@ final class ShowcaseSceneController {
 	@ObservationIgnored private var clock: TimeInterval = 0
 	@ObservationIgnored var updateSubscription: EventSubscription?
 	@ObservationIgnored private var labelMaterials: [Style: UnlitMaterial] = [:]
-	/// The device models on the shelves.
-	let showroom = ShowcaseDisplays()
-	@ObservationIgnored private var showroomHardware: [ShowcaseHardwareRecord]?
+	/// The device models on the display tables.
+	let displays = ShowcaseDisplays()
+	@ObservationIgnored private var displayHardware: [ShowcaseHardwareRecord]?
 
 	/// The nodes from the last read, by number.
 	private(set) var nodesByNum: [Int64: ShowcaseNodeSnapshot] = [:]
@@ -55,19 +55,29 @@ final class ShowcaseSceneController {
 	private(set) var hasConnectedRadio = false
 	/// The node whose card is open.
 	var selected: Int64? {
-		didSet { if selected != nil, selectedItem != nil { selectedItem = nil } }
+		didSet {
+			if selected != nil, selectedItem != nil { selectedItem = nil }
+			updateInspection()
+		}
 	}
-	/// The showroom model whose card is open.
+	/// The displayed model whose card is open.
 	var selectedItem: String? {
-		didSet { if selectedItem != nil, selected != nil { selected = nil } }
+		didSet {
+			if selectedItem != nil, selected != nil { selected = nil }
+			updateInspection()
+		}
 	}
+	/// Holds the selected model, or the connected radio, up in front of the viewer.
+	@ObservationIgnored let inspector = ShowcaseInspector()
 	var isHighTraffic = false
-	var reduceMotion = false
+	var reduceMotion = false {
+		didSet { inspector.reduceMotion = reduceMotion }
+	}
 	var preset: ModemPresets = .longFast
 
-	/// The stand-in box for a connected radio with no model is drawn larger so it reads from the
-	/// chair; a real model stays real size.
-	static let standInScale: Float = 1.6
+	/// The stand-in box for a connected radio with no model is drawn a little larger so it reads
+	/// from the chair; a real model stays real size.
+	static let standInScale: Float = 1.2
 
 	private struct Hero {
 		let holder: Entity
@@ -81,7 +91,7 @@ final class ShowcaseSceneController {
 		var slot: ShowcaseSlot
 		var baseGlow: Float
 		var style: Style
-		/// Top of the device above the desk, in meters.
+		/// Top of the device above the table, in meters.
 		var height: Float
 	}
 
@@ -110,14 +120,16 @@ final class ShowcaseSceneController {
 		let grid = ShowcaseRackGrid.forRoom(rack: rackPose)
 		layout = ShowcaseLayout(grid: grid)
 		buildRack(grid: grid)
-		world.addChild(showroom.root)
+		world.addChild(displays.root)
+		world.addChild(inspector.stage)
 		if !nodesByNum.isEmpty { relayout(now: Date(), force: true) }
 	}
 
-	/// Seated, the room is as authored; standing, it moves back a little so the desk isn't
+	/// Seated, the room is as authored; standing, it moves back a little so the front table isn't
 	/// against the viewer.
 	func setSeated(_ seated: Bool) {
 		world.position = seated ? .zero : [0, 0, -Self.standingSetback]
+		inspector.setSeated(seated)
 	}
 
 	static let standingSetback: Float = 0.25
@@ -187,6 +199,7 @@ final class ShowcaseSceneController {
 			wanted[num] = slot
 		}
 		for (num, hero) in heroes where wanted[num] == nil {
+			if inspector.model === hero.device { selected = nil }
 			hero.holder.removeFromParent()
 			heroes[num] = nil
 			if boosts[num] != nil, rackHaloByNode[num] == nil { boosts[num] = nil }
@@ -194,9 +207,10 @@ final class ShowcaseSceneController {
 		for (num, slot) in wanted {
 			guard let node = nodesByNum[num] else { continue }
 			let archetype = ShowcaseDeviceArchetype(hwModel: node.hwModel, role: node.role)
-			let modelName = deskModelName(for: node)
+			let modelName = radioModelName(for: node)
 			var hero = heroes[num] ?? makeHero(node, archetype: archetype, modelName: modelName, slot: slot)
 			if hero.archetype != archetype || hero.modelName != modelName {
+				if inspector.model === hero.device { inspector.release() }
 				hero.holder.removeFromParent()
 				hero = makeHero(node, archetype: archetype, modelName: modelName, slot: slot)
 			}
@@ -210,14 +224,14 @@ final class ShowcaseSceneController {
 			if boosts[num] == nil {
 				hero.halo.components.set(OpacityComponent(opacity: hero.baseGlow))
 			}
-			hero.device.components.set(Self.accessibility(for: node, isOnline: style.isOnline))
+			hero.device.components.set(ShowcaseDeviceMeshes.accessibility(for: node, isOnline: style.isOnline))
 			heroes[num] = hero
 		}
 	}
 
 	/// The model for the connected radio's hardware, once it has loaded.
-	private func deskModelName(for node: ShowcaseNodeSnapshot) -> String? {
-		showroom.modelName(forHardwareSlug: node.hwModel)
+	private func radioModelName(for node: ShowcaseNodeSnapshot) -> String? {
+		displays.modelName(forHardwareSlug: node.hwModel)
 	}
 
 	private func makeHero(_ node: ShowcaseNodeSnapshot, archetype: ShowcaseDeviceArchetype, modelName: String?, slot: ShowcaseSlot) -> Hero {
@@ -228,14 +242,19 @@ final class ShowcaseSceneController {
 		halo.components.set(OpacityComponent(opacity: 0))
 		holder.addChild(halo)
 		heroContainer.addChild(holder)
-		if let modelName, let template = showroom.template(named: modelName) {
-			// The radio's own model at real size, standing on the desk; it can be picked up too.
+		let shortName = node.shortName
+		Task {
+			guard let placard = await ShowcaseDeviceMeshes.placard(shortName: shortName) else { return }
+			holder.addChild(placard)
+		}
+		if let modelName, let template = displays.template(named: modelName) {
+			// The radio's own model at real size, on a stand like the others; it can be picked up too.
 			let device = template.clone(recursive: true)
-			// The clone is the radio, not the shelf's example: its taps open the node's card.
+			// The clone is the radio, not the table's example: its taps open the node's card.
 			device.components.remove(ShowcaseItemComponent.self)
 			let height = ShowcaseDisplays.stand(device, in: holder)
 			device.components.set(ShowcaseNodeComponent(nodeNum: node.id))
-			device.components.set(Self.accessibility(for: node, isOnline: false))
+			device.components.set(ShowcaseDeviceMeshes.accessibility(for: node, isOnline: false))
 			receiveRoomLight(device)
 			return Hero(holder: holder, device: device, label: nil, halo: halo, modelName: modelName, archetype: archetype, slot: slot, baseGlow: 0, style: Style(shortName: node.shortName, isOnline: false), height: height)
 		}
@@ -285,18 +304,6 @@ final class ShowcaseSceneController {
 		return material
 	}
 
-	private static func accessibility(for node: ShowcaseNodeSnapshot, isOnline: Bool) -> AccessibilityComponent {
-		var component = AccessibilityComponent()
-		component.isAccessibilityElement = true
-		component.traits = [.button]
-		component.label = LocalizedStringResource(stringLiteral: node.longName)
-		let heard = node.lastHeard?.lastHeard ?? String(localized: "Never", comment: "Spatial map: node has never been heard")
-		component.value = isOnline
-			? LocalizedStringResource("Online, last heard \(heard)", comment: "Showcase: VoiceOver value for a radio that is online; the argument is when it was last heard")
-			: LocalizedStringResource("Offline, last heard \(heard)", comment: "Showcase: VoiceOver value for a radio that is offline; the argument is when it was last heard")
-		return component
-	}
-
 	static func nodeColor(_ nodeNum: Int64) -> UIColor {
 		UIColor(hex: UInt32(truncatingIfNeeded: nodeNum))
 	}
@@ -336,14 +343,14 @@ final class ShowcaseSceneController {
 		let pageNodes = layout.rackPage(page)
 		var texels: [SIMD4<UInt8>] = Array(repeating: SIMD4(26, 28, 30, 255), count: grid.perPage)
 		for (cell, num) in pageNodes where cell < texels.count {
-			texels[cell] = Self.texel(Self.nodeColor(num), isOnline: layout.isOnline(num))
+			texels[cell] = ShowcaseDeviceMeshes.texel(Self.nodeColor(num), isOnline: layout.isOnline(num))
 		}
 		var ax = AccessibilityComponent()
 		ax.isAccessibilityElement = true
 		ax.label = LocalizedStringResource("Wall rack", comment: "Showcase: VoiceOver label for the rack of radios on the wall")
 		ax.value = LocalizedStringResource("Page \(page + 1) of \(rackPageCount), \(pageNodes.count) radios", comment: "Showcase: VoiceOver value for the wall rack; the arguments are the page, the page count and the radios on the page")
 		cells.components.set(ax)
-		guard let image = Self.image(texels, width: grid.columns, height: grid.rows) else { return }
+		guard let image = ShowcaseDeviceMeshes.image(texels, width: grid.columns, height: grid.rows) else { return }
 		Task {
 			var options = TextureResource.CreateOptions(semantic: .color)
 			options.mipmapsMode = .none
@@ -362,46 +369,43 @@ final class ShowcaseSceneController {
 		}
 	}
 
-	private static func texel(_ color: UIColor, isOnline: Bool) -> SIMD4<UInt8> {
-		var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
-		color.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-		// Offline cells keep a hint of their color, mostly gray and dim.
-		let mix: CGFloat = isOnline ? 1 : 0.3
-		let level: CGFloat = isOnline ? 0.9 : 0.3
-		func channel(_ value: CGFloat) -> UInt8 {
-			UInt8(max(0, min(255, ((value * mix + 0.5 * (1 - mix)) * level * 255).rounded())))
-		}
-		return SIMD4(channel(red), channel(green), channel(blue), 255)
+	// MARK: Displays
+
+	/// The hardware catalog for the displays, read by the view; the room may not be in yet.
+	func setDisplayHardware(_ hardware: [ShowcaseHardwareRecord]) async {
+		displayHardware = hardware
+		await loadDisplaysIfReady()
 	}
 
-	private static func image(_ texels: [SIMD4<UInt8>], width: Int, height: Int) -> CGImage? {
-		var bytes: [UInt8] = []
-		bytes.reserveCapacity(texels.count * 4)
-		for texel in texels { bytes += [texel.x, texel.y, texel.z, texel.w] }
-		guard let provider = CGDataProvider(data: Data(bytes) as CFData) else { return nil }
-		return CGImage(
-			width: width, height: height, bitsPerComponent: 8, bitsPerPixel: 32, bytesPerRow: width * 4,
-			space: CGColorSpace(name: CGColorSpace.sRGB) ?? CGColorSpaceCreateDeviceRGB(),
-			bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue),
-			provider: provider, decode: nil, shouldInterpolate: false, intent: .defaultIntent
-		)
-	}
-
-	// MARK: Showroom
-
-	/// The hardware catalog for the showroom, read by the view; the room may not be in yet.
-	func setShowroomHardware(_ hardware: [ShowcaseHardwareRecord]) async {
-		showroomHardware = hardware
-		await loadShowroomIfReady()
-	}
-
-	/// Once both the room and the catalog are in, stands the device models on the shelves, then
-	/// puts the connected radio's model on the desk.
-	func loadShowroomIfReady() async {
-		guard let room, let hardware = showroomHardware else { return }
-		showroomHardware = nil
-		await showroom.load(room: room, hardware: hardware) { [weak self] in self?.receiveRoomLight($0) }
+	/// Once both the room and the catalog are in, stands the device models on the tables, then
+	/// swaps the connected radio's stand-in for its model.
+	func loadDisplaysIfReady() async {
+		guard let room, let hardware = displayHardware else { return }
+		displayHardware = nil
+		await displays.load(room: room, hardware: hardware) { [weak self] in self?.receiveRoomLight($0) }
 		if let layout { syncHeroes(layout: layout, now: Date()) }
+		// A selection made while the models were loading.
+		updateInspection()
+	}
+
+	// MARK: Inspection
+
+	/// Holds up whatever is selected: a table's model, or the connected radio when it is a real
+	/// model; puts the last one back otherwise.
+	private func updateInspection() {
+		if let id = selectedItem, let model = displays.model(for: id) {
+			inspector.inspect(model)
+		} else if let num = selected, let hero = heroes[num], hero.modelName != nil {
+			inspector.inspect(hero.device)
+		} else {
+			inspector.release()
+		}
+	}
+
+	/// Where a model's card goes: beside it when held up, else above it on its table.
+	func cardPosition(forItem id: String) -> SIMD3<Float>? {
+		if let model = displays.model(for: id), inspector.model === model { return inspector.cardPosition }
+		return displays.cardPosition(forItem: id)
 	}
 
 	// MARK: Taps
@@ -425,13 +429,14 @@ final class ShowcaseSceneController {
 	/// Where the card goes for a node, in the world's space: above a device, or out from a rack
 	/// cell. Nil when the node isn't placed or is on another rack page.
 	func cardPosition(for nodeNum: Int64) -> SIMD3<Float>? {
+		if let device = heroes[nodeNum]?.device, inspector.model === device { return inspector.cardPosition }
 		guard let layout, let room, let slot = layout.slots[nodeNum] else { return nil }
 		let pose = ShowcasePlacement.pose(of: slot, grid: layout.grid, anchor: room.pose)
 		switch slot {
 		case .rack(let index):
 			guard index / layout.grid.perPage == page else { return nil }
 			return pose.position + pose.forward * 0.3
-		case .deskRadio:
+		case .connectedRadio:
 			let top = heroes[nodeNum]?.height ?? ShowcaseDeviceArchetype.generic.height
 			return pose.position + [0, top + 0.13, 0] + pose.forward * 0.12
 		}
@@ -448,6 +453,7 @@ final class ShowcaseSceneController {
 	}
 
 	func step(deltaTime dt: TimeInterval) {
+		inspector.step(deltaTime: dt)
 		clock += dt
 		guard !boosts.isEmpty, let layout else { return }
 		for (num, boost) in boosts {
@@ -582,6 +588,74 @@ enum ShowcaseDeviceMeshes {
 			(text as NSString).draw(at: origin, withAttributes: attributes)
 		}
 		return image.cgImage
+	}
+
+	/// The tent card in front of the connected radio: "Your radio" and its short name.
+	static func placard(shortName: String) async -> ModelEntity? {
+		let size = CGSize(width: 360, height: 180)
+		let format = UIGraphicsImageRendererFormat()
+		format.scale = 1
+		format.opaque = false
+		let title = String(localized: "Your radio", comment: "Showcase: card in front of the connected radio on the display table")
+		let image = UIGraphicsImageRenderer(size: size, format: format).image { _ in
+			UIColor.white.setFill()
+			UIBezierPath(roundedRect: CGRect(origin: .zero, size: size), cornerRadius: 18).fill()
+			let small: [NSAttributedString.Key: Any] = [.font: UIFont.systemFont(ofSize: 34, weight: .medium), .foregroundColor: UIColor(white: 0.45, alpha: 1)]
+			let large: [NSAttributedString.Key: Any] = [.font: UIFont.systemFont(ofSize: 64, weight: .semibold), .foregroundColor: UIColor(white: 0.1, alpha: 1)]
+			let titleSize = (title as NSString).size(withAttributes: small)
+			(title as NSString).draw(at: CGPoint(x: (size.width - titleSize.width) / 2, y: 22), withAttributes: small)
+			let name = shortName.isEmpty ? "?" : shortName
+			let nameSize = (name as NSString).size(withAttributes: large)
+			(name as NSString).draw(at: CGPoint(x: (size.width - nameSize.width) / 2, y: 74), withAttributes: large)
+		}
+		guard let cgImage = image.cgImage,
+			  let texture = try? await TextureResource(image: cgImage, options: .init(semantic: .color)) else { return nil }
+		var material = UnlitMaterial()
+		material.color = .init(tint: .white, texture: .init(texture))
+		material.blending = .transparent(opacity: .init(floatLiteral: 1))
+		let card = ModelEntity(mesh: .generatePlane(width: 0.08, height: 0.04, cornerRadius: 0.004), materials: [material])
+		card.name = "placard"
+		// Leaning back a little, just in front of the radio's stand.
+		card.orientation = simd_quatf(angle: -0.35, axis: [1, 0, 0])
+		card.position = [0, 0.019, 0.07]
+		return card
+	}
+
+	static func texel(_ color: UIColor, isOnline: Bool) -> SIMD4<UInt8> {
+		var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0, alpha: CGFloat = 0
+		color.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+		// Offline cells keep a hint of their color, mostly gray and dim.
+		let mix: CGFloat = isOnline ? 1 : 0.3
+		let level: CGFloat = isOnline ? 0.9 : 0.3
+		func channel(_ value: CGFloat) -> UInt8 {
+			UInt8(max(0, min(255, ((value * mix + 0.5 * (1 - mix)) * level * 255).rounded())))
+		}
+		return SIMD4(channel(red), channel(green), channel(blue), 255)
+	}
+
+	static func image(_ texels: [SIMD4<UInt8>], width: Int, height: Int) -> CGImage? {
+		var bytes: [UInt8] = []
+		bytes.reserveCapacity(texels.count * 4)
+		for texel in texels { bytes += [texel.x, texel.y, texel.z, texel.w] }
+		guard let provider = CGDataProvider(data: Data(bytes) as CFData) else { return nil }
+		return CGImage(
+			width: width, height: height, bitsPerComponent: 8, bitsPerPixel: 32, bytesPerRow: width * 4,
+			space: CGColorSpace(name: CGColorSpace.sRGB) ?? CGColorSpaceCreateDeviceRGB(),
+			bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue),
+			provider: provider, decode: nil, shouldInterpolate: false, intent: .defaultIntent
+		)
+	}
+
+	static func accessibility(for node: ShowcaseNodeSnapshot, isOnline: Bool) -> AccessibilityComponent {
+		var component = AccessibilityComponent()
+		component.isAccessibilityElement = true
+		component.traits = [.button]
+		component.label = LocalizedStringResource(stringLiteral: node.longName)
+		let heard = node.lastHeard?.lastHeard ?? String(localized: "Never", comment: "Spatial map: node has never been heard")
+		component.value = isOnline
+			? LocalizedStringResource("Online, last heard \(heard)", comment: "Showcase: VoiceOver value for a radio that is online; the argument is when it was last heard")
+			: LocalizedStringResource("Offline, last heard \(heard)", comment: "Showcase: VoiceOver value for a radio that is offline; the argument is when it was last heard")
+		return component
 	}
 }
 #endif

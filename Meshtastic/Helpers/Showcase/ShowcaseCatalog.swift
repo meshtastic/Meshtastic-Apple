@@ -1,25 +1,39 @@
 //
-//  ShowcaseShowroom.swift
+//  ShowcaseCatalog.swift
 //  Meshtastic
 //
 //  Copyright(c) Garth Vander Houwen 10/14/26.
 //
 import Foundation
+import simd
 @preconcurrency import SwiftData
 
-/// The makers the showcase's shelves show, one shelf each. Elecrow's tall radios go on the bottom
-/// shelf, RAK in the middle, and Seeed on the open top shelf, where the Solar Node fits.
+/// The makers the showcase shows, one row of the display tables each.
 enum ShowcaseVendor: String, CaseIterable, Sendable {
-	case elecrow = "Elecrow"
 	case rak = "RAK"
 	case seeed = "Seeed"
+	case elecrow = "Elecrow"
 
-	/// Shelf 0 is the lowest.
-	var shelf: Int {
+	/// RAK along the front of the front table, Seeed on its riser behind, and Elecrow, whose radios
+	/// are the tallest, on the higher back table.
+	var row: ShowcaseDisplayRow {
 		switch self {
-		case .elecrow: 0
-		case .rak: 1
-		case .seeed: 2
+		case .rak:
+			// Leaves the front table's right end for the connected radio.
+			ShowcaseDisplayRow(table: .tableFront, depthOffset: 0.16, height: 0, length: 1.35, centerX: -0.22)
+		case .seeed:
+			ShowcaseDisplayRow(table: .tableFront, depthOffset: ShowcaseRoomGeometry.riserOffset, height: ShowcaseRoomGeometry.riserHeight, length: ShowcaseRoomGeometry.tableLength, centerX: 0)
+		case .elecrow:
+			ShowcaseDisplayRow(table: .tableBack, depthOffset: 0, height: 0, length: ShowcaseRoomGeometry.tableLength, centerX: 0)
+		}
+	}
+
+	/// Front of the room first.
+	var displayOrder: Int {
+		switch self {
+		case .rak: 0
+		case .seeed: 1
+		case .elecrow: 2
 		}
 	}
 
@@ -48,7 +62,7 @@ struct ShowcaseHardwareRecord: Codable, Equatable, Sendable {
 	let images: [String]?
 }
 
-/// One model on a shelf: an example of a device, not a node on the mesh.
+/// One model on a display table: an example of a device, not a node on the mesh.
 struct ShowcaseItem: Identifiable, Equatable, Sendable {
 	/// The model's file name without extension, the same as its SVG's.
 	let id: String
@@ -114,7 +128,7 @@ enum ShowcaseCatalog {
 			}
 		}
 		return items.sorted { lhs, rhs in
-			if lhs.vendor != rhs.vendor { return lhs.vendor.shelf < rhs.vendor.shelf }
+			if lhs.vendor != rhs.vendor { return lhs.vendor.displayOrder < rhs.vendor.displayOrder }
 			return lhs.title.localizedStandardCompare(rhs.title) == .orderedAscending
 		}
 	}
@@ -180,11 +194,25 @@ enum ShowcaseCatalog {
 	}
 }
 
-/// Spreads a shelf's models along it: the space left over is shared out evenly, between the models
+/// A run of a display table that one maker's models stand along, in the table's own space:
+/// `depthOffset` toward the viewer from the table's middle, `height` above its top (the riser),
+/// and `length` of table centered at `centerX`.
+struct ShowcaseDisplayRow: Equatable, Sendable {
+	let table: ShowcaseAnchor
+	let depthOffset: Float
+	let height: Float
+	let length: Float
+	let centerX: Float
+
+	/// Where the connected radio stands: the front table's right end, toward the viewer.
+	static let connectedRadio = SIMD3<Float>(0.7, 0, 0.16)
+}
+
+/// Spreads a row's models along it: the space left over is shared out evenly, between the models
 /// and at both ends.
-enum ShowcaseShelfPacking {
-	/// The center of each model along a shelf of `length`, measured from the shelf's middle. When
-	/// the models are wider than the shelf they touch and run past its ends, centered.
+enum ShowcaseRowPacking {
+	/// The center of each model along a row of `length`, measured from the row's middle. When the
+	/// models are wider than the row they touch and run past its ends, centered.
 	static func centers(widths: [Float], length: Float) -> [Float] {
 		guard !widths.isEmpty else { return [] }
 		let total = widths.reduce(0, +)

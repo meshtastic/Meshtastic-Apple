@@ -9,17 +9,9 @@ import simd
 
 /// The named empty prims in Showcase.usda that code places things at. The raw value is the prim name.
 enum ShowcaseAnchor: String, CaseIterable, Sendable {
-	case deskRadio = "Anchor_DeskRadio"
-	case deskMap = "Anchor_DeskMap"
-	case shelf0 = "Anchor_Shelf_0"
-	case shelf1 = "Anchor_Shelf_1"
-	case shelf2 = "Anchor_Shelf_2"
+	case tableFront = "Anchor_TableFront"
+	case tableBack = "Anchor_TableBack"
 	case wallRack = "Anchor_WallRack"
-	case window = "Anchor_Window"
-	case cablePort = "Anchor_CablePort"
-	case lamp = "Anchor_Lamp"
-
-	static let shelves: [ShowcaseAnchor] = [.shelf0, .shelf1, .shelf2]
 }
 
 /// Where an anchor sits in the room, in meters from the floor under the viewer (Y up, facing -Z).
@@ -44,12 +36,14 @@ enum ShowcaseRoomGeometry {
 	static let assetName = "Showcase"
 
 	static let width: Float = 3.4
-	static let height: Float = 2.5
+	static let height: Float = 2.8
 	/// Inner face of the back wall, in front of the viewer.
-	static let backWallZ: Float = -1.3
-	static let deskTopY: Float = 0.76
-	static let shelfLength: Float = 1.695
-	static let shelfDepth: Float = 0.26
+	static let backWallZ: Float = -2.6
+	/// The display tables' usable length, inside their legs.
+	static let tableLength: Float = 1.8
+	/// The front table's riser: its height and how far back of the table's middle it runs.
+	static let riserHeight: Float = 0.05
+	static let riserOffset: Float = -0.2
 	static let rackSize = SIMD2<Float>(1.75, 1.65)
 	/// Eye height for someone sitting in the chair at the origin.
 	static let seatedEye = SIMD3<Float>(0, 1.2, 0)
@@ -61,15 +55,9 @@ enum ShowcaseRoomGeometry {
 
 	static func defaultPose(_ anchor: ShowcaseAnchor) -> ShowcaseAnchorPose {
 		switch anchor {
-		case .deskRadio: ShowcaseAnchorPose(SIMD3(0.4, deskTopY, -0.82))
-		case .deskMap: ShowcaseAnchorPose(SIMD3(-0.15, deskTopY, -0.82))
-		case .shelf0: ShowcaseAnchorPose(SIMD3(0, 1.1325, -1.17))
-		case .shelf1: ShowcaseAnchorPose(SIMD3(0, 1.4325, -1.17))
-		case .shelf2: ShowcaseAnchorPose(SIMD3(0, 1.7325, -1.17))
+		case .tableFront: ShowcaseAnchorPose(SIMD3(0, 0.82, -0.95))
+		case .tableBack: ShowcaseAnchorPose(SIMD3(0, 0.95, -2.0))
 		case .wallRack: ShowcaseAnchorPose(SIMD3(1.655, 1.3, -0.2), orientation: yaw(-90))
-		case .window: ShowcaseAnchorPose(SIMD3(-1.7, 1.5, -0.75), orientation: yaw(90))
-		case .cablePort: ShowcaseAnchorPose(SIMD3(-1.69, 0.84, -1.02), orientation: yaw(90))
-		case .lamp: ShowcaseAnchorPose(SIMD3(-0.62, 1.035, -0.86))
 		}
 	}
 
