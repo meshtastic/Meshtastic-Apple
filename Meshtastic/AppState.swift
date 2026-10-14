@@ -132,6 +132,9 @@ class AppState: ObservableObject {
 		return pendingRoute
 	}
 
+	/// Whether the visionOS ham shack immersive space is showing. Only one may be open at a time.
+	@Published var hamShackOpen = false
+
 	/// A node the spatial map volume should select once it is showing; claimed the same way.
 	@Published var spatialMapFocus: SpatialMapFocusRequest?
 

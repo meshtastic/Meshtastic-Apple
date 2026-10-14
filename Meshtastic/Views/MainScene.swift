@@ -13,6 +13,11 @@ struct MainScene: View {
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 	@Environment(\.scenePhase) private var scenePhase
 	@Environment(\.openWindow) private var openWindow
+	#if os(visionOS) && DEBUG
+	@Environment(\.openImmersiveSpace) private var openImmersiveSpace
+	/// `--meshtastic-open-shack` opens the shack once per launch, not once per main window.
+	private static var openedShackForLaunchArgument = false
+	#endif
 	@State private var saveChannelLink: SaveChannelLinkData?
 	@State private var pendingContact: PendingContact?
 	@State private var routerToken: UUID?
@@ -72,6 +77,16 @@ struct MainScene: View {
 					appState.spatialMapFocus = SpatialMapFocusRequest(nodeNum: nodeNum)
 				}
 				openWindow(id: SpatialMapScene.id, value: SpatialMapSceneKey.shared)
+			}
+			#endif
+			#if os(visionOS) && DEBUG
+			// Simulator screenshots: open the ham shack without a button. Here rather than in the
+			// app's init, because opening an immersive space needs a view's environment.
+			.task {
+				guard CommandLine.arguments.contains("--meshtastic-open-shack"), !Self.openedShackForLaunchArgument else { return }
+				Self.openedShackForLaunchArgument = true
+				try? await Task.sleep(for: .seconds(3))
+				await HamShackScene.open(openImmersiveSpace, appState: appState)
 			}
 			#endif
 			.task {
