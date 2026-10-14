@@ -1,0 +1,20 @@
+# thinknode_m3: generated layout from the SVG; add [[part]] rules to refine.
+# Elecrow: L/W/H 64*64*10 mm; with fixed base 68*68*10.2 mm; 38.7 g.
+# The drawing shows the square turned on its corner. 64 mm is the side of the
+# square (as a 49 mm square it would be too dense for 40 g with a 770 mAh
+# battery), so fit_bbox is a 502-unit square (side + corner radius from the
+# path) centered on the drawing, and the corner-to-corner extent is ~84 mm.
+# Internal antennas only. The case is a soft rounded slab, rounder on the back.
+
+[size]
+width_mm = 64.0
+height_mm = 64.0
+depth_mm = 10.0
+scale_by = "width"
+fit_bbox = [322.0, 252.0, 824.0, 754.0]
+appendage = "none"
+edge_radius_mm = 4.0
+front_edge_radius_mm = 1.5
+covers = "device without fixed base (internal antennas)"
+source = "https://www.elecrow.com/thinknode-m3-meshtastic-tracker-with-gps-wifi-ble-function-for-positioning.html"
+confidence = "vendor"

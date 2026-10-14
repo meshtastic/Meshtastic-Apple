@@ -1,0 +1,19 @@
+# thinknode_m9: phone-style case, all antennas internal (vendor page).
+# Elecrow: Size 126*67*10.3mm, 123 g. 67/126=0.53 matches drawn 0.54.
+
+[size]
+width_mm = 67.0
+height_mm = 126.0
+depth_mm = 10.3
+scale_by = "width"
+covers = "whole device"
+source = "https://www.elecrow.com/thinknode-m9-meshtastic-communication-terminal-with-full-keyboard-2-4inch-lcd.html"
+confidence = "vendor"
+# Rounded plastic phone case; keyboard sits about 1.4 mm from the edge, so keep the front edge small.
+edge_radius_mm = 4.0
+front_edge_radius_mm = 1.0
+
+# Power switch on the right side: a small slider, not full body depth.
+[[thin]]
+bbox = [424, 430, 431, 516]
+depth_mm = 3.5

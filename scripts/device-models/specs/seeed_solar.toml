@@ -1,0 +1,22 @@
+# seeed_solar: generated layout from the SVG; add [[part]] rules to refine.
+# Seeed wiki: 'Dimension 191.2 x 201.2 x 42.1 mm' (P1 and P1-Pro). Width/height assignment assumed from drawing (panel slightly taller than wide). Drawn aspect 0.64 includes the antenna on top.
+
+[size]
+width_mm = 191.2
+height_mm = 201.2
+depth_mm = 42.1
+scale_by = "width"
+fit_bbox = [199, 228, 574, 636]  # case only, antenna excluded
+appendage = "none"
+edge_radius_mm = 6          # molded plastic case with soft back edges
+front_edge_radius_mm = 1.5  # small: the white frame and clip tabs sit at the front edge
+body_color = "#d9ddd6"      # light gray case; the dark panel color stays on the face
+covers = "enclosure/solar panel body, excludes antenna"
+source = "https://wiki.seeedstudio.com/meshtastic_solar_node/"
+confidence = "vendor"
+
+# Rod-shaped rubber antenna on top (wiki), so it is round.
+[[antenna]]
+name = "Antenna"
+start = [386.5, 228]
+end = [386.5, 49]

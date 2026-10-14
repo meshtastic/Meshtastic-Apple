@@ -1,0 +1,15 @@
+# rak_wismesh_tag: generated layout from the SVG; add [[part]] rules to refine.
+# Dimension image on RAK store page https://store.rakwireless.com/products/wismesh-tag-meshtastic-gps-lora-tracker-ip66. Top corners are chamfered rather than rounded. 59/92=0.64 matches drawn 0.65.
+
+[size]
+width_mm = 59.0
+height_mm = 92.0
+depth_mm = 7.5
+scale_by = "width"
+covers = "whole device (no external antenna)"
+source = "https://cdn.shopify.com/s/files/1/0177/8784/6756/files/wismesh-tag-dimensions-v2.webp"
+confidence = "vendor"
+# Integrated antennas, nothing sticks out. The molded case has soft, rounded edges;
+# keep the front radius under the ~2 mm rim drawn around the face.
+edge_radius_mm = 3.0
+front_edge_radius_mm = 1.5

@@ -496,6 +496,16 @@
 			path = Tips;
 			sourceTree = "<group>";
 		};
+		C9A178D4960C8B5434676256 /* DeviceModels */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			name = DeviceModels;
+			path = DeviceModels;
+			sourceTree = "<group>";
+		};
 		D983771846F46D151DDE372B /* Views */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			explicitFileTypes = {
@@ -804,6 +814,7 @@
 				6D159B66B1877A7506D1AB20 /* AppIconDebug.icon */,
 				25BA43A8304E6CC120811070 /* Certificates */,
 				C6BCC32505771F08628D70D7 /* DeviceHardware.json */,
+				C9A178D4960C8B5434676256 /* DeviceModels */,
 				6B3F64B089C3A398FEBE6C9C /* docs */,
 				C0810161F73BC57A90E60D0C /* event_firmware.json */,
 				0846840A4300FE311DCFDA44 /* images */,
@@ -1021,6 +1032,7 @@
 				46D9EC9A9870D40B64CBD339 /* Accessory */,
 				91DE2B8079DF4453A2B7A512 /* AppIntents */,
 				B47C68738DD365F2A873DF1E /* CarPlay */,
+				C9A178D4960C8B5434676256 /* DeviceModels */,
 				811D897CDBB8285F81701314 /* Enums */,
 				C21C46F8F2BCFF68F31B12C0 /* Export */,
 				11D3172B1FEF230630B7A990 /* Extensions */,
@@ -1886,6 +1898,8 @@
 				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
 				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
 				ENABLE_RESOURCE_ACCESS_USB = NO;
+				"EXCLUDED_SOURCE_FILE_NAMES[sdk=iphone*]" = "*.usdz";
+				"EXCLUDED_SOURCE_FILE_NAMES[sdk=macosx*]" = "*.usdz";
 				INFOPLIST_FILE = Meshtastic/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
@@ -1940,6 +1954,8 @@
 				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
 				ENABLE_RESOURCE_ACCESS_PRINTING = NO;
 				ENABLE_RESOURCE_ACCESS_USB = NO;
+				"EXCLUDED_SOURCE_FILE_NAMES[sdk=iphone*]" = "*.usdz";
+				"EXCLUDED_SOURCE_FILE_NAMES[sdk=macosx*]" = "*.usdz";
 				INFOPLIST_FILE = Meshtastic/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";

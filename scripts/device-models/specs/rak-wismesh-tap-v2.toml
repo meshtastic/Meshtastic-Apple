@@ -1,0 +1,42 @@
+# rak-wismesh-tap-v2: generated layout from the SVG; add [[part]] rules to refine.
+# No published V2 dimensions found. Product photos and the drawing show the same housing as V1 (Unify 100x75x38). Antenna is a 2.3 dBi blade.
+
+[size]
+width_mm = 100.0
+height_mm = 75.0
+depth_mm = 38.0
+scale_by = "width"
+covers = "enclosure only, excludes antenna (assumed same Unify enclosure as V1)"
+source = "https://store.rakwireless.com/products/wismesh-unify-enclosure"
+confidence = "estimated"
+# Unify case has softly rounded edges; keep the front small so the gray bezel stays.
+edge_radius_mm = 6.0
+front_edge_radius_mm = 2.5
+
+# Round rubber whip on a swivel, folded over to the left in the drawing.
+# Fixed radius so the drawn elbow at its base does not flare it out;
+# max_width only widens the area it clears so no flat scraps are left.
+[[antenna]]
+name = "AntennaWhip"
+start = [447.0, 370.0]
+end = [88.0, 9.5]
+radius_mm = 3.5
+tip_radius_mm = 3.0
+max_width = 45
+
+# Swivel knuckle under the whip, fixed radius for the same reason.
+[[antenna]]
+name = "AntennaKnuckle"
+start = [444.3, 392.0]
+end = [444.3, 362.0]
+radius_mm = 3.6
+dome = false
+max_width = 40
+
+# Knurled nut and gold SMA base, straight up from the case.
+[[antenna]]
+name = "AntennaBase"
+start = [444.3, 531.5]
+end = [444.3, 392.0]
+dome = false
+max_width = 40

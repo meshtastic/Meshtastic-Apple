@@ -1,0 +1,34 @@
+# seeed_wio_tracker_l2: generated layout from the SVG; add [[part]] rules to refine.
+# Seeed wiki: 'Dimension (Antenna folded) L: 87.5, W: 69, H: 26.6' (the wiki says cm, clearly a typo for mm), weight 171.5 g. 69/87.5=0.79 vs drawn 0.76.
+
+[size]
+# Fit the case; the antenna is drawn raised above it.
+covers = "case only; height from the drawing at the published 69 mm width"
+height_mm = 54.0
+fit_bbox = [0, 296, 549, 727]
+width_mm = 69.0
+depth_mm = 26.6
+scale_by = "width"
+source = "https://wiki.seeedstudio.com/meshtastic_wio_tracker_l2_intro/"
+confidence = "vendor"
+# Rugged case with soft corners; small front radius keeps the drawn bezel.
+edge_radius_mm = 5.0
+front_edge_radius_mm = 1.2
+
+[materials]
+rubber = { color = "#353535", roughness = 0.8 }
+
+# Rubber whip, folded up from the hinge at the top left. The drawn tip cap
+# is dropped as a stray shape, so the radius is fixed (drawn width ~5.6 mm).
+[[antenna]]
+name = "AntennaWhip"
+start = [175.4, 226.6]
+end = [395.0, 10.0]
+radius_mm = 2.8
+dome = true
+material = "rubber"
+
+# Hinge block where the whip meets the case top.
+[[thin]]
+polygon = [[191.1, 244.7], [169.2, 268.8], [141.7, 296.0], [64.0, 296.0], [117.6, 245.3], [151.8, 215.8], [159.6, 208.5]]
+depth_mm = 9

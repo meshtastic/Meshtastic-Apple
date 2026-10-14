@@ -1,0 +1,76 @@
+# seeed_xiao_nrf52_kit: generated layout from the SVG; add [[part]] rules to refine.
+# Seeed: 'dimensions of only 8mm x 22mm x 23mm' for the kit; each board 21 x 17.8 mm. Which of 22/23 is horizontal is not stated. Drawing (0.67) includes antenna on a cable.
+
+[size]
+# Fit the XIAO board stack; the flat antenna and cable around it are built thin.
+covers = "XIAO board stack; antenna and cable not to published size"
+appendage_depth_mm = 1.0
+appendage = "outside"
+height_mm = 21.0
+width_mm = 17.8
+fit_bbox = [532, 776, 1002, 1349]
+depth_mm = 8.0
+# The drawing shows the top XIAO board. The base board here is the Wio-SX1262
+# under it; the XIAO is a raised block on pin headers. 1 + 2.8 + 1 + 3.2 = 8 mm.
+# PCB and part heights are typical values, not published.
+board_mm = 1.0
+scale_by = "width"
+source = "https://wiki.seeedstudio.com/xiao_nrf52840%26_wio_SX1262_kit_for_meshtastic/"
+confidence = "vendor"
+
+# Pin headers between the boards, under the XIAO edge pads.
+[[block]]
+name = "HeaderLeft"
+bbox = [534, 815, 590, 1305]
+h = 2.8
+side_color = "#151515"
+
+[[block]]
+name = "HeaderRight"
+bbox = [946, 815, 1001, 1305]
+h = 2.8
+side_color = "#151515"
+
+# XIAO nRF52840 board, 1 mm, held 2.8 mm above the Wio-SX1262.
+[[block]]
+name = "XIAO"
+bbox = [532, 776, 1002, 1349]
+base_mm = 2.8
+h = 3.8
+
+# Parts on the XIAO sit on top of it (base_mm 3.8).
+# nRF52840 module shield can (typical ~2 mm).
+[[block]]
+name = "ShieldCan"
+bbox = [594, 959, 943, 1252]
+base_mm = 3.8
+h = 5.8
+
+# USB-C receptacle at the top edge (typical 3.2 mm). The part past the
+# XIAO edge leaves no Wio board under it.
+[[block]]
+name = "USBC"
+bbox = [655, 776, 889, 923]
+base_mm = 3.8
+h = 7.0
+
+[[block]]
+name = "USBC"
+bbox = [655, 721, 889, 776]
+base_mm = 3.8
+h = 7.0
+hollow_under = true
+
+# Reset button.
+[[block]]
+name = "ResetButton"
+bbox = [593, 789, 636, 862]
+base_mm = 3.8
+h = 5.3
+
+# Blue slide switch at the bottom edge.
+[[block]]
+name = "Switch"
+bbox = [673, 1294, 765, 1337]
+base_mm = 3.8
+h = 5.0

@@ -1,0 +1,60 @@
+# thinknode_m4: generated layout from the SVG; add [[part]] rules to refine.
+# Elecrow: Size 87.3*67.7*28mm, 190 g. The drawing shows the back label panel
+# with the clear headlamp cap on the right (a see-through shape in the SVG) and
+# the charge cables looped over the top and down the left. LoRa antenna is internal.
+
+[size]
+width_mm = 67.7
+height_mm = 87.3
+depth_mm = 28.0
+scale_by = "width"
+# Case including the clear cap, excluding the cables.
+fit_bbox = [326.13, 202.8, 849.41, 866.27]
+covers = "case including clear headlamp cap, excludes cables"
+# Cables are handled by [[thin]] below.
+appendage = "none"
+edge_radius_mm = 4.0
+front_edge_radius_mm = 2.0
+source = "https://www.elecrow.com/thinknode-m4-power-bank-lora-device-with-meshtastic-lora-tracker-function-powered-by-nrf52840.html"
+confidence = "vendor"
+# Cream case; the black label panel still shows on the face.
+body_color = "#e3dccd"
+
+[materials]
+cap = { color = "#e4e2dc", roughness = 0.15, opacity = 0.4 }
+
+# Clear headlamp cap on the right end, just under full depth so the face
+# details stay on top. Its left corners sit inside the body.
+[[box]]
+name = "Cap"
+x = 660.0
+y = 202.8
+width = 189.41
+height = 663.47
+radius = 68.24
+thickness = 0.96
+material = "cap"
+
+# Cables and plugs hanging down the left side.
+[[thin]]
+bbox = [205, 120, 326.1, 610]
+depth_mm = 7
+edge_radius_mm = 2
+
+# Cable loop over the top.
+[[thin]]
+bbox = [326.1, 120, 760, 202.8]
+depth_mm = 4.5
+edge_radius_mm = 2
+
+# Cable passing the rounded top-left corner.
+[[thin]]
+polygon = [[326.13, 202.8], [326.13, 271.05], [328.46, 253.39], [335.27, 236.93], [346.12, 222.79], [360.25, 211.94], [376.72, 205.13], [394.38, 202.8]]
+depth_mm = 4.5
+edge_radius_mm = 2
+
+# Cap details (side strip, window, buttons): kept just inside the cap so the
+# black body stops at the cap's edge.
+[[thin]]
+bbox = [735.0, 202.8, 860, 880]
+depth_mm = 26.6

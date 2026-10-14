@@ -1,0 +1,14 @@
+# seeed_mesh_tracker_x1: generated layout from the SVG; add [[part]] rules to refine.
+# Seeed wiki: Dimensions 90*57*8 mm, 45 g. 57/90=0.63 matches drawn 0.64.
+
+[size]
+width_mm = 57.0
+height_mm = 90.0
+depth_mm = 8.0
+# Thin card with soft, rounded sides; no external antenna, lanyard slot is cut through.
+edge_radius_mm = 4.0
+front_edge_radius_mm = 1.2
+scale_by = "width"
+covers = "whole device (internal antennas)"
+source = "https://wiki.seeedstudio.com/meshtracker_x1_intro/"
+confidence = "vendor"

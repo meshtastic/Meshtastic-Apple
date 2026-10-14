@@ -1,0 +1,124 @@
+# rak11200: generated layout from the SVG; add [[part]] rules to refine.
+# Drawing: RAK19007 base (30x60 mm) with the RAK11200 core across the CPU slot
+# (its ESP32-WROVER antenna end overhangs the left edge) and a RAK13300 LoRa module in the
+# IO slot overhanging the bottom. Width and height are the drawn outline scaled so the base is
+# 30 mm wide (the base edge is 215.3 SVG units). Depth is the overall stack: 1.0 mm base plus the 4.5 mm core.
+# Heights: base PCB 1.0 mm (typical, not published); RAK11200 module 4.3 mm thick with a 3.2 mm
+# WROVER on it, so its top is ~4.5 mm above the base. USB-C, JST, button and RAK13300
+# heights are typical values, not published.
+
+[size]
+width_mm = 36.8
+height_mm = 82.7
+depth_mm = 5.5
+board_mm = 1.0
+scale_by = "width"
+covers = "RAK19007 base (30x60) with RAK11200 core overhanging the left edge and RAK13300 overhanging the bottom; PCB only, no external antenna"
+source = "https://docs.rakwireless.com/product-categories/wisblock/rak11200/datasheet/"
+confidence = "vendor"
+
+# RAK11200 core: WROVER shield can (top 4.5 mm). The castellated pad rows above and
+# below the can and the PCB antenna end sit on the WROVER board edge (top ~2.1 mm).
+[[block]]
+name = "ESP32Module"
+bbox = [289, 206, 468, 318]
+h = 4.5
+side_color = "#cbccca"
+
+[[block]]
+name = "WroverPadsTop"
+bbox = [289, 190, 468, 206]
+h = 2.1
+
+[[block]]
+name = "WroverPadsBottom"
+bbox = [289, 318, 468, 333]
+h = 2.1
+
+# The antenna end overhangs the base: core PCB bottom ~0.5 mm up, open space below.
+[[block]]
+name = "ESP32Antenna"
+bbox = [240, 190, 289, 333]
+base_mm = 0.5
+h = 2.1
+hollow_under = true
+
+# Right edge of the core board past the WROVER can: core PCB top ~1.3 mm (4.5 - 3.2).
+[[block]]
+name = "CoreBoard"
+bbox = [468, 190, 504, 333]
+h = 1.3
+
+# Base board parts along the top edge (typical heights).
+[[block]]
+name = "USBC"
+bbox = [387, 99, 456, 157]
+h = 3.2
+
+[[block]]
+name = "BatteryJST"
+bbox = [461, 152, 503, 184]
+h = 4.5
+
+[[block]]
+name = "SolarJST"
+bbox = [290, 152, 323, 180]
+h = 3.5
+
+[[block]]
+name = "ResetButton"
+bbox = [346, 112, 382, 130]
+h = 2.0
+
+# RAK13300 in the IO slot: PCB top ~1.5 mm, SX1262 shield ~3.5 mm (typical).
+# Its PCB is split into strips around the shield so blocks don't overlap, and at the
+# base edge (y 532): past it the module PCB (0.7..1.5 mm) is over open space.
+[[block]]
+name = "LoRaShield"
+bbox = [327, 446, 431, 532]
+h = 3.5
+side_color = "#cbccca"
+
+[[block]]
+name = "LoRaShieldOverhang"
+bbox = [327, 532, 431, 613]
+base_mm = 0.7
+h = 3.5
+hollow_under = true
+side_color = "#cbccca"
+
+[[block]]
+name = "LoRaBoardLeft"
+bbox = [289, 425, 327, 532]
+h = 1.5
+
+[[block]]
+name = "LoRaBoardLeftOverhang"
+bbox = [289, 532, 327, 693]
+base_mm = 0.7
+h = 1.5
+hollow_under = true
+
+[[block]]
+name = "LoRaBoardRight"
+bbox = [431, 425, 481, 532]
+h = 1.5
+
+[[block]]
+name = "LoRaBoardRightOverhang"
+bbox = [431, 532, 481, 693]
+base_mm = 0.7
+h = 1.5
+hollow_under = true
+
+[[block]]
+name = "LoRaBoardTop"
+bbox = [327, 425, 431, 446]
+h = 1.5
+
+[[block]]
+name = "LoRaBoardBottom"
+bbox = [327, 613, 431, 693]
+base_mm = 0.7
+h = 1.5
+hollow_under = true

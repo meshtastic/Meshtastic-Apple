@@ -1,0 +1,75 @@
+# rak3401: generated layout from the SVG; add [[part]] rules to refine.
+# RAK3401 is 20x30 mm (datasheet). RAK19007 is 30x60 mm; the RAK13302 (35x25 mm) overhangs the end by about 20 mm, so the stack is about 82 mm long.
+# RAK19007 size: https://store.rakwireless.com/products/rak19007-wisblock-base-board-2nd-gen
+
+[size]
+width_mm = 30.0
+height_mm = 82.0
+depth_mm = 6.0
+scale_by = "width"
+covers = "RAK19007 base + RAK3401 core + RAK13302 1W LoRa module in IO slot; PCB only (estimated overall)"
+source = "https://docs.rakwireless.com/product-categories/wisblock/rak13302/datasheet/"
+confidence = "estimated"
+board_mm = 1.0
+
+# Board is 1.0 mm (RAK19007 drawing). Core module 4.5 mm is from the RAK store listing for WisBlock cores.
+# The rest are typical values: USB-C 3.2, side-entry JST-PH battery 4.8, JST-ZH solar 3.5, reset switch 2.0.
+# RAK13302 sits on the IO connector: about 1.5 mm gap + 1.0 mm PCB, with its shield about 2 mm higher.
+[[block]]
+name = "CoreModule"
+bbox = [23, 111, 188, 219]
+h = 4.5
+side_color = "#216749"
+
+[[block]]
+name = "USBC"
+bbox = [96, 0, 160, 58]
+h = 3.2
+
+[[block]]
+name = "Battery"
+bbox = [164, 59, 208, 93]
+h = 4.8
+
+[[block]]
+name = "Solar"
+bbox = [3, 60, 36, 91]
+h = 3.5
+
+[[block]]
+name = "Reset"
+bbox = [54, 17, 91, 40]
+h = 2.0
+
+# The base board ends at y=435. The RAK13302 PCB (x 0-177, about 25 mm) sits
+# 1.5 mm up on the IO connector with air under it; past y=435 there is no base board.
+[[block]]
+name = "LoRaBoard"
+bbox = [0, 325, 177, 435]
+base_mm = 1.5
+h = 2.5
+side_color = "#202121"
+
+[[block]]
+name = "LoRaBoardOverhang"
+bbox = [0, 435, 177, 579]
+base_mm = 1.5
+h = 2.5
+hollow_under = true
+side_color = "#202121"
+
+# Shield can on top of the RAK13302 PCB.
+[[block]]
+name = "LoRaShield"
+bbox = [28, 328, 134, 435]
+base_mm = 2.5
+h = 4.5
+side_color = "#c9cbcc"
+
+[[block]]
+name = "LoRaShieldOverhang"
+bbox = [28, 435, 134, 556]
+base_mm = 2.5
+h = 4.5
+hollow_under = true
+side_color = "#c9cbcc"

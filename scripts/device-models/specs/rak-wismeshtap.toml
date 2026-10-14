@@ -1,0 +1,28 @@
+# rak-wismeshtap: generated layout from the SVG; add [[part]] rules to refine.
+# WisMesh TAP uses the small Unify enclosure, listed by RAK as 100mm x 75mm x 38mm; Rokland also lists TAP as 100 x 75 x 38 mm. Drawing is landscape with a tall antenna above (drawn 0.63 includes antenna).
+
+[size]
+width_mm = 100.0
+height_mm = 75.0
+depth_mm = 38.0
+scale_by = "width"
+covers = "enclosure only (Unify 100x75x38), excludes antenna"
+source = "https://store.rakwireless.com/products/wismesh-unify-enclosure"
+confidence = "retailer"
+# Drawn case runs 0.76 mm past 75 at 100 mm wide; build it all full depth.
+body_height_mm = 75.8
+# Unify case has softly rounded edges; keep the front small so the gray bezel stays.
+edge_radius_mm = 8.0
+front_edge_radius_mm = 1.5
+
+# Rubber whip on a hinged SMA connector: straight base, then the tilted whip.
+[[antenna]]
+name = "AntennaBase"
+start = [1108.0, 857.0]
+end = [1108.0, 689.0]
+
+[[antenna]]
+name = "AntennaWhip"
+start = [1111.2, 687.3]
+end = [760.0, 344.0]
+dome = true

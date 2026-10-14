@@ -1,0 +1,14 @@
+# tracker-t1000-e: generated layout from the SVG; add [[part]] rules to refine.
+# Seeed wiki and T1000 datasheet: 85 x 55 x 6.5 mm, 32 g. 55/85=0.65 matches drawn 0.64.
+
+[size]
+width_mm = 55.0
+height_mm = 85.0
+depth_mm = 6.5
+scale_by = "width"
+covers = "whole device (internal antennas)"
+source = "https://wiki.seeedstudio.com/t1000_e_intro/"
+confidence = "vendor"
+# Real case is a soft card with well-rounded sides; face details sit >3 mm in from the edge.
+edge_radius_mm = 3.0
+front_edge_radius_mm = 2.0

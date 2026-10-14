@@ -1,0 +1,65 @@
+# rak_3312: generated layout from the SVG; add [[part]] rules to refine.
+# RAK3312 core 20 x 30 x 4.5 mm (RAK store); base RAK19007 30x60, PCB 1.0 mm, R1.0 corners. Stack depth estimated.
+
+[size]
+width_mm = 30.0
+height_mm = 60.0
+depth_mm = 8.0
+board_mm = 1.0  # RAK19007 PCB, published
+scale_by = "width"
+covers = "RAK19007 base board with RAK3312 core; PCB only"
+source = "https://store.rakwireless.com/products/wisblock-core-module-rak3312-lora-wifi-ble"
+confidence = "vendor"
+
+# Component heights: RAK3312 4.5 mm is published (RAK store); the rest are typical values.
+# Core module: green PCB with a labeled metal shield on top.
+[[block]]
+name = "CorePCB"
+bbox = [344, 285, 675, 501]
+h = 1.0
+side_color = "#206648"
+
+[[block]]
+name = "CoreShield"
+bbox = [355, 294, 664, 489]
+base_mm = 1.0
+h = 4.5
+material = "shield"
+
+[[block]]
+name = "USBC"
+bbox = [488, 61, 619, 181]
+h = 3.2
+
+[[block]]
+name = "ResetSwitch"
+bbox = [398, 84, 476, 124]
+h = 2.0
+
+[[block]]
+name = "BatteryJST"
+bbox = [637, 171, 722, 236]
+h = 4.5
+
+[[block]]
+name = "SolarJST"
+bbox = [288, 170, 353, 228]
+h = 3.5
+
+[[block]]
+name = "SlotA"
+bbox = [287, 590, 340, 704]
+h = 1.0
+
+[[block]]
+name = "WisBlockJ6"
+bbox = [478, 590, 532, 704]
+h = 1.0
+
+[[block]]
+name = "SlotJ7"
+bbox = [602, 731, 654, 891]
+h = 1.0
+
+[materials]
+shield = { color = "#c4c6c8", roughness = 0.35, metallic = 1.0 }
