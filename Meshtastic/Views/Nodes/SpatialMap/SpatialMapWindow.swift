@@ -111,7 +111,44 @@ struct SpatialMapWindow: View {
 			}
 		}
 		.trackScreen(.spatialMap)
+		#if DEBUG
+		.task { await showRouteForScreenshots() }
+		#endif
 	}
+
+	#if DEBUG
+	/// Simulator screenshots: `--meshtastic-spatial-route [index]` flies the newest trace route
+	/// with positions (or the one at `index`) at high speed and leaves it drawn.
+	/// `--meshtastic-spatial-route-zoom` zooms in on its first relay first, and
+	/// `--meshtastic-spatial-tilt <degrees>` tips the table toward the camera.
+	private func showRouteForScreenshots() async {
+		let arguments = ProcessInfo.processInfo.arguments
+		guard let flagIndex = arguments.firstIndex(of: "--meshtastic-spatial-route") else { return }
+		let index = arguments.indices.contains(flagIndex + 1) ? Int(arguments[flagIndex + 1]) ?? 0 : 0
+		var waited = 0
+		while model.routes.count <= index || model.placement == nil, waited < 60 {
+			try? await Task.sleep(for: .seconds(1))
+			waited += 1
+		}
+		guard model.routes.indices.contains(index) else { return }
+		let route = model.routes[index]
+		Logger.services.info("🧪 [Spatial] Showing route \(route.id, privacy: .public) (launch argument)")
+		if arguments.contains("--meshtastic-spatial-route-zoom"), let relay = route.layout.badges.first?.num ?? route.layout.targetNum {
+			model.zoomIn(on: relay)
+			try? await Task.sleep(for: .seconds(4))
+		}
+		model.shownRoute = route
+		traffic.startFlyover(route, speed: 10)
+		// The simulator's camera looks at the table edge on; tip it toward the viewer.
+		if let tiltIndex = arguments.firstIndex(of: "--meshtastic-spatial-tilt"), arguments.indices.contains(tiltIndex + 1),
+		   let degrees = Float(arguments[tiltIndex + 1]) {
+			scene.root.orientation = simd_quatf(angle: degrees * .pi / 180, axis: [1, 0, 0])
+			// Smaller and lifted so the near edge, now lower, stays inside the volume.
+			scene.root.scale = SIMD3(repeating: 0.75)
+			scene.model.position.y += 0.45 * sin(degrees * .pi / 180)
+		}
+	}
+	#endif
 
 	private func points(_ meters: Double) -> CGFloat {
 		metrics.convert(CGFloat(meters), from: .meters)
