@@ -17,6 +17,7 @@ struct SpatialMapWindow: View {
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 	@Environment(\.modelContext) private var context
 	@Environment(\.dismissWindow) private var dismissWindow
+	@Environment(\.openWindow) private var openWindow
 	@Environment(\.scenePhase) private var scenePhase
 	@Environment(\.physicalMetrics) private var metrics
 	@StateObject private var nodeFilters = NodeFilterParameters()
@@ -162,6 +163,10 @@ struct SpatialMapWindow: View {
 	private func showInMainWindow(_ route: String) {
 		guard let url = URL(string: route) else { return }
 		appState.pendingRoute = PendingRoute(url: url, bringForward: true)
+		// With no main window, open one; it takes the route as it appears.
+		if appState.mainWindowCount == 0 {
+			openWindow(id: MeshtasticAppleApp.mainWindowID)
+		}
 	}
 
 	/// Any scene that is not one of the secondary windows.

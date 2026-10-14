@@ -31,6 +31,7 @@ struct MainScene: View {
 			.onAppear {
 				if routerToken == nil {
 					routerToken = appState.sceneRouters.register(router)
+					appState.mainWindowCount += 1
 					if let launch = appState.takeLaunchNavigation() {
 						router.navigationState = launch
 					}
@@ -43,6 +44,7 @@ struct MainScene: View {
 				guard let routerToken else { return }
 				appState.sceneRouters.unregister(routerToken)
 				self.routerToken = nil
+				appState.mainWindowCount -= 1
 			}
 			.onOpenURL { url in
 				Logger.mesh.debug("URL received")

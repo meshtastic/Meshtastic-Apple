@@ -264,8 +264,11 @@ struct MeshtasticAppleApp: App {
 		}
 	}
 
+	/// The main window, so another window can open one when none is showing.
+	static let mainWindowID = "main"
+
 	var body: some Scene {
-		WindowGroup {
+		WindowGroup(id: Self.mainWindowID) {
 			Group {
 			if Self.isRunningTests {
 				Color.clear
