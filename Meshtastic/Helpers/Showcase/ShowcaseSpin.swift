@@ -19,6 +19,10 @@ struct ShowcaseSpin: Equatable, Sendable {
 	static let damping: Float = 3.5
 	/// Below this a flick has stopped, in radians per second.
 	static let restSpeed: Float = 0.05
+	/// The fastest a flick can spin it, in radians per second (about two turns a second).
+	static let maxSpeed: Float = 12
+	/// A hand that has been still this long before letting go doesn't flick it.
+	static let staleRelease: TimeInterval = 0.1
 
 	private(set) var yaw: Float = 0
 	private(set) var pitch: Float = 0
@@ -47,13 +51,20 @@ struct ShowcaseSpin: Equatable, Sendable {
 		pitch = min(max(start.y - offset.y * Self.radiansPerMeter, -Self.maxPitch), Self.maxPitch)
 		if let last = lastDrag, time > last.time {
 			let speed = (offset - last.offset) * Self.radiansPerMeter / Float(time - last.time)
-			velocity = SIMD2(speed.x, -speed.y)
+			// Smoothed over the last few samples so one jittery sample doesn't set the flick.
+			let sample = SIMD2(speed.x, -speed.y)
+			velocity = velocity * 0.5 + sample * 0.5
+			let magnitude = simd_length(velocity)
+			if magnitude > Self.maxSpeed { velocity *= Self.maxSpeed / magnitude }
 		}
 		lastDrag = (offset, time)
 	}
 
-	/// Ends the drag; it coasts on unless motion is reduced.
-	mutating func endDrag(reduceMotion: Bool) {
+	/// Ends the drag at `time`; it coasts on unless motion is reduced or the hand had stopped.
+	mutating func endDrag(reduceMotion: Bool, at time: TimeInterval? = nil) {
+		if let time, let last = lastDrag, time - last.time > Self.staleRelease {
+			velocity = .zero
+		}
 		dragStart = nil
 		lastDrag = nil
 		if reduceMotion { velocity = .zero }

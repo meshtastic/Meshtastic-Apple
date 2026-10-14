@@ -45,6 +45,8 @@ struct ShowcaseSpace: View {
 			}
 			Task { await scene.loadDisplaysIfReady() }
 		} update: { _, attachments in
+			// Before placing cards, so a card beside a held-up model follows a seated/standing switch.
+			scene.setSeated(seated)
 			if let panel = attachments.entity(for: Attachments.controls) {
 				placeControls(panel)
 			}
@@ -155,8 +157,8 @@ struct ShowcaseSpace: View {
 				let offset = value.convert(value.translation3D, from: .local, to: .scene)
 				scene.inspector.drag(offset: SIMD2(offset.x, offset.y), at: value.time.timeIntervalSinceReferenceDate)
 			}
-			.onEnded { _ in
-				scene.inspector.endDrag()
+			.onEnded { value in
+				scene.inspector.endDrag(at: value.time.timeIntervalSinceReferenceDate)
 			}
 	}
 

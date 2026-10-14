@@ -42,6 +42,19 @@ struct ShowcaseSpinTests {
 		for _ in 0..<200 { spin.step(0.05) }
 		#expect(!spin.isMoving)
 
+		// A hand that stopped before letting go doesn't flick it.
+		var stopped = ShowcaseSpin()
+		stopped.drag(offset: .zero, at: 0)
+		stopped.drag(offset: SIMD2(0.05, 0), at: 0.05)
+		stopped.endDrag(reduceMotion: false, at: 0.5)
+		#expect(!stopped.isMoving)
+
+		// However hard the flick, it spins no faster than the cap.
+		var hard = ShowcaseSpin()
+		hard.drag(offset: .zero, at: 0)
+		hard.drag(offset: SIMD2(5, 0), at: 0.01)
+		#expect(simd_length(hard.velocity) <= ShowcaseSpin.maxSpeed + 1e-4)
+
 		var still = ShowcaseSpin()
 		still.drag(offset: .zero, at: 0)
 		still.drag(offset: SIMD2(0.05, 0), at: 0.05)
