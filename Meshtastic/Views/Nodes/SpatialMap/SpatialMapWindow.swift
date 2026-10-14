@@ -127,7 +127,7 @@ struct SpatialMapWindow: View {
 		let index = arguments.indices.contains(flagIndex + 1) ? Int(arguments[flagIndex + 1]) ?? 0 : 0
 		var waited = 0
 		while model.routes.count <= index || model.placement == nil, waited < 60 {
-			try? await Task.sleep(for: .seconds(1))
+			guard (try? await Task.sleep(for: .seconds(1))) != nil else { return }
 			waited += 1
 		}
 		guard model.routes.indices.contains(index) else { return }
@@ -135,7 +135,7 @@ struct SpatialMapWindow: View {
 		Logger.services.info("🧪 [Spatial] Showing route \(route.id, privacy: .public) (launch argument)")
 		if arguments.contains("--meshtastic-spatial-route-zoom"), let relay = route.layout.badges.first?.num ?? route.layout.targetNum {
 			model.zoomIn(on: relay)
-			try? await Task.sleep(for: .seconds(4))
+			guard (try? await Task.sleep(for: .seconds(4))) != nil else { return }
 		}
 		model.shownRoute = route
 		traffic.startFlyover(route, speed: 10)
