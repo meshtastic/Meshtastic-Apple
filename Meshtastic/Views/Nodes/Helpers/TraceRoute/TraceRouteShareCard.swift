@@ -43,16 +43,18 @@ struct TraceRouteShareCard: View {
 	private typealias Style = TraceRouteShareStyle
 
 	var body: some View {
-		VStack(alignment: .leading, spacing: 14) {
-			header
-			stats
-			if let map = model.map, let mapImage {
-				TraceRouteShareMap(frame: map, image: mapImage, legs: model.legs)
+		VStack(alignment: .leading, spacing: 0) {
+			VStack(alignment: .leading, spacing: 14) {
+				header
+				stats
+				if let map = model.map, let mapImage {
+					TraceRouteShareMap(frame: map, image: mapImage, legs: model.legs)
+				}
+				chains
 			}
-			chains
-			Spacer(minLength: 0)
+			// Kept out of the stack above so its spacing doesn't add a gap on top of the spacer's.
+			Spacer(minLength: 16)
 			footer
-				.padding(.top, -4)
 		}
 		.padding(Style.margin)
 		.frame(width: Style.width, alignment: .topLeading)
@@ -327,6 +329,8 @@ struct TraceRouteShareNodeCircle: View {
 				.frame(width: size, height: size)
 			} else {
 				CircleText(text: stop.shortName, color: Color(UIColor(hex: UInt32(truncatingIfNeeded: stop.num))), circleSize: size)
+					// A faint edge so a dark node color still shows against the dark card.
+					.overlay(Circle().strokeBorder(Color.white.opacity(0.22), lineWidth: 1))
 			}
 		}
 		.overlay {
@@ -488,11 +492,6 @@ struct TraceRouteShareMap: View {
 				drawSegments(in: &context)
 			}
 			.frame(width: frame.size.width, height: frame.size.height)
-			// Only the forward SNRs go on the map; the return ones are in its chain below.
-			ForEach(frame.layout.visibleLabels(in: visibleRect).filter { !$0.isBack }, id: \.id) { label in
-				snrLabel(label.snr, color: color(snr: label.snr))
-					.position(frame.point(for: label.coordinate))
-			}
 			ForEach(relayCoordinates, id: \.num) { relay in
 				Circle()
 					.fill(Color(UIColor(hex: UInt32(truncatingIfNeeded: relay.num))))
@@ -505,6 +504,10 @@ struct TraceRouteShareMap: View {
 					.position(frame.point(for: badge.coordinate))
 					.offset(x: 11, y: badge.isBack ? 11 : -11)
 			}
+			ForEach(forwardLabels, id: \.id) { label in
+				snrLabel(label.snr, color: color(snr: label.snr))
+					.position(frame.point(for: label.coordinate))
+			}
 			ForEach(endpoints, id: \.stop.num) { endpoint in
 				TraceRouteShareNodeCircle(stop: endpoint.stop, size: 24, ring: endpoint.ring)
 					.shadow(color: .black.opacity(0.5), radius: 3, y: 1)
@@ -514,6 +517,37 @@ struct TraceRouteShareMap: View {
 		.frame(width: frame.size.width, height: frame.size.height)
 		.clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
 		.overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(TraceRouteShareStyle.panelBorder))
+	}
+
+	/// Rough size of an SNR label, for checking it doesn't cover a circle or badge.
+	private static let labelSize = CGSize(width: 50, height: 15)
+
+	/// Only the forward SNRs go on the map; the return ones are in its chain below. With no return
+	/// label to make room for, each sits at the middle of its leg. A label that would cover an
+	/// endpoint, relay dot or hop badge is left off; every SNR is in the hop chains anyway.
+	private var forwardLabels: [TraceRouteMapLayout.Label] {
+		let obstacles: [(center: CGPoint, radius: CGFloat)] =
+			endpoints.map { (frame.point(for: $0.coordinate), 15) }
+			+ relayCoordinates.map { (frame.point(for: $0.coordinate), 6) }
+			+ frame.layout.visibleBadges(in: visibleRect).map { badge in
+				let point = frame.point(for: badge.coordinate)
+				return (CGPoint(x: point.x + 11, y: point.y + (badge.isBack ? 11 : -11)), 8)
+			}
+		return frame.layout.visibleLabels(in: visibleRect).filter { !$0.isBack }.compactMap { label in
+			guard let segment = frame.layout.segments.first(where: { $0.id == label.id }) else { return nil }
+			let start = MKMapPoint(segment.from), end = MKMapPoint(segment.to)
+			let middle = MKMapPoint(x: (start.x + end.x) / 2, y: (start.y + end.y) / 2)
+			let center = frame.point(for: middle.coordinate)
+			let box = CGRect(
+				x: center.x - Self.labelSize.width / 2,
+				y: center.y - Self.labelSize.height / 2,
+				width: Self.labelSize.width,
+				height: Self.labelSize.height
+			)
+			let covers = obstacles.contains { box.insetBy(dx: -$0.radius, dy: -$0.radius).contains($0.center) }
+			guard !covers else { return nil }
+			return TraceRouteMapLayout.Label(id: label.id, isBack: false, snr: label.snr, coordinate: middle.coordinate, length: label.length)
+		}
 	}
 
 	private var preset: ModemPresets { ModemPresets(rawValue: UserDefaults.modemPreset) ?? .longFast }
