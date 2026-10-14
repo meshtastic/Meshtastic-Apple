@@ -313,6 +313,9 @@
     "%lld radios" : {
       "comment" : "Ham shack: how many radios are in the room"
     },
+    "Enter Shack" : {
+      "comment" : "Spatial map: open the ham shack immersive space, closing this volume"
+    },
     "Ham Shack" : {
       "comment" : "Ham shack: title of the immersive space's control panel"
     },

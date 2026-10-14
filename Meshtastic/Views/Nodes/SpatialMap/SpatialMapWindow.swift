@@ -18,6 +18,7 @@ struct SpatialMapWindow: View {
 	@Environment(\.modelContext) private var context
 	@Environment(\.dismissWindow) private var dismissWindow
 	@Environment(\.openWindow) private var openWindow
+	@Environment(\.openImmersiveSpace) private var openImmersiveSpace
 	@Environment(\.scenePhase) private var scenePhase
 	@Environment(\.physicalMetrics) private var metrics
 	@StateObject private var nodeFilters = NodeFilterParameters()
@@ -66,7 +67,8 @@ struct SpatialMapWindow: View {
 			SpatialMapOrnament(
 				model: model, traffic: traffic, mapLayer: $mapLayer, darkMap: $darkMap, showContours: $showContours,
 				showLabels: $showLabels, showLinks: $showLinks, showTraffic: $showTraffic, autoTerrain: $autoTerrain,
-				coverageMode: $coverageMode, coverageOpacity: $coverageOpacity
+				coverageMode: $coverageMode, coverageOpacity: $coverageOpacity,
+				onEnterShack: enterShack
 			)
 		}
 		.task(id: refreshKey) {
@@ -201,6 +203,16 @@ struct SpatialMapWindow: View {
 		}
 	}
 
+	/// Opens the ham shack and, once it is showing, closes this volume: the shack is one space,
+	/// and the map moves onto its desk.
+	private func enterShack() {
+		Task {
+			if await HamShackScene.open(openImmersiveSpace, appState: appState) {
+				dismissWindow(id: SpatialMapScene.id)
+			}
+		}
+	}
+
 	private func claimFocus() {
 		guard let nodeNum = appState.claimSpatialMapFocus() else { return }
 		model.focus(on: nodeNum)
@@ -241,6 +253,7 @@ struct SpatialMapOrnament: View {
 	@Binding var autoTerrain: Bool
 	@Binding var coverageMode: SpatialCoverageMode
 	@Binding var coverageOpacity: Double
+	let onEnterShack: () -> Void
 	@ObservedObject private var offline = OfflineMapManager.shared
 	@State private var confirmingTerrainDownload = false
 
@@ -320,6 +333,12 @@ struct SpatialMapOrnament: View {
 				.accessibilityLabel(String(localized: "Reset zoom", comment: "Spatial map: button showing how far the map is zoomed in; tapping it zooms back out to the whole mesh"))
 				.accessibilityValue(Text(verbatim: "\(model.zoom.formatted(.number.precision(.fractionLength(0...1))))×"))
 			}
+
+			Button(action: onEnterShack) {
+				Image(systemName: "door.left.hand.open")
+			}
+			.help(String(localized: "Enter Shack", comment: "Spatial map: open the ham shack immersive space, closing this volume"))
+			.accessibilityLabel(String(localized: "Enter Shack", comment: "Spatial map: open the ham shack immersive space, closing this volume"))
 
 			Divider().frame(height: 20)
 
