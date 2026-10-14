@@ -175,6 +175,17 @@ Tap **▶** in the route banner for a guided 3D flythrough over satellite imager
 
 Tap the **legend** button (map icon, bottom-right) for a key to the colors and markers.
 
+### On the spatial map (Apple Vision Pro)
+
+On the 3D spatial map, tap the **airplane** button in the toolbar and pick a trace route. A marker flies the route, and the route stays drawn on the terrain after it lands so you can read it. Tap **✕** in the toolbar to clear it.
+
+- **Forward and return** — the forward path toward the target is a **solid blue** line and the return path back to the originator is a **dashed green** line, the same colors as the Forward route and Return route headings in the hop timeline. Each has a dark edge so it stands out on the terrain. Where both paths use the same leg, the two lines sit side by side.
+- **Arrows** — small cones along each line, a shade lighter than the line, point in the direction of travel and drift slowly along it. They stay still when **Reduce Motion** is on.
+- **Endpoints** — the originator has a **green** ring at its foot and the target a **white** ring.
+- **Hop numbers** — each relay gets a numbered badge beside its pin, in the order the packet reached it: filled blue on the way out, a green ring on the way back.
+- **Signal labels** — each leg shows its SNR (for example "7.0 dB") in a small pill colored by signal quality. A forward leg whose SNR wasn't reported is drawn with short dashes and has no label. Labels that would crowd each other are hidden; zoom in to see more.
+- While a route is shown, the traceroute links between nodes are faded so the route stands out, and the toolbar shows a key to the two line colors.
+
 ## Node Trail
 
 When a node has reported multiple positions over time, a trail line connects the historical positions on the map, showing the node's path.

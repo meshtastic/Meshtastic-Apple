@@ -29,7 +29,16 @@ struct SpatialRouteSnapshot: Identifiable, Equatable, Sendable {
 	let time: Date?
 	let forward: [Point]
 	let back: [Point]
+	/// The styled legs, endpoints and numbered relays drawn once the route is picked.
+	var layout: SpatialRouteLayout = .empty
 	var hasPath: Bool { forward.count >= 2 }
+
+	/// Where each node on the route was when it was traced.
+	var pointsByNum: [Int64: Point] {
+		var points: [Int64: Point] = [:]
+		for point in forward + back where points[point.num] == nil { points[point.num] = point }
+		return points
+	}
 }
 
 /// One node-to-node link seen in a traceroute, with the latest SNR heard in each direction.
@@ -67,7 +76,13 @@ enum SpatialRouteSource {
 			}
 			guard forward.count >= 2 else { return nil }
 			let name = route.node?.user?.longName ?? route.toNum.toHex()
-			return SpatialRouteSnapshot(id: route.id, fromNum: route.fromNum, toNum: route.toNum, targetName: name, time: route.time, forward: forward, back: back)
+			// The preset only grades signal quality, which the layout doesn't use.
+			let legs = TraceRouteLegs(route: route, preset: .longFast, lookup: { _ in nil })
+			let layout = SpatialRouteLayout(legs: legs, positions: byNum.compactMapValues { $0.coordinate })
+			return SpatialRouteSnapshot(
+				id: route.id, fromNum: route.fromNum, toNum: route.toNum, targetName: name, time: route.time,
+				forward: forward, back: back, layout: layout
+			)
 		}
 	}
 

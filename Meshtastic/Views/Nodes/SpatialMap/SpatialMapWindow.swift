@@ -111,7 +111,44 @@ struct SpatialMapWindow: View {
 			}
 		}
 		.trackScreen(.spatialMap)
+		#if DEBUG
+		.task { await showRouteForScreenshots() }
+		#endif
 	}
+
+	#if DEBUG
+	/// Simulator screenshots: `--meshtastic-spatial-route [index]` flies the newest trace route
+	/// with positions (or the one at `index`) at high speed and leaves it drawn.
+	/// `--meshtastic-spatial-route-zoom` zooms in on its first relay first, and
+	/// `--meshtastic-spatial-tilt <degrees>` tips the table toward the camera.
+	private func showRouteForScreenshots() async {
+		let arguments = ProcessInfo.processInfo.arguments
+		guard let flagIndex = arguments.firstIndex(of: "--meshtastic-spatial-route") else { return }
+		let index = arguments.indices.contains(flagIndex + 1) ? Int(arguments[flagIndex + 1]) ?? 0 : 0
+		var waited = 0
+		while model.routes.count <= index || model.placement == nil, waited < 60 {
+			guard (try? await Task.sleep(for: .seconds(1))) != nil else { return }
+			waited += 1
+		}
+		guard model.routes.indices.contains(index) else { return }
+		let route = model.routes[index]
+		Logger.services.info("🧪 [Spatial] Showing route \(route.id, privacy: .public) (launch argument)")
+		if arguments.contains("--meshtastic-spatial-route-zoom"), let relay = route.layout.badges.first?.num ?? route.layout.targetNum {
+			model.zoomIn(on: relay)
+			guard (try? await Task.sleep(for: .seconds(4))) != nil else { return }
+		}
+		model.shownRoute = route
+		traffic.startFlyover(route, speed: 10)
+		// The simulator's camera looks at the table edge on; tip it toward the viewer.
+		if let tiltIndex = arguments.firstIndex(of: "--meshtastic-spatial-tilt"), arguments.indices.contains(tiltIndex + 1),
+		   let degrees = Float(arguments[tiltIndex + 1]) {
+			scene.root.orientation = simd_quatf(angle: degrees * .pi / 180, axis: [1, 0, 0])
+			// Smaller and lifted so the near edge, now lower, stays inside the volume.
+			scene.root.scale = SIMD3(repeating: 0.75)
+			scene.model.position.y += 0.45 * sin(degrees * .pi / 180)
+		}
+	}
+	#endif
 
 	private func points(_ meters: Double) -> CGFloat {
 		metrics.convert(CGFloat(meters), from: .meters)
@@ -225,13 +262,15 @@ struct SpatialMapOrnament: View {
 			Toggle(isOn: $showTraffic) { Image(systemName: "dot.radiowaves.left.and.right") }
 				.accessibilityLabel(String(localized: "Live traffic", comment: "VoiceOver label for the spatial map traffic toggle"))
 
-			if traffic.isFlying {
+			if model.shownRoute != nil {
 				Button {
 					traffic.stopFlyover()
+					model.shownRoute = nil
 				} label: {
-					Image(systemName: "stop.fill")
+					Image(systemName: "xmark")
 				}
-				.accessibilityLabel(String(localized: "Stop flyover", comment: "VoiceOver label to stop the spatial map traceroute flyover"))
+				.help(String(localized: "Clear trace route", comment: "VoiceOver label for the clear trace route button"))
+				.accessibilityLabel(String(localized: "Clear trace route", comment: "VoiceOver label for the clear trace route button"))
 			} else {
 				Menu {
 					if model.routes.isEmpty {
@@ -239,6 +278,7 @@ struct SpatialMapOrnament: View {
 					}
 					ForEach(model.routes.prefix(12)) { route in
 						Button {
+							model.shownRoute = route
 							traffic.startFlyover(route)
 						} label: {
 							Text(verbatim: "\(route.targetName) · \(route.time?.formatted(date: .abbreviated, time: .shortened) ?? "")")
@@ -294,6 +334,9 @@ struct SpatialMapOrnament: View {
 				if model.outsideCount > 0 {
 					Text("· \(model.outsideCount) outside", comment: "Spatial map: nodes too far away to fit on the terrain")
 						.foregroundStyle(.secondary)
+				}
+				if model.shownRoute != nil {
+					SpatialRouteLegend()
 				}
 				if !model.coverageLegend.isEmpty {
 					SpatialCoverageLegendStrip(entries: model.coverageLegend)
@@ -418,6 +461,30 @@ struct SpatialMapOrnament: View {
 		let size = "\(Measurement(value: area.width, unit: UnitLength.meters).formatted(style)) × \(Measurement(value: area.height, unit: UnitLength.meters).formatted(style))"
 		let bytes = ByteCountFormatter.string(fromByteCount: SpatialTerrainAutoDecision.estimatedBytes(target), countStyle: .file)
 		return String(localized: "Downloads about \(bytes) of elevation data for a \(size) area around the mesh.", comment: "Spatial map: terrain download confirmation; the arguments are the download size, e.g. 40 MB, and the area's width × height, e.g. 98 km × 104 km")
+	}
+}
+
+/// The route colors in the ornament while a route is shown: solid blue out, dashed green back.
+struct SpatialRouteLegend: View {
+	var body: some View {
+		HStack(spacing: 4) {
+			Divider().frame(height: 14)
+			line(dashed: false, color: TraceRouteColors.forward)
+			Text("Forward route", comment: "Trace route timeline: heading for the path towards the target")
+			line(dashed: true, color: TraceRouteColors.back)
+			Text("Return route", comment: "Trace route timeline: heading for the path back from the target")
+		}
+		.accessibilityElement(children: .combine)
+	}
+
+	private func line(dashed: Bool, color: Color) -> some View {
+		Path { path in
+			path.move(to: CGPoint(x: 1, y: 3))
+			path.addLine(to: CGPoint(x: 17, y: 3))
+		}
+		.stroke(color, style: StrokeStyle(lineWidth: 3, lineCap: .round, dash: dashed ? [3, 3] : []))
+		.frame(width: 18, height: 6)
+		.environment(\.colorScheme, .dark)
 	}
 }
 

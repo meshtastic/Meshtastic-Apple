@@ -40,6 +40,7 @@ struct SpatialMapView: View {
 					traffic.step(deltaTime: event.deltaTime)
 					scene.stepWheel(deltaTime: event.deltaTime)
 					scene.stepBeacons(deltaTime: event.deltaTime)
+					scene.route.step(deltaTime: event.deltaTime)
 				}
 			} update: { content, attachments in
 				_ = volumeSize
@@ -50,7 +51,8 @@ struct SpatialMapView: View {
 				scene.apply(nodes: model.nodes)
 				scene.apply(target: liveZoom.flatMap { model.circle(forZoom: $0) } ?? model.targetCircle)
 				traffic.applyBaseGlow()
-				scene.apply(links: showLinks ? model.links : [], preset: preset)
+				scene.apply(links: showLinks ? model.links : [], preset: preset, dimmed: model.shownRoute != nil)
+				scene.apply(route: model.shownRoute, attachments: attachments, attachmentIDs: routeAttachmentIDs)
 				scene.apply(labels: model.labeledNodeNums, attachments: attachments)
 				scene.apply(selection: model.selectedNodeNum, attachments: attachments)
 			} attachments: {
@@ -60,6 +62,18 @@ struct SpatialMapView: View {
 							SpatialNodeLabel(node: node, isSelected: num == model.selectedNodeNum) {
 								model.select(num)
 							}
+						}
+					}
+				}
+				if let route = model.shownRoute {
+					ForEach(route.layout.badges) { badge in
+						Attachment(id: SpatialRouteDrawing.badgeAttachmentID(badge.id)) {
+							SpatialRouteHopBadge(number: badge.number, isBack: badge.isBack)
+						}
+					}
+					ForEach(route.layout.segments.filter { $0.snr != nil }) { segment in
+						Attachment(id: SpatialRouteDrawing.pillAttachmentID(segment.id)) {
+							SpatialRouteSnrPill(snr: segment.snr ?? 0, color: getSnrColor(snr: segment.snr ?? 0, preset: preset))
 						}
 					}
 				}
@@ -91,6 +105,12 @@ struct SpatialMapView: View {
 				if !pinching { endPinch() }
 			}
 		}
+	}
+
+	private var routeAttachmentIDs: [String] {
+		guard let layout = model.shownRoute?.layout else { return [] }
+		return layout.badges.map { SpatialRouteDrawing.badgeAttachmentID($0.id) }
+			+ layout.segments.filter { $0.snr != nil }.map { SpatialRouteDrawing.pillAttachmentID($0.id) }
 	}
 
 	private var tap: some Gesture {
