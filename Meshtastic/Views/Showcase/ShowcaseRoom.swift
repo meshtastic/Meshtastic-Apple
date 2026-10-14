@@ -64,7 +64,7 @@ struct ShowcaseRoom {
 	private static let storeWhite = UIColor(red: 1.0, green: 0.97, blue: 0.93, alpha: 1)
 
 	/// Bright, even store light: a soft key from overhead that casts the models' shadows on the
-	/// tables, a light over each table, and a white room for reflections.
+	/// tables, a light over each table, and the room's colors for reflections.
 	private func addLighting() async {
 		let key = Entity()
 		key.name = "KeyLight"
@@ -98,8 +98,8 @@ struct ShowcaseRoom {
 		}
 	}
 
-	/// A small equirectangular image of a bright white room: a glowing ceiling, white walls around
-	/// the horizon, and the pale floor below.
+	/// A small equirectangular image of the room: a glowing white ceiling, Meshtastic green walls
+	/// around the horizon, and the pale floor below.
 	private static func environmentImage() -> CGImage? {
 		let width = 64, height = 32
 		let renderer = UIGraphicsImageRenderer(size: CGSize(width: width, height: height), format: {
@@ -110,8 +110,8 @@ struct ShowcaseRoom {
 		let image = renderer.image { context in
 			let colors = [
 				UIColor(white: 1.0, alpha: 1).cgColor,
-				UIColor(white: 0.93, alpha: 1).cgColor,
-				UIColor(white: 0.88, alpha: 1).cgColor,
+				UIColor(red: 0.40, green: 0.92, blue: 0.58, alpha: 1).cgColor,
+				UIColor(red: 0.36, green: 0.84, blue: 0.53, alpha: 1).cgColor,
 				UIColor(red: 0.74, green: 0.72, blue: 0.68, alpha: 1).cgColor
 			] as CFArray
 			guard let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: colors, locations: [0, 0.4, 0.55, 1]) else { return }
@@ -143,7 +143,7 @@ struct ShowcaseRoom {
 		floor.position = SIMD3<Float>(0, -0.01, (ShowcaseRoomGeometry.backWallZ + 1) / 2)
 		let wall = ModelEntity(
 			mesh: .generateBox(width: ShowcaseRoomGeometry.width, height: ShowcaseRoomGeometry.height, depth: 0.06),
-			materials: [SimpleMaterial(color: UIColor(white: 0.94, alpha: 1), roughness: 0.85, isMetallic: false)]
+			materials: [SimpleMaterial(color: UIColor(red: 0.404, green: 0.918, blue: 0.580, alpha: 1), roughness: 0.85, isMetallic: false)]
 		)
 		wall.position = SIMD3<Float>(0, ShowcaseRoomGeometry.height / 2, ShowcaseRoomGeometry.backWallZ - 0.03)
 		room.addChild(floor)

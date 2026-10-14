@@ -4,7 +4,7 @@
     doc = """The hardware showcase room for the visionOS immersive space. Our own asset, written by hand.
 
     Units are meters, Y is up. The origin is on the floor where the viewer sits, facing -Z.
-    A bright store-style room: two maple display tables in front of the viewer, the nearer one
+    A bright store-style room with Meshtastic green walls: two maple display tables in front of the viewer, the nearer one
     with a low riser along its back, the wall rack on the right wall (x = +1.7), and the back
     wall at z = -2.6. The side behind the viewer is open.
 
@@ -37,12 +37,12 @@ def Xform "Root"
         }
         def Material "Wall"
         {
-            # Store white.
+            # Meshtastic green, Green 500 (#67EA94), in linear color.
             token outputs:surface.connect = </Root/Materials/Wall/Surface.outputs:surface>
             def Shader "Surface"
             {
                 uniform token info:id = "UsdPreviewSurface"
-                color3f inputs:diffuseColor = (0.94, 0.94, 0.93)
+                color3f inputs:diffuseColor = (0.136, 0.823, 0.296)
                 float inputs:roughness = 0.85
                 float inputs:metallic = 0.0
                 token outputs:surface
