@@ -5,11 +5,11 @@
 
     Units are meters, Y is up. The origin is on the floor where the viewer sits, facing -Z.
     A bright store-style room with Meshtastic green walls: two maple display tables in front of the viewer, the nearer one
-    with a low riser along its back, the wall rack on the right wall (x = +1.7), and the back
-    wall at z = -2.6. The side behind the viewer is open.
+    with a low riser along its back, and the back wall at z = -2.6 with the wall rack hung on
+    it above the back table. The side behind the viewer is open.
 
     Shapes are unit cubes scaled to size. Lights are added in code. The Anchor_* prims are empty and are read by name in ShowcaseRoom.load(). Their local +Z
-    points toward the viewer (out of the wall for the rack), and +Y is up. Keep
+    points toward the viewer, and +Y is up. Keep
     ShowcaseRoomGeometry.swift in step when one moves."""
     metersPerUnit = 1
     upAxis = "Y"
@@ -266,7 +266,8 @@ def Xform "Root"
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
     }
     # ------------------------------------------------------------------------------------------
-    # Wall rack on the right wall: a dark panel, 1.75 m wide and 1.65 m high.
+    # Wall rack on the back wall above the back table, hung like a picture: a dark panel
+    # in a maple frame.
     # ------------------------------------------------------------------------------------------
     def Cube "Rack_Panel" (
         prepend apiSchemas = ["MaterialBindingAPI"]
@@ -274,13 +275,52 @@ def Xform "Root"
     {
         double size = 1
         rel material:binding = </Root/Materials/RackPanel>
-        float3 xformOp:translate = (1.68, 1.3, -0.2)
-        float3 xformOp:scale = (0.04, 1.65, 1.75)
+        float3 xformOp:translate = (0, 2.025, -2.58)
+        float3 xformOp:scale = (2.8, 1.25, 0.04)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+    def Cube "RackFrame_Top" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        double size = 1
+        rel material:binding = </Root/Materials/Maple>
+        float3 xformOp:translate = (0, 2.67, -2.57)
+        float3 xformOp:scale = (2.88, 0.04, 0.06)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+    def Cube "RackFrame_Bottom" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        double size = 1
+        rel material:binding = </Root/Materials/Maple>
+        float3 xformOp:translate = (0, 1.38, -2.57)
+        float3 xformOp:scale = (2.88, 0.04, 0.06)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+    def Cube "RackFrame_Left" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        double size = 1
+        rel material:binding = </Root/Materials/Maple>
+        float3 xformOp:translate = (-1.42, 2.025, -2.57)
+        float3 xformOp:scale = (0.04, 1.25, 0.06)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+    def Cube "RackFrame_Right" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        double size = 1
+        rel material:binding = </Root/Materials/Maple>
+        float3 xformOp:translate = (1.42, 2.025, -2.57)
+        float3 xformOp:scale = (0.04, 1.25, 0.06)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
     }
     # ------------------------------------------------------------------------------------------
     # Anchors. Empty; code places models, panels and lights at them.
-    # Orient is (w, x, y, z): ±90° about Y turns +Z to face out of the side walls.
     # ------------------------------------------------------------------------------------------
     def Xform "Anchor_TableFront"
     {
@@ -296,9 +336,8 @@ def Xform "Root"
     }
     def Xform "Anchor_WallRack"
     {
-        # Center of the rack panel's face, facing -X into the room.
-        float3 xformOp:translate = (1.655, 1.3, -0.2)
-        quatf xformOp:orient = (0.70710677, 0, -0.70710677, 0)
-        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+        # Center of the rack panel's face, facing +Z into the room.
+        float3 xformOp:translate = (0, 2.025, -2.555)
+        uniform token[] xformOpOrder = ["xformOp:translate"]
     }
 }

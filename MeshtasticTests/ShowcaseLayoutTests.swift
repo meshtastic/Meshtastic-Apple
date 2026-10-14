@@ -134,7 +134,8 @@ struct ShowcaseLayoutTests {
 		#expect(grid.pitch >= 0.06 * distance)
 		#expect(Float(grid.columns) * grid.pitch <= ShowcaseRoomGeometry.rackSize.x)
 		#expect(Float(grid.rows) * grid.pitch <= ShowcaseRoomGeometry.rackSize.y)
-		#expect(grid.perPage > 100)
+		// Hung on the back wall it is further away, so its cells are bigger and fewer.
+		#expect(grid.perPage > 60)
 		for index in [0, grid.columns - 1, grid.perPage / 2, grid.perPage - 1] {
 			#expect(grid.cell(at: grid.center(ofCellOnPage: index)) == index)
 		}
@@ -152,7 +153,7 @@ struct ShowcaseLayoutTests {
 		#expect(radio.position.x > 0.5)
 		#expect(radio.position.z > table.position.z)
 		let rack = ShowcasePlacement.pose(of: .rack(0), grid: grid, anchor: ShowcaseRoomGeometry.defaultPose)
-		// The rack is on the right wall, so its cells share the anchor's x.
-		#expect(abs(rack.position.x - ShowcaseRoomGeometry.defaultPose(.wallRack).position.x) < 1e-4)
+		// The rack hangs on the back wall, so its cells share the anchor's depth.
+		#expect(abs(rack.position.z - ShowcaseRoomGeometry.defaultPose(.wallRack).position.z) < 1e-4)
 	}
 }

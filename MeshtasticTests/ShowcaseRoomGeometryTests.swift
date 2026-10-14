@@ -32,10 +32,10 @@ struct ShowcaseRoomGeometryTests {
 		#expect(resolved.poses.count == ShowcaseAnchor.allCases.count)
 	}
 
-	@Test("The rack faces into the room and the tables toward the viewer")
+	@Test("The rack and the tables face the viewer")
 	func facing() {
 		let rack = ShowcaseRoomGeometry.defaultPose(.wallRack).forward
-		#expect(abs(rack.x + 1) < 1e-4)
+		#expect(abs(rack.z - 1) < 1e-4)
 		#expect(abs(ShowcaseRoomGeometry.defaultPose(.tableFront).forward.z - 1) < 1e-4)
 	}
 
