@@ -18,10 +18,10 @@ struct ShackNodeComponent: Component {
 /// Marks the wall rack's panel; a tap on it is turned into a cell from where it landed.
 struct ShackRackComponent: Component {}
 
-/// Owns the shack's entities: the room, a device per node on the desk and shelves, and the wall
-/// rack, whose cells are one mesh colored by a small texture, one texel per cell. Takes the
-/// reader's snapshots, places them with `ShackLayout`, glows senders as packets arrive, and
-/// keeps the state the control panel and card show.
+/// Owns the shack's entities: the room, the connected radio on the desk, the device showroom on
+/// the shelves, and the wall rack, whose cells are one mesh colored by a small texture, one texel
+/// per cell. Takes the reader's snapshots, places them with `ShackLayout`, glows senders as
+/// packets arrive, and keeps the state the control panel and cards show.
 @MainActor @Observable
 final class ShackSceneController {
 	/// Everything that moves with the seated/standing setting: the room and what is in it.
@@ -40,6 +40,9 @@ final class ShackSceneController {
 	@ObservationIgnored private var clock: TimeInterval = 0
 	@ObservationIgnored var updateSubscription: EventSubscription?
 	@ObservationIgnored private var labelMaterials: [Style: UnlitMaterial] = [:]
+	/// The device models on the shelves.
+	let showroom = ShackShowroomShelves()
+	@ObservationIgnored private var showroomHardware: [ShackHardwareRecord]?
 
 	/// The nodes from the last read, by number.
 	private(set) var nodesByNum: [Int64: ShackNodeSnapshot] = [:]
@@ -50,29 +53,36 @@ final class ShackSceneController {
 	private(set) var overflowCount = 0
 	private(set) var page = 0
 	private(set) var hasConnectedRadio = false
-	var selected: Int64?
+	/// The node whose card is open.
+	var selected: Int64? {
+		didSet { if selected != nil, selectedItem != nil { selectedItem = nil } }
+	}
+	/// The showroom model whose card is open.
+	var selectedItem: String? {
+		didSet { if selectedItem != nil, selected != nil { selected = nil } }
+	}
 	var isHighTraffic = false
 	var reduceMotion = false
 	var preset: ModemPresets = .longFast
 
-	/// Scale of a device on each tier: the connected radio stands out, favorites a little.
-	static func scale(for tier: ShackTier) -> Float {
-		switch tier {
-		case .deskRadio: 1.6
-		case .desk: 1.15
-		case .shelf, .rack: 1
-		}
-	}
+	/// The stand-in box for a connected radio with no model is drawn larger so it reads from the
+	/// chair; a real model stays real size.
+	static let standInScale: Float = 1.6
 
 	private struct Hero {
 		let holder: Entity
-		let device: ModelEntity
-		let label: ModelEntity
+		let device: Entity
+		/// The short name on a stand-in box's screen; a real model has its own face.
+		let label: ModelEntity?
 		let halo: ModelEntity
+		/// The model shown, or nil for the stand-in box.
+		let modelName: String?
 		var archetype: ShackDeviceArchetype
 		var slot: ShackSlot
 		var baseGlow: Float
 		var style: Style
+		/// Top of the device above the desk, in meters.
+		var height: Float
 	}
 
 	private struct Style: Hashable {
@@ -100,6 +110,7 @@ final class ShackSceneController {
 		let grid = ShackRackGrid.forRoom(rack: rackPose)
 		layout = ShackLayout(grid: grid)
 		buildRack(grid: grid)
+		world.addChild(showroom.root)
 		if !nodesByNum.isEmpty { relayout(now: Date(), force: true) }
 	}
 
@@ -119,7 +130,13 @@ final class ShackSceneController {
 	/// Lets a device or the rack pick up the room's warm environment light, as the room does.
 	private func receiveRoomLight(_ entity: Entity) {
 		guard let light = room?.root.findEntity(named: ShackRoom.environmentLightName) else { return }
-		entity.components.set(ImageBasedLightReceiverComponent(imageBasedLight: light))
+		var pending = [entity]
+		while let next = pending.popLast() {
+			if next.components.has(ModelComponent.self) {
+				next.components.set(ImageBasedLightReceiverComponent(imageBasedLight: light))
+			}
+			pending += next.children
+		}
 	}
 
 	// MARK: Nodes
@@ -177,15 +194,15 @@ final class ShackSceneController {
 		for (num, slot) in wanted {
 			guard let node = nodesByNum[num] else { continue }
 			let archetype = ShackDeviceArchetype(hwModel: node.hwModel, role: node.role)
-			var hero = heroes[num] ?? makeHero(node, archetype: archetype, slot: slot)
-			if hero.archetype != archetype {
+			let modelName = deskModelName(for: node)
+			var hero = heroes[num] ?? makeHero(node, archetype: archetype, modelName: modelName, slot: slot)
+			if hero.archetype != archetype || hero.modelName != modelName {
 				hero.holder.removeFromParent()
-				hero = makeHero(node, archetype: archetype, slot: slot)
+				hero = makeHero(node, archetype: archetype, modelName: modelName, slot: slot)
 			}
 			let pose = ShackPlacement.pose(of: slot, grid: layout.grid, anchor: room.pose)
 			hero.holder.position = pose.position
 			hero.holder.orientation = pose.orientation
-			hero.holder.scale = SIMD3(repeating: Self.scale(for: slot.tier))
 			hero.slot = slot
 			let style = Style(shortName: node.shortName, isOnline: layout.isOnline(num))
 			if style != hero.style { styleHero(&hero, node: node, style: style) }
@@ -198,38 +215,55 @@ final class ShackSceneController {
 		}
 	}
 
-	private func makeHero(_ node: ShackNodeSnapshot, archetype: ShackDeviceArchetype, slot: ShackSlot) -> Hero {
+	/// The model for the connected radio's hardware, once it has loaded.
+	private func deskModelName(for node: ShackNodeSnapshot) -> String? {
+		showroom.modelName(forHardwareSlug: node.hwModel)
+	}
+
+	private func makeHero(_ node: ShackNodeSnapshot, archetype: ShackDeviceArchetype, modelName: String?, slot: ShackSlot) -> Hero {
 		let holder = Entity()
 		holder.name = "node-\(node.id)"
+		let halo = ModelEntity(mesh: ShackDeviceMeshes.haloMesh, materials: [UnlitMaterial(color: Self.nodeColor(node.id))])
+		halo.position = [0, 0.002, 0]
+		halo.components.set(OpacityComponent(opacity: 0))
+		holder.addChild(halo)
+		heroContainer.addChild(holder)
+		if let modelName, let template = showroom.template(named: modelName) {
+			// The radio's own model at real size, standing on the desk; it can be picked up too.
+			let device = template.clone(recursive: true)
+			// The clone is the radio, not the shelf's example: its taps open the node's card.
+			device.components.remove(ShackShowroomComponent.self)
+			let height = ShackShowroomShelves.stand(device, in: holder)
+			device.components.set(ShackNodeComponent(nodeNum: node.id))
+			device.components.set(Self.accessibility(for: node, isOnline: false))
+			receiveRoomLight(device)
+			return Hero(holder: holder, device: device, label: nil, halo: halo, modelName: modelName, archetype: archetype, slot: slot, baseGlow: 0, style: Style(shortName: node.shortName, isOnline: false), height: height)
+		}
 		let device = ModelEntity(mesh: ShackDeviceMeshes.mesh(for: archetype), materials: [])
 		device.components.set(InputTargetComponent())
 		device.components.set(HoverEffectComponent())
 		device.components.set(CollisionComponent.inputTarget([ShackDeviceMeshes.shape(for: archetype)]))
 		device.components.set(ShackNodeComponent(nodeNum: node.id))
+		device.scale = SIMD3(repeating: Self.standInScale)
 		let label = ModelEntity()
 		label.name = "label"
 		device.addChild(label)
-		let halo = ModelEntity(mesh: ShackDeviceMeshes.haloMesh, materials: [UnlitMaterial(color: Self.nodeColor(node.id))])
-		halo.position = [0, 0.002, 0]
-		halo.components.set(OpacityComponent(opacity: 0))
 		receiveRoomLight(device)
-		holder.addChild(halo)
 		holder.addChild(device)
-		heroContainer.addChild(holder)
-		var hero = Hero(holder: holder, device: device, label: label, halo: halo, archetype: archetype, slot: slot, baseGlow: 0, style: Style(shortName: "", isOnline: false))
+		var hero = Hero(holder: holder, device: device, label: label, halo: halo, modelName: nil, archetype: archetype, slot: slot, baseGlow: 0, style: Style(shortName: "", isOnline: false), height: archetype.height * Self.standInScale)
 		styleHero(&hero, node: node, style: Style(shortName: node.shortName, isOnline: false))
 		return hero
 	}
 
 	private func styleHero(_ hero: inout Hero, node: ShackNodeSnapshot, style: Style) {
-		hero.device.model?.materials = ShackDeviceMeshes.materials(color: Self.nodeColor(node.id), isOnline: style.isOnline)
-		if hero.label.model == nil {
-			let screen = hero.archetype.screen
-			hero.label.model = ModelComponent(mesh: ShackDeviceMeshes.labelMesh(for: hero.archetype), materials: [UnlitMaterial(color: .clear)])
-			hero.label.position = screen.center + [0, 0, 0.0008]
-		}
 		hero.style = style
-		let label = hero.label
+		guard let label = hero.label, let device = hero.device as? ModelEntity else { return }
+		device.model?.materials = ShackDeviceMeshes.materials(color: Self.nodeColor(node.id), isOnline: style.isOnline)
+		if label.model == nil {
+			let screen = hero.archetype.screen
+			label.model = ModelComponent(mesh: ShackDeviceMeshes.labelMesh(for: hero.archetype), materials: [UnlitMaterial(color: .clear)])
+			label.position = screen.center + [0, 0, 0.0008]
+		}
 		Task {
 			guard let material = await labelMaterial(style) else { return }
 			// A newer style may have been applied while this one was drawn.
@@ -242,35 +276,13 @@ final class ShackSceneController {
 	/// text mesh, because text meshes leave out emoji, which many short names are.
 	private func labelMaterial(_ style: Style) async -> UnlitMaterial? {
 		if let material = labelMaterials[style] { return material }
-		guard let image = Self.labelImage(style.shortName.isEmpty ? "?" : style.shortName, isOnline: style.isOnline),
+		guard let image = ShackDeviceMeshes.labelImage(style.shortName.isEmpty ? "?" : style.shortName, isOnline: style.isOnline),
 			  let texture = try? await TextureResource(image: image, options: .init(semantic: .color)) else { return nil }
 		var material = UnlitMaterial()
 		material.color = .init(tint: .white, texture: .init(texture))
 		material.blending = .transparent(opacity: .init(floatLiteral: 1))
 		labelMaterials[style] = material
 		return material
-	}
-
-	private static func labelImage(_ text: String, isOnline: Bool) -> CGImage? {
-		let size = CGSize(width: 256, height: 128)
-		let format = UIGraphicsImageRendererFormat()
-		format.scale = 1
-		format.opaque = false
-		let color = isOnline ? UIColor(red: 0.62, green: 1, blue: 0.78, alpha: 1) : UIColor(white: 0.5, alpha: 1)
-		let image = UIGraphicsImageRenderer(size: size, format: format).image { _ in
-			var fontSize: CGFloat = 96
-			var attributes: [NSAttributedString.Key: Any] = [:]
-			var measured = CGSize.zero
-			// Shrink until the name fits the screen.
-			repeat {
-				attributes = [.font: UIFont.monospacedSystemFont(ofSize: fontSize, weight: .bold), .foregroundColor: color]
-				measured = (text as NSString).size(withAttributes: attributes)
-				fontSize -= 4
-			} while (measured.width > size.width * 0.92 || measured.height > size.height * 0.9) && fontSize > 12
-			let origin = CGPoint(x: (size.width - measured.width) / 2, y: (size.height - measured.height) / 2)
-			(text as NSString).draw(at: origin, withAttributes: attributes)
-		}
-		return image.cgImage
 	}
 
 	private static func accessibility(for node: ShackNodeSnapshot, isOnline: Bool) -> AccessibilityComponent {
@@ -375,6 +387,23 @@ final class ShackSceneController {
 		)
 	}
 
+	// MARK: Showroom
+
+	/// The hardware catalog for the showroom, read by the view; the room may not be in yet.
+	func setShowroomHardware(_ hardware: [ShackHardwareRecord]) async {
+		showroomHardware = hardware
+		await loadShowroomIfReady()
+	}
+
+	/// Once both the room and the catalog are in, stands the device models on the shelves, then
+	/// puts the connected radio's model on the desk.
+	func loadShowroomIfReady() async {
+		guard let room, let hardware = showroomHardware else { return }
+		showroomHardware = nil
+		await showroom.load(room: room, hardware: hardware) { [weak self] in self?.receiveRoomLight($0) }
+		if let layout { syncHeroes(layout: layout, now: Date()) }
+	}
+
 	// MARK: Taps
 
 	/// The node under a tap: the device's own node, or the rack cell under the point.
@@ -402,9 +431,8 @@ final class ShackSceneController {
 		case .rack(let index):
 			guard index / layout.grid.perPage == page else { return nil }
 			return pose.position + pose.forward * 0.3
-		default:
-			let archetype = heroes[nodeNum]?.archetype ?? .generic
-			let top = archetype.height * Self.scale(for: slot.tier)
+		case .deskRadio:
+			let top = heroes[nodeNum]?.height ?? ShackDeviceArchetype.generic.height
 			return pose.position + [0, top + 0.13, 0] + pose.forward * 0.12
 		}
 	}
@@ -531,6 +559,29 @@ enum ShackDeviceMeshes {
 		dark.baseColor = .init(tint: UIColor(white: 0.08, alpha: 1))
 		dark.roughness = 0.75
 		return [body, screen, dark]
+	}
+
+	/// The short name drawn for a stand-in box's screen, 2:1, fitted to the width.
+	static func labelImage(_ text: String, isOnline: Bool) -> CGImage? {
+		let size = CGSize(width: 256, height: 128)
+		let format = UIGraphicsImageRendererFormat()
+		format.scale = 1
+		format.opaque = false
+		let color = isOnline ? UIColor(red: 0.62, green: 1, blue: 0.78, alpha: 1) : UIColor(white: 0.5, alpha: 1)
+		let image = UIGraphicsImageRenderer(size: size, format: format).image { _ in
+			var fontSize: CGFloat = 96
+			var attributes: [NSAttributedString.Key: Any] = [:]
+			var measured = CGSize.zero
+			// Shrink until the name fits the screen.
+			repeat {
+				attributes = [.font: UIFont.monospacedSystemFont(ofSize: fontSize, weight: .bold), .foregroundColor: color]
+				measured = (text as NSString).size(withAttributes: attributes)
+				fontSize -= 4
+			} while (measured.width > size.width * 0.92 || measured.height > size.height * 0.9) && fontSize > 12
+			let origin = CGPoint(x: (size.width - measured.width) / 2, y: (size.height - measured.height) / 2)
+			(text as NSString).draw(at: origin, withAttributes: attributes)
+		}
+		return image.cgImage
 	}
 }
 #endif

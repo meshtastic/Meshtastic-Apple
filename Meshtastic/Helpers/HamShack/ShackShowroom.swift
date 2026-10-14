@@ -1,0 +1,216 @@
+//
+//  ShackShowroom.swift
+//  Meshtastic
+//
+//  Copyright(c) Garth Vander Houwen 10/14/26.
+//
+import Foundation
+@preconcurrency import SwiftData
+
+/// The makers the shack's shelves show, one shelf each. Elecrow's tall radios go on the bottom
+/// shelf, RAK in the middle, and Seeed on the open top shelf, where the Solar Node fits.
+enum ShackVendor: String, CaseIterable, Sendable {
+	case elecrow = "Elecrow"
+	case rak = "RAK"
+	case seeed = "Seeed"
+
+	/// Shelf 0 is the lowest.
+	var shelf: Int {
+		switch self {
+		case .elecrow: 0
+		case .rak: 1
+		case .seeed: 2
+		}
+	}
+
+	/// The vendor from a hardware record's tags, or from the model's name when untagged.
+	static func from(tags: [String], modelName: String) -> ShackVendor? {
+		for tag in tags {
+			if let vendor = ShackVendor.allCases.first(where: { $0.rawValue.caseInsensitiveCompare(tag) == .orderedSame }) {
+				return vendor
+			}
+		}
+		let name = modelName.lowercased()
+		if name.hasPrefix("rak") { return .rak }
+		if name.hasPrefix("thinknode") || name.hasPrefix("crowpanel") { return .elecrow }
+		if name.hasPrefix("seeed") || name.hasPrefix("wio") || name.hasPrefix("tracker-t1000") { return .seeed }
+		return nil
+	}
+}
+
+/// A device in the hardware catalog, as much of it as the showroom needs.
+struct ShackHardwareRecord: Codable, Equatable, Sendable {
+	let hwModel: Int?
+	let hwModelSlug: String?
+	let platformioTarget: String?
+	let displayName: String?
+	let tags: [String]?
+	let images: [String]?
+}
+
+/// One model on a shelf: an example of a device, not a node on the mesh.
+struct ShackShowroomItem: Identifiable, Equatable, Sendable {
+	/// The model's file name without extension, the same as its SVG's.
+	let id: String
+	let vendor: ShackVendor
+	/// The devices drawn with this model, e.g. a board sold bare and in a kit.
+	let deviceNames: [String]
+	/// Their firmware targets, which the purchase links are keyed by.
+	let targets: [String]
+	/// What tells this model apart from others drawn for the same devices, e.g. a screen size or
+	/// "case"; nil when it is the only one.
+	var variant: String?
+
+	var title: String {
+		let name = deviceNames.first ?? id
+		return variant.map { "\(name) (\($0))" } ?? name
+	}
+}
+
+enum ShackShowroomCatalog {
+	/// The models there are, matched to the catalog's devices. A device uses a model when the model
+	/// is named after its firmware target, or else when the model is one of its images (a model can
+	/// arrive before the catalog points the device at its image). Models no device uses are left
+	/// out, as are models from other makers. Sorted by vendor, then name.
+	static func items(models: Set<String>, hardware: [ShackHardwareRecord]) -> [ShackShowroomItem] {
+		let modelKeys = Set(models.map { $0.lowercased() })
+		// Models that are some device's own, by firmware target.
+		let ownModels = Set(hardware.compactMap { $0.platformioTarget?.lowercased() }).intersection(modelKeys)
+		var items: [ShackShowroomItem] = []
+		for model in models {
+			let key = model.lowercased()
+			let devices = hardware.filter { record in
+				let target = record.platformioTarget?.lowercased()
+				if target == key { return true }
+				// A device with a model of its own isn't listed under another device's model it
+				// shares an image with, but is under its own variants (a board and its case).
+				if let target, modelKeys.contains(target), ownModels.contains(key) { return false }
+				return (record.images ?? []).contains("\(model).svg")
+			}
+			guard !devices.isEmpty,
+				  let vendor = devices.lazy.compactMap({ ShackVendor.from(tags: $0.tags ?? [], modelName: model) }).first
+			else { continue }
+			// The device named after the model first, then the rest alphabetically.
+			let ordered = devices.sorted { lhs, rhs in
+				let lhsExact = lhs.platformioTarget?.lowercased() == key, rhsExact = rhs.platformioTarget?.lowercased() == key
+				if lhsExact != rhsExact { return lhsExact }
+				return (lhs.displayName ?? "") < (rhs.displayName ?? "")
+			}
+			var names: [String] = []
+			for name in ordered.compactMap(\.displayName) where !names.contains(name) {
+				names.append(name)
+			}
+			items.append(ShackShowroomItem(
+				id: model,
+				vendor: vendor,
+				deviceNames: names,
+				targets: Array(Set(ordered.compactMap(\.platformioTarget))).sorted()
+			))
+		}
+		// Models drawn for the same devices are told apart by the rest of their names.
+		for group in Dictionary(grouping: items.indices, by: { items[$0].deviceNames }).values where group.count > 1 {
+			for (index, variant) in zip(group, variants(of: group.map { items[$0].id })) {
+				items[index].variant = variant
+			}
+		}
+		return items.sorted { lhs, rhs in
+			if lhs.vendor != rhs.vendor { return lhs.vendor.shelf < rhs.vendor.shelf }
+			return lhs.title.localizedStandardCompare(rhs.title) == .orderedAscending
+		}
+	}
+
+	/// What follows the words the names share: "crowpanel_2_4" and "crowpanel_2_8" give "2.4" and
+	/// "2.8"; "rak4631" and "rak4631_case" give nil and "case".
+	static func variants(of names: [String]) -> [String?] {
+		let words = names.map { $0.split(whereSeparator: { $0 == "_" || $0 == "-" }).map(String.init) }
+		var shared = 0
+		// Only words with letters are shared; a size like "2_4" stays whole.
+		while let first = words.first, shared < first.count, first[shared].contains(where: \.isLetter),
+			  words.allSatisfy({ shared < $0.count && $0[shared] == first[shared] }) {
+			shared += 1
+		}
+		return words.map { name in
+			let rest = Array(name.dropFirst(shared))
+			guard !rest.isEmpty else { return nil }
+			return rest.allSatisfy({ $0.allSatisfy(\.isNumber) }) ? rest.joined(separator: ".") : rest.joined(separator: " ")
+		}
+	}
+
+	/// The model for a node's hardware: the first of its catalog images that has a model. Matched
+	/// on the hardware number when known, since a node's stored name can differ from the catalog's
+	/// ("RAK2560" for "WISMESH_HUB"), else on the name without underscores ("THINKNODEM1" for
+	/// "THINKNODE_M1").
+	static func modelName(forHardwareSlug slug: String?, number: Int? = nil, models: Set<String>, hardware: [ShackHardwareRecord]) -> String? {
+		guard let slug, !slug.isEmpty, slug != "UNSET" else { return nil }
+		let key = normalized(slug)
+		let records = number.map { number in hardware.filter { $0.hwModel == number } }.flatMap { $0.isEmpty ? nil : $0 }
+			?? hardware.filter { $0.hwModelSlug.map(normalized) == key }
+		for record in records {
+			for image in record.images ?? [] {
+				let name = (image as NSString).deletingPathExtension
+				if models.contains(name) { return name }
+			}
+		}
+		return nil
+	}
+
+	private static func normalized(_ slug: String) -> String {
+		slug.replacingOccurrences(of: "_", with: "").uppercased()
+	}
+
+	/// The catalog the app keeps fresh from the API, or the one bundled with it when that is empty.
+	static func hardware(in container: ModelContainer) async -> [ShackHardwareRecord] {
+		let reader = await Task.detached { ShackHardwareReader(modelContainer: container) }.value
+		let stored = await reader.records()
+		return stored.isEmpty ? bundledHardware() : stored
+	}
+
+	/// The hardware catalog bundled with the app.
+	static func bundledHardware(in bundle: Bundle = .main) -> [ShackHardwareRecord] {
+		guard let url = bundle.url(forResource: "DeviceHardware", withExtension: "json"),
+			  let data = try? Data(contentsOf: url) else { return [] }
+		return (try? JSONDecoder().decode([ShackHardwareRecord].self, from: data)) ?? []
+	}
+
+	/// The models bundled with the app (visionOS builds only).
+	static func bundledModels(in bundle: Bundle = .main) -> Set<String> {
+		Set((bundle.urls(forResourcesWithExtension: "usdz", subdirectory: nil) ?? []).map {
+			$0.deletingPathExtension().lastPathComponent
+		})
+	}
+}
+
+/// Spreads a shelf's models along it: the space left over is shared out evenly, between the models
+/// and at both ends.
+enum ShackShelfPacking {
+	/// The center of each model along a shelf of `length`, measured from the shelf's middle. When
+	/// the models are wider than the shelf they touch and run past its ends, centered.
+	static func centers(widths: [Float], length: Float) -> [Float] {
+		guard !widths.isEmpty else { return [] }
+		let total = widths.reduce(0, +)
+		let gap = max(0, (length - total) / Float(widths.count + 1))
+		var x = -(total + gap * Float(widths.count - 1)) / 2
+		return widths.map { width in
+			defer { x += width + gap }
+			return x + width / 2
+		}
+	}
+}
+
+/// Reads the hardware catalog out of SwiftData on its own context, off the main actor.
+@ModelActor
+actor ShackHardwareReader {
+	func records() -> [ShackHardwareRecord] {
+		let devices = (try? modelContext.fetch(FetchDescriptor<DeviceHardwareEntity>())) ?? []
+		return devices.map { device in
+			ShackHardwareRecord(
+				hwModel: Int(device.hwModel),
+				hwModelSlug: device.hwModelSlug,
+				platformioTarget: device.platformioTarget,
+				displayName: device.displayName,
+				tags: device.tags.map(\.tag),
+				images: device.images.compactMap(\.fileName)
+			)
+		}
+	}
+}
