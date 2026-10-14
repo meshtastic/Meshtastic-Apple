@@ -110,8 +110,6 @@ struct ShareContactQRDialog: View {
 		}
 		.padding()
 		.frame(maxWidth: 350)
-		#if targetEnvironment(macCatalyst)
-		// Catalyst has no drag-to-dismiss, so it gets the close button the other sheets use.
 		// Widened first, or the overlay would anchor to the 350pt content rather than the sheet.
 		.frame(maxWidth: .infinity)
 		.overlay(alignment: .topLeading) {
@@ -128,9 +126,7 @@ struct ShareContactQRDialog: View {
 			.padding(.top, 12)
 			.padding(.leading, 14)
 		}
-		#else
 		.presentationDragIndicator(.visible)
-		#endif
 	}
 }
 

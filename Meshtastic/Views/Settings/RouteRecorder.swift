@@ -87,207 +87,194 @@ struct RouteRecorder: View {
 				.padding()
 			}
 			.sheet(isPresented: $isShowingDetails) {
-				VStack {
-						if locationsHandler.isRecording {
-							HStack(alignment: .center) {
-								Image(systemName: "record.circle.fill")
-									.symbolRenderingMode(.multicolor)
-									.font(.title)
-									.foregroundColor(.red)
-								Text("Recording route")
-									.font(.title)
-								Spacer()
-								Text("\(Image(systemName: "mappin.and.ellipse")) \(locationsHandler.count)")
-									.foregroundColor(.red)
-									.font(.title2)
-							}
-							.padding()
-						} else if locationsHandler.isRecordingPaused {
-							HStack(alignment: .center) {
-
-								Image(systemName: "playpause")
-									.symbolRenderingMode(.multicolor)
-									.font(.title3)
-									.foregroundColor(.red)
-								Text("Route recording paused")
-									.font(.title)
-							}
-							.padding(.top)
-						}
-
-						if locationsHandler.isRecording || locationsHandler.isRecordingPaused {
-							Divider()
-							HStack {
-								VStack {
-									Text(locationsHandler.recordingStarted ?? Date(), style: .timer)
-										.font(.title)
-										.fixedSize()
-									Text("Time")
-										.font(.callout)
-										.fixedSize()
-								}
-								.padding(.horizontal)
-								Divider()
-								VStack {
-									let distance = Measurement(value: locationsHandler.distanceTraveled, unit: UnitLength.meters)
-									Text("\(distance.formatted())")
-										.font(.title)
-										.fixedSize()
-									Text("Distance")
-										.font(.callout)
-										.fixedSize()
-								}
-								.padding(.horizontal)
-								Divider()
-								VStack {
-									let gain = Measurement(value: locationsHandler.elevationGain, unit: UnitLength.meters)
-									Text(gain.formatted())
-										.font(.title)
-									Text("Elev. Gain")
-										.font(.callout)
-								}
-								.padding(.horizontal)
-							}
-							.frame(maxHeight: 90)
-						}
-						Divider()
-						VStack(alignment: .leading) {
-							List {
-								GPSStatus(largeFont: .body, smallFont: .callout)
-							}
-							.listStyle(.plain)
-							if recording == nil {
+				NavigationStack {
+					VStack {
+							if locationsHandler.isRecording {
 								HStack(alignment: .center) {
+									Image(systemName: "record.circle.fill")
+										.symbolRenderingMode(.multicolor)
+										.font(.title)
+										.foregroundColor(.red)
+									Text("Recording route")
+										.font(.title)
 									Spacer()
-									Image(systemName: "figure.hiking")
+									Text("\(Image(systemName: "mappin.and.ellipse")) \(locationsHandler.count)")
+										.foregroundColor(.red)
+										.font(.title2)
+								}
+								.padding()
+							} else if locationsHandler.isRecordingPaused {
+								HStack(alignment: .center) {
+
+									Image(systemName: "playpause")
 										.symbolRenderingMode(.multicolor)
 										.font(.title3)
-										.foregroundColor(.accentColor)
-									Text("Activity")
-									Picker(selection: $activity, label: Text("Activity")) {
-										ForEach(ActivityType.allCases) { r in
-											Text(r.description)
+										.foregroundColor(.red)
+									Text("Route recording paused")
+										.font(.title)
+								}
+								.padding(.top)
+							}
+
+							if locationsHandler.isRecording || locationsHandler.isRecordingPaused {
+								Divider()
+								HStack {
+									VStack {
+										Text(locationsHandler.recordingStarted ?? Date(), style: .timer)
+											.font(.title)
+											.fixedSize()
+										Text("Time")
+											.font(.callout)
+											.fixedSize()
+									}
+									.padding(.horizontal)
+									Divider()
+									VStack {
+										let distance = Measurement(value: locationsHandler.distanceTraveled, unit: UnitLength.meters)
+										Text("\(distance.formatted())")
+											.font(.title)
+											.fixedSize()
+										Text("Distance")
+											.font(.callout)
+											.fixedSize()
+									}
+									.padding(.horizontal)
+									Divider()
+									VStack {
+										let gain = Measurement(value: locationsHandler.elevationGain, unit: UnitLength.meters)
+										Text(gain.formatted())
+											.font(.title)
+										Text("Elev. Gain")
+											.font(.callout)
+									}
+									.padding(.horizontal)
+								}
+								.frame(maxHeight: 90)
+							}
+							Divider()
+							VStack(alignment: .leading) {
+								List {
+									GPSStatus(largeFont: .body, smallFont: .callout)
+								}
+								.listStyle(.plain)
+								if recording == nil {
+									HStack(alignment: .center) {
+										Spacer()
+										Image(systemName: "figure.hiking")
+											.symbolRenderingMode(.multicolor)
+											.font(.title3)
+											.foregroundColor(.accentColor)
+										Text("Activity")
+										Picker(selection: $activity, label: Text("Activity")) {
+											ForEach(ActivityType.allCases) { r in
+												Text(r.description)
+											}
 										}
+										Spacer()
+									}
+								}
+								HStack {
+									Spacer()
+									if !locationsHandler.isRecording && !locationsHandler.isRecordingPaused {
+										/// We are not recording or paused, show start recording button
+										Button {
+											locationsHandler.isRecording = true
+											locationsHandler.count = 0
+											locationsHandler.distanceTraveled = 0.0
+											locationsHandler.elevationGain = 0.0
+											locationsHandler.locationsArray.removeAll()
+											locationsHandler.recordingStarted = Date()
+											let newRoute = RouteEntity()
+											context.insert(newRoute)
+											newRoute.date = Date()
+											let at = ActivityType(rawValue: activity)
+											newRoute.name = "\(newRoute.date?.relativeTimeOfDay() ?? "morning".localized) \(at?.fileNameString ?? "hike")"
+											newRoute.id = Int32.random(in: Int32(Int8.max) ... Int32.max)
+											newRoute.color = Int64(UIColor.random.hex)
+											newRoute.enabled = false
+											color = Color(UIColor(hex: UInt32(newRoute.color)))
+											self.recording = newRoute
+											do {
+												try context.save()
+												Logger.data.info("💾 Saved a new route")
+											} catch {
+												let nsError = error as NSError
+												Logger.data.error("Error Saving RouteEntity from the Route Recorder \(nsError, privacy: .public)")
+											}
+										} label: {
+											Label("Start", systemImage: "play")
+										}
+										.buttonStyle(.bordered)
+										.buttonBorderShape(.capsule)
+										.controlSize(.large)
+										.padding(.bottom)
+
+									} else if locationsHandler.isRecording {
+										/// We are recording show pause button
+										Button {
+											locationsHandler.isRecording = false
+											locationsHandler.isRecordingPaused = true
+										} label: {
+											Label("Pause", systemImage: "pause")
+										}
+										.buttonStyle(.bordered)
+										.buttonBorderShape(.capsule)
+										.controlSize(.large)
+										.padding(.bottom)
+									} else if locationsHandler.isRecordingPaused {
+										/// We are paused show resume button
+										Button {
+											locationsHandler.isRecording = true
+											locationsHandler.isRecordingPaused = false
+										} label: {
+											Label("Resume", systemImage: "playpause")
+										}
+										.buttonStyle(.bordered)
+										.buttonBorderShape(.capsule)
+										.controlSize(.large)
+										.padding(.bottom)
+									}
+
+									if locationsHandler.isRecording || locationsHandler.isRecordingPaused {
+										/// We are recording or paused, show finish button
+										Button {
+
+											if let rec = recording {
+												rec.enabled = true
+												rec.distance = locationsHandler.distanceTraveled
+												rec.elevationGain = locationsHandler.elevationGain
+											}
+											locationsHandler.isRecording = false
+											locationsHandler.isRecordingPaused = false
+											locationsHandler.distanceTraveled = 0.0
+											locationsHandler.elevationGain = 0.0
+											locationsHandler.locationsArray.removeAll()
+											locationsHandler.recordingStarted = nil
+											do {
+												try context.save()
+												Logger.data.info("💾 Saved a route finish")
+											} catch {
+												let nsError = error as NSError
+												Logger.data.error("Error Saving RouteEntity from the Route Recorder \(nsError, privacy: .public)")
+											}
+											isShowingDetails = false
+										} label: {
+											Label("Finish", systemImage: "flag.checkered")
+										}
+										.buttonStyle(.bordered)
+										.buttonBorderShape(.capsule)
+										.controlSize(.large)
+										.padding(.bottom)
 									}
 									Spacer()
 								}
+
 							}
-							HStack {
-								Spacer()
-								if !locationsHandler.isRecording && !locationsHandler.isRecordingPaused {
-									/// We are not recording or paused, show start recording button
-									Button {
-										locationsHandler.isRecording = true
-										locationsHandler.count = 0
-										locationsHandler.distanceTraveled = 0.0
-										locationsHandler.elevationGain = 0.0
-										locationsHandler.locationsArray.removeAll()
-										locationsHandler.recordingStarted = Date()
-										let newRoute = RouteEntity()
-										context.insert(newRoute)
-										newRoute.date = Date()
-										let at = ActivityType(rawValue: activity)
-										newRoute.name = "\(newRoute.date?.relativeTimeOfDay() ?? "morning".localized) \(at?.fileNameString ?? "hike")"
-										newRoute.id = Int32.random(in: Int32(Int8.max) ... Int32.max)
-										newRoute.color = Int64(UIColor.random.hex)
-										newRoute.enabled = false
-										color = Color(UIColor(hex: UInt32(newRoute.color)))
-										self.recording = newRoute
-										do {
-											try context.save()
-											Logger.data.info("💾 Saved a new route")
-										} catch {
-											let nsError = error as NSError
-											Logger.data.error("Error Saving RouteEntity from the Route Recorder \(nsError, privacy: .public)")
-										}
-									} label: {
-										Label("Start", systemImage: "play")
-									}
-									.buttonStyle(.bordered)
-									.buttonBorderShape(.capsule)
-									.controlSize(.large)
-									.padding(.bottom)
-
-								} else if locationsHandler.isRecording {
-									/// We are recording show pause button
-									Button {
-										locationsHandler.isRecording = false
-										locationsHandler.isRecordingPaused = true
-									} label: {
-										Label("Pause", systemImage: "pause")
-									}
-									.buttonStyle(.bordered)
-									.buttonBorderShape(.capsule)
-									.controlSize(.large)
-									.padding(.bottom)
-								} else if locationsHandler.isRecordingPaused {
-									/// We are paused show resume button
-									Button {
-										locationsHandler.isRecording = true
-										locationsHandler.isRecordingPaused = false
-									} label: {
-										Label("Resume", systemImage: "playpause")
-									}
-									.buttonStyle(.bordered)
-									.buttonBorderShape(.capsule)
-									.controlSize(.large)
-									.padding(.bottom)
-								}
-
-								if locationsHandler.isRecording || locationsHandler.isRecordingPaused {
-									/// We are recording or paused, show finish button
-									Button {
-
-										if let rec = recording {
-											rec.enabled = true
-											rec.distance = locationsHandler.distanceTraveled
-											rec.elevationGain = locationsHandler.elevationGain
-										}
-										locationsHandler.isRecording = false
-										locationsHandler.isRecordingPaused = false
-										locationsHandler.distanceTraveled = 0.0
-										locationsHandler.elevationGain = 0.0
-										locationsHandler.locationsArray.removeAll()
-										locationsHandler.recordingStarted = nil
-										do {
-											try context.save()
-											Logger.data.info("💾 Saved a route finish")
-										} catch {
-											let nsError = error as NSError
-											Logger.data.error("Error Saving RouteEntity from the Route Recorder \(nsError, privacy: .public)")
-										}
-										isShowingDetails = false
-									} label: {
-										Label("Finish", systemImage: "flag.checkered")
-									}
-									.buttonStyle(.bordered)
-									.buttonBorderShape(.capsule)
-									.controlSize(.large)
-									.padding(.bottom)
-								}
-								Spacer()
-							}
-
 						}
-					}
-#if targetEnvironment(macCatalyst)
-					.overlay(alignment: .topLeading) {
-						Button {
-							isShowingDetails = false
-						} label: {
-							Image(systemName: "xmark.circle.fill")
-								.font(.system(size: 34))
-								.symbolRenderingMode(.palette)
-								.foregroundStyle(.white, Color(.systemGray3))
-						}
-						.accessibilityLabel(String(localized: "Close", comment: "VoiceOver: dismiss this sheet"))
-						.buttonStyle(.plain)
-						.padding(.top, 12)
-						.padding(.leading, 14)
-					}
-#endif
+					.navigationBarTitleDisplayMode(.inline)
+					.sheetCloseButton { isShowingDetails = false }
+				}
 				.trackScreen(.routeRecordingDetails)
-				.presentationDetents([.fraction(0.45), .fraction(0.65)])
 				.presentationDetents([.fraction(0.45), .fraction(0.65)])
 				.presentationDragIndicator(.hidden)
 				.interactiveDismissDisabled(false)

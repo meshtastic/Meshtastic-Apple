@@ -461,6 +461,7 @@ struct WaypointForm: View {
 			}
 			.navigationTitle(waypoint.name ?? "Waypoint")
 			.navigationBarTitleDisplayMode(.inline)
+			.sheetCloseButton()
 			.toolbar {
 				if !waypoint.locked {
 					ToolbarItem(placement: .topBarTrailing) {
@@ -580,23 +581,6 @@ struct WaypointForm: View {
 		.presentationBackgroundInteraction(.enabled(upThrough: .fraction(0.85)))
 		#if !targetEnvironment(macCatalyst)
 		.presentationDragIndicator(.visible)
-		#endif
-
-		#if targetEnvironment(macCatalyst)
-		.overlay(alignment: .topLeading) {
-			Button {
-				dismiss()
-			} label: {
-				Image(systemName: "xmark.circle.fill")
-					.font(.system(size: 34))
-					.symbolRenderingMode(.palette)
-					.foregroundStyle(.white, Color(.systemGray3))
-			}
-			.accessibilityLabel(String(localized: "Close", comment: "VoiceOver: dismiss this sheet"))
-			.buttonStyle(.plain)
-			.padding(.top, 12)
-			.padding(.leading, 14)
-		}
 		#endif
 	}
 	

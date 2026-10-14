@@ -8,8 +8,6 @@
 import SwiftUI
 
 struct NodeListHelp: View {
-	@Environment(\.dismiss) private var dismiss
-
 	var body: some View {
 		NavigationStack {
 			List {
@@ -190,31 +188,14 @@ struct NodeListHelp: View {
 			}
 			.navigationTitle("Node List Help")
 			.navigationBarTitleDisplayMode(.inline)
+			.sheetCloseButton()
 		}
-
-		#if targetEnvironment(macCatalyst)
-		.overlay(alignment: .topLeading) {
-			Button {
-				dismiss()
-			} label: {
-				Image(systemName: "xmark.circle.fill")
-					.font(.system(size: 34))
-					.symbolRenderingMode(.palette)
-					.foregroundStyle(.white, Color(.systemGray3))
-			}
-			.accessibilityLabel(String(localized: "Close", comment: "VoiceOver: dismiss this sheet"))
-			.buttonStyle(.plain)
-			.padding(.top, 12)
-			.padding(.leading, 14)
-		}
-		#endif
 		.presentationDetents([.large])
 		.presentationContentInteraction(.scrolls)
 		#if !targetEnvironment(macCatalyst)
 		.presentationDragIndicator(.visible)
 		#endif
 		.presentationBackgroundInteraction(.enabled(upThrough: .large))
-
 
 	}
 }

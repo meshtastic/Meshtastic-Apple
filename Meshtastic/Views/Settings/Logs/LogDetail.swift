@@ -11,7 +11,6 @@ import OSLog
 
 struct LogDetail: View {
 
-	@Environment(\.dismiss) private var dismiss
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
 	var log: OSLogEntryLog
 	var font: Font = .title2
@@ -26,145 +25,131 @@ struct LogDetail: View {
 
 	var body: some View {
 
-		VStack {
-			HStack {
-				Text("OS Log Entry Details")
-					.font(.largeTitle)
-			}
-			Divider()
-			HStack(alignment: .top) {
-				VStack(alignment: .leading) {
-					List {
-						/// Time
-						Label {
-							HStack {
-								Text("Time".localized + ":")
-									.font(idiom == .phone ? .caption : .title)
-									.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
-								Text(log.date.formatted(dateFormatStyle))
-									.font(idiom == .phone ? .caption : .title)
-							}
-						} icon: {
-							Image(systemName: "timer")
-								.symbolRenderingMode(.hierarchical)
-								.font(idiom == .phone ? .callout : .title)
-								.frame(width: 35)
-						}
-						.padding(.bottom, 5)
-						.listSectionSeparator(.hidden, edges: .top)
-						.listSectionSeparator(.visible, edges: .bottom)
-						/// Subsystem
-						Label {
-							HStack {
-								Text("Subsystem".localized + ":")
-									.font(idiom == .phone ? .caption : .title)
-									.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
-								Text(log.subsystem)
-									.font(idiom == .phone ? .caption : .title)
-							}
-						} icon: {
-							Image(systemName: "gear")
-								.symbolRenderingMode(.hierarchical)
-								.font(idiom == .phone ? .caption : .title)
-								.frame(width: 35)
-						}
-						.padding(.bottom, 5)
-						.listRowSeparator(.visible)
-						/// Process
-						Label {
-							HStack {
-								Text("Process".localized + ":")
-									.font(idiom == .phone ? .caption : .title)
-									.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
-								Text(log.process)
-									.font(idiom == .phone ? .caption : .title)
-							}
-						} icon: {
-							Image(systemName: "tag")
-								.symbolRenderingMode(.hierarchical)
-								.font(idiom == .phone ? .caption : .title)
-								.frame(width: 35)
-						}
-						.padding(.bottom, 5)
-						.listRowSeparator(.visible)
-						/// Level
-						Label {
-							HStack {
-								Text("Level".localized + ":")
-									.font(idiom == .phone ? .caption : .title)
-									.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
-								Text(log.level.description)
-									.font(idiom == .phone ? .caption : .title)
-								.foregroundStyle(log.level.color) }
-						} icon: {
-							Image(systemName: "stairs")
-								.symbolRenderingMode(.hierarchical)
-								.font(idiom == .phone ? .caption : .title)
-								.frame(width: 35)
-						}
-						.padding(.bottom, 5)
-						.listRowSeparator(.visible)
-						/// Category
-						Label {
-							HStack {
-								Text("Category".localized + ":")
-									.font(idiom == .phone ? .caption : .title)
-									.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
-								Text(log.category)
-									.font(idiom == .phone ? .caption : .title)
-							}
-						} icon: {
-							Image(systemName: "square.grid.2x2")
-								.symbolRenderingMode(.hierarchical)
-								.font(idiom == .phone ? .caption : .title)
-								.frame(width: 35)
-						}
-						.padding(.bottom, 5)
-						.listRowSeparator(.visible)
-
-						/// message
-						Label {
-							Text("Message".localized + ":")
-								.font(idiom == .phone ? .caption : .title)
-								.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
-							Text(log.composedMessage)
-								.textSelection(.enabled)
-								.font(idiom == .phone ? .body : .title)
-								.foregroundStyle(log.level.color)
-								.padding(.bottom, 5)
-						} icon: {
-							Image(systemName: "text.bubble")
-								.symbolRenderingMode(.hierarchical)
-								.font(idiom == .phone ? .callout : .title)
-								.frame(width: 35)
-						}
-						.listRowSeparator(.hidden)
-
-					}
-					.listStyle(.plain)
+		NavigationStack {
+			VStack {
+				HStack {
+					Text("OS Log Entry Details")
+						.font(.largeTitle)
 				}
-				Spacer()
-			}
-			.padding(.top)
-		}
-		.monospaced()
+				Divider()
+				HStack(alignment: .top) {
+					VStack(alignment: .leading) {
+						List {
+							/// Time
+							Label {
+								HStack {
+									Text("Time".localized + ":")
+										.font(idiom == .phone ? .caption : .title)
+										.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
+									Text(log.date.formatted(dateFormatStyle))
+										.font(idiom == .phone ? .caption : .title)
+								}
+							} icon: {
+								Image(systemName: "timer")
+									.symbolRenderingMode(.hierarchical)
+									.font(idiom == .phone ? .callout : .title)
+									.frame(width: 35)
+							}
+							.padding(.bottom, 5)
+							.listSectionSeparator(.hidden, edges: .top)
+							.listSectionSeparator(.visible, edges: .bottom)
+							/// Subsystem
+							Label {
+								HStack {
+									Text("Subsystem".localized + ":")
+										.font(idiom == .phone ? .caption : .title)
+										.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
+									Text(log.subsystem)
+										.font(idiom == .phone ? .caption : .title)
+								}
+							} icon: {
+								Image(systemName: "gear")
+									.symbolRenderingMode(.hierarchical)
+									.font(idiom == .phone ? .caption : .title)
+									.frame(width: 35)
+							}
+							.padding(.bottom, 5)
+							.listRowSeparator(.visible)
+							/// Process
+							Label {
+								HStack {
+									Text("Process".localized + ":")
+										.font(idiom == .phone ? .caption : .title)
+										.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
+									Text(log.process)
+										.font(idiom == .phone ? .caption : .title)
+								}
+							} icon: {
+								Image(systemName: "tag")
+									.symbolRenderingMode(.hierarchical)
+									.font(idiom == .phone ? .caption : .title)
+									.frame(width: 35)
+							}
+							.padding(.bottom, 5)
+							.listRowSeparator(.visible)
+							/// Level
+							Label {
+								HStack {
+									Text("Level".localized + ":")
+										.font(idiom == .phone ? .caption : .title)
+										.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
+									Text(log.level.description)
+										.font(idiom == .phone ? .caption : .title)
+									.foregroundStyle(log.level.color) }
+							} icon: {
+								Image(systemName: "stairs")
+									.symbolRenderingMode(.hierarchical)
+									.font(idiom == .phone ? .caption : .title)
+									.frame(width: 35)
+							}
+							.padding(.bottom, 5)
+							.listRowSeparator(.visible)
+							/// Category
+							Label {
+								HStack {
+									Text("Category".localized + ":")
+										.font(idiom == .phone ? .caption : .title)
+										.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
+									Text(log.category)
+										.font(idiom == .phone ? .caption : .title)
+								}
+							} icon: {
+								Image(systemName: "square.grid.2x2")
+									.symbolRenderingMode(.hierarchical)
+									.font(idiom == .phone ? .caption : .title)
+									.frame(width: 35)
+							}
+							.padding(.bottom, 5)
+							.listRowSeparator(.visible)
 
-		#if targetEnvironment(macCatalyst)
-		.overlay(alignment: .topLeading) {
-			Button {
-				dismiss()
-			} label: {
-				Image(systemName: "xmark.circle.fill")
-					.font(.system(size: 34))
-					.symbolRenderingMode(.palette)
-					.foregroundStyle(.white, Color(.systemGray3))
+							/// message
+							Label {
+								Text("Message".localized + ":")
+									.font(idiom == .phone ? .caption : .title)
+									.frame(width: idiom == .phone ? 115 : 190, alignment: .trailing)
+								Text(log.composedMessage)
+									.textSelection(.enabled)
+									.font(idiom == .phone ? .body : .title)
+									.foregroundStyle(log.level.color)
+									.padding(.bottom, 5)
+							} icon: {
+								Image(systemName: "text.bubble")
+									.symbolRenderingMode(.hierarchical)
+									.font(idiom == .phone ? .callout : .title)
+									.frame(width: 35)
+							}
+							.listRowSeparator(.hidden)
+
+						}
+						.listStyle(.plain)
+					}
+					Spacer()
+				}
+				.padding(.top)
 			}
-			.accessibilityLabel(String(localized: "Close", comment: "VoiceOver: dismiss this sheet"))
-			.buttonStyle(.plain)
-			.padding(.top, 12)
-			.padding(.leading, 14)
+			.monospaced()
+			.sheetCloseButton()
 		}
-		#endif
 		.presentationDetents([.fraction(0.75), .fraction(0.85), .fraction(1.0)])
 		#if !targetEnvironment(macCatalyst)
 		.presentationDragIndicator(.visible)
