@@ -1,5 +1,5 @@
 //
-//  ShackRoom.swift
+//  ShowcaseRoom.swift
 //  Meshtastic
 //
 //  Copyright(c) Garth Vander Houwen 10/14/26.
@@ -8,50 +8,50 @@
 import CoreGraphics
 import OSLog
 import RealityKit
-import ShackContent
+import ShowcaseContent
 import UIKit
 
-/// The ham shack room: the Shack.usda scene from ShackContent, with its lights added, and where
-/// each named anchor ended up. Anchors the asset lacks come from `ShackRoomGeometry`.
+/// The showcase room: the Showcase.usda scene from ShowcaseContent, with its lights added, and where
+/// each named anchor ended up. Anchors the asset lacks come from `ShowcaseRoomGeometry`.
 @MainActor
-struct ShackRoom {
+struct ShowcaseRoom {
 	/// Place at the space's origin; the room is authored with the viewer's seat there.
 	let root: Entity
-	let anchors: [ShackAnchor: ShackAnchorPose]
+	let anchors: [ShowcaseAnchor: ShowcaseAnchorPose]
 	/// Anchors the asset did not have, placed from the defaults instead.
-	let missingAnchors: [ShackAnchor]
+	let missingAnchors: [ShowcaseAnchor]
 	/// False when the asset failed to load and a plain stand-in room was built.
 	let loadedAsset: Bool
 
-	func pose(_ anchor: ShackAnchor) -> ShackAnchorPose {
-		anchors[anchor] ?? ShackRoomGeometry.defaultPose(anchor)
+	func pose(_ anchor: ShowcaseAnchor) -> ShowcaseAnchorPose {
+		anchors[anchor] ?? ShowcaseRoomGeometry.defaultPose(anchor)
 	}
 
-	static func load() async -> ShackRoom {
+	static func load() async -> ShowcaseRoom {
 		let root = Entity()
-		root.name = "ShackRoom"
-		var found: [String: ShackAnchorPose] = [:]
+		root.name = "ShowcaseRoom"
+		var found: [String: ShowcaseAnchorPose] = [:]
 		var loadedAsset = false
 		do {
-			let scene = try await Entity(named: ShackRoomGeometry.assetName, in: shackContentBundle)
+			let scene = try await Entity(named: ShowcaseRoomGeometry.assetName, in: showcaseContentBundle)
 			root.addChild(scene)
-			for anchor in ShackAnchor.allCases {
+			for anchor in ShowcaseAnchor.allCases {
 				guard let entity = scene.findEntity(named: anchor.rawValue) else { continue }
-				found[anchor.rawValue] = ShackAnchorPose(
+				found[anchor.rawValue] = ShowcaseAnchorPose(
 					entity.position(relativeTo: root),
 					orientation: entity.orientation(relativeTo: root)
 				)
 			}
 			loadedAsset = true
 		} catch {
-			Logger.services.error("📻 [Shack] The room failed to load: \(error.localizedDescription, privacy: .public)")
+			Logger.services.error("📻 [Showcase] The room failed to load: \(error.localizedDescription, privacy: .public)")
 			root.addChild(standInRoom())
 		}
-		let resolved = ShackRoomGeometry.resolve(found: found)
+		let resolved = ShowcaseRoomGeometry.resolve(found: found)
 		if loadedAsset, !resolved.missing.isEmpty {
-			Logger.services.warning("📻 [Shack] Room is missing anchors: \(resolved.missing.map(\.rawValue).joined(separator: ", "), privacy: .public)")
+			Logger.services.warning("📻 [Showcase] Room is missing anchors: \(resolved.missing.map(\.rawValue).joined(separator: ", "), privacy: .public)")
 		}
-		let room = ShackRoom(root: root, anchors: resolved.poses, missingAnchors: resolved.missing, loadedAsset: loadedAsset)
+		let room = ShowcaseRoom(root: root, anchors: resolved.poses, missingAnchors: resolved.missing, loadedAsset: loadedAsset)
 		room.drawSkyUnlit()
 		await room.addLighting()
 		return room
@@ -77,7 +77,7 @@ struct ShackRoom {
 	// MARK: Lighting
 
 	/// The entity carrying the room's image-based light; things added later receive it too.
-	static let environmentLightName = "ShackEnvironment"
+	static let environmentLightName = "ShowcaseEnvironment"
 
 	private static let lampColor = UIColor(red: 1.0, green: 0.78, blue: 0.52, alpha: 1)
 
@@ -107,7 +107,7 @@ struct ShackRoom {
 		root.addChild(fill)
 
 		guard let image = Self.environmentImage(),
-			  let environment = try? await EnvironmentResource(equirectangular: image, withName: "ShackEnvironment") else { return }
+			  let environment = try? await EnvironmentResource(equirectangular: image, withName: "ShowcaseEnvironment") else { return }
 		let light = Entity()
 		light.name = Self.environmentLightName
 		light.components.set(ImageBasedLightComponent(source: .single(environment), intensityExponent: -1.5))
@@ -149,26 +149,26 @@ struct ShackRoom {
 		return result
 	}
 
-	/// A plain floor, back wall and desk at the asset's measurements, for when Shack.usda fails
-	/// to load, so the shack still has somewhere to put things.
+	/// A plain floor, back wall and desk at the asset's measurements, for when Showcase.usda fails
+	/// to load, so the showcase still has somewhere to put things.
 	private static func standInRoom() -> Entity {
 		let room = Entity()
 		room.name = "StandInRoom"
 		let floor = ModelEntity(
-			mesh: .generateBox(width: ShackRoomGeometry.width, height: 0.02, depth: ShackRoomGeometry.width),
+			mesh: .generateBox(width: ShowcaseRoomGeometry.width, height: 0.02, depth: ShowcaseRoomGeometry.width),
 			materials: [SimpleMaterial(color: UIColor(red: 0.36, green: 0.22, blue: 0.12, alpha: 1), roughness: 0.6, isMetallic: false)]
 		)
-		floor.position = SIMD3<Float>(0, -0.01, ShackRoomGeometry.backWallZ + ShackRoomGeometry.width / 2)
+		floor.position = SIMD3<Float>(0, -0.01, ShowcaseRoomGeometry.backWallZ + ShowcaseRoomGeometry.width / 2)
 		let wall = ModelEntity(
-			mesh: .generateBox(width: ShackRoomGeometry.width, height: ShackRoomGeometry.height, depth: 0.06),
+			mesh: .generateBox(width: ShowcaseRoomGeometry.width, height: ShowcaseRoomGeometry.height, depth: 0.06),
 			materials: [SimpleMaterial(color: UIColor(red: 0.58, green: 0.52, blue: 0.42, alpha: 1), roughness: 0.9, isMetallic: false)]
 		)
-		wall.position = SIMD3<Float>(0, ShackRoomGeometry.height / 2, ShackRoomGeometry.backWallZ - 0.03)
+		wall.position = SIMD3<Float>(0, ShowcaseRoomGeometry.height / 2, ShowcaseRoomGeometry.backWallZ - 0.03)
 		let desk = ModelEntity(
 			mesh: .generateBox(width: 1.9, height: 0.04, depth: 0.75),
 			materials: [SimpleMaterial(color: UIColor(red: 0.26, green: 0.15, blue: 0.08, alpha: 1), roughness: 0.45, isMetallic: false)]
 		)
-		desk.position = SIMD3<Float>(0, ShackRoomGeometry.deskTopY - 0.02, ShackRoomGeometry.backWallZ + 0.375)
+		desk.position = SIMD3<Float>(0, ShowcaseRoomGeometry.deskTopY - 0.02, ShowcaseRoomGeometry.backWallZ + 0.375)
 		room.addChild(floor)
 		room.addChild(wall)
 		room.addChild(desk)

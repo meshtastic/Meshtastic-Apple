@@ -15,8 +15,8 @@ struct MainScene: View {
 	@Environment(\.openWindow) private var openWindow
 	#if os(visionOS) && DEBUG
 	@Environment(\.openImmersiveSpace) private var openImmersiveSpace
-	/// `--meshtastic-open-shack` opens the shack once per launch, not once per main window.
-	private static var openedShackForLaunchArgument = false
+	/// `--meshtastic-open-showcase` opens the showcase once per launch, not once per main window.
+	private static var openedShowcaseForLaunchArgument = false
 	#endif
 	@State private var saveChannelLink: SaveChannelLinkData?
 	@State private var pendingContact: PendingContact?
@@ -80,13 +80,13 @@ struct MainScene: View {
 			}
 			#endif
 			#if os(visionOS) && DEBUG
-			// Simulator screenshots: open the ham shack without a button. Here rather than in the
+			// Simulator screenshots: open the showcase without a button. Here rather than in the
 			// app's init, because opening an immersive space needs a view's environment.
 			.task {
-				guard CommandLine.arguments.contains("--meshtastic-open-shack"), !Self.openedShackForLaunchArgument else { return }
-				Self.openedShackForLaunchArgument = true
+				guard CommandLine.arguments.contains("--meshtastic-open-showcase"), !Self.openedShowcaseForLaunchArgument else { return }
+				Self.openedShowcaseForLaunchArgument = true
 				try? await Task.sleep(for: .seconds(3))
-				await HamShackScene.open(openImmersiveSpace, appState: appState)
+				await ShowcaseScene.open(openImmersiveSpace, appState: appState)
 			}
 			#endif
 			.task {

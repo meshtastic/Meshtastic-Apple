@@ -1,5 +1,5 @@
 //
-//  ShackShowroom.swift
+//  ShowcaseShowroom.swift
 //  Meshtastic
 //
 //  Copyright(c) Garth Vander Houwen 10/14/26.
@@ -7,9 +7,9 @@
 import Foundation
 @preconcurrency import SwiftData
 
-/// The makers the shack's shelves show, one shelf each. Elecrow's tall radios go on the bottom
+/// The makers the showcase's shelves show, one shelf each. Elecrow's tall radios go on the bottom
 /// shelf, RAK in the middle, and Seeed on the open top shelf, where the Solar Node fits.
-enum ShackVendor: String, CaseIterable, Sendable {
+enum ShowcaseVendor: String, CaseIterable, Sendable {
 	case elecrow = "Elecrow"
 	case rak = "RAK"
 	case seeed = "Seeed"
@@ -24,9 +24,9 @@ enum ShackVendor: String, CaseIterable, Sendable {
 	}
 
 	/// The vendor from a hardware record's tags, or from the model's name when untagged.
-	static func from(tags: [String], modelName: String) -> ShackVendor? {
+	static func from(tags: [String], modelName: String) -> ShowcaseVendor? {
 		for tag in tags {
-			if let vendor = ShackVendor.allCases.first(where: { $0.rawValue.caseInsensitiveCompare(tag) == .orderedSame }) {
+			if let vendor = ShowcaseVendor.allCases.first(where: { $0.rawValue.caseInsensitiveCompare(tag) == .orderedSame }) {
 				return vendor
 			}
 		}
@@ -39,7 +39,7 @@ enum ShackVendor: String, CaseIterable, Sendable {
 }
 
 /// A device in the hardware catalog, as much of it as the showroom needs.
-struct ShackHardwareRecord: Codable, Equatable, Sendable {
+struct ShowcaseHardwareRecord: Codable, Equatable, Sendable {
 	let hwModel: Int?
 	let hwModelSlug: String?
 	let platformioTarget: String?
@@ -49,10 +49,10 @@ struct ShackHardwareRecord: Codable, Equatable, Sendable {
 }
 
 /// One model on a shelf: an example of a device, not a node on the mesh.
-struct ShackShowroomItem: Identifiable, Equatable, Sendable {
+struct ShowcaseItem: Identifiable, Equatable, Sendable {
 	/// The model's file name without extension, the same as its SVG's.
 	let id: String
-	let vendor: ShackVendor
+	let vendor: ShowcaseVendor
 	/// The devices drawn with this model, e.g. a board sold bare and in a kit.
 	let deviceNames: [String]
 	/// Their firmware targets, which the purchase links are keyed by.
@@ -67,16 +67,16 @@ struct ShackShowroomItem: Identifiable, Equatable, Sendable {
 	}
 }
 
-enum ShackShowroomCatalog {
+enum ShowcaseCatalog {
 	/// The models there are, matched to the catalog's devices. A device uses a model when the model
 	/// is named after its firmware target, or else when the model is one of its images (a model can
 	/// arrive before the catalog points the device at its image). Models no device uses are left
 	/// out, as are models from other makers. Sorted by vendor, then name.
-	static func items(models: Set<String>, hardware: [ShackHardwareRecord]) -> [ShackShowroomItem] {
+	static func items(models: Set<String>, hardware: [ShowcaseHardwareRecord]) -> [ShowcaseItem] {
 		let modelKeys = Set(models.map { $0.lowercased() })
 		// Models that are some device's own, by firmware target.
 		let ownModels = Set(hardware.compactMap { $0.platformioTarget?.lowercased() }).intersection(modelKeys)
-		var items: [ShackShowroomItem] = []
+		var items: [ShowcaseItem] = []
 		for model in models {
 			let key = model.lowercased()
 			let devices = hardware.filter { record in
@@ -88,7 +88,7 @@ enum ShackShowroomCatalog {
 				return (record.images ?? []).contains("\(model).svg")
 			}
 			guard !devices.isEmpty,
-				  let vendor = devices.lazy.compactMap({ ShackVendor.from(tags: $0.tags ?? [], modelName: model) }).first
+				  let vendor = devices.lazy.compactMap({ ShowcaseVendor.from(tags: $0.tags ?? [], modelName: model) }).first
 			else { continue }
 			// The device named after the model first, then the rest alphabetically.
 			let ordered = devices.sorted { lhs, rhs in
@@ -100,7 +100,7 @@ enum ShackShowroomCatalog {
 			for name in ordered.compactMap(\.displayName) where !names.contains(name) {
 				names.append(name)
 			}
-			items.append(ShackShowroomItem(
+			items.append(ShowcaseItem(
 				id: model,
 				vendor: vendor,
 				deviceNames: names,
@@ -140,7 +140,7 @@ enum ShackShowroomCatalog {
 	/// on the hardware number when known, since a node's stored name can differ from the catalog's
 	/// ("RAK2560" for "WISMESH_HUB"), else on the name without underscores ("THINKNODEM1" for
 	/// "THINKNODE_M1").
-	static func modelName(forHardwareSlug slug: String?, number: Int? = nil, models: Set<String>, hardware: [ShackHardwareRecord]) -> String? {
+	static func modelName(forHardwareSlug slug: String?, number: Int? = nil, models: Set<String>, hardware: [ShowcaseHardwareRecord]) -> String? {
 		guard let slug, !slug.isEmpty, slug != "UNSET" else { return nil }
 		let key = normalized(slug)
 		let records = number.map { number in hardware.filter { $0.hwModel == number } }.flatMap { $0.isEmpty ? nil : $0 }
@@ -159,17 +159,17 @@ enum ShackShowroomCatalog {
 	}
 
 	/// The catalog the app keeps fresh from the API, or the one bundled with it when that is empty.
-	static func hardware(in container: ModelContainer) async -> [ShackHardwareRecord] {
-		let reader = await Task.detached { ShackHardwareReader(modelContainer: container) }.value
+	static func hardware(in container: ModelContainer) async -> [ShowcaseHardwareRecord] {
+		let reader = await Task.detached { ShowcaseHardwareReader(modelContainer: container) }.value
 		let stored = await reader.records()
 		return stored.isEmpty ? bundledHardware() : stored
 	}
 
 	/// The hardware catalog bundled with the app.
-	static func bundledHardware(in bundle: Bundle = .main) -> [ShackHardwareRecord] {
+	static func bundledHardware(in bundle: Bundle = .main) -> [ShowcaseHardwareRecord] {
 		guard let url = bundle.url(forResource: "DeviceHardware", withExtension: "json"),
 			  let data = try? Data(contentsOf: url) else { return [] }
-		return (try? JSONDecoder().decode([ShackHardwareRecord].self, from: data)) ?? []
+		return (try? JSONDecoder().decode([ShowcaseHardwareRecord].self, from: data)) ?? []
 	}
 
 	/// The models bundled with the app (visionOS builds only).
@@ -182,7 +182,7 @@ enum ShackShowroomCatalog {
 
 /// Spreads a shelf's models along it: the space left over is shared out evenly, between the models
 /// and at both ends.
-enum ShackShelfPacking {
+enum ShowcaseShelfPacking {
 	/// The center of each model along a shelf of `length`, measured from the shelf's middle. When
 	/// the models are wider than the shelf they touch and run past its ends, centered.
 	static func centers(widths: [Float], length: Float) -> [Float] {
@@ -199,11 +199,11 @@ enum ShackShelfPacking {
 
 /// Reads the hardware catalog out of SwiftData on its own context, off the main actor.
 @ModelActor
-actor ShackHardwareReader {
-	func records() -> [ShackHardwareRecord] {
+actor ShowcaseHardwareReader {
+	func records() -> [ShowcaseHardwareRecord] {
 		let devices = (try? modelContext.fetch(FetchDescriptor<DeviceHardwareEntity>())) ?? []
 		return devices.map { device in
-			ShackHardwareRecord(
+			ShowcaseHardwareRecord(
 				hwModel: Int(device.hwModel),
 				hwModelSlug: device.hwModelSlug,
 				platformioTarget: device.platformioTarget,

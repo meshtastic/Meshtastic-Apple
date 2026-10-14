@@ -1,5 +1,5 @@
 //
-//  ShackDeviceModel.swift
+//  ShowcaseDeviceModel.swift
 //  Meshtastic
 //
 //  Copyright(c) Garth Vander Houwen 10/14/26.
@@ -7,8 +7,8 @@
 import Foundation
 import simd
 
-/// The rough shape a node's radio takes in the shack. One mesh per shape, colored per node.
-enum ShackDeviceArchetype: CaseIterable, Sendable {
+/// The rough shape a node's radio takes in the showcase. One mesh per shape, colored per node.
+enum ShowcaseDeviceArchetype: CaseIterable, Sendable {
 	/// A phone-sized case with a screen: T-Echo, T-Deck, ThinkNode, trackers.
 	case handheld
 	/// A bare dev board on a stand: T-Beam, Heltec V3, RAK WisBlock, XIAO.
@@ -69,9 +69,9 @@ enum ShackDeviceArchetype: CaseIterable, Sendable {
 	}
 
 	/// The device's parts, standing on the origin and facing +Z.
-	var geometry: ShackMeshGeometry {
-		var mesh = ShackMeshGeometry()
-		let body = ShackMeshGeometry.Material.body, screenPart = ShackMeshGeometry.Material.screen, dark = ShackMeshGeometry.Material.dark
+	var geometry: ShowcaseMeshGeometry {
+		var mesh = ShowcaseMeshGeometry()
+		let body = ShowcaseMeshGeometry.Material.body, screenPart = ShowcaseMeshGeometry.Material.screen, dark = ShowcaseMeshGeometry.Material.dark
 		let screen = self.screen
 		switch self {
 		case .handheld:
@@ -94,9 +94,9 @@ enum ShackDeviceArchetype: CaseIterable, Sendable {
 	}
 }
 
-/// Triangles for the shack's own meshes, grouped by material, kept free of RealityKit so they
+/// Triangles for the showcase's own meshes, grouped by material, kept free of RealityKit so they
 /// can be checked in tests. Triangles wind counterclockwise seen from the side their normals face.
-struct ShackMeshGeometry {
+struct ShowcaseMeshGeometry {
 	enum Material: Int, CaseIterable {
 		/// The node's color.
 		case body
@@ -191,8 +191,8 @@ struct ShackMeshGeometry {
 
 	/// The rack's cells for one page: a shallow box per cell standing out from the panel, each
 	/// colored from its own texel of a `columns` × `rows` texture (row 0 at the top).
-	static func rackCells(grid: ShackRackGrid, fill: Float = 0.8, depth: Float = 0.025) -> ShackMeshGeometry {
-		var mesh = ShackMeshGeometry()
+	static func rackCells(grid: ShowcaseRackGrid, fill: Float = 0.8, depth: Float = 0.025) -> ShowcaseMeshGeometry {
+		var mesh = ShowcaseMeshGeometry()
 		let side = grid.pitch * fill
 		for index in 0..<grid.perPage {
 			let center = grid.center(ofCellOnPage: index)
@@ -202,7 +202,7 @@ struct ShackMeshGeometry {
 	}
 
 	/// The texture coordinate of a cell's texel. RealityKit samples with v = 0 at the bottom.
-	static func rackTexel(_ index: Int, grid: ShackRackGrid) -> SIMD2<Float> {
+	static func rackTexel(_ index: Int, grid: ShowcaseRackGrid) -> SIMD2<Float> {
 		let column = index % grid.columns, row = index / grid.columns
 		return SIMD2((Float(column) + 0.5) / Float(grid.columns), 1 - (Float(row) + 0.5) / Float(grid.rows))
 	}

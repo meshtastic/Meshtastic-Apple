@@ -43,8 +43,8 @@ packages:
     majorVersion: 1.26.0
   MeshtasticProtobufs:
     path: MeshtasticProtobufs
-  ShackContent:
-    path: Packages/ShackContent
+  ShowcaseContent:
+    path: Packages/ShowcaseContent
 
 settings:
   configs:
@@ -274,9 +274,9 @@ targets:
         product: MeshtasticTAK
       - package: MeshtasticProtobufs
         product: MeshtasticProtobufs
-      # The ham shack room (a Reality Composer Pro content package); visionOS only.
-      - package: ShackContent
-        product: ShackContent
+      # The showcase room (a Reality Composer Pro content package); visionOS only.
+      - package: ShowcaseContent
+        product: ShowcaseContent
         destinationFilters: [visionOS]
       - package: dd-sdk-ios
         product: DatadogCore

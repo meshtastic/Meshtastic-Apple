@@ -1,5 +1,5 @@
 //
-//  ShackLayout.swift
+//  ShowcaseLayout.swift
 //  Meshtastic
 //
 //  Copyright(c) Garth Vander Houwen 10/14/26.
@@ -7,14 +7,14 @@
 import Foundation
 import simd
 
-/// Where a node sits in the shack.
-enum ShackSlot: Hashable, Sendable {
+/// Where a node sits in the showcase.
+enum ShowcaseSlot: Hashable, Sendable {
 	/// The connected radio, in the middle of the desk.
 	case deskRadio
 	/// A cell in the wall rack, counted across pages.
 	case rack(Int)
 
-	var tier: ShackTier {
+	var tier: ShowcaseTier {
 		switch self {
 		case .deskRadio: .deskRadio
 		case .rack: .rack
@@ -22,14 +22,14 @@ enum ShackSlot: Hashable, Sendable {
 	}
 }
 
-enum ShackTier: Int, Comparable, Sendable {
+enum ShowcaseTier: Int, Comparable, Sendable {
 	case deskRadio, rack
 	static func < (lhs: Self, rhs: Self) -> Bool { lhs.rawValue < rhs.rawValue }
 }
 
 /// The wall rack's cells: a grid sized so each cell is still a comfortable target from the chair,
 /// shown one page at a time.
-struct ShackRackGrid: Equatable, Sendable {
+struct ShowcaseRackGrid: Equatable, Sendable {
 	let columns: Int
 	let rows: Int
 	/// Center-to-center spacing, in meters.
@@ -39,17 +39,17 @@ struct ShackRackGrid: Equatable, Sendable {
 
 	/// A target should be about 6% of its distance across (a little over 3°); cells are spaced a
 	/// little wider than that, inside a margin around the panel's edge.
-	static func fitting(size: SIMD2<Float>, viewingDistance: Float, margin: Float = 0.06) -> ShackRackGrid {
+	static func fitting(size: SIMD2<Float>, viewingDistance: Float, margin: Float = 0.06) -> ShowcaseRackGrid {
 		let target = 0.06 * viewingDistance
 		let pitch = target * 1.15
 		let columns = max(1, Int(((size.x - 2 * margin) / pitch).rounded(.down)))
 		let rows = max(1, Int(((size.y - 2 * margin) / pitch).rounded(.down)))
-		return ShackRackGrid(columns: columns, rows: rows, pitch: pitch)
+		return ShowcaseRackGrid(columns: columns, rows: rows, pitch: pitch)
 	}
 
 	/// The grid for the room's rack, seen from the seat.
-	static func forRoom(rack: ShackAnchorPose) -> ShackRackGrid {
-		fitting(size: ShackRoomGeometry.rackSize, viewingDistance: simd_distance(ShackRoomGeometry.seatedEye, rack.position))
+	static func forRoom(rack: ShowcaseAnchorPose) -> ShowcaseRackGrid {
+		fitting(size: ShowcaseRoomGeometry.rackSize, viewingDistance: simd_distance(ShowcaseRoomGeometry.seatedEye, rack.position))
 	}
 
 	/// The center of a cell on its page, in the rack's own plane: +X to the viewer's right, +Y up,
@@ -76,14 +76,14 @@ struct ShackRackGrid: Equatable, Sendable {
 ///
 /// Nodes keep their cell: a new node takes the first free one, and a node counts as online or
 /// offline only after it has stayed that way for `hysteresis`, so the rack doesn't flicker.
-struct ShackLayout {
+struct ShowcaseLayout {
 	static let onlineWindow: TimeInterval = 2 * 60 * 60
 	static let hysteresis: TimeInterval = 2 * 60
 	static let maxRackPages = 4
 
-	let grid: ShackRackGrid
+	let grid: ShowcaseRackGrid
 	let maxRackPages: Int
-	private(set) var slots: [Int64: ShackSlot] = [:]
+	private(set) var slots: [Int64: ShowcaseSlot] = [:]
 	/// Nodes there was no place for.
 	private(set) var overflow = 0
 	private var onlineStates: [Int64: OnlineState] = [:]
@@ -94,7 +94,7 @@ struct ShackLayout {
 		var changingSince: Date?
 	}
 
-	init(grid: ShackRackGrid, maxRackPages: Int = ShackLayout.maxRackPages) {
+	init(grid: ShowcaseRackGrid, maxRackPages: Int = ShowcaseLayout.maxRackPages) {
 		self.grid = grid
 		self.maxRackPages = maxRackPages
 	}
@@ -124,12 +124,12 @@ struct ShackLayout {
 	}
 
 	/// The node in a place, if any.
-	func node(in slot: ShackSlot) -> Int64? {
+	func node(in slot: ShowcaseSlot) -> Int64? {
 		slots.first { $0.value == slot }?.key
 	}
 
-	/// Places `nodes`, which come in shack order (see `ShackNodeOrdering`).
-	mutating func update(_ nodes: [ShackNodeSnapshot], now: Date) {
+	/// Places `nodes`, which come in showcase order (see `ShowcaseNodeOrdering`).
+	mutating func update(_ nodes: [ShowcaseNodeSnapshot], now: Date) {
 		let present = Set(nodes.map(\.id))
 		slots = slots.filter { present.contains($0.key) }
 		onlineStates = onlineStates.filter { present.contains($0.key) }
@@ -156,7 +156,7 @@ struct ShackLayout {
 		}
 	}
 
-	private mutating func updateOnline(_ node: ShackNodeSnapshot, now: Date) {
+	private mutating func updateOnline(_ node: ShowcaseNodeSnapshot, now: Date) {
 		guard var state = onlineStates[node.id] else {
 			onlineStates[node.id] = OnlineState(isOnline: node.isOnline)
 			return
@@ -176,16 +176,16 @@ struct ShackLayout {
 }
 
 /// Where each place is in the room, from the room's anchors.
-enum ShackPlacement {
+enum ShowcasePlacement {
 	/// The place's position and facing in the room. Rack cells are on the face of the panel.
-	static func pose(of slot: ShackSlot, grid: ShackRackGrid, anchor: (ShackAnchor) -> ShackAnchorPose) -> ShackAnchorPose {
+	static func pose(of slot: ShowcaseSlot, grid: ShowcaseRackGrid, anchor: (ShowcaseAnchor) -> ShowcaseAnchorPose) -> ShowcaseAnchorPose {
 		switch slot {
 		case .deskRadio:
 			return anchor(.deskRadio)
 		case .rack(let index):
 			let base = anchor(.wallRack)
 			let center = grid.center(ofCellOnPage: index % grid.perPage)
-			return ShackAnchorPose(base.position + base.orientation.act(SIMD3(center.x, center.y, 0)), orientation: base.orientation)
+			return ShowcaseAnchorPose(base.position + base.orientation.act(SIMD3(center.x, center.y, 0)), orientation: base.orientation)
 		}
 	}
 }

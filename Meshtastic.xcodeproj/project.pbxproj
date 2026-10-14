@@ -53,7 +53,7 @@
 		B97B830773C8597258C1A96F /* MeshtasticProtobufs in Frameworks */ = {isa = PBXBuildFile; productRef = 838679D32875D367B9FC8FBF /* MeshtasticProtobufs */; };
 		BB73AFBEB76A7B00550C8F2F /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = A7443D3C9E82A023A4388EFC /* InfoPlist.strings */; };
 		C435B3FDDC80FBF45F9D6CDB /* Certificates in Resources */ = {isa = PBXBuildFile; fileRef = 25BA43A8304E6CC120811070 /* Certificates */; };
-		C5B1D5B4B38940E115D61856 /* ShackContent in Frameworks */ = {isa = PBXBuildFile; platformFilters = (xros, ); productRef = 35A1C82BA20137F8F71D2D74 /* ShackContent */; };
+		C5B1D5B4B38940E115D61856 /* ShowcaseContent in Frameworks */ = {isa = PBXBuildFile; platformFilters = (xros, ); productRef = 854C16DCEE2F871D2485DEE3 /* ShowcaseContent */; };
 		C6148418734B3ADB2741CB8E /* PMTilesExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9297A8F3E4AAC1F74C05844 /* PMTilesExtractor.swift */; };
 		D8EAA0284C5F4F9CE9941A1D /* MeshtasticMessages.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 591BC4981F3D80C31349BEED /* MeshtasticMessages.appex */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		ECF8A4938BAD87D6CD830F7A /* MeshtasticAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69F2AD74F4ECBF91E5BE6275 /* MeshtasticAppDelegate.swift */; };
@@ -188,7 +188,6 @@
 		7CC479B0D213C6E7BEB49872 /* MeshtasticDataModelV 44.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 44.xcdatamodel"; sourceTree = "<group>"; };
 		7D05DC325F033D282A72589F /* CircleText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleText.swift; sourceTree = "<group>"; };
 		81D5A542DA5164CF87651D93 /* MeshtasticDataModelV17.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV17.xcdatamodel; sourceTree = "<group>"; };
-		8233D315E4416F4CCADC3C14 /* ShackContent */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ShackContent; path = Packages/ShackContent; sourceTree = SOURCE_ROOT; };
 		82366FE0FE5DF98DF5CACD99 /* MeshtasticDataModelV5.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV5.xcdatamodel; sourceTree = "<group>"; };
 		83983ADF5E6EDF53099C4550 /* MeshtasticDataModelV 25.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 25.xcdatamodel"; sourceTree = "<group>"; };
 		8416D4A1A2CBEC8CF47BCF9A /* MeshtasticDataModelV 43.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 43.xcdatamodel"; sourceTree = "<group>"; };
@@ -220,6 +219,7 @@
 		B131E575DB7543BA64BF290C /* MeshtasticDataModelV 54.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 54.xcdatamodel"; sourceTree = "<group>"; };
 		B392CBC9201C0D5D78DEADEF /* MeshtasticDataModelV6.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV6.xcdatamodel; sourceTree = "<group>"; };
 		B4FDBE952986D711B234AEC4 /* MeshtasticDataModelV 30.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 30.xcdatamodel"; sourceTree = "<group>"; };
+		B5CE7E1EEA0E7E9ED7E764F6 /* ShowcaseContent */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ShowcaseContent; path = Packages/ShowcaseContent; sourceTree = SOURCE_ROOT; };
 		B8C15787882CA30C9787154D /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		BC6E547B77D9EA8FF3CE7491 /* MeshtasticDataModelV 51.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 51.xcdatamodel"; sourceTree = "<group>"; };
 		BD1780B27CE8A3FF56E1C632 /* zh-Hant */ = {isa = PBXFileReference; lastKnownFileType = text.plist; name = "zh-Hant"; path = "zh-Hant.lproj/AppIntentVocabulary.plist"; sourceTree = "<group>"; };
@@ -610,7 +610,7 @@
 				1F6C54C9333DB13E75830B91 /* CocoaMQTT in Frameworks */,
 				4701C2F3A8A60ADE516D7FA0 /* MeshtasticTAK in Frameworks */,
 				B97B830773C8597258C1A96F /* MeshtasticProtobufs in Frameworks */,
-				C5B1D5B4B38940E115D61856 /* ShackContent in Frameworks */,
+				C5B1D5B4B38940E115D61856 /* ShowcaseContent in Frameworks */,
 				F494AA4C9783F0E204B12D62 /* DatadogCore in Frameworks */,
 				9B61C796B61232F1226AAA28 /* DatadogCrashReporting in Frameworks */,
 				54D8BBD62304C5917AEE0C2B /* DatadogLogs in Frameworks */,
@@ -741,7 +741,7 @@
 			isa = PBXGroup;
 			children = (
 				BF325A6359A74DDECD015FA1 /* MeshtasticProtobufs */,
-				8233D315E4416F4CCADC3C14 /* ShackContent */,
+				B5CE7E1EEA0E7E9ED7E764F6 /* ShowcaseContent */,
 			);
 			path = Packages;
 			sourceTree = "<group>";
@@ -1060,7 +1060,7 @@
 				5F878D11CC8A8E494A4A51B5 /* CocoaMQTT */,
 				F98E8431879FC7025B658B08 /* MeshtasticTAK */,
 				838679D32875D367B9FC8FBF /* MeshtasticProtobufs */,
-				35A1C82BA20137F8F71D2D74 /* ShackContent */,
+				854C16DCEE2F871D2485DEE3 /* ShowcaseContent */,
 				680CA066D5A5ECD529461B91 /* DatadogCore */,
 				43547F7F6DDB3842969DA369 /* DatadogCrashReporting */,
 				7F3F27310C566077475C7105 /* DatadogLogs */,
@@ -1151,7 +1151,7 @@
 				4EFE4EEC5E27B5E40276A67C /* XCRemoteSwiftPackageReference "swift-markdown" */,
 				981964D4D54F32AEF37E646A /* XCRemoteSwiftPackageReference "swift-protobuf" */,
 				71B6C19C2660F20C79DC8366 /* XCLocalSwiftPackageReference "MeshtasticProtobufs" */,
-				8212F4DB629E2996559D6579 /* XCLocalSwiftPackageReference "Packages/ShackContent" */,
+				28266D5DB9AF0516D1ADB47C /* XCLocalSwiftPackageReference "Packages/ShowcaseContent" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 5D4AFA4225AF7D85EE343B80 /* Products */;
@@ -2069,13 +2069,13 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
+		28266D5DB9AF0516D1ADB47C /* XCLocalSwiftPackageReference "Packages/ShowcaseContent" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/ShowcaseContent;
+		};
 		71B6C19C2660F20C79DC8366 /* XCLocalSwiftPackageReference "MeshtasticProtobufs" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = MeshtasticProtobufs;
-		};
-		8212F4DB629E2996559D6579 /* XCLocalSwiftPackageReference "Packages/ShackContent" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = Packages/ShackContent;
 		};
 /* End XCLocalSwiftPackageReference section */
 
@@ -2148,10 +2148,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		35A1C82BA20137F8F71D2D74 /* ShackContent */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = ShackContent;
-		};
 		3E5E35695D4334FDDA3BE8F2 /* DatadogTrace */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = D4D6B3C078FD6A403FA6BA8D /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
@@ -2197,6 +2193,10 @@
 		838679D32875D367B9FC8FBF /* MeshtasticProtobufs */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = MeshtasticProtobufs;
+		};
+		854C16DCEE2F871D2485DEE3 /* ShowcaseContent */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ShowcaseContent;
 		};
 		99BACD26F50E4FBA1E2FC365 /* MVTTools */ = {
 			isa = XCSwiftPackageProductDependency;

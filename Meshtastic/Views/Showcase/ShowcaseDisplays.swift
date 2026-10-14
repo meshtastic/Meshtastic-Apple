@@ -1,5 +1,5 @@
 //
-//  ShackShowroomShelves.swift
+//  ShowcaseDisplays.swift
 //  Meshtastic
 //
 //  Copyright(c) Garth Vander Houwen 10/14/26.
@@ -11,7 +11,7 @@ import RealityKit
 import SwiftUI
 
 /// Marks a model in the showroom, so a tap on any of its parts finds the item.
-struct ShackShowroomComponent: Component {
+struct ShowcaseItemComponent: Component {
 	let itemID: String
 }
 
@@ -19,20 +19,20 @@ struct ShackShowroomComponent: Component {
 /// They are examples of the devices, not nodes on the mesh. A hand can pick one up and turn it
 /// over; let go and it goes back on the shelf.
 @MainActor @Observable
-final class ShackShowroomShelves {
+final class ShowcaseDisplays {
 	@ObservationIgnored let root = Entity()
 	/// Each loaded model as it was in its file; shelf items use it directly, the desk a clone.
 	@ObservationIgnored private var templates: [String: Entity] = [:]
 	/// Where each shelf model stands, and its height, in the world's space.
 	@ObservationIgnored private var placements: [String: (position: SIMD3<Float>, height: Float)] = [:]
-	@ObservationIgnored private var hardware: [ShackHardwareRecord] = []
-	@ObservationIgnored private let models = ShackShowroomCatalog.bundledModels()
+	@ObservationIgnored private var hardware: [ShowcaseHardwareRecord] = []
+	@ObservationIgnored private let models = ShowcaseCatalog.bundledModels()
 
 	/// The shelves' models, once loaded.
-	private(set) var items: [ShackShowroomItem] = []
+	private(set) var items: [ShowcaseItem] = []
 
 	init() {
-		ShackShowroomComponent.registerComponent()
+		ShowcaseItemComponent.registerComponent()
 		root.name = "Showroom"
 	}
 
@@ -45,30 +45,30 @@ final class ShackShowroomShelves {
 	/// enum case's name, uppercased, which gives back the number.
 	func modelName(forHardwareSlug slug: String?) -> String? {
 		let number = slug.flatMap { slug in HardwareModel.allCases.first { String(describing: $0).uppercased() == slug }?.rawValue }
-		guard let name = ShackShowroomCatalog.modelName(forHardwareSlug: slug, number: number, models: models, hardware: hardware),
+		guard let name = ShowcaseCatalog.modelName(forHardwareSlug: slug, number: number, models: models, hardware: hardware),
 			  templates[name] != nil else { return nil }
 		return name
 	}
 
 	/// Loads every bundled model with a device in the catalog and stands them on the shelves, one
 	/// maker per shelf, spread along it. `receiveLight` gives each model the room's light.
-	func load(room: ShackRoom, hardware: [ShackHardwareRecord], receiveLight: (Entity) -> Void) async {
+	func load(room: ShowcaseRoom, hardware: [ShowcaseHardwareRecord], receiveLight: (Entity) -> Void) async {
 		guard items.isEmpty else { return }
 		self.hardware = hardware
-		let catalog = ShackShowroomCatalog.items(models: models, hardware: hardware)
+		let catalog = ShowcaseCatalog.items(models: models, hardware: hardware)
 		for item in catalog {
 			guard let url = Bundle.main.url(forResource: item.id, withExtension: "usdz") else { continue }
 			do {
 				templates[item.id] = try await Entity(contentsOf: url)
 			} catch {
-				Logger.services.error("📻 [Shack] Model \(item.id, privacy: .public) failed to load: \(error.localizedDescription, privacy: .public)")
+				Logger.services.error("📻 [Showcase] Model \(item.id, privacy: .public) failed to load: \(error.localizedDescription, privacy: .public)")
 			}
 		}
 		let loaded = catalog.filter { templates[$0.id] != nil }
-		for vendor in ShackVendor.allCases {
+		for vendor in ShowcaseVendor.allCases {
 			let shelfItems = loaded.filter { $0.vendor == vendor }
 			guard !shelfItems.isEmpty else { continue }
-			let shelf = room.pose(ShackAnchor.shelves[min(vendor.shelf, ShackAnchor.shelves.count - 1)])
+			let shelf = room.pose(ShowcaseAnchor.shelves[min(vendor.shelf, ShowcaseAnchor.shelves.count - 1)])
 			var stands: [ShowroomStand] = []
 			for item in shelfItems {
 				guard let model = templates[item.id] else { continue }
@@ -76,12 +76,12 @@ final class ShackShowroomShelves {
 				holder.name = "showroom-\(item.id)"
 				let width = model.visualBounds(relativeTo: nil).extents.x
 				let height = Self.stand(model, in: holder)
-				model.components.set(ShackShowroomComponent(itemID: item.id))
+				model.components.set(ShowcaseItemComponent(itemID: item.id))
 				model.components.set(Self.accessibility(for: item))
 				receiveLight(model)
 				stands.append(ShowroomStand(item: item, holder: holder, width: width, height: height))
 			}
-			let centers = ShackShelfPacking.centers(widths: stands.map(\.width), length: ShackRoomGeometry.shelfLength)
+			let centers = ShowcaseShelfPacking.centers(widths: stands.map(\.width), length: ShowcaseRoomGeometry.shelfLength)
 			for (stand, x) in zip(stands, centers) {
 				let position = shelf.position + shelf.orientation.act(SIMD3(x, 0, 0))
 				stand.holder.position = position
@@ -91,11 +91,11 @@ final class ShackShowroomShelves {
 			}
 		}
 		items = loaded
-		Logger.services.info("📻 [Shack] Showroom: \(loaded.count, privacy: .public) models on the shelves")
+		Logger.services.info("📻 [Showcase] Showroom: \(loaded.count, privacy: .public) models on the shelves")
 	}
 
 	private struct ShowroomStand {
-		let item: ShackShowroomItem
+		let item: ShowcaseItem
 		let holder: Entity
 		let width: Float
 		let height: Float
@@ -123,12 +123,12 @@ final class ShackShowroomShelves {
 		model.components.set(manipulation)
 	}
 
-	private static func accessibility(for item: ShackShowroomItem) -> AccessibilityComponent {
+	private static func accessibility(for item: ShowcaseItem) -> AccessibilityComponent {
 		var component = AccessibilityComponent()
 		component.isAccessibilityElement = true
 		component.traits = [.button]
 		component.label = LocalizedStringResource(stringLiteral: item.title)
-		component.value = LocalizedStringResource("Made by \(item.vendor.rawValue)", comment: "Ham shack: VoiceOver value for a model on the shelf; the argument is the maker")
+		component.value = LocalizedStringResource("Made by \(item.vendor.rawValue)", comment: "Showcase: VoiceOver value for a model on the shelf; the argument is the maker")
 		return component
 	}
 
@@ -136,7 +136,7 @@ final class ShackShowroomShelves {
 	func item(tappedOn entity: Entity) -> String? {
 		var current: Entity? = entity
 		while let candidate = current {
-			if let component = candidate.components[ShackShowroomComponent.self] { return component.itemID }
+			if let component = candidate.components[ShowcaseItemComponent.self] { return component.itemID }
 			current = candidate.parent
 		}
 		return nil
