@@ -65,7 +65,9 @@ struct HamShackSpace: View {
 		}
 		.gesture(tap)
 		.task(id: accessoryManager.activeDeviceNum) {
-			let reader = ShackSnapshotReader(modelContainer: context.container)
+			// Made off the main thread: a model actor made on it runs its fetches there too.
+			let container = context.container
+			let reader = await Task.detached { ShackSnapshotReader(modelContainer: container) }.value
 			while !Task.isCancelled {
 				let result = await reader.read(connectedNodeNum: accessoryManager.activeDeviceNum)
 				scene.apply(result)
