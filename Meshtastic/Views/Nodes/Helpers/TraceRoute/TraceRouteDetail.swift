@@ -94,7 +94,7 @@ struct TraceRouteDetail: View {
 		}
 		isRenderingShareImage = true
 		defer { isRenderingShareImage = false }
-		let model = TraceRouteShareModel(route: route, legs: legs, mapWidth: TraceRouteShareStyle.contentWidth)
+		let model = TraceRouteShareModel(route: route, legs: legs, mapWidth: TraceRouteShareStyle.mapWidth)
 		shareImage = await TraceRouteShareRenderer.render(model: model)
 	}
 

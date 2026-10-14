@@ -79,7 +79,7 @@ enum TraceRouteShareFixtures {
 			date: date,
 			observed: false,
 			roundTrip: roundTrip,
-			mapWidth: TraceRouteShareStyle.contentWidth
+			mapWidth: TraceRouteShareStyle.mapWidth
 		)
 	}
 
@@ -112,14 +112,14 @@ enum TraceRouteShareFixtures {
 			date: date,
 			observed: false,
 			roundTrip: 21.75,
-			mapWidth: TraceRouteShareStyle.contentWidth
+			mapWidth: TraceRouteShareStyle.mapWidth
 		)
 	}
 
 	/// A direct route that was observed on the mesh: no relays, no round trip, no positions.
 	static func directObservedModel() -> TraceRouteShareModel {
 		let legs = legs(forward: [.init(num: origin, snr: 7.25), .init(num: target, snr: 10.5)], back: [], positions: [:])
-		return TraceRouteShareModel(legs: legs, positions: [:], date: date, observed: true, roundTrip: nil, mapWidth: TraceRouteShareStyle.contentWidth)
+		return TraceRouteShareModel(legs: legs, positions: [:], date: date, observed: true, roundTrip: nil, mapWidth: TraceRouteShareStyle.mapWidth)
 	}
 }
 
@@ -191,7 +191,7 @@ struct TraceRouteShareModelTests {
 	@Test("The map frames every positioned stop with a margin")
 	func framing() throws {
 		let map = try #require(Fixtures.model().map)
-		#expect(map.size.width == TraceRouteShareStyle.contentWidth)
+		#expect(map.size.width == TraceRouteShareStyle.mapWidth)
 		for coordinate in Fixtures.positions.values {
 			let point = map.point(for: coordinate)
 			#expect(point.x > map.size.width * 0.1 && point.x < map.size.width * 0.9)
@@ -214,7 +214,7 @@ struct TraceRouteShareModelTests {
 			MKMapPoint(CLLocationCoordinate2D(latitude: 47.6, longitude: -122.1))
 		]
 		let frame = TraceRouteShareModel.frame(points: points, width: 300)
-		#expect(frame.size.height == 150)
+		#expect(frame.size.height == 225)
 	}
 
 	@Test("A route running north to south gets the tallest map")
@@ -224,9 +224,34 @@ struct TraceRouteShareModelTests {
 			MKMapPoint(CLLocationCoordinate2D(latitude: 47.8, longitude: -122.3))
 		]
 		let frame = TraceRouteShareModel.frame(points: points, width: 300)
-		#expect(frame.size.height == 225)
+		#expect(frame.size.height == 300)
 		// Widened, not cropped: both ends stay inside.
 		#expect(frame.rect.contains(points[0]) && frame.rect.contains(points[1]))
+	}
+
+	@Test("A set height replaces the shape and keeps the route inside")
+	func setHeight() {
+		let points = [
+			MKMapPoint(CLLocationCoordinate2D(latitude: 47.6, longitude: -122.5)),
+			MKMapPoint(CLLocationCoordinate2D(latitude: 47.6, longitude: -122.1))
+		]
+		let frame = TraceRouteShareModel.frame(points: points, width: 300, height: 600)
+		#expect(frame.size == CGSize(width: 300, height: 600))
+		#expect(abs(frame.rect.height / frame.rect.width - 2) < 0.01)
+		#expect(frame.rect.contains(points[0]) && frame.rect.contains(points[1]))
+	}
+
+	@Test("Fitting the map to a height keeps its width and never goes flatter than the range")
+	func fittingMap() throws {
+		let model = Fixtures.model()
+		let map = try #require(model.map)
+		let taller = try #require(model.fittingMap(height: map.size.height + 200).map)
+		#expect(taller.size.width == map.size.width)
+		#expect(taller.size.height == map.size.height + 200)
+		#expect(Fixtures.positions.values.allSatisfy { taller.rect.contains(MKMapPoint($0)) })
+		let flattest = (map.size.width * CGFloat(TraceRouteShareModel.mapAspectRange.lowerBound)).rounded(.up)
+		#expect(model.fittingMap(height: 10).map?.size.height == flattest)
+		#expect(Fixtures.model(positions: [:]).fittingMap(height: 500).map == nil)
 	}
 
 	@Test("Nodes close together still show the minimum span")

@@ -39,6 +39,7 @@ struct TraceRouteShareCardSnapshotTests {
 	}
 
 	private func render(_ model: TraceRouteShareModel) throws -> TraceRouteShareImage {
+		let model = TraceRouteShareRenderer.fittingMap(model)
 		let mapImage = model.map.map { Self.placeholderMap(size: $0.size) }
 		return try #require(TraceRouteShareRenderer.image(model: model, mapImage: mapImage))
 	}
@@ -71,6 +72,9 @@ struct TraceRouteShareCardSnapshotTests {
 		let image = try render(Fixtures.model())
 		#expect(image.image.size.width == TraceRouteShareStyle.width)
 		#expect(image.image.scale == TraceRouteShareRenderer.scale)
+		// A typical route comes out close to square.
+		let aspect = image.image.size.width / image.image.size.height
+		#expect(aspect > 0.9 && aspect < 1.3)
 		assertSnapshot(image.image, named: "traceRouteShareWithMap")
 	}
 
@@ -82,9 +86,13 @@ struct TraceRouteShareCardSnapshotTests {
 		assertSnapshot(image.image, named: "traceRouteShareWithoutMap")
 	}
 
-	@Test("A long route with an unknown repeater")
+	@Test("A long route with an unknown repeater grows taller, with the map filling the left column")
 	func longRoute() throws {
+		let model = TraceRouteShareRenderer.fittingMap(Fixtures.longModel())
+		let map = try #require(model.map)
+		#expect(map.size.height > map.size.width)
 		let image = try render(Fixtures.longModel())
+		#expect(image.image.size.width == TraceRouteShareStyle.width)
 		assertSnapshot(image.image, named: "traceRouteShareLongRoute")
 	}
 

@@ -37,9 +37,9 @@ struct TraceRouteShareModel {
 	/// The map never shows less than this many meters across, so nodes close together still
 	/// show some streets around them.
 	static let mapMinimumSpanMeters: CLLocationDistance = 800
-	/// Height over width of the map is kept between these, so a route running north to south
-	/// gets a taller map without pushing the hop chains off the image.
-	static let mapAspectRange: ClosedRange<Double> = 0.5...0.75
+	/// Height over width of the map follows the shape of the route within these, so the map stays
+	/// close to square. The image can still make it taller to line up with the hop chains beside it.
+	static let mapAspectRange: ClosedRange<Double> = 0.75...1.0
 
 	let legs: TraceRouteLegs
 	let date: Date?
@@ -76,13 +76,16 @@ struct TraceRouteShareModel {
 
 	/// - Parameters:
 	///   - mapWidth: width of the map in points; its height follows the shape of the route.
+	///   - mapHeight: a set height for the map instead of one from the route's shape; the area
+	///     shown widens to match, so the route is never cropped.
 	init(
 		legs: TraceRouteLegs,
 		positions: [Int64: CLLocationCoordinate2D],
 		date: Date?,
 		observed: Bool,
 		roundTrip: TimeInterval?,
-		mapWidth: CGFloat
+		mapWidth: CGFloat,
+		mapHeight: CGFloat? = nil
 	) {
 		self.legs = legs
 		self.date = date
@@ -92,23 +95,42 @@ struct TraceRouteShareModel {
 		// A map needs at least one drawn line, which takes two stops with a position.
 		if !layout.segments.isEmpty {
 			let points = layout.segments.flatMap { [MKMapPoint($0.from), MKMapPoint($0.to)] }
-			let (rect, size) = Self.frame(points: points, width: mapWidth)
+			let (rect, size) = Self.frame(points: points, width: mapWidth, height: mapHeight)
 			map = MapFrame(rect: rect, size: size, layout: layout, positions: positions)
 		} else {
 			map = nil
 		}
 	}
 
+	/// The same route with the map `height` points tall, so it lines up with the hop chains beside
+	/// it. It's never made flatter than `mapAspectRange` allows.
+	func fittingMap(height: CGFloat) -> TraceRouteShareModel {
+		guard let map else { return self }
+		let height = max(height, (map.size.width * Self.mapAspectRange.lowerBound).rounded(.up))
+		guard height != map.size.height else { return self }
+		return TraceRouteShareModel(
+			legs: legs,
+			positions: map.positions,
+			date: date,
+			observed: observed,
+			roundTrip: roundTrip,
+			mapWidth: map.size.width,
+			mapHeight: height
+		)
+	}
+
 	/// The map area and size for a set of points: their bounds with padding and a minimum span,
-	/// widened in one direction to match the map's aspect ratio.
-	static func frame(points: [MKMapPoint], width: CGFloat) -> (rect: MKMapRect, size: CGSize) {
+	/// widened in one direction to match the map's aspect ratio. A set `height` replaces the
+	/// aspect ratio from the route's shape.
+	static func frame(points: [MKMapPoint], width: CGFloat, height: CGFloat? = nil) -> (rect: MKMapRect, size: CGSize) {
 		let minX = points.map(\.x).min() ?? 0, maxX = points.map(\.x).max() ?? 0
 		let minY = points.map(\.y).min() ?? 0, maxY = points.map(\.y).max() ?? 0
 		let center = MKMapPoint(x: (minX + maxX) / 2, y: (minY + maxY) / 2)
 		let minimumSpan = mapMinimumSpanMeters * MKMapPointsPerMeterAtLatitude(center.coordinate.latitude)
 		var spanX = max((maxX - minX) * (1 + 2 * mapPaddingFraction), minimumSpan)
 		var spanY = max((maxY - minY) * (1 + 2 * mapPaddingFraction), minimumSpan)
-		let aspect = min(max(spanY / spanX, mapAspectRange.lowerBound), mapAspectRange.upperBound)
+		let aspect = height.map { Double($0 / width) }
+			?? min(max(spanY / spanX, mapAspectRange.lowerBound), mapAspectRange.upperBound)
 		// Grow whichever side is short so the area matches the aspect ratio without cropping.
 		if spanY / spanX < aspect {
 			spanY = spanX * aspect

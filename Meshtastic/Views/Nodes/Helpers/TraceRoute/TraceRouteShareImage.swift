@@ -29,13 +29,14 @@ struct TraceRouteShareImage: Transferable {
 
 enum TraceRouteShareRenderer {
 
-	/// Scale the image renders at: 360 points wide becomes 1080 pixels.
-	static let scale: CGFloat = 3
+	/// Scale the image renders at: 720 points wide becomes 1800 pixels.
+	static let scale: CGFloat = 2.5
 
 	/// Renders the share image: takes the map snapshot first when the route has positions, then
 	/// draws the card. Without a map (no positions, or the snapshot failed) the card leaves it out.
 	@MainActor
 	static func render(model: TraceRouteShareModel) async -> TraceRouteShareImage? {
+		let model = fittingMap(model)
 		var mapImage: UIImage?
 		if let map = model.map {
 			mapImage = await snapshot(rect: map.rect, size: map.size)
@@ -45,18 +46,40 @@ enum TraceRouteShareRenderer {
 		return image(model: model, mapImage: mapImage)
 	}
 
+	/// Sizes the map so the map and the stats under it end level with the hop chains beside them:
+	/// a long route fills the left column with map rather than leaving empty space.
+	@MainActor
+	static func fittingMap(_ model: TraceRouteShareModel) -> TraceRouteShareModel {
+		guard model.map != nil else { return model }
+		let chains = height(of: TraceRouteShareChains(model: model, sideBySide: false), width: TraceRouteShareStyle.chainColumnWidth)
+		let stats = height(of: TraceRouteShareStats(model: model, columns: 2), width: TraceRouteShareStyle.mapWidth)
+		guard let chains, let stats else { return model }
+		return model.fittingMap(height: (chains - stats - TraceRouteShareStyle.columnSpacing).rounded(.down))
+	}
+
+	/// Height of a part of the card laid out at `width`, with the card's environment.
+	@MainActor
+	private static func height(of view: some View, width: CGFloat) -> CGFloat? {
+		let renderer = ImageRenderer(content: view
+			.frame(width: width)
+			.environment(\.dynamicTypeSize, .large)
+			.environment(\.colorScheme, .dark))
+		renderer.proposedSize = ProposedViewSize(width: width, height: nil)
+		return renderer.uiImage?.size.height
+	}
+
 	/// Draws the card into an image.
 	@MainActor
 	static func image(model: TraceRouteShareModel, mapImage: UIImage?) -> TraceRouteShareImage? {
 		let card = TraceRouteShareCard(model: model, mapImage: mapImage)
 			.environment(\.dynamicTypeSize, .large)
 		let proposal = ProposedViewSize(width: TraceRouteShareStyle.width, height: nil)
-		// Round the height up to whole points so the image is a whole number of pixels tall.
+		// Round the height up to an even number of points so at 2.5x it's a whole number of pixels.
 		let measure = ImageRenderer(content: card)
 		measure.proposedSize = proposal
 		guard let measured = measure.uiImage?.size.height else { return nil }
 		let renderer = ImageRenderer(content: card
-			.frame(height: measured.rounded(.up), alignment: .top)
+			.frame(height: (measured / 2).rounded(.up) * 2, alignment: .top)
 			.background(TraceRouteShareStyle.backgroundBottom))
 		renderer.scale = scale
 		renderer.isOpaque = true

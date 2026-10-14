@@ -8,8 +8,8 @@
 import MapKit
 import SwiftUI
 
-/// Colors for the share image. It always uses the dark Meshtastic look so it reads the same in
-/// whatever app it's posted to, whatever the sender's appearance setting.
+/// Colors and sizes for the share image. It always uses the dark Meshtastic look so it reads the
+/// same in whatever app it's posted to, whatever the sender's appearance setting.
 enum TraceRouteShareStyle {
 	/// Meshtastic brand green.
 	static let brand = Color(red: 0x67 / 255, green: 0xEA / 255, blue: 0x94 / 255)
@@ -25,16 +25,24 @@ enum TraceRouteShareStyle {
 	/// Ring around the destination's circle.
 	static let destinationRing = Color.white
 
-	/// Width of the image in points; rendered at 3x for 1080 pixels.
-	static let width: CGFloat = 360
-	/// Height of the image in points when the content is short (1350 pixels at 3x, a 4:5 portrait).
-	static let minimumHeight: CGFloat = 450
-	static let margin: CGFloat = 20
+	/// Width of the image in points; rendered at 2.5x for 1800 pixels.
+	static let width: CGFloat = 720
+	/// Height of the image in points when the content is short (1400 pixels at 2.5x), so even a
+	/// direct route stays close to square.
+	static let minimumHeight: CGFloat = 560
+	static let margin: CGFloat = 28
 	static var contentWidth: CGFloat { width - margin * 2 }
+	/// Gap between the two columns, and between the map and the stats under it.
+	static let columnSpacing: CGFloat = 16
+	/// Width of the map in the left column.
+	static let mapWidth: CGFloat = 356
+	/// Width of the hop chains in the right column, beside the map.
+	static var chainColumnWidth: CGFloat { contentWidth - mapWidth - columnSpacing }
 }
 
-/// The trace route share image: logo and title, the stats, the map when there are positions, the
-/// hop chains and a footer.
+/// The trace route share image: the Meshtastic wordmark, the route and its date, then the map with
+/// the stats under it on the left and both hop chains on the right. Without a map the stats run
+/// across the top and the chains sit side by side under them.
 struct TraceRouteShareCard: View {
 	let model: TraceRouteShareModel
 	/// The map tiles for `model.map`; nil leaves the map out.
@@ -44,13 +52,22 @@ struct TraceRouteShareCard: View {
 
 	var body: some View {
 		VStack(alignment: .leading, spacing: 0) {
-			VStack(alignment: .leading, spacing: 14) {
+			VStack(alignment: .leading, spacing: 18) {
 				header
-				stats
 				if let map = model.map, let mapImage {
-					TraceRouteShareMap(frame: map, image: mapImage, legs: model.legs)
+					HStack(alignment: .top, spacing: Style.columnSpacing) {
+						VStack(spacing: Style.columnSpacing) {
+							TraceRouteShareMap(frame: map, image: mapImage, legs: model.legs)
+							TraceRouteShareStats(model: model, columns: 2)
+						}
+						.frame(width: Style.mapWidth)
+						TraceRouteShareChains(model: model, sideBySide: false)
+							.frame(width: Style.chainColumnWidth)
+					}
+				} else {
+					TraceRouteShareStats(model: model, columns: nil)
+					TraceRouteShareChains(model: model, sideBySide: true)
 				}
-				chains
 			}
 			// Kept out of the stack above so its spacing doesn't add a gap on top of the spacer's.
 			Spacer(minLength: 16)
@@ -67,57 +84,59 @@ struct TraceRouteShareCard: View {
 		ZStack {
 			LinearGradient(colors: [Style.backgroundTop, Style.backgroundBottom], startPoint: .top, endPoint: .bottom)
 			RadialGradient(
-				colors: [Style.brand.opacity(0.22), .clear],
+				colors: [Style.brand.opacity(0.2), .clear],
 				center: .topLeading,
 				startRadius: 0,
-				endRadius: 300
+				endRadius: 460
 			)
 		}
 	}
 
 	// MARK: Header
 
+	/// The wordmark as the title, "Trace Route" under it, then origin → destination. The date sits
+	/// on the right.
 	private var header: some View {
-		VStack(alignment: .leading, spacing: 12) {
-			HStack(alignment: .center, spacing: 10) {
-				Image("logo-white")
-					.renderingMode(.template)
+		HStack(alignment: .top, spacing: 16) {
+			VStack(alignment: .leading, spacing: 0) {
+				Image(decorative: "meshtastic-wordmark-white")
 					.resizable()
 					.scaledToFit()
-					.foregroundStyle(Style.brand)
-					.frame(height: 24)
-					.accessibilityHidden(true)
+					.frame(height: 28)
+					.padding(.bottom, 12)
 				Text("Trace Route")
-					.font(.system(size: 22, weight: .bold))
-					.foregroundStyle(Style.primaryText)
-				Spacer(minLength: 8)
-				if let date = model.date {
-					VStack(alignment: .trailing, spacing: 1) {
-						Text(date.formatted(.dateTime.month(.abbreviated).day().year()))
-						Text(date.formatted(.dateTime.hour().minute()))
+					.font(.system(size: 16, weight: .semibold))
+					.foregroundStyle(Style.brand)
+					.padding(.bottom, 2)
+				if let origin = model.origin, let destination = model.destination {
+					HStack(alignment: .firstTextBaseline, spacing: 10) {
+						Text(routeTitle(origin: origin, destination: destination))
+							.font(.system(size: 22, weight: .semibold))
+							.foregroundStyle(Style.primaryText)
+							.lineLimit(2)
+							.minimumScaleFactor(0.75)
+							.fixedSize(horizontal: false, vertical: true)
+						if model.observed {
+							Text("Observed")
+								.font(.system(size: 12, weight: .semibold))
+								.foregroundStyle(Color.orange)
+								.padding(.horizontal, 8)
+								.padding(.vertical, 3)
+								.background(Color.orange.opacity(0.15), in: Capsule())
+								.fixedSize()
+						}
 					}
-					.font(.system(size: 11, weight: .medium))
-					.foregroundStyle(Style.secondaryText)
-					.fixedSize()
 				}
 			}
-			if let origin = model.origin, let destination = model.destination {
-				VStack(alignment: .leading, spacing: 6) {
-					Text(routeTitle(origin: origin, destination: destination))
-						.font(.system(size: 17, weight: .semibold))
-						.foregroundStyle(Style.primaryText)
-						.lineLimit(2)
-						.minimumScaleFactor(0.8)
-						.fixedSize(horizontal: false, vertical: true)
-					if model.observed {
-						Text("Observed")
-							.font(.system(size: 10, weight: .semibold))
-							.foregroundStyle(Color.orange)
-							.padding(.horizontal, 6)
-							.padding(.vertical, 2)
-							.background(Color.orange.opacity(0.15), in: Capsule())
-					}
+			Spacer(minLength: 0)
+			if let date = model.date {
+				VStack(alignment: .trailing, spacing: 2) {
+					Text(date.formatted(.dateTime.month(.abbreviated).day().year()))
+					Text(date.formatted(.dateTime.hour().minute()))
 				}
+				.font(.system(size: 14, weight: .medium))
+				.foregroundStyle(Style.secondaryText)
+				.fixedSize()
 			}
 		}
 	}
@@ -129,149 +148,8 @@ struct TraceRouteShareCard: View {
 		return AttributedString(origin.longName) + arrow + AttributedString(destination.longName)
 	}
 
-	// MARK: Stats
-
-	/// Hops, round trip and distance in one row, with the SNR range on its own row underneath
-	/// when the first row is already full enough that it wouldn't fit.
-	@ViewBuilder
-	private var stats: some View {
-		let tiles = statTiles
-		let snr = snrTile
-		VStack(spacing: 8) {
-			HStack(spacing: 8) {
-				ForEach(tiles.indices, id: \.self) { tiles[$0] }
-				if tiles.count < 2, let snr { snr }
-			}
-			if tiles.count >= 2, let snr { snr }
-		}
-	}
-
-	private var snrTile: AnyView? {
-		guard let best = model.bestLeg, let bestSnr = best.snr else { return nil }
-		let worst = model.worstLeg.flatMap { $0 == best ? nil : $0 }
-		let label = worst == nil
-			? String(localized: "SNR")
-			: String(localized: "Best / worst SNR", comment: "Trace route share image: the highest and lowest SNR of the legs")
-		return AnyView(statTile(label: label, systemImage: "cellularbars") {
-			HStack(spacing: 6) {
-				Text(Self.decibels(bestSnr))
-					.foregroundStyle(best.quality?.color ?? Style.primaryText)
-				if let worst, let worstSnr = worst.snr {
-					Text(verbatim: "/")
-						.foregroundStyle(Style.tertiaryText)
-					Text(Self.decibels(worstSnr))
-						.foregroundStyle(worst.quality?.color ?? Style.primaryText)
-				}
-			}
-		})
-	}
-
-	private var statTiles: [AnyView] {
-		var tiles: [AnyView] = []
-		tiles.append(AnyView(statTile(
-			label: String(localized: "Hops"),
-			systemImage: "point.3.connected.trianglepath.dotted"
-		) {
-			HStack(spacing: 8) {
-				HStack(spacing: 2) {
-					Image(systemName: "arrow.right").font(.system(size: 12, weight: .bold))
-					Text(verbatim: "\(model.hopsTowards)")
-				}
-				.foregroundStyle(TraceRouteColors.forward)
-				if let back = model.hopsBack {
-					HStack(spacing: 2) {
-						Image(systemName: "arrow.left").font(.system(size: 12, weight: .bold))
-						Text(verbatim: "\(back)")
-					}
-					.foregroundStyle(TraceRouteColors.back)
-				}
-			}
-		}))
-		if let roundTrip = model.roundTrip {
-			tiles.append(AnyView(statTile(
-				label: String(localized: "Round trip", comment: "Trace route: time from sending the request to getting the response"),
-				systemImage: "timer"
-			) {
-				Text(TraceRouteCardModel.formattedRoundTrip(roundTrip))
-					.foregroundStyle(Style.primaryText)
-			}))
-		}
-		if let distance = model.routeDistance {
-			tiles.append(AnyView(statTile(label: String(localized: "Distance"), systemImage: "ruler") {
-				Text(Measurement(value: distance, unit: UnitLength.meters).formatted(.measurement(width: .abbreviated, usage: .road)))
-					.foregroundStyle(Style.primaryText)
-			}))
-		}
-		return tiles
-	}
-
-	private func statTile<Value: View>(label: String, systemImage: String, @ViewBuilder value: () -> Value) -> some View {
-		VStack(alignment: .leading, spacing: 4) {
-			value()
-				.font(.system(size: 16, weight: .semibold, design: .rounded))
-				.monospacedDigit()
-				.lineLimit(1)
-				.minimumScaleFactor(0.6)
-			Label(label, systemImage: systemImage)
-				.labelStyle(TraceRouteShareStatLabelStyle())
-				.font(.system(size: 9.5, weight: .semibold))
-				.textCase(.uppercase)
-				.foregroundStyle(Style.secondaryText)
-				.lineLimit(1)
-				.minimumScaleFactor(0.7)
-		}
-		.padding(.horizontal, 10)
-		.padding(.vertical, 9)
-		.frame(maxWidth: .infinity, alignment: .leading)
-		.background(Style.panel, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-		.overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(Style.panelBorder))
-	}
-
 	static func decibels(_ snr: Float) -> String {
 		"\(snr.formatted(.number.precision(.fractionLength(1)))) dB"
-	}
-
-	// MARK: Chains
-
-	@ViewBuilder
-	private var chains: some View {
-		if model.legs.back.isEmpty {
-			VStack(alignment: .leading, spacing: 8) {
-				TraceRouteShareChain(
-					title: String(localized: "Forward route", comment: "Trace route timeline: heading for the path towards the target"),
-					systemImage: "arrow.down",
-					color: TraceRouteColors.forward,
-					stops: model.legs.forward,
-					compact: false,
-					startRing: Style.originRing,
-					endRing: Style.destinationRing
-				)
-				Text("No return route was reported.", comment: "Trace route share image: the response didn't include the path back")
-					.font(.system(size: 11))
-					.foregroundStyle(Style.tertiaryText)
-			}
-		} else {
-			HStack(alignment: .top, spacing: 12) {
-				TraceRouteShareChain(
-					title: String(localized: "Forward route", comment: "Trace route timeline: heading for the path towards the target"),
-					systemImage: "arrow.down",
-					color: TraceRouteColors.forward,
-					stops: model.legs.forward,
-					compact: true,
-					startRing: Style.originRing,
-					endRing: Style.destinationRing
-				)
-				TraceRouteShareChain(
-					title: String(localized: "Return route", comment: "Trace route timeline: heading for the path back from the target"),
-					systemImage: "arrow.up",
-					color: TraceRouteColors.back,
-					stops: model.legs.back,
-					compact: true,
-					startRing: Style.destinationRing,
-					endRing: Style.originRing
-				)
-			}
-		}
 	}
 
 	// MARK: Footer
@@ -283,11 +161,11 @@ struct TraceRouteShareCard: View {
 				.frame(height: 1)
 			HStack {
 				Text(verbatim: "meshtastic.org")
-					.font(.system(size: 12, weight: .semibold))
+					.font(.system(size: 15, weight: .semibold))
 					.foregroundStyle(Style.brand)
 				Spacer()
 				Text(verbatim: Self.appName)
-					.font(.system(size: 11, weight: .medium))
+					.font(.system(size: 13, weight: .medium))
 					.foregroundStyle(Style.tertiaryText)
 			}
 		}
@@ -298,13 +176,181 @@ struct TraceRouteShareCard: View {
 	}
 }
 
+/// Hops, round trip, distance and the SNR range as tiles: in a grid of `columns` under the map, or
+/// in one row across the image when there's no map.
+struct TraceRouteShareStats: View {
+	let model: TraceRouteShareModel
+	/// Tiles per row; nil puts them all in one row.
+	let columns: Int?
+
+	private typealias Style = TraceRouteShareStyle
+
+	var body: some View {
+		let tiles = self.tiles
+		let perRow = max(columns ?? tiles.count, 1)
+		let rows = stride(from: 0, to: tiles.count, by: perRow).map { Array(tiles[$0..<min($0 + perRow, tiles.count)]) }
+		VStack(spacing: 10) {
+			ForEach(rows.indices, id: \.self) { row in
+				HStack(spacing: 10) {
+					ForEach(rows[row].indices, id: \.self) { rows[row][$0] }
+				}
+			}
+		}
+		// Never squeezed shorter than its content, which would shrink the values to fit.
+		.fixedSize(horizontal: false, vertical: true)
+	}
+
+	private var tiles: [AnyView] {
+		var tiles: [AnyView] = []
+		tiles.append(AnyView(tile(
+			label: String(localized: "Hops"),
+			systemImage: "point.3.connected.trianglepath.dotted"
+		) {
+			HStack(spacing: 10) {
+				HStack(spacing: 3) {
+					Image(systemName: "arrow.right").font(.system(size: 15, weight: .bold))
+					Text(verbatim: "\(model.hopsTowards)")
+				}
+				.foregroundStyle(TraceRouteColors.forward)
+				if let back = model.hopsBack {
+					HStack(spacing: 3) {
+						Image(systemName: "arrow.left").font(.system(size: 15, weight: .bold))
+						Text(verbatim: "\(back)")
+					}
+					.foregroundStyle(TraceRouteColors.back)
+				}
+			}
+		}))
+		if let roundTrip = model.roundTrip {
+			tiles.append(AnyView(tile(
+				label: String(localized: "Round trip", comment: "Trace route: time from sending the request to getting the response"),
+				systemImage: "timer"
+			) {
+				Text(TraceRouteCardModel.formattedRoundTrip(roundTrip))
+					.foregroundStyle(Style.primaryText)
+			}))
+		}
+		if let distance = model.routeDistance {
+			tiles.append(AnyView(tile(label: String(localized: "Distance"), systemImage: "ruler") {
+				Text(Measurement(value: distance, unit: UnitLength.meters).formatted(.measurement(width: .abbreviated, usage: .road)))
+					.foregroundStyle(Style.primaryText)
+			}))
+		}
+		if let snr = snrTile {
+			tiles.append(snr)
+		}
+		return tiles
+	}
+
+	private var snrTile: AnyView? {
+		guard let best = model.bestLeg, let bestSnr = best.snr else { return nil }
+		let worst = model.worstLeg.flatMap { $0 == best ? nil : $0 }
+		let label = worst == nil
+			? String(localized: "SNR")
+			: String(localized: "Best / worst SNR", comment: "Trace route share image: the highest and lowest SNR of the legs")
+		return AnyView(tile(label: label, systemImage: "cellularbars") {
+			HStack(spacing: 6) {
+				Text(TraceRouteShareCard.decibels(bestSnr))
+					.foregroundStyle(best.quality?.color ?? Style.primaryText)
+				if let worst, let worstSnr = worst.snr {
+					Text(verbatim: "/")
+						.foregroundStyle(Style.tertiaryText)
+					Text(TraceRouteShareCard.decibels(worstSnr))
+						.foregroundStyle(worst.quality?.color ?? Style.primaryText)
+				}
+			}
+		})
+	}
+
+	private func tile<Value: View>(label: String, systemImage: String, @ViewBuilder value: () -> Value) -> some View {
+		VStack(alignment: .leading, spacing: 5) {
+			value()
+				.font(.system(size: 20, weight: .semibold, design: .rounded))
+				.monospacedDigit()
+				.lineLimit(1)
+				.minimumScaleFactor(0.6)
+			Label(label, systemImage: systemImage)
+				.labelStyle(TraceRouteShareStatLabelStyle())
+				.font(.system(size: 11, weight: .semibold))
+				.textCase(.uppercase)
+				.foregroundStyle(Style.secondaryText)
+				.lineLimit(1)
+				.minimumScaleFactor(0.7)
+		}
+		.padding(.horizontal, 12)
+		.padding(.vertical, 11)
+		.frame(maxWidth: .infinity, alignment: .leading)
+		.background(Style.panel, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+		.overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Style.panelBorder))
+	}
+}
+
 /// Icon and title side by side with a small gap, for the stat tiles.
 private struct TraceRouteShareStatLabelStyle: LabelStyle {
 	func makeBody(configuration: Configuration) -> some View {
-		HStack(spacing: 3) {
+		HStack(spacing: 4) {
 			configuration.icon
 			configuration.title
 		}
+	}
+}
+
+/// Both hop chains: stacked in the column beside the map, or side by side across the image when
+/// there's no map. A route without a return path shows the forward chain and a note.
+struct TraceRouteShareChains: View {
+	let model: TraceRouteShareModel
+	let sideBySide: Bool
+
+	private typealias Style = TraceRouteShareStyle
+
+	var body: some View {
+		if model.legs.back.isEmpty {
+			VStack(alignment: .leading, spacing: 10) {
+				forward
+				Text("No return route was reported.", comment: "Trace route share image: the response didn't include the path back")
+					.font(.system(size: 13))
+					.foregroundStyle(Style.tertiaryText)
+			}
+		} else if sideBySide {
+			HStack(alignment: .top, spacing: Style.columnSpacing) {
+				forward
+				back
+			}
+		} else {
+			VStack(spacing: Style.columnSpacing) {
+				forward
+				back
+			}
+		}
+	}
+
+	/// Smaller circles and rows once a chain gets long, so a long route doesn't run far down.
+	private var dense: Bool { max(model.legs.forward.count, model.legs.back.count) > 6 }
+
+	private var forward: some View {
+		TraceRouteShareChain(
+			title: String(localized: "Forward route", comment: "Trace route timeline: heading for the path towards the target"),
+			systemImage: "arrow.down",
+			color: TraceRouteColors.forward,
+			stops: model.legs.forward,
+			dense: dense,
+			showsDistance: model.legs.back.isEmpty || !sideBySide,
+			startRing: Style.originRing,
+			endRing: Style.destinationRing
+		)
+	}
+
+	private var back: some View {
+		TraceRouteShareChain(
+			title: String(localized: "Return route", comment: "Trace route timeline: heading for the path back from the target"),
+			systemImage: "arrow.up",
+			color: TraceRouteColors.back,
+			stops: model.legs.back,
+			dense: dense,
+			showsDistance: !sideBySide,
+			startRing: Style.destinationRing,
+			endRing: Style.originRing
+		)
 	}
 }
 
@@ -344,34 +390,30 @@ struct TraceRouteShareNodeCircle: View {
 	}
 }
 
-/// One direction of the route as a compact vertical chain: node circles joined by lines colored by
-/// the SNR of each leg.
+/// One direction of the route as a vertical chain: node circles joined by lines colored by the SNR
+/// of each leg, with the SNR beside each line.
 private struct TraceRouteShareChain: View {
 	let title: String
 	let systemImage: String
 	let color: Color
 	let stops: [TraceRouteStop]
-	/// Two chains side by side: smaller circles and one line per name.
-	let compact: Bool
+	/// Smaller circles and gaps for a long route.
+	let dense: Bool
+	/// Adds each leg's length beside its SNR when there's room.
+	let showsDistance: Bool
 	/// Rings for the first and last stops, so the origin and destination match the header and map.
 	let startRing: Color
 	let endRing: Color
 
 	private typealias Style = TraceRouteShareStyle
 
-	private var circleSize: CGFloat {
-		if stops.count > 7 { return 22 }
-		return compact ? 26 : 28
-	}
-
-	private var connectorHeight: CGFloat {
-		stops.count > 7 ? 18 : 20
-	}
+	private var circleSize: CGFloat { dense ? 25 : 28 }
+	private var connectorHeight: CGFloat { dense ? 13 : 15 }
 
 	var body: some View {
 		VStack(alignment: .leading, spacing: 0) {
 			Label(title, systemImage: systemImage)
-				.font(.system(size: 12, weight: .bold))
+				.font(.system(size: 14, weight: .bold))
 				.foregroundStyle(color)
 				.lineLimit(1)
 				.padding(.bottom, 8)
@@ -382,10 +424,11 @@ private struct TraceRouteShareChain: View {
 				row(stop)
 			}
 		}
-		.padding(12)
+		.padding(.horizontal, 14)
+		.padding(.vertical, 12)
 		.frame(maxWidth: .infinity, alignment: .topLeading)
-		.background(Style.panel, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-		.overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Style.panelBorder))
+		.background(Style.panel, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+		.overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(Style.panelBorder))
 	}
 
 	private func ring(for stop: TraceRouteStop) -> Color? {
@@ -396,37 +439,38 @@ private struct TraceRouteShareChain: View {
 
 	private func row(_ stop: TraceRouteStop) -> some View {
 		let isEndpoint = stop.id == 0 || stop.id == stops.count - 1
-		return HStack(spacing: 8) {
+		return HStack(spacing: 10) {
 			ZStack(alignment: .topTrailing) {
 				TraceRouteShareNodeCircle(stop: stop, size: circleSize, ring: isEndpoint ? ring(for: stop) : nil)
 				if !isEndpoint {
 					Text(verbatim: "\(stop.id)")
-						.font(.system(size: 8.5, weight: .bold, design: .rounded))
+						.font(.system(size: 9.5, weight: .bold, design: .rounded))
 						.foregroundStyle(Color.white)
-						.frame(minWidth: 13, minHeight: 13)
+						.frame(minWidth: 15, minHeight: 15)
 						.background(Circle().fill(Color.black))
 						.overlay(Circle().strokeBorder(Color.white.opacity(0.9), lineWidth: 1))
-						.offset(x: 5, y: -4)
+						.offset(x: 6, y: -4)
 				}
 			}
 			.frame(width: circleSize + 6)
-			VStack(alignment: .leading, spacing: 1) {
+			HStack(spacing: 8) {
 				Text(stop.longName)
-					.font(.system(size: compact ? 12 : 13.5, weight: isEndpoint ? .semibold : .regular))
+					.font(.system(size: dense ? 14.5 : 15.5, weight: isEndpoint ? .semibold : .regular))
 					.foregroundStyle(stop.isUnknownRepeater ? Style.secondaryText : Style.primaryText)
-					.lineLimit(compact ? 2 : 1)
+					.lineLimit(2)
 					.truncationMode(.tail)
 					.fixedSize(horizontal: false, vertical: true)
 				if stop.viaMqtt {
-					HStack(spacing: 2) {
+					HStack(spacing: 3) {
 						Image(systemName: "network")
 						Text(verbatim: "MQTT")
 					}
-					.font(.system(size: 8.5, weight: .bold))
+					.font(.system(size: 10, weight: .bold))
 					.foregroundStyle(Color(red: 0.80, green: 0.66, blue: 1.0))
-					.padding(.horizontal, 4)
-					.padding(.vertical, 1)
+					.padding(.horizontal, 6)
+					.padding(.vertical, 2)
 					.background(Color.purple.opacity(0.25), in: Capsule())
+					.fixedSize()
 				}
 			}
 			Spacer(minLength: 0)
@@ -435,7 +479,7 @@ private struct TraceRouteShareChain: View {
 
 	private func connector(_ stop: TraceRouteStop) -> some View {
 		let lineColor = stop.quality?.color ?? Color.gray
-		return HStack(spacing: 8) {
+		return HStack(spacing: 10) {
 			TraceRouteShareLegLine()
 				.stroke(lineColor, style: StrokeStyle(lineWidth: 2.5, lineCap: .round, dash: stop.snr == nil ? [3, 4] : []))
 				.frame(width: circleSize + 6, height: connectorHeight)
@@ -448,11 +492,11 @@ private struct TraceRouteShareChain: View {
 						.foregroundStyle(Style.tertiaryText)
 				}
 			}
-			.font(.system(size: 10, weight: .semibold))
+			.font(.system(size: 12, weight: .semibold))
 			.monospacedDigit()
-			if !compact, let distance = stop.legDistance {
+			if showsDistance, let distance = stop.legDistance {
 				Text(Measurement(value: distance, unit: UnitLength.meters).formatted(.measurement(width: .abbreviated, usage: .road)))
-					.font(.system(size: 10))
+					.font(.system(size: 12))
 					.foregroundStyle(Style.tertiaryText)
 			}
 			Spacer(minLength: 0)
