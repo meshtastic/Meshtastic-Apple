@@ -162,16 +162,28 @@ A trace route can be drawn on the map to show the path a packet took through the
 
 ### Reading the Route
 
-- **Colored legs** — each hop is colored by its signal quality (SNR), using the same scale as the LoRa signal meter: **green** (good), **yellow** (fair), **orange** (bad), **red** (none). Signal quality is also shown by line weight and dash pattern — legs get progressively thinner and more dashed as quality drops from good to none — so the tier doesn't rely on color alone.
-- **Solid vs. dashed** — the **solid** line is the outbound path toward the target; the **dashed** line is the return path back to the originator.
-- **Arrows** — chevrons along each line point in the direction of travel.
-- **Endpoints** — a **green** marker is the originator; a **red** marker is the target.
+- **Forward and return** — the forward path toward the target is a **solid blue** line and the return path back to the originator is a **dashed green** line, the same colors as the Forward route and Return route headings in the hop timeline. Both have a dark edge so they stand out on the standard, satellite, hybrid and offline maps. Where both paths use the same leg, the two lines sit side by side instead of on top of each other.
+- **Arrows** — chevrons along each line, in the line's color, point in the direction of travel.
+- **Endpoints** — the originator and the target show the node's short name in its colored circle. The originator has a **green** ring and the target a **white** ring.
+- **Hop numbers** — each relay gets a small numbered badge in the order the packet reached it, the same order as the hop timeline. Badges on the way out are filled blue and sit above the node; badges on the way back are outlined green and sit below it. A relay that didn't add its number, or has no known position, gets no badge.
+- **Signal labels** — each leg shows its SNR (for example "7.0 dB") in a small pill colored by signal quality, on the same scale as the LoRa signal meter: **green** (good), **yellow** (fair), **orange** (bad), **red** (none). A forward leg whose SNR wasn't reported is drawn dashed and has no label. Labels and badges that would overlap at the current zoom are hidden until you zoom in.
 
 ### 3D Flyover
 
 Tap **▶** in the route banner for a guided 3D flythrough over satellite imagery: it flies the outbound path, lands at the target, then flies the return path and eases back to the map. Tap the **speed control** to cycle the pace from 1× up to 5× (1×, 1.5×, 2×, 2.5×, 3×, 4×, 5×) — adjustable mid-flight — and **■** to stop.
 
 Tap the **legend** button (map icon, bottom-right) for a key to the colors and markers.
+
+### On the spatial map (Apple Vision Pro)
+
+On the 3D spatial map, tap the **airplane** button in the toolbar and pick a trace route. A marker flies the route, and the route stays drawn on the terrain after it lands so you can read it. Tap **✕** in the toolbar to clear it.
+
+- **Forward and return** — the forward path toward the target is a **solid blue** line and the return path back to the originator is a **dashed green** line, the same colors as the Forward route and Return route headings in the hop timeline. Each has a dark edge so it stands out on the terrain. Where both paths use the same leg, the two lines sit side by side.
+- **Arrows** — small cones along each line, a shade lighter than the line, point in the direction of travel and drift slowly along it. They stay still when **Reduce Motion** is on.
+- **Endpoints** — the originator has a **green** ring at its foot and the target a **white** ring.
+- **Hop numbers** — each relay gets a numbered badge beside its pin, in the order the packet reached it: filled blue on the way out, a green ring on the way back.
+- **Signal labels** — each leg shows its SNR (for example "7.0 dB") in a small pill colored by signal quality. A forward leg whose SNR wasn't reported is drawn with short dashes and has no label. Labels that would crowd each other are hidden; zoom in to see more.
+- While a route is shown, the traceroute links between nodes are faded so the route stands out, and the toolbar shows a key to the two line colors.
 
 ## Node Trail
 

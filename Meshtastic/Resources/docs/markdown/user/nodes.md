@@ -117,7 +117,7 @@ Long-press any node in the list to access quick actions:
 - **Status Message** — set the status your radio broadcasts to the mesh (connected node only, firmware 2.8+)
 - **Mute notifications / Unmute** — silence alerts from this node
 - **Message** — open a direct message conversation with this node
-- **Trace Route** — discover the path messages take to reach this node
+- **Trace Route** — discover the path messages take to reach this node (see [Trace Routes](traceroute.md))
 - **Ignore / Remove from ignored** — hide this node from normal views
 - **Remove** — remove the node from your local database
 
@@ -163,7 +163,7 @@ Tap a node and scroll to the Logs section for detailed metrics:
 | ![Positions](../assets/screenshots/logPositions.png) | GPS position data including latitude, longitude, and altitude. |
 | ![Environment](../assets/screenshots/logEnvironment.png) | Sensor data: temperature, humidity, barometric pressure. |
 | ![Detection Sensor](../assets/screenshots/logDetectionSensor.png) | Motion or door open/close alerts from the node. |
-| ![Trace Routes](../assets/screenshots/logTraceRoutes.png) | Recorded trace route paths showing the hops a message took through the mesh. |
+| ![Trace Routes](../assets/screenshots/logTraceRoutes.png) | Recorded trace route paths showing the hops a message took through the mesh, with a chart and a hop-by-hop timeline. See [Trace Routes](traceroute.md). |
 
 When a node has a known position, the Logs section also offers **Estimate Coverage** (`cellularbars`). It switches to the Map tab and opens the Site Planner coverage-estimate form prefilled from that node. See [Coverage Estimate (Site Planner)](map.md) on the Map page for the full flow.
 
