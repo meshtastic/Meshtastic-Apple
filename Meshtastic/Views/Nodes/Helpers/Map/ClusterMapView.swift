@@ -40,7 +40,7 @@ struct ClusterMapConfiguration: Equatable {
 
 // MARK: - Overlays (polylines / polygons / circles)
 
-/// How to draw a `ClusterMapOverlay` (constant-width strokes; no casing).
+/// How to draw a `ClusterMapOverlay` (constant-width strokes).
 struct ClusterMapOverlayStyle {
 	var strokeUIColor: UIColor?
 	var fillUIColor: UIColor?
@@ -53,31 +53,94 @@ struct ClusterMapOverlayStyle {
 	var level: MKOverlayLevel = .aboveLabels
 	/// Draw chevrons along the line pointing in the direction of travel (uses the stroke color).
 	var directional: Bool = false
+	/// Directional lines only: a darker edge drawn under the line and chevrons, so the color reads
+	/// on any basemap.
+	var casingUIColor: UIColor?
+	/// Directional lines only: how far to shift the line sideways, in screen points, to the right of
+	/// the direction of travel. Two lines over the same leg in opposite directions both shift to
+	/// their own right, so they sit side by side.
+	var sideOffset: CGFloat = 0
 }
 
 /// An `MKPolylineRenderer` that also draws small chevrons along the line pointing in the direction of
 /// travel, at a roughly constant on-screen size + spacing. Drawn in the renderer's (north-up) map
-/// space so the arrows rotate and scale with the map. Used for trace route direction indicators.
+/// space so the arrows rotate and scale with the map. Used for trace route lines, which can also
+/// have a dark casing and a sideways offset (see `ClusterMapOverlayStyle`).
 final class DirectionalPolylineRenderer: MKPolylineRenderer {
+	var casingColor: UIColor?
+	var sideOffset: CGFloat = 0
+
 	override func draw(_ mapRect: MKMapRect, zoomScale: MKZoomScale, in context: CGContext) {
-		super.draw(mapRect, zoomScale: zoomScale, in: context)
 		guard let line = overlay as? MKPolyline, line.pointCount >= 2 else { return }
-		let points = line.points()
-
+		let mapPoints = line.points()
 		// Sizes are in screen points, converted to the renderer's space by dividing by the zoom scale.
-		let size = 10 / zoomScale
-		let spacing = 156 / zoomScale
-		guard spacing > 0 else { return }
+		let shift = sideOffset / zoomScale
+		var points: [CGPoint] = (0..<line.pointCount).map { point(for: mapPoints[$0]) }
+		if shift != 0 {
+			points = Self.offset(points, by: shift)
+		}
+		let path = CGMutablePath()
+		path.addLines(between: points)
+		let dash = lineDashPattern?.map { CGFloat($0.doubleValue) / zoomScale }
+		let width = lineWidth / zoomScale
+		let color = strokeColor ?? .white
 
-		context.setStrokeColor((strokeColor ?? .white).cgColor)
-		context.setLineWidth(max(lineWidth, 3) / zoomScale)
-		context.setLineCap(.round)
+		context.setLineCap(lineCap)
 		context.setLineJoin(.round)
+		if let casingColor {
+			context.addPath(path)
+			context.setStrokeColor(casingColor.cgColor)
+			context.setLineWidth(width + 2.5 / zoomScale)
+			if let dash { context.setLineDash(phase: lineDashPhase / zoomScale, lengths: dash) }
+			context.strokePath()
+		}
+		context.addPath(path)
+		context.setStrokeColor(color.cgColor)
+		context.setLineWidth(width)
+		if let dash { context.setLineDash(phase: lineDashPhase / zoomScale, lengths: dash) }
+		context.strokePath()
+		context.setLineDash(phase: 0, lengths: [])
 
+		let chevrons = Self.chevrons(along: points, size: 10 / zoomScale, spacing: 156 / zoomScale)
+		guard !chevrons.isEmpty else { return }
+		let chevronWidth = max(lineWidth, 3) / zoomScale
+		context.setLineCap(.round)
+		if let casingColor {
+			context.addPath(chevrons)
+			context.setStrokeColor(casingColor.cgColor)
+			context.setLineWidth(chevronWidth + 2.5 / zoomScale)
+			context.strokePath()
+		}
+		context.addPath(chevrons)
+		context.setStrokeColor(color.cgColor)
+		context.setLineWidth(chevronWidth)
+		context.strokePath()
+	}
+
+	/// The line moved `distance` to the right of travel, segment by segment. Trace route lines are
+	/// one segment each, so joins between segments aren't mitered.
+	private static func offset(_ points: [CGPoint], by distance: CGFloat) -> [CGPoint] {
+		guard points.count >= 2 else { return points }
+		var result: [CGPoint] = []
+		for i in 1..<points.count {
+			let a = points[i - 1], b = points[i]
+			let length = hypot(b.x - a.x, b.y - a.y)
+			guard length > 0 else { continue }
+			// Map space has y increasing southward, like the screen, so (-dy, dx) is to the right.
+			let nx = -(b.y - a.y) / length * distance, ny = (b.x - a.x) / length * distance
+			if i == 1 { result.append(CGPoint(x: a.x + nx, y: a.y + ny)) }
+			result.append(CGPoint(x: b.x + nx, y: b.y + ny))
+		}
+		return result.count >= 2 ? result : points
+	}
+
+	/// Open chevrons every `spacing` along the line, tips pointing the way of travel.
+	private static func chevrons(along points: [CGPoint], size: CGFloat, spacing: CGFloat) -> CGPath {
+		let path = CGMutablePath()
+		guard spacing > 0, points.count >= 2 else { return path }
 		var carry = spacing * 0.5
-		for i in 1..<line.pointCount {
-			let a = point(for: points[i - 1])
-			let b = point(for: points[i])
+		for i in 1..<points.count {
+			let a = points[i - 1], b = points[i]
 			let dx = b.x - a.x, dy = b.y - a.y
 			let segLength = (dx * dx + dy * dy).squareRoot()
 			guard segLength > 0 else { continue }
@@ -87,14 +150,14 @@ final class DirectionalPolylineRenderer: MKPolylineRenderer {
 			while d < segLength {
 				let tipX = a.x + ux * d, tipY = a.y + uy * d
 				let backX = tipX - ux * size, backY = tipY - uy * size
-				context.move(to: CGPoint(x: backX + px * size * 0.7, y: backY + py * size * 0.7))
-				context.addLine(to: CGPoint(x: tipX, y: tipY))
-				context.addLine(to: CGPoint(x: backX - px * size * 0.7, y: backY - py * size * 0.7))
+				path.move(to: CGPoint(x: backX + px * size * 0.7, y: backY + py * size * 0.7))
+				path.addLine(to: CGPoint(x: tipX, y: tipY))
+				path.addLine(to: CGPoint(x: backX - px * size * 0.7, y: backY - py * size * 0.7))
 				d += spacing
 			}
-			context.strokePath()
 			carry = d - segLength
 		}
+		return path
 	}
 }
 
@@ -116,6 +179,9 @@ struct ClusterMapDecoration: Identifiable {
 	let content: AnyView
 	/// Tapped -> caller handles it (e.g. open the waypoint form). nil = display-only (route markers).
 	var onTap: (() -> Void)?
+	/// Stacking order against the node pins and other decorations; nil draws at the default level.
+	/// Trace route markers set a high value so they sit on top of the node pins.
+	var zPriority: MKAnnotationViewZPriority?
 }
 
 // MARK: - One-shot camera command
@@ -642,15 +708,18 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 				if let existing = decorationsByID[deco.id] {
 					existing.content = deco.content
 					existing.onTap = deco.onTap
+					existing.zPriority = deco.zPriority
 					if !Self.coordinatesEqual(existing.coordinate, deco.coordinate) {
 						existing.coordinate = deco.coordinate
 					}
 					if let view = mapView.view(for: existing) as? HostingDecorationView {
 						view.configure(content: deco.content)
+						view.zPriority = deco.zPriority ?? .defaultUnselected
 					}
 				} else {
 					let annotation = DecorationAnnotation(id: deco.id, coordinate: deco.coordinate, content: deco.content)
 					annotation.onTap = deco.onTap
+					annotation.zPriority = deco.zPriority
 					decorationsByID[deco.id] = annotation
 					toAdd.append(annotation)
 				}
@@ -749,6 +818,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 				view.isEnabled = (deco.onTap != nil) // tappable for waypoints; route markers stay inert
 				// Inert markers (trace route badges and labels) let taps through to the node pins under them.
 				view.isUserInteractionEnabled = (deco.onTap != nil)
+				view.zPriority = deco.zPriority ?? .defaultUnselected
 				return view
 			}
 
@@ -873,7 +943,14 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 			case let circle as MKCircle: renderer = MKCircleRenderer(circle: circle)
 			case let polygon as MKPolygon: renderer = MKPolygonRenderer(polygon: polygon)
 			case let polyline as MKPolyline:
-				renderer = style.directional ? DirectionalPolylineRenderer(polyline: polyline) : MKPolylineRenderer(polyline: polyline)
+				if style.directional {
+					let directional = DirectionalPolylineRenderer(polyline: polyline)
+					directional.casingColor = style.casingUIColor
+					directional.sideOffset = style.sideOffset
+					renderer = directional
+				} else {
+					renderer = MKPolylineRenderer(polyline: polyline)
+				}
 			case let multi as MKMultiPolyline: renderer = MKMultiPolylineRenderer(multiPolyline: multi)
 			case let multi as MKMultiPolygon: renderer = MKMultiPolygonRenderer(multiPolygon: multi)
 			default: return MKOverlayRenderer(overlay: overlay)
@@ -1089,6 +1166,7 @@ private final class DecorationAnnotation: NSObject, MKAnnotation {
 	@objc dynamic var coordinate: CLLocationCoordinate2D
 	var content: AnyView
 	var onTap: (() -> Void)?
+	var zPriority: MKAnnotationViewZPriority?
 	init(id: AnyHashable, coordinate: CLLocationCoordinate2D, content: AnyView) {
 		self.id = id; self.coordinate = coordinate; self.content = content
 	}
