@@ -71,6 +71,9 @@ final class SpatialMapModel {
 	private(set) var terrainMessage: String?
 	private(set) var routes: [SpatialRouteSnapshot] = []
 	private(set) var links: [SpatialLinkSnapshot] = []
+	/// The trace route picked in the flyover menu. It stays drawn after the flyover lands, so its
+	/// badges and SNR can be read, until it is cleared.
+	var shownRoute: SpatialRouteSnapshot?
 	private(set) var labeledNodeNums: [Int64] = []
 	private(set) var selectedNodeNum: Int64?
 	var connectedNodeNum: Int64?

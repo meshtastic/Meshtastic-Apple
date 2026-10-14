@@ -225,13 +225,15 @@ struct SpatialMapOrnament: View {
 			Toggle(isOn: $showTraffic) { Image(systemName: "dot.radiowaves.left.and.right") }
 				.accessibilityLabel(String(localized: "Live traffic", comment: "VoiceOver label for the spatial map traffic toggle"))
 
-			if traffic.isFlying {
+			if model.shownRoute != nil {
 				Button {
 					traffic.stopFlyover()
+					model.shownRoute = nil
 				} label: {
-					Image(systemName: "stop.fill")
+					Image(systemName: "xmark")
 				}
-				.accessibilityLabel(String(localized: "Stop flyover", comment: "VoiceOver label to stop the spatial map traceroute flyover"))
+				.help(String(localized: "Clear trace route", comment: "VoiceOver label for the clear trace route button"))
+				.accessibilityLabel(String(localized: "Clear trace route", comment: "VoiceOver label for the clear trace route button"))
 			} else {
 				Menu {
 					if model.routes.isEmpty {
@@ -239,6 +241,7 @@ struct SpatialMapOrnament: View {
 					}
 					ForEach(model.routes.prefix(12)) { route in
 						Button {
+							model.shownRoute = route
 							traffic.startFlyover(route)
 						} label: {
 							Text(verbatim: "\(route.targetName) · \(route.time?.formatted(date: .abbreviated, time: .shortened) ?? "")")
@@ -294,6 +297,9 @@ struct SpatialMapOrnament: View {
 				if model.outsideCount > 0 {
 					Text("· \(model.outsideCount) outside", comment: "Spatial map: nodes too far away to fit on the terrain")
 						.foregroundStyle(.secondary)
+				}
+				if model.shownRoute != nil {
+					SpatialRouteLegend()
 				}
 				if !model.coverageLegend.isEmpty {
 					SpatialCoverageLegendStrip(entries: model.coverageLegend)
@@ -418,6 +424,30 @@ struct SpatialMapOrnament: View {
 		let size = "\(Measurement(value: area.width, unit: UnitLength.meters).formatted(style)) × \(Measurement(value: area.height, unit: UnitLength.meters).formatted(style))"
 		let bytes = ByteCountFormatter.string(fromByteCount: SpatialTerrainAutoDecision.estimatedBytes(target), countStyle: .file)
 		return String(localized: "Downloads about \(bytes) of elevation data for a \(size) area around the mesh.", comment: "Spatial map: terrain download confirmation; the arguments are the download size, e.g. 40 MB, and the area's width × height, e.g. 98 km × 104 km")
+	}
+}
+
+/// The route colors in the ornament while a route is shown: solid blue out, dashed green back.
+struct SpatialRouteLegend: View {
+	var body: some View {
+		HStack(spacing: 4) {
+			Divider().frame(height: 14)
+			line(dashed: false, color: TraceRouteColors.forward)
+			Text("Forward route", comment: "Trace route timeline: heading for the path towards the target")
+			line(dashed: true, color: TraceRouteColors.back)
+			Text("Return route", comment: "Trace route timeline: heading for the path back from the target")
+		}
+		.accessibilityElement(children: .combine)
+	}
+
+	private func line(dashed: Bool, color: Color) -> some View {
+		Path { path in
+			path.move(to: CGPoint(x: 1, y: 3))
+			path.addLine(to: CGPoint(x: 17, y: 3))
+		}
+		.stroke(color, style: StrokeStyle(lineWidth: 3, lineCap: .round, dash: dashed ? [3, 3] : []))
+		.frame(width: 18, height: 6)
+		.environment(\.colorScheme, .dark)
 	}
 }
 

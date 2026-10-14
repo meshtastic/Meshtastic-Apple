@@ -45,14 +45,12 @@ final class SpatialTrafficController {
 	private var clock: TimeInterval = 0
 	private var flyover: SpatialFlyover?
 	private let marker: ModelEntity
-	private(set) var flyingRouteID: Int64?
 
 	var showPulses = true
 	var showGlow = true { didSet { if !showGlow { clearHalos() } } }
 	var isHighTraffic = false
 	var preset: ModemPresets = .longFast
 	var connectedNodeNum: Int64?
-	var isFlying: Bool { flyover != nil }
 
 	init(scene: SpatialSceneController) {
 		self.scene = scene
@@ -108,27 +106,26 @@ final class SpatialTrafficController {
 
 	// MARK: Flyover
 
-	func startFlyover(_ route: SpatialRouteSnapshot) {
+	/// Flies the marker along the route; the scene draws the route itself.
+	func startFlyover(_ route: SpatialRouteSnapshot, speed: Double = 1) {
 		guard let placement = scene.placement else { return }
 		let legs = [route.forward, route.back].map { path in
 			path.map {
 				SpatialZoom.clampToDisk(placement.surface($0.coordinate, clearance: SpatialSceneController.flyHeight), diskRadius: placement.diskRadius)
 			}
 		}
-		let flyover = SpatialFlyover(legs: legs)
+		var flyover = SpatialFlyover(legs: legs)
+		flyover.speedMultiplier = speed
 		guard !flyover.legs.isEmpty else { return }
 		self.flyover = flyover
-		flyingRouteID = route.id
-		scene.showRoute(legs: legs.map { $0.map { $0 - [0, 0.03, 0] } }, color: UIColor(getSnrColor(snr: route.forward.last?.snr ?? 0, preset: preset)))
 		marker.scale = SIMD3(repeating: scene.counterScale)
 		marker.isEnabled = true
 	}
 
+	/// Stops the marker. The route itself stays drawn until it is cleared.
 	func stopFlyover() {
 		flyover = nil
-		flyingRouteID = nil
 		marker.isEnabled = false
-		scene.showRoute(legs: [], color: .white)
 	}
 
 	// MARK: Per frame
