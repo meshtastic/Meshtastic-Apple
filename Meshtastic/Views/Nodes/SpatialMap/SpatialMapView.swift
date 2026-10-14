@@ -40,6 +40,7 @@ struct SpatialMapView: View {
 				content.add(scene.root)
 				scene.updateSubscription = content.subscribe(to: SceneEvents.Update.self) { event in
 					traffic.step(deltaTime: event.deltaTime)
+					scene.faceTowers()
 				}
 			} update: { content, attachments in
 				_ = volumeSize

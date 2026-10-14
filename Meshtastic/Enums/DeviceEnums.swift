@@ -39,6 +39,24 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			return false
 		}
 	}
+
+	/// Fixed nodes that carry the mesh rather than a person: Router, Router Late, Client Base and
+	/// the retired Repeater. Mesh discovery counts the same roles, less Repeater.
+	var isInfrastructure: Bool {
+		switch self {
+		case .router, .routerLate, .clientBase, .repeater:
+			return true
+		default:
+			return false
+		}
+	}
+
+	/// `isInfrastructure` for a role as stored on a user, false when it is unknown.
+	static func isInfrastructure(role: Int32?) -> Bool {
+		guard let role, let deviceRole = DeviceRoles(rawValue: Int(role)) else { return false }
+		return deviceRole.isInfrastructure
+	}
+
 	var name: String {
 		switch self {
 		case .client:

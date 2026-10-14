@@ -20,10 +20,16 @@ struct NodePinComponent: Component {
 /// `terrainAnchor` carries the preview of a zoom whose terrain is still building.
 @MainActor
 final class SpatialSceneController {
-	static let pinRadius: Float = 0.006
-	static let stemHeight: Float = 0.03
-	static let pinTop: Float = stemHeight + pinRadius * 2
+	nonisolated static let pinRadius: Float = 0.006
+	nonisolated static let stemHeight: Float = 0.03
+	nonisolated static let pinTop: Float = stemHeight + pinRadius * 2
 	static let flyHeight: Float = pinTop + 0.03
+	/// Infrastructure nodes stand as a tower on a colored base about as tall as a pin.
+	static let towerBaseRadius: Float = 0.0085
+	nonisolated static let towerBaseHeight: Float = 0.003
+	nonisolated static let towerHeight: Float = 0.04
+	static let towerDepth: Float = 0.0025
+	nonisolated static let towerTop: Float = towerBaseHeight + towerHeight
 
 	let root = Entity()
 	let model = Entity()
@@ -37,9 +43,15 @@ final class SpatialSceneController {
 	let wheel = SpatialWheelEntity()
 	var updateSubscription: EventSubscription?
 
+	@MainActor
 	private struct Pin {
 		let holder: Entity
-		let pin: ModelEntity
+		/// Takes taps and shows the hover highlight: a pin's head, or a tower with its base.
+		let target: Entity
+		/// The part in the node's color: a pin's head, a tower's base.
+		let colored: ModelEntity
+		/// The tower standing on the base, nil for a pin.
+		let mast: ModelEntity?
 		let halo: ModelEntity
 		var baseGlow: Float
 		/// Distance to the nearest other pin in model units.
@@ -47,12 +59,20 @@ final class SpatialSceneController {
 		var hitShape: HitShapeKey?
 		/// On the disk, so drawn. Pins outside the circle shown are hidden.
 		var shown = true
+
+		var isTower: Bool { mast != nil }
+
+		/// Height of the top above the ground before counter-scaling, where labels and links attach.
+		var top: Float {
+			isTower ? SpatialSceneController.towerTop * target.scale.y : SpatialSceneController.pinTop
+		}
 	}
 
 	/// A pin's hit radius in half millimeters and the head's size in percent.
 	private struct HitShapeKey: Hashable {
 		let radius: Int
 		let size: Int
+		let tower: Bool
 	}
 
 	private static let pinMesh = MeshResource.generateSphere(radius: pinRadius)
@@ -83,6 +103,7 @@ final class SpatialSceneController {
 	private let tether: ModelEntity
 	private var detailEntity: Entity?
 	private var appliedSelection: Int64?
+	private var towerFacing = simd_quatf(angle: 0, axis: [0, 1, 0])
 	/// Model units per meter for everything under the terrain anchor, so pins, labels and the card
 	/// keep the same size in the room whatever the table's size and the zoom preview.
 	private(set) var counterScale: Float = 1
@@ -154,7 +175,7 @@ final class SpatialSceneController {
 		for pin in pins.values { pin.holder.scale = SIMD3(repeating: counter) }
 		updateHitShapes()
 		if let selection = appliedSelection, let pin = pins[selection], pin.shown {
-			placeSelection(at: pin.holder.position)
+			placeSelection(at: pin.holder.position, top: pin.top)
 		}
 	}
 
@@ -251,7 +272,7 @@ final class SpatialSceneController {
 		}
 		if changed, let selection = appliedSelection {
 			if let pin = pins[selection], pin.shown {
-				placeSelection(at: pin.holder.position)
+				placeSelection(at: pin.holder.position, top: pin.top)
 			} else {
 				hideSelection()
 			}
@@ -271,6 +292,11 @@ final class SpatialSceneController {
 		for node in nodes {
 			seen.insert(node.id)
 			let previous = applied[node.id]
+			// A role change between pin and tower builds the node again.
+			if let pin = pins[node.id], previous?.isInfrastructure != node.isInfrastructure {
+				pin.holder.removeFromParent()
+				pins[node.id] = nil
+			}
 			if var pin = pins[node.id] {
 				if replaceAll || previous == nil || !Self.samePlace(previous!, node) {
 					pin.holder.position = placement.position(node.coordinate)
@@ -322,17 +348,18 @@ final class SpatialSceneController {
 	/// current zoom, between a little over the head and the full 2.5 cm.
 	private func updateHitShapes() {
 		for (num, pin) in pins {
-			let size = pin.pin.scale.x
+			let size = pin.target.scale.x
 			let radius = min(max(pin.gap / counterScale / 2, Self.minHitRadius * size), Self.maxHitRadius)
-			let key = HitShapeKey(radius: Int((radius * 2000).rounded()), size: Int((size * 100).rounded()))
+			let key = HitShapeKey(radius: Int((radius * 2000).rounded()), size: Int((size * 100).rounded()), tower: pin.isTower)
 			guard key != pin.hitShape else { continue }
-			pin.pin.components.set(CollisionComponent(shapes: shapes(for: key)))
+			pin.target.components.set(CollisionComponent(shapes: shapes(for: key)))
 			pins[num]?.hitShape = key
 		}
 	}
 
 	private func shapes(for key: HitShapeKey) -> [ShapeResource] {
 		if let cached = hitShapes[key] { return cached }
+		if key.tower { return towerShapes(for: key) }
 		// In the head's space, which is scaled by its size around the head's center.
 		let size = Float(key.size) / 100
 		let radius = Float(key.radius) / 2000
@@ -355,40 +382,10 @@ final class SpatialSceneController {
 		a.isOnline == b.isOnline && a.isFavorite == b.isFavorite && a.isConnectedRadio == b.isConnectedRadio
 	}
 
-	private func makePin(_ node: SpatialNodeSnapshot) -> Pin {
-		let color = Self.nodeColor(node.id)
-		let holder = Entity()
-		holder.name = "node-\(node.id)"
-		let stem = ModelEntity(mesh: Self.stemMesh, materials: [Self.transparentMaterial(.white, opacity: 0.55)])
-		stem.position = [0, Self.stemHeight / 2, 0]
-		let pin = ModelEntity(mesh: Self.pinMesh, materials: [UnlitMaterial(color: color)])
-		pin.position = [0, Self.stemHeight + Self.pinRadius, 0]
-		pin.components.set(InputTargetComponent())
-		pin.components.set(HoverEffectComponent())
-		pin.components.set(NodePinComponent(nodeNum: node.id))
-		let halo = ModelEntity(mesh: Self.haloMesh, materials: [UnlitMaterial(color: color)])
-		halo.position = [0, 0.0006, 0]
-		halo.components.set(OpacityComponent(opacity: 0))
-		holder.addChild(stem)
-		holder.addChild(pin)
-		holder.addChild(halo)
-		let result = Pin(holder: holder, pin: pin, halo: halo, baseGlow: 0)
-		style(result, for: node)
-		return result
-	}
-
-	private func style(_ pin: Pin, for node: SpatialNodeSnapshot) {
-		let color = Self.nodeColor(node.id)
-		let size: Float = node.isConnectedRadio ? 1.5 : (node.isFavorite ? 1.2 : 1)
-		pin.pin.scale = SIMD3(repeating: size)
-		pin.pin.model?.materials = [UnlitMaterial(color: node.isOnline ? color : color.darker(componentDelta: 0.25))]
-		pin.pin.components.set(OpacityComponent(opacity: node.isOnline ? 1 : 0.6))
-	}
-
-	/// Where a shown pin's head is, under the terrain anchor; nil for a hidden one.
+	/// Where a shown pin's top is, under the terrain anchor; nil for a hidden one.
 	func pinPosition(_ nodeNum: Int64) -> SIMD3<Float>? {
 		guard let pin = pins[nodeNum], pin.shown else { return nil }
-		return pin.holder.position + [0, Self.pinTop * counterScale, 0]
+		return pin.holder.position + [0, pin.top * counterScale, 0]
 	}
 
 	/// The pin whose stem stands nearest a point in scene space, when the point is about within its
@@ -398,7 +395,7 @@ final class SpatialSceneController {
 		var best: (num: Int64, distance: Float)?
 		for (num, pin) in pins where pin.shown {
 			let base = pin.holder.position
-			let y = min(max(local.y - base.y, 0), Self.pinTop * counterScale)
+			let y = min(max(local.y - base.y, 0), pin.top * counterScale)
 			let distance = simd_distance(local, base + [0, y, 0])
 			let reach = Float(pin.hitShape?.radius ?? 0) / 2000 * 1.2 * counterScale
 			if distance <= reach, distance < (best?.distance ?? .infinity) { best = (num, distance) }
@@ -434,9 +431,9 @@ final class SpatialSceneController {
 				entity.components.set(BillboardComponent())
 				// So a tap the label's button doesn't take still selects this node, not whatever is nearby.
 				entity.components.set(NodePinComponent(nodeNum: num))
-				entity.position = [0, Self.pinTop + 0.018, 0]
 				pin.holder.addChild(entity)
 			}
+			entity.position = [0, pin.top + 0.018, 0]
 			labelEntities[num] = entity
 		}
 	}
@@ -461,7 +458,7 @@ final class SpatialSceneController {
 			detailEntity = entity
 		}
 		if pin.shown {
-			placeSelection(at: pin.holder.position)
+			placeSelection(at: pin.holder.position, top: pin.top)
 		} else {
 			hideSelection()
 		}
@@ -474,11 +471,11 @@ final class SpatialSceneController {
 	}
 
 	/// The ring at the pin's foot, the card above its head and the line between them.
-	private func placeSelection(at base: SIMD3<Float>) {
+	private func placeSelection(at base: SIMD3<Float>, top height: Float) {
 		ring.position = base + [0, 0.0007, 0]
 		ring.scale = SIMD3(repeating: counterScale)
 		ring.isEnabled = true
-		let top = base + [0, Self.pinTop * counterScale, 0]
+		let top = base + [0, height * counterScale, 0]
 		let card = top + [0, 0.11 * counterScale, 0]
 		detailEntity?.position = card
 		detailEntity?.scale = SIMD3(repeating: counterScale)
@@ -493,6 +490,110 @@ final class SpatialSceneController {
 }
 
 extension SpatialSceneController {
+	// MARK: Pins and towers
+
+	private func makePin(_ node: SpatialNodeSnapshot) -> Pin {
+		if node.isInfrastructure, let tower = makeTower(node) { return tower }
+		let color = Self.nodeColor(node.id)
+		let holder = Entity()
+		holder.name = "node-\(node.id)"
+		let stem = ModelEntity(mesh: Self.stemMesh, materials: [Self.transparentMaterial(.white, opacity: 0.55)])
+		stem.position = [0, Self.stemHeight / 2, 0]
+		let pin = ModelEntity(mesh: Self.pinMesh, materials: [UnlitMaterial(color: color)])
+		pin.position = [0, Self.stemHeight + Self.pinRadius, 0]
+		pin.components.set(InputTargetComponent())
+		pin.components.set(HoverEffectComponent())
+		pin.components.set(NodePinComponent(nodeNum: node.id))
+		let halo = ModelEntity(mesh: Self.haloMesh, materials: [UnlitMaterial(color: color)])
+		halo.position = [0, 0.0006, 0]
+		halo.components.set(OpacityComponent(opacity: 0))
+		holder.addChild(stem)
+		holder.addChild(pin)
+		holder.addChild(halo)
+		let result = Pin(holder: holder, target: pin, colored: pin, mast: nil, halo: halo, baseGlow: 0)
+		style(result, for: node)
+		return result
+	}
+
+	private func style(_ pin: Pin, for node: SpatialNodeSnapshot) {
+		let color = Self.nodeColor(node.id)
+		let size: Float = node.isConnectedRadio ? 1.5 : (node.isFavorite ? 1.2 : 1)
+		pin.target.scale = SIMD3(repeating: size)
+		pin.colored.model?.materials = [UnlitMaterial(color: node.isOnline ? color : color.darker(componentDelta: 0.25))]
+		pin.target.components.set(OpacityComponent(opacity: node.isOnline ? 1 : 0.6))
+	}
+
+	static let towerBaseMesh = MeshResource.generateCylinder(height: towerBaseHeight, radius: towerBaseRadius)
+	/// The tower glyph extruded once, with its offset to stand centered on the origin. Nil if the
+	/// extrusion fails, and those nodes fall back to pins.
+	static let towerMesh: (mesh: MeshResource, offset: SIMD3<Float>)? = {
+		guard let outline = SpatialTowerGlyph.outline(height: CGFloat(towerHeight)) else { return nil }
+		var options = MeshResource.ShapeExtrusionOptions()
+		options.extrusionMethod = .linear(depth: towerDepth)
+		options.chamferRadius = 0.0002
+		guard let mesh = try? MeshResource(extruding: Path(outline), extrusionOptions: options) else { return nil }
+		let bounds = mesh.bounds
+		return (mesh, [-bounds.center.x, -bounds.min.y, -bounds.center.z])
+	}()
+	static let towerMaterial: PhysicallyBasedMaterial = {
+		var material = PhysicallyBasedMaterial()
+		material.baseColor = .init(tint: .white)
+		material.metallic = 0.2
+		material.roughness = 0.45
+		return material
+	}()
+
+	/// A tower's hit target is one capsule from its base to its top, in the tower's space, which
+	/// stands on the ground and is scaled by its size.
+	private func towerShapes(for key: HitShapeKey) -> [ShapeResource] {
+		let size = Float(key.size) / 100
+		let radius = Float(key.radius) / 2000 / size
+		let top = Self.towerTop + 0.002
+		let capsule = ShapeResource.generateCapsule(height: max(top, 2 * radius), radius: radius)
+			.offsetBy(translation: [0, top / 2, 0])
+		hitShapes[key] = [capsule]
+		return [capsule]
+	}
+
+	/// The tower glyph standing on a disc in the node's color, turned to face the front of the
+	/// volume whichever way the table is turned.
+	private func makeTower(_ node: SpatialNodeSnapshot) -> Pin? {
+		guard let towerMesh = Self.towerMesh else { return nil }
+		let color = Self.nodeColor(node.id)
+		let holder = Entity()
+		holder.name = "node-\(node.id)"
+		let target = Entity()
+		target.orientation = model.orientation.inverse
+		target.components.set(InputTargetComponent())
+		target.components.set(HoverEffectComponent())
+		target.components.set(NodePinComponent(nodeNum: node.id))
+		let base = ModelEntity(mesh: Self.towerBaseMesh, materials: [UnlitMaterial(color: color)])
+		base.position = [0, Self.towerBaseHeight / 2, 0]
+		let mast = ModelEntity(mesh: towerMesh.mesh, materials: [Self.towerMaterial])
+		mast.position = towerMesh.offset + [0, Self.towerBaseHeight, 0]
+		target.addChild(base)
+		target.addChild(mast)
+		let halo = ModelEntity(mesh: Self.haloMesh, materials: [UnlitMaterial(color: color)])
+		halo.position = [0, 0.0006, 0]
+		halo.components.set(OpacityComponent(opacity: 0))
+		holder.addChild(target)
+		holder.addChild(halo)
+		let result = Pin(holder: holder, target: target, colored: base, mast: mast, halo: halo, baseGlow: 0)
+		style(result, for: node)
+		return result
+	}
+
+	/// Keeps towers facing the front of the volume as the table turns, so their outline always
+	/// reads. Called every frame; does nothing unless the table's turn has changed.
+	func faceTowers() {
+		let facing = model.orientation.inverse
+		guard facing != towerFacing else { return }
+		towerFacing = facing
+		for pin in pins.values where pin.isTower { pin.target.orientation = facing }
+	}
+}
+
+extension SpatialSceneController {
 	// MARK: Links and routes
 
 	func apply(links: [SpatialLinkSnapshot], preset: ModemPresets) {
@@ -501,8 +602,7 @@ extension SpatialSceneController {
 		for link in links {
 			guard let pinA = pins[link.a], let pinB = pins[link.b], pinA.shown, pinB.shown else { continue }
 			let a = pinA.holder.position, b = pinB.holder.position
-			let lift = SIMD3<Float>(0, Self.pinTop * counterScale, 0)
-			let start = a + lift, end = b + lift
+			let start = a + [0, pinA.top * counterScale, 0], end = b + [0, pinB.top * counterScale, 0]
 			for (suffix, from, to, snr) in [(">", start, end, link.snrAtoB), ("<", end, start, link.snrBtoA)] {
 				guard let snr else { continue }
 				let key = link.id + suffix

@@ -25,6 +25,8 @@ struct SpatialNodeSnapshot: Identifiable, Equatable, Sendable {
 	let hopsAway: Int
 	let snr: Float
 	let isConnectedRadio: Bool
+	/// A router, repeater or client base, drawn as a tower rather than a pin.
+	let isInfrastructure: Bool
 
 	static func == (lhs: Self, rhs: Self) -> Bool {
 		lhs.id == rhs.id
@@ -36,6 +38,7 @@ struct SpatialNodeSnapshot: Identifiable, Equatable, Sendable {
 			&& lhs.isFavorite == rhs.isFavorite && lhs.viaMqtt == rhs.viaMqtt
 			&& lhs.hopsAway == rhs.hopsAway && lhs.snr == rhs.snr
 			&& lhs.isConnectedRadio == rhs.isConnectedRadio
+			&& lhs.isInfrastructure == rhs.isInfrastructure
 	}
 }
 
@@ -83,7 +86,8 @@ enum SpatialMapNodeSource {
 				viaMqtt: node.viaMqtt,
 				hopsAway: Int(node.hopsAway),
 				snr: node.snr,
-				isConnectedRadio: node.num == connectedNodeNum
+				isConnectedRadio: node.num == connectedNodeNum,
+				isInfrastructure: DeviceRoles.isInfrastructure(role: node.user?.role)
 			)
 			if snapshot.isConnectedRadio || snapshot.isFavorite {
 				pinned.append(snapshot)
