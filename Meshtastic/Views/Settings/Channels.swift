@@ -107,6 +107,8 @@ struct Channels: View {
 	@State var positionsEnabled = true
 	@State var supportedVersion = true
 	@State var selectedChannel: ChannelEntity?
+	@State private var isSavingChannel = false
+	@State private var saveError: String?
 
 	/// Minimum Version for granular position configuration
 	@State var minimumVersion = "2.2.24"
@@ -264,91 +266,11 @@ struct Channels: View {
 						}
 						HStack {
 							Button {
-								var channel = Channel()
-								channel.index = channelIndex
-								channel.role = ChannelRoles(rawValue: channelRole)?.protoEnumValue() ?? .secondary
-									channel.index = channelIndex
-									channel.settings.name = channelName
-									channel.settings.psk = Data(base64Encoded: channelKey) ?? Data()
-									channel.settings.uplinkEnabled = uplink
-									channel.settings.downlinkEnabled = downlink
-									channel.settings.moduleSettings.positionPrecision = UInt32(positionPrecision)
-									selectedChannel!.role = Int32(channelRole)
-									selectedChannel!.index = channelIndex
-									selectedChannel!.name = channelName
-									selectedChannel!.psk = Data(base64Encoded: channelKey) ?? Data()
-									selectedChannel!.uplinkEnabled = uplink
-									selectedChannel!.downlinkEnabled = downlink
-									selectedChannel!.positionPrecision = Int32(positionPrecision)
-
-									guard var channels = node.myInfo?.channels else {
-										return
-									}
-									if let idx = channels.firstIndex(where: { $0.index == selectedChannel?.index }) {
-										channels[idx] = selectedChannel!
-									} else {
-										channels.append(selectedChannel!)
-									}
-
-									var uniqueChannels: [Int32: ChannelEntity] = [:]
-									for channel in channels {
-										uniqueChannels[channel.index] = channel
-									}
-									node.myInfo?.channels = uniqueChannels.values.sorted { $0.index < $1.index }
-								if channel.role != Channel.Role.disabled {
-									if let selected = selectedChannel, selected.modelContext == nil {
-										context.insert(selected)
-									}
-									do {
-										try context.save()
-										Logger.data.info("💾 Saved Channel: \(channel.settings.name, privacy: .public)")
-									} catch {
-										let nsError = error as NSError
-										Logger.data.error("Unresolved Core Data error in the channel editor. Error: \(nsError, privacy: .public)")
-									}
-								} else {
-									let objects = selectedChannel?.allPrivateMessages ?? []
-									for object in objects {
-										context.delete(object)
-									}
-									let channelIdx = channel.index
-									var nodeDescriptor = FetchDescriptor<NodeInfoEntity>(
-										predicate: #Predicate { $0.channel == channelIdx }
-									)
-									nodeDescriptor.fetchLimit = 100
-									if let matchingNodes = try? context.fetch(nodeDescriptor) {
-										for matchingNode in matchingNodes {
-											context.delete(matchingNode)
-										}
-									}
-									context.delete(selectedChannel!)
-									do {
-										try context.save()
-										Logger.data.info("💾 Deleted Channel: \(channel.settings.name, privacy: .public)")
-									} catch {
-										let nsError = error as NSError
-										Logger.data.error("Unresolved Core Data error in the channel editor. Error: \(nsError, privacy: .public)")
-									}
-								}
-								Task {
-									_ = try await accessoryManager.saveChannel(
-										channel: channel,
-										fromUser: node.user!,
-										toUser: node.user!,
-										refreshShareSnapshot: true
-									)
-									Task { @MainActor in
-										selectedChannel = nil
-										channelName = ""
-										channelRole	= 2
-										hasChanges = false
-									}
-									accessoryManager.mqttManager.connectFromConfigSettings(node: node)
-								}
+								Task { await saveSelectedChannel() }
 							} label: {
 								Label("Save", systemImage: "square.and.arrow.down")
 							}
-							.disabled(!accessoryManager.isConnected)// || !hasChanges)// !hasValidKey)
+							.disabled(!accessoryManager.isConnected || isSavingChannel)// || !hasChanges)// !hasValidKey)
 							.buttonStyle(.bordered)
 							.buttonBorderShape(.capsule)
 							.controlSize(.large)
@@ -357,7 +279,15 @@ struct Channels: View {
 					}
 					.navigationTitle("Channel")
 					.navigationBarTitleDisplayMode(.inline)
-					.sheetCloseButton(action: { selectedChannel = nil })
+					// Closing mid-save would hide a failure alert.
+					.sheetCloseButton(action: { if !isSavingChannel { selectedChannel = nil } })
+					.interactiveDismissDisabled(isSavingChannel)
+					.alert(String(localized: "Save failed", comment: "Config save error title"),
+						   isPresented: Binding(get: { saveError != nil }, set: { if !$0 { saveError = nil } })) {
+						Button(String(localized: "OK", comment: "Dismiss")) { saveError = nil }
+					} message: {
+						Text(saveError ?? "")
+					}
 				}
 				.presentationDetents([.large])
 				#if !targetEnvironment(macCatalyst)
@@ -399,6 +329,103 @@ struct Channels: View {
 				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 			}
 		}
+	}
+
+	/// Sends the edited channel to the radio, then applies it locally. If the send fails
+	/// nothing local changes and the editor stays open with the user's edits.
+	private func saveSelectedChannel() async {
+		guard let selectedChannel, let myInfo = node.myInfo, let user = node.user else { return }
+		// Capture the form now; the fields stay editable while the send is in flight.
+		let role = Int32(channelRole)
+		let index = channelIndex
+		let name = channelName
+		let psk = Data(base64Encoded: channelKey) ?? Data()
+		let uplinkEnabled = uplink
+		let downlinkEnabled = downlink
+		let precision = positionPrecision
+
+		var channel = Channel()
+		channel.index = index
+		channel.role = ChannelRoles(rawValue: Int(role))?.protoEnumValue() ?? .secondary
+		channel.settings.name = name
+		channel.settings.psk = psk
+		channel.settings.uplinkEnabled = uplinkEnabled
+		channel.settings.downlinkEnabled = downlinkEnabled
+		channel.settings.moduleSettings.positionPrecision = UInt32(precision)
+
+		isSavingChannel = true
+		defer { isSavingChannel = false }
+		do {
+			_ = try await accessoryManager.saveChannel(channel: channel, fromUser: user, toUser: user)
+		} catch {
+			Logger.mesh.error("Channel \(channel.index) save failed: \(error.localizedDescription, privacy: .public)")
+			saveError = error.localizedDescription
+			return
+		}
+
+		selectedChannel.role = role
+		selectedChannel.index = index
+		selectedChannel.name = name
+		selectedChannel.psk = psk
+		selectedChannel.uplinkEnabled = uplinkEnabled
+		selectedChannel.downlinkEnabled = downlinkEnabled
+		selectedChannel.positionPrecision = Int32(precision)
+
+		var channels = myInfo.channels
+		if let idx = channels.firstIndex(where: { $0.index == selectedChannel.index }) {
+			channels[idx] = selectedChannel
+		} else {
+			channels.append(selectedChannel)
+		}
+		var uniqueChannels: [Int32: ChannelEntity] = [:]
+		for channel in channels {
+			uniqueChannels[channel.index] = channel
+		}
+		myInfo.channels = uniqueChannels.values.sorted { $0.index < $1.index }
+
+		if channel.role != Channel.Role.disabled {
+			if selectedChannel.modelContext == nil {
+				context.insert(selectedChannel)
+			}
+			do {
+				try context.save()
+				Logger.data.info("💾 Saved Channel: \(channel.settings.name, privacy: .public)")
+			} catch {
+				let nsError = error as NSError
+				Logger.data.error("Unresolved Core Data error in the channel editor. Error: \(nsError, privacy: .public)")
+			}
+		} else {
+			for object in selectedChannel.allPrivateMessages {
+				context.delete(object)
+			}
+			let channelIdx = channel.index
+			var nodeDescriptor = FetchDescriptor<NodeInfoEntity>(
+				predicate: #Predicate { $0.channel == channelIdx }
+			)
+			nodeDescriptor.fetchLimit = 100
+			if let matchingNodes = try? context.fetch(nodeDescriptor) {
+				for matchingNode in matchingNodes {
+					context.delete(matchingNode)
+				}
+			}
+			context.delete(selectedChannel)
+			do {
+				try context.save()
+				Logger.data.info("💾 Deleted Channel: \(channel.settings.name, privacy: .public)")
+			} catch {
+				let nsError = error as NSError
+				Logger.data.error("Unresolved Core Data error in the channel editor. Error: \(nsError, privacy: .public)")
+			}
+		}
+		if node.num == accessoryManager.activeDeviceNum {
+			MeshShareSnapshotBuilder.refresh(nodeNum: node.num, context: context)
+		}
+
+		self.selectedChannel = nil
+		channelName = ""
+		channelRole = 2
+		hasChanges = false
+		accessoryManager.mqttManager.connectFromConfigSettings(node: node)
 	}
 }
 
