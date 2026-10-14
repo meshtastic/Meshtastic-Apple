@@ -195,3 +195,52 @@ enum SpatialTowerBeacon {
 		return Float(t * t * (3 - 2 * t))
 	}
 }
+
+/// The rings that ripple out from a tower's antenna when that node is heard: a few thin rings a
+/// moment apart, each widening and fading.
+enum SpatialSignalRings {
+	static let count = 3
+	static let stagger: Double = 0.3
+	static let duration: Double = 1.4
+	static let startRadius: Float = 0.002
+	static let endRadius: Float = 0.026
+	static let peakOpacity: Float = 1
+	/// The ring mesh's inner edge as a share of its outer edge.
+	static let innerShare: Float = 0.8
+
+	static var burstDuration: Double { stagger * Double(count - 1) + duration }
+
+	/// Ring `index`'s radius and opacity `elapsed` seconds into a burst; nil before it starts and
+	/// once it has faded.
+	static func ring(_ index: Int, elapsed: Double) -> (radius: Float, opacity: Float)? {
+		let t = (elapsed - Double(index) * stagger) / duration
+		guard t >= 0, t < 1 else { return nil }
+		let grown = Float(1 - (1 - t) * (1 - t))
+		let left = Float(1 - t)
+		return (startRadius + (endRadius - startRadius) * grown, peakOpacity * left * left.squareRoot())
+	}
+
+	/// A flat ring of radius 1 in the x-z plane, faced both up and down.
+	static func ringMesh(segments: Int = 48) -> SpatialMeshData {
+		var mesh = SpatialMeshData()
+		for side: Float in [1, -1] {
+			let first = UInt32(mesh.positions.count)
+			for i in 0..<segments {
+				let angle = Float(i) / Float(segments) * 2 * .pi
+				let direction = SIMD3(cos(angle), 0, sin(angle))
+				mesh.positions += [direction, direction * innerShare]
+				mesh.normals += [[0, side, 0], [0, side, 0]]
+			}
+			for i in 0..<segments {
+				let outer = first + UInt32(2 * i), inner = outer + 1
+				let nextOuter = first + UInt32(2 * ((i + 1) % segments)), nextInner = nextOuter + 1
+				if side > 0 {
+					mesh.indices += [outer, inner, nextOuter, nextOuter, inner, nextInner]
+				} else {
+					mesh.indices += [outer, nextOuter, inner, nextOuter, nextInner, inner]
+				}
+			}
+		}
+		return mesh
+	}
+}

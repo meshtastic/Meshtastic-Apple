@@ -437,6 +437,13 @@ final class SpatialSceneController {
 		return best?.num
 	}
 
+	/// The middle of the light on a shown, online tower, under the terrain anchor; nil otherwise.
+	func antennaPosition(_ nodeNum: Int64) -> SIMD3<Float>? {
+		guard let pin = pins[nodeNum], let tower = pin.tower, pin.shown, tower.beacon.isEnabled else { return nil }
+		let top = Self.towerBaseHeight + SpatialTower.beaconCenter(height: tower.height)
+		return pin.holder.position + [0, top * counterScale, 0]
+	}
+
 	func baseGlow(_ nodeNum: Int64) -> Float {
 		pins[nodeNum]?.baseGlow ?? 0
 	}

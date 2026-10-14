@@ -68,9 +68,10 @@ struct SpatialTowerTests {
 		#expect(abs(spread - circumradius) < 0.001)
 	}
 
-	@Test("tower triangles face the way their normals do")
+	@Test("tower and ring triangles face the way their normals do")
 	func winding() {
 		#expect(windingMatchesNormals(SpatialTower.geometry(height: 0.04)))
+		#expect(windingMatchesNormals(SpatialSignalRings.ringMesh()))
 	}
 
 	@Test("bracing levels climb to the lattice top, each section shorter")
@@ -105,5 +106,40 @@ struct SpatialTowerBeaconTests {
 		let offsets = (0..<50).map { SpatialTowerBeacon.offset(for: Int64(0xA000_0000 + $0)) }
 		#expect(offsets.allSatisfy { $0 >= 0 && $0 < SpatialTowerBeacon.maxOffset })
 		#expect(Set(offsets).count > 40)
+	}
+}
+
+@Suite("Spatial map signal rings")
+struct SpatialSignalRingTests {
+
+	@Test("each ring starts a moment after the last, widens and fades")
+	func progression() throws {
+		#expect(SpatialSignalRings.ring(1, elapsed: 0.1) == nil)
+		let early = try #require(SpatialSignalRings.ring(0, elapsed: 0))
+		let middle = try #require(SpatialSignalRings.ring(0, elapsed: 0.7))
+		let late = try #require(SpatialSignalRings.ring(0, elapsed: 1.3))
+		#expect(early.radius == SpatialSignalRings.startRadius)
+		#expect(early.opacity == SpatialSignalRings.peakOpacity)
+		#expect(early.radius < middle.radius && middle.radius < late.radius)
+		#expect(early.opacity > middle.opacity && middle.opacity > late.opacity)
+		#expect(late.radius <= SpatialSignalRings.endRadius)
+	}
+
+	@Test("every ring has faded by the end of the burst")
+	func burstEnds() {
+		for index in 0..<SpatialSignalRings.count {
+			#expect(SpatialSignalRings.ring(index, elapsed: SpatialSignalRings.burstDuration) == nil)
+			#expect(SpatialSignalRings.ring(index, elapsed: SpatialSignalRings.burstDuration - 0.05 - Double(SpatialSignalRings.count - 1 - index) * SpatialSignalRings.stagger) != nil)
+		}
+	}
+
+	@Test("a tower ripples at most every couple of seconds")
+	func rateLimit() {
+		var limiter = PulseRateLimiter(capacity: 4, refillPerSecond: 2, perSenderInterval: 2.5)
+		let first = limiter.admit(sender: 1, now: 0, highTraffic: false)
+		let soon = limiter.admit(sender: 1, now: 1, highTraffic: false)
+		let later = limiter.admit(sender: 1, now: 3, highTraffic: false)
+		let busy = limiter.admit(sender: 2, now: 3, highTraffic: true)
+		#expect(first && !soon && later && !busy)
 	}
 }

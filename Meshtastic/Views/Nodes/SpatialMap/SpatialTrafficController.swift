@@ -10,10 +10,13 @@ import RealityKit
 import UIKit
 
 /// The moving parts of the volume, stepped once per rendered frame: packet pulses arcing from
-/// the sender to the connected radio, the activity halo under each node, and a flyover marker.
+/// the sender to the connected radio, rings rippling from a tower that was heard, the activity
+/// halo under each node, and a flyover marker.
 @MainActor
 final class SpatialTrafficController {
 	static let poolSize = 24
+	/// Enough rings for six towers rippling at once.
+	static let ringPoolSize = SpatialSignalRings.count * 6
 
 	private struct Pulse {
 		let entity: ModelEntity
@@ -23,12 +26,22 @@ final class SpatialTrafficController {
 		var elapsed: TimeInterval = 0
 	}
 
+	private struct RingBurst {
+		let rings: [ModelEntity]
+		let origin: SIMD3<Float>
+		var elapsed: TimeInterval = 0
+	}
+
 	private let scene: SpatialSceneController
 	private static let pulseMesh = MeshResource.generateSphere(radius: 0.007)
 	private static let markerMesh = MeshResource.generateSphere(radius: 0.008)
 	private var idle: [ModelEntity] = []
 	private var active: [Pulse] = []
 	private var limiter = PulseRateLimiter()
+	private var idleRings: [ModelEntity] = []
+	private var bursts: [RingBurst] = []
+	/// A tower ripples at most every couple of seconds, and only a few start each second.
+	private var ringLimiter = PulseRateLimiter(capacity: 4, refillPerSecond: 2, perSenderInterval: 2.5)
 	private var boosts: [Int64: (start: TimeInterval, initial: Float)] = [:]
 	private var clock: TimeInterval = 0
 	private var flyover: SpatialFlyover?
@@ -53,12 +66,22 @@ final class SpatialTrafficController {
 			scene.trafficContainer.addChild(entity)
 			idle.append(entity)
 		}
+		if let ringMesh = SpatialTowerParts.ringMesh {
+			for _ in 0..<Self.ringPoolSize {
+				let ring = ModelEntity(mesh: ringMesh, materials: [UnlitMaterial(color: .white)])
+				ring.isEnabled = false
+				ring.components.set(OpacityComponent(opacity: 0))
+				scene.trafficContainer.addChild(ring)
+				idleRings.append(ring)
+			}
+		}
 	}
 
 	// MARK: Packets
 
 	func handle(_ event: MeshPacketEvent) {
 		if showGlow { boosts[event.from] = (clock, 1) }
+		if showPulses, !event.viaMqtt { ripple(from: event.from) }
 		guard showPulses, !event.viaMqtt, let connectedNodeNum, event.from != connectedNodeNum,
 			  limiter.admit(sender: event.from, now: clock, highTraffic: isHighTraffic),
 			  let from = scene.pinPosition(event.from), let to = scene.pinPosition(connectedNodeNum),
@@ -71,6 +94,17 @@ final class SpatialTrafficController {
 		entity.position = from
 		entity.isEnabled = true
 		active.append(Pulse(entity: entity, from: from, to: to, duration: duration))
+	}
+
+	/// Sends rings out from a tower's antenna, when the sender is a tower and the pool and rate
+	/// limit allow.
+	private func ripple(from nodeNum: Int64) {
+		guard idleRings.count >= SpatialSignalRings.count, let origin = scene.antennaPosition(nodeNum),
+			  ringLimiter.admit(sender: nodeNum, now: clock, highTraffic: isHighTraffic) else { return }
+		let material = UnlitMaterial(color: SpatialSceneController.nodeColor(nodeNum).lighter(componentDelta: 0.35))
+		let rings = (0..<SpatialSignalRings.count).compactMap { _ in idleRings.popLast() }
+		for ring in rings { ring.model?.materials = [material] }
+		bursts.append(RingBurst(rings: rings, origin: origin))
 	}
 
 	// MARK: Flyover
@@ -118,6 +152,7 @@ final class SpatialTrafficController {
 			}
 			active = still
 		}
+		if !bursts.isEmpty { stepRings(deltaTime: dt) }
 		if !boosts.isEmpty {
 			for (num, boost) in boosts {
 				let value = NodeActivityGlow.boost(startedAt: boost.start, now: clock, initial: boost.initial)
@@ -134,6 +169,31 @@ final class SpatialTrafficController {
 				stopFlyover()
 			}
 		}
+	}
+
+	private func stepRings(deltaTime dt: TimeInterval) {
+		var still: [RingBurst] = []
+		for var burst in bursts {
+			burst.elapsed += dt
+			for (index, ring) in burst.rings.enumerated() {
+				guard let state = SpatialSignalRings.ring(index, elapsed: burst.elapsed) else {
+					ring.isEnabled = false
+					continue
+				}
+				let radius = state.radius * scene.counterScale
+				ring.position = burst.origin
+				ring.scale = [radius, scene.counterScale, radius]
+				ring.components.set(OpacityComponent(opacity: state.opacity))
+				ring.isEnabled = true
+			}
+			if burst.elapsed >= SpatialSignalRings.burstDuration {
+				for ring in burst.rings { ring.isEnabled = false }
+				idleRings += burst.rings
+			} else {
+				still.append(burst)
+			}
+		}
+		bursts = still
 	}
 
 	/// Sets every halo to its recency level; called after the node list refreshes.

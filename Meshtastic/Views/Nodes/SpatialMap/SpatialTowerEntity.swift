@@ -19,7 +19,7 @@ extension SpatialMeshData {
 }
 
 /// The meshes and materials towers share: one lattice mesh per height, built the first time a
-/// tower that tall is shown, and the light every tower uses.
+/// tower that tall is shown, and the light and signal ring every tower uses.
 @MainActor
 enum SpatialTowerParts {
 	private static var meshes: [Float: MeshResource] = [:]
@@ -43,6 +43,8 @@ enum SpatialTowerParts {
 	static let beaconGlowMesh = MeshResource.generateSphere(radius: SpatialTower.beaconRadius * 2.2)
 	static let beaconMaterial = UnlitMaterial(color: UIColor(red: 1, green: 0.1, blue: 0.08, alpha: 1))
 	static let beaconGlowMaterial = SpatialSceneController.transparentMaterial(UIColor(red: 1, green: 0.15, blue: 0.1, alpha: 1), opacity: 0.45)
+
+	static let ringMesh: MeshResource? = try? SpatialSignalRings.ringMesh().meshResource()
 
 	/// The red light for the top of a tower: a bright core inside a faint glow, faded together.
 	static func makeBeacon(height: Float) -> Entity {
