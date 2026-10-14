@@ -733,7 +733,7 @@ extension AccessoryManager {
 				}
 				hopNodes.append(traceRouteHop)
 
-				let hopName = hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "Unknown".localized))
+				let hopName = hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : node.toHex())
 				let mqttLabel = hopNode?.viaMqtt ?? false ? "MQTT " : ""
 				let snrLabel = (traceRouteHop.snr != -32) ? String(traceRouteHop.snr) : "unknown ".localized
 				routeString += "\(hopName) \(mqttLabel)(\(snrLabel)dB) --> "
@@ -777,7 +777,7 @@ extension AccessoryManager {
 					}
 					hopNodes.append(traceRouteHop)
 
-					let hopName = hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : String(hopNode?.num.toHex() ?? "Unknown".localized))
+					let hopName = hopNode?.user?.longName ?? (node == 4294967295 ? "Repeater" : node.toHex())
 					let mqttLabel = hopNode?.viaMqtt ?? false ? "MQTT " : ""
 					let snrLabel = (traceRouteHop.snr != -32) ? String(traceRouteHop.snr) : "unknown ".localized
 					routeBackString += "\(hopName) \(mqttLabel)(\(snrLabel)dB) --> "
