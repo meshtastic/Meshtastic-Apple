@@ -8,8 +8,8 @@
 import SwiftData
 import SwiftUI
 
-/// One trace route: the hop timeline when it came back, otherwise what happened to the request,
-/// with the round trip, hop counts and actions underneath.
+/// One trace route: the summary card, a row of actions, then the hop timeline when it came back
+/// (otherwise what happened to the request) and the round trip and hop counts.
 struct TraceRouteDetail: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var router: Router
@@ -33,8 +33,10 @@ struct TraceRouteDetail: View {
 							if let shareImage {
 								shareLink(shareImage)
 							}
+							copyButton
 						}
 				}
+				actions(state: state)
 				switch state {
 				case .complete, .observed:
 					Section {
@@ -51,7 +53,6 @@ struct TraceRouteDetail: View {
 					}
 				}
 				details(state: state)
-				actions(state: state)
 			}
 		}
 		.navigationTitle("Trace Route")
@@ -167,48 +168,88 @@ struct TraceRouteDetail: View {
 		}
 	}
 
+	/// Map, Share and Trace Route as one row of equal buttons between the card and the route.
 	@ViewBuilder
 	private func actions(state: TraceRouteState) -> some View {
-		Section {
-			if route.hasPositions, state == .complete || state == .observed {
-				Button {
-					router.selectedTab = .map
-					router.mapState = .traceRoute(route.id)
-				} label: {
-					Label("Show on Map", systemImage: "map")
-				}
-			}
-			if state == .complete || state == .observed {
-				if let shareImage {
-					shareLink(shareImage)
-				} else if isRenderingShareImage {
-					Label {
-						HStack {
-							Text("Share")
-							Spacer()
-							ProgressView()
+		let answered = state == .complete || state == .observed
+		let canMap = route.hasPositions && answered
+		let target = route.node
+		let canTrace = !route.observed && accessoryManager.isConnected && target != nil && target?.num != accessoryManager.activeDeviceNum
+		if canMap || answered || canTrace {
+			Section {
+				HStack(spacing: 10) {
+					if canMap {
+						Button {
+							router.selectedTab = .map
+							router.mapState = .traceRoute(route.id)
+						} label: {
+							TraceRouteActionLabel(title: String(localized: "Map", comment: "Trace route detail: button that shows the route on the map"), systemImage: "map")
 						}
-					} icon: {
-						Image(systemName: "square.and.arrow.up")
 					}
-					.foregroundStyle(.secondary)
-				}
-			}
-			if let routeText = route.routeText {
-				Button {
-					var text = String(localized: "Route: \(routeText)")
-					if let back = route.routeBackText {
-						text += "\n" + String(localized: "Route Back: \(back)")
+					if answered {
+						if let shareImage {
+							ShareLink(
+								item: shareImage,
+								subject: Text(shareImage.title),
+								preview: SharePreview(shareImage.title, image: Image(uiImage: shareImage.image))
+							) {
+								TraceRouteActionLabel(title: String(localized: "Share", comment: "Trace route detail: share the route image"), systemImage: "square.and.arrow.up")
+							}
+						} else {
+							TraceRouteActionLabel(title: String(localized: "Share", comment: "Trace route detail: share the route image"), systemImage: "square.and.arrow.up", isBusy: isRenderingShareImage)
+								.foregroundStyle(.secondary)
+						}
 					}
-					UIPasteboard.general.string = text
-				} label: {
-					Label("Copy", systemImage: "doc.on.doc")
+					if canTrace, let target {
+						TraceRouteButton(node: target, compact: true)
+					}
 				}
-			}
-			if !route.observed, accessoryManager.isConnected,
-			   let target = route.node, target.num != accessoryManager.activeDeviceNum {
-				TraceRouteButton(node: target)
+				.buttonStyle(.borderless)
+				.listRowInsets(EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8))
+				.listRowBackground(Color.clear)
 			}
 		}
+	}
+
+	@ViewBuilder
+	private var copyButton: some View {
+		if let routeText = route.routeText {
+			Button {
+				var text = String(localized: "Route: \(routeText)")
+				if let back = route.routeBackText {
+					text += "\n" + String(localized: "Route Back: \(back)")
+				}
+				UIPasteboard.general.string = text
+			} label: {
+				Label("Copy", systemImage: "doc.on.doc")
+			}
+		}
+	}
+}
+
+/// One of the equal-width action tiles in the trace route detail: an icon over a short title.
+struct TraceRouteActionLabel: View {
+	let title: String
+	let systemImage: String
+	var isBusy = false
+
+	var body: some View {
+		VStack(spacing: 6) {
+			if isBusy {
+				ProgressView()
+					.frame(height: 22)
+			} else {
+				Image(systemName: systemImage)
+					.font(.title3)
+					.frame(height: 22)
+			}
+			Text(title)
+				.font(.caption.weight(.semibold))
+				.lineLimit(1)
+				.minimumScaleFactor(0.8)
+		}
+		.frame(maxWidth: .infinity, minHeight: 64)
+		.background(.thinMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+		.contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
 	}
 }
