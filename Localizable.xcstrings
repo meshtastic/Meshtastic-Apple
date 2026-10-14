@@ -311,7 +311,27 @@
       }
     },
     "%lld radios" : {
-      "comment" : "Ham shack: how many radios are in the room"
+      "comment" : "Ham shack: how many radios are in the room",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld radio"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld radios"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Enter Shack" : {
       "comment" : "Spatial map: open the ham shack immersive space, closing this volume"
