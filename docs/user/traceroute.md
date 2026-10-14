@@ -38,4 +38,4 @@ Tap an entry to see the route as a timeline: the forward route from your radio t
 - A hop whose SNR wasn't reported is drawn as a dashed gray line labeled **Unknown signal**.
 - A relay that didn't add its node number appears as a dotted circle named **Unknown repeater**.
 
-Below the timeline are the round trip, the hop counts and the time. **Show on Map** draws the route on the map (see [Trace Routes on the Map](map.md#trace-routes-on-the-map)), **Copy** copies the route as text, and **Trace Route** sends a new one to the same node.
+Below the timeline are the round trip, the hop counts and the time. **Show on Map** draws the route on the map, forward in solid blue and return in dashed green (see [Trace Routes on the Map](map.md#trace-routes-on-the-map)), **Copy** copies the route as text, and **Trace Route** sends a new one to the same node.

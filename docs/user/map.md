@@ -162,12 +162,11 @@ A trace route can be drawn on the map to show the path a packet took through the
 
 ### Reading the Route
 
-- **Colored legs** — each hop is colored by its signal quality (SNR), using the same scale as the LoRa signal meter: **green** (good), **yellow** (fair), **orange** (bad), **red** (none). Signal quality is also shown by line weight and dash pattern — legs get progressively thinner and more dashed as quality drops from good to none — so the tier doesn't rely on color alone.
-- **Solid vs. dashed** — the **solid** line is the outbound path toward the target; the **dashed** line is the return path back to the originator.
-- **Arrows** — chevrons along each line point in the direction of travel.
-- **Endpoints** — a **green** marker is the originator; a **red** marker is the target.
-- **Hop numbers** — each relay gets a small numbered badge in the order the packet reached it, the same order as the hop timeline. Badges on the way out are filled and sit above the node; badges on the way back are outlined and sit below it. A relay that didn't add its number, or has no known position, gets no badge.
-- **Signal labels** — zoom in and each leg shows its SNR (for example "7.0 dB") in the leg's color. Labels and badges that would overlap at the current zoom are hidden until there's room.
+- **Forward and return** — the forward path toward the target is a **solid blue** line and the return path back to the originator is a **dashed green** line, the same colors as the Forward route and Return route headings in the hop timeline. Both have a dark edge so they stand out on the standard, satellite, hybrid and offline maps. Where both paths use the same leg, the two lines sit side by side instead of on top of each other.
+- **Arrows** — chevrons along each line, in the line's color, point in the direction of travel.
+- **Endpoints** — the originator and the target show the node's short name in its colored circle. The originator has a **green** ring and the target a **white** ring.
+- **Hop numbers** — each relay gets a small numbered badge in the order the packet reached it, the same order as the hop timeline. Badges on the way out are filled blue and sit above the node; badges on the way back are outlined green and sit below it. A relay that didn't add its number, or has no known position, gets no badge.
+- **Signal labels** — each leg shows its SNR (for example "7.0 dB") in a small pill colored by signal quality, on the same scale as the LoRa signal meter: **green** (good), **yellow** (fair), **orange** (bad), **red** (none). A forward leg whose SNR wasn't reported is drawn dashed and has no label. Labels and badges that would overlap at the current zoom are hidden until you zoom in.
 
 ### 3D Flyover
 
