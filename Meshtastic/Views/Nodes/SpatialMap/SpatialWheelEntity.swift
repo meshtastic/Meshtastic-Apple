@@ -82,7 +82,7 @@ final class SpatialWheelEntity {
 		if let mesh = try? MeshResource.generate(from: [descriptor]) {
 			bezel.model = ModelComponent(mesh: mesh, materials: [Self.bezelMaterial])
 		}
-		bezel.components.set(CollisionComponent(shapes: Self.ringShapes(inner: inner, width: width, bottom: bottom, top: top)))
+		bezel.components.set(CollisionComponent.inputTarget(Self.ringShapes(inner: inner, width: width, bottom: bottom, top: top)))
 
 		// Letters lie on the bezel's top, their tops toward the center so they read from outside.
 		let middle = inner + width / 2
@@ -143,7 +143,7 @@ final class SpatialWheelEntity {
 		let knobShape = ShapeResource.generateSphere(radius: radius * 1.4).offsetBy(translation: [length, 0, 0])
 		let spokeShape = ShapeResource.generateCapsule(height: length, radius: radius * 0.7)
 			.offsetBy(rotation: simd_quatf(angle: -.pi / 2, axis: [0, 0, 1]), translation: [length / 2, 0, 0])
-		handle.components.set(CollisionComponent(shapes: [knobShape, spokeShape]))
+		handle.components.set(CollisionComponent.inputTarget([knobShape, spokeShape]))
 		return handle
 	}
 

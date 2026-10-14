@@ -14,6 +14,18 @@ struct NodePinComponent: Component {
 	let nodeNum: Int64
 }
 
+extension CollisionComponent {
+	/// A hit shape for looking and pinching only. As plain collision shapes, the physics engine
+	/// worked out contacts between every pin, the wheel and the terrain mesh each frame, which kept
+	/// the main thread fully busy and made turning the map stutter. A trigger in its own group that
+	/// ignores itself still takes taps and drags but gets no contacts.
+	static func inputTarget(_ shapes: [ShapeResource]) -> CollisionComponent {
+		CollisionComponent(shapes: shapes, mode: .trigger, filter: CollisionFilter(group: spatialMapGroup, mask: .all.subtracting(spatialMapGroup)))
+	}
+
+	private static let spatialMapGroup = CollisionGroup(rawValue: 1 << 20)
+}
+
 /// Owns the entities in the volume and diffs the model's snapshots into them, so the RealityView
 /// update closure stays a dispatcher. `root` sits on the middle of the volume floor; `model`
 /// carries the user's rotation and the scale that makes the disk fill the volume's footprint;
@@ -352,7 +364,7 @@ final class SpatialSceneController {
 			let radius = min(max(pin.gap / counterScale / 2, Self.minHitRadius * size), Self.maxHitRadius)
 			let key = HitShapeKey(radius: Int((radius * 2000).rounded()), size: Int((size * 100).rounded()), tower: pin.isTower)
 			guard key != pin.hitShape else { continue }
-			pin.target.components.set(CollisionComponent(shapes: shapes(for: key)))
+			pin.target.components.set(CollisionComponent.inputTarget(shapes(for: key)))
 			pins[num]?.hitShape = key
 		}
 	}

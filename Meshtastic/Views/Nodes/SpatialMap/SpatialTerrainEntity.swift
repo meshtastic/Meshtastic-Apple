@@ -44,7 +44,7 @@ enum SpatialTerrainEntity {
 		entity.name = "terrain"
 		// Collide with the mesh itself, so the pins standing on it are never inside the terrain's
 		// hit shape and a look-and-pinch reaches them first.
-		entity.components.set(CollisionComponent(shapes: [try await ShapeResource.generateStaticMesh(from: mesh)]))
+		entity.components.set(CollisionComponent.inputTarget([try await ShapeResource.generateStaticMesh(from: mesh)]))
 		entity.components.set(InputTargetComponent())
 		return entity
 	}
