@@ -154,7 +154,7 @@ struct TraceRouteParsingTests {
 		let route = try #require(try routes(context).first)
 		#expect(forwardHops(route).map(\.num) == [deviceNum, Int64(knownHopNum), Int64(newHopNum), Int64(unknownRepeater), targetNum])
 		#expect(backHops(route).map(\.num) == [Int64(newHopNum)])
-		#expect(getNodeInfo(id: Int64(newHopNum), context: context) != nil)
+		#expect(getNodeInfo(id: Int64(newHopNum), context: context) == nil)
 		#expect(getNodeInfo(id: Int64(unknownRepeater), context: context) == nil)
 	}
 

@@ -823,11 +823,12 @@ extension AccessoryManager {
 		}
 	}
 
-	/// The node for a trace route hop, created when it isn't in the node DB yet so the hop keeps
-	/// its real number. `0xFFFFFFFF` marks a repeater that didn't add its number; it has no node.
+	/// The known node for a trace route hop, if any. The hop row keeps the raw number itself, so a
+	/// hop we haven't heard from isn't added to the node DB. `0xFFFFFFFF` marks a repeater that
+	/// didn't add its number; it has no node.
 	private func traceRouteHopNode(num: UInt32) -> NodeInfoEntity? {
 		guard num != 0, num != UInt32.max else { return nil }
-		return findOrCreateNode(num: Int64(num), context: context)
+		return getNodeInfo(id: Int64(num), context: context)
 	}
 
 	/// Captures a point-in-time snapshot of the current position of every node involved in a trace
