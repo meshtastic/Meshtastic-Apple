@@ -333,6 +333,12 @@
         }
       }
     },
+    "3D model © Meshtastic LLC. The product and its name, logos and marks belong to %@." : {
+      "comment" : "Showcase model card: who owns the model and who owns the product; the argument is the maker"
+    },
+    "Also: %@" : {
+      "comment" : "Showcase model card: other devices drawn with the same model; the argument is a list of device names"
+    },
     "Enter Showcase" : {
       "comment" : "Spatial map: open the showcase immersive space, closing this volume"
     },
@@ -341,6 +347,9 @@
     },
     "Leave" : {
       "comment" : "Showcase: close the immersive space"
+    },
+    "Made by %@" : {
+      "comment" : "Showcase model card and VoiceOver: the device's maker"
     },
     "Next rack page" : {
       "comment" : "Showcase: show the next page of the wall rack"
@@ -356,6 +365,9 @@
     },
     "Page %lld of %lld, %lld radios" : {
       "comment" : "Showcase: VoiceOver value for the wall rack; the arguments are the page, the page count and the radios on the page"
+    },
+    "Pinch and hold to pick it up. It's real size." : {
+      "comment" : "Showcase model card: how to hold the model"
     },
     "Previous rack page" : {
       "comment" : "Showcase: show the previous page of the wall rack"
@@ -374,6 +386,12 @@
     },
     "Wall rack" : {
       "comment" : "Showcase: VoiceOver label for the rack of radios on the wall"
+    },
+    "Where to buy" : {
+      "comment" : "Showcase model card: heading for the purchase links"
+    },
+    "Your radio" : {
+      "comment" : "Showcase: card in front of the connected radio on the display table"
     },
     "· %lld not shown" : {
       "comment" : "Showcase: radios with no place in the room"
@@ -6995,7 +7013,7 @@
       }
     },
     "· No radio connected" : {
-      "comment" : "Showcase: the desk has no connected radio on it"
+      "comment" : "Showcase: no radio is connected, so none stands on the front table"
     },
     "—" : {
       "localizations" : {

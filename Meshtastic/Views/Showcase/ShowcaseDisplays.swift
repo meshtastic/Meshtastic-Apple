@@ -84,7 +84,8 @@ final class ShowcaseDisplays {
 				let height = Self.stand(model, in: holder)
 				model.components.set(ShowcaseItemComponent(itemID: item.id))
 				model.components.set(Self.accessibility(for: item))
-				receiveLight(model)
+				// The holder, so the clear stand gets the room's light too.
+				receiveLight(holder)
 				stands.append(DisplayStand(item: item, holder: holder, width: width + Self.standMargin, height: height))
 			}
 			let centers = ShowcaseRowPacking.centers(widths: stands.map(\.width), length: row.length)
@@ -132,6 +133,7 @@ final class ShowcaseDisplays {
 		base.position = [0, standThickness / 2, 0]
 		holder.addChild(base)
 		holder.addChild(model)
+		model.components.set(ShowcaseHomeComponent(transform: model.transform))
 		makeHoldable(model, bounds: bounds)
 		return bounds.extents.y + standThickness
 	}

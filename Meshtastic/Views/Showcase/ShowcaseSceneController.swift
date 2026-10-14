@@ -227,6 +227,8 @@ final class ShowcaseSceneController {
 			hero.device.components.set(ShowcaseDeviceMeshes.accessibility(for: node, isOnline: style.isOnline))
 			heroes[num] = hero
 		}
+		// A rebuilt radio that was held up goes back up as its new model.
+		updateInspection()
 	}
 
 	/// The model for the connected radio's hardware, once it has loaded.
@@ -242,16 +244,15 @@ final class ShowcaseSceneController {
 		halo.components.set(OpacityComponent(opacity: 0))
 		holder.addChild(halo)
 		heroContainer.addChild(holder)
-		let shortName = node.shortName
-		Task {
-			guard let placard = await ShowcaseDeviceMeshes.placard(shortName: shortName) else { return }
-			holder.addChild(placard)
-		}
+		refreshPlacard(in: holder, nodeNum: node.id, shortName: node.shortName)
 		if let modelName, let template = displays.template(named: modelName) {
 			// The radio's own model at real size, on a stand like the others; it can be picked up too.
 			let device = template.clone(recursive: true)
-			// The clone is the radio, not the table's example: its taps open the node's card.
+			// The clone is the radio, not the table's example: its taps open the node's card, and it
+			// keeps none of the example's inspection state.
 			device.components.remove(ShowcaseItemComponent.self)
+			device.components.remove(ShowcaseInspectedComponent.self)
+			device.components.remove(ShowcaseHomeComponent.self)
 			let height = ShowcaseDisplays.stand(device, in: holder)
 			device.components.set(ShowcaseNodeComponent(nodeNum: node.id))
 			device.components.set(ShowcaseDeviceMeshes.accessibility(for: node, isOnline: false))
@@ -275,6 +276,9 @@ final class ShowcaseSceneController {
 	}
 
 	private func styleHero(_ hero: inout Hero, node: ShowcaseNodeSnapshot, style: Style) {
+		if hero.style.shortName != style.shortName {
+			refreshPlacard(in: hero.holder, nodeNum: node.id, shortName: style.shortName)
+		}
 		hero.style = style
 		guard let label = hero.label, let device = hero.device as? ModelEntity else { return }
 		device.model?.materials = ShowcaseDeviceMeshes.materials(color: Self.nodeColor(node.id), isOnline: style.isOnline)
@@ -292,6 +296,17 @@ final class ShowcaseSceneController {
 	}
 
 	/// The short name drawn on the device's screen. Drawn into a texture rather than built as a
+	/// Draws the "Your radio" card for `shortName`, replacing any older one. Skipped if the name
+	/// changed again while it was drawn.
+	private func refreshPlacard(in holder: Entity, nodeNum: Int64, shortName: String) {
+		Task {
+			guard let placard = await ShowcaseDeviceMeshes.placard(shortName: shortName),
+				  heroes[nodeNum].map({ $0.style.shortName == shortName || $0.style.shortName.isEmpty }) ?? true else { return }
+			for old in Array(holder.children) where old.name == "placard" { old.removeFromParent() }
+			holder.addChild(placard)
+		}
+	}
+
 	/// text mesh, because text meshes leave out emoji, which many short names are.
 	private func labelMaterial(_ style: Style) async -> UnlitMaterial? {
 		if let material = labelMaterials[style] { return material }
@@ -367,45 +382,6 @@ final class ShowcaseSceneController {
 			material.color = .init(tint: .white, texture: parameter)
 			cells.model?.materials = [material]
 		}
-	}
-
-	// MARK: Displays
-
-	/// The hardware catalog for the displays, read by the view; the room may not be in yet.
-	func setDisplayHardware(_ hardware: [ShowcaseHardwareRecord]) async {
-		displayHardware = hardware
-		await loadDisplaysIfReady()
-	}
-
-	/// Once both the room and the catalog are in, stands the device models on the tables, then
-	/// swaps the connected radio's stand-in for its model.
-	func loadDisplaysIfReady() async {
-		guard let room, let hardware = displayHardware else { return }
-		displayHardware = nil
-		await displays.load(room: room, hardware: hardware) { [weak self] in self?.receiveRoomLight($0) }
-		if let layout { syncHeroes(layout: layout, now: Date()) }
-		// A selection made while the models were loading.
-		updateInspection()
-	}
-
-	// MARK: Inspection
-
-	/// Holds up whatever is selected: a table's model, or the connected radio when it is a real
-	/// model; puts the last one back otherwise.
-	private func updateInspection() {
-		if let id = selectedItem, let model = displays.model(for: id) {
-			inspector.inspect(model)
-		} else if let num = selected, let hero = heroes[num], hero.modelName != nil {
-			inspector.inspect(hero.device)
-		} else {
-			inspector.release()
-		}
-	}
-
-	/// Where a model's card goes: beside it when held up, else above it on its table.
-	func cardPosition(forItem id: String) -> SIMD3<Float>? {
-		if let model = displays.model(for: id), inspector.model === model { return inspector.cardPosition }
-		return displays.cardPosition(forItem: id)
 	}
 
 	// MARK: Taps
@@ -501,6 +477,47 @@ final class ShowcaseSceneController {
 			releaseRackHalo(num)
 			if heroes[num] == nil { boosts[num] = nil }
 		}
+	}
+}
+
+extension ShowcaseSceneController {
+	// MARK: Displays
+
+	/// The hardware catalog for the displays, read by the view; the room may not be in yet.
+	func setDisplayHardware(_ hardware: [ShowcaseHardwareRecord]) async {
+		displayHardware = hardware
+		await loadDisplaysIfReady()
+	}
+
+	/// Once both the room and the catalog are in, stands the device models on the tables, then
+	/// swaps the connected radio's stand-in for its model.
+	func loadDisplaysIfReady() async {
+		guard let room, let hardware = displayHardware else { return }
+		displayHardware = nil
+		await displays.load(room: room, hardware: hardware) { [weak self] in self?.receiveRoomLight($0) }
+		if let layout { syncHeroes(layout: layout, now: Date()) }
+		// A selection made while the models were loading.
+		updateInspection()
+	}
+
+	// MARK: Inspection
+
+	/// Holds up whatever is selected: a table's model, or the connected radio when it is a real
+	/// model; puts the last one back otherwise.
+	private func updateInspection() {
+		if let id = selectedItem, let model = displays.model(for: id) {
+			inspector.inspect(model)
+		} else if let num = selected, let hero = heroes[num], hero.modelName != nil {
+			inspector.inspect(hero.device)
+		} else {
+			inspector.release()
+		}
+	}
+
+	/// Where a model's card goes: beside it when held up, else above it on its table.
+	func cardPosition(forItem id: String) -> SIMD3<Float>? {
+		if let model = displays.model(for: id), inspector.model === model { return inspector.cardPosition }
+		return displays.cardPosition(forItem: id)
 	}
 }
 

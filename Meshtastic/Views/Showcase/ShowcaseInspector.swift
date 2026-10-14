@@ -11,6 +11,12 @@ import SwiftUI
 /// Marks the model being inspected, so only it takes the spin drag.
 struct ShowcaseInspectedComponent: Component {}
 
+/// Where a model rests on its stand, relative to the stand's holder. Recorded when it is stood
+/// up, so it goes back to the right place however it was moved since.
+struct ShowcaseHomeComponent: Component {
+	let transform: Transform
+}
+
 /// Holds one model up in front of the viewer to look at: it glides off its stand to a spot past
 /// the front table's edge, turns as the viewer drags, and glides back when let go. While it is
 /// held up a drag spins it, so its hand grab is set aside until it is back on its stand.
@@ -21,6 +27,8 @@ final class ShowcaseInspector {
 	let stage = Entity()
 	private let pivot = Entity()
 	private var current: Inspected?
+	/// Released models still gliding home, whose hand grab goes back when they land.
+	private var landing: [ObjectIdentifier: (task: Task<Void, Never>, manipulation: ManipulationComponent?)] = [:]
 	private(set) var spin = ShowcaseSpin()
 	var reduceMotion = false
 
@@ -35,6 +43,7 @@ final class ShowcaseInspector {
 
 	init() {
 		ShowcaseInspectedComponent.registerComponent()
+		ShowcaseHomeComponent.registerComponent()
 		stage.name = "InspectStage"
 		pivot.name = "InspectPivot"
 		stage.addChild(pivot)
@@ -54,7 +63,14 @@ final class ShowcaseInspector {
 		guard current?.model !== model else { return }
 		release()
 		guard let home = model.parent else { return }
-		let saved = Inspected(model: model, home: home, homeTransform: model.transform, manipulation: model.components[ManipulationComponent.self])
+		model.stopAllAnimations()
+		let homeTransform = model.components[ShowcaseHomeComponent.self]?.transform ?? model.transform
+		var manipulation = model.components[ManipulationComponent.self]
+		if let pending = landing.removeValue(forKey: ObjectIdentifier(model)) {
+			pending.task.cancel()
+			manipulation = manipulation ?? pending.manipulation
+		}
+		let saved = Inspected(model: model, home: home, homeTransform: homeTransform, manipulation: manipulation)
 		model.components.remove(ManipulationComponent.self)
 		model.components.set(ShowcaseInspectedComponent())
 		current = saved
@@ -70,9 +86,18 @@ final class ShowcaseInspector {
 		guard let saved = current else { return }
 		current = nil
 		saved.model.components.remove(ShowcaseInspectedComponent.self)
+		saved.model.stopAllAnimations()
 		saved.model.setParent(saved.home, preservingWorldTransform: true)
-		saved.model.move(to: saved.homeTransform, relativeTo: saved.home, duration: reduceMotion ? 0 : Self.glide, timingFunction: .easeInOut)
-		if let manipulation = saved.manipulation { saved.model.components.set(manipulation) }
+		let duration = reduceMotion ? 0 : Self.glide
+		saved.model.move(to: saved.homeTransform, relativeTo: saved.home, duration: duration, timingFunction: .easeInOut)
+		// The grab comes back once it has landed, so a grab's reset returns it to its stand.
+		let key = ObjectIdentifier(saved.model)
+		let task = Task { [weak self] in
+			try? await Task.sleep(for: .seconds(duration))
+			guard !Task.isCancelled, let self, let pending = self.landing.removeValue(forKey: key) else { return }
+			if let manipulation = pending.manipulation { saved.model.components.set(manipulation) }
+		}
+		landing[key] = (task, saved.manipulation)
 		spin.reset()
 		pivot.orientation = spin.orientation
 	}
@@ -93,8 +118,8 @@ final class ShowcaseInspector {
 		pivot.orientation = spin.orientation
 	}
 
-	func endDrag() {
-		spin.endDrag(reduceMotion: reduceMotion)
+	func endDrag(at time: TimeInterval) {
+		spin.endDrag(reduceMotion: reduceMotion, at: time)
 	}
 
 	func step(deltaTime dt: TimeInterval) {

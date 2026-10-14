@@ -81,6 +81,12 @@ struct ShowcaseRoom {
 			root.addChild(light)
 		}
 
+		// Only the tables and what stands on them cast shadows; the ceiling, walls and floor
+		// would otherwise put the whole room in the key light's shadow.
+		for entity in Self.modelEntities(in: root) where !entity.name.contains("Table") {
+			entity.components.set(DynamicLightShadowComponent(castsShadow: false))
+		}
+
 		guard let image = Self.environmentImage(),
 			  let environment = try? await EnvironmentResource(equirectangular: image, withName: "ShowcaseEnvironment") else { return }
 		let light = Entity()
@@ -148,9 +154,17 @@ struct ShowcaseRoom {
 				mesh: .generateBox(width: 1.9, height: 0.05, depth: 0.7),
 				materials: [SimpleMaterial(color: UIColor(red: 0.84, green: 0.70, blue: 0.52, alpha: 1), roughness: 0.45, isMetallic: false)]
 			)
+			table.name = "StandInTable"
 			table.position = top - SIMD3<Float>(0, 0.025, 0)
 			room.addChild(table)
 		}
+		let riser = ModelEntity(
+			mesh: .generateBox(width: ShowcaseRoomGeometry.tableLength, height: ShowcaseRoomGeometry.riserHeight, depth: 0.24),
+			materials: [SimpleMaterial(color: UIColor(white: 0.97, alpha: 1), roughness: 0.6, isMetallic: false)]
+		)
+		riser.position = ShowcaseRoomGeometry.defaultPose(.tableFront).position
+			+ SIMD3<Float>(0, ShowcaseRoomGeometry.riserHeight / 2, ShowcaseRoomGeometry.riserOffset)
+		room.addChild(riser)
 		return room
 	}
 }
