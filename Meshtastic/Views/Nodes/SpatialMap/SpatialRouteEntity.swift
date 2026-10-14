@@ -58,6 +58,7 @@ final class SpatialRouteDrawing {
 	private let originRing: ModelEntity
 	private let targetRing: ModelEntity
 	private var chevrons: [Chevron] = []
+	private var chevronPool: [ModelEntity] = []
 	private var badgeAnchors: [String: Entity] = [:]
 	private var pillAnchors: [String: Entity] = [:]
 	private var key: Key?
@@ -132,7 +133,10 @@ final class SpatialRouteDrawing {
 		lines.model = nil
 		casing.model = nil
 		for chevron in chevrons { chevron.entity.removeFromParent() }
+		for entity in chevronPool { entity.removeFromParent() }
 		chevrons = []
+		chevronPool = []
+		phase = 0
 		for anchor in badgeAnchors.values { anchor.removeFromParent() }
 		for anchor in pillAnchors.values { anchor.removeFromParent() }
 		badgeAnchors = [:]
@@ -204,8 +208,10 @@ final class SpatialRouteDrawing {
 		return ModelComponent(mesh: mesh, materials: materials)
 	}
 
+	/// Reuses the chevron entities already made, so a pinch, which rebuilds the route every frame,
+	/// doesn't make new ones each time. Spare ones are hidden.
 	private func buildChevrons(_ legs: [Leg], scale: Float) {
-		for chevron in chevrons { chevron.entity.removeFromParent() }
+		var spare = chevrons.map(\.entity) + chevronPool
 		chevrons = []
 		let spacing = SpatialRouteGeometry.chevronSpacing * scale
 		let margin = SpatialRouteGeometry.chevronMargin * scale
@@ -216,15 +222,21 @@ final class SpatialRouteDrawing {
 			let orientation = simd_quatf(from: [0, 1, 0], to: direction)
 			let material = leg.isBack ? Self.backChevronMaterial : Self.forwardChevronMaterial
 			for distance in SpatialRouteGeometry.marks(length: leg.length, spacing: spacing, margin: margin) {
-				let entity = ModelEntity(mesh: Self.chevronMesh, materials: [material])
+				let entity = spare.popLast() ?? {
+					let made = ModelEntity(mesh: Self.chevronMesh, materials: [material])
+					root.addChild(made)
+					return made
+				}()
+				entity.model?.materials = [material]
+				entity.isEnabled = true
 				entity.orientation = orientation
 				entity.scale = SIMD3(repeating: scale)
 				entity.position = a + direction * distance
-				root.addChild(entity)
 				chevrons.append(Chevron(entity: entity, start: a, direction: direction, margin: usable > 0 ? margin : distance, usable: usable, base: distance))
 			}
 		}
-		phase = 0
+		for entity in spare { entity.isEnabled = false }
+		chevronPool = spare
 	}
 
 	private func placeRings(_ layout: SpatialRouteLayout, anchors: [Int64: Anchor], scale: Float) {
