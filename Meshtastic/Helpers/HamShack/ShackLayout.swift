@@ -190,23 +190,36 @@ struct ShackLayout {
 		onlineStates[node.id] = state
 	}
 
+	/// The tier each node should be in. Nodes already on the desk or a shelf keep it while they
+	/// still qualify, so a full desk or shelf doesn't swap nodes each time last-heard order shifts.
 	private func desiredTiers(_ nodes: [ShackNodeSnapshot]) -> [Int64: ShackTier] {
 		var result: [Int64: ShackTier] = [:]
-		var desk = 0, shelf = 0
+		var favorites: [ShackNodeSnapshot] = []
+		var online: [ShackNodeSnapshot] = []
 		for node in nodes {
 			if node.isConnectedRadio {
 				result[node.id] = .deskRadio
-			} else if node.isFavorite, desk < Self.deskSlots {
-				result[node.id] = .desk
-				desk += 1
-			} else if node.isFavorite || isOnline(node.id), shelf < Self.shelfCapacity {
-				result[node.id] = .shelf
-				shelf += 1
+			} else if node.isFavorite {
+				favorites.append(node)
+			} else if isOnline(node.id) {
+				online.append(node)
 			} else {
 				result[node.id] = .rack
 			}
 		}
+		let desk = stickyFirst(favorites, in: .desk)
+		for node in desk.prefix(Self.deskSlots) { result[node.id] = .desk }
+		let shelf = stickyFirst(Array(desk.dropFirst(Self.deskSlots)), in: .shelf) + stickyFirst(online, in: .shelf)
+		for (index, node) in shelf.enumerated() {
+			result[node.id] = index < Self.shelfCapacity ? .shelf : .rack
+		}
 		return result
+	}
+
+	/// `nodes` with those already in `tier` first, each group keeping its order.
+	private func stickyFirst(_ nodes: [ShackNodeSnapshot], in tier: ShackTier) -> [ShackNodeSnapshot] {
+		let holding = nodes.filter { slots[$0.id]?.tier == tier }
+		return holding + nodes.filter { slots[$0.id]?.tier != tier }
 	}
 
 	/// The free places in each tier, lowest first. A node whose tier is full drops to the next.
