@@ -1,0 +1,659 @@
+#usda 1.0
+(
+    defaultPrim = "Root"
+    doc = """The ham shack room for the visionOS immersive space. Our own asset, written by hand.
+
+    Units are meters, Y is up. The origin is on the floor where the viewer sits, facing -Z.
+    The desk and its shelf hutch stand against the back wall (z = -1.3), the window is in the
+    left wall (x = -1.7), and the wall rack hangs on the right wall (x = +1.7). The side behind
+    the viewer is left open.
+
+    Shapes are unit cubes scaled to size, plus a few cylinders and one textured quad for the
+    sky. Lights are added in code at Anchor_Lamp.
+
+    The Anchor_* prims are empty and are read by name in ShackRoom.load(). Their local +Z points
+    out of the surface toward the viewer, and +Y is up. Keep ShackRoomGeometry.swift in step
+    when one moves."""
+    metersPerUnit = 1
+    upAxis = "Y"
+)
+
+def Xform "Root"
+{
+    # ------------------------------------------------------------------------------------------
+    # Materials: plain physically based colors, and the one texture for the sky.
+    # ------------------------------------------------------------------------------------------
+    def Scope "Materials"
+    {
+        def Material "FloorOak"
+        {
+            token outputs:surface.connect = </Root/Materials/FloorOak/Surface.outputs:surface>
+            def Shader "Surface"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                color3f inputs:diffuseColor = (0.36, 0.22, 0.12)
+                float inputs:roughness = 0.55
+                float inputs:metallic = 0
+                token outputs:surface
+            }
+        }
+
+        def Material "Rug"
+        {
+            token outputs:surface.connect = </Root/Materials/Rug/Surface.outputs:surface>
+            def Shader "Surface"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                color3f inputs:diffuseColor = (0.30, 0.09, 0.07)
+                float inputs:roughness = 1
+                float inputs:metallic = 0
+                token outputs:surface
+            }
+        }
+
+        def Material "Wall"
+        {
+            # Deep sage green, a study color that sets off the walnut and brass.
+            token outputs:surface.connect = </Root/Materials/Wall/Surface.outputs:surface>
+            def Shader "Surface"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                color3f inputs:diffuseColor = (0.22, 0.29, 0.22)
+                float inputs:roughness = 0.9
+                float inputs:metallic = 0
+                token outputs:surface
+            }
+        }
+
+        def Material "Ceiling"
+        {
+            token outputs:surface.connect = </Root/Materials/Ceiling/Surface.outputs:surface>
+            def Shader "Surface"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                color3f inputs:diffuseColor = (0.40, 0.30, 0.20)
+                float inputs:roughness = 0.95
+                float inputs:metallic = 0
+                token outputs:surface
+            }
+        }
+
+        def Material "Walnut"
+        {
+            token outputs:surface.connect = </Root/Materials/Walnut/Surface.outputs:surface>
+            def Shader "Surface"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                color3f inputs:diffuseColor = (0.26, 0.15, 0.08)
+                float inputs:roughness = 0.45
+                float inputs:metallic = 0
+                token outputs:surface
+            }
+        }
+
+        def Material "Pine"
+        {
+            token outputs:surface.connect = </Root/Materials/Pine/Surface.outputs:surface>
+            def Shader "Surface"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                color3f inputs:diffuseColor = (0.52, 0.34, 0.18)
+                float inputs:roughness = 0.6
+                float inputs:metallic = 0
+                token outputs:surface
+            }
+        }
+
+        def Material "RackPanel"
+        {
+            token outputs:surface.connect = </Root/Materials/RackPanel/Surface.outputs:surface>
+            def Shader "Surface"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                color3f inputs:diffuseColor = (0.06, 0.08, 0.07)
+                float inputs:roughness = 0.45
+                float inputs:metallic = 0.6
+                token outputs:surface
+            }
+        }
+
+        def Material "Brass"
+        {
+            token outputs:surface.connect = </Root/Materials/Brass/Surface.outputs:surface>
+            def Shader "Surface"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                color3f inputs:diffuseColor = (0.78, 0.58, 0.28)
+                float inputs:roughness = 0.3
+                float inputs:metallic = 1
+                token outputs:surface
+            }
+        }
+
+        def Material "LampShade"
+        {
+            # Green glass banker's lamp shade, glowing a little from the bulb inside.
+            token outputs:surface.connect = </Root/Materials/LampShade/Surface.outputs:surface>
+            def Shader "Surface"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                color3f inputs:diffuseColor = (0.06, 0.30, 0.14)
+                color3f inputs:emissiveColor = (0.02, 0.12, 0.05)
+                float inputs:roughness = 0.15
+                float inputs:metallic = 0
+                token outputs:surface
+            }
+        }
+
+        def Material "Paper"
+        {
+            token outputs:surface.connect = </Root/Materials/Paper/Surface.outputs:surface>
+            def Shader "Surface"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                color3f inputs:diffuseColor = (0.80, 0.73, 0.56)
+                float inputs:roughness = 0.95
+                float inputs:metallic = 0
+                token outputs:surface
+            }
+        }
+
+        def Material "Aluminum"
+        {
+            token outputs:surface.connect = </Root/Materials/Aluminum/Surface.outputs:surface>
+            def Shader "Surface"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                color3f inputs:diffuseColor = (0.62, 0.62, 0.64)
+                float inputs:roughness = 0.35
+                float inputs:metallic = 1
+                token outputs:surface
+            }
+        }
+
+        def Material "Rubber"
+        {
+            token outputs:surface.connect = </Root/Materials/Rubber/Surface.outputs:surface>
+            def Shader "Surface"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                color3f inputs:diffuseColor = (0.04, 0.04, 0.04)
+                float inputs:roughness = 0.8
+                float inputs:metallic = 0
+                token outputs:surface
+            }
+        }
+
+        def Material "Leather"
+        {
+            token outputs:surface.connect = </Root/Materials/Leather/Surface.outputs:surface>
+            def Shader "Surface"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                color3f inputs:diffuseColor = (0.30, 0.13, 0.06)
+                float inputs:roughness = 0.5
+                float inputs:metallic = 0
+                token outputs:surface
+            }
+        }
+
+        def Material "Sky"
+        {
+            # Drawn as unlit in code, so it keeps its colors whatever the lamp does.
+            token outputs:surface.connect = </Root/Materials/Sky/Surface.outputs:surface>
+            def Shader "Surface"
+            {
+                uniform token info:id = "UsdPreviewSurface"
+                color3f inputs:diffuseColor.connect = </Root/Materials/Sky/Texture.outputs:rgb>
+                color3f inputs:emissiveColor.connect = </Root/Materials/Sky/Texture.outputs:rgb>
+                float inputs:roughness = 1
+                float inputs:metallic = 0
+                token outputs:surface
+            }
+
+            def Shader "Texture"
+            {
+                uniform token info:id = "UsdUVTexture"
+                asset inputs:file = @Textures/DuskSky.png@
+                float2 inputs:st.connect = </Root/Materials/Sky/UV.outputs:result>
+                token inputs:sourceColorSpace = "sRGB"
+                token inputs:wrapS = "clamp"
+                token inputs:wrapT = "clamp"
+                float3 outputs:rgb
+            }
+
+            def Shader "UV"
+            {
+                uniform token info:id = "UsdPrimvarReader_float2"
+                string inputs:varname = "st"
+                float2 outputs:result
+            }
+        }
+    }
+
+    # ------------------------------------------------------------------------------------------
+    # Room shell: 3.4 m wide, 3.4 m deep, 2.5 m high. Walls are 6 cm thick, set outside the
+    # inner faces at x = ±1.7 and z = -1.3.
+    # ------------------------------------------------------------------------------------------
+    def Cube "Floor" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        double size = 1
+        rel material:binding = </Root/Materials/FloorOak>
+        float3 xformOp:translate = (0, -0.02, 0.4)
+        float3 xformOp:scale = (3.52, 0.04, 3.52)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+
+    def Cube "Ceiling" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        double size = 1
+        rel material:binding = </Root/Materials/Ceiling>
+        float3 xformOp:translate = (0, 2.52, 0.4)
+        float3 xformOp:scale = (3.52, 0.04, 3.52)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+
+    def Cube "Rug" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        double size = 1
+        rel material:binding = </Root/Materials/Rug>
+        float3 xformOp:translate = (0, 0.004, -0.2)
+        float3 xformOp:scale = (1.8, 0.008, 1.3)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+
+    def Cube "BackWall" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        double size = 1
+        rel material:binding = </Root/Materials/Wall>
+        float3 xformOp:translate = (0, 1.25, -1.33)
+        float3 xformOp:scale = (3.52, 2.5, 0.06)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+
+    def Cube "RightWall" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        double size = 1
+        rel material:binding = </Root/Materials/Wall>
+        float3 xformOp:translate = (1.73, 1.25, 0.4)
+        float3 xformOp:scale = (0.06, 2.5, 3.4)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+
+    # The left wall is four pieces around the window opening:
+    # z from -1.15 to -0.35, y from 1.0 to 2.0.
+    def Cube "LeftWall_Front" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        double size = 1
+        rel material:binding = </Root/Materials/Wall>
+        float3 xformOp:translate = (-1.73, 1.25, -1.255)
+        float3 xformOp:scale = (0.06, 2.5, 0.21)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+
+    def Cube "LeftWall_Rear" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        double size = 1
+        rel material:binding = </Root/Materials/Wall>
+        float3 xformOp:translate = (-1.73, 1.25, 0.875)
+        float3 xformOp:scale = (0.06, 2.5, 2.45)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+
+    def Cube "LeftWall_Below" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        double size = 1
+        rel material:binding = </Root/Materials/Wall>
+        float3 xformOp:translate = (-1.73, 0.5, -0.75)
+        float3 xformOp:scale = (0.06, 1.0, 0.8)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+
+    def Cube "LeftWall_Above" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        double size = 1
+        rel material:binding = </Root/Materials/Wall>
+        float3 xformOp:translate = (-1.73, 2.25, -0.75)
+        float3 xformOp:scale = (0.06, 0.5, 0.8)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+
+    def Cube "WindowSill" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        double size = 1
+        rel material:binding = </Root/Materials/Pine>
+        float3 xformOp:translate = (-1.68, 0.9825, -0.75)
+        float3 xformOp:scale = (0.16, 0.035, 0.9)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+
+    # A center mullion, so the opening reads as a two-pane window.
+    def Cube "WindowMullion" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        double size = 1
+        rel material:binding = </Root/Materials/Pine>
+        float3 xformOp:translate = (-1.72, 1.5, -0.75)
+        float3 xformOp:scale = (0.04, 1.0, 0.04)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+
+    # Flat dusk sky 4.3 m outside the window, facing +X into the room. 16 m by 12 m so it fills the
+    # opening from anywhere in the room; its horizon is at seated eye height (1.2 m).
+    # u runs toward -Z (the viewer's right when facing it).
+    def Mesh "Sky" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        rel material:binding = </Root/Materials/Sky>
+        int[] faceVertexCounts = [4]
+        int[] faceVertexIndices = [0, 1, 2, 3]
+        point3f[] points = [(-6, -3, -10), (-6, 9, -10), (-6, 9, 6), (-6, -3, 6)]
+        normal3f[] normals = [(1, 0, 0), (1, 0, 0), (1, 0, 0), (1, 0, 0)] (
+            interpolation = "vertex"
+        )
+        texCoord2f[] primvars:st = [(1, 0), (1, 1), (0, 1), (0, 0)] (
+            interpolation = "vertex"
+        )
+        uniform token subdivisionScheme = "none"
+    }
+
+    # ------------------------------------------------------------------------------------------
+    # Desk: 1.9 m wide, 0.75 m deep, top surface at 0.76 m, against the back wall.
+    # ------------------------------------------------------------------------------------------
+    def Cube "DeskTop" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        double size = 1
+        rel material:binding = </Root/Materials/Walnut>
+        float3 xformOp:translate = (0, 0.74, -0.925)
+        float3 xformOp:scale = (1.9, 0.04, 0.75)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+
+    def Cube "DeskSide_Left" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        double size = 1
+        rel material:binding = </Root/Materials/Walnut>
+        float3 xformOp:translate = (-0.91, 0.36, -0.95)
+        float3 xformOp:scale = (0.04, 0.72, 0.68)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+
+    def Cube "DeskSide_Right" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        double size = 1
+        rel material:binding = </Root/Materials/Walnut>
+        float3 xformOp:translate = (0.91, 0.36, -0.95)
+        float3 xformOp:scale = (0.04, 0.72, 0.68)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+
+    # Shelf hutch on the desk: two sides and three 1.7 m shelves, 26 cm deep, 30 cm apart.
+    def Cube "Hutch_Left" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        double size = 1
+        rel material:binding = </Root/Materials/Pine>
+        float3 xformOp:translate = (-0.86, 1.26, -1.17)
+        float3 xformOp:scale = (0.025, 1.0, 0.26)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+
+    def Cube "Hutch_Right" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        double size = 1
+        rel material:binding = </Root/Materials/Pine>
+        float3 xformOp:translate = (0.86, 1.26, -1.17)
+        float3 xformOp:scale = (0.025, 1.0, 0.26)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+
+    def Cube "Shelf_0" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        double size = 1
+        rel material:binding = </Root/Materials/Pine>
+        float3 xformOp:translate = (0, 1.12, -1.17)
+        float3 xformOp:scale = (1.695, 0.025, 0.26)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+
+    def Cube "Shelf_1" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        double size = 1
+        rel material:binding = </Root/Materials/Pine>
+        float3 xformOp:translate = (0, 1.42, -1.17)
+        float3 xformOp:scale = (1.695, 0.025, 0.26)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+
+    def Cube "Shelf_2" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        double size = 1
+        rel material:binding = </Root/Materials/Pine>
+        float3 xformOp:translate = (0, 1.72, -1.17)
+        float3 xformOp:scale = (1.695, 0.025, 0.26)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+
+    # ------------------------------------------------------------------------------------------
+    # Banker's lamp at the left of the desk: brass base and stem, green shade.
+    # ------------------------------------------------------------------------------------------
+    def Cylinder "Lamp_Base" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        uniform token axis = "Y"
+        double height = 0.025
+        double radius = 0.085
+        rel material:binding = </Root/Materials/Brass>
+        float3 xformOp:translate = (-0.62, 0.7725, -0.92)
+        uniform token[] xformOpOrder = ["xformOp:translate"]
+    }
+
+    def Cylinder "Lamp_Stem" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        uniform token axis = "Y"
+        double height = 0.3
+        double radius = 0.01
+        rel material:binding = </Root/Materials/Brass>
+        float3 xformOp:translate = (-0.62, 0.91, -0.92)
+        uniform token[] xformOpOrder = ["xformOp:translate"]
+    }
+
+    def Cylinder "Lamp_Shade" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        uniform token axis = "X"
+        double height = 0.3
+        double radius = 0.07
+        rel material:binding = </Root/Materials/LampShade>
+        float3 xformOp:translate = (-0.62, 1.07, -0.87)
+        float3 xformOp:scale = (1, 0.55, 1)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+
+    # ------------------------------------------------------------------------------------------
+    # Wall rack on the right wall: a dark panel, 1.75 m wide and 1.65 m high.
+    # ------------------------------------------------------------------------------------------
+    def Cube "Rack_Panel" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        double size = 1
+        rel material:binding = </Root/Materials/RackPanel>
+        float3 xformOp:translate = (1.68, 1.3, -0.2)
+        float3 xformOp:scale = (0.04, 1.65, 1.75)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+
+    # ------------------------------------------------------------------------------------------
+    # Framed map on the back wall, right of the hutch.
+    # ------------------------------------------------------------------------------------------
+    def Cube "Map_Frame" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        double size = 1
+        rel material:binding = </Root/Materials/Walnut>
+        float3 xformOp:translate = (1.28, 1.45, -1.285)
+        float3 xformOp:scale = (0.6, 0.8, 0.03)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+
+    def Cube "Map_Paper" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        double size = 1
+        rel material:binding = </Root/Materials/Paper>
+        float3 xformOp:translate = (1.28, 1.45, -1.266)
+        float3 xformOp:scale = (0.52, 0.72, 0.012)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+
+    # ------------------------------------------------------------------------------------------
+    # Cable entry plate under the window, where the coax comes in.
+    # ------------------------------------------------------------------------------------------
+    def Cube "CablePort_Plate" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        double size = 1
+        rel material:binding = </Root/Materials/Aluminum>
+        float3 xformOp:translate = (-1.695, 0.84, -1.02)
+        float3 xformOp:scale = (0.01, 0.12, 0.12)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+
+    def Cylinder "CablePort_Coax" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        uniform token axis = "X"
+        double height = 0.06
+        double radius = 0.012
+        rel material:binding = </Root/Materials/Rubber>
+        float3 xformOp:translate = (-1.67, 0.84, -1.02)
+        uniform token[] xformOpOrder = ["xformOp:translate"]
+    }
+
+    # A leather stool by the window, at chair height (45 cm), for scale.
+    def Cylinder "Stool" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        uniform token axis = "Y"
+        double height = 0.45
+        double radius = 0.19
+        rel material:binding = </Root/Materials/Leather>
+        float3 xformOp:translate = (-1.2, 0.225, 0.15)
+        uniform token[] xformOpOrder = ["xformOp:translate"]
+    }
+
+    # ------------------------------------------------------------------------------------------
+    # Anchors. Empty; code places nodes, lights and panels at them.
+    # Orient is (w, x, y, z): ±90° about Y turns +Z to face out of the side walls.
+    # ------------------------------------------------------------------------------------------
+    def Xform "Anchor_DeskRadio"
+    {
+        # The connected radio, on the desk right of center.
+        float3 xformOp:translate = (0.4, 0.76, -0.82)
+        uniform token[] xformOpOrder = ["xformOp:translate"]
+    }
+
+    def Xform "Anchor_DeskMap"
+    {
+        # Center of the clear desk area for the map, left of the radio.
+        float3 xformOp:translate = (-0.15, 0.76, -0.82)
+        uniform token[] xformOpOrder = ["xformOp:translate"]
+    }
+
+    def Xform "Anchor_Shelf_0"
+    {
+        # Center of each shelf's top surface; devices line up along local X.
+        float3 xformOp:translate = (0, 1.1325, -1.17)
+        uniform token[] xformOpOrder = ["xformOp:translate"]
+    }
+
+    def Xform "Anchor_Shelf_1"
+    {
+        float3 xformOp:translate = (0, 1.4325, -1.17)
+        uniform token[] xformOpOrder = ["xformOp:translate"]
+    }
+
+    def Xform "Anchor_Shelf_2"
+    {
+        float3 xformOp:translate = (0, 1.7325, -1.17)
+        uniform token[] xformOpOrder = ["xformOp:translate"]
+    }
+
+    def Xform "Anchor_WallRack"
+    {
+        # Center of the rack panel's face, facing -X into the room.
+        float3 xformOp:translate = (1.655, 1.3, -0.2)
+        quatf xformOp:orient = (0.70710677, 0, -0.70710677, 0)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+    }
+
+    def Xform "Anchor_Window"
+    {
+        # Center of the window opening, facing +X into the room.
+        float3 xformOp:translate = (-1.7, 1.5, -0.75)
+        quatf xformOp:orient = (0.70710677, 0, 0.70710677, 0)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+    }
+
+    def Xform "Anchor_CablePort"
+    {
+        # Face of the cable entry plate, facing +X into the room.
+        float3 xformOp:translate = (-1.69, 0.84, -1.02)
+        quatf xformOp:orient = (0.70710677, 0, 0.70710677, 0)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient"]
+    }
+
+    def Xform "Anchor_Lamp"
+    {
+        # The bulb, where the lamp's light comes from.
+        float3 xformOp:translate = (-0.62, 1.035, -0.86)
+        uniform token[] xformOpOrder = ["xformOp:translate"]
+    }
+}
