@@ -67,6 +67,11 @@ actor TerrainStore {
 
 	var hasSources: Bool { !sources.isEmpty }
 
+	/// The finest zoom any configured archive carries, nil with no archives.
+	func finestDataZoom() -> Int? {
+		sources.map(\.maxZoom).max()
+	}
+
 	/// Whether any configured region covers the given tile at all.
 	func covers(z: Int, x: Int, y: Int) -> Bool {
 		source(covering: z, x: x, y: y) != nil
@@ -267,14 +272,35 @@ actor TerrainStore {
 		return decoded
 	}
 
-	/// The configured source whose bounds INTERSECT the tile. A center test left
-	/// border tiles either spilling past the region boundary or gapped inside it;
-	/// intersection + consumer-side clipping renders exactly to the boundary.
+	/// The configured source to read a tile from. A center test left border tiles either spilling
+	/// past the region boundary or gapped inside it; intersection + consumer-side clipping renders
+	/// exactly to the boundary. When regions overlap, a source that contains the whole tile wins,
+	/// so a tile is never clipped to a smaller region's box while a bigger one covers all of it.
 	private func source(covering z: Int, x: Int, y: Int) -> OpenSource? {
 		let tile = Self.tileBounds(z: z, x: x, y: y)
-		return sources.first { source in
-			tile.minLon <= source.bounds.maxLon && tile.maxLon >= source.bounds.minLon &&
-			tile.minLat <= source.bounds.maxLat && tile.maxLat >= source.bounds.minLat
+		return Self.preferredSourceIndex(tile: tile, sources: sources.map { ($0.bounds, $0.maxZoom) }).map { sources[$0] }
+	}
+
+	/// Which source serves a tile: among sources that contain the whole tile, the one with the
+	/// finest data (first listed on a tie); otherwise the one overlapping the tile the most. Nil
+	/// when no source touches the tile.
+	static func preferredSourceIndex(tile: GeoBounds, sources: [(bounds: GeoBounds, maxZoom: Int)]) -> Int? {
+		var best: (index: Int, maxZoom: Int)?
+		for (index, source) in sources.enumerated() {
+			let b = source.bounds
+			guard b.minLon <= tile.minLon, b.maxLon >= tile.maxLon, b.minLat <= tile.minLat, b.maxLat >= tile.maxLat else { continue }
+			if let current = best, source.maxZoom <= current.maxZoom { continue }
+			best = (index, source.maxZoom)
 		}
+		if let best { return best.index }
+		var bestOverlap: (index: Int, area: Double)?
+		for (index, source) in sources.enumerated() {
+			let b = source.bounds
+			guard tile.minLon <= b.maxLon, tile.maxLon >= b.minLon, tile.minLat <= b.maxLat, tile.maxLat >= b.minLat else { continue }
+			let area = (min(tile.maxLon, b.maxLon) - max(tile.minLon, b.minLon)) * (min(tile.maxLat, b.maxLat) - max(tile.minLat, b.minLat))
+			if let current = bestOverlap, area <= current.area { continue }
+			bestOverlap = (index, area)
+		}
+		return bestOverlap?.index
 	}
 }

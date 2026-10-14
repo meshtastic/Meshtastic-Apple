@@ -172,7 +172,8 @@ struct MeshtasticSwiftUIViewsPredicate: SwiftUIRUMViewsPredicate {
 		"AppSettings",
 		"DeviceOnboarding",
 		"LoRaConfig",
-		"ShareChannels"
+		"ShareChannels",
+		"SpatialMapWindow"
 	]
 
 	func rumView(for extractedViewName: String) -> RUMView? {

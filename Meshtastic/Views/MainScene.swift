@@ -12,9 +12,12 @@ struct MainScene: View {
 	@EnvironmentObject private var appState: AppState
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 	@Environment(\.scenePhase) private var scenePhase
+	@Environment(\.openWindow) private var openWindow
 	@State private var saveChannelLink: SaveChannelLinkData?
 	@State private var pendingContact: PendingContact?
 	@State private var routerToken: UUID?
+	/// This window's scene, so a route from another window can bring it forward.
+	@State private var sceneSession: UISceneSession?
 
 	/// TipKit configuration must run once per process. This view stays mounted
 	/// across node switches; the flag is a backstop if a window is recreated.
@@ -22,11 +25,13 @@ struct MainScene: View {
 
 	var body: some View {
 		sceneContent
+			.background(SceneSessionReader(session: $sceneSession))
 			.environmentObject(router)
 			.environmentObject(nodeFilters)
 			.onAppear {
 				if routerToken == nil {
 					routerToken = appState.sceneRouters.register(router)
+					appState.mainWindowCount += 1
 					if let launch = appState.takeLaunchNavigation() {
 						router.navigationState = launch
 					}
@@ -39,6 +44,7 @@ struct MainScene: View {
 				guard let routerToken else { return }
 				appState.sceneRouters.unregister(routerToken)
 				self.routerToken = nil
+				appState.mainWindowCount -= 1
 			}
 			.onOpenURL { url in
 				Logger.mesh.debug("URL received")
@@ -59,6 +65,15 @@ struct MainScene: View {
 					claimPendingRoute()
 				}
 			}
+			#if os(visionOS)
+			.onChange(of: router.spatialMapRequest?.id) { _, _ in
+				guard let request = router.claimSpatialMapRequest() else { return }
+				if let nodeNum = request.nodeNum {
+					appState.spatialMapFocus = SpatialMapFocusRequest(nodeNum: nodeNum)
+				}
+				openWindow(id: SpatialMapScene.id, value: SpatialMapSceneKey.shared)
+			}
+			#endif
 			.task {
 				// Skip TipKit during marketing screenshot capture so tip popovers never
 				// appear in the shots (unconfigured TipKit displays nothing).
@@ -132,8 +147,13 @@ struct MainScene: View {
 	/// it so another window does not navigate too.
 	private func claimPendingRoute() {
 		guard scenePhase == .active else { return }
-		guard let url = appState.claimPendingRoute() else { return }
-		dispatchIncomingURL(url, fromActivity: false)
+		guard let route = appState.claimPendingRoute() else { return }
+		if route.bringForward, let sceneSession {
+			UIApplication.shared.requestSceneSessionActivation(sceneSession, userActivity: nil, options: nil) { error in
+				Logger.services.error("🛣 [App] Couldn't bring the window forward: \(error.localizedDescription, privacy: .public)")
+			}
+		}
+		dispatchIncomingURL(route.url, fromActivity: false)
 	}
 
 	private func dispatchIncomingURL(_ url: URL, fromActivity: Bool) {
@@ -172,5 +192,28 @@ struct MainScene: View {
 		let source = fromActivity ? "User Activity" : "Open URL"
 		Logger.mesh.debug("User wants to open a Channel Settings URL (\(source, privacy: .public))")
 		return true
+	}
+}
+
+/// Reads the UIKit scene session of the window it is placed in.
+private struct SceneSessionReader: UIViewRepresentable {
+	@Binding var session: UISceneSession?
+
+	func makeUIView(context: Context) -> ReaderView {
+		let view = ReaderView()
+		view.onWindow = { session = $0 }
+		return view
+	}
+
+	func updateUIView(_ uiView: ReaderView, context: Context) {}
+
+	final class ReaderView: UIView {
+		var onWindow: ((UISceneSession?) -> Void)?
+
+		override func didMoveToWindow() {
+			super.didMoveToWindow()
+			let session = window?.windowScene?.session
+			DispatchQueue.main.async { [onWindow] in onWindow?(session) }
+		}
 	}
 }

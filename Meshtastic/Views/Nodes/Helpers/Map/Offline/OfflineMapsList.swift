@@ -45,7 +45,7 @@ struct OfflineMapsList: View {
 							OfflineMapRow(region: region)
 						}
 						.swipeActions(edge: .leading, allowsFullSwipe: false) {
-							if region.terrain == nil {
+							if region.terrain == nil, !region.isAppManaged {
 								Button {
 									manager.downloadTerrain(for: region)
 								} label: {
@@ -131,6 +131,11 @@ struct OfflineMapRow: View {
 						.foregroundStyle(.secondary)
 				} else if let terrainSize = region.formattedTerrainSize {
 					Text("Terrain: \(terrainSize)")
+						.font(.caption)
+						.foregroundStyle(.secondary)
+				}
+				if region.isAppManaged {
+					Text("Kept up to date by the Spatial Map. Delete it any time; it is downloaded again when the volume needs it (turn off Download Terrain Automatically to stop that).", comment: "Offline map row caption for the terrain region the visionOS spatial map manages")
 						.font(.caption)
 						.foregroundStyle(.secondary)
 				}

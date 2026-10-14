@@ -60,7 +60,7 @@ struct MapDataManagerImportFromStringTests {
 }
 
 /// Covers file provenance and the per-source activation policy: a new Site Planner
-/// run replaces the previous one (only the newest planner file stays active), while
+/// run replaces the previous run from the same transmitter, while
 /// manually uploaded files keep whatever visibility the user set.
 @Suite("MapData source and visibility policy", .serialized)
 struct MapDataSourcePolicyTests {
@@ -113,6 +113,73 @@ struct MapDataSourcePolicyTests {
 		#expect(files.first(where: { $0.id == secondRun.id })?.source == .sitePlanner)
 
 		await cleanUp(manager, created)
+	}
+
+	private func coverage(node: Int64?) -> SitePlannerCoverageInfo {
+		SitePlannerCoverageInfo(
+			nodeNum: node, latitude: 47.6, longitude: -122.3, maxRangeKm: 30, txHeightMeters: 2,
+			colorScale: "mesh", bounds: CoverageBounds(minLatitude: 47.5, maxLatitude: 47.7, minLongitude: -122.4, maxLongitude: -122.2)
+		)
+	}
+
+	@Test func manifestsWithoutCoverageDecodeWithNoTransmitter() throws {
+		let legacy = """
+		{ "id": "9E8282D3-D73A-3954-8DD9-D5CAED9B4EFD", "filename": "a.geojson",
+		  "originalName": "a", "uploadDate": 700000000, "fileSize": 10,
+		  "format": "geojson", "overlayCount": 1, "isActive": true, "source": "sitePlanner" }
+		"""
+		let metadata = try JSONDecoder().decode(MapDataMetadata.self, from: Data(legacy.utf8))
+		#expect(metadata.source == .sitePlanner)
+		#expect(metadata.coverage == nil)
+	}
+
+	@Test func coverageInfoIsSavedWithTheFile() async throws {
+		let manager = MapDataManager()
+		let info = coverage(node: 42)
+		let run = try await manager.importFromString(sampleGeoJSON, name: "Run \(UUID().uuidString)", source: .sitePlanner, coverage: info)
+		#expect(run.coverage == info)
+
+		let reloaded = MapDataManager()
+		reloaded.loadMetadata()
+		#expect(reloaded.getUploadedFiles().first(where: { $0.id == run.id })?.coverage == info)
+
+		await cleanUp(manager, [run])
+	}
+
+	@Test func plannerRunsReplaceOnlyRunsFromTheSameNode() async throws {
+		let manager = MapDataManager()
+		var created: [MapDataMetadata] = []
+
+		let nodeA1 = try await manager.importFromString(sampleGeoJSON, name: "A1 \(UUID().uuidString)", source: .sitePlanner, coverage: coverage(node: 1))
+		created.append(nodeA1)
+		let nodeB = try await manager.importFromString(sampleGeoJSON, name: "B \(UUID().uuidString)", source: .sitePlanner, coverage: coverage(node: 2))
+		created.append(nodeB)
+		let noNode = try await manager.importFromString(sampleGeoJSON, name: "Center \(UUID().uuidString)", source: .sitePlanner, coverage: coverage(node: nil))
+		created.append(noNode)
+		let nodeA2 = try await manager.importFromString(sampleGeoJSON, name: "A2 \(UUID().uuidString)", source: .sitePlanner, coverage: coverage(node: 1))
+		created.append(nodeA2)
+
+		let files = manager.getUploadedFiles()
+		#expect(files.first(where: { $0.id == nodeA1.id })?.isActive == false, "the same node's older run is replaced")
+		#expect(files.first(where: { $0.id == nodeA2.id })?.isActive == true)
+		#expect(files.first(where: { $0.id == nodeB.id })?.isActive == true, "another node's run stays")
+		#expect(files.first(where: { $0.id == noNode.id })?.isActive == true, "a run with no node stays")
+
+		await cleanUp(manager, created)
+	}
+
+	@Test func replacementRule() {
+		func file(_ source: MapDataSource, node: Int64?, hasInfo: Bool = true) -> MapDataMetadata {
+			MapDataMetadata(filename: "f", originalName: "f", uploadDate: Date(), fileSize: 1, format: "geojson",
+							license: nil, attribution: nil, overlayCount: 1, isActive: true, source: source,
+							coverage: hasInfo ? coverage(node: node) : nil)
+		}
+		#expect(MapDataManager.replaces(file(.sitePlanner, node: 1), file(.sitePlanner, node: 1)))
+		#expect(!MapDataManager.replaces(file(.sitePlanner, node: 1), file(.sitePlanner, node: 2)))
+		#expect(!MapDataManager.replaces(file(.sitePlanner, node: 1), file(.sitePlanner, node: nil, hasInfo: false)))
+		#expect(MapDataManager.replaces(file(.sitePlanner, node: nil), file(.sitePlanner, node: nil, hasInfo: false)), "a map-center run replaces older files with no node")
+		#expect(!MapDataManager.replaces(file(.sitePlanner, node: 1), file(.manualUpload, node: 1)))
+		#expect(!MapDataManager.replaces(file(.manualUpload, node: nil, hasInfo: false), file(.manualUpload, node: nil, hasInfo: false)))
 	}
 
 	@Test func manualUploadsArriveActiveAndKeepUserVisibility() async throws {

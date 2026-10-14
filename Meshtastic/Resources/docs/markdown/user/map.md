@@ -78,7 +78,7 @@ Estimate the radio coverage of a transmitter site without leaving the app. The a
 
 You can open the estimate form two ways:
 
-- **From the map** — tap the coverage button (`cellularbars`) in the bottom-right toolbar. The form is prefilled from the connected radio and located at the current map centre.
+- **From the map** — tap the coverage button (`cellularbars`) in the bottom-right toolbar. The form is prefilled from the connected radio and located at the current map center.
 - **From a node** — open a node with a known position, scroll to the **Logs** section, and tap **Estimate Coverage**. The map recenters on that node and opens the form prefilled from it.
 
 ### The estimate form
@@ -90,16 +90,29 @@ The form mirrors the Site Planner's own panels. The **Transmitter** and **Displa
 | Site / Transmitter | Site name, latitude/longitude, transmit power (W), frequency (MHz), antenna height (m), antenna gain (dBi). Location shortcuts fill the coordinates from **My Location**, the selected **Node**, or the **Map Center**. |
 | Receiver | Receiver sensitivity (dBm) — the coverage threshold. |
 | Simulation Options | Maximum range (km) and a high-resolution terrain toggle (which caps the range at 70 km). |
-| Display | Colour palette for the coverage map (Plasma, Viridis, CMRmap, Cool, Turbo, Jet). |
+| Display | Color palette for the coverage map (Mesh, Plasma, Viridis, CMRmap, Cool, Turbo, Jet). |
 
 **Prefill from the connected radio:** frequency is computed from the radio's region, modem preset, and channel; transmit power is converted from the device's dBm setting; and receiver sensitivity is mapped from the modem preset (for example LongFast → −139 dBm). Antenna gain and height aren't part of the device config, so they keep the planner's defaults. You can edit any value before running.
 
 ### Running it
 
-Tap **Estimate**. A progress indicator appears while the planner computes the coverage; you can **Cancel** at any time. When it finishes, the styled coverage map is added as a map overlay (in its dBm colours), the GeoJSON overlays layer is enabled, and the map recenters on the transmitter. The imported layer is managed like any other GeoJSON overlay in **Map Options**.
+Tap **Estimate**. A progress indicator appears while the planner computes the coverage; you can **Cancel** at any time. When it finishes, the styled coverage map is added as a map overlay (in its dBm colors), the GeoJSON overlays layer is enabled, and the map recenters on the transmitter. The imported layer is managed like any other GeoJSON overlay in **Map Options**.
+
+A new estimate hides older estimates for the same node, so estimates for different nodes can be shown together. Estimates run from the map center or another location replace each other.
 
 > **Note — Requires a network connection**
 > The coverage simulation runs in the hosted Site Planner, so an internet connection is needed. Estimates time out after 45 seconds; on failure the flow ends cleanly without leaving a stuck spinner.
+
+### Coverage on the spatial map (Apple Vision Pro)
+
+On Apple Vision Pro, estimates also show on the 3D spatial map, laid over the terrain. Inside the range the planner computed, ground with no signal is shaded dark, so a ridge or valley that blocks the signal shows as a dark hole in the colors.
+
+- **Coverage** in the map menu chooses what is shown: **Off**, **Selected Node** (the default — the selected node's estimate), or **All Estimates** in the area.
+- **Coverage Opacity** sets how see-through the colors are: **Light**, **Medium**, or **Strong**.
+- While coverage is shown, the toolbar shows the colors, the dBm range, and the **No signal** shade.
+- The **Coverage** menu on a node's card shows or hides that node's estimate, or opens the estimate form for it in the main window.
+
+Showing or hiding an estimate here does the same as its switch in **Map Options**.
 
 ## Waypoints
 

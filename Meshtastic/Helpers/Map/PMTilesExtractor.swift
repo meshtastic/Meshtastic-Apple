@@ -318,6 +318,7 @@ final class PMTilesExtractor {
 		let (data, response) = try await session.data(for: request)
 		guard let http = response as? HTTPURLResponse else { throw PMTilesExtractorError.rangeRequestFailed(-1) }
 		guard http.statusCode == 206 || http.statusCode == 200 else {
+			Logger.services.error("🗺️ [Offline] Range \(start, privacy: .public)-\(end, privacy: .public) of \(url.absoluteString, privacy: .public) failed: HTTP \(http.statusCode, privacy: .public)")
 			throw PMTilesExtractorError.rangeRequestFailed(http.statusCode)
 		}
 		return data

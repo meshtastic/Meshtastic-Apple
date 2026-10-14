@@ -1,0 +1,49 @@
+//
+//  SpatialMapArea.swift
+//  Meshtastic
+//
+//  Copyright(c) Garth Vander Houwen 10/10/26.
+//
+import CoreLocation
+import Foundation
+
+/// Which circle the spatial map shows. The circle is rebuilt only when it has to be: a node
+/// outside it, or the mesh having shrunk well inside it, so the terrain is not rebuilt on every refresh.
+enum SpatialMapArea {
+	/// Nodes farther than this from the anchor are left out: a mesh with MQTT nodes on another
+	/// continent cannot be a one-meter model.
+	static let maxRadiusMeters: Double = 125_000
+	static let shrinkRatio = 0.5
+	static let minimumRebuildInterval: TimeInterval = 30
+
+	struct Selection {
+		let coordinates: [CLLocationCoordinate2D]
+		let outsideCount: Int
+	}
+
+	/// The coordinates that fit around the anchor (the connected radio, else the centroid).
+	static func select(_ coordinates: [CLLocationCoordinate2D], anchor: CLLocationCoordinate2D?) -> Selection {
+		guard !coordinates.isEmpty else { return Selection(coordinates: [], outsideCount: 0) }
+		let center = anchor ?? CLLocationCoordinate2D(
+			latitude: coordinates.map(\.latitude).reduce(0, +) / Double(coordinates.count),
+			longitude: coordinates.map(\.longitude).reduce(0, +) / Double(coordinates.count)
+		)
+		let frame = SpatialFrame(bounds: GeoBounds(minLon: center.longitude, minLat: center.latitude, maxLon: center.longitude, maxLat: center.latitude))
+		let inside = coordinates.filter { c in
+			let p = frame.localPosition(c, altitude: 0)
+			return Double((p.x * p.x + p.z * p.z).squareRoot()) <= maxRadiusMeters
+		}
+		return Selection(coordinates: inside, outsideCount: coordinates.count - inside.count)
+	}
+
+	/// The circle to use next: nil to keep the current one.
+	static func next(current: SpatialCircle?, candidate: SpatialCircle, nodes: [CLLocationCoordinate2D], lastChange: Date?, now: Date) -> SpatialCircle? {
+		guard let current else { return candidate }
+		if nodes.contains(where: { !current.contains($0) }) { return candidate }
+		if candidate.radiusMeters < current.radiusMeters * shrinkRatio,
+		   lastChange.map({ now.timeIntervalSince($0) >= minimumRebuildInterval }) ?? true {
+			return candidate
+		}
+		return nil
+	}
+}

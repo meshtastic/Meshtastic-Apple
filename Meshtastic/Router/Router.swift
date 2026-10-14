@@ -245,7 +245,34 @@ class Router: ObservableObject {
 		discoveryShowHistory = false
 	}
 
+	/// `meshtastic:///map?spatial=1[&nodenum=N]` asks for the spatial map volume. On visionOS that is
+	/// the whole route: the main window opens the volume and stays on its tab. Elsewhere there is no
+	/// volume and the URL routes like `/map`.
+	@Published private(set) var spatialMapRequest: SpatialMapOpenRequest?
+
+	func claimSpatialMapRequest() -> SpatialMapOpenRequest? {
+		guard let spatialMapRequest else { return nil }
+		self.spatialMapRequest = nil
+		return spatialMapRequest
+	}
+
+	nonisolated static func spatialMapRequest(in components: URLComponents) -> SpatialMapOpenRequest? {
+		let spatial = components.queryItems?.first(where: { $0.name == "spatial" })?.value
+		guard spatial == "1" || spatial == "true" else { return nil }
+		let nodeNum = components.queryItems?
+			.first(where: { $0.name == "nodenum" })?
+			.value
+			.flatMap(Int64.init)
+		return SpatialMapOpenRequest(nodeNum: nodeNum)
+	}
+
 	private func routeMap(_ components: URLComponents) {
+		#if os(visionOS)
+		if let request = Self.spatialMapRequest(in: components) {
+			spatialMapRequest = request
+			return
+		}
+		#endif
 		let nodeId = components.queryItems?
 			.first(where: { $0.name == "nodenum" })?
 			.value
@@ -259,8 +286,13 @@ class Router: ObservableObject {
 			.value
 			.flatMap(Int64.init)
 
+		// `coverage=1` opens the coverage estimate form for the node.
+		let wantsCoverage = components.queryItems?.contains { $0.name == "coverage" && $0.value == "1" } == true
+
 		selectedTab = .map
-		mapState = if let nodeId {
+		mapState = if let nodeId, wantsCoverage {
+			.coverageEstimate(nodeId)
+		} else if let nodeId {
 			.selectedNode(nodeId)
 		} else if let waypointId {
 			.waypoint(waypointId)

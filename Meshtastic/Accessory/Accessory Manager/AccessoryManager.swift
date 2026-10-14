@@ -340,6 +340,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// its decay timer on the first packet and is cleared via `reset()` on disconnect.
 	let meshTrafficMonitor = MeshTrafficMonitor.shared
 
+	/// Every live packet the radio hears, for views that animate traffic. See `MeshPacketEvent`.
+	let packetEvents = PassthroughSubject<MeshPacketEvent, Never>()
+
 	/// Mirrors `meshTrafficMonitor.isHighTraffic` onto this ObservableObject so views already
 	/// observing AccessoryManager (e.g. the map) react to it without having to observe the nested
 	/// monitor. True while sustained inbound mesh traffic is high enough to pause the map flyover.
@@ -1008,6 +1011,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			// Feed the traffic-rate estimator one tick per inbound mesh packet — this is the busy path
 			// whose re-renders make the map flyover stutter, so it's exactly what we want to measure.
 			meshTrafficMonitor.recordInboundPacket()
+			// Not during a node database download: nothing in it is live traffic.
+			if !nodeDatabaseDumpInProgress, let event = MeshPacketEvent(packet: packet) {
+				packetEvents.send(event)
+			}
 			// All received packets get passed through updateAnyPacketFrom to update lastHeard, rxSnr, etc. (like firmware's NodeDB::updateFrom).
 			if let connectedNodeNum = self.activeDeviceNum {
 				await MeshPackets.shared.updateAnyPacketFrom(packet: packet, activeDeviceNum: connectedNodeNum,

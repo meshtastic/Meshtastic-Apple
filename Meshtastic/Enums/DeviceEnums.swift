@@ -39,6 +39,18 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 			return false
 		}
 	}
+
+	/// Fixed nodes that carry the mesh rather than a person: Router, Router Late, Client Base and
+	/// the retired Repeater. Mesh discovery counts the same roles, less Repeater.
+	var isInfrastructure: Bool {
+		switch self {
+		case .router, .routerLate, .clientBase, .repeater:
+			return true
+		default:
+			return false
+		}
+	}
+
 	var name: String {
 		switch self {
 		case .client:

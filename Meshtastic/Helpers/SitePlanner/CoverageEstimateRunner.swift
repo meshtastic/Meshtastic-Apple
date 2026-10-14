@@ -29,7 +29,7 @@ enum CoverageEstimateState: Equatable {
 }
 
 /// Geographic bounding box (degrees) of an imported coverage overlay, used to frame the map on it.
-struct CoverageBounds {
+struct CoverageBounds: Codable, Equatable, Sendable {
 	let minLatitude: Double
 	let maxLatitude: Double
 	let minLongitude: Double
@@ -80,13 +80,15 @@ final class CoverageEstimateRunner: NSObject, ObservableObject {
 	private var webView: WKWebView?
 	private var timeoutTask: Task<Void, Never>?
 	private var params: SitePlannerParameters?
+	private var nodeNum: Int64?
 	private var didFinish = false
 
 	/// Whether a run is currently in flight.
 	var isRunning: Bool { state == .running }
 
-	/// Kick off a headless coverage run for `params`. Requires a valid coordinate.
-	func start(params: SitePlannerParameters) {
+	/// Kick off a headless coverage run for `params`. Requires a valid coordinate. `nodeNum` is the
+	/// node the run is for, saved with the estimate; nil when it is for another location.
+	func start(params: SitePlannerParameters, nodeNum: Int64? = nil) {
 		cancel() // tear down any prior run first
 		guard params.isValid, let url = params.queryURL(autorun: true, bridge: true) else {
 			state = .failed(String(localized: "Invalid coverage parameters."))
@@ -98,6 +100,7 @@ final class CoverageEstimateRunner: NSObject, ObservableObject {
 		}
 
 		self.params = params
+		self.nodeNum = nodeNum
 		self.didFinish = false
 		state = .running
 
@@ -177,12 +180,17 @@ final class CoverageEstimateRunner: NSObject, ObservableObject {
 		let layerName = params.name.trimmingCharacters(in: .whitespacesAndNewlines)
 		let importName = layerName.isEmpty ? "Coverage" : layerName
 		let boundingBox = Self.boundingBox(fromGeoJSON: geoJSON)
+		let coverage = SitePlannerCoverageInfo(
+			nodeNum: nodeNum, latitude: params.latitude, longitude: params.longitude,
+			maxRangeKm: params.maxRangeKm, txHeightMeters: params.txHeightMeters,
+			colorScale: params.colorScale.rawValue, bounds: boundingBox
+		)
 
 		// This method is `@MainActor`, so the Task inherits MainActor isolation — after each
 		// `await` we're back on the main actor and can assign published state directly.
 		Task { [weak self] in
 			do {
-				let metadata = try await MapDataManager.shared.importFromString(geoJSON, name: importName, source: .sitePlanner)
+				let metadata = try await MapDataManager.shared.importFromString(geoJSON, name: importName, source: .sitePlanner, coverage: coverage)
 				guard let self else { return }
 				self.importedResult = CoverageEstimateResult(metadata: metadata, coordinate: coordinate, boundingBox: boundingBox)
 				self.state = .imported

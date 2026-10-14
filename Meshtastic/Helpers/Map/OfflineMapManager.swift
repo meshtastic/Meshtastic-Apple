@@ -140,29 +140,51 @@ final class OfflineMapManager: ObservableObject {
 	var isBusy: Bool { isDownloading || isImporting }
 
 	/// The first existing region whose extent intersects `bounds` (ignoring `excluding`), or nil.
-	/// Downloads must not overlap — avoids duplicate coverage.
+	/// Downloads must not overlap — avoids duplicate coverage. App-managed regions are skipped:
+	/// the app replaces them on its own, so they never block the user's downloads.
 	func overlappingRegion(with bounds: GeoBounds, excluding: OfflineMapRegion? = nil) -> OfflineMapRegion? {
+		Self.overlappingRegion(in: regions, with: bounds, excluding: excluding)
+	}
+
+	nonisolated static func overlappingRegion(in regions: [OfflineMapRegion], with bounds: GeoBounds, excluding: OfflineMapRegion? = nil) -> OfflineMapRegion? {
 		regions.first { region in
-			region.id != excluding?.id &&
+			!region.isAppManaged && region.id != excluding?.id &&
 			region.bounds.minLon <= bounds.maxLon && region.bounds.maxLon >= bounds.minLon &&
 			region.bounds.minLat <= bounds.maxLat && region.bounds.maxLat >= bounds.minLat
 		}
 	}
 
+	/// Regions the user made or imported. App-managed regions don't count toward `maxRegions`.
+	var userRegionCount: Int { Self.userRegionCount(regions) }
+
+	nonisolated static func userRegionCount(_ regions: [OfflineMapRegion]) -> Int {
+		regions.filter { !$0.isAppManaged }.count
+	}
+
+	/// The terrain the spatial map keeps up to date, once its download has finished.
+	var managedTerrainRegion: OfflineMapRegion? {
+		regions.first { $0.managedBy == OfflineMapRegion.spatialMapManager && $0.terrain != nil }
+	}
+
 	/// Why a download of `estimatedBytes` (replacing `replacing`) can't proceed against the limits, or
 	/// nil if it can. Drives the Download button's disabled state + reason message, and is a backstop.
 	func downloadBlockReason(estimatedBytes: Int64, replacing: OfflineMapRegion?) -> String? {
-		let effectiveCount = regions.count - (replacing != nil ? 1 : 0)
-		if effectiveCount >= Self.maxRegions {
-			return String(localized: "You can keep up to \(Self.maxRegions) offline maps. Remove one to download another.")
+		Self.downloadBlockReason(regions: regions, estimatedBytes: estimatedBytes, replacing: replacing)
+	}
+
+	nonisolated static func downloadBlockReason(regions: [OfflineMapRegion], estimatedBytes: Int64, replacing: OfflineMapRegion?) -> String? {
+		let effectiveCount = userRegionCount(regions) - (replacing.map { $0.isAppManaged ? 0 : 1 } ?? 0)
+		if effectiveCount >= OfflineMapStorageLimits.maxRegions {
+			return String(localized: "You can keep up to \(OfflineMapStorageLimits.maxRegions) offline maps. Remove one to download another.")
 		}
-		if estimatedBytes > Self.maxRegionBytes {
-			let limit = ByteCountFormatter.string(fromByteCount: Self.maxRegionBytes, countStyle: .file)
+		if estimatedBytes > OfflineMapStorageLimits.maxRegionBytes {
+			let limit = ByteCountFormatter.string(fromByteCount: OfflineMapStorageLimits.maxRegionBytes, countStyle: .file)
 			return String(localized: "This map is larger than the \(limit) per-map limit. Zoom in or lower the detail.")
 		}
-		let otherTotal = totalSize - (replacing.map { $0.fileSize + ($0.terrain?.byteCount ?? 0) } ?? 0)
-		if otherTotal + estimatedBytes > Self.maxTotalBytes {
-			let limit = ByteCountFormatter.string(fromByteCount: Self.maxTotalBytes, countStyle: .file)
+		let total = regions.reduce(Int64(0)) { $0 + $1.totalByteCount }
+		let otherTotal = total - (replacing?.totalByteCount ?? 0)
+		if otherTotal + estimatedBytes > OfflineMapStorageLimits.maxTotalBytes {
+			let limit = ByteCountFormatter.string(fromByteCount: OfflineMapStorageLimits.maxTotalBytes, countStyle: .file)
 			return String(localized: "This would exceed the \(limit) total offline storage limit. Remove a map first.")
 		}
 		return nil
@@ -186,7 +208,7 @@ final class OfflineMapManager: ObservableObject {
 			onCompletion?(nil)
 			return
 		}
-		guard regions.count - (replacing != nil ? 1 : 0) < Self.maxRegions else {
+		guard userRegionCount - (replacing.map { $0.isAppManaged ? 0 : 1 } ?? 0) < Self.maxRegions else {
 			onCompletion?(nil)
 			return
 		}
@@ -295,7 +317,7 @@ final class OfflineMapManager: ObservableObject {
 		guard !existingDigests.contains(source.digest) else {
 			throw OfflineMapImportError.duplicateMap
 		}
-		guard regions.count < Self.maxRegions else {
+		guard userRegionCount < Self.maxRegions else {
 			throw OfflineMapImportError.exceedsMapCountLimit
 		}
 		guard totalSize + source.fileSize <= Self.maxTotalBytes else {
@@ -312,7 +334,7 @@ final class OfflineMapManager: ObservableObject {
 			guard !existingDigests.contains(imported.digest) else {
 				throw OfflineMapImportError.duplicateMap
 			}
-			guard regions.count < Self.maxRegions else {
+			guard userRegionCount < Self.maxRegions else {
 				throw OfflineMapImportError.exceedsMapCountLimit
 			}
 			guard totalSize + imported.fileSize <= Self.maxTotalBytes else {
@@ -601,8 +623,14 @@ extension OfflineMapManager {
 	/// Downloads Mapterhorn elevation data for an existing region: a global z0–12
 	/// extract of the region's bounds, plus a z13–15 extract when a single regional
 	/// high-resolution archive covers the area. Failure never touches the basemap —
-	/// the region stays usable and terrain can be retried.
-	func downloadTerrain(for region: OfflineMapRegion, onCompletion: ((Bool) -> Void)? = nil) {
+	/// the region stays usable and terrain can be retried. `includeRegional: false` skips the
+	/// z13–15 extract; `maxBytes` caps the whole terrain download (global plus regional).
+	func downloadTerrain(
+		for region: OfflineMapRegion,
+		includeRegional: Bool = true,
+		maxBytes: Int64? = nil,
+		onCompletion: ((Bool) -> Void)? = nil
+	) {
 		loadIfNeeded()
 		guard !isBusy,
 			  let current = regions.first(where: { $0.id == region.id }),
@@ -637,6 +665,9 @@ extension OfflineMapManager {
 					sourceURL: source, sourceBuild: "Mapterhorn",
 					bounds: current.bounds, minZoom: 0, maxZoom: Self.terrainGlobalMaxZoom
 				)
+				if let maxBytes, plan.payloadBytes > maxBytes {
+					throw OfflineMapError.exceedsPerMapLimit(maxBytes)
+				}
 				// The basemap limit check ran before terrain existed — re-check the
 				// total ceiling with the terrain plan included so terrain can't push
 				// storage past the configured maximum.
@@ -653,9 +684,13 @@ extension OfflineMapManager {
 				}.value
 				guard hasValidHeader else { throw PMTilesExtractorError.badHeader }
 
-				let regionalMaxZoom = try await self.extractRegionalTerrain(
-					extractor: extractor, bounds: current.bounds, to: regionalURL
-				)
+				var regionalMaxZoom: Int?
+				if includeRegional {
+					regionalMaxZoom = try await self.extractRegionalTerrain(
+						extractor: extractor, bounds: current.bounds, to: regionalURL,
+						maxBytes: maxBytes.map { $0 - plan.payloadBytes }
+					)
+				}
 				await self.finishTerrainDownload(
 					id: current.id,
 					globalName: names.global,
@@ -680,7 +715,7 @@ extension OfflineMapManager {
 	/// max zoom on success, or nil when the bounds span multiple z6 archives, no
 	/// archive exists, or the extract fails — global-only terrain is normal, never an
 	/// error. Only cancellation propagates.
-	private func extractRegionalTerrain(extractor: PMTilesExtractor, bounds: GeoBounds, to destination: URL) async throws -> Int? {
+	private func extractRegionalTerrain(extractor: PMTilesExtractor, bounds: GeoBounds, to destination: URL, maxBytes: Int64? = nil) async throws -> Int? {
 		let tiles = Self.z6Tiles(intersecting: bounds)
 		guard tiles.count == 1, let tile = tiles.first,
 			  let source = URL(string: "https://download.mapterhorn.com/6-\(tile.x)-\(tile.y).pmtiles"),
@@ -694,6 +729,7 @@ extension OfflineMapManager {
 			// disk by now, so totalSize already includes it).
 			let projected = await MainActor.run { self.totalSize } + plan.payloadBytes
 			guard projected <= Self.maxTotalBytes else { return nil }
+			if let maxBytes, plan.payloadBytes > maxBytes { return nil }
 			try await extractor.extract(plan: plan, to: destination)
 			let hasValidHeader = await Task.detached(priority: .utility) {
 				PMTilesArchive.header(url: destination) != nil
@@ -711,6 +747,42 @@ extension OfflineMapManager {
 			try? FileManager.default.removeItem(at: destination)
 			Logger.services.info("🗺️ [Terrain] Regional extract skipped: \(error.localizedDescription, privacy: .public)")
 			return nil
+		}
+	}
+
+	/// Downloads terrain the app manages itself (the spatial map's): a terrain-only region for
+	/// `bounds` that may overlap any other region and doesn't count toward `maxRegions`. On success
+	/// it replaces the previous managed region; on failure or cancel the new region is removed and
+	/// the previous one stays. The user's own regions are never touched.
+	func downloadManagedTerrain(
+		bounds: GeoBounds,
+		includeRegional: Bool,
+		managedBy: String = OfflineMapRegion.spatialMapManager,
+		onCompletion: @escaping (Bool) -> Void
+	) {
+		loadIfNeeded()
+		guard !isBusy, let archive = newArchiveURL() else {
+			onCompletion(false)
+			return
+		}
+		let region = OfflineMapRegion(
+			name: String(localized: "Spatial Map terrain", comment: "Name of the terrain-only offline map the visionOS spatial map downloads and keeps up to date"),
+			fileName: archive.fileName,
+			bounds: bounds, minZoom: 0, maxZoom: 0,
+			fileSize: 0, sourceBuild: "Mapterhorn", includesBasemap: false,
+			managedBy: managedBy
+		)
+		add(region)
+		downloadTerrain(for: region, includeRegional: includeRegional, maxBytes: Self.maxRegionBytes) { [weak self] success in
+			guard let self else { return }
+			if success {
+				for old in self.regions where old.managedBy == managedBy && old.id != region.id {
+					self.remove(old)
+				}
+			} else {
+				self.remove(region)
+			}
+			onCompletion(success)
 		}
 	}
 

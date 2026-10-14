@@ -32,10 +32,13 @@ extension NSNotification.Name {
 	static let otaDeviceNotice = NSNotification.Name("OTADeviceNotice")
 }
 
-/// A notification tap has no scene of its own. The active main window takes it.
+/// A route with no main window of its own: a notification tap, or a button in the visionOS
+/// spatial map volume. The active main window takes it.
 struct PendingRoute: Equatable {
 	let id = UUID()
 	let url: URL
+	/// The window that takes it also comes to the front, for a route asked for from another window.
+	var bringForward = false
 }
 
 class AppState: ObservableObject {
@@ -45,6 +48,9 @@ class AppState: ObservableObject {
 	let sceneRouters = SceneRouters()
 	/// Set by a notification response. Claimed by the active main window.
 	@Published var pendingRoute: PendingRoute?
+	/// How many main windows are showing. Scene configuration names are nil on visionOS, so the
+	/// scene list can't tell a main window from the spatial map volume.
+	var mainWindowCount = 0
 	/// Initial tab for a debug performance seed, applied once by the first main window.
 	var launchNavigation: NavigationState?
 	@Published var unreadChannelMessages: Int
@@ -118,11 +124,20 @@ class AppState: ObservableObject {
 		return launchNavigation
 	}
 
-	/// Hands the pending notification route to one window. The caller must already
+	/// Hands the pending route to one window. The caller must already
 	/// be the window that should navigate; a second caller sees nil.
-	func claimPendingRoute() -> URL? {
+	func claimPendingRoute() -> PendingRoute? {
 		guard let pendingRoute else { return nil }
 		self.pendingRoute = nil
-		return pendingRoute.url
+		return pendingRoute
+	}
+
+	/// A node the spatial map volume should select once it is showing; claimed the same way.
+	@Published var spatialMapFocus: SpatialMapFocusRequest?
+
+	func claimSpatialMapFocus() -> Int64? {
+		guard let spatialMapFocus else { return nil }
+		self.spatialMapFocus = nil
+		return spatialMapFocus.nodeNum
 	}
 }

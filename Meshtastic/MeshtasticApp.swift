@@ -23,6 +23,9 @@ struct MeshtasticAppleApp: App {
 	private let persistenceController: PersistenceController?
 	private let accessoryManager: AccessoryManager
 	@Environment(\.scenePhase) var scenePhase
+	#if os(visionOS)
+	@Environment(\.openWindow) private var openWindow
+	#endif
 
 	private static let isRunningTests = NSClassFromString("XCTestCase") != nil || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
 	private static let isChirpyOTADemo: Bool = {
@@ -171,6 +174,50 @@ struct MeshtasticAppleApp: App {
 					try? await manager.connect(to: device)
 				}
 			}
+			// Simulator terrain: `--meshtastic-download-terrain minLon,minLat,maxLon,maxLat` downloads
+			// a terrain-only region for the box, the same way the Offline Maps screen does.
+			if let flagIndex = arguments.firstIndex(of: "--meshtastic-download-terrain"),
+			   arguments.indices.contains(flagIndex + 1) {
+				let parts = arguments[flagIndex + 1].split(separator: ",").compactMap { Double($0) }
+				if parts.count == 4 {
+					let bounds = GeoBounds(minLon: parts[0], minLat: parts[1], maxLon: parts[2], maxLat: parts[3])
+					Task {
+						try? await Task.sleep(for: .seconds(2))
+						OfflineMapManager.shared.loadIfNeeded()
+						OfflineMapManager.shared.startDownload(name: "Terrain", bounds: bounds, detail: .standard, includeBasemap: false, includeTerrain: true) { region in
+							Logger.services.info("🧪 [App] Terrain download \(region != nil ? "finished" : "failed", privacy: .public) (launch argument)")
+						}
+					}
+				}
+			}
+			// Simulator basemap: `--meshtastic-download-basemap minLon,minLat,maxLon,maxLat` downloads
+			// a basemap with terrain for the box, replacing the region it overlaps.
+			if let flagIndex = arguments.firstIndex(of: "--meshtastic-download-basemap"),
+			   arguments.indices.contains(flagIndex + 1) {
+				let parts = arguments[flagIndex + 1].split(separator: ",").compactMap { Double($0) }
+				if parts.count == 4 {
+					let bounds = GeoBounds(minLon: parts[0], minLat: parts[1], maxLon: parts[2], maxLat: parts[3])
+					Task {
+						try? await Task.sleep(for: .seconds(2))
+						let manager = OfflineMapManager.shared
+						manager.loadIfNeeded()
+						let replacing = manager.overlappingRegion(with: bounds)
+						manager.startDownload(name: "Basemap", bounds: bounds, detail: .standard, replacing: replacing) { region in
+							Logger.services.info("🧪 [App] Basemap download \(region != nil ? "finished" : "failed", privacy: .public) (launch argument)")
+						}
+					}
+				}
+			}
+			#if os(visionOS)
+			// Simulator screenshots: open the spatial map volume without tapping through the map.
+			if arguments.contains("--meshtastic-open-spatial-map") {
+				let openWindow = openWindow
+				Task {
+					try? await Task.sleep(for: .seconds(3))
+					openWindow(id: SpatialMapScene.id, value: SpatialMapSceneKey.shared)
+				}
+			}
+			#endif
 #endif
 		}
 	}
@@ -217,8 +264,11 @@ struct MeshtasticAppleApp: App {
 		}
 	}
 
+	/// The main window, so another window can open one when none is showing.
+	static let mainWindowID = "main"
+
 	var body: some Scene {
-		WindowGroup {
+		WindowGroup(id: Self.mainWindowID) {
 			Group {
 			if Self.isRunningTests {
 				Color.clear
@@ -303,6 +353,30 @@ struct MeshtasticAppleApp: App {
 		.windowResizability(.contentMinSize)
 		#if os(visionOS)
 		.windowStyle(.plain)
+		#endif
+
+		#if os(visionOS)
+		// The mesh on a terrain model. Same gates as the Mesh Map window, and one constant key
+		// so every entry point brings the same volume forward.
+		WindowGroup("Spatial Map", id: SpatialMapScene.id, for: SpatialMapSceneKey.self) { _ in
+			if Self.shouldInitializeAppServices, let persistenceController, !appState.isDatabaseResetting {
+				EventFirmwareTintScope {
+					SpatialMapWindow()
+						.id(appState.databaseResetID)
+				}
+				.modelContainer(persistenceController.container)
+				.environmentObject(appState)
+				.environmentObject(accessoryManager)
+				.environmentObject(lockdownCoordinator)
+				.environmentObject(MeshtasticAPI.shared)
+			}
+		}
+		.windowStyle(.volumetric)
+		.defaultSize(width: SpatialVolumeFit.defaultSize.x, height: SpatialVolumeFit.defaultSize.y, depth: SpatialVolumeFit.defaultSize.z, in: .meters)
+		.windowResizability(.contentSize)
+		.volumeWorldAlignment(.gravityAligned)
+		.restorationBehavior(.disabled)
+		.handlesExternalEvents(matching: [])
 		#endif
 	}
 }

@@ -162,7 +162,7 @@ struct MapSettingsForm: View {
 											.font(.caption)
 											.foregroundColor(.secondary)
 									} else {
-										Text("\(offlineMapManager.regions.count) downloaded · \(offlineMapManager.formattedTotalSize)")
+										Text("\(offlineMapManager.userRegionCount) downloaded · \(offlineMapManager.formattedTotalSize)")
 											.font(.caption)
 											.foregroundColor(.secondary)
 									}
@@ -418,7 +418,7 @@ struct MapSettingsForm: View {
 	}
 
 	/// Marks a file produced by an in-app Site Planner coverage run — those are
-	/// managed automatically (only the newest stays active).
+	/// managed automatically (only the newest per transmitter stays active).
 	private func overlaySourcePill() -> some View {
 		Text("Site Planner")
 			.font(.caption2)

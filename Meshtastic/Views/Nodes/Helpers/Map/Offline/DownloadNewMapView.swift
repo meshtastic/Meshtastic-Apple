@@ -109,7 +109,7 @@ struct DownloadNewMapView: View {
 	}
 
 	/// Reverse-geocodes the current location to a short place name (city) for the row subtitle.
-	private static func placeName(for coordinate: CLLocationCoordinate2D) async -> String? {
+	static func placeName(for coordinate: CLLocationCoordinate2D) async -> String? {
 		let location = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
 		let placemark = try? await CLGeocoder().reverseGeocodeLocation(location).first
 		return placemark?.locality ?? placemark?.subAdministrativeArea ?? placemark?.name

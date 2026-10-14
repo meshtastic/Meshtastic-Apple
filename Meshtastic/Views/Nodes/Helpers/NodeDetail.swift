@@ -886,6 +886,9 @@ struct NodeDetail: View {
 						}
 					#endif
 						NavigateToButton(node: node)
+						#if os(visionOS)
+						ShowInSpatialMapButton(nodeNum: nodeNum)
+						#endif
 					}
 					#if !targetEnvironment(macCatalyst)
 					if WatchSessionManager.shared.isWatchAvailable {

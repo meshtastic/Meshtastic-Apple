@@ -464,11 +464,30 @@ extension OfflineVectorTileProvider {
 		"forest", "wood", "grass", "meadow", "nature_reserve", "playground"
 	]
 
-	nonisolated private static func decode(tile: TileID, source: OfflineTileSource, bounds: GeoBounds?) -> (polys: [OfflineMapPolygon], lines: [OfflineMapPolyline]) {
-		guard let data = source.tileData(z: UInt8(tile.z), x: UInt32(tile.x), y: UInt32(tile.y)),
-			  let vector = VectorTile(data: data, x: tile.x, y: tile.y, z: tile.z, projection: .epsg4326) else {
-			return ([], [])
+	nonisolated private static func parse(tile: TileID, source: OfflineTileSource) -> VectorTile? {
+		guard let data = source.tileData(z: UInt8(tile.z), x: UInt32(tile.x), y: UInt32(tile.y)) else { return nil }
+		return VectorTile(data: data, x: tile.x, y: tile.y, z: tile.z, projection: .epsg4326)
+	}
+
+	/// The water bodies in one tile, clipped to `bounds`. The spatial map paints these onto its
+	/// offline texture.
+	nonisolated static func waterPolygons(tile: TileID, source: OfflineTileSource, clippedTo bounds: GeoBounds?) -> [OfflineMapPolygon] {
+		guard let vector = parse(tile: tile, source: source) else { return [] }
+		var polys: [OfflineMapPolygon] = []
+		var counter = 0
+		appendWater(in: vector, bounds: bounds, into: &polys) { counter += 1; return "\(tile.key)/\(counter)" }
+		return polys
+	}
+
+	/// The water layer carries every polygonal water body (ocean, lake, dock, reef, basin…).
+	nonisolated private static func appendWater(in vector: VectorTile, bounds: GeoBounds?, into polys: inout [OfflineMapPolygon], id: () -> String) {
+		for feature in vector.features(for: "water") {
+			appendPolygons(feature.geometry, role: .water, bounds: bounds, into: &polys, id: id)
 		}
+	}
+
+	nonisolated private static func decode(tile: TileID, source: OfflineTileSource, bounds: GeoBounds?) -> (polys: [OfflineMapPolygon], lines: [OfflineMapPolyline]) {
+		guard let vector = parse(tile: tile, source: source) else { return ([], []) }
 		var polys: [OfflineMapPolygon] = []
 		var lines: [OfflineMapPolyline] = []
 		var counter = 0
@@ -480,12 +499,11 @@ extension OfflineVectorTileProvider {
 			guard let kind, parkKinds.contains(kind) else { continue } // parks only, skip generic land
 			appendPolygons(feature.geometry, role: .park, bounds: bounds, into: &polys, id: nextID)
 		}
-		// The water layer carries every polygonal water body (ocean, lake, dock,
-		// reef, basin…) plus river/stream/canal CENTERLINES as LineStrings — in
+		appendWater(in: vector, bounds: bounds, into: &polys, id: nextID)
+		// The water layer also carries river/stream/canal CENTERLINES as LineStrings — in
 		// current basemap builds there is no separate physical_line layer, so
 		// waterway lines must come from here too or narrow rivers render as land.
 		for feature in vector.features(for: "water") {
-			appendPolygons(feature.geometry, role: .water, bounds: bounds, into: &polys, id: nextID)
 			let kind = (feature.properties["kind"] as? String) ?? (feature.properties["pmap:kind"] as? String)
 			if kind == "river" || kind == "stream" || kind == "canal" {
 				appendPolylines(feature.geometry, role: .river, bounds: bounds, into: &lines, id: nextID)

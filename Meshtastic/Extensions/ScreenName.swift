@@ -122,6 +122,7 @@ enum ScreenName: String, CaseIterable {
 	case mapLegend = "Map Legend"
 	case coverageEstimate = "Coverage Estimate"
 	case positionDetail = "Position Detail"
+	case spatialMap = "Spatial Map"
 
 	// MARK: Node detail
 

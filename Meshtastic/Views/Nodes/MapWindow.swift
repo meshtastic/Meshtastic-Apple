@@ -39,7 +39,9 @@ struct MapWindow: View {
 			}
 			// If the map window is restored on launch without the main window, dismiss it
 			let mainScenes = UIApplication.shared.connectedScenes.filter {
-				$0.session.configuration.name != "meshmap-window" && $0.activationState != .unattached
+				$0.session.configuration.name != "meshmap-window"
+					&& $0.session.configuration.name != SpatialMapScene.id
+					&& $0.activationState != .unattached
 			}
 			if mainScenes.isEmpty {
 				dismissWindow(id: "meshmap-window")
@@ -52,8 +54,12 @@ struct MapWindow: View {
 		}
 		.onReceive(NotificationCenter.default.publisher(for: UIScene.didDisconnectNotification)) { _ in
 			// Close the map window when the main window is closed
-			let remainingScenes = UIApplication.shared.connectedScenes.filter { $0.activationState != .unattached }
-			if remainingScenes.count <= 1 {
+			let mainScenes = UIApplication.shared.connectedScenes.filter {
+				$0.session.configuration.name != "meshmap-window"
+					&& $0.session.configuration.name != SpatialMapScene.id
+					&& $0.activationState != .unattached
+			}
+			if mainScenes.isEmpty {
 				dismissWindow(id: "meshmap-window")
 			}
 		}
