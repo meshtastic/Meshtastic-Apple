@@ -162,10 +162,10 @@ struct ShowcaseSpace: View {
 			}
 	}
 
-	/// Over the front table's left end, turned to face the seat. Higher when standing, where the
-	/// viewer is also further back in the world.
+	/// In front of the front table's left end, turned to face the seat. Higher when standing,
+	/// where the viewer is also further back in the world.
 	private func placeControls(_ panel: Entity) {
-		let position = SIMD3<Float>(-0.72, seated ? 1.0 : 1.3, -0.48)
+		let position = SIMD3<Float>(-0.75, seated ? 1.0 : 1.3, -0.7)
 		let eye = ShowcaseRoomGeometry.seatedEye + (seated ? .zero : SIMD3<Float>(0, 0.4, ShowcaseSceneController.standingSetback))
 		panel.look(at: eye, from: position, relativeTo: scene.world, forward: .positiveZ)
 	}

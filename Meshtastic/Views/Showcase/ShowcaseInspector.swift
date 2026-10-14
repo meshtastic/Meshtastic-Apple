@@ -52,10 +52,10 @@ final class ShowcaseInspector {
 	/// The model being inspected, if any.
 	var model: Entity? { current?.model }
 
-	/// Seated, a little below eye height just past the front table's edge; standing, higher and
-	/// as far in front of the viewer, who is further back in the world.
+	/// Seated, a little below eye height and within reach, in front of the front table; standing,
+	/// higher and as far in front of the viewer, who is further back in the world.
 	func setSeated(_ seated: Bool) {
-		stage.position = seated ? [0, 1.02, -0.42] : [0, 1.38, -0.2]
+		stage.position = seated ? [0, 1.05, -0.5] : [0, 1.4, -0.25]
 	}
 
 	/// Takes `model` off its stand and floats it on the stage, centered and facing the viewer.
