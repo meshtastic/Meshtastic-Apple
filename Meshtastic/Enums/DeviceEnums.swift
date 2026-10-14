@@ -51,12 +51,6 @@ enum DeviceRoles: Int, CaseIterable, Identifiable {
 		}
 	}
 
-	/// `isInfrastructure` for a role as stored on a user, false when it is unknown.
-	static func isInfrastructure(role: Int32?) -> Bool {
-		guard let role, let deviceRole = DeviceRoles(rawValue: Int(role)) else { return false }
-		return deviceRole.isInfrastructure
-	}
-
 	var name: String {
 		switch self {
 		case .client:

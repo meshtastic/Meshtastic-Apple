@@ -25,8 +25,11 @@ struct SpatialNodeSnapshot: Identifiable, Equatable, Sendable {
 	let hopsAway: Int
 	let snr: Float
 	let isConnectedRadio: Bool
-	/// A router, repeater or client base, drawn as a tower rather than a pin.
-	let isInfrastructure: Bool
+	/// The node's role, nil when unknown. Routers, repeaters and client bases stand as towers.
+	let role: DeviceRoles?
+
+	/// How tall the node's tower stands, nil for a node drawn as a pin.
+	var towerHeight: Float? { SpatialTower.height(for: role) }
 
 	static func == (lhs: Self, rhs: Self) -> Bool {
 		lhs.id == rhs.id
@@ -38,7 +41,7 @@ struct SpatialNodeSnapshot: Identifiable, Equatable, Sendable {
 			&& lhs.isFavorite == rhs.isFavorite && lhs.viaMqtt == rhs.viaMqtt
 			&& lhs.hopsAway == rhs.hopsAway && lhs.snr == rhs.snr
 			&& lhs.isConnectedRadio == rhs.isConnectedRadio
-			&& lhs.isInfrastructure == rhs.isInfrastructure
+			&& lhs.role == rhs.role
 	}
 }
 
@@ -87,7 +90,7 @@ enum SpatialMapNodeSource {
 				hopsAway: Int(node.hopsAway),
 				snr: node.snr,
 				isConnectedRadio: node.num == connectedNodeNum,
-				isInfrastructure: DeviceRoles.isInfrastructure(role: node.user?.role)
+				role: node.user.flatMap { DeviceRoles(rawValue: Int($0.role)) }
 			)
 			if snapshot.isConnectedRadio || snapshot.isFavorite {
 				pinned.append(snapshot)

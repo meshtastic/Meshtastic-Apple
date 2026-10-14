@@ -39,6 +39,7 @@ struct SpatialMapView: View {
 				scene.updateSubscription = content.subscribe(to: SceneEvents.Update.self) { event in
 					traffic.step(deltaTime: event.deltaTime)
 					scene.stepWheel(deltaTime: event.deltaTime)
+					scene.stepBeacons(deltaTime: event.deltaTime)
 				}
 			} update: { content, attachments in
 				_ = volumeSize
