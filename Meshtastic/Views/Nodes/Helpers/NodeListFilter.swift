@@ -9,7 +9,6 @@ import Foundation
 import SwiftUI
 
 struct NodeListFilter: View {
-	@Environment(\.dismiss) private var dismiss
 	@State var editMode = EditMode.active
 	var filterTitle = "Node Filters"
 	/// The contact list only ever shows contacts we can direct message, so filtering it by key
@@ -168,23 +167,8 @@ struct NodeListFilter: View {
 			.listStyle(.insetGrouped)
 			.navigationTitle(filterTitle)
 			.navigationBarTitleDisplayMode(.inline)
+			.sheetCloseButton()
 		}
-		#if targetEnvironment(macCatalyst)
-		.overlay(alignment: .topLeading) {
-			Button {
-				dismiss()
-			} label: {
-				Image(systemName: "xmark.circle.fill")
-					.font(.system(size: 34))
-					.symbolRenderingMode(.palette)
-					.foregroundStyle(.white, Color(.systemGray3))
-			}
-			.accessibilityLabel(String(localized: "Close", comment: "VoiceOver: dismiss this sheet"))
-			.buttonStyle(.plain)
-			.padding(.top, 12)
-			.padding(.leading, 14)
-		}
-		#endif
 		.presentationDetents([.large])
 		.presentationContentInteraction(.scrolls)
 		#if !targetEnvironment(macCatalyst)

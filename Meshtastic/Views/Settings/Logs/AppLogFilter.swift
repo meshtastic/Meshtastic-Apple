@@ -121,7 +121,6 @@ enum LogLevels: Int, CaseIterable, Identifiable {
 
 struct AppLogFilter: View {
 
-	@Environment(\.dismiss) private var dismiss
 	@State private var currentDetent = PresentationDetent.medium
 	/// Filters
 	var filterTitle = "App Log Filters"
@@ -192,24 +191,8 @@ struct AppLogFilter: View {
 			}
 			.navigationTitle(filterTitle)
 			.navigationBarTitleDisplayMode(.inline)
+			.sheetCloseButton()
 		}
-
-		#if targetEnvironment(macCatalyst)
-		.overlay(alignment: .topLeading) {
-			Button {
-				dismiss()
-			} label: {
-				Image(systemName: "xmark.circle.fill")
-					.font(.system(size: 34))
-					.symbolRenderingMode(.palette)
-					.foregroundStyle(.white, Color(.systemGray3))
-			}
-			.accessibilityLabel(String(localized: "Close", comment: "VoiceOver: dismiss this sheet"))
-			.buttonStyle(.plain)
-			.padding(.top, 12)
-			.padding(.leading, 14)
-		}
-		#endif
 		.presentationDetents([.large], selection: $currentDetent)
 		.presentationContentInteraction(.scrolls)
 		#if !targetEnvironment(macCatalyst)

@@ -87,7 +87,6 @@ struct Channels: View {
 
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
-	@Environment(\.dismiss) private var goBack
 	@Environment(\.sizeCategory) var sizeCategory
 	@Environment(\.colorScheme) private var colorScheme
 
@@ -256,123 +255,114 @@ struct Channels: View {
 				}
 			}
 			.sheet(item: $selectedChannel) { _ in
-				#if targetEnvironment(macCatalyst)
-				Text("Channel")
-					.font(.largeTitle)
-					.padding()
-				#endif
-				ChannelForm(channelIndex: $channelIndex, channelName: $channelName, channelKeySize: $channelKeySize, channelKey: $channelKey, channelRole: $channelRole, uplink: $uplink, downlink: $downlink, positionPrecision: $positionPrecision, preciseLocation: $preciseLocation, positionsEnabled: $positionsEnabled, hasChanges: $hasChanges, hasValidKey: $hasValidKey, supportedVersion: $supportedVersion)
-					.trackScreen(.channelEditor)
-					.presentationDetents([.large])
-					#if !targetEnvironment(macCatalyst)
-					.presentationDragIndicator(.visible)
-					#endif
-				.onFirstAppear {
-					supportedVersion = accessoryManager.checkIsVersionSupported(forVersion: minimumVersion)
-				}
-				HStack {
-					Button {
-						var channel = Channel()
-						channel.index = channelIndex
-						channel.role = ChannelRoles(rawValue: channelRole)?.protoEnumValue() ?? .secondary
-							channel.index = channelIndex
-							channel.settings.name = channelName
-							channel.settings.psk = Data(base64Encoded: channelKey) ?? Data()
-							channel.settings.uplinkEnabled = uplink
-							channel.settings.downlinkEnabled = downlink
-							channel.settings.moduleSettings.positionPrecision = UInt32(positionPrecision)
-							selectedChannel!.role = Int32(channelRole)
-							selectedChannel!.index = channelIndex
-							selectedChannel!.name = channelName
-							selectedChannel!.psk = Data(base64Encoded: channelKey) ?? Data()
-							selectedChannel!.uplinkEnabled = uplink
-							selectedChannel!.downlinkEnabled = downlink
-							selectedChannel!.positionPrecision = Int32(positionPrecision)
+				NavigationStack {
+					VStack {
+						ChannelForm(channelIndex: $channelIndex, channelName: $channelName, channelKeySize: $channelKeySize, channelKey: $channelKey, channelRole: $channelRole, uplink: $uplink, downlink: $downlink, positionPrecision: $positionPrecision, preciseLocation: $preciseLocation, positionsEnabled: $positionsEnabled, hasChanges: $hasChanges, hasValidKey: $hasValidKey, supportedVersion: $supportedVersion)
+							.trackScreen(.channelEditor)
+						.onFirstAppear {
+							supportedVersion = accessoryManager.checkIsVersionSupported(forVersion: minimumVersion)
+						}
+						HStack {
+							Button {
+								var channel = Channel()
+								channel.index = channelIndex
+								channel.role = ChannelRoles(rawValue: channelRole)?.protoEnumValue() ?? .secondary
+									channel.index = channelIndex
+									channel.settings.name = channelName
+									channel.settings.psk = Data(base64Encoded: channelKey) ?? Data()
+									channel.settings.uplinkEnabled = uplink
+									channel.settings.downlinkEnabled = downlink
+									channel.settings.moduleSettings.positionPrecision = UInt32(positionPrecision)
+									selectedChannel!.role = Int32(channelRole)
+									selectedChannel!.index = channelIndex
+									selectedChannel!.name = channelName
+									selectedChannel!.psk = Data(base64Encoded: channelKey) ?? Data()
+									selectedChannel!.uplinkEnabled = uplink
+									selectedChannel!.downlinkEnabled = downlink
+									selectedChannel!.positionPrecision = Int32(positionPrecision)
 
-							guard var channels = node.myInfo?.channels else {
-								return
-							}
-							if let idx = channels.firstIndex(where: { $0.index == selectedChannel?.index }) {
-								channels[idx] = selectedChannel!
-							} else {
-								channels.append(selectedChannel!)
-							}
+									guard var channels = node.myInfo?.channels else {
+										return
+									}
+									if let idx = channels.firstIndex(where: { $0.index == selectedChannel?.index }) {
+										channels[idx] = selectedChannel!
+									} else {
+										channels.append(selectedChannel!)
+									}
 
-							var uniqueChannels: [Int32: ChannelEntity] = [:]
-							for channel in channels {
-								uniqueChannels[channel.index] = channel
-							}
-							node.myInfo?.channels = uniqueChannels.values.sorted { $0.index < $1.index }
-						if channel.role != Channel.Role.disabled {
-							if let selected = selectedChannel, selected.modelContext == nil {
-								context.insert(selected)
-							}
-							do {
-								try context.save()
-								Logger.data.info("💾 Saved Channel: \(channel.settings.name, privacy: .public)")
-							} catch {
-								let nsError = error as NSError
-								Logger.data.error("Unresolved Core Data error in the channel editor. Error: \(nsError, privacy: .public)")
-							}
-						} else {
-							let objects = selectedChannel?.allPrivateMessages ?? []
-							for object in objects {
-								context.delete(object)
-							}
-							let channelIdx = channel.index
-							var nodeDescriptor = FetchDescriptor<NodeInfoEntity>(
-								predicate: #Predicate { $0.channel == channelIdx }
-							)
-							nodeDescriptor.fetchLimit = 100
-							if let matchingNodes = try? context.fetch(nodeDescriptor) {
-								for matchingNode in matchingNodes {
-									context.delete(matchingNode)
+									var uniqueChannels: [Int32: ChannelEntity] = [:]
+									for channel in channels {
+										uniqueChannels[channel.index] = channel
+									}
+									node.myInfo?.channels = uniqueChannels.values.sorted { $0.index < $1.index }
+								if channel.role != Channel.Role.disabled {
+									if let selected = selectedChannel, selected.modelContext == nil {
+										context.insert(selected)
+									}
+									do {
+										try context.save()
+										Logger.data.info("💾 Saved Channel: \(channel.settings.name, privacy: .public)")
+									} catch {
+										let nsError = error as NSError
+										Logger.data.error("Unresolved Core Data error in the channel editor. Error: \(nsError, privacy: .public)")
+									}
+								} else {
+									let objects = selectedChannel?.allPrivateMessages ?? []
+									for object in objects {
+										context.delete(object)
+									}
+									let channelIdx = channel.index
+									var nodeDescriptor = FetchDescriptor<NodeInfoEntity>(
+										predicate: #Predicate { $0.channel == channelIdx }
+									)
+									nodeDescriptor.fetchLimit = 100
+									if let matchingNodes = try? context.fetch(nodeDescriptor) {
+										for matchingNode in matchingNodes {
+											context.delete(matchingNode)
+										}
+									}
+									context.delete(selectedChannel!)
+									do {
+										try context.save()
+										Logger.data.info("💾 Deleted Channel: \(channel.settings.name, privacy: .public)")
+									} catch {
+										let nsError = error as NSError
+										Logger.data.error("Unresolved Core Data error in the channel editor. Error: \(nsError, privacy: .public)")
+									}
 								}
+								Task {
+									_ = try await accessoryManager.saveChannel(
+										channel: channel,
+										fromUser: node.user!,
+										toUser: node.user!,
+										refreshShareSnapshot: true
+									)
+									Task { @MainActor in
+										selectedChannel = nil
+										channelName = ""
+										channelRole	= 2
+										hasChanges = false
+									}
+									accessoryManager.mqttManager.connectFromConfigSettings(node: node)
+								}
+							} label: {
+								Label("Save", systemImage: "square.and.arrow.down")
 							}
-							context.delete(selectedChannel!)
-							do {
-								try context.save()
-								Logger.data.info("💾 Deleted Channel: \(channel.settings.name, privacy: .public)")
-							} catch {
-								let nsError = error as NSError
-								Logger.data.error("Unresolved Core Data error in the channel editor. Error: \(nsError, privacy: .public)")
-							}
+							.disabled(!accessoryManager.isConnected)// || !hasChanges)// !hasValidKey)
+							.buttonStyle(.bordered)
+							.buttonBorderShape(.capsule)
+							.controlSize(.large)
+							.padding(.bottom)
 						}
-						Task {
-							_ = try await accessoryManager.saveChannel(
-								channel: channel,
-								fromUser: node.user!,
-								toUser: node.user!,
-								refreshShareSnapshot: true
-							)
-							Task { @MainActor in
-								selectedChannel = nil
-								channelName = ""
-								channelRole	= 2
-								hasChanges = false
-							}
-							accessoryManager.mqttManager.connectFromConfigSettings(node: node)
-						}
-					} label: {
-						Label("Save", systemImage: "square.and.arrow.down")
 					}
-					.disabled(!accessoryManager.isConnected)// || !hasChanges)// !hasValidKey)
-					.buttonStyle(.bordered)
-					.buttonBorderShape(.capsule)
-					.controlSize(.large)
-					.padding(.bottom)
-					#if targetEnvironment(macCatalyst)
-					Button {
-						goBack()
-					} label: {
-						Label("Close", systemImage: "xmark")
-					}
-					.buttonStyle(.bordered)
-					.buttonBorderShape(.capsule)
-					.controlSize(.large)
-					.padding(.bottom)
-					#endif
+					.navigationTitle("Channel")
+					.navigationBarTitleDisplayMode(.inline)
+					.sheetCloseButton(action: { selectedChannel = nil })
 				}
+				.presentationDetents([.large])
+				#if !targetEnvironment(macCatalyst)
+				.presentationDragIndicator(.visible)
+				#endif
 			}
 		}
 		.sheet(isPresented: $showingHelp) {

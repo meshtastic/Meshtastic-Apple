@@ -17,16 +17,21 @@ struct AppIconPicker: View {
 	]
 
 	var body: some View {
-		List {
-			Section(header: Text("Icons")) {
-				ForEach(Self.iconOptions) { icon in
-					AppIconButton(
-						iconDescription: .constant(icon.description),
-						iconName: .constant(icon.iconName),
-						isPresenting: $isPresenting
-					)
+		NavigationStack {
+			List {
+				Section(header: Text("Icons")) {
+					ForEach(Self.iconOptions) { icon in
+						AppIconButton(
+							iconDescription: .constant(icon.description),
+							iconName: .constant(icon.iconName),
+							isPresenting: $isPresenting
+						)
+					}
 				}
 			}
+			.navigationTitle("App Icon")
+			.navigationBarTitleDisplayMode(.inline)
+			.sheetCloseButton()
 		}
 	}
 }

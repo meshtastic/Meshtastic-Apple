@@ -13,8 +13,6 @@ struct MetricsColumnDetail: View {
 
 	@State private var currentDetent = PresentationDetent.medium
 
-	@Environment(\.dismiss) private var dismiss
-	
 	enum ViewOption: String, CaseIterable, Identifiable {
 		case chart = "Chart"
 		case table = "Table"
@@ -94,23 +92,8 @@ struct MetricsColumnDetail: View {
 			}
 			.listStyle(.insetGrouped)
 			.listSectionSpacing(12)
+			.sheetCloseButton()
 		}
-		#if targetEnvironment(macCatalyst)
-		.overlay(alignment: .topLeading) {
-			Button {
-				dismiss()
-			} label: {
-				Image(systemName: "xmark.circle.fill")
-					.font(.system(size: 34))
-					.symbolRenderingMode(.palette)
-					.foregroundStyle(.white, Color(.systemGray3))
-			}
-			.accessibilityLabel(String(localized: "Close", comment: "VoiceOver: dismiss this sheet"))
-			.buttonStyle(.plain)
-			.padding(.top, 12)
-			.padding(.leading, 14)
-		}
-		#endif
 		.presentationDetents([.medium, .large], selection: $currentDetent)
 		.presentationContentInteraction(.scrolls)
 		#if !targetEnvironment(macCatalyst)

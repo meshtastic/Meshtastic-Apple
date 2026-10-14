@@ -485,22 +485,8 @@ struct MeshMapMK: View {
 						NavigationStack {
 							NodeDetail(node: node, nodeNum: selection.id, showMapLink: false)
 								.trackScreen(.nodeDetail)
+								.sheetCloseButton()
 						}
-						#if targetEnvironment(macCatalyst)
-							.overlay(alignment: .topLeading) {
-								Button {
-									selectedNode = nil
-								} label: {
-									Image(systemName: "xmark.circle.fill")
-										.font(.system(size: 34))
-									.symbolRenderingMode(.palette)
-									.foregroundStyle(.white, Color(.systemGray3))
-							}
-							.buttonStyle(.plain)
-							.padding(.top, 12)
-							.padding(.leading, 14)
-						}
-						#endif
 						.presentationDetents([.large])
 						#if !targetEnvironment(macCatalyst)
 						.presentationDragIndicator(.visible)

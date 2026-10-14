@@ -11,6 +11,14 @@ extension View {
 	func onFirstAppear(_ action: @escaping () -> Void) -> some View {
 		modifier(FirstAppear(action: action))
 	}
+
+	/// A close button in the toolbar's cancel position, on every platform. A sheet can't be swiped
+	/// away on Mac or Vision Pro, so each one needs a way out it can show. Apply it to the root view
+	/// inside the sheet's `NavigationStack`; `action` replaces the plain dismiss when closing has
+	/// to do something first.
+	func sheetCloseButton(action: (() -> Void)? = nil) -> some View {
+		modifier(SheetCloseButton(action: action))
+	}
 	
 	@ViewBuilder func olderThanOS26( _ contentBuilder: (@escaping (Self) -> some View) ) -> some View {
 		if #available(iOS 26.0, macOS 26.0, *) {
@@ -100,6 +108,24 @@ private struct FirstAppear: ViewModifier {
 			guard !hasAppeared else { return }
 			hasAppeared = true
 			action()
+		}
+	}
+}
+
+private struct SheetCloseButton: ViewModifier {
+	@Environment(\.dismiss) private var dismiss
+	let action: (() -> Void)?
+
+	func body(content: Content) -> some View {
+		content.toolbar {
+			ToolbarItem(placement: .cancellationAction) {
+				Button {
+					if let action { action() } else { dismiss() }
+				} label: {
+					Image(systemName: "xmark")
+				}
+				.accessibilityLabel(String(localized: "Close", comment: "VoiceOver: dismiss this sheet"))
+			}
 		}
 	}
 }

@@ -16,6 +16,8 @@ struct CompassView: View {
 	let waypointLongName: String?
 	let waypointShortName: String?
 	let color: Color
+	/// Shown as a sheet it needs a close button; pushed onto a navigation stack it has Back.
+	var showsCloseButton = false
 
 	@ObservedObject private var locationsHandler = LocationsHandler.shared
 
@@ -200,6 +202,7 @@ struct CompassView: View {
 				locationsHandler.stopLocationUpdates()
 			}
 			.navigationTitle("Compass")
+			.if(showsCloseButton) { $0.sheetCloseButton() }
 		}
 	}
 
