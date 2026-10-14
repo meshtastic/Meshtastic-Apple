@@ -126,6 +126,20 @@ struct ShackLayoutTests {
 		#expect(layout.slots[10] == .desk(0))
 	}
 
+	@Test("A full shelf keeps its nodes when last-heard order changes")
+	func fullShelfStaysPut() {
+		var layout = ShackLayout(grid: Self.grid)
+		let nodes = mesh(count: 60, favorites: 0, online: 40)
+		layout.update(nodes, now: Self.now)
+		let shelved = Set(layout.slots.filter { $0.value.tier == .shelf }.keys)
+		#expect(shelved.count == ShackLayout.shelfCapacity)
+		// The online nodes on the rack are now heard more recently than those on the shelves.
+		let online = nodes[1..<40]
+		let reordered = [nodes[0]] + online.filter { !shelved.contains($0.id) } + online.filter { shelved.contains($0.id) } + nodes[40...]
+		layout.update(reordered, now: Self.now.addingTimeInterval(ShackLayout.promotionInterval))
+		#expect(Set(layout.slots.filter { $0.value.tier == .shelf }.keys) == shelved)
+	}
+
 	@Test("Online and offline change only after the hysteresis")
 	func hysteresis() {
 		var layout = ShackLayout(grid: Self.grid)
