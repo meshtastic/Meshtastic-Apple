@@ -49,9 +49,7 @@ struct SpatialMapWindow: View {
 
 	var body: some View {
 		SpatialMapView(model: model, scene: scene, traffic: traffic, preset: preset, showLinks: showLinks) { nodeNum in
-			if let url = URL(string: "meshtastic:///nodes?nodenum=\(nodeNum)") {
-				UIApplication.shared.open(url)
-			}
+			showInMainWindow("meshtastic:///nodes?nodenum=\(nodeNum)")
 		} onCoverage: { nodeNum, action in
 			handleCoverage(action, nodeNum: nodeNum)
 		}
@@ -141,9 +139,7 @@ struct SpatialMapWindow: View {
 	private func handleCoverage(_ action: SpatialCoverageAction, nodeNum: Int64) {
 		switch action {
 		case .estimate:
-			if let url = URL(string: "meshtastic:///map?coverage=1&nodenum=\(nodeNum)") {
-				UIApplication.shared.open(url)
-			}
+			showInMainWindow("meshtastic:///map?coverage=1&nodenum=\(nodeNum)")
 		case .show, .hide:
 			guard let file = model.coverageByNode[nodeNum] else { return }
 			GeoJSONOverlayManager.shared.setFileActive(file.fileID, action == .show)
@@ -159,6 +155,13 @@ struct SpatialMapWindow: View {
 		guard let nodeNum = appState.claimSpatialMapFocus() else { return }
 		model.focus(on: nodeNum)
 		refresh()
+	}
+
+	/// Hands a route to the main window, which comes forward to show it. Opening the URL with
+	/// UIApplication doesn't reach the main window from the volume.
+	private func showInMainWindow(_ route: String) {
+		guard let url = URL(string: route) else { return }
+		appState.pendingRoute = PendingRoute(url: url, bringForward: true)
 	}
 
 	/// Any scene that is not one of the secondary windows.
