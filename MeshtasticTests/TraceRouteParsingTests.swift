@@ -156,6 +156,8 @@ struct TraceRouteParsingTests {
 		#expect(backHops(route).map(\.num) == [Int64(newHopNum)])
 		#expect(getNodeInfo(id: Int64(newHopNum), context: context) == nil)
 		#expect(getNodeInfo(id: Int64(unknownRepeater), context: context) == nil)
+		#expect(route.routeText?.contains(newHopNum.toHex()) == true, "a hop the app has never heard from is named by its ID")
+		#expect(route.routeBackText?.contains(newHopNum.toHex()) == true)
 	}
 
 	@Test("A response without a return leg leaves hopsBack at -1")
