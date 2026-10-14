@@ -67,11 +67,19 @@ final class SpatialRouteDrawing {
 	private static let traits = UITraitCollection(userInterfaceStyle: .dark)
 	static let forwardColor = UIColor(TraceRouteColors.forward).resolvedColor(with: traits)
 	static let backColor = UIColor(TraceRouteColors.back).resolvedColor(with: traits)
-	private static let forwardMaterial = UnlitMaterial(color: forwardColor)
-	private static let backMaterial = UnlitMaterial(color: backColor)
+	private static let forwardMaterial = trueColor(forwardColor)
+	private static let backMaterial = trueColor(backColor)
 	/// Chevrons a shade lighter than their line so they read against it.
-	private static let forwardChevronMaterial = UnlitMaterial(color: forwardColor.lighter(componentDelta: 0.22))
-	private static let backChevronMaterial = UnlitMaterial(color: backColor.lighter(componentDelta: 0.12))
+	private static let forwardChevronMaterial = trueColor(forwardColor.lighter(componentDelta: 0.22))
+	private static let backChevronMaterial = trueColor(backColor.lighter(componentDelta: 0.12))
+
+	/// Unlit and left out of the tone mapping, which otherwise darkens the blue and washes out the
+	/// green, so the lines match the hop timeline and the legend.
+	private static func trueColor(_ color: UIColor) -> UnlitMaterial {
+		var material = UnlitMaterial(applyPostProcessToneMap: false)
+		material.color = .init(tint: color)
+		return material
+	}
 	/// The dark edge draws only its inside faces, so it shows as an outline around the line.
 	private static let casingMaterial: UnlitMaterial = {
 		var material = UnlitMaterial(color: UIColor(white: 0.06, alpha: 1))
@@ -95,8 +103,8 @@ final class SpatialRouteDrawing {
 		root.addChild(casing)
 		root.addChild(lines)
 		let ringMesh = SpatialTowerParts.ringMesh ?? .generateCylinder(height: 0.0005, radius: 1)
-		originRing = ModelEntity(mesh: ringMesh, materials: [UnlitMaterial(color: UIColor(TraceRouteShareStyle.originRing))])
-		targetRing = ModelEntity(mesh: ringMesh, materials: [UnlitMaterial(color: UIColor(TraceRouteShareStyle.destinationRing))])
+		originRing = ModelEntity(mesh: ringMesh, materials: [Self.trueColor(UIColor(TraceRouteShareStyle.originRing))])
+		targetRing = ModelEntity(mesh: ringMesh, materials: [Self.trueColor(UIColor(TraceRouteShareStyle.destinationRing))])
 		root.addChild(originRing)
 		root.addChild(targetRing)
 		root.isEnabled = false
