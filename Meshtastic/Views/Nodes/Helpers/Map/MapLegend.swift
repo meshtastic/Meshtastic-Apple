@@ -172,29 +172,29 @@ struct MapLegend: View {
 	private var traceRouteSection: some View {
 		Section {
 			MapLegendItem(
-				symbol: AnyView(traceRouteSignalSymbol),
-				title: String(localized: "Signal Strength"),
-				subtitle: String(localized: "Each leg is colored by its hop SNR — green (good), yellow (fair), orange (bad), red (none) — and also gets progressively thinner and more dashed as quality drops.")
-			)
-			MapLegendItem(
 				symbol: AnyView(traceRouteOutboundSymbol),
 				title: String(localized: "Outbound Path"),
-				subtitle: String(localized: "Solid line toward the target; arrows point in the direction of travel.")
+				subtitle: String(localized: "Solid blue line toward the target; arrows point in the direction of travel.")
 			)
 			MapLegendItem(
 				symbol: AnyView(traceRouteReturnSymbol),
 				title: String(localized: "Return Path"),
-				subtitle: String(localized: "Dashed line back to the originator.")
+				subtitle: String(localized: "Dashed green line back to the originator. Where both paths use the same leg, the two lines sit side by side.")
 			)
 			MapLegendItem(
-				symbol: AnyView(traceRouteHopLabelsSymbol),
-				title: String(localized: "Hop Numbers and Signal"),
-				subtitle: String(localized: "Relays are numbered in order, filled on the way out and outlined on the way back. Zoom in to see each leg's SNR.")
+				symbol: AnyView(traceRouteHopNumbersSymbol),
+				title: String(localized: "Hop Numbers"),
+				subtitle: String(localized: "Relays are numbered in order, filled blue on the way out and outlined green on the way back.")
+			)
+			MapLegendItem(
+				symbol: AnyView(traceRouteSignalSymbol),
+				title: String(localized: "Signal Strength"),
+				subtitle: String(localized: "The pill on each leg shows its SNR, colored green (good), yellow (fair), orange (bad) or red (none). Pills that would overlap stay hidden until you zoom in.")
 			)
 			MapLegendItem(
 				symbol: AnyView(traceRouteEndpointsSymbol),
 				title: String(localized: "Origin & Target"),
-				subtitle: String(localized: "Green marks the originator, red marks the target node.")
+				subtitle: String(localized: "The originator's short name has a green ring, the target's a white ring.")
 			)
 		} header: {
 			Text("Trace Routes")
@@ -300,83 +300,80 @@ struct MapLegend: View {
 	}
 
 	private var traceRouteSignalSymbol: some View {
-		HStack(spacing: 2) {
-			ForEach([Color.green, Color.yellow, Color.orange, Color.red], id: \.self) { color in
-				Capsule().fill(color).frame(width: 7, height: 4)
-			}
+		VStack(spacing: 3) {
+			snrPill("7.0 dB", color: .green)
+			snrPill("-12.5 dB", color: .orange)
 		}
+	}
+
+	private func snrPill(_ text: String, color: Color) -> some View {
+		Text(verbatim: text)
+			.font(.system(size: 8, weight: .bold))
+			.monospacedDigit()
+			.foregroundStyle(.black)
+			.padding(.horizontal, 4)
+			.padding(.vertical, 1)
+			.background(Capsule().fill(color))
+			.overlay(Capsule().strokeBorder(.black.opacity(0.35), lineWidth: 0.75))
+			.fixedSize()
+	}
+
+	/// A short trace route line in the map's style: a dark edge under the color, with a chevron.
+	private func traceRouteLine(color: Color, width: CGFloat, dash: [CGFloat]) -> some View {
+		let line = Path { path in
+			path.move(to: CGPoint(x: 3, y: 20))
+			path.addLine(to: CGPoint(x: 37, y: 20))
+		}
+		let chevron = Path { path in
+			path.move(to: CGPoint(x: 21, y: 15))
+			path.addLine(to: CGPoint(x: 26, y: 20))
+			path.addLine(to: CGPoint(x: 21, y: 25))
+		}
+		return ZStack {
+			line.stroke(Color.black.opacity(0.45), style: StrokeStyle(lineWidth: width + 2.5, lineCap: .round, dash: dash))
+			line.stroke(color, style: StrokeStyle(lineWidth: width, lineCap: .round, dash: dash))
+			chevron.stroke(Color.black.opacity(0.45), style: StrokeStyle(lineWidth: 5.5, lineCap: .round, lineJoin: .round))
+			chevron.stroke(color, style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
+		}
+		.frame(width: 40, height: 40)
 	}
 
 	private var traceRouteOutboundSymbol: some View {
-		ZStack {
-			Path { path in
-				path.move(to: CGPoint(x: 2, y: 20))
-				path.addLine(to: CGPoint(x: 38, y: 20))
-			}
-			.stroke(style: StrokeStyle(lineWidth: 4, lineCap: .round))
-			.foregroundStyle(Color.green)
-			Image(systemName: "chevron.right")
-				.font(.system(size: 9, weight: .heavy))
-				.foregroundStyle(.white)
-				.offset(x: 4)
-		}
+		traceRouteLine(color: TraceRouteColors.forward, width: 4, dash: [])
 	}
 
 	private var traceRouteReturnSymbol: some View {
-		ZStack {
-			Path { path in
-				path.move(to: CGPoint(x: 2, y: 20))
-				path.addLine(to: CGPoint(x: 38, y: 20))
-			}
-			.stroke(style: StrokeStyle(lineWidth: 3, lineCap: .round, dash: [2, 8]))
-			.foregroundStyle(Color.green)
-			// The map colors the return path by SNR like the outbound one, with chevrons in the line color.
-			Image(systemName: "chevron.right")
-				.font(.system(size: 11, weight: .heavy))
-				.foregroundStyle(Color.green)
-				.offset(x: 4)
-		}
+		traceRouteLine(color: TraceRouteColors.back, width: 3.5, dash: [6, 6])
 	}
 
-	private var traceRouteHopLabelsSymbol: some View {
-		VStack(spacing: 3) {
-			HStack(spacing: 4) {
-				hopBadge("1", isBack: false)
-				hopBadge("1", isBack: true)
-			}
-			Text(verbatim: "7.0 dB")
-				.font(.system(size: 8, weight: .semibold))
-				.foregroundStyle(.black)
-				.padding(.horizontal, 3)
-				.background(Capsule().fill(Color.green))
+	private var traceRouteHopNumbersSymbol: some View {
+		HStack(spacing: 4) {
+			hopBadge("1", isBack: false)
+			hopBadge("1", isBack: true)
 		}
 	}
 
 	private func hopBadge(_ number: String, isBack: Bool) -> some View {
 		Text(verbatim: number)
 			.font(.system(size: 9, weight: .bold, design: .rounded))
-			.foregroundStyle(isBack ? Color.black : Color.white)
-			.frame(width: 15, height: 15)
-			.background(Circle().fill(isBack ? Color.white : Color.black.opacity(0.85)))
-			.overlay(
-				Circle().strokeBorder(
-					isBack ? Color.black : Color.white,
-					style: StrokeStyle(lineWidth: 1.2, dash: isBack ? [2, 2] : [])
-				)
-			)
+			.foregroundStyle(isBack ? Color.primary : Color.white)
+			.frame(width: 16, height: 16)
+			.background(Circle().fill(isBack ? Color(UIColor.systemBackground) : TraceRouteColors.forward))
+			.overlay(Circle().strokeBorder(isBack ? TraceRouteColors.back : Color.white, lineWidth: isBack ? 1.75 : 1.25))
 	}
 
 	private var traceRouteEndpointsSymbol: some View {
-		HStack(spacing: 6) {
-			Circle()
-				.fill(Color.green)
-				.strokeBorder(Color.white, lineWidth: 2)
-				.frame(width: 14, height: 14)
-			Circle()
-				.fill(Color.red)
-				.strokeBorder(Color.white, lineWidth: 2)
-				.frame(width: 14, height: 14)
+		HStack(spacing: 3) {
+			endpointCircle(text: "ME", color: .orange, ring: TraceRouteShareStyle.originRing)
+			endpointCircle(text: "TG", color: .purple, ring: TraceRouteShareStyle.destinationRing)
 		}
+	}
+
+	private func endpointCircle(text: String, color: Color, ring: Color) -> some View {
+		CircleText(text: text, color: color, circleSize: 15)
+			.overlay(Circle().strokeBorder(ring, lineWidth: 1.5).padding(-2.5))
+			.padding(2.5)
+			.shadow(color: .black.opacity(0.4), radius: 1.5, y: 0.5)
 	}
 
 	private var convexHullSymbol: some View {

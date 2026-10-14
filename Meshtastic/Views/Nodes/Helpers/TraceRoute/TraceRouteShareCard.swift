@@ -658,8 +658,7 @@ struct TraceRouteShareMap: View {
 			var from = frame.point(for: segment.from)
 			var to = frame.point(for: segment.to)
 			// When both directions use a leg, push each to its own side so neither hides the other.
-			let shared = segments.contains { $0.isBack != segment.isBack && $0.fromNum == segment.toNum && $0.toNum == segment.fromNum }
-			if shared {
+			if frame.layout.sharesLeg(segment) {
 				let length = max(hypot(to.x - from.x, to.y - from.y), 0.001)
 				let offset = CGPoint(x: -(to.y - from.y) / length * 4, y: (to.x - from.x) / length * 4)
 				from = CGPoint(x: from.x + offset.x, y: from.y + offset.y)

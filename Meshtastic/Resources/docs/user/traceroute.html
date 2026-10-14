@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trace Routes</title>
+  <link rel="stylesheet" href="../assets/docs.css">
+</head>
+<body data-page="traceroute">
+<h1>Trace Routes</h1>
+<p>A trace route asks a node to report the path a packet took to reach it and the path the answer took back, with the signal heard on each hop.</p>
+<hr />
+<h2>Sending a Trace Route</h2>
+<p>Send a trace route from a node's long-press menu, from the actions on its detail screen, or with the <strong>Trace Route</strong> button at the top of its Trace Route Log. Your radio can send one trace route every 30 seconds; the button shows a countdown until the next one is allowed.</p>
+<p>The app waits up to two minutes for an answer. Until then the entry reads <strong>Waiting for response</strong>; after that it reads <strong>No response</strong>. If the radio refuses the request because of its 30-second limit, the entry reads <strong>Rate limited</strong>.</p>
+<h2>The Trace Route Log</h2>
+<p>Open a node and choose <strong>Trace Route Log</strong> in the Logs section to see every trace route you sent to that node.</p>
+<ul>
+<li><strong>Time window</strong> — pick how far back the chart and list go: 1 hour, 24 hours, 1 week, 2 weeks, 1 month or all. Only the windows that would leave out older entries are offered.</li>
+<li><strong>Chart</strong> — forward hops (blue, solid) and return hops (green, dashed) use the left axis; the round trip (orange) uses the right axis, in seconds. Tap the chart to highlight the nearest entry in the list. Tap <strong>Hops</strong> to fold the chart away.</li>
+<li><strong>Entries</strong> — each one shows the time and a summary: <strong>Direct</strong>, the number of hops, or the hops each way when they differ. Chips repeat the forward hops, return hops and round trip.</li>
+</ul>
+<p>The round trip is the time from sending the request to receiving the answer. Routes seen on the mesh for someone else's request, and routes saved by older versions of the app, have no round trip.</p>
+<p><strong>Settings → Logging → Trace Routes</strong> lists every trace route the app has saved, including ones observed on the mesh for other nodes' requests. Those are labeled <strong>Observed</strong>; yours are labeled <strong>Requested</strong>.</p>
+<h2>The Hop Timeline</h2>
+<p>Tap an entry to see the route as a timeline: the forward route from your radio to the node, then the return route back. On iPad and Mac the two sit side by side.</p>
+<ul>
+<li>Each stop shows the node's short name in its colored circle and its long name. Nodes heard over MQTT are marked <strong>MQTT</strong>. Tap a stop to open that node.</li>
+<li>Between stops, the line is colored by the signal heard on that hop, on the same scale as the <a href="signal-meter.html">signal meter</a>: green (good), yellow (fair), orange (bad), red (none). The SNR and its rating appear beside the line, along with the hop's length when both nodes had a known position.</li>
+<li>A hop whose SNR wasn't reported is drawn as a dashed gray line labeled <strong>Unknown signal</strong>.</li>
+<li>A relay that didn't add its node number appears as a dotted circle named <strong>Unknown repeater</strong>.</li>
+</ul>
+<p>Below the timeline are the round trip, the hop counts and the time. <strong>Show on Map</strong> draws the route on the map, forward in solid blue and return in dashed green (see <a href="map.md#trace-routes-on-the-map">Trace Routes on the Map</a>), <strong>Copy</strong> copies the route as text, and <strong>Trace Route</strong> sends a new one to the same node.</p>
+</body>
+</html>

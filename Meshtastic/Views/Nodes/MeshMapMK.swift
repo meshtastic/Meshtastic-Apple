@@ -773,6 +773,7 @@ struct MeshMapMK: View {
 		mapWithDataHooks
 			.onChange(of: colorScheme) {
 				rebuildHillshadeOverlay()
+				rebuildTraceRouteContent()
 			}
 			.onChange(of: offlineMapConnectivity.isNetworkAvailable) {
 				rebuildAllMapContent()
@@ -1530,42 +1531,14 @@ struct MeshMapMK: View {
 		return legs
 	}
 
-	/// Per-leg line width, dash pattern, and dash phase for a trace-route polyline, keyed to signal
-	/// tier so degraded links are legible by shape and not only by the SNR hue. `baseDash` is the
-	/// leg's normal treatment (nil for the solid forward path, a fixed rhythm for the always-dashed
-	/// return path); every tier below good gets its own dash rhythm distinct from `baseDash`, so
-	/// fair/bad/none read differently from a good leg on both the forward and return path.
-	private struct TraceRouteLineStyle {
-		let width: CGFloat
-		let dash: [NSNumber]?
-		let phase: CGFloat
-	}
-
-	private func traceRouteLineStyle(
-		snr: Float,
-		preset: ModemPresets,
-		baseWidth: CGFloat,
-		baseDash: [NSNumber]?
-	) -> TraceRouteLineStyle {
-		switch getLoRaSignalStrength(snr: snr, rssi: 0, preset: preset) {
-		case .good:
-			return TraceRouteLineStyle(width: baseWidth, dash: baseDash, phase: 0)
-		case .fair:
-			return TraceRouteLineStyle(width: baseWidth - 0.5, dash: [10, 4], phase: 0)
-		case .bad:
-			return TraceRouteLineStyle(width: max(baseWidth - 1, 1), dash: [4, 4], phase: 3)
-		case .none:
-			return TraceRouteLineStyle(width: max(baseWidth - 1.5, 1), dash: [1, 5], phase: 6)
-		}
-	}
-
-	/// Build the forward (solid) + return (dashed) polylines and origin/target markers for the
-	/// selected trace route, and the layout the hop badges and SNR labels come from. Each leg is
-	/// colored by that hop's SNR using the same signal-meter math as the LoRa signal indicator
-	/// (green/yellow/orange/red), and its width/dash rhythm varies with the same tier so signal
-	/// quality isn't encoded by hue alone. Limited to nodes with a snapshot.
+	/// Build the forward and return polylines and the origin/target markers for the selected trace
+	/// route, and the layout the hop badges and SNR labels come from. Forward is solid blue and
+	/// return dashed green, the colors of the Forward route and Return route headings, each with a
+	/// dark edge so it reads on any basemap. SNR is shown by the labels on the legs, not the line
+	/// color. Limited to nodes with a snapshot.
 	private func rebuildTraceRouteContent() {
-		let key = selectedTraceRoute.map { "\($0.id)|\($0.nodePositions.count)" } ?? "none"
+		let dark = colorScheme == .dark
+		let key = selectedTraceRoute.map { "\($0.id)|\($0.nodePositions.count)|\(dark)" } ?? "none"
 		guard key != lastTraceRouteKey else { return }
 		lastTraceRouteKey = key
 		guard let route = selectedTraceRoute else {
@@ -1578,39 +1551,54 @@ struct MeshMapMK: View {
 		var decorations: [ClusterMapDecoration] = []
 		let idKey = route.persistentModelID.hashValue
 		let modemPreset = ModemPresets(rawValue: UserDefaults.modemPreset) ?? .longFast
-		let legs = TraceRouteLegs(route: route, preset: modemPreset, lookup: { _ in nil })
-		let layout = TraceRouteMapLayout(legs: legs, positions: route.nodePositionsByNum.compactMapValues { $0.coordinate })
+		// Node names for the endpoint circles; the lines and badges only need numbers and positions.
+		let legs = TraceRouteLegs(route: route, preset: modemPreset) { num in
+			guard num != 0, num != TraceRouteLegs.unknownRepeaterNum else { return nil }
+			return router.cachedNodeInfo(id: num, context: context).map(TraceRouteLegs.NodeDetails.init(node:))
+		}
+		let positions = route.nodePositionsByNum.compactMapValues { $0.coordinate }
+		let layout = TraceRouteMapLayout(legs: legs, positions: positions)
+		let traits = UITraitCollection(userInterfaceStyle: dark ? .dark : .light)
+		let forwardColor = UIColor(TraceRouteColors.forward).resolvedColor(with: traits)
+		let backColor = UIColor(TraceRouteColors.back).resolvedColor(with: traits)
+		let casing = UIColor.black.withAlphaComponent(dark ? 0.6 : 0.45)
 
-		// One polyline per leg, colored by the SNR measured at the node it arrives at. Forward is
-		// solid, return dashed; both get thinner and more dashed as the signal drops.
 		for segment in layout.segments {
 			var seg = [segment.from, segment.to]
-			let snr = segment.snr ?? TraceRouteLegs.unknownSnr
-			let style = segment.isBack
-				? traceRouteLineStyle(snr: snr, preset: modemPreset, baseWidth: 3, baseDash: [2, 8])
-				: traceRouteLineStyle(snr: snr, preset: modemPreset, baseWidth: 4, baseDash: nil)
+			// Forward is solid unless its SNR is unknown; return is always dashed.
+			let dash: [NSNumber]? = segment.isBack ? [6, 6] : (segment.snr == nil ? [3, 6] : nil)
 			overlays.append(ClusterMapOverlay(
-				id: "traceroute-\(segment.id)-\(idKey)",
+				id: "traceroute-\(segment.id)-\(idKey)-\(dark)",
 				overlay: MKPolyline(coordinates: &seg, count: 2),
 				style: ClusterMapOverlayStyle(
-					strokeUIColor: UIColor(getSnrColor(snr: snr, preset: modemPreset)),
+					strokeUIColor: segment.isBack ? backColor : forwardColor,
 					fillUIColor: nil,
-					lineWidth: style.width,
-					lineDash: style.dash,
-					lineDashPhase: style.phase,
+					lineWidth: segment.isBack ? 3.5 : 4,
+					lineDash: dash,
 					lineCap: .round,
-					directional: true
+					directional: true,
+					casingUIColor: casing,
+					// Where both directions use a leg, each moves to its own side so both show.
+					sideOffset: layout.sharesLeg(segment) ? 4 : 0
 				)
 			))
 		}
-		let byNum = route.nodePositionsByNum
-		if let origin = byNum[route.fromNum]?.coordinate {
-			decorations.append(ClusterMapDecoration(id: "traceroute-origin-\(idKey)", coordinate: origin,
-			                                        content: AnyView(RouteEndpointMarker(color: .green))))
+		// Destination first so the origin draws on top when the two are close.
+		if let stop = legs.forward.last, let coordinate = positions[stop.num] {
+			decorations.append(ClusterMapDecoration(
+				id: "traceroute-target-\(idKey)",
+				coordinate: coordinate,
+				content: AnyView(TraceRouteEndpointMarker(stop: stop, ring: TraceRouteShareStyle.destinationRing)),
+				zPriority: TraceRouteZ.endpoint
+			))
 		}
-		if let target = byNum[route.toNum]?.coordinate {
-			decorations.append(ClusterMapDecoration(id: "traceroute-target-\(idKey)", coordinate: target,
-			                                        content: AnyView(RouteEndpointMarker(color: .red))))
+		if let stop = legs.forward.first, let coordinate = positions[stop.num] {
+			decorations.append(ClusterMapDecoration(
+				id: "traceroute-origin-\(idKey)",
+				coordinate: coordinate,
+				content: AnyView(TraceRouteEndpointMarker(stop: stop, ring: TraceRouteShareStyle.originRing)),
+				zPriority: TraceRouteZ.endpoint
+			))
 		}
 		tracerouteOverlays = overlays
 		tracerouteDecorations = decorations
@@ -1628,14 +1616,16 @@ struct MeshMapMK: View {
 			ClusterMapDecoration(
 				id: "traceroute-label-\(label.id)-\(tracerouteLayoutKey)",
 				coordinate: label.coordinate,
-				content: AnyView(TraceRouteSnrLabel(snr: label.snr, color: getSnrColor(snr: label.snr, preset: preset)))
+				content: AnyView(TraceRouteSnrLabel(snr: label.snr, color: getSnrColor(snr: label.snr, preset: preset))),
+				zPriority: TraceRouteZ.label
 			)
 		}
 		let badges = layout.visibleBadges(in: rect).map { badge in
 			ClusterMapDecoration(
 				id: "traceroute-badge-\(badge.id)-\(tracerouteLayoutKey)",
 				coordinate: badge.coordinate,
-				content: AnyView(TraceRouteHopBadge(number: badge.number, isBack: badge.isBack))
+				content: AnyView(TraceRouteHopBadge(number: badge.number, isBack: badge.isBack)),
+				zPriority: TraceRouteZ.badge
 			)
 		}
 		return labels + badges
@@ -1995,9 +1985,17 @@ private struct MeshMapMKNodePin: View, Equatable {
 
 // MARK: - Trace route hop badges and SNR labels
 
-/// Numbered badge for a trace route relay. It sits up and to the right of the node on the way out
-/// (filled), and down and to the right on the way back (outlined, like the dashed return line), so
-/// a node on both paths shows both numbers.
+/// Stacking order for the trace route markers: all above the node pins, endpoints on top, then
+/// the hop badges, then the SNR labels.
+private enum TraceRouteZ {
+	static let label = MKAnnotationViewZPriority(rawValue: 980)
+	static let badge = MKAnnotationViewZPriority(rawValue: 990)
+	static let endpoint = MKAnnotationViewZPriority.max
+}
+
+/// Numbered badge for a trace route relay, in the color of its direction: filled blue on the way
+/// out, sitting up and to the right of the node, and outlined green on the way back, down and to
+/// the right. A node on both paths shows both numbers.
 private struct TraceRouteHopBadge: View {
 	let number: Int
 	let isBack: Bool
@@ -2006,35 +2004,48 @@ private struct TraceRouteHopBadge: View {
 		Text(verbatim: "\(number)")
 			.font(.system(size: 11, weight: .bold, design: .rounded))
 			.monospacedDigit()
-			.foregroundStyle(isBack ? Color.black : Color.white)
+			.foregroundStyle(isBack ? Color.primary : Color.white)
 			.frame(minWidth: 18, minHeight: 18)
-			.background(Circle().fill(isBack ? Color.white : Color.black.opacity(0.85)))
+			.background(Circle().fill(isBack ? Color(UIColor.systemBackground) : TraceRouteColors.forward))
 			.overlay(
-				Circle().strokeBorder(
-					isBack ? Color.black : Color.white,
-					style: StrokeStyle(lineWidth: 1.5, dash: isBack ? [2, 2] : [])
-				)
+				Circle().strokeBorder(isBack ? TraceRouteColors.back : Color.white, lineWidth: isBack ? 2 : 1.5)
 			)
+			.shadow(color: .black.opacity(0.35), radius: 1.5, y: 0.5)
 			.padding(.leading, 30)
 			.padding(isBack ? .top : .bottom, 30)
 			.accessibilityHidden(true)
 	}
 }
 
-/// SNR of one trace route leg, drawn on the line in the leg's color.
+/// SNR of one trace route leg, as a small pill on the line in the SNR color.
 private struct TraceRouteSnrLabel: View {
 	let snr: Float
 	let color: Color
 
 	var body: some View {
 		Text("\(snr.formatted(.number.precision(.fractionLength(1)))) dB")
-			.font(.system(size: 10, weight: .semibold))
+			.font(.system(size: 10, weight: .bold))
 			.monospacedDigit()
 			.foregroundStyle(.black)
 			.padding(.horizontal, 5)
 			.padding(.vertical, 1.5)
 			.background(Capsule().fill(color))
-			.overlay(Capsule().strokeBorder(.white, lineWidth: 1))
+			.overlay(Capsule().strokeBorder(.black.opacity(0.35), lineWidth: 0.75))
+			.shadow(color: .black.opacity(0.3), radius: 1.5, y: 0.5)
+			.fixedSize()
+			.accessibilityHidden(true)
+	}
+}
+
+/// A trace route's origin or destination: the node's short name in a circle of its color, with the
+/// green (origin) or white (destination) ring used on the share image and in the hop chains.
+private struct TraceRouteEndpointMarker: View {
+	let stop: TraceRouteStop
+	let ring: Color
+
+	var body: some View {
+		TraceRouteShareNodeCircle(stop: stop, size: 28, ring: ring)
+			.shadow(color: .black.opacity(0.5), radius: 3, y: 1)
 			.accessibilityHidden(true)
 	}
 }

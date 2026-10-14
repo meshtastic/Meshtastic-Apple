@@ -126,6 +126,14 @@ struct TraceRouteMapLayoutTests {
 		#expect(abs((inbound?.coordinate.longitude ?? 0) - -122.3805) < 0.000_1)
 	}
 
+	@Test("Only legs used in both directions count as shared")
+	func sharedLegs() {
+		let relayed = layout(forward: threeLegForward, back: [.init(num: relayB, snr: 2)], originBackSnr: -6)
+		let shared = relayed.segments.filter { relayed.sharesLeg($0) }.map { "\($0.fromNum)>\($0.toNum)" }
+		// Relay B ↔ target is used both ways; origin → A → B out and B → origin back are not.
+		#expect(shared == ["\(relayB)>\(target)", "\(target)>\(relayB)"])
+	}
+
 	@Test("Zoomed out, legs too short for a label are hidden; zoomed in, all show")
 	func labelsByZoom() {
 		let result = layout(forward: threeLegForward)
