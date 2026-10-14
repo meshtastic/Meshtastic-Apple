@@ -51,6 +51,8 @@ enum ShackRoomGeometry {
 	static let shelfLength: Float = 1.695
 	static let shelfDepth: Float = 0.26
 	static let rackSize = SIMD2<Float>(1.75, 1.65)
+	/// Eye height for someone sitting in the chair at the origin.
+	static let seatedEye = SIMD3<Float>(0, 1.2, 0)
 
 	/// A quarter turn about Y: faces +X when positive, -X when negative.
 	private static func yaw(_ degrees: Float) -> simd_quatf {
