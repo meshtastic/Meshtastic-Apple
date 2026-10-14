@@ -52,8 +52,11 @@ struct TraceRouteShareCard: View {
 
 	var body: some View {
 		VStack(alignment: .leading, spacing: 0) {
-			VStack(alignment: .leading, spacing: 18) {
-				header
+			header
+			// When the content is shorter than the minimum height, the spacers on either side of the
+			// body share the extra space so it sits in the middle rather than leaving a gap at the bottom.
+			Spacer(minLength: 18)
+			Group {
 				if let map = model.map, let mapImage {
 					HStack(alignment: .top, spacing: Style.columnSpacing) {
 						VStack(spacing: Style.columnSpacing) {
@@ -65,11 +68,12 @@ struct TraceRouteShareCard: View {
 							.frame(width: Style.chainColumnWidth)
 					}
 				} else {
-					TraceRouteShareStats(model: model, columns: nil)
-					TraceRouteShareChains(model: model, sideBySide: true)
+					VStack(alignment: .leading, spacing: 18) {
+						TraceRouteShareStats(model: model, columns: nil)
+						TraceRouteShareChains(model: model, sideBySide: true)
+					}
 				}
 			}
-			// Kept out of the stack above so its spacing doesn't add a gap on top of the spacer's.
 			Spacer(minLength: 16)
 			footer
 		}
@@ -159,20 +163,12 @@ struct TraceRouteShareCard: View {
 			Rectangle()
 				.fill(Style.panelBorder)
 				.frame(height: 1)
-			HStack {
-				Text(verbatim: "meshtastic.org")
-					.font(.system(size: 15, weight: .semibold))
-					.foregroundStyle(Style.brand)
-				Spacer()
-				Text(verbatim: Self.appName)
-					.font(.system(size: 13, weight: .medium))
-					.foregroundStyle(Style.tertiaryText)
-			}
+			// The wordmark at the top already names the app, so the footer only carries the site.
+			Text(verbatim: "meshtastic.org")
+				.font(.system(size: 15, weight: .semibold))
+				.foregroundStyle(Style.brand)
+				.frame(maxWidth: .infinity, alignment: .leading)
 		}
-	}
-
-	private static var appName: String {
-		Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? "Meshtastic"
 	}
 }
 
@@ -453,28 +449,49 @@ private struct TraceRouteShareChain: View {
 				}
 			}
 			.frame(width: circleSize + 6)
-			HStack(spacing: 8) {
-				Text(stop.longName)
-					.font(.system(size: dense ? 14.5 : 15.5, weight: isEndpoint ? .semibold : .regular))
-					.foregroundStyle(stop.isUnknownRepeater ? Style.secondaryText : Style.primaryText)
-					.lineLimit(2)
-					.truncationMode(.tail)
-					.fixedSize(horizontal: false, vertical: true)
-				if stop.viaMqtt {
-					HStack(spacing: 3) {
-						Image(systemName: "network")
-						Text(verbatim: "MQTT")
+			if stop.viaMqtt {
+				// The badge goes beside a name that fits on one line, and under one that doesn't, so
+				// the name keeps the full width rather than being cut off.
+				ViewThatFits(in: .horizontal) {
+					HStack(spacing: 8) {
+						name(stop, isEndpoint: isEndpoint)
+							.fixedSize()
+						mqttBadge
 					}
-					.font(.system(size: 10, weight: .bold))
-					.foregroundStyle(Color(red: 0.80, green: 0.66, blue: 1.0))
-					.padding(.horizontal, 6)
-					.padding(.vertical, 2)
-					.background(Color.purple.opacity(0.25), in: Capsule())
-					.fixedSize()
+					VStack(alignment: .leading, spacing: 3) {
+						name(stop, isEndpoint: isEndpoint)
+						mqttBadge
+					}
 				}
+			} else {
+				name(stop, isEndpoint: isEndpoint)
 			}
 			Spacer(minLength: 0)
 		}
+	}
+
+	private func name(_ stop: TraceRouteStop, isEndpoint: Bool) -> some View {
+		Text(stop.longName)
+			.font(.system(size: dense ? 14.5 : 15.5, weight: isEndpoint ? .semibold : .regular))
+			.foregroundStyle(stop.isUnknownRepeater ? Style.secondaryText : Style.primaryText)
+			.lineLimit(2)
+			.truncationMode(.tail)
+			.fixedSize(horizontal: false, vertical: true)
+			// A little room above and below a name that wraps, so it doesn't touch the SNR lines.
+			.padding(.vertical, 2)
+	}
+
+	private var mqttBadge: some View {
+		HStack(spacing: 3) {
+			Image(systemName: "network")
+			Text(verbatim: "MQTT")
+		}
+		.font(.system(size: 10, weight: .bold))
+		.foregroundStyle(Color(red: 0.80, green: 0.66, blue: 1.0))
+		.padding(.horizontal, 6)
+		.padding(.vertical, 2)
+		.background(Color.purple.opacity(0.25), in: Capsule())
+		.fixedSize()
 	}
 
 	private func connector(_ stop: TraceRouteStop) -> some View {
