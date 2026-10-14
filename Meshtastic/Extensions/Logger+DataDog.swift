@@ -171,7 +171,7 @@ struct MeshtasticSwiftUIViewsPredicate: SwiftUIRUMViewsPredicate {
 	private static let namedElsewhere: Set<String> = [
 		"AppSettings",
 		"DeviceOnboarding",
-		"HamShackSpace",
+		"ShowcaseSpace",
 		"LoRaConfig",
 		"ShareChannels",
 		"SpatialMapWindow"

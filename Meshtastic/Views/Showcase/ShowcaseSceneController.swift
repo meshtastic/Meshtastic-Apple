@@ -1,5 +1,5 @@
 //
-//  ShackSceneController.swift
+//  ShowcaseSceneController.swift
 //  Meshtastic
 //
 //  Copyright(c) Garth Vander Houwen 10/14/26.
@@ -11,23 +11,23 @@ import RealityKit
 import SwiftUI
 
 /// Marks a device on the desk or a shelf, so a tap on any of its parts finds the node.
-struct ShackNodeComponent: Component {
+struct ShowcaseNodeComponent: Component {
 	let nodeNum: Int64
 }
 
 /// Marks the wall rack's panel; a tap on it is turned into a cell from where it landed.
-struct ShackRackComponent: Component {}
+struct ShowcaseRackComponent: Component {}
 
-/// Owns the shack's entities: the room, the connected radio on the desk, the device showroom on
+/// Owns the showcase's entities: the room, the connected radio on the desk, the device showroom on
 /// the shelves, and the wall rack, whose cells are one mesh colored by a small texture, one texel
-/// per cell. Takes the reader's snapshots, places them with `ShackLayout`, glows senders as
+/// per cell. Takes the reader's snapshots, places them with `ShowcaseLayout`, glows senders as
 /// packets arrive, and keeps the state the control panel and cards show.
 @MainActor @Observable
-final class ShackSceneController {
+final class ShowcaseSceneController {
 	/// Everything that moves with the seated/standing setting: the room and what is in it.
 	@ObservationIgnored let world = Entity()
-	@ObservationIgnored private(set) var room: ShackRoom?
-	@ObservationIgnored private var layout: ShackLayout?
+	@ObservationIgnored private(set) var room: ShowcaseRoom?
+	@ObservationIgnored private var layout: ShowcaseLayout?
 	@ObservationIgnored private var heroes: [Int64: Hero] = [:]
 	@ObservationIgnored private let heroContainer = Entity()
 	@ObservationIgnored private let rackHolder = Entity()
@@ -41,11 +41,11 @@ final class ShackSceneController {
 	@ObservationIgnored var updateSubscription: EventSubscription?
 	@ObservationIgnored private var labelMaterials: [Style: UnlitMaterial] = [:]
 	/// The device models on the shelves.
-	let showroom = ShackShowroomShelves()
-	@ObservationIgnored private var showroomHardware: [ShackHardwareRecord]?
+	let showroom = ShowcaseDisplays()
+	@ObservationIgnored private var showroomHardware: [ShowcaseHardwareRecord]?
 
 	/// The nodes from the last read, by number.
-	private(set) var nodesByNum: [Int64: ShackNodeSnapshot] = [:]
+	private(set) var nodesByNum: [Int64: ShowcaseNodeSnapshot] = [:]
 	/// Every node that isn't ignored, including those past the reader's limit.
 	private(set) var totalCount = 0
 	private(set) var rackPageCount = 1
@@ -77,8 +77,8 @@ final class ShackSceneController {
 		let halo: ModelEntity
 		/// The model shown, or nil for the stand-in box.
 		let modelName: String?
-		var archetype: ShackDeviceArchetype
-		var slot: ShackSlot
+		var archetype: ShowcaseDeviceArchetype
+		var slot: ShowcaseSlot
 		var baseGlow: Float
 		var style: Style
 		/// Top of the device above the desk, in meters.
@@ -91,15 +91,15 @@ final class ShackSceneController {
 	}
 
 	init() {
-		ShackNodeComponent.registerComponent()
-		ShackRackComponent.registerComponent()
-		world.name = "ShackWorld"
+		ShowcaseNodeComponent.registerComponent()
+		ShowcaseRackComponent.registerComponent()
+		world.name = "ShowcaseWorld"
 		heroContainer.name = "Devices"
 		rackHolder.name = "Rack"
 	}
 
 	/// Puts the loaded room in the world and builds the rack for its anchor.
-	func install(room: ShackRoom) {
+	func install(room: ShowcaseRoom) {
 		self.room = room
 		world.addChild(room.root)
 		world.addChild(heroContainer)
@@ -107,8 +107,8 @@ final class ShackSceneController {
 		rackHolder.position = rackPose.position
 		rackHolder.orientation = rackPose.orientation
 		world.addChild(rackHolder)
-		let grid = ShackRackGrid.forRoom(rack: rackPose)
-		layout = ShackLayout(grid: grid)
+		let grid = ShowcaseRackGrid.forRoom(rack: rackPose)
+		layout = ShowcaseLayout(grid: grid)
 		buildRack(grid: grid)
 		world.addChild(showroom.root)
 		if !nodesByNum.isEmpty { relayout(now: Date(), force: true) }
@@ -129,7 +129,7 @@ final class ShackSceneController {
 
 	/// Lets a device or the rack pick up the room's warm environment light, as the room does.
 	private func receiveRoomLight(_ entity: Entity) {
-		guard let light = room?.root.findEntity(named: ShackRoom.environmentLightName) else { return }
+		guard let light = room?.root.findEntity(named: ShowcaseRoom.environmentLightName) else { return }
 		var pending = [entity]
 		while let next = pending.popLast() {
 			if next.components.has(ModelComponent.self) {
@@ -141,7 +141,7 @@ final class ShackSceneController {
 
 	// MARK: Nodes
 
-	func apply(_ result: ShackSnapshotReader.Result, now: Date = Date()) {
+	func apply(_ result: ShowcaseSnapshotReader.Result, now: Date = Date()) {
 		let nodes = Dictionary(result.nodes.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
 		let changed = nodes != nodesByNum
 		if changed { nodesByNum = nodes }
@@ -180,9 +180,9 @@ final class ShackSceneController {
 		refreshRackTexture()
 	}
 
-	private func syncHeroes(layout: ShackLayout, now: Date) {
+	private func syncHeroes(layout: ShowcaseLayout, now: Date) {
 		guard let room else { return }
-		var wanted: [Int64: ShackSlot] = [:]
+		var wanted: [Int64: ShowcaseSlot] = [:]
 		for (num, slot) in layout.slots where slot.tier != .rack {
 			wanted[num] = slot
 		}
@@ -193,14 +193,14 @@ final class ShackSceneController {
 		}
 		for (num, slot) in wanted {
 			guard let node = nodesByNum[num] else { continue }
-			let archetype = ShackDeviceArchetype(hwModel: node.hwModel, role: node.role)
+			let archetype = ShowcaseDeviceArchetype(hwModel: node.hwModel, role: node.role)
 			let modelName = deskModelName(for: node)
 			var hero = heroes[num] ?? makeHero(node, archetype: archetype, modelName: modelName, slot: slot)
 			if hero.archetype != archetype || hero.modelName != modelName {
 				hero.holder.removeFromParent()
 				hero = makeHero(node, archetype: archetype, modelName: modelName, slot: slot)
 			}
-			let pose = ShackPlacement.pose(of: slot, grid: layout.grid, anchor: room.pose)
+			let pose = ShowcasePlacement.pose(of: slot, grid: layout.grid, anchor: room.pose)
 			hero.holder.position = pose.position
 			hero.holder.orientation = pose.orientation
 			hero.slot = slot
@@ -216,14 +216,14 @@ final class ShackSceneController {
 	}
 
 	/// The model for the connected radio's hardware, once it has loaded.
-	private func deskModelName(for node: ShackNodeSnapshot) -> String? {
+	private func deskModelName(for node: ShowcaseNodeSnapshot) -> String? {
 		showroom.modelName(forHardwareSlug: node.hwModel)
 	}
 
-	private func makeHero(_ node: ShackNodeSnapshot, archetype: ShackDeviceArchetype, modelName: String?, slot: ShackSlot) -> Hero {
+	private func makeHero(_ node: ShowcaseNodeSnapshot, archetype: ShowcaseDeviceArchetype, modelName: String?, slot: ShowcaseSlot) -> Hero {
 		let holder = Entity()
 		holder.name = "node-\(node.id)"
-		let halo = ModelEntity(mesh: ShackDeviceMeshes.haloMesh, materials: [UnlitMaterial(color: Self.nodeColor(node.id))])
+		let halo = ModelEntity(mesh: ShowcaseDeviceMeshes.haloMesh, materials: [UnlitMaterial(color: Self.nodeColor(node.id))])
 		halo.position = [0, 0.002, 0]
 		halo.components.set(OpacityComponent(opacity: 0))
 		holder.addChild(halo)
@@ -232,18 +232,18 @@ final class ShackSceneController {
 			// The radio's own model at real size, standing on the desk; it can be picked up too.
 			let device = template.clone(recursive: true)
 			// The clone is the radio, not the shelf's example: its taps open the node's card.
-			device.components.remove(ShackShowroomComponent.self)
-			let height = ShackShowroomShelves.stand(device, in: holder)
-			device.components.set(ShackNodeComponent(nodeNum: node.id))
+			device.components.remove(ShowcaseItemComponent.self)
+			let height = ShowcaseDisplays.stand(device, in: holder)
+			device.components.set(ShowcaseNodeComponent(nodeNum: node.id))
 			device.components.set(Self.accessibility(for: node, isOnline: false))
 			receiveRoomLight(device)
 			return Hero(holder: holder, device: device, label: nil, halo: halo, modelName: modelName, archetype: archetype, slot: slot, baseGlow: 0, style: Style(shortName: node.shortName, isOnline: false), height: height)
 		}
-		let device = ModelEntity(mesh: ShackDeviceMeshes.mesh(for: archetype), materials: [])
+		let device = ModelEntity(mesh: ShowcaseDeviceMeshes.mesh(for: archetype), materials: [])
 		device.components.set(InputTargetComponent())
 		device.components.set(HoverEffectComponent())
-		device.components.set(CollisionComponent.inputTarget([ShackDeviceMeshes.shape(for: archetype)]))
-		device.components.set(ShackNodeComponent(nodeNum: node.id))
+		device.components.set(CollisionComponent.inputTarget([ShowcaseDeviceMeshes.shape(for: archetype)]))
+		device.components.set(ShowcaseNodeComponent(nodeNum: node.id))
 		device.scale = SIMD3(repeating: Self.standInScale)
 		let label = ModelEntity()
 		label.name = "label"
@@ -255,13 +255,13 @@ final class ShackSceneController {
 		return hero
 	}
 
-	private func styleHero(_ hero: inout Hero, node: ShackNodeSnapshot, style: Style) {
+	private func styleHero(_ hero: inout Hero, node: ShowcaseNodeSnapshot, style: Style) {
 		hero.style = style
 		guard let label = hero.label, let device = hero.device as? ModelEntity else { return }
-		device.model?.materials = ShackDeviceMeshes.materials(color: Self.nodeColor(node.id), isOnline: style.isOnline)
+		device.model?.materials = ShowcaseDeviceMeshes.materials(color: Self.nodeColor(node.id), isOnline: style.isOnline)
 		if label.model == nil {
 			let screen = hero.archetype.screen
-			label.model = ModelComponent(mesh: ShackDeviceMeshes.labelMesh(for: hero.archetype), materials: [UnlitMaterial(color: .clear)])
+			label.model = ModelComponent(mesh: ShowcaseDeviceMeshes.labelMesh(for: hero.archetype), materials: [UnlitMaterial(color: .clear)])
 			label.position = screen.center + [0, 0, 0.0008]
 		}
 		Task {
@@ -276,7 +276,7 @@ final class ShackSceneController {
 	/// text mesh, because text meshes leave out emoji, which many short names are.
 	private func labelMaterial(_ style: Style) async -> UnlitMaterial? {
 		if let material = labelMaterials[style] { return material }
-		guard let image = ShackDeviceMeshes.labelImage(style.shortName.isEmpty ? "?" : style.shortName, isOnline: style.isOnline),
+		guard let image = ShowcaseDeviceMeshes.labelImage(style.shortName.isEmpty ? "?" : style.shortName, isOnline: style.isOnline),
 			  let texture = try? await TextureResource(image: image, options: .init(semantic: .color)) else { return nil }
 		var material = UnlitMaterial()
 		material.color = .init(tint: .white, texture: .init(texture))
@@ -285,15 +285,15 @@ final class ShackSceneController {
 		return material
 	}
 
-	private static func accessibility(for node: ShackNodeSnapshot, isOnline: Bool) -> AccessibilityComponent {
+	private static func accessibility(for node: ShowcaseNodeSnapshot, isOnline: Bool) -> AccessibilityComponent {
 		var component = AccessibilityComponent()
 		component.isAccessibilityElement = true
 		component.traits = [.button]
 		component.label = LocalizedStringResource(stringLiteral: node.longName)
 		let heard = node.lastHeard?.lastHeard ?? String(localized: "Never", comment: "Spatial map: node has never been heard")
 		component.value = isOnline
-			? LocalizedStringResource("Online, last heard \(heard)", comment: "Ham shack: VoiceOver value for a radio that is online; the argument is when it was last heard")
-			: LocalizedStringResource("Offline, last heard \(heard)", comment: "Ham shack: VoiceOver value for a radio that is offline; the argument is when it was last heard")
+			? LocalizedStringResource("Online, last heard \(heard)", comment: "Showcase: VoiceOver value for a radio that is online; the argument is when it was last heard")
+			: LocalizedStringResource("Offline, last heard \(heard)", comment: "Showcase: VoiceOver value for a radio that is offline; the argument is when it was last heard")
 		return component
 	}
 
@@ -303,9 +303,9 @@ final class ShackSceneController {
 
 	// MARK: Rack
 
-	private func buildRack(grid: ShackRackGrid) {
-		guard let mesh = try? ShackDeviceMeshes.resource(ShackMeshGeometry.rackCells(grid: grid), name: "rack") else {
-			Logger.services.error("📻 [Shack] The rack mesh could not be built")
+	private func buildRack(grid: ShowcaseRackGrid) {
+		guard let mesh = try? ShowcaseDeviceMeshes.resource(ShowcaseMeshGeometry.rackCells(grid: grid), name: "rack") else {
+			Logger.services.error("📻 [Showcase] The rack mesh could not be built")
 			return
 		}
 		let cells = ModelEntity(mesh: mesh, materials: [SimpleMaterial(color: .darkGray, isMetallic: false)])
@@ -314,7 +314,7 @@ final class ShackSceneController {
 		cells.components.set(CollisionComponent.inputTarget([ShapeResource.generateBox(size: size).offsetBy(translation: [0, 0, 0.015])]))
 		cells.components.set(InputTargetComponent())
 		cells.components.set(HoverEffectComponent(.spotlight(HoverEffectComponent.SpotlightHoverEffectStyle(color: .white, strength: 0.6))))
-		cells.components.set(ShackRackComponent())
+		cells.components.set(ShowcaseRackComponent())
 		rackHolder.addChild(cells)
 		rackCells = cells
 		let haloMesh = MeshResource.generatePlane(width: grid.pitch, height: grid.pitch, cornerRadius: grid.pitch * 0.2)
@@ -340,8 +340,8 @@ final class ShackSceneController {
 		}
 		var ax = AccessibilityComponent()
 		ax.isAccessibilityElement = true
-		ax.label = LocalizedStringResource("Wall rack", comment: "Ham shack: VoiceOver label for the rack of radios on the wall")
-		ax.value = LocalizedStringResource("Page \(page + 1) of \(rackPageCount), \(pageNodes.count) radios", comment: "Ham shack: VoiceOver value for the wall rack; the arguments are the page, the page count and the radios on the page")
+		ax.label = LocalizedStringResource("Wall rack", comment: "Showcase: VoiceOver label for the rack of radios on the wall")
+		ax.value = LocalizedStringResource("Page \(page + 1) of \(rackPageCount), \(pageNodes.count) radios", comment: "Showcase: VoiceOver value for the wall rack; the arguments are the page, the page count and the radios on the page")
 		cells.components.set(ax)
 		guard let image = Self.image(texels, width: grid.columns, height: grid.rows) else { return }
 		Task {
@@ -390,7 +390,7 @@ final class ShackSceneController {
 	// MARK: Showroom
 
 	/// The hardware catalog for the showroom, read by the view; the room may not be in yet.
-	func setShowroomHardware(_ hardware: [ShackHardwareRecord]) async {
+	func setShowroomHardware(_ hardware: [ShowcaseHardwareRecord]) async {
 		showroomHardware = hardware
 		await loadShowroomIfReady()
 	}
@@ -410,8 +410,8 @@ final class ShackSceneController {
 	func node(tappedOn entity: Entity, scenePoint: SIMD3<Float>) -> Int64? {
 		var current: Entity? = entity
 		while let candidate = current {
-			if let component = candidate.components[ShackNodeComponent.self] { return component.nodeNum }
-			if candidate.components.has(ShackRackComponent.self) {
+			if let component = candidate.components[ShowcaseNodeComponent.self] { return component.nodeNum }
+			if candidate.components.has(ShowcaseRackComponent.self) {
 				guard let layout else { return nil }
 				let local = candidate.convert(position: scenePoint, from: nil)
 				guard let cell = layout.grid.cell(at: SIMD2(local.x, local.y)) else { return nil }
@@ -426,13 +426,13 @@ final class ShackSceneController {
 	/// cell. Nil when the node isn't placed or is on another rack page.
 	func cardPosition(for nodeNum: Int64) -> SIMD3<Float>? {
 		guard let layout, let room, let slot = layout.slots[nodeNum] else { return nil }
-		let pose = ShackPlacement.pose(of: slot, grid: layout.grid, anchor: room.pose)
+		let pose = ShowcasePlacement.pose(of: slot, grid: layout.grid, anchor: room.pose)
 		switch slot {
 		case .rack(let index):
 			guard index / layout.grid.perPage == page else { return nil }
 			return pose.position + pose.forward * 0.3
 		case .deskRadio:
-			let top = heroes[nodeNum]?.height ?? ShackDeviceArchetype.generic.height
+			let top = heroes[nodeNum]?.height ?? ShowcaseDeviceArchetype.generic.height
 			return pose.position + [0, top + 0.13, 0] + pose.forward * 0.12
 		}
 	}
@@ -467,7 +467,7 @@ final class ShackSceneController {
 		}
 	}
 
-	private func stepRackHalo(_ num: Int64, cell: Int, grid: ShackRackGrid, value: Float, scale: Float) {
+	private func stepRackHalo(_ num: Int64, cell: Int, grid: ShowcaseRackGrid, value: Float, scale: Float) {
 		let halo: ModelEntity
 		if let existing = rackHaloByNode[num] {
 			halo = existing
@@ -500,14 +500,14 @@ final class ShackSceneController {
 
 /// The device meshes, built once per shape, and their materials.
 @MainActor
-enum ShackDeviceMeshes {
-	private static var meshes: [ShackDeviceArchetype: MeshResource] = [:]
-	private static var shapes: [ShackDeviceArchetype: ShapeResource] = [:]
+enum ShowcaseDeviceMeshes {
+	private static var meshes: [ShowcaseDeviceArchetype: MeshResource] = [:]
+	private static var shapes: [ShowcaseDeviceArchetype: ShapeResource] = [:]
 	static let haloMesh = MeshResource.generatePlane(width: 0.17, depth: 0.17, cornerRadius: 0.085)
-	private static var labelMeshes: [ShackDeviceArchetype: MeshResource] = [:]
+	private static var labelMeshes: [ShowcaseDeviceArchetype: MeshResource] = [:]
 
 	/// A quad covering most of the screen, for the short name.
-	static func labelMesh(for archetype: ShackDeviceArchetype) -> MeshResource {
+	static func labelMesh(for archetype: ShowcaseDeviceArchetype) -> MeshResource {
 		if let mesh = labelMeshes[archetype] { return mesh }
 		let size = archetype.screen.size
 		// The label texture is 2:1; keep its shape inside the screen.
@@ -517,7 +517,7 @@ enum ShackDeviceMeshes {
 		return mesh
 	}
 
-	static func mesh(for archetype: ShackDeviceArchetype) -> MeshResource {
+	static func mesh(for archetype: ShowcaseDeviceArchetype) -> MeshResource {
 		if let mesh = meshes[archetype] { return mesh }
 		let mesh = (try? resource(archetype.geometry, name: "device")) ?? MeshResource.generateBox(size: 0.08)
 		meshes[archetype] = mesh
@@ -525,7 +525,7 @@ enum ShackDeviceMeshes {
 	}
 
 	/// The device's hit box, a little bigger than the device so it is easy to look at.
-	static func shape(for archetype: ShackDeviceArchetype) -> ShapeResource {
+	static func shape(for archetype: ShowcaseDeviceArchetype) -> ShapeResource {
 		if let shape = shapes[archetype] { return shape }
 		let bounds = mesh(for: archetype).bounds
 		let shape = ShapeResource.generateBox(size: bounds.extents + [0.02, 0.01, 0.02]).offsetBy(translation: bounds.center)
@@ -533,9 +533,9 @@ enum ShackDeviceMeshes {
 		return shape
 	}
 
-	/// One descriptor per material, in `ShackMeshGeometry.Material` order.
-	static func resource(_ geometry: ShackMeshGeometry, name: String) throws -> MeshResource {
-		let descriptors = ShackMeshGeometry.Material.allCases.compactMap { material -> MeshDescriptor? in
+	/// One descriptor per material, in `ShowcaseMeshGeometry.Material` order.
+	static func resource(_ geometry: ShowcaseMeshGeometry, name: String) throws -> MeshResource {
+		let descriptors = ShowcaseMeshGeometry.Material.allCases.compactMap { material -> MeshDescriptor? in
 			guard let part = geometry.parts[material] else { return nil }
 			var descriptor = MeshDescriptor(name: "\(name)-\(material)")
 			descriptor.positions = MeshBuffer(part.positions)

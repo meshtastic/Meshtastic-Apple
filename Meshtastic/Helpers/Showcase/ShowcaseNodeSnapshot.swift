@@ -1,5 +1,5 @@
 //
-//  ShackNodeSnapshot.swift
+//  ShowcaseNodeSnapshot.swift
 //  Meshtastic
 //
 //  Copyright(c) Garth Vander Houwen 10/14/26.
@@ -7,9 +7,9 @@
 import Foundation
 @preconcurrency import SwiftData
 
-/// What the ham shack needs to know about one node, copied out of SwiftData so the scene never
+/// What the showcase needs to know about one node, copied out of SwiftData so the scene never
 /// holds a model object. Unlike the spatial map, nodes without a position are included.
-struct ShackNodeSnapshot: Identifiable, Equatable, Sendable {
+struct ShowcaseNodeSnapshot: Identifiable, Equatable, Sendable {
 	let id: Int64
 	let shortName: String
 	let longName: String
@@ -29,9 +29,9 @@ struct ShackNodeSnapshot: Identifiable, Equatable, Sendable {
 	let hasPosition: Bool
 }
 
-/// The order the shack fills its places in: the connected radio, favorites, then everyone else
+/// The order the showcase fills its places in: the connected radio, favorites, then everyone else
 /// by when they were last heard, newest first (so online nodes come before offline ones).
-enum ShackNodeOrdering {
+enum ShowcaseNodeOrdering {
 	static let limit = 500
 
 	struct Key {
@@ -40,7 +40,7 @@ enum ShackNodeOrdering {
 		let lastHeard: Date?
 	}
 
-	/// Indexes into `keys` in shack order, at most `limit` of them.
+	/// Indexes into `keys` in showcase order, at most `limit` of them.
 	static func order(_ keys: [Key], connectedNodeNum: Int64?, limit: Int = limit) -> [Int] {
 		let sorted = keys.indices.sorted { lhs, rhs in
 			let left = keys[lhs], right = keys[rhs]
@@ -58,27 +58,27 @@ enum ShackNodeOrdering {
 	}
 }
 
-/// Reads the shack's nodes on its own context, off the main actor. One fetch of every node that
+/// Reads the showcase's nodes on its own context, off the main actor. One fetch of every node that
 /// isn't ignored; only the nodes that make the cut have their user and position read.
 @ModelActor
-actor ShackSnapshotReader {
+actor ShowcaseSnapshotReader {
 	struct Result: Equatable, Sendable {
-		let nodes: [ShackNodeSnapshot]
+		let nodes: [ShowcaseNodeSnapshot]
 		/// Every node that isn't ignored, including those past the limit.
 		let totalCount: Int
 	}
 
-	func read(connectedNodeNum: Int64?, limit: Int = ShackNodeOrdering.limit, now: Date = Date()) -> Result {
+	func read(connectedNodeNum: Int64?, limit: Int = ShowcaseNodeOrdering.limit, now: Date = Date()) -> Result {
 		let descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.ignored == false })
 		let fetched = ((try? modelContext.fetch(descriptor)) ?? []).filter { $0.modelContext != nil && !$0.isDeleted }
-		let keys = fetched.map { ShackNodeOrdering.Key(num: $0.num, isFavorite: $0.favorite, lastHeard: $0.lastHeard) }
-		let order = ShackNodeOrdering.order(keys, connectedNodeNum: connectedNodeNum, limit: limit)
-		let onlineSince = now.addingTimeInterval(-ShackLayout.onlineWindow)
-		let nodes = order.map { index -> ShackNodeSnapshot in
+		let keys = fetched.map { ShowcaseNodeOrdering.Key(num: $0.num, isFavorite: $0.favorite, lastHeard: $0.lastHeard) }
+		let order = ShowcaseNodeOrdering.order(keys, connectedNodeNum: connectedNodeNum, limit: limit)
+		let onlineSince = now.addingTimeInterval(-ShowcaseLayout.onlineWindow)
+		let nodes = order.map { index -> ShowcaseNodeSnapshot in
 			let node = fetched[index]
 			let user = node.user
 			let cached = node.latestPositionCache
-			return ShackNodeSnapshot(
+			return ShowcaseNodeSnapshot(
 				id: node.num,
 				shortName: user?.shortName ?? "?",
 				longName: user?.longName ?? node.num.toHex(),

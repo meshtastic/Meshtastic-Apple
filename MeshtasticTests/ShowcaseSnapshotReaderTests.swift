@@ -1,5 +1,5 @@
 //
-//  ShackSnapshotReaderTests.swift
+//  ShowcaseSnapshotReaderTests.swift
 //  MeshtasticTests
 //
 //  Copyright(c) Garth Vander Houwen 10/14/26.
@@ -10,8 +10,8 @@ import simd
 import Testing
 @testable import Meshtastic
 
-@Suite("Ham shack snapshot reader")
-struct ShackSnapshotReaderTests {
+@Suite("Showcase snapshot reader")
+struct ShowcaseSnapshotReaderTests {
 
 	private static let now = Date(timeIntervalSince1970: 2_000_000_000)
 
@@ -63,7 +63,7 @@ struct ShackSnapshotReaderTests {
 		seed(context, num: 6, heardAgo: 3 * 60 * 60)
 		try context.save()
 
-		let reader = ShackSnapshotReader(modelContainer: container)
+		let reader = ShowcaseSnapshotReader(modelContainer: container)
 		let result = await reader.read(connectedNodeNum: 6, now: Self.now)
 		#expect(result.nodes.map(\.id) == [6, 3, 2, 1, 5])
 		#expect(result.totalCount == 5)
@@ -88,7 +88,7 @@ struct ShackSnapshotReaderTests {
 		}
 		try context.save()
 
-		let reader = ShackSnapshotReader(modelContainer: container)
+		let reader = ShowcaseSnapshotReader(modelContainer: container)
 		let result = await reader.read(connectedNodeNum: 19, limit: 5, now: Self.now)
 		#expect(result.nodes.map(\.id) == [19, 20, 1, 2, 3])
 		#expect(result.totalCount == 20)
@@ -96,34 +96,34 @@ struct ShackSnapshotReaderTests {
 
 	@Test("Device shapes come from the role first, then the hardware name")
 	func archetypes() {
-		#expect(ShackDeviceArchetype(hwModel: "TBEAM", role: .router) == .enclosure)
-		#expect(ShackDeviceArchetype(hwModel: "T_ECHO", role: .client) == .handheld)
-		#expect(ShackDeviceArchetype(hwModel: "TECHO", role: nil) == .handheld)
-		#expect(ShackDeviceArchetype(hwModel: "HELTEC_WIRELESS_TRACKER", role: nil) == .handheld)
-		#expect(ShackDeviceArchetype(hwModel: "HELTECV3", role: .client) == .board)
-		#expect(ShackDeviceArchetype(hwModel: "STATION_G2", role: .client) == .enclosure)
-		#expect(ShackDeviceArchetype(hwModel: "UNSET", role: nil) == .generic)
-		#expect(ShackDeviceArchetype(hwModel: nil, role: nil) == .generic)
+		#expect(ShowcaseDeviceArchetype(hwModel: "TBEAM", role: .router) == .enclosure)
+		#expect(ShowcaseDeviceArchetype(hwModel: "T_ECHO", role: .client) == .handheld)
+		#expect(ShowcaseDeviceArchetype(hwModel: "TECHO", role: nil) == .handheld)
+		#expect(ShowcaseDeviceArchetype(hwModel: "HELTEC_WIRELESS_TRACKER", role: nil) == .handheld)
+		#expect(ShowcaseDeviceArchetype(hwModel: "HELTECV3", role: .client) == .board)
+		#expect(ShowcaseDeviceArchetype(hwModel: "STATION_G2", role: .client) == .enclosure)
+		#expect(ShowcaseDeviceArchetype(hwModel: "UNSET", role: nil) == .generic)
+		#expect(ShowcaseDeviceArchetype(hwModel: nil, role: nil) == .generic)
 	}
 
 	@Test("Device and rack meshes face outward and stay small")
 	func meshes() {
-		for archetype in ShackDeviceArchetype.allCases {
+		for archetype in ShowcaseDeviceArchetype.allCases {
 			let mesh = archetype.geometry
 			#expect(mesh.triangleCount < 300)
-			#expect(mesh.parts.count == ShackMeshGeometry.Material.allCases.count)
+			#expect(mesh.parts.count == ShowcaseMeshGeometry.Material.allCases.count)
 			expectOutward(mesh)
 		}
-		let grid = ShackRackGrid.forRoom(rack: ShackRoomGeometry.defaultPose(.wallRack))
-		let rack = ShackMeshGeometry.rackCells(grid: grid)
+		let grid = ShowcaseRackGrid.forRoom(rack: ShowcaseRoomGeometry.defaultPose(.wallRack))
+		let rack = ShowcaseMeshGeometry.rackCells(grid: grid)
 		#expect(rack.triangleCount == grid.perPage * 12)
 		expectOutward(rack)
-		let texel = ShackMeshGeometry.rackTexel(0, grid: grid)
+		let texel = ShowcaseMeshGeometry.rackTexel(0, grid: grid)
 		#expect(texel.y > 0.9)
 	}
 
 	/// Every triangle winds counterclockwise seen from the side its normals face.
-	private func expectOutward(_ mesh: ShackMeshGeometry) {
+	private func expectOutward(_ mesh: ShowcaseMeshGeometry) {
 		for part in mesh.parts.values {
 			for triangle in stride(from: 0, to: part.indices.count, by: 3) {
 				let a = part.positions[Int(part.indices[triangle])]

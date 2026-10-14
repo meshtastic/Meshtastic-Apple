@@ -1,7 +1,7 @@
 #usda 1.0
 (
     defaultPrim = "Root"
-    doc = """The ham shack room for the visionOS immersive space. Our own asset, written by hand.
+    doc = """The showcase room for the visionOS immersive space. Our own asset, written by hand.
 
     Units are meters, Y is up. The origin is on the floor where the viewer sits, facing -Z.
     The desk and its shelf hutch stand against the back wall (z = -1.3), the window is in the
@@ -11,8 +11,8 @@
     Shapes are unit cubes scaled to size, plus a few cylinders and one textured quad for the
     sky. Lights are added in code at Anchor_Lamp.
 
-    The Anchor_* prims are empty and are read by name in ShackRoom.load(). Their local +Z points
-    out of the surface toward the viewer, and +Y is up. Keep ShackRoomGeometry.swift in step
+    The Anchor_* prims are empty and are read by name in ShowcaseRoom.load(). Their local +Z points
+    out of the surface toward the viewer, and +Y is up. Keep ShowcaseRoomGeometry.swift in step
     when one moves."""
     metersPerUnit = 1
     upAxis = "Y"

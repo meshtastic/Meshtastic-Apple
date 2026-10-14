@@ -1,5 +1,5 @@
 //
-//  ShackPanels.swift
+//  ShowcasePanels.swift
 //  Meshtastic
 //
 //  Copyright(c) Garth Vander Houwen 10/14/26.
@@ -8,8 +8,8 @@
 import SwiftUI
 
 /// The card for a tapped radio. Reads only the snapshot, never SwiftData.
-struct ShackNodeCard: View {
-	let node: ShackNodeSnapshot
+struct ShowcaseNodeCard: View {
+	let node: ShowcaseNodeSnapshot
 	let isOnline: Bool
 	let preset: ModemPresets
 	let onOpen: () -> Void
@@ -18,7 +18,7 @@ struct ShackNodeCard: View {
 	var body: some View {
 		VStack(alignment: .leading, spacing: 8) {
 			HStack(spacing: 10) {
-				CircleText(text: node.shortName, color: Color(ShackSceneController.nodeColor(node.id)), circleSize: 36)
+				CircleText(text: node.shortName, color: Color(ShowcaseSceneController.nodeColor(node.id)), circleSize: 36)
 				VStack(alignment: .leading, spacing: 2) {
 					Text(node.longName)
 						.font(.headline)
@@ -82,7 +82,7 @@ struct ShackNodeCard: View {
 			.font(.caption)
 			.foregroundStyle(.secondary)
 			Button(action: onOpen) {
-				Label(String(localized: "Open in App", comment: "Ham shack card: show this node's detail screen in the main window"), systemImage: "arrow.up.forward.app")
+				Label(String(localized: "Open in App", comment: "Showcase card: show this node's detail screen in the main window"), systemImage: "arrow.up.forward.app")
 			}
 			.font(.caption)
 			.buttonStyle(.bordered)
@@ -95,13 +95,13 @@ struct ShackNodeCard: View {
 	private var hardware: String {
 		if let name = node.hardwareName, !name.isEmpty, name != "UNSET" { return name }
 		if let model = node.hwModel, !model.isEmpty, model != "UNSET" { return model }
-		return String(localized: "Unknown hardware", comment: "Ham shack card: the node hasn't said what hardware it is")
+		return String(localized: "Unknown hardware", comment: "Showcase card: the node hasn't said what hardware it is")
 	}
 }
 
 /// The card for a model on the shelf: what it is, who makes it, and where to buy one. The model is
 /// an example of the device, not a node on the mesh.
-struct ShackModelCard: View {
+struct ShowcaseModelCard: View {
 	struct Link: Identifiable, Equatable {
 		let id: String
 		let title: String
@@ -110,7 +110,7 @@ struct ShackModelCard: View {
 		let url: URL
 	}
 
-	let item: ShackShowroomItem
+	let item: ShowcaseItem
 	let links: [Link]
 	let onClose: () -> Void
 
@@ -120,7 +120,7 @@ struct ShackModelCard: View {
 				VStack(alignment: .leading, spacing: 2) {
 					Text(item.title)
 						.font(.headline)
-					Text("Made by \(item.vendor.rawValue)", comment: "Ham shack model card: the device's maker")
+					Text("Made by \(item.vendor.rawValue)", comment: "Showcase model card: the device's maker")
 						.font(.caption)
 						.foregroundStyle(.secondary)
 				}
@@ -132,15 +132,15 @@ struct ShackModelCard: View {
 				.accessibilityLabel(String(localized: "Close"))
 			}
 			if item.deviceNames.count > 1 {
-				Text("Also: \(item.deviceNames.dropFirst().formatted(.list(type: .and)))", comment: "Ham shack model card: other devices drawn with the same model; the argument is a list of device names")
+				Text("Also: \(item.deviceNames.dropFirst().formatted(.list(type: .and)))", comment: "Showcase model card: other devices drawn with the same model; the argument is a list of device names")
 					.font(.caption)
 					.foregroundStyle(.secondary)
 			}
-			Label(String(localized: "Pinch and hold to pick it up. It's real size.", comment: "Ham shack model card: how to hold the model"), systemImage: "hand.pinch")
+			Label(String(localized: "Pinch and hold to pick it up. It's real size.", comment: "Showcase model card: how to hold the model"), systemImage: "hand.pinch")
 				.font(.caption)
 			if !links.isEmpty {
 				VStack(alignment: .leading, spacing: 6) {
-					Text("Where to buy", comment: "Ham shack model card: heading for the purchase links")
+					Text("Where to buy", comment: "Showcase model card: heading for the purchase links")
 						.font(.caption.weight(.semibold))
 					ForEach(links) { link in
 						SwiftUI.Link(destination: link.url) {
@@ -155,7 +155,7 @@ struct ShackModelCard: View {
 						.foregroundStyle(.secondary)
 				}
 			}
-			Text("3D model © Meshtastic LLC. The product and its name, logos and marks belong to \(item.vendor.rawValue).", comment: "Ham shack model card: who owns the model and who owns the product; the argument is the maker")
+			Text("3D model © Meshtastic LLC. The product and its name, logos and marks belong to \(item.vendor.rawValue).", comment: "Showcase model card: who owns the model and who owns the product; the argument is the maker")
 				.font(.caption2)
 				.foregroundStyle(.tertiary)
 		}
@@ -167,8 +167,8 @@ struct ShackModelCard: View {
 
 /// The panel by the desk: how many radios are on the rack, its pages, seated or standing, and the
 /// way out.
-struct ShackControlPanel: View {
-	let scene: ShackSceneController
+struct ShowcaseControlPanel: View {
+	let scene: ShowcaseSceneController
 	@Binding var seated: Bool
 	let onLeave: () -> Void
 
@@ -183,21 +183,21 @@ struct ShackControlPanel: View {
 	var body: some View {
 		VStack(spacing: 10) {
 			HStack {
-				Label(String(localized: "Ham Shack", comment: "Ham shack: title of the immersive space's control panel"), systemImage: "radio")
+				Label(String(localized: "Hardware Showcase", comment: "Showcase: title of the immersive space's control panel"), systemImage: "radio")
 					.font(.headline)
 				Spacer(minLength: 12)
 				Button(role: .cancel, action: onLeave) {
-					Label(String(localized: "Leave", comment: "Ham shack: close the immersive space"), systemImage: "door.left.hand.open")
+					Label(String(localized: "Leave", comment: "Showcase: close the immersive space"), systemImage: "door.left.hand.open")
 				}
 			}
 			HStack(spacing: 6) {
-				Text("\(scene.nodesByNum.count) radios", comment: "Ham shack: how many radios are in the room")
+				Text("\(scene.nodesByNum.count) radios", comment: "Showcase: how many radios are in the room")
 				if scene.overflowCount > 0 {
-					Text("· \(scene.overflowCount) not shown", comment: "Ham shack: radios with no place in the room")
+					Text("· \(scene.overflowCount) not shown", comment: "Showcase: radios with no place in the room")
 						.foregroundStyle(.secondary)
 				}
 				if !scene.hasConnectedRadio {
-					Text("· No radio connected", comment: "Ham shack: the desk has no connected radio on it")
+					Text("· No radio connected", comment: "Showcase: the desk has no connected radio on it")
 						.foregroundStyle(.secondary)
 				}
 				Spacer(minLength: 0)
@@ -211,8 +211,8 @@ struct ShackControlPanel: View {
 						Image(systemName: "chevron.left")
 					}
 					.disabled(scene.page == 0)
-					.accessibilityLabel(String(localized: "Previous rack page", comment: "Ham shack: show the previous page of the wall rack"))
-					Text("Rack page \(scene.page + 1) of \(scene.rackPageCount)", comment: "Ham shack: which page of the wall rack is showing")
+					.accessibilityLabel(String(localized: "Previous rack page", comment: "Showcase: show the previous page of the wall rack"))
+					Text("Rack page \(scene.page + 1) of \(scene.rackPageCount)", comment: "Showcase: which page of the wall rack is showing")
 						.font(.caption)
 						.monospacedDigit()
 						.frame(maxWidth: .infinity)
@@ -222,12 +222,12 @@ struct ShackControlPanel: View {
 						Image(systemName: "chevron.right")
 					}
 					.disabled(scene.page >= scene.rackPageCount - 1)
-					.accessibilityLabel(String(localized: "Next rack page", comment: "Ham shack: show the next page of the wall rack"))
+					.accessibilityLabel(String(localized: "Next rack page", comment: "Showcase: show the next page of the wall rack"))
 				}
 			}
-			Picker(String(localized: "Position", comment: "Ham shack: whether the viewer is sitting or standing"), selection: posture) {
-				Text("Seated", comment: "Ham shack: the viewer is sitting in the chair").tag(Posture.seated)
-				Text("Standing", comment: "Ham shack: the viewer is standing").tag(Posture.standing)
+			Picker(String(localized: "Position", comment: "Showcase: whether the viewer is sitting or standing"), selection: posture) {
+				Text("Seated", comment: "Showcase: the viewer is sitting in the chair").tag(Posture.seated)
+				Text("Standing", comment: "Showcase: the viewer is standing").tag(Posture.standing)
 			}
 			.pickerStyle(.segmented)
 		}

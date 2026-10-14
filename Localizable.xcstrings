@@ -311,7 +311,7 @@
       }
     },
     "%lld radios" : {
-      "comment" : "Ham shack: how many radios are in the room",
+      "comment" : "Showcase: how many radios are in the room",
       "localizations" : {
         "en" : {
           "variations" : {
@@ -333,50 +333,50 @@
         }
       }
     },
-    "Enter Shack" : {
-      "comment" : "Spatial map: open the ham shack immersive space, closing this volume"
+    "Enter Showcase" : {
+      "comment" : "Spatial map: open the showcase immersive space, closing this volume"
     },
-    "Ham Shack" : {
-      "comment" : "Ham shack: title of the immersive space's control panel"
+    "Hardware Showcase" : {
+      "comment" : "Showcase: title of the immersive space's control panel"
     },
     "Leave" : {
-      "comment" : "Ham shack: close the immersive space"
+      "comment" : "Showcase: close the immersive space"
     },
     "Next rack page" : {
-      "comment" : "Ham shack: show the next page of the wall rack"
+      "comment" : "Showcase: show the next page of the wall rack"
     },
     "Offline, last heard %@" : {
-      "comment" : "Ham shack: VoiceOver value for a radio that is offline; the argument is when it was last heard"
+      "comment" : "Showcase: VoiceOver value for a radio that is offline; the argument is when it was last heard"
     },
     "Online, last heard %@" : {
-      "comment" : "Ham shack: VoiceOver value for a radio that is online; the argument is when it was last heard"
+      "comment" : "Showcase: VoiceOver value for a radio that is online; the argument is when it was last heard"
     },
     "Open in App" : {
-      "comment" : "Ham shack card: show this node's detail screen in the main window"
+      "comment" : "Showcase card: show this node's detail screen in the main window"
     },
     "Page %lld of %lld, %lld radios" : {
-      "comment" : "Ham shack: VoiceOver value for the wall rack; the arguments are the page, the page count and the radios on the page"
+      "comment" : "Showcase: VoiceOver value for the wall rack; the arguments are the page, the page count and the radios on the page"
     },
     "Previous rack page" : {
-      "comment" : "Ham shack: show the previous page of the wall rack"
+      "comment" : "Showcase: show the previous page of the wall rack"
     },
     "Rack page %lld of %lld" : {
-      "comment" : "Ham shack: which page of the wall rack is showing"
+      "comment" : "Showcase: which page of the wall rack is showing"
     },
     "Seated" : {
-      "comment" : "Ham shack: the viewer is sitting in the chair"
+      "comment" : "Showcase: the viewer is sitting in the chair"
     },
     "Standing" : {
-      "comment" : "Ham shack: the viewer is standing"
+      "comment" : "Showcase: the viewer is standing"
     },
     "Unknown hardware" : {
-      "comment" : "Ham shack card: the node hasn't said what hardware it is"
+      "comment" : "Showcase card: the node hasn't said what hardware it is"
     },
     "Wall rack" : {
-      "comment" : "Ham shack: VoiceOver label for the rack of radios on the wall"
+      "comment" : "Showcase: VoiceOver label for the rack of radios on the wall"
     },
     "· %lld not shown" : {
-      "comment" : "Ham shack: radios with no place in the room"
+      "comment" : "Showcase: radios with no place in the room"
     },
     "· %lld outside" : {
       "comment" : "Spatial map: nodes too far away to fit on the terrain",
@@ -6683,7 +6683,7 @@
       }
     },
     "· No radio connected" : {
-      "comment" : "Ham shack: the desk has no connected radio on it"
+      "comment" : "Showcase: the desk has no connected radio on it"
     },
     "—" : {
       "localizations" : {

@@ -1,5 +1,5 @@
 //
-//  HamShackSpace.swift
+//  ShowcaseSpace.swift
 //  Meshtastic
 //
 //  Copyright(c) Garth Vander Houwen 10/14/26.
@@ -10,11 +10,11 @@ import RealityKit
 import SwiftData
 import SwiftUI
 
-/// Root of the ham shack immersive space: the room with the viewer's seat at the origin, the
+/// Root of the showcase immersive space: the room with the viewer's seat at the origin, the
 /// connected radio on the desk, the mesh on the wall rack, a showroom of device models on the
 /// shelves, the control panel by the desk, and the card for whatever was tapped. Reads the nodes
 /// every few seconds and closes itself when the app goes to the background.
-struct HamShackSpace: View {
+struct ShowcaseSpace: View {
 	@EnvironmentObject private var appState: AppState
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 	@Environment(\.modelContext) private var context
@@ -22,8 +22,8 @@ struct HamShackSpace: View {
 	@Environment(\.dismissImmersiveSpace) private var dismissImmersiveSpace
 	@Environment(\.openWindow) private var openWindow
 	@Environment(\.accessibilityReduceMotion) private var reduceMotion
-	@AppStorage("hamShackSeated") private var seated = true
-	@State private var scene = ShackSceneController()
+	@AppStorage("showcaseSeated") private var seated = true
+	@State private var scene = ShowcaseSceneController()
 	@Query(sort: [SortDescriptor(\DeviceLinkEntity.shortCode)]) private var deviceLinks: [DeviceLinkEntity]
 
 	static let refreshInterval: Duration = .seconds(5)
@@ -32,7 +32,7 @@ struct HamShackSpace: View {
 
 	var body: some View {
 		RealityView { content, attachments in
-			let room = await ShackRoom.load()
+			let room = await ShowcaseRoom.load()
 			scene.install(room: room)
 			scene.setSeated(seated)
 			content.add(scene.world)
@@ -52,13 +52,13 @@ struct HamShackSpace: View {
 			placeItemCard(attachments.entity(for: Attachments.itemCard))
 		} attachments: {
 			Attachment(id: Attachments.controls) {
-				ShackControlPanel(scene: scene, seated: $seated) {
+				ShowcaseControlPanel(scene: scene, seated: $seated) {
 					Task { await dismissImmersiveSpace() }
 				}
 			}
 			if let selected = scene.selected, let node = scene.nodesByNum[selected] {
 				Attachment(id: Attachments.card) {
-					ShackNodeCard(node: node, isOnline: scene.isOnline(selected), preset: preset) {
+					ShowcaseNodeCard(node: node, isOnline: scene.isOnline(selected), preset: preset) {
 						showInMainWindow(node.id)
 					} onClose: {
 						scene.selected = nil
@@ -67,7 +67,7 @@ struct HamShackSpace: View {
 			}
 			if let id = scene.selectedItem, let item = scene.showroom.items.first(where: { $0.id == id }) {
 				Attachment(id: Attachments.itemCard) {
-					ShackModelCard(item: item, links: links(for: item)) {
+					ShowcaseModelCard(item: item, links: links(for: item)) {
 						scene.selectedItem = nil
 					}
 				}
@@ -76,13 +76,13 @@ struct HamShackSpace: View {
 		.gesture(tap)
 		.task {
 			// The context is read here, not in the RealityView's make, where SwiftData traps.
-			let hardware = await ShackShowroomCatalog.hardware(in: context.container)
+			let hardware = await ShowcaseCatalog.hardware(in: context.container)
 			await scene.setShowroomHardware(hardware)
 		}
 		.task(id: accessoryManager.activeDeviceNum) {
 			// Made off the main thread: a model actor made on it runs its fetches there too.
 			let container = context.container
-			let reader = await Task.detached { ShackSnapshotReader(modelContainer: container) }.value
+			let reader = await Task.detached { ShowcaseSnapshotReader(modelContainer: container) }.value
 			while !Task.isCancelled {
 				let result = await reader.read(connectedNodeNum: accessoryManager.activeDeviceNum)
 				scene.apply(result)
@@ -102,18 +102,18 @@ struct HamShackSpace: View {
 			scene.setSeated(isSeated)
 		}
 		.onAppear {
-			appState.hamShackOpen = true
+			appState.showcaseOpen = true
 			scene.preset = preset
 		}
 		.onDisappear {
-			appState.hamShackOpen = false
+			appState.showcaseOpen = false
 		}
 		.onChange(of: scenePhase) { _, phase in
 			if phase == .background {
 				Task { await dismissImmersiveSpace() }
 			}
 		}
-		.trackScreen(.hamShack)
+		.trackScreen(.showcase)
 	}
 
 	private enum Attachments {
@@ -140,7 +140,7 @@ struct HamShackSpace: View {
 	/// Higher when standing, where the viewer is also further back in the world.
 	private func placeControls(_ panel: Entity) {
 		let position = SIMD3<Float>(-0.4, seated ? 0.95 : 1.25, -0.4)
-		let eye = ShackRoomGeometry.seatedEye + (seated ? .zero : SIMD3<Float>(0, 0.4, ShackSceneController.standingSetback))
+		let eye = ShowcaseRoomGeometry.seatedEye + (seated ? .zero : SIMD3<Float>(0, 0.4, ShowcaseSceneController.standingSetback))
 		panel.look(at: eye, from: position, relativeTo: scene.world, forward: .positiveZ)
 	}
 
@@ -174,7 +174,7 @@ struct HamShackSpace: View {
 
 	/// Where to buy the model's devices: the maker's own links first, then shops that ship to the
 	/// viewer's region, as on a node's detail screen.
-	private func links(for item: ShackShowroomItem) -> [ShackModelCard.Link] {
+	private func links(for item: ShowcaseItem) -> [ShowcaseModelCard.Link] {
 		let region = Locale.current.region?.identifier ?? ""
 		return deviceLinks
 			.filter { link in item.targets.contains { link.isVisible(forTarget: $0, userRegion: region) } }
@@ -184,7 +184,7 @@ struct HamShackSpace: View {
 			}
 			.compactMap { link in
 				URL(string: "https://msh.to/\(link.shortCode)").map {
-					ShackModelCard.Link(id: link.shortCode, title: link.linkDescription ?? link.shortCode, isVendor: link.isVendor, url: $0)
+					ShowcaseModelCard.Link(id: link.shortCode, title: link.linkDescription ?? link.shortCode, isVendor: link.isVendor, url: $0)
 				}
 			}
 	}
