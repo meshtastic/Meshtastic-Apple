@@ -40,6 +40,8 @@ enum TraceRouteShareRenderer {
 		if let map = model.map {
 			mapImage = await snapshot(rect: map.rect, size: map.size)
 		}
+		// The screen closed or the route changed while the map was loading.
+		guard !Task.isCancelled else { return nil }
 		return image(model: model, mapImage: mapImage)
 	}
 
