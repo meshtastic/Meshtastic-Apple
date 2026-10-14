@@ -52,26 +52,8 @@ struct ShowcaseRoom {
 			Logger.services.warning("📻 [Showcase] Room is missing anchors: \(resolved.missing.map(\.rawValue).joined(separator: ", "), privacy: .public)")
 		}
 		let room = ShowcaseRoom(root: root, anchors: resolved.poses, missingAnchors: resolved.missing, loadedAsset: loadedAsset)
-		room.drawSkyUnlit()
 		await room.addLighting()
 		return room
-	}
-
-	// MARK: Materials
-
-	/// The sky outside the window keeps its own colors, whatever the lamp does.
-	private func drawSkyUnlit() {
-		guard let sky = root.findEntity(named: "Sky") else { return }
-		for entity in Self.modelEntities(in: sky) {
-			guard var model = entity.components[ModelComponent.self] else { continue }
-			model.materials = model.materials.map { material in
-				guard let texture = (material as? PhysicallyBasedMaterial)?.baseColor.texture else { return material }
-				var unlit = UnlitMaterial()
-				unlit.color = .init(tint: .white, texture: texture)
-				return unlit
-			}
-			entity.components.set(model)
-		}
 	}
 
 	// MARK: Lighting
@@ -79,46 +61,39 @@ struct ShowcaseRoom {
 	/// The entity carrying the room's image-based light; things added later receive it too.
 	static let environmentLightName = "ShowcaseEnvironment"
 
-	private static let lampColor = UIColor(red: 1.0, green: 0.78, blue: 0.52, alpha: 1)
+	private static let storeWhite = UIColor(red: 1.0, green: 0.97, blue: 0.93, alpha: 1)
 
-	/// A warm point light at the lamp's bulb, a spot from the lamp onto the desk with shadows, a
-	/// dim fill from behind the viewer, and a warm environment for reflections.
+	/// Bright, even store light: a soft key from overhead that casts the models' shadows on the
+	/// tables, a light over each table, and a white room for reflections.
 	private func addLighting() async {
-		let lamp = pose(.lamp)
+		let key = Entity()
+		key.name = "KeyLight"
+		root.addChild(key)
+		key.look(at: pose(.tableFront).position, from: SIMD3<Float>(-0.6, 2.7, 0.4), relativeTo: root)
+		key.components.set(DirectionalLightComponent(color: Self.storeWhite, intensity: 1300))
+		key.components.set(DirectionalLightComponent.Shadow(maximumDistance: 4, depthBias: 2))
 
-		let bulb = Entity()
-		bulb.name = "LampLight"
-		bulb.position = lamp.position
-		bulb.components.set(PointLightComponent(color: Self.lampColor, intensity: 2200, attenuationRadius: 4))
-		root.addChild(bulb)
-
-		let spot = Entity()
-		spot.name = "LampSpot"
-		root.addChild(spot)
-		let target = pose(.deskMap).position + SIMD3<Float>(0.1, 0, 0.05)
-		spot.look(at: target, from: lamp.position, relativeTo: root)
-		spot.components.set(SpotLightComponent(color: Self.lampColor, intensity: 5000, innerAngleInDegrees: 50, outerAngleInDegrees: 110, attenuationRadius: 3))
-		spot.components.set(SpotLightComponent.Shadow())
-
-		let fill = Entity()
-		fill.name = "CeilingFill"
-		fill.position = SIMD3<Float>(0.2, 1.9, 0.8)
-		fill.components.set(PointLightComponent(color: UIColor(red: 1.0, green: 0.86, blue: 0.70, alpha: 1), intensity: 700, attenuationRadius: 5))
-		root.addChild(fill)
+		for (name, anchor) in [("FrontTableLight", ShowcaseAnchor.tableFront), ("BackTableLight", .tableBack)] {
+			let light = Entity()
+			light.name = name
+			light.position = pose(anchor).position + SIMD3<Float>(0, 1.6, 0.1)
+			light.components.set(PointLightComponent(color: Self.storeWhite, intensity: 4500, attenuationRadius: 4))
+			root.addChild(light)
+		}
 
 		guard let image = Self.environmentImage(),
 			  let environment = try? await EnvironmentResource(equirectangular: image, withName: "ShowcaseEnvironment") else { return }
 		let light = Entity()
 		light.name = Self.environmentLightName
-		light.components.set(ImageBasedLightComponent(source: .single(environment), intensityExponent: -1.5))
+		light.components.set(ImageBasedLightComponent(source: .single(environment), intensityExponent: 0))
 		root.addChild(light)
 		for entity in Self.modelEntities(in: root) {
 			entity.components.set(ImageBasedLightReceiverComponent(imageBasedLight: light))
 		}
 	}
 
-	/// A small equirectangular image of a warm, dim room: lamp-lit walls around the horizon, a
-	/// darker ceiling, and the floor's brown below.
+	/// A small equirectangular image of a bright white room: a glowing ceiling, white walls around
+	/// the horizon, and the pale floor below.
 	private static func environmentImage() -> CGImage? {
 		let width = 64, height = 32
 		let renderer = UIGraphicsImageRenderer(size: CGSize(width: width, height: height), format: {
@@ -128,12 +103,12 @@ struct ShowcaseRoom {
 		}())
 		let image = renderer.image { context in
 			let colors = [
-				UIColor(red: 0.30, green: 0.26, blue: 0.22, alpha: 1).cgColor,
-				UIColor(red: 0.85, green: 0.66, blue: 0.45, alpha: 1).cgColor,
-				UIColor(red: 0.62, green: 0.46, blue: 0.32, alpha: 1).cgColor,
-				UIColor(red: 0.20, green: 0.12, blue: 0.07, alpha: 1).cgColor
+				UIColor(white: 1.0, alpha: 1).cgColor,
+				UIColor(white: 0.93, alpha: 1).cgColor,
+				UIColor(white: 0.88, alpha: 1).cgColor,
+				UIColor(red: 0.74, green: 0.72, blue: 0.68, alpha: 1).cgColor
 			] as CFArray
-			guard let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: colors, locations: [0, 0.45, 0.55, 1]) else { return }
+			guard let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: colors, locations: [0, 0.4, 0.55, 1]) else { return }
 			context.cgContext.drawLinearGradient(gradient, start: .zero, end: CGPoint(x: 0, y: height), options: [])
 		}
 		return image.cgImage
@@ -149,29 +124,33 @@ struct ShowcaseRoom {
 		return result
 	}
 
-	/// A plain floor, back wall and desk at the asset's measurements, for when Showcase.usda fails
-	/// to load, so the showcase still has somewhere to put things.
+	/// A plain floor, back wall and the two display tables at the asset's measurements, for when
+	/// Showcase.usda fails to load, so the showcase still has somewhere to put things.
 	private static func standInRoom() -> Entity {
 		let room = Entity()
 		room.name = "StandInRoom"
+		let depth = -ShowcaseRoomGeometry.backWallZ + 1
 		let floor = ModelEntity(
-			mesh: .generateBox(width: ShowcaseRoomGeometry.width, height: 0.02, depth: ShowcaseRoomGeometry.width),
-			materials: [SimpleMaterial(color: UIColor(red: 0.36, green: 0.22, blue: 0.12, alpha: 1), roughness: 0.6, isMetallic: false)]
+			mesh: .generateBox(width: ShowcaseRoomGeometry.width, height: 0.02, depth: depth),
+			materials: [SimpleMaterial(color: UIColor(red: 0.80, green: 0.78, blue: 0.74, alpha: 1), roughness: 0.35, isMetallic: false)]
 		)
-		floor.position = SIMD3<Float>(0, -0.01, ShowcaseRoomGeometry.backWallZ + ShowcaseRoomGeometry.width / 2)
+		floor.position = SIMD3<Float>(0, -0.01, (ShowcaseRoomGeometry.backWallZ + 1) / 2)
 		let wall = ModelEntity(
 			mesh: .generateBox(width: ShowcaseRoomGeometry.width, height: ShowcaseRoomGeometry.height, depth: 0.06),
-			materials: [SimpleMaterial(color: UIColor(red: 0.58, green: 0.52, blue: 0.42, alpha: 1), roughness: 0.9, isMetallic: false)]
+			materials: [SimpleMaterial(color: UIColor(white: 0.94, alpha: 1), roughness: 0.85, isMetallic: false)]
 		)
 		wall.position = SIMD3<Float>(0, ShowcaseRoomGeometry.height / 2, ShowcaseRoomGeometry.backWallZ - 0.03)
-		let desk = ModelEntity(
-			mesh: .generateBox(width: 1.9, height: 0.04, depth: 0.75),
-			materials: [SimpleMaterial(color: UIColor(red: 0.26, green: 0.15, blue: 0.08, alpha: 1), roughness: 0.45, isMetallic: false)]
-		)
-		desk.position = SIMD3<Float>(0, ShowcaseRoomGeometry.deskTopY - 0.02, ShowcaseRoomGeometry.backWallZ + 0.375)
 		room.addChild(floor)
 		room.addChild(wall)
-		room.addChild(desk)
+		for anchor in [ShowcaseAnchor.tableFront, .tableBack] {
+			let top = ShowcaseRoomGeometry.defaultPose(anchor).position
+			let table = ModelEntity(
+				mesh: .generateBox(width: 1.9, height: 0.05, depth: 0.7),
+				materials: [SimpleMaterial(color: UIColor(red: 0.84, green: 0.70, blue: 0.52, alpha: 1), roughness: 0.45, isMetallic: false)]
+			)
+			table.position = top - SIMD3<Float>(0, 0.025, 0)
+			room.addChild(table)
+		}
 		return room
 	}
 }

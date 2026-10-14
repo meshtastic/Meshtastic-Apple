@@ -9,21 +9,21 @@ import simd
 
 /// Where a node sits in the showcase.
 enum ShowcaseSlot: Hashable, Sendable {
-	/// The connected radio, in the middle of the desk.
-	case deskRadio
+	/// The connected radio, at the front of the front table.
+	case connectedRadio
 	/// A cell in the wall rack, counted across pages.
 	case rack(Int)
 
 	var tier: ShowcaseTier {
 		switch self {
-		case .deskRadio: .deskRadio
+		case .connectedRadio: .connectedRadio
 		case .rack: .rack
 		}
 	}
 }
 
 enum ShowcaseTier: Int, Comparable, Sendable {
-	case deskRadio, rack
+	case connectedRadio, rack
 	static func < (lhs: Self, rhs: Self) -> Bool { lhs.rawValue < rhs.rawValue }
 }
 
@@ -71,8 +71,9 @@ struct ShowcaseRackGrid: Equatable, Sendable {
 	}
 }
 
-/// Decides which node goes where. The connected radio takes the desk; everyone else goes into the
-/// wall rack, page by page, until it is full. The shelves hold the device showroom, not nodes.
+/// Decides which node goes where. The connected radio stands on the front table; everyone else
+/// goes into the wall rack, page by page, until it is full. The tables' other models are the
+/// device showcase, not nodes.
 ///
 /// Nodes keep their cell: a new node takes the first free one, and a node counts as online or
 /// offline only after it has stayed that way for `hysteresis`, so the rack doesn't flicker.
@@ -135,19 +136,19 @@ struct ShowcaseLayout {
 		onlineStates = onlineStates.filter { present.contains($0.key) }
 		for node in nodes { updateOnline(node, now: now) }
 
-		// The desk follows the connection at once, both ways.
-		for node in nodes where (slots[node.id] == .deskRadio) != node.isConnectedRadio {
+		// The table follows the connection at once, both ways.
+		for node in nodes where (slots[node.id] == .connectedRadio) != node.isConnectedRadio {
 			slots[node.id] = nil
 		}
 
 		let taken = Set(slots.values)
-		var deskFree = !taken.contains(.deskRadio)
+		var radioFree = !taken.contains(.connectedRadio)
 		var rackFree = (0..<rackCapacity).filter { !taken.contains(.rack($0)) }[...]
 		overflow = 0
 		for node in nodes where slots[node.id] == nil {
-			if node.isConnectedRadio, deskFree {
-				deskFree = false
-				slots[node.id] = .deskRadio
+			if node.isConnectedRadio, radioFree {
+				radioFree = false
+				slots[node.id] = .connectedRadio
 			} else if let index = rackFree.popFirst() {
 				slots[node.id] = .rack(index)
 			} else {
@@ -180,8 +181,9 @@ enum ShowcasePlacement {
 	/// The place's position and facing in the room. Rack cells are on the face of the panel.
 	static func pose(of slot: ShowcaseSlot, grid: ShowcaseRackGrid, anchor: (ShowcaseAnchor) -> ShowcaseAnchorPose) -> ShowcaseAnchorPose {
 		switch slot {
-		case .deskRadio:
-			return anchor(.deskRadio)
+		case .connectedRadio:
+			let table = anchor(.tableFront)
+			return ShowcaseAnchorPose(table.position + table.orientation.act(ShowcaseDisplayRow.connectedRadio), orientation: table.orientation)
 		case .rack(let index):
 			let base = anchor(.wallRack)
 			let center = grid.center(ofCellOnPage: index % grid.perPage)

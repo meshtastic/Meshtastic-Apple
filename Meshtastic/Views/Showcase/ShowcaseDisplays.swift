@@ -10,20 +10,20 @@ import OSLog
 import RealityKit
 import SwiftUI
 
-/// Marks a model in the showroom, so a tap on any of its parts finds the item.
+/// Marks a model on a display table, so a tap on any of its parts finds the item.
 struct ShowcaseItemComponent: Component {
 	let itemID: String
 }
 
-/// The shelves' showroom: a real-size model of each device we have one for, one maker per shelf.
+/// The display tables: a real-size model of each device we have one for, one maker per row.
 /// They are examples of the devices, not nodes on the mesh. A hand can pick one up and turn it
-/// over; let go and it goes back on the shelf.
+/// over; let go and it goes back on its stand.
 @MainActor @Observable
 final class ShowcaseDisplays {
 	@ObservationIgnored let root = Entity()
-	/// Each loaded model as it was in its file; shelf items use it directly, the desk a clone.
+	/// Each loaded model as it was in its file; the tables use it directly, the connected radio a clone.
 	@ObservationIgnored private var templates: [String: Entity] = [:]
-	/// Where each shelf model stands, and its height, in the world's space.
+	/// Where each model stands, and its height, in the world's space.
 	@ObservationIgnored private var placements: [String: (position: SIMD3<Float>, height: Float)] = [:]
 	@ObservationIgnored private var hardware: [ShowcaseHardwareRecord] = []
 	@ObservationIgnored private let models = ShowcaseCatalog.bundledModels()
@@ -33,7 +33,12 @@ final class ShowcaseDisplays {
 
 	init() {
 		ShowcaseItemComponent.registerComponent()
-		root.name = "Showroom"
+		root.name = "Displays"
+	}
+
+	/// The model standing on a table for an item.
+	func model(for id: String) -> Entity? {
+		templates[id]
 	}
 
 	/// A loaded model, as it was in its file.
@@ -50,8 +55,8 @@ final class ShowcaseDisplays {
 		return name
 	}
 
-	/// Loads every bundled model with a device in the catalog and stands them on the shelves, one
-	/// maker per shelf, spread along it. `receiveLight` gives each model the room's light.
+	/// Loads every bundled model with a device in the catalog and stands each on a clear stand
+	/// along its maker's row of the display tables. `receiveLight` gives each model the room's light.
 	func load(room: ShowcaseRoom, hardware: [ShowcaseHardwareRecord], receiveLight: (Entity) -> Void) async {
 		guard items.isEmpty else { return }
 		self.hardware = hardware
@@ -66,52 +71,80 @@ final class ShowcaseDisplays {
 		}
 		let loaded = catalog.filter { templates[$0.id] != nil }
 		for vendor in ShowcaseVendor.allCases {
-			let shelfItems = loaded.filter { $0.vendor == vendor }
-			guard !shelfItems.isEmpty else { continue }
-			let shelf = room.pose(ShowcaseAnchor.shelves[min(vendor.shelf, ShowcaseAnchor.shelves.count - 1)])
-			var stands: [ShowroomStand] = []
-			for item in shelfItems {
+			let rowItems = loaded.filter { $0.vendor == vendor }
+			guard !rowItems.isEmpty else { continue }
+			let row = vendor.row
+			let table = room.pose(row.table)
+			var stands: [DisplayStand] = []
+			for item in rowItems {
 				guard let model = templates[item.id] else { continue }
 				let holder = Entity()
-				holder.name = "showroom-\(item.id)"
+				holder.name = "display-\(item.id)"
 				let width = model.visualBounds(relativeTo: nil).extents.x
 				let height = Self.stand(model, in: holder)
 				model.components.set(ShowcaseItemComponent(itemID: item.id))
 				model.components.set(Self.accessibility(for: item))
 				receiveLight(model)
-				stands.append(ShowroomStand(item: item, holder: holder, width: width, height: height))
+				stands.append(DisplayStand(item: item, holder: holder, width: width + Self.standMargin, height: height))
 			}
-			let centers = ShowcaseShelfPacking.centers(widths: stands.map(\.width), length: ShowcaseRoomGeometry.shelfLength)
+			let centers = ShowcaseRowPacking.centers(widths: stands.map(\.width), length: row.length)
 			for (stand, x) in zip(stands, centers) {
-				let position = shelf.position + shelf.orientation.act(SIMD3(x, 0, 0))
+				let local = SIMD3<Float>(row.centerX + x, row.height, row.depthOffset)
+				let position = table.position + table.orientation.act(local)
 				stand.holder.position = position
-				stand.holder.orientation = shelf.orientation
+				stand.holder.orientation = table.orientation
 				root.addChild(stand.holder)
 				placements[stand.item.id] = (position, stand.height)
 			}
 		}
 		items = loaded
-		Logger.services.info("📻 [Showcase] Showroom: \(loaded.count, privacy: .public) models on the shelves")
+		Logger.services.info("📻 [Showcase] \(loaded.count, privacy: .public) models on the tables")
 	}
 
-	private struct ShowroomStand {
+	private struct DisplayStand {
 		let item: ShowcaseItem
 		let holder: Entity
 		let width: Float
 		let height: Float
 	}
 
-	/// Stands a model in `holder` on its base, centered over the holder's origin, and lets a hand
-	/// pick it up. Returns its height.
+	/// The clear stand's thickness, and how far it reaches past the model on each side.
+	static let standThickness: Float = 0.006
+	static let standMargin: Float = 0.012
+
+	/// Stands a model on a clear stand in `holder`, centered over the holder's origin, and lets a
+	/// hand pick it up. Returns its height, stand included.
 	@discardableResult
 	static func stand(_ model: Entity, in holder: Entity) -> Float {
 		model.transform = .identity
 		let bounds = model.visualBounds(relativeTo: model)
-		model.position = [-bounds.center.x, -bounds.min.y, -bounds.center.z]
+		model.position = [-bounds.center.x, standThickness - bounds.min.y, -bounds.center.z]
+		let base = ModelEntity(
+			mesh: .generateBox(
+				width: bounds.extents.x + standMargin,
+				height: standThickness,
+				depth: max(bounds.extents.z + standMargin * 2, 0.05),
+				cornerRadius: 0.002
+			),
+			materials: [clearAcrylic]
+		)
+		base.name = "stand"
+		base.position = [0, standThickness / 2, 0]
+		holder.addChild(base)
 		holder.addChild(model)
 		makeHoldable(model, bounds: bounds)
-		return bounds.extents.y
+		return bounds.extents.y + standThickness
 	}
+
+	/// Clear acrylic, like a store's display stands.
+	private static let clearAcrylic: PhysicallyBasedMaterial = {
+		var material = PhysicallyBasedMaterial()
+		material.baseColor = .init(tint: .white)
+		material.roughness = 0.05
+		material.clearcoat = .init(floatLiteral: 1)
+		material.blending = .transparent(opacity: .init(floatLiteral: 0.22))
+		return material
+	}()
 
 	/// Pinch to pick it up and turn it over at real size; let go and it goes back where it was.
 	private static func makeHoldable(_ model: Entity, bounds: RealityKit.BoundingBox) {
@@ -128,11 +161,11 @@ final class ShowcaseDisplays {
 		component.isAccessibilityElement = true
 		component.traits = [.button]
 		component.label = LocalizedStringResource(stringLiteral: item.title)
-		component.value = LocalizedStringResource("Made by \(item.vendor.rawValue)", comment: "Showcase: VoiceOver value for a model on the shelf; the argument is the maker")
+		component.value = LocalizedStringResource("Made by \(item.vendor.rawValue)", comment: "Showcase: VoiceOver value for a model on a display table; the argument is the maker")
 		return component
 	}
 
-	/// The showroom model under a tap.
+	/// The displayed model under a tap.
 	func item(tappedOn entity: Entity) -> String? {
 		var current: Entity? = entity
 		while let candidate = current {
@@ -142,7 +175,7 @@ final class ShowcaseDisplays {
 		return nil
 	}
 
-	/// Where a model's card goes: above it on its shelf, a little toward the viewer.
+	/// Where a model's card goes: above it on its table, a little toward the viewer.
 	func cardPosition(forItem id: String) -> SIMD3<Float>? {
 		guard let placement = placements[id] else { return nil }
 		return placement.position + [0, placement.height + 0.09, 0.12]

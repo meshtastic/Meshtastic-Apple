@@ -10,10 +10,10 @@ import RealityKit
 import SwiftData
 import SwiftUI
 
-/// Root of the showcase immersive space: the room with the viewer's seat at the origin, the
-/// connected radio on the desk, the mesh on the wall rack, a showroom of device models on the
-/// shelves, the control panel by the desk, and the card for whatever was tapped. Reads the nodes
-/// every few seconds and closes itself when the app goes to the background.
+/// Root of the hardware showcase immersive space: the room with the viewer's seat at the origin,
+/// device models and the connected radio on the display tables, the mesh on the wall rack, the
+/// control panel by the front table, and the card for whatever was tapped. Reads the nodes every
+/// few seconds and closes itself when the app goes to the background.
 struct ShowcaseSpace: View {
 	@EnvironmentObject private var appState: AppState
 	@EnvironmentObject private var accessoryManager: AccessoryManager
@@ -43,7 +43,7 @@ struct ShowcaseSpace: View {
 			scene.updateSubscription = content.subscribe(to: SceneEvents.Update.self) { event in
 				scene.step(deltaTime: event.deltaTime)
 			}
-			Task { await scene.loadShowroomIfReady() }
+			Task { await scene.loadDisplaysIfReady() }
 		} update: { _, attachments in
 			if let panel = attachments.entity(for: Attachments.controls) {
 				placeControls(panel)
@@ -65,7 +65,7 @@ struct ShowcaseSpace: View {
 					}
 				}
 			}
-			if let id = scene.selectedItem, let item = scene.showroom.items.first(where: { $0.id == id }) {
+			if let id = scene.selectedItem, let item = scene.displays.items.first(where: { $0.id == id }) {
 				Attachment(id: Attachments.itemCard) {
 					ShowcaseModelCard(item: item, links: links(for: item)) {
 						scene.selectedItem = nil
@@ -74,10 +74,21 @@ struct ShowcaseSpace: View {
 			}
 		}
 		.gesture(tap)
+		.simultaneousGesture(spin)
 		.task {
 			// The context is read here, not in the RealityView's make, where SwiftData traps.
 			let hardware = await ShowcaseCatalog.hardware(in: context.container)
-			await scene.setShowroomHardware(hardware)
+			await scene.setDisplayHardware(hardware)
+			#if DEBUG
+			// `--meshtastic-showcase-inspect <model>` holds a model up once the tables are set.
+			let arguments = CommandLine.arguments
+			if let index = arguments.firstIndex(of: "--meshtastic-showcase-inspect"), index + 1 < arguments.count {
+				while scene.displays.items.isEmpty, !Task.isCancelled {
+					try? await Task.sleep(for: .milliseconds(250))
+				}
+				scene.selectedItem = arguments[index + 1]
+			}
+			#endif
 		}
 		.task(id: accessoryManager.activeDeviceNum) {
 			// Made off the main thread: a model actor made on it runs its fetches there too.
@@ -126,7 +137,7 @@ struct ShowcaseSpace: View {
 		SpatialTapGesture()
 			.targetedToAnyEntity()
 			.onEnded { value in
-				if let item = scene.showroom.item(tappedOn: value.entity) {
+				if let item = scene.displays.item(tappedOn: value.entity) {
 					scene.selectedItem = scene.selectedItem == item ? nil : item
 					return
 				}
@@ -136,10 +147,23 @@ struct ShowcaseSpace: View {
 			}
 	}
 
-	/// Over the front of the desk's left side, in front of the lamp, turned to face the seat.
-	/// Higher when standing, where the viewer is also further back in the world.
+	/// Turns the model held up for inspection: sideways spins it, up and down tips it.
+	private var spin: some Gesture {
+		DragGesture(minimumDistance: 0)
+			.targetedToEntity(where: .has(ShowcaseInspectedComponent.self))
+			.onChanged { value in
+				let offset = value.convert(value.translation3D, from: .local, to: .scene)
+				scene.inspector.drag(offset: SIMD2(offset.x, offset.y), at: value.time.timeIntervalSinceReferenceDate)
+			}
+			.onEnded { _ in
+				scene.inspector.endDrag()
+			}
+	}
+
+	/// Over the front table's left end, turned to face the seat. Higher when standing, where the
+	/// viewer is also further back in the world.
 	private func placeControls(_ panel: Entity) {
-		let position = SIMD3<Float>(-0.4, seated ? 0.95 : 1.25, -0.4)
+		let position = SIMD3<Float>(-0.72, seated ? 1.0 : 1.3, -0.48)
 		let eye = ShowcaseRoomGeometry.seatedEye + (seated ? .zero : SIMD3<Float>(0, 0.4, ShowcaseSceneController.standingSetback))
 		panel.look(at: eye, from: position, relativeTo: scene.world, forward: .positiveZ)
 	}
@@ -160,7 +184,7 @@ struct ShowcaseSpace: View {
 
 	private func placeItemCard(_ card: Entity?) {
 		guard let card else { return }
-		guard let id = scene.selectedItem, let position = scene.showroom.cardPosition(forItem: id) else {
+		guard let id = scene.selectedItem, let position = scene.cardPosition(forItem: id) else {
 			card.isEnabled = false
 			return
 		}
