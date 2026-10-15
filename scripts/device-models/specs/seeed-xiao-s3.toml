@@ -1,0 +1,74 @@
+# seeed-xiao-s3: generated layout from the SVG; add [[part]] rules to refine.
+# Board footprint 21 x 17.8 mm (Seeed wiki and datasheet 102010611). Stack depth not published; estimated 9.0 mm. Drawing (aspect 1.00) is a kit layout: board with two antennas on cables beside it, so the overall drawing is much wider than the board.
+
+[size]
+# Fit the XIAO board stack; the flat antenna and cable around it are built thin.
+covers = "XIAO board stack; antenna and cable not to published size"
+appendage_depth_mm = 1.0
+appendage = "outside"
+height_mm = 21.0
+width_mm = 17.8
+fit_bbox = [909, 688, 1337, 1209]
+depth_mm = 9.0
+board_mm = 1.0
+scale_by = "width"
+source = "https://wiki.seeedstudio.com/wio_sx1262_with_xiao_esp32s3_kit/"
+confidence = "vendor"
+
+# Two-board stack, 9.0 mm total. The base board here is the XIAO ESP32S3 (1.0 mm PCB).
+# The Wio-SX1262 for XIAO sits above it on a B2B connector (1.25 mm mated gap, estimated),
+# and the XIAO's shield and USB-C face down. Radio module height 2.95 mm is published
+# (https://www.mouser.lt/pdfDocs/Wio-SX1262module-Datasheet.pdf); 1.5 mm button is typical.
+[[block]]
+name = "WioBoard"
+bbox = [909, 688, 1337, 1209]
+base_mm = 1.25
+h = 2.25
+
+[[block]]
+name = "B2BConnector"
+bbox = [1060, 990, 1186, 1070]
+h = 1.25
+side_color = "#2b2b2b"
+
+[[block]]
+name = "RadioModule"
+bbox = [989, 920, 1255, 1209]
+base_mm = 2.25
+h = 5.2
+
+[[block]]
+name = "Button"
+bbox = [1072, 848, 1172, 912]
+base_mm = 2.25
+h = 3.75
+
+# Under the XIAO: the RF shield (2.5 mm, estimated) and the USB-C receptacle, which
+# overhangs the top edge. With the 1.0 mm board it makes the 3.2 mm USB-C height.
+[[block]]
+name = "Shield"
+bbox = [945, 760, 1301, 1150]
+h = 2.5
+back = true
+side_color = "#c2c1c0"
+
+[[block]]
+name = "USBC"
+bbox = [1026, 644, 1234, 730]
+h = 2.2
+back = true
+side_color = "#c2c1c0"
+
+# Flat flex antennas are about 0.3 mm thick. Polygons leave out the coax cable
+# where it crosses each antenna so the cable keeps its round 1.0 mm.
+[[thin]]
+name = "LoRaFPC"
+polygon = [[394, 492], [803, 492], [803, 1379], [555, 1379], [555, 1290], [614, 945], [572, 945], [502, 1290], [502, 1379], [394, 1379]]
+depth_mm = 0.3
+edge_radius_mm = 0.1
+
+[[thin]]
+name = "WiFiFPC"
+polygon = [[1510, 366], [1660, 366], [1660, 1319], [1620, 1319], [1620, 1268], [1575, 1268], [1575, 1319], [1510, 1319]]
+depth_mm = 0.3
+edge_radius_mm = 0.1

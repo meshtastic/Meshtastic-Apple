@@ -1,0 +1,129 @@
+# RAK WisMesh Pocket V3. Hand-tuned: case, raised face panel and ridges,
+# screws, screen, side button and a lathed antenna.
+name = "WisMeshPocket"
+auto = false
+
+[size]
+# RAK's 94 mm covers the case plus the button housing on top, not the antenna.
+fit_bbox = [756.66, 647.59, 1306.76, 1636.87]
+width_mm = 52.0
+height_mm = 94.0
+depth_mm = 30.0
+covers = "case including button housing, excludes antenna"
+source = "https://store.rakwireless.com/products/wismesh-pocket"
+confidence = "vendor"
+
+[materials]
+case   = { color = "#92c9a2", roughness = 0.55 }
+accent = { color = "#7fb08d", roughness = 0.50 }
+pocket = { color = "#5e866a", roughness = 0.70 }
+metal  = { color = "#999999", roughness = 0.30, metallic = 1.0 }
+screen = { color = "#1a1a1c", roughness = 0.08 }
+button = { color = "#454545", roughness = 0.60 }
+rubber = { color = "#2d2d2d", roughness = 0.80 }
+brass  = { color = "#e2d299", roughness = 0.30, metallic = 1.0 }
+
+[[part]]
+name = "Body"
+class = "cls-3"
+min_width_mm = 30
+role = "body"
+material = "case"
+
+[[part]]
+name = "ButtonHousing"
+class = "cls-3"
+role = "body"
+thickness = 0.6
+fill_holes = true
+material = "case"
+
+[[part]]
+name = "FacePanel"
+class = "cls-6"
+z = 0.0
+h = 0.8
+material = "case"
+
+[[part]]
+name = "Ridges"
+class = "cls-5"
+z = 0.8
+h = 1.2
+material = "accent"
+
+[[part]]
+name = "Screws"
+class = "cls-4"
+z = 0.0
+h = 1.0
+material = "metal"
+
+[[part]]
+name = "ScrewPockets"
+class = "cls-8"
+shape = "circle"
+z = 0.0
+h = 0.15
+material = "pocket"
+
+[[part]]
+name = "Screen"
+class = "cls-2"
+min_width_mm = 25
+z = 0.8
+h = 0.25
+material = "screen"
+
+[[box]]
+name = "Button"
+x = 1207.05
+y = 672.58
+width = 71.46
+height = 48.69
+radius = 13.87
+thickness = 0.6
+h = 1.0
+material = "button"
+
+# Antenna, revolved around its axis from the stepped outline in the drawing.
+[[lathe]]
+name = "AntennaWhip"
+axis_x = 922.93
+y_top = 174.42
+y_bottom = 608.70
+radius = 42.15
+dome = true
+material = "rubber"
+
+[[lathe]]
+name = "AntennaCollar"
+axis_x = 922.93
+y_top = 608.70
+y_bottom = 620.75
+radius = 31.26
+material = "rubber"
+
+[[lathe]]
+name = "AntennaNut"
+axis_x = 922.93
+y_top = 620.75
+y_bottom = 684.75
+radius = 46.95
+material = "brass"
+
+[[lathe]]
+name = "AntennaBase"
+axis_x = 922.93
+y_top = 684.75
+y_bottom = 713.97
+radius = 35.83
+material = "brass"
+
+[[lathe]]
+name = "AntennaFlange"
+axis_x = 922.93
+y_top = 713.97
+y_bottom = 741.60
+radius = 42.15
+material = "brass"

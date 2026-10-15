@@ -1,0 +1,38 @@
+# rak2560: generated layout from the SVG; add [[part]] rules to refine.
+# RAK2560 WisNode Sensor Hub datasheet: 120 x 80 x 39 mm; body-dimension image shows 80 mm wide x 120 mm tall excluding glands. Drawn aspect 0.53 includes the two glands below (~15-20 mm). Large corner radius visible (~12 mm, not dimensioned).
+
+[size]
+# The drawing adds the cable glands below the published body.
+appendage = "bottom"
+width_mm = 80.0
+height_mm = 120.0
+depth_mm = 39.0
+scale_by = "width"
+covers = "enclosure body only, excludes the two bottom sensor-port glands"
+source = "https://docs.rakwireless.com/product-categories/wisnode/rak2560/hub-datasheet/"
+confidence = "vendor"
+# Molded case with soft, well-rounded sides.
+edge_radius_mm = 8.0
+front_edge_radius_mm = 3.0
+
+# The two sensor-port connectors under the case are round.
+[[antenna]]
+name = "SensorPortLeft"
+start = [374.5, 581.5]
+end = [374.5, 670]
+dome = false
+
+[[antenna]]
+name = "SensorPortRight"
+start = [451.5, 581.5]
+end = [451.5, 670]
+dome = false
+
+# Short necks join each port to the case; the port width probe misses this strip.
+[[thin]]
+bbox = [357, 574, 392, 582.5]
+depth_mm = 10
+
+[[thin]]
+bbox = [434, 574, 469, 582.5]
+depth_mm = 10

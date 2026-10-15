@@ -1,0 +1,78 @@
+# seeed_wio_tracker_l1_pro_1w: generated layout from the SVG; add [[part]] rules to refine.
+# No published figures for a 1W variant found. Same drawn aspect (0.48) as the L1 case, so L1 Pro figures (181 x 56 x 26 incl. antenna) are reused.
+
+[size]
+# Fit the case; the published 181 mm includes the antenna, which is drawn folded out to the side.
+covers = "case only; height from the drawing at the published 56 mm width"
+height_mm = 74.8
+fit_bbox = [561, 519, 865, 925]
+width_mm = 56.0
+depth_mm = 26.0
+scale_by = "width"
+source = "https://www.cnx-software.com/2025/05/31/wio-tracker-l1-pro-is-a-battery-powered-ready-to-use-meshtastic-lora-node/"
+confidence = "estimated"
+# Rounded 3D-printed case; small front radius keeps the drawn rim.
+edge_radius_mm = 4.0
+front_edge_radius_mm = 1.0
+
+# Rubber whip, folded out at the hinge.
+[[antenna]]
+name = "AntennaWhip"
+start = [816.5, 412.4]
+end = [435, 38]
+dome = true
+material = "rubber"
+
+# SMA connector on the case top: base and brass ring (fixed radius; the probe
+# misses them), then nut and ferrule.
+[[antenna]]
+name = "AntennaBase"
+start = [799.2, 547.6]
+end = [799.2, 541.9]
+radius_mm = 6.2
+dome = false
+
+[[antenna]]
+name = "AntennaBrass"
+start = [799.2, 541.9]
+end = [799.2, 531.6]
+radius_mm = 5.0
+dome = false
+material = "brass"
+
+[[antenna]]
+name = "AntennaConnector"
+start = [799.2, 531.6]
+end = [799.2, 419]
+dome = false
+
+# Hinge knuckle between connector and whip, as a rounded cap.
+[[antenna]]
+name = "AntennaHinge"
+start = [799.2, 419]
+end = [799.2, 396]
+radius_mm = 4.6
+dome = true
+material = "rubber"
+
+# Side buttons on the left edge.
+[[thin]]
+bbox = [554, 636, 562, 757]
+depth_mm = 10
+
+[materials]
+rubber = { color = "#353535", roughness = 0.80 }
+brass = { color = "#e0b77b", roughness = 0.30, metallic = 1.0 }
+
+# Round "1W" variant badge on the top-left corner: a drawing mark, not part
+# of the device. The size-limited white circle rule keeps the white logo stroke.
+[[part]]
+fill = ["#66e792", "#202938"]
+role = "skip"
+
+[[part]]
+fill = "#ffffff"
+shape = "circle"
+min_width_mm = 10.5
+max_width_mm = 11.5
+role = "skip"

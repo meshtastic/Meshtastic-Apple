@@ -1,0 +1,41 @@
+# thinknode_m6: generated layout from the SVG, with the antennas and their
+# hinges built at their own thickness.
+# Elecrow: 'Size 210*156*42mm (excluding antenna and bracket)', 530 g. The drawn
+# case (fit_bbox) is 435x322 units, aspect 1.35, which matches 210x156.
+
+[size]
+fit_bbox = [38, 222, 473, 545]
+width_mm = 210.0
+height_mm = 156.0
+depth_mm = 42.0
+scale_by = "width"
+appendage = "outside"
+appendage_depth_mm = 10
+# Rounded back edges; the front keeps a small radius so the panel bezel stays.
+edge_radius_mm = 8
+front_edge_radius_mm = 2
+covers = "body only, excludes antenna and bracket"
+source = "https://www.elecrow.com/thinknode-m6-outdoor-solar-power-for-meshtastic-powered-by-nrf52840-supports-gps.html"
+confidence = "vendor"
+
+# Two flat router-style paddle antennas on RP-SMA hinges, one on each side.
+# Drawn about 13.5 mm wide; built 9 mm thick with rounded edges. The outer
+# edges and tips run past the drawn shapes so no square sliver is left behind.
+[[thin]]
+bbox = [0, 0, 29, 356]
+depth_mm = 9
+edge_radius_mm = 3.5
+
+[[thin]]
+bbox = [482, 0, 512, 356]
+depth_mm = 9
+edge_radius_mm = 3.5
+
+# RP-SMA connectors and hinge knuckles between the case and each antenna.
+[[thin]]
+bbox = [28, 325, 38, 353]
+depth_mm = 11
+
+[[thin]]
+bbox = [473, 325, 483, 353]
+depth_mm = 11

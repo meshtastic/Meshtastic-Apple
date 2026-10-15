@@ -1,0 +1,29 @@
+# rak4631_case: generated layout from the SVG; add [[part]] rules to refine.
+# Could not identify this enclosure (silver ribbed metal-look case with lanyard loop, SMA antenna on top). It must house a 30x60 RAK19007, so body is estimated at ~45x80x22. Drawing aspect 0.38 includes a tall antenna. Replace if the case is identified.
+# The outline matches the WisMesh Pocket drawing, so it gets the same treatment:
+# a round whip antenna and a thinner tab on top.
+
+[size]
+width_mm = 45.0
+height_mm = 80.0
+depth_mm = 22.0
+scale_by = "width"
+# Case plus the tab on top, not the antenna.
+fit_bbox = [756.66, 647.59, 1306.76, 1636.87]
+edge_radius_mm = 4.0
+front_edge_radius_mm = 1.0
+covers = "enclosure body only, excludes antenna (estimated)"
+source = "https://docs.rakwireless.com/product-categories/wisblock/rak19007/datasheet/"
+confidence = "estimated"
+
+# Rubber whip on a brass SMA connector.
+[[antenna]]
+name = "Antenna"
+start = [922.93, 741.6]
+end = [922.93, 174.42]
+dome = true
+
+# Tab on top right, thinner than the case.
+[[thin]]
+bbox = [1180, 647.59, 1307, 742]
+depth_mm = 14

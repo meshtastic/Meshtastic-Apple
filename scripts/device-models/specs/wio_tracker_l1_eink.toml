@@ -1,0 +1,74 @@
+# wio_tracker_l1_eink: generated layout from the SVG; add [[part]] rules to refine.
+# L1 PCB footprint is reported as 48 x 34 mm (Seeed search snippet); e-ink active area 48.55 x 23.70 mm; a 2.13in e-ink module is ~59 x 29 mm and overhangs the PCB. Overall estimated from the drawing (aspect 1.23). Depth estimated.
+
+[size]
+width_mm = 60.0
+height_mm = 49.0
+depth_mm = 12.0
+# No published PCB thickness or part heights; all values below are typical.
+board_mm = 1.2
+scale_by = "width"
+covers = "bare L1 board with 2.13in e-ink module mounted on top (no case, no antenna)"
+source = "https://wiki.seeedstudio.com/wio_tracker_l1_node/"
+confidence = "estimated"
+
+# E-ink module on its standoffs above the board. Over the PCB (x 72-544) it is solid.
+[[block]]
+name = "EInk"
+bbox = [72, 13, 544, 301]
+h = 4.0
+
+# Where the module overhangs the PCB it is just the panel (about 1.2 mm thick)
+# with open space beneath.
+[[block]]
+name = "EInkLeft"
+bbox = [1, 1, 72, 301]
+h = 4.0
+base_mm = 2.8
+hollow_under = true
+
+# Right overhang, including the glass tail and FPC.
+[[block]]
+name = "EInkRight"
+bbox = [544, 1, 638, 301]
+h = 4.0
+base_mm = 2.8
+hollow_under = true
+
+# Thin strip above the PCB's top edge.
+[[block]]
+name = "EInkTop"
+bbox = [72, 1, 544, 13]
+h = 4.0
+base_mm = 2.8
+hollow_under = true
+
+# USB-C on the left edge (typical 3.2 mm).
+[[block]]
+name = "USBC"
+bbox = [63, 302, 135, 385]
+h = 3.2
+
+# Solar JST-PH 2-pin (typical 4.5 mm).
+[[block]]
+name = "SolarJST"
+bbox = [122, 427, 201, 485]
+h = 4.5
+
+# MENU tactile button (typical 6x6 switch, 3.5 mm).
+[[block]]
+name = "MenuButton"
+bbox = [355, 324, 400, 369]
+h = 3.5
+
+# 5-way joystick (typical 5 mm).
+[[block]]
+name = "Joystick"
+bbox = [444, 306, 525, 386]
+h = 5.0
+
+# Grove 4-pin connector, side entry (typical 6 mm).
+[[block]]
+name = "Grove"
+bbox = [368, 434, 487, 519]
+h = 6.0

@@ -1,0 +1,80 @@
+# wio-tracker-wm1110: generated layout from the SVG; add [[part]] rules to refine.
+# Seeed publishes no board dimensions (cnx-software lists 'Dimensions - Not specified'). Estimated from the drawing using the USB-C and Grove connectors as scale; height set from drawn aspect 0.67. Depth = PCB + Grove connectors, estimated.
+# Board and part heights: WM1110 module 2.3 mm is published (20 x 20 x 2.3 mm, Wio-WM1110 module datasheet V1.3); PCB 1.2 mm and the connector and button heights are typical values.
+# The two white parts near the top edge (AntennaLoRa, AntennaGNSS) are unidentified; their 1.2 mm height is a guess.
+# Scale check: at 55 mm wide the drawn module is about 22 mm, not 20, so the board may be closer to 49 x 73 mm.
+
+[size]
+width_mm = 55.0
+height_mm = 82.0
+depth_mm = 7.5
+board_mm = 1.2
+scale_by = "width"
+covers = "bare PCB (estimated)"
+source = "https://wiki.seeedstudio.com/Wio-Tracker_Introduction/"
+confidence = "estimated"
+
+[[block]]
+name = "WM1110"
+bbox = [830, 850, 1079, 1104]
+h = 2.3
+
+[[block]]
+name = "USBC"
+bbox = [935, 1341, 1044, 1436]
+h = 3.2
+
+[[block]]
+name = "Battery"
+bbox = [794, 1327, 901, 1415]
+h = 6.0
+
+[[block]]
+name = "GroveL1"
+bbox = [662, 809, 764, 962]
+h = 6.0
+
+[[block]]
+name = "GroveL2"
+bbox = [662, 987, 764, 1140]
+h = 6.0
+
+[[block]]
+name = "GroveL3"
+bbox = [662, 1165, 764, 1318]
+h = 6.0
+
+[[block]]
+name = "GroveR1"
+bbox = [1156, 809, 1258, 962]
+h = 6.0
+
+[[block]]
+name = "GroveR2"
+bbox = [1156, 987, 1258, 1140]
+h = 6.0
+
+[[block]]
+name = "GroveR3"
+bbox = [1156, 1165, 1258, 1318]
+h = 6.0
+
+[[block]]
+name = "AntennaLoRa"
+bbox = [679, 553, 869, 631]
+h = 1.2
+
+[[block]]
+name = "AntennaGNSS"
+bbox = [1028, 529, 1229, 607]
+h = 1.2
+
+[[block]]
+name = "ButtonUser"
+bbox = [1074, 1352, 1115, 1406]
+h = 2.0
+
+[[block]]
+name = "ButtonReset"
+bbox = [1137, 1352, 1178, 1406]
+h = 2.0

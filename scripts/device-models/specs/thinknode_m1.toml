@@ -1,0 +1,33 @@
+# thinknode_m1: generated layout from the SVG; add [[part]] rules to refine.
+# Elecrow: Size 82*51.6*26.3mm, 81 g. ThinkNode M5 page lists the identical 82*51.6*26.3mm. Drawn aspect 0.42 includes the antenna on top (~40 mm extra at this scale). Depth includes thickness of side features.
+
+[size]
+width_mm = 51.6
+height_mm = 82.0
+depth_mm = 26.3
+scale_by = "width"
+covers = "case, excludes antenna"
+source = "https://www.elecrow.com/thinknode-m1-meshtastic-lora-signal-transceiver-powered-by-nrf52840-with-154-screen-support-gps.html"
+confidence = "vendor"
+# Rounded ABS shell.
+edge_radius_mm = 5
+front_edge_radius_mm = 1.5
+
+# Rubber stick antenna on an RP-SMA base.
+[[antenna]]
+name = "Antenna"
+start = [506.5, 441]
+end = [506.5, 78]
+dome = true
+
+# Round knurled knob switch on top.
+[[antenna]]
+name = "Knob"
+start = [657, 441]
+end = [657, 347]
+dome = false
+
+# Side buttons on the right edge.
+[[thin]]
+bbox = [750, 553, 760, 840]
+depth_mm = 7

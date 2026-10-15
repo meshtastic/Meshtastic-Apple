@@ -1,0 +1,14 @@
+# crowpanel_2_8: generated layout from the SVG; add [[part]] rules to refine.
+# Elecrow spec table: Dimensions 85.4*58.5*15.5 mm.
+
+[size]
+width_mm = 85.4
+height_mm = 58.5
+depth_mm = 15.5
+scale_by = "width"
+covers = "whole display module (landscape)"
+source = "https://www.elecrow.com/crowpanel-advance-2-8-hmi-ai-display-for-meshtastic-esp32-320x240-artificial-ips-intelligent-touchscreen.html"
+confidence = "vendor"
+# Black plastic case with a rounded back; the front has screws near the corners, so keep that edge small.
+edge_radius_mm = 4.0
+front_edge_radius_mm = 1.0

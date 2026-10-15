@@ -1,0 +1,49 @@
+# rak4631: generated layout from the SVG; add [[part]] rules to refine.
+# Width/height and 1.0 mm PCB thickness and 4x R1.0 corners from RAK19007 mechanical drawing; RAK4631 module is 20x30 mm (rak4631 datasheet). Depth is an estimate: 1.0 mm PCB + WisConnector + ~4.5 mm core module (RAK3312 store lists cores as 20x30x4.5) plus USB-C/JST; depth estimated.
+
+[size]
+width_mm = 30.0
+height_mm = 60.0
+depth_mm = 8.0
+board_mm = 1.0
+scale_by = "width"
+covers = "RAK19007 base board (30x60) with RAK4631 core (20x30) mounted; PCB outline, no antenna"
+source = "https://docs.rakwireless.com/product-categories/wisblock/rak19007/datasheet/"
+confidence = "vendor"
+
+# Board is 1.0 mm (RAK19007 drawing). Core module height 4.5 mm is from the RAK store listing; USB-C 3.2 mm is a typical receptacle height.
+# Core module: a 1 mm green PCB with a silver shield can (white label on top) above it.
+[[block]]
+name = "CoreModule"
+bbox = [788, 670, 1220, 963]
+h = 1.0
+side_color = "#217e6a"
+
+[[block]]
+name = "CoreShield"
+bbox = [802, 692, 1206, 948]
+base_mm = 1.0
+h = 4.5
+side_color = "#c0c0c0"
+
+[[block]]
+name = "USBC"
+bbox = [987, 368, 1146, 527]
+h = 3.2
+
+# JST connectors stand up next to the core and USB-C: battery is a JST PH 2-pin, solar a JST ZH.
+[[block]]
+name = "BatteryJST"
+bbox = [1179, 527, 1279, 601]
+h = 4.5
+
+[[block]]
+name = "SolarJST"
+bbox = [718, 536, 793, 592]
+h = 3.5
+
+# Reset tact switch.
+[[block]]
+name = "ResetSwitch"
+bbox = [871, 420, 956, 454]
+h = 1.5

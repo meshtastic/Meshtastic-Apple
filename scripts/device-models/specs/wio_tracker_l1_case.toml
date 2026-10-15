@@ -1,0 +1,36 @@
+# wio_tracker_l1_case: generated layout from the SVG; add [[part]] rules to refine.
+# 181 x 56 x 26 mm is the published L1 Pro (3D-printed case) figure (cnx-software, RobotShop); 181 mm only makes sense with the antenna. Drawing shows the antenna angled, so drawn aspect 0.48 is not 56/181. Case body height estimated by scaling the drawing to 56 mm width.
+
+[size]
+# Fit the case; the published 181 mm includes the antenna, which is drawn folded out to the side.
+covers = "case only; height from the drawing at the published 56 mm width"
+height_mm = 74.8
+fit_bbox = [561, 519, 865, 925]
+width_mm = 56.0
+depth_mm = 26.0
+scale_by = "width"
+# Printed case with softly rounded edges; the face has a rim, so keep the front small.
+edge_radius_mm = 4.0
+front_edge_radius_mm = 1.0
+source = "https://www.cnx-software.com/2025/05/31/wio-tracker-l1-pro-is-a-battery-powered-ready-to-use-meshtastic-lora-node/"
+confidence = "retailer"
+
+# SMA connector and hinge knuckle, straight up from the case top.
+[[antenna]]
+name = "AntennaBase"
+start = [800, 548]
+end = [800, 388]
+max_width = 60   # skip the wide flange where it meets the case
+
+# Rubber whip, folded down at an angle from the hinge.
+[[antenna]]
+name = "Antenna"
+start = [800, 390]
+end = [450, 46]
+
+# Side button strip on the left edge; keep it short instead of full case depth.
+[[thin]]
+name = "SideButton"
+bbox = [554, 635, 562, 758]
+depth_mm = 8.0
+edge_radius_mm = 1.0

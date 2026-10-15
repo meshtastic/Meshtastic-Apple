@@ -1,0 +1,98 @@
+# thinknode_m7: auto layout from the SVG with round antennas and rounded case edges.
+# Elecrow: 'Size 74*74*33mm (Without Antenna)', 80 g. Drawn aspect 0.65 includes antenna (~40 mm extra).
+
+[size]
+width_mm = 74.0
+height_mm = 74.0
+depth_mm = 33.0
+scale_by = "width"
+covers = "body only, excludes antenna"
+source = "https://www.elecrow.com/thinknode-m7-wireless-communication-gateway-for-meshtastic-support-poe-powered-powered-by-esp32-s3-and-lr1110.html"
+confidence = "vendor"
+# Antennas are handled below, so no thin strip on top.
+appendage = "none"
+# Rounded plastic case.
+edge_radius_mm = 6.0
+front_edge_radius_mm = 3.0
+
+# Two RP-SMA rubber antennas, drawn with the whip folded back, so only the
+# connector, nut, sleeve and hinge head show. Lathed round from the drawing.
+# The case top curves, so each antenna is cut in two: the gold ring from
+# just below where the top meets it, and the rest from the top of the ring.
+# Each part only cuts the case as wide as itself, which keeps the notch
+# in the case top small and leaves no sliver of ring as a thin sheet.
+[[antenna]]
+name = "LoRaRing"
+start = [157, 287]
+end = [157, 279]
+max_width = 30
+dome = false
+
+[[antenna]]
+name = "LoRaAntenna"
+start = [157, 279]
+end = [157, 1]
+max_width = 47
+dome = true
+
+[[antenna]]
+name = "WlanRing"
+start = [370, 288]
+end = [370, 279]
+max_width = 30
+dome = false
+
+[[antenna]]
+name = "WlanAntenna"
+start = [370, 279]
+end = [370, 1]
+max_width = 47
+dome = true
+
+# The whips, drawn end-on, shown standing straight up from the hinge heads.
+# No published length; the manual drawing puts the whole antenna near
+# 200 mm, so 160 mm of whip (1140 units) above the 40 mm connector and hinge.
+[[antenna]]
+name = "LoRaWhip"
+start = [157, 20]
+end = [157, -1120]
+radius_mm = 5.5
+tip_radius_mm = 4.5
+material = "rubber"
+
+[[antenna]]
+name = "WlanWhip"
+start = [370, 20]
+end = [370, -1120]
+radius_mm = 5.5
+tip_radius_mm = 4.5
+material = "rubber"
+
+[materials]
+rubber = { color = "#3f3f3f", roughness = 0.80 }
+
+# Reload button tab on the bottom edge.
+[[thin]]
+bbox = [119, 796, 171, 810]
+depth_mm = 6
+
+# Hinge pins on each side of the antenna heads, about 3 mm round.
+[[thin]]
+bbox = [99, 52, 113, 74]
+depth_mm = 3
+edge_radius_mm = 1.4
+
+[[thin]]
+bbox = [201, 52, 216, 74]
+depth_mm = 3
+edge_radius_mm = 1.4
+
+[[thin]]
+bbox = [311, 52, 326, 74]
+depth_mm = 3
+edge_radius_mm = 1.4
+
+[[thin]]
+bbox = [414, 52, 428, 74]
+depth_mm = 3
+edge_radius_mm = 1.4

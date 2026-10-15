@@ -1,0 +1,87 @@
+# rak6421: generated layout from the SVG; add [[part]] rules to refine.
+# Mechanical drawing from RAK6421 datasheet (https://docs.rakwireless.com/product-categories/wishat/rak6421-wisblock-pi-hat/datasheet/): 65.00 x 56.00 mm, mounting holes 58 x 49 mm, 4x dia 2.8. Corner radius not dimensioned (Pi HAT spec uses 3 mm). 56/65=0.86 vs drawn 0.84.
+
+[size]
+width_mm = 56.0
+height_mm = 65.0
+depth_mm = 18.6
+board_mm = 1.6
+# The drawing is turned: its width is the 56 mm side (hole spacing 440:536 matches 49:58).
+scale_by = "width"
+covers = "HAT PCB with the drawn RAK13300 IO module and front parts as blocks; depth = 8.5 mm Pi socket under + 1.6 mm PCB + 8.5 mm J9 header on top."
+source = "https://images.docs.rakwireless.com/wishat/rak6421/datasheet/rak6421-mechanical.png"
+confidence = "vendor"
+
+# Blocks. The drawing shows a RAK13300 IO module in IO slot 1. None of these
+# heights are published: HAT PCB 1.6 mm, WisBlock connectors ~1.5 mm, the IO
+# module plate 2.5 mm (connector gap + 1.0 mm board), its shield can ~2 mm more,
+# the 2.54 mm header 8.5 mm and the 2-pin JST 4.5 mm are typical values.
+[[block]]
+name = "IOSlotJ1"
+bbox = [226, 260, 327, 294]
+h = 1.5
+
+[[block]]
+name = "SlotJ4"
+bbox = [349, 16, 419, 50]
+h = 1.5
+
+[[block]]
+name = "SlotJ5"
+bbox = [349, 257, 419, 291]
+h = 1.5
+
+[[block]]
+name = "SlotJ6"
+bbox = [349, 366, 419, 400]
+h = 1.5
+
+[[block]]
+name = "SlotJ7"
+bbox = [349, 487, 419, 521]
+h = 1.5
+
+# IO module board, split into four strips around the shield can.
+[[block]]
+name = "IOModuleLeft"
+bbox = [2, 303, 112, 537]
+h = 2.5
+
+[[block]]
+name = "IOModuleTop"
+bbox = [112, 303, 339, 346]
+h = 2.5
+
+[[block]]
+name = "IOModuleBottom"
+bbox = [112, 474, 339, 537]
+h = 2.5
+
+[[block]]
+name = "IOModuleRight"
+bbox = [319, 346, 339, 474]
+h = 2.5
+
+[[block]]
+name = "IOModuleCan"
+bbox = [112, 346, 319, 474]
+h = 4.5
+
+[[block]]
+name = "HeaderJ9"
+bbox = [80, 566, 172, 591]
+h = 8.5
+
+[[block]]
+name = "BatteryJST"
+bbox = [276, 564, 324, 593]
+h = 4.5
+
+# Female 2x20 Pi socket under the board, on the drawn pin footprint
+# (50.8 x 5.1 mm body, typical 8.5 mm height).
+[[block]]
+name = "PiSocket"
+bbox = [451, 66, 497, 537]
+h = 8.5
+back = true
+side_color = "#1c1c1c"

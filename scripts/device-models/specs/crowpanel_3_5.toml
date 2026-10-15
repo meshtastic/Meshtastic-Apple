@@ -1,0 +1,15 @@
+# crowpanel_3_5: generated layout from the SVG; add [[part]] rules to refine.
+# Elecrow spec table: Dimensions 101.4*63.3*15.8 mm.
+
+[size]
+width_mm = 101.4
+height_mm = 63.3
+depth_mm = 15.8
+scale_by = "width"
+covers = "whole display module (landscape)"
+source = "https://www.elecrow.com/crowpanel-advance-3-5-hmi-esp32-ai-display-for-meshtastic-320x240-ips-artificial-intelligent-screen.html"
+confidence = "vendor"
+# Black plastic shell: rounded back edge, small front edge so the
+# corner screws and bezel stay intact. Antenna is internal (IPEX).
+edge_radius_mm = 3.5
+front_edge_radius_mm = 0.8

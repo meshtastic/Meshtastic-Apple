@@ -1,0 +1,41 @@
+# thinknode_m2: generated layout from the SVG; add [[part]] rules to refine.
+# Elecrow: 'With Case 88.4*46*23mm; Without Case 51.5*37*9.5mm'. 46/88.4=0.52 equals drawn aspect, but the drawing shows a short antenna on top, so 88.4 may include it or the drawing's case may be shorter. Check against the drawing.
+
+[size]
+# The published 88.4 mm includes the antenna stub; the case alone is about 58 mm.
+body_height_mm = 58.2
+width_mm = 46.0
+height_mm = 88.4
+depth_mm = 23.0
+scale_by = "width"
+covers = "with case; unclear whether 88.4 includes the antenna stub"
+source = "https://www.elecrow.com/thinknode-m2-meshtastic-lora-signal-transceiver-powered-by-esp32-s3-with-1-3-oled-display.html"
+confidence = "vendor"
+# ABS case with rounded edges. Keep the front small: there is a bezel at the edge.
+edge_radius_mm = 5.0
+front_edge_radius_mm = 1.0
+
+# Short rubber stub antenna on top, with its collar and base.
+[[antenna]]
+name = "Antenna"
+start = [527, 403]
+end = [527, 122]
+dome = true
+
+# Side buttons on the right and left edges.
+[[thin]]
+bbox = [789, 509, 802, 667]
+depth_mm = 8
+
+[[thin]]
+bbox = [388, 518, 395, 799]
+depth_mm = 8
+
+# Small feet on the bottom edge.
+[[thin]]
+bbox = [446, 903, 466, 910]
+depth_mm = 14
+
+[[thin]]
+bbox = [718, 903, 738, 910]
+depth_mm = 14

@@ -1,0 +1,44 @@
+# rak11310: generated layout from the SVG; add [[part]] rules to refine.
+# RAK19003 mechanical drawing: 35.00 x 30.00 mm, PCB 1.00 mm. 30/35=0.857 matches drawn 0.86. RAK11310 module 20x30 mm with 4x R0.75/R1.30 mount pads (rak11310 datasheet board-dimensions). Depth estimated (PCB + JST connectors + core).
+
+[size]
+width_mm = 30.0
+height_mm = 35.0
+depth_mm = 8.0
+board_mm = 1.0  # published (RAK19003 mechanical drawing)
+scale_by = "width"
+covers = "RAK19003 mini base board (35x30, drawn rotated with USB-C on top) with RAK11310 core (20x30); PCB only"
+source = "https://docs.rakwireless.com/product-categories/wisblock/rak19003/datasheet/"
+confidence = "vendor"
+
+# Block heights: core 4.5 mm as listed for WisBlock cores. The connector and
+# button heights are measured from the to-scale side view in the RAK19003
+# mechanical drawing (about 14.8 px/mm).
+[[block]]
+name = "CoreModule"
+bbox = [701, 928, 1209, 1261]
+h = 4.5
+side_color = "#267f4b"  # green PCB edge, not the shield's gray
+
+[[block]]
+name = "USBC"
+bbox = [921, 580, 1118, 755]
+h = 3.7
+
+# Battery connector, JST PH 2-pin (measured from drawing)
+[[block]]
+name = "BatteryJST"
+bbox = [1148, 745, 1279, 851]
+h = 6.0
+
+# Solar connector, JST ZH 2-pin (measured from drawing)
+[[block]]
+name = "SolarJST"
+bbox = [612, 758, 708, 835]
+h = 4.5
+
+# Reset button (measured from drawing)
+[[block]]
+name = "ResetButton"
+bbox = [788, 630, 892, 688]
+h = 2.5
