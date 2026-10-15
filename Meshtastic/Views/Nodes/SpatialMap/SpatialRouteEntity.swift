@@ -296,7 +296,7 @@ final class SpatialRouteDrawing {
 
 	/// A billboarded holder whose one child is where the attachment goes, so an offset in the
 	/// child stays to the viewer's right however the table is turned.
-	private static func makeAnchor(in parent: Entity) -> Entity {
+	static func makeAnchor(in parent: Entity) -> Entity {
 		let anchor = Entity()
 		anchor.components.set(BillboardComponent())
 		anchor.addChild(Entity())

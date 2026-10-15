@@ -73,6 +73,16 @@ final class SpatialMapModel {
 	/// The trace route picked in the trace route menu. It stays drawn after the flyover lands, so its
 	/// badges and SNR can be read, until it is cleared.
 	var shownRoute: SpatialRouteSnapshot?
+	/// Direct links between the nodes on the map, newest first; empty while `showLinks` is off.
+	private(set) var links: [SpatialLinkSnapshot] = []
+	/// Set from the window's setting.
+	var showLinks = false {
+		// Read the reports again right away when the links are turned back on.
+		didSet { if showLinks && !oldValue { reportsReadAt = .distantPast } }
+	}
+	/// Saved neighbor reports, re-read every 15 s rather than on every 2 s refresh.
+	@ObservationIgnored private var reports: [NodeLinkReportRow] = []
+	@ObservationIgnored private var reportsReadAt = Date.distantPast
 	private(set) var labeledNodeNums: [Int64] = []
 	private(set) var selectedNodeNum: Int64?
 	var connectedNodeNum: Int64?
@@ -260,6 +270,15 @@ final class SpatialMapModel {
 		autoDownloadIfNeeded()
 
 		if refreshCount % 10 == 1 { refreshRoutes(container: context.container) }
+		let now = Date.now
+		if showLinks && now.timeIntervalSince(reportsReadAt) >= 15 {
+			reports = NodeLinks.reportRows(context: context, now: now)
+			reportsReadAt = now
+		}
+		let freshLinks = showLinks
+			? SpatialLinkLayout.links(nodes: fetched, connectedNum: connectedNodeNum, reports: reports, now: now)
+			: []
+		if freshLinks != links { links = freshLinks }
 		updateLabels()
 		rebuildCoverageIfNeeded()
 	}
