@@ -646,18 +646,18 @@ enum ShowcaseDeviceMeshes {
 		let image = UIGraphicsImageRenderer(size: size, format: format).image { _ in
 			UIColor.white.setFill()
 			UIBezierPath(roundedRect: CGRect(origin: .zero, size: size), cornerRadius: 14).fill()
-			let inset: CGFloat = 12
+			let inset: CGFloat = 10
 			let paragraph = NSMutableParagraphStyle()
 			paragraph.alignment = .center
 			paragraph.lineBreakMode = .byWordWrapping
-			let small: [NSAttributedString.Key: Any] = [.font: UIFont.systemFont(ofSize: 22, weight: .medium), .foregroundColor: UIColor(white: 0.45, alpha: 1), .paragraphStyle: paragraph]
+			let small: [NSAttributedString.Key: Any] = [.font: UIFont.systemFont(ofSize: 28, weight: .medium), .foregroundColor: UIColor(white: 0.45, alpha: 1), .paragraphStyle: paragraph]
 			(item.vendor.rawValue as NSString).draw(
-				with: CGRect(x: inset, y: 8, width: size.width - inset * 2, height: 28),
+				with: CGRect(x: inset, y: 4, width: size.width - inset * 2, height: 34),
 				options: .usesLineFragmentOrigin, attributes: small, context: nil
 			)
 			// Up to two lines; long names shrink until they fit.
-			let nameBox = CGRect(x: inset, y: 36, width: size.width - inset * 2, height: size.height - 44)
-			var fontSize: CGFloat = 30
+			let nameBox = CGRect(x: inset, y: 36, width: size.width - inset * 2, height: size.height - 38)
+			var fontSize: CGFloat = 42
 			var large: [NSAttributedString.Key: Any] = [:]
 			repeat {
 				large = [.font: UIFont.systemFont(ofSize: fontSize, weight: .semibold), .foregroundColor: UIColor(white: 0.1, alpha: 1), .paragraphStyle: paragraph]
