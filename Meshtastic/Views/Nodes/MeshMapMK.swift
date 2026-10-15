@@ -1518,10 +1518,10 @@ struct MeshMapMK: View {
 	}
 
 	/// Build the forward and return polylines and the origin/target markers for the selected trace
-	/// route, and the layout the hop badges and SNR labels come from. Forward is solid blue and
-	/// return dashed green, the colors of the Forward route and Return route headings, each with a
-	/// dark edge so it reads on any basemap. SNR is shown by the labels on the legs, not the line
-	/// color. Limited to nodes with a snapshot.
+	/// route, and the layout the hop badges and SNR labels come from. Forward is solid orange (short
+	/// dashes where the SNR is unknown) and return dashed blue, the colors of the Forward route and
+	/// Return route headings, each with a dark edge so it reads on any basemap. SNR is shown by the
+	/// labels on the legs, not the line color. Limited to nodes with a snapshot.
 	private func rebuildTraceRouteContent() {
 		let dark = colorScheme == .dark
 		let key = selectedTraceRoute.map { "\($0.id)|\($0.nodePositions.count)|\(dark)" } ?? "none"
@@ -1979,8 +1979,8 @@ private enum TraceRouteZ {
 	static let endpoint = MKAnnotationViewZPriority.max
 }
 
-/// Numbered badge for a trace route relay, in the color of its direction: filled blue on the way
-/// out, sitting up and to the right of the node, and outlined green on the way back, down and to
+/// Numbered badge for a trace route relay, in the color of its direction: filled orange on the way
+/// out, sitting up and to the right of the node, and outlined blue on the way back, down and to
 /// the right. A node on both paths shows both numbers.
 private struct TraceRouteHopBadge: View {
 	let number: Int
@@ -1990,7 +1990,8 @@ private struct TraceRouteHopBadge: View {
 		Text(verbatim: "\(number)")
 			.font(.system(size: 11, weight: .bold, design: .rounded))
 			.monospacedDigit()
-			.foregroundStyle(isBack ? Color.primary : Color.white)
+			// Black on the orange: white on it is too faint for digits this small.
+			.foregroundStyle(isBack ? Color.primary : Color.black)
 			.frame(minWidth: 18, minHeight: 18)
 			.background(Circle().fill(isBack ? Color(UIColor.systemBackground) : TraceRouteColors.forward))
 			.overlay(

@@ -464,7 +464,7 @@ struct SpatialMapOrnament: View {
 	}
 }
 
-/// The route colors in the ornament while a route is shown: solid blue out, dashed green back.
+/// The route colors in the ornament while a route is shown: solid orange out, dashed blue back.
 struct SpatialRouteLegend: View {
 	var body: some View {
 		HStack(spacing: 4) {

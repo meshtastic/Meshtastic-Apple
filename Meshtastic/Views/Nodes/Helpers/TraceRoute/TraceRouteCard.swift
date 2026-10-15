@@ -7,11 +7,17 @@
 
 import SwiftUI
 
-/// Colors shared by the log chart and the cards, so a chip matches its line.
+/// Route colors for every trace route surface: the log chart and cards, the hop timeline, the map,
+/// the share image and Vision Pro. Forward and return match the Android app's outgoing and return
+/// routes, a pair that reads on light and dark maps and for most color-blind viewers. They are
+/// fixed values rather than system colors, so they look the same in light, dark and on Vision Pro.
 enum TraceRouteColors {
-	static let forward = Color.blue
-	static let back = Color.green
-	static let roundTrip = Color.orange
+	/// Orange, #E86A00.
+	static let forward = Color(red: 0xE8 / 255, green: 0x6A / 255, blue: 0x00 / 255)
+	/// Blue, #0081C7.
+	static let back = Color(red: 0x00 / 255, green: 0x81 / 255, blue: 0xC7 / 255)
+	/// Purple, so the round trip doesn't read as either direction.
+	static let roundTrip = Color.purple
 }
 
 /// One trace route in a log: when, what came back, and chips for the hop counts and round trip.
@@ -114,10 +120,12 @@ struct TraceRouteChip: View {
 	var body: some View {
 		HStack(spacing: 4) {
 			Image(systemName: systemImage)
+				.foregroundStyle(color)
+			// Primary text, not the route color: the route colors are too light for small text.
 			Text(text)
+				.foregroundStyle(.primary)
 		}
 		.font(.caption.weight(.medium))
-		.foregroundStyle(color)
 		.padding(.horizontal, 8)
 		.padding(.vertical, 3)
 		.background(color.opacity(0.15), in: Capsule())
