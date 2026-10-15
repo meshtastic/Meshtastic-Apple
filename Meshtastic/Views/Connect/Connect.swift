@@ -730,7 +730,8 @@ struct Connect: View {
 			sortBy: [SortDescriptor(\TelemetryEntity.time, order: .reverse)]
 		)
 		statsDescriptor.fetchLimit = 1
-		let mostRecent = try? context.fetch(statsDescriptor).first
+		// No node means no stats; a lookup for node 0 would only find unlinked rows.
+		let mostRecent = node == nil ? nil : try? context.fetch(statsDescriptor).first
 		
 		let activityAttributes = MeshActivityAttributes(nodeNum: Int(node?.num ?? 0), name: node?.user?.longName?.addingVariationSelectors ?? "unknown", shortName: node?.user?.shortName ?? "?")
 		
