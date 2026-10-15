@@ -11,7 +11,7 @@ import UIKit
 
 /// The moving parts of the volume, stepped once per rendered frame: packet pulses arcing from
 /// the sender to the connected radio, rings rippling from a tower that was heard, the activity
-/// halo under each node, and a flyover marker.
+/// halo under each node, and the flyover comet.
 @MainActor
 final class SpatialTrafficController {
 	static let poolSize = 24
@@ -34,7 +34,6 @@ final class SpatialTrafficController {
 
 	private let scene: SpatialSceneController
 	private static let pulseMesh = MeshResource.generateSphere(radius: 0.007)
-	private static let markerMesh = MeshResource.generateSphere(radius: 0.008)
 	private var idle: [ModelEntity] = []
 	private var active: [Pulse] = []
 	private var limiter = PulseRateLimiter()
@@ -44,7 +43,9 @@ final class SpatialTrafficController {
 	private var boosts: [Int64: (start: TimeInterval, initial: Float)] = [:]
 	private var clock: TimeInterval = 0
 	private var flyover: SpatialFlyover?
-	private let marker: ModelEntity
+	private var flownRoute: SpatialRouteSnapshot?
+	private var flownRevision: Int?
+	private let comet: SpatialFlyoverComet
 
 	var showPulses = true
 	var showGlow = true { didSet { if !showGlow { clearHalos() } } }
@@ -54,9 +55,7 @@ final class SpatialTrafficController {
 
 	init(scene: SpatialSceneController) {
 		self.scene = scene
-		marker = ModelEntity(mesh: Self.markerMesh, materials: [UnlitMaterial(color: .white)])
-		marker.isEnabled = false
-		scene.trafficContainer.addChild(marker)
+		comet = SpatialFlyoverComet(parent: scene.trafficContainer)
 		for _ in 0..<Self.poolSize {
 			let entity = ModelEntity(mesh: Self.pulseMesh, materials: [UnlitMaterial(color: .white)])
 			entity.isEnabled = false
@@ -106,26 +105,29 @@ final class SpatialTrafficController {
 
 	// MARK: Flyover
 
-	/// Flies the marker along the route; the scene draws the route itself.
+	/// Flies the comet along the route; the scene draws the route itself. The legs follow the
+	/// ground and the comet is lifted per frame, so it stays just above the pins at any zoom.
 	func startFlyover(_ route: SpatialRouteSnapshot, speed: Double = 1) {
 		guard let placement = scene.placement else { return }
-		let legs = [route.forward, route.back].map { path in
-			path.map {
-				SpatialZoom.clampToDisk(placement.surface($0.coordinate, clearance: SpatialSceneController.flyHeight), diskRadius: placement.diskRadius)
-			}
-		}
-		var flyover = SpatialFlyover(legs: legs)
+		var flyover = SpatialFlyover(legs: Self.legs(route, on: placement))
 		flyover.speedMultiplier = speed
 		guard !flyover.legs.isEmpty else { return }
 		self.flyover = flyover
-		marker.scale = SIMD3(repeating: scene.counterScale)
-		marker.isEnabled = true
+		flownRoute = route
+		flownRevision = placement.revision
 	}
 
-	/// Stops the marker. The route itself stays drawn until it is cleared.
+	private static func legs(_ route: SpatialRouteSnapshot, on placement: SpatialPlacement) -> [[SIMD3<Float>]] {
+		[route.forward, route.back].map { path in
+			path.map { SpatialZoom.clampToDisk(placement.surface($0.coordinate), diskRadius: placement.diskRadius) }
+		}
+	}
+
+	/// Stops the comet. The route itself stays drawn until it is cleared.
 	func stopFlyover() {
 		flyover = nil
-		marker.isEnabled = false
+		flownRoute = nil
+		comet.hide()
 	}
 
 	// MARK: Per frame
@@ -158,9 +160,16 @@ final class SpatialTrafficController {
 			}
 		}
 		if var flyover {
+			// The map zoomed or its terrain arrived mid-flight: carry on over the new positions.
+			if let placement = scene.placement, placement.revision != flownRevision, let flownRoute {
+				flownRevision = placement.revision
+				guard let moved = flyover.moved(to: Self.legs(flownRoute, on: placement)) else { return stopFlyover() }
+				flyover = moved
+			}
 			if let position = flyover.advance(by: dt) {
-				marker.position = position
 				self.flyover = flyover
+				// Reduce Motion keeps the head and drops the tail.
+				comet.update(flyover, position: position, lift: SpatialSceneController.flyHeight * scene.counterScale, counterScale: scene.counterScale, showTail: !UIAccessibility.isReduceMotionEnabled)
 			} else {
 				stopFlyover()
 			}

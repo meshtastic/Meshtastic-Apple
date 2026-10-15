@@ -14,6 +14,8 @@ struct SpatialFlyover: Equatable {
 		let points: [SIMD3<Float>]
 		let cumulative: [Float]
 		let duration: TimeInterval
+		/// Index of this leg in the paths passed in, which can differ when a path was too short.
+		let source: Int
 		var length: Float { cumulative.last ?? 0 }
 	}
 
@@ -32,14 +34,26 @@ struct SpatialFlyover: Equatable {
 	var speedMultiplier = 1.0
 
 	init(legs paths: [[SIMD3<Float>]]) {
-		legs = paths.compactMap { points in
+		legs = paths.enumerated().compactMap { source, points in
 			guard points.count >= 2 else { return nil }
 			var cumulative: [Float] = [0]
 			for i in 1..<points.count { cumulative.append(cumulative[i - 1] + simd_distance(points[i - 1], points[i])) }
 			guard let length = cumulative.last, length > 0 else { return nil }
 			let duration = min(max(TimeInterval(length / Self.cruiseSpeed), Self.minLegDuration), Self.maxLegDuration)
-			return Leg(points: points, cumulative: cumulative, duration: duration)
+			return Leg(points: points, cumulative: cumulative, duration: duration, source: source)
 		}
+	}
+
+	/// The same flight over new positions for its legs, such as after the map zooms: the leg,
+	/// progress and hold carry over. Nil when the new paths don't give the same legs.
+	func moved(to paths: [[SIMD3<Float>]]) -> SpatialFlyover? {
+		var next = SpatialFlyover(legs: paths)
+		guard next.legs.map(\.source) == legs.map(\.source) else { return nil }
+		next.legIndex = legIndex
+		next.progress = progress
+		next.holdRemaining = holdRemaining
+		next.speedMultiplier = speedMultiplier
+		return next
 	}
 
 	/// Advances by `dt` seconds and returns the marker position, nil once the route is flown.
@@ -60,6 +74,23 @@ struct SpatialFlyover: Equatable {
 		let position = Self.point(on: leg, at: Float(Self.eased(progress)) * leg.length)
 		if progress >= 1 { holdRemaining = Self.landingHold }
 		return position
+	}
+
+	/// How far along the current leg the marker was `ago` seconds of flight earlier, ignoring the
+	/// speed multiplier, clamped to the start of the leg. While holding, it counts the hold first,
+	/// so a trail behind the marker catches up with it. Nil once the route is flown.
+	func distanceBack(_ ago: TimeInterval) -> Float? {
+		guard legIndex < legs.count else { return nil }
+		let leg = legs[legIndex]
+		var raw = progress
+		if holdRemaining > 0 {
+			let held = Self.landingHold - holdRemaining
+			if ago <= held { return leg.length }
+			raw = 1 - (ago - held) / leg.duration
+		} else {
+			raw -= ago / leg.duration
+		}
+		return Float(Self.eased(max(raw, 0))) * leg.length
 	}
 
 	/// Constant speed, then a smooth deceleration over the last stretch of the leg.
