@@ -58,8 +58,8 @@ enum TraceRouteTimeWindow: String, CaseIterable, Identifiable {
 		return formatter.string(from: components) ?? rawValue
 	}
 
-	/// The windows to offer: `hour` and `all` always, and each other window once the log reaches
-	/// back that far. The same rule as the Android app's metrics time frames.
+	/// The windows to offer: `all` always; once there is a log, `hour` too, and each other window
+	/// once the log reaches back that far. The same rule as the Android app's metrics time frames.
 	static func available(oldest: Date?, now: Date = .now) -> [TraceRouteTimeWindow] {
 		guard let oldest else { return [.all] }
 		let age = now.timeIntervalSince(oldest)

@@ -109,7 +109,10 @@ struct TraceRouteLog: View {
 		let windows = availableWindows
 		if windows.count > 1 {
 			Section {
-				Picker(String(localized: "Time window", comment: "Trace route log: how far back the chart and list go"), selection: $windowRawValue) {
+				Picker(String(localized: "Time window", comment: "Trace route log: how far back the chart and list go"), selection: Binding(
+					get: { window.rawValue },
+					set: { windowRawValue = $0 }
+				)) {
 					ForEach(windows) { window in
 						Text(window.label).tag(window.rawValue)
 					}

@@ -13,7 +13,7 @@ import Testing
 struct TraceRouteTimeWindowTests {
 	private let now = Date(timeIntervalSince1970: 1_800_000_000)
 
-	@Test("1h and All are always offered, the others once the log reaches back that far")
+	@Test("With a log, 1h and All are offered, the others once the log reaches back that far")
 	func availableWindows() {
 		#expect(TraceRouteTimeWindow.available(oldest: nil, now: now) == [.all])
 		#expect(TraceRouteTimeWindow.available(oldest: now.addingTimeInterval(-600), now: now) == [.hour, .all])
