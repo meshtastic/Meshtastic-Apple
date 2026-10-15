@@ -115,6 +115,28 @@ struct SpatialRouteMenuTests {
 		#expect(oneWay.originName == Self.origin.toHex(), "an unknown originator falls back to its hex id")
 	}
 
+	/// More routes with one positioned node than one fetch page holds, then an older drawable one:
+	/// the menu keeps fetching until it finds it.
+	@Test func routesSkipPastRoutesThatCantBeDrawn() throws {
+		let context = ModelContext(sharedModelContainer)
+		defer { cleanUp(context) }
+		let target = insertNode(Self.target, name: "Ridge", in: context)
+		// Ahead of anything else in the shared store, so these are the newest routes.
+		let base = Date.now.addingTimeInterval(400 * 86_400)
+		for index in 0..<(SpatialRouteSource.routeLimit * 3 + 1) {
+			let route = insertRoute(id: 0x5EA7_2000 + Int64(index), time: base.addingTimeInterval(Double(-index)), hopsBack: 0, target: target, in: context)
+			// Keep only the originator's position: counts as having positions, can't be drawn.
+			for position in route.nodePositions where position.num != Self.origin {
+				context.delete(position)
+			}
+		}
+		let drawable = insertRoute(id: 0x5EA7_2FFF, time: base.addingTimeInterval(-3_600), hopsBack: 1, target: target, in: context)
+		try context.save()
+
+		let routes = SpatialRouteSource.routes(context: context)
+		#expect(routes.first?.id == drawable.id)
+	}
+
 	@Test func routesLookUpTheOriginatorsName() throws {
 		let context = ModelContext(sharedModelContainer)
 		defer { cleanUp(context) }

@@ -87,14 +87,30 @@ enum SpatialRouteSource {
 			predicate: #Predicate<TraceRouteEntity> { $0.hasPositions == true && $0.response == true },
 			sortBy: [SortDescriptor(\.time, order: .reverse)]
 		)
-		// Some routes drop out below when fewer than two of their nodes have a position, so fetch
-		// extra to still fill the menu.
-		descriptor.fetchLimit = routeLimit * 3
-		let routes = (try? context.fetch(descriptor)) ?? []
-		let originNums = Array(Set(routes.map(\.fromNum)))
+		// A route counts as having positions when one node has one, but drawing it needs two, so
+		// some routes drop out below. Fetch a page at a time until the menu is full or none are left.
+		let pageSize = routeLimit * 3
+		descriptor.fetchLimit = pageSize
+		var routes: [TraceRouteEntity] = []
+		var drawable: [TraceRouteEntity] = []
+		while drawable.count < routeLimit {
+			descriptor.fetchOffset = routes.count
+			let page = (try? context.fetch(descriptor)) ?? []
+			routes += page
+			drawable += page.filter(isDrawable)
+			if page.count < pageSize { break }
+		}
+		let originNums = Array(Set(drawable.map(\.fromNum)))
 		let origins = (try? context.fetch(FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { originNums.contains($0.num) }))) ?? []
 		let names = Dictionary(origins.compactMap { node in node.user?.longName.map { (node.num, $0) } }, uniquingKeysWith: { first, _ in first })
-		return Array(newestFirst(routes.compactMap { snapshot($0, originName: names[$0.fromNum]) }).prefix(routeLimit))
+		return Array(newestFirst(drawable.compactMap { snapshot($0, originName: names[$0.fromNum]) }).prefix(routeLimit))
+	}
+
+	/// Whether at least two nodes on the route's forward path have a position, the least the map
+	/// can draw. Cheaper than building the snapshot.
+	static func isDrawable(_ route: TraceRouteEntity) -> Bool {
+		let byNum = route.nodePositionsByNum
+		return route.hops.lazy.filter { !$0.back && byNum[$0.num]?.coordinate != nil }.prefix(2).count == 2
 	}
 
 	/// One stored route as the map draws it, or nil when fewer than two of its nodes have a position.
