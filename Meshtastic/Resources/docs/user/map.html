@@ -112,6 +112,10 @@ Enable the <strong>Via LoRa</strong> filter and disable <strong>Via MQTT</strong
 <td>Show or hide your own position (the blue dot) on the map</td>
 </tr>
 <tr>
+<td>Direct Links</td>
+<td>Draw a line between nodes that hear each other directly, colored by signal quality like the signal meter, with the SNR in a small pill near the node that measured it when you zoom in. Lines from your connected radio come from nodes it heard directly (no hops, not over MQTT) in the last 12 hours. Lines between other nodes come from their Neighbor Info reports from the last day; these only arrive when your radio's Neighbor Info module is on, and reports that came over MQTT are left out. A line is solid when both directions are known and dashed when only one is, and it fades as it gets older. Both ends need a position, and node filters apply. Hidden while a trace route is shown.</td>
+</tr>
+<tr>
 <td>Convex Hull</td>
 <td>Draw an outline around the outermost LoRa nodes to visualize mesh coverage</td>
 </tr>
@@ -253,14 +257,14 @@ Geofences are evaluated on your own device as position packets arrive from the m
 <p>Tap <strong>▶</strong> in the route banner for a guided 3D flythrough over satellite imagery: it flies the outbound path, lands at the target, then flies the return path and eases back to the map. Tap the <strong>speed control</strong> to cycle the pace from 1× up to 5× (1×, 1.5×, 2×, 2.5×, 3×, 4×, 5×) — adjustable mid-flight — and <strong>■</strong> to stop.</p>
 <p>Tap the <strong>legend</strong> button (map icon, bottom-right) for a key to the colors and markers.</p>
 <h3>On the spatial map (Apple Vision Pro)</h3>
-<p>On the 3D spatial map, tap the <strong>airplane</strong> button in the toolbar and pick a trace route. A marker flies the route, and the route stays drawn on the terrain after it lands so you can read it. Tap <strong>✕</strong> in the toolbar to clear it.</p>
+<p>On the 3D spatial map, tap the <strong>trace route</strong> button in the toolbar and pick a route. The menu lists the 20 most recent trace routes that came back with node positions, newest first. Each shows the originator and target, then the hop count, whether a return path came back, and how long ago it arrived (for example &quot;3 Hops · 2 hours ago&quot;). A marker flies the route, and the route stays drawn on the terrain after it lands so you can read it. Tap <strong>✕</strong> in the toolbar to clear it.</p>
 <ul>
 <li><strong>Forward and return</strong> — the forward path toward the target is a <strong>solid orange</strong> line (short dashes where the SNR is unknown) and the return path back to the originator is a <strong>dashed blue</strong> line, the same colors as the Forward route and Return route headings in the hop timeline. Each has a dark edge so it stands out on the terrain. Where both paths use the same leg, the two lines sit side by side.</li>
 <li><strong>Arrows</strong> — small cones along each line, a shade lighter than the line, point in the direction of travel and drift slowly along it. They stay still when <strong>Reduce Motion</strong> is on.</li>
 <li><strong>Endpoints</strong> — the originator has a <strong>green</strong> ring at its foot and the target a <strong>white</strong> ring.</li>
 <li><strong>Hop numbers</strong> — each relay gets a numbered badge beside its pin, in the order the packet reached it: filled orange on the way out, a blue ring on the way back.</li>
 <li><strong>Signal labels</strong> — each leg shows its SNR (for example &quot;7.0 dB&quot;) in a small pill colored by signal quality. A forward leg whose SNR wasn't reported is drawn with short dashes and has no label. Labels that would crowd each other are hidden; zoom in to see more.</li>
-<li>While a route is shown, the traceroute links between nodes are faded so the route stands out, and the toolbar shows a key to the two line colors.</li>
+<li>While a route is shown, the toolbar shows a key to the two line colors.</li>
 </ul>
 <h2>Node Trail</h2>
 <p>When a node has reported multiple positions over time, a trail line connects the historical positions on the map, showing the node's path.</p>
