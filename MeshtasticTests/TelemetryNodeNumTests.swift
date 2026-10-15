@@ -234,6 +234,30 @@ struct TelemetryNodeNumTests {
 		}
 	}
 
+	@Test("Before the backfill, a lookup for node 0 does not match rows the backfill hasn't reached")
+	func nodeZeroSkipsUnfilledRows() async throws {
+		try await withBackfill(complete: false) {
+			let container = try makeContainer()
+			let context = container.mainContext
+			let node = makeNode(0x7E1E_0040, in: context)
+			addLegacyRow(node, type: 0, in: context)
+			addLegacyRow(node, type: 0, in: context)
+			// No node: nodeNum 0 and no relationship.
+			addRow(0, type: 0, in: context)
+			try context.save()
+
+			#expect(try count(TelemetryEntity.predicate(forNode: 0), in: context) == 1)
+			#expect(try count(TelemetryEntity.predicate(forNode: 0, metricsType: 0), in: context) == 1)
+			#expect(try count(TelemetryEntity.predicate(forNodes: [0]), in: context) == 1)
+			#expect(try count(TelemetryEntity.predicate(forNodes: [0], metricsType: 0), in: context) == 1)
+			#expect(try count(TelemetryEntity.predicate(forNode: node.num), in: context) == 2)
+
+			TelemetryEntity.deleteAll(forNodes: [0], in: context)
+			try context.save()
+			#expect(try count(TelemetryEntity.predicate(forNode: node.num), in: context) == 2)
+		}
+	}
+
 	// MARK: - Backfill
 
 	@Test("The backfill copies the node number in chunks and finishes")

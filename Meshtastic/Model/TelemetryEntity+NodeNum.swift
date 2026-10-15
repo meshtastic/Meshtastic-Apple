@@ -28,7 +28,11 @@ extension TelemetryEntity {
 		if TelemetryNodeNumBackfill.isComplete {
 			return #Predicate<TelemetryEntity> { $0.nodeNum == nodeNum }
 		}
-		return #Predicate<TelemetryEntity> { $0.nodeNum == nodeNum || $0.nodeTelemetry?.num == nodeNum }
+		// `nodeNum != 0 || nodeTelemetry == nil`: every row the backfill hasn't reached has
+		// nodeNum 0, so without it a lookup for node 0 would match all of them.
+		return #Predicate<TelemetryEntity> {
+			($0.nodeNum == nodeNum && ($0.nodeNum != 0 || $0.nodeTelemetry == nil)) || $0.nodeTelemetry?.num == nodeNum
+		}
 	}
 
 	/// One metrics type for one node.
@@ -37,7 +41,8 @@ extension TelemetryEntity {
 			return #Predicate<TelemetryEntity> { $0.nodeNum == nodeNum && $0.metricsType == metricsType }
 		}
 		return #Predicate<TelemetryEntity> {
-			$0.metricsType == metricsType && ($0.nodeNum == nodeNum || $0.nodeTelemetry?.num == nodeNum)
+			$0.metricsType == metricsType
+				&& (($0.nodeNum == nodeNum && ($0.nodeNum != 0 || $0.nodeTelemetry == nil)) || $0.nodeTelemetry?.num == nodeNum)
 		}
 	}
 
@@ -47,7 +52,8 @@ extension TelemetryEntity {
 			return #Predicate<TelemetryEntity> { nodeNums.contains($0.nodeNum) }
 		}
 		return #Predicate<TelemetryEntity> {
-			nodeNums.contains($0.nodeNum) || ($0.nodeTelemetry.flatMap { nodeNums.contains($0.num) } ?? false)
+			(nodeNums.contains($0.nodeNum) && ($0.nodeNum != 0 || $0.nodeTelemetry == nil))
+				|| ($0.nodeTelemetry.flatMap { nodeNums.contains($0.num) } ?? false)
 		}
 	}
 
@@ -58,7 +64,8 @@ extension TelemetryEntity {
 		}
 		return #Predicate<TelemetryEntity> {
 			$0.metricsType == metricsType
-				&& (nodeNums.contains($0.nodeNum) || ($0.nodeTelemetry.flatMap { nodeNums.contains($0.num) } ?? false))
+				&& ((nodeNums.contains($0.nodeNum) && ($0.nodeNum != 0 || $0.nodeTelemetry == nil))
+					|| ($0.nodeTelemetry.flatMap { nodeNums.contains($0.num) } ?? false))
 		}
 	}
 
