@@ -764,8 +764,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 		let nodeShortName = connectedNode?.user?.shortName ?? "?"
 
 		// Fetch latest local stats telemetry
-		let localStats = connectedNode?.telemetries.filter { $0.metricsType == 4 }
-		let mostRecent = localStats?.last
+		let mostRecent = connectedNode?.latestLocalStats
 
 		let timerSeconds = 900 // 15 minute local stats interval
 		let future = Date(timeIntervalSinceNow: Double(timerSeconds))

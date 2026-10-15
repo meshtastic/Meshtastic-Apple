@@ -303,7 +303,7 @@ enum PerformanceSeedData {
 			deviceMetrics.uptimeSeconds = configuration.style == .marketing
 				? Int32(86_400 * (3 + index % 40) + sample * 300)   // 3–43 days, like a real long-lived node
 				: Int32(index * 60 + sample)
-			deviceMetrics.nodeTelemetry = node
+			deviceMetrics.nodeNum = node.num
 			context.insert(deviceMetrics)
 
 			let environmentMetrics = TelemetryEntity()
@@ -313,7 +313,7 @@ enum PerformanceSeedData {
 			environmentMetrics.relativeHumidity = 25 + Float((index + sample * 2) % 70)
 			environmentMetrics.barometricPressure = 980 + Float((index + sample) % 70)
 			environmentMetrics.gasResistance = Float((index + sample) % 500)
-			environmentMetrics.nodeTelemetry = node
+			environmentMetrics.nodeNum = node.num
 			context.insert(environmentMetrics)
 		}
 
@@ -338,7 +338,7 @@ enum PerformanceSeedData {
 			localStats.numOnlineNodes = Int32(max(1, min(250, configuration.nodeCount - (sample % 12))))
 			localStats.numTotalNodes = Int32(configuration.nodeCount)
 			localStats.uptimeSeconds = Int32(86_400 + index * 60 + sample * 900)
-			localStats.nodeTelemetry = node
+			localStats.nodeNum = node.num
 			context.insert(localStats)
 		}
 	}

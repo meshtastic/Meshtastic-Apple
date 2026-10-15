@@ -585,6 +585,7 @@ actor MeshPackets {
 		// inclusive of pending inserts, so we free enough persisted rows to make room for them.
 		descriptor.includePendingChanges = false
 		guard let stale = try? modelContext.fetch(descriptor), !stale.isEmpty else { return 0 }
+		TelemetryEntity.deleteAll(forNodes: stale.map(\.num), in: modelContext)
 		for node in stale { modelContext.delete(node) }
 		Logger.data.info("🗄️ [Caps] Evicted \(stale.count, privacy: .public) least-recently-heard node(s) (was \(nodeCount, privacy: .public), cap \(cap, privacy: .public))")
 		return stale.count
@@ -1090,7 +1091,7 @@ actor MeshPackets {
 						telemetry.voltage = nodeInfo.deviceMetrics.voltage
 						telemetry.channelUtilization = nodeInfo.deviceMetrics.channelUtilization
 						telemetry.airUtilTx = nodeInfo.deviceMetrics.airUtilTx
-						telemetry.nodeTelemetry = newNode
+						telemetry.nodeNum = newNode.num
 					}
 					if nodeInfo.lastHeard > 0 {
 						newNode.firstHeard = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.lastHeard)))
@@ -1278,7 +1279,7 @@ actor MeshPackets {
 						newTelemetry.voltage = nodeInfo.deviceMetrics.voltage
 						newTelemetry.channelUtilization = nodeInfo.deviceMetrics.channelUtilization
 						newTelemetry.airUtilTx = nodeInfo.deviceMetrics.airUtilTx
-						newTelemetry.nodeTelemetry = fetchedNode[0]
+						newTelemetry.nodeNum = fetchedNode[0].num
 					}
 
 					if nodeInfo.hasPosition {
@@ -1609,7 +1610,7 @@ actor MeshPackets {
 			// Telemetry is genuine RF contact with packet.from. Like deviceMetadataPacket /
 			// textMessageAppPacket, ensure a NodeInfoEntity exists before storing so telemetry that
 			// arrives before the node's NodeInfo / nodeDB entry is not dropped as an orphan row
-			// (nodeTelemetry == nil) that the UI can never query. `num` is @Attribute(.unique), so this
+			// (no node to show it under) that the UI can never query. `num` is @Attribute(.unique), so this
 			// returns the existing node or a minimal stub that a later NodeInfo packet enriches.
 			let node = findOrCreateNode(num: packetFrom, context: modelContext)
 			let telemetry = TelemetryEntity()
@@ -1698,8 +1699,9 @@ actor MeshPackets {
 			// node reporting time == 0 (no RTC/GPS) never stores as 1970 and gets hidden by the node
 			// detail's "latest" sort and the 7-day chart window.
 			telemetry.time = resolveTimestamp(telemetryMessage.time, packet.rxTime)
-			// Assign via relationship without loading all telemetries
-			telemetry.nodeTelemetry = node
+			// Link by node number, not through `nodeTelemetry`: setting the relationship makes
+			// SwiftData load every telemetry row this node has to update its inverse array.
+			telemetry.nodeNum = packetFrom
 
 			// Keep telemetry bounded as a soft cap during bursts; counting
 			// and sorting every telemetry packet does not scale on large meshes.
@@ -1707,13 +1709,13 @@ actor MeshPackets {
 			let nodeNum = packetFrom
 			if shouldPruneTelemetryHistory(nodeNum: nodeNum, metricsType: metricsType) {
 				let countDescriptor = FetchDescriptor<TelemetryEntity>(
-					predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType }
+					predicate: TelemetryEntity.predicate(forNode: nodeNum, metricsType: metricsType)
 				)
 				let currentCount = (try? modelContext.fetchCount(countDescriptor)) ?? 0
 				if currentCount > MeshPackets.maxTelemetryPerType {
 					let excess = currentCount - MeshPackets.maxTelemetryPerType
 					var pruneDescriptor = FetchDescriptor<TelemetryEntity>(
-						predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType },
+						predicate: TelemetryEntity.predicate(forNode: nodeNum, metricsType: metricsType),
 						sortBy: [SortDescriptor(\TelemetryEntity.time, order: .forward)]
 					)
 					pruneDescriptor.fetchLimit = excess
@@ -1746,9 +1748,9 @@ actor MeshPackets {
 						// invalidated (the same pattern the text-message path follows). Gating first also
 						// avoids faulting the user relationship and running the formatter on every packet.
 						let notificationID = "notification.lowbattery.\(packet.from)"
-						let shortName = telemetry.nodeTelemetry?.user?.shortName ?? "UNK"
+						let shortName = node.user?.shortName ?? "UNK"
 						let batteryText = telemetry.batteryLevel?.formatted(.number) ?? Constants.nilValueIndicator
-						let nodeNum = telemetry.nodeTelemetry?.num ?? 0
+						let nodeNum = node.num
 						Task {@MainActor in
 							let manager = LocalNotificationManager()
 							manager.notifications = [

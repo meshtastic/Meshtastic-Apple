@@ -70,7 +70,12 @@ final class TelemetryEntity {
 	var pm25Environmental: UInt32?
 	var pm100Environmental: UInt32?
 
-	// Relationship
+	/// The node this reading belongs to. New rows are found by this number rather than through
+	/// `nodeTelemetry`: setting the relationship makes SwiftData load every telemetry row the
+	/// node has to update the inverse array, on each insert. See `TelemetryEntity+NodeNum.swift`.
+	var nodeNum: Int64 = 0
+
+	// Relationship. Only rows saved before `nodeNum` existed still use it; new rows leave it nil.
 	var nodeTelemetry: NodeInfoEntity?
 
 	// Computed property

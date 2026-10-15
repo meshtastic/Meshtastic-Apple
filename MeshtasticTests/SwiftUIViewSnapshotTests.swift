@@ -734,7 +734,9 @@ struct NodeListItemCompactSnapshotTests {
 			let telemetry = TelemetryEntity()
 			telemetry.batteryLevel = battery
 			telemetry.distance = 100
-			node.telemetries = [telemetry]
+			telemetry.time = Date()
+			telemetry.nodeNum = num
+			sharedModelContainer.mainContext.insert(telemetry)
 		}
 		if let lat = latitudeI, let lon = longitudeI {
 			let position = PositionEntity()
@@ -1037,7 +1039,9 @@ struct NodeListItemSnapshotTests {
 			let telemetry = TelemetryEntity()
 			telemetry.batteryLevel = battery
 			telemetry.distance = 100
-			node.telemetries = [telemetry]
+			telemetry.time = Date()
+			telemetry.nodeNum = num
+			sharedModelContainer.mainContext.insert(telemetry)
 		}
 		if let lat = latitudeI, let lon = longitudeI {
 			let position = PositionEntity()
@@ -1581,7 +1585,10 @@ struct NodeDetailSnapshotTests {
 		envTelemetry.relativeHumidity = 55.0
 		envTelemetry.barometricPressure = 1013.25
 
-		node.telemetries = [deviceTelemetry, envTelemetry]
+		deviceTelemetry.nodeNum = node.num
+		envTelemetry.nodeNum = node.num
+		context.insert(deviceTelemetry)
+		context.insert(envTelemetry)
 		context.insert(node)
 
 		let view = NodeDetail(node: node, nodeNum: node.num)

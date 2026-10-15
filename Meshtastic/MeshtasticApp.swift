@@ -136,6 +136,10 @@ struct MeshtasticAppleApp: App {
 #endif
 
 		if Self.shouldInitializeAppServices {
+			// One-time copy of the node number onto telemetry saved by earlier versions.
+			if let persistenceController {
+				TelemetryNodeNumBackfill.startIfNeeded(persistence: persistenceController, appState: appState)
+			}
 			// Initialize map data manager
 			MapDataManager.shared.initialize()
 

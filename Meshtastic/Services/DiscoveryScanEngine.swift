@@ -1047,9 +1047,11 @@ extension DiscoveryScanEngine {
 		}
 
 		// All local stats (metricsType == 4) persisted by MeshPackets, oldest → newest.
-		let allLocalStats = connectedNode.telemetries
-			.filter { $0.metricsType == 4 }
-			.sorted { ($0.time ?? .distantPast) < ($1.time ?? .distantPast) }
+		let localStatsDescriptor = FetchDescriptor<TelemetryEntity>(
+			predicate: TelemetryEntity.predicate(forNode: connectedNode.num, metricsType: 4),
+			sortBy: [SortDescriptor(\TelemetryEntity.time, order: .forward)]
+		)
+		let allLocalStats = (try? context.fetch(localStatsDescriptor)) ?? []
 
 		// Prefer the samples that arrived during THIS preset's dwell — they reflect the preset's
 		// frequency. Fall back to the single most recent sample if none landed in the window.
@@ -1169,6 +1171,19 @@ extension DiscoveryScanEngine {
 			}
 		}
 
+		// Per-node sensor telemetry counts (single fetch, grouped by node): environment (1) and
+		// air-quality (3), matching the live scan's sensorPacketCount.
+		var sensorCounts: [Int64: Int] = [:]
+		var sensorDescriptor = FetchDescriptor<TelemetryEntity>(
+			predicate: #Predicate<TelemetryEntity> { $0.metricsType == 1 || $0.metricsType == 3 }
+		)
+		sensorDescriptor.propertiesToFetch = [\.nodeNum]
+		if let sensorRows = try? context.fetch(sensorDescriptor) {
+			for row in sensorRows {
+				if let num = row.ownerNodeNum { sensorCounts[num, default: 0] += 1 }
+			}
+		}
+
 		let allNodes = (try? context.fetch(FetchDescriptor<NodeInfoEntity>())) ?? []
 		// Skip the connected node and any node a live packet already added this dwell.
 		let candidates = allNodes.filter { node in
@@ -1213,7 +1228,7 @@ extension DiscoveryScanEngine {
 				messageCount: messageCounts[node.num] ?? 0,
 				// Sensor packets ≈ environment (1) + air-quality (3) telemetry the node has reported,
 				// matching the live scan's sensorPacketCount (.environmentMetrics + .airQualityMetrics).
-				sensorPacketCount: node.telemetries.filter { $0.metricsType == 1 || $0.metricsType == 3 }.count
+				sensorPacketCount: sensorCounts[node.num] ?? 0
 			)
 		}
 

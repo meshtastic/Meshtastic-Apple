@@ -1447,6 +1447,7 @@ extension AccessoryManager {
 				if let user = node.user {
 					context.delete(user)
 				}
+				TelemetryEntity.deleteAll(forNodes: [node.num], in: context)
 				context.delete(node)
 				try context.save()
 			} catch {

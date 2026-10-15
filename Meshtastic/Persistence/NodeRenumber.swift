@@ -65,6 +65,10 @@ enum NodeRenumber {
 			for hop in route.hops where hop.num == oldNum { hop.num = newNum }
 			for snapshot in route.nodePositions where snapshot.num == oldNum { snapshot.num = newNum }
 		}
+		let telemetry = try context.fetch(
+			FetchDescriptor<TelemetryEntity>(predicate: #Predicate { $0.nodeNum == oldNum })
+		)
+		for row in telemetry { row.nodeNum = newNum }
 		let relayed = try context.fetch(
 			FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.relayNode == oldNum })
 		)
@@ -93,6 +97,12 @@ enum NodeRenumber {
 			context.delete(duplicate)
 		}
 		if let duplicateNode = try fetchNode(num: newNum, in: context), duplicateNode !== keeper.userNode {
+			// Older telemetry is only linked to the node, and deleting the node unlinks it.
+			// Give it the number first so it stays with the renumbered radio.
+			let linked = try context.fetch(FetchDescriptor<TelemetryEntity>(
+				predicate: #Predicate { $0.nodeNum == 0 && $0.nodeTelemetry?.num == newNum }
+			))
+			for row in linked { row.nodeNum = newNum }
 			context.delete(duplicateNode)
 		}
 	}

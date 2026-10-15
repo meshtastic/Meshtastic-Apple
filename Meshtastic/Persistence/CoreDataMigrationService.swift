@@ -510,7 +510,7 @@ private extension CoreDataMigrationService {
 
 			if let cdNode = obj.value(forKey: "nodeTelemetry") as? NSManagedObject,
 			   let sdNode = nodeMap[cdNode.objectID] {
-				sd.nodeTelemetry = sdNode
+				sd.nodeNum = sdNode.num
 			}
 			sdContext.insert(sd)
 		}
