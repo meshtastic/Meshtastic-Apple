@@ -9,10 +9,10 @@ import RealityKit
 import SwiftUI
 
 /// The trace route picked in the flyover menu, drawn like the 2D map and the share image: forward
-/// legs solid orange, return legs dashed blue, each with a dark edge; shared legs side by side;
-/// chevrons for the direction; rings on the origin and target; and attachment slots for the hop
-/// badges and SNR pills. Built once per route and rebuilt only when the pins move or the scale
-/// changes, so the only per-frame work is the chevrons' drift.
+/// legs solid orange (short dashes where the SNR is unknown), return legs dashed blue, each with a
+/// dark edge; shared legs side by side; chevrons for the direction; rings on the origin and target;
+/// and attachment slots for the hop badges and SNR pills. Built once per route and rebuilt only
+/// when the pins move or the scale changes, so the only per-frame work is the chevrons' drift.
 @MainActor
 final class SpatialRouteDrawing {
 	/// Where the route's attachments go: the hop badges and SNR pills are SwiftUI views the

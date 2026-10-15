@@ -120,10 +120,12 @@ struct TraceRouteChip: View {
 	var body: some View {
 		HStack(spacing: 4) {
 			Image(systemName: systemImage)
+				.foregroundStyle(color)
+			// Primary text, not the route color: the route colors are too light for small text.
 			Text(text)
+				.foregroundStyle(.primary)
 		}
 		.font(.caption.weight(.medium))
-		.foregroundStyle(color)
 		.padding(.horizontal, 8)
 		.padding(.vertical, 3)
 		.background(color.opacity(0.15), in: Capsule())

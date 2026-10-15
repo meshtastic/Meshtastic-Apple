@@ -1518,10 +1518,10 @@ struct MeshMapMK: View {
 	}
 
 	/// Build the forward and return polylines and the origin/target markers for the selected trace
-	/// route, and the layout the hop badges and SNR labels come from. Forward is solid orange and
-	/// return dashed blue, the colors of the Forward route and Return route headings, each with a
-	/// dark edge so it reads on any basemap. SNR is shown by the labels on the legs, not the line
-	/// color. Limited to nodes with a snapshot.
+	/// route, and the layout the hop badges and SNR labels come from. Forward is solid orange (short
+	/// dashes where the SNR is unknown) and return dashed blue, the colors of the Forward route and
+	/// Return route headings, each with a dark edge so it reads on any basemap. SNR is shown by the
+	/// labels on the legs, not the line color. Limited to nodes with a snapshot.
 	private func rebuildTraceRouteContent() {
 		let dark = colorScheme == .dark
 		let key = selectedTraceRoute.map { "\($0.id)|\($0.nodePositions.count)|\(dark)" } ?? "none"
