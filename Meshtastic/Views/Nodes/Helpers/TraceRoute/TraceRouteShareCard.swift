@@ -145,10 +145,10 @@ struct TraceRouteShareCard: View {
 		}
 	}
 
-	/// "Origin → Destination" with the arrow in the brand color.
+	/// "Origin → Destination" with the arrow in the round trip purple, since the route runs both ways.
 	private func routeTitle(origin: TraceRouteStop, destination: TraceRouteStop) -> AttributedString {
 		var arrow = AttributedString(" → ")
-		arrow.foregroundColor = Style.brand
+		arrow.foregroundColor = TraceRouteColors.roundTrip
 		return AttributedString(origin.longName) + arrow + AttributedString(destination.longName)
 	}
 
