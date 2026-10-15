@@ -261,16 +261,16 @@
             "shows",
             "radio",
             "path",
-            "green",
             "forward",
             "colors",
             "waypoints",
             "toolbar",
             "site",
             "return",
-            "planner"
+            "planner",
+            "out"
         ],
-        "charCount": 13382
+        "charCount": 13386
     },
     {
         "id": "messages",
@@ -328,27 +328,27 @@
             "tls",
             "node",
             "channel",
+            "topics",
             "org",
             "internet",
+            "active",
             "username",
             "uplink",
             "unencrypted",
             "traffic",
             "than",
             "support",
+            "state",
+            "shows",
             "security",
             "root",
             "removed",
+            "region",
             "rather",
             "publishing",
-            "publishes",
-            "password",
-            "packet",
-            "optional",
-            "only",
-            "one"
+            "publishes"
         ],
-        "charCount": 2443
+        "charCount": 2542
     },
     {
         "id": "nodes",
@@ -577,12 +577,12 @@
             "request",
             "reads",
             "radio",
+            "orange",
             "nodes",
             "map",
-            "line",
-            "labeled"
+            "line"
         ],
-        "charCount": 2917
+        "charCount": 2919
     },
     {
         "id": "translate",

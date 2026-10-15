@@ -9,7 +9,7 @@ import RealityKit
 import SwiftUI
 
 /// The trace route picked in the flyover menu, drawn like the 2D map and the share image: forward
-/// legs solid blue, return legs dashed green, each with a dark edge; shared legs side by side;
+/// legs solid orange, return legs dashed blue, each with a dark edge; shared legs side by side;
 /// chevrons for the direction; rings on the origin and target; and attachment slots for the hop
 /// badges and SNR pills. Built once per route and rebuilt only when the pins move or the scale
 /// changes, so the only per-frame work is the chevrons' drift.
@@ -74,8 +74,8 @@ final class SpatialRouteDrawing {
 	private static let forwardChevronMaterial = trueColor(forwardColor.lighter(componentDelta: 0.22))
 	private static let backChevronMaterial = trueColor(backColor.lighter(componentDelta: 0.12))
 
-	/// Unlit and left out of the tone mapping, which otherwise darkens the blue and washes out the
-	/// green, so the lines match the hop timeline and the legend.
+	/// Unlit and left out of the tone mapping, which otherwise darkens and washes out the route
+	/// colors, so the lines match the hop timeline and the legend.
 	private static func trueColor(_ color: UIColor) -> UnlitMaterial {
 		var material = UnlitMaterial(applyPostProcessToneMap: false)
 		material.color = .init(tint: color)
@@ -339,7 +339,7 @@ final class SpatialRouteDrawing {
 	}
 }
 
-/// A relay's number on the route: filled blue with a white number on the way out, a green ring
+/// A relay's number on the route: filled orange with a white number on the way out, a blue ring
 /// on the way back, like the hop timeline.
 struct SpatialRouteHopBadge: View {
 	let number: Int
