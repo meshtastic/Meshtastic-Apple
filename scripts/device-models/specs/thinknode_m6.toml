@@ -50,8 +50,8 @@ port   = { color = "#111112", roughness = 0.6 }
 red    = { color = "#d42a2a", roughness = 0.3 }
 ledblue = { color = "#2a6ad4", roughness = 0.3 }
 
-# The two blade antennas and their hinges, as drawn, but behind the panel at the height of the
-# box, where they screw onto the SMA connectors.
+# The two blade antennas as drawn, but behind the panel at the height of the box, where they
+# screw onto the SMA connectors. The drawing stops them above their hinges.
 [[thin]]
 bbox = [0, 0, 29, 356]
 depth_mm = 9
@@ -63,16 +63,6 @@ bbox = [482, 0, 512, 356]
 depth_mm = 9
 z_mm = -19.75
 edge_radius_mm = 3.5
-
-[[thin]]
-bbox = [28, 325, 38, 353]
-depth_mm = 10
-z_mm = -19.75
-
-[[thin]]
-bbox = [473, 325, 483, 353]
-depth_mm = 10
-z_mm = -19.75
 
 # The box behind the tray, a little inside the plate, about 9 mm left of center.
 [[solid]]
@@ -92,23 +82,104 @@ size_mm = [162.0, 110.0, 2.5]
 radius_mm = 4.0
 confidence = "estimated from photos"
 
-# SMA connectors and the antennas' hinge barrels, from the box sides out to the drawn hinges
-# (x 105): short on the left, longer on the right.
+# The antenna hinges and connectors, from each blade's foot in to the box side: the hinge
+# knuckle (its pin points out of the panel, as drawn), the antenna's sleeve and knurled nut, then
+# the brass SMA jack and its hex nut on the box wall. Short on the left, longer on the right.
+# The drawn hinge pins put them 99.2 mm up; the knuckle is the blade's width (13.5 mm) and depth.
+
 [[solid]]
-name = "ConnectorLeft"
+name = "KnuckleLeft"
 material = "rubber"
-center_mm = [-95.0, 99.4, -19.75]
-size_mm = [22.0, 8.0, 7.9]
-radius_mm = 3.9
+shape = "cylinder"
+axis = "z"
+center_mm = [-116.2, 99.2, -19.75]
+size_mm = [13.5, 13.5, 9.0]
 confidence = "estimated from photos"
 
 [[solid]]
-name = "ConnectorRight"
+name = "SleeveLeft"
 material = "rubber"
-center_mm = [85.0, 99.4, -19.75]
-size_mm = [42.0, 8.0, 7.9]
-radius_mm = 3.9
+shape = "cylinder"
+axis = "x"
+center_mm = [-106.0, 99.2, -19.75]
+size_mm = [12.0, 8.0, 8.0]
 confidence = "estimated from photos"
+
+[[solid]]
+name = "AntennaNutLeft"
+material = "rubber"
+shape = "cylinder"
+axis = "x"
+sides = 24
+center_mm = [-95.0, 99.2, -19.75]
+size_mm = [10.0, 9.5, 9.5]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "SMALeft"
+material = "brass"
+shape = "cylinder"
+axis = "x"
+center_mm = [-88.25, 99.2, -19.75]
+size_mm = [3.5, 6.35, 6.35]
+confidence = "SMA thread, 1/4-36 UNS"
+
+[[solid]]
+name = "SMANutLeft"
+material = "brass"
+shape = "cylinder"
+axis = "x"
+sides = 6
+center_mm = [-85.25, 99.2, -19.75]
+size_mm = [2.5, 9.2, 9.2]
+confidence = "SMA panel nut, 8 mm across flats"
+
+[[solid]]
+name = "KnuckleRight"
+material = "rubber"
+shape = "cylinder"
+axis = "z"
+center_mm = [116.2, 99.2, -19.75]
+size_mm = [13.5, 13.5, 9.0]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "SleeveRight"
+material = "rubber"
+shape = "cylinder"
+axis = "x"
+center_mm = [99.0, 99.2, -19.75]
+size_mm = [26.0, 8.0, 8.0]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "AntennaNutRight"
+material = "rubber"
+shape = "cylinder"
+axis = "x"
+sides = 24
+center_mm = [81.0, 99.2, -19.75]
+size_mm = [10.0, 9.5, 9.5]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "SMARight"
+material = "brass"
+shape = "cylinder"
+axis = "x"
+center_mm = [72.25, 99.2, -19.75]
+size_mm = [7.5, 6.35, 6.35]
+confidence = "SMA thread, 1/4-36 UNS"
+
+[[solid]]
+name = "SMANutRight"
+material = "brass"
+shape = "cylinder"
+axis = "x"
+sides = 6
+center_mm = [67.25, 99.2, -19.75]
+size_mm = [2.5, 9.2, 9.2]
+confidence = "SMA panel nut, 8 mm across flats"
 
 # On the plate, as seen from the front (the back view mirrored): the two SP11 sensor sockets
 # with blue caps and the capped USB-C on the LoRa side, the red and blue LEDs on the GPS side.

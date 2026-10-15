@@ -90,6 +90,10 @@ rotate_deg = [0, 0, 0]       # about x, y, then z, around its own center
 source = "Seeed STEP, measured"
 ```
 
+For a round part such as an SMA connector or a hinge, set `shape = "cylinder"`
+and `axis` (`"x"`, `"y"` or `"z"`): `size_mm` is then its length along the axis
+and its diameter across. `sides = 6` makes a hex nut.
+
 For a hand-tuned model, set `auto = false` and describe the parts with
 `[[part]]` rules (match an SVG class and place it as body or a raised layer),
 `[[lathe]]` (round parts such as antennas) and `[[box]]` (simple blocks such as

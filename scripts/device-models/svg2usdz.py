@@ -203,9 +203,22 @@ def solid_mesh(sd, depth):
     bottom, z out of the front with 0 the middle of the body (the front face is
     at depth/2, the back at -depth/2). It is size_mm across, rotated by
     rotate_deg about x, y then z around its own center. radius_mm rounds the
-    corners of its two largest sides, so a flat port or button reads as one."""
+    corners of its two largest sides, so a flat port or button reads as one.
+    shape = "cylinder" makes it round instead, along axis ("x", "y" or "z"),
+    with sides faces around (6 for a hex nut)."""
     w, h, d = (float(v) for v in sd["size_mm"])
     dims = [w, h, d]
+    if sd.get("shape") == "cylinder":
+        axis = "xyz".index(sd.get("axis", "z"))
+        cross = [dims[i] for i in range(3) if i != axis]
+        m = trimesh.creation.cylinder(radius=0.5, height=dims[axis], sections=int(sd.get("sides", 32)))
+        m.apply_scale([cross[0], cross[1], 1])
+        # Built along z; turn it onto its axis.
+        if axis == 0:
+            m.apply_transform(trimesh.transformations.rotation_matrix(math.pi / 2, [0, 1, 0]))
+        elif axis == 1:
+            m.apply_transform(trimesh.transformations.rotation_matrix(-math.pi / 2, [1, 0, 0]))
+        return place_solid(m, sd)
     thin = int(np.argmin(dims))
     a, b = [dims[i] for i in range(3) if i != thin]
     r = min(float(sd.get("radius_mm", 0)), a / 2, b / 2)
@@ -230,6 +243,11 @@ def solid_mesh(sd, depth):
         m.apply_transform(trimesh.transformations.rotation_matrix(math.pi / 2, [1, 0, 0]))
     elif thin == 1:
         m.apply_transform(trimesh.transformations.rotation_matrix(math.pi / 2, [1, 0, 0]))
+    return place_solid(m, sd)
+
+
+def place_solid(m, sd):
+    """Turns a solid by its rotate_deg and moves it to its center_mm."""
     rx, ry, rz = (math.radians(float(v)) for v in sd.get("rotate_deg", [0, 0, 0]))
     for angle, axis in ((rx, [1, 0, 0]), (ry, [0, 1, 0]), (rz, [0, 0, 1])):
         if angle:
