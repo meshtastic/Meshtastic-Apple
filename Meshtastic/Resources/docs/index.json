@@ -262,15 +262,15 @@
             "path",
             "open",
             "colors",
+            "back",
             "trace",
             "toolbar",
             "snr",
             "shown",
             "return",
-            "forward",
-            "back"
+            "out"
         ],
-        "charCount": 14923
+        "charCount": 15033
     },
     {
         "id": "messages",
