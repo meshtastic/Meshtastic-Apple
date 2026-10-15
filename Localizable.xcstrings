@@ -34080,6 +34080,9 @@
         }
       }
     },
+    "Direct Links" : {
+      "comment" : "Map settings toggle that draws lines from the connected radio to the nodes it hears directly."
+    },
     "Direct Message Key" : {
       "localizations" : {
         "de" : {
@@ -58029,6 +58032,9 @@
           }
         }
       }
+    },
+    "Lines from your radio to the nodes it hears directly, colored by signal quality." : {
+      "comment" : "Caption under the Direct Links toggle in map settings."
     },
     "Link" : {
       "comment" : "VoiceOver: link formatting toolbar button",

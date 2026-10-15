@@ -144,12 +144,12 @@ struct TraceRouteMapLayout {
 	}
 
 	/// Straight-line distance in map points (`MKMapPoint.distance(to:)` returns meters).
-	private static func distance(_ a: MKMapPoint, _ b: MKMapPoint) -> Double {
+	static func distance(_ a: MKMapPoint, _ b: MKMapPoint) -> Double {
 		hypot(b.x - a.x, b.y - a.y)
 	}
 
 	/// Keeps items in order, dropping any closer than `minDistance` map points to one already kept.
-	private static func thinned<T>(_ items: [T], coordinate: KeyPath<T, CLLocationCoordinate2D>, minDistance: Double) -> [T] {
+	static func thinned<T>(_ items: [T], coordinate: KeyPath<T, CLLocationCoordinate2D>, minDistance: Double) -> [T] {
 		var kept: [T] = []
 		var keptPoints: [MKMapPoint] = []
 		for item in items {
