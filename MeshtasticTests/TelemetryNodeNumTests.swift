@@ -234,7 +234,7 @@ struct TelemetryNodeNumTests {
 		}
 	}
 
-	@Test("Before the backfill, a lookup for node 0 does not match rows the backfill hasn't reached")
+	@Test("Before the backfill, a lookup for node 0 matches nothing, not the rows the backfill hasn't reached")
 	func nodeZeroSkipsUnfilledRows() async throws {
 		try await withBackfill(complete: false) {
 			let container = try makeContainer()
@@ -246,10 +246,10 @@ struct TelemetryNodeNumTests {
 			addRow(0, type: 0, in: context)
 			try context.save()
 
-			#expect(try count(TelemetryEntity.predicate(forNode: 0), in: context) == 1)
-			#expect(try count(TelemetryEntity.predicate(forNode: 0, metricsType: 0), in: context) == 1)
-			#expect(try count(TelemetryEntity.predicate(forNodes: [0]), in: context) == 1)
-			#expect(try count(TelemetryEntity.predicate(forNodes: [0], metricsType: 0), in: context) == 1)
+			#expect(try count(TelemetryEntity.predicate(forNode: 0), in: context) == 0)
+			#expect(try count(TelemetryEntity.predicate(forNode: 0, metricsType: 0), in: context) == 0)
+			#expect(try count(TelemetryEntity.predicate(forNodes: [0]), in: context) == 0)
+			#expect(try count(TelemetryEntity.predicate(forNodes: [0], metricsType: 0), in: context) == 0)
 			#expect(try count(TelemetryEntity.predicate(forNode: node.num), in: context) == 2)
 
 			TelemetryEntity.deleteAll(forNodes: [0], in: context)
