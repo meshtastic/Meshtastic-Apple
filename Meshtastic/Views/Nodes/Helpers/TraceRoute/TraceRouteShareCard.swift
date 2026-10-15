@@ -534,8 +534,9 @@ private struct TraceRouteShareLegLine: Shape {
 
 // MARK: - Map
 
-/// The map tiles with the route drawn on top: forward legs solid, return legs dashed, both colored
-/// by SNR with an arrow for direction, numbered relays and the two endpoints.
+/// The map tiles with the route drawn on top: forward legs solid orange and return legs dashed blue,
+/// like the in-app map, with an arrow for direction, SNR labels on the forward legs, numbered relays
+/// and the two endpoints.
 struct TraceRouteShareMap: View {
 	let frame: TraceRouteShareModel.MapFrame
 	let image: UIImage
@@ -664,7 +665,7 @@ struct TraceRouteShareMap: View {
 				from = CGPoint(x: from.x + offset.x, y: from.y + offset.y)
 				to = CGPoint(x: to.x + offset.x, y: to.y + offset.y)
 			}
-			let color = color(snr: segment.snr)
+			let color = segment.isBack ? TraceRouteColors.back : TraceRouteColors.forward
 			var path = Path()
 			path.move(to: from)
 			path.addLine(to: to)
@@ -706,18 +707,15 @@ struct TraceRouteShareMap: View {
 			.fixedSize()
 	}
 
+	/// A relay's number, like the in-app map and Vision Pro: filled orange on the way out, a blue
+	/// ring on the way back.
 	private func hopBadge(number: Int, isBack: Bool) -> some View {
 		Text(verbatim: "\(number)")
 			.font(.system(size: 9.5, weight: .bold, design: .rounded))
 			.monospacedDigit()
-			.foregroundStyle(isBack ? Color.black : Color.white)
+			.foregroundStyle(Color.white)
 			.frame(minWidth: 16, minHeight: 16)
-			.background(Circle().fill(isBack ? Color.white : Color.black.opacity(0.85)))
-			.overlay(
-				Circle().strokeBorder(
-					isBack ? Color.black : Color.white,
-					style: StrokeStyle(lineWidth: 1.25, dash: isBack ? [2, 2] : [])
-				)
-			)
+			.background(Circle().fill(isBack ? Color.black.opacity(0.75) : TraceRouteColors.forward))
+			.overlay(Circle().strokeBorder(isBack ? TraceRouteColors.back : Color.white, lineWidth: isBack ? 1.75 : 1.25))
 	}
 }
