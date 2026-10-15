@@ -1990,7 +1990,8 @@ private struct TraceRouteHopBadge: View {
 		Text(verbatim: "\(number)")
 			.font(.system(size: 11, weight: .bold, design: .rounded))
 			.monospacedDigit()
-			.foregroundStyle(isBack ? Color.primary : Color.white)
+			// Black on the orange: white on it is too faint for digits this small.
+			.foregroundStyle(isBack ? Color.primary : Color.black)
 			.frame(minWidth: 18, minHeight: 18)
 			.background(Circle().fill(isBack ? Color(UIColor.systemBackground) : TraceRouteColors.forward))
 			.overlay(

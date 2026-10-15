@@ -713,7 +713,8 @@ struct TraceRouteShareMap: View {
 		Text(verbatim: "\(number)")
 			.font(.system(size: 9.5, weight: .bold, design: .rounded))
 			.monospacedDigit()
-			.foregroundStyle(Color.white)
+			// Black on the orange: white on it is too faint for digits this small.
+			.foregroundStyle(isBack ? Color.white : Color.black)
 			.frame(minWidth: 16, minHeight: 16)
 			.background(Circle().fill(isBack ? Color.black.opacity(0.75) : TraceRouteColors.forward))
 			.overlay(Circle().strokeBorder(isBack ? TraceRouteColors.back : Color.white, lineWidth: isBack ? 1.75 : 1.25))

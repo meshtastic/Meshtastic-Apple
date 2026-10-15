@@ -349,7 +349,8 @@ struct SpatialRouteHopBadge: View {
 		Text(verbatim: "\(number)")
 			.font(.system(size: 13, weight: .bold, design: .rounded))
 			.monospacedDigit()
-			.foregroundStyle(.white)
+			// Black on the orange: white on it is too faint for digits this small.
+			.foregroundStyle(isBack ? Color.white : Color.black)
 			.frame(minWidth: 22, minHeight: 22)
 			.background(Circle().fill(isBack ? Color.black.opacity(0.7) : TraceRouteColors.forward))
 			.overlay(Circle().strokeBorder(isBack ? TraceRouteColors.back : Color.white, lineWidth: isBack ? 2.5 : 1.5))
