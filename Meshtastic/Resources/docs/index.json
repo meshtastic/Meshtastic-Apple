@@ -559,16 +559,18 @@
             "hop",
             "trip",
             "round",
+            "each",
             "time",
             "tap",
             "signal",
             "return",
             "one",
+            "log",
             "from",
             "forward",
             "entry",
-            "each",
             "chart",
+            "back",
             "timeline",
             "shows",
             "see",
@@ -577,12 +579,10 @@
             "radio",
             "nodes",
             "map",
-            "log",
             "line",
-            "labeled",
-            "heard"
+            "labeled"
         ],
-        "charCount": 2864
+        "charCount": 2917
     },
     {
         "id": "translate",

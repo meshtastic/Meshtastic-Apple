@@ -17,7 +17,7 @@ struct TraceRouteLog: View {
 	/// The route picked on the chart, highlighted in the list.
 	@State private var highlightedID: Int64?
 	@State private var openRouteID: PersistentIdentifier?
-	@SceneStorage("traceRouteLogWindow") private var windowRawValue = TraceRouteTimeWindow.all.rawValue
+	@SceneStorage("traceRouteLogWindow") private var windowRawValue = TraceRouteTimeWindow.day.rawValue
 	@SceneStorage("traceRouteLogChartExpanded") private var chartExpanded = true
 
 	init(node: NodeInfoEntity) {
@@ -109,7 +109,10 @@ struct TraceRouteLog: View {
 		let windows = availableWindows
 		if windows.count > 1 {
 			Section {
-				Picker(String(localized: "Time window", comment: "Trace route log: how far back the chart and list go"), selection: $windowRawValue) {
+				Picker(String(localized: "Time window", comment: "Trace route log: how far back the chart and list go"), selection: Binding(
+					get: { window.rawValue },
+					set: { windowRawValue = $0 }
+				)) {
 					ForEach(windows) { window in
 						Text(window.label).tag(window.rawValue)
 					}

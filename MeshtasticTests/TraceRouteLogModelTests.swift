@@ -13,10 +13,11 @@ import Testing
 struct TraceRouteTimeWindowTests {
 	private let now = Date(timeIntervalSince1970: 1_800_000_000)
 
-	@Test("Only windows that would leave something out are offered, plus All")
+	@Test("With a log, 1h and All are offered, the others once the log reaches back that far")
 	func availableWindows() {
 		#expect(TraceRouteTimeWindow.available(oldest: nil, now: now) == [.all])
-		#expect(TraceRouteTimeWindow.available(oldest: now.addingTimeInterval(-600), now: now) == [.all])
+		#expect(TraceRouteTimeWindow.available(oldest: now.addingTimeInterval(-600), now: now) == [.hour, .all])
+		#expect(TraceRouteTimeWindow.available(oldest: now.addingTimeInterval(-86_400), now: now) == [.hour, .day, .all])
 		#expect(TraceRouteTimeWindow.available(oldest: now.addingTimeInterval(-3 * 86_400), now: now) == [.hour, .day, .all])
 		#expect(TraceRouteTimeWindow.available(oldest: now.addingTimeInterval(-20 * 86_400), now: now) == [.hour, .day, .week, .twoWeeks, .all])
 		#expect(TraceRouteTimeWindow.available(oldest: now.addingTimeInterval(-90 * 86_400), now: now) == TraceRouteTimeWindow.allCases)

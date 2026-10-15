@@ -21,7 +21,7 @@ The app waits up to two minutes for an answer. Until then the entry reads **Wait
 
 Open a node and choose **Trace Route Log** in the Logs section to see every trace route you sent to that node.
 
-- **Time window** — pick how far back the chart and list go: 1 hour, 24 hours, 1 week, 2 weeks, 1 month or all. Only the windows that would leave out older entries are offered.
+- **Time window** — pick how far back the chart and list go: 1 hour, 24 hours, 1 week, 2 weeks, 1 month or all. It starts at 24 hours. 1 hour and All are always offered; each of the others appears once the log goes back that far.
 - **Chart** — forward hops (blue, solid) and return hops (green, dashed) use the left axis; the round trip (orange) uses the right axis, in seconds. Tap the chart to highlight the nearest entry in the list. Tap **Hops** to fold the chart away.
 - **Entries** — each one shows the time and a summary: **Direct**, the number of hops, or the hops each way when they differ. Chips repeat the forward hops, return hops and round trip.
 
