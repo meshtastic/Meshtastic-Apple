@@ -138,6 +138,9 @@ struct ShowcaseSpace: View {
 		}
 		.onDisappear {
 			appState.showcaseOpen = false
+			// Stops the per-frame updates; the closure holds the scene.
+			scene.updateSubscription?.cancel()
+			scene.updateSubscription = nil
 			// Leaving with the Digital Crown would otherwise leave the app with no window (the
 			// panel's Leave opens it first). Not when the app went to the background, which
 			// closes the room too.
