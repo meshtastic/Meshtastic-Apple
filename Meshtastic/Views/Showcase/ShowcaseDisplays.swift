@@ -64,7 +64,11 @@ final class ShowcaseDisplays {
 		for item in catalog {
 			guard let url = Bundle.main.url(forResource: item.id, withExtension: "usdz") else { continue }
 			do {
-				templates[item.id] = try await Entity(contentsOf: url)
+				let model = try await Entity(contentsOf: url)
+				if Self.matte(model) == 0 {
+					Logger.services.warning("📻 [Showcase] Model \(item.id, privacy: .public) has no materials the showcase can soften")
+				}
+				templates[item.id] = model
 			} catch {
 				Logger.services.error("📻 [Showcase] Model \(item.id, privacy: .public) failed to load: \(error.localizedDescription, privacy: .public)")
 			}
@@ -149,6 +153,29 @@ final class ShowcaseDisplays {
 		model.components.set(ShowcaseHomeComponent(transform: model.transform))
 		makeHoldable(model, bounds: bounds)
 		return bounds.extents.y + standThickness
+	}
+
+	/// Takes the shine off a model's surfaces: under the store lights the files' glossy plastic and
+	/// metal read as glare. Only the showcase's copy changes; the files stay as they are.
+	/// Returns how many materials it softened.
+	@discardableResult
+	static func matte(_ entity: Entity) -> Int {
+		var softened = 0
+		if var model = entity.components[ModelComponent.self] {
+			model.materials = model.materials.map { material in
+				guard var material = material as? PhysicallyBasedMaterial else { return material }
+				softened += 1
+				material.roughness = .init(floatLiteral: max(material.roughness.scale, 0.85))
+				material.metallic = .init(floatLiteral: material.metallic.scale * 0.3)
+				material.specular = .init(floatLiteral: 0.2)
+				return material
+			}
+			entity.components.set(model)
+		}
+		for child in entity.children {
+			softened += matte(child)
+		}
+		return softened
 	}
 
 	/// Clear acrylic, like a store's display stands.
