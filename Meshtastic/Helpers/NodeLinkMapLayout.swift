@@ -32,12 +32,12 @@ struct NodeLinkMapLayout {
 		for link in links {
 			let pointA = MKMapPoint(link.coordinateA), pointB = MKMapPoint(link.coordinateB)
 			let length = TraceRouteMapLayout.distance(pointA, pointB)
-			let opacity = NodeLinks.opacity(forAge: link.age)
+			// Each pill fades with its own direction's age, so a stale reading looks stale.
 			if let snr = link.snrAtA {
-				labels.append(Label(id: "\(link.id)-a", snr: snr, coordinate: Self.point(from: pointA, to: pointB).coordinate, length: length, opacity: opacity))
+				labels.append(Label(id: "\(link.id)-a", snr: snr, coordinate: Self.point(from: pointA, to: pointB).coordinate, length: length, opacity: link.opacityAtA))
 			}
 			if let snr = link.snrAtB {
-				labels.append(Label(id: "\(link.id)-b", snr: snr, coordinate: Self.point(from: pointB, to: pointA).coordinate, length: length, opacity: opacity))
+				labels.append(Label(id: "\(link.id)-b", snr: snr, coordinate: Self.point(from: pointB, to: pointA).coordinate, length: length, opacity: link.opacityAtB))
 			}
 		}
 		self.labels = labels

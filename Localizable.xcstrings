@@ -34081,7 +34081,7 @@
       }
     },
     "Direct Links" : {
-      "comment" : "Map settings toggle that draws lines from the connected radio to the nodes it hears directly."
+      "comment" : "Map settings toggle that draws lines between nodes that hear each other directly."
     },
     "Direct Message Key" : {
       "localizations" : {
@@ -58033,8 +58033,8 @@
         }
       }
     },
-    "Lines from your radio to the nodes it hears directly, colored by signal quality." : {
-      "comment" : "Caption under the Direct Links toggle in map settings."
+    "Lines between nodes that hear each other directly, colored by signal quality. Links from your radio come from the nodes it hears; links between other nodes come from their Neighbor Info reports." : {
+      "comment" : "Caption under the Direct Links toggle in map settings, explaining where the two kinds of lines come from."
     },
     "Link" : {
       "comment" : "VoiceOver: link formatting toolbar button",
@@ -142505,6 +142505,9 @@
           }
         }
       }
+    },
+    "Your radio's Neighbor Info module is off, so links between other nodes can't be shown." : {
+      "comment" : "Note under the Direct Links toggle in map settings, shown when the connected radio's Neighbor Info module is off."
     },
     "Your region has a %lld%% duty cycle. MQTT is not advised when you are duty cycle restricted, the extra traffic will quickly overwhelm your LoRa mesh." : {
       "localizations" : {

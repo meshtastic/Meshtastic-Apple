@@ -469,20 +469,37 @@ struct MapSettingsForm: View {
 		meshMap: .constant(true),
 		enabledOverlayConfigs: .constant(Set<UUID>())
 	)
+	.environmentObject(AccessoryManager.shared)
 }
 
-/// Turns on the lines from the connected radio to the nodes it hears directly.
+/// Turns on the lines between nodes that hear each other directly.
 private struct DirectLinksToggle: View {
 	@AppStorage("meshMapShowDirectLinks") private var showDirectLinks = false
+	@EnvironmentObject private var accessoryManager: AccessoryManager
+	@Environment(\.modelContext) private var context
+
+	/// The connected radio has sent its Neighbor Info settings and the module is off. Its radio
+	/// then drops other nodes' reports, so only its own direct links can be drawn.
+	private var neighborInfoOff: Bool {
+		guard let num = accessoryManager.activeDeviceNum,
+			  let config = getNodeInfo(id: num, context: context)?.neighborInfoConfig
+		else { return false }
+		return !config.enabled
+	}
 
 	var body: some View {
 		Toggle(isOn: $showDirectLinks) {
 			Label {
 				VStack(alignment: .leading) {
 					Text("Direct Links")
-					Text("Lines from your radio to the nodes it hears directly, colored by signal quality.")
+					Text("Lines between nodes that hear each other directly, colored by signal quality. Links from your radio come from the nodes it hears; links between other nodes come from their Neighbor Info reports.")
 						.font(.caption)
 						.foregroundColor(.secondary)
+					if neighborInfoOff {
+						Text("Your radio's Neighbor Info module is off, so links between other nodes can't be shown.")
+							.font(.caption)
+							.foregroundColor(.secondary)
+					}
 				}
 			} icon: {
 				Image(systemName: "point.3.connected.trianglepath.dotted")
