@@ -61,6 +61,23 @@ extension TelemetryEntity {
 				&& (nodeNums.contains($0.nodeNum) || ($0.nodeTelemetry.flatMap { nodeNums.contains($0.num) } ?? false))
 		}
 	}
+
+	/// Deletes the telemetry of nodes that are being deleted. New rows have no relationship, so the
+	/// node's `.nullify` rule never reaches them and they would be left behind. Rows are deleted one
+	/// by one rather than with a batch delete, because older rows are still linked to a node that
+	/// may be deleted in the same save. Does not save.
+	static func deleteAll(forNodes nodeNums: [Int64], in context: ModelContext) {
+		guard !nodeNums.isEmpty else { return }
+		var descriptor = FetchDescriptor<TelemetryEntity>(predicate: predicate(forNodes: nodeNums))
+		descriptor.propertiesToFetch = [\.nodeNum]
+		do {
+			for row in try context.fetch(descriptor) {
+				context.delete(row)
+			}
+		} catch {
+			Logger.data.error("💥 [TelemetryEntity] Failed to delete telemetry for removed nodes: \(error.localizedDescription, privacy: .public)")
+		}
+	}
 }
 
 /// Copies the node number onto telemetry rows saved before `TelemetryEntity.nodeNum` existed.

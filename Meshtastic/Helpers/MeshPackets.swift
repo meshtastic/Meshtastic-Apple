@@ -585,6 +585,7 @@ actor MeshPackets {
 		// inclusive of pending inserts, so we free enough persisted rows to make room for them.
 		descriptor.includePendingChanges = false
 		guard let stale = try? modelContext.fetch(descriptor), !stale.isEmpty else { return 0 }
+		TelemetryEntity.deleteAll(forNodes: stale.map(\.num), in: modelContext)
 		for node in stale { modelContext.delete(node) }
 		Logger.data.info("🗄️ [Caps] Evicted \(stale.count, privacy: .public) least-recently-heard node(s) (was \(nodeCount, privacy: .public), cap \(cap, privacy: .public))")
 		return stale.count

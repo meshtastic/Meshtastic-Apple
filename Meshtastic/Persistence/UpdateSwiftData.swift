@@ -45,6 +45,7 @@ extension MeshPackets {
 				return false
 			}
 			let deletedNodes = staleNodes.count
+			TelemetryEntity.deleteAll(forNodes: staleNodes.map(\.num), in: modelContext)
 			for node in staleNodes {
 				modelContext.delete(node)
 			}
