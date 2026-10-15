@@ -165,6 +165,47 @@ struct ShowcaseModelCard: View {
 	}
 }
 
+/// The small card standing in front of a model on a display table, like a store's: the device's
+/// name and what the catalog says it runs on. Drawn at `size`, in meters, so it fits its spot.
+struct ShowcasePlacard: View {
+	let item: ShowcaseItem
+	let size: SIMD2<Float>
+	@Environment(\.physicalMetrics) private var metrics
+
+	private var specs: [String] {
+		var specs = item.architectures
+		if item.hasMui { specs.append("MUI") }
+		if item.hasInkHud { specs.append("InkHUD") }
+		return specs
+	}
+
+	var body: some View {
+		VStack(alignment: .leading, spacing: 4) {
+			Text(item.title)
+				.font(.system(size: 13, weight: .semibold))
+				.lineLimit(2)
+				.minimumScaleFactor(0.7)
+			Spacer(minLength: 0)
+			if !specs.isEmpty {
+				Text(specs.joined(separator: " · "))
+					.font(.system(size: 10, weight: .medium))
+					.foregroundStyle(Color.black.opacity(0.6))
+					.lineLimit(1)
+					.minimumScaleFactor(0.6)
+			}
+		}
+		.foregroundStyle(Color.black.opacity(0.85))
+		.padding(8)
+		.frame(
+			width: metrics.convert(CGFloat(size.x), from: .meters),
+			height: metrics.convert(CGFloat(size.y), from: .meters),
+			alignment: .topLeading
+		)
+		.background(Color.white.opacity(0.94), in: RoundedRectangle(cornerRadius: 6))
+		.accessibilityElement(children: .combine)
+	}
+}
+
 /// The control panel by the front table: how many radios are on the rack, its pages, seated or
 /// standing, and the way out.
 struct ShowcaseControlPanel: View {
