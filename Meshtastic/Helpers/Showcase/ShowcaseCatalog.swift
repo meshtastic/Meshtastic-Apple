@@ -60,11 +60,8 @@ struct ShowcaseHardwareRecord: Codable, Equatable, Sendable {
 	let displayName: String?
 	let tags: [String]?
 	let images: [String]?
-	var architecture: String?
 	/// `SupportLevel`'s raw value; nil when the catalog doesn't say.
 	var supportLevel: Int?
-	var hasMui: Bool?
-	var hasInkHud: Bool?
 
 	/// The showcase is for devices we recommend: flagship and niche. Legacy and discontinued
 	/// devices are left off the tables; a record that doesn't give a level stays on.
@@ -86,15 +83,18 @@ struct ShowcaseItem: Identifiable, Equatable, Sendable {
 	/// What tells this model apart from others drawn for the same devices, e.g. a screen size or
 	/// "case"; nil when it is the only one.
 	var variant: String?
-	/// The chips its devices run on, as people write them ("ESP32-S3", "nRF52840").
-	var architectures: [String] = []
-	/// Whether any of its devices runs the touchscreen UI (MUI) or the e-ink UI (InkHUD).
-	var hasMui = false
-	var hasInkHud = false
 
 	var title: String {
 		let name = deviceNames.first ?? id
 		return variant.map { "\(name) (\($0))" } ?? name
+	}
+
+	/// The title without the maker in front, for a card that names the maker above it. The
+	/// catalog's names are uneven: "Seeed Card Tracker T1000-E" has it, "ThinkNode M2" doesn't.
+	var nameWithoutMaker: String {
+		let prefix = vendor.rawValue + " "
+		guard title.count > prefix.count, title.lowercased().hasPrefix(prefix.lowercased()) else { return title }
+		return String(title.dropFirst(prefix.count))
 	}
 }
 
@@ -133,18 +133,11 @@ enum ShowcaseCatalog {
 			for name in ordered.compactMap(\.displayName) where !names.contains(name) {
 				names.append(name)
 			}
-			var architectures: [String] = []
-			for name in ordered.compactMap({ $0.architecture.map(architectureName) }) where !architectures.contains(name) {
-				architectures.append(name)
-			}
 			items.append(ShowcaseItem(
 				id: model,
 				vendor: vendor,
 				deviceNames: names,
-				targets: Array(Set(ordered.compactMap(\.platformioTarget))).sorted(),
-				architectures: architectures,
-				hasMui: ordered.contains { $0.hasMui == true },
-				hasInkHud: ordered.contains { $0.hasInkHud == true }
+				targets: Array(Set(ordered.compactMap(\.platformioTarget))).sorted()
 			))
 		}
 		// Models drawn for the same devices are told apart by the rest of their names.
@@ -192,16 +185,6 @@ enum ShowcaseCatalog {
 			}
 		}
 		return nil
-	}
-
-	/// A chip as people write it: "esp32-s3" gives "ESP32-S3", "nrf52840" gives "nRF52840", and
-	/// "portduino", the firmware's Linux build, gives "Linux".
-	static func architectureName(_ architecture: String) -> String {
-		switch architecture.lowercased() {
-		case "portduino": "Linux"
-		case let name where name.hasPrefix("nrf"): "nRF" + name.dropFirst(3).uppercased()
-		default: architecture.uppercased()
-		}
 	}
 
 	private static func normalized(_ slug: String) -> String {
@@ -274,10 +257,7 @@ actor ShowcaseHardwareReader {
 				displayName: device.displayName,
 				tags: device.tags.map(\.tag),
 				images: device.images.compactMap(\.fileName),
-				architecture: device.architecture,
-				supportLevel: device.supportLevel,
-				hasMui: device.hasMui,
-				hasInkHud: device.hasInkHud
+				supportLevel: device.supportLevel
 			)
 		}
 	}

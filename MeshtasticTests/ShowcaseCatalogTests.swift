@@ -74,34 +74,27 @@ struct ShowcaseCatalogTests {
 		#expect(ShowcaseCatalog.modelName(forHardwareSlug: nil, models: models, hardware: hardware) == nil)
 	}
 
-	@Test("Placards name the chips as people write them")
-	func architectureNames() {
-		#expect(ShowcaseCatalog.architectureName("esp32-s3") == "ESP32-S3")
-		#expect(ShowcaseCatalog.architectureName("esp32") == "ESP32")
-		#expect(ShowcaseCatalog.architectureName("nrf52840") == "nRF52840")
-		#expect(ShowcaseCatalog.architectureName("rp2040") == "RP2040")
-		#expect(ShowcaseCatalog.architectureName("portduino") == "Linux")
-	}
-
-	@Test("A model shows every chip and UI its devices have, and legacy devices are left off")
-	func specsAndSupport() {
+	@Test("Legacy and discontinued devices are left off the tables")
+	func supportLevels() {
 		var m1 = record("THINKNODE_M1", "thinknode_m1", "ThinkNode M1", tag: "Elecrow", images: ["thinknode_m1.svg"])
-		m1.architecture = "nrf52840"
 		m1.supportLevel = SupportLevel.flagship.rawValue
-		m1.hasInkHud = true
 		var m5 = record("THINKNODE_M5", "thinknode_m5", "ThinkNode M5", tag: "Elecrow", images: ["thinknode_m1.svg"])
-		m5.architecture = "esp32-s3"
 		m5.supportLevel = SupportLevel.niche.rawValue
 		var legacy = record("RAK11200", "rak11200", "RAK WisBlock 11200", tag: "RAK", images: ["rak11200.svg"])
-		legacy.architecture = "esp32"
 		legacy.supportLevel = SupportLevel.legacy.rawValue
 		var gone = record("RAK11310", "rak11310", "RAK WisBlock 11310", tag: "RAK", images: ["rak11310.svg"])
 		gone.supportLevel = SupportLevel.discontinued.rawValue
 		let items = ShowcaseCatalog.items(models: ["thinknode_m1", "rak11200", "rak11310"], hardware: [m1, m5, legacy, gone])
 		#expect(items.map(\.id) == ["thinknode_m1"])
-		#expect(items.first?.architectures == ["nRF52840", "ESP32-S3"])
-		#expect(items.first?.hasInkHud == true)
-		#expect(items.first?.hasMui == false)
+		#expect(items.first?.deviceNames == ["ThinkNode M1", "ThinkNode M5"])
+	}
+
+	@Test("A card's name leaves off the maker when the catalog's name starts with it")
+	func nameWithoutMaker() {
+		let items = ShowcaseCatalog.items(models: ["rak4631", "tracker-t1000-e", "thinknode_m1"], hardware: hardware)
+		#expect(items.first { $0.id == "rak4631" }?.nameWithoutMaker == "WisBlock 4631")
+		#expect(items.first { $0.id == "tracker-t1000-e" }?.nameWithoutMaker == "Card Tracker T1000-E")
+		#expect(items.first { $0.id == "thinknode_m1" }?.nameWithoutMaker == "ThinkNode M1")
 	}
 
 	@Test("The bundled catalog decodes")
