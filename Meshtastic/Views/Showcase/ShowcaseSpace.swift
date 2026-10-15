@@ -52,18 +52,10 @@ struct ShowcaseSpace: View {
 			}
 			placeCard(attachments.entity(for: Attachments.card))
 			placeItemCard(attachments.entity(for: Attachments.itemCard))
-			placePlacards(attachments)
 		} attachments: {
 			Attachment(id: Attachments.controls) {
 				ShowcaseControlPanel(scene: scene, seated: $seated) {
 					Task { await dismissImmersiveSpace() }
-				}
-			}
-			ForEach(scene.displays.items) { item in
-				if let spot = scene.displays.placards[item.id] {
-					Attachment(id: Attachments.placard(item.id)) {
-						ShowcasePlacard(item: item, size: spot.size)
-					}
 				}
 			}
 			if let selected = scene.selected, let node = scene.nodesByNum[selected] {
@@ -141,7 +133,6 @@ struct ShowcaseSpace: View {
 		static let controls = "controls"
 		static let card = "card"
 		static let itemCard = "itemCard"
-		static func placard(_ itemID: String) -> String { "placard-\(itemID)" }
 	}
 
 	private var tap: some Gesture {
@@ -205,17 +196,6 @@ struct ShowcaseSpace: View {
 		}
 		card.position = position
 		card.isEnabled = true
-	}
-
-	/// Stands each model's placard on its table in front of it, once.
-	private func placePlacards(_ attachments: RealityViewAttachments) {
-		for item in scene.displays.items {
-			guard let placard = attachments.entity(for: Attachments.placard(item.id)), placard.parent == nil,
-				  let spot = scene.displays.placards[item.id], let center = scene.displays.placardCenter(forItem: item.id) else { continue }
-			placard.position = center
-			placard.orientation = spot.orientation
-			scene.displays.root.addChild(placard)
-		}
 	}
 
 	/// Where to buy the model's devices: the maker's own links first, then shops that ship to the
