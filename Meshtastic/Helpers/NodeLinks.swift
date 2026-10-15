@@ -7,6 +7,7 @@
 
 import CoreLocation
 import Foundation
+import OSLog
 import SwiftData
 
 /// One node hearing another: `observer` heard `heard` at `snr` dB, last at `heardAt`.
@@ -195,9 +196,15 @@ enum NodeLinks {
 	@MainActor
 	static func reportRows(context: ModelContext, now: Date) -> [NodeLinkReportRow] {
 		let cutoff = now.addingTimeInterval(-maxReportAge)
-		let rows = (try? context.fetch(FetchDescriptor<NeighborLinkEntity>(
-			predicate: #Predicate<NeighborLinkEntity> { $0.viaMqtt == false && $0.receivedAt >= cutoff }
-		))) ?? []
+		let rows: [NeighborLinkEntity]
+		do {
+			rows = try context.fetch(FetchDescriptor<NeighborLinkEntity>(
+				predicate: #Predicate<NeighborLinkEntity> { $0.viaMqtt == false && $0.receivedAt >= cutoff }
+			))
+		} catch {
+			Logger.data.error("💥 [NodeLinks] Neighbor link fetch failed: \(error.localizedDescription, privacy: .public)")
+			rows = []
+		}
 		return rows.map {
 			NodeLinkReportRow(reporter: $0.reporterNum, neighbor: $0.neighborNum, snr: $0.snr, receivedAt: $0.receivedAt, viaMqtt: $0.viaMqtt)
 		}
