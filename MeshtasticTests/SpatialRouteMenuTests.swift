@@ -81,9 +81,16 @@ struct SpatialRouteMenuTests {
 	}
 
 	private func cleanUp(_ context: ModelContext) {
-		try? context.delete(model: TraceRouteEntity.self, where: #Predicate { $0.fromNum == 0x5EA7_0001 })
-		try? context.delete(model: NodeInfoEntity.self, where: #Predicate { $0.num >= 0x5EA7_0001 && $0.num <= 0x5EA7_0003 })
-		try? context.delete(model: UserEntity.self, where: #Predicate { $0.num >= 0x5EA7_0001 && $0.num <= 0x5EA7_0003 })
+		// One by one: a batch delete fails on the route's link to its target node and leaves the rows behind.
+		for route in (try? context.fetch(FetchDescriptor<TraceRouteEntity>(predicate: #Predicate { $0.fromNum == 0x5EA7_0001 }))) ?? [] {
+			context.delete(route)
+		}
+		for node in (try? context.fetch(FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num >= 0x5EA7_0001 && $0.num <= 0x5EA7_0003 }))) ?? [] {
+			context.delete(node)
+		}
+		for user in (try? context.fetch(FetchDescriptor<UserEntity>(predicate: #Predicate { $0.num >= 0x5EA7_0001 && $0.num <= 0x5EA7_0003 }))) ?? [] {
+			context.delete(user)
+		}
 		try? context.save()
 	}
 
