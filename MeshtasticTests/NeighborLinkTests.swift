@@ -166,13 +166,29 @@ struct NeighborLinkTests {
 	@Test("The radio's receive time is used only when it is believable")
 	func reportTime() {
 		var packet = MeshPacket()
-		#expect(MeshPackets.neighborReportTime(packet: packet, now: Self.now) == Self.now)
+		let day: Int32 = 86_400
+		#expect(MeshPackets.neighborReportTime(packet: packet, interval: 21_600, now: Self.now) == Self.now)
 		packet.rxTime = UInt32(Self.now.timeIntervalSince1970) - 600
-		#expect(MeshPackets.neighborReportTime(packet: packet, now: Self.now) == Self.now.addingTimeInterval(-600))
+		#expect(MeshPackets.neighborReportTime(packet: packet, interval: 21_600, now: Self.now) == Self.now.addingTimeInterval(-600))
 		packet.rxTime = UInt32(Self.now.timeIntervalSince1970) + 600
-		#expect(MeshPackets.neighborReportTime(packet: packet, now: Self.now) == Self.now)
+		#expect(MeshPackets.neighborReportTime(packet: packet, interval: 21_600, now: Self.now) == Self.now)
+		// Clock never set.
 		packet.rxTime = 1_000
-		#expect(MeshPackets.neighborReportTime(packet: packet, now: Self.now) == Self.now)
+		#expect(MeshPackets.neighborReportTime(packet: packet, interval: 21_600, now: Self.now) == Self.now)
+		// Older than pruning would keep: dropped, not saved as new.
+		packet.rxTime = UInt32(Self.now.timeIntervalSince1970) - UInt32(2 * day)
+		#expect(MeshPackets.neighborReportTime(packet: packet, interval: 21_600, now: Self.now) == nil)
+		// A 1 day interval keeps rows for 3 days, so a 2 day old report still counts.
+		#expect(MeshPackets.neighborReportTime(packet: packet, interval: day, now: Self.now) == Self.now.addingTimeInterval(-2 * 86_400))
+	}
+
+	@Test("A replayed report older than a day is not saved")
+	func staleReplayDropped() async throws {
+		let container = try makeContainer()
+		let mesh = MeshPackets(modelContainer: container)
+		let replayTime = UInt32(Self.now.addingTimeInterval(-2 * 86_400).timeIntervalSince1970)
+		await ingest(makeReport(neighbors: [(0x7E1E_0001, 3)], rxTime: replayTime), into: mesh)
+		#expect(try links(in: container).isEmpty)
 	}
 
 	// MARK: - Pruning

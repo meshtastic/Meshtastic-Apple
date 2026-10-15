@@ -39,8 +39,11 @@ extension MeshPackets {
 		// is a request, not a node saying it hears nobody.
 		guard !listed.isEmpty else { return }
 
-		let receivedAt = Self.neighborReportTime(packet: packet, now: now)
 		let interval = Int32(clamping: neighborInfo.nodeBroadcastIntervalSecs)
+		guard let receivedAt = Self.neighborReportTime(packet: packet, interval: interval, now: now) else {
+			Logger.mesh.info("[Neighbor Info] Skipped a report from \(packet.from.toHex(), privacy: .public) that is too old to keep")
+			return
+		}
 		do {
 			let existing = try modelContext.fetch(FetchDescriptor<NeighborLinkEntity>(
 				predicate: #Predicate { $0.reporterNum == reporter }
@@ -78,11 +81,20 @@ extension MeshPackets {
 	}
 
 	/// When the radio received the report, if it says and the time is believable; otherwise now.
-	nonisolated static func neighborReportTime(packet: MeshPacket, now: Date) -> Date {
-		guard packet.rxTime > 0 else { return now }
+	/// Nil when the radio's time says the report is older than pruning would keep, as happens
+	/// when the radio replays old packets after the node database.
+	nonisolated static func neighborReportTime(packet: MeshPacket, interval: Int32, now: Date) -> Date? {
+		// Before 2020 means the radio's clock was never set.
+		guard packet.rxTime > 1_577_836_800 else { return now }
 		let rxTime = Date(timeIntervalSince1970: TimeInterval(packet.rxTime))
-		guard rxTime <= now, now.timeIntervalSince(rxTime) < neighborLinkMinimumAge else { return now }
+		guard rxTime <= now else { return now }
+		guard now.timeIntervalSince(rxTime) <= neighborLinkMaxAge(interval: interval) else { return nil }
 		return rxTime
+	}
+
+	/// How long a row is kept: a day, or three of the reporter's intervals if that is longer.
+	nonisolated static func neighborLinkMaxAge(interval: Int32) -> TimeInterval {
+		Swift.max(neighborLinkMinimumAge, 3 * TimeInterval(interval))
 	}
 
 	/// Deletes rows older than a day, or three of the reporter's intervals if that is longer,
@@ -103,8 +115,7 @@ extension MeshPackets {
 		var kept = 0
 		var removed = 0
 		for row in rows {
-			let maxAge = Swift.max(Self.neighborLinkMinimumAge, 3 * TimeInterval(row.reporterIntervalSecs))
-			if now.timeIntervalSince(row.receivedAt) > maxAge || kept >= cap {
+			if now.timeIntervalSince(row.receivedAt) > Self.neighborLinkMaxAge(interval: row.reporterIntervalSecs) || kept >= cap {
 				modelContext.delete(row)
 				removed += 1
 			} else {
