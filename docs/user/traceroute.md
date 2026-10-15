@@ -34,6 +34,7 @@ The round trip is the time from sending the request to receiving the answer. Rou
 Tap an entry to see the route as a timeline: the forward route from your radio to the node, then the return route back. On iPad and Mac the two sit side by side.
 
 - Each stop shows the node's short name in its colored circle and its long name. Nodes heard over MQTT are marked **MQTT**. Tap a stop to open that node.
+- Relays carry a small number for the order the packet reached them, and the two ends of the route have a ring around their circle.
 - Between stops, the line is colored by the signal heard on that hop, on the same scale as the [signal meter](signal-meter.md): green (good), yellow (fair), orange (bad), red (none). The SNR and its rating appear beside the line, along with the hop's length when both nodes had a known position.
 - A hop whose SNR wasn't reported is drawn as a dashed gray line labeled **Unknown signal**.
 - A relay that didn't add its node number appears as a dotted circle named **Unknown repeater**.
