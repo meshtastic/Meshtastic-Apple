@@ -23,49 +23,57 @@ extension TelemetryEntity {
 		nodeNum != 0 ? nodeNum : nodeTelemetry?.num
 	}
 
+	// Before the backfill a row is a node's when its nodeNum matches or, for a row the backfill
+	// hasn't reached, when its old relationship points at the node. Node 0 isn't a node, and every
+	// unreached row has nodeNum 0, so a lookup for 0 matches nothing. Handling that here, outside
+	// the predicates, keeps each one small enough for the compiler to type-check quickly; a
+	// version with the node 0 case inside timed out on CI.
+
+	/// No rows: the lookup for node 0.
+	private static let noRows = #Predicate<TelemetryEntity> { _ in false }
+
 	/// All telemetry for one node.
 	static func predicate(forNode nodeNum: Int64) -> Predicate<TelemetryEntity> {
+		guard nodeNum != 0 else { return noRows }
 		if TelemetryNodeNumBackfill.isComplete {
 			return #Predicate<TelemetryEntity> { $0.nodeNum == nodeNum }
 		}
-		// `nodeNum != 0 || nodeTelemetry == nil`: every row the backfill hasn't reached has
-		// nodeNum 0, so without it a lookup for node 0 would match all of them.
-		return #Predicate<TelemetryEntity> {
-			($0.nodeNum == nodeNum && ($0.nodeNum != 0 || $0.nodeTelemetry == nil)) || $0.nodeTelemetry?.num == nodeNum
-		}
+		return #Predicate<TelemetryEntity> { $0.nodeNum == nodeNum || $0.nodeTelemetry?.num == nodeNum }
 	}
 
 	/// One metrics type for one node.
 	static func predicate(forNode nodeNum: Int64, metricsType: Int32) -> Predicate<TelemetryEntity> {
+		guard nodeNum != 0 else { return noRows }
 		if TelemetryNodeNumBackfill.isComplete {
 			return #Predicate<TelemetryEntity> { $0.nodeNum == nodeNum && $0.metricsType == metricsType }
 		}
 		return #Predicate<TelemetryEntity> {
-			$0.metricsType == metricsType
-				&& (($0.nodeNum == nodeNum && ($0.nodeNum != 0 || $0.nodeTelemetry == nil)) || $0.nodeTelemetry?.num == nodeNum)
+			$0.metricsType == metricsType && ($0.nodeNum == nodeNum || $0.nodeTelemetry?.num == nodeNum)
 		}
 	}
 
 	/// All telemetry for any of `nodeNums`.
 	static func predicate(forNodes nodeNums: [Int64]) -> Predicate<TelemetryEntity> {
+		let nums = nodeNums.filter { $0 != 0 }
+		guard !nums.isEmpty else { return noRows }
 		if TelemetryNodeNumBackfill.isComplete {
-			return #Predicate<TelemetryEntity> { nodeNums.contains($0.nodeNum) }
+			return #Predicate<TelemetryEntity> { nums.contains($0.nodeNum) }
 		}
 		return #Predicate<TelemetryEntity> {
-			(nodeNums.contains($0.nodeNum) && ($0.nodeNum != 0 || $0.nodeTelemetry == nil))
-				|| ($0.nodeTelemetry.flatMap { nodeNums.contains($0.num) } ?? false)
+			nums.contains($0.nodeNum) || ($0.nodeTelemetry.flatMap { nums.contains($0.num) } ?? false)
 		}
 	}
 
 	/// One metrics type for any of `nodeNums`.
 	static func predicate(forNodes nodeNums: [Int64], metricsType: Int32) -> Predicate<TelemetryEntity> {
+		let nums = nodeNums.filter { $0 != 0 }
+		guard !nums.isEmpty else { return noRows }
 		if TelemetryNodeNumBackfill.isComplete {
-			return #Predicate<TelemetryEntity> { $0.metricsType == metricsType && nodeNums.contains($0.nodeNum) }
+			return #Predicate<TelemetryEntity> { $0.metricsType == metricsType && nums.contains($0.nodeNum) }
 		}
 		return #Predicate<TelemetryEntity> {
 			$0.metricsType == metricsType
-				&& ((nodeNums.contains($0.nodeNum) && ($0.nodeNum != 0 || $0.nodeTelemetry == nil))
-					|| ($0.nodeTelemetry.flatMap { nodeNums.contains($0.num) } ?? false))
+				&& (nums.contains($0.nodeNum) || ($0.nodeTelemetry.flatMap { nums.contains($0.num) } ?? false))
 		}
 	}
 

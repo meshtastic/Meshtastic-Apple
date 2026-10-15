@@ -815,6 +815,7 @@ struct NodeListItemCompactSnapshotTests {
 		let node = makeNode(
 			longName: "Sneaky Little Roof Node 03",
 			shortName: "SLN",
+			num: 0x5A11_0001,
 			hopsAway: 1,
 			batteryLevel: 99,
 			favorite: true,
@@ -862,6 +863,7 @@ struct NodeListItemCompactSnapshotTests {
 		let node = makeNode(
 			longName: "Power Station",
 			shortName: "PWR",
+			num: 0x5A11_0002,
 			hopsAway: 0,
 			batteryLevel: 101,
 			lastHeard: Date(timeIntervalSinceNow: -5)
