@@ -170,6 +170,9 @@ struct ShowcaseModelCard: View {
 struct ShowcaseControlPanel: View {
 	let scene: ShowcaseSceneController
 	@Binding var seated: Bool
+	/// Whether the app's window is open; the panel can hide it or bring it back.
+	let isAppShowing: Bool
+	let onToggleApp: () -> Void
 	let onLeave: () -> Void
 
 	private enum Posture: Hashable {
@@ -225,11 +228,21 @@ struct ShowcaseControlPanel: View {
 					.accessibilityLabel(String(localized: "Next rack page", comment: "Showcase: show the next page of the wall rack"))
 				}
 			}
-			Picker(String(localized: "Position", comment: "Showcase: whether the viewer is sitting or standing"), selection: posture) {
-				Text("Seated", comment: "Showcase: the viewer is sitting in the chair").tag(Posture.seated)
-				Text("Standing", comment: "Showcase: the viewer is standing").tag(Posture.standing)
+			HStack(spacing: 8) {
+				Picker(String(localized: "Position", comment: "Showcase: whether the viewer is sitting or standing"), selection: posture) {
+					Text("Seated", comment: "Showcase: the viewer is sitting in the chair").tag(Posture.seated)
+					Text("Standing", comment: "Showcase: the viewer is standing").tag(Posture.standing)
+				}
+				.pickerStyle(.segmented)
+				Button(action: onToggleApp) {
+					if isAppShowing {
+						Label(String(localized: "Hide App", comment: "Showcase: close the app's window while in the showcase"), systemImage: "macwindow.badge.minus")
+					} else {
+						Label(String(localized: "Show App", comment: "Showcase: bring back the app's window while in the showcase"), systemImage: "macwindow")
+					}
+				}
+				.fixedSize()
 			}
-			.pickerStyle(.segmented)
 		}
 		.padding(14)
 		.frame(width: 340)

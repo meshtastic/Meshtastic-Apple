@@ -21,9 +21,12 @@ struct ShowcaseSpace: View {
 	@Environment(\.scenePhase) private var scenePhase
 	@Environment(\.dismissImmersiveSpace) private var dismissImmersiveSpace
 	@Environment(\.openWindow) private var openWindow
+	@Environment(\.dismissWindow) private var dismissWindow
 	@Environment(\.accessibilityReduceMotion) private var reduceMotion
 	@AppStorage("showcaseSeated") private var seated = true
 	@State private var scene = ShowcaseSceneController()
+	/// The grab bar under the control panel; the panel rides on it.
+	@State private var controlsGrabber = Self.makeControlsGrabber()
 	@Query(sort: [SortDescriptor(\DeviceLinkEntity.shortCode)]) private var deviceLinks: [DeviceLinkEntity]
 
 	static let refreshInterval: Duration = .seconds(5)
@@ -37,8 +40,10 @@ struct ShowcaseSpace: View {
 			scene.setSeated(seated)
 			content.add(scene.world)
 			if let panel = attachments.entity(for: Attachments.controls) {
-				placeControls(panel)
-				scene.world.addChild(panel)
+				controlsGrabber.addChild(panel)
+				seat(panel)
+				scene.world.addChild(controlsGrabber)
+				placeControls()
 			}
 			scene.updateSubscription = content.subscribe(to: SceneEvents.Update.self) { event in
 				scene.step(deltaTime: event.deltaTime)
@@ -48,13 +53,19 @@ struct ShowcaseSpace: View {
 			// Before placing cards, so a card beside a held-up model follows a seated/standing switch.
 			scene.setSeated(seated)
 			if let panel = attachments.entity(for: Attachments.controls) {
-				placeControls(panel)
+				seat(panel)
 			}
 			placeCard(attachments.entity(for: Attachments.card))
 			placeItemCard(attachments.entity(for: Attachments.itemCard))
 		} attachments: {
 			Attachment(id: Attachments.controls) {
-				ShowcaseControlPanel(scene: scene, seated: $seated) {
+				ShowcaseControlPanel(scene: scene, seated: $seated, isAppShowing: appState.mainWindowCount > 0) {
+					if appState.mainWindowCount > 0 {
+						dismissWindow(id: MeshtasticAppleApp.mainWindowID)
+					} else {
+						openWindow(id: MeshtasticAppleApp.mainWindowID)
+					}
+				} onLeave: {
 					Task { await dismissImmersiveSpace() }
 				}
 			}
@@ -113,13 +124,21 @@ struct ShowcaseSpace: View {
 		}
 		.onChange(of: seated) { _, isSeated in
 			scene.setSeated(isSeated)
+			placeControls()
 		}
 		.onAppear {
 			appState.showcaseOpen = true
 			scene.preset = preset
+			// The room is the app while it's open; the panel brings the window back.
+			dismissWindow(id: MeshtasticAppleApp.mainWindowID)
 		}
 		.onDisappear {
 			appState.showcaseOpen = false
+			// Leaving by the panel or the Digital Crown would otherwise leave the app with no
+			// window. Not when the app went to the background, which closes the room too.
+			if appState.mainWindowCount == 0, scenePhase != .background {
+				openWindow(id: MeshtasticAppleApp.mainWindowID)
+			}
 		}
 		.onChange(of: scenePhase) { _, phase in
 			if phase == .background {
@@ -162,12 +181,45 @@ struct ShowcaseSpace: View {
 			}
 	}
 
-	/// In front of the front table's left end, turned to face the seat. Higher when standing,
-	/// where the viewer is also further back in the world.
-	private func placeControls(_ panel: Entity) {
-		let position = SIMD3<Float>(-0.75, seated ? 1.0 : 1.3, -0.7)
-		let eye = ShowcaseRoomGeometry.seatedEye + (seated ? .zero : SIMD3<Float>(0, 0.4, ShowcaseSceneController.standingSetback))
-		panel.look(at: eye, from: position, relativeTo: scene.world, forward: .positiveZ)
+	/// In front of the front table's left end, higher when standing. Puts back a panel that was
+	/// moved, too.
+	private func placeControls() {
+		controlsGrabber.setPosition(SIMD3<Float>(-0.75, seated ? 0.92 : 1.22, -0.7), relativeTo: scene.world)
+	}
+
+	/// The panel sits just above the grab bar, however tall it is.
+	private func seat(_ panel: Entity) {
+		let height = panel.visualBounds(relativeTo: panel).extents.y
+		panel.position = [0, height / 2 + Self.grabberGap, 0]
+	}
+
+	private static let grabberGap: Float = 0.012
+
+	/// A bar like a window's: pinch and drag it to move the control panel. It and the panel keep
+	/// facing the viewer.
+	private static func makeControlsGrabber() -> Entity {
+		var material = UnlitMaterial(color: .white)
+		material.blending = .transparent(opacity: .init(floatLiteral: 0.55))
+		let bar = ModelEntity(mesh: .generateBox(width: 0.08, height: 0.008, depth: 0.008, cornerRadius: 0.004), materials: [material])
+		bar.name = "ControlsGrabber"
+		ManipulationComponent.configureEntity(
+			bar,
+			hoverEffect: .highlight(.default),
+			allowedInputTypes: .all,
+			collisionShapes: [.generateBox(width: 0.14, height: 0.035, depth: 0.03)]
+		)
+		var manipulation = bar.components[ManipulationComponent.self] ?? ManipulationComponent()
+		manipulation.releaseBehavior = .stay
+		manipulation.dynamics.scalingBehavior = .none
+		manipulation.dynamics.primaryRotationBehavior = .none
+		manipulation.dynamics.secondaryRotationBehavior = .none
+		bar.components.set(manipulation)
+		bar.components.set(BillboardComponent())
+		var accessibility = AccessibilityComponent()
+		accessibility.isAccessibilityElement = true
+		accessibility.label = LocalizedStringResource("Move the control panel", comment: "Showcase: VoiceOver label for the bar under the control panel that moves it")
+		bar.components.set(accessibility)
+		return bar
 	}
 
 	private func placeCard(_ card: Entity?) {
