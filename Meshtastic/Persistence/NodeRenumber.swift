@@ -83,6 +83,20 @@ enum NodeRenumber {
 		for beacon in try fetchAll(DiscoveredBeaconEntity.self, in: context) where beacon.nodeNum == oldNum {
 			beacon.nodeNum = newNum
 		}
+		try renumberNeighborLinks(from: oldNum, to: newNum, in: context)
+	}
+
+	/// Rows already saved under the new number would collide with the moved ones on `key`, and
+	/// the old number's rows are the ones that belong to this radio, so the new number's go.
+	private static func renumberNeighborLinks(from oldNum: Int64, to newNum: Int64, in context: ModelContext) throws {
+		for row in try context.fetch(FetchDescriptor(predicate: NeighborLinkEntity.predicate(involving: [newNum]))) {
+			context.delete(row)
+		}
+		for row in try context.fetch(FetchDescriptor(predicate: NeighborLinkEntity.predicate(involving: [oldNum]))) {
+			if row.reporterNum == oldNum { row.reporterNum = newNum }
+			if row.neighborNum == oldNum { row.neighborNum = newNum }
+			row.key = NeighborLinkEntity.key(reporter: row.reporterNum, neighbor: row.neighborNum)
+		}
 	}
 
 	/// The app can hear a radio on the mesh before it connects to it, so the new number may

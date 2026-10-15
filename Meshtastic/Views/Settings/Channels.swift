@@ -405,6 +405,7 @@ struct Channels: View {
 			nodeDescriptor.fetchLimit = 100
 			if let matchingNodes = try? context.fetch(nodeDescriptor) {
 				TelemetryEntity.deleteAll(forNodes: matchingNodes.map(\.num), in: context)
+				NeighborLinkEntity.deleteAll(forNodes: matchingNodes.map(\.num), in: context)
 				for matchingNode in matchingNodes {
 					context.delete(matchingNode)
 				}

@@ -302,6 +302,7 @@ extension AccessoryManager {
 				// handshake on the ingestion actor. Post-dump lastHeard values also make the
 				// pruning decisions more accurate.
 				_ = await MeshPackets.shared.clearStaleNodes(nodeExpireDays: Int(UserDefaults.purgeStaleNodeDays))
+				await MeshPackets.shared.pruneNeighborLinksAndSave()
 				await self.initializeMqtt()
 				self.initializeLocationProvider()
 				if transport.requiresPeriodicHeartbeat {
