@@ -63,4 +63,36 @@ struct SpatialMapAreaTests {
 		#expect(flyover.isFinished)
 		#expect(flyover.advance(by: 1) == nil)
 	}
+
+	@Test func flyoverTrailFollowsTheLegAndCatchesUpOnLanding() {
+		var flyover = SpatialFlyover(legs: [[SIMD3(0, 0, 0), SIMD3(0.4, 0, 0)], [SIMD3(0.4, 0, 0), SIMD3(0.4, 0, 0.4)]])
+		flyover.speedMultiplier = 4
+		_ = flyover.advance(by: 0.5)
+		let front = flyover.distanceBack(0) ?? 0
+		#expect(abs(front - 0.4 * Float(SpatialFlyover.eased(0.4))) < 1e-4, "2 s of flight at 4x")
+		let behind = flyover.distanceBack(0.5) ?? 0
+		#expect(abs(behind - 0.4 * Float(SpatialFlyover.eased(0.3))) < 1e-4, "lag is in flight seconds, not wall seconds")
+		#expect(flyover.distanceBack(10) == 0, "clamped to the start of the leg")
+		_ = flyover.advance(by: 10)
+		_ = flyover.advance(by: 0.5)
+		#expect(flyover.holdRemaining > 0)
+		#expect(flyover.distanceBack(0.4) == 0.4, "the trail has caught up with the landed marker")
+		#expect((flyover.distanceBack(0.6) ?? 1) < 0.4)
+	}
+
+	@Test func flyoverLegsKeepTheirSourceIndex() {
+		let flyover = SpatialFlyover(legs: [[SIMD3(0, 0, 0)], [SIMD3(0, 0, 0), SIMD3(0.4, 0, 0)]])
+		#expect(flyover.legs.count == 1)
+		#expect(flyover.legs[0].source == 1, "a dropped forward path leaves the return leg marked as the return")
+	}
+
+	@Test func flyoverMovedToNewPositionsKeepsItsPlace() throws {
+		var flyover = SpatialFlyover(legs: [[SIMD3(0, 0, 0), SIMD3(0.4, 0, 0)], [SIMD3(0.4, 0, 0), SIMD3(0.4, 0, 0.4)]])
+		_ = flyover.advance(by: 6.3)
+		#expect(flyover.holdRemaining > 0)
+		let moved = try #require(flyover.moved(to: [[SIMD3(0, 0, 0), SIMD3(0.8, 0, 0)], [SIMD3(0.8, 0, 0), SIMD3(0.8, 0, 0.8)]]))
+		#expect(moved.legIndex == 0 && moved.progress == flyover.progress && moved.holdRemaining == flyover.holdRemaining)
+		#expect(moved.legs[0].length == 0.8)
+		#expect(flyover.moved(to: [[SIMD3(0, 0, 0)], [SIMD3(0.8, 0, 0), SIMD3(0.8, 0, 0.8)]]) == nil, "lost a leg")
+	}
 }
