@@ -102,6 +102,10 @@ struct MeshMapMK: View {
 	@State private var linkOverlays: [ClusterMapOverlay] = []
 	@State private var linkLayout: NodeLinkMapLayout?
 	@State private var lastLinkKey = "init"
+	/// When the direct links were last fetched, so the 2 s position refresh fetches them less often.
+	@State private var lastLinkRefresh = Date.distantPast
+	/// Links fade over hours, so the regular refresh only needs to re-fetch them this often.
+	private static let linkRefreshInterval: TimeInterval = 15
 	/// Drives the guided 3D camera flythrough along the selected trace route.
 	@StateObject private var flyover = TraceRouteFlyover()
 	@AppStorage("enableMapWaypoints") private var showWaypoints = true
@@ -194,7 +198,10 @@ struct MeshMapMK: View {
 	private func refreshPositionState(force: Bool = false) {
 		allLatestPositions = fetchLatestPositions()
 		// Before the change check: links also change with signal and age, not just positions.
-		rebuildLinkContent()
+		// Filter, toggle, radio and appearance changes force it; otherwise every 15 s is enough.
+		if force || Date().timeIntervalSince(lastLinkRefresh) >= Self.linkRefreshInterval {
+			rebuildLinkContent()
+		}
 		let state = visiblePositionState
 		guard force || state.key != appliedPositionStateKey else { return }
 		appliedPositionStateKey = state.key
@@ -1636,6 +1643,7 @@ struct MeshMapMK: View {
 	/// Rebuild the direct link lines and pill layout when the links, their colors or their fade
 	/// changed. An unchanged line keeps its overlay object so the map doesn't redraw it.
 	private func rebuildLinkContent() {
+		lastLinkRefresh = Date()
 		let dark = colorScheme == .dark
 		let preset = ModemPresets(rawValue: UserDefaults.modemPreset) ?? .longFast
 		let links = showDirectLinks && isMapVisible ? currentDirectLinks() : []
