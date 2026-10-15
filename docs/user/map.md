@@ -58,7 +58,7 @@ Tap the **info button** (`info.circle`) in the bottom-right toolbar to open the 
 | Precise Locations Only | Hide nodes that broadcast an approximate (reduced-precision) location. Imprecise nodes are normally drawn with a translucent circle showing how large the possible area is; turn this on to show only nodes reporting an exact position. Both the imprecise pins and their precision circles are hidden. |
 | Cluster Nodes | Group nearby nodes into one numbered pin; tap it to zoom in. Turn off to always show every node individually. |
 | My Location | Show or hide your own position (the blue dot) on the map |
-| Direct Links | Draw a line from your connected radio to each node it heard directly (no hops, not over MQTT) in the last 12 hours, colored by signal quality like the signal meter. Lines are dashed because only one direction is known, fade as they get older, and show the SNR in a small pill when you zoom in. Both ends need a position. Hidden while a trace route is shown. |
+| Direct Links | Draw a line from your connected radio to each node it heard directly (no hops, not over MQTT) in the last 12 hours, colored by signal quality like the signal meter. Lines are dashed because only one direction is known, fade as they get older, and show the SNR in a small pill when you zoom in. Both ends need a position, and node filters apply. Hidden while a trace route is shown. |
 | Convex Hull | Draw an outline around the outermost LoRa nodes to visualize mesh coverage |
 | Traffic | Show Apple Maps live traffic |
 | Points of Interest | Show Apple Maps points of interest |

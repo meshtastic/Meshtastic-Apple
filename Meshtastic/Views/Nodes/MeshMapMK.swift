@@ -1700,7 +1700,12 @@ struct MeshMapMK: View {
 			predicate: #Predicate<NodeInfoEntity> { $0.hopsAway == 0 && $0.viaMqtt == false && ($0.lastHeard ?? epoch) >= cutoff }
 		)
 		// SNR is checked by the link builder; ignored nodes aren't on the map.
-		let nodes = ((try? context.fetch(descriptor)) ?? []).filter { !$0.ignored }
+		var nodes = ((try? context.fetch(descriptor)) ?? []).filter { !$0.ignored }
+		// With a filter or search on, only draw links to nodes the filter still shows.
+		if filters.isFiltering || !filters.searchText.isEmpty {
+			let shown = Set(filteredPositions(from: mapEligiblePositions).compactMap { $0.nodePosition?.num })
+			nodes = nodes.filter { shown.contains($0.num) }
+		}
 		var positions: [Int64: CLLocationCoordinate2D] = [connectedNum: connectedCoordinate]
 		var rows: [NodeLinkNodeRow] = []
 		for node in nodes where node.num != connectedNum {
