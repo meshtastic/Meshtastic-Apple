@@ -649,7 +649,7 @@ def write_usdz(parts, materials, out, root_name, meta):
     Usd.ModelAPI(root.GetPrim()).SetAssetInfo({"name": root_name, "copyright": COPYRIGHT})
 
     mat_prims = {}
-    for name in {m for _, m, _ in parts.values()}:
+    for name in sorted({m for _, m, _ in parts.values()}):
         spec = materials.get(name, {"color": "#888888", "roughness": 0.5, "metallic": 0.0})
         m = UsdShade.Material.Define(stage, f"/{root_name}/Materials/{prim_name(name)}")
         s = UsdShade.Shader.Define(stage, f"/{root_name}/Materials/{prim_name(name)}/Surface")
