@@ -23,7 +23,7 @@ struct ShowInSpatialMapButton: View {
 				Label {
 					Text("Show in 3D", comment: "Node detail action: open the spatial map volume at this node")
 				} icon: {
-					Image(systemName: "cube")
+					Image("custom.map.wheel")
 				}
 			}
 		}
