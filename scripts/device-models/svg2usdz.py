@@ -210,14 +210,13 @@ def solid_mesh(sd, depth):
     dims = [w, h, d]
     if sd.get("shape") == "cylinder":
         axis = "xyz".index(sd.get("axis", "z"))
-        cross = [dims[i] for i in range(3) if i != axis]
-        m = trimesh.creation.cylinder(radius=0.5, height=dims[axis], sections=int(sd.get("sides", 32)))
-        m.apply_scale([cross[0], cross[1], 1])
-        # Built along z; turn it onto its axis.
+        m = trimesh.creation.cylinder(radius=0.5, height=1, sections=int(sd.get("sides", 32)))
+        # Built along z; turn it onto its axis, then size it, so size_mm is x, y, z.
         if axis == 0:
             m.apply_transform(trimesh.transformations.rotation_matrix(math.pi / 2, [0, 1, 0]))
         elif axis == 1:
             m.apply_transform(trimesh.transformations.rotation_matrix(-math.pi / 2, [1, 0, 0]))
+        m.apply_scale(dims)
         return place_solid(m, sd)
     thin = int(np.argmin(dims))
     a, b = [dims[i] for i in range(3) if i != thin]
