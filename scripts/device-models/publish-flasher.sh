@@ -33,6 +33,14 @@ fi
 git fetch -q origin main
 git switch -q -C "$BRANCH" origin/main
 
+# A first publish adds the models; later ones update them.
+if compgen -G "$DEST/*.usdz" >/dev/null; then
+	title="Update the device models"
+	summary="Rebuilds the device models in \`public/models/devices/\` from the current specs in Meshtastic-Apple's \`scripts/device-models/\`, and regenerates their GLBs."
+else
+	title="Add real-size 3D device models"
+	summary="Adds real-size USDZ models in \`public/models/devices/\`, one for each device SVG that has a spec in Meshtastic-Apple's \`scripts/device-models/\`, and a GLB of each for glTF viewers. They will be served at \`/models/devices/<name>.usdz\` and \`<name>.glb\`."
+fi
 mkdir -p "$DEST"
 cp "$HERE/flasher-README.md" "$DEST/README.md"
 cp "${models[@]}" "$DEST/"
@@ -48,18 +56,19 @@ fi
 
 names=""
 for m in "${models[@]}"; do names+="${names:+ }$(basename "$m" .usdz)"; done
-git commit -q -m "Add real-size 3D device models" -m "USDZ models built from the device SVGs, each with a GLB converted from it: $names"
+git commit -q -m "$title" -m "USDZ models built from the device SVGs, each with a GLB converted from it: $names"
 git push -q -u origin "$BRANCH"
-gh pr create --base main --head "$BRANCH" --title "Add real-size 3D device models" --body "$(cat <<EOF
+# The body comes in on stdin: a here-document inside "$(...)" breaks on the
+# apostrophes in it under macOS's bash 3.2.
+gh pr create --base main --head "$BRANCH" --title "$title" --body-file - <<EOF
 ## Summary
-Adds real-size USDZ models in \`public/models/devices/\`, one for each device SVG that has a spec in Meshtastic-Apple's \`scripts/device-models/\`, and a GLB of each for glTF viewers. They will be served at \`/models/devices/<name>.usdz\` and \`<name>.glb\`.
+$summary
 
 ## What changed
 - \`public/models/devices/*.usdz\`: $names
 - \`public/models/devices/*.glb\`: the same models, converted with \`scripts/usdz2glb.py\`
-- \`public/models/devices/README.md\`: the same Meshtastic LLC asset notice as \`img/devices\`, worded for the models. The notice is also embedded in each file.
+- \`public/models/devices/README.md\`: the Meshtastic LLC asset notice, worded for the models. The notice is also embedded in each file.
 
 ## Testing
 Each model passes \`usdchecker --arkit\` and was checked against the manufacturer's published dimensions. The GLBs come from the flasher's converter, unchanged.
 EOF
-)"
