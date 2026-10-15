@@ -17,7 +17,7 @@ struct TraceRouteLog: View {
 	/// The route picked on the chart, highlighted in the list.
 	@State private var highlightedID: Int64?
 	@State private var openRouteID: PersistentIdentifier?
-	@SceneStorage("traceRouteLogWindow") private var windowRawValue = TraceRouteTimeWindow.all.rawValue
+	@SceneStorage("traceRouteLogWindow") private var windowRawValue = TraceRouteTimeWindow.day.rawValue
 	@SceneStorage("traceRouteLogChartExpanded") private var chartExpanded = true
 
 	init(node: NodeInfoEntity) {
