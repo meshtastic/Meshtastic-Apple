@@ -107,6 +107,7 @@ struct MapSettingsForm: View {
 									.symbolRenderingMode(.multicolor)
 							}
 						}
+						DirectLinksToggle()
 					}
 					if !meshMap {
 						Toggle(isOn: $nodeHistory) {
@@ -468,4 +469,24 @@ struct MapSettingsForm: View {
 		meshMap: .constant(true),
 		enabledOverlayConfigs: .constant(Set<UUID>())
 	)
+}
+
+/// Turns on the lines from the connected radio to the nodes it hears directly.
+private struct DirectLinksToggle: View {
+	@AppStorage("meshMapShowDirectLinks") private var showDirectLinks = false
+
+	var body: some View {
+		Toggle(isOn: $showDirectLinks) {
+			Label {
+				VStack(alignment: .leading) {
+					Text("Direct Links")
+					Text("Lines from your radio to the nodes it hears directly, colored by signal quality.")
+						.font(.caption)
+						.foregroundColor(.secondary)
+				}
+			} icon: {
+				Image(systemName: "point.3.connected.trianglepath.dotted")
+			}
+		}
+	}
 }
