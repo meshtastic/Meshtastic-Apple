@@ -28,7 +28,8 @@ let view = args.count > 4 ? args[4] : "three-quarter"
 let dir: SCNVector3 = switch view {
 case "front": SCNVector3(0, 0, 1)
 case "side": SCNVector3(1, 0, 0)
-case "back": SCNVector3(0, 0, -1)
+// Not exactly (0, 0, -1): look(at:) can't turn the camera exactly halfway round and renders nothing.
+case "back": SCNVector3(0.001, 0, -1)
 case "back-three-quarter": SCNVector3(-0.55, 0.25, -1.0)
 default: SCNVector3(0.55, 0.25, 1.0)
 }
