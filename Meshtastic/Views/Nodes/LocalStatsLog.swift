@@ -594,7 +594,7 @@ struct LocalStatsRow: Identifiable, Sendable {
 actor LocalStatsFetchActor {
 	func rows(nodeNum: Int64) -> [LocalStatsRow] {
 		var descriptor = FetchDescriptor<TelemetryEntity>(
-			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == 4 },
+			predicate: TelemetryEntity.predicate(forNode: nodeNum, metricsType: 4),
 			sortBy: [SortDescriptor(\TelemetryEntity.time, order: .reverse)]
 		)
 		descriptor.fetchLimit = 500

@@ -100,9 +100,11 @@ extension MeshPackets {
 		)
 		descriptor.fetchLimit = 1
 		do {
-			if let node = try modelContext.fetch(descriptor).first {
-				let toDelete = node.telemetries.filter { $0.metricsType == metricsType }
-				for entity in toDelete {
+			if try modelContext.fetch(descriptor).first != nil {
+				let telemetryDescriptor = FetchDescriptor<TelemetryEntity>(
+					predicate: TelemetryEntity.predicate(forNode: num, metricsType: metricsType)
+				)
+				for entity in try modelContext.fetch(telemetryDescriptor) {
 					modelContext.delete(entity)
 				}
 				try modelContext.save()
@@ -539,7 +541,7 @@ extension MeshPackets {
 						telemetry.voltage = nodeInfoMessage.deviceMetrics.voltage
 						telemetry.channelUtilization = nodeInfoMessage.deviceMetrics.channelUtilization
 						telemetry.airUtilTx = nodeInfoMessage.deviceMetrics.airUtilTx
-						telemetry.nodeTelemetry = fetchedNode[0]
+						telemetry.nodeNum = fetchedNode[0].num
 					}
 					if nodeInfoMessage.hasUser {
 						fetchedNode[0].user?.userId = nodeInfoMessage.num.toHex()

@@ -173,6 +173,9 @@ extension NodeBackupManager {
 	nonisolated static func importTelemetry(from backupContext: ModelContext, into liveContext: ModelContext, nodesByNum: [Int64: NodeInfoEntity]) throws {
 		let backupTelemetry = try backupContext.fetch(FetchDescriptor<TelemetryEntity>())
 		for src in backupTelemetry {
+			// Backups made before `nodeNum` existed only link the row to its node, so fall back
+			// to that. Rows whose node is not in the backup were never shown, so they stay out.
+			guard let nodeNum = src.ownerNodeNum, nodesByNum[nodeNum] != nil else { continue }
 			let dst = TelemetryEntity()
 			dst.metricsType = src.metricsType
 			dst.time = src.time
@@ -225,9 +228,7 @@ extension NodeBackupManager {
 			dst.windGust = src.windGust
 			dst.windLull = src.windLull
 			dst.windSpeed = src.windSpeed
-			if let srcNode = src.nodeTelemetry, let liveNode = nodesByNum[srcNode.num] {
-				dst.nodeTelemetry = liveNode
-			}
+			dst.nodeNum = nodeNum
 			liveContext.insert(dst)
 		}
 	}

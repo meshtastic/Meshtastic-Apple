@@ -72,7 +72,7 @@ extension NodeInfoEntity {
 		guard let ctx = context ?? modelContext else { return 0 }
 		let nodeNum = self.num
 		let descriptor = FetchDescriptor<TelemetryEntity>(
-			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType }
+			predicate: TelemetryEntity.predicate(forNode: nodeNum, metricsType: metricsType)
 		)
 		return (try? ctx.fetchCount(descriptor)) ?? 0
 	}
@@ -104,7 +104,7 @@ extension NodeInfoEntity {
 		let nodeNum = self.num
 		let metricsType: Int32 = 0
 		var descriptor = FetchDescriptor<TelemetryEntity>(
-			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType },
+			predicate: TelemetryEntity.predicate(forNode: nodeNum, metricsType: metricsType),
 			sortBy: [SortDescriptor(\TelemetryEntity.time, order: .reverse)]
 		)
 		descriptor.fetchLimit = 1
@@ -116,7 +116,7 @@ extension NodeInfoEntity {
 		let nodeNum = self.num
 		let metricsType: Int32 = 1
 		var descriptor = FetchDescriptor<TelemetryEntity>(
-			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType },
+			predicate: TelemetryEntity.predicate(forNode: nodeNum, metricsType: metricsType),
 			sortBy: [SortDescriptor(\TelemetryEntity.time, order: .reverse)]
 		)
 		descriptor.fetchLimit = 1
@@ -128,7 +128,7 @@ extension NodeInfoEntity {
 		let nodeNum = self.num
 		let metricsType: Int32 = 3
 		var descriptor = FetchDescriptor<TelemetryEntity>(
-			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType },
+			predicate: TelemetryEntity.predicate(forNode: nodeNum, metricsType: metricsType),
 			sortBy: [SortDescriptor(\TelemetryEntity.time, order: .reverse)]
 		)
 		descriptor.fetchLimit = 1
@@ -152,7 +152,7 @@ extension NodeInfoEntity {
 		let nodeNum = self.num
 		let metricsType: Int32 = 3
 		var descriptor = FetchDescriptor<TelemetryEntity>(
-			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType }
+			predicate: TelemetryEntity.predicate(forNode: nodeNum, metricsType: metricsType)
 		)
 		descriptor.fetchLimit = 1
 		return ((try? ctx.fetch(descriptor)) ?? []).isEmpty == false
@@ -163,7 +163,7 @@ extension NodeInfoEntity {
 		let nodeNum = self.num
 		let metricsType: Int32 = 2
 		var descriptor = FetchDescriptor<TelemetryEntity>(
-			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType },
+			predicate: TelemetryEntity.predicate(forNode: nodeNum, metricsType: metricsType),
 			sortBy: [SortDescriptor(\TelemetryEntity.time, order: .reverse)]
 		)
 		descriptor.fetchLimit = 1
@@ -185,7 +185,7 @@ extension NodeInfoEntity {
 		let nodeNum = self.num
 		let metricsType: Int32 = 0
 		var descriptor = FetchDescriptor<TelemetryEntity>(
-			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType }
+			predicate: TelemetryEntity.predicate(forNode: nodeNum, metricsType: metricsType)
 		)
 		descriptor.fetchLimit = 1
 		return ((try? ctx.fetch(descriptor)) ?? []).isEmpty == false
@@ -196,7 +196,7 @@ extension NodeInfoEntity {
 		let nodeNum = self.num
 		let metricsType: Int32 = 1
 		var descriptor = FetchDescriptor<TelemetryEntity>(
-			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType }
+			predicate: TelemetryEntity.predicate(forNode: nodeNum, metricsType: metricsType)
 		)
 		descriptor.fetchLimit = 1
 		return ((try? ctx.fetch(descriptor)) ?? []).isEmpty == false
@@ -236,7 +236,7 @@ extension NodeInfoEntity {
 		let nodeNum = self.num
 		let metricsType: Int32 = 2
 		var descriptor = FetchDescriptor<TelemetryEntity>(
-			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType }
+			predicate: TelemetryEntity.predicate(forNode: nodeNum, metricsType: metricsType)
 		)
 		descriptor.fetchLimit = 1
 		return ((try? ctx.fetch(descriptor)) ?? []).isEmpty == false
@@ -247,7 +247,7 @@ extension NodeInfoEntity {
 		let nodeNum = self.num
 		let metricsType: Int32 = 4
 		var descriptor = FetchDescriptor<TelemetryEntity>(
-			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType },
+			predicate: TelemetryEntity.predicate(forNode: nodeNum, metricsType: metricsType),
 			sortBy: [SortDescriptor(\TelemetryEntity.time, order: .reverse)]
 		)
 		descriptor.fetchLimit = 1
@@ -274,7 +274,7 @@ extension NodeInfoEntity {
 		let nodeNum = self.num
 		let metricsType: Int32 = 4
 		let descriptor = FetchDescriptor<TelemetryEntity>(
-			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType }
+			predicate: TelemetryEntity.predicate(forNode: nodeNum, metricsType: metricsType)
 		)
 		return (try? ctx.fetchCount(descriptor)) ?? 0 > 0
 	}
@@ -309,7 +309,7 @@ extension NodeInfoEntity {
 		guard let ctx = modelContext else { return [] }
 		let nodeNum = self.num
 		var descriptor = FetchDescriptor<TelemetryEntity>(
-			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType },
+			predicate: TelemetryEntity.predicate(forNode: nodeNum, metricsType: metricsType),
 			sortBy: [SortDescriptor(\TelemetryEntity.time, order: .reverse)]
 		)
 		descriptor.fetchLimit = 500

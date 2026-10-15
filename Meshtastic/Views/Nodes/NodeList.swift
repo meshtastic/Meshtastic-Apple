@@ -616,14 +616,10 @@ private struct NodeListFilterLookup {
 		guard !nodeNums.isEmpty else { return [] }
 		let metricsType: Int32 = 1
 		let descriptor = FetchDescriptor<TelemetryEntity>(
-			predicate: #Predicate<TelemetryEntity> {
-				$0.metricsType == metricsType
-				&& $0.nodeTelemetry != nil
-				&& ($0.nodeTelemetry.flatMap { nodeNums.contains($0.num) } ?? false)
-			}
+			predicate: TelemetryEntity.predicate(forNodes: nodeNums, metricsType: metricsType)
 		)
 		let metrics = (try? context.fetch(descriptor)) ?? []
-		return Set(metrics.compactMap { $0.nodeTelemetry?.num })
+		return Set(metrics.compactMap(\.ownerNodeNum))
 	}
 
 	private static func fetchDistanceNodeNums(

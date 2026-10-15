@@ -103,7 +103,7 @@ struct NodeRecentNoiseFloorTests {
 		stats.metricsType = 4 // Local Stats
 		stats.time = time
 		stats.noiseFloor = noiseFloor
-		stats.nodeTelemetry = node
+		stats.nodeNum = node.num
 		context.insert(stats)
 	}
 

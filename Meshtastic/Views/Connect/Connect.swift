@@ -637,7 +637,7 @@ struct Connect: View {
 		guard let nodeNum = node?.num else { return nil }
 		let metricsType: Int32 = 0
 		var descriptor = FetchDescriptor<TelemetryEntity>(
-			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType },
+			predicate: TelemetryEntity.predicate(forNode: nodeNum, metricsType: metricsType),
 			sortBy: [SortDescriptor(\TelemetryEntity.time, order: .reverse)]
 		)
 		descriptor.fetchLimit = 1
@@ -726,7 +726,7 @@ struct Connect: View {
 		let nodeNum = node?.num ?? 0
 		let metricsType: Int32 = 4
 		var statsDescriptor = FetchDescriptor<TelemetryEntity>(
-			predicate: #Predicate<TelemetryEntity> { $0.nodeTelemetry?.num == nodeNum && $0.metricsType == metricsType },
+			predicate: TelemetryEntity.predicate(forNode: nodeNum, metricsType: metricsType),
 			sortBy: [SortDescriptor(\TelemetryEntity.time, order: .reverse)]
 		)
 		statsDescriptor.fetchLimit = 1

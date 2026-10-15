@@ -1013,7 +1013,7 @@ struct TelemetryPacketIngestTests {
 		let environmentType: Int32 = 1
 		var descriptor = FetchDescriptor<TelemetryEntity>(
 			predicate: #Predicate<TelemetryEntity> {
-				$0.nodeTelemetry?.num == nodeNum && $0.metricsType == environmentType
+				$0.nodeNum == nodeNum && $0.metricsType == environmentType
 			},
 			sortBy: [SortDescriptor(\TelemetryEntity.time, order: .reverse)]
 		)
@@ -1022,7 +1022,7 @@ struct TelemetryPacketIngestTests {
 	}
 
 	/// Fix #2: telemetry from a node with no `NodeInfoEntity` yet must create the node and link the
-	/// reading, instead of being saved as an orphan row (nodeTelemetry == nil) the UI can never query.
+	/// reading, instead of being saved as an orphan row the UI can never query.
 	@Test func environmentTelemetryFromUnknownNode_createsNodeAndLinksReading() async throws {
 		let nodeNum: UInt32 = 0x2004_AA01
 		let packet = try makeEnvironmentTelemetryPacket(
@@ -1049,7 +1049,8 @@ struct TelemetryPacketIngestTests {
 		let latest = try fetchLatestEnvironmentTelemetry(forNode: num)
 		#expect(latest != nil)
 		#expect(latest?.temperature == 23.5)
-		#expect(latest?.nodeTelemetry?.num == num)
+		#expect(latest?.nodeNum == num)
+		#expect(latest?.nodeTelemetry == nil)
 	}
 
 	/// Fix #1: a remote node that reports `time == 0` (no RTC/GPS) must fall back to the packet
@@ -1136,7 +1137,7 @@ struct TelemetryPacketIngestTests {
 		let airQualityType: Int32 = 3
 		var descriptor = FetchDescriptor<TelemetryEntity>(
 			predicate: #Predicate<TelemetryEntity> {
-				$0.nodeTelemetry?.num == nodeNum && $0.metricsType == airQualityType
+				$0.nodeNum == nodeNum && $0.metricsType == airQualityType
 			},
 			sortBy: [SortDescriptor(\TelemetryEntity.time, order: .reverse)]
 		)
@@ -1171,7 +1172,7 @@ struct TelemetryPacketIngestTests {
 		#expect(latest?.pm10Environmental == nil)
 		#expect(latest?.pm25Environmental == nil)
 		#expect(latest?.pm100Environmental == nil)
-		#expect(latest?.nodeTelemetry?.num == Int64(nodeNum))
+		#expect(latest?.nodeNum == Int64(nodeNum))
 	}
 }
 

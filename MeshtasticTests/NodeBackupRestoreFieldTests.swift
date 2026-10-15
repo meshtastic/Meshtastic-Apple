@@ -117,7 +117,7 @@ struct NodeBackupRestoreFieldTests {
 		telemetry.pm10Environmental = 4
 		telemetry.pm25Environmental = 5
 		telemetry.pm100Environmental = 6
-		telemetry.nodeTelemetry = node
+		telemetry.nodeNum = node.num
 		backup.insert(telemetry)
 		try backup.save()
 
@@ -132,7 +132,7 @@ struct NodeBackupRestoreFieldTests {
 		#expect(dst.pm10Environmental == 4)
 		#expect(dst.pm25Environmental == 5)
 		#expect(dst.pm100Environmental == 6)
-		#expect(dst.nodeTelemetry?.num == 99)
+		#expect(dst.nodeNum == 99)
 	}
 
 	// MARK: - MessageEntity

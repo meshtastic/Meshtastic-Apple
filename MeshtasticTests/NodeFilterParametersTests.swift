@@ -678,7 +678,7 @@ struct NodeFilterParametersMatchesTests {
 		let telemetry = TelemetryEntity()
 		telemetry.metricsType = 1 // environment metrics
 		telemetry.time = Date()
-		telemetry.nodeTelemetry = withMetrics
+		telemetry.nodeNum = withMetrics.num
 		context.insert(telemetry)
 
 		let withoutMetrics = makeNode(context, num: 9_970_002)

@@ -65,6 +65,10 @@ enum NodeRenumber {
 			for hop in route.hops where hop.num == oldNum { hop.num = newNum }
 			for snapshot in route.nodePositions where snapshot.num == oldNum { snapshot.num = newNum }
 		}
+		let telemetry = try context.fetch(
+			FetchDescriptor<TelemetryEntity>(predicate: #Predicate { $0.nodeNum == oldNum })
+		)
+		for row in telemetry { row.nodeNum = newNum }
 		let relayed = try context.fetch(
 			FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.relayNode == oldNum })
 		)
