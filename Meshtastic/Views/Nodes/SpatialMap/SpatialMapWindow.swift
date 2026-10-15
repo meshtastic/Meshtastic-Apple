@@ -332,9 +332,30 @@ struct SpatialMapOrnament: View {
 		}
 	}
 
-	/// The trace route menu: pick a route to fly it and leave it drawn. While one is shown, the
-	/// button clears it instead.
+	/// The trace route menu: pick a route to fly it and leave it drawn. Picking another replaces it.
+	/// While one is shown, a clear button sits beside the menu.
 	@ViewBuilder private var traceRoutes: some View {
+		Menu {
+			if model.routes.isEmpty {
+				Text("No traceroutes with positions", comment: "Spatial map: trace route menu is empty")
+			}
+			let now = Date.now
+			ForEach(model.routes) { route in
+				let entry = SpatialRouteMenuEntry(route: route, now: now)
+				Button {
+					model.shownRoute = route
+					traffic.startFlyover(route)
+				} label: {
+					Text(verbatim: entry.title)
+					Text(verbatim: entry.subtitle)
+				}
+			}
+		} label: {
+			Image(systemName: "point.3.connected.trianglepath.dotted")
+		}
+		.help(String(localized: "Trace routes", comment: "VoiceOver label for the spatial map trace route menu"))
+		.accessibilityLabel(String(localized: "Trace routes", comment: "VoiceOver label for the spatial map trace route menu"))
+		.accessibilityHint(String(localized: "Pick a trace route to fly along it and leave it drawn on the map.", comment: "VoiceOver hint for the spatial map trace route menu"))
 		if model.shownRoute != nil {
 			Button {
 				traffic.stopFlyover()
@@ -344,28 +365,6 @@ struct SpatialMapOrnament: View {
 			}
 			.help(String(localized: "Clear trace route", comment: "VoiceOver label for the clear trace route button"))
 			.accessibilityLabel(String(localized: "Clear trace route", comment: "VoiceOver label for the clear trace route button"))
-		} else {
-			Menu {
-				if model.routes.isEmpty {
-					Text("No traceroutes with positions", comment: "Spatial map: trace route menu is empty")
-				}
-				let now = Date.now
-				ForEach(model.routes) { route in
-					let entry = SpatialRouteMenuEntry(route: route, now: now)
-					Button {
-						model.shownRoute = route
-						traffic.startFlyover(route)
-					} label: {
-						Text(verbatim: entry.title)
-						Text(verbatim: entry.subtitle)
-					}
-				}
-			} label: {
-				Image(systemName: "point.3.connected.trianglepath.dotted")
-			}
-			.help(String(localized: "Trace routes", comment: "VoiceOver label for the spatial map trace route menu"))
-			.accessibilityLabel(String(localized: "Trace routes", comment: "VoiceOver label for the spatial map trace route menu"))
-			.accessibilityHint(String(localized: "Pick a trace route to fly along it and leave it drawn on the map.", comment: "VoiceOver hint for the spatial map trace route menu"))
 		}
 	}
 
