@@ -36518,7 +36518,7 @@
         }
       }
     },
-    "Dashed green line back to the originator. Where both paths use the same leg, the two lines sit side by side." : {
+    "Dashed blue line back to the originator. Where both paths use the same leg, the two lines sit side by side." : {
 
     },
     "Dashed line showing a recorded route path." : {
@@ -113354,7 +113354,7 @@
         }
       }
     },
-    "Relays are numbered in order, filled blue on the way out and outlined green on the way back." : {
+    "Relays are numbered in order, filled orange on the way out and outlined blue on the way back." : {
 
     },
     "Release Notes" : {
@@ -131653,7 +131653,7 @@
         }
       }
     },
-    "Solid blue line toward the target; arrows point in the direction of travel." : {
+    "Solid orange line toward the target; arrows point in the direction of travel." : {
 
     },
     "Source" : {

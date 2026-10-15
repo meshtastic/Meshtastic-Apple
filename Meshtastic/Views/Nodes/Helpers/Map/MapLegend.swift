@@ -157,17 +157,17 @@ struct MapLegend: View {
 			MapLegendItem(
 				symbol: AnyView(traceRouteOutboundSymbol),
 				title: String(localized: "Outbound Path"),
-				subtitle: String(localized: "Solid blue line toward the target; arrows point in the direction of travel.")
+				subtitle: String(localized: "Solid orange line toward the target; arrows point in the direction of travel.")
 			)
 			MapLegendItem(
 				symbol: AnyView(traceRouteReturnSymbol),
 				title: String(localized: "Return Path"),
-				subtitle: String(localized: "Dashed green line back to the originator. Where both paths use the same leg, the two lines sit side by side.")
+				subtitle: String(localized: "Dashed blue line back to the originator. Where both paths use the same leg, the two lines sit side by side.")
 			)
 			MapLegendItem(
 				symbol: AnyView(traceRouteHopNumbersSymbol),
 				title: String(localized: "Hop Numbers"),
-				subtitle: String(localized: "Relays are numbered in order, filled blue on the way out and outlined green on the way back.")
+				subtitle: String(localized: "Relays are numbered in order, filled orange on the way out and outlined blue on the way back.")
 			)
 			MapLegendItem(
 				symbol: AnyView(traceRouteSignalSymbol),
@@ -339,7 +339,7 @@ struct MapLegend: View {
 	private func hopBadge(_ number: String, isBack: Bool) -> some View {
 		Text(verbatim: number)
 			.font(.system(size: 9, weight: .bold, design: .rounded))
-			.foregroundStyle(isBack ? Color.primary : Color.white)
+			.foregroundStyle(isBack ? Color.primary : Color.black)
 			.frame(width: 16, height: 16)
 			.background(Circle().fill(isBack ? Color(UIColor.systemBackground) : TraceRouteColors.forward))
 			.overlay(Circle().strokeBorder(isBack ? TraceRouteColors.back : Color.white, lineWidth: isBack ? 1.75 : 1.25))
