@@ -278,7 +278,7 @@ struct TelemetryNodeNumTests {
 
 			let worker = TelemetryNodeNumBackfillActor(modelContainer: container)
 			let chunks = Counter()
-			let finished = await worker.run(chunkSize: 3) {
+			let finished = await TelemetryNodeNumBackfill.run(using: worker, chunkSize: 3) {
 				chunks.value += 1
 				return true
 			}
@@ -304,7 +304,7 @@ struct TelemetryNodeNumTests {
 		try context.save()
 
 		let worker = TelemetryNodeNumBackfillActor(modelContainer: container)
-		let finished = await worker.run(chunkSize: 10) { false }
+		let finished = await TelemetryNodeNumBackfill.run(using: worker, chunkSize: 10) { false }
 		#expect(!finished)
 		#expect(try count(#Predicate { $0.nodeNum == 0 }, in: ModelContext(container)) == 1)
 	}

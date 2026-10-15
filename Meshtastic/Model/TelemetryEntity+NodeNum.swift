@@ -111,13 +111,39 @@ enum TelemetryNodeNumBackfill {
 			guard let persistence, let appState else { return false }
 			return !appState.isDatabaseResetting && persistence.containerGeneration == generation
 		}
-		// Detached so the actor is created, and so runs, off the main thread.
+		// Detached so the actor is created, and called, off the main thread.
 		Task.detached(priority: .utility) {
 			let worker = TelemetryNodeNumBackfillActor(modelContainer: container)
-			if await worker.run(chunkSize: chunkSize, shouldContinue: shouldContinue) {
+			if await run(using: worker, chunkSize: chunkSize, shouldContinue: shouldContinue) {
 				isComplete = true
 				Logger.data.info("💾 [TelemetryEntity] Node number backfill complete")
 			}
+		}
+	}
+
+	/// Fills `nodeNum` in chunks until no row is left. Returns true once done, false if it stopped
+	/// early. The check that it should go on runs here, between chunks, and not inside the actor:
+	/// a model actor that awaits the main actor resumes its work on the main thread.
+	static func run(
+		using worker: TelemetryNodeNumBackfillActor,
+		chunkSize: Int,
+		shouldContinue: @MainActor @Sendable () -> Bool
+	) async -> Bool {
+		var filledTotal = 0
+		while true {
+			guard await shouldContinue() else {
+				Logger.data.info("💾 [TelemetryEntity] Node number backfill paused after \(filledTotal, privacy: .public) rows")
+				return false
+			}
+			guard let filled = await worker.fillChunk(limit: chunkSize) else { return false }
+			guard filled > 0 else {
+				if filledTotal > 0 {
+					Logger.data.info("💾 [TelemetryEntity] Node number backfill filled \(filledTotal, privacy: .public) rows")
+				}
+				return true
+			}
+			filledTotal += filled
+			await Task.yield()
 		}
 	}
 }
@@ -125,51 +151,37 @@ enum TelemetryNodeNumBackfill {
 @ModelActor
 actor TelemetryNodeNumBackfillActor {
 
-	/// Fills `nodeNum` from the relationship in chunks, saving each one. Returns true once no row
-	/// is left to fill, false if it stopped early.
-	func run(chunkSize: Int, shouldContinue: @MainActor @Sendable () -> Bool) async -> Bool {
-		var filledTotal = 0
-		while true {
-			guard await shouldContinue() else {
-				Logger.data.info("💾 [TelemetryEntity] Node number backfill paused after \(filledTotal, privacy: .public) rows")
-				return false
+	/// Fills `nodeNum` from the relationship on up to `limit` rows and saves. Returns how many
+	/// were filled (0 when none are left), or nil if the fetch or save failed.
+	func fillChunk(limit: Int) -> Int? {
+		var descriptor = FetchDescriptor<TelemetryEntity>(
+			predicate: #Predicate<TelemetryEntity> {
+				$0.nodeNum == 0 && $0.nodeTelemetry != nil && $0.nodeTelemetry?.num != 0
 			}
-			var descriptor = FetchDescriptor<TelemetryEntity>(
-				predicate: #Predicate<TelemetryEntity> {
-					$0.nodeNum == 0 && $0.nodeTelemetry != nil && $0.nodeTelemetry?.num != 0
-				}
-			)
-			descriptor.fetchLimit = chunkSize
-			let rows: [TelemetryEntity]
-			do {
-				rows = try modelContext.fetch(descriptor)
-			} catch {
-				Logger.data.error("💥 [TelemetryEntity] Node number backfill fetch failed: \(error.localizedDescription, privacy: .public)")
-				return false
-			}
-			var filled = 0
-			for row in rows {
-				if let num = row.nodeTelemetry?.num, num != 0 {
-					row.nodeNum = num
-					filled += 1
-				}
-			}
-			// Nothing matched, or nothing more can be filled: done.
-			guard filled > 0 else {
-				if filledTotal > 0 {
-					Logger.data.info("💾 [TelemetryEntity] Node number backfill filled \(filledTotal, privacy: .public) rows")
-				}
-				return true
-			}
-			do {
-				try modelContext.save()
-			} catch {
-				modelContext.rollback()
-				Logger.data.error("💥 [TelemetryEntity] Node number backfill save failed: \(error.localizedDescription, privacy: .public)")
-				return false
-			}
-			filledTotal += filled
-			await Task.yield()
+		)
+		descriptor.fetchLimit = limit
+		let rows: [TelemetryEntity]
+		do {
+			rows = try modelContext.fetch(descriptor)
+		} catch {
+			Logger.data.error("💥 [TelemetryEntity] Node number backfill fetch failed: \(error.localizedDescription, privacy: .public)")
+			return nil
 		}
+		var filled = 0
+		for row in rows {
+			if let num = row.nodeTelemetry?.num, num != 0 {
+				row.nodeNum = num
+				filled += 1
+			}
+		}
+		guard filled > 0 else { return 0 }
+		do {
+			try modelContext.save()
+		} catch {
+			modelContext.rollback()
+			Logger.data.error("💥 [TelemetryEntity] Node number backfill save failed: \(error.localizedDescription, privacy: .public)")
+			return nil
+		}
+		return filled
 	}
 }
