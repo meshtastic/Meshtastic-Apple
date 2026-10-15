@@ -170,4 +170,112 @@ struct NodeLinksTests {
 		#expect(layout.visibleLabels(in: close).count == 1)
 		#expect(layout.visibleLabels(in: far).isEmpty)
 	}
+
+	// MARK: Neighbor Info reports
+
+	private func report(_ reporter: Int64, _ neighbor: Int64, snr: Float = 5, ago: TimeInterval = 600, mqtt: Bool = false) -> NodeLinkReportRow {
+		NodeLinkReportRow(reporter: reporter, neighbor: neighbor, snr: snr, receivedAt: now.addingTimeInterval(-ago), viaMqtt: mqtt)
+	}
+
+	@Test func reportsBecomeObservationsByTheReporter() {
+		let observations = NodeLinks.reportedObservations([report(nodeA, nodeC, snr: -4)], now: now)
+		#expect(observations == [NodeLinkObservation(observer: nodeA, heard: nodeC, snr: -4, heardAt: now.addingTimeInterval(-600), source: .neighborReport)])
+	}
+
+	@Test func reportsSkipMqttSelfZeroAndOld() {
+		let rows = [
+			report(nodeA, nodeC, mqtt: true),
+			report(nodeA, nodeA),
+			report(nodeA, 0),
+			report(0, nodeC),
+			report(nodeB, nodeC, ago: hours(24.1)),
+			report(nodeB, nodeA, ago: hours(23.9))
+		]
+		let observations = NodeLinks.reportedObservations(rows, now: now)
+		#expect(observations.map(\.observer) == [nodeB])
+		#expect(observations.map(\.heard) == [nodeA])
+	}
+
+	@Test func twoReportsOfOnePairMakeOneSolidLink() throws {
+		let observations = NodeLinks.reportedObservations([report(nodeA, nodeC, snr: 3), report(nodeC, nodeA, snr: -6)], now: now)
+		let links = NodeLinks.links(from: observations, positions: positions, now: now)
+		let link = try #require(links.first)
+		#expect(links.count == 1)
+		#expect(link.a == nodeA && link.b == nodeC)
+		#expect(link.snrAtA == 3)
+		#expect(link.snrAtB == -6)
+		#expect(!link.isOneWay)
+		#expect(link.worstSnr == -6)
+	}
+
+	@Test func radioHearingANodeAndTheNodesReportMakeOneLink() throws {
+		// The radio hears nodeB directly, and nodeB's report says it hears the radio.
+		let direct = NodeLinks.directObservations(connectedNum: radio, nodes: [row(nodeB, snr: 8, heardAgo: hours(1))], now: now)
+		let reported = NodeLinks.reportedObservations([report(nodeB, radio, snr: -2, ago: hours(3))], now: now)
+		let links = NodeLinks.links(from: direct + reported, positions: positions, now: now)
+		let link = try #require(links.first)
+		#expect(links.count == 1)
+		#expect(link.a == radio && link.b == nodeB)
+		#expect(link.snrAtA == 8)
+		#expect(link.snrAtB == -2)
+		#expect(!link.isOneWay)
+		#expect(link.age == hours(1))
+	}
+
+	@Test func radioHearingANodeAndItsOwnReportShareADirection() {
+		// The radio's own report lists nodeB too; the newer of the two readings wins.
+		let direct = NodeLinks.directObservations(connectedNum: radio, nodes: [row(nodeB, snr: 8, heardAgo: hours(5))], now: now)
+		let reported = NodeLinks.reportedObservations([report(radio, nodeB, snr: 2, ago: hours(1))], now: now)
+		let links = NodeLinks.links(from: direct + reported, positions: positions, now: now)
+		#expect(links.count == 1)
+		#expect(links.first?.snrAtA == 2)
+		#expect(links.first?.snrAtB == nil)
+		#expect(links.first?.isOneWay == true)
+	}
+
+	@Test func reportedLinksDontNeedTheRadiosPosition() {
+		var positions = positions
+		positions[radio] = nil
+		let direct = NodeLinks.directObservations(connectedNum: radio, nodes: [row(nodeA)], now: now)
+		let reported = NodeLinks.reportedObservations([report(nodeA, nodeC)], now: now)
+		let links = NodeLinks.links(from: direct + reported, positions: positions, now: now)
+		#expect(links.map(\.id) == ["\(nodeA)-\(nodeC)"])
+	}
+
+	@Test func reportedLinksSkipNodesWithoutAPosition() {
+		var positions = positions
+		positions[nodeC] = nil
+		let reported = NodeLinks.reportedObservations([report(nodeA, nodeC), report(nodeA, nodeB)], now: now)
+		let links = NodeLinks.links(from: reported, positions: positions, now: now)
+		#expect(links.map(\.id) == ["\(nodeA)-\(nodeB)"])
+	}
+
+	@Test func reportedLinksOutlastTheRadiosOwn() {
+		// At 13 hours a direct reading is gone but a report is still shown.
+		let direct = NodeLinkObservation(observer: radio, heard: nodeA, snr: 4, heardAt: now.addingTimeInterval(-hours(13)))
+		let reported = NodeLinks.reportedObservations([report(nodeB, nodeC, ago: hours(13))], now: now)
+		let links = NodeLinks.links(from: [direct] + reported, positions: positions, now: now)
+		#expect(links.map(\.id) == ["\(nodeB)-\(nodeC)"])
+	}
+
+	@Test func reportOpacityIsFullForSevenHoursThenFadesToADay() {
+		let source = NodeLinkObservation.Source.neighborReport
+		#expect(NodeLinks.opacity(forAge: hours(6.9), source: source) == 1)
+		#expect(NodeLinks.opacity(forAge: hours(12), source: source) < 1)
+		#expect(NodeLinks.opacity(forAge: hours(12), source: source) > NodeLinks.opacity(forAge: hours(20), source: source))
+		#expect(abs(NodeLinks.opacity(forAge: hours(24), source: source) - NodeLinks.minOpacity) < 0.0001)
+	}
+
+	@Test func eachDirectionFadesOnItsOwn() throws {
+		// A fresh direct reading and a 20 hour old report on the same pair.
+		let direct = NodeLinks.directObservations(connectedNum: radio, nodes: [row(nodeB, snr: 8, heardAgo: 0)], now: now)
+		let reported = NodeLinks.reportedObservations([report(nodeB, radio, snr: -2, ago: hours(20))], now: now)
+		let link = try #require(NodeLinks.links(from: direct + reported, positions: positions, now: now).first)
+		#expect(link.opacityAtA == 1)
+		#expect(link.opacityAtB < 0.5)
+		#expect(link.opacity == 1)
+		let layout = NodeLinkMapLayout(links: [link])
+		#expect(layout.labels.first { $0.snr == 8 }?.opacity == 1)
+		#expect((layout.labels.first { $0.snr == -2 }?.opacity ?? 1) < 0.5)
+	}
 }

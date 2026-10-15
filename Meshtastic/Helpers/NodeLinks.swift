@@ -11,10 +11,48 @@ import Foundation
 /// One node hearing another: `observer` heard `heard` at `snr` dB, last at `heardAt`.
 /// One-way, so A hearing B says nothing about B hearing A.
 struct NodeLinkObservation: Sendable, Equatable {
+
+	/// Where the observation came from, which sets how long it stays on the map.
+	enum Source: Sendable, Equatable {
+		/// The connected radio heard the node directly, from the node list.
+		case heardByRadio
+		/// A node listed it in a Neighbor Info report. Reports come every 4 to 6 hours, so they
+		/// stay at full strength longer and are kept for a day.
+		case neighborReport
+
+		/// Older than this and the observation is left out.
+		var maxAge: TimeInterval {
+			switch self {
+			case .heardByRadio: 12 * 60 * 60
+			case .neighborReport: 24 * 60 * 60
+			}
+		}
+
+		/// Newer than this is drawn at full strength; older fades until `maxAge`.
+		var fullStrengthAge: TimeInterval {
+			switch self {
+			case .heardByRadio: 2 * 60 * 60
+			// The default report interval is 6 hours, plus some slack so a node on that
+			// schedule doesn't start fading just before each new report.
+			case .neighborReport: 7 * 60 * 60
+			}
+		}
+	}
+
 	let observer: Int64
 	let heard: Int64
 	let snr: Float
 	let heardAt: Date
+	var source: Source = .heardByRadio
+}
+
+/// One saved Neighbor Info entry: `reporter` heard `neighbor` at `snr` dB.
+struct NodeLinkReportRow: Sendable, Equatable {
+	let reporter: Int64
+	let neighbor: Int64
+	let snr: Float
+	let receivedAt: Date
+	let viaMqtt: Bool
 }
 
 /// The fields of a node that say whether the connected radio hears it directly.
@@ -37,8 +75,14 @@ struct NodeLink: Sendable, Identifiable {
 	let snrAtA: Float?
 	/// SNR of `a` as heard by `b`; nil when unknown.
 	let snrAtB: Float?
+	/// How strongly to draw each direction's pill, from its own age; 0 when unknown.
+	let opacityAtA: Double
+	let opacityAtB: Double
 	/// Time since the newest of the two measurements.
 	let age: TimeInterval
+
+	/// How strongly to draw the line: the fresher of the two directions.
+	var opacity: Double { max(opacityAtA, opacityAtB) }
 
 	var id: String { "\(a)-\(b)" }
 
@@ -59,10 +103,10 @@ struct NodeLink: Sendable, Identifiable {
 /// Builds the links drawn on the map from plain node rows, so it can be tested without a store.
 enum NodeLinks {
 
-	/// Links older than this are left out.
-	static let maxAge: TimeInterval = 12 * 60 * 60
-	/// Links newer than this are drawn at full strength; older ones fade until `maxAge`.
-	static let fullStrengthAge: TimeInterval = 2 * 60 * 60
+	/// How long the connected radio's own direct links stay on the map.
+	static let maxAge = NodeLinkObservation.Source.heardByRadio.maxAge
+	/// How long links from Neighbor Info reports stay on the map.
+	static let maxReportAge = NodeLinkObservation.Source.neighborReport.maxAge
 	/// The faintest an old link gets, so it never disappears before it ages out.
 	static let minOpacity = 0.25
 
@@ -79,15 +123,28 @@ enum NodeLinks {
 		}
 	}
 
-	/// One link per pair of nodes that both have a position. When a direction is reported more
-	/// than once the newest report wins. Observations older than `maxAge` are dropped.
+	/// Each saved Neighbor Info entry as the reporter hearing its neighbor, within `maxReportAge`.
+	/// Reports that reached us over MQTT are left out: they can come from meshes far from the
+	/// user's own, and the radio's own links leave MQTT out too.
+	static func reportedObservations(_ rows: [NodeLinkReportRow], now: Date) -> [NodeLinkObservation] {
+		rows.compactMap { row in
+			guard !row.viaMqtt, row.reporter != 0, row.neighbor != 0, row.reporter != row.neighbor,
+				  now.timeIntervalSince(row.receivedAt) <= maxReportAge
+			else { return nil }
+			return NodeLinkObservation(observer: row.reporter, heard: row.neighbor, snr: row.snr, heardAt: row.receivedAt, source: .neighborReport)
+		}
+	}
+
+	/// One link per pair of nodes that both have a position. When a direction is known from more
+	/// than one observation the newest wins, so the radio hearing a node and a report of the same
+	/// direction don't make two links. Observations older than their source's `maxAge` are dropped.
 	static func links(from observations: [NodeLinkObservation], positions: [Int64: CLLocationCoordinate2D], now: Date) -> [NodeLink] {
 		struct Pair: Hashable { let a: Int64, b: Int64 }
 		var atA: [Pair: NodeLinkObservation] = [:]
 		var atB: [Pair: NodeLinkObservation] = [:]
 		for observation in observations {
 			guard observation.observer != observation.heard,
-				  now.timeIntervalSince(observation.heardAt) <= maxAge,
+				  now.timeIntervalSince(observation.heardAt) <= observation.source.maxAge,
 				  positions[observation.observer] != nil, positions[observation.heard] != nil
 			else { continue }
 			let observerIsA = observation.observer < observation.heard
@@ -112,17 +169,23 @@ enum NodeLinks {
 				coordinateB: coordinateB,
 				snrAtA: fromA?.snr,
 				snrAtB: fromB?.snr,
+				opacityAtA: fromA.map { opacity(for: $0, now: now) } ?? 0,
+				opacityAtB: fromB.map { opacity(for: $0, now: now) } ?? 0,
 				age: max(0, now.timeIntervalSince(newest))
 			)
 		}
 		.sorted { ($0.age, $0.a, $0.b) < ($1.age, $1.a, $1.b) }
 	}
 
-	/// How strongly to draw a link of this age: 1 up to `fullStrengthAge`, then fading in a
-	/// straight line to `minOpacity` at `maxAge`.
-	static func opacity(forAge age: TimeInterval) -> Double {
-		guard age > fullStrengthAge else { return 1 }
-		let progress = min(1, (age - fullStrengthAge) / (maxAge - fullStrengthAge))
+	/// How strongly to draw an observation: 1 up to its source's `fullStrengthAge`, then fading
+	/// in a straight line to `minOpacity` at its `maxAge`.
+	static func opacity(for observation: NodeLinkObservation, now: Date) -> Double {
+		opacity(forAge: max(0, now.timeIntervalSince(observation.heardAt)), source: observation.source)
+	}
+
+	static func opacity(forAge age: TimeInterval, source: NodeLinkObservation.Source = .heardByRadio) -> Double {
+		guard age > source.fullStrengthAge else { return 1 }
+		let progress = min(1, (age - source.fullStrengthAge) / (source.maxAge - source.fullStrengthAge))
 		return 1 - progress * (1 - minOpacity)
 	}
 }

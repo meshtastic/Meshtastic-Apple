@@ -97,7 +97,7 @@ struct MeshMapMK: View {
 	@State private var tracerouteLayout: TraceRouteMapLayout?
 	@State private var tracerouteLayoutKey = ""
 	@State private var lastTraceRouteKey = "init"
-	/// Lines from the connected radio to the nodes it hears directly, and their SNR pills.
+	/// Lines between nodes that hear each other directly, and their SNR pills.
 	@AppStorage("meshMapShowDirectLinks") private var showDirectLinks = false
 	@State private var linkOverlays: [ClusterMapOverlay] = []
 	@State private var linkLayout: NodeLinkMapLayout?
@@ -1646,17 +1646,19 @@ struct MeshMapMK: View {
 		lastLinkRefresh = Date()
 		let dark = colorScheme == .dark
 		let preset = ModemPresets(rawValue: UserDefaults.modemPreset) ?? .longFast
-		let links = showDirectLinks && isMapVisible ? currentDirectLinks() : []
+		let links = showDirectLinks && isMapVisible ? currentLinks() : []
 		var parts = ["\(dark)", "\(preset.rawValue)"]
 		let styled = links.map { link -> StyledLink in
 			// Fade in steps so a refresh only rebuilds a line when its look changes.
-			let opacity = (NodeLinks.opacity(forAge: link.age) * 20).rounded() / 20
+			let opacity = (link.opacity * 20).rounded() / 20
+			let pillFade = String(format: "%.2f,%.2f", (link.opacityAtA * 20).rounded() / 20, (link.opacityAtB * 20).rounded() / 20)
 			let signature = [
 				link.id,
 				link.snrAtA.map { String(format: "%.1f", $0) } ?? "-",
 				link.snrAtB.map { String(format: "%.1f", $0) } ?? "-",
 				String(format: "%.6f,%.6f,%.6f,%.6f", link.coordinateA.latitude, link.coordinateA.longitude, link.coordinateB.latitude, link.coordinateB.longitude),
-				"\(opacity)"
+				"\(opacity)",
+				pillFade
 			].joined(separator: "|")
 			parts.append(signature)
 			return StyledLink(link: link, opacity: opacity, signature: signature)
@@ -1694,34 +1696,50 @@ struct MeshMapMK: View {
 		linkLayout = NodeLinkMapLayout(links: links)
 	}
 
-	/// The connected radio's direct links: nodes it heard with no hops, not over MQTT, in the
-	/// last 12 hours, where both ends have a position on the map.
-	private func currentDirectLinks() -> [NodeLink] {
-		guard let connectedNum = accessoryManager.activeDeviceNum, connectedNum != 0,
-			  let connected = getNodeInfo(id: connectedNum, context: context),
-			  let connectedCoordinate = connected.latestPosition.flatMap(linkCoordinate(for:))
-		else { return [] }
+	/// Links between nodes that hear each other directly, where both ends have a position on the
+	/// map. Two sources: nodes the connected radio heard with no hops, not over MQTT, in the last
+	/// 12 hours, and saved Neighbor Info reports from the last day that didn't come over MQTT.
+	private func currentLinks() -> [NodeLink] {
+		guard let connectedNum = accessoryManager.activeDeviceNum, connectedNum != 0 else { return [] }
 		let now = Date()
-		let cutoff = now.addingTimeInterval(-NodeLinks.maxAge)
 		let epoch = Date.distantPast
-		let descriptor = FetchDescriptor<NodeInfoEntity>(
-			predicate: #Predicate<NodeInfoEntity> { $0.hopsAway == 0 && $0.viaMqtt == false && ($0.lastHeard ?? epoch) >= cutoff }
-		)
-		// SNR is checked by the link builder; ignored nodes aren't on the map.
-		var nodes = ((try? context.fetch(descriptor)) ?? []).filter { !$0.ignored }
-		// With a filter or search on, only draw links to nodes the filter still shows.
+		// The radio's own direct links.
+		let directCutoff = now.addingTimeInterval(-NodeLinks.maxAge)
+		var nodes = (try? context.fetch(FetchDescriptor<NodeInfoEntity>(
+			predicate: #Predicate<NodeInfoEntity> { $0.hopsAway == 0 && $0.viaMqtt == false && ($0.lastHeard ?? epoch) >= directCutoff }
+		))) ?? []
+		// Neighbor Info reports. There are few rows: at most ten per reporting node.
+		let reportCutoff = now.addingTimeInterval(-NodeLinks.maxReportAge)
+		let reports = ((try? context.fetch(FetchDescriptor<NeighborLinkEntity>(
+			predicate: #Predicate<NeighborLinkEntity> { $0.viaMqtt == false && $0.receivedAt >= reportCutoff }
+		))) ?? []).map {
+			NodeLinkReportRow(reporter: $0.reporterNum, neighbor: $0.neighborNum, snr: $0.snr, receivedAt: $0.receivedAt, viaMqtt: $0.viaMqtt)
+		}
+		// Nodes named in reports that aren't already loaded, for their positions.
+		let loaded = Set(nodes.map(\.num))
+		let missing = Array(Set(reports.flatMap { [$0.reporter, $0.neighbor] }).union([connectedNum]).subtracting(loaded))
+		if !missing.isEmpty {
+			nodes += (try? context.fetch(FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { missing.contains($0.num) }))) ?? []
+		}
+		// Ignored nodes aren't on the map. With a filter or search on, only draw links between
+		// nodes the filter still shows; the connected radio always counts as shown.
+		nodes = nodes.filter { !$0.ignored }
 		if filters.isFiltering || !filters.searchText.isEmpty {
 			let shown = Set(filteredPositions(from: mapEligiblePositions).compactMap { $0.nodePosition?.num })
-			nodes = nodes.filter { shown.contains($0.num) }
+			nodes = nodes.filter { $0.num == connectedNum || shown.contains($0.num) }
 		}
-		var positions: [Int64: CLLocationCoordinate2D] = [connectedNum: connectedCoordinate]
+		var positions: [Int64: CLLocationCoordinate2D] = [:]
 		var rows: [NodeLinkNodeRow] = []
-		for node in nodes where node.num != connectedNum {
-			guard let coordinate = node.latestPosition.flatMap(linkCoordinate(for:)) else { continue }
+		for node in nodes {
+			guard positions[node.num] == nil,
+				  let coordinate = node.latestPosition.flatMap(linkCoordinate(for:))
+			else { continue }
 			positions[node.num] = coordinate
+			// SNR is checked by the link builder.
 			rows.append(NodeLinkNodeRow(num: node.num, hopsAway: node.hopsAway, viaMqtt: node.viaMqtt, snr: node.snr, lastHeard: node.lastHeard))
 		}
 		let observations = NodeLinks.directObservations(connectedNum: connectedNum, nodes: rows, now: now)
+			+ NodeLinks.reportedObservations(reports, now: now)
 		return NodeLinks.links(from: observations, positions: positions, now: now)
 	}
 
