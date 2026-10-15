@@ -63,21 +63,21 @@ struct ShowcaseRoom {
 
 	private static let storeWhite = UIColor(red: 1.0, green: 0.97, blue: 0.93, alpha: 1)
 
-	/// Even store light, kept a little low so the room isn't glaring: a soft key from overhead that casts the models' shadows on the
+	/// Soft store light, kept well down so the room isn't glaring: a soft key from overhead that casts the models' shadows on the
 	/// tables, a light over each table, and the room's colors for reflections.
 	private func addLighting() async {
 		let key = Entity()
 		key.name = "KeyLight"
 		root.addChild(key)
 		key.look(at: pose(.tableFront).position, from: SIMD3<Float>(-0.6, 2.7, 0.4), relativeTo: root)
-		key.components.set(DirectionalLightComponent(color: Self.storeWhite, intensity: 900))
+		key.components.set(DirectionalLightComponent(color: Self.storeWhite, intensity: 450))
 		key.components.set(DirectionalLightComponent.Shadow(maximumDistance: 4, depthBias: 2))
 
 		for (name, anchor) in [("FrontTableLight", ShowcaseAnchor.tableFront), ("BackTableLight", .tableBack)] {
 			let light = Entity()
 			light.name = name
 			light.position = pose(anchor).position + SIMD3<Float>(0, 1.6, 0.1)
-			light.components.set(PointLightComponent(color: Self.storeWhite, intensity: 3000, attenuationRadius: 4))
+			light.components.set(PointLightComponent(color: Self.storeWhite, intensity: 1500, attenuationRadius: 4))
 			root.addChild(light)
 		}
 
@@ -91,7 +91,7 @@ struct ShowcaseRoom {
 			  let environment = try? await EnvironmentResource(equirectangular: image, withName: "ShowcaseEnvironment") else { return }
 		let light = Entity()
 		light.name = Self.environmentLightName
-		light.components.set(ImageBasedLightComponent(source: .single(environment), intensityExponent: -0.5))
+		light.components.set(ImageBasedLightComponent(source: .single(environment), intensityExponent: -2))
 		root.addChild(light)
 		for entity in Self.modelEntities(in: root) {
 			entity.components.set(ImageBasedLightReceiverComponent(imageBasedLight: light))

@@ -94,7 +94,7 @@ def Xform "Root"
             {
                 uniform token info:id = "UsdPreviewSurface"
                 color3f inputs:diffuseColor = (1, 1, 1)
-                color3f inputs:emissiveColor = (1, 0.98, 0.94)
+                color3f inputs:emissiveColor = (0.55, 0.54, 0.52)
                 float inputs:roughness = 1
                 float inputs:metallic = 0.0
                 token outputs:surface
