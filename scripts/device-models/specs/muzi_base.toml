@@ -1,0 +1,757 @@
+# muzi_base: muzi BASE DUO/UNO, a 42 x 32 mm bare board with the Elecrow nRFLR1121 module (DUO) or
+# nRFLR1262 module (UNO), an edge-mount SMA at the top, a QWIIC port and, underneath, the USB-C,
+# the battery connector and the reset switch.
+# The flasher's illustration is a true top view at the CAD's proportions (12.957 units/mm: the
+# board runs x 451.3-995.5 = 42.0 mm and y 461.0-875.7 = 32.0 mm). drawings/muzi_base.svg is that
+# illustration with two broken arcs in the silkscreen text fixed (see the drawing's comment).
+# Measured from muzi works' published CAD and drawing, used for measurement only:
+#   https://cdn.shopify.com/s/files/1/0657/6973/4201/files/Base_Duo_MH212A.step
+#   (sha256 b698e2a7c9fa083c0b630f958d38d8b9853fd30109d5d17f111da011a9bc45b8)
+#   https://cdn.shopify.com/s/files/1/0657/6973/4201/files/Base_Duo_Drawing_Rev01.pdf
+#   (sha256 bf09d52688ae43083640c67cd0231aafe4da1805a3770cdba132bcfc3e4cada7): 42.0 x 32.0, PCB 1.6
+# Module: Elecrow nRFLR1121 datasheet V1.1, package outline: 20 x 20 mm PCB 1.0 mm thick, 18.5 mm
+# shield, 3.5 mm overall. The CAD's module block is 3.7 mm; the datasheet figure is used.
+#   https://cdn.shopify.com/s/files/1/0657/6973/4201/files/nRFLR1121_Wireless_Transceiver_Module_Datasheet_V1.1.pdf
+# Colors from muzi works' product photos (https://muzi.works/products/base-duo): the castellated
+# pads and mounting rings are gold (ENIG), drawn gray in the illustration.
+#
+# UNO vs DUO (https://muzi.works/products/base-uno): same board, outline and parts placement. The
+# UNO carries the nRFLR1262 module (same 20 x 20 x 3.5 mm package, its own datasheet), has no
+# 2.4 GHz U.FL connector, and its silkscreen reads UNO. The model follows the DUO, as drawn.
+#
+# Model frame: x from the center line, y up from the bottom edge, z out of the top face with 0 the
+# middle of the PCB (top at +0.8, back at -0.8). CAD to model: x - 21.0, y, z - 0.755 (the CAD's
+# board runs z -0.05 to 1.56).
+
+drawing = "drawings/muzi_base.svg"
+
+[size]
+width_mm = 42.0
+height_mm = 32.0
+# Overall: module top (+0.8 + 3.5) to the back of the battery connector (-0.8 - 4.7).
+depth_mm = 9.8
+board_mm = 1.6
+fit_bbox = [451.3, 461.0, 995.5, 875.7]
+scale_by = "width"
+# The SMA and the USB-C's overhang are built by measurement, not as thin appendages.
+appendage = "none"
+covers = "PCB 42 x 32; SMA (12.5 mm past the top edge) and USB-C (1.5 mm past the left edge) built separately"
+source = "https://cdn.shopify.com/s/files/1/0657/6973/4201/files/Base_Duo_Drawing_Rev01.pdf"
+confidence = "cad"
+
+[materials]
+enig      = { color = "#d4b26a", roughness = 0.3, metallic = 1.0 }
+sma       = { color = "#d8b45c", roughness = 0.3, metallic = 1.0 }
+shield    = { color = "#c3c2bd", roughness = 0.35, metallic = 1.0 }
+usb       = { color = "#c2c1c0", roughness = 0.3, metallic = 1.0 }
+port      = { color = "#1d1d1f", roughness = 0.6 }
+jst       = { color = "#e4e1d8", roughness = 0.6 }
+switch    = { color = "#e9e8e5", roughness = 0.6 }
+plunger   = { color = "#232323", roughness = 0.6 }
+part      = { color = "#2a2a2a", roughness = 0.6 }
+ferrite   = { color = "#5a5a58", roughness = 0.6 }
+dielectric = { color = "#f2f1ec", roughness = 0.6 }
+hole      = { color = "#ededed", roughness = 0.5 }
+
+# The drawn USB-C beside the left edge is under the board in the CAD; it is built below.
+[[part]]
+name = "DrawnUSBC"
+class = "cls-20"
+role = "skip"
+
+# Castellated pads (1.7 mm wide) and the battery solder pads are gold in the photos.
+[[part]]
+name = "Castellations"
+class = "cls-5"
+min_width_mm = 1.5
+max_width_mm = 1.9
+material = "enig"
+
+# The three M2 mounting rings, 4.0 mm across (holes 2.15 mm, drawing).
+[[part]]
+name = "MountRings"
+class = "cls-8"
+min_width_mm = 3.5
+max_width_mm = 4.5
+material = "enig"
+
+# The QWIIC (JST SH) is drawn in the SMA's gold; it is natural plastic. Its drawn top goes on its
+# blocks. The generator also puts the board's color on top of the blocks, at their height, where
+# shapes taken by a rule were, so these sit 0.05 mm higher to show over it.
+[[part]]
+name = "QWIICTop"
+class = "cls-13"
+min_width_mm = 2.0
+max_width_mm = 4.0
+material = "jst"
+z = 3.0
+
+[[part]]
+name = "QWIICTop"
+class = "cls-13"
+max_bbox_area_mm2 = 1.5
+material = "jst"
+z = 3.0
+
+# --- top side, heights above the board from the CAD --------------------------------------------
+
+# Module: purple 1.0 mm PCB, then the 18.5 mm shield to 3.5 mm (datasheet).
+[[block]]
+name = "ModulePCB"
+bbox = [573.3, 568.0, 834.3, 829.0]
+h = 1.0
+side_color = "#80558a"
+
+[[block]]
+name = "ModuleShield"
+bbox = [585.1, 579.7, 822.1, 817.0]
+base_mm = 1.0
+h = 3.5
+material = "shield"
+
+# QWIIC: CAD 4.95 x 6.0 mm, 2.96 mm tall, opening toward the right edge's notch. Built as the
+# three drawn rectangles of its outline.
+[[block]]
+name = "QWIIC"
+bbox = [902.97, 746.69, 949.6, 821.64]
+h = 2.95
+material = "jst"
+
+[[block]]
+name = "QWIIC"
+bbox = [896.59, 746.69, 925.71, 760.09]
+h = 2.95
+material = "jst"
+
+[[block]]
+name = "QWIIC"
+bbox = [896.59, 809.89, 908.81, 821.63]
+h = 2.95
+material = "jst"
+
+# User button: CAD 4.6 x 3.2 mm, 2.5 mm tall.
+[[block]]
+name = "UserButton"
+bbox = [482.5, 722.0, 537.9, 764.4]
+h = 2.5
+
+# 2.4 GHz U.FL (DUO only): CAD 3.0 x 3.1 mm, 1.25 mm tall.
+[[block]]
+name = "UFL"
+bbox = [666.06, 518.05, 705.73, 557.72]
+h = 1.25
+side_color = "#d2c9b5"
+
+# BLE chip antenna: the CAD places a 1206 part, 1.6 mm tall.
+[[block]]
+name = "BLEAntenna"
+bbox = [962.25, 551.66, 986.86, 604.83]
+h = 1.6
+
+# QSPI flash (WSON-8), 0.75 mm.
+[[block]]
+name = "Flash"
+bbox = [495.0, 600.5, 563.7, 677.5]
+h = 0.75
+
+# SOD-123 diode, 1.26 mm.
+[[block]]
+name = "Diode"
+bbox = [545.78, 780.56, 563.91, 821.96]
+h = 1.26
+
+# SOT-323 transistors, 1.05 mm.
+[[block]]
+name = "Q1"
+bbox = [905.47, 665.49, 918.4, 691.56]
+h = 1.05
+
+[[block]]
+name = "Q2"
+bbox = [905.83, 701.48, 918.76, 727.55]
+h = 1.05
+
+[[block]]
+name = "Q3"
+bbox = [496.71, 553.61, 521.75, 569.17]
+h = 1.05
+
+[[block]]
+name = "Q4"
+bbox = [540.89, 553.42, 556.45, 578.45]
+h = 1.05
+
+# --- SMA, edge mount, from the CAD --------------------------------------------------------------
+# Its axis is at CAD x 8.71, z -0.59: 1.35 mm behind the middle of the board, so the connector
+# hangs mostly below the board, as in the drawing's side views. Legs straddle the board for 4.0 mm
+# (0.95 wide, 0.9 thick each side); a 6.5 mm square flange 1.5 mm long at the edge; a 2.5 mm
+# radius neck; the 1/4-36 thread (radius 3.13) from 2.6 to 11.3 mm past the edge; a 2.5 mm radius
+# collar to the tip, 12.5 mm past the edge.
+[[block]]
+name = "SMALegFrontL"
+bbox = [524.77, 460.97, 536.79, 512.89]
+h = 0.9
+material = "sma"
+
+[[block]]
+name = "SMALegFrontR"
+bbox = [590.55, 460.97, 603.48, 512.94]
+h = 0.9
+material = "sma"
+
+[[solid]]
+name = "SMALegBackL"
+material = "sma"
+center_mm = [-14.815, 30.0, -1.25]
+size_mm = [0.95, 4.0, 0.9]
+
+[[solid]]
+name = "SMALegBackR"
+material = "sma"
+center_mm = [-9.765, 30.0, -1.25]
+size_mm = [0.95, 4.0, 0.9]
+
+[[solid]]
+name = "SMAFlange"
+material = "sma"
+center_mm = [-12.29, 32.75, -1.345]
+size_mm = [6.5, 1.5, 6.5]
+
+[[antenna]]
+name = "SMANeck"
+start = [563.9, 461.1]
+end = [563.9, 427.4]
+radius_mm = 2.5
+z_mm = -1.345
+dome = false
+max_width = 50
+material = "sma"
+
+[[antenna]]
+name = "SMAThread"
+start = [563.9, 427.4]
+end = [563.9, 314.7]
+radius_mm = 3.13
+z_mm = -1.345
+dome = false
+material = "sma"
+
+[[antenna]]
+name = "SMATip"
+start = [563.9, 314.7]
+end = [563.9, 299.1]
+radius_mm = 2.5
+z_mm = -1.345
+dome = false
+material = "sma"
+
+# The socket's white dielectric, seen in the tip (bore radius 2.29 in the CAD).
+[[solid]]
+name = "SMADielectric"
+material = "dielectric"
+center_mm = [-12.29, 44.52, -1.345]
+size_mm = [4.4, 0.06, 4.4]
+radius_mm = 2.2
+
+# --- underside, from the CAD; heights below the board's back ------------------------------------
+
+# USB-C, mid-height under the board, 7.8 mm long, 8.94 x 3.16 mm, reaching 1.49 mm past the left
+# edge. Built as three rounded slices so its ends are the right shape.
+[[solid]]
+name = "USBC"
+material = "usb"
+center_mm = [-21.19, 9.47, -2.38]
+size_mm = [2.6, 8.94, 3.16]
+radius_mm = 1.58
+
+[[solid]]
+name = "USBC"
+material = "usb"
+center_mm = [-18.59, 9.47, -2.38]
+size_mm = [2.6, 8.94, 3.16]
+radius_mm = 1.58
+
+[[solid]]
+name = "USBC"
+material = "usb"
+center_mm = [-15.99, 9.47, -2.38]
+size_mm = [2.6, 8.94, 3.16]
+radius_mm = 1.58
+
+[[solid]]
+name = "USBCOpening"
+material = "port"
+center_mm = [-22.5, 9.47, -2.38]
+size_mm = [0.1, 8.0, 2.3]
+radius_mm = 1.15
+
+# Battery: Molex PicoBlade 53398-0371, 3-pin vertical, 8.9 x 4.2 mm, 4.7 mm tall, light gray in the
+# photos. Its mouth faces away from the board; the opening size is estimated from the photos.
+[[solid]]
+name = "Battery"
+material = "jst"
+center_mm = [-15.77, 23.71, -3.15]
+size_mm = [8.9, 4.2, 4.7]
+
+[[solid]]
+name = "BatteryMouth"
+material = "port"
+center_mm = [-15.77, 23.6, -5.5]
+size_mm = [4.6, 1.6, 0.04]
+confidence = "estimated from photos"
+
+# Reset switch: side-push, CAD 3.65 x 4.61 mm, 2.74 mm tall. White body and a dark plunger
+# toward the left edge's notch (photos); the split between them, at 1.0 mm, is estimated.
+[[solid]]
+name = "ResetSwitch"
+material = "switch"
+center_mm = [-18.4, 17.905, -2.17]
+size_mm = [2.65, 4.61, 2.74]
+
+[[solid]]
+name = "ResetPlunger"
+material = "plunger"
+center_mm = [-20.21, 17.905, -2.17]
+size_mm = [1.0, 2.0, 1.4]
+confidence = "estimated from photos"
+
+# Other parts under the board, the ones 0.9 mm or taller: inductor (1206), diode (SOD-123),
+# crystal.
+[[solid]]
+name = "Inductor"
+material = "ferrite"
+center_mm = [-6.77, 13.59, -1.6]
+size_mm = [3.2, 1.6, 1.6]
+
+[[solid]]
+name = "DiodeBack"
+material = "part"
+center_mm = [-10.26, 16.06, -1.43]
+size_mm = [3.8, 1.6, 1.26]
+
+[[solid]]
+name = "Crystal"
+material = "usb"
+center_mm = [0.36, 6.87, -1.27]
+size_mm = [3.2, 1.5, 0.94]
+
+# The mounting holes show on the back as gold rings (4.0 mm, hole 2.15 mm): top left, bottom left
+# and right (drawing: 2.4 / 2.25 from the left corners, 2.35 from the right edge, 17.0 from the top).
+[[solid]]
+name = "PadTopLeft"
+material = "enig"
+center_mm = [-18.61, 29.73, -0.85]
+size_mm = [4.0, 4.0, 0.1]
+radius_mm = 2.0
+
+[[solid]]
+name = "PadBottomLeft"
+material = "enig"
+center_mm = [-18.61, 2.22, -0.85]
+size_mm = [4.0, 4.0, 0.1]
+radius_mm = 2.0
+
+[[solid]]
+name = "PadRight"
+material = "enig"
+center_mm = [18.7, 14.99, -0.85]
+size_mm = [4.0, 4.0, 0.1]
+radius_mm = 2.0
+
+[[solid]]
+name = "HoleTopLeft"
+material = "hole"
+center_mm = [-18.61, 29.73, -0.92]
+size_mm = [2.15, 2.15, 0.06]
+radius_mm = 1.075
+
+[[solid]]
+name = "HoleBottomLeft"
+material = "hole"
+center_mm = [-18.61, 2.22, -0.92]
+size_mm = [2.15, 2.15, 0.06]
+radius_mm = 1.075
+
+[[solid]]
+name = "HoleRight"
+material = "hole"
+center_mm = [18.7, 14.99, -0.92]
+size_mm = [2.15, 2.15, 0.06]
+radius_mm = 1.075
+
+# Castellated pads on the back, gold in the photos: 1.68 x 2.89 mm from each edge (drawing), each
+# with its 1.0 mm hole (CAD: 14 along the bottom from x 6.88, 11 along the top from x 14.5,
+# 2.54 mm pitch, hole centers 2.03 mm from the edge).
+
+[[solid]]
+name = "BackPadB1"
+material = "enig"
+center_mm = [-14.12, 1.445, -0.825]
+size_mm = [1.68, 2.89, 0.05]
+radius_mm = 0.84
+
+[[solid]]
+name = "BackPadHoleB1"
+material = "port"
+center_mm = [-14.12, 2.03, -0.86]
+size_mm = [1.0, 1.0, 0.03]
+radius_mm = 0.5
+
+[[solid]]
+name = "BackPadB2"
+material = "enig"
+center_mm = [-11.58, 1.445, -0.825]
+size_mm = [1.68, 2.89, 0.05]
+radius_mm = 0.84
+
+[[solid]]
+name = "BackPadHoleB2"
+material = "port"
+center_mm = [-11.58, 2.03, -0.86]
+size_mm = [1.0, 1.0, 0.03]
+radius_mm = 0.5
+
+[[solid]]
+name = "BackPadB3"
+material = "enig"
+center_mm = [-9.04, 1.445, -0.825]
+size_mm = [1.68, 2.89, 0.05]
+radius_mm = 0.84
+
+[[solid]]
+name = "BackPadHoleB3"
+material = "port"
+center_mm = [-9.04, 2.03, -0.86]
+size_mm = [1.0, 1.0, 0.03]
+radius_mm = 0.5
+
+[[solid]]
+name = "BackPadB4"
+material = "enig"
+center_mm = [-6.5, 1.445, -0.825]
+size_mm = [1.68, 2.89, 0.05]
+radius_mm = 0.84
+
+[[solid]]
+name = "BackPadHoleB4"
+material = "port"
+center_mm = [-6.5, 2.03, -0.86]
+size_mm = [1.0, 1.0, 0.03]
+radius_mm = 0.5
+
+[[solid]]
+name = "BackPadB5"
+material = "enig"
+center_mm = [-3.96, 1.445, -0.825]
+size_mm = [1.68, 2.89, 0.05]
+radius_mm = 0.84
+
+[[solid]]
+name = "BackPadHoleB5"
+material = "port"
+center_mm = [-3.96, 2.03, -0.86]
+size_mm = [1.0, 1.0, 0.03]
+radius_mm = 0.5
+
+[[solid]]
+name = "BackPadB6"
+material = "enig"
+center_mm = [-1.42, 1.445, -0.825]
+size_mm = [1.68, 2.89, 0.05]
+radius_mm = 0.84
+
+[[solid]]
+name = "BackPadHoleB6"
+material = "port"
+center_mm = [-1.42, 2.03, -0.86]
+size_mm = [1.0, 1.0, 0.03]
+radius_mm = 0.5
+
+[[solid]]
+name = "BackPadB7"
+material = "enig"
+center_mm = [1.12, 1.445, -0.825]
+size_mm = [1.68, 2.89, 0.05]
+radius_mm = 0.84
+
+[[solid]]
+name = "BackPadHoleB7"
+material = "port"
+center_mm = [1.12, 2.03, -0.86]
+size_mm = [1.0, 1.0, 0.03]
+radius_mm = 0.5
+
+[[solid]]
+name = "BackPadB8"
+material = "enig"
+center_mm = [3.66, 1.445, -0.825]
+size_mm = [1.68, 2.89, 0.05]
+radius_mm = 0.84
+
+[[solid]]
+name = "BackPadHoleB8"
+material = "port"
+center_mm = [3.66, 2.03, -0.86]
+size_mm = [1.0, 1.0, 0.03]
+radius_mm = 0.5
+
+[[solid]]
+name = "BackPadB9"
+material = "enig"
+center_mm = [6.2, 1.445, -0.825]
+size_mm = [1.68, 2.89, 0.05]
+radius_mm = 0.84
+
+[[solid]]
+name = "BackPadHoleB9"
+material = "port"
+center_mm = [6.2, 2.03, -0.86]
+size_mm = [1.0, 1.0, 0.03]
+radius_mm = 0.5
+
+[[solid]]
+name = "BackPadB10"
+material = "enig"
+center_mm = [8.74, 1.445, -0.825]
+size_mm = [1.68, 2.89, 0.05]
+radius_mm = 0.84
+
+[[solid]]
+name = "BackPadHoleB10"
+material = "port"
+center_mm = [8.74, 2.03, -0.86]
+size_mm = [1.0, 1.0, 0.03]
+radius_mm = 0.5
+
+[[solid]]
+name = "BackPadB11"
+material = "enig"
+center_mm = [11.28, 1.445, -0.825]
+size_mm = [1.68, 2.89, 0.05]
+radius_mm = 0.84
+
+[[solid]]
+name = "BackPadHoleB11"
+material = "port"
+center_mm = [11.28, 2.03, -0.86]
+size_mm = [1.0, 1.0, 0.03]
+radius_mm = 0.5
+
+[[solid]]
+name = "BackPadB12"
+material = "enig"
+center_mm = [13.82, 1.445, -0.825]
+size_mm = [1.68, 2.89, 0.05]
+radius_mm = 0.84
+
+[[solid]]
+name = "BackPadHoleB12"
+material = "port"
+center_mm = [13.82, 2.03, -0.86]
+size_mm = [1.0, 1.0, 0.03]
+radius_mm = 0.5
+
+[[solid]]
+name = "BackPadB13"
+material = "enig"
+center_mm = [16.36, 1.445, -0.825]
+size_mm = [1.68, 2.89, 0.05]
+radius_mm = 0.84
+
+[[solid]]
+name = "BackPadHoleB13"
+material = "port"
+center_mm = [16.36, 2.03, -0.86]
+size_mm = [1.0, 1.0, 0.03]
+radius_mm = 0.5
+
+[[solid]]
+name = "BackPadB14"
+material = "enig"
+center_mm = [18.9, 1.445, -0.825]
+size_mm = [1.68, 2.89, 0.05]
+radius_mm = 0.84
+
+[[solid]]
+name = "BackPadHoleB14"
+material = "port"
+center_mm = [18.9, 2.03, -0.86]
+size_mm = [1.0, 1.0, 0.03]
+radius_mm = 0.5
+
+[[solid]]
+name = "BackPadT1"
+material = "enig"
+center_mm = [-6.5, 30.555, -0.825]
+size_mm = [1.68, 2.89, 0.05]
+radius_mm = 0.84
+
+[[solid]]
+name = "BackPadHoleT1"
+material = "port"
+center_mm = [-6.5, 29.97, -0.86]
+size_mm = [1.0, 1.0, 0.03]
+radius_mm = 0.5
+
+[[solid]]
+name = "BackPadT2"
+material = "enig"
+center_mm = [-3.96, 30.555, -0.825]
+size_mm = [1.68, 2.89, 0.05]
+radius_mm = 0.84
+
+[[solid]]
+name = "BackPadHoleT2"
+material = "port"
+center_mm = [-3.96, 29.97, -0.86]
+size_mm = [1.0, 1.0, 0.03]
+radius_mm = 0.5
+
+[[solid]]
+name = "BackPadT3"
+material = "enig"
+center_mm = [-1.42, 30.555, -0.825]
+size_mm = [1.68, 2.89, 0.05]
+radius_mm = 0.84
+
+[[solid]]
+name = "BackPadHoleT3"
+material = "port"
+center_mm = [-1.42, 29.97, -0.86]
+size_mm = [1.0, 1.0, 0.03]
+radius_mm = 0.5
+
+[[solid]]
+name = "BackPadT4"
+material = "enig"
+center_mm = [1.12, 30.555, -0.825]
+size_mm = [1.68, 2.89, 0.05]
+radius_mm = 0.84
+
+[[solid]]
+name = "BackPadHoleT4"
+material = "port"
+center_mm = [1.12, 29.97, -0.86]
+size_mm = [1.0, 1.0, 0.03]
+radius_mm = 0.5
+
+[[solid]]
+name = "BackPadT5"
+material = "enig"
+center_mm = [3.66, 30.555, -0.825]
+size_mm = [1.68, 2.89, 0.05]
+radius_mm = 0.84
+
+[[solid]]
+name = "BackPadHoleT5"
+material = "port"
+center_mm = [3.66, 29.97, -0.86]
+size_mm = [1.0, 1.0, 0.03]
+radius_mm = 0.5
+
+[[solid]]
+name = "BackPadT6"
+material = "enig"
+center_mm = [6.2, 30.555, -0.825]
+size_mm = [1.68, 2.89, 0.05]
+radius_mm = 0.84
+
+[[solid]]
+name = "BackPadHoleT6"
+material = "port"
+center_mm = [6.2, 29.97, -0.86]
+size_mm = [1.0, 1.0, 0.03]
+radius_mm = 0.5
+
+[[solid]]
+name = "BackPadT7"
+material = "enig"
+center_mm = [8.74, 30.555, -0.825]
+size_mm = [1.68, 2.89, 0.05]
+radius_mm = 0.84
+
+[[solid]]
+name = "BackPadHoleT7"
+material = "port"
+center_mm = [8.74, 29.97, -0.86]
+size_mm = [1.0, 1.0, 0.03]
+radius_mm = 0.5
+
+[[solid]]
+name = "BackPadT8"
+material = "enig"
+center_mm = [11.28, 30.555, -0.825]
+size_mm = [1.68, 2.89, 0.05]
+radius_mm = 0.84
+
+[[solid]]
+name = "BackPadHoleT8"
+material = "port"
+center_mm = [11.28, 29.97, -0.86]
+size_mm = [1.0, 1.0, 0.03]
+radius_mm = 0.5
+
+[[solid]]
+name = "BackPadT9"
+material = "enig"
+center_mm = [13.82, 30.555, -0.825]
+size_mm = [1.68, 2.89, 0.05]
+radius_mm = 0.84
+
+[[solid]]
+name = "BackPadHoleT9"
+material = "port"
+center_mm = [13.82, 29.97, -0.86]
+size_mm = [1.0, 1.0, 0.03]
+radius_mm = 0.5
+
+[[solid]]
+name = "BackPadT10"
+material = "enig"
+center_mm = [16.36, 30.555, -0.825]
+size_mm = [1.68, 2.89, 0.05]
+radius_mm = 0.84
+
+[[solid]]
+name = "BackPadHoleT10"
+material = "port"
+center_mm = [16.36, 29.97, -0.86]
+size_mm = [1.0, 1.0, 0.03]
+radius_mm = 0.5
+
+[[solid]]
+name = "BackPadT11"
+material = "enig"
+center_mm = [18.9, 30.555, -0.825]
+size_mm = [1.68, 2.89, 0.05]
+radius_mm = 0.84
+
+[[solid]]
+name = "BackPadHoleT11"
+material = "port"
+center_mm = [18.9, 29.97, -0.86]
+size_mm = [1.0, 1.0, 0.03]
+radius_mm = 0.5
+
+# The mounting holes from the front: the drawn rings are open in the middle, so the hole shows.
+
+[[solid]]
+name = "HoleFrontTopLeft"
+material = "hole"
+center_mm = [-18.61, 29.73, 0.83]
+size_mm = [2.15, 2.15, 0.06]
+radius_mm = 1.075
+
+[[solid]]
+name = "HoleFrontBottomLeft"
+material = "hole"
+center_mm = [-18.61, 2.22, 0.83]
+size_mm = [2.15, 2.15, 0.06]
+radius_mm = 1.075
+
+[[solid]]
+name = "HoleFrontRight"
+material = "hole"
+center_mm = [18.7, 14.99, 0.83]
+size_mm = [2.15, 2.15, 0.06]
+radius_mm = 1.075

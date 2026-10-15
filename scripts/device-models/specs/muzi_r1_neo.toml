@@ -1,0 +1,1462 @@
+# muzi_r1_neo: muzi works R1 Neo. The flasher's illustration is a front view with the bevels
+# shaded in, so this uses our own front drawing in mm (drawings/), built from these measurements.
+# muzi works publishes the case as 58.0 x 63.5 x 17.8 mm and the antenna as 17 cm:
+# https://muzi.works/products/r1-neo-complete-meshtastic-device
+# No CAD or dimension drawing is published. Everything else is measured from muzi's product
+# photos (front P1000223, back P1000227, side P1000232, bottom P1000236, red P1000215) and its
+# top-view render of the button (Integrated_Button_Indicator.jpg), each scaled to the published
+# 58 mm width, so those figures are estimated from photos.
+# Shape: a 3D-printed shell on an anodized aluminum base. The front is a flat panel with three
+# bevels: 9.1 mm wide on the left, 16.9 mm on the right and 11.4 mm along the top, each dropping
+# 6.7 mm to the side walls, which are 11.1 mm deep. The aluminum base is 11.3 mm tall on the sides
+# and back and 7.4 mm on the front panel. The top-left corner is cut away on a diagonal; behind it
+# a notch open to the back and the left side holds the SMA connector and the antenna, and the
+# bevels form a thin cheek in front of it.
+# The generator can't slope a face, so the bevels are tilted strips ([[solid]]s, 1 mm wide),
+# stepped where they meet the diagonal, the corners and the base seam; the parts below are built
+# as layers between set depths, which leaves their edges square.
+# Color: the illustration is maroon; of the five colors sold, Red is the one it shows, a brick
+# red in muzi's photos.
+# Model frame: x from the center line, y up from the bottom, z out of the front, 0 the middle.
+name = "R1Neo"
+drawing = "drawings/muzi_r1_neo.svg"
+auto = false
+
+[size]
+width_mm = 58.0
+height_mm = 63.5
+depth_mm = 17.8
+covers = "case, excludes antenna"
+source = "https://muzi.works/products/r1-neo-complete-meshtastic-device"
+confidence = "vendor"
+
+[materials]
+case    = { color = "#b0402c", roughness = 0.75 }
+base    = { color = "#1c1c1e", roughness = 0.4, metallic = 0.6 }
+button  = { color = "#ecebe8", roughness = 0.5, opacity = 0.95 }
+rubber  = { color = "#1f2022", roughness = 0.8 }
+brass   = { color = "#c9a24a", roughness = 0.3, metallic = 1.0 }
+port    = { color = "#0d0d0f", roughness = 0.6 }
+gasket  = { color = "#2c2c2e", roughness = 0.7 }
+screw   = { color = "#3a3a3c", roughness = 0.4, metallic = 1.0 }
+slot    = { color = "#141416", roughness = 0.8 }
+
+# Behind the bevels: the case from the back to the bevels' outer edge (z -8.9 to 2.2), with the
+# antenna notch (16.5 mm wide, 24.5 mm deep from the top) left open. The notch wall runs straight
+# up to the top with a 3 mm round at the corner (back photo P1000227); the front diagonal is only
+# on the bevels. Below the base seam it's aluminum.
+[[part]]
+name = "Shell"
+class = "back"
+z = -17.8
+h = 11.1
+material = "case"
+
+[[part]]
+name = "Base"
+class = "back-base"
+z = -17.8
+h = 11.1
+material = "base"
+
+# The flat front panel, from the bevels' outer edge up to the front (z 2.2 to 8.9). Over the
+# notch it starts at z 4.2 to clear the antenna.
+[[part]]
+name = "Panel"
+class = "panel"
+z = -6.7
+h = 6.7
+material = "case"
+
+[[part]]
+name = "PanelOverNotch"
+class = "panel-notch"
+z = -4.7
+h = 4.7
+material = "case"
+
+[[part]]
+name = "PanelBase"
+class = "panel-base"
+z = -6.7
+h = 6.7
+material = "base"
+
+# The drawing's bevels, button and lanyard slot are for the picture; they're built below.
+[[part]]
+name = "DrawnOnly"
+class = ["bevel-left", "bevel-right", "bevel-top", "bevel-base", "button", "slot"]
+role = "skip"
+
+# Antenna: on the SMA connector at the notch floor (39 mm up), 9.7 mm in from the left edge and
+# about mid-depth (top-view render). From the front photo: a 9 mm sleeve tapering to 6.5 mm at
+# 71 mm up, a 4.4 mm whip, and a 6.1 mm cap 13.5 mm long ending 208 mm up, so 169 mm from the
+# connector against the published 17 cm.
+[[lathe]]
+name = "AntennaConnector"
+axis_x = 9.7
+y_bottom = 24.5
+y_top = 21.0
+radius = 3.2
+z = -0.6
+material = "brass"
+
+[[lathe]]
+name = "AntennaSleeve"
+axis_x = 9.7
+y_bottom = 21.0
+y_top = 5.5
+radius = 4.5
+z = -0.6
+material = "rubber"
+
+[[lathe]]
+name = "AntennaTaper1"
+axis_x = 9.7
+y_bottom = 5.5
+y_top = 0.5
+radius = 4.1
+z = -0.6
+material = "rubber"
+
+[[lathe]]
+name = "AntennaTaper2"
+axis_x = 9.7
+y_bottom = 0.5
+y_top = -4.0
+radius = 3.7
+z = -0.6
+material = "rubber"
+
+[[lathe]]
+name = "AntennaTaper3"
+axis_x = 9.7
+y_bottom = -4.0
+y_top = -7.4
+radius = 3.25
+z = -0.6
+material = "rubber"
+
+[[lathe]]
+name = "AntennaWhip"
+axis_x = 9.7
+y_bottom = -7.4
+y_top = -130.8
+radius = 2.2
+z = -0.6
+material = "rubber"
+
+[[lathe]]
+name = "AntennaCap"
+axis_x = 9.7
+y_bottom = -130.8
+y_top = -144.4
+radius = 3.05
+dome = true
+z = -0.6
+material = "rubber"
+
+# Top: the one button, a white soft-touch stadium 14.2 x 6.5 mm that lights up as the status LED.
+# It sits about mid-depth and runs a little over the top bevel, so it shows from the front.
+[[solid]]
+name = "Button"
+material = "button"
+center_mm = [-4.5, 62.35, 0.2]
+size_mm = [14.2, 3.0, 6.5]
+radius_mm = 3.25
+confidence = "estimated from photos"
+
+# The lanyard slot through the top-right corner, 2.9 x 7 mm: dark insets on the right bevel and
+# the back, since the generator can't cut through.
+[[solid]]
+name = "SlotFront"
+material = "slot"
+center_mm = [25.65, 53.1, 3.53]
+size_mm = [3.1, 7.0, 0.3]
+radius_mm = 1.45
+rotate_deg = [0, 21.6, 0]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "SlotBack"
+material = "slot"
+center_mm = [25.65, 53.1, -8.83]
+size_mm = [2.9, 7.0, 0.2]
+radius_mm = 1.45
+confidence = "estimated from photos"
+
+# Bottom: the sealed USB-C near the left end in its gasket, and a screw at each end. The printed
+# label between them is left out. Their depth is hard to read from the photo; estimated.
+[[solid]]
+name = "USBCGasket"
+material = "gasket"
+center_mm = [-16.3, -0.05, -4.0]
+size_mm = [11.3, 0.3, 5.0]
+radius_mm = 2.5
+confidence = "estimated from photos"
+
+[[solid]]
+name = "USBC"
+material = "port"
+center_mm = [-16.3, -0.1, -4.0]
+size_mm = [9.0, 0.4, 3.3]
+radius_mm = 1.6
+confidence = "estimated from photos"
+
+[[solid]]
+name = "ScrewLeft"
+material = "screw"
+center_mm = [-25.0, -0.05, -5.5]
+size_mm = [2.2, 0.3, 2.2]
+radius_mm = 1.1
+confidence = "estimated from photos"
+
+[[solid]]
+name = "ScrewRight"
+material = "screw"
+center_mm = [25.0, -0.05, -5.5]
+size_mm = [2.2, 0.3, 2.2]
+radius_mm = 1.1
+confidence = "estimated from photos"
+
+# The bevels as tilted strips, computed from the bevel figures at the top: one piece for each
+# plain stretch, 0.6 mm strips where an edge slants. Thin (1 mm) where they cover the notch, 7.5 mm elsewhere so they
+# fill down to the layers above. Below the base seam they're aluminum.
+[[solid]]
+name = "BevelLeft1"
+material = "case"
+center_mm = [-22.23, 23.10, 2.53]
+size_mm = [11.30, 23.60, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft2"
+material = "case"
+center_mm = [-26.49, 35.10, -0.61]
+size_mm = [0.71, 0.40, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft3"
+material = "case"
+center_mm = [-26.49, 11.24, -0.61]
+size_mm = [0.71, 0.12, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeftBase1"
+material = "base"
+center_mm = [-26.49, 7.05, -0.61]
+size_mm = [0.71, 8.25, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft4"
+material = "case"
+center_mm = [-25.92, 35.50, -0.19]
+size_mm = [0.71, 1.21, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft5"
+material = "case"
+center_mm = [-25.92, 11.12, -0.19]
+size_mm = [0.71, 0.37, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeftBase2"
+material = "base"
+center_mm = [-25.92, 6.40, -0.19]
+size_mm = [0.71, 9.07, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft6"
+material = "case"
+center_mm = [-25.35, 35.91, 0.23]
+size_mm = [0.71, 2.01, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft7"
+material = "case"
+center_mm = [-25.35, 11.00, 0.23]
+size_mm = [0.71, 0.61, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeftBase3"
+material = "base"
+center_mm = [-25.35, 5.95, 0.23]
+size_mm = [0.71, 9.47, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft8"
+material = "case"
+center_mm = [-24.79, 36.31, 0.65]
+size_mm = [0.71, 2.82, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft9"
+material = "case"
+center_mm = [-24.79, 10.87, 0.65]
+size_mm = [0.71, 0.85, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeftBase4"
+material = "base"
+center_mm = [-24.79, 5.61, 0.65]
+size_mm = [0.71, 9.68, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft10"
+material = "case"
+center_mm = [-24.22, 36.71, 1.06]
+size_mm = [0.71, 3.62, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft11"
+material = "case"
+center_mm = [-24.22, 10.75, 1.06]
+size_mm = [0.71, 1.10, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeftBase5"
+material = "base"
+center_mm = [-24.22, 5.32, 1.06]
+size_mm = [0.71, 9.76, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft12"
+material = "case"
+center_mm = [-25.58, 39.16, 4.10]
+size_mm = [0.71, 0.33, 1.00]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft13"
+material = "case"
+center_mm = [-23.65, 36.95, 1.48]
+size_mm = [0.71, 4.10, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft14"
+material = "case"
+center_mm = [-23.65, 10.63, 1.48]
+size_mm = [0.71, 1.34, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeftBase6"
+material = "base"
+center_mm = [-23.65, 5.09, 1.48]
+size_mm = [0.71, 9.75, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft15"
+material = "case"
+center_mm = [-25.01, 39.57, 4.52]
+size_mm = [0.71, 1.13, 1.00]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft16"
+material = "case"
+center_mm = [-23.08, 36.95, 1.90]
+size_mm = [0.71, 4.10, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft17"
+material = "case"
+center_mm = [-23.08, 10.51, 1.90]
+size_mm = [0.71, 1.58, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeftBase7"
+material = "base"
+center_mm = [-23.08, 4.89, 1.90]
+size_mm = [0.71, 9.64, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft18"
+material = "case"
+center_mm = [-24.44, 39.97, 4.94]
+size_mm = [0.71, 1.94, 1.00]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft19"
+material = "case"
+center_mm = [-22.51, 36.95, 2.32]
+size_mm = [0.71, 4.10, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft20"
+material = "case"
+center_mm = [-22.51, 10.39, 2.32]
+size_mm = [0.71, 1.83, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeftBase8"
+material = "base"
+center_mm = [-22.51, 4.74, 2.32]
+size_mm = [0.71, 9.47, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft21"
+material = "case"
+center_mm = [-23.87, 40.37, 5.36]
+size_mm = [0.71, 2.74, 1.00]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft22"
+material = "case"
+center_mm = [-21.94, 36.95, 2.74]
+size_mm = [0.71, 4.10, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft23"
+material = "case"
+center_mm = [-21.94, 10.26, 2.74]
+size_mm = [0.71, 2.07, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeftBase9"
+material = "base"
+center_mm = [-21.94, 4.61, 2.74]
+size_mm = [0.71, 9.23, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft24"
+material = "case"
+center_mm = [-23.30, 40.77, 5.78]
+size_mm = [0.71, 3.55, 1.00]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft25"
+material = "case"
+center_mm = [-21.37, 36.95, 3.16]
+size_mm = [0.71, 4.10, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft26"
+material = "case"
+center_mm = [-21.37, 10.14, 3.16]
+size_mm = [0.71, 2.32, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeftBase10"
+material = "base"
+center_mm = [-21.37, 4.49, 3.16]
+size_mm = [0.71, 8.98, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft27"
+material = "case"
+center_mm = [-22.73, 41.18, 6.19]
+size_mm = [0.71, 4.36, 1.00]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft28"
+material = "case"
+center_mm = [-20.80, 36.95, 3.58]
+size_mm = [0.71, 4.10, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft29"
+material = "case"
+center_mm = [-20.80, 10.02, 3.58]
+size_mm = [0.71, 2.56, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeftBase11"
+material = "base"
+center_mm = [-20.80, 4.37, 3.58]
+size_mm = [0.71, 8.74, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft30"
+material = "case"
+center_mm = [-22.16, 41.58, 6.61]
+size_mm = [0.71, 5.16, 1.00]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft31"
+material = "case"
+center_mm = [-20.24, 36.95, 4.00]
+size_mm = [0.71, 4.10, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft32"
+material = "case"
+center_mm = [-20.24, 9.90, 4.00]
+size_mm = [0.71, 2.80, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeftBase12"
+material = "base"
+center_mm = [-20.24, 4.25, 4.00]
+size_mm = [0.71, 8.50, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft33"
+material = "case"
+center_mm = [-21.59, 41.98, 7.03]
+size_mm = [0.71, 5.97, 1.00]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft34"
+material = "case"
+center_mm = [-19.67, 36.95, 4.41]
+size_mm = [0.71, 4.10, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft35"
+material = "case"
+center_mm = [-19.67, 9.78, 4.41]
+size_mm = [0.71, 3.05, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeftBase13"
+material = "base"
+center_mm = [-19.67, 4.13, 4.41]
+size_mm = [0.71, 8.25, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft36"
+material = "case"
+center_mm = [-21.03, 42.39, 7.45]
+size_mm = [0.71, 6.77, 1.00]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft37"
+material = "case"
+center_mm = [-19.10, 36.95, 4.83]
+size_mm = [0.71, 4.10, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft38"
+material = "case"
+center_mm = [-19.10, 9.65, 4.83]
+size_mm = [0.71, 3.29, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeftBase14"
+material = "base"
+center_mm = [-19.10, 4.00, 4.83]
+size_mm = [0.71, 8.01, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft39"
+material = "case"
+center_mm = [-20.46, 42.79, 7.87]
+size_mm = [0.71, 7.58, 1.00]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft40"
+material = "case"
+center_mm = [-18.53, 36.95, 5.25]
+size_mm = [0.71, 4.10, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft41"
+material = "case"
+center_mm = [-18.53, 9.53, 5.25]
+size_mm = [0.71, 3.53, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeftBase15"
+material = "base"
+center_mm = [-18.53, 3.88, 5.25]
+size_mm = [0.71, 7.77, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft42"
+material = "case"
+center_mm = [-19.89, 43.19, 8.29]
+size_mm = [0.71, 8.38, 1.00]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft43"
+material = "case"
+center_mm = [-17.96, 36.95, 5.67]
+size_mm = [0.71, 4.10, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeft44"
+material = "case"
+center_mm = [-17.96, 9.41, 5.67]
+size_mm = [0.71, 3.78, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelLeftBase16"
+material = "base"
+center_mm = [-17.96, 3.76, 5.67]
+size_mm = [0.71, 7.52, 7.50]
+rotate_deg = [0.0, -36.4, 0.0]
+
+[[solid]]
+name = "BevelRight45"
+material = "case"
+center_mm = [19.17, 31.70, 2.06]
+size_mm = [18.18, 40.80, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight46"
+material = "case"
+center_mm = [11.01, 52.20, 5.30]
+size_mm = [0.63, 0.20, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight47"
+material = "case"
+center_mm = [11.01, 9.38, 5.30]
+size_mm = [0.63, 3.83, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRightBase17"
+material = "base"
+center_mm = [11.01, 3.73, 5.30]
+size_mm = [0.63, 7.47, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight48"
+material = "case"
+center_mm = [11.59, 52.39, 5.07]
+size_mm = [0.63, 0.59, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight49"
+material = "case"
+center_mm = [11.59, 9.45, 5.07]
+size_mm = [0.63, 3.70, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRightBase18"
+material = "base"
+center_mm = [11.59, 3.80, 5.07]
+size_mm = [0.63, 7.60, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight50"
+material = "case"
+center_mm = [12.17, 52.59, 4.84]
+size_mm = [0.63, 0.98, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight51"
+material = "case"
+center_mm = [12.17, 9.52, 4.84]
+size_mm = [0.63, 3.56, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRightBase19"
+material = "base"
+center_mm = [12.17, 3.87, 4.84]
+size_mm = [0.63, 7.74, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight52"
+material = "case"
+center_mm = [12.76, 52.79, 4.61]
+size_mm = [0.63, 1.38, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight53"
+material = "case"
+center_mm = [12.76, 9.59, 4.61]
+size_mm = [0.63, 3.43, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRightBase20"
+material = "base"
+center_mm = [12.76, 3.94, 4.61]
+size_mm = [0.63, 7.87, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight54"
+material = "case"
+center_mm = [13.34, 52.98, 4.37]
+size_mm = [0.63, 1.77, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight55"
+material = "case"
+center_mm = [13.34, 9.65, 4.37]
+size_mm = [0.63, 3.29, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRightBase21"
+material = "base"
+center_mm = [13.34, 4.00, 4.37]
+size_mm = [0.63, 8.01, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight56"
+material = "case"
+center_mm = [13.92, 53.18, 4.14]
+size_mm = [0.63, 2.16, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight57"
+material = "case"
+center_mm = [13.92, 9.72, 4.14]
+size_mm = [0.63, 3.16, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRightBase22"
+material = "base"
+center_mm = [13.92, 4.07, 4.14]
+size_mm = [0.63, 8.14, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight58"
+material = "case"
+center_mm = [14.51, 53.38, 3.91]
+size_mm = [0.63, 2.56, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight59"
+material = "case"
+center_mm = [14.51, 9.79, 3.91]
+size_mm = [0.63, 3.03, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRightBase23"
+material = "base"
+center_mm = [14.51, 4.14, 3.91]
+size_mm = [0.63, 8.27, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight60"
+material = "case"
+center_mm = [15.09, 53.57, 3.68]
+size_mm = [0.63, 2.95, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight61"
+material = "case"
+center_mm = [15.09, 9.85, 3.68]
+size_mm = [0.63, 2.89, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRightBase24"
+material = "base"
+center_mm = [15.09, 4.20, 3.68]
+size_mm = [0.63, 8.41, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight62"
+material = "case"
+center_mm = [15.67, 53.77, 3.45]
+size_mm = [0.63, 3.34, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight63"
+material = "case"
+center_mm = [15.67, 9.92, 3.45]
+size_mm = [0.63, 2.76, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRightBase25"
+material = "base"
+center_mm = [15.67, 4.27, 3.45]
+size_mm = [0.63, 8.54, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight64"
+material = "case"
+center_mm = [16.25, 53.97, 3.22]
+size_mm = [0.63, 3.73, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight65"
+material = "case"
+center_mm = [16.25, 9.99, 3.22]
+size_mm = [0.63, 2.62, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRightBase26"
+material = "base"
+center_mm = [16.25, 4.34, 3.22]
+size_mm = [0.63, 8.68, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight66"
+material = "case"
+center_mm = [16.84, 54.16, 2.99]
+size_mm = [0.63, 4.13, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight67"
+material = "case"
+center_mm = [16.84, 10.06, 2.99]
+size_mm = [0.63, 2.49, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRightBase27"
+material = "base"
+center_mm = [16.84, 4.41, 2.99]
+size_mm = [0.63, 8.81, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight68"
+material = "case"
+center_mm = [17.42, 54.36, 2.76]
+size_mm = [0.63, 4.52, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight69"
+material = "case"
+center_mm = [17.42, 10.12, 2.76]
+size_mm = [0.63, 2.35, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRightBase28"
+material = "base"
+center_mm = [17.42, 4.47, 2.76]
+size_mm = [0.63, 8.95, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight70"
+material = "case"
+center_mm = [18.00, 54.56, 2.53]
+size_mm = [0.63, 4.91, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight71"
+material = "case"
+center_mm = [18.00, 10.19, 2.53]
+size_mm = [0.63, 2.22, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRightBase29"
+material = "base"
+center_mm = [18.00, 4.54, 2.53]
+size_mm = [0.63, 9.08, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight72"
+material = "case"
+center_mm = [18.59, 54.75, 2.29]
+size_mm = [0.63, 5.31, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight73"
+material = "case"
+center_mm = [18.59, 10.26, 2.29]
+size_mm = [0.63, 2.08, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRightBase30"
+material = "base"
+center_mm = [18.59, 4.61, 2.29]
+size_mm = [0.63, 9.22, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight74"
+material = "case"
+center_mm = [19.17, 54.95, 2.06]
+size_mm = [0.63, 5.70, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight75"
+material = "case"
+center_mm = [19.17, 10.32, 2.06]
+size_mm = [0.63, 1.95, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRightBase31"
+material = "base"
+center_mm = [19.17, 4.67, 2.06]
+size_mm = [0.63, 9.35, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight76"
+material = "case"
+center_mm = [19.75, 55.15, 1.83]
+size_mm = [0.63, 6.09, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight77"
+material = "case"
+center_mm = [19.75, 10.39, 1.83]
+size_mm = [0.63, 1.82, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRightBase32"
+material = "base"
+center_mm = [19.75, 4.74, 1.83]
+size_mm = [0.63, 9.48, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight78"
+material = "case"
+center_mm = [20.33, 55.34, 1.60]
+size_mm = [0.63, 6.49, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight79"
+material = "case"
+center_mm = [20.33, 10.46, 1.60]
+size_mm = [0.63, 1.68, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRightBase33"
+material = "base"
+center_mm = [20.33, 4.81, 1.60]
+size_mm = [0.63, 9.62, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight80"
+material = "case"
+center_mm = [20.92, 55.54, 1.37]
+size_mm = [0.63, 6.88, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight81"
+material = "case"
+center_mm = [20.92, 10.53, 1.37]
+size_mm = [0.63, 1.55, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRightBase34"
+material = "base"
+center_mm = [20.92, 4.88, 1.37]
+size_mm = [0.63, 9.75, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight82"
+material = "case"
+center_mm = [21.50, 55.74, 1.14]
+size_mm = [0.63, 7.27, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight83"
+material = "case"
+center_mm = [21.50, 10.59, 1.14]
+size_mm = [0.63, 1.41, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRightBase35"
+material = "base"
+center_mm = [21.50, 4.94, 1.14]
+size_mm = [0.63, 9.89, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight84"
+material = "case"
+center_mm = [22.08, 55.93, 0.91]
+size_mm = [0.63, 7.67, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight85"
+material = "case"
+center_mm = [22.08, 10.66, 0.91]
+size_mm = [0.63, 1.28, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRightBase36"
+material = "base"
+center_mm = [22.08, 5.01, 0.91]
+size_mm = [0.63, 10.02, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight86"
+material = "case"
+center_mm = [22.66, 56.13, 0.68]
+size_mm = [0.63, 8.06, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight87"
+material = "case"
+center_mm = [22.66, 10.73, 0.68]
+size_mm = [0.63, 1.14, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRightBase37"
+material = "base"
+center_mm = [22.66, 5.08, 0.68]
+size_mm = [0.63, 10.16, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight88"
+material = "case"
+center_mm = [23.25, 56.33, 0.45]
+size_mm = [0.63, 8.45, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight89"
+material = "case"
+center_mm = [23.25, 10.80, 0.45]
+size_mm = [0.63, 1.01, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRightBase38"
+material = "base"
+center_mm = [23.25, 5.15, 0.45]
+size_mm = [0.63, 10.29, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight90"
+material = "case"
+center_mm = [23.83, 56.52, 0.22]
+size_mm = [0.63, 8.84, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight91"
+material = "case"
+center_mm = [23.83, 10.86, 0.22]
+size_mm = [0.63, 0.87, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRightBase39"
+material = "base"
+center_mm = [23.83, 5.24, 0.22]
+size_mm = [0.63, 10.37, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight92"
+material = "case"
+center_mm = [24.41, 56.72, -0.02]
+size_mm = [0.63, 9.24, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight93"
+material = "case"
+center_mm = [24.41, 10.93, -0.02]
+size_mm = [0.63, 0.74, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRightBase40"
+material = "base"
+center_mm = [24.41, 5.38, -0.02]
+size_mm = [0.63, 10.37, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight94"
+material = "case"
+center_mm = [25.00, 56.92, -0.25]
+size_mm = [0.63, 9.63, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight95"
+material = "case"
+center_mm = [25.00, 11.00, -0.25]
+size_mm = [0.63, 0.61, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRightBase41"
+material = "base"
+center_mm = [25.00, 5.55, -0.25]
+size_mm = [0.63, 10.28, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight96"
+material = "case"
+center_mm = [25.58, 57.11, -0.48]
+size_mm = [0.63, 10.02, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight97"
+material = "case"
+center_mm = [25.58, 11.06, -0.48]
+size_mm = [0.63, 0.47, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRightBase42"
+material = "base"
+center_mm = [25.58, 5.78, -0.48]
+size_mm = [0.63, 10.10, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight98"
+material = "case"
+center_mm = [26.16, 57.12, -0.71]
+size_mm = [0.63, 10.04, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight99"
+material = "case"
+center_mm = [26.16, 11.13, -0.71]
+size_mm = [0.63, 0.34, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRightBase43"
+material = "base"
+center_mm = [26.16, 6.07, -0.71]
+size_mm = [0.63, 9.78, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight100"
+material = "case"
+center_mm = [26.74, 56.78, -0.94]
+size_mm = [0.63, 9.36, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight101"
+material = "case"
+center_mm = [26.74, 11.20, -0.94]
+size_mm = [0.63, 0.20, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRightBase44"
+material = "base"
+center_mm = [26.74, 6.47, -0.94]
+size_mm = [0.63, 9.26, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight102"
+material = "case"
+center_mm = [27.33, 56.22, -1.17]
+size_mm = [0.63, 8.25, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRight103"
+material = "case"
+center_mm = [27.33, 11.27, -1.17]
+size_mm = [0.63, 0.07, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelRightBase45"
+material = "base"
+center_mm = [27.33, 7.07, -1.17]
+size_mm = [0.63, 8.33, 7.50]
+rotate_deg = [0.0, 21.6, 0.0]
+
+[[solid]]
+name = "BevelTop104"
+material = "case"
+center_mm = [8.43, 61.30, -0.86]
+size_mm = [34.88, 0.70, 7.50]
+rotate_deg = [-30.4, 0.0, 0.0]
+
+[[solid]]
+name = "BevelTop105"
+material = "case"
+center_mm = [8.78, 60.70, -0.50]
+size_mm = [36.43, 0.70, 7.50]
+rotate_deg = [-30.4, 0.0, 0.0]
+
+[[solid]]
+name = "BevelTop106"
+material = "case"
+center_mm = [8.46, 60.10, -0.15]
+size_mm = [36.64, 0.70, 7.50]
+rotate_deg = [-30.4, 0.0, 0.0]
+
+[[solid]]
+name = "BevelTop107"
+material = "case"
+center_mm = [7.80, 59.50, 0.20]
+size_mm = [36.17, 0.70, 7.50]
+rotate_deg = [-30.4, 0.0, 0.0]
+
+[[solid]]
+name = "BevelTop108"
+material = "case"
+center_mm = [7.15, 58.90, 0.55]
+size_mm = [35.70, 0.70, 7.50]
+rotate_deg = [-30.4, 0.0, 0.0]
+
+[[solid]]
+name = "BevelTop109"
+material = "case"
+center_mm = [6.49, 58.30, 0.91]
+size_mm = [35.24, 0.70, 7.50]
+rotate_deg = [-30.4, 0.0, 0.0]
+
+[[solid]]
+name = "BevelTop110"
+material = "case"
+center_mm = [5.83, 57.70, 1.26]
+size_mm = [34.77, 0.70, 7.50]
+rotate_deg = [-30.4, 0.0, 0.0]
+
+[[solid]]
+name = "BevelTop111"
+material = "case"
+center_mm = [5.18, 57.10, 1.61]
+size_mm = [34.31, 0.70, 7.50]
+rotate_deg = [-30.4, 0.0, 0.0]
+
+[[solid]]
+name = "BevelTop112"
+material = "case"
+center_mm = [4.52, 56.50, 1.96]
+size_mm = [33.84, 0.70, 7.50]
+rotate_deg = [-30.4, 0.0, 0.0]
+
+[[solid]]
+name = "BevelTop113"
+material = "case"
+center_mm = [-12.66, 57.55, 5.12]
+size_mm = [0.33, 0.70, 1.00]
+rotate_deg = [-30.4, 0.0, 0.0]
+
+[[solid]]
+name = "BevelTop114"
+material = "case"
+center_mm = [4.02, 55.90, 2.32]
+size_mm = [33.05, 0.70, 7.50]
+rotate_deg = [-30.4, 0.0, 0.0]
+
+[[solid]]
+name = "BevelTop115"
+material = "case"
+center_mm = [-12.87, 56.95, 5.47]
+size_mm = [0.75, 0.70, 1.00]
+rotate_deg = [-30.4, 0.0, 0.0]
+
+[[solid]]
+name = "BevelTop116"
+material = "case"
+center_mm = [3.58, 55.30, 2.67]
+size_mm = [32.16, 0.70, 7.50]
+rotate_deg = [-30.4, 0.0, 0.0]
+
+[[solid]]
+name = "BevelTop117"
+material = "case"
+center_mm = [-13.09, 56.35, 5.82]
+size_mm = [1.17, 0.70, 1.00]
+rotate_deg = [-30.4, 0.0, 0.0]
+
+[[solid]]
+name = "BevelTop118"
+material = "case"
+center_mm = [3.14, 54.70, 3.02]
+size_mm = [31.27, 0.70, 7.50]
+rotate_deg = [-30.4, 0.0, 0.0]
+
+[[solid]]
+name = "BevelTop119"
+material = "case"
+center_mm = [-13.30, 55.75, 6.18]
+size_mm = [1.60, 0.70, 1.00]
+rotate_deg = [-30.4, 0.0, 0.0]
+
+[[solid]]
+name = "BevelTop120"
+material = "case"
+center_mm = [2.69, 54.10, 3.37]
+size_mm = [30.38, 0.70, 7.50]
+rotate_deg = [-30.4, 0.0, 0.0]
+
+[[solid]]
+name = "BevelTop121"
+material = "case"
+center_mm = [-13.51, 55.15, 6.53]
+size_mm = [2.02, 0.70, 1.00]
+rotate_deg = [-30.4, 0.0, 0.0]
+
+[[solid]]
+name = "BevelTop122"
+material = "case"
+center_mm = [2.25, 53.50, 3.73]
+size_mm = [29.49, 0.70, 7.50]
+rotate_deg = [-30.4, 0.0, 0.0]
+
+[[solid]]
+name = "BevelTop123"
+material = "case"
+center_mm = [-13.72, 54.55, 6.88]
+size_mm = [2.44, 0.70, 1.00]
+rotate_deg = [-30.4, 0.0, 0.0]
+
+[[solid]]
+name = "BevelTop124"
+material = "case"
+center_mm = [1.80, 52.90, 4.08]
+size_mm = [28.60, 0.70, 7.50]
+rotate_deg = [-30.4, 0.0, 0.0]
+
+[[solid]]
+name = "BevelTop125"
+material = "case"
+center_mm = [-13.93, 53.95, 7.23]
+size_mm = [2.87, 0.70, 1.00]
+rotate_deg = [-30.4, 0.0, 0.0]
+
+[[solid]]
+name = "BevelTop126"
+material = "case"
+center_mm = [1.36, 52.30, 4.43]
+size_mm = [27.71, 0.70, 7.50]
+rotate_deg = [-30.4, 0.0, 0.0]
+
+[[solid]]
+name = "BevelTop127"
+material = "case"
+center_mm = [-14.15, 53.35, 7.59]
+size_mm = [3.29, 0.70, 1.00]
+rotate_deg = [-30.4, 0.0, 0.0]
+
+[[solid]]
+name = "BevelTop128"
+material = "case"
+center_mm = [0.91, 51.70, 4.79]
+size_mm = [26.82, 0.70, 7.50]
+rotate_deg = [-30.4, 0.0, 0.0]
+
+[[solid]]
+name = "BevelTop129"
+material = "case"
+center_mm = [-14.36, 52.75, 7.94]
+size_mm = [3.72, 0.70, 1.00]
+rotate_deg = [-30.4, 0.0, 0.0]
+
+[[solid]]
+name = "BevelTop130"
+material = "case"
+center_mm = [0.47, 51.10, 5.14]
+size_mm = [25.93, 0.70, 7.50]
+rotate_deg = [-30.4, 0.0, 0.0]
+
+[[solid]]
+name = "BevelTop131"
+material = "case"
+center_mm = [-14.57, 52.15, 8.29]
+size_mm = [4.14, 0.70, 1.00]
+rotate_deg = [-30.4, 0.0, 0.0]
+
+[[solid]]
+name = "BevelTop132"
+material = "case"
+center_mm = [0.02, 50.50, 5.49]
+size_mm = [25.04, 0.70, 7.50]
+rotate_deg = [-30.4, 0.0, 0.0]
