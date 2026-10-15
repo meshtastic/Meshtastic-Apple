@@ -30,7 +30,6 @@ struct SpatialMapWindow: View {
 	/// Shared with the 2D map's Contour Lines setting.
 	@AppStorage("meshMapShowContours") private var showContours = false
 	@AppStorage("spatialMapShowLabels") private var showLabels = true
-	@AppStorage("spatialMapShowLinks") private var showLinks = true
 	@AppStorage("spatialMapShowTraffic") private var showTraffic = true
 	@AppStorage("spatialMapAutoTerrain") private var autoTerrain = true
 	@AppStorage("spatialMapCoverage") private var coverageMode: SpatialCoverageMode = .selected
@@ -45,11 +44,11 @@ struct SpatialMapWindow: View {
 	private var preset: ModemPresets { ModemPresets(rawValue: UserDefaults.modemPreset) ?? .longFast }
 
 	private var refreshKey: String {
-		"\(mapLayer.rawValue)|\(darkMap)|\(showContours)|\(preciseLocationsOnly)|\(showLinks)|\(coverageMode.rawValue)|\(accessoryManager.activeDeviceNum ?? 0)|\(accessoryManager.isInBackground)"
+		"\(mapLayer.rawValue)|\(darkMap)|\(showContours)|\(preciseLocationsOnly)|\(coverageMode.rawValue)|\(accessoryManager.activeDeviceNum ?? 0)|\(accessoryManager.isInBackground)"
 	}
 
 	var body: some View {
-		SpatialMapView(model: model, scene: scene, traffic: traffic, preset: preset, showLinks: showLinks) { nodeNum in
+		SpatialMapView(model: model, scene: scene, traffic: traffic, preset: preset) { nodeNum in
 			showInMainWindow("meshtastic:///nodes?nodenum=\(nodeNum)")
 		} onCoverage: { nodeNum, action in
 			handleCoverage(action, nodeNum: nodeNum)
@@ -64,7 +63,7 @@ struct SpatialMapWindow: View {
 		.ornament(attachmentAnchor: .scene(.bottomFront)) {
 			SpatialMapOrnament(
 				model: model, traffic: traffic, mapLayer: $mapLayer, darkMap: $darkMap, showContours: $showContours,
-				showLabels: $showLabels, showLinks: $showLinks, showTraffic: $showTraffic, autoTerrain: $autoTerrain,
+				showLabels: $showLabels, showTraffic: $showTraffic, autoTerrain: $autoTerrain,
 				coverageMode: $coverageMode, coverageOpacity: $coverageOpacity
 			)
 		}
@@ -158,7 +157,6 @@ struct SpatialMapWindow: View {
 		model.connectedNodeNum = accessoryManager.activeDeviceNum
 		traffic.connectedNodeNum = accessoryManager.activeDeviceNum
 		traffic.preset = preset
-		model.showLinks = showLinks
 		model.showContours = showContours
 		model.autoDownloadTerrain = autoTerrain
 		model.coverageMode = coverageMode
@@ -216,7 +214,7 @@ struct SpatialMapWindow: View {
 	}
 }
 
-/// The volume's bottom toolbar: map layer, what to show, flyover, and the node count.
+/// The volume's bottom toolbar: map layer, what to show, trace routes, and the node count.
 struct SpatialMapOrnament: View {
 	let model: SpatialMapModel
 	let traffic: SpatialTrafficController
@@ -224,7 +222,6 @@ struct SpatialMapOrnament: View {
 	@Binding var darkMap: Bool
 	@Binding var showContours: Bool
 	@Binding var showLabels: Bool
-	@Binding var showLinks: Bool
 	@Binding var showTraffic: Bool
 	@Binding var autoTerrain: Bool
 	@Binding var coverageMode: SpatialCoverageMode
@@ -257,39 +254,10 @@ struct SpatialMapOrnament: View {
 
 			Toggle(isOn: $showLabels) { Image(systemName: "tag") }
 				.accessibilityLabel(String(localized: "Node labels", comment: "VoiceOver label for the spatial map labels toggle"))
-			Toggle(isOn: $showLinks) { Image(systemName: "point.3.connected.trianglepath.dotted") }
-				.accessibilityLabel(String(localized: "Traceroute links", comment: "VoiceOver label for the spatial map links toggle"))
 			Toggle(isOn: $showTraffic) { Image(systemName: "dot.radiowaves.left.and.right") }
 				.accessibilityLabel(String(localized: "Live traffic", comment: "VoiceOver label for the spatial map traffic toggle"))
 
-			if model.shownRoute != nil {
-				Button {
-					traffic.stopFlyover()
-					model.shownRoute = nil
-				} label: {
-					Image(systemName: "xmark")
-				}
-				.help(String(localized: "Clear trace route", comment: "VoiceOver label for the clear trace route button"))
-				.accessibilityLabel(String(localized: "Clear trace route", comment: "VoiceOver label for the clear trace route button"))
-			} else {
-				Menu {
-					if model.routes.isEmpty {
-						Text("No traceroutes with positions", comment: "Spatial map: flyover menu is empty")
-					}
-					ForEach(model.routes.prefix(12)) { route in
-						Button {
-							model.shownRoute = route
-							traffic.startFlyover(route)
-						} label: {
-							Text(verbatim: "\(route.targetName) · \(route.time?.formatted(date: .abbreviated, time: .shortened) ?? "")")
-						}
-					}
-				} label: {
-					Image(systemName: "airplane")
-				}
-				.accessibilityLabel(String(localized: "Fly a traceroute", comment: "VoiceOver label for the spatial map flyover menu"))
-				.disabled(model.routes.isEmpty)
-			}
+			traceRoutes
 
 			terrainDownload
 
@@ -361,6 +329,43 @@ struct SpatialMapOrnament: View {
 			Button("OK") {}
 		} message: {
 			Text(model.terrainDownloadError ?? "")
+		}
+	}
+
+	/// The trace route menu: pick a route to fly it and leave it drawn. While one is shown, the
+	/// button clears it instead.
+	@ViewBuilder private var traceRoutes: some View {
+		if model.shownRoute != nil {
+			Button {
+				traffic.stopFlyover()
+				model.shownRoute = nil
+			} label: {
+				Image(systemName: "xmark")
+			}
+			.help(String(localized: "Clear trace route", comment: "VoiceOver label for the clear trace route button"))
+			.accessibilityLabel(String(localized: "Clear trace route", comment: "VoiceOver label for the clear trace route button"))
+		} else {
+			Menu {
+				if model.routes.isEmpty {
+					Text("No traceroutes with positions", comment: "Spatial map: trace route menu is empty")
+				}
+				let now = Date.now
+				ForEach(model.routes) { route in
+					let entry = SpatialRouteMenuEntry(route: route, now: now)
+					Button {
+						model.shownRoute = route
+						traffic.startFlyover(route)
+					} label: {
+						Text(verbatim: entry.title)
+						Text(verbatim: entry.subtitle)
+					}
+				}
+			} label: {
+				Image(systemName: "point.3.connected.trianglepath.dotted")
+			}
+			.help(String(localized: "Trace routes", comment: "VoiceOver label for the spatial map trace route menu"))
+			.accessibilityLabel(String(localized: "Trace routes", comment: "VoiceOver label for the spatial map trace route menu"))
+			.accessibilityHint(String(localized: "Pick a trace route to fly along it and leave it drawn on the map.", comment: "VoiceOver hint for the spatial map trace route menu"))
 		}
 	}
 

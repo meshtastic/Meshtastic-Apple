@@ -25,8 +25,13 @@ struct SpatialRouteSnapshot: Identifiable, Equatable, Sendable {
 	let id: Int64
 	let fromNum: Int64
 	let toNum: Int64
+	let originName: String
 	let targetName: String
+	/// When the response arrived, or when the request was sent if that is all there is.
 	let time: Date?
+	let hopsTowards: Int
+	/// Nil when the response didn't carry a return path.
+	let hopsBack: Int?
 	let forward: [Point]
 	let back: [Point]
 	/// The styled legs, endpoints and numbered relays drawn once the route is picked.
@@ -41,19 +46,42 @@ struct SpatialRouteSnapshot: Identifiable, Equatable, Sendable {
 	}
 }
 
-/// One node-to-node link seen in a traceroute, with the latest SNR heard in each direction.
-struct SpatialLinkSnapshot: Identifiable, Equatable, Sendable {
-	let a: Int64
-	let b: Int64
-	var snrAtoB: Float?
-	var snrBtoA: Float?
-	var id: String { "\(a)-\(b)" }
+/// What a trace route shows in the spatial map's trace route menu: who traced whom, then its hops
+/// and when it came back, e.g. "Base → Ridge" over "3 Hops · 2 h ago".
+struct SpatialRouteMenuEntry: Equatable {
+	let title: String
+	let subtitle: String
+
+	private static let relativeFormatter: RelativeDateTimeFormatter = {
+		let formatter = RelativeDateTimeFormatter()
+		formatter.dateTimeStyle = .named
+		formatter.unitsStyle = .full
+		return formatter
+	}()
+
+	init(route: SpatialRouteSnapshot, now: Date = .now) {
+		title = "\(route.originName) → \(route.targetName)"
+		let card = TraceRouteCardModel(title: nil, date: route.time, state: .complete, hopsTowards: route.hopsTowards, hopsBack: route.hopsBack, roundTrip: nil)
+		var hops = card.summary
+		if route.hopsBack == nil {
+			hops = String(localized: "\(hops), no return", comment: "Spatial map trace route menu: the response carried no return path, e.g. \"3 Hops, no return\"")
+		}
+		if let time = route.time {
+			// A clock a little ahead of this device's reads as "now", not "in 2 minutes".
+			let when = Self.relativeFormatter.localizedString(for: min(time, now), relativeTo: now)
+			subtitle = String(localized: "\(hops) · \(when)", comment: "Spatial map trace route menu: hops, then when the route came back, e.g. \"3 Hops · 2 hours ago\"")
+		} else {
+			subtitle = hops
+		}
+	}
 }
 
 @MainActor
 enum SpatialRouteSource {
-	static let routeLimit = 150
+	/// How many routes the toolbar's trace route menu lists.
+	static let routeLimit = 20
 
+	/// The newest routes that came back with positions, newest first.
 	static func routes(context: ModelContext) -> [SpatialRouteSnapshot] {
 		var descriptor = FetchDescriptor<TraceRouteEntity>(
 			predicate: #Predicate<TraceRouteEntity> { $0.hasPositions == true && $0.response == true },
@@ -61,55 +89,48 @@ enum SpatialRouteSource {
 		)
 		descriptor.fetchLimit = routeLimit
 		let routes = (try? context.fetch(descriptor)) ?? []
-		return routes.compactMap { route in
-			let byNum = route.nodePositionsByNum
-			func point(_ num: Int64, snr: Float) -> Point? {
-				guard let position = byNum[num], let coordinate = position.coordinate else { return nil }
-				return Point(num: num, coordinate: coordinate, altitude: Double(position.altitude), snr: snr)
-			}
-			let forwardHops = route.hops.filter { !$0.back }.sorted { $0.index < $1.index }
-			let forward = forwardHops.compactMap { point($0.num, snr: $0.snr) }
-			let backHops = route.hops.filter { $0.back }.sorted { $0.index < $1.index }
-			var back: [Point] = []
-			if let last = backHops.last {
-				back = ([point(route.toNum, snr: 0)] + backHops.map { point($0.num, snr: $0.snr) } + [point(route.fromNum, snr: last.snr)]).compactMap { $0 }
-			}
-			guard forward.count >= 2 else { return nil }
-			let name = route.node?.user?.longName ?? route.toNum.toHex()
-			// The preset only grades signal quality, which the layout doesn't use.
-			let legs = TraceRouteLegs(route: route, preset: .longFast, lookup: { _ in nil })
-			let layout = SpatialRouteLayout(legs: legs, positions: byNum.compactMapValues { $0.coordinate })
-			return SpatialRouteSnapshot(
-				id: route.id, fromNum: route.fromNum, toNum: route.toNum, targetName: name, time: route.time,
-				forward: forward, back: back, layout: layout
-			)
+		let originNums = Array(Set(routes.map(\.fromNum)))
+		let origins = (try? context.fetch(FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { originNums.contains($0.num) }))) ?? []
+		let names = Dictionary(origins.compactMap { node in node.user?.longName.map { (node.num, $0) } }, uniquingKeysWith: { first, _ in first })
+		return newestFirst(routes.compactMap { snapshot($0, originName: names[$0.fromNum]) })
+	}
+
+	/// One stored route as the map draws it, or nil when fewer than two of its nodes have a position.
+	static func snapshot(_ route: TraceRouteEntity, originName: String?) -> SpatialRouteSnapshot? {
+		let byNum = route.nodePositionsByNum
+		func point(_ num: Int64, snr: Float) -> Point? {
+			guard let position = byNum[num], let coordinate = position.coordinate else { return nil }
+			return Point(num: num, coordinate: coordinate, altitude: Double(position.altitude), snr: snr)
+		}
+		let forwardHops = route.hops.filter { !$0.back }.sorted { $0.index < $1.index }
+		let forward = forwardHops.compactMap { point($0.num, snr: $0.snr) }
+		let backHops = route.hops.filter { $0.back }.sorted { $0.index < $1.index }
+		var back: [Point] = []
+		if let last = backHops.last {
+			back = ([point(route.toNum, snr: 0)] + backHops.map { point($0.num, snr: $0.snr) } + [point(route.fromNum, snr: last.snr)]).compactMap { $0 }
+		}
+		guard forward.count >= 2 else { return nil }
+		// The preset only grades signal quality, which the layout doesn't use.
+		let legs = TraceRouteLegs(route: route, preset: .longFast, lookup: { _ in nil })
+		let layout = SpatialRouteLayout(legs: legs, positions: byNum.compactMapValues { $0.coordinate })
+		return SpatialRouteSnapshot(
+			id: route.id, fromNum: route.fromNum, toNum: route.toNum,
+			originName: originName ?? route.fromNum.toHex(),
+			targetName: route.node?.user?.longName ?? route.toNum.toHex(),
+			time: route.time ?? route.sentAt,
+			hopsTowards: Int(route.hopsTowards),
+			hopsBack: route.hopsBack >= 0 ? Int(route.hopsBack) : nil,
+			forward: forward, back: back, layout: layout
+		)
+	}
+
+	/// Newest first by when the route came back; routes with no time go last.
+	nonisolated static func newestFirst(_ routes: [SpatialRouteSnapshot]) -> [SpatialRouteSnapshot] {
+		routes.sorted { a, b in
+			let timeA = a.time ?? .distantPast, timeB = b.time ?? .distantPast
+			return timeA != timeB ? timeA > timeB : a.id > b.id
 		}
 	}
 
 	typealias Point = SpatialRouteSnapshot.Point
-
-	/// Every node-to-node link the routes crossed, the latest SNR kept per direction.
-	nonisolated static func links(from routes: [SpatialRouteSnapshot]) -> [SpatialLinkSnapshot] {
-		var links: [String: SpatialLinkSnapshot] = [:]
-		var seen: [String: Date] = [:]
-		for route in routes.sorted(by: { ($0.time ?? .distantPast) > ($1.time ?? .distantPast) }) {
-			for path in [route.forward, route.back] where path.count >= 2 {
-				for i in 0..<(path.count - 1) {
-					let from = path[i].num, to = path[i + 1].num
-					guard from != to, from != 0, to != 0, from != MeshPacketEvent.broadcastNum, to != MeshPacketEvent.broadcastNum else { continue }
-					let a = min(from, to), b = max(from, to)
-					let key = "\(a)-\(b)"
-					var link = links[key] ?? SpatialLinkSnapshot(a: a, b: b, snrAtoB: nil, snrBtoA: nil)
-					let heardAt = path[i + 1].snr
-					let directionKey = key + (from == a ? ">" : "<")
-					if seen[directionKey] == nil {
-						seen[directionKey] = route.time ?? .distantPast
-						if from == a { link.snrAtoB = heardAt } else { link.snrBtoA = heardAt }
-					}
-					links[key] = link
-				}
-			}
-		}
-		return links.values.sorted { $0.id < $1.id }
-	}
 }

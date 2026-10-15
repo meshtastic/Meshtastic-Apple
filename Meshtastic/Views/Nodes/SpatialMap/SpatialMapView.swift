@@ -16,7 +16,6 @@ struct SpatialMapView: View {
 	let scene: SpatialSceneController
 	let traffic: SpatialTrafficController
 	let preset: ModemPresets
-	let showLinks: Bool
 	let onOpenNode: (Int64) -> Void
 	let onCoverage: (Int64, SpatialCoverageAction) -> Void
 
@@ -51,7 +50,6 @@ struct SpatialMapView: View {
 				scene.apply(nodes: model.nodes)
 				scene.apply(target: liveZoom.flatMap { model.circle(forZoom: $0) } ?? model.targetCircle)
 				traffic.applyBaseGlow()
-				scene.apply(links: showLinks ? model.links : [], preset: preset, dimmed: model.shownRoute != nil)
 				scene.apply(route: model.shownRoute, attachments: attachments, attachmentIDs: routeAttachmentIDs)
 				scene.apply(labels: model.labeledNodeNums, attachments: attachments)
 				scene.apply(selection: model.selectedNodeNum, attachments: attachments)

@@ -46,24 +46,6 @@ struct SpatialMapAreaTests {
 		#expect(SpatialMapArea.next(current: circle, candidate: slightlySmaller, nodes: [seattle], lastChange: now.addingTimeInterval(-60), now: now) == nil)
 	}
 
-	@Test func linksKeepTheLatestSnrPerDirection() {
-		func point(_ num: Int64, snr: Float) -> SpatialRouteSnapshot.Point {
-			SpatialRouteSnapshot.Point(num: num, coordinate: seattle, altitude: 0, snr: snr)
-		}
-		let older = SpatialRouteSnapshot(id: 1, fromNum: 1, toNum: 3, targetName: "c", time: Date(timeIntervalSince1970: 100),
-										 forward: [point(1, snr: 0), point(2, snr: -5), point(3, snr: 2)],
-										 back: [point(3, snr: 0), point(2, snr: 7), point(1, snr: 4)])
-		let newer = SpatialRouteSnapshot(id: 2, fromNum: 1, toNum: 2, targetName: "b", time: Date(timeIntervalSince1970: 200),
-										 forward: [point(1, snr: 0), point(2, snr: 9)], back: [])
-		let links = SpatialRouteSource.links(from: [older, newer])
-		#expect(links.count == 2)
-		let oneTwo = links.first { $0.a == 1 && $0.b == 2 }
-		#expect(oneTwo?.snrAtoB == 9, "the newer route wins the 1→2 direction")
-		#expect(oneTwo?.snrBtoA == 4, "2→1 was only heard on the older return path")
-		let twoThree = links.first { $0.a == 2 && $0.b == 3 }
-		#expect(twoThree?.snrAtoB == 2 && twoThree?.snrBtoA == 7)
-	}
-
 	@Test func flyoverCruisesThenLandsAndHolds() {
 		var flyover = SpatialFlyover(legs: [[SIMD3(0, 0, 0), SIMD3(0.4, 0, 0)], [SIMD3(0.4, 0, 0), SIMD3(0.4, 0, 0.4)]])
 		#expect(flyover.legs.count == 2)

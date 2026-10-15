@@ -70,15 +70,13 @@ final class SpatialMapModel {
 	private(set) var isBuildingTerrain = false
 	private(set) var terrainMessage: String?
 	private(set) var routes: [SpatialRouteSnapshot] = []
-	private(set) var links: [SpatialLinkSnapshot] = []
-	/// The trace route picked in the flyover menu. It stays drawn after the flyover lands, so its
+	/// The trace route picked in the trace route menu. It stays drawn after the flyover lands, so its
 	/// badges and SNR can be read, until it is cleared.
 	var shownRoute: SpatialRouteSnapshot?
 	private(set) var labeledNodeNums: [Int64] = []
 	private(set) var selectedNodeNum: Int64?
 	var connectedNodeNum: Int64?
 	var showLabels = true { didSet { updateLabels() } }
-	var showLinks = true
 	var showContours = false
 	/// Which Site Planner estimates are draped on the terrain. Set from the window's setting.
 	var coverageMode: SpatialCoverageMode = .selected { didSet { rebuildCoverageIfNeeded() } }
@@ -260,15 +258,9 @@ final class SpatialMapModel {
 		applyArea()
 		autoDownloadIfNeeded()
 
-		if showLinks, refreshCount % 10 == 1 {
+		if refreshCount % 10 == 1 {
 			let fresh = SpatialRouteSource.routes(context: context)
-			if fresh != routes {
-				routes = fresh
-				links = SpatialRouteSource.links(from: fresh)
-			}
-		} else if !showLinks, !routes.isEmpty {
-			routes = []
-			links = []
+			if fresh != routes { routes = fresh }
 		}
 		updateLabels()
 		rebuildCoverageIfNeeded()
