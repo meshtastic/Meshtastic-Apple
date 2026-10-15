@@ -97,6 +97,12 @@ enum NodeRenumber {
 			context.delete(duplicate)
 		}
 		if let duplicateNode = try fetchNode(num: newNum, in: context), duplicateNode !== keeper.userNode {
+			// Older telemetry is only linked to the node, and deleting the node unlinks it.
+			// Give it the number first so it stays with the renumbered radio.
+			let linked = try context.fetch(FetchDescriptor<TelemetryEntity>(
+				predicate: #Predicate { $0.nodeNum == 0 && $0.nodeTelemetry?.num == newNum }
+			))
+			for row in linked { row.nodeNum = newNum }
 			context.delete(duplicateNode)
 		}
 	}

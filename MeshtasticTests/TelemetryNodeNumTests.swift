@@ -444,6 +444,27 @@ struct TelemetryNodeNumTests {
 		#expect(rows.map(\.nodeNum) == [newNum])
 	}
 
+	@Test("Renumbering keeps older telemetry linked to the node already on the new number")
+	func renumberKeepsDuplicateLegacyTelemetry() throws {
+		let container = try makeContainer()
+		let context = ModelContext(container)
+		let oldNum: Int64 = 0x7E1E_00C0
+		let newNum: Int64 = 0x7E1E_00C1
+		let user = UserEntity()
+		user.num = oldNum
+		context.insert(user)
+		let node = makeNode(oldNum, in: context)
+		node.user = user
+		let duplicate = makeNode(newNum, in: context)
+		addLegacyRow(duplicate, type: 0, in: context)
+		addRow(newNum, type: 0, in: context)
+		try context.save()
+
+		#expect(NodeRenumber.apply(from: oldNum, to: newNum, in: context))
+		let rows = try ModelContext(container).fetch(FetchDescriptor<TelemetryEntity>())
+		#expect(rows.map(\.nodeNum) == [newNum, newNum])
+	}
+
 	// MARK: - Backup restore
 
 	@Test("Restoring a backup keeps the node number and fills it for older backups")
