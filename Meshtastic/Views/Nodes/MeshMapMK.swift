@@ -621,7 +621,7 @@ struct MeshMapMK: View {
 							Button(action: {
 								openWindow(id: SpatialMapScene.id, value: SpatialMapSceneKey.shared)
 							}) {
-								Image(systemName: "cube")
+								Image("custom.map.wheel")
 							}
 							.accessibilityLabel(String(localized: "Open 3D map", comment: "VoiceOver label for the button that opens the spatial map volume"))
 							.accessibilityHint(String(localized: "Shows the mesh on a terrain model in a volume.", comment: "VoiceOver hint for the button that opens the spatial map volume"))
