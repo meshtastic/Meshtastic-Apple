@@ -313,6 +313,12 @@
     "· %lld outside" : {
       "comment" : "Spatial map: nodes too far away to fit on the terrain"
     },
+    "%@ · %@" : {
+      "comment" : "Spatial map trace route menu: hops, then when the route came back, e.g. \"3 Hops · 2 hours ago\""
+    },
+    "%@, no return" : {
+      "comment" : "Spatial map trace route menu: the response carried no return path, e.g. \"3 Hops, no return\""
+    },
     "%lld could not be removed." : {
       "comment" : "Result after removing unheard nodes: nodes the radio refused to remove",
       "localizations" : {
@@ -1051,11 +1057,8 @@
     "Dark Map" : {
       "comment" : "Spatial map: draw the map in its dark appearance"
     },
-    "%@, no return" : {
-      "comment" : "Spatial map trace route menu: the response carried no return path, e.g. \"3 Hops, no return\""
-    },
-    "%@ · %@" : {
-      "comment" : "Spatial map trace route menu: hops, then when the route came back, e.g. \"3 Hops · 2 hours ago\""
+    "Live traffic" : {
+      "comment" : "VoiceOver label for the spatial map traffic toggle"
     },
     "Default 128x64 screen layout" : {
       "extractionState" : "manual",
@@ -1735,9 +1738,6 @@
           }
         }
       }
-    },
-    "Live traffic" : {
-      "comment" : "VoiceOver label for the spatial map traffic toggle"
     },
     "Logs:" : {
       "extractionState" : "manual",
@@ -5354,6 +5354,20 @@
     "Open 3D map" : {
       "comment" : "VoiceOver label for the button that opens the spatial map volume"
     },
+    "Pick a trace route to fly along it and leave it drawn on the map." : {
+      "comment" : "VoiceOver hint for the spatial map trace route menu"
+    },
+    "Removed %lld nodes." : {
+      "comment" : "Result after removing nodes not heard on the current LoRa settings",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已移除 %lld 個節點。"
+          }
+        }
+      }
+    },
     "Open Simulator Controls" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -5581,17 +5595,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已在 %2$@ 上將節點 %1$@ 移除最愛"
-          }
-        }
-      }
-    },
-    "Removed %lld nodes." : {
-      "comment" : "Result after removing nodes not heard on the current LoRa settings",
-      "localizations" : {
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "已移除 %lld 個節點。"
           }
         }
       }
@@ -6133,9 +6136,6 @@
     },
     "Terrain Shading" : {
       "comment" : "Spatial map layer: hillshade only, no map imagery"
-    },
-    "Pick a trace route to fly along it and leave it drawn on the map." : {
-      "comment" : "VoiceOver hint for the spatial map trace route menu"
     },
     "Trace routes" : {
       "comment" : "VoiceOver label for the spatial map trace route menu"

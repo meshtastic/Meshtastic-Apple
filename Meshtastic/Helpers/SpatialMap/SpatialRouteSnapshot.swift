@@ -87,12 +87,14 @@ enum SpatialRouteSource {
 			predicate: #Predicate<TraceRouteEntity> { $0.hasPositions == true && $0.response == true },
 			sortBy: [SortDescriptor(\.time, order: .reverse)]
 		)
-		descriptor.fetchLimit = routeLimit
+		// Some routes drop out below when fewer than two of their nodes have a position, so fetch
+		// extra to still fill the menu.
+		descriptor.fetchLimit = routeLimit * 3
 		let routes = (try? context.fetch(descriptor)) ?? []
 		let originNums = Array(Set(routes.map(\.fromNum)))
 		let origins = (try? context.fetch(FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { originNums.contains($0.num) }))) ?? []
 		let names = Dictionary(origins.compactMap { node in node.user?.longName.map { (node.num, $0) } }, uniquingKeysWith: { first, _ in first })
-		return newestFirst(routes.compactMap { snapshot($0, originName: names[$0.fromNum]) })
+		return Array(newestFirst(routes.compactMap { snapshot($0, originName: names[$0.fromNum]) }).prefix(routeLimit))
 	}
 
 	/// One stored route as the map draws it, or nil when fewer than two of its nodes have a position.
