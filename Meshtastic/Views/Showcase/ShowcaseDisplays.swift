@@ -25,8 +25,6 @@ final class ShowcaseDisplays {
 	@ObservationIgnored private var templates: [String: Entity] = [:]
 	/// Where each model stands, and its height, in the world's space.
 	@ObservationIgnored private var placements: [String: (position: SIMD3<Float>, height: Float)] = [:]
-	/// Where each model's placard stands. Set before `items`, so it's there when the placards are made.
-	@ObservationIgnored private(set) var placards: [String: ShowcasePlacardSpot] = [:]
 	@ObservationIgnored private var hardware: [ShowcaseHardwareRecord] = []
 	@ObservationIgnored private let models = ShowcaseCatalog.bundledModels()
 
@@ -92,7 +90,6 @@ final class ShowcaseDisplays {
 				stands.append(DisplayStand(item: item, holder: holder, width: width + Self.standMargin, height: height, depth: depth))
 			}
 			let centers = ShowcaseRowPacking.centers(widths: stands.map(\.width), length: row.length)
-			let tilt = simd_quatf(angle: -Self.placardTilt, axis: [1, 0, 0])
 			for (index, (stand, x)) in zip(stands, centers).enumerated() {
 				let local = SIMD3<Float>(row.centerX + x, row.height, row.depthOffset)
 				let position = table.position + table.orientation.act(local)
@@ -100,14 +97,14 @@ final class ShowcaseDisplays {
 				stand.holder.orientation = table.orientation
 				root.addChild(stand.holder)
 				placements[stand.item.id] = (position, stand.height)
-				// As wide as the space to the nearer neighbor allows, up to the most a placard is.
+				// As wide as the space to the nearer neighbor allows, up to the "Your radio" card's,
+				// and as far in front as that card, or further for a deep stand.
 				let room = [index > 0 ? x - centers[index - 1] : row.length, index + 1 < centers.count ? centers[index + 1] - x : row.length].min() ?? row.length
-				let front = local + [0, 0, stand.depth / 2 + Self.placardGap]
-				placards[stand.item.id] = ShowcasePlacardSpot(
-					base: table.position + table.orientation.act(front),
-					orientation: table.orientation * tilt,
-					size: [min(Self.placardSize.x, room - Self.placardGap), Self.placardSize.y]
-				)
+				let width = min(ShowcaseDeviceMeshes.placardSize.x, room - Self.placardGap)
+				let distance = max(ShowcaseDeviceMeshes.placardDistance, stand.depth / 2 + Self.placardGap * 2)
+				if let placard = await ShowcaseDeviceMeshes.placard(for: stand.item, width: width, inFrontBy: distance) {
+					stand.holder.addChild(placard)
+				}
 			}
 		}
 		items = loaded
@@ -122,11 +119,8 @@ final class ShowcaseDisplays {
 		let depth: Float
 	}
 
-	/// A placard's largest size in meters, how far in front of its stand it stands, and how far
-	/// it leans back, so it reads from a chair.
-	static let placardSize = SIMD2<Float>(0.1, 0.055)
+	/// The space kept between a placard and its neighbors, and between it and its stand.
 	static let placardGap: Float = 0.012
-	static let placardTilt: Float = .pi / 9
 
 	/// The clear stand's thickness, and how far it reaches past the model on each side.
 	static let standThickness: Float = 0.006
@@ -196,22 +190,10 @@ final class ShowcaseDisplays {
 		return nil
 	}
 
-	/// The placard's center for a model: its bottom edge on the table at `base`, leaning back.
-	func placardCenter(forItem id: String) -> SIMD3<Float>? {
-		guard let spot = placards[id] else { return nil }
-		return spot.base + spot.orientation.act([0, spot.size.y / 2, 0])
-	}
-
 	/// Where a model's card goes: above it on its table, a little toward the viewer.
 	func cardPosition(forItem id: String) -> SIMD3<Float>? {
 		guard let placement = placements[id] else { return nil }
 		return placement.position + [0, placement.height + 0.09, 0.12]
 	}
-}
-/// Where a model's placard stands on its table, which way it faces, and its size in meters.
-struct ShowcasePlacardSpot: Equatable {
-	let base: SIMD3<Float>
-	let orientation: simd_quatf
-	let size: SIMD2<Float>
 }
 #endif
