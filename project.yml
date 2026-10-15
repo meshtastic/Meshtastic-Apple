@@ -319,8 +319,9 @@ targets:
         Debug:
           ASSETCATALOG_COMPILER_APPICON_NAME: "AppIconDebug"
           # visionOS icons are solid image stacks, and only AppIcon has one; with no stack for
-          # AppIconDebug a debug build has no icon on Vision Pro.
+          # AppIconDebug a debug build has no icon on Vision Pro or in its simulator.
           ASSETCATALOG_COMPILER_APPICON_NAME[sdk=xros*]: "AppIcon"
+          ASSETCATALOG_COMPILER_APPICON_NAME[sdk=xrsimulator*]: "AppIcon"
           ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: "AccentColor"
           ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS: "YES"
           CLANG_ENABLE_MODULES: "YES"
