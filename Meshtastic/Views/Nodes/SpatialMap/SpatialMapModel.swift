@@ -131,6 +131,7 @@ final class SpatialMapModel {
 	private var buildDark = true
 	private var lastBoundsChange: Date?
 	private var refreshCount = 0
+	private var routeTask: Task<Void, Never>?
 
 	init() {
 		builder = SpatialTerrainBuilder(elevation: terrainStore)
@@ -258,12 +259,21 @@ final class SpatialMapModel {
 		applyArea()
 		autoDownloadIfNeeded()
 
-		if refreshCount % 10 == 1 {
-			let fresh = SpatialRouteSource.routes(context: context)
-			if fresh != routes { routes = fresh }
-		}
+		if refreshCount % 10 == 1 { refreshRoutes(container: context.container) }
 		updateLabels()
 		rebuildCoverageIfNeeded()
+	}
+
+	/// Reads the routes in the background and publishes them here. A read still running is left
+	/// to finish rather than starting another.
+	private func refreshRoutes(container: ModelContainer) {
+		guard routeTask == nil else { return }
+		routeTask = Task { [weak self] in
+			let fresh = await SpatialRouteReader.routes(container: container)
+			guard let self else { return }
+			routeTask = nil
+			if fresh != routes { routes = fresh }
+		}
 	}
 
 	private func rebuildTerrainIfNeeded(circle: SpatialCircle, layer: MapLayer, dark: Bool, contours: Bool) {

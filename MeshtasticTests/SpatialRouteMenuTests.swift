@@ -151,6 +151,22 @@ struct SpatialRouteMenuTests {
 		#expect(SpatialRouteMenuEntry(route: snapshot).title == "Base → Ridge")
 	}
 
+	/// The background reader sees saved routes and hands back the same snapshots.
+	@Test func backgroundReaderReturnsSavedRoutes() async throws {
+		let context = ModelContext(sharedModelContainer)
+		defer { cleanUp(context) }
+		insertNode(Self.origin, name: "Base", in: context)
+		let target = insertNode(Self.target, name: "Ridge", in: context)
+		_ = insertRoute(id: 0x5EA7_3001, time: Date.now.addingTimeInterval(86_400 * 365), hopsBack: 1, target: target, in: context)
+		try context.save()
+
+		let routes = await SpatialRouteReader.routes(container: sharedModelContainer)
+		let snapshot = try #require(routes.first { $0.id == 0x5EA7_3001 })
+		#expect(snapshot.originName == "Base")
+		#expect(snapshot.targetName == "Ridge")
+		#expect(snapshot.forward.map(\.num) == [Self.origin, Self.relay, Self.target])
+	}
+
 	@Test func newestComesFirst() {
 		let base = Date(timeIntervalSince1970: 1_000_000)
 		let routes = [

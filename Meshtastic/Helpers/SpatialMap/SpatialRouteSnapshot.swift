@@ -76,7 +76,23 @@ struct SpatialRouteMenuEntry: Equatable {
 	}
 }
 
-@MainActor
+/// Reads the trace route menu's routes on a background context, so paging through a long route
+/// history never holds up the main actor. Create it off the main thread: a model actor created on
+/// the main thread runs its work there.
+@ModelActor
+actor SpatialRouteReader {
+	func routes() -> [SpatialRouteSnapshot] {
+		SpatialRouteSource.routes(context: modelContext)
+	}
+
+	/// Creates a reader off the main thread and reads the routes with it.
+	nonisolated static func routes(container: ModelContainer) async -> [SpatialRouteSnapshot] {
+		await Task.detached(priority: .utility) {
+			await SpatialRouteReader(modelContainer: container).routes()
+		}.value
+	}
+}
+
 enum SpatialRouteSource {
 	/// How many routes the toolbar's trace route menu lists.
 	static let routeLimit = 20
@@ -143,7 +159,7 @@ enum SpatialRouteSource {
 	}
 
 	/// Newest first by when the route came back; routes with no time go last.
-	nonisolated static func newestFirst(_ routes: [SpatialRouteSnapshot]) -> [SpatialRouteSnapshot] {
+	static func newestFirst(_ routes: [SpatialRouteSnapshot]) -> [SpatialRouteSnapshot] {
 		routes.sorted { a, b in
 			let timeA = a.time ?? .distantPast, timeB = b.time ?? .distantPast
 			return timeA != timeB ? timeA > timeB : a.id > b.id
