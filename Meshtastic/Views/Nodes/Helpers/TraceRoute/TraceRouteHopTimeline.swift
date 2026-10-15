@@ -190,6 +190,8 @@ private struct TraceRouteHopChain: View {
 	private var mqttBadge: some View {
 		HStack(spacing: 3) {
 			Image(systemName: "network")
+				// VoiceOver reads "MQTT", not "network, MQTT".
+				.accessibilityHidden(true)
 			Text(verbatim: "MQTT")
 		}
 		.font(.caption2.weight(.bold))
