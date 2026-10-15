@@ -74,45 +74,80 @@ final class ShowcaseDisplays {
 			}
 		}
 		let loaded = catalog.filter { templates[$0.id] != nil }
-		for vendor in ShowcaseVendor.allCases {
-			let rowItems = loaded.filter { $0.vendor == vendor }
-			guard !rowItems.isEmpty else { continue }
-			let row = vendor.row
-			let table = room.pose(row.table)
-			var stands: [DisplayStand] = []
-			for item in rowItems {
-				guard let model = templates[item.id] else { continue }
-				let holder = Entity()
-				holder.name = "display-\(item.id)"
-				let width = model.visualBounds(relativeTo: nil).extents.x
-				let height = Self.stand(model, in: holder)
-				let depth = max(model.visualBounds(relativeTo: holder).extents.z + Self.standMargin * 2, 0.05)
-				model.components.set(ShowcaseItemComponent(itemID: item.id))
-				model.components.set(Self.accessibility(for: item))
-				// The holder, so the clear stand gets the room's light too.
-				receiveLight(holder)
-				stands.append(DisplayStand(item: item, holder: holder, width: width + Self.standMargin, height: height, depth: depth))
+		// Makers that share a row stand one after the other, front of the room first.
+		var rows: [(row: ShowcaseDisplayRow, vendors: [ShowcaseVendor])] = []
+		for vendor in ShowcaseVendor.allCases.sorted(by: { $0.displayOrder < $1.displayOrder }) where loaded.contains(where: { $0.vendor == vendor }) {
+			if let index = rows.firstIndex(where: { $0.row == vendor.row }) {
+				rows[index].vendors.append(vendor)
+			} else {
+				rows.append((vendor.row, [vendor]))
 			}
-			let centers = ShowcaseRowPacking.centers(widths: stands.map(\.width), length: row.length)
-			for (index, (stand, x)) in zip(stands, centers).enumerated() {
+		}
+		for (row, vendors) in rows {
+			let table = room.pose(row.table)
+			// Each maker's run starts with its brand card, which takes a place in the row like a model.
+			var slots: [DisplaySlot] = []
+			for vendor in vendors {
+				slots.append(.brand(vendor))
+				for item in loaded where item.vendor == vendor {
+					guard let model = templates[item.id] else { continue }
+					let holder = Entity()
+					holder.name = "display-\(item.id)"
+					let width = model.visualBounds(relativeTo: nil).extents.x
+					let height = Self.stand(model, in: holder)
+					let depth = max(model.visualBounds(relativeTo: holder).extents.z + Self.standMargin * 2, 0.05)
+					model.components.set(ShowcaseItemComponent(itemID: item.id))
+					model.components.set(Self.accessibility(for: item))
+					// The holder, so the clear stand gets the room's light too.
+					receiveLight(holder)
+					slots.append(.stand(DisplayStand(item: item, holder: holder, width: width + Self.standMargin, height: height, depth: depth)))
+				}
+			}
+			let centers = ShowcaseRowPacking.centers(widths: slots.map(\.width), length: row.length)
+			for (index, (slot, x)) in zip(slots, centers).enumerated() {
 				let local = SIMD3<Float>(row.centerX + x, row.height, row.depthOffset)
 				let position = table.position + table.orientation.act(local)
-				stand.holder.position = position
-				stand.holder.orientation = table.orientation
-				root.addChild(stand.holder)
-				placements[stand.item.id] = (position, stand.height)
-				// As wide as the space to the nearer neighbor allows, up to the "Your radio" card's,
-				// and as far in front as that card, or further for a deep stand.
-				let room = [index > 0 ? x - centers[index - 1] : row.length, index + 1 < centers.count ? centers[index + 1] - x : row.length].min() ?? row.length
-				let width = min(ShowcaseDeviceMeshes.placardSize.x, room - Self.placardGap)
-				let distance = max(ShowcaseDeviceMeshes.placardDistance, stand.depth / 2 + Self.placardGap * 2)
-				if let placard = await ShowcaseDeviceMeshes.placard(for: stand.item, width: width, inFrontBy: distance) {
-					stand.holder.addChild(placard)
+				switch slot {
+				case .brand(let vendor):
+					guard let card = await ShowcaseDeviceMeshes.brandCard(for: vendor) else { continue }
+					let holder = Entity()
+					holder.name = "brand-\(vendor.rawValue)"
+					holder.position = position
+					holder.orientation = table.orientation
+					holder.addChild(card)
+					receiveLight(holder)
+					root.addChild(holder)
+				case .stand(let stand):
+					stand.holder.position = position
+					stand.holder.orientation = table.orientation
+					root.addChild(stand.holder)
+					placements[stand.item.id] = (position, stand.height)
+					// As wide as the space to the nearer neighbor allows, up to the "Your radio" card's,
+					// and as far in front as that card, or further for a deep stand.
+					let room = [index > 0 ? x - centers[index - 1] : row.length, index + 1 < centers.count ? centers[index + 1] - x : row.length].min() ?? row.length
+					let width = min(ShowcaseDeviceMeshes.placardSize.x, room - Self.placardGap)
+					let distance = max(ShowcaseDeviceMeshes.placardDistance, stand.depth / 2 + Self.placardGap * 2)
+					if let placard = await ShowcaseDeviceMeshes.placard(for: stand.item, width: width, inFrontBy: distance) {
+						stand.holder.addChild(placard)
+					}
 				}
 			}
 		}
 		items = loaded
 		Logger.services.info("📻 [Showcase] \(loaded.count, privacy: .public) models on the tables")
+	}
+
+	/// A place along a row: a maker's brand card, or a model on its stand.
+	private enum DisplaySlot {
+		case brand(ShowcaseVendor)
+		case stand(DisplayStand)
+
+		var width: Float {
+			switch self {
+			case .brand: ShowcaseDeviceMeshes.brandCardSize.x + ShowcaseDisplays.placardGap * 2
+			case .stand(let stand): stand.width
+			}
+		}
 	}
 
 	private struct DisplayStand {
@@ -203,7 +238,7 @@ final class ShowcaseDisplays {
 		component.isAccessibilityElement = true
 		component.traits = [.button]
 		component.label = LocalizedStringResource(stringLiteral: item.title)
-		component.value = LocalizedStringResource("Made by \(item.vendor.rawValue)", comment: "Showcase: VoiceOver value for a model on a display table; the argument is the maker")
+		component.value = LocalizedStringResource("Made by \(item.vendor.name)", comment: "Showcase: VoiceOver value for a model on a display table; the argument is the maker")
 		return component
 	}
 

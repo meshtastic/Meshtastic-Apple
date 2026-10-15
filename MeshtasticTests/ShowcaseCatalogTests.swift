@@ -97,6 +97,16 @@ struct ShowcaseCatalogTests {
 		#expect(items.first { $0.id == "thinknode_m1" }?.nameWithoutMaker == "ThinkNode M1")
 	}
 
+	@Test("muzi works is a maker, after Elecrow on the back table")
+	func muziWorks() {
+		#expect(ShowcaseVendor.from(tags: ["muzi"], modelName: "muzi_r1_neo") == .muzi)
+		#expect(ShowcaseVendor.from(tags: [], modelName: "muzi_base") == .muzi)
+		#expect(ShowcaseVendor.muzi.row == ShowcaseVendor.elecrow.row)
+		#expect(ShowcaseVendor.muzi.displayOrder > ShowcaseVendor.elecrow.displayOrder)
+		#expect(ShowcaseVendor.muzi.name == "muzi works")
+		#expect(ShowcaseVendor.rak.name == "RAKwireless")
+	}
+
 	@Test("The bundled catalog decodes")
 	func bundledCatalog() {
 		let hardware = ShowcaseCatalog.bundledHardware()

@@ -651,7 +651,7 @@ enum ShowcaseDeviceMeshes {
 			paragraph.alignment = .center
 			paragraph.lineBreakMode = .byWordWrapping
 			let small: [NSAttributedString.Key: Any] = [.font: UIFont.systemFont(ofSize: 28, weight: .medium), .foregroundColor: UIColor(white: 0.45, alpha: 1), .paragraphStyle: paragraph]
-			(item.vendor.rawValue as NSString).draw(
+			(item.vendor.name as NSString).draw(
 				with: CGRect(x: inset, y: 4, width: size.width - inset * 2, height: 34),
 				options: .usesLineFragmentOrigin, attributes: small, context: nil
 			)
@@ -666,6 +666,33 @@ enum ShowcaseDeviceMeshes {
 			(name as NSString).draw(with: nameBox, options: [.usesLineFragmentOrigin, .truncatesLastVisibleLine], attributes: large, context: nil)
 		}
 		return await tentCard(image, size: [width, height], inFrontBy: distance)
+	}
+
+	/// The card at the start of a maker's run of models: its name in white on charcoal, larger than
+	/// the models' cards, so it reads as a sign rather than a label.
+	static let brandCardSize = SIMD2<Float>(0.1, 0.05)
+
+	static func brandCard(for vendor: ShowcaseVendor) async -> ModelEntity? {
+		let size = CGSize(width: CGFloat(brandCardSize.x) * placardPixelsPerMeter, height: CGFloat(brandCardSize.y) * placardPixelsPerMeter)
+		let format = UIGraphicsImageRendererFormat()
+		format.scale = 1
+		format.opaque = false
+		let image = UIGraphicsImageRenderer(size: size, format: format).image { _ in
+			UIColor(red: 0.17, green: 0.18, blue: 0.24, alpha: 1).setFill()
+			UIBezierPath(roundedRect: CGRect(origin: .zero, size: size), cornerRadius: 18).fill()
+			let name = vendor.name
+			let inset: CGFloat = 24
+			var fontSize: CGFloat = 76
+			var attributes: [NSAttributedString.Key: Any] = [:]
+			var measured = CGSize.zero
+			repeat {
+				attributes = [.font: UIFont.systemFont(ofSize: fontSize, weight: .bold), .foregroundColor: UIColor.white]
+				measured = (name as NSString).size(withAttributes: attributes)
+				fontSize -= 2
+			} while measured.width > size.width - inset * 2 && fontSize > 24
+			(name as NSString).draw(at: CGPoint(x: (size.width - measured.width) / 2, y: (size.height - measured.height) / 2), withAttributes: attributes)
+		}
+		return await tentCard(image, size: brandCardSize, inFrontBy: 0)
 	}
 
 	/// The model cards' height in meters.

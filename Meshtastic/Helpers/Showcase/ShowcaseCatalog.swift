@@ -8,14 +8,26 @@ import Foundation
 import simd
 @preconcurrency import SwiftData
 
-/// The makers the showcase shows, one row of the display tables each.
+/// The makers the showcase shows. The raw value is the hardware catalog's tag for the maker.
 enum ShowcaseVendor: String, CaseIterable, Sendable {
 	case rak = "RAK"
 	case seeed = "Seeed"
 	case elecrow = "Elecrow"
+	case muzi = "muzi"
+
+	/// The maker's name as it brands itself, for the cards on the tables.
+	var name: String {
+		switch self {
+		case .rak: "RAKwireless"
+		case .seeed: "Seeed Studio"
+		case .elecrow: "Elecrow"
+		case .muzi: "muzi works"
+		}
+	}
 
 	/// RAK along the front of the front table, Seeed on its riser behind, and Elecrow, whose radios
-	/// are the tallest, on the higher back table.
+	/// are the tallest, on the higher back table, with muzi works after it. Makers that share a row
+	/// stand one after the other, each behind its own brand card.
 	var row: ShowcaseDisplayRow {
 		switch self {
 		case .rak:
@@ -23,7 +35,7 @@ enum ShowcaseVendor: String, CaseIterable, Sendable {
 			ShowcaseDisplayRow(table: .tableFront, depthOffset: 0.16, height: 0, length: 1.35, centerX: -0.22)
 		case .seeed:
 			ShowcaseDisplayRow(table: .tableFront, depthOffset: ShowcaseRoomGeometry.riserOffset, height: ShowcaseRoomGeometry.riserHeight, length: ShowcaseRoomGeometry.tableLength, centerX: 0)
-		case .elecrow:
+		case .elecrow, .muzi:
 			ShowcaseDisplayRow(table: .tableBack, depthOffset: 0, height: 0, length: ShowcaseRoomGeometry.tableLength, centerX: 0)
 		}
 	}
@@ -34,6 +46,7 @@ enum ShowcaseVendor: String, CaseIterable, Sendable {
 		case .rak: 0
 		case .seeed: 1
 		case .elecrow: 2
+		case .muzi: 3
 		}
 	}
 
@@ -48,6 +61,7 @@ enum ShowcaseVendor: String, CaseIterable, Sendable {
 		if name.hasPrefix("rak") { return .rak }
 		if name.hasPrefix("thinknode") || name.hasPrefix("crowpanel") { return .elecrow }
 		if name.hasPrefix("seeed") || name.hasPrefix("wio") || name.hasPrefix("tracker-t1000") { return .seeed }
+		if name.hasPrefix("muzi") { return .muzi }
 		return nil
 	}
 }
