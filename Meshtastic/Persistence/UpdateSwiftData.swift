@@ -300,9 +300,10 @@ extension MeshPackets {
 				// every packet (mirroring firmware NodeDB::updateFrom), so the per-packet
 				// handlers no longer touch lastHeard for remote nodes.
 				// Never moved backwards: a packet with an older rxTime doesn't make the node heard earlier.
+				// A stored time in the future came from a wrong clock, so any real packet replaces it.
 				if !isImplicitAck && !isReplay {
 					let heard = packet.rxTime > 0 ? Date(timeIntervalSince1970: TimeInterval(Int64(packet.rxTime))) : Date()
-					if node.lastHeard.map({ heard > $0 }) ?? true {
+					if node.lastHeard.map({ heard > $0 || $0 > Date() }) ?? true {
 						node.lastHeard = heard
 					}
 				}

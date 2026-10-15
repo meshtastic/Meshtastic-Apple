@@ -15,7 +15,7 @@ import Testing
 struct NodeHopsAndSignalTests {
 
 	private let num: Int64 = 0x00E0_0301
-	private let heardAt = Date(timeIntervalSince1970: 1_800_000_000)
+	private let heardAt = Date(timeIntervalSince1970: 1_780_000_000)
 
 	@MainActor
 	private func makeStore() throws -> (MeshPackets, ModelContainer) {
@@ -154,6 +154,17 @@ struct NodeHopsAndSignalTests {
 		let node = try #require(try fetchNode(container))
 		#expect(node.lastHeard == heardAt)
 		#expect(node.snr == -3, "the signal is still a real reading")
+	}
+
+	@Test @MainActor func aLivePacketReplacesALastHeardInTheFuture() async throws {
+		let (mp, container) = try makeStore()
+		var info = nodeInfo(hops: 1)
+		info.lastHeard = UInt32(Date().addingTimeInterval(86_400 * 365 * 5).timeIntervalSince1970)
+		_ = await mp.nodeInfoPacket(nodeInfo: info, channel: 0)
+		let now = Date()
+		await apply(livePacket(rxTime: now, hops: 1), mp)
+		let node = try #require(try fetchNode(container))
+		#expect(node.lastHeard.map { abs($0.timeIntervalSince(now)) < 1 } == true, "a time from a wrong clock must not stick")
 	}
 
 	@Test @MainActor func aLivePacketAtZeroDbmIsAReading() async throws {
