@@ -60,6 +60,18 @@ struct ShowcaseHardwareRecord: Codable, Equatable, Sendable {
 	let displayName: String?
 	let tags: [String]?
 	let images: [String]?
+	var architecture: String?
+	/// `SupportLevel`'s raw value; nil when the catalog doesn't say.
+	var supportLevel: Int?
+	var hasMui: Bool?
+	var hasInkHud: Bool?
+
+	/// The showcase is for devices we recommend: flagship and niche. Legacy and discontinued
+	/// devices are left off the tables; a record that doesn't give a level stays on.
+	var isShowcased: Bool {
+		guard let supportLevel, let level = SupportLevel(rawValue: supportLevel) else { return supportLevel == nil }
+		return level == .flagship || level == .niche
+	}
 }
 
 /// One model on a display table: an example of a device, not a node on the mesh.
@@ -74,6 +86,11 @@ struct ShowcaseItem: Identifiable, Equatable, Sendable {
 	/// What tells this model apart from others drawn for the same devices, e.g. a screen size or
 	/// "case"; nil when it is the only one.
 	var variant: String?
+	/// The chips its devices run on, as people write them ("ESP32-S3", "nRF52840").
+	var architectures: [String] = []
+	/// Whether any of its devices runs the touchscreen UI (MUI) or the e-ink UI (InkHUD).
+	var hasMui = false
+	var hasInkHud = false
 
 	var title: String {
 		let name = deviceNames.first ?? id
@@ -85,9 +102,11 @@ enum ShowcaseCatalog {
 	/// The models there are, matched to the catalog's devices. A device uses a model when the model
 	/// is named after its firmware target, or else when the model is one of its images (a model can
 	/// arrive before the catalog points the device at its image). Models no device uses are left
-	/// out, as are models from other makers. Sorted by vendor, then name.
+	/// out, as are models from other makers and models whose devices are all legacy or
+	/// discontinued. Sorted by vendor, then name.
 	static func items(models: Set<String>, hardware: [ShowcaseHardwareRecord]) -> [ShowcaseItem] {
 		let modelKeys = Set(models.map { $0.lowercased() })
+		let hardware = hardware.filter(\.isShowcased)
 		// Models that are some device's own, by firmware target.
 		let ownModels = Set(hardware.compactMap { $0.platformioTarget?.lowercased() }).intersection(modelKeys)
 		var items: [ShowcaseItem] = []
@@ -114,11 +133,18 @@ enum ShowcaseCatalog {
 			for name in ordered.compactMap(\.displayName) where !names.contains(name) {
 				names.append(name)
 			}
+			var architectures: [String] = []
+			for name in ordered.compactMap({ $0.architecture.map(architectureName) }) where !architectures.contains(name) {
+				architectures.append(name)
+			}
 			items.append(ShowcaseItem(
 				id: model,
 				vendor: vendor,
 				deviceNames: names,
-				targets: Array(Set(ordered.compactMap(\.platformioTarget))).sorted()
+				targets: Array(Set(ordered.compactMap(\.platformioTarget))).sorted(),
+				architectures: architectures,
+				hasMui: ordered.contains { $0.hasMui == true },
+				hasInkHud: ordered.contains { $0.hasInkHud == true }
 			))
 		}
 		// Models drawn for the same devices are told apart by the rest of their names.
@@ -166,6 +192,16 @@ enum ShowcaseCatalog {
 			}
 		}
 		return nil
+	}
+
+	/// A chip as people write it: "esp32-s3" gives "ESP32-S3", "nrf52840" gives "nRF52840", and
+	/// "portduino", the firmware's Linux build, gives "Linux".
+	static func architectureName(_ architecture: String) -> String {
+		switch architecture.lowercased() {
+		case "portduino": "Linux"
+		case let name where name.hasPrefix("nrf"): "nRF" + name.dropFirst(3).uppercased()
+		default: architecture.uppercased()
+		}
 	}
 
 	private static func normalized(_ slug: String) -> String {
@@ -237,7 +273,11 @@ actor ShowcaseHardwareReader {
 				platformioTarget: device.platformioTarget,
 				displayName: device.displayName,
 				tags: device.tags.map(\.tag),
-				images: device.images.compactMap(\.fileName)
+				images: device.images.compactMap(\.fileName),
+				architecture: device.architecture,
+				supportLevel: device.supportLevel,
+				hasMui: device.hasMui,
+				hasInkHud: device.hasInkHud
 			)
 		}
 	}
