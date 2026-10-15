@@ -91,7 +91,7 @@ private struct TraceRouteHopChain: View {
 
 	@Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-	private var circleSize: CGFloat { dense ? 25 : 28 }
+	private var circleSize: CGFloat { dense ? 32 : 36 }
 	/// The circle plus room for its ring; the leg lines are centered under it.
 	private var circleColumnWidth: CGFloat { circleSize + 6 }
 	private var connectorHeight: CGFloat { dense ? 13 : 15 }
@@ -156,6 +156,8 @@ private struct TraceRouteHopChain: View {
 					.accessibilityHidden(true)
 			}
 		}
+		// Apple's minimum tap height, so stops that open a node are easy to hit.
+		.frame(minHeight: 44)
 		.contentShape(Rectangle())
 		.accessibilityElement(children: .combine)
 	}
