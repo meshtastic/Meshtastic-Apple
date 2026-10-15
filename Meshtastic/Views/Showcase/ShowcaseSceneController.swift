@@ -625,7 +625,7 @@ enum ShowcaseDeviceMeshes {
 			let nameSize = (name as NSString).size(withAttributes: large)
 			(name as NSString).draw(at: CGPoint(x: (size.width - nameSize.width) / 2, y: 74), withAttributes: large)
 		}
-		return await tentCard(image, width: placardSize.x, inFrontBy: placardDistance)
+		return await tentCard(image, size: placardSize, inFrontBy: placardDistance)
 	}
 
 	/// The tent cards' size in meters, the image pixels per meter they're drawn at, and how far in
@@ -634,55 +634,57 @@ enum ShowcaseDeviceMeshes {
 	private static let placardPixelsPerMeter: CGFloat = 4500
 	static let placardDistance: Float = 0.07
 
-	/// The tent card in front of a model on a display table: the device's name, and what the
-	/// catalog says it runs on. `width` in meters, up to the "Your radio" card's.
+	/// The tent card in front of a model on a display table: the maker, and the device's name
+	/// under it. Shorter than the "Your radio" card; `width` in meters, up to that card's.
 	static func placard(for item: ShowcaseItem, width: Float, inFrontBy distance: Float) async -> ModelEntity? {
-		let size = CGSize(width: CGFloat(width) * placardPixelsPerMeter, height: CGFloat(placardSize.y) * placardPixelsPerMeter)
+		let height = itemPlacardHeight
+		let size = CGSize(width: CGFloat(width) * placardPixelsPerMeter, height: CGFloat(height) * placardPixelsPerMeter)
 		let format = UIGraphicsImageRendererFormat()
 		format.scale = 1
 		format.opaque = false
-		var specs = item.architectures
-		if item.hasMui { specs.append("MUI") }
-		if item.hasInkHud { specs.append("InkHUD") }
+		let name = item.nameWithoutMaker
 		let image = UIGraphicsImageRenderer(size: size, format: format).image { _ in
 			UIColor.white.setFill()
-			UIBezierPath(roundedRect: CGRect(origin: .zero, size: size), cornerRadius: 18).fill()
-			let inset: CGFloat = 16
+			UIBezierPath(roundedRect: CGRect(origin: .zero, size: size), cornerRadius: 14).fill()
+			let inset: CGFloat = 12
 			let paragraph = NSMutableParagraphStyle()
 			paragraph.alignment = .center
 			paragraph.lineBreakMode = .byWordWrapping
-			// The name gets two lines; long names shrink until they fit.
-			let titleBox = CGRect(x: inset, y: 14, width: size.width - inset * 2, height: 104)
-			var fontSize: CGFloat = 40
-			var title: [NSAttributedString.Key: Any] = [:]
+			let small: [NSAttributedString.Key: Any] = [.font: UIFont.systemFont(ofSize: 22, weight: .medium), .foregroundColor: UIColor(white: 0.45, alpha: 1), .paragraphStyle: paragraph]
+			(item.vendor.rawValue as NSString).draw(
+				with: CGRect(x: inset, y: 8, width: size.width - inset * 2, height: 28),
+				options: .usesLineFragmentOrigin, attributes: small, context: nil
+			)
+			// Up to two lines; long names shrink until they fit.
+			let nameBox = CGRect(x: inset, y: 36, width: size.width - inset * 2, height: size.height - 44)
+			var fontSize: CGFloat = 30
+			var large: [NSAttributedString.Key: Any] = [:]
 			repeat {
-				title = [.font: UIFont.systemFont(ofSize: fontSize, weight: .semibold), .foregroundColor: UIColor(white: 0.1, alpha: 1), .paragraphStyle: paragraph]
+				large = [.font: UIFont.systemFont(ofSize: fontSize, weight: .semibold), .foregroundColor: UIColor(white: 0.1, alpha: 1), .paragraphStyle: paragraph]
 				fontSize -= 2
-			} while (item.title as NSString).boundingRect(with: CGSize(width: titleBox.width, height: .greatestFiniteMagnitude), options: .usesLineFragmentOrigin, attributes: title, context: nil).height > titleBox.height && fontSize > 18
-			(item.title as NSString).draw(with: titleBox, options: [.usesLineFragmentOrigin, .truncatesLastVisibleLine], attributes: title, context: nil)
-			if !specs.isEmpty {
-				let small: [NSAttributedString.Key: Any] = [.font: UIFont.systemFont(ofSize: 28, weight: .medium), .foregroundColor: UIColor(white: 0.45, alpha: 1), .paragraphStyle: paragraph]
-				(specs.joined(separator: " · ") as NSString).draw(
-					with: CGRect(x: inset, y: size.height - 46, width: size.width - inset * 2, height: 36),
-					options: [.usesLineFragmentOrigin, .truncatesLastVisibleLine], attributes: small, context: nil
-				)
-			}
+			} while (name as NSString).boundingRect(with: CGSize(width: nameBox.width, height: .greatestFiniteMagnitude), options: .usesLineFragmentOrigin, attributes: large, context: nil).height > nameBox.height && fontSize > 16
+			(name as NSString).draw(with: nameBox, options: [.usesLineFragmentOrigin, .truncatesLastVisibleLine], attributes: large, context: nil)
 		}
-		return await tentCard(image, width: width, inFrontBy: distance)
+		return await tentCard(image, size: [width, height], inFrontBy: distance)
 	}
+
+	/// The model cards' height in meters.
+	static let itemPlacardHeight: Float = 0.025
 
 	/// A card drawn as `image`, standing on the table `distance` in front of a stand's center and
 	/// leaning back a little.
-	private static func tentCard(_ image: UIImage, width: Float, inFrontBy distance: Float) async -> ModelEntity? {
+	private static func tentCard(_ image: UIImage, size: SIMD2<Float>, inFrontBy distance: Float) async -> ModelEntity? {
 		guard let cgImage = image.cgImage,
 			  let texture = try? await TextureResource(image: cgImage, options: .init(semantic: .color)) else { return nil }
 		var material = UnlitMaterial()
 		material.color = .init(tint: .white, texture: .init(texture))
 		material.blending = .transparent(opacity: .init(floatLiteral: 1))
-		let card = ModelEntity(mesh: .generatePlane(width: width, height: placardSize.y, cornerRadius: 0.004), materials: [material])
+		let card = ModelEntity(mesh: .generatePlane(width: size.x, height: size.y, cornerRadius: 0.004), materials: [material])
 		card.name = "placard"
-		card.orientation = simd_quatf(angle: -0.35, axis: [1, 0, 0])
-		card.position = [0, 0.019, distance]
+		let lean: Float = 0.35
+		card.orientation = simd_quatf(angle: -lean, axis: [1, 0, 0])
+		// Its bottom edge on the table.
+		card.position = [0, size.y / 2 * cos(lean), distance]
 		return card
 	}
 
