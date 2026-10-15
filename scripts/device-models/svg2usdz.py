@@ -265,6 +265,15 @@ def hex_rgb(h):
     return tuple(int(h[i:i + 2], 16) / 255 for i in (0, 2, 4))
 
 
+def linear_rgb(h):
+    """A hex color as the linear values USD and glTF expect for a material's
+    base color. Written as-is, sRGB values show up much lighter: a near-black
+    #232527 comes out mid-gray."""
+    def channel(c):
+        return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+    return tuple(channel(c) for c in hex_rgb(h))
+
+
 def auto_material(hexcolor):
     """Plastic by default; gold and pale yellow fills read as metal."""
     r, g, b = hex_rgb(hexcolor)
@@ -654,7 +663,7 @@ def write_usdz(parts, materials, out, root_name, meta):
             m = UsdShade.Material.Define(stage, f"/{root_name}/Materials/{prim_name(name)}")
             s = UsdShade.Shader.Define(stage, f"/{root_name}/Materials/{prim_name(name)}/Surface")
             s.CreateIdAttr("UsdPreviewSurface")
-            s.CreateInput("diffuseColor", Sdf.ValueTypeNames.Color3f).Set(Gf.Vec3f(*hex_rgb(spec["color"])))
+            s.CreateInput("diffuseColor", Sdf.ValueTypeNames.Color3f).Set(Gf.Vec3f(*linear_rgb(spec["color"])))
             s.CreateInput("roughness", Sdf.ValueTypeNames.Float).Set(float(spec.get("roughness", 0.5)))
             s.CreateInput("metallic", Sdf.ValueTypeNames.Float).Set(float(spec.get("metallic", 0.0)))
             if "opacity" in spec:
