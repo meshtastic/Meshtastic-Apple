@@ -635,55 +635,53 @@ def build(spec, svg_path):
 
 
 def write_usdz(parts, materials, out, root_name, meta):
-    tmpdir = tempfile.mkdtemp()
-    usdc = os.path.join(tmpdir, root_name + ".usdc")
-    stage = Usd.Stage.CreateNew(usdc)
-    UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.y)
-    UsdGeom.SetStageMetersPerUnit(stage, 1.0)
-    layer = stage.GetRootLayer()
-    layer.documentation = COPYRIGHT
-    layer.customLayerData = meta
-    root = UsdGeom.Xform.Define(stage, f"/{root_name}")
-    stage.SetDefaultPrim(root.GetPrim())
-    Usd.ModelAPI(root.GetPrim()).SetKind("component")
-    Usd.ModelAPI(root.GetPrim()).SetAssetInfo({"name": root_name, "copyright": COPYRIGHT})
+    with tempfile.TemporaryDirectory() as tmpdir:
+        usdc = os.path.join(tmpdir, root_name + ".usdc")
+        stage = Usd.Stage.CreateNew(usdc)
+        UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.y)
+        UsdGeom.SetStageMetersPerUnit(stage, 1.0)
+        layer = stage.GetRootLayer()
+        layer.documentation = COPYRIGHT
+        layer.customLayerData = meta
+        root = UsdGeom.Xform.Define(stage, f"/{root_name}")
+        stage.SetDefaultPrim(root.GetPrim())
+        Usd.ModelAPI(root.GetPrim()).SetKind("component")
+        Usd.ModelAPI(root.GetPrim()).SetAssetInfo({"name": root_name, "copyright": COPYRIGHT})
 
-    mat_prims = {}
-    for name in sorted({m for _, m, _ in parts.values()}):
-        spec = materials.get(name, {"color": "#888888", "roughness": 0.5, "metallic": 0.0})
-        m = UsdShade.Material.Define(stage, f"/{root_name}/Materials/{prim_name(name)}")
-        s = UsdShade.Shader.Define(stage, f"/{root_name}/Materials/{prim_name(name)}/Surface")
-        s.CreateIdAttr("UsdPreviewSurface")
-        s.CreateInput("diffuseColor", Sdf.ValueTypeNames.Color3f).Set(Gf.Vec3f(*hex_rgb(spec["color"])))
-        s.CreateInput("roughness", Sdf.ValueTypeNames.Float).Set(float(spec.get("roughness", 0.5)))
-        s.CreateInput("metallic", Sdf.ValueTypeNames.Float).Set(float(spec.get("metallic", 0.0)))
-        if "opacity" in spec:
-            s.CreateInput("opacity", Sdf.ValueTypeNames.Float).Set(float(spec["opacity"]))
-        m.CreateSurfaceOutput().ConnectToSource(s.ConnectableAPI(), "surface")
-        mat_prims[name] = m
+        mat_prims = {}
+        for name in sorted({m for _, m, _ in parts.values()}):
+            spec = materials.get(name, {"color": "#888888", "roughness": 0.5, "metallic": 0.0})
+            m = UsdShade.Material.Define(stage, f"/{root_name}/Materials/{prim_name(name)}")
+            s = UsdShade.Shader.Define(stage, f"/{root_name}/Materials/{prim_name(name)}/Surface")
+            s.CreateIdAttr("UsdPreviewSurface")
+            s.CreateInput("diffuseColor", Sdf.ValueTypeNames.Color3f).Set(Gf.Vec3f(*hex_rgb(spec["color"])))
+            s.CreateInput("roughness", Sdf.ValueTypeNames.Float).Set(float(spec.get("roughness", 0.5)))
+            s.CreateInput("metallic", Sdf.ValueTypeNames.Float).Set(float(spec.get("metallic", 0.0)))
+            if "opacity" in spec:
+                s.CreateInput("opacity", Sdf.ValueTypeNames.Float).Set(float(spec["opacity"]))
+            m.CreateSurfaceOutput().ConnectToSource(s.ConnectableAPI(), "surface")
+            mat_prims[name] = m
 
-    mm = 0.001
-    for name, (meshes, mat, smooth) in parts.items():
-        mesh = trimesh.util.concatenate(meshes)
-        if not smooth:
-            # Split vertices only along sharp edges so extrusions keep crisp
-            # corners without tripling the vertex count.
-            mesh = mesh.smooth_shaded
-        normals = mesh.vertex_normals
-        g = UsdGeom.Mesh.Define(stage, f"/{root_name}/{name}")
-        g.CreatePointsAttr((mesh.vertices * mm).astype(np.float32))
-        g.CreateFaceVertexCountsAttr(np.full(len(mesh.faces), 3, dtype=np.int32))
-        g.CreateFaceVertexIndicesAttr(mesh.faces.flatten().astype(np.int32))
-        g.CreateNormalsAttr(np.asarray(normals, dtype=np.float32))
-        g.SetNormalsInterpolation(UsdGeom.Tokens.vertex)
-        g.CreateSubdivisionSchemeAttr(UsdGeom.Tokens.none)
-        g.CreateExtentAttr([Gf.Vec3f(*(mesh.bounds[0] * mm)), Gf.Vec3f(*(mesh.bounds[1] * mm))])
-        UsdShade.MaterialBindingAPI.Apply(g.GetPrim()).Bind(mat_prims[mat])
+        mm = 0.001
+        for name, (meshes, mat, smooth) in parts.items():
+            mesh = trimesh.util.concatenate(meshes)
+            if not smooth:
+                # Split vertices only along sharp edges so extrusions keep crisp
+                # corners without tripling the vertex count.
+                mesh = mesh.smooth_shaded
+            normals = mesh.vertex_normals
+            g = UsdGeom.Mesh.Define(stage, f"/{root_name}/{name}")
+            g.CreatePointsAttr((mesh.vertices * mm).astype(np.float32))
+            g.CreateFaceVertexCountsAttr(np.full(len(mesh.faces), 3, dtype=np.int32))
+            g.CreateFaceVertexIndicesAttr(mesh.faces.flatten().astype(np.int32))
+            g.CreateNormalsAttr(np.asarray(normals, dtype=np.float32))
+            g.SetNormalsInterpolation(UsdGeom.Tokens.vertex)
+            g.CreateSubdivisionSchemeAttr(UsdGeom.Tokens.none)
+            g.CreateExtentAttr([Gf.Vec3f(*(mesh.bounds[0] * mm)), Gf.Vec3f(*(mesh.bounds[1] * mm))])
+            UsdShade.MaterialBindingAPI.Apply(g.GetPrim()).Bind(mat_prims[mat])
 
-    layer.Save()
-    ok = UsdUtils.CreateNewARKitUsdzPackage(usdc, out)
-    os.remove(usdc)
-    os.rmdir(tmpdir)
+        layer.Save()
+        ok = UsdUtils.CreateNewARKitUsdzPackage(usdc, out)
     if not ok:
         sys.exit(f"failed to package {out}")
     allm = trimesh.util.concatenate([m for ms, _, _ in parts.values() for m in ms])

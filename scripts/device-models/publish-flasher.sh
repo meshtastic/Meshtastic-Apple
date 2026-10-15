@@ -40,7 +40,8 @@ if git diff --cached --quiet; then
 	exit 0
 fi
 
-names=$(cd "$DEST" && ls *.usdz | sed 's/\.usdz$//' | paste -sd ' ' -)
+names=""
+for m in "${models[@]}"; do names+="${names:+ }$(basename "$m" .usdz)"; done
 git commit -q -m "Add real-size 3D device models" -m "USDZ models built from the device SVGs: $names"
 git push -q -u origin "$BRANCH"
 gh pr create --base main --head "$BRANCH" --title "Add real-size 3D device models" --body "$(cat <<EOF

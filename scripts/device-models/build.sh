@@ -52,12 +52,13 @@ for name in "${names[@]}"; do
 		failed+=("$name (missing on flasher)")
 		continue
 	fi
-	if uv run -q "$HERE/svg2usdz.py" "$spec" "$svg" "$OUT/$name.usdz" --source-url "$url" \
-		&& uv run -q --python 3.12 --with usd-core usdchecker --arkit "$OUT/$name.usdz" >"$OUT/$name.check.txt" 2>&1 \
-		&& "$OUT/render" "$OUT/$name.usdz" "$OUT/$name.png" 600; then
+	log="$OUT/$name.check.txt"
+	if uv run -q "$HERE/svg2usdz.py" "$spec" "$svg" "$OUT/$name.usdz" --source-url "$url" 2>&1 | tee "$log" \
+		&& uv run -q --python 3.12 --with usd-core usdchecker --arkit "$OUT/$name.usdz" >>"$log" 2>&1 \
+		&& "$OUT/render" "$OUT/$name.usdz" "$OUT/$name.png" 600 >>"$log" 2>&1; then
 		built+=("$name")
 	else
-		echo "$name: build or check failed (see $OUT/$name.check.txt)"
+		echo "$name: build or check failed (see $log)"
 		failed+=("$name (build/check)")
 	fi
 done
