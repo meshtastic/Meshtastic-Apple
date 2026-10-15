@@ -342,14 +342,14 @@
     "Enter Showcase" : {
       "comment" : "Spatial map: open the showcase immersive space, closing this volume"
     },
-    "Hardware Showcase" : {
-      "comment" : "Showcase: title of the immersive space's control panel"
-    },
     "Leave" : {
       "comment" : "Showcase: close the immersive space"
     },
     "Made by %@" : {
       "comment" : "Showcase model card and VoiceOver: the device's maker"
+    },
+    "Meshtastic Hardware Showcase" : {
+      "comment" : "Showcase: title of the immersive space's control panel"
     },
     "Next rack page" : {
       "comment" : "Showcase: show the next page of the wall rack"

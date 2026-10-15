@@ -186,8 +186,10 @@ struct ShowcaseControlPanel: View {
 	var body: some View {
 		VStack(spacing: 10) {
 			HStack {
-				Label(String(localized: "Hardware Showcase", comment: "Showcase: title of the immersive space's control panel"), systemImage: "radio")
+				Label(String(localized: "Meshtastic Hardware Showcase", comment: "Showcase: title of the immersive space's control panel"), systemImage: "storefront")
 					.font(.headline)
+					.lineLimit(1)
+					.minimumScaleFactor(0.8)
 				Spacer(minLength: 12)
 				Button(role: .cancel, action: onLeave) {
 					Label(String(localized: "Leave", comment: "Showcase: close the immersive space"), systemImage: "door.left.hand.open")
