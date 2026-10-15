@@ -266,7 +266,7 @@ struct TraceRouteShareStats: View {
 				.lineLimit(1)
 				.minimumScaleFactor(0.6)
 			Label(label, systemImage: systemImage)
-				.labelStyle(TraceRouteShareStatLabelStyle())
+				.labelStyle(TraceRouteTightLabelStyle())
 				.font(.system(size: 11, weight: .semibold))
 				.textCase(.uppercase)
 				.foregroundStyle(Style.secondaryText)
@@ -281,8 +281,8 @@ struct TraceRouteShareStats: View {
 	}
 }
 
-/// Icon and title side by side with a small gap, for the stat tiles.
-private struct TraceRouteShareStatLabelStyle: LabelStyle {
+/// Icon and title side by side with a small gap, for the stat tiles and the timeline headings.
+struct TraceRouteTightLabelStyle: LabelStyle {
 	func makeBody(configuration: Configuration) -> some View {
 		HStack(spacing: 4) {
 			configuration.icon
@@ -303,7 +303,7 @@ struct TraceRouteShareChains: View {
 		if model.legs.back.isEmpty {
 			VStack(alignment: .leading, spacing: 10) {
 				forward
-				Text("No return route was reported.", comment: "Trace route share image: the response didn't include the path back")
+				Text("No return route was reported.", comment: "Trace route timeline and share image: the response didn't include the path back")
 					.font(.system(size: 13))
 					.foregroundStyle(Style.tertiaryText)
 			}
@@ -350,29 +350,41 @@ struct TraceRouteShareChains: View {
 	}
 }
 
+/// Colors for `TraceRouteShareNodeCircle`: light on dark for the share image and the map, or
+/// system colors that follow the appearance in the app's lists.
+struct TraceRouteNodeCircleColors {
+	let unknownFill: Color
+	let unknownStroke: Color
+	/// A faint edge so a node color close to the background still shows.
+	let edge: Color
+
+	static let shareImage = Self(unknownFill: Color.white.opacity(0.04), unknownStroke: TraceRouteShareStyle.secondaryText, edge: Color.white.opacity(0.22))
+	static let app = Self(unknownFill: Color.secondary.opacity(0.08), unknownStroke: .secondary, edge: Color.primary.opacity(0.15))
+}
+
 /// A node's short name in a circle of its color, or a dashed "?" for an unknown repeater.
 struct TraceRouteShareNodeCircle: View {
 	let stop: TraceRouteStop
 	let size: CGFloat
 	var ring: Color?
+	var colors: TraceRouteNodeCircleColors = .shareImage
 
 	var body: some View {
 		Group {
 			if stop.isUnknownRepeater {
 				ZStack {
 					Circle()
-						.fill(Color.white.opacity(0.04))
+						.fill(colors.unknownFill)
 					Circle()
-						.strokeBorder(TraceRouteShareStyle.secondaryText, style: StrokeStyle(lineWidth: 1.5, dash: [3, 3]))
+						.strokeBorder(colors.unknownStroke, style: StrokeStyle(lineWidth: 1.5, dash: [3, 3]))
 					Text(verbatim: "?")
 						.font(.system(size: size * 0.45, weight: .bold))
-						.foregroundStyle(TraceRouteShareStyle.secondaryText)
+						.foregroundStyle(colors.unknownStroke)
 				}
 				.frame(width: size, height: size)
 			} else {
 				CircleText(text: stop.shortName, color: Color(UIColor(hex: UInt32(truncatingIfNeeded: stop.num))), circleSize: size)
-					// A faint edge so a dark node color still shows against the dark card.
-					.overlay(Circle().strokeBorder(Color.white.opacity(0.22), lineWidth: 1))
+					.overlay(Circle().strokeBorder(colors.edge, lineWidth: 1))
 			}
 		}
 		.overlay {
@@ -383,6 +395,21 @@ struct TraceRouteShareNodeCircle: View {
 			}
 		}
 		.padding(ring == nil ? 0 : 3)
+	}
+}
+
+/// A relay's position in its chain, on the top right of its circle.
+struct TraceRouteHopNumberBadge: View {
+	let number: Int
+
+	var body: some View {
+		Text(verbatim: "\(number)")
+			.font(.system(size: 9.5, weight: .bold, design: .rounded))
+			.foregroundStyle(Color.white)
+			.frame(minWidth: 15, minHeight: 15)
+			.background(Circle().fill(Color.black))
+			.overlay(Circle().strokeBorder(Color.white.opacity(0.9), lineWidth: 1))
+			.offset(x: 6, y: -4)
 	}
 }
 
@@ -439,13 +466,7 @@ private struct TraceRouteShareChain: View {
 			ZStack(alignment: .topTrailing) {
 				TraceRouteShareNodeCircle(stop: stop, size: circleSize, ring: isEndpoint ? ring(for: stop) : nil)
 				if !isEndpoint {
-					Text(verbatim: "\(stop.id)")
-						.font(.system(size: 9.5, weight: .bold, design: .rounded))
-						.foregroundStyle(Color.white)
-						.frame(minWidth: 15, minHeight: 15)
-						.background(Circle().fill(Color.black))
-						.overlay(Circle().strokeBorder(Color.white.opacity(0.9), lineWidth: 1))
-						.offset(x: 6, y: -4)
+					TraceRouteHopNumberBadge(number: stop.id)
 				}
 			}
 			.frame(width: circleSize + 6)
@@ -497,7 +518,7 @@ private struct TraceRouteShareChain: View {
 	private func connector(_ stop: TraceRouteStop) -> some View {
 		let lineColor = stop.quality?.color ?? Color.gray
 		return HStack(spacing: 10) {
-			TraceRouteShareLegLine()
+			TraceRouteLegLine()
 				.stroke(lineColor, style: StrokeStyle(lineWidth: 2.5, lineCap: .round, dash: stop.snr == nil ? [3, 4] : []))
 				.frame(width: circleSize + 6, height: connectorHeight)
 			Group {
@@ -523,7 +544,7 @@ private struct TraceRouteShareChain: View {
 }
 
 /// A vertical line down the middle of its frame, inset so it doesn't touch the circles.
-private struct TraceRouteShareLegLine: Shape {
+struct TraceRouteLegLine: Shape {
 	func path(in rect: CGRect) -> Path {
 		Path { path in
 			path.move(to: CGPoint(x: rect.midX, y: rect.minY + 3))

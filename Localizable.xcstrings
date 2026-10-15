@@ -97607,7 +97607,7 @@
       "comment" : "Trace route state: request sent, nothing came back"
     },
     "No return route was reported." : {
-      "comment" : "Trace route share image: the response didn't include the path back"
+      "comment" : "Trace route timeline and share image: the response didn't include the path back"
     },
     "No route to the destination node was found in the mesh. Try again when more nodes are reachable." : {
       "comment" : "RoutingError.description",
@@ -113215,6 +113215,9 @@
           }
         }
       }
+    },
+    "Relay %lld" : {
+      "comment" : "Trace route timeline: VoiceOver label for a relay's number badge, the order the packet reached it"
     },
     "Relayed" : {
       "localizations" : {
