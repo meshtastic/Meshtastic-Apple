@@ -4,8 +4,6 @@
 //
 //  Copyright(c) Garth Vander Houwen 9/18/26.
 //
-import CoreLocation
-import OSLog
 import SwiftUI
 import MeshtasticProtobufs
 
@@ -45,6 +43,9 @@ struct MQTTConfig: View {
 	/// is read on every release, and private brokers use it on older firmware. It is a
 	/// rule about one server.
 	static let tlsRequiredFirmware = "2.7.4"
+	/// Firmware from here (MQTT::applyRegionRootTopic, firmware PR #11899) rewrites only "msh"
+	/// and "msh/<REGION>" on a region set; older firmware overwrote any root that starts with "msh".
+	static let rootRewriteFirmware = "2.8.1"
 
 	/// Host equality, not a substring: `mqtt.meshtastic.org.example.com` is somebody
 	/// else's server, and treating it as the public one would hide the credential
@@ -107,7 +108,7 @@ struct MQTTConfig: View {
 					  control: .custom { config in AnyView(MapReportPrecision(precision: config.mapReportSettings.positionPrecision)) })
 			]),
 			.init(title: String(localized: "Root Topic", comment: "Settings section"), fields: [
-				.init(F.root, symbol: "tree", control: .custom { config in AnyView(RootTopicField(root: config.root, node: node)) })
+				.init(F.root, symbol: "tree", control: .custom { config in AnyView(RootTopicField(config: config, node: node)) })
 			]),
 			.init(title: String(localized: "Server", comment: "Settings section"), fields: [
 				.init(F.address, symbol: "server.rack", byteCap: 63),
@@ -134,6 +135,10 @@ struct MQTTConfig: View {
 			node: node, title: "MQTT", overlay: Self.overlay(node: node),
 			normalize: { Self.normalize($0, tlsRequired: tlsRequired) },
 			reconcile: { config, env in Self.reconcile(&config, tlsRequired: env.firmwareAtLeast(Self.tlsRequiredFirmware)) },
+			// Empty is allowed: the firmware reads it as "msh". A stored root that breaks a rule
+			// (the old picker could write "msh/US/") is let through unchanged: re-saving it writes
+			// nothing new to the radio, and the row's rule text shows how to fix it.
+			canSave: { $0.root.isEmpty || $0.root == node?.mqttConfig?.root || MqttRootTopic.problem(in: $0.root) == nil },
 			request: accessoryManager.requestMqttModuleConfig,
 			save: { config, from, to in
 				_ = try await accessoryManager.saveMQTTConfig(config: config, fromUser: from, toUser: to)
@@ -248,75 +253,74 @@ private struct MapReportPrecision: View {
 	}
 }
 
-/// The root topic, with the topics for the phone's own region, state, county, city and
-/// neighbourhood offered beneath it.
+/// The root topic, the rule it breaks if any, the warning for firmware that will replace a custom
+/// root on the next region save, and the button that opens the finder.
 private struct RootTopicField: View {
-	@Binding var root: String
+	@EnvironmentObject private var accessoryManager: AccessoryManager
+	@Binding var config: ModuleConfig.MQTTConfig
 	let node: NodeInfoEntity?
-	@State private var nearbyTopics: [String] = []
-	@State private var selectedTopic = ""
+	@State private var showFinder = false
 
-	private static let byteCap = 31
+	private static let byteCap = MqttRootTopic.byteCap
 	private static let metadata = FieldMetadataRegistry.get("meshtastic.ModuleConfig.MQTTConfig", tag: 8)
+
+	private var regionTopic: String {
+		"msh/" + ((RegionCodes(rawValue: Int(node?.loRaConfig?.regionCode ?? 0)) ?? .unset).topic)
+	}
+
+	/// Same split as `MetadataConfigForm.environment`: the connected radio answers live, a remote
+	/// target from its metadata; unknown firmware never warns.
+	private var olderFirmwareReplacesRoot: Bool {
+		let isConnectedNode = node != nil && node?.num == accessoryManager.activeDeviceNum
+		let known = isConnectedNode ? accessoryManager.isConnected : node?.knownFirmwareVersion != nil
+		let atLeast = isConnectedNode
+			? accessoryManager.checkIsVersionSupported(forVersion: MQTTConfig.rootRewriteFirmware)
+			: node?.firmwareAtLeast(MQTTConfig.rootRewriteFirmware) ?? true
+		return MqttRootTopic.olderFirmwareReplaces(root: config.root, regionTopic: regionTopic, firmwareKnown: known, firmwareAtLeast281: atLeast)
+	}
 
 	var body: some View {
 		HStack {
 			Label(Self.metadata?.label ?? "Root Topic", systemImage: "tree")
-			TextField(Self.metadata?.label ?? "Root Topic", text: $root)
+			TextField(Self.metadata?.label ?? "Root Topic", text: $config.root)
 				.foregroundColor(.gray)
 				.keyboardType(.asciiCapable)
 				.autocorrectionDisabled()
 				.textInputAutocapitalization(.never)
-				.onChange(of: root) { _, new in
+				.onChange(of: config.root) { _, new in
 					var trimmed = new
 					while trimmed.utf8.count > Self.byteCap { trimmed = String(trimmed.dropLast()) }
-					if trimmed != new { root = trimmed }
+					if trimmed != new { config.root = trimmed }
 				}
 		}
 		.listRowSeparator(.hidden)
-		.onAppear(perform: findNearbyTopics)
 		Text("The root topic to use for MQTT.")
 			.foregroundColor(.gray)
 			.font(.callout)
-		if !nearbyTopics.isEmpty {
-			Picker("Nearby Topics", selection: $selectedTopic) {
-				ForEach(nearbyTopics, id: \.self) { Text($0) }
-			}
-			.pickerStyle(InlinePickerStyle())
-			.listRowSeparator(.hidden)
-			.onChange(of: selectedTopic) { _, topic in root = topic }
-			Text("If the default region topic is too busy you can choose a more local topic.")
-				.foregroundColor(.gray)
-				.font(.callout)
+		if !config.root.isEmpty, let problem = MqttRootTopic.problem(in: config.root) {
+			Label(problem.message, systemImage: "exclamationmark.triangle")
+				.font(.caption)
+				.foregroundStyle(.red)
 		}
-	}
-
-	private func findNearbyTopics() {
-		nearbyTopics = []
-		guard let location = LocationsHandler.shared.locationsArray.first else { return }
-		let region = RegionCodes(rawValue: Int(node?.loRaConfig?.regionCode ?? 0))
-		let defaultTopic = "msh/" + (region?.topic ?? "UNSET")
-		CLGeocoder().reverseGeocodeLocation(location) { placemarks, error in
-			if let error {
-				Logger.services.error("Failed to reverse geocode location: \(error.localizedDescription, privacy: .public)")
-				return
-			}
-			guard let placemark = placemarks?.first else {
-				Logger.services.debug("No Location")
-				return
-			}
-			var topics: [String] = []
-			if !(region?.isCountry ?? false) {
-				topics.append(defaultTopic + "/" + (placemark.isoCountryCode ?? ""))
-			}
-			let state = placemark.administrativeArea ?? ""
-			topics.append(defaultTopic + "/" + state)
-			topics.append(defaultTopic + "/" + state + "/" + (placemark.subAdministrativeArea?.lowercased().replacingOccurrences(of: " ", with: "") ?? ""))
-			topics.append(defaultTopic + "/" + state + "/" + (placemark.locality?.lowercased().replacingOccurrences(of: " ", with: "") ?? ""))
-			topics.append(defaultTopic + "/" + state + "/" + (placemark.subLocality?.lowercased()
-				.replacingOccurrences(of: " ", with: "")
-				.replacingOccurrences(of: "'", with: "") ?? ""))
-			nearbyTopics = topics.filter { !$0.isEmpty }
+		if olderFirmwareReplacesRoot {
+			Label("Firmware before 2.8.1 replaces a custom root topic with msh/<REGION> whenever the LoRa region is saved.", systemImage: "exclamationmark.triangle")
+				.font(.caption)
+				.foregroundStyle(.orange)
 		}
+		Button {
+			showFinder = true
+		} label: {
+			Label("Find Topics", systemImage: "location.magnifyingglass")
+		}
+		.sheet(isPresented: $showFinder) {
+			MQTTTopicFinder(config: $config, node: node)
+				.presentationDetents([.large])
+				#if !targetEnvironment(macCatalyst)
+				.presentationDragIndicator(.visible)
+				#endif
+		}
+		Text("See which root topics are active on your broker near you, and pick one.")
+			.foregroundColor(.gray)
+			.font(.callout)
 	}
 }
