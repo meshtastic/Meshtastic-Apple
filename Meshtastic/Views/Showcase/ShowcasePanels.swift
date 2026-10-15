@@ -120,7 +120,7 @@ struct ShowcaseModelCard: View {
 				VStack(alignment: .leading, spacing: 2) {
 					Text(item.title)
 						.font(.headline)
-					Text("Made by \(item.vendor.rawValue)", comment: "Showcase model card: the device's maker")
+					Text("Made by \(item.vendor.name)", comment: "Showcase model card: the device's maker")
 						.font(.caption)
 						.foregroundStyle(.secondary)
 				}
@@ -155,7 +155,7 @@ struct ShowcaseModelCard: View {
 						.foregroundStyle(.secondary)
 				}
 			}
-			Text("3D model © Meshtastic LLC. The product and its name, logos and marks belong to \(item.vendor.rawValue).", comment: "Showcase model card: who owns the model and who owns the product; the argument is the maker")
+			Text("3D model © Meshtastic LLC. The product and its name, logos and marks belong to \(item.vendor.name).", comment: "Showcase model card: who owns the model and who owns the product; the argument is the maker")
 				.font(.caption2)
 				.foregroundStyle(.tertiary)
 		}
