@@ -93,7 +93,8 @@ class Element:
 def read_svg(path):
     # Drop the viewBox so svgelements keeps the file's raw coordinates; its
     # viewBox shift composes wrongly with per-element rotate() transforms.
-    raw = re.sub(r'\sviewBox="[^"]*"', "", open(path, encoding="utf-8").read(), count=1)
+    with open(path, encoding="utf-8") as f:
+        raw = re.sub(r'\sviewBox="[^"]*"', "", f.read(), count=1)
     svg = SVG.parse(io.StringIO(raw), reify=True)
     out = []
     for el in svg.elements():

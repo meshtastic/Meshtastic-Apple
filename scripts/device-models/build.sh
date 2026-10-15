@@ -83,7 +83,8 @@ import html, os, re, sys
 out, specs, names = sys.argv[1], sys.argv[2], sys.argv[3:]
 cards = []
 for n in names:
-    spec = open(os.path.join(specs, n + ".toml")).read()
+    with open(os.path.join(specs, n + ".toml")) as f:
+        spec = f.read()
     def field(k):
         m = re.search(rf'^{k}\s*=\s*"?([^"\n]*)"?', spec, re.M)
         return m.group(1) if m else ""
@@ -100,7 +101,8 @@ for n in names:
 page = """<!doctype html><meta charset="utf-8"><title>Device models</title>
 <style>body{font:14px system-ui;margin:16px;background:#f4f4f4}main{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
 figure{margin:0;background:#fff;padding:8px;border-radius:8px}img{width:100%}</style><main>""" + "".join(cards) + "</main>"
-open(os.path.join(out, "contact-sheet.html"), "w").write(page)
+with open(os.path.join(out, "contact-sheet.html"), "w") as f:
+    f.write(page)
 PY
 
 if $install && [ ${#built[@]} -gt 0 ]; then
