@@ -52,6 +52,8 @@ struct ShowcaseRoom {
 			Logger.services.warning("📻 [Showcase] Room is missing anchors: \(resolved.missing.map(\.rawValue).joined(separator: ", "), privacy: .public)")
 		}
 		let room = ShowcaseRoom(root: root, anchors: resolved.poses, missingAnchors: resolved.missing, loadedAsset: loadedAsset)
+		// Before the lighting, so the art gets the room's light too.
+		await room.addWallArt()
 		await room.addLighting()
 		return room
 	}
