@@ -66,6 +66,10 @@ struct ShowcaseSpace: View {
 						openWindow(id: MeshtasticAppleApp.mainWindowID)
 					}
 				} onLeave: {
+					// The window first: once the room has closed, this view can't open it.
+					if appState.mainWindowCount == 0 {
+						openWindow(id: MeshtasticAppleApp.mainWindowID)
+					}
 					Task { await dismissImmersiveSpace() }
 				}
 			}
@@ -134,8 +138,9 @@ struct ShowcaseSpace: View {
 		}
 		.onDisappear {
 			appState.showcaseOpen = false
-			// Leaving by the panel or the Digital Crown would otherwise leave the app with no
-			// window. Not when the app went to the background, which closes the room too.
+			// Leaving with the Digital Crown would otherwise leave the app with no window (the
+			// panel's Leave opens it first). Not when the app went to the background, which
+			// closes the room too.
 			if appState.mainWindowCount == 0, scenePhase != .background {
 				openWindow(id: MeshtasticAppleApp.mainWindowID)
 			}
