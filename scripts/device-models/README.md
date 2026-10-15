@@ -61,7 +61,9 @@ Other optional entries, with coordinates in SVG units:
 - `[[antenna]]`: a round antenna from `start` (its base) to `end` (its tip),
   at any angle. The radius is measured from the drawing, or set with `radius_mm`
   for an antenna drawn end-on, and `min_radius_mm` bridges small gaps in the
-  drawing. Each color band becomes its own part.
+  drawing. Each color band becomes its own part. Unless `dome = false`, the tip
+  ends in an even dome as wide as the shaft just below it. Don't add a wider
+  cap at the tip; end the whip (or a `[[lathe]]`) with `dome = true` instead.
 - `[[thin]]`: a region (`bbox` or `polygon`) built at its own `depth_mm`
   instead of full depth, for lanyards, clips, side buttons, stands and flat
   antennas. `edge_radius_mm` rounds its edges.

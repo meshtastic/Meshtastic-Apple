@@ -95,7 +95,7 @@ confidence = "estimated from photos"
 # The antenna on the top face, measured on the straight-on mounted photo (5.3 px/mm on the 80 mm
 # case, 2048 px image): 23.8 mm from the left edge, 154 mm tall. From the case up: a nut 9.8 mm
 # across, the base 11.3 mm across to 31 mm, a taper to 50 mm, a 4 mm section to 78 mm, the 2.5 mm
-# whip and a 4 mm tip. The isometric product photo looks closer to the middle, so the position
+# whip, ending in an even dome rather than the photo's slightly wider tip. The isometric product photo looks closer to the middle, so the position
 # is less certain than the length; the depth position isn't shown and it sits at mid-depth.
 [[lathe]]
 name = "AntennaNut"
@@ -138,17 +138,8 @@ name = "AntennaWhip"
 material = "rubber"
 axis_x = 23.8
 y_bottom = -78.5
-y_top = -149.2
-radius = 1.3
-confidence = "estimated from photos"
-
-[[lathe]]
-name = "AntennaTip"
-material = "rubber"
-axis_x = 23.8
-y_bottom = -149.2
 y_top = -154.0
-radius = 2.0
+radius = 1.3
 dome = true
 confidence = "estimated from photos"
 

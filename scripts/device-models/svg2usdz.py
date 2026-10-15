@@ -498,6 +498,16 @@ def build(spec, svg_path):
             r1 = float(an.get("tip_radius_mm", r0))
             prof = [(t, r0 + (r1 - r0) * t / prof[-1][0], o) for t, _, o in prof]
 
+        # The tip ends in an even hemisphere as wide as the shaft just below it. The drawn tip
+        # narrows, flares or carries highlight marks, which revolved into a bulb or a point. The
+        # last stretch is held at that radius so the shaft runs straight into the dome, with no
+        # step where a sample was a little thinner or wider.
+        tip_r = None
+        if an.get("dome", True):
+            t_end = prof[-1][0]
+            near = [r for t, r, _ in prof if 0.8 * t_end <= t <= 0.95 * t_end]
+            tip_r = float(np.median(near)) if near else prof[-1][1]
+            prof = [(t, tip_r if t >= 0.8 * t_end else r, o) for t, r, o in prof]
         runs = []
         for t, r, o in prof:
             key = o.fill_hex if o is not None else None
@@ -515,8 +525,8 @@ def build(spec, svg_path):
         for idx, (key, pts, owner) in enumerate(runs):
             if len(pts) < 2:
                 continue
-            if idx == len(runs) - 1 and an.get("dome", True):
-                r_end = pts[-1][1]
+            if idx == len(runs) - 1 and tip_r is not None:
+                r_end = tip_r
                 t_end = pts[-1][0]
                 pts = [(t, r) for t, r in pts if t <= t_end - r_end] or pts[:1]
                 pts += [(t_end - r_end + r_end * math.sin(a), r_end * math.cos(a)) for a in np.linspace(0, math.pi / 2, 10)]
