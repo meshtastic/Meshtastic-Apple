@@ -245,7 +245,7 @@ struct ShowcaseControlPanel: View {
 			}
 		}
 		.padding(14)
-		.frame(width: 340)
+		.frame(width: 440)
 		.glassBackgroundEffect()
 	}
 }
