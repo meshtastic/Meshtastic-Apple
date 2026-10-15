@@ -50,7 +50,7 @@ class AppState: ObservableObject {
 	@Published var pendingRoute: PendingRoute?
 	/// How many main windows are showing. Scene configuration names are nil on visionOS, so the
 	/// scene list can't tell a main window from the spatial map volume.
-	var mainWindowCount = 0
+	@Published var mainWindowCount = 0
 	/// Initial tab for a debug performance seed, applied once by the first main window.
 	var launchNavigation: NavigationState?
 	@Published var unreadChannelMessages: Int
