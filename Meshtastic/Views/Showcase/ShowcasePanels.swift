@@ -150,7 +150,7 @@ struct ShowcaseModelCard: View {
 						.font(.caption)
 						.buttonStyle(.bordered)
 					}
-					Text("Product links may be affiliate links — purchases may earn Meshtastic a commission.")
+					Text("Product links may be affiliate links — purchases may earn Meshtastic a commission.", comment: "Affiliate disclosure shown above msh.to product links")
 						.font(.caption2)
 						.foregroundStyle(.secondary)
 				}

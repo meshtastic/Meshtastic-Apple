@@ -69,9 +69,12 @@ struct ShowcaseCatalogTests {
 		legacy.supportLevel = SupportLevel.legacy.rawValue
 		var gone = record("RAK11310", "rak11310", "RAK WisBlock 11310", tag: "RAK", images: ["rak11310.svg"])
 		gone.supportLevel = SupportLevel.discontinued.rawValue
-		let items = ShowcaseCatalog.items(models: ["thinknode_m1", "rak11200", "rak11310"], hardware: [m1, m5, legacy, gone])
-		#expect(items.map(\.id) == ["thinknode_m1"])
-		#expect(items.first?.deviceNames == ["ThinkNode M1", "ThinkNode M5"])
+		// A level newer than this build knows stays on the tables.
+		var newer = record("TRACKER_T1000_E", "tracker-t1000-e", "Seeed Card Tracker T1000-E", tag: "Seeed", images: ["tracker-t1000-e.svg"])
+		newer.supportLevel = 99
+		let items = ShowcaseCatalog.items(models: ["thinknode_m1", "rak11200", "rak11310", "tracker-t1000-e"], hardware: [m1, m5, legacy, gone, newer])
+		#expect(items.map(\.id) == ["tracker-t1000-e", "thinknode_m1"])
+		#expect(items.first { $0.id == "thinknode_m1" }?.deviceNames == ["ThinkNode M1", "ThinkNode M5"])
 	}
 
 	@Test("A card's name leaves off the maker when the catalog's name starts with it")

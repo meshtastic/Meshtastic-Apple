@@ -76,11 +76,12 @@ struct ShowcaseHardwareRecord: Codable, Equatable, Sendable {
 	/// `SupportLevel`'s raw value; nil when the catalog doesn't say.
 	var supportLevel: Int?
 
-	/// The showcase is for devices we recommend: flagship and niche. Legacy and discontinued
-	/// devices are left off the tables; a record that doesn't give a level stays on.
+	/// The showcase is for devices we recommend, so legacy and discontinued devices are left off
+	/// the tables. Everything else stays on: flagship and niche, a record that doesn't give a
+	/// level, and a level newer than this build knows.
 	var isShowcased: Bool {
-		guard let supportLevel, let level = SupportLevel(rawValue: supportLevel) else { return supportLevel == nil }
-		return level == .flagship || level == .niche
+		guard let supportLevel, let level = SupportLevel(rawValue: supportLevel) else { return true }
+		return level != .legacy && level != .discontinued
 	}
 }
 
