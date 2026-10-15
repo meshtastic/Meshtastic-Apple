@@ -143,7 +143,8 @@ private struct TraceRouteHopChain: View {
 				.accessibilityHidden(stop.isUnknownRepeater)
 				if !isStart && !isEnd {
 					TraceRouteHopNumberBadge(number: stop.id)
-						.accessibilityHidden(true)
+						// Read as the relay's place in the route, not a bare number.
+						.accessibilityLabel(Text("Relay \(stop.id)", comment: "Trace route timeline: VoiceOver label for a relay's number badge, the order the packet reached it"))
 				}
 			}
 			.frame(width: circleColumnWidth)

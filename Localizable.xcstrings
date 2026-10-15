@@ -113216,6 +113216,9 @@
         }
       }
     },
+    "Relay %lld" : {
+      "comment" : "Trace route timeline: VoiceOver label for a relay's number badge, the order the packet reached it"
+    },
     "Relayed" : {
       "localizations" : {
         "ko" : {
