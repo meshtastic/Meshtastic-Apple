@@ -311,13 +311,37 @@
       }
     },
     "· %lld outside" : {
-      "comment" : "Spatial map: nodes too far away to fit on the terrain"
+      "comment" : "Spatial map: nodes too far away to fit on the terrain",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "· %lld 個在範圍外"
+          }
+        }
+      }
     },
     "%@ · %@" : {
-      "comment" : "Spatial map trace route menu: hops, then when the route came back, e.g. \"3 Hops · 2 hours ago\""
+      "comment" : "Spatial map trace route menu: hops, then when the route came back, e.g. \"3 Hops · 2 hours ago\"",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · %@"
+          }
+        }
+      }
     },
     "%@, no return" : {
-      "comment" : "Spatial map trace route menu: the response carried no return path, e.g. \"3 Hops, no return\""
+      "comment" : "Spatial map trace route menu: the response carried no return path, e.g. \"3 Hops, no return\"",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@，無回程"
+          }
+        }
+      }
     },
     "%lld could not be removed." : {
       "comment" : "Result after removing unheard nodes: nodes the radio refused to remove",
@@ -874,7 +898,15 @@
       }
     },
     "Center" : {
-      "comment" : "Spatial map: slide the map to put this node in the middle"
+      "comment" : "Spatial map: slide the map to put this node in the middle",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "置中"
+          }
+        }
+      }
     },
     "Channel received: %d %@" : {
       "extractionState" : "manual",
@@ -1019,7 +1051,15 @@
       }
     },
     "Connected radio" : {
-      "comment" : "Spatial map: the selected node is the connected radio"
+      "comment" : "Spatial map: the selected node is the connected radio",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已連線的無線電"
+          }
+        }
+      }
     },
     "Contacts (%@)" : {
       "extractionState" : "manual",
@@ -1055,10 +1095,26 @@
       }
     },
     "Dark Map" : {
-      "comment" : "Spatial map: draw the map in its dark appearance"
+      "comment" : "Spatial map: draw the map in its dark appearance",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "深色地圖"
+          }
+        }
+      }
     },
     "Live traffic" : {
-      "comment" : "VoiceOver label for the spatial map traffic toggle"
+      "comment" : "VoiceOver label for the spatial map traffic toggle",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "即時流量"
+          }
+        }
+      }
     },
     "Default 128x64 screen layout" : {
       "extractionState" : "manual",
@@ -1894,13 +1950,37 @@
       }
     },
     "Map imagery unavailable; showing terrain shading" : {
-      "comment" : "Spatial map: the Apple map image could not be fetched"
+      "comment" : "Spatial map: the Apple map image could not be fetched",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "地圖影像無法使用；改為顯示地形陰影"
+          }
+        }
+      }
     },
     "Map Layer" : {
-      "comment" : "Spatial map: picker for the image draped over the terrain"
+      "comment" : "Spatial map: picker for the image draped over the terrain",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "地圖圖層"
+          }
+        }
+      }
     },
     "Map layer" : {
-      "comment" : "VoiceOver label for the spatial map layer menu"
+      "comment" : "VoiceOver label for the spatial map layer menu",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "地圖圖層"
+          }
+        }
+      }
     },
     "Medium Range - Fast" : {
       "extractionState" : "manual",
@@ -5234,10 +5314,26 @@
       }
     },
     "No traceroutes with positions" : {
-      "comment" : "Spatial map: trace route menu is empty"
+      "comment" : "Spatial map: trace route menu is empty",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "沒有含位置的追蹤路由"
+          }
+        }
+      }
     },
     "Node Detail" : {
-      "comment" : "Spatial map: open the node's detail screen"
+      "comment" : "Spatial map: open the node's detail screen",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "節點詳細資料"
+          }
+        }
+      }
     },
     "Node Filters" : {
       "localizations" : {
@@ -5250,7 +5346,15 @@
       }
     },
     "Node labels" : {
-      "comment" : "VoiceOver label for the spatial map labels toggle"
+      "comment" : "VoiceOver label for the spatial map labels toggle",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "節點標籤"
+          }
+        }
+      }
     },
     "Node status received: %@" : {
       "extractionState" : "manual",
@@ -5352,10 +5456,26 @@
       }
     },
     "Open 3D map" : {
-      "comment" : "VoiceOver label for the button that opens the spatial map volume"
+      "comment" : "VoiceOver label for the button that opens the spatial map volume",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開啟 3D 地圖"
+          }
+        }
+      }
     },
     "Pick a trace route to fly along it and leave it drawn on the map." : {
-      "comment" : "VoiceOver hint for the spatial map trace route menu"
+      "comment" : "VoiceOver hint for the spatial map trace route menu",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選擇一條追蹤路由，沿著路徑飛行並將其保留繪製在地圖上。"
+          }
+        }
+      }
     },
     "Removed %lld nodes." : {
       "comment" : "Result after removing nodes not heard on the current LoRa settings",
@@ -5995,10 +6115,26 @@
       }
     },
     "Show in 3D" : {
-      "comment" : "Node detail action: open the spatial map volume at this node"
+      "comment" : "Node detail action: open the spatial map volume at this node",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "以 3D 顯示"
+          }
+        }
+      }
     },
     "Shows the mesh on a terrain model in a volume." : {
-      "comment" : "VoiceOver hint for the button that opens the spatial map volume"
+      "comment" : "VoiceOver hint for the button that opens the spatial map volume",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在立體空間中將 Mesh 網路顯示於地形模型上。"
+          }
+        }
+      }
     },
     "Simple" : {
       "extractionState" : "manual",
@@ -6034,7 +6170,15 @@
       }
     },
     "Spatial Map" : {
-      "comment" : "Title of the visionOS spatial map volume"
+      "comment" : "Title of the visionOS spatial map volume",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "空間地圖"
+          }
+        }
+      }
     },
     "Status Message module config received: %@" : {
       "extractionState" : "manual",
@@ -6135,10 +6279,26 @@
       }
     },
     "Terrain Shading" : {
-      "comment" : "Spatial map layer: hillshade only, no map imagery"
+      "comment" : "Spatial map layer: hillshade only, no map imagery",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "地形陰影"
+          }
+        }
+      }
     },
     "Trace routes" : {
-      "comment" : "VoiceOver label for the spatial map trace route menu"
+      "comment" : "VoiceOver label for the spatial map trace route menu",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "追蹤路由"
+          }
+        }
+      }
     },
     "Text Message" : {
       "extractionState" : "manual",
@@ -8851,7 +9011,15 @@
       }
     },
     "%@ out · %@ back" : {
-      "comment" : "Trace route card when the forward and return paths differ, e.g. \"3 Hops out · 4 Hops back\""
+      "comment" : "Trace route card when the forward and return paths differ, e.g. \"3 Hops out · 4 Hops back\"",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "去程 %1$@ · 回程 %2$@"
+          }
+        }
+      }
     },
     "%@ percent" : {
       "comment" : "VoiceOver value spoken as a percentage reading on a chart. %@ is the number.",
@@ -15785,7 +15953,15 @@
       }
     },
     "Active topics" : {
-      "comment" : "Topic finder section: roots heard on the broker"
+      "comment" : "Topic finder section: roots heard on the broker",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "活躍主題"
+          }
+        }
+      }
     },
     "Activity" : {
       "localizations" : {
@@ -18949,7 +19125,15 @@
       }
     },
     "All Estimates" : {
-      "comment" : "Spatial map coverage option: show every coverage estimate in the area"
+      "comment" : "Spatial map coverage option: show every coverage estimate in the area",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "所有估算"
+          }
+        }
+      }
     },
     "All secondary channel slots are full. Choose an existing secondary channel to replace — your primary channel is never touched." : {
       "comment" : "A message displayed when the user is prompted to replace a beacon's channel.",
@@ -23906,7 +24090,15 @@
       }
     },
     "Best / worst SNR" : {
-      "comment" : "Trace route share image: the highest and lowest SNR of the legs"
+      "comment" : "Trace route share image: the highest and lowest SNR of the legs",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最佳／最差 SNR"
+          }
+        }
+      }
     },
     "Biking" : {
       "comment" : "ActivityType.description\nActivityType.fileNameString",
@@ -26094,7 +26286,15 @@
       }
     },
     "Cancel terrain download" : {
-      "comment" : "VoiceOver label to stop the spatial map terrain download"
+      "comment" : "VoiceOver label to stop the spatial map terrain download",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取消地形下載"
+          }
+        }
+      }
     },
     "Canceled" : {
       "localizations" : {
@@ -30133,7 +30333,15 @@
       }
     },
     "City" : {
-      "comment" : "Topic finder: ladder level name"
+      "comment" : "Topic finder: ladder level name",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "城市"
+          }
+        }
+      }
     },
     "Clear" : {
       "localizations" : {
@@ -33901,7 +34109,15 @@
       }
     },
     "Connecting…" : {
-      "comment" : "Topic finder: sampler status"
+      "comment" : "Topic finder: sampler status",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "連線中…"
+          }
+        }
+      }
     },
     "Connection Attempt %lld of %lld" : {
       "localizations" : {
@@ -35201,7 +35417,15 @@
       }
     },
     "Could not connect to %@." : {
-      "comment" : "Topic finder: sampler error"
+      "comment" : "Topic finder: sampler error",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法連線到 %@。"
+          }
+        }
+      }
     },
     "Could not connect to the device." : {
       "comment" : "OTA failed to connect to the device in update mode",
@@ -35327,7 +35551,15 @@
       }
     },
     "Could not look up the place name for your location." : {
-      "comment" : "Topic finder: geocoding failed"
+      "comment" : "Topic finder: geocoding failed",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法查詢您所在位置的地名。"
+          }
+        }
+      }
     },
     "Could not open the selected drive." : {
       "comment" : "Error message when the user cannot access the selected bootloader drive.",
@@ -35663,13 +35895,37 @@
       }
     },
     "Counts are nodes heard during the sample. Busy topics fill in within seconds; quiet ones may stay at zero." : {
-      "comment" : "Topic finder: ladder footer"
+      "comment" : "Topic finder: ladder footer",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "計數為取樣期間收聽到的節點數。繁忙的主題會在數秒內出現計數；冷清的主題可能維持為零。"
+          }
+        }
+      }
     },
     "Coverage" : {
-      "comment" : "Spatial map menu: which Site Planner coverage estimates to show on the terrain"
+      "comment" : "Spatial map menu: which Site Planner coverage estimates to show on the terrain",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "涵蓋範圍"
+          }
+        }
+      }
     },
     "Coverage estimate" : {
-      "comment" : "VoiceOver label for the spatial map card's coverage menu"
+      "comment" : "VoiceOver label for the spatial map card's coverage menu",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "涵蓋範圍估算"
+          }
+        }
+      }
     },
     "Coverage estimate failed" : {
       "comment" : "A title for an alert that displays when a coverage estimate fails.",
@@ -35708,10 +35964,26 @@
       }
     },
     "Coverage legend" : {
-      "comment" : "VoiceOver label for the spatial map coverage colors"
+      "comment" : "VoiceOver label for the spatial map coverage colors",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "涵蓋範圍圖例"
+          }
+        }
+      }
     },
     "Coverage Opacity" : {
-      "comment" : "Spatial map menu: how see-through the coverage overlay is"
+      "comment" : "Spatial map menu: how see-through the coverage overlay is",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "涵蓋範圍不透明度"
+          }
+        }
+      }
     },
     "Create Node Contact NFC Tag" : {
       "comment" : "A section header that instructs the user to create a contact NFC tag.",
@@ -36487,7 +36759,15 @@
       }
     },
     "Custom topic" : {
-      "comment" : "Topic finder: section and field for a typed root"
+      "comment" : "Topic finder: section and field for a typed root",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自訂主題"
+          }
+        }
+      }
     },
     "Custom: %@" : {
       "comment" : "A custom channel picker option that shows the name of the channel.",
@@ -36519,7 +36799,14 @@
       }
     },
     "Dashed blue line back to the originator. Where both paths use the same leg, the two lines sit side by side." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "藍色虛線為返回發起端的路徑。若兩條路徑經過同一段，兩條線會並排顯示。"
+          }
+        }
+      }
     },
     "Dashed line showing a recorded route path." : {
       "comment" : "A description of a dashed line that shows a recorded route path.",
@@ -41384,7 +41671,15 @@
       }
     },
     "Direct Links" : {
-      "comment" : "Map settings toggle that draws lines between nodes that hear each other directly."
+      "comment" : "Map settings toggle that draws lines between nodes that hear each other directly.",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "直接連結"
+          }
+        }
+      }
     },
     "Direct Message Key" : {
       "localizations" : {
@@ -44374,13 +44669,37 @@
       }
     },
     "Download Terrain" : {
-      "comment" : "Spatial map: button that downloads elevation data so the volume shows relief"
+      "comment" : "Spatial map: button that downloads elevation data so the volume shows relief",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下載地形"
+          }
+        }
+      }
     },
     "Download Terrain Automatically" : {
-      "comment" : "Spatial map menu: keep the volume's area covered by elevation data without asking"
+      "comment" : "Spatial map menu: keep the volume's area covered by elevation data without asking",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動下載地形"
+          }
+        }
+      }
     },
     "Download terrain for this area?" : {
-      "comment" : "Spatial map: title of the terrain download confirmation"
+      "comment" : "Spatial map: title of the terrain download confirmation",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "要下載此區域的地形嗎？"
+          }
+        }
+      }
     },
     "Download the %@ language pack to read the documentation in your language." : {
       "comment" : "A description of the action of downloading a translation language pack.",
@@ -44521,7 +44840,15 @@
       }
     },
     "Downloading terrain" : {
-      "comment" : "VoiceOver label for the spatial map terrain download progress"
+      "comment" : "VoiceOver label for the spatial map terrain download progress",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在下載地形"
+          }
+        }
+      }
     },
     "Downloading, verifying and writing…" : {
       "localizations" : {
@@ -44540,10 +44867,26 @@
       }
     },
     "Downloads about %@ of elevation data for a %@ area around the mesh." : {
-      "comment" : "Spatial map: terrain download confirmation; the arguments are the download size, e.g. 40 MB, and the area's width × height, e.g. 98 km × 104 km"
+      "comment" : "Spatial map: terrain download confirmation; the arguments are the download size, e.g. 40 MB, and the area's width × height, e.g. 98 km × 104 km",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "將下載約 %1$@ 的海拔資料，涵蓋 Mesh 網路周圍 %2$@ 的區域。"
+          }
+        }
+      }
     },
     "Downloads elevation data so the map shows hills and valleys." : {
-      "comment" : "VoiceOver hint for the spatial map terrain download button"
+      "comment" : "VoiceOver hint for the spatial map terrain download button",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下載海拔資料，讓地圖顯示山丘與山谷。"
+          }
+        }
+      }
     },
     "Drag the box, its corners, or the map to frame an area" : {
       "comment" : "A description of how to use the map selector.",
@@ -47507,7 +47850,15 @@
       }
     },
     "Enter a topic." : {
-      "comment" : "MQTT root topic rule"
+      "comment" : "MQTT root topic rule",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請輸入主題。"
+          }
+        }
+      }
     },
     "Enter hostname[:port]" : {
       "comment" : "A label for a text field where the user can enter a hostname or IP address and optionally a port number.",
@@ -49028,10 +49379,26 @@
       }
     },
     "Estimate Coverage…" : {
-      "comment" : "Spatial map card: open the coverage estimate form for this node"
+      "comment" : "Spatial map card: open the coverage estimate form for this node",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "估算涵蓋範圍…"
+          }
+        }
+      }
     },
     "Estimated %@" : {
-      "comment" : "Spatial map card: when this node's coverage estimate was made, e.g. Estimated 2 days ago"
+      "comment" : "Spatial map card: when this node's coverage estimate was made, e.g. Estimated 2 days ago",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "估算 %@"
+          }
+        }
+      }
     },
     "Estimating coverage…" : {
       "comment" : "A label displayed while running a coverage estimate.",
@@ -51952,7 +52319,15 @@
       }
     },
     "Find Topics" : {
-      "comment" : "MQTT root topic: button that opens the topic finder, and the sheet title"
+      "comment" : "MQTT root topic: button that opens the topic finder, and the sheet title",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尋找主題"
+          }
+        }
+      }
     },
     "Finish" : {
       "localizations" : {
@@ -52186,7 +52561,15 @@
       }
     },
     "Firmware before 2.8.1 replaces a custom root topic with msh/<REGION> whenever the LoRa region is saved." : {
-      "comment" : "MQTT root topic: warning on older firmware"
+      "comment" : "MQTT root topic: warning on older firmware",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "2.8.1 之前的韌體在每次儲存 LoRa 地區時，都會將自訂根主題替換為 msh/<REGION>。"
+          }
+        }
+      }
     },
     "Firmware Edition" : {
       "localizations" : {
@@ -53946,10 +54329,26 @@
       }
     },
     "Forward hops" : {
-      "comment" : "Trace route: hop count towards the target"
+      "comment" : "Trace route: hop count towards the target",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "去程跳數"
+          }
+        }
+      }
     },
     "Forward route" : {
-      "comment" : "Trace route timeline: heading for the path towards the target"
+      "comment" : "Trace route timeline: heading for the path towards the target",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "去程路由"
+          }
+        }
+      }
     },
     "Four Hours" : {
       "comment" : "UpdateInterval.description",
@@ -57091,7 +57490,15 @@
       }
     },
     "Heard %lld messages on %lld topics" : {
-      "comment" : "Topic finder: result summary"
+      "comment" : "Topic finder: result summary",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 %2$lld 個主題上收聽到 %1$lld 則訊息"
+          }
+        }
+      }
     },
     "Heard on %@" : {
       "comment" : "A label that shows the name of the preset/region/frequency slot that the beacon is currently heard on.",
@@ -57607,7 +58014,15 @@
       }
     },
     "Hide Coverage" : {
-      "comment" : "Spatial map card: stop showing this node's coverage estimate"
+      "comment" : "Spatial map card: stop showing this node's coverage estimate",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隱藏涵蓋範圍"
+          }
+        }
+      }
     },
     "Hide help" : {
       "comment" : "VoiceOver label for the help toggle button when help is showing",
@@ -58450,7 +58865,14 @@
       }
     },
     "Hop Numbers" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "跳數編號"
+          }
+        }
+      }
     },
     "hops" : {
       "comment" : "Search keyword",
@@ -64483,7 +64905,15 @@
       }
     },
     "Kept up to date by the Spatial Map. Delete it any time; it is downloaded again when the volume needs it (turn off Download Terrain Automatically to stop that)." : {
-      "comment" : "Offline map row caption for the terrain region the visionOS spatial map manages"
+      "comment" : "Offline map row caption for the terrain region the visionOS spatial map manages",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "由空間地圖保持最新。您可隨時刪除；當立體檢視需要時會重新下載（關閉「自動下載地形」即可停止）。"
+          }
+        }
+      }
     },
     "key" : {
       "comment" : "Search keyword",
@@ -66356,7 +66786,15 @@
       }
     },
     "Light" : {
-      "comment" : "Spatial map coverage opacity option: most see-through"
+      "comment" : "Spatial map coverage opacity option: most see-through",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "淺色"
+          }
+        }
+      }
     },
     "Limit all periodic broadcast intervals especially telemetry and position. If you need to increase hops, do it on nodes at the edges, not the ones in the middle. MQTT is not advised when you are duty cycle restricted because the gateway node is then doing all the work." : {
       "localizations" : {
@@ -66587,7 +67025,15 @@
       }
     },
     "Lines between nodes that hear each other directly, colored by signal quality. Links from your radio come from the nodes it hears; links between other nodes come from their Neighbor Info reports." : {
-      "comment" : "Caption under the Direct Links toggle in map settings, explaining where the two kinds of lines come from."
+      "comment" : "Caption under the Direct Links toggle in map settings, explaining where the two kinds of lines come from.",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可直接互相收聽的節點之間會以線條相連，並依訊號品質上色。您無線電的連結來自它收聽到的節點；其他節點之間的連結則來自它們的鄰居資訊回報。"
+          }
+        }
+      }
     },
     "Link" : {
       "comment" : "VoiceOver: link formatting toolbar button",
@@ -66645,10 +67091,26 @@
       }
     },
     "Listening…" : {
-      "comment" : "Topic finder: sampler status"
+      "comment" : "Topic finder: sampler status",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "收聽中…"
+          }
+        }
+      }
     },
     "Listens to %@ for one minute and publishes nothing. The broker sees your IP address and a random client ID, not your node. Your location is never sent to the broker; Apple's geocoder turns it into the state and city names on the rows. Picking a row fills in the Root Topic field; nothing is sent to the radio until you tap Save." : {
-      "comment" : "Topic finder: privacy footer"
+      "comment" : "Topic finder: privacy footer",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "收聽 %@ 一分鐘，且不會發布任何內容。訊息代理伺服器只會看到您的 IP 位址與隨機的客戶端 ID，而不是您的節點。您的位置絕不會傳送給訊息代理伺服器；Apple 的地理編碼器會將其轉換為各列中的州與城市名稱。選擇一列會填入「根主題」欄位；在您點選「儲存」之前，不會傳送任何內容到無線電。"
+          }
+        }
+      }
     },
     "Live" : {
       "localizations" : {
@@ -71644,7 +72106,15 @@
       }
     },
     "Medium" : {
-      "comment" : "Spatial map coverage opacity option"
+      "comment" : "Spatial map coverage opacity option",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "中"
+          }
+        }
+      }
     },
     "Mesh activity update" : {
       "localizations" : {
@@ -94598,7 +95068,15 @@
       }
     },
     "Near you" : {
-      "comment" : "Topic finder section: geocoded ladder"
+      "comment" : "Topic finder section: geocoded ladder",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "您附近"
+          }
+        }
+      }
     },
     "Nearby Devices" : {
       "localizations" : {
@@ -94777,7 +95255,15 @@
       }
     },
     "nearest %@" : {
-      "comment" : "Topic finder: distance to the closest map-reported node"
+      "comment" : "Topic finder: distance to the closest map-reported node",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最近的 %@"
+          }
+        }
+      }
     },
     "Need Hardware?" : {
       "comment" : "A link to learn more about the hardware needed to use Meshtastic.",
@@ -96793,7 +97279,15 @@
       }
     },
     "No local topics heard" : {
-      "comment" : "Topic finder: empty discovered section"
+      "comment" : "Topic finder: empty discovered section",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未收聽到本地主題"
+          }
+        }
+      }
     },
     "No LocalStats data collected" : {
       "comment" : "A message displayed when a user has not yet collected LocalStats data.",
@@ -96868,7 +97362,15 @@
       }
     },
     "No location yet. Connect a radio with a position fix, or allow location access, to see state and city topics." : {
-      "comment" : "Topic finder: ladder footer without a location"
+      "comment" : "Topic finder: ladder footer without a location",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尚無位置。請連線已定位的無線電，或允許位置存取權限，以查看州與城市主題。"
+          }
+        }
+      }
     },
     "No map data files uploaded" : {
       "comment" : "Message when no files are uploaded",
@@ -97604,10 +98106,26 @@
       }
     },
     "No response" : {
-      "comment" : "Trace route state: request sent, nothing came back"
+      "comment" : "Trace route state: request sent, nothing came back",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "沒有回應"
+          }
+        }
+      }
     },
     "No return route was reported." : {
-      "comment" : "Trace route timeline and share image: the response didn't include the path back"
+      "comment" : "Trace route timeline and share image: the response didn't include the path back",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未回報回程路由。"
+          }
+        }
+      }
     },
     "No route to the destination node was found in the mesh. Try again when more nodes are reachable." : {
       "comment" : "RoutingError.description",
@@ -97637,7 +98155,15 @@
       }
     },
     "No signal" : {
-      "comment" : "Spatial map legend: the dark shade where a coverage estimate found no signal"
+      "comment" : "Spatial map legend: the dark shade where a coverage estimate found no signal",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無訊號"
+          }
+        }
+      }
     },
     "No SSH client found. We'll open the App Store so you can install one." : {
       "localizations" : {
@@ -98906,7 +99432,15 @@
       }
     },
     "nodes" : {
-      "comment" : "Topic finder: unit under the node count on a topic row"
+      "comment" : "Topic finder: unit under the node count on a topic row",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "節點"
+          }
+        }
+      }
     },
     "Nodes" : {
       "localizations" : {
@@ -99821,10 +100355,26 @@
       }
     },
     "Nothing heard yet" : {
-      "comment" : "Topic finder: discovered section while sampling"
+      "comment" : "Topic finder: discovered section while sampling",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尚未收聽到任何內容"
+          }
+        }
+      }
     },
     "Nothing was heard during the sample." : {
-      "comment" : "Topic finder: empty discovered section"
+      "comment" : "Topic finder: empty discovered section",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取樣期間未收聽到任何內容。"
+          }
+        }
+      }
     },
     "Notifications for channel and direct messages." : {
       "localizations" : {
@@ -100567,7 +101117,15 @@
       }
     },
     "Offline map storage is full. Delete a map in Offline Maps to download terrain for the whole mesh." : {
-      "comment" : "Spatial map: terrain for the whole mesh does not fit in the offline map storage limit"
+      "comment" : "Spatial map: terrain for the whole mesh does not fit in the offline map storage limit",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "離線地圖儲存空間已滿。請在「離線地圖」中刪除一張地圖，以下載整個 Mesh 網路的地形。"
+          }
+        }
+      }
     },
     "Offline Maps" : {
       "localizations" : {
@@ -101616,7 +102174,15 @@
       }
     },
     "Only the topics above were active during the sample." : {
-      "comment" : "Topic finder: empty discovered section"
+      "comment" : "Topic finder: empty discovered section",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取樣期間只有上方的主題處於活躍狀態。"
+          }
+        }
+      }
     },
     "Open %@ documentation" : {
       "comment" : "VoiceOver label for a documentation source link",
@@ -111392,7 +111958,15 @@
       }
     },
     "Re-estimate Coverage…" : {
-      "comment" : "Spatial map card: run a new coverage estimate for this node"
+      "comment" : "Spatial map card: run a new coverage estimate for this node",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重新估算涵蓋範圍…"
+          }
+        }
+      }
     },
     "Re-run Analysis" : {
       "comment" : "A button that triggers a re-run of the analysis.",
@@ -113217,7 +113791,15 @@
       }
     },
     "Relay %lld" : {
-      "comment" : "Trace route timeline: VoiceOver label for a relay's number badge, the order the packet reached it"
+      "comment" : "Trace route timeline: VoiceOver label for a relay's number badge, the order the packet reached it",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "中繼 %lld"
+          }
+        }
+      }
     },
     "Relayed" : {
       "localizations" : {
@@ -113358,7 +113940,14 @@
       }
     },
     "Relays are numbered in order, filled orange on the way out and outlined blue on the way back." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "中繼節點依序編號，去程以橘色填滿，回程以藍色外框標示。"
+          }
+        }
+      }
     },
     "Release Notes" : {
       "localizations" : {
@@ -115535,7 +116124,15 @@
       }
     },
     "Reset zoom" : {
-      "comment" : "Spatial map: button showing how far the map is zoomed in; tapping it zooms back out to the whole mesh"
+      "comment" : "Spatial map: button showing how far the map is zoomed in; tapping it zooms back out to the whole mesh",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重設縮放"
+          }
+        }
+      }
     },
     "Resetting…" : {
       "localizations" : {
@@ -116436,7 +117033,15 @@
       }
     },
     "Retry terrain download" : {
-      "comment" : "VoiceOver label to retry the spatial map terrain download after it failed"
+      "comment" : "VoiceOver label to retry the spatial map terrain download after it failed",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重試地形下載"
+          }
+        }
+      }
     },
     "Retry Update" : {
       "localizations" : {
@@ -116661,7 +117266,15 @@
       }
     },
     "Return hops" : {
-      "comment" : "Trace route: hop count on the way back"
+      "comment" : "Trace route: hop count on the way back",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "回程跳數"
+          }
+        }
+      }
     },
     "Return Path" : {
       "comment" : "A description of the return path of a trace route.",
@@ -116694,7 +117307,15 @@
       }
     },
     "Return route" : {
-      "comment" : "Trace route timeline: heading for the path back from the target"
+      "comment" : "Trace route timeline: heading for the path back from the target",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "回程路由"
+          }
+        }
+      }
     },
     "Review in Meshtastic" : {
       "comment" : "A button that opens a web page in the user's browser.",
@@ -117658,7 +118279,15 @@
       }
     },
     "Round trip" : {
-      "comment" : "Trace route: time from sending the request to getting the response"
+      "comment" : "Trace route: time from sending the request to getting the response",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "往返"
+          }
+        }
+      }
     },
     "route" : {
       "comment" : "Search keyword",
@@ -119015,7 +119644,15 @@
       }
     },
     "Sample again" : {
-      "comment" : "Topic finder: rerun the broker sample"
+      "comment" : "Topic finder: rerun the broker sample",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重新取樣"
+          }
+        }
+      }
     },
     "Satellite" : {
       "comment" : "MapLayer.localized: map layer style\nMeshMapTypes.description",
@@ -121485,7 +122122,15 @@
       }
     },
     "See which root topics are active on your broker near you, and pick one." : {
-      "comment" : "MQTT root topic: help under the Find Topics button"
+      "comment" : "MQTT root topic: help under the Find Topics button",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查看訊息代理伺服器上您附近有哪些活躍的根主題，並從中選擇一個。"
+          }
+        }
+      }
     },
     "Select a channel" : {
       "localizations" : {
@@ -122457,7 +123102,15 @@
       }
     },
     "Selected Node" : {
-      "comment" : "Spatial map coverage option: show the selected node's coverage estimate"
+      "comment" : "Spatial map coverage option: show the selected node's coverage estimate",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已選擇的節點"
+          }
+        }
+      }
     },
     "Send" : {
       "localizations" : {
@@ -126506,7 +127159,15 @@
       }
     },
     "Set the LoRa region first" : {
-      "comment" : "Topic finder: sampling needs a region"
+      "comment" : "Topic finder: sampling needs a region",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請先設定 LoRa 地區"
+          }
+        }
+      }
     },
     "Set to current location" : {
       "comment" : "VoiceOver label for the use-my-location button",
@@ -127060,7 +127721,15 @@
       }
     },
     "Share" : {
-      "comment" : "Button that shares the trace route image"
+      "comment" : "Button that shares the trace route image",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "分享"
+          }
+        }
+      }
     },
     "Share Channels" : {
       "comment" : "A tip that explains how to share channels.",
@@ -128302,7 +128971,15 @@
       }
     },
     "Show Coverage" : {
-      "comment" : "Spatial map card: show this node's coverage estimate on the terrain"
+      "comment" : "Spatial map card: show this node's coverage estimate on the terrain",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顯示涵蓋範圍"
+          }
+        }
+      }
     },
     "Show help" : {
       "comment" : "VoiceOver label for the help toggle button when help is hidden",
@@ -131657,7 +132334,14 @@
       }
     },
     "Solid orange line toward the target; arrows point in the direction of travel." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "橘色實線為前往目標的路徑；箭頭指向傳遞方向。"
+          }
+        }
+      }
     },
     "Source" : {
       "comment" : "A label that displays the source of a map.",
@@ -131690,7 +132374,15 @@
       }
     },
     "Spatial Map terrain" : {
-      "comment" : "Name of the terrain-only offline map the visionOS spatial map downloads and keeps up to date"
+      "comment" : "Name of the terrain-only offline map the visionOS spatial map downloads and keeps up to date",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "空間地圖地形"
+          }
+        }
+      }
     },
     "Speed" : {
       "localizations" : {
@@ -132740,7 +133432,15 @@
       }
     },
     "State or province" : {
-      "comment" : "Topic finder: ladder level name"
+      "comment" : "Topic finder: ladder level name",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "州或省"
+          }
+        }
+      }
     },
     "Static" : {
       "localizations" : {
@@ -133638,7 +134338,15 @@
       }
     },
     "Strong" : {
-      "comment" : "Spatial map coverage opacity option: least see-through"
+      "comment" : "Spatial map coverage opacity option: least see-through",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "強"
+          }
+        }
+      }
     },
     "Subnet" : {
       "localizations" : {
@@ -133763,7 +134471,15 @@
       }
     },
     "Subscribing…" : {
-      "comment" : "Topic finder: sampler status"
+      "comment" : "Topic finder: sampler status",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "訂閱中…"
+          }
+        }
+      }
     },
     "Successfully uploaded '%@' with %lld overlays" : {
       "localizations" : {
@@ -135773,7 +136489,15 @@
       }
     },
     "Terrain Download Failed" : {
-      "comment" : "Spatial map: alert title when downloading terrain for the volume fails"
+      "comment" : "Spatial map: alert title when downloading terrain for the volume fails",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "地形下載失敗"
+          }
+        }
+      }
     },
     "Terrain for %@" : {
       "localizations" : {
@@ -136255,16 +136979,48 @@
       }
     },
     "The broker closed the connection." : {
-      "comment" : "Topic finder: sampler error"
+      "comment" : "Topic finder: sampler error",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "訊息代理伺服器已關閉連線。"
+          }
+        }
+      }
     },
     "The broker did not confirm the subscription." : {
-      "comment" : "Topic finder: sampler error"
+      "comment" : "Topic finder: sampler error",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "訊息代理伺服器未確認訂閱。"
+          }
+        }
+      }
     },
     "The broker does not allow these topic filters." : {
-      "comment" : "Topic finder: sampler error"
+      "comment" : "Topic finder: sampler error",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "訊息代理伺服器不允許這些主題篩選條件。"
+          }
+        }
+      }
     },
     "The broker refused the connection: %@." : {
-      "comment" : "Topic finder: sampler error"
+      "comment" : "Topic finder: sampler error",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "訊息代理伺服器拒絕連線：%@。"
+          }
+        }
+      }
     },
     "The channel and preset the beacon transmits on. Add a target to broadcast on more channels." : {
       "localizations" : {
@@ -137436,7 +138192,15 @@
       }
     },
     "The mesh is too spread out to download terrain for all of it." : {
-      "comment" : "Spatial map: the area around the mesh is over the per-map download limit"
+      "comment" : "Spatial map: the area around the mesh is over the per-map download limit",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesh 網路分布範圍過大，無法下載全部區域的地形。"
+          }
+        }
+      }
     },
     "The Meshtastic Apple app requires firmware version %@ or later. Older firmware versions are no longer supported and may have compatibility issues or missing features." : {
       "comment" : "A body text that explains that the app requires a certain version of the firmware.",
@@ -138023,7 +138787,14 @@
       }
     },
     "The originator's short name has a green ring, the target's a white ring." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "發起端的簡稱以綠色圓環標示，目標的簡稱以白色圓環標示。"
+          }
+        }
+      }
     },
     "The owner, channels, identity keys, settings, and node database are permanently removed." : {
       "localizations" : {
@@ -138042,7 +138813,14 @@
       }
     },
     "The pill on each leg shows its SNR, colored green (good), yellow (fair), orange (bad) or red (none). Pills that would overlap stay hidden until you zoom in." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每一段上的標籤會顯示其 SNR，並以綠色（良好）、黃色（普通）、橘色（不佳）或紅色（無）標示。會重疊的標籤將隱藏，直到您放大為止。"
+          }
+        }
+      }
     },
     "The primary channel handles broadcast traffic. Add secondary channels for separate messaging groups, each secured by their own key. [Learn more](https://meshtastic.org/docs/configuration/tips/)" : {
       "comment" : "A description of the channels feature.",
@@ -138860,7 +139638,15 @@
       }
     },
     "The terrain download could not start." : {
-      "comment" : "Spatial map: alert message when the manager refuses the terrain download"
+      "comment" : "Spatial map: alert message when the manager refuses the terrain download",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法開始地形下載。"
+          }
+        }
+      }
     },
     "The tertiary public key authorized to send admin messages to this node." : {
       "localizations" : {
@@ -141754,7 +142540,15 @@
       }
     },
     "Time window" : {
-      "comment" : "Trace route log: how far back the chart and list go"
+      "comment" : "Trace route log: how far back the chart and list go",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "時間範圍"
+          }
+        }
+      }
     },
     "Time window in seconds for rate limiting calculations." : {
       "extractionState" : "stale",
@@ -142922,28 +143716,92 @@
       }
     },
     "Topics are limited to 31 characters." : {
-      "comment" : "MQTT root topic rule"
+      "comment" : "MQTT root topic rule",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "主題最多 31 個字元。"
+          }
+        }
+      }
     },
     "Topics cannot contain + or #." : {
-      "comment" : "MQTT root topic rule"
+      "comment" : "MQTT root topic rule",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "主題不能包含 + 或 #。"
+          }
+        }
+      }
     },
     "Topics cannot contain spaces or control characters." : {
-      "comment" : "MQTT root topic rule"
+      "comment" : "MQTT root topic rule",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "主題不能包含空格或控制字元。"
+          }
+        }
+      }
     },
     "Topics cannot contain two slashes in a row." : {
-      "comment" : "MQTT root topic rule"
+      "comment" : "MQTT root topic rule",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "主題不能包含連續兩個斜線。"
+          }
+        }
+      }
     },
     "Topics cannot end with /2." : {
-      "comment" : "MQTT root topic rule"
+      "comment" : "MQTT root topic rule",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "主題不能以 /2 結尾。"
+          }
+        }
+      }
     },
     "Topics cannot end with a slash." : {
-      "comment" : "MQTT root topic rule"
+      "comment" : "MQTT root topic rule",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "主題不能以斜線結尾。"
+          }
+        }
+      }
     },
     "Topics cannot start with a slash." : {
-      "comment" : "MQTT root topic rule"
+      "comment" : "MQTT root topic rule",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "主題不能以斜線開頭。"
+          }
+        }
+      }
     },
     "Topics must use ASCII characters." : {
-      "comment" : "MQTT root topic rule"
+      "comment" : "MQTT root topic rule",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "主題必須使用 ASCII 字元。"
+          }
+        }
+      }
     },
     "Total" : {
       "localizations" : {
@@ -144042,7 +144900,15 @@
       }
     },
     "Traceroute Complete" : {
-      "comment" : "Notification title when a trace route you sent gets a response"
+      "comment" : "Notification title when a trace route you sent gets a response",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "路由追蹤完成"
+          }
+        }
+      }
     },
     "track" : {
       "comment" : "Search keyword",
@@ -146239,10 +147105,26 @@
       }
     },
     "Unknown repeater" : {
-      "comment" : "Trace route hop that didn't add its node number"
+      "comment" : "Trace route hop that didn't add its node number",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未知的中繼器"
+          }
+        }
+      }
     },
     "Unknown signal" : {
-      "comment" : "Trace route timeline: a leg whose SNR wasn't reported"
+      "comment" : "Trace route timeline: a leg whose SNR wasn't reported",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未知訊號"
+          }
+        }
+      }
     },
     "UNLISTED" : {
       "comment" : "A label for a firmware tag.",
@@ -146795,7 +147677,15 @@
       }
     },
     "Up to 31 ASCII characters, no leading or trailing slash, no + or #." : {
-      "comment" : "Topic finder: custom topic footer"
+      "comment" : "Topic finder: custom topic footer",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最多 31 個 ASCII 字元，開頭與結尾不可為斜線，不可包含 + 或 #。"
+          }
+        }
+      }
     },
     "update" : {
       "comment" : "Search keyword",
@@ -148887,7 +149777,15 @@
       }
     },
     "Use this topic" : {
-      "comment" : "Topic finder: apply the typed root"
+      "comment" : "Topic finder: apply the typed root",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用此主題"
+          }
+        }
+      }
     },
     "Use your phone GPS to send locations to your node to instead of using a hardware GPS on your node." : {
       "localizations" : {
@@ -150979,7 +151877,15 @@
       }
     },
     "via MQTT" : {
-      "comment" : "Spatial map: node heard over MQTT"
+      "comment" : "Spatial map: node heard over MQTT",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "透過 MQTT"
+          }
+        }
+      }
     },
     "Via Mqtt" : {
       "localizations" : {
@@ -151667,7 +152573,15 @@
       }
     },
     "Waiting for response" : {
-      "comment" : "Trace route state: request sent, no answer yet"
+      "comment" : "Trace route state: request sent, no answer yet",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "等待回應中"
+          }
+        }
+      }
     },
     "Waiting for the mesh to acknowledge this message." : {
       "extractionState" : "manual",
@@ -155875,7 +156789,15 @@
       }
     },
     "Your radio's Neighbor Info module is off, so links between other nodes can't be shown." : {
-      "comment" : "Note under the Direct Links toggle in map settings, shown when the connected radio's Neighbor Info module is off."
+      "comment" : "Note under the Direct Links toggle in map settings, shown when the connected radio's Neighbor Info module is off.",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "您無線電的鄰居資訊模組已關閉，因此無法顯示其他節點之間的連結。"
+          }
+        }
+      }
     },
     "Your region has a %lld%% duty cycle. MQTT is not advised when you are duty cycle restricted, the extra traffic will quickly overwhelm your LoRa mesh." : {
       "localizations" : {
@@ -156290,10 +157212,26 @@
       }
     },
     "Zoom in" : {
-      "comment" : "Spatial map: show a smaller area on the table in more detail"
+      "comment" : "Spatial map: show a smaller area on the table in more detail",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "放大"
+          }
+        }
+      }
     },
     "Zoom out" : {
-      "comment" : "Spatial map: show a wider area on the table"
+      "comment" : "Spatial map: show a wider area on the table",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "縮小"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"
