@@ -3,7 +3,9 @@
 #
 # Opens a web-flasher pull request with the models from out/ in
 # public/models/devices/, next to the README carrying the copyright notice.
-# Run build.sh first and review out/contact-sheet.html.
+# Each USDZ also gets a GLB for Android, desktop and the web, made by the
+# flasher's own scripts/usdz2glb.py so it matches the GLBs already there.
+# Run build.sh first and review out/contact-sheet.html. Needs uv.
 #
 #   scripts/device-models/publish-flasher.sh [path-to-web-flasher-clone]
 set -euo pipefail
@@ -34,6 +36,10 @@ git switch -q -C "$BRANCH" origin/main
 mkdir -p "$DEST"
 cp "$HERE/flasher-README.md" "$DEST/README.md"
 cp "${models[@]}" "$DEST/"
+published=()
+for m in "${models[@]}"; do published+=("$DEST/$(basename "$m")"); done
+[ -f scripts/usdz2glb.py ] || { echo "scripts/usdz2glb.py is missing from the flasher; can't make the GLBs"; exit 1; }
+uv run -q scripts/usdz2glb.py "${published[@]}" --out "$DEST"
 git add "$DEST"
 if git diff --cached --quiet; then
 	echo "no changes to publish"
@@ -42,17 +48,18 @@ fi
 
 names=""
 for m in "${models[@]}"; do names+="${names:+ }$(basename "$m" .usdz)"; done
-git commit -q -m "Add real-size 3D device models" -m "USDZ models built from the device SVGs: $names"
+git commit -q -m "Add real-size 3D device models" -m "USDZ models built from the device SVGs, each with a GLB converted from it: $names"
 git push -q -u origin "$BRANCH"
 gh pr create --base main --head "$BRANCH" --title "Add real-size 3D device models" --body "$(cat <<EOF
 ## Summary
-Adds real-size USDZ models in \`public/models/devices/\`, one for each device SVG that has a spec in Meshtastic-Apple's \`scripts/device-models/\`. They will be served at \`/models/devices/<name>.usdz\`.
+Adds real-size USDZ models in \`public/models/devices/\`, one for each device SVG that has a spec in Meshtastic-Apple's \`scripts/device-models/\`, and a GLB of each for glTF viewers. They will be served at \`/models/devices/<name>.usdz\` and \`<name>.glb\`.
 
 ## What changed
 - \`public/models/devices/*.usdz\`: $names
+- \`public/models/devices/*.glb\`: the same models, converted with \`scripts/usdz2glb.py\`
 - \`public/models/devices/README.md\`: the same Meshtastic LLC asset notice as \`img/devices\`, worded for the models. The notice is also embedded in each file.
 
 ## Testing
-Each model passes \`usdchecker --arkit\` and was checked against the manufacturer's published dimensions.
+Each model passes \`usdchecker --arkit\` and was checked against the manufacturer's published dimensions. The GLBs come from the flasher's converter, unchanged.
 EOF
 )"
