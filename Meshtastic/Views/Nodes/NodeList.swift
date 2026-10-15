@@ -615,9 +615,11 @@ private struct NodeListFilterLookup {
 	private static func fetchEnvironmentNodeNums(nodeNums: [Int64], context: ModelContext) -> Set<Int64> {
 		guard !nodeNums.isEmpty else { return [] }
 		let metricsType: Int32 = 1
-		let descriptor = FetchDescriptor<TelemetryEntity>(
+		var descriptor = FetchDescriptor<TelemetryEntity>(
 			predicate: TelemetryEntity.predicate(forNodes: nodeNums, metricsType: metricsType)
 		)
+		// Only the node number is read, and this matches every environment row of every node.
+		descriptor.propertiesToFetch = [\.nodeNum]
 		let metrics = (try? context.fetch(descriptor)) ?? []
 		return Set(metrics.compactMap(\.ownerNodeNum))
 	}
