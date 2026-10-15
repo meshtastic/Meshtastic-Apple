@@ -71,11 +71,20 @@ extension ShowcaseRoom {
 			let small: [NSAttributedString.Key: Any] = [.font: UIFont.systemFont(ofSize: 64, weight: .medium), .foregroundColor: UIColor.white.withAlphaComponent(0.7)]
 			let byLineSize = (byLine as NSString).size(withAttributes: small)
 			(byLine as NSString).draw(at: CGPoint(x: bounds.midX - byLineSize.width / 2, y: 170), withAttributes: small)
-			let large: [NSAttributedString.Key: Any] = [.font: UIFont.systemFont(ofSize: 88, weight: .semibold), .foregroundColor: UIColor.white]
-			let nameSize = (name as NSString).size(withAttributes: large)
-			let markHeight: CGFloat = 110
-			let markWidth = markHeight * mark.size.width / max(mark.size.height, 1)
+			// As large as fits inside the border.
+			var fontSize: CGFloat = 112
+			var large: [NSAttributedString.Key: Any] = [:]
+			var nameSize = CGSize.zero
+			var markHeight: CGFloat = 0
+			var markWidth: CGFloat = 0
 			let gap: CGFloat = 32
+			repeat {
+				large = [.font: UIFont.systemFont(ofSize: fontSize, weight: .semibold), .foregroundColor: UIColor.white]
+				nameSize = (name as NSString).size(withAttributes: large)
+				markHeight = fontSize * 1.2
+				markWidth = markHeight * mark.size.width / max(mark.size.height, 1)
+				fontSize -= 4
+			} while markWidth + gap + nameSize.width > bounds.width - 140 && fontSize > 48
 			let left = bounds.midX - (markWidth + gap + nameSize.width) / 2
 			let rowMid: CGFloat = 470
 			mark.draw(in: CGRect(x: left, y: rowMid - markHeight / 2, width: markWidth, height: markHeight))
