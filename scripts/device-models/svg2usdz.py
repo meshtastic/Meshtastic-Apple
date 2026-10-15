@@ -198,6 +198,46 @@ def extrude(geom, z0, h):
     return meshes
 
 
+def solid_mesh(sd, depth):
+    """A block placed in mm: x from the device's center line, y up from its
+    bottom, z out of the front with 0 the middle of the body (the front face is
+    at depth/2, the back at -depth/2). It is size_mm across, rotated by
+    rotate_deg about x, y then z around its own center. radius_mm rounds the
+    corners of its two largest sides, so a flat port or button reads as one."""
+    w, h, d = (float(v) for v in sd["size_mm"])
+    dims = [w, h, d]
+    thin = int(np.argmin(dims))
+    a, b = [dims[i] for i in range(3) if i != thin]
+    r = min(float(sd.get("radius_mm", 0)), a / 2, b / 2)
+    if r > 0:
+        # Grow a core by r: a point for a disc, a line for a stadium, else a
+        # smaller rectangle.
+        ca, cb = a / 2 - r, b / 2 - r
+        if ca < 1e-6 and cb < 1e-6:
+            core = Point(0, 0)
+        elif ca < 1e-6 or cb < 1e-6:
+            core = LineString([(-max(ca, 0), -max(cb, 0)), (max(ca, 0), max(cb, 0))])
+        else:
+            core = box(-ca, -cb, ca, cb)
+        g = core.buffer(r, quad_segs=8)
+    else:
+        g = box(-a / 2, -b / 2, a / 2, b / 2)
+    m = extrude(g, -dims[thin] / 2, dims[thin])[0]
+    # The rounded face was built in x/y with its thickness along z; turn it so
+    # the thickness lies along the smallest dimension.
+    if thin == 0:
+        m.apply_transform(trimesh.transformations.rotation_matrix(math.pi / 2, [0, 1, 0]))
+        m.apply_transform(trimesh.transformations.rotation_matrix(math.pi / 2, [1, 0, 0]))
+    elif thin == 1:
+        m.apply_transform(trimesh.transformations.rotation_matrix(math.pi / 2, [1, 0, 0]))
+    rx, ry, rz = (math.radians(float(v)) for v in sd.get("rotate_deg", [0, 0, 0]))
+    for angle, axis in ((rx, [1, 0, 0]), (ry, [0, 1, 0]), (rz, [0, 0, 1])):
+        if angle:
+            m.apply_transform(trimesh.transformations.rotation_matrix(angle, axis))
+    m.apply_translation([float(v) for v in sd["center_mm"]])
+    return m
+
+
 def even_ring(ring, n):
     """n points evenly spaced along a closed ring, counter-clockwise."""
     line = LineString(ring.coords)
@@ -637,6 +677,11 @@ def build(spec, svg_path):
         else:
             t, z0 = float(bx["h"]), front + float(bx.get("z", 0))
         add(bx["name"], extrude(g, z0, t), material_for(bx["material"]))
+
+    # Parts placed by measurement rather than read off the drawing: ports,
+    # buttons and screws on any face, stands. In mm, in the model's frame.
+    for sd in spec.get("solid", []):
+        add(sd["name"], [solid_mesh(sd, depth)], material_for(sd["material"]))
 
     if not parts:
         sys.exit(f"{svg_path}: nothing was built")

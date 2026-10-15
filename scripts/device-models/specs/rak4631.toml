@@ -1,49 +1,212 @@
-# rak4631: generated layout from the SVG; add [[part]] rules to refine.
-# Width/height and 1.0 mm PCB thickness and 4x R1.0 corners from RAK19007 mechanical drawing; RAK4631 module is 20x30 mm (rak4631 datasheet). Depth is an estimate: 1.0 mm PCB + WisConnector + ~4.5 mm core module (RAK3312 store lists cores as 20x30x4.5) plus USB-C/JST; depth estimated.
+# rak4631: the RAK19007 base board with the RAK4631 core in its CPU slot, seen from the top with
+# the USB-C end up. The flasher's drawing is a clean top view and stays the drawing.
+# Base: RAK19007 mechanical drawing (30 x 60 mm, 1.00 mm PCB, the two edge cutouts, and the side
+# view, read at 10.1 px/mm, for the USB-C, JST and reset button heights):
+# https://images.docs.rakwireless.com/wisblock/rak19007/datasheet/image-20220218090849344.png
+# Core: measured from RAK's RAK4631 core CAD, which is placed in the base board's frame, used for
+# measurement only: https://raw.githubusercontent.com/RAKWireless/rakwireless-docs/master/docs/.vuepress/public/assets/files/wisblock-3d/pwb-rak4631.stp
+# (sha256 d2ed500b410a359451a12af5d9c1a3dbed00a934f4a966e8ecaa28ca0e723525). Above the base's top:
+# the core PCB 1.8 to 2.8 mm, the RAK4630 module PCB to 3.8 and its shield to 5.8. That the CAD's
+# zero is the base's top face is read from how the file is placed; RAK doesn't state it.
+# Model frame: x from the center line, y up from the bottom (the end away from USB-C), z out of the
+# top face with 0 the middle of the base PCB (top face at +0.5, bottom at -0.5).
 
 [size]
 width_mm = 30.0
 height_mm = 60.0
-depth_mm = 8.0
+# Base PCB plus the battery JST, the tallest part on top.
+depth_mm = 7.0
 board_mm = 1.0
 scale_by = "width"
 covers = "RAK19007 base board (30x60) with RAK4631 core (20x30) mounted; PCB outline, no antenna"
 source = "https://docs.rakwireless.com/product-categories/wisblock/rak19007/datasheet/"
 confidence = "vendor"
 
-# Board is 1.0 mm (RAK19007 drawing). Core module height 4.5 mm is from the RAK store listing; USB-C 3.2 mm is a typical receptacle height.
-# Core module: a 1 mm green PCB with a silver shield can (white label on top) above it.
+[materials]
+connector = { color = "#202121", roughness = 0.6 }
+gold      = { color = "#dfac52", roughness = 0.3, metallic = 1.0 }
+hole      = { color = "#ededed", roughness = 0.5 }
+
+# The core PCB sits on its board-to-board connector, 1.8 mm above the base. The base has a
+# cutout under it (13 x 8.1 mm at the left edge), so that part of the core has nothing below.
 [[block]]
-name = "CoreModule"
-bbox = [788, 670, 1220, 963]
-h = 1.0
+name = "CoreConnector"
+bbox = [1237.3, 724.6, 1272.0, 919.4]
+h = 1.8
+material = "connector"
+
+[[block]]
+name = "CoreBoard"
+bbox = [867.2, 628.25, 1289.4, 1013.8]
+base_mm = 1.8
+h = 2.8
+side_color = "#2c2d2d"
+
+[[block]]
+name = "CoreBoardTopLeft"
+bbox = [711, 628.25, 867.2, 695.7]
+base_mm = 1.8
+h = 2.8
+side_color = "#2c2d2d"
+
+[[block]]
+name = "CoreBoardBottomLeft"
+bbox = [711, 946.4, 867.2, 1013.8]
+base_mm = 1.8
+h = 2.8
+side_color = "#2c2d2d"
+
+[[block]]
+name = "CoreBoardOverCutout"
+bbox = [710.0, 695.7, 867.2, 946.4]
+base_mm = 1.8
+h = 2.8
+hollow_under = true
+side_color = "#2c2d2d"
+
+# The RAK4630 module on the core: its green PCB and the silver shield under the label.
+[[block]]
+name = "ModuleBoard"
+bbox = [788.13, 669.92, 1220.44, 962.55]
+base_mm = 2.8
+h = 3.8
 side_color = "#217e6a"
 
+# The shield is notched at two corners (as drawn, and in RAK's photos), so it is built in three
+# pieces that leave the notches, and the u.fl connector in one of them, at module level.
 [[block]]
-name = "CoreShield"
-bbox = [802, 692, 1206, 948]
-base_mm = 1.0
-h = 4.5
-side_color = "#c0c0c0"
+name = "ModuleShieldTop"
+bbox = [883.55, 692.2, 1206.5, 766.13]
+base_mm = 3.8
+h = 5.8
+side_color = "#b1b0b1"
 
+[[block]]
+name = "ModuleShieldMiddle"
+bbox = [802.6, 766.13, 1206.5, 877.23]
+base_mm = 3.8
+h = 5.8
+side_color = "#b1b0b1"
+
+[[block]]
+name = "ModuleShieldBottom"
+bbox = [802.6, 877.23, 1125.23, 948.3]
+base_mm = 3.8
+h = 5.8
+side_color = "#b1b0b1"
+
+# Base parts along the USB-C end, heights from the RAK19007 side view.
 [[block]]
 name = "USBC"
 bbox = [987, 368, 1146, 527]
-h = 3.2
+h = 3.1
 
-# JST connectors stand up next to the core and USB-C: battery is a JST PH 2-pin, solar a JST ZH.
+# Battery: JST PH 2-pin, 6.0 mm tall.
 [[block]]
 name = "BatteryJST"
 bbox = [1179, 527, 1279, 601]
-h = 4.5
+h = 6.0
 
+# Solar: JST ZH 2-pin, 4.5 mm tall.
 [[block]]
 name = "SolarJST"
 bbox = [718, 536, 793, 592]
-h = 3.5
+h = 4.5
 
-# Reset tact switch.
+# Reset button, pushed from the USB-C end.
 [[block]]
-name = "ResetSwitch"
+name = "ResetButton"
 bbox = [871, 420, 956, 454]
-h = 1.5
+h = 1.7
+
+# Sensor slots A and B and the IO slot: the receptacles stand about 0.9 mm (side view).
+[[block]]
+name = "SlotA"
+bbox = [727.6, 1077.4, 765.0, 1216.1]
+h = 0.9
+material = "connector"
+
+[[block]]
+name = "SlotB"
+bbox = [977.8, 1077.4, 1015.2, 1216.1]
+h = 0.9
+material = "connector"
+
+[[block]]
+name = "SlotIO"
+bbox = [1142.3, 1261.0, 1179.9, 1462.3]
+h = 0.9
+material = "connector"
+
+# Under the base, from the drawing's bottom view: slot D's connector across the middle and
+# slot C's along the left edge, about 0.9 mm tall (side view).
+[[solid]]
+name = "SlotD"
+material = "connector"
+center_mm = [1.75, 35.6, -0.95]
+size_mm = [7.2, 2.0, 0.9]
+radius_mm = 0.2
+
+[[solid]]
+name = "SlotC"
+material = "connector"
+center_mm = [-12.65, 20.6, -0.95]
+size_mm = [1.95, 7.2, 0.9]
+radius_mm = 0.2
+
+# The four plated mounting holes show on the back as gold pads (5.0 mm, hole 2.7 mm).
+[[solid]]
+name = "PadUpperLeft"
+material = "gold"
+center_mm = [-10.79, 56.0, -0.55]
+size_mm = [4.8, 4.8, 0.1]
+radius_mm = 2.4
+
+[[solid]]
+name = "PadUpperRight"
+material = "gold"
+center_mm = [10.93, 56.0, -0.55]
+size_mm = [4.8, 4.8, 0.1]
+radius_mm = 2.4
+
+[[solid]]
+name = "PadLowerLeft"
+material = "gold"
+center_mm = [-10.93, 4.19, -0.55]
+size_mm = [4.8, 4.8, 0.1]
+radius_mm = 2.4
+
+[[solid]]
+name = "PadLowerRight"
+material = "gold"
+center_mm = [12.59, 2.46, -0.55]
+size_mm = [4.8, 4.8, 0.1]
+radius_mm = 2.4
+
+[[solid]]
+name = "HoleUpperLeft"
+material = "hole"
+center_mm = [-10.79, 56.0, -0.62]
+size_mm = [2.7, 2.7, 0.06]
+radius_mm = 1.35
+
+[[solid]]
+name = "HoleUpperRight"
+material = "hole"
+center_mm = [10.93, 56.0, -0.62]
+size_mm = [2.7, 2.7, 0.06]
+radius_mm = 1.35
+
+[[solid]]
+name = "HoleLowerLeft"
+material = "hole"
+center_mm = [-10.93, 4.19, -0.62]
+size_mm = [2.7, 2.7, 0.06]
+radius_mm = 1.35
+
+[[solid]]
+name = "HoleLowerRight"
+material = "hole"
+center_mm = [12.59, 2.46, -0.62]
+size_mm = [2.7, 2.7, 0.06]
+radius_mm = 1.35

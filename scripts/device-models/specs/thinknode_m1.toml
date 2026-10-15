@@ -1,33 +1,227 @@
-# thinknode_m1: generated layout from the SVG; add [[part]] rules to refine.
-# Elecrow: Size 82*51.6*26.3mm, 81 g. ThinkNode M5 page lists the identical 82*51.6*26.3mm. Drawn aspect 0.42 includes the antenna on top (~40 mm extra at this scale). Depth includes thickness of side features.
+# thinknode_m1: the flasher's illustration is a front view, but it draws the antenna and knob flat
+# and a little large, so this uses our copy of it (drawings/) with those taken out, scaled to the
+# measured case, plus the antenna and knob drawn from measurements. Every figure is measured from
+# Elecrow's published STEP, used for measurement only:
+# https://github.com/Elecrow-RD/ThinkNode-M1-LoRa-Meshtastic-Transceiver-With-1.54-EPD-Screen-GPS-function-nRF52840/blob/master/3D%20file/thinknode-m1-20250221.stp
+# (sha256 a29c190cca7c16b770795393ca85c826bb9adfc7264947f65a8edf9321264b47).
+# The STEP gives 118.5 mm overall with the antenna and 26.4 mm deep at the screen bezel, which
+# matches Elecrow's size photo (118.5, 25.0 for the case); the store's 82 x 51.6 x 26.3 doesn't
+# describe the case alone. Model frame: x from the center line, y up from the bottom, z out of the
+# front with 0 the middle of the body; the STEP's y + 36.0 gives y here, its x and z match.
+drawing = "drawings/thinknode_m1.svg"
 
 [size]
-width_mm = 51.6
-height_mm = 82.0
-depth_mm = 26.3
+width_mm = 50.8
+height_mm = 67.6
+depth_mm = 25.0
 scale_by = "width"
-covers = "case, excludes antenna"
-source = "https://www.elecrow.com/thinknode-m1-meshtastic-lora-signal-transceiver-powered-by-nrf52840-with-154-screen-support-gps.html"
-confidence = "vendor"
-# Rounded ABS shell.
-edge_radius_mm = 5
-front_edge_radius_mm = 1.5
+fit_bbox = [0, 50.9, 50.8, 118.5]  # the case; the antenna and knob stand above it
+appendage = "none"
+covers = "case, excludes the antenna, knob and side buttons; 118.5 mm tall with the antenna"
+source = "https://github.com/Elecrow-RD/ThinkNode-M1-LoRa-Meshtastic-Transceiver-With-1.54-EPD-Screen-GPS-function-nRF52840/blob/master/3D%20file/thinknode-m1-20250221.stp"
+confidence = "cad"
+# About 4 mm round at the front edges and 5 at the back.
+edge_radius_mm = 5.0
+front_edge_radius_mm = 3.5
 
-# Rubber stick antenna on an RP-SMA base.
+[materials]
+rubber = { color = "#232323", roughness = 0.8 }
+knob   = { color = "#1e1e1e", roughness = 0.45 }
+port   = { color = "#1d1d1f", roughness = 0.6 }
+button = { color = "#2a2a2a", roughness = 0.6 }
+screw  = { color = "#141414", roughness = 0.5 }
+foot   = { color = "#353535", roughness = 0.7 }
+brass  = { color = "#c9a24a", roughness = 0.3, metallic = 1.0 }
+
+# The raised frame around the screen stands 1.4 mm off the face.
+[[part]]
+name = "Bezel"
+class = "bezel"
+h = 1.4
+
+# The antenna: a 15 mm collar tapering to an 11 mm stem, 50.9 mm tall, and the 15 mm knurled
+# knob. Both sit 3.7 mm behind the middle of the body.
 [[antenna]]
 name = "Antenna"
-start = [506.5, 441]
-end = [506.5, 78]
-dome = true
+start = [14.91, 50.9]
+end = [14.91, 0]
+dome = false
+z_mm = -3.69
+material = "rubber"
 
-# Round knurled knob switch on top.
 [[antenna]]
 name = "Knob"
-start = [657, 441]
-end = [657, 347]
+start = [35.89, 50.9]
+end = [35.89, 35.0]
 dome = false
+z_mm = -3.69
+material = "knob"
 
-# Side buttons on the right edge.
-[[thin]]
-bbox = [750, 553, 760, 840]
-depth_mm = 7
+# Right side: the function and page buttons, 1.3 mm proud, and the GPS slide switch in its pocket.
+[[solid]]
+name = "FunctionButton"
+material = "button"
+center_mm = [25.9, 31.1, 1.9]
+size_mm = [1.6, 8.75, 8.75]
+radius_mm = 2.0
+
+[[solid]]
+name = "PageButton"
+material = "button"
+center_mm = [25.9, 18.1, 1.9]
+size_mm = [1.6, 8.75, 8.75]
+radius_mm = 2.0
+
+[[solid]]
+name = "GPSSwitchPocket"
+material = "port"
+center_mm = [25.35, 46.7, 1.9]
+size_mm = [0.2, 14.75, 7.75]
+radius_mm = 1.5
+
+[[solid]]
+name = "GPSSwitch"
+material = "button"
+center_mm = [25.9, 45.55, 1.85]
+size_mm = [1.0, 7.75, 4.75]
+radius_mm = 1.0
+
+# The lanyard hole runs through the top right corner, opening on the top and the right side.
+[[solid]]
+name = "LanyardTop"
+material = "port"
+center_mm = [20.5, 67.6, 9.0]
+size_mm = [3.5, 0.3, 3.5]
+radius_mm = 1.75
+
+[[solid]]
+name = "LanyardSide"
+material = "port"
+center_mm = [25.4, 60.5, 9.0]
+size_mm = [0.3, 3.5, 3.5]
+radius_mm = 1.75
+
+# Bottom: USB-C in the middle, the reset pinhole to its right and four 0.5 mm feet.
+[[solid]]
+name = "USBC"
+material = "port"
+center_mm = [0, -0.1, 1.25]
+size_mm = [8.9, 0.4, 3.2]
+radius_mm = 1.6
+
+[[solid]]
+name = "Reset"
+material = "port"
+center_mm = [12.3, -0.1, 1.9]
+size_mm = [1.2, 0.4, 1.2]
+radius_mm = 0.6
+
+[[solid]]
+name = "FootFrontLeft"
+material = "foot"
+center_mm = [-20.1, -0.25, 6.75]
+size_mm = [2.4, 0.5, 1.9]
+
+[[solid]]
+name = "FootFrontRight"
+material = "foot"
+center_mm = [20.1, -0.25, 6.75]
+size_mm = [2.4, 0.5, 1.9]
+
+[[solid]]
+name = "FootBackLeft"
+material = "foot"
+center_mm = [-20.1, -0.25, -6.5]
+size_mm = [2.4, 0.5, 2.4]
+
+[[solid]]
+name = "FootBackRight"
+material = "foot"
+center_mm = [20.1, -0.25, -6.5]
+size_mm = [2.4, 0.5, 2.4]
+
+# Back: four round pads 0.5 mm proud (2.4 mm across, so it lies flat on its back), four screw
+# holes and the two brass hanging inserts between them.
+[[solid]]
+name = "PadLowerLeft"
+material = "foot"
+center_mm = [-17.7, 12.8, -12.75]
+size_mm = [2.4, 2.4, 0.5]
+radius_mm = 1.2
+
+[[solid]]
+name = "PadLowerRight"
+material = "foot"
+center_mm = [17.7, 12.8, -12.75]
+size_mm = [2.4, 2.4, 0.5]
+radius_mm = 1.2
+
+[[solid]]
+name = "PadUpperLeft"
+material = "foot"
+center_mm = [-17.7, 52.6, -12.75]
+size_mm = [2.4, 2.4, 0.5]
+radius_mm = 1.2
+
+[[solid]]
+name = "PadUpperRight"
+material = "foot"
+center_mm = [17.7, 52.6, -12.75]
+size_mm = [2.4, 2.4, 0.5]
+radius_mm = 1.2
+
+[[solid]]
+name = "ScrewLowerLeft"
+material = "screw"
+center_mm = [-18.25, 6.6, -12.5]
+size_mm = [3.3, 3.3, 0.3]
+radius_mm = 1.65
+
+[[solid]]
+name = "ScrewLowerRight"
+material = "screw"
+center_mm = [18.25, 6.6, -12.5]
+size_mm = [3.3, 3.3, 0.3]
+radius_mm = 1.65
+
+[[solid]]
+name = "ScrewUpperLeft"
+material = "screw"
+center_mm = [-18.25, 56.6, -12.5]
+size_mm = [3.3, 3.3, 0.3]
+radius_mm = 1.65
+
+[[solid]]
+name = "ScrewUpperRight"
+material = "screw"
+center_mm = [18.25, 56.6, -12.5]
+size_mm = [3.3, 3.3, 0.3]
+radius_mm = 1.65
+
+[[solid]]
+name = "InsertLeft"
+material = "brass"
+center_mm = [-18.5, 36.0, -12.5]
+size_mm = [3.5, 3.5, 0.3]
+radius_mm = 1.75
+
+[[solid]]
+name = "InsertRight"
+material = "brass"
+center_mm = [18.5, 36.0, -12.5]
+size_mm = [3.5, 3.5, 0.3]
+radius_mm = 1.75
+
+[[solid]]
+name = "InsertLeftHole"
+material = "screw"
+center_mm = [-18.5, 36.0, -12.6]
+size_mm = [1.6, 1.6, 0.3]
+radius_mm = 0.8
+
+[[solid]]
+name = "InsertRightHole"
+material = "screw"
+center_mm = [18.5, 36.0, -12.6]
+size_mm = [1.6, 1.6, 0.3]
+radius_mm = 0.8

@@ -1,26 +1,56 @@
-# thinknode_m7: auto layout from the SVG with round antennas and rounded case edges.
-# Elecrow: 'Size 74*74*33mm (Without Antenna)', 80 g. Drawn aspect 0.65 includes antenna (~40 mm extra).
+# thinknode_m7: ThinkNode M7 gateway, label face to the front as it hangs on its wall base, ports
+# along the bottom, antennas on top. The flasher's illustration is a true front view, so it
+# stays the drawing; the ports, the round foot and the depth are placed by measurement.
+# Published sizes conflict: the product page says 74 x 74 x 33 mm (80 g), the datasheet and
+# manual 75 x 75 x 30 mm (108 g):
+# https://www.elecrow.com/thinknode-m7-wireless-communication-gateway-for-meshtastic-support-poe-powered-powered-by-esp32-s3-and-lr1110.html
+# https://www.elecrow.com/download/product/LMM15507D/ThinkNode_M7_for_Meshtastic.pdf
+# Elecrow's straight-on photo of the port side (gallery "multiple wireless communications"),
+# calibrated by the RJ45 jack (15.9 mm wide) and the USB-C opening, gives a 73.5 mm wide box about
+# 29.5 mm deep plus a round foot about 3 mm deep and 60 mm across, so both figures fit: 30 mm is
+# the box and 33 mm includes the foot. This uses 74 (the drawing is square) and 30 + 3.
+# No CAD; the FCC filing (2BDNA-TNM7) couldn't be fetched. Port positions are from that photo.
+# Model frame: x from the center line, y up from the bottom of the case, z out of the label face
+# with 0 the middle of the box (front at +15, back at -15).
 
 [size]
 width_mm = 74.0
 height_mm = 74.0
-depth_mm = 33.0
+depth_mm = 30.0
 scale_by = "width"
-covers = "body only, excludes antenna"
-source = "https://www.elecrow.com/thinknode-m7-wireless-communication-gateway-for-meshtastic-support-poe-powered-powered-by-esp32-s3-and-lr1110.html"
+# The case outline; the antennas above it are built round below.
+fit_bbox = [0.8, 281.2, 527.9, 805.6]
+covers = "box 30 mm plus the round foot 3 mm behind; excludes antennas"
+source = "https://www.elecrow.com/download/product/LMM15507D/ThinkNode_M7_for_Meshtastic.pdf"
 confidence = "vendor"
-# Antennas are handled below, so no thin strip on top.
 appendage = "none"
-# Rounded plastic case.
-edge_radius_mm = 6.0
-front_edge_radius_mm = 3.0
+# Soft rounded box: the label face's edge is rounder than the back's.
+edge_radius_mm = 3.0
+front_edge_radius_mm = 5.0
+
+[materials]
+# Matte black case and antennas; the drawing's grays darkened to the real finish.
+c_3f3f3f = { color = "#222224", roughness = 0.6 }
+c_2d2d2d = { color = "#161618", roughness = 0.6 }
+c_515151 = { color = "#36363a", roughness = 0.55 }
+rubber = { color = "#1c1c1e", roughness = 0.80 }
+case   = { color = "#222224", roughness = 0.6 }
+port   = { color = "#111112", roughness = 0.6 }
+metal  = { color = "#c8c8c6", roughness = 0.35, metallic = 1.0 }
+amber  = { color = "#e0a53a", roughness = 0.4 }
+
+# The drawing's reload button pokes out under the case; the real one sits in the bottom face,
+# so the drawn tab is left out and the button is placed below.
+[[part]]
+name = "DrawnReload"
+class = "cls-1"
+max_width_mm = 8
+role = "skip"
 
 # Two RP-SMA rubber antennas, drawn with the whip folded back, so only the
 # connector, nut, sleeve and hinge head show. Lathed round from the drawing.
 # The case top curves, so each antenna is cut in two: the gold ring from
 # just below where the top meets it, and the rest from the top of the ring.
-# Each part only cuts the case as wide as itself, which keeps the notch
-# in the case top small and leaves no sliver of ring as a thin sheet.
 [[antenna]]
 name = "LoRaRing"
 start = [157, 287]
@@ -49,9 +79,8 @@ end = [370, 1]
 max_width = 47
 dome = true
 
-# The whips, drawn end-on, shown standing straight up from the hinge heads.
-# No published length; the manual drawing puts the whole antenna near
-# 200 mm, so 160 mm of whip (1140 units) above the 40 mm connector and hinge.
+# The whips, shown standing straight up from the hinge heads as in the wall-mounted photos.
+# No published length; about 160 mm above the 40 mm connector and hinge, as the photos show.
 [[antenna]]
 name = "LoRaWhip"
 start = [157, 20]
@@ -67,14 +96,6 @@ end = [370, -1120]
 radius_mm = 5.5
 tip_radius_mm = 4.5
 material = "rubber"
-
-[materials]
-rubber = { color = "#3f3f3f", roughness = 0.80 }
-
-# Reload button tab on the bottom edge.
-[[thin]]
-bbox = [119, 796, 171, 810]
-depth_mm = 6
 
 # Hinge pins on each side of the antenna heads, about 3 mm round.
 [[thin]]
@@ -96,3 +117,60 @@ edge_radius_mm = 1.4
 bbox = [414, 52, 428, 74]
 depth_mm = 3
 edge_radius_mm = 1.4
+
+# Back: the round foot that locks into the wall base.
+[[solid]]
+name = "Foot"
+material = "case"
+center_mm = [0, 36.8, -16.4]
+size_mm = [60.0, 60.0, 3.2]
+radius_mm = 30.0
+confidence = "estimated from photos"
+
+# Bottom, left to right as seen from the front: reload button, USB-C (console and 5 V), and the
+# RJ45 Ethernet/PoE jack with its metal shield and two link lights.
+[[solid]]
+name = "ReloadButton"
+material = "port"
+center_mm = [-19.0, -0.1, 0.1]
+size_mm = [6.0, 0.4, 6.0]
+radius_mm = 3.0
+confidence = "estimated from photos"
+
+[[solid]]
+name = "USBC"
+material = "port"
+center_mm = [-4.4, -0.1, -1.2]
+size_mm = [8.9, 0.4, 3.2]
+radius_mm = 1.6
+confidence = "estimated from photos"
+
+[[solid]]
+name = "EthernetShield"
+material = "metal"
+center_mm = [13.7, -0.1, 4.4]
+size_mm = [15.9, 0.4, 13.0]
+radius_mm = 0.5
+confidence = "estimated from photos"
+
+[[solid]]
+name = "EthernetOpening"
+material = "port"
+center_mm = [13.7, -0.2, 5.0]
+size_mm = [12.0, 0.4, 9.5]
+radius_mm = 0.5
+confidence = "estimated from photos"
+
+[[solid]]
+name = "EthernetLightLeft"
+material = "amber"
+center_mm = [9.2, -0.2, -0.6]
+size_mm = [2.5, 0.4, 1.5]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "EthernetLightRight"
+material = "amber"
+center_mm = [18.2, -0.2, -0.6]
+size_mm = [2.5, 0.4, 1.5]
+confidence = "estimated from photos"

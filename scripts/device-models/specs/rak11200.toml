@@ -1,124 +1,278 @@
-# rak11200: generated layout from the SVG; add [[part]] rules to refine.
-# Drawing: RAK19007 base (30x60 mm) with the RAK11200 core across the CPU slot
-# (its ESP32-WROVER antenna end overhangs the left edge) and a RAK13300 LoRa module in the
-# IO slot overhanging the bottom. Width and height are the drawn outline scaled so the base is
-# 30 mm wide (the base edge is 215.3 SVG units). Depth is the overall stack: 1.0 mm base plus the 4.5 mm core.
-# Heights: base PCB 1.0 mm (typical, not published); RAK11200 module 4.3 mm thick with a 3.2 mm
-# WROVER on it, so its top is ~4.5 mm above the base. USB-C, JST, button and RAK13300
-# heights are typical values, not published.
+# rak11200: the RAK19007 base with the RAK11200 core in the CPU slot (its ESP32-WROVER antenna end
+# overhangs the left edge) and a RAK13300 LoRa module in the IO slot, overhanging the far end.
+# The drawing is our copy of the flasher's top view with the RAK13300 redrawn at its published
+# 25 x 35 mm: the flasher draws it about 6.5% too large and flush with the base's left edge.
+# Its place comes from lining its connector (RAK13300 drawing: 2.2 mm in from its edge, 5.5 mm
+# from its end) up with the base's IO slot connector: 0.5 mm in from the base edge, 45.1 to
+# 80.1 mm from the USB-C end.
+# Sources:
+# RAK19007 drawing (30 x 60, 1.00 mm PCB, cutouts, and the side view for part heights):
+# https://images.docs.rakwireless.com/wisblock/rak19007/datasheet/image-20220218090849344.png
+# RAK11200 drawing (20 x 30 core PCB 1.00 mm, 18 mm WROVER overhanging to 36.40, 4.30 mm thick;
+# its side view at 25.6 px/mm gives the WROVER PCB 0.8 mm and the shield 2.5 mm):
+# https://images.docs.rakwireless.com/wisblock/rak11200/datasheet/image-20210310153730185.png
+# RAK13300 drawing (25 x 35, 1.00 mm PCB, connector position):
+# https://images.docs.rakwireless.com/wisblock/rak13300/datasheet/mechanical-drawing.png
+# The core and the RAK13300 sit 1.8 mm above the base on their connectors, as the RAK4631 core CAD
+# shows for the same connector (see rak4631.toml); RAK doesn't publish it for these two.
+# Model frame: x from the center line, y up from the bottom (the RAK13300's far end), z out of the
+# top face with 0 the middle of the base PCB (top face at +0.5, bottom at -0.5). In base-board mm
+# from the USB-C end: x = X - 11.61, y = 80.10 - Y.
+drawing = "drawings/rak11200.svg"
 
 [size]
 width_mm = 36.8
-height_mm = 82.7
-depth_mm = 5.5
+height_mm = 80.6
+# Base PCB plus the WROVER shield, the tallest part (6.1 mm above the base).
+depth_mm = 7.1
 board_mm = 1.0
 scale_by = "width"
-covers = "RAK19007 base (30x60) with RAK11200 core overhanging the left edge and RAK13300 overhanging the bottom; PCB only, no external antenna"
+covers = "RAK19007 base (30x60) with the RAK11200 core overhanging the left edge and the RAK13300 (25x35) overhanging the far end; PCBs only, no external antenna"
 source = "https://docs.rakwireless.com/product-categories/wisblock/rak11200/datasheet/"
 confidence = "vendor"
 
-# RAK11200 core: WROVER shield can (top 4.5 mm). The castellated pad rows above and
-# below the can and the PCB antenna end sit on the WROVER board edge (top ~2.1 mm).
-[[block]]
-name = "ESP32Module"
-bbox = [289, 206, 468, 318]
-h = 4.5
-side_color = "#cbccca"
+[materials]
+connector = { color = "#202121", roughness = 0.6 }
+gold      = { color = "#e0ad53", roughness = 0.3, metallic = 1.0 }
+hole      = { color = "#ededed", roughness = 0.5 }
 
+# RAK11200 core: its connector, then the PCB 1.8 to 2.8 mm above the base. The base has a cutout
+# under its left part (13 x 8.1 mm at the left edge), so that piece has nothing below.
 [[block]]
-name = "WroverPadsTop"
-bbox = [289, 190, 468, 206]
-h = 2.1
+name = "CoreConnector"
+bbox = [485.0, 224.8, 498.0, 297.3]
+h = 1.8
+material = "connector"
 
-[[block]]
-name = "WroverPadsBottom"
-bbox = [289, 318, 468, 333]
-h = 2.1
-
-# The antenna end overhangs the base: core PCB bottom ~0.5 mm up, open space below.
-[[block]]
-name = "ESP32Antenna"
-bbox = [240, 190, 289, 333]
-base_mm = 0.5
-h = 2.1
-hollow_under = true
-
-# Right edge of the core board past the WROVER can: core PCB top ~1.3 mm (4.5 - 3.2).
 [[block]]
 name = "CoreBoard"
-bbox = [468, 190, 504, 333]
-h = 1.3
+bbox = [347.26, 190.44, 504.42, 333.12]
+base_mm = 1.8
+h = 2.8
+side_color = "#2c2d2d"
 
-# Base board parts along the top edge (typical heights).
+[[block]]
+name = "CoreBoardTopLeft"
+bbox = [289.13, 190.44, 347.26, 214.0]
+base_mm = 1.8
+h = 2.8
+side_color = "#2c2d2d"
+
+[[block]]
+name = "CoreBoardBottomLeft"
+bbox = [289.13, 307.3, 347.26, 333.12]
+base_mm = 1.8
+h = 2.8
+side_color = "#2c2d2d"
+
+[[block]]
+name = "CoreBoardOverCutout"
+bbox = [288.5, 214.0, 347.26, 307.3]
+base_mm = 1.8
+h = 2.8
+hollow_under = true
+side_color = "#2c2d2d"
+
+# ESP32-WROVER: its 0.8 mm PCB on the core (2.8 to 3.6 mm), the antenna end over open space past
+# the base edge, and the shield to 6.1 mm.
+[[block]]
+name = "WroverBoard"
+bbox = [289.13, 196.0, 467.05, 330.0]
+base_mm = 2.8
+h = 3.6
+side_color = "#2c2d2d"
+
+[[block]]
+name = "WroverAntenna"
+bbox = [239.5, 189.5, 289.13, 334.0]
+base_mm = 2.8
+h = 3.6
+hollow_under = true
+side_color = "#2c2d2d"
+
+[[block]]
+name = "WroverShield"
+bbox = [289.13, 206.0, 467.05, 318.14]
+base_mm = 3.6
+h = 6.1
+side_color = "#cbccca"
+
+# Base parts along the USB-C end, heights from the RAK19007 side view.
 [[block]]
 name = "USBC"
 bbox = [387, 99, 456, 157]
-h = 3.2
+h = 3.1
 
+# Battery: JST PH 2-pin, 6.0 mm tall.
 [[block]]
 name = "BatteryJST"
-bbox = [461, 152, 503, 184]
+bbox = [460.94, 152.06, 502.52, 184.13]
+h = 6.0
+
+# Solar: JST ZH 2-pin, 4.5 mm tall.
+[[block]]
+name = "SolarJST"
+bbox = [290.36, 152.06, 323.44, 179.72]
 h = 4.5
 
 [[block]]
-name = "SolarJST"
-bbox = [290, 152, 323, 180]
-h = 3.5
-
-[[block]]
 name = "ResetButton"
-bbox = [346, 112, 382, 130]
-h = 2.0
+bbox = [345.81, 111.6, 381.7, 130.06]
+h = 1.7
 
-# RAK13300 in the IO slot: PCB top ~1.5 mm, SX1262 shield ~3.5 mm (typical).
-# Its PCB is split into strips around the shield so blocks don't overlap, and at the
-# base edge (y 532): past it the module PCB (0.7..1.5 mm) is over open space.
+# Sensor slots A and B on the base, about 0.9 mm tall (side view).
 [[block]]
-name = "LoRaShield"
-bbox = [327, 446, 431, 532]
-h = 3.5
-side_color = "#cbccca"
+name = "SlotA"
+bbox = [294.18, 357.47, 315.04, 409.57]
+h = 0.9
+material = "connector"
 
 [[block]]
-name = "LoRaShieldOverhang"
-bbox = [327, 532, 431, 613]
-base_mm = 0.7
-h = 3.5
-hollow_under = true
-side_color = "#cbccca"
+name = "SlotB"
+bbox = [386.02, 357.48, 406.88, 409.58]
+h = 0.9
+material = "connector"
+
+# RAK13300 on the IO slot connector: its PCB 1.8 to 2.8 mm above the base. Past the base's end,
+# and over the base's second cutout (14.5 x 8 mm at the end), there is nothing below it.
+[[block]]
+name = "LoRaConnector"
+bbox = [449.9, 428.6, 462.8, 503.2]
+h = 1.8
+material = "connector"
+
+[[block]]
+name = "LoRaBoard"
+bbox = [292.72, 426.42, 472.12, 475.94]
+base_mm = 1.8
+h = 2.8
+side_color = "#2c2d2d"
 
 [[block]]
 name = "LoRaBoardLeft"
-bbox = [289, 425, 327, 532]
-h = 1.5
-
-[[block]]
-name = "LoRaBoardLeftOverhang"
-bbox = [289, 532, 327, 693]
-base_mm = 0.7
-h = 1.5
-hollow_under = true
+bbox = [292.72, 475.94, 338.65, 532.44]
+base_mm = 1.8
+h = 2.8
+side_color = "#2c2d2d"
 
 [[block]]
 name = "LoRaBoardRight"
-bbox = [431, 425, 481, 532]
-h = 1.5
+bbox = [442.71, 475.94, 472.12, 532.44]
+base_mm = 1.8
+h = 2.8
+side_color = "#2c2d2d"
 
 [[block]]
-name = "LoRaBoardRightOverhang"
-bbox = [431, 532, 481, 693]
-base_mm = 0.7
-h = 1.5
+name = "LoRaBoardOverCutout"
+bbox = [338.65, 475.94, 442.71, 532.44]
+base_mm = 1.8
+h = 2.8
 hollow_under = true
+side_color = "#2c2d2d"
 
 [[block]]
-name = "LoRaBoardTop"
-bbox = [327, 425, 431, 446]
-h = 1.5
-
-[[block]]
-name = "LoRaBoardBottom"
-bbox = [327, 613, 431, 693]
-base_mm = 0.7
-h = 1.5
+name = "LoRaBoardOverhang"
+bbox = [292.0, 532.44, 473.0, 678.5]
+base_mm = 1.8
+h = 2.8
 hollow_under = true
+side_color = "#2c2d2d"
+
+# The SX1262 shield under the label: 2 mm tall like the RAK4630's (estimated; not published).
+# It is notched at two corners (the drawing's outline), so it is built in three pieces that
+# leave the notches, and the u.fl connector in one of them, at board level.
+[[block]]
+name = "LoRaShieldTop"
+bbox = [327.82, 445.42, 396.78, 476.15]
+base_mm = 2.8
+h = 4.8
+side_color = "#cbccca"
+confidence = "estimated"
+
+[[block]]
+name = "LoRaShieldMiddle"
+bbox = [327.82, 476.15, 425.64, 570.6]
+base_mm = 2.8
+h = 4.8
+side_color = "#cbccca"
+confidence = "estimated"
+
+[[block]]
+name = "LoRaShieldBottom"
+bbox = [355.6, 570.6, 425.64, 602.81]
+base_mm = 2.8
+h = 4.8
+side_color = "#cbccca"
+confidence = "estimated"
+
+# Under the base, as on the rak4631 (RAK19007 bottom view): slot D's and slot C's connectors.
+[[solid]]
+name = "SlotD"
+material = "connector"
+center_mm = [5.14, 55.92, -0.95]
+size_mm = [7.2, 2.0, 0.9]
+radius_mm = 0.2
+
+[[solid]]
+name = "SlotC"
+material = "connector"
+center_mm = [-9.26, 40.95, -0.95]
+size_mm = [1.95, 7.2, 0.9]
+radius_mm = 0.2
+
+# The base's four plated mounting holes as gold pads on the back (5.0 mm, hole 2.7 mm).
+[[solid]]
+name = "PadUpperLeft"
+material = "gold"
+center_mm = [-7.62, 76.02, -0.55]
+size_mm = [4.8, 4.8, 0.1]
+radius_mm = 2.4
+
+[[solid]]
+name = "PadUpperRight"
+material = "gold"
+center_mm = [14.49, 76.02, -0.55]
+size_mm = [4.8, 4.8, 0.1]
+radius_mm = 2.4
+
+[[solid]]
+name = "PadLowerLeft"
+material = "gold"
+center_mm = [-7.76, 24.2, -0.55]
+size_mm = [4.8, 4.8, 0.1]
+radius_mm = 2.4
+
+[[solid]]
+name = "PadLowerRight"
+material = "gold"
+center_mm = [15.76, 22.48, -0.55]
+size_mm = [4.8, 4.8, 0.1]
+radius_mm = 2.4
+
+[[solid]]
+name = "HoleUpperLeft"
+material = "hole"
+center_mm = [-7.62, 76.02, -0.62]
+size_mm = [2.7, 2.7, 0.06]
+radius_mm = 1.35
+
+[[solid]]
+name = "HoleUpperRight"
+material = "hole"
+center_mm = [14.49, 76.02, -0.62]
+size_mm = [2.7, 2.7, 0.06]
+radius_mm = 1.35
+
+[[solid]]
+name = "HoleLowerLeft"
+material = "hole"
+center_mm = [-7.76, 24.2, -0.62]
+size_mm = [2.7, 2.7, 0.06]
+radius_mm = 1.35
+
+[[solid]]
+name = "HoleLowerRight"
+material = "hole"
+center_mm = [15.76, 22.48, -0.62]
+size_mm = [2.7, 2.7, 0.06]
+radius_mm = 1.35

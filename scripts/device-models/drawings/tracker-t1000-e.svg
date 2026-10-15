@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="667.51 476.78 664.98 1035.52"><!-- Copyright (c) 2026 Meshtastic LLC. The T1000-E's front, from the flasher's illustration
+     (public/img/devices/tracker-t1000-e.svg) with the circuit board marks seen through the case and the
+     gold strip at the lower right taken out: the case, the lanyard slot (filled dark, since the model
+     can't cut it through), the button, the light window and the buzzer. --><defs><style>.case{fill:#333;}.slot{fill:#141414;}.gold{fill:#dfac52;}.ring{fill:#373838;}.window{fill:#cbcccb;}.light{fill:#fff;}.bar{fill:#b7802b;}</style></defs>
+  <path class="case" fill="#333" d="M1273.43,478H726.56a57.85,57.85,0,0,0-57.84,57.86v917.4a57.850,57.850,0,0,0,57.84,57.85h546.87a57.86,57.86,0,0,0,57.86-57.85V535.85A57.870,57.870,0,0,0,1273.43,478Zm-180.85,58.15a17.73,17.73,0,0,1-12.6,5.22H921.92a17.83,17.83,0,0,1,0-35.65H1080a17.83,17.83,0,0,1,12.6,30.43Z"/>
+  <rect class="slot" fill="#141414" x="904.09" y="505.72" width="193.71" height="35.64" rx="17.82"/>
+  <path class="gold" fill="#dfac52" d="M1112.31,1112.18A119.83,119.83,0,1,1,992.49,992.34,119.83,119.83,0,0,1,1112.31,1112.18Z"/>
+  <path class="ring" fill="#373838" d="M992.48,1000.79a111.39,111.39,0,1,0,111.38,111.39A111.39,111.39,0,0,0,992.48,1000.79Zm0,199.64a88.26,88.26,0,1,1,88.25-88.25A88.26,88.26,0,0,1,992.48,1200.43Z"/>
+  <path class="gold" fill="#dfac52" d="M1080.73,1112.18a88.25,88.25,0,1,1-88.25-88.26A88.26,88.26,0,0,1,1080.73,1112.18Z"/>
+  <circle class="window" fill="#cbcccb" cx="1000" cy="928.96" r="63.38"/>
+  <circle class="light" fill="#fff" cx="1000" cy="928.96" r="35.27"/>
+  <circle class="gold" fill="#dfac52" cx="1000" cy="702.01" r="25.23"/>
+  <rect class="bar" fill="#b7802b" x="996.04" y="690.54" width="6.43" height="22.58" transform="translate(1701.09 -297.42) rotate(90)"/>
+  <rect class="bar" fill="#b7802b" x="996.04" y="690.54" width="6.43" height="22.58"/>
+</svg>

@@ -1,7 +1,7 @@
 // Copyright(c) Garth Vander Houwen 10/14/26.
 //
 // Renders a .usdz to PNG for review with studio lighting.
-// usage: render <in.usdz> <out.png> [size] [three-quarter|front|side]
+// usage: render <in.usdz> <out.png> [size] [three-quarter|front|side|back|back-three-quarter]
 import AppKit
 import SceneKit
 
@@ -28,6 +28,9 @@ let view = args.count > 4 ? args[4] : "three-quarter"
 let dir: SCNVector3 = switch view {
 case "front": SCNVector3(0, 0, 1)
 case "side": SCNVector3(1, 0, 0)
+// Not exactly (0, 0, -1): look(at:) can't turn the camera exactly halfway round and renders nothing.
+case "back": SCNVector3(0.001, 0, -1)
+case "back-three-quarter": SCNVector3(-0.55, 0.25, -1.0)
 default: SCNVector3(0.55, 0.25, 1.0)
 }
 cameraNode.position = SCNVector3(center.x + dir.x * extent * 3, center.y + dir.y * extent * 3, center.z + dir.z * extent * 3)
@@ -38,7 +41,8 @@ let key = SCNNode()
 key.light = SCNLight()
 key.light!.type = .directional
 key.light!.intensity = 900
-key.eulerAngles = SCNVector3(-0.7, 0.5, 0)
+// Lit from over the viewer's shoulder, so back views get the same light as front ones.
+key.eulerAngles = SCNVector3(-0.7, view.hasPrefix("back") ? 0.5 + .pi : 0.5, 0)
 scene.rootNode.addChildNode(key)
 let fill = SCNNode()
 fill.light = SCNLight()

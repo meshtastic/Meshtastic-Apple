@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 640.3 1015.7">
+  <!-- Copyright (c) 2026 Meshtastic LLC. The WisMesh TAP V2 front, from the flasher's illustration
+     (public/img/devices/rak-wismesh-tap-v2.svg) with the "V2" badge taken out: it is artwork, not
+     part of the device. -->
+  <defs>
+    <style>
+      .st0 {
+        stroke-width: 2px;
+      }
+
+      .st0, .st1 {
+        fill: none;
+        stroke: #050606;
+        stroke-miterlimit: 10;
+      }
+
+      .st2 {
+        fill: #9f9f9e;
+      }
+
+      .st3 {
+        fill: #202938;
+      }
+
+      .st4 {
+        fill: #fff;
+      }
+
+      .st5 {
+        fill: #66e792;
+      }
+
+      .st6 {
+        fill: #1d1e1e;
+      }
+
+      .st7 {
+        fill: #b1a368;
+      }
+
+      .st8 {
+        fill: #353535;
+      }
+
+      .st9 {
+        fill: #434343;
+      }
+    </style>
+  </defs>
+  <g id="Layer_7">
+    <rect class="st8" fill="#353535" x="415.9" y="508.2" width="56.5" height="10"/>
+    <rect class="st8" fill="#353535" x="411.9" y="475" width="63.8" height="33.3"/>
+    <path class="st8" fill="#353535" d="M416.3,475v-5.3c0-1.6,1.3-2.8,2.8-2.8h50.4c1.6,0,2.8,1.2,2.8,2.8h0v5.3"/>
+    <rect class="st8" fill="#353535" x="413.1" y="392.3" width="62.7" height="70.7" rx="3.5" ry="3.5"/>
+    <rect class="st8" fill="#353535" x="419.2" y="463" width="50.7" height="3.9"/>
+    <path class="st6" fill="#1d1e1e" d="M421.6,369.9s-2.8-3.8-4.5-3.3-3.9.3-1.5,2.7l12.9,13s.8.8.6,3.4,0,5.6.7,5.9,30.4,1.6,30.6-.8.7-6.2-.7-5.7-11.3,4.4-19.6,0-18.5-15.4-18.5-15.4Z"/>
+    <path class="st8" fill="#353535" d="M618.4,612.3v321.6c0,33-26.8,59.7-59.8,59.8H81.8c-33,0-59.7-26.8-59.8-59.8v-321.6c0-33,26.8-59.7,59.8-59.8h476.8c33,0,59.8,26.8,59.8,59.8Z"/>
+    <path class="st2" fill="#9f9f9e" d="M558.6,531.5H81.8c-44.6,0-80.8,36.2-80.8,80.8h0v321.7c0,44.6,36.2,80.8,80.8,80.8h476.8c44.6,0,80.8-36.2,80.8-80.8h0v-321.6c0-44.6-36.2-80.8-80.8-80.8ZM618.4,933.9c0,33-26.8,59.7-59.8,59.8H81.8c-33,0-59.7-26.8-59.8-59.8v-321.6c0-33,26.8-59.7,59.8-59.8h476.8c33,0,59.8,26.8,59.8,59.8v321.6Z"/>
+    <rect class="st9" fill="#434343" x="155.7" y="645.2" width="328.9" height="250.9"/>
+    <path class="st0" fill="none" stroke="#050606" stroke-miterlimit="10" d="M558.6,552.5c33,0,59.7,26.8,59.8,59.8v321.6c0,33-26.8,59.7-59.8,59.8H81.8c-33,0-59.7-26.8-59.8-59.8v-321.7c0-33,26.8-59.7,59.8-59.8h476.8M558.6,531.5H81.8c-44.6,0-80.8,36.2-80.8,80.8h0v321.7c0,44.6,36.2,80.8,80.8,80.8h476.8c44.6,0,80.8-36.2,80.8-80.8v-321.7c0-44.6-36.2-80.8-80.8-80.8h0Z"/>
+    <rect class="st0" fill="none" stroke="#050606" stroke-miterlimit="10" x="155.7" y="645.2" width="328.9" height="250.9"/>
+    <rect class="st7" fill="#b1a368" x="416.9" y="521.9" width="55.6" height="9.6"/>
+    <rect class="st0" fill="none" stroke="#050606" stroke-miterlimit="10" x="416.9" y="521.9" width="55.6" height="9.6"/>
+    <rect class="st0" fill="none" stroke="#050606" stroke-miterlimit="10" x="415.9" y="508.2" width="56.5" height="10"/>
+    <rect class="st0" fill="none" stroke="#050606" stroke-miterlimit="10" x="411.9" y="475" width="63.8" height="33.3"/>
+    <path class="st0" fill="none" stroke="#050606" stroke-miterlimit="10" d="M416.3,475v-5.3c0-1.6,1.3-2.8,2.8-2.8h50.4c1.6,0,2.8,1.2,2.8,2.8h0v5.3"/>
+    <rect class="st0" fill="none" stroke="#050606" stroke-miterlimit="10" x="413.1" y="392.3" width="62.7" height="70.7" rx="3.5" ry="3.5"/>
+    <rect class="st0" fill="none" stroke="#050606" stroke-miterlimit="10" x="419.2" y="463" width="50.7" height="3.9"/>
+    <line class="st0" fill="none" stroke="#050606" stroke-miterlimit="10" x1="429.4" y1="392.3" x2="429.4" y2="377.2"/>
+    <line class="st0" fill="none" stroke="#050606" stroke-miterlimit="10" x1="461" y1="392.3" x2="461" y2="384.6"/>
+    <path class="st8" fill="#353535" d="M120.8,7.9l363.9,355.8-18.1,16.9c-9.5,8.9-24.2,8.9-33.7,0l-14.9-14c-.1-.1-.3-.2-.5,0h0c-5.1,2.2-11,1.1-14.8-2.9L86.7,42.1c-9.4-9.5-9.2-24.8.2-34.1.3-.3.6-.6.9-.9h0c9.5-8.4,23.9-8,32.9.9Z"/>
+    <path class="st6" fill="#1d1e1e" d="M154.8,41.2c-2.3-2.1-11.9,3.6-21.1,13.4s-15.3,19.5-13.1,21.7l-2.5-2.8c-2.3-2.1,3.9-11.8,13.1-21.7s18.8-15.5,21.1-13.4l-4.2-3.6c-2.3-2.1-11.9,3.6-21.1,13.4s-15.3,19.6-13.1,21.7l-2.5-2.8c-2.3-2.1,3.9-11.9,13.1-21.7s18.8-15.5,21.1-13.4"/>
+    <path class="st0" fill="none" stroke="#050606" stroke-miterlimit="10" d="M120.8,7.9l363.9,355.8-18.1,16.9c-9.5,8.9-24.2,8.9-33.7,0l-14.9-14c-.1-.1-.3-.2-.5,0h0c-5.1,2.2-11,1.1-14.8-2.9L86.7,42.1c-9.4-9.5-9.2-24.8.2-34.1.3-.3.6-.6.9-.9h0c9.5-8.4,23.9-8,32.9.9Z"/>
+    <line class="st0" fill="none" stroke="#050606" stroke-miterlimit="10" x1="413.8" y1="367.5" x2="429.4" y2="383.3"/>
+    <circle class="st6" fill="#1d1e1e" cx="447.6" cy="361.3" r="6"/>
+    <circle class="st0" fill="none" stroke="#050606" stroke-miterlimit="10" cx="447.6" cy="361.3" r="6"/>
+    <path class="st1" fill="none" stroke="#050606" stroke-miterlimit="10" d="M111.3,67.1c-2.3-2.1,3.9-11.9,13.1-21.7s18.8-15.5,21.1-13.4"/>
+    <path class="st1" fill="none" stroke="#050606" stroke-miterlimit="10" d="M113.8,69.9c-2.3-2.1,3.9-11.9,13.1-21.7s18.8-15.5,21.1-13.4"/>
+    <path class="st1" fill="none" stroke="#050606" stroke-miterlimit="10" d="M118.1,73.5c-2.3-2.1,3.9-11.8,13.1-21.7s18.8-15.5,21.1-13.4"/>
+    <path class="st1" fill="none" stroke="#050606" stroke-miterlimit="10" d="M120.6,76.3c-2.3-2.1,3.9-11.8,13.1-21.7s18.8-15.5,21.1-13.4"/>
+    <rect class="st7" fill="#b1a368" x="422.9" y="518.2" width="41.6" height="3.8"/>
+    <rect class="st0" fill="none" stroke="#050606" stroke-miterlimit="10" x="422.9" y="518.2" width="41.6" height="3.8"/>
+    <rect class="st6" fill="#1d1e1e" x="415.9" y="479.5" width="1.6" height="25"/>
+    <rect class="st6" fill="#1d1e1e" x="420.1" y="479.5" width="1.6" height="25"/>
+    <rect class="st6" fill="#1d1e1e" x="424.3" y="479.5" width="1.6" height="25"/>
+    <rect class="st6" fill="#1d1e1e" x="428.6" y="479.5" width="1.6" height="25"/>
+    <rect class="st6" fill="#1d1e1e" x="432.8" y="479.5" width="1.6" height="25"/>
+    <rect class="st6" fill="#1d1e1e" x="437" y="479.5" width="1.6" height="25"/>
+    <rect class="st6" fill="#1d1e1e" x="441.2" y="479.5" width="1.6" height="25"/>
+    <rect class="st6" fill="#1d1e1e" x="445.5" y="479.5" width="1.6" height="25"/>
+    <rect class="st6" fill="#1d1e1e" x="449.7" y="479.5" width="1.6" height="25"/>
+    <rect class="st6" fill="#1d1e1e" x="453.9" y="479.5" width="1.6" height="25"/>
+    <rect class="st6" fill="#1d1e1e" x="458.1" y="479.5" width="1.6" height="25"/>
+    <rect class="st6" fill="#1d1e1e" x="462.4" y="479.5" width="1.6" height="25"/>
+    <rect class="st6" fill="#1d1e1e" x="466.6" y="479.5" width="1.6" height="25"/>
+    <rect class="st6" fill="#1d1e1e" x="470.8" y="479.5" width="1.6" height="25"/>
+  </g>
+</svg>

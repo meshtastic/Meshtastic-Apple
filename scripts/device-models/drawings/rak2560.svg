@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 120" width="80mm" height="120mm">
+  <!-- Copyright (c) 2026 Meshtastic LLC. Front view of the RAK WisMesh Repeater (RAK2560 Sensor Hub
+       enclosure), drawn in mm from RAK's body-dimension figure (80 x 120 mm, 5.83 px/mm): 11.5 mm
+       corners, the darker cap band over the top 36.4 mm and the 12.4 mm NFC mark centered 95.3 mm
+       down. The sensor-port connectors and the antenna are built by measurement in the spec. -->
+  <style>.case{fill:#c4c5c7}.band{fill:#a6a7ab}.nfc{fill:#8c8d90}</style>
+  <rect class="case" x="0" y="0" width="80" height="120" rx="11.5"/>
+  <path class="band" d="M0,36.4 V11.5 A11.5,11.5 0 0 1 11.5,0 H68.5 A11.5,11.5 0 0 1 80,11.5 V36.4 Z"/>
+  <rect class="nfc" x="33.8" y="89.1" width="12.4" height="12.4" rx="2"/>
+  <path class="case" d="M36.6,91.4 H38.2 L42.2,97.4 V91.4 H43.4 V99.2 H41.8 L37.8,93.2 V99.2 H36.6 Z"/>
+</svg>

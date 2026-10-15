@@ -1,41 +1,175 @@
-# thinknode_m6: generated layout from the SVG, with the antennas and their
-# hinges built at their own thickness.
-# Elecrow: 'Size 210*156*42mm (excluding antenna and bracket)', 530 g. The drawn
-# case (fit_bbox) is 435x322 units, aspect 1.35, which matches 210x156.
+# thinknode_m6: ThinkNode M6 outdoor solar node. The flasher's illustration is a true front view,
+# but draws each solar cell as fine lines, which the generator can't build, so this uses our copy
+# with the cells as filled rectangles (drawings/). Behind the panel: a box with the antenna
+# connectors on its sides and a metal mounting plate on top carrying the connectors and LEDs.
+# Elecrow: 210 x 156 x 42 mm excluding antenna and bracket, 533 g (user manual,
+# https://www.elecrow.com/download/product/LMM14106D/ThinkNode_M6_Outdoor_Solar_Power_for_Meshtastic_User_Manual.pdf).
+# No CAD, and the FCC exhibits (2BDNA-TNM6-ELE) couldn't be fetched, so the split of the 42 mm
+# and everything on the back is estimated from Elecrow's gallery photos:
+# https://www.elecrow.com/thinknode-m6-outdoor-solar-power-for-meshtastic-powered-by-nrf52840-supports-gps.html
+# (backside_of_thinknode_m6_1/2, detailed_of_thinknode_m6_1, thinknode_m6_3). The box wall is
+# about 18 mm tall next to the SMA connector (calibrated by its 6.35 mm thread) and the plate
+# about 2.5 mm, which leaves about 21.5 mm for the panel tray. The bracket isn't modeled.
+# Back positions: backside_of_thinknode_m6_2 mapped to the tray by its four corners, corrected
+# for the plate standing about 22 mm off the tray (the SMA connectors, whose height is known from
+# the drawn hinges, check the mapping: it reads them 8 mm high, so that is taken off), then
+# averaged with backside_of_thinknode_m6_1. Both photos put the box off center, toward the
+# left as seen from the front: the right-hand SMA (seen from the front) stands well clear of the
+# plate and the left-hand one is right at its edge.
+# Model frame: x from the center line as seen from the front, y up from the bottom, z out of the
+# panel with 0 the middle of the tray (front at +10.75, back at -10.75).
+drawing = "drawings/thinknode_m6.svg"
 
 [size]
 fit_bbox = [38, 222, 473, 545]
 width_mm = 210.0
 height_mm = 156.0
-depth_mm = 42.0
+# The panel tray; the box and plate add 20.5 mm behind it for the published 42.
+depth_mm = 21.5
 scale_by = "width"
 appendage = "outside"
-appendage_depth_mm = 10
-# Rounded back edges; the front keeps a small radius so the panel bezel stays.
-edge_radius_mm = 8
+appendage_depth_mm = 9
+# The tray's back edge curves in; the front keeps a small radius so the frame stays.
+edge_radius_mm = 9
 front_edge_radius_mm = 2
-covers = "body only, excludes antenna and bracket"
-source = "https://www.elecrow.com/thinknode-m6-outdoor-solar-power-for-meshtastic-powered-by-nrf52840-supports-gps.html"
+covers = "panel tray 21.5 mm (estimated) plus the box and plate behind, 42 mm overall; excludes the bracket"
+source = "https://www.elecrow.com/download/product/LMM14106D/ThinkNode_M6_Outdoor_Solar_Power_for_Meshtastic_User_Manual.pdf"
 confidence = "vendor"
+body_color = "#201f1f"
 
-# Two flat router-style paddle antennas on RP-SMA hinges, one on each side.
-# Drawn about 13.5 mm wide; built 9 mm thick with rounded edges. The outer
-# edges and tips run past the drawn shapes so no square sliver is left behind.
+[materials]
+# Cells: near-black with a little shine; the gaps between them darker.
+c_2e3035 = { color = "#2b2e34", roughness = 0.25 }
+c_282727 = { color = "#141414", roughness = 0.5 }
+case   = { color = "#232323", roughness = 0.55 }
+plate  = { color = "#2a2a2c", roughness = 0.45, metallic = 0.3 }
+brass  = { color = "#c9a24a", roughness = 0.3, metallic = 1.0 }
+rubber = { color = "#1f2022", roughness = 0.8 }
+blue   = { color = "#4a90e2", roughness = 0.5 }
+port   = { color = "#111112", roughness = 0.6 }
+red    = { color = "#d42a2a", roughness = 0.3 }
+ledblue = { color = "#2a6ad4", roughness = 0.3 }
+
+# The two blade antennas and their hinges, as drawn, but behind the panel at the height of the
+# box, where they screw onto the SMA connectors.
 [[thin]]
 bbox = [0, 0, 29, 356]
 depth_mm = 9
+z_mm = -19.75
 edge_radius_mm = 3.5
 
 [[thin]]
 bbox = [482, 0, 512, 356]
 depth_mm = 9
+z_mm = -19.75
 edge_radius_mm = 3.5
 
-# RP-SMA connectors and hinge knuckles between the case and each antenna.
 [[thin]]
 bbox = [28, 325, 38, 353]
-depth_mm = 11
+depth_mm = 10
+z_mm = -19.75
 
 [[thin]]
 bbox = [473, 325, 483, 353]
-depth_mm = 11
+depth_mm = 10
+z_mm = -19.75
+
+# The box behind the tray, a little inside the plate, about 9 mm left of center.
+[[solid]]
+name = "Box"
+material = "case"
+center_mm = [-9.0, 75.0, -19.25]
+size_mm = [150.0, 98.0, 19.0]
+radius_mm = 4.0
+confidence = "estimated from photos"
+
+# The mounting plate on the box: about 162 x 110 mm, from about 20 to 130 mm up.
+[[solid]]
+name = "Plate"
+material = "plate"
+center_mm = [-9.0, 75.0, -30.0]
+size_mm = [162.0, 110.0, 2.5]
+radius_mm = 4.0
+confidence = "estimated from photos"
+
+# SMA connectors and the antennas' hinge barrels, from the box sides out to the drawn hinges
+# (x 105): short on the left, longer on the right.
+[[solid]]
+name = "ConnectorLeft"
+material = "rubber"
+center_mm = [-95.0, 99.4, -19.75]
+size_mm = [22.0, 8.0, 7.9]
+radius_mm = 3.9
+confidence = "estimated from photos"
+
+[[solid]]
+name = "ConnectorRight"
+material = "rubber"
+center_mm = [85.0, 99.4, -19.75]
+size_mm = [42.0, 8.0, 7.9]
+radius_mm = 3.9
+confidence = "estimated from photos"
+
+# On the plate, as seen from the front (the back view mirrored): the two SP11 sensor sockets
+# with blue caps and the capped USB-C on the LoRa side, the red and blue LEDs on the GPS side.
+[[solid]]
+name = "SensorIIC"
+material = "blue"
+center_mm = [32.0, 91.0, -33.25]
+size_mm = [13.0, 13.0, 4.0]
+radius_mm = 6.5
+confidence = "estimated from photos"
+
+[[solid]]
+name = "SensorUART"
+material = "blue"
+center_mm = [32.0, 70.0, -33.25]
+size_mm = [13.0, 13.0, 4.0]
+radius_mm = 6.5
+confidence = "estimated from photos"
+
+[[solid]]
+name = "USBCCap"
+material = "port"
+center_mm = [35.0, 47.0, -31.75]
+size_mm = [11.0, 11.0, 1.0]
+radius_mm = 5.5
+confidence = "estimated from photos"
+
+[[solid]]
+name = "PowerLED"
+material = "red"
+center_mm = [-41.0, 45.0, -31.6]
+size_mm = [4.5, 4.5, 0.8]
+radius_mm = 2.25
+confidence = "estimated from photos"
+
+[[solid]]
+name = "DataLED"
+material = "ledblue"
+center_mm = [-53.0, 45.0, -31.6]
+size_mm = [4.5, 4.5, 0.8]
+radius_mm = 2.25
+confidence = "estimated from photos"
+
+# The bracket fittings across the middle of the plate: two slots with a raised pad between.
+[[solid]]
+name = "SlotUpper"
+material = "port"
+center_mm = [-8.0, 91.0, -31.5]
+size_mm = [35.0, 4.0, 0.6]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "BracketPad"
+material = "plate"
+center_mm = [-8.0, 71.0, -31.5]
+size_mm = [35.0, 12.0, 0.6]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "SlotLower"
+material = "port"
+center_mm = [-6.0, 53.0, -31.5]
+size_mm = [35.0, 4.0, 0.6]
+confidence = "estimated from photos"

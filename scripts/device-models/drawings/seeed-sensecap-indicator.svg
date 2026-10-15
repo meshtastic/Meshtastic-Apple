@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 92.14 96.08" width="92.14mm" height="96.08mm">
+  <!-- Copyright (c) 2026 Meshtastic LLC. Front view of the Seeed SenseCAP Indicator, drawn in mm
+       from measurements of Seeed's published enclosure CAD (Indicator_3D.stp): a 92.14 x 96.08 face
+       with 7 mm corners, an 84 mm square glass centered on it, and the 4" square display inside. -->
+  <style>.case{fill:#e5e5e3}.glass{fill:#0c0c0e}.display{fill:#18191d}</style>
+  <rect class="case" x="0" y="0" width="92.14" height="96.08" rx="7"/>
+  <rect class="glass" x="4.07" y="6.04" width="84" height="84" rx="2.5"/>
+  <rect class="display" x="10.07" y="12.04" width="72" height="72" rx="0.5"/>
+</svg>

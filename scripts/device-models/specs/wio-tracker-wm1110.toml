@@ -1,80 +1,200 @@
-# wio-tracker-wm1110: generated layout from the SVG; add [[part]] rules to refine.
-# Seeed publishes no board dimensions (cnx-software lists 'Dimensions - Not specified'). Estimated from the drawing using the USB-C and Grove connectors as scale; height set from drawn aspect 0.67. Depth = PCB + Grove connectors, estimated.
-# Board and part heights: WM1110 module 2.3 mm is published (20 x 20 x 2.3 mm, Wio-WM1110 module datasheet V1.3); PCB 1.2 mm and the connector and button heights are typical values.
-# The two white parts near the top edge (AntennaLoRa, AntennaGNSS) are unidentified; their 1.2 mm height is a guess.
-# Scale check: at 55 mm wide the drawn module is about 22 mm, not 20, so the board may be closer to 49 x 73 mm.
+# wio-tracker-wm1110: Wio Tracker 1110 Dev Board, a bare board. The flasher's illustration is a
+# true front view, but its board outline has a notch at the USB-C that the real board doesn't have,
+# so this uses our copy of it with the notch taken out (drawings/).
+# Seeed publishes no board dimensions. Size from Seeed's top-down photo on a cm grid (gallery image 5):
+# https://media-cdn.seeedstudio.com/media/catalog/product/5/-/5-114993136-wio-tracker-1110-dev-board-size_1.jpg
+# The board is 621 x 424 px there. Its two rulers disagree by 2% (90.7 px/cm along, 88.8 px/cm
+# across) although the pixels are square (the WM1110 shield reads 172 x 172 px), so the size is the
+# mean of the two: 69.2 x 47.2 mm (68.5 x 46.8 by one ruler, 69.9 x 47.7 by the other). The shield
+# then reads 19.2 mm, against the module's published 20 x 20 mm. The drawing is 1.7% squatter than
+# that, so our copy is stretched in height to match.
+# The official 3D files are truncated on Seeed's server (wio tracker 723.stp stops at exactly 5 MiB),
+# so there is no CAD to measure.
+# Heights: the WM1110 module's 2.3 mm is published (Wio-WM1110 datasheet V1.3); the PCB, Grove,
+# battery connector, antenna and button heights are estimated from the 45-degree gallery photos.
+# Model frame: x from the center line with the USB-C at the bottom, y up from the board's bottom
+# edge, z out of the front with 0 the middle of the PCB (front face +0.6, back -0.6).
+drawing = "drawings/wio-tracker-wm1110.svg"
 
 [size]
-width_mm = 55.0
-height_mm = 82.0
-depth_mm = 7.5
+width_mm = 47.2
+height_mm = 69.2
+depth_mm = 7.2
 board_mm = 1.2
 scale_by = "width"
-covers = "bare PCB (estimated)"
-source = "https://wiki.seeedstudio.com/Wio-Tracker_Introduction/"
-confidence = "estimated"
+# The board's outline; the USB-C overhangs the bottom edge by about 1.6 mm.
+fit_bbox = [653.25, 519.32, 1264.0, 1414.75]
+appendage = "none"
+covers = "bare PCB; depth is the PCB plus the Grove connectors"
+source = "https://www.seeedstudio.com/Wio-Tracker-1110-Dev-Board-p-5799.html"
+confidence = "estimated from photos"
+
+[materials]
+plating = { color = "#c9c9c4", roughness = 0.3, metallic = 1.0 }
+hole    = { color = "#1a1a1a", roughness = 0.9 }
+label   = { color = "#f4f4f2", roughness = 0.7 }
+gold    = { color = "#d4b05a", roughness = 0.3, metallic = 1.0 }
 
 [[block]]
 name = "WM1110"
-bbox = [830, 850, 1079, 1104]
+bbox = [830, 840.7, 1079, 1098.9]
 h = 2.3
 
+# Top-mounted, overhanging the bottom edge.
 [[block]]
 name = "USBC"
-bbox = [935, 1341, 1044, 1436]
+bbox = [935, 1339.8, 1044, 1436.4]
 h = 3.2
 
+# JST battery connector.
 [[block]]
 name = "Battery"
-bbox = [794, 1327, 901, 1415]
+bbox = [794, 1325.5, 901, 1415.0]
 h = 6.0
 
+# Right-angle Grove connectors, three down each long side.
 [[block]]
 name = "GroveL1"
-bbox = [662, 809, 764, 962]
+bbox = [662, 799.0, 764, 954.5]
 h = 6.0
 
 [[block]]
 name = "GroveL2"
-bbox = [662, 987, 764, 1140]
+bbox = [662, 979.9, 764, 1135.5]
 h = 6.0
 
 [[block]]
 name = "GroveL3"
-bbox = [662, 1165, 764, 1318]
+bbox = [662, 1160.9, 764, 1316.4]
 h = 6.0
 
 [[block]]
 name = "GroveR1"
-bbox = [1156, 809, 1258, 962]
+bbox = [1156, 799.0, 1258, 954.5]
 h = 6.0
 
 [[block]]
 name = "GroveR2"
-bbox = [1156, 987, 1258, 1140]
+bbox = [1156, 979.9, 1258, 1135.5]
 h = 6.0
 
 [[block]]
 name = "GroveR3"
-bbox = [1156, 1165, 1258, 1318]
+bbox = [1156, 1160.9, 1258, 1316.4]
 h = 6.0
 
+# The white ceramic LoRa chip antenna (RainSun) and the GNSS patch antenna, a tan ceramic bar
+# with a silver top.
 [[block]]
 name = "AntennaLoRa"
-bbox = [679, 553, 869, 631]
-h = 1.2
+bbox = [679, 538.7, 869, 618.0]
+h = 2.5
+side_color = "#f2f0ea"
 
 [[block]]
 name = "AntennaGNSS"
-bbox = [1028, 529, 1229, 607]
-h = 1.2
+bbox = [1028, 514.3, 1229, 593.6]
+h = 4.0
+side_color = "#c79a6e"
 
 [[block]]
 name = "ButtonUser"
-bbox = [1074, 1352, 1115, 1406]
+bbox = [1074, 1351.0, 1115, 1405.9]
 h = 2.0
 
 [[block]]
 name = "ButtonReset"
-bbox = [1137, 1352, 1178, 1406]
+bbox = [1137, 1351.0, 1178, 1405.9]
 h = 2.0
+
+# Four plated mounting holes, 40.6 mm apart across and 2.8 and 51.6 mm up, read as fractions of the
+# board on the grid photo (centers 362.8 px apart on a 422 px board) and on the straight-on back
+# photo (gallery image 3), which agree to 0.1 mm. The generator can't cut holes, so each is a
+# dark disc in a plated ring, showing on both faces.
+[[solid]]
+name = "HoleRing1"
+material = "plating"
+center_mm = [-20.3, 2.8, 0]
+size_mm = [4.6, 4.6, 1.3]
+radius_mm = 2.3
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Hole1"
+material = "hole"
+center_mm = [-20.3, 2.8, 0]
+size_mm = [2.9, 2.9, 1.36]
+radius_mm = 1.45
+confidence = "estimated from photos"
+
+[[solid]]
+name = "HoleRing2"
+material = "plating"
+center_mm = [20.3, 2.8, 0]
+size_mm = [4.6, 4.6, 1.3]
+radius_mm = 2.3
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Hole2"
+material = "hole"
+center_mm = [20.3, 2.8, 0]
+size_mm = [2.9, 2.9, 1.36]
+radius_mm = 1.45
+confidence = "estimated from photos"
+
+[[solid]]
+name = "HoleRing3"
+material = "plating"
+center_mm = [-20.3, 51.6, 0]
+size_mm = [4.6, 4.6, 1.3]
+radius_mm = 2.3
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Hole3"
+material = "hole"
+center_mm = [-20.3, 51.6, 0]
+size_mm = [2.9, 2.9, 1.36]
+radius_mm = 1.45
+confidence = "estimated from photos"
+
+[[solid]]
+name = "HoleRing4"
+material = "plating"
+center_mm = [20.3, 51.6, 0]
+size_mm = [4.6, 4.6, 1.3]
+radius_mm = 2.3
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Hole4"
+material = "hole"
+center_mm = [20.3, 51.6, 0]
+size_mm = [2.9, 2.9, 1.36]
+radius_mm = 1.45
+confidence = "estimated from photos"
+
+# Back, from the straight-on back photo calibrated to the board outline: the white serial-number
+# label and the two columns of gold SWD+Trace pads along the right edge (seen from the front).
+[[solid]]
+name = "Label"
+material = "label"
+center_mm = [-2.7, 29.6, -0.65]
+size_mm = [29.5, 19.5, 0.1]
+radius_mm = 1.0
+confidence = "estimated from photos"
+
+[[solid]]
+name = "TracePadsOuter"
+material = "gold"
+center_mm = [21.0, 26.7, -0.62]
+size_mm = [2.2, 12.3, 0.04]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "TracePadsInner"
+material = "gold"
+center_mm = [17.8, 26.7, -0.62]
+size_mm = [2.2, 12.3, 0.04]
+confidence = "estimated from photos"

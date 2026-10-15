@@ -1,30 +1,39 @@
-# thinknode_m4: generated layout from the SVG; add [[part]] rules to refine.
-# Elecrow: Size 87.3*67.7*28mm, 190 g. The drawing shows the back label panel
-# with the clear headlamp cap on the right (a see-through shape in the SVG) and
-# the charge cables looped over the top and down the left. LoRa antenna is internal.
+# thinknode_m4: the ThinkNode M4 power bank, label side to the front. The flasher's illustration
+# also draws the tethered cables and the clear section's insides over the face, so this uses our
+# copy of it with those taken out (drawings/), builds the clear headlamp section as a clear block,
+# and places the charging side's magnetic ring and the bottom USB-C by measurement.
+# Elecrow: 87.3 x 67.7 mm, 27.6 mm deep on its annotated hardware overview (the store page says 28);
+# 190 g. The ring is measured from that photo, which is taken at a slight angle, so it's estimated.
+# Photos: https://www.elecrow.com/media/catalog/product/h/a/hardware_overview_of_thinknode_m4_powerbank2_2.jpg
+# Model frame: x from the center line, y up from the bottom, z out of the label side with 0 the
+# middle of the body.
+drawing = "drawings/thinknode_m4.svg"
 
 [size]
 width_mm = 67.7
 height_mm = 87.3
-depth_mm = 28.0
+depth_mm = 27.6
 scale_by = "width"
-# Case including the clear cap, excluding the cables.
+# The case including the clear section, which the drawing leaves out and the Cap box adds back.
 fit_bbox = [326.13, 202.8, 849.41, 866.27]
-covers = "case including clear headlamp cap, excludes cables"
-# Cables are handled by [[thin]] below.
+covers = "case including the clear headlamp section, excludes the tethered cables"
 appendage = "none"
 edge_radius_mm = 4.0
 front_edge_radius_mm = 2.0
 source = "https://www.elecrow.com/thinknode-m4-power-bank-lora-device-with-meshtastic-lora-tracker-function-powered-by-nrf52840.html"
 confidence = "vendor"
-# Cream case; the black label panel still shows on the face.
+# Cream case; the black label plate stays on the face.
 body_color = "#e3dccd"
 
 [materials]
-cap = { color = "#e4e2dc", roughness = 0.15, opacity = 0.4 }
+cap   = { color = "#eef0f0", roughness = 0.1, opacity = 0.3 }
+core  = { color = "#d9d2c3", roughness = 0.6 }
+ring  = { color = "#a2a1a0", roughness = 0.5 }
+pad   = { color = "#ebe6da", roughness = 0.45 }
+port  = { color = "#1d1d1f", roughness = 0.6 }
 
-# Clear headlamp cap on the right end, just under full depth so the face
-# details stay on top. Its left corners sit inside the body.
+# The clear section along the right edge (seen from the label side), full height and nearly
+# full depth, with its left corners inside the body.
 [[box]]
 name = "Cap"
 x = 660.0
@@ -35,26 +44,45 @@ radius = 68.24
 thickness = 0.96
 material = "cap"
 
-# Cables and plugs hanging down the left side.
-[[thin]]
-bbox = [205, 120, 326.1, 610]
-depth_mm = 7
-edge_radius_mm = 2
+# What shows through it: the cream holder for the stored cables and the headlamp.
+[[solid]]
+name = "Holder"
+material = "core"
+center_mm = [26.4, 43.6, 0]
+size_mm = [9.0, 75.0, 20.0]
+radius_mm = 3.0
+confidence = "estimated from photos"
 
-# Cable loop over the top.
-[[thin]]
-bbox = [326.1, 120, 760, 202.8]
-depth_mm = 4.5
-edge_radius_mm = 2
+# USB-C input at the bottom of the clear section.
+[[solid]]
+name = "USBC"
+material = "port"
+center_mm = [26.4, -0.1, 0]
+size_mm = [8.9, 0.4, 3.2]
+radius_mm = 1.6
 
-# Cable passing the rounded top-left corner.
-[[thin]]
-polygon = [[326.13, 202.8], [326.13, 271.05], [328.46, 253.39], [335.27, 236.93], [346.12, 222.79], [360.25, 211.94], [376.72, 205.13], [394.38, 202.8]]
-depth_mm = 4.5
-edge_radius_mm = 2
+# Charging side: the gray magnetic ring, its light center pad and the dot, centered on the
+# cream part of the case. Each layer stands a little proud of the one under it.
+[[solid]]
+name = "MagneticRing"
+material = "ring"
+center_mm = [-7.4, 35.0, -13.9]
+size_mm = [48.0, 48.0, 0.3]
+radius_mm = 24.0
+confidence = "estimated from photos"
 
-# Cap details (side strip, window, buttons): kept just inside the cap so the
-# black body stops at the cap's edge.
-[[thin]]
-bbox = [735.0, 202.8, 860, 880]
-depth_mm = 26.6
+[[solid]]
+name = "ChargePad"
+material = "pad"
+center_mm = [-7.4, 35.0, -14.0]
+size_mm = [34.0, 34.0, 0.3]
+radius_mm = 17.0
+confidence = "estimated from photos"
+
+[[solid]]
+name = "ChargeDot"
+material = "ring"
+center_mm = [-7.4, 35.0, -14.1]
+size_mm = [5.0, 5.0, 0.3]
+radius_mm = 2.5
+confidence = "estimated from photos"

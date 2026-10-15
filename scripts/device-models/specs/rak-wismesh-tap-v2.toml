@@ -1,19 +1,35 @@
-# rak-wismesh-tap-v2: generated layout from the SVG; add [[part]] rules to refine.
-# No published V2 dimensions found. Product photos and the drawing show the same housing as V1 (Unify 100x75x38). Antenna is a 2.3 dBi blade.
+# rak-wismesh-tap-v2: WisMesh TAP V2 (ESP32-S3), the same Unify Small enclosure and lid as the
+# TAP. Uses our copy of the flasher's illustration with the "V2" badge taken out (drawings/).
+# Depth, outline and the back are measured from the Unify Small body in RAK's MIT-licensed
+# drill-guide STEP, used for measurement only ("Unified-Small-Enclosure v3" component):
+# https://raw.githubusercontent.com/RAKWireless/Awesome-WisBlock/main/Unify-Enclosure/Small-Unifiy-Enclosure/Drill-Guide-USB-Type-C-Hole.step
+# (sha256 b28486ccb9cacf0237829f05dc1a8d697f379f9a76098824337f7fcf1c581f10).
+# The STEP has the shell only (27.5 mm to the parting line, plan corner radius ~13 mm). The lid,
+# the sides and the overall depth come from RAK's straight-on V2 photos
+# (https://store.rakwireless.com/products/meshtastic-touch-client-wismesh-tap-v2-sx1262.json:
+# -top, -buttons and -front-back): 38.5 mm overall with a 9.7 mm lid, matching the published 38.
+# Model frame: x from the center line as seen from the front, y up from the bottom, z out of the
+# screen with 0 the middle of the body; the case center is at y 37.85.
+drawing = "drawings/rak-wismesh-tap-v2.svg"
 
 [size]
 width_mm = 100.0
 height_mm = 75.0
 depth_mm = 38.0
 scale_by = "width"
-covers = "enclosure only, excludes antenna (assumed same Unify enclosure as V1)"
+covers = "enclosure (Unify Small 100 x 75 x 38 with the TAP lid), excludes antenna"
 source = "https://store.rakwireless.com/products/wismesh-unify-enclosure"
-confidence = "estimated"
-# Unify case has softly rounded edges; keep the front small so the gray bezel stays.
-edge_radius_mm = 6.0
-front_edge_radius_mm = 2.5
+confidence = "cad"
+# Drawn case runs 0.7 mm past 75 at 100 mm wide; build it all full depth.
+body_height_mm = 75.8
+# The lid and the shell are the gray case; the drawn bezel is the lid's front rim.
+body_color = "#9f9f9e"
+# The STEP's back edge is a ~0.75 mm fillet on a drafted wall; 1.5 stands in for both.
+edge_radius_mm = 1.5
+front_edge_radius_mm = 2.0
 
-# Round rubber whip on a swivel, folded over to the left in the drawing.
+# The drawing folds the antenna over to the left. RAK's photos show a flat black blade on a
+# swivel; it is built round here, as drawn. The connector sits 21 mm right of center, mid-depth.
 # Fixed radius so the drawn elbow at its base does not flare it out;
 # max_width only widens the area it clears so no flat scraps are left.
 [[antenna]]
@@ -40,3 +56,276 @@ start = [444.3, 531.5]
 end = [444.3, 392.0]
 dome = false
 max_width = 40
+
+[materials]
+recess = { color = "#87888a", roughness = 0.6 }
+dish   = { color = "#7c7d7f", roughness = 0.6 }
+pocket = { color = "#2a2b2d", roughness = 0.7 }
+brass  = { color = "#c9a24a", roughness = 0.3, metallic = 1.0 }
+hole   = { color = "#1d1d1f", roughness = 0.6 }
+port   = { color = "#1d1d1f", roughness = 0.6 }
+button = { color = "#77787a", roughness = 0.55 }
+panel  = { color = "#a6a6a5", roughness = 0.5 }
+
+# Back (the floor of the Unify shell), from the STEP. The shell is 75 x 100 mm at the lid and
+# narrows to 71.3 x 96.3 mm at the back with a draft and a ~0.75 mm edge fillet; the generator
+# extrudes straight, so the back is full size. Recesses are drawn as thin darker layers.
+# Corner screw pockets, ~10 mm square, 22 mm deep, at x +-40.8, y center +-28.3.
+[[solid]]
+name = "PocketUpperLeft"
+material = "pocket"
+center_mm = [-40.8, 66.15, -19.1]
+size_mm = [10.0, 10.0, 0.2]
+radius_mm = 3.0
+
+[[solid]]
+name = "PocketUpperRight"
+material = "pocket"
+center_mm = [40.8, 66.15, -19.1]
+size_mm = [10.0, 10.0, 0.2]
+radius_mm = 3.0
+
+[[solid]]
+name = "PocketLowerLeft"
+material = "pocket"
+center_mm = [-40.8, 9.55, -19.1]
+size_mm = [10.0, 10.0, 0.2]
+radius_mm = 3.0
+
+[[solid]]
+name = "PocketLowerRight"
+material = "pocket"
+center_mm = [40.8, 9.55, -19.1]
+size_mm = [10.0, 10.0, 0.2]
+radius_mm = 3.0
+
+# The mounting-plate recesses, 2.5 mm deep: four round (12.8 mm) and four slotted (16.8 x 12.8 mm),
+# in 180-degree symmetry, each with a brass insert 9 mm off its axis. Which end of each pair is
+# the slot is read from RAK's straight-on back photo (wismesh-tap-v2-front-back.webp).
+[[solid]]
+name = "SlotRight"
+material = "recess"
+center_mm = [34.58, 44.85, -19.1]
+size_mm = [12.8, 16.8, 0.2]
+radius_mm = 6.4
+
+[[solid]]
+name = "RoundRight"
+material = "recess"
+center_mm = [34.58, 28.85, -19.1]
+size_mm = [12.8, 12.8, 0.2]
+radius_mm = 6.4
+
+[[solid]]
+name = "RoundLeft"
+material = "recess"
+center_mm = [-34.58, 46.85, -19.1]
+size_mm = [12.8, 12.8, 0.2]
+radius_mm = 6.4
+
+[[solid]]
+name = "SlotLeft"
+material = "recess"
+center_mm = [-34.58, 30.85, -19.1]
+size_mm = [12.8, 16.8, 0.2]
+radius_mm = 6.4
+
+[[solid]]
+name = "RoundTop"
+material = "recess"
+center_mm = [9.0, 59.93, -19.1]
+size_mm = [12.8, 12.8, 0.2]
+radius_mm = 6.4
+
+[[solid]]
+name = "SlotTop"
+material = "recess"
+center_mm = [-7.0, 59.93, -19.1]
+size_mm = [16.8, 12.8, 0.2]
+radius_mm = 6.4
+
+[[solid]]
+name = "SlotBottom"
+material = "recess"
+center_mm = [7.0, 15.77, -19.1]
+size_mm = [16.8, 12.8, 0.2]
+radius_mm = 6.4
+
+[[solid]]
+name = "RoundBottom"
+material = "recess"
+center_mm = [-9.0, 15.77, -19.1]
+size_mm = [12.8, 12.8, 0.2]
+radius_mm = 6.4
+
+# Brass inserts (4.3 mm) with their threaded holes.
+[[solid]]
+name = "Insert1"
+material = "brass"
+center_mm = [34.58, 46.85, -19.15]
+size_mm = [4.3, 4.3, 0.3]
+radius_mm = 2.15
+
+[[solid]]
+name = "InsertHole1"
+material = "hole"
+center_mm = [34.58, 46.85, -19.2]
+size_mm = [2.2, 2.2, 0.3]
+radius_mm = 1.1
+
+[[solid]]
+name = "Insert2"
+material = "brass"
+center_mm = [34.58, 28.85, -19.15]
+size_mm = [4.3, 4.3, 0.3]
+radius_mm = 2.15
+
+[[solid]]
+name = "InsertHole2"
+material = "hole"
+center_mm = [34.58, 28.85, -19.2]
+size_mm = [2.2, 2.2, 0.3]
+radius_mm = 1.1
+
+[[solid]]
+name = "Insert3"
+material = "brass"
+center_mm = [-34.58, 46.85, -19.15]
+size_mm = [4.3, 4.3, 0.3]
+radius_mm = 2.15
+
+[[solid]]
+name = "InsertHole3"
+material = "hole"
+center_mm = [-34.58, 46.85, -19.2]
+size_mm = [2.2, 2.2, 0.3]
+radius_mm = 1.1
+
+[[solid]]
+name = "Insert4"
+material = "brass"
+center_mm = [-34.58, 28.85, -19.15]
+size_mm = [4.3, 4.3, 0.3]
+radius_mm = 2.15
+
+[[solid]]
+name = "InsertHole4"
+material = "hole"
+center_mm = [-34.58, 28.85, -19.2]
+size_mm = [2.2, 2.2, 0.3]
+radius_mm = 1.1
+
+[[solid]]
+name = "Insert5"
+material = "brass"
+center_mm = [9, 59.93, -19.15]
+size_mm = [4.3, 4.3, 0.3]
+radius_mm = 2.15
+
+[[solid]]
+name = "InsertHole5"
+material = "hole"
+center_mm = [9, 59.93, -19.2]
+size_mm = [2.2, 2.2, 0.3]
+radius_mm = 1.1
+
+[[solid]]
+name = "Insert6"
+material = "brass"
+center_mm = [-9, 59.93, -19.15]
+size_mm = [4.3, 4.3, 0.3]
+radius_mm = 2.15
+
+[[solid]]
+name = "InsertHole6"
+material = "hole"
+center_mm = [-9, 59.93, -19.2]
+size_mm = [2.2, 2.2, 0.3]
+radius_mm = 1.1
+
+[[solid]]
+name = "Insert7"
+material = "brass"
+center_mm = [9, 15.77, -19.15]
+size_mm = [4.3, 4.3, 0.3]
+radius_mm = 2.15
+
+[[solid]]
+name = "InsertHole7"
+material = "hole"
+center_mm = [9, 15.77, -19.2]
+size_mm = [2.2, 2.2, 0.3]
+radius_mm = 1.1
+
+[[solid]]
+name = "Insert8"
+material = "brass"
+center_mm = [-9, 15.77, -19.15]
+size_mm = [4.3, 4.3, 0.3]
+radius_mm = 2.15
+
+[[solid]]
+name = "InsertHole8"
+material = "hole"
+center_mm = [-9, 15.77, -19.2]
+size_mm = [2.2, 2.2, 0.3]
+radius_mm = 1.1
+
+# The center panel, 52.5 x 27.5 mm and 0.6 mm deep, with an 11.8 mm round dish in it.
+[[solid]]
+name = "CenterPanel"
+material = "recess"
+center_mm = [0, 37.85, -19.1]
+size_mm = [52.5, 27.5, 0.2]
+radius_mm = 2.0
+
+[[solid]]
+name = "CenterDish"
+material = "dish"
+center_mm = [0, 37.85, -19.15]
+size_mm = [11.8, 11.8, 0.2]
+radius_mm = 5.9
+
+# Right side as seen from the front: the power button, a 9.8 mm cap in a 17.7 mm ring, 14 mm
+# off the back. Left side: a raised pill-shaped panel with a tail (RAK doesn't name it) and the
+# USB-C, 4.7 mm off the back. All read from RAK's straight-on side photos of the V2
+# (wismesh-tap-v2-buttons.webp, calibrated to the 75 mm height, 12.3 px/mm).
+[[solid]]
+name = "ButtonRing"
+material = "recess"
+center_mm = [50.05, 32.1, -4.9]
+size_mm = [0.3, 17.7, 17.7]
+radius_mm = 8.85
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Button"
+material = "button"
+center_mm = [50.4, 32.1, -4.9]
+size_mm = [1.0, 9.8, 9.8]
+radius_mm = 4.9
+confidence = "estimated from photos"
+
+[[solid]]
+name = "SidePanel"
+material = "panel"
+center_mm = [-50.15, 45.8, -0.6]
+size_mm = [0.5, 25.6, 16.0]
+radius_mm = 7.9
+confidence = "estimated from photos"
+
+[[solid]]
+name = "SidePanelTail"
+material = "panel"
+center_mm = [-50.15, 26.2, -0.65]
+size_mm = [0.5, 19.6, 7.3]
+radius_mm = 3.6
+confidence = "estimated from photos"
+
+[[solid]]
+name = "USBC"
+material = "port"
+center_mm = [-50.1, 45.0, -14.3]
+size_mm = [0.4, 8.9, 3.2]
+radius_mm = 1.6
+confidence = "estimated from photos"

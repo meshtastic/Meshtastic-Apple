@@ -1,30 +1,150 @@
-# seeed-sensecap-indicator: generated layout from the SVG; add [[part]] rules to refine.
-# TinyTronics: 96 L x 92 W x 19 H mm, 118 g. Another listing (via cnx-software/RobotShop search) gives 97 x 93 x 18 mm. Seeed wiki/manual give no dimensions. Drawing is a 3/4 perspective view with the stand, so drawn aspect 0.98 is not a clean front view.
+# seeed-sensecap-indicator: the flasher's illustration is a 3/4 perspective view with the stand
+# out, so this model is built from our own front drawing (drawings/) and parts placed in mm.
+# Every figure is measured from Seeed's published enclosure CAD, used for measurement only:
+# https://files.seeedstudio.com/wiki/SenseCAP_Indicator/Indicator_3D.stp
+# (sha256 541b98caac9b29c13bc67503b27b3ef198089ec69a329db2aed611c547aaf3d3, 2023-07-27).
+# Model frame: x from the center line, y up from the bottom, z out of the front with 0 the
+# middle of the body; the CAD's y + 48.04 and z + 8.85 give these.
+drawing = "drawings/seeed-sensecap-indicator.svg"
 
 [size]
-width_mm = 92.0
-height_mm = 96.0
-depth_mm = 19.0
+width_mm = 92.1
+height_mm = 96.1
+depth_mm = 17.7
 scale_by = "width"
-covers = "whole device, kickstand folded"
-source = "https://www.tinytronics.nl/en/development-boards/microcontroller-boards/with-lora/seeed-studio-sensecap-indicator-d1l"
-confidence = "retailer"
-# White plastic case for the sides and back; the dark screen stays on the face.
+covers = "case without the stand; the stand is built open below"
+source = "https://files.seeedstudio.com/wiki/SenseCAP_Indicator/Indicator_3D.stp"
+confidence = "cad"
 body_color = "#e5e5e3"
-# Rounded white plastic case with a flat glass front inside a bezel.
-edge_radius_mm = 5.0
-front_edge_radius_mm = 1.0
+edge_radius_mm = 3.0
+front_edge_radius_mm = 1.5
 
-# The drawing shows the left side wall (speaker grille) and the fold-out stand
-# in perspective. Build that strip as a thin plate at the back instead of full
-# depth. It follows the face's slanted left edge down to the stand, and stops
-# at the stand's bottom (y 1222) so the bezel corner stays full depth.
-[[thin]]
-polygon = [[700, 560], [768, 560], [771, 650], [837, 962], [842, 1225], [700, 1225]]
-depth_mm = 3
-z_mm = -8
-
-# The screen (drawn #353535) renders mid-gray as plain plastic. Make it darker,
-# glossy glass so it reads as a screen against the white case.
 [materials]
-c_353535 = { color = "#101012", roughness = 0.15 }
+glass   = { color = "#0c0c0e", roughness = 0.12 }
+c_0c0c0e = { color = "#0c0c0e", roughness = 0.12 }
+c_18191d = { color = "#18191d", roughness = 0.12 }
+port    = { color = "#1d1d1f", roughness = 0.6 }
+screw   = { color = "#9a9a9c", roughness = 0.35, metallic = 1.0 }
+pad     = { color = "#cfcfcc", roughness = 0.7 }
+case    = { color = "#e5e5e3", roughness = 0.55 }
+
+# The stand: two 15 mm arms along the outer edges, 4 mm thick, hinged about y 44 on the back and
+# leaning back 39.2 degrees, joined at the foot by a full-width bar. Open, as Seeed shows it.
+[[solid]]
+name = "StandArmLeft"
+material = "case"
+center_mm = [-38.6, 29.65, -20.84]
+size_mm = [15.0, 46.0, 4.0]
+rotate_deg = [39.2, 0, 0]
+radius_mm = 1.0
+
+[[solid]]
+name = "StandArmRight"
+material = "case"
+center_mm = [38.6, 29.65, -20.84]
+size_mm = [15.0, 46.0, 4.0]
+rotate_deg = [39.2, 0, 0]
+radius_mm = 1.0
+
+[[solid]]
+name = "StandFoot"
+material = "case"
+center_mm = [0, 14.9, -32.85]
+size_mm = [92.1, 8.0, 4.0]
+rotate_deg = [39.2, 0, 0]
+radius_mm = 1.0
+
+# Bottom: USB-C in the middle, the microSD slot to the right.
+[[solid]]
+name = "USBC"
+material = "port"
+center_mm = [0, -0.1, 1.25]
+size_mm = [8.9, 0.4, 3.2]
+radius_mm = 1.6
+
+[[solid]]
+name = "MicroSD"
+material = "port"
+center_mm = [27.9, -0.1, 1.65]
+size_mm = [12.0, 0.4, 2.8]
+radius_mm = 0.4
+
+# Top: the button near the left end, 0.94 mm proud.
+[[solid]]
+name = "Button"
+material = "pad"
+center_mm = [-33.5, 96.55, 1.65]
+size_mm = [6.0, 0.94, 3.5]
+radius_mm = 1.2
+
+# Right side: a 7 mm disc standing 0.5 mm proud, probably a button; the CAD doesn't name it.
+[[solid]]
+name = "SideButton"
+material = "pad"
+center_mm = [46.32, 56.04, -1.15]
+size_mm = [0.5, 7.0, 7.0]
+radius_mm = 3.5
+
+# Back: four screws, four round pads and the small opening near the top.
+[[solid]]
+name = "ScrewLowerLeft"
+material = "screw"
+center_mm = [-25.0, 48.0, -8.95]
+size_mm = [3.7, 3.7, 0.3]
+radius_mm = 1.85
+
+[[solid]]
+name = "ScrewLowerRight"
+material = "screw"
+center_mm = [25.0, 48.0, -8.95]
+size_mm = [3.7, 3.7, 0.3]
+radius_mm = 1.85
+
+[[solid]]
+name = "ScrewUpperLeft"
+material = "screw"
+center_mm = [-39.5, 89.5, -8.95]
+size_mm = [3.7, 3.7, 0.3]
+radius_mm = 1.85
+
+[[solid]]
+name = "ScrewUpperRight"
+material = "screw"
+center_mm = [39.5, 89.5, -8.95]
+size_mm = [3.7, 3.7, 0.3]
+radius_mm = 1.85
+
+[[solid]]
+name = "PadLowerLeft"
+material = "pad"
+center_mm = [-11.6, 57.1, -8.95]
+size_mm = [5.0, 5.0, 0.3]
+radius_mm = 2.5
+
+[[solid]]
+name = "PadLowerRight"
+material = "pad"
+center_mm = [11.7, 57.1, -8.95]
+size_mm = [5.0, 5.0, 0.3]
+radius_mm = 2.5
+
+[[solid]]
+name = "PadUpperLeft"
+material = "pad"
+center_mm = [-7.8, 82.1, -8.95]
+size_mm = [5.0, 5.0, 0.3]
+radius_mm = 2.5
+
+[[solid]]
+name = "PadUpperRight"
+material = "pad"
+center_mm = [7.2, 82.1, -8.95]
+size_mm = [5.0, 5.0, 0.3]
+radius_mm = 2.5
+
+[[solid]]
+name = "BackOpening"
+material = "port"
+center_mm = [0, 73.0, -8.95]
+size_mm = [8.0, 12.0, 0.3]
+radius_mm = 1.0
