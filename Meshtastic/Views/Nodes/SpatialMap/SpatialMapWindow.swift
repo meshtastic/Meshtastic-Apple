@@ -31,6 +31,7 @@ struct SpatialMapWindow: View {
 	@AppStorage("meshMapShowContours") private var showContours = false
 	@AppStorage("spatialMapShowLabels") private var showLabels = true
 	@AppStorage("spatialMapShowTraffic") private var showTraffic = true
+	@AppStorage("spatialMapShowDirectLinks") private var showLinks = false
 	@AppStorage("spatialMapAutoTerrain") private var autoTerrain = true
 	@AppStorage("spatialMapCoverage") private var coverageMode: SpatialCoverageMode = .selected
 	@AppStorage("spatialMapCoverageOpacity") private var coverageOpacity = 0.55
@@ -44,7 +45,7 @@ struct SpatialMapWindow: View {
 	private var preset: ModemPresets { ModemPresets(rawValue: UserDefaults.modemPreset) ?? .longFast }
 
 	private var refreshKey: String {
-		"\(mapLayer.rawValue)|\(darkMap)|\(showContours)|\(preciseLocationsOnly)|\(coverageMode.rawValue)|\(accessoryManager.activeDeviceNum ?? 0)|\(accessoryManager.isInBackground)"
+		"\(mapLayer.rawValue)|\(darkMap)|\(showContours)|\(preciseLocationsOnly)|\(showLinks)|\(coverageMode.rawValue)|\(accessoryManager.activeDeviceNum ?? 0)|\(accessoryManager.isInBackground)"
 	}
 
 	var body: some View {
@@ -63,7 +64,7 @@ struct SpatialMapWindow: View {
 		.ornament(attachmentAnchor: .scene(.bottomFront)) {
 			SpatialMapOrnament(
 				model: model, traffic: traffic, mapLayer: $mapLayer, darkMap: $darkMap, showContours: $showContours,
-				showLabels: $showLabels, showTraffic: $showTraffic, autoTerrain: $autoTerrain,
+				showLabels: $showLabels, showLinks: $showLinks, showTraffic: $showTraffic, autoTerrain: $autoTerrain,
 				coverageMode: $coverageMode, coverageOpacity: $coverageOpacity
 			)
 		}
@@ -122,6 +123,7 @@ struct SpatialMapWindow: View {
 	/// `--meshtastic-spatial-tilt <degrees>` tips the table toward the camera.
 	private func showRouteForScreenshots() async {
 		let arguments = ProcessInfo.processInfo.arguments
+		tiltForScreenshots(arguments)
 		guard let flagIndex = arguments.firstIndex(of: "--meshtastic-spatial-route") else { return }
 		let index = arguments.indices.contains(flagIndex + 1) ? Int(arguments[flagIndex + 1]) ?? 0 : 0
 		var waited = 0
@@ -138,7 +140,10 @@ struct SpatialMapWindow: View {
 		}
 		model.shownRoute = route
 		traffic.startFlyover(route, speed: 10)
-		// The simulator's camera looks at the table edge on; tip it toward the viewer.
+	}
+
+	/// The simulator's camera looks at the table edge on; tip it toward the viewer.
+	private func tiltForScreenshots(_ arguments: [String]) {
 		if let tiltIndex = arguments.firstIndex(of: "--meshtastic-spatial-tilt"), arguments.indices.contains(tiltIndex + 1),
 		   let degrees = Float(arguments[tiltIndex + 1]) {
 			scene.root.orientation = simd_quatf(angle: degrees * .pi / 180, axis: [1, 0, 0])
@@ -158,6 +163,7 @@ struct SpatialMapWindow: View {
 		traffic.connectedNodeNum = accessoryManager.activeDeviceNum
 		traffic.preset = preset
 		model.showContours = showContours
+		model.showLinks = showLinks
 		model.autoDownloadTerrain = autoTerrain
 		model.coverageMode = coverageMode
 		model.refresh(context: context, filters: nodeFilters, preciseOnly: preciseLocationsOnly, layer: mapLayer, dark: darkMap)
@@ -222,6 +228,7 @@ struct SpatialMapOrnament: View {
 	@Binding var darkMap: Bool
 	@Binding var showContours: Bool
 	@Binding var showLabels: Bool
+	@Binding var showLinks: Bool
 	@Binding var showTraffic: Bool
 	@Binding var autoTerrain: Bool
 	@Binding var coverageMode: SpatialCoverageMode
@@ -254,6 +261,8 @@ struct SpatialMapOrnament: View {
 
 			Toggle(isOn: $showLabels) { Image(systemName: "tag") }
 				.accessibilityLabel(String(localized: "Node labels", comment: "VoiceOver label for the spatial map labels toggle"))
+			Toggle(isOn: $showLinks) { Image(systemName: "link") }
+				.accessibilityLabel(String(localized: "Direct Links", comment: "Map settings toggle that draws lines between nodes that hear each other directly."))
 			Toggle(isOn: $showTraffic) { Image(systemName: "dot.radiowaves.left.and.right") }
 				.accessibilityLabel(String(localized: "Live traffic", comment: "VoiceOver label for the spatial map traffic toggle"))
 

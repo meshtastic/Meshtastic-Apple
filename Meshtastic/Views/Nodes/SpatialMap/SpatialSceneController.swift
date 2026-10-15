@@ -49,6 +49,7 @@ final class SpatialSceneController {
 	let selectionContainer = Entity()
 	let trafficContainer = Entity()
 	let route = SpatialRouteDrawing()
+	let links = SpatialLinkDrawing()
 	let wheel = SpatialWheelEntity()
 	var updateSubscription: EventSubscription?
 
@@ -159,6 +160,7 @@ final class SpatialSceneController {
 		terrainAnchor.addChild(placeholder)
 		terrainAnchor.addChild(coverageContainer)
 		terrainAnchor.addChild(nodesContainer)
+		terrainAnchor.addChild(links.root)
 		terrainAnchor.addChild(route.root)
 		terrainAnchor.addChild(selectionContainer)
 		terrainAnchor.addChild(trafficContainer)
@@ -653,6 +655,28 @@ extension SpatialSceneController {
 		}
 		route.update(route: snapshot, anchors: anchors, counterScale: counterScale, clip: clip)
 		route.place(attachments: attachments, ids: attachmentIDs)
+	}
+
+	// MARK: Links
+
+	/// Draws the direct links between pins, cut at the rim, or clears them when `snapshots` is
+	/// empty. Both ends need a pin; the links are built from the nodes on the map, so they have one.
+	func apply(links snapshots: [SpatialLinkSnapshot], pills: [SpatialLinkPill], preset: ModemPresets, attachments: RealityViewAttachments, attachmentIDs: [String]) {
+		links.preset = preset
+		guard !snapshots.isEmpty, let placement else {
+			links.update(links: [], pills: [], anchors: [:], counterScale: counterScale, clip: SpatialRouteClip(scale: 1, translation: .zero, radius: 0))
+			return
+		}
+		let clip = SpatialRouteClip(scale: preview.scale, translation: preview.translation, radius: placement.diskRadius)
+		var anchors: [Int64: SpatialRouteDrawing.Anchor] = [:]
+		for link in snapshots {
+			for num in [link.a, link.b] where anchors[num] == nil {
+				guard let pin = pins[num] else { continue }
+				anchors[num] = .init(foot: pin.holder.position, top: pin.holder.position + [0, pin.top * counterScale, 0], onDisk: pin.shown)
+			}
+		}
+		links.update(links: snapshots, pills: pills, anchors: anchors, counterScale: counterScale, clip: clip)
+		links.place(attachments: attachments, ids: attachmentIDs)
 	}
 
 	// MARK: User transform

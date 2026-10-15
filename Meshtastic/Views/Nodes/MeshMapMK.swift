@@ -1708,13 +1708,8 @@ struct MeshMapMK: View {
 		var nodes = (try? context.fetch(FetchDescriptor<NodeInfoEntity>(
 			predicate: #Predicate<NodeInfoEntity> { $0.hopsAway == 0 && $0.viaMqtt == false && ($0.lastHeard ?? epoch) >= directCutoff }
 		))) ?? []
-		// Neighbor Info reports. There are few rows: at most ten per reporting node.
-		let reportCutoff = now.addingTimeInterval(-NodeLinks.maxReportAge)
-		let reports = ((try? context.fetch(FetchDescriptor<NeighborLinkEntity>(
-			predicate: #Predicate<NeighborLinkEntity> { $0.viaMqtt == false && $0.receivedAt >= reportCutoff }
-		))) ?? []).map {
-			NodeLinkReportRow(reporter: $0.reporterNum, neighbor: $0.neighborNum, snr: $0.snr, receivedAt: $0.receivedAt, viaMqtt: $0.viaMqtt)
-		}
+		// Neighbor Info reports.
+		let reports = NodeLinks.reportRows(context: context, now: now)
 		// Nodes named in reports that aren't already loaded, for their positions.
 		let loaded = Set(nodes.map(\.num))
 		let missing = Array(Set(reports.flatMap { [$0.reporter, $0.neighbor] }).union([connectedNum]).subtracting(loaded))

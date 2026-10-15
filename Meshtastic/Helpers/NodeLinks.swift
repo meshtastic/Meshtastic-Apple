@@ -7,6 +7,7 @@
 
 import CoreLocation
 import Foundation
+import SwiftData
 
 /// One node hearing another: `observer` heard `heard` at `snr` dB, last at `heardAt`.
 /// One-way, so A hearing B says nothing about B hearing A.
@@ -187,5 +188,18 @@ enum NodeLinks {
 		guard age > source.fullStrengthAge else { return 1 }
 		let progress = min(1, (age - source.fullStrengthAge) / (source.maxAge - source.fullStrengthAge))
 		return 1 - progress * (1 - minOpacity)
+	}
+
+	/// The saved Neighbor Info entries young enough to draw, left out when they came over MQTT.
+	/// There are few rows: at most ten per reporting node.
+	@MainActor
+	static func reportRows(context: ModelContext, now: Date) -> [NodeLinkReportRow] {
+		let cutoff = now.addingTimeInterval(-maxReportAge)
+		let rows = (try? context.fetch(FetchDescriptor<NeighborLinkEntity>(
+			predicate: #Predicate<NeighborLinkEntity> { $0.viaMqtt == false && $0.receivedAt >= cutoff }
+		))) ?? []
+		return rows.map {
+			NodeLinkReportRow(reporter: $0.reporterNum, neighbor: $0.neighborNum, snr: $0.snr, receivedAt: $0.receivedAt, viaMqtt: $0.viaMqtt)
+		}
 	}
 }
