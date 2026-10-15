@@ -153,7 +153,7 @@ struct MQTTTopicFinder: View {
 					subtitle: levelName(rung.level),
 					count: live?.activity.nodeCount ?? 0,
 					truncated: live?.activity.truncated ?? false,
-					isCurrent: MqttRootTopic.rootsMatch(topic, config.root)
+					isCurrent: topic == config.root
 				) { pick(topic) }
 			}
 		} header: {
@@ -195,7 +195,7 @@ struct MQTTTopicFinder: View {
 						subtitle: subtitle(for: root),
 						count: root.activity.nodeCount,
 						truncated: root.activity.truncated,
-						isCurrent: MqttRootTopic.rootsMatch(root.root, config.root)
+						isCurrent: root.root == config.root
 					) { pick(root.root) }
 				}
 			}

@@ -69,8 +69,8 @@ enum MqttRootTopic {
 		return nil
 	}
 
-	/// "", "msh" and "msh/<regionTopic>" (exact, case-sensitive like the firmware) are the roots
-	/// `MQTT::applyRegionRootTopic` treats as its own default.
+	/// "", "msh" and `regionTopic` (the full "msh/<REGION>" string; exact, case-sensitive like the
+	/// firmware) are the roots `MQTT::applyRegionRootTopic` treats as its own default.
 	static func isFirmwareDefault(_ root: String, regionTopic: String) -> Bool {
 		root.isEmpty || root == "msh" || root == regionTopic
 	}
