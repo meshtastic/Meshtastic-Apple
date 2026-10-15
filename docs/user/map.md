@@ -177,14 +177,14 @@ Tap the **legend** button (map icon, bottom-right) for a key to the colors and m
 
 ### On the spatial map (Apple Vision Pro)
 
-On the 3D spatial map, tap the **airplane** button in the toolbar and pick a trace route. A marker flies the route, and the route stays drawn on the terrain after it lands so you can read it. Tap **✕** in the toolbar to clear it.
+On the 3D spatial map, tap the **trace route** button in the toolbar and pick a route. The menu lists the 20 most recent trace routes that came back with node positions, newest first. Each shows the originator and target, then the hop count, whether a return path came back, and how long ago it arrived (for example "3 Hops · 2 hours ago"). A marker flies the route, and the route stays drawn on the terrain after it lands so you can read it. Tap **✕** in the toolbar to clear it.
 
 - **Forward and return** — the forward path toward the target is a **solid orange** line (short dashes where the SNR is unknown) and the return path back to the originator is a **dashed blue** line, the same colors as the Forward route and Return route headings in the hop timeline. Each has a dark edge so it stands out on the terrain. Where both paths use the same leg, the two lines sit side by side.
 - **Arrows** — small cones along each line, a shade lighter than the line, point in the direction of travel and drift slowly along it. They stay still when **Reduce Motion** is on.
 - **Endpoints** — the originator has a **green** ring at its foot and the target a **white** ring.
 - **Hop numbers** — each relay gets a numbered badge beside its pin, in the order the packet reached it: filled orange on the way out, a blue ring on the way back.
 - **Signal labels** — each leg shows its SNR (for example "7.0 dB") in a small pill colored by signal quality. A forward leg whose SNR wasn't reported is drawn with short dashes and has no label. Labels that would crowd each other are hidden; zoom in to see more.
-- While a route is shown, the traceroute links between nodes are faded so the route stands out, and the toolbar shows a key to the two line colors.
+- While a route is shown, the toolbar shows a key to the two line colors.
 
 ## Node Trail
 
