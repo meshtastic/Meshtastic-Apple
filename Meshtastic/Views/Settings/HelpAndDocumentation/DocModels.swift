@@ -37,8 +37,8 @@ enum DocSection: String, CaseIterable, Identifiable {
 
 	var title: String {
 		switch self {
-		case .user: return "User Guide"
-		case .developer: return "Developer Guide"
+		case .user: return String(localized: "User Guide")
+		case .developer: return String(localized: "Developer Guide")
 		}
 	}
 

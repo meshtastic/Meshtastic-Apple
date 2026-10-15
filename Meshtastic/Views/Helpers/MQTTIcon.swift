@@ -27,7 +27,7 @@ struct MQTTIcon: View {
 				.symbolRenderingMode(.hierarchical)
 		}.popover(isPresented: self.$isPopoverOpen, content: {
 			VStack(spacing: 0.5) {
-				Text("Topic: \(topic)".localized)
+				Text("Topic: \(topic)")
 					.padding(20)
 			}
 			.presentationCompactAdaptation(.popover)

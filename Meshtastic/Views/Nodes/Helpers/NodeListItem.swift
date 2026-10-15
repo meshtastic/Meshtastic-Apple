@@ -352,11 +352,11 @@ struct NodeListItem: View {
 									text: UnheardOnCurrentLora.shortLabel)
 					}
 					IconAndText(systemName: summary.role?.systemName ?? "figure",
-								text: "Role: \(summary.role?.name ?? "Unknown".localized)")
+								text: String(localized: "Role: \(summary.role?.name ?? "Unknown".localized)"))
 					if summary.unmessagable {
 						IconAndText(systemName: "iphone.slash",
 									renderingMode: .multicolor,
-									text: "Unmonitored")
+									text: "Unmonitored".localized)
 					}
 					if summary.isStoreForwardRouter {
 						IconAndText(systemName: "envelope.arrow.triangle.branch",
@@ -391,7 +391,7 @@ struct NodeListItem: View {
 					}
 					HStack {
 						if summary.channel > 0 {
-							IconAndText(systemName: "\(summary.channel).circle.fill", text: "Channel")
+							IconAndText(systemName: "\(summary.channel).circle.fill", text: "Channel".localized)
 						}
 
 						if summary.viaMqtt && connectedNode != summary.num {
@@ -402,7 +402,7 @@ struct NodeListItem: View {
 					}
 					if cachedHasLogs {
 						HStack {
-							IconAndText(systemName: "scroll", text: "Logs:")
+							IconAndText(systemName: "scroll", text: "Logs:".localized)
 							if cachedHasDeviceMetrics {
 								DefaultIcon(systemName: "flipphone")
 							}
@@ -422,7 +422,7 @@ struct NodeListItem: View {
 					}
 					if summary.hopsAway > 0 {
 						HStack {
-							IconAndText(systemName: "hare", text: "Hops Away:")
+							IconAndText(systemName: "hare", text: "Hops Away:".localized)
 							Image(systemName: "\(summary.hopsAway).square")
 								.font(.title2)
 						}

@@ -184,9 +184,9 @@ enum IntentMessageConverters {
 		}
 
 		if index == 0 {
-			return "Primary Channel"
+			return String(localized: "Primary Channel")
 		}
 
-		return "Channel \(index)"
+		return String(localized: "Channel \(index)")
 	}
 }
