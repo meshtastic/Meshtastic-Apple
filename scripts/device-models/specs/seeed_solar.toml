@@ -1,22 +1,237 @@
-# seeed_solar: generated layout from the SVG; add [[part]] rules to refine.
-# Seeed wiki: 'Dimension 191.2 x 201.2 x 42.1 mm' (P1 and P1-Pro). Width/height assignment assumed from drawing (panel slightly taller than wide). Drawn aspect 0.64 includes the antenna on top.
+# seeed_solar: SenseCAP Solar Node P1. The flasher's illustration is a true front view of the
+# panel and frame, so it stays the drawing. Behind it, the frame is a thin tray and the depth
+# comes from the electronics box on the back, built here by measurement from Seeed's photos:
+# https://www.seeedstudio.com/SenseCAP-Solar-Node-P1-for-Meshtastic-LoRa-p-6425.html
+# (gallery images 4, 8 and 9: the straight-on back, the button side and the antenna connector).
+# The back photo is calibrated against the published 191.2 x 201.2 mm outline (3.5 px/mm both
+# ways); everything on the back is estimated from it. Model frame: x from the center line as seen
+# from the front, y up from the bottom, z out of the panel with 0 the middle of the frame.
 
 [size]
 width_mm = 191.2
 height_mm = 201.2
-depth_mm = 42.1
+# The frame and panel; the box adds 28.1 mm behind, for the wiki's 42.1 mm overall.
+depth_mm = 14.0
 scale_by = "width"
 fit_bbox = [199, 228, 574, 636]  # case only, antenna excluded
 appendage = "none"
-edge_radius_mm = 6          # molded plastic case with soft back edges
-front_edge_radius_mm = 1.5  # small: the white frame and clip tabs sit at the front edge
-body_color = "#d9ddd6"      # light gray case; the dark panel color stays on the face
-covers = "enclosure/solar panel body, excludes antenna"
+edge_radius_mm = 6          # the back edge slopes in like a tray
+front_edge_radius_mm = 1.5  # small: the frame and clip tabs sit at the front edge
+body_color = "#d9ddd6"      # light gray case; the dark panel stays on the face
+covers = "frame and panel 14 mm (estimated) plus the electronics box behind, 42.1 mm overall; the antenna is built at its connector"
 source = "https://wiki.seeedstudio.com/meshtastic_solar_node/"
 confidence = "vendor"
 
-# Rod-shaped rubber antenna on top (wiki), so it is round.
-[[antenna]]
+[materials]
+# The solar panel: near-black with a little shine, instead of plain plastic.
+c_232527 = { color = "#1b1f26", roughness = 0.25 }
+case     = { color = "#d9ddd6", roughness = 0.55 }
+brass    = { color = "#c9a24a", roughness = 0.3, metallic = 1.0 }
+screw    = { color = "#26282a", roughness = 0.5 }
+rubber   = { color = "#1f2022", roughness = 0.8 }
+port     = { color = "#1d1d1f", roughness = 0.6 }
+
+# The drawing's antenna stands on top of the frame; the real one screws onto the connector on the
+# side of the box, so the drawn one is left out and a round one is built there instead.
+[[part]]
+name = "DrawnAntenna"
+class = "cls-1"
+max_width_mm = 15
+role = "skip"
+
+# The electronics box, 119.5 x 157.7 mm, centered 102.3 mm up and slightly right of center as
+# seen from the front, standing 28.1 mm off the back of the frame.
+[[solid]]
+name = "Box"
+material = "case"
+center_mm = [4.2, 102.3, -20.6]
+size_mm = [119.5, 157.7, 29.0]
+radius_mm = 6.0
+confidence = "estimated from photos"
+
+# The mounting cross on the box: three ribs, two crossbars and the two brass threaded inserts.
+[[solid]]
+name = "RibLeft"
+material = "case"
+center_mm = [23.4, 120.6, -36.1]
+size_mm = [3.0, 71.4, 2.0]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "RibCenter"
+material = "case"
+center_mm = [2.7, 120.6, -36.1]
+size_mm = [3.0, 71.4, 2.0]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "RibRight"
+material = "case"
+center_mm = [-16.8, 120.6, -36.1]
+size_mm = [3.0, 71.4, 2.0]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "CrossbarUpper"
+material = "case"
+center_mm = [3.3, 136.3, -36.1]
+size_mm = [43.0, 3.0, 2.0]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "CrossbarLower"
+material = "case"
+center_mm = [3.3, 96.3, -36.1]
+size_mm = [43.0, 3.0, 2.0]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "InsertUpper"
+material = "brass"
+center_mm = [2.7, 137.1, -37.3]
+size_mm = [8.5, 8.5, 0.6]
+radius_mm = 4.25
+confidence = "estimated from photos"
+
+[[solid]]
+name = "InsertLower"
+material = "brass"
+center_mm = [2.7, 96.9, -37.3]
+size_mm = [8.5, 8.5, 0.6]
+radius_mm = 4.25
+confidence = "estimated from photos"
+
+# Screws around the box.
+[[solid]]
+name = "Screw1"
+material = "screw"
+center_mm = [55.2, 174.9, -35.25]
+size_mm = [4.0, 4.0, 0.3]
+radius_mm = 2.0
+
+[[solid]]
+name = "Screw2"
+material = "screw"
+center_mm = [3.2, 174.9, -35.25]
+size_mm = [4.0, 4.0, 0.3]
+radius_mm = 2.0
+
+[[solid]]
+name = "Screw3"
+material = "screw"
+center_mm = [-48.4, 174.9, -35.25]
+size_mm = [4.0, 4.0, 0.3]
+radius_mm = 2.0
+
+[[solid]]
+name = "Screw4"
+material = "screw"
+center_mm = [55.2, 128.3, -35.25]
+size_mm = [4.0, 4.0, 0.3]
+radius_mm = 2.0
+
+[[solid]]
+name = "Screw5"
+material = "screw"
+center_mm = [-48.4, 128.3, -35.25]
+size_mm = [4.0, 4.0, 0.3]
+radius_mm = 2.0
+
+[[solid]]
+name = "Screw6"
+material = "screw"
+center_mm = [55.2, 81.4, -35.25]
+size_mm = [4.0, 4.0, 0.3]
+radius_mm = 2.0
+
+[[solid]]
+name = "Screw7"
+material = "screw"
+center_mm = [-48.4, 81.4, -35.25]
+size_mm = [4.0, 4.0, 0.3]
+radius_mm = 2.0
+
+[[solid]]
+name = "Screw8"
+material = "screw"
+center_mm = [55.2, 35.7, -35.25]
+size_mm = [4.0, 4.0, 0.3]
+radius_mm = 2.0
+
+[[solid]]
+name = "Screw9"
+material = "screw"
+center_mm = [-48.4, 35.7, -35.25]
+size_mm = [4.0, 4.0, 0.3]
+radius_mm = 2.0
+
+# Bottom of the box: three buttons, the status LEDs, USB-C and the vent plug, left to right as
+# seen from the front.
+[[solid]]
+name = "Button1"
+material = "rubber"
+center_mm = [-30.0, 22.7, -20.6]
+size_mm = [7.0, 1.5, 7.0]
+radius_mm = 3.5
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Button2"
+material = "rubber"
+center_mm = [-20.0, 22.7, -20.6]
+size_mm = [7.0, 1.5, 7.0]
+radius_mm = 3.5
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Button3"
+material = "rubber"
+center_mm = [-10.0, 22.7, -20.6]
+size_mm = [7.0, 1.5, 7.0]
+radius_mm = 3.5
+confidence = "estimated from photos"
+
+[[solid]]
+name = "LEDs"
+material = "port"
+center_mm = [5.0, 23.3, -20.6]
+size_mm = [14.0, 0.4, 2.5]
+radius_mm = 1.25
+confidence = "estimated from photos"
+
+[[solid]]
+name = "USBC"
+material = "port"
+center_mm = [22.0, 23.3, -20.6]
+size_mm = [8.9, 0.4, 3.2]
+radius_mm = 1.6
+confidence = "estimated from photos"
+
+[[solid]]
+name = "VentPlug"
+material = "rubber"
+center_mm = [34.0, 22.7, -20.6]
+size_mm = [6.0, 1.5, 6.0]
+radius_mm = 3.0
+confidence = "estimated from photos"
+
+# The antenna connector on the right side of the box, as seen from the front, and the antenna
+# standing up from it, about 190 mm, rising past the top of the frame as in Seeed's mounted photo
+# (gallery image 1; estimated).
+[[solid]]
+name = "Connector"
+material = "brass"
+center_mm = [66.95, 62.0, -20.6]
+size_mm = [6.0, 8.0, 8.0]
+radius_mm = 4.0
+confidence = "estimated from photos"
+
+[[lathe]]
 name = "Antenna"
-start = [386.5, 228]
-end = [386.5, 49]
+material = "rubber"
+axis_x = 523.8
+y_bottom = 514.4
+y_top = 141.8
+radius = 9.8
+dome = true
+z = -20.6
