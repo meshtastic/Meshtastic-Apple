@@ -201,10 +201,6 @@ struct ShowcaseControlPanel: View {
 					Text("· \(scene.overflowCount) not shown", comment: "Showcase: radios with no place in the room")
 						.foregroundStyle(.secondary)
 				}
-				if !scene.hasConnectedRadio {
-					Text("· No radio connected", comment: "Showcase: no radio is connected, so none stands on the front table")
-						.foregroundStyle(.secondary)
-				}
 				Spacer(minLength: 0)
 			}
 			.font(.caption)

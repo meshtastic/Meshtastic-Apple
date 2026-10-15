@@ -31,39 +31,25 @@ struct ShowcaseLayoutTests {
 		}
 	}
 
-	private func tiers(_ layout: ShowcaseLayout) -> [ShowcaseTier: Int] {
-		layout.slots.values.reduce(into: [:]) { $0[$1.tier, default: 0] += 1 }
-	}
-
-	@Test("Ten nodes: the radio on the table, everyone else in the rack, favorites included")
+	@Test("Ten nodes, the connected radio included, all go into the rack in order")
 	func tenNodes() {
 		var layout = ShowcaseLayout(grid: Self.grid)
 		layout.update(mesh(count: 10, online: 6), now: Self.now)
-		#expect(layout.slots[1] == .connectedRadio)
-		#expect(layout.slots[2] == .rack(0))
-		#expect(layout.slots[3] == .rack(1))
-		#expect(tiers(layout) == [.connectedRadio: 1, .rack: 9])
+		#expect(layout.slots[1] == .rack(0))
+		#expect(layout.slots[2] == .rack(1))
+		#expect(layout.slots.count == 10)
 		#expect(layout.overflow == 0)
 		#expect(layout.rackPageCount == 1)
-	}
-
-	@Test("With no radio connected its place stays empty")
-	func noConnectedRadio() {
-		var layout = ShowcaseLayout(grid: Self.grid)
-		let nodes = (1...5).map { node(Int64($0)) }
-		layout.update(nodes, now: Self.now)
-		#expect(layout.node(in: .connectedRadio) == nil)
-		#expect(tiers(layout) == [.rack: 5])
 	}
 
 	@Test("Five hundred nodes page through the rack and overflow when it is full")
 	func fiveHundredNodes() {
 		var layout = ShowcaseLayout(grid: Self.grid, maxRackPages: 4)
 		layout.update(mesh(count: 500, online: 300), now: Self.now)
-		#expect(layout.slots[1] == .connectedRadio)
+		#expect(layout.slots[1] == .rack(0))
 		#expect(layout.rackPageCount == 4)
-		#expect(tiers(layout)[.rack] == 400)
-		#expect(layout.overflow == 500 - 400 - 1)
+		#expect(layout.slots.count == 400)
+		#expect(layout.overflow == 500 - 400)
 		#expect(layout.rackPage(0).count == 100)
 		#expect(layout.rackPage(3).count == 100)
 
@@ -71,19 +57,6 @@ struct ShowcaseLayoutTests {
 		roomy.update(mesh(count: 500, online: 300), now: Self.now)
 		#expect(roomy.overflow == 0)
 		#expect(roomy.rackPageCount == 5)
-	}
-
-	@Test("The radio's place follows the connection at once")
-	func radioFollowsConnection() {
-		var layout = ShowcaseLayout(grid: Self.grid)
-		var nodes = mesh(count: 10, online: 10)
-		layout.update(nodes, now: Self.now)
-		#expect(layout.slots[1] == .connectedRadio)
-		nodes[0] = node(1, online: true)
-		nodes[5] = node(6, online: true, connected: true)
-		layout.update([nodes[5]] + nodes.filter { $0.id != 6 }, now: Self.now.addingTimeInterval(5))
-		#expect(layout.slots[6] == .connectedRadio)
-		#expect(layout.slots[1] != .connectedRadio)
 	}
 
 	@Test("Nodes keep their places, and a new node takes the first free one")
@@ -143,15 +116,9 @@ struct ShowcaseLayoutTests {
 		#expect(grid.center(ofCellOnPage: 0).y > 0)
 	}
 
-	@Test("The connected radio stands on the front table and rack cells on the rack's wall")
+	@Test("Rack cells sit on the rack's wall")
 	func placement() {
 		let grid = ShowcaseRackGrid.forRoom(rack: ShowcaseRoomGeometry.defaultPose(.wallRack))
-		let radio = ShowcasePlacement.pose(of: .connectedRadio, grid: grid, anchor: ShowcaseRoomGeometry.defaultPose)
-		let table = ShowcaseRoomGeometry.defaultPose(.tableFront)
-		// On the front table's top, toward its right end and the viewer.
-		#expect(radio.position.y == table.position.y)
-		#expect(radio.position.x > 0.5)
-		#expect(radio.position.z > table.position.z)
 		let rack = ShowcasePlacement.pose(of: .rack(0), grid: grid, anchor: ShowcaseRoomGeometry.defaultPose)
 		// The rack hangs on the back wall, so its cells share the anchor's depth.
 		#expect(abs(rack.position.z - ShowcaseRoomGeometry.defaultPose(.wallRack).position.z) < 1e-4)

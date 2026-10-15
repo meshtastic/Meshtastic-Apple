@@ -45,7 +45,7 @@ struct ShowcaseCatalogTests {
 		let pocket = items.first { $0.id == "rak_wismesh_pocket" }
 		#expect(pocket?.deviceNames == ["RAK WisMesh Pocket V3"])
 		#expect(items.first { $0.id == "thinknode_m1" }?.deviceNames == ["ThinkNode M1", "ThinkNode M5"])
-		#expect(items.map(\.vendor.displayOrder) == [0, 0, 0, 1, 2])
+		#expect(items.map(\.vendor.displayOrder) == [0, 0, 0, 2, 3])
 	}
 
 	@Test("Firmware targets match whatever their case, and models drawn for one device are told apart")
@@ -57,21 +57,6 @@ struct ShowcaseCatalogTests {
 		#expect(items.first { $0.id == "crowpanel_2_8" }?.title == "Crowpanel Adv 2.4/2.8 TFT (2.8)")
 		#expect(ShowcaseCatalog.variants(of: ["rak4631", "rak4631_case"]) == [nil, "case"])
 		#expect(ShowcaseCatalog.variants(of: ["crowpanel_5_0", "crowpanel_7_0"]) == ["5.0", "7.0"])
-	}
-
-	@Test("A node's hardware finds its model from the catalog's images")
-	func modelForNode() {
-		let models: Set<String> = ["rak4631", "thinknode_m1"]
-		#expect(ShowcaseCatalog.modelName(forHardwareSlug: "RAK4631", models: models, hardware: hardware) == "rak4631")
-		#expect(ShowcaseCatalog.modelName(forHardwareSlug: "THINKNODE_M5", models: models, hardware: hardware) == "thinknode_m1")
-		// As nodes store it, without underscores.
-		#expect(ShowcaseCatalog.modelName(forHardwareSlug: "THINKNODEM1", models: models, hardware: hardware) == "thinknode_m1")
-		#expect(ShowcaseCatalog.modelName(forHardwareSlug: "TBEAM", models: models, hardware: hardware) == nil)
-		// The stored name and the catalog's can differ; the number still finds it.
-		#expect(ShowcaseCatalog.modelName(forHardwareSlug: "RAK2560", number: 22, models: ["rak2560"], hardware: hardware) == "rak2560")
-		#expect(ShowcaseCatalog.modelName(forHardwareSlug: "RAK2560", models: ["rak2560"], hardware: hardware) == nil)
-		#expect(ShowcaseCatalog.modelName(forHardwareSlug: "UNSET", models: models, hardware: hardware) == nil)
-		#expect(ShowcaseCatalog.modelName(forHardwareSlug: nil, models: models, hardware: hardware) == nil)
 	}
 
 	@Test("Legacy and discontinued devices are left off the tables")
@@ -97,12 +82,12 @@ struct ShowcaseCatalogTests {
 		#expect(items.first { $0.id == "thinknode_m1" }?.nameWithoutMaker == "ThinkNode M1")
 	}
 
-	@Test("muzi works is a maker, after Elecrow on the back table")
+	@Test("muzi works is a maker, after RAK on the front table")
 	func muziWorks() {
 		#expect(ShowcaseVendor.from(tags: ["muzi"], modelName: "muzi_r1_neo") == .muzi)
 		#expect(ShowcaseVendor.from(tags: [], modelName: "muzi_base") == .muzi)
-		#expect(ShowcaseVendor.muzi.row == ShowcaseVendor.elecrow.row)
-		#expect(ShowcaseVendor.muzi.displayOrder > ShowcaseVendor.elecrow.displayOrder)
+		#expect(ShowcaseVendor.muzi.row == ShowcaseVendor.rak.row)
+		#expect(ShowcaseVendor.muzi.displayOrder == ShowcaseVendor.rak.displayOrder + 1)
 		#expect(ShowcaseVendor.muzi.name == "muzi works")
 		#expect(ShowcaseVendor.rak.name == "RAKwireless")
 	}

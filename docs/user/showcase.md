@@ -10,16 +10,16 @@ On Apple Vision Pro, the Hardware Showcase is a room you step into to see Meshta
 
 ## Display tables
 
-Real-size 3D models of the radios we have models for stand on clear stands along two tables, one maker after another. Each maker's run of radios starts with a dark card with its name: RAKwireless, Seeed Studio, Elecrow and muzi works. A small card in front of each model gives the maker and the device's name.
+Real-size 3D models of the radios we have models for stand on clear stands along two tables, one maker after another: RAKwireless and muzi works along the front, Seeed Studio on the riser behind them, and Elecrow on the back table. Each maker's run of radios starts with a dark card with its name. A small card in front of each model gives the maker and the device's name.
 
-- **Pick one up**: pinch and hold a model to lift it and turn it over in your hand. It's real size. Let go and it goes back on its stand.
+- **Pick one up**: pinch and hold a model's body to lift it and turn it over in your hand. It's real size. Let go and it goes back on its stand. Antennas don't catch the pinch, so you can reach past a tall one to the model behind it.
 - **Look closer**: tap a model to hold it up in front of you, with a card beside it naming the device and its maker and listing where to buy one. Drag sideways to spin it and up or down to tip it.
 
 The models are built from each device's published measurements. Backs, sides and ports are modeled where the maker publishes enough to go on.
 
-## Your radio and the wall rack
+## The wall rack
 
-The radio you're connected to stands at the right end of the front table with a **Your radio** card showing its short name. The radios on your mesh are on the wall rack above the back table, one per square. They light up when they're heard and dim when they go offline. Tap a radio to see its card, with **Open in App** to go to its node in the app.
+The radios on your mesh, the one you're connected to included, are on the wall rack above the back table, one per square. They light up when they're heard and dim when they go offline. Tap a radio to see its card, with **Open in App** to go to its node in the app.
 
 ## Control panel
 

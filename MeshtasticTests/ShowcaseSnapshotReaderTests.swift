@@ -94,26 +94,8 @@ struct ShowcaseSnapshotReaderTests {
 		#expect(result.totalCount == 20)
 	}
 
-	@Test("Device shapes come from the role first, then the hardware name")
-	func archetypes() {
-		#expect(ShowcaseDeviceArchetype(hwModel: "TBEAM", role: .router) == .enclosure)
-		#expect(ShowcaseDeviceArchetype(hwModel: "T_ECHO", role: .client) == .handheld)
-		#expect(ShowcaseDeviceArchetype(hwModel: "TECHO", role: nil) == .handheld)
-		#expect(ShowcaseDeviceArchetype(hwModel: "HELTEC_WIRELESS_TRACKER", role: nil) == .handheld)
-		#expect(ShowcaseDeviceArchetype(hwModel: "HELTECV3", role: .client) == .board)
-		#expect(ShowcaseDeviceArchetype(hwModel: "STATION_G2", role: .client) == .enclosure)
-		#expect(ShowcaseDeviceArchetype(hwModel: "UNSET", role: nil) == .generic)
-		#expect(ShowcaseDeviceArchetype(hwModel: nil, role: nil) == .generic)
-	}
-
-	@Test("Device and rack meshes face outward and stay small")
+	@Test("The rack's mesh faces outward")
 	func meshes() {
-		for archetype in ShowcaseDeviceArchetype.allCases {
-			let mesh = archetype.geometry
-			#expect(mesh.triangleCount < 300)
-			#expect(mesh.parts.count == ShowcaseMeshGeometry.Material.allCases.count)
-			expectOutward(mesh)
-		}
 		let grid = ShowcaseRackGrid.forRoom(rack: ShowcaseRoomGeometry.defaultPose(.wallRack))
 		let rack = ShowcaseMeshGeometry.rackCells(grid: grid)
 		#expect(rack.triangleCount == grid.perPage * 12)

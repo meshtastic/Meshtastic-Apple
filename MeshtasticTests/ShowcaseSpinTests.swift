@@ -62,13 +62,12 @@ struct ShowcaseSpinTests {
 		#expect(!still.isMoving)
 	}
 
-	@Test("Each maker's row fits its table, and the connected radio stands clear of the front row")
+	@Test("Each maker's row fits its table, and muzi works shares RAK's")
 	func rows() {
 		for vendor in ShowcaseVendor.allCases {
 			let row = vendor.row
 			#expect(abs(row.centerX) + row.length / 2 <= ShowcaseRoomGeometry.tableLength / 2 + 1e-5, "\(vendor)")
 		}
-		let front = ShowcaseVendor.rak.row
-		#expect(ShowcaseDisplayRow.connectedRadio.x > front.centerX + front.length / 2)
+		#expect(ShowcaseVendor.muzi.row == ShowcaseVendor.rak.row)
 	}
 }
