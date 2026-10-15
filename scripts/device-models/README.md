@@ -7,7 +7,7 @@ flasher, for the visionOS app and for `public/models/devices/` in web-flasher.
 scripts/device-models/build.sh                 # build every spec, check, render
 scripts/device-models/build.sh thinknode_m1    # just one
 scripts/device-models/build.sh --install       # also copy into Meshtastic/Resources/DeviceModels
-scripts/device-models/publish-flasher.sh       # open a web-flasher PR with out/*.usdz
+scripts/device-models/publish-flasher.sh       # open a web-flasher PR with out/*.usdz and a GLB of each
 ```
 
 Needs `uv` (`brew install uv`); the Python packages are fetched on first run.
