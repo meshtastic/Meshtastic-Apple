@@ -90,8 +90,8 @@ role = "skip"
 
 # Antenna: on the SMA connector at the notch floor (39 mm up), 9.7 mm in from the left edge and
 # about mid-depth (top-view render). From the front photo: a 9 mm sleeve tapering to 6.5 mm at
-# 71 mm up, a 4.4 mm whip, and a 6.1 mm cap 13.5 mm long ending 208 mm up, so 169 mm from the
-# connector against the published 17 cm.
+# 71 mm up, then a 4.4 mm whip ending 208 mm up, so 169 mm from the connector against the
+# published 17 cm. The photo's slightly wider end cap is left out; the whip ends in an even dome.
 [[lathe]]
 name = "AntennaConnector"
 axis_x = 9.7
@@ -141,17 +141,8 @@ material = "rubber"
 name = "AntennaWhip"
 axis_x = 9.7
 y_bottom = -7.4
-y_top = -130.8
-radius = 2.2
-z = -0.6
-material = "rubber"
-
-[[lathe]]
-name = "AntennaCap"
-axis_x = 9.7
-y_bottom = -130.8
 y_top = -144.4
-radius = 3.05
+radius = 2.2
 dome = true
 z = -0.6
 material = "rubber"

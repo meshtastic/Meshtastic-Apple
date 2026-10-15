@@ -45,7 +45,7 @@ h = 1.4
 name = "Antenna"
 start = [14.91, 50.9]
 end = [14.91, 0]
-dome = false
+dome = true
 z_mm = -3.69
 material = "rubber"
 
