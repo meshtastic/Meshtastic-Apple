@@ -68,6 +68,26 @@ Other optional entries, with coordinates in SVG units:
 
 `[materials]` entries take `color`, `roughness`, `metallic` and `opacity`.
 
+When the flasher's illustration isn't a front view (a perspective drawing, or
+several views in one), draw the front ourselves from the device's measurements
+and point the spec at it with a top-level `drawing = "drawings/<name>.svg"`.
+build.sh then uses that file instead of downloading the flasher's. Draw it in
+mm so it can be checked against the measurements.
+
+`[[solid]]` places a block by measurement instead of by the drawing, for ports,
+buttons and screws on the sides, top and back, and for stands:
+
+```toml
+[[solid]]
+name = "USBC"
+material = "port"
+center_mm = [0, -0.1, 1.25]  # x from the center line, y up from the bottom, z out of the front (0 = middle of the body)
+size_mm = [8.9, 0.4, 3.2]
+radius_mm = 1.6              # rounds the corners of its two largest sides
+rotate_deg = [0, 0, 0]       # about x, y, then z, around its own center
+source = "Seeed STEP, measured"
+```
+
 For a hand-tuned model, set `auto = false` and describe the parts with
 `[[part]]` rules (match an SVG class and place it as body or a raised layer),
 `[[lathe]]` (round parts such as antennas) and `[[box]]` (simple blocks such as
