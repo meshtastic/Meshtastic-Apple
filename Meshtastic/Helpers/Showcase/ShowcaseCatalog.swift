@@ -25,17 +25,16 @@ enum ShowcaseVendor: String, CaseIterable, Sendable {
 		}
 	}
 
-	/// RAK along the front of the front table, Seeed on its riser behind, and Elecrow, whose radios
-	/// are the tallest, on the higher back table, with muzi works after it. Makers that share a row
+	/// RAK along the front of the front table with muzi works after it, Seeed on the riser behind,
+	/// and Elecrow, whose radios are the tallest, on the higher back table. Makers that share a row
 	/// stand one after the other, each behind its own brand card.
 	var row: ShowcaseDisplayRow {
 		switch self {
-		case .rak:
-			// Leaves the front table's right end for the connected radio.
-			ShowcaseDisplayRow(table: .tableFront, depthOffset: 0.16, height: 0, length: 1.35, centerX: -0.22)
+		case .rak, .muzi:
+			ShowcaseDisplayRow(table: .tableFront, depthOffset: 0.16, height: 0, length: ShowcaseRoomGeometry.tableLength, centerX: 0)
 		case .seeed:
 			ShowcaseDisplayRow(table: .tableFront, depthOffset: ShowcaseRoomGeometry.riserOffset, height: ShowcaseRoomGeometry.riserHeight, length: ShowcaseRoomGeometry.tableLength, centerX: 0)
-		case .elecrow, .muzi:
+		case .elecrow:
 			ShowcaseDisplayRow(table: .tableBack, depthOffset: 0, height: 0, length: ShowcaseRoomGeometry.tableLength, centerX: 0)
 		}
 	}
@@ -44,9 +43,9 @@ enum ShowcaseVendor: String, CaseIterable, Sendable {
 	var displayOrder: Int {
 		switch self {
 		case .rak: 0
-		case .seeed: 1
-		case .elecrow: 2
-		case .muzi: 3
+		case .muzi: 1
+		case .seeed: 2
+		case .elecrow: 3
 		}
 	}
 
@@ -183,28 +182,6 @@ enum ShowcaseCatalog {
 		}
 	}
 
-	/// The model for a node's hardware: the first of its catalog images that has a model. Matched
-	/// on the hardware number when known, since a node's stored name can differ from the catalog's
-	/// ("RAK2560" for "WISMESH_HUB"), else on the name without underscores ("THINKNODEM1" for
-	/// "THINKNODE_M1").
-	static func modelName(forHardwareSlug slug: String?, number: Int? = nil, models: Set<String>, hardware: [ShowcaseHardwareRecord]) -> String? {
-		guard let slug, !slug.isEmpty, slug != "UNSET" else { return nil }
-		let key = normalized(slug)
-		let records = number.map { number in hardware.filter { $0.hwModel == number } }.flatMap { $0.isEmpty ? nil : $0 }
-			?? hardware.filter { $0.hwModelSlug.map(normalized) == key }
-		for record in records {
-			for image in record.images ?? [] {
-				let name = (image as NSString).deletingPathExtension
-				if models.contains(name) { return name }
-			}
-		}
-		return nil
-	}
-
-	private static func normalized(_ slug: String) -> String {
-		slug.replacingOccurrences(of: "_", with: "").uppercased()
-	}
-
 	/// The catalog the app keeps fresh from the API, or the one bundled with it when that is empty.
 	static func hardware(in container: ModelContainer) async -> [ShowcaseHardwareRecord] {
 		let reader = await Task.detached { ShowcaseHardwareReader(modelContainer: container) }.value
@@ -237,8 +214,6 @@ struct ShowcaseDisplayRow: Equatable, Sendable {
 	let length: Float
 	let centerX: Float
 
-	/// Where the connected radio stands: the front table's right end, toward the viewer.
-	static let connectedRadio = SIMD3<Float>(0.7, 0, 0.16)
 }
 
 /// Spreads a row's models along it: the space left over is shared out evenly, between the models

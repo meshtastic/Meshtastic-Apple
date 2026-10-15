@@ -25,7 +25,6 @@ final class ShowcaseDisplays {
 	@ObservationIgnored private var templates: [String: Entity] = [:]
 	/// Where each model stands, and its height, in the world's space.
 	@ObservationIgnored private var placements: [String: (position: SIMD3<Float>, height: Float)] = [:]
-	@ObservationIgnored private var hardware: [ShowcaseHardwareRecord] = []
 	@ObservationIgnored private let models = ShowcaseCatalog.bundledModels()
 
 	/// The shelves' models, once loaded.
@@ -41,25 +40,10 @@ final class ShowcaseDisplays {
 		templates[id]
 	}
 
-	/// A loaded model, as it was in its file.
-	func template(named name: String) -> Entity? {
-		templates[name]
-	}
-
-	/// The loaded model for a node's hardware, if there is one. Nodes store the hardware as its
-	/// enum case's name, uppercased, which gives back the number.
-	func modelName(forHardwareSlug slug: String?) -> String? {
-		let number = slug.flatMap { slug in HardwareModel.allCases.first { String(describing: $0).uppercased() == slug }?.rawValue }
-		guard let name = ShowcaseCatalog.modelName(forHardwareSlug: slug, number: number, models: models, hardware: hardware),
-			  templates[name] != nil else { return nil }
-		return name
-	}
-
 	/// Loads every bundled model with a device in the catalog and stands each on a clear stand
 	/// along its maker's row of the display tables. `receiveLight` gives each model the room's light.
 	func load(room: ShowcaseRoom, hardware: [ShowcaseHardwareRecord], receiveLight: (Entity) -> Void) async {
 		guard items.isEmpty else { return }
-		self.hardware = hardware
 		let catalog = ShowcaseCatalog.items(models: models, hardware: hardware)
 		for item in catalog {
 			guard let url = Bundle.main.url(forResource: item.id, withExtension: "usdz") else { continue }
@@ -186,7 +170,7 @@ final class ShowcaseDisplays {
 		holder.addChild(base)
 		holder.addChild(model)
 		model.components.set(ShowcaseHomeComponent(transform: model.transform))
-		makeHoldable(model, bounds: bounds)
+		makeHoldable(model, bounds: grabBounds(of: model) ?? bounds)
 		return bounds.extents.y + standThickness
 	}
 
@@ -222,6 +206,23 @@ final class ShowcaseDisplays {
 		material.blending = .transparent(opacity: .init(floatLiteral: 0.22))
 		return material
 	}()
+
+	/// The model's body without its antennas, in its own space: what a pinch grabs and the spotlight
+	/// lights. A tall antenna would otherwise stand in front of the models behind it and catch their
+	/// pinches. Antenna parts are the ones the model generator names Antenna or Whip.
+	static func grabBounds(of model: Entity) -> RealityKit.BoundingBox? {
+		var result: RealityKit.BoundingBox?
+		var pending = [model]
+		while let entity = pending.popLast() {
+			pending += entity.children
+			let name = entity.name.lowercased()
+			guard entity.components.has(ModelComponent.self), !name.contains("antenna"), !name.contains("whip") else { continue }
+			let bounds = entity.visualBounds(recursive: false, relativeTo: model)
+			guard !bounds.isEmpty else { continue }
+			result = result.map { $0.union(bounds) } ?? bounds
+		}
+		return result
+	}
 
 	/// Pinch to pick it up and turn it over at real size; let go and it goes back where it was.
 	private static func makeHoldable(_ model: Entity, bounds: RealityKit.BoundingBox) {
