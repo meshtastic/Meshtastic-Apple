@@ -1076,7 +1076,11 @@ actor MeshPackets {
 					newNode.channel = Int32(truncatingIfNeeded: nodeInfo.channel)
 					newNode.favorite = nodeInfo.isFavorite
 					newNode.ignored = nodeInfo.isIgnored
-					newNode.hopsAway = Int32(truncatingIfNeeded: nodeInfo.hopsAway)
+					// Left out when the radio doesn't know how far away the node is; reading it anyway gives 0, which means direct.
+					if nodeInfo.hasHopsAway {
+						newNode.hopsAway = Int32(truncatingIfNeeded: nodeInfo.hopsAway)
+					}
+					newNode.viaMqtt = nodeInfo.viaMqtt
 					newNode.hasXeddsaSigned = nodeInfo.hasXeddsaSigned_p
 					// Was missing here while the update path below set it, so a node seen for the
 					// first time — every node on a fresh install or after a database reset — lost
@@ -1199,7 +1203,10 @@ actor MeshPackets {
 					fetchedNode[0].channel = Int32(truncatingIfNeeded: nodeInfo.channel)
 					fetchedNode[0].favorite = nodeInfo.isFavorite
 					fetchedNode[0].ignored = nodeInfo.isIgnored
-					fetchedNode[0].hopsAway = Int32(truncatingIfNeeded: nodeInfo.hopsAway)
+					if nodeInfo.hasHopsAway {
+						fetchedNode[0].hopsAway = Int32(truncatingIfNeeded: nodeInfo.hopsAway)
+					}
+					fetchedNode[0].viaMqtt = nodeInfo.viaMqtt
 					// Both trust flags come from the radio's node db, which is where they live: the
 					// firmware sets has_xeddsa_signed when it verifies a signature and
 					// is_key_manually_verified on a contact exchange, and persists both across its
