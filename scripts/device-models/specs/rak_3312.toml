@@ -1,65 +1,97 @@
-# rak_3312: generated layout from the SVG; add [[part]] rules to refine.
-# RAK3312 core 20 x 30 x 4.5 mm (RAK store); base RAK19007 30x60, PCB 1.0 mm, R1.0 corners. Stack depth estimated.
+# rak_3312: RAK19007 base board with the RAK3312 core (the black 20 x 30 mm carrier holding the
+# RAK3112 module). The flasher's illustration is a true top view, so it stays the drawing.
+# Board outline and heights from RAK's RAK19007 mechanical drawing (60 x 30, PCB 1.00,
+# top/side/bottom views): https://images.docs.rakwireless.com/wisblock/rak19007/datasheet/image-20220218090849344.png
+# Core: 20 x 30 x 4.5 mm (RAK store): https://store.rakwireless.com/products/wisblock-core-module-rak3312-lora-wifi-ble
+# In the drawing, 441.1 units = 30.0 mm (14.70 units/mm): the board runs y 72.0-951.9 (59.8 mm)
+# and the USB-C stands 0.8 mm past its end, as in RAK's drawing.
 
 [size]
 width_mm = 30.0
-height_mm = 60.0
-depth_mm = 8.0
-board_mm = 1.0  # RAK19007 PCB, published
+height_mm = 60.6
+# Overall: base PCB 1.0 + the battery connector, 6.0 mm, the tallest part on top.
+depth_mm = 7.0
+board_mm = 1.0
 scale_by = "width"
-covers = "RAK19007 base board with RAK3312 core; PCB only"
-source = "https://store.rakwireless.com/products/wisblock-core-module-rak3312-lora-wifi-ble"
+covers = "RAK19007 base board with the RAK3312 core, the USB-C's overhang included; excludes antennas"
+source = "https://images.docs.rakwireless.com/wisblock/rak19007/datasheet/image-20220218090849344.png"
 confidence = "vendor"
 
-# Component heights: RAK3312 4.5 mm is published (RAK store); the rest are typical values.
-# Core module: green PCB with a labeled metal shield on top.
-[[block]]
-name = "CorePCB"
-bbox = [344, 285, 675, 501]
-h = 1.0
-side_color = "#206648"
+[materials]
+shield = { color = "#c4c6c8", roughness = 0.35, metallic = 1.0 }
 
-[[block]]
-name = "CoreShield"
-bbox = [355, 294, 664, 489]
-base_mm = 1.0
-h = 4.5
-material = "shield"
-
+# Heights above the base board, read off the RAK19007 side view (about 10.2 px/mm): USB-C 3.3,
+# battery JST 6.0, solar JST 4.6, reset switch 1.8.
 [[block]]
 name = "USBC"
-bbox = [488, 61, 619, 181]
-h = 3.2
+bbox = [488.2, 60.8, 619.0, 181.4]
+h = 3.3
 
 [[block]]
 name = "ResetSwitch"
 bbox = [398, 84, 476, 124]
-h = 2.0
+h = 1.8
 
 [[block]]
 name = "BatteryJST"
-bbox = [637, 171, 722, 236]
-h = 4.5
+bbox = [636.7, 171.0, 721.8, 236.0]
+h = 6.0
 
 [[block]]
 name = "SolarJST"
-bbox = [288, 170, 353, 228]
-h = 3.5
+bbox = [288.2, 169.8, 352.6, 228.4]
+h = 4.6
+
+# C26, a 3.2 x 1.6 mm capacitor; its height is a typical value.
+[[block]]
+name = "C26"
+bbox = [417.1, 156.5, 463.8, 179.3]
+h = 1.2
+
+# RAK3312 core: its black board spans the full width between the silkscreen line at y 245.6 and
+# the edge at y 542.9 (20.2 mm), on the WisBlock connector with an estimated 1.5 mm gap. The
+# RAK3112 module on it (22.5 x 14.6 mm in the drawing): PCB 0.8 and shield 1.2 mm, estimated so
+# that the core comes to RAK's 4.5 mm.
+[[block]]
+name = "CoreBoard"
+bbox = [285.0, 245.6, 726.1, 542.9]
+base_mm = 1.5
+h = 2.5
+side_color = "#212121"
 
 [[block]]
+name = "CorePCB"
+bbox = [343.9, 285.5, 675.1, 500.9]
+base_mm = 2.5
+h = 3.3
+side_color = "#206648"
+
+[[block]]
+name = "CoreShield"
+bbox = [354.8, 294.4, 663.6, 488.7]
+base_mm = 3.3
+h = 4.5
+material = "shield"
+
+# WisBlock sensor slot receptacles, about 1 mm (typical).
+[[block]]
 name = "SlotA"
-bbox = [287, 590, 340, 704]
+bbox = [286.7, 589.9, 340.3, 704.2]
 h = 1.0
 
 [[block]]
 name = "WisBlockJ6"
-bbox = [478, 590, 532, 704]
+bbox = [478.4, 589.9, 532.0, 704.2]
 h = 1.0
 
 [[block]]
 name = "SlotJ7"
-bbox = [602, 731, 654, 891]
+bbox = [602.3, 731.2, 653.8, 891.3]
 h = 1.0
 
-[materials]
-shield = { color = "#c4c6c8", roughness = 0.35, metallic = 1.0 }
+# The small white 3-pin connector by the WISBLOCK label isn't in RAK's drawing; its height is a
+# typical value for a 1 mm pitch connector.
+[[block]]
+name = "SmallConnector"
+bbox = [487.5, 752.1, 519.1, 811.2]
+h = 2.9

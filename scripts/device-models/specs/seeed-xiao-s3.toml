@@ -1,74 +1,263 @@
-# seeed-xiao-s3: generated layout from the SVG; add [[part]] rules to refine.
-# Board footprint 21 x 17.8 mm (Seeed wiki and datasheet 102010611). Stack depth not published; estimated 9.0 mm. Drawing (aspect 1.00) is a kit layout: board with two antennas on cables beside it, so the overall drawing is much wider than the board.
+# seeed-xiao-s3: Wio-SX1262 with XIAO ESP32S3 kit. The flasher's illustration is the kit from the
+# front: the Wio-SX1262 board on top, with the two flat antennas on their cables beside it. It stays
+# the drawing; the body is the Wio board and everything behind it is placed in mm.
+# Measured from Seeed's published CAD, used for measurement only:
+#   Wio-SX1262 for XIAO: https://files.seeedstudio.com/products/SenseCAP/Wio_SX1262/Wio-SX1262_for_XIAO_3D_file.step
+#   (sha256 6a4c8592691cf821314ea96482c5946a64d479317316bfa81e509cec9284782c)
+#   XIAO ESP32S3: https://files.seeedstudio.com/wiki/SeeedStudio-XIAO-ESP32S3/res/seeed-studio-xiao-esp32s3-3d_model.zip
+#   (sha256 0d552ed2cc7359ea132601f4f7fe2c9d816e2dfe4f58f6463e83f84a901d3650, "XIAO-ESP32S3 v2.step")
+# The stacking is from Seeed's photos (https://www.seeedstudio.com/Wio-SX1262-with-XIAO-ESP32S3-p-5982.html,
+# gallery images 2 to 7): the Wio board plugs onto the XIAO's component side through the
+# board-to-board connector, over the XIAO's shield, with the XIAO's USB-C under its top edge, and the
+# XIAO has pin headers soldered on underneath.
+# Model frame: x from the center line as seen from the front, y up from the bottom of the Wio board,
+# z out of the front with 0 the middle of the Wio board.
 
 [size]
-# Fit the XIAO board stack; the flat antenna and cable around it are built thin.
-covers = "XIAO board stack; antenna and cable not to published size"
+# Fit the Wio board; the flat antennas and cables around it are built thin.
+covers = "board stack; antennas and cables not to published size"
 appendage_depth_mm = 1.0
 appendage = "outside"
-height_mm = 21.0
-width_mm = 17.8
+# Wio-SX1262 for XIAO PCB in the CAD: 17.78 x 21.44 mm. The drawing is 21.64 mm tall at this width.
+width_mm = 17.78
+height_mm = 21.44
 fit_bbox = [909, 688, 1337, 1209]
-depth_mm = 9.0
+# The CAD's board is 1.6 mm, but Seeed's photos show a board edge well under that (about 1 mm,
+# against the 3.4 mm socket and the 2.54 mm pad pitch), and the CAD sets the radio module 0.7 mm
+# into the board, as if the board were thinner than its 1.6 mm default. 1.0 mm is estimated.
 board_mm = 1.0
+# Overall, front of the radio module to the back of the XIAO board. The pin headers add 8.5 mm.
+depth_mm = 8.65
 scale_by = "width"
-source = "https://wiki.seeedstudio.com/wio_sx1262_with_xiao_esp32s3_kit/"
-confidence = "vendor"
+source = "https://files.seeedstudio.com/products/SenseCAP/Wio_SX1262/Wio-SX1262_for_XIAO_3D_file.step"
+confidence = "cad"
 
-# Two-board stack, 9.0 mm total. The base board here is the XIAO ESP32S3 (1.0 mm PCB).
-# The Wio-SX1262 for XIAO sits above it on a B2B connector (1.25 mm mated gap, estimated),
-# and the XIAO's shield and USB-C face down. Radio module height 2.95 mm is published
-# (https://www.mouser.lt/pdfDocs/Wio-SX1262module-Datasheet.pdf); 1.5 mm button is typical.
-[[block]]
-name = "WioBoard"
-bbox = [909, 688, 1337, 1209]
-base_mm = 1.25
-h = 2.25
+[materials]
+pcb     = { color = "#262626", roughness = 0.6 }
+shield  = { color = "#c9c9c6", roughness = 0.35, metallic = 1.0 }
+usb     = { color = "#c2c1c0", roughness = 0.3, metallic = 1.0 }
+port    = { color = "#1d1d1f", roughness = 0.6 }
+socket  = { color = "#2b2b2b", roughness = 0.6 }
+header  = { color = "#151515", roughness = 0.6 }
+pin     = { color = "#c8c8c4", roughness = 0.3, metallic = 1.0 }
+gold    = { color = "#d4b77a", roughness = 0.3, metallic = 1.0 }
+# The drawing's #353535 (board, flat antennas) and #282828 (antenna cables) are black in Seeed's
+# photos.
+c_353535 = { color = "#161616", roughness = 0.6 }
+c_282828 = { color = "#161616", roughness = 0.5 }
 
+# The drawing's USB-C belongs to the XIAO behind the Wio board; it is built there instead.
+[[part]]
+name = "DrawnUSBC"
+class = "cls-3"
+min_width_mm = 7
+max_bbox_area_mm2 = 25
+role = "skip"
+
+# On the Wio board's front. The radio module is 2.95 mm tall (module datasheet,
+# https://www.mouser.lt/pdfDocs/Wio-SX1262module-Datasheet.pdf, and the CAD's module part; the CAD
+# sinks it 0.7 mm into the board, which looks like a placement error, so it stands on the board
+# here). Its lower right corner is cut away for the u.FL, which is 1.3 mm tall in the CAD.
 [[block]]
-name = "B2BConnector"
-bbox = [1060, 990, 1186, 1070]
-h = 1.25
-side_color = "#2b2b2b"
+name = "RadioModule"
+bbox = [989, 920, 1255, 1110]
+h = 2.95
 
 [[block]]
 name = "RadioModule"
-bbox = [989, 920, 1255, 1209]
-base_mm = 2.25
-h = 5.2
+bbox = [989, 1110, 1160, 1209]
+h = 2.95
 
+[[block]]
+name = "LoRaUFL"
+bbox = [1165, 1110, 1250, 1209]
+h = 1.3
+side_color = "#d4b77a"
+
+# The button isn't in the CAD; Seeed's photo puts it 7.8 mm below the top edge on the center line,
+# where the drawing has it. Its height is estimated.
 [[block]]
 name = "Button"
-bbox = [1072, 848, 1172, 912]
-base_mm = 2.25
-h = 3.75
+bbox = [1060, 845, 1182, 912]
+h = 1.5
+side_color = "#c2c1c0"
 
-# Under the XIAO: the RF shield (2.5 mm, estimated) and the USB-C receptacle, which
-# overhangs the top edge. With the 1.0 mm board it makes the 3.2 mm USB-C height.
-[[block]]
+# Behind the Wio board: its board-to-board socket (8.6 x 3.43 x 3.4 mm in the CAD), right of
+# center near the bottom edge. Its part name gives a 3.5 mm mated height, so the XIAO's top face
+# sits 3.5 mm behind the Wio board, which clears the XIAO's USB-C by 0.25 mm.
+[[solid]]
+name = "Socket"
+material = "socket"
+center_mm = [2.2, 2.0, -2.2]
+size_mm = [8.6, 3.43, 3.4]
+
+# The XIAO ESP32S3: 17.78 x 21.0 mm, 1.2 mm thick in the CAD, centered behind the Wio board.
+[[solid]]
+name = "XIAOBoard"
+material = "pcb"
+center_mm = [0, 10.82, -4.6]
+size_mm = [17.78, 21.0, 1.2]
+radius_mm = 2.0
+
+# On the XIAO's component side, facing the Wio board: the shield (10.5 x 12.6 mm, 2.0 mm tall),
+# its u.FL for the Wi-Fi antenna in the lower left corner (1.3 mm tall), and the USB-C,
+# 3.25 mm tall, reaching 1.5 mm past the board's top edge.
+[[solid]]
 name = "Shield"
-bbox = [945, 760, 1301, 1150]
-h = 2.5
-back = true
-side_color = "#c2c1c0"
+material = "shield"
+center_mm = [0, 9.34, -3.0]
+size_mm = [12.6, 10.5, 2.0]
+radius_mm = 0.5
 
-[[block]]
+[[solid]]
+name = "WiFiUFL"
+material = "gold"
+center_mm = [-4.9, 2.0, -3.35]
+size_mm = [2.4, 2.4, 1.3]
+radius_mm = 1.2
+
+# USB-C: a 5.7 mm box between two round sides (lathes), 8.9 x 3.2 mm across, 7.3 mm long.
+[[solid]]
 name = "USBC"
-bbox = [1026, 644, 1234, 730]
-h = 2.2
-back = true
-side_color = "#c2c1c0"
+material = "usb"
+center_mm = [0, 19.15, -2.35]
+size_mm = [5.7, 7.3, 3.2]
 
-# Flat flex antennas are about 0.3 mm thick. Polygons leave out the coax cable
-# where it crosses each antenna so the cable keeps its round 1.0 mm.
+[[lathe]]
+name = "USBCSide"
+material = "usb"
+axis_x = 1054.4
+y_bottom = 835.9
+y_top = 660.2
+radius = 38.5
+z = -2.35
+
+[[lathe]]
+name = "USBCSide"
+material = "usb"
+axis_x = 1191.6
+y_bottom = 835.9
+y_top = 660.2
+radius = 38.5
+z = -2.35
+
+[[solid]]
+name = "USBCOpening"
+material = "port"
+center_mm = [0, 22.85, -2.35]
+size_mm = [7.9, 0.2, 2.2]
+radius_mm = 1.1
+
+# Pin headers under the XIAO, as in Seeed's photos: two rows of seven at 2.54 mm pitch, 15.24 mm
+# apart, a 2.5 mm plastic strip and pins 6 mm below it (standard header sizes, estimated).
+[[solid]]
+name = "HeaderLeft"
+material = "header"
+center_mm = [-7.62, 10.82, -6.45]
+size_mm = [2.54, 17.78, 2.5]
+
+[[solid]]
+name = "HeaderRight"
+material = "header"
+center_mm = [7.62, 10.82, -6.45]
+size_mm = [2.54, 17.78, 2.5]
+
+[[solid]]
+name = "PinL1"
+material = "pin"
+center_mm = [-7.62, 3.2, -9.45]
+size_mm = [0.64, 0.64, 8.5]
+
+[[solid]]
+name = "PinL2"
+material = "pin"
+center_mm = [-7.62, 5.74, -9.45]
+size_mm = [0.64, 0.64, 8.5]
+
+[[solid]]
+name = "PinL3"
+material = "pin"
+center_mm = [-7.62, 8.28, -9.45]
+size_mm = [0.64, 0.64, 8.5]
+
+[[solid]]
+name = "PinL4"
+material = "pin"
+center_mm = [-7.62, 10.82, -9.45]
+size_mm = [0.64, 0.64, 8.5]
+
+[[solid]]
+name = "PinL5"
+material = "pin"
+center_mm = [-7.62, 13.36, -9.45]
+size_mm = [0.64, 0.64, 8.5]
+
+[[solid]]
+name = "PinL6"
+material = "pin"
+center_mm = [-7.62, 15.9, -9.45]
+size_mm = [0.64, 0.64, 8.5]
+
+[[solid]]
+name = "PinL7"
+material = "pin"
+center_mm = [-7.62, 18.44, -9.45]
+size_mm = [0.64, 0.64, 8.5]
+
+[[solid]]
+name = "PinR1"
+material = "pin"
+center_mm = [7.62, 3.2, -9.45]
+size_mm = [0.64, 0.64, 8.5]
+
+[[solid]]
+name = "PinR2"
+material = "pin"
+center_mm = [7.62, 5.74, -9.45]
+size_mm = [0.64, 0.64, 8.5]
+
+[[solid]]
+name = "PinR3"
+material = "pin"
+center_mm = [7.62, 8.28, -9.45]
+size_mm = [0.64, 0.64, 8.5]
+
+[[solid]]
+name = "PinR4"
+material = "pin"
+center_mm = [7.62, 10.82, -9.45]
+size_mm = [0.64, 0.64, 8.5]
+
+[[solid]]
+name = "PinR5"
+material = "pin"
+center_mm = [7.62, 13.36, -9.45]
+size_mm = [0.64, 0.64, 8.5]
+
+[[solid]]
+name = "PinR6"
+material = "pin"
+center_mm = [7.62, 15.9, -9.45]
+size_mm = [0.64, 0.64, 8.5]
+
+[[solid]]
+name = "PinR7"
+material = "pin"
+center_mm = [7.62, 18.44, -9.45]
+size_mm = [0.64, 0.64, 8.5]
+
+# Flat flex antennas, about 0.3 mm thick: the wide 2.4 GHz one on the left for the XIAO, the
+# narrow LoRa one on the right for the Wio board's u.FL. Polygons leave out the coax cable where
+# it crosses each antenna so the cable keeps its round 1.0 mm. The cables are built in the Wio
+# board's plane; the Wi-Fi cable really runs to the XIAO's u.FL behind it.
 [[thin]]
-name = "LoRaFPC"
+name = "WiFiFPC"
 polygon = [[394, 492], [803, 492], [803, 1379], [555, 1379], [555, 1290], [614, 945], [572, 945], [502, 1290], [502, 1379], [394, 1379]]
 depth_mm = 0.3
 edge_radius_mm = 0.1
 
 [[thin]]
-name = "WiFiFPC"
+name = "LoRaFPC"
 polygon = [[1510, 366], [1660, 366], [1660, 1319], [1620, 1319], [1620, 1268], [1575, 1268], [1575, 1319], [1510, 1319]]
 depth_mm = 0.3
 edge_radius_mm = 0.1

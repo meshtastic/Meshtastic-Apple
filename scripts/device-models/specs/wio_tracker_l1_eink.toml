@@ -1,74 +1,133 @@
-# wio_tracker_l1_eink: generated layout from the SVG; add [[part]] rules to refine.
-# L1 PCB footprint is reported as 48 x 34 mm (Seeed search snippet); e-ink active area 48.55 x 23.70 mm; a 2.13in e-ink module is ~59 x 29 mm and overhangs the PCB. Overall estimated from the drawing (aspect 1.23). Depth estimated.
+# wio_tracker_l1_eink: the bare Wio Tracker L1 board with its 2.13" e-paper panel laid over the top,
+# as the flasher draws it (Seeed ships the panel loose on its ribbon; the drawing's arrangement is kept).
+# Board: 48.04 x 51.97 mm, measured from Seeed's L1 outline DXF, used for measurement only:
+# https://files.seeedstudio.com/wiki/SenseCAP/Meshtastic/Wio%20Tracker%20L1%20outline.dxf
+# (sha256 46fb02b1ec1013c2ee2be293fdba709ce9c1c82a106023a67469875f375bce66). The flasher's board
+# matches it to 1%, but its panel was drawn about 7% too large, so drawings/ holds a copy with the
+# panel scaled to its real outline: the label on the panel's back in Seeed's photo reads 0213BN-B74,
+# a 59.2 x 29.2 x 1.0 mm panel whose 48.55 x 23.70 mm active area matches the Seeed wiki.
+# Back parts are estimated from Seeed's back photo (gallery image 3), calibrated at 5.16 px/mm
+# against the board width:
+# https://media-cdn.seeedstudio.com/media/catalog/product/3/-/3-114993653-wio-tracker-l1-e-ink_1.jpg
+# Model frame: x from the center line as seen from the front, y up from the board's bottom edge,
+# z out of the board's top face with 0 the middle of the board.
+drawing = "drawings/wio_tracker_l1_eink.svg"
 
 [size]
-width_mm = 60.0
-height_mm = 49.0
-depth_mm = 12.0
-# No published PCB thickness or part heights; all values below are typical.
+width_mm = 48.04
+height_mm = 51.97
+# Overall stack: the 6 mm Grove on top, the board and the 4.5 mm battery JST underneath.
+depth_mm = 11.7
+# No published PCB thickness; 1.2 mm is typical.
 board_mm = 1.2
 scale_by = "width"
-covers = "bare L1 board with 2.13in e-ink module mounted on top (no case, no antenna)"
-source = "https://wiki.seeedstudio.com/wio_tracker_l1_node/"
-confidence = "estimated"
+fit_bbox = [72.4, 12.7, 544.2, 518.6]  # the board; the panel overhangs it
+appendage = "none"
+covers = "bare L1 board with the 2.13in e-paper panel laid over it (no case, no antenna)"
+source = "https://files.seeedstudio.com/wiki/SenseCAP/Meshtastic/Wio%20Tracker%20L1%20outline.dxf"
+confidence = "cad"
+# The board is black; the drawing's main color is the panel, and its board gray is too light.
+body_color = "#232425"
 
-# E-ink module on its standoffs above the board. Over the PCB (x 72-544) it is solid.
+[materials]
+c_525354 = { color = "#232425", roughness = 0.6 }
+part  = { color = "#1d1d1f", roughness = 0.5 }
+metal = { color = "#b9babb", roughness = 0.35, metallic = 1.0 }
+white = { color = "#efefea", roughness = 0.6 }
+
+# E-paper panel on standoffs above the board, 4 mm to its top. Over the board it is built solid.
 [[block]]
 name = "EInk"
-bbox = [72, 13, 544, 301]
+bbox = [72.4, 12.7, 544.2, 284.9]
 h = 4.0
 
-# Where the module overhangs the PCB it is just the panel (about 1.2 mm thick)
-# with open space beneath.
+# Where the panel overhangs the board it is just the panel (about 1.2 mm with its tape) with open
+# space beneath.
 [[block]]
 name = "EInkLeft"
-bbox = [1, 1, 72, 301]
+bbox = [21.4, 0.6, 72.4, 284.9]
 h = 4.0
 base_mm = 2.8
 hollow_under = true
 
-# Right overhang, including the glass tail and FPC.
+# Right overhang, including the glass end and the ribbon.
 [[block]]
 name = "EInkRight"
-bbox = [544, 1, 638, 301]
+bbox = [544.2, 0.6, 616.0, 284.9]
 h = 4.0
 base_mm = 2.8
 hollow_under = true
 
-# Thin strip above the PCB's top edge.
+# Thin strip above the board's top edge.
 [[block]]
 name = "EInkTop"
-bbox = [72, 1, 544, 13]
+bbox = [72.4, 0.6, 544.2, 12.7]
 h = 4.0
 base_mm = 2.8
 hollow_under = true
 
-# USB-C on the left edge (typical 3.2 mm).
+# Top-side parts at typical heights; positions from the drawing, which matches the DXF.
+# USB-C on the left edge.
 [[block]]
 name = "USBC"
 bbox = [63, 302, 135, 385]
 h = 3.2
 
-# Solar JST-PH 2-pin (typical 4.5 mm).
+# Solar JST-PH 2-pin.
 [[block]]
 name = "SolarJST"
 bbox = [122, 427, 201, 485]
 h = 4.5
 
-# MENU tactile button (typical 6x6 switch, 3.5 mm).
+# MENU tactile button (6 x 6 switch).
 [[block]]
 name = "MenuButton"
 bbox = [355, 324, 400, 369]
 h = 3.5
 
-# 5-way joystick (typical 5 mm).
+# 5-way joystick.
 [[block]]
 name = "Joystick"
 bbox = [444, 306, 525, 386]
 h = 5.0
 
-# Grove 4-pin connector, side entry (typical 6 mm).
+# Grove 4-pin connector, side entry.
 [[block]]
 name = "Grove"
 bbox = [368, 434, 487, 519]
 h = 6.0
+
+# Underside, as seen from the front (the photo is mirrored): the L76K GNSS module (10.1 x 9.7 x
+# 2.5 mm by its datasheet), the Wio-SX1262 module under its white label, the buzzer and the white
+# battery JST.
+[[solid]]
+name = "GNSS"
+material = "metal"
+center_mm = [-7.2, 34.9, -1.85]
+size_mm = [10.1, 9.7, 2.5]
+radius_mm = 0.4
+confidence = "estimated from photos"
+
+[[solid]]
+name = "LoRaModule"
+material = "white"
+center_mm = [7.8, 34.9, -1.6]
+size_mm = [11.2, 10.6, 2.0]
+radius_mm = 0.3
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Buzzer"
+material = "part"
+center_mm = [18.6, 14.7, -2.1]
+size_mm = [9.0, 9.0, 3.0]
+radius_mm = 1.0
+confidence = "estimated from photos"
+
+[[solid]]
+name = "BatteryJST"
+material = "white"
+center_mm = [-14.8, 5.4, -2.85]
+size_mm = [8.0, 3.5, 4.5]
+radius_mm = 0.3
+confidence = "estimated from photos"

@@ -1,14 +1,98 @@
-# seeed_mesh_tracker_x1: generated layout from the SVG; add [[part]] rules to refine.
-# Seeed wiki: Dimensions 90*57*8 mm, 45 g. 57/90=0.63 matches drawn 0.64.
+# seeed_mesh_tracker_x1: SenseCAP MeshTracker X1. The flasher's illustration is a clean front view
+# and matches Seeed's straight-on front photo, so it stays the drawing. The edges, the bottom USB-C
+# and the back are built from Seeed's photos:
+# https://www.seeedstudio.com/sensecap-meshtracker-x1-meshtastic-gps-tracker-p-6935.html
+# (gallery images 4, 6 and 7: the straight-on back, the USB-C edge and the grille). The back photo
+# is calibrated against the published 57 x 90 mm (8.12 and 8.18 px/mm); everything on the back is
+# estimated from it. Model frame: x from the center line as seen from the front, y up from the
+# bottom, z out of the front with 0 the middle of the body.
+# Not built: the lanyard slot is shown dark on the back rather than cut through (the generator
+# fills holes in the outline), and the printed back label is left out.
 
 [size]
+# Seeed wiki: 90 x 57 x 8 mm, 45 g. 57/90 = 0.63 matches the drawn 0.64.
 width_mm = 57.0
 height_mm = 90.0
 depth_mm = 8.0
-# Thin card with soft, rounded sides; no external antenna, lanyard slot is cut through.
-edge_radius_mm = 4.0
-front_edge_radius_mm = 1.2
+# The photos show a small bevel on the front edge, near-vertical sides and a moderate round on
+# the back edge, not a soft pebble (estimated from photos).
+edge_radius_mm = 2.0
+front_edge_radius_mm = 1.0
 scale_by = "width"
 covers = "whole device (internal antennas)"
 source = "https://wiki.seeedstudio.com/meshtracker_x1_intro/"
 confidence = "vendor"
+
+[materials]
+port  = { color = "#1d1d1f", roughness = 0.6 }
+slot  = { color = "#141414", roughness = 0.8 }
+grille = { color = "#232325", roughness = 0.7 }
+# The button is a brighter, purer green than the flasher's #a4ca60 (front photo, gallery image 3).
+c_a4ca60 = { color = "#7fdc4c", roughness = 0.5 }
+
+# Bottom: USB-C in the middle, at about mid-thickness (gallery image 6).
+[[solid]]
+name = "USBC"
+material = "port"
+center_mm = [0, -0.1, 0]
+size_mm = [8.9, 0.4, 3.2]
+radius_mm = 1.6
+confidence = "estimated from photos"
+
+# The lanyard slot as seen from the back, where the drawing puts it: 15.7 x 3.3 mm, 2.5 mm below
+# the top. It reaches into the body so it stays whole over the rounded back edge.
+[[solid]]
+name = "SlotBack"
+material = "slot"
+center_mm = [0, 87.5, -3.6]
+size_mm = [15.7, 3.3, 1.0]
+radius_mm = 1.65
+
+[[solid]]
+name = "SlotFront"
+material = "slot"
+center_mm = [0, 87.5, 3.65]
+size_mm = [15.7, 3.3, 1.0]
+radius_mm = 1.65
+
+# Back: the buzzer grille near the bottom corner (lower left in the back photo, so right of center
+# as seen from the front), a shallow pill with four slots.
+[[solid]]
+name = "GrillePad"
+material = "grille"
+center_mm = [16.3, 9.1, -4.05]
+size_mm = [12.1, 6.4, 0.2]
+radius_mm = 3.2
+confidence = "estimated from photos"
+
+[[solid]]
+name = "GrilleSlot1"
+material = "slot"
+center_mm = [19.8, 9.2, -4.15]
+size_mm = [0.9, 2.9, 0.2]
+radius_mm = 0.45
+confidence = "estimated from photos"
+
+[[solid]]
+name = "GrilleSlot2"
+material = "slot"
+center_mm = [17.4, 9.2, -4.15]
+size_mm = [0.9, 2.9, 0.2]
+radius_mm = 0.45
+confidence = "estimated from photos"
+
+[[solid]]
+name = "GrilleSlot3"
+material = "slot"
+center_mm = [15.1, 9.2, -4.15]
+size_mm = [0.9, 2.9, 0.2]
+radius_mm = 0.45
+confidence = "estimated from photos"
+
+[[solid]]
+name = "GrilleSlot4"
+material = "slot"
+center_mm = [12.9, 9.2, -4.15]
+size_mm = [0.9, 2.9, 0.2]
+radius_mm = 0.45
+confidence = "estimated from photos"

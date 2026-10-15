@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 178.9 108.4" width="178.9mm" height="108.4mm">
+  <!-- Copyright (c) 2026 Meshtastic LLC. Front view of the Elecrow CrowPanel Advance 7.0" in its
+       case, drawn in mm from measurements of Elecrow's published STEP (advance-hmi7_0_asm-20260116):
+       a 178.9 x 108.4 face with 5.2 mm corners, the cover glass, the 156 x 87 display area, the
+       slot under the glass where the display's flex cable shows, and the small hole on the right. -->
+  <style>.case{fill:#1b1b1d}.glass{fill:#0c0c0e}.display{fill:#18191d}.flex{fill:#97621d}.hole{fill:#050506}</style>
+  <rect class="case" x="0" y="0" width="178.9" height="108.4" rx="5.2"/>
+  <rect class="glass" x="7.0" y="4.9" width="164.4" height="99.28" rx="0.3"/>
+  <rect class="display" x="11.2" y="7.8" width="156" height="87"/>
+  <rect class="flex" x="41.88" y="104.2" width="65" height="2.1"/>
+  <circle class="hole" cx="174.7" cy="79.0" r="0.6"/>
+</svg>

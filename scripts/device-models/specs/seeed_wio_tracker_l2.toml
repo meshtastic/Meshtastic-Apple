@@ -1,34 +1,566 @@
-# seeed_wio_tracker_l2: generated layout from the SVG; add [[part]] rules to refine.
-# Seeed wiki: 'Dimension (Antenna folded) L: 87.5, W: 69, H: 26.6' (the wiki says cm, clearly a typo for mm), weight 171.5 g. 69/87.5=0.79 vs drawn 0.76.
+# seeed_wio_tracker_l2: Wio Tracker L2. The flasher's illustration is a true front view of the case,
+# but it draws the antenna leaning out to the right. On the real device the antenna's lower section
+# runs up a channel in the back-left corner (seen from the front) from an RP-SMA connector, and the
+# whip stands upright from a joint at the top or folds flat across the back. So the drawn antenna is
+# left out and an upright one is built where it really is.
+# Seeed wiki: "(Antenna folded) L: 87.5, W: 69, H: 26.6" (the wiki says cm, clearly mm), 171.5 g:
+# https://wiki.seeedstudio.com/meshtastic_wio_tracker_l2_intro/
+# 87.5 x 69 is the front: the drawn case is 549 x 431.6 units (0.786; 69/87.5 = 0.789), and the
+# straight-on back render in the wiki's hardware overview measures 2360 x 1862 px (0.789):
+# https://files.seeedstudio.com/wiki/SenseCAP/Wio_Tracker_L2/L2DeviceComponent29.7(2).png
+# Everything on the back, sides, top and bottom is measured from that back render (26.97 px/mm)
+# or estimated from the 3/4 renders in the same image and the wiki's front photo (L2First.png).
+# The published 26.6 mm depth is with the antenna folded flat across the back, so the case itself
+# is 26.6 less the whip's ~8 mm: 18.6 mm, estimated. No CAD or dimension drawing is published.
+# Model frame: x from the center line as seen from the front, y up from the bottom, z out of the
+# screen with 0 the middle of the case (front +9.3, back -9.3).
 
 [size]
-# Fit the case; the antenna is drawn raised above it.
-covers = "case only; height from the drawing at the published 69 mm width"
-height_mm = 54.0
-fit_bbox = [0, 296, 549, 727]
-width_mm = 69.0
-depth_mm = 26.6
+width_mm = 87.5
+height_mm = 69.0
+depth_mm = 18.6
 scale_by = "width"
+fit_bbox = [0.4, 295.6, 549.4, 727.2]
+appendage = "none"
+covers = "case; the antenna is built upright, 72 mm above the top (estimated)"
 source = "https://wiki.seeedstudio.com/meshtastic_wio_tracker_l2_intro/"
-confidence = "vendor"
+confidence = "vendor (front); depth and back estimated from renders"
 # Rugged case with soft corners; small front radius keeps the drawn bezel.
-edge_radius_mm = 5.0
+edge_radius_mm = 3.0
 front_edge_radius_mm = 1.2
+body_color = "#3f3e3e"
 
 [materials]
-rubber = { color = "#353535", roughness = 0.8 }
+case   = { color = "#3f3e3e", roughness = 0.75 }
+rubber = { color = "#232323", roughness = 0.8 }
+brass  = { color = "#c9a24a", roughness = 0.3, metallic = 1.0 }
+port   = { color = "#1d1d1f", roughness = 0.6 }
+yellow = { color = "#f2b705", roughness = 0.5 }
+orange = { color = "#e88a1a", roughness = 0.5 }
+silver = { color = "#b8b8b6", roughness = 0.3, metallic = 1.0 }
+grove  = { color = "#efede6", roughness = 0.6 }
+groove = { color = "#161616", roughness = 0.9 }
 
-# Rubber whip, folded up from the hinge at the top left. The drawn tip cap
-# is dropped as a stray shape, so the radius is fixed (drawn width ~5.6 mm).
-[[antenna]]
-name = "AntennaWhip"
-start = [175.4, 226.6]
-end = [395.0, 10.0]
-radius_mm = 2.8
-dome = true
+# The drawn antenna (cls-6) and its two band marks (the large cls-5 shapes; the small cls-5
+# rects are the sound slots and stay).
+[[part]]
+name = "DrawnAntenna"
+class = "cls-6"
+role = "skip"
+
+[[part]]
+name = "DrawnAntennaBands"
+class = "cls-5"
+min_width_mm = 3
+role = "skip"
+
+# The antenna, 7 mm in from the left edge (front photo; 5.9 mm on the back render) and set into
+# the back. Lower section in its channel from the RP-SMA connector 36 mm up to the top, the joint,
+# then the whip. Whip 7.5 mm thick widening to 8.4 at its base (front photo); its length, 72 mm
+# above the top, is estimated from the front photo and the folded whip on the back render (65-80).
+[[lathe]]
+name = "AntennaPin"
+material = "brass"
+axis_x = 41.5
+y_bottom = 514.5
+y_top = 503.8
+radius = 6.3
+z = -5.3
+
+[[lathe]]
+name = "AntennaConnector"
+material = "brass"
+axis_x = 41.5
+y_bottom = 503.8
+y_top = 486.3
+radius = 26.7
+z = -5.3
+
+[[lathe]]
+name = "AntennaLower"
 material = "rubber"
+axis_x = 41.5
+y_bottom = 486.3
+y_top = 294.3
+radius = 28.5
+z = -5.3
 
-# Hinge block where the whip meets the case top.
-[[thin]]
-polygon = [[191.1, 244.7], [169.2, 268.8], [141.7, 296.0], [64.0, 296.0], [117.6, 245.3], [151.8, 215.8], [159.6, 208.5]]
-depth_mm = 9
+[[lathe]]
+name = "AntennaJoint"
+material = "rubber"
+axis_x = 41.5
+y_bottom = 294.3
+y_top = 225.3
+radius = 26.4
+z = -5.3
+
+[[lathe]]
+name = "AntennaWhip"
+material = "rubber"
+axis_x = 41.5
+y_bottom = 225.3
+y_top = -157.5
+radius = 23.5
+dome = true
+z = -5.3
+
+# Top: the yellow WAKE-UP button, toward the right (front photo 18 mm right of center, back
+# render 23; estimated).
+[[solid]]
+name = "WakeButton"
+material = "yellow"
+center_mm = [20.5, 69.4, 0]
+size_mm = [6.0, 1.2, 4.0]
+radius_mm = 1.0
+confidence = "estimated from photos"
+
+# Right side, top to bottom: power switch, User/Boot, microSD slot, RST. Heights averaged from
+# the right 3/4 render and the board render; depth on the side is a guess.
+[[solid]]
+name = "PowerSwitchSlot"
+material = "port"
+center_mm = [43.65, 50.4, 1.5]
+size_mm = [0.4, 8.0, 3.5]
+radius_mm = 1.0
+confidence = "estimated from photos"
+
+[[solid]]
+name = "PowerSwitch"
+material = "orange"
+center_mm = [43.85, 51.4, 1.5]
+size_mm = [0.6, 3.0, 2.2]
+radius_mm = 0.5
+confidence = "estimated from photos"
+
+[[solid]]
+name = "UserButton"
+material = "orange"
+center_mm = [43.8, 39.7, 1.5]
+size_mm = [0.5, 4.0, 3.0]
+radius_mm = 0.8
+confidence = "estimated from photos"
+
+[[solid]]
+name = "SDSlot"
+material = "port"
+center_mm = [43.65, 27.6, 1.5]
+size_mm = [0.4, 12.0, 1.6]
+radius_mm = 0.8
+confidence = "estimated from photos"
+
+[[solid]]
+name = "ResetButton"
+material = "orange"
+center_mm = [43.8, 16.6, 1.5]
+size_mm = [0.5, 4.0, 3.0]
+radius_mm = 0.8
+confidence = "estimated from photos"
+
+# Bottom: the brass 1/4" tripod insert, left of center (3/4 renders, estimated).
+[[solid]]
+name = "TripodInsert"
+material = "brass"
+center_mm = [-17.5, -0.15, 0]
+size_mm = [9.0, 0.3, 9.0]
+radius_mm = 4.5
+confidence = "estimated from photos"
+
+[[solid]]
+name = "TripodThread"
+material = "port"
+center_mm = [-17.5, -0.2, 0]
+size_mm = [6.35, 0.3, 6.35]
+radius_mm = 3.175
+confidence = "estimated from photos"
+
+# Back, along the bottom edge: the Grove socket and USB-C facing out of the back (back render).
+[[solid]]
+name = "Grove"
+material = "grove"
+center_mm = [21.6, 4.8, -9.4]
+size_mm = [12.0, 5.8, 0.4]
+radius_mm = 0.5
+
+[[solid]]
+name = "GroveOpening"
+material = "port"
+center_mm = [21.6, 4.8, -9.55]
+size_mm = [10.0, 3.6, 0.2]
+
+[[solid]]
+name = "USBC"
+material = "silver"
+center_mm = [-1.9, 5.2, -9.4]
+size_mm = [9.5, 3.4, 0.4]
+radius_mm = 1.7
+
+[[solid]]
+name = "USBCOpening"
+material = "port"
+center_mm = [-1.9, 5.2, -9.55]
+size_mm = [8.3, 2.4, 0.2]
+radius_mm = 1.2
+
+# Two round dark pads at the back's bottom corners (back render; screw covers or feet, not
+# identified).
+[[solid]]
+name = "PadLeft"
+material = "port"
+center_mm = [33.4, 5.0, -9.4]
+size_mm = [4.2, 4.2, 0.4]
+radius_mm = 2.1
+
+[[solid]]
+name = "PadRight"
+material = "port"
+center_mm = [-33.3, 5.0, -9.4]
+size_mm = [4.2, 4.2, 0.4]
+radius_mm = 2.1
+
+# Back: the large ribbed panel (stepped top edge, slanted right edge as seen from the back) and the
+# small ribbed panel in the opposite lower corner, ribs 2.35 mm apart (back render). Each rib sits on a
+# dark strip so the gaps between ribs read as grooves.
+[[solid]]
+name = "Rib1"
+material = "case"
+center_mm = [17.75, 52.00, -9.55]
+size_mm = [45.51, 1.5, 0.5]
+radius_mm = 0.5
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Rib2"
+material = "case"
+center_mm = [16.37, 49.65, -9.55]
+size_mm = [48.27, 1.5, 0.5]
+radius_mm = 0.5
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Rib3"
+material = "case"
+center_mm = [7.25, 47.30, -9.55]
+size_mm = [66.50, 1.5, 0.5]
+radius_mm = 0.5
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Rib4"
+material = "case"
+center_mm = [7.25, 44.95, -9.55]
+size_mm = [66.50, 1.5, 0.5]
+radius_mm = 0.5
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Rib5"
+material = "case"
+center_mm = [7.25, 42.60, -9.55]
+size_mm = [66.50, 1.5, 0.5]
+radius_mm = 0.5
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Rib6"
+material = "case"
+center_mm = [7.25, 40.25, -9.55]
+size_mm = [66.50, 1.5, 0.5]
+radius_mm = 0.5
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Rib7"
+material = "case"
+center_mm = [7.25, 37.90, -9.55]
+size_mm = [66.50, 1.5, 0.5]
+radius_mm = 0.5
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Rib8"
+material = "case"
+center_mm = [7.37, 35.55, -9.55]
+size_mm = [66.26, 1.5, 0.5]
+radius_mm = 0.5
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Rib9"
+material = "case"
+center_mm = [7.81, 33.20, -9.55]
+size_mm = [65.38, 1.5, 0.5]
+radius_mm = 0.5
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Rib10"
+material = "case"
+center_mm = [8.25, 30.85, -9.55]
+size_mm = [64.49, 1.5, 0.5]
+radius_mm = 0.5
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Rib11"
+material = "case"
+center_mm = [8.69, 28.50, -9.55]
+size_mm = [63.61, 1.5, 0.5]
+radius_mm = 0.5
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Rib12"
+material = "case"
+center_mm = [9.13, 26.15, -9.55]
+size_mm = [62.73, 1.5, 0.5]
+radius_mm = 0.5
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Rib13"
+material = "case"
+center_mm = [9.58, 23.80, -9.55]
+size_mm = [61.85, 1.5, 0.5]
+radius_mm = 0.5
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Rib14"
+material = "case"
+center_mm = [10.02, 21.45, -9.55]
+size_mm = [60.97, 1.5, 0.5]
+radius_mm = 0.5
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Rib15"
+material = "case"
+center_mm = [10.46, 19.10, -9.55]
+size_mm = [60.09, 1.5, 0.5]
+radius_mm = 0.5
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Rib16"
+material = "case"
+center_mm = [10.90, 16.75, -9.55]
+size_mm = [59.21, 1.5, 0.5]
+radius_mm = 0.5
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Rib17"
+material = "case"
+center_mm = [11.34, 14.40, -9.55]
+size_mm = [58.33, 1.5, 0.5]
+radius_mm = 0.5
+confidence = "estimated from photos"
+
+[[solid]]
+name = "RibLower1"
+material = "case"
+center_mm = [-35.78, 26.30, -9.55]
+size_mm = [9.44, 1.5, 0.5]
+radius_mm = 0.5
+confidence = "estimated from photos"
+
+[[solid]]
+name = "RibLower2"
+material = "case"
+center_mm = [-35.42, 23.95, -9.55]
+size_mm = [10.15, 1.5, 0.5]
+radius_mm = 0.5
+confidence = "estimated from photos"
+
+[[solid]]
+name = "RibLower3"
+material = "case"
+center_mm = [-35.07, 21.60, -9.55]
+size_mm = [10.87, 1.5, 0.5]
+radius_mm = 0.5
+confidence = "estimated from photos"
+
+[[solid]]
+name = "RibLower4"
+material = "case"
+center_mm = [-34.71, 19.25, -9.55]
+size_mm = [11.58, 1.5, 0.5]
+radius_mm = 0.5
+confidence = "estimated from photos"
+
+[[solid]]
+name = "RibLower5"
+material = "case"
+center_mm = [-34.35, 16.90, -9.55]
+size_mm = [12.30, 1.5, 0.5]
+radius_mm = 0.5
+confidence = "estimated from photos"
+
+[[solid]]
+name = "RibLower6"
+material = "case"
+center_mm = [-33.99, 14.55, -9.55]
+size_mm = [13.01, 1.5, 0.5]
+radius_mm = 0.5
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Groove1"
+material = "groove"
+center_mm = [17.75, 52.00, -9.32]
+size_mm = [45.51, 2.35, 0.04]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Groove2"
+material = "groove"
+center_mm = [16.37, 49.65, -9.32]
+size_mm = [48.27, 2.35, 0.04]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Groove3"
+material = "groove"
+center_mm = [7.25, 47.30, -9.32]
+size_mm = [66.50, 2.35, 0.04]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Groove4"
+material = "groove"
+center_mm = [7.25, 44.95, -9.32]
+size_mm = [66.50, 2.35, 0.04]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Groove5"
+material = "groove"
+center_mm = [7.25, 42.60, -9.32]
+size_mm = [66.50, 2.35, 0.04]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Groove6"
+material = "groove"
+center_mm = [7.25, 40.25, -9.32]
+size_mm = [66.50, 2.35, 0.04]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Groove7"
+material = "groove"
+center_mm = [7.25, 37.90, -9.32]
+size_mm = [66.50, 2.35, 0.04]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Groove8"
+material = "groove"
+center_mm = [7.37, 35.55, -9.32]
+size_mm = [66.26, 2.35, 0.04]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Groove9"
+material = "groove"
+center_mm = [7.81, 33.20, -9.32]
+size_mm = [65.38, 2.35, 0.04]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Groove10"
+material = "groove"
+center_mm = [8.25, 30.85, -9.32]
+size_mm = [64.49, 2.35, 0.04]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Groove11"
+material = "groove"
+center_mm = [8.69, 28.50, -9.32]
+size_mm = [63.61, 2.35, 0.04]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Groove12"
+material = "groove"
+center_mm = [9.13, 26.15, -9.32]
+size_mm = [62.73, 2.35, 0.04]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Groove13"
+material = "groove"
+center_mm = [9.58, 23.80, -9.32]
+size_mm = [61.85, 2.35, 0.04]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Groove14"
+material = "groove"
+center_mm = [10.02, 21.45, -9.32]
+size_mm = [60.97, 2.35, 0.04]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Groove15"
+material = "groove"
+center_mm = [10.46, 19.10, -9.32]
+size_mm = [60.09, 2.35, 0.04]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Groove16"
+material = "groove"
+center_mm = [10.90, 16.75, -9.32]
+size_mm = [59.21, 2.35, 0.04]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Groove17"
+material = "groove"
+center_mm = [11.34, 14.40, -9.32]
+size_mm = [58.33, 2.35, 0.04]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "GrooveLower1"
+material = "groove"
+center_mm = [-35.78, 26.30, -9.32]
+size_mm = [9.44, 2.35, 0.04]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "GrooveLower2"
+material = "groove"
+center_mm = [-35.42, 23.95, -9.32]
+size_mm = [10.15, 2.35, 0.04]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "GrooveLower3"
+material = "groove"
+center_mm = [-35.07, 21.60, -9.32]
+size_mm = [10.87, 2.35, 0.04]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "GrooveLower4"
+material = "groove"
+center_mm = [-34.71, 19.25, -9.32]
+size_mm = [11.58, 2.35, 0.04]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "GrooveLower5"
+material = "groove"
+center_mm = [-34.35, 16.90, -9.32]
+size_mm = [12.30, 2.35, 0.04]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "GrooveLower6"
+material = "groove"
+center_mm = [-33.99, 14.55, -9.32]
+size_mm = [13.01, 2.35, 0.04]
+confidence = "estimated from photos"

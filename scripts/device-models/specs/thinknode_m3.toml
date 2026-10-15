@@ -1,10 +1,15 @@
-# thinknode_m3: generated layout from the SVG; add [[part]] rules to refine.
-# Elecrow: L/W/H 64*64*10 mm; with fixed base 68*68*10.2 mm; 38.7 g.
-# The drawing shows the square turned on its corner. 64 mm is the side of the
-# square (as a 49 mm square it would be too dense for 40 g with a 770 mAh
-# battery), so fit_bbox is a 502-unit square (side + corner radius from the
-# path) centered on the drawing, and the corner-to-corner extent is ~84 mm.
-# Internal antennas only. The case is a soft rounded slab, rounder on the back.
+# thinknode_m3: the ThinkNode M3 tracker card. The flasher's illustration is a true front view
+# (the square hung on its corner), so it stays the drawing.
+# Elecrow user manual: 64 x 64 x 10 mm without the mounting base (base 68 x 68 x 10.2), 38.5 g:
+# https://www.elecrow.com/download/product/ILO13903D/ThinkNode_M3_User_Manual.pdf
+# 64 mm is the side of the square: the drawing's rounded square is 502 units a side (straight edge
+# plus the 62.4-unit corner radius), so fit_bbox is that square centered on the drawing and the
+# corner-to-corner extent comes out at 84.2 mm. (As a 45 mm square it would be too dense for
+# 38.5 g.) No CAD, and the FCC exhibits (2BDNA-TNM3-ELE) couldn't be fetched, so the back is
+# estimated from Elecrow's back photo (gallery "magnetic charging", mapped to the square by its
+# four corners) and the manual's "Device Part" line drawing.
+# Model frame: x from the center line, y up from the bottom of fit_bbox (the square's center is
+# at y 32.0, the bottom corner at -10.1), z out of the front with 0 the middle of the body.
 
 [size]
 width_mm = 64.0
@@ -13,8 +18,82 @@ depth_mm = 10.0
 scale_by = "width"
 fit_bbox = [322.0, 252.0, 824.0, 754.0]
 appendage = "none"
-edge_radius_mm = 4.0
-front_edge_radius_mm = 1.5
-covers = "device without fixed base (internal antennas)"
-source = "https://www.elecrow.com/thinknode-m3-meshtastic-tracker-with-gps-wifi-ble-function-for-positioning.html"
+# The front shell is well rounded at the edge; the back plate meets the side more squarely.
+front_edge_radius_mm = 2.5
+edge_radius_mm = 1.5
+covers = "device without the mounting base (internal antennas)"
+source = "https://www.elecrow.com/download/product/ILO13903D/ThinkNode_M3_User_Manual.pdf"
 confidence = "vendor"
+# Warm light gray, sampled from Elecrow's studio photos.
+body_color = "#cdc9bf"
+
+[materials]
+# The drawing's case color and the bezel ring and button, in the real warm gray.
+c_e8e8e6 = { color = "#cdc9bf", roughness = 0.6 }
+c_ccccca = { color = "#c4c0b6", roughness = 0.6 }
+c_525757 = { color = "#4a4c4c", roughness = 0.6 }
+plate  = { color = "#c7c3b9", roughness = 0.6 }
+window = { color = "#e2dfd8", roughness = 0.4 }
+gold   = { color = "#d4b25a", roughness = 0.3, metallic = 1.0 }
+hole   = { color = "#1d1d1f", roughness = 0.8 }
+
+# Lanyard hole through the top corner, where the drawing has its cutout. The generator fills
+# holes in the outline, so this dark slot stands in for the opening on both faces.
+[[solid]]
+name = "LanyardHole"
+material = "hole"
+center_mm = [0.1, 69.1, 0]
+size_mm = [6.5, 2.4, 10.1]
+radius_mm = 1.2
+
+# Back: the back plate sits inside a narrow rim; its edge shows as a seam about 2 mm in.
+[[solid]]
+name = "BackPlate"
+material = "plate"
+center_mm = [0, 32.0, -5.05]
+size_mm = [60.0, 60.0, 0.1]
+radius_mm = 6.0
+rotate_deg = [0, 0, 45]
+confidence = "estimated from photos"
+
+# The magnetic charging port: a light, slightly clear oval window below the center with four
+# gold pins in a row, about 2.4 mm apart.
+[[solid]]
+name = "ChargeWindow"
+material = "window"
+center_mm = [0, 24.5, -5.15]
+size_mm = [19.0, 6.0, 0.1]
+radius_mm = 3.0
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Pin1"
+material = "gold"
+center_mm = [-3.6, 24.5, -5.2]
+size_mm = [1.6, 1.6, 0.1]
+radius_mm = 0.8
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Pin2"
+material = "gold"
+center_mm = [-1.2, 24.5, -5.2]
+size_mm = [1.6, 1.6, 0.1]
+radius_mm = 0.8
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Pin3"
+material = "gold"
+center_mm = [1.2, 24.5, -5.2]
+size_mm = [1.6, 1.6, 0.1]
+radius_mm = 0.8
+confidence = "estimated from photos"
+
+[[solid]]
+name = "Pin4"
+material = "gold"
+center_mm = [3.6, 24.5, -5.2]
+size_mm = [1.6, 1.6, 0.1]
+radius_mm = 0.8
+confidence = "estimated from photos"

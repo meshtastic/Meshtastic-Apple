@@ -1,14 +1,379 @@
-# crowpanel_2_4: generated layout from the SVG; add [[part]] rules to refine.
-# Elecrow spec table: Dimensions 77.1*51.8*15.8 mm.
+# crowpanel_2_4: Elecrow CrowPanel Advance 2.4 in its case. The flasher's illustration is the bare
+# board (no case), so this model is built from our own front drawing (drawings/) and parts placed
+# in mm. Every figure is measured from Elecrow's current STEP, used for measurement only:
+# https://github.com/Elecrow-RD/CrowPanel-Advance-2.4-HMI-ESP32-S3-AI-Powered-IPS-Touch-Screen-320x240/tree/master/3D%20file
+# advance-hmi2_4-20260126.stp (v1.4, sha256 b1eb9fbdb0947a018d16fbe3487717319334f869f9f82e98025bb8b9fd79cfca).
+# The store page's 77.1 x 51.8 x 15.8 mm and its photos are the older v1.0 case (00-24_asm.stp:
+# 77.2 x 51.9 x 16 mm, BOOT/RESET through holes in the back, no seam, no screws on the front).
+# v1.4 is 74.8 x 51.9: a front shell and a back shell with the board showing between them, screws
+# at the corners front and back, a lidded module bay and a cutout at the BOOT/RESET corner, the
+# same case Elecrow's 2.8 back photo shows. This follows v1.4.
+# The "2.4"" on the flasher's drawing is screen content, not printed on the device, so it's left out.
+# Model frame: x from the center line, y up from the bottom, z out of the display with 0 the
+# middle of the case; the CAD's 36.4 - x, y + 2.2 and 0.65 - z give these.
+drawing = "drawings/crowpanel_2_4.svg"
 
 [size]
-width_mm = 77.1
-height_mm = 51.8
-depth_mm = 15.8
+width_mm = 74.8
+height_mm = 51.9
+# Case front to the back plate. The display glass stands 0.2 mm proud and the screw heads 1.0 mm
+# on each side: 16.7 mm over the screws.
+depth_mm = 14.7
 scale_by = "width"
-covers = "whole display module (landscape)"
-source = "https://www.elecrow.com/crowpanel-advance-2-4-hmi-ai-display-for-meshtastic-esp32-320x240-ips-artificial-intelligent-touchscreen.html"
-confidence = "vendor"
-# Plastic shell with small rounded edges; corner screws sit near the front edge.
-edge_radius_mm = 2.5
-front_edge_radius_mm = 1.0
+covers = "case; screw heads add 1 mm front and back"
+source = "https://raw.githubusercontent.com/Elecrow-RD/CrowPanel-Advance-2.4-HMI-ESP32-S3-AI-Powered-IPS-Touch-Screen-320x240/master/3D%20file/advance-hmi2_4-20260126.stp"
+confidence = "cad"
+edge_radius_mm = 0.3
+front_edge_radius_mm = 0.5
+
+[materials]
+c_1d1d1f = { color = "#1d1d1f", roughness = 0.6 }
+acrylic  = { color = "#0b0b0c", roughness = 0.12 }
+opening  = { color = "#060606", roughness = 0.9 }
+seam     = { color = "#0e0e0f", roughness = 0.8 }
+screw    = { color = "#2a2a2c", roughness = 0.45, metallic = 0.8 }
+jst      = { color = "#ece6d6", roughness = 0.5 }
+jst_in   = { color = "#c9c0ac", roughness = 0.6 }
+metal    = { color = "#a9abae", roughness = 0.35, metallic = 1.0 }
+
+# The display glass stands 0.2 mm off the case; the flex slot and the hole are openings, so
+# they're painted flush.
+[[part]]
+name = "Glass"
+class = "glass"
+z = 0
+h = 0.2
+
+[[part]]
+name = "Display"
+class = "display"
+z = 0
+h = 0.22
+
+[[part]]
+name = "FlexSlot"
+class = "flex"
+z = -0.29
+h = 0.3
+
+[[part]]
+name = "Hole"
+class = "hole"
+z = -0.29
+h = 0.3
+
+# Front screw heads at the corners, 6 mm across and 1 mm proud.
+[[solid]]
+name = "FrontScrewLowerLeft"
+material = "screw"
+center_mm = [-33.4, 5.2, 7.85]
+size_mm = [6.0, 6.0, 1.0]
+radius_mm = 3.0
+
+[[solid]]
+name = "FrontScrewLowerRight"
+material = "screw"
+center_mm = [33.4, 5.2, 7.85]
+size_mm = [6.0, 6.0, 1.0]
+radius_mm = 3.0
+
+[[solid]]
+name = "FrontScrewUpperLeft"
+material = "screw"
+center_mm = [-33.4, 46.7, 7.85]
+size_mm = [6.0, 6.0, 1.0]
+radius_mm = 3.0
+
+[[solid]]
+name = "FrontScrewUpperRight"
+material = "screw"
+center_mm = [33.4, 46.7, 7.85]
+size_mm = [6.0, 6.0, 1.0]
+radius_mm = 3.0
+
+# The board shows in a 1.7 mm gap between the front and back shells, set in 1 mm at the sides
+# and 2.2 mm at the top and bottom. The generator can't cut a groove, so it's drawn as a dark band.
+[[solid]]
+name = "SeamTop"
+material = "seam"
+center_mm = [0, 51.92, 1.5]
+size_mm = [64.8, 0.1, 1.7]
+
+[[solid]]
+name = "SeamBottom"
+material = "seam"
+center_mm = [0, -0.02, 1.5]
+size_mm = [64.8, 0.1, 1.7]
+
+[[solid]]
+name = "SeamLeft"
+material = "seam"
+center_mm = [-37.42, 25.95, 1.5]
+size_mm = [0.1, 41.9, 1.7]
+
+[[solid]]
+name = "SeamRight"
+material = "seam"
+center_mm = [37.42, 25.95, 1.5]
+size_mm = [0.1, 41.9, 1.7]
+
+# Back: the 2 mm black acrylic plate over the back shell.
+[[solid]]
+name = "BackPlate"
+material = "acrylic"
+center_mm = [0, 25.95, -6.375]
+size_mm = [74.84, 51.94, 2.05]
+radius_mm = 5.0
+
+# Back screw heads at the same corners.
+[[solid]]
+name = "BackScrewLowerLeft"
+material = "screw"
+center_mm = [-33.4, 5.2, -7.85]
+size_mm = [6.0, 6.0, 1.0]
+radius_mm = 3.0
+
+[[solid]]
+name = "BackScrewLowerRight"
+material = "screw"
+center_mm = [33.4, 5.2, -7.85]
+size_mm = [6.0, 6.0, 1.0]
+radius_mm = 3.0
+
+[[solid]]
+name = "BackScrewUpperLeft"
+material = "screw"
+center_mm = [-33.4, 46.7, -7.85]
+size_mm = [6.0, 6.0, 1.0]
+radius_mm = 3.0
+
+[[solid]]
+name = "BackScrewUpperRight"
+material = "screw"
+center_mm = [33.4, 46.7, -7.85]
+size_mm = [6.0, 6.0, 1.0]
+radius_mm = 3.0
+
+# Two holes near the top corners, open down to the board.
+[[solid]]
+name = "HoleLeft"
+material = "opening"
+center_mm = [-27.4, 48.9, -7.43]
+size_mm = [3.2, 3.2, 0.1]
+radius_mm = 1.6
+
+[[solid]]
+name = "HoleRight"
+material = "opening"
+center_mm = [27.4, 48.9, -7.43]
+size_mm = [3.2, 3.2, 0.1]
+radius_mm = 1.6
+
+# Connector windows in the plate with the white JST housings flush in them. Seen from the
+# back, UART1-OUT is top left, I2C-OUT and UART0-IN along the bottom, SPK and BAT in the middle.
+[[solid]]
+name = "UART1Window"
+material = "opening"
+center_mm = [4.93, 44.74, -7.43]
+size_mm = [14.1, 6.5, 0.1]
+radius_mm = 0.5
+
+[[solid]]
+name = "UART1"
+material = "jst"
+center_mm = [4.6, 44.99, -7.5]
+size_mm = [12.0, 5.0, 0.1]
+
+[[solid]]
+name = "UART1Socket"
+material = "jst_in"
+center_mm = [4.6, 44.99, -7.57]
+size_mm = [9.0, 4.0, 0.1]
+
+[[solid]]
+name = "I2CWindow"
+material = "opening"
+center_mm = [-0.95, 6.92, -7.43]
+size_mm = [13.0, 6.47, 0.1]
+radius_mm = 0.5
+
+[[solid]]
+name = "I2C"
+material = "jst"
+center_mm = [-0.95, 6.75, -7.5]
+size_mm = [12.0, 5.0, 0.1]
+
+[[solid]]
+name = "I2CSocket"
+material = "jst_in"
+center_mm = [-0.95, 6.75, -7.57]
+size_mm = [9.0, 4.0, 0.1]
+
+[[solid]]
+name = "UART0Window"
+material = "opening"
+center_mm = [-20.3, 7.42, -7.43]
+size_mm = [15.8, 7.62, 0.1]
+radius_mm = 0.5
+
+[[solid]]
+name = "UART0"
+material = "jst"
+center_mm = [-20.3, 7.25, -7.5]
+size_mm = [15.0, 5.9, 0.1]
+
+[[solid]]
+name = "UART0Socket"
+material = "jst_in"
+center_mm = [-20.3, 8.08, -7.57]
+size_mm = [12.5, 4.23, 0.1]
+
+[[solid]]
+name = "SPKWindow"
+material = "opening"
+center_mm = [-5.65, 22.44, -7.43]
+size_mm = [8.4, 5.9, 0.1]
+radius_mm = 0.5
+
+[[solid]]
+name = "SPK"
+material = "jst"
+center_mm = [-5.65, 22.47, -7.5]
+size_mm = [8.0, 5.45, 0.1]
+
+[[solid]]
+name = "SPKSocket"
+material = "jst_in"
+center_mm = [-5.65, 23.6, -7.57]
+size_mm = [6.0, 3.2, 0.1]
+
+[[solid]]
+name = "BATWindow"
+material = "opening"
+center_mm = [-15.7, 25.8, -7.43]
+size_mm = [7.0, 6.6, 0.1]
+radius_mm = 0.5
+
+# The wireless module bay: a lid flush with the plate, outlined by 1 mm slots, open to the top
+# edge. The LoRa module sits under it.
+# The side slots are broken by two 1.5 mm bridges each.
+[[solid]]
+name = "BaySlotLeft1"
+material = "opening"
+center_mm = [-4.71, 32.1, -7.43]
+size_mm = [1.0, 7.8, 0.1]
+
+[[solid]]
+name = "BaySlotLeft2"
+material = "opening"
+center_mm = [-4.71, 41.0, -7.43]
+size_mm = [1.0, 7.0, 0.1]
+
+[[solid]]
+name = "BaySlotLeft3"
+material = "opening"
+center_mm = [-4.71, 48.95, -7.43]
+size_mm = [1.0, 5.9, 0.1]
+
+[[solid]]
+name = "BaySlotRight1"
+material = "opening"
+center_mm = [-23.21, 32.1, -7.43]
+size_mm = [1.0, 7.8, 0.1]
+
+[[solid]]
+name = "BaySlotRight2"
+material = "opening"
+center_mm = [-23.21, 41.0, -7.43]
+size_mm = [1.0, 7.0, 0.1]
+
+[[solid]]
+name = "BaySlotRight3"
+material = "opening"
+center_mm = [-23.21, 48.95, -7.43]
+size_mm = [1.0, 5.9, 0.1]
+
+[[solid]]
+name = "BaySlotBottom"
+material = "opening"
+center_mm = [-13.96, 28.7, -7.43]
+size_mm = [19.5, 1.0, 0.1]
+
+# The v1.4 cutout at the BOOT/RESET corner: the back shell is open down to the board, 7.3 mm in
+# from the right side (seen from the front) and 19 mm tall, and the side wall is also open beside
+# the ESP32 module above it. Drawn as dark patches, since the generator can't cut it.
+[[solid]]
+name = "ButtonCutoutBack"
+material = "opening"
+center_mm = [33.75, 17.25, -7.43]
+size_mm = [7.3, 19.0, 0.1]
+
+[[solid]]
+name = "ButtonCutoutSide"
+material = "opening"
+center_mm = [37.43, 17.25, -3.35]
+size_mm = [0.1, 19.0, 8.0]
+
+[[solid]]
+name = "SideWindow"
+material = "opening"
+center_mm = [37.43, 34.2, -2.35]
+size_mm = [0.1, 14.95, 6.0]
+
+# Left side (seen from the front): USB-C OTG above, USB-C UART0 below, each in a 10.7 x 6 window.
+[[solid]]
+name = "USBWindowUpper"
+material = "opening"
+center_mm = [-37.43, 36.3, -2.35]
+size_mm = [0.1, 10.7, 6.0]
+radius_mm = 0.5
+
+[[solid]]
+name = "USBCUpper"
+material = "metal"
+center_mm = [-37.5, 36.3, -0.95]
+size_mm = [0.1, 8.9, 3.2]
+radius_mm = 1.6
+
+[[solid]]
+name = "USBCUpperOpening"
+material = "opening"
+center_mm = [-37.57, 36.3, -0.95]
+size_mm = [0.1, 7.6, 2.0]
+radius_mm = 1.0
+
+[[solid]]
+name = "USBWindowLower"
+material = "opening"
+center_mm = [-37.43, 15.7, -2.35]
+size_mm = [0.1, 10.7, 6.0]
+radius_mm = 0.5
+
+[[solid]]
+name = "USBCLower"
+material = "metal"
+center_mm = [-37.5, 15.7, -0.95]
+size_mm = [0.1, 8.9, 3.2]
+radius_mm = 1.6
+
+[[solid]]
+name = "USBCLowerOpening"
+material = "opening"
+center_mm = [-37.57, 15.7, -0.95]
+size_mm = [0.1, 7.6, 2.0]
+radius_mm = 1.0
+
+# Bottom: the microSD slot, right of center seen from the front. The opening is drawn without
+# the 2 mm chamfer around its mouth.
+[[solid]]
+name = "TFSlot"
+material = "opening"
+center_mm = [19.05, -0.03, -2.35]
+size_mm = [17.3, 0.1, 6.0]
+radius_mm = 0.5
+
+[[solid]]
+name = "TFSocket"
+material = "metal"
+center_mm = [19.05, -0.1, -0.6]
+size_mm = [15.5, 0.1, 2.0]

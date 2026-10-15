@@ -1,87 +1,453 @@
-# rak6421: generated layout from the SVG; add [[part]] rules to refine.
-# Mechanical drawing from RAK6421 datasheet (https://docs.rakwireless.com/product-categories/wishat/rak6421-wisblock-pi-hat/datasheet/): 65.00 x 56.00 mm, mounting holes 58 x 49 mm, 4x dia 2.8. Corner radius not dimensioned (Pi HAT spec uses 3 mm). 56/65=0.86 vs drawn 0.84.
+# rak6421: the RAK6421 WisMesh Pi HAT with a WisBlock IO module in IO slot 2, seen from above with
+# the Pi header along the right edge. The flasher's illustration is drawn about 2.5% narrow (9.03
+# units/mm across, 9.26 down), so this uses our copy of it stretched to scale (drawings/).
+# RAK's mechanical drawing gives the outline, holes and heights:
+# https://images.docs.rakwireless.com/wishat/rak6421/datasheet/rak6421-mechanical.png
+# 65 x 56 mm, holes 58 x 49 mm, PCB 1.60, the Pi socket 8.50 below; its side view (23.8 px/mm)
+# gives the header pin ends 1.4 mm and the WisBlock connectors and standoffs 0.9 mm above the board.
+# That drawing has no J9 header, ADC parts or underside parts, so it is likely an earlier revision
+# than the VC in the flasher's illustration; the J9 header and the inductor underneath come from
+# RAK's photos of the current VD board (store: https://store.rakwireless.com/products/meshtastic-raspberry-pi-hat-rak6421).
+# Those photos also show the Pi header pins standing well above the board, longer than the
+# drawing's 1.4 mm; the model follows the drawing.
+# Model frame: x from the center line, y up from the bottom edge of the illustration, z out of the
+# top with 0 the middle of the board.
+drawing = "drawings/rak6421.svg"
 
 [size]
 width_mm = 56.0
 height_mm = 65.0
+# Overall: 8.5 mm socket below + 1.6 mm PCB + the J9 header, about 8.5 mm, on top.
 depth_mm = 18.6
 board_mm = 1.6
-# The drawing is turned: its width is the 56 mm side (hole spacing 440:536 matches 49:58).
 scale_by = "width"
-covers = "HAT PCB with the drawn RAK13300 IO module and front parts as blocks; depth = 8.5 mm Pi socket under + 1.6 mm PCB + 8.5 mm J9 header on top."
+covers = "HAT PCB with the drawn IO module, the Pi socket below and the J9 header on top"
 source = "https://images.docs.rakwireless.com/wishat/rak6421/datasheet/rak6421-mechanical.png"
 confidence = "vendor"
 
-# Blocks. The drawing shows a RAK13300 IO module in IO slot 1. None of these
-# heights are published: HAT PCB 1.6 mm, WisBlock connectors ~1.5 mm, the IO
-# module plate 2.5 mm (connector gap + 1.0 mm board), its shield can ~2 mm more,
-# the 2.54 mm header 8.5 mm and the 2-pin JST 4.5 mm are typical values.
-[[block]]
-name = "IOSlotJ1"
-bbox = [226, 260, 327, 294]
-h = 1.5
+[materials]
+gold   = { color = "#d4b062", roughness = 0.3, metallic = 1.0 }
+socket = { color = "#1c1c1c", roughness = 0.6 }
+can    = { color = "#c4c6c8", roughness = 0.35, metallic = 1.0 }
+dark   = { color = "#2a2a2a", roughness = 0.5 }
 
+# WisBlock connectors: four sensor slots along the header and IO slot 1, 0.9 mm (side view).
 [[block]]
 name = "SlotJ4"
-bbox = [349, 16, 419, 50]
-h = 1.5
+bbox = [357.9, 16.5, 429.8, 50.5]
+h = 0.9
 
 [[block]]
 name = "SlotJ5"
-bbox = [349, 257, 419, 291]
-h = 1.5
+bbox = [357.9, 256.8, 429.8, 290.8]
+h = 0.9
 
 [[block]]
 name = "SlotJ6"
-bbox = [349, 366, 419, 400]
-h = 1.5
+bbox = [357.9, 365.9, 429.8, 399.9]
+h = 0.9
 
 [[block]]
 name = "SlotJ7"
-bbox = [349, 487, 419, 521]
-h = 1.5
-
-# IO module board, split into four strips around the shield can.
-[[block]]
-name = "IOModuleLeft"
-bbox = [2, 303, 112, 537]
-h = 2.5
+bbox = [357.9, 487.4, 429.8, 521.5]
+h = 0.9
 
 [[block]]
-name = "IOModuleTop"
-bbox = [112, 303, 339, 346]
-h = 2.5
+name = "IOSlotJ1"
+bbox = [231.8, 259.6, 335.7, 293.8]
+h = 0.9
+
+# The two round standoffs by the mounting holes, 0.9 mm (side view).
+[[block]]
+name = "StandoffUpper"
+bbox = [28.9, 57.6, 82.7, 110.1]
+h = 0.9
+radius_mm = 2.8
 
 [[block]]
-name = "IOModuleBottom"
-bbox = [112, 474, 339, 537]
+name = "StandoffLower"
+bbox = [28.9, 492.4, 82.5, 544.9]
+h = 0.9
+radius_mm = 2.8
+
+# The IO module: 1.0 mm board on its connector (1.5 mm gap, estimated) and its shield can, about
+# 2 mm more (estimated). The drawn module is 37.5 x 25.3 mm, larger than RAK's 35 x 25 mm
+# WisBlock IO size; it is kept as drawn. Under it the HAT has the IO slot 2 opening, which the
+# illustration covers: from the mechanical drawing, open at x 0-9.5 mm (from the left edge as
+# drawn) for y 32.7-53.0, x 9.5-21 for y to 57.9 and x 21-29 for y 39.5-53.9 (from the top).
+# The module board is split so that its parts over the opening have no board under them.
+[[block]]
+name = "IOModuleOverOpening1"
+bbox = [2.2, 303.0, 88.4, 491.1]
+base_mm = 1.5
 h = 2.5
+hollow_under = true
+side_color = "#262525"
+
+[[block]]
+name = "IOModuleOverOpening2"
+bbox = [88.4, 303.0, 194.9, 536.9]
+base_mm = 1.5
+h = 2.5
+hollow_under = true
+side_color = "#262525"
+
+[[block]]
+name = "IOModuleOverOpening3"
+bbox = [194.9, 366.1, 268.9, 499.4]
+base_mm = 1.5
+h = 2.5
+hollow_under = true
+side_color = "#262525"
 
 [[block]]
 name = "IOModuleRight"
-bbox = [319, 346, 339, 474]
+bbox = [268.9, 303.0, 347.2, 536.9]
+base_mm = 1.5
 h = 2.5
+side_color = "#262525"
+
+[[block]]
+name = "IOModuleTongueUpper"
+bbox = [194.9, 303.0, 268.9, 366.1]
+base_mm = 1.5
+h = 2.5
+side_color = "#262525"
+
+[[block]]
+name = "IOModuleTongueLower"
+bbox = [194.9, 499.4, 268.9, 536.9]
+base_mm = 1.5
+h = 2.5
+side_color = "#262525"
+
+[[block]]
+name = "IOModuleLeftLower"
+bbox = [2.2, 491.1, 88.4, 536.9]
+base_mm = 1.5
+h = 2.5
+side_color = "#262525"
 
 [[block]]
 name = "IOModuleCan"
-bbox = [112, 346, 319, 474]
+bbox = [116.3, 351.0, 322.9, 471.6]
+base_mm = 2.5
 h = 4.5
+material = "can"
+confidence = "estimated"
 
+# J9 (3V3, GND, SCL, SDA): a straight 2.54 mm header, from RAK's VD photos. The plastic is 2.5 mm
+# and the pins stand 6 mm above it with 3 mm tails below; typical header figures.
 [[block]]
 name = "HeaderJ9"
-bbox = [80, 566, 172, 591]
-h = 8.5
+bbox = [83.2, 568.3, 174.2, 589.7]
+h = 2.5
+material = "socket"
+confidence = "estimated from photos"
 
-[[block]]
-name = "BatteryJST"
-bbox = [276, 564, 324, 593]
-h = 4.5
+[[solid]]
+name = "J9Pin1"
+material = "gold"
+center_mm = [-17.95, 2.5, 6.3]
+size_mm = [0.64, 0.64, 6.0]
 
-# Female 2x20 Pi socket under the board, on the drawn pin footprint
-# (50.8 x 5.1 mm body, typical 8.5 mm height).
-[[block]]
+[[solid]]
+name = "J9Tail1"
+material = "gold"
+center_mm = [-17.95, 2.5, -2.3]
+size_mm = [0.64, 0.64, 3.0]
+
+[[solid]]
+name = "J9Pin2"
+material = "gold"
+center_mm = [-15.43, 2.5, 6.3]
+size_mm = [0.64, 0.64, 6.0]
+
+[[solid]]
+name = "J9Tail2"
+material = "gold"
+center_mm = [-15.43, 2.5, -2.3]
+size_mm = [0.64, 0.64, 3.0]
+
+[[solid]]
+name = "J9Pin3"
+material = "gold"
+center_mm = [-12.91, 2.5, 6.3]
+size_mm = [0.64, 0.64, 6.0]
+
+[[solid]]
+name = "J9Tail3"
+material = "gold"
+center_mm = [-12.91, 2.5, -2.3]
+size_mm = [0.64, 0.64, 3.0]
+
+[[solid]]
+name = "J9Pin4"
+material = "gold"
+center_mm = [-10.39, 2.5, 6.3]
+size_mm = [0.64, 0.64, 6.0]
+
+[[solid]]
+name = "J9Tail4"
+material = "gold"
+center_mm = [-10.39, 2.5, -2.3]
+size_mm = [0.64, 0.64, 3.0]
+
+# The 2x20 Pi socket under the board, 8.5 mm (drawing), centered on the header pads 3.5 mm in
+# from the edge.
+[[solid]]
 name = "PiSocket"
-bbox = [451, 66, 497, 537]
-h = 8.5
-back = true
-side_color = "#1c1c1c"
+material = "socket"
+center_mm = [24.42, 32.45, -5.05]
+size_mm = [5.08, 50.8, 8.5]
+
+# The power inductor under the board ("4R7"), about 7 mm square, placed from the VD back photo
+# (calibrated on the 65 mm edge, 8.2 px/mm); its 3 mm height is a typical value.
+[[solid]]
+name = "Inductor"
+material = "dark"
+center_mm = [4.15, 48.55, -2.3]
+size_mm = [7.0, 7.0, 3.0]
+radius_mm = 0.5
+confidence = "estimated from photos"
+
+# Header pin ends above the board, 1.4 mm (drawing), on the 2.54 mm pads.
+[[solid]]
+name = "PiPin1_1"
+material = "gold"
+center_mm = [23.15, 56.61, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin1_2"
+material = "gold"
+center_mm = [23.15, 54.07, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin1_3"
+material = "gold"
+center_mm = [23.15, 51.52, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin1_4"
+material = "gold"
+center_mm = [23.15, 48.98, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin1_5"
+material = "gold"
+center_mm = [23.15, 46.44, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin1_6"
+material = "gold"
+center_mm = [23.15, 43.89, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin1_7"
+material = "gold"
+center_mm = [23.15, 41.35, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin1_8"
+material = "gold"
+center_mm = [23.15, 38.81, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin1_9"
+material = "gold"
+center_mm = [23.15, 36.27, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin1_10"
+material = "gold"
+center_mm = [23.15, 33.72, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin1_11"
+material = "gold"
+center_mm = [23.15, 31.18, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin1_12"
+material = "gold"
+center_mm = [23.15, 28.64, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin1_13"
+material = "gold"
+center_mm = [23.15, 26.09, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin1_14"
+material = "gold"
+center_mm = [23.15, 23.55, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin1_15"
+material = "gold"
+center_mm = [23.15, 21.01, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin1_16"
+material = "gold"
+center_mm = [23.15, 18.47, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin1_17"
+material = "gold"
+center_mm = [23.15, 15.92, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin1_18"
+material = "gold"
+center_mm = [23.15, 13.38, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin1_19"
+material = "gold"
+center_mm = [23.15, 10.84, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin1_20"
+material = "gold"
+center_mm = [23.15, 8.3, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin2_1"
+material = "gold"
+center_mm = [25.68, 56.61, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin2_2"
+material = "gold"
+center_mm = [25.68, 54.07, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin2_3"
+material = "gold"
+center_mm = [25.68, 51.52, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin2_4"
+material = "gold"
+center_mm = [25.68, 48.98, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin2_5"
+material = "gold"
+center_mm = [25.68, 46.44, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin2_6"
+material = "gold"
+center_mm = [25.68, 43.89, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin2_7"
+material = "gold"
+center_mm = [25.68, 41.35, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin2_8"
+material = "gold"
+center_mm = [25.68, 38.81, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin2_9"
+material = "gold"
+center_mm = [25.68, 36.27, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin2_10"
+material = "gold"
+center_mm = [25.68, 33.72, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin2_11"
+material = "gold"
+center_mm = [25.68, 31.18, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin2_12"
+material = "gold"
+center_mm = [25.68, 28.64, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin2_13"
+material = "gold"
+center_mm = [25.68, 26.09, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin2_14"
+material = "gold"
+center_mm = [25.68, 23.55, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin2_15"
+material = "gold"
+center_mm = [25.68, 21.01, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin2_16"
+material = "gold"
+center_mm = [25.68, 18.47, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin2_17"
+material = "gold"
+center_mm = [25.68, 15.92, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin2_18"
+material = "gold"
+center_mm = [25.68, 13.38, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin2_19"
+material = "gold"
+center_mm = [25.68, 10.84, 1.5]
+size_mm = [0.64, 0.64, 1.4]
+
+[[solid]]
+name = "PiPin2_20"
+material = "gold"
+center_mm = [25.68, 8.3, 1.5]
+size_mm = [0.64, 0.64, 1.4]

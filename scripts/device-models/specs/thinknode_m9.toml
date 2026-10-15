@@ -1,19 +1,118 @@
-# thinknode_m9: phone-style case, all antennas internal (vendor page).
-# Elecrow: Size 126*67*10.3mm, 123 g. 67/126=0.53 matches drawn 0.54.
+# thinknode_m9: ThinkNode M9 keyboard terminal, a phone-style case with all antennas inside.
+# The flasher's illustration is a true front view, so it stays the drawing; the ports, the
+# lanyard slots and the back panel are placed by measurement.
+# Published thickness conflicts: the product page says 126 x 67 x 10.3 mm (123 g), the user
+# manual 126 x 67 x 12 mm:
+# https://www.elecrow.com/thinknode-m9-meshtastic-communication-terminal-with-full-keyboard-2-4inch-lcd.html
+# https://www.elecrow.com/download/product/LMM15409D/ThinkNode_M9_for_Meshtastic_User_Manual.pdf
+# Elecrow's dimensioned front and side views (gallery "hardware overview") measure 1.9 px/mm on
+# the 67 and 126 mm figures and put the side at 10.0 mm, toggle switch included, so this uses
+# 10.3. The manual's line drawing (page 3, "Hardware Overview") settles the 12: its bottom view,
+# 12.9 px/mm on the 67 mm width, shows a 10.2 mm body with the keys and the navigation pad
+# standing about 1 mm proud, and its 12 mm dimension line runs from the top of those keys.
+# No CAD; the FCC filing (2BDNA-TNM9) couldn't be fetched. The bottom ports are measured from
+# that drawing's bottom view; the lanyard slots from the back photo (gallery "with full keyboard").
+# Model frame: x from the center line, y up from the bottom, z out of the screen with 0 the
+# middle of the body (front at +5.15, back at -5.15).
 
 [size]
 width_mm = 67.0
 height_mm = 126.0
 depth_mm = 10.3
 scale_by = "width"
+# The case outline, without the toggle switch that stands off the right side.
+fit_bbox = [0.7, 0.7, 425.7, 801.6]
+appendage = "none"
 covers = "whole device"
 source = "https://www.elecrow.com/thinknode-m9-meshtastic-communication-terminal-with-full-keyboard-2-4inch-lcd.html"
 confidence = "vendor"
-# Rounded plastic phone case; keyboard sits about 1.4 mm from the edge, so keep the front edge small.
-edge_radius_mm = 4.0
+# Flat front with the keyboard close to the edge, so a small front radius; the back is a little
+# rounder where the frame meets the back panel.
+edge_radius_mm = 2.0
 front_edge_radius_mm = 1.0
 
-# Power switch on the right side: a small slider, not full body depth.
+[materials]
+# The screen as dark glass, not the drawing's flat gray.
+c_7d7e82 = { color = "#101214", roughness = 0.12 }
+panel = { color = "#34363a", roughness = 0.25 }
+port  = { color = "#111112", roughness = 0.6 }
+
+# The keys stand proud of the face: about 0.5 mm for the keyboard and 1.2 mm for the navigation
+# pad, from the manual's bottom view. Each is one raised block with the drawn keys on top.
+[[block]]
+name = "KeyboardRows"
+bbox = [9.7, 515.5, 416.3, 684.0]
+h = 0.5
+source = "user manual bottom view, measured"
+
+[[block]]
+name = "KeyboardBottomRow"
+bbox = [51.9, 684.0, 375.9, 740.1]
+h = 0.5
+radius_mm = 3.0
+source = "user manual bottom view, measured"
+
+[[block]]
+name = "NavPad"
+bbox = [157.2, 401.1, 269.4, 505.9]
+h = 1.2
+radius_mm = 4.5
+source = "user manual bottom view, measured"
+
+# Toggle switch on the right side: a small slider, not full body depth.
 [[thin]]
 bbox = [424, 430, 431, 516]
 depth_mm = 3.5
+
+# Back: the glossy faceted panel (a gray polygon pattern on the real one) inside a narrow frame.
+[[solid]]
+name = "BackPanel"
+material = "panel"
+center_mm = [0, 63.15, -5.2]
+size_mm = [63.5, 122.5, 0.1]
+radius_mm = 7.0
+confidence = "estimated from photos"
+
+# Bottom, left to right as seen from the front (the drawing's bottom view has the side switch on
+# the right, as the front does): a small unlabeled hole, the round reset key (11) and the USB-C
+# port (12), centered. Measured from the manual's bottom view.
+[[solid]]
+name = "BottomHole"
+material = "port"
+center_mm = [-22.2, -0.1, -0.3]
+size_mm = [1.5, 0.4, 1.5]
+radius_mm = 0.75
+source = "user manual bottom view, measured"
+
+[[solid]]
+name = "ResetKey"
+material = "port"
+center_mm = [-11.2, -0.1, -1.5]
+size_mm = [5.4, 0.4, 5.4]
+radius_mm = 2.7
+source = "user manual bottom view, measured"
+
+[[solid]]
+name = "USBC"
+material = "port"
+center_mm = [0, -0.1, -0.8]
+size_mm = [8.9, 0.4, 3.2]
+radius_mm = 1.6
+source = "user manual bottom view, measured"
+
+# Lanyard: two small slots near the top of the left side.
+[[solid]]
+name = "LanyardSlotUpper"
+material = "port"
+center_mm = [-33.6, 116.3, 0]
+size_mm = [0.4, 1.2, 3.0]
+radius_mm = 0.6
+confidence = "estimated from photos"
+
+[[solid]]
+name = "LanyardSlotLower"
+material = "port"
+center_mm = [-33.6, 113.6, 0]
+size_mm = [0.4, 1.2, 3.0]
+radius_mm = 0.6
+confidence = "estimated from photos"

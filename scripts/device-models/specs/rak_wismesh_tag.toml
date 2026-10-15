@@ -1,5 +1,18 @@
-# rak_wismesh_tag: generated layout from the SVG; add [[part]] rules to refine.
-# Dimension image on RAK store page https://store.rakwireless.com/products/wismesh-tag-meshtastic-gps-lora-tracker-ip66. Top corners are chamfered rather than rounded. 59/92=0.64 matches drawn 0.65.
+# rak_wismesh_tag: WisMesh Tag (built by MOKO, LW010-R). The flasher's illustration is a clean
+# front view but 1.5% too short (90.6 mm tall at 59 mm wide). Our copy in drawings/ stretches it
+# to 92, which RAK's dimension image and front photo both show (59 x 92, 1.557:1); the button
+# then lands 55.7 mm up (photo 55.9) and the slot 88.2 mm up (photo 88.1). Size from RAK's
+# dimension image (59 x 92 x 7.5 mm, front and side views): https://cdn.shopify.com/s/files/1/0177/8784/6756/files/wismesh-tag-dimensions-v2.webp
+# Its side view (9.0 px/mm) shows the button standing ~0.7 mm proud of the face, ~1.3 mm bevels
+# on the front and back edges and a seam at mid-depth. The back, from RAK's straight-on photo
+# (wismesh-tag-front-back.webp, calibrated to the 59 mm width, 9.1 px/mm), is plain apart from
+# the printed label and the ring marking the reset button. Charging is by the four pogo pins on
+# the face (port callout: https://images.docs.rakwireless.com/meshtastic/wismesh-tag-port.png);
+# there is no side port. The 7.5 mm depth is taken as the case without the raised button.
+# Model frame: x from the center line as seen from the front, y up from the bottom, z out of the
+# face with 0 the middle of the body.
+
+drawing = "drawings/rak_wismesh_tag.svg"
 
 [size]
 width_mm = 59.0
@@ -9,7 +22,51 @@ scale_by = "width"
 covers = "whole device (no external antenna)"
 source = "https://cdn.shopify.com/s/files/1/0177/8784/6756/files/wismesh-tag-dimensions-v2.webp"
 confidence = "vendor"
-# Integrated antennas, nothing sticks out. The molded case has soft, rounded edges;
-# keep the front radius under the ~2 mm rim drawn around the face.
-edge_radius_mm = 3.0
+# The edges are beveled rather than rounded; ~1.3 mm on both faces. The generator rounds them.
+edge_radius_mm = 1.5
 front_edge_radius_mm = 1.5
+
+[materials]
+hole = { color = "#0a0a0a", roughness = 0.8 }
+ring = { color = "#8c8c8c", roughness = 0.5 }
+case = { color = "#212121", roughness = 0.6 }
+
+# The button: the drawn 21.8 mm round, raised 0.7 mm with its holes on top.
+[[block]]
+name = "Button"
+bbox = [483.62, 379.69, 623.22, 521.45]
+h = 0.7
+radius_mm = 10.87
+
+# The lanyard slot through the top, 15.6 x 3.4 mm (from the drawing; the photo agrees within
+# 0.4 mm). The generator can't cut a hole, so it is a dark layer on each face.
+[[solid]]
+name = "SlotFront"
+material = "hole"
+center_mm = [0, 88.2, 3.8]
+size_mm = [15.6, 3.4, 0.2]
+radius_mm = 1.7
+
+[[solid]]
+name = "SlotBack"
+material = "hole"
+center_mm = [0, 88.2, -3.8]
+size_mm = [15.6, 3.4, 0.2]
+radius_mm = 1.7
+
+# Back: the printed ring over the reset button, 10.9 mm, upper right as seen from the front.
+[[solid]]
+name = "ResetRing"
+material = "ring"
+center_mm = [16.6, 73.4, -3.8]
+size_mm = [10.9, 10.9, 0.2]
+radius_mm = 5.45
+confidence = "estimated from photos"
+
+[[solid]]
+name = "ResetCenter"
+material = "case"
+center_mm = [16.6, 73.4, -3.85]
+size_mm = [10.1, 10.1, 0.2]
+radius_mm = 5.05
+confidence = "estimated from photos"

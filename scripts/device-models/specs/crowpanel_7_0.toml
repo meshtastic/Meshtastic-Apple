@@ -1,15 +1,332 @@
-# crowpanel_7_0: generated layout from the SVG; add [[part]] rules to refine.
-# Elecrow spec table: Dimensions 181.26*108.36*16 mm; active area 156 x 87 mm.
+# crowpanel_7_0: the CrowPanel Advance 7.0" in Elecrow's black acrylic case. The flasher's
+# illustration is the bare board's front, so this uses our own front drawing (drawings/) and
+# places the back and side parts in mm. Every figure is measured from Elecrow's published STEP,
+# used for measurement only:
+# https://github.com/Elecrow-RD/CrowPanel-Advance-7-HMI-ESP32-S3-AI-Powered-IPS-Touch-Screen-800x480/tree/master/3D%20file
+# (advance-hmi7_0_asm-20260116.zip, sha256 5b33a71cca5d9f870a35f6f034efeaa063917f884737a9b5bef32b93547e0219;
+# the .stp inside, sha256 2f0e11657978e4a3b91dfa45df924cfb70548449a00c7882eddb7fe3e61a43a5).
+# The store lists 181.26 x 108.36 x 16 mm; the CAD's case is 178.9 x 108.4 x 15.7, used here.
+# The display area (156 x 87, from the store) sits higher on the glass than centered, as in
+# Elecrow's hardware overview photo; its vertical place is estimated from that photo.
+# Model frame: x from the center line, y up from the bottom, z out of the front with 0 the
+# middle of the body. The CAD looks at the back, so x = 88.43 - CAD x, y = CAD y + 2.22 and
+# z = 0.15 - CAD z.
+# Not built: the 1.7 mm seam around the sides where the board sits between the front frame and
+# the back shell (the generator can't cut a groove), and the depth of the openings, which are
+# drawn flush as dark panels.
+drawing = "drawings/crowpanel_7_0.svg"
 
 [size]
-width_mm = 181.26
-height_mm = 108.36
-depth_mm = 16.0
+width_mm = 178.9
+height_mm = 108.4
+depth_mm = 15.7
 scale_by = "width"
-covers = "whole display module (landscape)"
-source = "https://www.elecrow.com/crowpanel-advance-7-hmi-esp32-ai-display-800x480-ai-ips-touch-screen.html"
-confidence = "vendor"
-# Molded back shell with rounded edges; the front is flat glass with
-# corner screws close to the edge, so keep the front radius small.
-edge_radius_mm = 4.0
+covers = "case without the screw heads, which stand 1 to 1.3 mm off the front and back"
+source = "https://github.com/Elecrow-RD/CrowPanel-Advance-7-HMI-ESP32-S3-AI-Powered-IPS-Touch-Screen-800x480/tree/master/3D%20file"
+confidence = "cad"
+body_color = "#1b1b1d"
+# Laser-cut acrylic layers: square edges.
+edge_radius_mm = 0.5
 front_edge_radius_mm = 0.5
+
+[materials]
+body      = { color = "#1b1b1d", roughness = 0.3 }
+c_0c0c0e  = { color = "#0c0c0e", roughness = 0.1 }
+c_18191d  = { color = "#18191d", roughness = 0.1 }
+c_97621d  = { color = "#97621d", roughness = 0.5 }
+hole      = { color = "#070708", roughness = 0.8 }
+connector = { color = "#ecebe3", roughness = 0.5 }
+usb       = { color = "#a8a8a6", roughness = 0.35, metallic = 1.0 }
+brass     = { color = "#c9a24a", roughness = 0.3, metallic = 1.0 }
+button    = { color = "#c9c9c6", roughness = 0.5 }
+screw_back  = { color = "#2a2a2c", roughness = 0.4, metallic = 1.0 }
+screw_front = { color = "#d6d6d2", roughness = 0.35, metallic = 1.0 }
+
+# The notch on the right side for BOOT and RESET runs through the back shell down to the board,
+# 10.8 x 19.6 mm; only the front frame and board (7.7 mm) stay there.
+[[thin]]
+bbox = [168.08, 54.18, 180.0, 73.78]
+depth_mm = 7.7
+z_mm = 4.0
+
+# Back, as seen from the front (x is mirrored from the CAD, which looks at the back).
+# Connector openings along the top with the white JST housings showing in them.
+[[solid]]
+name = "UART0OutOpening"
+material = "hole"
+center_mm = [40.95, 100.1, -7.9]
+size_mm = [13.45, 7.17, 0.2]
+radius_mm = 0.5
+
+[[solid]]
+name = "UART0Out"
+material = "connector"
+center_mm = [41.0, 100.69, -7.95]
+size_mm = [12.0, 5.0, 0.3]
+radius_mm = 0.3
+
+[[solid]]
+name = "UART1OutOpening"
+material = "hole"
+center_mm = [16.1, 100.1, -7.9]
+size_mm = [13.45, 7.17, 0.2]
+radius_mm = 0.5
+
+[[solid]]
+name = "UART1Out"
+material = "connector"
+center_mm = [16.22, 100.69, -7.95]
+size_mm = [12.0, 5.0, 0.3]
+radius_mm = 0.3
+
+[[solid]]
+name = "I2COutOpening"
+material = "hole"
+center_mm = [-8.99, 100.1, -7.9]
+size_mm = [13.45, 7.17, 0.2]
+radius_mm = 0.5
+
+[[solid]]
+name = "I2COut"
+material = "connector"
+center_mm = [-9.08, 100.69, -7.95]
+size_mm = [12.0, 5.0, 0.3]
+radius_mm = 0.3
+
+[[solid]]
+name = "UART0InOpening"
+material = "hole"
+center_mm = [-65.99, 7.17, -7.9]
+size_mm = [16.0, 6.95, 0.2]
+radius_mm = 0.5
+
+[[solid]]
+name = "UART0In"
+material = "connector"
+center_mm = [-66.0, 7.91, -7.95]
+size_mm = [12.5, 4.23, 0.3]
+radius_mm = 0.3
+
+[[solid]]
+name = "SpeakerOpening"
+material = "hole"
+center_mm = [48.63, 11.89, -7.9]
+size_mm = [10.0, 7.45, 0.2]
+radius_mm = 0.5
+
+[[solid]]
+name = "Speaker"
+material = "connector"
+center_mm = [48.63, 11.89, -7.95]
+size_mm = [5.6, 4.45, 0.3]
+radius_mm = 0.3
+
+[[solid]]
+name = "FunctionSwitchOpening"
+material = "hole"
+center_mm = [-16.62, 11.49, -7.9]
+size_mm = [5.0, 5.0, 0.2]
+radius_mm = 0.3
+
+[[solid]]
+name = "FunctionSwitch"
+material = "connector"
+center_mm = [-16.62, 11.49, -7.95]
+size_mm = [2.0, 3.0, 0.3]
+radius_mm = 0.3
+
+# The wireless module's sliding cover: the finger recess below it and its two side gaps.
+[[solid]]
+name = "ModuleRecess"
+material = "hole"
+center_mm = [-58.04, 87.81, -7.9]
+size_mm = [19.5, 11.14, 0.2]
+radius_mm = 0.5
+
+[[solid]]
+name = "ModuleGapLeft"
+material = "hole"
+center_mm = [-48.79, 100.89, -7.9]
+size_mm = [1.0, 15.02, 0.2]
+
+[[solid]]
+name = "ModuleGapRight"
+material = "hole"
+center_mm = [-67.29, 100.89, -7.9]
+size_mm = [1.0, 15.02, 0.2]
+
+[[solid]]
+name = "BuzzerHole"
+material = "hole"
+center_mm = [-25.75, 101.85, -7.9]
+size_mm = [1.5, 1.5, 0.2]
+radius_mm = 0.75
+
+# Brass threaded inserts and the four corner screws.
+[[solid]]
+name = "Insert1"
+material = "brass"
+center_mm = [80.0, 17.25, -7.9]
+size_mm = [3.0, 3.0, 0.2]
+radius_mm = 1.5
+
+[[solid]]
+name = "Insert2"
+material = "brass"
+center_mm = [-80.05, 17.25, -7.9]
+size_mm = [3.0, 3.0, 0.2]
+radius_mm = 1.5
+
+[[solid]]
+name = "Insert3"
+material = "brass"
+center_mm = [-80.05, 91.2, -7.9]
+size_mm = [3.0, 3.0, 0.2]
+radius_mm = 1.5
+
+[[solid]]
+name = "Insert4"
+material = "brass"
+center_mm = [80.0, 91.2, -7.9]
+size_mm = [3.0, 3.0, 0.2]
+radius_mm = 1.5
+
+[[solid]]
+name = "BackScrew1"
+material = "screw_back"
+center_mm = [85.43, 5.22, -8.35]
+size_mm = [6.08, 6.08, 1.1]
+radius_mm = 3.04
+
+[[solid]]
+name = "BackScrew2"
+material = "screw_back"
+center_mm = [-85.43, 5.22, -8.35]
+size_mm = [6.08, 6.08, 1.1]
+radius_mm = 3.04
+
+[[solid]]
+name = "BackScrew3"
+material = "screw_back"
+center_mm = [85.43, 103.18, -8.35]
+size_mm = [6.08, 6.08, 1.1]
+radius_mm = 3.04
+
+[[solid]]
+name = "BackScrew4"
+material = "screw_back"
+center_mm = [-85.43, 103.18, -8.35]
+size_mm = [6.08, 6.08, 1.1]
+radius_mm = 3.04
+
+# Front: the rounded screw heads in the corners, 6 mm across at the face and 5 mm near the top.
+[[solid]]
+name = "FrontScrew1"
+material = "screw_front"
+center_mm = [85.43, 5.22, 8.1]
+size_mm = [6.0, 6.0, 0.6]
+radius_mm = 3.0
+
+[[solid]]
+name = "FrontScrew1Top"
+material = "screw_front"
+center_mm = [85.43, 5.22, 8.5]
+size_mm = [5.0, 5.0, 1.3]
+radius_mm = 2.5
+
+[[solid]]
+name = "FrontScrew2"
+material = "screw_front"
+center_mm = [-85.43, 5.22, 8.1]
+size_mm = [6.0, 6.0, 0.6]
+radius_mm = 3.0
+
+[[solid]]
+name = "FrontScrew2Top"
+material = "screw_front"
+center_mm = [-85.43, 5.22, 8.35]
+size_mm = [5.0, 5.0, 1.0]
+radius_mm = 2.5
+
+[[solid]]
+name = "FrontScrew3"
+material = "screw_front"
+center_mm = [85.43, 103.18, 8.1]
+size_mm = [6.0, 6.0, 0.6]
+radius_mm = 3.0
+
+[[solid]]
+name = "FrontScrew3Top"
+material = "screw_front"
+center_mm = [85.43, 103.18, 8.5]
+size_mm = [5.0, 5.0, 1.3]
+radius_mm = 2.5
+
+[[solid]]
+name = "FrontScrew4"
+material = "screw_front"
+center_mm = [-85.43, 103.18, 8.1]
+size_mm = [6.0, 6.0, 0.6]
+radius_mm = 3.0
+
+[[solid]]
+name = "FrontScrew4Top"
+material = "screw_front"
+center_mm = [-85.43, 103.18, 8.5]
+size_mm = [5.0, 5.0, 1.3]
+radius_mm = 2.5
+
+# Left side, as seen from the front: USB-C in its opening.
+[[solid]]
+name = "USBOpening"
+material = "hole"
+center_mm = [-89.5, 54.2, -2.85]
+size_mm = [0.2, 10.8, 6.0]
+radius_mm = 0.5
+
+[[solid]]
+name = "USBC"
+material = "usb"
+center_mm = [-89.55, 54.2, -1.46]
+size_mm = [0.3, 8.94, 3.21]
+radius_mm = 1.6
+
+# Right side: the opening beside the ESP32 module's antenna end (its role is inferred from
+# the board photo).
+[[solid]]
+name = "AntennaOpening"
+material = "hole"
+center_mm = [89.5, 76.5, -2.85]
+size_mm = [0.2, 20.6, 6.0]
+radius_mm = 0.5
+
+# BOOT and RESET in the notch on the right, at the board edge (heights from the board photo).
+[[solid]]
+name = "BootButton"
+material = "button"
+center_mm = [86.95, 44.52, -0.65]
+size_mm = [3.0, 3.0, 1.6]
+confidence = "estimated from photos"
+
+[[solid]]
+name = "ResetButton"
+material = "button"
+center_mm = [86.95, 38.72, -0.65]
+size_mm = [3.0, 3.0, 1.6]
+confidence = "estimated from photos"
+
+# Bottom: the microSD slot in its opening (opening 20.55 wide, slot 15.25, both from the CAD).
+[[solid]]
+name = "TFOpening"
+material = "hole"
+center_mm = [67.4, -0.05, -2.85]
+size_mm = [20.55, 0.2, 6.0]
+radius_mm = 0.5
+
+[[solid]]
+name = "TFSlot"
+material = "usb"
+center_mm = [67.0, -0.1, -0.95]
+size_mm = [15.25, 0.3, 2.2]
+radius_mm = 0.3
+

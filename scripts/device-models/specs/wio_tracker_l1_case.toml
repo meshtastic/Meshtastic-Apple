@@ -1,36 +1,406 @@
-# wio_tracker_l1_case: generated layout from the SVG; add [[part]] rules to refine.
-# 181 x 56 x 26 mm is the published L1 Pro (3D-printed case) figure (cnx-software, RobotShop); 181 mm only makes sense with the antenna. Drawing shows the antenna angled, so drawn aspect 0.48 is not 56/181. Case body height estimated by scaling the drawing to 56 mm width.
+# wio_tracker_l1_case: the Wio Tracker L1 Pro in Seeed's case. The flasher's illustration is a
+# true front view that matches the case CAD to about 0.2 mm, so it stays the drawing; the size,
+# depth, back and sides are measured from Seeed's L1 Pro enclosure CAD (V2, four-way joystick),
+# used for measurement only:
+# https://files.seeedstudio.com/wiki/SenseCAP/wio_tracker/L1pro%203D%20Enclosure.zip
+# (sha256 b011f41e4ef11eba9cac168916814d0332137adf5b3a873fe31c649dc58932c4; front shell
+# wio_tracker_l1_pro_qian-3d.stp db337a2d..., back shell wio_tracker_l1_pro_hou-3D.stp 0b8724f7...).
+# The case is 54 x 72 mm and 26.5 mm deep: a 23 mm body, the 2.5 mm pad on the back and the 1 mm
+# raised display bezel and button rings on the front. Seeed's 181 x 56 x 26 mm includes the antenna
+# and the side bezel and caps. Model frame: x from the center line as seen from the front, y up from
+# the bottom, z out of the front with 0 the middle of the body; the CAD's x, 29 - z and y + 2.5 give
+# these.
 
 [size]
-# Fit the case; the published 181 mm includes the antenna, which is drawn folded out to the side.
-covers = "case only; height from the drawing at the published 56 mm width"
-height_mm = 74.8
-fit_bbox = [561, 519, 865, 925]
-width_mm = 56.0
-depth_mm = 26.0
+width_mm = 54.0
+height_mm = 72.0
+depth_mm = 23.0
 scale_by = "width"
-# Printed case with softly rounded edges; the face has a rim, so keep the front small.
+# The case outline; the antenna above it and the side bezel left of it are built separately.
+fit_bbox = [561.14, 519.33, 864.86, 925.0]
+covers = "case: 54 x 72 x 23 mm body plus the 2.5 mm back pad, with the antenna folded as drawn"
+# The back edge is a 4-5 mm chamfer down to the pad; the front edge a 1.5 mm round.
 edge_radius_mm = 4.0
-front_edge_radius_mm = 1.0
-source = "https://www.cnx-software.com/2025/05/31/wio-tracker-l1-pro-is-a-battery-powered-ready-to-use-meshtastic-lora-node/"
-confidence = "retailer"
+front_edge_radius_mm = 1.5
+source = "https://files.seeedstudio.com/wiki/SenseCAP/wio_tracker/L1pro%203D%20Enclosure.zip"
+confidence = "cad"
 
-# SMA connector and hinge knuckle, straight up from the case top.
+[materials]
+# Matte black PC+ABS; the drawing's grays are lighter than the real case.
+c_3b3b3d = { color = "#28282a", roughness = 0.7 }
+c_595859 = { color = "#333335", roughness = 0.7 }
+c_4c4b4f = { color = "#38383a", roughness = 0.7 }
+rubber   = { color = "#353535", roughness = 0.80 }
+brass    = { color = "#e0b77b", roughness = 0.30, metallic = 1.0 }
+cap      = { color = "#f4b27a", roughness = 0.6 }
+port     = { color = "#1d1d1f", roughness = 0.6 }
+hole     = { color = "#0e0e10", roughness = 0.9 }
+groove   = { color = "#1a1a1c", roughness = 0.8 }
+
+# The side caps are built by measurement below, so the drawing's slivers of them are left out.
+[[part]]
+class = "cls-3"
+role = "skip"
+
+# Rubber whip, folded out at the hinge.
+[[antenna]]
+name = "AntennaWhip"
+start = [816.5, 412.4]
+end = [435, 38]
+dome = true
+material = "rubber"
+
+# SMA connector on the case top (CAD: x 15.0, centered in depth, in a 12.6 mm collar): base and
+# brass ring (fixed radius; the probe misses them), then nut and ferrule.
 [[antenna]]
 name = "AntennaBase"
-start = [800, 548]
-end = [800, 388]
-max_width = 60   # skip the wide flange where it meets the case
+start = [799.2, 547.6]
+end = [799.2, 541.9]
+radius_mm = 6.2
+dome = false
 
-# Rubber whip, folded down at an angle from the hinge.
 [[antenna]]
-name = "Antenna"
-start = [800, 390]
-end = [450, 46]
+name = "AntennaBrass"
+start = [799.2, 541.9]
+end = [799.2, 531.6]
+radius_mm = 5.0
+dome = false
+material = "brass"
 
-# Side button strip on the left edge; keep it short instead of full case depth.
+[[antenna]]
+name = "AntennaConnector"
+start = [799.2, 531.6]
+end = [799.2, 419]
+dome = false
+
+# Hinge knuckle between connector and whip, as a rounded cap.
+[[antenna]]
+name = "AntennaHinge"
+start = [799.2, 419]
+end = [799.2, 396]
+radius_mm = 4.6
+dome = true
+material = "rubber"
+
+# Left side: the raised bezel around the two caps, 1 mm proud, y 30-50.6 and z 2.1-9.5.
 [[thin]]
-name = "SideButton"
-bbox = [554, 635, 562, 758]
-depth_mm = 8.0
-edge_radius_mm = 1.0
+name = "SideBezel"
+bbox = [554, 637.0, 561.2, 755.8]
+depth_mm = 7.4
+z_mm = 5.8
+edge_radius_mm = 0.5
+
+# The caps in it: the switch cap in the 7 x 5 opening and the button cap in the 5 x 5 one above
+# it. How far they stand out is estimated from Seeed's photos (gallery image 5).
+[[solid]]
+name = "SwitchCap"
+material = "cap"
+center_mm = [-28.0, 35.0, 5.84]
+size_mm = [1.2, 6.4, 4.4]
+radius_mm = 0.6
+
+[[solid]]
+name = "ButtonCap"
+material = "cap"
+center_mm = [-28.0, 44.9, 5.84]
+size_mm = [1.2, 4.4, 4.4]
+radius_mm = 0.6
+
+# Left side, below the bezel: USB-C (the case opening is 9.5 x 3.8) and three 2 mm holes for the
+# light pipes and the charge LED.
+[[solid]]
+name = "USBC"
+material = "port"
+center_mm = [-27.05, 21.2, 5.83]
+size_mm = [0.4, 8.9, 3.2]
+radius_mm = 1.6
+
+[[solid]]
+name = "SideHole1"
+material = "hole"
+center_mm = [-27.05, 29.0, 4.8]
+size_mm = [0.3, 2.0, 2.0]
+radius_mm = 1.0
+
+[[solid]]
+name = "SideHole2"
+material = "hole"
+center_mm = [-27.05, 13.5, 4.8]
+size_mm = [0.3, 2.0, 2.0]
+radius_mm = 1.0
+
+[[solid]]
+name = "SideHole3"
+material = "hole"
+center_mm = [-27.05, 10.0, 4.8]
+size_mm = [0.3, 2.0, 2.0]
+radius_mm = 1.0
+
+# Right side: eight grip grooves, 2 mm wide and 0.5 mm deep across most of the depth. The generator
+# can't cut grooves, so they are drawn as dark strips on the surface.
+[[solid]]
+name = "Groove1"
+material = "groove"
+center_mm = [27.0, 8.0, -1.0]
+size_mm = [0.2, 2.0, 13.5]
+
+[[solid]]
+name = "Groove2"
+material = "groove"
+center_mm = [27.0, 13.0, -1.0]
+size_mm = [0.2, 2.0, 13.5]
+
+[[solid]]
+name = "Groove3"
+material = "groove"
+center_mm = [27.0, 18.0, -1.0]
+size_mm = [0.2, 2.0, 13.5]
+
+[[solid]]
+name = "Groove4"
+material = "groove"
+center_mm = [27.0, 23.0, -1.0]
+size_mm = [0.2, 2.0, 13.5]
+
+[[solid]]
+name = "Groove5"
+material = "groove"
+center_mm = [27.0, 43.0, -1.0]
+size_mm = [0.2, 2.0, 13.5]
+
+[[solid]]
+name = "Groove6"
+material = "groove"
+center_mm = [27.0, 48.0, -1.0]
+size_mm = [0.2, 2.0, 13.5]
+
+[[solid]]
+name = "Groove7"
+material = "groove"
+center_mm = [27.0, 53.0, -1.0]
+size_mm = [0.2, 2.0, 13.5]
+
+[[solid]]
+name = "Groove8"
+material = "groove"
+center_mm = [27.0, 58.0, -1.0]
+size_mm = [0.2, 2.0, 13.5]
+
+# Back: the raised pad, 40 x 60 mm with 1.5 mm corners, and the buzzer grille of 30 holes,
+# 1.5 mm across on a 3 mm grid, near its right edge as seen from the front.
+[[solid]]
+name = "BackPad"
+material = "c_3b3b3d"
+center_mm = [-0.5, 33.5, -12.6]
+size_mm = [40.0, 60.0, 2.8]
+radius_mm = 1.5
+
+[[solid]]
+name = "Grille1"
+material = "hole"
+center_mm = [10.0, 10.5, -14.05]
+size_mm = [1.5, 1.5, 0.3]
+radius_mm = 0.75
+
+[[solid]]
+name = "Grille2"
+material = "hole"
+center_mm = [13.0, 10.5, -14.05]
+size_mm = [1.5, 1.5, 0.3]
+radius_mm = 0.75
+
+[[solid]]
+name = "Grille3"
+material = "hole"
+center_mm = [16.0, 10.5, -14.05]
+size_mm = [1.5, 1.5, 0.3]
+radius_mm = 0.75
+
+[[solid]]
+name = "Grille4"
+material = "hole"
+center_mm = [10.0, 13.5, -14.05]
+size_mm = [1.5, 1.5, 0.3]
+radius_mm = 0.75
+
+[[solid]]
+name = "Grille5"
+material = "hole"
+center_mm = [13.0, 13.5, -14.05]
+size_mm = [1.5, 1.5, 0.3]
+radius_mm = 0.75
+
+[[solid]]
+name = "Grille6"
+material = "hole"
+center_mm = [16.0, 13.5, -14.05]
+size_mm = [1.5, 1.5, 0.3]
+radius_mm = 0.75
+
+[[solid]]
+name = "Grille7"
+material = "hole"
+center_mm = [10.0, 16.5, -14.05]
+size_mm = [1.5, 1.5, 0.3]
+radius_mm = 0.75
+
+[[solid]]
+name = "Grille8"
+material = "hole"
+center_mm = [13.0, 16.5, -14.05]
+size_mm = [1.5, 1.5, 0.3]
+radius_mm = 0.75
+
+[[solid]]
+name = "Grille9"
+material = "hole"
+center_mm = [16.0, 16.5, -14.05]
+size_mm = [1.5, 1.5, 0.3]
+radius_mm = 0.75
+
+[[solid]]
+name = "Grille10"
+material = "hole"
+center_mm = [10.0, 19.5, -14.05]
+size_mm = [1.5, 1.5, 0.3]
+radius_mm = 0.75
+
+[[solid]]
+name = "Grille11"
+material = "hole"
+center_mm = [13.0, 19.5, -14.05]
+size_mm = [1.5, 1.5, 0.3]
+radius_mm = 0.75
+
+[[solid]]
+name = "Grille12"
+material = "hole"
+center_mm = [16.0, 19.5, -14.05]
+size_mm = [1.5, 1.5, 0.3]
+radius_mm = 0.75
+
+[[solid]]
+name = "Grille13"
+material = "hole"
+center_mm = [10.0, 22.5, -14.05]
+size_mm = [1.5, 1.5, 0.3]
+radius_mm = 0.75
+
+[[solid]]
+name = "Grille14"
+material = "hole"
+center_mm = [13.0, 22.5, -14.05]
+size_mm = [1.5, 1.5, 0.3]
+radius_mm = 0.75
+
+[[solid]]
+name = "Grille15"
+material = "hole"
+center_mm = [16.0, 22.5, -14.05]
+size_mm = [1.5, 1.5, 0.3]
+radius_mm = 0.75
+
+[[solid]]
+name = "Grille16"
+material = "hole"
+center_mm = [10.0, 25.5, -14.05]
+size_mm = [1.5, 1.5, 0.3]
+radius_mm = 0.75
+
+[[solid]]
+name = "Grille17"
+material = "hole"
+center_mm = [13.0, 25.5, -14.05]
+size_mm = [1.5, 1.5, 0.3]
+radius_mm = 0.75
+
+[[solid]]
+name = "Grille18"
+material = "hole"
+center_mm = [16.0, 25.5, -14.05]
+size_mm = [1.5, 1.5, 0.3]
+radius_mm = 0.75
+
+[[solid]]
+name = "Grille19"
+material = "hole"
+center_mm = [10.0, 28.5, -14.05]
+size_mm = [1.5, 1.5, 0.3]
+radius_mm = 0.75
+
+[[solid]]
+name = "Grille20"
+material = "hole"
+center_mm = [13.0, 28.5, -14.05]
+size_mm = [1.5, 1.5, 0.3]
+radius_mm = 0.75
+
+[[solid]]
+name = "Grille21"
+material = "hole"
+center_mm = [16.0, 28.5, -14.05]
+size_mm = [1.5, 1.5, 0.3]
+radius_mm = 0.75
+
+[[solid]]
+name = "Grille22"
+material = "hole"
+center_mm = [10.0, 31.5, -14.05]
+size_mm = [1.5, 1.5, 0.3]
+radius_mm = 0.75
+
+[[solid]]
+name = "Grille23"
+material = "hole"
+center_mm = [13.0, 31.5, -14.05]
+size_mm = [1.5, 1.5, 0.3]
+radius_mm = 0.75
+
+[[solid]]
+name = "Grille24"
+material = "hole"
+center_mm = [16.0, 31.5, -14.05]
+size_mm = [1.5, 1.5, 0.3]
+radius_mm = 0.75
+
+[[solid]]
+name = "Grille25"
+material = "hole"
+center_mm = [10.0, 34.5, -14.05]
+size_mm = [1.5, 1.5, 0.3]
+radius_mm = 0.75
+
+[[solid]]
+name = "Grille26"
+material = "hole"
+center_mm = [13.0, 34.5, -14.05]
+size_mm = [1.5, 1.5, 0.3]
+radius_mm = 0.75
+
+[[solid]]
+name = "Grille27"
+material = "hole"
+center_mm = [16.0, 34.5, -14.05]
+size_mm = [1.5, 1.5, 0.3]
+radius_mm = 0.75
+
+[[solid]]
+name = "Grille28"
+material = "hole"
+center_mm = [10.0, 37.5, -14.05]
+size_mm = [1.5, 1.5, 0.3]
+radius_mm = 0.75
+
+[[solid]]
+name = "Grille29"
+material = "hole"
+center_mm = [13.0, 37.5, -14.05]
+size_mm = [1.5, 1.5, 0.3]
+radius_mm = 0.75
+
+[[solid]]
+name = "Grille30"
+material = "hole"
+center_mm = [16.0, 37.5, -14.05]
+size_mm = [1.5, 1.5, 0.3]
+radius_mm = 0.75

@@ -1,38 +1,228 @@
-# rak2560: generated layout from the SVG; add [[part]] rules to refine.
-# RAK2560 WisNode Sensor Hub datasheet: 120 x 80 x 39 mm; body-dimension image shows 80 mm wide x 120 mm tall excluding glands. Drawn aspect 0.53 includes the two glands below (~15-20 mm). Large corner radius visible (~12 mm, not dimensioned).
+# rak2560: the RAK WisMesh Repeater (RAK10721), built in the RAK2560 Sensor Hub enclosure;
+# DeviceHardware.json maps rak2560 to it. The flasher's illustration draws the case in RAK blue
+# with sensor cables plugged into both ports, so this uses our own front drawing (drawings/) in
+# the repeater's two grays, with the ports capped and the antenna on top.
+# Size from the hub datasheet: 120 x 80 x 39 mm, and the body-dimension figure (80 x 120 mm front):
+# https://docs.rakwireless.com/product-categories/wisnode/rak2560/hub-datasheet/
+# https://images.docs.rakwireless.com/wisnode/rak2560/hub-datasheet/body-dimensions.png
+# The ports, antenna and back are estimated from RAK's photos:
+# https://cdn.shopify.com/s/files/1/0177/8784/6756/files/WisMesh_Meshtastic-repeater.png
+# https://cdn.shopify.com/s/files/1/0177/8784/6756/files/WisMesh_Meshtastic-repeater-mounted.png
+# https://cdn.shopify.com/s/files/1/0177/8784/6756/files/SensorHub_01.png (front) and SensorHub_04.png (back)
+# Model frame: x from the center line, y up from the bottom, z out of the front with 0 the middle
+# of the body (front at +19.5, back at -19.5).
+drawing = "drawings/rak2560.svg"
 
 [size]
-# The drawing adds the cable glands below the published body.
-appendage = "bottom"
 width_mm = 80.0
 height_mm = 120.0
 depth_mm = 39.0
 scale_by = "width"
-covers = "enclosure body only, excludes the two bottom sensor-port glands"
+appendage = "none"
+covers = "enclosure; the ports and antenna are built outside it"
 source = "https://docs.rakwireless.com/product-categories/wisnode/rak2560/hub-datasheet/"
 confidence = "vendor"
-# Molded case with soft, well-rounded sides.
-edge_radius_mm = 8.0
+# Rounded all round, a little more at the back (photos).
+edge_radius_mm = 4.0
 front_edge_radius_mm = 3.0
 
-# The two sensor-port connectors under the case are round.
-[[antenna]]
-name = "SensorPortLeft"
-start = [374.5, 581.5]
-end = [374.5, 670]
-dome = false
+[materials]
+case   = { color = "#c4c5c7", roughness = 0.6 }
+door   = { color = "#b4b5b8", roughness = 0.6 }
+screw  = { color = "#9a9b9e", roughness = 0.35, metallic = 1.0 }
+port   = { color = "#1a1a1a", roughness = 0.6 }
+blue   = { color = "#1a4fa3", roughness = 0.45 }
+rubber = { color = "#1f2022", roughness = 0.8 }
 
-[[antenna]]
-name = "SensorPortRight"
-start = [451.5, 581.5]
-end = [451.5, 670]
-dome = false
+# Two sensor-port connectors under the case, 11.2 mm either side of the center (figure). Each is
+# a black panel nut, about 15 mm across and 7 mm deep, with a blue cap, about 13 mm across and
+# 8 mm, and a small stub (photos). Their front-to-back position isn't shown straight on in any
+# photo, so they sit at the middle of the depth. The caps' tether loops are left out.
+[[lathe]]
+name = "PortLeftNut"
+material = "port"
+axis_x = 28.8
+y_top = 120
+y_bottom = 127
+radius = 7.5
+confidence = "estimated from photos"
 
-# Short necks join each port to the case; the port width probe misses this strip.
-[[thin]]
-bbox = [357, 574, 392, 582.5]
-depth_mm = 10
+[[lathe]]
+name = "PortLeftCap"
+material = "blue"
+axis_x = 28.8
+y_top = 127
+y_bottom = 135
+radius = 6.5
+confidence = "estimated from photos"
 
-[[thin]]
-bbox = [434, 574, 469, 582.5]
-depth_mm = 10
+[[lathe]]
+name = "PortLeftStub"
+material = "blue"
+axis_x = 28.8
+y_top = 135
+y_bottom = 137
+radius = 2.0
+confidence = "estimated from photos"
+
+[[lathe]]
+name = "PortRightNut"
+material = "port"
+axis_x = 51.2
+y_top = 120
+y_bottom = 127
+radius = 7.5
+confidence = "estimated from photos"
+
+[[lathe]]
+name = "PortRightCap"
+material = "blue"
+axis_x = 51.2
+y_top = 127
+y_bottom = 135
+radius = 6.5
+confidence = "estimated from photos"
+
+[[lathe]]
+name = "PortRightStub"
+material = "blue"
+axis_x = 51.2
+y_top = 135
+y_bottom = 137
+radius = 2.0
+confidence = "estimated from photos"
+
+# The antenna on the top face, measured on the straight-on mounted photo (5.3 px/mm on the 80 mm
+# case, 2048 px image): 23.8 mm from the left edge, 154 mm tall. From the case up: a nut 9.8 mm
+# across, the base 11.3 mm across to 31 mm, a taper to 50 mm, a 4 mm section to 78 mm, the 2.5 mm
+# whip and a 4 mm tip. The isometric product photo looks closer to the middle, so the position
+# is less certain than the length; the depth position isn't shown and it sits at mid-depth.
+[[lathe]]
+name = "AntennaNut"
+material = "rubber"
+axis_x = 23.8
+y_bottom = 0
+y_top = -7.7
+radius = 4.9
+confidence = "estimated from photos"
+
+[[lathe]]
+name = "AntennaBase"
+material = "rubber"
+axis_x = 23.8
+y_bottom = -7.7
+y_top = -31.3
+radius = 5.65
+confidence = "estimated from photos"
+
+[[lathe]]
+name = "AntennaTaper"
+material = "rubber"
+axis_x = 23.8
+y_bottom = -31.3
+y_top = -50.2
+radius = 3.6
+confidence = "estimated from photos"
+
+[[lathe]]
+name = "AntennaLower"
+material = "rubber"
+axis_x = 23.8
+y_bottom = -50.2
+y_top = -78.5
+radius = 2.0
+confidence = "estimated from photos"
+
+[[lathe]]
+name = "AntennaWhip"
+material = "rubber"
+axis_x = 23.8
+y_bottom = -78.5
+y_top = -149.2
+radius = 1.3
+confidence = "estimated from photos"
+
+[[lathe]]
+name = "AntennaTip"
+material = "rubber"
+axis_x = 23.8
+y_bottom = -149.2
+y_top = -154.0
+radius = 2.0
+dome = true
+confidence = "estimated from photos"
+
+# Back: the battery door, about 66 x 94 mm, held by four screws, and four more screws near the
+# corners of the back (SensorHub_04.png, about 4.5 px/mm at the back face). The door is recessed
+# in a rim on the real case; here it is a thin plate.
+[[solid]]
+name = "BatteryDoor"
+material = "door"
+center_mm = [0, 60.0, -19.65]
+size_mm = [66.0, 94.0, 0.3]
+radius_mm = 3.0
+confidence = "estimated from photos"
+
+[[solid]]
+name = "DoorScrew1"
+material = "screw"
+center_mm = [-29.5, 101, -19.95]
+size_mm = [3.5, 3.5, 0.3]
+radius_mm = 1.75
+confidence = "estimated from photos"
+
+[[solid]]
+name = "DoorScrew2"
+material = "screw"
+center_mm = [29.5, 101, -19.95]
+size_mm = [3.5, 3.5, 0.3]
+radius_mm = 1.75
+confidence = "estimated from photos"
+
+[[solid]]
+name = "DoorScrew3"
+material = "screw"
+center_mm = [-29.5, 19, -19.95]
+size_mm = [3.5, 3.5, 0.3]
+radius_mm = 1.75
+confidence = "estimated from photos"
+
+[[solid]]
+name = "DoorScrew4"
+material = "screw"
+center_mm = [29.5, 19, -19.95]
+size_mm = [3.5, 3.5, 0.3]
+radius_mm = 1.75
+confidence = "estimated from photos"
+
+[[solid]]
+name = "CaseScrew1"
+material = "screw"
+center_mm = [-32.5, 113.5, -19.65]
+size_mm = [3.5, 3.5, 0.3]
+radius_mm = 1.75
+confidence = "estimated from photos"
+
+[[solid]]
+name = "CaseScrew2"
+material = "screw"
+center_mm = [32.5, 113.5, -19.65]
+size_mm = [3.5, 3.5, 0.3]
+radius_mm = 1.75
+confidence = "estimated from photos"
+
+[[solid]]
+name = "CaseScrew3"
+material = "screw"
+center_mm = [-32.5, 6.5, -19.65]
+size_mm = [3.5, 3.5, 0.3]
+radius_mm = 1.75
+confidence = "estimated from photos"
+
+[[solid]]
+name = "CaseScrew4"
+material = "screw"
+center_mm = [32.5, 6.5, -19.65]
+size_mm = [3.5, 3.5, 0.3]
+radius_mm = 1.75
+confidence = "estimated from photos"
