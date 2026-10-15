@@ -335,7 +335,7 @@ struct SpatialMapOrnament: View {
 			}
 
 			Button(action: onEnterShowcase) {
-				Image(systemName: "door.left.hand.open")
+				Image(systemName: "storefront")
 			}
 			.help(String(localized: "Enter Showcase", comment: "Spatial map: open the showcase immersive space, closing this volume"))
 			.accessibilityLabel(String(localized: "Enter Showcase", comment: "Spatial map: open the showcase immersive space, closing this volume"))
