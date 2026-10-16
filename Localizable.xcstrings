@@ -77020,6 +77020,18 @@
         }
       }
     },
+    "meshtastic.Config.LoRaConfig.coding_rate.description" : {
+      "comment" : "description of meshtastic.Config.LoRaConfig.coding_rate",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Error-correction redundancy, as the denominator of 4/n. Higher values survive noisier links but make every packet longer."
+          }
+        }
+      }
+    },
     "meshtastic.Config.LoRaConfig.coding_rate.label" : {
       "comment" : "label of meshtastic.Config.LoRaConfig.coding_rate",
       "extractionState" : "extracted_with_value",

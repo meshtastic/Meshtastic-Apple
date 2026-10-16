@@ -934,6 +934,9 @@ public struct ModuleConfig: Sendable {
 
       /// only text (channel & DM)
       case logtext // = 10
+
+      /// Modbus-RTU master, polls an RS485 sensor and sends telemetry
+      case modbus // = 11
       case UNRECOGNIZED(Int)
 
       public init() {
@@ -953,6 +956,7 @@ public struct ModuleConfig: Sendable {
         case 8: self = .msConfig
         case 9: self = .log
         case 10: self = .logtext
+        case 11: self = .modbus
         default: self = .UNRECOGNIZED(rawValue)
         }
       }
@@ -970,6 +974,7 @@ public struct ModuleConfig: Sendable {
         case .msConfig: return 8
         case .log: return 9
         case .logtext: return 10
+        case .modbus: return 11
         case .UNRECOGNIZED(let i): return i
         }
       }
@@ -987,6 +992,7 @@ public struct ModuleConfig: Sendable {
         .msConfig,
         .log,
         .logtext,
+        .modbus,
       ]
 
     }
@@ -2501,7 +2507,7 @@ extension ModuleConfig.SerialConfig.Serial_Baud: SwiftProtobuf._ProtoNameProvidi
 }
 
 extension ModuleConfig.SerialConfig.Serial_Mode: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0DEFAULT\0\u{1}SIMPLE\0\u{1}PROTO\0\u{1}TEXTMSG\0\u{1}NMEA\0\u{1}CALTOPO\0\u{1}WS85\0\u{1}VE_DIRECT\0\u{1}MS_CONFIG\0\u{1}LOG\0\u{1}LOGTEXT\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0DEFAULT\0\u{1}SIMPLE\0\u{1}PROTO\0\u{1}TEXTMSG\0\u{1}NMEA\0\u{1}CALTOPO\0\u{1}WS85\0\u{1}VE_DIRECT\0\u{1}MS_CONFIG\0\u{1}LOG\0\u{1}LOGTEXT\0\u{1}MODBUS\0")
 }
 
 extension ModuleConfig.ExternalNotificationConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
