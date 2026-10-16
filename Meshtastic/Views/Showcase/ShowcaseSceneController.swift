@@ -242,7 +242,8 @@ final class ShowcaseSceneController {
 		switch slot {
 		case .rack(let index):
 			guard index / layout.grid.perPage == page else { return nil }
-			return pose.position + pose.forward * 0.3
+			// Well clear of the rack, toward the viewer, so the big card isn't lost against the wall.
+			return pose.position + pose.forward * 0.6
 		}
 	}
 
