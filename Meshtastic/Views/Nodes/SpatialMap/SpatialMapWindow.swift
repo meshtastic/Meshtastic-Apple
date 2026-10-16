@@ -257,13 +257,17 @@ struct SpatialMapOrnament: View {
 			} label: {
 				Image(systemName: "map")
 			}
+			.help(String(localized: "Map layer", comment: "VoiceOver label for the spatial map layer menu"))
 			.accessibilityLabel(String(localized: "Map layer", comment: "VoiceOver label for the spatial map layer menu"))
 
 			Toggle(isOn: $showLabels) { Image(systemName: "tag") }
+				.help(String(localized: "Node labels", comment: "VoiceOver label for the spatial map labels toggle"))
 				.accessibilityLabel(String(localized: "Node labels", comment: "VoiceOver label for the spatial map labels toggle"))
 			Toggle(isOn: $showLinks) { Image(systemName: "link") }
+				.help(String(localized: "Direct Links", comment: "Map settings toggle that draws lines between nodes that hear each other directly."))
 				.accessibilityLabel(String(localized: "Direct Links", comment: "Map settings toggle that draws lines between nodes that hear each other directly."))
 			Toggle(isOn: $showTraffic) { Image(systemName: "dot.radiowaves.left.and.right") }
+				.help(String(localized: "Live traffic", comment: "VoiceOver label for the spatial map traffic toggle"))
 				.accessibilityLabel(String(localized: "Live traffic", comment: "VoiceOver label for the spatial map traffic toggle"))
 
 			traceRoutes
@@ -276,6 +280,7 @@ struct SpatialMapOrnament: View {
 				Image(systemName: "minus.magnifyingglass")
 			}
 			.disabled(model.zoom <= 1.01)
+			.help(String(localized: "Zoom out", comment: "Spatial map: show a wider area on the table"))
 			.accessibilityLabel(String(localized: "Zoom out", comment: "Spatial map: show a wider area on the table"))
 			Button {
 				model.setZoom(model.clampedZoom(model.zoom * 2))
@@ -283,6 +288,7 @@ struct SpatialMapOrnament: View {
 				Image(systemName: "plus.magnifyingglass")
 			}
 			.disabled(model.clampedZoom(model.zoom * 2) <= model.zoom + 0.01)
+			.help(String(localized: "Zoom in", comment: "Spatial map: show a smaller area on the table in more detail"))
 			.accessibilityLabel(String(localized: "Zoom in", comment: "Spatial map: show a smaller area on the table in more detail"))
 			if model.zoom > 1.01 {
 				Button {
@@ -394,6 +400,7 @@ struct SpatialMapOrnament: View {
 				} label: {
 					Image(systemName: "xmark.circle")
 				}
+				.help(String(localized: "Cancel terrain download", comment: "VoiceOver label to stop the spatial map terrain download"))
 				.accessibilityLabel(String(localized: "Cancel terrain download", comment: "VoiceOver label to stop the spatial map terrain download"))
 			}
 			.accessibilityElement(children: .contain)
@@ -407,6 +414,7 @@ struct SpatialMapOrnament: View {
 					} label: {
 						Image(systemName: "arrow.clockwise")
 					}
+					.help(String(localized: "Retry terrain download", comment: "VoiceOver label to retry the spatial map terrain download after it failed"))
 					.accessibilityLabel(String(localized: "Retry terrain download", comment: "VoiceOver label to retry the spatial map terrain download after it failed"))
 				} else if !autoTerrain || model.autoDownloadGaveUp(on: target) {
 					Button {
@@ -415,6 +423,7 @@ struct SpatialMapOrnament: View {
 						Label(String(localized: "Download Terrain", comment: "Spatial map: button that downloads elevation data so the volume shows relief"), systemImage: "arrow.down.circle")
 							.labelStyle(.titleAndIcon)
 					}
+					.help(String(localized: "Downloads elevation data so the map shows hills and valleys.", comment: "VoiceOver hint for the spatial map terrain download button"))
 					.accessibilityHint(String(localized: "Downloads elevation data so the map shows hills and valleys.", comment: "VoiceOver hint for the spatial map terrain download button"))
 					.confirmationDialog(
 						String(localized: "Download terrain for this area?", comment: "Spatial map: title of the terrain download confirmation"),
