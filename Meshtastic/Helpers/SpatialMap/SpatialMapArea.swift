@@ -46,4 +46,23 @@ enum SpatialMapArea {
 		}
 		return nil
 	}
+
+	/// The nodes the map shows: when some are too far from the connected radio, those are left
+	/// out, except `pinned` ones. With no connected radio every node stays.
+	static func fit(_ nodes: [SpatialNodeSnapshot], pinned: Set<Int64> = []) -> (nodes: [SpatialNodeSnapshot], outsideCount: Int) {
+		let anchor = nodes.first { $0.isConnectedRadio }?.coordinate
+		guard select(nodes.map(\.coordinate), anchor: anchor).outsideCount > 0, let anchor else { return (nodes, 0) }
+		let frame = SpatialFrame(bounds: GeoBounds(minLon: anchor.longitude, minLat: anchor.latitude, maxLon: anchor.longitude, maxLat: anchor.latitude))
+		let kept = nodes.filter { node in
+			if pinned.contains(node.id) { return true }
+			let p = frame.localPosition(node.coordinate, altitude: 0)
+			return Double((p.x * p.x + p.z * p.z).squareRoot()) <= maxRadiusMeters
+		}
+		return (kept, nodes.count - kept.count)
+	}
+
+	/// The circle around the whole mesh, before any zoom: what terrain downloads cover.
+	static func meshCircle(_ nodes: [SpatialNodeSnapshot]) -> SpatialCircle? {
+		SpatialCircle.around(fit(nodes).nodes.map(\.coordinate))
+	}
 }

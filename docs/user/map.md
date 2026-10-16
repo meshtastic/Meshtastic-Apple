@@ -71,6 +71,10 @@ On the 3D spatial map, the **link** button in the toolbar draws the same direct 
 
 A dedicated section of the sheet for working without a connection: a link opens the list of downloaded map regions to manage them or download new ones, and the **Offline Tiles** toggle overlays a downloaded region on the base map so it keeps rendering with no internet connection.
 
+### Terrain for the spatial map (Apple Vision Pro)
+
+The 3D spatial map needs elevation data to show hills and valleys. With **Download Terrain Automatically** on (in the spatial map's map menu, on by default), the app keeps one terrain-only region of its own, named **Spatial Map terrain** in the offline map list, and grows it as the mesh grows. This happens while the app is open on Vision Pro, not only while the spatial map is: the app checks the mesh's area shortly after launch, after each new connection, and every five minutes while a radio is connected. The area is the one the spatial map would show, around your connected radio, with the map filters left off. Your own offline map regions are never changed. A failed download is retried later, and a cancelled one is not retried for that area. Turn the setting off to stop automatic downloads; **Download Terrain** in the spatial map's toolbar still downloads on request.
+
 ### Map Overlays
 
 Custom GeoJSON overlays you've uploaded are listed here, each with its own toggle and file details (format, feature count, size, upload date). Swipe a file left to delete it, or tap **Upload Map Data** to add another. The section's master toggle turns uploaded overlays on the map on or off as a group.

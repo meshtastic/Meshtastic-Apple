@@ -305,6 +305,12 @@ struct MeshtasticAppleApp: App {
 			// backgrounding the demo must not touch (or force-unwrap) SwiftData.
 			guard Self.shouldInitializeAppServices, let persistenceController else { return }
 			accessoryManager.isInBackground = (newScenePhase == .background)
+			#if os(visionOS)
+			// Grows the Spatial Map's terrain with the mesh while the app is open.
+			SpatialTerrainKeeper.shared.setAppActive(newScenePhase == .active) { [appState] in
+				appState.isDatabaseResetting ? nil : persistenceController.container
+			}
+			#endif
 			switch newScenePhase {
 			case .background:
 				Logger.services.info("🎬 [App] Scene is in the background")

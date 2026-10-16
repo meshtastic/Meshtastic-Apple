@@ -100,10 +100,14 @@ struct SpatialMapWindow: View {
 			}
 		}
 		.onAppear {
+			SpatialTerrainKeeper.shared.volumeAppeared()
 			claimFocus()
 			if !Self.mainWindowIsOpen {
 				dismissWindow(id: SpatialMapScene.id)
 			}
+		}
+		.onDisappear {
+			SpatialTerrainKeeper.shared.volumeDisappeared()
 		}
 		.onReceive(NotificationCenter.default.publisher(for: UIScene.didDisconnectNotification)) { _ in
 			if !Self.mainWindowIsOpen {

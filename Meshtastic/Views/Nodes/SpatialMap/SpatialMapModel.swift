@@ -104,19 +104,15 @@ final class SpatialMapModel {
 	private var coverageUnreadable: Set<UUID> = []
 	private var coverageKey: String?
 	private var coverageTask: Task<Void, Never>?
-	private(set) var isDownloadingTerrain = false
+	/// The download and its retry rules live in the keeper, shared with the app's own check.
+	private let keeper = SpatialTerrainKeeper.shared
+	var isDownloadingTerrain: Bool { keeper.isDownloading }
 	/// Alert text for a failed download the user started.
 	var terrainDownloadError: String?
 	/// Caption for a failed automatic download, shown in the ornament with a retry button.
-	private(set) var terrainDownloadNote: String?
+	var terrainDownloadNote: String? { keeper.note }
 	/// Keep the box covered by terrain without asking. Set from the window's setting.
 	var autoDownloadTerrain = true
-	private var terrainDownloadCancelled = false
-	private var terrainDownloadAutomatic = false
-	/// The manager took the download (it didn't refuse it up front).
-	private var terrainDownloadBegan = false
-	private var terrainDownloadTarget: GeoBounds?
-	private(set) var backoff = SpatialTerrainBackoff()
 	/// The box and region set the automatic check last ran for, so it runs once per settled box.
 	private var autoCheckKey: String?
 	/// How long the box must stay put before an automatic download starts.
@@ -230,21 +226,8 @@ final class SpatialMapModel {
 
 	func refresh(context: ModelContext, filters: NodeFilterParameters, preciseOnly: Bool, layer: MapLayer, dark: Bool) {
 		refreshCount += 1
-		var fetched = SpatialMapNodeSource.snapshots(context: context, filters: filters, preciseOnly: preciseOnly, connectedNodeNum: connectedNodeNum)
-		let anchor = fetched.first { $0.isConnectedRadio }?.coordinate
-		let selection = SpatialMapArea.select(fetched.map(\.coordinate), anchor: anchor)
-		var outside = 0
-		if selection.outsideCount > 0 {
-			let frame = anchor.map { SpatialFrame(bounds: GeoBounds(minLon: $0.longitude, minLat: $0.latitude, maxLon: $0.longitude, maxLat: $0.latitude)) }
-			let total = fetched.count
-			fetched = fetched.filter { node in
-				if pinnedNodeNums.contains(node.id) { return true }
-				guard let frame else { return true }
-				let p = frame.localPosition(node.coordinate, altitude: 0)
-				return Double((p.x * p.x + p.z * p.z).squareRoot()) <= SpatialMapArea.maxRadiusMeters
-			}
-			outside = total - fetched.count
-		}
+		let all = SpatialMapNodeSource.snapshots(context: context, filters: filters, preciseOnly: preciseOnly, connectedNodeNum: connectedNodeNum)
+		let (fetched, outside) = SpatialMapArea.fit(all, pinned: pinnedNodeNums)
 		if fetched != nodes {
 			nodes = fetched
 			nodesByNum = Dictionary(fetched.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
@@ -365,7 +348,7 @@ final class SpatialMapModel {
 
 	/// Whether automatic downloads have stopped for this area (cancelled or failed too often).
 	func autoDownloadGaveUp(on target: GeoBounds) -> Bool {
-		backoff.gaveUp(on: target)
+		keeper.gaveUp(on: target)
 	}
 
 	/// Starts a download by itself once the box has settled and the terrain doesn't cover it.
@@ -379,78 +362,27 @@ final class SpatialMapModel {
 		let regionKey = manager.regions.map { "\($0.id)\($0.terrain != nil)" }.joined(separator: ",")
 		let bounds = fullCircle.bounds
 		let key = "\(bounds.minLon),\(bounds.minLat),\(bounds.maxLon),\(bounds.maxLat)|\(regionKey)"
-		let retryDue = backoff.target.map { !backoff.gaveUp(on: $0) } == true && backoff.retryAfter.map { Date() >= $0 } == true
+		// The wait is over: check once, not on every refresh until the next attempt.
+		let retryDue = keeper.takeRetryDue()
 		guard key != autoCheckKey || retryDue else { return }
 		autoCheckKey = key
-		// The wait is over: check once, not on every refresh until the next attempt.
-		if retryDue { backoff.retryAfter = nil }
 		startTerrainDownload(automatic: true)
 	}
 
-	/// Downloads terrain so it covers the volume's box: a new app-managed region, or a bigger one
-	/// that replaces it. When it finishes, the terrain generation in the build key changes and the
-	/// next refresh rebuilds the model with relief. A manual start ignores the retry rules.
+	/// Downloads terrain so it covers the volume's box. When it finishes, the terrain generation in
+	/// the build key changes and the next refresh rebuilds the model with relief. A manual start
+	/// ignores the retry rules.
 	func startTerrainDownload(automatic: Bool = false) {
 		// The square around the whole mesh, whatever the zoom.
-		guard !isDownloadingTerrain, let bounds = fullCircle?.bounds else { return }
-		let manager = OfflineMapManager.shared
-		manager.loadIfNeeded()
-		if !automatic { backoff = SpatialTerrainBackoff() }
-		let decision = SpatialTerrainAutoDecision.make(
-			box: bounds, regions: manager.regions,
-			isBusy: manager.isBusy, backoff: backoff, now: Date()
-		)
-		guard let target = decision.target else {
-			Logger.services.debug("🧊 [Spatial] Terrain check: \(String(describing: decision), privacy: .public)")
-			return
-		}
-		isDownloadingTerrain = true
-		terrainDownloadCancelled = false
-		terrainDownloadAutomatic = automatic
-		terrainDownloadTarget = target
-		terrainDownloadError = nil
-		terrainDownloadNote = nil
-		terrainDownloadBegan = false
-		let estimate = ByteCountFormatter.string(fromByteCount: SpatialTerrainAutoDecision.estimatedBytes(target), countStyle: .file)
-		Logger.services.info("🧊 [Spatial] Terrain download (\(automatic ? "automatic" : "manual", privacy: .public)): \(String(describing: decision), privacy: .public), about \(estimate, privacy: .public)")
-		manager.downloadManagedTerrain(bounds: target, includeRegional: SpatialTerrainAutoDecision.includesRegional(target)) { [weak self] success in
-			self?.finishTerrainDownload(success: success)
-		}
-		// Set after the call: a refusal up front completes synchronously, before this line.
-		if isDownloadingTerrain, manager.activeDownload != nil { terrainDownloadBegan = true }
+		guard let bounds = fullCircle?.bounds else { return }
+		if !automatic { terrainDownloadError = nil }
+		keeper.start(box: bounds, automatic: automatic, onFailure: automatic ? nil : { [weak self] message in
+			self?.terrainDownloadError = message
+		})
 	}
 
 	func cancelTerrainDownload() {
-		guard isDownloadingTerrain else { return }
-		terrainDownloadCancelled = true
-		OfflineMapManager.shared.cancelDownload()
-	}
-
-	private func finishTerrainDownload(success: Bool) {
-		guard isDownloadingTerrain else { return }
-		isDownloadingTerrain = false
-		Logger.services.info("🧊 [Spatial] Terrain download \(success ? "finished" : (self.terrainDownloadCancelled ? "cancelled" : "failed"), privacy: .public)")
-		let target = terrainDownloadTarget
-		terrainDownloadTarget = nil
-		if success {
-			backoff = SpatialTerrainBackoff()
-			return
-		}
-		let manager = OfflineMapManager.shared
-		let failed: String? = if case .failed(let message) = manager.activeDownload?.state { message } else { nil }
-		// A download that started and ended without failing was cancelled, here or in Offline Maps.
-		if terrainDownloadCancelled || (terrainDownloadBegan && failed == nil) {
-			if let target { backoff.recordCancel(target) }
-			return
-		}
-		if let target { backoff.recordFailure(target, now: Date()) }
-		if failed != nil { manager.dismissDownload() }
-		let message = failed ?? String(localized: "The terrain download could not start.", comment: "Spatial map: alert message when the manager refuses the terrain download")
-		if terrainDownloadAutomatic {
-			terrainDownloadNote = message
-		} else {
-			terrainDownloadError = message
-		}
+		keeper.cancel()
 	}
 
 	/// The selected node, the connected radio, favorites, then the most recently heard, capped.

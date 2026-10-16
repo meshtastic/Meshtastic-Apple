@@ -64934,13 +64934,13 @@
         }
       }
     },
-    "Kept up to date by the Spatial Map. Delete it any time; it is downloaded again when the volume needs it (turn off Download Terrain Automatically to stop that)." : {
+    "Kept up to date as the mesh grows while the app is open. Delete it any time; it is downloaded again when the mesh needs it (turn off Download Terrain Automatically in the Spatial Map to stop that)." : {
       "comment" : "Offline map row caption for the terrain region the visionOS spatial map manages",
       "localizations" : {
-        "zh-Hant-TW" : {
+        "en" : {
           "stringUnit" : {
-            "state" : "translated",
-            "value" : "由空間地圖保持最新。您可隨時刪除；當立體檢視需要時會重新下載（關閉「自動下載地形」即可停止）。"
+            "state" : "new",
+            "value" : "Kept up to date as the mesh grows while the app is open. Delete it any time; it is downloaded again when the mesh needs it (turn off Download Terrain Automatically in the Spatial Map to stop that)."
           }
         }
       }
