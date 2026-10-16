@@ -93,20 +93,20 @@
             "frequency",
             "settings",
             "setting",
-            "local",
             "region",
             "one",
+            "local",
             "name",
             "discovery",
             "uses",
             "results",
             "lora",
+            "default",
             "public",
             "noise",
             "modem",
             "floor",
             "each",
-            "default",
             "configuration",
             "automatically",
             "also",
@@ -114,7 +114,7 @@
             "then",
             "report"
         ],
-        "charCount": 6640
+        "charCount": 6812
     },
     {
         "id": "firmware",

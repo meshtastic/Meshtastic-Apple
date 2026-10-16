@@ -157,9 +157,12 @@ struct DiscoverySummaryView: View {
 	}
 
 	private func beaconSwitchPrompt(_ beacon: DiscoveredBeaconEntity) -> String {
-		var parts = ["This sets your radio's primary channel to \"\(beacon.offerChannelName)\""]
-		if let preset = beacon.offeredPreset { parts.append("the \(preset.description) preset") }
+		// Name everything the join changes: the preset is always set (the region default when the
+		// beacon sent none), and a pinned slot replaces the derived one.
+		let preset = accessoryManager.beaconJoinRegionAndPreset(region: beacon.offeredRegion, preset: beacon.offeredPreset).preset
+		var parts = ["This sets your radio's primary channel to \"\(beacon.offerChannelName)\"", "the \(preset.description) preset"]
 		if let region = beacon.offeredRegion { parts.append("region \(region.description)") }
+		if let slot = beacon.offeredFrequencySlot { parts.append("frequency slot \(slot)") }
 		let joined = parts.count > 1
 			? parts.dropLast().joined(separator: ", ") + " and " + parts.last!
 			: parts[0]

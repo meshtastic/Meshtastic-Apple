@@ -366,12 +366,15 @@ final class DiscoveryScanEngine {
 		await applyChannel(for: target)
 
 		// Skip the config change only for a plain public target we're already sitting on (no region
-		// override, no custom channel). Custom-channel / region-override targets always re-send.
+		// override, no custom channel), on the slot this target needs. Custom-channel /
+		// region-override targets always re-send. The slot check catches a pinned-slot target and
+		// a radio left on a previous target's pinned slot (or the user's own custom slot).
 		if !target.isCustomChannel, target.regionRaw == nil, accessoryManager != nil, let context = modelContext {
 			let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
 			let node = getNodeInfo(id: connectedNodeNum, context: context)
-			if let currentModemPreset = node?.loRaConfig?.modemPreset,
-			   ModemPresets(rawValue: Int(currentModemPreset)) == nextPreset {
+			if let loRaConfig = node?.loRaConfig,
+			   ModemPresets(rawValue: Int(loRaConfig.modemPreset)) == nextPreset,
+			   Int(loRaConfig.channelNum) == (target.frequencySlot ?? 0) {
 				Logger.discovery.info("📡 [Discovery] Already on preset \(nextPreset.name) — skipping config change")
 				transitionTo(.dwell)
 				startDwellTimer()

@@ -1015,6 +1015,26 @@ extension AccessoryManager {
 		return Int64(meshPacket.id)
 	}
 
+	/// The region and preset `joinBeaconMesh` will put the radio on: the beacon's, or the radio's
+	/// own region and that region's default preset when the beacon didn't advertise them.
+	@MainActor
+	func beaconJoinRegionAndPreset(
+		region: RegionCodes?,
+		preset: ModemPresets?,
+		node: NodeInfoEntity? = nil
+	) -> (region: Int, preset: ModemPresets) {
+		let radioNode = node ?? activeConnection?.device.num.flatMap { getNodeInfo(id: $0, context: context) }
+		let targetRegion = LoRaChannelCalculator.beaconRegion(
+			offerRegion: region?.rawValue ?? 0,
+			radioRegion: Int(radioNode?.loRaConfig?.regionCode ?? 0)
+		)
+		let targetPreset = LoRaChannelCalculator.beaconPreset(
+			offered: preset,
+			regionInfo: LoRaChannelCalculator.regionInfo(regionCode: targetRegion, in: loRaRegionPresets)
+		)
+		return (targetRegion, targetPreset)
+	}
+
 	/// Join a mesh advertised by a beacon: set the primary channel to the offered channel (name +
 	/// PSK), then apply the offered region/preset. The channel change lands first (no reboot); the
 	/// LoRa config change reboots the radio onto the advertised mesh. `region` falls back to the
@@ -1039,14 +1059,7 @@ extension AccessoryManager {
 
 		// Work out the region, preset and slot before touching the radio, so a slot the region
 		// doesn't have fails here instead of after the channel write.
-		let targetRegion = LoRaChannelCalculator.beaconRegion(
-			offerRegion: region?.rawValue ?? 0,
-			radioRegion: Int(node.loRaConfig?.regionCode ?? 0)
-		)
-		let targetPreset = LoRaChannelCalculator.beaconPreset(
-			offered: preset,
-			regionInfo: LoRaChannelCalculator.regionInfo(regionCode: targetRegion, in: loRaRegionPresets)
-		)
+		let (targetRegion, targetPreset) = beaconJoinRegionAndPreset(region: region, preset: preset, node: node)
 		if let frequencySlot, targetRegion != 0,
 		   !LoRaChannelCalculator.isValidBeaconSlot(frequencySlot, regionCode: targetRegion, preset: targetPreset) {
 			throw AccessoryError.appError("The mesh's frequency slot \(frequencySlot) doesn't exist in this region")
