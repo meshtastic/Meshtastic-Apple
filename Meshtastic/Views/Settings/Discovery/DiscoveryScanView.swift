@@ -69,7 +69,14 @@ struct DiscoveryScanView: View {
 		let descriptor = FetchDescriptor<DiscoveredBeaconEntity>()
 		guard let beacons = try? context.fetch(descriptor) else { return [] }
 		let available = Set(availablePresets)
-		return Set(beacons.compactMap { $0.offeredPreset }).intersection(available)
+		// A public offer that pinned a slot is listed under Beacon Channels with its slot instead,
+		// since a preset chip would scan the preset's own slot.
+		let presets = beacons.compactMap { beacon -> ModemPresets? in
+			let isCustom = beacon.hasOfferChannel && !beacon.offerChannelName.isEmpty
+			if !isCustom, beacon.offeredFrequencySlot != nil { return nil }
+			return beacon.offeredPreset
+		}
+		return Set(presets).intersection(available)
 	}
 
 
@@ -425,8 +432,9 @@ struct DiscoveryScanView: View {
 
 extension DiscoveryScanView {
 
-	/// A custom channel advertised by a beacon, shown as its own selectable row in the scan setup.
-	/// Deduped by name + preset + pinned slot; carries what the scan needs to tune to that mesh.
+	/// A custom channel, or a public channel on a pinned slot, advertised by a beacon, shown as its
+	/// own selectable row in the scan setup. `name` is empty for the public channel. Deduped by
+	/// name + preset + pinned slot; carries what the scan needs to tune to that mesh.
 	struct BeaconChannel: Hashable, Identifiable {
 		let name: String
 		let preset: ModemPresets
@@ -435,11 +443,38 @@ extension DiscoveryScanView {
 
 		static func == (lhs: BeaconChannel, rhs: BeaconChannel) -> Bool { lhs.id == rhs.id }
 		func hash(into hasher: inout Hasher) { hasher.combine(id) }
+
+		init(name: String, preset: ModemPresets, scanTarget: ScanTarget) {
+			self.name = name
+			self.preset = preset
+			self.scanTarget = scanTarget
+		}
+
+		/// The row for a saved beacon's offer. Nil for a public offer without a pinned slot, which
+		/// the preset chips already cover, and for a slot the region doesn't have.
+		init?(
+			beacon: DiscoveredBeaconEntity,
+			radioRegion: Int,
+			regionPresets: [Config.LoRaConfig.RegionCode: RegionPresetInfo]
+		) {
+			let isCustom = beacon.hasOfferChannel && !beacon.offerChannelName.isEmpty
+			if !isCustom, beacon.offeredFrequencySlot == nil { return nil }
+			guard let target = ScanTarget.beacon(
+				offeredPreset: beacon.offeredPreset,
+				offerRegion: beacon.offerRegion,
+				channel: isCustom ? (beacon.offerChannelName, beacon.offerChannelPSK) : nil,
+				frequencySlot: beacon.offeredFrequencySlot,
+				radioRegion: radioRegion,
+				regionPresets: regionPresets
+			) else { return nil }
+			self.init(name: isCustom ? beacon.offerChannelName : "", preset: target.preset, scanTarget: target)
+		}
 	}
 
-	/// Distinct custom channels heard from beacons across past sessions, for the Beacon Channels
-	/// section. A beacon with no preset runs on its region's default. One that pinned a slot its
-	/// region doesn't have is left out, since the scan can't tune to it.
+	/// Distinct custom channels, and public channels on a pinned slot, heard from beacons across
+	/// past sessions, for the Beacon Channels section. A beacon with no preset runs on its region's
+	/// default. One that pinned a slot its region doesn't have is left out, since the scan can't
+	/// tune to it.
 	var beaconChannels: [BeaconChannel] {
 		let descriptor = FetchDescriptor<DiscoveredBeaconEntity>()
 		guard let beacons = try? context.fetch(descriptor) else { return [] }
@@ -448,17 +483,14 @@ extension DiscoveryScanView {
 		let radioRegion = connectedRegionCode?.rawValue ?? 0
 		var seen = Set<String>()
 		var channels: [BeaconChannel] = []
-		for beacon in beacons where beacon.hasOfferChannel && !beacon.offerChannelName.isEmpty {
-			if joined.contains("\(beacon.offerChannelName)|\(beacon.offerChannelPSK.base64EncodedString())") { continue }
-			guard let target = ScanTarget.beacon(
-				offeredPreset: beacon.offeredPreset,
-				offerRegion: beacon.offerRegion,
-				channel: (beacon.offerChannelName, beacon.offerChannelPSK),
-				frequencySlot: beacon.offeredFrequencySlot,
+		for beacon in beacons {
+			guard let channel = BeaconChannel(
+				beacon: beacon,
 				radioRegion: radioRegion,
 				regionPresets: accessoryManager.loRaRegionPresets
 			) else { continue }
-			let channel = BeaconChannel(name: beacon.offerChannelName, preset: target.preset, scanTarget: target)
+			if !channel.name.isEmpty,
+			   joined.contains("\(beacon.offerChannelName)|\(beacon.offerChannelPSK.base64EncodedString())") { continue }
 			if seen.insert(channel.id).inserted { channels.append(channel) }
 		}
 		return channels.sorted { $0.name < $1.name }
@@ -646,14 +678,24 @@ extension DiscoveryScanView {
 						}
 					} label: {
 						HStack {
-							Image(systemName: "lock.fill")
+							Image(systemName: channel.name.isEmpty ? "globe" : "lock.fill")
 								.font(.caption)
 								.foregroundStyle(.secondary)
 							VStack(alignment: .leading, spacing: 1) {
-								Text(channel.name)
-								Text(channel.preset.description)
-									.font(.caption)
-									.foregroundStyle(.secondary)
+								Text(channel.name.isEmpty ? channel.preset.description : channel.name)
+								Group {
+									if let slot = channel.scanTarget.frequencySlot {
+										if channel.name.isEmpty {
+											Text("Slot \(slot)")
+										} else {
+											Text("\(channel.preset.description) · Slot \(slot)")
+										}
+									} else {
+										Text(channel.preset.description)
+									}
+								}
+								.font(.caption)
+								.foregroundStyle(.secondary)
 							}
 							Image(systemName: "dot.radiowaves.left.and.right")
 								.foregroundStyle(.blue)
@@ -670,7 +712,7 @@ extension DiscoveryScanView {
 			} header: {
 				sectionHeader("Beacon Channels".localized, systemImage: "dot.radiowaves.left.and.right")
 			} footer: {
-				Text("Private channels advertised by beacons. Selecting one tunes the scan to that mesh so its traffic can be decoded.")
+				Text("Channels and frequency slots advertised by beacons. Selecting one tunes the scan to that mesh so its traffic can be decoded.")
 			}
 		}
 	}

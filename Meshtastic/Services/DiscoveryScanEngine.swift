@@ -92,9 +92,18 @@ struct ScanTarget: Equatable {
 			return nil
 		}
 		let channel = channel?.name.isEmpty == false ? channel : nil
+		// A slot checked against the radio's region keeps that region, so an earlier target that
+		// moves the radio to another region can't carry this slot there unchecked.
+		let regionRaw: Int? = if offerRegion > 0 {
+			offerRegion
+		} else if frequencySlot != nil, region != 0 {
+			region
+		} else {
+			nil
+		}
 		return ScanTarget(
 			preset: preset,
-			regionRaw: offerRegion > 0 ? offerRegion : nil,
+			regionRaw: regionRaw,
 			channelName: channel?.name,
 			channelPSK: channel?.psk,
 			frequencySlot: frequencySlot
@@ -105,10 +114,13 @@ struct ScanTarget: Equatable {
 	var isCustomChannel: Bool { (channelName?.isEmpty == false) }
 
 	/// The name shown in results and used to key discovered nodes. Custom-channel targets append the
-	/// channel so two targets on the same preset (public vs. a beacon's channel) don't collide.
+	/// channel, and pinned-slot targets the slot, so two targets on the same preset don't collide.
+	/// It is saved with the results, so targets without a channel or slot keep the plain preset name.
 	var label: String {
-		if let name = channelName, !name.isEmpty { return "\(preset.name) · \(name)" }
-		return preset.name
+		var label = preset.name
+		if let name = channelName, !name.isEmpty { label += " · \(name)" }
+		if let frequencySlot { label += " · slot \(frequencySlot)" }
+		return label
 	}
 }
 
