@@ -15,8 +15,9 @@ import OSLog
 /// still points at a shared image; those are listed by target.
 enum DeviceModelCatalog {
 
-	/// Every model in `Meshtastic/Resources/DeviceModels` and on the web flasher. The iOS build
-	/// does not bundle the files, so this list is what decides whether a download is attempted.
+	/// Every model in `Meshtastic/Resources/DeviceModels` and on the web flasher. iPhone, iPad,
+	/// Mac and Vision Pro builds bundle these files; the list also gates the download fallback
+	/// used when a bundled copy is absent.
 	static let modelNames: Set<String> = [
 		"crowpanel_2_4", "crowpanel_2_8", "crowpanel_3_5", "crowpanel_5_0", "crowpanel_7_0",
 		"muzi_base", "muzi_r1_neo",
@@ -114,8 +115,8 @@ struct DeviceModelCache: Sendable {
 	}
 }
 
-/// Finds a local file for a device model: the bundled copy on visionOS, otherwise a cached or
-/// freshly downloaded copy from the web flasher.
+/// Finds a local file for a device model: the bundled copy when the app ships one, otherwise a
+/// cached or freshly downloaded copy from the web flasher.
 actor DeviceModelSource {
 	static let shared = DeviceModelSource()
 
