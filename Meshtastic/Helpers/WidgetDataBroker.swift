@@ -45,6 +45,9 @@ final class WidgetDataBroker {
 	/// is the union over all of them — keeping only the newest trigger dropped
 	/// the earlier triggers' reload kinds.
 	private var pendingTriggers: Set<Trigger> = []
+	/// When the oldest pending trigger arrived, so a steady stream of triggers
+	/// can't postpone the write past the ceiling.
+	private var pendingSince: Date?
 	private var lastReload: [Kind: Date] = [:]
 	/// LocalStats are keyed to the radio that produced them so a radio switch
 	/// can't show the previous radio's counters as the new one's.
@@ -90,11 +93,17 @@ final class WidgetDataBroker {
 	func refresh(_ trigger: Trigger) {
 		pendingTriggers.insert(trigger)
 		// Trailing debounce: coalesce the burst, then build once with every
-		// trigger that arrived during the window.
+		// trigger that arrived during the window. A 5 s ceiling (same as
+		// MeshPackets.scheduleDebouncedSave) keeps a steady stream — a node DB
+		// dump changes connection state per node — from postponing forever.
+		let since = pendingSince ?? Date()
+		pendingSince = since
+		let delay = min(2.0, max(0, 5.0 - Date().timeIntervalSince(since)))
 		pendingRefresh?.cancel()
 		pendingRefresh = Task { @MainActor [weak self] in
-			try? await Task.sleep(nanoseconds: 2_000_000_000)
+			try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
 			guard !Task.isCancelled, let self else { return }
+			self.pendingSince = nil
 			let triggers = self.pendingTriggers
 			self.pendingTriggers = []
 			self.buildAndStore(triggers)

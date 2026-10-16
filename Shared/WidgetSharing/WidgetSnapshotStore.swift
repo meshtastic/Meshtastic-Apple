@@ -7,9 +7,13 @@
 //  Reads and writes the widget snapshot in the shared app group container.
 //  File protection is class C (complete until first user authentication) so
 //  CarPlay and StandBy widgets can still read it while the phone is locked
-//  in the car. Every access guards against a missing group container —
-//  Catalyst provisioning can leave the group unavailable, and the store
-//  must quietly do nothing there.
+//  in the car. That is a deliberate tradeoff: the snapshot carries message
+//  text and node coordinates, and after the first unlock those stay readable
+//  on the locked device — the same exposure every lock-screen-capable widget
+//  store accepts, and on-screen redaction is still the system's
+//  privacySensitive handling. Every access guards against a missing group
+//  container — Catalyst provisioning can leave the group unavailable, and
+//  the store must quietly do nothing there.
 //
 
 import Foundation
