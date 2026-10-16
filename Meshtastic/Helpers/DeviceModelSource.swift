@@ -180,11 +180,18 @@ actor DeviceModelSource {
 		guard let url = DeviceModelCatalog.remoteURL(for: name) else { return nil }
 		let (downloaded, response) = try await session.download(from: url)
 		let status = (response as? HTTPURLResponse)?.statusCode ?? 0
-		guard status == 200 else {
+		let missing = isMissingReply(status: status, mimeType: response.mimeType)
+		guard status == 200, !missing else {
 			try? FileManager.default.removeItem(at: downloaded)
-			if status == 404 { try cache.markMissing(name) }
+			if missing { try cache.markMissing(name) }
 			return nil
 		}
 		return try cache.store(downloadedFile: downloaded, for: name)
+	}
+
+	/// Whether a reply means the flasher doesn't have the model. It answers a missing file with
+	/// its web page and a 200, so a text reply counts as missing as well as a 404.
+	static func isMissingReply(status: Int, mimeType: String?) -> Bool {
+		status == 404 || (mimeType?.hasPrefix("text/") ?? false)
 	}
 }

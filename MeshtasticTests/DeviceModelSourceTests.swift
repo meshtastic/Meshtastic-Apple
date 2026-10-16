@@ -107,6 +107,14 @@ struct DeviceModelCacheTests {
 		#expect(!cache.isRecentlyMissing("rak4631"))
 	}
 
+	@Test("a 404 or the flasher's web page counts as missing")
+	func missingReply() {
+		#expect(DeviceModelSource.isMissingReply(status: 404, mimeType: "text/html"))
+		#expect(DeviceModelSource.isMissingReply(status: 200, mimeType: "text/html"))
+		#expect(!DeviceModelSource.isMissingReply(status: 200, mimeType: "model/vnd.usdz+zip"))
+		#expect(!DeviceModelSource.isMissingReply(status: 503, mimeType: nil))
+	}
+
 	@Test("hardware without a model never reaches the network")
 	func unknownModel() async {
 		let source = DeviceModelSource(cache: makeCache())
