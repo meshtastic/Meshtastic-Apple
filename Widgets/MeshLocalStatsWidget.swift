@@ -24,7 +24,7 @@ struct MeshStatusEntry: TimelineEntry {
 	/// .atEnd reload, re-presenting hours-old data as fresh.
 	var isStale: Bool {
 		guard let snapshot else { return false }
-		return date.timeIntervalSince(snapshot.generatedAt) > 2 * 3600
+		return date.timeIntervalSince(snapshot.generatedAt) >= 2 * 3600
 	}
 }
 
@@ -41,9 +41,20 @@ struct MeshStatusProvider: TimelineProvider {
 	func getTimeline(in context: Context, completion: @escaping (Timeline<MeshStatusEntry>) -> Void) {
 		let snapshot = WidgetSnapshotStore.load()
 		let now = Date()
+		// The stale flip belongs two hours after the snapshot was generated, not
+		// two hours after this reload — an already-old snapshot must not read
+		// fresh for longer. Once that moment has passed (or there is no snapshot)
+		// the tail entry only sets the .atEnd reload cadence.
+		var secondDate = now.addingTimeInterval(2 * 3600)
+		if let generatedAt = snapshot?.generatedAt {
+			let staleDate = generatedAt.addingTimeInterval(2 * 3600)
+			if staleDate > now {
+				secondDate = staleDate
+			}
+		}
 		let entries = [
 			MeshStatusEntry(date: now, snapshot: snapshot),
-			MeshStatusEntry(date: now.addingTimeInterval(2 * 3600), snapshot: snapshot)
+			MeshStatusEntry(date: secondDate, snapshot: snapshot)
 		]
 		completion(Timeline(entries: entries, policy: .atEnd))
 	}
@@ -431,7 +442,9 @@ private struct UtilizationGauge: View {
 			Gauge(value: Double(min(max(value ?? 0, 0), 100)), in: 0...100) {
 				Text(title)
 			} currentValueLabel: {
-				Text("\(value ?? 0, specifier: "%.0f")%")
+				// nil means the radio did not report this measurement — showing
+				// 0% would claim a reading that never arrived.
+				Text(value.map { String(format: "%.0f%%", $0) } ?? "--")
 					.font(.caption2)
 			}
 			.gaugeStyle(.accessoryCircularCapacity)
@@ -488,9 +501,12 @@ private func nodesText(_ snapshot: WidgetSnapshot) -> String {
 
 private func stateText(_ state: WidgetConnectionState) -> String {
 	switch state {
-	case .connected: return "Connected"
-	case .connecting: return "Connecting"
-	case .disconnected: return "Disconnected"
+	case .connected:
+		return String(localized: "Connected", comment: "Widget connection state label")
+	case .connecting:
+		return String(localized: "Connecting", comment: "Widget connection state label")
+	case .disconnected:
+		return String(localized: "Disconnected", comment: "Widget connection state label")
 	}
 }
 
