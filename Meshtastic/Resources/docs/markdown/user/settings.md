@@ -205,6 +205,22 @@ The screen opens with a placement assessment: how many nodes this radio heard di
 | Drop Unknown | Drop packets that cannot be decrypted. |
 | Threshold | How many per window before the sender is dropped. |
 
+### Mesh Beacon
+
+A mesh beacon lets nearby radios find your mesh and join it. It is available on nodes running firmware **2.8.0 or later**, and needs a LoRa region set first. The beacon always uses the radio's own region, and offers the radio's own modem preset.
+
+| Setting | Description |
+|---------|-------------|
+| Listen for Beacons | Hear beacons from other meshes and show them in discovery. |
+| Broadcast a Beacon | Send a beacon from this radio. The settings below appear only while this is on. |
+| Message | Short text sent with each beacon, up to 60 bytes. |
+| Channel | The channel listeners are offered to join. It must be one of this radio's channels. |
+| Frequency Slot | The slot listeners should tune to for the offered channel. Leave it empty and they work it out from the region, preset and channel name, which is right for most meshes. Set it only if your mesh uses a different slot. |
+| Interval | How often the beacon is sent. The minimum is one hour. |
+| Broadcast On | Where the beacon is sent. Each target is a channel, a preset and an optional frequency slot, and gets its own copy of the beacon. A target whose channel is no longer on the radio is marked and must be changed before saving. |
+
+A frequency slot must be within the range for the region and preset; the screen shows the range when a value is outside it.
+
 ## Tools
 
 The **Tools** entry appears only on iPhones with NFC hardware running iOS 18 or later; it is hidden on iPads, Mac Catalyst, and any device without an NFC radio.
