@@ -102,6 +102,8 @@ struct NodeAdministrationTests {
 
 		let node = try fetchNode(num: num, in: container)
 		#expect(node.hasBeenAdministered)
+		#expect(node.sessionPasskey == Data([0x01, 0x02, 0x03]))
+		#expect(node.sessionExpiration != nil)
 	}
 
 	@Test func metadataResponseWithPasskeyMarksUnknownNode() async throws {
@@ -145,8 +147,36 @@ struct NodeAdministrationTests {
 
 		let node = try fetchNode(num: num, in: container)
 		#expect(!node.hasBeenAdministered)
-		// The local download still stamps the (empty) passkey as before.
-		#expect(node.sessionPasskey == Data())
+		// The local download carries no passkey, so it leaves the stored one alone.
+		#expect(node.sessionPasskey == nil)
+	}
+
+	@Test func configWithoutPasskeyKeepsStoredSession() async throws {
+		// Saving a setting to a remote node stores the new config locally with no
+		// passkey. That must not clear the session the next save needs.
+		let (mesh, container) = try freshMesh()
+		let num: Int64 = 0x66FF77
+		let expiration = Date().addingTimeInterval(200)
+		do {
+			let context = ModelContext(container)
+			let node = NodeInfoEntity()
+			node.id = num
+			node.num = num
+			node.sessionPasskey = Data([0xAB, 0xCD])
+			node.sessionExpiration = expiration
+			context.insert(node)
+			try context.save()
+		}
+
+		await mesh.upsertStatusMessageModuleConfigPacket(config: ModuleConfig.StatusMessageConfig(), nodeNum: num)
+		var config = Config()
+		config.device = Config.DeviceConfig()
+		await mesh.localConfig(config: config, nodeNum: num, nodeLongName: "Test Node")
+
+		let node = try fetchNode(num: num, in: container)
+		#expect(node.sessionPasskey == Data([0xAB, 0xCD]))
+		#expect(node.sessionExpiration == expiration)
+		#expect(node.hasLiveAdminSession)
 	}
 
 	@Test func setConfigRequestWithPasskeyDoesNotMark() async throws {
