@@ -201,10 +201,6 @@ extension GeoBounds {
 		return size.width * size.height / 1_000_000
 	}
 
-	func contains(_ other: GeoBounds) -> Bool {
-		minLon <= other.minLon && maxLon >= other.maxLon && minLat <= other.minLat && maxLat >= other.maxLat
-	}
-
 	func union(_ other: GeoBounds) -> GeoBounds {
 		GeoBounds(
 			minLon: min(minLon, other.minLon), minLat: min(minLat, other.minLat),

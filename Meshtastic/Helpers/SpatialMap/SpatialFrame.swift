@@ -137,6 +137,10 @@ extension GeoBounds {
 			&& coordinate.longitude >= minLon && coordinate.longitude <= maxLon
 	}
 
+	func contains(_ other: GeoBounds) -> Bool {
+		other.minLon >= minLon && other.maxLon <= maxLon && other.minLat >= minLat && other.maxLat <= maxLat
+	}
+
 	func intersects(_ other: GeoBounds) -> Bool {
 		maxLon > other.minLon && minLon < other.maxLon && maxLat > other.minLat && minLat < other.maxLat
 	}
