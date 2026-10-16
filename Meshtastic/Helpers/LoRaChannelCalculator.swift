@@ -102,7 +102,8 @@ struct LoRaChannelCalculator {
 		return region.freqStart + bandwidthMHz / 2 + region.padding + Double(slot - 1) * slotWidth + frequencyOffset
 	}
 
-	private func numChannels() -> Int {
+	/// How many frequency slots the region has at this bandwidth.
+	func numChannels() -> Int {
 		guard let region else { return 0 }
 		let bandwidthMHz = bandwidthMHz(region: region)
 		guard bandwidthMHz > 0 else { return 1 }
