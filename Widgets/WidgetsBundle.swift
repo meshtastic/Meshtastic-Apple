@@ -11,7 +11,7 @@ import SwiftUI
 @main
 struct WidgetsBundle: WidgetBundle {
 	var body: some Widget {
-		// Widgets()
+		MeshLocalStatsWidget()
 		#if !targetEnvironment(macCatalyst)
 		#if canImport(ActivityKit)
 		WidgetsLiveActivity()
