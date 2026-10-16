@@ -135,7 +135,7 @@ struct OfflineMapRow: View {
 						.foregroundStyle(.secondary)
 				}
 				if region.isAppManaged {
-					Text("Kept up to date as the mesh grows while the app is open. Delete it any time; it is downloaded again when the mesh needs it (turn off Download Terrain Automatically in the Spatial Map to stop that).", comment: "Offline map row caption for the terrain region the visionOS spatial map manages")
+					Text("Grows with the mesh while the app is open. Delete it any time; the Spatial Map downloads it again the next time it opens (turn off Download Terrain Automatically there to stop that).", comment: "Offline map row caption for the terrain region the visionOS spatial map manages")
 						.font(.caption)
 						.foregroundStyle(.secondary)
 				}

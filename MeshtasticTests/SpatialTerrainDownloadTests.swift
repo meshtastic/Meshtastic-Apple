@@ -27,8 +27,8 @@ struct SpatialTerrainDownloadTests {
 		region(bounds, basemap: false, terrain: true, terrainBytes: bytes, managedBy: OfflineMapRegion.spatialMapManager)
 	}
 
-	func decide(_ box: GeoBounds, _ regions: [OfflineMapRegion], busy: Bool = false, backoff: SpatialTerrainBackoff = SpatialTerrainBackoff()) -> SpatialTerrainAutoDecision {
-		SpatialTerrainAutoDecision.make(box: box, regions: regions, isBusy: busy, backoff: backoff, now: now)
+	func decide(_ box: GeoBounds, _ regions: [OfflineMapRegion], busy: Bool = false, backoff: SpatialTerrainBackoff = SpatialTerrainBackoff(), growOnly: Bool = false) -> SpatialTerrainAutoDecision {
+		SpatialTerrainAutoDecision.make(box: box, regions: regions, isBusy: busy, backoff: backoff, now: now, growOnly: growOnly)
 	}
 
 	func contains(_ outer: GeoBounds, _ inner: GeoBounds) -> Bool {
@@ -116,6 +116,16 @@ struct SpatialTerrainDownloadTests {
 		let decision = decide(grown, [m])
 		#expect(decision == .expand(m.bounds.union(grown).expandedForTerrain(), replacing: m.id))
 		#expect(decision.target.map { contains($0, m.bounds) && contains($0, grown) } == true)
+	}
+
+	@Test func growOnlyNeverCreatesButStillExpands() {
+		let user = region(GeoBounds(minLon: -122.55, minLat: 47.4, maxLon: -122.25, maxLat: 47.85), terrain: true)
+		#expect(decide(box, [], growOnly: true) == .none)
+		#expect(decide(box, [user], growOnly: true) == .none)
+		let m = managed(box.expandedForTerrain())
+		let grown = GeoBounds(minLon: box.minLon, minLat: box.minLat, maxLon: -121.5, maxLat: box.maxLat)
+		#expect(decide(grown, [m], growOnly: true) == decide(grown, [m]))
+		#expect(decide(grown, [m], growOnly: true) != .none)
 	}
 
 	@Test func aFarAwayBoxMovesTheManagedRegion() {

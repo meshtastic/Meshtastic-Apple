@@ -63,12 +63,15 @@ enum SpatialTerrainAutoDecision: Equatable {
 		regions: [OfflineMapRegion],
 		isBusy: Bool,
 		backoff: SpatialTerrainBackoff,
-		now: Date
+		now: Date,
+		growOnly: Bool = false
 	) -> SpatialTerrainAutoDecision {
 		let terrain = regions.filter { $0.terrain != nil }
 		if SpatialTerrainCoverage.fraction(of: box, covered: terrain.map(\.bounds)) >= coverageThreshold { return .none }
 		if isBusy { return .none }
 		let managed = terrain.first { $0.managedBy == OfflineMapRegion.spatialMapManager }
+		// The app's own check only grows a region the spatial map already made.
+		if growOnly && managed == nil { return .none }
 		// Grow the managed region to take in the box. If that gets too big (say the radio is now on
 		// another continent), move it to the box instead; the bare box is the last resort.
 		let candidates = [managed.map { $0.bounds.union(box).expandedForTerrain() }, box.expandedForTerrain(), box].compactMap { $0 }

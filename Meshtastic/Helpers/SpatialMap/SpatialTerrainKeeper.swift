@@ -19,7 +19,8 @@ struct SpatialTerrainCheckSchedule: Equatable {
 	private(set) var connectedSinceCheck = false
 
 	/// Called on every tick with the connected radio. True when the area should be checked now.
-	/// `canCheck` is false while the setting is off, the volume is open, or a download is running.
+	/// `canCheck` is false while the setting is off, there is no terrain region yet, the volume is
+	/// open, or a download is running.
 	mutating func shouldCheck(now: Date, radio: Int64?, canCheck: Bool) -> Bool {
 		if radio != seenRadio {
 			seenRadio = radio
@@ -85,16 +86,17 @@ final class SpatialTerrainKeeper {
 
 	/// Downloads terrain so it covers `box`: a new app-managed region, or a bigger one that replaces
 	/// it. A manual start ignores the retry rules and reports a failure to `onFailure`; an automatic
-	/// one leaves it in `note`. False when nothing was started.
+	/// one leaves it in `note`. With `growOnly` it never creates the region, only grows it.
+	/// False when nothing was started.
 	@discardableResult
-	func start(box: GeoBounds, automatic: Bool, onFailure: ((String) -> Void)? = nil) -> Bool {
+	func start(box: GeoBounds, automatic: Bool, growOnly: Bool = false, onFailure: ((String) -> Void)? = nil) -> Bool {
 		guard !isDownloading else { return false }
 		let manager = OfflineMapManager.shared
 		manager.loadIfNeeded()
 		if !automatic { backoff = SpatialTerrainBackoff() }
 		let decision = SpatialTerrainAutoDecision.make(
 			box: box, regions: manager.regions,
-			isBusy: manager.isBusy, backoff: backoff, now: Date()
+			isBusy: manager.isBusy, backoff: backoff, now: Date(), growOnly: growOnly
 		)
 		guard let target = decision.target else {
 			Logger.services.debug("🧊 [Spatial] Terrain check: \(String(describing: decision), privacy: .public)")
@@ -173,19 +175,23 @@ final class SpatialTerrainKeeper {
 	}
 
 	/// Reads the mesh's nodes off the main thread when the schedule says so, and grows the terrain
-	/// region when it doesn't cover the circle the volume would show for them.
+	/// region when it doesn't cover the circle the volume would show for them. Only the spatial map
+	/// creates the region, so nothing downloads for someone who never opened it or deleted it.
 	private func checkIfDue(container: @MainActor () -> ModelContainer?) async {
 		let defaults = UserDefaults.standard
 		let enabled = defaults.object(forKey: Self.autoTerrainKey) as? Bool ?? true
 		let radio = AccessoryManager.shared.activeDeviceNum
-		let canCheck = enabled && openVolumes == 0 && !isDownloading && !OfflineMapManager.shared.isBusy
+		let manager = OfflineMapManager.shared
+		manager.loadIfNeeded()
+		let hasRegion = manager.regions.contains(where: \.isAppManaged)
+		let canCheck = enabled && hasRegion && openVolumes == 0 && !isDownloading && !manager.isBusy
 		guard schedule.shouldCheck(now: Date(), radio: radio, canCheck: canCheck), let container = container() else { return }
 		let preciseOnly = defaults.bool(forKey: Self.preciseOnlyKey)
 		let nodes = await SpatialMeshAreaReader.nodes(container: container, preciseOnly: preciseOnly, connectedNodeNum: radio)
 		// The app may have left the foreground, or the volume opened, while the read ran.
 		guard !Task.isCancelled, openVolumes == 0, let box = SpatialMapArea.meshCircle(nodes)?.bounds else { return }
 		Logger.services.debug("🧊 [Spatial] App terrain check: \(nodes.count, privacy: .public) nodes")
-		start(box: box, automatic: true)
+		start(box: box, automatic: true, growOnly: true)
 	}
 }
 
