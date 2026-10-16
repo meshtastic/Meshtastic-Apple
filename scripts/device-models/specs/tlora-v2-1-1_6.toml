@@ -1,0 +1,20 @@
+# tlora-v2-1-1_6: LILYGO T-LoRa V2.1-1.6 with its antenna, front view.
+# Size: https://wiki.lilygo.cc/products/t3-series/t3-lora32/
+[size]
+width_mm = 66
+height_mm = 40.2
+depth_mm = 15
+scale_by = "width"
+fit_bbox = [577.41, 840.71, 1422.61, 1353.91]
+covers = "board with OLED and right-angle SMA; the antenna is built round"
+source = "https://wiki.lilygo.cc/products/t3-series/t3-lora32/"
+confidence = "cad"
+appendage = "none"
+
+[[antenna]]
+name = "Antenna"
+start = [1227.96, 840.71]
+end = [1227.96, 328.31]
+# Radius from the drawn width at the base; the drawing tapers it toward the tip.
+radius_mm = 3.62
+tip_radius_mm = 2.53

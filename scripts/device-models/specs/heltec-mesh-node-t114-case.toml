@@ -1,0 +1,22 @@
+# heltec-mesh-node-t114-case: Heltec Mesh Node T114 in Heltec's enclosure, with its antenna, front view.
+# Size: https://www.tinytronics.nl/en/tools-and-mounting/enclosures/others/heltec-enclosure-for-mesh-node-t114
+[size]
+width_mm = 35
+height_mm = 64
+depth_mm = 24
+scale_by = "width"
+fit_bbox = [796.47, 856.33, 1203.57, 1595.33]
+covers = "enclosure; the antenna above it is built round"
+source = "https://www.tinytronics.nl/en/tools-and-mounting/enclosures/others/heltec-enclosure-for-mesh-node-t114"
+confidence = "retailer"
+edge_radius_mm = 3.0
+front_edge_radius_mm = 2.0
+appendage = "none"
+
+[[antenna]]
+name = "Antenna"
+start = [926.87, 856.33]
+end = [926.87, 278.33]
+# Radius from the drawn width at the base; the drawing tapers it toward the tip.
+radius_mm = 3.98
+tip_radius_mm = 2.79

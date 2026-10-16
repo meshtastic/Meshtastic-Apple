@@ -1,0 +1,18 @@
+# heltec_wireless_tracker_v2: Heltec Wireless Tracker V2, the bare board seen from the display side.
+# Size from the datasheet's mechanical drawing (read from a scanned image): https://resource.heltec.cn/download/Wireless_Tracker_V2/Wireless_Tracker_v2_Datasheet/Wireless%20Tracker%20v2.pdf
+# The PCB thickness isn't published; 1.0 mm is an estimate. The display stands to the published
+# stack height; the other parts are built flat on the board.
+[size]
+width_mm = 52.0
+height_mm = 25.4
+depth_mm = 10.26
+board_mm = 1.0
+scale_by = "width"
+covers = "bare PCB with its display, no headers or antenna"
+source = "https://resource.heltec.cn/download/Wireless_Tracker_V2/Wireless_Tracker_v2_Datasheet/Wireless%20Tracker%20v2.pdf"
+confidence = "vendor"
+
+[[block]]
+name = "Display"
+bbox = [185.5, 77.1, 502.7, 264.1]
+h = 9.26

@@ -1,0 +1,20 @@
+# tlora-t3s3-v1: LILYGO T3-S3 with its antenna, front view.
+# Size: https://wiki.lilygo.cc/products/t3-series/t3-s3/
+[size]
+width_mm = 66
+height_mm = 40.2
+depth_mm = 14
+scale_by = "width"
+fit_bbox = [573.31, 904.58, 1418.51, 1417.78]
+covers = "board with OLED and right-angle SMA; the antenna is built round"
+source = "https://wiki.lilygo.cc/products/t3-series/t3-s3/"
+confidence = "cad"
+appendage = "none"
+
+[[antenna]]
+name = "Antenna"
+start = [1223.86, 904.58]
+end = [1223.86, 392.18]
+# Radius from the drawn width at the base; the drawing tapers it toward the tip.
+radius_mm = 3.62
+tip_radius_mm = 2.53

@@ -19,7 +19,7 @@ CACHE="$OUT/svg"
 INSTALL_DIR="$REPO/Meshtastic/Resources/DeviceModels"
 IMAGE_BASE_URL="https://flasher.meshtastic.org/img/devices"
 API_URL="https://api.meshtastic.org/resource/deviceHardware"
-VENDORS='seeed|rak|elecrow|thinknode|crowpanel|sensecap|xiao|wio|muzi'
+VENDORS='seeed|rak|elecrow|thinknode|crowpanel|sensecap|xiao|wio|muzi|heltec|lilygo'
 
 install=false
 names=()

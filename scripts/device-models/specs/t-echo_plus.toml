@@ -1,0 +1,15 @@
+# t-echo_plus: LILYGO T-Echo Plus, front view.
+# Size: https://www.cnx-software.com/?p=159235
+# The press figures (credited to LILYGO) give 89 x 53 x 45 including the clip loop; the case height is
+# read from the drawing at 53 wide.
+[size]
+width_mm = 53
+height_mm = 66.3
+depth_mm = 45
+scale_by = "width"
+fit_bbox = [0.4, 106.8, 289.9, 470.2]
+covers = "case; the clip loop above it is built thin"
+source = "https://www.cnx-software.com/?p=159235"
+confidence = "retailer"
+edge_radius_mm = 4.0
+front_edge_radius_mm = 2.0

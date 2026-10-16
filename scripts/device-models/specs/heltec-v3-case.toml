@@ -1,0 +1,13 @@
+# heltec-v3-case: Heltec WiFi LoRa 32 V3 in Heltec's enclosure, front view.
+# Size: https://www.tinytronics.nl/en/tools-and-mounting/enclosures/others/enclosure-for-heltec-wi-fi-lora-32-v3
+# Retailer figures only, and 55 mm seems wide for a 25.5 mm board: measure a real case.
+[size]
+width_mm = 69
+height_mm = 55
+depth_mm = 13
+scale_by = "width"
+covers = "case"
+source = "https://www.tinytronics.nl/en/tools-and-mounting/enclosures/others/enclosure-for-heltec-wi-fi-lora-32-v3"
+confidence = "retailer"
+edge_radius_mm = 3.0
+front_edge_radius_mm = 2.0

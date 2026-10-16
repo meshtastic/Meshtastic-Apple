@@ -1,0 +1,15 @@
+# t-watch-s3: LILYGO T-Watch S3, front view.
+# Size: https://cdn.shopify.com/s/files/1/0617/7190/7253/files/T-Watch-s3_600x600.jpg
+[size]
+width_mm = 40
+height_mm = 47.45
+depth_mm = 13
+scale_by = "width"
+fit_bbox = [735.32, 598.22, 1277.32, 1237.22]
+covers = "watch body; the strap above and below is built thin"
+source = "https://cdn.shopify.com/s/files/1/0617/7190/7253/files/T-Watch-s3_600x600.jpg"
+confidence = "vendor"
+edge_radius_mm = 6.0
+front_edge_radius_mm = 2.0
+appendage = "outside"
+appendage_depth_mm = 3.0

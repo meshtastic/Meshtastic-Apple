@@ -1,0 +1,20 @@
+# tbeam-s3-core: LILYGO T-Beam Supreme with its 18650 holder and antenna, front view.
+# Size: https://wiki.lilygo.cc/products/t-beam-series/t-beam-supreme/
+[size]
+width_mm = 114
+height_mm = 33
+depth_mm = 28
+scale_by = "width"
+fit_bbox = [689.18, 1079.38, 1707.28, 1362.68]
+covers = "board with holder and SMA; the antenna is built round"
+source = "https://wiki.lilygo.cc/products/t-beam-series/t-beam-supreme/"
+confidence = "vendor"
+appendage = "none"
+
+[[antenna]]
+name = "Antenna"
+start = [539.58, 1178.98]
+end = [539.58, 425.18]
+# Radius from the drawn width at the base; the drawing tapers it toward the tip.
+radius_mm = 4.33
+tip_radius_mm = 3.03

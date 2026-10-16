@@ -1,0 +1,18 @@
+# heltec-mesh-node-t114: Heltec Mesh Node T114, the bare board seen from the display side.
+# Size from the datasheet's mechanical drawing (read from a scanned image): https://resource.heltec.cn/download/Mesh_Node_T114/Datasheet.pdf
+# The PCB thickness isn't published; 1.0 mm is an estimate. The display stands to the published
+# stack height; the other parts are built flat on the board.
+[size]
+width_mm = 50.8
+height_mm = 22.86
+depth_mm = 9.68
+board_mm = 1.0
+scale_by = "width"
+covers = "bare PCB with its display, no headers or antenna"
+source = "https://resource.heltec.cn/download/Mesh_Node_T114/Datasheet.pdf"
+confidence = "vendor"
+
+[[block]]
+name = "Display"
+bbox = [790.95, 817.15, 1313.35, 1147.45]
+h = 8.68
