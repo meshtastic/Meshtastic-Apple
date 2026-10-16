@@ -502,7 +502,15 @@
       }
     },
     "3D model of %@" : {
-      "comment" : "Accessibility label for the rotating 3D model of a radio; the argument is the device name"
+      "comment" : "Accessibility label for the rotating 3D model of a radio; the argument is the device name",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 的 3D 模型"
+          }
+        }
+      }
     },
     "90° Inverted" : {
       "extractionState" : "manual",
@@ -1970,6 +1978,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Map imagery unavailable; showing the offline map"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法取得地圖影像，改為顯示離線地圖"
           }
         }
       }
@@ -7725,13 +7739,21 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ · 插槽 %2$@"
+            "value" : "%@ · 槽位 %@"
           }
         }
       }
     },
     "%@ · Slot %lld" : {
-      "comment" : "Subtitle on a Local Mesh Discovery beacon channel row. %@ is the modem preset name, %lld the 1-based frequency slot the beacon fixed."
+      "comment" : "Subtitle on a Local Mesh Discovery beacon channel row. %@ is the modem preset name, %lld the 1-based frequency slot the beacon fixed.",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · 槽位 %lld"
+          }
+        }
+      }
     },
     "%@ · Updated %@" : {
       "comment" : "A description of a downloaded offline map, including its size and the date it was last updated. The argument is the size of the map, the second argument is the formatted date of the last update.",
@@ -7955,7 +7977,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@（插槽 %2$d）"
+            "value" : "%1$@（槽位 %2$d）"
           }
         }
       }
@@ -10967,7 +10989,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "將使用 8 個頻道插槽中的 %lld 個。"
+            "value" : "將使用 8 個頻道槽位中的 %lld 個。"
           }
         }
       }
@@ -19154,7 +19176,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "所有次要頻道插槽已滿。選擇要取代的現有次要頻道 — 您的主要頻道永遠不會被觸及。"
+            "value" : "所有次要頻道槽位已滿。選擇要取代的現有次要頻道 — 您的主要頻道永遠不會被觸及。"
           }
         }
       }
@@ -22231,6 +22253,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Auto"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自動"
           }
         }
       }
@@ -27708,6 +27736,12 @@
             "state" : "new",
             "value" : "Channel %d isn't on this radio. Pick another channel."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此無線電沒有頻道 %d，請選擇其他頻道。"
+          }
         }
       }
     },
@@ -29891,7 +29925,15 @@
       }
     },
     "Channels and frequency slots advertised by beacons. Selecting one tunes the scan to that mesh so its traffic can be decoded." : {
-      "comment" : "Footer under the Beacon Channels section of Local Mesh Discovery setup. Rows are private channels, or the public channel on a fixed frequency slot, that beacons advertised."
+      "comment" : "Footer under the Beacon Channels section of Local Mesh Discovery setup. Rows are private channels, or the public channel on a fixed frequency slot, that beacons advertised.",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "信標所廣播的頻道與頻率槽位。選擇其中一個後，掃描會調諧至該 Mesh，以便解碼其通訊流量。"
+          }
+        }
+      }
     },
     "Chat-dominated: %@" : {
       "comment" : "A label that indicates which presets had more messages exchanged.",
@@ -64109,6 +64151,12 @@
             "state" : "new",
             "value" : "Interval must be at least one hour."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "間隔至少須為一小時。"
+          }
         }
       }
     },
@@ -66352,6 +66400,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Leave Frequency Slot empty and listeners work it out from the region, preset and channel name. Set it only if your mesh uses a different slot."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "頻率槽位留空時，接收端會依據地區、預設值與頻道名稱自行推算。只有在 Mesh 使用不同槽位時才需設定。"
           }
         }
       }
@@ -77542,6 +77596,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Error-correction redundancy, as the denominator of 4/n. Higher values survive noisier links but make every packet longer."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "錯誤更正冗餘度，以 4/n 的分母表示。數值越高，越能承受雜訊較多的鏈路，但每個封包也會變長。"
           }
         }
       }
@@ -128706,7 +128766,15 @@
       }
     },
     "Show 3D model" : {
-      "comment" : "Button on the device image: switch from the picture to the device's 3D model"
+      "comment" : "Button on the device image: switch from the picture to the device's 3D model",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顯示 3D 模型"
+          }
+        }
+      }
     },
     "Show a confirmation dialog before performing the factory reset" : {
       "localizations" : {
@@ -129624,7 +129692,15 @@
       }
     },
     "Show photo" : {
-      "comment" : "Button on the device image: switch from the 3D model back to the picture"
+      "comment" : "Button on the device image: switch from the 3D model back to the picture",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顯示照片"
+          }
+        }
+      }
     },
     "Show Translation" : {
       "comment" : "A label for a button that toggles whether the translation of a message is shown.",
@@ -131545,7 +131621,15 @@
       }
     },
     "Slot %lld" : {
-      "comment" : "Subtitle on a Local Mesh Discovery beacon row for the public channel on a fixed frequency slot. %lld is the 1-based slot number."
+      "comment" : "Subtitle on a Local Mesh Discovery beacon row for the public channel on a fixed frequency slot. %lld is the 1-based slot number.",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "槽位 %lld"
+          }
+        }
+      }
     },
     "Smart Citizen" : {
       "comment" : "FirmwareEditions.name",
@@ -141785,6 +141869,12 @@
             "state" : "new",
             "value" : "This radio's channels aren't available, so a channel can't be offered. Connect to it directly to set one."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法取得此無線電的頻道，因此無法提供頻道選項。請直接連線至該無線電以進行設定。"
+          }
         }
       }
     },
@@ -149517,6 +149607,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Use a slot from 1 to %lld, or leave it empty."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請使用 1 到 %lld 的槽位，或留空。"
           }
         }
       }
