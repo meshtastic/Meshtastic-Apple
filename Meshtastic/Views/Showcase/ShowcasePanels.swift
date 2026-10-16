@@ -15,81 +15,119 @@ struct ShowcaseNodeCard: View {
 	let onOpen: () -> Void
 	let onClose: () -> Void
 
+	/// Read from across the room: it floats off the wall rack, a few meters away.
+	static let width: CGFloat = 560
+
 	var body: some View {
-		VStack(alignment: .leading, spacing: 8) {
-			HStack(spacing: 10) {
-				CircleText(text: node.shortName, color: Color(ShowcaseSceneController.nodeColor(node.id)), circleSize: 36)
-				VStack(alignment: .leading, spacing: 2) {
-					Text(node.longName)
-						.font(.headline)
-						.lineLimit(1)
-					HStack(spacing: 4) {
-						Image(systemName: isOnline ? "checkmark.circle.fill" : "moon.circle.fill")
-							.foregroundStyle(isOnline ? .green : .orange)
-						Text(node.lastHeard?.lastHeard ?? String(localized: "Never", comment: "Spatial map: node has never been heard"))
-							.foregroundStyle(.secondary)
-					}
-					.font(.caption)
-				}
-				Spacer(minLength: 0)
-				Button(action: onClose) {
-					Image(systemName: "xmark")
-				}
-				.buttonStyle(.borderless)
-				.accessibilityLabel(String(localized: "Close"))
-			}
-			Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 4) {
-				if let role = node.role {
-					GridRow {
-						Image(systemName: "person.crop.circle")
-						Text(role.name)
-					}
-				}
-				GridRow {
-					Image(systemName: "cpu")
-					Text(hardware)
-				}
+		VStack(alignment: .leading, spacing: 22) {
+			header
+			LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
 				if node.isConnectedRadio {
-					GridRow {
-						Image(systemName: "antenna.radiowaves.left.and.right")
+					tile(String(localized: "Connected"), icon: "antenna.radiowaves.left.and.right") {
 						Text("Connected radio", comment: "Spatial map: the selected node is the connected radio")
 					}
 				} else {
-					GridRow {
-						Image(systemName: "arrow.triangle.turn.up.right.diamond")
-						Text("\(node.hopsAway) hops away", comment: "Spatial map: hops from the connected radio")
-					}
-					GridRow {
-						Image(systemName: "dot.radiowaves.left.and.right")
-						HStack(spacing: 6) {
-							Text(verbatim: String(format: "SNR %.1f dB", node.snr))
-							if node.rssi != 0 {
-								Text(verbatim: "RSSI \(node.rssi) dBm")
-							}
+					tile(String(localized: "SNR"), icon: "dot.radiowaves.left.and.right") {
+						HStack(spacing: 8) {
 							Circle()
 								.fill(getSnrColor(snr: node.snr, preset: preset))
-								.frame(width: 8, height: 8)
+								.frame(width: 14, height: 14)
+							Text(verbatim: String(format: "%.1f dB", node.snr))
+						}
+						if node.rssi != 0 {
+							Text(verbatim: "RSSI \(node.rssi) dBm")
+								.font(.callout)
+								.foregroundStyle(.secondary)
+						}
+					}
+					tile(String(localized: "Hops Away"), icon: "arrow.triangle.turn.up.right.diamond") {
+						if node.hopsAway == 0 {
+							Text("Direct")
+						} else {
+							Text(verbatim: "\(node.hopsAway)")
 						}
 					}
 				}
-				if node.viaMqtt {
-					GridRow {
-						Image(systemName: "dot.radiowaves.up.forward")
-						Text("via MQTT", comment: "Spatial map: node heard over MQTT")
+				if let role = node.role {
+					tile(String(localized: "Role"), icon: "person.crop.circle") {
+						Text(role.name)
 					}
 				}
+				tile(String(localized: "Hardware"), icon: "cpu") {
+					Text(hardware)
+						.lineLimit(2)
+						.minimumScaleFactor(0.7)
+				}
 			}
-			.font(.caption)
-			.foregroundStyle(.secondary)
 			Button(action: onOpen) {
 				Label(String(localized: "Open in App", comment: "Showcase card: show this node's detail screen in the main window"), systemImage: "arrow.up.forward.app")
+					.font(.title3.weight(.semibold))
+					.frame(maxWidth: .infinity)
+					.padding(.vertical, 6)
 			}
-			.font(.caption)
-			.buttonStyle(.bordered)
+			.buttonStyle(.borderedProminent)
+			.controlSize(.large)
 		}
-		.padding(12)
-		.frame(width: 280)
-		.glassBackgroundEffect()
+		.padding(30)
+		.frame(width: Self.width)
+		.glassBackgroundEffect(in: RoundedRectangle(cornerRadius: 40, style: .continuous))
+	}
+
+	private var header: some View {
+		HStack(alignment: .top, spacing: 18) {
+			CircleText(text: node.shortName, color: Color(ShowcaseSceneController.nodeColor(node.id)), circleSize: 84)
+			VStack(alignment: .leading, spacing: 8) {
+				Text(node.longName)
+					.font(.largeTitle.weight(.bold))
+					.lineLimit(2)
+					.minimumScaleFactor(0.6)
+				Text(verbatim: "\(node.shortName) · !\(String(format: "%08x", UInt32(truncatingIfNeeded: node.id)))")
+					.font(.title3.monospaced())
+					.foregroundStyle(.secondary)
+				HStack(spacing: 10) {
+					Label(isOnline ? String(localized: "Online") : String(localized: "Offline"), systemImage: isOnline ? "checkmark.circle.fill" : "moon.circle.fill")
+						.font(.headline)
+						.padding(.horizontal, 12)
+						.padding(.vertical, 6)
+						.background((isOnline ? Color.green : Color.orange).opacity(0.25), in: Capsule())
+						.foregroundStyle(isOnline ? .green : .orange)
+					if node.viaMqtt {
+						Label(String(localized: "via MQTT", comment: "Spatial map: node heard over MQTT"), systemImage: "dot.radiowaves.up.forward")
+							.font(.headline)
+							.padding(.horizontal, 12)
+							.padding(.vertical, 6)
+							.background(.quaternary, in: Capsule())
+					}
+				}
+				Text(node.lastHeard?.lastHeard ?? String(localized: "Never", comment: "Spatial map: node has never been heard"))
+					.font(.title3)
+					.foregroundStyle(.secondary)
+			}
+			Spacer(minLength: 0)
+			Button(action: onClose) {
+				Image(systemName: "xmark")
+					.font(.title2.weight(.semibold))
+			}
+			.buttonStyle(.bordered)
+			.buttonBorderShape(.circle)
+			.accessibilityLabel(String(localized: "Close"))
+		}
+	}
+
+	/// One fact about the node: a small label over a large value.
+	private func tile<Content: View>(_ title: String, icon: String, @ViewBuilder value: () -> Content) -> some View {
+		VStack(alignment: .leading, spacing: 8) {
+			Label(title, systemImage: icon)
+				.font(.callout.weight(.semibold))
+				.foregroundStyle(.secondary)
+			VStack(alignment: .leading, spacing: 4) {
+				value()
+			}
+			.font(.title2.weight(.semibold))
+		}
+		.frame(maxWidth: .infinity, minHeight: 96, alignment: .topLeading)
+		.padding(16)
+		.background(.thinMaterial, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
 	}
 
 	private var hardware: String {
