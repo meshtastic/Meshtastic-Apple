@@ -36,6 +36,7 @@ jobs:
           --output-dir "Meshtastic/Resources/images" \
           --output-json "Meshtastic/Resources/DeviceHardware.json" \
           --force \
+          --require-api \
           --verbose
 
     - name: Check for changes

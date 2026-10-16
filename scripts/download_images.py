@@ -16,6 +16,13 @@ import hashlib
 API_URL = "https://api.meshtastic.org/resource/deviceHardware"
 IMAGE_BASE_URL = "https://flasher.meshtastic.org/img/devices/"
 REQUEST_TIMEOUT = 15
+
+# api.meshtastic.org answers Python's default "Python-urllib" user agent with 403 Forbidden,
+# which made the nightly sync fall back to the cached copy and report success. Name the
+# script on every request instead.
+_opener = urllib.request.build_opener()
+_opener.addheaders = [("User-Agent", "Meshtastic-Apple-device-sync/1.0")]
+urllib.request.install_opener(_opener)
 MAX_WORKERS = 16
 # --- END CONFIGURATION ---
 
@@ -150,6 +157,7 @@ def main():
     parser.add_argument("--output-json", help="If the API data has changed, save the raw JSON to this filename.")
     parser.add_argument("--force", action="store_true", help="Force a full sync, ignoring the API content hash check.")
     parser.add_argument("--verbose", action="store_true", help="Enable detailed logging for debugging.")
+    parser.add_argument("--require-api", action="store_true", help="Fail instead of keeping the cached copy when the API can't be reached.")
     args = parser.parse_args()
 
     target_mode = "xcassets" if args.output_xcassets else "directory"
@@ -179,6 +187,9 @@ def main():
             new_api_hash = hashlib.sha256(api_data_bytes).hexdigest()
             devices = json.loads(api_data_bytes.decode('utf-8'))
     except (urllib.error.URLError, urllib.error.HTTPError, socket.timeout) as e:
+        if args.require_api:
+            log_error(f"Could not fetch API data from {API_URL}: {e}.")
+            sys.exit(1)
         log_warning(f"Could not fetch API data from {API_URL}: {e}. Building with cached images.")
         sys.exit(0) # Fail silently, XCode may be building offline without a network
     except json.JSONDecodeError:
