@@ -169,7 +169,6 @@ final class ShowcaseDisplays {
 		base.position = [0, standThickness / 2, 0]
 		holder.addChild(base)
 		holder.addChild(model)
-		model.components.set(ShowcaseHomeComponent(transform: model.transform))
 		makeHoldable(model, bounds: grabBounds(of: model) ?? bounds)
 		return bounds.extents.y + standThickness
 	}

@@ -37,6 +37,7 @@ final class ShowcaseSceneController {
 	@ObservationIgnored private var limiter = PulseRateLimiter(capacity: 12, refillPerSecond: 8, perSenderInterval: 0.3)
 	@ObservationIgnored private var clock: TimeInterval = 0
 	@ObservationIgnored var updateSubscription: EventSubscription?
+	@ObservationIgnored var grabSubscription: EventSubscription?
 	/// The device models on the display tables.
 	let displays = ShowcaseDisplays()
 	@ObservationIgnored private var displayHardware: [ShowcaseHardwareRecord]?
@@ -53,22 +54,16 @@ final class ShowcaseSceneController {
 	var selected: Int64? {
 		didSet {
 			if selected != nil, selectedItem != nil { selectedItem = nil }
-			updateInspection()
 		}
 	}
 	/// The displayed model whose card is open.
 	var selectedItem: String? {
 		didSet {
 			if selectedItem != nil, selected != nil { selected = nil }
-			updateInspection()
 		}
 	}
-	/// Holds the selected model up in front of the viewer.
-	@ObservationIgnored let inspector = ShowcaseInspector()
 	var isHighTraffic = false
-	var reduceMotion = false {
-		didSet { inspector.reduceMotion = reduceMotion }
-	}
+	var reduceMotion = false
 	var preset: ModemPresets = .longFast
 
 	init() {
@@ -90,7 +85,6 @@ final class ShowcaseSceneController {
 		layout = ShowcaseLayout(grid: grid)
 		buildRack(grid: grid)
 		world.addChild(displays.root)
-		world.addChild(inspector.stage)
 		if !nodesByNum.isEmpty { relayout(now: Date(), force: true) }
 	}
 
@@ -98,7 +92,6 @@ final class ShowcaseSceneController {
 	/// against the viewer.
 	func setSeated(_ seated: Bool) {
 		world.position = seated ? .zero : [0, 0, -Self.standingSetback]
-		inspector.setSeated(seated)
 	}
 
 	static let standingSetback: Float = 0.25
@@ -264,7 +257,6 @@ final class ShowcaseSceneController {
 	}
 
 	func step(deltaTime dt: TimeInterval) {
-		inspector.step(deltaTime: dt)
 		clock += dt
 		guard !boosts.isEmpty, let layout else { return }
 		for (num, boost) in boosts {
@@ -326,25 +318,11 @@ extension ShowcaseSceneController {
 		guard let room, let hardware = displayHardware else { return }
 		displayHardware = nil
 		await displays.load(room: room, hardware: hardware) { [weak self] in self?.receiveRoomLight($0) }
-		// A selection made while the models were loading.
-		updateInspection()
 	}
 
-	// MARK: Inspection
-
-	/// Holds up the selected table model; puts the last one back otherwise.
-	private func updateInspection() {
-		if let id = selectedItem, let model = displays.model(for: id) {
-			inspector.inspect(model)
-		} else {
-			inspector.release()
-		}
-	}
-
-	/// Where a model's card goes: beside it when held up, else above it on its table.
+	/// Where a model's card goes: above its place on the table.
 	func cardPosition(forItem id: String) -> SIMD3<Float>? {
-		if let model = displays.model(for: id), inspector.model === model { return inspector.cardPosition }
-		return displays.cardPosition(forItem: id)
+		displays.cardPosition(forItem: id)
 	}
 }
 

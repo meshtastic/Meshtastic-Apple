@@ -48,9 +48,16 @@ struct ShowcaseSpace: View {
 			scene.updateSubscription = content.subscribe(to: SceneEvents.Update.self) { event in
 				scene.step(deltaTime: event.deltaTime)
 			}
+			// Picking a model up with the system grab opens its card. A tap can't: the grab
+			// takes the pinch first.
+			scene.grabSubscription = content.subscribe(to: ManipulationEvents.WillBegin.self) { event in
+				if let item = scene.displays.item(tappedOn: event.entity) {
+					scene.selectedItem = item
+				}
+			}
 			Task { await scene.loadDisplaysIfReady() }
 		} update: { _, attachments in
-			// Before placing cards, so a card beside a held-up model follows a seated/standing switch.
+			// Before placing cards, so they follow a seated/standing switch.
 			scene.setSeated(seated)
 			if let panel = attachments.entity(for: Attachments.controls) {
 				seat(panel)
@@ -91,15 +98,14 @@ struct ShowcaseSpace: View {
 			}
 		}
 		.gesture(tap)
-		.simultaneousGesture(spin)
 		.task {
 			// The context is read here, not in the RealityView's make, where SwiftData traps.
 			let hardware = await ShowcaseCatalog.hardware(in: context.container)
 			await scene.setDisplayHardware(hardware)
 			#if DEBUG
-			// `--meshtastic-showcase-inspect <model>` holds a model up once the tables are set.
+			// `--meshtastic-showcase-card <model>` opens a model's card once the tables are set.
 			let arguments = CommandLine.arguments
-			if let index = arguments.firstIndex(of: "--meshtastic-showcase-inspect"), index + 1 < arguments.count {
+			if let index = arguments.firstIndex(of: "--meshtastic-showcase-card"), index + 1 < arguments.count {
 				while scene.displays.items.isEmpty, !Task.isCancelled {
 					try? await Task.sleep(for: .milliseconds(250))
 				}
@@ -141,6 +147,8 @@ struct ShowcaseSpace: View {
 			// Stops the per-frame updates; the closure holds the scene.
 			scene.updateSubscription?.cancel()
 			scene.updateSubscription = nil
+			scene.grabSubscription?.cancel()
+			scene.grabSubscription = nil
 			// Leaving with the Digital Crown would otherwise leave the app with no window (the
 			// panel's Leave opens it first). Not when the app went to the background, which
 			// closes the room too.
@@ -173,23 +181,6 @@ struct ShowcaseSpace: View {
 				let point = value.convert(value.location3D, from: .local, to: .scene)
 				guard let num = scene.node(tappedOn: value.entity, scenePoint: point) else { return }
 				scene.selected = scene.selected == num ? nil : num
-			}
-	}
-
-	/// Turns the model held up for inspection: sideways spins it, up and down tips it.
-	private var spin: some Gesture {
-		DragGesture(minimumDistance: 0)
-			.targetedToEntity(where: .has(ShowcaseInspectedComponent.self))
-			.onChanged { value in
-				// Convert both ends and subtract: converting the translation itself treats it as a
-				// point, which adds the view's offset from the scene origin and pins the tip at its limit.
-				let start = value.convert(value.startLocation3D, from: .local, to: .scene)
-				let now = value.convert(value.location3D, from: .local, to: .scene)
-				let offset = now - start
-				scene.inspector.drag(offset: SIMD2(offset.x, offset.y), at: value.time.timeIntervalSinceReferenceDate)
-			}
-			.onEnded { value in
-				scene.inspector.endDrag(at: value.time.timeIntervalSinceReferenceDate)
 			}
 	}
 

@@ -116,4 +116,13 @@ struct ShowcaseCatalogTests {
 		#expect(abs(crowded[1] - 0.3) < 1e-5)
 		#expect(ShowcaseRowPacking.centers(widths: [], length: 1).isEmpty)
 	}
+
+	@Test("Each maker's row fits its table, and muzi works shares RAK's")
+	func rows() {
+		for vendor in ShowcaseVendor.allCases {
+			let row = vendor.row
+			#expect(abs(row.centerX) + row.length / 2 <= ShowcaseRoomGeometry.tableLength / 2 + 1e-5, "\(vendor)")
+		}
+		#expect(ShowcaseVendor.muzi.row == ShowcaseVendor.rak.row)
+	}
 }
