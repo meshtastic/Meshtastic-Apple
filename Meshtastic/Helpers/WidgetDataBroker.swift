@@ -234,7 +234,9 @@ final class WidgetDataBroker {
 			let rating: Int? = (hasSignal && preset != nil)
 				? getLoRaSignalStrength(snr: node.snr, rssi: node.rssi, preset: preset!).rawValue
 				: nil
-			let position = node.latestPosition
+			// nodeCoordinate nil-guards the 0/0 a positionless node stores —
+			// the raw latitude accessor returns 0, not nil.
+			let coordinate = node.latestPosition?.nodeCoordinate
 			return NodeSnapshot(
 				num: node.num,
 				longName: node.user?.longName ?? "Unknown".localized,
@@ -247,8 +249,8 @@ final class WidgetDataBroker {
 				lastHeard: node.lastHeard,
 				isOnline: node.isOnline,
 				hopsAway: node.hopsAway,
-				latitude: position?.latitude,
-				longitude: position?.longitude,
+				latitude: coordinate?.latitude,
+				longitude: coordinate?.longitude,
 				isFavorite: node.favorite
 			)
 		}
