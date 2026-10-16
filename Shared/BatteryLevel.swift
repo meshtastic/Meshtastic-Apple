@@ -12,47 +12,29 @@ struct BatteryIcon: View {
 	var color: Color
 
 	var body: some View {
+		// A nil level renders nothing; the old force-unwrap chain crashed on it.
+		if let batteryLevel {
+			Image(systemName: symbolName(for: batteryLevel))
+				.font(font)
+				.foregroundColor(batteryLevel == 0 ? .red : color)
+				.symbolRenderingMode(.hierarchical)
+		}
+	}
 
-		if batteryLevel == 100 {
-
-			Image(systemName: "battery.100.bolt")
-				.font(font)
-				.foregroundColor(color)
-				.symbolRenderingMode(.hierarchical)
-		} else if batteryLevel! < 100 && batteryLevel! > 74 {
-
-			Image(systemName: "battery.75")
-				.font(font)
-				.foregroundColor(color)
-				.symbolRenderingMode(.hierarchical)
-		} else if batteryLevel! < 75 && batteryLevel! > 49 {
-
-			Image(systemName: "battery.50")
-				.font(font)
-				.foregroundColor(color)
-				.symbolRenderingMode(.hierarchical)
-		} else if batteryLevel! < 50 && batteryLevel! > 14 {
-
-			Image(systemName: "battery.25")
-				.font(font)
-				.foregroundColor(color)
-				.symbolRenderingMode(.hierarchical)
-		} else if batteryLevel! < 15 && batteryLevel! > 0 {
-
-			Image(systemName: "battery.0")
-				.font(font)
-				.foregroundColor(color)
-				.symbolRenderingMode(.hierarchical)
-		} else if batteryLevel! == 0 {
-			Image(systemName: "battery.0")
-				.font(font)
-				.foregroundColor(.red)
-				.symbolRenderingMode(.hierarchical)
-		} else if batteryLevel! > 100 {
-			Image(systemName: "powerplug")
-				.font(font)
-				.foregroundColor(color)
-				.symbolRenderingMode(.hierarchical)
+	private func symbolName(for level: Int32) -> String {
+		switch level {
+		case 101...:
+			return "powerplug"
+		case 100:
+			return "battery.100.bolt"
+		case 75...99:
+			return "battery.75"
+		case 50...74:
+			return "battery.50"
+		case 15...49:
+			return "battery.25"
+		default:
+			return "battery.0"
 		}
 	}
 }
