@@ -81,9 +81,11 @@ enum SpatialTerrainAutoDecision: Equatable {
 			|| SpatialTerrainCoverage.fraction(of: box, covered: streets) >= coverageThreshold
 		if hasTerrain && hasStreets { return .none }
 		if isBusy { return .none }
-		// Normally one; a second is left over when the app quit mid-download.
+		// Normally one. A second is left over when the app quit mid-download, or is terrain for a
+		// bigger area kept beside a street map when the bigger street map was too large. Grow from
+		// the largest with terrain.
 		let allManaged = regions.filter { $0.managedBy == OfflineMapRegion.spatialMapManager }
-		let managed = allManaged.first { $0.terrain != nil } ?? allManaged.first
+		let managed = allManaged.filter { $0.terrain != nil }.max { $0.bounds.areaSquareKm < $1.bounds.areaSquareKm } ?? allManaged.first
 		// The app's own check only grows a region the spatial map already made.
 		if growOnly && managed == nil { return .none }
 		// A managed region that already spans the box is missing streets or terrain (an older
@@ -99,6 +101,16 @@ enum SpatialTerrainAutoDecision: Equatable {
 		guard backoff.allows(target, now: now) else { return .none }
 		if let managed { return .expand(target, replacing: managed.id) }
 		return .create(target)
+	}
+
+	/// The smaller areas that still cover `box`, to try in turn when the street map for `target` is
+	/// over the per-map limit (the estimate is rough; the manager checks the real plan).
+	static func smallerAreas(than target: GeoBounds, box: GeoBounds) -> [GeoBounds] {
+		var result: [GeoBounds] = []
+		for area in [box.expandedForTerrain(), box] where area != target && target.contains(area) && !result.contains(area) {
+			result.append(area)
+		}
+		return result
 	}
 
 	static func estimatedTerrainBytes(_ bounds: GeoBounds) -> Int64 {

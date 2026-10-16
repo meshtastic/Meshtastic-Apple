@@ -254,23 +254,23 @@
             "line",
             "waypoint",
             "radio",
+            "one",
+            "mesh",
             "signal",
             "same",
             "open",
-            "one",
-            "mesh",
             "estimate",
             "location",
+            "area",
             "terrain",
             "shows",
             "offline",
+            "maps",
             "back",
-            "area",
-            "toolbar",
-            "path",
-            "off"
+            "while",
+            "toolbar"
         ],
-        "charCount": 16679
+        "charCount": 16971
     },
     {
         "id": "messages",

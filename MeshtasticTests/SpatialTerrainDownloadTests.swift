@@ -150,11 +150,51 @@ struct SpatialTerrainDownloadTests {
 		#expect(!OfflineMapManager.managedTerrainCovers(inside, in: [region(box, terrain: true)], managedBy: manager), "the user's terrain is not the managed one")
 	}
 
-	@Test func managedMapsDrawUnderTheUsersMaps() {
-		let user = OfflineMapRegionFile(region: region(box), url: URL(fileURLWithPath: "/tmp/user.pmtiles"))
-		let app = OfflineMapRegionFile(region: managed(box), url: URL(fileURLWithPath: "/tmp/app.pmtiles"))
-		let bindings = OfflineVectorTileProvider.sourceBindings(for: [user, app])
-		#expect(bindings.map(\.regionID) == [app.region.id, user.region.id])
+	@Test func smallerAreasForTheStreetMap() {
+		let grown = box.expandedForTerrain().union(GeoBounds(minLon: -121.0, minLat: 47.5, maxLon: -120.8, maxLat: 47.7)).expandedForTerrain()
+		#expect(SpatialTerrainAutoDecision.smallerAreas(than: grown, box: box) == [box.expandedForTerrain(), box])
+		#expect(SpatialTerrainAutoDecision.smallerAreas(than: box.expandedForTerrain(), box: box) == [box])
+		#expect(SpatialTerrainAutoDecision.smallerAreas(than: box, box: box).isEmpty)
+	}
+
+	@Test func aFullManagedMapReplacesEveryOlderOne() {
+		let oldFull = managed(box)
+		let oldTerrain = managed(box.expandedForTerrain(), basemap: false)
+		let user = region(box, terrain: true)
+		let new = managed(box.expandedForTerrain())
+		let replaced = OfflineMapManager.managedRegionsReplaced(by: new, in: [oldFull, oldTerrain, user, new])
+		#expect(Set(replaced.map(\.id)) == [oldFull.id, oldTerrain.id])
+	}
+
+	@Test func terrainOnlyKeepsTheStreetsTheUserHad() {
+		let oldFull = managed(box)
+		let farFull = managed(GeoBounds(minLon: 13, minLat: 52, maxLon: 14, maxLat: 53))
+		let oldTerrain = managed(box, basemap: false)
+		let new = managed(box.expandedForTerrain(), basemap: false)
+		let replaced = OfflineMapManager.managedRegionsReplaced(by: new, in: [oldFull, farFull, oldTerrain, new])
+		#expect(Set(replaced.map(\.id)) == [farFull.id, oldTerrain.id], "the street map under the new terrain stays")
+		#expect(OfflineMapManager.managedBytesFreed(by: new, in: [oldFull, farFull, oldTerrain, new]) == farFull.totalByteCount + oldTerrain.totalByteCount)
+	}
+
+	@Test func growsFromTheLargestManagedTerrain() {
+		// A street map for the box, and terrain for a bigger area beside it.
+		let streets = managed(box.expandedForTerrain())
+		let wide = GeoBounds(minLon: -123.5, minLat: 47.0, maxLon: -121.0, maxLat: 48.2)
+		let terrain = managed(wide, basemap: false)
+		let east = GeoBounds(minLon: -121.5, minLat: 47.5, maxLon: -120.5, maxLat: 47.7)
+		#expect(decide(east, [streets, terrain]) == .expand(wide.union(east).expandedForTerrain(), replacing: terrain.id))
+		#expect(decide(wide, [streets, terrain], streetsTooLarge: wide) == .none)
+	}
+
+	@Test func managedBytesNeverBlockTheUsersDownloads() {
+		var user = region(GeoBounds(minLon: 0, minLat: 0, maxLon: 1, maxLat: 1))
+		user.fileSize = OfflineMapStorageLimits.maxTotalBytes - 200_000_000
+		var m = managed(box)
+		m.fileSize = 400_000_000
+		#expect(OfflineMapManager.storageCounted(in: [user, m], forAppManaged: false) == user.totalByteCount)
+		#expect(OfflineMapManager.storageCounted(in: [user, m], forAppManaged: true) == user.totalByteCount + m.totalByteCount)
+		#expect(OfflineMapManager.downloadBlockReason(regions: [user, m], estimatedBytes: 100_000_000, replacing: nil) == nil)
+		#expect(OfflineMapManager.downloadBlockReason(regions: [user, m], estimatedBytes: 300_000_000, replacing: nil) != nil)
 	}
 
 	@Test func aThinUncoveredStripAlongAnEdgeStillDownloads() {

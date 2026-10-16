@@ -116,7 +116,11 @@ final class SpatialTerrainKeeper {
 		note = nil
 		let estimate = ByteCountFormatter.string(fromByteCount: SpatialTerrainAutoDecision.estimatedBytes(target), countStyle: .file)
 		Logger.services.info("🧊 [Spatial] Map download (\(automatic ? "automatic" : "manual", privacy: .public)): \(String(describing: decision), privacy: .public), about \(estimate, privacy: .public)")
-		manager.downloadManagedMap(bounds: target, includeRegional: SpatialTerrainAutoDecision.includesRegional(target)) { [weak self] result in
+		manager.downloadManagedMap(
+			bounds: target,
+			smallerAreas: SpatialTerrainAutoDecision.smallerAreas(than: target, box: box),
+			includeRegional: SpatialTerrainAutoDecision.includesRegional(target)
+		) { [weak self] result in
 			self?.finish(result: result)
 		}
 		// Set after the call: a refusal up front completes synchronously, before this line.

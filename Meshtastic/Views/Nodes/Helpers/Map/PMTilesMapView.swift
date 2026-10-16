@@ -184,10 +184,8 @@ final class OfflineVectorTileProvider: ObservableObject {
 		sourceBindings(for: OfflineMapManager.persistedRegionFiles())
 	}
 
-	/// App-managed maps first, so the user's own maps (often more detailed) draw over them.
 	nonisolated static func sourceBindings(for regionFiles: [OfflineMapRegionFile]) -> [OfflineVectorSourceBinding] {
-		(regionFiles.filter(\.region.isAppManaged) + regionFiles.filter { !$0.region.isAppManaged })
-			.map(OfflineVectorSourceBinding.init(regionFile:))
+		regionFiles.map(OfflineVectorSourceBinding.init(regionFile:))
 	}
 
 	nonisolated static func requiresReload(
