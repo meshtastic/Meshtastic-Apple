@@ -139,9 +139,11 @@ final class WidgetDataBroker {
 				sortBy: [SortDescriptor(\.time, order: .reverse)]
 			)
 			statsDescriptor.fetchLimit = 1
-			if let stored = try? context.fetch(statsDescriptor).first {
+			// Rows with no timestamp (pre-dating current ingest) are skipped —
+			// a .distantPast statsAt renders as a multi-millennium age.
+			if let stored = try? context.fetch(statsDescriptor).first, let statsTime = stored.time {
 				latestLocalStats = LocalStatsSnapshot(
-					statsAt: stored.time ?? .distantPast,
+					statsAt: statsTime,
 					uptimeSeconds: stored.uptimeSeconds,
 					channelUtilization: stored.channelUtilization,
 					airUtilTx: stored.airUtilTx,
@@ -160,6 +162,7 @@ final class WidgetDataBroker {
 
 		let preset = (radioNode?.loRaConfig?.modemPreset).flatMap { ModemPresets(rawValue: Int($0)) }
 		let nodes = fetchNodeSnapshots(context: context, preset: preset)
+		let totalNodeCount = (try? context.fetchCount(FetchDescriptor<NodeInfoEntity>())) ?? nodes.count
 		let (unreadChannels, unreadDMs) = fetchUnreadCounts(context: context)
 		let recent = fetchRecentMessages(context: context, radioNum: radioNum, radioNode: radioNode)
 
@@ -172,6 +175,7 @@ final class WidgetDataBroker {
 			radioBatteryLevel: radioNode?.latestDeviceMetrics?.batteryLevel,
 			localStats: latestLocalStats,
 			nodes: nodes,
+			totalNodeCount: totalNodeCount,
 			unreadChannelMessages: unreadChannels,
 			unreadDirectMessages: unreadDMs,
 			recentMessages: recent

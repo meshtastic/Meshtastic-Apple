@@ -31,6 +31,9 @@ struct WidgetSnapshot: Codable {
 	/// Favorites first, then most recently heard. Capped small — this feeds the
 	/// node-tracker widget picker and rows, not a full node database.
 	let nodes: [NodeSnapshot]
+	/// The real node-database size, so widgets never present the capped `nodes`
+	/// list as the mesh.
+	let totalNodeCount: Int
 
 	let unreadChannelMessages: Int
 	let unreadDirectMessages: Int
