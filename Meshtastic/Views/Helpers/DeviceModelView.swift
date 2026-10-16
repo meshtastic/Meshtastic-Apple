@@ -25,7 +25,8 @@ struct DeviceModelView<Placeholder: View>: View {
 	@State private var stage: DeviceModelStage?
 
 	var body: some View {
-		ZStack(alignment: .bottomTrailing) {
+		// Bottom left: the supported-hardware rosette sits bottom right on the same image.
+		ZStack(alignment: .bottomLeading) {
 			ZStack {
 				placeholder()
 					.opacity(stage == nil ? 1 : 0)
