@@ -99,13 +99,16 @@ extension AccessoryManager {
 					}
 					let eventStream = try await connection.connect()
 					self.updateState(.communicating)
+					// Every event is tagged with the session it came from, so a late event from an
+					// earlier attempt's connection is never handled against this one.
+					let session = RadioSession(device: device, connection: connection)
 					self.connectionEventTask = Task {
 						for await event in eventStream {
-							await self.didReceive(event)
+							await self.didReceive(event, from: session)
 						}
 						Logger.transport.info("[Accessory] Event stream closed")
 					}
-					self.activeConnection = (device: device, connection: connection)
+					self.activeConnection = session
 					self.activeDeviceNum = device.num
 					// The mesh-traffic monitor (map flyover gate) self-starts its decay timer on the
 					// first inbound packet and is cleared by Step 0's closeConnection() reset(), so

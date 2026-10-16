@@ -79,7 +79,7 @@ struct AccessoryManagerChannelRefreshLifecycleTests {
 			connectionState: .connected,
 			num: nodeNum.map(Int64.init)
 		)
-		manager.activeConnection = (device: device, connection: connection)
+		manager.activeConnection = RadioSession(device: device, connection: connection)
 		manager.isSwitchingDevices = true
 		manager.context = PersistenceController.shared.context
 		manager.updateState(.connecting)

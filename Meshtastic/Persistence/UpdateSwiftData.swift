@@ -366,12 +366,16 @@ extension MeshPackets {
 	/// - Parameter overTheMesh: true when this NodeInfo arrived as an over-the-air packet from a
 	///   remote node — logged on .mesh so it appears in the Packet Stream. false for local updates
 	///   (e.g. the favorite action), which did not cross the mesh and log on .data.
+	/// - Parameter receivedBy: node number of the local radio the packet arrived on, used to tell
+	///   whether it was addressed to us. Nil falls back to the stored preferred radio.
 	/// - Parameter acceptsKeyReplacement: Set only for a contact import where the person was shown
 	///   that the key differs from the stored one and confirmed the replacement. It lifts
 	///   first-wins for that one write, so the app ends up holding the same key the `add_contact`
 	///   just gave the radio. Every other path leaves it false and keeps first-wins.
-	func upsertNodeInfoPacket (packet: MeshPacket, favorite: Bool = false, overTheMesh: Bool = true,
+	func upsertNodeInfoPacket (packet: MeshPacket, favorite: Bool = false, overTheMesh: Bool = true, receivedBy: Int64? = nil,
 	                           acceptsKeyReplacement: Bool = false) {
+		let localNodeNum = receivedBy ?? Int64(UserDefaults.preferredPeripheralNum)
+		let isForUs = packet.to == Constants.maximumNodeNum || Int64(packet.to) == localNodeNum
 
 		let details = nodeInfoLogDetails(from: packet)
 		if overTheMesh {
@@ -409,7 +413,7 @@ extension MeshPackets {
 				newNode.rssi = packet.rxRssi
 				newNode.viaMqtt = packet.viaMqtt
 				
-				if packet.to == Constants.maximumNodeNum || packet.to == UserDefaults.preferredPeripheralNum {
+				if isForUs {
 					newNode.channel = Int32(truncatingIfNeeded: packet.channel)
 				}
 				if let nodeInfoMessage = try? NodeInfo(serializedBytes: packet.decoded.payload) {
@@ -534,7 +538,7 @@ extension MeshPackets {
 				
 			} else {
 				// Update an existing node
-				if packet.to == Constants.maximumNodeNum || packet.to == UserDefaults.preferredPeripheralNum {
+				if isForUs {
 					fetchedNode[0].channel = Int32(truncatingIfNeeded: packet.channel)
 				}
 				

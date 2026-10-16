@@ -283,7 +283,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// absent region (or an empty map) as "no constraint". Reset on disconnect.
 	@Published var loRaRegionPresets: [Config.LoRaConfig.RegionCode: RegionPresetInfo] = [:]
 
-	var activeConnection: (device: Device, connection: any Connection)?
+	/// The live connection, if any. A `RadioSession` rather than a bare (device, connection) pair
+	/// so every event and handler can carry which connection it belongs to.
+	var activeConnection: RadioSession?
 
 	/// Reference to the active discovery scan engine, if any
 	var discoveryScanEngine: DiscoveryScanEngine?
@@ -786,18 +788,14 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		
 		// Update the active device if the UUID's match
 		if let activeConnection, activeConnection.device.id == deviceId {
-			var device = activeConnection.device
-			if device[keyPath: key] != value {
+			if activeConnection.device[keyPath: key] != value {
 				// Update the @Published stuff for the UI
 				self.objectWillChange.send()
-
-				device[keyPath: key] = value
-				self.activeConnection = (device: device, connection: activeConnection.connection)
-				
+				activeConnection.device[keyPath: key] = value
 			}
 			// Make sure activeDeviceNum is up to date.
-			if key == \.num, self.activeDeviceNum != device.num {
-				self.activeDeviceNum = device.num
+			if key == \.num, self.activeDeviceNum != activeConnection.device.num {
+				self.activeDeviceNum = activeConnection.device.num
 			}
 		}
 		
@@ -851,8 +849,17 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		}
 	}
 
-	func didReceive(_ event: ConnectionEvent) async {
+	/// Handles one event from a connection. `session` is the connection it came from; nil means
+	/// the active one (tests and older call sites).
+	///
+	/// Data, log and RSSI events from a session that is no longer the active one are dropped:
+	/// they are late arrivals from a torn-down connection, and handling them would store them
+	/// against whichever radio is connected now. Errors and disconnects are still handled as
+	/// before, since the connect retry flow depends on them.
+	func didReceive(_ event: ConnectionEvent, from session: RadioSession? = nil) async {
 		let shouldIgnoreTransientEvent = isClosingConnection || userRequestedConnectionCancellation || activeConnection == nil
+		let isFromStaleSession = session.map { $0 !== activeConnection } ?? false
+		let source = session ?? activeConnection
 
 		packetsReceived += 1
 
@@ -862,8 +869,12 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				Logger.transport.debug("[Accessory] Dropping data event during disconnect teardown")
 				return
 			}
+			guard !isFromStaleSession, let source else {
+				Logger.transport.debug("[Accessory] Dropping data event from a connection that is no longer active")
+				return
+			}
 			// Logger.transport.info("✅ [Accessory] didReceive: \(fromRadio.payloadVariant.debugDescription)")
-			await self.processFromRadio(fromRadio)
+			await self.processFromRadio(fromRadio, session: source)
 			// Periodically recycle the ingest actor so its ModelContext releases accumulated
 			// registered objects (see packetsAtLastIngestRecycle). Only while subscribed —
 			// never mid node-DB retrieval — and only here, between packets, where no in-flight
@@ -880,7 +891,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			}
 
 		case .logMessage(let message):
-			guard !shouldIgnoreTransientEvent else {
+			guard !shouldIgnoreTransientEvent, !isFromStaleSession else {
 				Logger.transport.debug("[Accessory] Dropping log event during disconnect teardown")
 				return
 			}
@@ -891,11 +902,11 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			}
 		
 		case .rssiUpdate(let rssi):
-			guard !shouldIgnoreTransientEvent else {
+			guard !shouldIgnoreTransientEvent, !isFromStaleSession else {
 				Logger.transport.debug("[Accessory] Dropping RSSI update during disconnect teardown")
 				return
 			}
-			guard let deviceId = self.activeConnection?.device.id else {
+			guard let deviceId = source?.device.id else {
 				Logger.transport.error("Could not update RSSI, no active connection")
 				return
 			}
@@ -995,7 +1006,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		}
 	}
 
-	private func processFromRadio(_ decodedInfo: FromRadio) async {
+	/// Routes one `FromRadio` to its handler. Everything here is about `session`, the radio the
+	/// packet arrived on — never "whichever radio is current".
+	private func processFromRadio(_ decodedInfo: FromRadio, session: RadioSession) async {
 		// Logger.transport.info("📻 [processFromRadio] Processing: \(String(describing: decodedInfo.payloadVariant), privacy: .public)")
 		switch decodedInfo.payloadVariant {
 		case .mqttClientProxyMessage(let mqttClientProxyMessage):
@@ -1005,7 +1018,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			handleClientNotification(clientNotification)
 
 		case .myInfo(let myNodeInfo):
-			await handleMyInfo(myNodeInfo)
+			await handleMyInfo(myNodeInfo, session: session)
 
 		case .packet(let packet):
 			// Feed the traffic-rate estimator one tick per inbound mesh packet — this is the busy path
@@ -1016,7 +1029,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				packetEvents.send(event)
 			}
 			// All received packets get passed through updateAnyPacketFrom to update lastHeard, rxSnr, etc. (like firmware's NodeDB::updateFrom).
-			if let connectedNodeNum = self.activeDeviceNum {
+			if let connectedNodeNum = session.nodeNum {
 				await MeshPackets.shared.updateAnyPacketFrom(packet: packet, activeDeviceNum: connectedNodeNum,
 				                                             reportsHeardOnCurrentLora: reportsHeardOnCurrentLora)
 			} else {
@@ -1032,7 +1045,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 				switch data.portnum {
 				case .textMessageApp, .detectionSensorApp, .alertApp:
-					await handleTextMessageAppPacket(packet)
+					await handleTextMessageAppPacket(packet, session: session)
 					// Broadcast text message to TAK clients
 					if let text = String(bytes: data.payload, encoding: .utf8) {
 						Logger.tak.debug("Text message received, calling broadcast")
@@ -1068,26 +1081,26 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 						}
 					}
 				case .nodeinfoApp:
-					guard let connectedNodeNum = self.activeDeviceNum else {
+					guard let connectedNodeNum = session.nodeNum else {
 						Logger.mesh.error("🕸️ Unable to determine connectedNodeNum for node info upsert.")
 						return
 					}
 					if packet.from != connectedNodeNum {
-						await MeshPackets.shared.upsertNodeInfoPacket(packet: packet)
+						await MeshPackets.shared.upsertNodeInfoPacket(packet: packet, receivedBy: connectedNodeNum)
 					} else {
 						Logger.mesh.error("🕸️ Received a node info packet from ourselves over the mesh. Dropping.")
 					}
 				case .routingApp:
-					guard let deviceNum = activeConnection?.device.num else {
+					guard let deviceNum = session.nodeNum else {
 						Logger.mesh.error("🕸️ No active connection. Unable to determine connectedNodeNum for routingPacket.")
 						return
 					}
 					await MeshPackets.shared.routingPacket(packet: packet, connectedNodeNum: deviceNum)
 				case .adminApp:
-					await MeshPackets.shared.adminAppPacket(packet: packet, connectedNodeNum: self.activeDeviceNum)
+					await MeshPackets.shared.adminAppPacket(packet: packet, connectedNodeNum: session.nodeNum)
 				case .replyApp:
 					Logger.mesh.info("[Reply] packet received from \(packet.from.toHex(), privacy: .public)")
-					guard let deviceNum = activeConnection?.device.num else {
+					guard let deviceNum = session.nodeNum else {
 						Logger.mesh.error("🕸️ No active connection. Unable to determine connectedNodeNum for replyApp.")
 						return
 					}
@@ -1097,13 +1110,13 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				case .serialApp:
 					Logger.mesh.info("[Serial] packet received from \(packet.from.toHex(), privacy: .public)")
 				case .storeForwardApp:
-					guard let deviceNum = activeConnection?.device.num else {
+					guard let deviceNum = session.nodeNum else {
 						Logger.mesh.error("🕸️ No active connection. Unable to determine connectedNodeNum for storeAndForward.")
 						return
 					}
 					storeAndForwardPacket(packet: decodedInfo.packet, connectedNodeNum: deviceNum)
 				case .rangeTestApp:
-					guard let deviceNum = activeConnection?.device.num else {
+					guard let deviceNum = session.nodeNum else {
 						Logger.mesh.error("🕸️ No active connection. Unable to determine connectedNodeNum for rangeTestApp.")
 						return
 					}
@@ -1118,7 +1131,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 						Logger.mesh.info("[Range Test] packet received from \(packet.from.toHex(), privacy: .public)")
 					}
 				case .telemetryApp:
-					guard let deviceNum = activeConnection?.device.num else {
+					guard let deviceNum = session.nodeNum else {
 						Logger.mesh.error("🕸️ No active connection. Unable to determine connectedNodeNum for telemetryApp.")
 						return
 					}
@@ -1140,7 +1153,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				case .nodeStatusApp:
 					await MeshPackets.shared.upsertNodeStatusPacket(packet: packet)
 				case .tracerouteApp:
-					handleTraceRouteApp(packet)
+					handleTraceRouteApp(packet, session: session)
 				case .neighborinfoApp:
 					if let neighborInfo = try? NeighborInfo(serializedBytes: decodedInfo.packet.decoded.payload) {
 						Logger.mesh.info("[Neighbor Info] packet received from \(packet.from.toHex(), privacy: .public) — \(neighborInfo.neighbors.count, privacy: .public) neighbors")
@@ -1162,7 +1175,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 							// shows in the Beacons list and feeds the next scan setup (FR-015). Two gates
 							// apply: "no active scan" here, plus the connected node's MeshBeaconConfig
 							// FLAG_LISTEN_ENABLED enforced inside ingestPassiveBeacon.
-							ingestPassiveBeacon(beacon, packet: decodedInfo.packet)
+							ingestPassiveBeacon(beacon, packet: decodedInfo.packet, receivedBy: session.nodeNum)
 						}
 					} else {
 						Logger.mesh.info("[Mesh Beacon] packet received from \(packet.from.toHex(), privacy: .public) — failed to decode payload")
@@ -1206,19 +1219,19 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			await MeshPackets.shared.scheduleDebouncedSave()
 
 		case .nodeInfo(let nodeInfo):
-			await handleNodeInfo(nodeInfo)
+			await handleNodeInfo(nodeInfo, session: session)
 
 		case .channel(let channel):
-			await handleChannel(channel)
+			await handleChannel(channel, session: session)
 
 		case .config(let config):
-			await handleConfig(config)
+			await handleConfig(config, session: session)
 
 		case .moduleConfig(let moduleConfig):
-			await handleModuleConfig(moduleConfig)
+			await handleModuleConfig(moduleConfig, session: session)
 
 		case .metadata(let metadata):
-			await handleDeviceMetadata(metadata)
+			await handleDeviceMetadata(metadata, session: session)
 
 		case .regionPresets(let regionPresets):
 			handleRegionPresets(regionPresets)
@@ -1306,9 +1319,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 							nodeDatabaseSavedAt = Date()
 						}
 						Logger.data.info("💾 [Database] Batch saved all node info after database retrieval")
-						if let activeDeviceNum {
+						if let completedNodeNum = session.nodeNum {
 							MeshShareSnapshotBuilder.refresh(
-								nodeNum: activeDeviceNum,
+								nodeNum: completedNodeNum,
 								context: context
 							)
 						}
@@ -1560,14 +1573,17 @@ extension AccessoryManager {
 extension AccessoryManager {
 
 	/// Persist a `MESH_BEACON_APP` beacon heard outside an active scan as a session-less
-	/// `DiscoveredBeaconEntity` (session / presetResult nil). Ignores beacons from the connected
-	/// node itself and de-dupes against a recent identical capture (same node + channel within a
+	/// `DiscoveredBeaconEntity` (session / presetResult nil). Ignores beacons from the radio that
+	/// heard it and de-dupes against a recent identical capture (same node + channel within a
 	/// short window) so a beacon broadcast repeatedly doesn't spam the list.
-	func ingestPassiveBeacon(_ beacon: MeshBeacon, packet: MeshPacket) {
+	///
+	/// `receivedBy` is the node number of the radio the beacon arrived on; nil falls back to the
+	/// stored preferred radio, which is what this used before sessions carried it.
+	func ingestPassiveBeacon(_ beacon: MeshBeacon, packet: MeshPacket, receivedBy: Int64? = nil) {
 		let fromNodeNum = Int64(packet.from)
 
 		// Ignore self-beacons (FR-001/FR-002).
-		let connectedNodeNum = Int64(UserDefaults.preferredPeripheralNum)
+		let connectedNodeNum = receivedBy ?? Int64(UserDefaults.preferredPeripheralNum)
 		guard fromNodeNum != connectedNodeNum else { return }
 
 		// FR-015: only capture passive beacons when the connected node is configured to listen
