@@ -114,6 +114,34 @@ struct ScanTargetTests {
 		#expect(target?.regionRaw == RegionCodes.us.rawValue)
 	}
 
+	@Test func aUSSlotIsNotCarriedIntoEU868() {
+		// Slot 20 exists in US but not in EU868's single LongFast slot. Checked against US it keeps
+		// US, so a queued EU868 target ahead of it can't leave the radio applying slot 20 in EU868.
+		let us = ScanTarget.beacon(
+			offeredPreset: .longFast, offerRegion: 0, channel: nil, frequencySlot: 20,
+			radioRegion: RegionCodes.us.rawValue
+		)
+		#expect(us?.regionRaw == RegionCodes.us.rawValue)
+		let eu = ScanTarget.beacon(
+			offeredPreset: .longFast, offerRegion: 0, channel: nil, frequencySlot: 20,
+			radioRegion: RegionCodes.eu868.rawValue
+		)
+		#expect(eu == nil)
+	}
+
+	@Test func aPinnedSlotBeaconIsNotTheActivePresetDwell() {
+		// Heard during a plain LongFast dwell, a beacon pinning LongFast slot 20 is a different
+		// target with a different results key, so it still gets queued.
+		let active = ScanTarget(preset: .longFast)
+		let beacon = ScanTarget.beacon(
+			offeredPreset: .longFast, offerRegion: 0, channel: nil, frequencySlot: 20,
+			radioRegion: RegionCodes.us.rawValue
+		)
+		#expect(beacon != nil)
+		#expect(beacon != active)
+		#expect(beacon?.label != active.label)
+	}
+
 	// MARK: - Labels key results, so a pinned slot must show in them
 
 	@Test func pinnedSlotIsInTheLabel() {

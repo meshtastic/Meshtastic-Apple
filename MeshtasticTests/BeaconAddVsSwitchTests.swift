@@ -303,6 +303,9 @@ struct BeaconAddVsSwitchTests {
 		let ph433 = RegionCodes.ph433.rawValue
 		#expect(LoRaChannelCalculator.isValidBeaconSlot(7, regionCode: ph433, preset: .longFast))
 		#expect(!LoRaChannelCalculator.isValidBeaconSlot(8, regionCode: ph433, preset: .longFast))
+		let ua433 = RegionCodes.ua433.rawValue
+		#expect(LoRaChannelCalculator.isValidBeaconSlot(7, regionCode: ua433, preset: .longFast))
+		#expect(!LoRaChannelCalculator.isValidBeaconSlot(8, regionCode: ua433, preset: .longFast))
 	}
 
 	@Test func slotBoundsAreOneBased() {
