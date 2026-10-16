@@ -181,7 +181,11 @@ struct ShowcaseSpace: View {
 		DragGesture(minimumDistance: 0)
 			.targetedToEntity(where: .has(ShowcaseInspectedComponent.self))
 			.onChanged { value in
-				let offset = value.convert(value.translation3D, from: .local, to: .scene)
+				// Convert both ends and subtract: converting the translation itself treats it as a
+				// point, which adds the view's offset from the scene origin and pins the tip at its limit.
+				let start = value.convert(value.startLocation3D, from: .local, to: .scene)
+				let now = value.convert(value.location3D, from: .local, to: .scene)
+				let offset = now - start
 				scene.inspector.drag(offset: SIMD2(offset.x, offset.y), at: value.time.timeIntervalSinceReferenceDate)
 			}
 			.onEnded { value in
