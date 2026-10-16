@@ -215,7 +215,7 @@ targets:
         type: syncedFolder
       - path: "Meshtastic/Resources/images"
         type: syncedFolder
-      # Real-size device models, only used by the visionOS build.
+      # Real-size device models (iPhone, iPad, Mac and Vision Pro).
       - path: "Meshtastic/Resources/DeviceModels"
         type: syncedFolder
       - path: "Meshtastic/MeshtasticApp.swift"
@@ -344,11 +344,9 @@ targets:
           ENABLE_RESOURCE_ACCESS_LOCATION: "NO"
           ENABLE_RESOURCE_ACCESS_PRINTING: "NO"
           ENABLE_RESOURCE_ACCESS_USB: "NO"
-          # Device models are visionOS-only; keep them out of iPhone, iPad and Mac builds. Their
-          # folder's README (the copyright notice) stays out of every build.
+          # Device models ship in the iPhone, iPad, Mac and Vision Pro app (not TV or Watch, which
+          # don't include this folder). Their README (the copyright notice) stays out of every build.
           EXCLUDED_SOURCE_FILE_NAMES: "README.md"
-          EXCLUDED_SOURCE_FILE_NAMES[sdk=iphone*]: "*.usdz README.md"
-          EXCLUDED_SOURCE_FILE_NAMES[sdk=macosx*]: "*.usdz README.md"
           INFOPLIST_FILE: "Meshtastic/Info.plist"
           INFOPLIST_KEY_CFBundleDisplayName: "Meshtastic"
           INFOPLIST_KEY_LSApplicationCategoryType: "public.app-category.utilities"
@@ -396,11 +394,9 @@ targets:
           ENABLE_RESOURCE_ACCESS_LOCATION: "NO"
           ENABLE_RESOURCE_ACCESS_PRINTING: "NO"
           ENABLE_RESOURCE_ACCESS_USB: "NO"
-          # Device models are visionOS-only; keep them out of iPhone, iPad and Mac builds. Their
-          # folder's README (the copyright notice) stays out of every build.
+          # Device models ship in the iPhone, iPad, Mac and Vision Pro app (not TV or Watch, which
+          # don't include this folder). Their README (the copyright notice) stays out of every build.
           EXCLUDED_SOURCE_FILE_NAMES: "README.md"
-          EXCLUDED_SOURCE_FILE_NAMES[sdk=iphone*]: "*.usdz README.md"
-          EXCLUDED_SOURCE_FILE_NAMES[sdk=macosx*]: "*.usdz README.md"
           INFOPLIST_FILE: "Meshtastic/Info.plist"
           INFOPLIST_KEY_CFBundleDisplayName: "Meshtastic"
           INFOPLIST_KEY_LSApplicationCategoryType: "public.app-category.utilities"
