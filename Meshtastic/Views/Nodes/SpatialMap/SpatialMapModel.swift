@@ -67,6 +67,8 @@ final class SpatialMapModel {
 	private(set) var placement: SpatialPlacement?
 	private(set) var terrainEntity: ModelEntity?
 	private(set) var textureSource: SpatialTextureSource?
+	/// The built texture is the offline fallback because the Apple map image could not be fetched.
+	private(set) var imageryUnavailable = false
 	private(set) var isBuildingTerrain = false
 	private(set) var terrainMessage: String?
 	private(set) var routes: [SpatialRouteSnapshot] = []
@@ -123,6 +125,10 @@ final class SpatialMapModel {
 	private let builder: SpatialTerrainBuilder
 	private var buildTask: Task<Void, Never>?
 	private var buildKey: String?
+	/// Whether each imported basemap holds vector tiles, by region ID. A raster import can't be
+	/// drawn as the Offline layer, so it never offers it.
+	private var vectorBasemaps: [UUID: Bool] = [:]
+	@ObservationIgnored private var vectorCheckTask: Task<Void, Never>?
 	private var placementRevision = 0
 	/// The circle around the whole mesh. Terrain downloads cover the square around it, so zooming
 	/// in never starts a download.
@@ -278,16 +284,55 @@ final class SpatialMapModel {
 		}
 	}
 
-	private func rebuildTerrainIfNeeded(circle: SpatialCircle, layer: MapLayer, dark: Bool, contours: Bool) {
+	/// Whether a downloaded basemap covers the box being shown, so the Offline layer can be picked.
+	func offlineLayerAvailable(regions: [OfflineMapRegion]) -> Bool {
+		guard let bounds = targetCircle?.bounds else { return false }
+		return offlineBasemapCovers(bounds, regions: regions)
+	}
+
+	private func offlineBasemapCovers(_ bounds: GeoBounds, regions: [OfflineMapRegion]) -> Bool {
+		checkImportedBasemaps(regions)
+		return SpatialOfflineMap.covers(bounds, basemaps: SpatialOfflineMap.basemapBounds(regions, checked: vectorBasemaps))
+	}
+
+	/// Reads the tile type of imported basemaps not checked yet, then rebuilds in case Offline is
+	/// now available.
+	private func checkImportedBasemaps(_ regions: [OfflineMapRegion]) {
+		guard vectorCheckTask == nil else { return }
+		let unchecked = regions.filter { SpatialOfflineMap.isVectorBasemap($0, checked: vectorBasemaps) == nil }
+		guard !unchecked.isEmpty else { return }
+		let files = unchecked.compactMap { region in OfflineMapManager.shared.fileURL(for: region).map { OfflineMapRegionFile(region: region, url: $0) } }
+		vectorCheckTask = Task { [weak self] in
+			let found = await Task.detached(priority: .utility) { SpatialOfflineMap.checkVectorTiles(files) }.value
+			guard let self else { return }
+			// A file that can't be read counts as not vector, so it isn't checked again.
+			for region in unchecked { vectorBasemaps[region.id] = found[region.id] ?? false }
+			vectorCheckTask = nil
+			applyArea()
+		}
+	}
+
+	private func rebuildTerrainIfNeeded(circle: SpatialCircle, layer storedLayer: MapLayer, dark: Bool, contours: Bool) {
 		let bounds = circle.bounds
+		OfflineMapManager.shared.loadIfNeeded()
+		let regions = OfflineMapManager.shared.regions
+		let offlineBasemap = offlineBasemapCovers(bounds, regions: regions)
+		let layer = SpatialOfflineMap.buildLayer(storedLayer, offlineAvailable: offlineBasemap)
 		// The terrain generation (every region's download stamp) is part of the key, so a terrain
 		// download or delete rebuilds the model.
-		let generation = OfflineMapManager.shared.regions
+		let terrainGeneration = regions
 			.compactMap { $0.terrain.map { String(Int($0.downloadedAt.timeIntervalSince1970)) } }
 			.sorted()
 			.joined(separator: ",")
 		let metric = Locale.current.measurementSystem == .metric
-		let key = "\(bounds.minLon),\(bounds.minLat),\(bounds.maxLon),\(bounds.maxLat)|\(layer.rawValue)|\(dark)|\(contours)|\(metric)|\(generation)"
+		// The Offline layer, and an Apple layer drawn from the offline map because imagery failed,
+		// also rebuild when a basemap is downloaded, updated or replaced. The Apple layers otherwise
+		// rebuild only when the area gains or loses a basemap (`offlineBasemap`).
+		func makeKey(usedFallback: Bool) -> String {
+			let basemaps = SpatialOfflineMap.basemapGeneration(regions, layer: layer, usedFallback: usedFallback)
+			return "\(bounds.minLon),\(bounds.minLat),\(bounds.maxLon),\(bounds.maxLat)|\(layer.rawValue)|\(dark)|\(contours)|\(metric)|\(offlineBasemap)|\(terrainGeneration)|\(basemaps)"
+		}
+		let key = makeKey(usedFallback: imageryUnavailable)
 		guard key != buildKey else { return }
 		buildKey = key
 		buildTask?.cancel()
@@ -296,6 +341,7 @@ final class SpatialMapModel {
 		let sources = OfflineMapManager.shared.terrainSources()
 		var options = SpatialTerrainOptions()
 		options.layer = layer
+		options.offlineBasemap = offlineBasemap
 		options.dark = dark
 		options.contours = contours
 		options.metric = metric
@@ -309,6 +355,9 @@ final class SpatialMapModel {
 				guard !Task.isCancelled, buildKey == key else { return }
 				terrainEntity = entity
 				textureSource = model.textureSource
+				imageryUnavailable = model.imageryUnavailable
+				// Key the build by what it drew, so falling back (or not) doesn't rebuild it again.
+				buildKey = makeKey(usedFallback: model.imageryUnavailable)
 				placementRevision += 1
 				placement = SpatialPlacement(
 					circle: circle, geometry: model.geometry,
@@ -332,6 +381,14 @@ final class SpatialMapModel {
 				}
 			}
 		}
+	}
+
+	/// Builds the current area again after the network comes back, so an Apple layer that fell
+	/// back to the offline map for lack of imagery gets its imagery.
+	func retryImagery() {
+		guard imageryUnavailable else { return }
+		buildKey = nil
+		applyArea()
 	}
 
 	// MARK: - Terrain download

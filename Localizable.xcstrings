@@ -1960,6 +1960,17 @@
         }
       }
     },
+    "Map imagery unavailable; showing the offline map" : {
+      "comment" : "Spatial map: the Apple map image could not be fetched, so the downloaded offline map is shown",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Map imagery unavailable; showing the offline map"
+          }
+        }
+      }
+    },
     "Map Layer" : {
       "comment" : "Spatial map: picker for the image draped over the terrain",
       "localizations" : {
@@ -6274,17 +6285,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已接收遙測模組設定：%@"
-          }
-        }
-      }
-    },
-    "Terrain Shading" : {
-      "comment" : "Spatial map layer: hillshade only, no map imagery",
-      "localizations" : {
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "地形陰影"
           }
         }
       }
