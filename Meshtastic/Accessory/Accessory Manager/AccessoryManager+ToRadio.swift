@@ -1011,6 +1011,7 @@ extension AccessoryManager {
 		   fromUser.num == activeDeviceNum,
 		   toUser.num == activeDeviceNum {
 			MeshShareSnapshotBuilder.refresh(nodeNum: activeDeviceNum, context: context)
+			WidgetDataBroker.shared.refresh(.config)
 		}
 		return Int64(meshPacket.id)
 	}

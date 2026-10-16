@@ -31,6 +31,9 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 		}
 #endif
 		UNUserNotificationCenter.current().delegate = self
+		// Widget snapshots: subscribe to message changes so widgets refresh on
+		// ingest and mark-read.
+		WidgetDataBroker.shared.start()
 		let locationsHandler = LocationsHandler.shared
 		locationsHandler.startLocationUpdates()
 		// If a background activity session was previously active, reinstantiate it after the background launch.
