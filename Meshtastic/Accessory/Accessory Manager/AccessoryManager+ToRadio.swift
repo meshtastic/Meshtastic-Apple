@@ -2839,7 +2839,7 @@ extension AccessoryManager {
 
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
-		await MeshPackets.shared.upsertBluetoothConfigPacket(config: config, nodeNum: toUser.num, sessionPasskey: toUser.userNode?.sessionPasskey)
+		await MeshPackets.shared.upsertBluetoothConfigPacket(config: config, nodeNum: toUser.num)
 
 		return Int64(meshPacket.id)
 	}
@@ -3007,7 +3007,7 @@ extension AccessoryManager {
 		let messageDescription = "🛟 Saved Display Config for \(toUser.longName ?? "Unknown".localized)"
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
-		await MeshPackets.shared.upsertDisplayConfigPacket(config: config, nodeNum: toUser.num, sessionPasskey: toUser.userNode?.sessionPasskey)
+		await MeshPackets.shared.upsertDisplayConfigPacket(config: config, nodeNum: toUser.num)
 
 		return Int64(meshPacket.id)
 	}
@@ -3086,7 +3086,7 @@ extension AccessoryManager {
 		let messageDescription = "🛟 Saved Device Config for \(toUser.longName ?? "Unknown".localized)"
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
-		await MeshPackets.shared.upsertDeviceConfigPacket(config: config, nodeNum: toUser.num, sessionPasskey: toUser.userNode?.sessionPasskey)
+		await MeshPackets.shared.upsertDeviceConfigPacket(config: config, nodeNum: toUser.num)
 
 		return Int64(meshPacket.id)
 	}
@@ -3115,7 +3115,7 @@ extension AccessoryManager {
 
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
-		await MeshPackets.shared.upsertLoRaConfigPacket(config: config, nodeNum: toUser.num, sessionPasskey: toUser.userNode?.sessionPasskey)
+		await MeshPackets.shared.upsertLoRaConfigPacket(config: config, nodeNum: toUser.num)
 
 		return Int64(meshPacket.id)
 	}
