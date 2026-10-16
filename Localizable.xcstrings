@@ -141741,6 +141741,16 @@
         }
       }
     },
+    "This radio's channels aren't available, so a channel can't be offered. Connect to it directly to set one." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "This radio's channels aren't available, so a channel can't be offered. Connect to it directly to set one."
+          }
+        }
+      }
+    },
     "This region may require a locale-specific firmware file for correct on-device text rendering." : {
       "localizations" : {
         "es" : {

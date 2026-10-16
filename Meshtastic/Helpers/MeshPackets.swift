@@ -1413,6 +1413,13 @@ actor MeshPackets {
 					self.upsertStatusMessageModuleConfigPacket(config: moduleConfig.statusmessage, nodeNum: Int64(packet.from))
 				} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.trafficManagement(moduleConfig.trafficManagement) {
 					self.upsertTrafficManagementModuleConfigPacket(config: moduleConfig.trafficManagement, nodeNum: Int64(packet.from))
+				} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.meshBeacon(moduleConfig.meshBeacon) {
+					// An empty key means the reply carried none; keep the stored one.
+					self.upsertMeshBeaconModuleConfigPacket(
+						config: moduleConfig.meshBeacon,
+						nodeNum: Int64(packet.from),
+						sessionPasskey: adminMessage.sessionPasskey.isEmpty ? nil : adminMessage.sessionPasskey
+					)
 				}
 			} else if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getRingtoneResponse(adminMessage.getRingtoneResponse) {
 				if let rt = try? RTTTLConfig(serializedBytes: packet.decoded.payload) {
