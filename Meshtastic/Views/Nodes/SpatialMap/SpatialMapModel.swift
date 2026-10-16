@@ -342,8 +342,15 @@ final class SpatialMapModel {
 		guard let placement, placement.geometry != nil, !isBuildingTerrain, let fullCircle else { return nil }
 		return SpatialTerrainAutoDecision.make(
 			box: fullCircle.bounds, regions: manager.regions,
-			isBusy: manager.isBusy, backoff: SpatialTerrainBackoff(), now: Date()
+			isBusy: manager.isBusy, backoff: SpatialTerrainBackoff(), now: Date(),
+			streetsTooLarge: keeper.streetsTooLarge
 		)
+	}
+
+	/// The street map for the box was over the per-map limit, so the volume has terrain only.
+	var streetsLeftOut: Bool {
+		guard let box = fullCircle?.bounds, let area = keeper.streetsTooLarge else { return false }
+		return area.contains(box)
 	}
 
 	/// Whether automatic downloads have stopped for this area (cancelled or failed too often).
@@ -359,7 +366,7 @@ final class SpatialMapModel {
 		let manager = OfflineMapManager.shared
 		guard !manager.isBusy else { return }
 		// The region set is part of the key: deleting a map (or the managed terrain) checks again.
-		let regionKey = manager.regions.map { "\($0.id)\($0.terrain != nil)" }.joined(separator: ",")
+		let regionKey = manager.regions.map { "\($0.id)\($0.terrain != nil)\($0.hasBasemap)" }.joined(separator: ",")
 		let bounds = fullCircle.bounds
 		let key = "\(bounds.minLon),\(bounds.minLat),\(bounds.maxLon),\(bounds.maxLat)|\(regionKey)"
 		// The wait is over: check once, not on every refresh until the next attempt.

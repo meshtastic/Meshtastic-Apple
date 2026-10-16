@@ -23,12 +23,16 @@ struct SpatialTerrainDownloadTests {
 		)
 	}
 
-	func managed(_ bounds: GeoBounds, bytes: Int64 = 1) -> OfflineMapRegion {
-		region(bounds, basemap: false, terrain: true, terrainBytes: bytes, managedBy: OfflineMapRegion.spatialMapManager)
+	/// The spatial map's region: streets and terrain unless `basemap` is false (an older build's).
+	func managed(_ bounds: GeoBounds, bytes: Int64 = 1, basemap: Bool = true, terrain: Bool = true) -> OfflineMapRegion {
+		region(bounds, basemap: basemap, terrain: terrain, terrainBytes: bytes, managedBy: OfflineMapRegion.spatialMapManager)
 	}
 
-	func decide(_ box: GeoBounds, _ regions: [OfflineMapRegion], busy: Bool = false, backoff: SpatialTerrainBackoff = SpatialTerrainBackoff(), growOnly: Bool = false) -> SpatialTerrainAutoDecision {
-		SpatialTerrainAutoDecision.make(box: box, regions: regions, isBusy: busy, backoff: backoff, now: now, growOnly: growOnly)
+	func decide(
+		_ box: GeoBounds, _ regions: [OfflineMapRegion], busy: Bool = false, backoff: SpatialTerrainBackoff = SpatialTerrainBackoff(),
+		growOnly: Bool = false, streetsTooLarge: GeoBounds? = nil
+	) -> SpatialTerrainAutoDecision {
+		SpatialTerrainAutoDecision.make(box: box, regions: regions, isBusy: busy, backoff: backoff, now: now, growOnly: growOnly, streetsTooLarge: streetsTooLarge)
 	}
 
 	func contains(_ outer: GeoBounds, _ inner: GeoBounds) -> Bool {
@@ -85,6 +89,72 @@ struct SpatialTerrainDownloadTests {
 	@Test func coveredByAUserRegionDownloadsNothing() {
 		let user = region(GeoBounds(minLon: -122.55, minLat: 47.4, maxLon: -121.9, maxLat: 47.85), terrain: true)
 		#expect(decide(box, [user]) == .none)
+	}
+
+	@Test func coverageNeedsStreetsAndTerrain() {
+		let area = GeoBounds(minLon: -122.55, minLat: 47.4, maxLon: -121.9, maxLat: 47.85)
+		let terrainOnly = region(area, basemap: false, terrain: true)
+		let streetsOnly = region(area)
+		#expect(decide(box, [terrainOnly]) == .create(box.expandedForTerrain()))
+		#expect(decide(box, [streetsOnly]) == .create(box.expandedForTerrain()))
+		#expect(decide(box, [terrainOnly, streetsOnly]) == .none, "two user regions together cover it")
+	}
+
+	@Test func aTerrainOnlyManagedRegionIsUpgradedForTheSameArea() {
+		let old = managed(box.expandedForTerrain(), basemap: false)
+		#expect(decide(box, [old]) == .expand(old.bounds, replacing: old.id), "no extra padding")
+		#expect(decide(box, [old], growOnly: true) == .expand(old.bounds, replacing: old.id), "upgrading counts as growing")
+		let full = managed(old.bounds)
+		#expect(decide(box, [full], growOnly: true) == .none)
+	}
+
+	@Test func aManagedRegionCutShortIsReplaced() {
+		// The app quit after the street map and before the terrain.
+		let leftover = managed(box.expandedForTerrain(), terrain: false)
+		#expect(decide(box, [leftover], growOnly: true) == .expand(leftover.bounds, replacing: leftover.id))
+	}
+
+	@Test func whereStreetsWereTooLargeTerrainAloneCovers() {
+		let old = managed(box.expandedForTerrain(), basemap: false)
+		#expect(decide(box, [old], streetsTooLarge: old.bounds) == .none)
+		// Outside that area the full map is tried again.
+		let grown = GeoBounds(minLon: box.minLon, minLat: box.minLat, maxLon: -121.5, maxLat: box.maxLat)
+		#expect(decide(grown, [old], streetsTooLarge: old.bounds) == .expand(old.bounds.union(grown).expandedForTerrain(), replacing: old.id))
+	}
+
+	@Test func theEstimateCountsStreetsAndTerrain() {
+		let area = Int64(box.areaSquareKm)
+		#expect(SpatialTerrainAutoDecision.estimatedTerrainBytes(box) == area * 4_096)
+		#expect(SpatialTerrainAutoDecision.estimatedBasemapBytes(box) == area * 4_096)
+		#expect(SpatialTerrainAutoDecision.estimatedBytes(box) == area * 8_192)
+	}
+
+	@Test func storageCreditsEveryManagedRegion() {
+		// The new map is well under 100 MB; only crediting both old ones makes room for it.
+		#expect(SpatialTerrainAutoDecision.estimatedBytes(box.expandedForTerrain()) < 100_000_000)
+		var big = region(GeoBounds(minLon: 0, minLat: 0, maxLon: 1, maxLat: 1))
+		big.fileSize = OfflineMapStorageLimits.maxTotalBytes - 100_000_000
+		let far = GeoBounds(minLon: 13, minLat: 52, maxLon: 14, maxLat: 53)
+		let old = managed(far, bytes: 150_000_000, basemap: false)
+		var leftover = managed(far, terrain: false)
+		leftover.fileSize = 150_000_000
+		#expect(decide(box, [big, old, leftover]) == .expand(box.expandedForTerrain(), replacing: old.id))
+	}
+
+	@Test func managedTerrainCoversOnlyWithTerrain() {
+		let inside = GeoBounds(minLon: -122.3, minLat: 47.55, maxLon: -122.2, maxLat: 47.65)
+		let manager = OfflineMapRegion.spatialMapManager
+		#expect(OfflineMapManager.managedTerrainCovers(inside, in: [managed(box, basemap: false)], managedBy: manager))
+		#expect(!OfflineMapManager.managedTerrainCovers(inside, in: [managed(box, terrain: false)], managedBy: manager))
+		#expect(!OfflineMapManager.managedTerrainCovers(box.expandedForTerrain(), in: [managed(box)], managedBy: manager))
+		#expect(!OfflineMapManager.managedTerrainCovers(inside, in: [region(box, terrain: true)], managedBy: manager), "the user's terrain is not the managed one")
+	}
+
+	@Test func managedMapsDrawUnderTheUsersMaps() {
+		let user = OfflineMapRegionFile(region: region(box), url: URL(fileURLWithPath: "/tmp/user.pmtiles"))
+		let app = OfflineMapRegionFile(region: managed(box), url: URL(fileURLWithPath: "/tmp/app.pmtiles"))
+		let bindings = OfflineVectorTileProvider.sourceBindings(for: [user, app])
+		#expect(bindings.map(\.regionID) == [app.region.id, user.region.id])
 	}
 
 	@Test func aThinUncoveredStripAlongAnEdgeStillDownloads() {

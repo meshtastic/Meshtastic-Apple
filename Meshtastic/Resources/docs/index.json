@@ -247,9 +247,9 @@
             "show",
             "only",
             "each",
+            "spatial",
             "route",
             "coverage",
-            "spatial",
             "position",
             "line",
             "waypoint",
@@ -257,20 +257,20 @@
             "signal",
             "same",
             "open",
+            "one",
             "mesh",
             "estimate",
             "location",
-            "one",
-            "back",
-            "toolbar",
             "terrain",
             "shows",
+            "offline",
+            "back",
+            "area",
+            "toolbar",
             "path",
-            "off",
-            "colors",
-            "apple"
+            "off"
         ],
-        "charCount": 16120
+        "charCount": 16679
     },
     {
         "id": "messages",
@@ -709,8 +709,8 @@
         "keywords": [
             "settings",
             "new",
-            "now",
             "map",
+            "now",
             "jun",
             "app",
             "nodes",
@@ -738,7 +738,7 @@
             "per",
             "meshtastic"
         ],
-        "charCount": 8256
+        "charCount": 8298
     },
     {
         "id": "adding-features",

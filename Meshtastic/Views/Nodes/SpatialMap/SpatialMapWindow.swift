@@ -381,9 +381,9 @@ struct SpatialMapOrnament: View {
 		}
 	}
 
-	/// Progress while terrain downloads. Otherwise, when the terrain doesn't cover the box: the
-	/// Download Terrain button if automatic downloads are off or have given up on this area, a
-	/// retry after an automatic download failed, or why terrain can't be downloaded.
+	/// Progress while the offline map downloads. Otherwise, when streets and terrain don't cover the
+	/// box: the Download Terrain button if automatic downloads are off or have given up on this
+	/// area, a retry after an automatic download failed, or why it can't be downloaded.
 	@ViewBuilder private var terrainDownload: some View {
 		if model.isDownloadingTerrain {
 			HStack(spacing: 6) {
@@ -438,6 +438,8 @@ struct SpatialMapOrnament: View {
 				case .tooLarge:
 					caption(String(localized: "The mesh is too spread out to download terrain for all of it.", comment: "Spatial map: the area around the mesh is over the per-map download limit"))
 				}
+			} else if model.streetsLeftOut {
+				caption(String(localized: "The street map for the mesh is over the per-map limit, so only terrain was downloaded.", comment: "Spatial map: the offline map kept for the mesh has terrain but no streets because the street map is too large"))
 			}
 		}
 	}
@@ -477,7 +479,7 @@ struct SpatialMapOrnament: View {
 		let style = Measurement<UnitLength>.FormatStyle(width: .abbreviated, usage: .road, numberFormatStyle: .number.precision(.fractionLength(0)))
 		let size = "\(Measurement(value: area.width, unit: UnitLength.meters).formatted(style)) × \(Measurement(value: area.height, unit: UnitLength.meters).formatted(style))"
 		let bytes = ByteCountFormatter.string(fromByteCount: SpatialTerrainAutoDecision.estimatedBytes(target), countStyle: .file)
-		return String(localized: "Downloads about \(bytes) of elevation data for a \(size) area around the mesh.", comment: "Spatial map: terrain download confirmation; the arguments are the download size, e.g. 40 MB, and the area's width × height, e.g. 98 km × 104 km")
+		return String(localized: "Downloads about \(bytes) of street map and elevation data for a \(size) area around the mesh.", comment: "Spatial map: offline map download confirmation; the arguments are the download size, e.g. 40 MB, and the area's width × height, e.g. 98 km × 104 km")
 	}
 }
 

@@ -8,9 +8,9 @@ import Foundation
 import OSLog
 import SwiftData
 
-/// When the app checks the mesh's area for terrain on its own: once soon after launch, once after
-/// each new connection, then every few minutes while a radio is connected (the mesh only changes
-/// while one is).
+/// When the app checks the mesh's area for its offline map on its own: once soon after launch,
+/// once after each new connection, then every few minutes while a radio is connected (the mesh
+/// only changes while one is).
 struct SpatialTerrainCheckSchedule: Equatable {
 	static let interval: TimeInterval = 300
 
@@ -19,7 +19,7 @@ struct SpatialTerrainCheckSchedule: Equatable {
 	private(set) var connectedSinceCheck = false
 
 	/// Called on every tick with the connected radio. True when the area should be checked now.
-	/// `canCheck` is false while the setting is off, there is no terrain region yet, the volume is
+	/// `canCheck` is false while the setting is off, there is no managed region yet, the volume is
 	/// open, or a download is running.
 	mutating func shouldCheck(now: Date, radio: Int64?, canCheck: Bool) -> Bool {
 		if radio != seenRadio {
@@ -42,9 +42,10 @@ struct SpatialTerrainCheckSchedule: Equatable {
 }
 
 #if os(visionOS)
-/// Keeps the app-managed terrain region covering the mesh. It holds the one automatic download
-/// and its retry rules, so the spatial map volume and the app's own check never start two
-/// downloads or keep separate backoffs. The volume shows the progress and notes from here.
+/// Keeps the app-managed offline map (streets and terrain) covering the mesh. It holds the one
+/// automatic download and its retry rules, so the spatial map volume and the app's own check
+/// never start two downloads or keep separate backoffs. The volume shows the progress and notes
+/// from here.
 @MainActor @Observable
 final class SpatialTerrainKeeper {
 	static let shared = SpatialTerrainKeeper()
@@ -58,6 +59,9 @@ final class SpatialTerrainKeeper {
 	private(set) var isDownloading = false
 	/// Caption for a failed automatic download, shown in the volume with a retry button.
 	private(set) var note: String?
+	/// The last area whose street map was over the per-map limit, so only terrain was kept there.
+	/// Inside it terrain alone counts as covered, for the rest of the session.
+	private(set) var streetsTooLarge: GeoBounds?
 
 	@ObservationIgnored private var automatic = false
 	@ObservationIgnored private var cancelled = false
@@ -84,10 +88,10 @@ final class SpatialTerrainKeeper {
 		return true
 	}
 
-	/// Downloads terrain so it covers `box`: a new app-managed region, or a bigger one that replaces
-	/// it. A manual start ignores the retry rules and reports a failure to `onFailure`; an automatic
-	/// one leaves it in `note`. With `growOnly` it never creates the region, only grows it.
-	/// False when nothing was started.
+	/// Downloads the offline map (streets and terrain) so it covers `box`: a new app-managed
+	/// region, or a bigger one that replaces it. A manual start ignores the retry rules and reports
+	/// a failure to `onFailure`; an automatic one leaves it in `note`. With `growOnly` it never
+	/// creates the region, only grows it. False when nothing was started.
 	@discardableResult
 	func start(box: GeoBounds, automatic: Bool, growOnly: Bool = false, onFailure: ((String) -> Void)? = nil) -> Bool {
 		guard !isDownloading else { return false }
@@ -96,7 +100,8 @@ final class SpatialTerrainKeeper {
 		if !automatic { backoff = SpatialTerrainBackoff() }
 		let decision = SpatialTerrainAutoDecision.make(
 			box: box, regions: manager.regions,
-			isBusy: manager.isBusy, backoff: backoff, now: Date(), growOnly: growOnly
+			isBusy: manager.isBusy, backoff: backoff, now: Date(), growOnly: growOnly,
+			streetsTooLarge: streetsTooLarge
 		)
 		guard let target = decision.target else {
 			Logger.services.debug("🧊 [Spatial] Terrain check: \(String(describing: decision), privacy: .public)")
@@ -110,9 +115,9 @@ final class SpatialTerrainKeeper {
 		self.onFailure = onFailure
 		note = nil
 		let estimate = ByteCountFormatter.string(fromByteCount: SpatialTerrainAutoDecision.estimatedBytes(target), countStyle: .file)
-		Logger.services.info("🧊 [Spatial] Terrain download (\(automatic ? "automatic" : "manual", privacy: .public)): \(String(describing: decision), privacy: .public), about \(estimate, privacy: .public)")
-		manager.downloadManagedTerrain(bounds: target, includeRegional: SpatialTerrainAutoDecision.includesRegional(target)) { [weak self] success in
-			self?.finish(success: success)
+		Logger.services.info("🧊 [Spatial] Map download (\(automatic ? "automatic" : "manual", privacy: .public)): \(String(describing: decision), privacy: .public), about \(estimate, privacy: .public)")
+		manager.downloadManagedMap(bounds: target, includeRegional: SpatialTerrainAutoDecision.includesRegional(target)) { [weak self] result in
+			self?.finish(result: result)
 		}
 		// Set after the call: a refusal up front completes synchronously, before this line.
 		if isDownloading, manager.activeDownload != nil { began = true }
@@ -125,16 +130,18 @@ final class SpatialTerrainKeeper {
 		OfflineMapManager.shared.cancelDownload()
 	}
 
-	private func finish(success: Bool) {
+	private func finish(result: OfflineManagedMapResult) {
 		guard isDownloading else { return }
 		isDownloading = false
-		Logger.services.info("🧊 [Spatial] Terrain download \(success ? "finished" : (self.cancelled ? "cancelled" : "failed"), privacy: .public)")
+		Logger.services.info("🧊 [Spatial] Map download \(result == .failed ? (self.cancelled ? "cancelled" : "failed") : String(describing: result), privacy: .public)")
 		let target = target
 		let onFailure = onFailure
 		self.target = nil
 		self.onFailure = nil
-		if success {
+		if result != .failed {
 			backoff = SpatialTerrainBackoff()
+			// Without this the next check would try the same street map again.
+			if result == .streetsTooLarge { streetsTooLarge = target }
 			return
 		}
 		let manager = OfflineMapManager.shared
@@ -174,9 +181,9 @@ final class SpatialTerrainKeeper {
 		}
 	}
 
-	/// Reads the mesh's nodes off the main thread when the schedule says so, and grows the terrain
-	/// region when it doesn't cover the circle the volume would show for them. Only the spatial map
-	/// creates the region, so nothing downloads for someone who never opened it or deleted it.
+	/// Reads the mesh's nodes off the main thread when the schedule says so, and grows the managed
+	/// offline map when it doesn't cover the circle the volume would show for them. Only the spatial
+	/// map creates the region, so nothing downloads for someone who never opened it or deleted it.
 	private func checkIfDue(container: @MainActor () -> ModelContainer?) async {
 		let defaults = UserDefaults.standard
 		let enabled = defaults.object(forKey: Self.autoTerrainKey) as? Bool ?? true
@@ -185,7 +192,8 @@ final class SpatialTerrainKeeper {
 		manager.loadIfNeeded()
 		let hasRegion = manager.regions.contains(where: \.isAppManaged)
 		let canCheck = enabled && hasRegion && openVolumes == 0 && !isDownloading && !manager.isBusy
-		guard schedule.shouldCheck(now: Date(), radio: radio, canCheck: canCheck), let container = container() else { return }
+		// The container first: while the database resets, the scheduled check waits instead of being used up.
+		guard let container = container(), schedule.shouldCheck(now: Date(), radio: radio, canCheck: canCheck) else { return }
 		let preciseOnly = defaults.bool(forKey: Self.preciseOnlyKey)
 		let nodes = await SpatialMeshAreaReader.nodes(container: container, preciseOnly: preciseOnly, connectedNodeNum: radio)
 		// The app may have left the foreground, or the volume opened, while the read ran.

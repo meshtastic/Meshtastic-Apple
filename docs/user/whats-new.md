@@ -14,7 +14,7 @@ Recent user-facing changes from roughly the last 12 months. Newest at the top.
 Show roughly the last 12 months of changes; archive entries older than a year by removing them.
 -->
 
-**Oct 2026** — [Map & Waypoints](map.md) — On Apple Vision Pro, the spatial map's terrain now grows with the mesh whenever the app is open, not only while the spatial map is showing.
+**Oct 2026** — [Map & Waypoints](map.md) — On Apple Vision Pro, the spatial map now keeps a full offline map of the mesh, streets and terrain, and grows it whenever the app is open, not only while the spatial map is showing.
 
 **Sep 2026** — [Firmware Updates](firmware.md) — Factory Erase now uses the OTAFIX bootloader's own erase when the radio's bootloader supports it: one file for every board, and the installed firmware is kept, so the radio boots factory-fresh instead of needing firmware reinstalled. Older bootloaders are unchanged.
 

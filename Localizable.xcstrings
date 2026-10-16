@@ -44886,13 +44886,19 @@
         }
       }
     },
-    "Downloads about %@ of elevation data for a %@ area around the mesh." : {
-      "comment" : "Spatial map: terrain download confirmation; the arguments are the download size, e.g. 40 MB, and the area's width × height, e.g. 98 km × 104 km",
+    "Downloads about %@ of street map and elevation data for a %@ area around the mesh." : {
+      "comment" : "Spatial map: offline map download confirmation; the arguments are the download size, e.g. 40 MB, and the area's width × height, e.g. 98 km × 104 km",
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Downloads about %1$@ of street map and elevation data for a %2$@ area around the mesh."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "將下載約 %1$@ 的海拔資料，涵蓋 Mesh 網路周圍 %2$@ 的區域。"
+            "value" : "將下載約 %1$@ 的街道地圖與海拔資料，涵蓋 Mesh 網路周圍 %2$@ 的區域。"
           }
         }
       }
@@ -57009,17 +57015,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "將附近的節點分組到一個編號的圖釘；點一下以放大。關閉以始終顯示每個節點。"
-          }
-        }
-      }
-    },
-    "Grows with the mesh while the app is open. Delete it any time; the Spatial Map downloads it again the next time it opens (turn off Download Terrain Automatically there to stop that)." : {
-      "comment" : "Offline map row caption for the terrain region the visionOS spatial map manages",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Grows with the mesh while the app is open. Delete it any time; the Spatial Map downloads it again the next time it opens (turn off Download Terrain Automatically there to stop that)."
           }
         }
       }
@@ -132425,13 +132420,19 @@
         }
       }
     },
-    "Spatial Map terrain" : {
-      "comment" : "Name of the terrain-only offline map the visionOS spatial map downloads and keeps up to date",
+    "Spatial Map area" : {
+      "comment" : "Name of the offline map (streets and terrain) the visionOS spatial map downloads and keeps up to date for the mesh",
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Spatial Map area"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "空間地圖地形"
+            "value" : "空間地圖區域"
           }
         }
       }
@@ -139607,6 +139608,23 @@
         }
       }
     },
+    "The Spatial Map's offline map of the mesh: streets and terrain. It grows with the mesh while the app is open. Delete it any time; the Spatial Map downloads it again the next time it opens (turn off Download Terrain Automatically there to stop that)." : {
+      "comment" : "Offline map row caption for the offline map (streets and terrain) the visionOS spatial map manages",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The Spatial Map's offline map of the mesh: streets and terrain. It grows with the mesh while the app is open. Delete it any time; the Spatial Map downloads it again the next time it opens (turn off Download Terrain Automatically there to stop that)."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "空間地圖為 Mesh 網路保留的離線地圖，包含街道與地形。應用程式開啟時會隨 Mesh 網路擴大。您可隨時刪除；下次開啟空間地圖時會重新下載（在空間地圖中關閉「自動下載地形」即可停止）。"
+          }
+        }
+      }
+    },
     "The state of the LED (on/off)" : {
       "localizations" : {
         "da" : {
@@ -139685,6 +139703,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "LED狀態燈開關"
+          }
+        }
+      }
+    },
+    "The street map for the mesh is over the per-map limit, so only terrain was downloaded." : {
+      "comment" : "Spatial map: the offline map kept for the mesh has terrain but no streets because the street map is too large",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The street map for the mesh is over the per-map limit, so only terrain was downloaded."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesh 網路的街道地圖超過單張地圖的大小上限，因此只下載了地形。"
           }
         }
       }
