@@ -232,6 +232,7 @@ struct NodeAdministrationTests {
 
 		let node = try fetchNode(num: num, in: container)
 		#expect(!node.hasBeenAdministered)
+		#expect(node.sessionPasskey == nil)
 	}
 
 	@Test func responseAddressedToAnotherNodeDoesNotMark() async throws {
@@ -247,6 +248,7 @@ struct NodeAdministrationTests {
 
 		let node = try fetchNode(num: num, in: container)
 		#expect(!node.hasBeenAdministered)
+		#expect(node.sessionPasskey == nil)
 	}
 
 	@Test func unknownConnectedNodeDoesNotMark() async throws {
@@ -259,6 +261,7 @@ struct NodeAdministrationTests {
 
 		let node = try fetchNode(num: num, in: container)
 		#expect(!node.hasBeenAdministered)
+		#expect(node.sessionPasskey == nil)
 	}
 
 	@Test func markIsNeverCleared() async throws {
