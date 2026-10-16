@@ -11,3 +11,8 @@ scale_by = "width"
 covers = "bare PCB with its display, no headers or antenna"
 source = "https://resource.heltec.cn/download/HT-VME290/HT-VME290-Datasheet.pdf"
 confidence = "vendor"
+
+[[block]]
+name = "Display"
+bbox = [541.37, 740.86, 1491.87, 1182.66]
+h = 11.01
