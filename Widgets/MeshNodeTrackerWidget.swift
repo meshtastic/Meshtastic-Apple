@@ -442,9 +442,12 @@ private struct HeardFooter: View {
 	}
 }
 
-/// Distance from the connected radio, when both ends have a position.
+/// Distance from the connected radio, when both ends have a position. A
+/// disconnected snapshot keeps the last radio's identity, and a distance from
+/// a radio that is no longer attached would read as live — so connected only.
 private func distanceText(node: NodeSnapshot?, snapshot: WidgetSnapshot?) -> String? {
 	guard let node, let snapshot,
+		  snapshot.connectionState == .connected,
 		  let lat = node.latitude, let lon = node.longitude,
 		  let radioNum = snapshot.radioNodeNum, radioNum != node.num,
 		  let radio = snapshot.nodes.first(where: { $0.num == radioNum }),
