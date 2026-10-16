@@ -345,6 +345,47 @@ screen may briefly appear before the radio finishes identifying itself.</p>
 </tr>
 </tbody>
 </table>
+<h3>Mesh Beacon</h3>
+<p>A mesh beacon lets nearby radios find your mesh and join it. It is available on nodes running firmware <strong>2.8.0 or later</strong>, and needs a LoRa region set first. The beacon always uses the radio's own region, and offers the radio's own modem preset.</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Listen for Beacons</td>
+<td>Hear beacons from other meshes and show them in discovery.</td>
+</tr>
+<tr>
+<td>Broadcast a Beacon</td>
+<td>Send a beacon from this radio. The settings below appear only while this is on.</td>
+</tr>
+<tr>
+<td>Message</td>
+<td>Short text sent with each beacon, up to 60 bytes.</td>
+</tr>
+<tr>
+<td>Channel</td>
+<td>The channel listeners are offered to join. It must be one of this radio's channels.</td>
+</tr>
+<tr>
+<td>Frequency Slot</td>
+<td>The slot listeners should tune to for the offered channel. Leave it empty and they work it out from the region, preset and channel name, which is right for most meshes. Set it only if your mesh uses a different slot.</td>
+</tr>
+<tr>
+<td>Interval</td>
+<td>How often the beacon is sent. The minimum is one hour.</td>
+</tr>
+<tr>
+<td>Broadcast On</td>
+<td>Where the beacon is sent. Each target is a channel, a preset and an optional frequency slot, and gets its own copy of the beacon. A target whose channel is no longer on the radio is marked and must be changed before saving.</td>
+</tr>
+</tbody>
+</table>
+<p>A frequency slot must be within the range for the region and preset; the screen shows the range when a value is outside it.</p>
 <h2>Tools</h2>
 <p>The <strong>Tools</strong> entry appears only on iPhones with NFC hardware running iOS 18 or later; it is hidden on iPads, Mac Catalyst, and any device without an NFC radio.</p>
 <p>It contains an <strong>NFC Tags</strong> section:</p>

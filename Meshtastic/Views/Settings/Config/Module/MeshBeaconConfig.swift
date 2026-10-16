@@ -35,8 +35,10 @@ struct MeshBeaconConfig: View {
 	@State private var offerChannelPSK = Data()
 	@State private var offerChannelIndex: Int32 = -1
 	@State private var beaconInterval = UpdateInterval(from: 3_600)
+	@State private var offerFrequencySlot: Int32 = 0
 	@State private var targets: [BroadcastTargetDraft] = [BroadcastTargetDraft()]
-	@State private var seededTargetKeys: [[Int32]] = []
+	/// What the screen loaded, after seeding defaults. Unsaved changes are measured against it.
+	@State private var seededValues: MeshBeaconConfigValues?
 
 	/// In-memory draft for one broadcast row. Every row saves as a `broadcast_targets`
 	/// entry — one beacon each; the protobuf has no other TX destination.
@@ -44,6 +46,7 @@ struct MeshBeaconConfig: View {
 		let id = UUID()
 		var preset: Int32 = -1   // -1 = falls back to running config
 		var channelIndex: Int32 = -1 // -1 = unset (default channel)
+		var frequencySlot: Int32 = 0 // 0 = unset (derived)
 	}
 
 	private var supports2_8: Bool {
@@ -134,7 +137,28 @@ struct MeshBeaconConfig: View {
 	private var isMessageValid: Bool { MeshBeaconValidation.isMessageValid(broadcastMessage) }
 	private var isIntervalValid: Bool { MeshBeaconValidation.isIntervalValid(Int32(truncatingIfNeeded: beaconInterval.intValue)) }
 	private var hasOfferChannel: Bool { offerChannelIndex >= 0 || offerChannelIndex == -2 }
-	private var canSave: Bool { isMessageValid && isIntervalValid && hasConfiguredRegion && hasOfferChannel }
+	private var isBroadcastEnabled: Bool { MeshBeaconFlags.has(flags, MeshBeaconFlags.broadcastEnabled) }
+	/// The broadcast settings are only shown, and only checked, while broadcast is on.
+	private var areBroadcastSettingsValid: Bool {
+		isIntervalValid
+			&& MeshBeaconSlots.isValid(offerFrequencySlot, count: offerSlotCount)
+			&& targets.allSatisfy { MeshBeaconSlots.isValid($0.frequencySlot, count: slotCount(for: $0)) && !isChannelMissing($0) }
+	}
+	private var canSave: Bool {
+		isMessageValid && hasConfiguredRegion && hasOfferChannel && (!isBroadcastEnabled || areBroadcastSettingsValid)
+	}
+
+	/// Slots for the offered preset, which is always the radio's own.
+	private var offerSlotCount: Int { MeshBeaconSlots.slotCount(region: nodeRegion, preset: nodeModemPreset) }
+
+	private func slotCount(for target: BroadcastTargetDraft) -> Int {
+		MeshBeaconSlots.slotCount(region: nodeRegion, preset: target.preset >= 0 ? target.preset : nodeModemPreset)
+	}
+
+	/// A target pointing at a channel the radio no longer has. Unknown until the channels load.
+	private func isChannelMissing(_ target: BroadcastTargetDraft) -> Bool {
+		target.channelIndex >= 0 && !nodeChannels.isEmpty && !nodeChannels.contains { $0.index == target.channelIndex }
+	}
 
 	var body: some View {
 		Group {
@@ -175,7 +199,7 @@ struct MeshBeaconConfig: View {
 				}
 			}
 			optionsSection
-			if hasConfiguredRegion, MeshBeaconFlags.has(flags, MeshBeaconFlags.broadcastEnabled) {
+			if hasConfiguredRegion, isBroadcastEnabled {
 				messageSection
 				offeredSection
 				intervalSection
@@ -198,11 +222,10 @@ struct MeshBeaconConfig: View {
 			}
 			.disabled(!canSave)
 		}
-		.onChange(of: broadcastMessage) { if broadcastMessage != (node?.meshBeaconConfig?.broadcastMessage ?? "") { hasChanges = true } }
 		.onChange(of: offerChannelIndex) { applyChannelSelection(offerChannelIndex, name: &offerChannelName, psk: &offerChannelPSK) }
-		.onChange(of: offerChannelName) { if offerChannelName != (node?.meshBeaconConfig?.broadcastOfferChannelName ?? "") { hasChanges = true } }
-		.onChange(of: offerChannelPSK) { if offerChannelPSK != (node?.meshBeaconConfig?.broadcastOfferChannelPSK ?? Data()) { hasChanges = true } }
-		.onChange(of: beaconInterval) { if beaconInterval.intValue != Int(node?.meshBeaconConfig?.broadcastIntervalSecs ?? 3600) { hasChanges = true } }
+		.onChange(of: currentValues) {
+			if let seededValues { hasChanges = currentValues != seededValues }
+		}
 		.onChange(of: targets) { oldRows, newRows in
 			// Picking a channel preselects the radio's own preset when the row has none —
 			// that is what the channel runs on today. Only applies when the user changes
@@ -213,7 +236,6 @@ struct MeshBeaconConfig: View {
 					targets[index].preset = nodeModemPreset
 				}
 			}
-			if targets.map({ [$0.preset, $0.channelIndex] }) != seededTargetKeys { hasChanges = true }
 		}
 	}
 
@@ -250,10 +272,11 @@ struct MeshBeaconConfig: View {
 	}
 
 	private var offeredSection: some View {
-		Section(header: Text("Offered to Listeners")) {
+		Section(header: Text("Offered to Listeners"), footer: Text("Leave Frequency Slot empty and listeners work it out from the region, preset and channel name. Set it only if your mesh uses a different slot.")) {
 			channelPicker("Channel", selection: $offerChannelIndex, customName: offerChannelName, noneLabel: nil)
 			regionRow
 			offerPresetRow
+			slotField(selection: $offerFrequencySlot, count: offerSlotCount)
 		}
 	}
 
@@ -275,6 +298,11 @@ struct MeshBeaconConfig: View {
 				pickerLabel: "Interval",
 				selectedInterval: $beaconInterval
 			)
+			if !isIntervalValid {
+				Text("Interval must be at least one hour.")
+					.font(.caption)
+					.foregroundStyle(.red)
+			}
 		}
 	}
 
@@ -283,7 +311,13 @@ struct MeshBeaconConfig: View {
 			ForEach($targets) { $target in
 				VStack(alignment: .leading, spacing: 6) {
 					channelPicker("Channel", selection: $target.channelIndex, customName: "", noneLabel: "Default")
+					if isChannelMissing(target) {
+						Text("Channel \(target.channelIndex) isn't on this radio. Pick another channel.")
+							.font(.caption)
+							.foregroundStyle(.red)
+					}
 					presetPicker("Preset", selection: $target.preset)
+					slotField(selection: $target.frequencySlot, count: slotCount(for: target))
 				}
 			}
 			.onDelete { offsets in
@@ -307,6 +341,29 @@ struct MeshBeaconConfig: View {
 			Spacer()
 			Text(nodeRegionName)
 				.foregroundStyle(.secondary)
+		}
+	}
+
+	/// An optional 1-based frequency slot. Empty means unset; nothing is filled in from
+	/// the radio's own LoRa settings.
+	@ViewBuilder
+	private func slotField(selection: Binding<Int32>, count: Int) -> some View {
+		HStack {
+			Text("Frequency Slot")
+				.layoutPriority(1)
+			Spacer()
+			TextField("Auto", value: Binding<Int?>(
+				get: { selection.wrappedValue == 0 ? nil : Int(selection.wrappedValue) },
+				set: { selection.wrappedValue = Int32(clamping: $0 ?? 0) }
+			), format: .number)
+				.multilineTextAlignment(.trailing)
+				.keyboardType(.numbersAndPunctuation)
+				.foregroundColor(.gray)
+		}
+		if !MeshBeaconSlots.isValid(selection.wrappedValue, count: count) {
+			Text("Use a slot from 1 to \(count), or leave it empty.")
+				.font(.caption)
+				.foregroundStyle(.red)
 		}
 	}
 
@@ -350,7 +407,6 @@ struct MeshBeaconConfig: View {
 			get: { MeshBeaconFlags.has(flags, flag) },
 			set: { newValue in
 				flags = MeshBeaconFlags.setting(flags, flag, to: newValue)
-				hasChanges = true
 			}
 		)
 	}
@@ -368,15 +424,16 @@ struct MeshBeaconConfig: View {
 		// primary channel.
 		if offerChannelIndex == -1, let first = nodeChannels.first {
 			offerChannelIndex = first.index
-			offerChannelName = first.name ?? ""
-			offerChannelPSK = first.psk ?? Data()
 		}
+		// Same as picking the channel, so the onChange that follows changes nothing.
+		applyChannelSelection(offerChannelIndex, name: &offerChannelName, psk: &offerChannelPSK)
+		offerFrequencySlot = config?.broadcastOfferFrequencySlot ?? 0
 		beaconInterval = UpdateInterval(from: Int(config?.broadcastIntervalSecs ?? 3_600))
 		// Targets are the only broadcast model since the protobuf consolidated TX
 		// destinations onto broadcast_targets. The relationship's order isn't
 		// guaranteed, so sort for a stable list; an empty config seeds one default row.
 		let storedTargets = (config?.broadcastTargets ?? []).sorted {
-			($0.channelIndex, $0.preset) < ($1.channelIndex, $1.preset)
+			($0.channelIndex, $0.preset, $0.frequencySlot) < ($1.channelIndex, $1.preset, $1.frequencySlot)
 		}
 		if storedTargets.isEmpty {
 			// A pre-consolidation config kept its destination in the legacy broadcast-on
@@ -392,51 +449,38 @@ struct MeshBeaconConfig: View {
 				channelIndex: max(legacyIndex, -1)
 			)]
 		} else {
-			targets = storedTargets.map { BroadcastTargetDraft(preset: $0.preset, channelIndex: $0.channelIndex) }
+			targets = storedTargets.map {
+				BroadcastTargetDraft(preset: $0.preset, channelIndex: $0.channelIndex, frequencySlot: $0.frequencySlot)
+			}
 		}
-		seededTargetKeys = targets.map { [$0.preset, $0.channelIndex] }
+		seededValues = currentValues
 		hasChanges = false
 	}
 
-	/// Assemble the protobuf from the edit buffer for the admin write. `FLAG_LEGACY_SPLIT` and any
-	/// other bits not exposed here ride along in `flags` unchanged (D4).
-	private func buildConfig() -> ModuleConfig.MeshBeaconConfig {
-		var config = ModuleConfig.MeshBeaconConfig()
-		config.flags = UInt32(truncatingIfNeeded: flags)
-		config.broadcastMessage = broadcastMessage
-
+	/// The edit buffer as config values. `FLAG_LEGACY_SPLIT` and any other bits not
+	/// exposed here ride along in `flags` unchanged (D4).
+	private var currentValues: MeshBeaconConfigValues {
+		var values = MeshBeaconConfigValues()
+		values.flags = flags
+		values.message = broadcastMessage
 		// The primary channel's name is empty, so presence is keyed on the selection
 		// (or a non-empty custom pair), never on the name alone.
-		if offerChannelIndex >= 0 || !offerChannelName.isEmpty || !offerChannelPSK.isEmpty {
-			var settings = ChannelSettings()
-			settings.name = offerChannelName
-			settings.psk = offerChannelPSK
-			config.broadcastOfferChannel = settings
-		}
-		if let region = Config.LoRaConfig.RegionCode(rawValue: Int(nodeRegion)) {
-			config.broadcastOfferRegion = region
-		}
-		if nodeModemPreset >= 0, let preset = Config.LoRaConfig.ModemPreset(rawValue: Int(nodeModemPreset)) {
-			config.broadcastOfferPreset = preset
-		}
-
-		config.broadcastIntervalSecs = UInt32(truncatingIfNeeded: beaconInterval.intValue)
-
+		values.hasOfferChannel = offerChannelIndex >= 0 || !offerChannelName.isEmpty || !offerChannelPSK.isEmpty
+		values.offerChannelName = offerChannelName
+		values.offerChannelPSK = offerChannelPSK
+		values.offerRegion = nodeRegion
+		values.offerPreset = nodeModemPreset
+		values.offerFrequencySlot = offerFrequencySlot
+		values.intervalSecs = Int32(truncatingIfNeeded: beaconInterval.intValue)
 		// Every row is a broadcast target — the protobuf's only TX destination model.
-		config.broadcastTargets = targets.map { draft in
-			var target = ModuleConfig.MeshBeaconConfig.BroadcastTarget()
-			if draft.preset >= 0, let preset = Config.LoRaConfig.ModemPreset(rawValue: Int(draft.preset)) {
-				target.preset = preset
-			}
-			if let region = Config.LoRaConfig.RegionCode(rawValue: Int(nodeRegion)) {
-				target.region = region
-			}
-			if draft.channelIndex >= 0 {
-				target.channelIndex = UInt32(draft.channelIndex)
-			}
-			return target
+		values.targets = targets.map {
+			MeshBeaconTargetValues(preset: $0.preset, region: nodeRegion, channelIndex: $0.channelIndex, frequencySlot: $0.frequencySlot)
 		}
-		return config
+		return values
+	}
+
+	private func buildConfig() -> ModuleConfig.MeshBeaconConfig {
+		currentValues.config
 	}
 }
 
