@@ -151,22 +151,42 @@ struct NodeAdministrationTests {
 		#expect(node.sessionPasskey == nil)
 	}
 
+	@Test func responseWithEmptyPasskeyKeepsStoredSession() async throws {
+		let (mesh, container) = try freshMesh()
+		let num: Int64 = 0x77AA88
+		let expiration = Date().addingTimeInterval(200)
+		try seedSession(num: num, passkey: Data([0x12, 0x34]), expiration: expiration, in: container)
+
+		var moduleConfig = ModuleConfig()
+		moduleConfig.statusmessage = ModuleConfig.StatusMessageConfig()
+		var admin = AdminMessage()
+		admin.getModuleConfigResponse = moduleConfig
+		await mesh.adminAppPacket(packet: try adminPacket(from: num, message: admin), connectedNodeNum: Self.myNum)
+		await mesh.adminAppPacket(packet: try adminPacket(from: num, message: deviceConfigResponse(passkey: nil)), connectedNodeNum: Self.myNum)
+
+		let node = try fetchNode(num: num, in: container)
+		#expect(node.sessionPasskey == Data([0x12, 0x34]))
+		#expect(node.sessionExpiration == expiration)
+	}
+
+	private func seedSession(num: Int64, passkey: Data, expiration: Date, in container: ModelContainer) throws {
+		let context = ModelContext(container)
+		let node = NodeInfoEntity()
+		node.id = num
+		node.num = num
+		node.sessionPasskey = passkey
+		node.sessionExpiration = expiration
+		context.insert(node)
+		try context.save()
+	}
+
 	@Test func configWithoutPasskeyKeepsStoredSession() async throws {
 		// Saving a setting to a remote node stores the new config locally with no
 		// passkey. That must not clear the session the next save needs.
 		let (mesh, container) = try freshMesh()
 		let num: Int64 = 0x66FF77
 		let expiration = Date().addingTimeInterval(200)
-		do {
-			let context = ModelContext(container)
-			let node = NodeInfoEntity()
-			node.id = num
-			node.num = num
-			node.sessionPasskey = Data([0xAB, 0xCD])
-			node.sessionExpiration = expiration
-			context.insert(node)
-			try context.save()
-		}
+		try seedSession(num: num, passkey: Data([0xAB, 0xCD]), expiration: expiration, in: container)
 
 		await mesh.upsertStatusMessageModuleConfigPacket(config: ModuleConfig.StatusMessageConfig(), nodeNum: num)
 		var config = Config()

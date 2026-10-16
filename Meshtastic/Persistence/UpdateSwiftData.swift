@@ -824,7 +824,7 @@ extension MeshPackets {
 					fetchedNode[0].bluetoothConfig?.mode = Int32(config.mode.rawValue)
 					fetchedNode[0].bluetoothConfig?.fixedPin = Int32(truncatingIfNeeded: config.fixedPin)
 				}
-				if sessionPasskey != nil {
+				if let sessionPasskey, !sessionPasskey.isEmpty {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
@@ -876,7 +876,7 @@ extension MeshPackets {
 					fetchedNode[0].deviceConfig?.isManaged = config.isManaged
 					fetchedNode[0].deviceConfig?.tzdef = config.tzdef
 				}
-				if sessionPasskey != nil {
+				if let sessionPasskey, !sessionPasskey.isEmpty {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
@@ -929,7 +929,7 @@ extension MeshPackets {
 					fetchedNode[0].displayConfig?.headingBold = config.headingBold
 					fetchedNode[0].displayConfig?.use12HClock = config.use12HClock
 				}
-				if sessionPasskey != nil {
+				if let sessionPasskey, !sessionPasskey.isEmpty {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
@@ -999,7 +999,7 @@ extension MeshPackets {
 					fetchedNode[0].loRaConfig?.okToMqtt = config.configOkToMqtt
 					fetchedNode[0].loRaConfig?.sx126xRxBoostedGain = config.sx126XRxBoostedGain
 				}
-				if sessionPasskey != nil {
+				if let sessionPasskey, !sessionPasskey.isEmpty {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
@@ -1056,7 +1056,7 @@ extension MeshPackets {
 					fetchedNode[0].networkConfig?.subnet = Int32(bitPattern: config.ipv4Config.subnet)
 					fetchedNode[0].networkConfig?.dns = Int32(bitPattern: config.ipv4Config.dns)
 				}
-				if sessionPasskey != nil {
+				if let sessionPasskey, !sessionPasskey.isEmpty {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
@@ -1115,7 +1115,7 @@ extension MeshPackets {
 					fetchedNode[0].positionConfig?.gpsUpdateInterval = Int32(truncatingIfNeeded: config.gpsUpdateInterval)
 					fetchedNode[0].positionConfig?.positionFlags = Int32(truncatingIfNeeded: config.positionFlags)
 				}
-				if sessionPasskey != nil {
+				if let sessionPasskey, !sessionPasskey.isEmpty {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
@@ -1161,7 +1161,7 @@ extension MeshPackets {
 					fetchedNode[0].powerConfig?.onBatteryShutdownAfterSecs = Int32(truncatingIfNeeded: config.onBatteryShutdownAfterSecs)
 					fetchedNode[0].powerConfig?.waitBluetoothSecs = Int32(truncatingIfNeeded: config.waitBluetoothSecs)
 				}
-				if sessionPasskey != nil {
+				if let sessionPasskey, !sessionPasskey.isEmpty {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
@@ -1266,7 +1266,7 @@ extension MeshPackets {
 					fetchedNode[0].audioConfig?.i2sDin = Int32(truncatingIfNeeded: config.i2SDin)
 					fetchedNode[0].audioConfig?.i2sSck = Int32(truncatingIfNeeded: config.i2SSck)
 				}
-				if sessionPasskey != nil {
+				if let sessionPasskey, !sessionPasskey.isEmpty {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
@@ -1304,7 +1304,7 @@ extension MeshPackets {
 				fetchedNode[0].ambientLightingConfig?.red = Int32(truncatingIfNeeded: config.red)
 				fetchedNode[0].ambientLightingConfig?.green = Int32(truncatingIfNeeded: config.green)
 				fetchedNode[0].ambientLightingConfig?.blue = Int32(truncatingIfNeeded: config.blue)
-				if sessionPasskey != nil {
+				if let sessionPasskey, !sessionPasskey.isEmpty {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
@@ -1359,7 +1359,7 @@ extension MeshPackets {
 					fetchedNode[0].cannedMessageConfig?.inputbrokerEventCcw = Int32(config.inputbrokerEventCcw.rawValue)
 					fetchedNode[0].cannedMessageConfig?.inputbrokerEventPress = Int32(config.inputbrokerEventPress.rawValue)
 				}
-				if sessionPasskey != nil {
+				if let sessionPasskey, !sessionPasskey.isEmpty {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
@@ -1408,7 +1408,7 @@ extension MeshPackets {
 					fetchedNode[0].detectionSensorConfig?.minimumBroadcastSecs = Int32(truncatingIfNeeded: config.minimumBroadcastSecs)
 					fetchedNode[0].detectionSensorConfig?.stateBroadcastSecs = Int32(truncatingIfNeeded: config.stateBroadcastSecs)
 				}
-				if sessionPasskey != nil {
+				if let sessionPasskey, !sessionPasskey.isEmpty {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
@@ -1470,7 +1470,7 @@ extension MeshPackets {
 					return newTarget
 				}
 
-				if sessionPasskey != nil {
+				if let sessionPasskey, !sessionPasskey.isEmpty {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
@@ -1536,7 +1536,7 @@ extension MeshPackets {
 					fetchedNode[0].externalNotificationConfig?.nagTimeout = Int32(truncatingIfNeeded: config.nagTimeout)
 					fetchedNode[0].externalNotificationConfig?.useI2SAsBuzzer = config.useI2SAsBuzzer
 				}
-				if sessionPasskey != nil {
+				if let sessionPasskey, !sessionPasskey.isEmpty {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
@@ -1574,7 +1574,7 @@ extension MeshPackets {
 					fetchedNode[0].neighborInfoConfig?.updateInterval = Int32(truncatingIfNeeded: config.updateInterval)
 					fetchedNode[0].neighborInfoConfig?.transmitOverLora = config.transmitOverLora
 				}
-				if sessionPasskey != nil {
+				if let sessionPasskey, !sessionPasskey.isEmpty {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
@@ -1615,7 +1615,7 @@ extension MeshPackets {
 					fetchedNode[0].paxCounterConfig?.wifiThreshold = config.wifiThreshold
 					fetchedNode[0].paxCounterConfig?.bleThreshold = config.bleThreshold
 				}
-				if sessionPasskey != nil {
+				if let sessionPasskey, !sessionPasskey.isEmpty {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
@@ -1650,7 +1650,7 @@ extension MeshPackets {
 				} else {
 					fetchedNode[0].rtttlConfig?.ringtone = ringtone
 				}
-				if sessionPasskey != nil {
+				if let sessionPasskey, !sessionPasskey.isEmpty {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
@@ -1709,7 +1709,7 @@ extension MeshPackets {
 					fetchedNode[0].mqttConfig?.mapPositionPrecision = Int32(truncatingIfNeeded: config.mapReportSettings.positionPrecision)
 					fetchedNode[0].mqttConfig?.mapPublishIntervalSecs = Int32(truncatingIfNeeded: config.mapReportSettings.publishIntervalSecs)
 				}
-				if sessionPasskey != nil {
+				if let sessionPasskey, !sessionPasskey.isEmpty {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
@@ -1748,7 +1748,7 @@ extension MeshPackets {
 					fetchedNode[0].rangeTestConfig?.enabled = config.enabled
 					fetchedNode[0].rangeTestConfig?.save = config.save
 				}
-				if sessionPasskey != nil {
+				if let sessionPasskey, !sessionPasskey.isEmpty {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
@@ -1795,7 +1795,7 @@ extension MeshPackets {
 					fetchedNode[0].serialConfig?.timeout = Int32(truncatingIfNeeded: config.timeout)
 					fetchedNode[0].serialConfig?.mode = Int32(config.mode.rawValue)
 				}
-				if sessionPasskey != nil {
+				if let sessionPasskey, !sessionPasskey.isEmpty {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
@@ -1834,7 +1834,7 @@ extension MeshPackets {
 				// status too — displays prefer the live field and would otherwise show the
 				// old status until the next broadcast arrives.
 				fetchedNode[0].nodeStatus = config.nodeStatus.isEmpty ? nil : config.nodeStatus
-				if sessionPasskey != nil {
+				if let sessionPasskey, !sessionPasskey.isEmpty {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
@@ -1912,7 +1912,7 @@ extension MeshPackets {
 					// reflected after the first sync and the device-profile export keeps writing the old value.
 					fetchedNode[0].storeForwardConfig?.isRouter = config.isServer
 				}
-				if sessionPasskey != nil {
+				if let sessionPasskey, !sessionPasskey.isEmpty {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
@@ -1967,7 +1967,7 @@ extension MeshPackets {
 					fetchedNode[0].telemetryConfig?.powerUpdateInterval = Int32(truncatingIfNeeded: config.powerUpdateInterval)
 					fetchedNode[0].telemetryConfig?.powerScreenEnabled = config.powerScreenEnabled
 				}
-				if sessionPasskey != nil {
+				if let sessionPasskey, !sessionPasskey.isEmpty {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
@@ -2005,7 +2005,7 @@ extension MeshPackets {
 					fetchedNode[0].takConfig?.team = Int32(config.team.rawValue)
 					fetchedNode[0].takConfig?.role = Int32(config.role.rawValue)
 				}
-				if sessionPasskey != nil {
+				if let sessionPasskey, !sessionPasskey.isEmpty {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
@@ -2059,7 +2059,7 @@ extension MeshPackets {
 				entity.rateLimitMaxPackets = Int32(truncatingIfNeeded: config.rateLimitMaxPackets)
 				entity.dropUnknownEnabled = dropUnknown
 				entity.unknownPacketThreshold = Int32(truncatingIfNeeded: config.unknownPacketThreshold)
-				if sessionPasskey != nil {
+				if let sessionPasskey, !sessionPasskey.isEmpty {
 					fetchedNode[0].sessionPasskey = sessionPasskey
 					fetchedNode[0].sessionExpiration = Date().addingTimeInterval(300)
 				}
