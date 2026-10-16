@@ -12,16 +12,35 @@ import UIKit
 /// The spatial map's Offline layer: the downloaded Protomaps basemaps drawn onto the terrain
 /// texture with the 2D offline map's decoder and colors.
 enum SpatialOfflineMap {
-	/// Most vector tiles decoded from one basemap for a build.
+	/// Most vector tiles decoded for one build, across all the basemaps.
 	static let maxTiles = 64
 	/// Strokes are twice the 2D map's point widths, the same 2x the Apple snapshot is drawn at.
 	static let strokeScale: CGFloat = 2
 
 	// MARK: Layer choice
 
-	/// Basemap boxes from the downloaded regions, the user's and the app's own.
-	static func basemapBounds(_ regions: [OfflineMapRegion]) -> [GeoBounds] {
-		regions.filter(\.hasBasemap).map(\.bounds)
+	/// Whether the region's basemap is vector tiles the Offline layer can draw. Downloads are always
+	/// Protomaps vector tiles; an imported archive can be raster, so it is nil until its file has
+	/// been checked (`checked`, by region ID).
+	static func isVectorBasemap(_ region: OfflineMapRegion, checked: [UUID: Bool]) -> Bool? {
+		guard region.hasBasemap else { return false }
+		guard region.sourceBuild == "Imported" else { return true }
+		return checked[region.id]
+	}
+
+	/// Vector basemap boxes from the downloaded regions, the user's and the app's own. Imports not
+	/// checked yet are left out.
+	static func basemapBounds(_ regions: [OfflineMapRegion], checked: [UUID: Bool] = [:]) -> [GeoBounds] {
+		regions.filter { isVectorBasemap($0, checked: checked) == true }.map(\.bounds)
+	}
+
+	/// Reads each archive's header to see whether it holds vector tiles. Blocking; run off the main thread.
+	static func checkVectorTiles(_ files: [OfflineMapRegionFile]) -> [UUID: Bool] {
+		var result: [UUID: Bool] = [:]
+		for file in files {
+			result[file.region.id] = OfflineTileSourceFactory.source(for: file.url)?.isVectorTiles ?? false
+		}
+		return result
 	}
 
 	/// Least share of the box one basemap must cover to offer the Offline layer.
@@ -129,29 +148,43 @@ enum SpatialOfflineMap {
 	}
 
 	/// Decodes the downloaded basemaps that touch the box. Nil when none do, or when cancelled.
+	/// `maxTiles` is shared by all the basemaps, and a tile already inside a decoded basemap is not
+	/// decoded again from an overlapping one.
 	static func decode(frame: SpatialFrame, width: Int, files: [OfflineMapRegionFile] = OfflineMapManager.persistedRegionFiles()) -> Shapes? {
 		let bounds = frame.bounds
 		var polygons: [OfflineMapPolygon] = []
 		var polylines: [OfflineMapPolyline] = []
 		var tileCount = 0
+		var decoded: [GeoBounds] = []
 		let started = Date()
 		for file in files where file.region.hasBasemap && file.region.bounds.intersects(bounds) {
 			if Task.isCancelled { return nil }
+			let remaining = maxTiles - tileCount
+			guard remaining > 0 else { break }
 			guard let source = OfflineTileSourceFactory.source(for: file.url), source.isVectorTiles else { continue }
 			let coverage = source.geographicBounds ?? file.region.bounds
 			guard coverage.intersects(bounds) else { continue }
-			let zoom = zoom(bounds: bounds, width: width, minZoom: Int(source.tileMinZoom), maxZoom: Int(source.tileMaxZoom))
-			let tiles = tiles(bounds: bounds, zoom: zoom).filter { TerrainStore.tileBounds(z: $0.z, x: $0.x, y: $0.y).intersects(coverage) }
+			let zoom = zoom(bounds: bounds, width: width, minZoom: Int(source.tileMinZoom), maxZoom: Int(source.tileMaxZoom), maxTiles: remaining)
+			let tiles = newTiles(tiles(bounds: bounds, zoom: zoom), coverage: coverage, decoded: decoded).prefix(remaining)
 			guard !tiles.isEmpty else { continue }
-			let result = OfflineVectorTileProvider.build(source: source, bounds: bounds, tiles: tiles, shouldStop: { Task.isCancelled })
+			let result = OfflineVectorTileProvider.build(source: source, bounds: bounds, tiles: Array(tiles), shouldStop: { Task.isCancelled })
 			if Task.isCancelled { return nil }
 			tileCount += tiles.count
+			decoded.append(coverage)
 			polygons += result.polygons
 			polylines += result.polylines
 		}
 		guard tileCount > 0 else { return nil }
 		Logger.services.info("🧊 [Spatial] Offline map: \(polygons.count) fills, \(polylines.count) lines from \(tileCount) tiles in \(String(format: "%.2f", Date().timeIntervalSince(started)), privacy: .public)s")
 		return Shapes(polygons: polygons, polylines: polylines)
+	}
+
+	/// The tiles that touch this basemap's coverage and are not wholly inside a basemap already decoded.
+	static func newTiles(_ tiles: [OfflineVectorTileProvider.TileID], coverage: GeoBounds, decoded: [GeoBounds]) -> [OfflineVectorTileProvider.TileID] {
+		tiles.filter { tile in
+			let tileBounds = TerrainStore.tileBounds(z: tile.z, x: tile.x, y: tile.y)
+			return tileBounds.intersects(coverage) && !decoded.contains { $0.contains(tileBounds) }
+		}
 	}
 
 	/// Paints the fills and lines over whatever the context holds (the land color).

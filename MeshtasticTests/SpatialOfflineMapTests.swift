@@ -58,6 +58,17 @@ struct SpatialOfflineMapTests {
 		#expect(SpatialOfflineMap.basemapBounds([terrainOnly, basemap]) == [box])
 	}
 
+	@Test func importedBasemapsCountOnlyOnceCheckedAsVector() {
+		let download = OfflineMapRegion(name: "Seattle", fileName: "a.pmtiles", bounds: box, minZoom: 0, maxZoom: 15, fileSize: 1, sourceBuild: "20260623")
+		let imported = OfflineMapRegion(name: "Import", fileName: "b.pmtiles", bounds: box, minZoom: 0, maxZoom: 15, fileSize: 1, sourceBuild: "Imported")
+		#expect(SpatialOfflineMap.isVectorBasemap(download, checked: [:]) == true)
+		#expect(SpatialOfflineMap.isVectorBasemap(imported, checked: [:]) == nil)
+		// Unchecked or raster imports never offer Offline.
+		#expect(SpatialOfflineMap.basemapBounds([imported]).isEmpty)
+		#expect(SpatialOfflineMap.basemapBounds([imported], checked: [imported.id: false]).isEmpty)
+		#expect(SpatialOfflineMap.basemapBounds([imported], checked: [imported.id: true]) == [box])
+	}
+
 	// MARK: Layers
 
 	@Test func pickerOffersOfflineOnlyWhenCovered() {
@@ -99,6 +110,18 @@ struct SpatialOfflineMapTests {
 	@Test func defaultCapHoldsForATypicalBox() {
 		let zoom = SpatialOfflineMap.zoom(bounds: box, width: 2048, minZoom: 0, maxZoom: 15)
 		#expect(SpatialOfflineMap.tiles(bounds: box, zoom: zoom).count <= SpatialOfflineMap.maxTiles)
+	}
+
+	@Test func tilesInsideADecodedBasemapAreSkipped() {
+		let tiles = SpatialOfflineMap.tiles(bounds: box, zoom: 10)
+		let world = GeoBounds(minLon: -180, minLat: -85, maxLon: 180, maxLat: 85)
+		#expect(SpatialOfflineMap.newTiles(tiles, coverage: world, decoded: []).count == tiles.count)
+		#expect(SpatialOfflineMap.newTiles(tiles, coverage: world, decoded: [world]).isEmpty)
+		// A decoded basemap over the west half leaves the eastern tiles to decode.
+		let west = GeoBounds(minLon: -124, minLat: 46, maxLon: -122.3, maxLat: 49)
+		let rest = SpatialOfflineMap.newTiles(tiles, coverage: world, decoded: [west])
+		#expect(!rest.isEmpty && rest.count < tiles.count)
+		#expect(rest.allSatisfy { TerrainStore.tileBounds(z: $0.z, x: $0.x, y: $0.y).maxLon > -122.3 })
 	}
 
 	@Test func tilesCoverTheBox() {
