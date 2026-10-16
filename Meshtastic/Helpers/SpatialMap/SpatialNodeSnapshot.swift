@@ -8,8 +8,8 @@ import CoreLocation
 import Foundation
 import SwiftData
 
-/// What the spatial map needs to know about one node, copied out of SwiftData on the main actor
-/// so the scene never holds a model object.
+/// What the spatial map needs to know about one node, copied out of SwiftData so the scene never
+/// holds a model object.
 struct SpatialNodeSnapshot: Identifiable, Equatable, Sendable {
 	let id: Int64
 	let coordinate: CLLocationCoordinate2D
@@ -48,32 +48,43 @@ struct SpatialNodeSnapshot: Identifiable, Equatable, Sendable {
 /// Builds the node list for the spatial map the same way the 2D map builds its pins: latest
 /// positions only, the map filters applied, and a cap that keeps the connected radio and favorites
 /// first when the mesh is large.
-@MainActor
 enum SpatialMapNodeSource {
 	static let limit = 500
 
+	@MainActor
 	static func snapshots(
 		context: ModelContext,
 		filters: NodeFilterParameters,
 		preciseOnly: Bool,
 		connectedNodeNum: Int64?
 	) -> [SpatialNodeSnapshot] {
-		let positions = (try? context.fetch(PositionEntity.allPositionsFetchDescriptor())) ?? []
 		let searchText = filters.searchText.lowercased()
 		let onlineThreshold = filters.isOnline ? Date().addingTimeInterval(-7_200) : nil
 		let distanceBounds = filters.currentDistanceBounds
 		let filtering = filters.isFiltering || !searchText.isEmpty
+		let all = try? snapshots(context: context, preciseOnly: preciseOnly, connectedNodeNum: connectedNodeNum) { node, position in
+			!filtering || filters.matches(node, latestPosition: position, normalizedSearchText: searchText,
+										  onlineThreshold: onlineThreshold, distanceBounds: distanceBounds)
+		}
+		return all ?? []
+	}
 
+	/// The same list with no map filters, or with `include` deciding which nodes stay. Works on
+	/// any context, so a background reader can use it. Throws when the positions can't be read.
+	static func snapshots(
+		context: ModelContext,
+		preciseOnly: Bool,
+		connectedNodeNum: Int64?,
+		include: (NodeInfoEntity, PositionEntity) -> Bool = { _, _ in true }
+	) throws -> [SpatialNodeSnapshot] {
+		let positions = try context.fetch(PositionEntity.allPositionsFetchDescriptor())
 		var pinned: [SpatialNodeSnapshot] = []
 		var online: [SpatialNodeSnapshot] = []
 		var rest: [SpatialNodeSnapshot] = []
 		for position in positions {
 			guard let node = position.nodePosition, !node.ignored else { continue }
 			guard position.isPreciseLocation || (!preciseOnly && position.isReducedPrecision) else { continue }
-			if filtering, !filters.matches(node, latestPosition: position, normalizedSearchText: searchText,
-										   onlineThreshold: onlineThreshold, distanceBounds: distanceBounds) {
-				continue
-			}
+			guard include(node, position) else { continue }
 			let coordinate: CLLocationCoordinate2D? = position.isPreciseLocation ? position.nodeCoordinate : position.fuzzedNodeCoordinate
 			guard let coordinate else { continue }
 			let snapshot = SpatialNodeSnapshot(

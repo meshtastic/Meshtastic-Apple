@@ -13,7 +13,6 @@ import SwiftUI
 
 extension PositionEntity {
 
-	@MainActor
 	static func allPositionsFetchDescriptor() -> FetchDescriptor<PositionEntity> {
 		var descriptor = FetchDescriptor<PositionEntity>(
 			predicate: #Predicate<PositionEntity> { pos in

@@ -30,7 +30,7 @@ enum SpatialTerrainCoverage {
 	}
 }
 
-/// Why the spatial map can't download terrain for the whole box.
+/// Why the spatial map can't download its map for the whole box.
 enum SpatialTerrainBlock: Equatable {
 	/// The download would push offline maps past the total storage limit.
 	case storage
@@ -38,9 +38,9 @@ enum SpatialTerrainBlock: Equatable {
 	case tooLarge
 }
 
-/// What the spatial map should do to keep its box covered by terrain. The app keeps one
-/// terrain-only region of its own ("Spatial Map terrain") and grows or moves it as the mesh
-/// changes; the user's regions count as coverage but are never changed.
+/// What the spatial map should do to keep its box covered by an offline map: streets and terrain.
+/// The app keeps one full offline map of its own ("Spatial Map area") and grows or moves it as
+/// the mesh changes; the user's regions count as coverage but are never changed.
 enum SpatialTerrainAutoDecision: Equatable {
 	/// Covered, busy, or the backoff says not now.
 	case none
@@ -50,40 +50,85 @@ enum SpatialTerrainAutoDecision: Equatable {
 	case expand(GeoBounds, replacing: UUID)
 	case blocked(SpatialTerrainBlock)
 
-	/// Every sample must have terrain: the volume should show relief edge to edge.
+	/// Every sample must be covered: the volume should show relief edge to edge.
 	static let coverageThreshold = 1.0
+	#if os(visionOS)
+	/// About what the 1 GB per-map limit covers at the street-map estimate below.
+	static let maxSpanMeters: Double = 500_000
+	#else
 	static let maxSpanMeters: Double = 350_000
+	#endif
 	/// Rough size of global z0–12 terrain per km². The manager re-checks the real plan.
-	static let bytesPerSquareKm: Int64 = 4_096
+	static let terrainBytesPerSquareKm: Int64 = 4_096
+	/// Rough size of the Standard (z0–13) street map per km². Built from the per-tile averages in
+	/// `PMTilesExtractor.roughByteEstimate`: a z13 tile averages 34 KB and covers about 11 km² at
+	/// Seattle's latitude (3.2 KB/km²), and z0–12 add about a third more. Urban areas, so rural
+	/// meshes come in well under it. The manager re-checks the real plan.
+	static let basemapBytesPerSquareKm: Int64 = 4_096
 	/// Areas this small (per side) also get the regional high-resolution extract.
 	static let regionalMaxSpanMeters: Double = 20_000
 
+	/// `streetsTooLarge` is an area whose street map was over the per-map limit: inside it,
+	/// terrain alone counts as covered.
 	static func make(
 		box: GeoBounds,
 		regions: [OfflineMapRegion],
 		isBusy: Bool,
 		backoff: SpatialTerrainBackoff,
-		now: Date
+		now: Date,
+		growOnly: Bool = false,
+		streetsTooLarge: GeoBounds? = nil
 	) -> SpatialTerrainAutoDecision {
-		let terrain = regions.filter { $0.terrain != nil }
-		if SpatialTerrainCoverage.fraction(of: box, covered: terrain.map(\.bounds)) >= coverageThreshold { return .none }
+		let terrain = regions.filter { $0.terrain != nil }.map(\.bounds)
+		let streets = regions.filter(\.hasBasemap).map(\.bounds)
+		let hasTerrain = SpatialTerrainCoverage.fraction(of: box, covered: terrain) >= coverageThreshold
+		let hasStreets = streetsTooLarge?.contains(box) == true
+			|| SpatialTerrainCoverage.fraction(of: box, covered: streets) >= coverageThreshold
+		if hasTerrain && hasStreets { return .none }
 		if isBusy { return .none }
-		let managed = terrain.first { $0.managedBy == OfflineMapRegion.spatialMapManager }
-		// Grow the managed region to take in the box. If that gets too big (say the radio is now on
-		// another continent), move it to the box instead; the bare box is the last resort.
-		let candidates = [managed.map { $0.bounds.union(box).expandedForTerrain() }, box.expandedForTerrain(), box].compactMap { $0 }
+		// Normally one. A second is left over when the app quit mid-download, or is terrain for a
+		// bigger area kept beside a street map when the bigger street map was too large. Grow from
+		// the largest with terrain.
+		let allManaged = regions.filter { $0.managedBy == OfflineMapRegion.spatialMapManager }
+		let managed = allManaged.filter { $0.terrain != nil }.max { $0.bounds.areaSquareKm < $1.bounds.areaSquareKm } ?? allManaged.first
+		// The app's own check only grows a region the spatial map already made.
+		if growOnly && managed == nil { return .none }
+		// A managed region that already spans the box is missing streets or terrain (an older
+		// build's terrain-only region, or a download cut short): download the same area again. Otherwise grow it to take in the box. If that gets too big
+		// (say the radio is now on another continent), move it to the box; the bare box is last.
+		let grown = managed.map { $0.bounds.contains(box) ? $0.bounds : $0.bounds.union(box).expandedForTerrain() }
+		let candidates = [grown, box.expandedForTerrain(), box].compactMap { $0 }
 		guard let target = candidates.first(where: fits) else { return .blocked(.tooLarge) }
-		// Storage counts every region, less the managed one that the download replaces.
+		// Storage counts every region, less the managed ones that the download replaces.
 		let totalBytes = regions.reduce(Int64(0)) { $0 + $1.totalByteCount }
-		let freed = managed?.terrain?.byteCount ?? 0
+		let freed = allManaged.reduce(Int64(0)) { $0 + $1.totalByteCount }
 		if totalBytes - freed + estimatedBytes(target) > OfflineMapStorageLimits.maxTotalBytes { return .blocked(.storage) }
 		guard backoff.allows(target, now: now) else { return .none }
 		if let managed { return .expand(target, replacing: managed.id) }
 		return .create(target)
 	}
 
+	/// The smaller areas that still cover `box`, to try in turn when the street map for `target` is
+	/// over the per-map limit (the estimate is rough; the manager checks the real plan).
+	static func smallerAreas(than target: GeoBounds, box: GeoBounds) -> [GeoBounds] {
+		var result: [GeoBounds] = []
+		for area in [box.expandedForTerrain(), box] where area != target && target.contains(area) && !result.contains(area) {
+			result.append(area)
+		}
+		return result
+	}
+
+	static func estimatedTerrainBytes(_ bounds: GeoBounds) -> Int64 {
+		Int64(bounds.areaSquareKm) * terrainBytesPerSquareKm
+	}
+
+	static func estimatedBasemapBytes(_ bounds: GeoBounds) -> Int64 {
+		Int64(bounds.areaSquareKm) * basemapBytesPerSquareKm
+	}
+
+	/// Streets plus terrain.
 	static func estimatedBytes(_ bounds: GeoBounds) -> Int64 {
-		Int64(bounds.areaSquareKm) * bytesPerSquareKm
+		estimatedBasemapBytes(bounds) + estimatedTerrainBytes(bounds)
 	}
 
 	static func includesRegional(_ bounds: GeoBounds) -> Bool {
@@ -91,10 +136,13 @@ enum SpatialTerrainAutoDecision: Equatable {
 		return max(size.width, size.height) <= regionalMaxSpanMeters
 	}
 
+	/// The street map and the terrain each have to fit the per-map limit, as they do for the
+	/// user's own downloads.
 	private static func fits(_ bounds: GeoBounds) -> Bool {
 		let size = bounds.sizeInMeters
 		return size.width <= maxSpanMeters && size.height <= maxSpanMeters
-			&& estimatedBytes(bounds) <= OfflineMapStorageLimits.maxRegionBytes
+			&& estimatedBasemapBytes(bounds) <= OfflineMapStorageLimits.maxRegionBytes
+			&& estimatedTerrainBytes(bounds) <= OfflineMapStorageLimits.maxRegionBytes
 	}
 
 	/// The area to download, for `.create` and `.expand`.
