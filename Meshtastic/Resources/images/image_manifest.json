@@ -1,5 +1,5 @@
 {
-  "api_hash": "494ca528f19131056f0caafee2433f23a8c8d461c2f06ade795fe8b28ebfbf14",
+  "api_hash": "f6bc0397f4908e530fe0fe1617ae4c6d7fb0199c0b28795daf340334440974dd",
   "files": {
     "crowpanel_2_4.svg": {
       "etag": "\"29194e5a415e5aee034b2d4a3ba2e398\""
@@ -70,6 +70,9 @@
     "heltec_v4.svg": {
       "etag": "\"57666cd119ac01e74716bef5f785e2df\""
     },
+    "heltec_v4_r8_base.svg": {
+      "etag": "\"2dac9cf812697347616594d83bbd79b6\""
+    },
     "heltec_wireless_tracker_v2.svg": {
       "etag": "\"7a6b4a5c152ec91cc9f746da978bdfbc\""
     },
@@ -93,6 +96,9 @@
     },
     "meteor_pro.svg": {
       "etag": "\"db5044328b825421851b963479fab9ca\""
+    },
+    "mini-epaper-s3.svg": {
+      "etag": "\"4728d1fe386b8d85ec41e2449c26fe29\""
     },
     "muzi_base.svg": {
       "etag": "\"be887c289c63af434835279b75f0879e\""
@@ -157,6 +163,12 @@
     "seeed_solar.svg": {
       "etag": "\"1b517a452f66e0e5b1b7323dfce89fbc\""
     },
+    "seeed_wio_tracker_l1_pro_1w.svg": {
+      "etag": "\"0297c59c9c7467b43c857242f57547a5\""
+    },
+    "seeed_wio_tracker_l2.svg": {
+      "etag": "\"2bd32ce3ace0afb13dcd8258f9c3a6ae\""
+    },
     "seeed_xiao_nrf52_kit.svg": {
       "etag": "\"c73c0f939e9f6ad244a36d4a3e3da289\""
     },
@@ -178,8 +190,14 @@
     "t-watch-s3.svg": {
       "etag": "\"b2c26bdc010a6f78855a1fb1905c9397\""
     },
+    "t-watch-ultra.svg": {
+      "etag": "\"a4448c205bdc2216284d670be87fc63d\""
+    },
     "t5s3_epaper.svg": {
       "etag": "\"423640c486cc7c4480f194bc02481ea5\""
+    },
+    "t5s3_epaper_v2.svg": {
+      "etag": "\"cac5c21953969c63f825469410f8bed6\""
     },
     "tbeam-1w.svg": {
       "etag": "\"ffb9d18fb8c98f231a610c58a1d1e865\""
