@@ -758,10 +758,10 @@
             "firmware",
             "node",
             "radios",
-            "radio",
             "page",
             "local",
             "channel",
+            "radio",
             "list",
             "jul",
             "device",
@@ -777,7 +777,7 @@
             "row",
             "per"
         ],
-        "charCount": 8619
+        "charCount": 8597
     },
     {
         "id": "adding-features",
