@@ -112,6 +112,18 @@ struct LoRaChannelCalculator {
 		return max(Int(((region.freqEnd - region.freqStart + region.spacing) / slotWidth).rounded()), 1)
 	}
 
+	/// Whether the region is at least one slot wide at this bandwidth. The firmware
+	/// refuses a bandwidth wider than the region, even though `numChannels()` still
+	/// reports one slot for it.
+	func regionFitsBandwidth() -> Bool {
+		guard let region else { return false }
+		let bandwidthMHz = bandwidthMHz(region: region)
+		guard bandwidthMHz > 0 else { return false }
+		let slotWidth = region.spacing + 2 * region.padding + bandwidthMHz
+		// Small tolerance so a band exactly one slot wide (EU868 at 250 kHz) isn't lost to rounding.
+		return region.freqEnd - region.freqStart + 1e-6 >= slotWidth
+	}
+
 	private func bandwidthMHz(region: RegionInfo) -> Double {
 		if usePreset {
 			let presetBandwidth = ModemPresets(rawValue: modemPreset)?.bandwidthMHz ?? 0
@@ -185,7 +197,8 @@ extension LoRaChannelCalculator {
 	}
 
 	/// Whether a slot a beacon pinned exists in the region and preset the radio would join on.
-	/// Slots are 1-based; anything past the region's slot count would put the radio off-band.
+	/// Slots are 1-based. This matches what the firmware accepts: the slot must be within the
+	/// region's slot count, and the preset's bandwidth must fit in the region at all.
 	static func isValidBeaconSlot(_ slot: Int, regionCode: Int, preset: ModemPresets) -> Bool {
 		let calculator = LoRaChannelCalculator(
 			regionCode: regionCode,
@@ -195,6 +208,7 @@ extension LoRaChannelCalculator {
 			bandwidth: 0,
 			overrideFrequency: 0
 		)
+		guard calculator.regionFitsBandwidth() else { return false }
 		let count = calculator.numChannels()
 		return count > 0 && (1...count).contains(slot)
 	}

@@ -284,6 +284,27 @@ struct BeaconAddVsSwitchTests {
 		#expect(!LoRaChannelCalculator.isValidBeaconSlot(lastLongFastSlot, regionCode: RegionCodes.us.rawValue, preset: .shortTurbo))
 	}
 
+	@Test func aPresetWiderThanTheRegionHasNoValidSlot() {
+		// EU868 is 250 kHz wide; ShortTurbo needs 500 kHz. The firmware refuses it, even though
+		// the slot count used for the channel-name hash still rounds up to one.
+		let eu868 = RegionCodes.eu868.rawValue
+		#expect(!LoRaChannelCalculator.isValidBeaconSlot(1, regionCode: eu868, preset: .shortTurbo))
+		#expect(LoRaChannelCalculator.isValidBeaconSlot(1, regionCode: eu868, preset: .longFast))
+		let calculator = LoRaChannelCalculator(
+			regionCode: eu868, usePreset: true, modemPreset: ModemPresets.shortTurbo.rawValue,
+			channelNum: 0, bandwidth: 0, overrideFrequency: 0
+		)
+		#expect(calculator.numChannels() == 1)
+	}
+
+	@Test func theLastRoundedSlotIsAcceptedLikeTheFirmware() {
+		// PH433 is 1.7 MHz wide, so LongFast rounds to 7 slots. The firmware accepts slot 7
+		// (and can hash a channel name onto it), so the app does too; slot 8 is past the count.
+		let ph433 = RegionCodes.ph433.rawValue
+		#expect(LoRaChannelCalculator.isValidBeaconSlot(7, regionCode: ph433, preset: .longFast))
+		#expect(!LoRaChannelCalculator.isValidBeaconSlot(8, regionCode: ph433, preset: .longFast))
+	}
+
 	@Test func slotBoundsAreOneBased() {
 		let us = RegionCodes.us.rawValue
 		#expect(!LoRaChannelCalculator.isValidBeaconSlot(0, regionCode: us, preset: .longFast))
