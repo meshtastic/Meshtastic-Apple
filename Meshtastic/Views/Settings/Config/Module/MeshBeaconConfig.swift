@@ -272,7 +272,7 @@ struct MeshBeaconConfig: View {
 	}
 
 	private var offeredSection: some View {
-		Section(header: Text("Offered to Listeners"), footer: Text("Leave Frequency Slot empty and listeners work it out from the channel name. Set it only if your mesh uses a different slot.")) {
+		Section(header: Text("Offered to Listeners"), footer: Text("Leave Frequency Slot empty and listeners work it out from the region, preset and channel name. Set it only if your mesh uses a different slot.")) {
 			channelPicker("Channel", selection: $offerChannelIndex, customName: offerChannelName, noneLabel: nil)
 			regionRow
 			offerPresetRow

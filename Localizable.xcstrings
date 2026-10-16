@@ -66342,12 +66342,12 @@
         }
       }
     },
-    "Leave Frequency Slot empty and listeners work it out from the channel name. Set it only if your mesh uses a different slot." : {
+    "Leave Frequency Slot empty and listeners work it out from the region, preset and channel name. Set it only if your mesh uses a different slot." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "Leave Frequency Slot empty and listeners work it out from the channel name. Set it only if your mesh uses a different slot."
+            "value" : "Leave Frequency Slot empty and listeners work it out from the region, preset and channel name. Set it only if your mesh uses a different slot."
           }
         }
       }
