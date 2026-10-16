@@ -85,8 +85,12 @@ struct DeviceModelCacheTests {
 
 		try cache.markMissing("rak4631")
 		#expect(cache.isRecentlyMissing("rak4631"))
-		#expect(cache.isRecentlyMissing("rak4631", now: .now.addingTimeInterval(23 * 60 * 60)))
-		#expect(!cache.isRecentlyMissing("rak4631", now: .now.addingTimeInterval(25 * 60 * 60)))
+		// Built outside #expect: the macro's rewrite loses the Int-literal to
+		// TimeInterval inference on the CI toolchain and fails to compile.
+		let justUnderADay = Date.now.addingTimeInterval(23 * 60 * 60)
+		let justOverADay = Date.now.addingTimeInterval(25 * 60 * 60)
+		#expect(cache.isRecentlyMissing("rak4631", now: justUnderADay))
+		#expect(!cache.isRecentlyMissing("rak4631", now: justOverADay))
 	}
 
 	@Test("storing a download replaces the old copy and clears the missing marker")
