@@ -22,6 +22,7 @@ struct SpatialMapWindow: View {
 	@Environment(\.physicalMetrics) private var metrics
 	@StateObject private var nodeFilters = NodeFilterParameters()
 	@State private var model = SpatialMapModel()
+	@ObservedObject private var connectivity = OfflineMapConnectivityMonitor.shared
 	@State private var scene: SpatialSceneController
 	@State private var traffic: SpatialTrafficController
 	@AppStorage("mapLayer") private var mapLayer: MapLayer = .standard
@@ -90,6 +91,9 @@ struct SpatialMapWindow: View {
 		}
 		.onChange(of: coverageOpacity, initial: true) { _, opacity in
 			model.coverageOpacity = Float(opacity)
+		}
+		.onChange(of: connectivity.isNetworkAvailable) { wasAvailable, isAvailable in
+			if !wasAvailable && isAvailable { model.retryImagery() }
 		}
 		.onChange(of: appState.spatialMapFocus?.id) {
 			claimFocus()

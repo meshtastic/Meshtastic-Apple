@@ -78,6 +78,18 @@ enum SpatialOfflineMap {
 		stored == .offline && !offlineAvailable ? .standard : stored
 	}
 
+	/// The basemap part of the terrain build key: each basemap's ID and update date, sorted, so
+	/// downloading, updating or replacing one rebuilds the map. Only the Offline layer and a build
+	/// that fell back to the offline map without imagery draw basemaps; the Apple layers leave it
+	/// empty so a basemap change doesn't rebuild them while online.
+	static func basemapGeneration(_ regions: [OfflineMapRegion], layer: MapLayer, usedFallback: Bool) -> String {
+		guard layer == .offline || usedFallback else { return "" }
+		return regions.filter(\.hasBasemap)
+			.map { "\($0.id)\(Int($0.updatedDate.timeIntervalSince1970))" }
+			.sorted()
+			.joined(separator: ",")
+	}
+
 	// MARK: Tiles
 
 	/// The zoom to decode at: one vector tile per 256–512 texels across the box, lowered until the

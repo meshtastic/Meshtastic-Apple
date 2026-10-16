@@ -337,21 +337,19 @@ final class SpatialMapModel {
 		let layer = SpatialOfflineMap.buildLayer(storedLayer, offlineAvailable: offlineBasemap)
 		// The terrain generation (every region's download stamp) is part of the key, so a terrain
 		// download or delete rebuilds the model.
-		var generation = regions
+		let terrainGeneration = regions
 			.compactMap { $0.terrain.map { String(Int($0.downloadedAt.timeIntervalSince1970)) } }
 			.sorted()
 			.joined(separator: ",")
-		// The Offline layer also rebuilds when a basemap is downloaded, updated or deleted. The other
-		// layers rebuild when the area gains or loses a basemap (`offlineBasemap`), so the
-		// no-network fallback switches between the offline map and terrain shading.
-		if layer == .offline {
-			generation += "|" + regions.filter(\.hasBasemap)
-				.map { "\($0.id)\(Int($0.updatedDate.timeIntervalSince1970))" }
-				.sorted()
-				.joined(separator: ",")
-		}
 		let metric = Locale.current.measurementSystem == .metric
-		let key = "\(bounds.minLon),\(bounds.minLat),\(bounds.maxLon),\(bounds.maxLat)|\(layer.rawValue)|\(dark)|\(contours)|\(metric)|\(offlineBasemap)|\(generation)"
+		// The Offline layer, and an Apple layer drawn from the offline map because imagery failed,
+		// also rebuild when a basemap is downloaded, updated or replaced. The Apple layers otherwise
+		// rebuild only when the area gains or loses a basemap (`offlineBasemap`).
+		func makeKey(usedFallback: Bool) -> String {
+			let basemaps = SpatialOfflineMap.basemapGeneration(regions, layer: layer, usedFallback: usedFallback)
+			return "\(bounds.minLon),\(bounds.minLat),\(bounds.maxLon),\(bounds.maxLat)|\(layer.rawValue)|\(dark)|\(contours)|\(metric)|\(offlineBasemap)|\(terrainGeneration)|\(basemaps)"
+		}
+		let key = makeKey(usedFallback: imageryUnavailable)
 		guard key != buildKey else { return }
 		buildKey = key
 		buildTask?.cancel()
@@ -375,6 +373,8 @@ final class SpatialMapModel {
 				terrainEntity = entity
 				textureSource = model.textureSource
 				imageryUnavailable = model.imageryUnavailable
+				// Key the build by what it drew, so falling back (or not) doesn't rebuild it again.
+				buildKey = makeKey(usedFallback: model.imageryUnavailable)
 				placementRevision += 1
 				placement = SpatialPlacement(
 					circle: circle, geometry: model.geometry,
@@ -398,6 +398,14 @@ final class SpatialMapModel {
 				}
 			}
 		}
+	}
+
+	/// Builds the current area again after the network comes back, so an Apple layer that fell
+	/// back to the offline map for lack of imagery gets its imagery.
+	func retryImagery() {
+		guard imageryUnavailable else { return }
+		buildKey = nil
+		applyArea()
 	}
 
 	// MARK: - Terrain download

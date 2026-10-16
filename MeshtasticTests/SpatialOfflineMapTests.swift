@@ -76,6 +76,18 @@ struct SpatialOfflineMapTests {
 		#expect(SpatialOfflineMap.layers(offlineAvailable: false) == [.standard, .hybrid, .satellite])
 	}
 
+	@Test func basemapGenerationOnlyCountsWhenBasemapsAreDrawn() {
+		var basemap = OfflineMapRegion(name: "Seattle", fileName: "a.pmtiles", bounds: box, minZoom: 0, maxZoom: 15, fileSize: 1, sourceBuild: "x")
+		let before = SpatialOfflineMap.basemapGeneration([basemap], layer: .offline, usedFallback: false)
+		#expect(!before.isEmpty)
+		#expect(SpatialOfflineMap.basemapGeneration([basemap], layer: .standard, usedFallback: true) == before)
+		// Online Apple layers don't rebuild for a basemap change.
+		#expect(SpatialOfflineMap.basemapGeneration([basemap], layer: .standard, usedFallback: false).isEmpty)
+		// Updating the basemap changes the key.
+		basemap.updatedDate = basemap.updatedDate.addingTimeInterval(60)
+		#expect(SpatialOfflineMap.basemapGeneration([basemap], layer: .offline, usedFallback: false) != before)
+	}
+
 	@Test func storedOfflineBuildsStandardWithoutABasemap() {
 		#expect(SpatialOfflineMap.buildLayer(.offline, offlineAvailable: false) == .standard)
 		#expect(SpatialOfflineMap.buildLayer(.offline, offlineAvailable: true) == .offline)
