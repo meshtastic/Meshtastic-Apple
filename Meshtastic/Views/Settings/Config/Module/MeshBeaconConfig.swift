@@ -192,6 +192,15 @@ struct MeshBeaconConfig: View {
 				configIsNil: { $0.meshBeaconConfig == nil },
 				request: accessoryManager.requestMeshBeaconModuleConfig
 			)
+			// The region and preset come from the LoRa config, which a remote node
+			// may not have sent yet.
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.loRaConfig == nil },
+				request: accessoryManager.requestLoRaConfig
+			)
 		}
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {
@@ -261,6 +270,13 @@ struct MeshBeaconConfig: View {
 	private var offeredSection: some View {
 		Section(header: Text("Offered to Listeners")) {
 			channelPicker("Channel", selection: $offerChannelIndex, customName: offerChannelName, noneLabel: nil)
+			// Only the connected radio's channels are stored, so a remote node with no
+			// offered channel saved has nothing to pick from.
+			if !hasOfferChannel && nodeChannels.isEmpty {
+				Text("This radio's channels aren't available, so a channel can't be offered. Connect to it directly to set one.")
+					.font(.caption)
+					.foregroundStyle(.orange)
+			}
 			regionRow
 			offerPresetRow
 		}
