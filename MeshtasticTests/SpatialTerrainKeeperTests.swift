@@ -85,4 +85,33 @@ struct SpatialTerrainKeeperTests {
 		// Connected while the volume was open: the check waits for it to close.
 		#expect(run([Tick(0, nil, true), Tick(30, 1, false), Tick(60, 1, true)]) == [true, false, true])
 	}
+
+	@Test func anUndoneCheckRunsAgainOnTheNextTick() {
+		var schedule = SpatialTerrainCheckSchedule()
+		let first = schedule.shouldCheck(now: start, radio: 1, canCheck: true)
+		#expect(first)
+		schedule.undoLastCheck()
+		#expect(schedule.lastCheck == nil)
+		let retry = schedule.shouldCheck(now: start.addingTimeInterval(30), radio: 1, canCheck: true)
+		#expect(retry)
+		// A check that read the mesh, even with no nodes, isn't undone, so the interval holds.
+		let after = schedule.shouldCheck(now: start.addingTimeInterval(60), radio: 1, canCheck: true)
+		#expect(!after)
+	}
+
+	@Test func undoingALaterCheckKeepsTheEarlierOne() {
+		let interval = SpatialTerrainCheckSchedule.interval
+		var schedule = SpatialTerrainCheckSchedule()
+		let first = schedule.shouldCheck(now: start, radio: 1, canCheck: true)
+		let second = schedule.shouldCheck(now: start.addingTimeInterval(interval), radio: 1, canCheck: true)
+		#expect(first && second)
+		schedule.undoLastCheck()
+		#expect(schedule.lastCheck == start)
+		let retry = schedule.shouldCheck(now: start.addingTimeInterval(interval + 30), radio: 1, canCheck: true)
+		#expect(retry)
+		// Undo only takes back one check.
+		schedule.undoLastCheck()
+		schedule.undoLastCheck()
+		#expect(schedule.lastCheck == start)
+	}
 }

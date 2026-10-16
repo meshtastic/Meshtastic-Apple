@@ -17,6 +17,13 @@ struct SpatialTerrainCheckSchedule: Equatable {
 	private(set) var lastCheck: Date?
 	private(set) var seenRadio: Int64?
 	private(set) var connectedSinceCheck = false
+	/// The state before the last check, so a check that couldn't read the mesh can be taken back.
+	private var beforeCheck: Before?
+
+	private struct Before: Equatable {
+		let lastCheck: Date?
+		let connectedSinceCheck: Bool
+	}
 
 	/// Called on every tick with the connected radio. True when the area should be checked now.
 	/// `canCheck` is false while the setting is off, there is no managed region yet, the volume is
@@ -34,10 +41,19 @@ struct SpatialTerrainCheckSchedule: Equatable {
 			due = true
 		}
 		if due {
+			beforeCheck = Before(lastCheck: lastCheck, connectedSinceCheck: connectedSinceCheck)
 			lastCheck = now
 			connectedSinceCheck = false
 		}
 		return due
+	}
+
+	/// Takes back the last check when it couldn't read the mesh, so the next tick tries again.
+	mutating func undoLastCheck() {
+		guard let beforeCheck else { return }
+		lastCheck = beforeCheck.lastCheck
+		connectedSinceCheck = connectedSinceCheck || beforeCheck.connectedSinceCheck
+		self.beforeCheck = nil
 	}
 }
 
@@ -199,7 +215,15 @@ final class SpatialTerrainKeeper {
 		// The container first: while the database resets, the scheduled check waits instead of being used up.
 		guard let container = container(), schedule.shouldCheck(now: Date(), radio: radio, canCheck: canCheck) else { return }
 		let preciseOnly = defaults.bool(forKey: Self.preciseOnlyKey)
-		let nodes = await SpatialMeshAreaReader.nodes(container: container, preciseOnly: preciseOnly, connectedNodeNum: radio)
+		let nodes: [SpatialNodeSnapshot]
+		do {
+			nodes = try await SpatialMeshAreaReader.nodes(container: container, preciseOnly: preciseOnly, connectedNodeNum: radio)
+		} catch {
+			// A failed read isn't an empty mesh: try again on the next tick.
+			Logger.services.error("🧊 [Spatial] App terrain check could not read the nodes: \(error.localizedDescription, privacy: .public)")
+			schedule.undoLastCheck()
+			return
+		}
 		// The app may have left the foreground, or the volume opened, while the read ran.
 		guard !Task.isCancelled, openVolumes == 0, let box = SpatialMapArea.meshCircle(nodes)?.bounds else { return }
 		Logger.services.debug("🧊 [Spatial] App terrain check: \(nodes.count, privacy: .public) nodes")
@@ -211,13 +235,13 @@ final class SpatialTerrainKeeper {
 /// it off the main thread: a model actor created on the main thread runs its work there.
 @ModelActor
 actor SpatialMeshAreaReader {
-	func nodes(preciseOnly: Bool, connectedNodeNum: Int64?) -> [SpatialNodeSnapshot] {
-		SpatialMapNodeSource.snapshots(context: modelContext, preciseOnly: preciseOnly, connectedNodeNum: connectedNodeNum)
+	func nodes(preciseOnly: Bool, connectedNodeNum: Int64?) throws -> [SpatialNodeSnapshot] {
+		try SpatialMapNodeSource.snapshots(context: modelContext, preciseOnly: preciseOnly, connectedNodeNum: connectedNodeNum)
 	}
 
-	nonisolated static func nodes(container: ModelContainer, preciseOnly: Bool, connectedNodeNum: Int64?) async -> [SpatialNodeSnapshot] {
-		await Task.detached(priority: .utility) {
-			await SpatialMeshAreaReader(modelContainer: container).nodes(preciseOnly: preciseOnly, connectedNodeNum: connectedNodeNum)
+	nonisolated static func nodes(container: ModelContainer, preciseOnly: Bool, connectedNodeNum: Int64?) async throws -> [SpatialNodeSnapshot] {
+		try await Task.detached(priority: .utility) {
+			try await SpatialMeshAreaReader(modelContainer: container).nodes(preciseOnly: preciseOnly, connectedNodeNum: connectedNodeNum)
 		}.value
 	}
 }

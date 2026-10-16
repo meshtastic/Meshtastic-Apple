@@ -62,21 +62,22 @@ enum SpatialMapNodeSource {
 		let onlineThreshold = filters.isOnline ? Date().addingTimeInterval(-7_200) : nil
 		let distanceBounds = filters.currentDistanceBounds
 		let filtering = filters.isFiltering || !searchText.isEmpty
-		return snapshots(context: context, preciseOnly: preciseOnly, connectedNodeNum: connectedNodeNum) { node, position in
+		let all = try? snapshots(context: context, preciseOnly: preciseOnly, connectedNodeNum: connectedNodeNum) { node, position in
 			!filtering || filters.matches(node, latestPosition: position, normalizedSearchText: searchText,
 										  onlineThreshold: onlineThreshold, distanceBounds: distanceBounds)
 		}
+		return all ?? []
 	}
 
 	/// The same list with no map filters, or with `include` deciding which nodes stay. Works on
-	/// any context, so a background reader can use it.
+	/// any context, so a background reader can use it. Throws when the positions can't be read.
 	static func snapshots(
 		context: ModelContext,
 		preciseOnly: Bool,
 		connectedNodeNum: Int64?,
 		include: (NodeInfoEntity, PositionEntity) -> Bool = { _, _ in true }
-	) -> [SpatialNodeSnapshot] {
-		let positions = (try? context.fetch(PositionEntity.allPositionsFetchDescriptor())) ?? []
+	) throws -> [SpatialNodeSnapshot] {
+		let positions = try context.fetch(PositionEntity.allPositionsFetchDescriptor())
 		var pinned: [SpatialNodeSnapshot] = []
 		var online: [SpatialNodeSnapshot] = []
 		var rest: [SpatialNodeSnapshot] = []
