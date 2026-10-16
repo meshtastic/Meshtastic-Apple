@@ -170,7 +170,7 @@ final class WidgetDataBroker {
 		}
 
 		let preset = (radioNode?.loRaConfig?.modemPreset).flatMap { ModemPresets(rawValue: Int($0)) }
-		let nodes = fetchNodeSnapshots(context: context, preset: preset)
+		let nodes = fetchNodeSnapshots(context: context, preset: preset, radioNum: radioNum)
 		let totalNodeCount = (try? context.fetchCount(FetchDescriptor<NodeInfoEntity>())) ?? nodes.count
 		let (unreadChannels, unreadDMs) = fetchUnreadCounts(context: context)
 		let recent = fetchRecentMessages(context: context, radioNum: radioNum, radioNode: radioNode)
@@ -208,7 +208,7 @@ final class WidgetDataBroker {
 		return .disconnected
 	}
 
-	private func fetchNodeSnapshots(context: ModelContext, preset: ModemPresets?) -> [NodeSnapshot] {
+	private func fetchNodeSnapshots(context: ModelContext, preset: ModemPresets?, radioNum: Int64?) -> [NodeSnapshot] {
 		// Two fetches: favorites by the scalar flag (so an offline favorite is
 		// never lost to the recency window), then the most recently heard.
 		// No `user != nil` in either predicate — optional-relationship nil
@@ -228,13 +228,26 @@ final class WidgetDataBroker {
 			.filter { $0.user != nil && !$0.favorite }
 
 		let ordered = favorites + recent
-		return ordered.prefix(24).map { node in
+		var selected = Array(ordered.prefix(24))
+		// The tracker measures distance from the radio's own node, so the radio
+		// must survive the cap even when favorites alone fill it.
+		if let radioNum, !selected.contains(where: { $0.num == radioNum }) {
+			let radioDescriptor = FetchDescriptor<NodeInfoEntity>(
+				predicate: #Predicate<NodeInfoEntity> { $0.num == radioNum }
+			)
+			if let radioNode = try? context.fetch(radioDescriptor).first, radioNode.user != nil {
+				selected.append(radioNode)
+			}
+		}
+		return selected.map { node in
 			// Same display gate the app uses for signal: SNR present and not MQTT.
 			let hasSignal = node.snr != 0 && !node.viaMqtt
 			let rating: Int? = (hasSignal && preset != nil)
 				? getLoRaSignalStrength(snr: node.snr, rssi: node.rssi, preset: preset!).rawValue
 				: nil
-			let position = node.latestPosition
+			// nodeCoordinate nil-guards the 0/0 a positionless node stores —
+			// the raw latitude accessor returns 0, not nil.
+			let coordinate = node.latestPosition?.nodeCoordinate
 			return NodeSnapshot(
 				num: node.num,
 				longName: node.user?.longName ?? "Unknown".localized,
@@ -247,8 +260,8 @@ final class WidgetDataBroker {
 				lastHeard: node.lastHeard,
 				isOnline: node.isOnline,
 				hopsAway: node.hopsAway,
-				latitude: position?.latitude,
-				longitude: position?.longitude,
+				latitude: coordinate?.latitude,
+				longitude: coordinate?.longitude,
 				isFavorite: node.favorite
 			)
 		}
