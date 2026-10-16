@@ -1605,6 +1605,8 @@ extension AccessoryManager {
 		entity.hasOfferChannel = hasCustomChannel
 		entity.offerChannelName = channelName
 		entity.offerChannelPSK = hasCustomChannel ? beacon.offerChannel.psk : Data()
+		// Same as the scan path: zero means the beacon didn't pin a slot.
+		entity.offerFrequencySlot = beacon.hasOfferFrequencySlot ? Int(beacon.offerFrequencySlot) : 0
 		entity.snr = packet.rxSnr
 		entity.rssi = Int(packet.rxRssi)
 		entity.timestamp = Date()

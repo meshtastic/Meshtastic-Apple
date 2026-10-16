@@ -42,6 +42,62 @@ struct ScanTargetTests {
 		let b = ScanTarget(preset: .longFast, regionRaw: 1, channelName: "M", channelPSK: Data([9]))
 		#expect(a == b)
 	}
+
+	// MARK: - Targets built from a beacon
+
+	@Test func beaconTargetCarriesThePinnedSlot() {
+		let target = ScanTarget.beacon(
+			offeredPreset: .longFast,
+			offerRegion: RegionCodes.us.rawValue,
+			channel: ("M", Data([9])),
+			frequencySlot: 20,
+			radioRegion: RegionCodes.us.rawValue,
+			regionPresets: [:]
+		)
+		#expect(target?.frequencySlot == 20)
+		#expect(target?.regionRaw == RegionCodes.us.rawValue)
+		#expect(target?.isCustomChannel == true)
+	}
+
+	@Test func beaconTargetWithoutASlotLeavesItToTheFirmware() {
+		let target = ScanTarget.beacon(
+			offeredPreset: .longFast,
+			offerRegion: 0,
+			channel: ("M", Data([9])),
+			frequencySlot: nil,
+			radioRegion: RegionCodes.us.rawValue,
+			regionPresets: [:]
+		)
+		#expect(target?.frequencySlot == nil)
+		#expect(target?.regionRaw == nil)
+	}
+
+	@Test func beaconTargetWithASlotPastTheRegionIsDropped() {
+		// No region advertised, so the slot is checked against the radio's own region.
+		let target = ScanTarget.beacon(
+			offeredPreset: .longFast,
+			offerRegion: 0,
+			channel: ("M", Data([9])),
+			frequencySlot: 500,
+			radioRegion: RegionCodes.us.rawValue,
+			regionPresets: [:]
+		)
+		#expect(target == nil)
+	}
+
+	@Test func beaconTargetWithoutAPresetUsesTheRegionDefault() {
+		let usTurbo = RegionPresetInfo(presets: [.longFast, .longTurbo], defaultPreset: .longTurbo, licensedOnly: false)
+		let target = ScanTarget.beacon(
+			offeredPreset: nil,
+			offerRegion: RegionCodes.us.rawValue,
+			channel: nil,
+			frequencySlot: nil,
+			radioRegion: RegionCodes.us.rawValue,
+			regionPresets: [.us: usTurbo]
+		)
+		#expect(target?.preset == .longTurbo)
+		#expect(target?.isCustomChannel == false)
+	}
 }
 
 @Suite("DiscoveryScanEngine")

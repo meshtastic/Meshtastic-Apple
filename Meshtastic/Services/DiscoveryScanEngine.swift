@@ -45,18 +45,60 @@ enum DiscoveryScanState: Equatable, CustomStringConvertible {
 /// A single dwell target for the scan. Manual selections and public-channel beacons leave
 /// `channelName` nil and run on the scan's default public channel; a custom-channel beacon carries
 /// the advertised channel (name + PSK) so the scan tunes the radio to that mesh's frequency and can
-/// decode it. An optional region override lets a beacon steer the scan to the region it runs in.
+/// decode it. An optional region override lets a beacon steer the scan to the region it runs in,
+/// and an optional frequency slot carries a slot the beacon pinned.
 struct ScanTarget: Equatable {
 	let preset: ModemPresets
 	let regionRaw: Int?
 	let channelName: String?
 	let channelPSK: Data?
+	/// The 1-based slot a beacon pinned for its mesh; nil lets the firmware derive it.
+	let frequencySlot: Int?
 
-	init(preset: ModemPresets, regionRaw: Int? = nil, channelName: String? = nil, channelPSK: Data? = nil) {
+	init(
+		preset: ModemPresets,
+		regionRaw: Int? = nil,
+		channelName: String? = nil,
+		channelPSK: Data? = nil,
+		frequencySlot: Int? = nil
+	) {
 		self.preset = preset
 		self.regionRaw = regionRaw
 		self.channelName = channelName
 		self.channelPSK = channelPSK
+		self.frequencySlot = frequencySlot
+	}
+
+	/// The dwell target for a mesh a beacon advertised. An absent preset means the region's
+	/// default. Returns nil when the beacon pinned a slot the region and preset don't have,
+	/// since tuning there would put the radio off-band.
+	/// - Parameter channel: the offered custom channel, or nil for the public channel.
+	/// - Parameter radioRegion: the radio's region, used when the beacon didn't advertise one.
+	static func beacon(
+		offeredPreset: ModemPresets?,
+		offerRegion: Int,
+		channel: (name: String, psk: Data)?,
+		frequencySlot: Int?,
+		radioRegion: Int,
+		regionPresets: [Config.LoRaConfig.RegionCode: RegionPresetInfo] = [:]
+	) -> ScanTarget? {
+		let region = LoRaChannelCalculator.beaconRegion(offerRegion: offerRegion, radioRegion: radioRegion)
+		let preset = LoRaChannelCalculator.beaconPreset(
+			offered: offeredPreset,
+			regionInfo: LoRaChannelCalculator.regionInfo(regionCode: region, in: regionPresets)
+		)
+		if let frequencySlot, region != 0,
+		   !LoRaChannelCalculator.isValidBeaconSlot(frequencySlot, regionCode: region, preset: preset) {
+			return nil
+		}
+		let channel = channel?.name.isEmpty == false ? channel : nil
+		return ScanTarget(
+			preset: preset,
+			regionRaw: offerRegion > 0 ? offerRegion : nil,
+			channelName: channel?.name,
+			channelPSK: channel?.psk,
+			frequencySlot: frequencySlot
+		)
 	}
 
 	/// True when the target names a specific (non-public) channel the scan must tune to.
@@ -401,10 +443,12 @@ final class DiscoveryScanEngine {
 		// the primary channel. A user's custom frequency slot can't be translated across presets,
 		// so scanning on it would listen on the wrong frequency and find nothing. The user's real
 		// slot is snapshotted in `homeLoRaConfig` and restored verbatim when the scan finishes.
+		// A beacon target that pinned its slot uses that slot instead.
+		let scanSlot = UInt32(clamping: target.frequencySlot ?? 0)
 		let loraConfig: Config.LoRaConfig
 		if let existingConfig = connectedNode.loRaConfig, !existingConfig.isDeleted {
 			var scanConfig = loRaConfigProto(from: existingConfig, presetOverride: preset)
-			scanConfig.channelNum = 0
+			scanConfig.channelNum = scanSlot
 			// A beacon may advertise the region its mesh runs in; apply it so the derived frequency
 			// matches. Manual/public targets carry no override and keep the user's current region.
 			if let regionRaw = target.regionRaw, let region = RegionCodes(rawValue: regionRaw) {
@@ -414,6 +458,7 @@ final class DiscoveryScanEngine {
 		} else {
 			var minimal = Config.LoRaConfig()
 			minimal.modemPreset = preset.protoEnumValue()
+			minimal.channelNum = scanSlot
 			if let regionRaw = target.regionRaw, let region = RegionCodes(rawValue: regionRaw) {
 				minimal.region = region.protoEnumValue()
 			}
@@ -718,15 +763,29 @@ final class DiscoveryScanEngine {
 	/// with `removeFirst()`, so appending only extends future dwells and never disrupts the current
 	/// one. Custom-channel targets carry the offered channel so the dwell tunes to that mesh.
 	private func autoQueueBeacon(_ beacon: MeshBeacon) {
-		guard beacon.hasOfferPreset, let preset = ModemPresets(rawValue: beacon.offerPreset.rawValue) else { return }
-		let regionRaw = beacon.offerRegion != .unset ? beacon.offerRegion.rawValue : nil
+		let offeredPreset: ModemPresets?
+		if beacon.hasOfferPreset {
+			guard let preset = ModemPresets(rawValue: beacon.offerPreset.rawValue) else { return }
+			offeredPreset = preset
+		} else {
+			offeredPreset = nil
+		}
 		let hasCustomChannel = beacon.hasOfferChannel && !beacon.offerChannel.name.isEmpty
-		let target = ScanTarget(
-			preset: preset,
-			regionRaw: regionRaw,
-			channelName: hasCustomChannel ? beacon.offerChannel.name : nil,
-			channelPSK: hasCustomChannel ? beacon.offerChannel.psk : nil
-		)
+		let radioRegion = modelContext.flatMap {
+			getNodeInfo(id: Int64(UserDefaults.preferredPeripheralNum), context: $0)?.loRaConfig?.regionCode
+		}
+		guard let target = ScanTarget.beacon(
+			offeredPreset: offeredPreset,
+			offerRegion: beacon.offerRegion != .unset ? beacon.offerRegion.rawValue : 0,
+			channel: hasCustomChannel ? (beacon.offerChannel.name, beacon.offerChannel.psk) : nil,
+			frequencySlot: beacon.hasOfferFrequencySlot && beacon.offerFrequencySlot > 0 ? Int(beacon.offerFrequencySlot) : nil,
+			radioRegion: Int(radioRegion ?? 0),
+			regionPresets: accessoryManager?.loRaRegionPresets ?? [:]
+		) else {
+			Logger.discovery.info("📡 [Discovery] Beacon pinned slot \(beacon.offerFrequencySlot) that the region doesn't have; not queued")
+			return
+		}
+		let preset = target.preset
 
 		if activeTarget == target { return }
 		if presetQueue.contains(target) { return }

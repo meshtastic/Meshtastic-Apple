@@ -259,4 +259,74 @@ struct BeaconAddVsSwitchTests {
 		beacon.offerFrequencySlot = 42
 		#expect(beacon.offeredFrequencySlot == 42)
 	}
+
+	// MARK: - Pinned slot checked against the region
+
+	@Test func aPinnedSlotPastTheRegionIsNotJoinable() {
+		// US LongFast has far fewer than 500 slots; tuning there would be off-band.
+		let option = LoRaChannelCalculator.beaconJoinOption(
+			hasOfferChannel: true,
+			offerChannelName: "MyMesh",
+			offeredPreset: .longFast,
+			offerRegion: RegionCodes.us.rawValue,
+			offeredFrequencySlot: 500,
+			isConnected: true,
+			loRaConfig: usLongFastConfig(),
+			primaryChannelName: "MyMesh"
+		)
+		#expect(option == .none)
+	}
+
+	@Test func aPinnedSlotIsCheckedAgainstTheOfferedPreset() {
+		// The last US LongFast slot does not exist on a wider preset with fewer slots.
+		let lastLongFastSlot = LoRaChannelCalculator(config: usLongFastConfig()).numChannels()
+		#expect(LoRaChannelCalculator.isValidBeaconSlot(lastLongFastSlot, regionCode: RegionCodes.us.rawValue, preset: .longFast))
+		#expect(!LoRaChannelCalculator.isValidBeaconSlot(lastLongFastSlot, regionCode: RegionCodes.us.rawValue, preset: .shortTurbo))
+	}
+
+	@Test func slotBoundsAreOneBased() {
+		let us = RegionCodes.us.rawValue
+		#expect(!LoRaChannelCalculator.isValidBeaconSlot(0, regionCode: us, preset: .longFast))
+		#expect(LoRaChannelCalculator.isValidBeaconSlot(1, regionCode: us, preset: .longFast))
+		#expect(!LoRaChannelCalculator.isValidBeaconSlot(-1, regionCode: us, preset: .longFast))
+	}
+
+	// MARK: - A beacon with no preset means the region's default
+
+	@Test func noPresetMeansLongFastWithoutARegionMap() {
+		let option = LoRaChannelCalculator.beaconJoinOption(
+			hasOfferChannel: true,
+			offerChannelName: "MyMesh",
+			offeredPreset: nil,
+			offerRegion: RegionCodes.us.rawValue,
+			isConnected: true,
+			loRaConfig: usLongFastConfig(),
+			primaryChannelName: "MyMesh"
+		)
+		#expect(option == .add)
+	}
+
+	@Test func noPresetUsesTheRegionDefaultFromTheRadio() {
+		// The radio says US defaults to LongTurbo, so a preset-less beacon is not on this
+		// LongFast radio's preset.
+		let usTurbo = RegionPresetInfo(presets: [.longFast, .longTurbo], defaultPreset: .longTurbo, licensedOnly: false)
+		let option = LoRaChannelCalculator.beaconJoinOption(
+			hasOfferChannel: true,
+			offerChannelName: "MyMesh",
+			offeredPreset: nil,
+			offerRegion: RegionCodes.us.rawValue,
+			regionPresets: [.us: usTurbo],
+			isConnected: true,
+			loRaConfig: usLongFastConfig(),
+			primaryChannelName: "MyMesh"
+		)
+		#expect(option == .switchOnly)
+	}
+
+	@Test func beaconPresetPrefersTheOfferThenTheRegionDefault() {
+		let usTurbo = RegionPresetInfo(presets: [.longFast, .longTurbo], defaultPreset: .longTurbo, licensedOnly: false)
+		#expect(LoRaChannelCalculator.beaconPreset(offered: .shortFast, regionInfo: usTurbo) == .shortFast)
+		#expect(LoRaChannelCalculator.beaconPreset(offered: nil, regionInfo: usTurbo) == .longTurbo)
+		#expect(LoRaChannelCalculator.beaconPreset(offered: nil, regionInfo: nil) == .longFast)
+	}
 }

@@ -147,7 +147,8 @@ struct DiscoverySummaryView: View {
 					channelName: beacon.offerChannelName,
 					channelPSK: beacon.offerChannelPSK,
 					region: beacon.offeredRegion,
-					preset: beacon.offeredPreset
+					preset: beacon.offeredPreset,
+					frequencySlot: beacon.offeredFrequencySlot
 				)
 			} catch {
 				joinErrorMessage = error.localizedDescription
@@ -813,6 +814,7 @@ extension DiscoverySummaryView {
 			offeredPreset: beacon.offeredPreset,
 			offerRegion: beacon.offerRegion,
 			offeredFrequencySlot: beacon.offeredFrequencySlot,
+			regionPresets: accessoryManager.loRaRegionPresets,
 			isConnected: accessoryManager.isConnected,
 			loRaConfig: node?.loRaConfig,
 			primaryChannelName: beaconPrimaryChannelName(for: node)

@@ -426,32 +426,39 @@ struct DiscoveryScanView: View {
 extension DiscoveryScanView {
 
 	/// A custom channel advertised by a beacon, shown as its own selectable row in the scan setup.
-	/// Deduped by name + preset; carries the PSK/region needed to tune the radio to that mesh.
+	/// Deduped by name + preset + pinned slot; carries what the scan needs to tune to that mesh.
 	struct BeaconChannel: Hashable, Identifiable {
 		let name: String
-		let psk: Data
 		let preset: ModemPresets
-		let regionRaw: Int
-		var id: String { "\(name)|\(preset.rawValue)" }
-		var scanTarget: ScanTarget {
-			ScanTarget(preset: preset, regionRaw: regionRaw > 0 ? regionRaw : nil, channelName: name, channelPSK: psk)
-		}
+		let scanTarget: ScanTarget
+		var id: String { "\(name)|\(preset.rawValue)|\(scanTarget.frequencySlot ?? 0)" }
+
+		static func == (lhs: BeaconChannel, rhs: BeaconChannel) -> Bool { lhs.id == rhs.id }
+		func hash(into hasher: inout Hasher) { hasher.combine(id) }
 	}
 
 	/// Distinct custom channels heard from beacons across past sessions, for the Beacon Channels
-	/// section. A beacon must advertise both a channel name and a modem preset to be tunable.
+	/// section. A beacon with no preset runs on its region's default. One that pinned a slot its
+	/// region doesn't have is left out, since the scan can't tune to it.
 	var beaconChannels: [BeaconChannel] {
 		let descriptor = FetchDescriptor<DiscoveredBeaconEntity>()
 		guard let beacons = try? context.fetch(descriptor) else { return [] }
 		// Offers for channels the radio already has are not invitations (design#140).
 		let joined = configuredChannelOfferKeys(context: context)
+		let radioRegion = connectedRegionCode?.rawValue ?? 0
 		var seen = Set<String>()
 		var channels: [BeaconChannel] = []
 		for beacon in beacons where beacon.hasOfferChannel && !beacon.offerChannelName.isEmpty {
-			guard let preset = beacon.offeredPreset else { continue }
 			if joined.contains("\(beacon.offerChannelName)|\(beacon.offerChannelPSK.base64EncodedString())") { continue }
-			let channel = BeaconChannel(name: beacon.offerChannelName, psk: beacon.offerChannelPSK,
-										preset: preset, regionRaw: beacon.offerRegion)
+			guard let target = ScanTarget.beacon(
+				offeredPreset: beacon.offeredPreset,
+				offerRegion: beacon.offerRegion,
+				channel: (beacon.offerChannelName, beacon.offerChannelPSK),
+				frequencySlot: beacon.offeredFrequencySlot,
+				radioRegion: radioRegion,
+				regionPresets: accessoryManager.loRaRegionPresets
+			) else { continue }
+			let channel = BeaconChannel(name: beacon.offerChannelName, preset: target.preset, scanTarget: target)
 			if seen.insert(channel.id).inserted { channels.append(channel) }
 		}
 		return channels.sorted { $0.name < $1.name }
