@@ -421,6 +421,7 @@ struct Channels: View {
 		}
 		if node.num == accessoryManager.activeDeviceNum {
 			MeshShareSnapshotBuilder.refresh(nodeNum: node.num, context: context)
+			WidgetDataBroker.shared.refresh(.config)
 		}
 
 		self.selectedChannel = nil

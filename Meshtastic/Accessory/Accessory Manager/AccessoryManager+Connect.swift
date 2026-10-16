@@ -287,6 +287,7 @@ extension AccessoryManager {
 				// connect path reaches this step.
 				if let activeDeviceNum = self.activeDeviceNum {
 					MeshShareSnapshotBuilder.refresh(nodeNum: activeDeviceNum, context: self.context)
+					WidgetDataBroker.shared.refresh(.config)
 				}
 
 				// Best-effort: the notifier bounds stale API refresh and cannot roll back a completed connect.

@@ -1789,6 +1789,32 @@ actor MeshPackets {
 					}
 				}
 			} else if telemetry.metricsType == 4 {
+				// Hand the connected radio's LocalStats to the widget snapshot as
+				// plain values — the broker runs on the main actor and must not
+				// hold this context-bound entity across the hop. Guarded to the
+				// connected node like the device-metrics branch above: relayed
+				// LocalStats from other nodes are not our radio's counters.
+				if connectedNode == Int64(packet.from) {
+					let statsNodeNum = connectedNode
+					let widgetStats = LocalStatsSnapshot(
+						statsAt: telemetry.time ?? Date(),
+						uptimeSeconds: telemetry.uptimeSeconds,
+						channelUtilization: telemetry.channelUtilization,
+						airUtilTx: telemetry.airUtilTx,
+						packetsSent: telemetry.numPacketsTx,
+						packetsReceived: telemetry.numPacketsRx,
+						packetsReceivedBad: telemetry.numPacketsRxBad,
+						packetsReceivedDupe: telemetry.numRxDupe,
+						packetsRelayed: telemetry.numTxRelay,
+						packetsRelayCanceled: telemetry.numTxRelayCanceled,
+						nodesOnline: telemetry.numOnlineNodes,
+						nodesTotal: telemetry.numTotalNodes
+					)
+					Task { @MainActor in
+						WidgetDataBroker.shared.updateLocalStats(widgetStats, nodeNum: statsNodeNum)
+					}
+				}
+
 				// Update our live activity if there is one running, not available on mac
 #if !targetEnvironment(macCatalyst)
 #if canImport(ActivityKit)
@@ -1812,7 +1838,9 @@ actor MeshPackets {
 				let updatedContent = ActivityContent(state: updatedMeshStatus, staleDate: nil)
 
 				let meshActivity = Activity<MeshActivityAttributes>.activities.first(where: { $0.attributes.nodeNum == connectedNode })
-				if meshActivity != nil {
+				// Same origin guard as the widget hand-off above: another node's
+				// relayed LocalStats must not be shown as the connected radio's.
+				if meshActivity != nil, connectedNode == Int64(packet.from) {
 					Task {
 						// await meshActivity?.update(updatedContent, alertConfiguration: alertConfiguration)
 						await meshActivity?.update(updatedContent)
