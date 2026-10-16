@@ -54,6 +54,8 @@ private struct NodeInfoHardwareSection: View {
 	let summary: NodeInfoItemSummary
 	@Query private var hardware: [DeviceHardwareEntity]
 	@EnvironmentObject private var meshtasticAPI: MeshtasticAPI
+	/// The 3D model for this hardware, worked out off the layout pass like the device image.
+	@State private var deviceModelFile: String?
 
 	init(summary: NodeInfoItemSummary) {
 		self.summary = summary
@@ -140,6 +142,17 @@ private struct NodeInfoHardwareSection: View {
 		}
 	}
 
+	/// The device image, or its 3D model where there is one and RealityView is available.
+	@ViewBuilder
+	private var heroImage: some View {
+		let image = DeviceHardwareImage(hwId: Int32(summary.hwModelId))
+		if let deviceModelFile, #available(iOS 18.0, macCatalyst 18.0, *) {
+			DeviceModelView(modelName: deviceModelFile, deviceName: modelName) { image }
+		} else {
+			image
+		}
+	}
+
 	var body: some View {
 		Section {
 			if summary.hwModel == "UNSET" {
@@ -182,7 +195,7 @@ private struct NodeInfoHardwareSection: View {
 				// MARK: - Flagship Device (Hero Layout)
 				VStack(spacing: 12) {
 					ZStack(alignment: .bottomTrailing) {
-						DeviceHardwareImage(hwId: Int32(summary.hwModelId))
+						heroImage
 							.frame(maxWidth: .infinity)
 							.frame(height: 200)
 							.cornerRadius(12)
@@ -257,6 +270,9 @@ private struct NodeInfoHardwareSection: View {
 				.foregroundStyle(tierColor ?? .secondary)
 		}
 		.accessibilityElement(children: .combine)
+		.task(id: hardware.map(\.platformioTarget)) {
+			deviceModelFile = DeviceModelCatalog.modelName(for: summary.hwModelId, in: hardware)
+		}
 
 		// Device links section (shown only when device has a platformioTarget)
 		if let target = hardwarePresentation?.platformioTarget {

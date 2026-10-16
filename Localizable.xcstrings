@@ -501,6 +501,9 @@
         }
       }
     },
+    "3D model of %@" : {
+      "comment" : "Accessibility label for the rotating 3D model of a radio; the argument is the device name"
+    },
     "90° Inverted" : {
       "extractionState" : "manual",
       "localizations" : {
