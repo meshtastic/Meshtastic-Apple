@@ -52,7 +52,12 @@ enum SpatialTerrainAutoDecision: Equatable {
 
 	/// Every sample must be covered: the volume should show relief edge to edge.
 	static let coverageThreshold = 1.0
+	#if os(visionOS)
+	/// About what the 1 GB per-map limit covers at the street-map estimate below.
+	static let maxSpanMeters: Double = 500_000
+	#else
 	static let maxSpanMeters: Double = 350_000
+	#endif
 	/// Rough size of global z0–12 terrain per km². The manager re-checks the real plan.
 	static let terrainBytesPerSquareKm: Int64 = 4_096
 	/// Rough size of the Standard (z0–13) street map per km². Built from the per-tile averages in

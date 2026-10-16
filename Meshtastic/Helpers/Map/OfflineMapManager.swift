@@ -110,7 +110,12 @@ enum OfflineManagedMapResult: Equatable {
 }
 
 enum OfflineMapStorageLimits {
+	#if os(visionOS)
+	/// Twice the other platforms': the spatial map keeps one map for the whole mesh.
+	static let maxRegionBytes: Int64 = 1024 * 1024 * 1024
+	#else
 	static let maxRegionBytes: Int64 = 512 * 1024 * 1024
+	#endif
 	static let maxRegions = 10
 	static let maxTotalBytes: Int64 = 3 * 1024 * 1024 * 1024
 }
@@ -122,7 +127,7 @@ final class OfflineMapManager: ObservableObject {
 
 	// MARK: - Limits
 	/// Maximum size of a single downloaded map.
-	static let maxRegionBytes = OfflineMapStorageLimits.maxRegionBytes // 0.5 GB
+	static let maxRegionBytes = OfflineMapStorageLimits.maxRegionBytes // 0.5 GB, 1 GB on visionOS
 	/// Maximum number of downloaded maps kept at once.
 	static let maxRegions = OfflineMapStorageLimits.maxRegions
 	/// Maximum combined size of all downloaded maps.
