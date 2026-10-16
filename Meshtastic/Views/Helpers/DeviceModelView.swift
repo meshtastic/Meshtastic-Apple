@@ -9,8 +9,9 @@ import SwiftUI
 import RealityKit
 import OSLog
 
-/// Shows a device's 3D model, turning slowly, with a placeholder (the device image) until the
-/// model has loaded. If the model can't be loaded the placeholder simply stays.
+/// Shows the device image with a 3D badge; tapping either switches to the device's 3D model,
+/// turning slowly. The model is only fetched once asked for. If it can't be loaded, the badge goes
+/// away and the image stays.
 @available(iOS 18.0, macCatalyst 18.0, visionOS 1.0, *)
 struct DeviceModelView<Placeholder: View>: View {
 	let modelName: String
@@ -18,28 +19,50 @@ struct DeviceModelView<Placeholder: View>: View {
 	@ViewBuilder let placeholder: () -> Placeholder
 
 	@Environment(\.accessibilityReduceMotion) private var reduceMotion
+	@State private var showsModel = false
+	@State private var isLoading = false
+	@State private var unavailable = false
 	@State private var stage: DeviceModelStage?
 
 	var body: some View {
-		ZStack {
-			placeholder()
-				.opacity(stage == nil ? 1 : 0)
-				.accessibilityHidden(stage != nil)
-			if let stage {
-				DeviceModelRealityView(stage: stage, autoRotate: !reduceMotion)
-					.transition(.opacity)
-					.accessibilityElement(children: .ignore)
-					.accessibilityLabel(String(
-						localized: "3D model of \(deviceName)",
-						comment: "Accessibility label for the rotating 3D model of a radio; the argument is the device name"
-					))
+		ZStack(alignment: .bottomTrailing) {
+			ZStack {
+				placeholder()
+					.opacity(stage == nil ? 1 : 0)
+					.accessibilityHidden(stage != nil)
+				if let stage {
+					DeviceModelRealityView(stage: stage, autoRotate: !reduceMotion)
+						.transition(.opacity)
+						.accessibilityElement(children: .ignore)
+						.accessibilityLabel(String(
+							localized: "3D model of \(deviceName)",
+							comment: "Accessibility label for the rotating 3D model of a radio; the argument is the device name"
+						))
+				}
+			}
+			.animation(.easeInOut(duration: 0.35), value: stage == nil)
+			.contentShape(Rectangle())
+			.onTapGesture {
+				// Only the image switches; on the model, touches rotate and zoom it.
+				if stage == nil && !unavailable { showsModel = true }
+			}
+			if !unavailable {
+				toggleButton
+					.padding(8)
 			}
 		}
-		.animation(.easeInOut(duration: 0.35), value: stage == nil)
-		.task(id: modelName) {
-			stage = nil
-			guard let url = await DeviceModelSource.shared.localURL(for: modelName),
-				!Task.isCancelled else { return }
+		.task(id: showsModel) {
+			guard showsModel else {
+				stage = nil
+				return
+			}
+			isLoading = true
+			defer { isLoading = false }
+			guard let url = await DeviceModelSource.shared.localURL(for: modelName) else {
+				if !Task.isCancelled { giveUp() }
+				return
+			}
+			guard !Task.isCancelled else { return }
 			do {
 				let entity = try await Entity(contentsOf: url)
 				guard !Task.isCancelled else { return }
@@ -48,8 +71,40 @@ struct DeviceModelView<Placeholder: View>: View {
 				Logger.services.error("Device model \(modelName, privacy: .public) failed to open: \(error.localizedDescription, privacy: .public)")
 				// A damaged download would otherwise fail the same way every time.
 				await DeviceModelSource.shared.discardCachedFile(for: modelName)
+				giveUp()
 			}
 		}
+		.onChange(of: modelName) {
+			showsModel = false
+			unavailable = false
+		}
+	}
+
+	private var toggleButton: some View {
+		Button {
+			showsModel.toggle()
+		} label: {
+			Group {
+				if isLoading {
+					ProgressView()
+				} else {
+					Image(systemName: showsModel ? "photo" : "rotate.3d")
+						.font(.body.weight(.semibold))
+				}
+			}
+			.frame(width: 36, height: 36)
+			.background(.ultraThinMaterial, in: Circle())
+		}
+		.buttonStyle(.plain)
+		.accessibilityLabel(showsModel
+			? String(localized: "Show photo", comment: "Button on the device image: switch from the 3D model back to the picture")
+			: String(localized: "Show 3D model", comment: "Button on the device image: switch from the picture to the device's 3D model"))
+	}
+
+	/// No model to show: back to the image, without the badge.
+	private func giveUp() {
+		showsModel = false
+		unavailable = true
 	}
 }
 

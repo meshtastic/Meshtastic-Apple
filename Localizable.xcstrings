@@ -128720,6 +128720,9 @@
         }
       }
     },
+    "Show 3D model" : {
+      "comment" : "Button on the device image: switch from the picture to the device's 3D model"
+    },
     "Show a confirmation dialog before performing the factory reset" : {
       "localizations" : {
         "de" : {
@@ -129634,6 +129637,9 @@
           }
         }
       }
+    },
+    "Show photo" : {
+      "comment" : "Button on the device image: switch from the 3D model back to the picture"
     },
     "Show Translation" : {
       "comment" : "A label for a button that toggles whether the translation of a message is shown.",
