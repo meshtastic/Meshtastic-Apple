@@ -184,6 +184,15 @@ struct MeshBeaconConfig: View {
 		}
 		.dismissesKeyboardOnScroll(.interactively)
 		.disabled(!accessoryManager.isConnected || node?.meshBeaconConfig == nil)
+		.onFirstAppear {
+			requestRemoteConfig(
+				node: node,
+				context: context,
+				accessoryManager: accessoryManager,
+				configIsNil: { $0.meshBeaconConfig == nil },
+				request: accessoryManager.requestMeshBeaconModuleConfig
+			)
+		}
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			SaveConfigButton(node: node, hasChanges: $hasChanges) {
 				performConfigSave(

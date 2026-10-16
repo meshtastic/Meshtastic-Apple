@@ -212,8 +212,8 @@ struct Settings: View {
 	}
 
 	private func isMeshBeaconModuleSupported(_ node: SettingsNodeSnapshot?) -> Bool {
-		guard node != nil else { return false }
-		return firmwareReadsModule(tag: ModuleField.meshBeacon, node: node)
+		guard let node else { return false }
+		return isModuleSupported(.meshbeaconConfig, excludedModules: node.excludedModules, tag: ModuleField.meshBeacon, node: node)
 	}
 
 	/// Whether a module's settings belong on this node's list. Two separate questions:
