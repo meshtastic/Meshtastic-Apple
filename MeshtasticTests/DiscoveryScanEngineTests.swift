@@ -42,6 +42,152 @@ struct ScanTargetTests {
 		let b = ScanTarget(preset: .longFast, regionRaw: 1, channelName: "M", channelPSK: Data([9]))
 		#expect(a == b)
 	}
+
+	// MARK: - Targets built from a beacon
+
+	@Test func beaconTargetCarriesThePinnedSlot() {
+		let target = ScanTarget.beacon(
+			offeredPreset: .longFast,
+			offerRegion: RegionCodes.us.rawValue,
+			channel: ("M", Data([9])),
+			frequencySlot: 20,
+			radioRegion: RegionCodes.us.rawValue,
+			regionPresets: [:]
+		)
+		#expect(target?.frequencySlot == 20)
+		#expect(target?.regionRaw == RegionCodes.us.rawValue)
+		#expect(target?.isCustomChannel == true)
+	}
+
+	@Test func beaconTargetWithoutASlotLeavesItToTheFirmware() {
+		let target = ScanTarget.beacon(
+			offeredPreset: .longFast,
+			offerRegion: 0,
+			channel: ("M", Data([9])),
+			frequencySlot: nil,
+			radioRegion: RegionCodes.us.rawValue,
+			regionPresets: [:]
+		)
+		#expect(target?.frequencySlot == nil)
+		#expect(target?.regionRaw == nil)
+	}
+
+	@Test func beaconTargetWithASlotPastTheRegionIsDropped() {
+		// No region advertised, so the slot is checked against the radio's own region.
+		let target = ScanTarget.beacon(
+			offeredPreset: .longFast,
+			offerRegion: 0,
+			channel: ("M", Data([9])),
+			frequencySlot: 500,
+			radioRegion: RegionCodes.us.rawValue,
+			regionPresets: [:]
+		)
+		#expect(target == nil)
+	}
+
+	@Test func beaconTargetWithoutAPresetUsesTheRegionDefault() {
+		let usTurbo = RegionPresetInfo(presets: [.longFast, .longTurbo], defaultPreset: .longTurbo, licensedOnly: false)
+		let target = ScanTarget.beacon(
+			offeredPreset: nil,
+			offerRegion: RegionCodes.us.rawValue,
+			channel: nil,
+			frequencySlot: nil,
+			radioRegion: RegionCodes.us.rawValue,
+			regionPresets: [.us: usTurbo]
+		)
+		#expect(target?.preset == .longTurbo)
+		#expect(target?.isCustomChannel == false)
+	}
+
+	@Test func aSlotCheckedAgainstTheRadioRegionKeepsThatRegion() {
+		// The slot was validated for US, so the target must apply it in US even if an earlier
+		// target has moved the radio to another region.
+		let target = ScanTarget.beacon(
+			offeredPreset: .longFast,
+			offerRegion: 0,
+			channel: nil,
+			frequencySlot: 20,
+			radioRegion: RegionCodes.us.rawValue,
+			regionPresets: [:]
+		)
+		#expect(target?.frequencySlot == 20)
+		#expect(target?.regionRaw == RegionCodes.us.rawValue)
+	}
+
+	@Test func aUSSlotIsNotCarriedIntoEU868() {
+		// Slot 20 exists in US but not in EU868's single LongFast slot. Checked against US it keeps
+		// US, so a queued EU868 target ahead of it can't leave the radio applying slot 20 in EU868.
+		let us = ScanTarget.beacon(
+			offeredPreset: .longFast, offerRegion: 0, channel: nil, frequencySlot: 20,
+			radioRegion: RegionCodes.us.rawValue
+		)
+		#expect(us?.regionRaw == RegionCodes.us.rawValue)
+		let eu = ScanTarget.beacon(
+			offeredPreset: .longFast, offerRegion: 0, channel: nil, frequencySlot: 20,
+			radioRegion: RegionCodes.eu868.rawValue
+		)
+		#expect(eu == nil)
+	}
+
+	@Test func aPinnedSlotBeaconIsNotTheActivePresetDwell() {
+		// Heard during a plain LongFast dwell, a beacon pinning LongFast slot 20 is a different
+		// target with a different results key, so it still gets queued.
+		let active = ScanTarget(preset: .longFast)
+		let beacon = ScanTarget.beacon(
+			offeredPreset: .longFast, offerRegion: 0, channel: nil, frequencySlot: 20,
+			radioRegion: RegionCodes.us.rawValue
+		)
+		#expect(beacon != nil)
+		#expect(beacon != active)
+		#expect(beacon?.label != active.label)
+	}
+
+	// MARK: - Labels key results, so a pinned slot must show in them
+
+	@Test func pinnedSlotIsInTheLabel() {
+		#expect(ScanTarget(preset: .longFast, frequencySlot: 20).label == "\(ModemPresets.longFast.name) · slot 20")
+		let custom = ScanTarget(preset: .longFast, channelName: "M", channelPSK: Data([9]), frequencySlot: 3)
+		#expect(custom.label == "\(ModemPresets.longFast.name) · M · slot 3")
+	}
+
+	@Test func samePresetDifferentSlotAreDistinct() {
+		let derived = ScanTarget(preset: .longFast)
+		let pinned = ScanTarget(preset: .longFast, regionRaw: RegionCodes.us.rawValue, frequencySlot: 20)
+		let other = ScanTarget(preset: .longFast, regionRaw: RegionCodes.us.rawValue, frequencySlot: 21)
+		#expect(Set([derived.label, pinned.label, other.label]).count == 3)
+	}
+
+	// MARK: - Saved beacon offers in the scan setup
+
+	@MainActor @Test func savedPublicOfferKeepsItsPinnedSlot() {
+		let beacon = DiscoveredBeaconEntity()
+		beacon.offerPreset = ModemPresets.longFast.rawValue
+		beacon.offerFrequencySlot = 42
+		let row = DiscoveryScanView.BeaconChannel(beacon: beacon, radioRegion: RegionCodes.us.rawValue, regionPresets: [:])
+		#expect(row?.name == "")
+		#expect(row?.scanTarget.isCustomChannel == false)
+		#expect(row?.scanTarget.frequencySlot == 42)
+		#expect(row?.scanTarget.regionRaw == RegionCodes.us.rawValue)
+	}
+
+	@MainActor @Test func savedPublicOfferWithoutASlotIsLeftToThePresetChips() {
+		let beacon = DiscoveredBeaconEntity()
+		beacon.offerPreset = ModemPresets.longFast.rawValue
+		#expect(DiscoveryScanView.BeaconChannel(beacon: beacon, radioRegion: RegionCodes.us.rawValue, regionPresets: [:]) == nil)
+	}
+
+	@MainActor @Test func savedCustomOfferKeepsItsChannelAndSlot() {
+		let beacon = DiscoveredBeaconEntity()
+		beacon.offerPreset = ModemPresets.longFast.rawValue
+		beacon.hasOfferChannel = true
+		beacon.offerChannelName = "M"
+		beacon.offerChannelPSK = Data([9])
+		beacon.offerFrequencySlot = 7
+		let row = DiscoveryScanView.BeaconChannel(beacon: beacon, radioRegion: RegionCodes.us.rawValue, regionPresets: [:])
+		#expect(row?.name == "M")
+		#expect(row?.scanTarget.channelName == "M")
+		#expect(row?.scanTarget.frequencySlot == 7)
+	}
 }
 
 @Suite("DiscoveryScanEngine")

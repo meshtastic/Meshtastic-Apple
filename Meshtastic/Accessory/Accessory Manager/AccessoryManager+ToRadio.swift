@@ -1015,18 +1015,54 @@ extension AccessoryManager {
 		return Int64(meshPacket.id)
 	}
 
+	/// The region and preset `joinBeaconMesh` will put the radio on: the beacon's, or the radio's
+	/// own region and that region's default preset when the beacon didn't advertise them.
+	@MainActor
+	func beaconJoinRegionAndPreset(
+		region: RegionCodes?,
+		preset: ModemPresets?,
+		node: NodeInfoEntity? = nil
+	) -> (region: Int, preset: ModemPresets) {
+		let radioNode = node ?? activeConnection?.device.num.flatMap { getNodeInfo(id: $0, context: context) }
+		let targetRegion = LoRaChannelCalculator.beaconRegion(
+			offerRegion: region?.rawValue ?? 0,
+			radioRegion: Int(radioNode?.loRaConfig?.regionCode ?? 0)
+		)
+		let targetPreset = LoRaChannelCalculator.beaconPreset(
+			offered: preset,
+			regionInfo: LoRaChannelCalculator.regionInfo(regionCode: targetRegion, in: loRaRegionPresets)
+		)
+		return (targetRegion, targetPreset)
+	}
+
 	/// Join a mesh advertised by a beacon: set the primary channel to the offered channel (name +
 	/// PSK), then apply the offered region/preset. The channel change lands first (no reboot); the
-	/// LoRa config change reboots the radio onto the advertised mesh. `region`/`preset` fall back to
-	/// the radio's current values when the beacon didn't advertise them. `channelNum` is forced to 0
-	/// so the firmware derives the frequency from the new channel name + preset + region.
+	/// LoRa config change reboots the radio onto the advertised mesh. `region` falls back to the
+	/// radio's current region and `preset` to that region's default when the beacon didn't advertise
+	/// them. `frequencySlot` is the slot the beacon pinned; the radio uses it as-is. Without one,
+	/// `channelNum` is 0 so the firmware derives the frequency from the new channel name + preset +
+	/// region. The radio's own slot is never kept.
 	@MainActor
-	public func joinBeaconMesh(channelName: String, channelPSK: Data, region: RegionCodes?, preset: ModemPresets?) async throws {
+	public func joinBeaconMesh(
+		channelName: String,
+		channelPSK: Data,
+		region: RegionCodes?,
+		preset: ModemPresets?,
+		frequencySlot: Int? = nil
+	) async throws {
 		guard let deviceNum = self.activeConnection?.device.num else {
 			throw AccessoryError.ioFailed("No active device")
 		}
 		guard let node = getNodeInfo(id: Int64(deviceNum), context: context), let user = node.user else {
 			throw AccessoryError.appError("Connected node not found")
+		}
+
+		// Work out the region, preset and slot before touching the radio, so a slot the region
+		// doesn't have fails here instead of after the channel write.
+		let (targetRegion, targetPreset) = beaconJoinRegionAndPreset(region: region, preset: preset, node: node)
+		if let frequencySlot, targetRegion != 0,
+		   !LoRaChannelCalculator.isValidBeaconSlot(frequencySlot, regionCode: targetRegion, preset: targetPreset) {
+			throw AccessoryError.appError("The mesh's frequency slot \(frequencySlot) doesn't exist in this region")
 		}
 
 		// Snapshot the current primary channel so a partial failure (channel write succeeds but the
@@ -1072,10 +1108,11 @@ extension AccessoryManager {
 			lora.modemPreset = ModemPresets(rawValue: Int(existing.modemPreset))?.protoEnumValue() ?? .longFast
 		}
 		if let region { lora.region = region.protoEnumValue() }
-		if let preset { lora.modemPreset = preset.protoEnumValue() }
+		lora.modemPreset = targetPreset.protoEnumValue()
 		lora.usePreset = true
-		// Derive the frequency from the new channel + preset + region rather than a stale slot.
-		lora.channelNum = 0
+		// Use the slot the beacon pinned. Otherwise derive it from the new channel + preset +
+		// region rather than keeping the radio's own slot.
+		lora.channelNum = UInt32(clamping: frequencySlot ?? 0)
 		do {
 			_ = try await saveLoRaConfig(config: lora, fromUser: user, toUser: user)
 			refreshNodeDatabaseAfterLoRaChange()

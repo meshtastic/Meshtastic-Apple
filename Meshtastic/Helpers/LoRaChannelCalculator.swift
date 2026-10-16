@@ -11,6 +11,7 @@
 //
 
 import Foundation
+import MeshtasticProtobufs
 
 /// Derives a radio's operating frequency slot and frequency the way the firmware does.
 /// Moved out of `Channels.swift` (was `private struct`) so the Mesh Beacons join
@@ -111,6 +112,18 @@ struct LoRaChannelCalculator {
 		return max(Int(((region.freqEnd - region.freqStart + region.spacing) / slotWidth).rounded()), 1)
 	}
 
+	/// Whether the region is at least one slot wide at this bandwidth. The firmware
+	/// refuses a bandwidth wider than the region, even though `numChannels()` still
+	/// reports one slot for it.
+	func regionFitsBandwidth() -> Bool {
+		guard let region else { return false }
+		let bandwidthMHz = bandwidthMHz(region: region)
+		guard bandwidthMHz > 0 else { return false }
+		let slotWidth = region.spacing + 2 * region.padding + bandwidthMHz
+		// Small tolerance so a band exactly one slot wide (EU868 at 250 kHz) isn't lost to rounding.
+		return region.freqEnd - region.freqStart + 1e-6 >= slotWidth
+	}
+
 	private func bandwidthMHz(region: RegionInfo) -> Double {
 		if usePreset {
 			let presetBandwidth = ModemPresets(rawValue: modemPreset)?.bandwidthMHz ?? 0
@@ -152,40 +165,100 @@ enum BeaconJoinOption {
 	case add
 	/// A retune (different slot / preset / region) is required — only Switch (reboot) applies.
 	case switchOnly
-	/// The beacon advertised no channel, or no radio is connected — no join action.
+	/// The beacon advertised no channel, no radio is connected, or the beacon pinned a
+	/// frequency slot that doesn't exist in the region and preset it would join on.
 	case none
 }
 
 extension LoRaChannelCalculator {
+	/// The preset a beacon's mesh runs on. The proto says an unset offer_preset means the
+	/// region's default preset. 2.8+ radios report each region's default; without that,
+	/// LONG_FAST, the firmware's default.
+	static func beaconPreset(offered: ModemPresets?, regionInfo: RegionPresetInfo?) -> ModemPresets {
+		if let offered { return offered }
+		if let info = regionInfo, let preset = ModemPresets(rawValue: info.defaultPreset.rawValue) {
+			return preset
+		}
+		return .longFast
+	}
+
+	/// The region a beacon's mesh runs in: the one it advertised, or the radio's own.
+	static func beaconRegion(offerRegion: Int, radioRegion: Int) -> Int {
+		offerRegion != 0 ? offerRegion : radioRegion
+	}
+
+	/// The firmware's region default for `regionCode`, looked up in the map a 2.8+ radio sends.
+	static func regionInfo(
+		regionCode: Int,
+		in regionPresets: [Config.LoRaConfig.RegionCode: RegionPresetInfo]
+	) -> RegionPresetInfo? {
+		guard let region = RegionCodes(rawValue: regionCode) else { return nil }
+		return regionPresets[region.protoEnumValue()]
+	}
+
+	/// Whether a slot a beacon pinned exists in the region and preset the radio would join on.
+	/// Slots are 1-based. This matches what the firmware accepts: the slot must be within the
+	/// region's slot count, and the preset's bandwidth must fit in the region at all.
+	static func isValidBeaconSlot(_ slot: Int, regionCode: Int, preset: ModemPresets) -> Bool {
+		let calculator = LoRaChannelCalculator(
+			regionCode: regionCode,
+			usePreset: true,
+			modemPreset: preset.rawValue,
+			channelNum: 0,
+			bandwidth: 0,
+			overrideFrequency: 0
+		)
+		guard calculator.regionFitsBandwidth() else { return false }
+		let count = calculator.numChannels()
+		return count > 0 && (1...count).contains(slot)
+	}
+
 	/// Pure Add-vs-Switch decision (contract C6, FR-016/FR-017). Extracted so it can be unit
 	/// tested independently of SwiftUI / the accessory manager.
 	///
-	/// - Returns `.none` when the beacon offered no channel or no radio is connected.
+	/// - Returns `.none` when the beacon offered no channel, no radio is connected, or the
+	///   beacon pinned a slot that doesn't exist in the region and preset it would join on.
 	/// - Returns `.add` only when the offered preset + region match the radio **and** the
 	///   offered channel resolves to the radio's current operating frequency slot.
 	/// - Returns `.switchOnly` for any mismatch (or when the LoRa config isn't available to verify).
+	/// - Parameter offeredPreset: the beacon's preset; `nil` means the region's default.
 	/// - Parameter offeredFrequencySlot: the slot the beacon pinned, when it carried one.
 	///   A mesh sends this only when it sits somewhere its channel name would not derive,
 	///   so it replaces the derivation rather than being checked against it. Deriving
 	///   anyway can agree with the radio by coincidence and offer Add for a mesh on a
 	///   different frequency, which adds a channel the radio will never hear.
+	/// - Parameter regionPresets: the radio's region-to-preset map, for region defaults.
 	static func beaconJoinOption(
 		hasOfferChannel: Bool,
 		offerChannelName: String,
 		offeredPreset: ModemPresets?,
 		offerRegion: Int,
 		offeredFrequencySlot: Int? = nil,
+		regionPresets: [Config.LoRaConfig.RegionCode: RegionPresetInfo] = [:],
 		isConnected: Bool,
 		loRaConfig: LoRaConfigEntity?,
 		primaryChannelName: String
 	) -> BeaconJoinOption {
 		// No channel to join, or nothing to join it with.
 		guard hasOfferChannel, !offerChannelName.isEmpty, isConnected else { return .none }
+
+		let region = beaconRegion(offerRegion: offerRegion, radioRegion: Int(loRaConfig?.regionCode ?? 0))
+		let preset = beaconPreset(
+			offered: offeredPreset,
+			regionInfo: regionInfo(regionCode: region, in: regionPresets)
+		)
+		// A pinned slot the region doesn't have can't be joined at all. With no region known
+		// yet there is nothing to check it against.
+		if let slot = offeredFrequencySlot, region != 0,
+		   !isValidBeaconSlot(slot, regionCode: region, preset: preset) {
+			return .none
+		}
+
 		// Connected but the LoRa config hasn't synced — Switch is still valid, but we can't
 		// verify the slot for Add, so never offer Add.
 		guard let config = loRaConfig else { return .switchOnly }
 
-		let presetOK = offeredPreset != nil && offeredPreset == ModemPresets(rawValue: Int(config.modemPreset))
+		let presetOK = preset == ModemPresets(rawValue: Int(config.modemPreset))
 		// offerRegion == 0 means the beacon didn't advertise a region, so it can't be a mismatch.
 		let regionOK = offerRegion == 0 || offerRegion == Int(config.regionCode)
 
