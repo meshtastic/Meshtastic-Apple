@@ -16,6 +16,9 @@ struct SpatialTerrainOptions: Equatable, Sendable {
 	var textureEdge = 2048
 	var modelSize: SIMD3<Float> = [1, 0.3, 1]
 	var allowNetwork = true
+	/// A downloaded basemap covers the box: the Offline layer, and the fallback when the Apple
+	/// snapshot fails, draw it.
+	var offlineBasemap = false
 	/// Stroke contour lines from the downloaded terrain onto the texture.
 	var contours = false
 	/// Contour spacing in round meters rather than round feet.
@@ -24,7 +27,10 @@ struct SpatialTerrainOptions: Equatable, Sendable {
 
 enum SpatialTextureSource: Equatable, Sendable {
 	case appleMaps(MapLayer)
-	case offline
+	/// The downloaded offline map under the hillshade.
+	case offlineMap
+	/// Land color, basemap water and the hillshade: no offline map covers the box.
+	case terrainShading
 }
 
 /// A built terrain: the mesh and the image to drape over it.
@@ -34,10 +40,13 @@ struct SpatialTerrainModel: @unchecked Sendable {
 	/// Immutable once made; CGImage is just not marked Sendable.
 	let texture: CGImage
 	let textureSource: SpatialTextureSource
+	/// The Apple snapshot was wanted but could not be made, so the texture is the offline fallback.
+	let imageryUnavailable: Bool
 }
 
 /// Builds a terrain model for a box off the main actor. The map snapshot and the elevation
-/// sampling run at the same time; the offline composite is the fallback when there is no snapshot.
+/// sampling run at the same time, as does decoding the offline map for the Offline layer. The
+/// offline composite is the fallback when there is no snapshot.
 final class SpatialTerrainBuilder: Sendable {
 	let elevation: any ElevationTileSource
 
@@ -52,6 +61,10 @@ final class SpatialTerrainBuilder: Sendable {
 		let wantsSnapshot = options.layer != .offline && options.allowNetwork
 		async let snapshot: CGImage? = wantsSnapshot
 			? SpatialTextureRenderer.snapshot(frame: frame, pixelSize: pixelSize, layer: options.layer, dark: options.dark)
+			: nil
+		let width = Int(pixelSize.width)
+		async let offlineShapes: SpatialOfflineMap.Shapes? = options.layer == .offline
+			? SpatialOfflineMap.decode(frame: frame, width: width)
 			: nil
 
 		let dataZoom = await elevation.finestDataZoom()
@@ -71,9 +84,15 @@ final class SpatialTerrainBuilder: Sendable {
 
 		var textureSource = SpatialTextureSource.appleMaps(options.layer)
 		var texture = await snapshot
+		var basemap = await offlineShapes
+		let imageryUnavailable = texture == nil && wantsSnapshot
 		if texture == nil {
-			textureSource = .offline
-			texture = await SpatialTextureRenderer.offlineComposite(frame: frame, pixelSize: pixelSize, dark: options.dark, source: elevation)
+			if basemap == nil, options.offlineBasemap, options.layer != .offline {
+				basemap = SpatialOfflineMap.decode(frame: frame, width: width)
+			}
+			try Task.checkCancellation()
+			textureSource = basemap == nil ? .terrainShading : .offlineMap
+			texture = await SpatialTextureRenderer.offlineComposite(frame: frame, pixelSize: pixelSize, dark: options.dark, basemap: basemap, source: elevation)
 		}
 		try Task.checkCancellation()
 		guard var texture else { throw CancellationError() }
@@ -88,6 +107,6 @@ final class SpatialTerrainBuilder: Sendable {
 			}
 		}
 		Logger.services.info("🧊 [Spatial] Built terrain \(grid.columns)x\(grid.rows) (\(geometry.surfaceTriangleCount) triangles, terrain: \(grid.hasAnyTerrain), \(String(describing: textureSource), privacy: .public)) in \(String(format: "%.2f", Date().timeIntervalSince(started)), privacy: .public)s")
-		return SpatialTerrainModel(bounds: bounds, geometry: geometry, texture: texture, textureSource: textureSource)
+		return SpatialTerrainModel(bounds: bounds, geometry: geometry, texture: texture, textureSource: textureSource, imageryUnavailable: imageryUnavailable)
 	}
 }

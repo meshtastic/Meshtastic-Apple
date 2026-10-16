@@ -67,6 +67,8 @@ final class SpatialMapModel {
 	private(set) var placement: SpatialPlacement?
 	private(set) var terrainEntity: ModelEntity?
 	private(set) var textureSource: SpatialTextureSource?
+	/// The built texture is the offline fallback because the Apple map image could not be fetched.
+	private(set) var imageryUnavailable = false
 	private(set) var isBuildingTerrain = false
 	private(set) var terrainMessage: String?
 	private(set) var routes: [SpatialRouteSnapshot] = []
@@ -295,14 +297,31 @@ final class SpatialMapModel {
 		}
 	}
 
-	private func rebuildTerrainIfNeeded(circle: SpatialCircle, layer: MapLayer, dark: Bool, contours: Bool) {
+	/// Whether a downloaded basemap covers the box being shown, so the Offline layer can be picked.
+	func offlineLayerAvailable(regions: [OfflineMapRegion]) -> Bool {
+		guard let bounds = targetCircle?.bounds else { return false }
+		return SpatialOfflineMap.covers(bounds, basemaps: SpatialOfflineMap.basemapBounds(regions))
+	}
+
+	private func rebuildTerrainIfNeeded(circle: SpatialCircle, layer storedLayer: MapLayer, dark: Bool, contours: Bool) {
 		let bounds = circle.bounds
+		OfflineMapManager.shared.loadIfNeeded()
+		let regions = OfflineMapManager.shared.regions
+		let offlineBasemap = SpatialOfflineMap.covers(bounds, basemaps: SpatialOfflineMap.basemapBounds(regions))
+		let layer = SpatialOfflineMap.buildLayer(storedLayer, offlineAvailable: offlineBasemap)
 		// The terrain generation (every region's download stamp) is part of the key, so a terrain
 		// download or delete rebuilds the model.
-		let generation = OfflineMapManager.shared.regions
+		var generation = regions
 			.compactMap { $0.terrain.map { String(Int($0.downloadedAt.timeIntervalSince1970)) } }
 			.sorted()
 			.joined(separator: ",")
+		// The Offline layer also rebuilds when a basemap is downloaded, updated or deleted.
+		if layer == .offline {
+			generation += "|" + regions.filter(\.hasBasemap)
+				.map { "\($0.id)\(Int($0.updatedDate.timeIntervalSince1970))" }
+				.sorted()
+				.joined(separator: ",")
+		}
 		let metric = Locale.current.measurementSystem == .metric
 		let key = "\(bounds.minLon),\(bounds.minLat),\(bounds.maxLon),\(bounds.maxLat)|\(layer.rawValue)|\(dark)|\(contours)|\(metric)|\(generation)"
 		guard key != buildKey else { return }
@@ -313,6 +332,7 @@ final class SpatialMapModel {
 		let sources = OfflineMapManager.shared.terrainSources()
 		var options = SpatialTerrainOptions()
 		options.layer = layer
+		options.offlineBasemap = offlineBasemap
 		options.dark = dark
 		options.contours = contours
 		options.metric = metric
@@ -326,6 +346,7 @@ final class SpatialMapModel {
 				guard !Task.isCancelled, buildKey == key else { return }
 				terrainEntity = entity
 				textureSource = model.textureSource
+				imageryUnavailable = model.imageryUnavailable
 				placementRevision += 1
 				placement = SpatialPlacement(
 					circle: circle, geometry: model.geometry,

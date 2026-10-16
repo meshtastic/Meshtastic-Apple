@@ -239,9 +239,15 @@ struct SpatialMapOrnament: View {
 	var body: some View {
 		HStack(spacing: 10) {
 			Menu {
-				Picker(String(localized: "Map Layer", comment: "Spatial map: picker for the image draped over the terrain"), selection: $mapLayer) {
-					ForEach([MapLayer.standard, .hybrid, .satellite, .offline], id: \.self) { layer in
-						Text(layer == .offline ? String(localized: "Terrain Shading", comment: "Spatial map layer: hillshade only, no map imagery") : layer.localized).tag(layer)
+				// Offline is offered only where a downloaded basemap covers the map. The setting is
+				// shared with the 2D map, so a stored Offline shows as Standard elsewhere.
+				let offlineAvailable = model.offlineLayerAvailable(regions: offline.regions)
+				Picker(String(localized: "Map Layer", comment: "Spatial map: picker for the image draped over the terrain"), selection: Binding(
+					get: { SpatialOfflineMap.buildLayer(mapLayer, offlineAvailable: offlineAvailable) },
+					set: { mapLayer = $0 }
+				)) {
+					ForEach(SpatialOfflineMap.layers(offlineAvailable: offlineAvailable), id: \.self) { layer in
+						Text(layer.localized).tag(layer)
 					}
 				}
 				Toggle(isOn: $darkMap) {
@@ -318,10 +324,12 @@ struct SpatialMapOrnament: View {
 				if !model.coverageLegend.isEmpty {
 					SpatialCoverageLegendStrip(entries: model.coverageLegend)
 				}
-				if model.textureSource == .offline, mapLayer != .offline {
+				if model.imageryUnavailable {
 					Image(systemName: "wifi.slash")
 						.foregroundStyle(.secondary)
-						.help(String(localized: "Map imagery unavailable; showing terrain shading", comment: "Spatial map: the Apple map image could not be fetched"))
+						.help(model.textureSource == .offlineMap
+							? String(localized: "Map imagery unavailable; showing the offline map", comment: "Spatial map: the Apple map image could not be fetched, so the downloaded offline map is shown")
+							: String(localized: "Map imagery unavailable; showing terrain shading", comment: "Spatial map: the Apple map image could not be fetched"))
 				}
 			}
 			.font(.caption)

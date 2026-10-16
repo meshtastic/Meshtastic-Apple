@@ -12,8 +12,8 @@ import OSLog
 import UIKit
 
 /// Draws the image draped over the terrain mesh: Apple's map of exactly the box when online,
-/// otherwise the hillshade over flat land color. Both are Web Mercator so the mesh's texture
-/// coordinates line up with either.
+/// otherwise the downloaded offline map (or just its water) under the hillshade. Both are Web
+/// Mercator so the mesh's texture coordinates line up with either.
 enum SpatialTextureRenderer {
 
 	/// Pixel size for a box: the Mercator aspect ratio, longest edge `maxEdge`.
@@ -142,16 +142,20 @@ enum SpatialTextureRenderer {
 		return polygons
 	}
 
-	/// Flat land color, the downloaded basemap's water when one covers the box, then the hillshade
-	/// from the downloaded terrain. Nothing is fetched.
-	static func offlineComposite(frame: SpatialFrame, pixelSize: CGSize, dark: Bool, source: any ElevationTileSource) async -> CGImage? {
+	/// Flat land color, then the decoded offline map when there is one, else just the water from
+	/// the downloaded basemaps, then the hillshade from the downloaded terrain. Nothing is fetched.
+	static func offlineComposite(frame: SpatialFrame, pixelSize: CGSize, dark: Bool, basemap: SpatialOfflineMap.Shapes?, source: any ElevationTileSource) async -> CGImage? {
 		let width = Int(pixelSize.width), height = Int(pixelSize.height)
 		let colorSpace = CGColorSpaceCreateDeviceRGB()
 		guard let context = CGContext(data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: 0,
 									  space: colorSpace, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
 		context.setFillColor(OfflineMapPalette.earth(dark: dark).cgColor)
 		context.fill(CGRect(x: 0, y: 0, width: width, height: height))
-		drawWater(offlineWater(frame: frame, width: width), frame: frame, size: pixelSize, dark: dark, in: context)
+		if let basemap {
+			SpatialOfflineMap.draw(basemap, frame: frame, size: pixelSize, dark: dark, in: context)
+		} else {
+			drawWater(offlineWater(frame: frame, width: width), frame: frame, size: pixelSize, dark: dark, in: context)
+		}
 		if Task.isCancelled { return nil }
 
 		let bounds = frame.bounds

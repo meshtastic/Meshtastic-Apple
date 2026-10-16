@@ -244,12 +244,14 @@ final class OfflineVectorTileProvider: ObservableObject {
 
 	/// Decode + stitch the given tiles into render-ready shapes, with measurement stats. Shared by
 	/// `updateIfNeeded` and the test/benchmark entry point so they exercise the identical pipeline.
+	/// `shouldStop` is checked before each tile; once it returns true the rest are skipped.
 	nonisolated static func build(
 		source: OfflineTileSource,
 		bounds: GeoBounds,
 		tiles: [TileID],
 		minFillMeters: Double = defaultMinFillMeters,
-		minRoadMeters: Double = defaultMinRoadMeters
+		minRoadMeters: Double = defaultMinRoadMeters,
+		shouldStop: () -> Bool = { false }
 	) -> BuildResult {
 		let clock = ContinuousClock()
 		var polys: [OfflineMapPolygon] = []
@@ -258,6 +260,7 @@ final class OfflineVectorTileProvider: ObservableObject {
 		var rawVertexCount = 0
 		let decodeDuration = clock.measure {
 			for tile in tiles {
+				if shouldStop() { break }
 				autoreleasepool {
 					let decoded = decode(tile: tile, source: source, bounds: bounds)
 					for polygon in decoded.polys where boundingMeters(polygon.coordinates) >= minFillMeters {
