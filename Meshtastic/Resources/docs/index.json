@@ -758,11 +758,11 @@
             "messages",
             "firmware",
             "radios",
-            "radio",
             "page",
             "local",
             "device",
             "channel",
+            "radio",
             "list",
             "jul",
             "from",
@@ -777,7 +777,7 @@
             "meshtastic",
             "apple"
         ],
-        "charCount": 8950
+        "charCount": 8928
     },
     {
         "id": "adding-features",
