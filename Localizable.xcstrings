@@ -339,8 +339,32 @@
     "Also: %@" : {
       "comment" : "Showcase model card: other devices drawn with the same model; the argument is a list of device names"
     },
+    "Brought to you by" : {
+      "comment" : "Showcase: plaque on the wall naming who made the showcase, above the Meshtastic Solutions name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Brought to you by"
+          }
+        }
+      }
+    },
     "Enter Showcase" : {
       "comment" : "Spatial map: open the showcase immersive space, closing this volume"
+    },
+    "Hide App" : {
+      "comment" : "Showcase: close the app's window while in the showcase",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Hide App"
+          }
+        }
+      }
     },
     "Leave" : {
       "comment" : "Showcase: close the immersive space"
@@ -350,6 +374,18 @@
     },
     "Meshtastic Hardware Showcase" : {
       "comment" : "Showcase: title of the immersive space's control panel"
+    },
+    "Move the control panel" : {
+      "comment" : "Showcase: VoiceOver label for the bar under the control panel that moves it",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Move the control panel"
+          }
+        }
+      }
     },
     "Next rack page" : {
       "comment" : "Showcase: show the next page of the wall rack"
@@ -377,6 +413,18 @@
     },
     "Seated" : {
       "comment" : "Showcase: the viewer is sitting in the chair"
+    },
+    "Show App" : {
+      "comment" : "Showcase: bring back the app's window while in the showcase",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Show App"
+          }
+        }
+      }
     },
     "Standing" : {
       "comment" : "Showcase: the viewer is standing"
