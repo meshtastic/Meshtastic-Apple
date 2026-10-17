@@ -27,3 +27,11 @@ name = "AntennaLeft"
 start = [52.8, 251.2]
 end = [52.8, 5.3]
 max_width = 30
+
+# The orange piece hanging off the bottom-right corner is the drawing's lanyard, not part of the
+# case; built at case depth it reads as a lump, so it's left out. The key labels and the bar under
+# the keys share its colors, so only shapes as big as it are matched.
+[[part]]
+fill = ["#f8ae59", "#cf8740"]
+min_bbox_area_mm2 = 90
+role = "skip"
