@@ -20,14 +20,24 @@ enum DeviceModelCatalog {
 	/// used when a bundled copy is absent.
 	static let modelNames: Set<String> = [
 		"crowpanel_2_4", "crowpanel_2_8", "crowpanel_3_5", "crowpanel_5_0", "crowpanel_7_0",
+		"heltec-mesh-node-t114", "heltec-mesh-node-t114-case", "heltec-meshnode-t1", "heltec-t096",
+		"heltec-v3", "heltec-v3-case", "heltec-vision-master-e213", "heltec-vision-master-e290",
+		"heltec-vision-master-t190", "heltec-wireless-paper", "heltec-wireless-tracker", "heltec-wsl-v3",
+		"heltec_mesh_pocket", "heltec_v4", "heltec_wireless_tracker_v2",
+		"lilygo-tlora-pager",
 		"muzi_base", "muzi_r1_neo",
-		"rak-wismesh-tap-v2", "rak-wismeshtap", "rak11200", "rak11310", "rak2560", "rak3401",
-		"rak4631", "rak4631_case", "rak6421", "rak_3312", "rak_wismesh_pocket", "rak_wismesh_tag",
+		"rak-wismesh-tap-v2", "rak-wismeshtap", "rak11200", "rak11310", "rak2560", "rak3401", "rak4631",
+		"rak4631_case", "rak6421", "rak_3312", "rak_wismesh_pocket", "rak_wismesh_tag",
 		"seeed-sensecap-indicator", "seeed-xiao-s3", "seeed_mesh_tracker_x1", "seeed_solar",
 		"seeed_wio_tracker_l1_pro_1w", "seeed_wio_tracker_l2", "seeed_xiao_nrf52_kit",
-		"thinknode_m1", "thinknode_m2", "thinknode_m3", "thinknode_m4", "thinknode_m6",
-		"thinknode_m7", "thinknode_m9",
-		"tracker-t1000-e", "wio-tracker-wm1110", "wio_tracker_l1_case", "wio_tracker_l1_eink"
+		"t-deck", "t-echo", "t-echo_plus", "t-watch-s3",
+		"tbeam-1w", "tbeam-s3-core",
+		"tdeck_pro",
+		"thinknode_m1", "thinknode_m2", "thinknode_m3", "thinknode_m4", "thinknode_m6", "thinknode_m7",
+		"thinknode_m9",
+		"tlora-t3s3-epaper", "tlora-t3s3-v1",
+		"tracker-t1000-e",
+		"wio-tracker-wm1110", "wio_tracker_l1_case", "wio_tracker_l1_eink"
 	]
 
 	/// Models whose catalog entry may not name a matching image, keyed by lowercased
