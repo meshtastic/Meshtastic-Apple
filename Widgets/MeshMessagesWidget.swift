@@ -98,7 +98,7 @@ struct MeshMessagesWidgetView: View {
 		case .accessoryRectangular:
 			MessagesRectangularView(snapshot: snapshot)
 		case .systemLarge:
-			MessagesListView(snapshot: snapshot, rowLimit: 6)
+			MessagesListView(snapshot: snapshot, rowLimit: 5)
 		default:
 			MessagesListView(snapshot: snapshot, rowLimit: 2)
 		}
@@ -131,13 +131,21 @@ private struct MessagesListView: View {
 	let rowLimit: Int
 
 	var body: some View {
-		VStack(alignment: .leading, spacing: 6) {
-			HStack(spacing: 6) {
-				MeshLogo(height: 13)
+		VStack(alignment: .leading, spacing: 7) {
+			HStack(spacing: 5) {
+				MeshLogo(height: 10)
 				Text("Messages")
-					.font(.headline)
+					.font(.caption.weight(.semibold))
+					.foregroundStyle(.secondary)
+					.textCase(.uppercase)
 				Spacer()
-				UnreadBadges(snapshot: snapshot)
+				let total = snapshot.unreadChannelMessages + snapshot.unreadDirectMessages
+				if total > 0 {
+					Text("\(total) unread")
+						.font(.caption.weight(.semibold))
+						.foregroundStyle(Color.accentColor)
+						.widgetAccentable()
+				}
 			}
 			if snapshot.recentMessages.isEmpty {
 				Spacer()
@@ -158,61 +166,45 @@ private struct MessagesListView: View {
 	}
 }
 
+/// One conversation row, shaped like a mail inbox row: unread dot in a fixed
+/// leading gutter, avatar circle, sender and time on the first line, the
+/// message underneath.
 private struct MessageRow: View {
 	let message: MessageSnapshot
 
 	var body: some View {
-		HStack(alignment: .top, spacing: 6) {
-			NodeChip(shortName: message.senderShortName, colorSeed: message.senderColorSeed, size: 22)
-			VStack(alignment: .leading, spacing: 0) {
-				HStack(spacing: 4) {
+		HStack(alignment: .top, spacing: 7) {
+			Circle()
+				.fill(Color.accentColor)
+				.frame(width: 7, height: 7)
+				.opacity(message.isUnread ? 1 : 0)
+				.padding(.top, 6)
+				.widgetAccentable()
+			NodeChip(shortName: message.senderShortName, colorSeed: message.senderColorSeed, size: 27)
+			VStack(alignment: .leading, spacing: 1) {
+				HStack(alignment: .firstTextBaseline, spacing: 5) {
 					Text(message.senderLongName)
-						.font(.caption.weight(.semibold))
+						.font(.subheadline.weight(.semibold))
 						.lineLimit(1)
+						.layoutPriority(1)
 					if case .channel(_, let name) = message.kind, !name.isEmpty {
-						Text("· \(name)")
-							.font(.caption2)
+						Text(name)
+							.font(.caption)
 							.foregroundStyle(.secondary)
 							.lineLimit(1)
 					}
-					Spacer()
+					Spacer(minLength: 6)
 					Text(message.timestamp, style: .relative)
 						.font(.caption2)
-						.foregroundStyle(.secondary)
-					if message.isUnread {
-						Circle()
-							.fill(Color.accentColor)
-							.frame(width: 6, height: 6)
-							.widgetAccentable()
-					}
+						.foregroundStyle(.tertiary)
 				}
 				Text(message.text)
-					.font(.caption2)
+					.font(.caption)
 					.foregroundStyle(.secondary)
-					.lineLimit(1)
+					.lineLimit(2, reservesSpace: false)
+					.multilineTextAlignment(.leading)
 					.privacySensitive()
 			}
-		}
-	}
-}
-
-private struct UnreadBadges: View {
-	let snapshot: WidgetSnapshot
-
-	var body: some View {
-		let total = snapshot.unreadChannelMessages + snapshot.unreadDirectMessages
-		if total > 0 {
-			Text("\(total) unread")
-				.font(.caption.weight(.semibold))
-				.padding(.horizontal, 7)
-				.padding(.vertical, 2)
-				.background(Capsule().fill(Color.accentColor.opacity(0.18)))
-				.foregroundStyle(Color.accentColor)
-				.widgetAccentable()
-		} else {
-			Text("No unread")
-				.font(.caption2)
-				.foregroundStyle(.secondary)
 		}
 	}
 }
