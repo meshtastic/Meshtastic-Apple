@@ -264,6 +264,8 @@ private struct MessagesRectangularView: View {
 					.foregroundStyle(.secondary)
 			}
 		}
+		// A tap opens the conversation of the message shown, like the system widget's rows.
+		.widgetURL(snapshot.recentMessages.first.map(deepLink(for:)))
 	}
 }
 
