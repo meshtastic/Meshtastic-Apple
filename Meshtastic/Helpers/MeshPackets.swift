@@ -577,14 +577,30 @@ actor MeshPackets {
 		let ignored: Bool
 	}
 
-	/// Nil when the node isn't in the database.
-	func liveActivityNodeReading(num: Int64, radioNum: Int64?) -> LiveActivityNodeReading? {
-		guard !invalidated else { return nil }
+	/// Why a reading is or isn't there: only a node that's really gone should end the activity,
+	/// not a retired actor or a failed fetch.
+	enum LiveActivityNodeLookup: Sendable {
+		case found(LiveActivityNodeReading)
+		/// Not in the database: deleted, evicted or cleared.
+		case missing
+		/// Couldn't look: this instance was retired, or the fetch failed.
+		case unavailable
+	}
+
+	func liveActivityNodeReading(num: Int64, radioNum: Int64?) -> LiveActivityNodeLookup {
+		guard !invalidated else { return .unavailable }
 		// Fetch by the scalar number only; an optional-relationship nil check in a predicate
 		// crashes on iOS 26.
 		var nodeDescriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == num })
 		nodeDescriptor.fetchLimit = 1
-		guard let node = try? modelContext.fetch(nodeDescriptor).first else { return nil }
+		let fetched: [NodeInfoEntity]
+		do {
+			fetched = try modelContext.fetch(nodeDescriptor)
+		} catch {
+			Logger.data.error("🛰️ Live Activity node fetch failed: \(error.localizedDescription, privacy: .public)")
+			return .unavailable
+		}
+		guard let node = fetched.first else { return .missing }
 
 		var radio: NodeInfoEntity?
 		if let radioNum {
@@ -606,14 +622,14 @@ actor MeshPackets {
 				.distance(from: CLLocation(latitude: radioCoordinate.latitude, longitude: radioCoordinate.longitude))
 		}
 
-		return LiveActivityNodeReading(
+		return .found(LiveActivityNodeReading(
 			battery: node.latestDeviceMetrics?.batteryLevel,
 			signalRating: signalRating,
 			lastHeard: node.lastHeard,
 			hopsAway: node.hopsAway,
 			distanceMeters: distanceMeters,
 			ignored: node.ignored
-		)
+		))
 	}
 
 	/// Nodes: cap the total, evicting least-recently-heard first. Never evict favorites — the user
@@ -1817,8 +1833,11 @@ actor MeshPackets {
 					// The Live Activity shows the radio's battery; hand it over as a plain
 					// value, since the broker only rebuilds on other events.
 					if let liveActivityBattery = telemetry.batteryLevel {
+						// The radio it came from travels with it, so a radio switch before
+						// the hop can't pin this reading on the new radio.
+						let batteryRadioNum = connectedNode
 						Task { @MainActor in
-							MeshLiveActivityManager.shared.radioBatteryDidUpdate(liveActivityBattery)
+							MeshLiveActivityManager.shared.radioBatteryDidUpdate(liveActivityBattery, radioNum: batteryRadioNum)
 						}
 					}
 					let batteryLevel = telemetry.batteryLevel ?? 0

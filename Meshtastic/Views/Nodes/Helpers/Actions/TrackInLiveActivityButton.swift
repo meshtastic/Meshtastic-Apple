@@ -8,14 +8,22 @@
 import SwiftUI
 
 /// Starts a Live Activity that follows this node, or stops it when this node
-/// is the one being tracked. Hidden where Live Activities are off or missing.
+/// is the one being tracked. Shown only when a start would go through — Live
+/// Activities on, the radio connected and no lockdown — or to stop tracking.
 struct TrackInLiveActivityButton: View {
+	@EnvironmentObject private var accessoryManager: AccessoryManager
 	@ObservedObject private var liveActivities = MeshLiveActivityManager.shared
 	let nodeNum: Int64
 
+	private var canStart: Bool {
+		liveActivities.isAvailable
+			&& accessoryManager.isConnected
+			&& accessoryManager.lockdownCoordinator?.isBlockingSession != true
+	}
+
 	var body: some View {
-		if liveActivities.isAvailable {
-			let isTracking = liveActivities.currentMode == .trackNode(num: nodeNum)
+		let isTracking = liveActivities.currentMode == .trackNode(num: nodeNum)
+		if isTracking || canStart {
 			Button {
 				if isTracking {
 					liveActivities.stop()

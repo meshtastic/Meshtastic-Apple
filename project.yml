@@ -431,6 +431,7 @@ targets:
         excludes:
           - "Info.plist"
           - "WidgetsExtension.entitlements"
+      - path: "Localizable.xcstrings"
     dependencies:
       - package: MeshtasticProtobufs
         product: MeshtasticProtobufs

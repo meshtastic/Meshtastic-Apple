@@ -149,7 +149,7 @@ final class MeshLiveActivityManager: ObservableObject {
 			if mode == .meshStatus {
 				content = meshStatusContent(from: WidgetSnapshotStore.load(), radioNum: radioNum)
 			} else if let num = mode.trackedNodeNum,
-					  let reading = await MeshPackets.shared.liveActivityNodeReading(num: num, radioNum: radioNum) {
+					  case .found(let reading) = await MeshPackets.shared.liveActivityNodeReading(num: num, radioNum: radioNum) {
 				content = trackedContent(from: reading)
 			}
 			// The link, the radio or the user may have moved on while this waited.
@@ -208,10 +208,10 @@ final class MeshLiveActivityManager: ObservableObject {
 #endif
 	}
 
-	/// The connected radio's battery, from its device telemetry.
-	func radioBatteryDidUpdate(_ level: Int32) {
+	/// The connected radio's battery, from its device telemetry, with the radio
+	/// it came from.
+	func radioBatteryDidUpdate(_ level: Int32, radioNum: Int64) {
 #if os(iOS) && !targetEnvironment(macCatalyst) && canImport(ActivityKit)
-		guard let radioNum = AccessoryManager.shared.activeDeviceNum else { return }
 		radioBattery = (radioNum, level)
 		guard let activity, activity.attributes.mode == .meshStatus,
 			  activity.attributes.radioNum == radioNum, var content = lastContent,
@@ -299,14 +299,20 @@ final class MeshLiveActivityManager: ObservableObject {
 			}
 			guard !Task.isCancelled else { return }
 			self?.trackedReadIsDelayed = false
-			let reading = await MeshPackets.shared.liveActivityNodeReading(num: num, radioNum: radioNum)
+			let lookup = await MeshPackets.shared.liveActivityNodeReading(num: num, radioNum: radioNum)
 			guard !Task.isCancelled, let self else { return }
-			guard let reading, !reading.ignored else {
-				// Deleted, evicted or ignored: nothing left to track.
+			switch lookup {
+			case .missing:
+				// Deleted, evicted or cleared: nothing left to track.
 				self.stop()
-				return
+			case .found(let reading) where reading.ignored:
+				self.stop()
+			case .found(let reading):
+				self.pushContent(self.trackedContent(from: reading))
+			case .unavailable:
+				// The next packet or broker build reads again.
+				break
 			}
-			self.pushContent(self.trackedContent(from: reading))
 		}
 	}
 
