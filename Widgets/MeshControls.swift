@@ -5,9 +5,9 @@
 //  Copyright(c) Garth Vander Houwen 10/17/26.
 //
 //  Control Center, Lock Screen and Action button controls (iOS 18). Each one
-//  opens the app on a screen through the app's own deep links. A control
-//  can't reach the radio itself — the Bluetooth connection lives in the app —
-//  so these hand off to the app rather than act on their own.
+//  opens the app on a screen through OpenMeshScreenIntent. A control can't
+//  reach the radio itself — the Bluetooth connection lives in the app — so
+//  these hand off to the app rather than act on their own.
 //
 
 import AppIntents
@@ -21,7 +21,7 @@ private let controlTint = Color(red: 0x67 / 255, green: 0xEA / 255, blue: 0x94 /
 struct MeshMessagesControl: ControlWidget {
 	var body: some ControlWidgetConfiguration {
 		StaticControlConfiguration(kind: "MeshOpenMessages") {
-			ControlWidgetButton(action: OpenURLIntent(URL(string: "meshtastic:///messages")!)) {
+			ControlWidgetButton(action: OpenMeshScreenIntent(screen: .messages)) {
 				Label("Messages", systemImage: "message.fill")
 			}
 			.tint(controlTint)
@@ -35,7 +35,7 @@ struct MeshMessagesControl: ControlWidget {
 struct MeshConnectControl: ControlWidget {
 	var body: some ControlWidgetConfiguration {
 		StaticControlConfiguration(kind: "MeshOpenConnect") {
-			ControlWidgetButton(action: OpenURLIntent(URL(string: "meshtastic:///connect")!)) {
+			ControlWidgetButton(action: OpenMeshScreenIntent(screen: .connect)) {
 				Label("Connect", systemImage: "antenna.radiowaves.left.and.right")
 			}
 			.tint(controlTint)
@@ -49,7 +49,7 @@ struct MeshConnectControl: ControlWidget {
 struct MeshMapControl: ControlWidget {
 	var body: some ControlWidgetConfiguration {
 		StaticControlConfiguration(kind: "MeshOpenMap") {
-			ControlWidgetButton(action: OpenURLIntent(URL(string: "meshtastic:///map")!)) {
+			ControlWidgetButton(action: OpenMeshScreenIntent(screen: .map)) {
 				Label("Node Map", systemImage: "map.fill")
 			}
 			.tint(controlTint)

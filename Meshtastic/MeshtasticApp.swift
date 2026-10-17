@@ -118,6 +118,10 @@ struct MeshtasticAppleApp: App {
 #if os(iOS)
 		self.appDelegate.appState = appState
 #endif
+		// Control Center controls open a screen the way a notification tap does.
+		MeshScreenOpener.handler = { url in
+			appState.pendingRoute = PendingRoute(url: url)
+		}
 
 #if DEBUG
 		if let persistenceController, let performanceSeedConfiguration {
