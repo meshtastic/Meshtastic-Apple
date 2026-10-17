@@ -10,6 +10,7 @@ import simd
 /// The named empty prims in Showcase.usda that code places things at. The raw value is the prim name.
 enum ShowcaseAnchor: String, CaseIterable, Sendable {
 	case tableFront = "Anchor_TableFront"
+	case tableMiddle = "Anchor_TableMiddle"
 	case tableBack = "Anchor_TableBack"
 	case wallRack = "Anchor_WallRack"
 }
@@ -44,6 +45,10 @@ enum ShowcaseRoomGeometry {
 	/// The front table's riser: its height and how far back of the table's middle it runs.
 	static let riserHeight: Float = 0.05
 	static let riserOffset: Float = -0.2
+	/// The tables' depths, front to back.
+	static let frontTableDepth: Float = 0.8
+	static let middleTableDepth: Float = 0.5
+	static let backTableDepth: Float = 0.35
 	/// The wall rack, hung above the back table: wide and short, so it clears the devices below.
 	static let rackSize = SIMD2<Float>(2.8, 1.065)
 	/// Eye height for someone sitting in the chair at the origin.
@@ -52,8 +57,9 @@ enum ShowcaseRoomGeometry {
 	static func defaultPose(_ anchor: ShowcaseAnchor) -> ShowcaseAnchorPose {
 		switch anchor {
 		case .tableFront: ShowcaseAnchorPose(SIMD3(0, 0.82, -1.3))
-		case .tableBack: ShowcaseAnchorPose(SIMD3(0, 0.95, -2.0))
-		case .wallRack: ShowcaseAnchorPose(SIMD3(0, 1.9325, -2.555))
+		case .tableMiddle: ShowcaseAnchorPose(SIMD3(0, 0.95, -1.955))
+		case .tableBack: ShowcaseAnchorPose(SIMD3(0, 1.1, -2.385))
+		case .wallRack: ShowcaseAnchorPose(SIMD3(0, 2.0825, -2.555))
 		}
 	}
 
