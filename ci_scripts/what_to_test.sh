@@ -24,10 +24,13 @@ MAX_ENTRIES=12
 MAX_SUMMARY=300
 MAX_TOTAL=3900
 
-# Xcode Cloud clones are shallow; deepen and fetch tags so the merge history and the previous
-# release tag are both visible.
-git -C "$REPO" fetch --deepen 50 --quiet 2>/dev/null || true
+# Xcode Cloud clones are shallow. Fetch the full history and the tags so the previous release
+# tag is reachable from HEAD; a fixed depth can stop short of it after a long release cycle.
 git -C "$REPO" fetch --tags --quiet 2>/dev/null || true
+if [ "$(git -C "$REPO" rev-parse --is-shallow-repository 2>/dev/null)" = "true" ]; then
+	git -C "$REPO" fetch --unshallow --quiet 2>/dev/null \
+		|| echo "WhatToTest: could not fetch the full history; the notes may stop short of the last release."
+fi
 
 # Bound the notes at the previous release tag, so a build lists what is new in it. If this
 # commit is itself tagged, the release has already been cut: measure from the tag before it.
@@ -81,9 +84,10 @@ touches_app() {
 summary_of() {
 	awk -v max="$MAX_SUMMARY" '
 		/^##[ \t]+Summary/ { inside = 1; next }
+		inside && comment { if (/-->/) comment = 0; next }
+		inside && /^[ \t]*<!--/ { if ($0 !~ /-->/) comment = 1; next }
 		inside && /^#/ { exit }
 		inside && /^[ \t]*$/ { if (text != "") exit; next }
-		inside && /^<!--/ { exit }
 		inside { sub(/^[ \t]*[-*][ \t]+/, ""); text = text (text == "" ? "" : " ") $0 }
 		END {
 			while (match(text, /\[[^]]*\]\([^)]*\)/)) {
