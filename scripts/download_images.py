@@ -16,6 +16,14 @@ import hashlib
 API_URL = "https://api.meshtastic.org/resource/deviceHardware"
 IMAGE_BASE_URL = "https://flasher.meshtastic.org/img/devices/"
 REQUEST_TIMEOUT = 15
+# Device entries also list each board's 3D model files (.usdz, .glb) beside its images; those
+# live under the flasher's /models/devices/, not /img/devices/, and aren't images. Only sync
+# entries with an image extension.
+IMAGE_EXTENSIONS = (".svg", ".png", ".jpg", ".jpeg", ".webp")
+
+
+def is_image(filename):
+    return filename.lower().endswith(IMAGE_EXTENSIONS)
 
 # api.meshtastic.org answers Python's default "Python-urllib" user agent with 403 Forbidden,
 # which made the nightly sync fall back to the cached copy and report success. Name the
@@ -220,6 +228,7 @@ def main():
     verbose_print(f"Found {len(devices)} devices in API response.")
     required_image_filenames = set(
         image_filename for device in devices for image_filename in device.get("images", [])
+        if is_image(image_filename)
     )
     stats = {"new": 0, "updated": 0, "skipped": 0, "failed": 0}
     verbose_print(f"\n--- Syncing {len(required_image_filenames)} unique assets using up to {MAX_WORKERS} threads ---")

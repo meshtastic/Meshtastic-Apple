@@ -181,6 +181,14 @@ class MeshtasticAPI: ObservableObject, @unchecked Sendable {
 	// MARK: - Constants
 	static let deviceURLEndpoint = URL(string: "https://api.meshtastic.org/resource/deviceHardware")!
 	static let imageURLPrefix = URL(string: "https://flasher.meshtastic.org/img/devices/")!
+
+	/// A device's `images` also lists its 3D model files (.usdz, .glb), which the flasher serves
+	/// from /models/devices/, not /img/devices/. Only these extensions are fetched as images.
+	static let imageFileExtensions: Set<String> = ["svg", "png", "jpg", "jpeg", "webp"]
+
+	static func isImageFile(_ name: String) -> Bool {
+		imageFileExtensions.contains((name as NSString).pathExtension.lowercased())
+	}
 	static let firmwareURLEndpoint = URL(string: "https://api.meshtastic.org/github/firmware/list")!
 	static let firmwareGitHubURLEndpoint = URL(string: "https://api.github.com/repos/meshtastic/firmware/releases?per_page=100")!
 	static let nightlyIndexEndpoint = URL(string: "https://nightly.meshtastic.org/index.json")!
@@ -925,7 +933,7 @@ extension MeshtasticAPI {
 		var work: [String: [String]] = [:]
 		var order: [String] = []
 		for device in bundledDevices + (apiDevices ?? []) {
-			for imageName in device.images ?? [] {
+			for imageName in device.images ?? [] where Self.isImageFile(imageName) {
 				if work[imageName] == nil {
 					work[imageName] = []
 					order.append(imageName)

@@ -883,3 +883,15 @@ extension MeshtasticAPIBundledSeedTests {
 		#expect(try nightlyVersions() == ["v2.8.1.bbbbbbb"], "an unchanged release list must not freeze the nightly")
 	}
 }
+
+@Suite("MeshtasticAPI device image files")
+struct MeshtasticAPIImageFileTests {
+	@Test("Model files in a device's images aren't fetched as images")
+	func onlyImageFilesAreFetched() {
+		#expect(MeshtasticAPI.isImageFile("heltec_v4.svg"))
+		#expect(MeshtasticAPI.isImageFile("Board.PNG"))
+		#expect(!MeshtasticAPI.isImageFile("heltec_v4.usdz"))
+		#expect(!MeshtasticAPI.isImageFile("heltec_v4.glb"))
+		#expect(!MeshtasticAPI.isImageFile("README"))
+	}
+}
