@@ -345,8 +345,8 @@ targets:
           ENABLE_RESOURCE_ACCESS_PRINTING: "NO"
           ENABLE_RESOURCE_ACCESS_USB: "NO"
           # Device models ship in the iPhone, iPad, Mac and Vision Pro app (not TV or Watch, which
-          # don't include this folder). Their README (the copyright notice) stays out of every build.
-          EXCLUDED_SOURCE_FILE_NAMES: "README.md"
+          # don't include this folder). Their README (the copyright notice) stays out of every build, as does the model sync manifest.
+          EXCLUDED_SOURCE_FILE_NAMES: "README.md model_manifest.json"
           INFOPLIST_FILE: "Meshtastic/Info.plist"
           INFOPLIST_KEY_CFBundleDisplayName: "Meshtastic"
           INFOPLIST_KEY_LSApplicationCategoryType: "public.app-category.utilities"
@@ -395,8 +395,8 @@ targets:
           ENABLE_RESOURCE_ACCESS_PRINTING: "NO"
           ENABLE_RESOURCE_ACCESS_USB: "NO"
           # Device models ship in the iPhone, iPad, Mac and Vision Pro app (not TV or Watch, which
-          # don't include this folder). Their README (the copyright notice) stays out of every build.
-          EXCLUDED_SOURCE_FILE_NAMES: "README.md"
+          # don't include this folder). Their README (the copyright notice) stays out of every build, as does the model sync manifest.
+          EXCLUDED_SOURCE_FILE_NAMES: "README.md model_manifest.json"
           INFOPLIST_FILE: "Meshtastic/Info.plist"
           INFOPLIST_KEY_CFBundleDisplayName: "Meshtastic"
           INFOPLIST_KEY_LSApplicationCategoryType: "public.app-category.utilities"
