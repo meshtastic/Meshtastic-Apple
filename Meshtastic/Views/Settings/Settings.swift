@@ -669,7 +669,7 @@ struct Settings: View {
 	private var searchAvailability: SettingsSearchEngine.Availability {
 		SettingsSearchEngine.Availability(
 			isConnected: accessoryManager.isConnected,
-			hasFixedGPS: connectedHardwareHasFixedGPS,
+			hasFixedGPS: configTargetHasFixedGPS,
 			isManaged: connectedNodeIsManaged,
 			// The same condition the Developers section itself renders on, so search
 			// never offers a screen this build does not show.
@@ -681,8 +681,11 @@ struct Settings: View {
 		nodes.first(where: { $0.num == Int64(preferredNodeNum) })?.isManaged ?? false
 	}
 
-	private var connectedHardwareHasFixedGPS: Bool {
-		guard let node = nodes.first(where: { $0.num == Int64(preferredNodeNum) }) else { return false }
+	/// The node the config screens edit: the one picked for remote admin, else the connected radio.
+	/// Search hides GPS pin settings by this node's hardware, as the Position screen does.
+	private var configTargetHasFixedGPS: Bool {
+		let nodeNum = selectedNode > 0 ? selectedNode : preferredNodeNum
+		guard let node = nodes.first(where: { $0.num == Int64(nodeNum) }) else { return false }
 		return FixedGPSHardware.hasFixedGPS(hwModelId: node.hwModelId)
 	}
 
