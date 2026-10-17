@@ -4,8 +4,8 @@
     doc = """The hardware showcase room for the visionOS immersive space. Our own asset, written by hand.
 
     Units are meters, Y is up. The origin is on the floor where the viewer sits, facing -Z.
-    A bright store-style room with Meshtastic green walls: two maple display tables in front of the viewer, the nearer one
-    with a low riser along its back, touching the taller back table; the back wall at z = -2.6
+    A bright store-style room with Meshtastic green walls: three maple display tables stepping up toward the back wall, the nearest
+    with a low riser along its back, then the middle table, then a narrow back table against the wall; the back wall at z = -2.6
     with the wall rack hung on it above the back table; and the Meshtastic mark on the left wall. The side behind the viewer is open.
 
     Shapes are unit cubes scaled to size. Lights are added in code. The Anchor_* prims are empty and are read by name in ShowcaseRoom.load(). Their local +Z
@@ -219,9 +219,10 @@ def Xform "Root"
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
     }
     # ------------------------------------------------------------------------------------------
-    # Display tables: 1.9 m maple slabs on trestle legs. The front one is 0.8 m deep with
-    # its top at 0.82 m and a 5 cm riser along its back; the back one is 0.6 m deep, its
-    # top at 0.95 m so its row shows over the front table's.
+    # Display tables: 1.9 m maple slabs on trestle legs, stepping up toward the wall so each
+    # row shows over the one in front. The front one is 0.8 m deep with its top at 0.82 m
+    # and a 5 cm riser along its back; the middle one is 0.5 m deep at 0.95 m; the back one
+    # is 0.35 m deep at 1.1 m, against the wall under the rack.
     # ------------------------------------------------------------------------------------------
     def Cube "FrontTable_Top" (
         prepend apiSchemas = ["MaterialBindingAPI"]
@@ -263,14 +264,44 @@ def Xform "Root"
         float3 xformOp:scale = (1.8, 0.05, 0.24)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
     }
+    def Cube "MiddleTable_Top" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        double size = 1
+        rel material:binding = </Root/Materials/Maple>
+        float3 xformOp:translate = (0, 0.925, -1.955)
+        float3 xformOp:scale = (1.9, 0.05, 0.5)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+    def Cube "MiddleTable_Leg_Left" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        double size = 1
+        rel material:binding = </Root/Materials/Maple>
+        float3 xformOp:translate = (-0.83, 0.45, -1.955)
+        float3 xformOp:scale = (0.06, 0.9, 0.38)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
+    def Cube "MiddleTable_Leg_Right" (
+        prepend apiSchemas = ["MaterialBindingAPI"]
+    )
+    {
+        double size = 1
+        rel material:binding = </Root/Materials/Maple>
+        float3 xformOp:translate = (0.83, 0.45, -1.955)
+        float3 xformOp:scale = (0.06, 0.9, 0.38)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
+    }
     def Cube "BackTable_Top" (
         prepend apiSchemas = ["MaterialBindingAPI"]
     )
     {
         double size = 1
         rel material:binding = </Root/Materials/Maple>
-        float3 xformOp:translate = (0, 0.925, -2)
-        float3 xformOp:scale = (1.9, 0.05, 0.6)
+        float3 xformOp:translate = (0, 1.075, -2.385)
+        float3 xformOp:scale = (1.9, 0.05, 0.35)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
     }
     def Cube "BackTable_Leg_Left" (
@@ -279,8 +310,8 @@ def Xform "Root"
     {
         double size = 1
         rel material:binding = </Root/Materials/Maple>
-        float3 xformOp:translate = (-0.83, 0.45, -2)
-        float3 xformOp:scale = (0.06, 0.9, 0.48)
+        float3 xformOp:translate = (-0.83, 0.525, -2.385)
+        float3 xformOp:scale = (0.06, 1.05, 0.23)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
     }
     def Cube "BackTable_Leg_Right" (
@@ -289,8 +320,8 @@ def Xform "Root"
     {
         double size = 1
         rel material:binding = </Root/Materials/Maple>
-        float3 xformOp:translate = (0.83, 0.45, -2)
-        float3 xformOp:scale = (0.06, 0.9, 0.48)
+        float3 xformOp:translate = (0.83, 0.525, -2.385)
+        float3 xformOp:scale = (0.06, 1.05, 0.23)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
     }
     # ------------------------------------------------------------------------------------------
@@ -303,7 +334,7 @@ def Xform "Root"
     {
         double size = 1
         rel material:binding = </Root/Materials/RackPanel>
-        float3 xformOp:translate = (0, 1.9325, -2.58)
+        float3 xformOp:translate = (0, 2.0825, -2.58)
         float3 xformOp:scale = (2.8, 1.065, 0.04)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
     }
@@ -313,7 +344,7 @@ def Xform "Root"
     {
         double size = 1
         rel material:binding = </Root/Materials/Maple>
-        float3 xformOp:translate = (0, 2.485, -2.57)
+        float3 xformOp:translate = (0, 2.635, -2.57)
         float3 xformOp:scale = (2.88, 0.04, 0.06)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
     }
@@ -323,7 +354,7 @@ def Xform "Root"
     {
         double size = 1
         rel material:binding = </Root/Materials/Maple>
-        float3 xformOp:translate = (0, 1.38, -2.57)
+        float3 xformOp:translate = (0, 1.53, -2.57)
         float3 xformOp:scale = (2.88, 0.04, 0.06)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
     }
@@ -333,7 +364,7 @@ def Xform "Root"
     {
         double size = 1
         rel material:binding = </Root/Materials/Maple>
-        float3 xformOp:translate = (-1.42, 1.9325, -2.57)
+        float3 xformOp:translate = (-1.42, 2.0825, -2.57)
         float3 xformOp:scale = (0.04, 1.065, 0.06)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
     }
@@ -343,7 +374,7 @@ def Xform "Root"
     {
         double size = 1
         rel material:binding = </Root/Materials/Maple>
-        float3 xformOp:translate = (1.42, 1.9325, -2.57)
+        float3 xformOp:translate = (1.42, 2.0825, -2.57)
         float3 xformOp:scale = (0.04, 1.065, 0.06)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
     }
@@ -356,16 +387,22 @@ def Xform "Root"
         float3 xformOp:translate = (0, 0.82, -1.3)
         uniform token[] xformOpOrder = ["xformOp:translate"]
     }
+    def Xform "Anchor_TableMiddle"
+    {
+        # Center of the middle table top.
+        float3 xformOp:translate = (0, 0.95, -1.955)
+        uniform token[] xformOpOrder = ["xformOp:translate"]
+    }
     def Xform "Anchor_TableBack"
     {
         # Center of the back table top.
-        float3 xformOp:translate = (0, 0.95, -2)
+        float3 xformOp:translate = (0, 1.1, -2.385)
         uniform token[] xformOpOrder = ["xformOp:translate"]
     }
     def Xform "Anchor_WallRack"
     {
         # Center of the rack panel's face, facing +Z into the room.
-        float3 xformOp:translate = (0, 1.9325, -2.555)
+        float3 xformOp:translate = (0, 2.0825, -2.555)
         uniform token[] xformOpOrder = ["xformOp:translate"]
     }
 }

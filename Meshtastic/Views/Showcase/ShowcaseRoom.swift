@@ -75,7 +75,7 @@ struct ShowcaseRoom {
 		key.components.set(DirectionalLightComponent(color: Self.storeWhite, intensity: 450))
 		key.components.set(DirectionalLightComponent.Shadow(maximumDistance: 4, depthBias: 2))
 
-		for (name, anchor) in [("FrontTableLight", ShowcaseAnchor.tableFront), ("BackTableLight", .tableBack)] {
+		for (name, anchor) in [("FrontTableLight", ShowcaseAnchor.tableFront), ("MiddleTableLight", .tableMiddle), ("BackTableLight", .tableBack)] {
 			let light = Entity()
 			light.name = name
 			light.position = pose(anchor).position + SIMD3<Float>(0, 1.6, 0.1)
@@ -132,7 +132,7 @@ struct ShowcaseRoom {
 		return result
 	}
 
-	/// A plain floor, back wall and the two display tables at the asset's measurements, for when
+	/// A plain floor, back wall and the three display tables at the asset's measurements, for when
 	/// Showcase.usda fails to load, so the showcase still has somewhere to put things.
 	private static func standInRoom() -> Entity {
 		let room = Entity()
@@ -150,10 +150,14 @@ struct ShowcaseRoom {
 		wall.position = SIMD3<Float>(0, ShowcaseRoomGeometry.height / 2, ShowcaseRoomGeometry.backWallZ - 0.03)
 		room.addChild(floor)
 		room.addChild(wall)
-		for anchor in [ShowcaseAnchor.tableFront, .tableBack] {
+		for (anchor, tableDepth) in [
+			(ShowcaseAnchor.tableFront, ShowcaseRoomGeometry.frontTableDepth),
+			(.tableMiddle, ShowcaseRoomGeometry.middleTableDepth),
+			(.tableBack, ShowcaseRoomGeometry.backTableDepth)
+		] {
 			let top = ShowcaseRoomGeometry.defaultPose(anchor).position
 			let table = ModelEntity(
-				mesh: .generateBox(width: 1.9, height: 0.05, depth: 0.7),
+				mesh: .generateBox(width: 1.9, height: 0.05, depth: tableDepth),
 				materials: [SimpleMaterial(color: UIColor(red: 0.84, green: 0.70, blue: 0.52, alpha: 1), roughness: 0.45, isMetallic: false)]
 			)
 			table.name = "StandInTable"
