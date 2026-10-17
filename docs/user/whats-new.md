@@ -14,7 +14,7 @@ Recent user-facing changes from roughly the last 12 months. Newest at the top.
 Show roughly the last 12 months of changes; archive entries older than a year by removing them.
 -->
 
-**Oct 2026** — [Hardware Showcase](showcase.md) — On Apple Vision Pro, a room with real-size models of Meshtastic radios on display tables, grouped by maker: pick one up and turn it over in your hand, and its card shows where to buy one. The radios on your mesh are on the wall rack. Open it from the spatial map.
+**Oct 2026** — [Hardware Showcase](showcase.md) — On Apple Vision Pro, a room with real-size models of Meshtastic radios on display tables, grouped by maker: pick one up and turn it over in your hand. The radios on your mesh are on the wall rack. Open it from the spatial map.
 
 **Oct 2026** — [Map & Waypoints](map.md) — On Apple Vision Pro, the spatial map now keeps a full offline map of the mesh, streets and terrain, and grows it whenever the app is open, not only while the spatial map is showing.
 

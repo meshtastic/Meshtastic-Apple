@@ -437,35 +437,35 @@
             "app",
             "room",
             "radios",
-            "one",
             "back",
-            "model",
-            "maker",
-            "card",
-            "table",
+            "one",
             "rack",
             "panel",
+            "maker",
             "closes",
             "window",
             "wall",
             "vision",
+            "table",
             "size",
             "showcase",
             "real",
             "pro",
             "pinch",
-            "open",
             "models",
+            "model",
             "hardware",
             "front",
             "each",
-            "device",
+            "card",
             "apple",
             "turn",
             "tables",
-            "step"
+            "step",
+            "stand",
+            "see"
         ],
-        "charCount": 2141
+        "charCount": 1948
     },
     {
         "id": "signal-meter",
@@ -777,7 +777,7 @@
             "row",
             "per"
         ],
-        "charCount": 8597
+        "charCount": 8560
     },
     {
         "id": "adding-features",
