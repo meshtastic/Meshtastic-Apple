@@ -115,7 +115,7 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 			node: node,
 			isConnected: accessoryManager.isConnected,
 			isConnectedNode: isConnectedNode,
-			isDIYHardware: DIYHardware.isDIY(slug: node?.user?.hwModel),
+			hasFixedGPS: FixedGPSHardware.hasFixedGPS(hwModelId: node?.user?.hwModelId),
 			hasWifi: node?.metadata?.hasWifi ?? false,
 			hasEthernet: node?.metadata?.hasEthernet ?? false,
 			hasXeddsa: node?.metadata?.hasXeddsa ?? false,

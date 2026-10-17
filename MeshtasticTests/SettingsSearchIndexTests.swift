@@ -338,24 +338,35 @@ struct SettingsSearchCatalogueTests {
 		// App Store builds do not render the Developers section at all, so a result
 		// pointing into it would be an offer the user cannot take up.
 		let release = SettingsSearchEngine.Availability(
-			isConnected: true, isDIYHardware: false, isManaged: false,
+			isConnected: true, hasFixedGPS: false, isManaged: false,
 			showsDeveloperSettings: false)
 		#expect(
 			SettingsSearchEngine.search("Data Browser", in: SettingsSearchCatalogue.entries, availability: release).isEmpty,
 			"a Developers screen surfaced on a release build")
 
 		let testflight = SettingsSearchEngine.Availability(
-			isConnected: true, isDIYHardware: false, isManaged: false,
+			isConnected: true, hasFixedGPS: false, isManaged: false,
 			showsDeveloperSettings: true)
 		#expect(
 			!SettingsSearchEngine.search("Data Browser", in: SettingsSearchCatalogue.entries, availability: testflight).isEmpty,
 			"a Developers screen should be findable where the section renders")
 	}
 
+	@Test("GPS pin settings are hidden only on boards with maker-wired GPS")
+	func gpsPinsFollowFixedGPS() throws {
+		func finds(_ availability: SettingsSearchEngine.Availability) -> Bool {
+			SettingsSearchEngine.search("GPS Receive GPIO", in: SettingsSearchIndex.entries, availability: availability)
+				.contains { $0.entry.label == "GPS Receive GPIO" }
+		}
+		#expect(finds(.init(isConnected: true, hasFixedGPS: false, isManaged: false)))
+		#expect(!finds(.init(isConnected: true, hasFixedGPS: true, isManaged: false)))
+		#expect(finds(.init(isConnected: false, hasFixedGPS: true, isManaged: false)), "disconnected shows everything")
+	}
+
 	@Test("Searching the discovery screen by name finds it")
 	func localMeshDiscoveryIsFindable() throws {
 		let available = SettingsSearchEngine.Availability(
-			isConnected: false, isDIYHardware: false, isManaged: false)
+			isConnected: false, hasFixedGPS: false, isManaged: false)
 		for query in ["Local Mesh", "discovery", "bonjour"] {
 			let results = SettingsSearchEngine.search(
 				query, in: SettingsSearchIndex.entries, availability: available)
