@@ -24,12 +24,24 @@ MODEL_BASE_URL = "https://flasher.meshtastic.org/models/devices/"
 MODEL_EXTENSIONS = (".usdz",)
 
 
+def is_plain_filename(filename):
+    """A bare file name: no directories, no parent references, not hidden. File names come from
+    the API, so anything else could write or prune outside the target folder."""
+    return (
+        bool(filename)
+        and os.path.basename(filename) == filename
+        and "/" not in filename and "\\" not in filename
+        and filename not in (".", "..")
+        and not filename.startswith(".")
+    )
+
+
 def is_image(filename):
-    return filename.lower().endswith(IMAGE_EXTENSIONS)
+    return is_plain_filename(filename) and filename.lower().endswith(IMAGE_EXTENSIONS)
 
 
 def is_model(filename):
-    return filename.lower().endswith(MODEL_EXTENSIONS)
+    return is_plain_filename(filename) and filename.lower().endswith(MODEL_EXTENSIONS)
 
 
 def is_image_content(content_type):
@@ -98,8 +110,16 @@ def download_image(url, local_path, log_warning, accept=is_image_content):
             if not accept(content_type):
                 return (False, f"Invalid content type '{content_type}' at {url}. Server may have returned an error page.")
 
-            with open(local_path, 'wb') as out_file:
-                shutil.copyfileobj(response, out_file)
+            # Download beside the destination and swap it in only once complete, so a failed
+            # download never leaves a partial file in place of a good one.
+            temp_path = local_path + ".download"
+            try:
+                with open(temp_path, 'wb') as out_file:
+                    shutil.copyfileobj(response, out_file)
+                os.replace(temp_path, local_path)
+            finally:
+                if os.path.exists(temp_path):
+                    os.remove(temp_path)
             return (True, None)
 
     except (urllib.error.URLError, urllib.error.HTTPError, socket.timeout, IOError) as e:
@@ -198,7 +218,7 @@ def sync_models(devices, models_dir, verbose_print, log_warning):
                 new_manifest['files'][filename] = local_manifest['files'][filename]
     pruned = 0
     for filename in local_manifest.get('files', {}):
-        if filename not in required:
+        if filename not in required and is_plain_filename(filename):
             path = os.path.join(models_dir, filename)
             if os.path.exists(path):
                 verbose_print(f"Pruning {filename}...")
@@ -267,7 +287,11 @@ def main():
     if not args.force:
         previous_api_hash = local_manifest.get("api_hash")
         if previous_api_hash == new_api_hash:
-            verbose_print("\nAPI data has not changed. Nothing to do. Use --force to override.")
+            verbose_print("\nAPI data has not changed. Images are up to date. Use --force to override.")
+            # Models are checked anyway: a first run with --models-dir, or a model updated on the
+            # flasher, doesn't change the device list.
+            if args.models_dir:
+                sync_models(devices, args.models_dir, verbose_print, log_warning)
             verbose_print("--- Sync Complete ---")
             sys.exit(0)
         else:
@@ -323,7 +347,7 @@ def main():
     verbose_print("\n--- Pruning old assets ---")
     pruned_count = 0
     for filename in list(local_manifest.get('files', {}).keys()):
-        if filename not in required_image_filenames:
+        if filename not in required_image_filenames and is_plain_filename(filename):
             asset_name = os.path.splitext(filename)[0]
             if target_mode == "xcassets":
                 asset_dir = os.path.join(base_dir, f"{asset_name}.imageset")
