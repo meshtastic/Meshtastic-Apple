@@ -20,7 +20,7 @@ struct DeviceModelCatalogTests {
 	@Test("first image with a model wins, in the same order the image grid uses")
 	func multipleImages() {
 		#expect(DeviceModelCatalog.modelName(platformioTarget: "rak4631", hwModelSlug: "RAK4631", imageFileNames: ["rak4631_case.svg", "rak4631.svg"]) == "rak4631")
-		#expect(DeviceModelCatalog.modelName(platformioTarget: "x", hwModelSlug: nil, imageFileNames: ["heltec-v3.svg", "rak2560.svg"]) == "rak2560")
+		#expect(DeviceModelCatalog.modelName(platformioTarget: "x", hwModelSlug: nil, imageFileNames: ["station-g2.svg", "rak2560.svg"]) == "rak2560")
 	}
 
 	@Test("variants with a shared image use their own model")
@@ -32,7 +32,7 @@ struct DeviceModelCatalogTests {
 
 	@Test("hardware without a model gets none")
 	func noModel() {
-		#expect(DeviceModelCatalog.modelName(platformioTarget: "heltec-v3", hwModelSlug: "HELTEC_V3", imageFileNames: ["heltec-v3.svg"]) == nil)
+		#expect(DeviceModelCatalog.modelName(platformioTarget: "station-g2", hwModelSlug: "STATION_G2", imageFileNames: ["station-g2.svg"]) == nil)
 		#expect(DeviceModelCatalog.modelName(platformioTarget: nil, hwModelSlug: nil, imageFileNames: []) == nil)
 	}
 
@@ -122,6 +122,6 @@ struct DeviceModelCacheTests {
 	@Test("hardware without a model never reaches the network")
 	func unknownModel() async {
 		let source = DeviceModelSource(cache: makeCache())
-		#expect(await source.localURL(for: "heltec-v3") == nil)
+		#expect(await source.localURL(for: "station-g2") == nil)
 	}
 }
