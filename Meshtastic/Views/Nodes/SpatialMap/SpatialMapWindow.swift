@@ -201,6 +201,8 @@ struct SpatialMapWindow: View {
 		}
 	}
 
+	/// Opens the showcase and, once it is showing, closes this volume: the showcase is one space,
+	/// and the map moves onto its desk.
 	private func claimFocus() {
 		guard let nodeNum = appState.claimSpatialMapFocus() else { return }
 		model.focus(on: nodeNum)
@@ -320,6 +322,7 @@ struct SpatialMapOrnament: View {
 				.accessibilityLabel(String(localized: "Reset zoom", comment: "Spatial map: button showing how far the map is zoomed in; tapping it zooms back out to the whole mesh"))
 				.accessibilityValue(Text(verbatim: "\(model.zoom.formatted(.number.precision(.fractionLength(0...1))))×"))
 			}
+
 
 			Divider().frame(height: 20)
 

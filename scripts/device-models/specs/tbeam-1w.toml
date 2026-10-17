@@ -1,11 +1,25 @@
 # tbeam-1w: LILYGO T-Beam 1W, front view.
 # Size: https://wiki.lilygo.cc/products/t-beam-series/t-beam-1w/
 # The CAD shows 18.5 deep but models no fan; the vendor's 27 is used for the shipped unit.
+# Built as a 1.6 mm board with its OLED 3 mm up, on the 18650 holder and fan behind it, which take up the rest of the published 27 mm (estimates).
 [size]
 width_mm = 43
 height_mm = 133
 depth_mm = 27
+board_mm = 1.6
 scale_by = "width"
 covers = "board with fan, no antenna"
 source = "https://wiki.lilygo.cc/products/t-beam-series/t-beam-1w/"
 confidence = "vendor"
+
+[[block]]
+name = "Display"
+bbox = [29.4, 118.9, 210.3, 264.6]
+h = 3.0
+
+[[block]]
+name = "HolderAndFan"
+bbox = [11.5, 82.4, 226.6, 642.0]
+h = 22.4
+back = true
+side_color = "#202020"
