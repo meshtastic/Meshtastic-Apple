@@ -26,7 +26,7 @@ jobs:
       with:
         python-version: '3.11'
 
-    - name: Sync device images and hardware catalog
+    - name: Sync device images, 3D models and hardware catalog
       # Write to the bundled resource location the app loads at runtime
       # (the Bundle "images" subdirectory + DeviceHardware.json; see MeshtasticAPI).
       # --force ignores the cached API hash so the committed snapshot always matches
@@ -35,6 +35,7 @@ jobs:
         python3 scripts/download_images.py \
           --output-dir "Meshtastic/Resources/images" \
           --output-json "Meshtastic/Resources/DeviceHardware.json" \
+          --models-dir "Meshtastic/Resources/DeviceModels" \
           --force \
           --require-api \
           --verbose
@@ -42,7 +43,7 @@ jobs:
     - name: Check for changes
       id: check_changes
       run: |
-        if [ -z "$(git status --porcelain Meshtastic/Resources/images Meshtastic/Resources/DeviceHardware.json)" ]; then
+        if [ -z "$(git status --porcelain Meshtastic/Resources/images Meshtastic/Resources/DeviceModels Meshtastic/Resources/DeviceHardware.json)" ]; then
           echo "has_changes=false" >> "$GITHUB_OUTPUT"
         else
           echo "has_changes=true" >> "$GITHUB_OUTPUT"
@@ -59,11 +60,11 @@ jobs:
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         # -A stages new device SVGs, updated ones, and any pruned (removed) devices.
-        git add -A Meshtastic/Resources/images Meshtastic/Resources/DeviceHardware.json
+        git add -A Meshtastic/Resources/images Meshtastic/Resources/DeviceModels Meshtastic/Resources/DeviceHardware.json
         git commit -m "🤖 Sync device images and hardware catalog
 
         - Refreshed from https://api.meshtastic.org/resource/deviceHardware
-        - Bundled resources: Meshtastic/Resources/images + DeviceHardware.json
+        - Bundled resources: Meshtastic/Resources/images, DeviceModels + DeviceHardware.json
         - Automatically synced on $(date -u)"
         git push origin "HEAD:${TARGET_BRANCH}"
 

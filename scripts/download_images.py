@@ -16,6 +16,42 @@ import hashlib
 API_URL = "https://api.meshtastic.org/resource/deviceHardware"
 IMAGE_BASE_URL = "https://flasher.meshtastic.org/img/devices/"
 REQUEST_TIMEOUT = 15
+# Device entries list each board's images and, after them, its 3D model files (.usdz, .glb).
+# Images are served from the flasher's /img/devices/ and models from /models/devices/.
+IMAGE_EXTENSIONS = (".svg", ".png", ".jpg", ".jpeg", ".webp")
+MODEL_BASE_URL = "https://flasher.meshtastic.org/models/devices/"
+# RealityKit opens USDZ; the .glb copies are for other platforms.
+MODEL_EXTENSIONS = (".usdz",)
+
+
+def is_plain_filename(filename):
+    """A bare file name: no directories, no parent references, not hidden. File names come from
+    the API, so anything else could write or prune outside the target folder."""
+    return (
+        bool(filename)
+        and os.path.basename(filename) == filename
+        and "/" not in filename and "\\" not in filename
+        and filename not in (".", "..")
+        and not filename.startswith(".")
+    )
+
+
+def is_image(filename):
+    return is_plain_filename(filename) and filename.lower().endswith(IMAGE_EXTENSIONS)
+
+
+def is_model(filename):
+    return is_plain_filename(filename) and filename.lower().endswith(MODEL_EXTENSIONS)
+
+
+def is_image_content(content_type):
+    return content_type.startswith('image/')
+
+
+def is_model_content(content_type):
+    # The flasher answers unknown paths with its web page (HTML, 200), so anything textual is
+    # not a model.
+    return not content_type.startswith('text/')
 
 # api.meshtastic.org answers Python's default "Python-urllib" user agent with 403 Forbidden,
 # which made the nightly sync fall back to the cached copy and report success. Name the
@@ -60,10 +96,10 @@ def save_manifest(data, manifest_path):
         json.dump(data, f, indent=2, sort_keys=True)
         f.write('\n')
 
-def download_image(url, local_path, log_warning):
+def download_image(url, local_path, log_warning, accept=is_image_content):
     """
-    Downloads an image from a URL to a local path, but only if the content is valid.
-    Returns a tuple (success: bool, error_message: str|None).
+    Downloads an image (or, with `accept`, another asset) from a URL to a local path, but only
+    if the content is valid. Returns a tuple (success: bool, error_message: str|None).
     """
     try:
         with urllib.request.urlopen(url, timeout=REQUEST_TIMEOUT) as response:
@@ -71,18 +107,27 @@ def download_image(url, local_path, log_warning):
                 return (False, f"Server returned status {response.status} for {url}")
             
             content_type = response.headers.get('Content-Type', '').lower()
-            if not content_type.startswith('image/'):
-                return (False, f"Invalid content type '{content_type}' for image at {url}. Server may have returned an error page.")
+            if not accept(content_type):
+                return (False, f"Invalid content type '{content_type}' at {url}. Server may have returned an error page.")
 
-            with open(local_path, 'wb') as out_file:
-                shutil.copyfileobj(response, out_file)
+            # Download beside the destination and swap it in only once complete, so a failed
+            # download never leaves a partial file in place of a good one.
+            temp_path = local_path + ".download"
+            try:
+                with open(temp_path, 'wb') as out_file:
+                    shutil.copyfileobj(response, out_file)
+                os.replace(temp_path, local_path)
+            finally:
+                if os.path.exists(temp_path):
+                    os.remove(temp_path)
             return (True, None)
 
     except (urllib.error.URLError, urllib.error.HTTPError, socket.timeout, IOError) as e:
         return (False, f"Failed to download image from {url}: {e}")
 
-def process_image(image_filename, base_dir, local_manifest, verbose_print, log_warning, target_mode):
-    image_url = f"{IMAGE_BASE_URL}{image_filename}"
+def process_image(image_filename, base_dir, local_manifest, verbose_print, log_warning, target_mode,
+                  base_url=IMAGE_BASE_URL, accept=is_image_content):
+    image_url = f"{base_url}{image_filename}"
     asset_name = os.path.splitext(image_filename)[0]
 
     if target_mode == "xcassets":
@@ -124,7 +169,7 @@ def process_image(image_filename, base_dir, local_manifest, verbose_print, log_w
 
     if should_download:
         os.makedirs(asset_dir, exist_ok=True)
-        success, error_message = download_image(image_url, local_image_path, log_warning)
+        success, error_message = download_image(image_url, local_image_path, log_warning, accept)
         if success:
             if target_mode == "xcassets":
                 contents_json_path = os.path.join(asset_dir, "Contents.json")
@@ -143,6 +188,48 @@ def process_image(image_filename, base_dir, local_manifest, verbose_print, log_w
 
     return ("skipped", image_filename, remote_etag)
 
+def sync_models(devices, models_dir, verbose_print, log_warning):
+    """Syncs every USDZ model the API lists into models_dir, keeping its own manifest. Only files
+    this sync downloaded before are pruned, so models added to the folder by hand stay."""
+    os.makedirs(models_dir, exist_ok=True)
+    manifest_file = os.path.join(models_dir, "model_manifest.json")
+    local_manifest = load_manifest(manifest_file, log_warning)
+    new_manifest = {'files': {}}
+    required = set(f for device in devices for f in device.get("images", []) if is_model(f))
+    stats = {"new": 0, "updated": 0, "skipped": 0, "failed": 0}
+    verbose_print(f"\n--- Syncing {len(required)} models ---")
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        futures = {
+            executor.submit(process_image, f, models_dir, local_manifest, verbose_print, log_warning,
+                            "directory", MODEL_BASE_URL, is_model_content): f
+            for f in required
+        }
+        for future in as_completed(futures):
+            filename = futures[future]
+            try:
+                status, _, remote_etag = future.result()
+            except Exception as exc:
+                log_warning(f"An unexpected exception occurred while processing {filename}: {exc}")
+                status, remote_etag = "failed", None
+            stats[status] += 1
+            if status != "failed":
+                new_manifest['files'][filename] = {"etag": remote_etag}
+            elif filename in local_manifest.get('files', {}):
+                new_manifest['files'][filename] = local_manifest['files'][filename]
+    pruned = 0
+    for filename in local_manifest.get('files', {}):
+        if filename not in required and is_plain_filename(filename):
+            path = os.path.join(models_dir, filename)
+            if os.path.exists(path):
+                verbose_print(f"Pruning {filename}...")
+                os.remove(path)
+            pruned += 1
+    save_manifest(new_manifest, manifest_file)
+    verbose_print(f"Models — New: {stats['new']}, Updated: {stats['updated']}, Skipped: {stats['skipped']}, Failed: {stats['failed']}, Pruned: {pruned}")
+    if stats["failed"] > 0:
+        log_warning(f"{stats['failed']} model(s) failed to sync. Check the build log for details.")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Downloads and syncs image assets.")
     group = parser.add_mutually_exclusive_group(required=True)
@@ -158,6 +245,7 @@ def main():
     parser.add_argument("--force", action="store_true", help="Force a full sync, ignoring the API content hash check.")
     parser.add_argument("--verbose", action="store_true", help="Enable detailed logging for debugging.")
     parser.add_argument("--require-api", action="store_true", help="Fail instead of keeping the cached copy when the API can't be reached.")
+    parser.add_argument("--models-dir", help="Also sync each device's USDZ 3D models into this directory.")
     args = parser.parse_args()
 
     target_mode = "xcassets" if args.output_xcassets else "directory"
@@ -199,7 +287,11 @@ def main():
     if not args.force:
         previous_api_hash = local_manifest.get("api_hash")
         if previous_api_hash == new_api_hash:
-            verbose_print("\nAPI data has not changed. Nothing to do. Use --force to override.")
+            verbose_print("\nAPI data has not changed. Images are up to date. Use --force to override.")
+            # Models are checked anyway: a first run with --models-dir, or a model updated on the
+            # flasher, doesn't change the device list.
+            if args.models_dir:
+                sync_models(devices, args.models_dir, verbose_print, log_warning)
             verbose_print("--- Sync Complete ---")
             sys.exit(0)
         else:
@@ -220,6 +312,7 @@ def main():
     verbose_print(f"Found {len(devices)} devices in API response.")
     required_image_filenames = set(
         image_filename for device in devices for image_filename in device.get("images", [])
+        if is_image(image_filename)
     )
     stats = {"new": 0, "updated": 0, "skipped": 0, "failed": 0}
     verbose_print(f"\n--- Syncing {len(required_image_filenames)} unique assets using up to {MAX_WORKERS} threads ---")
@@ -254,7 +347,7 @@ def main():
     verbose_print("\n--- Pruning old assets ---")
     pruned_count = 0
     for filename in list(local_manifest.get('files', {}).keys()):
-        if filename not in required_image_filenames:
+        if filename not in required_image_filenames and is_plain_filename(filename):
             asset_name = os.path.splitext(filename)[0]
             if target_mode == "xcassets":
                 asset_dir = os.path.join(base_dir, f"{asset_name}.imageset")
@@ -278,6 +371,9 @@ def main():
     verbose_print("--------------------")
     if stats["failed"] > 0:
         log_warning(f"{stats['failed']} image(s) failed to sync. Check the build log for details.")
+
+    if args.models_dir:
+        sync_models(devices, args.models_dir, verbose_print, log_warning)
 
 if __name__ == "__main__":
     main()
