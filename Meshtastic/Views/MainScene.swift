@@ -126,6 +126,9 @@ struct MainScene: View {
 				router: router
 			)
 			.id(appState.databaseResetID)
+			#if os(visionOS)
+			.spatialFeaturesOrnament()
+			#endif
 			.sheet(item: $saveChannelLink) { link in
 				SaveChannelQRCode(
 					channelSetLink: link.data,
