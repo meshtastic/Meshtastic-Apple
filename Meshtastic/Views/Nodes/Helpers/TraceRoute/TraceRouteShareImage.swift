@@ -122,7 +122,8 @@ enum TraceRouteShareRenderer {
 	}
 
 	/// Dark, muted map tiles for an area without points of interest, drawn off the main thread.
-	static func snapshot(rect: MKMapRect, size: CGSize) async -> UIImage? {
+	/// `scale` defaults to the share image's; the widget passes its own render scale.
+	static func snapshot(rect: MKMapRect, size: CGSize, scale: CGFloat = TraceRouteShareRenderer.scale) async -> UIImage? {
 		let options = MKMapSnapshotter.Options()
 		options.mapRect = rect
 		options.size = size

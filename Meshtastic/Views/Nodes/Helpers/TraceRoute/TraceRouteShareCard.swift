@@ -562,8 +562,20 @@ struct TraceRouteShareMap: View {
 	let frame: TraceRouteShareModel.MapFrame
 	let image: UIImage
 	let legs: TraceRouteLegs
+	/// Minimum gap between hop badges in points. Nil keeps the layout's default share of the
+	/// map width, which suits the share card's map; a much smaller map sets this so the
+	/// fixed-size badges don't land on each other.
+	var minimumBadgeGap: CGFloat?
 
 	private var visibleRect: MKMapRect { frame.rect }
+
+	private var visibleBadges: [TraceRouteMapLayout.Badge] {
+		guard let minimumBadgeGap, frame.size.width > 0 else {
+			return frame.layout.visibleBadges(in: visibleRect)
+		}
+		let fraction = max(TraceRouteMapLayout.badgeMinSeparationFraction, Double(minimumBadgeGap / frame.size.width))
+		return frame.layout.visibleBadges(in: visibleRect, separationFraction: fraction)
+	}
 
 	var body: some View {
 		ZStack(alignment: .topLeading) {
@@ -582,7 +594,7 @@ struct TraceRouteShareMap: View {
 					.frame(width: 11, height: 11)
 					.position(frame.point(for: relay.coordinate))
 			}
-			ForEach(frame.layout.visibleBadges(in: visibleRect), id: \.id) { badge in
+			ForEach(visibleBadges, id: \.id) { badge in
 				hopBadge(number: badge.number, isBack: badge.isBack)
 					.position(frame.point(for: badge.coordinate))
 					.offset(x: 11, y: badge.isBack ? 11 : -11)
@@ -612,7 +624,7 @@ struct TraceRouteShareMap: View {
 		let obstacles: [(center: CGPoint, radius: CGFloat)] =
 			endpoints.map { (frame.point(for: $0.coordinate), 15) }
 			+ relayCoordinates.map { (frame.point(for: $0.coordinate), 6) }
-			+ frame.layout.visibleBadges(in: visibleRect).map { badge in
+			+ visibleBadges.map { badge in
 				let point = frame.point(for: badge.coordinate)
 				return (CGPoint(x: point.x + 11, y: point.y + (badge.isBack ? 11 : -11)), 8)
 			}

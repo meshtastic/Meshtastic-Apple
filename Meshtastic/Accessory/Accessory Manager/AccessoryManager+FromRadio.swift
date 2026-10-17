@@ -814,6 +814,7 @@ extension AccessoryManager {
 			do {
 				try context.save()
 				Logger.data.info("💾 Saved Trace Route")
+				WidgetTraceRouteRenderer.shared.refresh()
 			} catch {
 				let nsError = error as NSError
 				Logger.data.error("Error Updating Core Data TraceRouteHop: \(nsError, privacy: .public)")

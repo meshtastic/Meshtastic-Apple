@@ -88,9 +88,10 @@ struct TraceRouteMapLayout {
 	}
 
 	/// Badges that don't crowd each other in `rect`. Forward and return badges sit on opposite
-	/// sides of a node, so each direction is thinned on its own.
-	func visibleBadges(in rect: MKMapRect) -> [Badge] {
-		let minDistance = rect.width * Self.badgeMinSeparationFraction
+	/// sides of a node, so each direction is thinned on its own. `separationFraction` replaces
+	/// the default share of the visible width, for maps drawn much smaller than the share card's.
+	func visibleBadges(in rect: MKMapRect, separationFraction: Double = badgeMinSeparationFraction) -> [Badge] {
+		let minDistance = rect.width * separationFraction
 		let forward = Self.thinned(badges.filter { !$0.isBack }, coordinate: \.coordinate, minDistance: minDistance)
 		let back = Self.thinned(badges.filter { $0.isBack }, coordinate: \.coordinate, minDistance: minDistance)
 		return forward + back

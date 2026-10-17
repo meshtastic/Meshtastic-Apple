@@ -192,6 +192,8 @@ final class WidgetDataBroker {
 		WidgetSnapshotStore.save(snapshot)
 		// The map renderer throttles itself; it only redraws when pins moved.
 		WidgetMapRenderer.shared.refresh(nodes: nodes, radioNum: radioNum)
+		// Catches up after launch or install; the save hook covers new routes.
+		WidgetTraceRouteRenderer.shared.refresh()
 
 		let connectionKey = "\(connectionState.rawValue)|\(radioNum ?? -1)"
 		let connectionChanged = connectionKey != lastWrittenConnectionKey
