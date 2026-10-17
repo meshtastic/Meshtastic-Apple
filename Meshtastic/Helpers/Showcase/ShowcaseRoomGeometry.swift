@@ -9,9 +9,12 @@ import simd
 
 /// The named empty prims in Showcase.usda that code places things at. The raw value is the prim name.
 enum ShowcaseAnchor: String, CaseIterable, Sendable {
-	case tableFront = "Anchor_TableFront"
-	case tableMiddle = "Anchor_TableMiddle"
-	case tableBack = "Anchor_TableBack"
+	/// The display tables, numbered from the viewer: table1 is nearest, table5 is against the back wall.
+	case table1 = "Anchor_Table1"
+	case table2 = "Anchor_Table2"
+	case table3 = "Anchor_Table3"
+	case table4 = "Anchor_Table4"
+	case table5 = "Anchor_Table5"
 	case wallRack = "Anchor_WallRack"
 }
 
@@ -42,13 +45,14 @@ enum ShowcaseRoomGeometry {
 	static let backWallZ: Float = -2.6
 	/// The display tables' usable length, inside their legs.
 	static let tableLength: Float = 1.8
-	/// The front table's riser: its height and how far back of the table's middle it runs.
-	static let riserHeight: Float = 0.05
-	static let riserOffset: Float = -0.2
-	/// The tables' depths, front to back.
-	static let frontTableDepth: Float = 0.8
-	static let middleTableDepth: Float = 0.5
-	static let backTableDepth: Float = 0.35
+	/// Every display table, front to back. Each is the same depth, and each top is 7 cm above
+	/// the one in front, from 0.82 m to 1.1 m.
+	static let tables: [ShowcaseAnchor] = [.table1, .table2, .table3, .table4, .table5]
+	static let tableDepth: Float = 0.35
+	static let tableStep: Float = 0.07
+	static let frontTableTop: Float = 0.82
+	/// The back table's back edge, just in front of the rack frame.
+	static let tablesBackEdgeZ: Float = -2.56
 	/// The wall rack, hung above the back table: wide and short, so it clears the devices below.
 	static let rackSize = SIMD2<Float>(2.8, 1.065)
 	/// Eye height for someone sitting in the chair at the origin.
@@ -56,10 +60,12 @@ enum ShowcaseRoomGeometry {
 
 	static func defaultPose(_ anchor: ShowcaseAnchor) -> ShowcaseAnchorPose {
 		switch anchor {
-		case .tableFront: ShowcaseAnchorPose(SIMD3(0, 0.82, -1.3))
-		case .tableMiddle: ShowcaseAnchorPose(SIMD3(0, 0.95, -1.955))
-		case .tableBack: ShowcaseAnchorPose(SIMD3(0, 1.1, -2.385))
-		case .wallRack: ShowcaseAnchorPose(SIMD3(0, 2.0825, -2.555))
+		case .table1, .table2, .table3, .table4, .table5:
+			let index = tables.firstIndex(of: anchor) ?? 0
+			let fromBack = Float(tables.count - 1 - index)
+			return ShowcaseAnchorPose(SIMD3(0, frontTableTop + tableStep * Float(index), tablesBackEdgeZ + tableDepth / 2 + tableDepth * fromBack))
+		case .wallRack:
+			return ShowcaseAnchorPose(SIMD3(0, 2.0825, -2.555))
 		}
 	}
 

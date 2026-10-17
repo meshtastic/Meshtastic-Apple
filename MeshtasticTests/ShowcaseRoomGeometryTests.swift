@@ -24,10 +24,10 @@ struct ShowcaseRoomGeometryTests {
 	@Test("A found anchor wins over the default; others still fall back; unknown names are ignored")
 	func partial() {
 		let moved = ShowcaseAnchorPose(SIMD3<Float>(1, 2, 3))
-		let resolved = ShowcaseRoomGeometry.resolve(found: [ShowcaseAnchor.tableBack.rawValue: moved, "Anchor_Nope": moved])
-		#expect(resolved.poses[.tableBack] == moved)
-		#expect(resolved.poses[.tableFront] == ShowcaseRoomGeometry.defaultPose(.tableFront))
-		#expect(!resolved.missing.contains(.tableBack))
+		let resolved = ShowcaseRoomGeometry.resolve(found: [ShowcaseAnchor.table5.rawValue: moved, "Anchor_Nope": moved])
+		#expect(resolved.poses[.table5] == moved)
+		#expect(resolved.poses[.table1] == ShowcaseRoomGeometry.defaultPose(.table1))
+		#expect(!resolved.missing.contains(.table5))
 		#expect(resolved.missing.count == ShowcaseAnchor.allCases.count - 1)
 		#expect(resolved.poses.count == ShowcaseAnchor.allCases.count)
 	}
@@ -36,7 +36,7 @@ struct ShowcaseRoomGeometryTests {
 	func facing() {
 		let rack = ShowcaseRoomGeometry.defaultPose(.wallRack).forward
 		#expect(abs(rack.z - 1) < 1e-4)
-		#expect(abs(ShowcaseRoomGeometry.defaultPose(.tableFront).forward.z - 1) < 1e-4)
+		#expect(abs(ShowcaseRoomGeometry.defaultPose(.table1).forward.z - 1) < 1e-4)
 	}
 
 	/// Showcase.usda is the source of truth; the defaults must match it so a missing anchor lands
