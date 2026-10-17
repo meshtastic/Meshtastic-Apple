@@ -13,7 +13,7 @@ import MeshtasticProtobufs
 /// does. Pass nil for a node whose firmware the app does not know.
 private func testEnvironment(firmware version: String?) -> ConfigFormEnvironment {
 	ConfigFormEnvironment(
-		node: nil, isConnected: version != nil, isConnectedNode: version != nil, isDIYHardware: false,
+		node: nil, isConnected: version != nil, isConnectedNode: version != nil, hasFixedGPS: false,
 		hasWifi: false, hasEthernet: false, hasXeddsa: false,
 		firmwareAtLeast: { required in
 			guard let version else { return true }
@@ -31,7 +31,7 @@ private func environment(hwModel: Int32) -> ConfigFormEnvironment {
 	user.hwModelId = hwModel
 	node.user = user
 	return ConfigFormEnvironment(
-		node: node, isConnected: true, isConnectedNode: true, isDIYHardware: false,
+		node: node, isConnected: true, isConnectedNode: true, hasFixedGPS: false,
 		hasWifi: false, hasEthernet: false, hasXeddsa: false,
 		firmwareAtLeast: { _ in true }, isFirmwareKnown: true)
 }
@@ -172,7 +172,7 @@ struct ConfigFormOverlayTests {
 	func conditionsEvaluate() throws {
 		typealias F = ModuleConfig.NeighborInfoConfig.Fields
 		var message = ModuleConfig.NeighborInfoConfig()
-		let env = ConfigFormEnvironment(node: nil, isConnected: true, isConnectedNode: true, isDIYHardware: false,
+		let env = ConfigFormEnvironment(node: nil, isConnected: true, isConnectedNode: true, hasFixedGPS: false,
 										hasWifi: false, hasEthernet: false, hasXeddsa: false, firmwareAtLeast: { _ in true },
 			isFirmwareKnown: false)
 		let enabled = ConfigFormCondition<ModuleConfig.NeighborInfoConfig>.isTrue(F.enabled)
@@ -428,7 +428,7 @@ struct ConfigFormOverlayTests {
 		let overlay = NeighborInfoConfig.overlay()
 		let interval = ModuleConfig.NeighborInfoConfig.Fields.updateInterval.identity
 		let env = ConfigFormEnvironment(
-			node: nil, isConnected: true, isConnectedNode: true, isDIYHardware: false,
+			node: nil, isConnected: true, isConnectedNode: true, hasFixedGPS: false,
 			hasWifi: false, hasEthernet: false, hasXeddsa: false, firmwareAtLeast: { _ in true },
 			isFirmwareKnown: false)
 
@@ -451,7 +451,7 @@ struct ConfigFormOverlayTests {
 		let overlay = MQTTConfig.overlay()
 		let password = ModuleConfig.MQTTConfig.Fields.password.identity
 		let env = ConfigFormEnvironment(
-			node: nil, isConnected: true, isConnectedNode: true, isDIYHardware: false,
+			node: nil, isConnected: true, isConnectedNode: true, hasFixedGPS: false,
 			hasWifi: false, hasEthernet: false, hasXeddsa: false, firmwareAtLeast: { _ in true },
 			isFirmwareKnown: false)
 
@@ -632,7 +632,7 @@ struct ConfigFormFirmwareWindowTests {
 		// A node the app has never heard metadata from, and the same node once it has.
 		// Guessing wrong here takes a setting away from somebody who came to change it.
 		let unknown = ConfigFormEnvironment(
-			node: nil, isConnected: true, isConnectedNode: true, isDIYHardware: false,
+			node: nil, isConnected: true, isConnectedNode: true, hasFixedGPS: false,
 			hasWifi: false, hasEthernet: false, hasXeddsa: false,
 			firmwareAtLeast: { _ in false }, isFirmwareKnown: false)
 		let clock = Config.DisplayConfig.Fields.use12HClock.metadata

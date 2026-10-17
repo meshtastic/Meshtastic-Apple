@@ -6,6 +6,7 @@
 //
 import Testing
 @testable import Meshtastic
+import MeshtasticProtobufs
 
 @Suite("Settings search ranking and matching")
 struct SettingsSearchEngineTests {
@@ -23,7 +24,7 @@ struct SettingsSearchEngineTests {
 	}
 
 	private let connected = SettingsSearchEngine.Availability(
-		isConnected: true, isDIYHardware: false, isManaged: false)
+		isConnected: true, hasFixedGPS: false, isManaged: false)
 
 	@Test("A match in the label outranks a keyword or description hit")
 	func fieldWeighting() throws {
@@ -164,23 +165,19 @@ struct DocumentationSearchTests {
 	}
 }
 
-@Suite("DIY hardware lookup")
-struct DIYHardwareTests {
+@Suite("Fixed GPS hardware lookup")
+struct FixedGPSHardwareTests {
 
-	@Test("A missing catalogue never hides anything")
-	func unknownCatalogueIsNotNotDIY() throws {
-		// "We do not know" and "not DIY" must not give the same answer: the engine hides
-		// DIY-only settings when this is false, so unknown has to read as true.
-		#expect(DIYHardware.isDIY(slug: "HELTEC_V3", in: nil))
-		#expect(DIYHardware.isDIY(slug: nil, in: nil))
+	@Test("Boards flagged oem_fixed_gps have fixed GPS")
+	func flaggedBoards() {
+		#expect(FixedGPSHardware.hasFixedGPS(hwModelId: Int32(HardwareModel.tbeam.rawValue)))
+		#expect(FixedGPSHardware.hasFixedGPS(hwModelId: Int32(HardwareModel.trackerT1000E.rawValue)))
 	}
 
-	@Test("A known catalogue answers by tag, and an absent slug is not DIY")
-	func knownCatalogue() throws {
-		let catalogue: Set<String> = ["DIY_V1", "RAK4631"]
-		#expect(DIYHardware.isDIY(slug: "diy_v1", in: catalogue), "lookup is case-insensitive")
-		#expect(!DIYHardware.isDIY(slug: "HELTEC_V3", in: catalogue))
-		#expect(!DIYHardware.isDIY(slug: nil, in: catalogue))
-		#expect(!DIYHardware.isDIY(slug: "", in: catalogue))
+	@Test("Other, unknown and missing boards keep the GPS pin settings")
+	func otherBoards() {
+		#expect(!FixedGPSHardware.hasFixedGPS(hwModelId: Int32(HardwareModel.heltecV3.rawValue)))
+		#expect(!FixedGPSHardware.hasFixedGPS(hwModelId: 9_999))
+		#expect(!FixedGPSHardware.hasFixedGPS(hwModelId: nil))
 	}
 }

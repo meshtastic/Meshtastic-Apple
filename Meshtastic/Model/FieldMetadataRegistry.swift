@@ -14,6 +14,7 @@ public struct FieldMetadata {
     public var keywords: String? = nil
     public var sinceFirmware: String? = nil
     public var deprecatedSince: String? = nil
+    public var oemFixedGps: Bool? = nil
 }
 
 extension Config.BluetoothConfig.PairingMode {
@@ -84,6 +85,11 @@ extension Config.PositionConfig.PositionFlags {
 extension Config.SecurityConfig.PacketSignaturePolicy {
     /// Metadata for this value, or nil if it carries none.
     public var metadata: FieldMetadata? { FieldMetadataRegistry.get("meshtastic.Config.SecurityConfig.PacketSignaturePolicy", tag: rawValue) }
+}
+
+extension HardwareModel {
+    /// Metadata for this value, or nil if it carries none.
+    public var metadata: FieldMetadata? { FieldMetadataRegistry.get("meshtastic.HardwareModel", tag: rawValue) }
 }
 
 extension MemberRole {
@@ -335,6 +341,24 @@ public enum FieldMetadataRegistry {
         "meshtastic.DeviceState#9": FieldMetadata(deprecated: true),
         "meshtastic.DeviceState#11": FieldMetadata(deprecated: true),
         "meshtastic.EnvironmentMetrics#23": FieldMetadata(deprecated: true),
+        "meshtastic.HardwareModel#4": FieldMetadata(oemFixedGps: true),
+        "meshtastic.HardwareModel#7": FieldMetadata(oemFixedGps: true),
+        "meshtastic.HardwareModel#12": FieldMetadata(oemFixedGps: true),
+        "meshtastic.HardwareModel#21": FieldMetadata(oemFixedGps: true),
+        "meshtastic.HardwareModel#29": FieldMetadata(oemFixedGps: true),
+        "meshtastic.HardwareModel#33": FieldMetadata(oemFixedGps: true),
+        "meshtastic.HardwareModel#48": FieldMetadata(oemFixedGps: true),
+        "meshtastic.HardwareModel#71": FieldMetadata(oemFixedGps: true),
+        "meshtastic.HardwareModel#89": FieldMetadata(oemFixedGps: true),
+        "meshtastic.HardwareModel#99": FieldMetadata(oemFixedGps: true),
+        "meshtastic.HardwareModel#100": FieldMetadata(oemFixedGps: true),
+        "meshtastic.HardwareModel#102": FieldMetadata(oemFixedGps: true),
+        "meshtastic.HardwareModel#103": FieldMetadata(oemFixedGps: true),
+        "meshtastic.HardwareModel#105": FieldMetadata(oemFixedGps: true),
+        "meshtastic.HardwareModel#113": FieldMetadata(oemFixedGps: true),
+        "meshtastic.HardwareModel#122": FieldMetadata(oemFixedGps: true),
+        "meshtastic.HardwareModel#124": FieldMetadata(oemFixedGps: true),
+        "meshtastic.HardwareModel#128": FieldMetadata(oemFixedGps: true),
         "meshtastic.MemberRole#0": FieldMetadata(label: String(localized: "meshtastic.MemberRole.Unspecifed.label", defaultValue: "Default (Team Member)", comment: "label of meshtastic.MemberRole.Unspecifed")),
         "meshtastic.MemberRole#1": FieldMetadata(label: String(localized: "meshtastic.MemberRole.TeamMember.label", defaultValue: "Team Member", comment: "label of meshtastic.MemberRole.TeamMember")),
         "meshtastic.MemberRole#2": FieldMetadata(label: String(localized: "meshtastic.MemberRole.TeamLead.label", defaultValue: "Team Lead", comment: "label of meshtastic.MemberRole.TeamLead")),
