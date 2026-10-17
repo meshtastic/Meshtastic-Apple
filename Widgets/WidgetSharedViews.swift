@@ -25,22 +25,24 @@ struct MeshLogo: View {
 	}
 }
 
-/// A node's shortname in its node color.
+/// A node's shortname fitted in a circle of its node color — the same look
+/// as the app's CircleText annotations. Never a capsule.
 struct NodeChip: View {
 	let shortName: String
 	let colorSeed: UInt32
 	let size: CGFloat
 
-	// Accented rendering is left off: tinting flattens the opaque capsule and
-	// its text to one alpha, leaving an unreadable solid pill.
+	// Accented rendering is left off: tinting flattens the opaque circle and
+	// its text to one alpha, leaving an unreadable solid disc.
 	var body: some View {
 		Text(shortName)
-			.font(.system(size: size * 0.38, weight: .bold))
-			.minimumScaleFactor(0.5)
+			.font(.system(size: size * 0.34, weight: .bold))
+			.minimumScaleFactor(0.4)
 			.lineLimit(1)
+			.padding(2)
 			.foregroundStyle(isLight ? Color.black : Color.white)
-			.frame(width: size * 1.6, height: size)
-			.background(Capsule().fill(Color(red: red, green: green, blue: blue)))
+			.frame(width: size, height: size)
+			.background(Circle().fill(Color(red: red, green: green, blue: blue)))
 	}
 
 	// Same derivation the app uses: the node number's low 24 bits as RRGGBB.

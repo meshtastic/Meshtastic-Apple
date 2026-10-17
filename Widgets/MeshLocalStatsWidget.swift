@@ -176,19 +176,19 @@ private struct MediumView: View {
 				HStack(spacing: 16) {
 					UtilizationGauge(title: "ChUtil", value: stats.channelUtilization)
 					UtilizationGauge(title: "Airtime", value: stats.airUtilTx)
-					VStack(alignment: .leading, spacing: 2) {
-						TrafficLine(label: "TX", value: stats.packetsSent)
-						TrafficLine(label: "RX", value: stats.packetsReceived)
-						TrafficLine(label: "Dupe", value: stats.packetsReceivedDupe)
+					VStack(alignment: .leading, spacing: 3) {
+						StatLine(label: "Sent", value: countText(stats.packetsSent))
+						StatLine(label: "Received", value: countText(stats.packetsReceived))
+						StatLine(label: "Duplicates", value: countText(stats.packetsReceivedDupe))
 					}
-					Spacer()
 				}
 			} else {
 				Text("No local stats yet")
 					.font(.caption)
 					.foregroundStyle(.secondary)
 			}
-			UpdatedFooter(snapshot: snapshot)
+			Spacer(minLength: 0)
+			BottomBar(snapshot: snapshot)
 		}
 	}
 }
@@ -197,50 +197,96 @@ private struct LargeView: View {
 	let snapshot: WidgetSnapshot
 
 	var body: some View {
-		VStack(alignment: .leading, spacing: 8) {
+		VStack(alignment: .leading, spacing: 10) {
 			HeaderRow(snapshot: snapshot)
 			if let stats = snapshot.localStats {
 				HStack(spacing: 20) {
 					UtilizationGauge(title: "ChUtil", value: stats.channelUtilization)
 					UtilizationGauge(title: "Airtime", value: stats.airUtilTx)
-					VStack(alignment: .leading, spacing: 2) {
-						TrafficLine(label: "TX", value: stats.packetsSent)
-						TrafficLine(label: "RX", value: stats.packetsReceived)
-						TrafficLine(label: "Bad", value: stats.packetsReceivedBad)
-						TrafficLine(label: "Dupe", value: stats.packetsReceivedDupe)
-					}
-					VStack(alignment: .leading, spacing: 2) {
-						TrafficLine(label: "Relayed", value: stats.packetsRelayed)
-						TrafficLine(label: "Canceled", value: stats.packetsRelayCanceled)
+					VStack(alignment: .leading, spacing: 4) {
+						Label("\(nodesText(snapshot)) nodes", systemImage: "dot.radiowaves.left.and.right")
+							.font(.callout.weight(.semibold))
+							.widgetAccentable()
 						if let uptime = stats.uptimeSeconds {
 							Text("Up \(uptimeText(seconds: uptime))")
-								.font(.caption2)
+								.font(.caption)
 								.foregroundStyle(.secondary)
 						}
+						Text("Stats \(stats.statsAt, style: .relative) ago")
+							.font(.caption2)
+							.foregroundStyle(.secondary)
 					}
-					Spacer()
+					Spacer(minLength: 0)
 				}
 				Divider()
-				HStack {
-					Label(nodesText(snapshot), systemImage: "dot.radiowaves.left.and.right")
-						.font(.callout.weight(.semibold))
-						.widgetAccentable()
-					Spacer()
-					Text("Stats \(stats.statsAt, style: .relative) ago")
-						.font(.caption2)
-						.foregroundStyle(.secondary)
+				// The full Android local-stats set, two labeled columns.
+				HStack(alignment: .top, spacing: 20) {
+					VStack(spacing: 7) {
+						StatLine(label: "Sent", value: countText(stats.packetsSent))
+						StatLine(label: "Received", value: countText(stats.packetsReceived))
+						StatLine(label: "Error Rate", value: errorRateText(stats))
+						StatLine(label: "Duplicates", value: countText(stats.packetsReceivedDupe))
+					}
+					VStack(spacing: 7) {
+						StatLine(label: "Relayed", value: countText(stats.packetsRelayed))
+						StatLine(label: "Relay Canceled", value: countText(stats.packetsRelayCanceled))
+						StatLine(label: "Bad Received", value: countText(stats.packetsReceivedBad))
+						StatLine(label: "Nodes Online", value: nodesText(snapshot))
+					}
 				}
 			} else {
 				Text("No local stats yet — they arrive about every 15 minutes while connected.")
 					.font(.caption)
 					.foregroundStyle(.secondary)
-				Label(nodesText(snapshot), systemImage: "dot.radiowaves.left.and.right")
+				Label("\(nodesText(snapshot)) nodes", systemImage: "dot.radiowaves.left.and.right")
 					.font(.callout.weight(.semibold))
 			}
 			Spacer(minLength: 0)
-			UpdatedFooter(snapshot: snapshot)
+			BottomBar(snapshot: snapshot)
 		}
 	}
+}
+
+/// One labeled stat: full words, grouped digits, never wrapped.
+private struct StatLine: View {
+	let label: String
+	let value: String
+
+	var body: some View {
+		HStack(spacing: 6) {
+			Text(label)
+				.foregroundStyle(.secondary)
+			Spacer(minLength: 4)
+			Text(value)
+				.fontWeight(.semibold)
+				.monospacedDigit()
+		}
+		.font(.caption)
+		.lineLimit(1)
+	}
+}
+
+/// Footer: freshness on the left, battery bottom right.
+private struct BottomBar: View {
+	let snapshot: WidgetSnapshot
+
+	var body: some View {
+		HStack {
+			UpdatedFooter(snapshot: snapshot)
+			Spacer()
+			BatteryRow(level: snapshot.radioBatteryLevel, font: .caption)
+		}
+	}
+}
+
+private func countText(_ value: Int32) -> String {
+	Int(value).formatted(.number)
+}
+
+private func errorRateText(_ stats: LocalStatsSnapshot) -> String {
+	guard stats.packetsReceived > 0 else { return "0.0%" }
+	let rate = Double(stats.packetsReceivedBad) / Double(stats.packetsReceived) * 100
+	return String(format: "%.1f%%", rate)
 }
 
 // MARK: Accessory families
@@ -336,6 +382,8 @@ private struct RectangularView: View {
 private struct HeaderRow: View {
 	let snapshot: WidgetSnapshot
 
+	// Battery lives in the bottom bar; the header keeps the room so the
+	// radio's name shows whole, scaling down before it ever truncates.
 	var body: some View {
 		HStack(spacing: 8) {
 			MeshLogo(height: 13)
@@ -343,8 +391,9 @@ private struct HeaderRow: View {
 			Text(snapshot.radioLongName ?? "Meshtastic")
 				.font(.headline)
 				.lineLimit(1)
+				.minimumScaleFactor(0.6)
+				.layoutPriority(1)
 			Spacer()
-			BatteryRow(level: snapshot.radioBatteryLevel, font: .caption)
 			ConnectionDot(state: snapshot.connectionState)
 		}
 	}
@@ -370,21 +419,6 @@ private struct UtilizationGauge: View {
 				.font(.caption2)
 				.foregroundStyle(.secondary)
 		}
-	}
-}
-
-private struct TrafficLine: View {
-	let label: String
-	let value: Int32
-
-	var body: some View {
-		HStack(spacing: 4) {
-			Text(label)
-				.foregroundStyle(.secondary)
-			Text("\(value)")
-				.fontWeight(.medium)
-		}
-		.font(.caption2)
 	}
 }
 
