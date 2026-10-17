@@ -86,4 +86,12 @@ struct ShowcaseRoomGeometryTests {
 		if let current { poses[current] = pose }
 		return poses
 	}
+
+	@Test func theRackIsFourSquaresTall() {
+		let grid = ShowcaseRackGrid.forRoom(rack: ShowcaseRoomGeometry.defaultPose(.wallRack))
+		#expect(grid.rows == 4)
+		// Its bottom clears the back table by a good margin.
+		let bottom = ShowcaseRoomGeometry.defaultPose(.wallRack).position.y - ShowcaseRoomGeometry.rackSize.y / 2
+		#expect(bottom - ShowcaseRoomGeometry.defaultPose(.table5).position.y > 0.3)
+	}
 }

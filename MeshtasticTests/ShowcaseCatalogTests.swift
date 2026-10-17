@@ -22,7 +22,7 @@ struct ShowcaseCatalogTests {
 			record("THINKNODE_M1", "thinknode_m1", "ThinkNode M1", tag: "Elecrow", images: ["thinknode_m1.svg"]),
 			record("THINKNODE_M5", "thinknode_m5", "ThinkNode M5", tag: "Elecrow", images: ["thinknode_m1.svg"]),
 			record("TRACKER_T1000_E", "tracker-t1000-e", "Seeed Card Tracker T1000-E", tag: "Seeed", images: ["tracker-t1000-e.svg"]),
-			record("TBEAM", "tbeam", "LILYGO T-Beam", tag: "LilyGo", images: ["tbeam.svg"]),
+			record("STATION_G2", "station-g2", "B&Q Station G2", tag: "B&Q", images: ["station-g2.svg"]),
 			record("WISMESH_HUB", "rak2560", "RAK WisMesh Repeater", tag: "RAK", images: ["rak2560.svg"], number: 22),
 			record("SEEED_WIO_TRACKER_L1", "seeed_wio_tracker_L1_Pro_1W", "Seeed Wio Tracker L1 Pro 1W", tag: "Seeed", images: ["wio_tracker_l1_case.svg"]),
 			record("CROWPANEL", "elecrow-adv-24-28-tft", "Crowpanel Adv 2.4/2.8 TFT", tag: "Elecrow", images: ["crowpanel_2_4.svg", "crowpanel_2_8.svg"])
@@ -31,9 +31,9 @@ struct ShowcaseCatalogTests {
 
 	@Test("A model lists every device drawn with it, front row first")
 	func items() {
-		let models: Set<String> = ["rak4631", "rak4631_case", "rak_wismesh_pocket", "thinknode_m1", "tracker-t1000-e", "tbeam", "orphan"]
+		let models: Set<String> = ["rak4631", "rak4631_case", "rak_wismesh_pocket", "thinknode_m1", "tracker-t1000-e", "station-g2", "orphan"]
 		let items = ShowcaseCatalog.items(models: models, hardware: hardware)
-		// T-Beam is another maker's and "orphan" has no device, so both are left out.
+		// The Station G2 is a maker the showcase doesn't show and "orphan" has no device, so both are left out.
 		#expect(items.map(\.id) == ["rak4631", "rak4631_case", "rak_wismesh_pocket", "tracker-t1000-e", "thinknode_m1"])
 		// The board's case is the board's own variant, so the board is listed under it.
 		#expect(items.first { $0.id == "rak4631_case" }?.title == "RAK WisBlock 4631 (case)")
@@ -93,6 +93,12 @@ struct ShowcaseCatalogTests {
 		#expect(ShowcaseVendor.muzi.displayOrder == ShowcaseVendor.rak.displayOrder + 1)
 		#expect(ShowcaseVendor.muzi.name == "muzi works")
 		#expect(ShowcaseVendor.rak.name == "RAKwireless")
+		#expect(ShowcaseVendor.from(tags: ["Heltec"], modelName: "heltec_v4") == .heltec)
+		#expect(ShowcaseVendor.from(tags: [], modelName: "heltec-wsl-v3") == .heltec)
+		#expect(ShowcaseVendor.from(tags: ["LilyGo"], modelName: "t-deck") == .lilygo)
+		#expect(ShowcaseVendor.from(tags: [], modelName: "tbeam-s3-core") == .lilygo)
+		#expect(ShowcaseVendor.from(tags: [], modelName: "tracker-t1000-e") == .seeed)
+		#expect(ShowcaseVendor.from(tags: [], modelName: "thinknode_m1") == .elecrow)
 	}
 
 	@Test("The bundled catalog decodes")
