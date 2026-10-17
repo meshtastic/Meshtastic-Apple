@@ -30,6 +30,7 @@ struct ShowcaseSpace: View {
 	@Query(sort: [SortDescriptor(\DeviceLinkEntity.shortCode)]) private var deviceLinks: [DeviceLinkEntity]
 
 	static let refreshInterval: Duration = .seconds(5)
+	static let showsCardOnGrab = false
 
 	private var preset: ModemPresets { ModemPresets(rawValue: UserDefaults.modemPreset) ?? .longFast }
 
@@ -48,11 +49,13 @@ struct ShowcaseSpace: View {
 			scene.updateSubscription = content.subscribe(to: SceneEvents.Update.self) { event in
 				scene.step(deltaTime: event.deltaTime)
 			}
-			// Picking a model up with the system grab opens its card. A tap can't: the grab
-			// takes the pinch first.
-			scene.grabSubscription = content.subscribe(to: ManipulationEvents.WillBegin.self) { event in
-				if let item = scene.displays.item(tappedOn: event.entity) {
-					scene.selectedItem = item
+			// Picking a model up with the system grab opens its card (a tap can't: the grab takes
+			// the pinch first). Off for now; the placard in front of each model names it.
+			if Self.showsCardOnGrab {
+				scene.grabSubscription = content.subscribe(to: ManipulationEvents.WillBegin.self) { event in
+					if let item = scene.displays.item(tappedOn: event.entity) {
+						scene.selectedItem = item
+					}
 				}
 			}
 			Task { await scene.loadDisplaysIfReady() }

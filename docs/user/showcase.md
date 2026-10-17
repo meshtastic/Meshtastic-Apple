@@ -13,7 +13,6 @@ On Apple Vision Pro, the Hardware Showcase is a room you step into to see Meshta
 Real-size 3D models of the radios we have models for stand on clear stands along five tables that step up toward the back wall, one maker after another: RAKwireless and muzi works on the front table, then Seeed Studio, Elecrow, Heltec and LILYGO. Each maker's run of radios starts with a dark card with its name. A small card in front of each model gives the maker and the device's name.
 
 - **Pick one up**: pinch and hold a model's body to lift it. It's real size. Turn your hand to turn it over, or use both hands to rotate it. Let go and it goes back on its stand. Antennas don't catch the pinch, so you can reach past a tall one to the model behind it.
-- **Its card**: picking a model up opens a card above its place on the table, naming the device and its maker and listing where to buy one. It stays open until you close it or pick up another model.
 
 The models are built from each device's published measurements. Backs, sides and ports are modeled where the maker publishes enough to go on.
 
