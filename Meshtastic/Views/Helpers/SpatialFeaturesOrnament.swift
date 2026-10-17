@@ -14,8 +14,9 @@ struct SpatialFeaturesOrnament: View {
 	@Environment(\.supportsMultipleWindows) private var supportsMultipleWindows
 
 	var body: some View {
-		VStack(spacing: 8) {
-			if supportsMultipleWindows {
+		// Nothing to open without more windows, so no empty glass either.
+		if supportsMultipleWindows {
+			VStack(spacing: 8) {
 				Button {
 					openWindow(id: SpatialMapScene.id, value: SpatialMapSceneKey.shared)
 				} label: {
@@ -24,12 +25,12 @@ struct SpatialFeaturesOrnament: View {
 				.help(String(localized: "Open 3D map", comment: "VoiceOver label for the button that opens the spatial map volume"))
 				.accessibilityLabel(String(localized: "Open 3D map", comment: "VoiceOver label for the button that opens the spatial map volume"))
 			}
+			.buttonStyle(.borderless)
+			.buttonBorderShape(.circle)
+			.font(.title3)
+			.padding(10)
+			.glassBackgroundEffect(in: Capsule())
 		}
-		.buttonStyle(.borderless)
-		.buttonBorderShape(.circle)
-		.font(.title3)
-		.padding(10)
-		.glassBackgroundEffect(in: Capsule())
 	}
 }
 
