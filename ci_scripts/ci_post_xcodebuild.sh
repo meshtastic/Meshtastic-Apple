@@ -12,66 +12,12 @@ if [ -z "$CI_ARCHIVE_PATH" ]; then
 	exit 0
 fi
 
-# TestFlight "What to Test": generated from the PR titles merged recently, so every
-# TestFlight build carries notes without anyone writing them. Xcode Cloud picks up
+# TestFlight "What to Test": the opening of each pull request's Summary since the last
+# release, so testers read what changed rather than a list of titles. Xcode Cloud picks up
 # TestFlight/WhatToTest.<locale>.txt from the repository root during an archive action.
-# Best effort — never fail the build over release notes.
-TESTFLIGHT_DIR="$CI_PRIMARY_REPOSITORY_PATH/TestFlight"
-mkdir -p "$TESTFLIGHT_DIR"
-# Xcode Cloud clones are shallow; deepen and fetch tags so the merge history and
-# the previous release tag are both visible.
-git -C "$CI_PRIMARY_REPOSITORY_PATH" fetch --deepen 50 --quiet 2>/dev/null || true
-git -C "$CI_PRIMARY_REPOSITORY_PATH" fetch --tags --quiet 2>/dev/null || true
-
-# Bound the notes at the previous release tag, so a build lists what is new in it
-# rather than a fixed count of merges that runs back through earlier releases.
-LAST_TAG=$(git -C "$CI_PRIMARY_REPOSITORY_PATH" describe --tags --abbrev=0 --match 'v[0-9]*' 2>/dev/null)
-# If this commit is itself tagged, the release has already been cut — measure from
-# the tag before it, or the range would be empty.
-if [ -n "$LAST_TAG" ] && \
-	[ "$(git -C "$CI_PRIMARY_REPOSITORY_PATH" rev-list -n1 "$LAST_TAG" 2>/dev/null)" = "$(git -C "$CI_PRIMARY_REPOSITORY_PATH" rev-parse HEAD 2>/dev/null)" ]; then
-	LAST_TAG=$(git -C "$CI_PRIMARY_REPOSITORY_PATH" describe --tags --abbrev=0 --match 'v[0-9]*' "$LAST_TAG^" 2>/dev/null)
-fi
-if [ -n "$LAST_TAG" ]; then
-	RANGE="$LAST_TAG..HEAD"
-	echo "WhatToTest range: $RANGE"
-else
-	RANGE=""
-	echo "WhatToTest: no release tag found, falling back to the last 10 merges."
-fi
-
-# A pull request lands one of two ways and the title sits in a different place in
-# each. A merge commit carries it in the body; a squash carries it in the subject
-# with "(#1234)" appended. Reading only merges, as this did, silently dropped every
-# squashed pull request - which is most of them - so builds described older work.
-# One pass over both, newest first, trailers and the version bump dropped.
-NOTES=$(git -C "$CI_PRIMARY_REPOSITORY_PATH" log ${RANGE:---max-count=40} \
-	--pretty=format:'%x1e%p%x1f%s%x1f%b' 2>/dev/null \
-	| awk -v RS='\036' -F'\037' '
-		NF < 3 { next }
-		{
-			parents = $1; subject = $2; body = $3; line = ""
-			if (parents ~ / /) {
-				n = split(body, b, "\n")
-				for (i = 1; i <= n; i++) if (b[i] != "") { line = b[i]; break }
-			} else if (subject ~ /\(#[0-9]+\)[ \t]*$/) {
-				line = subject
-				sub(/[ \t]*\(#[0-9]+\)[ \t]*$/, "", line)
-			}
-			if (line != "" && line !~ /^Co-authored/ && line !~ /^Signed-off/) print "• " line
-		}' \
-	| grep -v -i '^• Bump version' \
-	| awk '!seen[$0]++' | head -12)
-if [ -z "$NOTES" ]; then
-	NOTES=$(git -C "$CI_PRIMARY_REPOSITORY_PATH" log ${RANGE:--10} --no-merges --pretty=format:"• %s" 2>/dev/null \
-		| grep -v -i '^• Bump version' | head -12)
-fi
-if [ -n "$NOTES" ]; then
-	printf "Recent changes in this build:\n\n%s\n" "$NOTES" > "$TESTFLIGHT_DIR/WhatToTest.en-US.txt"
-	echo "WhatToTest generated with $(printf '%s\n' "$NOTES" | wc -l | tr -d ' ') entries."
-else
-	echo "No commit history available — skipping WhatToTest generation."
-fi
+# Best effort; it never fails the build.
+bash "$CI_PRIMARY_REPOSITORY_PATH/ci_scripts/what_to_test.sh" \
+	"$CI_PRIMARY_REPOSITORY_PATH" "$CI_PRIMARY_REPOSITORY_PATH/TestFlight/WhatToTest.en-US.txt" || true
 
 DSYM_DIR="$CI_ARCHIVE_PATH/dSYMs"
 
