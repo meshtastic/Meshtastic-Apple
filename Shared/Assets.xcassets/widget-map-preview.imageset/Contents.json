@@ -1,18 +1,9 @@
 {
   "images" : [
     {
-      "filename" : "widget-map-preview-light.png",
-      "idiom" : "universal"
-    },
-    {
-      "appearances" : [
-        {
-          "appearance" : "luminosity",
-          "value" : "dark"
-        }
-      ],
-      "filename" : "widget-map-preview-dark.png",
-      "idiom" : "universal"
+      "filename" : "widget-map-preview.png",
+      "idiom" : "universal",
+      "scale" : "3x"
     }
   ],
   "info" : {

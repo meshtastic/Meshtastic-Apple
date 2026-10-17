@@ -4,31 +4,68 @@
 //
 //  Copyright(c) Garth Vander Houwen 10/16/26.
 //
-//  A map of the mesh: node chips on a pre-rendered map image. The app renders
-//  the images (square for small/large, wide for medium, light and dark) with
-//  MKMapSnapshotter and writes them to the app group — this process only
-//  loads a PNG, so it stays inside the widget memory cap and never touches
-//  the network.
+//  A map of the mesh in the trace route share image's look: node circles on
+//  dark tiles, the radio's name, and how many nodes are on the map, how many
+//  are online and how far the farthest one is. The app renders the map image
+//  only when a pin moves; the counts cover the drawn nodes, read from the
+//  live snapshot where it still lists them.
 //
 
 import SwiftUI
 import WidgetKit
 
+private typealias Style = ShareCardStyle
+
 // MARK: - Timeline
+
+/// What the widget says about the nodes on the map.
+struct NodeMapSummary {
+	let title: String
+	let onMap: Int
+	let online: Int
+	let favorites: Int
+	/// Meters from the radio to the farthest node on the map, when the radio
+	/// has a position.
+	let farthest: Double?
+	let updatedAt: Date?
+	let connectionState: WidgetConnectionState
+
+	init(meta: WidgetMapMeta, snapshot: WidgetSnapshot?) {
+		let stats = WidgetMapStats(meta: meta, snapshot: snapshot)
+		title = snapshot?.radioLongName ?? String(localized: "Meshtastic")
+		onMap = stats.onMap
+		online = stats.online
+		favorites = stats.favorites
+		farthest = stats.farthest
+		updatedAt = snapshot?.generatedAt ?? meta.generatedAt
+		connectionState = snapshot?.connectionState ?? .disconnected
+	}
+
+	private init(title: String, onMap: Int, online: Int, favorites: Int, farthest: Double?) {
+		self.title = title
+		self.onMap = onMap
+		self.online = online
+		self.favorites = favorites
+		self.farthest = farthest
+		self.updatedAt = Date(timeIntervalSinceNow: -120)
+		self.connectionState = .connected
+	}
+
+	/// Gallery content to go with the bundled sample map.
+	static let preview = NodeMapSummary(title: "Capitol Hill Relay", onMap: 24, online: 19, favorites: 5, farthest: 21_400)
+}
 
 struct MeshNodeMapEntry: TimelineEntry {
 	let date: Date
 	let meta: WidgetMapMeta?
-	/// When the mesh data was last written — the image may be much older for
-	/// a mesh whose nodes simply have not moved, and that is not staleness.
-	let dataGeneratedAt: Date?
-	/// Gallery and placeholder contexts show a bundled sample render, since
-	/// the preview process may have no access to the rendered images.
+	let summary: NodeMapSummary?
 	let isPreview: Bool
 
+	/// The mesh data, not the image, decides staleness: a mesh where nothing
+	/// moved has an old image and current data.
 	var isStale: Bool {
-		guard let reference = dataGeneratedAt ?? meta?.generatedAt else { return false }
-		return date.timeIntervalSince(reference) >= 2 * 3600
+		guard let updatedAt = summary?.updatedAt else { return false }
+		return date.timeIntervalSince(updatedAt) >= 2 * 3600
 	}
 }
 
@@ -44,29 +81,26 @@ struct MeshNodeMapProvider: TimelineProvider {
 	func getTimeline(in context: Context, completion: @escaping (Timeline<MeshNodeMapEntry>) -> Void) {
 		let first = entry(at: .now, isPreview: false)
 		let now = Date()
-		// The stale flip belongs two hours after the data was generated, not
-		// two hours after this reload.
+		// The stale flip belongs two hours after the data was written, not two
+		// hours after this reload.
 		var secondDate = now.addingTimeInterval(2 * 3600)
-		if let reference = first.dataGeneratedAt ?? first.meta?.generatedAt {
-			let staleDate = reference.addingTimeInterval(2 * 3600)
+		if let updatedAt = first.summary?.updatedAt {
+			let staleDate = updatedAt.addingTimeInterval(2 * 3600)
 			if staleDate > now {
 				secondDate = staleDate
 			}
 		}
 		let entries = [
 			first,
-			MeshNodeMapEntry(date: secondDate, meta: first.meta, dataGeneratedAt: first.dataGeneratedAt, isPreview: false)
+			MeshNodeMapEntry(date: secondDate, meta: first.meta, summary: first.summary, isPreview: false)
 		]
 		completion(Timeline(entries: entries, policy: .atEnd))
 	}
 
 	private func entry(at date: Date, isPreview: Bool) -> MeshNodeMapEntry {
-		MeshNodeMapEntry(
-			date: date,
-			meta: WidgetMapStore.loadMeta(),
-			dataGeneratedAt: WidgetSnapshotStore.load()?.generatedAt,
-			isPreview: isPreview
-		)
+		let meta = WidgetMapStore.loadMeta()
+		let summary = meta.map { NodeMapSummary(meta: $0, snapshot: WidgetSnapshotStore.load()) }
+		return MeshNodeMapEntry(date: date, meta: meta, summary: summary, isPreview: isPreview)
 	}
 }
 
@@ -76,7 +110,8 @@ struct MeshNodeMapWidget: Widget {
 	var body: some WidgetConfiguration {
 		StaticConfiguration(kind: "MeshNodeMap", provider: MeshNodeMapProvider()) { entry in
 			MeshNodeMapWidgetView(entry: entry)
-				.containerBackground(Color(UIColor.systemBackground), for: .widget)
+				.containerBackground(for: .widget) { Style.background }
+				.environment(\.colorScheme, .dark)
 				.widgetURL(URL(string: "meshtastic:///map"))
 		}
 		.configurationDisplayName("Node Map")
@@ -90,107 +125,208 @@ struct MeshNodeMapWidget: Widget {
 
 struct MeshNodeMapWidgetView: View {
 	@Environment(\.widgetFamily) private var family
-	@Environment(\.colorScheme) private var colorScheme
 	let entry: MeshNodeMapEntry
 
 	var body: some View {
-		if let meta = entry.meta, let image = mapImage {
-			ZStack(alignment: .bottomLeading) {
-				// Color.clear contains the scaled image to the widget's own
-				// bounds — scaledToFill alone can blow up the layout in the
-				// gallery's preview pass.
-				Color.clear
-					.overlay(fullColorImage(image).opacity(entry.isStale ? 0.55 : 1))
-				// The footer is the age cue, so the stale dim spares it.
-				MapFooter(meta: meta, dataGeneratedAt: entry.dataGeneratedAt, compact: family == .systemSmall)
-					.padding(6)
-			}
-			.clipped()
-		} else if entry.isPreview, let sample = UIImage(named: "widget-map-preview") {
-			// Any preview that cannot load a real image — no group access, no
-			// render yet, a family's file missing — shows the bundled sample,
-			// like the other widgets' canned preview data.
-			Color.clear
-				.overlay(fullColorImage(sample))
-				.clipped()
+		if let summary = entry.summary, let map = mapImage {
+			content(summary: summary, map: map)
+		} else if entry.isPreview, let sample = UIImage(named: family == .systemLarge ? "widget-map-preview-wide" : "widget-map-preview") {
+			// Any preview that can't load a real image shows the bundled sample.
+			content(summary: .preview, map: sample)
 		} else if entry.meta?.nodeCount == 0 {
-			PlaceholderView(
-				icon: "mappin.slash",
-				text: "No node positions yet"
-			)
+			placeholder(icon: "mappin.slash", text: "No node positions yet")
 		} else {
-			PlaceholderView(
-				icon: "map",
-				text: "Open Meshtastic to render the map"
-			)
+			placeholder(icon: "map", text: "Open Meshtastic to render the map")
 		}
 	}
 
-	/// Keep the map full color on tinted home screens — a desaturated map
-	/// with flattened chips tells the user nothing.
 	@ViewBuilder
-	private func fullColorImage(_ image: UIImage) -> some View {
-		let base = Image(uiImage: image).resizable()
-		if #available(iOS 18.0, *) {
-			base.widgetAccentedRenderingMode(.fullColor)
-				.scaledToFill()
-		} else {
-			base.scaledToFill()
+	private func content(summary: NodeMapSummary, map: UIImage) -> some View {
+		// Data over two hours old dims the map; the age line says how old.
+		let mapView = ShareMapImage(image: map).opacity(entry.isStale ? 0.55 : 1)
+		switch family {
+		case .systemLarge:
+			MapLargeView(summary: summary, map: mapView)
+		case .systemMedium:
+			MapMediumView(summary: summary, map: mapView)
+		default:
+			MapSmallView(summary: summary, map: mapView)
 		}
 	}
 
-	/// The widget process decodes a single pre-rendered PNG and nothing else.
-	/// Medium has its own wide render; cropping the square cut off pins.
+	/// The rendered map. The square one serves small and medium, the wide one
+	/// large.
 	private var mapImage: UIImage? {
-		WidgetMapStore.loadImageData(dark: colorScheme == .dark, wide: family == .systemMedium)
-			.flatMap(UIImage.init(data:))
+		WidgetMapStore.loadImageData(wide: family == .systemLarge).flatMap(UIImage.init(data:))
 	}
-}
 
-private struct PlaceholderView: View {
-	let icon: String
-	let text: LocalizedStringKey
-
-	var body: some View {
+	private func placeholder(icon: String, text: LocalizedStringKey) -> some View {
 		VStack(spacing: 6) {
 			Image(systemName: icon)
 				.font(.title2)
-				.foregroundStyle(.secondary)
+				.foregroundStyle(Style.brand)
 				.widgetAccentable()
 			Text(text)
 				.font(.caption2)
 				.multilineTextAlignment(.center)
-				.foregroundStyle(.secondary)
+				.foregroundStyle(Style.secondaryText)
 		}
 		.padding(12)
 	}
 }
 
-private struct MapFooter: View {
-	let meta: WidgetMapMeta
-	let dataGeneratedAt: Date?
+// MARK: Families
+
+private struct MapSmallView<Map: View>: View {
+	let summary: NodeMapSummary
+	let map: Map
+
+	var body: some View {
+		VStack(alignment: .leading, spacing: 5) {
+			HStack(spacing: 4) {
+				MapHeader(summary: summary, compact: true)
+				Spacer(minLength: 2)
+				AgeLine(summary: summary)
+			}
+			map
+				.frame(maxWidth: .infinity, maxHeight: .infinity)
+			HStack(spacing: 4) {
+				Text("\(summary.onMap) on map")
+					.foregroundStyle(.white)
+				Spacer(minLength: 2)
+				// Disconnected, the online count is stale; say why instead. Down
+				// here so the age line up top keeps its room.
+				if summary.connectionState == .connected {
+					Text("\(summary.online) online")
+						.foregroundStyle(Style.brand)
+				} else {
+					Text(stateText(summary.connectionState))
+						.foregroundStyle(Style.secondaryText)
+				}
+			}
+			.font(.caption2.weight(.semibold))
+			.lineLimit(1)
+		}
+		.padding(12)
+	}
+}
+
+private struct MapMediumView<Map: View>: View {
+	let summary: NodeMapSummary
+	let map: Map
+
+	var body: some View {
+		HStack(spacing: 12) {
+			map
+			VStack(alignment: .leading, spacing: 5) {
+				MapHeader(summary: summary, compact: false)
+				Text(summary.title)
+					.font(.subheadline.weight(.semibold))
+					.lineLimit(2)
+					.minimumScaleFactor(0.7)
+				Spacer(minLength: 0)
+				HStack(spacing: 8) {
+					Text("\(summary.onMap) on map")
+						.foregroundStyle(.white)
+					// Disconnected, the online count is stale; the header's tag
+					// says why.
+					if summary.connectionState == .connected {
+						Text("\(summary.online) online")
+							.foregroundStyle(Style.brand)
+					}
+				}
+				.font(.caption2.weight(.semibold))
+				.lineLimit(1)
+				if let farthest = summary.farthest {
+					Text("Farthest \(shareDistanceText(farthest))")
+						.font(.caption2)
+						.foregroundStyle(Style.secondaryText)
+						.lineLimit(1)
+				}
+				AgeLine(summary: summary)
+			}
+			Spacer(minLength: 0)
+		}
+		.padding(12)
+	}
+}
+
+private struct MapLargeView<Map: View>: View {
+	let summary: NodeMapSummary
+	let map: Map
+
+	var body: some View {
+		VStack(alignment: .leading, spacing: 8) {
+			MapHeader(summary: summary, compact: false)
+			Text(summary.title)
+				.font(.headline)
+				.lineLimit(2)
+				.minimumScaleFactor(0.7)
+			map
+				.frame(maxWidth: .infinity)
+			HStack(spacing: 6) {
+				ShareStatTile(title: "On Map", value: "\(summary.onMap)")
+				// Disconnected, the online count is stale; the header's tag says why.
+				ShareStatTile(
+					title: "Online",
+					value: summary.connectionState == .connected ? "\(summary.online)" : "—",
+					color: summary.connectionState == .connected ? Style.brand : Style.secondaryText
+				)
+				ShareStatTile(title: "Farthest", value: summary.farthest.map(shareDistanceText) ?? "—")
+				ShareStatTile(title: "Favorites", value: "\(summary.favorites)", color: .yellow)
+			}
+			Spacer(minLength: 0)
+			AgeLine(summary: summary)
+		}
+		.padding(14)
+	}
+}
+
+// MARK: Pieces
+
+/// The Meshtastic mark, "Node Map" in brand green and, when the radio isn't
+/// connected, a tag saying so.
+private struct MapHeader: View {
+	let summary: NodeMapSummary
 	let compact: Bool
 
 	var body: some View {
-		HStack(spacing: 4) {
-			MeshLogo(height: 9)
-			// "on map" and not "nodes": the image shows the snapshot's capped,
-			// positioned sample, not the mesh.
-			if compact {
-				Text("\(ageDate, style: .relative) ago")
-			} else {
-				Text("\(meta.nodeCount) on map · \(ageDate, style: .relative) ago")
+		HStack(spacing: 5) {
+			Image("m-logo-white")
+				.resizable()
+				.aspectRatio(contentMode: .fit)
+				.frame(height: 10)
+			if !compact {
+				Text("Node Map")
+					.font(.caption.weight(.semibold))
+					.foregroundStyle(Style.brand)
+					.lineLimit(1)
+					.fixedSize()
+			}
+			// The small widget shows the state in its bottom line instead.
+			if !compact, summary.connectionState != .connected {
+				Text(stateText(summary.connectionState))
+					.font(.system(size: 10, weight: .semibold))
+					.foregroundStyle(Style.secondaryText)
+					.padding(.horizontal, 5)
+					.padding(.vertical, 1)
+					.background(Style.panel, in: RoundedRectangle(cornerRadius: 4, style: .continuous))
+					.lineLimit(1)
+					.fixedSize()
 			}
 		}
-		.font(.caption2)
-		.foregroundStyle(.secondary)
-		.lineLimit(1)
-		.padding(.horizontal, 7)
-		.padding(.vertical, 3)
-		.background(RoundedRectangle(cornerRadius: 6, style: .continuous).fill(.thinMaterial))
 	}
+}
 
-	private var ageDate: Date {
-		dataGeneratedAt ?? meta.generatedAt
+private struct AgeLine: View {
+	let summary: NodeMapSummary
+
+	var body: some View {
+		if let updatedAt = summary.updatedAt {
+			Text("\(updatedAt, style: .relative) ago")
+				.font(.caption2)
+				.foregroundStyle(Style.tertiaryText)
+				.lineLimit(1)
+		}
 	}
 }

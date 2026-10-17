@@ -49,6 +49,8 @@ final class WidgetDataBroker {
 	/// can't postpone the write past the ceiling.
 	private var pendingSince: Date?
 	private var lastReload: [Kind: Date] = [:]
+	/// A map reload that was due while a map render was in flight.
+	private var mapReloadDeferred = false
 	/// LocalStats are keyed to the radio that produced them so a radio switch
 	/// can't show the previous radio's counters as the new one's.
 	private var latestLocalStats: LocalStatsSnapshot?
@@ -343,30 +345,52 @@ final class WidgetDataBroker {
 				floors[kind] = min(floors[kind] ?? .infinity, floor)
 			}
 		}
-		// The map kind is reloaded by WidgetMapRenderer when it actually wrote a
-		// new image; reloading it here would spend budget redisplaying the same
-		// PNG, since the map shows nothing but the image and a self-aging footer.
+		// WidgetMapRenderer reloads the map kind when it writes a new image. The
+		// map's counts and connection tag come from this snapshot, so it also
+		// reloads here, at long floors: a connection change right away, the
+		// online count at most every 15 minutes.
 		for trigger in triggers {
 			switch trigger {
 			case .connection:
 				merge(connectionChanged
-					? [(.stats, 0), (.tracker, 0), (.messages, 0)]
-					: [(.stats, 300), (.tracker, 300), (.messages, 300)])
+					? [(.stats, 0), (.tracker, 0), (.messages, 0), (.map, 0)]
+					: [(.stats, 300), (.tracker, 300), (.messages, 300), (.map, 900)])
 			case .config:
-				merge([(.stats, 60), (.tracker, 60)])
+				merge([(.stats, 60), (.tracker, 60), (.map, 900)])
 			case .messages:
 				merge(messagesChanged
 					? [(.messages, 0), (.tracker, 300)]
 					: [(.messages, 300), (.tracker, 300)])
 			case .localStats:
-				merge([(.stats, 300), (.tracker, 300)])
+				merge([(.stats, 300), (.tracker, 300), (.map, 900)])
 			}
 		}
 		for (kind, floor) in floors {
 			let last = lastReload[kind] ?? .distantPast
 			guard Date().timeIntervalSince(last) >= floor else { continue }
-			lastReload[kind] = Date()
-			WidgetCenter.shared.reloadTimelines(ofKind: kind.rawValue)
+			// A map render in progress reloads the map itself when it's written,
+			// with the counts too; reloading now would spend a second reload on
+			// the old image. If the render fails it sends this one instead.
+			if kind == .map, WidgetMapRenderer.shared.isRendering {
+				mapReloadDeferred = true
+				continue
+			}
+			reload(kind)
 		}
+	}
+
+	/// Called by WidgetMapRenderer when a render ends without writing, so a map
+	/// reload held back for it still goes out.
+	func sendDeferredMapReload() {
+		guard mapReloadDeferred else { return }
+		reload(.map)
+	}
+
+	/// Reloads a widget kind and records it, so every reload of the kind counts
+	/// toward its floor, whoever asked for it.
+	func reload(_ kind: Kind) {
+		if kind == .map { mapReloadDeferred = false }
+		lastReload[kind] = Date()
+		WidgetCenter.shared.reloadTimelines(ofKind: kind.rawValue)
 	}
 }
