@@ -1,11 +1,11 @@
 # heltec-vision-master-e290: Heltec Vision Master E290, the bare board seen from the display side.
 # Size from the datasheet's mechanical drawing (read from a scanned image): https://resource.heltec.cn/download/HT-VME290/HT-VME290-Datasheet.pdf
-# The PCB thickness isn't published; 1.0 mm is an estimate. The display stands to the published
-# stack height; the other parts are built flat on the board.
+# The PCB thickness isn't published; 1.0 mm is an estimate. The display stands 2.5 mm off the board, an estimate for
+# an e-paper panel on its frame: the published 12.01 mm takes in parts on the back and connectors; the other parts are built flat on the board.
 [size]
 width_mm = 87.96
 height_mm = 36.63
-depth_mm = 12.01
+depth_mm = 3.5
 board_mm = 1.0
 scale_by = "width"
 covers = "bare PCB with its display, no headers or antenna"
@@ -15,4 +15,4 @@ confidence = "vendor"
 [[block]]
 name = "Display"
 bbox = [541.37, 740.86, 1491.87, 1182.66]
-h = 11.01
+h = 2.5

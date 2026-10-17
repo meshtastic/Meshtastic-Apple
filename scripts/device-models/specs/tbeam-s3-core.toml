@@ -1,9 +1,11 @@
 # tbeam-s3-core: LILYGO T-Beam Supreme with its 18650 holder and antenna, front view.
 # Size: https://wiki.lilygo.cc/products/t-beam-series/t-beam-supreme/
+# Built as a 1.6 mm board with its OLED 3 mm up, on the 18650 holder behind it, which takes up the rest of the published 28 mm (estimates).
 [size]
 width_mm = 114
 height_mm = 33
 depth_mm = 28
+board_mm = 1.6
 scale_by = "width"
 fit_bbox = [689.18, 1079.38, 1707.28, 1362.68]
 covers = "board with holder and SMA; the antenna is built round"
@@ -18,3 +20,15 @@ end = [539.58, 425.18]
 # Radius from the drawn width at the base; the drawing tapers it toward the tip.
 radius_mm = 4.33
 tip_radius_mm = 3.03
+
+[[block]]
+name = "Display"
+bbox = [877.3, 1080.1, 1173.9, 1362.7]
+h = 3.0
+
+[[block]]
+name = "BatteryHolder"
+bbox = [830.1, 1079.3, 1702.4, 1362.7]
+h = 23.4
+back = true
+side_color = "#202020"
