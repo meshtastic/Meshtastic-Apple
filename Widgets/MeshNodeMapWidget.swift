@@ -7,11 +7,10 @@
 //  A map of the mesh in the trace route share image's look: node circles on
 //  dark tiles, the radio's name, and how many nodes are on the map, how many
 //  are online and how far the farthest one is. The app renders the map image
-//  only when a pin moves; the counts come from the live snapshot, so they
-//  stay current between renders.
+//  only when a pin moves; the counts cover the drawn nodes, read from the
+//  live snapshot where it still lists them.
 //
 
-import CoreLocation
 import SwiftUI
 import WidgetKit
 
@@ -19,7 +18,7 @@ private typealias Style = ShareCardStyle
 
 // MARK: - Timeline
 
-/// What the widget says about the nodes on the map, from the live snapshot.
+/// What the widget says about the nodes on the map.
 struct NodeMapSummary {
 	let title: String
 	let onMap: Int
@@ -32,33 +31,14 @@ struct NodeMapSummary {
 	let connectionState: WidgetConnectionState
 
 	init(meta: WidgetMapMeta, snapshot: WidgetSnapshot?) {
-		let onMapNums = Set(meta.nodeNums)
-		let nodes = (snapshot?.nodes ?? []).filter { onMapNums.contains($0.num) }
+		let stats = WidgetMapStats(meta: meta, snapshot: snapshot)
 		title = snapshot?.radioLongName ?? String(localized: "Meshtastic")
-		// Counted over the same nodes as online, so the two always describe one
-		// set; a pin that has left the snapshot drops out of both until redrawn.
-		onMap = snapshot == nil ? meta.nodeCount : nodes.count
-		online = nodes.filter(\.isOnline).count
-		favorites = nodes.filter(\.isFavorite).count
+		onMap = stats.onMap
+		online = stats.online
+		favorites = stats.favorites
+		farthest = stats.farthest
 		updatedAt = snapshot?.generatedAt ?? meta.generatedAt
 		connectionState = snapshot?.connectionState ?? .disconnected
-
-		// The connected radio, not the one the image was drawn for, so the
-		// distance and the title name the same radio.
-		let radioNum = snapshot?.radioNodeNum ?? meta.radioNum
-		if let radio = nodes.first(where: { $0.num == radioNum }),
-		   let lat = radio.latitude, let lon = radio.longitude {
-			let origin = CLLocation(latitude: lat, longitude: lon)
-			farthest = nodes
-				.filter { $0.num != radio.num }
-				.compactMap { node -> Double? in
-					guard let lat = node.latitude, let lon = node.longitude else { return nil }
-					return origin.distance(from: CLLocation(latitude: lat, longitude: lon))
-				}
-				.max()
-		} else {
-			farthest = nil
-		}
 	}
 
 	private init(title: String, onMap: Int, online: Int, favorites: Int, farthest: Double?) {
@@ -248,8 +228,12 @@ private struct MapMediumView<Map: View>: View {
 				HStack(spacing: 8) {
 					Text("\(summary.onMap) on map")
 						.foregroundStyle(.white)
-					Text("\(summary.online) online")
-						.foregroundStyle(Style.brand)
+					// Disconnected, the online count is stale; the header's tag
+					// says why.
+					if summary.connectionState == .connected {
+						Text("\(summary.online) online")
+							.foregroundStyle(Style.brand)
+					}
 				}
 				.font(.caption2.weight(.semibold))
 				.lineLimit(1)
@@ -282,7 +266,12 @@ private struct MapLargeView<Map: View>: View {
 				.frame(maxWidth: .infinity)
 			HStack(spacing: 6) {
 				ShareStatTile(title: "On Map", value: "\(summary.onMap)")
-				ShareStatTile(title: "Online", value: "\(summary.online)", color: Style.brand)
+				// Disconnected, the online count is stale; the header's tag says why.
+				ShareStatTile(
+					title: "Online",
+					value: summary.connectionState == .connected ? "\(summary.online)" : "—",
+					color: summary.connectionState == .connected ? Style.brand : Style.secondaryText
+				)
 				ShareStatTile(title: "Farthest", value: summary.farthest.map(shareDistanceText) ?? "—")
 				ShareStatTile(title: "Favorites", value: "\(summary.favorites)", color: .yellow)
 			}

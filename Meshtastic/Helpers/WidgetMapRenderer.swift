@@ -81,11 +81,18 @@ final class WidgetMapRenderer {
 		renderTask?.cancel()
 		renderTask = Task { [pins, radioNum] in
 			let rendered = await Self.render(pins: pins, radioNum: radioNum)
-			// A superseded task must not commit state for its old positions.
-			if !Task.isCancelled, rendered {
-				self.lastSuccessKey = key
-				self.lastSuccessAt = Date()
-				self.lastSuccessRadioNum = radioNum
+			// A superseded task must not commit state for its old positions;
+			// the newer render settles the map's reload.
+			if !Task.isCancelled {
+				if rendered {
+					self.lastSuccessKey = key
+					self.lastSuccessAt = Date()
+					self.lastSuccessRadioNum = radioNum
+				} else {
+					// Nothing written, so no reload went out; send the one the
+					// broker held back for this render.
+					WidgetDataBroker.shared.sendDeferredMapReload()
+				}
 			}
 			if self.inFlightKey == key {
 				self.inFlightKey = nil
@@ -109,7 +116,20 @@ final class WidgetMapRenderer {
 	}
 
 	private static func render(pins: [MapPin], radioNum: Int64?) async -> Bool {
-		let meta = WidgetMapMeta(generatedAt: Date(), nodeNums: pins.map(\.node.num), radioNum: radioNum)
+		let meta = WidgetMapMeta(
+			generatedAt: Date(),
+			nodeNums: pins.map(\.node.num),
+			radioNum: radioNum,
+			pins: pins.map {
+				WidgetMapPin(
+					num: $0.node.num,
+					latitude: $0.coordinate.latitude,
+					longitude: $0.coordinate.longitude,
+					lastHeard: $0.node.lastHeard,
+					isFavorite: $0.node.isFavorite
+				)
+			}
+		)
 		guard !pins.isEmpty else {
 			let saved = WidgetMapStore.saveEmpty(meta: meta)
 			if saved { WidgetDataBroker.shared.reload(.map) }

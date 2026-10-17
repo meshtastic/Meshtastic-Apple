@@ -11,6 +11,7 @@
 //  so the images still render on a locked phone, like the snapshot.
 //
 
+import CoreLocation
 import Foundation
 import OSLog
 
@@ -19,14 +20,81 @@ struct WidgetMapMeta: Codable {
 
 	var version: Int = WidgetMapMeta.currentVersion
 	let generatedAt: Date
-	/// The nodes drawn on the image. The widget joins these with the live
-	/// snapshot for online counts and distances, so those stay current
-	/// between renders, which only happen when a pin moves.
+	/// The nodes drawn on the image.
 	let nodeNums: [Int64]
 	/// The connected radio's node, ringed on the map.
 	let radioNum: Int64?
+	/// The drawn nodes as they were drawn, so the widget's counts and
+	/// distance cover a pin that has since left the snapshot's node list.
+	/// Nil in metadata written before this was added.
+	var pins: [WidgetMapPin]?
 
 	var nodeCount: Int { nodeNums.count }
+}
+
+/// One drawn node: where it was drawn, and what the widget needs to count it
+/// when it is no longer in the snapshot.
+struct WidgetMapPin: Codable, Equatable {
+	let num: Int64
+	let latitude: Double
+	let longitude: Double
+	let lastHeard: Date?
+	let isFavorite: Bool
+}
+
+/// The map widget's counts, over the nodes drawn on the image. Online and
+/// favorite come from the live snapshot when it still lists the node, so they
+/// stay current between renders, and from the drawn pin otherwise. The
+/// distance uses the drawn positions, so it matches the image.
+struct WidgetMapStats: Equatable {
+	/// Same window as NodeInfoEntity.isOnline.
+	static let onlineWindow: TimeInterval = 2 * 3600
+
+	let onMap: Int
+	let online: Int
+	let favorites: Int
+	/// Meters from the radio to the farthest drawn node, when the radio has a
+	/// position.
+	let farthest: Double?
+
+	init(meta: WidgetMapMeta, snapshot: WidgetSnapshot?, now: Date = .now) {
+		let live = Dictionary((snapshot?.nodes ?? []).map { ($0.num, $0) }, uniquingKeysWith: { first, _ in first })
+		let drawn = Dictionary((meta.pins ?? []).map { ($0.num, $0) }, uniquingKeysWith: { first, _ in first })
+
+		var online = 0
+		var favorites = 0
+		var coordinates: [Int64: (lat: Double, lon: Double)] = [:]
+		for num in meta.nodeNums {
+			if let node = live[num] {
+				if node.isOnline { online += 1 }
+				if node.isFavorite { favorites += 1 }
+			} else if let pin = drawn[num] {
+				if let lastHeard = pin.lastHeard, now.timeIntervalSince(lastHeard) < Self.onlineWindow { online += 1 }
+				if pin.isFavorite { favorites += 1 }
+			}
+			if let pin = drawn[num] {
+				coordinates[num] = (pin.latitude, pin.longitude)
+			} else if let node = live[num], let lat = node.latitude, let lon = node.longitude {
+				coordinates[num] = (lat, lon)
+			}
+		}
+		self.onMap = meta.nodeCount
+		self.online = online
+		self.favorites = favorites
+
+		// The connected radio, not the one the image was drawn for, so the
+		// distance and the widget's title name the same radio.
+		let radioNum = snapshot?.radioNodeNum ?? meta.radioNum
+		if let radioNum, let origin = coordinates[radioNum] {
+			let from = CLLocation(latitude: origin.lat, longitude: origin.lon)
+			farthest = coordinates
+				.filter { $0.key != radioNum }
+				.map { from.distance(from: CLLocation(latitude: $0.value.lat, longitude: $0.value.lon)) }
+				.max()
+		} else {
+			farthest = nil
+		}
+	}
 }
 
 enum WidgetMapStore {

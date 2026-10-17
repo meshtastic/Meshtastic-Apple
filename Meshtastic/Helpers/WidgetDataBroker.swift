@@ -49,6 +49,8 @@ final class WidgetDataBroker {
 	/// can't postpone the write past the ceiling.
 	private var pendingSince: Date?
 	private var lastReload: [Kind: Date] = [:]
+	/// A map reload that was due while a map render was in flight.
+	private var mapReloadDeferred = false
 	/// LocalStats are keyed to the radio that produced them so a radio switch
 	/// can't show the previous radio's counters as the new one's.
 	private var latestLocalStats: LocalStatsSnapshot?
@@ -364,19 +366,30 @@ final class WidgetDataBroker {
 			}
 		}
 		for (kind, floor) in floors {
-			// A map render in progress reloads the map itself when it's written,
-			// with the counts too; reloading now would spend a second reload on
-			// the old image.
-			if kind == .map, WidgetMapRenderer.shared.isRendering { continue }
 			let last = lastReload[kind] ?? .distantPast
 			guard Date().timeIntervalSince(last) >= floor else { continue }
+			// A map render in progress reloads the map itself when it's written,
+			// with the counts too; reloading now would spend a second reload on
+			// the old image. If the render fails it sends this one instead.
+			if kind == .map, WidgetMapRenderer.shared.isRendering {
+				mapReloadDeferred = true
+				continue
+			}
 			reload(kind)
 		}
+	}
+
+	/// Called by WidgetMapRenderer when a render ends without writing, so a map
+	/// reload held back for it still goes out.
+	func sendDeferredMapReload() {
+		guard mapReloadDeferred else { return }
+		reload(.map)
 	}
 
 	/// Reloads a widget kind and records it, so every reload of the kind counts
 	/// toward its floor, whoever asked for it.
 	func reload(_ kind: Kind) {
+		if kind == .map { mapReloadDeferred = false }
 		lastReload[kind] = Date()
 		WidgetCenter.shared.reloadTimelines(ofKind: kind.rawValue)
 	}
