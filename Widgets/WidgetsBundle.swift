@@ -14,6 +14,7 @@ struct WidgetsBundle: WidgetBundle {
 		MeshLocalStatsWidget()
 		MeshNodeTrackerWidget()
 		MeshMessagesWidget()
+		MeshNodeMapWidget()
 		#if !targetEnvironment(macCatalyst)
 		#if canImport(ActivityKit)
 		WidgetsLiveActivity()
