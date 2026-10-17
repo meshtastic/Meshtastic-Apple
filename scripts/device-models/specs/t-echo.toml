@@ -1,0 +1,20 @@
+# t-echo: LILYGO T-Echo with its stock antenna, front view.
+# Size: https://cdn.shopify.com/s/files/1/0617/7190/7253/products/size_e2db0b9f-9eb7-40b3-a7e6-4ac21476e823.jpg
+# LILYGO's size image; their STL measures 67.01 x 54.29 x 24.24. 127 mm tall with the stock antenna.
+[size]
+width_mm = 53.8
+height_mm = 67
+depth_mm = 24.3
+scale_by = "width"
+fit_bbox = [0.8, 223.3, 206.2, 481.0]
+covers = "case; the antenna above it is built round"
+source = "https://cdn.shopify.com/s/files/1/0617/7190/7253/products/size_e2db0b9f-9eb7-40b3-a7e6-4ac21476e823.jpg"
+confidence = "vendor"
+edge_radius_mm = 4.0
+front_edge_radius_mm = 2.0
+appendage = "none"
+
+[[antenna]]
+name = "Antenna"
+start = [168.65, 223.3]
+end = [168.65, 0.8]

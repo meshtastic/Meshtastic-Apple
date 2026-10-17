@@ -1,0 +1,20 @@
+# tlora-t3s3-epaper: LILYGO T3-S3 E-Paper with its antenna, front view.
+# Size: https://wiki.lilygo.cc/products/t3-series/t3-s3-e-paper/
+[size]
+width_mm = 67
+height_mm = 36.8
+depth_mm = 15
+scale_by = "width"
+fit_bbox = [547.50, 746.54, 1563.50, 1306.34]
+covers = "board with 2.13 inch e-paper; the antenna is built round"
+source = "https://wiki.lilygo.cc/products/t3-series/t3-s3-e-paper/"
+confidence = "vendor"
+appendage = "none"
+
+[[antenna]]
+name = "Antenna"
+start = [1318.50, 746.54]
+end = [1318.50, 263.94]
+# Radius from the drawn width at the base; the drawing tapers it toward the tip.
+radius_mm = 2.9
+tip_radius_mm = 2.03

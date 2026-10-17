@@ -1,0 +1,18 @@
+# heltec-vision-master-e213: Heltec Vision Master E213, the bare board seen from the display side.
+# Size from the datasheet's mechanical drawing (read from a scanned image): https://resource.heltec.cn/download/HT-VME213/HT-VME213%20Datasheet.pdf
+# The PCB thickness isn't published; 1.0 mm is an estimate. The display stands to the published
+# stack height; the other parts are built flat on the board.
+[size]
+width_mm = 66.75
+height_mm = 30.41
+depth_mm = 10.08
+board_mm = 1.0
+scale_by = "width"
+covers = "bare PCB with its display, no headers or antenna"
+source = "https://resource.heltec.cn/download/HT-VME213/HT-VME213%20Datasheet.pdf"
+confidence = "vendor"
+
+[[block]]
+name = "Display"
+bbox = [627.79, 840.44, 1385.99, 1201.54]
+h = 9.08

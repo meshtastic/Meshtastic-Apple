@@ -1,0 +1,26 @@
+# lilygo-tlora-pager: LILYGO T-LoRa Pager, front view.
+# Size: https://lilygo.cc/products/t-lora-pager
+# LILYGO gives 106 x 89 x 23. 106 matches the drawing's height with the antennas up at 89 wide, so the
+# case height (63.5) is read from the drawing at that width.
+[size]
+width_mm = 89
+height_mm = 63.5
+depth_mm = 23
+scale_by = "width"
+fit_bbox = [1.0, 268.8, 586.4, 686.5]
+covers = "case; the two antennas above it are built round"
+source = "https://lilygo.cc/products/t-lora-pager"
+confidence = "estimated"
+edge_radius_mm = 4.0
+front_edge_radius_mm = 2.0
+appendage = "none"
+
+[[antenna]]
+name = "AntennaRight"
+start = [502.75, 268.8]
+end = [502.75, 1.0]
+
+[[antenna]]
+name = "AntennaLeft"
+start = [52.8, 251.2]
+end = [52.8, 5.3]

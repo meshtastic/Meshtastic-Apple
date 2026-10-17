@@ -1,0 +1,14 @@
+# heltec-wsl-v3: Heltec Wireless Stick Lite V3, the bare board seen from the display side.
+# Size from the datasheet's mechanical drawing (read from a scanned image): https://resource.heltec.cn/download/Wireless_Stick_Lite_V3/HTIT-WSL_V3(Rev1.1).pdf
+# The PCB thickness isn't published; 1.0 mm is an estimate. The display stands to the published
+# stack height; the other parts are built flat on the board.
+# No display: the board carries its parts flat. The USB-C stands a little past the 58.08 length.
+[size]
+width_mm = 58.08
+height_mm = 22.6
+depth_mm = 8.2
+board_mm = 1.0
+scale_by = "width"
+covers = "bare PCB with its display, no headers or antenna"
+source = "https://resource.heltec.cn/download/Wireless_Stick_Lite_V3/HTIT-WSL_V3(Rev1.1).pdf"
+confidence = "vendor"

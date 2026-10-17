@@ -1,0 +1,12 @@
+# heltec-meshnode-t1: Heltec Mesh Node T1, a finished cased device, front view.
+# Size: https://resource.heltec.cn/download/Mesh_Node_T1/Datasheet/Mesh-Node-T1.pdf
+[size]
+width_mm = 55.18
+height_mm = 85.18
+depth_mm = 9.5
+scale_by = "width"
+covers = "case"
+source = "https://resource.heltec.cn/download/Mesh_Node_T1/Datasheet/Mesh-Node-T1.pdf"
+confidence = "vendor"
+edge_radius_mm = 2.0
+front_edge_radius_mm = 2.0

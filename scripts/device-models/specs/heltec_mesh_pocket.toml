@@ -1,0 +1,13 @@
+# heltec_mesh_pocket: Heltec MeshPocket (5000 mAh), antenna inside the case, front view.
+# Size: https://resource.heltec.cn/download/MeshPocket/datasheet/MeshPocket_1.0.1.pdf
+# The 10000 mAh version is 17.0 deep. The drawing shows a little of the yellow side; it is built as front.
+[size]
+width_mm = 74.1
+height_mm = 102.0
+depth_mm = 11.5
+scale_by = "width"
+covers = "case"
+source = "https://resource.heltec.cn/download/MeshPocket/datasheet/MeshPocket_1.0.1.pdf"
+confidence = "vendor"
+edge_radius_mm = 3.0
+front_edge_radius_mm = 2.0

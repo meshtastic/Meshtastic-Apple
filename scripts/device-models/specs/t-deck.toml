@@ -1,0 +1,13 @@
+# t-deck: LILYGO T-Deck, front view.
+# Size: https://wiki.lilygo.cc/products/t-deck-series/t-deck/
+# PCB outline 98.94 x 67.06 from the T-Deck repo's shell DXF.
+[size]
+width_mm = 68
+height_mm = 100
+depth_mm = 11
+scale_by = "width"
+covers = "board, display and keyboard stack, no case or antenna"
+source = "https://wiki.lilygo.cc/products/t-deck-series/t-deck/"
+confidence = "vendor"
+edge_radius_mm = 2.0
+front_edge_radius_mm = 2.0

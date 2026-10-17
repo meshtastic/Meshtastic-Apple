@@ -1,0 +1,11 @@
+# tbeam-1w: LILYGO T-Beam 1W, front view.
+# Size: https://wiki.lilygo.cc/products/t-beam-series/t-beam-1w/
+# The CAD shows 18.5 deep but models no fan; the vendor's 27 is used for the shipped unit.
+[size]
+width_mm = 43
+height_mm = 133
+depth_mm = 27
+scale_by = "width"
+covers = "board with fan, no antenna"
+source = "https://wiki.lilygo.cc/products/t-beam-series/t-beam-1w/"
+confidence = "vendor"

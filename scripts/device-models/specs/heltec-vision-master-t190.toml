@@ -1,0 +1,18 @@
+# heltec-vision-master-t190: Heltec Vision Master T190, the bare board seen from the display side.
+# Size from the datasheet's mechanical drawing (read from a scanned image): https://resource.heltec.cn/download/HT-VMT190/HT-VMT190%20Datasheet.pdf
+# The PCB thickness isn't published; 1.0 mm is an estimate. The display stands to the published
+# stack height; the other parts are built flat on the board.
+[size]
+width_mm = 60.0
+height_mm = 25.4
+depth_mm = 10.19
+board_mm = 1.0
+scale_by = "width"
+covers = "bare PCB with its display, no headers or antenna"
+source = "https://resource.heltec.cn/download/HT-VMT190/HT-VMT190%20Datasheet.pdf"
+confidence = "vendor"
+
+[[block]]
+name = "Display"
+bbox = [676.17, 804.58, 1418.97, 1200.58]
+h = 9.19

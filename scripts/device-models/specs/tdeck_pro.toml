@@ -1,0 +1,12 @@
+# tdeck_pro: LILYGO T-Deck Pro, front view.
+# Size: https://wiki.lilygo.cc/products/t-deck-series/t-deck-pro/
+[size]
+width_mm = 66
+height_mm = 120
+depth_mm = 13.5
+scale_by = "width"
+covers = "case, SMA antenna not fitted"
+source = "https://wiki.lilygo.cc/products/t-deck-series/t-deck-pro/"
+confidence = "vendor"
+edge_radius_mm = 4.0
+front_edge_radius_mm = 2.0
