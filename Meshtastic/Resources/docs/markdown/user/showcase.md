@@ -6,7 +6,7 @@ nav_order: 16
 
 # Hardware Showcase (Apple Vision Pro)
 
-On Apple Vision Pro, the Hardware Showcase is a room you step into to see Meshtastic radios at their real size. Open it from the spatial map with the **storefront** button in its toolbar. The app's window closes while you're in the room.
+On Apple Vision Pro, the Hardware Showcase is a room you step into to see Meshtastic radios at their real size. Open it with the **storefront** button in the round glass menu under the app's tab bar. The app's window closes while you're in the room.
 
 ## Display tables
 

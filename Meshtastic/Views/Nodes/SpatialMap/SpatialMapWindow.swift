@@ -18,7 +18,6 @@ struct SpatialMapWindow: View {
 	@Environment(\.modelContext) private var context
 	@Environment(\.dismissWindow) private var dismissWindow
 	@Environment(\.openWindow) private var openWindow
-	@Environment(\.openImmersiveSpace) private var openImmersiveSpace
 	@Environment(\.scenePhase) private var scenePhase
 	@Environment(\.physicalMetrics) private var metrics
 	@StateObject private var nodeFilters = NodeFilterParameters()
@@ -67,8 +66,7 @@ struct SpatialMapWindow: View {
 			SpatialMapOrnament(
 				model: model, traffic: traffic, mapLayer: $mapLayer, darkMap: $darkMap, showContours: $showContours,
 				showLabels: $showLabels, showLinks: $showLinks, showTraffic: $showTraffic, autoTerrain: $autoTerrain,
-				coverageMode: $coverageMode, coverageOpacity: $coverageOpacity,
-				onEnterShowcase: enterShowcase
+				coverageMode: $coverageMode, coverageOpacity: $coverageOpacity
 			)
 		}
 		.task(id: refreshKey) {
@@ -205,14 +203,6 @@ struct SpatialMapWindow: View {
 
 	/// Opens the showcase and, once it is showing, closes this volume: the showcase is one space,
 	/// and the map moves onto its desk.
-	private func enterShowcase() {
-		Task {
-			if await ShowcaseScene.open(openImmersiveSpace, appState: appState) {
-				dismissWindow(id: SpatialMapScene.id)
-			}
-		}
-	}
-
 	private func claimFocus() {
 		guard let nodeNum = appState.claimSpatialMapFocus() else { return }
 		model.focus(on: nodeNum)
@@ -253,7 +243,6 @@ struct SpatialMapOrnament: View {
 	@Binding var autoTerrain: Bool
 	@Binding var coverageMode: SpatialCoverageMode
 	@Binding var coverageOpacity: Double
-	let onEnterShowcase: () -> Void
 	@ObservedObject private var offline = OfflineMapManager.shared
 	@State private var confirmingTerrainDownload = false
 
@@ -334,11 +323,6 @@ struct SpatialMapOrnament: View {
 				.accessibilityValue(Text(verbatim: "\(model.zoom.formatted(.number.precision(.fractionLength(0...1))))×"))
 			}
 
-			Button(action: onEnterShowcase) {
-				Image(systemName: "storefront")
-			}
-			.help(String(localized: "Enter Showcase", comment: "Spatial map: open the showcase immersive space, closing this volume"))
-			.accessibilityLabel(String(localized: "Enter Showcase", comment: "Spatial map: open the showcase immersive space, closing this volume"))
 
 			Divider().frame(height: 20)
 
