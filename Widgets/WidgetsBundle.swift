@@ -20,6 +20,11 @@ struct WidgetsBundle: WidgetBundle {
 		#if canImport(ActivityKit)
 		WidgetsLiveActivity()
 		#endif
+		if #available(iOS 18.0, *) {
+			MeshMessagesControl()
+			MeshConnectControl()
+			MeshMapControl()
+		}
 		#endif
 	}
 }
