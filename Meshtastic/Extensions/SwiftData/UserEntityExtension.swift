@@ -20,6 +20,15 @@ extension UserEntity {
 		return longName ?? "Unknown".localized
 	}
 
+	/// The node's broadcast long name while a local display name is hiding it, otherwise nil.
+	/// Node details shows it as its own row so the real name can be seen without clearing
+	/// the display name (#2604).
+	var longNameHiddenByDisplayName: String? {
+		guard NodeDisplayNameStore.displayName(for: num) != nil,
+		      let longName, !longName.isEmpty else { return nil }
+		return longName
+	}
+
 	@MainActor
 	var messageList: [MessageEntity] {
 		guard let ctx = modelContext else { return [] }
