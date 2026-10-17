@@ -104,6 +104,20 @@ struct BatteryRow: View {
 	}
 }
 
+/// Signal quality as bars, 0 (none) to 3 (good).
+struct SignalBars: View {
+	let rating: Int?
+
+	var body: some View {
+		if let rating {
+			Image(systemName: "cellularbars", variableValue: Double(rating) / 3)
+				.font(.caption)
+				.widgetAccentable()
+				.accessibilityLabel("Signal \(rating) of 3")
+		}
+	}
+}
+
 func stateText(_ state: WidgetConnectionState) -> String {
 	switch state {
 	case .connected:

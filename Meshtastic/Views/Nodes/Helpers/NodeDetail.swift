@@ -861,6 +861,7 @@ struct NodeDetail: View {
 					TraceRouteButton(
 						node: node
 					)
+					TrackInLiveActivityButton(nodeNum: nodeNum)
 					if node.isStoreForwardRouter {
 						ClientHistoryButton(
 							connectedNode: connectedNode,

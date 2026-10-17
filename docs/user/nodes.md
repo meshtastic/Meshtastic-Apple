@@ -121,6 +121,8 @@ Long-press any node in the list to access quick actions:
 - **Ignore / Remove from ignored** — hide this node from normal views
 - **Remove** — remove the node from your local database
 
+Open a node and choose **Track in Live Activity** to keep it on your Lock Screen and in the Dynamic Island: its battery, signal, when it was last heard and how far away it is. See [Live Activity](bluetooth.md#live-activity).
+
 ## Display Names
 
 You can give any node a local nickname that's shown throughout the app instead of its device long name — in the node list, node details, and messages. Set it from the node's long-press menu ("Display name") or from the **Name** row in Node Detail. The avatar circle always shows the node's actual short code, unaffected by the nickname.
