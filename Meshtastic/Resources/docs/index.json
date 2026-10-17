@@ -447,6 +447,7 @@
             "panel",
             "closes",
             "window",
+            "wall",
             "vision",
             "size",
             "showcase",
@@ -460,12 +461,11 @@
             "each",
             "device",
             "apple",
-            "wall",
             "turn",
-            "them",
-            "tables"
+            "tables",
+            "step"
         ],
-        "charCount": 2126
+        "charCount": 2134
     },
     {
         "id": "signal-meter",

@@ -25,18 +25,19 @@ enum ShowcaseVendor: String, CaseIterable, Sendable {
 		}
 	}
 
-	/// RAK along the front of the front table with muzi works after it, Seeed on the riser behind,
-	/// and Elecrow, whose radios are the tallest, on the higher back table. Makers that share a row
-	/// stand one after the other, each behind its own brand card.
+	/// RAK on the front table with muzi works after it, Seeed on the next one back, then Elecrow.
+	/// The two tables behind are free for more makers. Makers that share a row stand one after the
+	/// other, each behind its own brand card.
 	var row: ShowcaseDisplayRow {
 		switch self {
-		case .rak, .muzi:
-			ShowcaseDisplayRow(table: .tableFront, depthOffset: 0.16, height: 0, length: ShowcaseRoomGeometry.tableLength, centerX: 0)
-		case .seeed:
-			ShowcaseDisplayRow(table: .tableFront, depthOffset: ShowcaseRoomGeometry.riserOffset, height: ShowcaseRoomGeometry.riserHeight, length: ShowcaseRoomGeometry.tableLength, centerX: 0)
-		case .elecrow:
-			ShowcaseDisplayRow(table: .tableBack, depthOffset: 0, height: 0, length: ShowcaseRoomGeometry.tableLength, centerX: 0)
+		case .rak, .muzi: Self.row(on: .table1)
+		case .seeed: Self.row(on: .table2)
+		case .elecrow: Self.row(on: .table3)
 		}
+	}
+
+	private static func row(on table: ShowcaseAnchor) -> ShowcaseDisplayRow {
+		ShowcaseDisplayRow(table: table, depthOffset: 0, height: 0, length: ShowcaseRoomGeometry.tableLength, centerX: 0)
 	}
 
 	/// Front of the room first.

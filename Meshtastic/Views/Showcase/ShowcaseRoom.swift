@@ -71,15 +71,16 @@ struct ShowcaseRoom {
 		let key = Entity()
 		key.name = "KeyLight"
 		root.addChild(key)
-		key.look(at: pose(.tableFront).position, from: SIMD3<Float>(-0.6, 2.7, 0.4), relativeTo: root)
+		key.look(at: pose(.table3).position, from: SIMD3<Float>(-0.6, 2.7, 0.4), relativeTo: root)
 		key.components.set(DirectionalLightComponent(color: Self.storeWhite, intensity: 450))
 		key.components.set(DirectionalLightComponent.Shadow(maximumDistance: 4, depthBias: 2))
 
-		for (name, anchor) in [("FrontTableLight", ShowcaseAnchor.tableFront), ("MiddleTableLight", .tableMiddle), ("BackTableLight", .tableBack)] {
+		// One over each table, each dimmer than the two the room had, so five keep about the same light.
+		for anchor in ShowcaseRoomGeometry.tables {
 			let light = Entity()
-			light.name = name
+			light.name = "TableLight_\(anchor.rawValue)"
 			light.position = pose(anchor).position + SIMD3<Float>(0, 1.6, 0.1)
-			light.components.set(PointLightComponent(color: Self.storeWhite, intensity: 1500, attenuationRadius: 4))
+			light.components.set(PointLightComponent(color: Self.storeWhite, intensity: 650, attenuationRadius: 4))
 			root.addChild(light)
 		}
 
@@ -132,7 +133,7 @@ struct ShowcaseRoom {
 		return result
 	}
 
-	/// A plain floor, back wall and the three display tables at the asset's measurements, for when
+	/// A plain floor, back wall and the display tables at the asset's measurements, for when
 	/// Showcase.usda fails to load, so the showcase still has somewhere to put things.
 	private static func standInRoom() -> Entity {
 		let room = Entity()
@@ -150,27 +151,16 @@ struct ShowcaseRoom {
 		wall.position = SIMD3<Float>(0, ShowcaseRoomGeometry.height / 2, ShowcaseRoomGeometry.backWallZ - 0.03)
 		room.addChild(floor)
 		room.addChild(wall)
-		for (anchor, tableDepth) in [
-			(ShowcaseAnchor.tableFront, ShowcaseRoomGeometry.frontTableDepth),
-			(.tableMiddle, ShowcaseRoomGeometry.middleTableDepth),
-			(.tableBack, ShowcaseRoomGeometry.backTableDepth)
-		] {
+		for anchor in ShowcaseRoomGeometry.tables {
 			let top = ShowcaseRoomGeometry.defaultPose(anchor).position
 			let table = ModelEntity(
-				mesh: .generateBox(width: 1.9, height: 0.05, depth: tableDepth),
+				mesh: .generateBox(width: 1.9, height: 0.05, depth: ShowcaseRoomGeometry.tableDepth),
 				materials: [SimpleMaterial(color: UIColor(red: 0.84, green: 0.70, blue: 0.52, alpha: 1), roughness: 0.45, isMetallic: false)]
 			)
 			table.name = "StandInTable"
 			table.position = top - SIMD3<Float>(0, 0.025, 0)
 			room.addChild(table)
 		}
-		let riser = ModelEntity(
-			mesh: .generateBox(width: ShowcaseRoomGeometry.tableLength, height: ShowcaseRoomGeometry.riserHeight, depth: 0.24),
-			materials: [SimpleMaterial(color: UIColor(white: 0.97, alpha: 1), roughness: 0.6, isMetallic: false)]
-		)
-		riser.position = ShowcaseRoomGeometry.defaultPose(.tableFront).position
-			+ SIMD3<Float>(0, ShowcaseRoomGeometry.riserHeight / 2, ShowcaseRoomGeometry.riserOffset)
-		room.addChild(riser)
 		return room
 	}
 }
