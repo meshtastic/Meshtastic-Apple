@@ -249,7 +249,7 @@ private struct LargeView: View {
 
 /// One labeled stat: full words, grouped digits, never wrapped.
 private struct StatLine: View {
-	let label: String
+	let label: LocalizedStringKey
 	let value: String
 
 	var body: some View {
@@ -284,9 +284,10 @@ private func countText(_ value: Int32) -> String {
 }
 
 private func errorRateText(_ stats: LocalStatsSnapshot) -> String {
-	guard stats.packetsReceived > 0 else { return "0.0%" }
-	let rate = Double(stats.packetsReceivedBad) / Double(stats.packetsReceived) * 100
-	return String(format: "%.1f%%", rate)
+	let rate = stats.packetsReceived > 0
+		? Double(stats.packetsReceivedBad) / Double(stats.packetsReceived)
+		: 0
+	return rate.formatted(.percent.precision(.fractionLength(1)))
 }
 
 // MARK: Accessory families
