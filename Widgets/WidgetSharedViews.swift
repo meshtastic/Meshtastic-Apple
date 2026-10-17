@@ -12,17 +12,25 @@
 import SwiftUI
 import WidgetKit
 
-/// The Meshtastic mark, picked for the color scheme. The asset is about 2:1,
-/// so it is sized by height.
+/// The Meshtastic mark in a brand color on every widget: the accent green on
+/// dark backgrounds, the primary dark gray on light ones, where green is too
+/// faint. The asset is about 2:1, so it is sized by height.
 struct MeshLogo: View {
 	@Environment(\.colorScheme) private var colorScheme
 	let height: CGFloat
 
+	/// Brand accent, #67EA94.
+	private static let green = Color(red: 0x67 / 255, green: 0xEA / 255, blue: 0x94 / 255)
+	/// Brand primary, #2C2D3C.
+	private static let darkGray = Color(red: 0x2C / 255, green: 0x2D / 255, blue: 0x3C / 255)
+
 	var body: some View {
-		Image(colorScheme == .dark ? "m-logo-white" : "m-logo-black")
+		Image("m-logo-white")
+			.renderingMode(.template)
 			.resizable()
 			.aspectRatio(contentMode: .fit)
 			.frame(height: height)
+			.foregroundStyle(colorScheme == .dark ? Self.green : Self.darkGray)
 	}
 }
 
