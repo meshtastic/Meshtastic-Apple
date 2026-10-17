@@ -94,8 +94,8 @@ public struct FieldMetadata: Sendable {
   // methods supported on all messages.
 
   ///
-  /// Field is only relevant to DIY hardware builds. Apps may hide it when
-  /// connected to a pre-assembled / commercial board.
+  /// Field is only relevant to DIY hardware builds. Apps hide a GPS field
+  /// tagged this way when the board's `HardwareModel` sets `oem_fixed_gps`.
   public var diyOnly: Bool {
     get {_diyOnly ?? false}
     set {_diyOnly = newValue}
@@ -272,6 +272,19 @@ public struct FieldMetadata: Sendable {
   /// Clears the value of `deprecatedSince`. Subsequent reads from it will return its default value.
   public mutating func clearDeprecatedSince() {self._deprecatedSince = nil}
 
+  ///
+  /// Set on a `HardwareModel` value: the maker wired the board's GPS, so the
+  /// `diy_only` GPS pin fields do not apply. Apps hide those fields on these
+  /// boards and keep them on any other or unknown board.
+  public var oemFixedGps: Bool {
+    get {_oemFixedGps ?? false}
+    set {_oemFixedGps = newValue}
+  }
+  /// Returns true if `oemFixedGps` has been explicitly set.
+  public var hasOemFixedGps: Bool {self._oemFixedGps != nil}
+  /// Clears the value of `oemFixedGps`. Subsequent reads from it will return its default value.
+  public mutating func clearOemFixedGps() {self._oemFixedGps = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -287,6 +300,7 @@ public struct FieldMetadata: Sendable {
   fileprivate var _keywords: String? = nil
   fileprivate var _sinceFirmware: String? = nil
   fileprivate var _deprecatedSince: String? = nil
+  fileprivate var _oemFixedGps: Bool? = nil
 }
 
 // MARK: - Extension support defined in field_metadata.proto.
@@ -408,7 +422,7 @@ fileprivate let _protobuf_package = "meshtastic"
 
 extension FieldMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".FieldMetadata"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}diy_only\0\u{3}admin_only\0\u{3}min_value\0\u{3}max_value\0\u{1}unit\0\u{1}deprecated\0\u{1}label\0\u{1}description\0\u{1}keywords\0\u{3}since_firmware\0\u{3}deprecated_since\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}diy_only\0\u{3}admin_only\0\u{3}min_value\0\u{3}max_value\0\u{1}unit\0\u{1}deprecated\0\u{1}label\0\u{1}description\0\u{1}keywords\0\u{3}since_firmware\0\u{3}deprecated_since\0\u{3}oem_fixed_gps\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -427,6 +441,7 @@ extension FieldMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
       case 9: try { try decoder.decodeSingularStringField(value: &self._keywords) }()
       case 10: try { try decoder.decodeSingularStringField(value: &self._sinceFirmware) }()
       case 11: try { try decoder.decodeSingularStringField(value: &self._deprecatedSince) }()
+      case 12: try { try decoder.decodeSingularBoolField(value: &self._oemFixedGps) }()
       default: break
       }
     }
@@ -470,6 +485,9 @@ extension FieldMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     try { if let v = self._deprecatedSince {
       try visitor.visitSingularStringField(value: v, fieldNumber: 11)
     } }()
+    try { if let v = self._oemFixedGps {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 12)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -485,6 +503,7 @@ extension FieldMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     if lhs._keywords != rhs._keywords {return false}
     if lhs._sinceFirmware != rhs._sinceFirmware {return false}
     if lhs._deprecatedSince != rhs._deprecatedSince {return false}
+    if lhs._oemFixedGps != rhs._oemFixedGps {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

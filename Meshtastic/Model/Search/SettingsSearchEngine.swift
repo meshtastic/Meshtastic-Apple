@@ -16,8 +16,8 @@ enum SettingsSearchEngine {
 	/// What the app knows at query time. Everything here changes; the index does not.
 	struct Availability {
 		let isConnected: Bool
-		/// Whether the connected hardware model is tagged DIY.
-		let isDIYHardware: Bool
+		/// Whether the connected board's maker wired the GPS (`oem_fixed_gps`).
+		let hasFixedGPS: Bool
 		/// A managed radio exposes no configuration; its settings screens render
 		/// read-only, so results behave as they do when disconnected.
 		let isManaged: Bool
@@ -27,18 +27,18 @@ enum SettingsSearchEngine {
 
 		init(
 			isConnected: Bool,
-			isDIYHardware: Bool,
+			hasFixedGPS: Bool,
 			isManaged: Bool,
 			showsDeveloperSettings: Bool = false
 		) {
 			self.isConnected = isConnected
-			self.isDIYHardware = isDIYHardware
+			self.hasFixedGPS = hasFixedGPS
 			self.isManaged = isManaged
 			self.showsDeveloperSettings = showsDeveloperSettings
 		}
 
 		static let disconnected = Availability(
-			isConnected: false, isDIYHardware: false, isManaged: false)
+			isConnected: false, hasFixedGPS: false, isManaged: false)
 	}
 
 	/// Queries shorter than this match nothing. One character matches most of the
@@ -138,11 +138,9 @@ enum SettingsSearchEngine {
 				comment: "Why a settings search result is de-emphasised"))
 		}
 
-		// The DIY tag marks a product line, not how a particular unit was assembled,
-		// so this hides GPIO settings on a hand-wired commercial board. They stay
-		// reachable by opening the screen. When disconnected the hardware is unknown,
-		// and showing is better than hiding on an assumption.
-		if metadata?.diyOnly == true, availability.isConnected, !availability.isDIYHardware {
+		// GPS pin settings are hidden only on boards whose maker wired the GPS. Any
+		// other or unknown board keeps them, and so does a disconnected app.
+		if metadata?.diyOnly == true, availability.isConnected, availability.hasFixedGPS {
 			return .hidden
 		}
 

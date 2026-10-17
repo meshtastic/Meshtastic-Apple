@@ -26,8 +26,8 @@ struct SettingsNodeSnapshot: Identifiable, Equatable {
 	let hasTAKConfig: Bool
 	let userLongName: String?
 	let userIsLicensed: Bool
-	/// Hardware model slug, for the DIY check in settings search.
-	let hwModelSlug: String?
+	/// Hardware model, for hiding GPS pin settings on boards with maker-wired GPS.
+	let hwModelId: Int32?
 	let userIsPkiEncrypted: Bool
 	let role: Int32?
 	let regionCode: Int?
@@ -70,7 +70,7 @@ struct SettingsNodeSnapshot: Identifiable, Equatable {
 			user.modelContext != nil,
 			!user.isDeleted {
 			userLongName = user.longName
-			hwModelSlug = user.hwModel
+			hwModelId = user.hwModelId
 			userIsLicensed = user.isLicensed
 			userIsPkiEncrypted = user.pkiEncrypted
 			let userRole = user.role
@@ -83,7 +83,7 @@ struct SettingsNodeSnapshot: Identifiable, Equatable {
 			}
 		} else {
 			userLongName = nil
-			hwModelSlug = nil
+			hwModelId = nil
 			userIsLicensed = false
 			userIsPkiEncrypted = false
 			if let deviceConfig = node.deviceConfig,
@@ -669,9 +669,7 @@ struct Settings: View {
 	private var searchAvailability: SettingsSearchEngine.Availability {
 		SettingsSearchEngine.Availability(
 			isConnected: accessoryManager.isConnected,
-			// The DIY tag marks a product line rather than how a unit was built, so
-			// this is a hint and not a fact. See spec 019 FR-012a.
-			isDIYHardware: connectedHardwareIsDIY,
+			hasFixedGPS: configTargetHasFixedGPS,
 			isManaged: connectedNodeIsManaged,
 			// The same condition the Developers section itself renders on, so search
 			// never offers a screen this build does not show.
@@ -683,9 +681,12 @@ struct Settings: View {
 		nodes.first(where: { $0.num == Int64(preferredNodeNum) })?.isManaged ?? false
 	}
 
-	private var connectedHardwareIsDIY: Bool {
-		guard let node = nodes.first(where: { $0.num == Int64(preferredNodeNum) }) else { return false }
-		return DIYHardware.isDIY(slug: node.hwModelSlug)
+	/// The node the config screens edit: the one picked for remote admin, else the connected radio.
+	/// Search hides GPS pin settings by this node's hardware, as the Position screen does.
+	private var configTargetHasFixedGPS: Bool {
+		let nodeNum = selectedNode > 0 ? selectedNode : preferredNodeNum
+		guard let node = nodes.first(where: { $0.num == Int64(nodeNum) }) else { return false }
+		return FixedGPSHardware.hasFixedGPS(hwModelId: node.hwModelId)
 	}
 
 	var body: some View {
