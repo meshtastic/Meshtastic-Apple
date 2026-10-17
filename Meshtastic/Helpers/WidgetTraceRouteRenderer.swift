@@ -125,7 +125,10 @@ final class WidgetTraceRouteRenderer {
 	private func clearIfNeeded() {
 		guard lastSavedKey != Self.noRouteKey else { return }
 		renderTask?.cancel()
+		// Cleared here, not in the cancelled task: a handle left set would make
+		// every later deferral look already scheduled.
 		deferredRefresh?.cancel()
+		deferredRefresh = nil
 		inFlightKey = nil
 		if WidgetTraceRouteStore.load() != nil {
 			WidgetTraceRouteStore.clear()
@@ -139,9 +142,11 @@ final class WidgetTraceRouteRenderer {
 		guard deferredRefresh == nil else { return }
 		deferredRefresh = Task { [weak self] in
 			try? await Task.sleep(for: .seconds(delay))
-			guard !Task.isCancelled else { return }
-			self?.deferredRefresh = nil
-			self?.refresh()
+			// A cancelled task leaves the property alone; whoever cancelled it
+			// already cleared it, and it may hold a newer task by now.
+			guard let self, !Task.isCancelled else { return }
+			self.deferredRefresh = nil
+			self.refresh()
 		}
 	}
 

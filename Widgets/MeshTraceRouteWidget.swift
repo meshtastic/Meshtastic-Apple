@@ -304,12 +304,20 @@ private struct HopsLabel: View {
 	let count: Int
 	let color: Color
 
+	// The app's own "%d Hops" plural key, so the count reads the same here and
+	// in the trace route log, in every language.
 	var body: some View {
-		Text(count == 0 ? "Direct" : (count == 1 ? "1 hop" : "\(count) hops"))
-			.font(.caption2.weight(.semibold))
-			.foregroundStyle(color)
-			.lineLimit(1)
-			.fixedSize()
+		Group {
+			if count == 0 {
+				Text("Direct")
+			} else {
+				Text("\(Int32(count)) Hops")
+			}
+		}
+		.font(.caption2.weight(.semibold))
+		.foregroundStyle(color)
+		.lineLimit(1)
+		.fixedSize()
 	}
 }
 
@@ -502,10 +510,11 @@ private struct AgeLine: View {
 
 // MARK: Helpers
 
+/// "7.3 sec", formatted for the locale the same way the app's trace route log
+/// shows a round trip.
 private func roundTripText(_ seconds: TimeInterval) -> String {
-	seconds < 10
-		? "\(seconds.formatted(.number.precision(.fractionLength(1)))) s"
-		: "\(Int(seconds.rounded())) s"
+	Duration.milliseconds(Int64((seconds * 1000).rounded()))
+		.formatted(.units(allowed: [.seconds], width: .abbreviated, fractionalPart: .show(length: 1)))
 }
 
 private func distanceText(_ meters: Double) -> String {
