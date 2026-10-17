@@ -148,6 +148,8 @@ red. **DNS is optional** and may be left blank, which stores it as unset.
 
 GPS update interval, position precision, and smart position broadcasting. Enable **Broadcast Position** to share your location with the mesh.
 
+The GPS pin settings (the receive, transmit and enable GPIOs) are for boards where you wire up the GPS yourself. On a board whose maker builds the GPS in, they are hidden, here and in settings search.
+
 The **GPS Mode** selector (Enabled / Disabled / Not Present) is the single source of truth for the GPS state that the app writes to the radio. The older on/off `gpsEnabled` field it replaced is deprecated: the app no longer writes it, but still reads it from older firmware so existing devices keep working. No action is needed when upgrading — your GPS setting is preserved.
 
 ### Power
