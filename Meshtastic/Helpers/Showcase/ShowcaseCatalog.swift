@@ -14,6 +14,8 @@ enum ShowcaseVendor: String, CaseIterable, Sendable {
 	case seeed = "Seeed"
 	case elecrow = "Elecrow"
 	case muzi = "muzi"
+	case heltec = "Heltec"
+	case lilygo = "LilyGo"
 
 	/// The maker's name as it brands itself, for the cards on the tables.
 	var name: String {
@@ -22,17 +24,21 @@ enum ShowcaseVendor: String, CaseIterable, Sendable {
 		case .seeed: "Seeed Studio"
 		case .elecrow: "Elecrow"
 		case .muzi: "muzi works"
+		case .heltec: "Heltec"
+		case .lilygo: "LILYGO"
 		}
 	}
 
-	/// RAK on the front table with muzi works after it, Seeed on the next one back, then Elecrow.
-	/// The two tables behind are free for more makers. Makers that share a row stand one after the
-	/// other, each behind its own brand card.
+	/// RAK on the front table with muzi works after it, then Seeed, Elecrow, Heltec and LILYGO, one
+	/// table each toward the back wall. Makers that share a row stand one after the other, each
+	/// behind its own brand card.
 	var row: ShowcaseDisplayRow {
 		switch self {
 		case .rak, .muzi: Self.row(on: .table1)
 		case .seeed: Self.row(on: .table2)
 		case .elecrow: Self.row(on: .table3)
+		case .heltec: Self.row(on: .table4)
+		case .lilygo: Self.row(on: .table5)
 		}
 	}
 
@@ -47,6 +53,8 @@ enum ShowcaseVendor: String, CaseIterable, Sendable {
 		case .muzi: 1
 		case .seeed: 2
 		case .elecrow: 3
+		case .heltec: 4
+		case .lilygo: 5
 		}
 	}
 
@@ -62,6 +70,11 @@ enum ShowcaseVendor: String, CaseIterable, Sendable {
 		if name.hasPrefix("thinknode") || name.hasPrefix("crowpanel") { return .elecrow }
 		if name.hasPrefix("seeed") || name.hasPrefix("wio") || name.hasPrefix("tracker-t1000") { return .seeed }
 		if name.hasPrefix("muzi") { return .muzi }
+		if name.hasPrefix("heltec") { return .heltec }
+		if name.hasPrefix("lilygo") || name.hasPrefix("t-") || name.hasPrefix("tbeam") || name.hasPrefix("tlora")
+			|| name.hasPrefix("tdeck") || name.hasPrefix("t5s3") || name.hasPrefix("techo") || name.hasPrefix("mini-epaper") {
+			return .lilygo
+		}
 		return nil
 	}
 }

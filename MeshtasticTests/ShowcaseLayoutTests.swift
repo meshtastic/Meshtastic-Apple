@@ -108,7 +108,7 @@ struct ShowcaseLayoutTests {
 		#expect(Float(grid.columns) * grid.pitch <= ShowcaseRoomGeometry.rackSize.x)
 		#expect(Float(grid.rows) * grid.pitch <= ShowcaseRoomGeometry.rackSize.y)
 		// Hung on the back wall it is further away, so its cells are bigger and fewer.
-		#expect(grid.perPage > 60)
+		#expect(grid.perPage == 56) // four rows of 14
 		for index in [0, grid.columns - 1, grid.perPage / 2, grid.perPage - 1] {
 			#expect(grid.cell(at: grid.center(ofCellOnPage: index)) == index)
 		}
