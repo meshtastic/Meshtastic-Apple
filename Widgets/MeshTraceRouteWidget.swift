@@ -214,10 +214,7 @@ private struct RouteHeader: View {
 
 	var body: some View {
 		HStack(spacing: 5) {
-			Image("m-logo-white")
-				.resizable()
-				.aspectRatio(contentMode: .fit)
-				.frame(height: 10)
+			MeshLogo(height: 10)
 			if !compact {
 				Text("Trace Route")
 					.font(.caption.weight(.semibold))
