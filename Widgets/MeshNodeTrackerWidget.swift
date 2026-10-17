@@ -402,19 +402,6 @@ private struct OnlineDot: View {
 	}
 }
 
-private struct SignalBars: View {
-	let rating: Int?
-
-	var body: some View {
-		if let rating {
-			Image(systemName: "cellularbars", variableValue: Double(rating) / 3)
-				.font(.caption)
-				.widgetAccentable()
-				.accessibilityLabel("Signal \(rating) of 3")
-		}
-	}
-}
-
 private struct HopsLine: View {
 	let hopsAway: Int32
 

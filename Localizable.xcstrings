@@ -310,6 +310,306 @@
         }
       }
     },
+    "%lld Hops" : {
+      "comment" : "Live Activity: how many hops away the tracked node is",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%lld Hops"
+          }
+        }
+      }
+    },
+    "Heard %@ ago" : {
+      "comment" : "How long ago a node was last heard; the argument is a relative time",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Heard %@ ago"
+          }
+        }
+      }
+    },
+    "iOS stops a Live Activity after 8 hours. Only one runs at a time." : {
+      "comment" : "Live Activity sheet: footer when no Live Activity is running",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "iOS stops a Live Activity after 8 hours. Only one runs at a time."
+          }
+        }
+      }
+    },
+    "Live Activity" : {
+      "comment" : "Connect screen: section and sheet title for the Live Activity",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Live Activity"
+          }
+        }
+      }
+    },
+    "Mesh Status" : {
+      "comment" : "Live Activity: the mode that shows the connection, nodes online, unread messages and battery",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Mesh Status"
+          }
+        }
+      }
+    },
+    "No nodes to track yet" : {
+      "comment" : "Live Activity sheet: the node list is empty",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "No nodes to track yet"
+          }
+        }
+      }
+    },
+    "Not heard yet" : {
+      "comment" : "Live Activity: the tracked node hasn't been heard",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Not heard yet"
+          }
+        }
+      }
+    },
+    "One node's battery, signal, when it was last heard and how far away it is." : {
+      "comment" : "Live Activity sheet: what the Track a Node mode shows",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "One node's battery, signal, when it was last heard and how far away it is."
+          }
+        }
+      }
+    },
+    "Search nodes" : {
+      "comment" : "Live Activity sheet: search field prompt for the node list",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Search nodes"
+          }
+        }
+      }
+    },
+    "Show" : {
+      "comment" : "Live Activity sheet: heading of the choice between Mesh Status and Track a Node",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Show"
+          }
+        }
+      }
+    },
+    "Show the mesh or one node on the Lock Screen and in the Dynamic Island." : {
+      "comment" : "Connect screen: footer of the Live Activity section",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Show the mesh or one node on the Lock Screen and in the Dynamic Island."
+          }
+        }
+      }
+    },
+    "Signal %lld of 3" : {
+      "comment" : "Widget: VoiceOver label for the signal bars; the argument is 0 to 3",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Signal %lld of 3"
+          }
+        }
+      }
+    },
+    "Start Live Activity" : {
+      "comment" : "Live Activity sheet: start the chosen Live Activity",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Start Live Activity"
+          }
+        }
+      }
+    },
+    "Stop Live Activity" : {
+      "comment" : "Live Activity sheet: end the running Live Activity",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Stop Live Activity"
+          }
+        }
+      }
+    },
+    "Swipe left to disconnect. Long press for more options." : {
+      "comment" : "Bluetooth tip on the Connect screen",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Swipe left to disconnect. Long press for more options."
+          }
+        }
+      }
+    },
+    "Switch Live Activity" : {
+      "comment" : "Live Activity sheet: replace the running Live Activity with the chosen one",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Switch Live Activity"
+          }
+        }
+      }
+    },
+    "The connection, nodes online, unread messages and the radio's battery." : {
+      "comment" : "Live Activity sheet: what the Mesh Status mode shows",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The connection, nodes online, unread messages and the radio's battery."
+          }
+        }
+      }
+    },
+    "Track a Node" : {
+      "comment" : "Live Activity sheet: the mode that shows one node",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Track a Node"
+          }
+        }
+      }
+    },
+    "Tracking %@" : {
+      "comment" : "Connect screen: the running Live Activity tracks this node; the argument is its short name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Tracking %@"
+          }
+        }
+      }
+    },
+    "Tracking a node" : {
+      "comment" : "Connect screen: the running Live Activity tracks a node whose name isn't known",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Tracking a node"
+          }
+        }
+      }
+    },
+    "Until %@" : {
+      "comment" : "Live Activity: when it stops updating; the argument is a time",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Until %@"
+          }
+        }
+      }
+    },
+    "Updated %@ ago" : {
+      "comment" : "Live Activity: how long ago its numbers were updated; the argument is a relative time",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Updated %@ ago"
+          }
+        }
+      }
+    },
+    "Updates until %@." : {
+      "comment" : "Connect screen: when the running Live Activity stops updating; the argument is a time",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Updates until %@."
+          }
+        }
+      }
+    },
+    "Updates until %@. iOS stops a Live Activity after 8 hours." : {
+      "comment" : "Live Activity sheet: when the running Live Activity stops updating; the argument is a time",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Updates until %@. iOS stops a Live Activity after 8 hours."
+          }
+        }
+      }
+    },
+    "via %@" : {
+      "comment" : "Live Activity: the radio the data came through; the argument is its short name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "via %@"
+          }
+        }
+      }
+    },
     "· %lld outside" : {
       "comment" : "Spatial map: nodes too far away to fit on the terrain",
       "localizations" : {
@@ -5490,6 +5790,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "開啟 3D 地圖"
+          }
+        }
+      }
+    },
+    "Pick a node below" : {
+      "comment" : "Live Activity sheet: shown in place of the tracked node until one is picked from the list",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Pick a node below"
           }
         }
       }

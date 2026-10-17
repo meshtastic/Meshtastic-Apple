@@ -16,7 +16,7 @@ struct ConnectionTip: Tip {
 		Text("Connected Radio")
 	}
 	var message: Text? {
-		Text("Swipe left to disconnect. Long press to start the live activity.")
+		Text("Swipe left to disconnect. Long press for more options.")
 	}
 	var image: Image? {
 		Image("custom.mesh.radio")

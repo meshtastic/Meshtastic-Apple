@@ -192,6 +192,7 @@ final class WidgetDataBroker {
 			recentMessages: recent
 		)
 		WidgetSnapshotStore.save(snapshot)
+		MeshLiveActivityManager.shared.meshStatusDidUpdate(snapshot)
 		// The map renderer throttles itself; it only redraws when pins moved.
 		WidgetMapRenderer.shared.refresh(nodes: nodes, radioNum: radioNum)
 		// Catches up after launch or install; the save hook covers new routes.

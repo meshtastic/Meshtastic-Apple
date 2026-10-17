@@ -13,9 +13,6 @@ import CoreBluetooth
 import MeshtasticProtobufs
 import OSLog
 import TipKit
-#if canImport(ActivityKit)
-import ActivityKit
-#endif
 
 struct Connect: View {
 	
@@ -32,9 +29,7 @@ struct Connect: View {
 	@State private var firmwareUpdateNotice: FirmwareUpdateNotice?
 	@State var isUnsetRegion = false
 	@State var showSecurityVersionNag = false
-#if !targetEnvironment(macCatalyst)
-	@State var liveActivityStarted = false
-#endif
+	@ObservedObject private var liveActivities = MeshLiveActivityManager.shared
 	@ObservedObject var manualConnections = ManualConnectionList.shared
 	@ObservedObject private var nymeaProvisioning = NymeaProvisioningManager.shared
 	@Environment(\.scenePhase) private var scenePhase
@@ -44,6 +39,7 @@ struct Connect: View {
 	@State private var isSwitchingRadio = false
 	@State private var showingShutdownConfirm = false
 	@State private var showingShareContactQR = false
+	@State private var showingLiveActivitySheet = false
 	/// The connected node as a plain protobuf value, copied when the share menu item is tapped.
 	/// The sheet outlives the row it was opened from, and reading a faulted @Model after a
 	/// reconnect traps, so nothing SwiftData-backed is held here.
@@ -288,25 +284,6 @@ struct Connect: View {
 								
 								if let node = safeNode {
 									Label("\(String(node.num))", systemImage: "number")
-#if !targetEnvironment(macCatalyst)
-									if accessoryManager.state == .subscribed {
-										Button {
-											if !liveActivityStarted {
-#if canImport(ActivityKit)
-												Logger.services.info("Start live activity.")
-												startNodeActivity()
-#endif
-											} else {
-#if canImport(ActivityKit)
-												Logger.services.info("Stop live activity.")
-												endActivity()
-#endif
-											}
-										} label: {
-											Label("Mesh Live Activity", systemImage: liveActivityStarted ? "stop" : "play")
-										}
-									}
-#endif
 									if ShareContactQR.canShareContact(for: node) {
 										Button {
 											// Same liveness re-check as Power Off below: the node captured
@@ -427,6 +404,14 @@ struct Connect: View {
 							}
 						}
 						.textCase(nil)
+					}
+
+					// Shown while one runs even when disconnected, so it can always be stopped.
+					if liveActivities.currentMode != nil
+						|| (accessoryManager.isConnected && !lockdown.isBlockingSession && liveActivities.isAvailable) {
+						LiveActivitySection(liveActivities: liveActivities) {
+							showingLiveActivitySheet = true
+						}
 					}
 					
 					if !(accessoryManager.isConnected || accessoryManager .isConnecting) {
@@ -580,6 +565,11 @@ struct Connect: View {
 					ShareContactQRDialog(manuallyVerified: true, node: shareContactNode)
 				}
 			}
+			// On the list, not its row: the list redraws with every packet, and a sheet
+			// attached to a row it rebuilds loses its choices mid-edit.
+			.sheet(isPresented: $showingLiveActivitySheet) {
+				LiveActivitySheet(liveActivities: liveActivities)
+			}
 		}
 		.sheet(isPresented: $showSecurityVersionNag) {
 			SecurityVersionNag(minimumSecureVersion: accessoryManager.securityVersion, version: accessoryManager.activeConnection?.device.firmwareVersion ?? "?.?.?")
@@ -717,59 +707,6 @@ struct Connect: View {
 			openURL(url)
 		}
 	}
-#if !targetEnvironment(macCatalyst)
-#if canImport(ActivityKit)
-	func startNodeActivity() {
-		liveActivityStarted = true
-		// 15 Minutes Local Stats Interval
-		let timerSeconds = 900
-		let nodeNum = node?.num ?? 0
-		let metricsType: Int32 = 4
-		var statsDescriptor = FetchDescriptor<TelemetryEntity>(
-			predicate: TelemetryEntity.predicate(forNode: nodeNum, metricsType: metricsType),
-			sortBy: [SortDescriptor(\TelemetryEntity.time, order: .reverse)]
-		)
-		statsDescriptor.fetchLimit = 1
-		// No node means no stats; a lookup for node 0 would only find unlinked rows.
-		let mostRecent = node == nil ? nil : try? context.fetch(statsDescriptor).first
-		
-		let activityAttributes = MeshActivityAttributes(nodeNum: Int(node?.num ?? 0), name: node?.user?.longName?.addingVariationSelectors ?? "unknown", shortName: node?.user?.shortName ?? "?")
-		
-		let future = Date(timeIntervalSinceNow: Double(timerSeconds))
-		let initialContentState = MeshActivityAttributes.ContentState(uptimeSeconds: UInt32(bitPattern: mostRecent?.uptimeSeconds ?? 0),
-																	  channelUtilization: mostRecent?.channelUtilization ?? 0.0,
-																	  airtime: mostRecent?.airUtilTx ?? 0.0,
-																	  sentPackets: UInt32(bitPattern: mostRecent?.numPacketsTx ?? 0),
-																	  receivedPackets: UInt32(bitPattern: mostRecent?.numPacketsRx ?? 0),
-																	  badReceivedPackets: UInt32(bitPattern: mostRecent?.numPacketsRxBad ?? 0),
-																	  dupeReceivedPackets: UInt32(bitPattern: mostRecent?.numRxDupe ?? 0),
-																	  packetsSentRelay: UInt32(bitPattern: mostRecent?.numTxRelay ?? 0),
-																	  packetsCanceledRelay: UInt32(bitPattern: mostRecent?.numTxRelayCanceled ?? 0),
-																	  nodesOnline: UInt32(bitPattern: mostRecent?.numOnlineNodes ?? 0),
-																	  totalNodes: UInt32(bitPattern: mostRecent?.numTotalNodes ?? 0),
-																	  timerRange: Date.now...future)
-		
-		let activityContent = ActivityContent(state: initialContentState, staleDate: Calendar.current.date(byAdding: .minute, value: 15, to: Date())!)
-		
-		do {
-			let myActivity = try Activity<MeshActivityAttributes>.request(attributes: activityAttributes, content: activityContent,
-																		  pushType: nil)
-			Logger.services.info("Requested MyActivity live activity. ID: \(myActivity.id)")
-		} catch {
-			Logger.services.error("Error requesting live activity: \(error.localizedDescription, privacy: .public)")
-		}
-	}
-	
-	func endActivity() {
-		liveActivityStarted = false
-		Task {
-			for activity in Activity<MeshActivityAttributes>.activities where activity.attributes.nodeNum == node?.num ?? 0 {
-				await activity.end(nil, dismissalPolicy: .immediate)
-			}
-		}
-	}
-#endif
-#endif
 	func didDismissSheet() {
 		// bleManager.disconnectPeripheral(reconnect: false)
 		Task {

@@ -23,7 +23,15 @@
 <p>Long press a connected radio row and choose <strong>Power Off</strong> to shut the radio down completely. Unlike <strong>Disconnect</strong> — which only stops the app from syncing — Power Off turns the radio off entirely, and you must physically power it back on to use it again.</p>
 <p>Because that is hard to undo on a roof, tower, or other remote node, the app asks you to confirm before sending the shutdown, so an accidental tap (or a misplaced finger) won't power the device off.</p>
 <h2>Live Activity</h2>
-<p>Long press a connected radio row to start a Live Activity (iOS 16.2+). The Live Activity shows mesh status on your Lock Screen and in Dynamic Island.</p>
+<p>A Live Activity keeps the mesh on your Lock Screen and in the Dynamic Island. It shows one of two things, chosen when you start it:</p>
+<ul>
+<li><strong>Mesh status</strong> — the connection, nodes online, unread messages and the radio's battery.</li>
+<li><strong>One node</strong> — its battery, signal, when it was last heard and how far away it is.</li>
+</ul>
+<p>Tap <strong>Live Activity</strong> on the Connect screen while a radio is connected, choose what to show (for a node, pick it from the list; favorites come first), and tap <strong>Start Live Activity</strong>. You can also open a node and choose <strong>Track in Live Activity</strong>.</p>
+<p>Only one runs at a time; starting the other kind switches it. Stop it from the same <strong>Live Activity</strong> row, or from the node's detail screen.</p>
+<p>If the radio's link drops, the Live Activity shows <strong>Disconnected</strong> and picks up again when the app reconnects. Disconnecting the radio yourself, or switching to a different radio, ends it. iOS stops updating a Live Activity after 8 hours, and the Connect screen shows when that will be.</p>
+<p>On iOS 18 and later, a running Live Activity also appears in the Smart Stack on a paired Apple Watch, and on iOS 26 on the CarPlay Dashboard.</p>
 <h2>Managing Multiple Radios</h2>
 <p>You can pair multiple radios but only one is active at a time. Switch between them by tapping a different device in the Connect view.</p>
 <p>When you switch radios, the app restores the last saved local database for that radio if one exists, then reconnects and resumes syncing with the newly active device. After the new radio finishes its initial config handshake, the app first reapplies the bundled Meshtastic hardware catalog that ships with the app, then refreshes the same catalog from the Meshtastic API in the background so hardware names, images, and firmware-target metadata stay current.</p>
@@ -85,6 +93,6 @@
 </ul>
 <hr />
 <div class="tips-callout"><strong>Tip — Connected Radio</strong>
-Swipe left to disconnect. Long press to start the Live Activity or to power off the radio (you'll be asked to confirm).</div>
+Swipe left to disconnect. Long press for more options, such as powering off the radio (you'll be asked to confirm).</div>
 </body>
 </html>

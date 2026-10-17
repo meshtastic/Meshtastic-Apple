@@ -18,9 +18,6 @@ import Intents
 import OSLog
 @preconcurrency import SwiftData
 import UserNotifications
-#if canImport(ActivityKit)
-import ActivityKit
-#endif
 
 class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPInterfaceControllerDelegate {
 
@@ -745,67 +742,19 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 
 	// MARK: - Live Activity
 
-#if canImport(ActivityKit) && !targetEnvironment(macCatalyst)
+	/// In the car, a mesh status Live Activity shows on the CarPlay Dashboard
+	/// (iOS 26). It starts only when none is running, so one the user started,
+	/// in either mode, is left alone.
 	private func startLiveActivityIfNeeded() {
-		guard ActivityAuthorizationInfo().areActivitiesEnabled else {
-			Logger.services.info("🚗 [CarPlay] Live Activities not enabled")
-			return
-		}
-
-		// Don't start another if one is already running
-		guard Activity<MeshActivityAttributes>.activities.isEmpty else {
-			Logger.services.info("🚗 [CarPlay] Live Activity already active")
-			return
-		}
-
-		guard let connectedNum = AccessoryManager.shared.activeDeviceNum else { return }
-		let connectedNode = getNodeInfo(id: connectedNum, context: context)
-		let nodeName = connectedNode?.user?.longName ?? "Meshtastic"
-		let nodeShortName = connectedNode?.user?.shortName ?? "?"
-
-		// Fetch latest local stats telemetry
-		let mostRecent = connectedNode?.latestLocalStats
-
-		let timerSeconds = 900 // 15 minute local stats interval
-		let future = Date(timeIntervalSinceNow: Double(timerSeconds))
-		let initialState = MeshActivityAttributes.ContentState(
-			uptimeSeconds: UInt32(bitPattern: mostRecent?.uptimeSeconds ?? 0),
-			channelUtilization: mostRecent?.channelUtilization ?? 0.0,
-			airtime: mostRecent?.airUtilTx ?? 0.0,
-			sentPackets: UInt32(bitPattern: mostRecent?.numPacketsTx ?? 0),
-			receivedPackets: UInt32(bitPattern: mostRecent?.numPacketsRx ?? 0),
-			badReceivedPackets: UInt32(bitPattern: mostRecent?.numPacketsRxBad ?? 0),
-			dupeReceivedPackets: UInt32(bitPattern: mostRecent?.numRxDupe ?? 0),
-			packetsSentRelay: UInt32(bitPattern: mostRecent?.numTxRelay ?? 0),
-			packetsCanceledRelay: UInt32(bitPattern: mostRecent?.numTxRelayCanceled ?? 0),
-			nodesOnline: UInt32(bitPattern: mostRecent?.numOnlineNodes ?? 0),
-			totalNodes: UInt32(bitPattern: mostRecent?.numTotalNodes ?? 0),
-			timerRange: Date.now...future
-		)
-
-		let attributes = MeshActivityAttributes(nodeNum: Int(connectedNum), name: nodeName, shortName: nodeShortName)
-		let content = ActivityContent(state: initialState, staleDate: Calendar.current.date(byAdding: .minute, value: 15, to: Date())!)
-
-		do {
-			let activity = try Activity<MeshActivityAttributes>.request(attributes: attributes, content: content, pushType: nil)
-			Logger.services.info("🚗 [CarPlay] Started Live Activity: \(activity.id)")
-		} catch {
-			Logger.services.error("🚗 [CarPlay] Failed to start Live Activity: \(error.localizedDescription, privacy: .public)")
-		}
+		let liveActivities = MeshLiveActivityManager.shared
+		guard liveActivities.currentMode == nil else { return }
+		liveActivities.start(mode: .meshStatus, startedByCarPlay: true)
 	}
 
+	/// Ends only the activity CarPlay started.
 	private func endLiveActivity() {
-		Task {
-			for activity in Activity<MeshActivityAttributes>.activities {
-				await activity.end(nil, dismissalPolicy: .immediate)
-				Logger.services.info("🚗 [CarPlay] Ended Live Activity: \(activity.id)")
-			}
-		}
+		MeshLiveActivityManager.shared.endIfStartedByCarPlay()
 	}
-#else
-	private func startLiveActivityIfNeeded() {}
-	private func endLiveActivity() {}
-#endif
 }
 #endif
 #endif

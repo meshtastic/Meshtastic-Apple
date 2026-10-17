@@ -839,6 +839,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		// Widgets must never show a dead link as live; every state change
 		// refreshes the shared snapshot (debounced in the broker).
 		WidgetDataBroker.shared.refresh(.connection)
+		MeshLiveActivityManager.shared.connectionStateChanged(newState)
 	}
 
 	func send(_ data: ToRadio, debugDescription: String? = nil) async throws {

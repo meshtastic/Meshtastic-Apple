@@ -12,9 +12,6 @@ import MeshtasticProtobufs
 import SwiftUI
 import RegexBuilder
 import OSLog
-#if canImport(ActivityKit)
-import ActivityKit
-#endif
 
 // Simple extension to concisely pass values through a has_XXX boolean check
 fileprivate extension Bool {
@@ -561,6 +558,78 @@ actor MeshPackets {
 		return results.compactMap {
 			WatchNode.make(from: $0, userLocation: userLocation, maxDistanceMeters: maxDistanceMeters)
 		}
+	}
+
+	// MARK: - Live Activity reading
+
+	/// What the Live Activity shows for a tracked node, value-copied on this actor for the same
+	/// reason as the watch snapshot: this actor deletes rows, and only value types cross back.
+	/// It also sees this actor's unsaved writes, so a reading taken right after a packet isn't
+	/// a debounced save behind.
+	struct LiveActivityNodeReading: Sendable {
+		let battery: Int32?
+		/// 0 (none) to 3 (good); nil unless heard directly over LoRa, as on the node detail screen.
+		let signalRating: Int?
+		let lastHeard: Date?
+		let hopsAway: Int32
+		/// Meters from the connected radio, when both have a position.
+		let distanceMeters: Double?
+		let ignored: Bool
+	}
+
+	/// Why a reading is or isn't there: only a node that's really gone should end the activity,
+	/// not a retired actor or a failed fetch.
+	enum LiveActivityNodeLookup: Sendable {
+		case found(LiveActivityNodeReading)
+		/// Not in the database: deleted, evicted or cleared.
+		case missing
+		/// Couldn't look: this instance was retired, or the fetch failed.
+		case unavailable
+	}
+
+	func liveActivityNodeReading(num: Int64, radioNum: Int64?) -> LiveActivityNodeLookup {
+		guard !invalidated else { return .unavailable }
+		// Fetch by the scalar number only; an optional-relationship nil check in a predicate
+		// crashes on iOS 26.
+		var nodeDescriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == num })
+		nodeDescriptor.fetchLimit = 1
+		let fetched: [NodeInfoEntity]
+		do {
+			fetched = try modelContext.fetch(nodeDescriptor)
+		} catch {
+			Logger.data.error("🛰️ Live Activity node fetch failed: \(error.localizedDescription, privacy: .public)")
+			return .unavailable
+		}
+		guard let node = fetched.first else { return .missing }
+
+		var radio: NodeInfoEntity?
+		if let radioNum {
+			var radioDescriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == radioNum })
+			radioDescriptor.fetchLimit = 1
+			radio = try? modelContext.fetch(radioDescriptor).first
+		}
+
+		var signalRating: Int?
+		if node.snr != 0 && !node.viaMqtt && node.hopsAway == 0 {
+			let preset = (radio?.loRaConfig?.modemPreset).flatMap { ModemPresets(rawValue: Int($0)) } ?? .longFast
+			signalRating = getLoRaSignalStrength(snr: node.snr, rssi: node.rssi, preset: preset, noiseFloor: radio?.recentNoiseFloor).rawValue
+		}
+
+		var distanceMeters: Double?
+		if let nodeCoordinate = node.latestPosition?.nodeCoordinate,
+		   let radioCoordinate = radio?.latestPosition?.nodeCoordinate {
+			distanceMeters = CLLocation(latitude: nodeCoordinate.latitude, longitude: nodeCoordinate.longitude)
+				.distance(from: CLLocation(latitude: radioCoordinate.latitude, longitude: radioCoordinate.longitude))
+		}
+
+		return .found(LiveActivityNodeReading(
+			battery: node.latestDeviceMetrics?.batteryLevel,
+			signalRating: signalRating,
+			lastHeard: node.lastHeard,
+			hopsAway: node.hopsAway,
+			distanceMeters: distanceMeters,
+			ignored: node.ignored
+		))
 	}
 
 	/// Nodes: cap the total, evicting least-recently-heard first. Never evict favorites — the user
@@ -1674,7 +1743,7 @@ actor MeshPackets {
 				telemetry.soilMoisture = telemetryMessage.environmentMetrics.hasSoilMoisture.then(telemetryMessage.environmentMetrics.soilMoisture)
 				telemetry.metricsType = 1
 			} else if telemetryMessage.variant == Telemetry.OneOf_Variant.localStats(telemetryMessage.localStats) {
-				// Local Stats for Live activity
+				// Local Stats, for the Mesh Status widget and Live Activity
 				telemetry.uptimeSeconds = Int32(truncatingIfNeeded: telemetryMessage.localStats.uptimeSeconds)
 				telemetry.channelUtilization = telemetryMessage.localStats.channelUtilization
 				telemetry.airUtilTx = telemetryMessage.localStats.airUtilTx
@@ -1761,6 +1830,16 @@ actor MeshPackets {
 				// ------------------------
 				// Low Battery notification
 				if connectedNode == Int64(packet.from) {
+					// The Live Activity shows the radio's battery; hand it over as a plain
+					// value, since the broker only rebuilds on other events.
+					if let liveActivityBattery = telemetry.batteryLevel {
+						// The radio it came from travels with it, so a radio switch before
+						// the hop can't pin this reading on the new radio.
+						let batteryRadioNum = connectedNode
+						Task { @MainActor in
+							MeshLiveActivityManager.shared.radioBatteryDidUpdate(liveActivityBattery, radioNum: batteryRadioNum)
+						}
+					}
 					let batteryLevel = telemetry.batteryLevel ?? 0
 					if UserDefaults.lowBatteryNotifications && batteryLevel > 0 && batteryLevel < 4 {
 						// Only when the notification will actually fire: snapshot plain values from the
@@ -1814,41 +1893,6 @@ actor MeshPackets {
 						WidgetDataBroker.shared.updateLocalStats(widgetStats, nodeNum: statsNodeNum)
 					}
 				}
-
-				// Update our live activity if there is one running, not available on mac
-#if !targetEnvironment(macCatalyst)
-#if canImport(ActivityKit)
-
-				let fifteenMinutesLater = Calendar.current.date(byAdding: .minute, value: (Int(15) ), to: Date())!
-				let date = Date.now...fifteenMinutesLater
-				let updatedMeshStatus = MeshActivityAttributes.MeshActivityStatus(uptimeSeconds: telemetry.uptimeSeconds.map { UInt32(bitPattern: $0) },
-																				  channelUtilization: telemetry.channelUtilization,
-																				  airtime: telemetry.airUtilTx,
-																				  sentPackets: UInt32(bitPattern: telemetry.numPacketsTx),
-																				  receivedPackets: UInt32(bitPattern: telemetry.numPacketsRx),
-																				  badReceivedPackets: UInt32(bitPattern: telemetry.numPacketsRxBad),
-																				  dupeReceivedPackets: UInt32(bitPattern: telemetry.numRxDupe),
-																				  packetsSentRelay: UInt32(bitPattern: telemetry.numTxRelay),
-																				  packetsCanceledRelay: UInt32(bitPattern: telemetry.numTxRelayCanceled),
-																				  nodesOnline: UInt32(bitPattern: telemetry.numOnlineNodes),
-																				  totalNodes: UInt32(bitPattern: telemetry.numTotalNodes),
-																				  timerRange: date)
-
-				let alertConfiguration = AlertConfiguration(title: "Mesh activity update", body: "Updated Node Stats Data.", sound: .default)
-				let updatedContent = ActivityContent(state: updatedMeshStatus, staleDate: nil)
-
-				let meshActivity = Activity<MeshActivityAttributes>.activities.first(where: { $0.attributes.nodeNum == connectedNode })
-				// Same origin guard as the widget hand-off above: another node's
-				// relayed LocalStats must not be shown as the connected radio's.
-				if meshActivity != nil, connectedNode == Int64(packet.from) {
-					Task {
-						// await meshActivity?.update(updatedContent, alertConfiguration: alertConfiguration)
-						await meshActivity?.update(updatedContent)
-						Logger.services.debug("Updated live activity.")
-					}
-				}
-#endif
-#endif
 			}
 		} else {
 			Logger.data.error("💥 Error Decoding Telemetry payload for Node \(packet.from.toHex(), privacy: .public)")
