@@ -63,6 +63,10 @@ Tap the **info button** (`info.circle`) in the bottom-right toolbar to open the 
 | Traffic | Show Apple Maps live traffic |
 | Points of Interest | Show Apple Maps points of interest |
 
+### Opening the spatial map (Apple Vision Pro)
+
+On Apple Vision Pro, the round glass button under the app's tab bar, at the window's left edge, opens the 3D spatial map from any tab. The map wheel button on the 2D map opens it too.
+
 ### Direct links on the spatial map (Apple Vision Pro)
 
 On the 3D spatial map, the **link** button in the toolbar draws the same direct links as the 2D map, between the tops of the pins. It is off by default and has its own setting. Lines use the signal quality colors, are dashed when only one direction is known, and fade as they get older. To keep the volume smooth, at most 12 SNR pills are shown: the selected node's links when a node is selected, otherwise the newest links, your radio's first. Links are hidden while a trace route is shown.

@@ -244,10 +244,10 @@
             "nodes",
             "tap",
             "from",
+            "spatial",
             "show",
             "only",
             "each",
-            "spatial",
             "route",
             "coverage",
             "position",
@@ -262,15 +262,15 @@
             "estimate",
             "location",
             "area",
+            "apple",
             "terrain",
             "shows",
             "offline",
             "maps",
             "back",
-            "while",
-            "toolbar"
+            "while"
         ],
-        "charCount": 16971
+        "charCount": 17198
     },
     {
         "id": "messages",
