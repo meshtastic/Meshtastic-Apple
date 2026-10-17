@@ -154,11 +154,11 @@ struct ShowcaseRoom {
 		for anchor in ShowcaseRoomGeometry.tables {
 			let top = ShowcaseRoomGeometry.defaultPose(anchor).position
 			let table = ModelEntity(
-				mesh: .generateBox(width: 1.9, height: 0.05, depth: ShowcaseRoomGeometry.tableDepth),
+				mesh: .generateBox(width: 1.9, height: ShowcaseRoomGeometry.tableThickness, depth: ShowcaseRoomGeometry.tableDepth),
 				materials: [SimpleMaterial(color: UIColor(red: 0.84, green: 0.70, blue: 0.52, alpha: 1), roughness: 0.45, isMetallic: false)]
 			)
 			table.name = "StandInTable"
-			table.position = top - SIMD3<Float>(0, 0.025, 0)
+			table.position = top - SIMD3<Float>(0, ShowcaseRoomGeometry.tableThickness / 2, 0)
 			room.addChild(table)
 		}
 		return room

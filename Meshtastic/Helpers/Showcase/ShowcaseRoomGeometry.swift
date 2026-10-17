@@ -45,11 +45,14 @@ enum ShowcaseRoomGeometry {
 	static let backWallZ: Float = -2.6
 	/// The display tables' usable length, inside their legs.
 	static let tableLength: Float = 1.8
-	/// Every display table, front to back. Each is the same depth, and each top is 7 cm above
-	/// the one in front, from 0.82 m to 1.1 m.
+	/// Every display table, front to back. Each is the same depth, and each top is three slab
+	/// thicknesses above the one in front, from 0.82 m to 1.42 m: the slab itself plus a gap of two
+	/// thicknesses between its underside and the table in front.
 	static let tables: [ShowcaseAnchor] = [.table1, .table2, .table3, .table4, .table5]
 	static let tableDepth: Float = 0.35
-	static let tableStep: Float = 0.07
+	/// A table top's thickness (Showcase.usda's TableN_Top).
+	static let tableThickness: Float = 0.05
+	static let tableStep: Float = tableThickness * 3
 	static let frontTableTop: Float = 0.82
 	/// The back table's back edge, just in front of the rack frame.
 	static let tablesBackEdgeZ: Float = -2.56
