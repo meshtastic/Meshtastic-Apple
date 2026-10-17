@@ -234,12 +234,27 @@ struct ShowcaseControlPanel: View {
 				}
 			}
 			HStack(spacing: 6) {
-				Text("\(scene.nodesByNum.count) radios", comment: "Showcase: how many radios are in the room")
+				// Every radio, past the reader's limit too, so it adds up with the "not shown" count.
+				Text("\(scene.totalCount) radios", comment: "Showcase: how many radios are in the room")
 				if scene.overflowCount > 0 {
 					Text("· \(scene.overflowCount) not shown", comment: "Showcase: radios with no place in the room")
 						.foregroundStyle(.secondary)
 				}
 				Spacer(minLength: 0)
+				// The rack is one element to VoiceOver; this lists its radios so each can be opened.
+				if !scene.nodesOnPage.isEmpty {
+					Menu {
+						ForEach(scene.nodesOnPage) { node in
+							Button {
+								scene.selected = node.id
+							} label: {
+								Label(node.longName, systemImage: scene.isOnline(node.id) ? "checkmark.circle.fill" : "moon.circle.fill")
+							}
+						}
+					} label: {
+						Label(String(localized: "Radios on this page", comment: "Showcase: menu listing the radios on the wall rack page that's showing; picking one opens its card"), systemImage: "list.bullet")
+					}
+				}
 			}
 			.font(.caption)
 			if scene.rackPageCount > 1 {

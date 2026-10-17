@@ -27,7 +27,8 @@ final class ShowcaseSceneController {
 	/// Everything that moves with the seated/standing setting: the room and what is in it.
 	@ObservationIgnored let world = Entity()
 	@ObservationIgnored private(set) var room: ShowcaseRoom?
-	@ObservationIgnored private var layout: ShowcaseLayout?
+	/// Observed, so an open node card follows the rack's settled online state.
+	private var layout: ShowcaseLayout?
 	@ObservationIgnored private let rackHolder = Entity()
 	@ObservationIgnored private var rackCells: ModelEntity?
 	@ObservationIgnored private var rackTextureGeneration = 0
@@ -95,6 +96,12 @@ final class ShowcaseSceneController {
 	}
 
 	static let standingSetback: Float = 0.25
+
+	/// The radios on the rack page showing, in the order of their cells, for the panel's list.
+	var nodesOnPage: [ShowcaseNodeSnapshot] {
+		guard let layout else { return [] }
+		return layout.rackPage(page).sorted { $0.key < $1.key }.compactMap { nodesByNum[$0.value] }
+	}
 
 	/// Online as the room shows it, after the layout's hysteresis.
 	func isOnline(_ nodeNum: Int64) -> Bool {

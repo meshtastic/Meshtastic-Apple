@@ -390,6 +390,18 @@
     "Next rack page" : {
       "comment" : "Showcase: show the next page of the wall rack"
     },
+    "Radios on this page" : {
+      "comment" : "Showcase: menu listing the radios on the wall rack page that's showing; picking one opens its card",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Radios on this page"
+          }
+        }
+      }
+    },
     "Offline, last heard %@" : {
       "comment" : "Showcase: VoiceOver value for a radio that is offline; the argument is when it was last heard"
     },

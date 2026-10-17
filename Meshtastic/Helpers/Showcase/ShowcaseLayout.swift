@@ -130,6 +130,15 @@ struct ShowcaseLayout {
 				overflow += 1
 			}
 		}
+		// The connected radio always has a place: on a full rack it takes the one held by the node
+		// that comes last in showcase order, which joins the overflow in its stead.
+		if let radio = nodes.first(where: \.isConnectedRadio), slots[radio.id] == nil {
+			let rank = Dictionary(nodes.enumerated().map { ($1.id, $0) }, uniquingKeysWith: { first, _ in first })
+			if let last = slots.keys.max(by: { (rank[$0] ?? .max) < (rank[$1] ?? .max) }), let place = slots[last] {
+				slots[last] = nil
+				slots[radio.id] = place
+			}
+		}
 	}
 
 	private mutating func updateOnline(_ node: ShowcaseNodeSnapshot, now: Date) {

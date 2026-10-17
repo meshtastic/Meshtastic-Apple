@@ -42,6 +42,26 @@ struct ShowcaseLayoutTests {
 		#expect(layout.rackPageCount == 1)
 	}
 
+	@Test("A node that becomes the connected radio on a full rack takes the last node's place")
+	func connectedRadioOnFullRack() {
+		var layout = ShowcaseLayout(grid: Self.grid, maxRackPages: 1)
+		var nodes = mesh(count: 120, online: 120)
+		layout.update(nodes, now: Self.now)
+		#expect(layout.slots[110] == nil)
+		let last = Int64(100)
+		#expect(layout.slots[last] != nil)
+		// Connect to node 110, which overflowed; the reader puts it first.
+		nodes = nodes.filter { $0.id != 110 }.map { node($0.id, connected: false) }
+		nodes.insert(node(110, connected: true), at: 0)
+		let before = layout.slots
+		layout.update(nodes, now: Self.now)
+		#expect(layout.slots[110] == before[last])
+		#expect(layout.slots[last] == nil)
+		#expect(layout.overflow == 20)
+		// Everyone else keeps their place.
+		for (num, slot) in before where num != last { #expect(layout.slots[num] == slot) }
+	}
+
 	@Test("Five hundred nodes page through the rack and overflow when it is full")
 	func fiveHundredNodes() {
 		var layout = ShowcaseLayout(grid: Self.grid, maxRackPages: 4)
