@@ -190,6 +190,8 @@ final class WidgetDataBroker {
 			recentMessages: recent
 		)
 		WidgetSnapshotStore.save(snapshot)
+		// The map renderer throttles itself; it only redraws when pins moved.
+		WidgetMapRenderer.shared.refresh(nodes: nodes, radioNum: radioNum)
 
 		let connectionKey = "\(connectionState.rawValue)|\(radioNum ?? -1)"
 		let connectionChanged = connectionKey != lastWrittenConnectionKey
@@ -339,20 +341,23 @@ final class WidgetDataBroker {
 				floors[kind] = min(floors[kind] ?? .infinity, floor)
 			}
 		}
+		// The map kind is reloaded by WidgetMapRenderer when it actually wrote a
+		// new image; reloading it here would spend budget redisplaying the same
+		// PNG, since the map shows nothing but the image and a self-aging footer.
 		for trigger in triggers {
 			switch trigger {
 			case .connection:
 				merge(connectionChanged
-					? [(.stats, 0), (.tracker, 0), (.messages, 0), (.map, 0)]
-					: [(.stats, 300), (.tracker, 300), (.messages, 300), (.map, 900)])
+					? [(.stats, 0), (.tracker, 0), (.messages, 0)]
+					: [(.stats, 300), (.tracker, 300), (.messages, 300)])
 			case .config:
-				merge([(.stats, 60), (.tracker, 60), (.map, 300)])
+				merge([(.stats, 60), (.tracker, 60)])
 			case .messages:
 				merge(messagesChanged
 					? [(.messages, 0), (.tracker, 300)]
 					: [(.messages, 300), (.tracker, 300)])
 			case .localStats:
-				merge([(.stats, 300), (.tracker, 300), (.map, 900)])
+				merge([(.stats, 300), (.tracker, 300)])
 			}
 		}
 		for (kind, floor) in floors {
