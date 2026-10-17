@@ -5494,6 +5494,18 @@
         }
       }
     },
+    "Pick a node below" : {
+      "comment" : "Live Activity sheet: shown in place of the tracked node until one is picked from the list",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Pick a node below"
+          }
+        }
+      }
+    },
     "Pick a trace route to fly along it and leave it drawn on the map." : {
       "comment" : "VoiceOver hint for the spatial map trace route menu",
       "localizations" : {

@@ -38,48 +38,67 @@ struct LiveActivitySheet: View {
 	@State private var nodes: [NodeRow] = []
 	@State private var searchText = ""
 
+	private static let topID = "top"
+
 	var body: some View {
 		NavigationStack {
-			Form {
-				Section {
-					Picker("Show", selection: $choice) {
-						Text("Mesh Status").tag(Choice.meshStatus)
-						Text("Track a Node").tag(Choice.trackNode)
-					}
-					.pickerStyle(.inline)
-					.labelsHidden()
-				} header: {
-					Text("Show")
-				} footer: {
-					Text(choice == .meshStatus
-						? "The connection, nodes online, unread messages and the radio's battery."
-						: "One node's battery, signal, when it was last heard and how far away it is.")
-				}
-
-				if choice == .trackNode {
-					Section("Node") {
-						if filteredNodes.isEmpty {
-							Text("No nodes to track yet")
-								.foregroundStyle(.secondary)
+			ScrollViewReader { proxy in
+				Form {
+					Section {
+						Picker("Show", selection: $choice) {
+							Text("Mesh Status").tag(Choice.meshStatus)
+							Text("Track a Node").tag(Choice.trackNode)
 						}
-						ForEach(filteredNodes) { node in
-							Button {
-								selectedNode = node.num
-							} label: {
+						.pickerStyle(.inline)
+						.labelsHidden()
+					} header: {
+						Text("Show")
+					} footer: {
+						Text(choice == .meshStatus
+							? "The connection, nodes online, unread messages and the radio's battery."
+							: "One node's battery, signal, when it was last heard and how far away it is.")
+					}
+					.id(Self.topID)
+
+					// Start, switch and stop sit above the node list, which can be long, with the
+					// picked node shown here so it's clear what starting will track.
+					Section {
+						if choice == .trackNode {
+							if let node = nodes.first(where: { $0.num == selectedNode }) {
 								nodeLabel(node)
+							} else {
+								Text("Pick a node below")
+									.foregroundStyle(.secondary)
 							}
-							.foregroundStyle(.primary)
+						}
+						actionButtons
+					} footer: {
+						if let updatesEndAt = liveActivities.updatesEndAt {
+							Text("Updates until \(updatesEndAt.formatted(date: .omitted, time: .shortened)). iOS stops a Live Activity after 8 hours.")
+						} else {
+							Text("iOS stops a Live Activity after 8 hours. Only one runs at a time.")
 						}
 					}
-				}
 
-				Section {
-					actionButtons
-				} footer: {
-					if let updatesEndAt = liveActivities.updatesEndAt {
-						Text("Updates until \(updatesEndAt.formatted(date: .omitted, time: .shortened)). iOS stops a Live Activity after 8 hours.")
-					} else {
-						Text("iOS stops a Live Activity after 8 hours. Only one runs at a time.")
+					if choice == .trackNode {
+						Section("Node") {
+							if filteredNodes.isEmpty {
+								Text("No nodes to track yet")
+									.foregroundStyle(.secondary)
+							}
+							ForEach(filteredNodes) { node in
+								Button {
+									selectedNode = node.num
+									// Back up to the picked node and the button that starts or switches to it.
+									withAnimation {
+										proxy.scrollTo(Self.topID, anchor: .top)
+									}
+								} label: {
+									nodeLabel(node)
+								}
+								.foregroundStyle(.primary)
+							}
+						}
 					}
 				}
 			}
