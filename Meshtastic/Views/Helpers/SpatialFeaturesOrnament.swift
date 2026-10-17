@@ -8,9 +8,13 @@
 import SwiftUI
 
 /// The Vision Pro features beside the main window, under its tab bar: a small glass capsule with
-/// a button for each, like the environment button other visionOS apps keep there.
+/// a button for each (the 3D map and the Hardware Showcase), like the environment button other
+/// visionOS apps keep there.
 struct SpatialFeaturesOrnament: View {
 	@Environment(\.openWindow) private var openWindow
+	@Environment(\.dismissWindow) private var dismissWindow
+	@Environment(\.openImmersiveSpace) private var openImmersiveSpace
+	@EnvironmentObject private var appState: AppState
 	@Environment(\.supportsMultipleWindows) private var supportsMultipleWindows
 
 	var body: some View {
@@ -24,6 +28,18 @@ struct SpatialFeaturesOrnament: View {
 				}
 				.help(String(localized: "Open 3D map", comment: "VoiceOver label for the button that opens the spatial map volume"))
 				.accessibilityLabel(String(localized: "Open 3D map", comment: "VoiceOver label for the button that opens the spatial map volume"))
+				Button {
+					Task {
+						// The room takes over the space, so the 3D map's volume closes.
+						if await ShowcaseScene.open(openImmersiveSpace, appState: appState) {
+							dismissWindow(id: SpatialMapScene.id)
+						}
+					}
+				} label: {
+					Image(systemName: "storefront")
+				}
+				.help(String(localized: "Enter Showcase", comment: "Spatial map: open the showcase immersive space, closing this volume"))
+				.accessibilityLabel(String(localized: "Enter Showcase", comment: "Spatial map: open the showcase immersive space, closing this volume"))
 			}
 			.buttonStyle(.borderless)
 			.buttonBorderShape(.circle)

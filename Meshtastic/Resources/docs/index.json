@@ -270,7 +270,7 @@
             "back",
             "while"
         ],
-        "charCount": 17198
+        "charCount": 17223
     },
     {
         "id": "messages",
@@ -459,13 +459,13 @@
             "each",
             "card",
             "apple",
+            "under",
             "turn",
             "tables",
             "step",
-            "stand",
-            "see"
+            "stand"
         ],
-        "charCount": 1948
+        "charCount": 1960
     },
     {
         "id": "signal-meter",
