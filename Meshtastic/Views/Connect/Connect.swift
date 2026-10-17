@@ -39,6 +39,7 @@ struct Connect: View {
 	@State private var isSwitchingRadio = false
 	@State private var showingShutdownConfirm = false
 	@State private var showingShareContactQR = false
+	@State private var showingLiveActivitySheet = false
 	/// The connected node as a plain protobuf value, copied when the share menu item is tapped.
 	/// The sheet outlives the row it was opened from, and reading a faulted @Model after a
 	/// reconnect traps, so nothing SwiftData-backed is held here.
@@ -408,7 +409,9 @@ struct Connect: View {
 					// Shown while one runs even when disconnected, so it can always be stopped.
 					if liveActivities.currentMode != nil
 						|| (accessoryManager.isConnected && !lockdown.isBlockingSession && liveActivities.isAvailable) {
-						LiveActivitySection(liveActivities: liveActivities)
+						LiveActivitySection(liveActivities: liveActivities) {
+							showingLiveActivitySheet = true
+						}
 					}
 					
 					if !(accessoryManager.isConnected || accessoryManager .isConnecting) {
@@ -561,6 +564,11 @@ struct Connect: View {
 					// definition.
 					ShareContactQRDialog(manuallyVerified: true, node: shareContactNode)
 				}
+			}
+			// On the list, not its row: the list redraws with every packet, and a sheet
+			// attached to a row it rebuilds loses its choices mid-edit.
+			.sheet(isPresented: $showingLiveActivitySheet) {
+				LiveActivitySheet(liveActivities: liveActivities)
 			}
 		}
 		.sheet(isPresented: $showSecurityVersionNag) {

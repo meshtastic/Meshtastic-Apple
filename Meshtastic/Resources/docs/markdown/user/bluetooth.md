@@ -31,10 +31,12 @@ Because that is hard to undo on a roof, tower, or other remote node, the app ask
 
 A Live Activity keeps the mesh on your Lock Screen and in the Dynamic Island. It shows one of two things, chosen when you start it:
 
-- **Mesh status** — the connection, nodes online, unread messages and the radio's battery. Start it from the **Live Activity** section on the Connect screen while a radio is connected.
-- **One node** — its battery, signal, when it was last heard and how far away it is. Open the node and choose **Track in Live Activity**.
+- **Mesh status** — the connection, nodes online, unread messages and the radio's battery.
+- **One node** — its battery, signal, when it was last heard and how far away it is.
 
-Only one runs at a time; starting the other kind replaces it. Stop it from the same place you started it.
+Tap **Live Activity** on the Connect screen while a radio is connected, choose what to show (for a node, pick it from the list; favorites come first), and tap **Start Live Activity**. You can also open a node and choose **Track in Live Activity**.
+
+Only one runs at a time; starting the other kind switches it. Stop it from the same **Live Activity** row, or from the node's detail screen.
 
 If the radio's link drops, the Live Activity shows **Disconnected** and picks up again when the app reconnects. Disconnecting the radio yourself, or switching to a different radio, ends it. iOS stops updating a Live Activity after 8 hours, and the Connect screen shows when that will be.
 
