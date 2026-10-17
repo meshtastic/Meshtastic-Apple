@@ -4,28 +4,30 @@
 //
 //  Copyright(c) Garth Vander Houwen 10/16/26.
 //
-//  Renders the map widget's images in the app with MKMapSnapshotter — square
-//  for the small and large families, wide for medium, each in light and dark —
-//  draws the node chips on them, and hands the PNGs to the shared store.
-//  Renders are throttled, and the throttle only advances on success: a failed
-//  render (offline launch, snapshotter error) is retried by the next broker
-//  refresh instead of being silently dropped.
+//  Renders the map widget's images in the app, in the trace route share
+//  image's look: the same dark, muted tiles, node circles in their colors and
+//  the connected radio ringed in brand green — a square for small and medium,
+//  a wide one for large. Renders are throttled, and the throttle only
+//  advances on success: a failed render (offline launch, snapshotter error)
+//  is retried by the next broker refresh instead of being silently dropped.
 //
 
 import MapKit
 import OSLog
-import UIKit
+import SwiftUI
 import WidgetKit
 
 @MainActor
 final class WidgetMapRenderer {
 	static let shared = WidgetMapRenderer()
 
-	/// Small and large crop the square; medium gets its own wide render so the
-	/// north/south extremes are not cut off by a 2:1 crop of a square image.
-	private static let squareSize = CGSize(width: 345, height: 345)
-	private static let wideSize = CGSize(width: 360, height: 169)
-	/// Renders cost four snapshotter passes and a widget reload each, so at
+	/// Square map for small and medium, in points; the same sizes as the
+	/// trace route widget's maps.
+	private static let squareSize = CGSize(width: 170, height: 170)
+	/// Wide map for large, in points.
+	private static let wideSize = CGSize(width: 330, height: 190)
+	private static let scale: CGFloat = 3
+	/// Renders cost two snapshotter passes and a widget reload each, so at
 	/// most one per fifteen minutes, movement or not.
 	private static let minimumInterval: TimeInterval = 15 * 60
 	/// Positions snap to a ~28 m grid before comparison, so GPS jitter does
@@ -37,33 +39,43 @@ final class WidgetMapRenderer {
 	private static let outlierDistance: CLLocationDistance = 100_000
 
 	/// A node with a real position, unwrapped once.
-	private struct MapPin {
+	fileprivate struct MapPin {
 		let node: NodeSnapshot
 		let coordinate: CLLocationCoordinate2D
 	}
 
 	private var lastSuccessKey: String?
 	private var lastSuccessAt: Date?
+	/// The radio the last written image rings.
+	private var lastSuccessRadioNum: Int64?
 	private var inFlightKey: String?
 	private var renderTask: Task<Void, Never>?
+
+	/// True while an image is being drawn; the broker leaves the map's reload
+	/// to the render.
+	var isRendering: Bool { inFlightKey != nil }
 
 	/// Called by the broker after each snapshot write, with the nodes it wrote.
 	func refresh(nodes: [NodeSnapshot], radioNum: Int64?) {
 		let pins = Self.localPins(from: nodes)
-		let key = pins.isEmpty ? "none" : pins
+		// The radio is part of the key so a radio switch moves the green ring,
+		// and short names are, so a renamed node's circle is redrawn.
+		let key = "\(radioNum ?? 0)#" + (pins.isEmpty ? "none" : pins
 			.sorted { $0.node.num < $1.node.num }
 			.map { pin -> String in
 				let lat = (pin.coordinate.latitude * Self.gridScale).rounded()
 				let lon = (pin.coordinate.longitude * Self.gridScale).rounded()
-				return "\(pin.node.num):\(lat):\(lon)"
+				return "\(pin.node.num):\(pin.node.shortName):\(lat):\(lon)"
 			}
-			.joined(separator: "|")
+			.joined(separator: "|"))
 
 		// Unchanged, already being rendered, or inside the floor: skip. The
 		// floor case retries naturally — the key stays uncommitted, so the
-		// next broker refresh after the floor lapses renders the move.
+		// next broker refresh after the floor lapses renders the move. A new
+		// radio skips the floor: the ring and the widget's title must agree.
 		guard key != lastSuccessKey, key != inFlightKey else { return }
-		if let lastSuccessAt, Date().timeIntervalSince(lastSuccessAt) < Self.minimumInterval { return }
+		let radioChanged = lastSuccessKey != nil && radioNum != lastSuccessRadioNum
+		if !radioChanged, let lastSuccessAt, Date().timeIntervalSince(lastSuccessAt) < Self.minimumInterval { return }
 
 		inFlightKey = key
 		renderTask?.cancel()
@@ -73,6 +85,7 @@ final class WidgetMapRenderer {
 			if !Task.isCancelled, rendered {
 				self.lastSuccessKey = key
 				self.lastSuccessAt = Date()
+				self.lastSuccessRadioNum = radioNum
 			}
 			if self.inFlightKey == key {
 				self.inFlightKey = nil
@@ -95,119 +108,107 @@ final class WidgetMapRenderer {
 		}
 	}
 
-	/// Off the main actor: four snapshotter passes, chip drawing and PNG
-	/// encoding are more work than a UI hop should carry.
-	private nonisolated static func render(pins: [MapPin], radioNum: Int64?) async -> Bool {
-		let meta = WidgetMapMeta(generatedAt: Date(), nodeCount: pins.count)
+	private static func render(pins: [MapPin], radioNum: Int64?) async -> Bool {
+		let meta = WidgetMapMeta(generatedAt: Date(), nodeNums: pins.map(\.node.num), radioNum: radioNum)
 		guard !pins.isEmpty else {
 			let saved = WidgetMapStore.saveEmpty(meta: meta)
-			if saved { WidgetCenter.shared.reloadTimelines(ofKind: "MeshNodeMap") }
+			if saved { WidgetDataBroker.shared.reload(.map) }
 			return saved
 		}
 
-		let region = region(for: pins)
-		var images: [(data: Data, dark: Bool, wide: Bool)] = []
-		for wide in [false, true] {
-			for dark in [false, true] {
-				guard !Task.isCancelled,
-					  let image = await snapshotImage(region: region, pins: pins, radioNum: radioNum, dark: dark, wide: wide),
-					  let data = image.pngData() else {
-					Logger.services.warning("🧩 Widget map render produced no image.")
-					return false
-				}
-				images.append((data, dark, wide))
-			}
-		}
+		let points = pins.map { MKMapPoint($0.coordinate) }
+		// The share image's framing: the pins' bounds with padding and a
+		// minimum span, widened to the map's shape so nothing is cropped.
+		let square = TraceRouteShareModel.frame(points: points, width: squareSize.width, height: squareSize.height)
+		let wide = TraceRouteShareModel.frame(points: points, width: wideSize.width, height: wideSize.height)
+		// Dark, muted tiles without points of interest, as on the share image.
+		let squareTiles = await TraceRouteShareRenderer.snapshot(rect: square.rect, size: square.size, scale: scale)
+		let wideTiles = await TraceRouteShareRenderer.snapshot(rect: wide.rect, size: wide.size, scale: scale)
 		// A cancelled (superseded) render must not overwrite the newer files.
 		guard !Task.isCancelled else { return false }
-		guard WidgetMapStore.save(images: images, meta: meta) else { return false }
-		WidgetCenter.shared.reloadTimelines(ofKind: "MeshNodeMap")
+		guard let squareTiles, let wideTiles,
+			  let squareImage = drawMap(tiles: squareTiles, rect: square.rect, size: square.size, pins: pins, radioNum: radioNum),
+			  let wideImage = drawMap(tiles: wideTiles, rect: wide.rect, size: wide.size, pins: pins, radioNum: radioNum) else {
+			Logger.services.warning("🧩 Widget map render produced no image.")
+			return false
+		}
+		// Drawing needs the main actor; encoding and writing the files don't.
+		let saved = await Task.detached(priority: .utility) {
+			guard let squareData = squareImage.pngData(), let wideData = wideImage.pngData() else { return false }
+			return WidgetMapStore.save(squareImage: squareData, wideImage: wideData, meta: meta)
+		}.value
+		guard saved, !Task.isCancelled else { return false }
+		WidgetDataBroker.shared.reload(.map)
 		return true
 	}
 
-	private nonisolated static func region(for pins: [MapPin]) -> MKCoordinateRegion {
-		var rect = MKMapRect.null
-		for pin in pins {
-			let point = MKMapPoint(pin.coordinate)
-			rect = rect.union(MKMapRect(x: point.x, y: point.y, width: 0, height: 0))
-		}
-		// Generous padding keeps chips away from the edges; each canvas shape
-		// gets its own snapshot of this region, so nothing relies on cropping.
-		var region = MKCoordinateRegion(rect.insetBy(dx: -rect.width * 0.35 - 1, dy: -rect.height * 0.35 - 1))
-		region.span.latitudeDelta = max(region.span.latitudeDelta, 0.02)
-		region.span.longitudeDelta = max(region.span.longitudeDelta, 0.02)
-		return region
+	private static func drawMap(tiles: UIImage, rect: MKMapRect, size: CGSize, pins: [MapPin], radioNum: Int64?) -> UIImage? {
+		let renderer = ImageRenderer(content: WidgetMapPinsView(tiles: tiles, rect: rect, size: size, pins: pins, radioNum: radioNum)
+			.environment(\.colorScheme, .dark))
+		renderer.scale = scale
+		renderer.proposedSize = ProposedViewSize(size)
+		return renderer.uiImage
 	}
+}
 
-	private nonisolated static func snapshotImage(
-		region: MKCoordinateRegion, pins: [MapPin], radioNum: Int64?, dark: Bool, wide: Bool
-	) async -> UIImage? {
-		let options = MKMapSnapshotter.Options()
-		options.region = region
-		options.size = wide ? wideSize : squareSize
-		options.traitCollection = UITraitCollection(traitsFrom: [
-			options.traitCollection,
-			UITraitCollection(userInterfaceStyle: dark ? .dark : .light)
-		])
-		options.showsBuildings = false
-		options.pointOfInterestFilter = .excludingAll
+/// The tiles with a circle for each node, styled like the share image's map:
+/// node color, white rim and a soft shadow, the radio ringed in brand green
+/// and drawn on top, inside the same rounded frame.
+private struct WidgetMapPinsView: View {
+	let tiles: UIImage
+	let rect: MKMapRect
+	let size: CGSize
+	fileprivate let pins: [WidgetMapRenderer.MapPin]
+	let radioNum: Int64?
 
-		guard let snapshot = try? await MKMapSnapshotter(options: options).start() else { return nil }
-		return draw(pins: pins, radioNum: radioNum, on: snapshot)
-	}
+	private static let circleSize: CGFloat = 22
+	private static let brand = Color(red: 0x67 / 255, green: 0xEA / 255, blue: 0x94 / 255)
 
-	private nonisolated static func draw(pins: [MapPin], radioNum: Int64?, on snapshot: MKMapSnapshotter.Snapshot) -> UIImage {
-		let renderer = UIGraphicsImageRenderer(size: snapshot.image.size)
-		return renderer.image { context in
-			snapshot.image.draw(at: .zero)
-
-			// The radio's chip draws last so it stays on top of a cluster.
-			let ordered = pins.sorted { ($0.node.num == radioNum ? 1 : 0) < ($1.node.num == radioNum ? 1 : 0) }
-			for pin in ordered {
-				let point = snapshot.point(for: pin.coordinate)
-				guard point.x > -20, point.y > -20,
-					  point.x < snapshot.image.size.width + 20,
-					  point.y < snapshot.image.size.height + 20 else { continue }
-				drawChip(for: pin.node, at: point, isRadio: pin.node.num == radioNum, context: context.cgContext)
+	var body: some View {
+		ZStack(alignment: .topLeading) {
+			Image(uiImage: tiles)
+				.resizable()
+				.interpolation(.high)
+				.frame(width: size.width, height: size.height)
+			// The radio last, so it stays on top of a cluster.
+			ForEach(ordered, id: \.node.num) { pin in
+				circle(for: pin.node, isRadio: pin.node.num == radioNum)
+					.shadow(color: .black.opacity(0.5), radius: 3, y: 1)
+					.position(point(for: pin.coordinate))
 			}
 		}
+		.frame(width: size.width, height: size.height)
+		.clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+		.overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(Color.white.opacity(0.08)))
 	}
 
-	/// A circle in the node's color with the shortname fitted inside — the
-	/// same look as the app's map annotations.
-	private nonisolated static func drawChip(for node: NodeSnapshot, at point: CGPoint, isRadio: Bool, context: CGContext) {
+	private var ordered: [WidgetMapRenderer.MapPin] {
+		pins.sorted { ($0.node.num == radioNum ? 1 : 0) < ($1.node.num == radioNum ? 1 : 0) }
+	}
+
+	private func point(for coordinate: CLLocationCoordinate2D) -> CGPoint {
+		let mapPoint = MKMapPoint(coordinate)
+		return CGPoint(
+			x: (mapPoint.x - rect.minX) / rect.width * size.width,
+			y: (mapPoint.y - rect.minY) / rect.height * size.height
+		)
+	}
+
+	private func circle(for node: NodeSnapshot, isRadio: Bool) -> some View {
 		let color = UIColor(
 			red: CGFloat((node.colorSeed >> 16) & 0xFF) / 255,
 			green: CGFloat((node.colorSeed >> 8) & 0xFF) / 255,
 			blue: CGFloat(node.colorSeed & 0xFF) / 255,
 			alpha: 1
 		)
-		let diameter: CGFloat = 22
-		let circle = CGRect(x: point.x - diameter / 2, y: point.y - diameter / 2, width: diameter, height: diameter)
-
-		let text = node.shortName as NSString
-		let textColor: UIColor = color.isLight() ? .black : .white
-		// Shrink the font until the name fits inside the circle.
-		var fontSize: CGFloat = 9
-		var font = UIFont.systemFont(ofSize: fontSize, weight: .bold)
-		var textSize = text.size(withAttributes: [.font: font])
-		while textSize.width > diameter - 5, fontSize > 5 {
-			fontSize -= 0.5
-			font = UIFont.systemFont(ofSize: fontSize, weight: .bold)
-			textSize = text.size(withAttributes: [.font: font])
-		}
-
-		context.setFillColor(color.cgColor)
-		let path = UIBezierPath(ovalIn: circle)
-		path.fill()
-		// The connected radio gets a halo so it reads at a glance.
-		context.setStrokeColor(isRadio ? UIColor.systemGreen.cgColor : UIColor.white.withAlphaComponent(0.9).cgColor)
-		path.lineWidth = isRadio ? 2.5 : 1
-		path.stroke()
-
-		text.draw(
-			at: CGPoint(x: circle.midX - textSize.width / 2, y: circle.midY - textSize.height / 2),
-			withAttributes: [.font: font, .foregroundColor: textColor]
-		)
+		return Text(node.shortName)
+			.font(.system(size: Self.circleSize * 0.34, weight: .bold))
+			.minimumScaleFactor(0.4)
+			.lineLimit(1)
+			.padding(2)
+			.foregroundStyle(color.isLight() ? Color.black : Color.white)
+			.frame(width: Self.circleSize, height: Self.circleSize)
+			.background(Circle().fill(Color(uiColor: color)))
+			.overlay(Circle().strokeBorder(isRadio ? Self.brand : .white, lineWidth: isRadio ? 2.5 : 1.5))
 	}
 }

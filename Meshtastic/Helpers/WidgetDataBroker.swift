@@ -343,30 +343,41 @@ final class WidgetDataBroker {
 				floors[kind] = min(floors[kind] ?? .infinity, floor)
 			}
 		}
-		// The map kind is reloaded by WidgetMapRenderer when it actually wrote a
-		// new image; reloading it here would spend budget redisplaying the same
-		// PNG, since the map shows nothing but the image and a self-aging footer.
+		// WidgetMapRenderer reloads the map kind when it writes a new image. The
+		// map's counts and connection tag come from this snapshot, so it also
+		// reloads here, at long floors: a connection change right away, the
+		// online count at most every 15 minutes.
 		for trigger in triggers {
 			switch trigger {
 			case .connection:
 				merge(connectionChanged
-					? [(.stats, 0), (.tracker, 0), (.messages, 0)]
-					: [(.stats, 300), (.tracker, 300), (.messages, 300)])
+					? [(.stats, 0), (.tracker, 0), (.messages, 0), (.map, 0)]
+					: [(.stats, 300), (.tracker, 300), (.messages, 300), (.map, 900)])
 			case .config:
-				merge([(.stats, 60), (.tracker, 60)])
+				merge([(.stats, 60), (.tracker, 60), (.map, 900)])
 			case .messages:
 				merge(messagesChanged
 					? [(.messages, 0), (.tracker, 300)]
 					: [(.messages, 300), (.tracker, 300)])
 			case .localStats:
-				merge([(.stats, 300), (.tracker, 300)])
+				merge([(.stats, 300), (.tracker, 300), (.map, 900)])
 			}
 		}
 		for (kind, floor) in floors {
+			// A map render in progress reloads the map itself when it's written,
+			// with the counts too; reloading now would spend a second reload on
+			// the old image.
+			if kind == .map, WidgetMapRenderer.shared.isRendering { continue }
 			let last = lastReload[kind] ?? .distantPast
 			guard Date().timeIntervalSince(last) >= floor else { continue }
-			lastReload[kind] = Date()
-			WidgetCenter.shared.reloadTimelines(ofKind: kind.rawValue)
+			reload(kind)
 		}
+	}
+
+	/// Reloads a widget kind and records it, so every reload of the kind counts
+	/// toward its floor, whoever asked for it.
+	func reload(_ kind: Kind) {
+		lastReload[kind] = Date()
+		WidgetCenter.shared.reloadTimelines(ofKind: kind.rawValue)
 	}
 }

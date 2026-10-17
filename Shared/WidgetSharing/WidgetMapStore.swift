@@ -15,75 +15,79 @@ import Foundation
 import OSLog
 
 struct WidgetMapMeta: Codable {
-	static let currentVersion = 1
+	static let currentVersion = 2
 
 	var version: Int = WidgetMapMeta.currentVersion
 	let generatedAt: Date
-	/// How many nodes have a pin on the image.
-	let nodeCount: Int
+	/// The nodes drawn on the image. The widget joins these with the live
+	/// snapshot for online counts and distances, so those stay current
+	/// between renders, which only happen when a pin moves.
+	let nodeNums: [Int64]
+	/// The connected radio's node, ringed on the map.
+	let radioNum: Int64?
+
+	var nodeCount: Int { nodeNums.count }
 }
 
 enum WidgetMapStore {
 	static let metaFilename = "widget-map.json"
+
+	/// Files from the first version: light and dark images in two shapes.
+	private static let legacyFilenames = [
+		"widget-map-light.png", "widget-map-dark.png",
+		"widget-map-wide-light.png", "widget-map-wide-dark.png"
+	]
 
 	private static let logger = Logger(
 		subsystem: Bundle.main.bundleIdentifier ?? "Meshtastic",
 		category: "🧩 WidgetSharing"
 	)
 
-	/// The square image serves small and large; the wide one serves medium —
-	/// cropping the square to medium's 2:1 cut off the north/south pins.
-	static func imageURL(dark: Bool, wide: Bool) -> URL? {
-		let name = "widget-map\(wide ? "-wide" : "")\(dark ? "-dark" : "-light").png"
-		return FileManager.default
-			.containerURL(forSecurityApplicationGroupIdentifier: WidgetSnapshotStore.appGroupID)?
-			.appendingPathComponent(name)
+	private static var containerURL: URL? {
+		FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: WidgetSnapshotStore.appGroupID)
+	}
+
+	/// The square image serves small and medium; the wide one serves large.
+	static func imageURL(wide: Bool) -> URL? {
+		containerURL?.appendingPathComponent(wide ? "widget-map-wide.png" : "widget-map-square.png")
 	}
 
 	static var metaURL: URL? {
-		FileManager.default
-			.containerURL(forSecurityApplicationGroupIdentifier: WidgetSnapshotStore.appGroupID)?
-			.appendingPathComponent(metaFilename)
+		containerURL?.appendingPathComponent(metaFilename)
 	}
 
-	/// Writes all four images and then the meta sidecar. Returns false when
+	/// Writes both images and then the meta sidecar. Returns false when
 	/// anything failed, so the renderer can retry instead of marking success.
-	static func save(images: [(data: Data, dark: Bool, wide: Bool)], meta: WidgetMapMeta) -> Bool {
-		guard let metaURL else {
+	static func save(squareImage: Data, wideImage: Data, meta: WidgetMapMeta) -> Bool {
+		guard let metaURL, let squareURL = imageURL(wide: false), let wideURL = imageURL(wide: true) else {
 			logger.warning("No app group container; widget map not written.")
 			return false
 		}
 		do {
 			let options: Data.WritingOptions = [.atomic, .completeFileProtectionUntilFirstUserAuthentication]
-			for image in images {
-				guard let url = imageURL(dark: image.dark, wide: image.wide) else { return false }
-				try image.data.write(to: url, options: options)
-			}
-			let encoder = JSONEncoder()
-			encoder.dateEncodingStrategy = .millisecondsSince1970
-			try (try encoder.encode(meta)).write(to: metaURL, options: options)
-			return true
+			try squareImage.write(to: squareURL, options: options)
+			try wideImage.write(to: wideURL, options: options)
+			try encode(meta).write(to: metaURL, options: options)
 		} catch {
 			logger.error("Could not write the widget map: \(error.localizedDescription, privacy: .public)")
 			return false
 		}
+		removeLegacyFiles()
+		return true
 	}
 
 	/// For a mesh with no node positions: no images, a meta that says so —
 	/// the widget then explains instead of prompting to open the app.
 	static func saveEmpty(meta: WidgetMapMeta) -> Bool {
 		guard let metaURL else { return false }
-		for dark in [false, true] {
-			for wide in [false, true] {
-				if let url = imageURL(dark: dark, wide: wide) {
-					try? FileManager.default.removeItem(at: url)
-				}
+		for wide in [false, true] {
+			if let url = imageURL(wide: wide) {
+				try? FileManager.default.removeItem(at: url)
 			}
 		}
+		removeLegacyFiles()
 		do {
-			let encoder = JSONEncoder()
-			encoder.dateEncodingStrategy = .millisecondsSince1970
-			try (try encoder.encode(meta)).write(to: metaURL, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
+			try encode(meta).write(to: metaURL, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
 			return true
 		} catch {
 			return false
@@ -100,8 +104,21 @@ enum WidgetMapStore {
 		return meta
 	}
 
-	static func loadImageData(dark: Bool, wide: Bool) -> Data? {
-		guard let url = imageURL(dark: dark, wide: wide) else { return nil }
+	static func loadImageData(wide: Bool) -> Data? {
+		guard let url = imageURL(wide: wide) else { return nil }
 		return try? Data(contentsOf: url)
+	}
+
+	private static func encode(_ meta: WidgetMapMeta) throws -> Data {
+		let encoder = JSONEncoder()
+		encoder.dateEncodingStrategy = .millisecondsSince1970
+		return try encoder.encode(meta)
+	}
+
+	private static func removeLegacyFiles() {
+		guard let containerURL else { return }
+		for name in legacyFilenames {
+			try? FileManager.default.removeItem(at: containerURL.appendingPathComponent(name))
+		}
 	}
 }

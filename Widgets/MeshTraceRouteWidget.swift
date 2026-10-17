@@ -15,28 +15,8 @@ import WidgetKit
 
 // MARK: - Style
 
-/// The share image's palette. The widget always uses its dark look, like the
-/// share image, so it reads the same in light and dark mode.
-private enum RouteStyle {
-	/// Meshtastic brand green.
-	static let brand = Color(red: 0x67 / 255, green: 0xEA / 255, blue: 0x94 / 255)
-	static let backgroundTop = Color(red: 0.13, green: 0.14, blue: 0.19)
-	static let backgroundBottom = Color(red: 0.07, green: 0.08, blue: 0.10)
-	static let panel = Color.white.opacity(0.06)
-	static let secondaryText = Color.white.opacity(0.62)
-	static let tertiaryText = Color.white.opacity(0.42)
-	/// Route colors agreed across clients (meshtastic/design#165).
-	static let forward = Color(red: 0xE8 / 255, green: 0x6A / 255, blue: 0x00 / 255)
-	static let back = Color(red: 0x00 / 255, green: 0x81 / 255, blue: 0xC7 / 255)
-	static let roundTrip = Color.purple
-
-	static var background: some View {
-		ZStack {
-			LinearGradient(colors: [backgroundTop, backgroundBottom], startPoint: .top, endPoint: .bottom)
-			RadialGradient(colors: [brand.opacity(0.2), .clear], center: .topLeading, startRadius: 0, endRadius: 260)
-		}
-	}
-}
+private typealias RouteStyle = ShareCardStyle
+private typealias RouteMapImage = ShareMapImage
 
 // MARK: - Timeline
 
@@ -226,25 +206,6 @@ private struct RouteLargeView: View {
 
 // MARK: Pieces
 
-/// The rendered route map. Kept full color on tinted home screens, where an
-/// opaque image would otherwise flatten into a solid block.
-private struct RouteMapImage: View {
-	let image: UIImage
-
-	var body: some View {
-		if #available(iOS 18.0, *) {
-			Image(uiImage: image)
-				.resizable()
-				.widgetAccentedRenderingMode(.fullColor)
-				.scaledToFit()
-		} else {
-			Image(uiImage: image)
-				.resizable()
-				.scaledToFit()
-		}
-	}
-}
-
 /// The Meshtastic mark, "Trace Route" in brand green and, for a route seen on
 /// the mesh, an "Observed" tag.
 private struct RouteHeader: View {
@@ -347,29 +308,11 @@ private struct StatTiles: View {
 
 	var body: some View {
 		HStack(spacing: 6) {
-			tile("Hops Out", hopsText(route.hopsTowards), RouteStyle.forward)
-			tile("Hops Back", route.hopsBack.map(hopsText) ?? "—", RouteStyle.back)
-			tile("Round Trip", route.roundTrip.map(roundTripText) ?? "—", RouteStyle.roundTrip)
-			tile("Distance", route.distance.map(distanceText) ?? "—", .white)
+			ShareStatTile(title: "Hops Out", value: hopsText(route.hopsTowards), color: RouteStyle.forward)
+			ShareStatTile(title: "Hops Back", value: route.hopsBack.map(hopsText) ?? "—", color: RouteStyle.back)
+			ShareStatTile(title: "Round Trip", value: route.roundTrip.map(roundTripText) ?? "—", color: RouteStyle.roundTrip)
+			ShareStatTile(title: "Distance", value: route.distance.map(shareDistanceText) ?? "—")
 		}
-	}
-
-	private func tile(_ title: LocalizedStringKey, _ value: String, _ color: Color) -> some View {
-		VStack(alignment: .leading, spacing: 1) {
-			Text(title)
-				.font(.system(size: 9, weight: .semibold))
-				.foregroundStyle(RouteStyle.tertiaryText)
-				.lineLimit(1)
-			Text(value)
-				.font(.caption.weight(.semibold))
-				.foregroundStyle(color)
-				.lineLimit(1)
-				.minimumScaleFactor(0.7)
-		}
-		.frame(maxWidth: .infinity, alignment: .leading)
-		.padding(.horizontal, 7)
-		.padding(.vertical, 5)
-		.background(RouteStyle.panel, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
 	}
 
 	private func hopsText(_ count: Int) -> String {
@@ -515,11 +458,6 @@ private struct AgeLine: View {
 private func roundTripText(_ seconds: TimeInterval) -> String {
 	Duration.milliseconds(Int64((seconds * 1000).rounded()))
 		.formatted(.units(allowed: [.seconds], width: .abbreviated, fractionalPart: .show(length: 1)))
-}
-
-private func distanceText(_ meters: Double) -> String {
-	Measurement(value: meters, unit: UnitLength.meters)
-		.formatted(.measurement(width: .abbreviated, usage: .road, numberFormatStyle: .number.precision(.fractionLength(0...1))))
 }
 
 // MARK: Preview data
