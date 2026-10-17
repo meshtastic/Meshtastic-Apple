@@ -212,9 +212,6 @@ private struct LargeView: View {
 								.font(.caption)
 								.foregroundStyle(.secondary)
 						}
-						Text("Stats \(stats.statsAt, style: .relative) ago")
-							.font(.caption2)
-							.foregroundStyle(.secondary)
 					}
 					Spacer(minLength: 0)
 				}
