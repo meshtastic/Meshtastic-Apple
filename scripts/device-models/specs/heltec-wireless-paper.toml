@@ -1,12 +1,12 @@
 # heltec-wireless-paper: Heltec Wireless Paper, the bare board seen from the display side.
 # Size from the datasheet's mechanical drawing (read from a scanned image): https://resource.heltec.cn/download/Wireless_Paper/Wireless-Paper.pdf
-# The PCB thickness isn't published; 1.0 mm is an estimate. The display stands to the published
-# stack height; the other parts are built flat on the board.
+# The PCB thickness isn't published; 1.0 mm is an estimate. The display stands 2.5 mm off the board, an estimate for
+# an e-paper panel on its frame: the published 10.0 mm takes in parts on the back and connectors; the other parts are built flat on the board.
 # The thickness isn't published: 10 mm follows the Vision Master E213, which uses the same 2.13" e-ink.
 [size]
 width_mm = 72.0
 height_mm = 30.0
-depth_mm = 10.0
+depth_mm = 3.5
 board_mm = 1.0
 scale_by = "width"
 covers = "bare PCB with its display, no headers or antenna"
@@ -16,4 +16,4 @@ confidence = "estimated"
 [[block]]
 name = "Display"
 bbox = [655.03, 816.15, 1412.63, 1176.25]
-h = 9.0
+h = 2.5

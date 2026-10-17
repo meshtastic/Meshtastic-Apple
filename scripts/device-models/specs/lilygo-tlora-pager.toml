@@ -19,8 +19,11 @@ appendage = "none"
 name = "AntennaRight"
 start = [502.75, 268.8]
 end = [502.75, 1.0]
+# At its base the measurement would take in the case top and spin it into a disc.
+max_width = 34
 
 [[antenna]]
 name = "AntennaLeft"
 start = [52.8, 251.2]
 end = [52.8, 5.3]
+max_width = 30
