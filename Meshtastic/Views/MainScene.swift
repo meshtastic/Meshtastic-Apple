@@ -13,6 +13,11 @@ struct MainScene: View {
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 	@Environment(\.scenePhase) private var scenePhase
 	@Environment(\.openWindow) private var openWindow
+	#if os(visionOS) && DEBUG
+	@Environment(\.openImmersiveSpace) private var openImmersiveSpace
+	/// `--meshtastic-open-showcase` opens the showcase once per launch, not once per main window.
+	private static var openedShowcaseForLaunchArgument = false
+	#endif
 	@State private var saveChannelLink: SaveChannelLinkData?
 	@State private var pendingContact: PendingContact?
 	@State private var routerToken: UUID?
@@ -74,6 +79,16 @@ struct MainScene: View {
 				openWindow(id: SpatialMapScene.id, value: SpatialMapSceneKey.shared)
 			}
 			#endif
+			#if os(visionOS) && DEBUG
+			// Simulator screenshots: open the showcase without a button. Here rather than in the
+			// app's init, because opening an immersive space needs a view's environment.
+			.task {
+				guard CommandLine.arguments.contains("--meshtastic-open-showcase"), !Self.openedShowcaseForLaunchArgument else { return }
+				Self.openedShowcaseForLaunchArgument = true
+				try? await Task.sleep(for: .seconds(3))
+				await ShowcaseScene.open(openImmersiveSpace, appState: appState)
+			}
+			#endif
 			.task {
 				// Skip TipKit during marketing screenshot capture so tip popovers never
 				// appear in the shots (unconfigured TipKit displays nothing).
@@ -111,6 +126,9 @@ struct MainScene: View {
 				router: router
 			)
 			.id(appState.databaseResetID)
+			#if os(visionOS)
+			.spatialFeaturesOrnament()
+			#endif
 			.sheet(item: $saveChannelLink) { link in
 				SaveChannelQRCode(
 					channelSetLink: link.data,

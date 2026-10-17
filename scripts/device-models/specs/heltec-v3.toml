@@ -1,11 +1,11 @@
 # heltec-v3: Heltec WiFi LoRa 32 V3, the bare board seen from the display side.
 # Size from the datasheet's mechanical drawing (read from a scanned image): https://resource.heltec.cn/download/WiFi_LoRa_32_V3/HTIT-WB32LA_V3(Rev1.1).pdf
-# The PCB thickness isn't published; 1.0 mm is an estimate. The display stands to the published
-# stack height; the other parts are built flat on the board.
+# The PCB thickness isn't published; 1.0 mm is an estimate. The display stands 3.0 mm off the board, an estimate for
+# a small OLED or TFT module on its spacer: the published 10.2 mm takes in parts on the back and connectors; the other parts are built flat on the board.
 [size]
 width_mm = 50.2
 height_mm = 25.5
-depth_mm = 10.2
+depth_mm = 4.0
 board_mm = 1.0
 scale_by = "width"
 covers = "bare PCB with its display, no headers or antenna"
@@ -15,4 +15,4 @@ confidence = "vendor"
 [[block]]
 name = "Display"
 bbox = [868.04, 794.98, 1498.24, 1133.48]
-h = 9.2
+h = 3.0

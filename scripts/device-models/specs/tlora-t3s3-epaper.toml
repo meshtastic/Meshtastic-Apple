@@ -1,9 +1,11 @@
 # tlora-t3s3-epaper: LILYGO T3-S3 E-Paper with its antenna, front view.
 # Size: https://wiki.lilygo.cc/products/t3-series/t3-s3-e-paper/
+# The board is 1.2 mm and the e-paper panel stands 2.5 mm off it, both estimates for a bare board with a panel on its frame. The published 15 mm takes in the parts on the back, which aren't built.
 [size]
 width_mm = 67
 height_mm = 36.8
-depth_mm = 15
+depth_mm = 3.7
+board_mm = 1.2
 scale_by = "width"
 fit_bbox = [547.50, 746.54, 1563.50, 1306.34]
 covers = "board with 2.13 inch e-paper; the antenna is built round"
@@ -18,3 +20,8 @@ end = [1318.50, 263.94]
 # Radius from the drawn width at the base; the drawing tapers it toward the tip.
 radius_mm = 2.9
 tip_radius_mm = 2.03
+
+[[block]]
+name = "Display"
+bbox = [645.3, 865.2, 1542.8, 1306.3]
+h = 2.5

@@ -310,6 +310,152 @@
         }
       }
     },
+    "%lld radios" : {
+      "comment" : "Showcase: how many radios are in the room",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld radio"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld radios"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "3D model © Meshtastic LLC. The product and its name, logos and marks belong to %@." : {
+      "comment" : "Showcase model card: who owns the model and who owns the product; the argument is the maker"
+    },
+    "Also: %@" : {
+      "comment" : "Showcase model card: other devices drawn with the same model; the argument is a list of device names"
+    },
+    "Brought to you by" : {
+      "comment" : "Showcase: plaque on the wall naming who made the showcase, above the Meshtastic Solutions name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Brought to you by"
+          }
+        }
+      }
+    },
+    "Enter Showcase" : {
+      "comment" : "Spatial map: open the showcase immersive space, closing this volume"
+    },
+    "Hide App" : {
+      "comment" : "Showcase: close the app's window while in the showcase",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Hide App"
+          }
+        }
+      }
+    },
+    "Leave" : {
+      "comment" : "Showcase: close the immersive space"
+    },
+    "Made by %@" : {
+      "comment" : "Showcase model card and VoiceOver: the device's maker"
+    },
+    "Meshtastic Hardware Showcase" : {
+      "comment" : "Showcase: title of the immersive space's control panel"
+    },
+    "Move the control panel" : {
+      "comment" : "Showcase: VoiceOver label for the bar under the control panel that moves it",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Move the control panel"
+          }
+        }
+      }
+    },
+    "Next rack page" : {
+      "comment" : "Showcase: show the next page of the wall rack"
+    },
+    "Radios on this page" : {
+      "comment" : "Showcase: menu listing the radios on the wall rack page that's showing; picking one opens its card",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Radios on this page"
+          }
+        }
+      }
+    },
+    "Offline, last heard %@" : {
+      "comment" : "Showcase: VoiceOver value for a radio that is offline; the argument is when it was last heard"
+    },
+    "Online, last heard %@" : {
+      "comment" : "Showcase: VoiceOver value for a radio that is online; the argument is when it was last heard"
+    },
+    "Open in App" : {
+      "comment" : "Showcase card: show this node's detail screen in the main window"
+    },
+    "Page %lld of %lld, %lld radios" : {
+      "comment" : "Showcase: VoiceOver value for the wall rack; the arguments are the page, the page count and the radios on the page"
+    },
+    "Pinch and hold to pick it up. It's real size." : {
+      "comment" : "Showcase model card: how to hold the model"
+    },
+    "Previous rack page" : {
+      "comment" : "Showcase: show the previous page of the wall rack"
+    },
+    "Rack page %lld of %lld" : {
+      "comment" : "Showcase: which page of the wall rack is showing"
+    },
+    "Seated" : {
+      "comment" : "Showcase: the viewer is sitting in the chair"
+    },
+    "Show App" : {
+      "comment" : "Showcase: bring back the app's window while in the showcase",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Show App"
+          }
+        }
+      }
+    },
+    "Standing" : {
+      "comment" : "Showcase: the viewer is standing"
+    },
+    "Unknown hardware" : {
+      "comment" : "Showcase card: the node hasn't said what hardware it is"
+    },
+    "Wall rack" : {
+      "comment" : "Showcase: VoiceOver label for the rack of radios on the wall"
+    },
+    "Where to buy" : {
+      "comment" : "Showcase model card: heading for the purchase links"
+    },
+    "Your radio" : {
+      "comment" : "Showcase: card in front of the connected radio on the display table"
+    },
+    "· %lld not shown" : {
+      "comment" : "Showcase: radios with no place in the room"
+    },
     "%lld Hops" : {
       "comment" : "Live Activity: how many hops away the tracked node is",
       "extractionState" : "extracted_with_value",
@@ -6925,6 +7071,9 @@
           }
         }
       }
+    },
+    "· No radio connected" : {
+      "comment" : "Showcase: no radio is connected, so none stands on the front table"
     },
     "—" : {
       "localizations" : {
