@@ -330,14 +330,36 @@
               }
             }
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 台無線電"
+          }
         }
       }
     },
     "3D model © Meshtastic LLC. The product and its name, logos and marks belong to %@." : {
-      "comment" : "Showcase model card: who owns the model and who owns the product; the argument is the maker"
+      "comment" : "Showcase model card: who owns the model and who owns the product; the argument is the maker",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "3D 模型 © Meshtastic LLC。產品及其名稱、標誌與商標屬於 %@。"
+          }
+        }
+      }
     },
     "Also: %@" : {
-      "comment" : "Showcase model card: other devices drawn with the same model; the argument is a list of device names"
+      "comment" : "Showcase model card: other devices drawn with the same model; the argument is a list of device names",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "同一模型也用於：%@"
+          }
+        }
+      }
     },
     "Brought to you by" : {
       "comment" : "Showcase: plaque on the wall naming who made the showcase, above the Meshtastic Solutions name",
@@ -348,11 +370,25 @@
             "state" : "new",
             "value" : "Brought to you by"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "由以下單位提供"
+          }
         }
       }
     },
     "Enter Showcase" : {
-      "comment" : "Spatial map: open the showcase immersive space, closing this volume"
+      "comment" : "Spatial map: open the showcase immersive space, closing this volume",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "進入展示區"
+          }
+        }
+      }
     },
     "Hide App" : {
       "comment" : "Showcase: close the app's window while in the showcase",
@@ -363,17 +399,47 @@
             "state" : "new",
             "value" : "Hide App"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隱藏應用程式"
+          }
         }
       }
     },
     "Leave" : {
-      "comment" : "Showcase: close the immersive space"
+      "comment" : "Showcase: close the immersive space",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "離開"
+          }
+        }
+      }
     },
     "Made by %@" : {
-      "comment" : "Showcase model card and VoiceOver: the device's maker"
+      "comment" : "Showcase model card and VoiceOver: the device's maker",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "製造商：%@"
+          }
+        }
+      }
     },
     "Meshtastic Hardware Showcase" : {
-      "comment" : "Showcase: title of the immersive space's control panel"
+      "comment" : "Showcase: title of the immersive space's control panel",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meshtastic 硬體展示區"
+          }
+        }
+      }
     },
     "Move the control panel" : {
       "comment" : "Showcase: VoiceOver label for the bar under the control panel that moves it",
@@ -384,11 +450,25 @@
             "state" : "new",
             "value" : "Move the control panel"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移動控制面板"
+          }
         }
       }
     },
     "Next rack page" : {
-      "comment" : "Showcase: show the next page of the wall rack"
+      "comment" : "Showcase: show the next page of the wall rack",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "展示架下一頁"
+          }
+        }
+      }
     },
     "Radios on this page" : {
       "comment" : "Showcase: menu listing the radios on the wall rack page that's showing; picking one opens its card",
@@ -399,32 +479,102 @@
             "state" : "new",
             "value" : "Radios on this page"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此頁的無線電"
+          }
         }
       }
     },
     "Offline, last heard %@" : {
-      "comment" : "Showcase: VoiceOver value for a radio that is offline; the argument is when it was last heard"
+      "comment" : "Showcase: VoiceOver value for a radio that is offline; the argument is when it was last heard",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "離線，最後收到訊號：%@"
+          }
+        }
+      }
     },
     "Online, last heard %@" : {
-      "comment" : "Showcase: VoiceOver value for a radio that is online; the argument is when it was last heard"
+      "comment" : "Showcase: VoiceOver value for a radio that is online; the argument is when it was last heard",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在線，最後收到訊號：%@"
+          }
+        }
+      }
     },
     "Open in App" : {
-      "comment" : "Showcase card: show this node's detail screen in the main window"
+      "comment" : "Showcase card: show this node's detail screen in the main window",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在應用程式中開啟"
+          }
+        }
+      }
     },
     "Page %lld of %lld, %lld radios" : {
-      "comment" : "Showcase: VoiceOver value for the wall rack; the arguments are the page, the page count and the radios on the page"
+      "comment" : "Showcase: VoiceOver value for the wall rack; the arguments are the page, the page count and the radios on the page",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "第 %lld 頁，共 %lld 頁，%lld 台無線電"
+          }
+        }
+      }
     },
     "Pinch and hold to pick it up. It's real size." : {
-      "comment" : "Showcase model card: how to hold the model"
+      "comment" : "Showcase model card: how to hold the model",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "捏住不放即可拿起，這是實際尺寸。"
+          }
+        }
+      }
     },
     "Previous rack page" : {
-      "comment" : "Showcase: show the previous page of the wall rack"
+      "comment" : "Showcase: show the previous page of the wall rack",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "展示架上一頁"
+          }
+        }
+      }
     },
     "Rack page %lld of %lld" : {
-      "comment" : "Showcase: which page of the wall rack is showing"
+      "comment" : "Showcase: which page of the wall rack is showing",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "展示架第 %lld 頁，共 %lld 頁"
+          }
+        }
+      }
     },
     "Seated" : {
-      "comment" : "Showcase: the viewer is sitting in the chair"
+      "comment" : "Showcase: the viewer is sitting in the chair",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "坐姿"
+          }
+        }
+      }
     },
     "Show App" : {
       "comment" : "Showcase: bring back the app's window while in the showcase",
@@ -435,26 +585,80 @@
             "state" : "new",
             "value" : "Show App"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顯示應用程式"
+          }
         }
       }
     },
     "Standing" : {
-      "comment" : "Showcase: the viewer is standing"
+      "comment" : "Showcase: the viewer is standing",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "站姿"
+          }
+        }
+      }
     },
     "Unknown hardware" : {
-      "comment" : "Showcase card: the node hasn't said what hardware it is"
+      "comment" : "Showcase card: the node hasn't said what hardware it is",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未知硬體"
+          }
+        }
+      }
     },
     "Wall rack" : {
-      "comment" : "Showcase: VoiceOver label for the rack of radios on the wall"
+      "comment" : "Showcase: VoiceOver label for the rack of radios on the wall",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "壁掛展示架"
+          }
+        }
+      }
     },
     "Where to buy" : {
-      "comment" : "Showcase model card: heading for the purchase links"
+      "comment" : "Showcase model card: heading for the purchase links",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "購買管道"
+          }
+        }
+      }
     },
     "Your radio" : {
-      "comment" : "Showcase: card in front of the connected radio on the display table"
+      "comment" : "Showcase: card in front of the connected radio on the display table",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "您的無線電"
+          }
+        }
+      }
     },
     "· %lld not shown" : {
-      "comment" : "Showcase: radios with no place in the room"
+      "comment" : "Showcase: radios with no place in the room",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "· 另有 %lld 台未顯示"
+          }
+        }
+      }
     },
     "%lld Hops" : {
       "comment" : "Live Activity: how many hops away the tracked node is",
@@ -464,6 +668,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%lld Hops"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 跳"
           }
         }
       }
@@ -477,6 +687,12 @@
             "state" : "new",
             "value" : "Heard %@ ago"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@前收到訊號"
+          }
         }
       }
     },
@@ -488,6 +704,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "iOS stops a Live Activity after 8 hours. Only one runs at a time."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iOS 會在 8 小時後停止即時動態，且一次只能執行一個。"
           }
         }
       }
@@ -501,6 +723,12 @@
             "state" : "new",
             "value" : "Live Activity"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "即時動態"
+          }
         }
       }
     },
@@ -512,6 +740,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Mesh Status"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesh 狀態"
           }
         }
       }
@@ -525,6 +759,12 @@
             "state" : "new",
             "value" : "No nodes to track yet"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尚無可追蹤的節點"
+          }
         }
       }
     },
@@ -536,6 +776,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Not heard yet"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尚未收到訊號"
           }
         }
       }
@@ -549,6 +795,12 @@
             "state" : "new",
             "value" : "One node's battery, signal, when it was last heard and how far away it is."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "單一節點的電量、訊號、最後收到訊號的時間，以及與您的距離。"
+          }
         }
       }
     },
@@ -560,6 +812,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Search nodes"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "搜尋節點"
           }
         }
       }
@@ -573,6 +831,12 @@
             "state" : "new",
             "value" : "Show"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顯示內容"
+          }
         }
       }
     },
@@ -584,6 +848,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Show the mesh or one node on the Lock Screen and in the Dynamic Island."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在鎖定畫面和動態島上顯示 Mesh 或單一節點。"
           }
         }
       }
@@ -597,6 +867,12 @@
             "state" : "new",
             "value" : "Signal %lld of 3"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "訊號強度：%lld／3 格"
+          }
         }
       }
     },
@@ -608,6 +884,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Start Live Activity"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開始即時動態"
           }
         }
       }
@@ -621,6 +903,12 @@
             "state" : "new",
             "value" : "Stop Live Activity"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "停止即時動態"
+          }
         }
       }
     },
@@ -632,6 +920,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Swipe left to disconnect. Long press for more options."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "向左滑動以中斷連線。長按以顯示更多選項。"
           }
         }
       }
@@ -645,6 +939,12 @@
             "state" : "new",
             "value" : "Switch Live Activity"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切換即時動態"
+          }
         }
       }
     },
@@ -656,6 +956,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "The connection, nodes online, unread messages and the radio's battery."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "連線狀態、在線節點、未讀訊息與無線電電量。"
           }
         }
       }
@@ -669,6 +975,12 @@
             "state" : "new",
             "value" : "Track a Node"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "追蹤節點"
+          }
         }
       }
     },
@@ -680,6 +992,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Tracking %@"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在追蹤 %@"
           }
         }
       }
@@ -693,6 +1011,12 @@
             "state" : "new",
             "value" : "Tracking a node"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在追蹤節點"
+          }
         }
       }
     },
@@ -704,6 +1028,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Until %@"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新至 %@"
           }
         }
       }
@@ -717,6 +1047,12 @@
             "state" : "new",
             "value" : "Updated %@ ago"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@前更新"
+          }
         }
       }
     },
@@ -728,6 +1064,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Updates until %@."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新至 %@。"
           }
         }
       }
@@ -741,6 +1083,12 @@
             "state" : "new",
             "value" : "Updates until %@. iOS stops a Live Activity after 8 hours."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更新至 %@。iOS 會在 8 小時後停止即時動態。"
+          }
         }
       }
     },
@@ -752,6 +1100,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "via %@"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "透過 %@"
           }
         }
       }
@@ -5949,6 +6303,12 @@
             "state" : "new",
             "value" : "Pick a node below"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請從下方選擇節點"
+          }
         }
       }
     },
@@ -7073,7 +7433,15 @@
       }
     },
     "· No radio connected" : {
-      "comment" : "Showcase: no radio is connected, so none stands on the front table"
+      "comment" : "Showcase: no radio is connected, so none stands on the front table",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "· 未連線無線電"
+          }
+        }
+      }
     },
     "—" : {
       "localizations" : {
@@ -73003,7 +73371,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mesh 即時活動"
+            "value" : "Mesh 即時動態"
           }
         }
       }
