@@ -454,6 +454,13 @@ private struct FilteredNodeList: View {
 						connectedNode: connectedNode
 					)
 				}
+				.swipeActions(edge: .leading, allowsFullSwipe: true) {
+					if entry.id != accessoryManager.activeDeviceNum,
+					   entry.node.user?.showsDirectMessageAction == true {
+						MessageNodeButton(nodeNum: entry.id)
+							.tint(.accentColor)
+					}
+				}
 			} else {
 				// Keep a row for an entry whose node died since the last snapshot tick (cap
 				// eviction, user delete). A conditional row that silently produces nothing
@@ -538,13 +545,7 @@ private struct FilteredNodeList: View {
 			}
 			if connectedNode.num != node.num {
 				if node.user?.showsDirectMessageAction == true {
-					Button(action: {
-						if let url = URL(string: "meshtastic:///messages?userNum=\(node.num)") {
-							UIApplication.shared.open(url)
-						}
-					}) {
-						Label("Message", systemImage: "message")
-					}
+					MessageNodeButton(nodeNum: node.num)
 				}
 				TraceRouteButton(
 					node: node
