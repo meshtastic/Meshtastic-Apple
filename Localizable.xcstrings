@@ -1069,7 +1069,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "更新至 %@。"
+            "value" : "將持續更新至 %@。"
           }
         }
       }
@@ -1087,7 +1087,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "更新至 %@。iOS 會在 8 小時後停止即時動態。"
+            "value" : "將持續更新至 %@。iOS 會在 8 小時後停止即時動態。"
           }
         }
       }
