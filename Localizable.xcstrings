@@ -1033,7 +1033,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "更新至 %@"
+            "value" : "持續至 %@"
           }
         }
       }
