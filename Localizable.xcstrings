@@ -441,6 +441,7 @@
         }
       }
     },
+    "Message a Node" : {},
     "Move the control panel" : {
       "comment" : "Showcase: VoiceOver label for the bar under the control panel that moves it",
       "extractionState" : "extracted_with_value",
@@ -605,6 +606,7 @@
         }
       }
     },
+    "Swipe right on a node to open a direct message, or tap the message button at the top of its details." : {},
     "Unknown hardware" : {
       "comment" : "Showcase card: the node hasn't said what hardware it is",
       "localizations" : {
