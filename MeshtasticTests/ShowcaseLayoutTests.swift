@@ -25,9 +25,17 @@ struct ShowcaseLayoutTests {
 	}
 
 	/// The connected radio, then `favorites` favorites, then online nodes, then offline ones.
+	///
+	/// The closure is annotated and each argument hoisted into its own `let`. Written as one
+	/// expression — three inferred comparisons and an `Int64` conversion feeding a call with
+	/// four defaulted parameters — the type checker ran past its budget and the test target
+	/// failed to build rather than failing a test.
 	private func mesh(count: Int, favorites: Int = 2, online: Int) -> [ShowcaseNodeSnapshot] {
-		(0..<count).map { index in
-			node(Int64(index + 1), online: index < online, favorite: index >= 1 && index <= favorites, connected: index == 0)
+		(0..<count).map { (index: Int) -> ShowcaseNodeSnapshot in
+			let isOnline: Bool = index < online
+			let isFavorite: Bool = index >= 1 && index <= favorites
+			let isConnected: Bool = index == 0
+			return node(Int64(index + 1), online: isOnline, favorite: isFavorite, connected: isConnected)
 		}
 	}
 
