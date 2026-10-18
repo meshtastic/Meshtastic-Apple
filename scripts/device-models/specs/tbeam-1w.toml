@@ -17,9 +17,20 @@ name = "Display"
 bbox = [29.4, 118.9, 210.3, 264.6]
 h = 3.0
 
+# Behind the board (LILYGO's back photo, estimates): the 30 mm fan on its heatsink behind the
+# upper part, and the 18650 sled over the lower half, with the board showing around both.
 [[block]]
-name = "HolderAndFan"
-bbox = [11.5, 82.4, 226.6, 642.0]
-h = 22.4
+name = "Fan"
+bbox = [38.0, 120.0, 200.0, 282.0]
+h = 12.0
+radius_mm = 2.0
 back = true
-side_color = "#202020"
+side_color = "#1c1c1c"
+
+[[block]]
+name = "BatterySled"
+bbox = [20.0, 340.0, 218.0, 642.0]
+h = 22.0
+radius_mm = 2.0
+back = true
+side_color = "#1c1c1c"

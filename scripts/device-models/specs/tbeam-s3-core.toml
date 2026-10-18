@@ -26,9 +26,12 @@ name = "Display"
 bbox = [877.3, 1080.1, 1173.9, 1362.7]
 h = 3.0
 
+# The 18650 holder, about 77 x 22 mm and 21 mm deep, centered under the board with the board
+# showing past it at the ends and along both edges (LILYGO's back photo, estimates).
 [[block]]
 name = "BatteryHolder"
-bbox = [830.1, 1079.3, 1702.4, 1362.7]
-h = 23.4
+bbox = [923.0, 1123.0, 1609.0, 1319.0]
+h = 21.0
+radius_mm = 2.0
 back = true
-side_color = "#202020"
+side_color = "#1c1c1c"
