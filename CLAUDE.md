@@ -10,9 +10,9 @@ What changed / Testing). If there's nothing worth saying, say nothing.
 
 Every pull request starts from an issue, so maintainers can review the idea
 before anyone spends time on it. Before writing code for a change, find or
-open an issue describing it. For a feature, wait until a maintainer adds the
-`approved` label; a feature that isn't on the roadmap may be turned down, and
-that's cheaper to learn before the work than after. A bug report needs no
+open an issue describing it, and wait until a maintainer adds the `approved`
+label; an idea that isn't on the roadmap may be turned down, and that's cheaper
+to learn before the work than after. Only bug reports (labeled `bug`) need no
 approval. Link the issue from the pull request's description with a closing
 keyword, `Fixes #123`. The "Linked issue" check fails a pull request without
 one; maintainers and bots are exempt.

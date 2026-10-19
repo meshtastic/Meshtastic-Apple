@@ -1,4 +1,4 @@
-<!-- Every pull request starts from an issue. Link it below; for a feature, a maintainer must have added the approved label first. -->
+<!-- Every pull request starts from an issue. Link it below; unless it's a bug report, a maintainer must have added the approved label first. -->
 Fixes #
 
 ## What changed?

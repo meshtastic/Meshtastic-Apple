@@ -66,9 +66,9 @@ fails if the committed project does not match `project.yml`.
 
 ## Start with an Issue
 
-Before you write code, open an issue (or find an existing one) describing the change, so maintainers can review the idea before you spend time on it. Features need a maintainer to add the **`approved`** label to the issue; ideas that aren't on the roadmap may be declined, and it's better to learn that first. Bug reports need no approval.
+Before you write code, open an issue (or find an existing one) describing the change, so maintainers can review the idea before you spend time on it. A maintainer then adds the **`approved`** label to the issue; ideas that aren't on the roadmap may be declined, and it's better to learn that first. Only bug reports (labeled **`bug`**) need no approval.
 
-Link the issue from your pull request's description with a closing keyword, such as `Fixes #123`. The **Linked issue** check fails a pull request with no linked issue, or one whose feature issue isn't approved yet. Once a maintainer approves the issue, the check runs again by itself.
+Link the issue from your pull request's description with a closing keyword, such as `Fixes #123`. The **Linked issue** check fails a pull request with no linked issue, or one whose issue isn't approved yet. Once a maintainer approves the issue, the check runs again by itself.
 
 ## Development Workflow
 
