@@ -534,13 +534,13 @@ struct NodeDetail: View {
 
 	@ViewBuilder
 	private var environmentSection: some View {
-		if latestPosition != nil && UserDefaults.environmentEnableWeatherKit
-			|| hasDataForLatestEnvironmentMetrics(attributes: ["iaq", "temperature", "relativeHumidity", "barometricPressure", "windSpeed", "radiation", "weight", "Distance", "soilTemperature", "soilMoisture"]) {
+		// The node's own sensor readings come first; WeatherKit fills in only for a node with a
+		// position and no readings.
+		let metrics = latestEnvironmentMetrics.flatMap { hasEnvironmentReadings($0) ? $0 : nil }
+		if metrics != nil || latestPosition != nil && UserDefaults.environmentEnableWeatherKit {
 			Section("Environment") {
 				VStack(spacing: 0) {
-					if latestEnvironmentMetrics == nil {
-						LocalWeatherConditions(location: latestPosition?.nodeLocation)
-					} else if let metrics = latestEnvironmentMetrics {
+					if let metrics {
 						VStack {
 							if metrics.iaq ?? -1 > 0 {
 								IndoorAirQuality(iaq: Int(metrics.iaq ?? 0), displayMode: .gradient)
@@ -619,6 +619,8 @@ struct NodeDetail: View {
 							}
 							.padding(metrics.iaq ?? -1 > 0 ? .bottom : .vertical)
 						}
+					} else {
+						LocalWeatherConditions(location: latestPosition?.nodeLocation)
 					}
 				}
 				.accessibilityElement(children: .combine)
@@ -1028,20 +1030,12 @@ struct NodeDetail: View {
 		)
 	}
 
-	private func hasDataForLatestEnvironmentMetrics(attributes: [String]) -> Bool {
-		guard let latest = latestEnvironmentMetrics else { return false }
-		let mirror = Mirror(reflecting: latest)
-		for attribute in attributes {
-			if let child = mirror.children.first(where: { $0.label == attribute }) {
-				let childMirror = Mirror(reflecting: child.value)
-				if childMirror.displayStyle == .optional {
-					if childMirror.children.count > 0 { return true }
-				} else {
-					return true
-				}
-			}
-		}
-		return false
+	/// Whether `metrics` has any reading the Environment section shows.
+	private func hasEnvironmentReadings(_ metrics: TelemetryEntity) -> Bool {
+		metrics.iaq ?? -1 > 0 || metrics.temperature != nil || metrics.relativeHumidity != nil
+			|| metrics.barometricPressure != nil || metrics.windSpeed != nil || metrics.rainfall1H != nil
+			|| metrics.rainfall24H != nil || metrics.radiation != nil || metrics.weight != nil
+			|| metrics.distance != nil || metrics.soilTemperature != nil || metrics.soilMoisture != nil
 	}
 }
 
