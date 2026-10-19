@@ -8,7 +8,7 @@ height_mm = 133
 depth_mm = 27
 board_mm = 1.6
 scale_by = "width"
-covers = "board with fan, no antenna"
+covers = "board with fan and holder; the SMA and antenna are built round"
 source = "https://wiki.lilygo.cc/products/t-beam-series/t-beam-1w/"
 confidence = "vendor"
 
@@ -34,3 +34,25 @@ h = 22.0
 radius_mm = 2.0
 back = true
 side_color = "#1c1c1c"
+
+[materials]
+brass = { color = "#c9a24a", roughness = 0.3, metallic = 1.0 }
+whip = { color = "#1e1e1e", roughness = 0.6 }
+
+# The SMA connector's thread, drawn flat at the top right, built round.
+[[antenna]]
+name = "SMA"
+start = [194.4, 40.4]
+end = [194.4, 0.5]
+material = "brass"
+dome = false
+
+# LILYGO doesn't give the 1W's antenna; this is the T-Beam Supreme's (84 mm, 8.7 mm across at the
+# base, 6 at the tip), standing on the SMA above the drawing.
+[[antenna]]
+name = "Antenna"
+start = [194.4, 0.5]
+end = [194.4, -453.5]
+radius_mm = 4.33
+tip_radius_mm = 3.03
+material = "whip"
