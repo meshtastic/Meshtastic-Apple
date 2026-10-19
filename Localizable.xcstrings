@@ -606,7 +606,7 @@
         }
       }
     },
-    "Swipe right on a node to open a direct message, or tap the message button at the top of its details." : {},
+    "Swipe right on a node you can message to open a direct message, or tap the message button at the top of its details." : {},
     "Unknown hardware" : {
       "comment" : "Showcase card: the node hasn't said what hardware it is",
       "localizations" : {

@@ -53,7 +53,7 @@ struct NodeListHelp: View {
 								.foregroundColor(.accentColor)
 						),
 						title: String(localized: "Message a Node"),
-						subtitle: String(localized: "Swipe right on a node to open a direct message, or tap the message button at the top of its details.")
+						subtitle: String(localized: "Swipe right on a node you can message to open a direct message, or tap the message button at the top of its details.")
 					)
 				} header: {
 					Text("Node Status")
