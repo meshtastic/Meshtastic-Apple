@@ -1,3 +1,6 @@
+<!-- Every pull request starts from an issue. Link it below; unless it's a bug report, a maintainer must have added the approved label first. -->
+Fixes #
+
 ## What changed?
 <!-- Provide a clear description for the change -->
 

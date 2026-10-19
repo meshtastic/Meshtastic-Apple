@@ -6,6 +6,17 @@ no dramatized debugging stories, no bold-lead bullet lists that read like
 marketing. Match how existing PRs in this repo are written (Summary /
 What changed / Testing). If there's nothing worth saying, say nothing.
 
+## Start with an issue
+
+Every pull request starts from an issue, so maintainers can review the idea
+before anyone spends time on it. Before writing code for a change, find or
+open an issue describing it, and wait until a maintainer adds the `approved`
+label; an idea that isn't on the roadmap may be turned down, and that's cheaper
+to learn before the work than after. Only bug reports (labeled `bug`) need no
+approval. Link the issue from the pull request's description with a closing
+keyword, `Fixes #123`. The "Linked issue" check fails a pull request without
+one; maintainers and bots are exempt.
+
 ## Pull requests
 
 One change per pull request, based on `main`.
