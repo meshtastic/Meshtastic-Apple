@@ -535,9 +535,10 @@ struct NodeDetail: View {
 	@ViewBuilder
 	private var environmentSection: some View {
 		// The node's own sensor readings come first; WeatherKit fills in only for a node with a
-		// position and no readings.
+		// position and no readings, and only when the WeatherKit setting is on.
 		let metrics = latestEnvironmentMetrics.flatMap { hasEnvironmentReadings($0) ? $0 : nil }
-		if metrics != nil || latestPosition != nil && UserDefaults.environmentEnableWeatherKit {
+		let weatherLocation = UserDefaults.environmentEnableWeatherKit ? latestPosition?.nodeLocation : nil
+		if metrics != nil || weatherLocation != nil {
 			Section("Environment") {
 				VStack(spacing: 0) {
 					if let metrics {
@@ -620,7 +621,7 @@ struct NodeDetail: View {
 							.padding(metrics.iaq ?? -1 > 0 ? .bottom : .vertical)
 						}
 					} else {
-						LocalWeatherConditions(location: latestPosition?.nodeLocation)
+						LocalWeatherConditions(location: weatherLocation)
 					}
 				}
 				.accessibilityElement(children: .combine)
