@@ -77,7 +77,6 @@ actor ShowcaseSnapshotReader {
 		let nodes = order.map { index -> ShowcaseNodeSnapshot in
 			let node = fetched[index]
 			let user = node.user
-			let cached = node.latestPositionCache
 			return ShowcaseNodeSnapshot(
 				id: node.num,
 				shortName: user?.shortName ?? "?",
@@ -93,7 +92,8 @@ actor ShowcaseSnapshotReader {
 				hopsAway: Int(node.hopsAway),
 				snr: node.snr,
 				rssi: node.rssi,
-				hasPosition: cached != nil && cached?.modelContext != nil && cached?.isDeleted == false
+				// Through the accessor: it confirms the row in the store, which the raw link can't.
+				hasPosition: node.latestPosition != nil
 			)
 		}
 		return Result(nodes: nodes, totalCount: fetched.count)

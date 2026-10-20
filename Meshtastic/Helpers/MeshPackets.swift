@@ -533,10 +533,11 @@ actor MeshPackets {
 	/// The Watch update used to walk main-context entities while this actor's cap
 	/// eviction (`evictNodesIfOverCap`) and near-duplicate position pruning deleted
 	/// rows underneath them. An instance whose row another context deleted keeps
-	/// passing `modelContext != nil` / `isDeleted == false` until the merge lands,
-	/// and the next persisted-property read traps in SwiftData's backing-data
-	/// lookup — the app's largest crash. Running the snapshot here serializes it
-	/// against every delete this actor performs, and only value types cross back.
+	/// passing `modelContext != nil` / `isDeleted == false` (a context never learns
+	/// about another context's deletes), and the next persisted-property read traps
+	/// in SwiftData's backing-data lookup — the app's largest crash. Running the
+	/// snapshot here serializes it against every delete this actor performs, and
+	/// only value types cross back.
 	func watchNodeSnapshot(
 		userLatitude: Double,
 		userLongitude: Double,
@@ -1140,9 +1141,9 @@ actor MeshPackets {
 			// Not Found Insert
 			if fetchedNode.isEmpty && nodeInfo.num > 0 {
 
-				// findOrCreateNode (not a bare insert): NodeInfoEntity.num is @Attribute(.unique) and the
-				// fetch only sees SAVED rows, so a still-pending stub node created by an earlier POSITION
-				// packet for this num would otherwise collide on the unique num and trap on save.
+				// findOrCreateNode (not a bare insert): NodeInfoEntity.num is @Attribute(.unique), and a
+				// still-pending stub node created by an earlier POSITION packet for this num would
+				// otherwise collide on the unique num and trap on save.
 				let newNode = findOrCreateNode(num: Int64(nodeInfo.num), context: modelContext)
 					newNode.id = Int64(nodeInfo.num)
 					newNode.num = Int64(nodeInfo.num)

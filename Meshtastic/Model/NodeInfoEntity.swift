@@ -107,11 +107,15 @@ final class NodeInfoEntity {
 	@Relationship(deleteRule: .nullify, inverse: \PositionEntity.nodePosition)
 	var positions: [PositionEntity] = []
 
-	/// O(1) cache of this node's current "latest" position, maintained on insert so the hot
+	/// Cache of this node's current "latest" position, maintained on insert so the hot
 	/// position-ingest path never has to scan the (large, unindexed) PositionEntity table to
-	/// find/clear the previous latest. Read via the `latestPosition` accessor, which falls back
-	/// to a sorted query when this is nil (migrated/restored data). Unidirectional to-one;
-	/// nullified if the referenced position is deleted.
+	/// find/clear the previous latest. Read via the `latestPosition` accessor, which checks that
+	/// the row still exists (not that it is still this node's latest: a node fetched before a
+	/// later move keeps pointing at the older row until it is refetched) and falls back to a
+	/// sorted query when this is nil (migrated/restored data) or the row is gone. Unidirectional
+	/// to-one with no inverse: the context that deletes the position repairs this link at save,
+	/// but every other context keeps a handle that traps on its first persisted-property read, so
+	/// never follow it directly.
 	@Relationship(deleteRule: .nullify)
 	var latestPositionCache: PositionEntity?
 
