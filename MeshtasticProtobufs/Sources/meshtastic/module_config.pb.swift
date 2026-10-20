@@ -740,7 +740,7 @@ public struct ModuleConfig: Sendable {
     ///
     /// Minimum interval in seconds between position updates from the same node.
     /// A non-zero value implicitly enables the suppression window; 0 disables it.
-    /// Firmware default: 21600 (6 hours), installed when this config is first created.
+    /// Firmware default: 18000 (5 hours), installed when this config is first created.
     public var positionMinIntervalSecs: UInt32 = 0
 
     ///
@@ -760,7 +760,7 @@ public struct ModuleConfig: Sendable {
     public var rateLimitMaxPackets: UInt32 = 0
 
     ///
-    /// Maximum unknown/undecryptable packets per rate window before the source
+    /// Maximum unknown/undecryptable packets per 5 minutes before the source
     /// is dropped. A non-zero value implicitly enables unknown-packet filtering;
     /// 0 disables it.
     public var unknownPacketThreshold: UInt32 = 0
