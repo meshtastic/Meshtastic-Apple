@@ -83,8 +83,7 @@ struct ConfigFormOverlayTests {
 			"meshtastic.ModuleConfig.SerialConfig": (0, 0),
 			"meshtastic.ModuleConfig.StoreForwardConfig": (0, 0),
 			"meshtastic.ModuleConfig.TAKConfig": (0, 0),
-			"meshtastic.ModuleConfig.TelemetryConfig": (0, 1),          // the interval stands alone where there is no toggle
-			"meshtastic.ModuleConfig.TrafficManagementConfig": (0, 4)   // four feature sections behind the main switch
+			"meshtastic.ModuleConfig.TelemetryConfig": (0, 1)           // the interval stands alone where there is no toggle
 		]
 		// Without this, moving a screen to `bespoke` would silently stop checking its
 		// hatches: the loop below would just not visit it.
@@ -253,20 +252,6 @@ struct ConfigFormOverlayTests {
 					"\(field.messageName)#\(field.tag) (\(entry.label)) is indexed but the form neither shows nor omits it")
 		}
 		#expect(checked > 0, "no indexed field reached a migrated screen; the lookup is not being exercised")
-	}
-
-	@Test("Traffic Management's main switch derives from the values and clears them")
-	func trafficManagementMainSwitch() {
-		var message = ModuleConfig.TrafficManagementConfig()
-		#expect(!TrafficManagementConfig.isActive(message))
-		message.rateLimitWindowSecs = 60
-		message.rateLimitMaxPackets = 20
-		#expect(TrafficManagementConfig.isActive(message))
-		#expect(!TrafficManagementConfig.isActive(TrafficManagementConfig.cleared(message)))
-		// A cleared window takes the packet count with it.
-		message.rateLimitWindowSecs = 0
-		TrafficManagementConfig.reconcile(&message)
-		#expect(message.rateLimitMaxPackets == 0)
 	}
 
 	@Test("MQTT keeps the old screen's load-time rules")

@@ -2736,48 +2736,6 @@ struct PowerConfigSnapshotTests {
 	}
 }
 
-@Suite("TrafficManagementConfig Snapshots")
-struct TrafficManagementConfigSnapshotTests {
-
-	@MainActor
-	private func makeNode() throws -> NodeInfoEntity {
-		let context = sharedModelContainer.mainContext
-		let node = NodeInfoEntity()
-		node.num = 0xC0FF_EE0D
-		context.insert(node)
-		let user = UserEntity()
-		user.num = node.num
-		user.longName = "Snapshot Traffic Node"
-		user.shortName = "STRF"
-		context.insert(user)
-		node.user = user
-		let traffic = TrafficManagementConfigEntity()
-		traffic.positionMinIntervalSecs = 18000
-		traffic.nodeinfoDirectResponseMaxHops = 2
-		traffic.rateLimitWindowSecs = 60
-		traffic.rateLimitMaxPackets = 20
-		traffic.unknownPacketThreshold = 5
-		context.insert(traffic)
-		node.trafficManagementConfig = traffic
-		try context.save()
-		return node
-	}
-
-	@Test("Traffic Management form, every feature on")
-	@MainActor
-	func trafficManagementForm() async throws {
-		let node = try makeNode()
-		AccessoryManager.shared.isConnected = true
-		AccessoryManager.shared.activeDeviceNum = node.num
-		let view = NavigationView {
-			TrafficManagementConfig(node: node)
-				.environmentObject(AccessoryManager.shared)
-				.modelContainer(sharedModelContainer)
-		}
-		await assertViewSnapshot(of: view, width: 390, height: 1500, named: "trafficManagementConfigForm")
-	}
-}
-
 @Suite("CannedMessagesConfig Snapshots")
 struct CannedMessagesConfigSnapshotTests {
 

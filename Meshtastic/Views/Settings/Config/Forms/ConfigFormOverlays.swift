@@ -33,8 +33,7 @@ enum ConfigFormOverlays {
 		SerialConfig.overlay(),
 		StoreForwardConfig.overlay(),
 		TAKModuleConfig.overlay(),
-		TelemetryConfig.overlay(),
-		TrafficManagementConfig.overlay()
+		TelemetryConfig.overlay()
 	]
 
 	/// Messages whose screens stay hand-written, and why.

@@ -182,30 +182,6 @@ screen may briefly appear before the radio finishes identifying itself.
 | Store & Forward | Store packets for nodes that are temporarily offline. |
 | Serial | UART serial output for integration with other hardware. |
 | Telemetry | Device, environment, and air-quality sensor reporting. |
-| Traffic Management | Mesh traffic optimization — position deduplication, rate limiting, and unknown-packet filtering. Requires firmware 2.8.0+. |
-
-### Traffic Management
-
-The Traffic Management module helps reduce unnecessary mesh traffic and improve network efficiency. It is available on nodes running firmware **2.8.0 or later**.
-
-The screen opens with a placement assessment: how many nodes this radio heard directly (over RF, within the last two hours), and whether that makes the module worth enabling. Traffic management pays off on a well-placed node with many direct neighbors — 50 or more heard in that window, ideally around 200. One transmission from such a node reaches most of them at once, so cutting hop counts on the chattiest packets removes the retransmission storm that follows each broadcast. On a node with a handful of direct neighbors it has little to police. Each feature is enabled implicitly by a non-zero value — turning a section's toggle off (or the master **Enabled** switch) clears its values and disables that feature on the radio. Turning a feature on starts its interval at the firmware default rather than zero, so saving right away enables it.
-
-| Setting | Description |
-|---------|-------------|
-| Enabled | Turns the module on or off. |
-| **Position Deduplication** | |
-| Position Dedup | Drop repeated position broadcasts. |
-| Minimum Interval | Positions from the same node arriving sooner than this are dropped. The firmware default is five hours. |
-| **NodeInfo Direct Response** | |
-| Direct Response | Answer NodeInfo requests from the local cache instead of flooding the mesh. |
-| Max Hops | Only answer requestors within this many hops, 1 to 3. The radio's role caps the effective value: routers allow up to 3, plain clients answer direct requestors only. |
-| **Rate Limiting** | |
-| Rate Limiting | Throttle nodes that send too many packets. |
-| Window | The time window packets are counted over. |
-| Max Packets | The most packets one node may send per window. |
-| **Unknown Packet Handling** | |
-| Drop Unknown | Drop packets that cannot be decrypted. |
-| Threshold | How many per window before the sender is dropped. |
 
 ### Mesh Beacon
 

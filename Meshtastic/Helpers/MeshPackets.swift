@@ -892,7 +892,8 @@ actor MeshPackets {
 		case .tak:
 			upsertTAKModuleConfigPacket(config: config.tak, nodeNum: nodeNum)
 		case .trafficManagement:
-			upsertTrafficManagementModuleConfigPacket(config: config.trafficManagement, nodeNum: nodeNum)
+			// Traffic management is configured on the radio only; the app keeps no copy.
+			break
 		default:
 #if DEBUG
 			Logger.services.error("⁉️ Unknown Module Config variant UNHANDLED \(config.payloadVariant.debugDescription, privacy: .public)")
@@ -1492,8 +1493,6 @@ actor MeshPackets {
 					self.upsertTAKModuleConfigPacket(config: moduleConfig.tak, nodeNum: Int64(packet.from), sessionPasskey: responsePasskey)
 				} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.statusmessage(moduleConfig.statusmessage) {
 					self.upsertStatusMessageModuleConfigPacket(config: moduleConfig.statusmessage, nodeNum: Int64(packet.from), sessionPasskey: responsePasskey)
-				} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.trafficManagement(moduleConfig.trafficManagement) {
-					self.upsertTrafficManagementModuleConfigPacket(config: moduleConfig.trafficManagement, nodeNum: Int64(packet.from), sessionPasskey: responsePasskey)
 				} else if moduleConfig.payloadVariant == ModuleConfig.OneOf_PayloadVariant.meshBeacon(moduleConfig.meshBeacon) {
 					self.upsertMeshBeaconModuleConfigPacket(config: moduleConfig.meshBeacon, nodeNum: Int64(packet.from), sessionPasskey: responsePasskey)
 				}

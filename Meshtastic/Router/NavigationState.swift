@@ -75,7 +75,6 @@ enum SettingsNavigationState: String, CaseIterable {
 	case security
 	case storeAndForward
 	case telemetry
-	case trafficManagement
 	case debugLogs
 	case traceRoutes
 	case appFiles
@@ -122,7 +121,6 @@ enum SettingsNavigationState: String, CaseIterable {
 		case .security: return .security
 		case .storeAndForward: return .storeAndForward
 		case .telemetry: return .telemetry
-		case .trafficManagement: return .trafficManagement
 		case .debugLogs: return .debugLogs
 		case .traceRoutes: return .traceRoutes
 		case .appFiles: return .appFiles

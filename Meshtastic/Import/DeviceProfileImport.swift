@@ -84,7 +84,7 @@ enum ImportItemKind: String, Equatable {
 	case owner
 	case deviceConfig, displayConfig, positionConfig, powerConfig, networkConfig, bluetoothConfig, securityConfig
 	case mqtt, serial, externalNotification, storeForward, rangeTest, telemetry, cannedMessage, audio
-	case neighborInfo, ambientLighting, detectionSensor, paxcounter, tak, trafficManagement, statusMessage
+	case neighborInfo, ambientLighting, detectionSensor, paxcounter, tak, statusMessage
 	case ringtone, cannedMessagesText, fixedPosition
 	case channelURL, loraConfig
 
@@ -94,8 +94,6 @@ enum ImportItemKind: String, Equatable {
 		switch self {
 		// First released in v2.7.20.6658ec2; absent from v2.7.19 and earlier.
 		case .statusMessage: return .fromVersion("2.7.20")
-		// Present only on develop; no released tag has a traffic_management case.
-		case .trafficManagement: return .fromVersion("2.8.0")
 		// No `case meshtastic_ModuleConfig_tak_tag` has ever existed in handleSetModuleConfig, on any tag
 		// or on develop. Meshtastic-Android sends it too (InstallProfileUseCase.kt:110) and hits the same
 		// silent no-op, so this is an ecosystem-wide dead path rather than an Apple gap.
@@ -129,7 +127,6 @@ enum ImportItemKind: String, Equatable {
 		case .detectionSensor: return "Detection Sensor".localized
 		case .paxcounter: return "PAX Counter".localized
 		case .tak: return "TAK".localized
-		case .trafficManagement: return "Traffic Management".localized
 		case .statusMessage: return "Status Message".localized
 		case .ringtone: return "Ringtone".localized
 		case .cannedMessagesText: return "Canned Messages".localized
@@ -164,7 +161,6 @@ enum ImportPayload {
 	case detectionSensor(ModuleConfig.DetectionSensorConfig)
 	case paxcounter(ModuleConfig.PaxcounterConfig)
 	case tak(ModuleConfig.TAKConfig)
-	case trafficManagement(ModuleConfig.TrafficManagementConfig)
 	case statusMessage(ModuleConfig.StatusMessageConfig)
 	case ringtone(String)
 	case cannedMessagesText(String)
@@ -384,10 +380,6 @@ struct DeviceProfileImportPlan {
 				// applies nothing. Tracked as a firmware-side bug; flagged reboot-causing here regardless.
 				items.append(ImportItem(kind: .tak, section: .modules, summary: "TAK",
 										isSensitive: false, mayReboot: true, payload: .tak(module.tak)))
-			}
-			if module.hasTrafficManagement {
-				items.append(ImportItem(kind: .trafficManagement, section: .modules, summary: "Traffic Management",
-										isSensitive: false, mayReboot: true, payload: .trafficManagement(module.trafficManagement)))
 			}
 			if module.hasStatusmessage {
 				// One of only two module configs the firmware does not reboot for (AdminModule.cpp:1275).

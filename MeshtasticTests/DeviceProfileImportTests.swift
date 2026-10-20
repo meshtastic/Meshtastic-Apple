@@ -133,7 +133,7 @@ struct DeviceProfileImportTests {
 			.owner, .deviceConfig, .displayConfig, .positionConfig, .powerConfig, .networkConfig,
 			.bluetoothConfig, .securityConfig, .mqtt, .serial, .externalNotification, .storeForward,
 			.rangeTest, .telemetry, .cannedMessage, .audio, .neighborInfo, .ambientLighting,
-			.detectionSensor, .paxcounter, .trafficManagement, .statusMessage, .ringtone,
+			.detectionSensor, .paxcounter, .statusMessage, .ringtone,
 			.cannedMessagesText, .fixedPosition, .loraConfig
 		]
 		#expect(kinds == expected)
@@ -148,29 +148,22 @@ struct DeviceProfileImportTests {
 
 	@Test("Firmware gating drops items the connected radio cannot apply")
 	func firmwareGating() throws {
-		// statusmessage first shipped in v2.7.20.6658ec2; traffic_management is develop-only.
+		// statusmessage first shipped in v2.7.20.6658ec2.
 		let old = try DeviceProfileImportPlan(profile: makeFullProfile(), currentUser: User(),
 											  firmwareVersion: "2.7.19.abc1234")
 		let oldKinds = Set(old.items.map(\.kind))
 		#expect(!oldKinds.contains(.statusMessage))
-		#expect(!oldKinds.contains(.trafficManagement))
 		#expect(!oldKinds.contains(.tak))
-		#expect(Set(old.unsupported.map(\.item.kind)) == [.statusMessage, .trafficManagement, .tak])
+		#expect(Set(old.unsupported.map(\.item.kind)) == [.statusMessage, .tak])
 		// Supported items are untouched by the gate.
 		#expect(oldKinds.contains(.mqtt))
 		#expect(oldKinds.contains(.loraConfig))
 
-		// 2.7.20 gains statusmessage but still not traffic_management.
+		// 2.7.20 gains statusmessage.
 		let mid = try DeviceProfileImportPlan(profile: makeFullProfile(), currentUser: User(),
 											  firmwareVersion: "2.7.20.6658ec2")
 		#expect(Set(mid.items.map(\.kind)).contains(.statusMessage))
-		#expect(Set(mid.unsupported.map(\.item.kind)) == [.trafficManagement, .tak])
-
-		// 2.8.0 gains traffic_management; only the never-implemented tak remains.
-		let new = try DeviceProfileImportPlan(profile: makeFullProfile(), currentUser: User(),
-											  firmwareVersion: "2.8.0.3a0c08b")
-		#expect(Set(new.items.map(\.kind)).contains(.trafficManagement))
-		#expect(new.unsupported.map(\.item.kind) == [.tak])
+		#expect(mid.unsupported.map(\.item.kind) == [.tak])
 	}
 
 	@Test("Unknown firmware is permissive, matching the app's other capability checks")
@@ -357,7 +350,7 @@ struct DeviceProfileImportTests {
 			.networkConfig, .bluetoothConfig, .securityConfig,
 			.mqtt, .serial, .externalNotification, .storeForward, .rangeTest, .telemetry,
 			.cannedMessage, .audio, .neighborInfo, .ambientLighting, .detectionSensor,
-			.paxcounter, .tak, .trafficManagement,
+			.paxcounter, .tak,
 			.loraConfig
 		]
 		// Explicitly NOT rebooting on any firmware line: .statusMessage, .ringtone, .cannedMessagesText,

@@ -193,23 +193,6 @@ struct DeviceProfileExportTests {
 		#expect(proto.team == .cyan)
 	}
 
-	@Test("TrafficManagementConfig exports its uint32 limits")
-	func trafficManagementConfig() {
-		let entity = TrafficManagementConfigEntity()
-		entity.positionMinIntervalSecs = 30
-		entity.nodeinfoDirectResponseMaxHops = 2
-		entity.rateLimitWindowSecs = 60
-		entity.rateLimitMaxPackets = 42
-		entity.unknownPacketThreshold = 5
-
-		let proto = entity.protoConfig
-		#expect(proto.positionMinIntervalSecs == 30)
-		#expect(proto.nodeinfoDirectResponseMaxHops == 2)
-		#expect(proto.rateLimitWindowSecs == 60)
-		#expect(proto.rateLimitMaxPackets == 42)
-		#expect(proto.unknownPacketThreshold == 5)
-	}
-
 	@Test("StatusMessageConfig maps the node status text")
 	func statusMessageConfig() {
 		let entity = StatusMessageConfigEntity()
@@ -253,7 +236,7 @@ struct DeviceProfileExportTests {
 		#expect(decoded.config.lora.region == .us)
 	}
 
-	@Test("exportDeviceProfile includes the TAK, traffic, and status module configs")
+	@Test("exportDeviceProfile includes the TAK and status module configs")
 	func assemblyIncludesPreviouslyMissedModules() {
 		let node = NodeInfoEntity()
 		node.num = 1
@@ -262,17 +245,13 @@ struct DeviceProfileExportTests {
 		tak.role = Int32(MemberRole.teamMember.rawValue)
 		node.takConfig = tak
 
-		let traffic = TrafficManagementConfigEntity()
-		traffic.rateLimitMaxPackets = 7
-		node.trafficManagementConfig = traffic
-
 		let status = StatusMessageConfigEntity()
 		status.nodeStatus = "QRT"
 		node.statusMessageConfig = status
 
 		let profile = node.exportDeviceProfile()
 		#expect(profile.moduleConfig.tak.role == .teamMember)
-		#expect(profile.moduleConfig.trafficManagement.rateLimitMaxPackets == 7)
+		#expect(!profile.moduleConfig.hasTrafficManagement)
 		#expect(profile.moduleConfig.statusmessage.nodeStatus == "QRT")
 	}
 
