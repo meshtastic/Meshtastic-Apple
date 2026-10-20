@@ -1,4 +1,4 @@
-name: Sync Device SVGs
+name: Sync Device Images
 
 on:
   schedule:
@@ -7,9 +7,10 @@ on:
   workflow_dispatch:
     # Allow manual triggering
 
-# Needed so the scheduled run can commit the refreshed catalog back to the repo.
+# main only takes changes through a pull request, so the run opens one.
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   sync-device-svgs:
@@ -40,40 +41,34 @@ jobs:
           --require-api \
           --verbose
 
-    - name: Check for changes
-      id: check_changes
-      run: |
-        if [ -z "$(git status --porcelain Meshtastic/Resources/images Meshtastic/Resources/DeviceModels Meshtastic/Resources/DeviceHardware.json)" ]; then
-          echo "has_changes=false" >> "$GITHUB_OUTPUT"
-        else
-          echo "has_changes=true" >> "$GITHUB_OUTPUT"
-        fi
+    - name: Open or update the pull request
+      id: pr
+      # Opens a PR only when files are new, updated or removed. Later runs update the
+      # same branch, and the PR is closed if main catches up.
+      uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676 # v7.0.11
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: "Sync device images and hardware list"
+        title: "Sync device images and hardware list"
+        body: |
+          Device images, 3D models and the hardware list refreshed from
+          https://api.meshtastic.org/resource/deviceHardware and the web flasher.
 
-    - name: Commit and push changes
-      if: steps.check_changes.outputs.has_changes == 'true'
-      env:
-        # actions/checkout leaves a detached HEAD, so push HEAD explicitly to the
-        # branch. Read the ref through env (not inline ${{ }}) to avoid expanding a
-        # GitHub expression inside the shell.
-        TARGET_BRANCH: ${{ github.ref_name }}
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        # -A stages new device SVGs, updated ones, and any pruned (removed) devices.
-        git add -A Meshtastic/Resources/images Meshtastic/Resources/DeviceModels Meshtastic/Resources/DeviceHardware.json
-        git commit -m "🤖 Sync device images and hardware catalog
-
-        - Refreshed from https://api.meshtastic.org/resource/deviceHardware
-        - Bundled resources: Meshtastic/Resources/images, DeviceModels + DeviceHardware.json
-        - Automatically synced on $(date -u)"
-        git push origin "HEAD:${TARGET_BRANCH}"
+          Opened by workflow run [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+        branch: chore/sync-device-images
+        delete-branch: true
+        add-paths: |
+          Meshtastic/Resources/images
+          Meshtastic/Resources/DeviceModels
+          Meshtastic/Resources/DeviceHardware.json
 
     - name: Summary
       env:
-        HAS_CHANGES: ${{ steps.check_changes.outputs.has_changes }}
+        OPERATION: ${{ steps.pr.outputs.pull-request-operation }}
+        PR_URL: ${{ steps.pr.outputs.pull-request-url }}
       run: |
-        if [ "$HAS_CHANGES" == "true" ]; then
-          echo "✅ Device images and hardware catalog updated"
-        else
-          echo "ℹ️ No changes detected - resources are up to date"
-        fi
+        case "$OPERATION" in
+          created|updated) echo "Device images and hardware list changed: $PR_URL ($OPERATION)" ;;
+          closed) echo "No differences from main; closed $PR_URL" ;;
+          *) echo "No changes; resources are up to date" ;;
+        esac
