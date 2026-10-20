@@ -45,7 +45,7 @@ jobs:
       id: pr
       # Opens a PR only when files are new, updated or removed. Later runs update the
       # same branch, and the PR is closed if main catches up.
-      uses: peter-evans/create-pull-request@v7
+      uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676 # v7.0.11
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         commit-message: "Sync device images and hardware list"
