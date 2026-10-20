@@ -197,7 +197,6 @@ struct Settings: View {
 			.telemetryConfig
 		], excludedModules: excludedModules)
 			|| isTAKModuleSupported(node)
-			|| isTrafficManagementModuleSupported(node)
 			|| isMeshBeaconModuleSupported(node)
 	}
 
@@ -206,7 +205,6 @@ struct Settings: View {
 	/// version lives upstream instead of being written out here.
 	private enum ModuleField {
 		static let statusMessage = 14
-		static let trafficManagement = 15
 		static let tak = 16
 		static let meshBeacon = 17
 	}
@@ -262,11 +260,6 @@ struct Settings: View {
 		}
 
 		return deviceRole == .tak || deviceRole == .takTracker
-	}
-
-	private func isTrafficManagementModuleSupported(_ node: SettingsNodeSnapshot?) -> Bool {
-		guard node != nil else { return false }
-		return firmwareReadsModule(tag: ModuleField.trafficManagement, node: node)
 	}
 
 	private var showsDevelopersSection: Bool {
@@ -552,16 +545,6 @@ struct Settings: View {
 						Text("Telemetry")
 					} icon: {
 						Image(systemName: "chart.xyaxis.line")
-					}
-				}
-			}
-
-			if isTrafficManagementModuleSupported(node) {
-				NavigationLink(value: SettingsNavigationState.trafficManagement) {
-					Label {
-						Text("Traffic Management")
-					} icon: {
-						Image(systemName: "arrow.triangle.branch")
 					}
 				}
 			}
@@ -924,8 +907,6 @@ struct Settings: View {
 						StoreForwardConfig(node: configNode)
 					case .telemetry:
 						TelemetryConfig(node: configNode)
-					case .trafficManagement:
-						TrafficManagementConfig(node: configNode)
 					case .debugLogs:
 						AppLog()
 					case .traceRoutes:

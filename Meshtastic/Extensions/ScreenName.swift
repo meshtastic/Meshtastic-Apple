@@ -70,7 +70,6 @@ enum ScreenName: String, CaseIterable {
 	case security = "Security Config"
 	case storeAndForward = "Store and Forward Config"
 	case telemetry = "Telemetry Config"
-	case trafficManagement = "Traffic Management Config"
 	case debugLogs = "Logs"
 	case traceRoutes = "Trace Routes"
 	case appFiles = "App Files"

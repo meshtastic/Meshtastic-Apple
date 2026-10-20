@@ -62,7 +62,6 @@ enum MeshtasticSchemaV1: VersionedSchema {
 			StatusMessageConfigEntity.self,
 			StoreForwardConfigEntity.self,
 			TAKConfigEntity.self,
-			TrafficManagementConfigEntity.self,
 			TelemetryConfigEntity.self,
 			// Discovery entities
 			DiscoverySessionEntity.self,

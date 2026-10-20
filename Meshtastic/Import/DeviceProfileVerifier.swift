@@ -234,8 +234,6 @@ struct NodeProfileConfigSource: ProfileConfigSource {
 		case .detectionSensor: return node.detectionSensorConfig.map { .detectionSensor($0.protoConfig) }
 		case .paxcounter: return node.paxCounterConfig.map { .paxcounter($0.protoConfig) }
 		case .tak: return node.takConfig.map { .tak($0.protoConfig) }
-		case .trafficManagement:
-			return node.trafficManagementConfig.map { .trafficManagement($0.protoConfig) }
 		case .statusMessage: return node.statusMessageConfig.map { .statusMessage($0.protoConfig) }
 		// The radio never echoes these back in a comparable form.
 		case .ringtone, .cannedMessagesText, .channelURL, .fixedPosition: return nil
@@ -273,7 +271,6 @@ extension ImportPayload {
 		case .detectionSensor(let value): return value
 		case .paxcounter(let value): return value
 		case .tak(let value): return value
-		case .trafficManagement(let value): return value
 		case .statusMessage(let value): return value
 		case .loraConfig(let value): return value
 		case .fixedPosition(let value): return value

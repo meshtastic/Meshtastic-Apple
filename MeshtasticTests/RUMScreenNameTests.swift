@@ -72,7 +72,7 @@ struct RUMScreenNameTests {
 			.bluetooth, .device, .display, .network, .position, .power, .ambientLighting, .audio,
 			.cannedMessages, .detectionSensor, .meshBeacon, .externalNotification, .mqtt,
 			.neighborInfo, .rangeTest, .paxCounter, .ringtone, .serial, .security, .storeAndForward,
-			.telemetry, .trafficManagement, .debugLogs, .traceRoutes, .appFiles, .firmwareUpdates,
+			.telemetry, .debugLogs, .traceRoutes, .appFiles, .firmwareUpdates,
 			.deviceLinks, .tak, .takConfig, .tools, .coreDataBrowser, .localMeshDiscovery,
 			.helpDocs, .backupManagement
 		]

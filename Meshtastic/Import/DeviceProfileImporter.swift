@@ -348,8 +348,6 @@ struct AccessoryProfileApplyGateway: ProfileApplyGateway {
 			_ = try await accessoryManager.savePaxcounterModuleConfig(config: config, fromUser: node, toUser: node)
 		case .tak(let config):
 			_ = try await accessoryManager.saveTAKModuleConfig(config: config, fromUser: node, toUser: node)
-		case .trafficManagement(let config):
-			_ = try await accessoryManager.saveTrafficManagementModuleConfig(config: config, fromUser: node, toUser: node)
 		case .statusMessage(let config):
 			_ = try await accessoryManager.saveStatusMessageModuleConfig(config: config, fromUser: node, toUser: node)
 		case .ringtone(let ringtone):

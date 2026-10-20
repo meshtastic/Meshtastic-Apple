@@ -112,10 +112,7 @@ enum SettingsSearchIndex {
 			section: .configure),
 		"meshtastic.ModuleConfig.TelemetryConfig": .init(
 			destination: .telemetry, title: String(localized: "Telemetry", comment: "Settings screen"),
-			section: .configure),
-		"meshtastic.ModuleConfig.TrafficManagementConfig": .init(
-			destination: .trafficManagement,
-			title: String(localized: "Traffic Management", comment: "Settings screen"), section: .configure)
+			section: .configure)
 	]
 
 	/// Every annotated field that maps to a screen, turned into an entry.

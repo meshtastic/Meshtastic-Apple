@@ -139,9 +139,6 @@ final class NodeInfoEntity {
 	@Relationship(deleteRule: .nullify, inverse: \TAKConfigEntity.takConfigNode)
 	var takConfig: TAKConfigEntity?
 
-	@Relationship(deleteRule: .nullify, inverse: \TrafficManagementConfigEntity.trafficManagementConfigNode)
-	var trafficManagementConfig: TrafficManagementConfigEntity?
-
 	@Relationship(deleteRule: .nullify, inverse: \TelemetryEntity.nodeTelemetry)
 	var telemetries: [TelemetryEntity] = []
 

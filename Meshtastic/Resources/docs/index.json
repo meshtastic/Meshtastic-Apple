@@ -397,36 +397,36 @@
         "keywords": [
             "radio",
             "app",
-            "node",
             "settings",
+            "node",
             "firmware",
             "region",
-            "from",
             "device",
             "connected",
             "channel",
-            "mesh",
+            "from",
             "only",
+            "mesh",
             "nodes",
-            "traffic",
-            "position",
             "messages",
-            "default",
             "tag",
             "nfc",
             "preset",
-            "off",
             "name",
+            "default",
             "configuration",
-            "before",
             "shows",
-            "module",
             "lora",
             "language",
+            "before",
             "beacon",
-            "than"
+            "set",
+            "position",
+            "contact",
+            "channels",
+            "setting"
         ],
-        "charCount": 22041
+        "charCount": 19975
     },
     {
         "id": "showcase",
@@ -1011,7 +1011,7 @@
             "urls",
             "tools"
         ],
-        "charCount": 3473
+        "charCount": 3411
     },
     {
         "id": "imessage-sharing",
