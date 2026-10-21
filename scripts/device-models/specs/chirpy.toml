@@ -1,5 +1,5 @@
 drawing = "drawings/chirpy.svg"
-copyright = "Copyright © 2026 Meshtastic LLC. This 3D model of Chirpy, the Meshtastic mascot, is licensed under the GNU General Public License v3.0 or later."
+copyright = "Copyright © 2026 Meshtastic LLC. This 3D model of Chirpy, the Meshtastic mascot, is licensed under CC BY-SA 4.0."
 
 # Sized so his body is as big as a handheld node's.
 [size]
