@@ -333,8 +333,9 @@ def puff_height(d, radius, dome):
     return radius * np.sqrt(t * (2 - t)) + dome * np.sqrt(np.maximum(d - radius, 0))
 
 
-def puffed(geom, zc, radius, dome, step=0.25):
+def puffed(geom, zc, radius, dome):
     """A region inflated like a cushion, front and back, around the plane zc."""
+    step = radius / 6  # Fine enough for the round edge, no finer.
     meshes = []
     for p in polygons(geom):
         if p.area < 1e-2:
@@ -767,6 +768,8 @@ def build(spec, svg_path):
                 if not has_body:
                     for tg, zc, t, tr, _, th in thins if color != dominant else []:
                         if "puff_mm" in th:
+                            if color == th.get("color", "").lower():
+                                continue  # The region is already this color.
                             holder = outline.intersection(tg)
                             # bare_edge_mm leaves the drawn outline off, so the region shows its own color there.
                             detail = g.intersection(holder.buffer(-float(th.get("bare_edge_mm", 0))))

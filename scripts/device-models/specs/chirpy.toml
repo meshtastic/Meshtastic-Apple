@@ -20,6 +20,8 @@ start = [727, 1838]
 end = [719, 2578]
 radius_mm = 1.65
 dome = false
+samples = 8
+sections = 24
 
 [[antenna]]
 name = "RightLeg"
@@ -27,18 +29,24 @@ start = [1077, 1838]
 end = [1088, 2578]
 radius_mm = 1.65
 dome = false
+samples = 8
+sections = 24
 
 [[antenna]]
 name = "LeftFoot"
 start = [719, 2590]
 end = [345, 2588]
 radius_mm = 1.95
+samples = 12
+sections = 24
 
 [[antenna]]
 name = "RightFoot"
 start = [1088, 2590]
 end = [1440, 2590]
 radius_mm = 1.95
+samples = 12
+sections = 24
 
 # The zigzag antenna as a round wire, with the drawn line behind it kept thin
 # enough to hide inside it.
