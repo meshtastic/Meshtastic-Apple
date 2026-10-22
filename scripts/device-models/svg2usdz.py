@@ -37,8 +37,10 @@ import tempfile
 import tomllib
 
 import numpy as np
+import shapely
 import trimesh
 from pxr import Gf, Sdf, Usd, UsdGeom, UsdShade, UsdUtils
+from scipy.spatial import Delaunay
 from shapely.geometry import LineString, MultiPolygon, Point, Polygon, box
 from shapely.geometry.polygon import orient
 from shapely.ops import unary_union
@@ -306,6 +308,57 @@ def rounded_extrude(geom, z0, h, r, rf=None, segs=6):
     return meshes
 
 
+def fine_mesh(p, step):
+    """Triangles filling polygon p with points about step apart, facing +z."""
+    edge = np.vstack([np.asarray(shapely.segmentize(r, step).coords)[:-1] for r in [p.exterior, *p.interiors]])
+    x0, y0, x1, y1 = p.bounds
+    gx, gy = np.meshgrid(np.arange(x0, x1, step), np.arange(y0, y1, step))
+    grid = np.column_stack([gx.ravel(), gy.ravel()])
+    grid = grid[shapely.contains_xy(p, grid[:, 0], grid[:, 1])]
+    grid = grid[shapely.distance(shapely.points(grid), p.boundary) > step / 2]
+    pts = np.vstack([edge, grid])
+    tri = Delaunay(pts).simplices
+    c = pts[tri].mean(axis=1)
+    tri = tri[shapely.contains_xy(p, c[:, 0], c[:, 1])]
+    ab, ac = pts[tri[:, 1]] - pts[tri[:, 0]], pts[tri[:, 2]] - pts[tri[:, 0]]
+    cw = ab[:, 0] * ac[:, 1] - ab[:, 1] * ac[:, 0] < 0
+    tri[cw] = tri[cw][:, ::-1]
+    return pts, tri
+
+
+def puff_height(d, radius, dome):
+    """Half-thickness at distance d in from the edge: a round edge of the given
+    radius, so a part narrower than it comes out round, then a gentle dome."""
+    t = np.clip(d / radius, 0, 1)
+    return radius * np.sqrt(t * (2 - t)) + dome * np.sqrt(np.maximum(d - radius, 0))
+
+
+def puffed(geom, zc, radius, dome):
+    """A region inflated like a cushion, front and back, around the plane zc."""
+    step = radius / 6  # Fine enough for the round edge, no finer.
+    meshes = []
+    for p in polygons(geom):
+        if p.area < 1e-2:
+            continue
+        pts, tri = fine_mesh(p, step)
+        h = puff_height(shapely.distance(shapely.points(pts), p.boundary), radius, dome)
+        verts = np.vstack([np.column_stack([pts, zc + h]), np.column_stack([pts, zc - h])])
+        meshes.append(trimesh.Trimesh(verts, np.vstack([tri, tri[:, ::-1] + len(pts)]), process=False))
+    return meshes
+
+
+def draped(geom, holder, zc, radius, dome, step=0.1, lift=0.1):
+    """Face detail laid just over the front of the puffed region holder."""
+    meshes = []
+    for p in polygons(geom):
+        if p.area < 1e-3:
+            continue
+        pts, tri = fine_mesh(p, step)
+        h = puff_height(shapely.distance(shapely.points(pts), holder.boundary), radius, dome)
+        meshes.append(trimesh.Trimesh(np.column_stack([pts, zc + h + lift]), tri, process=False))
+    return meshes
+
+
 def lathe_mesh(profile, sections=64):
     m = trimesh.creation.revolve(np.array(profile), sections=sections)
     # revolve uses Z as the axis; turn it so the axis is Y
@@ -557,6 +610,51 @@ def build(spec, svg_path):
         corridor = LineString([(sx, sy), (ex + ux * widest, ey + uy * widest)]).buffer(widest, cap_style=2)
         return mm_geom(corridor)
 
+    def build_tube(tb):
+        """A round rod swept along points in SVG units, for a bent wire the
+        drawing shows as a line. Returns the area of the drawing it replaces."""
+        pts = [to_mm(x, y) for x, y in tb["points"]]
+        r = float(tb["radius_mm"])
+        zc = float(tb.get("z_mm", 0))
+        # Open-ended sides: a capped cylinder's rim normals average with the
+        # cap and shade as a dark ring at every joint.
+        n = 24
+        ang = np.linspace(0, 2 * math.pi, n, endpoint=False)
+        meshes = []
+        for (ax, ay), (bx_, by) in zip(pts, pts[1:]):
+            a, b = np.array([ax, ay, zc]), np.array([bx_, by, zc])
+            d = (b - a) / np.linalg.norm(b - a)
+            u = np.cross(d, [0, 0, 1])
+            ring = r * (np.outer(np.cos(ang), u) + np.outer(np.sin(ang), [0, 0, 1]))
+            faces = [f for j in range(n) for f in ([j, n + (j + 1) % n, (j + 1) % n], [j, n + j, n + (j + 1) % n])]
+            meshes.append(trimesh.Trimesh(np.vstack([a + ring, b + ring]), faces, process=False))
+        # A ball at every point rounds the joints and both ends.
+        for x, y in pts:
+            ball = trimesh.creation.uv_sphere(radius=r, count=[12, 24])
+            ball.apply_translation([x, y, zc])
+            meshes.append(ball)
+        if tb.get("material"):
+            mat = material_for(tb["material"])
+        else:
+            mat = "c_" + tb["color"].lstrip("#").lower()
+            materials.setdefault(mat, auto_material(tb["color"]))
+        add(tb.get("name", "Tube"), meshes, mat, smooth=True)
+        half = float(tb.get("cut_width", 2 * r / scale)) / 2
+        return mm_geom(LineString(tb["points"]).buffer(half, cap_style=2))
+
+    def build_ball(bl):
+        """A sphere at a point in SVG units, for a knob the drawing shows flat.
+        Replaces the drawing inside cut_bbox, or inside its own outline."""
+        x, y = to_mm(*bl["center"])
+        ball = trimesh.creation.uv_sphere(radius=float(bl["radius_mm"]), count=[24, 48])
+        ball.apply_translation([x, y, float(bl.get("z_mm", 0))])
+        mat = "c_" + bl["color"].lstrip("#").lower()
+        materials.setdefault(mat, auto_material(bl["color"]))
+        add(bl.get("name", "Ball"), [ball], mat, smooth=True)
+        if "cut_bbox" in bl:
+            return svg_to_mm_poly(box(*bl["cut_bbox"]))
+        return Point(x, y).buffer(float(bl["radius_mm"]))
+
     if auto:
         solid = [e for e in leftover if e.solid]
         # What each shape still shows once later shapes are painted over it.
@@ -578,13 +676,20 @@ def build(spec, svg_path):
 
             # Round antennas replace their part of the drawing.
             cuts = [build_antenna(an, solid, visible) for an in spec.get("antenna", [])]
+            cuts += [build_tube(tb) for tb in spec.get("tube", [])]
+            cuts += [build_ball(bl) for bl in spec.get("ball", [])]
             cut_all = unary_union(cuts) if cuts else None
             # Regions built thinner than the body (lanyards, clips, side buttons).
             thins = []
             for th in spec.get("thin", []):
                 region = Polygon(th["polygon"]) if "polygon" in th else box(*th["bbox"])
-                thins.append((svg_to_mm_poly(region), float(th.get("z_mm", 0)), float(th["depth_mm"]),
-                              float(th.get("edge_radius_mm", 0))))
+                tmat = None
+                if th.get("color"):
+                    # A region whose own color differs from the body, such as a glove.
+                    tmat = "c_" + th["color"].lstrip("#").lower()
+                    materials.setdefault(tmat, auto_material(th["color"]))
+                thins.append((svg_to_mm_poly(region), float(th.get("z_mm", 0)), float(th.get("depth_mm", 0)),
+                              float(th.get("edge_radius_mm", 0)), tmat, th))
             thin_all = unary_union([t[0] for t in thins]) if thins else None
 
             def block_geom(bk):
@@ -613,8 +718,12 @@ def build(spec, svg_path):
                 else:
                     add("Body", rounded_extrude(body.intersection(band), -front, depth, edge_r, edge_rf), mat)
                     add("Appendage", extrude(body.difference(band), -app_depth / 2, app_depth), mat)
-                for g, zc, t, r in thins:
-                    add("Thin", rounded_extrude(outline.intersection(g), zc - t / 2, t, r), mat)
+                for g, zc, t, r, tmat, th in thins:
+                    if "puff_mm" in th:
+                        meshes = puffed(outline.intersection(g), zc, float(th["puff_mm"]), float(th.get("dome", 0)))
+                        add(f"Puff_{tmat}" if tmat else "Puff", meshes, tmat or mat, smooth=True)
+                        continue
+                    add(f"Thin_{tmat}" if tmat else "Thin", rounded_extrude(outline.intersection(g), zc - t / 2, t, r), tmat or mat)
             # Components that stand above the face: a block of the given
             # height whose face details sit on its top.
             blocks = []
@@ -657,7 +766,18 @@ def build(spec, svg_path):
             for color, items in by_color.items():
                 g = minus(mm_geom(unary_union([v for _, v in items])), cut_all)
                 if not has_body:
-                    for tg, zc, t, tr in thins if color != dominant else []:
+                    for tg, zc, t, tr, _, th in thins if color != dominant else []:
+                        if "puff_mm" in th:
+                            if color == th.get("color", "").lower():
+                                continue  # The region is already this color.
+                            holder = outline.intersection(tg)
+                            # bare_edge_mm leaves the drawn outline off, so the region shows its own color there.
+                            detail = g.intersection(holder.buffer(-float(th.get("bare_edge_mm", 0))))
+                            # Its own part: smoothing is set per part, and flat faces need sharp edges.
+                            add("PuffFace_" + color.lstrip("#"), draped(detail, holder, zc,
+                                                                  float(th["puff_mm"]), float(th.get("dome", 0))),
+                                material_for("auto", items[0][0]), smooth=True)
+                            continue
                         tface = tg.buffer(-tr * 0.9) if tr > 0 else tg
                         add("Face_" + color.lstrip("#"), extrude(g.intersection(tface), zc + t / 2, AUTO_LAYER_MM),
                             material_for("auto", items[0][0]))
@@ -722,12 +842,12 @@ def write_usdz(parts, materials, out, root_name, meta):
         UsdGeom.SetStageUpAxis(stage, UsdGeom.Tokens.y)
         UsdGeom.SetStageMetersPerUnit(stage, 1.0)
         layer = stage.GetRootLayer()
-        layer.documentation = COPYRIGHT
+        layer.documentation = meta["copyright"]
         layer.customLayerData = meta
         root = UsdGeom.Xform.Define(stage, f"/{root_name}")
         stage.SetDefaultPrim(root.GetPrim())
         Usd.ModelAPI(root.GetPrim()).SetKind("component")
-        Usd.ModelAPI(root.GetPrim()).SetAssetInfo({"name": root_name, "copyright": COPYRIGHT})
+        Usd.ModelAPI(root.GetPrim()).SetAssetInfo({"name": root_name, "copyright": meta["copyright"]})
 
         mat_prims = {}
         for name in sorted({m for _, m, _ in parts.values()}):
@@ -738,6 +858,11 @@ def write_usdz(parts, materials, out, root_name, meta):
             s.CreateInput("diffuseColor", Sdf.ValueTypeNames.Color3f).Set(Gf.Vec3f(*linear_rgb(spec["color"])))
             s.CreateInput("roughness", Sdf.ValueTypeNames.Float).Set(float(spec.get("roughness", 0.5)))
             s.CreateInput("metallic", Sdf.ValueTypeNames.Float).Set(float(spec.get("metallic", 0.0)))
+            if "emissive" in spec:
+                # A fraction of the base color, so a viewer's dim lighting can't wash it out.
+                k = float(spec["emissive"])
+                s.CreateInput("emissiveColor", Sdf.ValueTypeNames.Color3f).Set(
+                    Gf.Vec3f(*(c * k for c in linear_rgb(spec["color"]))))
             if "opacity" in spec:
                 s.CreateInput("opacity", Sdf.ValueTypeNames.Float).Set(float(spec["opacity"]))
             m.CreateSurfaceOutput().ConnectToSource(s.ConnectableAPI(), "surface")
@@ -784,7 +909,8 @@ def main():
     parts, materials, warnings = build(spec, a.svg)
     size = spec["size"]
     meta = {
-        "copyright": COPYRIGHT,
+        # A spec's own notice, for a model that isn't of a manufacturer's device.
+        "copyright": spec.get("copyright", COPYRIGHT),
         "generator": GENERATOR,
         "sourceImage": a.source_url,
         "dimensionsSource": size.get("source", ""),

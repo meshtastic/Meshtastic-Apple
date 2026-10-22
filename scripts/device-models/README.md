@@ -66,15 +66,30 @@ Other optional entries, with coordinates in SVG units:
   cap at the tip; end the whip (or a `[[lathe]]`) with `dome = true` instead.
 - `[[thin]]`: a region (`bbox` or `polygon`) built at its own `depth_mm`
   instead of full depth, for lanyards, clips, side buttons, stands and flat
-  antennas. `edge_radius_mm` rounds its edges.
+  antennas. `edge_radius_mm` rounds its edges, `z_mm` moves it forward or back,
+  and `color` builds it in its own color instead of the body's. `puff_mm`
+  inflates it like a cushion instead, with edges rounded to that radius, so a
+  part narrower than it comes out round; `dome` adds a rise in the wider parts.
+  The drawing's details follow the curved front; `bare_edge_mm` leaves off
+  any within that distance of the edge, such as a drawn outline.
+- `[[tube]]`: a round wire swept through `points` at `radius_mm`, for a bent
+  wire the drawing shows as a line. `cut_width` is how much of the drawn line
+  it replaces.
+- `[[ball]]`: a sphere at `center` with `radius_mm`, for a knob the drawing
+  shows flat. It replaces the drawing inside `cut_bbox`.
 
-`[materials]` entries take `color`, `roughness`, `metallic` and `opacity`.
+`[materials]` entries take `color`, `roughness`, `metallic`, `opacity` and
+`emissive` (a fraction of the color, so dim viewer lighting can't wash it out).
+An entry named `c_<hex>` overrides the material picked for that fill color.
 
 When the flasher's illustration isn't a front view (a perspective drawing, or
 several views in one), draw the front ourselves from the device's measurements
 and point the spec at it with a top-level `drawing = "drawings/<name>.svg"`.
 build.sh then uses that file instead of downloading the flasher's. Draw it in
 mm so it can be checked against the measurements.
+
+A top-level `copyright` replaces the notice written into the file, for a model
+that isn't of a manufacturer's device (`specs/chirpy.toml`).
 
 `[[solid]]` places a block by measurement instead of by the drawing, for ports,
 buttons and screws on the sides, top and back, and for stands:

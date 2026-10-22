@@ -1,0 +1,93 @@
+drawing = "drawings/chirpy.svg"
+copyright = "Copyright © 2026 Meshtastic LLC. This 3D model of Chirpy, the Meshtastic mascot, is licensed under the GNU General Public License v3.0 or later."
+
+# Sized so his body is as big as a handheld node's.
+[size]
+width_mm = 107.7
+height_mm = 151.2
+depth_mm = 20.0
+covers = "glove to glove, antenna tip to feet"
+source = "Meshtastic-Apple Assets.xcassets/Chirpy.imageset/chirpy.svg"
+confidence = "estimated"
+appendage = "none"
+edge_radius_mm = 3.0
+front_edge_radius_mm = 1.2
+
+# Stick legs and flat feet, round instead of extruded.
+[[antenna]]
+name = "LeftLeg"
+start = [727, 1838]
+end = [719, 2578]
+radius_mm = 1.65
+dome = false
+samples = 8
+sections = 24
+
+[[antenna]]
+name = "RightLeg"
+start = [1077, 1838]
+end = [1088, 2578]
+radius_mm = 1.65
+dome = false
+samples = 8
+sections = 24
+
+[[antenna]]
+name = "LeftFoot"
+start = [719, 2590]
+end = [345, 2588]
+radius_mm = 1.95
+samples = 12
+sections = 24
+
+[[antenna]]
+name = "RightFoot"
+start = [1088, 2590]
+end = [1440, 2590]
+radius_mm = 1.95
+samples = 12
+sections = 24
+
+# The zigzag antenna as a round wire, with the drawn line behind it kept thin
+# enough to hide inside it.
+[[tube]]
+name = "Antenna"
+points = [[1167, 95], [1100, 127], [1028, 166], [1100, 182], [1210, 200], [1175, 234], [1135, 272],
+          [1105, 304], [1075, 333], [1050, 360], [1030, 385], [1014, 407], [1085, 487], [1157, 567]]
+radius_mm = 1.35
+cut_width = 24
+color = "#2c2d3c"
+
+[[thin]]
+bbox = [950, 0, 1300, 566]
+depth_mm = 1.5
+color = "#2c2d3c"
+
+[[ball]]
+name = "AntennaTip"
+center = [1190, 55]
+radius_mm = 3.45
+cut_bbox = [1128, 0, 1240, 114]
+color = "#2c2d3c"
+
+# Puffed gloves without the drawn outline, standing about level with the face.
+[[thin]]
+bbox = [0, 650, 462, 1500]
+puff_mm = 2.4
+dome = 0.6
+bare_edge_mm = 0.9
+z_mm = 6.0
+color = "#ffffff"
+
+[[thin]]
+bbox = [1380, 850, 1872, 1650]
+puff_mm = 2.4
+dome = 0.6
+bare_edge_mm = 0.9
+z_mm = 6.0
+color = "#ffffff"
+
+[materials.c_67ea94]
+color = "#67ea94"
+roughness = 0.35
+emissive = 0.2
