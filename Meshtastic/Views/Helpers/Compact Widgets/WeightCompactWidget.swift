@@ -28,9 +28,7 @@ struct WeightCompactWidget: View {
 					.font(.system(size: 14))
 			}
 		}
-		.frame(minWidth: 100, idealWidth: 125, maxWidth: 150, minHeight: 120)
-		.padding()
-		.background(Color("Colors/MeshtasticTile"), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+		.compactWidgetTile()
 	}
 }
 
