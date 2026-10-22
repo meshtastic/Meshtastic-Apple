@@ -7,10 +7,21 @@
 
 import SwiftUI
 
-// This file was created for the purpose of previewing
-// all of the Compact Widgets in one place.
+extension View {
+	/// The square tile every compact widget sits in. The tile takes its column's width and is as
+	/// tall as it is wide; text shrinks to fit inside rather than stretching the tile.
+	func compactWidgetTile() -> some View {
+		self
+			.lineLimit(1)
+			.minimumScaleFactor(0.4)
+			.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+			.padding()
+			.aspectRatio(1, contentMode: .fit)
+			.background(Color("Colors/MeshtasticTile"), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+	}
+}
 
-// In the future, it could be used for a CompactWidget superclass, if desired.
+// Previews every compact widget in one place.
 
 #Preview {
 

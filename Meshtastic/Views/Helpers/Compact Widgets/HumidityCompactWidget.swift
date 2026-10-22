@@ -26,13 +26,10 @@ struct HumidityCompactWidget: View {
 				Text("The dew point is \(dewPoint) right now.")
 					.lineLimit(3)
 					.allowsTightening(true)
-					.fixedSize(horizontal: false, vertical: true)
 					.font(.caption2)
 			}
 		}
-		.frame(minWidth: 100, idealWidth: 125, maxWidth: 150, minHeight: 120)
-		.padding()
-		.background(Color("Colors/MeshtasticTile"), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+		.compactWidgetTile()
 	}
 }
 

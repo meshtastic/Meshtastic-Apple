@@ -36,7 +36,7 @@ struct LocalWeatherConditions: View {
 						.padding(.bottom, columns == 2 ? 10 : 0)
 					HumidityCompactWidget(humidity: humidity ?? 0, dewPoint: dewPoint)
 						.padding(.bottom, columns == 2 ? 10 : 0)
-					PressureCompactWidget(pressure: String(pressure?.value ?? 0.0 / 100), unit: pressure?.unit.symbol ?? "??", low: pressure?.value ?? 0.0 <= 1009.144)
+					PressureCompactWidget(pressure: pressure?.value.formatted(.number.precision(.fractionLength(2))) ?? "--", unit: pressure?.unit.symbol ?? "??", low: pressure?.value ?? 0.0 <= 1009.144)
 					WindCompactWidget(speed: windSpeed, gust: windGust, direction: windCompassDirection)
 				}
 				

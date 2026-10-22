@@ -19,15 +19,12 @@ struct WeatherConditionsCompactWidget: View {
 				Text(description)
 					.lineLimit(2)
 					.allowsTightening(/*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
-					.fixedSize(horizontal: false, vertical: true)
 					.font(.caption)
 			}
 			Text(temperature)
 				.font(temperature.length < 4 ? .system(size: 72) : .system(size: 54) )
 		}
-		.frame(minWidth: 100, idealWidth: 125, maxWidth: 150, minHeight: 120)
-		.padding()
-		.background(Color("Colors/MeshtasticTile"), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+		.compactWidgetTile()
 	}
 }
 
