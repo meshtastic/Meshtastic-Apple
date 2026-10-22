@@ -5,27 +5,25 @@
 //  Copyright(c) Garth Vander Houwen 10/14/26.
 //
 #if os(visionOS)
+import OSLog
 import RealityKit
+import ShowcaseContent
 import UIKit
 
-/// What hangs on the right wall: a poster of Chirpy, facing the Meshtastic mark on the left
-/// wall, and nearer the seat a small plaque for Meshtastic Solutions.
+/// Along the right wall: a giant Chirpy standing on the floor, facing the Meshtastic mark on the
+/// left wall, and nearer the seat a small plaque for Meshtastic Solutions.
 extension ShowcaseRoom {
-	/// The poster's and plaque's centers on the right wall, and their sizes in meters.
-	static let posterCenter = SIMD3<Float>(ShowcaseRoomGeometry.width / 2, 1.55, -1.5)
-	static let posterSize = SIMD2<Float>(1.0, 1.4)
+	/// Where Chirpy's feet stand, and how tall he is from feet to antenna tip, in meters.
+	static let chirpyFeet = SIMD3<Float>(1.25, 0, -1.6)
+	static let chirpyHeight: Float = 1.5
+	/// The plaque's center on the right wall, and its size in meters.
 	static let plaqueCenter = SIMD3<Float>(ShowcaseRoomGeometry.width / 2, 1.3, -0.55)
 	static let plaqueSize = SIMD2<Float>(0.36, 0.2)
 
 	func addWallArt() async {
 		// Turns a board's face, +Z, to -X: out of the right wall into the room.
 		let facingIn = simd_quatf(angle: -.pi / 2, axis: [0, 1, 0])
-		if let image = Self.chirpyPoster(), let poster = await Self.board(image, size: Self.posterSize, depth: 0.02, edge: .white) {
-			poster.name = "ChirpyPoster"
-			poster.position = Self.posterCenter - [0.01, 0, 0]
-			poster.orientation = facingIn
-			root.addChild(poster)
-		}
+		await addChirpy()
 		if let image = Self.solutionsPlaque(), let plaque = await Self.board(image, size: Self.plaqueSize, depth: 0.012, edge: Self.plaqueColor) {
 			plaque.name = "SolutionsPlaque"
 			plaque.position = Self.plaqueCenter - [0.006, 0, 0]
@@ -39,18 +37,30 @@ extension ShowcaseRoom {
 	/// Dark charcoal, the app's primary text color.
 	private static let plaqueColor = UIColor(red: 0.17, green: 0.18, blue: 0.24, alpha: 1)
 
-	/// Chirpy on white, so the green body doesn't vanish into the green wall.
-	private static func chirpyPoster() -> CGImage? {
-		guard let chirpy = UIImage(named: "Chirpy") else { return nil }
-		let size = CGSize(width: CGFloat(posterSize.x) * pixelsPerMeter, height: CGFloat(posterSize.y) * pixelsPerMeter)
-		return render(size) { bounds in
-			UIColor.white.setFill()
-			UIRectFill(bounds)
-			let area = bounds.insetBy(dx: 90, dy: 90)
-			let scale = min(area.width / chirpy.size.width, area.height / chirpy.size.height)
-			let drawn = CGSize(width: chirpy.size.width * scale, height: chirpy.size.height * scale)
-			chirpy.draw(in: CGRect(x: area.midX - drawn.width / 2, y: area.midY - drawn.height / 2, width: drawn.width, height: drawn.height))
+	/// Chirpy's real-size model from ShowcaseContent, scaled up to `chirpyHeight` and turned to
+	/// look at the seat. He's the room's mascot, not a device, so he isn't on a table.
+	private func addChirpy() async {
+		let chirpy: Entity
+		do {
+			chirpy = try await Entity(named: "Chirpy", in: showcaseContentBundle)
+		} catch {
+			Logger.services.error("📻 [Showcase] Chirpy failed to load: \(error.localizedDescription, privacy: .public)")
+			return
 		}
+		let bounds = chirpy.visualBounds(relativeTo: nil)
+		guard bounds.extents.y > 0 else { return }
+		let scale = Self.chirpyHeight / bounds.extents.y
+		// Feet on the floor, centered over his spot, whatever the model's own origin.
+		chirpy.scale = SIMD3(repeating: scale)
+		chirpy.position = SIMD3(-bounds.center.x, -bounds.min.y, -bounds.center.z) * scale
+		let stand = Entity()
+		stand.name = "GiantChirpy"
+		stand.addChild(chirpy)
+		stand.position = Self.chirpyFeet
+		// The model faces +Z; turn him about Y toward the seat.
+		let toSeat = ShowcaseRoomGeometry.seatedEye - Self.chirpyFeet
+		stand.orientation = simd_quatf(angle: atan2(toSeat.x, toSeat.z), axis: [0, 1, 0])
+		root.addChild(stand)
 	}
 
 	/// "Brought to you by" over the Meshtastic Solutions mark and name, in white on charcoal.
