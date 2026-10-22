@@ -10,8 +10,8 @@ import RealityKit
 import ShowcaseContent
 import UIKit
 
-/// Along the right wall: a giant Chirpy on a pedestal, facing the Meshtastic mark on the
-/// left wall, and nearer the seat a small plaque for Meshtastic Solutions.
+/// Along the right wall: a giant Chirpy on a pedestal, turned toward the seat, and nearer
+/// the seat a small plaque for Meshtastic Solutions.
 extension ShowcaseRoom {
 	/// Where Chirpy's pedestal stands on the floor, and how tall he is from feet to antenna tip, in meters.
 	static let chirpySpot = SIMD3<Float>(1.2, 0, -1.6)
