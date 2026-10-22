@@ -10,12 +10,14 @@ import RealityKit
 import ShowcaseContent
 import UIKit
 
-/// Along the right wall: a giant Chirpy standing on the floor, facing the Meshtastic mark on the
+/// Along the right wall: a giant Chirpy on a pedestal, facing the Meshtastic mark on the
 /// left wall, and nearer the seat a small plaque for Meshtastic Solutions.
 extension ShowcaseRoom {
-	/// Where Chirpy's feet stand, and how tall he is from feet to antenna tip, in meters.
-	static let chirpyFeet = SIMD3<Float>(1.25, 0, -1.6)
-	static let chirpyHeight: Float = 1.5
+	/// Where Chirpy's pedestal stands on the floor, and how tall he is from feet to antenna tip, in meters.
+	static let chirpySpot = SIMD3<Float>(1.2, 0, -1.6)
+	static let chirpyHeight: Float = 1.15
+	/// The pedestal under him: wide enough for his gloves, deep enough for his feet.
+	static let pedestalSize = SIMD3<Float>(0.75, 0.8, 0.4)
 	/// The plaque's center on the right wall, and its size in meters.
 	static let plaqueCenter = SIMD3<Float>(ShowcaseRoomGeometry.width / 2, 1.3, -0.55)
 	static let plaqueSize = SIMD2<Float>(0.36, 0.2)
@@ -50,15 +52,22 @@ extension ShowcaseRoom {
 		let bounds = chirpy.visualBounds(relativeTo: nil)
 		guard bounds.extents.y > 0 else { return }
 		let scale = Self.chirpyHeight / bounds.extents.y
-		// Feet on the floor, centered over his spot, whatever the model's own origin.
+		// Feet on the pedestal, centered over it, whatever the model's own origin.
 		chirpy.scale = SIMD3(repeating: scale)
-		chirpy.position = SIMD3(-bounds.center.x, -bounds.min.y, -bounds.center.z) * scale
+		chirpy.position = SIMD3(-bounds.center.x, -bounds.min.y, -bounds.center.z) * scale + [0, Self.pedestalSize.y, 0]
+		let pedestal = ModelEntity(
+			mesh: .generateBox(size: Self.pedestalSize, cornerRadius: 0.01),
+			materials: [SimpleMaterial(color: .white, roughness: 0.5, isMetallic: false)]
+		)
+		pedestal.name = "ChirpyPedestal"
+		pedestal.position = [0, Self.pedestalSize.y / 2, 0]
 		let stand = Entity()
 		stand.name = "GiantChirpy"
+		stand.addChild(pedestal)
 		stand.addChild(chirpy)
-		stand.position = Self.chirpyFeet
+		stand.position = Self.chirpySpot
 		// The model faces +Z; turn him about Y toward the seat.
-		let toSeat = ShowcaseRoomGeometry.seatedEye - Self.chirpyFeet
+		let toSeat = ShowcaseRoomGeometry.seatedEye - Self.chirpySpot
 		stand.orientation = simd_quatf(angle: atan2(toSeat.x, toSeat.z), axis: [0, 1, 0])
 		root.addChild(stand)
 	}
