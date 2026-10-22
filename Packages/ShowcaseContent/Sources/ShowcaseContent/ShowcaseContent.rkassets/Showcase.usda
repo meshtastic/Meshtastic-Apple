@@ -206,6 +206,7 @@ def Xform "Root"
     }
     # ------------------------------------------------------------------------------------------
     # Display tables: five 1.9 m maple slabs on trestle legs, each 0.35 m deep and 5 cm thick,
+    # centered 0.25 m left of the room's middle to leave the right side for Chirpy,
     # stepping up from 0.9533 m at the front to 1.42 m against the back wall: each top is one slab
     # thickness plus a gap of four thirds of one above the table in front.
     # ------------------------------------------------------------------------------------------
@@ -215,7 +216,7 @@ def Xform "Root"
     {
         double size = 1
         rel material:binding = </Root/Materials/Maple>
-        float3 xformOp:translate = (0, 0.9283, -0.985)
+        float3 xformOp:translate = (-0.25, 0.9283, -0.985)
         float3 xformOp:scale = (1.9, 0.05, 0.35)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
     }
@@ -225,7 +226,7 @@ def Xform "Root"
     {
         double size = 1
         rel material:binding = </Root/Materials/Maple>
-        float3 xformOp:translate = (-0.83, 0.4516, -0.985)
+        float3 xformOp:translate = (-1.08, 0.4516, -0.985)
         float3 xformOp:scale = (0.06, 0.9033, 0.23)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
     }
@@ -235,7 +236,7 @@ def Xform "Root"
     {
         double size = 1
         rel material:binding = </Root/Materials/Maple>
-        float3 xformOp:translate = (0.83, 0.4516, -0.985)
+        float3 xformOp:translate = (0.58, 0.4516, -0.985)
         float3 xformOp:scale = (0.06, 0.9033, 0.23)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
     }
@@ -245,7 +246,7 @@ def Xform "Root"
     {
         double size = 1
         rel material:binding = </Root/Materials/Maple>
-        float3 xformOp:translate = (0, 1.045, -1.335)
+        float3 xformOp:translate = (-0.25, 1.045, -1.335)
         float3 xformOp:scale = (1.9, 0.05, 0.35)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
     }
@@ -255,7 +256,7 @@ def Xform "Root"
     {
         double size = 1
         rel material:binding = </Root/Materials/Maple>
-        float3 xformOp:translate = (-0.83, 0.51, -1.335)
+        float3 xformOp:translate = (-1.08, 0.51, -1.335)
         float3 xformOp:scale = (0.06, 1.02, 0.23)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
     }
@@ -265,7 +266,7 @@ def Xform "Root"
     {
         double size = 1
         rel material:binding = </Root/Materials/Maple>
-        float3 xformOp:translate = (0.83, 0.51, -1.335)
+        float3 xformOp:translate = (0.58, 0.51, -1.335)
         float3 xformOp:scale = (0.06, 1.02, 0.23)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
     }
@@ -275,7 +276,7 @@ def Xform "Root"
     {
         double size = 1
         rel material:binding = </Root/Materials/Maple>
-        float3 xformOp:translate = (0, 1.1617, -1.685)
+        float3 xformOp:translate = (-0.25, 1.1617, -1.685)
         float3 xformOp:scale = (1.9, 0.05, 0.35)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
     }
@@ -285,7 +286,7 @@ def Xform "Root"
     {
         double size = 1
         rel material:binding = </Root/Materials/Maple>
-        float3 xformOp:translate = (-0.83, 0.5684, -1.685)
+        float3 xformOp:translate = (-1.08, 0.5684, -1.685)
         float3 xformOp:scale = (0.06, 1.1367, 0.23)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
     }
@@ -295,7 +296,7 @@ def Xform "Root"
     {
         double size = 1
         rel material:binding = </Root/Materials/Maple>
-        float3 xformOp:translate = (0.83, 0.5684, -1.685)
+        float3 xformOp:translate = (0.58, 0.5684, -1.685)
         float3 xformOp:scale = (0.06, 1.1367, 0.23)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
     }
@@ -305,7 +306,7 @@ def Xform "Root"
     {
         double size = 1
         rel material:binding = </Root/Materials/Maple>
-        float3 xformOp:translate = (0, 1.2783, -2.035)
+        float3 xformOp:translate = (-0.25, 1.2783, -2.035)
         float3 xformOp:scale = (1.9, 0.05, 0.35)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
     }
@@ -315,7 +316,7 @@ def Xform "Root"
     {
         double size = 1
         rel material:binding = </Root/Materials/Maple>
-        float3 xformOp:translate = (-0.83, 0.6266, -2.035)
+        float3 xformOp:translate = (-1.08, 0.6266, -2.035)
         float3 xformOp:scale = (0.06, 1.2533, 0.23)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
     }
@@ -325,7 +326,7 @@ def Xform "Root"
     {
         double size = 1
         rel material:binding = </Root/Materials/Maple>
-        float3 xformOp:translate = (0.83, 0.6266, -2.035)
+        float3 xformOp:translate = (0.58, 0.6266, -2.035)
         float3 xformOp:scale = (0.06, 1.2533, 0.23)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
     }
@@ -335,7 +336,7 @@ def Xform "Root"
     {
         double size = 1
         rel material:binding = </Root/Materials/Maple>
-        float3 xformOp:translate = (0, 1.395, -2.385)
+        float3 xformOp:translate = (-0.25, 1.395, -2.385)
         float3 xformOp:scale = (1.9, 0.05, 0.35)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
     }
@@ -345,7 +346,7 @@ def Xform "Root"
     {
         double size = 1
         rel material:binding = </Root/Materials/Maple>
-        float3 xformOp:translate = (-0.83, 0.685, -2.385)
+        float3 xformOp:translate = (-1.08, 0.685, -2.385)
         float3 xformOp:scale = (0.06, 1.37, 0.23)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
     }
@@ -355,7 +356,7 @@ def Xform "Root"
     {
         double size = 1
         rel material:binding = </Root/Materials/Maple>
-        float3 xformOp:translate = (0.83, 0.685, -2.385)
+        float3 xformOp:translate = (0.58, 0.685, -2.385)
         float3 xformOp:scale = (0.06, 1.37, 0.23)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:scale"]
     }
@@ -419,31 +420,31 @@ def Xform "Root"
     def Xform "Anchor_Table1"
     {
         # Center of table 1's top (nearest the viewer); displays line up along local X.
-        float3 xformOp:translate = (0, 0.9533, -0.985)
+        float3 xformOp:translate = (-0.25, 0.9533, -0.985)
         uniform token[] xformOpOrder = ["xformOp:translate"]
     }
     def Xform "Anchor_Table2"
     {
         # Center of table 2's top; displays line up along local X.
-        float3 xformOp:translate = (0, 1.07, -1.335)
+        float3 xformOp:translate = (-0.25, 1.07, -1.335)
         uniform token[] xformOpOrder = ["xformOp:translate"]
     }
     def Xform "Anchor_Table3"
     {
         # Center of table 3's top; displays line up along local X.
-        float3 xformOp:translate = (0, 1.1867, -1.685)
+        float3 xformOp:translate = (-0.25, 1.1867, -1.685)
         uniform token[] xformOpOrder = ["xformOp:translate"]
     }
     def Xform "Anchor_Table4"
     {
         # Center of table 4's top; displays line up along local X.
-        float3 xformOp:translate = (0, 1.3033, -2.035)
+        float3 xformOp:translate = (-0.25, 1.3033, -2.035)
         uniform token[] xformOpOrder = ["xformOp:translate"]
     }
     def Xform "Anchor_Table5"
     {
         # Center of table 5's top (against the back wall); displays line up along local X.
-        float3 xformOp:translate = (0, 1.42, -2.385)
+        float3 xformOp:translate = (-0.25, 1.42, -2.385)
         uniform token[] xformOpOrder = ["xformOp:translate"]
     }
     def Xform "Anchor_WallRack"

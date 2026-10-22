@@ -57,6 +57,8 @@ enum ShowcaseRoomGeometry {
 	static var frontTableTop: Float { backTableTop - tableStep * Float(tables.count - 1) }
 	/// The back table's back edge, just in front of the rack frame.
 	static let tablesBackEdgeZ: Float = -2.56
+	/// The tables sit left of the room's middle, leaving the right side clear for Chirpy.
+	static let tablesCenterX: Float = -0.25
 	/// The wall rack, hung above the back table: wide and short, so it clears the devices below.
 	static let rackSize = SIMD2<Float>(2.8, 0.9)
 	/// Eye height for someone sitting in the chair at the origin.
@@ -67,7 +69,7 @@ enum ShowcaseRoomGeometry {
 		case .table1, .table2, .table3, .table4, .table5:
 			let index = tables.firstIndex(of: anchor) ?? 0
 			let fromBack = Float(tables.count - 1 - index)
-			return ShowcaseAnchorPose(SIMD3(0, frontTableTop + tableStep * Float(index), tablesBackEdgeZ + tableDepth / 2 + tableDepth * fromBack))
+			return ShowcaseAnchorPose(SIMD3(tablesCenterX, frontTableTop + tableStep * Float(index), tablesBackEdgeZ + tableDepth / 2 + tableDepth * fromBack))
 		case .wallRack:
 			return ShowcaseAnchorPose(SIMD3(0, 2.2, -2.555))
 		}
