@@ -69,7 +69,7 @@ struct AccessoryManagerDisconnectTests {
 			identifier: "test-radio",
 			connectionState: .connected
 		)
-		manager.activeConnection = (device: device, connection: connection)
+		manager.activeConnection = RadioSession(device: device, connection: connection)
 		manager.activeDeviceNum = 123
 		manager.allowDisconnect = true
 		// Keep closeConnection() from arming discovery for this transport-free fixture.
