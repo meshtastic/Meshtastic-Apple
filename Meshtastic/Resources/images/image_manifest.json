@@ -1,5 +1,5 @@
 {
-  "api_hash": "f6bc0397f4908e530fe0fe1617ae4c6d7fb0199c0b28795daf340334440974dd",
+  "api_hash": "308bbd9912b5fe683c34447320c979ce0b0ae99d2cd5f4c0cb1e2d26111ace47",
   "files": {
     "crowpanel_2_4.svg": {
       "etag": "\"29194e5a415e5aee034b2d4a3ba2e398\""
@@ -34,6 +34,9 @@
     "heltec-meshnode-t1.svg": {
       "etag": "\"7c4b97ab2fb7db113e337417c8006701\""
     },
+    "heltec-rc52.svg": {
+      "etag": "\"7f8e3dee5b45fbd6fcf552f100024937\""
+    },
     "heltec-t096.svg": {
       "etag": "\"686fe6ac17fea4e6ff34aca78ca610f9\""
     },
@@ -66,6 +69,12 @@
     },
     "heltec_mesh_pocket.svg": {
       "etag": "\"4a7af4be3e7a829cd83017f05fa11f9a\""
+    },
+    "heltec_rc32.svg": {
+      "etag": "\"74a9e69a861bd07670740f410e119915\""
+    },
+    "heltec_rcc6.svg": {
+      "etag": "\"ccc19eebaeaa8873d787e84d9c02b3a3\""
     },
     "heltec_v4.svg": {
       "etag": "\"57666cd119ac01e74716bef5f785e2df\""
@@ -144,6 +153,9 @@
     },
     "rak_3312.svg": {
       "etag": "\"8db94664189df83d099b726cd21045b4\""
+    },
+    "rak_wismesh_pocket.svg": {
+      "etag": "\"27c2102c07267a9b78df385a7b55e09a\""
     },
     "rak_wismesh_tag.svg": {
       "etag": "\"d0fe0072bdfd0c3671ed8be8339708fa\""
