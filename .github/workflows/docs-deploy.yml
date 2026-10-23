@@ -66,12 +66,21 @@ jobs:
             -workspace Meshtastic.xcworkspace \
             -scheme Meshtastic \
             -destination 'platform=iOS Simulator,name=iPhone 16,OS=18.5' \
+            -resultBundlePath /tmp/snapshots.xcresult \
             "${snapshot_tests[@]}" \
             2>&1 | tee /tmp/xcodebuild-snapshots.log | tail -20; then
             echo "── error lines from full log ──" >&2
             grep -E "error:|: Fatal error|failed \(|recorded an issue|✘ Test |dimensions changed" /tmp/xcodebuild-snapshots.log | head -40 >&2
             exit 1
           fi
+
+      # Holds the actual and diff PNGs attached to failed snapshot tests.
+      - name: Upload snapshot test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: snapshot-test-results
+          path: /tmp/snapshots.xcresult
 
       - name: Verify snapshot tests leave references unchanged
         run: |
