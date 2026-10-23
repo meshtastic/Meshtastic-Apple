@@ -121,15 +121,16 @@ app-data reset removes them so the bundled seed can rebuild the cache.
 Theme colors are stored individually as `themePrimaryColor`, `themeSecondaryColor`, and
 `themeAccentColor`, with the authored palette in `themePalette`. Executable firmware URLs are
 not stored in this display cache; event OTA uses a separate signed artifact contract. The model
-previously had an experimental `firmwareZipUrl` field before V1 shipped; it was removed while
-the schema was still unreleased. The model remains in the unreleased **V1** schema, so these
-changes required no new `VersionedSchema`/`MigrationStage` (see below).
+previously had an experimental optional `firmwareZipUrl` field (shipped in v2.7.17); it was
+later removed in place in the **V1** schema. Dropping an optional property is a change SwiftData
+migrates on its own, so at the time it needed no new `VersionedSchema`/`MigrationStage`. V1 is now
+frozen (see below).
 
 ## Schema Migrations
 
 When you add, rename, or remove properties on a `@Model` type, you must provide a migration. Schema files live in `Meshtastic/Model/Schema/`.
 
-> **Note — V1 is unreleased.** While `MeshtasticSchemaV1` remains the initial, unshipped version, additive `@Model` changes go **directly into V1** rather than a new versioned schema + stage (see the comment in `MeshtasticMigrationPlan.swift`). For example, the air-quality particulate-matter fields on `TelemetryEntity` (`pm10/25/100Standard`, `pm10/25/100Environmental`) were added in place, as were `SecurityConfigEntity.packetSignaturePolicy` and `DeviceMetadataEntity.hasXeddsa` for the packet authenticity policy. Start adding `VersionedSchema` versions and migration stages only once V1 has shipped.
+> **Note — V1 shipped in v2.7.13 and must not change again.** Before that rule, V1 was changed in place with changes SwiftData migrates on its own: new optional or defaulted properties (the air-quality particulate-matter fields on `TelemetryEntity`, `pm10/25/100Standard` and `pm10/25/100Environmental`, `SecurityConfigEntity.packetSignaturePolicy` and `DeviceMetadataEntity.hasXeddsa`), an optional made non-optional with a default (`DeviceLinkEntity.regions`), and a dropped unique constraint (`DeviceHardwareEntity.hwModel`). `SchemaHistoryUpgradeTests` opens a real store from each SwiftData release, v2.7.13 through v2.7.21, and checks the current app migrates it without losing data (fixtures in `research/fixtures/swiftdata-schema-history`, see `research/schema-history/README.md`). Any further model change goes in a new `VersionedSchema` with a migration stage, as the comment in `MeshtasticMigrationPlan.swift` says. Run `SchemaHistoryUpgradeTests` after the change.
 
 Give an added property a default that matches what an absent value means on the wire, so a row
 written before the property existed and a device that never reported it agree. `packetSignaturePolicy`
@@ -175,7 +176,7 @@ static let migrateV1toV2 = MigrationStage.custom(
 
 ### Deprecated Properties
 
-When a proto field is deprecated upstream and the app stops using it, **do not remove the corresponding `@Model` property** — deleting a stored property is a schema change that would require a migration, and while V1 is unreleased there is nowhere to migrate from. Instead, retain the property as-is so:
+When a proto field is deprecated upstream and the app stops using it, **do not remove the corresponding `@Model` property** — deleting a stored property needs a new schema version and drops any values already stored on the device. Instead, retain the property as-is so:
 
 - the SwiftData schema is unchanged, and
 - any values already persisted on-device remain readable.
