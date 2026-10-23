@@ -47,5 +47,14 @@ callouts:
     title: Warning
     color: yellow
 
+# Working plans are not part of the site. Jekyll 3 replaces its default
+# exclude list when this is set, so the defaults are repeated here.
+exclude:
+  - plans/
+  - Gemfile
+  - Gemfile.lock
+  - node_modules/
+  - vendor/
+
 # Color scheme
 color_scheme: nil
