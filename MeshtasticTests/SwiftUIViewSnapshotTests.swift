@@ -13,34 +13,25 @@ import MeshtasticProtobufs
 
 /// Renders a SwiftUI view to a UIImage. When height is nil the view sizes itself
 /// using its intrinsic content height for the given width (via sizeThatFits).
+/// A nil colorScheme renders light, so the simulator's appearance setting does not matter.
 @MainActor
 private func renderImage<V: View>(_ view: V, width: CGFloat, height: CGFloat? = nil, transparent: Bool = false, colorScheme: ColorScheme? = nil) -> UIImage {
-	// Wrap the view to ignore safe area so content isn't inset by the device's safe area.
-	// Inject colorScheme environment when specified so dark mode renders correctly
-	// even in a windowless UIHostingController context.headii
-	let wrappedView: AnyView
-	if let scheme = colorScheme {
-		wrappedView = AnyView(
-			view
-				.environment(\.colorScheme, scheme)
-				.frame(width: width)
-				.ignoresSafeArea()
-		)
-	} else {
-		wrappedView = AnyView(
-			view
-				.frame(width: width)
-				.ignoresSafeArea()
-		)
-	}
+	let scheme = colorScheme ?? .light
+	// Ignore the safe area so content isn't inset by the device's safe area.
+	let wrappedView = AnyView(
+		view
+			.environment(\.colorScheme, scheme)
+			.frame(width: width)
+			.ignoresSafeArea()
+	)
 	let hostingController = UIHostingController(rootView: wrappedView)
+	let interfaceStyle: UIUserInterfaceStyle = scheme == .dark ? .dark : .light
+	hostingController.overrideUserInterfaceStyle = interfaceStyle
 	if transparent {
 		hostingController.view.backgroundColor = .clear
-	} else if let scheme = colorScheme {
-		let traits = UITraitCollection(userInterfaceStyle: scheme == .dark ? .dark : .light)
-		hostingController.view.backgroundColor = UIColor.systemBackground.resolvedColor(with: traits)
 	} else {
-		hostingController.view.backgroundColor = .systemBackground
+		let traits = UITraitCollection(userInterfaceStyle: interfaceStyle)
+		hostingController.view.backgroundColor = UIColor.systemBackground.resolvedColor(with: traits)
 	}
 
 	// Measure the view's intrinsic height
@@ -50,6 +41,7 @@ private func renderImage<V: View>(_ view: V, width: CGFloat, height: CGFloat? = 
 
 	// Use a plain UIWindow without a window scene to avoid safe area insets entirely.
 	let window = UIWindow(frame: CGRect(origin: .zero, size: size))
+	window.overrideUserInterfaceStyle = interfaceStyle
 	window.rootViewController = hostingController
 	window.isHidden = false
 
