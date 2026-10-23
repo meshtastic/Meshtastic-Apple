@@ -29,9 +29,8 @@ actor BLETransport: Transport {
 	private var discoveredPeripherals: [UUID: (peripheral: CBPeripheral, lastSeen: Date)] = [:]
 	private var discoveredDeviceContinuation: AsyncStream<DiscoveryEvent>.Continuation?
 	private let delegate: BLEDelegate
-	private var connectingPeripheral: CBPeripheral?
 	private var activeConnection: BLEConnection?
-	private var connectContinuation: CheckedContinuation<BLEConnection, Error>?
+	private var pendingConnect = PendingConnectSlot<CheckedContinuation<BLEConnection, Error>>()
 	private var restoredConnectContinuation: CheckedContinuation<Void, Error>?
 	private var setupCompleteGate: AsyncGate
 	private var restoreInProgress: Bool = false
@@ -260,10 +259,7 @@ actor BLETransport: Transport {
 			// the opposite of, so `.error` here also matches this file's own convention for
 			// every other non-powered-on state (.unauthorized, .unsupported, .resetting, etc.).
 			status = .error(Self.poweredOffStatusMessage)
-			if let continuation = connectContinuation {
-				connectContinuation = nil
-				continuation.resume(throwing: AccessoryError.disconnected("Bluetooth powered off"))
-			}
+			pendingConnect.take()?.resume(throwing: AccessoryError.disconnected("Bluetooth powered off"))
 			if let connection = activeConnection {
 				Task {
 					Logger.transport.error("🛜 [BLE] Bluetooth has powered off during active connection. Cleaning up.")
@@ -320,11 +316,10 @@ actor BLETransport: Transport {
 		}
 	}
 
-	func cancelConnectContinuation(for peripheral: CBPeripheral) {
-		guard connectingPeripheral?.identifier == peripheral.identifier,
-			  let connectContinuation else { return }
-		connectContinuation.resume(throwing: CancellationError())
-		self.connectContinuation = nil
+	/// Cancels one connect attempt. Does nothing if that attempt already finished,
+	/// so a late cancel can't end a newer attempt to the same peripheral.
+	func cancelConnect(attempt: UInt64) {
+		pendingConnect.take(attempt: attempt)?.resume(throwing: CancellationError())
 	}
 
 	/// Stops duplicate-advertisement scanning before CoreBluetooth starts a connection. Keeping the
@@ -374,7 +369,7 @@ actor BLETransport: Transport {
 	}
 
 	func connect(to device: Device) async throws -> any Connection {
-		guard activeConnection == nil, connectContinuation == nil else {
+		guard activeConnection == nil, !pendingConnect.isPending else {
 			throw AccessoryError.connectionFailed("BLE transport is busy: already connecting or connected")
 		}
 
@@ -384,27 +379,31 @@ actor BLETransport: Transport {
 			throw AccessoryError.connectionFailed("Peripheral not found")
 		}
 		
+		let attempt = pendingConnect.nextAttempt()
 		do {
 			let returnConnection = try await withTaskCancellationHandler {
 				let newConnection: BLEConnection = try await withCheckedThrowingContinuation { cont in
-					if self.connectContinuation != nil || self.activeConnection != nil {
+					if self.pendingConnect.isPending || self.activeConnection != nil {
 						cont.resume(throwing: AccessoryError.connectionFailed("BLE transport is busy: already connecting or connected"))
 						return
 					}
-					self.connectContinuation = cont
-					self.connectingPeripheral = peripheral
 					guard centralManager != nil else {
-						self.connectContinuation = nil
 						cont.resume(throwing: AccessoryError.connectionFailed("Bluetooth not initialized"))
 						return
 					}
+					// onCancel may have already run and found nothing to cancel.
+					if Task.isCancelled {
+						cont.resume(throwing: CancellationError())
+						return
+					}
+					self.pendingConnect.begin(attempt: attempt, peripheralId: peripheral.identifier, continuation: cont)
 					centralManager.connect(peripheral)
 				}
 				self.activeConnection = newConnection
 				return newConnection
 			} onCancel: {
 				Task {
-					await self.cancelConnectContinuation(for: peripheral)
+					await self.cancelConnect(attempt: attempt)
 				}
 			}
 			Logger.transport.debug("🛜 [BLE] Connect complete.")
@@ -416,14 +415,11 @@ actor BLETransport: Transport {
 	}
 
 	func handlePeripheralDisconnect(peripheral: CBPeripheral) {
-		if let continuation = self.connectContinuation,
-		   self.connectingPeripheral?.identifier == peripheral.identifier {
+		if let continuation = pendingConnect.take(peripheralId: peripheral.identifier) {
 			// Disconnect arrived while still waiting for didConnect — resume the
 			// pending continuation so the caller doesn't hang.
 			Logger.transport.debug("🛜 [BLETransport] Clean disconnect during connection phase. Resuming continuation with error.")
 			continuation.resume(throwing: AccessoryError.connectionFailed("Peripheral disconnected before connection completed"))
-			self.connectContinuation = nil
-			self.connectingPeripheral = nil
 			discoveredPeripherals.removeValue(forKey: peripheral.identifier)
 			discoveredDeviceContinuation?.yield(.deviceLost(peripheral.identifier))
 		} else if let connection = self.activeConnection {
@@ -460,11 +456,9 @@ actor BLETransport: Transport {
 			Logger.transport.error("🛜 [BLETransport] Disconnected with non-CBError: \(otherError.localizedDescription, privacy: .public)")
 		}
 		
-		if let continuation = self.connectContinuation {
+		if let continuation = pendingConnect.take() {
 			Logger.transport.debug("🛜 [BLETransport] Error while connecting. Resuming connection continuation with error.")
 			continuation.resume(throwing: error)
-			self.connectContinuation = nil
-			self.connectingPeripheral = nil
 		} else if let activeConnection = self.activeConnection {
 			// Inform the active connection that there was an error and it should disconnect
 			Logger.transport.debug("🛜 [BLETransport] Error on active connection. Disconnecting.")
@@ -484,15 +478,11 @@ actor BLETransport: Transport {
 			return
 		}
 		Logger.transport.debug("🛜 [BLE] Handle Did Connect Connected to peripheral \(peripheral.name ?? "Unknown", privacy: .public)")
-		guard let cont = connectContinuation,
-			  let connPeripheral = connectingPeripheral,
-			  peripheral.identifier == connPeripheral.identifier else {
+		guard let cont = pendingConnect.take(peripheralId: peripheral.identifier) else {
 			return
 		}
 		let connection = BLEConnection(peripheral: peripheral, central: central, transport: self)
 		cont.resume(returning: connection)
-		self.connectContinuation = nil
-		self.connectingPeripheral = nil
 	}
 
 	func handleDidFailToConnect(peripheral: CBPeripheral, error: Error?) {
@@ -502,14 +492,10 @@ actor BLETransport: Transport {
 			return
 		}
 		
-		guard let cont = connectContinuation,
-			  let connPeripheral = connectingPeripheral,
-			  peripheral.identifier == connPeripheral.identifier else {
+		guard let cont = pendingConnect.take(peripheralId: peripheral.identifier) else {
 			return
 		}
 		cont.resume(throwing: error ?? AccessoryError.connectionFailed("Connection failed"))
-		self.connectContinuation = nil
-		self.connectingPeripheral = nil
 	}
 	
 	func handleWillRestoreState(dict: [String: Any], central: CBCentralManager) async {
@@ -646,8 +632,8 @@ actor BLETransport: Transport {
 			discoveredDeviceContinuation?.yield(.deviceLost(peripheral.identifier))
 		}
 		
+		// Leaves pendingConnect alone. A pending connect is ended only by its own callbacks or cancel.
 		self.activeConnection = nil
-		self.connectingPeripheral = nil
 		restoreInProgress = false
 		resumeScanningAfterFailedConnection()
 	}
@@ -692,6 +678,48 @@ class BLEDelegate: NSObject, CBCentralManagerDelegate {
 	
 	func centralManager(_ central: CBCentralManager, willRestoreState dict: [String: Any]) {
 		Task { await self.transport?.handleWillRestoreState(dict: dict, central: central) }
+	}
+}
+
+/// The one connect BLETransport is waiting on, if any. The continuation, its peripheral and
+/// its attempt number are stored and cleared together, and take() hands the continuation out
+/// once, so it can only be resumed once.
+struct PendingConnectSlot<Continuation> {
+	private struct Entry {
+		let attempt: UInt64
+		let peripheralId: UUID
+		let continuation: Continuation
+	}
+
+	private var current: Entry?
+	private var lastAttempt: UInt64 = 0
+
+	var isPending: Bool { current != nil }
+
+	mutating func nextAttempt() -> UInt64 {
+		lastAttempt += 1
+		return lastAttempt
+	}
+
+	/// Stores the continuation. The caller checks isPending first.
+	mutating func begin(attempt: UInt64, peripheralId: UUID, continuation: Continuation) {
+		precondition(current == nil, "begin called while another connect is pending")
+		current = Entry(attempt: attempt, peripheralId: peripheralId, continuation: continuation)
+	}
+
+	mutating func take() -> Continuation? {
+		defer { current = nil }
+		return current?.continuation
+	}
+
+	mutating func take(peripheralId: UUID) -> Continuation? {
+		guard current?.peripheralId == peripheralId else { return nil }
+		return take()
+	}
+
+	mutating func take(attempt: UInt64) -> Continuation? {
+		guard current?.attempt == attempt else { return nil }
+		return take()
 	}
 }
 

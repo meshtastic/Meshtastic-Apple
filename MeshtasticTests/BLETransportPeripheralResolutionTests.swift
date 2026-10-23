@@ -45,6 +45,8 @@ private final class TestPeripheral: CBPeripheral, @unchecked Sendable {
 		guard let testPeripheral = peripheral as? TestPeripheral else {
 			fatalError("Test peripheral has an unexpected type")
 		}
+		// Never freed: CBPeripheral's dealloc removes a KVO observer this double never added.
+		_ = Unmanaged.passRetained(testPeripheral)
 		return testPeripheral
 	}
 }
@@ -202,13 +204,66 @@ struct BLETransportPeripheralResolutionTests {
 		await transport.handleDidConnect(peripheral: peripheral, central: centralManager)
 		_ = try await connection.value
 
-		await transport.cancelConnectContinuation(for: peripheral)
+		// The first connect on a fresh transport is attempt 1.
+		await transport.cancelConnect(attempt: 1)
 
 		do {
 			_ = try await transport.connect(to: device)
 			Issue.record("A late cancellation cleanup must not clear the active connection")
 		} catch AccessoryError.connectionFailed(let message) {
 			#expect(message == "BLE transport is busy: already connecting or connected")
+		}
+	}
+
+	@Test func staleDisconnectNoticeDoesNotStrandPendingConnect() async throws {
+		let peripheral = TestPeripheral.make()
+		let connectSignal = Signal()
+		let centralManager = RecordingCentralManager(peripheral: peripheral, connectSignal: connectSignal)
+		let transport = BLETransport(
+			createCentralManagerImmediately: false,
+			centralManager: centralManager
+		)
+		let device = Device(
+			id: UUID(),
+			name: "Test Radio",
+			transportType: .ble,
+			identifier: peripheral.identifier.uuidString
+		)
+
+		let connection = Task { try await transport.connect(to: device) }
+		await connectSignal.wait()
+		// A disconnect notice left over from an earlier connection lands mid-connect.
+		await transport.connectionDidDisconnect(fromPeripheral: peripheral)
+		await transport.handleDidConnect(peripheral: peripheral, central: centralManager)
+
+		_ = try await connection.value
+	}
+
+	@Test func cancelAfterStaleDisconnectNoticeEndsPendingConnect() async {
+		let peripheral = TestPeripheral.make()
+		let connectSignal = Signal()
+		let centralManager = RecordingCentralManager(peripheral: peripheral, connectSignal: connectSignal)
+		let transport = BLETransport(
+			createCentralManagerImmediately: false,
+			centralManager: centralManager
+		)
+		let device = Device(
+			id: UUID(),
+			name: "Test Radio",
+			transportType: .ble,
+			identifier: peripheral.identifier.uuidString
+		)
+
+		let connection = Task { try await transport.connect(to: device) }
+		await connectSignal.wait()
+		await transport.connectionDidDisconnect(fromPeripheral: nil)
+		connection.cancel()
+
+		do {
+			_ = try await connection.value
+			Issue.record("A cancelled connect must throw")
+		} catch {
+			#expect(error is CancellationError)
 		}
 	}
 }
