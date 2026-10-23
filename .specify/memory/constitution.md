@@ -1,16 +1,14 @@
 <!--
 Sync Impact Report
-  Version change: 1.3.3 → 1.4.0
+  Version change: 1.4.0 → 1.4.1
   Modified principles:
-    - VIII (Meshtastic Design Standards Compliance): repointed at the
-      standards index, because the old raw link returned 35 bytes with
-      HTTP 200 — GitHub serves a symlink as its target's filename.
-      Adds a requirement: agents and contributors MUST NOT fetch
-      meshtastic_design_standards_latest.md over HTTP. MINOR rather than
-      PATCH because a new prohibition is expanded guidance, not a
-      clarification.
+    - II (SwiftData Persistence): schema path now points at
+      Meshtastic/Model/Schema/ (MeshtasticSchemaV1.swift,
+      MeshtasticMigrationPlan.swift). PATCH because it corrects a stale
+      path, not the rule.
   Updated sections:
-    - Technology Constraints → Design Standards: same repoint
+    - Development Workflow → Testing: lists the three XCTest files that
+      are left; ChannelEntityTests.swift now uses Swift Testing
   Added sections: none
   Removed sections: N/A
   Templates requiring updates:
@@ -52,7 +50,8 @@ Entity query helpers reside in
 providing computed properties MUST be placed in
 `Meshtastic/Extensions/CoreData/`. Schema evolution is managed via
 `VersionedSchema` and `SchemaMigrationPlan` in
-`Meshtastic/Model/MeshtasticSchema.swift`.
+`Meshtastic/Model/Schema/` (`MeshtasticSchemaV1.swift`,
+`MeshtasticMigrationPlan.swift`).
 
 **Rationale**: SwiftData replaces Core Data with a modern,
 Swift-native persistence API that integrates directly with SwiftUI
@@ -201,8 +200,10 @@ cross-platform consistency as standards evolve.
   New features and bug fixes SHOULD include tests using the Swift
   Testing framework in `MeshtasticTests/`. Do NOT use XCTest for
   new tests — use `import Testing`, `@Suite`, `@Test`, `#expect`,
-  and `#require` exclusively. The one remaining XCTest file
-  (`ChannelEntityTests.swift`) is legacy and SHOULD be migrated.
+  and `#require` exclusively. Three legacy XCTest files remain
+  (`CoreDataMigrationServiceTests.swift`,
+  `LockdownCoordinatorTests.swift`, `LockdownPassphraseStoreTests.swift`)
+  and SHOULD be migrated.
 - **Snapshot Testing**: SwiftUI helper views SHOULD have snapshot
   tests in `MeshtasticTests/SwiftUIViewSnapshotTests.swift`. The
   custom `renderImage` function renders views via
@@ -257,4 +258,4 @@ with these principles.
   MUST be justified in the PR description and approved by a
   maintainer.
 
-**Version**: 1.4.0 | **Ratified**: 2026-04-15 | **Last Amended**: 2026-09-15
+**Version**: 1.4.1 | **Ratified**: 2026-04-15 | **Last Amended**: 2026-10-23
