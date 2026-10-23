@@ -2,25 +2,17 @@
 //  CoverageEstimateRunner.swift
 //  Meshtastic
 //
-//  Drives the hosted Meshtastic Site Planner headlessly to compute a coverage
-//  estimate and hand the styled GeoJSON straight back to the app — no visible
-//  browser hop or manual share-sheet tap.
-//
-//  There is no headless params→GeoJSON HTTP API; the planner is a client-side
-//  WASM SPLAT!/ITM simulator, so coverage is only ever computed in a WebView.
-//  We load the planner with `run=1&bridge=1`, inject a tiny `__meshtasticNative`
-//  shim (the object-injection contract the planner expects, since WKWebView has
-//  no `addJavascriptInterface`), and receive the result via a script message.
-//
-//  See meshtastic/Meshtastic-Apple#2058.
+//  Runs a coverage estimate on the device: fetches Mapterhorn terrain around the
+//  site, predicts received power with kp1812 (ITU-R P.1812), and imports the
+//  resulting signal bands as a map overlay. Needs the network only for terrain
+//  tiles it hasn't cached yet.
 //
 
 import Foundation
 import CoreLocation
-import WebKit
 import OSLog
 
-/// Progress of a single headless coverage run.
+/// Progress of a single coverage run.
 enum CoverageEstimateState: Equatable {
 	case idle
 	case running
@@ -52,24 +44,7 @@ struct CoverageEstimateResult: Equatable {
 }
 
 @MainActor
-final class CoverageEstimateRunner: NSObject, ObservableObject {
-
-	/// The message-handler name the injected shim forwards coverage GeoJSON to.
-	private static let bridgeName = "coverageBridge"
-	/// Matches the Android reference timeout for a headless run.
-	private static let timeout: TimeInterval = 45
-
-	/// JS injected at `.atDocumentStart` so `__meshtasticNative` exists before the
-	/// planner's success handler (`postCoverageToBridge`) runs. It defines the
-	/// object-shaped contract the planner checks for and forwards to the WKWebView
-	/// message handler.
-	private static let shimJS = """
-	window.__meshtasticNative = {
-	  onCoverage: function (geojson) {
-	    window.webkit.messageHandlers.\(bridgeName).postMessage(geojson);
-	  }
-	};
-	"""
+final class CoverageEstimateRunner: ObservableObject {
 
 	@Published private(set) var state: CoverageEstimateState = .idle
 
@@ -77,66 +52,40 @@ final class CoverageEstimateRunner: NSObject, ObservableObject {
 	/// Observe via `onChange` to recenter the map and enable the overlay.
 	@Published private(set) var importedResult: CoverageEstimateResult?
 
-	private var webView: WKWebView?
-	private var timeoutTask: Task<Void, Never>?
-	private var params: SitePlannerParameters?
-	private var nodeNum: Int64?
-	private var didFinish = false
+	private var task: Task<Void, Never>?
 
 	/// Whether a run is currently in flight.
 	var isRunning: Bool { state == .running }
 
-	/// Kick off a headless coverage run for `params`. Requires a valid coordinate. `nodeNum` is the
-	/// node the run is for, saved with the estimate; nil when it is for another location.
+	/// Start a coverage run for `params`. Requires a valid coordinate. `nodeNum` is the node the run is
+	/// for, saved with the estimate; nil when it is for another location.
 	func start(params: SitePlannerParameters, nodeNum: Int64? = nil) {
-		cancel() // tear down any prior run first
-		guard params.isValid, let url = params.queryURL(autorun: true, bridge: true) else {
+		cancel()
+		guard params.isValid else {
 			state = .failed(String(localized: "Invalid coverage parameters."))
 			return
 		}
-		guard let hostWindow = Self.keyWindow() else {
-			state = .failed(String(localized: "Could not start the coverage estimate."))
-			return
-		}
-
-		self.params = params
-		self.nodeNum = nodeNum
-		self.didFinish = false
 		state = .running
-
-		let config = WKWebViewConfiguration()
-		let controller = WKUserContentController()
-		controller.add(self, name: Self.bridgeName)
-		controller.addUserScript(WKUserScript(source: Self.shimJS, injectionTime: .atDocumentStart, forMainFrameOnly: true))
-		config.userContentController = controller
-
-		// The WebView must be attached to a window and non-zero size, or WebGL/WASM
-		// never gets a GL context and the planner's autorun stalls on map-load. Keep
-		// it full-size but invisible and non-interactive behind the progress UI.
-		let webView = WKWebView(frame: hostWindow.bounds, configuration: config)
-		webView.navigationDelegate = self
-		webView.isUserInteractionEnabled = false
-		webView.alpha = 0
-		webView.isHidden = false
-		hostWindow.addSubview(webView)
-		self.webView = webView
-
-		Logger.services.info("🗺️ [SitePlanner] Starting headless coverage run: \(url.absoluteString, privacy: .public)")
-		webView.load(URLRequest(url: url))
-
-		timeoutTask = Task { [weak self] in
-			try? await Task.sleep(nanoseconds: UInt64(Self.timeout * 1_000_000_000))
-			guard !Task.isCancelled else { return }
-			await self?.fail(String(localized: "Coverage estimate timed out."))
+		task = Task { [weak self] in
+			do {
+				let started = Date()
+				let geoJSON = try await Self.estimate(params)
+				try Task.checkCancellation()
+				Logger.services.info("🗺️ [Coverage] Estimate for \(params.maxRangeKm, privacy: .public) km took \(Date().timeIntervalSince(started), privacy: .public) s")
+				await self?.importCoverage(geoJSON, params: params, nodeNum: nodeNum)
+			} catch is CancellationError {
+				return
+			} catch {
+				Logger.services.error("🗺️ [Coverage] Estimate failed: \(error.localizedDescription, privacy: .public)")
+				self?.state = .failed(error.localizedDescription)
+			}
 		}
 	}
 
-	/// Cancel any in-flight run and tear down the WebView.
+	/// Cancel any in-flight run.
 	func cancel() {
-		didFinish = true
-		timeoutTask?.cancel()
-		timeoutTask = nil
-		teardownWebView()
+		task?.cancel()
+		task = nil
 		if state == .running { state = .idle }
 	}
 
@@ -148,34 +97,28 @@ final class CoverageEstimateRunner: NSObject, ObservableObject {
 
 	// MARK: - Private
 
-	private func teardownWebView() {
-		if let webView {
-			webView.stopLoading()
-			webView.navigationDelegate = nil
-			webView.configuration.userContentController.removeAllUserScripts()
-			webView.configuration.userContentController.removeScriptMessageHandler(forName: Self.bridgeName)
-			webView.removeFromSuperview()
+	/// Terrain, sweep and bands for `params`, off the main actor.
+	nonisolated static func estimate(_ params: SitePlannerParameters) async throws -> String {
+		let site = CoverageSite(
+			name: params.name.trimmingCharacters(in: .whitespacesAndNewlines),
+			latitude: params.latitude,
+			longitude: params.longitude,
+			frequencyMHz: params.txFrequencyMHz,
+			txPowerDBm: 10 * log10(params.txPowerWatts) + 30,
+			txGainDBi: params.txGainDBi,
+			txHeightMeters: params.txHeightMeters,
+			radiusKm: params.maxRangeKm
+		)
+		let terrain = try await CoverageTerrainLoader.load(latitude: site.latitude, longitude: site.longitude, radiusKm: site.radiusKm)
+		let polar = try await LocalCoverage.sweepPolar(site: site) { latitude, longitude in
+			terrain.elevation(latitude: latitude, longitude: longitude)
 		}
-		webView = nil
+		// Bands start at the receiver's sensitivity, so the outermost one is where a node can hear the site at all.
+		let style = CoverageStyle(colorScale: params.colorScale, minDBm: params.rxSensitivityDBm, maxDBm: params.rxSensitivityDBm + 50)
+		return LocalCoverage.grid(from: polar).geoJSON(style: style)
 	}
 
-	private func fail(_ message: String) {
-		guard !didFinish else { return }
-		didFinish = true
-		Logger.services.error("🗺️ [SitePlanner] Coverage run failed: \(message, privacy: .public)")
-		teardownWebView()
-		timeoutTask?.cancel()
-		timeoutTask = nil
-		state = .failed(message)
-	}
-
-	private func handleCoverage(_ geoJSON: String) {
-		guard !didFinish, let params else { return }
-		didFinish = true
-		timeoutTask?.cancel()
-		timeoutTask = nil
-		teardownWebView()
-
+	private func importCoverage(_ geoJSON: String, params: SitePlannerParameters, nodeNum: Int64?) async {
 		let coordinate = CLLocationCoordinate2D(latitude: params.latitude, longitude: params.longitude)
 		let layerName = params.name.trimmingCharacters(in: .whitespacesAndNewlines)
 		let importName = layerName.isEmpty ? "Coverage" : layerName
@@ -185,18 +128,12 @@ final class CoverageEstimateRunner: NSObject, ObservableObject {
 			maxRangeKm: params.maxRangeKm, txHeightMeters: params.txHeightMeters,
 			colorScale: params.colorScale.rawValue, bounds: boundingBox
 		)
-
-		// This method is `@MainActor`, so the Task inherits MainActor isolation — after each
-		// `await` we're back on the main actor and can assign published state directly.
-		Task { [weak self] in
-			do {
-				let metadata = try await MapDataManager.shared.importFromString(geoJSON, name: importName, source: .sitePlanner, coverage: coverage)
-				guard let self else { return }
-				self.importedResult = CoverageEstimateResult(metadata: metadata, coordinate: coordinate, boundingBox: boundingBox)
-				self.state = .imported
-			} catch {
-				self?.state = .failed(error.localizedDescription)
-			}
+		do {
+			let metadata = try await MapDataManager.shared.importFromString(geoJSON, name: importName, source: .sitePlanner, coverage: coverage)
+			importedResult = CoverageEstimateResult(metadata: metadata, coordinate: coordinate, boundingBox: boundingBox)
+			state = .imported
+		} catch {
+			state = .failed(error.localizedDescription)
 		}
 	}
 
@@ -204,7 +141,7 @@ final class CoverageEstimateRunner: NSObject, ObservableObject {
 	/// generically: any array whose first element is a number is a `[lon, lat, …]` position, and
 	/// everything else is a container to recurse into — so it works for Point / LineString / Polygon /
 	/// MultiPolygon without a schema. Returns nil when no positions are found.
-	static func boundingBox(fromGeoJSON geoJSON: String) -> CoverageBounds? {
+	nonisolated static func boundingBox(fromGeoJSON geoJSON: String) -> CoverageBounds? {
 		guard let data = geoJSON.data(using: .utf8),
 			  let root = try? JSONSerialization.jsonObject(with: data) else { return nil }
 		var minLat = Double.infinity, maxLat = -Double.infinity
@@ -224,45 +161,5 @@ final class CoverageEstimateRunner: NSObject, ObservableObject {
 		walk(root)
 		guard minLat <= maxLat, minLon <= maxLon else { return nil }
 		return CoverageBounds(minLatitude: minLat, maxLatitude: maxLat, minLongitude: minLon, maxLongitude: maxLon)
-	}
-
-	/// The foreground key window to host the headless WebView.
-	private static func keyWindow() -> UIWindow? {
-		UIApplication.shared.connectedScenes
-			.compactMap { $0 as? UIWindowScene }
-			.filter { $0.activationState == .foregroundActive || $0.activationState == .foregroundInactive }
-			.flatMap { $0.windows }
-			.first { $0.isKeyWindow } ??
-		UIApplication.shared.connectedScenes
-			.compactMap { $0 as? UIWindowScene }
-			.flatMap { $0.windows }
-			.first
-	}
-}
-
-// MARK: - WKScriptMessageHandler
-
-extension CoverageEstimateRunner: WKScriptMessageHandler {
-	nonisolated func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-		guard message.name == Self.bridgeName, let body = message.body as? String else { return }
-		Task { @MainActor [weak self] in
-			self?.handleCoverage(body)
-		}
-	}
-}
-
-// MARK: - WKNavigationDelegate
-
-extension CoverageEstimateRunner: WKNavigationDelegate {
-	nonisolated func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-		Task { @MainActor [weak self] in
-			self?.fail(error.localizedDescription)
-		}
-	}
-
-	nonisolated func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
-		Task { @MainActor [weak self] in
-			self?.fail(error.localizedDescription)
-		}
 	}
 }

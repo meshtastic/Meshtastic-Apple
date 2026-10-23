@@ -1,0 +1,130 @@
+// LocalCoverageTests.swift
+// MeshtasticTests
+//
+// The on-device coverage engine: kp1812 predictions over a terrain profile, the polar sweep,
+// its resampling onto a grid, and the GeoJSON bands the map draws.
+
+import Testing
+import Foundation
+@testable import Meshtastic
+
+@Suite("LocalCoverage")
+struct LocalCoverageTests {
+
+	private func site(radiusKm: Double = 10, txPowerDBm: Double = 22) -> CoverageSite {
+		CoverageSite(
+			name: "Test", latitude: 47.6, longitude: -122.3, frequencyMHz: 906.875,
+			txPowerDBm: txPowerDBm, txGainDBi: 2, txHeightMeters: 2, radiusKm: radiusKm
+		)
+	}
+
+	private let flat: @Sendable (Double, Double) -> Double = { _, _ in 100 }
+
+	@Test func signalWeakensWithDistanceOverFlatGround() async throws {
+		let polar = try await LocalCoverage.sweepPolar(site: site(), radials: 8, rings: 8, profileStepKm: 0.1, elevation: flat)
+		let ring = (0..<polar.rings).map { polar.at(0, $0) }
+		#expect(ring.allSatisfy { $0.isFinite })
+		#expect(zip(ring, ring.dropFirst()).allSatisfy { $0 >= $1 })
+	}
+
+	@Test func flatGroundIsTheSameOnEveryBearing() async throws {
+		let polar = try await LocalCoverage.sweepPolar(site: site(), radials: 8, rings: 6, profileStepKm: 0.1, elevation: flat)
+		for ring in 0..<polar.rings {
+			let values = (0..<polar.radials).map { polar.at($0, ring) }
+			#expect((values.max()! - values.min()!) < 0.01)
+		}
+	}
+
+	@Test func ridgeShadowsTheFarSide() async throws {
+		let base = site()
+		// A 400 m ridge from 4.5 to 5.5 km north of the site; flat everywhere else.
+		let ridged: @Sendable (Double, Double) -> Double = { latitude, _ in
+			let northKm = (latitude - base.latitude) * 111.0
+			return (4.5...5.5).contains(northKm) ? 400 : 0
+		}
+		let polar = try await LocalCoverage.sweepPolar(site: base, radials: 8, rings: 8, profileStepKm: 0.1, elevation: ridged)
+		let last = polar.rings - 1
+		let north = polar.at(0, last)
+		let south = polar.at(4, last)
+		#expect(north < south, "past the ridge \(north) dBm should be weaker than flat \(south) dBm")
+	}
+
+	@Test func morePowerReachesAtLeastAsFar() async throws {
+		let weak = try await LocalCoverage.sweepPolar(site: site(txPowerDBm: 10), radials: 8, rings: 6, profileStepKm: 0.1, elevation: flat)
+		let strong = try await LocalCoverage.sweepPolar(site: site(txPowerDBm: 30), radials: 8, rings: 6, profileStepKm: 0.1, elevation: flat)
+		for index in weak.dbm.indices {
+			#expect(abs((strong.dbm[index] - weak.dbm[index]) - 20) < 0.01)
+		}
+	}
+
+	@Test func rejectsAFrequencyOutsideP1812() async {
+		var outOfRange = site()
+		outOfRange.frequencyMHz = 7000
+		await #expect(throws: LocalCoverageError.self) {
+			_ = try await LocalCoverage.sweepPolar(site: outOfRange, radials: 8, rings: 4, profileStepKm: 0.1, elevation: flat)
+		}
+	}
+
+	@Test func gridCoversOnlyTheDisc() async throws {
+		let polar = try await LocalCoverage.sweepPolar(site: site(), radials: 8, rings: 6, profileStepKm: 0.1, elevation: flat)
+		let grid = LocalCoverage.grid(from: polar, resolution: 33)
+		#expect(grid.at(0, 0).isNaN)
+		#expect(grid.at(32, 32).isNaN)
+		#expect(!grid.at(16, 16).isNaN)
+		#expect(!grid.at(16, 2).isNaN)
+	}
+
+	@Test func geoJSONIsBandedSimplestyle() async throws {
+		var named = site()
+		named.name = "Hill \"Site\""
+		let polar = try await LocalCoverage.sweepPolar(site: named, radials: 8, rings: 8, profileStepKm: 0.1, elevation: flat)
+		let text = LocalCoverage.grid(from: polar, resolution: 32).geoJSON(style: CoverageStyle(colorScale: .mesh, minDBm: -130, maxDBm: -80))
+		let root = try #require(JSONSerialization.jsonObject(with: Data(text.utf8)) as? [String: Any])
+		let properties = try #require(root["properties"] as? [String: Any])
+		#expect(properties["generator"] as? String == "meshtastic-kp1812")
+		#expect(properties["name"] as? String == "Hill \"Site\"")
+		let features = try #require(root["features"] as? [[String: Any]])
+		#expect(!features.isEmpty && features.count <= 6)
+		for feature in features {
+			let geometry = try #require(feature["geometry"] as? [String: Any])
+			#expect(geometry["type"] as? String == "MultiPolygon")
+			let style = try #require(feature["properties"] as? [String: Any])
+			#expect((style["fill"] as? String)?.hasPrefix("#") == true)
+			#expect(style["fill-opacity"] as? Double == 0.5)
+		}
+		#expect(CoverageEstimateRunner.boundingBox(fromGeoJSON: text) != nil)
+	}
+
+	@Test func paletteEndsMatchThePlanner() {
+		#expect(SitePlannerColorScale.mesh.color(at: 0) == "#ff3b30")
+		#expect(SitePlannerColorScale.mesh.color(at: 1) == "#34c759")
+		#expect(SitePlannerColorScale.plasma.color(at: 0) == "#0d0887")
+		#expect(SitePlannerColorScale.cool.color(at: 0.5) == "#8080ff")
+	}
+
+	@Test func destinationAndDistanceAgree() {
+		let point = LocalCoverage.destination(latitude: 47.6, longitude: -122.3, bearing: 73, distanceKm: 12.5)
+		#expect(abs(LocalCoverage.haversineKm(47.6, -122.3, point.latitude, point.longitude) - 12.5) < 0.001)
+		#expect(abs(LocalCoverage.bearing(47.6, -122.3, point.latitude, point.longitude) - 73) < 0.01)
+	}
+}
+
+@Suite("CoverageTerrain")
+struct CoverageTerrainTests {
+
+	@Test func wideDiscsStepDownAZoomToFitTheTileBudget() {
+		#expect(CoverageTerrainLoader.zoom(latitude: 47.6, longitude: -122.3, radiusKm: 30) == 12)
+		let wide = CoverageTerrainLoader.zoom(latitude: 47.6, longitude: -122.3, radiusKm: 150)
+		#expect(wide < 12)
+		#expect(CoverageTerrainLoader.tileKeys(latitude: 47.6, longitude: -122.3, radiusKm: 150, zoom: wide).count <= CoverageTerrainLoader.maxTiles)
+	}
+
+	@Test func elevationReadsTheTileUnderTheCoordinateAndSeaIsZero() {
+		let probe = TerrainStore.tilePixel(latitude: 47.6, longitude: -122.3, z: 12, size: 256)
+		let key = CoverageTerrain.TileKey(x: probe.x, y: probe.y)
+		let land = CoverageTerrain(zoom: 12, tiles: [key: CoverageTerrain.Tile(size: 256, elevations: [Float](repeating: 321, count: 256 * 256))])
+		#expect(land.elevation(latitude: 47.6, longitude: -122.3) == 321)
+		let sea = CoverageTerrain(zoom: 12, tiles: [key: nil])
+		#expect(sea.elevation(latitude: 47.6, longitude: -122.3) == 0)
+	}
+}

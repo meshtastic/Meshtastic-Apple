@@ -45,6 +45,8 @@ packages:
     path: MeshtasticProtobufs
   ShowcaseContent:
     path: Packages/ShowcaseContent
+  Kp1812:
+    path: Packages/Kp1812
 
 settings:
   configs:
@@ -278,6 +280,9 @@ targets:
       - package: ShowcaseContent
         product: ShowcaseContent
         destinationFilters: [visionOS]
+      # On-device coverage estimates (ITU-R P.1812).
+      - package: Kp1812
+        product: Kp1812
       - package: dd-sdk-ios
         product: DatadogCore
       - package: dd-sdk-ios

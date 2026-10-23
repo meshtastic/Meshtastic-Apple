@@ -142,7 +142,7 @@ struct MeshMapMK: View {
 	@State var newWaypointCoord: CLLocationCoordinate2D?
 	@State var isMeshMap = true
 	@State private var showLegend = false
-	/// Site Planner coverage-estimate flow: the headless WebView+bridge runner and the form seed.
+	/// Site Planner coverage-estimate flow: the on-device runner and the form seed.
 	@StateObject private var coverageRunner = CoverageEstimateRunner()
 	@State private var coverageSeed: CoverageEstimateSeed?
 	@EnvironmentObject private var filters: NodeFilterParameters
