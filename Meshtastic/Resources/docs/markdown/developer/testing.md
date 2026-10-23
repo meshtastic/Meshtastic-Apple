@@ -48,8 +48,19 @@ Snapshot tests for SwiftUI views live in `MeshtasticTests/SwiftUIViewSnapshotTes
 
 1. A `renderImage` helper renders a SwiftUI view to a `UIImage` using `UIHostingController` + `drawHierarchy(in:afterScreenUpdates:true)`.
 2. On first run, the PNG is saved as a reference. Snapshots with `forDocs: true` are saved to `docs/assets/screenshots/` (shared with the documentation site); test-only snapshots are saved to `MeshtasticTests/__Snapshots__/`.
-3. On subsequent runs, the rendered image is compared pixel-by-pixel to the reference using `CGImage` dimensions.
+3. On later runs, the rendered image must have the same pixel dimensions as the reference. With `MESHTASTIC_COMPARE_SNAPSHOT_PIXELS=1` (or `TEST_RUNNER_MESHTASTIC_COMPARE_SNAPSHOT_PIXELS=1` from `xcodebuild`), the pixels are compared too; see [Pixel Comparison](#pixel-comparison).
 4. `copy-snapshots.sh` copies only doc-referenced PNGs into the app bundle — test-only snapshots are never bundled.
+
+### Pixel Comparison
+
+The pixel check is off by default because the tolerance has not yet been measured on the CI toolchain. References recorded with a different Xcode or simulator version will not match.
+
+- A pixel counts as changed when any RGBA channel differs by more than 8.
+- The image is split into 32×32 tiles, and the test fails if any tile has more than 16 changed pixels. A per-tile limit catches a one-character text change on a large screenshot, where a whole-image percentage would not.
+- Each comparison prints a `SNAPSHOT_PIXELS` line with the changed pixel count and the worst tile, so a CI log can be used to tune the numbers in `SnapshotPixelTolerance.standard`.
+- On failure, `<name>_actual.png` and `<name>_diff.png` (changed pixels in red) are attached to the test result. Open them from the test report in Xcode. On CI, a failed `docs-deploy` run uploads the result bundle as the `snapshot-test-results` artifact.
+- Snapshots render in light mode unless the test passes `colorScheme: .dark`, so the simulator's appearance setting does not affect the output.
+- Views that show the current date or time (the node list rows and node detail) pass `comparePixels: false`, since their text changes on every run.
 
 ### Writing a Snapshot Test
 

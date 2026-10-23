@@ -42,9 +42,19 @@ struct MyFeatureTests {
 <ol>
 <li>A <code>renderImage</code> helper renders a SwiftUI view to a <code>UIImage</code> using <code>UIHostingController</code> + <code>drawHierarchy(in:afterScreenUpdates:true)</code>.</li>
 <li>On first run, the PNG is saved as a reference. Snapshots with <code>forDocs: true</code> are saved to <code>docs/assets/screenshots/</code> (shared with the documentation site); test-only snapshots are saved to <code>MeshtasticTests/__Snapshots__/</code>.</li>
-<li>On subsequent runs, the rendered image is compared pixel-by-pixel to the reference using <code>CGImage</code> dimensions.</li>
+<li>On later runs, the rendered image must have the same pixel dimensions as the reference. With <code>MESHTASTIC_COMPARE_SNAPSHOT_PIXELS=1</code> (or <code>TEST_RUNNER_MESHTASTIC_COMPARE_SNAPSHOT_PIXELS=1</code> from <code>xcodebuild</code>), the pixels are compared too; see <a href="#pixel-comparison">Pixel Comparison</a>.</li>
 <li><code>copy-snapshots.sh</code> copies only doc-referenced PNGs into the app bundle — test-only snapshots are never bundled.</li>
 </ol>
+<h3>Pixel Comparison</h3>
+<p>The pixel check is off by default because the tolerance has not yet been measured on the CI toolchain. References recorded with a different Xcode or simulator version will not match.</p>
+<ul>
+<li>A pixel counts as changed when any RGBA channel differs by more than 8.</li>
+<li>The image is split into 32×32 tiles, and the test fails if any tile has more than 16 changed pixels. A per-tile limit catches a one-character text change on a large screenshot, where a whole-image percentage would not.</li>
+<li>Each comparison prints a <code>SNAPSHOT_PIXELS</code> line with the changed pixel count and the worst tile, so a CI log can be used to tune the numbers in <code>SnapshotPixelTolerance.standard</code>.</li>
+<li>On failure, <code>&lt;name&gt;_actual.png</code> and <code>&lt;name&gt;_diff.png</code> (changed pixels in red) are attached to the test result. Open them from the test report in Xcode. On CI, a failed <code>docs-deploy</code> run uploads the result bundle as the <code>snapshot-test-results</code> artifact.</li>
+<li>Snapshots render in light mode unless the test passes <code>colorScheme: .dark</code>, so the simulator's appearance setting does not affect the output.</li>
+<li>Views that show the current date or time (the node list rows and node detail) pass <code>comparePixels: false</code>, since their text changes on every run.</li>
+</ul>
 <h3>Writing a Snapshot Test</h3>
 <pre><code class="language-swift">@Suite(&quot;MyViewSnapshotTests&quot;)
 struct MyViewSnapshotTests {
