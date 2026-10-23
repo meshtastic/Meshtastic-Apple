@@ -1,6 +1,6 @@
 # Tasks: Device msh.to Links
 
-**Input**: Design documents from `/specs/010-device-mshto-links/`
+**Input**: Design documents from `/specs/021-device-mshto-links/`
 **Prerequisites**: plan.md ✅, spec.md ✅, research.md ✅, data-model.md ✅, quickstart.md ✅
 
 **Tests**: Included — spec references Swift Testing (`@Suite`, `@Test`, `#expect`).

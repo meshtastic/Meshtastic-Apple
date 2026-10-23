@@ -1,7 +1,7 @@
 # Implementation Plan: Device msh.to Links
 
-**Branch**: `010-device-mshto-links` | **Date**: 2026-05-15 | **Spec**: `specs/010-device-mshto-links/spec.md`
-**Input**: Feature specification from `/specs/010-device-mshto-links/spec.md`
+**Branch**: `010-device-mshto-links` (merged) | **Date**: 2026-05-15 | **Spec**: `specs/021-device-mshto-links/spec.md`
+**Input**: Feature specification from `/specs/021-device-mshto-links/spec.md`
 
 ## Summary
 
@@ -41,7 +41,7 @@ Display msh.to links for Meshtastic devices using multi-tier matching of a devic
 ### Documentation (this feature)
 
 ```text
-specs/010-device-mshto-links/
+specs/021-device-mshto-links/
 ├── plan.md              # This file
 ├── spec.md              # Feature specification
 ├── research.md          # Phase 0 output
