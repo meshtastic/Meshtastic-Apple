@@ -18,7 +18,7 @@
 
 - [x] T001 Create `Meshtastic/Helpers/Map/TerrariumDecoder.swift` — WebP tile → `ElevationTile` grid (`(R×256 + G + B/256) − 32768`), with neighbor-margin stitching support
 - [x] T002 [P] Create `Meshtastic/Helpers/Map/TerrainStore.swift` — actor opening a region's terrain archives via `PMTilesArchive`, serving margin-stitched `ElevationTile`s with an in-memory decode cache
-- [x] T003 [P] `MeshtasticTests/TerrariumDecoderTests.swift` — known Terrarium pixel → elevation round-trips, margin stitching, malformed tile handling
+- [ ] T003 [P] `MeshtasticTests/TerrariumDecoderTests.swift` — known Terrarium pixel → elevation round-trips, margin stitching, malformed tile handling (Round-trips and malformed tiles are covered; margin stitching is not covered yet.)
 
 ## Phase 2: US1 — terrain downloads with a region (P1)
 
@@ -42,7 +42,7 @@
 - [x] T301 Create `Meshtastic/Helpers/Map/ContourGenerator.swift` — marching squares over margin-stitched tiles, `ContourIntervalTable` (zoom → minor/index interval, locale unit), serialized `ContourSet` cache under `contour-cache/` (Contours are cached in memory by `TerrainContourProvider`, not serialized to `contour-cache/`.)
 - [x] T302 Render `ContourSet`s as `MKMultiPolyline` overlays with index-contour emphasis and elevation labels; imagery-legible color on hybrid/satellite
 - [x] T303 Map settings: Contours toggle (`meshMapShowContours`, default off, disabled until a region has terrain)
-- [x] T304 [P] `MeshtasticTests/ContourGeneratorTests.swift` — synthetic DEMs (cone, saddle, flat sea level), edge continuity across tiles, interval selection, cache invalidation on re-download (Cross-tile edge continuity and cache invalidation are not covered yet.)
+- [ ] T304 [P] `MeshtasticTests/ContourGeneratorTests.swift` — synthetic DEMs (cone, saddle, flat sea level), edge continuity across tiles, interval selection, cache invalidation on re-download (Cross-tile edge continuity and cache invalidation are not covered yet.)
 - [ ] T305 Verify quickstart US3 flow: intervals refine with zoom, hybrid shows contours only, global-only areas degrade gracefully
 
 ## Phase 5: Polish
