@@ -77,6 +77,7 @@ private func renderImage<V: View>(_ view: V, width: CGFloat, height: CGFloat? = 
 /// When height is nil the view determines its own height via sizeThatFits.
 /// When `forDocs` is true, the PNG is stored under `docs/assets/screenshots/`.
 /// Otherwise it is stored in `__Snapshots__/` next to the test file.
+/// Pass `comparePixels: false` for views that show the current date or time.
 @MainActor
 private func assertViewSnapshot<V: View>(
 	of view: V,
@@ -86,6 +87,7 @@ private func assertViewSnapshot<V: View>(
 	colorScheme: ColorScheme? = nil,
 	named name: String,
 	forDocs: Bool = false,
+	comparePixels: Bool = true,
 	filePath: String = #filePath,
 	sourceLocation: SourceLocation = #_sourceLocation
 ) {
@@ -111,10 +113,17 @@ private func assertViewSnapshot<V: View>(
 			pngData: pngData,
 			pixelDimensions: SnapshotPixelDimensions(width: cgImage.width, height: cgImage.height),
 			referenceURL: snapshotFile,
-			mode: .current()
+			mode: .current(),
+			comparePixels: comparePixels
 		)
 	} catch {
 		Issue.record("\(error)", sourceLocation: sourceLocation)
+		if case let SnapshotReferenceError.pixelMismatch(_, _, images) = error {
+			Attachment.record(images.actualPNG, named: "\(name)_actual.png", sourceLocation: sourceLocation)
+			if let diffPNG = images.diffPNG {
+				Attachment.record(diffPNG, named: "\(name)_diff.png", sourceLocation: sourceLocation)
+			}
+		}
 	}
 }
 
