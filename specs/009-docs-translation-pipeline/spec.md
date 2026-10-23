@@ -2,7 +2,7 @@
 
 **Feature Branch**: `009-docs-translation-pipeline`  
 **Created**: 2026-05-14  
-**Status**: Implemented  
+**Status**: Implemented (merged in #1797; pipeline fixes in #1963)  
 
 ## Summary
 

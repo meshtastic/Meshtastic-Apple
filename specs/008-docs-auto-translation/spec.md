@@ -3,7 +3,7 @@
 **Feature Branch**: `008-docs-auto-translation`  
 **Created**: 2026-05-14  
 **Updated**: 2026-05-14  
-**Status**: Implemented  
+**Status**: Implemented (merged in #1785)  
 **Input**: User description: "Automatically detect if the user's language is not english and use the foundation model translation to generate a .md file in their language for the docs to use instead of the english file"
 
 ## User Scenarios & Testing *(mandatory)*

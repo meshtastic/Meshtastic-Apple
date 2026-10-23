@@ -2,7 +2,7 @@
 
 **Feature Branch**: `003-app-docs-markdown`  
 **Created**: 2026-05-05  
-**Status**: Implemented  
+**Status**: Implemented (merged in #1720)  
 **Input**: User description: "Complete markdown documentation for the Meshtastic Apple app — served as a GitHub Pages Jekyll site, bundled in-app for offline browsing and Foundation Models Q&A, with GitHub Actions CI auto-regeneration on push to main. Covers both end users and developers. Uses existing snapshot test images."
 
 ## User Scenarios & Testing *(mandatory)*

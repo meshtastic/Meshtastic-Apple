@@ -2,7 +2,7 @@
 
 **Feature Branch**: `spec-tak`
 **Created**: 2026-05-14
-**Status**: Retroactive — back-specifies the merged Apple TAK v2 implementation; companion to Meshtastic-Android [`specs/005-tak-v2-protocol`](https://github.com/meshtastic/Meshtastic-Android/tree/main/specs/005-tak-v2-protocol)
+**Status**: Retroactive — back-specifies the merged Apple TAK v2 implementation (spec added in #1838; V2 gate tightened in #2244; SDK at 0.9.1 since #2349). Phases 0–4 shipped; parity backlog T080–T122 open. Companion to Meshtastic-Android [`specs/005-tak-v2-protocol`](https://github.com/meshtastic/Meshtastic-Android/tree/main/specs/005-tak-v2-protocol)
 **Input**: User description: "Write an Apple spec for TAK v2 — Apple already ships TAK v2 (`supportsTAKv2`, firmware ≥ 2.8.0) but with no formal spec. An Apple companion spec scopes the iOS/macOS UX surface differences and ensures ongoing parity as the protocol evolves."
 **Cross-Platform Spec**: iOS (iPhone, iPad) and macOS (via Mac Catalyst). Wire protocol defined by [TAKPacket-SDK](https://github.com/meshtastic/TAKPacket-SDK) (Swift Package via SPM); pinned at `0.2.3` in `Meshtastic.xcworkspace/.../Package.resolved`.
 

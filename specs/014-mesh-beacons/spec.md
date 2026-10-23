@@ -2,7 +2,7 @@
 
 **Feature Branch**: `014-mesh-beacons`
 **Created**: 2026-07-04
-**Status**: Partially Implemented (receive/discovery/join shipped; broadcast/config proposed)
+**Status**: Implemented (receive/discovery/join, Add-vs-Switch, passive listen, and broadcast/config editor merged in #2035; snapshot tests and Add-channel docs outstanding)
 **Input**: User description: "Mesh Beacons — capture `MESH_BEACON_APP` advertisements to discover, display, and join meshes (including private custom-channel meshes) while a Local Mesh Discovery scan is running, and configure the user's own node to broadcast beacons so others can find and join its mesh."
 
 ## Relationship to Local Mesh Discovery (spec 001)

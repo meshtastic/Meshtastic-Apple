@@ -2,7 +2,7 @@
 
 **Feature Branch**: `007-lockdown-mode`
 **Created**: 2026-05-13
-**Status**: Draft
+**Status**: Implemented (merged in #1779; iOS 17 launch-crash fix in #2094). T028 on-device verification still pending
 **Input**: User description: "Implement lockdown mode for Meshtastic-Apple using the new lockdown protobufs (meshtastic/protobufs PR #911) and the ATAK plugin's proof-of-concept (meshtastic/pluginmeshtastic PR #2)"
 **Cross-Platform Spec**: Companion to Meshtastic-Android lockdown spec — protocol is identical, this spec adapts the client UX and storage to Apple platforms (iOS + macCatalyst).
 

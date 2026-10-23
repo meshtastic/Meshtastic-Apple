@@ -2,7 +2,7 @@
 
 **Feature Branch**: `018-offline-terrain-layer`
 **Created**: 2026-08-16
-**Status**: Draft — approved direction, not yet implemented
+**Status**: Implemented (merged in #2306, follow-on #2311) — docs, ETag change-detection, license check and on-device profiling still open
 **Input**: User description: "Use Mapterhorn to get contour lines for our Protomaps offline downloads. I want hillshade and contours (Option D) on MapKit — not switching to MapLibre. On hybrid, contours only."
 
 ## Overview

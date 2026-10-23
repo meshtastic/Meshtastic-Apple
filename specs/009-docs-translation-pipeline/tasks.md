@@ -103,8 +103,8 @@
 
 **Independent Test**: Verify committed `.md` files are valid markdown, `manifest.json` is well-formed, and `nav-labels.json` contains expected keys
 
-- [ ] ~~T021 [US4] Add README.md to `meshtastic/translations` repo explaining the structure and review process~~ **(out of scope — external repo)**
-- [ ] ~~T022 [US4] Add GitHub Action in `meshtastic/translations` to regenerate `index.json` feed and deploy to GitHub Pages~~ **(out of scope — external repo)**
+- [x] T021 [US4] Add README.md to `meshtastic/translations` repo explaining the structure and review process (done in that repo)
+- [x] T022 [US4] Add GitHub Action in `meshtastic/translations` to regenerate `index.json` feed and deploy to GitHub Pages (done in that repo as `generate-feed.yml`)
 
 **Checkpoint**: Community review flow documented and discoverable
 
@@ -171,7 +171,7 @@
 ## Notes
 
 - Feature is **fully implemented** (T001–T020, T023–T027, T028–T043 complete)
-- T021–T022 are out of scope (external `meshtastic/translations` repo)
+- T021–T022 were done in the external `meshtastic/translations` repo
 - 41 of 41 in-scope tasks complete
 - The system forms a **crowd-sourced translation loop**:
   1. Community translations download from GitHub Pages CDN (`CommunityTranslationFetcher`)

@@ -2,8 +2,8 @@
 
 **Feature Branch**: `016-accessibility-audit`
 **Created**: 2026-07-21
-**Status**: Draft
-**Input**: Deep accessibility audit fan-out (12 parallel agents + cross-validation) run against `Meshtastic/Views`, `Widgets/`, and `Meshtastic Watch App/Views`. Full raw findings: `/Users/bruschill/.pi/workflows/projects/meshtastic-apple-63f78c487247/runs/a11y-codebase-audit-mru2fgm4-u38mxd.json`.
+**Status**: Implemented (merged in #2165-#2172; T041 deferred)
+**Input**: Deep accessibility audit fan-out (12 parallel agents + cross-validation) run against `Meshtastic/Views`, `Widgets/`, and `Meshtastic Watch App/Views`. Full raw findings: not checked in (it was a local file on the auditor's machine).
 
 This is a remediation backlog, not a new-feature spec — the SpecKit user-story template doesn't map cleanly onto a flat bug list, so this doc gives context and the requirements/success-criteria section states the acceptance bar per severity tier. **`tasks.md` in this directory is the actual working checklist** — grouped by the same severity tiers, one checkbox per finding, meant to be checked off across however many sessions this takes.
 

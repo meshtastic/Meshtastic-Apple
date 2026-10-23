@@ -3,7 +3,7 @@
 **Feature Branch**: `004-message-formatting-toolbar`  
 **Created**: 2026-05-10  
 **Updated**: 2026-05-11  
-**Status**: Draft (Updated — added link formatting support)  
+**Status**: Implemented (merged in #1771, including link formatting)  
 **Input**: User description: "Add a markdown formatting toolbar to the message compose UI. Pure SwiftUI approach — user types/sees raw markdown, live preview shows rendered output. Gated to iOS 18+ / macOS 15+ only."
 
 ## User Scenarios & Testing *(mandatory)*

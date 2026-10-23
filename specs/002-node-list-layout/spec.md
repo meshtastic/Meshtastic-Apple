@@ -2,7 +2,7 @@
 
 **Feature Branch**: `compact-view`
 **Created**: 2026-05-04
-**Status**: Implemented
+**Status**: Implemented (merged in #1716)
 **Input**: Reverse-specified from implemented feature — node layout engine with complete and compact views
 
 ## User Scenarios & Testing *(mandatory)*

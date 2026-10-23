@@ -2,7 +2,7 @@
 
 **Feature Branch**: `012-packet-stream-log-filter`  
 **Created**: 2026-06-02  
-**Status**: Draft  
+**Status**: Implemented (merged in #1902, follow-ups #1907, #1909)  
 **Input**: User description: "make updates to the existing oslog filters and functionality to allow for a packet streaming filter which will display on packets that are going over the mesh currently. Update the categories and log levels filters to be accordions so they can be shown / hidden and take less space. Have packet stream as the top available option in the log filter"
 
 ## User Scenarios & Testing *(mandatory)*

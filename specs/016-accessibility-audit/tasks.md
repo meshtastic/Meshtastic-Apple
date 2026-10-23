@@ -1,6 +1,6 @@
 # Tasks: Accessibility (VoiceOver) Audit Remediation
 
-**Input**: `spec.md` in this directory; full raw audit result: `/Users/bruschill/.pi/workflows/projects/meshtastic-apple-63f78c487247/runs/a11y-codebase-audit-mru2fgm4-u38mxd.json`
+**Input**: `spec.md` in this directory; full raw audit result: not checked in (it was a local file on the auditor's machine)
 **Audit method**: 12-agent parallel fan-out (VoiceOver labels, value/hint, custom-control traits, element grouping, Dynamic Type, color-only signaling, contrast, touch targets, focus order, custom drawing/maps/charts, localization of a11y strings, accessibility identifiers) + cross-validation pass over `Meshtastic/Views`, `Widgets/`, `Meshtastic Watch App/Views`.
 
 **How to use this file**: Check off `[x]` as each item is fixed and verified (VoiceOver on-device or Simulator + Accessibility Inspector). This is the persistent tracker — pick up anywhere by scanning for the first unchecked box. Update the "Progress" line below when a batch is completed.

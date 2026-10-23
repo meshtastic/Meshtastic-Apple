@@ -2,7 +2,7 @@
 
 **Feature Branch**: `010-device-mshto-links`  
 **Created**: 2026-05-15  
-**Status**: Implemented  
+**Status**: Implemented (merged in #1898; moved to the msh.to API in #1920)  
 **Input**: User description: "Import the msh.to urls.json file during device hardware data import and populate links on vendor and product data so we can use the links in the code to point users to additional documentation and links for supported devices from our backers and partners."
 
 ## Clarifications

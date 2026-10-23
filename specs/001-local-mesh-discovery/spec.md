@@ -2,7 +2,7 @@
 
 **Feature Branch**: `001-local-mesh-discovery`
 **Created**: 2026-04-27
-**Status**: Implemented
+**Status**: Implemented (merged in #1694)
 **Input**: User description: "Local Mesh Discovery — a high-fidelity diagnostic and community-mapping tool that cycles through modem presets to audit the local RF environment"
 
 ## User Scenarios & Testing *(mandatory)*

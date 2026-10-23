@@ -10,7 +10,7 @@
 
 **Feature Branch**: `013-docs-release-versioning`  
 **Created**: 2026-06-05  
-**Status**: Superseded
+**Status**: Superseded (originally implemented in #1911; banner, --beta flag and docs-release-gate.yml removed in #1963)
 
 ## User Scenarios & Testing *(mandatory)*
 
