@@ -101,3 +101,7 @@ marketing/
 
 # SwiftPM build output of the in-repo protoc plugin (scripts/gen_protos.sh, phase 5)
 scripts/protoc-gen-configform-swift/.build/
+
+# Local Python virtualenvs
+/3.14/
+.venv/
