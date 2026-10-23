@@ -1410,7 +1410,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 2.7.25;
+				MARKETING_VERSION = 2.7.26;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.TVUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
@@ -1433,7 +1433,7 @@
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
-				MARKETING_VERSION = 2.7.25;
+				MARKETING_VERSION = 2.7.26;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.MeshtasticTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -1458,7 +1458,7 @@
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
-				MARKETING_VERSION = 2.7.25;
+				MARKETING_VERSION = 2.7.26;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.MeshtasticTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -1627,7 +1627,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.7.25;
+				MARKETING_VERSION = 2.7.26;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1661,7 +1661,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.7.25;
+				MARKETING_VERSION = 2.7.26;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.MessagesExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1688,7 +1688,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.7.25;
+				MARKETING_VERSION = 2.7.26;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
@@ -1713,7 +1713,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.7.25;
+				MARKETING_VERSION = 2.7.26;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
@@ -1745,7 +1745,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 2.7.25;
+				MARKETING_VERSION = 2.7.26;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.MessagesExtension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1779,7 +1779,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.7.25;
+				MARKETING_VERSION = 2.7.26;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1814,7 +1814,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.7.25;
+				MARKETING_VERSION = 2.7.26;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -1834,7 +1834,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = GCH7VS5Y9R;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 2.7.25;
+				MARKETING_VERSION = 2.7.26;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.TVUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
@@ -1867,7 +1867,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.7.25;
+				MARKETING_VERSION = 2.7.26;
 				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
@@ -1918,7 +1918,7 @@
 					"@executable_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.7.25;
+				MARKETING_VERSION = 2.7.26;
 				OTHER_LDFLAGS = (
 					"-weak_framework",
 					SwiftUI,
@@ -1973,7 +1973,7 @@
 					"@executable_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
-				MARKETING_VERSION = 2.7.25;
+				MARKETING_VERSION = 2.7.26;
 				OTHER_LDFLAGS = (
 					"-weak_framework",
 					SwiftUI,

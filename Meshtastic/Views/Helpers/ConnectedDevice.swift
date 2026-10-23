@@ -37,8 +37,19 @@ struct ConnectedDevice: View {
 	}
 
 	var body: some View {
+		// The bar doesn't always have room for everything: in landscape on the open iPhone Duo the
+		// item gets a narrow slot. Drop the name, then the activity lights, rather than overflow it.
+		ViewThatFits(in: .horizontal) {
+			indicator(showName: true, showLights: showActivityLights)
+			indicator(showName: false, showLights: showActivityLights)
+			indicator(showName: false, showLights: false)
+		}
+		.if(.os26) { $0.padding(.leading, 5.0) }
+	}
+
+	private func indicator(showName: Bool, showLights: Bool) -> some View {
 		HStack {
-			if showActivityLights {
+			if showLights {
 				RXTXIndicatorWidget()
 			}
 			if (phoneOnly && UIDevice.current.userInterfaceIdiom == .phone) || !phoneOnly {
@@ -54,10 +65,14 @@ struct ConnectedDevice: View {
 							.foregroundColor(.green)
 							.symbolRenderingMode(.hierarchical)
 							.accessibilityHidden(true)
-						Text(name.addingVariationSelectors)
-							.font(name.isEmoji() ? .title : .callout)
-							.foregroundColor(.gray)
-							.accessibilityHidden(true)
+						if showName {
+							Text(name.addingVariationSelectors)
+								.font(name.isEmoji() ? .title : .callout)
+								.foregroundColor(.gray)
+								.lineLimit(1)
+								.fixedSize()
+								.accessibilityHidden(true)
+						}
 					}
 					.accessibilityElement(children: .ignore)
 					.accessibilityLabel(String(localized: "Connected to Bluetooth device", comment: "VoiceOver label for a connected Bluetooth device") + ", " + name.formatNodeNameForVoiceOver())
@@ -75,7 +90,7 @@ struct ConnectedDevice: View {
 				}
 			}
 		}
-		.if(.os26) { $0.padding(.leading, 5.0) }
+		.fixedSize()
 	}
 }
 
