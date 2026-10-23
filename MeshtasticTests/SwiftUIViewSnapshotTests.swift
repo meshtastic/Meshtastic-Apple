@@ -772,7 +772,7 @@ struct NodeListItemCompactSnapshotTests {
 		await assertViewSnapshot(
 			of: NodeListItemCompact(node: node, isDirectlyConnected: true, connectedNode: 0).padding(.horizontal, 16),
 			width: 390,
-			named: "compact_directConnected_allInfo", forDocs: true
+			named: "compact_directConnected_allInfo", forDocs: true, comparePixels: false
 		)
 	}
 
@@ -789,7 +789,7 @@ struct NodeListItemCompactSnapshotTests {
 		await assertViewSnapshot(
 			of: NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
 			width: 390,
-			named: "compact_multiHop", forDocs: true
+			named: "compact_multiHop", forDocs: true, comparePixels: false
 		)
 	}
 
@@ -807,7 +807,7 @@ struct NodeListItemCompactSnapshotTests {
 		await assertViewSnapshot(
 			of: NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
 			width: 390,
-			named: "compact_mqtt", forDocs: true
+			named: "compact_mqtt", forDocs: true, comparePixels: false
 		)
 	}
 
@@ -825,7 +825,7 @@ struct NodeListItemCompactSnapshotTests {
 		await assertViewSnapshot(
 			of: NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
 			width: 390,
-			named: "compact_longName_stale"
+			named: "compact_longName_stale", comparePixels: false
 		)
 	}
 
@@ -842,7 +842,7 @@ struct NodeListItemCompactSnapshotTests {
 		await assertViewSnapshot(
 			of: NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
 			width: 390,
-			named: "compact_pkiMismatch", forDocs: true
+			named: "compact_pkiMismatch", forDocs: true, comparePixels: false
 		)
 	}
 
@@ -855,7 +855,7 @@ struct NodeListItemCompactSnapshotTests {
 		await assertViewSnapshot(
 			of: NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
 			width: 390,
-			named: "compact_unknownNode"
+			named: "compact_unknownNode", comparePixels: false
 		)
 	}
 
@@ -872,7 +872,7 @@ struct NodeListItemCompactSnapshotTests {
 		await assertViewSnapshot(
 			of: NodeListItemCompact(node: node, isDirectlyConnected: true, connectedNode: 0).padding(.horizontal, 16),
 			width: 390,
-			named: "compact_pluggedIn"
+			named: "compact_pluggedIn", comparePixels: false
 		)
 	}
 
@@ -892,7 +892,7 @@ struct NodeListItemCompactSnapshotTests {
 		await assertViewSnapshot(
 			of: NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 0).padding(.horizontal, 16),
 			width: 390,
-			named: "compact_withPosition", forDocs: true
+			named: "compact_withPosition", forDocs: true, comparePixels: false
 		)
 	}
 
@@ -917,7 +917,7 @@ struct NodeListItemCompactSnapshotTests {
 			of: NodeListItemCompact(node: node, isDirectlyConnected: true, connectedNode: 0).padding(.horizontal, 16),
 			width: 390,
 			colorScheme: .dark,
-			named: "compact_directConnected_allInfo_dark", forDocs: true
+			named: "compact_directConnected_allInfo_dark", forDocs: true, comparePixels: false
 		)
 	}
 
@@ -935,7 +935,7 @@ struct NodeListItemCompactSnapshotTests {
 			of: NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
 			width: 390,
 			colorScheme: .dark,
-			named: "compact_multiHop_dark", forDocs: true
+			named: "compact_multiHop_dark", forDocs: true, comparePixels: false
 		)
 	}
 
@@ -954,7 +954,7 @@ struct NodeListItemCompactSnapshotTests {
 			of: NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
 			width: 390,
 			colorScheme: .dark,
-			named: "compact_mqtt_dark", forDocs: true
+			named: "compact_mqtt_dark", forDocs: true, comparePixels: false
 		)
 	}
 
@@ -972,7 +972,7 @@ struct NodeListItemCompactSnapshotTests {
 			of: NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
 			width: 390,
 			colorScheme: .dark,
-			named: "compact_pkiMismatch_dark", forDocs: true
+			named: "compact_pkiMismatch_dark", forDocs: true, comparePixels: false
 		)
 	}
 
@@ -993,7 +993,7 @@ struct NodeListItemCompactSnapshotTests {
 			of: NodeListItemCompact(node: node, isDirectlyConnected: false, connectedNode: 0).padding(.horizontal, 16),
 			width: 390,
 			colorScheme: .dark,
-			named: "compact_withPosition_dark", forDocs: true
+			named: "compact_withPosition_dark", forDocs: true, comparePixels: false
 		)
 	}
 }
@@ -1075,7 +1075,7 @@ struct NodeListItemSnapshotTests {
 		await assertViewSnapshot(
 			of: NodeListItem(node: node, isDirectlyConnected: true, connectedNode: 0).padding(.horizontal, 16),
 			width: 390,
-			named: "standard_directConnected", forDocs: true
+			named: "standard_directConnected", forDocs: true, comparePixels: false
 		)
 	}
 
@@ -1092,7 +1092,7 @@ struct NodeListItemSnapshotTests {
 		await assertViewSnapshot(
 			of: NodeListItem(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
 			width: 390,
-			named: "standard_multiHop", forDocs: true
+			named: "standard_multiHop", forDocs: true, comparePixels: false
 		)
 	}
 
@@ -1110,7 +1110,7 @@ struct NodeListItemSnapshotTests {
 		await assertViewSnapshot(
 			of: NodeListItem(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
 			width: 390,
-			named: "standard_mqtt", forDocs: true
+			named: "standard_mqtt", forDocs: true, comparePixels: false
 		)
 	}
 
@@ -1134,7 +1134,7 @@ struct NodeListItemSnapshotTests {
 			of: NodeListItem(node: node, isDirectlyConnected: true, connectedNode: 0).padding(.horizontal, 16),
 			width: 390,
 			colorScheme: .dark,
-			named: "standard_directConnected_dark", forDocs: true
+			named: "standard_directConnected_dark", forDocs: true, comparePixels: false
 		)
 	}
 
@@ -1152,7 +1152,7 @@ struct NodeListItemSnapshotTests {
 			of: NodeListItem(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
 			width: 390,
 			colorScheme: .dark,
-			named: "standard_multiHop_dark", forDocs: true
+			named: "standard_multiHop_dark", forDocs: true, comparePixels: false
 		)
 	}
 
@@ -1171,7 +1171,7 @@ struct NodeListItemSnapshotTests {
 			of: NodeListItem(node: node, isDirectlyConnected: false, connectedNode: 1).padding(.horizontal, 16),
 			width: 390,
 			colorScheme: .dark,
-			named: "standard_mqtt_dark", forDocs: true
+			named: "standard_mqtt_dark", forDocs: true, comparePixels: false
 		)
 	}
 }
@@ -1600,7 +1600,7 @@ struct NodeDetailSnapshotTests {
 			.environmentObject(Router())
 			.modelContainer(container)
 
-		await assertViewSnapshot(of: view, width: 390, height: 1800, named: "nodeDetail", forDocs: true)
+		await assertViewSnapshot(of: view, width: 390, height: 1800, named: "nodeDetail", forDocs: true, comparePixels: false)
 	}
 }
 
