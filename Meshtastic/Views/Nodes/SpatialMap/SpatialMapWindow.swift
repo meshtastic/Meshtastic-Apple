@@ -36,6 +36,8 @@ struct SpatialMapWindow: View {
 	@AppStorage("spatialMapAutoTerrain") private var autoTerrain = true
 	@AppStorage("spatialMapCoverage") private var coverageMode: SpatialCoverageMode = .selected
 	@AppStorage("spatialMapCoverageOpacity") private var coverageOpacity = 0.55
+	@State private var downloadPrompt = SpatialMapDownloadPrompt()
+	@State private var showingMapSearch = false
 
 	init() {
 		let scene = SpatialSceneController()
@@ -73,8 +75,25 @@ struct SpatialMapWindow: View {
 			guard !accessoryManager.isInBackground else { return }
 			while !Task.isCancelled {
 				refresh()
+				if downloadPrompt.shouldOffer(positionedNodes: model.nodes.count, autoDownload: autoTerrain, isBusy: OfflineMapManager.shared.isBusy) {
+					showingMapSearch = true
+				}
 				try? await Task.sleep(for: .seconds(2))
 			}
+		}
+		// No node has a position, so there's no area to download on its own: offer the map search.
+		.sheet(isPresented: $showingMapSearch) {
+			NavigationStack {
+				DownloadNewMapView()
+					.toolbar {
+						ToolbarItem(placement: .cancellationAction) {
+							Button(String(localized: "Not Now", comment: "Spatial map: close the offline map search opened because no node has a position")) {
+								showingMapSearch = false
+							}
+						}
+					}
+			}
+			.frame(minWidth: 680, minHeight: 600)
 		}
 		.onReceive(accessoryManager.packetEvents) { event in
 			traffic.handle(event)
