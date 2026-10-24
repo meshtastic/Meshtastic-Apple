@@ -10,7 +10,7 @@
 #    Blender -b -P sar_tent.py -- --out out/sar_tent.png --width 4096 --samples 160
 #
 #  Comms and radio tables on the left, the map table past the door on the right, a mesh node on a
-#  tripod by the door, and the whiteboard the app draws the team roster on. The floor is left clear.
+#  tripod by the door, and the whiteboard the app draws the team roster on. Nothing else stands on the floor.
 
 import math
 import os
@@ -70,40 +70,42 @@ def furnish(layout):
     bottle = material("Bottle", (0.3, 0.5, 0.8), 0.1)
     wall = HALF_WIDTH - 0.38
 
-    # Comms table along the left wall.
-    folding_table("CommsTable", (-wall, 0.9), 2.2, True, table_top, steel)
-    laptop((-wall + 0.05, 0.3, 0.76), -math.pi / 2, screen_a, laptop_body)
-    laptop((-wall + 0.05, 1.05, 0.76), -math.pi / 2, screen_b, laptop_body)
-    box("ChargerBank", (0.16, 0.5, 0.04), (-wall - 0.15, 1.65, 0.78), black_plastic, bevel=0.005)
+    # Comms table along the left wall, under the plaque and the poster.
+    folding_table("CommsTable", (-wall, 0.3), 1.8, True, table_top, steel)
+    laptops = (-0.12, 0.58)
+    laptop((-wall + 0.05, laptops[0], 0.76), -math.pi / 2, screen_a, laptop_body)
+    laptop((-wall + 0.05, laptops[1], 0.76), -math.pi / 2, screen_b, laptop_body)
+    box("ChargerBank", (0.16, 0.5, 0.04), (-wall - 0.15, 0.91, 0.78), black_plastic, bevel=0.005)
     for i in range(6):
-        radio((-wall - 0.15, 1.45 + i * 0.08, 0.80), black_plastic, black_plastic, led_green if i % 3 else led_red)
-    cylinder("Mug", 0.04, (-wall + 0.25, 1.75, 0.76), (-wall + 0.25, 1.75, 0.86), mug)
-    cylinder("Bottle", 0.035, (-wall + 0.25, 0.65, 0.76), (-wall + 0.25, 0.65, 0.98), bottle)
-    box("PowerStrip", (0.06, 0.4, 0.04), (-wall - 0.3, 0.6, 0.78), material("Strip", (0.8, 0.8, 0.78), 0.5))
+        radio((-wall - 0.15, 0.72 + i * 0.075, 0.80), black_plastic, black_plastic, led_green if i % 3 else led_red)
+    cylinder("Mug", 0.04, (-wall + 0.25, 1.08, 0.76), (-wall + 0.25, 1.08, 0.86), mug)
+    cylinder("Bottle", 0.035, (-wall + 0.25, 0.23, 0.76), (-wall + 0.25, 0.23, 0.98), bottle)
+    box("PowerStrip", (0.06, 0.4, 0.04), (-wall - 0.3, 0.2, 0.78), material("Strip", (0.8, 0.8, 0.78), 0.5))
     for i in range(3):
-        box("Log", (0.21, 0.29, 0.004), (-wall + 0.2 + rng.uniform(-0.03, 0.03), -0.05 + i * 0.01, 0.765 + i * 0.004), paper, rotation=(0, 0, rng.uniform(-0.2, 0.2)))
+        box("Log", (0.21, 0.29, 0.004), (-wall + 0.2 + rng.uniform(-0.03, 0.03), -0.45 + i * 0.01, 0.765 + i * 0.004), paper, rotation=(0, 0, rng.uniform(-0.2, 0.2)))
 
-    # Radio table further forward on the left.
-    folding_table("RadioTable", (-wall, 3.1), 1.6, True, table_top, steel)
-    box("BaseRadio", (0.25, 0.3, 0.09), (-wall - 0.1, 2.9, 0.805), black_plastic, bevel=0.01)
-    plane("BaseRadioFace", 0.2, 0.06, (-wall + 0.03, 2.9, 0.81), (math.pi / 2, 0, math.pi / 2), material("RadioDisplay", (0.2, 0.5, 1), emission=(0.25, 0.55, 1), strength=3))
-    cylinder("Mic", 0.025, (-wall + 0.15, 3.25, 0.76), (-wall + 0.15, 3.25, 0.85), black_plastic)
-    box("Binder", (0.3, 0.26, 0.05), (-wall + 0.05, 3.55, 0.785), material("Binder", (0.1, 0.25, 0.6), 0.5))
+    # Radio table in the front corner on the left, under the window.
+    folding_table("RadioTable", (-wall, 2.0), 1.3, True, table_top, steel)
+    box("BaseRadio", (0.25, 0.3, 0.09), (-wall - 0.1, 1.85, 0.805), black_plastic, bevel=0.01)
+    plane("BaseRadioFace", 0.2, 0.06, (-wall + 0.03, 1.85, 0.81), (math.pi / 2, 0, math.pi / 2), material("RadioDisplay", (0.2, 0.5, 1), emission=(0.25, 0.55, 1), strength=3))
+    cylinder("Mic", 0.025, (-wall + 0.15, 2.18, 0.76), (-wall + 0.15, 2.18, 0.85), black_plastic)
+    box("Binder", (0.3, 0.26, 0.05), (-wall + 0.05, 2.45, 0.785), material("Binder", (0.1, 0.25, 0.6), 0.5))
 
-    # Map table on the right, past the door.
-    folding_table("MapTable", (wall - 0.1, 2.6), 1.8, True, table_top, steel)
+    # Map table in the front corner on the right, past the door.
+    map_x, map_y = wall - 0.1, 2.05
+    folding_table("MapTable", (map_x, map_y), 1.3, True, table_top, steel)
     topo = image_material("Topo", os.path.join(CACHE, "topo.png"), 0.8)
-    plane("TopoMap", 0.7, 1.4, (wall - 0.1, 2.6, 0.765), (0, 0, 0), topo)
+    plane("TopoMap", 0.6, 1.2, (map_x, map_y, 0.765), (0, 0, 0), topo)
     for _ in range(9):
         pin = led_red if rng.random() < 0.6 else material("PinYellow", (0.95, 0.8, 0.1), 0.4)
-        x, y = wall - 0.1 + rng.uniform(-0.3, 0.3), 2.6 + rng.uniform(-0.6, 0.6)
+        x, y = map_x + rng.uniform(-0.26, 0.26), map_y + rng.uniform(-0.5, 0.5)
         cylinder("PinShaft", 0.002, (x, y, 0.765), (x, y, 0.79), steel)
         sphere("PinHead", 0.007, (x, y, 0.795), pin, segments=8)
-    radio((wall - 0.35, 2.0, 0.765), black_plastic, black_plastic, led_green)
-    box("Compass", (0.06, 0.1, 0.008), (wall + 0.15, 3.1, 0.77), material("Compass", (0.8, 0.85, 0.9), 0.1))
+    radio((map_x - 0.25, map_y - 0.5, 0.765), black_plastic, black_plastic, led_green)
+    box("Compass", (0.06, 0.1, 0.008), (map_x + 0.25, map_y + 0.45, 0.77), material("Compass", (0.8, 0.85, 0.9), 0.1))
 
-    # A mesh node on a tripod by the door, its antenna up near the eave.
-    tripod_top = (wall + 0.05, 1.25, 1.35)
+    # A mesh node on a tripod just past the door, its antenna up near the eave.
+    tripod_top = (wall + 0.05, 1.08, 1.35)
     for angle in (0, 2.1, 4.2):
         foot = (tripod_top[0] + 0.3 * math.cos(angle), tripod_top[1] + 0.3 * math.sin(angle), 0)
         cylinder("TripodLeg", 0.01, foot, tripod_top, steel)
@@ -111,16 +113,16 @@ def furnish(layout):
     cylinder("NodeAntenna", 0.008, (tripod_top[0], tripod_top[1], tripod_top[2] + 0.14), (tripod_top[0], tripod_top[1], tripod_top[2] + 0.5), black_plastic)
     sphere("NodeLED", 0.006, (tripod_top[0] - 0.05, tripod_top[1], tripod_top[2] + 0.1), led_green, segments=8)
 
-    # Whiteboard on the left wall, behind the viewer's shoulder. Left blank: the app draws the live
-    # team roster over it (the "teamStatus" anchor). The easel legs stand outside the frame so the
-    # panel doesn't cover them; the near one is closer to the camera, so it stands farther out to
-    # stay clear of the frame's edge in the image.
+    # Whiteboard on the left wall, behind the viewer's shoulder, in the back bay. Left blank: the
+    # app draws the live team roster over it (the "teamStatus" anchor). The easel legs stand
+    # outside the frame so the panel doesn't cover them; the near one is closer to the camera, so
+    # it stands farther out to stay clear of the frame's edge in the image.
     board = image_material("Whiteboard", os.path.join(CACHE, "whiteboard.png"), 0.25)
-    board_x = -HALF_WIDTH + 0.1
-    whiteboard = plane("Whiteboard", 1.8, 1.2, (board_x + 0.02, -1.6, 1.25), tent.facing_in(-1), board)
+    board_x, board_y = -HALF_WIDTH + 0.1, -1.8
+    whiteboard = plane("Whiteboard", 1.8, 1.2, (board_x + 0.02, board_y, 1.25), tent.facing_in(-1), board)
     anchor("teamStatus", whiteboard, 1.8, 1.2)
-    box("WhiteboardFrame", (0.03, 1.86, 1.26), (board_x, -1.6, 1.25), material("Frame", (0.7, 0.7, 0.72), 0.4, metallic=0.8))
-    for y in (-1.6 - 0.96, -1.6 + 1.08):
+    box("WhiteboardFrame", (0.03, 1.86, 1.26), (board_x, board_y, 1.25), material("Frame", (0.7, 0.7, 0.72), 0.4, metallic=0.8))
+    for y in (board_y - 0.95, board_y + 1.05):
         cylinder("EaselLeg", 0.012, (board_x + 0.3, y, 0), (board_x + 0.02, y, 1.8), steel)
 
     # A light on the board, from up by the eave, so the painted board is as bright as the panel
@@ -132,25 +134,54 @@ def furnish(layout):
     board_light.color = (1, 0.55, 0.24)
     board_light.spread = math.radians(70)
     obj = bpy.data.objects.new("BoardLight", board_light)
-    obj.location = (board_x + 0.9, -1.6, 2.1)
+    obj.location = (board_x + 0.9, board_y, 2.1)
     obj.rotation_mode = "QUATERNION"
-    obj.rotation_quaternion = (Vector((board_x, -1.6, 1.3)) - obj.location).to_track_quat("-Z", "Y")
+    obj.rotation_quaternion = (Vector((board_x, board_y, 1.3)) - obj.location).to_track_quat("-Z", "Y")
     obj.visible_camera = False
     obj.visible_glossy = False
     link(obj)
 
-    # A work lamp hanging from the rafter over the map table, its light kept on the table.
-    lamp_x, lamp_y = wall - 0.1, 2.55
-    rafter_z = tent.WALL_HEIGHT - 0.04 + (tent.RIDGE_HEIGHT - tent.WALL_HEIGHT - 0.02) * (HALF_WIDTH - 0.05 - lamp_x) / (HALF_WIDTH - 0.05)
-    shade_bottom = 1.5
-    enamel = material("LampShade", (0.07, 0.11, 0.08), 0.35, metallic=0.6)
-    cylinder("LampCord", 0.004, (lamp_x, lamp_y, rafter_z), (lamp_x, lamp_y, shade_bottom + 0.16), black_plastic, segments=6)
-    cylinder("LampSocket", 0.022, (lamp_x, lamp_y, shade_bottom + 0.1), (lamp_x, lamp_y, shade_bottom + 0.17), black_plastic)
+    map_lamp(map_x, map_y, black_plastic)
 
-    def shade(bm):
-        bmesh.ops.create_cone(bm, cap_ends=False, segments=32, radius1=0.13, radius2=0.035, depth=0.14)
-    tent.smooth(tent.mesh_object("LampShadeCone", shade, enamel, (lamp_x, lamp_y, shade_bottom + 0.07)))
-    sphere("LampBulb", 0.03, (lamp_x, lamp_y, shade_bottom + 0.06), material("LampBulb", (1, 0.85, 0.6), emission=(1, 0.8, 0.55), strength=25), segments=16)
+    # Screen glow on the comms table.
+    for y in laptops:
+        area = bpy.data.lights.new("ScreenGlow", "AREA")
+        area.energy = 4
+        area.color = (0.6, 0.9, 0.7)
+        area.size = 0.3
+        obj = bpy.data.objects.new("ScreenGlow", area)
+        obj.location = (-wall + 0.32, y, 0.92)
+        obj.rotation_euler = (0, -math.pi / 2, 0)
+        link(obj)
+
+
+def map_lamp(x, y, cord_mat):
+    """A work lamp hanging from the roof over the map table. The shade is a shallow dish, so the
+    lit bulb and the glowing inside of the shade show from the seat, and its light lands on the
+    table, not the floor."""
+    roof = tent.WALL_HEIGHT + (tent.RIDGE_HEIGHT - tent.WALL_HEIGHT) * (HALF_WIDTH - x) / HALF_WIDTH - 0.06
+    rim = 1.42
+    depth, radius = 0.09, 0.17
+    cylinder("LampCord", 0.004, (x, y, roof), (x, y, rim + depth + 0.06), cord_mat, segments=6)
+    tent.torus("LampHook", 0.018, 0.003, (x, y, roof), cord_mat, rotation=(math.pi / 2, 0, 0))
+    cylinder("LampSocket", 0.022, (x, y, rim + depth - 0.01), (x, y, rim + depth + 0.07), cord_mat)
+
+    def dish(r):
+        def build(bm):
+            bmesh.ops.create_cone(bm, cap_ends=False, segments=40, radius1=r, radius2=0.03, depth=depth)
+        return build
+    enamel = material("LampShade", (0.07, 0.11, 0.08), 0.35, metallic=0.6)
+    tent.smooth(tent.mesh_object("LampShade", dish(radius), enamel, (x, y, rim + depth / 2)))
+    # White enamel inside, lit by the bulb. Its glow is for the eye only; the spot below does the
+    # lighting, so nothing spills onto the floor.
+    inside = material("LampInside", (0.9, 0.86, 0.78), 0.3, emission=(1, 0.8, 0.55), strength=4)
+    lining = tent.mesh_object("LampInside", dish(radius - 0.004), inside, (x, y, rim + depth / 2 - 0.002))
+    tent.smooth(lining)
+    lining.visible_diffuse = False
+    # The bulb hangs a little below the rim, where it shows from across the tent.
+    bulb = sphere("LampBulb", 0.035, (x, y, rim + 0.012), material("LampBulb", (1, 0.85, 0.6), emission=(1, 0.8, 0.55), strength=30), segments=20)
+    bulb.visible_diffuse = False
+    bulb.visible_shadow = False
     spot = bpy.data.lights.new("MapLamp", "SPOT")
     spot.energy = 30
     spot.color = (1, 0.85, 0.65)
@@ -159,18 +190,8 @@ def furnish(layout):
     spot.spot_blend = 0.5
     spot.shadow_soft_size = 0.03
     obj = bpy.data.objects.new("MapLamp", spot)
-    obj.location = (lamp_x, lamp_y, shade_bottom + 0.02)
+    obj.location = (x, y, rim - 0.03)
     link(obj)
-    # Screen glow on the comms table.
-    for y in (0.8, 1.6):
-        area = bpy.data.lights.new("ScreenGlow", "AREA")
-        area.energy = 4
-        area.color = (0.6, 0.9, 0.7)
-        area.size = 0.3
-        obj = bpy.data.objects.new("ScreenGlow", area)
-        obj.location = (-1.9, y, 0.92)
-        obj.rotation_euler = (0, -math.pi / 2, 0)
-        link(obj)
 
 
 tent.render(furnish)

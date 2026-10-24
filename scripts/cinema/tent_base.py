@@ -40,14 +40,16 @@ def arguments():
 
 # MARK: - Tent dimensions (meters)
 
-HALF_WIDTH = 2.6
-BACK_Y = -3.0
-FRONT_Y = 4.2
+# 5.6 m square, with the viewer in the middle, so every wall is about 2.8 m away.
+HALF_WIDTH = 2.8
+BACK_Y = -2.8
+FRONT_Y = 2.8
 WALL_HEIGHT = 1.95
 RIDGE_HEIGHT = 3.0
 DOOR = (-0.6, 0.9, 1.85)  # right wall: from y, to y, top
-# Frame tents have wide bays; these leave room for a full-size window between two legs.
-RAFTERS = [-3.0, -0.6, 0.9, 2.55, 4.2]
+# Frame tents have wide bays; these leave room for a full-size window between two legs in the
+# back and front bays, and for the door, plaque and poster in the middle one.
+RAFTERS = [-2.8, -0.8, 1.2, 2.8]
 EYE_HEIGHT = 1.15
 
 
@@ -70,13 +72,13 @@ class Layout:
     # High on the wall, up under the eave, as frame-tent windows are. Sizes are the clear vinyl.
     windows: list = field(default_factory=lambda: [
         WallSpot(side=1, y=-1.8, z=1.34, width=1.36, height=0.8),
-        WallSpot(side=-1, y=3.36, z=1.34, width=1.3, height=0.8),
+        WallSpot(side=-1, y=2.0, z=1.34, width=1.3, height=0.8),
     ])
     # The banner hangs on the back wall: center x, center z, width, height.
     banner: tuple = (0.0, 1.62, 2.0, 1.0)
-    poster: WallSpot = field(default_factory=lambda: WallSpot(side=-1, y=1.72, z=1.45, width=0.56, height=0.784))
+    poster: WallSpot = field(default_factory=lambda: WallSpot(side=-1, y=0.88, z=1.45, width=0.5, height=0.7))
     # Big enough that its small top line reads from the seat.
-    plaque: WallSpot = field(default_factory=lambda: WallSpot(side=-1, y=0.2, z=1.42, width=1.26, height=0.62))
+    plaque: WallSpot = field(default_factory=lambda: WallSpot(side=-1, y=-0.13, z=1.42, width=1.26, height=0.62))
 
 
 # Surfaces the app covers with live panels, by the id the app knows them by. Filled in as the
@@ -356,16 +358,43 @@ def canvas_material(windows):
         ripple = nodes.new("ShaderNodeTexNoise")
         ripple.inputs["Scale"].default_value = 2.2
         ripple.inputs["Detail"].default_value = 2
-        links.new(coords.outputs["Object"], ripple.inputs["Vector"])
+        # The sheet hangs in long, shallow waves across it, which tip it up and down enough to
+        # catch the string lights overhead.
+        stretch = nodes.new("ShaderNodeMapping")
+        stretch.inputs["Scale"].default_value = (1, 0.7, 2.6)
+        links.new(coords.outputs["Object"], stretch.inputs["Vector"])
+        links.new(stretch.outputs["Vector"], ripple.inputs["Vector"])
         wobble = nodes.new("ShaderNodeBump")
-        wobble.inputs["Strength"].default_value = 0.35
-        wobble.inputs["Distance"].default_value = 0.02
+        wobble.inputs["Strength"].default_value = 1.0
+        wobble.inputs["Distance"].default_value = 0.04
         links.new(ripple.outputs["Fac"], wobble.inputs["Height"])
+        # And it leans back a little toward the top, as slack vinyl does with its bottom edge
+        # pulled in, so it faces up toward the lights rather than straight across the tent.
+        bow = nodes.new("ShaderNodeBump")
+        bow.inputs["Strength"].default_value = 1.0
+        bow.inputs["Distance"].default_value = 0.2
+        links.new(n.math("MULTIPLY", z, -1), bow.inputs["Height"])
+        links.new(wobble.outputs["Normal"], bow.inputs["Normal"])
+        wobble = bow
         clear = nodes.new("ShaderNodeBsdfTransparent")
-        clear.inputs["Color"].default_value = (0.86, 0.87, 0.84, 1)
-        haze = principled(nodes, (0.75, 0.74, 0.70), 0.9)
+        clear.inputs["Color"].default_value = (1.2, 1.2, 1.15, 1)
+        # The haze scatters the evening light coming through as well as the light inside.
+        haze_lit = principled(nodes, (0.8, 0.79, 0.75), 0.9)
+        haze_glow = nodes.new("ShaderNodeBsdfTranslucent")
+        haze_glow.inputs["Color"].default_value = (0.85, 0.8, 0.7, 1)
+        haze = nodes.new("ShaderNodeMixShader")
+        haze.inputs["Fac"].default_value = 0.5
+        links.new(haze_lit.outputs["BSDF"], haze.inputs[1])
+        links.new(haze_glow.outputs["BSDF"], haze.inputs[2])
+        # And a little dusk sky caught in it, so a window never goes dark on the forest's dim side.
+        sky = nodes.new("ShaderNodeEmission")
+        sky.inputs["Color"].default_value = (0.75, 0.68, 0.56, 1)
+        sky.inputs["Strength"].default_value = 0.3
+        glowing = nodes.new("ShaderNodeAddShader")
+        links.new(haze.outputs["Shader"], glowing.inputs[0])
+        links.new(sky.outputs["Emission"], glowing.inputs[1])
         sheen = nodes.new("ShaderNodeBsdfGlossy")
-        sheen.inputs["Roughness"].default_value = 0.1
+        sheen.inputs["Roughness"].default_value = 0.18
         links.new(wobble.outputs["Normal"], sheen.inputs["Normal"])
         fresnel = nodes.new("ShaderNodeFresnel")
         fresnel.inputs["IOR"].default_value = 1.5
@@ -374,9 +403,9 @@ def canvas_material(windows):
         cloud = nodes.new("ShaderNodeTexNoise")
         cloud.inputs["Scale"].default_value = 4
         links.new(coords.outputs["Object"], cloud.inputs["Vector"])
-        hazy = n.math("ADD", 0.05, n.math("MULTIPLY", cloud.outputs["Fac"], 0.06))
-        vinyl = n.mix(hazy, clear.outputs["BSDF"], haze.outputs["BSDF"])
-        vinyl = n.mix(n.math("ADD", n.math("MULTIPLY", fresnel.outputs["Fac"], 1.6), 0.03), vinyl, sheen.outputs["BSDF"])
+        hazy = n.math("ADD", 0.07, n.math("MULTIPLY", cloud.outputs["Fac"], 0.07))
+        vinyl = n.mix(hazy, clear.outputs["BSDF"], glowing.outputs["Shader"])
+        vinyl = n.mix(n.math("ADD", n.math("MULTIPLY", fresnel.outputs["Fac"], 1.6), 0.12), vinyl, sheen.outputs["BSDF"])
         shader = n.mix(band, shader, binding.outputs["BSDF"])
         shader = n.mix(stitch, shader, thread.outputs["BSDF"])
         shader = n.mix(inside, shader, vinyl)
@@ -385,30 +414,111 @@ def canvas_material(windows):
 
 
 def floor_material():
+    """A ripstop groundsheet: olive-tan panels with welded seams, a darker band where it turns up
+    at the walls, and a little wear and dirt, worst by the door."""
     mat = bpy.data.materials.new("Floor")
     mat.use_nodes = True
     nodes, links = mat.node_tree.nodes, mat.node_tree.links
+    n = Nodes(mat.node_tree)
     bsdf = nodes["Principled BSDF"]
-    bsdf.inputs["Roughness"].default_value = 0.9
-    coords = nodes.new("ShaderNodeTexCoord")
-    noise = nodes.new("ShaderNodeTexNoise")
-    noise.inputs["Scale"].default_value = 3
-    noise.inputs["Detail"].default_value = 8
-    links.new(coords.outputs["Object"], noise.inputs["Vector"])
-    ramp = nodes.new("ShaderNodeValToRGB")
-    ramp.color_ramp.elements[0].color = (0.035, 0.04, 0.035, 1)
-    ramp.color_ramp.elements[1].color = (0.075, 0.08, 0.07, 1)
-    links.new(noise.outputs["Fac"], ramp.inputs["Fac"])
-    links.new(ramp.outputs["Color"], bsdf.inputs["Base Color"])
-    # Seams between the floor mats.
-    bricks = nodes.new("ShaderNodeTexBrick")
-    bricks.inputs["Scale"].default_value = 1
-    bricks.inputs["Mortar Size"].default_value = 0.004
-    bricks.offset = 0
-    links.new(coords.outputs["Object"], bricks.inputs["Vector"])
+    bsdf.inputs["Roughness"].default_value = 0.8
+    geometry = nodes.new("ShaderNodeNewGeometry")
+    xyz = nodes.new("ShaderNodeSeparateXYZ")
+    links.new(geometry.outputs["Position"], xyz.inputs[0])
+    x, y = xyz.outputs["X"], xyz.outputs["Y"]
+
+    # Cloth: a soft mottle in the color, slightly lighter in worn patches.
+    mottle = nodes.new("ShaderNodeTexNoise")
+    mottle.inputs["Scale"].default_value = 1.4
+    mottle.inputs["Detail"].default_value = 6
+    links.new(geometry.outputs["Position"], mottle.inputs["Vector"])
+    cloth = nodes.new("ShaderNodeValToRGB")
+    cloth.color_ramp.elements[0].color = (0.10, 0.095, 0.068, 1)
+    cloth.color_ramp.elements[1].color = (0.18, 0.165, 0.118, 1)
+    links.new(mottle.outputs["Fac"], cloth.inputs["Fac"])
+    color = cloth.outputs["Color"]
+    # Each panel was cut from a different roll and has faded differently.
+    panel = n.math("FLOOR", n.math("DIVIDE", n.math("ADD", x, 0.7), 1.4))
+    tint = n.math("FRACT", n.math("MULTIPLY", n.math("SINE", n.math("MULTIPLY", panel, 12.9898)), 43758.55))
+    shade = nodes.new("ShaderNodeMix")
+    shade.data_type = "RGBA"
+    shade.blend_type = "MULTIPLY"
+    shade.inputs["Factor"].default_value = 1
+    links.new(color, shade.inputs[6])
+    value = nodes.new("ShaderNodeCombineXYZ")
+    brightness = n.math("ADD", 0.86, n.math("MULTIPLY", tint, 0.24))
+    for socket in ("X", "Y", "Z"):
+        links.new(brightness, value.inputs[socket])
+    links.new(value.outputs[0], shade.inputs[7])
+    color = shade.outputs[2]
+
+    def mix_color(fac, a, b):
+        node = nodes.new("ShaderNodeMix")
+        node.data_type = "RGBA"
+        links.new(fac, node.inputs["Factor"])
+        for socket, value in ((node.inputs[6], a), (node.inputs[7], b)):
+            if isinstance(value, tuple):
+                socket.default_value = (*value, 1)
+            else:
+                links.new(value, socket)
+        return node.outputs[2]
+
+    wear = nodes.new("ShaderNodeTexNoise")
+    wear.inputs["Scale"].default_value = 0.7
+    wear.inputs["Detail"].default_value = 3
+    links.new(geometry.outputs["Position"], wear.inputs["Vector"])
+    scuff = nodes.new("ShaderNodeTexNoise")
+    scuff.inputs["Scale"].default_value = 9
+    scuff.inputs["Detail"].default_value = 4
+    links.new(geometry.outputs["Position"], scuff.inputs["Vector"])
+    worn = n.math("MINIMUM", 1, n.math("MAXIMUM", 0, n.math("MULTIPLY", n.math("SUBTRACT", wear.outputs["Fac"], 0.47), 4)))
+    worn = n.math("MULTIPLY", n.math("MULTIPLY", worn, scuff.outputs["Fac"]), 0.9)
+    color = mix_color(worn, color, (0.27, 0.25, 0.2))
+    # Creases where the sheet was folded for packing.
+    fold_x = n.math("ABSOLUTE", n.math("SUBTRACT", n.math("FRACT", n.math("DIVIDE", n.math("ADD", x, 0.25), 0.93)), 0.5))
+    fold_y = n.math("ABSOLUTE", n.math("SUBTRACT", n.math("FRACT", n.math("DIVIDE", n.math("ADD", y, 0.4), 1.12)), 0.5))
+    crease = n.math("MAXIMUM", n.math("GREATER_THAN", fold_x, 0.49), n.math("GREATER_THAN", fold_y, 0.492))
+    # Pressed flat in places, so the creases come and go.
+    crease = n.math("MULTIPLY", crease, n.math("GREATER_THAN", wear.outputs["Fac"], 0.42))
+    color = mix_color(n.math("MULTIPLY", crease, 0.14), color, (0.28, 0.26, 0.2))
+    # Dirt walked in at the door, on the right wall.
+    door_from, door_to, _ = DOOR
+    to_door = n.math("SUBTRACT", HALF_WIDTH, x)
+    along = n.math("MAXIMUM", n.math("SUBTRACT", door_from, y), n.math("SUBTRACT", y, door_to))
+    near_door = n.math("MULTIPLY", n.math("MAXIMUM", 0, n.math("SUBTRACT", 1, n.math("DIVIDE", to_door, 1.3))), n.math("LESS_THAN", along, 0.25))
+    dirt = n.math("MULTIPLY", near_door, n.math("GREATER_THAN", scuff.outputs["Fac"], 0.5))
+    color = mix_color(n.math("MULTIPLY", dirt, 0.6), color, (0.075, 0.06, 0.04))
+
+    # The band round the edge, where the sheet turns up at the walls: a heavier, darker cloth.
+    edge = n.math("MINIMUM", n.math("SUBTRACT", HALF_WIDTH, n.math("ABSOLUTE", x)),
+                  n.math("MINIMUM", n.math("SUBTRACT", y, BACK_Y), n.math("SUBTRACT", FRONT_Y, y)))
+    border = 0.4
+    in_border = n.math("LESS_THAN", edge, border)
+    color = mix_color(n.math("MULTIPLY", in_border, 0.7), color, (0.04, 0.04, 0.03))
+
+    # Welded seams between the panels, 1.4 m apart across the tent, each a raised strip with a
+    # line of stitching down both sides; the same seam runs round the border.
+    seam_width = 0.05
+    across = n.math("ABSOLUTE", n.math("SUBTRACT", n.math("FRACT", n.math("DIVIDE", n.math("ADD", x, 0.7), 1.4)), 0.5))
+    panel_seam = n.math("ABSOLUTE", n.math("SUBTRACT", n.math("MULTIPLY", across, 1.4), 0.7))
+    to_border = n.math("ABSOLUTE", n.math("SUBTRACT", edge, border))
+    seam = n.math("MINIMUM", n.math("ADD", panel_seam, n.math("MULTIPLY", in_border, 10)), to_border)
+    welt = n.math("LESS_THAN", seam, seam_width / 2)
+    stitch_line = n.math("LESS_THAN", n.math("ABSOLUTE", n.math("SUBTRACT", seam, seam_width / 2 - 0.004)), 0.0015)
+    color = mix_color(n.math("MULTIPLY", welt, 0.6), color, (0.06, 0.055, 0.04))
+    color = mix_color(n.math("MULTIPLY", stitch_line, 0.6), color, (0.24, 0.22, 0.16))
+    links.new(color, bsdf.inputs["Base Color"])
+
+    # Ripstop: a fine grid of heavier threads, about 7 mm, felt more than seen.
+    grid = n.math("MAXIMUM",
+                  n.math("LESS_THAN", n.math("FRACT", n.math("DIVIDE", x, 0.007)), 0.14),
+                  n.math("LESS_THAN", n.math("FRACT", n.math("DIVIDE", y, 0.007)), 0.14))
+    height = n.math("ADD", n.math("MULTIPLY", grid, 0.15), n.math("ADD", welt, n.math("MULTIPLY", crease, 0.5)))
+    height = n.math("ADD", height, n.math("MULTIPLY", mottle.outputs["Fac"], 0.6))
     bump = nodes.new("ShaderNodeBump")
-    bump.inputs["Strength"].default_value = 0.4
-    links.new(bricks.outputs["Fac"], bump.inputs["Height"])
+    bump.inputs["Strength"].default_value = 0.25
+    bump.inputs["Distance"].default_value = 0.002
+    links.new(height, bump.inputs["Height"])
     links.new(bump.outputs["Normal"], bsdf.inputs["Normal"])
     return mat
 
@@ -592,7 +702,7 @@ def build_lights():
         for p in points:
             sphere("Bulb", 0.03, (p[0], p[1], p[2] - 0.05), bulb)
     warm = (1.0, 0.70, 0.42)
-    for y in (-1.8, 0.9):
+    for y in (-1.4, 1.4):
         light = bpy.data.lights.new("Work", "POINT")
         light.energy = 25
         light.color = warm
@@ -609,7 +719,7 @@ def build_window_lights(windows):
         area = bpy.data.lights.new("WindowLight", "AREA")
         area.shape = "RECTANGLE"
         area.size, area.size_y = window.width, window.height
-        area.energy = 6
+        area.energy = 9
         area.color = (0.95, 0.85, 0.72)
         # A beam into the room, tipped down a little, so it doesn't light up the roof just above
         # the window or wash out the far wall.
