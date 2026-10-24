@@ -8,14 +8,14 @@ Run `build.sh` to render them at full size and copy them into `Packages/CinemaCo
 
 The scenes are split in two:
 
-- `tent_base.py` is the tent every environment shares: a 5 × 7 m frame tent with canvas walls, clear vinyl windows, the floor, the string lights, the Meshtastic branding, the dusk forest outside, the seated camera, the render settings, and the anchors file. Its `Layout` says where the windows, banner, poster and plaque go.
-- An environment script, such as `sar_tent.py`, adds its own furniture, lights and boards in a `furnish()` function and calls `tent_base.render(furnish)`.
+- `tent_base.py` is the tent every environment shares: a 5.2 × 7.2 m frame tent with canvas walls, clear vinyl windows, the floor, the string lights, the Meshtastic branding, the dusk forest outside, the seated camera, the render settings, and the anchors file. Its `Layout` says where the windows, banner, poster and plaque go.
+- An environment script, such as `sar_tent.py`, adds its own furniture, lights and boards in a `furnish(layout)` function and calls `tent_base.render(furnish)`.
 
 Blender's +Y is the image's center: the front wall, left plain for the app window. +X is the viewer's right and Z is up, with the viewer at the origin at seated eye height.
 
 ### Adding an environment
 
-1. Copy `sar_tent.py` to `<name>.py` and change `furnish()`. Keep the front wall clear. To move the windows or the branding away from your furniture, pass your own `tent_base.Layout(...)` to `render()`.
+1. Copy `sar_tent.py` to `<name>.py` and change `furnish()`. Keep the front wall clear. To move the windows or the branding away from your furniture, pass your own `tent_base.Layout(...)` to `render()`; set an item to None to leave it out. `furnish()` gets the same layout.
 2. For each board the app should draw on, make a plane and call `anchor("<id>", plane, width, height)`. The plane's +X is the board's right and its +Z faces the viewer.
 3. Add `environment <name>` at the end of `build.sh` and run it. It writes `<name>.heic` and `<name>_anchors.json` into `Packages/CinemaContent`.
 4. Add a case to `CinemaEnvironment` with `imageName` set to `<name>`.
@@ -24,7 +24,7 @@ Since the camera, eye height and axes come from `tent_base.py`, the anchors an e
 
 ## Search and rescue tent
 
-`sar_tent.py` furnishes the tent as a search and rescue command post. The comms table is on the left, with Chirpy's poster and the "Brought to you by Meshtastic Solutions" plaque on the wall above it. The door and the map table are on the right, with a mesh node on a tripod by the door. The Meshtastic banner hangs on the back wall, behind the viewer. There is a clear vinyl window on each side wall. The floor is left clear. The whiteboard behind the viewer's left shoulder is blank: the app draws the live team roster over it.
+`sar_tent.py` furnishes the tent as a search and rescue command post. The comms table is on the left, with the "Comms equipment provided by Meshtastic Solutions" plaque and Chirpy's poster on the wall above it. The door and the map table are on the right, with a work lamp hanging over the map and a mesh node on a tripod by the door. The Meshtastic banner hangs on the back wall, behind the viewer. There is a clear vinyl window high on each side wall, with its cover rolled up above it. The floor is left clear. The whiteboard behind the viewer's left shoulder is blank: the app draws the live team roster over it. A hidden light on the board makes the painted board as bright as the panel the app draws, so the frame around the panel matches it.
 
 The render also writes `sar_tent_anchors.json`, which `build.sh` copies next to the image. It says where each board the app draws on sits, relative to the camera, in RealityKit's axes. The app places its panels from it, so moving a board and re-rendering moves the panel with it. The app pushes each panel out along the lines from the camera until it sits just inside the backdrop sphere, and grows it to match, so it covers the same part of the view and has the same stereo depth as the painted tent around it.
 

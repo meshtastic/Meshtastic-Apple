@@ -207,33 +207,36 @@ def chirpy_poster(path, w=1200, h=1680):
     image.convert("RGB").save(path)
 
 
-def solutions_plaque(path, w=1440, h=800):
-    """The showcase's plaque: "Brought to you by" over the Meshtastic Solutions mark and name, in
-    white on charcoal, laid out as ShowcaseWallArt.solutionsPlaque() draws it."""
+def solutions_plaque(path, w=2016, h=992):
+    """The showcase's plaque, laid out as ShowcaseWallArt.solutionsPlaque() draws it: a small line
+    over the Meshtastic Solutions mark and name, in white on charcoal. Drawn for a 1.26 by 0.62 m
+    plaque (1600 px a meter), with the small line's capitals about 56 mm tall so it reads from
+    the seat."""
     image = Image.new("RGBA", (w, h), (43, 46, 61, 255))
     draw = ImageDraw.Draw(image)
-    draw.rounded_rectangle([28, 28, w - 28, h - 28], radius=18, outline=(130, 132, 142), width=4)
-    small = system_font(64, b"Medium")
-    by_line = "Brought to you by"
+    inset = 36
+    draw.rounded_rectangle([inset, inset, w - inset, h - inset], radius=26, outline=(130, 132, 142), width=6)
+    small = system_font(128, b"Medium")
+    by_line = "Comms equipment provided by"
     left, _, right, _ = draw.textbbox((0, 0), by_line, font=small)
-    draw.text(((w - (right - left)) / 2, 170), by_line, fill=(200, 201, 206), font=small)
+    draw.text(((w - (right - left)) / 2, h * 0.34), by_line, fill=(214, 215, 220), font=small, anchor="ls")
     # The mark tinted white, as the showcase does.
-    mark = svg(SOLUTIONS_SVG, 600)
+    mark = svg(SOLUTIONS_SVG, 800)
     white = Image.new("RGBA", mark.size, (255, 255, 255, 255))
     white.putalpha(mark.getchannel("A"))
     name = "Meshtastic Solutions"
-    gap = 32
-    size = 112
+    gap = 40
+    size = 176
     while True:
         large = system_font(size, b"Semibold")
         left, top, right, bottom = draw.textbbox((0, 0), name, font=large)
         mark_height = size * 1.2
         mark_width = mark_height * white.width / white.height
-        if mark_width + gap + (right - left) <= w - 140 or size <= 48:
+        if mark_width + gap + (right - left) <= w - 200 or size <= 64:
             break
         size -= 4
     start = (w - (mark_width + gap + (right - left))) / 2
-    row = 470
+    row = h * 0.65
     tinted = white.resize((int(mark_width), int(mark_height)), Image.LANCZOS)
     image.alpha_composite(tinted, (int(start), int(row - mark_height / 2)))
     draw.text((start + mark_width + gap, row), name, fill=(255, 255, 255), font=large, anchor="lm")

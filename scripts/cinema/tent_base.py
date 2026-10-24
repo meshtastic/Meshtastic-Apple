@@ -46,7 +46,8 @@ FRONT_Y = 4.2
 WALL_HEIGHT = 1.95
 RIDGE_HEIGHT = 3.0
 DOOR = (-0.6, 0.9, 1.85)  # right wall: from y, to y, top
-RAFTERS = [-3.0, -1.8, -0.6, 0.9, 2.0, 3.1, 4.2]
+# Frame tents have wide bays; these leave room for a full-size window between two legs.
+RAFTERS = [-3.0, -0.6, 0.9, 2.55, 4.2]
 EYE_HEIGHT = 1.15
 
 
@@ -64,16 +65,18 @@ class WallSpot:
 @dataclass
 class Layout:
     """Where the windows and the branding go. The defaults suit the search and rescue tent; another
-    environment passes its own to fit its furniture. The front wall is never used, and nothing
-    should cover a board the app draws on."""
+    environment passes its own to fit its furniture, and None leaves an item out. The front wall
+    is never used, and nothing should cover a board the app draws on."""
+    # High on the wall, up under the eave, as frame-tent windows are. Sizes are the clear vinyl.
     windows: list = field(default_factory=lambda: [
-        WallSpot(side=1, y=-1.2, z=1.33, width=0.84, height=0.62),
-        WallSpot(side=-1, y=2.55, z=1.33, width=0.78, height=0.62),
+        WallSpot(side=1, y=-1.8, z=1.34, width=1.36, height=0.8),
+        WallSpot(side=-1, y=3.36, z=1.34, width=1.3, height=0.8),
     ])
     # The banner hangs on the back wall: center x, center z, width, height.
     banner: tuple = (0.0, 1.62, 2.0, 1.0)
-    poster: WallSpot = field(default_factory=lambda: WallSpot(side=-1, y=0.15, z=1.4, width=0.56, height=0.784))
-    plaque: WallSpot = field(default_factory=lambda: WallSpot(side=-1, y=1.45, z=1.32, width=0.54, height=0.3))
+    poster: WallSpot = field(default_factory=lambda: WallSpot(side=-1, y=1.72, z=1.45, width=0.56, height=0.784))
+    # Big enough that its small top line reads from the seat.
+    plaque: WallSpot = field(default_factory=lambda: WallSpot(side=-1, y=0.2, z=1.42, width=1.26, height=0.62))
 
 
 # Surfaces the app covers with live panels, by the id the app knows them by. Filled in as the
@@ -321,10 +324,10 @@ def canvas_material(windows):
         xyz = nodes.new("ShaderNodeSeparateXYZ")
         links.new(coords.outputs["Object"], xyz.inputs[0])
         x, y, z = xyz.outputs["X"], xyz.outputs["Y"], xyz.outputs["Z"]
-        band_width = 0.045
+        band_width = 0.04
         inside = band = stitch = None
-        # Dashes along the binding: y runs along its top and bottom, z up its sides.
-        dash = n.math("LESS_THAN", n.math("FRACT", n.math("MULTIPLY", n.math("ADD", y, z), 55)), 0.55)
+        # Short stitches along the binding: y runs along its top and bottom, z up its sides.
+        dash = n.math("LESS_THAN", n.math("FRACT", n.math("MULTIPLY", n.math("ADD", y, z), 90)), 0.6)
         for window in windows:
             on_wall = n.math("GREATER_THAN", n.math("MULTIPLY", x, window.side), HALF_WIDTH - 0.2)
             dy = n.math("SUBTRACT", n.math("ABSOLUTE", n.math("SUBTRACT", y, window.y)), window.width / 2)
@@ -333,25 +336,47 @@ def canvas_material(windows):
             d = n.math("MAXIMUM", dy, dz)
             this_inside = n.math("MULTIPLY", n.math("LESS_THAN", d, 0), on_wall)
             this_band = n.math("MULTIPLY", n.math("MULTIPLY", n.math("GREATER_THAN", d, -0.0001), n.math("LESS_THAN", d, band_width)), on_wall)
-            # Two rows of stitches, a third and two thirds of the way across the binding.
-            rows = n.math("MAXIMUM",
-                          n.math("LESS_THAN", n.math("ABSOLUTE", n.math("SUBTRACT", d, band_width / 3)), 0.0025),
-                          n.math("LESS_THAN", n.math("ABSOLUTE", n.math("SUBTRACT", d, band_width * 2 / 3)), 0.0025))
-            this_stitch = n.math("MULTIPLY", n.math("MULTIPLY", rows, dash), this_band)
+            # One row of stitches along the middle of the binding.
+            row = n.math("LESS_THAN", n.math("ABSOLUTE", n.math("SUBTRACT", d, band_width / 2)), 0.0018)
+            this_stitch = n.math("MULTIPLY", n.math("MULTIPLY", row, dash), this_band)
             inside = this_inside if inside is None else n.math("MAXIMUM", inside, this_inside)
             band = this_band if band is None else n.math("MAXIMUM", band, this_band)
             stitch = this_stitch if stitch is None else n.math("MAXIMUM", stitch, this_stitch)
-        # Binding: dark coated webbing sewn round the vinyl.
-        binding = principled(nodes, (0.045, 0.04, 0.032), 0.55)
-        thread = principled(nodes, (0.42, 0.38, 0.30), 0.8)
-        # Clear vinyl: you see straight through, with a faint sheen that grows at grazing angles.
+        # Binding: webbing a shade darker than the canvas, sewn round the vinyl, with a slight
+        # ridge so it reads as a folded edge.
+        binding = principled(nodes, (0.21, 0.18, 0.12), 0.85)
+        ridge = nodes.new("ShaderNodeBump")
+        ridge.inputs["Strength"].default_value = 0.6
+        ridge.inputs["Distance"].default_value = 0.004
+        links.new(band, ridge.inputs["Height"])
+        links.new(ridge.outputs["Normal"], binding.inputs["Normal"])
+        thread = principled(nodes, (0.27, 0.24, 0.17), 0.85)
+        # Clear vinyl. Mostly see-through, with a little milky haze, and a soft sheen that picks
+        # up the string lights. A slow ripple in the sheet bends the reflections.
+        ripple = nodes.new("ShaderNodeTexNoise")
+        ripple.inputs["Scale"].default_value = 2.2
+        ripple.inputs["Detail"].default_value = 2
+        links.new(coords.outputs["Object"], ripple.inputs["Vector"])
+        wobble = nodes.new("ShaderNodeBump")
+        wobble.inputs["Strength"].default_value = 0.35
+        wobble.inputs["Distance"].default_value = 0.02
+        links.new(ripple.outputs["Fac"], wobble.inputs["Height"])
         clear = nodes.new("ShaderNodeBsdfTransparent")
-        clear.inputs["Color"].default_value = (0.9, 0.91, 0.88, 1)
+        clear.inputs["Color"].default_value = (0.86, 0.87, 0.84, 1)
+        haze = principled(nodes, (0.75, 0.74, 0.70), 0.9)
         sheen = nodes.new("ShaderNodeBsdfGlossy")
-        sheen.inputs["Roughness"].default_value = 0.25
+        sheen.inputs["Roughness"].default_value = 0.1
+        links.new(wobble.outputs["Normal"], sheen.inputs["Normal"])
         fresnel = nodes.new("ShaderNodeFresnel")
         fresnel.inputs["IOR"].default_value = 1.5
-        vinyl = n.mix(fresnel.outputs["Fac"], clear.outputs["BSDF"], sheen.outputs["BSDF"])
+        links.new(wobble.outputs["Normal"], fresnel.inputs["Normal"])
+        # Haze thickens a little in patches, as on old vinyl.
+        cloud = nodes.new("ShaderNodeTexNoise")
+        cloud.inputs["Scale"].default_value = 4
+        links.new(coords.outputs["Object"], cloud.inputs["Vector"])
+        hazy = n.math("ADD", 0.05, n.math("MULTIPLY", cloud.outputs["Fac"], 0.06))
+        vinyl = n.mix(hazy, clear.outputs["BSDF"], haze.outputs["BSDF"])
+        vinyl = n.mix(n.math("ADD", n.math("MULTIPLY", fresnel.outputs["Fac"], 1.6), 0.03), vinyl, sheen.outputs["BSDF"])
         shader = n.mix(band, shader, binding.outputs["BSDF"])
         shader = n.mix(stitch, shader, thread.outputs["BSDF"])
         shader = n.mix(inside, shader, vinyl)
@@ -438,16 +463,22 @@ def build_tent(canvas, metal, layout):
     for y in (door_from + 0.2, door_to - 0.2):
         cylinder("DoorTie", 0.008, (x + 0.02, y, WALL_HEIGHT - 0.02), (x + 0.15, y, door_top - 0.12), strap)
 
-    # Each window's canvas cover, rolled up inside above it and tied with two straps.
-    for window in layout.windows:
+    # Each window's canvas cover, rolled up inside above it. Two webbing ties hang from the top of
+    # the wall and wrap round the roll.
+    webbing = material("Webbing", (0.17, 0.145, 0.10), 0.85)
+    for window in layout.windows or []:
         side, top = window.side, window.z + window.height / 2
-        wall = side * (HALF_WIDTH - sag(window.y) - 0.065)
-        start, end = window.y - window.width / 2 - 0.04, window.y + window.width / 2 + 0.04
-        roll_z = top + 0.11
-        cylinder("WindowRoll", 0.055, (wall, start, roll_z), (wall, end, roll_z), canvas)
-        for y in (window.y - window.width / 2 + 0.1, window.y + window.width / 2 - 0.1):
-            torus("WindowTie", 0.062, 0.006, (wall, y, roll_z), strap, rotation=(math.pi / 2, 0, 0))
-            cylinder("WindowTieTail", 0.006, (wall - side * 0.05, y, roll_z - 0.03), (wall - side * 0.055, y + 0.01, roll_z - 0.16), strap, segments=6)
+        cloth = side * (HALF_WIDTH - sag(window.y))
+        radius = 0.045
+        wall = cloth - side * (radius + 0.012)
+        start, end = window.y - window.width / 2 - 0.06, window.y + window.width / 2 + 0.06
+        roll_z = top + 0.04 + radius + 0.005
+        cylinder("WindowRoll", radius, (wall, start, roll_z), (wall, end, roll_z), canvas, segments=24)
+        for y in (window.y - window.width / 2 + 0.12, window.y + window.width / 2 - 0.12):
+            tie = torus("WindowTie", radius + 0.004, 0.004, (wall, y, roll_z), webbing, rotation=(math.pi / 2, 0, 0))
+            # Flatten the ring into a strap about 25 mm wide.
+            tie.scale = (1, 1, 3)
+            box("WindowTieStrap", (0.004, 0.025, WALL_HEIGHT - 0.03 - roll_z), (cloth - side * 0.008, y, (WALL_HEIGHT - 0.03 + roll_z) / 2), webbing)
 
     radius = 0.022
     inset = x - 0.05
@@ -491,13 +522,22 @@ def wall_sheet(name, spot, gap, mat):
 
 def build_branding(layout):
     """Meshtastic's own artwork, printed and hung like the showcase room's: the mark and wordmark
-    on a canvas banner on the back wall, Chirpy on a poster, and the "Brought to you by" plaque.
-    make_textures.py draws them from the app's SVGs."""
+    on a canvas banner on the back wall, Chirpy on a poster, and the "Comms equipment provided by"
+    plaque. make_textures.py draws them from the app's SVGs."""
     steel = material("Grommet", (0.6, 0.6, 0.62), 0.35, metallic=1.0)
     cord = material("Cord", (0.08, 0.08, 0.08), 0.8)
 
-    # Banner on the back wall, hung by its top grommets from the rafter.
-    bx, bz, bw, bh = layout.banner
+    if layout.banner:
+        build_banner(layout.banner, steel, cord)
+    if layout.poster:
+        build_poster(layout.poster)
+    if layout.plaque:
+        build_plaque(layout.plaque)
+
+
+def build_banner(spot, steel, cord):
+    """The banner on the back wall, hung by its top grommets from the rafter."""
+    bx, bz, bw, bh = spot
     banner_y = BACK_Y + 0.035
     plane("Banner", bw, bh, (bx, banner_y, bz), (math.pi / 2, 0, math.pi), print_material("Banner", os.path.join(CACHE, "banner.png"), 0.9, weave=0.08))
     for dx in (-bw / 2 + 0.04, bw / 2 - 0.04):
@@ -508,10 +548,11 @@ def build_branding(layout):
         rafter_z = WALL_HEIGHT - 0.04 + (RIDGE_HEIGHT - WALL_HEIGHT - 0.02) * (1 - abs(top.x) / (HALF_WIDTH - 0.05))
         cylinder("BannerCord", 0.004, top, (top.x, BACK_Y + 0.01, rafter_z - 0.02), cord, segments=6)
 
-    # Chirpy on white, pinned at the corners.
-    wall_sheet("ChirpyPoster", layout.poster, 0.004, print_material("ChirpyPoster", os.path.join(CACHE, "chirpy_poster.png"), 0.7))
+
+def build_poster(spot):
+    """Chirpy on white, pinned at the corners."""
+    wall_sheet("ChirpyPoster", spot, 0.004, print_material("ChirpyPoster", os.path.join(CACHE, "chirpy_poster.png"), 0.7))
     pin = material("PushPin", (0.75, 0.08, 0.06), 0.35)
-    spot = layout.poster
     for du in (-1, 1):
         for dv in (-1, 1):
             y = spot.y + du * (spot.width / 2 - 0.025)
@@ -519,8 +560,9 @@ def build_branding(layout):
             x = spot.side * (HALF_WIDTH - sag(y) - 0.012)
             sphere("PosterPin", 0.008, (x, y, z), pin, segments=10)
 
-    # The plaque: a thin charcoal board on the wall.
-    spot = layout.plaque
+
+def build_plaque(spot):
+    """A thin charcoal board on the wall."""
     depth = 0.012
     span = [spot.y - spot.width / 2, spot.y, spot.y + spot.width / 2]
     front = HALF_WIDTH - max(sag(y) for y in span) - 0.006 - depth
@@ -557,6 +599,27 @@ def build_lights():
         light.shadow_soft_size = 0.25
         obj = bpy.data.objects.new("Work", light)
         obj.location = (0, y, RIDGE_HEIGHT - 0.8)
+        link(obj)
+
+
+def build_window_lights(windows):
+    """A little evening light coming in at each window. The lights can't be seen themselves, in
+    the image or in the vinyl."""
+    for window in windows:
+        area = bpy.data.lights.new("WindowLight", "AREA")
+        area.shape = "RECTANGLE"
+        area.size, area.size_y = window.width, window.height
+        area.energy = 6
+        area.color = (0.95, 0.85, 0.72)
+        # A beam into the room, tipped down a little, so it doesn't light up the roof just above
+        # the window or wash out the far wall.
+        area.spread = math.radians(70)
+        obj = bpy.data.objects.new("WindowLight", area)
+        obj.location = (window.side * (HALF_WIDTH - 0.3), window.y, window.z)
+        obj.rotation_mode = "QUATERNION"
+        obj.rotation_quaternion = Vector((-window.side, 0, -0.4)).to_track_quat("-Z", "Y")
+        obj.visible_camera = False
+        obj.visible_glossy = False
         link(obj)
 
 
@@ -618,8 +681,8 @@ def configure_render(options):
 
 
 def render(furnish, layout=None):
-    """Builds the tent, calls `furnish()` to add the environment's own furniture, lights and boards,
-    renders the panorama and writes its anchors. `layout` places the windows and branding."""
+    """Builds the tent, calls `furnish(layout)` to add the environment's own furniture, lights and
+    boards, renders the panorama and writes its anchors. `layout` places the windows and branding."""
     options = arguments()
     layout = layout or Layout()
     bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -627,8 +690,9 @@ def render(furnish, layout=None):
     canvas = canvas_material(layout.windows)
     metal = material("Aluminum", (0.75, 0.76, 0.78), 0.35, metallic=1.0)
     build_tent(canvas, metal, layout)
-    furnish()
+    furnish(layout)
     build_lights()
+    build_window_lights(layout.windows or [])
     build_branding(layout)
     build_world()
     camera = build_camera()

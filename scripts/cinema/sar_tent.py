@@ -17,6 +17,7 @@ import os
 import random
 import sys
 
+import bmesh
 import bpy
 from mathutils import Euler, Vector
 
@@ -53,7 +54,7 @@ def radio(location, body_mat, antenna_mat, led_mat):
     sphere("RadioLED", 0.004, (x - 0.018, y + 0.018, z + 0.12), led_mat, segments=8)
 
 
-def furnish():
+def furnish(layout):
     rng = random.Random(42)
     table_top = material("TableTop", (0.62, 0.61, 0.57), 0.5)
     steel = material("Steel", (0.15, 0.15, 0.16), 0.4, metallic=0.9)
@@ -122,14 +123,43 @@ def furnish():
     for y in (-1.6 - 0.96, -1.6 + 1.08):
         cylinder("EaselLeg", 0.012, (board_x + 0.3, y, 0), (board_x + 0.02, y, 1.8), steel)
 
-    # Clamp lamp over the map table.
+    # A light on the board, from up by the eave, so the painted board is as bright as the panel
+    # the app draws over it. It can't be seen itself, in the image or on the board.
+    board_light = bpy.data.lights.new("BoardLight", "AREA")
+    board_light.shape = "RECTANGLE"
+    board_light.size, board_light.size_y = 1.6, 0.3
+    board_light.energy = 3.3
+    board_light.color = (1, 0.55, 0.24)
+    board_light.spread = math.radians(70)
+    obj = bpy.data.objects.new("BoardLight", board_light)
+    obj.location = (board_x + 0.9, -1.6, 2.1)
+    obj.rotation_mode = "QUATERNION"
+    obj.rotation_quaternion = (Vector((board_x, -1.6, 1.3)) - obj.location).to_track_quat("-Z", "Y")
+    obj.visible_camera = False
+    obj.visible_glossy = False
+    link(obj)
+
+    # A work lamp hanging from the rafter over the map table, its light kept on the table.
+    lamp_x, lamp_y = wall - 0.1, 2.55
+    rafter_z = tent.WALL_HEIGHT - 0.04 + (tent.RIDGE_HEIGHT - tent.WALL_HEIGHT - 0.02) * (HALF_WIDTH - 0.05 - lamp_x) / (HALF_WIDTH - 0.05)
+    shade_bottom = 1.5
+    enamel = material("LampShade", (0.07, 0.11, 0.08), 0.35, metallic=0.6)
+    cylinder("LampCord", 0.004, (lamp_x, lamp_y, rafter_z), (lamp_x, lamp_y, shade_bottom + 0.16), black_plastic, segments=6)
+    cylinder("LampSocket", 0.022, (lamp_x, lamp_y, shade_bottom + 0.1), (lamp_x, lamp_y, shade_bottom + 0.17), black_plastic)
+
+    def shade(bm):
+        bmesh.ops.create_cone(bm, cap_ends=False, segments=32, radius1=0.13, radius2=0.035, depth=0.14)
+    tent.smooth(tent.mesh_object("LampShadeCone", shade, enamel, (lamp_x, lamp_y, shade_bottom + 0.07)))
+    sphere("LampBulb", 0.03, (lamp_x, lamp_y, shade_bottom + 0.06), material("LampBulb", (1, 0.85, 0.6), emission=(1, 0.8, 0.55), strength=25), segments=16)
     spot = bpy.data.lights.new("MapLamp", "SPOT")
-    spot.energy = 60
+    spot.energy = 30
     spot.color = (1, 0.85, 0.65)
-    spot.spot_size = 1.3
-    spot.shadow_soft_size = 0.1
+    # About 25 degrees each side of straight down: the table stops all of it.
+    spot.spot_size = math.radians(50)
+    spot.spot_blend = 0.5
+    spot.shadow_soft_size = 0.03
     obj = bpy.data.objects.new("MapLamp", spot)
-    obj.location = (1.85, 2.6, 1.7)
+    obj.location = (lamp_x, lamp_y, shade_bottom + 0.02)
     link(obj)
     # Screen glow on the comms table.
     for y in (0.8, 1.6):

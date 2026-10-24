@@ -27,7 +27,8 @@ if [ ! -f "$HDRI" ]; then
 	curl -sfL -o "$HDRI" https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/4k/sunset_forest_4k.hdr
 fi
 
-uv run --quiet --with pillow --with numpy --with resvg-py python "$HERE/make_textures.py"
+# Pinned so a new release can't quietly change the artwork.
+uv run --quiet --with pillow==13.0.0 --with numpy==2.5.4 --with resvg-py==0.5.0 python "$HERE/make_textures.py"
 
 # Renders one environment script, <name>.py, and ships <name>.heic and <name>_anchors.json.
 environment() {
