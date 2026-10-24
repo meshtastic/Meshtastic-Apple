@@ -1,8 +1,7 @@
 // SitePlannerParametersTests.swift
 // MeshtasticTests
 //
-// Locks down the Site Planner flat-query contract (meshtastic/Meshtastic-Apple#2058):
-// the query-URL builder, validation bounds, and radio prefill (dBm→W, preset→sensitivity,
+// Validation bounds and radio prefill for the coverage estimate (dBm→W, preset→sensitivity,
 // firmware-accurate frequency).
 
 import Testing
@@ -12,86 +11,6 @@ import CoreLocation
 
 @Suite("SitePlannerParameters")
 struct SitePlannerParametersTests {
-
-	private func queryItems(_ url: URL?) -> [String: String] {
-		guard let url, let comps = URLComponents(url: url, resolvingAgainstBaseURL: false) else { return [:] }
-		var dict: [String: String] = [:]
-		for item in comps.queryItems ?? [] {
-			dict[item.name] = item.value
-		}
-		return dict
-	}
-
-	// MARK: - Query URL
-
-	@Test func buildsFlatQueryWithAutorunAndBridge() throws {
-		var params = SitePlannerParameters()
-		params.name = "Hill Site"
-		params.latitude = 47.6062
-		params.longitude = -122.3321
-		params.txPowerWatts = 0.1
-		params.txFrequencyMHz = 906.875
-		params.txHeightMeters = 2
-		params.txGainDBi = 2
-		params.rxSensitivityDBm = -139
-		params.maxRangeKm = 30
-		params.colorScale = .viridis
-
-		let url = params.queryURL(autorun: true, bridge: true)
-		let items = queryItems(url)
-
-		#expect(url?.absoluteString.hasPrefix("https://site.meshtastic.org/?") == true)
-		#expect(items["lat"] == "47.6062")
-		#expect(items["lon"] == "-122.3321")
-		#expect(items["name"] == "Hill Site")
-		#expect(items["tx_power"] == "0.1")
-		#expect(items["tx_freq"] == "906.875")
-		#expect(items["tx_height"] == "2")   // integer-valued → no trailing .0
-		#expect(items["tx_gain"] == "2")
-		#expect(items["rx_sensitivity"] == "-139")
-		#expect(items["max_range"] == "30")
-		#expect(items["color_scale"] == "viridis")
-		#expect(items["run"] == "1")
-		#expect(items["bridge"] == "1")
-	}
-
-	@Test func omitsAutorunBridgeHighResAndEmptyNameWhenNotSet() throws {
-		var params = SitePlannerParameters()
-		params.latitude = 10
-		params.longitude = 10
-		params.name = "   " // whitespace only
-
-		let items = queryItems(params.queryURL(autorun: false, bridge: false))
-		#expect(items["run"] == nil)
-		#expect(items["bridge"] == nil)
-		#expect(items["high_res"] == nil)
-		#expect(items["name"] == nil)
-	}
-
-	@Test func includesHighResWhenEnabled() throws {
-		var params = SitePlannerParameters()
-		params.latitude = 10
-		params.longitude = 10
-		params.highResolution = true
-		params.maxRangeKm = 70
-
-		let items = queryItems(params.queryURL())
-		#expect(items["high_res"] == "1")
-	}
-
-	@Test func percentEncodesName() throws {
-		var params = SitePlannerParameters()
-		params.latitude = 1
-		params.longitude = 1
-		params.name = "A & B / C"
-
-		let url = params.queryURL()
-		// The raw query string must not contain a bare `&` or `/` from the name.
-		let raw = url?.query ?? ""
-		#expect(raw.contains("name=A%20%26%20B%20/%20C") || raw.contains("name=A%20%26%20B%20%2F%20C"))
-		// And decoded round-trips back to the original.
-		#expect(queryItems(url)["name"] == "A & B / C")
-	}
 
 	// MARK: - Validation
 
@@ -107,22 +26,24 @@ struct SitePlannerParametersTests {
 		var params = SitePlannerParameters()
 		params.latitude = 45
 		params.longitude = 45
-		params.txFrequencyMHz = 5  // below 20 MHz floor
+		params.txFrequencyMHz = 20  // below P.1812's 30 MHz floor
+		#expect(params.isValid == false)
+
+		params.txFrequencyMHz = 7000 // above its 6 GHz ceiling
 		#expect(params.isValid == false)
 
 		params.txFrequencyMHz = 907
 		params.rxSensitivityDBm = -200 // below -150
 		#expect(params.isValid == false)
-	}
 
-	@Test func highResClampsMaxRangeBounds() {
-		var params = SitePlannerParameters()
-		params.latitude = 45
-		params.longitude = 45
-		params.highResolution = true
-		params.maxRangeKm = 120 // >70 with high-res
+		params.rxSensitivityDBm = -130
+		params.rxHeightMeters = -1
 		#expect(params.isValid == false)
-		params.maxRangeKm = 70
+
+		params.rxHeightMeters = 1
+		params.maxRangeKm = 151
+		#expect(params.isValid == false)
+		params.maxRangeKm = 150
 		#expect(params.isValid == true)
 	}
 

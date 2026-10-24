@@ -5,10 +5,8 @@
 //  The estimate form for an in-app Site Planner coverage run. Mirrors the
 //  planner's `Site Parameters` panels — Site / Transmitter → Receiver →
 //  Simulation Options → Display, with Transmitter + Display open and the rest
-//  collapsed. Submitting drives `CoverageEstimateRunner` (headless WebView +
-//  bridge) and, on success, imports the styled GeoJSON as a map overlay.
-//
-//  See meshtastic/Meshtastic-Apple#2058.
+//  collapsed. Submitting drives `CoverageEstimateRunner`, which computes the
+//  estimate on the device and imports it as a map overlay.
 //
 
 import SwiftUI
@@ -102,7 +100,7 @@ struct CoverageEstimateForm: View {
 				await refreshGroundElevation()
 			}
 			.onDisappear {
-				// Tear down a still-running headless run if the sheet is swipe-dismissed. Safe on the
+				// Cancel a still-running estimate if the sheet is swipe-dismissed. Safe on the
 				// success path too — the import already published its result before `dismiss()`.
 				runner.reset()
 			}
@@ -152,8 +150,18 @@ struct CoverageEstimateForm: View {
 				Image("custom.radio.tower")
 			}
 		} footer: {
-			if groundElevation != nil {
-				Text("Ground elevation is read from downloaded offline map terrain.")
+			let frequencyOutOfRange = !SitePlannerParameters.frequencyRange.contains(params.txFrequencyMHz)
+			if frequencyOutOfRange || groundElevation != nil {
+				VStack(alignment: .leading, spacing: 4) {
+					// Estimate is disabled for a frequency the model can't take; say why.
+					if frequencyOutOfRange {
+						Text(LocalCoverageError.frequencyOutOfRange.localizedDescription)
+							.foregroundStyle(.red)
+					}
+					if groundElevation != nil {
+						Text("Ground elevation is read from downloaded offline map terrain.")
+					}
+				}
 			}
 		}
 	}
@@ -174,6 +182,7 @@ struct CoverageEstimateForm: View {
 	private var receiverSection: some View {
 		Section {
 			DecimalField("Sensitivity (dBm)", value: $params.rxSensitivityDBm)
+			lengthField("Receiver height", canonical: $params.rxHeightMeters, storedUnit: .meters, imperialUnit: .feet)
 		} header: {
 			Label("Receiver", systemImage: "dot.radiowaves.left.and.right")
 		}
@@ -182,16 +191,10 @@ struct CoverageEstimateForm: View {
 	private var simulationSection: some View {
 		Section {
 			lengthField("Max range", canonical: $params.maxRangeKm, storedUnit: .kilometers, imperialUnit: .miles)
-			Toggle("High-resolution terrain", isOn: $params.highResolution)
-				.onChange(of: params.highResolution) { _, _ in
-					// High-res caps the range at 70 km — clamp so the value stays valid.
-					let bounds = params.maxRangeBounds
-					params.maxRangeKm = min(max(params.maxRangeKm, bounds.lowerBound), bounds.upperBound)
-				}
 		} header: {
 			Label("Simulation Options", systemImage: "slider.horizontal.3")
 		} footer: {
-			Text("High-resolution terrain gives a more detailed estimate but caps the maximum range at 70 km.")
+			Text("Terrain data © [Mapterhorn](https://mapterhorn.com/attribution)")
 		}
 	}
 

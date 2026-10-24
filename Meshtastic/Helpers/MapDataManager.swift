@@ -6,20 +6,25 @@ import Combine
 /// Manager for handling user-uploaded map data files
 class MapDataManager: ObservableObject {
 	static let shared = MapDataManager()
-	init() {}
+	/// `directoryName` is the folder under Documents; tests pass their own so they don't touch the app's files.
+	init(directoryName: String = "MapData") {
+		mapDataDirectory = directoryName
+	}
 
 	// MARK: - Constants
 	/// The most a map file may be, as picked and as stored once converted. Android takes 50 MB
 	/// for files shared into the app, and KML and KMZ exports of real surveys run well past 10.
 	static let maxFileSize: Int64 = 50 * 1024 * 1024
 	private var maxFileSize: Int64 { Self.maxFileSize }
-	private let mapDataDirectory = "MapData"
+	private let mapDataDirectory: String
 	private let userUploadedDirectory = "user_uploaded"
 	private let metadataFileName = "upload_history.json"
 
 	// MARK: - Properties
 	@Published private var uploadedFiles: [MapDataMetadata] = []
 	private var activeFeatureCollection: GeoJSONFeatureCollection?
+	/// The Site Planner files each import switched off, so `discardImport` can turn them back on.
+	private var switchedOffBy: [UUID: [UUID]] = [:]
 
 	// MARK: - File Management
 
@@ -117,10 +122,13 @@ class MapDataManager: ObservableObject {
 			// A new Site Planner run replaces the previous run from the same transmitter,
 			// so estimates for different nodes can show together. Manual uploads are never
 			// touched — their visibility belongs to the user.
+			var switchedOff: [UUID] = []
 			for index in uploadedFiles.indices
 			where uploadedFiles[index].id != metadata.id && Self.replaces(metadata, uploadedFiles[index]) {
+				if uploadedFiles[index].isActive { switchedOff.append(uploadedFiles[index].id) }
 				uploadedFiles[index].isActive = false
 			}
+			if !switchedOff.isEmpty { switchedOffBy[metadata.id] = switchedOff }
 			// Clear cached configuration to force reload
 			activeFeatureCollection = nil
 		}
@@ -496,6 +504,24 @@ class MapDataManager: ObservableObject {
 		}
 	}
 
+	/// Delete a file that was just imported and turn back on the files its import switched off, unless a
+	/// newer active file replaces them. Used when a coverage run is cancelled while its file is saving.
+	func discardImport(_ metadata: MapDataMetadata) async throws {
+		let switchedOff = await MainActor.run { switchedOffBy[metadata.id] ?? [] }
+		try await deleteFile(metadata)
+		guard !switchedOff.isEmpty else { return }
+		await MainActor.run {
+			for id in switchedOff {
+				guard let index = uploadedFiles.firstIndex(where: { $0.id == id }) else { continue }
+				let older = uploadedFiles[index]
+				let stillReplaced = uploadedFiles.contains { $0.id != older.id && $0.isActive && Self.replaces($0, older) }
+				if !stillReplaced { uploadedFiles[index].isActive = true }
+			}
+			activeFeatureCollection = nil
+		}
+		try saveMetadata()
+	}
+
 	/// Delete uploaded file
 	func deleteFile(_ metadata: MapDataMetadata) async throws {
 
@@ -519,6 +545,7 @@ class MapDataManager: ObservableObject {
 
 		// Update UI-related properties on main thread
 		await MainActor.run {
+			switchedOffBy[metadata.id] = nil
 			if let index = uploadedFiles.firstIndex(where: { $0.filename == metadata.filename }) {
 				uploadedFiles.remove(at: index)
 			} else {

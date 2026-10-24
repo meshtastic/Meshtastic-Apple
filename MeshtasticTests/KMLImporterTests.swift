@@ -133,6 +133,19 @@ struct KMLImporterTests {
 
 	// MARK: - Through the layer store
 
+	/// A layer store of its own, in a folder removed when the test ends, so the tests never touch the
+	/// app's own map files.
+	private func isolatedManager() -> (manager: MapDataManager, cleanup: () -> Void) {
+		let directory = "MapDataTests-\(UUID().uuidString)"
+		let manager = MapDataManager(directoryName: directory)
+		return (manager, {
+			if let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+				try? FileManager.default.removeItem(at: documents.appendingPathComponent(directory))
+			}
+		})
+	}
+
+
 	private func write(_ data: Data, named name: String) throws -> URL {
 		let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
 		try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
@@ -152,10 +165,9 @@ struct KMLImporterTests {
 		let url = try write(archive, named: "Survey \(UUID().uuidString).kmz")
 		defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
 
-		let manager = MapDataManager.shared
+		let (manager, cleanup) = isolatedManager()
+		defer { cleanup() }
 		let metadata = try await manager.processUploadedFile(from: url)
-		var removed = false
-		defer { if !removed { Task { try? await manager.deleteFile(metadata) } } }
 
 		#expect(metadata.format == "geojson")
 		#expect(metadata.overlayCount == 3, "two features and one ground overlay")
@@ -174,7 +186,6 @@ struct KMLImporterTests {
 
 		let assetsDirectory = overlay.imageURL.deletingLastPathComponent()
 		try await manager.deleteFile(metadata)
-		removed = true
 		#expect(!FileManager.default.fileExists(atPath: assetsDirectory.path))
 	}
 
@@ -182,9 +193,9 @@ struct KMLImporterTests {
 	func importKML() async throws {
 		let url = try write(Data(document.utf8), named: "Plain \(UUID().uuidString).kml")
 		defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
-		let manager = MapDataManager.shared
+		let (manager, cleanup) = isolatedManager()
+		defer { cleanup() }
 		let metadata = try await manager.processUploadedFile(from: url)
-		defer { Task { try? await manager.deleteFile(metadata) } }
 		#expect(metadata.overlayCount == 2)
 		#expect(manager.groundOverlays(for: [metadata]).isEmpty)
 	}
@@ -194,9 +205,9 @@ struct KMLImporterTests {
 		let archive = TestZip.make([.init(name: "doc.kml", data: Data(document.utf8))])
 		let url = try write(archive, named: "Renamed \(UUID().uuidString).kml")
 		defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
-		let manager = MapDataManager.shared
+		let (manager, cleanup) = isolatedManager()
+		defer { cleanup() }
 		let metadata = try await manager.processUploadedFile(from: url)
-		defer { Task { try? await manager.deleteFile(metadata) } }
 		#expect(metadata.overlayCount == 2)
 	}
 
@@ -206,7 +217,8 @@ struct KMLImporterTests {
 		let empty = try write(Data("<kml xmlns=\"http://www.opengis.net/kml/2.2\"/>".utf8), named: "empty-\(UUID().uuidString).kml")
 		let notZip = try write(Data([0x50, 0x4B, 0x03, 0x04, 0, 0]), named: "bad-\(UUID().uuidString).kmz")
 		defer { [html, empty, notZip].forEach { try? FileManager.default.removeItem(at: $0.deletingLastPathComponent()) } }
-		let manager = MapDataManager.shared
+		let (manager, cleanup) = isolatedManager()
+		defer { cleanup() }
 		await #expect(throws: KMLConverterError.self) { try await manager.processUploadedFile(from: html) }
 		await #expect(throws: MapDataError.self) { try await manager.processUploadedFile(from: empty) }
 		await #expect(throws: KMZArchiveError.self) { try await manager.processUploadedFile(from: notZip) }

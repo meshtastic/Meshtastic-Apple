@@ -173,6 +173,26 @@ actor TerrainStore {
 
 	// MARK: - Point queries
 
+	/// What a downloaded region holds for one tile a coverage estimate needs.
+	enum CoverageTile: Sendable {
+		/// The raw, undecoded Mapterhorn tile.
+		case data(Data)
+		/// A region holds the whole tile at this zoom but has no tile for it. Mapterhorn has no sea
+		/// tiles, so this is sea.
+		case sea
+		/// No region holds this tile.
+		case notHeld
+	}
+
+	/// The tile at exactly `z/x/y` from a downloaded region, undecoded and not cached, so a coverage
+	/// estimate can decode its tiles in parallel off this actor.
+	func coverageTile(z: Int, x: Int, y: Int) -> CoverageTile {
+		guard let open = source(covering: z, x: x, y: y), z <= open.maxZoom else { return .notHeld }
+		if let data = tileData(open: open, z: z, x: x, y: y) { return .data(data) }
+		let carriesZoom = z >= Int(open.archive.header.minZoom) && z <= Int(open.archive.header.maxZoom)
+		return carriesZoom && Self.contains(open.bounds, Self.tileBounds(z: z, x: x, y: y)) ? .sea : .notHeld
+	}
+
 	/// Zoom used for single-coordinate elevation lookups: the finest zoom the
 	/// global archive always carries (~30 m data), plenty for a site elevation.
 	static let pointQueryZoom = 12
@@ -256,20 +276,27 @@ actor TerrainStore {
 			}
 			return cached
 		}
-		var data: Data?
-		if let regional = open.regional, z >= Int(regional.header.minZoom), z <= Int(regional.header.maxZoom) {
-			data = regional.tileData(z: UInt8(z), x: UInt32(x), y: UInt32(y))
-		}
-		if data == nil {
-			data = open.archive.tileData(z: UInt8(z), x: UInt32(x), y: UInt32(y))
-		}
-		guard let data, let decoded = TerrariumDecoder.decode(tileData: data) else { return nil }
+		guard let data = tileData(open: open, z: z, x: x, y: y), let decoded = TerrariumDecoder.decode(tileData: data) else { return nil }
 		decodeCache[key] = decoded
 		decodeOrder.append(key)
 		if decodeOrder.count > decodeCacheLimit {
 			decodeCache.removeValue(forKey: decodeOrder.removeFirst())
 		}
 		return decoded
+	}
+
+	/// A tile's bytes, from the regional archive when it has the tile, else the global one.
+	private func tileData(open: OpenSource, z: Int, x: Int, y: Int) -> Data? {
+		if let regional = open.regional, z >= Int(regional.header.minZoom), z <= Int(regional.header.maxZoom),
+		   let data = regional.tileData(z: UInt8(z), x: UInt32(x), y: UInt32(y)) {
+			return data
+		}
+		return open.archive.tileData(z: UInt8(z), x: UInt32(x), y: UInt32(y))
+	}
+
+	/// Whether `bounds` holds all of `tile`.
+	static func contains(_ bounds: GeoBounds, _ tile: GeoBounds) -> Bool {
+		bounds.minLon <= tile.minLon && bounds.maxLon >= tile.maxLon && bounds.minLat <= tile.minLat && bounds.maxLat >= tile.maxLat
 	}
 
 	/// The configured source to read a tile from. A center test left border tiles either spilling
@@ -287,8 +314,7 @@ actor TerrainStore {
 	static func preferredSourceIndex(tile: GeoBounds, sources: [(bounds: GeoBounds, maxZoom: Int)]) -> Int? {
 		var best: (index: Int, maxZoom: Int)?
 		for (index, source) in sources.enumerated() {
-			let b = source.bounds
-			guard b.minLon <= tile.minLon, b.maxLon >= tile.maxLon, b.minLat <= tile.minLat, b.maxLat >= tile.maxLat else { continue }
+			guard contains(source.bounds, tile) else { continue }
 			if let current = best, source.maxZoom <= current.maxZoom { continue }
 			best = (index, source.maxZoom)
 		}
