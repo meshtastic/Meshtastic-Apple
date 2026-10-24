@@ -260,4 +260,41 @@ struct CoverageEstimateRunnerTests {
 		#expect(runner.importedResult?.metadata.id == saved.id)
 		#expect(probe.removed.isEmpty)
 	}
+
+	@Test func cancellingDuringTheImportTurnsThePreviousEstimateBackOn() async throws {
+		let directory = "MapDataTests-\(UUID().uuidString)"
+		let manager = MapDataManager(directoryName: directory)
+		defer {
+			if let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+				try? FileManager.default.removeItem(at: documents.appendingPathComponent(directory))
+			}
+		}
+		let geoJSON = #"{ "type": "FeatureCollection", "features": [{ "type": "Feature", "geometry": { "type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 0]]] }, "properties": {} }] }"#
+		let node = SitePlannerCoverageInfo(
+			nodeNum: 7, latitude: 47.6, longitude: -122.3, maxRangeKm: 30, txHeightMeters: 2, colorScale: "mesh", bounds: nil
+		)
+		let previous = try await manager.importFromString(geoJSON, name: "Previous", source: .sitePlanner, coverage: node)
+		let probe = Probe()
+		let runner = CoverageEstimateRunner(
+			estimate: { _ in geoJSON },
+			importOverlay: { geoJSON, name, _ in
+				let metadata = try await manager.importFromString(geoJSON, name: name, source: .sitePlanner, coverage: node)
+				await withCheckedContinuation { probe.importStarted = $0 }
+				return metadata
+			},
+			removeOverlay: { metadata in
+				try? await manager.discardImport(metadata)
+				probe.removed.append(metadata.id)
+			}
+		)
+		runner.start(params: params, nodeNum: 7)
+		try await wait { probe.importStarted != nil }
+		#expect(manager.getUploadedFiles().first { $0.id == previous.id }?.isActive == false)
+		runner.cancel()
+		probe.importStarted?.resume()
+		try await wait { !probe.removed.isEmpty }
+		let files = manager.getUploadedFiles()
+		#expect(files.map(\.id) == [previous.id])
+		#expect(files.first?.isActive == true)
+	}
 }

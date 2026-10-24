@@ -72,7 +72,7 @@ final class CoverageEstimateRunner: ObservableObject {
 		importOverlay: @escaping ImportOverlay = { geoJSON, name, coverage in
 			try await MapDataManager.shared.importFromString(geoJSON, name: name, source: .sitePlanner, coverage: coverage)
 		},
-		removeOverlay: @escaping RemoveOverlay = { metadata in try? await MapDataManager.shared.deleteFile(metadata) }
+		removeOverlay: @escaping RemoveOverlay = { metadata in try? await MapDataManager.shared.discardImport(metadata) }
 	) {
 		self.estimate = estimate
 		self.importOverlay = importOverlay
