@@ -11,42 +11,48 @@ import SwiftUI
 
 /// The live team roster on the tent's whiteboard in the cinema: the connected radio and the
 /// favorite nodes, with when each was last heard, its battery, signal, hops, and distance and
-/// bearing from the radio. Drawn as marker on the board, to be read from a couple of meters away.
+/// bearing from the radio. Drawn as marker on the board, to be read from across the tent.
 /// Tapping a row opens the node in the app window.
 struct TeamStatusBoard: View {
 	@EnvironmentObject private var appState: AppState
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 	@Environment(\.modelContext) private var context
 	@Environment(\.openWindow) private var openWindow
-	@Query(
-		filter: #Predicate<NodeInfoEntity> { $0.favorite == true },
-		sort: [SortDescriptor(\NodeInfoEntity.lastHeard, order: .reverse)]
-	)
-	private var favorites: [NodeInfoEntity]
+	@State private var roster: Roster?
 
 	/// The board's size in points. CinemaSpace scales the panel to the board in the image, so only
-	/// the 3:2 shape matters; at this size a point is about a millimeter.
+	/// the 3:2 shape matters.
 	static let size = CGSize(width: 1800, height: 1200)
 	private static let maxRows = 8
+	/// How often the rows are read from the store. The board is read from across the tent, so a
+	/// few seconds late is fine, and it keeps the store work off every packet.
+	private static let refreshInterval: Duration = .seconds(5)
 
 	var body: some View {
-		TimelineView(.periodic(from: .now, by: 30)) { timeline in
-			content(at: timeline.date)
+		Group {
+			if let roster {
+				content(roster)
+			}
 		}
+		.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
 		.padding(.horizontal, 56)
 		.padding(.vertical, 44)
 		.frame(width: Self.size.width, height: Self.size.height)
 		.background(BoardStyle.surface)
 		.environment(\.colorScheme, .light)
+		.task(id: RadioKey(isConnected: accessoryManager.isConnected, num: accessoryManager.activeDeviceNum)) {
+			while !Task.isCancelled {
+				roster = makeRoster()
+				try? await Task.sleep(for: Self.refreshInterval)
+			}
+		}
 	}
 
 	@ViewBuilder
-	private func content(at now: Date) -> some View {
-		let radio = connectedRadio
-		let members = teamMembers(radio: radio)
+	private func content(_ roster: Roster) -> some View {
 		VStack(alignment: .leading, spacing: 0) {
-			title(radio: radio)
-			if members.isEmpty {
+			title(radioName: roster.radioName)
+			if roster.members.isEmpty {
 				emptyState
 			} else {
 				headerRow
@@ -55,44 +61,50 @@ struct TeamStatusBoard: View {
 					.fill(BoardStyle.ink)
 					.frame(height: 5)
 					.padding(.top, 8)
-				ForEach(members.prefix(Self.maxRows)) { member in
+				ForEach(roster.members) { member in
 					Button {
 						showInMainWindow(member.id)
 					} label: {
-						TeamRow(member: member, now: now)
+						TeamRow(member: member, now: roster.date)
 					}
 					.buttonStyle(.plain)
 					.hoverEffect(.highlight)
 				}
 				Spacer(minLength: 0)
-				footer(members: members, radio: radio)
+				footer(roster)
 			}
 		}
 	}
 
 	// MARK: Pieces
 
-	private func title(radio: NodeInfoEntity?) -> some View {
+	private func title(radioName: String?) -> some View {
 		HStack(alignment: .firstTextBaseline) {
 			Text("Team Status", comment: "Cinema: title of the live team roster on the tent's whiteboard")
 				.textCase(.uppercase)
 				.font(BoardStyle.marker(92))
 				.foregroundStyle(BoardStyle.blue)
 			Spacer()
-			if let radio {
+			if let radioName {
 				HStack(spacing: 14) {
-					Circle()
-						.fill(BoardStyle.green)
-						.frame(width: 26, height: 26)
-					Text(verbatim: radio.liveUser?.longName ?? hexName(radio.num))
+					Image(systemName: TeamMember.Status.connected.symbol)
+						.font(.system(size: 36, weight: .bold))
+						.foregroundStyle(BoardStyle.green)
+						.accessibilityHidden(true)
+					Text(verbatim: radioName)
 						.font(BoardStyle.marker(46))
 						.foregroundStyle(BoardStyle.ink)
 						.lineLimit(1)
 				}
 			} else {
-				Text("No radio connected", comment: "Cinema team board: shown in the corner when no radio is connected")
-					.font(BoardStyle.marker(46))
-					.foregroundStyle(BoardStyle.red)
+				HStack(spacing: 14) {
+					Image(systemName: "exclamationmark.triangle.fill")
+						.font(.system(size: 36, weight: .bold))
+						.accessibilityHidden(true)
+					Text("No radio connected", comment: "Cinema team board: shown in the corner when no radio is connected")
+						.font(BoardStyle.marker(46))
+				}
+				.foregroundStyle(BoardStyle.red)
 			}
 			MeshLogo(height: 44)
 				.padding(.leading, 18)
@@ -122,16 +134,15 @@ struct TeamStatusBoard: View {
 	}
 
 	@ViewBuilder
-	private func footer(members: [TeamMember], radio: NodeInfoEntity?) -> some View {
-		let hidden = members.count - Self.maxRows
-		if hidden > 0 {
-			Text("+\(hidden) more", comment: "Cinema team board: how many favorite nodes didn't fit on the board")
+	private func footer(_ roster: Roster) -> some View {
+		if roster.hiddenCount > 0 {
+			Text("+\(roster.hiddenCount) more", comment: "Cinema team board: how many favorite nodes didn't fit on the board")
 				.font(BoardStyle.marker(40))
-				.foregroundStyle(BoardStyle.ink.opacity(0.75))
-		} else if favorites.isEmpty {
+				.foregroundStyle(BoardStyle.faded)
+		} else if roster.favoriteCount == 0 {
 			Text("Favorite nodes to add them to the board.", comment: "Cinema team board: hint shown when only the connected radio is listed")
 				.font(BoardStyle.marker(40))
-				.foregroundStyle(BoardStyle.ink.opacity(0.75))
+				.foregroundStyle(BoardStyle.faded)
 		}
 	}
 
@@ -153,26 +164,57 @@ struct TeamStatusBoard: View {
 
 	// MARK: Data
 
-	/// The radio's node while it is connected. Distances are only measured from a radio that is
-	/// connected now.
-	private var connectedRadio: NodeInfoEntity? {
-		guard accessoryManager.isConnected, let num = accessoryManager.activeDeviceNum else { return nil }
-		return getNodeInfo(id: num, context: context)
+	/// What the rows are read for. A new radio rebuilds the board right away.
+	private struct RadioKey: Equatable {
+		let isConnected: Bool
+		let num: Int64?
 	}
 
-	/// The radio first, then favorites, most recently heard first.
-	private func teamMembers(radio: NodeInfoEntity?) -> [TeamMember] {
-		let preset = (radio?.loRaConfig?.modemPreset).flatMap { ModemPresets(rawValue: Int($0)) } ?? .longFast
-		let noiseFloor = radio?.recentNoiseFloor
-		let radioLocation = radio?.latestPosition?.nodeCoordinate.map { CLLocation(latitude: $0.latitude, longitude: $0.longitude) }
+	/// The rows as last read from the store.
+	private struct Roster {
+		let date: Date
+		let radioName: String?
+		let members: [TeamMember]
+		/// Favorites other than the radio, shown or not.
+		let favoriteCount: Int
+		let hiddenCount: Int
+	}
+
+	/// Reads the radio and the favorites that fit on the board, most recently heard first. Only
+	/// the rows shown are looked up further, so the work doesn't grow with the favorites.
+	private func makeRoster() -> Roster {
+		let radio = accessoryManager.isConnected ? accessoryManager.activeDeviceNum.flatMap { getNodeInfo(id: $0, context: context) } : nil
+		// No node has a negative number, so this matches every favorite when there's no radio.
+		let radioNum = radio?.num ?? -1
+		var descriptor = FetchDescriptor<NodeInfoEntity>(
+			predicate: #Predicate { $0.favorite == true && $0.num != radioNum },
+			sortBy: [SortDescriptor(\.lastHeard, order: .reverse)]
+		)
+		let favoriteCount = (try? context.fetchCount(descriptor)) ?? 0
+		descriptor.fetchLimit = Self.maxRows - (radio == nil ? 0 : 1)
+		let favorites = (try? context.fetch(descriptor)) ?? []
+
 		var members: [TeamMember] = []
 		if let radio {
-			members.append(member(radio, isRadio: true, preset: preset, noiseFloor: noiseFloor, radioLocation: nil))
+			let preset = (radio.loRaConfig?.modemPreset).flatMap { ModemPresets(rawValue: Int($0)) } ?? .longFast
+			let noiseFloor = favorites.isEmpty ? nil : radio.recentNoiseFloor
+			let radioLocation = favorites.isEmpty ? nil : radio.latestPosition?.nodeCoordinate.map { CLLocation(latitude: $0.latitude, longitude: $0.longitude) }
+			members.append(member(radio, isRadio: true, preset: preset, noiseFloor: nil, radioLocation: nil))
+			for node in favorites {
+				members.append(member(node, isRadio: false, preset: preset, noiseFloor: noiseFloor, radioLocation: radioLocation))
+			}
+		} else {
+			for node in favorites {
+				members.append(member(node, isRadio: false, preset: .longFast, noiseFloor: nil, radioLocation: nil))
+			}
 		}
-		for node in favorites where node.num != radio?.num {
-			members.append(member(node, isRadio: false, preset: preset, noiseFloor: noiseFloor, radioLocation: radioLocation))
-		}
-		return members
+		return Roster(
+			date: .now,
+			radioName: radio.map { $0.liveUser?.longName ?? hexName($0.num) },
+			members: members,
+			favoriteCount: favoriteCount,
+			hiddenCount: max(0, favoriteCount - favorites.count)
+		)
 	}
 
 	private func member(_ node: NodeInfoEntity, isRadio: Bool, preset: ModemPresets, noiseFloor: Int32?, radioLocation: CLLocation?) -> TeamMember {
@@ -191,13 +233,19 @@ struct TeamStatusBoard: View {
 			let degrees = getBearingBetweenTwoPoints(point1: radioLocation, point2: location)
 			bearing = (degrees + 360).truncatingRemainder(dividingBy: 360)
 		}
+		let status: TeamMember.Status = if isRadio {
+			.connected
+		} else if node.lastHeard == nil {
+			.neverHeard
+		} else {
+			node.isOnline ? .heard : .stale
+		}
 		return TeamMember(
 			id: node.num,
 			shortName: user?.shortName ?? String(hexName(node.num).suffix(4)),
 			longName: user?.longName ?? hexName(node.num),
 			lastHeard: node.lastHeard,
-			isOnline: node.isOnline,
-			isRadio: isRadio,
+			status: status,
 			batteryLevel: node.latestDeviceMetrics?.batteryLevel,
 			signalRating: signal,
 			hopsAway: node.viaMqtt ? nil : node.hopsAway,
@@ -220,14 +268,42 @@ struct TeamStatusBoard: View {
 	}
 }
 
-/// One row's values, read from the store when the board draws.
+/// One row's values, read from the store when the board refreshes.
 private struct TeamMember: Identifiable {
+	enum Status {
+		/// The connected radio.
+		case connected
+		/// Heard in the last two hours.
+		case heard
+		/// Heard, but not in the last two hours.
+		case stale
+		case neverHeard
+
+		/// Shown beside the last-heard time, so status doesn't rest on color alone.
+		var symbol: String {
+			switch self {
+			case .connected: "link"
+			case .heard: "checkmark.circle.fill"
+			case .stale: "exclamationmark.triangle.fill"
+			case .neverHeard: "questionmark.circle"
+			}
+		}
+
+		var color: Color {
+			switch self {
+			case .connected: BoardStyle.green
+			case .heard: BoardStyle.ink
+			case .stale: BoardStyle.red
+			case .neverHeard: BoardStyle.faded
+			}
+		}
+	}
+
 	let id: Int64
 	let shortName: String
 	let longName: String
 	let lastHeard: Date?
-	let isOnline: Bool
-	let isRadio: Bool
+	let status: Status
 	let batteryLevel: Int32?
 	let signalRating: Int?
 	/// Nil for a node heard over MQTT, where hops don't apply.
@@ -241,11 +317,19 @@ private struct TeamRow: View {
 	let now: Date
 
 	static let spacing: CGFloat = 16
-	static let nameWidth: CGFloat = 560
-	static let heardWidth: CGFloat = 250
+	static let nameWidth: CGFloat = 450
+	static let heardWidth: CGFloat = 300
 	static let batteryWidth: CGFloat = 210
 	static let signalWidth: CGFloat = 130
-	static let hopsWidth: CGFloat = 130
+	static let hopsWidth: CGFloat = 190
+
+	/// Nodes not heard lately are written in the faded ink, which still reads at full contrast.
+	private var ink: Color {
+		switch member.status {
+		case .connected, .heard: BoardStyle.ink
+		case .stale, .neverHeard: BoardStyle.faded
+		}
+	}
 
 	var body: some View {
 		HStack(spacing: Self.spacing) {
@@ -253,7 +337,7 @@ private struct TeamRow: View {
 				NodeChip(shortName: member.shortName, colorSeed: UInt32(truncatingIfNeeded: member.id), size: 78)
 				Text(verbatim: member.longName)
 					.font(BoardStyle.marker(50))
-					.foregroundStyle(member.isRadio ? BoardStyle.blue : BoardStyle.ink)
+					.foregroundStyle(member.status == .connected ? BoardStyle.blue : ink)
 					.lineLimit(1)
 					.minimumScaleFactor(0.6)
 			}
@@ -261,7 +345,7 @@ private struct TeamRow: View {
 
 			cell(width: Self.heardWidth) { heard }
 			cell(width: Self.batteryWidth) {
-				BatteryRow(level: member.batteryLevel, font: BoardStyle.marker(42), color: BoardStyle.ink)
+				BatteryRow(level: member.batteryLevel, font: BoardStyle.marker(42), color: ink)
 			}
 			cell(width: Self.signalWidth) {
 				SignalBars(rating: member.signalRating, font: .system(size: 46))
@@ -270,12 +354,11 @@ private struct TeamRow: View {
 			cell(width: nil) { distance }
 		}
 		.font(BoardStyle.marker(42))
-		.foregroundStyle(BoardStyle.ink)
+		.foregroundStyle(ink)
 		.lineLimit(1)
 		.minimumScaleFactor(0.6)
 		.padding(.vertical, 8)
 		.frame(height: 104)
-		.opacity(member.isRadio || member.isOnline ? 1 : 0.55)
 		.overlay(alignment: .bottom) {
 			Rectangle()
 				.fill(BoardStyle.ink.opacity(0.3))
@@ -296,26 +379,32 @@ private struct TeamRow: View {
 		.frame(maxWidth: width == nil ? .infinity : nil)
 	}
 
-	@ViewBuilder
 	private var heard: some View {
-		if member.isRadio {
-			Text("Connected")
-				.foregroundStyle(BoardStyle.green)
-		} else if let lastHeard = member.lastHeard {
-			// Ticks with the board's timeline, not every second.
-			Text(verbatim: lastHeard.formatted(.relative(presentation: .named, unitsStyle: .abbreviated)))
-				.foregroundStyle(member.isOnline ? BoardStyle.ink : BoardStyle.red)
-		} else {
-			Text("Never heard")
-				.foregroundStyle(BoardStyle.red)
+		HStack(spacing: 12) {
+			Image(systemName: member.status.symbol)
+				.font(.system(size: 32, weight: .bold))
+				.accessibilityHidden(true)
+			switch member.status {
+			case .connected:
+				Text("Connected")
+			case .neverHeard:
+				Text("Never heard")
+			case .heard, .stale:
+				// Moves on with the board's refresh, not every second.
+				Text(verbatim: (member.lastHeard ?? now).formatted(.relative(presentation: .named, unitsStyle: .abbreviated)))
+			}
 		}
+		.foregroundStyle(member.status.color)
 	}
 
 	@ViewBuilder
 	private var hops: some View {
-		if member.isRadio {
+		if member.status == .connected {
 			Text("Base", comment: "Cinema team board: the hops column for the connected radio, the base distances are measured from")
 				.foregroundStyle(BoardStyle.blue)
+		} else if member.status == .neverHeard {
+			// Hops default to zero until the node is heard, which isn't "Direct".
+			Text(verbatim: "—")
 		} else if let hopsAway = member.hopsAway {
 			if hopsAway == 0 {
 				Text("Direct")
@@ -344,23 +433,25 @@ private struct TeamRow: View {
 			}
 		} else {
 			Text(verbatim: "—")
-				.foregroundStyle(BoardStyle.ink.opacity(0.5))
 		}
 	}
 }
 
-/// Marker on a whiteboard. The surface is the blank board's color in the tent image, sampled at
-/// its top and bottom, so the panel reads as the board rather than a window in front of it.
+/// Marker on a whiteboard. The surface keeps the hue of the blank board in the tent image but is
+/// lighter, so every ink below reads at a WCAG contrast of at least 4.5:1 across the gradient.
+/// Top / bottom: ink 7.8 / 6.6, blue 6.8 / 5.7, red 5.7 / 4.8, green 5.7 / 4.8, faded 5.6 / 4.7.
 private enum BoardStyle {
 	static let surface = LinearGradient(
-		colors: [Color(red: 134 / 255, green: 110 / 255, blue: 82 / 255), Color(red: 110 / 255, green: 89 / 255, blue: 65 / 255)],
+		colors: [Color(red: 184 / 255, green: 164 / 255, blue: 134 / 255), Color(red: 170 / 255, green: 150 / 255, blue: 121 / 255)],
 		startPoint: .top,
 		endPoint: .bottom
 	)
-	static let ink = Color(red: 0.08, green: 0.08, blue: 0.09)
-	static let blue = Color(red: 0.08, green: 0.16, blue: 0.45)
-	static let red = Color(red: 0.55, green: 0.07, blue: 0.06)
-	static let green = Color(red: 0.04, green: 0.33, blue: 0.14)
+	static let ink = Color(red: 0.07, green: 0.07, blue: 0.08)
+	static let blue = Color(red: 0.04, green: 0.10, blue: 0.33)
+	static let red = Color(red: 0.38, green: 0.02, blue: 0.02)
+	static let green = Color(red: 0, green: 0.21, blue: 0.07)
+	/// Nodes not heard lately, hints and missing values.
+	static let faded = Color(red: 0.19, green: 0.18, blue: 0.17)
 
 	/// The board's handwriting, falling back to the system font where Chalkboard isn't installed.
 	static func marker(_ size: CGFloat) -> Font {
