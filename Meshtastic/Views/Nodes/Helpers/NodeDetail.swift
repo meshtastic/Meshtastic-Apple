@@ -272,6 +272,24 @@ struct NodeDetail: View {
 				}
 			}
 			.accessibilityElement(children: .combine)
+			// When a local display name hides the node's real broadcast long name, show the real
+			// one too so it can still be seen without clearing the display name (#2604).
+			if let longName = currentUser?.longNameHiddenByDisplayName {
+				HStack {
+					Label {
+						Text("Long Name")
+					} icon: {
+						Image(systemName: "person.wave.2")
+							.symbolRenderingMode(.hierarchical)
+					}
+					Spacer()
+					Text(longName.addingVariationSelectors)
+						.foregroundStyle(.secondary)
+						.lineLimit(1)
+						.textSelection(.enabled)
+				}
+				.accessibilityElement(children: .combine)
+			}
 			HStack {
 				Label {
 					Text("Node Number")
