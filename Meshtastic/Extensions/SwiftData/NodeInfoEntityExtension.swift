@@ -25,18 +25,35 @@ extension NodeInfoEntity {
 	// These use FetchDescriptor with fetchLimit to avoid loading entire relationship arrays.
 
 	var latestPosition: PositionEntity? {
-		// Fast path: the ingest layer keeps this populated, so reads are O(1). Screen the cached
-		// handle's liveness first — a row the ingest context deleted can linger here until this
-		// context processes the merge, and touching a persisted property on it traps in SwiftData.
-		// (The ingest side now reuses the latest row for near-duplicate fixes, so stale caches are
-		// rare; this is the reader-side backstop.)
-		if let cached = latestPositionCache, cached.modelContext != nil, !cached.isDeleted {
-			return cached
-		}
-		// Fallback for data created without the cache (migrated / restored / seeded), or when the
-		// cached row is stale: a sorted limit-1 query. Runs at most once per node until the cache
-		// warms on the next position.
 		guard let ctx = modelContext else { return nil }
+		// The ingest layer keeps the cache pointed at the latest row, but the handle it hands back
+		// can't be trusted on its own. A context only learns about deletes made through itself, so
+		// a row the ingest actor deleted and saved still reports `modelContext != nil` and
+		// `isDeleted == false` here, and the first persisted-property read on it traps (the node
+		// list's top crash). Confirm the row through the store instead: reading persistentModelID
+		// on the stale handle is safe, and a fetch loads the row's values, so what it returns can
+		// be read even if the row is deleted afterwards.
+		if let cached = latestPositionCache {
+			let cachedID = cached.persistentModelID
+			if (cachedID.storeIdentifier ?? "").isEmpty {
+				// A temporary id is this context's own unsaved insert (the ingest actor reads it
+				// between debounced saves). No other context can have deleted it, and a fetch by a
+				// temporary id is not valid on every OS, so hand it back without the store lookup.
+				if cached.modelContext != nil, !cached.isDeleted {
+					return cached
+				}
+			} else {
+				var byID = FetchDescriptor<PositionEntity>(
+					predicate: #Predicate<PositionEntity> { $0.persistentModelID == cachedID }
+				)
+				byID.fetchLimit = 1
+				if let row = try? ctx.fetch(byID).first {
+					return row
+				}
+			}
+		}
+		// No cache (migrated / restored / seeded data) or the cached row is gone: a sorted limit-1
+		// query. The next position packet warms the cache again.
 		let nodeNum = self.num
 		var descriptor = FetchDescriptor<PositionEntity>(
 			predicate: #Predicate<PositionEntity> { $0.nodePosition?.num == nodeNum },
@@ -383,7 +400,8 @@ func findOrCreateUser(num: Int64, context: ModelContext) -> UserEntity {
 	if let existing = (try? context.fetch(descriptor))?.first {
 		return existing
 	}
-	// `fetch` only sees saved rows; an un-saved insert for this `num` won't appear above.
+	// A fetch also returns this context's unsaved inserts (`includePendingChanges` defaults to
+	// true; checked on this toolchain), so the pending scan below is a backstop, not the usual path.
 	if let pending = context.insertedModelsArray.lazy
 		.compactMap({ $0 as? UserEntity })
 		.first(where: { $0.num == num }) {
@@ -406,21 +424,21 @@ func findOrCreateUser(num: Int64, context: ModelContext) -> UserEntity {
 
 /// Returns the `NodeInfoEntity` for `num`, creating and inserting a stub only when none exists yet.
 ///
-/// `NodeInfoEntity.num` is `@Attribute(.unique)`. SwiftData resolves unique collisions against the
-/// **saved** store only — it does NOT dedup against un-saved inserts pending in the same context.
-/// So a plain `fetch`-then-`insert` can leave two pending rows with the same `num` (e.g. a POSITION
-/// packet creates a stub before the matching NodeInfo packet arrives, or two packets for a new node
-/// arrive back-to-back before a save), which then traps at insert/save time with a SwiftData
-/// assertion (`_assertionFailure`, "…remapped to a temporary identifier… fatal logic error in
-/// DefaultStore"). Routing every node creation through this helper — which checks pending inserts in
-/// addition to the store — guarantees exactly one node per `num`.
+/// `NodeInfoEntity.num` is `@Attribute(.unique)`, but the constraint is only enforced at save: two
+/// pending inserts with the same `num` (a POSITION packet creating a stub before the matching
+/// NodeInfo packet arrives, or two packets for a new node back-to-back before a save) trap there
+/// with a SwiftData assertion (`_assertionFailure`, "…remapped to a temporary identifier… fatal
+/// logic error in DefaultStore"). Routing every node creation through this helper guarantees
+/// exactly one node per `num`: the fetch finds pending inserts on the checked toolchain, and the
+/// `insertedModelsArray` scan is the backstop.
 func findOrCreateNode(num: Int64, context: ModelContext) -> NodeInfoEntity {
 	var descriptor = FetchDescriptor<NodeInfoEntity>(predicate: #Predicate<NodeInfoEntity> { $0.num == num })
 	descriptor.fetchLimit = 1
 	if let existing = (try? context.fetch(descriptor))?.first {
 		return existing
 	}
-	// `fetch` only sees saved rows; an un-saved insert for this `num` won't appear above.
+	// A fetch also returns this context's unsaved inserts (`includePendingChanges` defaults to
+	// true; checked on this toolchain), so the pending scan below is a backstop, not the usual path.
 	if let pending = context.insertedModelsArray.lazy
 		.compactMap({ $0 as? NodeInfoEntity })
 		.first(where: { $0.num == num }) {
