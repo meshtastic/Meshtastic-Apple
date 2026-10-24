@@ -212,6 +212,83 @@ struct KMLImporterTests {
 		await #expect(throws: KMZArchiveError.self) { try await manager.processUploadedFile(from: notZip) }
 	}
 
+	// MARK: - Drawing
+
+	/// A picture with a green top half and a blue bottom half, written to disk.
+	private func halvesImage() throws -> URL {
+		let renderer = UIGraphicsImageRenderer(size: CGSize(width: 20, height: 20), format: {
+			let format = UIGraphicsImageRendererFormat()
+			format.scale = 1
+			return format
+		}())
+		let data = renderer.pngData { _ in
+			UIColor(red: 0, green: 1, blue: 0, alpha: 1).setFill()
+			UIRectFill(CGRect(x: 0, y: 0, width: 20, height: 10))
+			UIColor(red: 0, green: 0, blue: 1, alpha: 1).setFill()
+			UIRectFill(CGRect(x: 0, y: 10, width: 20, height: 10))
+		}
+		return try write(data, named: "halves-\(UUID().uuidString).png")
+	}
+
+	private struct Pixel {
+		var red: CGFloat
+		var green: CGFloat
+		var blue: CGFloat
+	}
+
+	/// Draws the overlay the way the map does, into a bitmap with the top-left origin MapKit uses,
+	/// and returns the color near the middle of its top edge.
+	private func topColor(of overlay: GroundImageOverlay) -> Pixel? {
+		let rect = overlay.imageMapRect
+		let side = 200
+		guard let context = CGContext(
+			data: nil, width: side, height: side, bitsPerComponent: 8, bytesPerRow: side * 4,
+			space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+		) else { return nil }
+		// Top-left origin, with map points scaled so the overlay fills the bitmap. A renderer works
+		// in map points measured from the overlay's own corner, not from the map's.
+		context.translateBy(x: 0, y: CGFloat(side))
+		context.scaleBy(x: 1, y: -1)
+		context.scaleBy(x: CGFloat(side) / CGFloat(rect.size.width), y: CGFloat(side) / CGFloat(rect.size.height))
+		GroundImageOverlayRenderer(overlay: overlay).draw(overlay.boundingMapRect, zoomScale: 1, in: context)
+		guard let bytes = context.data?.assumingMemoryBound(to: UInt8.self) else { return nil }
+		// Row 0 of the bitmap is the top.
+		let offset = 20 * side * 4 + (side / 2) * 4
+		return Pixel(red: CGFloat(bytes[offset]) / 255, green: CGFloat(bytes[offset + 1]) / 255, blue: CGFloat(bytes[offset + 2]) / 255)
+	}
+
+	@Test("A ground overlay draws upright, reading its image from disk only when drawn")
+	func drawsUpright() throws {
+		let url = try halvesImage()
+		defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+		let overlay = ImportedGroundOverlay(
+			id: "t", name: nil, imageURL: url, north: 0.001, south: -0.001, east: 0.001, west: -0.001, rotation: 0
+		).makeOverlay()
+		let drawn = try #require(overlay)
+		let color = try #require(topColor(of: drawn))
+		#expect(color.green > 0.8 && color.blue < 0.2, "the top of the picture is green")
+	}
+
+	@Test("A ground overlay turned half a circle shows its other edge on top")
+	func drawsTurned() throws {
+		let url = try halvesImage()
+		defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+		let overlay = try #require(ImportedGroundOverlay(
+			id: "t", name: nil, imageURL: url, north: 0.001, south: -0.001, east: 0.001, west: -0.001, rotation: 180
+		).makeOverlay())
+		let color = try #require(topColor(of: overlay))
+		#expect(color.blue > 0.8 && color.green < 0.2, "the bottom of the picture is now on top")
+	}
+
+	@Test("An overlay whose image file is gone is left out")
+	func missingImage() {
+		let gone = ImportedGroundOverlay(
+			id: "t", name: nil, imageURL: URL(fileURLWithPath: "/nonexistent/\(UUID().uuidString).png"),
+			north: 1, south: 0, east: 1, west: 0, rotation: 0
+		)
+		#expect(gone.makeOverlay() == nil)
+	}
+
 	@Test("The size limit is the one Android uses for shared map files")
 	func sizeLimit() {
 		#expect(MapDataManager.maxFileSize == 50 * 1024 * 1024)

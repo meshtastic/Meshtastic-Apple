@@ -1398,7 +1398,7 @@ struct MeshMapMK: View {
 											// Point yields one marker; MultiPoint yields one per sub-coordinate.
 											let radius = styled.feature.markerRadius
 											// A KMZ point that names an icon draws it, at the size the file asked for.
-											let icon = styled.feature.importedIconPath.flatMap { ImportedImageCache.shared.icon(atPath: $0) }
+											let icon = styled.feature.importedIconPath.flatMap { content.icons[$0] }
 											let iconSide = 32 * CGFloat(min(max(styled.feature.importedIconScale, 0.5), 3))
 											for (index, coordinate) in styled.feature.markerCoordinates.enumerated() {
 												let content: AnyView

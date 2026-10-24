@@ -11,8 +11,11 @@ struct GeoJSONLayerContent: @unchecked Sendable {
 
 	let features: [GeoJSONStyledFeature]
 	let grounds: [Ground]
+	/// Point icons already decoded, by the path of their image file, so drawing a marker never
+	/// reads a file on the main thread.
+	let icons: [String: UIImage]
 
-	static let empty = GeoJSONLayerContent(features: [], grounds: [])
+	static let empty = GeoJSONLayerContent(features: [], grounds: [], icons: [:])
 }
 
 /// Manager for loading and managing raw GeoJSON feature collections with embedded styling
@@ -86,15 +89,20 @@ class GeoJSONOverlayManager {
 		let groundOverlays = MapDataManager.shared.groundOverlays(for: files)
 		let content = await Task.detached(priority: .userInitiated) { () -> GeoJSONLayerContent in
 			var features: [GeoJSONStyledFeature] = []
+			var icons: [String: UIImage] = [:]
 			if !files.isEmpty, let collection = MapDataManager.shared.loadFeatureCollectionForFiles(files) {
 				for feature in collection.features where feature.isVisible {
 					features.append(GeoJSONStyledFeature(feature: feature, overlayId: feature.layerId ?? "default"))
+					if let path = feature.importedIconPath, icons[path] == nil,
+					   let icon = ImportedImageCache.shared.icon(atPath: path) {
+						icons[path] = icon
+					}
 				}
 			}
 			let grounds = groundOverlays.compactMap { ground in
 				ground.makeOverlay().map { GeoJSONLayerContent.Ground(id: ground.id, overlay: $0) }
 			}
-			return GeoJSONLayerContent(features: features, grounds: grounds)
+			return GeoJSONLayerContent(features: features, grounds: grounds, icons: icons)
 		}.value
 		layerContentCache = (configs: enabledConfigs, content: content)
 		return content

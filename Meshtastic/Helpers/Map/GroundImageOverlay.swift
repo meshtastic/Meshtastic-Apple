@@ -30,9 +30,17 @@ enum KMLFileTypes {
 // MARK: - Images
 
 /// Decoded layer images, shrunk to what a map can use: a picture of several thousand pixels on a
-/// side would be gigabytes decoded, and the map never shows it larger than the screen.
+/// side would be gigabytes decoded, and the map never shows it larger than the screen. Nothing else
+/// holds on to a decoded image, so the cache can let go of the ones not in use.
 final class ImportedImageCache: @unchecked Sendable {
 	static let shared = ImportedImageCache()
+
+	/// The most decoded pixel data kept at once. A 4,096-pixel overlay is 64 MB.
+	private static let maxCacheBytes = 192 * 1024 * 1024
+
+	private init() {
+		cache.totalCostLimit = Self.maxCacheBytes
+	}
 
 	/// Longest side, in pixels, for a ground overlay, and for a point's icon.
 	static let overlayPixels = 4_096
@@ -51,7 +59,7 @@ final class ImportedImageCache: @unchecked Sendable {
 			kCGImageSourceThumbnailMaxPixelSize: maxPixels
 		]
 		guard let image = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else { return nil }
-		cache.setObject(image, forKey: key)
+		cache.setObject(image, forKey: key, cost: image.bytesPerRow * image.height)
 		return image
 	}
 
@@ -91,26 +99,26 @@ struct ImportedGroundOverlay: Identifiable {
 	/// Degrees counterclockwise, as KML states it.
 	let rotation: Double
 
-	/// The map overlay, or nil when the image won't load or the edges can't be drawn (an overlay
-	/// that crosses the antimeridian, or one with its edges the wrong way round).
+	/// The map overlay, or nil when the image file is missing or the edges can't be drawn (an overlay
+	/// that crosses the antimeridian, or one with its edges the wrong way round). The image itself is
+	/// read when the map draws it, not here, so a layer with many images costs memory only for the
+	/// ones on screen.
 	func makeOverlay() -> GroundImageOverlay? {
-		guard north > south, east > west,
-			  let image = ImportedImageCache.shared.image(atPath: imageURL.path, maxPixels: ImportedImageCache.overlayPixels)
-		else { return nil }
-		return GroundImageOverlay(image: image, north: north, south: south, east: east, west: west, rotation: rotation)
+		guard north > south, east > west, FileManager.default.fileExists(atPath: imageURL.path) else { return nil }
+		return GroundImageOverlay(imagePath: imageURL.path, north: north, south: south, east: east, west: west, rotation: rotation)
 	}
 }
 
 final class GroundImageOverlay: NSObject, MKOverlay {
-	let image: CGImage
+	let imagePath: String
 	let rotation: Double
 	/// Where the image goes before it is turned.
 	let imageMapRect: MKMapRect
 	let coordinate: CLLocationCoordinate2D
 	let boundingMapRect: MKMapRect
 
-	init(image: CGImage, north: Double, south: Double, east: Double, west: Double, rotation: Double) {
-		self.image = image
+	init(imagePath: String, north: Double, south: Double, east: Double, west: Double, rotation: Double) {
+		self.imagePath = imagePath
 		self.rotation = rotation
 		let northWest = MKMapPoint(CLLocationCoordinate2D(latitude: north, longitude: west))
 		let southEast = MKMapPoint(CLLocationCoordinate2D(latitude: south, longitude: east))
@@ -150,7 +158,10 @@ final class GroundImageOverlay: NSObject, MKOverlay {
 
 final class GroundImageOverlayRenderer: MKOverlayRenderer {
 	override func draw(_ mapRect: MKMapRect, zoomScale: MKZoomScale, in context: CGContext) {
-		guard let overlay = overlay as? GroundImageOverlay else { return }
+		// MapKit draws on a background thread, which is where a cache miss decodes the image.
+		guard let overlay = overlay as? GroundImageOverlay,
+			  let image = ImportedImageCache.shared.image(atPath: overlay.imagePath, maxPixels: ImportedImageCache.overlayPixels)
+		else { return }
 		let rect = self.rect(for: overlay.imageMapRect)
 		context.saveGState()
 		defer { context.restoreGState() }
@@ -160,7 +171,7 @@ final class GroundImageOverlayRenderer: MKOverlayRenderer {
 		context.rotate(by: CGFloat(-overlay.rotation * .pi / 180))
 		context.translateBy(x: -rect.midX, y: -rect.midY)
 		UIGraphicsPushContext(context)
-		UIImage(cgImage: overlay.image).draw(in: rect)
+		UIImage(cgImage: image).draw(in: rect)
 		UIGraphicsPopContext()
 	}
 }
