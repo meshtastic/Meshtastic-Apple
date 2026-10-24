@@ -142,6 +142,14 @@ struct MainScene: View {
 				#endif
 			}
 			.contactImportSheet($pendingContact, accessoryManager: accessoryManager)
+			.alert("Couldn't Import Map File", isPresented: Binding(
+				get: { router.mapImportError != nil },
+				set: { if !$0 { router.mapImportError = nil } }
+			)) {
+				Button("OK", role: .cancel) { router.mapImportError = nil }
+			} message: {
+				Text(router.mapImportError ?? "")
+			}
 			// Badge refresh reads the store, so it has to unmount with the
 			// container during a node switch. Message lists, Siri, and CarPlay
 			// all post this.

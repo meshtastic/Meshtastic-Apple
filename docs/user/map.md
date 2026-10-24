@@ -46,7 +46,7 @@ Tap the layer icon (top-right) to switch between:
 |-------|-------------|
 | Standard | Default Apple Maps street/satellite hybrid |
 | Satellite | Aerial imagery |
-| GeoJSON Overlays | Custom map layers loaded from `.geojson` files in the app's file storage |
+| Imported overlays | Custom map layers loaded from `.geojson`, `.kml` and `.kmz` files in the app's file storage |
 
 ## Map Options
 
@@ -89,9 +89,20 @@ When no node has a position yet, there is no mesh area to download. The spatial 
 
 Custom GeoJSON overlays you've uploaded are listed here, each with its own toggle and file details (format, feature count, size, upload date). Swipe a file left to delete it, or tap **Upload Map Data** to add another. The section's master toggle turns uploaded overlays on the map on or off as a group.
 
+#### KML and KMZ files
+
+Besides GeoJSON, you can import KML and KMZ files, such as the ones Google Earth, CalTopo and survey tools export. Tap **Upload Map Data** and pick the file, or open one from Files, AirDrop or the Share Sheet. The app converts it to a layer you manage like any other. If a file can't be imported, you get a message saying why.
+
+- **What comes through:** points, lines and polygons (holes included), with their names, descriptions, line and fill colors, and line widths. Placemarks the file marks hidden stay hidden.
+- **Images:** a KMZ can also carry ground overlays (an image laid on the map between four edges, turned if the file says so) and custom point icons. Ground overlays draw under the map's labels. A plain KML has no images with it, so its image overlays are left out and its points show the standard marker.
+- **Nothing is downloaded:** an icon or overlay image that lives on the web is not fetched, because that would tell the web server where you are looking. It is left out.
+- **Not imported:** folders (their features are shown, without the folder structure), network links, tours, 3D models and extended data.
+- **Limits:** a file may be up to 50 MB, and a KMZ may unpack to at most 50 MB. A file with nothing the map can draw, or one that is damaged, is turned down.
+- **Where it shows:** on the main map. The per-node and other maps don't draw imported layers.
+
 ## Coverage Estimate (Site Planner)
 
-Estimate the radio coverage of a transmitter site without leaving the app. The app drives the hosted [Meshtastic Site Planner](https://site.meshtastic.org) — a SPLAT!/ITM propagation simulator — and imports the resulting coverage map as a styled GeoJSON overlay.
+Estimate the radio coverage of a transmitter site without leaving the app. The app predicts received signal strength on the device with the ITU-R P.1812 propagation model over Mapterhorn terrain, the same engine the Android app uses, and adds the result to the map as a styled GeoJSON overlay. It uses the same inputs and color palettes as the [Meshtastic Site Planner](https://site.meshtastic.org), though its SPLAT!/ITM model won't match pixel for pixel.
 
 ### Starting an estimate
 
@@ -107,20 +118,20 @@ The form mirrors the Site Planner's own panels. The **Transmitter** and **Displa
 | Section | Fields |
 |---------|--------|
 | Site / Transmitter | Site name, latitude/longitude, transmit power (W), frequency (MHz), antenna height (m), antenna gain (dBi). Location shortcuts fill the coordinates from **My Location**, the selected **Node**, or the **Map Center**. |
-| Receiver | Receiver sensitivity (dBm) — the coverage threshold. |
-| Simulation Options | Maximum range (km) and a high-resolution terrain toggle (which caps the range at 70 km). |
+| Receiver | Receiver sensitivity (dBm) — the coverage threshold — and receiver height, how high above the ground the listening node is (1 m, a handheld, by default). |
+| Simulation Options | Maximum range, from 1 to 150 km. |
 | Display | Color palette for the coverage map (Mesh, Plasma, Viridis, CMRmap, Cool, Turbo, Jet). |
 
 **Prefill from the connected radio:** frequency is computed from the radio's region, modem preset, and channel; transmit power is converted from the device's dBm setting; and receiver sensitivity is mapped from the modem preset (for example LongFast → −139 dBm). Antenna gain and height aren't part of the device config, so they keep the planner's defaults. You can edit any value before running.
 
 ### Running it
 
-Tap **Estimate**. A progress indicator appears while the planner computes the coverage; you can **Cancel** at any time. When it finishes, the styled coverage map is added as a map overlay (in its dBm colors), the GeoJSON overlays layer is enabled, and the map recenters on the transmitter. The imported layer is managed like any other GeoJSON overlay in **Map Options**.
+Tap **Estimate**. A progress indicator appears while the coverage is computed; you can **Cancel** at any time. The result is drawn as six signal bands starting at the receiver sensitivity. When it finishes, the styled coverage map is added as a map overlay (in its dBm colors), the GeoJSON overlays layer is enabled, and the map recenters on the transmitter. The imported layer is managed like any other GeoJSON overlay in **Map Options**.
 
 A new estimate hides older estimates for the same node, so estimates for different nodes can be shown together. Estimates run from the map center or another location replace each other.
 
-> **Note — Requires a network connection**
-> The coverage simulation runs in the hosted Site Planner, so an internet connection is needed. Estimates time out after 45 seconds; on failure the flow ends cleanly without leaving a stuck spinner.
+> **Note — Terrain download**
+> The first estimate in an area downloads its terrain tiles, so it needs an internet connection; later estimates there use the cached terrain. Terrain from an offline map region you've downloaded is used without the network. The frequency must be between 30 and 6000 MHz, the range the model covers. Terrain data © [Mapterhorn](https://mapterhorn.com/attribution).
 
 ### Coverage on the spatial map (Apple Vision Pro)
 

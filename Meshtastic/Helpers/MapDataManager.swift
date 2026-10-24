@@ -6,17 +6,25 @@ import Combine
 /// Manager for handling user-uploaded map data files
 class MapDataManager: ObservableObject {
 	static let shared = MapDataManager()
-	init() {}
+	/// `directoryName` is the folder under Documents; tests pass their own so they don't touch the app's files.
+	init(directoryName: String = "MapData") {
+		mapDataDirectory = directoryName
+	}
 
 	// MARK: - Constants
-	private let maxFileSize: Int64 = 10 * 1024 * 1024 // 10MB
-	private let mapDataDirectory = "MapData"
+	/// The most a map file may be, as picked and as stored once converted. Android takes 50 MB
+	/// for files shared into the app, and KML and KMZ exports of real surveys run well past 10.
+	static let maxFileSize: Int64 = 50 * 1024 * 1024
+	private var maxFileSize: Int64 { Self.maxFileSize }
+	private let mapDataDirectory: String
 	private let userUploadedDirectory = "user_uploaded"
 	private let metadataFileName = "upload_history.json"
 
 	// MARK: - Properties
 	@Published private var uploadedFiles: [MapDataMetadata] = []
 	private var activeFeatureCollection: GeoJSONFeatureCollection?
+	/// The Site Planner files each import switched off, so `discardImport` can turn them back on.
+	private var switchedOffBy: [UUID: [UUID]] = [:]
 
 	// MARK: - File Management
 
@@ -57,7 +65,7 @@ class MapDataManager: ObservableObject {
 	// MARK: - File Upload & Processing
 
 	/// Process and store an uploaded file
-	func processUploadedFile(from sourceURL: URL, source: MapDataSource = .manualUpload, coverage: SitePlannerCoverageInfo? = nil) async throws -> MapDataMetadata {
+	func processUploadedFile(from sourceURL: URL, source: MapDataSource = .manualUpload, coverage: SitePlannerCoverageInfo? = nil, assets: [String: Data]? = nil) async throws -> MapDataMetadata {
 
 		// 1. Start accessing security-scoped resource
 		let isAccessing = sourceURL.startAccessingSecurityScopedResource()
@@ -65,6 +73,12 @@ class MapDataManager: ObservableObject {
 			if isAccessing {
 				sourceURL.stopAccessingSecurityScopedResource()
 			}
+		}
+
+		// A KML or KMZ becomes a GeoJSON layer (plus its images) and goes through this same
+		// pipeline from there.
+		if KMLFileTypes.isKMLOrKMZ(sourceURL) {
+			return try await importKMLFile(from: sourceURL, source: source)
 		}
 
 		// 2. Validate file
@@ -91,16 +105,30 @@ class MapDataManager: ObservableObject {
 		// 5. Process and validate content
 		let metadata = try await processFileContent(at: destURL, originalName: originalName, source: source, coverage: coverage)
 
+		// Images a KMZ brought along sit beside the layer, in a folder named for its file.
+		if let assets, !assets.isEmpty {
+			do {
+				try writeAssets(assets, forFilename: newFilename)
+			} catch {
+				removeAssets(forFilename: newFilename)
+				try? FileManager.default.removeItem(at: destURL)
+				throw error
+			}
+		}
+
 		// 6. Save metadata and update UI on main thread
 		await MainActor.run {
 			uploadedFiles.append(metadata)
 			// A new Site Planner run replaces the previous run from the same transmitter,
 			// so estimates for different nodes can show together. Manual uploads are never
 			// touched — their visibility belongs to the user.
+			var switchedOff: [UUID] = []
 			for index in uploadedFiles.indices
 			where uploadedFiles[index].id != metadata.id && Self.replaces(metadata, uploadedFiles[index]) {
+				if uploadedFiles[index].isActive { switchedOff.append(uploadedFiles[index].id) }
 				uploadedFiles[index].isActive = false
 			}
+			if !switchedOff.isEmpty { switchedOffBy[metadata.id] = switchedOff }
 			// Clear cached configuration to force reload
 			activeFeatureCollection = nil
 		}
@@ -114,7 +142,7 @@ class MapDataManager: ObservableObject {
 	/// reuses the exact validation + render + styling path with no round-trip to the share sheet.
 	/// `name` becomes the on-disk file / layer name; a `.geojson` extension is enforced.
 	/// `coverage` describes the transmitter of a Site Planner run and is saved with the file.
-	func importFromString(_ geoJSON: String, name: String, source: MapDataSource = .manualUpload, coverage: SitePlannerCoverageInfo? = nil) async throws -> MapDataMetadata {
+	func importFromString(_ geoJSON: String, name: String, source: MapDataSource = .manualUpload, coverage: SitePlannerCoverageInfo? = nil, assets: [String: Data]? = nil) async throws -> MapDataMetadata {
 		guard let data = geoJSON.data(using: .utf8) else {
 			throw MapDataError.invalidContent
 		}
@@ -137,7 +165,104 @@ class MapDataManager: ObservableObject {
 		try data.write(to: tempURL)
 		defer { try? FileManager.default.removeItem(at: tempURL) }
 
-		return try await processUploadedFile(from: tempURL, source: source, coverage: coverage)
+		return try await processUploadedFile(from: tempURL, source: source, coverage: coverage, assets: assets)
+	}
+
+	/// Reads a KML or KMZ, converts it to a GeoJSON layer and stores that, with any images a KMZ
+	/// held that the layer draws. Called with security-scoped access already open.
+	private func importKMLFile(from sourceURL: URL, source: MapDataSource) async throws -> MapDataMetadata {
+		let attributes = try sourceURL.resourceValues(forKeys: [.fileSizeKey, .isRegularFileKey])
+		guard attributes.isRegularFile == true else { throw MapDataError.invalidFileType }
+		guard let size = attributes.fileSize, Int64(size) <= maxFileSize else { throw MapDataError.fileTooLarge }
+		let originalName = sourceURL.deletingPathExtension().lastPathComponent
+
+		// Unpacking and converting can take a while on a big survey, so it stays off the main actor.
+		let package = try await Task.detached(priority: .userInitiated) { () -> KMLImportPackage in
+			let data = try Data(contentsOf: sourceURL)
+			if KMZArchive.isArchive(data) {
+				let archive = try KMZArchive(data: data)
+				return try KMLImporter.package(kml: try archive.kmlData(), imageData: { archive.data(forHref: $0) })
+			}
+			return try KMLImporter.package(kml: data, imageData: { _ in nil })
+		}.value
+
+		var assets = package.assets
+		if let overlays = package.groundOverlaysJSON { assets[Self.groundOverlaysFileName] = overlays }
+		return try await importFromString(package.geoJSON, name: originalName, source: source, assets: assets)
+	}
+
+	/// The list of a layer's ground overlays, kept beside its images.
+	static let groundOverlaysFileName = "ground-overlays.json"
+
+	// MARK: - Layer images
+
+	private func assetsDirectoryURL(forFilename filename: String) -> URL? {
+		getUserUploadedDirectory()?.appendingPathComponent(filename + ".assets", isDirectory: true)
+	}
+
+	/// Where an image a layer names is kept, or nil when the layer has none by that name.
+	func assetURL(forFilename filename: String, name: String) -> URL? {
+		// A name from the layer's own file is never trusted to be a path.
+		guard name == (name as NSString).lastPathComponent, !name.hasPrefix(".") else { return nil }
+		guard let url = assetsDirectoryURL(forFilename: filename)?.appendingPathComponent(name),
+			  FileManager.default.fileExists(atPath: url.path) else { return nil }
+		return url
+	}
+
+	private func writeAssets(_ assets: [String: Data], forFilename filename: String) throws {
+		guard let directory = assetsDirectoryURL(forFilename: filename) else { throw MapDataError.invalidDestination }
+		try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+		for (name, data) in assets where name == (name as NSString).lastPathComponent {
+			try data.write(to: directory.appendingPathComponent(name))
+		}
+	}
+
+	private func removeAssets(forFilename filename: String) {
+		guard let directory = assetsDirectoryURL(forFilename: filename) else { return }
+		try? FileManager.default.removeItem(at: directory)
+	}
+
+	/// The ground overlays (images laid on the map between four edges) of the given layers.
+	func groundOverlays(for files: [MapDataMetadata]) -> [ImportedGroundOverlay] {
+		var result: [ImportedGroundOverlay] = []
+		for file in files {
+			// Only a layer that kept images beside it can have ground overlays.
+			guard let listURL = assetsDirectoryURL(forFilename: file.filename)?
+					.appendingPathComponent(Self.groundOverlaysFileName),
+				  let data = try? Data(contentsOf: listURL),
+				  let entries = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else { continue }
+			for (index, entry) in entries.enumerated() {
+				guard let imageName = entry["image"] as? String,
+					  let imageURL = assetURL(forFilename: file.filename, name: imageName),
+					  let north = entry["north"] as? Double, let south = entry["south"] as? Double,
+					  let east = entry["east"] as? Double, let west = entry["west"] as? Double else { continue }
+				result.append(ImportedGroundOverlay(
+					id: "\(file.id.uuidString)-\(index)",
+					name: entry["name"] as? String,
+					imageURL: imageURL,
+					north: north, south: south, east: east, west: west,
+					rotation: entry["rotation"] as? Double ?? 0
+				))
+			}
+		}
+		return result
+	}
+
+	/// Points a layer's features at the image files they name, so drawing needs no lookup back to
+	/// the file. The path is made at load time and never saved.
+	private func resolvingAssets(in collection: GeoJSONFeatureCollection, for file: MapDataMetadata) -> GeoJSONFeatureCollection {
+		guard collection.features.contains(where: { feature in
+			if case .string = feature.properties?["icon-image"] { return true }
+			return false
+		}) else { return collection }
+		let features = collection.features.map { feature -> GeoJSONFeature in
+			guard case .string(let name) = feature.properties?["icon-image"],
+				  let url = assetURL(forFilename: file.filename, name: name) else { return feature }
+			var properties = feature.properties ?? [:]
+			properties["icon-path"] = .string(url.path)
+			return GeoJSONFeature(type: feature.type, id: feature.id, geometry: feature.geometry, properties: properties)
+		}
+		return GeoJSONFeatureCollection(type: collection.type, features: features)
 	}
 
 	/// Whether a new file switches an older one off: only Site Planner runs from the same node, or
@@ -232,7 +357,9 @@ class MapDataManager: ObservableObject {
 		// Parse as raw GeoJSON FeatureCollection
 		if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
 		   let features = json["features"] as? [[String: Any]] {
-			return features.count
+			// A KMZ made only of ground overlays has no features and is still worth showing.
+			let groundOverlays = (json["groundOverlays"] as? [[String: Any]])?.count ?? 0
+			return features.count + groundOverlays
 		}
 		throw MapDataError.invalidContent
 	}
@@ -244,7 +371,7 @@ class MapDataManager: ObservableObject {
 		}
 
 		let data = try Data(contentsOf: fileURL)
-		return try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: data)
+		return resolvingAssets(in: try GeoJSONFeatureCollection.parse(data), for: file)
 	}
 
 	// MARK: - Configuration Loading
@@ -315,7 +442,10 @@ class MapDataManager: ObservableObject {
 
 			do {
 				let data = try Data(contentsOf: fileURL)
-				let featureCollection = try JSONDecoder().decode(GeoJSONFeatureCollection.self, from: data)
+				let featureCollection = resolvingAssets(
+					in: try GeoJSONFeatureCollection.parse(data),
+					for: activeFile
+				)
 
 				allFeatures.append(contentsOf: featureCollection.features)
 			} catch {
@@ -374,6 +504,24 @@ class MapDataManager: ObservableObject {
 		}
 	}
 
+	/// Delete a file that was just imported and turn back on the files its import switched off, unless a
+	/// newer active file replaces them. Used when a coverage run is cancelled while its file is saving.
+	func discardImport(_ metadata: MapDataMetadata) async throws {
+		let switchedOff = await MainActor.run { switchedOffBy[metadata.id] ?? [] }
+		try await deleteFile(metadata)
+		guard !switchedOff.isEmpty else { return }
+		await MainActor.run {
+			for id in switchedOff {
+				guard let index = uploadedFiles.firstIndex(where: { $0.id == id }) else { continue }
+				let older = uploadedFiles[index]
+				let stillReplaced = uploadedFiles.contains { $0.id != older.id && $0.isActive && Self.replaces($0, older) }
+				if !stillReplaced { uploadedFiles[index].isActive = true }
+			}
+			activeFeatureCollection = nil
+		}
+		try saveMetadata()
+	}
+
 	/// Delete uploaded file
 	func deleteFile(_ metadata: MapDataMetadata) async throws {
 
@@ -393,9 +541,11 @@ class MapDataManager: ObservableObject {
 			Logger.services.error("🗑️ MapDataManager: Failed to remove file: \(error.localizedDescription, privacy: .public)")
 			throw error
 		}
+		removeAssets(forFilename: metadata.filename)
 
 		// Update UI-related properties on main thread
 		await MainActor.run {
+			switchedOffBy[metadata.id] = nil
 			if let index = uploadedFiles.firstIndex(where: { $0.filename == metadata.filename }) {
 				uploadedFiles.remove(at: index)
 			} else {
@@ -549,15 +699,17 @@ enum MapDataError: Error, LocalizedError {
 	case invalidDestination
 	case fileNotFound
 	case saveFailed
+	case noMappableContent
 
 	var errorDescription: String? {
 		switch self {
 		case .fileTooLarge:
-			return "File is too large. Maximum size is 10MB."
+			let limit = ByteCountFormatter.string(fromByteCount: MapDataManager.maxFileSize, countStyle: .memory)
+			return String(localized: "File is too large. Maximum size is \(limit).")
 		case .invalidFileType:
 			return "Invalid file type. Please select a regular file."
 		case .unsupportedFormat:
-			return "Unsupported file format. Supported formats: JSON, GeoJSON, KML, KMZ, GZ, ZLIB."
+			return String(localized: "Unsupported file format. Supported formats: GeoJSON, JSON, KML and KMZ.")
 		case .invalidContent:
 			return String(localized: "Invalid file content. Please check the file format.")
 		case .directoryCreationFailed:
@@ -568,6 +720,8 @@ enum MapDataError: Error, LocalizedError {
 			return "File not found."
 		case .saveFailed:
 			return "Failed to save file."
+		case .noMappableContent:
+			return String(localized: "This file has no points, lines, shapes or images the map can show.")
 		}
 	}
 }

@@ -936,6 +936,10 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 			if let tileOverlay = overlay as? MKTileOverlay {
 				return MKTileOverlayRenderer(tileOverlay: tileOverlay)
 			}
+			// An imported KML ground overlay: an image between four edges.
+			if overlay is GroundImageOverlay {
+				return GroundImageOverlayRenderer(overlay: overlay)
+			}
 			// Styled caller overlay (circle / polyline / polygon), style looked up by object identity.
 			let style = styleByOverlay[ObjectIdentifier(overlay)] ?? ClusterMapOverlayStyle()
 			let renderer: MKOverlayPathRenderer

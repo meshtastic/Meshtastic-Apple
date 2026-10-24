@@ -52,7 +52,7 @@ struct MapDataManagerImportFromStringTests {
 
 	@Test func throwsOnOversizedString() async throws {
 		let manager = MapDataManager()
-		let huge = String(repeating: "x", count: 11 * 1024 * 1024) // > 10MB cap
+		let huge = String(repeating: "x", count: 51 * 1024 * 1024) // > 50 MB cap
 		await #expect(throws: MapDataError.self) {
 			try await manager.importFromString(huge, name: "huge")
 		}

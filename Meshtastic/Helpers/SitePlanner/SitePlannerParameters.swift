@@ -2,20 +2,15 @@
 //  SitePlannerParameters.swift
 //  Meshtastic
 //
-//  The flat query contract used to drive the hosted Meshtastic Site Planner
-//  (https://site.meshtastic.org) for an in-app coverage estimate. A partial
-//  transmitter is merged over the planner's own defaults, so the app never needs
-//  the planner's internal schema — it only sends the keys the user can edit.
-//
-//  Contract reference: meshtastic/Meshtastic-Apple#2058 and
-//  meshtastic/meshtastic-site-planner#73 / #74.
+//  The inputs to an in-app coverage estimate. Defaults and names follow the
+//  Meshtastic Site Planner (https://site.meshtastic.org), so an estimate here
+//  and one there start from the same transmitter.
 //
 
 import Foundation
 import CoreLocation
 
-/// The coverage-map colour palette (`color_scale` query key). Raw values are the
-/// exact planner tokens; an unknown token falls back to `plasma` planner-side.
+/// The coverage-map colour palette. Raw values are the planner's colormap names.
 enum SitePlannerColorScale: String, CaseIterable, Identifiable, Hashable {
 	case mesh
 	case plasma
@@ -42,9 +37,8 @@ enum SitePlannerColorScale: String, CaseIterable, Identifiable, Hashable {
 }
 
 /// An in-app coverage-estimate request, mirroring the planner's `Site Parameters`
-/// panels. Defaults equal a fresh planner session so an untouched form is a no-op
-/// merge (see the Default column in the issue's flat-query contract table).
-struct SitePlannerParameters: Equatable {
+/// panels, with the planner's defaults.
+struct SitePlannerParameters: Equatable, Sendable {
 
 	// MARK: Site / Transmitter
 	var name: String = ""
@@ -62,28 +56,23 @@ struct SitePlannerParameters: Equatable {
 	// MARK: Receiver
 	/// Receiver sensitivity / coverage threshold in dBm. Planner default -130.
 	var rxSensitivityDBm: Double = -130
+	/// Receiver antenna height above ground in metres. Default 1, a handheld.
+	var rxHeightMeters: Double = 1
 
 	// MARK: Simulation Options
-	/// Maximum simulation range in km. Planner default 30; ≤150, or ≤70 with high-res.
+	/// Maximum simulation range in km. Planner default 30; at most 150.
 	var maxRangeKm: Double = 30
-	/// High-resolution terrain (30 m). Caps `maxRangeKm` at 70 when enabled.
-	var highResolution: Bool = false
 
 	// MARK: Display
 	var colorScale: SitePlannerColorScale = .mesh
 
-	// MARK: - Validation bounds (mirror the planner's `store.ts` / input ranges)
-	static let frequencyRange: ClosedRange<Double> = 20...20_000
+	// MARK: - Validation bounds
+	/// ITU-R P.1812's range, which kp1812 enforces.
+	static let frequencyRange: ClosedRange<Double> = 30...6000
 	static let rxSensitivityRange: ClosedRange<Double> = -150...(-30)
 	static let latitudeRange: ClosedRange<Double> = -90...90
 	static let longitudeRange: ClosedRange<Double> = -180...180
-	static let maxRangeStandard: ClosedRange<Double> = 1...150
-	static let maxRangeHighRes: ClosedRange<Double> = 1...70
-
-	/// The allowed max-range span for the current high-res selection.
-	var maxRangeBounds: ClosedRange<Double> {
-		highResolution ? Self.maxRangeHighRes : Self.maxRangeStandard
-	}
+	static let maxRangeBounds: ClosedRange<Double> = 1...150
 
 	/// A `0,0` fix is the firmware's "no position" sentinel — never a valid transmitter.
 	var hasValidCoordinate: Bool {
@@ -91,70 +80,15 @@ struct SitePlannerParameters: Equatable {
 		return !(latitude == 0 && longitude == 0)
 	}
 
-	/// Whether every field is inside the planner's accepted ranges and coordinates are usable.
+	/// Whether every field is inside the accepted ranges and coordinates are usable.
 	var isValid: Bool {
 		hasValidCoordinate
 			&& txPowerWatts > 0
 			&& Self.frequencyRange.contains(txFrequencyMHz)
 			&& txHeightMeters >= 0
 			&& Self.rxSensitivityRange.contains(rxSensitivityDBm)
-			&& maxRangeBounds.contains(maxRangeKm)
-	}
-
-	// MARK: - Query URL
-
-	/// The hosted planner base URL.
-	static let plannerBaseURL = "https://site.meshtastic.org/"
-
-	/// Builds `https://site.meshtastic.org/?<flat query>`.
-	/// - Parameters:
-	///   - autorun: append `run=1` so the planner computes on load (no click).
-	///   - bridge: append `bridge=1` so a native embed delivers via the JS bridge
-	///     instead of the share sheet.
-	func queryURL(autorun: Bool = true, bridge: Bool = false) -> URL? {
-		guard var components = URLComponents(string: Self.plannerBaseURL) else { return nil }
-
-		var items: [URLQueryItem] = [
-			URLQueryItem(name: "lat", value: Self.wire(latitude)),
-			URLQueryItem(name: "lon", value: Self.wire(longitude)),
-			URLQueryItem(name: "tx_power", value: Self.wire(txPowerWatts)),
-			URLQueryItem(name: "tx_freq", value: Self.wire(txFrequencyMHz)),
-			URLQueryItem(name: "tx_height", value: Self.wire(txHeightMeters)),
-			URLQueryItem(name: "tx_gain", value: Self.wire(txGainDBi)),
-			URLQueryItem(name: "rx_sensitivity", value: Self.wire(rxSensitivityDBm)),
-			URLQueryItem(name: "max_range", value: Self.wire(maxRangeKm)),
-			URLQueryItem(name: "color_scale", value: colorScale.rawValue)
-		]
-
-		let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
-		if !trimmedName.isEmpty {
-			// URLQueryItem percent-encodes the value for us.
-			items.append(URLQueryItem(name: "name", value: trimmedName))
-		}
-		if highResolution {
-			items.append(URLQueryItem(name: "high_res", value: "1"))
-		}
-		if autorun {
-			items.append(URLQueryItem(name: "run", value: "1"))
-		}
-		if bridge {
-			items.append(URLQueryItem(name: "bridge", value: "1"))
-		}
-
-		components.queryItems = items
-		// URLComponents encodes `+` in a query value as a literal `+`, which the
-		// planner would read as a space. None of our numeric values contain `+`,
-		// and names are handled by URLQueryItem, so no extra escaping is needed.
-		return components.url
-	}
-
-	/// Locale-independent numeric formatting for the wire (always a `.` decimal
-	/// separator; integers render without a trailing `.0`).
-	private static func wire(_ value: Double) -> String {
-		if value == value.rounded() && abs(value) < 1e15 {
-			return String(Int(value))
-		}
-		return String(value)
+			&& rxHeightMeters >= 0
+			&& Self.maxRangeBounds.contains(maxRangeKm)
 	}
 }
 

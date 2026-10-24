@@ -395,6 +395,22 @@
         }
       }
     },
+    "Couldn't Import Map File" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo importar el archivo de mapa"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法匯入地圖檔案"
+          }
+        }
+      }
+    },
     "Enter Showcase" : {
       "comment" : "Spatial map: open the showcase immersive space, closing this volume",
       "localizations" : {
@@ -402,6 +418,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "進入展示區"
+          }
+        }
+      }
+    },
+    "File is too large. Maximum size is %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El archivo es demasiado grande. El tamaño máximo es %@."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "檔案過大。大小上限為 %@。"
           }
         }
       }
@@ -637,6 +669,118 @@
         }
       }
     },
+    "This file has no points, lines, shapes or images the map can show." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este archivo no tiene puntos, líneas, formas ni imágenes que el mapa pueda mostrar."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此檔案沒有地圖可顯示的點、線、形狀或圖片。"
+          }
+        }
+      }
+    },
+    "This file is not a KML map." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este archivo no es un mapa KML."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此檔案不是 KML 地圖。"
+          }
+        }
+      }
+    },
+    "This file is not a KMZ archive." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este archivo no es un archivo KMZ."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此檔案不是 KMZ 壓縮檔。"
+          }
+        }
+      }
+    },
+    "This KML file could not be read." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo leer este archivo KML."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法讀取此 KML 檔案。"
+          }
+        }
+      }
+    },
+    "This KMZ archive has no KML document in it." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este archivo KMZ no contiene ningún documento KML."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此 KMZ 壓縮檔內沒有 KML 文件。"
+          }
+        }
+      }
+    },
+    "This KMZ archive is damaged and could not be read." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este archivo KMZ está dañado y no se pudo leer."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此 KMZ 壓縮檔已損毀,無法讀取。"
+          }
+        }
+      }
+    },
+    "This KMZ archive is too large once unpacked." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este archivo KMZ es demasiado grande al descomprimirse."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此 KMZ 壓縮檔解壓縮後過大。"
+          }
+        }
+      }
+    },
     "Unknown hardware" : {
       "comment" : "Showcase card: the node hasn't said what hardware it is",
       "localizations" : {
@@ -644,6 +788,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "未知硬體"
+          }
+        }
+      }
+    },
+    "Unsupported file format. Supported formats: GeoJSON, JSON, KML and KMZ." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Formato de archivo no compatible. Formatos compatibles: GeoJSON, JSON, KML y KMZ."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不支援的檔案格式。支援的格式:GeoJSON、JSON、KML 和 KMZ。"
           }
         }
       }
@@ -36388,6 +36548,9 @@
         }
       }
     },
+    "Could not download terrain for the coverage estimate." : {
+      "comment" : "Error when a terrain tile for the coverage estimate could not be downloaded"
+    },
     "Could not find node" : {
       "localizations" : {
         "da" : {
@@ -36530,24 +36693,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "無法傳送加密訊息"
-          }
-        }
-      }
-    },
-    "Could not start the coverage estimate." : {
-      "comment" : "Error message when the coverage estimate couldn't be started.",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No pudo empezar la estimación de cobertura."
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "無法開始涵蓋範圍估算。"
           }
         }
       }
@@ -36889,24 +37034,6 @@
         }
       }
     },
-    "Coverage estimate timed out." : {
-      "comment" : "A timeout message for the coverage estimate.",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "La estimación de cobertura ha caducado."
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "涵蓋範圍估算逾時。"
-          }
-        }
-      }
-    },
     "Coverage legend" : {
       "comment" : "VoiceOver label for the spatial map coverage colors",
       "localizations" : {
@@ -36917,6 +37044,9 @@
           }
         }
       }
+    },
+    "Coverage needs a frequency between 30 and 6000 MHz." : {
+      "comment" : "Error and form hint when the coverage frequency is outside what the propagation model accepts"
     },
     "Coverage Opacity" : {
       "comment" : "Spatial map menu: how see-through the coverage overlay is",
@@ -59475,40 +59605,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "高詳細程度"
-          }
-        }
-      }
-    },
-    "High-resolution terrain" : {
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Terreno de alta resolución"
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "高解析度地形"
-          }
-        }
-      }
-    },
-    "High-resolution terrain gives a more detailed estimate but caps the maximum range at 70 km." : {
-      "comment" : "A description of the high-resolution terrain feature.",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "El terreno de alta resolución proporciona una estimación más detallada, pero limita el alcance máximo a 70 km."
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "高解析度地形提供更詳細的估算，但最大範圍上限為 70 公里。"
           }
         }
       }
@@ -113917,6 +114013,9 @@
         }
       }
     },
+    "Receiver height" : {
+      "comment" : "Coverage estimate form: how high above the ground the receiving node's antenna is."
+    },
     "Recipient Ack: %@" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -137559,6 +137658,9 @@
           }
         }
       }
+    },
+    "Terrain data © [Mapterhorn](https://mapterhorn.com/attribution)" : {
+      "comment" : "Credit for the terrain the coverage estimate uses, with a link to its attribution page"
     },
     "Terrain Download Failed" : {
       "comment" : "Spatial map: alert title when downloading terrain for the volume fails",
