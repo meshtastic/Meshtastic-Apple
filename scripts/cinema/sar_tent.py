@@ -288,20 +288,6 @@ def folding_table(name, center, length, along_y, top_mat, leg_mat):
             cylinder(name + "Leg", 0.015, (cx + dx, cy + dy, 0), (cx + dx, cy + dy, 0.72), leg_mat)
 
 
-def folding_chair(center, facing, mat):
-    cx, cy = center
-    angle = math.atan2(facing[1], facing[0]) - math.pi / 2
-    seat = box("ChairSeat", (0.42, 0.40, 0.03), (cx, cy, 0.45), mat, rotation=(0, 0, angle), bevel=0.01)
-    back_offset = Vector((-facing[0], -facing[1], 0)).normalized() * 0.2
-    box("ChairBack", (0.42, 0.03, 0.28), (cx + back_offset.x, cy + back_offset.y, 0.78), mat, rotation=(0.15, 0, angle), bevel=0.01)
-    for dx in (-0.18, 0.18):
-        for dy in (-0.17, 0.17):
-            leg = Vector((dx, dy, 0))
-            leg.rotate(Euler((0, 0, angle)))
-            cylinder("ChairLeg", 0.011, (cx + leg.x, cy + leg.y, 0), (cx + leg.x, cy + leg.y, 0.44), mat)
-    return seat
-
-
 def laptop(center, facing_angle, screen_mat, body_mat):
     cx, cy, z = center
     box("LaptopBase", (0.34, 0.24, 0.02), (cx, cy, z + 0.01), body_mat, rotation=(0, 0, facing_angle), bevel=0.004)
@@ -326,7 +312,6 @@ def build_props():
     rng = random.Random(42)
     table_top = material("TableTop", (0.62, 0.61, 0.57), 0.5)
     steel = material("Steel", (0.15, 0.15, 0.16), 0.4, metallic=0.9)
-    chair = material("Chair", (0.08, 0.10, 0.12), 0.6)
     black_plastic = material("BlackPlastic", (0.02, 0.02, 0.02), 0.45)
     laptop_body = material("LaptopBody", (0.12, 0.12, 0.13), 0.35, metallic=0.6)
     screen_a = image_material("ScreenA", os.path.join(CACHE, "laptop_a.png"), 0.2, emission_strength=1.2)
@@ -355,8 +340,6 @@ def build_props():
     box("PowerStrip", (0.06, 0.4, 0.04), (-wall - 0.3, 0.6, 0.78), material("Strip", (0.8, 0.8, 0.78), 0.5))
     for i in range(3):
         box("Log", (0.21, 0.29, 0.004), (-wall + 0.2 + rng.uniform(-0.03, 0.03), -0.05 + i * 0.01, 0.765 + i * 0.004), paper, rotation=(0, 0, rng.uniform(-0.2, 0.2)))
-    folding_chair((-wall + 0.6, 0.4), (-1, 0), chair)
-    folding_chair((-wall + 0.6, 1.2), (-1, 0), chair)
     box("CaseUnderTable", (0.5, 0.35, 0.22), (-wall - 0.05, 1.6, 0.11), case_gray, bevel=0.02)
 
     # Radio table further forward on the left.
@@ -366,7 +349,6 @@ def build_props():
     cylinder("Mic", 0.025, (-wall + 0.15, 3.25, 0.76), (-wall + 0.15, 3.25, 0.85), black_plastic)
     box("Binder", (0.3, 0.26, 0.05), (-wall + 0.05, 3.55, 0.785), material("Binder", (0.1, 0.25, 0.6), 0.5))
     box("Battery", (0.3, 0.2, 0.2), (-wall - 0.05, 3.4, 0.1), yellow_case, bevel=0.015)
-    folding_chair((-wall + 0.6, 3.0), (-1, 0), chair)
 
     # Map table on the right, past the door.
     folding_table("MapTable", (wall - 0.1, 2.6), 1.8, True, table_top, steel)
@@ -379,8 +361,6 @@ def build_props():
         sphere("PinHead", 0.007, (x, y, 0.795), pin, segments=8)
     radio((wall - 0.35, 2.0, 0.765), black_plastic, black_plastic, led_green)
     box("Compass", (0.06, 0.1, 0.008), (wall + 0.15, 3.1, 0.77), material("Compass", (0.8, 0.85, 0.9), 0.1))
-    folding_chair((wall - 0.7, 2.8), (1, 0), chair)
-    folding_chair((wall - 0.7, 2.1), (1, 0), chair)
 
     # A mesh node on a tripod by the door, its antenna up near the eave.
     tripod_top = (wall + 0.05, 1.25, 1.35)
