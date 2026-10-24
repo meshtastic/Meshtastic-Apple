@@ -234,6 +234,10 @@ For supported devices, the support tier is shown below the hardware name:
 | Niche | Supported device with active firmware updates and a specialised form factor. |
 | Legacy | Older device that still receives firmware updates but may lack some features. |
 
+### 3D Model
+
+For many radios, the hardware image can turn into a 3D model of the device: tap the image, or the rotate button on it. Drag to turn the model and pinch to zoom; the photo button switches back to the picture. On iPhones and iPads that support augmented reality, and on Apple Vision Pro, the AR button places the model in the room around you at its real size. Most models ship with the app and work offline; any that don't are downloaded the first time they're shown.
+
 ### Where to Buy
 
 For devices with known purchase links, an **I want one** section appears below the hardware info. It shows the official vendor link and regional marketplace options (Amazon, Rokland, AliExpress, and others) sourced from [msh.to](https://msh.to).

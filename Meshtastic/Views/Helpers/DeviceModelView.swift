@@ -102,6 +102,9 @@ struct DeviceModelView<Placeholder: View>: View {
 				stage = DeviceModelStage(model: entity)
 				modelURL = url
 			} catch {
+				// A different model was picked while this one loaded; its failure says
+				// nothing about the new one, which would stay marked unavailable.
+				guard !Task.isCancelled else { return }
 				Logger.services.error("Device model \(name, privacy: .public) failed to open: \(error.localizedDescription, privacy: .public)")
 				// A damaged download would otherwise fail the same way every time.
 				await DeviceModelSource.shared.discardCachedFile(for: name)
