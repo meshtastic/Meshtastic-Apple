@@ -54,6 +54,10 @@ struct SpatialFeaturesOrnament: View {
 				}
 				.help(cinemaLabel)
 				.accessibilityLabel(cinemaLabel)
+				if appState.cinemaOpen {
+					CinemaLockButton(isLocked: $appState.cinemaScreenLocked)
+						.labelStyle(.iconOnly)
+				}
 			}
 			.buttonStyle(.borderless)
 			.buttonBorderShape(.circle)

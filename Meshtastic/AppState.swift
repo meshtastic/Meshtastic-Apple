@@ -138,6 +138,10 @@ class AppState: ObservableObject {
 	/// Whether the visionOS cinema immersive space is showing.
 	@Published var cinemaOpen = false
 
+	/// Whether the main window is locked as the cinema's screen: no window bar, fixed size. Off
+	/// when the cinema opens, so the window can be pushed back first.
+	@Published var cinemaScreenLocked = false
+
 	/// A node the spatial map volume should select once it is showing; claimed the same way.
 	@Published var spatialMapFocus: SpatialMapFocusRequest?
 

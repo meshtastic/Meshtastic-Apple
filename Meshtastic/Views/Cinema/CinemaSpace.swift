@@ -38,7 +38,7 @@ struct CinemaSpace: View {
 			}
 		} attachments: {
 			Attachment(id: Attachments.panel) {
-				CinemaPanel(environment: $environment) {
+				CinemaPanel(environment: $environment, isScreenLocked: $appState.cinemaScreenLocked) {
 					Task { await dismissImmersiveSpace() }
 				}
 			}
@@ -51,9 +51,11 @@ struct CinemaSpace: View {
 		}
 		.onAppear {
 			appState.cinemaOpen = true
+			appState.cinemaScreenLocked = false
 		}
 		.onDisappear {
 			appState.cinemaOpen = false
+			appState.cinemaScreenLocked = false
 			// The window may have been closed while the cinema was open. Not when the app went to
 			// the background, which closes the cinema too.
 			if appState.mainWindowCount == 0, scenePhase != .background {

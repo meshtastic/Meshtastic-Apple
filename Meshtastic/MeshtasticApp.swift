@@ -364,8 +364,8 @@ struct MeshtasticAppleApp: App {
 		.environmentObject(lockdownCoordinator)
 		.environmentObject(MeshtasticAPI.shared)
 		#if os(visionOS)
-		// In the cinema the window is the screen, without the bar that moves it.
-		.persistentSystemOverlays(appState.cinemaOpen ? .hidden : .automatic)
+		// A locked cinema screen has no bar to move it.
+		.persistentSystemOverlays(appState.cinemaOpen && appState.cinemaScreenLocked ? .hidden : .automatic)
 		#endif
 
 			WindowGroup("Mesh Map", id: "meshmap-window") {

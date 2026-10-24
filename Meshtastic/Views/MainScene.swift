@@ -81,6 +81,10 @@ struct MainScene: View {
 			.onChange(of: appState.cinemaOpen) { _, isOpen in
 				sizeForCinema(isOpen)
 			}
+			.onChange(of: appState.cinemaScreenLocked) { _, isLocked in
+				guard appState.cinemaOpen else { return }
+				lockCinemaSize(isLocked)
+			}
 			.onChange(of: router.spatialMapRequest?.id) { _, _ in
 				guard let request = router.claimSpatialMapRequest() else { return }
 				if let nodeNum = request.nodeNum {
@@ -189,18 +193,34 @@ struct MainScene: View {
 	/// The window's size in the cinema, in points.
 	private static let cinemaSize = CGSize(width: 2400, height: 1350)
 
-	/// Fixes the window at the cinema size while the cinema is open, and puts back the size it
-	/// had when the cinema closes.
+	/// Makes the window the cinema size while the cinema is open, and puts back the size it had
+	/// when the cinema closes. It can still be moved and resized until the screen is locked.
 	private func sizeForCinema(_ isOpen: Bool) {
 		guard let windowScene = sceneSession?.scene as? UIWindowScene else { return }
-		let preferences: UIWindowScene.GeometryPreferences.Vision
 		if isOpen {
 			sizeBeforeCinema = windowScene.effectiveGeometry.coordinateSpace.bounds.size
-			preferences = .init(size: Self.cinemaSize, minimumSize: Self.cinemaSize, maximumSize: Self.cinemaSize, resizingRestrictions: UIWindowScene.ResizingRestrictions.none)
+			requestGeometry(.init(size: Self.cinemaSize, minimumSize: .zero, maximumSize: Self.unlimitedSize, resizingRestrictions: .freeform), in: windowScene)
 		} else {
-			preferences = .init(size: sizeBeforeCinema, minimumSize: .zero, maximumSize: CGSize(width: CGFloat.infinity, height: CGFloat.infinity), resizingRestrictions: .freeform)
+			requestGeometry(.init(size: sizeBeforeCinema, minimumSize: .zero, maximumSize: Self.unlimitedSize, resizingRestrictions: .freeform), in: windowScene)
 			sizeBeforeCinema = nil
 		}
+	}
+
+	/// Fixes the window at the size it has when the screen is locked, and lets it resize again
+	/// when it is unlocked.
+	private func lockCinemaSize(_ isLocked: Bool) {
+		guard let windowScene = sceneSession?.scene as? UIWindowScene else { return }
+		if isLocked {
+			let size = windowScene.effectiveGeometry.coordinateSpace.bounds.size
+			requestGeometry(.init(size: size, minimumSize: size, maximumSize: size, resizingRestrictions: UIWindowScene.ResizingRestrictions.none), in: windowScene)
+		} else {
+			requestGeometry(.init(size: nil, minimumSize: .zero, maximumSize: Self.unlimitedSize, resizingRestrictions: .freeform), in: windowScene)
+		}
+	}
+
+	private static let unlimitedSize = CGSize(width: CGFloat.infinity, height: CGFloat.infinity)
+
+	private func requestGeometry(_ preferences: UIWindowScene.GeometryPreferences.Vision, in windowScene: UIWindowScene) {
 		windowScene.requestGeometryUpdate(preferences) { error in
 			Logger.services.error("🎬 [Cinema] Couldn't resize the window: \(error.localizedDescription, privacy: .public)")
 		}
