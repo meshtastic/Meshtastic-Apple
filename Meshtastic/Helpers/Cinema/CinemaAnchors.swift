@@ -17,7 +17,7 @@ enum CinemaBoard: String {
 }
 
 /// Where the boards in an environment's image sit. The render script writes this next to the
-/// image (scripts/cinema/sar_tent.py, `anchor()`), so a re-render can't move a board without
+/// image (scripts/cinema/tent_base.py, `anchor()`), so a re-render can't move a board without
 /// moving its panel. Meters, RealityKit axes, relative to the camera the image was rendered from,
 /// with the image's center toward -Z.
 struct CinemaAnchors: Decodable {

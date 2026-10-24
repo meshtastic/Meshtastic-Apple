@@ -5,7 +5,7 @@
 #
 #  Copyright(c) Garth Vander Houwen 10/23/26.
 #
-#  Renders the cinema environments and copies them into Packages/CinemaContent as JPEG, with
+#  Renders the cinema environments and copies them into Packages/CinemaContent as HEIC, with
 #  each one's anchors file. Needs Blender (5.2 or later) in /Applications and uv, which fetches
 #  Pillow, numpy and resvg-py for make_textures.py.
 #
@@ -17,6 +17,8 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$HERE/../.." && pwd)"
 BLENDER="${BLENDER:-/Applications/Blender.app/Contents/MacOS/Blender}"
 DEST="$ROOT/Packages/CinemaContent/Sources/CinemaContent/Environments"
+# HEIC quality, picked by comparing against the rendered PNG; see README.md.
+HEIC_QUALITY=88
 mkdir -p "$HERE/cache" "$HERE/out"
 
 # Poly Haven "Sunset Forest" (CC0), the view out of the tent's door and windows.
@@ -27,7 +29,7 @@ fi
 
 uv run --quiet --with pillow --with numpy --with resvg-py python "$HERE/make_textures.py"
 
-# Renders one environment script, <name>.py, and ships <name>.jpg and <name>_anchors.json.
+# Renders one environment script, <name>.py, and ships <name>.heic and <name>_anchors.json.
 environment() {
 	local name="$1"
 	if [ "$PREVIEW" = 1 ]; then
@@ -35,10 +37,10 @@ environment() {
 		return
 	fi
 	"$BLENDER" -b -P "$HERE/$name.py" -- --out "$HERE/out/$name.png" --width 4096 --samples 160
-	sips -s format jpeg -s formatOptions 85 "$HERE/out/$name.png" --out "$DEST/$name.jpg" >/dev/null
+	sips -s format heic -s formatOptions "$HEIC_QUALITY" "$HERE/out/$name.png" --out "$DEST/$name.heic" >/dev/null
 	# Where the app puts its live panels; must ship with the image it was rendered with.
 	cp "$HERE/out/${name}_anchors.json" "$DEST/${name}_anchors.json"
-	echo "Wrote $DEST/$name.jpg and ${name}_anchors.json"
+	echo "Wrote $DEST/$name.heic and ${name}_anchors.json"
 }
 
 PREVIEW=0

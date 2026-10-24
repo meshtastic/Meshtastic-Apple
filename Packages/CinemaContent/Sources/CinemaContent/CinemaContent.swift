@@ -8,7 +8,7 @@ import Foundation
 
 /// The URL of a cinema environment's equirectangular image, by name.
 public func cinemaEnvironmentImageURL(named name: String) -> URL? {
-	Bundle.module.url(forResource: name, withExtension: "jpg", subdirectory: "Environments")
+	Bundle.module.url(forResource: name, withExtension: "heic", subdirectory: "Environments")
 }
 
 /// Where the boards in a cinema environment's image sit, written by the render script next to

@@ -2,7 +2,7 @@
 
 The 360° images the visionOS cinema wraps around the viewer. Each is rendered in Blender from a script here, so it can be rebuilt and changed, and so we know where every part of it came from.
 
-Run `build.sh` to render them at full size and copy them into `Packages/CinemaContent`. Run `build.sh --preview` for a quick 2048-wide render in `out/`. It needs Blender 5.2 or later in /Applications and [uv](https://docs.astral.sh/uv/), which fetches Pillow, numpy and resvg-py for `make_textures.py`.
+Run `build.sh` to render them at full size and copy them into `Packages/CinemaContent` as HEIC. Run `build.sh --preview` for a quick 2048-wide render in `out/`. It needs Blender 5.2 or later in /Applications and [uv](https://docs.astral.sh/uv/), which fetches Pillow, numpy and resvg-py for `make_textures.py`.
 
 ## The tent and its furnishings
 
@@ -17,7 +17,7 @@ Blender's +Y is the image's center: the front wall, left plain for the app windo
 
 1. Copy `sar_tent.py` to `<name>.py` and change `furnish()`. Keep the front wall clear. To move the windows or the branding away from your furniture, pass your own `tent_base.Layout(...)` to `render()`.
 2. For each board the app should draw on, make a plane and call `anchor("<id>", plane, width, height)`. The plane's +X is the board's right and its +Z faces the viewer.
-3. Add `environment <name>` at the end of `build.sh` and run it. It writes `<name>.jpg` and `<name>_anchors.json` into `Packages/CinemaContent`.
+3. Add `environment <name>` at the end of `build.sh` and run it. It writes `<name>.heic` and `<name>_anchors.json` into `Packages/CinemaContent`.
 4. Add a case to `CinemaEnvironment` with `imageName` set to `<name>`.
 
 Since the camera, eye height and axes come from `tent_base.py`, the anchors an environment writes line up with its image the same way the tent's do.
@@ -27,6 +27,19 @@ Since the camera, eye height and axes come from `tent_base.py`, the anchors an e
 `sar_tent.py` furnishes the tent as a search and rescue command post. The comms table is on the left, with Chirpy's poster and the "Brought to you by Meshtastic Solutions" plaque on the wall above it. The door and the map table are on the right, with a mesh node on a tripod by the door. The Meshtastic banner hangs on the back wall, behind the viewer. There is a clear vinyl window on each side wall. The floor is left clear. The whiteboard behind the viewer's left shoulder is blank: the app draws the live team roster over it.
 
 The render also writes `sar_tent_anchors.json`, which `build.sh` copies next to the image. It says where each board the app draws on sits, relative to the camera, in RealityKit's axes. The app places its panels from it, so moving a board and re-rendering moves the panel with it. The app pushes each panel out along the lines from the camera until it sits just inside the backdrop sphere, and grows it to match, so it covers the same part of the view and has the same stereo depth as the painted tent around it.
+
+## HEIC
+
+`build.sh` converts the rendered PNG with `sips` at HEIC quality 88. That quality was picked by decoding the HEIC and comparing it with the PNG (PSNR and SSIM, over the whole image and over crops of the canvas, the banner, the plaque, the forest through the door and a window), and by looking at the same crops side by side. Quality 88 matched or beat the old JPEG at quality 85 in every crop, and no difference from the PNG could be seen in the crops at 3× zoom. For the tent at 4096 × 2048:
+
+| | Size | PSNR (whole / forest through the door) | SSIM (whole / forest) |
+|---|---|---|---|
+| PNG | 8.5 MB | | |
+| JPEG 85 (before) | 653 KB | 47.9 / 43.5 dB | 0.9922 / 0.976 |
+| HEIC 80 | 235 KB | 47.6 / 42.3 dB | 0.9920 / 0.971 |
+| HEIC 88 | 352 KB | 48.2 / 43.6 dB | 0.9926 / 0.978 |
+
+`sips` gives the same file for every quality from 80 to 85.
 
 ## Sources
 

@@ -22,6 +22,6 @@
       ]
     }
   },
-  "comment": "Written by scripts/cinema/sar_tent.py. Meters, RealityKit axes (+X right, +Y up, -Z toward the image's center), relative to the camera the image was rendered from.",
+  "comment": "Written by scripts/cinema/tent_base.py. Meters, RealityKit axes (+X right, +Y up, -Z toward the image's center), relative to the camera the image was rendered from.",
   "eyeHeight": 1.15
 }
