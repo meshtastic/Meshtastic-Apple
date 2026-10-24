@@ -73,8 +73,8 @@ final class MeshLiveActivityManager: ObservableObject {
 
 	// MARK: - Lifecycle
 
-	/// At launch: ends activities of the old type, picks up one of ours that
-	/// survived a relaunch, and follows the Settings switch.
+	/// At launch: picks up an activity that survived a relaunch, ends the rest,
+	/// and follows the Settings switch.
 	func start() {
 #if os(iOS) && !targetEnvironment(macCatalyst) && canImport(ActivityKit)
 		let authorization = ActivityAuthorizationInfo()
@@ -83,11 +83,6 @@ final class MeshLiveActivityManager: ObservableObject {
 			for await enabled in authorization.activityEnablementUpdates {
 				self?.isAvailable = enabled
 			}
-		}
-
-		// The local stats activity this replaced; nothing updates it any more.
-		for old in Activity<MeshActivityAttributes>.activities {
-			Task { await old.end(nil, dismissalPolicy: .immediate) }
 		}
 
 		// The list keeps ended activities while they're still on screen; only a
