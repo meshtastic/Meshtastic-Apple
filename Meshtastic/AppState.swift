@@ -135,6 +135,9 @@ class AppState: ObservableObject {
 	/// Whether the visionOS showcase immersive space is showing. Only one may be open at a time.
 	@Published var showcaseOpen = false
 
+	/// Whether the visionOS cinema immersive space is showing.
+	@Published var cinemaOpen = false
+
 	/// A node the spatial map volume should select once it is showing; claimed the same way.
 	@Published var spatialMapFocus: SpatialMapFocusRequest?
 

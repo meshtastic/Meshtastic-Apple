@@ -27,6 +27,7 @@ struct MeshtasticAppleApp: App {
 	@Environment(\.openWindow) private var openWindow
 	/// The showcase's immersion: progressive by default, with mixed and full offered.
 	@State private var showcaseImmersion: any ImmersionStyle = ProgressiveImmersionStyle.progressive(0.35...1.0, initialAmount: 0.7)
+	@State private var cinemaImmersion: any ImmersionStyle = ProgressiveImmersionStyle.progressive(0.4...1.0, initialAmount: 1.0)
 	#endif
 
 	private static let isRunningTests = NSClassFromString("XCTestCase") != nil || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
@@ -425,6 +426,14 @@ struct MeshtasticAppleApp: App {
 		}
 		.immersionStyle(selection: $showcaseImmersion, in: .mixed, .progressive(0.35...1.0, initialAmount: 0.7), .full)
 		.immersiveEnvironmentBehavior(.coexist)
+
+		// A 360° environment around the app's windows. Shows no mesh data, so it needs neither
+		// the store nor the radio.
+		ImmersiveSpace(id: CinemaScene.id) {
+			CinemaSpace()
+				.environmentObject(appState)
+		}
+		.immersionStyle(selection: $cinemaImmersion, in: .progressive(0.4...1.0, initialAmount: 1.0), .full)
 		#endif
 	}
 }

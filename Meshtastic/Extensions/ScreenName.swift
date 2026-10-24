@@ -124,6 +124,7 @@ enum ScreenName: String, CaseIterable {
 	case positionDetail = "Position Detail"
 	case spatialMap = "Spatial Map"
 	case showcase = "Hardware Showcase"
+	case cinema = "Cinema"
 
 	// MARK: Node detail
 
