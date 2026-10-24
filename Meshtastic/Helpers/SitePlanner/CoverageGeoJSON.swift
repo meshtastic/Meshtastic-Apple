@@ -101,7 +101,8 @@ extension CoverageGrid {
 	}
 
 	/// Cells in `lower..<upper`, greedily merged into rectangles: horizontal runs extended down while the whole
-	/// run stays in band. Each ring is closed, as `[lon, lat]` positions.
+	/// run stays in band. Each sample sits on a grid node, so its cell spans half a step either side of it.
+	/// Each ring is closed, as `[lon, lat]` positions.
 	func bandRectangles(lower: Double, upper: Double) -> [[[Double]]] {
 		func inBand(_ x: Int, _ y: Int) -> Bool {
 			let value = at(x, y)
@@ -109,29 +110,29 @@ extension CoverageGrid {
 		}
 		var taken = [Bool](repeating: false, count: width * height)
 		var rings: [[[Double]]] = []
-		for y in 0..<(height - 1) {
+		for y in 0..<height {
 			var x = 0
-			while x < width - 1 {
+			while x < width {
 				if taken[y * width + x] || !inBand(x, y) {
 					x += 1
 					continue
 				}
 				var runEnd = x
-				while runEnd + 1 < width - 1, !taken[y * width + runEnd + 1], inBand(runEnd + 1, y) {
+				while runEnd + 1 < width, !taken[y * width + runEnd + 1], inBand(runEnd + 1, y) {
 					runEnd += 1
 				}
 				var runBottom = y
-				while runBottom + 1 < height - 1,
+				while runBottom + 1 < height,
 					  (x...runEnd).allSatisfy({ inBand($0, runBottom + 1) && !taken[(runBottom + 1) * width + $0] }) {
 					runBottom += 1
 				}
 				for row in y...runBottom {
 					for column in x...runEnd { taken[row * width + column] = true }
 				}
-				let left = longitude(atColumn: Double(x))
-				let right = longitude(atColumn: Double(runEnd + 1))
-				let top = latitude(atRow: Double(y))
-				let bottom = latitude(atRow: Double(runBottom + 1))
+				let left = longitude(atColumn: Double(x) - 0.5)
+				let right = longitude(atColumn: Double(runEnd) + 0.5)
+				let top = latitude(atRow: Double(y) - 0.5)
+				let bottom = latitude(atRow: Double(runBottom) + 0.5)
 				rings.append([[left, top], [right, top], [right, bottom], [left, bottom], [left, top]])
 				x = runEnd + 1
 			}

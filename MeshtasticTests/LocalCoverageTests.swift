@@ -95,6 +95,23 @@ struct LocalCoverageTests {
 		#expect(CoverageEstimateRunner.boundingBox(fromGeoJSON: text) != nil)
 	}
 
+	@Test func aBandCellIsCenteredOnItsSample() {
+		// One in-band sample in the middle and one in the last row and column.
+		var dbm = [Double](repeating: .nan, count: 25)
+		dbm[2 * 5 + 2] = -100
+		dbm[4 * 5 + 4] = -100
+		let grid = CoverageGrid(site: site(), width: 5, height: 5, north: 48, south: 47, east: -122, west: -123, dbm: dbm)
+		let rings = grid.bandRectangles(lower: -110, upper: -90)
+		#expect(rings.count == 2)
+		for (ring, node) in zip(rings, [2, 4]) {
+			let longitudes = ring.map { $0[0] }
+			let latitudes = ring.map { $0[1] }
+			#expect(abs((longitudes.min()! + longitudes.max()!) / 2 - grid.longitude(atColumn: Double(node))) < 1e-9)
+			#expect(abs((latitudes.min()! + latitudes.max()!) / 2 - grid.latitude(atRow: Double(node))) < 1e-9)
+			#expect(abs(longitudes.max()! - longitudes.min()! - 0.25) < 1e-9)
+		}
+	}
+
 	@Test func paletteEndsMatchThePlanner() {
 		#expect(SitePlannerColorScale.mesh.color(at: 0) == "#ff3b30")
 		#expect(SitePlannerColorScale.mesh.color(at: 1) == "#34c759")
