@@ -8,7 +8,7 @@
 #
 # Output goes to scripts/device-models/out/ (git-ignored) along with
 # contact-sheet.html. --install also copies the models into
-# Meshtastic/Resources/DeviceModels for the visionOS build.
+# Meshtastic/Resources/DeviceModels, which the app bundles.
 # Needs uv (brew install uv); Python packages are fetched on first run.
 set -euo pipefail
 
