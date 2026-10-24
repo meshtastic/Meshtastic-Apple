@@ -148,7 +148,7 @@ struct TraceRouteLog: View {
 
 	private static func touchesTraceRoutes(_ notification: Foundation.Notification) -> Bool {
 		(notification.userInfo ?? [:]).values.contains { value in
-			(value as? [PersistentIdentifier])?.contains { $0.entityName == "TraceRouteEntity" } ?? false
+			(value as? Set<PersistentIdentifier>)?.contains { $0.entityName == "TraceRouteEntity" } ?? false
 		}
 	}
 
