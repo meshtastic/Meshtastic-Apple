@@ -30,43 +30,24 @@ struct LocalStatsLog: View {
 	@Environment(\.modelContext) private var context
 	@State private var sortOrder = [KeyPathComparator(\LocalStatsRow.time, order: .reverse)]
 	@State private var selection: LocalStatsRow.ID?
-	@State private var selectedChartRange: LocalStatsChartRange = .day
-	@State private var chartScrollPosition = Date()
+	/// Set when a table row is picked so the chart scrolls to that reading.
+	@State private var chartScrollTarget: LocalStatsChartScrollTarget?
 
 	// Derived data is cached in @State and recomputed only when the underlying telemetry
 	// changes (refreshData), NOT in `body`. The fetch runs on a background ModelActor
-	// (LocalStatsFetchActor) and only value rows cross back, and the chart binds its
-	// scroll offset to @State (chartScrollPosition), so `body` re-evaluates on every
-	// scroll frame. Recomputing these getters there fired ~8 fetches + sorts per frame
-	// and janked scrolling.
+	// (LocalStatsFetchActor) and only value rows cross back. The chart's scroll
+	// position lives in LocalStatsChart, so scrolling re-runs that view alone and
+	// never this body with its table and toolbar. Recomputing these getters in `body`
+	// fired ~8 fetches + sorts per frame and janked scrolling.
 	@State private var localStats: [LocalStatsRow] = []
 	@State private var noiseFloorReadings: [LocalStatsChartPoint] = []
 	@State private var chartYDomain: ClosedRange<Int> = -130 ... -60
-	@State private var chartDataDuration: TimeInterval = LocalStatsChartRange.minimumVisibleDuration
 	@State private var didLoad = false
+	/// The node the loaded rows belong to, so a node switch drops them before the new fetch.
+	@State private var loadedNodeNum: Int64?
 	@State private var refreshScheduled = false
 	@State private var refreshTask: Task<Void, Never>?
 	@State private var fetchActor: LocalStatsFetchActor?
-
-	private var chartVisibleDuration: TimeInterval {
-		chartVisibleDuration(for: selectedChartRange)
-	}
-
-	private var chartXAxisLabelCount: Int {
-		horizontalSizeClass == .regular ? 6 : 2
-	}
-
-	private var chartXAxisFormat: Date.FormatStyle {
-		let dayDuration = LocalStatsChartRange.day.duration ?? 24 * 60 * 60
-		if chartVisibleDuration <= dayDuration {
-			return Date.FormatStyle()
-				.hour(.twoDigits(amPM: .omitted))
-				.minute()
-		}
-		return Date.FormatStyle()
-			.month(.defaultDigits)
-			.day(.defaultDigits)
-	}
 
 	private var dateFormatString: String {
 		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMdjmma", options: 0, locale: Locale.current)
@@ -87,6 +68,7 @@ struct LocalStatsLog: View {
 		}
 		.navigationTitle("Local Stats Log")
 		.navigationBarTitleDisplayMode(.inline)
+		.trackScreen(.localStatsLog)
 		.toolbar {
 			ToolbarItem(placement: .topBarTrailing) {
 				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
@@ -140,8 +122,15 @@ struct LocalStatsLog: View {
 			// Keyed on node.num: if this view position is reused for another node,
 			// the pending work is cancelled and the new node's data loads.
 			refreshTask?.cancel()
+			if loadedNodeNum != node.num {
+				// Another node's rows would build the new chart and set its position from
+				// the wrong range, so clear them first; the chart appears with the new data.
+				localStats = []
+				noiseFloorReadings = []
+				didLoad = false
+			}
 			await refreshData()
-			resetChartViewToLatest()
+			if !Task.isCancelled { loadedNodeNum = node.num }
 		}
 		.onDisappear {
 			refreshTask?.cancel()
@@ -157,75 +146,12 @@ struct LocalStatsLog: View {
 
 	private var chartView: some View {
 		GroupBox {
-			VStack(alignment: .leading, spacing: 10) {
-				chartControlsView
-				Chart {
-					ForEach(noiseFloorReadings) { point in
-						LineMark(
-							x: .value("Time", point.time),
-							y: .value("Noise Floor", Int(point.noiseFloor))
-						)
-						.foregroundStyle(Color.accentColor)
-						.interpolationMethod(.linear)
-					}
-					if noiseFloorReadings.count == 1, let point = noiseFloorReadings.first {
-						PointMark(
-							x: .value("Time", point.time),
-							y: .value("Noise Floor", Int(point.noiseFloor))
-						)
-						.foregroundStyle(Color.accentColor)
-					}
-					RuleMark(y: .value("Busy Floor (-85 dBm)", -85))
-						.lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 5]))
-						.foregroundStyle(.red)
-				}
-				.chartXAxis {
-					AxisMarks(position: .bottom, values: .automatic(desiredCount: chartXAxisLabelCount)) { _ in
-						AxisGridLine()
-						AxisTick()
-						AxisValueLabel(format: chartXAxisFormat)
-					}
-				}
-				.chartYAxis {
-					AxisMarks(position: .leading)
-				}
-				.chartYScale(domain: chartYDomain)
-				.chartScrollableAxes(.horizontal)
-				.chartXVisibleDomain(length: chartVisibleDuration)
-				.chartScrollPosition(x: $chartScrollPosition)
-				.chartLegend(.hidden)
-				.frame(height: horizontalSizeClass == .regular ? 320 : 240)
-				.padding(.bottom, 8)
-			}
+			LocalStatsChart(readings: noiseFloorReadings, yDomain: chartYDomain, scrollTarget: chartScrollTarget)
+				.id(node.num)
 		} label: {
 			Label("\(localStats.count) Local Stats Readings", systemImage: "chart.xyaxis.line")
 		}
 		.padding(.horizontal)
-		.onChange(of: selectedChartRange) { _, newRange in
-			resetChartViewToLatest(for: newRange)
-		}
-	}
-
-	private var chartControlsView: some View {
-		HStack(spacing: 8) {
-			Picker("Visible Range", selection: $selectedChartRange) {
-				ForEach(LocalStatsChartRange.allCases) { range in
-					Text(range.title).tag(range)
-				}
-			}
-			.pickerStyle(.segmented)
-
-			Button {
-				resetChartViewToLatest()
-			} label: {
-				Label("Latest", systemImage: "forward.end")
-					.labelStyle(.iconOnly)
-			}
-			.buttonStyle(.bordered)
-			.buttonBorderShape(.capsule)
-			.controlSize(.small)
-			.accessibilityHint(String(localized: "Scrolls the chart to the newest reading", comment: "VoiceOver hint for the scroll-to-latest chart button"))
-		}
 	}
 
 	@ViewBuilder
@@ -386,37 +312,9 @@ struct LocalStatsLog: View {
 				return
 			}
 			if let time = metrics.time {
-				chartScrollPosition = scrollStart(containing: time)
+				chartScrollTarget = LocalStatsChartScrollTarget(date: time, serial: (chartScrollTarget?.serial ?? 0) + 1)
 			}
 		}
-	}
-
-	private func chartVisibleDuration(for range: LocalStatsChartRange) -> TimeInterval {
-		guard let duration = range.duration else {
-			return chartDataDuration
-		}
-		return min(duration, chartDataDuration)
-	}
-
-	private func resetChartViewToLatest(for range: LocalStatsChartRange? = nil) {
-		guard let firstTime = noiseFloorReadings.first?.time,
-			  let latestTime = noiseFloorReadings.last?.time else {
-			return
-		}
-		let duration = chartVisibleDuration(for: range ?? selectedChartRange)
-		chartScrollPosition = max(firstTime, latestTime.addingTimeInterval(-duration))
-	}
-
-	private func scrollStart(containing date: Date) -> Date {
-		guard let firstTime = noiseFloorReadings.first?.time,
-			  let latestTime = noiseFloorReadings.last?.time else {
-			return date
-		}
-		let visibleDuration = chartVisibleDuration
-		let lowerBound = firstTime
-		let upperBound = max(firstTime, latestTime.addingTimeInterval(-visibleDuration))
-		let centeredStart = date.addingTimeInterval(-visibleDuration / 2)
-		return min(max(centeredStart, lowerBound), upperBound)
 	}
 
 	private func noiseFloorColor(_ value: Int32) -> Color {
@@ -501,12 +399,14 @@ private extension LocalStatsLog {
 		localStats = stats
 
 		// The fetch returns rows sorted by time descending; compactMap preserves
-		// that order, so reversing yields ascending without a second sort.
-		let readings = Array(
+		// that order, and plottable reverses it to ascending without a second sort
+		// while leaving readings with a wrong clock off the chart.
+		let readings = LocalStatsChartPoint.plottable(
 			stats.compactMap { point -> LocalStatsChartPoint? in
 				guard let time = point.time, let noiseFloor = point.noiseFloor else { return nil }
 				return LocalStatsChartPoint(time: time, noiseFloor: noiseFloor)
-			}.reversed()
+			},
+			now: .now
 		)
 		noiseFloorReadings = downsampledForChart(readings)
 
@@ -515,12 +415,6 @@ private extension LocalStatsLog {
 			chartYDomain = min(minValue - 5, -115) ... max(maxValue + 5, -75)
 		} else {
 			chartYDomain = -130 ... -60
-		}
-
-		if let firstTime = readings.first?.time, let lastTime = readings.last?.time {
-			chartDataDuration = max(lastTime.timeIntervalSince(firstTime), LocalStatsChartRange.minimumVisibleDuration)
-		} else {
-			chartDataDuration = LocalStatsChartRange.minimumVisibleDuration
 		}
 
 		didLoad = true
@@ -564,11 +458,206 @@ private struct CopyableLocalStatsField: View {
 	}
 }
 
-private struct LocalStatsChartPoint: Identifiable {
-	let time: Date
-	let noiseFloor: Int32
+/// A request from the table to scroll the chart to a reading. The serial makes
+/// picking the same row again scroll again.
+private struct LocalStatsChartScrollTarget: Equatable {
+	let date: Date
+	let serial: Int
+}
 
-	var id: Date { time }
+/// The noise floor chart with its range picker and Latest button. It owns the scroll
+/// position, so scrolling re-runs this view and not the table, toolbar and buttons
+/// around it.
+private struct LocalStatsChart: View {
+	let readings: [LocalStatsChartPoint]
+	let yDomain: ClosedRange<Int>
+	let scrollTarget: LocalStatsChartScrollTarget?
+
+	@Environment(\.horizontalSizeClass) private var horizontalSizeClass
+	@State private var selectedChartRange: LocalStatsChartRange = .day
+	@State private var chartScrollPosition = Date()
+	@State private var xAxisTicks: [Date] = []
+
+	/// What the ticks depend on. The scroll position is rounded down to the tick
+	/// step, so this only changes when the window crosses a step boundary.
+	private struct TickKey: Equatable {
+		let visible: TimeInterval
+		let labelCount: Int
+		let position: Date
+		let dataRange: ClosedRange<Date>?
+		/// The zone's identifier, so a zone change refreshes the ticks.
+		let timeZone: String
+	}
+
+	private var dataRange: ClosedRange<Date>? {
+		guard let first = readings.first?.time, let last = readings.last?.time else { return nil }
+		return min(first, last)...max(first, last)
+	}
+
+	private var dataDuration: TimeInterval {
+		guard let dataRange else { return LocalStatsChartRange.minimumVisibleDuration }
+		return max(dataRange.upperBound.timeIntervalSince(dataRange.lowerBound), LocalStatsChartRange.minimumVisibleDuration)
+	}
+
+	private var visibleDuration: TimeInterval {
+		visibleDuration(for: selectedChartRange)
+	}
+
+	private var xAxisLabelCount: Int {
+		horizontalSizeClass == .regular ? 6 : 2
+	}
+
+	private var xAxisFormat: Date.FormatStyle {
+		let dayDuration = LocalStatsChartRange.day.duration ?? 24 * 60 * 60
+		if visibleDuration <= dayDuration {
+			// With AM/PM a 12-hour clock tells midnight from noon on the 24h view;
+			// a 24-hour clock shows 00:00 and 12:00 either way. Two-digit minutes, or
+			// some 24-hour locales show 17:0.
+			return Date.FormatStyle()
+				.hour(.defaultDigits(amPM: .abbreviated))
+				.minute(.twoDigits)
+		}
+		return Date.FormatStyle()
+			.month(.defaultDigits)
+			.day(.defaultDigits)
+	}
+
+	private var tickKey: TickKey {
+		let step = LocalStatsChartTicks.step(visible: visibleDuration, labelCount: xAxisLabelCount)
+		return TickKey(
+			visible: visibleDuration,
+			labelCount: xAxisLabelCount,
+			position: LocalStatsChartTicks.quantize(chartScrollPosition, step: step),
+			dataRange: dataRange,
+			timeZone: TimeZone.current.identifier
+		)
+	}
+
+	var body: some View {
+		VStack(alignment: .leading, spacing: 10) {
+			controlsView
+			chart
+		}
+		.onAppear {
+			resetToLatest()
+		}
+		.onChange(of: tickKey, initial: true) { _, key in
+			guard let range = key.dataRange else {
+				xAxisTicks = []
+				return
+			}
+			xAxisTicks = LocalStatsChartTicks.ticks(
+				visible: key.visible,
+				labelCount: key.labelCount,
+				scrollPosition: key.position,
+				dataRange: range,
+				timeZone: .current
+			)
+		}
+		.onChange(of: selectedChartRange) { _, newRange in
+			resetToLatest(for: newRange)
+		}
+		.onChange(of: scrollTarget) { _, target in
+			if let target {
+				chartScrollPosition = scrollStart(containing: target.date)
+			}
+		}
+		.onChange(of: dataRange) { _, range in
+			// A refresh can move the data out from under the position: with 500 rows
+			// the fetch drops the oldest on every new reading, and a reading with a
+			// wrong clock can drop off the chart. Keep the position inside the data
+			// rather than jumping to the newest reading.
+			guard let range else { return }
+			let newestStart = max(range.lowerBound, range.upperBound.addingTimeInterval(-visibleDuration))
+			let clamped = min(max(chartScrollPosition, range.lowerBound), newestStart)
+			if clamped != chartScrollPosition {
+				chartScrollPosition = clamped
+			}
+		}
+	}
+
+	private var controlsView: some View {
+		HStack(spacing: 8) {
+			Picker("Visible Range", selection: $selectedChartRange) {
+				ForEach(LocalStatsChartRange.allCases) { range in
+					Text(range.title).tag(range)
+				}
+			}
+			.pickerStyle(.segmented)
+
+			Button {
+				resetToLatest()
+			} label: {
+				Label("Latest", systemImage: "forward.end")
+					.labelStyle(.iconOnly)
+			}
+			.buttonStyle(.bordered)
+			.buttonBorderShape(.capsule)
+			.controlSize(.small)
+			.accessibilityHint(String(localized: "Scrolls the chart to the newest reading", comment: "VoiceOver hint for the scroll-to-latest chart button"))
+		}
+	}
+
+	private var chart: some View {
+		Chart {
+			ForEach(readings) { point in
+				LineMark(
+					x: .value("Time", point.time),
+					y: .value("Noise Floor", Int(point.noiseFloor))
+				)
+				.foregroundStyle(Color.accentColor)
+				.interpolationMethod(.linear)
+			}
+			if readings.count == 1, let point = readings.first {
+				PointMark(
+					x: .value("Time", point.time),
+					y: .value("Noise Floor", Int(point.noiseFloor))
+				)
+				.foregroundStyle(Color.accentColor)
+			}
+			RuleMark(y: .value("Busy Floor (-85 dBm)", -85))
+				.lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 5]))
+				.foregroundStyle(.red)
+		}
+		.chartXAxis {
+			AxisMarks(position: .bottom, values: xAxisTicks) { _ in
+				AxisGridLine()
+				AxisTick()
+				AxisValueLabel(format: xAxisFormat)
+			}
+		}
+		.chartYAxis {
+			AxisMarks(position: .leading)
+		}
+		.chartYScale(domain: yDomain)
+		.chartScrollableAxes(.horizontal)
+		.chartXVisibleDomain(length: visibleDuration)
+		.chartScrollPosition(x: $chartScrollPosition)
+		.chartLegend(.hidden)
+		.frame(height: horizontalSizeClass == .regular ? 320 : 240)
+		.padding(.bottom, 8)
+	}
+
+	private func visibleDuration(for range: LocalStatsChartRange) -> TimeInterval {
+		guard let duration = range.duration else {
+			return dataDuration
+		}
+		return min(duration, dataDuration)
+	}
+
+	private func resetToLatest(for range: LocalStatsChartRange? = nil) {
+		guard let dataRange else { return }
+		let duration = visibleDuration(for: range ?? selectedChartRange)
+		chartScrollPosition = max(dataRange.lowerBound, dataRange.upperBound.addingTimeInterval(-duration))
+	}
+
+	private func scrollStart(containing date: Date) -> Date {
+		guard let dataRange else { return date }
+		let lowerBound = dataRange.lowerBound
+		let upperBound = max(lowerBound, dataRange.upperBound.addingTimeInterval(-visibleDuration))
+		let centeredStart = date.addingTimeInterval(-visibleDuration / 2)
+		return min(max(centeredStart, lowerBound), upperBound)
+	}
 }
 
 /// Value snapshot of one local-stats telemetry row. The fetch runs on a background
