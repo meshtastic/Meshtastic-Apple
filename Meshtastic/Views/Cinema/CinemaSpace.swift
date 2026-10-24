@@ -26,11 +26,10 @@ struct CinemaSpace: View {
 	@State private var world = Entity()
 	@State private var backdrop: Entity?
 	@State private var panelGrabber = Self.makePanelGrabber()
-	/// The point the image was rendered from, kept at the viewer's eyes. The backdrop and the
-	/// boards hang from it, so the panels stay over the boards in the image.
-	@State private var eyes = Entity()
-	@State private var headTracker = CinemaHeadTracker()
-	@State private var followHead: EventSubscription?
+	/// The point the image was rendered from, fixed at the seated eye height and turned so the
+	/// image's center is in front. The backdrop and the boards hang from it, so one turn moves both.
+	@State private var stage = Entity()
+	@State private var fitBoards: EventSubscription?
 	@State private var anchors: CinemaAnchors?
 	@State private var boards = BoardPanels()
 
@@ -38,23 +37,24 @@ struct CinemaSpace: View {
 		RealityView { content, attachments in
 			world.name = "Cinema"
 			content.add(world)
-			eyes.name = "CinemaEyes"
-			world.addChild(eyes)
+			stage.name = "CinemaStage"
+			world.addChild(stage)
 			if let panel = attachments.entity(for: Attachments.panel) {
 				panelGrabber.addChild(panel)
 				seat(panel)
 				panelGrabber.position = [0.45, 0.85, -0.7]
 				world.addChild(panelGrabber)
 			}
-			followHead = content.subscribe(to: SceneEvents.Update.self) { _ in
-				moveEyesToHead()
+			// A panel's size is only known once SwiftUI has laid it out, so boards are fitted on
+			// the first frame that has it.
+			fitBoards = content.subscribe(to: SceneEvents.Update.self) { _ in
 				placeBoards()
 			}
 		} update: { _, attachments in
 			if let panel = attachments.entity(for: Attachments.panel) {
 				seat(panel)
 			}
-			boards.panels[.teamStatus] = attachments.entity(for: Attachments.teamStatus)
+			boards.set(attachments.entity(for: Attachments.teamStatus), for: .teamStatus)
 			placeBoards()
 		} attachments: {
 			Attachment(id: Attachments.panel) {
@@ -74,15 +74,13 @@ struct CinemaSpace: View {
 		}
 		.task(id: environment) {
 			anchors = CinemaAnchors.load(for: environment)
+			stage.position = [0, anchors?.eyeHeight ?? CinemaAnchors.seatedEyeHeight, 0]
+			stage.orientation = simd_quatf(angle: environment.frontRotation, axis: [0, 1, 0])
 			boards.fitted.removeAll()
-			moveEyesToHead()
 			let next = await CinemaBackdrop.make(environment)
 			backdrop?.removeFromParent()
-			eyes.addChild(next)
+			stage.addChild(next)
 			backdrop = next
-		}
-		.task {
-			await headTracker.start()
 		}
 		.onAppear {
 			appState.cinemaOpen = true
@@ -90,9 +88,8 @@ struct CinemaSpace: View {
 			openWindow(id: SpatialMapScene.id, value: SpatialMapSceneKey.shared)
 		}
 		.onDisappear {
-			headTracker.stop()
-			followHead?.cancel()
-			followHead = nil
+			fitBoards?.cancel()
+			fitBoards = nil
 			appState.cinemaOpen = false
 			appState.cinemaScreenLocked = false
 			// The window may have been closed while the cinema was open. Not when the app went to
@@ -109,10 +106,19 @@ struct CinemaSpace: View {
 		.trackScreen(.cinema)
 	}
 
-	/// The board panels SwiftUI has made, kept for the per-frame placement.
+	/// The board panels SwiftUI has made, and which of them are placed.
 	private final class BoardPanels {
 		var panels: [CinemaBoard: Entity] = [:]
 		var fitted: Set<CinemaBoard> = []
+
+		/// Keeps the board's panel, taking the old one out of the scene when SwiftUI drops or
+		/// replaces it (a database reset).
+		func set(_ panel: Entity?, for board: CinemaBoard) {
+			guard panels[board] !== panel else { return }
+			panels[board]?.removeFromParent()
+			panels[board] = panel
+			fitted.remove(board)
+		}
 	}
 
 	private enum Attachments {
@@ -120,33 +126,22 @@ struct CinemaSpace: View {
 		static let teamStatus = "teamStatus"
 	}
 
-	/// Keeps the render's camera at the viewer's eyes. Without head tracking (the simulator),
-	/// at the seated eye height the image was rendered from.
-	private func moveEyesToHead() {
-		if let head = headTracker.headPosition() {
-			eyes.position = head
-		} else if let anchors {
-			eyes.position = [0, anchors.eyeHeight, 0]
-		}
-	}
-
-	/// Puts each board's panel over its board in the image, scaled to the board. A panel's size
-	/// is only known once SwiftUI has laid it out, so this runs every frame until it is.
+	/// Puts each board's panel over its board in the image, out by the backdrop so both eyes see it
+	/// at the painting's depth, and scaled so it covers the same part of the view.
 	private func placeBoards() {
-		for (board, panel) in boards.panels {
-			guard let anchor = anchors?.board(board) else { continue }
-			if panel.parent !== eyes {
-				eyes.addChild(panel)
-				boards.fitted.remove(board)
+		guard boards.fitted.count < boards.panels.count, let anchors else { return }
+		for (board, panel) in boards.panels where !boards.fitted.contains(board) {
+			guard let anchor = anchors.board(board) else { continue }
+			if panel.parent !== stage {
+				stage.addChild(panel)
 			}
-			if !boards.fitted.contains(board) {
-				let width = panel.visualBounds(relativeTo: panel).extents.x
-				guard width > 0 else { continue }
-				panel.scale = SIMD3(repeating: anchor.width / width)
-				panel.position = anchor.position
-				panel.orientation = anchor.orientation
-				boards.fitted.insert(board)
-			}
+			let size = panel.visualBounds(relativeTo: panel).extents
+			guard size.x > 0, size.y > 0 else { continue }
+			let push = anchor.distanceScale(within: CinemaBackdrop.radius * 0.96)
+			panel.scale = SIMD3(repeating: push * min(anchor.width / size.x, anchor.height / size.y))
+			panel.position = anchor.position * push
+			panel.orientation = anchor.orientation
+			boards.fitted.insert(board)
 		}
 	}
 

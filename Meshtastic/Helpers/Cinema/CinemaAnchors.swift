@@ -18,8 +18,12 @@ enum CinemaBoard: String {
 
 /// Where the boards in an environment's image sit. The render script writes this next to the
 /// image (scripts/cinema/sar_tent.py, `anchor()`), so a re-render can't move a board without
-/// moving its panel. Meters, RealityKit axes, relative to the camera the image was rendered from.
+/// moving its panel. Meters, RealityKit axes, relative to the camera the image was rendered from,
+/// with the image's center toward -Z.
 struct CinemaAnchors: Decodable {
+	/// The eye height the images are rendered from, for an environment whose anchors don't load.
+	static let seatedEyeHeight: Float = 1.15
+
 	/// The camera's height above the floor in the render.
 	let eyeHeight: Float
 	let boards: [String: Board]
@@ -30,6 +34,18 @@ struct CinemaAnchors: Decodable {
 		let height: Float
 		/// Turns a panel, whose +X is its right and +Z its front, to lie on the board.
 		let orientation: simd_quatf
+
+		/// How much to push the board out from the camera, and grow it, so its farthest corner sits
+		/// at `distance`. Pushed out along the lines from the camera it still covers the same part
+		/// of the image, and far out it has about the painting's stereo depth.
+		func distanceScale(within distance: Float) -> Float {
+			let right = orientation.act([width / 2, 0, 0])
+			let up = orientation.act([0, height / 2, 0])
+			let farthest = [right + up, right - up, -right + up, -right - up]
+				.map { simd_length(position + $0) }
+				.max() ?? 0
+			return farthest > 0 ? distance / farthest : 1
+		}
 
 		private enum CodingKeys: String, CodingKey {
 			case center, size, right, normal

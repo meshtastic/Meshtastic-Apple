@@ -12,7 +12,8 @@ import UIKit
 
 /// The world around the cinema screen: a large sphere showing the environment's image from the
 /// inside, unlit so the image reads as painted. The image has its own floor, rendered from seated
-/// eye height; CinemaSpace centers the sphere on the viewer's eyes.
+/// eye height; CinemaSpace puts the sphere's center at that height. The image's center is at -Z,
+/// the frame the render's anchors are written in.
 @MainActor
 enum CinemaBackdrop {
 	static let radius: Float = 50
@@ -30,7 +31,9 @@ enum CinemaBackdrop {
 		sky.name = "Sky"
 		// Turned inside out so the faces point at the viewer in the middle.
 		sky.scale = [-1, 1, 1]
-		sky.orientation = simd_quatf(angle: environment.frontRotation, axis: [0, 1, 0])
+		// A RealityKit sphere puts the image's center a quarter turn to the right; this brings it
+		// to -Z. Fixed for every image; CinemaSpace turns the whole backdrop.
+		sky.orientation = simd_quatf(angle: .pi / 2, axis: [0, 1, 0])
 		root.addChild(sky)
 
 		return root
