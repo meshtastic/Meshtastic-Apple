@@ -50,17 +50,17 @@ final class WidgetInventory: ObservableObject {
 		ControlKind(kind: "MeshOpenMap", title: "Mesh Map", systemImage: "map.fill")
 	]
 
-	/// The sizes of each kind that are on a screen.
-	@Published private(set) var families: [String: Set<WidgetFamily>] = [:]
-	/// The control kinds that are added somewhere; nil before iOS 18 or until read.
+	/// The sizes of each kind that are on a screen; nil until iOS has answered,
+	/// so nothing reads as "not added" before the app knows.
+	@Published private(set) var families: [String: Set<WidgetFamily>]?
+	/// How many Meshtastic widgets are on a screen, counting each one — two
+	/// small Node Trackers are two; nil until iOS has answered.
+	@Published private(set) var addedWidgetCount: Int?
+	/// The control kinds that are added somewhere; nil before iOS 18, until
+	/// read, or when the read fails.
 	@Published private(set) var controlKinds: Set<String>?
 
 	private init() {}
-
-	/// How many Meshtastic widgets are on a screen.
-	var addedWidgetCount: Int {
-		families.values.reduce(0) { $0 + $1.count }
-	}
 
 	/// Reads the current configurations again; cheap, and iOS has no change
 	/// notification, so call it when the sheet or the app comes forward.
@@ -74,6 +74,7 @@ final class WidgetInventory: ObservableObject {
 						byKind[info.kind, default: []].insert(info.family)
 					}
 					self.families = byKind
+					self.addedWidgetCount = infos.count
 				case .failure(let error):
 					Logger.services.debug("🧩 Widget configurations unavailable: \(error.localizedDescription, privacy: .public)")
 				}
@@ -91,8 +92,28 @@ final class WidgetInventory: ObservableObject {
 		}
 	}
 
-	/// "Small, Medium · Lock Screen", or nil when the kind isn't on any screen.
-	func addedDescription(for kind: String) -> String? {
+	/// Whether a widget or control is on a screen, as far as the app knows.
+	enum AddedStatus: Equatable {
+		/// Where it's added: "Small, Medium, Lock Screen", or "Added".
+		case added(String)
+		case notAdded
+		/// iOS hasn't answered, or the request failed.
+		case unknown
+	}
+
+	func widgetStatus(for kind: String) -> AddedStatus {
+		guard let families else { return .unknown }
+		guard let description = addedDescription(for: kind, in: families) else { return .notAdded }
+		return .added(description)
+	}
+
+	func controlStatus(for kind: String) -> AddedStatus {
+		guard let controlKinds else { return .unknown }
+		return controlKinds.contains(kind) ? .added(String(localized: "Added")) : .notAdded
+	}
+
+	/// "Small, Medium, Lock Screen", or nil when the kind isn't on any screen.
+	private func addedDescription(for kind: String, in families: [String: Set<WidgetFamily>]) -> String? {
 		guard let added = families[kind], !added.isEmpty else { return nil }
 		let homeOrder: [(WidgetFamily, String)] = [
 			(.systemSmall, String(localized: "Small")),

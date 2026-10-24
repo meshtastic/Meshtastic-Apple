@@ -159,14 +159,14 @@ struct WidgetsSheet: View {
 				AddedRow(
 					title: widget.title,
 					systemImage: widget.systemImage,
-					detail: inventory.addedDescription(for: widget.kind)
+					status: inventory.widgetStatus(for: widget.kind)
 				)
 			}
 		} header: {
 			Text("Home Screen & Lock Screen")
 		} footer: {
 			VStack(alignment: .leading, spacing: 6) {
-				Text("To add one, touch and hold the Home Screen or Lock Screen, tap Edit, then Add Widget, and search for Meshtastic. To pick a Node Tracker's node, touch and hold the widget and choose Edit Widget.")
+				Text("Home Screen: touch and hold an empty spot, tap Edit, then Add Widget, and search for Meshtastic. Lock Screen: touch and hold it, tap Customize, then Lock Screen, tap the widget area and choose Meshtastic. To pick a Node Tracker's node, touch and hold the widget and choose Edit Widget.")
 				Link("Apple's guide to widgets", destination: Self.appleWidgetGuide)
 			}
 		}
@@ -181,7 +181,7 @@ struct WidgetsSheet: View {
 				AddedRow(
 					title: control.title,
 					systemImage: control.systemImage,
-					detail: inventory.controlKinds.flatMap { $0.contains(control.kind) ? String(localized: "Added") : nil }
+					status: inventory.controlStatus(for: control.kind)
 				)
 			}
 		} header: {
@@ -225,8 +225,7 @@ struct WidgetsSheet: View {
 private struct AddedRow: View {
 	let title: LocalizedStringKey
 	let systemImage: String
-	/// Where it's added, or nil when it isn't.
-	let detail: String?
+	let status: WidgetInventory.AddedStatus
 
 	var body: some View {
 		HStack(spacing: 12) {
@@ -235,10 +234,20 @@ private struct AddedRow: View {
 				.frame(width: 24)
 			Text(title)
 			Spacer(minLength: 8)
-			Text(detail ?? String(localized: "Not added"))
-				.font(.subheadline)
-				.foregroundStyle(detail == nil ? .tertiary : .secondary)
-				.multilineTextAlignment(.trailing)
+			switch status {
+			case .added(let description):
+				Text(description)
+					.font(.subheadline)
+					.foregroundStyle(.secondary)
+					.multilineTextAlignment(.trailing)
+			case .notAdded:
+				Text("Not added")
+					.font(.subheadline)
+					.foregroundStyle(.tertiary)
+			case .unknown:
+				// Nothing claimed until iOS says what's there.
+				EmptyView()
+			}
 		}
 	}
 }

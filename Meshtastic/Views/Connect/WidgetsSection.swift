@@ -53,7 +53,8 @@ struct WidgetsSection: View {
 			}
 			return String(localized: "Tracking a node")
 		case nil:
-			let count = inventory.addedWidgetCount
+			// Nothing claimed until iOS says what's there.
+			guard let count = inventory.addedWidgetCount else { return "" }
 			return count == 0 ? String(localized: "None added") : String(localized: "\(count) added")
 		}
 	}
