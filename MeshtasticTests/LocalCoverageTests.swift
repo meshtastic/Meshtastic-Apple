@@ -168,3 +168,69 @@ struct CoverageTerrainTests {
 		#expect(sea.elevation(latitude: 47.6, longitude: -122.3) == 0)
 	}
 }
+
+@MainActor
+@Suite("CoverageEstimateRunner")
+struct CoverageEstimateRunnerTests {
+
+	@MainActor
+	private final class Probe {
+		var importStarted: CheckedContinuation<Void, Never>?
+		var removed: [UUID] = []
+	}
+
+	private var params: SitePlannerParameters {
+		var params = SitePlannerParameters()
+		params.latitude = 47.6
+		params.longitude = -122.3
+		return params
+	}
+
+	private let metadata = MapDataMetadata(
+		filename: "c.geojson", originalName: "c", uploadDate: Date(), fileSize: 1,
+		format: "geojson", license: nil, attribution: nil, overlayCount: 1, isActive: true, source: .sitePlanner
+	)
+
+	/// Waits up to two seconds for `condition`, polling.
+	private func wait(_ condition: () -> Bool) async throws {
+		for _ in 0..<200 where !condition() {
+			try await Task.sleep(nanoseconds: 10_000_000)
+		}
+	}
+
+	@Test func cancellingDuringTheImportDropsTheOverlay() async throws {
+		let probe = Probe()
+		let saved = metadata
+		let runner = CoverageEstimateRunner(
+			estimate: { _ in "{}" },
+			importOverlay: { _, _, _ in
+				await withCheckedContinuation { probe.importStarted = $0 }
+				return saved
+			},
+			removeOverlay: { probe.removed.append($0.id) }
+		)
+		runner.start(params: params)
+		try await wait { probe.importStarted != nil }
+		runner.cancel()
+		probe.importStarted?.resume()
+		try await wait { !probe.removed.isEmpty }
+		#expect(probe.removed == [saved.id])
+		#expect(runner.state == .idle)
+		#expect(runner.importedResult == nil)
+	}
+
+	@Test func anImportThatFinishesNormallyIsKept() async throws {
+		let probe = Probe()
+		let saved = metadata
+		let runner = CoverageEstimateRunner(
+			estimate: { _ in "{}" },
+			importOverlay: { _, _, _ in saved },
+			removeOverlay: { probe.removed.append($0.id) }
+		)
+		runner.start(params: params)
+		try await wait { runner.state == .imported }
+		#expect(runner.state == .imported)
+		#expect(runner.importedResult?.metadata.id == saved.id)
+		#expect(probe.removed.isEmpty)
+	}
+}

@@ -52,10 +52,32 @@ final class CoverageEstimateRunner: ObservableObject {
 	/// Observe via `onChange` to recenter the map and enable the overlay.
 	@Published private(set) var importedResult: CoverageEstimateResult?
 
+	typealias Estimate = @Sendable (SitePlannerParameters) async throws -> String
+	typealias ImportOverlay = @MainActor (_ geoJSON: String, _ name: String, _ coverage: SitePlannerCoverageInfo) async throws -> MapDataMetadata
+	typealias RemoveOverlay = @MainActor (MapDataMetadata) async -> Void
+
 	private var task: Task<Void, Never>?
+	/// Counts runs, so an import that finishes after a cancel or a newer start can tell it is stale.
+	private var runID = 0
+	private let estimate: Estimate
+	private let importOverlay: ImportOverlay
+	private let removeOverlay: RemoveOverlay
 
 	/// Whether a run is currently in flight.
 	var isRunning: Bool { state == .running }
+
+	/// The defaults compute on the device and save through `MapDataManager`; tests replace them.
+	init(
+		estimate: @escaping Estimate = { try await CoverageEstimateRunner.estimate($0) },
+		importOverlay: @escaping ImportOverlay = { geoJSON, name, coverage in
+			try await MapDataManager.shared.importFromString(geoJSON, name: name, source: .sitePlanner, coverage: coverage)
+		},
+		removeOverlay: @escaping RemoveOverlay = { metadata in try? await MapDataManager.shared.deleteFile(metadata) }
+	) {
+		self.estimate = estimate
+		self.importOverlay = importOverlay
+		self.removeOverlay = removeOverlay
+	}
 
 	/// Start a coverage run for `params`. Requires a valid coordinate. `nodeNum` is the node the run is
 	/// for, saved with the estimate; nil when it is for another location.
@@ -66,13 +88,16 @@ final class CoverageEstimateRunner: ObservableObject {
 			return
 		}
 		state = .running
+		runID += 1
+		let run = runID
+		let estimate = estimate
 		task = Task { [weak self] in
 			do {
 				let started = Date()
-				let geoJSON = try await Self.estimate(params)
+				let geoJSON = try await estimate(params)
 				try Task.checkCancellation()
 				Logger.services.info("🗺️ [Coverage] Estimate for \(params.maxRangeKm, privacy: .public) km took \(Date().timeIntervalSince(started), privacy: .public) s")
-				await self?.importCoverage(geoJSON, params: params, nodeNum: nodeNum)
+				await self?.importCoverage(geoJSON, params: params, nodeNum: nodeNum, run: run)
 			} catch is CancellationError {
 				return
 			} catch {
@@ -120,7 +145,12 @@ final class CoverageEstimateRunner: ObservableObject {
 		return LocalCoverage.grid(from: polar).geoJSON(style: style)
 	}
 
-	private func importCoverage(_ geoJSON: String, params: SitePlannerParameters, nodeNum: Int64?) async {
+	/// Whether `run` is still the one the user is waiting on: not cancelled, and no newer run started.
+	private func isCurrent(_ run: Int) -> Bool {
+		!Task.isCancelled && run == runID
+	}
+
+	private func importCoverage(_ geoJSON: String, params: SitePlannerParameters, nodeNum: Int64?, run: Int) async {
 		let coordinate = CLLocationCoordinate2D(latitude: params.latitude, longitude: params.longitude)
 		let layerName = params.name.trimmingCharacters(in: .whitespacesAndNewlines)
 		let importName = layerName.isEmpty ? "Coverage" : layerName
@@ -131,10 +161,16 @@ final class CoverageEstimateRunner: ObservableObject {
 			colorScale: params.colorScale.rawValue, bounds: boundingBox
 		)
 		do {
-			let metadata = try await MapDataManager.shared.importFromString(geoJSON, name: importName, source: .sitePlanner, coverage: coverage)
+			let metadata = try await importOverlay(geoJSON, importName, coverage)
+			// Cancelled or replaced while the file was saving: drop the overlay rather than show a run the user left.
+			guard isCurrent(run) else {
+				await removeOverlay(metadata)
+				return
+			}
 			importedResult = CoverageEstimateResult(metadata: metadata, coordinate: coordinate, boundingBox: boundingBox)
 			state = .imported
 		} catch {
+			guard isCurrent(run) else { return }
 			state = .failed(error.localizedDescription)
 		}
 	}
