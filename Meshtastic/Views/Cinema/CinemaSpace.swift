@@ -6,14 +6,19 @@
 //
 #if os(visionOS)
 import RealityKit
+import SwiftData
 import SwiftUI
 
 /// Root of the cinema immersive space: an environment around the viewer and the app's windows,
 /// and a small panel to change the environment or leave. The app stays in its own window, which
 /// can be moved back and made bigger like a screen; a window drawn inside the space can't show the
-/// tab bar or sheets. The 3D map opens beside it.
+/// tab bar or sheets. The 3D map opens beside it. The tent's whiteboard shows the live team
+/// roster.
 struct CinemaSpace: View {
+	/// The store, for the team board. Nil when the app runs without one (demo mode).
+	let container: ModelContainer?
 	@EnvironmentObject private var appState: AppState
+	@EnvironmentObject private var accessoryManager: AccessoryManager
 	@Environment(\.scenePhase) private var scenePhase
 	@Environment(\.dismissImmersiveSpace) private var dismissImmersiveSpace
 	@Environment(\.openWindow) private var openWindow
@@ -21,33 +26,63 @@ struct CinemaSpace: View {
 	@State private var world = Entity()
 	@State private var backdrop: Entity?
 	@State private var panelGrabber = Self.makePanelGrabber()
+	/// The point the image was rendered from, kept at the viewer's eyes. The backdrop and the
+	/// boards hang from it, so the panels stay over the boards in the image.
+	@State private var eyes = Entity()
+	@State private var headTracker = CinemaHeadTracker()
+	@State private var followHead: EventSubscription?
+	@State private var anchors: CinemaAnchors?
+	@State private var boards = BoardPanels()
 
 	var body: some View {
 		RealityView { content, attachments in
 			world.name = "Cinema"
 			content.add(world)
+			eyes.name = "CinemaEyes"
+			world.addChild(eyes)
 			if let panel = attachments.entity(for: Attachments.panel) {
 				panelGrabber.addChild(panel)
 				seat(panel)
 				panelGrabber.position = [0.45, 0.85, -0.7]
 				world.addChild(panelGrabber)
 			}
+			followHead = content.subscribe(to: SceneEvents.Update.self) { _ in
+				moveEyesToHead()
+				placeBoards()
+			}
 		} update: { _, attachments in
 			if let panel = attachments.entity(for: Attachments.panel) {
 				seat(panel)
 			}
+			boards.panels[.teamStatus] = attachments.entity(for: Attachments.teamStatus)
+			placeBoards()
 		} attachments: {
 			Attachment(id: Attachments.panel) {
 				CinemaPanel(environment: $environment, isScreenLocked: $appState.cinemaScreenLocked) {
 					Task { await dismissImmersiveSpace() }
 				}
 			}
+			if let container, !appState.isDatabaseResetting, anchors?.board(.teamStatus) != nil {
+				Attachment(id: Attachments.teamStatus) {
+					TeamStatusBoard()
+						.id(appState.databaseResetID)
+						.modelContainer(container)
+						.environmentObject(appState)
+						.environmentObject(accessoryManager)
+				}
+			}
 		}
 		.task(id: environment) {
+			anchors = CinemaAnchors.load(for: environment)
+			boards.fitted.removeAll()
+			moveEyesToHead()
 			let next = await CinemaBackdrop.make(environment)
 			backdrop?.removeFromParent()
-			world.addChild(next)
+			eyes.addChild(next)
 			backdrop = next
+		}
+		.task {
+			await headTracker.start()
 		}
 		.onAppear {
 			appState.cinemaOpen = true
@@ -55,6 +90,9 @@ struct CinemaSpace: View {
 			openWindow(id: SpatialMapScene.id, value: SpatialMapSceneKey.shared)
 		}
 		.onDisappear {
+			headTracker.stop()
+			followHead?.cancel()
+			followHead = nil
 			appState.cinemaOpen = false
 			appState.cinemaScreenLocked = false
 			// The window may have been closed while the cinema was open. Not when the app went to
@@ -71,8 +109,45 @@ struct CinemaSpace: View {
 		.trackScreen(.cinema)
 	}
 
+	/// The board panels SwiftUI has made, kept for the per-frame placement.
+	private final class BoardPanels {
+		var panels: [CinemaBoard: Entity] = [:]
+		var fitted: Set<CinemaBoard> = []
+	}
+
 	private enum Attachments {
 		static let panel = "panel"
+		static let teamStatus = "teamStatus"
+	}
+
+	/// Keeps the render's camera at the viewer's eyes. Without head tracking (the simulator),
+	/// at the seated eye height the image was rendered from.
+	private func moveEyesToHead() {
+		if let head = headTracker.headPosition() {
+			eyes.position = head
+		} else if let anchors {
+			eyes.position = [0, anchors.eyeHeight, 0]
+		}
+	}
+
+	/// Puts each board's panel over its board in the image, scaled to the board. A panel's size
+	/// is only known once SwiftUI has laid it out, so this runs every frame until it is.
+	private func placeBoards() {
+		for (board, panel) in boards.panels {
+			guard let anchor = anchors?.board(board) else { continue }
+			if panel.parent !== eyes {
+				eyes.addChild(panel)
+				boards.fitted.remove(board)
+			}
+			if !boards.fitted.contains(board) {
+				let width = panel.visualBounds(relativeTo: panel).extents.x
+				guard width > 0 else { continue }
+				panel.scale = SIMD3(repeating: anchor.width / width)
+				panel.position = anchor.position
+				panel.orientation = anchor.orientation
+				boards.fitted.insert(board)
+			}
+		}
 	}
 
 	/// The panel sits just above the grab bar, however tall it is.

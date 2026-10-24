@@ -438,11 +438,12 @@ struct MeshtasticAppleApp: App {
 		.immersionStyle(selection: $showcaseImmersion, in: .mixed, .progressive(0.35...1.0, initialAmount: 0.7), .full)
 		.immersiveEnvironmentBehavior(.coexist)
 
-		// A 360° environment around the app's windows. Shows no mesh data, so it needs neither
-		// the store nor the radio.
+		// A 360° environment around the app's windows. Its whiteboard shows the team roster, from
+		// the store when there is one; CinemaSpace leaves the board out during a database reset.
 		ImmersiveSpace(id: CinemaScene.id) {
-			CinemaSpace()
+			CinemaSpace(container: Self.shouldInitializeAppServices ? persistenceController?.container : nil)
 				.environmentObject(appState)
+				.environmentObject(accessoryManager)
 		}
 		.immersionStyle(selection: $cinemaImmersion, in: .progressive(0.4...1.0, initialAmount: 1.0), .full)
 		#endif

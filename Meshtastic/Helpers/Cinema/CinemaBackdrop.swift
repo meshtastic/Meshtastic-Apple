@@ -12,7 +12,7 @@ import UIKit
 
 /// The world around the cinema screen: a large sphere showing the environment's image from the
 /// inside, unlit so the image reads as painted. The image has its own floor, rendered from seated
-/// eye height.
+/// eye height; CinemaSpace centers the sphere on the viewer's eyes.
 @MainActor
 enum CinemaBackdrop {
 	static let radius: Float = 50

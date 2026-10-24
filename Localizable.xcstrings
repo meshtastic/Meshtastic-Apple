@@ -8239,6 +8239,9 @@
         }
       }
     },
+    "+%lld more" : {
+      "comment" : "Cinema team board: how many favorite nodes didn't fit on the board"
+    },
     "[%lld items]" : {
       "localizations" : {
         "de" : {
@@ -24458,6 +24461,9 @@
         }
       }
     },
+    "Base" : {
+      "comment" : "Cinema team board: the hops column for the connected radio, the base distances are measured from"
+    },
     "Battery" : {
       "localizations" : {
         "da" : {
@@ -33971,6 +33977,9 @@
           }
         }
       }
+    },
+    "Connect a radio and favorite the nodes you're tracking to list them here." : {
+      "comment" : "Cinema team board: how to fill the empty board"
     },
     "Connect to a Node" : {
       "localizations" : {
@@ -52414,6 +52423,9 @@
           }
         }
       }
+    },
+    "Favorite nodes to add them to the board." : {
+      "comment" : "Cinema team board: hint shown when only the connected radio is listed"
     },
     "Favorited and ignored nodes are always retained. Other nodes are cleared from the app database on the schedule set by the user. (Nodes with PKC keys are always retained for at least 7 days.) This feature only purges nodes from the app that are not stored in the device node database." : {
       "localizations" : {
@@ -99099,6 +99111,9 @@
         }
       }
     },
+    "No radio connected" : {
+      "comment" : "Cinema team board: shown in the corner when no radio is connected"
+    },
     "No radio interface" : {
       "comment" : "RoutingError.display",
       "localizations" : {
@@ -99374,6 +99389,9 @@
           }
         }
       }
+    },
+    "No team yet" : {
+      "comment" : "Cinema team board: shown when there's no radio connected and no favorite nodes"
     },
     "No time limit" : {
       "comment" : "A label that indicates that a lockdown session has no",
@@ -131612,6 +131630,9 @@
         }
       }
     },
+    "Signal" : {
+      "comment" : "Cinema team board: column header for the node's signal bars"
+    },
     "Signal (Direct Only)" : {
       "comment" : "Settings control",
       "localizations" : {
@@ -137178,6 +137199,9 @@
           }
         }
       }
+    },
+    "Team Status" : {
+      "comment" : "Cinema: title of the live team roster on the tent's whiteboard"
     },
     "telemetry" : {
       "comment" : "Search keyword",
