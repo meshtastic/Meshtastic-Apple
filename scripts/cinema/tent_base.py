@@ -62,6 +62,9 @@ class WallSpot:
     z: float
     width: float
     height: float
+    # Windows only: how strongly the vinyl reflects the room, 1 for the usual amount. A window that
+    # faces a brightly lit stretch of wall needs less, or the reflection hides the forest.
+    shine: float = 1.0
 
 
 @dataclass
@@ -71,7 +74,7 @@ class Layout:
     is never used, and nothing should cover a board the app draws on."""
     # High on the wall, up under the eave, as frame-tent windows are. Sizes are the clear vinyl.
     windows: list = field(default_factory=lambda: [
-        WallSpot(side=1, y=-1.8, z=1.34, width=1.36, height=0.8),
+        WallSpot(side=1, y=-1.8, z=1.34, width=1.36, height=0.8, shine=0.5),
         WallSpot(side=-1, y=2.0, z=1.34, width=1.3, height=0.8),
     ])
     # The banner hangs on the back wall: center x, center z, width, height.
@@ -327,7 +330,7 @@ def canvas_material(windows):
         links.new(coords.outputs["Object"], xyz.inputs[0])
         x, y, z = xyz.outputs["X"], xyz.outputs["Y"], xyz.outputs["Z"]
         band_width = 0.04
-        inside = band = stitch = None
+        inside = band = stitch = shine = None
         # Short stitches along the binding: y runs along its top and bottom, z up its sides.
         dash = n.math("LESS_THAN", n.math("FRACT", n.math("MULTIPLY", n.math("ADD", y, z), 90)), 0.6)
         for window in windows:
@@ -342,6 +345,8 @@ def canvas_material(windows):
             row = n.math("LESS_THAN", n.math("ABSOLUTE", n.math("SUBTRACT", d, band_width / 2)), 0.0018)
             this_stitch = n.math("MULTIPLY", n.math("MULTIPLY", row, dash), this_band)
             inside = this_inside if inside is None else n.math("MAXIMUM", inside, this_inside)
+            this_shine = n.math("MULTIPLY", this_inside, window.shine)
+            shine = this_shine if shine is None else n.math("MAXIMUM", shine, this_shine)
             band = this_band if band is None else n.math("MAXIMUM", band, this_band)
             stitch = this_stitch if stitch is None else n.math("MAXIMUM", stitch, this_stitch)
         # Binding: webbing a shade darker than the canvas, sewn round the vinyl, with a slight
@@ -366,13 +371,13 @@ def canvas_material(windows):
         links.new(stretch.outputs["Vector"], ripple.inputs["Vector"])
         wobble = nodes.new("ShaderNodeBump")
         wobble.inputs["Strength"].default_value = 1.0
-        wobble.inputs["Distance"].default_value = 0.04
+        wobble.inputs["Distance"].default_value = 0.015
         links.new(ripple.outputs["Fac"], wobble.inputs["Height"])
         # And it leans back a little toward the top, as slack vinyl does with its bottom edge
         # pulled in, so it faces up toward the lights rather than straight across the tent.
         bow = nodes.new("ShaderNodeBump")
         bow.inputs["Strength"].default_value = 1.0
-        bow.inputs["Distance"].default_value = 0.2
+        bow.inputs["Distance"].default_value = 0.15
         links.new(n.math("MULTIPLY", z, -1), bow.inputs["Height"])
         links.new(wobble.outputs["Normal"], bow.inputs["Normal"])
         wobble = bow
@@ -403,9 +408,11 @@ def canvas_material(windows):
         cloud = nodes.new("ShaderNodeTexNoise")
         cloud.inputs["Scale"].default_value = 4
         links.new(coords.outputs["Object"], cloud.inputs["Vector"])
-        hazy = n.math("ADD", 0.07, n.math("MULTIPLY", cloud.outputs["Fac"], 0.07))
+        hazy = n.math("ADD", 0.11, n.math("MULTIPLY", cloud.outputs["Fac"], 0.07))
         vinyl = n.mix(hazy, clear.outputs["BSDF"], glowing.outputs["Shader"])
-        vinyl = n.mix(n.math("ADD", n.math("MULTIPLY", fresnel.outputs["Fac"], 1.6), 0.12), vinyl, sheen.outputs["BSDF"])
+        # Kept low, so only the string lights show clearly in it, as faint warm streaks.
+        reflect = n.math("MULTIPLY", n.math("ADD", fresnel.outputs["Fac"], 0.08), shine)
+        vinyl = n.mix(reflect, vinyl, sheen.outputs["BSDF"])
         shader = n.mix(band, shader, binding.outputs["BSDF"])
         shader = n.mix(stitch, shader, thread.outputs["BSDF"])
         shader = n.mix(inside, shader, vinyl)
@@ -433,12 +440,12 @@ def floor_material():
     mottle.inputs["Detail"].default_value = 6
     links.new(geometry.outputs["Position"], mottle.inputs["Vector"])
     cloth = nodes.new("ShaderNodeValToRGB")
-    cloth.color_ramp.elements[0].color = (0.10, 0.095, 0.068, 1)
-    cloth.color_ramp.elements[1].color = (0.18, 0.165, 0.118, 1)
+    cloth.color_ramp.elements[0].color = (0.11, 0.105, 0.075, 1)
+    cloth.color_ramp.elements[1].color = (0.20, 0.185, 0.13, 1)
     links.new(mottle.outputs["Fac"], cloth.inputs["Fac"])
     color = cloth.outputs["Color"]
     # Each panel was cut from a different roll and has faded differently.
-    panel = n.math("FLOOR", n.math("DIVIDE", n.math("ADD", x, 0.7), 1.4))
+    panel = n.math("FLOOR", n.math("DIVIDE", x, 1.4))
     tint = n.math("FRACT", n.math("MULTIPLY", n.math("SINE", n.math("MULTIPLY", panel, 12.9898)), 43758.55))
     shade = nodes.new("ShaderNodeMix")
     shade.data_type = "RGBA"
@@ -496,17 +503,18 @@ def floor_material():
     in_border = n.math("LESS_THAN", edge, border)
     color = mix_color(n.math("MULTIPLY", in_border, 0.7), color, (0.04, 0.04, 0.03))
 
-    # Welded seams between the panels, 1.4 m apart across the tent, each a raised strip with a
-    # line of stitching down both sides; the same seam runs round the border.
+    # Welded seams between the panels, 1.4 m apart across the tent with one right under the seat,
+    # each a raised strip with a line of stitching down both sides; the same seam runs round the
+    # border.
     seam_width = 0.05
-    across = n.math("ABSOLUTE", n.math("SUBTRACT", n.math("FRACT", n.math("DIVIDE", n.math("ADD", x, 0.7), 1.4)), 0.5))
+    across = n.math("ABSOLUTE", n.math("SUBTRACT", n.math("FRACT", n.math("DIVIDE", x, 1.4)), 0.5))
     panel_seam = n.math("ABSOLUTE", n.math("SUBTRACT", n.math("MULTIPLY", across, 1.4), 0.7))
     to_border = n.math("ABSOLUTE", n.math("SUBTRACT", edge, border))
     seam = n.math("MINIMUM", n.math("ADD", panel_seam, n.math("MULTIPLY", in_border, 10)), to_border)
     welt = n.math("LESS_THAN", seam, seam_width / 2)
-    stitch_line = n.math("LESS_THAN", n.math("ABSOLUTE", n.math("SUBTRACT", seam, seam_width / 2 - 0.004)), 0.0015)
-    color = mix_color(n.math("MULTIPLY", welt, 0.6), color, (0.06, 0.055, 0.04))
-    color = mix_color(n.math("MULTIPLY", stitch_line, 0.6), color, (0.24, 0.22, 0.16))
+    stitch_line = n.math("LESS_THAN", n.math("ABSOLUTE", n.math("SUBTRACT", seam, seam_width / 2 - 0.004)), 0.0025)
+    color = mix_color(n.math("MULTIPLY", welt, 0.85), color, (0.05, 0.045, 0.032))
+    color = mix_color(n.math("MULTIPLY", stitch_line, 0.9), color, (0.32, 0.3, 0.21))
     links.new(color, bsdf.inputs["Base Color"])
 
     # Ripstop: a fine grid of heavier threads, about 7 mm, felt more than seen.

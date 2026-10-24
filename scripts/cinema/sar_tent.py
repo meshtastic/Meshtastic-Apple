@@ -104,8 +104,9 @@ def furnish(layout):
     radio((map_x - 0.25, map_y - 0.5, 0.765), black_plastic, black_plastic, led_green)
     box("Compass", (0.06, 0.1, 0.008), (map_x + 0.25, map_y + 0.45, 0.77), material("Compass", (0.8, 0.85, 0.9), 0.1))
 
-    # A mesh node on a tripod just past the door, its antenna up near the eave.
-    tripod_top = (wall + 0.05, 1.08, 1.35)
+    # A mesh node on a tripod just past the door, its antenna up near the eave, far enough along
+    # that its legs stay clear of the door jamb.
+    tripod_top = (wall + 0.05, 1.18, 1.35)
     for angle in (0, 2.1, 4.2):
         foot = (tripod_top[0] + 0.3 * math.cos(angle), tripod_top[1] + 0.3 * math.sin(angle), 0)
         cylinder("TripodLeg", 0.01, foot, tripod_top, steel)
@@ -114,16 +115,18 @@ def furnish(layout):
     sphere("NodeLED", 0.006, (tripod_top[0] - 0.05, tripod_top[1], tripod_top[2] + 0.1), led_green, segments=8)
 
     # Whiteboard on the left wall, behind the viewer's shoulder, in the back bay. Left blank: the
-    # app draws the live team roster over it (the "teamStatus" anchor). The easel legs stand
-    # outside the frame so the panel doesn't cover them; the near one is closer to the camera, so
-    # it stands farther out to stay clear of the frame's edge in the image.
+    # app draws the live team roster over it (the "teamStatus" anchor). It stands on two legs under
+    # the frame, the way a mobile whiteboard does, so nothing crosses the board or crowds the tent
+    # legs at either end of the bay. Its top sits well under the eave.
     board = image_material("Whiteboard", os.path.join(CACHE, "whiteboard.png"), 0.25)
-    board_x, board_y = -HALF_WIDTH + 0.1, -1.8
-    whiteboard = plane("Whiteboard", 1.8, 1.2, (board_x + 0.02, board_y, 1.25), tent.facing_in(-1), board)
+    board_x, board_y, board_z = -HALF_WIDTH + 0.1, -1.8, 1.17
+    whiteboard = plane("Whiteboard", 1.8, 1.2, (board_x + 0.02, board_y, board_z), tent.facing_in(-1), board)
     anchor("teamStatus", whiteboard, 1.8, 1.2)
-    box("WhiteboardFrame", (0.03, 1.86, 1.26), (board_x, board_y, 1.25), material("Frame", (0.7, 0.7, 0.72), 0.4, metallic=0.8))
-    for y in (board_y - 0.95, board_y + 1.05):
-        cylinder("EaselLeg", 0.012, (board_x + 0.3, y, 0), (board_x + 0.02, y, 1.8), steel)
+    box("WhiteboardFrame", (0.03, 1.86, 1.26), (board_x, board_y, board_z), material("Frame", (0.7, 0.7, 0.72), 0.4, metallic=0.8))
+    frame_bottom = board_z - 0.63
+    for y in (board_y - 0.7, board_y + 0.7):
+        cylinder("EaselLeg", 0.014, (board_x + 0.03, y, 0.02), (board_x + 0.03, y, frame_bottom), steel)
+        cylinder("EaselFoot", 0.014, (board_x - 0.02, y, 0.02), (board_x + 0.3, y, 0.02), steel)
 
     # A light on the board, from up by the eave, so the painted board is as bright as the panel
     # the app draws over it. It can't be seen itself, in the image or on the board.
@@ -134,9 +137,9 @@ def furnish(layout):
     board_light.color = (1, 0.55, 0.24)
     board_light.spread = math.radians(70)
     obj = bpy.data.objects.new("BoardLight", board_light)
-    obj.location = (board_x + 0.9, board_y, 2.1)
+    obj.location = (board_x + 0.9, board_y, 2.02)
     obj.rotation_mode = "QUATERNION"
-    obj.rotation_quaternion = (Vector((board_x, board_y, 1.3)) - obj.location).to_track_quat("-Z", "Y")
+    obj.rotation_quaternion = (Vector((board_x, board_y, board_z + 0.05)) - obj.location).to_track_quat("-Z", "Y")
     obj.visible_camera = False
     obj.visible_glossy = False
     link(obj)
