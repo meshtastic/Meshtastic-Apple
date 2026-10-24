@@ -113,6 +113,20 @@ struct OfflineMapImportTests {
 		#expect(imported.fileName.hasSuffix(".mbtiles"))
 	}
 
+	@MainActor
+	@Test func importRecordsTheMapInTheManifest() async throws {
+		let sourceURL = try makeMBTilesFixture()
+		defer { try? FileManager.default.removeItem(at: sourceURL) }
+
+		let manager = OfflineMapManager.shared
+		let imported = try await manager.importOfflineMap(from: sourceURL)
+		defer { manager.remove(imported) }
+
+		// Reading the manifest back from disk, as a relaunch would, still finds it.
+		manager.load()
+		#expect(manager.regions.contains { $0.id == imported.id })
+	}
+
 	private var rasterHeader: PMTilesHeader {
 		parseHeader(tileType: .png)
 	}
