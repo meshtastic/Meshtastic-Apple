@@ -10,6 +10,10 @@ These assets are proprietary and protected by international copyright laws. Unau
 
 Each file is an original 3D model of a device sold by its manufacturer, built from the matching device illustration on the [web flasher](https://github.com/meshtastic/web-flasher) (`public/img/devices/`). The model is Meshtastic's work. The product it depicts, and that manufacturer's own logos, marks, and trade dress, remain theirs, and this notice grants no right to either.
 
+## Chirpy
+
+`chirpy.usdz` is the exception to the notice above. It is a model of Chirpy, the Meshtastic mascot, drawn from the app's own art, and not of a manufacturer's device. Its notice licenses it under the GNU GPL v3.0 or later, like the Chirpy art. The node detail viewer and the Vision Pro showcase use it, and the nightly image sync leaves it alone.
+
 ## About the files
 
 - Each `<name>.usdz` is named after its device's SVG, so a device's `images` entry in the hardware list maps to its model by swapping the extension.

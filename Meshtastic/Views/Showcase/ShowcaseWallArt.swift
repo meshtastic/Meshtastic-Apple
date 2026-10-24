@@ -7,7 +7,6 @@
 #if os(visionOS)
 import OSLog
 import RealityKit
-import ShowcaseContent
 import UIKit
 
 /// Along the right wall: a giant Chirpy on a pedestal, turned toward the seat, and nearer
@@ -39,12 +38,13 @@ extension ShowcaseRoom {
 	/// Dark charcoal, the app's primary text color.
 	private static let plaqueColor = UIColor(red: 0.17, green: 0.18, blue: 0.24, alpha: 1)
 
-	/// Chirpy's real-size model from ShowcaseContent, scaled up to `chirpyHeight` and turned to
+	/// Chirpy's real-size model, bundled with the device models, scaled up to `chirpyHeight` and turned to
 	/// look at the seat. He's the room's mascot, not a device, so he isn't on a table.
 	private func addChirpy() async {
 		let chirpy: Entity
 		do {
-			chirpy = try await Entity(named: "Chirpy", in: showcaseContentBundle)
+			guard let url = Bundle.main.url(forResource: DeviceModelCatalog.chirpy, withExtension: "usdz") else { return }
+			chirpy = try await Entity(contentsOf: url)
 		} catch {
 			Logger.services.error("📻 [Showcase] Chirpy failed to load: \(error.localizedDescription, privacy: .public)")
 			return

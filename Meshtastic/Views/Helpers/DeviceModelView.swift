@@ -8,10 +8,15 @@
 import SwiftUI
 import RealityKit
 import OSLog
+import QuickLook
+#if os(iOS) && !targetEnvironment(macCatalyst)
+import ARKit
+#endif
 
 /// Shows the device image with a 3D badge; tapping either switches to the device's 3D model,
 /// turning slowly. The model is only fetched once asked for. If it can't be loaded, the badge goes
-/// away and the image stays.
+/// away and the image stays. Once it's showing, "View in your space" stands it in the room at real
+/// size, and tapping it seven times swaps it for Chirpy.
 @available(iOS 18.0, macCatalyst 18.0, visionOS 1.0, *)
 struct DeviceModelView<Placeholder: View>: View {
 	let modelName: String
@@ -23,6 +28,19 @@ struct DeviceModelView<Placeholder: View>: View {
 	@State private var isLoading = false
 	@State private var unavailable = false
 	@State private var stage: DeviceModelStage?
+	/// The file the model came from, handed to Quick Look for "View in your space".
+	@State private var modelURL: URL?
+	@State private var quickLookURL: URL?
+	@State private var showsChirpy = false
+	@State private var chirpyTaps = 0
+	@State private var lastChirpyTap = Date.distantPast
+
+	/// Seven taps on the model within this long of each other swap it for Chirpy, or back.
+	private static var chirpyTapCount: Int { 7 }
+	private static var chirpyTapWindow: TimeInterval { 1.5 }
+
+	private var shownModelName: String { showsChirpy ? DeviceModelCatalog.chirpy : modelName }
+	private var shownName: String { showsChirpy ? "Chirpy" : deviceName }
 
 	var body: some View {
 		// Bottom left: the supported-hardware rosette sits bottom right on the same image.
@@ -33,10 +51,12 @@ struct DeviceModelView<Placeholder: View>: View {
 					.accessibilityHidden(stage != nil)
 				if let stage {
 					DeviceModelRealityView(stage: stage, autoRotate: !reduceMotion)
+						// RealityView adds its content once, so a new model needs a new view.
+						.id(ObjectIdentifier(stage))
 						.transition(.opacity)
 						.accessibilityElement(children: .ignore)
 						.accessibilityLabel(String(
-							localized: "3D model of \(deviceName)",
+							localized: "3D model of \(shownName)",
 							comment: "Accessibility label for the rotating 3D model of a radio; the argument is the device name"
 						))
 				}
@@ -44,22 +64,34 @@ struct DeviceModelView<Placeholder: View>: View {
 			.animation(.easeInOut(duration: 0.35), value: stage == nil)
 			.contentShape(Rectangle())
 			.onTapGesture {
-				// Only the image switches; on the model, touches rotate and zoom it.
-				if stage == nil && !unavailable { showsModel = true }
+				// The image switches to the model; on the model, touches rotate and zoom it, and
+				// enough taps in a row swap in Chirpy.
+				if stage == nil {
+					if !unavailable { showsModel = true }
+				} else {
+					countChirpyTap()
+				}
 			}
 			if !unavailable {
-				toggleButton
-					.padding(8)
+				HStack(spacing: 8) {
+					toggleButton
+					if stage != nil, modelURL != nil, Self.canViewInSpace {
+						viewInSpaceButton
+					}
+				}
+				.padding(8)
 			}
 		}
-		.task(id: showsModel) {
+		.task(id: ModelRequest(showsModel: showsModel, name: shownModelName)) {
 			guard showsModel else {
 				stage = nil
+				modelURL = nil
 				return
 			}
+			let name = shownModelName
 			isLoading = true
 			defer { isLoading = false }
-			guard let url = await DeviceModelSource.shared.localURL(for: modelName) else {
+			guard let url = await DeviceModelSource.shared.localURL(for: name) else {
 				if !Task.isCancelled { giveUp() }
 				return
 			}
@@ -68,17 +100,72 @@ struct DeviceModelView<Placeholder: View>: View {
 				let entity = try await Entity(contentsOf: url)
 				guard !Task.isCancelled else { return }
 				stage = DeviceModelStage(model: entity)
+				modelURL = url
 			} catch {
-				Logger.services.error("Device model \(modelName, privacy: .public) failed to open: \(error.localizedDescription, privacy: .public)")
+				// A different model was picked while this one loaded; its failure says
+				// nothing about the new one, which would stay marked unavailable.
+				guard !Task.isCancelled else { return }
+				Logger.services.error("Device model \(name, privacy: .public) failed to open: \(error.localizedDescription, privacy: .public)")
 				// A damaged download would otherwise fail the same way every time.
-				await DeviceModelSource.shared.discardCachedFile(for: modelName)
+				await DeviceModelSource.shared.discardCachedFile(for: name)
 				giveUp()
 			}
 		}
 		.onChange(of: modelName) {
 			showsModel = false
+			showsChirpy = false
 			unavailable = false
 		}
+		#if os(iOS)
+		.quickLookPreview($quickLookURL)
+		#endif
+	}
+
+	private struct ModelRequest: Equatable {
+		let showsModel: Bool
+		let name: String
+	}
+
+	/// Where Quick Look can put a model in the room: iPhones and iPads that run world tracking,
+	/// and Vision Pro. A Mac has no camera view to place it in.
+	private static var canViewInSpace: Bool {
+		#if os(visionOS)
+		return true
+		#elseif os(iOS) && !targetEnvironment(macCatalyst)
+		return ARWorldTrackingConfiguration.isSupported
+		#else
+		return false
+		#endif
+	}
+
+	private var viewInSpaceButton: some View {
+		Button {
+			guard let modelURL else { return }
+			#if os(visionOS)
+			// A Quick Look window of its own, which can be set down anywhere in the room.
+			_ = PreviewApplication.open(urls: [modelURL])
+			#else
+			// Quick Look shows the model at its own size, which is the real one.
+			quickLookURL = modelURL
+			#endif
+		} label: {
+			Image(systemName: "arkit")
+				.font(.body.weight(.semibold))
+				.frame(width: 36, height: 36)
+				.background(.ultraThinMaterial, in: Circle())
+		}
+		.buttonStyle(.plain)
+		.accessibilityLabel(String(localized: "View in your space", comment: "Button on a radio's 3D model: place the model in the room around you at real size"))
+	}
+
+	/// Counts taps on the model; a run of seven swaps the device for Chirpy, or Chirpy back.
+	private func countChirpyTap() {
+		let now = Date.now
+		chirpyTaps = now.timeIntervalSince(lastChirpyTap) < Self.chirpyTapWindow ? chirpyTaps + 1 : 1
+		lastChirpyTap = now
+		guard chirpyTaps >= Self.chirpyTapCount else { return }
+		chirpyTaps = 0
+		showsChirpy.toggle()
 	}
 
 	private var toggleButton: some View {
