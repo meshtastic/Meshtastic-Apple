@@ -147,8 +147,10 @@ struct CoverageTerrainTests {
 		#expect(CoverageTerrainLoader.tileKeys(latitude: 47.6, longitude: -122.3, radiusKm: 150, zoom: wide).count <= CoverageTerrainLoader.maxTiles)
 	}
 
-	@Test func theTileBoxHoldsEveryPointTheSweepReaches() {
-		let latitude = 70.0, longitude = 25.0, radiusKm = 150.0
+	/// Sites where a box sized from a flat 111.32 km per degree and cos(latitude) left out tiles the sweep reads.
+	@Test(arguments: [(60.0, 18.87), (60.0, 25.9), (65.0, 34.78), (72.0, 2.96)])
+	func theTileBoxHoldsEveryPointTheSweepReaches(latitude: Double, longitude: Double) {
+		let radiusKm = 150.0
 		let zoom = CoverageTerrainLoader.zoom(latitude: latitude, longitude: longitude, radiusKm: radiusKm)
 		let keys = Set(CoverageTerrainLoader.tileKeys(latitude: latitude, longitude: longitude, radiusKm: radiusKm, zoom: zoom))
 		var missing = 0
