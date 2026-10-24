@@ -5,20 +5,33 @@
 #
 #  Copyright(c) Garth Vander Houwen 10/23/26.
 #
-#  Draws the flat textures the SAR tent scene uses: a topo map, a blank whiteboard and a
-#  laptop showing a mesh map. Everything is generated here, so the tent image has no third-party
-#  artwork in it. Writes PNGs into cache/.
+#  Draws the flat textures the tent scenes use: a topo map, a blank whiteboard, laptops showing a
+#  mesh map, and the Meshtastic banner, Chirpy poster and Meshtastic Solutions plaque. The map,
+#  board and screens are generated here. The branding uses the app's own artwork, rasterized from
+#  its SVGs with resvg (the resvg-py package), so it is never redrawn. Writes PNGs into cache/.
+#  build.sh runs it with uv, which supplies Pillow, numpy and resvg-py.
 
+import io
 import math
 import os
 import random
 
 import numpy as np
+import resvg_py
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
 OUT = os.path.join(HERE, "cache")
 FONT_DIR = "/System/Library/Fonts/Supplemental"
+
+# The app's artwork, used as is.
+MARK_SVG = os.path.join(ROOT, "Meshtastic/Resources/AppIcon.icon/Assets/Meshtastic Logo.svg")
+WORDMARK_SVG = os.path.join(ROOT, "Meshtastic/Assets.xcassets/meshtastic-wordmark-white.imageset/meshtastic-wordmark-white.svg")
+CHIRPY_SVG = os.path.join(ROOT, "Meshtastic/Assets.xcassets/Chirpy.imageset/chirpy.svg")
+SOLUTIONS_SVG = os.path.join(ROOT, "Meshtastic/Assets.xcassets/MeshtasticSolutionsMark.imageset/meshtastic-solutions-mark.svg")
+# Meshtastic's charcoal, the color of the banner and the plaque.
+CHARCOAL = (44, 45, 60)
 
 
 def font(name, size):
@@ -132,12 +145,110 @@ def laptop_screen(path, w=1600, h=1000, seed=5):
     image.save(path)
 
 
+def svg(path, width):
+    """An SVG from the repo rasterized at `width` pixels, keeping its aspect and transparency."""
+    data = resvg_py.svg_to_bytes(svg_path=path, width=width)
+    return Image.open(io.BytesIO(bytes(data))).convert("RGBA")
+
+
+def system_font(size, weight):
+    """San Francisco at a named weight, like the app's system font."""
+    face = ImageFont.truetype("/System/Library/Fonts/SFNS.ttf", size)
+    face.set_variation_by_name(weight)
+    return face
+
+
+def weave(size, seed, strength):
+    """A faint canvas weave to multiply over printed fabric, so the print sits in the cloth."""
+    w, h = size
+    rng = np.random.default_rng(seed)
+    grain = rng.normal(0, 1, (h, w))
+    rows = np.sin(np.arange(h) * math.pi / 2)[:, None] * 0.5
+    cols = np.sin(np.arange(w) * math.pi / 2)[None, :] * 0.5
+    shade = 1 + strength * (grain * 0.6 + rows + cols) / 2
+    blotch = fractal_noise(w // 8, h // 8, seed=seed, octaves=4)
+    blotch = np.asarray(Image.fromarray((blotch * 255).astype(np.uint8)).resize((w, h), Image.BICUBIC), dtype=float) / 255
+    return np.clip(shade * (1 - strength * 0.8 * (blotch - 0.5)), 0, 2)
+
+
+def banner(path, w=2200, h=1100):
+    """A printed canvas banner, 2.0 by 1.0 m: the Meshtastic mark over the wordmark, in their own
+    colors on Meshtastic charcoal, with a stitched hem."""
+    image = Image.new("RGBA", (w, h), (*CHARCOAL, 255))
+    mark = svg(MARK_SVG, int(w * 0.40))
+    wordmark = svg(WORDMARK_SVG, int(w * 0.74))
+    gap = int(h * 0.09)
+    top = (h - mark.height - gap - wordmark.height) // 2
+    image.alpha_composite(mark, ((w - mark.width) // 2, top))
+    image.alpha_composite(wordmark, ((w - wordmark.width) // 2, top + mark.height + gap))
+    draw = ImageDraw.Draw(image)
+    # Hem: the folded edge and a line of stitches inside it.
+    hem = int(h * 0.035)
+    draw.rectangle([0, 0, w - 1, h - 1], outline=(30, 31, 42), width=hem)
+    stitch = (88, 89, 100)
+    for x in range(hem + 10, w - hem - 10, 26):
+        for y in (hem + 8, h - hem - 10):
+            draw.line([(x, y), (x + 14, y)], fill=stitch, width=3)
+    for y in range(hem + 10, h - hem - 10, 26):
+        for x in (hem + 8, w - hem - 10):
+            draw.line([(x, y), (x, y + 14)], fill=stitch, width=3)
+    pixels = np.asarray(image.convert("RGB"), dtype=float) * weave((w, h), 21, 0.12)[..., None]
+    Image.fromarray(np.clip(pixels, 0, 255).astype(np.uint8)).save(path)
+
+
+def chirpy_poster(path, w=1200, h=1680):
+    """Chirpy on white paper, as on the showcase's wall."""
+    image = Image.new("RGBA", (w, h), (246, 246, 242, 255))
+    margin = int(w * 0.09)
+    chirpy = svg(CHIRPY_SVG, w - 2 * margin)
+    if chirpy.height > h - 2 * margin:
+        chirpy = svg(CHIRPY_SVG, int((w - 2 * margin) * (h - 2 * margin) / chirpy.height))
+    image.alpha_composite(chirpy, ((w - chirpy.width) // 2, (h - chirpy.height) // 2))
+    image.convert("RGB").save(path)
+
+
+def solutions_plaque(path, w=1440, h=800):
+    """The showcase's plaque: "Brought to you by" over the Meshtastic Solutions mark and name, in
+    white on charcoal, laid out as ShowcaseWallArt.solutionsPlaque() draws it."""
+    image = Image.new("RGBA", (w, h), (43, 46, 61, 255))
+    draw = ImageDraw.Draw(image)
+    draw.rounded_rectangle([28, 28, w - 28, h - 28], radius=18, outline=(130, 132, 142), width=4)
+    small = system_font(64, b"Medium")
+    by_line = "Brought to you by"
+    left, _, right, _ = draw.textbbox((0, 0), by_line, font=small)
+    draw.text(((w - (right - left)) / 2, 170), by_line, fill=(200, 201, 206), font=small)
+    # The mark tinted white, as the showcase does.
+    mark = svg(SOLUTIONS_SVG, 600)
+    white = Image.new("RGBA", mark.size, (255, 255, 255, 255))
+    white.putalpha(mark.getchannel("A"))
+    name = "Meshtastic Solutions"
+    gap = 32
+    size = 112
+    while True:
+        large = system_font(size, b"Semibold")
+        left, top, right, bottom = draw.textbbox((0, 0), name, font=large)
+        mark_height = size * 1.2
+        mark_width = mark_height * white.width / white.height
+        if mark_width + gap + (right - left) <= w - 140 or size <= 48:
+            break
+        size -= 4
+    start = (w - (mark_width + gap + (right - left))) / 2
+    row = 470
+    tinted = white.resize((int(mark_width), int(mark_height)), Image.LANCZOS)
+    image.alpha_composite(tinted, (int(start), int(row - mark_height / 2)))
+    draw.text((start + mark_width + gap, row), name, fill=(255, 255, 255), font=large, anchor="lm")
+    image.convert("RGB").save(path)
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     topo_map(os.path.join(OUT, "topo.png"))
     whiteboard(os.path.join(OUT, "whiteboard.png"))
     laptop_screen(os.path.join(OUT, "laptop_a.png"), seed=5)
     laptop_screen(os.path.join(OUT, "laptop_b.png"), seed=9)
+    banner(os.path.join(OUT, "banner.png"))
+    chirpy_poster(os.path.join(OUT, "chirpy_poster.png"))
+    solutions_plaque(os.path.join(OUT, "solutions_plaque.png"))
     print("textures written to", OUT)
 
 

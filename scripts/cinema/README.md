@@ -2,16 +2,35 @@
 
 The 360° images the visionOS cinema wraps around the viewer. Each is rendered in Blender from a script here, so it can be rebuilt and changed, and so we know where every part of it came from.
 
-Run `build.sh` to render them at full size and copy them into `Packages/CinemaContent`. Run `build.sh --preview` for a quick 2048-wide render in `out/`. It needs Blender 5.2 or later in /Applications, and python3 with Pillow and numpy.
+Run `build.sh` to render them at full size and copy them into `Packages/CinemaContent`. Run `build.sh --preview` for a quick 2048-wide render in `out/`. It needs Blender 5.2 or later in /Applications and [uv](https://docs.astral.sh/uv/), which fetches Pillow, numpy and resvg-py for `make_textures.py`.
+
+## The tent and its furnishings
+
+The scenes are split in two:
+
+- `tent_base.py` is the tent every environment shares: a 5 × 7 m frame tent with canvas walls, clear vinyl windows, the floor, the string lights, the Meshtastic branding, the dusk forest outside, the seated camera, the render settings, and the anchors file. Its `Layout` says where the windows, banner, poster and plaque go.
+- An environment script, such as `sar_tent.py`, adds its own furniture, lights and boards in a `furnish()` function and calls `tent_base.render(furnish)`.
+
+Blender's +Y is the image's center: the front wall, left plain for the app window. +X is the viewer's right and Z is up, with the viewer at the origin at seated eye height.
+
+### Adding an environment
+
+1. Copy `sar_tent.py` to `<name>.py` and change `furnish()`. Keep the front wall clear. To move the windows or the branding away from your furniture, pass your own `tent_base.Layout(...)` to `render()`.
+2. For each board the app should draw on, make a plane and call `anchor("<id>", plane, width, height)`. The plane's +X is the board's right and its +Z faces the viewer.
+3. Add `environment <name>` at the end of `build.sh` and run it. It writes `<name>.jpg` and `<name>_anchors.json` into `Packages/CinemaContent`.
+4. Add a case to `CinemaEnvironment` with `imageName` set to `<name>`.
+
+Since the camera, eye height and axes come from `tent_base.py`, the anchors an environment writes line up with its image the same way the tent's do.
 
 ## Search and rescue tent
 
-`sar_tent.py` models a 5 × 7 m frame tent at dusk and renders it as an equirectangular panorama from a seated viewer at its middle. The center of the image is the front wall, left plain for the app window. The comms table is on the left, the door and map table on the right. The floor is left clear. The whiteboard behind the viewer's left shoulder is blank: the app draws the live team roster over it.
+`sar_tent.py` furnishes the tent as a search and rescue command post. The comms table is on the left, with Chirpy's poster and the "Brought to you by Meshtastic Solutions" plaque on the wall above it. The door and the map table are on the right, with a mesh node on a tripod by the door. The Meshtastic banner hangs on the back wall, behind the viewer. There is a clear vinyl window on each side wall. The floor is left clear. The whiteboard behind the viewer's left shoulder is blank: the app draws the live team roster over it.
 
-The render also writes `sar_tent_anchors.json`, which `build.sh` copies next to the image. It says where each board the app draws on sits, relative to the camera, in RealityKit's axes. The app places its panels from it, so moving a board in `sar_tent.py` and re-rendering moves the panel with it. The app pushes each panel out along the lines from the camera until it sits just inside the backdrop sphere, and grows it to match, so it covers the same part of the view and has the same stereo depth as the painted tent around it.
+The render also writes `sar_tent_anchors.json`, which `build.sh` copies next to the image. It says where each board the app draws on sits, relative to the camera, in RealityKit's axes. The app places its panels from it, so moving a board and re-rendering moves the panel with it. The app pushes each panel out along the lines from the camera until it sits just inside the backdrop sphere, and grows it to match, so it covers the same part of the view and has the same stereo depth as the painted tent around it.
 
-Sources:
+## Sources
 
-- The tent, furniture, gear and lighting are modeled in `sar_tent.py`.
+- The tent, furniture and lighting are modeled in `tent_base.py` and `sar_tent.py`.
 - The topo map, the whiteboard and the laptop screens are drawn by `make_textures.py`.
-- The forest seen through the door is the "Sunset Forest" HDRI from Poly Haven (https://polyhaven.com/a/sunset_forest), released under CC0. `build.sh` downloads it into `cache/`.
+- The banner, poster and plaque use the app's own artwork, rasterized from its SVGs by `make_textures.py` with resvg (the `resvg-py` package; chosen because it needs no system libraries, unlike cairosvg, and keeps transparency, unlike `qlmanage`): the Meshtastic mark (`Meshtastic/Resources/AppIcon.icon/Assets/Meshtastic Logo.svg`), the wordmark (`meshtastic-wordmark-white.imageset`), Chirpy (`Chirpy.imageset`) and the Meshtastic Solutions mark (`MeshtasticSolutionsMark.imageset`). The plaque follows the layout of the one in the visionOS Hardware Showcase.
+- The forest seen through the door and the windows is the "Sunset Forest" HDRI from Poly Haven (https://polyhaven.com/a/sunset_forest), released under CC0. `build.sh` downloads it into `cache/`.
