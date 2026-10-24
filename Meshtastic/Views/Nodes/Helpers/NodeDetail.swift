@@ -173,6 +173,14 @@ struct NodeDetail: View {
 						.contentMargins(.top, 0, for: .scrollContent)
 					.navigationTitle(String((currentUser?.displayLongName ?? "Unknown".localized).addingVariationSelectors))
 					.navigationBarTitleDisplayMode(.inline)
+					.toolbar {
+						if accessoryManager.activeDeviceNum != nodeNum,
+						   currentUser?.showsDirectMessageAction == true {
+							ToolbarItem(placement: .primaryAction) {
+								MessageNodeButton(nodeNum: nodeNum)
+							}
+						}
+					}
 					.id(displayNameRefresh)
 			}
 		} else {
@@ -844,13 +852,7 @@ struct NodeDetail: View {
 				)
 				if accessoryManager.activeDeviceNum != nodeNum {
 					if currentUser?.showsDirectMessageAction == true {
-						Button(action: {
-							if let url = URL(string: "meshtastic:///messages?userNum=\(nodeNum)") {
-								UIApplication.shared.open(url)
-							}
-						}) {
-							Label("Message", systemImage: "message")
-						}
+						MessageNodeButton(nodeNum: nodeNum)
 					}
 					ExchangePositionsButton(
 						node: node,

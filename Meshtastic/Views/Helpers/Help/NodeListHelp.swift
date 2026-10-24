@@ -46,6 +46,15 @@ struct NodeListHelp: View {
 						title: String(localized: "Hops Away"),
 						subtitle: String(localized: "The number of intermediate nodes relaying messages between you and this node. No hops means direct communication.")
 					)
+					HelpItem(
+						symbol: AnyView(
+							Image(systemName: "message")
+								.font(.title3)
+								.foregroundColor(.accentColor)
+						),
+						title: String(localized: "Message a Node"),
+						subtitle: String(localized: "Swipe right on a node you can message to open a direct message, or tap the message button at the top of its details.")
+					)
 				} header: {
 					Text("Node Status")
 				}

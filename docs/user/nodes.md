@@ -108,6 +108,10 @@ When most of the list is in that state, the Nodes tab shows a notice such as **8
 
 Older firmware doesn't report this, so the marker and the notice don't appear.
 
+## Messaging a Node
+
+Swipe right on a node in the list to show **Message**; a full swipe opens the direct message conversation straight away. In Node Detail, tap the message button at the top right. Both appear for nodes you can message: ones with a public key, or ones you already have a conversation with.
+
 ## Context Menu Actions
 
 Long-press any node in the list to access quick actions:
