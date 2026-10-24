@@ -171,34 +171,44 @@ def plane(name, width, height, location, rotation, mat):
 
 
 def anchor(board_id, obj, width, height):
-    """Records a plane as a board the app draws on. The plane's +X is the board's right and its
-    +Z faces the viewer."""
-    rotation = obj.rotation_euler.to_matrix()
-    ANCHORS[board_id] = {
-        "center": to_app(Vector(obj.location) - Vector((0, 0, EYE_HEIGHT))),
-        "size": [round(width, 4), round(height, 4)],
-        "right": to_app(rotation @ Vector((1, 0, 0))),
-        "normal": to_app(rotation @ Vector((0, 0, 1))),
-    }
+    """Records a plane of the given mesh size as a board the app draws on. The plane's +X is the
+    board's right and its +Z faces the viewer. write_anchors() reads where it ends up."""
+    ANCHORS[board_id] = (obj, width, height)
 
 
-def to_app(v):
-    """Blender's Z-up, +Y-forward coordinates to RealityKit's Y-up, -Z-forward ones."""
-    return [round(v.x, 4) + 0.0, round(v.z, 4) + 0.0, round(-v.y, 4) + 0.0]
-
-
-def write_anchors(out):
+def write_anchors(out, camera):
+    """Writes each board's place relative to the camera, in the camera's own axes, which are
+    RealityKit's: +X right, +Y up, -Z toward the image's center."""
+    bpy.context.view_layer.update()
+    to_camera = camera.matrix_world.to_3x3().normalized().inverted()
+    eye = camera.matrix_world.translation
+    boards = {}
+    for board_id, (obj, width, height) in ANCHORS.items():
+        world = obj.matrix_world
+        right = world.to_3x3() @ Vector((1, 0, 0))
+        up = world.to_3x3() @ Vector((0, 1, 0))
+        normal = world.to_3x3() @ Vector((0, 0, 1))
+        boards[board_id] = {
+            "center": rounded(to_camera @ (world.translation - eye)),
+            "size": [round(width * right.length, 4), round(height * up.length, 4)],
+            "right": rounded(to_camera @ right.normalized()),
+            "normal": rounded(to_camera @ normal.normalized()),
+        }
     path = os.path.splitext(out)[0] + "_anchors.json"
     data = {
         "comment": "Written by scripts/cinema/sar_tent.py. Meters, RealityKit axes (+X right, +Y up, "
                    "-Z toward the image's center), relative to the camera the image was rendered from.",
-        "eyeHeight": EYE_HEIGHT,
-        "boards": ANCHORS,
+        "eyeHeight": round(eye.z, 4),
+        "boards": boards,
     }
     with open(path, "w") as file:
         json.dump(data, file, indent=2, sort_keys=True)
         file.write("\n")
     print("wrote", path)
+
+
+def rounded(v):
+    return [round(v.x, 4) + 0.0, round(v.y, 4) + 0.0, round(v.z, 4) + 0.0]
 
 
 # MARK: - Materials
@@ -411,14 +421,15 @@ def build_props():
     sphere("NodeLED", 0.006, (tripod_top[0] - 0.05, tripod_top[1], tripod_top[2] + 0.1), led_green, segments=8)
 
     # Whiteboard on the left wall, behind the viewer's shoulder. Left blank: the app draws the live
-    # team roster over it (the "teamStatus" anchor). The easel legs stand just outside the frame so
-    # the panel doesn't cover them.
+    # team roster over it (the "teamStatus" anchor). The easel legs stand outside the frame so the
+    # panel doesn't cover them; the near one is closer to the camera, so it stands farther out to
+    # stay clear of the frame's edge in the image.
     board = image_material("Whiteboard", os.path.join(CACHE, "whiteboard.png"), 0.25)
     board_x = -HALF_WIDTH + 0.1
     whiteboard = plane("Whiteboard", 1.8, 1.2, (board_x + 0.02, -1.6, 1.25), (math.pi / 2, 0, math.pi / 2), board)
     anchor("teamStatus", whiteboard, 1.8, 1.2)
     box("WhiteboardFrame", (0.03, 1.86, 1.26), (board_x, -1.6, 1.25), material("Frame", (0.7, 0.7, 0.72), 0.4, metallic=0.8))
-    for y in (-1.6 - 0.96, -1.6 + 0.96):
+    for y in (-1.6 - 0.96, -1.6 + 1.08):
         cylinder("EaselLeg", 0.012, (board_x + 0.3, y, 0), (board_x + 0.02, y, 1.8), steel)
 
     # Gear along the back wall and the right rear corner.
@@ -517,6 +528,7 @@ def build_camera():
     camera.rotation_euler = (math.pi / 2, 0, 0)
     link(camera)
     bpy.context.scene.camera = camera
+    return camera
 
 
 def configure_render(options):
@@ -553,13 +565,17 @@ def main():
     build_props()
     build_lights()
     build_world()
-    build_camera()
-    write_anchors(options["out"])
+    camera = build_camera()
     configure_render(options)
     if options["blend"]:
         bpy.ops.wm.save_as_mainfile(filepath=os.path.abspath(options["blend"]))
-    bpy.ops.render.render(write_still=True)
+    if os.path.exists(options["out"]):
+        os.remove(options["out"])
+    if bpy.ops.render.render(write_still=True) != {"FINISHED"} or not os.path.exists(options["out"]):
+        raise SystemExit("render failed: " + options["out"])
     print("rendered", options["out"])
+    # Only once the image exists, so the anchors never describe an image that wasn't made.
+    write_anchors(options["out"], camera)
 
 
 main()
