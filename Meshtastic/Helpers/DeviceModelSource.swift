@@ -40,6 +40,10 @@ enum DeviceModelCatalog {
 		"wio-tracker-wm1110", "wio_tracker_l1_case", "wio_tracker_l1_eink"
 	]
 
+	/// Chirpy, bundled beside the device models. He isn't hardware, so he's not in `modelNames`
+	/// and is never downloaded.
+	static let chirpy = "chirpy"
+
 	/// Models whose catalog entry may not name a matching image, keyed by lowercased
 	/// platformio target or hardware model slug.
 	static let overrides: [String: String] = [
@@ -149,11 +153,12 @@ actor DeviceModelSource {
 
 	/// A local file URL for the model, or nil when there's no model or it couldn't be fetched.
 	func localURL(for name: String) async -> URL? {
-		guard DeviceModelCatalog.modelNames.contains(name) else { return nil }
+		guard DeviceModelCatalog.modelNames.contains(name) || name == DeviceModelCatalog.chirpy else { return nil }
 		// A model built into the app wins; otherwise it's downloaded and cached.
 		if let bundled = Bundle.main.url(forResource: name, withExtension: "usdz") {
 			return bundled
 		}
+		guard name != DeviceModelCatalog.chirpy else { return nil }
 		if let cached = cache.cachedFile(for: name) { return cached }
 		if cache.isRecentlyMissing(name) { return nil }
 

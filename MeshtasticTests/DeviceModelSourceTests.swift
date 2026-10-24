@@ -51,7 +51,7 @@ struct DeviceModelCatalogTests {
 		let files = try FileManager.default.contentsOfDirectory(atPath: folder.path)
 			.filter { $0.hasSuffix(".usdz") }
 			.map { ($0 as NSString).deletingPathExtension }
-		#expect(Set(files) == DeviceModelCatalog.modelNames)
+		#expect(Set(files) == DeviceModelCatalog.modelNames.union([DeviceModelCatalog.chirpy]))
 	}
 
 	@Test("remote URL is on the web flasher")
