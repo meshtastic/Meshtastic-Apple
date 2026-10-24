@@ -29,7 +29,9 @@ struct TeamStatusBoard: View {
 	private static let refreshInterval: Duration = .seconds(5)
 
 	var body: some View {
-		Group {
+		// A ZStack, not a Group: the modifiers below on an empty Group attach to nothing, so the
+		// task that reads the first roster would never start.
+		ZStack {
 			if let roster {
 				content(roster)
 			}
