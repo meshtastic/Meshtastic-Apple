@@ -105,9 +105,13 @@ enum LocalCoverage {
 		let firstIndex = minProfilePoints - 1
 		let indexStride = Double(profilePoints - 1 - firstIndex) / Double(rings - 1)
 
+		// One radial per core but one, at utility priority, so the sweep leaves room for the rest of the app.
+		let workers = max(1, ProcessInfo.processInfo.activeProcessorCount - 1)
 		let rows = try await withThrowingTaskGroup(of: (Int, [Double]).self) { group in
-			for bearingIndex in 0..<radials {
-				group.addTask {
+			var pending = (0..<radials).makeIterator()
+			func addNext() {
+				guard let bearingIndex = pending.next() else { return }
+				group.addTask(priority: .utility) {
 					try Task.checkCancellation()
 					let bearing = 360.0 * Double(bearingIndex) / Double(radials)
 					var latitudes = [Double](repeating: 0, count: profilePoints)
@@ -125,9 +129,11 @@ enum LocalCoverage {
 					return (bearingIndex, row)
 				}
 			}
+			for _ in 0..<workers { addNext() }
 			var rows = [[Double]](repeating: [], count: radials)
 			for try await (bearingIndex, row) in group {
 				rows[bearingIndex] = row
+				addNext()
 			}
 			return rows
 		}
