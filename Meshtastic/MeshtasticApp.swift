@@ -218,6 +218,21 @@ struct MeshtasticAppleApp: App {
 					}
 				}
 			}
+			// Simulator map files: `--meshtastic-import-map-file <path>` imports a GeoJSON, KML or KMZ the
+			// same way Open In does, so the layer can be looked at without going through Files.
+			if let flagIndex = arguments.firstIndex(of: "--meshtastic-import-map-file"),
+			   arguments.indices.contains(flagIndex + 1) {
+				let url = URL(fileURLWithPath: arguments[flagIndex + 1])
+				Task {
+					try? await Task.sleep(for: .seconds(2))
+					do {
+						let metadata = try await MapDataManager.shared.processUploadedFile(from: url)
+						Logger.services.info("🧪 [App] Imported map file with \(metadata.overlayCount, privacy: .public) overlays (launch argument)")
+					} catch {
+						Logger.services.error("🧪 [App] Map file import failed: \(error.localizedDescription, privacy: .public) (launch argument)")
+					}
+				}
+			}
 			#if os(visionOS)
 			// Simulator screenshots: open the spatial map volume without tapping through the map.
 			if arguments.contains("--meshtastic-open-spatial-map") {

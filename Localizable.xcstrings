@@ -395,6 +395,22 @@
         }
       }
     },
+    "Couldn't Import Map File" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo importar el archivo de mapa"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法匯入地圖檔案"
+          }
+        }
+      }
+    },
     "Enter Showcase" : {
       "comment" : "Spatial map: open the showcase immersive space, closing this volume",
       "localizations" : {
@@ -402,6 +418,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "進入展示區"
+          }
+        }
+      }
+    },
+    "File is too large. Maximum size is %@." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El archivo es demasiado grande. El tamaño máximo es %@."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "檔案過大。大小上限為 %@。"
           }
         }
       }
@@ -637,6 +669,118 @@
         }
       }
     },
+    "This file has no points, lines, shapes or images the map can show." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este archivo no tiene puntos, líneas, formas ni imágenes que el mapa pueda mostrar."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此檔案沒有地圖可顯示的點、線、形狀或圖片。"
+          }
+        }
+      }
+    },
+    "This file is not a KML map." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este archivo no es un mapa KML."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此檔案不是 KML 地圖。"
+          }
+        }
+      }
+    },
+    "This file is not a KMZ archive." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este archivo no es un archivo KMZ."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此檔案不是 KMZ 壓縮檔。"
+          }
+        }
+      }
+    },
+    "This KML file could not be read." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo leer este archivo KML."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法讀取此 KML 檔案。"
+          }
+        }
+      }
+    },
+    "This KMZ archive has no KML document in it." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este archivo KMZ no contiene ningún documento KML."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此 KMZ 壓縮檔內沒有 KML 文件。"
+          }
+        }
+      }
+    },
+    "This KMZ archive is damaged and could not be read." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este archivo KMZ está dañado y no se pudo leer."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此 KMZ 壓縮檔已損毀,無法讀取。"
+          }
+        }
+      }
+    },
+    "This KMZ archive is too large once unpacked." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este archivo KMZ es demasiado grande al descomprimirse."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此 KMZ 壓縮檔解壓縮後過大。"
+          }
+        }
+      }
+    },
     "Unknown hardware" : {
       "comment" : "Showcase card: the node hasn't said what hardware it is",
       "localizations" : {
@@ -644,6 +788,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "未知硬體"
+          }
+        }
+      }
+    },
+    "Unsupported file format. Supported formats: GeoJSON, JSON, KML and KMZ." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Formato de archivo no compatible. Formatos compatibles: GeoJSON, JSON, KML y KMZ."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不支援的檔案格式。支援的格式:GeoJSON、JSON、KML 和 KMZ。"
           }
         }
       }

@@ -46,7 +46,7 @@ Tap the layer icon (top-right) to switch between:
 |-------|-------------|
 | Standard | Default Apple Maps street/satellite hybrid |
 | Satellite | Aerial imagery |
-| GeoJSON Overlays | Custom map layers loaded from `.geojson` files in the app's file storage |
+| Imported overlays | Custom map layers loaded from `.geojson`, `.kml` and `.kmz` files in the app's file storage |
 
 ## Map Options
 
@@ -86,6 +86,17 @@ The 3D spatial map needs elevation data to show hills and valleys, and a street 
 ### Map Overlays
 
 Custom GeoJSON overlays you've uploaded are listed here, each with its own toggle and file details (format, feature count, size, upload date). Swipe a file left to delete it, or tap **Upload Map Data** to add another. The section's master toggle turns uploaded overlays on the map on or off as a group.
+
+#### KML and KMZ files
+
+Besides GeoJSON, you can import KML and KMZ files, such as the ones Google Earth, CalTopo and survey tools export. Tap **Upload Map Data** and pick the file, or open one from Files, AirDrop or the Share Sheet. The app converts it to a layer you manage like any other. If a file can't be imported, you get a message saying why.
+
+- **What comes through:** points, lines and polygons (holes included), with their names, descriptions, line and fill colors, and line widths. Placemarks the file marks hidden stay hidden.
+- **Images:** a KMZ can also carry ground overlays (an image laid on the map between four edges, turned if the file says so) and custom point icons. Ground overlays draw under the map's labels. A plain KML has no images with it, so its image overlays are left out and its points show the standard marker.
+- **Nothing is downloaded:** an icon or overlay image that lives on the web is not fetched, because that would tell the web server where you are looking. It is left out.
+- **Not imported:** folders (their features are shown, without the folder structure), network links, tours, 3D models and extended data.
+- **Limits:** a file may be up to 50 MB, and a KMZ may unpack to at most 50 MB. A file with nothing the map can draw, or one that is damaged, is turned down.
+- **Where it shows:** on the main map. The per-node and other maps don't draw imported layers.
 
 ## Coverage Estimate (Site Planner)
 

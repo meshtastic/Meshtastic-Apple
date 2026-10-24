@@ -1362,9 +1362,28 @@ struct MeshMapMK: View {
 										if !geoJSONDecorations.isEmpty { geoJSONDecorations = [] }
 										return
 									}
+									// A layer can be tens of megabytes, so it loads off the main thread and the
+									// overlays appear when it's ready. A newer change of layers outranks an older one.
+									let configs = enabledOverlayConfigs
+									Task { @MainActor in
+										let content = await GeoJSONOverlayManager.shared.loadLayerContent(configs)
+										guard lastGeoJSONKey == key else { return }
+										applyGeoJSONContent(content)
+									}
+								}
+
+								private func applyGeoJSONContent(_ content: GeoJSONLayerContent) {
 									var overlays: [ClusterMapOverlay] = []
 									var decorations: [ClusterMapDecoration] = []
-									for styled in GeoJSONOverlayManager.shared.loadStyledFeaturesForConfigs(enabledOverlayConfigs) {
+									// Imported images go on first, and under the labels, so shapes and nodes stay readable.
+									for ground in content.grounds {
+										overlays.append(ClusterMapOverlay(
+											id: "geojson-ground-\(ground.id)",
+											overlay: ground.overlay,
+											style: ClusterMapOverlayStyle(level: .aboveRoads)
+										))
+									}
+									for styled in content.features {
 										let stroke = styled.strokeStyle
 										let style = ClusterMapOverlayStyle(
 											strokeUIColor: UIColor(styled.strokeColor),
@@ -1378,16 +1397,30 @@ struct MeshMapMK: View {
 										} else {
 											// Point yields one marker; MultiPoint yields one per sub-coordinate.
 											let radius = styled.feature.markerRadius
+											// A KMZ point that names an icon draws it, at the size the file asked for.
+											let icon = styled.feature.importedIconPath.flatMap { ImportedImageCache.shared.icon(atPath: $0) }
+											let iconSide = 32 * CGFloat(min(max(styled.feature.importedIconScale, 0.5), 3))
 											for (index, coordinate) in styled.feature.markerCoordinates.enumerated() {
-												decorations.append(ClusterMapDecoration(
-													id: "geojson-pt-\(styled.id)-\(index)",
-													coordinate: coordinate,
-													content: AnyView(
+												let content: AnyView
+												if let icon {
+													content = AnyView(
+														Image(uiImage: icon)
+															.resizable()
+															.scaledToFit()
+															.frame(width: iconSide, height: iconSide)
+													)
+												} else {
+													content = AnyView(
 														Circle()
 															.fill(styled.fillColor)
 															.overlay(Circle().stroke(styled.strokeColor, style: stroke))
 															.frame(width: radius * 2, height: radius * 2)
 													)
+												}
+												decorations.append(ClusterMapDecoration(
+													id: "geojson-pt-\(styled.id)-\(index)",
+													coordinate: coordinate,
+													content: content
 												))
 											}
 										}

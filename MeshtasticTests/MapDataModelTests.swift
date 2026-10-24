@@ -125,7 +125,7 @@ struct MapDataErrorTests {
 
 	@Test func fileTooLarge_description() {
 		let err = MapDataError.fileTooLarge
-		#expect(err.errorDescription?.contains("10MB") == true)
+		#expect(err.errorDescription?.contains("50 MB") == true)
 	}
 
 	@Test func invalidFileType_description() {
