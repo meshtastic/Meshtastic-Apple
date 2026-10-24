@@ -36,6 +36,18 @@ enum SpatialMapArea {
 		return Selection(coordinates: inside, outsideCount: coordinates.count - inside.count)
 	}
 
+	/// With no node positions, the circle around the newest offline map the user downloaded, so the
+	/// table shows that place. The map the app keeps for the mesh itself is left out.
+	static func downloadedMapCircle(_ regions: [OfflineMapRegion]) -> SpatialCircle? {
+		guard let newest = regions.filter({ $0.managedBy == nil }).max(by: { $0.createdDate < $1.createdDate }) else { return nil }
+		let corners = [
+			CLLocationCoordinate2D(latitude: newest.minLatitude, longitude: newest.minLongitude),
+			CLLocationCoordinate2D(latitude: newest.maxLatitude, longitude: newest.maxLongitude)
+		]
+		guard let circle = SpatialCircle.around(corners, padding: 0) else { return nil }
+		return SpatialCircle(latitude: circle.latitude, longitude: circle.longitude, radiusMeters: min(circle.radiusMeters, maxRadiusMeters))
+	}
+
 	/// The circle to use next: nil to keep the current one.
 	static func next(current: SpatialCircle?, candidate: SpatialCircle, nodes: [CLLocationCoordinate2D], lastChange: Date?, now: Date) -> SpatialCircle? {
 		guard let current else { return candidate }

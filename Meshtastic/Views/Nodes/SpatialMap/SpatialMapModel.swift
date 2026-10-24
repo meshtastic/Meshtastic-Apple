@@ -133,6 +133,11 @@ final class SpatialMapModel {
 	/// The circle around the whole mesh. Terrain downloads cover the square around it, so zooming
 	/// in never starts a download.
 	private(set) var fullCircle: SpatialCircle?
+	/// The area to show while no node has a position: around the newest map the user downloaded.
+	var downloadedMapCircle: SpatialCircle?
+	/// The full circle is `downloadedMapCircle`, not the mesh. No automatic download then: the
+	/// user picked that map themselves.
+	private(set) var showingDownloadedMap = false
 	/// How far the map is zoomed into the geography: 1 shows the whole mesh.
 	private(set) var zoom: Double = 1
 	/// What the zoomed circle is centered on; nil is the full circle's center.
@@ -215,6 +220,14 @@ final class SpatialMapModel {
 
 	/// Starts building the terrain for the circle to show. Until it is built, the scene keeps the
 	/// old terrain and previews the new circle on it; a first circle gets a flat disk right away.
+	private func setFullCircle(_ circle: SpatialCircle) {
+		fullCircle = circle
+		lastBoundsChange = Date()
+		// The zoom is relative to the full circle; keep it within the new one's limits.
+		zoom = clampedZoom(zoom)
+		if zoom <= 1 { zoomCenter = nil }
+	}
+
 	private func applyArea() {
 		guard let target = targetCircle else { return }
 		if placement == nil {
@@ -243,11 +256,11 @@ final class SpatialMapModel {
 
 		if let candidate = SpatialCircle.around(fetched.map(\.coordinate)),
 		   let next = SpatialMapArea.next(current: fullCircle, candidate: candidate, nodes: fetched.map(\.coordinate), lastChange: lastBoundsChange, now: Date()) {
-			fullCircle = next
-			lastBoundsChange = Date()
-			// The zoom is relative to the full circle; keep it within the new one's limits.
-			zoom = clampedZoom(zoom)
-			if zoom <= 1 { zoomCenter = nil }
+			setFullCircle(next)
+			showingDownloadedMap = false
+		} else if fetched.isEmpty, let downloaded = downloadedMapCircle, downloaded != fullCircle {
+			setFullCircle(downloaded)
+			showingDownloadedMap = true
 		}
 		if let pending = pendingFocusNodeNum, nodesByNum[pending] != nil {
 			pendingFocusNodeNum = nil
@@ -417,7 +430,7 @@ final class SpatialMapModel {
 
 	/// Starts a download by itself once the box has settled and the terrain doesn't cover it.
 	private func autoDownloadIfNeeded() {
-		guard autoDownloadTerrain, !isBuildingTerrain, !isDownloadingTerrain,
+		guard autoDownloadTerrain, !showingDownloadedMap, !isBuildingTerrain, !isDownloadingTerrain,
 			  let placement, placement.geometry != nil, let fullCircle,
 			  let lastBoundsChange, Date().timeIntervalSince(lastBoundsChange) >= Self.autoDownloadSettleInterval else { return }
 		let manager = OfflineMapManager.shared
