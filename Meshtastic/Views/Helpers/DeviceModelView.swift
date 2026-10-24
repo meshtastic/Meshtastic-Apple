@@ -51,6 +51,8 @@ struct DeviceModelView<Placeholder: View>: View {
 					.accessibilityHidden(stage != nil)
 				if let stage {
 					DeviceModelRealityView(stage: stage, autoRotate: !reduceMotion)
+						// RealityView adds its content once, so a new model needs a new view.
+						.id(ObjectIdentifier(stage))
 						.transition(.opacity)
 						.accessibilityElement(children: .ignore)
 						.accessibilityLabel(String(
