@@ -150,8 +150,15 @@ struct CoverageEstimateForm: View {
 				Image("custom.radio.tower")
 			}
 		} footer: {
-			if groundElevation != nil {
-				Text("Ground elevation is read from downloaded offline map terrain.")
+			VStack(alignment: .leading, spacing: 4) {
+				// Estimate is disabled for a frequency the model can't take; say why.
+				if !SitePlannerParameters.frequencyRange.contains(params.txFrequencyMHz) {
+					Text(LocalCoverageError.frequencyOutOfRange.localizedDescription)
+						.foregroundStyle(.red)
+				}
+				if groundElevation != nil {
+					Text("Ground elevation is read from downloaded offline map terrain.")
+				}
 			}
 		}
 	}
@@ -182,6 +189,8 @@ struct CoverageEstimateForm: View {
 			lengthField("Max range", canonical: $params.maxRangeKm, storedUnit: .kilometers, imperialUnit: .miles)
 		} header: {
 			Label("Simulation Options", systemImage: "slider.horizontal.3")
+		} footer: {
+			Text("Terrain data © [Mapterhorn](https://mapterhorn.com/attribution)")
 		}
 	}
 
