@@ -75,13 +75,13 @@ struct SpatialMapWindow: View {
 			guard !accessoryManager.isInBackground else { return }
 			while !Task.isCancelled {
 				refresh()
-				if downloadPrompt.shouldOffer(positionedNodes: model.nodes.count, autoDownload: autoTerrain, isBusy: OfflineMapManager.shared.isBusy) {
+				if downloadPrompt.shouldOffer(positionedNodes: model.nodes.count, hasDownloadedMap: model.downloadedMapCircle != nil, autoDownload: autoTerrain, isBusy: OfflineMapManager.shared.isBusy) {
 					showingMapSearch = true
 				}
 				try? await Task.sleep(for: .seconds(2))
 			}
 		}
-		// No node has a position, so there's no area to download on its own: offer the map search.
+		// No node has a position and no map has been downloaded: offer the map search.
 		.sheet(isPresented: $showingMapSearch) {
 			NavigationStack {
 				DownloadNewMapView()
@@ -193,6 +193,8 @@ struct SpatialMapWindow: View {
 		model.showLinks = showLinks
 		model.autoDownloadTerrain = autoTerrain
 		model.coverageMode = coverageMode
+		OfflineMapManager.shared.loadIfNeeded()
+		model.downloadedMapCircle = SpatialMapArea.downloadedMapCircle(OfflineMapManager.shared.regions)
 		model.refresh(context: context, filters: nodeFilters, preciseOnly: preciseLocationsOnly, layer: mapLayer, dark: darkMap)
 		// The distance filter measures from the connected radio.
 		if let num = accessoryManager.activeDeviceNum, let coordinate = model.nodesByNum[num]?.coordinate {

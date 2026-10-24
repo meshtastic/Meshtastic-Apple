@@ -133,6 +133,11 @@ final class SpatialMapModel {
 	/// The circle around the whole mesh. Terrain downloads cover the square around it, so zooming
 	/// in never starts a download.
 	private(set) var fullCircle: SpatialCircle?
+	/// The area to show while no node has a position: around the newest map the user downloaded.
+	var downloadedMapCircle: SpatialCircle?
+	/// The full circle is `downloadedMapCircle`, not the mesh. No automatic download then: the
+	/// user picked that map themselves.
+	private(set) var showingDownloadedMap = false
 	/// How far the map is zoomed into the geography: 1 shows the whole mesh.
 	private(set) var zoom: Double = 1
 	/// What the zoomed circle is centered on; nil is the full circle's center.
@@ -213,6 +218,33 @@ final class SpatialMapModel {
 		applyArea()
 	}
 
+	private func clearArea() {
+		buildTask?.cancel()
+		buildKey = nil
+		isBuildingTerrain = false
+		terrainEntity = nil
+		textureSource = nil
+		placement = nil
+		fullCircle = nil
+		showingDownloadedMap = false
+		zoom = 1
+		zoomCenter = nil
+	}
+
+	/// A `newArea` starts zoomed out on its center; otherwise the zoom carries over.
+	private func setFullCircle(_ circle: SpatialCircle, newArea: Bool = false) {
+		fullCircle = circle
+		lastBoundsChange = Date()
+		if newArea {
+			zoom = 1
+			zoomCenter = nil
+			return
+		}
+		// The zoom is relative to the full circle; keep it within the new one's limits.
+		zoom = clampedZoom(zoom)
+		if zoom <= 1 { zoomCenter = nil }
+	}
+
 	/// Starts building the terrain for the circle to show. Until it is built, the scene keeps the
 	/// old terrain and previews the new circle on it; a first circle gets a flat disk right away.
 	private func applyArea() {
@@ -241,13 +273,23 @@ final class SpatialMapModel {
 		if outsideCount != outside { outsideCount = outside }
 		if let selectedNodeNum, nodesByNum[selectedNodeNum] == nil { select(nil) }
 
-		if let candidate = SpatialCircle.around(fetched.map(\.coordinate)),
-		   let next = SpatialMapArea.next(current: fullCircle, candidate: candidate, nodes: fetched.map(\.coordinate), lastChange: lastBoundsChange, now: Date()) {
-			fullCircle = next
-			lastBoundsChange = Date()
-			// The zoom is relative to the full circle; keep it within the new one's limits.
-			zoom = clampedZoom(zoom)
-			if zoom <= 1 { zoomCenter = nil }
+		let coordinates = fetched.map(\.coordinate)
+		if let candidate = SpatialCircle.around(coordinates) {
+			// Leaving a downloaded map for the mesh is a new area, not the mesh moving, so it doesn't
+			// wait for the rules that keep the mesh's circle steady.
+			let next = showingDownloadedMap
+				? candidate
+				: SpatialMapArea.next(current: fullCircle, candidate: candidate, nodes: coordinates, lastChange: lastBoundsChange, now: Date())
+			if let next {
+				setFullCircle(next, newArea: showingDownloadedMap)
+				showingDownloadedMap = false
+			}
+		} else if let downloaded = downloadedMapCircle, downloaded != fullCircle {
+			setFullCircle(downloaded, newArea: true)
+			showingDownloadedMap = true
+		} else if downloadedMapCircle == nil, showingDownloadedMap {
+			// The downloaded map was deleted and there are still no positions: back to an empty table.
+			clearArea()
 		}
 		if let pending = pendingFocusNodeNum, nodesByNum[pending] != nil {
 			pendingFocusNodeNum = nil
@@ -417,7 +459,7 @@ final class SpatialMapModel {
 
 	/// Starts a download by itself once the box has settled and the terrain doesn't cover it.
 	private func autoDownloadIfNeeded() {
-		guard autoDownloadTerrain, !isBuildingTerrain, !isDownloadingTerrain,
+		guard autoDownloadTerrain, !showingDownloadedMap, !isBuildingTerrain, !isDownloadingTerrain,
 			  let placement, placement.geometry != nil, let fullCircle,
 			  let lastBoundsChange, Date().timeIntervalSince(lastBoundsChange) >= Self.autoDownloadSettleInterval else { return }
 		let manager = OfflineMapManager.shared
