@@ -1,6 +1,9 @@
 {
-  "api_hash": "308bbd9912b5fe683c34447320c979ce0b0ae99d2cd5f4c0cb1e2d26111ace47",
+  "api_hash": "4237bf1f52bd530d9972cc58306001fc4322f9c280f6758e69d5ba2ffc1647b3",
   "files": {
+    "axiometa-genesis-mini.svg": {
+      "etag": "\"6ea3ddf5fac2625c58833840275b98a3\""
+    },
     "crowpanel_2_4.svg": {
       "etag": "\"29194e5a415e5aee034b2d4a3ba2e398\""
     },
@@ -276,6 +279,9 @@
     },
     "wio_tracker_l1_eink.svg": {
       "etag": "\"87446ec40a3c65f81a28e5c3309f4067\""
+    },
+    "wismesh_pod.svg": {
+      "etag": "\"ae26aeba3e155345dd1e1101c089cbe3\""
     }
   }
 }
