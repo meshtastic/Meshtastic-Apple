@@ -92,8 +92,9 @@ actor ShowcaseSnapshotReader {
 				hopsAway: Int(node.hopsAway),
 				snr: node.snr,
 				rssi: node.rssi,
-				// Through the accessor: it confirms the row in the store, which the raw link can't.
-				hasPosition: node.latestPosition != nil
+				// A nil link needs no query. Otherwise go through the accessor, which confirms
+				// the row in the store (one keyed lookup) where the raw link can't.
+				hasPosition: node.latestPositionCache != nil && node.latestPosition != nil
 			)
 		}
 		return Result(nodes: nodes, totalCount: fetched.count)
