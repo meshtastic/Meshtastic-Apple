@@ -367,14 +367,10 @@ def build_props():
     screen_b = image_material("ScreenB", os.path.join(CACHE, "laptop_b.png"), 0.2, emission_strength=1.2)
     led_green = material("LEDGreen", (0, 1, 0.3), emission=(0.1, 1, 0.3), strength=8)
     led_red = material("LEDRed", (1, 0, 0), emission=(1, 0.1, 0.05), strength=8)
-    case_gray = material("CaseGray", (0.06, 0.065, 0.07), 0.5)
     yellow_case = material("CaseYellow", (0.85, 0.65, 0.05), 0.5)
-    rope_blue = material("RopeBlue", (0.05, 0.18, 0.55), 0.8)
-    rope_orange = material("RopeOrange", (0.9, 0.35, 0.05), 0.8)
     mug = material("Mug", (0.75, 0.75, 0.72), 0.3)
     paper = material("Paper", (0.88, 0.87, 0.82), 0.8)
     bottle = material("Bottle", (0.3, 0.5, 0.8), 0.1)
-    olive = material("Olive", (0.12, 0.15, 0.08), 0.8)
     wall = HALF_WIDTH - 0.38
 
     # Comms table along the left wall.
@@ -389,7 +385,6 @@ def build_props():
     box("PowerStrip", (0.06, 0.4, 0.04), (-wall - 0.3, 0.6, 0.78), material("Strip", (0.8, 0.8, 0.78), 0.5))
     for i in range(3):
         box("Log", (0.21, 0.29, 0.004), (-wall + 0.2 + rng.uniform(-0.03, 0.03), -0.05 + i * 0.01, 0.765 + i * 0.004), paper, rotation=(0, 0, rng.uniform(-0.2, 0.2)))
-    box("CaseUnderTable", (0.5, 0.35, 0.22), (-wall - 0.05, 1.6, 0.11), case_gray, bevel=0.02)
 
     # Radio table further forward on the left.
     folding_table("RadioTable", (-wall, 3.1), 1.6, True, table_top, steel)
@@ -397,7 +392,6 @@ def build_props():
     plane("BaseRadioFace", 0.2, 0.06, (-wall + 0.03, 2.9, 0.81), (math.pi / 2, 0, math.pi / 2), material("RadioDisplay", (0.2, 0.5, 1), emission=(0.25, 0.55, 1), strength=3))
     cylinder("Mic", 0.025, (-wall + 0.15, 3.25, 0.76), (-wall + 0.15, 3.25, 0.85), black_plastic)
     box("Binder", (0.3, 0.26, 0.05), (-wall + 0.05, 3.55, 0.785), material("Binder", (0.1, 0.25, 0.6), 0.5))
-    box("Battery", (0.3, 0.2, 0.2), (-wall - 0.05, 3.4, 0.1), yellow_case, bevel=0.015)
 
     # Map table on the right, past the door.
     folding_table("MapTable", (wall - 0.1, 2.6), 1.8, True, table_top, steel)
@@ -431,23 +425,6 @@ def build_props():
     box("WhiteboardFrame", (0.03, 1.86, 1.26), (board_x, -1.6, 1.25), material("Frame", (0.7, 0.7, 0.72), 0.4, metallic=0.8))
     for y in (-1.6 - 0.96, -1.6 + 1.08):
         cylinder("EaselLeg", 0.012, (board_x + 0.3, y, 0), (board_x + 0.02, y, 1.8), steel)
-
-    # Gear along the back wall and the right rear corner.
-    back = BACK_Y + 0.35
-    box("CaseLarge", (0.9, 0.5, 0.42), (wall, -1.7, 0.21), case_gray, rotation=(0, 0, math.pi / 2), bevel=0.03)
-    box("CaseSmall", (0.55, 0.38, 0.24), (wall, -1.75, 0.54), yellow_case, rotation=(0, 0, math.pi / 2 + 0.1), bevel=0.02)
-    for i, mat in enumerate([rope_blue, rope_orange, rope_blue]):
-        torus("Rope", 0.2, 0.022, (wall - 0.05, -1.7 + (i - 1) * 0.02, 0.69 + i * 0.045), mat)
-    for x in (-2.0, -1.5):
-        box("Bin", (0.45, 0.6, 0.35), (x, back, 0.175), material("Bin", (0.12, 0.13, 0.12), 0.6), bevel=0.02)
-        box("BinLid", (0.47, 0.62, 0.03), (x, back, 0.36), material("BinLid", (0.85, 0.7, 0.1), 0.5), bevel=0.01)
-        box("Bin", (0.45, 0.6, 0.35), (x, back, 0.55), material("Bin", (0.12, 0.13, 0.12), 0.6), bevel=0.02)
-    for i in range(4):
-        box("WaterCase", (0.4, 0.27, 0.22), (0.35 + (i % 2) * 0.42, back, 0.11 + (i // 2) * 0.22), material("Water", (0.55, 0.7, 0.9), 0.2), bevel=0.01)
-    # On the floor near the seat: a cooler and a duffel.
-    box("Cooler", (0.6, 0.38, 0.4), (1.0, -1.0, 0.2), material("Cooler", (0.1, 0.3, 0.6), 0.4), rotation=(0, 0, 0.3), bevel=0.03)
-    box("CoolerLid", (0.62, 0.4, 0.06), (1.0, -1.0, 0.42), material("CoolerLid", (0.85, 0.85, 0.82), 0.4), rotation=(0, 0, 0.3), bevel=0.02)
-    box("Duffel", (0.7, 0.32, 0.3), (-1.1, -0.9, 0.15), olive, rotation=(0, 0, -0.4), bevel=0.12)
 
 
 # MARK: - Lights
