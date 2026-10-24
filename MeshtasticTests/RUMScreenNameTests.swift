@@ -43,7 +43,7 @@ struct RUMScreenNameTests {
 
 	@Test("Screens that name themselves are not also reported under a reflected name")
 	func dropsNamesSetElsewhere() {
-		for name in ["AppSettings", "DeviceOnboarding", "LoRaConfig", "ShareChannels"] {
+		for name in ["AppSettings", "DeviceOnboarding", "LocalStatsLog", "LoRaConfig", "ShareChannels"] {
 			#expect(predicate.rumView(for: name) == nil)
 		}
 	}

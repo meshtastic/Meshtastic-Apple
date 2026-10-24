@@ -129,6 +129,7 @@ enum ScreenName: String, CaseIterable {
 
 	case powerChannelLabels = "Power Channel Labels"
 	case noiseFloorInfo = "Noise Floor Info"
+	case localStatsLog = "Local Stats Log"
 
 	// MARK: Onboarding
 
