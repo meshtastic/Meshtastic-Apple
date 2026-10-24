@@ -165,8 +165,13 @@ struct Connect: View {
 												.font(.callout).foregroundColor(Color.gray)
 										}
 										if let presetName {
-											Text("Preset").font(.callout)+Text(": \(presetName)")
-												.font(.callout).foregroundColor(Color.gray)
+											// The preset names are a known, short set ("Very Long Range - Slow" is
+											// the longest), so they get one line and shrink to fit rather than
+											// wrapping the row in this narrow column.
+											(Text("Preset").font(.callout)+Text(": \(presetName)")
+												.font(.callout).foregroundColor(Color.gray))
+												.lineLimit(1)
+												.minimumScaleFactor(0.6)
 										}
 										if accessoryManager.firmwareEdition.isEvent {
 											// Event branding lives here, in the Connect device box — never in the
