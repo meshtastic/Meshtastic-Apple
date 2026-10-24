@@ -350,6 +350,22 @@
         }
       }
     },
+    "Add a map file you already have. It's copied into the app and added to this list." : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agrega un archivo de mapa que ya tengas. Se copia en la app y se añade a esta lista."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "加入您已有的地圖檔案。檔案會複製到 App 並加入此清單。"
+          }
+        }
+      }
+    },
     "Also: %@" : {
       "comment" : "Showcase model card: other devices drawn with the same model; the argument is a list of device names",
       "localizations" : {
@@ -404,6 +420,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "隱藏應用程式"
+          }
+        }
+      }
+    },
+    "Import MBTiles or PMTiles File" : {
+      "localizations" : {
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Importar archivo MBTiles o PMTiles"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "匯入 MBTiles 或 PMTiles 檔案"
           }
         }
       }
