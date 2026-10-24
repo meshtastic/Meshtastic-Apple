@@ -417,14 +417,10 @@ def build_props():
         box("WaterCase", (0.4, 0.27, 0.22), (0.35 + (i % 2) * 0.42, back, 0.11 + (i // 2) * 0.22), material("Water", (0.55, 0.7, 0.9), 0.2), bevel=0.01)
     for y in (back + 0.4, back + 0.7):
         box("Helmet", (0.22, 0.26, 0.14), (-1.75, y, 0.8), orange, bevel=0.06)
-    # On the floor near the seat: a cooler, a duffel and the power cable to the comms table.
+    # On the floor near the seat: a cooler and a duffel.
     box("Cooler", (0.6, 0.38, 0.4), (1.0, -1.0, 0.2), material("Cooler", (0.1, 0.3, 0.6), 0.4), rotation=(0, 0, 0.3), bevel=0.03)
     box("CoolerLid", (0.62, 0.4, 0.06), (1.0, -1.0, 0.42), material("CoolerLid", (0.85, 0.85, 0.82), 0.4), rotation=(0, 0, 0.3), bevel=0.02)
     box("Duffel", (0.7, 0.32, 0.3), (-1.1, -0.9, 0.15), olive, rotation=(0, 0, -0.4), bevel=0.12)
-    cable = material("Cable", (0.6, 0.35, 0.05), 0.6)
-    points = [(HALF_WIDTH - 0.1, 0.0, 0.01), (1.2, 0.4, 0.01), (0.2, 0.9, 0.01), (-1.0, 1.1, 0.01), (-wall, 1.3, 0.01), (-wall - 0.2, 1.35, 0.76)]
-    for a, b in zip(points, points[1:]):
-        cylinder("Cable", 0.01, a, b, cable, segments=8)
 
     # Jackets hanging from the rear rafter.
     for i, x in enumerate((-0.9, -0.55, 0.9)):

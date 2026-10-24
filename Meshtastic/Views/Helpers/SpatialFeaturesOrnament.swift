@@ -45,8 +45,8 @@ struct SpatialFeaturesOrnament: View {
 					Task {
 						if appState.cinemaOpen {
 							await dismissImmersiveSpace()
-						} else if await CinemaScene.open(openImmersiveSpace, dismissImmersiveSpace: dismissImmersiveSpace, appState: appState) {
-							dismissWindow(id: SpatialMapScene.id)
+						} else {
+							await CinemaScene.open(openImmersiveSpace, dismissImmersiveSpace: dismissImmersiveSpace, appState: appState)
 						}
 					}
 				} label: {

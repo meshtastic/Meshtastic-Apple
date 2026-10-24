@@ -413,6 +413,13 @@ struct MeshtasticAppleApp: App {
 		.volumeWorldAlignment(.gravityAligned)
 		.restorationBehavior(.disabled)
 		.handlesExternalEvents(matching: [])
+		// In the cinema the map sits to the right of the app's screen.
+		.defaultWindowPlacement { _, context in
+			if appState.cinemaOpen, let main = context.windows.first(where: { $0.id == Self.mainWindowID }) {
+				return WindowPlacement(.trailing(main))
+			}
+			return WindowPlacement()
+		}
 
 		// The mesh as radios in a showcase. Same gates and environment as the spatial map volume.
 		ImmersiveSpace(id: ShowcaseScene.id) {

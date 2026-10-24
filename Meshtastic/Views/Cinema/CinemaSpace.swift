@@ -11,7 +11,7 @@ import SwiftUI
 /// Root of the cinema immersive space: an environment around the viewer and the app's windows,
 /// and a small panel to change the environment or leave. The app stays in its own window, which
 /// can be moved back and made bigger like a screen; a window drawn inside the space can't show the
-/// tab bar or sheets.
+/// tab bar or sheets. The 3D map opens beside it.
 struct CinemaSpace: View {
 	@EnvironmentObject private var appState: AppState
 	@Environment(\.scenePhase) private var scenePhase
@@ -52,6 +52,7 @@ struct CinemaSpace: View {
 		.onAppear {
 			appState.cinemaOpen = true
 			appState.cinemaScreenLocked = false
+			openWindow(id: SpatialMapScene.id, value: SpatialMapSceneKey.shared)
 		}
 		.onDisappear {
 			appState.cinemaOpen = false
