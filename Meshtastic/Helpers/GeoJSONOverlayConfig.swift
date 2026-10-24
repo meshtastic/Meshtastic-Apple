@@ -11,6 +11,65 @@ struct GeoJSONFeatureCollection: Codable {
 	let features: [GeoJSONFeature]
 }
 
+extension GeoJSONFeatureCollection {
+	/// Reads a feature collection through `JSONSerialization` rather than `JSONDecoder`. The result is
+	/// the same, but a large file loads many times faster: `AnyCodableValue`'s decoder tries each
+	/// type in turn for every number and string, which on a 12 MB file takes seconds.
+	static func parse(_ data: Data) throws -> GeoJSONFeatureCollection {
+		guard let root = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+			  let type = root["type"] as? String,
+			  let features = root["features"] as? [[String: Any]] else {
+			throw DecodingError.dataCorrupted(.init(codingPath: [], debugDescription: "Not a GeoJSON FeatureCollection"))
+		}
+		let parsed = try features.map { feature -> GeoJSONFeature in
+			guard let geometry = feature["geometry"] as? [String: Any],
+				  let geometryType = geometry["type"] as? String,
+				  let coordinates = geometry["coordinates"] else {
+				throw DecodingError.dataCorrupted(.init(codingPath: [], debugDescription: "Feature without geometry"))
+			}
+			var properties: [String: AnyCodableValue]?
+			if let raw = feature["properties"] as? [String: Any] {
+				properties = raw.mapValues(AnyCodableValue.init(jsonObject:))
+			}
+			return GeoJSONFeature(
+				type: feature["type"] as? String ?? "Feature",
+				id: (feature["id"] as? NSNumber).flatMap { Self.isInteger($0) ? $0.intValue : nil },
+				geometry: GeoJSONGeometry(type: geometryType, coordinates: AnyCodableValue(jsonObject: coordinates)),
+				properties: properties
+			)
+		}
+		return GeoJSONFeatureCollection(type: type, features: parsed)
+	}
+
+	fileprivate static func isInteger(_ number: NSNumber) -> Bool {
+		CFNumberIsFloatType(number) == false && CFGetTypeID(number) != CFBooleanGetTypeID()
+	}
+}
+
+extension AnyCodableValue {
+	/// From a value `JSONSerialization` produced.
+	init(jsonObject: Any) {
+		switch jsonObject {
+		case let number as NSNumber:
+			if CFGetTypeID(number) == CFBooleanGetTypeID() {
+				self = .bool(number.boolValue)
+			} else if CFNumberIsFloatType(number) {
+				self = .double(number.doubleValue)
+			} else {
+				self = .int(number.intValue)
+			}
+		case let string as String:
+			self = .string(string)
+		case let array as [Any]:
+			self = .array(array.map(AnyCodableValue.init(jsonObject:)))
+		case let object as [String: Any]:
+			self = .object(object.mapValues(AnyCodableValue.init(jsonObject:)))
+		default:
+			self = .null
+		}
+	}
+}
+
 struct GeoJSONFeature: Codable {
 	let type: String // Always "Feature"
 	let id: Int?
@@ -285,6 +344,10 @@ struct GeoJSONStyledFeature: Identifiable {
 		return Color(css: feature.effectiveFillColor).opacity(feature.effectiveFillOpacity)
 	}
 }
+
+// A styled feature is built once, with its overlay, and never changed after, so it may be built on a
+// background thread and handed to the main one.
+extension GeoJSONStyledFeature: @unchecked Sendable {}
 
 struct GeoJSONGeometry: Codable {
 	let type: String // "Point", "LineString", "Polygon", etc.

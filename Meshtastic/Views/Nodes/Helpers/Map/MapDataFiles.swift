@@ -78,7 +78,7 @@ struct MapDataFiles: View {
 			allowedContentTypes: [
 				UTType.json,
 				UTType(filenameExtension: "geojson") ?? UTType.json
-			],
+			] + KMLFileTypes.contentTypes,
 			allowsMultipleSelection: false
 		) { result in
 			handleFileSelection(result)
