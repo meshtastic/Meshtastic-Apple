@@ -509,17 +509,21 @@ private struct LocalStatsChart: View {
 
 	private var xAxisFormat: Date.FormatStyle {
 		let dayDuration = LocalStatsChartRange.day.duration ?? 24 * 60 * 60
-		if visibleDuration <= dayDuration {
-			// With AM/PM a 12-hour clock tells midnight from noon on the 24h view;
-			// a 24-hour clock shows 00:00 and 12:00 either way. Two-digit minutes, or
-			// some 24-hour locales show 17:0.
+		let step = LocalStatsChartTicks.step(visible: visibleDuration, labelCount: xAxisLabelCount)
+		if step >= dayDuration {
 			return Date.FormatStyle()
-				.hour(.defaultDigits(amPM: .abbreviated))
-				.minute(.twoDigits)
+				.month(.defaultDigits)
+				.day(.defaultDigits)
 		}
-		return Date.FormatStyle()
-			.month(.defaultDigits)
-			.day(.defaultDigits)
+		// With AM/PM a 12-hour clock tells midnight from noon on the 24h view;
+		// a 24-hour clock shows 00:00 and 12:00 either way. Two-digit minutes, or
+		// some 24-hour locales show 17:0.
+		let time = Date.FormatStyle()
+			.hour(.defaultDigits(amPM: .abbreviated))
+			.minute(.twoDigits)
+		// Ticks less than a day apart on a window longer than a day need the date too,
+		// or the same time repeats on each day.
+		return visibleDuration <= dayDuration ? time : time.month(.defaultDigits).day(.defaultDigits)
 	}
 
 	private var tickKey: TickKey {

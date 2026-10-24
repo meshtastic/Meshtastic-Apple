@@ -279,6 +279,9 @@ struct LocalStatsChartTicksTests {
 		let newestFirst = [point(3 * hour), point(2 * hour), point(90 * 60)]
 		#expect(LocalStatsChartPoint.plottable(newestFirst, now: now) == [point(90 * 60), point(2 * hour), point(3 * hour)])
 		#expect(LocalStatsChartPoint.plottable([point(2 * hour)], now: now) == [point(2 * hour)])
+		// Every reading past the 30 days: still drawn, anchored on the newest.
+		let allFarAhead = [point(60 * day), point(59 * day)]
+		#expect(LocalStatsChartPoint.plottable(allFarAhead, now: now) == [point(59 * day), point(60 * day)])
 	}
 
 	@Test("A clock that jumped ahead keeps both its fast readings and its older correct ones")

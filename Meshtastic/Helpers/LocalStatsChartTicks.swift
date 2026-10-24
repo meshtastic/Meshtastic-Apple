@@ -27,8 +27,11 @@ struct LocalStatsChartPoint: Identifiable, Equatable {
 	/// fetch returns them. A node with a wrong clock stamps readings in the future or in
 	/// 1970, and either stretches the scrollable range by years. The newest reading no
 	/// more than 30 days past `now` anchors the chart, and readings past it, or more than
-	/// a year older, stay off. One reading per timestamp, since the chart keys its marks
-	/// on the time. The table and CSV keep every row.
+	/// a year older, stay off. When every reading is further out than that, the node's
+	/// clock is simply wrong and its readings are still real, so the newest one anchors
+	/// instead and the chart draws them rather than going blank above a full table; the
+	/// year window keeps the span bounded either way. One reading per timestamp, since
+	/// the chart keys its marks on the time. The table and CSV keep every row.
 	static func plottable(_ readings: [LocalStatsChartPoint], now: Date) -> [LocalStatsChartPoint] {
 		let latest = now.addingTimeInterval(fastClockLimit)
 		guard let newest = (readings.first(where: { $0.time <= latest }) ?? readings.first)?.time else { return [] }
