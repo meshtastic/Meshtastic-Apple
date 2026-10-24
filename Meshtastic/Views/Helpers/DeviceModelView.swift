@@ -116,6 +116,8 @@ private struct DeviceModelRealityView: View {
 
 	#if os(visionOS)
 	@Environment(\.physicalMetrics) private var metrics
+	#else
+	@Environment(\.colorScheme) private var colorScheme
 	#endif
 
 	var body: some View {
@@ -138,11 +140,31 @@ private struct DeviceModelRealityView: View {
 				#endif
 			}
 		}
+		#if !os(visionOS)
+		.background { backdrop }
+		#endif
 		.contentShape(Rectangle())
 		// Simultaneous so a drag that starts on the model can still scroll the list.
 		.simultaneousGesture(rotateGesture)
 		.simultaneousGesture(zoomGesture)
 	}
+
+	#if !os(visionOS)
+	/// Most radios are black, and vanish against a dark card. In dark mode they stand on a soft
+	/// gray, lighter in the middle like a studio backdrop.
+	@ViewBuilder
+	private var backdrop: some View {
+		if colorScheme == .dark {
+			RadialGradient(
+				colors: [Color(white: 0.52), Color(white: 0.30)],
+				center: .center,
+				startRadius: 0,
+				endRadius: 160
+			)
+			.clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+		}
+	}
+	#endif
 
 	/// Horizontal drags spin the model; mostly-vertical drags are left alone so the list still
 	/// scrolls.
