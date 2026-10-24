@@ -44,7 +44,7 @@ struct AirQualityMetricsLog: View {
 					if chartData.count > 0 {
 						GroupBox(label: Label("\(totalReadings) Readings Total", systemImage: "chart.xyaxis.line")) {
 							Chart(seriesList.visible) { series in
-								ForEach(chartData) { dataPoint in
+								ForEach(chartData, id: \.persistentModelID) { dataPoint in
 									series.body(dataPoint, inChartRange: chartRange)
 								}
 							}
