@@ -146,8 +146,18 @@ enum CoverageTerrainLoader {
 	}
 
 	private static func tile(z: Int, key: CoverageTerrain.TileKey, cache: URL?, offline: TerrainStore?, session: URLSession) async throws -> CoverageTerrain.Tile? {
-		if let offline, let decoded = await offline.dataTile(z: z, x: key.x, y: key.y) {
-			return CoverageTerrain.Tile(size: decoded.size, elevations: decoded.elevations)
+		if let offline {
+			switch await offline.coverageTile(z: z, x: key.x, y: key.y) {
+			case .data(let data):
+				// Decoded here rather than in the store, so tiles decode in parallel.
+				if let decoded = TerrariumDecoder.decode(tileData: data) {
+					return CoverageTerrain.Tile(size: decoded.size, elevations: decoded.elevations)
+				}
+			case .sea:
+				return nil
+			case .notHeld:
+				break
+			}
 		}
 		let file = cache?.appendingPathComponent("\(key.x)-\(key.y).webp")
 		// An empty marker records a sea tile, so a coastal estimate doesn't refetch every 404. After a few days
