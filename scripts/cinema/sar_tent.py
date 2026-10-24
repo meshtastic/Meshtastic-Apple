@@ -12,7 +12,11 @@
 #  Everything in the tent is modeled here. The view out of the door is Poly Haven's
 #  "Sunset Forest" HDRI (CC0), downloaded by build.sh. The image's center looks at the front
 #  wall, which is left plain for the app window; Blender's +Y is that direction.
+#
+#  It also writes <out>_anchors.json: where the boards the app draws live panels on sit, relative
+#  to the camera. build.sh copies it next to the image, and the app reads it to place the panels.
 
+import json
 import math
 import os
 import random
@@ -47,6 +51,10 @@ RIDGE_HEIGHT = 3.0
 DOOR = (-0.6, 0.9, 1.85)  # right wall: from y, to y, top
 RAFTERS = [-3.0, -1.8, -0.6, 0.9, 2.0, 3.1, 4.2]
 EYE_HEIGHT = 1.15
+
+# Surfaces the app covers with live panels, by the id the app knows them by. Filled in as the
+# scene is built, written out by write_anchors().
+ANCHORS = {}
 
 
 # MARK: - Helpers
@@ -160,6 +168,37 @@ def plane(name, width, height, location, rotation, mat):
         for loop, coord in zip(face.loops, [(0, 0), (1, 0), (1, 1), (0, 1)]):
             loop[uv].uv = coord
     return mesh_object(name, build, mat, location, rotation)
+
+
+def anchor(board_id, obj, width, height):
+    """Records a plane as a board the app draws on. The plane's +X is the board's right and its
+    +Z faces the viewer."""
+    rotation = obj.rotation_euler.to_matrix()
+    ANCHORS[board_id] = {
+        "center": to_app(Vector(obj.location) - Vector((0, 0, EYE_HEIGHT))),
+        "size": [round(width, 4), round(height, 4)],
+        "right": to_app(rotation @ Vector((1, 0, 0))),
+        "normal": to_app(rotation @ Vector((0, 0, 1))),
+    }
+
+
+def to_app(v):
+    """Blender's Z-up, +Y-forward coordinates to RealityKit's Y-up, -Z-forward ones."""
+    return [round(v.x, 4) + 0.0, round(v.z, 4) + 0.0, round(-v.y, 4) + 0.0]
+
+
+def write_anchors(out):
+    path = os.path.splitext(out)[0] + "_anchors.json"
+    data = {
+        "comment": "Written by scripts/cinema/sar_tent.py. Meters, RealityKit axes (+X right, +Y up, "
+                   "-Z toward the image's center), relative to the camera the image was rendered from.",
+        "eyeHeight": EYE_HEIGHT,
+        "boards": ANCHORS,
+    }
+    with open(path, "w") as file:
+        json.dump(data, file, indent=2, sort_keys=True)
+        file.write("\n")
+    print("wrote", path)
 
 
 # MARK: - Materials
@@ -371,13 +410,16 @@ def build_props():
     cylinder("NodeAntenna", 0.008, (tripod_top[0], tripod_top[1], tripod_top[2] + 0.14), (tripod_top[0], tripod_top[1], tripod_top[2] + 0.5), black_plastic)
     sphere("NodeLED", 0.006, (tripod_top[0] - 0.05, tripod_top[1], tripod_top[2] + 0.1), led_green, segments=8)
 
-    # Whiteboard on the left wall, behind the viewer's shoulder.
-    board = image_material("Whiteboard", os.path.join(CACHE, "status_board.png"), 0.25)
+    # Whiteboard on the left wall, behind the viewer's shoulder. Left blank: the app draws the live
+    # team roster over it (the "teamStatus" anchor). The easel legs stand just outside the frame so
+    # the panel doesn't cover them.
+    board = image_material("Whiteboard", os.path.join(CACHE, "whiteboard.png"), 0.25)
     board_x = -HALF_WIDTH + 0.1
-    plane("Whiteboard", 1.8, 1.2, (board_x + 0.02, -1.6, 1.25), (math.pi / 2, 0, math.pi / 2), board)
+    whiteboard = plane("Whiteboard", 1.8, 1.2, (board_x + 0.02, -1.6, 1.25), (math.pi / 2, 0, math.pi / 2), board)
+    anchor("teamStatus", whiteboard, 1.8, 1.2)
     box("WhiteboardFrame", (0.03, 1.86, 1.26), (board_x, -1.6, 1.25), material("Frame", (0.7, 0.7, 0.72), 0.4, metallic=0.8))
-    for x, y in ((board_x + 0.3, -2.4), (board_x + 0.3, -0.8)):
-        cylinder("EaselLeg", 0.012, (x, y, 0), (board_x + 0.02, y, 1.8), steel)
+    for y in (-1.6 - 0.96, -1.6 + 0.96):
+        cylinder("EaselLeg", 0.012, (board_x + 0.3, y, 0), (board_x + 0.02, y, 1.8), steel)
 
     # Gear along the back wall and the right rear corner.
     back = BACK_Y + 0.35
@@ -512,6 +554,7 @@ def main():
     build_lights()
     build_world()
     build_camera()
+    write_anchors(options["out"])
     configure_render(options)
     if options["blend"]:
         bpy.ops.wm.save_as_mainfile(filepath=os.path.abspath(options["blend"]))

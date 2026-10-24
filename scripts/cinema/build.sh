@@ -33,4 +33,6 @@ fi
 
 "$BLENDER" -b -P "$HERE/sar_tent.py" -- --out "$HERE/out/sar_tent.png" --width 4096 --samples 160
 sips -s format jpeg -s formatOptions 85 "$HERE/out/sar_tent.png" --out "$DEST/sar_tent.jpg" >/dev/null
-echo "Wrote $DEST/sar_tent.jpg"
+# Where the app puts its live panels; must ship with the image it was rendered with.
+cp "$HERE/out/sar_tent_anchors.json" "$DEST/sar_tent_anchors.json"
+echo "Wrote $DEST/sar_tent.jpg and sar_tent_anchors.json"

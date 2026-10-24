@@ -10,3 +10,9 @@ import Foundation
 public func cinemaEnvironmentImageURL(named name: String) -> URL? {
 	Bundle.module.url(forResource: name, withExtension: "jpg", subdirectory: "Environments")
 }
+
+/// Where the boards in a cinema environment's image sit, written by the render script next to
+/// the image. See `scripts/cinema/README.md`.
+public func cinemaEnvironmentAnchorsURL(named name: String) -> URL? {
+	Bundle.module.url(forResource: "\(name)_anchors", withExtension: "json", subdirectory: "Environments")
+}

@@ -5,7 +5,7 @@
 #
 #  Copyright(c) Garth Vander Houwen 10/23/26.
 #
-#  Draws the flat textures the SAR tent scene uses: a topo map, the team status whiteboard and a
+#  Draws the flat textures the SAR tent scene uses: a topo map, a blank whiteboard and a
 #  laptop showing a mesh map. Everything is generated here, so the tent image has no third-party
 #  artwork in it. Writes PNGs into cache/.
 
@@ -93,37 +93,10 @@ def topo_map(path, w=2048, h=1536):
     image.save(path)
 
 
-def status_board(path, w=2400, h=1600):
+def whiteboard(path, w=2400, h=1600):
+    """A blank whiteboard with a few marker smudges, so it reads as a used board. The app draws
+    the live team roster over it."""
     image = Image.new("RGB", (w, h), (246, 247, 244))
-    draw = ImageDraw.Draw(image)
-    pen = font("Chalkboard.ttc", 64)
-    small = font("Chalkboard.ttc", 52)
-    title = font("Chalkboard.ttc", 96)
-    blue, black, red, green = (30, 60, 160), (25, 25, 25), (190, 30, 30), (20, 130, 60)
-    draw.text((80, 50), "TEAM STATUS", fill=blue, font=title)
-    draw.text((1500, 70), "OP PERIOD 2  1800–0600", fill=black, font=small)
-    columns = [80, 520, 1240, 1760]
-    headers = ["TEAM", "ASSIGNMENT", "STATUS", "LAST CHECK-IN"]
-    for x, text in zip(columns, headers):
-        draw.text((x, 230), text, fill=black, font=pen)
-    draw.line([(60, 320), (w - 60, 320)], fill=black, width=6)
-    rows = [
-        ("Alpha", "Seg B2 – ridge", "In field", "1742", black),
-        ("Bravo", "Seg C5 – creek", "In field", "1738", black),
-        ("Charlie", "Seg D3 – trail", "Returning", "1729", green),
-        ("K9-1", "Seg B6 – hasty", "In field", "1745", black),
-        ("Medic", "ICP standby", "Available", "—", green),
-        ("Relay", "Ridge repeater", "Up", "1750", blue),
-    ]
-    for i, (team, assignment, status, checkin, color) in enumerate(rows):
-        y = 360 + i * 150
-        draw.text((columns[0], y), team, fill=blue, font=pen)
-        draw.text((columns[1], y), assignment, fill=black, font=pen)
-        draw.text((columns[2], y), status, fill=color, font=pen)
-        draw.text((columns[3], y), checkin, fill=black, font=pen)
-        draw.line([(60, y + 120), (w - 60, y + 120)], fill=(170, 170, 170), width=3)
-    draw.text((80, h - 160), "Comms: mesh ch. SAR-OPS  ·  Backup: VHF 155.160", fill=red, font=small)
-    # Marker smudges, so it reads as a used board.
     smudge = Image.new("L", image.size, 0)
     sd = ImageDraw.Draw(smudge)
     rng = random.Random(11)
@@ -162,7 +135,7 @@ def laptop_screen(path, w=1600, h=1000, seed=5):
 def main():
     os.makedirs(OUT, exist_ok=True)
     topo_map(os.path.join(OUT, "topo.png"))
-    status_board(os.path.join(OUT, "status_board.png"))
+    whiteboard(os.path.join(OUT, "whiteboard.png"))
     laptop_screen(os.path.join(OUT, "laptop_a.png"), seed=5)
     laptop_screen(os.path.join(OUT, "laptop_b.png"), seed=9)
     print("textures written to", OUT)
