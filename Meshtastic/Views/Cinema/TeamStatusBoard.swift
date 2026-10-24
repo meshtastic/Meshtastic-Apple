@@ -42,7 +42,10 @@ struct TeamStatusBoard: View {
 		.environment(\.colorScheme, .light)
 		.task(id: RadioKey(isConnected: accessoryManager.isConnected, num: accessoryManager.activeDeviceNum)) {
 			while !Task.isCancelled {
-				roster = makeRoster()
+				// The reset can start while this sleeps; don't read rows that are being deleted.
+				if !appState.isDatabaseResetting {
+					roster = makeRoster()
+				}
 				try? await Task.sleep(for: Self.refreshInterval)
 			}
 		}
@@ -437,8 +440,9 @@ private struct TeamRow: View {
 	}
 }
 
-/// Marker on a whiteboard. The surface keeps the hue of the blank board in the tent image but is
-/// lighter, so every ink below reads at a WCAG contrast of at least 4.5:1 across the gradient.
+/// Marker on a whiteboard. The surface matches the blank board in the tent image, which has a
+/// light on it so it is this light, and every ink below reads at a WCAG contrast of at least 4.5:1
+/// across the gradient.
 /// Top / bottom: ink 7.8 / 6.6, blue 6.8 / 5.7, red 5.7 / 4.8, green 5.7 / 4.8, faded 5.6 / 4.7.
 private enum BoardStyle {
 	static let surface = LinearGradient(
