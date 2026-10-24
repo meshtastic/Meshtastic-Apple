@@ -165,9 +165,9 @@ struct Connect: View {
 												.font(.callout).foregroundColor(Color.gray)
 										}
 										if let presetName {
-											// The preset names are a known, short set ("Very Long Range - Slow" is
-											// the longest), so they get one line and shrink to fit rather than
-											// wrapping the row in this narrow column.
+											// The preset names are a known, short set — the longest `ModemPresets`
+											// renders is "Long Range - Moderate" — so they get one line and shrink
+											// to fit rather than wrapping the row in this narrow column.
 											(Text("Preset").font(.callout)+Text(": \(presetName)")
 												.font(.callout).foregroundColor(Color.gray))
 												.lineLimit(1)
