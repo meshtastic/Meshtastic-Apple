@@ -25,6 +25,10 @@ struct MainScene: View {
 	@State private var routerToken: UUID?
 	/// This window's scene, so a route from another window can bring it forward.
 	@State private var sceneSession: UISceneSession?
+	#if os(visionOS)
+	/// The window's size before the cinema opened, put back when it closes.
+	@State private var sizeBeforeCinema: CGSize?
+	#endif
 
 	/// TipKit configuration must run once per process. This view stays mounted
 	/// across node switches; the flag is a backstop if a window is recreated.
@@ -73,6 +77,10 @@ struct MainScene: View {
 				}
 			}
 			#if os(visionOS)
+			// In the cinema the window is the screen.
+			.onChange(of: appState.cinemaOpen) { _, isOpen in
+				sizeForCinema(isOpen)
+			}
 			.onChange(of: router.spatialMapRequest?.id) { _, _ in
 				guard let request = router.claimSpatialMapRequest() else { return }
 				if let nodeNum = request.nodeNum {
@@ -176,6 +184,28 @@ struct MainScene: View {
 		.environmentObject(nodeFilters)
 		.environmentObject(MeshtasticAPI.shared)
 	}
+
+	#if os(visionOS)
+	/// The window's size in the cinema, in points.
+	private static let cinemaSize = CGSize(width: 2400, height: 1350)
+
+	/// Fixes the window at the cinema size while the cinema is open, and puts back the size it
+	/// had when the cinema closes.
+	private func sizeForCinema(_ isOpen: Bool) {
+		guard let windowScene = sceneSession?.scene as? UIWindowScene else { return }
+		let preferences: UIWindowScene.GeometryPreferences.Vision
+		if isOpen {
+			sizeBeforeCinema = windowScene.effectiveGeometry.coordinateSpace.bounds.size
+			preferences = .init(size: Self.cinemaSize, minimumSize: Self.cinemaSize, maximumSize: Self.cinemaSize, resizingRestrictions: UIWindowScene.ResizingRestrictions.none)
+		} else {
+			preferences = .init(size: sizeBeforeCinema, minimumSize: .zero, maximumSize: CGSize(width: CGFloat.infinity, height: CGFloat.infinity), resizingRestrictions: .freeform)
+			sizeBeforeCinema = nil
+		}
+		windowScene.requestGeometryUpdate(preferences) { error in
+			Logger.services.error("🎬 [Cinema] Couldn't resize the window: \(error.localizedDescription, privacy: .public)")
+		}
+	}
+	#endif
 
 	/// Notification taps land on `AppState` because the app delegate has no
 	/// window. This window takes the route only while it is active, and clears

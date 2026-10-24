@@ -363,6 +363,10 @@ struct MeshtasticAppleApp: App {
 		.environmentObject(accessoryManager)
 		.environmentObject(lockdownCoordinator)
 		.environmentObject(MeshtasticAPI.shared)
+		#if os(visionOS)
+		// In the cinema the window is the screen, without the bar that moves it.
+		.persistentSystemOverlays(appState.cinemaOpen ? .hidden : .automatic)
+		#endif
 
 			WindowGroup("Mesh Map", id: "meshmap-window") {
 				// Gated on shouldInitializeAppServices (not just tests): in Chirpy OTA demo mode
