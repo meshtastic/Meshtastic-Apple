@@ -150,12 +150,14 @@ enum CoverageTerrainLoader {
 			return CoverageTerrain.Tile(size: decoded.size, elevations: decoded.elevations)
 		}
 		let file = cache?.appendingPathComponent("\(key.x)-\(key.y).webp")
-		// An empty marker records a sea tile, so a coastal estimate doesn't refetch every 404. It expires
-		// after a few days, so a land tile that 404'd by mistake (during an archive update, say) is retried.
+		// An empty marker records a sea tile, so a coastal estimate doesn't refetch every 404. After a few days
+		// the tile is asked for again, so a land tile that 404'd by mistake (during an archive update, say) is
+		// retried. The old marker is kept until the network answers, so an offline run still treats it as sea.
 		let seaMarker = cache?.appendingPathComponent("\(key.x)-\(key.y).sea")
+		var hasExpiredSeaMarker = false
 		if let seaMarker, let written = (try? FileManager.default.attributesOfItem(atPath: seaMarker.path))?[.modificationDate] as? Date {
 			if Date().timeIntervalSince(written) < seaMarkerLifetime { return nil }
-			try? FileManager.default.removeItem(at: seaMarker)
+			hasExpiredSeaMarker = true
 		}
 		if let file, let data = try? Data(contentsOf: file), let decoded = TerrariumDecoder.decode(tileData: data) {
 			return CoverageTerrain.Tile(size: decoded.size, elevations: decoded.elevations)
@@ -176,6 +178,7 @@ enum CoverageTerrainLoader {
 					continue
 				}
 				if let file { try? data.write(to: file, options: .atomic) }
+				if hasExpiredSeaMarker, let seaMarker { try? FileManager.default.removeItem(at: seaMarker) }
 				return CoverageTerrain.Tile(size: decoded.size, elevations: decoded.elevations)
 			} catch is CancellationError {
 				throw CancellationError()
@@ -185,6 +188,8 @@ enum CoverageTerrainLoader {
 				lastError = error
 			}
 		}
+		// No answer from the network: an expired marker is still the best guess.
+		if hasExpiredSeaMarker { return nil }
 		Logger.services.error("🗺️ [Coverage] Terrain tile \(z)/\(key.x)/\(key.y) failed: \(lastError.localizedDescription, privacy: .public)")
 		throw LoadError.fetchFailed(z, key.x, key.y)
 	}
