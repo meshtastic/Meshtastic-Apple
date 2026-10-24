@@ -173,6 +173,13 @@ actor TerrainStore {
 
 	// MARK: - Point queries
 
+	/// The decoded Mapterhorn tile at exactly `z/x/y` from a downloaded region, nil when no region has it.
+	/// Coverage estimates read this before going to the network.
+	func dataTile(z: Int, x: Int, y: Int) -> (size: Int, elevations: [Float])? {
+		guard let open = source(covering: z, x: x, y: y), z <= open.maxZoom else { return nil }
+		return rawGrid(open: open, z: z, x: x, y: y)
+	}
+
 	/// Zoom used for single-coordinate elevation lookups: the finest zoom the
 	/// global archive always carries (~30 m data), plenty for a site elevation.
 	static let pointQueryZoom = 12

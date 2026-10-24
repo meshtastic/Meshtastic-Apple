@@ -3,8 +3,9 @@
 //  Meshtastic
 //
 //  Mapterhorn terrain for a coverage estimate. Every tile the coverage disc
-//  touches is fetched (or read from the disk cache) and decoded before the sweep,
-//  so the sweep samples elevation synchronously from an immutable snapshot.
+//  touches is read from downloaded offline terrain, the disk cache or the network
+//  and decoded before the sweep, so the sweep samples elevation synchronously
+//  from an immutable snapshot.
 //
 
 import Foundation
@@ -50,6 +51,18 @@ enum CoverageTerrainLoader {
 	/// Upper bound on tiles per estimate; a wider disc steps down a zoom level until it fits.
 	static let maxTiles = 192
 	private static let maxConcurrentFetches = 24
+	/// How long a 404 is trusted as sea before the tile is asked for again.
+	private static let seaMarkerLifetime: TimeInterval = 3 * 24 * 60 * 60
+	/// Matches `LocalCoverage`'s sphere, so the tile box holds every point the sweep walks to.
+	private static let earthRadiusKm = 6371.0
+
+	/// Tile requests give up after 15 s rather than URLSession's default 60 s, so a stalled
+	/// connection fails the estimate instead of leaving the spinner up for minutes.
+	static let tileSession: URLSession = {
+		let configuration = URLSessionConfiguration.default
+		configuration.timeoutIntervalForRequest = 15
+		return URLSession(configuration: configuration)
+	}()
 
 	enum LoadError: LocalizedError {
 		case fetchFailed(Int, Int, Int)
@@ -65,10 +78,12 @@ enum CoverageTerrainLoader {
 		URL(string: "https://tiles.mapterhorn.com/\(z)/\(x)/\(y).webp")!
 	}
 
-	/// Tiles at `zoom` covering a disc of `radiusKm` around a point.
+	/// Tiles at `zoom` covering a disc of `radiusKm` around a point. The box is the disc's extent on the
+	/// sweep's sphere (its widest longitude is poleward of the site), plus 1% and one profile step.
 	static func tileKeys(latitude: Double, longitude: Double, radiusKm: Double, zoom: Int) -> [CoverageTerrain.TileKey] {
-		let latitudeSpan = radiusKm / 111.32
-		let longitudeSpan = latitudeSpan / max(cos(latitude * .pi / 180), 0.01)
+		let angle = (radiusKm * 1.01 + LocalCoverage.defaultProfileStepKm) / earthRadiusKm
+		let latitudeSpan = angle * 180 / .pi
+		let longitudeSpan = asin(min(1, sin(angle) / max(cos(latitude * .pi / 180), 0.0001))) * 180 / .pi
 		let west = CoverageTerrain.wrapped(longitude - longitudeSpan)
 		let east = CoverageTerrain.wrapped(longitude + longitudeSpan)
 		let northWest = TerrainStore.tilePixel(latitude: latitude + latitudeSpan, longitude: west, z: zoom, size: 256)
@@ -95,18 +110,31 @@ enum CoverageTerrainLoader {
 		return zoom
 	}
 
-	/// Fetch and decode every tile the disc touches. Only a 404 counts as sea; any other failure throws,
-	/// so an estimate never runs over terrain that silently went flat.
-	static func load(latitude: Double, longitude: Double, radiusKm: Double, session: URLSession = .shared) async throws -> CoverageTerrain {
+	/// Fetch and decode every tile the disc touches, from `offlineSources` (downloaded Offline Maps terrain)
+	/// first. Only a 404 counts as sea; any other failure throws, so an estimate never runs over terrain
+	/// that silently went flat.
+	static func load(
+		latitude: Double,
+		longitude: Double,
+		radiusKm: Double,
+		offlineSources: [TerrainSource] = [],
+		session: URLSession = tileSession
+	) async throws -> CoverageTerrain {
 		let zoom = zoom(latitude: latitude, longitude: longitude, radiusKm: radiusKm)
 		let keys = tileKeys(latitude: latitude, longitude: longitude, radiusKm: radiusKm, zoom: zoom)
 		let cache = cacheDirectory(zoom: zoom)
+		var offline: TerrainStore?
+		if !offlineSources.isEmpty {
+			let store = TerrainStore()
+			await store.configure(sources: offlineSources)
+			if await store.hasSources { offline = store }
+		}
 		var tiles: [CoverageTerrain.TileKey: CoverageTerrain.Tile?] = [:]
 		try await withThrowingTaskGroup(of: (CoverageTerrain.TileKey, CoverageTerrain.Tile?).self) { group in
 			var pending = keys.makeIterator()
 			func addNext() {
 				guard let key = pending.next() else { return }
-				group.addTask { (key, try await tile(z: zoom, key: key, cache: cache, session: session)) }
+				group.addTask { (key, try await tile(z: zoom, key: key, cache: cache, offline: offline, session: session)) }
 			}
 			for _ in 0..<maxConcurrentFetches { addNext() }
 			for try await (key, tile) in group {
@@ -117,11 +145,18 @@ enum CoverageTerrainLoader {
 		return CoverageTerrain(zoom: zoom, tiles: tiles)
 	}
 
-	private static func tile(z: Int, key: CoverageTerrain.TileKey, cache: URL?, session: URLSession) async throws -> CoverageTerrain.Tile? {
+	private static func tile(z: Int, key: CoverageTerrain.TileKey, cache: URL?, offline: TerrainStore?, session: URLSession) async throws -> CoverageTerrain.Tile? {
+		if let offline, let decoded = await offline.dataTile(z: z, x: key.x, y: key.y) {
+			return CoverageTerrain.Tile(size: decoded.size, elevations: decoded.elevations)
+		}
 		let file = cache?.appendingPathComponent("\(key.x)-\(key.y).webp")
-		// An empty marker records a sea tile, so a coastal estimate doesn't refetch every 404.
+		// An empty marker records a sea tile, so a coastal estimate doesn't refetch every 404. It expires
+		// after a few days, so a land tile that 404'd by mistake (during an archive update, say) is retried.
 		let seaMarker = cache?.appendingPathComponent("\(key.x)-\(key.y).sea")
-		if let seaMarker, FileManager.default.fileExists(atPath: seaMarker.path) { return nil }
+		if let seaMarker, let written = (try? FileManager.default.attributesOfItem(atPath: seaMarker.path))?[.modificationDate] as? Date {
+			if Date().timeIntervalSince(written) < seaMarkerLifetime { return nil }
+			try? FileManager.default.removeItem(at: seaMarker)
+		}
 		if let file, let data = try? Data(contentsOf: file), let decoded = TerrariumDecoder.decode(tileData: data) {
 			return CoverageTerrain.Tile(size: decoded.size, elevations: decoded.elevations)
 		}

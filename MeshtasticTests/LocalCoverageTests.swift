@@ -136,6 +136,22 @@ struct CoverageTerrainTests {
 		#expect(CoverageTerrainLoader.tileKeys(latitude: 47.6, longitude: -122.3, radiusKm: 150, zoom: wide).count <= CoverageTerrainLoader.maxTiles)
 	}
 
+	@Test func theTileBoxHoldsEveryPointTheSweepReaches() {
+		let latitude = 70.0, longitude = 25.0, radiusKm = 150.0
+		let zoom = CoverageTerrainLoader.zoom(latitude: latitude, longitude: longitude, radiusKm: radiusKm)
+		let keys = Set(CoverageTerrainLoader.tileKeys(latitude: latitude, longitude: longitude, radiusKm: radiusKm, zoom: zoom))
+		var missing = 0
+		for index in 0..<LocalCoverage.defaultRadials {
+			let bearing = 360 * Double(index) / Double(LocalCoverage.defaultRadials)
+			for distanceKm in stride(from: 0, through: radiusKm, by: 2.5) {
+				let point = LocalCoverage.destination(latitude: latitude, longitude: longitude, bearing: bearing, distanceKm: distanceKm)
+				let probe = TerrainStore.tilePixel(latitude: point.latitude, longitude: CoverageTerrain.wrapped(point.longitude), z: zoom, size: 256)
+				if !keys.contains(CoverageTerrain.TileKey(x: probe.x, y: probe.y)) { missing += 1 }
+			}
+		}
+		#expect(missing == 0)
+	}
+
 	@Test func longitudesWrapIntoMinus180To180() {
 		#expect(CoverageTerrain.wrapped(181) == -179)
 		#expect(CoverageTerrain.wrapped(-181) == 179)

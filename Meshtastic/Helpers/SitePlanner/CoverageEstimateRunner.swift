@@ -5,7 +5,7 @@
 //  Runs a coverage estimate on the device: fetches Mapterhorn terrain around the
 //  site, predicts received power with kp1812 (ITU-R P.1812), and imports the
 //  resulting signal bands as a map overlay. Needs the network only for terrain
-//  tiles it hasn't cached yet.
+//  tiles it hasn't cached and that no downloaded offline region holds.
 //
 
 import Foundation
@@ -126,6 +126,7 @@ final class CoverageEstimateRunner: ObservableObject {
 
 	/// Terrain, sweep and bands for `params`, off the main actor.
 	nonisolated static func estimate(_ params: SitePlannerParameters) async throws -> String {
+		let offlineSources = await OfflineMapManager.shared.terrainSources()
 		let site = CoverageSite(
 			name: params.name.trimmingCharacters(in: .whitespacesAndNewlines),
 			latitude: params.latitude,
@@ -136,7 +137,9 @@ final class CoverageEstimateRunner: ObservableObject {
 			txHeightMeters: params.txHeightMeters,
 			radiusKm: params.maxRangeKm
 		)
-		let terrain = try await CoverageTerrainLoader.load(latitude: site.latitude, longitude: site.longitude, radiusKm: site.radiusKm)
+		let terrain = try await CoverageTerrainLoader.load(
+			latitude: site.latitude, longitude: site.longitude, radiusKm: site.radiusKm, offlineSources: offlineSources
+		)
 		let polar = try await LocalCoverage.sweepPolar(site: site) { latitude, longitude in
 			terrain.elevation(latitude: latitude, longitude: longitude)
 		}
