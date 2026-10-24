@@ -27,12 +27,20 @@ struct CoverageTerrain: Sendable {
 
 	/// Ground height at a coordinate, meters, from the nearest sample. Sea and missing tiles read 0.
 	func elevation(latitude: Double, longitude: Double) -> Double {
+		let longitude = Self.wrapped(longitude)
 		let probe = TerrainStore.tilePixel(latitude: latitude, longitude: longitude, z: zoom, size: 256)
 		guard let entry = tiles[TileKey(x: probe.x, y: probe.y)], let tile = entry else { return 0 }
 		let pixel = tile.size == 256 ? probe : TerrainStore.tilePixel(latitude: latitude, longitude: longitude, z: zoom, size: tile.size)
 		let px = min(max(Int(pixel.px.rounded()), 0), tile.size - 1)
 		let py = min(max(Int(pixel.py.rounded()), 0), tile.size - 1)
 		return Double(tile.elevations[py * tile.size + px])
+	}
+
+	/// A longitude in -180...180. A radial that crosses the antimeridian walks past ±180, which
+	/// `TerrainStore.tilePixel` would clamp to the edge tile.
+	static func wrapped(_ longitude: Double) -> Double {
+		let remainder = (longitude + 180).truncatingRemainder(dividingBy: 360)
+		return (remainder < 0 ? remainder + 360 : remainder) - 180
 	}
 }
 
@@ -61,11 +69,17 @@ enum CoverageTerrainLoader {
 	static func tileKeys(latitude: Double, longitude: Double, radiusKm: Double, zoom: Int) -> [CoverageTerrain.TileKey] {
 		let latitudeSpan = radiusKm / 111.32
 		let longitudeSpan = latitudeSpan / max(cos(latitude * .pi / 180), 0.01)
-		let northWest = TerrainStore.tilePixel(latitude: latitude + latitudeSpan, longitude: longitude - longitudeSpan, z: zoom, size: 256)
-		let southEast = TerrainStore.tilePixel(latitude: latitude - latitudeSpan, longitude: longitude + longitudeSpan, z: zoom, size: 256)
+		let west = CoverageTerrain.wrapped(longitude - longitudeSpan)
+		let east = CoverageTerrain.wrapped(longitude + longitudeSpan)
+		let northWest = TerrainStore.tilePixel(latitude: latitude + latitudeSpan, longitude: west, z: zoom, size: 256)
+		let southEast = TerrainStore.tilePixel(latitude: latitude - latitudeSpan, longitude: east, z: zoom, size: 256)
+		// Across the antimeridian the west edge has the higher tile index, so the columns wrap.
+		let columns = northWest.x <= southEast.x
+			? Array(northWest.x...southEast.x)
+			: Array(northWest.x..<(1 << zoom)) + Array(0...southEast.x)
 		var keys: [CoverageTerrain.TileKey] = []
 		for y in northWest.y...southEast.y {
-			for x in northWest.x...southEast.x {
+			for x in columns {
 				keys.append(CoverageTerrain.TileKey(x: x, y: y))
 			}
 		}
@@ -105,6 +119,9 @@ enum CoverageTerrainLoader {
 
 	private static func tile(z: Int, key: CoverageTerrain.TileKey, cache: URL?, session: URLSession) async throws -> CoverageTerrain.Tile? {
 		let file = cache?.appendingPathComponent("\(key.x)-\(key.y).webp")
+		// An empty marker records a sea tile, so a coastal estimate doesn't refetch every 404.
+		let seaMarker = cache?.appendingPathComponent("\(key.x)-\(key.y).sea")
+		if let seaMarker, FileManager.default.fileExists(atPath: seaMarker.path) { return nil }
 		if let file, let data = try? Data(contentsOf: file), let decoded = TerrariumDecoder.decode(tileData: data) {
 			return CoverageTerrain.Tile(size: decoded.size, elevations: decoded.elevations)
 		}
@@ -115,7 +132,10 @@ enum CoverageTerrainLoader {
 			do {
 				let (data, response) = try await session.data(from: tileURL(z: z, x: key.x, y: key.y))
 				let status = (response as? HTTPURLResponse)?.statusCode ?? 0
-				if status == 404 { return nil }
+				if status == 404 {
+					if let seaMarker { try? Data().write(to: seaMarker, options: .atomic) }
+					return nil
+				}
 				guard status == 200, let decoded = TerrariumDecoder.decode(tileData: data) else {
 					lastError = LoadError.fetchFailed(z, key.x, key.y)
 					continue
@@ -125,6 +145,8 @@ enum CoverageTerrainLoader {
 			} catch is CancellationError {
 				throw CancellationError()
 			} catch {
+				// URLSession reports a cancelled task as URLError(.cancelled), not CancellationError.
+				if Task.isCancelled { throw CancellationError() }
 				lastError = error
 			}
 		}

@@ -76,6 +76,8 @@ final class CoverageEstimateRunner: ObservableObject {
 			} catch is CancellationError {
 				return
 			} catch {
+				// A cancelled fetch can surface as a URL error; the run was cancelled, not failed.
+				guard !Task.isCancelled else { return }
 				Logger.services.error("🗺️ [Coverage] Estimate failed: \(error.localizedDescription, privacy: .public)")
 				self?.state = .failed(error.localizedDescription)
 			}

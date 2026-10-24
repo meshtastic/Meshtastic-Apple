@@ -119,6 +119,29 @@ struct CoverageTerrainTests {
 		#expect(CoverageTerrainLoader.tileKeys(latitude: 47.6, longitude: -122.3, radiusKm: 150, zoom: wide).count <= CoverageTerrainLoader.maxTiles)
 	}
 
+	@Test func longitudesWrapIntoMinus180To180() {
+		#expect(CoverageTerrain.wrapped(181) == -179)
+		#expect(CoverageTerrain.wrapped(-181) == 179)
+		#expect(CoverageTerrain.wrapped(-122.3) == -122.3)
+		#expect(CoverageTerrain.wrapped(540) == -180)
+	}
+
+	@Test func aDiscOnTheAntimeridianTakesTilesFromBothEdges() {
+		// Taveuni, Fiji sits almost on the antimeridian.
+		let keys = CoverageTerrainLoader.tileKeys(latitude: -16.8, longitude: 179.95, radiusKm: 20, zoom: 12)
+		let columns = Set(keys.map(\.x))
+		#expect(columns.contains(0))
+		#expect(columns.contains((1 << 12) - 1))
+		#expect(columns.count < 20)
+	}
+
+	@Test func aPointPastTheAntimeridianReadsTheWrappedTile() {
+		let probe = TerrainStore.tilePixel(latitude: -16.8, longitude: -179.95, z: 12, size: 256)
+		let key = CoverageTerrain.TileKey(x: probe.x, y: probe.y)
+		let terrain = CoverageTerrain(zoom: 12, tiles: [key: CoverageTerrain.Tile(size: 256, elevations: [Float](repeating: 77, count: 256 * 256))])
+		#expect(terrain.elevation(latitude: -16.8, longitude: 180.05) == 77)
+	}
+
 	@Test func elevationReadsTheTileUnderTheCoordinateAndSeaIsZero() {
 		let probe = TerrainStore.tilePixel(latitude: 47.6, longitude: -122.3, z: 12, size: 256)
 		let key = CoverageTerrain.TileKey(x: probe.x, y: probe.y)
