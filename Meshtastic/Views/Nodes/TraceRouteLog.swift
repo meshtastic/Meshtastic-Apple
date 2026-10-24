@@ -5,6 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 12/7/23.
 //
 
+import Foundation
 import SwiftUI
 import SwiftData
 import OSLog
@@ -13,23 +14,14 @@ struct TraceRouteLog: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@Bindable var node: NodeInfoEntity
-	@Query private var traceRoutes: [TraceRouteEntity]
+	@State private var traceRoutes: [TraceRouteEntity] = []
+	/// Chart points for the visible routes, rebuilt when the routes or the window change rather than on every redraw.
+	@State private var chartPoints: [TraceRouteChartPoint] = []
 	/// The route picked on the chart, highlighted in the list.
 	@State private var highlightedID: Int64?
 	@State private var openRouteID: PersistentIdentifier?
 	@SceneStorage("traceRouteLogWindow") private var windowRawValue = TraceRouteTimeWindow.day.rawValue
 	@SceneStorage("traceRouteLogChartExpanded") private var chartExpanded = true
-
-	init(node: NodeInfoEntity) {
-		self.node = node
-		let nodeNum = node.num
-		var descriptor = FetchDescriptor<TraceRouteEntity>(
-			predicate: #Predicate<TraceRouteEntity> { $0.node?.num == nodeNum },
-			sortBy: [SortDescriptor(\TraceRouteEntity.time, order: .reverse)]
-		)
-		descriptor.fetchLimit = 500
-		_traceRoutes = Query(descriptor)
-	}
 
 	private var availableWindows: [TraceRouteTimeWindow] {
 		TraceRouteTimeWindow.available(oldest: traceRoutes.compactMap { $0.time ?? $0.sentAt }.min())
@@ -86,10 +78,15 @@ struct TraceRouteLog: View {
 					}
 				}
 			}
+			.onChange(of: windowRawValue) { rebuildChartPoints() }
 			.onChange(of: highlightedID) { _, id in
 				guard let id else { return }
 				withAnimation { proxy.scrollTo(id, anchor: .center) }
 			}
+		}
+		.task { refreshTraceRoutes() }
+		.onReceive(NotificationCenter.default.publisher(for: ModelContext.didSave)) { notification in
+			if Self.touchesTraceRoutes(notification) { refreshTraceRoutes() }
 		}
 		.navigationTitle("Trace Route Log")
 		.navigationDestination(item: $openRouteID) { id in
@@ -122,7 +119,7 @@ struct TraceRouteLog: View {
 				.listRowInsets(EdgeInsets())
 			}
 		}
-		let points = TraceRouteChartPoint.points(from: visibleRoutes.map { (id: $0.id, card: TraceRouteCardModel(route: $0)) })
+		let points = chartPoints
 		if !points.isEmpty {
 			Section {
 				DisclosureGroup(isExpanded: $chartExpanded) {
@@ -132,6 +129,26 @@ struct TraceRouteLog: View {
 					Label("Hops", systemImage: "chart.xyaxis.line")
 				}
 			}
+		}
+	}
+
+	/// Loads the routes once and again only after a trace route is saved. The database is read here,
+	/// not while the view draws, so a busy mesh saving packets doesn't re-run the fetch.
+	private func refreshTraceRoutes() {
+		traceRoutes = node.safeTraceRoutes()
+		if let openRouteID, !traceRoutes.contains(where: { $0.persistentModelID == openRouteID }) {
+			self.openRouteID = nil
+		}
+		rebuildChartPoints()
+	}
+
+	private func rebuildChartPoints() {
+		chartPoints = TraceRouteChartPoint.points(from: visibleRoutes.map { (id: $0.id, card: TraceRouteCardModel(route: $0)) })
+	}
+
+	private static func touchesTraceRoutes(_ notification: Foundation.Notification) -> Bool {
+		(notification.userInfo ?? [:]).values.contains { value in
+			(value as? Set<PersistentIdentifier>)?.contains { $0.entityName == "TraceRouteEntity" } ?? false
 		}
 	}
 
@@ -145,6 +162,7 @@ struct TraceRouteLog: View {
 		context.delete(route)
 		do {
 			try context.save()
+			refreshTraceRoutes()
 		} catch let error as NSError {
 			Logger.data.error("\(error.localizedDescription, privacy: .public)")
 		}
