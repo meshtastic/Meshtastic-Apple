@@ -218,16 +218,22 @@ final class SpatialMapModel {
 		applyArea()
 	}
 
-	/// Starts building the terrain for the circle to show. Until it is built, the scene keeps the
-	/// old terrain and previews the new circle on it; a first circle gets a flat disk right away.
-	private func setFullCircle(_ circle: SpatialCircle) {
+	/// A `newArea` starts zoomed out on its center; otherwise the zoom carries over.
+	private func setFullCircle(_ circle: SpatialCircle, newArea: Bool = false) {
 		fullCircle = circle
 		lastBoundsChange = Date()
+		if newArea {
+			zoom = 1
+			zoomCenter = nil
+			return
+		}
 		// The zoom is relative to the full circle; keep it within the new one's limits.
 		zoom = clampedZoom(zoom)
 		if zoom <= 1 { zoomCenter = nil }
 	}
 
+	/// Starts building the terrain for the circle to show. Until it is built, the scene keeps the
+	/// old terrain and previews the new circle on it; a first circle gets a flat disk right away.
 	private func applyArea() {
 		guard let target = targetCircle else { return }
 		if placement == nil {
@@ -254,12 +260,19 @@ final class SpatialMapModel {
 		if outsideCount != outside { outsideCount = outside }
 		if let selectedNodeNum, nodesByNum[selectedNodeNum] == nil { select(nil) }
 
-		if let candidate = SpatialCircle.around(fetched.map(\.coordinate)),
-		   let next = SpatialMapArea.next(current: fullCircle, candidate: candidate, nodes: fetched.map(\.coordinate), lastChange: lastBoundsChange, now: Date()) {
-			setFullCircle(next)
-			showingDownloadedMap = false
-		} else if fetched.isEmpty, let downloaded = downloadedMapCircle, downloaded != fullCircle {
-			setFullCircle(downloaded)
+		let coordinates = fetched.map(\.coordinate)
+		if let candidate = SpatialCircle.around(coordinates) {
+			// Leaving a downloaded map for the mesh is a new area, not the mesh moving, so it doesn't
+			// wait for the rules that keep the mesh's circle steady.
+			let next = showingDownloadedMap
+				? candidate
+				: SpatialMapArea.next(current: fullCircle, candidate: candidate, nodes: coordinates, lastChange: lastBoundsChange, now: Date())
+			if let next {
+				setFullCircle(next, newArea: showingDownloadedMap)
+				showingDownloadedMap = false
+			}
+		} else if let downloaded = downloadedMapCircle, downloaded != fullCircle {
+			setFullCircle(downloaded, newArea: true)
 			showingDownloadedMap = true
 		}
 		if let pending = pendingFocusNodeNum, nodesByNum[pending] != nil {
