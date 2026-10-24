@@ -37,6 +37,10 @@ struct SitePlannerParametersTests {
 		#expect(params.isValid == false)
 
 		params.rxSensitivityDBm = -130
+		params.rxHeightMeters = -1
+		#expect(params.isValid == false)
+
+		params.rxHeightMeters = 1
 		params.maxRangeKm = 151
 		#expect(params.isValid == false)
 		params.maxRangeKm = 150

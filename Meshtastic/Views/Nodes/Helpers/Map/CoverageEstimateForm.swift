@@ -182,6 +182,7 @@ struct CoverageEstimateForm: View {
 	private var receiverSection: some View {
 		Section {
 			DecimalField("Sensitivity (dBm)", value: $params.rxSensitivityDBm)
+			lengthField("Receiver height", canonical: $params.rxHeightMeters, storedUnit: .meters, imperialUnit: .feet)
 		} header: {
 			Label("Receiver", systemImage: "dot.radiowaves.left.and.right")
 		}

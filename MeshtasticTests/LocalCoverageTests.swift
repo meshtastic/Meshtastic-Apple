@@ -68,6 +68,16 @@ struct LocalCoverageTests {
 		#expect(abs(dbm - -132.4627) < 0.1, "got \(dbm) dBm")
 	}
 
+	@Test func aHigherReceiverHearsMore() {
+		let receiverLatitude = 47.6 + 10 / 6371 * 180 / .pi
+		let heights = [Double](repeating: 100, count: 201)
+		var raised = site()
+		raised.rxHeightMeters = 10
+		let handheld = LocalCoverage.predict(site: site(), heights: heights, receiverLatitude: receiverLatitude, stepKm: 0.05, end: 200)
+		let rooftop = LocalCoverage.predict(site: raised, heights: heights, receiverLatitude: receiverLatitude, stepKm: 0.05, end: 200)
+		#expect(rooftop > handheld + 3, "handheld \(handheld) dBm, rooftop \(rooftop) dBm")
+	}
+
 	@Test func rejectsAFrequencyOutsideP1812() async {
 		var outOfRange = site()
 		outOfRange.frequencyMHz = 7000

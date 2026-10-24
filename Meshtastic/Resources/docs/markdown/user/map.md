@@ -105,7 +105,7 @@ The form mirrors the Site Planner's own panels. The **Transmitter** and **Displa
 | Section | Fields |
 |---------|--------|
 | Site / Transmitter | Site name, latitude/longitude, transmit power (W), frequency (MHz), antenna height (m), antenna gain (dBi). Location shortcuts fill the coordinates from **My Location**, the selected **Node**, or the **Map Center**. |
-| Receiver | Receiver sensitivity (dBm) — the coverage threshold. |
+| Receiver | Receiver sensitivity (dBm) — the coverage threshold — and receiver height, how high above the ground the listening node is (1 m, a handheld, by default). |
 | Simulation Options | Maximum range, from 1 to 150 km. |
 | Display | Color palette for the coverage map (Mesh, Plasma, Viridis, CMRmap, Cool, Turbo, Jet). |
 

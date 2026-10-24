@@ -136,6 +136,7 @@ final class CoverageEstimateRunner: ObservableObject {
 			txPowerDBm: 10 * log10(params.txPowerWatts) + 30,
 			txGainDBi: params.txGainDBi,
 			txHeightMeters: params.txHeightMeters,
+			rxHeightMeters: params.rxHeightMeters,
 			radiusKm: params.maxRangeKm
 		)
 		let terrain = try await CoverageTerrainLoader.load(

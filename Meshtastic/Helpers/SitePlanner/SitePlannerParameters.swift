@@ -56,6 +56,8 @@ struct SitePlannerParameters: Equatable, Sendable {
 	// MARK: Receiver
 	/// Receiver sensitivity / coverage threshold in dBm. Planner default -130.
 	var rxSensitivityDBm: Double = -130
+	/// Receiver antenna height above ground in metres. Default 1, a handheld.
+	var rxHeightMeters: Double = 1
 
 	// MARK: Simulation Options
 	/// Maximum simulation range in km. Planner default 30; at most 150.
@@ -85,6 +87,7 @@ struct SitePlannerParameters: Equatable, Sendable {
 			&& Self.frequencyRange.contains(txFrequencyMHz)
 			&& txHeightMeters >= 0
 			&& Self.rxSensitivityRange.contains(rxSensitivityDBm)
+			&& rxHeightMeters >= 0
 			&& Self.maxRangeBounds.contains(maxRangeKm)
 	}
 }

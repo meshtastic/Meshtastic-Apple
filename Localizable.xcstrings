@@ -113853,6 +113853,9 @@
         }
       }
     },
+    "Receiver height" : {
+      "comment" : "Coverage estimate form: how high above the ground the receiving node's antenna is."
+    },
     "Recipient Ack: %@" : {
       "extractionState" : "stale",
       "localizations" : {
