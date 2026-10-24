@@ -1,7 +1,8 @@
 # Device models
 
 Builds real-size `.usdz` models of devices from the front-view SVGs on the
-flasher, for the visionOS app and for `public/models/devices/` in web-flasher.
+flasher, for the app (iPhone, iPad, Mac and Vision Pro) and for
+`public/models/devices/` in web-flasher.
 
 ```bash
 scripts/device-models/build.sh                 # build every spec, check, render
@@ -16,8 +17,9 @@ lists any vendor SVGs in the API that don't have a spec yet.
 
 Each model takes its name from its SVG (`thinknode_m1.svg` → `thinknode_m1.usdz`),
 so a device's `images` entry maps to its model by swapping the extension. The
-copyright notice is written into every file's layer metadata. The models are only
-bundled in the visionOS build (`EXCLUDED_SOURCE_FILE_NAMES` in `project.yml`).
+copyright notice is written into every file's layer metadata. The app bundles
+the models from `Meshtastic/Resources/DeviceModels` on iPhone, iPad, Mac and
+Vision Pro.
 
 ## Specs
 
