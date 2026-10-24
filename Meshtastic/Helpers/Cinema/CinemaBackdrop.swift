@@ -5,17 +5,19 @@
 //  Copyright(c) Garth Vander Houwen 10/23/26.
 //
 #if os(visionOS)
+import CinemaContent
 import OSLog
 import RealityKit
 import UIKit
 
 /// The world around the cinema screen: a large sphere showing the environment's image from the
-/// inside, unlit so the image reads as painted, and a floor under the viewer.
+/// inside, unlit so the image reads as painted. The image has its own floor, rendered from seated
+/// eye height.
 @MainActor
 enum CinemaBackdrop {
 	static let radius: Float = 50
 
-	/// The sphere and the floor for `environment`, parented to one entity.
+	/// The sphere for `environment`, under one entity.
 	static func make(_ environment: CinemaEnvironment) async -> Entity {
 		let root = Entity()
 		root.name = "CinemaBackdrop"
@@ -28,21 +30,21 @@ enum CinemaBackdrop {
 		sky.name = "Sky"
 		// Turned inside out so the faces point at the viewer in the middle.
 		sky.scale = [-1, 1, 1]
+		sky.orientation = simd_quatf(angle: environment.frontRotation, axis: [0, 1, 0])
 		root.addChild(sky)
 
-		let floor = ModelEntity(
-			mesh: .generateCylinder(height: 0.01, radius: 20),
-			materials: [UnlitMaterial(color: environment.floorColor)]
-		)
-		floor.name = "Floor"
-		floor.position = [0, -0.005, 0]
-		root.addChild(floor)
 		return root
 	}
 
-	/// The environment's image. Until the real images are in the app this is a gradient from the
-	/// environment's sky to its ground.
+	/// The environment's image, or a gradient from its sky to its ground if the image won't load.
 	private static func texture(for environment: CinemaEnvironment) async -> TextureResource? {
+		if let url = cinemaEnvironmentImageURL(named: environment.imageName) {
+			do {
+				return try await TextureResource(contentsOf: url, options: .init(semantic: .color))
+			} catch {
+				Logger.services.error("🎬 [Cinema] Couldn't load \(environment.imageName, privacy: .public): \(error.localizedDescription, privacy: .public)")
+			}
+		}
 		guard let image = placeholderImage(environment.placeholderColors) else { return nil }
 		do {
 			return try await TextureResource(image: image, options: .init(semantic: .color))

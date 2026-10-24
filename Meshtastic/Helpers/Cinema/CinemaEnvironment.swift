@@ -21,8 +21,24 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 		}
 	}
 
-	/// Colors for the stand-in backdrop shown until the environment's image is in the app: sky at
-	/// the top, the horizon, and the ground.
+	/// The environment's image in CinemaContent.
+	var imageName: String {
+		switch self {
+		case .sarTent: "sar_tent"
+		}
+	}
+
+	/// Turns the sphere so the part of the image left quiet for the window is in front. The
+	/// images are rendered with that part at their center, which a RealityKit sphere puts a
+	/// quarter turn to the right.
+	var frontRotation: Float {
+		switch self {
+		case .sarTent: .pi / 2
+		}
+	}
+
+	/// Colors for the backdrop shown if the environment's image can't be loaded: sky at the top,
+	/// the horizon, and the ground.
 	var placeholderColors: (sky: UIColor, horizon: UIColor, ground: UIColor) {
 		switch self {
 		case .sarTent:
@@ -33,8 +49,5 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 			)
 		}
 	}
-
-	/// The floor under the viewer, close to the image's ground so the seat doesn't float.
-	var floorColor: UIColor { placeholderColors.ground }
 }
 #endif
