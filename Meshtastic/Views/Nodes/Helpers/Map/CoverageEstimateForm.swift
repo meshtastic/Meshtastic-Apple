@@ -150,14 +150,17 @@ struct CoverageEstimateForm: View {
 				Image("custom.radio.tower")
 			}
 		} footer: {
-			VStack(alignment: .leading, spacing: 4) {
-				// Estimate is disabled for a frequency the model can't take; say why.
-				if !SitePlannerParameters.frequencyRange.contains(params.txFrequencyMHz) {
-					Text(LocalCoverageError.frequencyOutOfRange.localizedDescription)
-						.foregroundStyle(.red)
-				}
-				if groundElevation != nil {
-					Text("Ground elevation is read from downloaded offline map terrain.")
+			let frequencyOutOfRange = !SitePlannerParameters.frequencyRange.contains(params.txFrequencyMHz)
+			if frequencyOutOfRange || groundElevation != nil {
+				VStack(alignment: .leading, spacing: 4) {
+					// Estimate is disabled for a frequency the model can't take; say why.
+					if frequencyOutOfRange {
+						Text(LocalCoverageError.frequencyOutOfRange.localizedDescription)
+							.foregroundStyle(.red)
+					}
+					if groundElevation != nil {
+						Text("Ground elevation is read from downloaded offline map terrain.")
+					}
 				}
 			}
 		}
