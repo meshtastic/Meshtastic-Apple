@@ -218,6 +218,19 @@ final class SpatialMapModel {
 		applyArea()
 	}
 
+	private func clearArea() {
+		buildTask?.cancel()
+		buildKey = nil
+		isBuildingTerrain = false
+		terrainEntity = nil
+		textureSource = nil
+		placement = nil
+		fullCircle = nil
+		showingDownloadedMap = false
+		zoom = 1
+		zoomCenter = nil
+	}
+
 	/// A `newArea` starts zoomed out on its center; otherwise the zoom carries over.
 	private func setFullCircle(_ circle: SpatialCircle, newArea: Bool = false) {
 		fullCircle = circle
@@ -274,6 +287,9 @@ final class SpatialMapModel {
 		} else if let downloaded = downloadedMapCircle, downloaded != fullCircle {
 			setFullCircle(downloaded, newArea: true)
 			showingDownloadedMap = true
+		} else if downloadedMapCircle == nil, showingDownloadedMap {
+			// The downloaded map was deleted and there are still no positions: back to an empty table.
+			clearArea()
 		}
 		if let pending = pendingFocusNodeNum, nodesByNum[pending] != nil {
 			pendingFocusNodeNum = nil
