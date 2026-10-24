@@ -25,7 +25,7 @@ struct AboutMeshtastic: View {
 							.frame(width: 110, height: 130)
 							.padding(.trailing, 8)
 						VStack(alignment: .leading) {
-							Link("Need Hardware?", destination: URL(string: "https://meshtastic.org/#hardware")!)
+							Link("Need Hardware?", destination: URL(string: "https://meshtastic.org/hardware/")!)
 								.font(.title2)
 							Text("Meshtastic requires a compatible device. Our backers and partners offer ready-to-use hardware. Here are some of the most popular options.")
 								.font(.callout)
