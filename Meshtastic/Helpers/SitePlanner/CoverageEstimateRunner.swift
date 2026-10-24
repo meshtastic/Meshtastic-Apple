@@ -91,7 +91,8 @@ final class CoverageEstimateRunner: ObservableObject {
 		runID += 1
 		let run = runID
 		let estimate = estimate
-		task = Task { [weak self] in
+		// Utility, like the sweep's radials, so the terrain load and the sweep don't outrank the radio and the UI.
+		task = Task(priority: .utility) { [weak self] in
 			do {
 				let started = Date()
 				let geoJSON = try await estimate(params)
