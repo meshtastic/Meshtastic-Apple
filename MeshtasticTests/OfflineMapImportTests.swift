@@ -9,7 +9,7 @@ import Testing
 
 @testable import Meshtastic
 
-@Suite("Offline map import")
+@Suite("Offline map import", .serialized)
 struct OfflineMapImportTests {
 
 	@Test func rasterPMTilesCreatesImportMetadata() throws {
