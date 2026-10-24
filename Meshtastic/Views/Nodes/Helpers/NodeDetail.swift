@@ -279,7 +279,7 @@ struct NodeDetail: View {
 					Label {
 						Text("Long Name")
 					} icon: {
-						Image(systemName: "antenna.radiowaves.left.and.right")
+						Image(systemName: "person.wave.2")
 							.symbolRenderingMode(.hierarchical)
 					}
 					Spacer()
