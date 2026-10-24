@@ -118,7 +118,7 @@ Tap **Estimate**. A progress indicator appears while the coverage is computed; y
 A new estimate hides older estimates for the same node, so estimates for different nodes can be shown together. Estimates run from the map center or another location replace each other.
 
 > **Note — Terrain download**
-> The first estimate in an area downloads its terrain tiles, so it needs an internet connection; later estimates there use the cached terrain. The frequency must be between 30 and 6000 MHz, the range the model covers.
+> The first estimate in an area downloads its terrain tiles, so it needs an internet connection; later estimates there use the cached terrain. Terrain from an offline map region you've downloaded is used without the network. The frequency must be between 30 and 6000 MHz, the range the model covers. Terrain data © [Mapterhorn](https://mapterhorn.com/attribution).
 
 ### Coverage on the spatial map (Apple Vision Pro)
 

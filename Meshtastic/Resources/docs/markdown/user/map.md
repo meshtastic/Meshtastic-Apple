@@ -89,7 +89,7 @@ Custom GeoJSON overlays you've uploaded are listed here, each with its own toggl
 
 ## Coverage Estimate (Site Planner)
 
-Estimate the radio coverage of a transmitter site without leaving the app. The app drives the hosted [Meshtastic Site Planner](https://site.meshtastic.org) — a SPLAT!/ITM propagation simulator — and imports the resulting coverage map as a styled GeoJSON overlay.
+Estimate the radio coverage of a transmitter site without leaving the app. The app predicts received signal strength on the device with the ITU-R P.1812 propagation model over Mapterhorn terrain, the same engine the Android app uses, and adds the result to the map as a styled GeoJSON overlay. It uses the same inputs and color palettes as the [Meshtastic Site Planner](https://site.meshtastic.org), though its SPLAT!/ITM model won't match pixel for pixel.
 
 ### Starting an estimate
 
@@ -106,19 +106,19 @@ The form mirrors the Site Planner's own panels. The **Transmitter** and **Displa
 |---------|--------|
 | Site / Transmitter | Site name, latitude/longitude, transmit power (W), frequency (MHz), antenna height (m), antenna gain (dBi). Location shortcuts fill the coordinates from **My Location**, the selected **Node**, or the **Map Center**. |
 | Receiver | Receiver sensitivity (dBm) — the coverage threshold. |
-| Simulation Options | Maximum range (km) and a high-resolution terrain toggle (which caps the range at 70 km). |
+| Simulation Options | Maximum range, from 1 to 150 km. |
 | Display | Color palette for the coverage map (Mesh, Plasma, Viridis, CMRmap, Cool, Turbo, Jet). |
 
 **Prefill from the connected radio:** frequency is computed from the radio's region, modem preset, and channel; transmit power is converted from the device's dBm setting; and receiver sensitivity is mapped from the modem preset (for example LongFast → −139 dBm). Antenna gain and height aren't part of the device config, so they keep the planner's defaults. You can edit any value before running.
 
 ### Running it
 
-Tap **Estimate**. A progress indicator appears while the planner computes the coverage; you can **Cancel** at any time. When it finishes, the styled coverage map is added as a map overlay (in its dBm colors), the GeoJSON overlays layer is enabled, and the map recenters on the transmitter. The imported layer is managed like any other GeoJSON overlay in **Map Options**.
+Tap **Estimate**. A progress indicator appears while the coverage is computed; you can **Cancel** at any time. The result is drawn as six signal bands starting at the receiver sensitivity. When it finishes, the styled coverage map is added as a map overlay (in its dBm colors), the GeoJSON overlays layer is enabled, and the map recenters on the transmitter. The imported layer is managed like any other GeoJSON overlay in **Map Options**.
 
 A new estimate hides older estimates for the same node, so estimates for different nodes can be shown together. Estimates run from the map center or another location replace each other.
 
-> **Note — Requires a network connection**
-> The coverage simulation runs in the hosted Site Planner, so an internet connection is needed. Estimates time out after 45 seconds; on failure the flow ends cleanly without leaving a stuck spinner.
+> **Note — Terrain download**
+> The first estimate in an area downloads its terrain tiles, so it needs an internet connection; later estimates there use the cached terrain. Terrain from an offline map region you've downloaded is used without the network. The frequency must be between 30 and 6000 MHz, the range the model covers. Terrain data © [Mapterhorn](https://mapterhorn.com/attribution).
 
 ### Coverage on the spatial map (Apple Vision Pro)
 
