@@ -57,6 +57,17 @@ struct LocalCoverageTests {
 		}
 	}
 
+	@Test func receivedPowerMatchesTheITUReference() {
+		// The expected value is from the ITU reference implementation, github.com/eeveetza/Py1812 at 6c9061dd (the
+		// commit kp1812's own fixtures are pinned to): P1812.bt_loss for 906.875 MHz, p 50%, 10 km of flat 100 m
+		// ground at 50 m steps, 1 m clutter, inland zone, tx 2 m, rx 1 m, vertical, DN 45, N0 325, 500 km to the
+		// coast, gives Lb 156.4627 dB. Received power is 22 dBm + 2 dBi - Lb.
+		let receiverLatitude = 47.6 + 10 / 6371 * 180 / .pi
+		let heights = [Double](repeating: 100, count: 201)
+		let dbm = LocalCoverage.predict(site: site(), heights: heights, receiverLatitude: receiverLatitude, stepKm: 0.05, end: 200)
+		#expect(abs(dbm - -132.4627) < 0.1, "got \(dbm) dBm")
+	}
+
 	@Test func rejectsAFrequencyOutsideP1812() async {
 		var outOfRange = site()
 		outOfRange.frequencyMHz = 7000
