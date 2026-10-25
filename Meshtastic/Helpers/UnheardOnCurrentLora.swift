@@ -25,11 +25,13 @@ enum UnheardOnCurrentLora {
 
 /// Whether to show the aggregate for nodes the radio reports unheard on its current LoRa settings.
 ///
-/// Keep stores the count it was dismissed at, not a flag. The radio's settings can change from the
-/// device menu or the CLI without the app seeing it, so the offer comes back when the count grows.
+/// Offered while most of the list is unheard, which is what a settings change does all at once.
+/// Keep holds until that clears (the nodes are heard again, or the settings go back), so the next
+/// change offers again. The radio's settings can change from the device menu or the CLI without the
+/// app seeing it, which is why this follows the radio's answers rather than the app's own saves.
 enum UnheardOnCurrentLoraOffer {
 	static func key(forNode nodeNum: Int64) -> String {
-		"unheardOnCurrentLoraDismissedCount.\(nodeNum)"
+		"unheardOnCurrentLoraDismissed.\(nodeNum)"
 	}
 
 	/// Whether unheard nodes are most of the nodes the radio reported on. Nodes it never reported on
@@ -38,22 +40,28 @@ enum UnheardOnCurrentLoraOffer {
 		unheard > 0 && unheard * 2 >= reported
 	}
 
-	static func shouldOffer(count: Int, forNode nodeNum: Int64, store: UserDefaults = .standard) -> Bool {
-		count > store.integer(forKey: key(forNode: nodeNum))
+	static func isDismissed(forNode nodeNum: Int64, store: UserDefaults = .standard) -> Bool {
+		store.bool(forKey: key(forNode: nodeNum))
 	}
 
-	static func dismiss(count: Int, forNode nodeNum: Int64, store: UserDefaults = .standard) {
-		store.set(count, forKey: key(forNode: nodeNum))
+	static func dismiss(forNode nodeNum: Int64, store: UserDefaults = .standard) {
+		store.set(true, forKey: key(forNode: nodeNum))
 	}
 
-	/// Lowers a kept count when fewer nodes are unheard now, so the next rise offers again.
-	/// Without this, switching back to a preset the nodes are heard on and then away again
-	/// would need more unheard nodes than last time before offering.
-	static func lowerDismissal(toCount count: Int, forNode nodeNum: Int64, store: UserDefaults = .standard) {
-		let key = key(forNode: nodeNum)
-		if count < store.integer(forKey: key) {
-			store.set(count, forKey: key)
+	/// Most of the list is heard again, so the next time it isn't is a new change worth offering for.
+	static func clearDismissal(forNode nodeNum: Int64, store: UserDefaults = .standard) {
+		store.removeObject(forKey: key(forNode: nodeNum))
+	}
+
+	/// Earlier versions stored the count Keep was tapped at and hid the banner until the count went
+	/// above it. Carries that over once: still dismissed if the count hasn't gone above it.
+	static func migrateCountDismissal(currentCount: Int, forNode nodeNum: Int64, store: UserDefaults = .standard) {
+		let oldKey = "unheardOnCurrentLoraDismissedCount.\(nodeNum)"
+		guard store.object(forKey: oldKey) != nil else { return }
+		if currentCount <= store.integer(forKey: oldKey) {
+			dismiss(forNode: nodeNum, store: store)
 		}
+		store.removeObject(forKey: oldKey)
 	}
 }
 

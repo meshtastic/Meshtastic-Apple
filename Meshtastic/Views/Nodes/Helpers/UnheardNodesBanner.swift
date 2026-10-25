@@ -63,6 +63,8 @@ struct UnheardNodesBanner: View {
 	/// Of `unheardNodes`, the ones the radio reported unheard. Only these decide whether to offer:
 	/// most apps keep more nodes than the radio, so counting the rest would offer all the time.
 	@State private var reportedUnheardCount = 0
+	/// Mirrors the stored Keep, which the view can't observe, so tapping Keep hides the banner at once.
+	@State private var isDismissed = false
 	@State private var isConfirming = false
 	@State private var isRemoving = false
 	@State private var removalResult: String?
@@ -103,11 +105,12 @@ struct UnheardNodesBanner: View {
 		accessoryManager.reportsHeardOnCurrentLora
 			&& !accessoryManager.awaitingNodeDatabaseAfterLoRaChange
 			&& UnheardOnCurrentLoraOffer.isMostOfList(unheard: reportedUnheardCount, reported: radioNodeCount)
-			&& UnheardOnCurrentLoraOffer.shouldOffer(count: unheardNodes.count, forNode: connectedNodeNum)
+			&& !isDismissed
 	}
 
 	private func dismiss(connectedNodeNum: Int64) {
-		UnheardOnCurrentLoraOffer.dismiss(count: unheardNodes.count, forNode: connectedNodeNum)
+		UnheardOnCurrentLoraOffer.dismiss(forNode: connectedNodeNum)
+		isDismissed = true
 	}
 
 	private func content(connectedNodeNum: Int64) -> some View {
@@ -138,12 +141,9 @@ struct UnheardNodesBanner: View {
 				} else {
 					HStack(spacing: 12) {
 						Button(role: .destructive) {
-							// Count again so the confirmation matches what will be removed; the shown
-							// count can be older than the radio's latest answers.
-							refresh()
-							if !unheardNodes.isEmpty, shouldOffer(connectedNodeNum: connectedNodeNum) {
-								isConfirming = true
-							}
+							// No fresh count here: reading every node before the dialog made the tap
+							// lag, and the removal re-checks each node anyway.
+							isConfirming = true
 						} label: {
 							Text("Remove Them")
 								.frame(minWidth: 48, minHeight: 48)
@@ -153,7 +153,6 @@ struct UnheardNodesBanner: View {
 
 						Button {
 							dismiss(connectedNodeNum: connectedNodeNum)
-							refresh()
 						} label: {
 							Text("Keep")
 								.frame(minWidth: 48, minHeight: 48)
@@ -221,11 +220,14 @@ struct UnheardNodesBanner: View {
 		radioNodeCount = candidates.filter { !$0.viaMqtt && $0.heardOnCurrentLora != nil }.count
 		reportedUnheardCount = candidates.filter(\.isUnheardOnCurrentLora).count
 		unheardNodes = candidates.filter(isRemovable)
-		// Only once this session's node database is saved: before that, nodes the radio no longer
-		// has aren't counted yet, and a low early count would bring the offer back after every launch.
-		if accessoryManager.nodeDatabaseSavedAt != nil {
-			UnheardOnCurrentLoraOffer.lowerDismissal(toCount: unheardNodes.count, forNode: connectedNodeNum)
+		UnheardOnCurrentLoraOffer.migrateCountDismissal(currentCount: unheardNodes.count, forNode: connectedNodeNum)
+		// Only once this session's node database is saved: before that the answers are last
+		// session's, and clearing on them would bring the offer back after every launch.
+		if accessoryManager.nodeDatabaseSavedAt != nil,
+		   !UnheardOnCurrentLoraOffer.isMostOfList(unheard: reportedUnheardCount, reported: radioNodeCount) {
+			UnheardOnCurrentLoraOffer.clearDismissal(forNode: connectedNodeNum)
 		}
+		isDismissed = UnheardOnCurrentLoraOffer.isDismissed(forNode: connectedNodeNum)
 	}
 
 	private func removeUnheardNodes(connectedNodeNum: Int64) async {

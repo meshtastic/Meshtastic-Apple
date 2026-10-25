@@ -184,29 +184,37 @@ struct UnheardOnCurrentLoraTests {
 		#expect(!UnheardOnCurrentLoraOffer.isMostOfList(unheard: 0, reported: 0))
 	}
 
-	@Test func keepHidesTheOfferUntilTheCountGrows() throws {
+	@Test func keepHoldsUntilMostOfTheListIsHeardAgain() throws {
 		let store = try #require(UserDefaults(suiteName: "UnheardOnCurrentLoraTests.offer"))
 		store.removePersistentDomain(forName: "UnheardOnCurrentLoraTests.offer")
-		#expect(UnheardOnCurrentLoraOffer.shouldOffer(count: 40, forNode: 7, store: store))
-		UnheardOnCurrentLoraOffer.dismiss(count: 40, forNode: 7, store: store)
-		#expect(!UnheardOnCurrentLoraOffer.shouldOffer(count: 40, forNode: 7, store: store))
-		#expect(!UnheardOnCurrentLoraOffer.shouldOffer(count: 12, forNode: 7, store: store))
-		#expect(UnheardOnCurrentLoraOffer.shouldOffer(count: 41, forNode: 7, store: store))
+		#expect(!UnheardOnCurrentLoraOffer.isDismissed(forNode: 7, store: store))
+		UnheardOnCurrentLoraOffer.dismiss(forNode: 7, store: store)
+		#expect(UnheardOnCurrentLoraOffer.isDismissed(forNode: 7, store: store))
+		// Another radio keeps its own answer.
+		#expect(!UnheardOnCurrentLoraOffer.isDismissed(forNode: 8, store: store))
+
+		UnheardOnCurrentLoraOffer.clearDismissal(forNode: 7, store: store)
+		#expect(!UnheardOnCurrentLoraOffer.isDismissed(forNode: 7, store: store))
 	}
 
-	@Test func keepResetsOnceFewerNodesAreUnheard() throws {
-		let store = try #require(UserDefaults(suiteName: "UnheardOnCurrentLoraTests.lower"))
-		store.removePersistentDomain(forName: "UnheardOnCurrentLoraTests.lower")
-		UnheardOnCurrentLoraOffer.dismiss(count: 208, forNode: 7, store: store)
-		#expect(!UnheardOnCurrentLoraOffer.shouldOffer(count: 60, forNode: 7, store: store))
+	@Test func anOldKeepCarriesOverOnlyWhileItStillApplies() throws {
+		let store = try #require(UserDefaults(suiteName: "UnheardOnCurrentLoraTests.migrate"))
+		store.removePersistentDomain(forName: "UnheardOnCurrentLoraTests.migrate")
 
-		// Back on a preset the nodes are heard on.
-		UnheardOnCurrentLoraOffer.lowerDismissal(toCount: 0, forNode: 7, store: store)
-		#expect(UnheardOnCurrentLoraOffer.shouldOffer(count: 60, forNode: 7, store: store))
+		store.set(40, forKey: "unheardOnCurrentLoraDismissedCount.7")
+		UnheardOnCurrentLoraOffer.migrateCountDismissal(currentCount: 40, forNode: 7, store: store)
+		#expect(UnheardOnCurrentLoraOffer.isDismissed(forNode: 7, store: store))
+		#expect(store.object(forKey: "unheardOnCurrentLoraDismissedCount.7") == nil)
 
-		// A higher count never raises it.
-		UnheardOnCurrentLoraOffer.lowerDismissal(toCount: 60, forNode: 7, store: store)
-		#expect(UnheardOnCurrentLoraOffer.shouldOffer(count: 1, forNode: 7, store: store))
+		// The count already went past the old Keep, so it no longer applied.
+		store.set(40, forKey: "unheardOnCurrentLoraDismissedCount.8")
+		UnheardOnCurrentLoraOffer.migrateCountDismissal(currentCount: 41, forNode: 8, store: store)
+		#expect(!UnheardOnCurrentLoraOffer.isDismissed(forNode: 8, store: store))
+		#expect(store.object(forKey: "unheardOnCurrentLoraDismissedCount.8") == nil)
+
+		// Nothing stored: nothing changes.
+		UnheardOnCurrentLoraOffer.migrateCountDismissal(currentCount: 0, forNode: 9, store: store)
+		#expect(!UnheardOnCurrentLoraOffer.isDismissed(forNode: 9, store: store))
 	}
 
 	// MARK: LoRa change in progress

@@ -372,12 +372,12 @@
             "messages",
             "hardware",
             "shown",
+            "list",
             "links",
             "direct",
             "detail",
             "packets",
             "one",
-            "list",
             "channel",
             "see",
             "row",
@@ -387,7 +387,7 @@
             "link",
             "broadcasts"
         ],
-        "charCount": 15563
+        "charCount": 15638
     },
     {
         "id": "settings",
