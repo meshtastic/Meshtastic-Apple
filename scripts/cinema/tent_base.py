@@ -253,13 +253,21 @@ def write_anchors(out, camera):
     print("wrote", path)
 
 
+# How far below the eye the front wall image reaches, in meters at the wall. The floor line is
+# only 22 degrees below the eye, and a cinema window level with the eye already reaches 19 degrees
+# down, so the image goes on down over the floor in front of the wall to 35.5 degrees. A window
+# lowered by 15 degrees still sits on wall or floor, not on the panorama behind.
+FRONT_WALL_BELOW_EYE = 2.0
+
+
 def front_wall(eye):
     """The front wall as the app draws it: a flat image of the wall at its own distance, in front of
     the panorama, so the app window can sit in it at the window's depth. `bounds` is the part of the
     wall's plane the image covers and `outline` the wall's shape in it, both in meters relative to
-    the camera (+X right, +Y up). The gable makes the shape a pentagon."""
+    the camera (+X right, +Y up). The gable makes the shape a pentagon. Below the floor line it
+    carries on over the floor, as seen from the seat (see FRONT_WALL_BELOW_EYE)."""
     distance = FRONT_Y - eye.y
-    below, eave, ridge = -eye.z, WALL_HEIGHT - eye.z, RIDGE_HEIGHT - eye.z
+    below, eave, ridge = -FRONT_WALL_BELOW_EYE, WALL_HEIGHT - eye.z, RIDGE_HEIGHT - eye.z
     x = HALF_WIDTH - eye.x
     return {
         "distance": round(distance, 4),
