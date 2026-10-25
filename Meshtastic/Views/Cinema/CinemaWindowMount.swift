@@ -50,6 +50,9 @@ final class CinemaWindowMount {
 	private var lastMove: TimeInterval = 0
 	/// Where the window was when the tent was last turned to it.
 	private var fitted: Placement?
+	/// Whether that fit knew where the head was. Head tracking starts after the window is first
+	/// placed, so the first fit usually guesses and is redone once it can.
+	private var fittedToHead = false
 	private var turn: Turn?
 
 	private let session = ARKitSession()
@@ -130,7 +133,8 @@ final class CinemaWindowMount {
 			return
 		}
 		followWindow(target, deltaTime: deltaTime)
-		if fitted.map({ !target.isNear($0) }) ?? true {
+		let moved = fitted.map { !target.isNear($0) } ?? true
+		if moved || (!fittedToHead && headPosition() != nil) {
 			if fitted == nil || Self.turnsLive {
 				fit(stage, to: target, now: now, animated: false)
 			} else if now - lastMove >= Self.settleTime {
@@ -168,7 +172,8 @@ final class CinemaWindowMount {
 	/// Turns the stage so the painted front wall faces the window, centers it on the eye, and puts
 	/// the wall image just behind the window, shrunk about the eye so it covers the painted wall.
 	private func fit(_ stage: Entity, to target: Placement, now: TimeInterval, animated: Bool) {
-		let eye = headPosition() ?? defaultEye
+		let head = headPosition()
+		let eye = head ?? defaultEye
 		var forward = -target.normal
 		forward.y = 0
 		guard simd_length(forward) > 0.01 else { return }
@@ -188,6 +193,7 @@ final class CinemaWindowMount {
 			stage.orientation = rotation
 		}
 		fitted = target
+		fittedToHead = head != nil
 		Logger.services.debug("🎬 [Cinema] Front wall fitted \(depth, privacy: .public) m out, eye at \(eye.y, privacy: .public) m")
 	}
 
