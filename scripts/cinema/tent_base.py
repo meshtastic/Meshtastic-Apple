@@ -6,8 +6,8 @@
 #
 #  The parts of a cinema tent that every tent environment shares: the canvas shell with its clear
 #  vinyl windows, the floor, the string lights, the Meshtastic branding, the dusk forest outside,
-#  the seated camera, the render settings, and the anchors file the app places its live panels
-#  from. An environment script (sar_tent.py) imports this, adds its own furnishings, and calls
+#  the seated camera, the render settings, the front wall image, and the anchors file the app
+#  places its live panels and the front wall from. An environment script (sar_tent.py) imports this, adds its own furnishings, and calls
 #  render(). See README.md.
 #
 #  Blender's +Y is the image's center: the front wall, left plain for the app window. +X is the
@@ -222,7 +222,8 @@ def anchor(board_id, obj, width, height):
 
 def write_anchors(out, camera):
     """Writes each board's place relative to the camera, in the camera's own axes, which are
-    RealityKit's: +X right, +Y up, -Z toward the image's center."""
+    RealityKit's: +X right, +Y up, -Z toward the image's center. Also writes where the front wall
+    image sits (see front_wall())."""
     bpy.context.view_layer.update()
     to_camera = camera.matrix_world.to_3x3().normalized().inverted()
     eye = camera.matrix_world.translation
@@ -244,11 +245,62 @@ def write_anchors(out, camera):
                    "-Z toward the image's center), relative to the camera the image was rendered from.",
         "eyeHeight": round(eye.z, 4),
         "boards": boards,
+        "frontWall": front_wall(eye),
     }
     with open(path, "w") as file:
         json.dump(data, file, indent=2, sort_keys=True)
         file.write("\n")
     print("wrote", path)
+
+
+def front_wall(eye):
+    """The front wall as the app draws it: a flat image of the wall at its own distance, in front of
+    the panorama, so the app window can sit in it at the window's depth. `bounds` is the part of the
+    wall's plane the image covers and `outline` the wall's shape in it, both in meters relative to
+    the camera (+X right, +Y up). The gable makes the shape a pentagon."""
+    distance = FRONT_Y - eye.y
+    below, eave, ridge = -eye.z, WALL_HEIGHT - eye.z, RIDGE_HEIGHT - eye.z
+    x = HALF_WIDTH - eye.x
+    return {
+        "distance": round(distance, 4),
+        "bounds": [round(-x, 4), round(below, 4), round(x, 4), round(ridge, 4)],
+        "outline": [[round(a, 4), round(b, 4)] for a, b in [(-x, below), (x, below), (x, eave), (0, ridge), (-x, eave)]],
+    }
+
+
+def render_front_wall(options, eye):
+    """Renders the front wall on its own, as seen from the seat: a perspective view cropped to the
+    wall's bounds. Whatever stands between the seat and the wall (the corner tables, the last bulbs)
+    lands where the panorama has it, so the image lines up with the panorama from the seat. Same
+    scene, lights and settings as the panorama, so it is lit the same."""
+    wall = front_wall(eye)
+    left, bottom, right, top = wall["bounds"]
+    width_m, height_m = right - left, top - bottom
+    # About 1.7 times the panorama's detail at the middle of the wall.
+    pixels_per_meter = options["width"] / 10.24
+    data = bpy.data.cameras.new("FrontWall")
+    data.type = "PERSP"
+    data.sensor_fit = "HORIZONTAL"
+    data.sensor_width = 36
+    # The wall's width fills the frame at its distance; shifts move the frame to the wall's middle.
+    data.lens = data.sensor_width * wall["distance"] / width_m
+    data.shift_x = (left + right) / 2 / width_m
+    data.shift_y = (bottom + top) / 2 / width_m
+    camera = bpy.data.objects.new("FrontWall", data)
+    camera.location = eye
+    camera.rotation_euler = (math.pi / 2, 0, 0)
+    link(camera)
+    scene = bpy.context.scene
+    scene.camera = camera
+    scene.render.resolution_x = round(width_m * pixels_per_meter)
+    scene.render.resolution_y = round(height_m * pixels_per_meter)
+    out = os.path.splitext(options["out"])[0] + "_front.png"
+    scene.render.filepath = out
+    if os.path.exists(out):
+        os.remove(out)
+    if bpy.ops.render.render(write_still=True) != {"FINISHED"} or not os.path.exists(out):
+        raise SystemExit("render failed: " + out)
+    print("rendered", out)
 
 
 def rounded(v):
@@ -822,5 +874,6 @@ def render(furnish, layout=None):
     if bpy.ops.render.render(write_still=True) != {"FINISHED"} or not os.path.exists(options["out"]):
         raise SystemExit("render failed: " + options["out"])
     print("rendered", options["out"])
-    # Only once the image exists, so the anchors never describe an image that wasn't made.
+    render_front_wall(options, camera.matrix_world.translation.copy())
+    # Only once the images exist, so the anchors never describe an image that wasn't made.
     write_anchors(options["out"], camera)
