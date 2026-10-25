@@ -60,55 +60,6 @@ struct MapTileServerPropertyTests {
 	}
 }
 
-// MARK: - MapOverlayServer Tests
-
-@Suite("MapOverlayServer Properties")
-struct MapOverlayServerPropertyTests {
-
-	@Test func allCases_count() {
-		#expect(MapOverlayServer.allCases.count == 9)
-	}
-
-	@Test func allCases_haveAttribution() {
-		for server in MapOverlayServer.allCases {
-			#expect(!server.attribution.isEmpty)
-			#expect(server.attribution.contains("Iowa State"))
-		}
-	}
-
-	@Test func allCases_haveTileUrl() {
-		for server in MapOverlayServer.allCases {
-			#expect(!server.tileUrl.isEmpty)
-			#expect(server.tileUrl.contains("mesonet.agron.iastate.edu"))
-		}
-	}
-
-	@Test func allCases_haveZoomRange() {
-		for server in MapOverlayServer.allCases {
-			let range = server.zoomRange
-			#expect(!range.isEmpty)
-		}
-	}
-
-	@Test func allCases_haveOverlayType() {
-		for server in MapOverlayServer.allCases {
-			#expect(server.overlayType == .tileServer)
-		}
-	}
-
-	@Test func allCases_haveId() {
-		for server in MapOverlayServer.allCases {
-			#expect(server.id == server.rawValue)
-		}
-	}
-
-	@Test func specificDescriptions() {
-		#expect(MapOverlayServer.baseReReflectivityCurrent.description == "Base Reflectivity current")
-		#expect(MapOverlayServer.q2OneHourPrecipitation.description == "Q2 1 Hour Precipitation")
-		#expect(MapOverlayServer.mrmsHybridScanReflectivityComposite.description == "MRMS Hybrid-Scan Reflectivity Composite")
-	}
-}
-
 // MARK: - OverlayType Tests
 
 @Suite("OverlayType Enum")

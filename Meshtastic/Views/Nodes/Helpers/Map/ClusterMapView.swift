@@ -932,9 +932,11 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 				renderer.lineJoin = .round
 				return renderer
 			}
-			// Raster tile overlays (hillshade) — MapKit's tile renderer, no styling.
+			// Raster tile overlays (hillshade, weather radar) — MapKit's tile renderer.
 			if let tileOverlay = overlay as? MKTileOverlay {
-				return MKTileOverlayRenderer(tileOverlay: tileOverlay)
+				let renderer = MKTileOverlayRenderer(tileOverlay: tileOverlay)
+				if tileOverlay is WeatherRadarTileOverlay { renderer.alpha = WeatherRadar.opacity }
+				return renderer
 			}
 			// An imported KML ground overlay: an image between four edges.
 			if overlay is GroundImageOverlay {

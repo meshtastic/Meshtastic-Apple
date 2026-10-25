@@ -110317,6 +110317,9 @@
         }
       }
     },
+    "Precipitation from NOAA radar, lower 48 states only. Needs a network connection." : {
+
+    },
     "Precise Location" : {
       "localizations" : {
         "da" : {
@@ -154497,6 +154500,9 @@
           }
         }
       }
+    },
+    "Weather Radar" : {
+
     },
     "Web view showing the %@ documentation" : {
       "comment" : "VoiceOver hint for the documentation web view",

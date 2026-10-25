@@ -47,6 +47,9 @@ struct MeshMapMK: View {
 	/// Contour generation + the shared TerrainStore behind hillshade and contours (spec 018).
 	@StateObject private var terrainContours = TerrainContourProvider()
 	@State private var hillshadeOverlay: HillshadeTileOverlay?
+	@AppStorage("meshMapShowWeatherRadar") private var showWeatherRadar = false
+	/// A new overlay each refresh period, so MapKit fetches the newest radar.
+	@State private var weatherRadarOverlay: WeatherRadarTileOverlay?
 	/// Hide nodes whose latest position is reduced-precision (the ones drawn with a precision circle).
 	@AppStorage("enableMapPreciseLocationsOnly") private var preciseLocationsOnly = false
 	/// Map overlay configs
@@ -810,6 +813,18 @@ struct MeshMapMK: View {
 			.onChange(of: showHillshade) {
 				rebuildHillshadeOverlay()
 			}
+			.task(id: isMapVisible && showWeatherRadar) {
+				// Fetch the radar again each refresh period while it's on screen.
+				guard isMapVisible, showWeatherRadar, WeatherRadar.isOfferedHere() else {
+					weatherRadarOverlay = nil
+					return
+				}
+				while !Task.isCancelled {
+					weatherRadarOverlay = WeatherRadarTileOverlay(refreshPeriod: WeatherRadar.refreshPeriod())
+					let next = Double(WeatherRadar.refreshPeriod() + 1) * WeatherRadar.refreshInterval
+					try? await Task.sleep(for: .seconds(max(1, next - Date.now.timeIntervalSince1970)))
+				}
+			}
 			.onChange(of: showContours) {
 				updateContoursIfNeeded()
 			}
@@ -1270,6 +1285,12 @@ struct MeshMapMK: View {
 									return result
 								}
 
+								/// NOAA radar over the lower 48, while it's on, offered, and there's a network to fetch it.
+								private var weatherRadarOverlays: [ClusterMapOverlay] {
+									guard showWeatherRadar, offlineMapConnectivity.isNetworkAvailable, let weatherRadarOverlay else { return [] }
+									return [ClusterMapOverlay(id: "weather-radar-\(ObjectIdentifier(weatherRadarOverlay).hashValue)", overlay: weatherRadarOverlay, style: ClusterMapOverlayStyle(level: .aboveRoads))]
+								}
+
 								/// Re-point the terrain store at downloaded terrain, then refresh dependents.
 								private func refreshTerrainSources() {
 									let sources = offlineMapManager.terrainSources()
@@ -1314,6 +1335,7 @@ struct MeshMapMK: View {
 									result += geoJSONOverlays
 									result += geofenceOverlays
 									result += terrainOverlays
+									result += weatherRadarOverlays
 									return result
 								}
 

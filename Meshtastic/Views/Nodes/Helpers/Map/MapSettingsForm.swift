@@ -25,6 +25,7 @@ struct MapSettingsForm: View {
 	@AppStorage("enableOfflineTiles") private var enableOfflineTiles = false
 	@AppStorage("meshMapShowHillshade") private var showHillshade = false
 	@AppStorage("meshMapShowContours") private var showContours = false
+	@AppStorage("meshMapShowWeatherRadar") private var showWeatherRadar = false
 	/// Terrain toggles are disabled until at least one region has terrain data.
 	/// When the last terrain region disappears, the stored values reset so a
 	/// disabled toggle is never stuck in the on position.
@@ -41,6 +42,8 @@ struct MapSettingsForm: View {
 	@AppStorage("enableMapPreciseLocationsOnly") private var preciseLocationsOnly = false
 	@ObservedObject private var mapDataManager = MapDataManager.shared
 	@ObservedObject private var offlineMapManager = OfflineMapManager.shared
+	/// Whether the phone is where the radar has data, checked when the form opens.
+	@State private var isWeatherRadarOffered = false
 	@Binding var traffic: Bool
 	@Binding var pointsOfInterest: Bool
 	@Binding var mapLayer: MapLayer
@@ -146,6 +149,20 @@ struct MapSettingsForm: View {
 					.onTapGesture {
 						self.pointsOfInterest.toggle()
 						UserDefaults.enableMapPointsOfInterest = self.pointsOfInterest
+					}
+					if meshMap, isWeatherRadarOffered {
+						Toggle(isOn: $showWeatherRadar) {
+							Label {
+								VStack(alignment: .leading) {
+									Text("Weather Radar")
+									Text("Precipitation from NOAA radar, lower 48 states only. Needs a network connection.")
+										.font(.caption)
+										.foregroundColor(.secondary)
+								}
+							} icon: {
+								Image(systemName: "cloud.rain")
+							}
+						}
 					}
 				}
 
@@ -291,6 +308,7 @@ struct MapSettingsForm: View {
 		}
 		.onAppear {
 			resetTerraintogglesIfOrphaned()
+			isWeatherRadarOffered = WeatherRadar.isOfferedHere()
 			// Initialize map data manager
 			mapDataManager.initialize()
 			offlineMapManager.loadIfNeeded()
