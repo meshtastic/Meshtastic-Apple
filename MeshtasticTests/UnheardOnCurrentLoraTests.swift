@@ -197,6 +197,26 @@ struct UnheardOnCurrentLoraTests {
 		#expect(!UnheardOnCurrentLoraOffer.isDismissed(forNode: 7, store: store))
 	}
 
+	@Test func anOldKeepCarriesOverOnlyWhileItStillApplies() throws {
+		let store = try #require(UserDefaults(suiteName: "UnheardOnCurrentLoraTests.migrate"))
+		store.removePersistentDomain(forName: "UnheardOnCurrentLoraTests.migrate")
+
+		store.set(40, forKey: "unheardOnCurrentLoraDismissedCount.7")
+		UnheardOnCurrentLoraOffer.migrateCountDismissal(currentCount: 40, forNode: 7, store: store)
+		#expect(UnheardOnCurrentLoraOffer.isDismissed(forNode: 7, store: store))
+		#expect(store.object(forKey: "unheardOnCurrentLoraDismissedCount.7") == nil)
+
+		// The count already went past the old Keep, so it no longer applied.
+		store.set(40, forKey: "unheardOnCurrentLoraDismissedCount.8")
+		UnheardOnCurrentLoraOffer.migrateCountDismissal(currentCount: 41, forNode: 8, store: store)
+		#expect(!UnheardOnCurrentLoraOffer.isDismissed(forNode: 8, store: store))
+		#expect(store.object(forKey: "unheardOnCurrentLoraDismissedCount.8") == nil)
+
+		// Nothing stored: nothing changes.
+		UnheardOnCurrentLoraOffer.migrateCountDismissal(currentCount: 0, forNode: 9, store: store)
+		#expect(!UnheardOnCurrentLoraOffer.isDismissed(forNode: 9, store: store))
+	}
+
 	// MARK: LoRa change in progress
 
 	@Test func aBurstOfChangesWaitsForTheNewestDownload() {

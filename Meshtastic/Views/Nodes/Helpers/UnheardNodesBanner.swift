@@ -220,6 +220,7 @@ struct UnheardNodesBanner: View {
 		radioNodeCount = candidates.filter { !$0.viaMqtt && $0.heardOnCurrentLora != nil }.count
 		reportedUnheardCount = candidates.filter(\.isUnheardOnCurrentLora).count
 		unheardNodes = candidates.filter(isRemovable)
+		UnheardOnCurrentLoraOffer.migrateCountDismissal(currentCount: unheardNodes.count, forNode: connectedNodeNum)
 		// Only once this session's node database is saved: before that the answers are last
 		// session's, and clearing on them would bring the offer back after every launch.
 		if accessoryManager.nodeDatabaseSavedAt != nil,

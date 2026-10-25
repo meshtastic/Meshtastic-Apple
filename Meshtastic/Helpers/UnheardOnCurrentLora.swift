@@ -52,6 +52,17 @@ enum UnheardOnCurrentLoraOffer {
 	static func clearDismissal(forNode nodeNum: Int64, store: UserDefaults = .standard) {
 		store.removeObject(forKey: key(forNode: nodeNum))
 	}
+
+	/// Earlier versions stored the count Keep was tapped at and hid the banner until the count went
+	/// above it. Carries that over once: still dismissed if the count hasn't gone above it.
+	static func migrateCountDismissal(currentCount: Int, forNode nodeNum: Int64, store: UserDefaults = .standard) {
+		let oldKey = "unheardOnCurrentLoraDismissedCount.\(nodeNum)"
+		guard store.object(forKey: oldKey) != nil else { return }
+		if currentCount <= store.integer(forKey: oldKey) {
+			dismiss(forNode: nodeNum, store: store)
+		}
+		store.removeObject(forKey: oldKey)
+	}
 }
 
 /// Whether the node database asked for after the latest app-initiated LoRa change has been saved.
