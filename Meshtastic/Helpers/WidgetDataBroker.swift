@@ -110,8 +110,12 @@ final class WidgetDataBroker {
 			guard !Task.isCancelled, let self else { return }
 			self.pendingSince = nil
 			// Mid node database download, every node changes what the widgets show. Keep the
-			// triggers; the save at the end of the download refreshes again and builds once.
-			if AccessoryManager.shared.nodeDatabaseDumpInProgress { return }
+			// triggers and look again shortly; the download's save usually refreshes first, and
+			// this still builds if that save fails.
+			if AccessoryManager.shared.nodeDatabaseDumpInProgress {
+				self.retry(after: 5)
+				return
+			}
 			await self.buildInFlight?.value
 			guard !Task.isCancelled else { return }
 			let triggers = self.pendingTriggers
@@ -119,6 +123,15 @@ final class WidgetDataBroker {
 			let build = Task { @MainActor in await self.buildAndStore(triggers) }
 			self.buildInFlight = build
 			await build.value
+		}
+	}
+
+	/// Runs the debounce again for the triggers still pending, after `delay` seconds.
+	private func retry(after delay: TimeInterval) {
+		Task { @MainActor [weak self] in
+			try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+			guard let self, let trigger = self.pendingTriggers.first else { return }
+			self.refresh(trigger)
 		}
 	}
 
@@ -154,8 +167,13 @@ final class WidgetDataBroker {
 		let data = await Task.detached(priority: .utility) {
 			Self.readDatabase(container: container, radioNum: radioNum, needsStoredStats: needsStoredStats)
 		}.value
-		// The store was reset while reading; what was read belongs to the old one.
-		guard generation == PersistenceController.shared.containerGeneration else { return }
+		// The store was reset while reading; what was read belongs to the old one. Build again
+		// from the new store.
+		guard generation == PersistenceController.shared.containerGeneration else {
+			pendingTriggers.formUnion(triggers)
+			retry(after: 0)
+			return
+		}
 
 		// Fall back to the newest stored LocalStats telemetry when none has
 		// arrived in this session yet (fresh connect). One that arrived while
