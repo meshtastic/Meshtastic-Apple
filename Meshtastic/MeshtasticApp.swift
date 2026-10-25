@@ -400,6 +400,7 @@ struct MeshtasticAppleApp: App {
 					SpatialMapWindow()
 						.id(appState.databaseResetID)
 				}
+				.reportsCinemaVolume(to: appState.cinemaWindow)
 				.modelContainer(persistenceController.container)
 				.environmentObject(appState)
 				.environmentObject(accessoryManager)

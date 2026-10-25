@@ -29,7 +29,7 @@ struct CinemaSpace: View {
 	@State private var backdrop: Entity?
 	@State private var panelGrabber = Self.makePanelGrabber()
 	/// The point the image was rendered from. Until the window is placed it sits at the seated eye
-	/// height, turned so the image's center is in front; then the mount puts it at the viewer's eye,
+	/// height, turned so the image's center is in front; then the mount keeps it on the viewer's eye,
 	/// turned so the front wall faces the window. The backdrop, the boards and the front wall hang
 	/// from it, so one turn moves them all.
 	@State private var stage = Entity()
@@ -39,8 +39,6 @@ struct CinemaSpace: View {
 	@State private var boards = BoardPanels()
 
 	var body: some View {
-		// Read here so a new window pose runs the update closure.
-		let windowPose = appState.cinemaWindow.pose
 		RealityView { content, attachments in
 			world.name = "Cinema"
 			content.add(world)
@@ -53,19 +51,17 @@ struct CinemaSpace: View {
 				panelGrabber.position = [0.45, 0.85, -0.7]
 				world.addChild(panelGrabber)
 			}
+			setSpaceConversion(content)
 			// A panel's size is only known once SwiftUI has laid it out, so boards are fitted on
-			// the first frame that has it.
+			// the first frame that has it. The window and volume poses are read here every frame
+			// rather than in body, so dragging the window doesn't redraw this view.
+			let tracker = appState.cinemaWindow
 			fitBoards = content.subscribe(to: SceneEvents.Update.self) { event in
 				placeBoards()
-				mount.update(deltaTime: event.deltaTime, stage: stage)
+				mount.update(deltaTime: event.deltaTime, stage: stage, window: tracker.pose, volume: tracker.volume)
 			}
 		} update: { content, attachments in
-			if let windowPose {
-				let corners = windowPose.corners.map { content.convert($0, from: .immersiveSpace, to: .scene) }
-				mount.setWindow(corners: corners, widthPoints: windowPose.size.width)
-			} else {
-				mount.clearWindow()
-			}
+			setSpaceConversion(content)
 			if let panel = attachments.entity(for: Attachments.panel) {
 				seat(panel)
 			}
@@ -89,8 +85,11 @@ struct CinemaSpace: View {
 		}
 		.task(id: environment) {
 			anchors = CinemaAnchors.load(for: environment)
-			stage.position = [0, anchors?.eyeHeight ?? CinemaAnchors.seatedEyeHeight, 0]
-			stage.orientation = simd_quatf(angle: environment.frontRotation, axis: [0, 1, 0])
+			// Once the tent is turned to the window it stays put while the new backdrop loads.
+			if !mount.isFitted {
+				stage.position = [0, anchors?.eyeHeight ?? CinemaAnchors.seatedEyeHeight, 0]
+				stage.orientation = simd_quatf(angle: environment.frontRotation, axis: [0, 1, 0])
+			}
 			boards.fitted.removeAll()
 			let next = await CinemaBackdrop.make(environment)
 			backdrop?.removeFromParent()
@@ -164,6 +163,14 @@ struct CinemaSpace: View {
 			panel.orientation = anchor.orientation
 			boards.fitted.insert(board)
 		}
+	}
+
+	/// Gives the mount the window and volume poses' conversion from `.immersiveSpace` to the scene.
+	private func setSpaceConversion(_ content: RealityViewContent) {
+		func scene(_ x: Double, _ y: Double, _ z: Double) -> SIMD3<Float> {
+			content.convert(Point3D(x: x, y: y, z: z), from: .immersiveSpace, to: .scene)
+		}
+		mount.setSpaceConversion(origin: scene(0, 0, 0), x: scene(1000, 0, 0), y: scene(0, 1000, 0), z: scene(0, 0, 1000))
 	}
 
 	/// The panel sits just above the grab bar, however tall it is.
