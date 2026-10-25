@@ -180,7 +180,7 @@ struct MqttTopicDiscoveryTests {
 		#expect(Discovery.ladder(regionTopic: "msh/US", regionName: "United States", state: nil, city: "Seattle").count == 1)
 	}
 
-	@Test func ladderKeepsLatinLetters() {
+	@Test func ladderKeepsLettersInAnyScript() {
 		let bayern = Discovery.ladder(regionTopic: "msh/EU_868", regionName: "EU 868", state: "Bayern", city: "München")
 		#expect(bayern.last?.topic == "msh/EU_868/Bayern/münchen")
 		#expect(Discovery.segment(from: "St. John's", lowercased: true) == "stjohns")
@@ -196,7 +196,9 @@ struct MqttTopicDiscoveryTests {
 		#expect(trimmed.count == 3)
 		#expect(trimmed.last?.topic.utf8.count == 31)
 		let tokyo = Discovery.ladder(regionTopic: "msh/JP", regionName: "Japan", state: "東京都", city: "渋谷区")
-		#expect(tokyo.map(\.level) == [.region])
+		#expect(tokyo.map(\.level) == [.region, .state, .city])
+		#expect(tokyo.last?.topic == "msh/JP/東京都/渋谷区")
+		#expect(Discovery.segment(from: "!?.", lowercased: true) == nil)
 	}
 
 	// MARK: Tally

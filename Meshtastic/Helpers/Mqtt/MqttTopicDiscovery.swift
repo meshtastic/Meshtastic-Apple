@@ -207,20 +207,14 @@ enum MqttTopicDiscovery {
 		return segment.isEmpty ? nil : base + "/" + segment
 	}
 
-	/// The place name as the local mesh would write it: Latin-script letters kept as they are (æ, ø, å,
-	/// ü, ł), digits, "_" and "-" kept, anything else dropped, lowercased when asked. States keep the
-	/// geocoder's case ("WA"); cities follow the community's lowercase convention. nil when nothing is
-	/// left: a name in a non-Latin script gets no rung rather than a romanization the local mesh would
-	/// not use.
-	/// "St. John's" -> "stjohns", "Coeur d'Alene" -> "coeurdalene", "Ørsta" -> "ørsta", "東京都" -> nil.
+	/// The place name as the local mesh would write it: letters and digits in any script kept as
+	/// they are (æ, ø, å, ü, 東京), "_" and "-" kept, anything else dropped, lowercased when asked.
+	/// States keep the geocoder's case ("WA"); cities follow the community's lowercase convention.
+	/// nil when nothing is left.
+	/// "St. John's" -> "stjohns", "Coeur d'Alene" -> "coeurdalene", "Ørsta" -> "ørsta", "東京都" -> "東京都".
 	static func segment(from place: String, lowercased: Bool) -> String? {
 		let kept = place.precomposedStringWithCanonicalMapping.unicodeScalars.filter { scalar in
-			switch scalar.value {
-			case 0x30...0x39, 0x41...0x5A, 0x61...0x7A, 0x5F, 0x2D: return true
-			// Latin-1 Supplement letters, Latin Extended-A and -B, Latin Extended Additional.
-			case 0xC0...0x24F, 0x1E00...0x1EFF: return scalar.properties.isAlphabetic
-			default: return false
-			}
+			scalar.properties.isAlphabetic || scalar.properties.numericType != nil || scalar == "_" || scalar == "-"
 		}
 		let result = String(String.UnicodeScalarView(kept))
 		if result.isEmpty { return nil }
