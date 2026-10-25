@@ -15,7 +15,7 @@ enum MqttRootTopic {
 	static let byteCap = 31
 
 	enum Problem: Equatable, CaseIterable {
-		case empty, whitespace, nonASCII, wildcard, leadingSlash, trailingSlash, emptySegment, endsWithVersion, tooLong
+		case empty, whitespace, wildcard, leadingSlash, trailingSlash, emptySegment, endsWithVersion, tooLong
 
 		var message: String {
 			switch self {
@@ -23,8 +23,6 @@ enum MqttRootTopic {
 				return String(localized: "Enter a topic.", comment: "MQTT root topic rule")
 			case .whitespace:
 				return String(localized: "Topics cannot contain spaces or control characters.", comment: "MQTT root topic rule")
-			case .nonASCII:
-				return String(localized: "Topics must use ASCII characters.", comment: "MQTT root topic rule")
 			case .wildcard:
 				return String(localized: "Topics cannot contain + or #.", comment: "MQTT root topic rule")
 			case .leadingSlash:
@@ -36,7 +34,7 @@ enum MqttRootTopic {
 			case .endsWithVersion:
 				return String(localized: "Topics cannot end with /2.", comment: "MQTT root topic rule")
 			case .tooLong:
-				return String(localized: "Topics are limited to 31 characters.", comment: "MQTT root topic rule")
+				return String(localized: "Topics are limited to 31 bytes (æ, ø and å use two).", comment: "MQTT root topic rule")
 			}
 		}
 	}
@@ -58,8 +56,7 @@ enum MqttRootTopic {
 	static func problem(in root: String) -> Problem? {
 		if root.isEmpty { return .empty }
 		let scalars = root.unicodeScalars
-		if scalars.contains(where: { $0.value <= 0x20 || $0.value == 0x7F }) { return .whitespace }
-		if scalars.contains(where: { $0.value > 0x7E }) { return .nonASCII }
+		if scalars.contains(where: { $0.value <= 0x20 || (0x7F...0x9F).contains($0.value) }) { return .whitespace }
 		if root.contains("+") || root.contains("#") { return .wildcard }
 		if root.hasPrefix("/") { return .leadingSlash }
 		if root.hasSuffix("/") { return .trailingSlash }

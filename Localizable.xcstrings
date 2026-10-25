@@ -144939,16 +144939,8 @@
         }
       }
     },
-    "Topics are limited to 31 characters." : {
-      "comment" : "MQTT root topic rule",
-      "localizations" : {
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "主題最多 31 個字元。"
-          }
-        }
-      }
+    "Topics are limited to 31 bytes (æ, ø and å use two)." : {
+      "comment" : "MQTT root topic rule"
     },
     "Topics cannot contain + or #." : {
       "comment" : "MQTT root topic rule",
@@ -145012,17 +145004,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "主題不能以斜線開頭。"
-          }
-        }
-      }
-    },
-    "Topics must use ASCII characters." : {
-      "comment" : "MQTT root topic rule",
-      "localizations" : {
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "主題必須使用 ASCII 字元。"
           }
         }
       }
@@ -148900,16 +148881,8 @@
         }
       }
     },
-    "Up to 31 ASCII characters, no leading or trailing slash, no + or #." : {
-      "comment" : "Topic finder: custom topic footer",
-      "localizations" : {
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "最多 31 個 ASCII 字元，開頭與結尾不可為斜線，不可包含 + 或 #。"
-          }
-        }
-      }
+    "Up to 31 bytes, no leading or trailing slash, no + or #." : {
+      "comment" : "Topic finder: custom topic footer"
     },
     "update" : {
       "comment" : "Search keyword",

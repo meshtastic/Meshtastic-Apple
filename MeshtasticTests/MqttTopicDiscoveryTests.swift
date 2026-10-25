@@ -105,7 +105,10 @@ struct MqttTopicDiscoveryTests {
 	@Test func rootProblems() {
 		#expect(MqttRootTopic.problem(in: "") == .empty)
 		#expect(MqttRootTopic.problem(in: "msh US") == .whitespace)
-		#expect(MqttRootTopic.problem(in: "msh/Zürich") == .nonASCII)
+		#expect(MqttRootTopic.problem(in: "msh/Zürich") == nil)
+		#expect(MqttRootTopic.problem(in: "msh/Norge/Møre og Romsdal".replacingOccurrences(of: " ", with: "_")) == nil)
+		// 16 two-byte letters plus "msh/" is 36 bytes, though only 20 characters.
+		#expect(MqttRootTopic.problem(in: "msh/" + String(repeating: "Ø", count: 16)) == .tooLong)
 		#expect(MqttRootTopic.problem(in: "msh/#") == .wildcard)
 		#expect(MqttRootTopic.problem(in: "msh/+") == .wildcard)
 		#expect(MqttRootTopic.problem(in: "/msh") == .leadingSlash)
