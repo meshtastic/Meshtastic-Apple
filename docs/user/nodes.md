@@ -104,7 +104,7 @@ Changing the radio's preset, region or frequency slot moves it to a different ch
 
 A node the radio has not heard shows **Not heard on current LoRa** under its last-heard time. That is separate from online and offline: a node can be online and still not heard on these settings. Nodes known only over MQTT are never marked, because they don't reach your radio over LoRa. Switching back to the earlier settings brings back the earlier answers on their own.
 
-When most of the list is in that state, the Nodes tab shows a notice such as **87 nodes not heard on your current LoRa settings**. Choose **Remove Them** to open a confirmation that includes the number of nodes, such as **Remove 1 node?** or **Remove 10 nodes?**. Confirming removes those nodes from this app and the connected radio, and keeps favorites and the connected node. A node returns if it is heard again. Choose **Keep** to dismiss the notice until more nodes join that count. Nothing is removed unless you choose to.
+When most of the list is in that state, the Nodes tab shows a notice such as **87 nodes not heard on your current LoRa settings**. Choose **Remove Them** to open a confirmation that includes the number of nodes, such as **Remove 1 node?** or **Remove 10 nodes?**. Confirming removes those nodes from this app and the connected radio, and keeps favorites and the connected node. A node returns if it is heard again. Choose **Keep** to dismiss the notice until most of the list is heard again; it comes back the next time a change leaves most of the list unheard. Nothing is removed unless you choose to.
 
 Older firmware doesn't report this, so the marker and the notice don't appear.
 
