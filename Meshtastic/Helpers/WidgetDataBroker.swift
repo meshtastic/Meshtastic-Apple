@@ -41,6 +41,9 @@ final class WidgetDataBroker {
 
 	private var cancellables = Set<AnyCancellable>()
 	private var pendingRefresh: Task<Void, Never>?
+	/// The build in progress. Builds run one at a time so an older one can't finish last and
+	/// overwrite a newer snapshot.
+	private var buildInFlight: Task<Void, Never>?
 	/// Triggers that arrived during the current debounce window. The reload plan
 	/// is the union over all of them — keeping only the newest trigger dropped
 	/// the earlier triggers' reload kinds.
@@ -106,22 +109,40 @@ final class WidgetDataBroker {
 			try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
 			guard !Task.isCancelled, let self else { return }
 			self.pendingSince = nil
+			// Mid node database download, every node changes what the widgets show. Keep the
+			// triggers and look again shortly; the download's save usually refreshes first, and
+			// this still builds if that save fails.
+			if AccessoryManager.shared.nodeDatabaseDumpInProgress {
+				self.retry(after: 5)
+				return
+			}
+			await self.buildInFlight?.value
+			guard !Task.isCancelled else { return }
 			let triggers = self.pendingTriggers
 			self.pendingTriggers = []
-			self.buildAndStore(triggers)
+			let build = Task { @MainActor in await self.buildAndStore(triggers) }
+			self.buildInFlight = build
+			await build.value
+		}
+	}
+
+	/// Runs the debounce again for the triggers still pending, after `delay` seconds.
+	private func retry(after delay: TimeInterval) {
+		Task { @MainActor [weak self] in
+			try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+			guard let self, let trigger = self.pendingTriggers.first else { return }
+			self.refresh(trigger)
 		}
 	}
 
 	// MARK: - Snapshot build
 
-	private func buildAndStore(_ triggers: Set<Trigger>) {
+	private func buildAndStore(_ triggers: Set<Trigger>) async {
 		// Before first unlock the store is provisional; skip and let the next
 		// trigger rebuild. Class C file writes would fail here anyway.
 		guard !PersistenceController.shared.isProvisionalPendingFirstUnlock else { return }
 
-		let context = PersistenceController.shared.context
 		let accessoryManager = AccessoryManager.shared
-
 		let connectionState = Self.connectionState(for: accessoryManager)
 		// Radio identity must survive disconnects and relaunches so channel
 		// names, DM partners and the radio's own name stay right while offline:
@@ -131,62 +152,52 @@ final class WidgetDataBroker {
 		if let liveRadioNum { lastKnownRadioNum = liveRadioNum }
 		let persistedNum = Int64(UserDefaults.preferredPeripheralNum)
 		let radioNum = liveRadioNum ?? lastKnownRadioNum ?? (persistedNum > 0 ? persistedNum : nil)
-		let radioNode = radioNum.flatMap { getNodeInfo(id: $0, context: context) }
 
 		// Drop stats that belong to a different radio than the one resolved now.
 		if let statsNode = latestLocalStatsNodeNum, statsNode != radioNum {
 			latestLocalStats = nil
 			latestLocalStatsNodeNum = nil
 		}
-		// Fall back to the newest stored LocalStats telemetry when none has
-		// arrived in this session yet (fresh connect). Fetched with the
-		// backfill-aware helper, never the telemetries inverse relationship —
-		// ingest deliberately leaves it nil and faulting it loads every row
-		// (#2485), and rows from pre-nodeNum builds are only reachable through
-		// the helper until the backfill completes.
-		if latestLocalStats == nil, let radioNum {
-			var statsDescriptor = FetchDescriptor<TelemetryEntity>(
-				predicate: TelemetryEntity.predicate(forNode: radioNum, metricsType: 4),
-				sortBy: [SortDescriptor(\.time, order: .reverse)]
-			)
-			statsDescriptor.fetchLimit = 1
-			// Rows with no timestamp (pre-dating current ingest) are skipped —
-			// a .distantPast statsAt renders as a multi-millennium age.
-			if let stored = try? context.fetch(statsDescriptor).first, let statsTime = stored.time {
-				latestLocalStats = LocalStatsSnapshot(
-					statsAt: statsTime,
-					uptimeSeconds: stored.uptimeSeconds,
-					channelUtilization: stored.channelUtilization,
-					airUtilTx: stored.airUtilTx,
-					packetsSent: stored.numPacketsTx,
-					packetsReceived: stored.numPacketsRx,
-					packetsReceivedBad: stored.numPacketsRxBad,
-					packetsReceivedDupe: stored.numRxDupe,
-					packetsRelayed: stored.numTxRelay,
-					packetsRelayCanceled: stored.numTxRelayCanceled,
-					nodesOnline: stored.numOnlineNodes,
-					nodesTotal: stored.numTotalNodes
-				)
-				latestLocalStatsNodeNum = radioNum
-			}
+
+		// The reads run on a context of their own, off the main thread: they only read, and
+		// they return plain values, so nothing here touches a model object afterwards.
+		let container = PersistenceController.shared.container
+		let generation = PersistenceController.shared.containerGeneration
+		let needsStoredStats = latestLocalStats == nil
+		let data = await Task.detached(priority: .utility) {
+			Self.readDatabase(container: container, radioNum: radioNum, needsStoredStats: needsStoredStats)
+		}.value
+		// The store was reset while reading; what was read belongs to the old one. Build again
+		// from the new store.
+		guard generation == PersistenceController.shared.containerGeneration else {
+			pendingTriggers.formUnion(triggers)
+			retry(after: 0)
+			return
 		}
 
-		let preset = (radioNode?.loRaConfig?.modemPreset).flatMap { ModemPresets(rawValue: Int($0)) }
-		let nodes = fetchNodeSnapshots(context: context, preset: preset, radioNum: radioNum)
-		let totalNodeCount = (try? context.fetchCount(FetchDescriptor<NodeInfoEntity>())) ?? nodes.count
-		let (unreadChannels, unreadDMs) = fetchUnreadCounts(context: context)
-		let recent = fetchRecentMessages(context: context, radioNum: radioNum, radioNode: radioNode)
+		// Fall back to the newest stored LocalStats telemetry when none has
+		// arrived in this session yet (fresh connect). One that arrived while
+		// reading is newer and wins.
+		if latestLocalStats == nil, let stored = data.storedLocalStats, let radioNum {
+			latestLocalStats = stored
+			latestLocalStatsNodeNum = radioNum
+		}
+
+		let nodes = data.nodes
+		let unreadChannels = data.unreadChannels
+		let unreadDMs = data.unreadDMs
+		let recent = data.recentMessages
 
 		let snapshot = WidgetSnapshot(
 			generatedAt: .now,
 			connectionState: connectionState,
 			radioNodeNum: radioNum,
-			radioLongName: radioNode?.user?.longName,
-			radioShortName: radioNode?.user?.shortName,
-			radioBatteryLevel: radioNode?.latestDeviceMetrics?.batteryLevel,
+			radioLongName: data.radioLongName,
+			radioShortName: data.radioShortName,
+			radioBatteryLevel: data.radioBatteryLevel,
 			localStats: latestLocalStats,
 			nodes: nodes,
-			totalNodeCount: totalNodeCount,
+			totalNodeCount: data.totalNodeCount,
 			unreadChannelMessages: unreadChannels,
 			unreadDirectMessages: unreadDMs,
 			recentMessages: recent
@@ -209,13 +220,72 @@ final class WidgetDataBroker {
 		reloadKinds(for: triggers, connectionChanged: connectionChanged, messagesChanged: messagesChanged)
 	}
 
+	/// What the snapshot needs from the database, as plain values.
+	private struct DatabaseRead: Sendable {
+		var radioLongName: String?
+		var radioShortName: String?
+		var radioBatteryLevel: Int32?
+		var storedLocalStats: LocalStatsSnapshot?
+		var nodes: [NodeSnapshot] = []
+		var totalNodeCount = 0
+		var unreadChannels = 0
+		var unreadDMs = 0
+		var recentMessages: [MessageSnapshot] = []
+	}
+
+	nonisolated private static func readDatabase(container: ModelContainer, radioNum: Int64?, needsStoredStats: Bool) -> DatabaseRead {
+		let context = ModelContext(container)
+		var read = DatabaseRead()
+		let radioNode = radioNum.flatMap { getNodeInfo(id: $0, context: context) }
+		read.radioLongName = radioNode?.user?.longName
+		read.radioShortName = radioNode?.user?.shortName
+		read.radioBatteryLevel = radioNode?.latestDeviceMetrics?.batteryLevel
+
+		// Fetched with the backfill-aware helper, never the telemetries inverse
+		// relationship — ingest deliberately leaves it nil and faulting it loads
+		// every row (#2485), and rows from pre-nodeNum builds are only reachable
+		// through the helper until the backfill completes.
+		if needsStoredStats, let radioNum {
+			var statsDescriptor = FetchDescriptor<TelemetryEntity>(
+				predicate: TelemetryEntity.predicate(forNode: radioNum, metricsType: 4),
+				sortBy: [SortDescriptor(\.time, order: .reverse)]
+			)
+			statsDescriptor.fetchLimit = 1
+			// Rows with no timestamp (pre-dating current ingest) are skipped —
+			// a .distantPast statsAt renders as a multi-millennium age.
+			if let stored = try? context.fetch(statsDescriptor).first, let statsTime = stored.time {
+				read.storedLocalStats = LocalStatsSnapshot(
+					statsAt: statsTime,
+					uptimeSeconds: stored.uptimeSeconds,
+					channelUtilization: stored.channelUtilization,
+					airUtilTx: stored.airUtilTx,
+					packetsSent: stored.numPacketsTx,
+					packetsReceived: stored.numPacketsRx,
+					packetsReceivedBad: stored.numPacketsRxBad,
+					packetsReceivedDupe: stored.numRxDupe,
+					packetsRelayed: stored.numTxRelay,
+					packetsRelayCanceled: stored.numTxRelayCanceled,
+					nodesOnline: stored.numOnlineNodes,
+					nodesTotal: stored.numTotalNodes
+				)
+			}
+		}
+
+		let preset = (radioNode?.loRaConfig?.modemPreset).flatMap { ModemPresets(rawValue: Int($0)) }
+		read.nodes = fetchNodeSnapshots(context: context, preset: preset, radioNum: radioNum)
+		read.totalNodeCount = (try? context.fetchCount(FetchDescriptor<NodeInfoEntity>())) ?? read.nodes.count
+		(read.unreadChannels, read.unreadDMs) = fetchUnreadCounts(context: context)
+		read.recentMessages = fetchRecentMessages(context: context, radioNum: radioNum, radioNode: radioNode)
+		return read
+	}
+
 	private static func connectionState(for manager: AccessoryManager) -> WidgetConnectionState {
 		if manager.isConnected { return .connected }
 		if manager.isConnecting { return .connecting }
 		return .disconnected
 	}
 
-	private func fetchNodeSnapshots(context: ModelContext, preset: ModemPresets?, radioNum: Int64?) -> [NodeSnapshot] {
+	nonisolated private static func fetchNodeSnapshots(context: ModelContext, preset: ModemPresets?, radioNum: Int64?) -> [NodeSnapshot] {
 		// Two fetches: favorites by the scalar flag (so an offline favorite is
 		// never lost to the recency window), then the most recently heard.
 		// No `user != nil` in either predicate — optional-relationship nil
@@ -276,17 +346,19 @@ final class WidgetDataBroker {
 
 	/// Same fetch-and-split approach as AppState.refreshBadgeCount — comparing an
 	/// optional relationship to nil inside a #Predicate crashes SwiftData on iOS 26.
-	private func fetchUnreadCounts(context: ModelContext) -> (channels: Int, dms: Int) {
-		let descriptor = FetchDescriptor<MessageEntity>(
+	nonisolated private static func fetchUnreadCounts(context: ModelContext) -> (channels: Int, dms: Int) {
+		var descriptor = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate<MessageEntity> { $0.isEmoji == false && $0.read == false }
 		)
+		// Loaded with the messages, rather than one at a time below.
+		descriptor.relationshipKeyPathsForPrefetching = [\.toUser]
 		let unread = (try? context.fetch(descriptor)) ?? []
 		let channels = unread.filter { $0.toUser == nil }.count
 		let dms = unread.filter { $0.toUser != nil && !$0.admin }.count
 		return (channels, dms)
 	}
 
-	private func fetchRecentMessages(context: ModelContext, radioNum: Int64?, radioNode: NodeInfoEntity?) -> [MessageSnapshot] {
+	nonisolated private static func fetchRecentMessages(context: ModelContext, radioNum: Int64?, radioNode: NodeInfoEntity?) -> [MessageSnapshot] {
 		var descriptor = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate<MessageEntity> { $0.isEmoji == false && $0.admin == false },
 			sortBy: [SortDescriptor(\.messageTimestamp, order: .reverse)]
