@@ -65,12 +65,12 @@ struct BatteryCompact: View {
 				}
 				// Battery text label
 				if isPluggedIn {
-					Text("PWD")
+					Text("PWD", comment: "Battery label in the node list: short for \"powered\", the node runs on external power. Keep it as short as the English.")
 						.foregroundStyle(.secondary)
 						.font(font)
 						.accessibilityHidden(true)
 				} else if isCharging {
-					Text("CHG")
+					Text("CHG", comment: "Battery label in the node list: short for \"charging\". Keep it as short as the English.")
 						.foregroundStyle(.secondary)
 						.font(font)
 						.accessibilityHidden(true)
