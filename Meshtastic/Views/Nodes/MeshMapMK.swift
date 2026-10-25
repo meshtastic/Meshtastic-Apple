@@ -50,6 +50,7 @@ struct MeshMapMK: View {
 	@AppStorage("meshMapShowWeatherRadar") private var showWeatherRadar = false
 	/// A new overlay each refresh period, so MapKit fetches the newest radar.
 	@State private var weatherRadarOverlay: WeatherRadarTileOverlay?
+	@ObservedObject private var weatherRadarAvailability = WeatherRadarAvailability.shared
 	/// Hide nodes whose latest position is reduced-precision (the ones drawn with a precision circle).
 	@AppStorage("enableMapPreciseLocationsOnly") private var preciseLocationsOnly = false
 	/// Map overlay configs
@@ -815,12 +816,16 @@ struct MeshMapMK: View {
 			}
 			.task(id: isMapVisible && showWeatherRadar) {
 				// Fetch the radar again each refresh period while it's on screen.
-				guard isMapVisible, showWeatherRadar, WeatherRadar.isOfferedHere() else {
+				guard isMapVisible, showWeatherRadar else {
 					weatherRadarOverlay = nil
 					return
 				}
 				while !Task.isCancelled {
-					weatherRadarOverlay = WeatherRadarTileOverlay(refreshPeriod: WeatherRadar.refreshPeriod())
+					// Checked each time, so the radar follows the phone in and out of coverage.
+					await weatherRadarAvailability.refresh()
+					weatherRadarOverlay = weatherRadarAvailability.isOffered
+						? WeatherRadarTileOverlay(refreshPeriod: WeatherRadar.refreshPeriod())
+						: nil
 					let next = Double(WeatherRadar.refreshPeriod() + 1) * WeatherRadar.refreshInterval
 					try? await Task.sleep(for: .seconds(max(1, next - Date.now.timeIntervalSince1970)))
 				}

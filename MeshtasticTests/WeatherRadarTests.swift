@@ -43,21 +43,24 @@ struct WeatherRadarTests {
 		#expect(WeatherRadar.refreshPeriod(at: start) + 1 == WeatherRadar.refreshPeriod(at: start.addingTimeInterval(300)))
 	}
 
-	@Test func offeredOnlyWhereTheRadarHasData() {
+	@Test func offeredOnlyInTheLowerFortyEight() {
 		let seattle = CLLocationCoordinate2D(latitude: 47.61, longitude: -122.33)
 		let vancouver = CLLocationCoordinate2D(latitude: 49.28, longitude: -123.12)
-		let mexicoCity = CLLocationCoordinate2D(latitude: 19.43, longitude: -99.13)
+		let tijuana = CLLocationCoordinate2D(latitude: 32.51, longitude: -117.04)
 		let honolulu = CLLocationCoordinate2D(latitude: 21.31, longitude: -157.86)
-		let berlin = CLLocationCoordinate2D(latitude: 52.52, longitude: 13.40)
-		#expect(WeatherRadar.isOffered(location: seattle, phoneRegion: .germany))
-		#expect(!WeatherRadar.isOffered(location: mexicoCity, phoneRegion: .unitedStates))
-		#expect(!WeatherRadar.isOffered(location: honolulu, phoneRegion: .unitedStates))
-		#expect(!WeatherRadar.isOffered(location: berlin, phoneRegion: .unitedStates))
-		// The box is rough: southern British Columbia falls inside it.
-		#expect(WeatherRadar.isOffered(location: vancouver, phoneRegion: .canada))
+		let anchorage = CLLocationCoordinate2D(latitude: 61.22, longitude: -149.90)
+		#expect(WeatherRadar.isOffered(location: seattle, countryCode: "US", phoneRegion: .germany))
+		// Inside the box, but not the US.
+		#expect(!WeatherRadar.isOffered(location: vancouver, countryCode: "CA", phoneRegion: .unitedStates))
+		#expect(!WeatherRadar.isOffered(location: tijuana, countryCode: "MX", phoneRegion: .unitedStates))
+		// The US, but not the lower 48.
+		#expect(!WeatherRadar.isOffered(location: honolulu, countryCode: "US", phoneRegion: .unitedStates))
+		#expect(!WeatherRadar.isOffered(location: anchorage, countryCode: "US", phoneRegion: .unitedStates))
+		// No country answer yet.
+		#expect(!WeatherRadar.isOffered(location: seattle, countryCode: nil, phoneRegion: .unitedStates))
 
 		// No location: the phone's region decides.
-		#expect(WeatherRadar.isOffered(location: nil, phoneRegion: .unitedStates))
-		#expect(!WeatherRadar.isOffered(location: nil, phoneRegion: .canada))
+		#expect(WeatherRadar.isOffered(location: nil, countryCode: nil, phoneRegion: .unitedStates))
+		#expect(!WeatherRadar.isOffered(location: nil, countryCode: nil, phoneRegion: .canada))
 	}
 }

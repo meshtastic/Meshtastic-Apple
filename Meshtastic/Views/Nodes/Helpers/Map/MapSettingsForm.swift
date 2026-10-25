@@ -25,7 +25,6 @@ struct MapSettingsForm: View {
 	@AppStorage("enableOfflineTiles") private var enableOfflineTiles = false
 	@AppStorage("meshMapShowHillshade") private var showHillshade = false
 	@AppStorage("meshMapShowContours") private var showContours = false
-	@AppStorage("meshMapShowWeatherRadar") private var showWeatherRadar = false
 	/// Terrain toggles are disabled until at least one region has terrain data.
 	/// When the last terrain region disappears, the stored values reset so a
 	/// disabled toggle is never stuck in the on position.
@@ -42,8 +41,6 @@ struct MapSettingsForm: View {
 	@AppStorage("enableMapPreciseLocationsOnly") private var preciseLocationsOnly = false
 	@ObservedObject private var mapDataManager = MapDataManager.shared
 	@ObservedObject private var offlineMapManager = OfflineMapManager.shared
-	/// Whether the phone is where the radar has data, checked when the form opens.
-	@State private var isWeatherRadarOffered = false
 	@Binding var traffic: Bool
 	@Binding var pointsOfInterest: Bool
 	@Binding var mapLayer: MapLayer
@@ -150,19 +147,8 @@ struct MapSettingsForm: View {
 						self.pointsOfInterest.toggle()
 						UserDefaults.enableMapPointsOfInterest = self.pointsOfInterest
 					}
-					if meshMap, isWeatherRadarOffered {
-						Toggle(isOn: $showWeatherRadar) {
-							Label {
-								VStack(alignment: .leading) {
-									Text("Weather Radar")
-									Text("Precipitation from NOAA radar, lower 48 states only. Needs a network connection.")
-										.font(.caption)
-										.foregroundColor(.secondary)
-								}
-							} icon: {
-								Image(systemName: "cloud.rain")
-							}
-						}
+					if meshMap {
+						WeatherRadarToggle()
 					}
 				}
 
@@ -306,9 +292,12 @@ struct MapSettingsForm: View {
 		.onChange(of: offlineMapManager.regions) {
 			resetTerraintogglesIfOrphaned()
 		}
+		// Here, not on the toggle: the toggle isn't in the form until this says it can be.
+		.task {
+			await WeatherRadarAvailability.shared.refresh()
+		}
 		.onAppear {
 			resetTerraintogglesIfOrphaned()
-			isWeatherRadarOffered = WeatherRadar.isOfferedHere()
 			// Initialize map data manager
 			mapDataManager.initialize()
 			offlineMapManager.loadIfNeeded()
@@ -488,6 +477,29 @@ struct MapSettingsForm: View {
 		enabledOverlayConfigs: .constant(Set<UUID>())
 	)
 	.environmentObject(AccessoryManager.shared)
+}
+
+/// Turns on NOAA radar over the map, shown only where the radar has data.
+private struct WeatherRadarToggle: View {
+	@AppStorage("meshMapShowWeatherRadar") private var showWeatherRadar = false
+	@ObservedObject private var availability = WeatherRadarAvailability.shared
+
+	var body: some View {
+		if availability.isOffered {
+			Toggle(isOn: $showWeatherRadar) {
+				Label {
+					VStack(alignment: .leading) {
+						Text("Weather Radar")
+						Text("Precipitation from NOAA radar, lower 48 states only. Needs a network connection.")
+							.font(.caption)
+							.foregroundColor(.secondary)
+					}
+				} icon: {
+					Image(systemName: "cloud.rain")
+				}
+			}
+		}
+	}
 }
 
 /// Turns on the lines between nodes that hear each other directly.

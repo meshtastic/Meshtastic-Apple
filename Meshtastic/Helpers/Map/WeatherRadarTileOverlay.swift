@@ -23,22 +23,51 @@ enum WeatherRadar {
 		Int(date.timeIntervalSince1970 / refreshInterval)
 	}
 
-	/// Roughly the lower 48 states, the area the radar layer covers.
+	/// A box around the lower 48 states. It keeps out Alaska, Hawaii and Puerto Rico, which this
+	/// radar layer doesn't cover, but takes in parts of Canada and Mexico, so the country decides too.
 	static func covers(_ coordinate: CLLocationCoordinate2D) -> Bool {
 		(24.0...50.0).contains(coordinate.latitude) && (-125.0 ... -66.0).contains(coordinate.longitude)
 	}
 
-	/// Offered only where it has data: when the phone is inside the radar's coverage, or, with no
-	/// location to go on, when the phone is set to the US. The radio's LoRa region doesn't decide it;
-	/// the US region is used across the Americas.
-	static func isOffered(location: CLLocationCoordinate2D?, phoneRegion: Locale.Region? = Locale.current.region) -> Bool {
-		if let location { return covers(location) }
-		return phoneRegion == .unitedStates
+	/// Offered only in the lower 48: a location in the box whose country is the US, or, with no
+	/// location to go on, a phone set to the US. The radio's LoRa region doesn't decide it; the US
+	/// region is used across the Americas.
+	static func isOffered(location: CLLocationCoordinate2D?, countryCode: String?, phoneRegion: Locale.Region?) -> Bool {
+		guard let location else { return phoneRegion == .unitedStates }
+		return covers(location) && countryCode == "US"
 	}
+}
 
-	/// `isOffered` for the phone's current location.
-	@MainActor static func isOfferedHere() -> Bool {
-		isOffered(location: LocationsHandler.currentLocation)
+/// Whether to offer the radar where the phone is now. The country comes from reverse geocoding,
+/// done again only after the phone moves, so checking on every refresh is cheap.
+@MainActor
+final class WeatherRadarAvailability: ObservableObject {
+	static let shared = WeatherRadarAvailability()
+
+	@Published private(set) var isOffered = false
+	private var checkedLocation: CLLocation?
+	/// How far the phone moves before the country is looked up again.
+	private static let recheckDistance: CLLocationDistance = 10_000
+
+	private init() {}
+
+	func refresh() async {
+		guard let location = LocationsHandler.shared.manager.location else {
+			checkedLocation = nil
+			isOffered = WeatherRadar.isOffered(location: nil, countryCode: nil, phoneRegion: Locale.current.region)
+			return
+		}
+		if let checkedLocation, checkedLocation.distance(from: location) < Self.recheckDistance { return }
+		guard WeatherRadar.covers(location.coordinate) else {
+			checkedLocation = location
+			isOffered = false
+			return
+		}
+		// No answer (offline, or the geocoder is busy): keep what was decided before and try again
+		// on the next refresh.
+		guard let countryCode = try? await CLGeocoder().reverseGeocodeLocation(location).first?.isoCountryCode else { return }
+		checkedLocation = location
+		isOffered = WeatherRadar.isOffered(location: location.coordinate, countryCode: countryCode, phoneRegion: Locale.current.region)
 	}
 }
 
