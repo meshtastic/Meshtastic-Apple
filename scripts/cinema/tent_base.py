@@ -79,9 +79,9 @@ class Layout:
     ])
     # The banner hangs on the back wall: center x, center z, width, height.
     banner: tuple = (0.0, 1.62, 2.0, 1.0)
-    # Chirpy, on the right wall's front bay beside the tripod by the door, clear of the node as seen
-    # from the seat.
-    poster: WallSpot = field(default_factory=lambda: WallSpot(side=1, y=1.8, z=1.45, width=0.5, height=0.7))
+    # Chirpy, on the right wall's front bay beside the tripod by the door, centered as seen from the
+    # seat in the open wall between the node and the front corner.
+    poster: WallSpot = field(default_factory=lambda: WallSpot(side=1, y=2.05, z=1.45, width=0.5, height=0.7))
     # Big enough that its small top line reads from the seat. In the middle of the left wall's
     # middle bay.
     plaque: WallSpot = field(default_factory=lambda: WallSpot(side=-1, y=0.2, z=1.42, width=1.26, height=0.62))
