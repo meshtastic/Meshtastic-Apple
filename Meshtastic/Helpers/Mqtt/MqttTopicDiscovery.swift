@@ -15,7 +15,7 @@ enum MqttRootTopic {
 	static let byteCap = 31
 
 	enum Problem: Equatable, CaseIterable {
-		case empty, whitespace, nonASCII, wildcard, leadingSlash, trailingSlash, emptySegment, endsWithVersion, tooLong
+		case empty, whitespace, wildcard, leadingSlash, trailingSlash, emptySegment, endsWithVersion, tooLong
 
 		var message: String {
 			switch self {
@@ -23,8 +23,6 @@ enum MqttRootTopic {
 				return String(localized: "Enter a topic.", comment: "MQTT root topic rule")
 			case .whitespace:
 				return String(localized: "Topics cannot contain spaces or control characters.", comment: "MQTT root topic rule")
-			case .nonASCII:
-				return String(localized: "Topics must use ASCII characters.", comment: "MQTT root topic rule")
 			case .wildcard:
 				return String(localized: "Topics cannot contain + or #.", comment: "MQTT root topic rule")
 			case .leadingSlash:
@@ -36,7 +34,7 @@ enum MqttRootTopic {
 			case .endsWithVersion:
 				return String(localized: "Topics cannot end with /2.", comment: "MQTT root topic rule")
 			case .tooLong:
-				return String(localized: "Topics are limited to 31 characters.", comment: "MQTT root topic rule")
+				return String(localized: "Topics are limited to 31 bytes (æ, ø and å use two).", comment: "MQTT root topic rule")
 			}
 		}
 	}
@@ -58,8 +56,8 @@ enum MqttRootTopic {
 	static func problem(in root: String) -> Problem? {
 		if root.isEmpty { return .empty }
 		let scalars = root.unicodeScalars
-		if scalars.contains(where: { $0.value <= 0x20 || $0.value == 0x7F }) { return .whitespace }
-		if scalars.contains(where: { $0.value > 0x7E }) { return .nonASCII }
+		// Any kind of space, control or invisible character, not only the ASCII ones.
+		if scalars.contains(where: { $0.properties.isWhitespace || [.control, .format].contains($0.properties.generalCategory) }) { return .whitespace }
 		if root.contains("+") || root.contains("#") { return .wildcard }
 		if root.hasPrefix("/") { return .leadingSlash }
 		if root.hasSuffix("/") { return .trailingSlash }
@@ -209,19 +207,14 @@ enum MqttTopicDiscovery {
 		return segment.isEmpty ? nil : base + "/" + segment
 	}
 
-	/// Diacritics stripped, Latin letters folded to ASCII, then only [A-Za-z0-9_-] kept, lowercased
-	/// when asked. States keep the geocoder's case ("WA"); cities follow the community's lowercase
-	/// convention. nil when nothing is left: a name in a non-Latin script gets no rung rather than a
-	/// romanization the local mesh would not use.
-	/// "St. John's" -> "stjohns", "Coeur d'Alene" -> "coeurdalene", "München" -> "munchen", "東京都" -> nil.
+	/// The place name as the local mesh would write it: letters and digits in any script kept as
+	/// they are (æ, ø, å, ü, 東京), "_" and "-" kept, anything else dropped, lowercased when asked.
+	/// States keep the geocoder's case ("WA"); cities follow the community's lowercase convention.
+	/// nil when nothing is left.
+	/// "St. John's" -> "stjohns", "Coeur d'Alene" -> "coeurdalene", "Ørsta" -> "ørsta", "東京都" -> "東京都".
 	static func segment(from place: String, lowercased: Bool) -> String? {
-		var text = place.applyingTransform(.stripDiacritics, reverse: false) ?? place
-		text = text.applyingTransform(StringTransform("Latin-ASCII"), reverse: false) ?? text
-		let kept = text.unicodeScalars.filter { scalar in
-			switch scalar.value {
-			case 0x30...0x39, 0x41...0x5A, 0x61...0x7A, 0x5F, 0x2D: return true
-			default: return false
-			}
+		let kept = place.precomposedStringWithCanonicalMapping.unicodeScalars.filter { scalar in
+			scalar.properties.isAlphabetic || scalar.properties.numericType != nil || scalar == "_" || scalar == "-"
 		}
 		let result = String(String.UnicodeScalarView(kept))
 		if result.isEmpty { return nil }
