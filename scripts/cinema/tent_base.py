@@ -75,7 +75,7 @@ class Layout:
     # High on the wall, up under the eave, as frame-tent windows are. Sizes are the clear vinyl.
     windows: list = field(default_factory=lambda: [
         WallSpot(side=1, y=-1.8, z=1.34, width=1.36, height=0.8, shine=0.5),
-        WallSpot(side=-1, y=2.0, z=1.34, width=1.3, height=0.8),
+        WallSpot(side=-1, y=-1.8, z=1.34, width=1.3, height=0.8, shine=0.5),
     ])
     # The banner hangs on the back wall: center x, center z, width, height.
     banner: tuple = (0.0, 1.62, 2.0, 1.0)
