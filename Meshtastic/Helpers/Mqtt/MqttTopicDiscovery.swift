@@ -56,7 +56,8 @@ enum MqttRootTopic {
 	static func problem(in root: String) -> Problem? {
 		if root.isEmpty { return .empty }
 		let scalars = root.unicodeScalars
-		if scalars.contains(where: { $0.value <= 0x20 || (0x7F...0x9F).contains($0.value) }) { return .whitespace }
+		// Any kind of space, control or invisible character, not only the ASCII ones.
+		if scalars.contains(where: { $0.properties.isWhitespace || [.control, .format].contains($0.properties.generalCategory) }) { return .whitespace }
 		if root.contains("+") || root.contains("#") { return .wildcard }
 		if root.hasPrefix("/") { return .leadingSlash }
 		if root.hasSuffix("/") { return .trailingSlash }
