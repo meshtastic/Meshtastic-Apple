@@ -5,10 +5,10 @@
 #
 #  Copyright(c) Garth Vander Houwen 10/23/26.
 #
-#  Draws the flat textures the tent scenes use: a topo map, a blank whiteboard, laptops showing a
-#  mesh map, and the Meshtastic banner, Chirpy poster and Meshtastic Solutions plaque. The map,
-#  board and screens are generated here. The branding uses the app's own artwork, rasterized from
-#  its SVGs with resvg (the resvg-py package), so it is never redrawn. Writes PNGs into cache/.
+#  Draws the flat textures the tent scenes use: a topo map, a blank whiteboard, and the Meshtastic
+#  banner, Chirpy poster and Meshtastic Solutions plaque. The map and board are generated here.
+#  The branding uses the app's own artwork, rasterized from its SVGs with resvg (the resvg-py
+#  package), so it is never redrawn. Writes PNGs into cache/.
 #  build.sh runs it with uv, which supplies Pillow, numpy and resvg-py.
 
 import io
@@ -122,29 +122,6 @@ def whiteboard(path, w=2400, h=1600):
     image.save(path)
 
 
-def laptop_screen(path, w=1600, h=1000, seed=5):
-    rng = random.Random(seed)
-    image = Image.new("RGB", (w, h), (24, 30, 36))
-    draw = ImageDraw.Draw(image)
-    # Faint terrain behind the mesh.
-    height = fractal_noise(w, h, seed=seed + 20, octaves=5)
-    contour = np.abs((height * 24) % 1 - 0.5) > 0.46
-    base = np.asarray(image, dtype=float)
-    base[contour] = base[contour] * 0.5 + np.array([70, 90, 80]) * 0.5
-    image = Image.fromarray(base.astype(np.uint8))
-    draw = ImageDraw.Draw(image)
-    nodes = [(rng.randint(120, w - 120), rng.randint(140, h - 120)) for _ in range(18)]
-    for i, a in enumerate(nodes):
-        for b in nodes[i + 1:]:
-            if math.dist(a, b) < 360:
-                draw.line([a, b], fill=(103, 234, 148), width=3)
-    for x, y in nodes:
-        draw.ellipse([x - 16, y - 16, x + 16, y + 16], fill=(103, 234, 148), outline=(230, 255, 240), width=3)
-    draw.rectangle([0, 0, w, 70], fill=(36, 44, 52))
-    draw.text((24, 14), "Mesh  ·  18 nodes", fill=(220, 230, 225), font=font("Arial Bold.ttf", 38))
-    image.save(path)
-
-
 def svg(path, width):
     """An SVG from the repo rasterized at `width` pixels, keeping its aspect and transparency."""
     data = resvg_py.svg_to_bytes(svg_path=path, width=width)
@@ -247,8 +224,6 @@ def main():
     os.makedirs(OUT, exist_ok=True)
     topo_map(os.path.join(OUT, "topo.png"))
     whiteboard(os.path.join(OUT, "whiteboard.png"))
-    laptop_screen(os.path.join(OUT, "laptop_a.png"), seed=5)
-    laptop_screen(os.path.join(OUT, "laptop_b.png"), seed=9)
     banner(os.path.join(OUT, "banner.png"))
     chirpy_poster(os.path.join(OUT, "chirpy_poster.png"))
     solutions_plaque(os.path.join(OUT, "solutions_plaque.png"))

@@ -104,7 +104,7 @@ def material(name, color=(0.5, 0.5, 0.5), roughness=0.6, metallic=0.0, emission=
     return mat
 
 
-def image_material(name, path, roughness=0.5, emission_strength=0.0):
+def image_material(name, path, roughness=0.5):
     mat = bpy.data.materials.new(name)
     mat.use_nodes = True
     nodes, links = mat.node_tree.nodes, mat.node_tree.links
@@ -113,9 +113,6 @@ def image_material(name, path, roughness=0.5, emission_strength=0.0):
     tex.image = bpy.data.images.load(path)
     links.new(tex.outputs["Color"], bsdf.inputs["Base Color"])
     bsdf.inputs["Roughness"].default_value = roughness
-    if emission_strength:
-        links.new(tex.outputs["Color"], bsdf.inputs["Emission Color"])
-        bsdf.inputs["Emission Strength"].default_value = emission_strength
     return mat
 
 

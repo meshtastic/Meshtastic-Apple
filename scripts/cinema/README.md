@@ -50,6 +50,6 @@ The image is a perspective view from the seat, cropped to the wall: 5.6 m wide, 
 ## Sources
 
 - The tent, furniture and lighting are modeled in `tent_base.py` and `sar_tent.py`.
-- The topo map, the whiteboard and the laptop screens are drawn by `make_textures.py`.
+- The topo map and the whiteboard are drawn by `make_textures.py`.
 - The banner, poster and plaque use the app's own artwork, rasterized from its SVGs by `make_textures.py` with resvg (the `resvg-py` package; chosen because it needs no system libraries, unlike cairosvg, and keeps transparency, unlike `qlmanage`): the Meshtastic mark (`Meshtastic/Resources/AppIcon.icon/Assets/Meshtastic Logo.svg`), the wordmark (`meshtastic-wordmark-white.imageset`), Chirpy (`Chirpy.imageset`) and the Meshtastic Solutions mark (`MeshtasticSolutionsMark.imageset`). The plaque follows the layout of the one in the visionOS Hardware Showcase.
 - The forest seen through the door and the windows is the "Sunset Forest" HDRI from Poly Haven (https://polyhaven.com/a/sunset_forest), released under CC0. `build.sh` downloads it into `cache/`.

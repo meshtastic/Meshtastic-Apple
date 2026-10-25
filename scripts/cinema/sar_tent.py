@@ -19,7 +19,7 @@ import sys
 
 import bmesh
 import bpy
-from mathutils import Euler, Vector
+from mathutils import Vector
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import tent_base as tent  # noqa: E402
@@ -36,17 +36,6 @@ def folding_table(name, center, length, along_y, top_mat, leg_mat):
             cylinder(name + "Leg", 0.015, (cx + dx, cy + dy, 0), (cx + dx, cy + dy, 0.72), leg_mat)
 
 
-def laptop(center, facing_angle, screen_mat, body_mat):
-    cx, cy, z = center
-    box("LaptopBase", (0.34, 0.24, 0.02), (cx, cy, z + 0.01), body_mat, rotation=(0, 0, facing_angle), bevel=0.004)
-    lid_center = Vector((0, 0.12 + 0.02, 0.115))
-    lid_center.rotate(Euler((0, 0, facing_angle)))
-    box("LaptopLid", (0.34, 0.012, 0.23), (cx + lid_center.x, cy + lid_center.y, z + 0.02 + 0.105), body_mat, rotation=(-0.25, 0, facing_angle), bevel=0.003)
-    screen = Vector((0, 0.12 + 0.012, 0))
-    screen.rotate(Euler((0, 0, facing_angle)))
-    plane("LaptopScreen", 0.31, 0.2, (cx + screen.x, cy + screen.y, z + 0.13), (math.pi / 2 - 0.25, 0, facing_angle + math.pi), screen_mat)
-
-
 def radio(location, body_mat, antenna_mat, led_mat):
     x, y, z = location
     box("Radio", (0.06, 0.035, 0.13), (x, y, z + 0.065), body_mat, bevel=0.006)
@@ -59,9 +48,6 @@ def furnish(layout):
     table_top = material("TableTop", (0.62, 0.61, 0.57), 0.5)
     steel = material("Steel", (0.15, 0.15, 0.16), 0.4, metallic=0.9)
     black_plastic = material("BlackPlastic", (0.02, 0.02, 0.02), 0.45)
-    laptop_body = material("LaptopBody", (0.12, 0.12, 0.13), 0.35, metallic=0.6)
-    screen_a = image_material("ScreenA", os.path.join(CACHE, "laptop_a.png"), 0.2, emission_strength=1.2)
-    screen_b = image_material("ScreenB", os.path.join(CACHE, "laptop_b.png"), 0.2, emission_strength=1.2)
     led_green = material("LEDGreen", (0, 1, 0.3), emission=(0.1, 1, 0.3), strength=8)
     led_red = material("LEDRed", (1, 0, 0), emission=(1, 0.1, 0.05), strength=8)
     yellow_case = material("CaseYellow", (0.85, 0.65, 0.05), 0.5)
@@ -72,9 +58,6 @@ def furnish(layout):
 
     # Comms table along the left wall, under the plaque and the poster.
     folding_table("CommsTable", (-wall, 0.3), 1.8, True, table_top, steel)
-    laptops = (-0.12, 0.58)
-    laptop((-wall + 0.05, laptops[0], 0.76), -math.pi / 2, screen_a, laptop_body)
-    laptop((-wall + 0.05, laptops[1], 0.76), -math.pi / 2, screen_b, laptop_body)
     box("ChargerBank", (0.16, 0.5, 0.04), (-wall - 0.15, 0.91, 0.78), black_plastic, bevel=0.005)
     for i in range(6):
         radio((-wall - 0.15, 0.72 + i * 0.075, 0.80), black_plastic, black_plastic, led_green if i % 3 else led_red)
@@ -145,17 +128,6 @@ def furnish(layout):
     link(obj)
 
     map_lamp(map_x, map_y, black_plastic)
-
-    # Screen glow on the comms table.
-    for y in laptops:
-        area = bpy.data.lights.new("ScreenGlow", "AREA")
-        area.energy = 4
-        area.color = (0.6, 0.9, 0.7)
-        area.size = 0.3
-        obj = bpy.data.objects.new("ScreenGlow", area)
-        obj.location = (-wall + 0.32, y, 0.92)
-        obj.rotation_euler = (0, -math.pi / 2, 0)
-        link(obj)
 
 
 def map_lamp(x, y, cord_mat):
