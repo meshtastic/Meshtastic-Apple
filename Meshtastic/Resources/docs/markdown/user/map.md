@@ -62,6 +62,7 @@ Tap the **info button** (`info.circle`) in the bottom-right toolbar to open the 
 | Convex Hull | Draw an outline around the outermost LoRa nodes to visualize mesh coverage |
 | Traffic | Show Apple Maps live traffic |
 | Points of Interest | Show Apple Maps points of interest |
+| Weather Radar | Show NOAA precipitation radar over the map, refreshed every five minutes. Only offered in the lower 48 United States (where the radar has data) and needs a network connection. Radar data from NOAA/NCEP. |
 
 ### Opening the spatial map (Apple Vision Pro)
 

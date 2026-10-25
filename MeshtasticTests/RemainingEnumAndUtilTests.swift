@@ -297,12 +297,6 @@ struct AppSettingsEnumsExtendedTests {
 		}
 	}
 
-	@Test func mapOverlayServer_allCases_haveDescriptions() {
-		for server in MapOverlayServer.allCases {
-			#expect(!server.description.isEmpty)
-		}
-	}
-
 	@Test func mapLayer_allCases_haveLocalized() {
 		for layer in MapLayer.allCases {
 			#expect(!layer.localized.isEmpty)

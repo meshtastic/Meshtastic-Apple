@@ -147,6 +147,9 @@ struct MapSettingsForm: View {
 						self.pointsOfInterest.toggle()
 						UserDefaults.enableMapPointsOfInterest = self.pointsOfInterest
 					}
+					if meshMap {
+						WeatherRadarToggle()
+					}
 				}
 
 				if meshMap {
@@ -288,6 +291,10 @@ struct MapSettingsForm: View {
 		.presentationBackgroundInteraction(.enabled(upThrough: .medium))
 		.onChange(of: offlineMapManager.regions) {
 			resetTerraintogglesIfOrphaned()
+		}
+		// Here, not on the toggle: the toggle isn't in the form until this says it can be.
+		.task {
+			await WeatherRadarAvailability.shared.refresh()
 		}
 		.onAppear {
 			resetTerraintogglesIfOrphaned()
@@ -470,6 +477,29 @@ struct MapSettingsForm: View {
 		enabledOverlayConfigs: .constant(Set<UUID>())
 	)
 	.environmentObject(AccessoryManager.shared)
+}
+
+/// Turns on NOAA radar over the map, shown only where the radar has data.
+private struct WeatherRadarToggle: View {
+	@AppStorage("meshMapShowWeatherRadar") private var showWeatherRadar = false
+	@ObservedObject private var availability = WeatherRadarAvailability.shared
+
+	var body: some View {
+		if availability.isOffered {
+			Toggle(isOn: $showWeatherRadar) {
+				Label {
+					VStack(alignment: .leading) {
+						Text("Weather Radar")
+						Text("Precipitation from NOAA radar, lower 48 states only. Needs a network connection.")
+							.font(.caption)
+							.foregroundColor(.secondary)
+					}
+				} icon: {
+					Image(systemName: "cloud.rain")
+				}
+			}
+		}
+	}
 }
 
 /// Turns on the lines between nodes that hear each other directly.
