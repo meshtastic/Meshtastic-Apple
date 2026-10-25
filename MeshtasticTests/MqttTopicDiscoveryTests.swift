@@ -55,6 +55,8 @@ struct MqttTopicDiscoveryTests {
 	}
 
 	@Test func mapTopicParses() {
+		let norway = Discovery.observation(fromTopic: "msh/NO/Møre_og_Romsdal/2/e/LongFast/!a1b2c3d4")
+		#expect(norway?.root == "msh/NO/Møre_og_Romsdal")
 		#expect(Discovery.observation(fromTopic: "msh/US/2/map/") == Discovery.Observation(root: "msh/US", kind: .mapReport))
 		#expect(Discovery.observation(fromTopic: "msh/EU_868/2/map/") == Discovery.Observation(root: "msh/EU_868", kind: .mapReport))
 	}
@@ -178,15 +180,17 @@ struct MqttTopicDiscoveryTests {
 		#expect(Discovery.ladder(regionTopic: "msh/US", regionName: "United States", state: nil, city: "Seattle").count == 1)
 	}
 
-	@Test func ladderSegmentsAreASCII() {
+	@Test func ladderKeepsLatinLetters() {
 		let bayern = Discovery.ladder(regionTopic: "msh/EU_868", regionName: "EU 868", state: "Bayern", city: "München")
-		#expect(bayern.last?.topic == "msh/EU_868/Bayern/munchen")
+		#expect(bayern.last?.topic == "msh/EU_868/Bayern/münchen")
 		#expect(Discovery.segment(from: "St. John's", lowercased: true) == "stjohns")
 		#expect(Discovery.segment(from: "Coeur d'Alene", lowercased: true) == "coeurdalene")
-		// Letters with no decomposition need the Latin-ASCII fold; without it they would be dropped.
-		#expect(Discovery.segment(from: "Łódź", lowercased: true) == "lodz")
-		#expect(Discovery.segment(from: "Straße", lowercased: true) == "strasse")
-		#expect(Discovery.segment(from: "Ørsta", lowercased: true) == "orsta")
+		#expect(Discovery.segment(from: "Łódź", lowercased: true) == "łódź")
+		#expect(Discovery.segment(from: "Straße", lowercased: true) == "straße")
+		#expect(Discovery.segment(from: "Ørsta", lowercased: true) == "ørsta")
+		#expect(Discovery.segment(from: "Møre og Romsdal", lowercased: false) == "MøreogRomsdal")
+		// Decomposed input (u + combining diaeresis) is composed first.
+		#expect(Discovery.segment(from: "Zu\u{0308}rich", lowercased: true) == "zürich")
 		let longCity = String(repeating: "x", count: 40)
 		let trimmed = Discovery.ladder(regionTopic: "msh/US", regionName: "United States", state: "WA", city: longCity)
 		#expect(trimmed.count == 3)
