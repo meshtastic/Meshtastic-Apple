@@ -31057,6 +31057,7 @@
       }
     },
     "CHG" : {
+      "comment" : "Battery label in the node list: short for \"charging\". Keep it as short as the English.",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -31066,8 +31067,8 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Aktualisierung"
+            "state" : "translated",
+            "value" : "Lädt"
           }
         },
         "es" : {
@@ -31078,8 +31079,8 @@
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Changement"
+            "state" : "translated",
+            "value" : "Charge"
           }
         },
         "it" : {
@@ -31102,8 +31103,8 @@
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Alterar"
+            "state" : "translated",
+            "value" : "Carreg."
           }
         },
         "ru" : {
@@ -31126,14 +31127,14 @@
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "更改"
+            "state" : "translated",
+            "value" : "充电中"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "變更"
+            "state" : "translated",
+            "value" : "充電中"
           }
         },
         "zh-Hant-TW" : {
@@ -112228,6 +112229,7 @@
       }
     },
     "PWD" : {
+      "comment" : "Battery label in the node list: short for \"powered\", the node runs on external power. Keep it as short as the English.",
       "localizations" : {
         "da" : {
           "stringUnit" : {
@@ -112237,8 +112239,8 @@
         },
         "de" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Passwort"
+            "state" : "translated",
+            "value" : "Netz"
           }
         },
         "es" : {
@@ -112249,8 +112251,8 @@
         },
         "fr" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Mot de passe"
+            "state" : "translated",
+            "value" : "Secteur"
           }
         },
         "it" : {
@@ -112262,7 +112264,7 @@
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "パスワード"
+            "value" : "電源"
           }
         },
         "ko" : {
@@ -112273,8 +112275,8 @@
         },
         "pt-BR" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Senha"
+            "state" : "translated",
+            "value" : "Tomada"
           }
         },
         "ru" : {
@@ -112297,14 +112299,14 @@
         },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "密码"
+            "state" : "translated",
+            "value" : "电源"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "密碼"
+            "state" : "translated",
+            "value" : "電源"
           }
         },
         "zh-Hant-TW" : {
