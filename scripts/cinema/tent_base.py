@@ -48,7 +48,7 @@ WALL_HEIGHT = 1.95
 RIDGE_HEIGHT = 3.0
 DOOR = (-0.6, 0.9, 1.85)  # right wall: from y, to y, top
 # Frame tents have wide bays; these leave room for a full-size window between two legs in the
-# back and front bays, and for the door, plaque and poster in the middle one.
+# back and front bays, and for the door and the plaque in the middle one.
 RAFTERS = [-2.8, -0.8, 1.2, 2.8]
 EYE_HEIGHT = 1.15
 
@@ -79,9 +79,12 @@ class Layout:
     ])
     # The banner hangs on the back wall: center x, center z, width, height.
     banner: tuple = (0.0, 1.62, 2.0, 1.0)
-    poster: WallSpot = field(default_factory=lambda: WallSpot(side=-1, y=0.88, z=1.45, width=0.5, height=0.7))
-    # Big enough that its small top line reads from the seat.
-    plaque: WallSpot = field(default_factory=lambda: WallSpot(side=-1, y=-0.13, z=1.42, width=1.26, height=0.62))
+    # Chirpy, on the right wall's front bay beside the tripod by the door, clear of the node as seen
+    # from the seat.
+    poster: WallSpot = field(default_factory=lambda: WallSpot(side=1, y=1.8, z=1.45, width=0.5, height=0.7))
+    # Big enough that its small top line reads from the seat. In the middle of the left wall's
+    # middle bay.
+    plaque: WallSpot = field(default_factory=lambda: WallSpot(side=-1, y=0.2, z=1.42, width=1.26, height=0.62))
 
 
 # Surfaces the app covers with live panels, by the id the app knows them by. Filled in as the

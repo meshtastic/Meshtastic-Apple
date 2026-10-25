@@ -10,7 +10,7 @@
 #    Blender -b -P sar_tent.py -- --out out/sar_tent.png --width 4096 --samples 160
 #
 #  On the left, the whiteboard the app draws the team roster on, then the comms and radio tables; the
-#  map table on the back wall to the right, and a mesh node on a tripod by the door. Nothing else
+#  map table on the back wall to the right, and a Solar Node on a tripod by the door. Nothing else
 #  stands on the floor.
 
 import math
@@ -20,7 +20,7 @@ import sys
 
 import bmesh
 import bpy
-from mathutils import Vector
+from mathutils import Matrix, Vector
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import tent_base as tent  # noqa: E402
@@ -51,13 +51,12 @@ def furnish(layout):
     black_plastic = material("BlackPlastic", (0.02, 0.02, 0.02), 0.45)
     led_green = material("LEDGreen", (0, 1, 0.3), emission=(0.1, 1, 0.3), strength=8)
     led_red = material("LEDRed", (1, 0, 0), emission=(1, 0.1, 0.05), strength=8)
-    yellow_case = material("CaseYellow", (0.85, 0.65, 0.05), 0.5)
     mug = material("Mug", (0.75, 0.75, 0.72), 0.3)
     paper = material("Paper", (0.88, 0.87, 0.82), 0.8)
     bottle = material("Bottle", (0.3, 0.5, 0.8), 0.1)
     wall = HALF_WIDTH - 0.38
 
-    # Comms table along the left wall, under the plaque and the poster.
+    # Comms table along the left wall, under the plaque.
     folding_table("CommsTable", (-wall, 0.3), 1.8, True, table_top, steel)
     box("ChargerBank", (0.16, 0.5, 0.04), (-wall - 0.15, 0.91, 0.78), black_plastic, bevel=0.005)
     for i in range(6):
@@ -89,15 +88,14 @@ def furnish(layout):
     radio((map_x - 0.5, map_y + 0.25, 0.765), black_plastic, black_plastic, led_green)
     box("Compass", (0.1, 0.06, 0.008), (map_x + 0.45, map_y - 0.25, 0.77), material("Compass", (0.8, 0.85, 0.9), 0.1))
 
-    # A mesh node on a tripod just past the door, its antenna up near the eave, far enough along
-    # that its legs stay clear of the door jamb.
+    # A SenseCAP Solar Node on a tripod just past the door, far enough along that the tripod's legs
+    # stay clear of the door jamb. A short mast stands up from the tripod's head and the node clamps
+    # to it by the mount on its back, the way it goes on a pole.
     tripod_top = (wall + 0.05, 1.18, 1.35)
     for angle in (0, 2.1, 4.2):
         foot = (tripod_top[0] + 0.3 * math.cos(angle), tripod_top[1] + 0.3 * math.sin(angle), 0)
         cylinder("TripodLeg", 0.01, foot, tripod_top, steel)
-    box("NodeCase", (0.1, 0.06, 0.14), (tripod_top[0], tripod_top[1], tripod_top[2] + 0.07), yellow_case, bevel=0.01)
-    cylinder("NodeAntenna", 0.008, (tripod_top[0], tripod_top[1], tripod_top[2] + 0.14), (tripod_top[0], tripod_top[1], tripod_top[2] + 0.5), black_plastic)
-    sphere("NodeLED", 0.006, (tripod_top[0] - 0.05, tripod_top[1], tripod_top[2] + 0.1), led_green, segments=8)
+    solar_node(tripod_top, steel, black_plastic)
 
     # Whiteboard on the left wall in the front bay, on clear canvas. Left blank: the app draws the
     # live team roster over it (the "teamStatus" anchor). The front bay is narrower than the back
@@ -133,6 +131,38 @@ def furnish(layout):
 
     map_lamp(map_x, map_y - 0.06, steel, black_plastic)
 
+
+# The app's own model of the SenseCAP Solar Node, at real size (scripts/device-models).
+SOLAR_NODE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "Meshtastic", "Resources", "DeviceModels", "seeed_solar.usdz")
+# Where its back mount is in the model, in meters: between the two threaded inserts on the back of
+# the box (see specs/seeed_solar.toml), in the model's own axes (Y up, +Z out of the panel).
+SOLAR_NODE_MOUNT = Vector((0.0027, 0.117, -0.0376))
+
+
+def solar_node(tripod_top, mast_mat, clamp_mat):
+    """Puts the Solar Node on a mast above the tripod's head: its panel tipped back toward the sky
+    and turned to face the seat. The antenna is fixed to the box, so it leans back with it."""
+    tilt = math.radians(20)
+    x, y, z = tripod_top
+    # Turned so the panel faces the seat at the middle of the tent.
+    yaw = math.atan2(-y, -x)
+    facing = Vector((math.cos(yaw), math.sin(yaw), 0))
+    # The clamp around the mast and the arm out to the mount on the node's back. The mast stops
+    # just above the clamp, so it stays clear of the box as the box tips back over it.
+    mount = Vector((x, y, z + 0.17)) + facing * 0.045
+    cylinder("NodeMast", 0.016, (x, y, z - 0.02), (x, y, mount.z + 0.035), mast_mat)
+    cylinder("NodeClamp", 0.024, (x, y, mount.z - 0.03), (x, y, mount.z + 0.03), clamp_mat)
+    cylinder("NodeArm", 0.01, (x, y, mount.z), mount - facing * 0.008, clamp_mat)
+
+    before = set(bpy.data.objects)
+    bpy.ops.wm.usd_import(filepath=os.path.abspath(SOLAR_NODE))
+    root = next(obj for obj in bpy.data.objects if obj not in before and obj.parent is None)
+    # The importer turns the model's Y up into Blender's Z up on the root, which leaves the panel
+    # facing -Y. Move the mount to the origin, tip the panel back, turn it to face the seat, and put
+    # the mount on the arm.
+    mount_local = root.matrix_world @ SOLAR_NODE_MOUNT
+    turn = Matrix.Rotation(yaw + math.pi / 2, 4, "Z") @ Matrix.Rotation(-tilt, 4, "X")
+    root.matrix_world = Matrix.Translation(mount) @ turn @ Matrix.Translation(-mount_local) @ root.matrix_world
 
 def map_lamp(x, y, arm_mat, cord_mat):
     """A work lamp over the map table, hung from an arm clamped to the back rafter. The shade is a
