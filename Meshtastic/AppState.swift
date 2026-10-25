@@ -144,8 +144,9 @@ class AppState: ObservableObject {
 	@Published var cinemaScreenLocked = false
 
 	#if os(visionOS)
-	/// Where the main window is while the cinema is open, so the tent's front wall can be built
-	/// around it. Observed on its own, so a window being dragged doesn't redraw every view.
+	/// Where the main windows and the Spatial Map volume are while the cinema is open, and which
+	/// window the tent's front wall is built round. Kept apart, so a window being dragged doesn't
+	/// redraw every view.
 	let cinemaWindow = CinemaWindowTracker()
 	#endif
 

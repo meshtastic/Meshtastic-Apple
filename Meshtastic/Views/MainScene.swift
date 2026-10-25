@@ -26,8 +26,11 @@ struct MainScene: View {
 	/// This window's scene, so a route from another window can bring it forward.
 	@State private var sceneSession: UISceneSession?
 	#if os(visionOS)
-	/// The window's size and resizing before the cinema opened, put back when it closes.
+	/// The window's size and resizing before it became the cinema's screen. Kept until putting them
+	/// back is seen to have worked, so a refused request is tried again.
 	@State private var geometryBeforeCinema: UIWindowScene.GeometryPreferences.Vision?
+	/// Whether this window has asked to be held at the cinema size.
+	@State private var heldAtCinemaSize = false
 	/// Tells this window's pose apart from other main windows' in the cinema.
 	@State private var cinemaWindowID = UUID()
 	#endif
@@ -47,10 +50,12 @@ struct MainScene: View {
 						.onGeometryChange(for: CinemaWindowPose?.self) { proxy in
 							proxy.transform(in: .immersiveSpace).map { CinemaWindowPose(transform: $0, size: proxy.size) }
 						} action: { pose in
-							appState.cinemaWindow.report(pose, from: cinemaWindowID)
+							if let pose {
+								appState.cinemaWindow.report(pose, from: cinemaWindowID)
+							}
 						}
 						.onDisappear {
-							appState.cinemaWindow.report(nil, from: cinemaWindowID)
+							appState.cinemaWindow.remove(cinemaWindowID)
 						}
 				}
 			}
@@ -92,12 +97,19 @@ struct MainScene: View {
 			.onChange(of: scenePhase) { _, phase in
 				if phase == .active {
 					claimPendingRoute()
+					#if os(visionOS)
+					// Puts the size back if that was refused or skipped in the background.
+					sizeForCinema()
+					#endif
 				}
 			}
 			#if os(visionOS)
-			// In the cinema the window is the screen.
-			.onChange(of: appState.cinemaOpen) { _, isOpen in
-				sizeForCinema(isOpen)
+			// In the cinema the window the front wall is built round is the screen.
+			.onChange(of: isCinemaScreen, initial: true) { _, _ in
+				sizeForCinema()
+			}
+			.onChange(of: sceneSession) { _, _ in
+				sizeForCinema()
 			}
 			.onChange(of: router.spatialMapRequest?.id) { _, _ in
 				guard let request = router.claimSpatialMapRequest() else { return }
@@ -207,28 +219,50 @@ struct MainScene: View {
 	/// The window's size in the cinema, in points. The system grows a window with its distance, so
 	/// this is close to a fixed angle: about 59° by 36°. The tent's front wall is 90° wide and, from
 	/// the seat, runs from the floor 22° below the eye to the eave 16° above it and the ridge 33°
-	/// above, so a window about level with the eye leaves wall showing all round it. 2400 by 1350
-	/// filled 81° and nearly covered the wall.
+	/// above, so a window about level with the eye leaves wall showing all round it. The wall image
+	/// carries on over the floor to 35° below the eye, so a window lowered by 15° still sits on the
+	/// tent. 2400 by 1350 filled 81° and nearly covered the wall.
 	private static let cinemaSize = CGSize(width: 1600, height: 900)
 
-	/// While the cinema is open the window is its screen, fixed at the cinema size so the frame and
-	/// wall built round it fit. Its size and resizing are put back when the cinema closes. Locking the
-	/// screen only hides the bar that moves it.
-	private func sizeForCinema(_ isOpen: Bool) {
+	/// Whether this window is the one the cinema's front wall is built round.
+	private var isCinemaScreen: Bool {
+		appState.cinemaOpen && appState.cinemaWindow.owner == cinemaWindowID
+	}
+
+	/// While this window is the cinema's screen it is held at the cinema size, so the frame and
+	/// wall built round it fit. Its size and resizing are put back afterwards. Locking the screen
+	/// only hides the bar that moves it.
+	private func sizeForCinema() {
 		guard let windowScene = sceneSession?.scene as? UIWindowScene else { return }
-		if isOpen {
-			let geometry = windowScene.effectiveGeometry
-			geometryBeforeCinema = .init(
-				size: geometry.coordinateSpace.bounds.size,
-				minimumSize: geometry.minimumSize,
-				maximumSize: geometry.maximumSize,
-				resizingRestrictions: Self.restrictions(geometry.resizingRestrictions)
-			)
+		if isCinemaScreen {
+			guard !heldAtCinemaSize else { return }
+			// Saved only once: if a restore never went through, this is still the size from before.
+			if geometryBeforeCinema == nil {
+				let geometry = windowScene.effectiveGeometry
+				geometryBeforeCinema = .init(
+					size: geometry.coordinateSpace.bounds.size,
+					minimumSize: geometry.minimumSize,
+					maximumSize: geometry.maximumSize,
+					resizingRestrictions: Self.restrictions(geometry.resizingRestrictions)
+				)
+			}
+			heldAtCinemaSize = true
 			let size = Self.cinemaSize
 			requestGeometry(.init(size: size, minimumSize: size, maximumSize: size, resizingRestrictions: UIWindowScene.ResizingRestrictions.none), in: windowScene)
-		} else {
-			requestGeometry(geometryBeforeCinema ?? .init(size: nil, minimumSize: .zero, maximumSize: Self.unlimitedSize, resizingRestrictions: .freeform), in: windowScene)
-			geometryBeforeCinema = nil
+		} else if let geometryBeforeCinema {
+			heldAtCinemaSize = false
+			requestGeometry(geometryBeforeCinema, in: windowScene)
+			Task {
+				// The request only reports failure, so look at the window a moment later.
+				try? await Task.sleep(for: .seconds(1))
+				guard !isCinemaScreen, self.geometryBeforeCinema != nil else { return }
+				let geometry = windowScene.effectiveGeometry
+				if geometry.resizingRestrictions == .none, geometry.maximumSize == Self.cinemaSize {
+					Logger.services.info("🎬 [Cinema] The window is still at the cinema size; trying again when it is next active")
+				} else {
+					self.geometryBeforeCinema = nil
+				}
+			}
 		}
 	}
 
@@ -241,8 +275,6 @@ struct MainScene: View {
 		@unknown default: .freeform
 		}
 	}
-
-	private static let unlimitedSize = CGSize(width: CGFloat.infinity, height: CGFloat.infinity)
 
 	private func requestGeometry(_ preferences: UIWindowScene.GeometryPreferences.Vision, in windowScene: UIWindowScene) {
 		windowScene.requestGeometryUpdate(preferences) { error in

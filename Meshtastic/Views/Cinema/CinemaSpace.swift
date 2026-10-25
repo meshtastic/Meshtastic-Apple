@@ -110,6 +110,7 @@ struct CinemaSpace: View {
 			fitBoards?.cancel()
 			fitBoards = nil
 			mount.stop()
+			appState.cinemaWindow.reset()
 			appState.cinemaOpen = false
 			appState.cinemaScreenLocked = false
 			// The window may have been closed while the cinema was open. Not when the app went to
