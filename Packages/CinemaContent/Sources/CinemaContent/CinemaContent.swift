@@ -11,6 +11,12 @@ public func cinemaEnvironmentImageURL(named name: String) -> URL? {
 	Bundle.module.url(forResource: name, withExtension: "heic", subdirectory: "Environments")
 }
 
+/// The URL of a cinema environment's front wall on its own, a flat image drawn at the app window's
+/// depth. See `scripts/cinema/README.md`.
+public func cinemaEnvironmentFrontWallURL(named name: String) -> URL? {
+	Bundle.module.url(forResource: "\(name)_front", withExtension: "heic", subdirectory: "Environments")
+}
+
 /// Where the boards in a cinema environment's image sit, written by the render script next to
 /// the image. See `scripts/cinema/README.md`.
 public func cinemaEnvironmentAnchorsURL(named name: String) -> URL? {

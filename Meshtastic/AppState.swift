@@ -142,6 +142,12 @@ class AppState: ObservableObject {
 	/// when the cinema opens, so the window can be pushed back first.
 	@Published var cinemaScreenLocked = false
 
+	#if os(visionOS)
+	/// Where the main window is while the cinema is open, so the tent's front wall can be built
+	/// around it. Observed on its own, so a window being dragged doesn't redraw every view.
+	let cinemaWindow = CinemaWindowTracker()
+	#endif
+
 	/// A node the spatial map volume should select once it is showing; claimed the same way.
 	@Published var spatialMapFocus: SpatialMapFocusRequest?
 

@@ -28,6 +28,8 @@ struct MainScene: View {
 	#if os(visionOS)
 	/// The window's size before the cinema opened, put back when it closes.
 	@State private var sizeBeforeCinema: CGSize?
+	/// Tells this window's pose apart from other main windows' in the cinema.
+	@State private var cinemaWindowID = UUID()
 	#endif
 
 	/// TipKit configuration must run once per process. This view stays mounted
@@ -37,6 +39,22 @@ struct MainScene: View {
 	var body: some View {
 		sceneContent
 			.background(SceneSessionReader(session: $sceneSession))
+			#if os(visionOS)
+			// In the cinema the tent's front wall is built around this window, wherever it is.
+			.background {
+				if appState.cinemaOpen {
+					Color.clear
+						.onGeometryChange(for: CinemaWindowPose?.self) { proxy in
+							proxy.transform(in: .immersiveSpace).map { CinemaWindowPose(transform: $0, size: proxy.size) }
+						} action: { pose in
+							appState.cinemaWindow.report(pose, from: cinemaWindowID)
+						}
+						.onDisappear {
+							appState.cinemaWindow.report(nil, from: cinemaWindowID)
+						}
+				}
+			}
+			#endif
 			.environmentObject(router)
 			.environmentObject(nodeFilters)
 			.onAppear {
