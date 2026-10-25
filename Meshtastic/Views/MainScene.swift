@@ -26,8 +26,8 @@ struct MainScene: View {
 	/// This window's scene, so a route from another window can bring it forward.
 	@State private var sceneSession: UISceneSession?
 	#if os(visionOS)
-	/// The window's size before the cinema opened, put back when it closes.
-	@State private var sizeBeforeCinema: CGSize?
+	/// The window's size and resizing before the cinema opened, put back when it closes.
+	@State private var geometryBeforeCinema: UIWindowScene.GeometryPreferences.Vision?
 	/// Tells this window's pose apart from other main windows' in the cinema.
 	@State private var cinemaWindowID = UUID()
 	#endif
@@ -98,10 +98,6 @@ struct MainScene: View {
 			// In the cinema the window is the screen.
 			.onChange(of: appState.cinemaOpen) { _, isOpen in
 				sizeForCinema(isOpen)
-			}
-			.onChange(of: appState.cinemaScreenLocked) { _, isLocked in
-				guard appState.cinemaOpen else { return }
-				lockCinemaSize(isLocked)
 			}
 			.onChange(of: router.spatialMapRequest?.id) { _, _ in
 				guard let request = router.claimSpatialMapRequest() else { return }
@@ -208,31 +204,41 @@ struct MainScene: View {
 	}
 
 	#if os(visionOS)
-	/// The window's size in the cinema, in points.
-	private static let cinemaSize = CGSize(width: 2400, height: 1350)
+	/// The window's size in the cinema, in points. The system grows a window with its distance, so
+	/// this is close to a fixed angle: about 59° by 36°. The tent's front wall is 90° wide and, from
+	/// the seat, runs from the floor 22° below the eye to the eave 16° above it and the ridge 33°
+	/// above, so a window about level with the eye leaves wall showing all round it. 2400 by 1350
+	/// filled 81° and nearly covered the wall.
+	private static let cinemaSize = CGSize(width: 1600, height: 900)
 
-	/// Makes the window the cinema size while the cinema is open, and puts back the size it had
-	/// when the cinema closes. It can still be moved and resized until the screen is locked.
+	/// While the cinema is open the window is its screen, fixed at the cinema size so the frame and
+	/// wall built round it fit. Its size and resizing are put back when the cinema closes. Locking the
+	/// screen only hides the bar that moves it.
 	private func sizeForCinema(_ isOpen: Bool) {
 		guard let windowScene = sceneSession?.scene as? UIWindowScene else { return }
 		if isOpen {
-			sizeBeforeCinema = windowScene.effectiveGeometry.coordinateSpace.bounds.size
-			requestGeometry(.init(size: Self.cinemaSize, minimumSize: .zero, maximumSize: Self.unlimitedSize, resizingRestrictions: .freeform), in: windowScene)
+			let geometry = windowScene.effectiveGeometry
+			geometryBeforeCinema = .init(
+				size: geometry.coordinateSpace.bounds.size,
+				minimumSize: geometry.minimumSize,
+				maximumSize: geometry.maximumSize,
+				resizingRestrictions: Self.restrictions(geometry.resizingRestrictions)
+			)
+			let size = Self.cinemaSize
+			requestGeometry(.init(size: size, minimumSize: size, maximumSize: size, resizingRestrictions: UIWindowScene.ResizingRestrictions.none), in: windowScene)
 		} else {
-			requestGeometry(.init(size: sizeBeforeCinema, minimumSize: .zero, maximumSize: Self.unlimitedSize, resizingRestrictions: .freeform), in: windowScene)
-			sizeBeforeCinema = nil
+			requestGeometry(geometryBeforeCinema ?? .init(size: nil, minimumSize: .zero, maximumSize: Self.unlimitedSize, resizingRestrictions: .freeform), in: windowScene)
+			geometryBeforeCinema = nil
 		}
 	}
 
-	/// Fixes the window at the size it has when the screen is locked, and lets it resize again
-	/// when it is unlocked.
-	private func lockCinemaSize(_ isLocked: Bool) {
-		guard let windowScene = sceneSession?.scene as? UIWindowScene else { return }
-		if isLocked {
-			let size = windowScene.effectiveGeometry.coordinateSpace.bounds.size
-			requestGeometry(.init(size: size, minimumSize: size, maximumSize: size, resizingRestrictions: UIWindowScene.ResizingRestrictions.none), in: windowScene)
-		} else {
-			requestGeometry(.init(size: nil, minimumSize: .zero, maximumSize: Self.unlimitedSize, resizingRestrictions: .freeform), in: windowScene)
+	/// The geometry reports its resizing as the Objective-C type; preferences take the Swift one.
+	private static func restrictions(_ value: UIWindowSceneResizingRestrictions) -> UIWindowScene.ResizingRestrictions {
+		switch value {
+		case .none: .none
+		case .uniform: .uniform
+		case .freeform: .freeform
+		@unknown default: .freeform
 		}
 	}
 

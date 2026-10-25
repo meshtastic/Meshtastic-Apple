@@ -47,8 +47,8 @@ struct CinemaLockButton: View {
 
 	private var title: String {
 		isLocked
-			? String(localized: "Unlock Screen", comment: "Cinema: let the app window be moved and resized again")
-			: String(localized: "Lock Screen", comment: "Cinema: hide the app window's bar and fix its size, once it has been pushed back where the viewer wants it")
+			? String(localized: "Unlock Screen", comment: "Cinema: let the app window be moved again")
+			: String(localized: "Lock Screen", comment: "Cinema: hide the app window's bar, once it has been pushed back where the viewer wants it")
 	}
 }
 #endif
