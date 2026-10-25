@@ -27,24 +27,6 @@ struct CinemaAnchors: Decodable {
 	/// The camera's height above the floor in the render.
 	let eyeHeight: Float
 	let boards: [String: Board]
-	/// The front wall image, if the environment has one.
-	let frontWall: FrontWall?
-
-	/// The front wall as a flat image at `distance` in front of the camera, facing it. `bounds` is
-	/// the part of the wall's plane the image covers and `outline` the wall's shape, in meters
-	/// relative to the camera, +X right and +Y up. Drawn nearer, it is shrunk by the same amount
-	/// about the viewer's eye, so it still covers the painted wall exactly.
-	struct FrontWall: Decodable {
-		let distance: Float
-		/// Left, bottom, right, top.
-		let bounds: [Float]
-		let outline: [[Float]]
-
-		var isValid: Bool {
-			distance > 0 && bounds.count == 4 && bounds[2] > bounds[0] && bounds[3] > bounds[1]
-				&& outline.count >= 3 && outline.allSatisfy { $0.count == 2 }
-		}
-	}
 
 	struct Board: Decodable {
 		let position: SIMD3<Float>

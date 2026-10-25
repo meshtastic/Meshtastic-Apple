@@ -363,10 +363,6 @@ struct MeshtasticAppleApp: App {
 		.environmentObject(accessoryManager)
 		.environmentObject(lockdownCoordinator)
 		.environmentObject(MeshtasticAPI.shared)
-		#if os(visionOS)
-		// A locked cinema screen has no bar to move it.
-		.persistentSystemOverlays(appState.cinemaOpen && appState.cinemaScreenLocked ? .hidden : .automatic)
-		#endif
 
 			WindowGroup("Mesh Map", id: "meshmap-window") {
 				// Gated on shouldInitializeAppServices (not just tests): in Chirpy OTA demo mode
@@ -400,7 +396,6 @@ struct MeshtasticAppleApp: App {
 					SpatialMapWindow()
 						.id(appState.databaseResetID)
 				}
-				.reportsCinemaVolume(to: appState.cinemaWindow)
 				.modelContainer(persistenceController.container)
 				.environmentObject(appState)
 				.environmentObject(accessoryManager)
@@ -414,13 +409,6 @@ struct MeshtasticAppleApp: App {
 		.volumeWorldAlignment(.gravityAligned)
 		.restorationBehavior(.disabled)
 		.handlesExternalEvents(matching: [])
-		// In the cinema the map sits to the right of the app's screen.
-		.defaultWindowPlacement { _, context in
-			if appState.cinemaOpen, let main = context.windows.first(where: { $0.id == Self.mainWindowID }) {
-				return WindowPlacement(.trailing(main))
-			}
-			return WindowPlacement()
-		}
 
 		// The mesh as radios in a showcase. Same gates and environment as the spatial map volume.
 		ImmersiveSpace(id: ShowcaseScene.id) {

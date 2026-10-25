@@ -31,8 +31,7 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 	/// Turns the backdrop and its boards together about the viewer, radians to the left, so the
 	/// part of the image left quiet for the window is in front. The images are rendered with that
 	/// part at their center, which the backdrop already puts in front, so this is zero unless an
-	/// image needs nudging. Only until the app window is placed: then the image's center, where
-	/// the front wall is, turns to face the window.
+	/// image needs nudging.
 	var frontRotation: Float {
 		switch self {
 		case .sarTent: 0

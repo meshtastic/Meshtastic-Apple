@@ -23,36 +23,5 @@
     }
   },
   "comment": "Written by scripts/cinema/tent_base.py. Meters, RealityKit axes (+X right, +Y up, -Z toward the image's center), relative to the camera the image was rendered from.",
-  "eyeHeight": 1.15,
-  "frontWall": {
-    "bounds": [
-      -2.8,
-      -2.0,
-      2.8,
-      1.85
-    ],
-    "distance": 2.8,
-    "outline": [
-      [
-        -2.8,
-        -2.0
-      ],
-      [
-        2.8,
-        -2.0
-      ],
-      [
-        2.8,
-        0.8
-      ],
-      [
-        0,
-        1.85
-      ],
-      [
-        -2.8,
-        0.8
-      ]
-    ]
-  }
+  "eyeHeight": 1.15
 }

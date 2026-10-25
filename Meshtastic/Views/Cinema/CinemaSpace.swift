@@ -9,13 +9,9 @@ import RealityKit
 import SwiftData
 import SwiftUI
 
-/// Root of the cinema immersive space: an environment around the viewer and the app's windows,
-/// and a small panel to change the environment or leave. The app stays in its own real window, so
-/// the tab bar, sheets and alerts work as usual; a window drawn inside the space can't show them.
-/// Nothing can fix a window in place, so the wall comes to the window: the tent turns so its front
-/// wall faces the window, and `CinemaWindowMount` sets the window into that wall with a black
-/// frame, the wall drawn at the window's own depth. The 3D map opens beside it. The tent's
-/// whiteboard shows the live team roster.
+/// Root of the cinema immersive space: an environment around the viewer and a small panel to
+/// change the environment or leave. The 3D map opens with it. The tent's whiteboard shows the live
+/// team roster.
 struct CinemaSpace: View {
 	/// The store, for the team board. Nil when the app runs without one (demo mode).
 	let container: ModelContainer?
@@ -28,12 +24,9 @@ struct CinemaSpace: View {
 	@State private var world = Entity()
 	@State private var backdrop: Entity?
 	@State private var panelGrabber = Self.makePanelGrabber()
-	/// The point the image was rendered from. Until the window is placed it sits at the seated eye
-	/// height, turned so the image's center is in front; then the mount keeps it on the viewer's eye,
-	/// turned so the front wall faces the window. The backdrop, the boards and the front wall hang
-	/// from it, so one turn moves them all.
+	/// The point the image was rendered from, fixed at the seated eye height and turned so the
+	/// image's center is in front. The backdrop and the boards hang from it, so one turn moves both.
 	@State private var stage = Entity()
-	@State private var mount = CinemaWindowMount()
 	@State private var fitBoards: EventSubscription?
 	@State private var anchors: CinemaAnchors?
 	@State private var boards = BoardPanels()
@@ -44,24 +37,18 @@ struct CinemaSpace: View {
 			content.add(world)
 			stage.name = "CinemaStage"
 			world.addChild(stage)
-			world.addChild(mount.frame)
 			if let panel = attachments.entity(for: Attachments.panel) {
 				panelGrabber.addChild(panel)
 				seat(panel)
 				panelGrabber.position = [0.45, 0.85, -0.7]
 				world.addChild(panelGrabber)
 			}
-			setSpaceConversion(content)
 			// A panel's size is only known once SwiftUI has laid it out, so boards are fitted on
-			// the first frame that has it. The window and volume poses are read here every frame
-			// rather than in body, so dragging the window doesn't redraw this view.
-			let tracker = appState.cinemaWindow
-			fitBoards = content.subscribe(to: SceneEvents.Update.self) { event in
+			// the first frame that has it.
+			fitBoards = content.subscribe(to: SceneEvents.Update.self) { _ in
 				placeBoards()
-				mount.update(deltaTime: event.deltaTime, stage: stage, window: tracker.pose, volume: tracker.volume)
 			}
-		} update: { content, attachments in
-			setSpaceConversion(content)
+		} update: { _, attachments in
 			if let panel = attachments.entity(for: Attachments.panel) {
 				seat(panel)
 			}
@@ -69,7 +56,7 @@ struct CinemaSpace: View {
 			placeBoards()
 		} attachments: {
 			Attachment(id: Attachments.panel) {
-				CinemaPanel(environment: $environment, isScreenLocked: $appState.cinemaScreenLocked) {
+				CinemaPanel(environment: $environment) {
 					Task { await dismissImmersiveSpace() }
 				}
 			}
@@ -85,33 +72,22 @@ struct CinemaSpace: View {
 		}
 		.task(id: environment) {
 			anchors = CinemaAnchors.load(for: environment)
-			// Once the tent is turned to the window it stays put while the new backdrop loads.
-			if !mount.isFitted {
-				stage.position = [0, anchors?.eyeHeight ?? CinemaAnchors.seatedEyeHeight, 0]
-				stage.orientation = simd_quatf(angle: environment.frontRotation, axis: [0, 1, 0])
-			}
+			stage.position = [0, anchors?.eyeHeight ?? CinemaAnchors.seatedEyeHeight, 0]
+			stage.orientation = simd_quatf(angle: environment.frontRotation, axis: [0, 1, 0])
 			boards.fitted.removeAll()
 			let next = await CinemaBackdrop.make(environment)
 			backdrop?.removeFromParent()
 			stage.addChild(next)
 			backdrop = next
-			await mount.setFrontWall(anchors?.frontWall, imageName: environment.imageName, eyeHeight: anchors?.eyeHeight ?? CinemaAnchors.seatedEyeHeight, on: stage)
-		}
-		.task {
-			await mount.start()
 		}
 		.onAppear {
 			appState.cinemaOpen = true
-			appState.cinemaScreenLocked = false
 			openWindow(id: SpatialMapScene.id, value: SpatialMapSceneKey.shared)
 		}
 		.onDisappear {
 			fitBoards?.cancel()
 			fitBoards = nil
-			mount.stop()
-			appState.cinemaWindow.reset()
 			appState.cinemaOpen = false
-			appState.cinemaScreenLocked = false
 			// The window may have been closed while the cinema was open. Not when the app went to
 			// the background, which closes the cinema too.
 			if appState.mainWindowCount == 0, scenePhase != .background {
@@ -163,14 +139,6 @@ struct CinemaSpace: View {
 			panel.orientation = anchor.orientation
 			boards.fitted.insert(board)
 		}
-	}
-
-	/// Gives the mount the window and volume poses' conversion from `.immersiveSpace` to the scene.
-	private func setSpaceConversion(_ content: RealityViewContent) {
-		func scene(_ x: Double, _ y: Double, _ z: Double) -> SIMD3<Float> {
-			content.convert(Point3D(x: x, y: y, z: z), from: .immersiveSpace, to: .scene)
-		}
-		mount.setSpaceConversion(origin: scene(0, 0, 0), x: scene(1000, 0, 0), y: scene(0, 1000, 0), z: scene(0, 0, 1000))
 	}
 
 	/// The panel sits just above the grab bar, however tall it is.

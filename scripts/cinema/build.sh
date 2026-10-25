@@ -30,8 +30,7 @@ fi
 # Pinned so a new release can't quietly change the artwork.
 uv run --quiet --with pillow==13.0.0 --with numpy==2.5.4 --with resvg-py==0.5.0 python "$HERE/make_textures.py"
 
-# Renders one environment script, <name>.py, and ships <name>.heic, the front wall on its own as
-# <name>_front.heic, and <name>_anchors.json.
+# Renders one environment script, <name>.py, and ships <name>.heic and <name>_anchors.json.
 environment() {
 	local name="$1"
 	if [ "$PREVIEW" = 1 ]; then
@@ -40,11 +39,9 @@ environment() {
 	fi
 	"$BLENDER" -b -P "$HERE/$name.py" -- --out "$HERE/out/$name.png" --width 4096 --samples 160
 	sips -s format heic -s formatOptions "$HEIC_QUALITY" "$HERE/out/$name.png" --out "$DEST/$name.heic" >/dev/null
-	sips -s format heic -s formatOptions "$HEIC_QUALITY" "$HERE/out/${name}_front.png" --out "$DEST/${name}_front.heic" >/dev/null
-	# Where the app puts its live panels and the front wall; must ship with the images it was
-	# rendered with.
+	# Where the app puts its live panels; must ship with the image it was rendered with.
 	cp "$HERE/out/${name}_anchors.json" "$DEST/${name}_anchors.json"
-	echo "Wrote $DEST/$name.heic, ${name}_front.heic and ${name}_anchors.json"
+	echo "Wrote $DEST/$name.heic and ${name}_anchors.json"
 }
 
 PREVIEW=0

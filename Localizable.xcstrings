@@ -69260,9 +69260,6 @@
         }
       }
     },
-    "Lock Screen" : {
-      "comment" : "Cinema: hide the app window's bar, once it has been pushed back where the viewer wants it"
-    },
     "Lockdown" : {
       "localizations" : {
         "es" : {
@@ -148383,9 +148380,6 @@
           }
         }
       }
-    },
-    "Unlock Screen" : {
-      "comment" : "Cinema: let the app window be moved again"
     },
     "Unlocked" : {
       "localizations" : {

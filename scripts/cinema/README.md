@@ -28,12 +28,6 @@ Since the camera, eye height and axes come from `tent_base.py`, the anchors an e
 
 The render also writes `sar_tent_anchors.json`, which `build.sh` copies next to the image. It says where each board the app draws on sits, relative to the camera, in RealityKit's axes. The app places its panels from it, so moving a board and re-rendering moves the panel with it. The app pushes each panel out along the lines from the camera until it sits just inside the backdrop sphere, and grows it to match, so it covers the same part of the view and has the same stereo depth as the painted tent around it.
 
-## The front wall
-
-The panorama sits on a 50 m sphere, so in stereo everything in it looks far away, while the app window is about 2 m from the viewer. To make the window look set into the wall, the render also writes the front wall on its own, `<name>_front.png`, which `build.sh` ships as `<name>_front.heic`. The app draws it as a flat wall just behind the window, at the window's depth, with a black frame round the window, and turns the tent so the painted front wall faces the window. The front wall stays in the panorama too, behind it.
-
-The image is a perspective view from the seat, cropped to the wall: 5.6 m wide, from the floor to the ridge, at about 400 pixels per meter. From the seat it lines up with the panorama exactly, including the bits of the corner tables and the last string-light bulbs that are in front of the wall, which a flat-on (orthographic) view would leave out. The anchors file gives the wall's distance from the camera, the part of the wall's plane the image covers (`bounds`) and the wall's outline, a pentagon because of the gable. The app shrinks it about the viewer's eye by the window's distance over the wall's (2.8 m), so it covers the same part of the view as the painted wall.
-
 ## HEIC
 
 `build.sh` converts the rendered PNG with `sips` at HEIC quality 88. That quality was picked by decoding the HEIC and comparing it with the PNG (PSNR and SSIM, over the whole image and over crops of the canvas, the banner, the plaque, the forest through the door and a window), and by looking at the same crops side by side. Quality 88 matched or beat the old JPEG at quality 85 in every crop, and no difference from the PNG could be seen in the crops at 3× zoom. For the tent at 4096 × 2048:
