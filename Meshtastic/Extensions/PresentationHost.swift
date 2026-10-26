@@ -195,7 +195,7 @@ extension View {
 }
 
 private enum HostedPresentationStyle {
-	case sheet, fullScreenCover
+	case sheet, fullScreenCover, popover
 }
 
 private struct HostedFlagPresentation<Page: View>: ViewModifier {
@@ -211,6 +211,8 @@ private struct HostedFlagPresentation<Page: View>: ViewModifier {
 			content.sheet(isPresented: $isPresented, onDismiss: onDismiss, content: page)
 		case (.window, .fullScreenCover):
 			content.fullScreenCover(isPresented: $isPresented, onDismiss: onDismiss, content: page)
+		case (.window, .popover):
+			content.popover(isPresented: $isPresented, content: page)
 		case (.panel, _):
 			content.modifier(PanelPush(isPresented: $isPresented, onDismiss: onDismiss, page: page))
 		}
@@ -232,6 +234,8 @@ private struct HostedItemPresentation<Item: Identifiable, Page: View>: ViewModif
 			content.sheet(item: $item, onDismiss: onDismiss, content: page)
 		case (.window, .fullScreenCover):
 			content.fullScreenCover(item: $item, onDismiss: onDismiss, content: page)
+		case (.window, .popover):
+			content.popover(item: $item, content: page)
 		case (.panel, _):
 			content
 				.modifier(PanelPush(
@@ -306,6 +310,14 @@ extension View {
 		@ViewBuilder content: @escaping () -> Popover
 	) -> some View {
 		modifier(HostedPopover(isPresented: isPresented, anchor: attachmentAnchor, arrowEdge: arrowEdge, page: content))
+	}
+
+	/// `.popover(item:)` in a window; a pushed page in a panel.
+	func hostedPopover<Item: Identifiable, Popover: View>(
+		item: Binding<Item?>,
+		@ViewBuilder content: @escaping (Item) -> Popover
+	) -> some View {
+		modifier(HostedItemPresentation(style: .popover, item: item, onDismiss: nil, page: content))
 	}
 }
 

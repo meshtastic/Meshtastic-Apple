@@ -82,7 +82,7 @@ struct NodeMapContent: MapContent {
 										.onTapGesture {
 											selectedPosition = (selectedPosition == position ? nil : position)
 										}
-										.popover(item: $selectedPosition) { selection in
+										.hostedPopover(item: $selectedPosition) { selection in
 											PositionPopover(position: selection)
 												.padding()
 												.opacity(0.8)
@@ -100,7 +100,7 @@ struct NodeMapContent: MapContent {
 										.onTapGesture {
 											selectedPosition = (selectedPosition == position ? nil : position)
 										}
-										.popover(item: $selectedPosition) { selection in
+										.hostedPopover(item: $selectedPosition) { selection in
 											PositionPopover(position: selection)
 												.padding()
 												.opacity(0.8)
