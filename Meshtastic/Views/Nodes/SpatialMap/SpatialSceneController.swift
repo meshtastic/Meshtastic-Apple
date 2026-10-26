@@ -45,6 +45,8 @@ final class SpatialSceneController {
 	let terrainAnchor = Entity()
 	/// Holds the coverage overlay, in model units like the terrain, so it is not counter-scaled.
 	let coverageContainer = Entity()
+	/// Holds the weather radar overlay, under the coverage.
+	let weatherRadarContainer = Entity()
 	let nodesContainer = Entity()
 	let selectionContainer = Entity()
 	let trafficContainer = Entity()
@@ -116,6 +118,7 @@ final class SpatialSceneController {
 	private var terrainEntity: ModelEntity?
 	private var coverageEntity: ModelEntity?
 	private var coverageOpacity: Float?
+	private var weatherRadarEntity: ModelEntity?
 	private var pins: [Int64: Pin] = [:]
 	private var hitShapes: [HitShapeKey: [ShapeResource]] = [:]
 	private var applied: [Int64: SpatialNodeSnapshot] = [:]
@@ -158,6 +161,7 @@ final class SpatialSceneController {
 		model.addChild(terrainAnchor)
 		model.addChild(wheel.root)
 		terrainAnchor.addChild(placeholder)
+		terrainAnchor.addChild(weatherRadarContainer)
 		terrainAnchor.addChild(coverageContainer)
 		terrainAnchor.addChild(nodesContainer)
 		terrainAnchor.addChild(links.root)
@@ -240,22 +244,6 @@ final class SpatialSceneController {
 		// While a new circle builds, the old terrain stays up with the zoom previewed on it.
 		terrainEntity?.isEnabled = terrainEntity != nil
 		placeholder.isEnabled = terrainEntity == nil
-	}
-
-	/// Swaps in the coverage overlay. It is built for one terrain, so it only shows while that
-	/// terrain (`revision`) is the one on the table; a new terrain hides it until its own is built.
-	func apply(coverage entity: ModelEntity?, revision: Int?, opacity: Float) {
-		if entity !== coverageEntity {
-			coverageEntity?.removeFromParent()
-			if let entity { coverageContainer.addChild(entity) }
-			coverageEntity = entity
-			coverageOpacity = opacity
-		}
-		if let coverageEntity, opacity != coverageOpacity {
-			SpatialCoverageEntity.setOpacity(opacity, on: coverageEntity)
-			coverageOpacity = opacity
-		}
-		coverageContainer.isEnabled = coverageEntity != nil && terrainEntity != nil && revision != nil && revision == placement?.revision
 	}
 
 	/// Shows the circle the map is heading for on the terrain that is built: scaled about the new
@@ -723,6 +711,37 @@ extension SpatialSceneController {
 	func stepWheel(deltaTime: Double) {
 		guard wheelMotion.step(dt: deltaTime) else { return }
 		model.orientation = simd_quatf(angle: wheelMotion.shown, axis: [0, 1, 0])
+	}
+}
+
+// MARK: - Overlays
+
+extension SpatialSceneController {
+	/// Swaps in the coverage overlay. It is built for one terrain, so it only shows while that
+	/// terrain (`revision`) is the one on the table; a new terrain hides it until its own is built.
+	func apply(coverage entity: ModelEntity?, revision: Int?, opacity: Float) {
+		if entity !== coverageEntity {
+			coverageEntity?.removeFromParent()
+			if let entity { coverageContainer.addChild(entity) }
+			coverageEntity = entity
+			coverageOpacity = opacity
+		}
+		if let coverageEntity, opacity != coverageOpacity {
+			SpatialOverlayEntity.setOpacity(opacity, on: coverageEntity)
+			coverageOpacity = opacity
+		}
+		coverageContainer.isEnabled = coverageEntity != nil && terrainEntity != nil && revision != nil && revision == placement?.revision
+	}
+
+	/// Swaps in the weather radar overlay. Like the coverage, it only shows on the terrain it was
+	/// built for.
+	func apply(weatherRadar entity: ModelEntity?, revision: Int?) {
+		if entity !== weatherRadarEntity {
+			weatherRadarEntity?.removeFromParent()
+			if let entity { weatherRadarContainer.addChild(entity) }
+			weatherRadarEntity = entity
+		}
+		weatherRadarContainer.isEnabled = weatherRadarEntity != nil && terrainEntity != nil && revision != nil && revision == placement?.revision
 	}
 }
 #endif
