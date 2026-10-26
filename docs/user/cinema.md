@@ -14,7 +14,7 @@ The screen on the tent's front wall shows the app. The tabs above it are the app
 
 ## The 3D map
 
-The [3D spatial map](map.md#opening-the-spatial-map-apple-vision-pro) opens in front of you when you enter, at its largest size. If you close it, **Open 3D Map** on the control panel brings it back.
+The [3D spatial map](map.md) opens in front of you when you enter, at its largest size. If you close it, **Open 3D Map** on the control panel brings it back.
 
 ## Boards
 
