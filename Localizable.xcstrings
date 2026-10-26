@@ -99444,6 +99444,9 @@
         }
       }
     },
+    "No trace routes yet" : {
+      "comment" : "Cinema trace route board: shown when no trace route has come back yet"
+    },
     "Node" : {
       "localizations" : {
         "da" : {
@@ -139308,6 +139311,9 @@
           }
         }
       }
+    },
+    "The latest trace route you send or hear shows here." : {
+      "comment" : "Cinema trace route board: what fills the empty board"
     },
     "The maximum interval that can elapse without a node broadcasting a position" : {
       "localizations" : {

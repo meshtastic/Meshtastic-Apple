@@ -152,8 +152,9 @@ final class WidgetTraceRouteRenderer {
 
 	/// The newest route that came back: requested and answered, or observed.
 	/// `response` is a scalar, so the predicate is safe; rate-limited and
-	/// pending records are skipped in Swift by `state()`.
-	private static func latestRoute(context: ModelContext) -> TraceRouteEntity? {
+	/// pending records are skipped in Swift by `state()`. The cinema's trace
+	/// route board shows the same one.
+	static func latestRoute(context: ModelContext) -> TraceRouteEntity? {
 		var descriptor = FetchDescriptor<TraceRouteEntity>(
 			predicate: #Predicate { $0.response == true },
 			sortBy: [SortDescriptor(\.time, order: .reverse)]

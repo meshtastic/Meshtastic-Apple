@@ -11,9 +11,11 @@ import OSLog
 import simd
 
 /// The boards in a cinema environment's image that the app draws live panels on.
-enum CinemaBoard: String {
+enum CinemaBoard: String, CaseIterable {
 	/// The whiteboard behind the viewer's left shoulder: the team roster.
 	case teamStatus
+	/// The print on the right wall by the door: the latest trace route's share card.
+	case traceRoute
 }
 
 /// Where the boards in an environment's image sit. The render script writes this next to the
