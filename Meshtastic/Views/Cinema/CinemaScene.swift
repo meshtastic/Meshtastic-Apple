@@ -24,44 +24,97 @@ enum CinemaScreenRequest: Equatable {
 enum CinemaScene {
 	static let id = "cinema-space"
 
+	/// Keeps the paths that bring the main window back from opening two: set when a window is
+	/// asked for, clear once one appears. A request made while the app is inactive can be
+	/// dropped, so after a while without a window it is given up on and the next ask goes through.
+	struct ReopenLatch {
+		/// How long a request is trusted to bring a window.
+		static let timeout: TimeInterval = 3
+		private(set) var requestedAt: Date?
+
+		/// Whether a window was asked for and none has appeared since, dropped or not.
+		var awaitingWindow: Bool { requestedAt != nil }
+
+		/// Whether a request is still on its way.
+		func isPending(at now: Date) -> Bool {
+			timeRemaining(at: now) > 0
+		}
+
+		/// How much longer the request on its way is trusted for; zero without one.
+		func timeRemaining(at now: Date) -> TimeInterval {
+			guard let requestedAt else { return 0 }
+			return max(0, Self.timeout - now.timeIntervalSince(requestedAt))
+		}
+
+		/// Records an ask for a window unless one is on its way. Returns whether to open one.
+		mutating func request(at now: Date) -> Bool {
+			guard !isPending(at: now) else { return false }
+			requestedAt = now
+			return true
+		}
+
+		/// A main window appeared, asked for or not.
+		mutating func windowAppeared() {
+			requestedAt = nil
+		}
+	}
+
 	#if os(visionOS)
 	@MainActor private static var isOpening = false
 	/// Set when the cinema closed the main window, so leaving it always brings the window back.
 	@MainActor static var closedMainWindow = false
-	/// Set while a main window the cinema asked for is still on its way, so the space's reopen on
-	/// the way to the background, its onDisappear and the 3D map's backup don't open two. The next
-	/// main window to appear clears it.
-	@MainActor private(set) static var reopeningMainWindow = false
+	@MainActor private static var latch = ReopenLatch()
+	/// Asks again once a request on its way has had its time, in case it was dropped.
+	@MainActor private static var retry: Task<Void, Never>?
 
-	/// Brings the main window back when none is open and none is on its way.
+	/// Brings the main window back when none is open. Scene configuration names are nil on
+	/// visionOS and the session role can't tell the main window from the Mesh Map window, so the
+	/// count the main windows keep is the only check. While a window asked for is still on its
+	/// way, waits for it and asks again if it never comes.
 	@MainActor
 	static func reopenMainWindow(_ openWindow: OpenWindowAction, appState: AppState) {
-		guard appState.mainWindowCount == 0, !reopeningMainWindow else { return }
-		reopeningMainWindow = true
-		openWindow(id: MeshtasticAppleApp.mainWindowID)
+		guard appState.mainWindowCount == 0 else { return }
+		let now = Date()
+		if latch.request(at: now) {
+			openWindow(id: MeshtasticAppleApp.mainWindowID)
+		} else {
+			retryLater(after: latch.timeRemaining(at: now), openWindow, appState: appState)
+		}
 	}
 
 	/// A main window appeared, asked for or not.
 	@MainActor
 	static func mainWindowAppeared() {
-		reopeningMainWindow = false
+		latch.windowAppeared()
+		retry?.cancel()
+		retry = nil
 	}
 
-	/// The app is back in the foreground and the main window it asked for on the way to the
-	/// background never came: a backgrounded app may not get to open one. Asks again, unless a
-	/// window is already there or on its way in (the app relaunched from Home opens one itself).
+	/// The app is back in the foreground and a main window the cinema asked for never came: a
+	/// request made on the way to the background can be dropped. Asks again, after a window the
+	/// system opens itself (the app relaunched from Home) has had a moment to appear, and not
+	/// into an open space, whose way out brings the window back.
 	@MainActor
 	static func reopenMainWindowAfterBackground(_ openWindow: OpenWindowAction, appState: AppState) {
-		guard reopeningMainWindow, !appState.cinemaOpen, !appState.showcaseOpen, !windowSceneExists else { return }
-		reopeningMainWindow = false
-		reopenMainWindow(openWindow, appState: appState)
+		guard latch.awaitingWindow else { return }
+		retry?.cancel()
+		retry = Task {
+			try? await Task.sleep(for: .seconds(1))
+			guard !Task.isCancelled, !appState.cinemaOpen, !appState.showcaseOpen else { return }
+			reopenMainWindow(openWindow, appState: appState)
+		}
 	}
 
-	/// Whether a window's scene is connected, showing or still on its way in. Scene configuration
-	/// names are nil on visionOS, but the session role tells a window (the main window or the
-	/// Mesh Map window) from the 3D map's volume and the immersive spaces.
-	@MainActor private static var windowSceneExists: Bool {
-		UIApplication.shared.connectedScenes.contains { $0.session.role == .windowApplication }
+	/// Asks for the main window again after a delay. Not from the background, where the ask may
+	/// be dropped again; the return to the foreground asks instead.
+	@MainActor
+	private static func retryLater(after delay: TimeInterval, _ openWindow: OpenWindowAction, appState: AppState) {
+		retry?.cancel()
+		retry = Task {
+			try? await Task.sleep(for: .seconds(delay))
+			guard !Task.isCancelled, UIApplication.shared.applicationState != .background else { return }
+			reopenMainWindow(openWindow, appState: appState)
+		}
 	}
 
 	/// Opens the space unless it is open or opening. Returns whether it is open afterwards.

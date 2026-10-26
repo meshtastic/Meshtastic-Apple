@@ -203,9 +203,7 @@ private struct CinemaScreenGate: View {
 			Text("Continue in the app window", comment: "Cinema: the front screen while the radio is locked or needs a firmware update, which only the app window can handle")
 				.font(.title)
 			Button {
-				if appState.mainWindowCount == 0 {
-					openWindow(id: MeshtasticAppleApp.mainWindowID)
-				}
+				CinemaScene.reopenMainWindow(openWindow, appState: appState)
 			} label: {
 				Label(String(localized: "Open App Window", comment: "Cinema: opens the app's main window from the immersive cinema"), systemImage: "macwindow")
 			}

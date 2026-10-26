@@ -324,9 +324,7 @@ struct SpatialMapWindow: View {
 		guard let url = URL(string: route) else { return }
 		appState.pendingRoute = PendingRoute(url: url, bringForward: true)
 		// With no main window, open one; it takes the route as it appears.
-		if appState.mainWindowCount == 0 {
-			openWindow(id: MeshtasticAppleApp.mainWindowID)
-		}
+		CinemaScene.reopenMainWindow(openWindow, appState: appState)
 	}
 
 	/// Any scene that is not one of the secondary windows.

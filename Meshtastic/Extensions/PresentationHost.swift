@@ -681,10 +681,14 @@ private struct OpenInAppWindowButton: View {
 
 	var body: some View {
 		Button {
-			if appState.mainWindowCount == 0 {
-				openWindow(id: MeshtasticAppleApp.mainWindowID)
-			} else {
+			if appState.mainWindowCount > 0 {
 				appState.mainWindowForwardRequest = UUID()
+			} else {
+				#if os(visionOS)
+				CinemaScene.reopenMainWindow(openWindow, appState: appState)
+				#else
+				openWindow(id: MeshtasticAppleApp.mainWindowID)
+				#endif
 			}
 		} label: {
 			Label {
