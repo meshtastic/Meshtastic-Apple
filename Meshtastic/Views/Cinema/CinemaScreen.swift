@@ -5,6 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 10/25/26.
 //
 #if os(visionOS)
+import Combine
 import SwiftData
 import SwiftUI
 import UIKit
@@ -64,12 +65,26 @@ final class CinemaScreenModel: ObservableObject {
 	/// The pages and banners the sections' sheets and dialogs become on the screen.
 	let presenter = PanelPresenter()
 	private var tokens: [UUID] = []
+	private var cancellables: Set<AnyCancellable> = []
 
 	init() {
 		routers = Dictionary(uniqueKeysWithValues: CinemaSection.allCases.map {
 			($0, Router(navigationState: NavigationState(selectedTab: $0.tab)))
 		})
 		filters = Dictionary(uniqueKeysWithValues: CinemaSection.allCases.map { ($0, NodeFilterParameters()) })
+		// The screens switch tabs through their router, like Node Detail's Estimate Coverage or a
+		// message's mention. Each section has its own router, so the switch and where it was going
+		// are passed on to the section that shows it, once the screen has set both.
+		for (section, router) in routers {
+			router.$selectedTab
+				.dropFirst()
+				.filter { $0 != section.tab }
+				.receive(on: DispatchQueue.main)
+				.sink { [weak self] _ in
+					MainActor.assumeIsolated { self?.forwardTabSwitch(from: section) }
+				}
+				.store(in: &cancellables)
+		}
 		#if DEBUG
 		// Simulator screenshots: `--meshtastic-cinema-section <name>` starts on that section.
 		let arguments = ProcessInfo.processInfo.arguments
@@ -105,6 +120,35 @@ final class CinemaScreenModel: ObservableObject {
 			section = .map
 			router(for: .map).mapState = .traceRoute(routeId)
 		}
+	}
+
+	/// Moves a tab switch made in one section's router to the section for that tab, with the
+	/// state the screen set for it, and puts the first router back on its own tab.
+	func forwardTabSwitch(from source: CinemaSection) {
+		let from = router(for: source)
+		let tab = from.selectedTab
+		guard tab != source.tab else { return }
+		from.selectedTab = source.tab
+		guard let target = CinemaSection.allCases.first(where: { $0.tab == tab }) else { return }
+		let to = router(for: target)
+		switch target {
+		case .messages:
+			to.messagesState = from.messagesState
+			to.messagesSection = from.messagesSection
+			from.messagesState = nil
+			from.messagesSection = nil
+		case .nodes:
+			to.selectedNodeNum = from.selectedNodeNum
+		case .map:
+			to.mapState = from.mapState
+			from.mapState = nil
+		case .settings:
+			to.settingsPath = from.settingsPath
+			from.settingsPath = []
+		case .connect:
+			break
+		}
+		section = target
 	}
 
 	/// Registers the routers and the page stack with the app's windows, so switching radios pops
