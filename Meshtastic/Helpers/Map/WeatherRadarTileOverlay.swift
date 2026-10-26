@@ -17,6 +17,8 @@ enum WeatherRadar {
 	static let refreshInterval: TimeInterval = 5 * 60
 	/// Drawn over the map, not instead of it.
 	static let opacity: CGFloat = 0.6
+	/// Half the width of the world in EPSG:3857 meters.
+	static let mercatorWorldHalf = 20_037_508.342789244
 
 	/// The current refresh period, used to fetch new tiles when it changes.
 	static func refreshPeriod(at date: Date = .now) -> Int {
@@ -35,6 +37,39 @@ enum WeatherRadar {
 	static func isOffered(location: CLLocationCoordinate2D?, countryCode: String?, phoneRegion: Locale.Region?) -> Bool {
 		guard let location else { return phoneRegion == .unitedStates }
 		return covers(location) && countryCode == "US"
+	}
+
+	/// A box's bounds in EPSG:3857 meters, y up. The same Mercator the spatial map's texture is
+	/// laid out in, so an image of these bounds lines up with the terrain.
+	static func mercatorBounds(for bounds: GeoBounds) -> CGRect {
+		let minX = bounds.minLon / 180 * mercatorWorldHalf
+		let maxX = bounds.maxLon / 180 * mercatorWorldHalf
+		let minY = mercatorWorldHalf * (1 - 2 * SpatialFrame.mercatorY(bounds.minLat))
+		let maxY = mercatorWorldHalf * (1 - 2 * SpatialFrame.mercatorY(bounds.maxLat))
+		return CGRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
+	}
+
+	/// One WMS GetMap of `mercatorBounds` at `width` by `height` pixels, transparent where there is
+	/// no rain. The server speaks WMS rather than serving z/x/y tiles, so each image asks for its
+	/// own Web Mercator bounds. `refreshPeriod` only changes the URL so caches don't serve an old image.
+	static func imageURL(mercatorBounds bounds: CGRect, width: Int, height: Int, refreshPeriod: Int) -> URL {
+		let bbox = [bounds.minX, bounds.minY, bounds.maxX, bounds.maxY].map { String(format: "%.2f", $0) }.joined(separator: ",")
+		var components = URLComponents(string: "https://opengeo.ncep.noaa.gov/geoserver/conus/conus_bref_qcd/ows")!
+		components.queryItems = [
+			URLQueryItem(name: "SERVICE", value: "WMS"),
+			URLQueryItem(name: "VERSION", value: "1.1.0"),
+			URLQueryItem(name: "REQUEST", value: "GetMap"),
+			URLQueryItem(name: "LAYERS", value: "conus_bref_qcd"),
+			URLQueryItem(name: "STYLES", value: ""),
+			URLQueryItem(name: "FORMAT", value: "image/png"),
+			URLQueryItem(name: "TRANSPARENT", value: "true"),
+			URLQueryItem(name: "SRS", value: "EPSG:3857"),
+			URLQueryItem(name: "BBOX", value: bbox),
+			URLQueryItem(name: "WIDTH", value: String(width)),
+			URLQueryItem(name: "HEIGHT", value: String(height)),
+			URLQueryItem(name: "period", value: String(refreshPeriod))
+		]
+		return components.url!
 	}
 }
 
@@ -85,33 +120,15 @@ final class WeatherRadarTileOverlay: MKTileOverlay {
 		Self.url(for: path, refreshPeriod: refreshPeriod)
 	}
 
-	/// The server speaks WMS rather than serving z/x/y tiles, so each tile asks for its own
-	/// Web Mercator bounds. `refreshPeriod` only changes the URL so MapKit doesn't reuse old tiles.
+	/// One tile's image: a GetMap of the tile's own Web Mercator bounds.
 	static func url(for path: MKTileOverlayPath, refreshPeriod: Int) -> URL {
-		let bounds = mercatorBounds(x: path.x, y: path.y, z: path.z)
-		let bbox = [bounds.minX, bounds.minY, bounds.maxX, bounds.maxY].map { String(format: "%.2f", $0) }.joined(separator: ",")
-		var components = URLComponents(string: "https://opengeo.ncep.noaa.gov/geoserver/conus/conus_bref_qcd/ows")!
-		components.queryItems = [
-			URLQueryItem(name: "SERVICE", value: "WMS"),
-			URLQueryItem(name: "VERSION", value: "1.1.0"),
-			URLQueryItem(name: "REQUEST", value: "GetMap"),
-			URLQueryItem(name: "LAYERS", value: "conus_bref_qcd"),
-			URLQueryItem(name: "STYLES", value: ""),
-			URLQueryItem(name: "FORMAT", value: "image/png"),
-			URLQueryItem(name: "TRANSPARENT", value: "true"),
-			URLQueryItem(name: "SRS", value: "EPSG:3857"),
-			URLQueryItem(name: "BBOX", value: bbox),
-			URLQueryItem(name: "WIDTH", value: "256"),
-			URLQueryItem(name: "HEIGHT", value: "256"),
-			URLQueryItem(name: "period", value: String(refreshPeriod))
-		]
-		return components.url!
+		WeatherRadar.imageURL(mercatorBounds: mercatorBounds(x: path.x, y: path.y, z: path.z), width: 256, height: 256, refreshPeriod: refreshPeriod)
 	}
 
 	/// A tile's bounds in EPSG:3857 meters, as minX/minY/maxX/maxY of the rect (y up, unlike map
 	/// points). Tile y counts down from the top.
 	static func mercatorBounds(x: Int, y: Int, z: Int) -> CGRect {
-		let worldHalf = 20_037_508.342789244
+		let worldHalf = WeatherRadar.mercatorWorldHalf
 		let tileSize = worldHalf * 2 / Double(1 << z)
 		let minX = -worldHalf + Double(x) * tileSize
 		let maxY = worldHalf - Double(y) * tileSize
