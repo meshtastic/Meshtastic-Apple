@@ -156,6 +156,11 @@ class AppState: ObservableObject {
 		return spatialMapRoute.routeId
 	}
 
+	/// True from entering the cinema until it has closed and reopened the spatial map volume in
+	/// front of the viewer. The volume leaves focus and route requests unclaimed meanwhile, so the
+	/// reopened one takes them.
+	@Published var spatialMapReopening = false
+
 	/// What the cinema's front screen should show next, from a tap on one of the tent's boards;
 	/// claimed by the cinema the same way.
 	@Published var cinemaScreenRequest: CinemaScreenRequest?

@@ -124,6 +124,12 @@ struct SpatialMapWindow: View {
 		.onChange(of: appState.spatialMapRoute?.id) {
 			claimRoute()
 		}
+		.onChange(of: appState.spatialMapReopening) { _, reopening in
+			if !reopening {
+				claimFocus()
+				claimRoute()
+			}
+		}
 		.onChange(of: scenePhase) { _, phase in
 			if phase == .background {
 				dismissWindow(id: SpatialMapScene.id)
@@ -252,10 +258,10 @@ struct SpatialMapWindow: View {
 		}
 	}
 
-	/// Opens the showcase and, once it is showing, closes this volume: the showcase is one space,
-	/// and the map moves onto its desk.
+	/// Selects and zooms to the node another window or a cinema board asked for. Not while the
+	/// cinema is about to close and reopen this volume: the request waits for the reopened one.
 	private func claimFocus() {
-		guard let nodeNum = appState.claimSpatialMapFocus() else { return }
+		guard !appState.spatialMapReopening, let nodeNum = appState.claimSpatialMapFocus() else { return }
 		model.focus(on: nodeNum)
 		refresh()
 	}
@@ -263,8 +269,9 @@ struct SpatialMapWindow: View {
 	/// Flies a trace route asked for by id, as picking it in the route menu does, and fits the map
 	/// to it so the whole route is on the disk. The route may be newer than the last read, so the
 	/// routes are read again if it isn't there. A volume that just opened waits for its table first.
+	/// Like the focus, not while the cinema is about to reopen the volume.
 	private func claimRoute() {
-		guard let routeId = appState.claimSpatialMapRoute() else { return }
+		guard !appState.spatialMapReopening, let routeId = appState.claimSpatialMapRoute() else { return }
 		routeRequestTask?.cancel()
 		routeRequestTask = Task {
 			if !model.routes.contains(where: { $0.id == routeId }) {

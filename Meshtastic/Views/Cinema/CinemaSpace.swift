@@ -108,6 +108,7 @@ struct CinemaSpace: View {
 		}
 		.onAppear {
 			appState.cinemaOpen = true
+			appState.spatialMapReopening = true
 			screen.register(with: appState.sceneRouters)
 		}
 		.onChange(of: appState.cinemaScreenRequest) {
@@ -118,7 +119,9 @@ struct CinemaSpace: View {
 		.task {
 			// The screen takes the main window's place. Once the space has settled, close the window
 			// and reopen the map: with no window to sit beside, the system puts it in front of the
-			// viewer, between them and the screen.
+			// viewer, between them and the screen. Until the map is back, a board's focus or route
+			// request waits for it (`spatialMapReopening`); the map about to close would take it.
+			defer { appState.spatialMapReopening = false }
 			try? await Task.sleep(for: .seconds(2))
 			guard appState.cinemaOpen else { return }
 			if appState.mainWindowCount > 0 {
