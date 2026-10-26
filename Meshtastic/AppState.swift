@@ -146,4 +146,13 @@ class AppState: ObservableObject {
 		self.spatialMapFocus = nil
 		return spatialMapFocus.nodeNum
 	}
+
+	/// A trace route the spatial map volume should fly once it is showing; claimed the same way.
+	@Published var spatialMapRoute: SpatialMapRouteRequest?
+
+	func claimSpatialMapRoute() -> Int64? {
+		guard let spatialMapRoute else { return nil }
+		self.spatialMapRoute = nil
+		return spatialMapRoute.routeId
+	}
 }

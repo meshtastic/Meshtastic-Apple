@@ -38,6 +38,8 @@ struct SpatialMapWindow: View {
 	@AppStorage("spatialMapCoverageOpacity") private var coverageOpacity = 0.55
 	@State private var downloadPrompt = SpatialMapDownloadPrompt()
 	@State private var showingMapSearch = false
+	/// Flies a route asked for by id once the routes and the table are ready.
+	@State private var routeRequestTask: Task<Void, Never>?
 
 	init() {
 		let scene = SpatialSceneController()
@@ -117,6 +119,9 @@ struct SpatialMapWindow: View {
 		.onChange(of: appState.spatialMapFocus?.id) {
 			claimFocus()
 		}
+		.onChange(of: appState.spatialMapRoute?.id) {
+			claimRoute()
+		}
 		.onChange(of: scenePhase) { _, phase in
 			if phase == .background {
 				dismissWindow(id: SpatialMapScene.id)
@@ -125,12 +130,14 @@ struct SpatialMapWindow: View {
 		.onAppear {
 			SpatialTerrainKeeper.shared.volumeAppeared()
 			claimFocus()
+			claimRoute()
 			if !Self.mainWindowIsOpen {
 				dismissWindow(id: SpatialMapScene.id)
 			}
 		}
 		.onDisappear {
 			SpatialTerrainKeeper.shared.volumeDisappeared()
+			routeRequestTask?.cancel()
 		}
 		.onReceive(NotificationCenter.default.publisher(for: UIScene.didDisconnectNotification)) { _ in
 			if !Self.mainWindowIsOpen {
@@ -228,6 +235,36 @@ struct SpatialMapWindow: View {
 		guard let nodeNum = appState.claimSpatialMapFocus() else { return }
 		model.focus(on: nodeNum)
 		refresh()
+	}
+
+	/// Flies a trace route asked for by id, as picking it in the route menu does. The route may be
+	/// newer than the last read, so the routes are read again if it isn't there. A volume that just
+	/// opened waits for its table first.
+	private func claimRoute() {
+		guard let routeId = appState.claimSpatialMapRoute() else { return }
+		routeRequestTask?.cancel()
+		routeRequestTask = Task {
+			if !model.routes.contains(where: { $0.id == routeId }) {
+				await model.reloadRoutes(container: context.container)
+			}
+			guard !Task.isCancelled else { return }
+			guard let route = model.routes.first(where: { $0.id == routeId }) else {
+				Logger.services.info("[Spatial] Trace route \(routeId, privacy: .public) has no positions to draw; not shown")
+				return
+			}
+			var waited = 0
+			while scene.placement == nil, waited < 30 {
+				guard (try? await Task.sleep(for: .seconds(1))) != nil else { return }
+				waited += 1
+			}
+			guard scene.placement != nil else {
+				Logger.services.info("[Spatial] Trace route \(routeId, privacy: .public) not shown: the map isn't ready")
+				return
+			}
+			Logger.services.info("[Spatial] Showing trace route \(routeId, privacy: .public)")
+			model.shownRoute = route
+			traffic.startFlyover(route)
+		}
 	}
 
 	/// Hands a route to the main window, which comes forward to show it. Opening the URL with

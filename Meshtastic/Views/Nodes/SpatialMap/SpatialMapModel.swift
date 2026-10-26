@@ -326,6 +326,13 @@ final class SpatialMapModel {
 		}
 	}
 
+	/// Reads the routes now and waits for them, for a route asked for by id that may be newer than
+	/// the last read.
+	func reloadRoutes(container: ModelContainer) async {
+		let fresh = await SpatialRouteReader.routes(container: container)
+		if fresh != routes { routes = fresh }
+	}
+
 	/// Whether a downloaded basemap covers the box being shown, so the Offline layer can be picked.
 	func offlineLayerAvailable(regions: [OfflineMapRegion]) -> Bool {
 		guard let bounds = targetCircle?.bounds else { return false }

@@ -10,7 +10,7 @@ import SwiftUI
 
 /// The latest trace route on the framed print by the tent's door in the cinema, drawn as the
 /// app's own share card: the same route the trace route widget shows, requested or observed.
-/// Tapping it opens the route on the map in the app window.
+/// Tapping it flies the route on the 3D map.
 struct TraceRouteBoard: View {
 	@EnvironmentObject private var appState: AppState
 	@Environment(\.modelContext) private var context
@@ -23,8 +23,10 @@ struct TraceRouteBoard: View {
 	/// The board's size in points. CinemaSpace scales the panel to the print in the image, so only
 	/// the 1.1 × 0.9 m shape matters.
 	static let size = CGSize(width: 1430, height: 1170)
-	/// Mat around the card.
-	private static let mat: CGFloat = 56
+	/// Strip of the print left showing around the card's background.
+	private static let mat: CGFloat = 14
+	/// Gap between the card's background and its content, so text doesn't touch the edge.
+	private static let inset: CGFloat = 24
 	/// How often the store is checked for a newer route. One small fetch; the card is only rebuilt
 	/// when the route changes.
 	private static let refreshInterval: Duration = .seconds(5)
@@ -36,7 +38,7 @@ struct TraceRouteBoard: View {
 		ZStack {
 			if let card {
 				Button {
-					showInMainWindow(card.routeId)
+					showOnSpatialMap(card.routeId)
 				} label: {
 					cardView(card)
 				}
@@ -61,21 +63,29 @@ struct TraceRouteBoard: View {
 		}
 	}
 
-	/// The share card at its own width, scaled to fit inside the mat.
+	/// The card's background across the print, with the card's content at its own width scaled to
+	/// fit inside it. The content goes without the card's own margin and minimum height, which would
+	/// only leave more empty background around it here.
 	private func cardView(_ card: Card) -> some View {
-		TraceRouteShareCard(model: card.model, mapImage: card.mapImage)
-			.environment(\.dynamicTypeSize, .large)
-			.fixedSize()
-			.onGeometryChange(for: CGSize.self) { $0.size } action: { cardSize = $0 }
-			.scaleEffect(cardScale)
-			.opacity(cardSize == .zero ? 0 : 1)
-			.frame(width: Self.size.width, height: Self.size.height)
-			.contentShape(Rectangle())
+		ZStack {
+			TraceRouteShareBackground(glowRadius: 460 * cardScale)
+				.clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+			TraceRouteShareCard(model: card.model, mapImage: card.mapImage, framed: false)
+				.environment(\.dynamicTypeSize, .large)
+				.fixedSize()
+				.onGeometryChange(for: CGSize.self) { $0.size } action: { cardSize = $0 }
+				.scaleEffect(cardScale)
+				.opacity(cardSize == .zero ? 0 : 1)
+		}
+		.frame(width: Self.size.width - Self.mat * 2, height: Self.size.height - Self.mat * 2)
+		.frame(width: Self.size.width, height: Self.size.height)
+		.contentShape(Rectangle())
 	}
 
 	private var cardScale: CGFloat {
 		guard cardSize.width > 0, cardSize.height > 0 else { return 1 }
-		return min((Self.size.width - Self.mat * 2) / cardSize.width, (Self.size.height - Self.mat * 2) / cardSize.height)
+		let margin = (Self.mat + Self.inset) * 2
+		return min((Self.size.width - margin) / cardSize.width, (Self.size.height - margin) / cardSize.height)
 	}
 
 	private var emptyState: some View {
@@ -137,13 +147,11 @@ struct TraceRouteBoard: View {
 		)
 	}
 
-	/// Hands the route to the main window's map, opening a window if there is none.
-	private func showInMainWindow(_ routeId: Int64) {
-		guard let url = URL(string: "meshtastic:///map?tracerouteId=\(routeId)") else { return }
-		appState.pendingRoute = PendingRoute(url: url, bringForward: true)
-		if appState.mainWindowCount == 0 {
-			openWindow(id: MeshtasticAppleApp.mainWindowID)
-		}
+	/// Asks the 3D map to fly the route, opening the map if it was closed. It takes the request as
+	/// it appears.
+	private func showOnSpatialMap(_ routeId: Int64) {
+		appState.spatialMapRoute = SpatialMapRouteRequest(routeId: routeId)
+		openWindow(id: SpatialMapScene.id, value: SpatialMapSceneKey.shared)
 	}
 }
 
