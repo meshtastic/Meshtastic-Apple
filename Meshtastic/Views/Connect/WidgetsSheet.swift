@@ -33,7 +33,7 @@ struct WidgetsSheet: View {
 	private static let appleWidgetGuide = URL(string: "https://support.apple.com/118610")!
 
 	var body: some View {
-		NavigationStack {
+		SheetNavigationStack {
 			Form {
 				liveActivitySections
 				widgetsSection

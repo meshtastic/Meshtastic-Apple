@@ -48,7 +48,7 @@ private struct NetworkRow: View {
 			}
 			.padding(.vertical, 4)
 		}
-		.sheet(isPresented: $showPasswordSheet) {
+		.hostedSheet(isPresented: $showPasswordSheet) {
 			PasswordEntrySheet(
 				ssid: network.essid,
 				onSubmit: { password in
@@ -80,7 +80,7 @@ struct PasswordEntrySheet: View {
 	@FocusState private var passwordFocused: Bool
 
 	var body: some View {
-		NavigationStack {
+		SheetNavigationStack {
 			Form {
 				Section {
 					LabeledContent("Network") {
@@ -156,7 +156,7 @@ struct WifiNetworkListView: View {
 		}
 		.listStyle(.insetGrouped)
 		// Hidden-network sheet — uses a custom binding to capture SSID + password together.
-		.sheet(isPresented: $showOtherSheet) {
+		.hostedSheet(isPresented: $showOtherSheet) {
 			HiddenNetworkSheet(
 				onSubmit: { ssid, password in
 					showOtherSheet = false
@@ -186,7 +186,7 @@ private struct HiddenNetworkSheet: View {
 	@FocusState private var ssidFocused: Bool
 
 	var body: some View {
-		NavigationStack {
+		SheetNavigationStack {
 			Form {
 				Section {
 					LabeledContent("Network Name") {
