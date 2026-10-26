@@ -70,6 +70,9 @@ struct MainScene: View {
 			.onChange(of: appState.pendingRoute?.id) { _, _ in
 				claimPendingRoute()
 			}
+			.onChange(of: appState.mainWindowForwardRequest) { _, request in
+				if request != nil { bringForward() }
+			}
 			.onChange(of: scenePhase) { _, phase in
 				if phase == .active {
 					claimPendingRoute()
@@ -186,12 +189,18 @@ struct MainScene: View {
 	private func claimPendingRoute() {
 		guard scenePhase == .active else { return }
 		guard let route = appState.claimPendingRoute() else { return }
-		if route.bringForward, let sceneSession {
-			UIApplication.shared.requestSceneSessionActivation(sceneSession, userActivity: nil, options: nil) { error in
-				Logger.services.error("🛣 [App] Couldn't bring the window forward: \(error.localizedDescription, privacy: .public)")
-			}
+		if route.bringForward {
+			bringForward()
 		}
 		dispatchIncomingURL(route.url, fromActivity: false)
+	}
+
+	/// Brings this window to the front, for a route or a request from another window.
+	private func bringForward() {
+		guard let sceneSession else { return }
+		UIApplication.shared.requestSceneSessionActivation(sceneSession, userActivity: nil, options: nil) { error in
+			Logger.services.error("🛣 [App] Couldn't bring the window forward: \(error.localizedDescription, privacy: .public)")
+		}
 	}
 
 	private func dispatchIncomingURL(_ url: URL, fromActivity: Bool) {

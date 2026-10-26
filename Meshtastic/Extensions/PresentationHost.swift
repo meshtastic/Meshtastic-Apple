@@ -661,22 +661,24 @@ private struct WindowOnly: ViewModifier {
 	}
 }
 
-/// Opens the main window when none is open. With one already open there is nothing to do,
-/// so it hides.
+/// Opens the main window, or brings the open one forward rather than opening another. Always
+/// there: it stands in for a control, which shouldn't vanish once a window is open.
 private struct OpenInAppWindowButton: View {
 	@EnvironmentObject private var appState: AppState
 	@Environment(\.openWindow) private var openWindow
 
 	var body: some View {
-		if appState.mainWindowCount == 0 {
-			Button {
+		Button {
+			if appState.mainWindowCount == 0 {
 				openWindow(id: MeshtasticAppleApp.mainWindowID)
-			} label: {
-				Label {
-					Text("Open in App Window", comment: "Button on a panel in the immersive space, shown in place of something that only works in the app window (sharing, saving a file, Apple Maps)")
-				} icon: {
-					Image(systemName: "arrow.up.forward.app")
-				}
+			} else {
+				appState.mainWindowForwardRequest = UUID()
+			}
+		} label: {
+			Label {
+				Text("Open in App Window", comment: "Button on a panel in the immersive space, shown in place of something that only works in the app window (sharing, saving a file, Apple Maps)")
+			} icon: {
+				Image(systemName: "arrow.up.forward.app")
 			}
 		}
 	}

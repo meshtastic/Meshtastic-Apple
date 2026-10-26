@@ -51,6 +51,10 @@ class AppState: ObservableObject {
 	/// How many main windows are showing. Scene configuration names are nil on visionOS, so the
 	/// scene list can't tell a main window from the spatial map volume.
 	@Published var mainWindowCount = 0
+	/// A one-shot ask for the open main windows to come to the front, from a button on a panel in
+	/// the visionOS immersive space that stands in for a control only a window can show. Every main
+	/// window answers it.
+	@Published var mainWindowForwardRequest: UUID?
 	/// Initial tab for a debug performance seed, applied once by the first main window.
 	var launchNavigation: NavigationState?
 	@Published var unreadChannelMessages: Int
