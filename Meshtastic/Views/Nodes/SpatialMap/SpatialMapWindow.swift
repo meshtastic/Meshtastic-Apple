@@ -30,6 +30,9 @@ struct SpatialMapWindow: View {
 	@AppStorage("spatialMapDark") private var darkMap = true
 	/// Shared with the 2D map's Contour Lines setting.
 	@AppStorage("meshMapShowContours") private var showContours = false
+	/// Shared with the 2D map's Weather Radar setting.
+	@AppStorage("meshMapShowWeatherRadar") private var showWeatherRadar = false
+	@ObservedObject private var weatherRadar = WeatherRadarAvailability.shared
 	@AppStorage("spatialMapShowLabels") private var showLabels = true
 	@AppStorage("spatialMapShowTraffic") private var showTraffic = true
 	@AppStorage("spatialMapShowDirectLinks") private var showLinks = false
@@ -50,7 +53,7 @@ struct SpatialMapWindow: View {
 	private var preset: ModemPresets { ModemPresets(rawValue: UserDefaults.modemPreset) ?? .longFast }
 
 	private var refreshKey: String {
-		"\(mapLayer.rawValue)|\(darkMap)|\(showContours)|\(preciseLocationsOnly)|\(showLinks)|\(coverageMode.rawValue)|\(accessoryManager.activeDeviceNum ?? 0)|\(accessoryManager.isInBackground)"
+		"\(mapLayer.rawValue)|\(darkMap)|\(showContours)|\(showWeatherRadar)|\(preciseLocationsOnly)|\(showLinks)|\(coverageMode.rawValue)|\(accessoryManager.activeDeviceNum ?? 0)|\(accessoryManager.isInBackground)"
 	}
 
 	var body: some View {
@@ -71,7 +74,7 @@ struct SpatialMapWindow: View {
 		.ornament(attachmentAnchor: .scene(.bottomFront)) {
 			SpatialMapOrnament(
 				model: model, traffic: traffic, mapLayer: $mapLayer, darkMap: $darkMap, showContours: $showContours,
-				showLabels: $showLabels, showLinks: $showLinks, showTraffic: $showTraffic, autoTerrain: $autoTerrain,
+				showWeatherRadar: $showWeatherRadar, showLabels: $showLabels, showLinks: $showLinks, showTraffic: $showTraffic, autoTerrain: $autoTerrain,
 				coverageMode: $coverageMode, coverageOpacity: $coverageOpacity, showRoute: show(route:)
 			)
 		}
@@ -83,6 +86,18 @@ struct SpatialMapWindow: View {
 					showingMapSearch = true
 				}
 				try? await Task.sleep(for: .seconds(2))
+			}
+		}
+		.task(id: showWeatherRadar) {
+			// Where the radar is offered follows the device, as on the 2D map: looked up once on
+			// open, so the map menu can offer the toggle, then once a period while the radar is on.
+			// It reverse geocodes, so it stays out of the node loop above.
+			await refreshWeatherRadarAvailability()
+			guard showWeatherRadar else { return }
+			while !Task.isCancelled {
+				let next = Double(WeatherRadar.refreshPeriod() + 1) * WeatherRadar.refreshInterval
+				guard (try? await Task.sleep(for: .seconds(max(1, next - Date.now.timeIntervalSince1970)))) != nil else { return }
+				await refreshWeatherRadarAvailability()
 			}
 		}
 		// No node has a position and no map has been downloaded: offer the map search.
@@ -116,6 +131,7 @@ struct SpatialMapWindow: View {
 			model.coverageOpacity = Float(opacity)
 		}
 		.onChange(of: connectivity.isNetworkAvailable) { wasAvailable, isAvailable in
+			model.networkAvailable = isAvailable
 			if !wasAvailable && isAvailable { model.retryImagery() }
 		}
 		.onChange(of: appState.spatialMapFocus?.id) {
@@ -132,7 +148,7 @@ struct SpatialMapWindow: View {
 		}
 		.onChange(of: scenePhase) { _, phase in
 			if phase == .background {
-				dismissWindow(id: SpatialMapScene.id)
+				close()
 			}
 		}
 		// Backup for the cinema closing without bringing an app window back, so the volume isn't
@@ -148,27 +164,30 @@ struct SpatialMapWindow: View {
 			}
 		}
 		.onAppear {
+			model.isClosed = false
 			SpatialTerrainKeeper.shared.volumeAppeared()
 			appState.spatialMapWindowCount += 1
 			claimFocus()
 			claimRoute()
 			if !Self.mainWindowIsOpen {
-				dismissWindow(id: SpatialMapScene.id)
+				close()
 			}
 		}
 		.onDisappear {
+			model.isClosed = true
 			SpatialTerrainKeeper.shared.volumeDisappeared()
 			appState.spatialMapWindowCount = max(0, appState.spatialMapWindowCount - 1)
 			routeRequestTask?.cancel()
 		}
 		.onReceive(NotificationCenter.default.publisher(for: UIScene.didDisconnectNotification)) { _ in
 			if !Self.mainWindowIsOpen {
-				dismissWindow(id: SpatialMapScene.id)
+				close()
 			}
 		}
 		.trackScreen(.spatialMap)
 		#if DEBUG
 		.task { await showRouteForScreenshots() }
+		.task { await closeForTests() }
 		#endif
 	}
 
@@ -198,6 +217,23 @@ struct SpatialMapWindow: View {
 		traffic.startFlyover(route, speed: 10)
 	}
 
+	/// Simulator checks: `--meshtastic-spatial-close <seconds>` closes the volume that long after
+	/// it opens, once a terrain build is in flight, to see what the build does when it finishes
+	/// after the volume is gone.
+	private func closeForTests() async {
+		let arguments = ProcessInfo.processInfo.arguments
+		guard let flagIndex = arguments.firstIndex(of: "--meshtastic-spatial-close"), arguments.indices.contains(flagIndex + 1),
+			  let seconds = Double(arguments[flagIndex + 1]) else { return }
+		guard (try? await Task.sleep(for: .seconds(seconds))) != nil else { return }
+		var waited = 0
+		while !model.isBuildingTerrain, waited < 3000 {
+			guard (try? await Task.sleep(for: .milliseconds(20))) != nil else { return }
+			waited += 1
+		}
+		Logger.services.info("🧪 [Spatial] Closing the volume during a terrain build, radar offered \(model.weatherRadarOffered, privacy: .public) (launch argument)")
+		close()
+	}
+
 	/// The simulator's camera looks at the table edge on; tip it toward the viewer.
 	private func tiltForScreenshots(_ arguments: [String]) {
 		if let tiltIndex = arguments.firstIndex(of: "--meshtastic-spatial-tilt"), arguments.indices.contains(tiltIndex + 1),
@@ -219,11 +255,22 @@ struct SpatialMapWindow: View {
 		metrics.convert(CGFloat(meters), from: .meters)
 	}
 
+	/// Closes the volume. The model stops its radar fetches now, not when the scene has finished
+	/// going away, which takes a moment; a terrain build still running then finds it closed.
+	private func close() {
+		model.isClosed = true
+		dismissWindow(id: SpatialMapScene.id)
+	}
+
 	private func refresh() {
 		model.connectedNodeNum = accessoryManager.activeDeviceNum
 		traffic.connectedNodeNum = accessoryManager.activeDeviceNum
 		traffic.preset = preset
+		// Before the radar's settings, so an offline open can't start a fetch.
+		model.networkAvailable = connectivity.isNetworkAvailable
 		model.showContours = showContours
+		model.showWeatherRadar = showWeatherRadar
+		model.weatherRadarOffered = weatherRadar.isOffered
 		model.showLinks = showLinks
 		model.autoDownloadTerrain = autoTerrain
 		model.coverageMode = coverageMode
@@ -237,6 +284,11 @@ struct SpatialMapWindow: View {
 				nodeFilters.fallbackLocation = coordinate
 			}
 		}
+	}
+
+	private func refreshWeatherRadarAvailability() async {
+		await weatherRadar.refresh()
+		Logger.services.info("🧊 [Spatial] Weather radar availability refreshed: offered \(self.weatherRadar.isOffered, privacy: .public)")
 	}
 
 	/// The estimate runs in the map's form, which has the antenna settings and a full-size window
@@ -344,6 +396,7 @@ struct SpatialMapOrnament: View {
 	@Binding var mapLayer: MapLayer
 	@Binding var darkMap: Bool
 	@Binding var showContours: Bool
+	@Binding var showWeatherRadar: Bool
 	@Binding var showLabels: Bool
 	@Binding var showLinks: Bool
 	@Binding var showTraffic: Bool
@@ -353,6 +406,7 @@ struct SpatialMapOrnament: View {
 	/// Shows a route picked in the trace route menu; the window fits the map to it and flies it.
 	let showRoute: (SpatialRouteSnapshot) -> Void
 	@ObservedObject private var offline = OfflineMapManager.shared
+	@ObservedObject private var weatherRadar = WeatherRadarAvailability.shared
 	@State private var confirmingTerrainDownload = false
 
 	var body: some View {
@@ -374,6 +428,12 @@ struct SpatialMapOrnament: View {
 				}
 				Toggle(isOn: $showContours) {
 					Label(String(localized: "Contour Lines"), systemImage: "point.topleft.down.to.point.bottomright.curvepath")
+				}
+				// Only where the radar has data, like the 2D map's setting it shares.
+				if weatherRadar.isOffered {
+					Toggle(isOn: $showWeatherRadar) {
+						Label(String(localized: "Weather Radar"), systemImage: "cloud.rain")
+					}
 				}
 				coverageMenu
 				Toggle(isOn: $autoTerrain) {
@@ -431,7 +491,6 @@ struct SpatialMapOrnament: View {
 				.accessibilityLabel(String(localized: "Reset zoom", comment: "Spatial map: button showing how far the map is zoomed in; tapping it zooms back out to the whole mesh"))
 				.accessibilityValue(Text(verbatim: "\(model.zoom.formatted(.number.precision(.fractionLength(0...1))))×"))
 			}
-
 
 			Divider().frame(height: 20)
 

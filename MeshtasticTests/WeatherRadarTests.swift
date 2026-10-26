@@ -63,4 +63,31 @@ struct WeatherRadarTests {
 		#expect(WeatherRadar.isOffered(location: nil, countryCode: nil, phoneRegion: .unitedStates))
 		#expect(!WeatherRadar.isOffered(location: nil, countryCode: nil, phoneRegion: .canada))
 	}
+
+	@Test func boxBoundsAreWebMercatorMeters() {
+		let worldHalf = WeatherRadar.mercatorWorldHalf
+		let world = WeatherRadar.mercatorBounds(for: GeoBounds(minLon: -180, minLat: -85.05, maxLon: 180, maxLat: 85.05))
+		#expect(abs(world.minX + worldHalf) < 0.01 && abs(world.maxX - worldHalf) < 0.01)
+		// The Mercator limit is a touch short of the world's half height.
+		#expect(abs(world.minY + 20_036_051.92) < 0.01 && abs(world.maxY - 20_036_051.92) < 0.01)
+
+		// The square around a 50 km circle on Seattle, as the spatial map boxes it.
+		let box = SpatialCircle(latitude: 47.61, longitude: -122.33, radiusMeters: 50_000).bounds
+		let bounds = WeatherRadar.mercatorBounds(for: box)
+		#expect(abs(bounds.minX + 13_691_877.86) < 0.01)
+		#expect(abs(bounds.minY - 5_968_367.61) < 0.01)
+		#expect(abs(bounds.maxX + 13_543_548.76) < 0.01)
+		#expect(abs(bounds.maxY - 6_116_701.87) < 0.01)
+	}
+
+	@Test func imageURLAsksForTheBoundsAtTheSize() throws {
+		let worldHalf = WeatherRadar.mercatorWorldHalf
+		let url = WeatherRadar.imageURL(mercatorBounds: CGRect(x: 0, y: -worldHalf, width: worldHalf, height: worldHalf), width: 300, height: 200, refreshPeriod: 7)
+		let items = try #require(URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems)
+		let query = Dictionary(uniqueKeysWithValues: items.map { ($0.name, $0.value ?? "") })
+		#expect(query["BBOX"] == "0.00,-20037508.34,20037508.34,0.00")
+		#expect(query["WIDTH"] == "300" && query["HEIGHT"] == "200")
+		#expect(query["FORMAT"] == "image/png" && query["TRANSPARENT"] == "true")
+		#expect(query["period"] == "7")
+	}
 }
