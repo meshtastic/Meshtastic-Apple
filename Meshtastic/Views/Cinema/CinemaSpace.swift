@@ -140,15 +140,26 @@ struct CinemaSpace: View {
 			screen.unregister(from: appState.sceneRouters)
 			// Bring the main window back. Not when the app went to the background, which closes the
 			// cinema too; but the space also reports .background while it closes, so when the
-			// cinema closed the window itself, always.
-			if appState.mainWindowCount == 0, scenePhase != .background || CinemaScene.closedMainWindow {
-				openWindow(id: MeshtasticAppleApp.mainWindowID)
+			// cinema closed the window itself, always. The fallback for the reopen below.
+			if scenePhase != .background || CinemaScene.closedMainWindow {
+				CinemaScene.reopenMainWindow(openWindow, appState: appState)
 			}
 			CinemaScene.closedMainWindow = false
 		}
 		.onChange(of: scenePhase) { _, phase in
-			if phase == .background {
+			switch phase {
+			case .inactive:
+				// On the way to the background (Digital Crown, headset off) the system takes the
+				// space down, and a backgrounded app may not get to open a window. So when the
+				// cinema closed the window, it comes back now, while the app is still in the
+				// foreground. If this was only a pause, the window sits in the tent.
+				if CinemaScene.closedMainWindow {
+					CinemaScene.reopenMainWindow(openWindow, appState: appState)
+				}
+			case .background:
 				Task { await dismissImmersiveSpace() }
+			default:
+				break
 			}
 		}
 		.trackScreen(.cinema)

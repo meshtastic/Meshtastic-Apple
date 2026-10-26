@@ -355,6 +355,12 @@ struct MeshtasticAppleApp: App {
 				MeshPackets.appIsActive = true
 				accessoryManager.appDidBecomeActive()
 				appState.refreshBadgeCount(context: persistenceController.container.mainContext)
+				#if os(visionOS)
+				// The cinema closed the main window and the app went to the background with the
+				// space up: if the reopen asked for on the way there was ignored, nothing else
+				// would open a window now.
+				CinemaScene.reopenMainWindowAfterBackground(openWindow, appState: appState)
+				#endif
 			@unknown default:
 				Logger.services.error("🍎 [App] Apple must have changed something")
 			}

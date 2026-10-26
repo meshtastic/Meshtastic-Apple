@@ -6,6 +6,9 @@
 //
 import OSLog
 import SwiftUI
+#if os(visionOS)
+import UIKit
+#endif
 
 /// A one-shot ask for the cinema's front screen to show something, from a tap on one of the
 /// tent's boards; claimed by the cinema once it has it.
@@ -25,6 +28,41 @@ enum CinemaScene {
 	@MainActor private static var isOpening = false
 	/// Set when the cinema closed the main window, so leaving it always brings the window back.
 	@MainActor static var closedMainWindow = false
+	/// Set while a main window the cinema asked for is still on its way, so the space's reopen on
+	/// the way to the background, its onDisappear and the 3D map's backup don't open two. The next
+	/// main window to appear clears it.
+	@MainActor private(set) static var reopeningMainWindow = false
+
+	/// Brings the main window back when none is open and none is on its way.
+	@MainActor
+	static func reopenMainWindow(_ openWindow: OpenWindowAction, appState: AppState) {
+		guard appState.mainWindowCount == 0, !reopeningMainWindow else { return }
+		reopeningMainWindow = true
+		openWindow(id: MeshtasticAppleApp.mainWindowID)
+	}
+
+	/// A main window appeared, asked for or not.
+	@MainActor
+	static func mainWindowAppeared() {
+		reopeningMainWindow = false
+	}
+
+	/// The app is back in the foreground and the main window it asked for on the way to the
+	/// background never came: a backgrounded app may not get to open one. Asks again, unless a
+	/// window is already there or on its way in (the app relaunched from Home opens one itself).
+	@MainActor
+	static func reopenMainWindowAfterBackground(_ openWindow: OpenWindowAction, appState: AppState) {
+		guard reopeningMainWindow, !appState.cinemaOpen, !appState.showcaseOpen, !windowSceneExists else { return }
+		reopeningMainWindow = false
+		reopenMainWindow(openWindow, appState: appState)
+	}
+
+	/// Whether a window's scene is connected, showing or still on its way in. Scene configuration
+	/// names are nil on visionOS, but the session role tells a window (the main window or the
+	/// Mesh Map window) from the 3D map's volume and the immersive spaces.
+	@MainActor private static var windowSceneExists: Bool {
+		UIApplication.shared.connectedScenes.contains { $0.session.role == .windowApplication }
+	}
 
 	/// Opens the space unless it is open or opening. Returns whether it is open afterwards.
 	@MainActor @discardableResult

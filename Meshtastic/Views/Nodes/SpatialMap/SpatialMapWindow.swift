@@ -136,13 +136,14 @@ struct SpatialMapWindow: View {
 			}
 		}
 		// Backup for the cinema closing without bringing an app window back, so the volume isn't
-		// left on its own. After the cinema's own reopen has had a moment, so they don't open two.
+		// left on its own. After the cinema's own reopen has had a moment, and not while that one
+		// is still on its way, so they don't open two.
 		.onChange(of: appState.cinemaOpen) { _, open in
 			guard !open else { return }
 			Task {
 				try? await Task.sleep(for: .seconds(1.5))
-				if !appState.cinemaOpen, appState.mainWindowCount == 0, UIApplication.shared.applicationState != .background {
-					openWindow(id: MeshtasticAppleApp.mainWindowID)
+				if !appState.cinemaOpen, UIApplication.shared.applicationState != .background {
+					CinemaScene.reopenMainWindow(openWindow, appState: appState)
 				}
 			}
 		}

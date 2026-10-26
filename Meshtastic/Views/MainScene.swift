@@ -39,6 +39,9 @@ struct MainScene: View {
 				if routerToken == nil {
 					routerToken = appState.sceneRouters.register(router)
 					appState.mainWindowCount += 1
+					#if os(visionOS)
+					CinemaScene.mainWindowAppeared()
+					#endif
 					if let launch = appState.takeLaunchNavigation() {
 						router.navigationState = launch
 					}
