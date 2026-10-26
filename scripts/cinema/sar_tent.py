@@ -51,25 +51,18 @@ def furnish(layout):
     black_plastic = material("BlackPlastic", (0.02, 0.02, 0.02), 0.45)
     led_green = material("LEDGreen", (0, 1, 0.3), emission=(0.1, 1, 0.3), strength=8)
     led_red = material("LEDRed", (1, 0, 0), emission=(1, 0.1, 0.05), strength=8)
-    mug = material("Mug", (0.75, 0.75, 0.72), 0.3)
-    paper = material("Paper", (0.88, 0.87, 0.82), 0.8)
-    bottle = material("Bottle", (0.3, 0.5, 0.8), 0.1)
     wall = HALF_WIDTH - 0.38
 
     # Comms table along the left wall, under the plaque. Short, and pushed back in its bay just clear
     # of the tent leg behind it, so its front end stays clear of the whiteboard's stand as seen from
-    # the seat.
+    # the seat. Bare: the app puts its own radio models on it.
     comms_length = 1.6
     comms_y = -0.75 + comms_length / 2
     folding_table("CommsTable", (-wall, comms_y), comms_length, True, table_top, steel)
-    box("ChargerBank", (0.16, 0.5, 0.04), (-wall - 0.15, comms_y + 0.5, 0.78), black_plastic, bevel=0.005)
-    for i in range(6):
-        radio((-wall - 0.15, comms_y + 0.31 + i * 0.075, 0.80), black_plastic, black_plastic, led_green if i % 3 else led_red)
-    cylinder("Mug", 0.04, (-wall + 0.25, comms_y + 0.65, 0.76), (-wall + 0.25, comms_y + 0.65, 0.86), mug)
-    cylinder("Bottle", 0.035, (-wall + 0.25, comms_y + 0.05, 0.76), (-wall + 0.25, comms_y + 0.05, 0.98), bottle)
-    box("PowerStrip", (0.06, 0.4, 0.04), (-wall - 0.3, comms_y - 0.1, 0.78), material("Strip", (0.8, 0.8, 0.78), 0.5))
-    for i in range(3):
-        box("Log", (0.21, 0.29, 0.004), (-wall + 0.2 + rng.uniform(-0.03, 0.03), comms_y - 0.62 + i * 0.01, 0.765 + i * 0.004), paper, rotation=(0, 0, rng.uniform(-0.2, 0.2)))
+    # The logs that used to lie on it drew six numbers here. Still draw them, so the map pins
+    # stay where they were.
+    for _ in range(6):
+        rng.random()
 
     # Radio table in the back corner on the left, under the window.
     folding_table("RadioTable", (-wall, -1.8), 1.3, True, table_top, steel)
