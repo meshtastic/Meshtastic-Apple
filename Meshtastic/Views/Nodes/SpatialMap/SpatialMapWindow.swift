@@ -149,6 +149,7 @@ struct SpatialMapWindow: View {
 		}
 		.onAppear {
 			SpatialTerrainKeeper.shared.volumeAppeared()
+			appState.spatialMapWindowCount += 1
 			claimFocus()
 			claimRoute()
 			if !Self.mainWindowIsOpen {
@@ -157,6 +158,7 @@ struct SpatialMapWindow: View {
 		}
 		.onDisappear {
 			SpatialTerrainKeeper.shared.volumeDisappeared()
+			appState.spatialMapWindowCount = max(0, appState.spatialMapWindowCount - 1)
 			routeRequestTask?.cancel()
 		}
 		.onReceive(NotificationCenter.default.publisher(for: UIScene.didDisconnectNotification)) { _ in

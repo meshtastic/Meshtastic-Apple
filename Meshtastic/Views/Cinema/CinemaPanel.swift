@@ -7,11 +7,13 @@
 #if os(visionOS)
 import SwiftUI
 
-/// The small panel near the viewer in the cinema: which environment to sit in, the app window
-/// (for anything that needs a real window), and Leave.
+/// The small panel near the viewer in the cinema: which environment to sit in, the 3D map while
+/// it is closed, and Leave.
 struct CinemaPanel: View {
 	@Binding var environment: CinemaEnvironment
-	let onOpenAppWindow: () -> Void
+	/// Whether the 3D map is showing or on its way; the button to open it is only there while not.
+	let spatialMapOpen: Bool
+	let onOpenSpatialMap: () -> Void
 	let onLeave: () -> Void
 
 	var body: some View {
@@ -22,8 +24,14 @@ struct CinemaPanel: View {
 				}
 			}
 			.pickerStyle(.menu)
-			Button(action: onOpenAppWindow) {
-				Label(String(localized: "Open App Window", comment: "Cinema: opens the app's main window from the immersive cinema"), systemImage: "macwindow")
+			if !spatialMapOpen {
+				Button(action: onOpenSpatialMap) {
+					Label {
+						Text("Open 3D Map", comment: "Cinema: opens the 3D map volume from the panel in the immersive cinema")
+					} icon: {
+						Image("custom.map.wheel")
+					}
+				}
 			}
 			Button(role: .cancel, action: onLeave) {
 				Label(String(localized: "Leave", comment: "Cinema: close the immersive cinema and go back to the app window"), systemImage: "xmark")

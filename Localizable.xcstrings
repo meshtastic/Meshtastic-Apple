@@ -103499,6 +103499,9 @@
         }
       }
     },
+    "Open 3D Map" : {
+      "comment" : "Cinema: opens the 3D map volume from the panel in the immersive cinema"
+    },
     "Open App Window" : {
       "comment" : "Cinema: opens the app's main window from the immersive cinema"
     },

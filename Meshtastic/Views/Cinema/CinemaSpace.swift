@@ -10,7 +10,7 @@ import SwiftData
 import SwiftUI
 
 /// Root of the cinema immersive space: an environment around the viewer and a small panel to
-/// change the environment, open the app window or leave. The front wall is a screen that shows
+/// change the environment, open the 3D map or leave. The front wall is a screen that shows
 /// the app's sections, picked from a tab strip above it. The tent's whiteboard shows the live
 /// team roster, and the print by the door the latest trace route. The main window closes while
 /// the space is open and the 3D map opens in front of the viewer instead.
@@ -65,10 +65,10 @@ struct CinemaSpace: View {
 			placeBoards()
 		} attachments: {
 			Attachment(id: Attachments.panel) {
-				CinemaPanel(environment: $environment) {
-					if appState.mainWindowCount == 0 {
-						openWindow(id: MeshtasticAppleApp.mainWindowID)
-					}
+				// The map counts as open while the cinema is reopening it, so the button doesn't
+				// show for the second in between.
+				CinemaPanel(environment: $environment, spatialMapOpen: appState.spatialMapWindowCount > 0 || appState.spatialMapReopening) {
+					openWindow(id: SpatialMapScene.id, value: SpatialMapSceneKey.shared)
 				} onLeave: {
 					Task { await dismissImmersiveSpace() }
 				}

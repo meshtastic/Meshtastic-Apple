@@ -142,6 +142,11 @@ class AppState: ObservableObject {
 	/// Whether the visionOS cinema immersive space is showing.
 	@Published var cinemaOpen = false
 
+	/// How many spatial map volumes are showing: one at most, but counted rather than flagged
+	/// because the view is remade on a database reset and the new one can appear before the old
+	/// one is gone.
+	@Published var spatialMapWindowCount = 0
+
 	/// A node the spatial map volume should select once it is showing; claimed the same way.
 	@Published var spatialMapFocus: SpatialMapFocusRequest?
 
