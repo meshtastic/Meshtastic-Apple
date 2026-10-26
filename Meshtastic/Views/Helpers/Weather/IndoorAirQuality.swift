@@ -86,7 +86,7 @@ struct IndoorAirQuality: View {
 		.accessibilityAction {
 			isLegendOpen.toggle()
 		}
-		.popover(isPresented: self.$isLegendOpen, arrowEdge: .bottom, content: {
+		.hostedPopover(isPresented: self.$isLegendOpen, arrowEdge: .bottom, content: {
 			VStack(spacing: 0.5) {
 				IAQScale()
 			}
