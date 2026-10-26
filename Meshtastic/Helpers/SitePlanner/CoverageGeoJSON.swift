@@ -54,22 +54,22 @@ struct CoverageStyle {
 }
 
 extension CoverageGrid {
-	/// The coverage as non-overlapping signal bands, one MultiPolygon feature per band. The strongest band is
-	/// open-ended so a cell above `maxDBm` still draws. Each band is a union of merged cell rectangles.
+	/// The coverage as non-overlapping signal bands, one MultiPolygon feature per band, traced as smooth
+	/// outlines (CoverageBands.swift). The strongest band is open-ended so a sample above `maxDBm` still draws.
 	func geoJSON(style: CoverageStyle) -> String {
 		let step = (style.maxDBm - style.minDBm) / Double(style.bandCount)
+		let floors = (0..<style.bandCount).map { style.minDBm + step * Double($0) }
+		let bands = bandPolygons(floors: floors)
 		var features: [[String: Any]] = []
-		for index in 0..<style.bandCount {
-			let lower = style.minDBm + step * Double(index)
-			let upper = index == style.bandCount - 1 ? Double.infinity : lower + step
-			let rings = bandRectangles(lower: lower, upper: upper)
-			guard !rings.isEmpty else { continue }
+		for (index, lower) in floors.enumerated() {
+			let polygons = bands[index]
+			guard !polygons.isEmpty else { continue }
 			// Spread across the band index, not its floor, so the ramp's brightest end appears.
 			let color = style.colorScale.color(at: Double(index) / Double(max(style.bandCount - 1, 1)))
 			let label = "≥ \(Self.oneDecimal(lower)) dBm"
 			features.append([
 				"type": "Feature",
-				"geometry": ["type": "MultiPolygon", "coordinates": rings.map { [$0] }],
+				"geometry": ["type": "MultiPolygon", "coordinates": polygons.map { $0.map(Self.shortPositions) }],
 				"properties": [
 					"title": label,
 					"label": label,
@@ -100,44 +100,15 @@ extension CoverageGrid {
 		return text
 	}
 
-	/// Cells in `lower..<upper`, greedily merged into rectangles: horizontal runs extended down while the whole
-	/// run stays in band. Each sample sits on a grid node, so its cell spans half a step either side of it.
-	/// Each ring is closed, as `[lon, lat]` positions.
-	func bandRectangles(lower: Double, upper: Double) -> [[[Double]]] {
-		func inBand(_ x: Int, _ y: Int) -> Bool {
-			let value = at(x, y)
-			return !value.isNaN && value >= lower && value < upper
-		}
-		var taken = [Bool](repeating: false, count: width * height)
-		var rings: [[[Double]]] = []
-		for y in 0..<height {
-			var x = 0
-			while x < width {
-				if taken[y * width + x] || !inBand(x, y) {
-					x += 1
-					continue
-				}
-				var runEnd = x
-				while runEnd + 1 < width, !taken[y * width + runEnd + 1], inBand(runEnd + 1, y) {
-					runEnd += 1
-				}
-				var runBottom = y
-				while runBottom + 1 < height,
-					  (x...runEnd).allSatisfy({ inBand($0, runBottom + 1) && !taken[(runBottom + 1) * width + $0] }) {
-					runBottom += 1
-				}
-				for row in y...runBottom {
-					for column in x...runEnd { taken[row * width + column] = true }
-				}
-				let left = longitude(atColumn: Double(x) - 0.5)
-				let right = longitude(atColumn: Double(runEnd) + 0.5)
-				let top = latitude(atRow: Double(y) - 0.5)
-				let bottom = latitude(atRow: Double(runBottom) + 0.5)
-				rings.append([[left, top], [right, top], [right, bottom], [left, bottom], [left, top]])
-				x = runEnd + 1
+	/// A ring's positions to a millionth of a degree (about 0.1 m). Decimal numbers serialize without the
+	/// 17-digit tails a Double can pick up.
+	private static func shortPositions(_ ring: Ring) -> [[NSDecimalNumber]] {
+		ring.map { position in
+			position.map { value in
+				let scaled = (value * 1_000_000).rounded()
+				return NSDecimalNumber(mantissa: UInt64(abs(scaled)), exponent: -6, isNegative: scaled < 0)
 			}
 		}
-		return rings
 	}
 
 	private static func oneDecimal(_ value: Double) -> String {
