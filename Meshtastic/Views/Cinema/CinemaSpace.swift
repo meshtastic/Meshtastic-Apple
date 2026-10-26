@@ -10,13 +10,15 @@ import SwiftData
 import SwiftUI
 
 /// Root of the cinema immersive space: an environment around the viewer and a small panel to
-/// change the environment or leave. The 3D map opens with it. The tent's whiteboard shows the live
-/// team roster, and the print by the door the latest trace route.
+/// change the environment, open the app window or leave. The front wall is a screen that shows
+/// the app's sections, picked from a tab strip above it. The tent's whiteboard shows the live
+/// team roster, and the print by the door the latest trace route. The 3D map opens with it.
 struct CinemaSpace: View {
 	/// The store, for the boards. Nil when the app runs without one (demo mode).
 	let container: ModelContainer?
 	@EnvironmentObject private var appState: AppState
 	@EnvironmentObject private var accessoryManager: AccessoryManager
+	@EnvironmentObject private var lockdown: LockdownCoordinator
 	@Environment(\.scenePhase) private var scenePhase
 	@Environment(\.dismissImmersiveSpace) private var dismissImmersiveSpace
 	@Environment(\.openWindow) private var openWindow
@@ -30,6 +32,8 @@ struct CinemaSpace: View {
 	@State private var fitBoards: EventSubscription?
 	@State private var anchors: CinemaAnchors?
 	@State private var boards = BoardPanels()
+	/// The front screen's section and navigation, kept here so they outlive its attachment.
+	@StateObject private var screen = CinemaScreenModel()
 
 	var body: some View {
 		RealityView { content, attachments in
@@ -55,10 +59,15 @@ struct CinemaSpace: View {
 			for board in CinemaBoard.allCases {
 				boards.set(attachments.entity(for: board.rawValue), for: board)
 			}
+			boards.setStrip(attachments.entity(for: Attachments.tabStrip))
 			placeBoards()
 		} attachments: {
 			Attachment(id: Attachments.panel) {
 				CinemaPanel(environment: $environment) {
+					if appState.mainWindowCount == 0 {
+						openWindow(id: MeshtasticAppleApp.mainWindowID)
+					}
+				} onLeave: {
 					Task { await dismissImmersiveSpace() }
 				}
 			}
@@ -72,12 +81,24 @@ struct CinemaSpace: View {
 					live(TraceRouteBoard(), container: container)
 				}
 			}
+			// Out during a database reset like the boards; the screen's model keeps its navigation.
+			if let container, !appState.isDatabaseResetting, anchors?.board(.screen) != nil {
+				Attachment(id: CinemaBoard.screen.rawValue) {
+					CinemaScreen(container: container, model: screen)
+						.environmentObject(appState)
+						.environmentObject(accessoryManager)
+						.environmentObject(lockdown)
+				}
+				Attachment(id: Attachments.tabStrip) {
+					CinemaTabStrip(model: screen)
+				}
+			}
 		}
 		.task(id: environment) {
 			anchors = CinemaAnchors.load(for: environment)
 			stage.position = [0, anchors?.eyeHeight ?? CinemaAnchors.seatedEyeHeight, 0]
 			stage.orientation = simd_quatf(angle: environment.frontRotation, axis: [0, 1, 0])
-			boards.fitted.removeAll()
+			boards.unfitAll()
 			let next = await CinemaBackdrop.make(environment)
 			backdrop?.removeFromParent()
 			stage.addChild(next)
@@ -85,12 +106,14 @@ struct CinemaSpace: View {
 		}
 		.onAppear {
 			appState.cinemaOpen = true
+			screen.register(with: appState.sceneRouters)
 			openWindow(id: SpatialMapScene.id, value: SpatialMapSceneKey.shared)
 		}
 		.onDisappear {
 			fitBoards?.cancel()
 			fitBoards = nil
 			appState.cinemaOpen = false
+			screen.unregister(from: appState.sceneRouters)
 			// The window may have been closed while the cinema was open. Not when the app went to
 			// the background, which closes the cinema too.
 			if appState.mainWindowCount == 0, scenePhase != .background {
@@ -109,6 +132,9 @@ struct CinemaSpace: View {
 	private final class BoardPanels {
 		var panels: [CinemaBoard: Entity] = [:]
 		var fitted: Set<CinemaBoard> = []
+		/// The tab strip above the screen, placed with the screen.
+		var strip: Entity?
+		var stripFitted = false
 
 		/// Keeps the board's panel, taking the old one out of the scene when SwiftUI drops or
 		/// replaces it (a database reset).
@@ -117,11 +143,29 @@ struct CinemaSpace: View {
 			panels[board]?.removeFromParent()
 			panels[board] = panel
 			fitted.remove(board)
+			if board == .screen { stripFitted = false }
+		}
+
+		func setStrip(_ panel: Entity?) {
+			guard strip !== panel else { return }
+			strip?.removeFromParent()
+			strip = panel
+			stripFitted = false
+		}
+
+		var allFitted: Bool {
+			fitted.count == panels.count && (strip == nil || stripFitted)
+		}
+
+		func unfitAll() {
+			fitted.removeAll()
+			stripFitted = false
 		}
 	}
 
 	private enum Attachments {
 		static let panel = "panel"
+		static let tabStrip = "screenTabs"
 	}
 
 	/// A board's view with the store and app state it reads, remade on a database reset.
@@ -136,20 +180,45 @@ struct CinemaSpace: View {
 	/// Puts each board's panel over its board in the image, out by the backdrop so both eyes see it
 	/// at the painting's depth, and scaled so it covers the same part of the view.
 	private func placeBoards() {
-		guard boards.fitted.count < boards.panels.count, let anchors else { return }
+		guard !boards.allFitted, let anchors else { return }
 		for (board, panel) in boards.panels where !boards.fitted.contains(board) {
 			guard let anchor = anchors.board(board) else { continue }
 			if panel.parent !== stage {
 				stage.addChild(panel)
 			}
+			// Measured without the screen's bezel, which goes around the panel.
+			CinemaBezel.remove(from: panel)
 			let size = panel.visualBounds(relativeTo: panel).extents
 			guard size.x > 0, size.y > 0 else { continue }
 			let push = anchor.distanceScale(within: CinemaBackdrop.radius * 0.96)
 			panel.scale = SIMD3(repeating: push * min(anchor.width / size.x, anchor.height / size.y))
 			panel.position = anchor.position * push
 			panel.orientation = anchor.orientation
+			if board == .screen {
+				CinemaBezel.add(to: panel, pointWidth: CinemaScreen.size.width, cornerRadius: CinemaScreen.cornerRadius)
+			}
 			boards.fitted.insert(board)
 		}
+		placeTabStrip(anchors)
+	}
+
+	/// The tab strip sits just above the screen and a little in front of it, pushed out with it.
+	/// Its points are a little smaller than the screen's.
+	private func placeTabStrip(_ anchors: CinemaAnchors) {
+		guard !boards.stripFitted, let strip = boards.strip, let screenPanel = boards.panels[.screen],
+			  boards.fitted.contains(.screen), let anchor = anchors.board(.screen) else { return }
+		if strip.parent !== stage {
+			stage.addChild(strip)
+		}
+		let size = strip.visualBounds(relativeTo: strip).extents
+		guard size.x > 0, size.y > 0 else { return }
+		let push = anchor.distanceScale(within: CinemaBackdrop.radius * 0.96)
+		let up = anchor.orientation.act([0, 1, 0])
+		let front = anchor.orientation.act([0, 0, 1])
+		strip.scale = screenPanel.scale * 0.75
+		strip.position = (anchor.position + up * (anchor.height / 2 + 0.125) + front * 0.05) * push
+		strip.orientation = anchor.orientation
+		boards.stripFitted = true
 	}
 
 	/// The panel sits just above the grab bar, however tall it is.

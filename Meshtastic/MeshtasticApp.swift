@@ -433,6 +433,7 @@ struct MeshtasticAppleApp: App {
 			CinemaSpace(container: Self.shouldInitializeAppServices ? persistenceController?.container : nil)
 				.environmentObject(appState)
 				.environmentObject(accessoryManager)
+				.environmentObject(lockdownCoordinator)
 		}
 		.immersionStyle(selection: $cinemaImmersion, in: .progressive(0.4...1.0, initialAmount: 1.0), .full)
 		#endif
