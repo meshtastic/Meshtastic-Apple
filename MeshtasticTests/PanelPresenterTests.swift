@@ -29,6 +29,16 @@ struct PanelPresenterTests {
 		#expect(presenter.page(id) != nil)
 	}
 
+	@Test func updateOnlyChangesAShowingPage() {
+		let presenter = PanelPresenter()
+		let id = UUID()
+		#expect(!presenter.update(id: id, content: AnyView(Text("A"))))
+		#expect(presenter.path.isEmpty)
+		presenter.push(id: id, content: AnyView(Text("A"))) {}
+		#expect(presenter.update(id: id, content: AnyView(Text("B"))))
+		#expect(presenter.path == [id])
+	}
+
 	@Test func backTapClearsTheFlagOfThePoppedPage() {
 		let presenter = PanelPresenter()
 		let first = UUID()

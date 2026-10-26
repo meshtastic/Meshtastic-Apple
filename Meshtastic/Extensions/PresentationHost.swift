@@ -83,7 +83,7 @@ private struct PanelPresentationHostModifier: ViewModifier {
 final class PanelPresenter {
 	struct Page {
 		let id: UUID
-		var content: AnyView
+		let content: PanelPageContent
 		/// Clears the presenting modifier's own isPresented binding or item.
 		let onPop: () -> Void
 	}
@@ -112,16 +112,23 @@ final class PanelPresenter {
 	}
 
 	func page(_ id: UUID) -> AnyView? {
-		pages.first { $0.id == id }?.content
+		pages.first { $0.id == id }.map { AnyView(PanelPageView(content: $0.content)) }
 	}
 
 	/// Pushes a page, or replaces its content when it is already showing.
 	func push(id: UUID, content: AnyView, onPop: @escaping () -> Void) {
-		if let index = pages.firstIndex(where: { $0.id == id }) {
-			pages[index].content = content
-		} else {
-			pages.append(Page(id: id, content: content, onPop: onPop))
+		if !update(id: id, content: content) {
+			pages.append(Page(id: id, content: PanelPageContent(content), onPop: onPop))
 		}
+	}
+
+	/// Replaces a showing page's content, without touching the stack. Returns false when the page
+	/// isn't showing.
+	@discardableResult
+	func update(id: UUID, content: AnyView) -> Bool {
+		guard let page = pages.first(where: { $0.id == id }) else { return false }
+		page.content.view = content
+		return true
 	}
 
 	/// Pops a page and any pages pushed from it.
@@ -151,6 +158,26 @@ final class PanelPresenter {
 
 	func removeBanner(id: UUID) {
 		if banner?.id == id { banner = nil }
+	}
+}
+
+/// What a pushed page shows. A sheet's content is rebuilt each time the view presenting it
+/// updates; the presenting modifier does the same by replacing this, so the page follows the
+/// state it was built from (a button enabled once a text field has text, a list of results).
+@MainActor @Observable
+final class PanelPageContent {
+	var view: AnyView
+
+	init(_ view: AnyView) {
+		self.view = view
+	}
+}
+
+private struct PanelPageView: View {
+	let content: PanelPageContent
+
+	var body: some View {
+		content.view
 	}
 }
 
@@ -265,6 +292,10 @@ private struct PanelPush<Page: View>: ViewModifier {
 	@State private var pageID = UUID()
 
 	func body(content: Content) -> some View {
+		// This runs whenever the presenting view updates, so a showing page gets the new content.
+		if let presenter, isPresented {
+			let _ = presenter.update(id: pageID, content: AnyView(page()))
+		}
 		Group {
 			if let presenter {
 				content
