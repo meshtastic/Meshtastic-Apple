@@ -62,7 +62,7 @@ struct TAKServerConfig: View {
 				connectedNode = getNodeInfo(id: nodeNum, context: context)
 			}
 		}
-		.alert("Fix Primary Channel?", isPresented: $showingFixWarning) {
+		.hostedAlert("Fix Primary Channel?", isPresented: $showingFixWarning) {
 			Button("Cancel", role: .cancel) {}
 			Button("Fix Channel", role: .destructive) {
 				fixPrimaryChannel()
@@ -82,7 +82,7 @@ struct TAKServerConfig: View {
 				handlePEMImport(result)
 			}
 		}
-		.alert("Enter P12 Password", isPresented: $showingPasswordPrompt) {
+		.hostedFormAlert("Enter P12 Password", isPresented: $showingPasswordPrompt) {
 			SecureField("Password", text: $p12Password)
 			Button("Import") {
 				importP12WithPassword()
@@ -94,12 +94,12 @@ struct TAKServerConfig: View {
 		} message: {
 			Text("Enter the password for the PKCS#12 file")
 		}
-		.alert("Import Error", isPresented: $showingImportError) {
+		.hostedAlert("Import Error", isPresented: $showingImportError) {
 			Button("OK", role: .cancel) {}
 		} message: {
 			Text(importError ?? "Unknown error")
 		}
-		.alert("Channel Fixed!", isPresented: $showShareChannelsAlert) {
+		.hostedAlert("Channel Fixed!", isPresented: $showShareChannelsAlert) {
 			Button("Share with TAK Buddies") {
 				showShareChannels = true
 			}
@@ -337,6 +337,7 @@ struct TAKServerConfig: View {
 					} label: {
 						Text("Import Custom .p12")
 					}
+					.hostedWindowOnly()
 					.buttonStyle(.bordered)
 
 					if certManager.hasCustomServerCertificate() {
@@ -381,6 +382,7 @@ struct TAKServerConfig: View {
 					} label: {
 						Text(certManager.hasClientCACertificate() ? "Add CA" : "Import .pem")
 					}
+					.hostedWindowOnly()
 					.buttonStyle(.bordered)
 
 					if certManager.hasClientCACertificate() {
@@ -422,6 +424,7 @@ struct TAKServerConfig: View {
 			} label: {
 				Label("Download TAK Server Data Package", systemImage: "arrow.down.doc.fill")
 			}
+			.hostedWindowOnly()
 		} header: {
 			Text("Client Configuration")
 		} footer: {

@@ -131,7 +131,7 @@ struct BackupManagement: View {
 		.onAppear {
 			refreshBackups()
 		}
-		.alert("Backup Failed", isPresented: Binding(
+		.hostedAlert("Backup Failed", isPresented: Binding(
 			get: { backupErrorMessage != nil },
 			set: { if !$0 { backupErrorMessage = nil } }
 		)) {
@@ -158,7 +158,7 @@ struct BackupManagement: View {
 				}
 			}
 		}
-		.alert("Delete Backup?", isPresented: $showDeleteConfirmation, presenting: entryToDelete) { entry in
+		.hostedAlert("Delete Backup?", isPresented: $showDeleteConfirmation, presenting: entryToDelete) { entry in
 			Button("Delete", role: .destructive) {
 				Task { @MainActor in
 					NodeBackupManager.shared.deleteBackup(forKey: entry.key)
@@ -169,7 +169,7 @@ struct BackupManagement: View {
 		} message: { entry in
 			Text("This will permanently delete the backup for \(entry.nodeName ?? "Node \(entry.nodeNum)") and free \(ByteCountFormatter.string(fromByteCount: entry.fileSize, countStyle: .file)) of storage.")
 		}
-		.alert("Restore Failed", isPresented: Binding(
+		.hostedAlert("Restore Failed", isPresented: Binding(
 			get: { restoreErrorMessage != nil },
 			set: { if !$0 { restoreErrorMessage = nil } }
 		)) {

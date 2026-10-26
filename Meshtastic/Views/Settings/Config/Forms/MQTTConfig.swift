@@ -312,7 +312,7 @@ private struct RootTopicField: View {
 		} label: {
 			Label("Find Topics", systemImage: "location.magnifyingglass")
 		}
-		.sheet(isPresented: $showFinder) {
+		.hostedSheet(isPresented: $showFinder) {
 			MQTTTopicFinder(config: $config, node: node)
 				.presentationDetents([.large])
 				#if !targetEnvironment(macCatalyst)

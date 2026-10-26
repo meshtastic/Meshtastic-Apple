@@ -43,7 +43,7 @@ struct BootloaderUpgradeView: View {
 	@State private var driveURL: URL?
 
 	var body: some View {
-		NavigationStack {
+		SheetNavigationStack {
 			ScrollView {
 				VStack(spacing: 20) {
 
@@ -179,6 +179,7 @@ struct BootloaderUpgradeView: View {
 		} label: {
 			Label("Choose Bootloader Drive", systemImage: "externaldrive")
 		}
+		.hostedWindowOnly()
 		.buttonStyle(.borderedProminent)
 		.tint(.accentFill)
 		.controlSize(.large)

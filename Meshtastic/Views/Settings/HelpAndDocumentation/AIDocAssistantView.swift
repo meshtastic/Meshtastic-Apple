@@ -77,7 +77,7 @@ struct AIDocAssistantView: View {
 	// MARK: Body
 
 	var body: some View {
-		NavigationStack {
+		SheetNavigationStack {
 			VStack(spacing: 0) {
 				ScrollViewReader { proxy in
 					ScrollView {

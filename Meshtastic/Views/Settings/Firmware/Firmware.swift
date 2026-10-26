@@ -312,13 +312,13 @@ private struct FirmwareContentView: View {
 				firmwareList.refresh()
 			}
 		}
-		.sheet(isPresented: $showBootloaderUpgrade) {
+		.hostedSheet(isPresented: $showBootloaderUpgrade) {
 			BootloaderUpgradeView()
 		}
-		.sheet(isPresented: $showFactoryErase) {
+		.hostedSheet(isPresented: $showFactoryErase) {
 			FactoryEraseView()
 		}
-		.sheet(item: $rowInstallation) { installation in
+		.hostedSheet(item: $rowInstallation) { installation in
 			// UF2MassStorageView is left unnamed here and below: reflection already names it,
 			// and a second name would split its history in Error Tracking.
 			switch installation.type {
@@ -503,7 +503,7 @@ private struct FirmwareContentView: View {
 				} catch {
 					Logger.services.error("Failed to load firmware file: \(error.localizedDescription)")
 				}
-			}.sheet(item: $showInstallationSheet) { type in
+			}.hostedSheet(item: $showInstallationSheet) { type in
 				if let locallyChosenFirmwareFile = self.locallyChosenFirmwareFile {
 					switch type {
 					case .otaZip:

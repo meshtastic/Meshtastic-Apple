@@ -85,7 +85,7 @@ struct AppLog: View {
 			 }
 			selectedLog = log
 		}
-		.sheet(isPresented: $isEditingFilters) {
+		.hostedSheet(isPresented: $isEditingFilters) {
 			AppLogFilter(
 				categories: $categories,
 				levels: $levels,
@@ -94,7 +94,7 @@ struct AppLog: View {
 				levelsExpanded: $levelsExpanded
 			)
 		}
-		.sheet(item: $selectedLog, onDismiss: didDismiss) { log in
+		.hostedSheet(item: $selectedLog, onDismiss: didDismiss) { log in
 			LogDetail(log: log)
 				.padding()
 				.trackScreen(.logDetail)
@@ -160,6 +160,7 @@ struct AppLog: View {
 					}) {
 						Image(systemName: "square.and.arrow.down")
 					}
+					.hostedWindowOnly()
 					.accessibilityLabel(String(localized: "Export logs as CSV", comment: "VoiceOver label for the export application logs to CSV button"))
 				}
 			}

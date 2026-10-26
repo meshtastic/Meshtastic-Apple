@@ -17,7 +17,7 @@ struct AppIconPicker: View {
 	]
 
 	var body: some View {
-		NavigationStack {
+		SheetNavigationStack {
 			List {
 				Section(header: Text("Icons")) {
 					ForEach(Self.iconOptions) { icon in

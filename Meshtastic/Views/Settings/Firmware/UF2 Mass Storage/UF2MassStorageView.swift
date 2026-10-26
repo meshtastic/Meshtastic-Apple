@@ -18,7 +18,7 @@ struct UF2MassStorageView: View {
 	
 	let fileURL: URL
 	var body: some View {
-		NavigationStack {
+		SheetNavigationStack {
 			ScrollView {
 				VStack(spacing: 20) {
 					
@@ -154,6 +154,7 @@ struct UF2MassStorageView: View {
 		} label: {
 			Label("Save Firmware to USB", systemImage: "externaldrive.fill")
 		}
+		.hostedWindowOnly()
 		.buttonStyle(.borderedProminent)
 		.tint(.accentFill)
 		.controlSize(.large)

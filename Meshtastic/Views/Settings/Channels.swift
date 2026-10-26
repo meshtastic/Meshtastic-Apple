@@ -256,8 +256,8 @@ struct Channels: View {
 					.padding(.vertical, 8)
 				}
 			}
-			.sheet(item: $selectedChannel) { _ in
-				NavigationStack {
+			.hostedSheet(item: $selectedChannel) { _ in
+				SheetNavigationStack {
 					VStack {
 						ChannelForm(channelIndex: $channelIndex, channelName: $channelName, channelKeySize: $channelKeySize, channelKey: $channelKey, channelRole: $channelRole, uplink: $uplink, downlink: $downlink, positionPrecision: $positionPrecision, preciseLocation: $preciseLocation, positionsEnabled: $positionsEnabled, hasChanges: $hasChanges, hasValidKey: $hasValidKey, supportedVersion: $supportedVersion)
 							.trackScreen(.channelEditor)
@@ -282,7 +282,7 @@ struct Channels: View {
 					// Closing mid-save would hide a failure alert.
 					.sheetCloseButton(action: { if !isSavingChannel { selectedChannel = nil } })
 					.interactiveDismissDisabled(isSavingChannel)
-					.alert(String(localized: "Save failed", comment: "Config save error title"),
+					.hostedAlert(String(localized: "Save failed", comment: "Config save error title"),
 						   isPresented: Binding(get: { saveError != nil }, set: { if !$0 { saveError = nil } })) {
 						Button(String(localized: "OK", comment: "Dismiss")) { saveError = nil }
 					} message: {
@@ -295,7 +295,7 @@ struct Channels: View {
 				#endif
 			}
 		}
-		.sheet(isPresented: $showingHelp) {
+		.hostedSheet(isPresented: $showingHelp) {
 			ChannelsHelp()
 				.trackScreen(.channelsHelp)
 				.presentationDetents([.large])

@@ -66,6 +66,7 @@ struct BackupRestoreSection: View {
 			} label: {
 				Label("Import Configuration", systemImage: "square.and.arrow.down")
 			}
+			.hostedWindowOnly()
 			.disabled(!isEnabled)
 
 			Button {
@@ -73,6 +74,7 @@ struct BackupRestoreSection: View {
 			} label: {
 				Label("Export Configuration", systemImage: "square.and.arrow.up")
 			}
+			.hostedWindowOnly()
 			.disabled(!isEnabled)
 
 			if !accessoryManager.isConnected || connectedNode == nil {
@@ -81,7 +83,7 @@ struct BackupRestoreSection: View {
 					.foregroundColor(.secondary)
 			}
 		}
-		.confirmationDialog(
+		.hostedConfirmation(
 			"Export Device Configuration",
 			isPresented: $isPresentingExportWarning,
 			titleVisibility: .visible
@@ -120,7 +122,7 @@ struct BackupRestoreSection: View {
 				isPresentingExportFailedAlert = true
 			}
 		}
-		.alert("Export Failed", isPresented: $isPresentingExportFailedAlert) {
+		.hostedAlert("Export Failed", isPresented: $isPresentingExportFailedAlert) {
 			Button("OK") { }.keyboardShortcut(.defaultAction)
 		} message: {
 			Text(exportFailedMessage)
@@ -132,12 +134,12 @@ struct BackupRestoreSection: View {
 		) { result in
 			handleImport(result)
 		}
-		.sheet(item: $pendingImport) { pending in
+		.hostedSheet(item: $pendingImport) { pending in
 			ImportDeviceProfileView(plan: pending.plan)
 				.environmentObject(accessoryManager)
 				.trackScreen(.importDeviceProfile)
 		}
-		.alert("Import Failed", isPresented: $isPresentingImportFailedAlert) {
+		.hostedAlert("Import Failed", isPresented: $isPresentingImportFailedAlert) {
 			Button("OK") { }.keyboardShortcut(.defaultAction)
 		} message: {
 			Text(importFailedMessage)

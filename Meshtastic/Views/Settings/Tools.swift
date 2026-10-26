@@ -72,7 +72,7 @@ struct Tools: View {
 		}
 		.navigationTitle("Tools")
 		.navigationBarTitleDisplayMode(.inline)
-		.alert(
+		.hostedAlert(
 			"Couldn't read tag",
 			isPresented: Binding(
 				get: { scanErrorMessage != nil },
@@ -85,7 +85,7 @@ struct Tools: View {
 			Text(message)
 		}
 		.contactImportSheet($pendingContact, accessoryManager: accessoryManager)
-		.sheet(item: $saveChannelLink) { link in
+		.hostedSheet(item: $saveChannelLink) { link in
 			SaveChannelQRCode(
 				channelSetLink: link.data,
 				addChannels: link.add,

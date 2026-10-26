@@ -138,6 +138,7 @@ struct ShareChannels: View {
 											preview: SharePreview("Meshtastic Node \(node?.user?.shortName ?? "????") has shared channels with you",
 																image: Image(uiImage: qrImage))
 								)
+								.hostedWindowOnly()
 								.buttonStyle(.bordered)
 									.buttonBorderShape(.capsule)
 									.controlSize(.large)
@@ -169,7 +170,7 @@ struct ShareChannels: View {
 					}
 				}
 			}
-			.sheet(isPresented: $showingHelp) {
+			.hostedSheet(isPresented: $showingHelp) {
 				ChannelsHelp()
 					.trackScreen(.channelsHelp)
 					.presentationDetents([.large])

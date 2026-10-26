@@ -201,7 +201,7 @@ struct UserConfig: View {
 					.buttonStyle(.borderedProminent)
 					.tint(.accentFill)
 					.buttonBorderShape(.capsule)
-					.confirmationDialog(
+					.hostedConfirmation(
 						"Are you sure?",
 						isPresented: $isPresentingSaveConfirm,
 						titleVisibility: .visible

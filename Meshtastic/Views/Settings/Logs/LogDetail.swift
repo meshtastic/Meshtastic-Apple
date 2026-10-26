@@ -25,7 +25,7 @@ struct LogDetail: View {
 
 	var body: some View {
 
-		NavigationStack {
+		SheetNavigationStack {
 			VStack {
 				HStack {
 					Text("OS Log Entry Details")

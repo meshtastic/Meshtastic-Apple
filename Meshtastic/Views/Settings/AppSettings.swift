@@ -73,7 +73,7 @@ struct AppSettings: View {
 					} label: {
 						Label("App Icon", systemImage: "app")
 					}
-					.sheet(isPresented: $isPresentingAppIconSheet) {
+					.hostedSheet(isPresented: $isPresentingAppIconSheet) {
 						AppIconPicker(isPresenting: self.$isPresentingAppIconSheet)
 							.trackScreen(.appIconPicker)
 							.presentationDetents([.medium])
@@ -186,7 +186,7 @@ struct AppSettings: View {
 						Label("Clear App Data", systemImage: "trash")
 							.foregroundColor(.red)
 					}
-					.confirmationDialog(
+					.hostedConfirmation(
 						"Are you sure?",
 						isPresented: $isPresentingCoreDataResetConfirm,
 						titleVisibility: .visible

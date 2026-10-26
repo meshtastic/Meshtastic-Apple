@@ -133,7 +133,7 @@ struct NRFDFUSheet: View {
 			.padding()
 		}
 		.interactiveDismissDisabled(true)
-		.confirmationDialog(
+		.hostedConfirmation(
 			Text("Stop the update?", comment: "Title of the confirmation shown when closing an update in progress"),
 			isPresented: $showStopConfirmation,
 			titleVisibility: .visible
