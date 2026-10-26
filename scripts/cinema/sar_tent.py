@@ -23,8 +23,27 @@ import bpy
 from mathutils import Matrix, Vector
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import tent_base as tent  # noqa: E402
-from tent_base import CACHE, HALF_WIDTH, anchor, box, cylinder, image_material, link, material, plane, sphere  # noqa: E402
+from tent_base import (  # noqa: E402
+    BACK_Y,
+    CACHE,
+    HALF_WIDTH,
+    RIDGE_HEIGHT,
+    WALL_HEIGHT,
+    anchor,
+    box,
+    cylinder,
+    facing_in,
+    image_material,
+    link,
+    material,
+    mesh_object,
+    plane,
+    render,
+    sag,
+    smooth,
+    sphere,
+    torus,
+)
 
 
 def folding_table(name, center, length, along_y, top_mat, leg_mat):
@@ -90,7 +109,7 @@ def furnish(layout):
     board = image_material("Whiteboard", os.path.join(CACHE, "whiteboard.png"), 0.25)
     board_x, board_y, board_z = -HALF_WIDTH + 0.1, 2.0, 1.17
     board_w, board_h = 1.35, 0.9
-    whiteboard = plane("Whiteboard", board_w, board_h, (board_x + 0.02, board_y, board_z), tent.facing_in(-1), board)
+    whiteboard = plane("Whiteboard", board_w, board_h, (board_x + 0.02, board_y, board_z), facing_in(-1), board)
     anchor("teamStatus", whiteboard, board_w, board_h)
     box("WhiteboardFrame", (0.03, board_w + 0.06, board_h + 0.06), (board_x, board_y, board_z), material("Frame", (0.7, 0.7, 0.72), 0.4, metallic=0.8))
     frame_bottom = board_z - board_h / 2 - 0.03
@@ -133,16 +152,16 @@ def trace_route_print(hook_mat):
     border, depth = 0.025, 0.02
     y, z = 2.1, 1.3
     # Rigid, so it stands off the canvas by the most the canvas bows in across it.
-    back = HALF_WIDTH - max(tent.sag(y + dy) for dy in (-width / 2, 0, width / 2)) - 0.006
+    back = HALF_WIDTH - max(sag(y + dy) for dy in (-width / 2, 0, width / 2)) - 0.006
     box("PrintFrame", (depth, width + 2 * border, height + 2 * border), (back - depth / 2, y, z), material("PrintFrame", (0.03, 0.03, 0.032), 0.5), bevel=0.003)
-    surface = plane("Print", width, height, (back - depth - 0.001, y, z), tent.facing_in(1), material("PrintMat", (0.86, 0.85, 0.82), 0.85))
+    surface = plane("Print", width, height, (back - depth - 0.001, y, z), facing_in(1), material("PrintMat", (0.86, 0.85, 0.82), 0.85))
     anchor("traceRoute", surface, width, height)
     top = z + height / 2 + border
-    eave_x, eave_z = HALF_WIDTH - 0.05, tent.WALL_HEIGHT - 0.04
+    eave_x, eave_z = HALF_WIDTH - 0.05, WALL_HEIGHT - 0.04
     cord = material("PrintCord", (0.08, 0.08, 0.08), 0.8)
     for dy in (-width / 2 + 0.12, width / 2 - 0.12):
         cylinder("PrintCord", 0.003, (back - depth / 2, y + dy, top), (eave_x - 0.01, y + dy, eave_z - 0.03), cord, segments=6)
-        tent.torus("PrintHook", 0.03, 0.003, (eave_x, y + dy, eave_z), hook_mat, rotation=(math.pi / 2, 0, 0))
+        torus("PrintHook", 0.03, 0.003, (eave_x, y + dy, eave_z), hook_mat, rotation=(math.pi / 2, 0, 0))
     board_light("PrintLight", (back - 0.9, y, 2.02), (back, y, z + 0.05), width - 0.2, 3.3)
 
 
@@ -183,14 +202,14 @@ def map_lamp(x, y, arm_mat, cord_mat):
     shallow dish, so the lit bulb and the glowing inside of the shade show from the seat, and its
     light lands on the table, not the floor."""
     inset = HALF_WIDTH - 0.05
-    rafter_z = tent.WALL_HEIGHT - 0.04 + (tent.RIDGE_HEIGHT - tent.WALL_HEIGHT - 0.02) * (1 - x / inset)
+    rafter_z = WALL_HEIGHT - 0.04 + (RIDGE_HEIGHT - WALL_HEIGHT - 0.02) * (1 - x / inset)
     hook = rafter_z - 0.05
     rim = 1.42
     depth, radius = 0.09, 0.17
-    box("LampClamp", (0.05, 0.03, 0.08), (x, tent.BACK_Y + 0.04, rafter_z - 0.02), arm_mat)
-    cylinder("LampArm", 0.008, (x, tent.BACK_Y + 0.04, hook), (x, y, hook), arm_mat, segments=8)
+    box("LampClamp", (0.05, 0.03, 0.08), (x, BACK_Y + 0.04, rafter_z - 0.02), arm_mat)
+    cylinder("LampArm", 0.008, (x, BACK_Y + 0.04, hook), (x, y, hook), arm_mat, segments=8)
     cylinder("LampCord", 0.004, (x, y, hook), (x, y, rim + depth + 0.06), cord_mat, segments=6)
-    tent.torus("LampHook", 0.018, 0.003, (x, y, hook), cord_mat, rotation=(0, math.pi / 2, 0))
+    torus("LampHook", 0.018, 0.003, (x, y, hook), cord_mat, rotation=(0, math.pi / 2, 0))
     cylinder("LampSocket", 0.022, (x, y, rim + depth - 0.01), (x, y, rim + depth + 0.07), cord_mat)
 
     def dish(r):
@@ -198,12 +217,12 @@ def map_lamp(x, y, arm_mat, cord_mat):
             bmesh.ops.create_cone(bm, cap_ends=False, segments=40, radius1=r, radius2=0.03, depth=depth)
         return build
     enamel = material("LampShade", (0.07, 0.11, 0.08), 0.35, metallic=0.6)
-    tent.smooth(tent.mesh_object("LampShade", dish(radius), enamel, (x, y, rim + depth / 2)))
+    smooth(mesh_object("LampShade", dish(radius), enamel, (x, y, rim + depth / 2)))
     # White enamel inside, lit by the bulb. Its glow is for the eye only; the spot below does the
     # lighting, so nothing spills onto the floor.
     inside = material("LampInside", (0.9, 0.86, 0.78), 0.3, emission=(1, 0.8, 0.55), strength=4)
-    lining = tent.mesh_object("LampInside", dish(radius - 0.004), inside, (x, y, rim + depth / 2 - 0.002))
-    tent.smooth(lining)
+    lining = mesh_object("LampInside", dish(radius - 0.004), inside, (x, y, rim + depth / 2 - 0.002))
+    smooth(lining)
     lining.visible_diffuse = False
     # The bulb hangs a little below the rim, where it shows from across the tent.
     bulb = sphere("LampBulb", 0.035, (x, y, rim + 0.012), material("LampBulb", (1, 0.85, 0.6), emission=(1, 0.8, 0.55), strength=30), segments=20)
@@ -221,4 +240,4 @@ def map_lamp(x, y, arm_mat, cord_mat):
     link(obj)
 
 
-tent.render(furnish)
+render(furnish)
