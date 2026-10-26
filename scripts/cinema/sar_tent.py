@@ -37,19 +37,11 @@ def folding_table(name, center, length, along_y, top_mat, leg_mat):
             cylinder(name + "Leg", 0.015, (cx + dx, cy + dy, 0), (cx + dx, cy + dy, 0.72), leg_mat)
 
 
-def radio(location, body_mat, antenna_mat, led_mat):
-    x, y, z = location
-    box("Radio", (0.06, 0.035, 0.13), (x, y, z + 0.065), body_mat, bevel=0.006)
-    cylinder("RadioAntenna", 0.006, (x + 0.018, y, z + 0.13), (x + 0.018, y, z + 0.29), antenna_mat)
-    sphere("RadioLED", 0.004, (x - 0.018, y + 0.018, z + 0.12), led_mat, segments=8)
-
-
 def furnish(layout):
     rng = random.Random(42)
     table_top = material("TableTop", (0.62, 0.61, 0.57), 0.5)
     steel = material("Steel", (0.15, 0.15, 0.16), 0.4, metallic=0.9)
     black_plastic = material("BlackPlastic", (0.02, 0.02, 0.02), 0.45)
-    led_green = material("LEDGreen", (0, 1, 0.3), emission=(0.1, 1, 0.3), strength=8)
     led_red = material("LEDRed", (1, 0, 0), emission=(1, 0.1, 0.05), strength=8)
     wall = HALF_WIDTH - 0.38
 
@@ -64,11 +56,9 @@ def furnish(layout):
     for _ in range(6):
         rng.random()
 
-    # Radio table in the back corner on the left, under the window.
+    # Radio table in the back corner on the left, under the window. Only a binder on it: the app
+    # puts its own radio models on it.
     folding_table("RadioTable", (-wall, -1.8), 1.3, True, table_top, steel)
-    box("BaseRadio", (0.25, 0.3, 0.09), (-wall - 0.1, -1.95, 0.805), black_plastic, bevel=0.01)
-    plane("BaseRadioFace", 0.2, 0.06, (-wall + 0.03, -1.95, 0.81), (math.pi / 2, 0, math.pi / 2), material("RadioDisplay", (0.2, 0.5, 1), emission=(0.25, 0.55, 1), strength=3))
-    cylinder("Mic", 0.025, (-wall + 0.15, -1.62, 0.76), (-wall + 0.15, -1.62, 0.85), black_plastic)
     box("Binder", (0.3, 0.26, 0.05), (-wall + 0.05, -1.35, 0.785), material("Binder", (0.1, 0.25, 0.6), 0.5))
 
     # Map table along the back wall on the right, between the banner and the corner, so the front
@@ -82,7 +72,6 @@ def furnish(layout):
         x, y = map_x + rng.uniform(-0.5, 0.5), map_y + rng.uniform(-0.26, 0.26)
         cylinder("PinShaft", 0.002, (x, y, 0.765), (x, y, 0.79), steel)
         sphere("PinHead", 0.007, (x, y, 0.795), pin, segments=8)
-    radio((map_x - 0.5, map_y + 0.25, 0.765), black_plastic, black_plastic, led_green)
     box("Compass", (0.1, 0.06, 0.008), (map_x + 0.45, map_y - 0.25, 0.77), material("Compass", (0.8, 0.85, 0.9), 0.1))
 
     # A SenseCAP Solar Node on a tripod just past the door, far enough along that the tripod's legs
