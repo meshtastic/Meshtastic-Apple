@@ -90,6 +90,7 @@ struct OfflineMapsList: View {
 				} label: {
 					Label("Import offline map", systemImage: "square.and.arrow.down")
 				}
+				.hostedWindowOnly()
 			}
 		}
 		.onAppear {
@@ -113,7 +114,7 @@ struct OfflineMapsList: View {
 				importError = error.localizedDescription
 			}
 		}
-		.alert("Couldn’t Import Offline Map", isPresented: Binding(
+		.hostedAlert("Couldn’t Import Offline Map", isPresented: Binding(
 			get: { importError != nil },
 			set: { if !$0 { importError = nil } }
 		)) {

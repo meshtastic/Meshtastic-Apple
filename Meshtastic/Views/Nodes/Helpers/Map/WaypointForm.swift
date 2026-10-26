@@ -44,7 +44,7 @@ struct WaypointForm: View {
 	@State private var lastUpdatedByNode: NodeInfoEntity?
 
 	var body: some View {
-		NavigationStack {
+		SheetNavigationStack {
 		Group {
 		if editMode {
 			Form {
@@ -394,6 +394,7 @@ struct WaypointForm: View {
 					} label: {
 						Label("Open in Maps", systemImage: "mappin.and.ellipse")
 					}
+					.hostedWindowOnly()
 				} header: {
 					Text("Location")
 				}
@@ -496,7 +497,7 @@ struct WaypointForm: View {
 		} // Group
 		} // NavigationStack
 		.background(Color(.systemGroupedBackground))
-		.fullScreenCover(isPresented: $showingBoundsSelector) {
+		.hostedFullScreenCover(isPresented: $showingBoundsSelector) {
 			GeofenceBoundsSelectorView(
 				center: CLLocationCoordinate2D(
 					latitude: latitude != 0 ? latitude : (LocationsHandler.currentLocation?.latitude ?? 0),
@@ -507,7 +508,7 @@ struct WaypointForm: View {
 				geofenceBounds = newBounds
 			}
 		}
-		.alert("Waypoint Failed to Send", isPresented: $waypointFailedAlert) {
+		.hostedAlert("Waypoint Failed to Send", isPresented: $waypointFailedAlert) {
 					Button("OK", role: .cancel) {
 						context.delete(waypoint)
 						do {

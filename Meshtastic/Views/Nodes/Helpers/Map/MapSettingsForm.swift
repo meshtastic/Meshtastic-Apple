@@ -49,7 +49,7 @@ struct MapSettingsForm: View {
 
 	var body: some View {
 
-		NavigationStack {
+		SheetNavigationStack {
 			Form {
 				Section(header: Text("Map Options")) {
 					Picker(selection: $mapLayer, label: Text("")) {
@@ -252,6 +252,7 @@ struct MapSettingsForm: View {
 					} label: {
 						Label("Upload Map Data", systemImage: "doc.badge.plus")
 					}
+					.hostedWindowOnly()
 					.disabled(isProcessingUpload)
 
 					if isProcessingUpload {
@@ -277,7 +278,7 @@ struct MapSettingsForm: View {
 			) { result in
 				handleFileSelection(result)
 			}
-			.alert("Upload Error", isPresented: $showUploadError) {
+			.hostedAlert("Upload Error", isPresented: $showUploadError) {
 				Button("Ok") { }
 			} message: {
 				Text(uploadErrorMessage)

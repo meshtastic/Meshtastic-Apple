@@ -37,6 +37,7 @@ struct MapDataFiles: View {
 					.foregroundColor(.white)
 					.cornerRadius(10)
 				}
+				.hostedWindowOnly()
 				.disabled(isProcessing)
 				.padding(.horizontal)
 
@@ -83,12 +84,12 @@ struct MapDataFiles: View {
 		) { result in
 			handleFileSelection(result)
 		}
-		.alert("Upload Error", isPresented: $showError) {
+		.hostedAlert("Upload Error", isPresented: $showError) {
 			Button("Ok") { }
 		} message: {
 			Text(errorMessage)
 		}
-		.alert("Upload Success", isPresented: $showSuccess) {
+		.hostedAlert("Upload Success", isPresented: $showSuccess) {
 			Button("Ok") { }
 		} message: {
 			Text(successMessage)

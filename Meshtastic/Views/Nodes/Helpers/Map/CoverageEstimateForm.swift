@@ -63,7 +63,7 @@ struct CoverageEstimateForm: View {
 	}
 
 	var body: some View {
-		NavigationStack {
+		SheetNavigationStack {
 			Form {
 				transmitterSection
 				receiverSection
@@ -114,7 +114,7 @@ struct CoverageEstimateForm: View {
 					break
 				}
 			}
-			.alert("Coverage estimate failed", isPresented: Binding(
+			.hostedAlert("Coverage estimate failed", isPresented: Binding(
 				get: { errorMessage != nil },
 				set: { if !$0 { errorMessage = nil } }
 			)) {
