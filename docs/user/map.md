@@ -72,6 +72,10 @@ On Apple Vision Pro, the round glass menu under the app's tab bar, at the window
 
 On the 3D spatial map, the **link** button in the toolbar draws the same direct links as the 2D map, between the tops of the pins. It is off by default and has its own setting. Lines use the signal quality colors, are dashed when only one direction is known, and fade as they get older. To keep the volume smooth, at most 12 SNR pills are shown: the selected node's links when a node is selected, otherwise the newest links, your radio's first. Links are hidden while a trace route is shown.
 
+### Weather radar on the spatial map (Apple Vision Pro)
+
+**Weather Radar** in the 3D spatial map's map menu, next to Contour Lines, drapes NOAA precipitation radar over the terrain, following the hills, at the same strength as on the 2D map. It is the 2D map's setting and is offered the same way: in the lower 48 United States, with a network connection. The radar is fetched when the map opens, when the area on the table changes, and every five minutes while it is shown. It is hidden while the device is offline, and when the table shows an area outside the radar's coverage. Radar data from NOAA/NCEP.
+
 ### Offline Maps
 
 A dedicated section of the sheet for working without a connection: a link opens the list of downloaded map regions to manage them or download new ones, and the **Offline Tiles** toggle overlays a downloaded region on the base map so it keeps rendering with no internet connection.

@@ -30,6 +30,9 @@ struct SpatialMapWindow: View {
 	@AppStorage("spatialMapDark") private var darkMap = true
 	/// Shared with the 2D map's Contour Lines setting.
 	@AppStorage("meshMapShowContours") private var showContours = false
+	/// Shared with the 2D map's Weather Radar setting.
+	@AppStorage("meshMapShowWeatherRadar") private var showWeatherRadar = false
+	@ObservedObject private var weatherRadar = WeatherRadarAvailability.shared
 	@AppStorage("spatialMapShowLabels") private var showLabels = true
 	@AppStorage("spatialMapShowTraffic") private var showTraffic = true
 	@AppStorage("spatialMapShowDirectLinks") private var showLinks = false
@@ -48,7 +51,7 @@ struct SpatialMapWindow: View {
 	private var preset: ModemPresets { ModemPresets(rawValue: UserDefaults.modemPreset) ?? .longFast }
 
 	private var refreshKey: String {
-		"\(mapLayer.rawValue)|\(darkMap)|\(showContours)|\(preciseLocationsOnly)|\(showLinks)|\(coverageMode.rawValue)|\(accessoryManager.activeDeviceNum ?? 0)|\(accessoryManager.isInBackground)"
+		"\(mapLayer.rawValue)|\(darkMap)|\(showContours)|\(showWeatherRadar)|\(preciseLocationsOnly)|\(showLinks)|\(coverageMode.rawValue)|\(accessoryManager.activeDeviceNum ?? 0)|\(accessoryManager.isInBackground)"
 	}
 
 	var body: some View {
@@ -67,7 +70,7 @@ struct SpatialMapWindow: View {
 		.ornament(attachmentAnchor: .scene(.bottomFront)) {
 			SpatialMapOrnament(
 				model: model, traffic: traffic, mapLayer: $mapLayer, darkMap: $darkMap, showContours: $showContours,
-				showLabels: $showLabels, showLinks: $showLinks, showTraffic: $showTraffic, autoTerrain: $autoTerrain,
+				showWeatherRadar: $showWeatherRadar, showLabels: $showLabels, showLinks: $showLinks, showTraffic: $showTraffic, autoTerrain: $autoTerrain,
 				coverageMode: $coverageMode, coverageOpacity: $coverageOpacity
 			)
 		}
@@ -75,6 +78,8 @@ struct SpatialMapWindow: View {
 			guard !accessoryManager.isInBackground else { return }
 			while !Task.isCancelled {
 				refresh()
+				// Where the radar is offered follows the device, as on the 2D map; cheap once decided.
+				await weatherRadar.refresh()
 				if downloadPrompt.shouldOffer(positionedNodes: model.nodes.count, hasDownloadedMap: model.downloadedMapCircle != nil, autoDownload: autoTerrain, isBusy: OfflineMapManager.shared.isBusy) {
 					showingMapSearch = true
 				}
@@ -112,6 +117,7 @@ struct SpatialMapWindow: View {
 			model.coverageOpacity = Float(opacity)
 		}
 		.onChange(of: connectivity.isNetworkAvailable) { wasAvailable, isAvailable in
+			model.networkAvailable = isAvailable
 			if !wasAvailable && isAvailable { model.retryImagery() }
 		}
 		.onChange(of: appState.spatialMapFocus?.id) {
@@ -190,6 +196,9 @@ struct SpatialMapWindow: View {
 		traffic.connectedNodeNum = accessoryManager.activeDeviceNum
 		traffic.preset = preset
 		model.showContours = showContours
+		model.showWeatherRadar = showWeatherRadar
+		model.weatherRadarOffered = weatherRadar.isOffered
+		model.networkAvailable = connectivity.isNetworkAvailable
 		model.showLinks = showLinks
 		model.autoDownloadTerrain = autoTerrain
 		model.coverageMode = coverageMode
@@ -258,6 +267,7 @@ struct SpatialMapOrnament: View {
 	@Binding var mapLayer: MapLayer
 	@Binding var darkMap: Bool
 	@Binding var showContours: Bool
+	@Binding var showWeatherRadar: Bool
 	@Binding var showLabels: Bool
 	@Binding var showLinks: Bool
 	@Binding var showTraffic: Bool
@@ -265,6 +275,7 @@ struct SpatialMapOrnament: View {
 	@Binding var coverageMode: SpatialCoverageMode
 	@Binding var coverageOpacity: Double
 	@ObservedObject private var offline = OfflineMapManager.shared
+	@ObservedObject private var weatherRadar = WeatherRadarAvailability.shared
 	@State private var confirmingTerrainDownload = false
 
 	var body: some View {
@@ -286,6 +297,12 @@ struct SpatialMapOrnament: View {
 				}
 				Toggle(isOn: $showContours) {
 					Label(String(localized: "Contour Lines"), systemImage: "point.topleft.down.to.point.bottomright.curvepath")
+				}
+				// Only where the radar has data, like the 2D map's setting it shares.
+				if weatherRadar.isOffered {
+					Toggle(isOn: $showWeatherRadar) {
+						Label(String(localized: "Weather Radar"), systemImage: "cloud.rain")
+					}
 				}
 				coverageMenu
 				Toggle(isOn: $autoTerrain) {
