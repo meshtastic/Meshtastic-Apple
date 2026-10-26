@@ -109,4 +109,47 @@ struct SpatialZoomTests {
 		let inside = SIMD3<Float>(0.1, 0.02, 0.2)
 		#expect(SpatialZoom.clampToDisk(inside, diskRadius: 0.5) == inside)
 	}
+
+	@Test func fittingARouteCentersOnItAndShowsEveryHop() throws {
+		let hops = [
+			CLLocationCoordinate2D(latitude: 47.62, longitude: -122.28),
+			CLLocationCoordinate2D(latitude: 47.64, longitude: -122.25),
+			CLLocationCoordinate2D(latitude: 47.66, longitude: -122.27)
+		]
+		let fit = try #require(SpatialZoom.fit(hops, full: full))
+		#expect(fit.zoom > 1)
+		let shown = SpatialZoom.circle(full: full, zoom: fit.zoom, center: fit.center)
+		#expect(hops.allSatisfy { shown.contains($0) })
+		// With room to spare, but not so much that it's the whole mesh.
+		#expect(shown.radiusMeters < full.radiusMeters / 2)
+	}
+
+	@Test func fittingOnePlaceZoomsInAsCenteringOnANodeDoes() throws {
+		let node = CLLocationCoordinate2D(latitude: 47.61, longitude: -122.31)
+		let fit = try #require(SpatialZoom.fit([node, node], full: full))
+		#expect(fit.zoom == SpatialZoom.focusZoom)
+		#expect(fit.center?.latitude == node.latitude && fit.center?.longitude == node.longitude)
+	}
+
+	@Test func fittingARouteNearTheRimStillShowsIt() throws {
+		// Hops at opposite edges and one by the rim: the pulled-in circle must still reach them.
+		let hops = [
+			CLLocationCoordinate2D(latitude: 47.6 + 0.17, longitude: -122.3),
+			CLLocationCoordinate2D(latitude: 47.6 + 0.12, longitude: -122.3 + 0.05)
+		]
+		let fit = try #require(SpatialZoom.fit(hops, full: full))
+		let shown = SpatialZoom.circle(full: full, zoom: fit.zoom, center: fit.center)
+		#expect(hops.allSatisfy { shown.contains($0) })
+	}
+
+	@Test func fittingARouteWiderThanTheMeshShowsTheWholeMesh() throws {
+		let hops = [
+			CLLocationCoordinate2D(latitude: 47.0, longitude: -123.0),
+			CLLocationCoordinate2D(latitude: 48.2, longitude: -121.6)
+		]
+		let fit = try #require(SpatialZoom.fit(hops, full: full))
+		#expect(fit.zoom == 1)
+		#expect(fit.center == nil)
+		#expect(SpatialZoom.fit([], full: full)?.zoom == nil)
+	}
 }

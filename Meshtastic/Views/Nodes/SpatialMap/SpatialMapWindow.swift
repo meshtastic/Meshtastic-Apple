@@ -255,9 +255,9 @@ struct SpatialMapWindow: View {
 		refresh()
 	}
 
-	/// Flies a trace route asked for by id, as picking it in the route menu does. The route may be
-	/// newer than the last read, so the routes are read again if it isn't there. A volume that just
-	/// opened waits for its table first.
+	/// Flies a trace route asked for by id, as picking it in the route menu does, and fits the map
+	/// to it so the whole route is on the disk. The route may be newer than the last read, so the
+	/// routes are read again if it isn't there. A volume that just opened waits for its table first.
 	private func claimRoute() {
 		guard let routeId = appState.claimSpatialMapRoute() else { return }
 		routeRequestTask?.cancel()
@@ -280,6 +280,8 @@ struct SpatialMapWindow: View {
 				return
 			}
 			Logger.services.info("[Spatial] Showing trace route \(routeId, privacy: .public)")
+			// Bring the whole route, there and back, onto the disk before the comet sets off.
+			model.fit((route.forward + route.back).map(\.coordinate))
 			model.shownRoute = route
 			traffic.startFlyover(route)
 		}

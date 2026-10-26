@@ -49,6 +49,28 @@ enum SpatialZoom {
 		)
 	}
 
+	/// The zoom and center that fit the coordinates on the disk with `padding` of their reach to
+	/// spare. One place (or several on top of each other) gets `focusZoom`, as centering on a node
+	/// does. Coordinates too spread out for any zoom get the whole mesh, zoom 1. Nil when empty.
+	static func fit(
+		_ coordinates: [CLLocationCoordinate2D],
+		full: SpatialCircle,
+		padding: Double = 0.15
+	) -> (zoom: Double, center: CLLocationCoordinate2D?)? {
+		guard let around = SpatialCircle.around(coordinates, padding: padding, minimumRadiusMeters: 0) else { return nil }
+		let center = CLLocationCoordinate2D(latitude: around.latitude, longitude: around.longitude)
+		var zoom = around.radiusMeters > 1
+			? clamp(full.radiusMeters / around.radiusMeters, fullRadiusMeters: full.radiusMeters)
+			: clamp(focusZoom, fullRadiusMeters: full.radiusMeters)
+		// Near the rim the zoomed circle is pulled in toward the middle and can leave a hop off the
+		// edge; step back out until every hop inside the full circle is shown.
+		let inside = coordinates.filter { full.contains($0) }
+		while zoom > 1, !inside.allSatisfy({ circle(full: full, zoom: zoom, center: center).contains($0) }) {
+			zoom = max(zoom / 1.1, 1)
+		}
+		return zoom > 1 ? (zoom, center) : (1, nil)
+	}
+
 	/// Whether a node is drawn: only inside the circle shown, so nothing stands past the rim.
 	static func isShown(_ coordinate: CLLocationCoordinate2D, in circle: SpatialCircle) -> Bool {
 		circle.contains(coordinate)

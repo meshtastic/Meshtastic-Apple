@@ -211,6 +211,14 @@ final class SpatialMapModel {
 		applyArea()
 	}
 
+	/// Centers and zooms the map so all the coordinates fit on the disk, as far out as the whole mesh.
+	func fit(_ coordinates: [CLLocationCoordinate2D]) {
+		guard let full = fullCircle, let fit = SpatialZoom.fit(coordinates, full: full) else { return }
+		zoom = fit.zoom
+		zoomCenter = fit.center
+		applyArea()
+	}
+
 	func resetZoom() {
 		guard zoom != 1 || zoomCenter != nil else { return }
 		zoom = 1
