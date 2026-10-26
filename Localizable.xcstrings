@@ -588,9 +588,6 @@
         }
       }
     },
-    "Open in App Window" : {
-      "comment" : "Button on a panel in the immersive space, shown in place of something that only works in the app window (sharing, saving a file, Apple Maps)"
-    },
     "Page %lld of %lld, %lld radios" : {
       "comment" : "Showcase: VoiceOver value for the wall rack; the arguments are the page, the page count and the radios on the page",
       "localizations" : {
@@ -103580,6 +103577,9 @@
           }
         }
       }
+    },
+    "Open in App Window" : {
+      "comment" : "Button on a panel in the immersive space, shown in place of something that only works in the app window (sharing, saving a file, Apple Maps)"
     },
     "Open in Maps" : {
       "localizations" : {

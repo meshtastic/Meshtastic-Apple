@@ -137,24 +137,25 @@ struct CinemaScreen: View {
 		let router = model.router(for: section)
 		let shape = RoundedRectangle(cornerRadius: Self.cornerRadius, style: .continuous)
 		let gated = lockdown.isBlockingSession || accessoryManager.firmwareUpdateRequired
-		Group {
-			if gated {
-				// The lockdown and firmware gates are full screen covers, which only a window can show.
-				CinemaScreenGate()
-			} else {
-				EventFirmwareTintScope {
+		// The tint goes around the host, so pages and banners get it like the section.
+		EventFirmwareTintScope {
+			Group {
+				if gated {
+					// The lockdown and firmware gates are full screen covers, which only a window can show.
+					CinemaScreenGate()
+				} else {
 					content(for: section, router: router)
 						.trackScreen(section.tab.screenName)
+						.id(section)
 				}
-				.id(section)
 			}
-		}
-		.id(appState.databaseResetID)
-		.panelPresentationHost(model.presenter)
-		// The pages are the model's and outlive the gate: one up when the gate goes up would stay
-		// over it, and come back when it drops.
-		.onChange(of: gated) { _, gated in
-			if gated { model.presenter.popAll() }
+			.id(appState.databaseResetID)
+			.panelPresentationHost(model.presenter)
+			// The pages are the model's and outlive the gate: one up when the gate goes up would
+			// stay over it, and come back when it drops.
+			.onChange(of: gated) { _, gated in
+				if gated { model.presenter.popAll() }
+			}
 		}
 		.frame(width: Self.size.width, height: Self.size.height)
 		.clipShape(shape)
