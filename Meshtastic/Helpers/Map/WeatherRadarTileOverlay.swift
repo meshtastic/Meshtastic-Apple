@@ -89,20 +89,25 @@ final class WeatherRadarAvailability: ObservableObject {
 	func refresh() async {
 		guard let location = LocationsHandler.shared.manager.location else {
 			checkedLocation = nil
-			isOffered = WeatherRadar.isOffered(location: nil, countryCode: nil, phoneRegion: Locale.current.region)
+			offer(WeatherRadar.isOffered(location: nil, countryCode: nil, phoneRegion: Locale.current.region))
 			return
 		}
 		if let checkedLocation, checkedLocation.distance(from: location) < Self.recheckDistance { return }
 		guard WeatherRadar.covers(location.coordinate) else {
 			checkedLocation = location
-			isOffered = false
+			offer(false)
 			return
 		}
 		// No answer (offline, or the geocoder is busy): keep what was decided before and try again
 		// on the next refresh.
 		guard let countryCode = try? await CLGeocoder().reverseGeocodeLocation(location).first?.isoCountryCode else { return }
 		checkedLocation = location
-		isOffered = WeatherRadar.isOffered(location: location.coordinate, countryCode: countryCode, phoneRegion: Locale.current.region)
+		offer(WeatherRadar.isOffered(location: location.coordinate, countryCode: countryCode, phoneRegion: Locale.current.region))
+	}
+
+	/// Published only when it changes, so a check that finds the same answer redraws nothing.
+	private func offer(_ offered: Bool) {
+		if isOffered != offered { isOffered = offered }
 	}
 }
 

@@ -78,12 +78,22 @@ struct SpatialMapWindow: View {
 			guard !accessoryManager.isInBackground else { return }
 			while !Task.isCancelled {
 				refresh()
-				// Where the radar is offered follows the device, as on the 2D map; cheap once decided.
-				await weatherRadar.refresh()
 				if downloadPrompt.shouldOffer(positionedNodes: model.nodes.count, hasDownloadedMap: model.downloadedMapCircle != nil, autoDownload: autoTerrain, isBusy: OfflineMapManager.shared.isBusy) {
 					showingMapSearch = true
 				}
 				try? await Task.sleep(for: .seconds(2))
+			}
+		}
+		.task(id: showWeatherRadar) {
+			// Where the radar is offered follows the device, as on the 2D map: looked up once on
+			// open, so the map menu can offer the toggle, then once a period while the radar is on.
+			// It reverse geocodes, so it stays out of the node loop above.
+			await refreshWeatherRadarAvailability()
+			guard showWeatherRadar else { return }
+			while !Task.isCancelled {
+				let next = Double(WeatherRadar.refreshPeriod() + 1) * WeatherRadar.refreshInterval
+				guard (try? await Task.sleep(for: .seconds(max(1, next - Date.now.timeIntervalSince1970)))) != nil else { return }
+				await refreshWeatherRadarAvailability()
 			}
 		}
 		// No node has a position and no map has been downloaded: offer the map search.
@@ -195,10 +205,11 @@ struct SpatialMapWindow: View {
 		model.connectedNodeNum = accessoryManager.activeDeviceNum
 		traffic.connectedNodeNum = accessoryManager.activeDeviceNum
 		traffic.preset = preset
+		// Before the radar's settings, so an offline open can't start a fetch.
+		model.networkAvailable = connectivity.isNetworkAvailable
 		model.showContours = showContours
 		model.showWeatherRadar = showWeatherRadar
 		model.weatherRadarOffered = weatherRadar.isOffered
-		model.networkAvailable = connectivity.isNetworkAvailable
 		model.showLinks = showLinks
 		model.autoDownloadTerrain = autoTerrain
 		model.coverageMode = coverageMode
@@ -212,6 +223,11 @@ struct SpatialMapWindow: View {
 				nodeFilters.fallbackLocation = coordinate
 			}
 		}
+	}
+
+	private func refreshWeatherRadarAvailability() async {
+		await weatherRadar.refresh()
+		Logger.services.info("🧊 [Spatial] Weather radar availability refreshed: offered \(self.weatherRadar.isOffered, privacy: .public)")
 	}
 
 	/// The estimate runs in the main window's form, which has the antenna settings and a full-size
@@ -360,7 +376,6 @@ struct SpatialMapOrnament: View {
 				.accessibilityLabel(String(localized: "Reset zoom", comment: "Spatial map: button showing how far the map is zoomed in; tapping it zooms back out to the whole mesh"))
 				.accessibilityValue(Text(verbatim: "\(model.zoom.formatted(.number.precision(.fractionLength(0...1))))×"))
 			}
-
 
 			Divider().frame(height: 20)
 
