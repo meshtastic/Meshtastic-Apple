@@ -55,7 +55,7 @@ struct SpatialMapWindow: View {
 
 	var body: some View {
 		SpatialMapView(model: model, scene: scene, traffic: traffic, preset: preset) { nodeNum in
-			showInMainWindow("meshtastic:///nodes?nodenum=\(nodeNum)")
+			openNode(nodeNum)
 		} onCoverage: { nodeNum, action in
 			handleCoverage(action, nodeNum: nodeNum)
 		}
@@ -230,12 +230,17 @@ struct SpatialMapWindow: View {
 		}
 	}
 
-	/// The estimate runs in the main window's form, which has the antenna settings and a full-size
-	/// window for the planner. Show and hide flip the file's visibility, shared with the 2D map.
+	/// The estimate runs in the map's form, which has the antenna settings and a full-size window
+	/// for the planner: in the main window, or on the cinema's front screen while the cinema is
+	/// open. Show and hide flip the file's visibility, shared with the 2D map.
 	private func handleCoverage(_ action: SpatialCoverageAction, nodeNum: Int64) {
 		switch action {
 		case .estimate:
-			showInMainWindow("meshtastic:///map?coverage=1&nodenum=\(nodeNum)")
+			if appState.cinemaOpen {
+				appState.cinemaScreenRequest = .coverageEstimate(nodeNum)
+			} else {
+				showInMainWindow("meshtastic:///map?coverage=1&nodenum=\(nodeNum)")
+			}
 		case .show, .hide:
 			guard let file = model.coverageByNode[nodeNum] else { return }
 			GeoJSONOverlayManager.shared.setFileActive(file.fileID, action == .show)
@@ -284,6 +289,16 @@ struct SpatialMapWindow: View {
 			model.fit((route.forward + route.back).map(\.coordinate))
 			model.shownRoute = route
 			traffic.startFlyover(route)
+		}
+	}
+
+	/// Opens the node's detail: on the cinema's front screen while the cinema is open, since the
+	/// screen took the main window's place; otherwise in the main window.
+	private func openNode(_ nodeNum: Int64) {
+		if appState.cinemaOpen {
+			appState.cinemaScreenRequest = .node(nodeNum)
+		} else {
+			showInMainWindow("meshtastic:///nodes?nodenum=\(nodeNum)")
 		}
 	}
 

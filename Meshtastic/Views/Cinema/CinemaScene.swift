@@ -12,6 +12,8 @@ import SwiftUI
 enum CinemaScreenRequest: Equatable {
 	/// The Nodes section with this node's detail open.
 	case node(Int64)
+	/// The Map section with the coverage estimate form open for this node.
+	case coverageEstimate(Int64)
 }
 
 /// The visionOS immersive space that shows the app on a big screen inside a 360° environment.

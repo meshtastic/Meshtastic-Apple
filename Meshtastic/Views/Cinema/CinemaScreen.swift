@@ -95,6 +95,10 @@ final class CinemaScreenModel: ObservableObject {
 			presenter.popAll()
 			section = .nodes
 			router(for: .nodes).navigateToNodeDetail(nodeNum: nodeNum)
+		case .coverageEstimate(let nodeNum):
+			presenter.popAll()
+			section = .map
+			router(for: .map).mapState = .coverageEstimate(nodeNum)
 		}
 	}
 
