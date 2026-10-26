@@ -154,6 +154,24 @@ private struct FilteredUserList: View {
 			)
 		}
 		.listStyle(.plain)
+		.hostedConfirmation(
+			"This conversation will be deleted.",
+			isPresented: $isPresentingDeleteUserMessagesConfirm,
+			titleVisibility: .visible
+		) {
+			Button(role: .destructive) {
+				Task {
+					if let userToDelete = userToDeleteMessages {
+						await MeshPackets.shared.deleteUserMessages(userNum: userToDelete.num)
+						await MainActor.run {
+							userToDeleteMessages = nil
+						}
+					}
+				}
+			} label: {
+				Text("Delete")
+			}
+		}
 		.navigationTitle(String.localizedStringWithFormat("Contacts (%@)".localized, String(visibleUsers.count)))
 		.task(id: summaryRefreshID) {
 			await refreshDirectMessageSummaries(
@@ -322,24 +340,6 @@ private struct DirectMessageUserRow: View {
 				} label: {
 					Label("Delete Messages", systemImage: "trash")
 				}
-			}
-		}
-		.hostedConfirmation(
-			"This conversation will be deleted.",
-			isPresented: $isPresentingDeleteUserMessagesConfirm,
-			titleVisibility: .visible
-		) {
-			Button(role: .destructive) {
-				Task {
-					if let userToDelete = userToDeleteMessages {
-						await MeshPackets.shared.deleteUserMessages(userNum: userToDelete.num)
-						await MainActor.run {
-							userToDeleteMessages = nil
-						}
-					}
-				}
-			} label: {
-				Text("Delete")
 			}
 		}
 	}
