@@ -8,7 +8,7 @@ Run `build.sh` to render them at full size and copy them into `Packages/CinemaCo
 
 The scenes are split in two:
 
-- `tent_base.py` is the tent every environment shares: a 5.6 × 5.6 m frame tent, with the viewer in the middle about 2.8 m from every wall, with canvas walls, clear vinyl windows, a groundsheet floor, the string lights, the Meshtastic branding, the dusk forest outside, the seated camera, the render settings, and the anchors file. Its `Layout` says where the windows, banner, poster and plaque go.
+- `tent_base.py` is the tent every environment shares: a 5.6 × 5.6 m frame tent, with the viewer in the middle about 2.8 m from every wall, with canvas walls, clear vinyl windows, a groundsheet floor, the string lights, the Meshtastic branding, the dusk forest outside, the seated camera, the render settings, and the anchors file, including the "screen" anchor on the front wall where the app puts its screen (an anchor only; nothing is drawn there). Its `Layout` says where the windows, banner, poster and plaque go.
 - An environment script, such as `sar_tent.py`, adds its own furniture, lights and boards in a `furnish(layout)` function and calls `tent_base.render(furnish)`.
 
 Blender's +Y is the image's center: the front wall, left plain for the app window. +X is the viewer's right and Z is up, with the viewer at the origin at seated eye height.

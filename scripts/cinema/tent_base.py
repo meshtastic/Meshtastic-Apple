@@ -229,6 +229,18 @@ def anchor(board_id, obj, width, height):
     ANCHORS[board_id] = (obj, width, height)
 
 
+def screen_anchor():
+    """The app's screen on the plain front wall (the "screen" anchor): an anchor only, nothing is
+    drawn. 2.6 m wide in the screen's shape, just off the wall, its center a little above the eye.
+    The gable carries the wall up past the eave in the middle, so the top can sit above the eave
+    line."""
+    width = 2.6
+    height = width * 940 / 1500
+    surface = plane("Screen", width, height, (0, FRONT_Y - 0.1, EYE_HEIGHT + 0.2), (math.pi / 2, 0, 0), None)
+    surface.hide_render = True
+    anchor("screen", surface, width, height)
+
+
 def write_anchors(out, camera):
     """Writes each board's place relative to the camera, in the camera's own axes, which are
     RealityKit's: +X right, +Y up, -Z toward the image's center."""
@@ -828,6 +840,7 @@ def render(furnish, layout=None):
     metal = material("Aluminum", (0.75, 0.76, 0.78), 0.35, metallic=1.0)
     build_tent(canvas, metal, layout)
     furnish(layout)
+    screen_anchor()
     build_lights()
     build_window_lights(layout.windows or [])
     build_branding(layout)

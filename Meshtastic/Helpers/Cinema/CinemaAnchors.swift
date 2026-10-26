@@ -16,6 +16,8 @@ enum CinemaBoard: String, CaseIterable {
 	case teamStatus
 	/// The print on the right wall by the door: the latest trace route's share card.
 	case traceRoute
+	/// The plain front wall: the screen that shows the app's sections. Only an anchor in the image.
+	case screen
 }
 
 /// Where the boards in an environment's image sit. The render script writes this next to the
