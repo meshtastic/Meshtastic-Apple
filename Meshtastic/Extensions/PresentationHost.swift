@@ -782,6 +782,8 @@ private struct PanelActionButtonStyle: PrimitiveButtonStyle {
 		} label: {
 			configuration.label
 				.frame(maxWidth: fullWidth ? .infinity : nil)
+				// A red tint on a bordered button colors the label red too, on the red fill.
+				.foregroundStyle(configuration.role == .destructive ? Color.white : Color.primary)
 		}
 		.buttonStyle(.bordered)
 		.controlSize(.large)
