@@ -12,7 +12,8 @@ import SwiftUI
 /// Root of the cinema immersive space: an environment around the viewer and a small panel to
 /// change the environment, open the app window or leave. The front wall is a screen that shows
 /// the app's sections, picked from a tab strip above it. The tent's whiteboard shows the live
-/// team roster, and the print by the door the latest trace route. The 3D map opens with it.
+/// team roster, and the print by the door the latest trace route. The main window closes while
+/// the space is open and the 3D map opens in front of the viewer instead.
 struct CinemaSpace: View {
 	/// The store, for the boards. Nil when the app runs without one (demo mode).
 	let container: ModelContainer?
@@ -22,6 +23,7 @@ struct CinemaSpace: View {
 	@Environment(\.scenePhase) private var scenePhase
 	@Environment(\.dismissImmersiveSpace) private var dismissImmersiveSpace
 	@Environment(\.openWindow) private var openWindow
+	@Environment(\.dismissWindow) private var dismissWindow
 	@AppStorage("cinemaEnvironment") private var environment: CinemaEnvironment = .sarTent
 	@State private var world = Entity()
 	@State private var backdrop: Entity?
@@ -107,6 +109,20 @@ struct CinemaSpace: View {
 		.onAppear {
 			appState.cinemaOpen = true
 			screen.register(with: appState.sceneRouters)
+		}
+		.task {
+			// The screen takes the main window's place. Once the space has settled, close the window
+			// and reopen the map: with no window to sit beside, the system puts it in front of the
+			// viewer, between them and the screen.
+			try? await Task.sleep(for: .seconds(2))
+			guard appState.cinemaOpen else { return }
+			if appState.mainWindowCount > 0 {
+				dismissWindow(id: MeshtasticAppleApp.mainWindowID)
+				CinemaScene.closedMainWindow = true
+			}
+			dismissWindow(id: SpatialMapScene.id, value: SpatialMapSceneKey.shared)
+			try? await Task.sleep(for: .seconds(1))
+			guard appState.cinemaOpen else { return }
 			openWindow(id: SpatialMapScene.id, value: SpatialMapSceneKey.shared)
 		}
 		.onDisappear {
@@ -114,11 +130,13 @@ struct CinemaSpace: View {
 			fitBoards = nil
 			appState.cinemaOpen = false
 			screen.unregister(from: appState.sceneRouters)
-			// The window may have been closed while the cinema was open. Not when the app went to
-			// the background, which closes the cinema too.
-			if appState.mainWindowCount == 0, scenePhase != .background {
+			// Bring the main window back. Not when the app went to the background, which closes the
+			// cinema too; but the space also reports .background while it closes, so when the
+			// cinema closed the window itself, always.
+			if appState.mainWindowCount == 0, scenePhase != .background || CinemaScene.closedMainWindow {
 				openWindow(id: MeshtasticAppleApp.mainWindowID)
 			}
+			CinemaScene.closedMainWindow = false
 		}
 		.onChange(of: scenePhase) { _, phase in
 			if phase == .background {

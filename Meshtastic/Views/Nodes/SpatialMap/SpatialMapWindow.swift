@@ -60,11 +60,13 @@ struct SpatialMapWindow: View {
 			handleCoverage(action, nodeNum: nodeNum)
 		}
 		// The window takes its size limits from these, so the user can resize the table between them.
+		// In the cinema the minimum is the maximum, so the volume opens (and stays) at its largest;
+		// a geometry request can't size a volume.
 		.frame(
-			minWidth: points(SpatialVolumeFit.minimumSize.x), maxWidth: points(SpatialVolumeFit.maximumSize.x),
-			minHeight: points(SpatialVolumeFit.minimumSize.y), maxHeight: points(SpatialVolumeFit.maximumSize.y)
+			minWidth: points(minimumSize.x), maxWidth: points(SpatialVolumeFit.maximumSize.x),
+			minHeight: points(minimumSize.y), maxHeight: points(SpatialVolumeFit.maximumSize.y)
 		)
-		.frame(minDepth: points(SpatialVolumeFit.minimumSize.z), maxDepth: points(SpatialVolumeFit.maximumSize.z))
+		.frame(minDepth: points(minimumSize.z), maxDepth: points(SpatialVolumeFit.maximumSize.z))
 		.volumeBaseplateVisibility(.visible)
 		.ornament(attachmentAnchor: .scene(.bottomFront)) {
 			SpatialMapOrnament(
@@ -127,6 +129,17 @@ struct SpatialMapWindow: View {
 				dismissWindow(id: SpatialMapScene.id)
 			}
 		}
+		// Backup for the cinema closing without bringing an app window back, so the volume isn't
+		// left on its own. After the cinema's own reopen has had a moment, so they don't open two.
+		.onChange(of: appState.cinemaOpen) { _, open in
+			guard !open else { return }
+			Task {
+				try? await Task.sleep(for: .seconds(1.5))
+				if !appState.cinemaOpen, appState.mainWindowCount == 0, UIApplication.shared.applicationState != .background {
+					openWindow(id: MeshtasticAppleApp.mainWindowID)
+				}
+			}
+		}
 		.onAppear {
 			SpatialTerrainKeeper.shared.volumeAppeared()
 			claimFocus()
@@ -187,6 +200,11 @@ struct SpatialMapWindow: View {
 		}
 	}
 	#endif
+
+	/// The volume's smallest allowed size: its largest while the cinema is open.
+	private var minimumSize: SIMD3<Double> {
+		appState.cinemaOpen ? SpatialVolumeFit.maximumSize : SpatialVolumeFit.minimumSize
+	}
 
 	private func points(_ meters: Double) -> CGFloat {
 		metrics.convert(CGFloat(meters), from: .meters)

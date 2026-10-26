@@ -14,6 +14,8 @@ enum CinemaScene {
 
 	#if os(visionOS)
 	@MainActor private static var isOpening = false
+	/// Set when the cinema closed the main window, so leaving it always brings the window back.
+	@MainActor static var closedMainWindow = false
 
 	/// Opens the space unless it is open or opening. Returns whether it is open afterwards.
 	@MainActor @discardableResult
