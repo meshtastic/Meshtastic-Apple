@@ -132,8 +132,9 @@ struct CinemaScreen: View {
 		let section = model.section
 		let router = model.router(for: section)
 		let shape = RoundedRectangle(cornerRadius: Self.cornerRadius, style: .continuous)
+		let gated = lockdown.isBlockingSession || accessoryManager.firmwareUpdateRequired
 		Group {
-			if lockdown.isBlockingSession || accessoryManager.firmwareUpdateRequired {
+			if gated {
 				// The lockdown and firmware gates are full screen covers, which only a window can show.
 				CinemaScreenGate()
 			} else {
@@ -146,6 +147,11 @@ struct CinemaScreen: View {
 		}
 		.id(appState.databaseResetID)
 		.panelPresentationHost(model.presenter)
+		// The pages are the model's and outlive the gate: one up when the gate goes up would stay
+		// over it, and come back when it drops.
+		.onChange(of: gated) { _, gated in
+			if gated { model.presenter.popAll() }
+		}
 		.frame(width: Self.size.width, height: Self.size.height)
 		.clipShape(shape)
 		.glassBackgroundEffect(in: shape)
