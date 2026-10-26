@@ -191,6 +191,15 @@ struct CoverageBandsTests {
 		}
 	}
 
+	@Test func aDiscAboveEveryFloorIsOneBandAtAnyResolution() throws {
+		// Every lower band's outer ring is the whole disc, the same ring as the hole the floor above cuts
+		// from it, so the band is empty. Matching that pair by float area broke on a large grid, where
+		// the reversed ring's area is no longer the exact negative.
+		let grid = discGrid(radiusKm: 25, latitude: 0, longitude: 0, resolution: 1536) { _, _, _ in -85 }
+		let all = try bands(grid.geoJSON(style: style))
+		#expect(all.map(\.dbm) == [(floors[5] * 10).rounded() / 10])
+	}
+
 	@Test func aWeakPatchIsAHoleInTheBandAroundIt() throws {
 		// Below the lowest floor near the middle: no band draws there, and the band around it has a hole.
 		let grid = discGrid(radiusKm: 10, resolution: 65) { km, _, _ in km < 3 ? -140 : -125 }

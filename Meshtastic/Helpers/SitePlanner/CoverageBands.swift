@@ -72,6 +72,9 @@ private struct Outline {
 		return sum / 2
 	}
 
+	/// Every point on the disc edge: the ring is the whole disc.
+	var isWholeDisc: Bool { onDiscEdge.allSatisfy { $0 } }
+
 	func reversed() -> Outline {
 		Outline(points: points.reversed(), onDiscEdge: onDiscEdge.reversed(), edges: edges.reversed())
 	}
@@ -374,8 +377,9 @@ private struct BandTracer {
 				.min { hole.points[$0].distanceSquared(to: center) < hole.points[$1].distanceSquared(to: center) }
 				.map { hole.points[$0] }
 			guard let probe else {
-				// A hole made only of disc edge points is the whole disc at the level above; it empties the matching outer.
-				if let twin = outers.first(where: { !cancelled.contains($0) && abs(areas[$0] + areas[index]) < 1e-9 }) {
+				// A hole made only of disc edge points is the whole disc at the level above. The outer made only of
+				// disc edge points at this level is the same ring, so the band between them is empty.
+				if let twin = outers.first(where: { !cancelled.contains($0) && outlines[$0].isWholeDisc }) {
 					cancelled.insert(twin)
 				}
 				continue
