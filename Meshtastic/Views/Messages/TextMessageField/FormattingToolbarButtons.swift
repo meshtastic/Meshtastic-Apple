@@ -27,7 +27,7 @@ struct FormattingToolbarButtons: View {
 				.disabled(textSelection == nil)
 			}
 		}
-		.alert("Insert Link", isPresented: $showLinkAlert) {
+		.hostedFormAlert("Insert Link", isPresented: $showLinkAlert) {
 			TextField("https://", text: $linkURL)
 				.textInputAutocapitalization(.never)
 				.keyboardType(.URL)

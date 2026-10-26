@@ -26,7 +26,7 @@ struct MessageText: View {
 			.environment(\.openURL, OpenURLAction { url in
 				handleURL(url)
 			})
-			.sheet(item: $saveChannelLink) { link in
+			.hostedSheet(item: $saveChannelLink) { link in
 				SaveChannelQRCode(
 					channelSetLink: link.data,
 					addChannels: link.add,
@@ -39,7 +39,7 @@ struct MessageText: View {
 				#endif
 			}
 			.contactImportSheet($pendingContact, accessoryManager: accessoryManager)
-			.confirmationDialog(
+			.hostedConfirmation(
 				"Are you sure you want to delete this message?",
 				isPresented: $isShowingDeleteConfirmation,
 				titleVisibility: .visible

@@ -24,10 +24,10 @@ struct UserList: View {
 	var body: some View {
 		VStack {
 			FilteredUserList(withFilters: filters, node: $node, userSelection: $userSelection)
-			.sheet(isPresented: $editingFilters) {
+			.hostedSheet(isPresented: $editingFilters) {
 				NodeListFilter(filterTitle: "Contact Filters", showsEncryptedFilter: false, filters: filters)
 			}
-			.sheet(isPresented: $showingHelp) {
+			.hostedSheet(isPresented: $showingHelp) {
 				DirectMessagesHelp()
 			}
 			.safeAreaInset(edge: .bottom, alignment: .leading) {
@@ -324,7 +324,7 @@ private struct DirectMessageUserRow: View {
 				}
 			}
 		}
-		.confirmationDialog(
+		.hostedConfirmation(
 			"This conversation will be deleted.",
 			isPresented: $isPresentingDeleteUserMessagesConfirm,
 			titleVisibility: .visible

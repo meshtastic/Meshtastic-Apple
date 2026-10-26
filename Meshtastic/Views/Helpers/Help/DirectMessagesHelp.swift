@@ -9,7 +9,7 @@ import SwiftUI
 
 struct DirectMessagesHelp: View {
 	var body: some View {
-		NavigationStack {
+		SheetNavigationStack {
 			List {
 				Section {
 					HelpItem(

@@ -33,7 +33,7 @@ struct RetryButton: View {
 		}
 		.accessibilityLabel(String(localized: "Message status", comment: "VoiceOver label for the message delivery status button"))
 		.accessibilityHint(status.detail)
-		.alert(status.text, isPresented: $isShowingDetails) {
+		.hostedAlert(status.text, isPresented: $isShowingDetails) {
 			if status.canRetry {
 				Button("Try Again", action: retryMessage)
 			}

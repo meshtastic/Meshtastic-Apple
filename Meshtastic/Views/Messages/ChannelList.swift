@@ -168,7 +168,7 @@ struct ChannelList: View {
 					Label(channel.mute ? "Show Alerts" : "Hide Alerts", systemImage: channel.mute ? "bell" : "bell.slash")
 				}
 			}
-			.confirmationDialog(
+			.hostedConfirmation(
 				"This conversation will be deleted.",
 				isPresented: $isPresentingDeleteChannelMessagesConfirm,
 				titleVisibility: .visible
@@ -200,7 +200,7 @@ struct ChannelList: View {
 			}
 			Spacer()
 		}
-		.sheet(isPresented: $showingHelp) {
+		.hostedSheet(isPresented: $showingHelp) {
 			ChannelsHelp()
 				.trackScreen(.channelsHelp)
 				.presentationDetents([.large])
