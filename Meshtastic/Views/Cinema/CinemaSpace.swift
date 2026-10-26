@@ -110,6 +110,11 @@ struct CinemaSpace: View {
 			appState.cinemaOpen = true
 			screen.register(with: appState.sceneRouters)
 		}
+		.onChange(of: appState.cinemaScreenRequest) {
+			if let request = appState.claimCinemaScreenRequest() {
+				screen.show(request)
+			}
+		}
 		.task {
 			// The screen takes the main window's place. Once the space has settled, close the window
 			// and reopen the map: with no window to sit beside, the system puts it in front of the

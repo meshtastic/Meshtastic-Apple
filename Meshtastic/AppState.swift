@@ -155,4 +155,14 @@ class AppState: ObservableObject {
 		self.spatialMapRoute = nil
 		return spatialMapRoute.routeId
 	}
+
+	/// What the cinema's front screen should show next, from a tap on one of the tent's boards;
+	/// claimed by the cinema the same way.
+	@Published var cinemaScreenRequest: CinemaScreenRequest?
+
+	func claimCinemaScreenRequest() -> CinemaScreenRequest? {
+		guard let cinemaScreenRequest else { return nil }
+		self.cinemaScreenRequest = nil
+		return cinemaScreenRequest
+	}
 }

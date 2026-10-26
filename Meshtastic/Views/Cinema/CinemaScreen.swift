@@ -88,6 +88,16 @@ final class CinemaScreenModel: ObservableObject {
 		filters[section] ?? NodeFilterParameters()
 	}
 
+	/// Shows what a tap on one of the tent's boards asked for.
+	func show(_ request: CinemaScreenRequest) {
+		switch request {
+		case .node(let nodeNum):
+			presenter.popAll()
+			section = .nodes
+			router(for: .nodes).navigateToNodeDetail(nodeNum: nodeNum)
+		}
+	}
+
 	/// Registers the routers and the page stack with the app's windows, so switching radios pops
 	/// them too.
 	func register(with sceneRouters: SceneRouters) {

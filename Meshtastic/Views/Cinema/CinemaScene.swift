@@ -7,6 +7,13 @@
 import OSLog
 import SwiftUI
 
+/// A one-shot ask for the cinema's front screen to show something, from a tap on one of the
+/// tent's boards; claimed by the cinema once it has it.
+enum CinemaScreenRequest: Equatable {
+	/// The Nodes section with this node's detail open.
+	case node(Int64)
+}
+
 /// The visionOS immersive space that shows the app on a big screen inside a 360° environment.
 /// Only one immersive space can be open, so opening this one closes the showcase first.
 enum CinemaScene {

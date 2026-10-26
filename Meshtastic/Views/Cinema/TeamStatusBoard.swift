@@ -12,7 +12,7 @@ import SwiftUI
 /// The live team roster on the tent's whiteboard in the cinema: the connected radio and the
 /// favorite nodes, with when each was last heard, its battery, signal, hops, and distance and
 /// bearing from the radio. Drawn as marker on the board, to be read from across the tent.
-/// Tapping a row opens the node in the app window.
+/// Tapping a row centers the 3D map on the node and opens its detail on the front screen.
 struct TeamStatusBoard: View {
 	@EnvironmentObject private var appState: AppState
 	@EnvironmentObject private var accessoryManager: AccessoryManager
@@ -68,7 +68,7 @@ struct TeamStatusBoard: View {
 					.padding(.top, 8)
 				ForEach(roster.members) { member in
 					Button {
-						showInMainWindow(member.id)
+						show(member.id)
 					} label: {
 						TeamRow(member: member, now: roster.date)
 					}
@@ -263,13 +263,12 @@ struct TeamStatusBoard: View {
 		"!" + String(format: "%08x", UInt32(truncatingIfNeeded: num))
 	}
 
-	/// Hands the node to the main window, opening one if there is none.
-	private func showInMainWindow(_ nodeNum: Int64) {
-		guard let url = URL(string: "meshtastic:///nodes?nodenum=\(nodeNum)") else { return }
-		appState.pendingRoute = PendingRoute(url: url, bringForward: true)
-		if appState.mainWindowCount == 0 {
-			openWindow(id: MeshtasticAppleApp.mainWindowID)
-		}
+	/// Centers the 3D map on the node, opening the map if it isn't open (an open one comes
+	/// forward), and puts the node's detail on the front screen.
+	private func show(_ nodeNum: Int64) {
+		appState.spatialMapFocus = SpatialMapFocusRequest(nodeNum: nodeNum)
+		openWindow(id: SpatialMapScene.id, value: SpatialMapSceneKey.shared)
+		appState.cinemaScreenRequest = .node(nodeNum)
 	}
 }
 
