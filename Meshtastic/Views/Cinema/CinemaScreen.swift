@@ -99,6 +99,11 @@ final class CinemaScreenModel: ObservableObject {
 			presenter.popAll()
 			section = .map
 			router(for: .map).mapState = .coverageEstimate(nodeNum)
+		case .traceRoute(let routeId):
+			// The map looks the route up and frames it, as for the widget's deep link.
+			presenter.popAll()
+			section = .map
+			router(for: .map).mapState = .traceRoute(routeId)
 		}
 	}
 

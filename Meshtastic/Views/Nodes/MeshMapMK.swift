@@ -1820,9 +1820,11 @@ struct MeshMapMK: View {
 		}
 	}
 
-	/// Center/zoom the camera to fit the selected trace route's nodes. Drives the MKMapView directly
-	/// (not the `visibleRegion` binding) so the framing doesn't kick off a region-binding feedback
-	/// loop that re-renders `body` repeatedly (which pegs the main thread on Mac Catalyst).
+	/// Center/zoom the camera to fit the selected trace route's nodes, with the one-shot camera
+	/// command (not the `visibleRegion` binding, which doesn't move the map and would kick off a
+	/// region-binding feedback loop that re-renders `body` repeatedly). The command also replaces an
+	/// initial framing still waiting to be applied, which would otherwise take the camera back off
+	/// the route when the route is asked for as the map appears.
 	private func frameTraceRoute() {
 		guard let route = selectedTraceRoute else { return }
 		let coords = route.forwardCoordinates + route.backCoordinates
@@ -1836,11 +1838,10 @@ struct MeshMapMK: View {
 			longitudeDelta: max((maxLon - minLon) * 1.4, 0.02)
 		)
 		let region = MKCoordinateRegion(center: center, span: span)
-		if let mapView = flyover.mapView {
-			mapView.setRegion(region, animated: false)
-		} else {
-			visibleRegion = region
-		}
+		// The route's framing stands in for the initial one, so the positions coming in don't re-frame.
+		didInitialFrame = true
+		visibleRegion = region
+		cameraCommand = ClusterMapCameraCommand(id: UUID(), region: region)
 	}
 
 /// Build the offline basemap as native MKOverlays (earth fill + water/park fills + arterial roads)

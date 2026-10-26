@@ -10,7 +10,7 @@ import SwiftUI
 
 /// The latest trace route on the framed print by the tent's door in the cinema, drawn as the
 /// app's own share card: the same route the trace route widget shows, requested or observed.
-/// Tapping it flies the route on the 3D map.
+/// Tapping it shows the route on the front screen's map and flies it on the 3D map.
 struct TraceRouteBoard: View {
 	@EnvironmentObject private var appState: AppState
 	@Environment(\.modelContext) private var context
@@ -38,7 +38,7 @@ struct TraceRouteBoard: View {
 		ZStack {
 			if let card {
 				Button {
-					showOnSpatialMap(card.routeId)
+					showRoute(card.routeId)
 				} label: {
 					cardView(card)
 				}
@@ -147,9 +147,10 @@ struct TraceRouteBoard: View {
 		)
 	}
 
-	/// Asks the 3D map to fly the route, opening the map if it was closed. It takes the request as
-	/// it appears.
-	private func showOnSpatialMap(_ routeId: Int64) {
+	/// Shows the route on the front screen's map, and asks the 3D map to fly it, opening the map if
+	/// it was closed. Each takes its request as it appears.
+	private func showRoute(_ routeId: Int64) {
+		appState.cinemaScreenRequest = .traceRoute(routeId)
 		appState.spatialMapRoute = SpatialMapRouteRequest(routeId: routeId)
 		openWindow(id: SpatialMapScene.id, value: SpatialMapSceneKey.shared)
 	}
