@@ -384,6 +384,9 @@ class Router: ObservableObject {
 /// from those methods.
 final class SceneRouters: @unchecked Sendable {
 	private var routers: [UUID: Router] = [:]
+	/// Stacks that aren't a router's: the page stack of a panel in the immersive space, whose
+	/// pages hold the same model objects a detail view does.
+	private var stacks: [UUID: @MainActor () -> Void] = [:]
 
 	@MainActor
 	@discardableResult
@@ -393,15 +396,28 @@ final class SceneRouters: @unchecked Sendable {
 		return id
 	}
 
+	/// Registers a stack to pop with the routers' stacks.
+	@MainActor
+	@discardableResult
+	func register(stack popAll: @escaping @MainActor () -> Void) -> UUID {
+		let id = UUID()
+		stacks[id] = popAll
+		return id
+	}
+
 	@MainActor
 	func unregister(_ id: UUID) {
 		routers.removeValue(forKey: id)
+		stacks.removeValue(forKey: id)
 	}
 
 	@MainActor
 	func popAllStacks() {
 		for router in Array(routers.values) {
 			router.popAllStacks()
+		}
+		for popAll in Array(stacks.values) {
+			popAll()
 		}
 	}
 }

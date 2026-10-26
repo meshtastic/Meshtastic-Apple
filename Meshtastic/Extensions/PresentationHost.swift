@@ -29,20 +29,24 @@ extension EnvironmentValues {
 extension View {
 	/// Marks this view as a panel and adds the page stack and banner area that the hosted
 	/// modifiers show in. Apply it once, around the whole panel, outside the screen's own
-	/// NavigationStack.
+	/// NavigationStack. A panel that changes what it shows, like the cinema screen switching
+	/// sections, passes its own presenter so it can pop the pages itself.
 	///
 	/// The pages go on a stack of their own rather than the screen's: a navigation destination
 	/// inside a List row or a split view's sidebar never pushes, and most of these presentations
 	/// sit in one of those.
-	func panelPresentationHost() -> some View {
-		modifier(PanelPresentationHostModifier())
+	func panelPresentationHost(_ presenter: PanelPresenter? = nil) -> some View {
+		modifier(PanelPresentationHostModifier(shared: presenter))
 	}
 }
 
 private struct PanelPresentationHostModifier: ViewModifier {
-	@State private var presenter = PanelPresenter()
+	/// The panel's own presenter, when it keeps one.
+	let shared: PanelPresenter?
+	@State private var owned = PanelPresenter()
 
 	func body(content: Content) -> some View {
+		let presenter = shared ?? owned
 		let showingPage = !presenter.pages.isEmpty
 		ZStack {
 			content
@@ -50,7 +54,7 @@ private struct PanelPresentationHostModifier: ViewModifier {
 				.accessibilityHidden(showingPage)
 			// Always there so the first page slides in like a push. Its root is empty, so every
 			// page is pushed and has a back button, and dismiss() inside a page pops it.
-			NavigationStack(path: $presenter.path) {
+			NavigationStack(path: Binding(get: { presenter.path }, set: { presenter.path = $0 })) {
 				Color.clear
 					.toolbar(.hidden, for: .navigationBar)
 					.navigationDestination(for: UUID.self) { id in
@@ -126,6 +130,18 @@ final class PanelPresenter {
 		let popped = pages[index...]
 		pages.removeSubrange(index...)
 		popped.reversed().forEach { $0.onPop() }
+	}
+
+	/// Pops every page and drops the banner, clearing their presenting views' flags: the panel
+	/// is about to show something else.
+	func popAll() {
+		let popped = pages
+		pages.removeAll()
+		popped.reversed().forEach { $0.onPop() }
+		if let banner {
+			self.banner = nil
+			banner.dismiss()
+		}
 	}
 
 	func show(_ banner: Banner) {

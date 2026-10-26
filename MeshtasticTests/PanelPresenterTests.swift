@@ -76,4 +76,19 @@ struct PanelPresenterTests {
 		presenter.removeBanner(id: second.id)
 		#expect(presenter.banner == nil)
 	}
+
+	@Test func popAllClearsEveryPageAndTheBanner() {
+		let presenter = PanelPresenter()
+		var pageShown = true
+		var bannerShown = true
+		presenter.push(id: UUID(), content: AnyView(EmptyView())) { pageShown = false }
+		presenter.show(PanelPresenter.Banner(id: UUID(), title: Text("A"), message: AnyView(EmptyView()), actions: AnyView(EmptyView())) { bannerShown = false })
+
+		presenter.popAll()
+
+		#expect(presenter.path.isEmpty)
+		#expect(presenter.banner == nil)
+		#expect(!pageShown)
+		#expect(!bannerShown)
+	}
 }

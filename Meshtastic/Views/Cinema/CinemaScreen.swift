@@ -52,10 +52,17 @@ enum CinemaSection: String, CaseIterable, Identifiable {
 /// reset or a rebuilt attachment doesn't lose where each section was.
 @MainActor
 final class CinemaScreenModel: ObservableObject {
-	@Published var section: CinemaSection = .connect
+	@Published var section: CinemaSection = .connect {
+		didSet {
+			// A page pushed over the old section would hide the new one.
+			if oldValue != section { presenter.popAll() }
+		}
+	}
 	/// Each section's own navigation, with its tab selected.
 	let routers: [CinemaSection: Router]
 	let filters: [CinemaSection: NodeFilterParameters]
+	/// The pages and banners the sections' sheets and dialogs become on the screen.
+	let presenter = PanelPresenter()
 	private var tokens: [UUID] = []
 
 	init() {
@@ -81,10 +88,12 @@ final class CinemaScreenModel: ObservableObject {
 		filters[section] ?? NodeFilterParameters()
 	}
 
-	/// Registers the routers with the app's windows, so switching radios pops their stacks too.
+	/// Registers the routers and the page stack with the app's windows, so switching radios pops
+	/// them too.
 	func register(with sceneRouters: SceneRouters) {
 		guard tokens.isEmpty else { return }
 		tokens = routers.values.map { sceneRouters.register($0) }
+		tokens.append(sceneRouters.register(stack: { [presenter] in presenter.popAll() }))
 	}
 
 	func unregister(from sceneRouters: SceneRouters) {
@@ -94,8 +103,10 @@ final class CinemaScreenModel: ObservableObject {
 }
 
 /// The big screen on the cinema's front wall: one app section at a time, with the store and the
-/// radio like the app window. Presentations become pushes here (`presentationHost` is `.panel`),
-/// since an immersive space never shows them.
+/// radio like the app window. The screen is a panel host, since an immersive space never shows a
+/// sheet or an alert: the sections' sheets and dialogs become pages pushed over the screen and
+/// their alerts a banner at its top. The host goes around the whole screen, with the store, the
+/// radio and the section's navigation outside it, so a pushed page has them too.
 struct CinemaScreen: View {
 	/// The screen's size in points. The front wall's anchor has the same shape.
 	static let size = CGSize(width: 1500, height: 940)
@@ -124,6 +135,7 @@ struct CinemaScreen: View {
 			}
 		}
 		.id(appState.databaseResetID)
+		.panelPresentationHost(model.presenter)
 		.frame(width: Self.size.width, height: Self.size.height)
 		.clipShape(shape)
 		.glassBackgroundEffect(in: shape)
@@ -134,7 +146,6 @@ struct CinemaScreen: View {
 		.environmentObject(router)
 		.environmentObject(model.filters(for: section))
 		.environmentObject(MeshtasticAPI.shared)
-		.environment(\.presentationHost, .panel)
 	}
 
 	@ViewBuilder
