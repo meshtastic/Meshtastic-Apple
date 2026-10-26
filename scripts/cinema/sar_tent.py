@@ -56,10 +56,9 @@ def furnish(layout):
     for _ in range(6):
         rng.random()
 
-    # Radio table in the back corner on the left, under the window. Only a binder on it: the app
-    # puts its own radio models on it.
+    # Radio table in the back corner on the left, under the window. Bare: the app puts its own
+    # radio models on it.
     folding_table("RadioTable", (-wall, -1.8), 1.3, True, table_top, steel)
-    box("Binder", (0.3, 0.26, 0.05), (-wall + 0.05, -1.35, 0.785), material("Binder", (0.1, 0.25, 0.6), 0.5))
 
     # Map table along the back wall on the right, between the banner and the corner, so the front
     # stays clear for the screen and the right window stays open.
