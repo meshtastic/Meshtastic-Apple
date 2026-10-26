@@ -72,7 +72,7 @@ struct SpatialMapWindow: View {
 			SpatialMapOrnament(
 				model: model, traffic: traffic, mapLayer: $mapLayer, darkMap: $darkMap, showContours: $showContours,
 				showLabels: $showLabels, showLinks: $showLinks, showTraffic: $showTraffic, autoTerrain: $autoTerrain,
-				coverageMode: $coverageMode, coverageOpacity: $coverageOpacity
+				coverageMode: $coverageMode, coverageOpacity: $coverageOpacity, showRoute: show(route:)
 			)
 		}
 		.task(id: refreshKey) {
@@ -267,10 +267,10 @@ struct SpatialMapWindow: View {
 		refresh()
 	}
 
-	/// Flies a trace route asked for by id, as picking it in the route menu does, and fits the map
-	/// to it so the whole route is on the disk. The route may be newer than the last read, so the
-	/// routes are read again if it isn't there. A volume that just opened waits for its table first.
-	/// Like the focus, not while the cinema is about to reopen the volume.
+	/// Shows a trace route asked for by id, as picking it in the route menu does. The route may be
+	/// newer than the last read, so the routes are read again if it isn't there. A volume that just
+	/// opened waits for its table first. Like the focus, not while the cinema is about to reopen
+	/// the volume.
 	private func claimRoute() {
 		guard !appState.spatialMapReopening, let routeId = appState.claimSpatialMapRoute() else { return }
 		routeRequestTask?.cancel()
@@ -293,11 +293,17 @@ struct SpatialMapWindow: View {
 				return
 			}
 			Logger.services.info("[Spatial] Showing trace route \(routeId, privacy: .public)")
-			// Bring the whole route, there and back, onto the disk before the comet sets off.
-			model.fit((route.forward + route.back).map(\.coordinate))
-			model.shownRoute = route
-			traffic.startFlyover(route)
+			show(route: route)
 		}
+	}
+
+	/// Flies the route and leaves it drawn, for the route menu and a request by id alike. The map
+	/// is fitted to the whole route, there and back, first, so it is all on the disk before the
+	/// comet sets off. Clearing the route leaves the map where it is.
+	private func show(route: SpatialRouteSnapshot) {
+		model.fit((route.forward + route.back).map(\.coordinate))
+		model.shownRoute = route
+		traffic.startFlyover(route)
 	}
 
 	/// Opens the node's detail: on the cinema's front screen while the cinema is open, since the
@@ -344,6 +350,8 @@ struct SpatialMapOrnament: View {
 	@Binding var autoTerrain: Bool
 	@Binding var coverageMode: SpatialCoverageMode
 	@Binding var coverageOpacity: Double
+	/// Shows a route picked in the trace route menu; the window fits the map to it and flies it.
+	let showRoute: (SpatialRouteSnapshot) -> Void
 	@ObservedObject private var offline = OfflineMapManager.shared
 	@State private var confirmingTerrainDownload = false
 
@@ -478,8 +486,7 @@ struct SpatialMapOrnament: View {
 			ForEach(model.routes) { route in
 				let entry = SpatialRouteMenuEntry(route: route, now: now)
 				Button {
-					model.shownRoute = route
-					traffic.startFlyover(route)
+					showRoute(route)
 				} label: {
 					Text(verbatim: entry.title)
 					Text(verbatim: entry.subtitle)
