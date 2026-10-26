@@ -68,6 +68,15 @@ class WallSpot:
 
 
 @dataclass
+class BackSpot:
+    """A rectangle on the back wall, centered at `x` (+X is the viewer's right)."""
+    x: float
+    z: float
+    width: float
+    height: float
+
+
+@dataclass
 class Layout:
     """Where the windows and the branding go. The defaults suit the search and rescue tent; another
     environment passes its own to fit its furniture, and None leaves an item out. The front wall
@@ -79,9 +88,9 @@ class Layout:
     ])
     # The banner hangs on the back wall: center x, center z, width, height.
     banner: tuple = (0.0, 1.62, 2.0, 1.0)
-    # Chirpy, on the right wall's front bay beside the tripod by the door, centered as seen from the
-    # seat in the open wall between the node and the front corner.
-    poster: WallSpot = field(default_factory=lambda: WallSpot(side=1, y=2.05, z=1.45, width=0.5, height=0.7))
+    # Chirpy, on the back wall to the left of the banner, centered between the banner's end and the
+    # back corner as seen from the seat, above the radio table and clear of the left window.
+    poster: BackSpot = field(default_factory=lambda: BackSpot(x=-1.78, z=1.45, width=0.5, height=0.7))
     # Big enough that its small top line reads from the seat. In the middle of the left wall's
     # middle bay.
     plaque: WallSpot = field(default_factory=lambda: WallSpot(side=-1, y=0.2, z=1.42, width=1.26, height=0.62))
@@ -668,9 +677,19 @@ def build_banner(spot, steel, cord):
 
 
 def build_poster(spot):
-    """Chirpy on white, pinned at the corners."""
-    wall_sheet("ChirpyPoster", spot, 0.004, print_material("ChirpyPoster", os.path.join(CACHE, "chirpy_poster.png"), 0.7))
+    """Chirpy on white, pinned at the corners, on a side wall (WallSpot) or the back wall (BackSpot)."""
+    mat = print_material("ChirpyPoster", os.path.join(CACHE, "chirpy_poster.png"), 0.7)
     pin = material("PushPin", (0.75, 0.08, 0.06), 0.35)
+    if isinstance(spot, BackSpot):
+        # The back wall is flat: it doesn't sag between rafters like the side walls.
+        plane("ChirpyPoster", spot.width, spot.height, (spot.x, BACK_Y + 0.01, spot.z), (math.pi / 2, 0, math.pi), mat)
+        for du in (-1, 1):
+            for dv in (-1, 1):
+                x = spot.x + du * (spot.width / 2 - 0.025)
+                z = spot.z + dv * (spot.height / 2 - 0.025)
+                sphere("PosterPin", 0.008, (x, BACK_Y + 0.018, z), pin, segments=10)
+        return
+    wall_sheet("ChirpyPoster", spot, 0.004, mat)
     for du in (-1, 1):
         for dv in (-1, 1):
             y = spot.y + du * (spot.width / 2 - 0.025)

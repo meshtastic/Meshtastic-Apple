@@ -10,8 +10,8 @@
 #    Blender -b -P sar_tent.py -- --out out/sar_tent.png --width 4096 --samples 160
 #
 #  On the left, the whiteboard the app draws the team roster on, then the comms and radio tables; the
-#  map table on the back wall to the right, and a Solar Node on a tripod by the door. Nothing else
-#  stands on the floor.
+#  map table on the back wall to the right, and a Solar Node on a tripod by the door, with the blank
+#  print the app draws the latest trace route on beside it. Nothing else stands on the floor.
 
 import math
 import os
@@ -119,21 +119,50 @@ def furnish(layout):
 
     # A light on the board, from up by the eave, so the painted board is as bright as the panel
     # the app draws over it. It can't be seen itself, in the image or on the board.
-    board_light = bpy.data.lights.new("BoardLight", "AREA")
-    board_light.shape = "RECTANGLE"
-    board_light.size, board_light.size_y = board_w - 0.2, 0.3
-    board_light.energy = 3.3
-    board_light.color = (1, 0.55, 0.24)
-    board_light.spread = math.radians(70)
-    obj = bpy.data.objects.new("BoardLight", board_light)
-    obj.location = (board_x + 0.9, board_y, 2.02)
+    board_light("BoardLight", (board_x + 0.9, board_y, 2.02), (board_x, board_y, board_z + 0.05), board_w - 0.2, 3.3)
+
+    map_lamp(map_x, map_y - 0.06, steel, black_plastic)
+    trace_route_print(steel)
+
+
+def board_light(name, location, target, width, energy):
+    """An area light from up by the eave onto a board the app draws over, so the painted board is
+    as bright as the panel. It can't be seen itself, in the image or on the board."""
+    light = bpy.data.lights.new(name, "AREA")
+    light.shape = "RECTANGLE"
+    light.size, light.size_y = width, 0.3
+    light.energy = energy
+    light.color = (1, 0.55, 0.24)
+    light.spread = math.radians(70)
+    obj = bpy.data.objects.new(name, light)
+    obj.location = location
     obj.rotation_mode = "QUATERNION"
-    obj.rotation_quaternion = (Vector((board_x, board_y, board_z + 0.05)) - obj.location).to_track_quat("-Z", "Y")
+    obj.rotation_quaternion = (Vector(target) - obj.location).to_track_quat("-Z", "Y")
     obj.visible_camera = False
     obj.visible_glossy = False
     link(obj)
 
-    map_lamp(map_x, map_y - 0.06, steel, black_plastic)
+
+def trace_route_print(hook_mat):
+    """A blank print in a thin dark frame on the right wall's front bay, between the Solar Node and
+    the front corner, hung from the eave on two cords. The app draws the latest trace route's share
+    card over it (the "traceRoute" anchor). Landscape, a little wider than the card's usual shape,
+    so a taller route still fits on the mat."""
+    width, height = 1.1, 0.9
+    border, depth = 0.025, 0.02
+    y, z = 2.1, 1.3
+    # Rigid, so it stands off the canvas by the most the canvas bows in across it.
+    back = HALF_WIDTH - max(tent.sag(y + dy) for dy in (-width / 2, 0, width / 2)) - 0.006
+    box("PrintFrame", (depth, width + 2 * border, height + 2 * border), (back - depth / 2, y, z), material("PrintFrame", (0.03, 0.03, 0.032), 0.5), bevel=0.003)
+    surface = plane("Print", width, height, (back - depth - 0.001, y, z), tent.facing_in(1), material("PrintMat", (0.86, 0.85, 0.82), 0.85))
+    anchor("traceRoute", surface, width, height)
+    top = z + height / 2 + border
+    eave_x, eave_z = HALF_WIDTH - 0.05, tent.WALL_HEIGHT - 0.04
+    cord = material("PrintCord", (0.08, 0.08, 0.08), 0.8)
+    for dy in (-width / 2 + 0.12, width / 2 - 0.12):
+        cylinder("PrintCord", 0.003, (back - depth / 2, y + dy, top), (eave_x - 0.01, y + dy, eave_z - 0.03), cord, segments=6)
+        tent.torus("PrintHook", 0.03, 0.003, (eave_x, y + dy, eave_z), hook_mat, rotation=(math.pi / 2, 0, 0))
+    board_light("PrintLight", (back - 0.9, y, 2.02), (back, y, z + 0.05), width - 0.2, 3.3)
 
 
 # The app's own model of the SenseCAP Solar Node, at real size (scripts/device-models).
