@@ -76,7 +76,7 @@ struct CompassView: View {
 	}
 
 	var body: some View {
-		NavigationStack {
+		SheetNavigationStack {
 			ZStack {
 				VStack(spacing: 0) {
 				

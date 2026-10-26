@@ -105,7 +105,7 @@ struct EnvironmentMetricsLog: View {
 					.controlSize(buttonSize)
 					.padding(.bottom)
 					.padding(.leading)
-					.sheet(isPresented: self.$isEditingColumnConfiguration) {
+					.hostedSheet(isPresented: self.$isEditingColumnConfiguration) {
 						MetricsColumnDetail(columnList: columnList, seriesList: seriesList)
 					}
 					Button(role: .destructive) {
@@ -118,7 +118,7 @@ struct EnvironmentMetricsLog: View {
 					.buttonBorderShape(.capsule)
 					.controlSize(buttonSize)
 					.padding(.bottom)
-					.confirmationDialog(
+					.hostedConfirmation(
 						"Are you sure?",
 						isPresented: $isPresentingClearLogConfirm,
 						titleVisibility: .visible
@@ -144,6 +144,7 @@ struct EnvironmentMetricsLog: View {
 						Label("Save", systemImage: "square.and.arrow.down")
 							.imageScale(imageScale)
 					}
+					.hostedWindowOnly()
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
 					.controlSize(buttonSize)

@@ -200,7 +200,7 @@ struct DeviceMetricsLog: View {
 					.controlSize(horizontalSizeClass == .regular ? .large : .regular)
 					.padding(.bottom)
 					.padding(.leading)
-					.confirmationDialog(
+					.hostedConfirmation(
 						"Are you sure?",
 						isPresented: $isPresentingClearLogConfirm,
 						titleVisibility: .visible
@@ -226,6 +226,7 @@ struct DeviceMetricsLog: View {
 					} label: {
 						Label("Save", systemImage: "square.and.arrow.down")
 					}
+					.hostedWindowOnly()
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
 					.controlSize(horizontalSizeClass == .regular ? .large : .regular)

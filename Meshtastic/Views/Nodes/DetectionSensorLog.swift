@@ -120,6 +120,7 @@ struct DetectionSensorLog: View {
 			} label: {
 				Label("Save", systemImage: "square.and.arrow.down")
 			}
+			.hostedWindowOnly()
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)
 			.controlSize(.large)

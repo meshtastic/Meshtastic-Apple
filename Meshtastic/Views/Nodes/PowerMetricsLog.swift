@@ -241,7 +241,7 @@ struct PowerMetricsLog: View {
 					.controlSize(horizontalSizeClass == .regular ? .large : .regular)
 					.padding(.bottom)
 					.padding(.leading)
-					.confirmationDialog(
+					.hostedConfirmation(
 						"Are you sure?",
 						isPresented: $isPresentingClearLogConfirm,
 						titleVisibility: .visible
@@ -267,6 +267,7 @@ struct PowerMetricsLog: View {
 					} label: {
 						Label("Save", systemImage: "square.and.arrow.down")
 					}
+					.hostedWindowOnly()
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
 					.controlSize(horizontalSizeClass == .regular ? .large : .regular)
@@ -304,8 +305,8 @@ struct PowerMetricsLog: View {
 				ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 			}
 		}
-		.sheet(isPresented: $isEditingLabels) {
-			NavigationStack {
+		.hostedSheet(isPresented: $isEditingLabels) {
+			SheetNavigationStack {
 				Form {
 					Section {
 						ForEach(0..<3, id: \.self) { index in

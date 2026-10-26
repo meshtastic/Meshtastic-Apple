@@ -107,6 +107,7 @@ struct TraceRouteDetail: View {
 		) {
 			Label("Share", systemImage: "square.and.arrow.up")
 		}
+		.hostedWindowOnly()
 	}
 
 	private func findNode(_ num: Int64) -> NodeInfoEntity? {
@@ -195,6 +196,7 @@ struct TraceRouteDetail: View {
 							) {
 								TraceRouteActionLabel(title: String(localized: "Share", comment: "Trace route detail: share the route image"), systemImage: "square.and.arrow.up")
 							}
+							.hostedWindowOnly()
 						} else {
 							TraceRouteActionLabel(title: String(localized: "Share", comment: "Trace route detail: share the route image"), systemImage: "square.and.arrow.up", isBusy: isRenderingShareImage)
 								.foregroundStyle(.secondary)

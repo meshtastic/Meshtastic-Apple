@@ -36,7 +36,7 @@ private struct StatusMessageAlertModifier: ViewModifier {
 
 	func body(content: Content) -> some View {
 		content
-			.alert(
+			.hostedFormAlert(
 				"Status Message",
 				isPresented: Binding(get: { node != nil }, set: { isPresented in if !isPresented { node = nil } }),
 				presenting: node

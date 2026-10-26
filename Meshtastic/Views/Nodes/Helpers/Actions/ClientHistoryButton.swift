@@ -31,7 +31,7 @@ struct ClientHistoryButton: View {
 				"Client History",
 				systemImage: "envelope.arrow.triangle.branch"
 			)
-		}.alert(
+		}.hostedAlert(
 			"Client History Request Sent",
 			isPresented: $isPresentingAlert
 		) {

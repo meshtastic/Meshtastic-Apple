@@ -81,8 +81,8 @@ struct LocalStatsLog: View {
 				}
 			}
 		}
-		.sheet(isPresented: $isPresentingNoiseFloorInfo) {
-			NavigationStack {
+		.hostedSheet(isPresented: $isPresentingNoiseFloorInfo) {
+			SheetNavigationStack {
 				NoiseFloorInfoView()
 					.navigationTitle("Noise Floor")
 					.navigationBarTitleDisplayMode(.inline)
@@ -259,7 +259,7 @@ struct LocalStatsLog: View {
 				.buttonStyle(.bordered)
 				.buttonBorderShape(.capsule)
 				.controlSize(horizontalSizeClass == .regular ? .large : .regular)
-				.confirmationDialog(
+				.hostedConfirmation(
 					"Are you sure?",
 					isPresented: $isPresentingClearLogConfirm,
 					titleVisibility: .visible
@@ -299,6 +299,7 @@ struct LocalStatsLog: View {
 						Image(systemName: "square.and.arrow.down")
 					}
 				}
+				.hostedWindowOnly()
 				.buttonStyle(.bordered)
 				.buttonBorderShape(.capsule)
 				.controlSize(horizontalSizeClass == .regular ? .large : .regular)

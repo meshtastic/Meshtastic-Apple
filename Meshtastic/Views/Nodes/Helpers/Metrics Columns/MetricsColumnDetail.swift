@@ -23,7 +23,7 @@ struct MetricsColumnDetail: View {
 	@State private var selectedView: ViewOption = .chart
 	
 	var body: some View {
-		NavigationStack {
+		SheetNavigationStack {
 			Form {
 				Section {
 					Picker("", selection: $selectedView) {

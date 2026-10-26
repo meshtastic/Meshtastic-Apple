@@ -59,12 +59,12 @@ struct RequestLocalStatsButton: View {
 				}
 			}
 		}
-		.alert("Local Stats Requested", isPresented: $isPresentingLocalStatsSentAlert) {
+		.hostedAlert("Local Stats Requested", isPresented: $isPresentingLocalStatsSentAlert) {
 			Button("OK", role: .cancel) { }
 		} message: {
 			Text("A local stats request has been sent to \(node.user?.longName ?? "this node"). Responses can take some time.")
 		}
-		.sheet(item: $presentedSheet) { _ in
+		.hostedSheet(item: $presentedSheet) { _ in
 			LocalStatsRequestMethodSheet(node: node)
 		}
 	}
@@ -112,7 +112,7 @@ private struct LocalStatsRequestMethodSheet: View {
 	}
 
 	var body: some View {
-		NavigationStack {
+		SheetNavigationStack {
 			List {
 				Section("Send local stats request") {
 					Text("Choose the encryption method for this request to \(node.user?.longName ?? "this node").")
@@ -162,7 +162,7 @@ private struct LocalStatsRequestMethodSheet: View {
 					Button("Cancel") { dismiss() }
 				}
 			}
-			.alert("Couldn’t send Local Stats request", isPresented: .constant(errorMessage != nil)) {
+			.hostedAlert("Couldn’t send Local Stats request", isPresented: .constant(errorMessage != nil)) {
 				Button("OK") { errorMessage = nil }
 			} message: {
 				Text(errorMessage ?? "")

@@ -10,6 +10,7 @@ struct DeleteNodeButton: View {
 	var connectedNode: NodeInfoEntity
 	var node: NodeInfoEntity
 	@Environment(\.dismiss) private var dismiss
+	@Environment(\.presentationHost) private var presentationHost
 	@State private var isPresentingAlert = false
 
 	var body: some View {
@@ -24,15 +25,19 @@ struct DeleteNodeButton: View {
 						.symbolRenderingMode(.multicolor)
 				}
 			}
-			.alert(
-				"Are you sure?",
-				isPresented: $isPresentingAlert
-			) {
-				Button("OK") {	}.keyboardShortcut(.defaultAction)
-			} message: {
-				Text("Delete Node?")
+			// The confirmation below shares this flag. In a panel only the confirmation shows, as
+			// a page; an alert banner on top of it would be a second copy.
+			.if(presentationHost == .window) {
+				$0.alert(
+					"Are you sure?",
+					isPresented: $isPresentingAlert
+				) {
+					Button("OK") {	}.keyboardShortcut(.defaultAction)
+				} message: {
+					Text("Delete Node?")
+				}
 			}
-			.confirmationDialog(
+			.hostedConfirmation(
 				"Are you sure?",
 				isPresented: $isPresentingAlert,
 				titleVisibility: .visible
