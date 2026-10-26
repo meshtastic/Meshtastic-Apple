@@ -31,7 +31,7 @@ struct FavoriteNodeButton: View {
 					.symbolRenderingMode(.multicolor)
 			}
 		}
-		.confirmationDialog(
+		.hostedConfirmation(
 			"Are you sure?",
 			isPresented: $isShowingClientBaseConfirmation,
 			titleVisibility: .visible

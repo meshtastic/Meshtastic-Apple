@@ -498,9 +498,9 @@ struct MeshMapMK: View {
 					flyover.stop()
 				}
 			}
-				.sheet(item: $selectedNode) { selection in
+				.hostedSheet(item: $selectedNode) { selection in
 					if let node = getNodeInfo(id: selection.id, context: context) {
-						NavigationStack {
+						SheetNavigationStack {
 							NodeDetail(node: node, nodeNum: selection.id, showMapLink: false)
 								.trackScreen(.nodeDetail)
 								.sheetCloseButton()
@@ -511,7 +511,7 @@ struct MeshMapMK: View {
 						#endif
 					}
 				}
-				.sheet(item: $colocatedStack, onDismiss: {
+				.hostedSheet(item: $colocatedStack, onDismiss: {
 					// Open the chosen item only after the picker has fully dismissed, so the two
 					// sheets don't fight over presentation.
 					if let selection = pendingColocatedSelection {
@@ -519,7 +519,7 @@ struct MeshMapMK: View {
 						open(selection)
 					}
 				}) { stack in
-					NavigationStack {
+					SheetNavigationStack {
 						List(stack.items) { item in
 							Button {
 								pendingColocatedSelection = item
@@ -550,7 +550,7 @@ struct MeshMapMK: View {
 					.presentationDragIndicator(.visible)
 					#endif
 				}
-				.sheet(item: $selectedWaypoint) { selection in
+				.hostedSheet(item: $selectedWaypoint) { selection in
 					WaypointForm(waypoint: selection)
 						.environmentObject(accessoryManager)
 						.trackScreen(.waypoint)
@@ -559,7 +559,7 @@ struct MeshMapMK: View {
 						.presentationDragIndicator(.visible)
 						#endif
 				}
-				.sheet(item: $editingWaypoint) { selection in
+				.hostedSheet(item: $editingWaypoint) { selection in
 					WaypointForm(waypoint: selection, editMode: true)
 						.environmentObject(accessoryManager)
 						.trackScreen(.waypoint)
@@ -569,7 +569,7 @@ struct MeshMapMK: View {
 						#endif
 				}
 
-				.sheet(isPresented: $editingSettings) {
+				.hostedSheet(isPresented: $editingSettings) {
 					MapSettingsForm(traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer, meshMap: $isMeshMap, enabledOverlayConfigs: $enabledOverlayConfigs)
 				}
 				.onChange(of: router.mapState) {
@@ -593,13 +593,13 @@ struct MeshMapMK: View {
 						return
 					}
 				}
-				.sheet(isPresented: $editingFilters) {
+				.hostedSheet(isPresented: $editingFilters) {
 					NodeListFilter(
 						filterTitle: "Map Filters",
 						filters: filters
 					)
 				}
-				.sheet(isPresented: $showLegend) {
+				.hostedSheet(isPresented: $showLegend) {
 					MapLegend(isMeshMap: true)
 						.trackScreen(.mapLegend)
 						.presentationDetents([.large])
@@ -609,7 +609,7 @@ struct MeshMapMK: View {
 						#endif
 						.presentationBackgroundInteraction(.enabled(upThrough: .medium))
 				}
-				.sheet(item: $coverageSeed) { seed in
+				.hostedSheet(item: $coverageSeed) { seed in
 					CoverageEstimateForm(seed: seed, runner: coverageRunner)
 						.trackScreen(.coverageEstimate)
 						.presentationDetents([.large])
@@ -1820,9 +1820,11 @@ struct MeshMapMK: View {
 		}
 	}
 
-	/// Center/zoom the camera to fit the selected trace route's nodes. Drives the MKMapView directly
-	/// (not the `visibleRegion` binding) so the framing doesn't kick off a region-binding feedback
-	/// loop that re-renders `body` repeatedly (which pegs the main thread on Mac Catalyst).
+	/// Center/zoom the camera to fit the selected trace route's nodes, with the one-shot camera
+	/// command (not the `visibleRegion` binding, which doesn't move the map and would kick off a
+	/// region-binding feedback loop that re-renders `body` repeatedly). The command also replaces an
+	/// initial framing still waiting to be applied, which would otherwise take the camera back off
+	/// the route when the route is asked for as the map appears.
 	private func frameTraceRoute() {
 		guard let route = selectedTraceRoute else { return }
 		let coords = route.forwardCoordinates + route.backCoordinates
@@ -1836,11 +1838,10 @@ struct MeshMapMK: View {
 			longitudeDelta: max((maxLon - minLon) * 1.4, 0.02)
 		)
 		let region = MKCoordinateRegion(center: center, span: span)
-		if let mapView = flyover.mapView {
-			mapView.setRegion(region, animated: false)
-		} else {
-			visibleRegion = region
-		}
+		// The route's framing stands in for the initial one, so the positions coming in don't re-frame.
+		didInitialFrame = true
+		visibleRegion = region
+		cameraCommand = ClusterMapCameraCommand(id: UUID(), region: region)
 	}
 
 /// Build the offline basemap as native MKOverlays (earth fill + water/park fills + arterial roads)

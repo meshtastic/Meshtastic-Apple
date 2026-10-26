@@ -173,7 +173,7 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 				}
 			}
 		}
-		.alert(String(localized: "Save failed", comment: "Config save error title"),
+		.hostedAlert(String(localized: "Save failed", comment: "Config save error title"),
 			   isPresented: Binding(get: { saveError != nil }, set: { if !$0 { saveError = nil } })) {
 			Button(String(localized: "OK", comment: "Dismiss")) { saveError = nil }
 		} message: {

@@ -52,7 +52,7 @@ struct FactoryEraseView: View {
 	@State private var driveURL: URL?
 
 	var body: some View {
-		NavigationStack {
+		SheetNavigationStack {
 			ScrollView {
 				VStack(spacing: 20) {
 
@@ -145,7 +145,7 @@ struct FactoryEraseView: View {
 		) { result in
 			handleDrivePick(result)
 		}
-		.alert("Erase this radio?", isPresented: $showConfirmation) {
+		.hostedAlert("Erase this radio?", isPresented: $showConfirmation) {
 			Button("Erase Everything", role: .destructive) { install() }
 			Button("Cancel", role: .cancel) {}
 		} message: {
@@ -188,6 +188,7 @@ struct FactoryEraseView: View {
 		} label: {
 			Label("Choose Bootloader Drive", systemImage: "externaldrive")
 		}
+		.hostedWindowOnly()
 		.buttonStyle(.borderedProminent)
 		.tint(.accentFill)
 		.controlSize(.large)

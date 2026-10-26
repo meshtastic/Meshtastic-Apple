@@ -66,7 +66,7 @@ Tap the **info button** (`info.circle`) in the bottom-right toolbar to open the 
 
 ### Opening the spatial map (Apple Vision Pro)
 
-On Apple Vision Pro, the round glass menu under the app's tab bar, at the window's left edge, opens the 3D spatial map from any tab, and the [Hardware Showcase](showcase.md). The map wheel button on the 2D map opens it too.
+On Apple Vision Pro, the round glass menu under the app's tab bar, at the window's left edge, opens the 3D spatial map from any tab, the [Hardware Showcase](showcase.md) and the [Cinema](cinema.md). The map wheel button on the 2D map opens it too.
 
 ### Direct links on the spatial map (Apple Vision Pro)
 

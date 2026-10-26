@@ -38,13 +38,16 @@ struct Routes: View {
 				Button("Import Route") {
 					importing = true
 				}
+				.hostedWindowOnly()
 				.buttonStyle(.bordered)
 				.buttonBorderShape(.capsule)
 				.controlSize(.large)
 				.padding()
 
-				.alert(isPresented: $isShowingBadFileAlert) {
-					Alert(title: Text("Not a valid route file"), message: Text("Your route file must have both Latitude and Longitude columns and headers."), dismissButton: .default(Text("OK")))
+				.hostedAlert("Not a valid route file", isPresented: $isShowingBadFileAlert) {
+					Button("OK") {}
+				} message: {
+					Text("Your route file must have both Latitude and Longitude columns and headers.")
 				}
 				.fileImporter(
 					isPresented: $importing,
@@ -291,6 +294,7 @@ struct Routes: View {
 							} label: {
 								Label("Export", systemImage: "square.and.arrow.down")
 							}
+							.hostedWindowOnly()
 							.glassButtonStyle()
 							.buttonBorderShape(.capsule)
 							.controlSize(.large)

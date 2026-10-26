@@ -147,12 +147,12 @@ struct NodeList: View {
 			nodeListDensity: $nodeListDensity,
 			selectedNodeNum: $router.selectedNodeNum
 		)
-		.sheet(isPresented: $isEditingFilters) {
+		.hostedSheet(isPresented: $isEditingFilters) {
 			NodeListFilter(
 				filters: filters
 			)
 		}
-		.sheet(isPresented: $showingHelp) {
+		.hostedSheet(isPresented: $showingHelp) {
 			NodeListHelp()
 		}
 		.safeAreaInset(edge: .top) {
@@ -211,25 +211,25 @@ struct NodeList: View {
 		.autocorrectionDisabled(true)
 		.dismissesKeyboardOnScroll()
 		.listStyle(.plain)
-		.alert("Position Exchange Requested", isPresented: $isPresentingPositionSentAlert) {
+		.hostedAlert("Position Exchange Requested", isPresented: $isPresentingPositionSentAlert) {
 			Button("OK") { }.keyboardShortcut(.defaultAction)
 		} message: {
 			Text("Your position has been sent with a request for a response with their position. You will receive a notification when a position is returned.")
 		}
-		.alert("Position Exchange Failed", isPresented: $isPresentingPositionFailedAlert) {
+		.hostedAlert("Position Exchange Failed", isPresented: $isPresentingPositionFailedAlert) {
 			Button("OK") { }.keyboardShortcut(.defaultAction)
 		} message: {
 			Text("Failed to get a valid position to exchange")
 		}
-		.alert("Trace Route Sent", isPresented: $isPresentingTraceRouteSentAlert) {
+		.hostedAlert("Trace Route Sent", isPresented: $isPresentingTraceRouteSentAlert) {
 			Button("OK") { }.keyboardShortcut(.defaultAction)
 		} message: {
 			Text("This could take a while, response will appear in the trace route log for the node it was sent to.")
 		}
-		.confirmationDialog("Are you sure?", isPresented: $isPresentingDeleteNodeAlert, titleVisibility: .visible) {
+		.hostedConfirmation("Are you sure?", isPresented: $isPresentingDeleteNodeAlert, titleVisibility: .visible) {
 			deleteNodeButton
 		}
-		.sheet(item: $shareContactNode) { selectedNode in
+		.hostedSheet(item: $shareContactNode) { selectedNode in
 			// Mirror NodeDetail's rule: only your own (connected) node is marked
 			// manually verified when shared.
 			ShareContactQRDialog(

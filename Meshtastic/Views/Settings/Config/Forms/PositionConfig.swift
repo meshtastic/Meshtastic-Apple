@@ -157,7 +157,7 @@ private struct FixedPositionRow: View {
 		.onChange(of: config.fixedPosition) { was, now in
 			if was != now { confirming = true }
 		}
-		.alert(turningOn
+		.hostedAlert(turningOn
 			   ? String(localized: "Set Fixed Position", comment: "Alert title")
 			   : String(localized: "Remove Fixed Position", comment: "Alert title"),
 			   isPresented: $confirming) {

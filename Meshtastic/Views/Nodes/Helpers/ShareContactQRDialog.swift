@@ -56,6 +56,7 @@ struct ShareContactQRDialog: View {
 	let manuallyVerified: Bool
 	let node: NodeInfo
 	@Environment(\.dismiss) private var dismiss
+	@Environment(\.presentationHost) private var presentationHost
 
 	var qrString: String {
 		ShareContactQR.urlString(for: node, manuallyVerified: manuallyVerified) ?? ""
@@ -99,6 +100,7 @@ struct ShareContactQRDialog: View {
 						image: Image(uiImage: qrImage)
 					  )
 			)
+			.hostedWindowOnly()
 			#if !targetEnvironment(macCatalyst) && !os(visionOS)
 			if #available(iOS 18, *) {
 				NFCWriteButton(
@@ -113,18 +115,21 @@ struct ShareContactQRDialog: View {
 		// Widened first, or the overlay would anchor to the 350pt content rather than the sheet.
 		.frame(maxWidth: .infinity)
 		.overlay(alignment: .topLeading) {
-			Button {
-				dismiss()
-			} label: {
-				Image(systemName: "xmark.circle.fill")
-					.font(.system(size: 34))
-					.symbolRenderingMode(.palette)
-					.foregroundStyle(.white, Color(.systemGray3))
+			// In a panel this is a push, which has a back button already.
+			if presentationHost == .window {
+				Button {
+					dismiss()
+				} label: {
+					Image(systemName: "xmark.circle.fill")
+						.font(.system(size: 34))
+						.symbolRenderingMode(.palette)
+						.foregroundStyle(.white, Color(.systemGray3))
+				}
+				.accessibilityLabel(String(localized: "Close", comment: "VoiceOver: dismiss this sheet"))
+				.buttonStyle(.plain)
+				.padding(.top, 12)
+				.padding(.leading, 14)
 			}
-			.accessibilityLabel(String(localized: "Close", comment: "VoiceOver: dismiss this sheet"))
-			.buttonStyle(.plain)
-			.padding(.top, 12)
-			.padding(.leading, 14)
 		}
 		.presentationDragIndicator(.visible)
 	}

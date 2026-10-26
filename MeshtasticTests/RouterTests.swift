@@ -63,6 +63,19 @@ struct RouterTests {
 		await registry.unregister(nodesToken)
 	}
 
+	@Test @MainActor func poppingEverySceneRunsTheRegisteredStacks() {
+		let registry = SceneRouters()
+		var popped = 0
+		let token = registry.register(stack: { popped += 1 })
+
+		registry.popAllStacks()
+		#expect(popped == 1)
+
+		registry.unregister(token)
+		registry.popAllStacks()
+		#expect(popped == 1)
+	}
+
 	// MARK: - Invalid URL Handling
 
 	@Test func invalidSchemeIsIgnored() async throws {

@@ -78,6 +78,45 @@
         "charCount": 3431
     },
     {
+        "id": "cinema",
+        "title": "Cinema (Apple Vision Pro)",
+        "section": "user",
+        "navOrder": 17,
+        "keywords": [
+            "app",
+            "map",
+            "screen",
+            "tent",
+            "open",
+            "window",
+            "route",
+            "while",
+            "vision",
+            "trace",
+            "radio",
+            "pro",
+            "panel",
+            "leave",
+            "closes",
+            "cinema",
+            "back",
+            "apple",
+            "under",
+            "tap",
+            "shows",
+            "show",
+            "place",
+            "opens",
+            "only",
+            "nodes",
+            "last",
+            "heard",
+            "front",
+            "control"
+        ],
+        "charCount": 1753
+    },
+    {
         "id": "discovery",
         "title": "Local Mesh Discovery",
         "section": "user",
@@ -270,7 +309,7 @@
             "app",
             "while"
         ],
-        "charCount": 20956
+        "charCount": 20967
     },
     {
         "id": "messages",
@@ -747,12 +786,12 @@
         "navOrder": 0,
         "keywords": [
             "settings",
+            "map",
             "now",
             "new",
-            "map",
+            "app",
             "mesh",
             "jun",
-            "app",
             "nodes",
             "node",
             "messages",
@@ -768,16 +807,16 @@
             "list",
             "jul",
             "from",
+            "apple",
             "waypoints",
             "signal",
             "show",
+            "screen",
             "row",
             "region",
-            "only",
-            "one",
-            "message"
+            "only"
         ],
-        "charCount": 9123
+        "charCount": 9319
     },
     {
         "id": "adding-features",

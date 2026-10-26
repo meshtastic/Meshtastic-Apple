@@ -57,7 +57,7 @@ struct FirmwareOTAUpdateSheet: View {
 	private let tipTimer = Timer.publish(every: 8.0, on: .main, in: .common).autoconnect()
 
 	var body: some View {
-		NavigationStack {
+		SheetNavigationStack {
 			GeometryReader { geometry in
 				ScrollView {
 					VStack(spacing: 20) {
@@ -199,7 +199,7 @@ struct FirmwareOTAUpdateSheet: View {
 			}
 		}
 		.interactiveDismissDisabled(true)
-		.confirmationDialog(
+		.hostedConfirmation(
 			Text("Stop the update?", comment: "Title of the confirmation shown when closing an update in progress"),
 			isPresented: $showStopConfirmation,
 			titleVisibility: .visible
@@ -310,7 +310,7 @@ struct FirmwareOTASimulatorView: View {
 				gameTitle: selectedPreset.gameTitle
 			)
 		}
-		.sheet(isPresented: $showControlDrawer) {
+		.hostedSheet(isPresented: $showControlDrawer) {
 			simulatorInspectorSheet
 		}
 	}
@@ -339,7 +339,7 @@ struct FirmwareOTASimulatorView: View {
 	}
 
 	private var simulatorInspectorSheet: some View {
-		NavigationStack {
+		SheetNavigationStack {
 			Form {
 				Section("State Control") {
 					Picker("Status State", selection: $statusState) {

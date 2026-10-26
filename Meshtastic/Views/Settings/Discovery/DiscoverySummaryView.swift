@@ -61,6 +61,7 @@ struct DiscoverySummaryView: View {
 					} label: {
 						Image(systemName: "square.and.arrow.up")
 					}
+					.hostedWindowOnly()
 					.accessibilityLabel(String(localized: "Export scan summary as PDF", comment: "VoiceOver label for the export scan summary to PDF button"))
 				}
 			}
@@ -83,7 +84,7 @@ struct DiscoverySummaryView: View {
 			await generateAIRecommendation()
 			await generateFoundationModelPresetSummaries()
 		}
-		.alert("Switch to this channel?", isPresented: Binding(
+		.hostedAlert("Switch to this channel?", isPresented: Binding(
 			get: { beaconToJoin != nil },
 			set: { if !$0 { beaconToJoin = nil } }
 		), presenting: beaconToJoin) { beacon in
@@ -92,7 +93,7 @@ struct DiscoverySummaryView: View {
 		} message: { beacon in
 			Text(beaconSwitchPrompt(beacon))
 		}
-		.alert("Couldn't switch channel", isPresented: Binding(
+		.hostedAlert("Couldn't switch channel", isPresented: Binding(
 			get: { joinErrorMessage != nil },
 			set: { if !$0 { joinErrorMessage = nil } }
 		)) {
@@ -100,7 +101,7 @@ struct DiscoverySummaryView: View {
 		} message: {
 			Text(joinErrorMessage ?? "")
 		}
-		.alert("Add this channel?", isPresented: Binding(
+		.hostedAlert("Add this channel?", isPresented: Binding(
 			get: { beaconToAdd != nil },
 			set: { if !$0 { beaconToAdd = nil } }
 		), presenting: beaconToAdd) { beacon in
@@ -109,7 +110,7 @@ struct DiscoverySummaryView: View {
 		} message: { beacon in
 			Text("Add \"\(beacon.offerChannelName)\" as an additional channel — your radio keeps its current mesh, no reboot.")
 		}
-		.alert("Couldn't add channel", isPresented: Binding(
+		.hostedAlert("Couldn't add channel", isPresented: Binding(
 			get: { addErrorMessage != nil },
 			set: { if !$0 { addErrorMessage = nil } }
 		)) {
@@ -117,7 +118,7 @@ struct DiscoverySummaryView: View {
 		} message: {
 			Text(addErrorMessage ?? "")
 		}
-		.confirmationDialog(
+		.hostedConfirmation(
 			"Replace which channel?",
 			isPresented: Binding(
 				get: { beaconToReplace != nil },

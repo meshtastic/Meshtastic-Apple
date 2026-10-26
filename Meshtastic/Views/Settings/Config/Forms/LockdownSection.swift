@@ -48,7 +48,7 @@ struct LockdownSection: View {
 				} label: {
 					Label("Lock Now", systemImage: "lock.fill")
 				}
-				.alert("Lock device now?", isPresented: $showLockNowAlert) {
+				.hostedAlert("Lock device now?", isPresented: $showLockNowAlert) {
 					Button("Cancel", role: .cancel) {}
 					Button("Lock", role: .destructive) {
 						lockdown.lockNow()

@@ -108,10 +108,10 @@ struct NodeMapSwiftUI: View {
 			.overlay(alignment: .bottom) {
 				altitudeView
 			}
-			.sheet(isPresented: $isEditingSettings) {
+			.hostedSheet(isPresented: $isEditingSettings) {
 				MapSettingsForm(traffic: $showTraffic, pointsOfInterest: $showPointsOfInterest, mapLayer: $selectedMapLayer, meshMap: $isMeshMap, enabledOverlayConfigs: $enabledOverlayConfigs)
 			}
-			.sheet(isPresented: $isShowingLegend) {
+			.hostedSheet(isPresented: $isShowingLegend) {
 				MapLegend(isMeshMap: false)
 					.trackScreen(.mapLegend)
 					.presentationDetents([.medium, .large])

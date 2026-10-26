@@ -83,7 +83,7 @@ struct AddContactConfirmationView: View {
 			content
 		}
 		.scrollBounceBehavior(.basedOnSize)
-		.sheet(item: $replyShareItem, onDismiss: { dismiss() }) { item in
+		.hostedSheet(item: $replyShareItem, onDismiss: { dismiss() }) { item in
 			ContactReplyActivityView(url: item.url)
 		}
 		.onAppear {
@@ -186,6 +186,8 @@ struct AddContactConfirmationView: View {
 				.tint(.accentFill)
 				.controlSize(.large)
 				.disabled(isAdding || !canSubmit || !hasShareableSnapshot)
+				// Sharing back needs the share sheet, which only the app window can show.
+				.hostedWindowOnly()
 				Button {
 					addContact()
 				} label: {
@@ -290,7 +292,7 @@ extension View {
 		_ pendingContact: Binding<PendingContact?>,
 		accessoryManager: AccessoryManager
 	) -> some View {
-		sheet(item: pendingContact) { pendingContact in
+		hostedSheet(item: pendingContact) { pendingContact in
 			AddContactConfirmationView(
 				pendingContact: pendingContact,
 				accessoryManager: accessoryManager

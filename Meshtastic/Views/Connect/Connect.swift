@@ -541,7 +541,7 @@ struct Connect: View {
 			// Attached to the list (not the connected-device subtree, which unmounts
 			// on disconnect) so the confirmation survives a connection state change between
 			// the long-press and the user tapping "Shutdown Node?".
-			.confirmationDialog(
+			.hostedConfirmation(
 				"Are you sure?",
 				isPresented: $showingShutdownConfirm,
 				titleVisibility: .visible
@@ -568,7 +568,7 @@ struct Connect: View {
 			}
 			// Attached here for the same reason as the dialog above: the connected-device
 			// row unmounts on disconnect, which would tear the sheet down with it.
-			.sheet(isPresented: $showingShareContactQR) {
+			.hostedSheet(isPresented: $showingShareContactQR) {
 				if let shareContactNode {
 					// This menu only ever shows on the connected radio, which is verified by
 					// definition.
@@ -578,12 +578,12 @@ struct Connect: View {
 			// On the list, not its row: the list redraws with every packet, and a sheet
 			// attached to a row it rebuilds loses its choices mid-edit.
 #if os(iOS) && !targetEnvironment(macCatalyst)
-			.sheet(isPresented: $showingWidgetsSheet) {
+			.hostedSheet(isPresented: $showingWidgetsSheet) {
 				WidgetsSheet(liveActivities: liveActivities, inventory: widgetInventory)
 			}
 #endif
 		}
-		.sheet(isPresented: $showSecurityVersionNag) {
+		.hostedSheet(isPresented: $showSecurityVersionNag) {
 			SecurityVersionNag(minimumSecureVersion: accessoryManager.securityVersion, version: accessoryManager.activeConnection?.device.firmwareVersion ?? "?.?.?")
 				.trackScreen(.firmwareSecurityWarning)
 				.presentationDetents([.large])
@@ -596,7 +596,7 @@ struct Connect: View {
 			}
 			refreshConnectedNodeState()
 		}
-		.sheet(item: $pendingNymeaDevice, onDismiss: {
+		.hostedSheet(item: $pendingNymeaDevice, onDismiss: {
 			updateNymeaDiscovery()
 		}) { device in
 			WifiProvisioningView(preselectedDevice: device)
@@ -870,7 +870,7 @@ struct ManualConnectionMenu: View {
 			}
 		} label: {
 			Label("Manual", systemImage: "plus")
-		}.alert("Manual connection string", isPresented: $showAlert, presenting: selectedTransport) { selectedTransport in
+		}.hostedFormAlert("Manual connection string", isPresented: $showAlert, presenting: selectedTransport) { selectedTransport in
 			// This continues to be quick and dirty. A better system is needed.
 			TextField("Enter hostname[:port]", text: $connectionString)
 				.keyboardType(.URL)

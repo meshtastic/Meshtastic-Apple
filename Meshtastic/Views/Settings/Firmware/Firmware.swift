@@ -312,24 +312,28 @@ private struct FirmwareContentView: View {
 				firmwareList.refresh()
 			}
 		}
-		.sheet(isPresented: $showBootloaderUpgrade) {
+		.hostedSheet(isPresented: $showBootloaderUpgrade) {
 			BootloaderUpgradeView()
 		}
-		.sheet(isPresented: $showFactoryErase) {
+		.hostedSheet(isPresented: $showFactoryErase) {
 			FactoryEraseView()
 		}
-		.sheet(item: $rowInstallation) { installation in
+		.hostedSheet(item: $rowInstallation) { installation in
 			// UF2MassStorageView is left unnamed here and below: reflection already names it,
 			// and a second name would split its history in Error Tracking.
 			switch installation.type {
 			case .otaZip:
 				NRFDFUSheet(firmwareToFlash: installation.url)
 					.trackScreen(.nordicDFUUpdate)
+					// An update has to keep running and can't be backed out of mid-transfer, which a page
+					// on the cinema screen can't promise; it runs in the app window.
+					.hostedWindowOnly()
 			case .uf2:
 				UF2MassStorageView(fileURL: installation.url)
 			case .bin:
 				ESP32OTAIntroSheet(binFileURL: installation.url)
 					.trackScreen(.esp32Update)
+										.hostedWindowOnly()
 			}
 		}
 	}
@@ -503,17 +507,21 @@ private struct FirmwareContentView: View {
 				} catch {
 					Logger.services.error("Failed to load firmware file: \(error.localizedDescription)")
 				}
-			}.sheet(item: $showInstallationSheet) { type in
+			}.hostedSheet(item: $showInstallationSheet) { type in
 				if let locallyChosenFirmwareFile = self.locallyChosenFirmwareFile {
 					switch type {
 					case .otaZip:
 						NRFDFUSheet(firmwareToFlash: locallyChosenFirmwareFile)
 							.trackScreen(.nordicDFUUpdate)
+							// An update has to keep running and can't be backed out of mid-transfer, which a page
+							// on the cinema screen can't promise; it runs in the app window.
+							.hostedWindowOnly()
 					case .uf2:
 						UF2MassStorageView(fileURL: locallyChosenFirmwareFile)
 					case .bin:
 						ESP32OTAIntroSheet(binFileURL: locallyChosenFirmwareFile)
 							.trackScreen(.esp32Update)
+														.hostedWindowOnly()
 					}
 				}
 			}

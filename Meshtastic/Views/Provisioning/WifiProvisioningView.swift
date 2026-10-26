@@ -164,7 +164,7 @@ struct WifiProvisioningView: View {
 	}
 
 	var body: some View {
-		NavigationStack {
+		SheetNavigationStack {
 			Group {
 				switch provisioning.state {
 

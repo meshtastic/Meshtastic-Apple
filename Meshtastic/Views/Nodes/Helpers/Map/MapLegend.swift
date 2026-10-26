@@ -43,7 +43,7 @@ struct MapLegend: View {
 	let isMeshMap: Bool
 
 	var body: some View {
-		NavigationStack {
+		SheetNavigationStack {
 			List {
 				nodeSection
 				if isMeshMap {

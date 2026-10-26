@@ -54,7 +54,7 @@ struct GeofenceBoundsSelectorView: View {
 	}
 
 	var body: some View {
-		NavigationStack {
+		SheetNavigationStack {
 			GeometryReader { geo in
 				MapReader { proxy in
 					ZStack(alignment: .bottom) {

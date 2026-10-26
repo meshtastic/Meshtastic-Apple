@@ -64,7 +64,7 @@ struct MQTTTopicFinder: View {
 	}
 
 	var body: some View {
-		NavigationStack {
+		SheetNavigationStack {
 			List {
 				statusSection
 				// Without a region there is no ladder and nothing is sampled; only the status row

@@ -62,7 +62,7 @@ struct SaveChannelQRCode: View {
 	}
 
 	var body: some View {
-		NavigationStack {
+		SheetNavigationStack {
 			ScrollView {
 				VStack(alignment: .leading, spacing: 18) {
 					header

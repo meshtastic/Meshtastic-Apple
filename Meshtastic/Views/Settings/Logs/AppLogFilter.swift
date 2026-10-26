@@ -131,7 +131,7 @@ struct AppLogFilter: View {
 	@Binding var levelsExpanded: Bool
 
 	var body: some View {
-		NavigationStack {
+		SheetNavigationStack {
 			Form {
 				Section {
 					Toggle(isOn: $isPacketStreamOn) {

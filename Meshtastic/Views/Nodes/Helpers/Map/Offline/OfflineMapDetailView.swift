@@ -97,6 +97,7 @@ struct OfflineMapDetailView: View {
 					ShareLink(item: fileURL) {
 						Label("Share Offline Map", systemImage: "square.and.arrow.up")
 					}
+					.hostedWindowOnly()
 				}
 			}
 
@@ -110,12 +111,12 @@ struct OfflineMapDetailView: View {
 		}
 		.navigationTitle(current.name)
 		.navigationBarTitleDisplayMode(.inline)
-		.alert("Rename Map", isPresented: $renaming) {
+		.hostedFormAlert("Rename Map", isPresented: $renaming) {
 			TextField("Name", text: $draftName)
 			Button("Save") { manager.rename(current, to: draftName) }
 			Button("Cancel", role: .cancel) { }
 		}
-		.confirmationDialog("Remove this offline map?", isPresented: $confirmingDelete, titleVisibility: .visible) {
+		.hostedConfirmation("Remove this offline map?", isPresented: $confirmingDelete, titleVisibility: .visible) {
 			Button("Remove Download", role: .destructive) {
 				manager.remove(current)
 				dismiss()

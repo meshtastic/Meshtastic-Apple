@@ -54,7 +54,7 @@ struct RXTXIndicatorWidget: View {
 				}.frame(maxHeight: fontSize)
 			}
 			.contentShape(Rectangle()) // Make sure the whole thing is tappable
-			.popover(isPresented: self.$isPopoverOpen,
+			.hostedPopover(isPresented: self.$isPopoverOpen,
 					 attachmentAnchor: .rect(.bounds),
 					 arrowEdge: .top) {
 				Button(action: {

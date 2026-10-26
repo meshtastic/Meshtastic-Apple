@@ -8,7 +8,7 @@ import OSLog
 import SwiftUI
 
 /// The visionOS immersive space that shows the mesh as radios in a showcase. There is only ever
-/// one; `open` refuses while it is showing or already opening.
+/// one; `open` refuses while it is showing or already opening, and closes the cinema first.
 enum ShowcaseScene {
 	static let id = "hamshowcase-space"
 
@@ -17,10 +17,13 @@ enum ShowcaseScene {
 
 	/// Opens the space unless it is open or opening. Returns whether it is open afterwards.
 	@MainActor @discardableResult
-	static func open(_ openImmersiveSpace: OpenImmersiveSpaceAction, appState: AppState) async -> Bool {
+	static func open(_ openImmersiveSpace: OpenImmersiveSpaceAction, dismissImmersiveSpace: DismissImmersiveSpaceAction, appState: AppState) async -> Bool {
 		guard !appState.showcaseOpen, !isOpening else { return appState.showcaseOpen }
 		isOpening = true
 		defer { isOpening = false }
+		if appState.cinemaOpen {
+			await dismissImmersiveSpace()
+		}
 		switch await openImmersiveSpace(id: id) {
 		case .opened:
 			appState.showcaseOpen = true

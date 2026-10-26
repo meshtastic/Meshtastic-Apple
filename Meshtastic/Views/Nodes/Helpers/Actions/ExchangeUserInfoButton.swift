@@ -42,14 +42,14 @@ struct ExchangeUserInfoButton: View {
 				Image(systemName: "person.2.badge.gearshape")
 					.symbolRenderingMode(.hierarchical)
 			}
-		}.alert(
+		}.hostedAlert(
 			"User Info Sent",
 			isPresented: $isPresentingUserInfoSentAlert
 		) {
 			Button("OK") {	}.keyboardShortcut(.defaultAction)
 		} message: {
 			Text("Your user info has been sent with a request for a response with their user info.")
-		}.alert(
+		}.hostedAlert(
 			"User Info Exchange Failed",
 			isPresented: $isPresentingUserInfoFailedAlert
 		) {

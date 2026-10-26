@@ -48,14 +48,14 @@ struct ExchangePositionsButton: View {
 				Image(systemName: "arrow.triangle.2.circlepath")
 					.symbolRenderingMode(.hierarchical)
 			}
-		}.alert(
+		}.hostedAlert(
 			"Position Sent",
 			isPresented: $isPresentingPositionSentAlert
 		) {
 			Button("OK") {	}.keyboardShortcut(.defaultAction)
 		} message: {
 			Text("Your position has been sent with a request for a response with their position. You will receive a notification when a position is returned.")
-		}.alert(
+		}.hostedAlert(
 			"Position Exchange Failed",
 			isPresented: $isPresentingPositionFailedAlert
 		) {

@@ -114,9 +114,18 @@ private struct FirstAppear: ViewModifier {
 
 private struct SheetCloseButton: ViewModifier {
 	@Environment(\.dismiss) private var dismiss
+	@Environment(\.presentationHost) private var host
 	let action: (() -> Void)?
 
 	func body(content: Content) -> some View {
+		// In a panel the "sheet" is a push and already has a back button.
+		switch host {
+		case .window: closeButton(content)
+		case .panel: content
+		}
+	}
+
+	private func closeButton(_ content: Content) -> some View {
 		content.toolbar {
 			ToolbarItem(placement: .cancellationAction) {
 				Button {

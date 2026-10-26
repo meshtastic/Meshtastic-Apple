@@ -47,10 +47,28 @@ struct TraceRouteShareCard: View {
 	let model: TraceRouteShareModel
 	/// The map tiles for `model.map`; nil leaves the map out.
 	let mapImage: UIImage?
+	/// False leaves out the margin, minimum height and background, for a view that draws the
+	/// background itself, sized to its own frame. The share image keeps them.
+	var framed = true
 
 	private typealias Style = TraceRouteShareStyle
 
 	var body: some View {
+		if framed {
+			content
+				.padding(Style.margin)
+				.frame(width: Style.width, alignment: .topLeading)
+				.frame(minHeight: Style.minimumHeight, alignment: .top)
+				.background(TraceRouteShareBackground())
+				.environment(\.colorScheme, .dark)
+		} else {
+			content
+				.frame(width: Style.contentWidth, alignment: .topLeading)
+				.environment(\.colorScheme, .dark)
+		}
+	}
+
+	private var content: some View {
 		VStack(alignment: .leading, spacing: 0) {
 			header
 			// When the content is shorter than the minimum height, the spacers on either side of the
@@ -76,23 +94,6 @@ struct TraceRouteShareCard: View {
 			}
 			Spacer(minLength: 16)
 			footer
-		}
-		.padding(Style.margin)
-		.frame(width: Style.width, alignment: .topLeading)
-		.frame(minHeight: Style.minimumHeight, alignment: .top)
-		.background(background)
-		.environment(\.colorScheme, .dark)
-	}
-
-	private var background: some View {
-		ZStack {
-			LinearGradient(colors: [Style.backgroundTop, Style.backgroundBottom], startPoint: .top, endPoint: .bottom)
-			RadialGradient(
-				colors: [Style.brand.opacity(0.2), .clear],
-				center: .topLeading,
-				startRadius: 0,
-				endRadius: 460
-			)
 		}
 	}
 
@@ -168,6 +169,24 @@ struct TraceRouteShareCard: View {
 				.font(.system(size: 15, weight: .semibold))
 				.foregroundStyle(Style.brand)
 				.frame(maxWidth: .infinity, alignment: .leading)
+		}
+	}
+}
+
+/// The share image's background: dark with a faint green glow from the top left. `glowRadius`
+/// scales the glow for a background drawn larger than the image.
+struct TraceRouteShareBackground: View {
+	var glowRadius: CGFloat = 460
+
+	var body: some View {
+		ZStack {
+			LinearGradient(colors: [TraceRouteShareStyle.backgroundTop, TraceRouteShareStyle.backgroundBottom], startPoint: .top, endPoint: .bottom)
+			RadialGradient(
+				colors: [TraceRouteShareStyle.brand.opacity(0.2), .clear],
+				center: .topLeading,
+				startRadius: 0,
+				endRadius: glowRadius
+			)
 		}
 	}
 }

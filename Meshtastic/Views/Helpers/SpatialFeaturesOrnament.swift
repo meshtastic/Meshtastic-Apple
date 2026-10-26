@@ -8,12 +8,13 @@
 import SwiftUI
 
 /// The Vision Pro features beside the main window, under its tab bar: a small glass capsule with
-/// a button for each (the 3D map and the Hardware Showcase), like the environment button other
+/// a button for each (the 3D map, the Hardware Showcase and the cinema), like the environment button other
 /// visionOS apps keep there.
 struct SpatialFeaturesOrnament: View {
 	@Environment(\.openWindow) private var openWindow
 	@Environment(\.dismissWindow) private var dismissWindow
 	@Environment(\.openImmersiveSpace) private var openImmersiveSpace
+	@Environment(\.dismissImmersiveSpace) private var dismissImmersiveSpace
 	@EnvironmentObject private var appState: AppState
 	@Environment(\.supportsMultipleWindows) private var supportsMultipleWindows
 
@@ -31,7 +32,7 @@ struct SpatialFeaturesOrnament: View {
 				Button {
 					Task {
 						// The room takes over the space, so the 3D map's volume closes.
-						if await ShowcaseScene.open(openImmersiveSpace, appState: appState) {
+						if await ShowcaseScene.open(openImmersiveSpace, dismissImmersiveSpace: dismissImmersiveSpace, appState: appState) {
 							dismissWindow(id: SpatialMapScene.id)
 						}
 					}
@@ -40,6 +41,19 @@ struct SpatialFeaturesOrnament: View {
 				}
 				.help(String(localized: "Enter Showcase", comment: "Spatial map: open the showcase immersive space, closing this volume"))
 				.accessibilityLabel(String(localized: "Enter Showcase", comment: "Spatial map: open the showcase immersive space, closing this volume"))
+				Button {
+					Task {
+						if appState.cinemaOpen {
+							await dismissImmersiveSpace()
+						} else {
+							await CinemaScene.open(openImmersiveSpace, dismissImmersiveSpace: dismissImmersiveSpace, appState: appState)
+						}
+					}
+				} label: {
+					Image(systemName: appState.cinemaOpen ? "tent.fill" : "tent")
+				}
+				.help(cinemaLabel)
+				.accessibilityLabel(cinemaLabel)
 			}
 			.buttonStyle(.borderless)
 			.buttonBorderShape(.circle)
@@ -47,6 +61,12 @@ struct SpatialFeaturesOrnament: View {
 			.padding(10)
 			.glassBackgroundEffect(in: Capsule())
 		}
+	}
+
+	private var cinemaLabel: String {
+		appState.cinemaOpen
+			? String(localized: "Leave Cinema", comment: "Close the cinema environment around the app's window")
+			: String(localized: "Enter Cinema", comment: "Open the cinema: an immersive environment around the app's window")
 	}
 }
 

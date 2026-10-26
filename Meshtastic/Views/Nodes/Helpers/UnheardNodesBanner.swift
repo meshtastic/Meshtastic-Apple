@@ -80,7 +80,7 @@ struct UnheardNodesBanner: View {
 				content(connectedNodeNum: connectedNodeNum)
 			}
 		}
-		.alert(
+		.hostedAlert(
 			Text("Unheard Nodes", comment: "Title of the result shown after removing nodes not heard on the current LoRa settings"),
 			isPresented: Binding(get: { removalResult != nil }, set: { if !$0 { removalResult = nil } })
 		) {
@@ -167,7 +167,7 @@ struct UnheardNodesBanner: View {
 		.background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 		.padding(.horizontal)
 		.padding(.bottom, 4)
-		.confirmationDialog(
+		.hostedConfirmation(
 			Text(UnheardNodesStrings.removeConfirmation(count: unheardNodes.count)),
 			isPresented: $isConfirming,
 			titleVisibility: .visible

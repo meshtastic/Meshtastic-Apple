@@ -51,6 +51,10 @@ class AppState: ObservableObject {
 	/// How many main windows are showing. Scene configuration names are nil on visionOS, so the
 	/// scene list can't tell a main window from the spatial map volume.
 	@Published var mainWindowCount = 0
+	/// A one-shot ask for the open main windows to come to the front, from a button on a panel in
+	/// the visionOS immersive space that stands in for a control only a window can show. Every main
+	/// window answers it.
+	@Published var mainWindowForwardRequest: UUID?
 	/// Initial tab for a debug performance seed, applied once by the first main window.
 	var launchNavigation: NavigationState?
 	@Published var unreadChannelMessages: Int
@@ -135,6 +139,14 @@ class AppState: ObservableObject {
 	/// Whether the visionOS showcase immersive space is showing. Only one may be open at a time.
 	@Published var showcaseOpen = false
 
+	/// Whether the visionOS cinema immersive space is showing.
+	@Published var cinemaOpen = false
+
+	/// How many spatial map volumes are showing: one at most, but counted rather than flagged
+	/// because the view is remade on a database reset and the new one can appear before the old
+	/// one is gone.
+	@Published var spatialMapWindowCount = 0
+
 	/// A node the spatial map volume should select once it is showing; claimed the same way.
 	@Published var spatialMapFocus: SpatialMapFocusRequest?
 
@@ -142,5 +154,29 @@ class AppState: ObservableObject {
 		guard let spatialMapFocus else { return nil }
 		self.spatialMapFocus = nil
 		return spatialMapFocus.nodeNum
+	}
+
+	/// A trace route the spatial map volume should fly once it is showing; claimed the same way.
+	@Published var spatialMapRoute: SpatialMapRouteRequest?
+
+	func claimSpatialMapRoute() -> Int64? {
+		guard let spatialMapRoute else { return nil }
+		self.spatialMapRoute = nil
+		return spatialMapRoute.routeId
+	}
+
+	/// True from entering the cinema until it has closed and reopened the spatial map volume in
+	/// front of the viewer. The volume leaves focus and route requests unclaimed meanwhile, so the
+	/// reopened one takes them.
+	@Published var spatialMapReopening = false
+
+	/// What the cinema's front screen should show next, from a tap on one of the tent's boards;
+	/// claimed by the cinema the same way.
+	@Published var cinemaScreenRequest: CinemaScreenRequest?
+
+	func claimCinemaScreenRequest() -> CinemaScreenRequest? {
+		guard let cinemaScreenRequest else { return nil }
+		self.cinemaScreenRequest = nil
+		return cinemaScreenRequest
 	}
 }

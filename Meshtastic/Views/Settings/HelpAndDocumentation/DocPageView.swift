@@ -257,7 +257,7 @@ struct AskChirpyToolbar: ViewModifier {
 					}
 				}
 			}
-			.sheet(isPresented: $isAIPresented) {
+			.hostedSheet(isPresented: $isAIPresented) {
 				if #available(iOS 26, *) {
 					AIDocAssistantView()
 						.trackScreen(.askChirpy)

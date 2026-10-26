@@ -68,7 +68,7 @@ struct ImportDeviceProfileView: View {
 	}
 
 	var body: some View {
-		NavigationStack {
+		SheetNavigationStack {
 			Group {
 				switch phase {
 				case .review, .applying:
@@ -100,7 +100,7 @@ struct ImportDeviceProfileView: View {
 					}
 				}
 			}
-			.confirmationDialog("Apply Configuration", isPresented: $isPresentingConfirm, titleVisibility: .visible) {
+			.hostedConfirmation("Apply Configuration", isPresented: $isPresentingConfirm, titleVisibility: .visible) {
 				Button("Apply Configuration", role: .destructive) { startImport() }
 				Button("Cancel", role: .cancel) { }
 			} message: {

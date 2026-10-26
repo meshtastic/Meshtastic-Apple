@@ -30,7 +30,7 @@ private struct DisplayNameAlertModifier: ViewModifier {
 
 	func body(content: Content) -> some View {
 		content
-			.alert(
+			.hostedFormAlert(
 				"Display Name",
 				isPresented: Binding(get: { node != nil }, set: { isPresented in if !isPresented { node = nil } }),
 				presenting: node

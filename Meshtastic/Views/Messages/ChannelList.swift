@@ -168,22 +168,6 @@ struct ChannelList: View {
 					Label(channel.mute ? "Show Alerts" : "Hide Alerts", systemImage: channel.mute ? "bell" : "bell.slash")
 				}
 			}
-			.confirmationDialog(
-				"This conversation will be deleted.",
-				isPresented: $isPresentingDeleteChannelMessagesConfirm,
-				titleVisibility: .visible
-			) {
-				Button(role: .destructive) {
-					Task {
-						await MeshPackets.shared.deleteChannelMessages(channel: channelToDeleteMessages!)
-						await MainActor.run {
-							channelToDeleteMessages = nil
-						}
-					}
-				} label: {
-					Text("Delete")
-				}
-			}
 	}
 
 	var body: some View {
@@ -197,10 +181,26 @@ struct ChannelList: View {
 				}
 				.olderThanOS26 { $0.padding([.top, .bottom]) }
 				.listStyle(.plain)
+				.hostedConfirmation(
+					"This conversation will be deleted.",
+					isPresented: $isPresentingDeleteChannelMessagesConfirm,
+					titleVisibility: .visible
+				) {
+					Button(role: .destructive) {
+						Task {
+							await MeshPackets.shared.deleteChannelMessages(channel: channelToDeleteMessages!)
+							await MainActor.run {
+								channelToDeleteMessages = nil
+							}
+						}
+					} label: {
+						Text("Delete")
+					}
+				}
 			}
 			Spacer()
 		}
-		.sheet(isPresented: $showingHelp) {
+		.hostedSheet(isPresented: $showingHelp) {
 			ChannelsHelp()
 				.trackScreen(.channelsHelp)
 				.presentationDetents([.large])

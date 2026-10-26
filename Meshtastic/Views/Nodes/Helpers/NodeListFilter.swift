@@ -17,7 +17,7 @@ struct NodeListFilter: View {
 	@ObservedObject var filters: NodeFilterParameters
 
 	var body: some View {
-		NavigationStack {
+		SheetNavigationStack {
 			Form {
 				Section {
 					Toggle(isOn: $filters.viaLora) {

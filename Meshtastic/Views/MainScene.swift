@@ -15,7 +15,9 @@ struct MainScene: View {
 	@Environment(\.openWindow) private var openWindow
 	#if os(visionOS) && DEBUG
 	@Environment(\.openImmersiveSpace) private var openImmersiveSpace
-	/// `--meshtastic-open-showcase` opens the showcase once per launch, not once per main window.
+	@Environment(\.dismissImmersiveSpace) private var dismissImmersiveSpace
+	/// `--meshtastic-open-showcase` (or `--meshtastic-open-cinema`) opens the space once per launch,
+	/// not once per main window.
 	private static var openedShowcaseForLaunchArgument = false
 	#endif
 	@State private var saveChannelLink: SaveChannelLinkData?
@@ -37,6 +39,9 @@ struct MainScene: View {
 				if routerToken == nil {
 					routerToken = appState.sceneRouters.register(router)
 					appState.mainWindowCount += 1
+					#if os(visionOS)
+					CinemaScene.mainWindowAppeared()
+					#endif
 					if let launch = appState.takeLaunchNavigation() {
 						router.navigationState = launch
 					}
@@ -65,6 +70,9 @@ struct MainScene: View {
 			.onChange(of: appState.pendingRoute?.id) { _, _ in
 				claimPendingRoute()
 			}
+			.onChange(of: appState.mainWindowForwardRequest) { _, request in
+				if request != nil { bringForward() }
+			}
 			.onChange(of: scenePhase) { _, phase in
 				if phase == .active {
 					claimPendingRoute()
@@ -83,10 +91,17 @@ struct MainScene: View {
 			// Simulator screenshots: open the showcase without a button. Here rather than in the
 			// app's init, because opening an immersive space needs a view's environment.
 			.task {
-				guard CommandLine.arguments.contains("--meshtastic-open-showcase"), !Self.openedShowcaseForLaunchArgument else { return }
-				Self.openedShowcaseForLaunchArgument = true
-				try? await Task.sleep(for: .seconds(3))
-				await ShowcaseScene.open(openImmersiveSpace, appState: appState)
+				guard !Self.openedShowcaseForLaunchArgument else { return }
+				let arguments = CommandLine.arguments
+				if arguments.contains("--meshtastic-open-showcase") {
+					Self.openedShowcaseForLaunchArgument = true
+					try? await Task.sleep(for: .seconds(3))
+					await ShowcaseScene.open(openImmersiveSpace, dismissImmersiveSpace: dismissImmersiveSpace, appState: appState)
+				} else if arguments.contains("--meshtastic-open-cinema") {
+					Self.openedShowcaseForLaunchArgument = true
+					try? await Task.sleep(for: .seconds(3))
+					await CinemaScene.open(openImmersiveSpace, dismissImmersiveSpace: dismissImmersiveSpace, appState: appState)
+				}
 			}
 			#endif
 			.task {
@@ -174,12 +189,18 @@ struct MainScene: View {
 	private func claimPendingRoute() {
 		guard scenePhase == .active else { return }
 		guard let route = appState.claimPendingRoute() else { return }
-		if route.bringForward, let sceneSession {
-			UIApplication.shared.requestSceneSessionActivation(sceneSession, userActivity: nil, options: nil) { error in
-				Logger.services.error("🛣 [App] Couldn't bring the window forward: \(error.localizedDescription, privacy: .public)")
-			}
+		if route.bringForward {
+			bringForward()
 		}
 		dispatchIncomingURL(route.url, fromActivity: false)
+	}
+
+	/// Brings this window to the front, for a route or a request from another window.
+	private func bringForward() {
+		guard let sceneSession else { return }
+		UIApplication.shared.requestSceneSessionActivation(sceneSession, userActivity: nil, options: nil) { error in
+			Logger.services.error("🛣 [App] Couldn't bring the window forward: \(error.localizedDescription, privacy: .public)")
+		}
 	}
 
 	private func dispatchIncomingURL(_ url: URL, fromActivity: Bool) {

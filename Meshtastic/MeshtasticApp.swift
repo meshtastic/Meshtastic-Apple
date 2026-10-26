@@ -27,6 +27,7 @@ struct MeshtasticAppleApp: App {
 	@Environment(\.openWindow) private var openWindow
 	/// The showcase's immersion: progressive by default, with mixed and full offered.
 	@State private var showcaseImmersion: any ImmersionStyle = ProgressiveImmersionStyle.progressive(0.35...1.0, initialAmount: 0.7)
+	@State private var cinemaImmersion: any ImmersionStyle = ProgressiveImmersionStyle.progressive(0.4...1.0, initialAmount: 1.0)
 	#endif
 
 	private static let isRunningTests = NSClassFromString("XCTestCase") != nil || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
@@ -354,6 +355,12 @@ struct MeshtasticAppleApp: App {
 				MeshPackets.appIsActive = true
 				accessoryManager.appDidBecomeActive()
 				appState.refreshBadgeCount(context: persistenceController.container.mainContext)
+				#if os(visionOS)
+				// The cinema closed the main window and the app went to the background with the
+				// space up: if the reopen asked for on the way there was ignored, nothing else
+				// would open a window now.
+				CinemaScene.reopenMainWindowAfterBackground(openWindow, appState: appState)
+				#endif
 			@unknown default:
 				Logger.services.error("🍎 [App] Apple must have changed something")
 			}
@@ -425,6 +432,16 @@ struct MeshtasticAppleApp: App {
 		}
 		.immersionStyle(selection: $showcaseImmersion, in: .mixed, .progressive(0.35...1.0, initialAmount: 0.7), .full)
 		.immersiveEnvironmentBehavior(.coexist)
+
+		// A 360° environment around the app's windows. Its whiteboard shows the team roster, from
+		// the store when there is one; CinemaSpace leaves the board out during a database reset.
+		ImmersiveSpace(id: CinemaScene.id) {
+			CinemaSpace(container: Self.shouldInitializeAppServices ? persistenceController?.container : nil)
+				.environmentObject(appState)
+				.environmentObject(accessoryManager)
+				.environmentObject(lockdownCoordinator)
+		}
+		.immersionStyle(selection: $cinemaImmersion, in: .progressive(0.4...1.0, initialAmount: 1.0), .full)
 		#endif
 	}
 }

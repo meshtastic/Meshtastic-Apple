@@ -140,10 +140,10 @@ struct NodeDetail: View {
 					.frame(height: 0) // Ensure it has no height
 					.id("topOfList")
 					nodeDetailList
-						.sheet(isPresented: $showingCompassSheet) {
+						.hostedSheet(isPresented: $showingCompassSheet) {
 							CompassView(waypointLocation: latestPosition?.nodeCoordinate ?? nil, waypointLongName: currentUser?.displayLongName, waypointShortName: currentUser?.shortName, color: Color(UIColor(hex: UInt32(nodeNum))), showsCloseButton: true)
 						}
-						.sheet(isPresented: $showingShareContactQR) {
+						.hostedSheet(isPresented: $showingShareContactQR) {
 							ShareContactQRDialog(
 								manuallyVerified: nodeNum == accessoryManager.activeDeviceNum,
 								node: shareContactNode
@@ -908,6 +908,7 @@ struct NodeDetail: View {
 						}
 					#endif
 						NavigateToButton(node: node)
+							.hostedWindowOnly()
 						#if os(visionOS)
 						ShowInSpatialMapButton(nodeNum: nodeNum)
 						#endif
@@ -974,7 +975,7 @@ struct NodeDetail: View {
 						showingShutdownConfirm = true
 					} label: {
 						Label("Power Off", systemImage: "power")
-					}.confirmationDialog(
+					}.hostedConfirmation(
 						"Are you sure?",
 						isPresented: $showingShutdownConfirm
 					) {
@@ -1001,7 +1002,7 @@ struct NodeDetail: View {
 						"Reboot",
 						systemImage: "arrow.triangle.2.circlepath"
 					)
-				}.confirmationDialog(
+				}.hostedConfirmation(
 					"Are you sure?",
 					isPresented: $showingRebootConfirm
 				) {

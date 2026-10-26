@@ -136,7 +136,7 @@ private struct DeviceRolePicker: View {
 				previous = new
 			}
 		}
-		.confirmationDialog("Are you sure?", isPresented: Binding(get: { pendingWarning != nil }, set: { if !$0 { pendingWarning = nil } }), titleVisibility: .visible) {
+		.hostedConfirmation("Are you sure?", isPresented: Binding(get: { pendingWarning != nil }, set: { if !$0 { pendingWarning = nil } }), titleVisibility: .visible) {
 			Button("Confirm") { previous = role; pendingWarning = nil }
 			Button("Cancel", role: .cancel) { if let previous { role = previous }; pendingWarning = nil }
 		} message: {
@@ -175,13 +175,13 @@ private struct DeviceResetSection: View {
 			Section {
 				Button("Reset NodeDB", role: .destructive) { confirmNodeDB = true }
 					.disabled(node?.user == nil)
-					.confirmationDialog("Are you sure?", isPresented: $confirmNodeDB, titleVisibility: .visible) {
+					.hostedConfirmation("Are you sure?", isPresented: $confirmNodeDB, titleVisibility: .visible) {
 						Button("Reset node database, preserving favorites?") { reset(preserveFavorites: true) }
 						Button("Reset node database and favorites?", role: .destructive) { reset(preserveFavorites: false) }
 					}
 				Button("Factory Reset", role: .destructive) { confirmFactory = true }
 					.disabled(node?.user == nil)
-					.confirmationDialog("Factory reset will delete device and app data.", isPresented: $confirmFactory, titleVisibility: .visible) {
+					.hostedConfirmation("Factory reset will delete device and app data.", isPresented: $confirmFactory, titleVisibility: .visible) {
 						Button("Delete all config? ", role: .destructive) { factoryReset(resetDevice: false) }
 						Button("Delete all config, keys and BLE bonds? ", role: .destructive) { factoryReset(resetDevice: true) }
 					}

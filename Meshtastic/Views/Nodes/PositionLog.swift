@@ -129,7 +129,7 @@ struct PositionLog: View {
 					.controlSize(.large)
 					.padding(.bottom)
 					.padding(.leading)
-					.confirmationDialog(
+					.hostedConfirmation(
 						"Are you sure?",
 						isPresented: $isPresentingClearLogConfirm,
 						titleVisibility: .visible
@@ -152,6 +152,7 @@ struct PositionLog: View {
 					} label: {
 						Label("Save", systemImage: "square.and.arrow.down")
 					}
+					.hostedWindowOnly()
 					.buttonStyle(.bordered)
 					.buttonBorderShape(.capsule)
 					.controlSize(.large)

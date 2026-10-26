@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ChannelsHelp: View {
 	var body: some View {
-		NavigationStack {
+		SheetNavigationStack {
 			List {
 				Section {
 					HelpItem(

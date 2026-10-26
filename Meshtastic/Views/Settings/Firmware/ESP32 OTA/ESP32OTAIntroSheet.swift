@@ -35,7 +35,7 @@ struct ESP32OTAIntroSheet: View {
 	}
 
 	var body: some View {
-		NavigationStack {
+		SheetNavigationStack {
 			List {
 				Section {
 					VStack(alignment: .leading, spacing: 12) {
@@ -184,7 +184,7 @@ struct ESP32OTAIntroSheet: View {
 				#endif
 
 			}
-			.sheet(isPresented: $showWifiUpdater) {
+			.hostedSheet(isPresented: $showWifiUpdater) {
 				let theHost: String? = {
 					#if DEBUG
 					if !debugHost.isEmpty {
@@ -198,7 +198,7 @@ struct ESP32OTAIntroSheet: View {
 					.environmentObject(accessoryManager)
 					.trackScreen(.esp32WiFiUpdate)
 			}
-			.sheet(isPresented: $showBLEUpdater) {
+			.hostedSheet(isPresented: $showBLEUpdater) {
 				let _ = Logger.services.info("📡 [ESP32 OTA] BLE path, file \(binFileURL.lastPathComponent, privacy: .public)")
 				ESP32BLEOTASheet(binFileURL: binFileURL, onUpdateComplete: { dismiss() })
 					.environmentObject(accessoryManager)

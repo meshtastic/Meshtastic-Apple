@@ -240,6 +240,14 @@ final class SpatialMapModel {
 		applyArea()
 	}
 
+	/// Centers and zooms the map so all the coordinates fit on the disk, as far out as the whole mesh.
+	func fit(_ coordinates: [CLLocationCoordinate2D]) {
+		guard let full = fullCircle, let fit = SpatialZoom.fit(coordinates, full: full) else { return }
+		zoom = fit.zoom
+		zoomCenter = fit.center
+		applyArea()
+	}
+
 	func resetZoom() {
 		guard zoom != 1 || zoomCenter != nil else { return }
 		zoom = 1
@@ -354,6 +362,13 @@ final class SpatialMapModel {
 			routeTask = nil
 			if fresh != routes { routes = fresh }
 		}
+	}
+
+	/// Reads the routes now and waits for them, for a route asked for by id that may be newer than
+	/// the last read.
+	func reloadRoutes(container: ModelContainer) async {
+		let fresh = await SpatialRouteReader.routes(container: container)
+		if fresh != routes { routes = fresh }
 	}
 
 	/// Whether a downloaded basemap covers the box being shown, so the Offline layer can be picked.
