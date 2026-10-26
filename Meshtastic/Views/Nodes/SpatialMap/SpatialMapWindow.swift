@@ -135,27 +135,30 @@ struct SpatialMapWindow: View {
 		}
 		.onChange(of: scenePhase) { _, phase in
 			if phase == .background {
-				dismissWindow(id: SpatialMapScene.id)
+				close()
 			}
 		}
 		.onAppear {
+			model.isClosed = false
 			SpatialTerrainKeeper.shared.volumeAppeared()
 			claimFocus()
 			if !Self.mainWindowIsOpen {
-				dismissWindow(id: SpatialMapScene.id)
+				close()
 			}
 		}
 		.onDisappear {
+			model.isClosed = true
 			SpatialTerrainKeeper.shared.volumeDisappeared()
 		}
 		.onReceive(NotificationCenter.default.publisher(for: UIScene.didDisconnectNotification)) { _ in
 			if !Self.mainWindowIsOpen {
-				dismissWindow(id: SpatialMapScene.id)
+				close()
 			}
 		}
 		.trackScreen(.spatialMap)
 		#if DEBUG
 		.task { await showRouteForScreenshots() }
+		.task { await closeForTests() }
 		#endif
 	}
 
@@ -185,6 +188,23 @@ struct SpatialMapWindow: View {
 		traffic.startFlyover(route, speed: 10)
 	}
 
+	/// Simulator checks: `--meshtastic-spatial-close <seconds>` closes the volume that long after
+	/// it opens, once a terrain build is in flight, to see what the build does when it finishes
+	/// after the volume is gone.
+	private func closeForTests() async {
+		let arguments = ProcessInfo.processInfo.arguments
+		guard let flagIndex = arguments.firstIndex(of: "--meshtastic-spatial-close"), arguments.indices.contains(flagIndex + 1),
+			  let seconds = Double(arguments[flagIndex + 1]) else { return }
+		guard (try? await Task.sleep(for: .seconds(seconds))) != nil else { return }
+		var waited = 0
+		while !model.isBuildingTerrain, waited < 3000 {
+			guard (try? await Task.sleep(for: .milliseconds(20))) != nil else { return }
+			waited += 1
+		}
+		Logger.services.info("🧪 [Spatial] Closing the volume during a terrain build, radar offered \(model.weatherRadarOffered, privacy: .public) (launch argument)")
+		close()
+	}
+
 	/// The simulator's camera looks at the table edge on; tip it toward the viewer.
 	private func tiltForScreenshots(_ arguments: [String]) {
 		if let tiltIndex = arguments.firstIndex(of: "--meshtastic-spatial-tilt"), arguments.indices.contains(tiltIndex + 1),
@@ -199,6 +219,13 @@ struct SpatialMapWindow: View {
 
 	private func points(_ meters: Double) -> CGFloat {
 		metrics.convert(CGFloat(meters), from: .meters)
+	}
+
+	/// Closes the volume. The model stops its radar fetches now, not when the scene has finished
+	/// going away, which takes a moment; a terrain build still running then finds it closed.
+	private func close() {
+		model.isClosed = true
+		dismissWindow(id: SpatialMapScene.id)
 	}
 
 	private func refresh() {

@@ -15,7 +15,8 @@ struct SpatialWeatherRadarImage: @unchecked Sendable {
 }
 
 /// The last radar image fetched, kept so a terrain rebuilt for the same box (dark map, contours,
-/// another layer) is draped again without a fetch, and a failed fetch keeps the rain that is up.
+/// another layer) is draped again without a fetch, and a failed fetch keeps the rain that is up
+/// for one more period.
 struct SpatialWeatherRadarCache: @unchecked Sendable {
 	let bounds: GeoBounds
 	let refreshPeriod: Int
@@ -26,10 +27,29 @@ struct SpatialWeatherRadarCache: @unchecked Sendable {
 		self.bounds == bounds && self.refreshPeriod == refreshPeriod ? image : nil
 	}
 
-	/// What to leave up after a failed fetch: the last image, as long as it is of the same box.
-	/// Rain from another box would be drawn in the wrong place.
-	func fallback(bounds: GeoBounds) -> CGImage? {
-		self.bounds == bounds ? image : nil
+	/// What to leave up after a failed fetch: the last image, as long as it is of the same box and
+	/// at most one period old. Rain from another box would be drawn in the wrong place, and older
+	/// rain has moved on, so the drape clears rather than show it.
+	func fallback(bounds: GeoBounds, refreshPeriod: Int) -> CGImage? {
+		self.bounds == bounds && self.refreshPeriod >= refreshPeriod - 1 ? image : nil
+	}
+}
+
+/// What the drape does after a failed fetch.
+enum SpatialWeatherRadarRecovery: Equatable {
+	/// The last image is of this box and at most a period old: leave it up.
+	case keep(CGImage)
+	/// Nothing to leave up: try once more after `SpatialWeatherRadar.retryDelay`.
+	case retry
+	/// Nothing to leave up and the retry failed too: clear, and wait for the next period.
+	case clear
+
+	static func == (lhs: Self, rhs: Self) -> Bool {
+		switch (lhs, rhs) {
+		case (.keep(let left), .keep(let right)): return left === right
+		case (.retry, .retry), (.clear, .clear): return true
+		default: return false
+		}
 	}
 }
 
@@ -40,6 +60,8 @@ enum SpatialWeatherRadar {
 	/// even on the widest table.
 	static let textureEdge = 1024
 	static let timeout: TimeInterval = 15
+	/// How long after a failed fetch that left nothing up to try once more.
+	static let retryDelay: TimeInterval = 30
 
 	/// The box's radar at the drape's size: a Mercator image of exactly the box, which lines up
 	/// with the terrain the way the map snapshot does.
@@ -62,6 +84,14 @@ enum SpatialWeatherRadar {
 	/// What a rebuild is keyed on: the terrain, the five-minute period and whether to fetch at all.
 	static func key(revision: Int, refreshPeriod: Int, fetch: Bool) -> String {
 		"\(revision)|\(refreshPeriod)|\(fetch)"
+	}
+
+	/// After a failed fetch: keep the last image if it is of this box and at most a period old.
+	/// With nothing to keep, try once more soon rather than leave the table bare until the next
+	/// period, unless `retried` says that was done already.
+	static func afterFailedFetch(cache: SpatialWeatherRadarCache?, bounds: GeoBounds, refreshPeriod: Int, retried: Bool) -> SpatialWeatherRadarRecovery {
+		if let image = cache?.fallback(bounds: bounds, refreshPeriod: refreshPeriod) { return .keep(image) }
+		return retried ? .clear : .retry
 	}
 
 	/// Fetches and decodes the image. Anything but an image the server is happy with is an

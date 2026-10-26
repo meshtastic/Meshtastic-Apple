@@ -121,6 +121,20 @@ final class SpatialMapModel {
 	private var weatherRadarCache: SpatialWeatherRadarCache?
 	/// The image on the drape that is up, so one image is never draped twice on the same terrain.
 	private var weatherRadarDraped: CGImage?
+	/// The key whose failed fetch was tried again, so each is tried again once.
+	private var weatherRadarRetriedKey: String?
+	private var weatherRadarRetryTask: Task<Void, Never>?
+	/// Set by the window when the volume closes. A terrain build that finishes after that must
+	/// not start a radar fetch for a table no one sees.
+	var isClosed = false {
+		didSet {
+			guard isClosed, !oldValue else { return }
+			weatherRadarTask?.cancel()
+			weatherRadarRetryTask?.cancel()
+			weatherRadarKey = nil
+			Logger.services.info("🧊 [Spatial] Volume closing; the weather radar stops fetching")
+		}
+	}
 	/// The download and its retry rules live in the keeper, shared with the app's own check.
 	private let keeper = SpatialTerrainKeeper.shared
 	var isDownloadingTerrain: Bool { keeper.isDownloading }
@@ -638,10 +652,11 @@ extension SpatialMapModel {
 	/// Rebuilds the weather radar overlay when the terrain, the five-minute period or whether to
 	/// fetch at all changes. The image is fetched and decoded off the main actor and kept, so a
 	/// terrain rebuilt for the same box (dark map, contours, another layer) is draped again without
-	/// a fetch. A failed fetch keeps the rain that is up until the next period; going offline
-	/// clears it.
+	/// a fetch, and a new period on the same terrain only swaps the drape's image. A failed fetch
+	/// keeps the rain that is up for one more period, or with nothing up tries once more; going
+	/// offline clears it.
 	private func rebuildWeatherRadarIfNeeded() {
-		guard let placement, let geometry = placement.geometry else { return }
+		guard !isClosed, let placement, let geometry = placement.geometry else { return }
 		let center = CLLocationCoordinate2D(latitude: placement.circle.latitude, longitude: placement.circle.longitude)
 		let fetch = SpatialWeatherRadar.shouldFetch(show: showWeatherRadar, offered: weatherRadarOffered, networkAvailable: networkAvailable, center: center)
 		let period = WeatherRadar.refreshPeriod()
@@ -649,12 +664,14 @@ extension SpatialMapModel {
 		guard key != weatherRadarKey else { return }
 		weatherRadarKey = key
 		weatherRadarTask?.cancel()
+		weatherRadarRetryTask?.cancel()
 		guard fetch else {
 			clearWeatherRadar()
 			return
 		}
 		let bounds = placement.bounds
 		let frame = geometry.transform.frame
+		let retried = weatherRadarRetriedKey == key
 		weatherRadarTask = Task {
 			var image = weatherRadarCache?.current(bounds: bounds, refreshPeriod: period)
 			if image == nil {
@@ -669,20 +686,34 @@ extension SpatialMapModel {
 				} catch {
 					guard !Task.isCancelled, weatherRadarKey == key else { return }
 					Logger.services.info("🧊 [Spatial] Weather radar fetch failed: \(error.localizedDescription, privacy: .public)")
-					image = weatherRadarCache?.fallback(bounds: bounds)
+					switch SpatialWeatherRadar.afterFailedFetch(cache: weatherRadarCache, bounds: bounds, refreshPeriod: period, retried: retried) {
+					case .keep(let kept):
+						image = kept
+					case .retry:
+						clearWeatherRadar()
+						retryWeatherRadar(key: key)
+						return
+					case .clear:
+						clearWeatherRadar()
+						return
+					}
 				}
 			}
-			guard let image else {
-				clearWeatherRadar()
-				return
-			}
+			guard let image else { return }
 			// The same image is already draped on this terrain.
 			if weatherRadarRevision == placement.revision, weatherRadarDraped === image { return }
 			do {
-				let entity = try await SpatialWeatherRadarEntity.make(geometry: geometry, image: image)
-				guard !Task.isCancelled, weatherRadarKey == key else { return }
-				weatherRadarEntity = entity
-				weatherRadarRevision = placement.revision
+				if let entity = weatherRadarEntity, weatherRadarRevision == placement.revision {
+					// A new period on the same terrain: only the image changes.
+					let texture = try await SpatialOverlayEntity.texture(for: image)
+					guard !Task.isCancelled, weatherRadarKey == key else { return }
+					SpatialOverlayEntity.setTexture(texture, on: entity)
+				} else {
+					let entity = try await SpatialWeatherRadarEntity.make(geometry: geometry, image: image)
+					guard !Task.isCancelled, weatherRadarKey == key else { return }
+					weatherRadarEntity = entity
+					weatherRadarRevision = placement.revision
+				}
 				weatherRadarDraped = image
 			} catch {
 				Logger.services.error("🧊 [Spatial] Weather radar overlay failed: \(error.localizedDescription, privacy: .public)")
@@ -690,10 +721,25 @@ extension SpatialMapModel {
 		}
 	}
 
+	/// A failed fetch left nothing on the table: fetch again after a short wait rather than leave
+	/// it bare until the next period. Dropping the key makes the next check fetch again.
+	private func retryWeatherRadar(key: String) {
+		weatherRadarRetriedKey = key
+		weatherRadarRetryTask?.cancel()
+		weatherRadarRetryTask = Task {
+			guard (try? await Task.sleep(for: .seconds(SpatialWeatherRadar.retryDelay))) != nil, weatherRadarKey == key else { return }
+			weatherRadarKey = nil
+			rebuildWeatherRadarIfNeeded()
+		}
+	}
+
+	/// Takes the drape down and drops the kept image: it is of a box that is not shown, too old,
+	/// or not wanted any more.
 	private func clearWeatherRadar() {
 		if weatherRadarEntity != nil { weatherRadarEntity = nil }
 		if weatherRadarRevision != nil { weatherRadarRevision = nil }
 		weatherRadarDraped = nil
+		weatherRadarCache = nil
 	}
 }
 #endif

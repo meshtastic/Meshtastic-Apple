@@ -86,12 +86,30 @@ struct SpatialWeatherRadarTests {
 		#expect(cache.current(bounds: box, refreshPeriod: 100) === image)
 		// A new period fetches again...
 		#expect(cache.current(bounds: box, refreshPeriod: 101) == nil)
-		// ...and if that fetch fails, the last image stays up for the same box.
-		#expect(cache.fallback(bounds: box) === image)
+		// ...and if that fetch fails, the last image stays up for the same box, for one period.
+		#expect(cache.fallback(bounds: box, refreshPeriod: 100) === image)
+		#expect(cache.fallback(bounds: box, refreshPeriod: 101) === image)
+		// Two periods on it is too old: the drape clears rather than show it.
+		#expect(cache.fallback(bounds: box, refreshPeriod: 102) == nil)
 		// Rain from another box is never draped.
 		let elsewhere = GeoBounds(minLon: -122.5, minLat: 47.5, maxLon: -122.2, maxLat: 47.8)
 		#expect(cache.current(bounds: elsewhere, refreshPeriod: 100) == nil)
-		#expect(cache.fallback(bounds: elsewhere) == nil)
+		#expect(cache.fallback(bounds: elsewhere, refreshPeriod: 101) == nil)
+	}
+
+	@Test func aFailedFetchKeepsTheLastImageOrRetriesOnceThenClears() throws {
+		let image = try #require(blank(width: 2, height: 2))
+		let cache = SpatialWeatherRadarCache(bounds: box, refreshPeriod: 100, image: image)
+		// The last image is a period old at most: it stays up, no retry.
+		#expect(SpatialWeatherRadar.afterFailedFetch(cache: cache, bounds: box, refreshPeriod: 101, retried: false) == .keep(image))
+		#expect(SpatialWeatherRadar.afterFailedFetch(cache: cache, bounds: box, refreshPeriod: 101, retried: true) == .keep(image))
+		// Nothing to keep: the first failure tries again soon rather than wait for the next period...
+		#expect(SpatialWeatherRadar.afterFailedFetch(cache: nil, bounds: box, refreshPeriod: 101, retried: false) == .retry)
+		#expect(SpatialWeatherRadar.afterFailedFetch(cache: cache, bounds: box, refreshPeriod: 102, retried: false) == .retry)
+		// ...and a second failure clears the drape until the next period.
+		#expect(SpatialWeatherRadar.afterFailedFetch(cache: nil, bounds: box, refreshPeriod: 101, retried: true) == .clear)
+		#expect(SpatialWeatherRadar.afterFailedFetch(cache: cache, bounds: box, refreshPeriod: 102, retried: true) == .clear)
+		#expect(SpatialWeatherRadar.retryDelay == 30)
 	}
 
 	// MARK: Decode
