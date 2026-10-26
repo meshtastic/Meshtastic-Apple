@@ -186,6 +186,8 @@ struct AddContactConfirmationView: View {
 				.tint(.accentFill)
 				.controlSize(.large)
 				.disabled(isAdding || !canSubmit || !hasShareableSnapshot)
+				// Sharing back needs the share sheet, which only the app window can show.
+				.hostedWindowOnly()
 				Button {
 					addContact()
 				} label: {

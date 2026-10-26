@@ -325,11 +325,15 @@ private struct FirmwareContentView: View {
 			case .otaZip:
 				NRFDFUSheet(firmwareToFlash: installation.url)
 					.trackScreen(.nordicDFUUpdate)
+					// An update has to keep running and can't be backed out of mid-transfer, which a page
+					// on the cinema screen can't promise; it runs in the app window.
+					.hostedWindowOnly()
 			case .uf2:
 				UF2MassStorageView(fileURL: installation.url)
 			case .bin:
 				ESP32OTAIntroSheet(binFileURL: installation.url)
 					.trackScreen(.esp32Update)
+										.hostedWindowOnly()
 			}
 		}
 	}
@@ -509,11 +513,15 @@ private struct FirmwareContentView: View {
 					case .otaZip:
 						NRFDFUSheet(firmwareToFlash: locallyChosenFirmwareFile)
 							.trackScreen(.nordicDFUUpdate)
+							// An update has to keep running and can't be backed out of mid-transfer, which a page
+							// on the cinema screen can't promise; it runs in the app window.
+							.hostedWindowOnly()
 					case .uf2:
 						UF2MassStorageView(fileURL: locallyChosenFirmwareFile)
 					case .bin:
 						ESP32OTAIntroSheet(binFileURL: locallyChosenFirmwareFile)
 							.trackScreen(.esp32Update)
+														.hostedWindowOnly()
 					}
 				}
 			}
