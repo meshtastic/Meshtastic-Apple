@@ -294,6 +294,7 @@ private struct PanelPush<Page: View>: ViewModifier {
 	func body(content: Content) -> some View {
 		// This runs whenever the presenting view updates, so a showing page gets the new content.
 		if let presenter, isPresented {
+			// swiftlint:disable:next redundant_discardable_let
 			let _ = presenter.update(id: pageID, content: AnyView(page()))
 		}
 		Group {
