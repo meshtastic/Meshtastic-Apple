@@ -368,10 +368,14 @@ final class WidgetDataBroker {
 		)
 		var names: [Int32: String] = [:]
 		for channel in (try? context.fetch(descriptor)) ?? [] {
-			let fallback = channel.index == 0 ? "Primary" : "Channel \(channel.index)"
+			let fallback = channel.index == 0 ? String(localized: "Primary", comment: "ChannelRoles.description") : channelLabel(channel.index)
 			names[channel.index] = (channel.name?.isEmpty ?? true) ? fallback : channel.name!
 		}
 		return names
+	}
+
+	nonisolated private static func channelLabel(_ index: Int32) -> String {
+		String(localized: "Channel \(index)", comment: "A label for a channel index. The argument is the channel index.")
 	}
 
 	nonisolated private static func fetchRecentMessages(context: ModelContext, radioNum: Int64?) -> [MessageSnapshot] {
@@ -398,7 +402,7 @@ final class WidgetDataBroker {
 				let partner = fromUser.num == radioNum ? toUser.num : fromUser.num
 				kind = .directMessage(userNum: partner)
 			} else {
-				let name = channelNames[message.channel] ?? "Channel \(message.channel)"
+				let name = channelNames[message.channel] ?? channelLabel(message.channel)
 				kind = .channel(index: message.channel, name: name)
 			}
 			snapshots.append(MessageSnapshot(
