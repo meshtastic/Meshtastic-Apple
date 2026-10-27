@@ -21,6 +21,16 @@ enum CinemaScreenRequest: Equatable {
 	case traceRoute(Int64)
 }
 
+/// A device model to stand in front of the viewer in the cinema, from the "View in your space"
+/// button on a 3D model.
+struct CinemaModelRequest: Equatable {
+	/// The model file's name, without the .usdz.
+	let modelName: String
+	let deviceName: String
+	/// The node it's a model of, for the live readings beside it. Nil for Chirpy.
+	let nodeNum: Int64?
+}
+
 /// The visionOS immersive space that shows the app on a big screen inside a 360° environment.
 /// Only one immersive space can be open, so opening this one closes the showcase first.
 enum CinemaScene {
@@ -65,6 +75,9 @@ enum CinemaScene {
 	@MainActor private static var isOpening = false
 	/// Set when the cinema closed the main window, so leaving it always brings the window back.
 	@MainActor static var closedMainWindow = false
+	/// Set while the cinema is open: stands a device model in front of the viewer. A Quick Look
+	/// window would take them out of the tent to show it.
+	@MainActor static var showModel: ((CinemaModelRequest) -> Void)?
 	@MainActor private static var latch = ReopenLatch()
 	/// Asks again once a request on its way has had its time, in case it was dropped.
 	@MainActor private static var retry: Task<Void, Never>?

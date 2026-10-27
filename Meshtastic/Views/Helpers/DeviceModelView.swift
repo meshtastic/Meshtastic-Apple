@@ -16,11 +16,14 @@ import ARKit
 /// Shows the device image with a 3D badge; tapping either switches to the device's 3D model,
 /// turning slowly. The model is only fetched once asked for. If it can't be loaded, the badge goes
 /// away and the image stays. Once it's showing, "View in your space" stands it in the room at real
-/// size, and tapping it seven times swaps it for Chirpy.
+/// size (in the Vision Pro cinema, on a stand in the tent), and tapping it seven times swaps it for
+/// Chirpy.
 @available(iOS 18.0, macCatalyst 18.0, visionOS 1.0, *)
 struct DeviceModelView<Placeholder: View>: View {
 	let modelName: String
 	let deviceName: String
+	/// The node it's a model of, for the live readings beside it in the Vision Pro cinema.
+	var nodeNum: Int64?
 	@ViewBuilder let placeholder: () -> Placeholder
 
 	@Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -142,8 +145,12 @@ struct DeviceModelView<Placeholder: View>: View {
 		Button {
 			guard let modelURL else { return }
 			#if os(visionOS)
-			// A Quick Look window of its own, which can be set down anywhere in the room.
-			_ = PreviewApplication.open(urls: [modelURL])
+			if let showModel = CinemaScene.showModel {
+				showModel(CinemaModelRequest(modelName: shownModelName, deviceName: shownName, nodeNum: showsChirpy ? nil : nodeNum))
+			} else {
+				// A Quick Look window of its own, which can be set down anywhere in the room.
+				_ = PreviewApplication.open(urls: [modelURL])
+			}
 			#else
 			// Quick Look shows the model at its own size, which is the real one.
 			quickLookURL = modelURL

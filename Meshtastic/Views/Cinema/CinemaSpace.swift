@@ -12,7 +12,8 @@ import SwiftUI
 /// Root of the cinema immersive space: an environment around the viewer and a small panel to
 /// change the environment, open the 3D map or leave. The front wall is a screen that shows
 /// the app's sections, picked from a tab strip above it. The tent's whiteboard shows the live
-/// team roster, and the print by the door the latest trace route. The main window closes while
+/// team roster, and the print by the door the latest trace route. "View in your space" on a 3D
+/// model stands it in front of the seat. The main window closes while
 /// the space is open and the 3D map opens in front of the viewer instead.
 struct CinemaSpace: View {
 	/// The store, for the boards. Nil when the app runs without one (demo mode).
@@ -34,6 +35,9 @@ struct CinemaSpace: View {
 	@State private var fitBoards: EventSubscription?
 	@State private var anchors: CinemaAnchors?
 	@State private var boards = BoardPanels()
+	/// A device model on a stand in front of the seat, from "View in your space" on a 3D model.
+	@State private var modelStand = CinemaModelStand()
+	@State private var modelRequest: CinemaModelRequest?
 	/// The front screen's section and navigation, kept here so they outlive its attachment.
 	@StateObject private var screen = CinemaScreenModel()
 
@@ -43,6 +47,7 @@ struct CinemaSpace: View {
 			content.add(world)
 			stage.name = "CinemaStage"
 			world.addChild(stage)
+			world.addChild(modelStand.root)
 			if let panel = attachments.entity(for: Attachments.panel) {
 				panelGrabber.addChild(panel)
 				seat(panel)
@@ -62,6 +67,9 @@ struct CinemaSpace: View {
 				boards.set(attachments.entity(for: board.rawValue), for: board)
 			}
 			boards.setStrip(attachments.entity(for: Attachments.tabStrip))
+			if let tag = attachments.entity(for: Attachments.modelTag) {
+				modelStand.placeTag(tag)
+			}
 			placeBoards()
 		} attachments: {
 			Attachment(id: Attachments.panel) {
@@ -81,6 +89,20 @@ struct CinemaSpace: View {
 			if let container, !appState.isDatabaseResetting, anchors?.board(.traceRoute) != nil {
 				Attachment(id: CinemaBoard.traceRoute.rawValue) {
 					live(TraceRouteBoard(), container: container)
+				}
+			}
+			if let modelRequest {
+				Attachment(id: Attachments.modelTag) {
+					// Without the store, the card only names the device.
+					if let container, !appState.isDatabaseResetting {
+						CinemaModelTag(request: modelRequest) { self.modelRequest = nil }
+							.id(appState.databaseResetID)
+							.modelContainer(container)
+					} else {
+						CinemaModelTag(request: CinemaModelRequest(modelName: modelRequest.modelName, deviceName: modelRequest.deviceName, nodeNum: nil)) {
+							self.modelRequest = nil
+						}
+					}
 				}
 			}
 			// Out during a database reset like the boards; the screen's model keeps its navigation.
@@ -106,8 +128,12 @@ struct CinemaSpace: View {
 			stage.addChild(next)
 			backdrop = next
 		}
+		.task(id: modelRequest) {
+			await modelStand.show(modelRequest, environment: environment)
+		}
 		.onAppear {
 			appState.cinemaOpen = true
+			CinemaScene.showModel = { request in modelRequest = request }
 			appState.spatialMapReopening = true
 			screen.register(with: appState.sceneRouters)
 		}
@@ -136,6 +162,8 @@ struct CinemaSpace: View {
 		.onDisappear {
 			fitBoards?.cancel()
 			fitBoards = nil
+			CinemaScene.showModel = nil
+			modelRequest = nil
 			appState.cinemaOpen = false
 			screen.unregister(from: appState.sceneRouters)
 			// Bring the main window back. Not when the app went to the background, which closes the
@@ -203,6 +231,7 @@ struct CinemaSpace: View {
 	private enum Attachments {
 		static let panel = "panel"
 		static let tabStrip = "screenTabs"
+		static let modelTag = "modelTag"
 	}
 
 	/// A board's view with the store and app state it reads, remade on a database reset.

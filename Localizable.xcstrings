@@ -526,6 +526,9 @@
         }
       }
     },
+    "Move the model stand" : {
+      "comment" : "Cinema: VoiceOver label for the bar under the device model's stand that moves it"
+    },
     "Next rack page" : {
       "comment" : "Showcase: show the next page of the wall rack",
       "localizations" : {
@@ -536,6 +539,9 @@
           }
         }
       }
+    },
+    "Put the model away" : {
+      "comment" : "Cinema: button on the card beside a device model on the stand; takes the model away"
     },
     "Radios on this page" : {
       "comment" : "Showcase: menu listing the radios on the wall rack page that's showing; picking one opens its card",
