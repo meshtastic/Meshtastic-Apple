@@ -691,7 +691,7 @@ extension SpatialMapModel {
 			var image = weatherRadarCache?.current(bounds: bounds, refreshPeriod: period)
 			if image == nil {
 				do {
-					let fetched = try await SpatialWeatherRadar.fetch(SpatialWeatherRadar.request(for: frame, refreshPeriod: period))
+					let fetched = try await SpatialWeatherRadar.fetch(SpatialWeatherRadar.plan(for: frame, refreshPeriod: period))
 					guard !Task.isCancelled, weatherRadarKey == key else { return }
 					weatherRadarCache = SpatialWeatherRadarCache(bounds: bounds, refreshPeriod: period, image: fetched.image)
 					image = fetched.image

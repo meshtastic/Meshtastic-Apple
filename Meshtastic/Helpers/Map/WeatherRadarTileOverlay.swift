@@ -10,6 +10,7 @@
 //
 
 import Foundation
+import ImageIO
 import MapKit
 
 enum WeatherRadar {
@@ -123,6 +124,44 @@ final class WeatherRadarTileOverlay: MKTileOverlay {
 
 	override func url(forTilePath path: MKTileOverlayPath) -> URL {
 		Self.url(for: path, refreshPeriod: refreshPeriod)
+	}
+
+	/// Pixels across a smoothed tile: twice the tile size, so the rounded edges stay crisp on a
+	/// Retina screen.
+	static let smoothTileEdge = 512
+
+	/// Zoomed in past the radar's own cells, asks for the cells and draws them smooth; further
+	/// out, a pixel covers a cell or more and the server's tile is used as is.
+	override func loadTile(at path: MKTileOverlayPath, result: @escaping (Data?, Error?) -> Void) {
+		let bounds = Self.mercatorBounds(x: path.x, y: path.y, z: path.z)
+		let edge = Self.smoothTileEdge
+		guard let grid = WeatherRadarCellGrid(bounds: bounds, outputWidth: edge, outputHeight: edge) else {
+			super.loadTile(at: path, result: result)
+			return
+		}
+		let url = WeatherRadar.imageURL(mercatorBounds: grid.paddedBounds, width: grid.requestWidth, height: grid.requestHeight, refreshPeriod: refreshPeriod)
+		Task.detached(priority: .utility) {
+			do {
+				let (data, response) = try await URLSession.shared.data(from: url)
+				guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
+					throw URLError(.badServerResponse)
+				}
+				guard let source = CGImageSourceCreateWithData(data as CFData, nil),
+					  let image = CGImageSourceCreateImageAtIndex(source, 0, nil),
+					  let smooth = WeatherRadarSmoothing.smooth(image, grid: grid, width: edge, height: edge),
+					  let png = Self.pngData(smooth) else { throw URLError(.cannotDecodeContentData) }
+				result(png, nil)
+			} catch {
+				result(nil, error)
+			}
+		}
+	}
+
+	private static func pngData(_ image: CGImage) -> Data? {
+		let data = NSMutableData()
+		guard let destination = CGImageDestinationCreateWithData(data, "public.png" as CFString, 1, nil) else { return nil }
+		CGImageDestinationAddImage(destination, image, nil)
+		return CGImageDestinationFinalize(destination) ? data as Data : nil
 	}
 
 	/// One tile's image: a GetMap of the tile's own Web Mercator bounds.

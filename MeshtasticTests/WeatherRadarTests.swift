@@ -90,4 +90,67 @@ struct WeatherRadarTests {
 		#expect(query["FORMAT"] == "image/png" && query["TRANSPARENT"] == "true")
 		#expect(query["period"] == "7")
 	}
+
+	// MARK: Smoothing
+
+	@Test func cellGridCountsKilometerCellsAndPadsOneOnEachSide() throws {
+		// A zoom 10 tile is about 39 km of Mercator across.
+		let bounds = WeatherRadarTileOverlay.mercatorBounds(x: 200, y: 360, z: 10)
+		let grid = try #require(WeatherRadarCellGrid(bounds: bounds, outputWidth: 512, outputHeight: 512))
+		#expect(grid.columns == Int((bounds.width / WeatherRadarCellGrid.cellMeters).rounded()))
+		// Cells are taller than wide in Mercator away from the equator.
+		#expect(grid.rows < grid.columns)
+		#expect(abs(grid.paddedBounds.width - bounds.width * Double(grid.columns + 2) / Double(grid.columns)) < 1e-6)
+		#expect(abs(grid.paddedBounds.midX - bounds.midX) < 1e-6 && abs(grid.paddedBounds.midY - bounds.midY) < 1e-6)
+	}
+
+	@Test func noCellGridWhenAPixelCoversACell() {
+		let bounds = WeatherRadarTileOverlay.mercatorBounds(x: 10, y: 22, z: 6)
+		#expect(WeatherRadarCellGrid(bounds: bounds, outputWidth: 512, outputHeight: 512) == nil)
+	}
+
+	/// Rain cells in the middle of the padded grid, smoothed to a 512 pixel tile.
+	private func smoothed(cells: [(Int, Int)], grid: WeatherRadarCellGrid) throws -> (image: CGImage, alphas: [UInt8]) {
+		let width = grid.requestWidth, height = grid.requestHeight
+		var bytes = [UInt8](repeating: 0, count: width * height * 4)
+		for (dx, dy) in cells {
+			let index = ((height / 2 + dy) * width + width / 2 + dx) * 4
+			bytes[index] = 40; bytes[index + 1] = 200; bytes[index + 2] = 80; bytes[index + 3] = 255
+		}
+		let input = try #require(bytes.withUnsafeMutableBytes { buffer in
+			CGContext(data: buffer.baseAddress, width: width, height: height, bitsPerComponent: 8, bytesPerRow: width * 4,
+					  space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)?.makeImage()
+		})
+		let output = try #require(WeatherRadarSmoothing.smooth(input, grid: grid, width: 512, height: 512))
+		let pixels = try #require(output.dataProvider?.data as Data?)
+		return (output, stride(from: 3, to: pixels.count, by: 4).map { pixels[$0] })
+	}
+
+	@Test func smoothingRoundsAShowerAndDropsALoneCell() throws {
+		let bounds = WeatherRadarTileOverlay.mercatorBounds(x: 200, y: 360, z: 10)
+		let grid = try #require(WeatherRadarCellGrid(bounds: bounds, outputWidth: 512, outputHeight: 512))
+		let block = (-1...1).flatMap { dx in (-1...1).map { dy in (dx, dy) } }
+		let shower = try smoothed(cells: block, grid: grid)
+		#expect(shower.image.width == 512 && shower.image.height == 512)
+		let covered = shower.alphas.filter { $0 > 0 }.count
+		// A 3 by 3 block of cells comes out round: solid in the middle, its square corners cut off.
+		let cellWidth = 512.0 / Double(grid.columns), cellHeight = 512.0 / Double(grid.rows)
+		let centerX = (Double(grid.requestWidth / 2) - 0.5) * cellWidth
+		let centerY = (Double(grid.requestHeight / 2) - 0.5) * cellHeight
+		let alpha = { (x: Double, y: Double) in shower.alphas[Int(y) * 512 + Int(x)] }
+		#expect(alpha(centerX, centerY) == 255)
+		for (dx, dy) in [(-1.0, -1.0), (1, -1), (-1, 1), (1, 1)] {
+			#expect(alpha(centerX + dx * 1.45 * cellWidth, centerY + dy * 1.45 * cellHeight) == 0)
+		}
+		// Its edge is a thin line, not a long fade.
+		#expect(shower.alphas.filter { $0 > 0 && $0 < 255 }.count < covered / 2)
+		// One cell on its own is speckle and is softened away.
+		#expect(try smoothed(cells: [(0, 0)], grid: grid).alphas.allSatisfy { $0 == 0 })
+	}
+
+	@Test func edgeKeepsFullRainAndDropsTheFade() {
+		#expect(WeatherRadarSmoothing.edgeAlpha(1) == 1)
+		#expect(WeatherRadarSmoothing.edgeAlpha(0.3) == 0)
+		#expect(abs(WeatherRadarSmoothing.edgeAlpha(0.5) - 0.5) < 1e-6)
+	}
 }

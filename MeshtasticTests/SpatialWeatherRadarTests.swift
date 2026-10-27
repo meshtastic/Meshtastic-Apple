@@ -19,17 +19,26 @@ struct SpatialWeatherRadarTests {
 
 	// MARK: Request
 
-	@Test func requestAsksForTheBoxAtTheDrapeSize() throws {
+	@Test func requestAsksForTheBoxsCellsToDrawSmoothAtTheDrapeSize() throws {
 		let frame = SpatialFrame(bounds: box)
-		let request = SpatialWeatherRadar.request(for: frame, refreshPeriod: 42)
-		let query = try query(request)
-		let size = SpatialTextureRenderer.pixelSize(for: frame, maxEdge: SpatialWeatherRadar.textureEdge)
-		#expect(max(size.width, size.height) == 1024)
-		#expect(query["WIDTH"] == String(Int(size.width)) && query["HEIGHT"] == String(Int(size.height)))
-		let bounds = WeatherRadar.mercatorBounds(for: box)
-		#expect(query["BBOX"] == [bounds.minX, bounds.minY, bounds.maxX, bounds.maxY].map { String(format: "%.2f", $0) }.joined(separator: ","))
+		let plan = SpatialWeatherRadar.plan(for: frame, refreshPeriod: 42)
+		let query = try query(plan.request)
+		#expect(max(plan.size.width, plan.size.height) == 1024)
+		let grid = try #require(plan.grid)
+		// 0.1° of longitude is about ten 1 km cells, plus one on each side.
+		#expect(grid.columns == 10 && query["WIDTH"] == "12" && query["HEIGHT"] == String(grid.rows + 2))
+		let padded = grid.paddedBounds
+		#expect(query["BBOX"] == [padded.minX, padded.minY, padded.maxX, padded.maxY].map { String(format: "%.2f", $0) }.joined(separator: ","))
 		#expect(query["LAYERS"] == "conus_bref_qcd" && query["period"] == "42")
-		#expect(request.timeoutInterval == 15)
+		#expect(plan.request.timeoutInterval == 15)
+	}
+
+	@Test func aTableWiderThanTheDrapeAsksForTheDrapeSize() throws {
+		let wide = GeoBounds(minLon: -125, minLat: 40, maxLon: -110, maxLat: 49)
+		let plan = SpatialWeatherRadar.plan(for: SpatialFrame(bounds: wide), refreshPeriod: 1)
+		#expect(plan.grid == nil)
+		let query = try query(plan.request)
+		#expect(query["WIDTH"] == String(Int(plan.size.width)) && query["HEIGHT"] == String(Int(plan.size.height)))
 	}
 
 	/// The server draws the bounds edge to edge, linear in Mercator meters, so a coordinate lands
