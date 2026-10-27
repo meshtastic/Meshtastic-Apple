@@ -625,9 +625,15 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 			container.translatesAutoresizingMaskIntoConstraints = false
 			control.translatesAutoresizingMaskIntoConstraints = false
 			content.addSubview(control)
+			// Just under required, so a hidden circle can collapse in the stack view without
+			// breaking the layout.
+			let width = container.widthAnchor.constraint(equalToConstant: size)
+			let height = container.heightAnchor.constraint(equalToConstant: size)
+			width.priority = .required - 1
+			height.priority = .required - 1
 			NSLayoutConstraint.activate([
-				container.widthAnchor.constraint(equalToConstant: size),
-				container.heightAnchor.constraint(equalToConstant: size),
+				width,
+				height,
 				control.centerXAnchor.constraint(equalTo: content.centerXAnchor),
 				control.centerYAnchor.constraint(equalTo: content.centerYAnchor),
 				control.widthAnchor.constraint(equalToConstant: size),
