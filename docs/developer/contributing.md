@@ -24,7 +24,7 @@ For the simulator, sign to run locally instead of with a personal team. In Xcode
 
 ```sh
 xcodebuild -workspace Meshtastic.xcworkspace -scheme Meshtastic \
-  -destination 'platform=iOS Simulator,name=iPhone 17' \
+  -destination 'generic/platform=iOS Simulator' \
   CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM= PROVISIONING_PROFILE_SPECIFIER= \
   build
 ```
