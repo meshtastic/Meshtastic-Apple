@@ -1293,7 +1293,10 @@ struct MeshMapMK: View {
 								/// NOAA radar over the lower 48, while it's on, offered, and there's a network to fetch it.
 								private var weatherRadarOverlays: [ClusterMapOverlay] {
 									guard showWeatherRadar, offlineMapConnectivity.isNetworkAvailable, let weatherRadarOverlay else { return [] }
-									return [ClusterMapOverlay(id: "weather-radar-\(ObjectIdentifier(weatherRadarOverlay).hashValue)", overlay: weatherRadarOverlay, style: ClusterMapOverlayStyle(level: .aboveRoads))]
+									// On the hybrid map MapKit doesn't draw an above-roads tile overlay that goes past
+									// zoom 12, so there the radar goes over the labels.
+									let level: MKOverlayLevel = selectedMapLayer == .hybrid ? .aboveLabels : .aboveRoads
+									return [ClusterMapOverlay(id: "weather-radar-\(ObjectIdentifier(weatherRadarOverlay).hashValue)", overlay: weatherRadarOverlay, style: ClusterMapOverlayStyle(level: level))]
 								}
 
 								/// Re-point the terrain store at downloaded terrain, then refresh dependents.

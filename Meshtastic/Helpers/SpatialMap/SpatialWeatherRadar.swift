@@ -56,22 +56,34 @@ enum SpatialWeatherRadarRecovery: Equatable {
 /// The NOAA radar for the spatial map: one image of the terrain's box, laid out like its map
 /// image, so the drape can use the terrain's own texture coordinates.
 enum SpatialWeatherRadar {
-	/// Longest edge of the radar image. The radar's cells are 1 km, so this is finer than the data
-	/// even on the widest table.
+	/// Longest edge of the drape. The radar's cells are 1 km, so this is finer than the data even
+	/// on the widest table, and the cells are drawn smooth to fill it.
 	static let textureEdge = 1024
 	static let timeout: TimeInterval = 15
 	/// How long after a failed fetch that left nothing up to try once more.
 	static let retryDelay: TimeInterval = 30
 
-	/// The box's radar at the drape's size: a Mercator image of exactly the box, which lines up
-	/// with the terrain the way the map snapshot does.
-	static func request(for frame: SpatialFrame, refreshPeriod: Int) -> URLRequest {
+	/// What to ask the server for: the box's radar cells, one pixel each, with one cell more on
+	/// every side, or on a table wider than the drape's pixels, the box at the drape's size.
+	/// Either way a Mercator image that lines up with the terrain the way the map snapshot does.
+	struct Plan {
+		let request: URLRequest
+		/// The drape's size in pixels.
+		let size: CGSize
+		/// The cells to draw smooth at `size`; nil when the server's image is already the drape.
+		let grid: WeatherRadarCellGrid?
+	}
+
+	static func plan(for frame: SpatialFrame, refreshPeriod: Int) -> Plan {
 		let size = SpatialTextureRenderer.pixelSize(for: frame, maxEdge: textureEdge)
-		let url = WeatherRadar.imageURL(
-			mercatorBounds: WeatherRadar.mercatorBounds(for: frame.bounds),
-			width: Int(size.width), height: Int(size.height), refreshPeriod: refreshPeriod
-		)
-		return URLRequest(url: url, timeoutInterval: timeout)
+		let bounds = WeatherRadar.mercatorBounds(for: frame.bounds)
+		let grid = WeatherRadarCellGrid(bounds: bounds, outputWidth: Int(size.width), outputHeight: Int(size.height))
+		let url = if let grid {
+			WeatherRadar.imageURL(mercatorBounds: grid.paddedBounds, width: grid.requestWidth, height: grid.requestHeight, refreshPeriod: refreshPeriod)
+		} else {
+			WeatherRadar.imageURL(mercatorBounds: bounds, width: Int(size.width), height: Int(size.height), refreshPeriod: refreshPeriod)
+		}
+		return Plan(request: URLRequest(url: url, timeoutInterval: timeout), size: size, grid: grid)
 	}
 
 	/// Whether there is a radar to fetch: it is turned on, offered where the device is, there is
@@ -96,12 +108,17 @@ enum SpatialWeatherRadar {
 
 	/// Fetches and decodes the image. Anything but an image the server is happy with is an
 	/// error, never a blank drape.
-	static func fetch(_ request: URLRequest, session: URLSession = .shared) async throws -> SpatialWeatherRadarImage {
-		let (data, response) = try await session.data(for: request)
+	static func fetch(_ plan: Plan, session: URLSession = .shared) async throws -> SpatialWeatherRadarImage {
+		let (data, response) = try await session.data(for: plan.request)
 		guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
 			throw URLError(.badServerResponse)
 		}
-		let decoded = await Task.detached(priority: .userInitiated) { decode(data).map(SpatialWeatherRadarImage.init) }.value
+		let decoded = await Task.detached(priority: .userInitiated) { () -> SpatialWeatherRadarImage? in
+			guard let image = decode(data) else { return nil }
+			guard let grid = plan.grid else { return SpatialWeatherRadarImage(image: image) }
+			return WeatherRadarSmoothing.smooth(image, grid: grid, width: Int(plan.size.width), height: Int(plan.size.height))
+				.map(SpatialWeatherRadarImage.init)
+		}.value
 		guard let decoded else { throw URLError(.cannotDecodeContentData) }
 		return decoded
 	}
