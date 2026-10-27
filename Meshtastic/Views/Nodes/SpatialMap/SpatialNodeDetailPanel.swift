@@ -33,90 +33,145 @@ struct SpatialNodeDetailPanel: View {
 	let onClose: () -> Void
 
 	var body: some View {
-		VStack(alignment: .leading, spacing: 8) {
-			HStack(spacing: 10) {
-				CircleText(text: node.shortName, color: Color(UIColor(hex: UInt32(truncatingIfNeeded: node.id))), circleSize: 36)
+		// Laid out like the cinema's model card. Its colors are fixed rather than left to the glass:
+		// over the bright map the glass goes light gray and the text loses its contrast.
+		VStack(alignment: .leading, spacing: 10) {
+			HStack(alignment: .top, spacing: 10) {
+				CircleText(text: node.shortName, color: Color(UIColor(hex: UInt32(truncatingIfNeeded: node.id))), circleSize: 48)
 				VStack(alignment: .leading, spacing: 2) {
 					Text(node.longName)
-						.font(.headline)
-						.lineLimit(1)
-					HStack(spacing: 4) {
-						Image(systemName: node.isOnline ? "checkmark.circle.fill" : "moon.circle.fill")
-							.foregroundStyle(node.isOnline ? .green : .orange)
-						Text(node.lastHeard?.lastHeard ?? String(localized: "Never", comment: "Spatial map: node has never been heard"))
-							.foregroundStyle(.secondary)
-					}
-					.font(.caption)
+						.font(.title3.weight(.semibold))
+					Text(subtitle)
+						.font(.subheadline)
+						.foregroundStyle(.white.opacity(0.6))
 				}
-				Spacer(minLength: 0)
+				Spacer(minLength: 8)
 				Button(action: onClose) {
 					Image(systemName: "xmark")
+						.frame(width: 44, height: 44)
 				}
-				.buttonStyle(.borderless)
+				.buttonStyle(CardButtonStyle(shape: .circle))
+				.accessibilityLabel(String(localized: "Close", comment: "Spatial map card: close the selected node's card"))
 			}
-			Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 4) {
-				if node.isConnectedRadio {
-					GridRow {
-						Image(systemName: "antenna.radiowaves.left.and.right")
-						Text("Connected radio", comment: "Spatial map: the selected node is the connected radio")
-					}
-				} else {
-					GridRow {
-						Image(systemName: "arrow.triangle.turn.up.right.diamond")
-						Text("\(node.hopsAway) hops away", comment: "Spatial map: hops from the connected radio")
-					}
-					GridRow {
-						Image(systemName: "dot.radiowaves.left.and.right")
-						HStack(spacing: 6) {
-							Text(verbatim: String(format: "SNR %.1f dB", node.snr))
-							Circle()
-								.fill(getSnrColor(snr: node.snr, preset: preset))
-								.frame(width: 8, height: 8)
-						}
-					}
-				}
-				if let altitude = node.altitude {
-					GridRow {
-						Image(systemName: "mountain.2")
-						Text(Measurement(value: altitude, unit: UnitLength.meters), format: .measurement(width: .abbreviated, usage: .asProvided))
-					}
-				}
-				GridRow {
-					Image(systemName: node.isPrecise ? "location" : "location.slash")
-					Text(verbatim: String(format: "%.5f, %.5f", node.coordinate.latitude, node.coordinate.longitude))
-						+ Text(node.isPrecise ? "" : " ~")
-				}
-				if node.viaMqtt {
-					GridRow {
-						Image(systemName: "dot.radiowaves.up.forward")
-						Text("via MQTT", comment: "Spatial map: node heard over MQTT")
-					}
-				}
-			}
-			.font(.caption)
-			.foregroundStyle(.secondary)
-			HStack {
+			readings
+			// One row: the card grows to fit the buttons rather than wrapping them.
+			HStack(spacing: 8) {
 				Button(action: onCenter) {
 					Label(String(localized: "Center", comment: "Spatial map: slide the map to put this node in the middle"), systemImage: "scope")
 				}
 				Button(action: onOpenNode) {
 					Label(String(localized: "Node Detail", comment: "Spatial map: open the node's detail screen"), systemImage: "arrow.up.forward.app")
 				}
+				if let onCoverage {
+					coverageMenu(onCoverage)
+				}
 			}
-			.font(.caption)
-			.buttonStyle(.bordered)
-			if let onCoverage {
-				coverageMenu(onCoverage)
-					.font(.caption)
-					.buttonStyle(.bordered)
-			}
+			.buttonStyle(CardButtonStyle(shape: .rounded))
+			.lineLimit(1)
+			.fixedSize()
 		}
-		.padding(12)
-		.frame(width: 270)
-		.glassBackgroundEffect()
+		.foregroundStyle(.white)
+		.padding(16)
+		.frame(minWidth: 300, alignment: .leading)
+		.fixedSize()
+		.background(Color(white: 0.11).opacity(0.92), in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+		.glassBackgroundEffect(in: RoundedRectangle(cornerRadius: 24, style: .continuous))
 	}
 
-	/// On its own row: the button row has no room for a third button.
+	/// What the node is: the connected radio, or its role.
+	private var subtitle: String {
+		if node.isConnectedRadio {
+			return String(localized: "Connected radio", comment: "Spatial map: the selected node is the connected radio")
+		}
+		return node.role?.name ?? String(localized: "Node", comment: "Spatial map card: subtitle when the node's role isn't known")
+	}
+
+	private var readings: some View {
+		Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 6) {
+			GridRow {
+				label(String(localized: "Heard", comment: "Spatial map card: label for when the node was last heard"), systemImage: "clock")
+				HStack(spacing: 6) {
+					Text(node.lastHeard?.formatted(.relative(presentation: .named, unitsStyle: .abbreviated)) ?? String(localized: "Never", comment: "Spatial map: node has never been heard"))
+					// A shape as well as a color, so it reads without telling green from orange.
+					Image(systemName: node.isOnline ? "checkmark.circle.fill" : "moon.circle.fill")
+						.foregroundStyle(node.isOnline ? .green : .orange)
+						.accessibilityLabel(node.isOnline
+							? String(localized: "Online", comment: "Spatial map card: VoiceOver label for the node's online status")
+							: String(localized: "Offline", comment: "Spatial map card: VoiceOver label for the node's offline status"))
+				}
+			}
+			if !node.isConnectedRadio {
+				GridRow {
+					label(String(localized: "Hops", comment: "Spatial map card: label for how many hops away the node is"), systemImage: "point.3.connected.trianglepath.dotted")
+					if node.viaMqtt {
+						Text("via MQTT", comment: "Spatial map: node heard over MQTT")
+					} else if node.hopsAway == 0 {
+						Text("Direct", comment: "Spatial map card: the node is heard directly, no hops")
+					} else {
+						Text(verbatim: "\(node.hopsAway)")
+					}
+				}
+				GridRow {
+					label(String(localized: "Signal", comment: "Spatial map card: label for the node's signal"), systemImage: "cellularbars")
+					HStack(spacing: 6) {
+						Text(verbatim: String(format: "%.1f dB SNR", node.snr))
+						Circle()
+							.fill(getSnrColor(snr: node.snr, preset: preset))
+							.frame(width: 8, height: 8)
+					}
+				}
+			}
+			if let altitude = node.altitude {
+				GridRow {
+					label(String(localized: "Altitude", comment: "Spatial map card: label for the node's altitude"), systemImage: "mountain.2")
+					Text(Measurement(value: altitude, unit: UnitLength.meters), format: .measurement(width: .abbreviated, usage: .asProvided))
+				}
+			}
+			GridRow {
+				label(String(localized: "Position", comment: "Spatial map card: label for the node's coordinates"), systemImage: node.isPrecise ? "location" : "location.slash")
+				Text(verbatim: String(format: "%.5f, %.5f", node.coordinate.latitude, node.coordinate.longitude))
+					+ Text(node.isPrecise ? "" : " ~")
+			}
+		}
+		.font(.subheadline)
+	}
+
+	private func label(_ title: String, systemImage: String) -> some View {
+		Label(title, systemImage: systemImage)
+			.foregroundStyle(.white.opacity(0.6))
+	}
+
+	/// The card's buttons, in fixed colors like the rest of it: a dark platter, white label, and at
+	/// least 44 points each way to hit.
+	private struct CardButtonStyle: ButtonStyle {
+		enum Shape {
+			case circle, rounded
+		}
+		let shape: Shape
+
+		func makeBody(configuration: Configuration) -> some View {
+			let label = configuration.label
+				.font(.subheadline.weight(.medium))
+				.foregroundStyle(.white)
+			Group {
+				switch shape {
+				case .circle:
+					label
+						.frame(minWidth: 44, minHeight: 44)
+						.background(Color(white: configuration.isPressed ? 0.35 : 0.24), in: Circle())
+						.contentShape(.hoverEffect, Circle())
+				case .rounded:
+					label
+						.padding(.horizontal, 12)
+						.frame(minWidth: 44, minHeight: 44)
+						.background(Color(white: configuration.isPressed ? 0.35 : 0.24), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+						.contentShape(.hoverEffect, RoundedRectangle(cornerRadius: 12, style: .continuous))
+				}
+			}
+			.hoverEffect()
+		}
+	}
+
 	private func coverageMenu(_ action: @escaping (SpatialCoverageAction) -> Void) -> some View {
 		Menu {
 			switch coverage {

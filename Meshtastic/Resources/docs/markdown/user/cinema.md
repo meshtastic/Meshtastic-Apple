@@ -16,6 +16,10 @@ The screen on the tent's front wall shows the app. The tabs above it are the app
 
 The [3D spatial map](map.md) opens in front of you when you enter, at its largest size. If you close it, **Open 3D Map** on the control panel brings it back.
 
+## Radio models
+
+On a node's details, the AR button on the radio's [3D model](nodes.md) stands the model on a clear stand in front of you, at real size. Pinch it to pick it up and turn it over; let go and it goes back on the stand. The card beside it shows the node's name, when it was last heard, its battery, signal and hops. Pinch the bar under the stand to move it, and the X on the card puts the model away. Outside the tent, the AR button places the model in the room around you instead.
+
 ## Boards
 
 - **Team Status**, on the whiteboard: your favorite nodes and the connected radio, with when each was last heard, its battery, signal, hops and distance from the radio. Tap a node to center the 3D map on it and open its details on the screen.

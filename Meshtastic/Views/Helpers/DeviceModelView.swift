@@ -16,11 +16,14 @@ import ARKit
 /// Shows the device image with a 3D badge; tapping either switches to the device's 3D model,
 /// turning slowly. The model is only fetched once asked for. If it can't be loaded, the badge goes
 /// away and the image stays. Once it's showing, "View in your space" stands it in the room at real
-/// size, and tapping it seven times swaps it for Chirpy.
+/// size (in the Vision Pro cinema, on a stand in the tent), and tapping it seven times swaps it for
+/// Chirpy.
 @available(iOS 18.0, macCatalyst 18.0, visionOS 1.0, *)
 struct DeviceModelView<Placeholder: View>: View {
 	let modelName: String
 	let deviceName: String
+	/// The node it's a model of, for the live readings beside it in the Vision Pro cinema.
+	var nodeNum: Int64?
 	@ViewBuilder let placeholder: () -> Placeholder
 
 	@Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -142,8 +145,12 @@ struct DeviceModelView<Placeholder: View>: View {
 		Button {
 			guard let modelURL else { return }
 			#if os(visionOS)
-			// A Quick Look window of its own, which can be set down anywhere in the room.
-			_ = PreviewApplication.open(urls: [modelURL])
+			if let showModel = CinemaScene.showModel {
+				showModel(CinemaModelRequest(modelName: shownModelName, deviceName: shownName, nodeNum: showsChirpy ? nil : nodeNum))
+			} else {
+				// A Quick Look window of its own, which can be set down anywhere in the room.
+				_ = PreviewApplication.open(urls: [modelURL])
+			}
 			#else
 			// Quick Look shows the model at its own size, which is the real one.
 			quickLookURL = modelURL
@@ -227,21 +234,24 @@ private struct DeviceModelRealityView: View {
 				#endif
 			}
 		}
-		#if !os(visionOS)
 		.background { backdrop }
-		#endif
 		.contentShape(Rectangle())
 		// Simultaneous so a drag that starts on the model can still scroll the list.
 		.simultaneousGesture(rotateGesture)
 		.simultaneousGesture(zoomGesture)
 	}
 
-	#if !os(visionOS)
-	/// Most radios are black, and vanish against a dark card. In dark mode they stand on a soft
-	/// gray, lighter in the middle like a studio backdrop.
+	/// Most radios are black, and vanish against a dark card. In dark mode, and always on Vision Pro
+	/// where the window's glass is dark, they stand on a soft gray, lighter in the middle like a
+	/// studio backdrop.
 	@ViewBuilder
 	private var backdrop: some View {
-		if colorScheme == .dark {
+		#if os(visionOS)
+		let dark = true
+		#else
+		let dark = colorScheme == .dark
+		#endif
+		if dark {
 			RadialGradient(
 				colors: [Color(white: 0.52), Color(white: 0.30)],
 				center: .center,
@@ -251,7 +261,6 @@ private struct DeviceModelRealityView: View {
 			.clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
 		}
 	}
-	#endif
 
 	/// Horizontal drags spin the model; mostly-vertical drags are left alone so the list still
 	/// scrolls.
@@ -292,6 +301,9 @@ final class DeviceModelStage {
 	var autoRotate = true
 
 	private var radius: Float = 1
+	/// Half the model's bounding box diagonal: the farthest any part gets from its center,
+	/// however it's turned.
+	private var sphereRadius: Float = 1
 	private var yaw: Float = -0.5
 	private var pitch: Float = DeviceModelStage.restingPitch
 	private var dragStartYaw: Float = 0
@@ -320,6 +332,7 @@ final class DeviceModelStage {
 		let extents = bounds.extents
 		let sweep = simd_length(SIMD2(extents.x, extents.z)) / 2
 		radius = max(sweep, extents.y / 2, 0.0001)
+		sphereRadius = max(simd_length(extents) / 2, radius)
 		model.position = -bounds.center
 		holder.addChild(model)
 		pivot.addChild(holder)
@@ -415,6 +428,11 @@ final class DeviceModelStage {
 
 	private func applyScale() {
 		holder.scale = .init(repeating: fitRadius / radius * zoomFactor)
+		#if os(visionOS)
+		// A window cuts off whatever is behind its surface, so the model stands just in front of
+		// it however it's turned or tilted.
+		pivot.position = [0, 0, fitRadius / radius * zoomFactor * sphereRadius]
+		#endif
 	}
 
 	private func applyOrientation() {

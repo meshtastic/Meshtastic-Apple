@@ -15,12 +15,14 @@ import MapKit
 /// Rendering the hardware section from this summary avoids retaining SwiftData user data in its
 /// view hierarchy while still allowing the parent query to observe later user updates.
 struct NodeInfoItemSummary: Equatable {
+	let nodeNum: Int64
 	let hwModel: String?
 	let hwModelId: Int64
 
 	@MainActor init?(user: UserEntity) {
 		guard user.modelContext != nil, !user.isDeleted else { return nil }
 
+		nodeNum = user.num
 		hwModel = user.hwModel
 		hwModelId = Int64(user.hwModelId)
 	}
@@ -147,7 +149,7 @@ private struct NodeInfoHardwareSection: View {
 	private var heroImage: some View {
 		let image = DeviceHardwareImage(hwId: Int32(summary.hwModelId))
 		if let deviceModelFile, #available(iOS 18.0, macCatalyst 18.0, *) {
-			DeviceModelView(modelName: deviceModelFile, deviceName: modelName) { image }
+			DeviceModelView(modelName: deviceModelFile, deviceName: modelName, nodeNum: summary.nodeNum) { image }
 		} else {
 			image
 		}
