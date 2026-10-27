@@ -102,7 +102,8 @@ struct SpatialRouteMenuTests {
 		let noReturn = insertRoute(id: 0x5EA7_1002, time: .now, hopsBack: -1, target: target, in: context)
 		try context.save()
 
-		let snapshot = try #require(SpatialRouteSource.snapshot(withReturn, originName: "Base"))
+		let withReturnHops = try #require(SpatialRouteSource.hops(of: withReturn, context: context))
+		let snapshot = try #require(SpatialRouteSource.snapshot(withReturn, hops: withReturnHops, originName: "Base"))
 		#expect(snapshot.originName == "Base")
 		#expect(snapshot.targetName == "Ridge")
 		#expect(snapshot.hopsTowards == 1)
@@ -110,7 +111,8 @@ struct SpatialRouteMenuTests {
 		#expect(snapshot.forward.map(\.num) == [Self.origin, Self.relay, Self.target])
 		#expect(snapshot.back.map(\.num) == [Self.target, Self.relay, Self.origin])
 
-		let oneWay = try #require(SpatialRouteSource.snapshot(noReturn, originName: nil))
+		let noReturnHops = try #require(SpatialRouteSource.hops(of: noReturn, context: context))
+		let oneWay = try #require(SpatialRouteSource.snapshot(noReturn, hops: noReturnHops, originName: nil))
 		#expect(oneWay.hopsBack == nil, "a negative stored count means no return path")
 		#expect(oneWay.originName == Self.origin.toHex(), "an unknown originator falls back to its hex id")
 	}
@@ -165,6 +167,42 @@ struct SpatialRouteMenuTests {
 		#expect(snapshot.originName == "Base")
 		#expect(snapshot.targetName == "Ridge")
 		#expect(snapshot.forward.map(\.num) == [Self.origin, Self.relay, Self.target])
+	}
+
+	/// Hearing a route again rebuilds its hops in another context. If that lands while the map's
+	/// reader is between fetching a route and reading its hops, the reader must read the new hops,
+	/// not trap on the deleted ones it was about to read through `route.hops`.
+	@Test func snapshotReadsHopsAnotherContextRebuilt() throws {
+		let context = ModelContext(sharedModelContainer)
+		defer { cleanUp(context) }
+		let target = insertNode(Self.target, name: "Ridge", in: context)
+		let route = insertRoute(id: 0x5EA7_4001, time: .now, hopsBack: 1, target: target, in: context)
+		try context.save()
+
+		// The reader has fetched the route, and its hops are there to read but not yet loaded.
+		let reader = ModelContext(sharedModelContainer)
+		let routeID = route.persistentModelID
+		let readerRoute = try #require(try reader.fetch(FetchDescriptor<TraceRouteEntity>(predicate: #Predicate { $0.persistentModelID == routeID })).first)
+		#expect(readerRoute.hops.count == 4)
+
+		// Ingest hears the route again: the old hops go, new ones take their place.
+		let ingest = ModelContext(sharedModelContainer)
+		let ingestRoute = try #require(try ingest.fetch(FetchDescriptor<TraceRouteEntity>(predicate: #Predicate { $0.persistentModelID == routeID })).first)
+		for hop in ingestRoute.hops {
+			ingest.delete(hop)
+		}
+		for (index, num) in [Self.origin, Self.target].enumerated() {
+			let hop = TraceRouteHopEntity()
+			hop.index = Int32(index)
+			hop.num = num
+			hop.traceRoute = ingestRoute
+			ingest.insert(hop)
+		}
+		try ingest.save()
+
+		let hops = try #require(SpatialRouteSource.hops(of: readerRoute, context: reader))
+		let snapshot = try #require(SpatialRouteSource.snapshot(readerRoute, hops: hops, originName: nil))
+		#expect(snapshot.forward.map(\.num) == [Self.origin, Self.target])
 	}
 
 	@Test func newestComesFirst() {

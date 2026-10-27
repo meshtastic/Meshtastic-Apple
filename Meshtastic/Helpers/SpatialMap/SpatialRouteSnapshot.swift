@@ -6,6 +6,7 @@
 //
 import CoreLocation
 import Foundation
+import OSLog
 import SwiftData
 
 /// A stored traceroute reduced to the two paths the spatial map draws and flies.
@@ -107,45 +108,65 @@ enum SpatialRouteSource {
 		// some routes drop out below. Fetch a page at a time until the menu is full or none are left.
 		let pageSize = routeLimit * 3
 		descriptor.fetchLimit = pageSize
-		var routes: [TraceRouteEntity] = []
-		var drawable: [TraceRouteEntity] = []
+		var fetched = 0
+		var drawable: [(route: TraceRouteEntity, hops: [TraceRouteHopEntity])] = []
 		while drawable.count < routeLimit {
-			descriptor.fetchOffset = routes.count
+			descriptor.fetchOffset = fetched
 			let page = (try? context.fetch(descriptor)) ?? []
-			routes += page
-			drawable += page.filter(isDrawable)
+			fetched += page.count
+			for route in page {
+				// A route whose hops won't read is left out, like one that can't be drawn.
+				guard let hops = hops(of: route, context: context) else { continue }
+				if isDrawable(route, hops: hops) { drawable.append((route, hops)) }
+			}
 			if page.count < pageSize { break }
 		}
-		let originNums = Array(Set(drawable.map(\.fromNum)))
+		let originNums = Array(Set(drawable.map(\.route.fromNum)))
 		let origins = (try? context.fetch(FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { originNums.contains($0.num) }))) ?? []
 		let names = Dictionary(origins.compactMap { node in node.user?.longName.map { (node.num, $0) } }, uniquingKeysWith: { first, _ in first })
-		return Array(newestFirst(drawable.compactMap { snapshot($0, originName: names[$0.fromNum]) }).prefix(routeLimit))
+		return Array(newestFirst(drawable.compactMap { snapshot($0.route, hops: $0.hops, originName: names[$0.route.fromNum]) }).prefix(routeLimit))
+	}
+
+	/// The route's hops as the store has them now. Not `route.hops`: hearing a route again rebuilds
+	/// its hops in the ingest context, which this one never hears about, and reading a hop it
+	/// deleted traps. A fetch only returns hops that are still there, with their values loaded.
+	/// Nil if the fetch fails, which is logged; an empty list is a route with no hops.
+	static func hops(of route: TraceRouteEntity, context: ModelContext) -> [TraceRouteHopEntity]? {
+		let routeID = route.persistentModelID
+		let descriptor = FetchDescriptor<TraceRouteHopEntity>(predicate: #Predicate { $0.traceRoute?.persistentModelID == routeID })
+		do {
+			return try context.fetch(descriptor)
+		} catch {
+			Logger.data.error("🗺️ [Spatial] Couldn't read the hops of trace route \(route.id, privacy: .public): \(error.localizedDescription, privacy: .public)")
+			return nil
+		}
 	}
 
 	/// Whether at least two nodes on the route's forward path have a position, the least the map
 	/// can draw. Cheaper than building the snapshot.
-	static func isDrawable(_ route: TraceRouteEntity) -> Bool {
+	static func isDrawable(_ route: TraceRouteEntity, hops: [TraceRouteHopEntity]) -> Bool {
 		let byNum = route.nodePositionsByNum
-		return route.hops.lazy.filter { !$0.back && byNum[$0.num]?.coordinate != nil }.prefix(2).count == 2
+		return hops.lazy.filter { !$0.back && byNum[$0.num]?.coordinate != nil }.prefix(2).count == 2
 	}
 
 	/// One stored route as the map draws it, or nil when fewer than two of its nodes have a position.
-	static func snapshot(_ route: TraceRouteEntity, originName: String?) -> SpatialRouteSnapshot? {
+	/// `hops` are the route's hops from `hops(of:context:)`.
+	static func snapshot(_ route: TraceRouteEntity, hops: [TraceRouteHopEntity], originName: String?) -> SpatialRouteSnapshot? {
 		let byNum = route.nodePositionsByNum
 		func point(_ num: Int64, snr: Float) -> Point? {
 			guard let position = byNum[num], let coordinate = position.coordinate else { return nil }
 			return Point(num: num, coordinate: coordinate, altitude: Double(position.altitude), snr: snr)
 		}
-		let forwardHops = route.hops.filter { !$0.back }.sorted { $0.index < $1.index }
+		let forwardHops = hops.filter { !$0.back }.sorted { $0.index < $1.index }
 		let forward = forwardHops.compactMap { point($0.num, snr: $0.snr) }
-		let backHops = route.hops.filter { $0.back }.sorted { $0.index < $1.index }
+		let backHops = hops.filter { $0.back }.sorted { $0.index < $1.index }
 		var back: [Point] = []
 		if let last = backHops.last {
 			back = ([point(route.toNum, snr: 0)] + backHops.map { point($0.num, snr: $0.snr) } + [point(route.fromNum, snr: last.snr)]).compactMap { $0 }
 		}
 		guard forward.count >= 2 else { return nil }
 		// The preset only grades signal quality, which the layout doesn't use.
-		let legs = TraceRouteLegs(route: route, preset: .longFast, lookup: { _ in nil })
+		let legs = TraceRouteLegs(route: route, hops: hops, preset: .longFast, lookup: { _ in nil })
 		let layout = SpatialRouteLayout(legs: legs, positions: byNum.compactMapValues { $0.coordinate })
 		return SpatialRouteSnapshot(
 			id: route.id, fromNum: route.fromNum, toNum: route.toNum,

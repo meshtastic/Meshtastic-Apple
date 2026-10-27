@@ -134,8 +134,14 @@ extension TraceRouteLegs {
 
 	/// Builds the legs for a stored trace route.
 	init(route: TraceRouteEntity, preset: ModemPresets, lookup: (Int64) -> NodeDetails?) {
-		let forwardHops = route.hops.filter { !$0.back }.sorted { $0.index < $1.index }
-		let backHops = route.hops.filter { $0.back }.sorted { $0.index < $1.index }
+		self.init(route: route, hops: route.hops, preset: preset, lookup: lookup)
+	}
+
+	/// Builds the legs for a stored trace route from hops read separately, for a reader that
+	/// fetches them rather than following `route.hops`.
+	init(route: TraceRouteEntity, hops: [TraceRouteHopEntity], preset: ModemPresets, lookup: (Int64) -> NodeDetails?) {
+		let forwardHops = hops.filter { !$0.back }.sorted { $0.index < $1.index }
+		let backHops = hops.filter { $0.back }.sorted { $0.index < $1.index }
 		// The originator's forward entry holds the SNR it heard the return path at.
 		let originBackSnr = forwardHops.first?.snr ?? Self.unknownSnr
 		// The forward hops carry both endpoints, which covers records stored without from/to nums.
