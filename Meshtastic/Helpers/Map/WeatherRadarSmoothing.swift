@@ -37,15 +37,15 @@ struct WeatherRadarCellGrid: Equatable {
 	init?(bounds: CGRect, outputWidth: Int, outputHeight: Int) {
 		guard bounds.width > 0, bounds.height > 0 else { return nil }
 		// Cells are square in degrees, so in Mercator they're taller by 1 / cos(latitude).
-		let latitude = atan(sinh(bounds.midY / 6_378_137))
-		let cellHeight = Self.cellMeters / max(cos(latitude), 0.01)
-		let columns = max(1, Int((bounds.width / Self.cellMeters).rounded()))
-		let rows = max(1, Int((bounds.height / cellHeight).rounded()))
+		let latitude: Double = atan(sinh(Double(bounds.midY) / 6_378_137))
+		let cellHeight: Double = Self.cellMeters / max(cos(latitude), 0.01)
+		let columns = max(1, Int((Double(bounds.width) / Self.cellMeters).rounded()))
+		let rows = max(1, Int((Double(bounds.height) / cellHeight).rounded()))
 		guard columns < outputWidth, rows < outputHeight else { return nil }
 		self.columns = columns
 		self.rows = rows
-		let dx = bounds.width / Double(columns), dy = bounds.height / Double(rows)
-		let padding = Double(Self.padding)
+		let padding = CGFloat(Self.padding)
+		let dx = bounds.width / CGFloat(columns), dy = bounds.height / CGFloat(rows)
 		paddedBounds = bounds.insetBy(dx: -dx * padding, dy: -dy * padding)
 	}
 }
