@@ -10,6 +10,8 @@ The Map tab shows all nodes that have shared a position, overlaid on an Apple Ma
 
 The map **reopens where you last left it** — your last-viewed area and zoom are remembered between launches, so you don't have to pan back after every relaunch. On a fresh install (before you've moved the map) it frames your current location, then your connected radio, then the center of your nodes.
 
+The map's buttons sit in the bottom corners, like in Apple Maps. On the left, **3D** tilts the map and **2D** flattens it again, the location button follows your position, and the compass appears once the map is turned. The 3D button is hidden when the map is zoomed out too far to tilt. On the right, one bar holds the coverage estimate, filter, legend and map options buttons.
+
 ## Node Pins
 
 Each node that has reported a GPS position appears as a colored circle pin on the map. The **green solid line** shows a directly connected node; **orange dashed lines** show nodes reached via the mesh. A purple star marks a waypoint. Tap a pin to see the node name, last heard time, signal info, and a shortcut to send a direct message.
@@ -22,7 +24,7 @@ When several nodes report the *same* (or nearly the same) location — for examp
 
 ## Filtering Nodes on the Map
 
-Tap the **filter button** (funnel icon, `line.3.horizontal.decrease.circle`) in the bottom-right toolbar to open the Map Filters sheet. When any filter is active, the icon appears **filled** to indicate filtering is in effect.
+Tap the **filter button** (funnel icon, `line.3.horizontal.decrease.circle`) in the button bar on the right to open the Map Filters sheet. When any filter is active, the icon appears **filled** to indicate filtering is in effect.
 
 | Filter | Description |
 |--------|-------------|
@@ -50,7 +52,7 @@ Tap the layer icon (top-right) to switch between:
 
 ## Map Options
 
-Tap the **info button** (`info.circle`) in the bottom-right toolbar to open the Map Options sheet. Alongside the base layer picker it offers:
+Tap the **info button** (`info.circle`) in the button bar on the right to open the Map Options sheet. Alongside the base layer picker it offers:
 
 | Option | Description |
 |--------|-------------|
@@ -113,7 +115,7 @@ Estimate the radio coverage of a transmitter site without leaving the app. The a
 
 You can open the estimate form two ways:
 
-- **From the map** — tap the coverage button (`cellularbars`) in the bottom-right toolbar. The form is prefilled from the connected radio and located at the current map center.
+- **From the map** — tap the coverage button (radio tower) in the button bar on the right. The form is prefilled from the connected radio and located at the current map center.
 - **From a node** — open a node with a known position, scroll to the **Logs** section, and tap **Estimate Coverage**. The map recenters on that node and opens the form prefilled from it.
 
 ### The estimate form
@@ -207,7 +209,7 @@ A trace route can be drawn on the map to show the path a packet took through the
 
 Tap **▶** in the route banner for a guided 3D flythrough over satellite imagery: it flies the outbound path, lands at the target, then flies the return path and eases back to the map. Tap the **speed control** to cycle the pace from 1× up to 5× (1×, 1.5×, 2×, 2.5×, 3×, 4×, 5×) — adjustable mid-flight — and **■** to stop.
 
-Tap the **legend** button (map icon, bottom-right) for a key to the colors and markers.
+Tap the **legend** button (map icon, in the button bar on the right) for a key to the colors and markers.
 
 ### On the spatial map (Apple Vision Pro)
 

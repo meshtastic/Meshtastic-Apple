@@ -310,7 +310,7 @@ struct MeshMapMK: View {
 			showsTraffic: showTraffic,
 			showsPointsOfInterest: showPointsOfInterest,
 			showsUserLocation: showUserLocation && isMapVisible,
-			controlsBottomInset: 72   // lift compass + pitch toggle above the bottom button bar
+			controlsBottomInset: 32   // clear of the map's Legal and Maps marks in the bottom-leading corner
 		)
 	}
 
@@ -617,9 +617,8 @@ struct MeshMapMK: View {
 						.presentationDragIndicator(.visible)
 						#endif
 				}
-				.safeAreaInset(edge: .bottom, alignment: .trailing) {
-					HStack(spacing: 12) {
-						Spacer()
+				.overlay(alignment: .bottomTrailing) {
+					MapControlBar {
 						#if os(visionOS)
 						if supportsMultipleWindows {
 							Button(action: {
@@ -629,7 +628,6 @@ struct MeshMapMK: View {
 							}
 							.accessibilityLabel(String(localized: "Open 3D map", comment: "VoiceOver label for the button that opens the spatial map volume"))
 							.accessibilityHint(String(localized: "Shows the mesh on a terrain model in a volume.", comment: "VoiceOver hint for the button that opens the spatial map volume"))
-							.glassButtonStyle()
 						}
 						#endif
 						Button(action: {
@@ -639,7 +637,6 @@ struct MeshMapMK: View {
 						}
 						.accessibilityLabel(String(localized: "Estimate coverage", comment: "VoiceOver label for the coverage estimate button"))
 						.accessibilityHint(String(localized: "Runs a Site Planner coverage estimate and adds it to the map.", comment: "VoiceOver hint for the coverage estimate button"))
-						.glassButtonStyle()
 						Button(action: {
 							withAnimation {
 								editingFilters = !editingFilters
@@ -649,7 +646,6 @@ struct MeshMapMK: View {
 						}
 						.accessibilityLabel(editingFilters ? String(localized: "Hide node filters", comment: "VoiceOver label to hide map node filters") : String(localized: "Show node filters", comment: "VoiceOver label to show map node filters"))
 						.accessibilityHint(editingFilters ? String(localized: "Hides the node filter options.", comment: "VoiceOver hint to hide map node filters") : String(localized: "Shows the node filter options.", comment: "VoiceOver hint to show map node filters"))
-						.glassButtonStyle()
 						Button(action: {
 							withAnimation {
 								showLegend = !showLegend
@@ -659,7 +655,6 @@ struct MeshMapMK: View {
 						}
 						.accessibilityLabel(showLegend ? String(localized: "Hide map legend", comment: "VoiceOver label to hide the map legend") : String(localized: "Show map legend", comment: "VoiceOver label to show the map legend"))
 						.accessibilityHint(showLegend ? String(localized: "Hides the map legend.", comment: "VoiceOver hint to hide the map legend") : String(localized: "Shows the map legend.", comment: "VoiceOver hint to show the map legend"))
-						.glassButtonStyle()
 						Button(action: {
 							withAnimation {
 								editingSettings = !editingSettings
@@ -669,11 +664,10 @@ struct MeshMapMK: View {
 						}
 						.accessibilityLabel(editingSettings ? String(localized: "Hide map settings", comment: "VoiceOver label to hide the map settings panel") : String(localized: "Show map settings", comment: "VoiceOver label to show the map settings panel"))
 						.accessibilityHint(editingSettings ? String(localized: "Hides the map settings panel.", comment: "VoiceOver hint to hide the map settings panel") : String(localized: "Shows the map settings panel.", comment: "VoiceOver hint to show the map settings panel"))
-						.glassButtonStyle()
 					}
-					.controlSize(.regular)
-					.padding(.horizontal, 12)
-					.padding(.vertical, 8)
+					.padding(.trailing, 12)
+					// Level with the round buttons on the leading side.
+					.padding(.bottom, 32)
 				}
 	}
 

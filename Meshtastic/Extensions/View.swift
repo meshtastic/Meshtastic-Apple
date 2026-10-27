@@ -72,7 +72,8 @@ extension View {
 	@ViewBuilder
 	private func glassButtonStyleOS26() -> some View {
 		#if os(visionOS)
-		self.buttonStyle(.bordered)
+		// White like the tab bar's icons; a bordered button draws its label in the accent color.
+		self.buttonStyle(.bordered).tint(.white)
 		#else
 		self.buttonStyle(.glass)
 		#endif
