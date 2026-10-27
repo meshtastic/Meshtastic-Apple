@@ -225,6 +225,68 @@ final class SpatialSceneController {
 		wheel.update(diskRadius: fit.diskRadius, bottom: -skirtDepth * fit.scale, top: top)
 	}
 
+	// MARK: Light
+
+	/// The map's own light, for the cinema. The terrain, wheel and towers are lit, and in a room
+	/// the system lights them from the room the cameras see; in the cinema all it has is the dim
+	/// tent, so the map looks in the shade. Off in a room, where the room's light is the point.
+	private(set) var usesOwnLight = false
+	private lazy var ownLight: Entity = {
+		let light = Entity()
+		light.name = "mapLight"
+		if let environment = Self.ownLightEnvironment {
+			light.components.set(ImageBasedLightComponent(source: .single(environment), intensityExponent: 0.5))
+		}
+		return light
+	}()
+
+	func setOwnLight(_ on: Bool) {
+		guard on != usesOwnLight else { return }
+		usesOwnLight = on
+		if on {
+			root.addChild(ownLight)
+		} else {
+			ownLight.removeFromParent()
+		}
+		applyLight(to: model)
+	}
+
+	/// Gives every lit part under `entity` the map's own light, or takes it away.
+	private func applyLight(to entity: Entity) {
+		let receiver = ImageBasedLightReceiverComponent(imageBasedLight: ownLight)
+		var pending = [entity]
+		while let next = pending.popLast() {
+			if next.components.has(ModelComponent.self) {
+				if usesOwnLight {
+					next.components.set(receiver)
+				} else {
+					next.components.remove(ImageBasedLightReceiverComponent.self)
+				}
+			}
+			pending += next.children
+		}
+	}
+
+	/// A plain daylit room: bright overhead, softer around the walls, darker below.
+	private static let ownLightEnvironment: EnvironmentResource? = {
+		let width = 64, height = 32
+		var pixels = [UInt8](repeating: 0, count: width * height)
+		for row in 0..<height {
+			let up = 1 - Double(row) / Double(height - 1)
+			let level = 0.25 + 0.75 * pow(up, 1.2)
+			for column in 0..<width {
+				pixels[row * width + column] = UInt8(level * 255)
+			}
+		}
+		guard let provider = CGDataProvider(data: Data(pixels) as CFData),
+			let image = CGImage(
+				width: width, height: height, bitsPerComponent: 8, bitsPerPixel: 8, bytesPerRow: width,
+				space: CGColorSpaceCreateDeviceGray(), bitmapInfo: CGBitmapInfo(rawValue: 0),
+				provider: provider, decode: nil, shouldInterpolate: true, intent: .defaultIntent
+			) else { return nil }
+		return try? EnvironmentResource(equirectangular: image)
+	}()
+
 	// MARK: Placement and terrain
 
 	func apply(placement: SpatialPlacement?) {
@@ -238,7 +300,10 @@ final class SpatialSceneController {
 	func apply(terrainEntity entity: ModelEntity?, building: Bool) {
 		if entity !== terrainEntity {
 			terrainEntity?.removeFromParent()
-			if let entity { terrainAnchor.addChild(entity) }
+			if let entity {
+				terrainAnchor.addChild(entity)
+				if usesOwnLight { applyLight(to: entity) }
+			}
 			terrainEntity = entity
 		}
 		// While a new circle builds, the old terrain stays up with the zoom previewed on it.
@@ -595,6 +660,7 @@ extension SpatialSceneController {
 		halo.components.set(OpacityComponent(opacity: 0))
 		holder.addChild(target)
 		holder.addChild(halo)
+		if usesOwnLight { applyLight(to: holder) }
 		let result = Pin(holder: holder, target: target, colored: base, tower: Tower(height: height, beacon: beacon), halo: halo, baseGlow: 0)
 		style(result, for: node)
 		return result
