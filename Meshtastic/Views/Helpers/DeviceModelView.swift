@@ -227,21 +227,24 @@ private struct DeviceModelRealityView: View {
 				#endif
 			}
 		}
-		#if !os(visionOS)
 		.background { backdrop }
-		#endif
 		.contentShape(Rectangle())
 		// Simultaneous so a drag that starts on the model can still scroll the list.
 		.simultaneousGesture(rotateGesture)
 		.simultaneousGesture(zoomGesture)
 	}
 
-	#if !os(visionOS)
-	/// Most radios are black, and vanish against a dark card. In dark mode they stand on a soft
-	/// gray, lighter in the middle like a studio backdrop.
+	/// Most radios are black, and vanish against a dark card. In dark mode, and always on Vision Pro
+	/// where the window's glass is dark, they stand on a soft gray, lighter in the middle like a
+	/// studio backdrop.
 	@ViewBuilder
 	private var backdrop: some View {
-		if colorScheme == .dark {
+		#if os(visionOS)
+		let dark = true
+		#else
+		let dark = colorScheme == .dark
+		#endif
+		if dark {
 			RadialGradient(
 				colors: [Color(white: 0.52), Color(white: 0.30)],
 				center: .center,
@@ -251,7 +254,6 @@ private struct DeviceModelRealityView: View {
 			.clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
 		}
 	}
-	#endif
 
 	/// Horizontal drags spin the model; mostly-vertical drags are left alone so the list still
 	/// scrolls.
@@ -415,6 +417,11 @@ final class DeviceModelStage {
 
 	private func applyScale() {
 		holder.scale = .init(repeating: fitRadius / radius * zoomFactor)
+		#if os(visionOS)
+		// A window cuts off whatever is behind its surface, so the model stands just in front of
+		// it however it's turned. The tilt can lean a tall model a little past its radius.
+		pivot.position = [0, 0, fitRadius * zoomFactor * 1.1]
+		#endif
 	}
 
 	private func applyOrientation() {
