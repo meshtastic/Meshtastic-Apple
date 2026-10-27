@@ -170,6 +170,7 @@ final class SpatialSceneController {
 		terrainAnchor.addChild(trafficContainer)
 		selectionContainer.addChild(ring)
 		selectionContainer.addChild(tether)
+		root.addChild(ownLight)
 	}
 
 	static func transparentMaterial(_ color: UIColor, opacity: Float) -> UnlitMaterial {
@@ -223,7 +224,16 @@ final class SpatialSceneController {
 		let top = min(rimTop * fit.scale + SpatialWheelLayout.bezelLift, SpatialWheelLayout.maximumTop)
 		wheel.root.scale = SIMD3(repeating: 1 / fit.scale)
 		wheel.update(diskRadius: fit.diskRadius, bottom: -skirtDepth * fit.scale, top: top)
+		// The wheel makes its rim, spokes and knobs here, once it knows its size.
+		applyLight(to: wheel.root)
 	}
+
+	// MARK: Light
+
+	/// The map's own light for the terrain, wheel and towers. Left to the system, they take the
+	/// light of whatever is around: a dim room, or in the cinema the dusk tent, leaves the map in
+	/// the shade.
+	private let ownLight = SpatialMapLight.make()
 
 	// MARK: Placement and terrain
 
@@ -238,7 +248,10 @@ final class SpatialSceneController {
 	func apply(terrainEntity entity: ModelEntity?, building: Bool) {
 		if entity !== terrainEntity {
 			terrainEntity?.removeFromParent()
-			if let entity { terrainAnchor.addChild(entity) }
+			if let entity {
+				terrainAnchor.addChild(entity)
+				applyLight(to: entity)
+			}
 			terrainEntity = entity
 		}
 		// While a new circle builds, the old terrain stays up with the zoom previewed on it.
@@ -595,6 +608,7 @@ extension SpatialSceneController {
 		halo.components.set(OpacityComponent(opacity: 0))
 		holder.addChild(target)
 		holder.addChild(halo)
+		applyLight(to: holder)
 		let result = Pin(holder: holder, target: target, colored: base, tower: Tower(height: height, beacon: beacon), halo: halo, baseGlow: 0)
 		style(result, for: node)
 		return result
@@ -743,5 +757,54 @@ extension SpatialSceneController {
 		}
 		weatherRadarContainer.isEnabled = weatherRadarEntity != nil && terrainEntity != nil && revision != nil && revision == placement?.revision
 	}
+}
+extension SpatialSceneController {
+	fileprivate func applyLight(to entity: Entity) {
+		SpatialMapLight.apply(ownLight, to: entity)
+	}
+}
+
+/// A plain daylit room's light for the map: bright overhead, softer around the walls, darker below.
+@MainActor
+enum SpatialMapLight {
+	static func make() -> Entity {
+		let light = Entity()
+		light.name = "mapLight"
+		if let environment {
+			light.components.set(ImageBasedLightComponent(source: .single(environment), intensityExponent: 0.5))
+		}
+		return light
+	}
+
+	/// Gives every lit part under `entity` the light.
+	static func apply(_ light: Entity, to entity: Entity) {
+		let receiver = ImageBasedLightReceiverComponent(imageBasedLight: light)
+		var pending = [entity]
+		while let next = pending.popLast() {
+			if next.components.has(ModelComponent.self) {
+				next.components.set(receiver)
+			}
+			pending += next.children
+		}
+	}
+
+	private static let environment: EnvironmentResource? = {
+		let width = 64, height = 32
+		var pixels = [UInt8](repeating: 0, count: width * height)
+		for row in 0..<height {
+			let up = 1 - Double(row) / Double(height - 1)
+			let level = 0.25 + 0.75 * pow(up, 1.2)
+			for column in 0..<width {
+				pixels[row * width + column] = UInt8(level * 255)
+			}
+		}
+		guard let provider = CGDataProvider(data: Data(pixels) as CFData),
+			let image = CGImage(
+				width: width, height: height, bitsPerComponent: 8, bitsPerPixel: 8, bytesPerRow: width,
+				space: CGColorSpaceCreateDeviceGray(), bitmapInfo: CGBitmapInfo(rawValue: 0),
+				provider: provider, decode: nil, shouldInterpolate: true, intent: .defaultIntent
+			) else { return nil }
+		return try? EnvironmentResource(equirectangular: image)
+	}()
 }
 #endif
