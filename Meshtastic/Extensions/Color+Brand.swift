@@ -32,7 +32,7 @@ extension Color {
 	static let primary = Color("Colors/MeshtasticPrimary")
 
 	/// Branded secondary — shadows SwiftUI `Color.secondary`
-	/// Neutral 300 #B8BAC8 light / Neutral 600 #555668 dark
+	/// Neutral 600 #555668 light / Neutral 300 #B8BAC8 dark, the standard's secondary text
 	static let secondary = Color("Colors/MeshtasticSecondary")
 
 	/// On-surface variant for descriptive/secondary text (timestamps, previews)
