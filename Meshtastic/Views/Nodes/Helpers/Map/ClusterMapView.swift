@@ -470,6 +470,9 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		/// Native follow/center control; hidden when `showsUserLocation` is off so it isn't a dead button.
 		/// The tracking button's glass circle; hidden while the user-location dot is off.
 		private weak var userTrackingCircle: UIView?
+		/// The 2D/3D button and its circle, shown only where the map can tilt.
+		private weak var pitchButton: UIButton?
+		private weak var pitchCircle: UIView?
 		/// id → standalone decoration annotation (route markers, waypoints) currently on the map.
 		private var decorationsByID: [AnyHashable: DecorationAnnotation] = [:]
 
@@ -541,6 +544,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 			// The tracking button is only meaningful when the user-location dot is shown.
 			userTrackingCircle?.isHidden = !config.showsUserLocation
 			mapView.showsScale = config.showsScale
+			updatePitchControl(for: mapView)
 			// A custom compass + pitch toggle are installed in `installControls` (bottom-leading); the
 			// built-in top-right compass is disabled there.
 			mapView.isPitchEnabled = config.showsPitchControl
@@ -561,9 +565,11 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 			compass.compassVisibility = .adaptive
 
 			let pitch = UIButton(type: .system)
-			pitch.setImage(UIImage(systemName: "view.3d") ?? UIImage(systemName: "cube"), for: .normal)
 			pitch.tintColor = .label
 			pitch.addTarget(self, action: #selector(togglePitch), for: .touchUpInside)
+			let pitchCircle = Self.controlCircle(around: pitch)
+			pitchButton = pitch
+			self.pitchCircle = pitchCircle
 
 			// Native follow/center control — MapKit owns the user-location camera behavior. Hidden
 			// while the user-location dot is off (see applyConfiguration).
@@ -573,7 +579,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 			trackingCircle.isHidden = !(appliedConfiguration?.showsUserLocation ?? true)
 			userTrackingCircle = trackingCircle
 
-			let stack = UIStackView(arrangedSubviews: [Self.controlCircle(around: pitch), trackingCircle, compass])
+			let stack = UIStackView(arrangedSubviews: [pitchCircle, trackingCircle, compass])
 			stack.axis = .vertical
 			stack.spacing = 10
 			stack.alignment = .center
@@ -586,6 +592,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 			])
 			controlsStack = stack
 			controlsBottomConstraint = bottom
+			updatePitchControl(for: mapView)
 		}
 
 		/// A round button on the map's leading side, like the Maps app's: Liquid Glass where the OS
@@ -629,6 +636,25 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		}
 
 		/// Toggle the camera between flat (2D) and pitched (3D), like the old SwiftUI `MapPitchToggle`.
+		/// Past this camera distance the standard map won't tilt (about 9,500 km, measured).
+		static var pitchMaxDistance: CLLocationDistance { 9_000_000 }
+
+		/// Shows the 2D/3D button only where the map can tilt, labeled with what a tap switches to,
+		/// like the Maps app. Satellite and hybrid are drawn with flat elevation, which never tilts.
+		func updatePitchControl(for mapView: MKMapView) {
+			guard let pitchButton, let pitchCircle else { return }
+			let layer = appliedConfiguration?.layer ?? .standard
+			let canTilt = (layer == .standard || layer == .offline)
+				&& (appliedConfiguration?.showsPitchControl ?? true)
+				&& mapView.camera.centerCoordinateDistance < Self.pitchMaxDistance
+			pitchCircle.isHidden = !canTilt
+			let pitched = mapView.camera.pitch > 1
+			pitchButton.setImage(UIImage(systemName: pitched ? "view.2d" : "view.3d"), for: .normal)
+			pitchButton.accessibilityLabel = pitched
+				? String(localized: "Show the map in 2D", comment: "VoiceOver label for the map button that flattens a tilted map")
+				: String(localized: "Show the map in 3D", comment: "VoiceOver label for the map button that tilts the map")
+		}
+
 		@objc func togglePitch() {
 			guard let mapView = hostMapView else { return }
 			let current = mapView.camera
@@ -993,6 +1019,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		// MARK: Camera write-back (user gestures → region binding), loop-guarded
 
 		func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
+			updatePitchControl(for: mapView)
 			// Ignore the callback caused by our own external write (guard #1).
 			guard !isApplyingExternalRegion else {
 				isApplyingExternalRegion = false
