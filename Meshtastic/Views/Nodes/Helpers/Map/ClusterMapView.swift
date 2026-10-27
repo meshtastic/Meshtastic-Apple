@@ -531,12 +531,13 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 					standard.showsTraffic = config.showsTraffic
 					mapView.preferredConfiguration = standard
 				case .hybrid:
-					let hybrid = MKHybridMapConfiguration(elevationStyle: .flat)
+					// Realistic elevation, like the Maps app: imagery only tilts with it.
+					let hybrid = MKHybridMapConfiguration(elevationStyle: .realistic)
 					hybrid.pointOfInterestFilter = poi
 					hybrid.showsTraffic = config.showsTraffic
 					mapView.preferredConfiguration = hybrid
 				case .satellite:
-					mapView.preferredConfiguration = MKImageryMapConfiguration(elevationStyle: .flat)
+					mapView.preferredConfiguration = MKImageryMapConfiguration(elevationStyle: .realistic)
 				}
 			}
 
@@ -636,16 +637,14 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		}
 
 		/// Toggle the camera between flat (2D) and pitched (3D), like the old SwiftUI `MapPitchToggle`.
-		/// Past this camera distance the standard map won't tilt (about 9,500 km, measured).
+		/// Past this camera distance the map won't tilt (about 9,500 km, measured).
 		static var pitchMaxDistance: CLLocationDistance { 9_000_000 }
 
 		/// Shows the 2D/3D button only where the map can tilt, labeled with what a tap switches to,
-		/// like the Maps app. Satellite and hybrid are drawn with flat elevation, which never tilts.
+		/// like the Maps app.
 		func updatePitchControl(for mapView: MKMapView) {
 			guard let pitchButton, let pitchCircle else { return }
-			let layer = appliedConfiguration?.layer ?? .standard
-			let canTilt = (layer == .standard || layer == .offline)
-				&& (appliedConfiguration?.showsPitchControl ?? true)
+			let canTilt = (appliedConfiguration?.showsPitchControl ?? true)
 				&& mapView.camera.centerCoordinateDistance < Self.pitchMaxDistance
 			pitchCircle.isHidden = !canTilt
 			let pitched = mapView.camera.pitch > 1
