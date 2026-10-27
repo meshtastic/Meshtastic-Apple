@@ -151,10 +151,6 @@ struct SpatialMapWindow: View {
 				close()
 			}
 		}
-		// In the cinema there's no room light for the terrain to pick up.
-		.onChange(of: appState.cinemaOpen, initial: true) { _, open in
-			scene.setOwnLight(open)
-		}
 		// Backup for the cinema closing without bringing an app window back, so the volume isn't
 		// left on its own. After the cinema's own reopen has had a moment, and not while that one
 		// is still on its way, so they don't open two.

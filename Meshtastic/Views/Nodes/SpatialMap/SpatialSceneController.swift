@@ -170,6 +170,7 @@ final class SpatialSceneController {
 		terrainAnchor.addChild(trafficContainer)
 		selectionContainer.addChild(ring)
 		selectionContainer.addChild(tether)
+		root.addChild(ownLight)
 	}
 
 	static func transparentMaterial(_ color: UIColor, opacity: Float) -> UnlitMaterial {
@@ -223,15 +224,16 @@ final class SpatialSceneController {
 		let top = min(rimTop * fit.scale + SpatialWheelLayout.bezelLift, SpatialWheelLayout.maximumTop)
 		wheel.root.scale = SIMD3(repeating: 1 / fit.scale)
 		wheel.update(diskRadius: fit.diskRadius, bottom: -skirtDepth * fit.scale, top: top)
+		// The wheel makes its rim, spokes and knobs here, once it knows its size.
+		applyLight(to: wheel.root)
 	}
 
 	// MARK: Light
 
-	/// The map's own light, for the cinema. The terrain, wheel and towers are lit, and in a room
-	/// the system lights them from the room the cameras see; in the cinema all it has is the dim
-	/// tent, so the map looks in the shade. Off in a room, where the room's light is the point.
-	private(set) var usesOwnLight = false
-	private lazy var ownLight = SpatialMapLight.make()
+	/// The map's own light for the terrain, wheel and towers. Left to the system, they take the
+	/// light of whatever is around: a dim room, or in the cinema the dusk tent, leaves the map in
+	/// the shade.
+	private let ownLight = SpatialMapLight.make()
 
 	// MARK: Placement and terrain
 
@@ -248,7 +250,7 @@ final class SpatialSceneController {
 			terrainEntity?.removeFromParent()
 			if let entity {
 				terrainAnchor.addChild(entity)
-				if usesOwnLight { applyLight(to: entity) }
+				applyLight(to: entity)
 			}
 			terrainEntity = entity
 		}
@@ -606,7 +608,7 @@ extension SpatialSceneController {
 		halo.components.set(OpacityComponent(opacity: 0))
 		holder.addChild(target)
 		holder.addChild(halo)
-		if usesOwnLight { applyLight(to: holder) }
+		applyLight(to: holder)
 		let result = Pin(holder: holder, target: target, colored: base, tower: Tower(height: height, beacon: beacon), halo: halo, baseGlow: 0)
 		style(result, for: node)
 		return result
@@ -757,19 +759,8 @@ extension SpatialSceneController {
 	}
 }
 extension SpatialSceneController {
-	func setOwnLight(_ on: Bool) {
-		guard on != usesOwnLight else { return }
-		usesOwnLight = on
-		if on {
-			root.addChild(ownLight)
-		} else {
-			ownLight.removeFromParent()
-		}
-		applyLight(to: model)
-	}
-
 	fileprivate func applyLight(to entity: Entity) {
-		SpatialMapLight.apply(usesOwnLight ? ownLight : nil, to: entity)
+		SpatialMapLight.apply(ownLight, to: entity)
 	}
 }
 
@@ -785,17 +776,13 @@ enum SpatialMapLight {
 		return light
 	}
 
-	/// Gives every lit part under `entity` the light, or takes it away for nil.
-	static func apply(_ light: Entity?, to entity: Entity) {
-		let receiver = light.map { ImageBasedLightReceiverComponent(imageBasedLight: $0) }
+	/// Gives every lit part under `entity` the light.
+	static func apply(_ light: Entity, to entity: Entity) {
+		let receiver = ImageBasedLightReceiverComponent(imageBasedLight: light)
 		var pending = [entity]
 		while let next = pending.popLast() {
 			if next.components.has(ModelComponent.self) {
-				if let receiver {
-					next.components.set(receiver)
-				} else {
-					next.components.remove(ImageBasedLightReceiverComponent.self)
-				}
+				next.components.set(receiver)
 			}
 			pending += next.children
 		}
