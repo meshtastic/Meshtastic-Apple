@@ -468,7 +468,8 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		private var controlsStack: UIStackView?
 		private var controlsBottomConstraint: NSLayoutConstraint?
 		/// Native follow/center control; hidden when `showsUserLocation` is off so it isn't a dead button.
-		private weak var userTrackingButton: MKUserTrackingButton?
+		/// The tracking button's glass circle; hidden while the user-location dot is off.
+		private weak var userTrackingCircle: UIView?
 		/// id → standalone decoration annotation (route markers, waypoints) currently on the map.
 		private var decorationsByID: [AnyHashable: DecorationAnnotation] = [:]
 
@@ -538,17 +539,17 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 
 			mapView.showsUserLocation = config.showsUserLocation
 			// The tracking button is only meaningful when the user-location dot is shown.
-			userTrackingButton?.isHidden = !config.showsUserLocation
+			userTrackingCircle?.isHidden = !config.showsUserLocation
 			mapView.showsScale = config.showsScale
-			// A custom compass + pitch toggle are installed in `installControls` (bottom-trailing, above
-			// the caller's button bar); the built-in top-right compass is disabled there.
+			// A custom compass + pitch toggle are installed in `installControls` (bottom-leading); the
+			// built-in top-right compass is disabled there.
 			mapView.isPitchEnabled = config.showsPitchControl
 		}
 
-		// MARK: Custom controls (compass + pitch toggle, bottom-trailing above the button bar)
+		// MARK: Custom controls (pitch toggle, tracking and compass, bottom-leading)
 
-		/// Installs (once) a custom compass + pitch toggle pinned to the map's bottom-trailing safe area,
-		/// lifted by `bottomInset` so they clear the caller's button bar. Disables the built-in compass.
+		/// Installs (once) a pitch toggle, tracking button and compass pinned to the map's bottom-leading
+		/// safe area, lifted by `bottomInset`, like the Maps app. Disables the built-in compass.
 		func installControls(on mapView: MKMapView, bottomInset: CGFloat) {
 			hostMapView = mapView
 			mapView.showsCompass = false
@@ -562,38 +563,17 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 			let pitch = UIButton(type: .system)
 			pitch.setImage(UIImage(systemName: "view.3d") ?? UIImage(systemName: "cube"), for: .normal)
 			pitch.tintColor = .label
-			pitch.backgroundColor = UIColor.tertiarySystemBackground.withAlphaComponent(0.92)
-			pitch.layer.cornerRadius = 8
-			pitch.layer.shadowColor = UIColor.black.cgColor
-			pitch.layer.shadowOpacity = 0.2
-			pitch.layer.shadowRadius = 2
-			pitch.layer.shadowOffset = CGSize(width: 0, height: 1)
-			pitch.translatesAutoresizingMaskIntoConstraints = false
 			pitch.addTarget(self, action: #selector(togglePitch), for: .touchUpInside)
-			NSLayoutConstraint.activate([
-				pitch.widthAnchor.constraint(equalToConstant: 44),
-				pitch.heightAnchor.constraint(equalToConstant: 44)
-			])
 
-			// Native follow/center control — MapKit owns the user-location camera behavior. Styled to
-			// match the pitch button; hidden while the user-location dot is off (see applyConfiguration).
+			// Native follow/center control — MapKit owns the user-location camera behavior. Hidden
+			// while the user-location dot is off (see applyConfiguration).
 			let tracking = MKUserTrackingButton(mapView: mapView)
 			tracking.tintColor = .label
-			tracking.backgroundColor = UIColor.tertiarySystemBackground.withAlphaComponent(0.92)
-			tracking.layer.cornerRadius = 8
-			tracking.layer.shadowColor = UIColor.black.cgColor
-			tracking.layer.shadowOpacity = 0.2
-			tracking.layer.shadowRadius = 2
-			tracking.layer.shadowOffset = CGSize(width: 0, height: 1)
-			tracking.translatesAutoresizingMaskIntoConstraints = false
-			tracking.isHidden = !(appliedConfiguration?.showsUserLocation ?? true)
-			NSLayoutConstraint.activate([
-				tracking.widthAnchor.constraint(equalToConstant: 44),
-				tracking.heightAnchor.constraint(equalToConstant: 44)
-			])
-			userTrackingButton = tracking
+			let trackingCircle = Self.controlCircle(around: tracking)
+			trackingCircle.isHidden = !(appliedConfiguration?.showsUserLocation ?? true)
+			userTrackingCircle = trackingCircle
 
-			let stack = UIStackView(arrangedSubviews: [tracking, pitch, compass])
+			let stack = UIStackView(arrangedSubviews: [Self.controlCircle(around: pitch), trackingCircle, compass])
 			stack.axis = .vertical
 			stack.spacing = 10
 			stack.alignment = .center
@@ -601,11 +581,51 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 			mapView.addSubview(stack)
 			let bottom = stack.bottomAnchor.constraint(equalTo: mapView.safeAreaLayoutGuide.bottomAnchor, constant: -bottomInset)
 			NSLayoutConstraint.activate([
-				stack.trailingAnchor.constraint(equalTo: mapView.safeAreaLayoutGuide.trailingAnchor, constant: -12),
+				stack.leadingAnchor.constraint(equalTo: mapView.safeAreaLayoutGuide.leadingAnchor, constant: 12),
 				bottom
 			])
 			controlsStack = stack
 			controlsBottomConstraint = bottom
+		}
+
+		/// A round button on the map's leading side, like the Maps app's: Liquid Glass where the OS
+		/// has it, a translucent disc before that.
+		static func controlCircle(around control: UIView) -> UIView {
+			let size: CGFloat = 48
+			let container: UIView
+			let content: UIView
+			#if os(visionOS)
+			let effect = UIVisualEffectView(effect: UIBlurEffect(style: .systemThinMaterial))
+			container = effect
+			content = effect.contentView
+			#else
+			if #available(iOS 26.0, macCatalyst 26.0, *) {
+				let glass = UIGlassEffect()
+				glass.isInteractive = true
+				let effect = UIVisualEffectView(effect: glass)
+				effect.cornerConfiguration = .capsule()
+				container = effect
+				content = effect.contentView
+			} else {
+				let effect = UIVisualEffectView(effect: UIBlurEffect(style: .systemThickMaterial))
+				container = effect
+				content = effect.contentView
+			}
+			#endif
+			container.layer.cornerRadius = size / 2
+			container.clipsToBounds = true
+			container.translatesAutoresizingMaskIntoConstraints = false
+			control.translatesAutoresizingMaskIntoConstraints = false
+			content.addSubview(control)
+			NSLayoutConstraint.activate([
+				container.widthAnchor.constraint(equalToConstant: size),
+				container.heightAnchor.constraint(equalToConstant: size),
+				control.centerXAnchor.constraint(equalTo: content.centerXAnchor),
+				control.centerYAnchor.constraint(equalTo: content.centerYAnchor),
+				control.widthAnchor.constraint(equalToConstant: size),
+				control.heightAnchor.constraint(equalToConstant: size)
+			])
+			return container
 		}
 
 		/// Toggle the camera between flat (2D) and pitched (3D), like the old SwiftUI `MapPitchToggle`.
