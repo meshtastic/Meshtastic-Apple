@@ -10,13 +10,14 @@
 <h1>Map &amp; Waypoints</h1>
 <p>The Map tab shows all nodes that have shared a position, overlaid on an Apple Maps base layer.</p>
 <p>The map <strong>reopens where you last left it</strong> — your last-viewed area and zoom are remembered between launches, so you don't have to pan back after every relaunch. On a fresh install (before you've moved the map) it frames your current location, then your connected radio, then the center of your nodes.</p>
+<p>The map's buttons sit in the bottom corners, like in Apple Maps. On the left, <strong>3D</strong> tilts the map and <strong>2D</strong> flattens it again, the location button follows your position, and the compass appears once the map is turned. The 3D button is hidden when the map is zoomed out too far to tilt. On the right, one bar holds the coverage estimate, filter, legend and map options buttons.</p>
 <h2>Node Pins</h2>
 <p>Each node that has reported a GPS position appears as a colored circle pin on the map. The <strong>green solid line</strong> shows a directly connected node; <strong>orange dashed lines</strong> show nodes reached via the mesh. A purple star marks a waypoint. Tap a pin to see the node name, last heard time, signal info, and a shortcut to send a direct message.</p>
 <p>Pins update automatically when a new position packet is received from the mesh.</p>
 <h3>Overlapping nodes at the same spot</h3>
 <p>When several nodes report the <em>same</em> (or nearly the same) location — for example radios sitting on one desk, or nodes broadcasting a reduced-precision position — their pins stack on top of each other and can't be pulled apart by zooming. Tapping the stack (or the numbered count badge, when node clustering is on) opens a <strong>Select a Node</strong> list of every node at that spot. Pick one to open its detail view. This works whether or not clustering is enabled, so an occluded node is always reachable.</p>
 <h2>Filtering Nodes on the Map</h2>
-<p>Tap the <strong>filter button</strong> (funnel icon, <code>line.3.horizontal.decrease.circle</code>) in the bottom-right toolbar to open the Map Filters sheet. When any filter is active, the icon appears <strong>filled</strong> to indicate filtering is in effect.</p>
+<p>Tap the <strong>filter button</strong> (funnel icon, <code>line.3.horizontal.decrease.circle</code>) in the button bar on the right to open the Map Filters sheet. When any filter is active, the icon appears <strong>filled</strong> to indicate filtering is in effect.</p>
 <table>
 <thead>
 <tr>
@@ -86,7 +87,7 @@ Enable the <strong>Via LoRa</strong> filter and disable <strong>Via MQTT</strong
 </tbody>
 </table>
 <h2>Map Options</h2>
-<p>Tap the <strong>info button</strong> (<code>info.circle</code>) in the bottom-right toolbar to open the Map Options sheet. Alongside the base layer picker it offers:</p>
+<p>Tap the <strong>info button</strong> (<code>info.circle</code>) in the button bar on the right to open the Map Options sheet. Alongside the base layer picker it offers:</p>
 <table>
 <thead>
 <tr>
@@ -163,7 +164,7 @@ Enable the <strong>Via LoRa</strong> filter and disable <strong>Via MQTT</strong
 <h3>Starting an estimate</h3>
 <p>You can open the estimate form two ways:</p>
 <ul>
-<li><strong>From the map</strong> — tap the coverage button (<code>cellularbars</code>) in the bottom-right toolbar. The form is prefilled from the connected radio and located at the current map center.</li>
+<li><strong>From the map</strong> — tap the coverage button (radio tower) in the button bar on the right. The form is prefilled from the connected radio and located at the current map center.</li>
 <li><strong>From a node</strong> — open a node with a known position, scroll to the <strong>Logs</strong> section, and tap <strong>Estimate Coverage</strong>. The map recenters on that node and opens the form prefilled from it.</li>
 </ul>
 <h3>The estimate form</h3>
@@ -280,7 +281,7 @@ Geofences are evaluated on your own device as position packets arrive from the m
 </ul>
 <h3>3D Flyover</h3>
 <p>Tap <strong>▶</strong> in the route banner for a guided 3D flythrough over satellite imagery: it flies the outbound path, lands at the target, then flies the return path and eases back to the map. Tap the <strong>speed control</strong> to cycle the pace from 1× up to 5× (1×, 1.5×, 2×, 2.5×, 3×, 4×, 5×) — adjustable mid-flight — and <strong>■</strong> to stop.</p>
-<p>Tap the <strong>legend</strong> button (map icon, bottom-right) for a key to the colors and markers.</p>
+<p>Tap the <strong>legend</strong> button (map icon, in the button bar on the right) for a key to the colors and markers.</p>
 <h3>On the spatial map (Apple Vision Pro)</h3>
 <p>On the 3D spatial map, tap the <strong>trace route</strong> button in the toolbar and pick a route. The menu lists the 20 most recent trace routes that came back with node positions, newest first. Each shows the originator and target, then the hop count, whether a return path came back, and how long ago it arrived (for example &quot;3 Hops · 2 hours ago&quot;). A comet flies the route, orange on the way out and blue on the way back, with a short fading tail (just the head when <strong>Reduce Motion</strong> is on). The route stays drawn on the terrain after it lands so you can read it. Tap <strong>✕</strong> in the toolbar to clear it.</p>
 <ul>
