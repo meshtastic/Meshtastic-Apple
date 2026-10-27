@@ -275,7 +275,7 @@ final class WidgetDataBroker {
 		read.nodes = fetchNodeSnapshots(context: context, preset: preset, radioNum: radioNum)
 		read.totalNodeCount = (try? context.fetchCount(FetchDescriptor<NodeInfoEntity>())) ?? read.nodes.count
 		(read.unreadChannels, read.unreadDMs) = fetchUnreadCounts(context: context)
-		read.recentMessages = fetchRecentMessages(context: context, radioNum: radioNum, radioNode: radioNode)
+		read.recentMessages = fetchRecentMessages(context: context, radioNum: radioNum)
 		return read
 	}
 
@@ -358,7 +358,23 @@ final class WidgetDataBroker {
 		return (channels, dms)
 	}
 
-	nonisolated private static func fetchRecentMessages(context: ModelContext, radioNum: Int64?, radioNode: NodeInfoEntity?) -> [MessageSnapshot] {
+	/// The radio's channel names by index, fetched rather than read through
+	/// `myInfo.channels`: a channel refresh on the main context deletes and replaces every
+	/// channel, and this context never learns of those deletes, so following the relationship
+	/// could read a deleted channel and trap. A fetch returns only channels that still exist.
+	nonisolated static func fetchChannelNames(context: ModelContext, radioNum: Int64) -> [Int32: String] {
+		let descriptor = FetchDescriptor<ChannelEntity>(
+			predicate: #Predicate<ChannelEntity> { $0.myInfoChannel?.myNodeNum == radioNum && $0.role > 0 }
+		)
+		var names: [Int32: String] = [:]
+		for channel in (try? context.fetch(descriptor)) ?? [] {
+			let fallback = channel.index == 0 ? "Primary" : "Channel \(channel.index)"
+			names[channel.index] = (channel.name?.isEmpty ?? true) ? fallback : channel.name!
+		}
+		return names
+	}
+
+	nonisolated private static func fetchRecentMessages(context: ModelContext, radioNum: Int64?) -> [MessageSnapshot] {
 		var descriptor = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate<MessageEntity> { $0.isEmoji == false && $0.admin == false },
 			sortBy: [SortDescriptor(\.messageTimestamp, order: .reverse)]
@@ -368,11 +384,7 @@ final class WidgetDataBroker {
 		descriptor.fetchLimit = 16
 		let fetched = (try? context.fetch(descriptor)) ?? []
 
-		var channelNames: [Int32: String] = [:]
-		for channel in radioNode?.myInfo?.channels ?? [] where channel.role > 0 {
-			let fallback = channel.index == 0 ? "Primary" : "Channel \(channel.index)"
-			channelNames[channel.index] = (channel.name?.isEmpty ?? true) ? fallback : channel.name!
-		}
+		let channelNames = radioNum.map { fetchChannelNames(context: context, radioNum: $0) } ?? [:]
 
 		var seenIds = Set<Int64>()
 		var snapshots: [MessageSnapshot] = []
