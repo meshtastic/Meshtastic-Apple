@@ -661,6 +661,12 @@
         }
       }
     },
+    "Show the map in 2D" : {
+      "comment" : "VoiceOver label for the map button that flattens a tilted map"
+    },
+    "Show the map in 3D" : {
+      "comment" : "VoiceOver label for the map button that tilts the map"
+    },
     "Standing" : {
       "comment" : "Showcase: the viewer is standing",
       "localizations" : {
