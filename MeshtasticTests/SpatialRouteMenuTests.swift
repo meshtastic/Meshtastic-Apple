@@ -102,7 +102,8 @@ struct SpatialRouteMenuTests {
 		let noReturn = insertRoute(id: 0x5EA7_1002, time: .now, hopsBack: -1, target: target, in: context)
 		try context.save()
 
-		let snapshot = try #require(SpatialRouteSource.snapshot(withReturn, hops: SpatialRouteSource.hops(of: withReturn, context: context), originName: "Base"))
+		let withReturnHops = try #require(SpatialRouteSource.hops(of: withReturn, context: context))
+		let snapshot = try #require(SpatialRouteSource.snapshot(withReturn, hops: withReturnHops, originName: "Base"))
 		#expect(snapshot.originName == "Base")
 		#expect(snapshot.targetName == "Ridge")
 		#expect(snapshot.hopsTowards == 1)
@@ -110,7 +111,8 @@ struct SpatialRouteMenuTests {
 		#expect(snapshot.forward.map(\.num) == [Self.origin, Self.relay, Self.target])
 		#expect(snapshot.back.map(\.num) == [Self.target, Self.relay, Self.origin])
 
-		let oneWay = try #require(SpatialRouteSource.snapshot(noReturn, hops: SpatialRouteSource.hops(of: noReturn, context: context), originName: nil))
+		let noReturnHops = try #require(SpatialRouteSource.hops(of: noReturn, context: context))
+		let oneWay = try #require(SpatialRouteSource.snapshot(noReturn, hops: noReturnHops, originName: nil))
 		#expect(oneWay.hopsBack == nil, "a negative stored count means no return path")
 		#expect(oneWay.originName == Self.origin.toHex(), "an unknown originator falls back to its hex id")
 	}
@@ -198,7 +200,7 @@ struct SpatialRouteMenuTests {
 		}
 		try ingest.save()
 
-		let hops = SpatialRouteSource.hops(of: readerRoute, context: reader)
+		let hops = try #require(SpatialRouteSource.hops(of: readerRoute, context: reader))
 		let snapshot = try #require(SpatialRouteSource.snapshot(readerRoute, hops: hops, originName: nil))
 		#expect(snapshot.forward.map(\.num) == [Self.origin, Self.target])
 	}

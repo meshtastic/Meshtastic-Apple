@@ -6,6 +6,7 @@
 //
 import CoreLocation
 import Foundation
+import OSLog
 import SwiftData
 
 /// A stored traceroute reduced to the two paths the spatial map draws and flies.
@@ -114,7 +115,8 @@ enum SpatialRouteSource {
 			let page = (try? context.fetch(descriptor)) ?? []
 			fetched += page.count
 			for route in page {
-				let hops = hops(of: route, context: context)
+				// A route whose hops won't read is left out, like one that can't be drawn.
+				guard let hops = hops(of: route, context: context) else { continue }
 				if isDrawable(route, hops: hops) { drawable.append((route, hops)) }
 			}
 			if page.count < pageSize { break }
@@ -128,10 +130,16 @@ enum SpatialRouteSource {
 	/// The route's hops as the store has them now. Not `route.hops`: hearing a route again rebuilds
 	/// its hops in the ingest context, which this one never hears about, and reading a hop it
 	/// deleted traps. A fetch only returns hops that are still there, with their values loaded.
-	static func hops(of route: TraceRouteEntity, context: ModelContext) -> [TraceRouteHopEntity] {
+	/// Nil if the fetch fails, which is logged; an empty list is a route with no hops.
+	static func hops(of route: TraceRouteEntity, context: ModelContext) -> [TraceRouteHopEntity]? {
 		let routeID = route.persistentModelID
 		let descriptor = FetchDescriptor<TraceRouteHopEntity>(predicate: #Predicate { $0.traceRoute?.persistentModelID == routeID })
-		return (try? context.fetch(descriptor)) ?? []
+		do {
+			return try context.fetch(descriptor)
+		} catch {
+			Logger.data.error("🗺️ [Spatial] Couldn't read the hops of trace route \(route.id, privacy: .public): \(error.localizedDescription, privacy: .public)")
+			return nil
+		}
 	}
 
 	/// Whether at least two nodes on the route's forward path have a position, the least the map
