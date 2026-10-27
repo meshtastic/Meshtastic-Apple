@@ -540,6 +540,9 @@
         }
       }
     },
+    "Pick up to turn it over" : {
+      "comment" : "Cinema: VoiceOver hint for the device model on the stand in front of the seat"
+    },
     "Put the model away" : {
       "comment" : "Cinema: button on the card beside a device model on the stand; takes the model away"
     },

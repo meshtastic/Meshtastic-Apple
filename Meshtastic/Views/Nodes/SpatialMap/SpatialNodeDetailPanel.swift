@@ -48,7 +48,7 @@ struct SpatialNodeDetailPanel: View {
 				Spacer(minLength: 8)
 				Button(action: onClose) {
 					Image(systemName: "xmark")
-						.frame(width: 40, height: 40)
+						.frame(width: 44, height: 44)
 				}
 				.buttonStyle(CardButtonStyle(shape: .circle))
 				.accessibilityLabel(String(localized: "Close", comment: "Spatial map card: close the selected node's card"))
@@ -92,9 +92,12 @@ struct SpatialNodeDetailPanel: View {
 				label(String(localized: "Heard", comment: "Spatial map card: label for when the node was last heard"), systemImage: "clock")
 				HStack(spacing: 6) {
 					Text(node.lastHeard?.formatted(.relative(presentation: .named, unitsStyle: .abbreviated)) ?? String(localized: "Never", comment: "Spatial map: node has never been heard"))
-					Circle()
-						.fill(node.isOnline ? Color.green : Color.orange)
-						.frame(width: 8, height: 8)
+					// A shape as well as a color, so it reads without telling green from orange.
+					Image(systemName: node.isOnline ? "checkmark.circle.fill" : "moon.circle.fill")
+						.foregroundStyle(node.isOnline ? .green : .orange)
+						.accessibilityLabel(node.isOnline
+							? String(localized: "Online", comment: "Spatial map card: VoiceOver label for the node's online status")
+							: String(localized: "Offline", comment: "Spatial map card: VoiceOver label for the node's offline status"))
 				}
 			}
 			if !node.isConnectedRadio {
@@ -138,7 +141,8 @@ struct SpatialNodeDetailPanel: View {
 			.foregroundStyle(.white.opacity(0.6))
 	}
 
-	/// The card's buttons, in fixed colors like the rest of it: a dark platter, white label.
+	/// The card's buttons, in fixed colors like the rest of it: a dark platter, white label, and at
+	/// least 44 points each way to hit.
 	private struct CardButtonStyle: ButtonStyle {
 		enum Shape {
 			case circle, rounded
@@ -153,12 +157,13 @@ struct SpatialNodeDetailPanel: View {
 				switch shape {
 				case .circle:
 					label
+						.frame(minWidth: 44, minHeight: 44)
 						.background(Color(white: configuration.isPressed ? 0.35 : 0.24), in: Circle())
 						.contentShape(.hoverEffect, Circle())
 				case .rounded:
 					label
 						.padding(.horizontal, 12)
-						.padding(.vertical, 8)
+						.frame(minWidth: 44, minHeight: 44)
 						.background(Color(white: configuration.isPressed ? 0.35 : 0.24), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 						.contentShape(.hoverEffect, RoundedRectangle(cornerRadius: 12, style: .continuous))
 				}

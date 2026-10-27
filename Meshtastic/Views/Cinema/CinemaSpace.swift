@@ -67,9 +67,7 @@ struct CinemaSpace: View {
 				boards.set(attachments.entity(for: board.rawValue), for: board)
 			}
 			boards.setStrip(attachments.entity(for: Attachments.tabStrip))
-			if let tag = attachments.entity(for: Attachments.modelTag) {
-				modelStand.placeTag(tag)
-			}
+			modelStand.setTag(attachments.entity(for: Attachments.modelTag))
 			placeBoards()
 		} attachments: {
 			Attachment(id: Attachments.panel) {

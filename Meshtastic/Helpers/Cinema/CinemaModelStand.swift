@@ -26,6 +26,8 @@ final class CinemaModelStand {
 	private var light: Entity?
 	/// The model's height on its stand, for hanging the readings beside it.
 	private var standHeight: Float = 0
+	/// The readings card, placed again once the model's height is known.
+	private var tag: Entity?
 
 	/// In front of the seat and to the left, clear of the panel on the right, about where a hand
 	/// rests. Meters from the space's origin on the floor.
@@ -69,6 +71,7 @@ final class CinemaModelStand {
 		let holder = Entity()
 		holder.name = "stand-\(request.modelName)"
 		standHeight = ShowcaseDisplays.stand(model, in: holder)
+		model.components.set(Self.accessibility(for: request))
 		if light == nil {
 			light = await Self.light(for: environment)
 		}
@@ -78,6 +81,7 @@ final class CinemaModelStand {
 			Self.receive(light, in: holder)
 		}
 		shelf.addChild(holder)
+		placeTag()
 	}
 
 	func clear() {
@@ -85,13 +89,33 @@ final class CinemaModelStand {
 		standHeight = 0
 	}
 
-	/// Hangs the readings beside the model, facing the seat like the stand.
-	func placeTag(_ tag: Entity) {
+	/// Hangs the readings beside the model, facing the seat like the stand. Nil takes down the
+	/// card SwiftUI dropped; a new one replaces the old.
+	func setTag(_ tag: Entity?) {
+		if self.tag !== tag {
+			self.tag?.removeFromParent()
+			self.tag = tag
+		}
+		placeTag()
+	}
+
+	private func placeTag() {
+		guard let tag else { return }
 		if tag.parent !== grabber {
 			grabber.addChild(tag)
 		}
 		let height = tag.visualBounds(relativeTo: tag).extents.y
 		tag.position = shelf.position + [0.2, max(standHeight, 0.08) / 2 + height / 2, 0]
+	}
+
+	/// Names the model for VoiceOver, like a model on the showcase's tables.
+	private static func accessibility(for request: CinemaModelRequest) -> AccessibilityComponent {
+		var component = AccessibilityComponent()
+		component.isAccessibilityElement = true
+		component.traits = [.button]
+		component.label = LocalizedStringResource(stringLiteral: request.deviceName)
+		component.value = LocalizedStringResource("Pick up to turn it over", comment: "Cinema: VoiceOver hint for the device model on the stand in front of the seat")
+		return component
 	}
 
 	/// A bar like a window's, the cinema panel's twin.

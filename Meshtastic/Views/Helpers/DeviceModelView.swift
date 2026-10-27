@@ -301,6 +301,9 @@ final class DeviceModelStage {
 	var autoRotate = true
 
 	private var radius: Float = 1
+	/// Half the model's bounding box diagonal: the farthest any part gets from its center,
+	/// however it's turned.
+	private var sphereRadius: Float = 1
 	private var yaw: Float = -0.5
 	private var pitch: Float = DeviceModelStage.restingPitch
 	private var dragStartYaw: Float = 0
@@ -329,6 +332,7 @@ final class DeviceModelStage {
 		let extents = bounds.extents
 		let sweep = simd_length(SIMD2(extents.x, extents.z)) / 2
 		radius = max(sweep, extents.y / 2, 0.0001)
+		sphereRadius = max(simd_length(extents) / 2, radius)
 		model.position = -bounds.center
 		holder.addChild(model)
 		pivot.addChild(holder)
@@ -426,8 +430,8 @@ final class DeviceModelStage {
 		holder.scale = .init(repeating: fitRadius / radius * zoomFactor)
 		#if os(visionOS)
 		// A window cuts off whatever is behind its surface, so the model stands just in front of
-		// it however it's turned. The tilt can lean a tall model a little past its radius.
-		pivot.position = [0, 0, fitRadius * zoomFactor * 1.1]
+		// it however it's turned or tilted.
+		pivot.position = [0, 0, fitRadius / radius * zoomFactor * sphereRadius]
 		#endif
 	}
 
