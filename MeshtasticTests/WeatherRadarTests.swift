@@ -218,4 +218,49 @@ struct WeatherRadarTests {
 		#expect(WeatherRadarSmoothing.edgeAlpha(0.3) == 0)
 		#expect(abs(WeatherRadarSmoothing.edgeAlpha(0.5) - 0.5) < 1e-6)
 	}
+
+	// MARK: Close in
+
+	@Test func overlayDrawsPastTheZoomItFetches() {
+		let overlay = WeatherRadarTileOverlay(refreshPeriod: 1)
+		#expect(overlay.maximumZ > WeatherRadarTileOverlay.fetchMaximumZ)
+	}
+
+	@Test func closeTileIsAPartOfItsZoomTwelveTile() {
+		// Zoom 14 is two levels in: a quarter of the zoom 12 tile across, here the third column and
+		// the second row of four.
+		let part = WeatherRadarTilePart(x: 4 * 655 + 2, y: 4 * 1430 + 1, z: 14, fetchZ: 12)
+		#expect(part.ancestorX == 655 && part.ancestorY == 1430 && part.ancestorZ == 12)
+		#expect(part.rect == CGRect(x: 0.5, y: 0.25, width: 0.25, height: 0.25))
+		// At the fetch zoom or above, the tile is its own ancestor.
+		let same = WeatherRadarTilePart(x: 655, y: 1430, z: 12, fetchZ: 12)
+		#expect(same.ancestorX == 655 && same.ancestorZ == 12 && same.rect == CGRect(x: 0, y: 0, width: 1, height: 1))
+	}
+
+	@Test func cutTakesTheTilesQuarter() throws {
+		// A 256 pixel tile, red in the top left quarter and blue in the bottom right, clear elsewhere.
+		let size = 256
+		var bytes = [UInt8](repeating: 0, count: size * size * 4)
+		for y in 0..<size {
+			for x in 0..<size {
+				let index = (y * size + x) * 4
+				if x < 128, y < 128 { bytes[index] = 255; bytes[index + 3] = 255 }
+				if x >= 128, y >= 128 { bytes[index + 2] = 255; bytes[index + 3] = 255 }
+			}
+		}
+		let image = try #require(bytes.withUnsafeMutableBytes { buffer in
+			CGContext(data: buffer.baseAddress, width: size, height: size, bitsPerComponent: 8, bytesPerRow: size * 4,
+					  space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)?.makeImage()
+		})
+		func center(_ part: WeatherRadarTilePart) throws -> [UInt8] {
+			let cut = try #require(part.cut(from: image, size: 512))
+			#expect(cut.width == 512 && cut.height == 512)
+			let pixels = try #require(cut.dataProvider?.data as Data?)
+			let index = 256 * cut.bytesPerRow + 256 * 4
+			return Array(pixels[index..<(index + 4)])
+		}
+		#expect(try center(WeatherRadarTilePart(x: 0, y: 0, z: 13, fetchZ: 12)) == [255, 0, 0, 255])
+		#expect(try center(WeatherRadarTilePart(x: 1, y: 1, z: 13, fetchZ: 12)) == [0, 0, 255, 255])
+		#expect(try center(WeatherRadarTilePart(x: 1, y: 0, z: 13, fetchZ: 12))[3] == 0)
+	}
 }

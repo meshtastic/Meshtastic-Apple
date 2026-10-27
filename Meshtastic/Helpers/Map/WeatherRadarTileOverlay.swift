@@ -5,8 +5,9 @@
 //  Copyright(c) Garth Vander Houwen 10/25/26.
 //
 //  NOAA's NEXRAD base reflectivity for the lower 48 states, from NCEP's map server.
-//  NOAA data is public domain; the server asks for nothing but reasonable use, so tiles
-//  stop at zoom 12 and refresh only every few minutes.
+//  NOAA data is public domain; the server asks for nothing but reasonable use, so tiles are
+//  fetched down to zoom 12 only and refresh only every few minutes. Closer in, a tile is cut
+//  from the zoom 12 tile that contains it.
 //
 
 import Foundation
@@ -113,11 +114,16 @@ final class WeatherRadarAvailability: ObservableObject {
 }
 
 final class WeatherRadarTileOverlay: MKTileOverlay {
+	/// NOAA is asked for tiles down to this zoom; closer in, tiles are cut from these.
+	static let fetchMaximumZ = 12
+
 	init(refreshPeriod: Int) {
 		self.refreshPeriod = refreshPeriod
 		super.init(urlTemplate: nil)
 		canReplaceMapContent = false
-		maximumZ = 12
+		// MapKit draws nothing past an overlay's maximum zoom rather than stretching its tiles,
+		// and on a phone it asks for tiles a level or two past the zoom on screen.
+		maximumZ = 21
 	}
 
 	private let refreshPeriod: Int
@@ -130,31 +136,60 @@ final class WeatherRadarTileOverlay: MKTileOverlay {
 	/// Retina screen.
 	static let smoothTileEdge = 512
 
-	/// Zoomed in past the radar's own cells, asks for the cells and draws them smooth; further
-	/// out, a pixel covers a cell or more and the server's tile is used as is.
 	override func loadTile(at path: MKTileOverlayPath, result: @escaping (Data?, Error?) -> Void) {
-		let bounds = Self.mercatorBounds(x: path.x, y: path.y, z: path.z)
-		let edge = Self.smoothTileEdge
-		guard let grid = WeatherRadarCellGrid(bounds: bounds, outputWidth: edge, outputHeight: edge) else {
-			super.loadTile(at: path, result: result)
-			return
-		}
-		let url = WeatherRadar.imageURL(mercatorBounds: grid.paddedBounds, width: grid.requestWidth, height: grid.requestHeight, refreshPeriod: refreshPeriod)
+		let refreshPeriod = refreshPeriod
+		let edge = Int(tileSize.width * max(path.contentScaleFactor, 1))
 		Task.detached(priority: .utility) {
 			do {
-				let (data, response) = try await URLSession.shared.data(from: url)
-				guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
-					throw URLError(.badServerResponse)
+				guard path.z > Self.fetchMaximumZ else {
+					result(try await Self.tileData(x: path.x, y: path.y, z: path.z, refreshPeriod: refreshPeriod), nil)
+					return
 				}
-				guard let source = CGImageSourceCreateWithData(data as CFData, nil),
-					  let image = CGImageSourceCreateImageAtIndex(source, 0, nil),
-					  let smooth = WeatherRadarSmoothing.smooth(image, grid: grid, width: edge, height: edge),
-					  let png = Self.pngData(smooth) else { throw URLError(.cannotDecodeContentData) }
+				let part = WeatherRadarTilePart(x: path.x, y: path.y, z: path.z, fetchZ: Self.fetchMaximumZ)
+				let key = Self.url(for: MKTileOverlayPath(x: part.ancestorX, y: part.ancestorY, z: part.ancestorZ, contentScaleFactor: 1), refreshPeriod: refreshPeriod)
+				let data = try await Self.ancestors.data(for: key) {
+					try await Self.tileData(x: part.ancestorX, y: part.ancestorY, z: part.ancestorZ, refreshPeriod: refreshPeriod)
+				}
+				guard let image = Self.image(data), let cut = part.cut(from: image, size: edge),
+					  let png = Self.pngData(cut) else { throw URLError(.cannotDecodeContentData) }
 				result(png, nil)
 			} catch {
 				result(nil, error)
 			}
 		}
+	}
+
+	/// The zoom 12 tiles that closer tiles are cut from. Many close tiles share one, and MapKit asks
+	/// for them all at once, so each is made once and shared.
+	private static let ancestors = WeatherRadarAncestorTiles()
+
+	/// A tile at the fetch zoom or further out. Zoomed in past the radar's own cells, asks for the
+	/// cells and draws them smooth; further out, a pixel covers a cell or more and the server's
+	/// tile is used as is.
+	private static func tileData(x: Int, y: Int, z: Int, refreshPeriod: Int) async throws -> Data {
+		let bounds = mercatorBounds(x: x, y: y, z: z)
+		let edge = smoothTileEdge
+		guard let grid = WeatherRadarCellGrid(bounds: bounds, outputWidth: edge, outputHeight: edge) else {
+			return try await download(WeatherRadar.imageURL(mercatorBounds: bounds, width: 256, height: 256, refreshPeriod: refreshPeriod))
+		}
+		let data = try await download(WeatherRadar.imageURL(mercatorBounds: grid.paddedBounds, width: grid.requestWidth, height: grid.requestHeight, refreshPeriod: refreshPeriod))
+		guard let image = image(data),
+			  let smooth = WeatherRadarSmoothing.smooth(image, grid: grid, width: edge, height: edge),
+			  let png = pngData(smooth) else { throw URLError(.cannotDecodeContentData) }
+		return png
+	}
+
+	private static func download(_ url: URL) async throws -> Data {
+		let (data, response) = try await URLSession.shared.data(from: url)
+		guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
+			throw URLError(.badServerResponse)
+		}
+		return data
+	}
+
+	private static func image(_ data: Data) -> CGImage? {
+		guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
+		return CGImageSourceCreateImageAtIndex(source, 0, nil)
 	}
 
 	private static func pngData(_ image: CGImage) -> Data? {
@@ -177,5 +212,67 @@ final class WeatherRadarTileOverlay: MKTileOverlay {
 		let minX = -worldHalf + Double(x) * tileSize
 		let maxY = worldHalf - Double(y) * tileSize
 		return CGRect(x: minX, y: maxY - tileSize, width: tileSize, height: tileSize)
+	}
+}
+
+/// A tile past the fetch zoom, as part of the tile at that zoom that contains it.
+struct WeatherRadarTilePart: Equatable {
+	let ancestorX: Int
+	let ancestorY: Int
+	let ancestorZ: Int
+	/// Where the tile sits in its ancestor, as fractions of it, y down.
+	let rect: CGRect
+
+	init(x: Int, y: Int, z: Int, fetchZ: Int) {
+		let levels = max(z - fetchZ, 0)
+		ancestorX = x >> levels
+		ancestorY = y >> levels
+		ancestorZ = z - levels
+		let count = Double(1 << levels)
+		rect = CGRect(x: Double(x - (ancestorX << levels)) / count, y: Double(y - (ancestorY << levels)) / count, width: 1 / count, height: 1 / count)
+	}
+
+	/// The tile's part of `image`, scaled up to `size` pixels square.
+	func cut(from image: CGImage, size: Int) -> CGImage? {
+		guard size > 0, let context = CGContext(
+			data: nil, width: size, height: size, bitsPerComponent: 8, bytesPerRow: 0,
+			space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+		) else { return nil }
+		context.interpolationQuality = .high
+		// Core Graphics has y up: the part's top edge goes to the top of the context.
+		let scale = Double(size) / rect.width
+		context.draw(image, in: CGRect(x: -rect.minX * scale, y: Double(size) - scale * (1 - rect.minY), width: scale, height: scale))
+		return context.makeImage()
+	}
+}
+
+/// The tiles closer tiles are cut from, shared while they're being made and kept for a while.
+actor WeatherRadarAncestorTiles {
+	/// Enough for a screen of close-in tiles across a couple of refreshes.
+	static let limit = 32
+
+	private var tiles: [URL: Task<Data, Error>] = [:]
+	private var order: [URL] = []
+
+	func data(for key: URL, make: @escaping @Sendable () async throws -> Data) async throws -> Data {
+		if let tile = tiles[key] {
+			return try await tile.value
+		}
+		let tile = Task { try await make() }
+		tiles[key] = tile
+		order.append(key)
+		if order.count > Self.limit {
+			tiles[order.removeFirst()] = nil
+		}
+		do {
+			return try await tile.value
+		} catch {
+			// A failed tile is tried again next time.
+			if tiles[key] == tile {
+				tiles[key] = nil
+				order.removeAll { $0 == key }
+			}
+			throw error
+		}
 	}
 }

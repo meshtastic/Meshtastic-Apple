@@ -25,8 +25,9 @@ struct SpatialWeatherRadarTests {
 		let query = try query(plan.request)
 		#expect(max(plan.size.width, plan.size.height) == 1024)
 		let grid = try #require(plan.grid)
-		// 0.1° of longitude is about ten 1 km cells, plus one on each side.
-		#expect(grid.columns == 10 && query["WIDTH"] == "12" && query["HEIGHT"] == String(grid.rows + 2))
+		// 0.1° of longitude is about ten 1 km cells, plus the padding on each side.
+		let padding = WeatherRadarCellGrid.padding
+		#expect(grid.columns == 10 && query["WIDTH"] == String(10 + 2 * padding) && query["HEIGHT"] == String(grid.rows + 2 * padding))
 		let padded = grid.paddedBounds
 		#expect(query["BBOX"] == [padded.minX, padded.minY, padded.maxX, padded.maxY].map { String(format: "%.2f", $0) }.joined(separator: ","))
 		#expect(query["LAYERS"] == "conus_bref_qcd" && query["period"] == "42")
