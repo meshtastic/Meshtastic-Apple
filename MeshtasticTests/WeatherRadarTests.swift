@@ -93,14 +93,16 @@ struct WeatherRadarTests {
 
 	// MARK: Smoothing
 
-	@Test func cellGridCountsKilometerCellsAndPadsOneOnEachSide() throws {
+	@Test func cellGridCountsKilometerCellsAndPadsEachSide() throws {
 		// A zoom 10 tile is about 39 km of Mercator across.
 		let bounds = WeatherRadarTileOverlay.mercatorBounds(x: 200, y: 360, z: 10)
 		let grid = try #require(WeatherRadarCellGrid(bounds: bounds, outputWidth: 512, outputHeight: 512))
 		#expect(grid.columns == Int((bounds.width / WeatherRadarCellGrid.cellMeters).rounded()))
 		// Cells are taller than wide in Mercator away from the equator.
 		#expect(grid.rows < grid.columns)
-		#expect(abs(grid.paddedBounds.width - bounds.width * Double(grid.columns + 2) / Double(grid.columns)) < 1e-6)
+		let padding = WeatherRadarCellGrid.padding
+		#expect(grid.requestWidth == grid.columns + 2 * padding && grid.requestHeight == grid.rows + 2 * padding)
+		#expect(abs(grid.paddedBounds.width - bounds.width * Double(grid.requestWidth) / Double(grid.columns)) < 1e-6)
 		#expect(abs(grid.paddedBounds.midX - bounds.midX) < 1e-6 && abs(grid.paddedBounds.midY - bounds.midY) < 1e-6)
 	}
 
@@ -135,8 +137,9 @@ struct WeatherRadarTests {
 		let covered = shower.alphas.filter { $0 > 0 }.count
 		// A 3 by 3 block of cells comes out round: solid in the middle, its square corners cut off.
 		let cellWidth = 512.0 / Double(grid.columns), cellHeight = 512.0 / Double(grid.rows)
-		let centerX = (Double(grid.requestWidth / 2) - 0.5) * cellWidth
-		let centerY = (Double(grid.requestHeight / 2) - 0.5) * cellHeight
+		let padding = Double(WeatherRadarCellGrid.padding)
+		let centerX = (Double(grid.requestWidth / 2) + 0.5 - padding) * cellWidth
+		let centerY = (Double(grid.requestHeight / 2) + 0.5 - padding) * cellHeight
 		let alpha = { (x: Double, y: Double) in shower.alphas[Int(y) * 512 + Int(x)] }
 		#expect(alpha(centerX, centerY) == 255)
 		for (dx, dy) in [(-1.0, -1.0), (1, -1), (-1, 1), (1, 1)] {
@@ -146,6 +149,68 @@ struct WeatherRadarTests {
 		#expect(shower.alphas.filter { $0 > 0 && $0 < 255 }.count < covered / 2)
 		// One cell on its own is speckle and is softened away.
 		#expect(try smoothed(cells: [(0, 0)], grid: grid).alphas.allSatisfy { $0 == 0 })
+	}
+
+	/// A premultiplied RGBA image of the columns `from..<(from + width)` of `field`, which holds
+	/// `fieldWidth` by `height` cells.
+	private func image(_ field: [UInt8], fieldWidth: Int, height: Int, from: Int, width: Int) throws -> CGImage {
+		var bytes = [UInt8](repeating: 0, count: width * height * 4)
+		for row in 0..<height {
+			let source = (row * fieldWidth + from) * 4
+			bytes.replaceSubrange((row * width * 4)..<((row + 1) * width * 4), with: field[source..<(source + width * 4)])
+		}
+		return try #require(bytes.withUnsafeMutableBytes { buffer in
+			CGContext(data: buffer.baseAddress, width: width, height: height, bitsPerComponent: 8, bytesPerRow: width * 4,
+					  space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)?.makeImage()
+		})
+	}
+
+	private func alphas(_ image: CGImage) throws -> [UInt8] {
+		let pixels = try #require(image.dataProvider?.data as Data?)
+		return stride(from: 3, to: pixels.count, by: 4).map { pixels[$0] }
+	}
+
+	@Test func neighboringTilesMeetWithoutASeam() throws {
+		// Two tiles side by side at the equator, where cells are square, and the box covering both.
+		let columns = 12, rows = 12, scale = 16
+		let cell = WeatherRadarCellGrid.cellMeters
+		let left = CGRect(x: 0, y: -Double(rows) * cell / 2, width: Double(columns) * cell, height: Double(rows) * cell)
+		let right = left.offsetBy(dx: left.width, dy: 0)
+		let leftGrid = try #require(WeatherRadarCellGrid(bounds: left, outputWidth: columns * scale, outputHeight: rows * scale))
+		let rightGrid = try #require(WeatherRadarCellGrid(bounds: right, outputWidth: columns * scale, outputHeight: rows * scale))
+		let bothGrid = try #require(WeatherRadarCellGrid(bounds: left.union(right), outputWidth: 2 * columns * scale, outputHeight: rows * scale))
+		#expect(leftGrid.columns == columns && bothGrid.columns == 2 * columns)
+		// Rain in the cells around the shared edge, so it crosses from one tile into the other.
+		let fieldWidth = bothGrid.requestWidth, height = bothGrid.requestHeight
+		var field = [UInt8](repeating: 0, count: fieldWidth * height * 4)
+		var random = SystemRandomNumberGenerator()
+		let edge = WeatherRadarCellGrid.padding + columns
+		for row in 0..<height {
+			for column in (edge - 6)..<(edge + 6) where Bool.random(using: &random) {
+				let index = (row * fieldWidth + column) * 4
+				field[index] = 40; field[index + 1] = 200; field[index + 2] = 80; field[index + 3] = 255
+			}
+		}
+		let tileWidth = columns * scale, tileHeight = rows * scale
+		let leftTile = try alphas(try #require(WeatherRadarSmoothing.smooth(
+			try image(field, fieldWidth: fieldWidth, height: height, from: 0, width: leftGrid.requestWidth),
+			grid: leftGrid, width: tileWidth, height: tileHeight)))
+		let rightTile = try alphas(try #require(WeatherRadarSmoothing.smooth(
+			try image(field, fieldWidth: fieldWidth, height: height, from: columns, width: rightGrid.requestWidth),
+			grid: rightGrid, width: tileWidth, height: tileHeight)))
+		let both = try alphas(try #require(WeatherRadarSmoothing.smooth(
+			try image(field, fieldWidth: fieldWidth, height: height, from: 0, width: fieldWidth),
+			grid: bothGrid, width: 2 * tileWidth, height: tileHeight)))
+		var largest = 0
+		for y in 0..<tileHeight {
+			for x in 0..<tileWidth {
+				largest = max(largest, abs(Int(leftTile[y * tileWidth + x]) - Int(both[y * 2 * tileWidth + x])))
+				largest = max(largest, abs(Int(rightTile[y * tileWidth + x]) - Int(both[y * 2 * tileWidth + tileWidth + x])))
+			}
+		}
+		// Rounding to 8 bits can differ by one; a seam differs by far more.
+		#expect(largest <= 1)
+		#expect(both.contains(255))
 	}
 
 	@Test func edgeKeepsFullRainAndDropsTheFade() {

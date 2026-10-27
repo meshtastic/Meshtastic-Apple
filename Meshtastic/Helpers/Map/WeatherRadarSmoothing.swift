@@ -17,16 +17,20 @@ import Foundation
 struct WeatherRadarCellGrid: Equatable {
 	/// One radar cell is 0.01° of longitude: this many Web Mercator meters across.
 	static let cellMeters = WeatherRadar.mercatorWorldHalf * 2 / 36_000
+	/// Cells asked for past the box on every side. An output pixel reads four cells through the
+	/// scaling, each softened from two cells either side, so the box's edge pixels reach four cells
+	/// out. With all of them fetched, neighboring tiles compute the same values where they meet.
+	static let padding = 4
 
 	/// Cells across and down the box.
 	let columns: Int
 	let rows: Int
-	/// The box with one cell more on every side, so softening and scaling see past its edges
-	/// and neighboring tiles meet without a seam.
+	/// The box with `padding` cells more on every side, so softening and scaling see past its
+	/// edges and neighboring tiles meet without a seam.
 	let paddedBounds: CGRect
 
-	var requestWidth: Int { columns + 2 }
-	var requestHeight: Int { rows + 2 }
+	var requestWidth: Int { columns + 2 * Self.padding }
+	var requestHeight: Int { rows + 2 * Self.padding }
 
 	/// The grid for Mercator `bounds` drawn at `outputWidth` by `outputHeight` pixels, or nil when
 	/// a pixel is already as big as a cell and there are no squares to smooth.
@@ -41,7 +45,8 @@ struct WeatherRadarCellGrid: Equatable {
 		self.columns = columns
 		self.rows = rows
 		let dx = bounds.width / Double(columns), dy = bounds.height / Double(rows)
-		paddedBounds = bounds.insetBy(dx: -dx, dy: -dy)
+		let padding = Double(Self.padding)
+		paddedBounds = bounds.insetBy(dx: -dx * padding, dy: -dy * padding)
 	}
 }
 
@@ -61,7 +66,7 @@ enum WeatherRadarSmoothing {
 		guard image.width == inWidth, image.height == inHeight, width > 0, height > 0,
 			  var cells = premultipliedPixels(image, width: inWidth, height: inHeight) else { return nil }
 		blur(&cells, width: inWidth, height: inHeight)
-		// Across, then down. The padding cell falls outside the output on every side.
+		// Across, then down. The padding falls outside the output on every side.
 		let across = scale(cells, rows: inHeight, from: inWidth, to: width, cells: grid.columns)
 		let down = scale(across, rows: width, from: inHeight, to: height, cells: grid.rows)
 		var bytes = [UInt8](repeating: 0, count: width * height * 4)
@@ -133,7 +138,7 @@ enum WeatherRadarSmoothing {
 
 	/// Scales each row of RGBA pixels from `from` to `to` pixels with a cubic B-spline, which is
 	/// smooth through every cell rather than passing through them in kinks. `to` covers `cells`
-	/// cells, starting one cell in. The result is stored transposed, `to` rows of `rows` pixels,
+	/// cells, starting past the padding. The result is stored transposed, `to` rows of `rows` pixels,
 	/// so a second call scales the other way and puts the image back the right way round.
 	private static func scale(_ pixels: [Float], rows: Int, from: Int, to: Int, cells: Int) -> [Float] {
 		// Where each output pixel reads from: the first of four cells and their weights.
@@ -141,8 +146,8 @@ enum WeatherRadarSmoothing {
 		var bases = [Int](repeating: 0, count: to)
 		var weights = [Float](repeating: 0, count: to * 4)
 		for out in 0..<to {
-			// Cell centers sit at index + 0.5; the first output pixel is one cell in.
-			let position = 1 + (Float(out) + 0.5) * step - 0.5
+			// Cell centers sit at index + 0.5; the first output pixel is past the padding.
+			let position = Float(WeatherRadarCellGrid.padding) + (Float(out) + 0.5) * step - 0.5
 			let base = Int(position.rounded(.down))
 			let t = position - Float(base)
 			bases[out] = base - 1
