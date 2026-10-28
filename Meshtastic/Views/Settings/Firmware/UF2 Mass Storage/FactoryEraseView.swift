@@ -50,6 +50,7 @@ struct FactoryEraseView: View {
 	/// the write can never run against a revoked security scope.
 	@State private var installTask: Task<Void, Never>?
 	@State private var driveURL: URL?
+	@State private var lastFault: BootloaderFault?
 
 	var body: some View {
 		SheetNavigationStack {
@@ -91,6 +92,10 @@ struct FactoryEraseView: View {
 							.fixedSize(horizontal: false, vertical: true)
 
 						chooseDriveButton()
+
+						if let lastFault {
+							BootloaderFaultNotice(fault: lastFault)
+						}
 					}
 
 					Divider()
@@ -268,6 +273,7 @@ struct FactoryEraseView: View {
 
 	private func handleDrivePick(_ result: Result<[URL], Error>) {
 		releaseDriveAccess()
+		lastFault = nil
 		do {
 			guard let url = try result.get().first else { return }
 			guard url.startAccessingSecurityScopedResource() else {
@@ -280,6 +286,7 @@ struct FactoryEraseView: View {
 				phase = .failed(String(localized: "That folder is not a UF2 bootloader drive — no INFO_UF2.TXT found. Select the drive the device mounts in DFU mode."))
 				return
 			}
+			lastFault = BootloaderFaultNotice.record(fromInfoText: infoText)
 			// A bootloader that erases itself takes one file for every board and needs
 			// no SoftDevice match. Anything else — line absent, or a family we do not
 			// ship — falls through to the SoftDevice-specific path unchanged.

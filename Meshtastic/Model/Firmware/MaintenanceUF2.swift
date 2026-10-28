@@ -629,4 +629,37 @@ enum OTAFIXBootloader {
 		}
 		return nil
 	}
+
+	/// Extracts the `Last-Fault: id=0x.. pc=0x.. info=0x..` line a 2.6.0+ bootloader adds
+	/// for a SoftDevice or SDK fault it recorded before this boot. Nil when the line is
+	/// absent or any of the three values is missing or not hex.
+	static func parseLastFault(fromInfoText text: String) -> BootloaderFault? {
+		for line in text.split(whereSeparator: \.isNewline) {
+			let trimmed = line.trimmingCharacters(in: .whitespaces)
+			guard trimmed.lowercased().hasPrefix("last-fault:") else { continue }
+			var values: [String: UInt32] = [:]
+			for token in trimmed.dropFirst("last-fault:".count).split(whereSeparator: \.isWhitespace) {
+				let pair = token.split(separator: "=", maxSplits: 1)
+				guard pair.count == 2, pair[1].lowercased().hasPrefix("0x"),
+					  let value = UInt32(pair[1].dropFirst(2), radix: 16) else { continue }
+				values[pair[0].lowercased()] = value
+			}
+			guard let id = values["id"], let pc = values["pc"], let info = values["info"] else { return nil }
+			return BootloaderFault(id: id, pc: pc, info: info)
+		}
+		return nil
+	}
+}
+
+/// A fault the nRF52 bootloader recorded and printed once in `INFO_UF2.TXT`. For an SDK
+/// error `info` is the error code.
+struct BootloaderFault: Equatable, Sendable {
+	let id: UInt32
+	let pc: UInt32
+	let info: UInt32
+
+	/// The values as the bootloader prints them, for logs and bug reports.
+	var summary: String {
+		"id=0x\(String(id, radix: 16)) pc=0x\(String(pc, radix: 16)) info=0x\(String(info, radix: 16))"
+	}
 }

@@ -138217,6 +138217,9 @@
         }
       }
     },
+    "The bootloader recorded a fault before this boot. Include this line when you report a problem with this radio." : {
+      "comment" : "Bootloader drive sheets: shown above the Last-Fault line the bootloader reported"
+    },
     "The broker closed the connection." : {
       "comment" : "Topic finder: sampler error",
       "localizations" : {
