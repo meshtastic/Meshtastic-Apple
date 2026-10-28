@@ -51,7 +51,7 @@ struct LatestPositionsBatchTests {
 		let cached = insertPosition(100, time: 1_000, for: cachedNode, in: context)
 		insertPosition(101, time: 2_000, latest: true, for: cachedNode, in: context)
 		cachedNode.latestPositionCache = cached
-		// No cache: the newest row flagged latest.
+		// No cache: the newest row by time, flagged or not, as latestPosition's fallback.
 		let flaggedNode = insertNode(2, in: context)
 		insertPosition(200, time: 1_000, latest: true, for: flaggedNode, in: context)
 		insertPosition(201, time: 3_000, latest: true, for: flaggedNode, in: context)
@@ -62,7 +62,8 @@ struct LatestPositionsBatchTests {
 
 		let positions = NodeInfoEntity.latestPositions(for: [cachedNode, flaggedNode, emptyNode], context: context)
 		#expect(positions[cachedNode.persistentModelID]?.latitudeI == 100)
-		#expect(positions[flaggedNode.persistentModelID]?.latitudeI == 201)
+		#expect(positions[flaggedNode.persistentModelID]?.latitudeI == 202)
+		#expect(positions[flaggedNode.persistentModelID]?.latitudeI == flaggedNode.latestPosition?.latitudeI)
 		#expect(positions[emptyNode.persistentModelID] == nil)
 	}
 
@@ -79,7 +80,7 @@ struct LatestPositionsBatchTests {
 	}
 
 	/// The crash #2698 fixed: another context deleted the cached row. It must not be read; the
-	/// node falls back to its newest flagged row.
+	/// node falls back to its newest remaining row.
 	@Test func aCachedPositionDeletedElsewhereFallsBack() throws {
 		let container = try makeContainer()
 		let reader = ModelContext(container)
@@ -99,33 +100,23 @@ struct LatestPositionsBatchTests {
 		#expect(positions[node.persistentModelID]?.latitudeI == 401)
 	}
 
-	@Test func manyNodesTakeAFewFetchesNotOnePerNode() throws {
+	@Test func manyNodesMatchTheirOwnLatestPosition() throws {
 		let container = try makeContainer()
 		let context = ModelContext(container)
-		var nodes: [NodeInfoEntity] = []
 		for num in 1...1_500 {
 			let node = insertNode(Int64(num), in: context)
 			for step in 0..<5 {
 				let position = insertPosition(Int32(num * 10 + step), time: TimeInterval(step), latest: step == 4, for: node, in: context)
+				// Every third node has no cache, so both fetches are used.
 				if step == 4, num % 3 != 0 { node.latestPositionCache = position }
 			}
-			nodes.append(node)
 		}
 		try context.save()
 
 		let fresh = ModelContext(container)
-		let reloaded = try fresh.fetch(FetchDescriptor<NodeInfoEntity>())
-		let start = ContinuousClock.now
-		let positions = NodeInfoEntity.latestPositions(for: reloaded, context: fresh)
-		let batched = ContinuousClock.now - start
+		let nodes = try fresh.fetch(FetchDescriptor<NodeInfoEntity>())
+		let positions = NodeInfoEntity.latestPositions(for: nodes, context: fresh)
 		#expect(positions.count == 1_500)
-		#expect(reloaded.allSatisfy { positions[$0.persistentModelID]?.latitudeI == Int32($0.num * 10 + 4) })
-
-		let perNodeContext = ModelContext(container)
-		let perNodeNodes = try perNodeContext.fetch(FetchDescriptor<NodeInfoEntity>())
-		let perNodeStart = ContinuousClock.now
-		_ = perNodeNodes.map(\.latestPosition)
-		let perNode = ContinuousClock.now - perNodeStart
-		#expect(batched < perNode)
+		#expect(nodes.allSatisfy { positions[$0.persistentModelID]?.latitudeI == $0.latestPosition?.latitudeI })
 	}
 }

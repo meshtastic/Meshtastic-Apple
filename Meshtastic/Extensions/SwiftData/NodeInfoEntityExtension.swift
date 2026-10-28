@@ -103,14 +103,18 @@ extension NodeInfoEntity {
 			}
 		}
 		if !uncachedNodeNums.isEmpty {
-			// The row ingest flags as each node's newest; the newest one wins if a node has several.
-			var latest = FetchDescriptor<PositionEntity>(
-				predicate: #Predicate<PositionEntity> { $0.latest == true }
+			// Each of those nodes' newest position by time, as latestPosition's own fallback picks,
+			// in one fetch scoped to them.
+			let nums = Array(uncachedNodeNums.keys)
+			var newest = FetchDescriptor<PositionEntity>(
+				predicate: #Predicate<PositionEntity> { position in
+					position.nodePosition.flatMap { nums.contains($0.num) } ?? false
+				},
+				sortBy: [SortDescriptor(\PositionEntity.time, order: .reverse)]
 			)
-			latest.relationshipKeyPathsForPrefetching = [\.nodePosition]
-			for row in (try? context.fetch(latest)) ?? [] {
-				guard let num = row.nodePosition?.num, let nodeID = uncachedNodeNums[num] else { continue }
-				if let current = result[nodeID], (current.time ?? .distantPast) >= (row.time ?? .distantPast) { continue }
+			newest.relationshipKeyPathsForPrefetching = [\.nodePosition]
+			for row in (try? context.fetch(newest)) ?? [] {
+				guard let num = row.nodePosition?.num, let nodeID = uncachedNodeNums[num], result[nodeID] == nil else { continue }
 				result[nodeID] = row
 			}
 		}
