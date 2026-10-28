@@ -25,6 +25,33 @@ enum DFUUpdateState: Equatable {
 	}
 }
 
+/// Whether a dropped BLE DFU starts over. From Meshtastic nRF52 Bootloader 2.6.0 the bootloader
+/// drops an unfinished transfer on disconnect and accepts a fresh START on the next connection.
+/// An older one keeps the stale session and answers START with invalid state, which NordicDFU
+/// reports as `.remoteLegacyDFUInvalidState`, not a lost link, so it ends the attempts.
+enum DFURestartPolicy {
+	static let maxRestarts = 3
+	static let delay: Duration = .seconds(2)
+
+	static func shouldRestart(linkLost: Bool, bootloaderTargetKnown: Bool, restartsSoFar: Int) -> Bool {
+		linkLost && bootloaderTargetKnown && restartsSoFar < maxRestarts
+	}
+}
+
+/// The default selector, remembering which peripheral it picked so a restart can go straight
+/// back to the bootloader, which may advertise at a different address from the application.
+private final class BootloaderPeripheralSelector: DFUPeripheralSelector {
+	private(set) var selectedIdentifier: UUID?
+
+	override func select(_ peripheral: CBPeripheral, advertisementData: [String: AnyObject], RSSI: NSNumber, hint name: String? = nil) -> Bool {
+		let selected = super.select(peripheral, advertisementData: advertisementData, RSSI: RSSI, hint: name)
+		if selected {
+			selectedIdentifier = peripheral.identifier
+		}
+		return selected
+	}
+}
+
 class DFUViewModel: NSObject, ObservableObject {
     // MARK: - Published Properties (UI Binding)
     @Published var progress: Double = 0.0
@@ -43,45 +70,96 @@ class DFUViewModel: NSObject, ObservableObject {
 	
     // MARK: - DFU Controller
     private var dfuController: DFUServiceController?
-    
+	private var selector = BootloaderPeripheralSelector()
+	private var zipFileUrl: URL?
+	private var targetIdentifier: UUID?
+	/// Set once START has been accepted. The bootloader has erased the application by then,
+	/// so the peripheral last connected to is the bootloader.
+	private var transferStarted = false
+	private var restarts = 0
+	private var restartTask: Task<Void, Never>?
+
     // MARK: - Start DFU
     /// Call this function from your SwiftUI View
     /// - Parameters:
     ///   - peripheral: The CoreBluetooth device you are connected to
     ///   - zipFileUrl: The local URL of the Firmware Zip file
     func startDFU(peripheral: CBPeripheral, zipFileUrl: URL) {
-        
-        guard let firmware = try? DFUFirmware(urlToZipFile: zipFileUrl) else {
+		self.zipFileUrl = zipFileUrl
+		self.targetIdentifier = peripheral.identifier
+		self.selector = BootloaderPeripheralSelector()
+		self.transferStarted = false
+		self.restarts = 0
+        self.didAbort = false
+        self.state = .uploading
+		Logger.services.info("NRF DFU: starting on \(peripheral.identifier.uuidString, privacy: .public)")
+		run(targetIdentifier: peripheral.identifier)
+    }
+
+	private func run(targetIdentifier: UUID) {
+		guard let zipFileUrl, let firmware = try? DFUFirmware(urlToZipFile: zipFileUrl) else {
 			Logger.services.error("NRF DFU: could not read the firmware zip")
-            self.state = .error("Invalid Zip File")
-            return
-        }
-        
-        // Setup the initiator
-        let initiator = DFUServiceInitiator(queue: .main, delegateQueue: .main)
-	
+			self.state = .error("Invalid Zip File")
+			return
+		}
+
+		let initiator = DFUServiceInitiator(queue: .main, delegateQueue: .main)
 		initiator.forceScanningForNewAddressInLegacyDfu = true
 		initiator.dataObjectPreparationDelay = 0.4
 		initiator.enableUnsafeExperimentalButtonlessServiceInSecureDfu = true
 		initiator.forceDfu = false
 		initiator.disableResume = true
 		initiator.packetReceiptNotificationParameter = 8
-		
-		// Set self as delegate
-        initiator.delegate = self
-        initiator.progressDelegate = self
-        initiator.logger = self // Optional: For debugging
-        
-        // Start the process
-        self.didAbort = false
-        self.state = .uploading
-		Logger.services.info("NRF DFU: starting on \(peripheral.identifier.uuidString, privacy: .public)")
+		initiator.peripheralSelector = selector
+		initiator.delegate = self
+		initiator.progressDelegate = self
+		initiator.logger = self
+
 		self.dfuController = initiator.with(firmware: firmware)
-			.start(target: peripheral)
-    }
-    
+			.start(targetWithIdentifier: targetIdentifier)
+	}
+
+	/// The peripheral to start over against: the bootloader the library scanned for after the
+	/// buttonless jump, or the original target when the bootloader kept its address.
+	private var bootloaderIdentifier: UUID? {
+		selector.selectedIdentifier ?? (transferStarted ? targetIdentifier : nil)
+	}
+
+	/// Starts the update over from START after the link dropped. Runs at once rather than
+	/// waiting on the user, since a board that still has a valid application leaves DFU after
+	/// 6 minutes without activity.
+	private func restart(after error: DFUError, message: String) -> Bool {
+		let linkLost = error == .deviceDisconnected || error == .failedToConnect
+		let bootloaderIdentifier = self.bootloaderIdentifier
+		guard DFURestartPolicy.shouldRestart(linkLost: linkLost, bootloaderTargetKnown: bootloaderIdentifier != nil, restartsSoFar: restarts),
+			  let bootloaderIdentifier else {
+			return false
+		}
+		restarts += 1
+		Logger.services.warning("NRF DFU: link lost (\(message, privacy: .public)), starting over, attempt \(self.restarts) of \(DFURestartPolicy.maxRestarts)")
+		targetIdentifier = bootloaderIdentifier
+		transferStarted = false
+		progress = 0
+		state = .starting
+		statusMessage = "Reconnecting..."
+		restartTask = Task { @MainActor [weak self] in
+			try? await Task.sleep(for: DFURestartPolicy.delay)
+			guard let self, !Task.isCancelled else { return }
+			self.restartTask = nil
+			self.run(targetIdentifier: bootloaderIdentifier)
+		}
+		return true
+	}
+
     // Abort function
     func abort() {
+		if let restartTask {
+			// Between attempts there is no library session to abort.
+			restartTask.cancel()
+			self.restartTask = nil
+			dfuStateDidChange(to: .aborted)
+			return
+		}
         _ = dfuController?.abort()
     }
 }
@@ -111,6 +189,7 @@ extension DFUViewModel: DFUServiceDelegate {
 			self.statusMessage = "Update Aborted"
 			self.didAbort = true
 		case .uploading:
+			self.transferStarted = true
 			self.state = .uploading
 			self.statusMessage = "Uploading..."
 		default:
@@ -120,6 +199,9 @@ extension DFUViewModel: DFUServiceDelegate {
     }
     
     func dfuError(_ error: DFUError, didOccurWithMessage message: String) {
+		if restart(after: error, message: message) {
+			return
+		}
 		self.state = .error(message)
 		self.statusMessage = "Error: \(message)"
     }
