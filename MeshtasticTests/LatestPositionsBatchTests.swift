@@ -126,7 +126,6 @@ struct LatestPositionsBatchTests {
 		let perNodeStart = ContinuousClock.now
 		_ = perNodeNodes.map(\.latestPosition)
 		let perNode = ContinuousClock.now - perNodeStart
-		print("latestPositions batched \(batched), per node \(perNode)")
 		#expect(batched < perNode)
 	}
 }
