@@ -63,6 +63,60 @@ extension NodeInfoEntity {
 		return try? ctx.fetch(descriptor).first
 	}
 
+	/// `latestPosition` for many nodes at once, keyed by each node's persistentModelID: one fetch
+	/// confirms every cached position through the store, and one more covers the nodes with no
+	/// cache, instead of a query or two per node. Same rules as `latestPosition`: a cached row is
+	/// confirmed through the store (a fetch loads its values, so another context's delete can't
+	/// trap a later read), and a context's own unsaved insert is taken as is.
+	static func latestPositions(for nodes: [NodeInfoEntity], context: ModelContext) -> [PersistentIdentifier: PositionEntity] {
+		var result: [PersistentIdentifier: PositionEntity] = [:]
+		var nodeForCachedID: [PersistentIdentifier: PersistentIdentifier] = [:]
+		var uncachedNodeNums: [Int64: PersistentIdentifier] = [:]
+		var numForNode: [PersistentIdentifier: Int64] = [:]
+		for node in nodes {
+			numForNode[node.persistentModelID] = node.num
+			guard let cached = node.latestPositionCache else {
+				uncachedNodeNums[node.num] = node.persistentModelID
+				continue
+			}
+			let cachedID = cached.persistentModelID
+			if (cachedID.storeIdentifier ?? "").isEmpty {
+				if cached.modelContext != nil, !cached.isDeleted { result[node.persistentModelID] = cached }
+			} else {
+				nodeForCachedID[cachedID] = node.persistentModelID
+			}
+		}
+		if !nodeForCachedID.isEmpty {
+			let cachedIDs = Array(nodeForCachedID.keys)
+			let byID = FetchDescriptor<PositionEntity>(
+				predicate: #Predicate<PositionEntity> { cachedIDs.contains($0.persistentModelID) }
+			)
+			var found = Set<PersistentIdentifier>()
+			for row in (try? context.fetch(byID)) ?? [] {
+				guard let nodeID = nodeForCachedID[row.persistentModelID] else { continue }
+				result[nodeID] = row
+				found.insert(row.persistentModelID)
+			}
+			// A cached row that's gone falls back like a node with no cache.
+			for (cachedID, nodeID) in nodeForCachedID where !found.contains(cachedID) {
+				if let num = numForNode[nodeID] { uncachedNodeNums[num] = nodeID }
+			}
+		}
+		if !uncachedNodeNums.isEmpty {
+			// The row ingest flags as each node's newest; the newest one wins if a node has several.
+			var latest = FetchDescriptor<PositionEntity>(
+				predicate: #Predicate<PositionEntity> { $0.latest == true }
+			)
+			latest.relationshipKeyPathsForPrefetching = [\.nodePosition]
+			for row in (try? context.fetch(latest)) ?? [] {
+				guard let num = row.nodePosition?.num, let nodeID = uncachedNodeNums[num] else { continue }
+				if let current = result[nodeID], (current.time ?? .distantPast) >= (row.time ?? .distantPast) { continue }
+				result[nodeID] = row
+			}
+		}
+		return result
+	}
+
 	func positionCount(context: ModelContext? = nil) -> Int {
 		guard let ctx = context ?? modelContext else { return 0 }
 		let nodeNum = self.num
