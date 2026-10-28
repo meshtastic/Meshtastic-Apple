@@ -29,15 +29,16 @@ struct FirmwareOTAUpdateSheetTests {
 
 	@Test("A dropped DFU starts over against a known bootloader, up to the restart limit")
 	func testDFURestartPolicy() {
-		#expect(DFURestartPolicy.shouldRestart(linkLost: true, bootloaderTargetKnown: true, restartsSoFar: 0))
-		#expect(DFURestartPolicy.shouldRestart(linkLost: true, bootloaderTargetKnown: true, restartsSoFar: DFURestartPolicy.maxRestarts - 1))
-		#expect(!DFURestartPolicy.shouldRestart(linkLost: true, bootloaderTargetKnown: true, restartsSoFar: DFURestartPolicy.maxRestarts))
+		#expect(DFURestartPolicy.shouldRestart(linkLost: true, bootloaderTargetKnown: true, finishing: false, restartsSoFar: 0))
+		#expect(DFURestartPolicy.shouldRestart(linkLost: true, bootloaderTargetKnown: true, finishing: false, restartsSoFar: DFURestartPolicy.maxRestarts - 1))
+		#expect(!DFURestartPolicy.shouldRestart(linkLost: true, bootloaderTargetKnown: true, finishing: false, restartsSoFar: DFURestartPolicy.maxRestarts))
 	}
 
-	@Test("A DFU error that is not a lost link, or with no bootloader to return to, does not restart")
+	@Test("A DFU error that is not a lost link, with no bootloader to return to, or after a stop or activation, does not restart")
 	func testDFURestartPolicyRefuses() {
-		#expect(!DFURestartPolicy.shouldRestart(linkLost: false, bootloaderTargetKnown: true, restartsSoFar: 0))
-		#expect(!DFURestartPolicy.shouldRestart(linkLost: true, bootloaderTargetKnown: false, restartsSoFar: 0))
+		#expect(!DFURestartPolicy.shouldRestart(linkLost: false, bootloaderTargetKnown: true, finishing: false, restartsSoFar: 0))
+		#expect(!DFURestartPolicy.shouldRestart(linkLost: true, bootloaderTargetKnown: false, finishing: false, restartsSoFar: 0))
+		#expect(!DFURestartPolicy.shouldRestart(linkLost: true, bootloaderTargetKnown: true, finishing: true, restartsSoFar: 0))
 	}
 
 	@Test("LocalOTAStatusCode descriptions match expected values")

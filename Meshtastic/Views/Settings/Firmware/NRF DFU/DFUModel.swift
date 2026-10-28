@@ -27,14 +27,16 @@ enum DFUUpdateState: Equatable {
 
 /// Whether a dropped BLE DFU starts over. From Meshtastic nRF52 Bootloader 2.6.0 the bootloader
 /// drops an unfinished transfer on disconnect and accepts a fresh START on the next connection.
-/// An older one keeps the stale session and answers START with invalid state, which NordicDFU
-/// reports as `.remoteLegacyDFUInvalidState`, not a lost link, so it ends the attempts.
+/// An older one answers that START with invalid state, and NordicDFU resets it and reconnects on
+/// its own; the restart limit bounds whatever is left.
 enum DFURestartPolicy {
 	static let maxRestarts = 3
 	static let delay: Duration = .seconds(2)
 
-	static func shouldRestart(linkLost: Bool, bootloaderTargetKnown: Bool, restartsSoFar: Int) -> Bool {
-		linkLost && bootloaderTargetKnown && restartsSoFar < maxRestarts
+	/// `finishing` covers a user stop and the disconnect after activation, when the device is
+	/// booting its new firmware and a fresh session would reach it.
+	static func shouldRestart(linkLost: Bool, bootloaderTargetKnown: Bool, finishing: Bool, restartsSoFar: Int) -> Bool {
+		linkLost && bootloaderTargetKnown && !finishing && restartsSoFar < maxRestarts
 	}
 }
 
@@ -73,9 +75,14 @@ class DFUViewModel: NSObject, ObservableObject {
 	private var selector = BootloaderPeripheralSelector()
 	private var zipFileUrl: URL?
 	private var targetIdentifier: UUID?
-	/// Set once START has been accepted. The bootloader has erased the application by then,
-	/// so the peripheral last connected to is the bootloader.
+	/// Set when the upload begins. START has erased the application by then, so the peripheral
+	/// last connected to is the bootloader.
 	private var transferStarted = false
+	/// The bootloader every restart goes back to, kept once known since a restart's own session
+	/// never reports `.uploading` if it fails to connect.
+	private var restartTarget: UUID?
+	private var stopRequested = false
+	private var activating = false
 	private var restarts = 0
 	private var restartTask: Task<Void, Never>?
 
@@ -89,6 +96,9 @@ class DFUViewModel: NSObject, ObservableObject {
 		self.targetIdentifier = peripheral.identifier
 		self.selector = BootloaderPeripheralSelector()
 		self.transferStarted = false
+		self.restartTarget = nil
+		self.stopRequested = false
+		self.activating = false
 		self.restarts = 0
         self.didAbort = false
         self.state = .uploading
@@ -122,7 +132,7 @@ class DFUViewModel: NSObject, ObservableObject {
 	/// The peripheral to start over against: the bootloader the library scanned for after the
 	/// buttonless jump, or the original target when the bootloader kept its address.
 	private var bootloaderIdentifier: UUID? {
-		selector.selectedIdentifier ?? (transferStarted ? targetIdentifier : nil)
+		restartTarget ?? selector.selectedIdentifier ?? (transferStarted ? targetIdentifier : nil)
 	}
 
 	/// Starts the update over from START after the link dropped. Runs at once rather than
@@ -131,14 +141,18 @@ class DFUViewModel: NSObject, ObservableObject {
 	private func restart(after error: DFUError, message: String) -> Bool {
 		let linkLost = error == .deviceDisconnected || error == .failedToConnect
 		let bootloaderIdentifier = self.bootloaderIdentifier
-		guard DFURestartPolicy.shouldRestart(linkLost: linkLost, bootloaderTargetKnown: bootloaderIdentifier != nil, restartsSoFar: restarts),
+		guard DFURestartPolicy.shouldRestart(
+				linkLost: linkLost,
+				bootloaderTargetKnown: bootloaderIdentifier != nil,
+				finishing: stopRequested || activating,
+				restartsSoFar: restarts
+			  ),
 			  let bootloaderIdentifier else {
 			return false
 		}
 		restarts += 1
 		Logger.services.warning("NRF DFU: link lost (\(message, privacy: .public)), starting over, attempt \(self.restarts) of \(DFURestartPolicy.maxRestarts)")
-		targetIdentifier = bootloaderIdentifier
-		transferStarted = false
+		restartTarget = bootloaderIdentifier
 		progress = 0
 		state = .starting
 		statusMessage = "Reconnecting..."
@@ -153,6 +167,7 @@ class DFUViewModel: NSObject, ObservableObject {
 
     // Abort function
     func abort() {
+		stopRequested = true
 		if let restartTask {
 			// Between attempts there is no library session to abort.
 			restartTask.cancel()
@@ -181,6 +196,7 @@ extension DFUViewModel: DFUServiceDelegate {
 			self.rotatingMessage = "Firmware Update Successful!"
 			self.progress = 1.0
 		case .disconnecting:
+			self.activating = true
 			UIApplication.shared.isIdleTimerDisabled = false
 			self.statusMessage = "Disconnecting..."
 		case .aborted:
@@ -200,6 +216,11 @@ extension DFUViewModel: DFUServiceDelegate {
     
     func dfuError(_ error: DFUError, didOccurWithMessage message: String) {
 		if restart(after: error, message: message) {
+			return
+		}
+		if stopRequested {
+			// A stop during a connect attempt ends as a connect failure, not `.aborted`.
+			dfuStateDidChange(to: .aborted)
 			return
 		}
 		self.state = .error(message)
