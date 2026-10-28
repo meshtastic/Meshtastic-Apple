@@ -136,8 +136,8 @@ class DFUViewModel: NSObject, ObservableObject {
 	}
 
 	/// Starts the update over from START after the link dropped. Runs at once rather than
-	/// waiting on the user, since a board that still has a valid application leaves DFU after
-	/// 6 minutes without activity.
+	/// waiting on the user: a drop before START leaves a valid application, which the bootloader
+	/// boots after 6 minutes without activity. After START it waits in DFU with no application.
 	private func restart(after error: DFUError, message: String) -> Bool {
 		let linkLost = error == .deviceDisconnected || error == .failedToConnect
 		let bootloaderIdentifier = self.bootloaderIdentifier
