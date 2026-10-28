@@ -177,22 +177,22 @@
             "board",
             "nrf52",
             "copy",
+            "instead",
             "bluetooth",
             "without",
             "shows",
-            "instead",
             "erase",
+            "button",
             "version",
             "target",
             "tap",
             "later",
+            "installed",
             "connected",
             "connect",
-            "button",
-            "back",
-            "artwork"
+            "back"
         ],
-        "charCount": 10759
+        "charCount": 10804
     },
     {
         "id": "getting-started",
