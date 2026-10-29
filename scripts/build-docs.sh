@@ -146,7 +146,7 @@ print(html, end="")
 ')"
 
     # Rewrite internal .md hrefs to .html so in-app WKWebView links work
-    html_content="$(echo "$html_content" | sed 's|href="\([^"]*\)\.md"|href="\1.html"|g')"
+    html_content="$(echo "$html_content" | sed -E 's|href="([^"#]*)\.md(#[^"]*)?"|href="\1.html\2"|g')"
 
     local title
     # Extract first H1 as title; fall back to stem
