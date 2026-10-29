@@ -62,9 +62,9 @@
 </table>
 <p><strong>Do not close the app or move out of Bluetooth range during a firmware update.</strong></p>
 <h2>Upgrading the Bootloader (nRF52)</h2>
-<p>Radios with an nRF52 processor can install the <a href="https://github.com/meshtastic/nRF52_Bootloader">Meshtastic nRF52 Bootloader</a> (formerly OTAFIX), which makes Bluetooth firmware updates faster and more reliable. When your connected radio supports it, a <strong>Bootloader</strong> section appears on the Firmware Updates screen.</p>
+<p>Radios with an nRF52 processor can install the <a href="https://github.com/meshtastic/nRF52_Bootloader">Meshtastic nRF52 Bootloader</a> , which makes Bluetooth firmware updates faster and more reliable. When your connected radio supports it, a <strong>Bootloader</strong> section appears on the Firmware Updates screen.</p>
 <ol>
-<li>Tap <strong>Upgrade Bootloader</strong> and follow the steps: reboot the radio into DFU mode (or double-press its reset button) and connect it to this device with a USB cable. The radio appears as a USB drive. The T1000-E and the MeshTracker X1 have no reset button; from OTAFIX 2.5, hold their button while the radio powers on, for about 3 seconds, instead.</li>
+<li>Tap <strong>Upgrade Bootloader</strong> and follow the steps: reboot the radio into DFU mode (or double-press its reset button) and connect it to this device with a USB cable. The radio appears as a USB drive. On the T1000-E and MeshTracker X1, hold the button for about 3 seconds while the radio powers on.</li>
 <li>Choose the radio's drive in the file picker. The app reads the drive's <code>INFO_UF2.TXT</code> file to identify the board — the board on the drive decides which image is installed, so the wrong file can never be written to your hardware.</li>
 <li>Tap <strong>Install Bootloader Update</strong>. The app downloads the image for your board, checks it against the checksum published for that board, and writes it to the drive. The radio installs the bootloader and reboots itself.</li>
 </ol>
@@ -73,20 +73,20 @@
 <h2>Factory Erase (nRF52)</h2>
 <p>Factory erase wipes an nRF52 radio from its bootloader drive — the owner, channels, identity keys, settings, Bluetooth bonds, and node database are permanently removed. Because it runs from the bootloader, it works on a radio whose firmware cannot boot, and it is the right way to wipe a radio before selling or handing it off.</p>
 <ol>
-<li>Tap <strong>Factory Erase</strong> in the Maintenance section, put the radio in DFU mode (double-press its reset button if the app cannot reach it; on the T1000-E and MeshTracker X1, hold the button through power-on instead), and connect it by USB.</li>
+<li>Tap <strong>Factory Erase</strong> in the Maintenance section, put the radio in DFU mode (double-press its reset button if the app cannot reach it), and connect it by USB.</li>
 <li>Choose the radio's drive in the file picker. The app reads the drive's <code>INFO_UF2.TXT</code> to choose the erase file, so the wrong file can never be written.</li>
 <li>Confirm the erase. The app downloads the file, checks it against its published checksum and against what the drive reported, and writes it to the drive. The radio erases itself.</li>
 </ol>
-<p>What happens next depends on the bootloader. A Meshtastic nRF52 Bootloader from OTAFIX 2.4 on erases its own settings itself and keeps the installed firmware: the radio comes back as a bootloader drive for a few seconds, and unplugging it starts the firmware as a brand-new device. On older bootloaders only the SoftDevice and bootloader remain, so install firmware next from the Firmware Updates screen. Nothing is restored automatically either way.</p>
+<p>What happens next depends on the bootloader. A recent bootloader erases its own settings and keeps the installed firmware: the radio comes back as a bootloader drive for a few seconds, and unplugging it starts the firmware as a brand-new device. On older bootloaders only the SoftDevice and bootloader remain, so install firmware next from the Firmware Updates screen. Nothing is restored automatically either way.</p>
 <h2>Bootloader Behavior (nRF52)</h2>
-<p>A radio running the Meshtastic nRF52 Bootloader behaves like this while its drive is up. Behavior marked 2.6.0 and later needs a bootloader from that release.</p>
+<p>With the Meshtastic nRF52 Bootloader 2.6.0 and later, the radio's drive works like this.</p>
 <ul>
-<li><strong>Backup.</strong> <code>CURRENT.UF2</code> on the drive is a copy of the installed firmware. Copy it off to keep a backup, and copy it back onto the drive to reinstall that firmware.</li>
-<li><strong>Screen.</strong> On a radio with a screen the bootloader drives (2.6.0 and later), the title reads BOOTLOADER during a bootloader upgrade, ERASE during a factory erase, WRONG FILE for a file the board cannot take, and NO FIRMWARE when no firmware is installed, and a progress bar shows the copy.</li>
-<li><strong>Wrong file.</strong> A firmware file whose data would land on the installed Bluetooth stack is refused as WRONG FILE (2.6.0 and later). Earlier bootloaders write it.</li>
-<li><strong>Interrupted copy.</strong> Pulling the cable mid-copy leaves the radio with no firmware instead of a broken one (2.6.0 and later). Plugged into a computer again it comes back as the drive; copy the firmware once more.</li>
-<li><strong>Idle.</strong> A radio with firmware installed that sits in DFU mode for 6 minutes with no update activity boots that firmware (2.6.0 and later). A radio with no firmware keeps waiting.</li>
-<li><strong>Single-button boards.</strong> On the T1000-E and the MeshTracker X1, eject the drive to leave DFU mode without copying a file; unplugging does not leave it.</li>
+<li><strong>Backup.</strong> <code>CURRENT.UF2</code> is a copy of the installed firmware. Copy it off to keep a backup, or back onto the drive to reinstall it.</li>
+<li><strong>Screen.</strong> The title reads BOOTLOADER, ERASE, WRONG FILE or NO FIRMWARE, and a progress bar shows the copy.</li>
+<li><strong>Wrong file.</strong> A firmware file that would overwrite the Bluetooth stack is refused as WRONG FILE.</li>
+<li><strong>Interrupted copy.</strong> If the cable is pulled mid-copy, the radio has no firmware. Plug it in again and copy the firmware once more.</li>
+<li><strong>Idle.</strong> A radio with firmware boots it after 6 minutes in DFU mode with no activity. A radio with no firmware keeps waiting.</li>
+<li><strong>Single-button boards.</strong> On the T1000-E and MeshTracker X1, eject the drive to leave DFU mode without copying a file.</li>
 </ul>
 <h2>During the Transfer</h2>
 <p>While a supported OTA transfer is active, the update screen rotates short tips, and you can tap <strong>Play Chirpy Hop</strong> to play without leaving the updater. Firmware progress remains visible above the game, and the back button returns to the normal update screen at any time. Keep the Meshtastic app in the foreground until the update finishes.</p>
@@ -121,7 +121,7 @@
 <ul>
 <li>Keep the radio within 1–2 meters of your phone during the update.</li>
 <li>If the radio appears bricked after a failed update, it can usually be recovered using the <a href="https://flasher.meshtastic.org/">Meshtastic Flasher</a> on a computer.</li>
-<li>On the Meshtastic nRF52 Bootloader 2.6.0 and later, a Bluetooth update that dropped partway can start over without resetting the radio. On battery, a radio with no firmware waits for a Bluetooth update. Plugged into a computer, it comes up as its bootloader drive instead, with NO FIRMWARE on its screen, and does not advertise over Bluetooth; copy the firmware <code>.uf2</code> for your board onto the drive, or use the Meshtastic Flasher.</li>
+<li>With bootloader 2.6.0 and later, a dropped Bluetooth update can start over without resetting the radio. A radio with no firmware waits for a Bluetooth update on battery. Plugged into a computer, it shows as the bootloader drive and does not advertise over Bluetooth; copy the firmware <code>.uf2</code> for your board onto the drive, or use the Meshtastic Flasher.</li>
 </ul>
 <p><strong>Firmware below the supported minimum</strong>
 The radio stays connected and the app shows the firmware update screen, with everything else blocked until the radio is updated. Update from that screen, or disconnect to use a different radio.</p>
