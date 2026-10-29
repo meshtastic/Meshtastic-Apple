@@ -4,23 +4,26 @@ The 360° images the visionOS cinema wraps around the viewer. Each is rendered i
 
 Run `build.sh` to render them at full size and copy them into `Packages/CinemaContent` as HEIC. Run `build.sh --preview` for a quick 2048-wide render in `out/`. It needs Blender 5.2 or later in /Applications and [uv](https://docs.astral.sh/uv/), which fetches Pillow, numpy and resvg-py for `make_textures.py`.
 
-## The tent and its furnishings
+## How the scenes are built
 
-The scenes are split in two:
-
-- `tent_base.py` is the tent every environment shares: a 5.6 × 5.6 m frame tent, with the viewer in the middle about 2.8 m from every wall, with canvas walls, clear vinyl windows, a groundsheet floor, the string lights, the Meshtastic branding, the dusk forest outside, the seated camera, the render settings, and the anchors file, including the "screen" anchor on the front wall where the app puts its screen (an anchor only; nothing is drawn there). Its `Layout` says where the windows, banner, poster and plaque go.
+- `room_base.py` is what every environment shares, whatever the room: the seated camera at the origin, the sky and light from an HDRI, the render settings, `anchor()` and `screen_anchor()`, the anchors file, and small helpers for building the scene. `render_room(build, hdri)` starts an empty scene, calls `build()`, renders and writes the anchors. The build fails if `build()` places no screen or the HDRI isn't in `cache/`.
+- `tent_base.py` builds the tent on top of that: a 5.6 × 5.6 m frame tent, with the viewer in the middle about 2.8 m from every wall, with canvas walls, clear vinyl windows, a groundsheet floor, the string lights, the Meshtastic branding, the dusk forest outside, and the "screen" anchor on the front wall where the app puts its screen (an anchor only; nothing is drawn there). Its `Layout` says where the windows, banner, poster and plaque go.
 - An environment script, such as `sar_tent.py`, adds its own furniture, lights and boards in a `furnish(layout)` function and calls `tent_base.render(furnish)`.
 
-Blender's +Y is the image's center: the front wall, left plain for the app window. +X is the viewer's right and Z is up, with the viewer at the origin at seated eye height.
+Blender's +Y is the image's center: where the screen goes, on the tent's plain front wall. +X is the viewer's right and Z is up, with the viewer at the origin at seated eye height.
 
 ### Adding an environment
 
-1. Copy `sar_tent.py` to `<name>.py` and change `furnish()`. Keep the front wall clear. To move the windows or the branding away from your furniture, pass your own `tent_base.Layout(...)` to `render()`; set an item to None to leave it out. `furnish()` gets the same layout.
-2. For each board the app should draw on, make a plane and call `anchor("<id>", plane, width, height)`. The plane's +X is the board's right and its +Z faces the viewer.
-3. Add `environment <name>` at the end of `build.sh` and run it. It writes `<name>.heic` and `<name>_anchors.json` into `Packages/CinemaContent`.
-4. Add a case to `CinemaEnvironment` with `imageName` set to `<name>`.
+See [Cinema Environments](../../docs/developer/cinema-environments.md) for what makes a place work in the cinema and the rules for its assets.
 
-Since the camera, eye height and axes come from `tent_base.py`, the anchors an environment writes line up with its image the same way the tent's do.
+1. For a tent, copy `sar_tent.py` to `<name>.py` and change `furnish()`. Keep the front wall clear. To move the windows or the branding away from your furniture, pass your own `tent_base.Layout(...)` to `render()`; set an item to None to leave it out. `furnish()` gets the same layout.
+   For any other room, write `<name>.py` with a `build()` that makes the room and calls `screen_anchor(center, rotation)` on a plain surface the viewer faces, and end it with `room_base.render_room(build, "<hdri file>")`.
+2. For each board the app should draw on, make a plane and call `anchor("<id>", plane, width, height)`. The plane's +X is the board's right and its +Z faces the viewer.
+3. For a new HDRI, add `hdri <polyhaven-name> <resolution>` to `build.sh`. It downloads to `cache/<name>_<resolution>.hdr`.
+4. Add `environment <name>` at the end of `build.sh` and run it. It writes `<name>.heic` and `<name>_anchors.json` into `Packages/CinemaContent`.
+5. Add a case to `CinemaEnvironment` with `imageName` set to `<name>`.
+
+Since the camera, eye height and axes come from `room_base.py`, the anchors an environment writes line up with its image the same way the tent's do.
 
 ## Search and rescue tent
 
@@ -43,7 +46,7 @@ The render also writes `sar_tent_anchors.json`, which `build.sh` copies next to 
 
 ## Sources
 
-- The tent, furniture and lighting are modeled in `tent_base.py` and `sar_tent.py`.
+- The tent, furniture and lighting are modeled in `room_base.py`, `tent_base.py` and `sar_tent.py`.
 - The topo map and the whiteboard are drawn by `make_textures.py`.
 - The banner, poster and plaque use the app's own artwork, rasterized from its SVGs by `make_textures.py` with resvg (the `resvg-py` package; chosen because it needs no system libraries, unlike cairosvg, and keeps transparency, unlike `qlmanage`): the Meshtastic mark (`Meshtastic/Resources/AppIcon.icon/Assets/Meshtastic Logo.svg`), the wordmark (`meshtastic-wordmark-white.imageset`), Chirpy (`Chirpy.imageset`) and the Meshtastic Solutions mark (`MeshtasticSolutionsMark.imageset`). The plaque follows the layout of the one in the visionOS Hardware Showcase.
 - The forest seen through the door and the windows is the "Sunset Forest" HDRI from Poly Haven (https://polyhaven.com/a/sunset_forest), released under CC0. `build.sh` downloads it into `cache/`.

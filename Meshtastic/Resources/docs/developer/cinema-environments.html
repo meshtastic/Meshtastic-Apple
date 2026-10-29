@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cinema Environments</title>
+  <link rel="stylesheet" href="../assets/docs.css">
+</head>
+<body data-page="cinema-environments">
+<h1>Cinema Environments</h1>
+<p>On Apple Vision Pro, the <a href="../user/cinema.html">Cinema</a> puts the app on a big screen inside a place: so far, a search and rescue tent. Each place is a 360° image rendered in Blender from a Python script in <code>scripts/cinema/</code>, plus an anchors file that says where the app's screen and boards go. This page is for anyone who wants to add a place of their own: a ham shack, a fire lookout, a hilltop.</p>
+<p>Open an issue describing the place first, and wait for a maintainer to add the <code>approved</code> label before building it.</p>
+<h2>How it works</h2>
+<ul>
+<li>The image is one equirectangular panorama, 2:1, rendered from a seated viewer at the origin, 1.15 m above the floor. The app wraps it on a sphere 50 m around the viewer.</li>
+<li>The render also writes <code>&lt;name&gt;_anchors.json</code>: each board's center, size and facing, relative to the camera. The app places its live panels from it, so moving a board in the scene and rendering again moves the panel with it.</li>
+<li>The app pushes each panel out along the lines from the viewer until it sits just inside the sphere, and grows it to match. It covers the same part of the view, and has the same depth as the painting around it.</li>
+</ul>
+<p>In Blender, +Y is the center of the image, where the screen usually goes. +X is the viewer's right and Z is up.</p>
+<h2>What the image can and can't do</h2>
+<p>The image is flat: one picture, with no depth of its own. That decides what looks right.</p>
+<ul>
+<li>Things at room distance (about 2.5–3 m) look fine. The tent's walls are all about 2.8 m away.</li>
+<li>Things close to the viewer look painted on and shift wrongly when you move your head. Keep near surfaces plain, keep the floor close by simple, and put the detail on the walls and the furniture against them. Real 3D models placed in front of the image float, so the app doesn't do that.</li>
+<li>The screen needs a plain surface the viewer faces, with nothing in the picture behind or around it that the screen would cut through.</li>
+</ul>
+<h2>Boards</h2>
+<table>
+<thead>
+<tr>
+<th>Board</th>
+<th>Id</th>
+<th>Required</th>
+<th>What the app draws</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Screen</td>
+<td><code>screen</code></td>
+<td>Yes</td>
+<td>The app's sections, with tabs above. Use <code>screen_anchor()</code>; it's 2.6 m wide by default, in the screen's shape. Nothing is drawn in the image there.</td>
+</tr>
+<tr>
+<td>Team Status</td>
+<td><code>teamStatus</code></td>
+<td>No</td>
+<td>Favorite nodes and the connected radio. The tent uses a 1.35 × 0.9 m whiteboard.</td>
+</tr>
+<tr>
+<td>Trace route</td>
+<td><code>traceRoute</code></td>
+<td>No</td>
+<td>The latest trace route's card. The tent uses a 1.1 × 0.9 m framed print.</td>
+</tr>
+</tbody>
+</table>
+<p>A board is a plane passed to <code>anchor(&quot;&lt;id&gt;&quot;, plane, width, height)</code>. The plane's +X is the board's right and its +Z faces the viewer. Paint the board blank in the image (the app covers it), and light it about as bright as the panel will be, so the frame around it matches. The app skips any optional board an environment leaves out.</p>
+<h2>Building a place</h2>
+<p>There are two ways in:</p>
+<ul>
+<li><strong>A furnished tent.</strong> Copy <code>scripts/cinema/sar_tent.py</code>, change its <code>furnish(layout)</code>, and call <code>tent_base.render(furnish)</code>. The tent shell, lights, windows, branding, dusk forest and the screen on the front wall come with it.</li>
+<li><strong>A room of your own.</strong> Write a <code>build()</code> that makes the room, its furniture, lights and boards, and calls <code>screen_anchor(center, rotation)</code>. Then call <code>room_base.render_room(build, &quot;&lt;hdri file&gt;&quot;)</code>. <code>room_base.py</code> gives you the camera, the render settings, the anchors file and small helpers (<code>box</code>, <code>plane</code>, <code>cylinder</code>, <code>material</code>, …). For a screen on a side wall, <code>rotation</code> is <code>(math.pi / 2, 0, -side * math.pi / 2)</code>, with <code>side</code> 1 for the right wall and -1 for the left.</li>
+</ul>
+<p>Then:</p>
+<ol>
+<li>Add <code>environment &lt;name&gt;</code> at the end of <code>scripts/cinema/build.sh</code>. Use <code>build.sh --preview</code> for a quick 2048-wide render in <code>scripts/cinema/out/</code>, and <code>build.sh</code> for the full size. The full build writes <code>&lt;name&gt;.heic</code> and <code>&lt;name&gt;_anchors.json</code> into <code>Packages/CinemaContent</code>.</li>
+<li>Add a case to <code>CinemaEnvironment</code> in <code>Meshtastic/Helpers/Cinema/CinemaEnvironment.swift</code> with a localized title, <code>imageName</code> set to <code>&lt;name&gt;</code>, and placeholder colors for the backdrop shown if the image can't be loaded.</li>
+<li>List every asset's source in <code>scripts/cinema/README.md</code>.</li>
+</ol>
+<p>The build fails if the scene has no screen, or if its HDRI isn't in <code>cache/</code>.</p>
+<h2>The sky and the light: HDRIs</h2>
+<p>What's outside the room, and much of its light, comes from an HDRI: a 360° photo that keeps how bright each part of the scene really is. Poly Haven's are CC0. Add one with an <code>hdri &lt;name&gt; &lt;resolution&gt;</code> line in <code>build.sh</code>, which downloads it to <code>cache/&lt;name&gt;_&lt;resolution&gt;.hdr</code>, and pass that file name to <code>render_room</code>. <code>hdri_rotation</code> turns it (in degrees) to put the sun where you want it, and <code>hdri_strength</code> sets how much light it gives.</p>
+<p>4K is enough when the HDRI is only seen through a door or windows, as in the tent. When it's most of the view, as on a hilltop or in a fire lookout's glass cab, use 8K or more, or it will look soft.</p>
+<h2>Rules for assets</h2>
+<ul>
+<li>Everything must be CC0 or your own work, with its source in <code>scripts/cinema/README.md</code>. No manufacturer logos or other marks.</li>
+<li>Keep the Meshtastic mark. A place can carry Meshtastic branding as the tent does; it never replaces it with another logo.</li>
+<li>Build from scripts so the image can be rebuilt. Don't commit <code>.blend</code> files or rendered PNGs; only the HEIC and its anchors ship.</li>
+</ul>
+<h2>Trying it</h2>
+<p>Build for the visionOS 26.5 simulator and launch with <code>--meshtastic-open-cinema</code>. The app opens the Cinema a few seconds after launch. Pick your place under <strong>Environment</strong> on the control panel, then check that:</p>
+<ul>
+<li>the screen sits on the surface you meant</li>
+<li>each board lines up with its painted frame</li>
+<li>nothing near the viewer looks wrong as you move</li>
+</ul>
+<p>Then try it on a headset if you have one.</p>
+</body>
+</html>

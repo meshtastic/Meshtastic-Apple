@@ -14,6 +14,8 @@ Recent architectural and procedural changes from roughly the last 12 months. New
 Show roughly the last 12 months of changes; archive entries older than a year by removing them.
 -->
 
+**Oct 2026** — [Cinema Environments](cinema-environments.md) — The cinema's render scripts split into `room_base.py` (camera, HDRI, render settings, anchors) and `tent_base.py` (the tent), so an environment can be a room other than the tent, with its own HDRI and its own screen placement. New page on building one.
+
 **Jul 2026** — [SwiftData](swiftdata.md) — Protobufs bumped to `b6ad0e5` (protobufs#983) for the packet authenticity policy: `Config.SecurityConfig.packet_signature_policy` (field 9, `COMPATIBLE`/`BALANCED`/`STRICT`) and the read-only `DeviceMetadata.has_xeddsa` capability (field 14). Both map to additive V1 properties — `SecurityConfigEntity.packetSignaturePolicy` and `DeviceMetadataEntity.hasXeddsa` — so no new `VersionedSchema`/`MigrationStage` was required. Also additive from the same bump: `interdevice` SD-card commands, the `HM330X` telemetry sensor, the `FAB` firmware edition, and an EU_868 deprecation comment. Display accessors for the policy live in `Extensions/Protobufs/Config+PacketSignaturePolicy.swift`, the first file in that directory.
 
 **Jul 2026** — [Codebase Guide](codebase.md) — `Meshtastic.xcodeproj` is now generated from `project.yml` via XcodeGen instead of being hand-maintained; most source directories (including `Meshtastic/Views/`) are Xcode 16 synchronized folders, so new files no longer need any project-file editing. A CI check (`xcodegen-drift.yml`) regenerates the project on every PR and fails if the committed project drifts from `project.yml`.
