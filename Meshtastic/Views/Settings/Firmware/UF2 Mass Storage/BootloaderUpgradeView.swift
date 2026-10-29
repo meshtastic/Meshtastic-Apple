@@ -41,6 +41,7 @@ struct BootloaderUpgradeView: View {
 	/// The security-scoped drive URL from the folder picker. Access is started
 	/// when granted and stopped when this view goes away or a new pick begins.
 	@State private var driveURL: URL?
+	@State private var lastFault: BootloaderFault?
 
 	var body: some View {
 		SheetNavigationStack {
@@ -86,6 +87,10 @@ struct BootloaderUpgradeView: View {
 							.fixedSize(horizontal: false, vertical: true)
 
 						chooseDriveButton()
+
+						if let lastFault {
+							BootloaderFaultNotice(fault: lastFault)
+						}
 					}
 
 					Divider()
@@ -248,6 +253,7 @@ struct BootloaderUpgradeView: View {
 
 	private func handleDrivePick(_ result: Result<[URL], Error>) {
 		releaseDriveAccess()
+		lastFault = nil
 		do {
 			guard let url = try result.get().first else { return }
 			guard url.startAccessingSecurityScopedResource() else {
@@ -260,6 +266,7 @@ struct BootloaderUpgradeView: View {
 				phase = .failed(String(localized: "That folder is not a UF2 bootloader drive — no INFO_UF2.TXT found. Select the drive the device mounts in DFU mode."))
 				return
 			}
+			lastFault = BootloaderFaultNotice.record(fromInfoText: infoText)
 			guard let boardID = OTAFIXBootloader.parseBoardID(fromInfoText: infoText) else {
 				phase = .failed(String(localized: "INFO_UF2.TXT has no Board-ID line, so the board cannot be identified safely."))
 				return
