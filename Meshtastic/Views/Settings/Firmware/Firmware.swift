@@ -301,7 +301,7 @@ private struct FirmwareContentView: View {
 				} header: {
 					Text("Maintenance")
 				} footer: {
-					Text("OTAFIX is Meshtastic's improved nRF52 bootloader with faster, more reliable Bluetooth firmware updates. Factory erase wipes the radio's flash from its bootloader drive — the recovery path when firmware cannot boot.")
+					Text("The Meshtastic nRF52 Bootloader (formerly OTAFIX) makes Bluetooth firmware updates faster and more reliable. Factory erase wipes the radio's flash from its bootloader drive, and is the recovery path when firmware cannot boot.")
 				}
 			}
 		}

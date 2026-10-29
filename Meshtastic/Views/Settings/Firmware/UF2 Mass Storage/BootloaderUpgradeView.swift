@@ -52,7 +52,7 @@ struct BootloaderUpgradeView: View {
 							.font(.title2)
 							.foregroundStyle(.blue)
 
-						Text("OTAFIX is Meshtastic's improved nRF52 bootloader with faster, more reliable Bluetooth firmware updates. The upgrade is written from the device's own bootloader drive.")
+						Text("The Meshtastic nRF52 Bootloader (formerly OTAFIX) makes Bluetooth firmware updates faster and more reliable. The upgrade is written from the device's own bootloader drive.")
 							.font(.callout)
 					}
 					.padding()
@@ -265,7 +265,7 @@ struct BootloaderUpgradeView: View {
 				return
 			}
 			guard let image = OTAFIXBootloader.image(forBoardID: boardID) else {
-				phase = .failed(String(localized: "No OTAFIX bootloader is available for board \"\(boardID)\". Nothing was written."))
+				phase = .failed(String(localized: "No Meshtastic nRF52 Bootloader is available for board \"\(boardID)\". Nothing was written."))
 				return
 			}
 			phase = .resolved(boardID: boardID, image: image)
