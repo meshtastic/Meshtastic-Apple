@@ -27,7 +27,9 @@ hdri() {
 	local name="$1" res="$2"
 	local file="$HERE/cache/${name}_${res}.hdr"
 	if [ ! -f "$file" ]; then
-		curl -sfL -o "$file" "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/$res/${name}_${res}.hdr"
+		# To a temporary name first, so a broken download is never taken for a finished one.
+		curl -sfL -o "$file.part" "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/$res/${name}_${res}.hdr"
+		mv "$file.part" "$file"
 	fi
 }
 

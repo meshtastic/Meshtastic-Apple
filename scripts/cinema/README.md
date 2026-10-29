@@ -17,7 +17,7 @@ Blender's +Y is the image's center: where the screen goes, on the tent's plain f
 See [Cinema Environments](../../docs/developer/cinema-environments.md) for what makes a place work in the cinema and the rules for its assets.
 
 1. For a tent, copy `sar_tent.py` to `<name>.py` and change `furnish()`. Keep the front wall clear. To move the windows or the branding away from your furniture, pass your own `tent_base.Layout(...)` to `render()`; set an item to None to leave it out. `furnish()` gets the same layout.
-   For any other room, write `<name>.py` with a `build()` that makes the room and calls `screen_anchor(center, rotation)` on a plain surface the viewer faces, and end it with `room_base.render_room(build, "<hdri file>")`.
+   For any other room, write `<name>.py` with a `build()` that makes the room and calls `screen_anchor(center, rotation)` on a plain surface the viewer faces, and end it with `room_base.render_room(build, "<hdri file>")`. Like `sar_tent.py`, it adds its own folder to `sys.path` before importing from `room_base`; the guide has a starting script.
 2. For each board the app should draw on, make a plane and call `anchor("<id>", plane, width, height)`. The plane's +X is the board's right and its +Z faces the viewer.
 3. For a new HDRI, add `hdri <polyhaven-name> <resolution>` to `build.sh`. It downloads to `cache/<name>_<resolution>.hdr`.
 4. Add `environment <name>` at the end of `build.sh` and run it. It writes `<name>.heic` and `<name>_anchors.json` into `Packages/CinemaContent`.

@@ -22,12 +22,9 @@ import bpy
 from mathutils import Vector
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-# The shared helpers are imported here by name so environment scripts can keep importing them
-# from tent_base.
-from room_base import (  # noqa: E402, F401
+from room_base import (  # noqa: E402
     CACHE,
     EYE_HEIGHT,
-    anchor,
     box,
     cylinder,
     image_material,

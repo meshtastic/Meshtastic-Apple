@@ -43,6 +43,27 @@ There are two ways in:
 - **A furnished tent.** Copy `scripts/cinema/sar_tent.py`, change its `furnish(layout)`, and call `tent_base.render(furnish)`. The tent shell, lights, windows, branding, dusk forest and the screen on the front wall come with it.
 - **A room of your own.** Write a `build()` that makes the room, its furniture, lights and boards, and calls `screen_anchor(center, rotation)`. Then call `room_base.render_room(build, "<hdri file>")`. `room_base.py` gives you the camera, the render settings, the anchors file and small helpers (`box`, `plane`, `cylinder`, `material`, …). For a screen on a side wall, `rotation` is `(math.pi / 2, 0, -side * math.pi / 2)`, with `side` 1 for the right wall and -1 for the left.
 
+A room of your own starts like this. Blender runs the script directly, so it has to add its own folder to the import path before it can import `room_base`:
+
+```python
+import math
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from room_base import EYE_HEIGHT, box, material, render_room, screen_anchor  # noqa: E402
+
+
+def build():
+    wall = material("Wall", (0.55, 0.5, 0.42), 0.8)
+    box("Front", (6, 0.1, 2.6), (0, 3, 1.3), wall)
+    # ... the other walls, the floor, furniture, lights and boards ...
+    screen_anchor((0, 2.9, EYE_HEIGHT + 0.2), (math.pi / 2, 0, 0))
+
+
+render_room(build, "sunset_forest_4k.hdr")
+```
+
 Then:
 
 1. Add `environment <name>` at the end of `scripts/cinema/build.sh`. Use `build.sh --preview` for a quick 2048-wide render in `scripts/cinema/out/`, and `build.sh` for the full size. The full build writes `<name>.heic` and `<name>_anchors.json` into `Packages/CinemaContent`.
