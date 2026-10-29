@@ -556,8 +556,13 @@ actor MeshPackets {
 			return []
 		}
 		let userLocation = CLLocation(latitude: userLatitude, longitude: userLongitude)
-		return results.compactMap {
-			WatchNode.make(from: $0, userLocation: userLocation, maxDistanceMeters: maxDistanceMeters)
+		// Every node's latest position in a couple of fetches, not a query per node: on a big mesh
+		// the per-node reads held the main thread for seconds on every watch update.
+		let positions = NodeInfoEntity.latestPositions(for: results, context: modelContext)
+		return results.compactMap { node in
+			positions[node.persistentModelID].flatMap {
+				WatchNode.make(from: node, position: $0, userLocation: userLocation, maxDistanceMeters: maxDistanceMeters)
+			}
 		}
 	}
 

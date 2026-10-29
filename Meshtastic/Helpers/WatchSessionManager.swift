@@ -173,6 +173,12 @@ struct WatchNode: Codable, Sendable {
 	let snr: Float?
 
 	static func make(from nodeInfo: NodeInfoEntity, userLocation: CLLocation, maxDistanceMeters: Double) -> WatchNode? {
+		guard let position = nodeInfo.latestPosition else { return nil }
+		return make(from: nodeInfo, position: position, userLocation: userLocation, maxDistanceMeters: maxDistanceMeters)
+	}
+
+	/// The node with a position already looked up, as the watch snapshot does for all nodes at once.
+	static func make(from nodeInfo: NodeInfoEntity, position pos: PositionEntity, userLocation: CLLocation, maxDistanceMeters: Double) -> WatchNode? {
 		// Liveness screens. These are a cheap backstop, not the fix: they only see
 		// deletions made through the entity's own context, which is why the walk kept
 		// crashing (`58e0e820`) when run on the main context against the ingest
@@ -182,7 +188,7 @@ struct WatchNode: Codable, Sendable {
 		// removal, database clear).
 		guard nodeInfo.modelContext != nil, !nodeInfo.isDeleted else { return nil }
 		guard let user = nodeInfo.user, user.modelContext != nil, !user.isDeleted else { return nil }
-		guard let pos = nodeInfo.latestPosition, pos.modelContext != nil, !pos.isDeleted else { return nil }
+		guard pos.modelContext != nil, !pos.isDeleted else { return nil }
 
 		let latI = pos.latitudeI
 		let lonI = pos.longitudeI
