@@ -14,7 +14,7 @@ Recent user-facing changes from roughly the last 12 months. Newest at the top.
 Show roughly the last 12 months of changes; archive entries older than a year by removing them.
 -->
 
-**Nov 2026** — [Firmware Updates](firmware.md#bootloader-behavior-nrf52) — The bootloader pages now describe the Meshtastic nRF52 Bootloader (formerly OTAFIX): what the drive does, the 2.6.0 behavior after an interrupted copy or Bluetooth update, and how the single-button T1000-E and MeshTracker X1 enter and leave DFU mode.
+**Nov 2026** — [Firmware Updates](firmware.md#bootloader-behavior-nrf52) — New section on how the Meshtastic nRF52 Bootloader drive works, including the T1000-E and MeshTracker X1.
 
 **Nov 2026** — [Settings](settings.md#data-management) — Messages, nodes and telemetry from before 2.7.25 are recovered when the app starts, or for another radio, when you switch to it: that update moved the app's database and left the old one unused. Switching radios backs up the previous radio again, and if the backup fails the switch stops and nothing is deleted. Bringing in data from an earlier version now happens after the app opens, so a large database no longer gets the app closed at launch.
 
