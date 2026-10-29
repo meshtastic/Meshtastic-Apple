@@ -21,11 +21,20 @@ DEST="$ROOT/Packages/CinemaContent/Sources/CinemaContent/Environments"
 HEIC_QUALITY=88
 mkdir -p "$HERE/cache" "$HERE/out"
 
-# Poly Haven "Sunset Forest" (CC0), the view out of the tent's door and windows.
-HDRI="$HERE/cache/sunset_forest_4k.hdr"
-if [ ! -f "$HDRI" ]; then
-	curl -sfL -o "$HDRI" https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/4k/sunset_forest_4k.hdr
-fi
+# Downloads a Poly Haven HDRI (CC0) into cache/ as <name>_<res>.hdr, the file an environment
+# names in render_room().
+hdri() {
+	local name="$1" res="$2"
+	local file="$HERE/cache/${name}_${res}.hdr"
+	if [ ! -f "$file" ]; then
+		# To a temporary name first, so a broken download is never taken for a finished one.
+		curl -sfL -o "$file.part" "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/$res/${name}_${res}.hdr"
+		mv "$file.part" "$file"
+	fi
+}
+
+# "Sunset Forest", the view out of the tent's door and windows.
+hdri sunset_forest 4k
 
 # Pinned so a new release can't quietly change the artwork.
 uv run --quiet --with pillow==13.0.0 --with numpy==2.5.4 --with resvg-py==0.5.0 python "$HERE/make_textures.py"

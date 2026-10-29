@@ -23,26 +23,28 @@ import bpy
 from mathutils import Matrix, Vector
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from tent_base import (  # noqa: E402
-    BACK_Y,
+from room_base import (  # noqa: E402
     CACHE,
-    HALF_WIDTH,
-    RIDGE_HEIGHT,
-    WALL_HEIGHT,
     anchor,
     box,
     cylinder,
-    facing_in,
     image_material,
     link,
     material,
     mesh_object,
     plane,
-    render,
-    sag,
     smooth,
     sphere,
     torus,
+)
+from tent_base import (  # noqa: E402
+    BACK_Y,
+    HALF_WIDTH,
+    RIDGE_HEIGHT,
+    WALL_HEIGHT,
+    facing_in,
+    render,
+    sag,
 )
 
 

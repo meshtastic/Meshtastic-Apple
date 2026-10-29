@@ -936,6 +936,45 @@
         "charCount": 2163
     },
     {
+        "id": "cinema-environments",
+        "title": "Cinema Environments",
+        "section": "developer",
+        "navOrder": 12,
+        "keywords": [
+            "screen",
+            "room",
+            "cinema",
+            "build",
+            "app",
+            "tent",
+            "image",
+            "viewer",
+            "render",
+            "name",
+            "board",
+            "scripts",
+            "place",
+            "hdri",
+            "from",
+            "wall",
+            "own",
+            "import",
+            "add",
+            "file",
+            "each",
+            "base",
+            "anchors",
+            "anchor",
+            "then",
+            "right",
+            "plane",
+            "path",
+            "panel",
+            "one"
+        ],
+        "charCount": 6192
+    },
+    {
         "id": "codebase",
         "title": "Codebase Guide",
         "section": "developer",
@@ -997,6 +1036,7 @@
             "guard",
             "documentation",
             "changes",
+            "apple",
             "app",
             "under",
             "tests",
@@ -1008,10 +1048,9 @@
             "ios",
             "install",
             "github",
-            "generated",
-            "deep"
+            "generated"
         ],
-        "charCount": 3970
+        "charCount": 4043
     },
     {
         "id": "deep-links",
@@ -1348,20 +1387,20 @@
             "app",
             "added",
             "yml",
+            "tent",
             "telemetry",
             "policy",
+            "page",
             "packet",
             "module",
             "lora",
             "links",
             "jul",
+            "into",
             "firmware",
             "file",
-            "field",
-            "documented",
-            "additive",
-            "xcodegen"
+            "field"
         ],
-        "charCount": 4683
+        "charCount": 4969
     }
 ]
