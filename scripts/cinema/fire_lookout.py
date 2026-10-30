@@ -680,9 +680,8 @@ SOLAR_NODE_MOUNT = Vector((0.0027, 0.117, -0.0376))
 
 
 def outside():
-    """On the catwalk: a Solar Node on a mast clamped to a railing post outside the right window,
-    the Meshtastic flag on a staff at the front-right corner, and the fire danger sign on the
-    railing outside the back-right window."""
+    """On the catwalk: a Solar Node on a mast clamped to a railing post outside the right window
+    and the Meshtastic flag on a staff at the front-right corner."""
     steel = material("MastSteel", (0.15, 0.15, 0.16), 0.4, metallic=0.9)
     clamp = material("Clamp", (0.02, 0.02, 0.02), 0.45)
     # The node, up above the railing where the window frames it, panel turned to the seat.
@@ -710,12 +709,6 @@ def outside():
     banner = image_material("Flag", os.path.join(CACHE, "banner.png"), 0.9)
     flag = plane("Flag", 0.6, 0.3, (fx - 0.3, fy + 0.02, 2.4), (math.pi / 2, 0, 0), banner)
     flag.rotation_euler = (math.pi / 2, 0, math.radians(-8))
-
-    # The fire danger sign hung on the railing outside the back-right window, facing in.
-    sx, sy = HALF + CATWALK - 0.09, -1.725
-    sign = image_material("FireDanger", os.path.join(CACHE, "fire_danger.png"), 0.6)
-    box("SignBoard", (0.03, 0.62, 0.47), (sx, sy, RAIL - 0.05), material("SignBoard", (0.3, 0.22, 0.14), 0.7))
-    plane("Sign", 0.6, 0.45, (sx - 0.016, sy, RAIL - 0.05), facing_in("right"), sign)
 
 
 # MARK: - Boards
@@ -793,4 +786,6 @@ def build():
 
 # Kiara 8 at sunset, turned so the sun is behind the viewer's right shoulder, lighting the cab
 # through the back and right windows and leaving the screen wall in shade.
-render_room(build, "kiara_8_sunset_8k.hdr", hdri_rotation=3, hdri_strength=1.0)
+# The sunset lights the cab but is not painted: the app puts the sky, and the terrain when it has
+# some, behind the glass (sky.py renders the skies).
+render_room(build, "kiara_8_sunset_8k.hdr", hdri_rotation=3, hdri_strength=1.0, cutout=True)

@@ -8,8 +8,7 @@
 #  Draws the flat textures the scenes use: a topo map, a blank whiteboard, and the Meshtastic
 #  banner, Chirpy poster and Meshtastic Solutions plaque; for the ham shack, a wall of QSL
 #  cards, two clock faces, a radio's display, two meter faces, an FT8 screen, a band plan chart, and its books' spines and covers; and
-#  for the fire lookout, its danger sign and radio display. All but the branding are
-#  generated here.
+#  for the fire lookout, its radio display. All but the branding are generated here.
 #  The branding uses the app's own artwork, rasterized from its SVGs with resvg (the resvg-py
 #  package), so it is never redrawn. Writes PNGs into cache/.
 #  build.sh runs it with uv, which supplies Pillow, numpy and resvg-py.
@@ -448,28 +447,6 @@ def book_cover(path, title, line, color, ink, w=880, h=1120):
 
 # MARK: - Fire lookout
 
-def fire_danger(path, w=1200, h=900):
-    """The fire danger sign on the lookout's railing: five colored wedges from LOW to EXTREME, with
-    the arrow on HIGH."""
-    image = Image.new("RGB", (w, h), (240, 234, 210))
-    draw = ImageDraw.Draw(image)
-    draw.rectangle([0, 0, w, 150], fill=(140, 30, 24))
-    draw.text((w / 2, 75), "FIRE DANGER TODAY", fill=(255, 250, 235), font=font("Arial Bold.ttf", 84), anchor="mm")
-    cx, cy, r = w / 2, h * 0.92, h * 0.62
-    levels = [("LOW", (60, 130, 70)), ("MODERATE", (70, 110, 190)), ("HIGH", (240, 200, 40)), ("VERY HIGH", (235, 130, 30)), ("EXTREME", (190, 40, 30))]
-    for i, (name, color) in enumerate(levels):
-        start, end = 180 + i * 36, 180 + (i + 1) * 36
-        draw.pieslice([cx - r, cy - r, cx + r, cy + r], start, end, fill=color, outline=(40, 30, 20), width=4)
-        angle = math.radians(start + 18)
-        label = font("Arial Bold.ttf", 34)
-        draw.text((cx + r * 0.72 * math.cos(angle), cy + r * 0.72 * math.sin(angle)), name, fill=(30, 25, 20), font=label, anchor="mm")
-    draw.pieslice([cx - r * 0.42, cy - r * 0.42, cx + r * 0.42, cy + r * 0.42], 180, 360, fill=(240, 234, 210))
-    angle = math.radians(270)
-    draw.polygon([(cx + r * 0.6 * math.cos(angle), cy + r * 0.6 * math.sin(angle)), (cx - 22, cy), (cx + 22, cy)], fill=(30, 25, 20))
-    draw.ellipse([cx - 26, cy - 26, cx + 26, cy + 26], fill=(30, 25, 20))
-    image.save(path)
-
-
 def lookout_radio(path, w=900, h=270):
     """The lookout's VHF base radio display: the channel and a lit S-meter."""
     image = Image.new("RGB", (w, h), (4, 18, 10))
@@ -508,7 +485,6 @@ def main():
         book_spine(os.path.join(OUT, f"spine_{i:02d}.png"), title, author, color, thickness, height)
     for i, (title, line, color, ink) in enumerate(COVERS):
         book_cover(os.path.join(OUT, f"cover_{i}.png"), title, line, color, ink)
-    fire_danger(os.path.join(OUT, "fire_danger.png"))
     lookout_radio(os.path.join(OUT, "lookout_radio.png"))
     print("textures written to", OUT)
 

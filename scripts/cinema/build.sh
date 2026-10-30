@@ -37,6 +37,8 @@ hdri() {
 hdri sunset_forest 4k
 # "Kiara 8" at sunset, the mountains round the fire lookout. 8K, since it is most of the view.
 hdri kiara_8_sunset 8k
+# A clear sunset sky with no horizon in it, for the lookout when the app draws real terrain.
+hdri kloppenheim_06_puresky 4k
 
 # Pinned so a new release can't quietly change the artwork.
 uv run --quiet --with pillow==13.0.0 --with numpy==2.5.4 --with resvg-py==0.5.0 python "$HERE/make_textures.py"
@@ -58,6 +60,20 @@ environment() {
 	echo "Wrote $DEST/$name.heic and ${name}_anchors.json"
 }
 
+# Renders an HDRI alone as <name>.heic, the sky an environment with a cutout image shows behind
+# its glass: sky <name> <hdri file> <rotation> <strength>.
+sky() {
+	local name="$1" file="$2" rotation="$3" strength="$4"
+	rm -f "$HERE/out/$name.png"
+	if [ "$PREVIEW" = 1 ]; then
+		"$BLENDER" -b --python-exit-code 1 -P "$HERE/sky.py" -- --hdri "$file" --rotation "$rotation" --strength "$strength" --out "$HERE/out/${name}_preview.png" --width 2048 --samples 16
+		return
+	fi
+	"$BLENDER" -b --python-exit-code 1 -P "$HERE/sky.py" -- --hdri "$file" --rotation "$rotation" --strength "$strength" --out "$HERE/out/$name.png" --width 4096 --samples 16
+	sips -s format heic -s formatOptions "$HEIC_QUALITY" "$HERE/out/$name.png" --out "$DEST/$name.heic" >/dev/null
+	echo "Wrote $DEST/$name.heic"
+}
+
 PREVIEW=0
 if [ "${1:-}" = "--preview" ]; then
 	PREVIEW=1
@@ -66,3 +82,8 @@ fi
 environment sar_tent
 environment ham_shack
 environment fire_lookout
+# The lookout's skies: the sunset it was lit by, and a clear sky with the sun in the same place
+# (both suns were found by rendering each sky alone and looking for its brightest pixel) and no
+# mountains in it, for behind real terrain.
+sky fire_lookout_sky kiara_8_sunset_8k.hdr 3 1
+sky fire_lookout_puresky kloppenheim_06_puresky_4k.hdr 5.5 1

@@ -40,7 +40,7 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 	/// board; the ham shack's is where net control logs the check-ins.
 	var statusBoardTitle: String {
 		switch self {
-		case .sarTent:
+		case .sarTent, .fireLookout:
 			String(localized: "Status Board", comment: "Cinema: title of the board of the nodes' status messages in the tent")
 		case .hamShack:
 			String(localized: "Net Check-In", comment: "Cinema: title of the ham shack's status board, where net control logs the check-ins")
@@ -52,17 +52,46 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 	var statusBoardPortrait: Bool {
 		switch self {
 		case .sarTent, .hamShack: true
+		case .fireLookout: false
 		}
 	}
 
 	/// What the status board says while no node has a status message.
 	var statusBoardEmptyTitle: String {
 		switch self {
-		case .sarTent:
+		case .sarTent, .fireLookout:
 			String(localized: "No status yet", comment: "Cinema: shown on the tent's status board while no node has a status message")
 		case .hamShack:
 			String(localized: "No check-ins yet", comment: "Cinema: shown on the ham shack's check-in board while no node has a status message")
 		}
+	}
+
+	/// Whether the image is a cutout: transparent wherever the camera saw past the room's glass, so
+	/// a sky, and real terrain when the app has some, are drawn behind it.
+	var isCutout: Bool {
+		self == .fireLookout
+	}
+
+	/// The sky painted behind a cutout: the one the room was lit by, with its own horizon.
+	var skyImageName: String? {
+		switch self {
+		case .fireLookout: "fire_lookout_sky"
+		default: nil
+		}
+	}
+
+	/// The same sky with nothing below the horizon, for behind real terrain.
+	var clearSkyImageName: String? {
+		switch self {
+		case .fireLookout: "fire_lookout_puresky"
+		default: nil
+		}
+	}
+
+	/// Where the sun is in a cutout's sky, so terrain can be shaded to match: degrees clockwise
+	/// from the image's center, and above the horizon.
+	var sun: (azimuth: Float, elevation: Float) {
+		(134, 5)
 	}
 
 	/// Turns the backdrop and its boards together about the viewer, radians to the left, so the
