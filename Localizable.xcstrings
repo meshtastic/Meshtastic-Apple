@@ -506,7 +506,15 @@
       }
     },
     "Move the cinema panel" : {
-      "comment" : "Cinema: VoiceOver label for the bar under the panel that moves it"
+      "comment" : "Cinema: VoiceOver label for the bar under the panel that moves it",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移動劇院面板"
+          }
+        }
+      }
     },
     "Move the control panel" : {
       "comment" : "Showcase: VoiceOver label for the bar under the control panel that moves it",
@@ -527,7 +535,15 @@
       }
     },
     "Move the model stand" : {
-      "comment" : "Cinema: VoiceOver label for the bar under the device model's stand that moves it"
+      "comment" : "Cinema: VoiceOver label for the bar under the device model's stand that moves it",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移動模型展示台"
+          }
+        }
+      }
     },
     "Next rack page" : {
       "comment" : "Showcase: show the next page of the wall rack",
@@ -541,10 +557,26 @@
       }
     },
     "Pick up to turn it over" : {
-      "comment" : "Cinema: VoiceOver hint for the device model on the stand in front of the seat"
+      "comment" : "Cinema: VoiceOver hint for the device model on the stand in front of the seat",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拿起即可翻轉"
+          }
+        }
+      }
     },
     "Put the model away" : {
-      "comment" : "Cinema: button on the card beside a device model on the stand; takes the model away"
+      "comment" : "Cinema: button on the card beside a device model on the stand; takes the model away",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "收起模型"
+          }
+        }
+      }
     },
     "Radios on this page" : {
       "comment" : "Showcase: menu listing the radios on the wall rack page that's showing; picking one opens its card",
@@ -671,10 +703,26 @@
       }
     },
     "Show the map in 2D" : {
-      "comment" : "VoiceOver label for the map button that flattens a tilted map"
+      "comment" : "VoiceOver label for the map button that flattens a tilted map",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "以 2D 顯示地圖"
+          }
+        }
+      }
     },
     "Show the map in 3D" : {
-      "comment" : "VoiceOver label for the map button that tilts the map"
+      "comment" : "VoiceOver label for the map button that tilts the map",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "以 3D 顯示地圖"
+          }
+        }
+      }
     },
     "Standing" : {
       "comment" : "Showcase: the viewer is standing",
@@ -4159,6 +4207,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "s"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "秒"
           }
         }
       }
@@ -8258,7 +8312,15 @@
       }
     },
     "+%lld more" : {
-      "comment" : "Cinema team board: how many favorite nodes didn't fit on the board"
+      "comment" : "Cinema team board: how many favorite nodes didn't fit on the board",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "還有 %lld 個"
+          }
+        }
+      }
     },
     "[%lld items]" : {
       "localizations" : {
@@ -24480,7 +24542,15 @@
       }
     },
     "Base" : {
-      "comment" : "Cinema team board: the hops column for the connected radio, the base distances are measured from"
+      "comment" : "Cinema team board: the hops column for the connected radio, the base distances are measured from",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "基準點"
+          }
+        }
+      }
     },
     "Battery" : {
       "localizations" : {
@@ -33997,7 +34067,15 @@
       }
     },
     "Connect a radio and favorite the nodes you're tracking to list them here." : {
-      "comment" : "Cinema team board: how to fill the empty board"
+      "comment" : "Cinema team board: how to fill the empty board",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "連線無線電並將您追蹤的節點加入最愛，即可在此列出。"
+          }
+        }
+      }
     },
     "Connect to a Node" : {
       "localizations" : {
@@ -35751,7 +35829,15 @@
       }
     },
     "Continue in the app window" : {
-      "comment" : "Cinema: the front screen while the radio is locked or needs a firmware update, which only the app window can handle"
+      "comment" : "Cinema: the front screen while the radio is locked or needs a firmware update, which only the app window can handle",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請在應用程式視窗中繼續"
+          }
+        }
+      }
     },
     "Continuous Location Updates" : {
       "comment" : "A toggle that enables continuous location updates.",
@@ -36580,7 +36666,15 @@
       }
     },
     "Could not download terrain for the coverage estimate." : {
-      "comment" : "Error when a terrain tile for the coverage estimate could not be downloaded"
+      "comment" : "Error when a terrain tile for the coverage estimate could not be downloaded",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法下載涵蓋範圍估算所需的地形。"
+          }
+        }
+      }
     },
     "Could not find node" : {
       "localizations" : {
@@ -37077,7 +37171,15 @@
       }
     },
     "Coverage needs a frequency between 30 and 6000 MHz." : {
-      "comment" : "Error and form hint when the coverage frequency is outside what the propagation model accepts"
+      "comment" : "Error and form hint when the coverage frequency is outside what the propagation model accepts",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "涵蓋範圍估算需要 30 至 6000 MHz 之間的頻率。"
+          }
+        }
+      }
     },
     "Coverage Opacity" : {
       "comment" : "Spatial map menu: how see-through the coverage overlay is",
@@ -52446,7 +52548,15 @@
       }
     },
     "Favorite nodes to add them to the board." : {
-      "comment" : "Cinema team board: hint shown when only the connected radio is listed"
+      "comment" : "Cinema team board: hint shown when only the connected radio is listed",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "將節點加入最愛即可新增至看板。"
+          }
+        }
+      }
     },
     "Favorited and ignored nodes are always retained. Other nodes are cleared from the app database on the schedule set by the user. (Nodes with PKC keys are always retained for at least 7 days.) This feature only purges nodes from the app that are not stored in the device node database." : {
       "localizations" : {
@@ -79458,6 +79568,12 @@
             "state" : "new",
             "value" : "MHz"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MHz"
+          }
         }
       }
     },
@@ -91050,6 +91166,12 @@
             "state" : "new",
             "value" : "ms"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "毫秒"
+          }
         }
       }
     },
@@ -91482,6 +91604,12 @@
             "state" : "new",
             "value" : "Maximum number of stored messages returned per request. 0 uses 25."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每次請求最多回傳的已儲存訊息數量。設為 0 時使用 25。"
+          }
         }
       }
     },
@@ -91583,6 +91711,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "How far back, in minutes, stored messages are returned. 0 uses 240."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "回傳已儲存訊息的時間範圍（分鐘）。設為 0 時使用 240。"
           }
         }
       }
@@ -91877,6 +92011,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Maximum number of messages to store. 0 uses three quarters of free PSRAM."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最多可儲存的訊息數量。設為 0 時使用可用 PSRAM 的四分之三。"
           }
         }
       }
@@ -98680,7 +98820,14 @@
       }
     },
     "No Meshtastic nRF52 Bootloader is available for board \"%@\". Nothing was written." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "沒有適用於主機板「%@」的 Meshtastic nRF52 開機載入程式。未寫入任何內容。"
+          }
+        }
+      }
     },
     "No Nearby Meshes" : {
       "comment" : "A title for a view that shows when a user has no nearby meshes.",
@@ -99137,7 +99284,15 @@
       }
     },
     "No radio connected" : {
-      "comment" : "Cinema team board: shown in the corner when no radio is connected"
+      "comment" : "Cinema team board: shown in the corner when no radio is connected",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未連線無線電"
+          }
+        }
+      }
     },
     "No radio interface" : {
       "comment" : "RoutingError.display",
@@ -99416,7 +99571,15 @@
       }
     },
     "No team yet" : {
-      "comment" : "Cinema team board: shown when there's no radio connected and no favorite nodes"
+      "comment" : "Cinema team board: shown when there's no radio connected and no favorite nodes",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尚無團隊"
+          }
+        }
+      }
     },
     "No time limit" : {
       "comment" : "A label that indicates that a lockdown session has no",
@@ -99467,7 +99630,15 @@
       }
     },
     "No trace routes yet" : {
-      "comment" : "Cinema trace route board: shown when no trace route has come back yet"
+      "comment" : "Cinema trace route board: shown when no trace route has come back yet",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尚無追蹤路由"
+          }
+        }
+      }
     },
     "Node" : {
       "localizations" : {
@@ -103519,10 +103690,26 @@
       }
     },
     "Open 3D Map" : {
-      "comment" : "Cinema: opens the 3D map volume from the panel in the immersive cinema"
+      "comment" : "Cinema: opens the 3D map volume from the panel in the immersive cinema",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開啟 3D 地圖"
+          }
+        }
+      }
     },
     "Open App Window" : {
-      "comment" : "Cinema: opens the app's main window from the immersive cinema"
+      "comment" : "Cinema: opens the app's main window from the immersive cinema",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開啟應用程式視窗"
+          }
+        }
+      }
     },
     "Open Compass" : {
       "localizations" : {
@@ -103601,7 +103788,15 @@
       }
     },
     "Open in App Window" : {
-      "comment" : "Button on a panel in the immersive space, shown in place of something that only works in the app window (sharing, saving a file, Apple Maps)"
+      "comment" : "Button on a panel in the immersive space, shown in place of something that only works in the app window (sharing, saving a file, Apple Maps)",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在應用程式視窗中開啟"
+          }
+        }
+      }
     },
     "Open in Maps" : {
       "localizations" : {
@@ -110375,7 +110570,14 @@
       }
     },
     "Precipitation from NOAA radar, lower 48 states only. Needs a network connection." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "降水資料來自 NOAA 雷達，僅涵蓋美國本土 48 州。需要網路連線。"
+          }
+        }
+      }
     },
     "Precise Location" : {
       "localizations" : {
@@ -114076,7 +114278,15 @@
       }
     },
     "Receiver height" : {
-      "comment" : "Coverage estimate form: how high above the ground the receiving node's antenna is."
+      "comment" : "Coverage estimate form: how high above the ground the receiving node's antenna is.",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "接收端高度"
+          }
+        }
+      }
     },
     "Recipient Ack: %@" : {
       "extractionState" : "stale",
@@ -122731,7 +122941,15 @@
       }
     },
     "Section" : {
-      "comment" : "Cinema: the picker above the front screen that picks the app section it shows"
+      "comment" : "Cinema: the picker above the front screen that picks the app section it shows",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "區塊"
+          }
+        }
+      }
     },
     "Sections to Import" : {
       "localizations" : {
@@ -131673,7 +131891,15 @@
       }
     },
     "Signal" : {
-      "comment" : "Cinema team board: column header for the node's signal bars"
+      "comment" : "Cinema team board: column header for the node's signal bars",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "訊號"
+          }
+        }
+      }
     },
     "Signal (Direct Only)" : {
       "comment" : "Settings control",
@@ -137243,7 +137469,15 @@
       }
     },
     "Team Status" : {
-      "comment" : "Cinema: title of the live team roster on the tent's whiteboard"
+      "comment" : "Cinema: title of the live team roster on the tent's whiteboard",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "團隊狀態"
+          }
+        }
+      }
     },
     "telemetry" : {
       "comment" : "Search keyword",
@@ -137731,7 +137965,15 @@
       }
     },
     "Terrain data © [Mapterhorn](https://mapterhorn.com/attribution)" : {
-      "comment" : "Credit for the terrain the coverage estimate uses, with a link to its attribution page"
+      "comment" : "Credit for the terrain the coverage estimate uses, with a link to its attribution page",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "地形資料 © [Mapterhorn](https://mapterhorn.com/attribution)"
+          }
+        }
+      }
     },
     "Terrain Download Failed" : {
       "comment" : "Spatial map: alert title when downloading terrain for the volume fails",
@@ -139349,7 +139591,15 @@
       }
     },
     "The latest trace route you send or hear shows here." : {
-      "comment" : "Cinema trace route board: what fills the empty board"
+      "comment" : "Cinema trace route board: what fills the empty board",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "您送出或收到的最新追蹤路由會顯示在這裡。"
+          }
+        }
+      }
     },
     "The maximum interval that can elapse without a node broadcasting a position" : {
       "localizations" : {
@@ -139524,10 +139774,24 @@
       }
     },
     "The Meshtastic nRF52 Bootloader (formerly OTAFIX) makes Bluetooth firmware updates faster and more reliable. Factory erase wipes the radio's flash from its bootloader drive, and is the recovery path when firmware cannot boot." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meshtastic nRF52 開機載入程式（前稱 OTAFIX）讓藍牙韌體更新更快、更可靠。原廠清除會透過開機載入程式磁碟機，清除無線電模組的快閃記憶體，這是韌體無法啟動時的復原方式。"
+          }
+        }
+      }
     },
     "The Meshtastic nRF52 Bootloader (formerly OTAFIX) makes Bluetooth firmware updates faster and more reliable. The upgrade is written from the device's own bootloader drive." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meshtastic nRF52 開機載入程式（前稱 OTAFIX）讓藍牙韌體更新更快、更可靠。升級檔會透過裝置本身的開機載入程式磁碟機寫入。"
+          }
+        }
+      }
     },
     "The minimum distance change in meters to be considered for a smart position broadcast." : {
       "localizations" : {
@@ -145020,7 +145284,15 @@
       }
     },
     "Topics are limited to 31 bytes (æ, ø and å use two)." : {
-      "comment" : "MQTT root topic rule"
+      "comment" : "MQTT root topic rule",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "主題最多 31 個位元組（æ、ø 和 å 各佔兩個位元組）。"
+          }
+        }
+      }
     },
     "Topics cannot contain + or #." : {
       "comment" : "MQTT root topic rule",
@@ -148962,7 +149234,15 @@
       }
     },
     "Up to 31 bytes, no leading or trailing slash, no + or #." : {
-      "comment" : "Topic finder: custom topic footer"
+      "comment" : "Topic finder: custom topic footer",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最多 31 個位元組，開頭與結尾不可為斜線，不可包含 + 或 #。"
+          }
+        }
+      }
     },
     "update" : {
       "comment" : "Search keyword",
@@ -154577,7 +154857,14 @@
       }
     },
     "Weather Radar" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "天氣雷達"
+          }
+        }
+      }
     },
     "Web view showing the %@ documentation" : {
       "comment" : "VoiceOver hint for the documentation web view",
