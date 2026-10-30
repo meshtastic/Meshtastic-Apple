@@ -946,6 +946,18 @@ struct NodeDetail: View {
 		   connectedNode != nil,
 		   accessoryManager.isConnected {
 			Section("Administration") {
+				// Screen mirroring only works over the local connection, so only for the connected radio.
+				if nodeNum == accessoryManager.activeDeviceNum, metadata.hasDisplay {
+					NavigationLink {
+						DeviceScreenView(metadata: metadata)
+					} label: {
+						Label {
+							Text("Device Screen")
+						} icon: {
+							Image(systemName: "display")
+						}
+					}
+				}
 				let administrationUserPair = self.administrationUserPair
 				if UserDefaults.enableAdministration {
 					Button {

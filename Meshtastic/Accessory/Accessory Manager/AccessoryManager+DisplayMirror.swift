@@ -1,0 +1,70 @@
+//
+//  AccessoryManager+DisplayMirror.swift
+//  Meshtastic
+//
+//  Copyright(c) Garth Vander Houwen 10/30/26.
+//
+
+import Foundation
+import MeshtasticProtobufs
+import OSLog
+
+/// Turns the connected radio's screen stream on and off (design#142). Both admin messages only
+/// work over the local connection and need no session passkey; frames come back as
+/// `FromRadio.display_frame` and `display_palette`.
+extension AccessoryManager {
+
+	/// Asks the radio to stream its screen. The stream isn't kept across a reboot or reconnect,
+	/// so call this again after one.
+	func startDisplayMirror() async {
+		guard !displayMirror.isStreaming else { return }
+		displayMirror.begin()
+		var admin = AdminMessage()
+		admin.setDisplayMirror = true
+		await sendDisplayMirrorAdmin(admin, description: "Started screen mirroring")
+	}
+
+	func stopDisplayMirror() async {
+		guard displayMirror.isStreaming else { return }
+		displayMirror.end()
+		var admin = AdminMessage()
+		admin.setDisplayMirror = false
+		await sendDisplayMirrorAdmin(admin, description: "Stopped screen mirroring")
+	}
+
+	/// Asks for one frame now, even if the screen hasn't changed. Useful on e-ink, which redraws slowly.
+	func requestDisplayFrame() async {
+		var admin = AdminMessage()
+		admin.getDisplayFrameRequest = true
+		await sendDisplayMirrorAdmin(admin, description: "Requested a screen frame")
+	}
+
+	private func sendDisplayMirrorAdmin(_ admin: AdminMessage, description: String) async {
+		guard let deviceNum = activeConnection?.device.num else {
+			Logger.admin.error("Screen mirroring: no connected radio")
+			return
+		}
+		guard let payload = try? admin.serializedData() else {
+			Logger.admin.error("Screen mirroring: couldn't encode the admin message")
+			return
+		}
+		var dataMessage = DataMessage()
+		dataMessage.payload = payload
+		dataMessage.portnum = PortNum.adminApp
+
+		var meshPacket = MeshPacket()
+		meshPacket.to = UInt32(deviceNum)
+		meshPacket.from = UInt32(deviceNum)
+		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
+		meshPacket.priority = .reliable
+		meshPacket.decoded = dataMessage
+
+		var toRadio = ToRadio()
+		toRadio.packet = meshPacket
+		do {
+			try await send(toRadio, debugDescription: description)
+		} catch {
+			Logger.admin.error("Screen mirroring: \(description, privacy: .public) failed: \(error.localizedDescription, privacy: .public)")
+		}
+	}
+}
