@@ -6255,6 +6255,9 @@
         }
       }
     },
+    "Net Check-In" : {
+      "comment" : "Cinema: title of the ham shack's status board, where net control logs the check-ins"
+    },
     "Network config received: %@" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -6363,6 +6366,9 @@
           }
         }
       }
+    },
+    "No check-ins yet" : {
+      "comment" : "Cinema: shown on the ham shack's check-in board while no node has a status message"
     },
     "No erase image is available for SoftDevice S140 %@ right now. Nothing was written — try again later." : {
       "localizations" : {
@@ -99502,6 +99508,9 @@
     "No trace routes yet" : {
       "comment" : "Cinema trace route board: shown when no trace route has come back yet"
     },
+    "No status yet" : {
+      "comment" : "Cinema: shown on the tent's status board while no node has a status message"
+    },
     "Node" : {
       "localizations" : {
         "da" : {
@@ -100896,6 +100905,9 @@
           }
         }
       }
+    },
+    "Nodes that broadcast a status message are listed here as they're heard." : {
+      "comment" : "Cinema status board: how the empty board fills"
     },
     "Noise" : {
       "localizations" : {
@@ -128554,6 +128566,9 @@
         }
       }
     },
+    "Set your radio's status in its node details to post it here." : {
+      "comment" : "Cinema status board: hint shown while the connected radio has no status message of its own"
+    },
     "Sets the maximum number of hops, default is 3. Increasing hops also increases congestion and should be used carefully. 0 hop broadcast messages will not get ACKs." : {
       "localizations" : {
         "da" : {
@@ -134839,6 +134854,9 @@
           }
         }
       }
+    },
+    "Status Board" : {
+      "comment" : "Cinema: title of the board of the nodes' status messages in the tent"
     },
     "Status Message" : {
       "localizations" : {
