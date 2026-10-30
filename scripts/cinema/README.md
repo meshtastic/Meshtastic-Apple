@@ -31,6 +31,24 @@ Since the camera, eye height and axes come from `room_base.py`, the anchors an e
 
 The render also writes `sar_tent_anchors.json`, which `build.sh` copies next to the image. It says where each board the app draws on sits, relative to the camera, in RealityKit's axes. The app places its panels from it, so moving a board and re-rendering moves the panel with it. The app pushes each panel out along the lines from the camera until it sits just inside the backdrop sphere, and grows it to match, so it covers the same part of the view and has the same stereo depth as the painted tent around it.
 
+## Ham shack
+
+`ham_shack.py` builds an amateur radio shack on `room_base.py`, with no tent: a 5.4 × 5.4 m room, every wall 2.7 m from the viewer, with knotty pine paneling, a dark green carpet and a flush ceiling light. The front wall is plain plaster for the screen.
+
+- **Left wall:** the operating desk runs along it. On the desk:
+  - an HF radio with its amber display on the 20 meter FT8 frequency
+  - a power supply and an SWR meter
+  - a desk mic and a straight key
+  - a computer running FT8
+  - the open log and an arm lamp
+  - three Meshtastic radios, from the app's own models at real size: a T-Deck, a T1000-E and a WisMesh Pocket
+
+  Coax runs up the wall to a feedthrough panel. Above the back of the desk is a shelf with two stacks of radios, each on a different band, with headphones hung under it and round UTC and local clocks above it. The whiteboard the app draws the team roster on is above the front of the desk, and a band plan chart hangs past the far end of the desk.
+- **Right wall:** a paneled door, then a double-hung window looking out on the dusk forest and a lattice tower with a beam and a vertical. The print the app draws the latest trace route on hangs between the door and the front corner.
+- **Back wall:** the Meshtastic banner, Chirpy, and a corkboard of QSL cards over a bookcase of made-up ham books (*SWR: It's Fine*, *The Joy of Coax*, *Morse Code in 30 Years* and more, by authors like Anne Tenna and Watt Ever), with four stood face out on top. The titles and authors are in `ham_books.py`.
+
+The QSL cards, the clock dials, the radio displays, the meter faces, the FT8 screen, the band plan and the book spines and covers are drawn by `make_textures.py`. The QSL cards and the FT8 screen show no call signs, so none belongs to a real station.
+
 ## HEIC
 
 `build.sh` converts the rendered PNG with `sips` at HEIC quality 88. That quality was picked by decoding the HEIC and comparing it with the PNG (PSNR and SSIM, over the whole image and over crops of the canvas, the banner, the plaque, the forest through the door and a window), and by looking at the same crops side by side. Quality 88 matched or beat the old JPEG at quality 85 in every crop, and no difference from the PNG could be seen in the crops at 3× zoom. For the tent at 4096 × 2048:
@@ -46,7 +64,8 @@ The render also writes `sar_tent_anchors.json`, which `build.sh` copies next to 
 
 ## Sources
 
-- The tent, furniture and lighting are modeled in `room_base.py`, `tent_base.py` and `sar_tent.py`.
-- The topo map and the whiteboard are drawn by `make_textures.py`.
+- The tent, the ham shack, their furniture and lighting are modeled in `room_base.py`, `tent_base.py`, `sar_tent.py` and `ham_shack.py`.
+- The radios on the shack's desk and the Solar Node in the tent are the app's own device models from `Meshtastic/Resources/DeviceModels`.
+- The topo map, the whiteboard and the ham shack's cards, clocks, displays, meters and chart are drawn by `make_textures.py`.
 - The banner, poster and plaque use the app's own artwork, rasterized from its SVGs by `make_textures.py` with resvg (the `resvg-py` package; chosen because it needs no system libraries, unlike cairosvg, and keeps transparency, unlike `qlmanage`): the Meshtastic mark (`Meshtastic/Resources/AppIcon.icon/Assets/Meshtastic Logo.svg`), the wordmark (`meshtastic-wordmark-white.imageset`), Chirpy (`Chirpy.imageset`) and the Meshtastic Solutions mark (`MeshtasticSolutionsMark.imageset`). The plaque follows the layout of the one in the visionOS Hardware Showcase.
 - The forest seen through the door and the windows is the "Sunset Forest" HDRI from Poly Haven (https://polyhaven.com/a/sunset_forest), released under CC0. `build.sh` downloads it into `cache/`.

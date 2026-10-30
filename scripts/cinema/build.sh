@@ -62,3 +62,4 @@ if [ "${1:-}" = "--preview" ]; then
 fi
 
 environment sar_tent
+environment ham_shack
