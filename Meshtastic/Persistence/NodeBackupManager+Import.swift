@@ -139,6 +139,11 @@ extension NodeBackupManager {
 			dst.positionFlags = src.positionFlags
 			dst.role = src.role
 			dst.time = src.time
+			dst.displayWidth = src.displayWidth
+			dst.displayHeight = src.displayHeight
+			dst.displayFormat = src.displayFormat
+			dst.displayPanelClass = src.displayPanelClass
+			dst.displayHasTouch = src.displayHasTouch
 			if let srcNode = src.metadataNode, let liveNode = nodesByNum[srcNode.num] {
 				dst.metadataNode = liveNode
 			}

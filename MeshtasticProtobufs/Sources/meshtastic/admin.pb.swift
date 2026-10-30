@@ -548,6 +548,37 @@ public struct AdminMessage: @unchecked Sendable {
   }
 
   ///
+  /// Request a single frame of the device's display framebuffer.
+  /// The frame is delivered to the local client as FromRadio.display_frame
+  /// chunks (see DisplayFrame in mesh.proto). There is no AdminMessage
+  /// response. Local connection only: a node receiving this over the mesh,
+  /// or a build without a display, ignores it. During active mirroring it
+  /// forces one frame on the next redraw even if the screen is unchanged.
+  public var getDisplayFrameRequest: Bool {
+    get {
+      if case .getDisplayFrameRequest(let v)? = _storage._payloadVariant {return v}
+      return false
+    }
+    set {_uniqueStorage()._payloadVariant = .getDisplayFrameRequest(newValue)}
+  }
+
+  ///
+  /// Enable (true) or disable (false) continuous mirroring of the device
+  /// display. Unlike most bool verbs in this oneof, false is meaningful.
+  /// While enabled, the device sends a DisplayFrame after each screen
+  /// redraw that changed the framebuffer, as FromRadio.display_frame
+  /// chunks; the first frame arrives immediately and acts as the
+  /// acknowledgement. Local connection only (see get_display_frame_request)
+  /// and not persisted across reboot.
+  public var setDisplayMirror: Bool {
+    get {
+      if case .setDisplayMirror(let v)? = _storage._payloadVariant {return v}
+      return false
+    }
+    set {_uniqueStorage()._payloadVariant = .setDisplayMirror(newValue)}
+  }
+
+  ///
   /// Begins an edit transaction for config, module config, owner, and channel settings changes
   /// This will delay the standard *implicit* save to the file system and subsequent reboot behavior until committed (commit_edit_settings)
   public var beginEditSettings: Bool {
@@ -846,6 +877,23 @@ public struct AdminMessage: @unchecked Sendable {
     ///
     /// Set specified node-num to be muted
     case toggleMutedNode(UInt32)
+    ///
+    /// Request a single frame of the device's display framebuffer.
+    /// The frame is delivered to the local client as FromRadio.display_frame
+    /// chunks (see DisplayFrame in mesh.proto). There is no AdminMessage
+    /// response. Local connection only: a node receiving this over the mesh,
+    /// or a build without a display, ignores it. During active mirroring it
+    /// forces one frame on the next redraw even if the screen is unchanged.
+    case getDisplayFrameRequest(Bool)
+    ///
+    /// Enable (true) or disable (false) continuous mirroring of the device
+    /// display. Unlike most bool verbs in this oneof, false is meaningful.
+    /// While enabled, the device sends a DisplayFrame after each screen
+    /// redraw that changed the framebuffer, as FromRadio.display_frame
+    /// chunks; the first frame arrives immediately and acts as the
+    /// acknowledgement. Local connection only (see get_display_frame_request)
+    /// and not persisted across reboot.
+    case setDisplayMirror(Bool)
     ///
     /// Begins an edit transaction for config, module config, owner, and channel settings changes
     /// This will delay the standard *implicit* save to the file system and subsequent reboot behavior until committed (commit_edit_settings)
@@ -2035,7 +2083,7 @@ extension OTAMode: SwiftProtobuf._ProtoNameProviding {
 
 extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".AdminMessage"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}get_channel_request\0\u{3}get_channel_response\0\u{3}get_owner_request\0\u{3}get_owner_response\0\u{3}get_config_request\0\u{3}get_config_response\0\u{3}get_module_config_request\0\u{3}get_module_config_response\0\u{4}\u{2}get_canned_message_module_messages_request\0\u{3}get_canned_message_module_messages_response\0\u{3}get_device_metadata_request\0\u{3}get_device_metadata_response\0\u{3}get_ringtone_request\0\u{3}get_ringtone_response\0\u{3}get_device_connection_status_request\0\u{3}get_device_connection_status_response\0\u{3}set_ham_mode\0\u{3}get_node_remote_hardware_pins_request\0\u{3}get_node_remote_hardware_pins_response\0\u{3}enter_dfu_mode_request\0\u{3}delete_file_request\0\u{3}set_scale\0\u{3}backup_preferences\0\u{3}restore_preferences\0\u{3}remove_backup_preferences\0\u{3}send_input_event\0\u{4}\u{5}set_owner\0\u{3}set_channel\0\u{3}set_config\0\u{3}set_module_config\0\u{3}set_canned_message_module_messages\0\u{3}set_ringtone_message\0\u{3}remove_by_nodenum\0\u{3}set_favorite_node\0\u{3}remove_favorite_node\0\u{3}set_fixed_position\0\u{3}remove_fixed_position\0\u{3}set_time_only\0\u{3}get_ui_config_request\0\u{3}get_ui_config_response\0\u{3}store_ui_config\0\u{3}set_ignored_node\0\u{3}remove_ignored_node\0\u{3}toggle_muted_node\0\u{4}\u{f}begin_edit_settings\0\u{3}commit_edit_settings\0\u{3}add_contact\0\u{3}key_verification\0\u{4}\u{1b}factory_reset_device\0\u{3}reboot_ota_seconds\0\u{3}exit_simulator\0\u{3}reboot_seconds\0\u{3}shutdown_seconds\0\u{3}factory_reset_config\0\u{3}nodedb_reset\0\u{3}session_passkey\0\u{3}ota_request\0\u{3}sensor_config\0\u{3}lockdown_auth\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}get_channel_request\0\u{3}get_channel_response\0\u{3}get_owner_request\0\u{3}get_owner_response\0\u{3}get_config_request\0\u{3}get_config_response\0\u{3}get_module_config_request\0\u{3}get_module_config_response\0\u{4}\u{2}get_canned_message_module_messages_request\0\u{3}get_canned_message_module_messages_response\0\u{3}get_device_metadata_request\0\u{3}get_device_metadata_response\0\u{3}get_ringtone_request\0\u{3}get_ringtone_response\0\u{3}get_device_connection_status_request\0\u{3}get_device_connection_status_response\0\u{3}set_ham_mode\0\u{3}get_node_remote_hardware_pins_request\0\u{3}get_node_remote_hardware_pins_response\0\u{3}enter_dfu_mode_request\0\u{3}delete_file_request\0\u{3}set_scale\0\u{3}backup_preferences\0\u{3}restore_preferences\0\u{3}remove_backup_preferences\0\u{3}send_input_event\0\u{4}\u{5}set_owner\0\u{3}set_channel\0\u{3}set_config\0\u{3}set_module_config\0\u{3}set_canned_message_module_messages\0\u{3}set_ringtone_message\0\u{3}remove_by_nodenum\0\u{3}set_favorite_node\0\u{3}remove_favorite_node\0\u{3}set_fixed_position\0\u{3}remove_fixed_position\0\u{3}set_time_only\0\u{3}get_ui_config_request\0\u{3}get_ui_config_response\0\u{3}store_ui_config\0\u{3}set_ignored_node\0\u{3}remove_ignored_node\0\u{3}toggle_muted_node\0\u{3}get_display_frame_request\0\u{3}set_display_mirror\0\u{4}\u{d}begin_edit_settings\0\u{3}commit_edit_settings\0\u{3}add_contact\0\u{3}key_verification\0\u{4}\u{1b}factory_reset_device\0\u{3}reboot_ota_seconds\0\u{3}exit_simulator\0\u{3}reboot_seconds\0\u{3}shutdown_seconds\0\u{3}factory_reset_config\0\u{3}nodedb_reset\0\u{3}session_passkey\0\u{3}ota_request\0\u{3}sensor_config\0\u{3}lockdown_auth\0")
 
   fileprivate class _StorageClass {
     var _sessionPasskey: Data = Data()
@@ -2502,6 +2550,22 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
             _storage._payloadVariant = .toggleMutedNode(v)
           }
         }()
+        case 50: try {
+          var v: Bool?
+          try decoder.decodeSingularBoolField(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .getDisplayFrameRequest(v)
+          }
+        }()
+        case 51: try {
+          var v: Bool?
+          try decoder.decodeSingularBoolField(value: &v)
+          if let v = v {
+            if _storage._payloadVariant != nil {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .setDisplayMirror(v)
+          }
+        }()
         case 64: try {
           var v: Bool?
           try decoder.decodeSingularBoolField(value: &v)
@@ -2828,6 +2892,14 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       case .toggleMutedNode?: try {
         guard case .toggleMutedNode(let v)? = _storage._payloadVariant else { preconditionFailure() }
         try visitor.visitSingularUInt32Field(value: v, fieldNumber: 49)
+      }()
+      case .getDisplayFrameRequest?: try {
+        guard case .getDisplayFrameRequest(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularBoolField(value: v, fieldNumber: 50)
+      }()
+      case .setDisplayMirror?: try {
+        guard case .setDisplayMirror(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularBoolField(value: v, fieldNumber: 51)
       }()
       case .beginEditSettings?: try {
         guard case .beginEditSettings(let v)? = _storage._payloadVariant else { preconditionFailure() }

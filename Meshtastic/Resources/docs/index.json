@@ -1373,18 +1373,21 @@
             "new",
             "docs",
             "config",
+            "protobufs",
+            "display",
             "architecture",
             "swiftdata",
-            "protobufs",
             "project",
             "markdown",
+            "from",
             "translation",
             "meshtastic",
-            "from",
             "fields",
+            "field",
             "deep",
             "changes",
             "app",
+            "additive",
             "added",
             "yml",
             "tent",
@@ -1396,11 +1399,8 @@
             "lora",
             "links",
             "jul",
-            "into",
-            "firmware",
-            "file",
-            "field"
+            "into"
         ],
-        "charCount": 4969
+        "charCount": 5537
     }
 ]

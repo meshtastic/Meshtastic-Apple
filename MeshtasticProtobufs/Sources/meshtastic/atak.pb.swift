@@ -3697,6 +3697,74 @@ public struct TAKPacketV2: @unchecked Sendable {
   public mutating func clearSensorFov() {_uniqueStorage()._sensorFov = nil}
 
   ///
+  /// Low 14 bits of the event's `start` time, as epoch seconds.
+  ///
+  /// Restores a value the format otherwise drops entirely. The parser reads `time`
+  /// and `stale` only to derive `stale_seconds`, and never reads `start` at all, so
+  /// the builder has nothing to rebuild it from and sets `time = start = now` at
+  /// decode. A CoT that spent 40 s crossing the mesh therefore arrives stamped as
+  /// the freshest thing on the map, and no receiver can tell a 2-second-old
+  /// position from a 40-second-old one, which makes correct ordering of two
+  /// reports for one UID impossible.
+  ///
+  /// 14 bits rather than a full timestamp: any tag at 16 or above costs a 2-byte
+  /// key, and a value below 16384 fits a 2-byte varint where epoch seconds needs
+  /// five, so the field costs 4 bytes on the wire instead of 7.
+  ///
+  /// SENDERS: populate this only when `start` is within 8192 s of transmission,
+  /// and omit it otherwise. The encoding cannot express an older start and a
+  /// receiver cannot detect one: an out-of-range value reconstructs silently as a
+  /// plausible recent time in the wrong window. Transit and clock skew spend part
+  /// of that budget, so treat roughly two hours as the practical limit.
+  ///
+  /// RECEIVERS: rebuild the full value by selecting the candidate NEAREST your own
+  /// clock. Do not splice the low bits onto your current window.
+  ///
+  ///   delta = ((carried - now) % 16384 + 24576) % 16384 - 8192   // [-8192, 8191]
+  ///   start = now + delta
+  ///
+  /// (The + 24576 keeps the second remainder non-negative under both C and Python
+  /// remainder semantics.)
+  ///
+  /// The naive `(now & ~0x3FFF) | carried` is wrong at a window boundary in BOTH
+  /// directions, not just one. For a boundary B, a sender `start` of B read by a
+  /// receiver whose clock is at B - 1 yields B - 16384: a fresh event that appears
+  /// 4.55 hours old, which no future-side sanity check will catch. Nearest-
+  /// candidate is exact whenever the true start is within 8192 s of the receiver's
+  /// clock, which subsumes any realistic transit plus skew.
+  ///
+  /// Treat the result as trustworthy for ORDERING packets from a single sender,
+  /// where a constant clock offset cancels out. Before using it as an absolute
+  /// age, bound it: reject a start more than a few seconds in the future, or more
+  /// than about an hour in the past, and fall back to decode time. Keep both
+  /// bounds well inside the 8192 s half-window, because past that the
+  /// reconstruction is wrong rather than merely implausible.
+  ///
+  /// Ordering assumes the producer advances `start` on each emission, which ATAK
+  /// does because it sets `start = time`. A producer that holds `start` fixed
+  /// across updates cannot be ordered by this field.
+  ///
+  /// `optional` is deliberate, despite the v0.4.0 `altitude` experiment above
+  /// finding `optional` net-negative: that regressed because a genuine 0 m
+  /// altitude is common, whereas `start` mod 16384 is 0 for one second in 16384.
+  /// Here explicit presence costs essentially nothing and distinguishes "sender
+  /// did not populate this" from a legitimate zero.
+  ///
+  /// Tag 43 rather than the 27 held above for "future top-level annotations",
+  /// which is what this is: un-reserving 27 trips buf's RESERVED_MESSAGE_NO_DELETE
+  /// under the FILE breaking category this module enables, and every tag at 16 or
+  /// above costs the same 2-byte key, so the fresh tag is free. Move it to 27 if
+  /// you would rather except the rule.
+  public var startEpochLo14: UInt32 {
+    get {_storage._startEpochLo14 ?? 0}
+    set {_uniqueStorage()._startEpochLo14 = newValue}
+  }
+  /// Returns true if `startEpochLo14` has been explicitly set.
+  public var hasStartEpochLo14: Bool {_storage._startEpochLo14 != nil}
+  /// Clears the value of `startEpochLo14`. Subsequent reads from it will return its default value.
+  public mutating func clearStartEpochLo14() {_uniqueStorage()._startEpochLo14 = nil}
+
+  ///
   /// Directed-routing recipient list (CoT <marti><dest callsign='X'/>…</marti>).
   /// Empty / unset = broadcast to all peers (the default for situational-awareness
   /// events). Populated for TAKTALK m-t-t, directed b-t-f DMs, and any other CoT
@@ -5494,7 +5562,7 @@ extension Marti: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase
 
 extension TAKPacketV2: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".TAKPacketV2"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}cot_type_id\0\u{1}how\0\u{1}callsign\0\u{1}team\0\u{1}role\0\u{3}latitude_i\0\u{3}longitude_i\0\u{1}altitude\0\u{1}speed\0\u{1}course\0\u{1}battery\0\u{3}geo_src\0\u{3}alt_src\0\u{1}uid\0\u{3}device_callsign\0\u{3}stale_seconds\0\u{3}tak_version\0\u{3}tak_device\0\u{3}tak_platform\0\u{3}tak_os\0\u{1}endpoint\0\u{1}phone\0\u{3}cot_type_str\0\u{1}remarks\0\u{1}environment\0\u{3}sensor_fov\0\u{2}\u{3}marti\0\u{2}\u{2}chat\0\u{1}aircraft\0\u{3}raw_detail\0\u{1}shape\0\u{1}marker\0\u{1}rab\0\u{1}route\0\u{1}casevac\0\u{1}emergency\0\u{1}task\0\u{1}taktalk\0\u{3}taktalk_room\0\u{c}\u{1b}\u{1}\u{c}\u{1c}\u{1}\u{c}\u{1e}\u{1}")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}cot_type_id\0\u{1}how\0\u{1}callsign\0\u{1}team\0\u{1}role\0\u{3}latitude_i\0\u{3}longitude_i\0\u{1}altitude\0\u{1}speed\0\u{1}course\0\u{1}battery\0\u{3}geo_src\0\u{3}alt_src\0\u{1}uid\0\u{3}device_callsign\0\u{3}stale_seconds\0\u{3}tak_version\0\u{3}tak_device\0\u{3}tak_platform\0\u{3}tak_os\0\u{1}endpoint\0\u{1}phone\0\u{3}cot_type_str\0\u{1}remarks\0\u{1}environment\0\u{3}sensor_fov\0\u{2}\u{3}marti\0\u{2}\u{2}chat\0\u{1}aircraft\0\u{3}raw_detail\0\u{1}shape\0\u{1}marker\0\u{1}rab\0\u{1}route\0\u{1}casevac\0\u{1}emergency\0\u{1}task\0\u{1}taktalk\0\u{3}taktalk_room\0\u{3}start_epoch_lo14\0\u{c}\u{1b}\u{1}\u{c}\u{1c}\u{1}\u{c}\u{1e}\u{1}")
 
   fileprivate class _StorageClass {
     var _cotTypeID: CotType = .other
@@ -5523,6 +5591,7 @@ extension TAKPacketV2: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     var _remarks: String = String()
     var _environment: TAKEnvironment? = nil
     var _sensorFov: SensorFov? = nil
+    var _startEpochLo14: UInt32? = nil
     var _marti: Marti? = nil
     var _payloadVariant: TAKPacketV2.OneOf_PayloadVariant?
 
@@ -5561,6 +5630,7 @@ extension TAKPacketV2: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       _remarks = source._remarks
       _environment = source._environment
       _sensorFov = source._sensorFov
+      _startEpochLo14 = source._startEpochLo14
       _marti = source._marti
       _payloadVariant = source._payloadVariant
     }
@@ -5759,6 +5829,7 @@ extension TAKPacketV2: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
             _storage._payloadVariant = .taktalkRoom(v)
           }
         }()
+        case 43: try { try decoder.decodeSingularUInt32Field(value: &_storage._startEpochLo14) }()
         default: break
         }
       }
@@ -5903,6 +5974,9 @@ extension TAKPacketV2: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       }()
       case nil: break
       }
+      try { if let v = _storage._startEpochLo14 {
+        try visitor.visitSingularUInt32Field(value: v, fieldNumber: 43)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -5938,6 +6012,7 @@ extension TAKPacketV2: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
         if _storage._remarks != rhs_storage._remarks {return false}
         if _storage._environment != rhs_storage._environment {return false}
         if _storage._sensorFov != rhs_storage._sensorFov {return false}
+        if _storage._startEpochLo14 != rhs_storage._startEpochLo14 {return false}
         if _storage._marti != rhs_storage._marti {return false}
         if _storage._payloadVariant != rhs_storage._payloadVariant {return false}
         return true
