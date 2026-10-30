@@ -12,6 +12,7 @@ import SwiftUI
 enum CinemaEnvironment: String, CaseIterable, Identifiable {
 	case sarTent
 	case hamShack
+	case fireLookout
 
 	var id: String { rawValue }
 
@@ -21,6 +22,8 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 			String(localized: "Search and Rescue Tent", comment: "Cinema environment: inside a search and rescue command tent")
 		case .hamShack:
 			String(localized: "Ham Shack", comment: "Cinema environment: inside an amateur radio operator's radio room")
+		case .fireLookout:
+			String(localized: "Fire Lookout", comment: "Cinema environment: inside a fire lookout cab on a mountain summit")
 		}
 	}
 
@@ -29,6 +32,7 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 		switch self {
 		case .sarTent: "sar_tent"
 		case .hamShack: "ham_shack"
+		case .fireLookout: "fire_lookout"
 		}
 	}
 
@@ -67,7 +71,7 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 	/// image needs nudging.
 	var frontRotation: Float {
 		switch self {
-		case .sarTent, .hamShack: 0
+		case .sarTent, .hamShack, .fireLookout: 0
 		}
 	}
 
@@ -86,6 +90,12 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 				UIColor(red: 0.85, green: 0.84, blue: 0.80, alpha: 1),
 				UIColor(red: 0.55, green: 0.36, blue: 0.18, alpha: 1),
 				UIColor(red: 0.05, green: 0.08, blue: 0.07, alpha: 1)
+			)
+		case .fireLookout:
+			(
+				UIColor(red: 0.35, green: 0.45, blue: 0.70, alpha: 1),
+				UIColor(red: 0.90, green: 0.60, blue: 0.30, alpha: 1),
+				UIColor(red: 0.30, green: 0.22, blue: 0.15, alpha: 1)
 			)
 		}
 	}

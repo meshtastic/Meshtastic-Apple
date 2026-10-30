@@ -35,6 +35,8 @@ hdri() {
 
 # "Sunset Forest", the view out of the tent's door and windows.
 hdri sunset_forest 4k
+# "Kiara 8" at sunset, the mountains round the fire lookout. 8K, since it is most of the view.
+hdri kiara_8_sunset 8k
 
 # Pinned so a new release can't quietly change the artwork.
 uv run --quiet --with pillow==13.0.0 --with numpy==2.5.4 --with resvg-py==0.5.0 python "$HERE/make_textures.py"
@@ -63,3 +65,4 @@ fi
 
 environment sar_tent
 environment ham_shack
+environment fire_lookout
