@@ -85,14 +85,15 @@
         "keywords": [
             "app",
             "tent",
-            "map",
             "screen",
+            "map",
             "window",
             "radio",
             "open",
             "route",
             "model",
             "button",
+            "beside",
             "back",
             "while",
             "vision",
@@ -101,7 +102,6 @@
             "stand",
             "shows",
             "shack",
-            "same",
             "pro",
             "pinch",
             "panel",
@@ -111,10 +111,10 @@
             "heard",
             "ham",
             "front",
-            "closes",
-            "cinema"
+            "control",
+            "closes"
         ],
-        "charCount": 2436
+        "charCount": 2500
     },
     {
         "id": "discovery",
@@ -816,7 +816,7 @@
             "row",
             "region"
         ],
-        "charCount": 9585
+        "charCount": 9606
     },
     {
         "id": "adding-features",

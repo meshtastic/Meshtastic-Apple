@@ -11,12 +11,14 @@
 #
 #  The front wall is plain plaster for the app's screen. The operating desk runs along the left
 #  wall: an HF radio, its power supply, an SWR meter, a desk mic, a Morse key, the log and a few
-#  Meshtastic radios, and a computer running FT8, with the whiteboard the app draws the team roster on above its front end and
-#  a shelf with two stacks of radios and the UTC and local clocks above the back, and a band plan chart
-#  past the end of the desk. A window on the right
-#  wall looks out on the dusk forest and the antenna tower, with the door in front of it and the
-#  print the app draws the latest trace route on between the door and the corner. The Meshtastic banner, Chirpy and a board of QSL cards are on the back
-#  wall.
+#  Meshtastic radios, and a computer running FT8, with the whiteboard the app draws the team roster
+#  on above its front end, a shelf with two stacks of radios and the UTC and local clocks above the
+#  back, and a band plan chart past the end of the desk. A window on the right wall looks out on
+#  the dusk forest and the antenna tower, with the door in front of it and the print the app draws
+#  the latest trace route on between the door and the corner. Chirpy's poster hangs to the left of
+#  the screen and the portrait whiteboard net control logs the check-ins on to its right, which the
+#  app draws the nodes' status messages over; the Meshtastic banner and a board of QSL cards are on
+#  the back wall.
 
 import math
 import os
@@ -614,6 +616,15 @@ def build_boards():
     anchor("teamStatus", surface, width, height)
     board_light("BoardLight", (-HALF + 0.9, y, 2.3), (-HALF, y, z + 0.05), width - 0.2, 3.0)
 
+    # A portrait whiteboard on the front wall to the right of the screen, where net control logs
+    # the check-ins: the app draws the nodes' status messages over it (the "nodeStatus" anchor).
+    width, height = 0.8, 1.2
+    x, z = 1.9, EYE_HEIGHT + 0.2
+    box("CheckInFrame", (width + 0.06, 0.025, height + 0.06), (x, HALF - 0.0125, z), aluminum)
+    surface = plane("CheckIn", width, height, (x, HALF - 0.026, z), (math.pi / 2, 0, 0), board)
+    anchor("nodeStatus", surface, width, height)
+    board_light("CheckInLight", (x, HALF - 0.9, 2.3), (x, HALF, z + 0.05), width - 0.2, 3.0)
+
     # The print on the right wall in front of the window: the app draws the latest trace route's
     # card over it (the "traceRoute" anchor).
     width, height = 1.1, 0.9
@@ -625,15 +636,15 @@ def build_boards():
 
 
 def build_back_wall():
-    """The Meshtastic banner in the middle of the back wall, Chirpy to its left, and the QSL cards to
-    its right."""
+    """The Meshtastic banner in the middle of the back wall and the QSL cards to its right, and
+    Chirpy on the front wall, between the screen and the left corner."""
     face = -HALF + 0.012
     facing = (math.pi / 2, 0, math.pi)
     banner = image_material("Banner", os.path.join(CACHE, "banner.png"), 0.9)
     plane("Banner", 1.8, 0.9, (0, face, 1.55), facing, banner)
     poster = image_material("ChirpyPoster", os.path.join(CACHE, "chirpy_poster.png"), 0.7)
-    box("PosterFrame", (0.54, 0.02, 0.74), (-1.65, face - 0.003, 1.45), material("PosterFrame", (0.03, 0.03, 0.032), 0.5))
-    plane("Poster", 0.5, 0.7, (-1.65, face + 0.009, 1.45), facing, poster)
+    box("PosterFrame", (0.54, 0.02, 0.74), (-2.0, HALF - 0.009, 1.45), material("PosterFrame", (0.03, 0.03, 0.032), 0.5))
+    plane("Poster", 0.5, 0.7, (-2.0, HALF - 0.021, 1.45), (math.pi / 2, 0, 0), poster)
     cork_frame = material("CorkFrame", (0.3, 0.19, 0.1), 0.5)
     box("QSLFrame", (0.96, 0.02, 0.66), (1.65, face - 0.003, 1.45), cork_frame)
     plane("QSLCards", 0.9, 0.6, (1.65, face + 0.009, 1.45), facing, image_material("QSLWall", os.path.join(CACHE, "qsl_wall.png"), 0.8))

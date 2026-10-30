@@ -33,7 +33,7 @@ The render also writes `sar_tent_anchors.json`, which `build.sh` copies next to 
 
 ## Ham shack
 
-`ham_shack.py` builds an amateur radio shack on `room_base.py`, with no tent: a 5.4 × 5.4 m room, every wall 2.7 m from the viewer, with knotty pine paneling, a dark green carpet and a flush ceiling light. The front wall is plain plaster for the screen.
+`ham_shack.py` builds an amateur radio shack on `room_base.py`, with no tent: a 5.4 × 5.4 m room, every wall 2.7 m from the viewer, with knotty pine paneling, a dark green carpet and a flush ceiling light. The front wall is plain plaster for the screen, with Chirpy's poster to its left and a portrait whiteboard, net control's check-in board, to its right: the app draws the nodes' status messages on it.
 
 - **Left wall:** the operating desk runs along it. On the desk:
   - an HF radio with its amber display on the 20 meter FT8 frequency
@@ -45,7 +45,7 @@ The render also writes `sar_tent_anchors.json`, which `build.sh` copies next to 
 
   Coax runs up the wall to a feedthrough panel. Above the back of the desk is a shelf with two stacks of radios, each on a different band, with headphones hung under it and round UTC and local clocks above it. The whiteboard the app draws the team roster on is above the front of the desk, and a band plan chart hangs past the far end of the desk.
 - **Right wall:** a paneled door, then a double-hung window looking out on the dusk forest and a lattice tower with a beam and a vertical. The print the app draws the latest trace route on hangs between the door and the front corner.
-- **Back wall:** the Meshtastic banner, Chirpy, and a corkboard of QSL cards over a bookcase of made-up ham books (*SWR: It's Fine*, *The Joy of Coax*, *Morse Code in 30 Years* and more, by authors like Anne Tenna and Watt Ever), with four stood face out on top. The titles and authors are in `ham_books.py`.
+- **Back wall:** the Meshtastic banner and a corkboard of QSL cards over a bookcase of made-up ham books (*SWR: It's Fine*, *The Joy of Coax*, *Morse Code in 30 Years* and more, by authors like Anne Tenna and Watt Ever), with four stood face out on top. The titles and authors are in `ham_books.py`.
 
 The QSL cards, the clock dials, the radio displays, the meter faces, the FT8 screen, the band plan and the book spines and covers are drawn by `make_textures.py`. The QSL cards and the FT8 screen show no call signs, so none belongs to a real station.
 

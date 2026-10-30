@@ -27,7 +27,7 @@ On a node's details, the AR button on the radio's [3D model](nodes.md) stands th
 
 ## Control panel
 
-- **Environment**: the place the screen is set in: the search and rescue tent, or a ham shack, a wood-paneled radio room with an operating desk, a window out to the antenna tower, and the same two boards in the same places.
+- **Environment**: the place the screen is set in: the search and rescue tent, or a ham shack, a wood-paneled radio room with an operating desk, a window out to the antenna tower, and the same boards; its status board is net control's check-in board, standing portrait beside the screen.
 - **Open 3D Map**: shown while the 3D map is closed.
 - **Move it**: pinch the bar under the panel and drag it wherever you want it.
 - **Leave**: closes the tent and brings back the app's window.
