@@ -1041,32 +1041,40 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 
 		// MARK: Widths that follow the zoom
 
-		/// The zoom the zoom-width overlays were last set for.
-		private var zoomWidthLevel: Double?
-
+		/// The map zoom at the center of the view, from the map distance across 100 points there.
+		/// Unlike `visibleMapRect`, whose width grows as the map turns, this stays put when the
+		/// map is rotated.
 		private func zoomLevel(of mapView: MKMapView) -> Double {
-			let visibleWidth = mapView.visibleMapRect.size.width
-			guard visibleWidth > 0, mapView.bounds.width > 0 else { return 0 }
-			return OfflineMapPalette.zoomLevel(zoomScale: mapView.bounds.width / visibleWidth)
+			let center = CGPoint(x: mapView.bounds.midX, y: mapView.bounds.midY)
+			let span: CGFloat = 100
+			let left = MKMapPoint(mapView.convert(CGPoint(x: center.x - span / 2, y: center.y), toCoordinateFrom: mapView))
+			let right = MKMapPoint(mapView.convert(CGPoint(x: center.x + span / 2, y: center.y), toCoordinateFrom: mapView))
+			let mapDistance = hypot(right.x - left.x, right.y - left.y)
+			guard mapDistance > 0, mapDistance.isFinite else { return 0 }
+			return OfflineMapPalette.zoomLevel(zoomScale: span / mapDistance)
 		}
 
-		private func applyZoomWidth(_ widthAtZoom: (Double) -> CGFloat, to renderer: MKOverlayPathRenderer, zoom: Double) {
+		/// Sets a renderer's width for `zoom`; true when that changed it.
+		@discardableResult
+		private func applyZoomWidth(_ widthAtZoom: (Double) -> CGFloat, to renderer: MKOverlayPathRenderer, zoom: Double) -> Bool {
 			let width = widthAtZoom(zoom)
+			let alpha: CGFloat = width > 0 ? 1 : 0
+			guard abs(renderer.lineWidth - width) > 0.01 || renderer.alpha != alpha else { return false }
 			renderer.lineWidth = width
-			renderer.alpha = width > 0 ? 1 : 0
+			renderer.alpha = alpha
+			return true
 		}
 
 		/// Sets the zoom-width overlays (the offline map's roads) for the zoom the map has settled at.
 		/// MapKit's own line renderers are kept, so they draw with the rest of the map; the width
-		/// steps when a zoom gesture ends.
+		/// steps when a zoom gesture ends. Only a renderer whose width changed is redrawn, so a pan
+		/// redraws nothing and a small zoom across a road's first stop still shows it.
 		func refreshZoomWidths(on mapView: MKMapView) {
 			let zoom = zoomLevel(of: mapView)
-			if let last = zoomWidthLevel, abs(last - zoom) < 0.1 { return }
-			zoomWidthLevel = zoom
 			for entry in overlaysByID.values {
 				guard let widthAtZoom = entry.style.widthAtZoom,
-					  let renderer = mapView.renderer(for: entry.overlay) as? MKOverlayPathRenderer else { continue }
-				applyZoomWidth(widthAtZoom, to: renderer, zoom: zoom)
+					  let renderer = mapView.renderer(for: entry.overlay) as? MKOverlayPathRenderer,
+					  applyZoomWidth(widthAtZoom, to: renderer, zoom: zoom) else { continue }
 				renderer.setNeedsDisplay()
 			}
 		}
