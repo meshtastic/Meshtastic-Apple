@@ -12,7 +12,8 @@ import SwiftUI
 /// Root of the cinema immersive space: an environment around the viewer and a small panel to
 /// change the environment, open the 3D map or leave. The front wall is a screen that shows
 /// the app's sections, picked from a tab strip above it. The tent's whiteboard shows the live
-/// team roster, and the print by the door the latest trace route. "View in your space" on a 3D
+/// team roster, the print by the door the latest trace route, and the second whiteboard the
+/// nodes' status messages. "View in your space" on a 3D
 /// model stands it in front of the seat. The main window closes while
 /// the space is open and the 3D map opens in front of the viewer instead.
 struct CinemaSpace: View {
@@ -87,6 +88,11 @@ struct CinemaSpace: View {
 			if let container, !appState.isDatabaseResetting, anchors?.board(.traceRoute) != nil {
 				Attachment(id: CinemaBoard.traceRoute.rawValue) {
 					live(TraceRouteBoard(), container: container)
+				}
+			}
+			if let container, !appState.isDatabaseResetting, anchors?.board(.nodeStatus) != nil {
+				Attachment(id: CinemaBoard.nodeStatus.rawValue) {
+					live(NodeStatusBoard(environment: environment), container: container)
 				}
 			}
 			if let modelRequest {

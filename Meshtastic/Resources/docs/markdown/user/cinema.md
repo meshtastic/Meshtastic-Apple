@@ -24,6 +24,7 @@ On a node's details, the AR button on the radio's [3D model](nodes.md) stands th
 
 - **Team Favorites**, on the whiteboard: your favorite nodes and the connected radio, with when each was last heard, its battery, signal, hops and distance from the radio. Tap a node to center the 3D map on it and open its details on the screen.
 - **The latest trace route**, on the framed print (by the door in the tent, beside the window in the ham shack): the same card the trace route widget shows, for the last trace route you sent or heard. Tap it to show the route on the screen's map and fly it on the 3D map.
+- **Status Board**, on the portrait whiteboard beside the screen: your radio's own status message, then the nodes heard with one, latest first, as many as fit, with a count of the rest. Tap a node to center the 3D map on it and open its details on the screen. Set your radio's status from its node details.
 
 ## Control panel
 
