@@ -43,8 +43,10 @@ struct MQTTConfig: View {
 	/// is read on every release, and private brokers use it on older firmware. It is a
 	/// rule about one server.
 	static let tlsRequiredFirmware = "2.7.4"
+	/// Firmware PR #8166 introduced the custom-root overwrite on a region set.
+	static let rootRewriteRegressionFirmware = "2.7.12"
 	/// Firmware from here (MQTT::applyRegionRootTopic, firmware PR #11899) rewrites only "msh"
-	/// and "msh/<REGION>" on a region set; older firmware overwrote any root that starts with "msh".
+	/// and "msh/<REGION>" on a region set, preserving custom roots.
 	static let rootRewriteFirmware = "2.8.1"
 
 	/// Host equality, not a substring: `mqtt.meshtastic.org.example.com` is somebody
@@ -273,10 +275,13 @@ private struct RootTopicField: View {
 	private var olderFirmwareReplacesRoot: Bool {
 		let isConnectedNode = node != nil && node?.num == accessoryManager.activeDeviceNum
 		let known = isConnectedNode ? accessoryManager.isConnected : node?.knownFirmwareVersion != nil
+		let affected = isConnectedNode
+			? accessoryManager.checkIsVersionSupported(forVersion: MQTTConfig.rootRewriteRegressionFirmware)
+			: node?.firmwareAtLeast(MQTTConfig.rootRewriteRegressionFirmware) ?? false
 		let atLeast = isConnectedNode
 			? accessoryManager.checkIsVersionSupported(forVersion: MQTTConfig.rootRewriteFirmware)
 			: node?.firmwareAtLeast(MQTTConfig.rootRewriteFirmware) ?? true
-		return MqttRootTopic.olderFirmwareReplaces(root: config.root, regionTopic: regionTopic, firmwareKnown: known, firmwareAtLeast281: atLeast)
+		return MqttRootTopic.olderFirmwareReplaces(root: config.root, regionTopic: regionTopic, firmwareKnown: known, firmwareAtLeast2712: affected, firmwareAtLeast281: atLeast)
 	}
 
 	var body: some View {
@@ -303,7 +308,7 @@ private struct RootTopicField: View {
 				.foregroundStyle(.red)
 		}
 		if olderFirmwareReplacesRoot {
-			Label("Firmware before 2.8.1 replaces a custom root topic with msh/<REGION> whenever the LoRa region is saved.", systemImage: "exclamationmark.triangle")
+			Label("Radio firmware 2.7.12–2.8.0 has a bug: saving LoRa settings can reset this root topic to \(regionTopic). After saving LoRa settings, return here, restore your custom root topic, and tap Save. Fixed in radio firmware 2.8.1 and later.", systemImage: "exclamationmark.triangle")
 				.font(.caption)
 				.foregroundStyle(.orange)
 		}

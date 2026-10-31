@@ -1643,8 +1643,17 @@ struct MQTTConfigSnapshotTests {
 	@MainActor
 	func mqttForm() async throws {
 		let node = try makeNode()
+		node.mqttConfig?.root = "msh/US/bayarea"
+		let lora = LoRaConfigEntity()
+		lora.regionCode = 1
+		sharedModelContainer.mainContext.insert(lora)
+		node.loRaConfig = lora
 		AccessoryManager.shared.isConnected = true
 		AccessoryManager.shared.activeDeviceNum = node.num
+		// Render the custom-root warning on affected radio firmware.
+		let firmwareVersion = UserDefaults.firmwareVersion
+		UserDefaults.firmwareVersion = "2.7.26"
+		defer { UserDefaults.firmwareVersion = firmwareVersion }
 		// Consent is the app's own record; the form reads it on load.
 		let consent = UserDefaults.mapReportingOptIn
 		UserDefaults.mapReportingOptIn = true
@@ -1654,7 +1663,7 @@ struct MQTTConfigSnapshotTests {
 				.environmentObject(AccessoryManager.shared)
 				.modelContainer(sharedModelContainer)
 		}
-		await assertViewSnapshot(of: view, width: 390, height: 1800, named: "mqttConfigForm")
+		await assertViewSnapshot(of: view, width: 390, height: 2200, named: "mqttConfigForm")
 	}
 
 	@Test("MQTT settings form")
