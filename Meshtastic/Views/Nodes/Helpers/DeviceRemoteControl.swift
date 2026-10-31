@@ -52,7 +52,8 @@ private struct DirectionWedge: View {
 	let innerRadius: CGFloat
 	let send: (DisplayInputEvent) -> Void
 
-	@State private var isPressed = false
+	/// Resets on its own when the system cancels the touch, which onEnded doesn't see.
+	@GestureState private var isPressed = false
 	@State private var repeatTask: Task<Void, Never>?
 
 	var body: some View {
@@ -74,26 +75,28 @@ private struct DirectionWedge: View {
 			.contentShape(shape)
 			.gesture(
 				DragGesture(minimumDistance: 0)
-					.onChanged { _ in
-						guard !isPressed else { return }
-						isPressed = true
-						startRepeating()
-					}
-					.onEnded { _ in
-						isPressed = false
-						repeatTask?.cancel()
-						repeatTask = nil
+					.updating($isPressed) { _, pressed, _ in
+						pressed = true
 					}
 			)
 		}
-		.onDisappear {
-			repeatTask?.cancel()
-			repeatTask = nil
+		.onChange(of: isPressed) { _, pressed in
+			if pressed {
+				startRepeating()
+			} else {
+				stopRepeating()
+			}
 		}
+		.onDisappear { stopRepeating() }
 		.accessibilityElement()
 		.accessibilityLabel(label)
 		.accessibilityAddTraits(.isButton)
 		.accessibilityAction { send(event) }
+	}
+
+	private func stopRepeating() {
+		repeatTask?.cancel()
+		repeatTask = nil
 	}
 
 	private func startRepeating() {

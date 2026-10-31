@@ -19,7 +19,7 @@ struct DeviceScreenView: View {
 
 	@FocusState private var keyboardCaptured: Bool
 	@State private var hasKeyboard = DeviceScreenView.keyboardAttached
-	@State private var pressStart: Date?
+	@State private var press: ScreenPress?
 	@State private var lastKeyRepeat = Date.distantPast
 
 	private static var keyboardAttached: Bool {
@@ -96,12 +96,13 @@ struct DeviceScreenView: View {
 				Image(decorative: image, scale: 1)
 					.resizable()
 					.interpolation(.none)
-					.aspectRatio(aspectRatio, contentMode: .fit)
+					// The picture's own shape, so touches line up with the pixels drawn.
+					.aspectRatio(contentMode: .fit)
 					.overlay {
 						GeometryReader { proxy in
 							Color.clear
 								.contentShape(Rectangle())
-								.gesture(screenGesture(renderedSize: proxy.size))
+								.gesture(screenGesture(renderedSize: proxy.size, panelWidth: image.width, panelHeight: image.height))
 						}
 					}
 					.accessibilityElement()
@@ -138,16 +139,18 @@ struct DeviceScreenView: View {
 
 	/// A swipe sends a direction. On touch screens a tap touches the pixel under it and a long
 	/// press long-presses it; the radio times the long press itself, so it's sent once.
-	private func screenGesture(renderedSize: CGSize) -> some Gesture {
+	private func screenGesture(renderedSize: CGSize, panelWidth: Int, panelHeight: Int) -> some Gesture {
 		DragGesture(minimumDistance: 0)
-			.onChanged { _ in
-				if pressStart == nil {
-					pressStart = .now
+			.onChanged { value in
+				// Keyed by where the touch began, so a canceled touch that never ended can't
+				// lend its start time to the next one.
+				if press?.start != value.startLocation {
+					press = ScreenPress(start: value.startLocation, time: value.time)
 				}
 			}
 			.onEnded { value in
-				let heldFor = pressStart.map { Date.now.timeIntervalSince($0) } ?? 0
-				pressStart = nil
+				let heldFor = press.flatMap { $0.start == value.startLocation ? value.time.timeIntervalSince($0.time) : nil } ?? 0
+				press = nil
 				if let direction = DisplayInputMapping.swipeDirection(for: value.translation) {
 					send(direction)
 					return
@@ -156,8 +159,8 @@ struct DeviceScreenView: View {
 					  let point = DisplayInputMapping.panelPoint(
 						for: value.location,
 						in: renderedSize,
-						panelWidth: Int(metadata.displayWidth),
-						panelHeight: Int(metadata.displayHeight)
+						panelWidth: panelWidth,
+						panelHeight: panelHeight
 					  ) else { return }
 				send(heldFor >= DisplayInputMapping.longPressDuration ? .select : .userPress, at: point)
 			}
@@ -252,4 +255,9 @@ struct DeviceScreenView: View {
 		guard accessoryManager.isConnected, scenePhase == .active else { return }
 		await accessoryManager.startDisplayMirror()
 	}
+}
+
+private struct ScreenPress {
+	let start: CGPoint
+	let time: Date
 }
