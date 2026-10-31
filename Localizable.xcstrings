@@ -1349,6 +1349,21 @@
         }
       }
     },
+    "%@ E-ink" : {
+
+    },
+    "%@ LCD" : {
+
+    },
+    "%@ LED matrix" : {
+
+    },
+    "%@ OLED" : {
+
+    },
+    "%@ TFT" : {
+
+    },
     "%@ · %@" : {
       "comment" : "Spatial map trace route menu: hops, then when the route came back, e.g. \"3 Hops · 2 hours ago\"",
       "localizations" : {

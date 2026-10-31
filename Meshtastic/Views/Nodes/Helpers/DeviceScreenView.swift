@@ -119,11 +119,11 @@ struct DeviceScreenView: View {
 	private var panelDescription: String {
 		let size = "\(metadata.displayWidth) × \(metadata.displayHeight)"
 		switch DisplayInfo.PanelClass(rawValue: Int(metadata.displayPanelClass)) {
-		case .oled: return "\(size) OLED"
-		case .lcd: return "\(size) LCD"
-		case .tft: return "\(size) TFT"
-		case .eink: return "\(size) E-ink"
-		case .hub75: return "\(size) LED matrix"
+		case .oled: return String(localized: "\(size) OLED")
+		case .lcd: return String(localized: "\(size) LCD")
+		case .tft: return String(localized: "\(size) TFT")
+		case .eink: return String(localized: "\(size) E-ink")
+		case .hub75: return String(localized: "\(size) LED matrix")
 		default: return size
 		}
 	}

@@ -21,7 +21,10 @@ extension AccessoryManager {
 		displayMirror.begin()
 		var admin = AdminMessage()
 		admin.setDisplayMirror = true
-		await sendDisplayMirrorAdmin(admin, description: "Started screen mirroring")
+		// If the request never went out, don't leave the session marked as streaming.
+		if !(await sendDisplayMirrorAdmin(admin, description: "Started screen mirroring")) {
+			displayMirror.end()
+		}
 	}
 
 	func stopDisplayMirror() async {
@@ -39,14 +42,15 @@ extension AccessoryManager {
 		await sendDisplayMirrorAdmin(admin, description: "Requested a screen frame")
 	}
 
-	private func sendDisplayMirrorAdmin(_ admin: AdminMessage, description: String) async {
+	@discardableResult
+	private func sendDisplayMirrorAdmin(_ admin: AdminMessage, description: String) async -> Bool {
 		guard let deviceNum = activeConnection?.device.num else {
 			Logger.admin.error("Screen mirroring: no connected radio")
-			return
+			return false
 		}
 		guard let payload = try? admin.serializedData() else {
 			Logger.admin.error("Screen mirroring: couldn't encode the admin message")
-			return
+			return false
 		}
 		var dataMessage = DataMessage()
 		dataMessage.payload = payload
@@ -63,8 +67,10 @@ extension AccessoryManager {
 		toRadio.packet = meshPacket
 		do {
 			try await send(toRadio, debugDescription: description)
+			return true
 		} catch {
 			Logger.admin.error("Screen mirroring: \(description, privacy: .public) failed: \(error.localizedDescription, privacy: .public)")
+			return false
 		}
 	}
 }

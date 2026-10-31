@@ -24,6 +24,7 @@ final class DisplayMirrorSession {
 	@ObservationIgnored private var lastFrame: DisplayMirrorFrame?
 	@ObservationIgnored private var palette: DisplayMirrorPalette?
 	@ObservationIgnored private var renderTask: Task<Void, Never>?
+	@ObservationIgnored private var renderPending = false
 	@ObservationIgnored private var renderGeneration = 0
 
 	/// Starts a fresh stream; the radio answers with a frame straight away.
@@ -63,23 +64,33 @@ final class DisplayMirrorSession {
 		palette = nil
 		renderTask?.cancel()
 		renderTask = nil
+		renderPending = false
 		renderGeneration += 1
 		image = nil
 	}
 
 	/// Draws off the main thread: a large color panel takes a while. The last picture stays up meanwhile.
+	/// Only one render runs at a time; frames that land during it are folded into one more render of the latest.
 	private func render() {
+		guard renderTask == nil else {
+			renderPending = true
+			return
+		}
 		guard let frame = lastFrame else { return }
 		let palette = self.palette
-		renderGeneration += 1
 		let generation = renderGeneration
-		renderTask?.cancel()
 		renderTask = Task {
 			let image = await Task.detached(priority: .userInitiated) {
 				DisplayFrameRenderer.image(for: frame, palette: palette)
 			}.value
-			guard !Task.isCancelled, generation == self.renderGeneration else { return }
+			// clear() bumps the generation and has already dropped this task.
+			guard generation == self.renderGeneration else { return }
 			self.image = image
+			self.renderTask = nil
+			if self.renderPending {
+				self.renderPending = false
+				self.render()
+			}
 		}
 	}
 }
