@@ -18,8 +18,6 @@ Each node that has reported a GPS position appears as a colored circle pin on th
 
 Pins update automatically when a new position packet is received from the mesh.
 
-With node clustering on, pins only merge into a numbered badge once they overlap by about half, so nearby nodes stay separate as long as their names can be read. A node with an approximate position sits at the center of its precision circle, and the circle is hidden while the node is inside a badge.
-
 ### Overlapping nodes at the same spot
 
 When several nodes report the *same* (or nearly the same) location — for example radios sitting on one desk, or nodes broadcasting a reduced-precision position — their pins stack on top of each other and can't be pulled apart by zooming. Tapping the stack (or the numbered count badge, when node clustering is on) opens a **Select a Node** list of every node at that spot. Pick one to open its detail view. This works whether or not clustering is enabled, so an occluded node is always reachable.
@@ -79,10 +77,6 @@ On the 3D spatial map, the **link** button in the toolbar draws the same direct 
 ### Weather radar on the spatial map (Apple Vision Pro)
 
 **Weather Radar** in the 3D spatial map's map menu, next to Contour Lines, drapes NOAA precipitation radar over the terrain, following the hills, at the same strength as on the 2D map. It is the 2D map's setting and is offered the same way: in the lower 48 United States, with a network connection. The radar is fetched when the map opens, when the area on the table changes, and every five minutes while it is shown. It is hidden while the device is offline, and when the table shows an area outside the radar's coverage. Radar data from NOAA/NCEP.
-
-### Buildings on the spatial map (Apple Vision Pro)
-
-**Buildings** in the 3D spatial map's map menu raises the buildings from your downloaded offline maps on the terrain, at their real height from OpenStreetMap. The hills are stretched upward so they stand out; the buildings aren't. It is offered where a downloaded street map covers part of the table, and is off by default. A map downloaded at **High detail** has every building; a **Standard** map has only the largest. Buildings without a height in OpenStreetMap stand about two floors tall. The further the table is zoomed out, the fewer are drawn: every building on a table a few kilometers across, only the larger ones on a wider one, and none past about 20 km. Building data © OpenStreetMap contributors.
 
 ### Offline Maps
 

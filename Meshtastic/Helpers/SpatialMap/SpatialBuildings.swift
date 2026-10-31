@@ -155,14 +155,12 @@ enum SpatialBuildings {
 	// MARK: Mesh
 
 	/// The buildings on the disk as one flat-shaded mesh in model units: walls and a flat roof each,
-	/// standing on the lowest ground under the outline and raised to their real heights. The terrain
-	/// is stretched upward so hills read; a building stretched with it turns a slim tower like the
-	/// Space Needle into a pole.
+	/// standing on the lowest ground under the outline and raised by the terrain's own height scale.
 	/// A building with any corner past the disk's edge is left out, and the largest are kept first
 	/// when there are more triangles than `triangleBudget`.
 	static func mesh(_ footprints: [SpatialBuildingFootprint], geometry: SpatialTerrainGeometry, triangleBudget: Int = triangleBudget) -> SpatialMeshData {
 		let transform = geometry.transform
-		let heightScale = Float(transform.scale)
+		let heightScale = Float(transform.verticalExaggeration * transform.scale)
 		let limit = transform.diskRadius * diskShare
 		struct Placed {
 			let outline: [SIMD2<Float>]
