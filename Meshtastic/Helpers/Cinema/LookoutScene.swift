@@ -68,7 +68,18 @@ final class LookoutScene {
 			return
 		}
 		bounds = union
+		let maps = LookoutSiteCache.maps(in: manager.regions)
+		if let kept = LookoutSiteCache.sites(for: maps) {
+			sites = kept
+			status = sites.isEmpty ? .noSummits : .ready
+			Logger.services.info("🎬 [Cinema] Lookout sites: \(self.sites.count, privacy: .public) kept from the last search")
+			return
+		}
 		sites = await LookoutPeakNames.named(await LookoutTerrain.sites(in: union, source: store))
+		// A search cut short isn't the list for these downloads.
+		if !Task.isCancelled {
+			LookoutSiteCache.store(sites, for: maps)
+		}
 		status = sites.isEmpty ? .noSummits : .ready
 		Logger.services.info("🎬 [Cinema] Lookout sites: \(self.sites.count, privacy: .public) in the downloaded terrain \(union.minLat, privacy: .public)..\(union.maxLat, privacy: .public), \(union.minLon, privacy: .public)..\(union.maxLon, privacy: .public)")
 	}
