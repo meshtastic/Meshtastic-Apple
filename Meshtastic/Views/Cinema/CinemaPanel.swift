@@ -14,7 +14,7 @@ struct CinemaPanel: View {
 	@Binding var environment: CinemaEnvironment
 	/// The summits the fire lookout can stand on, highest first; empty with no downloaded terrain.
 	let sites: [LookoutSite]
-	/// The chosen summit's id, or empty for the painted sunset.
+	/// The chosen summit's id, or empty for the forest sunset.
 	@Binding var siteID: String
 	/// Where the connected radio is, to say how far each summit is from it.
 	let radioCoordinate: CLLocationCoordinate2D?
@@ -35,7 +35,7 @@ struct CinemaPanel: View {
 			.pickerStyle(.menu)
 			if environment.isCutout, !sites.isEmpty {
 				Picker(String(localized: "Summit", comment: "Cinema: picker for the summit the fire lookout stands on"), selection: $siteID) {
-					Text("Painted sunset", comment: "Cinema: the fire lookout's painted view, with no real terrain")
+					Text("Forest sunset", comment: "Cinema: the fire lookout's rendered forest view, with no real terrain")
 						.tag("")
 					ForEach(sites) { site in
 						Text(verbatim: title(for: site)).tag(site.id)

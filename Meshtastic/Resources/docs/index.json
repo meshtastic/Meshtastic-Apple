@@ -94,11 +94,11 @@
             "summit",
             "lookout",
             "stands",
+            "out",
             "cab",
             "beside",
             "sunset",
             "route",
-            "out",
             "fire",
             "details",
             "back",
@@ -114,7 +114,7 @@
             "front",
             "from"
         ],
-        "charCount": 4100
+        "charCount": 4142
     },
     {
         "id": "discovery",
