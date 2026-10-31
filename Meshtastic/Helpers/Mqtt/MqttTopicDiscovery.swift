@@ -73,10 +73,10 @@ enum MqttRootTopic {
 		root.isEmpty || root == "msh" || root == regionTopic
 	}
 
-	/// Firmware before 2.8.1 overwrote every root starting with "msh" on a region set. Only worth a
+	/// Firmware 2.7.12 through 2.8.0 overwrote every root starting with "msh" on a region set. Only worth a
 	/// warning when the version is known and the root is not one the rewrite leaves correct.
-	static func olderFirmwareReplaces(root: String, regionTopic: String, firmwareKnown: Bool, firmwareAtLeast281: Bool) -> Bool {
-		firmwareKnown && !firmwareAtLeast281 && root.hasPrefix("msh") && !isFirmwareDefault(root, regionTopic: regionTopic)
+	static func olderFirmwareReplaces(root: String, regionTopic: String, firmwareKnown: Bool, firmwareAtLeast2712: Bool, firmwareAtLeast281: Bool) -> Bool {
+		firmwareKnown && firmwareAtLeast2712 && !firmwareAtLeast281 && root.hasPrefix("msh") && !isFirmwareDefault(root, regionTopic: regionTopic)
 	}
 
 	/// Split on "/", each segment trimmed, empties dropped.
