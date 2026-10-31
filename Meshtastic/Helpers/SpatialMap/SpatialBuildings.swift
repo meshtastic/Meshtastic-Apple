@@ -16,6 +16,8 @@ struct SpatialBuildingFootprint: Sendable {
 	let height: Double?
 	/// Where a building part starts above the ground, for the upper floors of a tower.
 	let minHeight: Double
+	/// A piece of a building drawn in parts, like a tower's legs, deck and spire.
+	var isPart = false
 
 	/// A tile property read as meters: vector tiles store numbers as doubles or integers.
 	static func meters(_ value: Any?) -> Double? {
@@ -86,8 +88,41 @@ enum SpatialBuildings {
 			tileCount += tiles.count
 			decoded.append(coverage)
 		}
+		footprints = withoutOutlinesOfParts(footprints)
 		Logger.services.info("🧊 [Spatial] Buildings: \(footprints.count) from \(tileCount) tiles in \(String(format: "%.2f", Date().timeIntervalSince(started)), privacy: .public)s")
 		return footprints
+	}
+
+	/// A building drawn in parts is drawn by its parts alone. Its outline covers the whole
+	/// footprint at the full height, so drawn as well it hides them: the Space Needle comes out as
+	/// one tall column. An outline with a part's middle inside it is left out.
+	static func withoutOutlinesOfParts(_ footprints: [SpatialBuildingFootprint]) -> [SpatialBuildingFootprint] {
+		let middles = footprints.filter(\.isPart).map { part in
+			let count = Double(part.outline.count)
+			return CLLocationCoordinate2D(
+				latitude: part.outline.reduce(0) { $0 + $1.latitude } / count,
+				longitude: part.outline.reduce(0) { $0 + $1.longitude } / count
+			)
+		}
+		guard !middles.isEmpty else { return footprints }
+		return footprints.filter { footprint in
+			footprint.isPart || !middles.contains { contains(footprint.outline, $0) }
+		}
+	}
+
+	/// Whether the point is inside the outline, by counting the edges a line east from it crosses.
+	static func contains(_ outline: [CLLocationCoordinate2D], _ point: CLLocationCoordinate2D) -> Bool {
+		var inside = false
+		var j = outline.count - 1
+		for i in outline.indices {
+			let a = outline[i], b = outline[j]
+			if (a.latitude > point.latitude) != (b.latitude > point.latitude),
+			   point.longitude < (b.longitude - a.longitude) * (point.latitude - a.latitude) / (b.latitude - a.latitude) + a.longitude {
+				inside.toggle()
+			}
+			j = i
+		}
+		return inside
 	}
 
 	// MARK: Mesh
