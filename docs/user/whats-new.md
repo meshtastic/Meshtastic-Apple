@@ -14,6 +14,8 @@ Recent user-facing changes from roughly the last 12 months. Newest at the top.
 Show roughly the last 12 months of changes; archive entries older than a year by removing them.
 -->
 
+**Oct 2026** — [Cinema](cinema.md) — On Apple Vision Pro, the Cinema has a second place to sit: a ham shack, with the app on the wall over an operating desk of radios, a window out to the antenna tower, and your team, the latest trace route and the net's check-ins on the same boards as in the tent.
+
 **Oct 2026** — [Bluetooth Device Connection](bluetooth.md#widgets-and-controls) — The Connect screen's Live Activity row is now **Widgets**: one sheet to start or switch the Live Activity and to see which widgets and controls are on your screens, with how to add the rest.
 
 **Oct 2026** — [Cinema](cinema.md) — On Apple Vision Pro, a search and rescue tent with the app on a big screen, the 3D map in front of you, your team on the whiteboard and the latest trace route on the wall.

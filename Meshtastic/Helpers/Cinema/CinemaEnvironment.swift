@@ -11,6 +11,7 @@ import SwiftUI
 /// viewer, with the screen in front of the part of the image left quiet for it.
 enum CinemaEnvironment: String, CaseIterable, Identifiable {
 	case sarTent
+	case hamShack
 
 	var id: String { rawValue }
 
@@ -18,6 +19,8 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 		switch self {
 		case .sarTent:
 			String(localized: "Search and Rescue Tent", comment: "Cinema environment: inside a search and rescue command tent")
+		case .hamShack:
+			String(localized: "Ham Shack", comment: "Cinema environment: inside an amateur radio operator's radio room")
 		}
 	}
 
@@ -25,6 +28,7 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 	var imageName: String {
 		switch self {
 		case .sarTent: "sar_tent"
+		case .hamShack: "ham_shack"
 		}
 	}
 
@@ -34,7 +38,7 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 	/// image needs nudging.
 	var frontRotation: Float {
 		switch self {
-		case .sarTent: 0
+		case .sarTent, .hamShack: 0
 		}
 	}
 
@@ -47,6 +51,12 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 				UIColor(red: 0.10, green: 0.12, blue: 0.18, alpha: 1),
 				UIColor(red: 0.55, green: 0.38, blue: 0.22, alpha: 1),
 				UIColor(red: 0.16, green: 0.13, blue: 0.10, alpha: 1)
+			)
+		case .hamShack:
+			(
+				UIColor(red: 0.85, green: 0.84, blue: 0.80, alpha: 1),
+				UIColor(red: 0.55, green: 0.36, blue: 0.18, alpha: 1),
+				UIColor(red: 0.05, green: 0.08, blue: 0.07, alpha: 1)
 			)
 		}
 	}

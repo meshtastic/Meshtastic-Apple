@@ -84,15 +84,16 @@
         "navOrder": 17,
         "keywords": [
             "app",
-            "map",
             "tent",
             "screen",
-            "open",
+            "map",
             "window",
             "radio",
+            "open",
             "route",
             "model",
             "button",
+            "beside",
             "back",
             "while",
             "vision",
@@ -100,6 +101,7 @@
             "trace",
             "stand",
             "shows",
+            "shack",
             "pro",
             "pinch",
             "panel",
@@ -107,14 +109,12 @@
             "leave",
             "last",
             "heard",
+            "ham",
             "front",
-            "closes",
-            "cinema",
-            "card",
-            "bar",
-            "apple"
+            "control",
+            "closes"
         ],
-        "charCount": 2231
+        "charCount": 2500
     },
     {
         "id": "discovery",
@@ -796,27 +796,27 @@
             "node",
             "messages",
             "firmware",
-            "device",
             "radios",
+            "device",
             "page",
             "local",
             "channel",
             "bluetooth",
+            "apple",
             "radio",
+            "oct",
             "live",
             "list",
             "jul",
             "from",
-            "apple",
             "waypoints",
             "signal",
             "show",
             "screen",
             "row",
-            "region",
-            "only"
+            "region"
         ],
-        "charCount": 9319
+        "charCount": 9606
     },
     {
         "id": "adding-features",
