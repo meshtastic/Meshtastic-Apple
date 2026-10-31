@@ -35,6 +35,9 @@ struct DeviceModelView<Placeholder: View>: View {
 	@State private var isLoading = false
 	@State private var unavailable = false
 	@State private var stage: DeviceModelStage?
+	/// The model as loaded, kept out of any scene so the full-screen view can have its own copy.
+	@State private var loadedModel: Entity?
+	@State private var fullScreenStage: DeviceModelStage?
 	/// The file the model came from, handed to Quick Look for "View in your space".
 	@State private var modelURL: URL?
 	@State private var quickLookURL: URL?
@@ -91,6 +94,9 @@ struct DeviceModelView<Placeholder: View>: View {
 			if !unavailable {
 				HStack(spacing: 8) {
 					toggleButton
+					if stage != nil, loadedModel != nil {
+						fullScreenButton
+					}
 					if stage != nil, modelURL != nil, Self.canViewInSpace {
 						viewInSpaceButton
 					}
@@ -101,6 +107,7 @@ struct DeviceModelView<Placeholder: View>: View {
 		.task(id: ModelRequest(showsModel: showsModel, name: shownModelName)) {
 			guard showsModel else {
 				stage = nil
+				loadedModel = nil
 				modelURL = nil
 				return
 			}
@@ -115,6 +122,7 @@ struct DeviceModelView<Placeholder: View>: View {
 			do {
 				let entity = try await Entity(contentsOf: url)
 				guard !Task.isCancelled else { return }
+				loadedModel = entity.clone(recursive: true)
 				stage = DeviceModelStage(model: entity)
 				modelURL = url
 			} catch {
@@ -145,6 +153,46 @@ struct DeviceModelView<Placeholder: View>: View {
 		#if os(iOS)
 		.quickLookPreview($quickLookURL)
 		#endif
+		.sheet(item: $fullScreenStage) { fullStage in
+			NavigationStack {
+				DeviceModelRealityView(
+					stage: fullStage,
+					autoRotate: !reduceMotion,
+					screenImage: liveScreen ? accessoryManager.displayMirror.image : nil
+				)
+				.padding()
+				.accessibilityElement(children: .ignore)
+				.accessibilityLabel(String(
+					localized: "3D model of \(shownName)",
+					comment: "Accessibility label for the rotating 3D model of a radio; the argument is the device name"
+				))
+				.navigationTitle(shownName)
+				#if !os(macOS)
+				.navigationBarTitleDisplayMode(.inline)
+				#endif
+				.toolbar {
+					ToolbarItem(placement: .confirmationAction) {
+						Button("Done") { fullScreenStage = nil }
+					}
+				}
+			}
+			.presentationDetents([.large])
+		}
+	}
+
+	private var fullScreenButton: some View {
+		Button {
+			guard let loadedModel else { return }
+			// A scene can only hold an entity once, so the full-screen view turns its own copy.
+			fullScreenStage = DeviceModelStage(model: loadedModel.clone(recursive: true))
+		} label: {
+			Image(systemName: "arrow.up.left.and.arrow.down.right")
+				.font(.body.weight(.semibold))
+				.frame(width: 36, height: 36)
+				.background(.ultraThinMaterial, in: Circle())
+		}
+		.buttonStyle(.plain)
+		.accessibilityLabel(String(localized: "Full Screen", comment: "Button on a radio's 3D model: open the model full screen"))
 	}
 
 	private struct ModelRequest: Equatable {
@@ -553,6 +601,9 @@ final class DeviceModelStage {
 		pivot.orientation = simd_quatf(angle: pitch, axis: [1, 0, 0]) * simd_quatf(angle: yaw, axis: [0, 1, 0])
 	}
 }
+
+@available(iOS 18.0, macCatalyst 18.0, visionOS 1.0, *)
+extension DeviceModelStage: Identifiable {}
 
 @available(iOS 18.0, macCatalyst 18.0, visionOS 1.0, *)
 private extension Entity {

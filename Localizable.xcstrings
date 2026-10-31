@@ -570,6 +570,9 @@
     "Arrow keys, Return and Esc go to the radio." : {
 
     },
+    "Full Screen" : {
+      "comment" : "Button on a radio's 3D model: open the model full screen"
+    },
     "Radio screen" : {
 
     },
