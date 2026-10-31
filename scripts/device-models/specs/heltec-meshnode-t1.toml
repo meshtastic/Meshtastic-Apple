@@ -10,3 +10,7 @@ source = "https://resource.heltec.cn/download/Mesh_Node_T1/Datasheet/Mesh-Node-T
 confidence = "vendor"
 edge_radius_mm = 2.0
 front_edge_radius_mm = 2.0
+
+# The display's visible area, for the radio's live screen.
+[screen]
+bbox = [117.48, 96.11, 295.18, 186.45]
