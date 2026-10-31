@@ -57,9 +57,9 @@ enum LookoutTerrain {
 	static let frontHeading = SpatialLookout.frontHeading
 	/// Earth's radius with the usual allowance for refraction: far ridges sit below a flat horizon.
 	static let earthRadius = 7_450_000.0
-	/// The cab's floor stands this far above the summit, on its footing, as a lookout does; the
-	/// ground around the footing falls away from the windows.
-	static let cabHeight = 4.0
+	/// The cab's floor stands this far above the summit, on a tower taller than most real ones
+	/// (under 30 m), so the view looks down onto the ground around the summit.
+	static let cabHeight = 40.0
 	/// The seated eye above the cab's floor.
 	static let eyeHeight = 1.15
 
@@ -321,7 +321,7 @@ enum LookoutTerrain {
 				let latitude = site.latitude + distance * cos(bearing) / metersPerDegreeLatitude
 				let longitude = site.longitude + distance * sin(bearing) / metersPerDegreeLongitude
 				if var elevation = await sampler.elevation(latitude: latitude, longitude: longitude, zoom: zoom) {
-					// The footing cuts the summit flat: nothing right around the cab stands above
+					// The tower's footing cuts the summit flat: nothing right around it stands above
 					// its floor.
 					if distance < 40 {
 						elevation = min(elevation, Float(floor - 0.5))
