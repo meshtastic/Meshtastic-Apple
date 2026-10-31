@@ -570,6 +570,15 @@
     "Arrow keys, Return and Esc go to the radio." : {
 
     },
+    "Zoom to Case" : {
+
+    },
+    "Zoom Out" : {
+
+    },
+    "Zoom to Screen" : {
+
+    },
     "Full Screen" : {
       "comment" : "Button on a radio's 3D model: open the model full screen"
     },

@@ -32,7 +32,7 @@ struct NodeInfoItem: View {
 
 	@Query private var users: [UserEntity]
 
-	/// Show the radio's live screen on its 3D model: the connected radio, when it reports a display.
+	/// Show the radio's live screen on its 3D model: the connected radio, while connected, when it reports a display.
 	let liveScreen: Bool
 
 	init(nodeNum: Int64, liveScreen: Bool = false) {
