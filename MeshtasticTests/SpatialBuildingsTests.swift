@@ -98,6 +98,9 @@ struct SpatialBuildingsTests {
 	func diskEdge() {
 		let mesh = SpatialBuildings.mesh([square(side: 40), square(side: 40, east: 990)], geometry: flatGeometry())
 		#expect(mesh.triangleCount == 2 * 4 + 2)
+		// Middle inside the edge, outer corners past it.
+		let straddling = SpatialBuildings.mesh([square(side: 40, east: 965)], geometry: flatGeometry())
+		#expect(straddling.triangleCount == 0)
 	}
 
 	@Test("over the budget, the biggest buildings are kept")

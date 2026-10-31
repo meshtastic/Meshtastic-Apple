@@ -94,7 +94,7 @@ enum SpatialBuildings {
 
 	/// The buildings on the disk as one flat-shaded mesh in model units: walls and a flat roof each,
 	/// standing on the lowest ground under the outline and raised by the terrain's own height scale.
-	/// A building whose middle is past the disk's edge is left out, and the largest are kept first
+	/// A building with any corner past the disk's edge is left out, and the largest are kept first
 	/// when there are more triangles than `triangleBudget`.
 	static func mesh(_ footprints: [SpatialBuildingFootprint], geometry: SpatialTerrainGeometry, triangleBudget: Int = triangleBudget) -> SpatialMeshData {
 		let transform = geometry.transform
@@ -119,8 +119,7 @@ enum SpatialBuildings {
 			guard abs(area) > 0 else { continue }
 			// Corners in order of increasing angle (x toward z), the order the faces below expect.
 			if area < 0 { outline.reverse() }
-			let middle = outline.reduce(SIMD2<Float>.zero, +) / Float(outline.count)
-			guard simd_length(middle) <= limit else { continue }
+			guard outline.allSatisfy({ simd_length($0) <= limit }) else { continue }
 			let ground = footprint.outline.map { geometry.groundHeight(at: $0) }.min() ?? 0
 			let height = max(footprint.height ?? defaultHeight, 1)
 			let minHeight = min(max(footprint.minHeight, 0), height - 1)

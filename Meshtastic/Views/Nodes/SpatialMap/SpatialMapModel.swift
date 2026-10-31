@@ -813,10 +813,12 @@ extension SpatialMapModel {
 		let bounds = placement.bounds
 		let dark = buildDark
 		buildingsTask = Task {
-			let mesh = await Task.detached(priority: .utility) { () -> SpatialMeshData? in
+			let worker = Task.detached(priority: .utility) { () -> SpatialMeshData? in
 				guard let footprints = SpatialBuildings.decode(bounds: bounds) else { return nil }
 				return SpatialBuildings.mesh(footprints, geometry: geometry)
-			}.value
+			}
+			// A detached task isn't cancelled with this one; pass it on so a superseded decode stops.
+			let mesh = await withTaskCancellationHandler { await worker.value } onCancel: { worker.cancel() }
 			guard !Task.isCancelled, buildingsKey == key, let mesh else { return }
 			do {
 				let entity = try await SpatialBuildingsEntity.make(mesh, dark: dark)
