@@ -362,6 +362,7 @@
             "enabled",
             "mesh",
             "root",
+            "region",
             "radio",
             "public",
             "packets",
@@ -371,8 +372,6 @@
             "node",
             "channel",
             "topics",
-            "settings",
-            "region",
             "org",
             "internet",
             "from",
@@ -385,9 +384,10 @@
             "unencrypted",
             "traffic",
             "through",
-            "than"
+            "than",
+            "support"
         ],
-        "charCount": 3012
+        "charCount": 3058
     },
     {
         "id": "nodes",

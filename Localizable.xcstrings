@@ -113019,7 +113019,7 @@
         }
       }
     },
-    "Radio firmware 2.7.12–2.8.0 has a bug: saving LoRa settings can reset this root topic to %@. After saving LoRa settings, return here, restore your custom root topic, and tap Save. Fixed in radio firmware 2.8.1 and later." : {
+    "Radio firmware 2.7.12–2.8.0 resets this root topic to %@ when the LoRa region is changed. After changing the region, return here, restore your custom root topic, and tap Save. Fixed in radio firmware 2.8.1 and later." : {
       "comment" : "MQTT custom-root reset warning. The placeholder is the radio region default, e.g. msh/US. Versions refer to radio firmware, not the Apple app."
     },
     "Radius" : {
