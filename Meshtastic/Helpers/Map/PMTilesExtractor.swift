@@ -7,7 +7,9 @@
 //  requests — never downloading the whole planet.
 //
 //  Strategy:
-//    1. Range-fetch the source header + root directory.
+//    1. Range-fetch the source header + root directory, keeping the archive's strong
+//       ETag. Every later range request carries it as If-Match, so an archive the host
+//       replaces mid-download is noticed and re-planned instead of copied half-and-half.
 //    2. Enumerate the slippy-map tiles covering the bounds across the zoom range
 //       and walk the source directory tree (fetching leaf directories on demand)
 //       to resolve each tile's byte range. This alone yields an exact size
@@ -24,10 +26,16 @@
 import Foundation
 import OSLog
 
-enum PMTilesExtractorError: Error, LocalizedError {
+enum PMTilesExtractorError: Error, LocalizedError, Equatable {
 	case noBuildAvailable
 	case badHeader
 	case rangeRequestFailed(Int)
+	/// The host replaced the archive while it was being read (412, 416, or a 206 with
+	/// a different strong ETag), twice in one extract.
+	case sourceReplaced
+	/// A range response that doesn't cover the bytes asked for: wrong Content-Range
+	/// start, a short body, or a whole-file reply shorter than the range start.
+	case rangeMismatch
 	case areaTooLarge(Int)
 	case noTilesInArea
 	case writeFailed
@@ -38,6 +46,8 @@ enum PMTilesExtractorError: Error, LocalizedError {
 		case .noBuildAvailable: return "No recent Protomaps map build could be reached."
 		case .badHeader: return "The map source returned an unexpected format."
 		case .rangeRequestFailed(let code): return "The map source rejected a range request (HTTP \(code))."
+		case .sourceReplaced: return "The map source changed while downloading. Try again."
+		case .rangeMismatch: return "The map source returned the wrong bytes for a range request."
 		case .areaTooLarge(let tiles): return "That area is too large to download (\(tiles) tiles). Zoom in or lower the detail level."
 		case .noTilesInArea: return "There is no map coverage for that area."
 		case .writeFailed: return "The downloaded map could not be saved."
@@ -60,6 +70,10 @@ final class PMTilesExtractor {
 	struct Plan {
 		let sourceURL: URL
 		let sourceBuild: String
+		/// The archive's strong ETag at planning time, sent as If-Match on every later
+		/// range request. Nil when the host sends none (or only a weak one): then a
+		/// replaced archive can't be told apart and the copy is unverified.
+		let sourceETag: String?
 		let header: PMTilesHeader
 		/// The extracted region's geometry and effective zoom range (clamped to the source).
 		let bounds: GeoBounds
@@ -80,16 +94,35 @@ final class PMTilesExtractor {
 		let outputOffset: UInt64
 	}
 
-	/// One answer to a range request: the status and the bytes. The extractor needs
+	/// One answer to a range request: status, headers and bytes. The extractor needs
 	/// nothing else from the transport.
 	struct RangeResponse {
 		let statusCode: Int
+		let headers: [String: String]
 		let body: Data
+
+		init(statusCode: Int, headers: [String: String] = [:], body: Data) {
+			self.statusCode = statusCode
+			self.headers = headers
+			self.body = body
+		}
+
+		/// A header by name, case-insensitively.
+		func header(_ name: String) -> String? {
+			headers.first { $0.key.caseInsensitiveCompare(name) == .orderedSame }?.value
+		}
 	}
 
-	/// Fetches one byte range of a remote archive. The default goes through
-	/// `URLSession`; tests hand in a closure that serves archives from memory.
-	typealias RangeFetcher = @Sendable (URL, ClosedRange<UInt64>) async throws -> RangeResponse
+	/// Fetches one byte range of a remote archive, sending `ifMatch` as If-Match when
+	/// given. The default goes through `URLSession`; tests hand in a closure that serves
+	/// archives from memory.
+	typealias RangeFetcher = @Sendable (URL, ClosedRange<UInt64>, _ ifMatch: String?) async throws -> RangeResponse
+
+	/// An archive being read: where it is and the validator its plan was made with.
+	private struct Source {
+		let url: URL
+		let etag: String?
+	}
 
 	private let fetch: RangeFetcher
 	/// Decoded directories, keyed by archive AND offset. One extractor plans the global
@@ -137,7 +170,7 @@ final class PMTilesExtractor {
 	/// Whether a PMTiles archive exists at `url`, probing the 7-byte magic with a range request.
 	func archiveExists(_ url: URL) async -> Bool {
 		do {
-			let data = try await fetchRange(url, start: 0, end: 6)
+			let data = try await fetchRange(url, start: 0, end: 6, ifMatch: nil).body
 			return data.count == 7 && data == Data("PMTiles".utf8)
 		} catch {
 			return false
@@ -146,17 +179,30 @@ final class PMTilesExtractor {
 
 	// MARK: - Planning (resolve tiles + exact size, no payload download)
 
+	/// Resolves the tiles a region needs. If the archive is replaced between the header
+	/// fetch and a directory fetch, planning starts over once from a fresh header.
 	func makePlan(sourceURL: URL, sourceBuild: String, bounds: GeoBounds, minZoom: Int, maxZoom: Int) async throws -> Plan {
+		do {
+			return try await resolvePlan(sourceURL: sourceURL, sourceBuild: sourceBuild, bounds: bounds, minZoom: minZoom, maxZoom: maxZoom)
+		} catch PMTilesExtractorError.sourceReplaced {
+			Logger.services.info("🗺️ [Offline] Source archive replaced while planning; planning again")
+			forgetDirectories(of: sourceURL)
+			return try await resolvePlan(sourceURL: sourceURL, sourceBuild: sourceBuild, bounds: bounds, minZoom: minZoom, maxZoom: maxZoom)
+		}
+	}
+
+	private func resolvePlan(sourceURL: URL, sourceBuild: String, bounds: GeoBounds, minZoom: Int, maxZoom: Int) async throws -> Plan {
 		// Header + root directory live at the start of the file; one fetch usually covers both.
-		let head = try await fetchRange(sourceURL, start: 0, end: 16_383)
-		guard let header = PMTilesArchive.parseHeader(head) else { throw PMTilesExtractorError.badHeader }
+		let head = try await fetchRange(sourceURL, start: 0, end: 16_383, ifMatch: nil)
+		guard let header = PMTilesArchive.parseHeader(head.body) else { throw PMTilesExtractorError.badHeader }
+		let source = Source(url: sourceURL, etag: head.etag)
 
 		let rootEntries = try await directory(
 			at: header.rootDirOffset,
 			length: header.rootDirLength,
 			compression: header.internalCompression,
-			sourceURL: sourceURL,
-			prefetched: head
+			source: source,
+			prefetched: head.body
 		)
 
 		let lo = max(minZoom, Int(header.minZoom))
@@ -172,7 +218,7 @@ final class PMTilesExtractor {
 		resolved.reserveCapacity(tileIDs.count)
 		for tileID in tileIDs {
 			try Task.checkCancellation()
-			if let range = try await resolve(tileID: tileID, header: header, root: rootEntries, sourceURL: sourceURL) {
+			if let range = try await resolve(tileID: tileID, header: header, root: rootEntries, source: source) {
 				resolved.append((tileID, range.source, range.length))
 			}
 		}
@@ -195,7 +241,7 @@ final class PMTilesExtractor {
 			.map { PMTilesArchive.Entry(tileID: $0.tileID, offset: outputBySource[$0.source] ?? 0, length: $0.length, runLength: 1) }
 			.sorted { $0.tileID < $1.tileID }
 
-		return Plan(sourceURL: sourceURL, sourceBuild: sourceBuild, header: header, bounds: bounds, minZoom: lo, maxZoom: hi, blobs: blobs, entries: entries)
+		return Plan(sourceURL: sourceURL, sourceBuild: sourceBuild, sourceETag: source.etag, header: header, bounds: bounds, minZoom: lo, maxZoom: hi, blobs: blobs, entries: entries)
 	}
 
 	/// Convenience: resolve the latest build and return the exact download size for a region.
@@ -209,7 +255,49 @@ final class PMTilesExtractor {
 
 	/// Downloads the planned tiles and writes a complete `.pmtiles` file to `destination`.
 	/// `onProgress` is invoked with (bytesWritten, totalBytes) on an arbitrary queue.
-	func extract(plan: Plan, to destination: URL, onProgress: (@Sendable (Int64, Int64) -> Void)? = nil) async throws {
+	///
+	/// If the host replaces the archive while this runs (a range request comes back 412,
+	/// 416, or with a different strong ETag), the region is planned again from a fresh
+	/// header and the file is written over from the start, once. A second replacement
+	/// fails with `sourceReplaced`. Returns the plan that was written, which is the
+	/// fresh one after a restart.
+	@discardableResult
+	func extract(plan: Plan, to destination: URL, onProgress: (@Sendable (Int64, Int64) -> Void)? = nil) async throws -> Plan {
+		FileManager.default.createFile(atPath: destination.path, contents: nil)
+		guard let handle = try? FileHandle(forWritingTo: destination) else { throw PMTilesExtractorError.writeFailed }
+		defer { try? handle.close() }
+
+		do {
+			do {
+				try await write(plan: plan, to: handle, onProgress: onProgress)
+				return plan
+			} catch PMTilesExtractorError.sourceReplaced {
+				Logger.services.info("🗺️ [Offline] Source archive replaced mid-extract; planning again")
+				forgetDirectories(of: plan.sourceURL)
+				let fresh = try await resolvePlan(
+					sourceURL: plan.sourceURL, sourceBuild: plan.sourceBuild,
+					bounds: plan.bounds, minZoom: plan.minZoom, maxZoom: plan.maxZoom
+				)
+				try handle.truncate(atOffset: 0)
+				try handle.seek(toOffset: 0)
+				try await write(plan: fresh, to: handle, onProgress: onProgress)
+				return fresh
+			}
+		} catch is CancellationError {
+			try? FileManager.default.removeItem(at: destination)
+			throw PMTilesExtractorError.cancelled
+		} catch let error as PMTilesExtractorError {
+			try? FileManager.default.removeItem(at: destination)
+			throw error
+		} catch {
+			try? FileManager.default.removeItem(at: destination)
+			Logger.services.error("🗺️ [Offline] Extract write failed: \(error.localizedDescription, privacy: .public)")
+			throw PMTilesExtractorError.writeFailed
+		}
+	}
+
+	/// Writes one plan's header, directory, metadata and tile payloads to an open file.
+	private func write(plan: Plan, to handle: FileHandle, onProgress: (@Sendable (Int64, Int64) -> Void)?) async throws {
 		let rootDir = Self.serializeDirectory(plan.entries)
 		let metadata = Self.metadataJSON()
 		let tileDataOffset = UInt64(127 + rootDir.count + metadata.count)
@@ -230,15 +318,11 @@ final class PMTilesExtractor {
 			tileCompression: plan.header.tileCompression
 		)
 
-		FileManager.default.createFile(atPath: destination.path, contents: nil)
-		guard let handle = try? FileHandle(forWritingTo: destination) else { throw PMTilesExtractorError.writeFailed }
-		defer { try? handle.close() }
+		try handle.write(contentsOf: header)
+		try handle.write(contentsOf: rootDir)
+		try handle.write(contentsOf: metadata)
 
 		do {
-			try handle.write(contentsOf: header)
-			try handle.write(contentsOf: rootDir)
-			try handle.write(contentsOf: metadata)
-
 			let total = Int64(tileDataLength)
 			var written: Int64 = 0
 			onProgress?(0, total)
@@ -262,39 +346,29 @@ final class PMTilesExtractor {
 					} else { break }
 				}
 
-				let chunk = try await fetchRange(plan.sourceURL, start: spanStart, end: spanEnd - 1)
+				let chunk = try await fetchRange(plan.sourceURL, start: spanStart, end: spanEnd - 1, ifMatch: plan.sourceETag).body
 				for blob in ordered[index...last] {
 					let lower = Int(blob.sourceOffset - spanStart)
 					let upper = lower + Int(blob.length)
-					guard upper <= chunk.count else { throw PMTilesExtractorError.writeFailed }
+					guard upper <= chunk.count else { throw PMTilesExtractorError.rangeMismatch }
 					try handle.write(contentsOf: chunk.subdata(in: lower..<upper))
 					written += Int64(blob.length)
 				}
 				onProgress?(written, total)
 				index = last + 1
 			}
-		} catch is CancellationError {
-			try? FileManager.default.removeItem(at: destination)
-			throw PMTilesExtractorError.cancelled
-		} catch let error as PMTilesExtractorError {
-			try? FileManager.default.removeItem(at: destination)
-			throw error
-		} catch {
-			try? FileManager.default.removeItem(at: destination)
-			Logger.services.error("🗺️ [Offline] Extract write failed: \(error.localizedDescription, privacy: .public)")
-			throw PMTilesExtractorError.writeFailed
 		}
 	}
 
 	// MARK: - Directory traversal
 
-	private func resolve(tileID: UInt64, header: PMTilesHeader, root: [PMTilesArchive.Entry], sourceURL: URL) async throws -> (source: UInt64, length: UInt32)? {
+	private func resolve(tileID: UInt64, header: PMTilesHeader, root: [PMTilesArchive.Entry], source: Source) async throws -> (source: UInt64, length: UInt32)? {
 		var dirOffset = header.rootDirOffset
 		var dirLength = header.rootDirLength
 		var entries = root
 		for depth in 0..<4 {
 			if depth > 0 {
-				entries = try await directory(at: dirOffset, length: dirLength, compression: header.internalCompression, sourceURL: sourceURL, prefetched: nil)
+				entries = try await directory(at: dirOffset, length: dirLength, compression: header.internalCompression, source: source, prefetched: nil)
 			}
 			guard let entry = PMTilesArchive.find(tileID, in: entries) else { return nil }
 			if entry.runLength == 0 {
@@ -312,8 +386,8 @@ final class PMTilesExtractor {
 		return nil
 	}
 
-	private func directory(at offset: UInt64, length: UInt64, compression: PMTilesCompression, sourceURL: URL, prefetched: Data?) async throws -> [PMTilesArchive.Entry] {
-		let key = DirectoryKey(url: sourceURL, offset: offset)
+	private func directory(at offset: UInt64, length: UInt64, compression: PMTilesCompression, source: Source, prefetched: Data?) async throws -> [PMTilesArchive.Entry] {
+		let key = DirectoryKey(url: source.url, offset: offset)
 		if let cached = leafCache[key] { return cached }
 		let raw: Data
 		// Overflow-safe range math (matches #2192): guard the add and the Int conversions so a
@@ -323,7 +397,7 @@ final class PMTilesExtractor {
 		   let start = Int(exactly: offset), let stop = Int(exactly: end) {
 			raw = prefetched.subdata(in: start..<stop)
 		} else if length > 0, !addOverflow {
-			raw = try await fetchRange(sourceURL, start: offset, end: end - 1)
+			raw = try await fetchRange(source.url, start: offset, end: end - 1, ifMatch: source.etag).body
 		} else {
 			return []
 		}
@@ -333,27 +407,9 @@ final class PMTilesExtractor {
 		return entries
 	}
 
-	// MARK: - HTTP range fetch
-
-	private func fetchRange(_ url: URL, start: UInt64, end: UInt64) async throws -> Data {
-		let response = try await fetch(url, start...end)
-		guard response.statusCode == 206 || response.statusCode == 200 else {
-			Logger.services.error("🗺️ [Offline] Range \(start, privacy: .public)-\(end, privacy: .public) of \(url.absoluteString, privacy: .public) failed: HTTP \(response.statusCode, privacy: .public)")
-			throw PMTilesExtractorError.rangeRequestFailed(response.statusCode)
-		}
-		return response.body
-	}
-
-	/// The production fetcher: one `Range` request per call, bypassing the URL cache.
-	static func rangeFetcher(session: URLSession) -> RangeFetcher {
-		{ url, range in
-			var request = URLRequest(url: url)
-			request.setValue("bytes=\(range.lowerBound)-\(range.upperBound)", forHTTPHeaderField: "Range")
-			request.cachePolicy = .reloadIgnoringLocalCacheData
-			let (data, response) = try await session.data(for: request)
-			guard let http = response as? HTTPURLResponse else { throw PMTilesExtractorError.rangeRequestFailed(-1) }
-			return RangeResponse(statusCode: http.statusCode, body: data)
-		}
+	/// Drops the cached directories of one archive, after the host replaced it.
+	private func forgetDirectories(of url: URL) {
+		leafCache = leafCache.filter { $0.key.url != url }
 	}
 
 	// MARK: - Tile enumeration
@@ -512,5 +568,95 @@ final class PMTilesExtractor {
 		putI32(Int32(((bounds.minLon + bounds.maxLon) / 2 * 1e7).rounded()), at: 119)
 		putI32(Int32(((bounds.minLat + bounds.maxLat) / 2 * 1e7).rounded()), at: 123)
 		return Data(bytes)
+	}
+}
+
+// MARK: - HTTP range fetch
+
+extension PMTilesExtractor {
+
+	/// The bytes of one range plus the archive's strong ETag, if the host sent one.
+	private struct Chunk {
+		let body: Data
+		let etag: String?
+	}
+
+	/// One validated range. 412 and 416, or a 206 whose strong ETag differs from
+	/// `ifMatch`, mean the archive was replaced. A 206 must start where asked and carry
+	/// as many bytes as its Content-Range says. A 200 means the Range header was
+	/// ignored and the whole file came back; the range is cut out of it, and a body
+	/// that ends before the range starts is an error.
+	private func fetchRange(_ url: URL, start: UInt64, end: UInt64, ifMatch: String?) async throws -> Chunk {
+		let response = try await fetch(url, start...end, ifMatch)
+		switch response.statusCode {
+		case 412, 416:
+			throw PMTilesExtractorError.sourceReplaced
+		case 200, 206:
+			break
+		default:
+			Logger.services.error("🗺️ [Offline] Range \(start, privacy: .public)-\(end, privacy: .public) of \(url.absoluteString, privacy: .public) failed: HTTP \(response.statusCode, privacy: .public)")
+			throw PMTilesExtractorError.rangeRequestFailed(response.statusCode)
+		}
+		let etag = Self.strongETag(response.header("ETag"))
+		if let ifMatch, let etag, etag != ifMatch {
+			throw PMTilesExtractorError.sourceReplaced
+		}
+		let body = response.body
+		let base = body.startIndex
+		let wanted = Int(end - start + 1)
+
+		if response.statusCode == 200 {
+			guard let first = Int(exactly: start), first < body.count else { throw PMTilesExtractorError.rangeMismatch }
+			let last = min(first + wanted, body.count)
+			return Chunk(body: Data(body[(base + first)..<(base + last)]), etag: etag)
+		}
+		if let contentRange = response.header("Content-Range") {
+			guard let parsed = Self.parseContentRange(contentRange), parsed.start == start,
+				  UInt64(body.count) == parsed.end - parsed.start + 1 else {
+				throw PMTilesExtractorError.rangeMismatch
+			}
+		} else if body.isEmpty {
+			throw PMTilesExtractorError.rangeMismatch
+		}
+		return Chunk(body: body.count > wanted ? Data(body[base..<(base + wanted)]) : body, etag: etag)
+	}
+
+	/// A validator worth sending: non-empty and strong. A weak tag (`W/"…"`) says the
+	/// bytes may differ between two responses, which is exactly what a range copy can't
+	/// tolerate, so it is treated as no tag at all.
+	static func strongETag(_ value: String?) -> String? {
+		guard let value = value?.trimmingCharacters(in: .whitespaces), !value.isEmpty, !value.hasPrefix("W/") else { return nil }
+		return value
+	}
+
+	/// The `start-end` of a `Content-Range: bytes start-end/total` header.
+	static func parseContentRange(_ value: String) -> (start: UInt64, end: UInt64)? {
+		let trimmed = value.trimmingCharacters(in: .whitespaces)
+		guard trimmed.lowercased().hasPrefix("bytes ") else { return nil }
+		let spec = trimmed.dropFirst(6)
+		guard let slash = spec.firstIndex(of: "/") else { return nil }
+		let range = spec[..<slash]
+		guard let dash = range.firstIndex(of: "-"),
+			  let start = UInt64(range[..<dash]),
+			  let end = UInt64(range[range.index(after: dash)...]),
+			  end >= start else { return nil }
+		return (start, end)
+	}
+
+	/// The production fetcher: one `Range` request per call, bypassing the URL cache.
+	static func rangeFetcher(session: URLSession) -> RangeFetcher {
+		{ url, range, ifMatch in
+			var request = URLRequest(url: url)
+			request.setValue("bytes=\(range.lowerBound)-\(range.upperBound)", forHTTPHeaderField: "Range")
+			if let ifMatch { request.setValue(ifMatch, forHTTPHeaderField: "If-Match") }
+			request.cachePolicy = .reloadIgnoringLocalCacheData
+			let (data, response) = try await session.data(for: request)
+			guard let http = response as? HTTPURLResponse else { throw PMTilesExtractorError.rangeRequestFailed(-1) }
+			var headers: [String: String] = [:]
+			for (name, value) in http.allHeaderFields {
+				if let name = name as? String, let value = value as? String { headers[name] = value }
+			}
+			return RangeResponse(statusCode: http.statusCode, headers: headers, body: data)
+		}
 	}
 }
