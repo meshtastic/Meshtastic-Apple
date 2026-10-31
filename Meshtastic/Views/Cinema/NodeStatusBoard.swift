@@ -179,10 +179,7 @@ struct NodeStatusBoard: View {
 		}
 		// No node has a negative number, so this matches every node when there's no radio.
 		let radioNum = radio?.num ?? -1
-		var descriptor = FetchDescriptor<NodeInfoEntity>(
-			predicate: #Predicate { $0.nodeStatus != nil && $0.num != radioNum },
-			sortBy: [SortDescriptor(\.lastHeard, order: .reverse)]
-		)
+		var descriptor = NodeInfoEntity.statusCandidates(excluding: radioNum)
 		let total = (try? context.fetchCount(descriptor)) ?? 0
 		let room = maxRows - entries.count
 		// A status can be all invisible characters, which gets no row, so a few more are read than fit.

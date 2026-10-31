@@ -235,6 +235,20 @@ extension NodeInfoEntity {
 		NodeInfoEntity.displayableStatus(nodeStatus) ?? NodeInfoEntity.displayableStatus(statusMessageConfig?.nodeStatus)
 	}
 
+	/// The nodes that may have a status to show, most recently heard first, for reading a few
+	/// from the store rather than every node: those with a live broadcast or a configured value,
+	/// the two `statusMessageDisplay` draws on. It can't tell a whitespace-only status from a
+	/// real one, so read `statusMessageDisplay` on each node fetched. `num` is left out, for the
+	/// connected radio, whose row is read separately.
+	static func statusCandidates(excluding num: Int64) -> FetchDescriptor<NodeInfoEntity> {
+		FetchDescriptor<NodeInfoEntity>(
+			predicate: #Predicate {
+				($0.nodeStatus != nil || ($0.statusMessageConfig?.nodeStatus != nil && $0.statusMessageConfig?.nodeStatus != "")) && $0.num != num
+			},
+			sortBy: [SortDescriptor(\.lastHeard, order: .reverse)]
+		)
+	}
+
 	/// Trims a candidate status and returns `nil` unless it contains at least one *visible*
 	/// character. Plain `whitespacesAndNewlines` trimming isn't enough: an untrusted broadcast
 	/// can be composed entirely of zero-width / format / control characters (U+200B, U+FEFF,

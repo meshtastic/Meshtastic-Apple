@@ -110,11 +110,11 @@
             "pro",
             "pinch",
             "panel",
+            "nodes",
             "leave",
-            "last",
-            "ham"
+            "last"
         ],
-        "charCount": 2763
+        "charCount": 2804
     },
     {
         "id": "discovery",
@@ -790,11 +790,11 @@
             "now",
             "new",
             "app",
-            "node",
+            "nodes",
             "messages",
             "mesh",
             "jun",
-            "nodes",
+            "node",
             "firmware",
             "radios",
             "device",
@@ -816,7 +816,7 @@
             "show",
             "screen"
         ],
-        "charCount": 9753
+        "charCount": 9759
     },
     {
         "id": "adding-features",
