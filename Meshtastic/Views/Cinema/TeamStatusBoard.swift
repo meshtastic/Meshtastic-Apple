@@ -9,7 +9,7 @@ import CoreLocation
 import SwiftData
 import SwiftUI
 
-/// The live team roster on the tent's whiteboard in the cinema: the connected radio and the
+/// The favorites board on the tent's whiteboard in the cinema: the connected radio and the
 /// favorite nodes, with when each was last heard, its battery, signal, hops, and distance and
 /// bearing from the radio. Drawn as marker on the board, to be read from across the tent.
 /// Tapping a row centers the 3D map on the node and opens its detail on the front screen.
@@ -85,7 +85,8 @@ struct TeamStatusBoard: View {
 
 	private func title(radioName: String?) -> some View {
 		HStack(alignment: .firstTextBaseline) {
-			Text("Team Status", comment: "Cinema: title of the live team roster on the tent's whiteboard")
+			star
+			Text("Team Favorites", comment: "Cinema: title of the favorites board on the tent's whiteboard")
 				.textCase(.uppercase)
 				.font(BoardStyle.marker(92))
 				.foregroundStyle(BoardStyle.blue)
@@ -114,6 +115,20 @@ struct TeamStatusBoard: View {
 			MeshLogo(height: 44)
 				.padding(.leading, 18)
 		}
+	}
+
+	/// The gold star before the title, outlined in ink so it shows on the board.
+	private var star: some View {
+		Image(systemName: "star.fill")
+			.font(.system(size: 84, weight: .bold))
+			.foregroundStyle(BoardStyle.gold)
+			.overlay {
+				Image(systemName: "star")
+					.font(.system(size: 84, weight: .bold))
+					.foregroundStyle(BoardStyle.ink)
+			}
+			.padding(.trailing, 12)
+			.accessibilityHidden(true)
 	}
 
 	private var headerRow: some View {
@@ -455,6 +470,8 @@ private enum BoardStyle {
 	static let blue = Color(red: 0.04, green: 0.10, blue: 0.33)
 	static let red = Color(red: 0.38, green: 0.02, blue: 0.02)
 	static let green = Color(red: 0, green: 0.21, blue: 0.07)
+	/// The star before the favorites title. Decoration, outlined in ink, so it needn't meet the contrast.
+	static let gold = Color(red: 0.96, green: 0.76, blue: 0.12)
 	/// Nodes not heard lately, hints and missing values.
 	static let faded = Color(red: 0.19, green: 0.18, blue: 0.17)
 
