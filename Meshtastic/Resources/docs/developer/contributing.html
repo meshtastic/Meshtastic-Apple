@@ -16,6 +16,15 @@
 <li>SwiftLint (<code>brew install swiftlint</code>)</li>
 </ul>
 <p>Run <code>./scripts/setup-hooks.sh</code> once after cloning to install the pre-commit SwiftLint hook.</p>
+<h3>Signing and the Siri capability</h3>
+<p>The app's entitlements include <code>com.apple.developer.siri</code>. If the build is signed with a team whose provisioning doesn't include Siri, such as a free personal team, the app crashes on the Siri step of onboarding when it calls <code>INPreferences.requestSiriAuthorization</code>. This happens on the simulator and on a device alike.</p>
+<p>For the simulator, sign to run locally instead of with a personal team. In Xcode, set the Meshtastic target's Team to None and Signing Certificate to Sign to Run Locally. From the command line:</p>
+<pre><code class="language-sh">xcodebuild -workspace Meshtastic.xcworkspace -scheme Meshtastic \
+  -destination 'generic/platform=iOS Simulator' \
+  CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM= PROVISIONING_PROFILE_SPECIFIER= \
+  build
+</code></pre>
+<p>Building with <code>CODE_SIGNING_ALLOWED=NO</code> leaves the entitlements out and crashes the same way. Keep these signing changes local and don't commit them.</p>
 <h2>Documentation</h2>
 <p>The app ships a built-in Help &amp; Documentation browser, a Jekyll site on GitHub Pages, and documentation is also published to the main <a href="https://meshtastic.org">meshtastic.org</a> site.</p>
 <table>
