@@ -121,7 +121,13 @@ enum LookoutTerrain {
 		for site in sites {
 			refined.append(await refine(site, within: cell, zoom: zoom, sampler: sampler))
 		}
-		return refined.sorted { $0.elevation > $1.elevation }
+		// Two coarse summits can climb to the same top when the cells are wide; keep the higher.
+		var distinct: [LookoutSite] = []
+		for site in refined.sorted(by: { $0.elevation > $1.elevation })
+			where !distinct.contains(where: { $0.coordinate.distance(from: site.coordinate) < 3_000 }) {
+			distinct.append(site)
+		}
+		return distinct
 	}
 
 	/// The highest ground in each cell of a coarse grid over the downloaded area, row-major from the

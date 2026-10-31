@@ -35,8 +35,22 @@ final class LookoutScene {
 	/// How many nodes get a label; the nearest ones.
 	private static let maxLabels = 40
 
-	/// Reads the downloaded terrain and finds the summits in it.
+	private var preparing: Task<Void, Never>?
+
+	/// Reads the downloaded terrain and finds the summits in it. A call while a search is running
+	/// waits for that one rather than starting another.
 	func prepare() async {
+		if let preparing {
+			await preparing.value
+			return
+		}
+		let search = Task { await self.search() }
+		preparing = search
+		await search.value
+		preparing = nil
+	}
+
+	private func search() async {
 		status = .searching
 		let manager = OfflineMapManager.shared
 		manager.loadIfNeeded()

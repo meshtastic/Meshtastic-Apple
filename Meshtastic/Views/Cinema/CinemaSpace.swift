@@ -48,6 +48,9 @@ struct CinemaSpace: View {
 	@State private var terrain: ModelEntity?
 	/// The site the terrain and labels are built for; nil for the painted sunset.
 	@State private var terrainSiteID: String?
+	/// The site a terrain is being built for. The cinema opening refreshes the lookout from two
+	/// tasks at once, and only one of them should build.
+	@State private var buildingSiteID: String?
 	@State private var labelPanels = LabelPanels()
 	@State private var radioCoordinate: CLLocationCoordinate2D?
 
@@ -68,6 +71,10 @@ struct CinemaSpace: View {
 			// the first frame that has it.
 			fitBoards = content.subscribe(to: SceneEvents.Update.self) { _ in
 				placeBoards()
+				// A label's size is only known once it has laid out, like a board's.
+				if labelPanels.unsized {
+					placeLabels { labelPanels.placed[$0] }
+				}
 			}
 		} update: { _, attachments in
 			if let panel = attachments.entity(for: Attachments.panel) {
@@ -79,7 +86,7 @@ struct CinemaSpace: View {
 			boards.setStrip(attachments.entity(for: Attachments.tabStrip))
 			modelStand.setTag(attachments.entity(for: Attachments.modelTag))
 			placeBoards()
-			placeLabels(attachments)
+			placeLabels { attachments.entity(for: $0) }
 		} attachments: {
 			Attachment(id: Attachments.panel) {
 				// The map counts as open while the cinema is reopening it, so the button doesn't
@@ -160,8 +167,20 @@ struct CinemaSpace: View {
 				if !appState.isDatabaseResetting {
 					let context = ModelContext(container)
 					let radioNum = accessoryManager.isConnected ? accessoryManager.activeDeviceNum : nil
-					radioCoordinate = radioNum.flatMap { getNodeInfo(id: $0, context: context)?.latestPosition?.nodeCoordinate }
 					lookout.labels = await lookout.labels(for: site, context: context, radioNum: radioNum)
+				}
+				try? await Task.sleep(for: .seconds(60))
+			}
+		}
+		.task(id: accessoryManager.isConnected ? accessoryManager.activeDeviceNum : nil) {
+			// Where the radio is, for each summit's distance and direction in the picker.
+			guard let container, let radioNum = accessoryManager.isConnected ? accessoryManager.activeDeviceNum : nil else {
+				radioCoordinate = nil
+				return
+			}
+			while !Task.isCancelled {
+				if !appState.isDatabaseResetting {
+					radioCoordinate = getNodeInfo(id: radioNum, context: ModelContext(container))?.latestPosition?.nodeCoordinate
 				}
 				try? await Task.sleep(for: .seconds(60))
 			}
@@ -277,6 +296,8 @@ struct CinemaSpace: View {
 		var placed: [String: Entity] = [:]
 		/// The line from each lifted label down to its node's spot.
 		var leaders: [String: ModelEntity] = [:]
+		/// A label hasn't laid out yet, so it couldn't be scaled; the frame update tries again.
+		var unsized = false
 
 		static func id(for label: LookoutLabel) -> String {
 			"node-\(label.id)"
@@ -319,6 +340,7 @@ struct CinemaSpace: View {
 		}
 		let site = lookout.site(for: lookoutSiteID)
 		guard site?.id != terrainSiteID || (site != nil && terrain == nil) else { return }
+		if let site, buildingSiteID == site.id { return }
 		terrain?.removeFromParent()
 		terrain = nil
 		terrainSiteID = nil
@@ -326,8 +348,14 @@ struct CinemaSpace: View {
 			await replaceBackdrop(clearSky: false)
 			return
 		}
-		guard let entity = await lookout.terrain(for: site, sun: environment.sun), lookoutSiteID == site.id, environment.isCutout else { return }
+		buildingSiteID = site.id
+		let built = await lookout.terrain(for: site, sun: environment.sun)
+		if buildingSiteID == site.id {
+			buildingSiteID = nil
+		}
+		guard let entity = built, lookoutSiteID == site.id, environment.isCutout else { return }
 		await replaceBackdrop(clearSky: true)
+		terrain?.removeFromParent()
 		stage.addChild(entity)
 		terrain = entity
 		terrainSiteID = site.id
@@ -336,9 +364,10 @@ struct CinemaSpace: View {
 	/// Hangs each node's label out the windows where the node is: lifted clear of the sill and of
 	/// the labels for nearer nodes, on a leader line down to its spot, facing the viewer and the
 	/// same share of the view whatever its distance.
-	private func placeLabels(_ attachments: RealityViewAttachments) {
+	private func placeLabels(_ entityFor: (String) -> Entity?) {
 		var keep: Set<String> = []
-		let entities = lookout.labels.map { attachments.entity(for: LabelPanels.id(for: $0)) }
+		var unsized = false
+		let entities = lookout.labels.map { entityFor(LabelPanels.id(for: $0)) }
 		// A label's height over its width, from the first one that has laid out.
 		var heightRatio = 0.3
 		for case let entity? in entities {
@@ -364,6 +393,8 @@ struct CinemaSpace: View {
 			let width = entity.visualBounds(relativeTo: entity).extents.x
 			if width > 0 {
 				entity.scale = SIMD3(repeating: widthPerDepth * spot.depth / width)
+			} else {
+				unsized = true
 			}
 			entity.position = LookoutTerrain.direction(azimuth: spot.azimuth, elevation: spot.center) * spot.depth
 			let leader = labelPanels.leaders[id] ?? {
@@ -390,6 +421,7 @@ struct CinemaSpace: View {
 			labelPanels.leaders[id]?.removeFromParent()
 			labelPanels.leaders[id] = nil
 		}
+		labelPanels.unsized = unsized
 	}
 
 	/// Centers the 3D map on the node, opening the map if it isn't open, and puts the node's

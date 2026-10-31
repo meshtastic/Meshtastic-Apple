@@ -52,11 +52,16 @@ enum LookoutPeakNames {
 
 	nonisolated private static func lookUp(_ sites: [LookoutSite], in files: [OfflineMapRegionFile]) -> [LookoutSite] {
 		let sources = files.compactMap { file in
-			OfflineTileSourceFactory.source(for: file.url).map { (source: $0, bounds: file.region.bounds) }
+			OfflineTileSourceFactory.source(for: file.url).map { (source: $0, bounds: file.region.bounds, path: file.url.path) }
 		}
+		// Keyed by download too: a tile one download lacks may be in the one next to it.
 		var tiles: [String: VectorTile?] = [:]
-		func tile(_ source: any OfflineTileSource, z: Int, x: Int, y: Int) -> VectorTile? {
-			let key = "\(z)/\(x)/\(y)"
+		func tile(_ source: any OfflineTileSource, path: String, z: Int, x: Int, y: Int) -> VectorTile? {
+			let count = 1 << z
+			// Wraps across the antimeridian; nothing past the poles.
+			guard y >= 0, y < count else { return nil }
+			let x = (x % count + count) % count
+			let key = "\(path)/\(z)/\(x)/\(y)"
 			if let cached = tiles[key] { return cached }
 			let made = source.tileData(z: UInt8(z), x: UInt32(x), y: UInt32(y))
 				.flatMap { VectorTile(data: $0, x: x, y: y, z: z, projection: .epsg4326) }
@@ -64,12 +69,12 @@ enum LookoutPeakNames {
 			return made
 		}
 		/// Named points in the tile the summit is in and the eight around it, so one just over an edge counts.
-		func points(near site: LookoutSite, source: any OfflineTileSource, zoom: Int, kinds: (String) -> Bool) -> [NamedPoint] {
+		func points(near site: LookoutSite, source: any OfflineTileSource, path: String, zoom: Int, kinds: (String) -> Bool) -> [NamedPoint] {
 			let center = tileIndex(for: site.coordinate, zoom: zoom)
 			var found: [NamedPoint] = []
 			for dx in -1...1 {
 				for dy in -1...1 {
-					guard let vector = tile(source, z: zoom, x: center.x + dx, y: center.y + dy) else { continue }
+					guard let vector = tile(source, path: path, z: zoom, x: center.x + dx, y: center.y + dy) else { continue }
 					for feature in vector.features(for: "pois") {
 						let kind = (feature.properties["kind"] as? String) ?? (feature.properties["pmap:kind"] as? String) ?? ""
 						guard kinds(kind), let name = feature.properties["name"] as? String, !name.isEmpty,
@@ -90,7 +95,7 @@ enum LookoutPeakNames {
 			guard site.name == nil, let source = sources.first(where: { $0.bounds.contains(site.coordinate) }) else { continue }
 			let reserveZoom = min(11, Int(source.source.tileMaxZoom))
 			var reserve: Candidate?
-			for point in points(near: site, source: source.source, zoom: reserveZoom, kinds: { reserveKinds.contains($0) }) {
+			for point in points(near: site, source: source.source, path: source.path, zoom: reserveZoom, kinds: { reserveKinds.contains($0) }) {
 				let distance = point.coordinate.distance(from: site.coordinate)
 				guard distance <= reserveReach, let mountain = mountainName(inReserve: point.name), !usedReserveNames.contains(mountain),
 					  distance < (reserve?.distance ?? .greatestFiniteMagnitude) else { continue }
@@ -103,7 +108,7 @@ enum LookoutPeakNames {
 			}
 			let peakZoom = min(13, Int(source.source.tileMaxZoom))
 			var peak: Candidate?
-			for point in points(near: site, source: source.source, zoom: peakZoom, kinds: { $0 == "peak" || $0 == "volcano" }) {
+			for point in points(near: site, source: source.source, path: source.path, zoom: peakZoom, kinds: { $0 == "peak" || $0 == "volcano" }) {
 				let distance = point.coordinate.distance(from: site.coordinate)
 				guard distance <= peakReach, let elevation = number(point.properties["elevation"]) ?? number(point.properties["ele"]),
 					  abs(elevation - Double(site.elevation)) <= peakDrop, distance < (peak?.distance ?? .greatestFiniteMagnitude) else { continue }
