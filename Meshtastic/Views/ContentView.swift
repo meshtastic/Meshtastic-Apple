@@ -274,6 +274,9 @@ struct ContentView: View {
 					.trackScreen(NavigationState.Tab.connect.screenName)
 				}
 			}
+			#if targetEnvironment(macCatalyst)
+			.background(TabToolbarReset())
+			#endif
 		} else {
 			// iOS 17 gets the legacy TabView, which differs from iOS 18's `Tab` in two
 			// ways that matter here. Its selection is bound straight to the stored
@@ -396,3 +399,24 @@ private struct LegacyTabContent<Content: View>: View {
 		}
 	}
 }
+
+#if targetEnvironment(macCatalyst)
+/// On the Mac the tabs live in the window's toolbar, which the first tab view puts there. A node
+/// switch rebuilds the tab view, and the new one keeps the toolbar it finds instead of installing
+/// its own, so the tabs stop responding (#2776). Removing the toolbar along with the old tab view
+/// lets the new one install a working one.
+private struct TabToolbarReset: UIViewRepresentable {
+	func makeUIView(context: Context) -> ResetView { ResetView() }
+
+	func updateUIView(_ uiView: ResetView, context: Context) {}
+
+	final class ResetView: UIView {
+		override func willMove(toWindow newWindow: UIWindow?) {
+			super.willMove(toWindow: newWindow)
+			if newWindow == nil {
+				window?.windowScene?.titlebar?.toolbar = nil
+			}
+		}
+	}
+}
+#endif
