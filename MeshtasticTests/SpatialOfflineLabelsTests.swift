@@ -32,6 +32,24 @@ struct SpatialOfflineLabelsTests {
 		#expect(OfflineVectorTileProvider.placeKind(kind: "country", kindDetail: nil) == nil)
 	}
 
+	@Test("an older basemap's pmap:kind and place name the same kinds")
+	func olderSchemaPlaceKinds() {
+		#expect(OfflineVectorTileProvider.placeKind(["pmap:kind": "locality", "place": "city"]) == .city)
+		#expect(OfflineVectorTileProvider.placeKind(["pmap:kind": "locality", "place": "town"]) == .town)
+		#expect(OfflineVectorTileProvider.placeKind(["pmap:kind": "neighbourhood", "place": "neighbourhood"]) == .neighborhood)
+		#expect(OfflineVectorTileProvider.placeKind(["pmap:kind": "country"]) == nil)
+		#expect(OfflineVectorTileProvider.placeKind(["kind": "locality", "kind_detail": "town", "place": "city"]) == .town)
+	}
+
+	@Test("a population rank too big or not a number reads as a small integer, without trapping")
+	func ranks() {
+		#expect(OfflineVectorTileProvider.labelRank(UInt64.max) == 1_000)
+		#expect(OfflineVectorTileProvider.labelRank(Double.infinity) == 0)
+		#expect(OfflineVectorTileProvider.labelRank(Double.nan) == 0)
+		#expect(OfflineVectorTileProvider.labelRank(Int64(7)) == 7)
+		#expect(OfflineVectorTileProvider.labelRank("7") == 0)
+	}
+
 	@Test("the name is in the app's language when the map has it")
 	func localizedNames() {
 		let properties: [String: Sendable] = ["name": "München", "name:en": "Munich", "name:zh-Hant": "慕尼黑"]

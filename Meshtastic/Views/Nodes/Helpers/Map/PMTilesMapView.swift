@@ -596,12 +596,12 @@ extension OfflineVectorTileProvider {
 			guard let point = feature.geometry as? GISTools.Point, let name = localizedName(feature.properties) else { return }
 			let coordinate = coord(point.coordinate)
 			if let bounds, !(bounds.minLat...bounds.maxLat).contains(coordinate.latitude) || !(bounds.minLon...bounds.maxLon).contains(coordinate.longitude) { return }
-			let minZoom = number(feature.properties["min_zoom"]) ?? 0
-			let rank = Int(number(feature.properties["population_rank"]) ?? 0)
+			let minZoom = number(feature.properties["min_zoom"] ?? feature.properties["pmap:min_zoom"]) ?? 0
+			let rank = labelRank(feature.properties["population_rank"] ?? feature.properties["pmap:population_rank"])
 			result.append(OfflineMapLabel(name: name, coordinate: coordinate, kind: kind, minZoom: minZoom, rank: rank))
 		}
 		for feature in vector.features(for: "places") {
-			guard let kind = placeKind(kind: feature.properties["kind"] as? String, kindDetail: feature.properties["kind_detail"] as? String) else { continue }
+			guard let kind = placeKind(feature.properties) else { continue }
 			add(feature, kind: kind)
 		}
 		// Lakes, bays and the sea carry a labeled point beside their polygons.
@@ -609,6 +609,22 @@ extension OfflineVectorTileProvider {
 			add(feature, kind: .water)
 		}
 		return result
+	}
+
+	/// The label kind for a `places` feature's properties, from the current schema's `kind` and
+	/// `kind_detail` or an older Protomaps basemap's `pmap:kind` and OSM `place`, which imported
+	/// archives can still carry.
+	nonisolated static func placeKind(_ properties: [String: Sendable]) -> OfflineMapLabel.Kind? {
+		let kind = (properties["kind"] as? String) ?? (properties["pmap:kind"] as? String)
+		let detail = (properties["kind_detail"] as? String) ?? (properties["pmap:kind_detail"] as? String) ?? (properties["place"] as? String)
+		return placeKind(kind: kind, kindDetail: detail)
+	}
+
+	/// A population rank as a small integer. A tile is outside data: a value too big for `Int`, or
+	/// not finite, would trap in a plain conversion, so it's clamped or dropped.
+	nonisolated static func labelRank(_ value: Any?) -> Int {
+		guard let rank = number(value), rank.isFinite else { return 0 }
+		return Int(min(max(rank, -1_000), 1_000).rounded())
 	}
 
 	/// The label kind for a `places` feature; nil for countries, which are too big for the maps here.
