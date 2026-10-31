@@ -50,6 +50,7 @@ struct SpatialMapView: View {
 				scene.apply(placement: model.placement)
 				scene.apply(terrainEntity: model.terrainEntity, building: model.isBuildingTerrain)
 				scene.apply(weatherRadar: model.weatherRadarEntity, revision: model.weatherRadarRevision)
+				scene.apply(buildings: model.buildingsEntity)
 				scene.apply(coverage: model.coverageEntity, revision: model.coverageRevision, opacity: model.coverageOpacity)
 				scene.apply(nodes: model.nodes)
 				scene.apply(lookout: cinemaEnvironment == .fireLookout

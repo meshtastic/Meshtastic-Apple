@@ -80,6 +80,10 @@ On the 3D spatial map, the **link** button in the toolbar draws the same direct 
 
 **Weather Radar** in the 3D spatial map's map menu, next to Contour Lines, drapes NOAA precipitation radar over the terrain, following the hills, at the same strength as on the 2D map. It is the 2D map's setting and is offered the same way: in the lower 48 United States, with a network connection. The radar is fetched when the map opens, when the area on the table changes, and every five minutes while it is shown. It is hidden while the device is offline, and when the table shows an area outside the radar's coverage. Radar data from NOAA/NCEP.
 
+### Buildings on the spatial map (Apple Vision Pro)
+
+**Buildings** in the 3D spatial map's map menu raises the buildings from your downloaded offline maps on the terrain, at their height from OpenStreetMap, with the same height exaggeration as the hills. It is offered where a downloaded street map covers part of the table, and is off by default. A map downloaded at **High detail** has every building; a **Standard** map has only the largest. Buildings without a height in OpenStreetMap stand about two floors tall. The further the table is zoomed out, the fewer are drawn: every building on a table a few kilometers across, only the larger ones on a wider one, and none past about 20 km. Building data © OpenStreetMap contributors.
+
 ### Offline Maps
 
 A dedicated section of the sheet for working without a connection: a link opens the list of downloaded map regions to manage them or download new ones, and the **Offline Tiles** toggle overlays a downloaded region on the base map so it keeps rendering with no internet connection.
