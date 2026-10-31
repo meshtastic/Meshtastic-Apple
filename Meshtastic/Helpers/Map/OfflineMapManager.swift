@@ -41,6 +41,16 @@ enum OfflineMapDetailLevel: String, CaseIterable, Identifiable {
 		                          comment: "Detail level for an offline map download; the other level is \"Standard\".")
 		}
 	}
+
+	/// The level a download starts at. High on Vision Pro, where the spatial map raises every
+	/// building and only zoom 15 has them all.
+	static var preferred: OfflineMapDetailLevel {
+		#if os(visionOS)
+		.high
+		#else
+		.standard
+		#endif
+	}
 }
 
 /// Live state of an in-flight region download, surfaced to the UI.
@@ -775,8 +785,8 @@ extension OfflineMapManager {
 		String(localized: "Spatial Map area", comment: "Name of the offline map (streets and terrain) the visionOS spatial map downloads and keeps up to date for the mesh")
 	}
 
-	/// Downloads a full offline map the app manages itself (the spatial map's): the Standard
-	/// street map, then its terrain. It may overlap any other region and doesn't count toward
+	/// Downloads a full offline map the app manages itself (the spatial map's): the street map at
+	/// the preferred detail (Standard where that is too big), then its terrain. It may overlap any other region and doesn't count toward
 	/// `maxRegions`. On success it replaces every older region with the same `managedBy`; on
 	/// failure or cancel the new region is removed and the old ones stay. The user's own regions are
 	/// never touched. When the street map for `bounds` is over the per-map limit, each of
@@ -818,28 +828,32 @@ extension OfflineMapManager {
 		downloadTask = Task { [weak self] in
 			guard let self else { return }
 			let extractor = PMTilesExtractor()
-			let detail = OfflineMapDetailLevel.standard
+			let details: [OfflineMapDetailLevel] = OfflineMapDetailLevel.preferred == .high ? [.high, .standard] : [.standard]
 			do {
 				guard let build = await extractor.latestBuild() else { throw PMTilesExtractorError.noBuildAvailable }
-				// The first area whose street map fits the per-map limit.
+				let others = await MainActor.run { self.totalSize } - freeing
+				// The first area whose street map fits the per-map limit, at the preferred detail if
+				// that fits both limits, else Standard.
 				var chosen: (area: GeoBounds, plan: PMTilesExtractor.Plan)?
-				for area in [bounds] + smallerAreas {
-					let plan = try await extractor.makePlan(
-						sourceURL: build.url, sourceBuild: build.build,
-						bounds: area, minZoom: detail.minZoom, maxZoom: detail.maxZoom
-					)
-					if plan.payloadBytes <= Self.maxRegionBytes {
-						chosen = (area, plan)
-						break
+				search: for area in [bounds] + smallerAreas {
+					for detail in details {
+						let plan = try await extractor.makePlan(
+							sourceURL: build.url, sourceBuild: build.build,
+							bounds: area, minZoom: detail.minZoom, maxZoom: detail.maxZoom
+						)
+						let fitsTotal = detail == .standard || others + plan.payloadBytes <= Self.maxTotalBytes
+						if plan.payloadBytes <= Self.maxRegionBytes && fitsTotal {
+							chosen = (area, plan)
+							break search
+						}
+						Logger.services.info("🗺️ [Offline] Managed \(detail.rawValue, privacy: .public) street map is \(plan.payloadBytes, privacy: .public) bytes, over the limit")
 					}
-					Logger.services.info("🗺️ [Offline] Managed street map is \(plan.payloadBytes, privacy: .public) bytes, over the per-map limit")
 				}
 				guard let (area, plan) = chosen else {
 					self.keepManagedTerrainOnly(id: regionID, bounds: bounds, includeRegional: includeRegional, managedBy: managedBy, onCompletion: onCompletion)
 					return
 				}
-				let projected = await MainActor.run { self.totalSize } - freeing + plan.payloadBytes
-				guard projected <= Self.maxTotalBytes else {
+				guard others + plan.payloadBytes <= Self.maxTotalBytes else {
 					let limit = ByteCountFormatter.string(fromByteCount: Self.maxTotalBytes, countStyle: .file)
 					throw OfflineMapError.storageLimit(String(localized: "This would exceed the \(limit) total offline storage limit. Remove a map first."))
 				}
