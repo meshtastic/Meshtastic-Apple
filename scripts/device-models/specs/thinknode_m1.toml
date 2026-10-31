@@ -225,3 +225,7 @@ material = "screw"
 center_mm = [18.5, 36.0, -12.6]
 size_mm = [1.6, 1.6, 0.3]
 radius_mm = 0.8
+
+# The display's visible area, for the radio's live screen.
+[screen]
+bbox = [11.23, 65.28, 41.09, 94.37]

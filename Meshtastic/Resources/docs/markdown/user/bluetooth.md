@@ -46,6 +46,8 @@ On iOS 18 and later, a running Live Activity also appears in the Smart Stack on 
 
 The same **Widgets** sheet lists the Meshtastic Home Screen and Lock Screen widgets (Mesh Status, Node Tracker, Messages, Node Map and Trace Route) and the Control Center controls, and shows which ones are on your screens. iOS doesn't let an app place a widget or a control, so the sheet gives the steps. On the Home Screen, touch and hold an empty spot, tap **Edit**, then **Add Widget**, and search for Meshtastic. On the Lock Screen, touch and hold it, tap **Customize**, then **Lock Screen**, tap the widget area and choose Meshtastic.
 
+A Node Tracker widget keeps showing the node it's set to, however long ago the node was heard. If that node is deleted, or you switch to a radio that doesn't have it, the widget keeps its name and says it's no longer in your node list; touch and hold the widget to choose another node, or it fills in again when the node is next heard. Deleting a node that's on a Node Tracker widget says so in the confirmation.
+
 ## Managing Multiple Radios
 
 You can pair multiple radios but only one is active at a time. Switch between them by tapping a different device in the Connect view.

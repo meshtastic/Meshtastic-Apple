@@ -40,6 +40,17 @@ struct WidgetSnapshot: Codable {
 
 	/// Newest first, capped small.
 	let recentMessages: [MessageSnapshot]
+
+	/// Nodes a Node Tracker widget is set to that are no longer in the node
+	/// database (deleted, or the radio was switched), with the names they last
+	/// had. Optional so snapshots written before it still decode.
+	var missingTrackedNodes: [MissingNodeSnapshot]?
+}
+
+struct MissingNodeSnapshot: Codable {
+	let num: Int64
+	let longName: String
+	let shortName: String
 }
 
 enum WidgetConnectionState: String, Codable {

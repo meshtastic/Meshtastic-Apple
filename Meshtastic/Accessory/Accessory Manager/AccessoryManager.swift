@@ -339,6 +339,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// `recordInboundPacket()` per inbound mesh packet in `processFromRadio`; the monitor self-starts
 	/// its decay timer on the first packet and is cleared via `reset()` on disconnect.
 	let meshTrafficMonitor = MeshTrafficMonitor.shared
+	/// The connected radio's screen, while the app is mirroring it.
+	let displayMirror = DisplayMirrorSession()
 
 	/// Every live packet the radio hears, for views that animate traffic. See `MeshPacketEvent`.
 	let packetEvents = PassthroughSubject<MeshPacketEvent, Never>()
@@ -691,6 +693,9 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 		// Lockdown: clear per-connection state. If a Lock Now was in flight, the
 		// disconnect resolves the coordinator to `.lockNowAcknowledged`.
 		lockdownCoordinator?.onDisconnect()
+
+		// The radio forgets the stream on disconnect; drop the last screen so it isn't shown as live.
+		displayMirror.reset()
 
 		// Stop sampling and clear the traffic gate so a stale "high traffic" flag can't linger and
 		// keep the map flyover paused after the mesh goes quiet on disconnect.
@@ -1336,6 +1341,12 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			if state == .subscribed {
 				Task { try? await sendWantConfig() }
 			}
+
+		case .displayFrame(let chunk):
+			displayMirror.handle(chunk)
+
+		case .displayPalette(let chunk):
+			displayMirror.handle(chunk)
 
 		case .lockdownStatus(let status):
 			// MESHTASTIC_LOCKDOWN-hardened firmware reports state after config_complete_id

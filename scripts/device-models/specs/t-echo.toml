@@ -18,3 +18,7 @@ appendage = "none"
 name = "Antenna"
 start = [168.65, 223.3]
 end = [168.65, 0.8]
+
+# The display's visible area, for the radio's live screen.
+[screen]
+bbox = [57.08, 335.98, 166.28, 446.49]

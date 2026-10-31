@@ -11,7 +11,9 @@
 #
 #  On the left, the whiteboard the app draws the team roster on, then the comms and radio tables; the
 #  map table on the back wall to the right, and a Solar Node on a tripod by the door, with the blank
-#  print the app draws the latest trace route on beside it. Nothing else stands on the floor.
+#  print the app draws the latest trace route on beside it. A second whiteboard, portrait, stands
+#  at the front wall to the right of the screen: the app draws the nodes' status messages on it.
+#  Nothing else stands on the floor.
 
 import math
 import os
@@ -23,26 +25,30 @@ import bpy
 from mathutils import Matrix, Vector
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from tent_base import (  # noqa: E402
-    BACK_Y,
+from room_base import (  # noqa: E402
     CACHE,
-    HALF_WIDTH,
-    RIDGE_HEIGHT,
-    WALL_HEIGHT,
+    EYE_HEIGHT,
     anchor,
     box,
     cylinder,
-    facing_in,
     image_material,
     link,
     material,
     mesh_object,
     plane,
-    render,
-    sag,
     smooth,
     sphere,
     torus,
+)
+from tent_base import (  # noqa: E402
+    BACK_Y,
+    FRONT_Y,
+    HALF_WIDTH,
+    RIDGE_HEIGHT,
+    WALL_HEIGHT,
+    facing_in,
+    render,
+    sag,
 )
 
 
@@ -107,11 +113,12 @@ def furnish(layout):
     # frame, the way a mobile whiteboard does, so nothing crosses the board or crowds the tent legs
     # at either end of the bay. Its top sits well under the eave.
     board = image_material("Whiteboard", os.path.join(CACHE, "whiteboard.png"), 0.25)
+    frame = material("Frame", (0.7, 0.7, 0.72), 0.4, metallic=0.8)
     board_x, board_y, board_z = -HALF_WIDTH + 0.1, 2.0, 1.17
     board_w, board_h = 1.35, 0.9
     whiteboard = plane("Whiteboard", board_w, board_h, (board_x + 0.02, board_y, board_z), facing_in(-1), board)
     anchor("teamStatus", whiteboard, board_w, board_h)
-    box("WhiteboardFrame", (0.03, board_w + 0.06, board_h + 0.06), (board_x, board_y, board_z), material("Frame", (0.7, 0.7, 0.72), 0.4, metallic=0.8))
+    box("WhiteboardFrame", (0.03, board_w + 0.06, board_h + 0.06), (board_x, board_y, board_z), frame)
     frame_bottom = board_z - board_h / 2 - 0.03
     for y in (board_y - board_w / 2 + 0.1, board_y + board_w / 2 - 0.1):
         cylinder("EaselLeg", 0.014, (board_x + 0.03, y, 0.02), (board_x + 0.03, y, frame_bottom), steel)
@@ -120,6 +127,20 @@ def furnish(layout):
     # A light on the board, from up by the eave, so the painted board is as bright as the panel
     # the app draws over it. It can't be seen itself, in the image or on the board.
     board_light("BoardLight", (board_x + 0.9, board_y, 2.02), (board_x, board_y, board_z + 0.05), board_w - 0.2, 3.3)
+
+    # A second whiteboard like it, portrait, standing at the front wall to the right of the screen:
+    # the app draws the nodes' status messages over it (the "nodeStatus" anchor).
+    status_w, status_h = 0.8, 1.2
+    status_x, status_y, status_z = 1.9, FRONT_Y - 0.1, EYE_HEIGHT + 0.2
+    status_board = plane("StatusBoard", status_w, status_h, (status_x, status_y - 0.02, status_z), (math.pi / 2, 0, 0), board)
+    anchor("nodeStatus", status_board, status_w, status_h)
+    box("StatusBoardFrame", (status_w + 0.06, 0.03, status_h + 0.06), (status_x, status_y, status_z), frame)
+    status_bottom = status_z - status_h / 2 - 0.03
+    for x in (status_x - status_w / 2 + 0.1, status_x + status_w / 2 - 0.1):
+        cylinder("EaselLeg", 0.014, (x, status_y - 0.03, 0.02), (x, status_y - 0.03, status_bottom), steel)
+        cylinder("EaselFoot", 0.014, (x, status_y + 0.02, 0.02), (x, status_y - 0.3, 0.02), steel)
+    # Under the roof, which is lower out here than at the ridge.
+    board_light("StatusLight", (status_x, status_y - 0.9, 2.0), (status_x, status_y, status_z + 0.05), status_w - 0.2, 3.3)
 
     map_lamp(map_x, map_y - 0.06, steel, black_plastic)
     trace_route_print(steel)

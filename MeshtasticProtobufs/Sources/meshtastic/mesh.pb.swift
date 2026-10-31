@@ -655,6 +655,14 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
   case thinknodeMx // = 150
 
   ///
+  /// Radioddity Nodara
+  case nodara // = 151
+
+  ///
+  /// Heltec Magnetic Power Bank V2
+  case heltecMeshPocketV2 // = 152
+
+  ///
   /// ------------------------------------------------------------------------------------------------------------------------------------------
   /// Reserved ID For developing private Ports. These will show up in live traffic sparsely, so we can use a high number. Keep it within 8 bits.
   /// ------------------------------------------------------------------------------------------------------------------------------------------
@@ -818,6 +826,8 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     case 148: self = .axiometaGenesisMini
     case 149: self = .makerfabsNomadTerminal
     case 150: self = .thinknodeMx
+    case 151: self = .nodara
+    case 152: self = .heltecMeshPocketV2
     case 255: self = .privateHw
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -976,6 +986,8 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     case .axiometaGenesisMini: return 148
     case .makerfabsNomadTerminal: return 149
     case .thinknodeMx: return 150
+    case .nodara: return 151
+    case .heltecMeshPocketV2: return 152
     case .privateHw: return 255
     case .UNRECOGNIZED(let i): return i
     }
@@ -1134,6 +1146,8 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
     .axiometaGenesisMini,
     .makerfabsNomadTerminal,
     .thinknodeMx,
+    .nodara,
+    .heltecMeshPocketV2,
     .privateHw,
   ]
 
@@ -4094,6 +4108,29 @@ public struct FromRadio: @unchecked Sendable {
     set {_uniqueStorage()._payloadVariant = .regionPresets(newValue)}
   }
 
+  ///
+  /// One chunk of the device's display framebuffer, sent while display
+  /// mirroring is active (see AdminMessage.set_display_mirror and
+  /// AdminMessage.get_display_frame_request).
+  public var displayFrame: DisplayFrame {
+    get {
+      if case .displayFrame(let v)? = _storage._payloadVariant {return v}
+      return DisplayFrame()
+    }
+    set {_uniqueStorage()._payloadVariant = .displayFrame(newValue)}
+  }
+
+  ///
+  /// One chunk of the color palette referenced by display_frame's
+  /// palette_signature (see DisplayPalette).
+  public var displayPalette: DisplayPalette {
+    get {
+      if case .displayPalette(let v)? = _storage._payloadVariant {return v}
+      return DisplayPalette()
+    }
+    set {_uniqueStorage()._payloadVariant = .displayPalette(newValue)}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
@@ -4169,12 +4206,249 @@ public struct FromRadio: @unchecked Sendable {
     /// illegal region+preset combination. A region that does not appear in
     /// any group carries no constraint info and should not be restricted.
     case regionPresets(LoRaRegionPresetMap)
+    ///
+    /// One chunk of the device's display framebuffer, sent while display
+    /// mirroring is active (see AdminMessage.set_display_mirror and
+    /// AdminMessage.get_display_frame_request).
+    case displayFrame(DisplayFrame)
+    ///
+    /// One chunk of the color palette referenced by display_frame's
+    /// palette_signature (see DisplayPalette).
+    case displayPalette(DisplayPalette)
 
   }
 
   public init() {}
 
   fileprivate var _storage = _StorageClass.defaultInstance
+}
+
+///
+/// A chunk of the device's display framebuffer, streamed to the local client
+/// over BLE/serial/TCP. Frames larger than one chunk are split by byte offset;
+/// a chunk with offset + data length == total_size completes the frame.
+/// This is application-level chunking of a framebuffer into several complete
+/// FromRadio messages, and is unrelated to ClientApiChunkedPayload, which
+/// splits ONE serialized FromRadio across a small BLE MTU. A frame cannot ride
+/// that wrapper: FromRadio is statically capped at MAX_TO_FROM_RADIO_SIZE, far
+/// below a full framebuffer. The two compose - a chunked-transport client
+/// receives these frames through it.
+///
+/// Chunks of one frame arrive contiguously (no other display_frame between
+/// them; display_palette messages may interleave) and in offset order, so a
+/// client never has to reorder. It does have to check for loss: the queue to
+/// the client drops its oldest entry when full, and a frame in flight can be
+/// truncated when mirroring is disabled. A client MUST verify that offset
+/// equals the number of bytes it has already accumulated for this frame_id,
+/// and discard the partial frame on any gap or frame_id change. An incomplete
+/// frame must never be rendered.
+public struct DisplayFrame: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// Display width in pixels.
+  public var width: UInt32 = 0
+
+  ///
+  /// Display height in pixels.
+  public var height: UInt32 = 0
+
+  ///
+  /// Pixel encoding of data.
+  public var format: DisplayFrame.Format = .unspecified
+
+  ///
+  /// Frame counter, constant across the chunks of one frame, so a change
+  /// marks the start of a new frame. It cannot reveal loss WITHIN a frame,
+  /// since every chunk of that frame carries the same value; only offset
+  /// contiguity can. Increments per captured frame, wraps at uint32 range,
+  /// and restarts from 1 on device reboot, so treat any change as "a new
+  /// frame" rather than as an ordering guarantee.
+  public var frameID: UInt32 = 0
+
+  ///
+  /// Byte offset of this chunk within the full frame buffer.
+  public var offset: UInt32 = 0
+
+  ///
+  /// Total size in bytes of the full frame buffer.
+  public var totalSize: UInt32 = 0
+
+  ///
+  /// The framebuffer bytes for this chunk.
+  public var data: Data = Data()
+
+  ///
+  /// Optional partial-update rectangle (dirty-rect streaming from LVGL-based
+  /// color UIs, format RGB565). A zero rect_width or rect_height means the
+  /// full panel in that axis, so data carries the pixels of the resulting
+  /// rectangle and offset/total_size describe that rectangle's own buffer;
+  /// width/height above always remain the full display dimensions, and each
+  /// rectangle is an independently completed unit under its own frame_id.
+  /// MONO_VLSB frames never set these fields.
+  public var rectX: UInt32 = 0
+
+  ///
+  /// See rect_x.
+  public var rectY: UInt32 = 0
+
+  ///
+  /// See rect_x.
+  public var rectWidth: UInt32 = 0
+
+  ///
+  /// See rect_x.
+  public var rectHeight: UInt32 = 0
+
+  ///
+  /// Identity of the DisplayPalette that colorizes this frame, matching
+  /// DisplayPalette.signature. 0 when the device renders monochrome (no
+  /// color panel); clients without the referenced palette yet should render
+  /// monochrome until its chunks arrive.
+  public var paletteSignature: UInt32 = 0
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  ///
+  /// Pixel encodings of the framebuffer bytes.
+  public enum Format: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public typealias RawValue = Int
+
+    ///
+    /// Default; should not be sent.
+    case unspecified // = 0
+
+    ///
+    /// 1 bit per pixel, vertical LSB-first pages (SSD1306/OLEDDisplay layout):
+    /// byte index = x + (y / 8) * width, bit index = y % 8.
+    case monoVlsb // = 1
+
+    ///
+    /// 16 bits per pixel, RGB565 in little-endian byte order, rows tightly
+    /// packed. Used with the partial-update rect fields: data covers only
+    /// the rectangle. Streamed by LVGL-based color UIs.
+    case rgb565 // = 2
+    case UNRECOGNIZED(Int)
+
+    public init() {
+      self = .unspecified
+    }
+
+    public init?(rawValue: Int) {
+      switch rawValue {
+      case 0: self = .unspecified
+      case 1: self = .monoVlsb
+      case 2: self = .rgb565
+      default: self = .UNRECOGNIZED(rawValue)
+      }
+    }
+
+    public var rawValue: Int {
+      switch self {
+      case .unspecified: return 0
+      case .monoVlsb: return 1
+      case .rgb565: return 2
+      case .UNRECOGNIZED(let i): return i
+      }
+    }
+
+    // The compiler won't synthesize support with the UNRECOGNIZED case.
+    public static let allCases: [DisplayFrame.Format] = [
+      .unspecified,
+      .monoVlsb,
+      .rgb565,
+    ]
+
+  }
+
+  public init() {}
+}
+
+///
+/// Colorization palette for DisplayFrame streams from devices that paint the
+/// 1bpp base UI onto a color panel. The panel applies per-region on/off
+/// colors at flush time; streaming the same region table lets a client
+/// render the mirror in the panel's true colors at 1bpp bandwidth.
+/// Sent as FromRadio.display_palette, split by region index when the table
+/// exceeds one message; re-sent only when the region layout or theme changes
+/// (the signature changes with it). Regions are ordered by table index; a
+/// region with a higher table index overrides lower-indexed ones where they
+/// overlap, regardless of chunk boundaries. A client holding partial chunks
+/// of a signature that no longer matches incoming chunks should discard
+/// them. All colors are RGB565 in logical bit layout (RRRRRGGGGGGBBBBB).
+public struct DisplayPalette: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// Identity of this palette; DisplayFrame.palette_signature references it.
+  /// Changes whenever the region table or theme changes. Never 0, which
+  /// DisplayFrame.palette_signature reserves for monochrome.
+  public var signature: UInt32 = 0
+
+  ///
+  /// RGB565 for set pixels outside all regions. The region_offset 0 chunk is authoritative.
+  public var defaultOnColor: UInt32 = 0
+
+  ///
+  /// RGB565 for clear pixels outside all regions. The region_offset 0 chunk is authoritative.
+  public var defaultOffColor: UInt32 = 0
+
+  ///
+  /// Table index of the first region in this chunk.
+  public var regionOffset: UInt32 = 0
+
+  ///
+  /// Total regions in the complete palette; region_offset + regions length
+  /// == region_total completes it.
+  public var regionTotal: UInt32 = 0
+
+  ///
+  /// The regions of this chunk, in table order.
+  public var regions: [DisplayPalette.ColorRegion] = []
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  ///
+  /// One colorized rectangle of the display.
+  public struct ColorRegion: Sendable {
+    // SwiftProtobuf.Message conformance is added in an extension below. See the
+    // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+    // methods supported on all messages.
+
+    ///
+    /// Region origin and size in pixels.
+    public var x: UInt32 = 0
+
+    ///
+    /// See x.
+    public var y: UInt32 = 0
+
+    ///
+    /// See x.
+    public var width: UInt32 = 0
+
+    ///
+    /// See x.
+    public var height: UInt32 = 0
+
+    ///
+    /// RGB565 drawn for set (1) pixels inside this region.
+    public var onColor: UInt32 = 0
+
+    ///
+    /// RGB565 drawn for clear (0) pixels inside this region.
+    public var offColor: UInt32 = 0
+
+    public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+    public init() {}
+  }
+
+  public init() {}
 }
 
 ///
@@ -4678,66 +4952,227 @@ public struct Neighbor: Sendable {
 
 ///
 /// Device metadata response
-public struct DeviceMetadata: Sendable {
+public struct DeviceMetadata: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
   ///
   /// Device firmware version string
-  public var firmwareVersion: String = String()
+  public var firmwareVersion: String {
+    get {_storage._firmwareVersion}
+    set {_uniqueStorage()._firmwareVersion = newValue}
+  }
 
   ///
   /// Device state version
-  public var deviceStateVersion: UInt32 = 0
+  public var deviceStateVersion: UInt32 {
+    get {_storage._deviceStateVersion}
+    set {_uniqueStorage()._deviceStateVersion = newValue}
+  }
 
   ///
   /// Indicates whether the device can shutdown CPU natively or via power management chip
-  public var canShutdown: Bool = false
+  public var canShutdown: Bool {
+    get {_storage._canShutdown}
+    set {_uniqueStorage()._canShutdown = newValue}
+  }
 
   ///
   /// Indicates that the device has native wifi capability
-  public var hasWifi_p: Bool = false
+  public var hasWifi_p: Bool {
+    get {_storage._hasWifi_p}
+    set {_uniqueStorage()._hasWifi_p = newValue}
+  }
 
   ///
   /// Indicates that the device has native bluetooth capability
-  public var hasBluetooth_p: Bool = false
+  public var hasBluetooth_p: Bool {
+    get {_storage._hasBluetooth_p}
+    set {_uniqueStorage()._hasBluetooth_p = newValue}
+  }
 
   ///
   /// Indicates that the device has an ethernet peripheral
-  public var hasEthernet_p: Bool = false
+  public var hasEthernet_p: Bool {
+    get {_storage._hasEthernet_p}
+    set {_uniqueStorage()._hasEthernet_p = newValue}
+  }
 
   ///
   /// Indicates that the device's role in the mesh
-  public var role: Config.DeviceConfig.Role = .client
+  public var role: Config.DeviceConfig.Role {
+    get {_storage._role}
+    set {_uniqueStorage()._role = newValue}
+  }
 
   ///
   /// Indicates the device's current enabled position flags
-  public var positionFlags: UInt32 = 0
+  public var positionFlags: UInt32 {
+    get {_storage._positionFlags}
+    set {_uniqueStorage()._positionFlags = newValue}
+  }
 
   ///
   /// Device hardware model
-  public var hwModel: HardwareModel = .unset
+  public var hwModel: HardwareModel {
+    get {_storage._hwModel}
+    set {_uniqueStorage()._hwModel = newValue}
+  }
 
   ///
   /// Has Remote Hardware enabled
-  public var hasRemoteHardware_p: Bool = false
+  public var hasRemoteHardware_p: Bool {
+    get {_storage._hasRemoteHardware_p}
+    set {_uniqueStorage()._hasRemoteHardware_p = newValue}
+  }
 
   ///
   /// Has PKC capabilities
-  public var hasPkc_p: Bool = false
+  public var hasPkc_p: Bool {
+    get {_storage._hasPkc_p}
+    set {_uniqueStorage()._hasPkc_p = newValue}
+  }
 
   ///
   /// Bit field of boolean for excluded modules
   /// (bitwise OR of ExcludedModules)
-  public var excludedModules: UInt32 = 0
+  public var excludedModules: UInt32 {
+    get {_storage._excludedModules}
+    set {_uniqueStorage()._excludedModules = newValue}
+  }
 
   ///
   /// Indicates whether this firmware build includes XEdDSA packet signature verification.
   /// This is a read-only capability and must be false when XEdDSA is not compiled in.
-  public var hasXeddsa_p: Bool = false
+  public var hasXeddsa_p: Bool {
+    get {_storage._hasXeddsa_p}
+    set {_uniqueStorage()._hasXeddsa_p = newValue}
+  }
+
+  ///
+  /// Describes the device's screen when one is present; absent on display-less
+  /// builds. Lets clients gate display-mirroring UI (see DisplayFrame) and
+  /// adapt to the panel, e.g. expect slow refresh from EINK, or offer
+  /// tap-to-touch when has_touch is set.
+  public var display: DisplayInfo {
+    get {_storage._display ?? DisplayInfo()}
+    set {_uniqueStorage()._display = newValue}
+  }
+  /// Returns true if `display` has been explicitly set.
+  public var hasDisplay: Bool {_storage._display != nil}
+  /// Clears the value of `display`. Subsequent reads from it will return its default value.
+  public mutating func clearDisplay() {_uniqueStorage()._display = nil}
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _storage = _StorageClass.defaultInstance
+}
+
+///
+/// Static description of a device's display, sent inside DeviceMetadata
+/// during the connection handshake.
+public struct DisplayInfo: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// Display width in pixels.
+  public var width: UInt32 = 0
+
+  ///
+  /// Display height in pixels.
+  public var height: UInt32 = 0
+
+  ///
+  /// Pixel encoding that DisplayFrame streams from this device will use.
+  public var format: DisplayFrame.Format = .unspecified
+
+  ///
+  /// Physical panel technology.
+  public var panelClass: DisplayInfo.PanelClass = .unspecified
+
+  ///
+  /// True when the panel accepts touch input; clients may map taps on a
+  /// mirrored frame to AdminMessage.send_input_event touch coordinates.
+  public var hasTouch_p: Bool = false
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  ///
+  /// Physical panel technology, as a hint for client rendering and refresh
+  /// expectations.
+  public enum PanelClass: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public typealias RawValue = Int
+
+    ///
+    /// Unknown, or selected at runtime (e.g. a native build's configured panel).
+    case unspecified // = 0
+
+    ///
+    /// Monochrome OLED (SSD1306/SH1106 family).
+    case oled // = 1
+
+    ///
+    /// Monochrome LCD (ST7567 family).
+    case lcd // = 2
+
+    ///
+    /// Color TFT.
+    case tft // = 3
+
+    ///
+    /// E-ink panel: refresh is slow and full-screen; clients should prefer
+    /// one-shot frame requests over continuous mirroring.
+    case eink // = 4
+
+    ///
+    /// LED matrix (HUB75).
+    case hub75 // = 5
+    case UNRECOGNIZED(Int)
+
+    public init() {
+      self = .unspecified
+    }
+
+    public init?(rawValue: Int) {
+      switch rawValue {
+      case 0: self = .unspecified
+      case 1: self = .oled
+      case 2: self = .lcd
+      case 3: self = .tft
+      case 4: self = .eink
+      case 5: self = .hub75
+      default: self = .UNRECOGNIZED(rawValue)
+      }
+    }
+
+    public var rawValue: Int {
+      switch self {
+      case .unspecified: return 0
+      case .oled: return 1
+      case .lcd: return 2
+      case .tft: return 3
+      case .eink: return 4
+      case .hub75: return 5
+      case .UNRECOGNIZED(let i): return i
+      }
+    }
+
+    // The compiler won't synthesize support with the UNRECOGNIZED case.
+    public static let allCases: [DisplayInfo.PanelClass] = [
+      .unspecified,
+      .oled,
+      .lcd,
+      .tft,
+      .eink,
+      .hub75,
+    ]
+
+  }
 
   public init() {}
 }
@@ -4976,7 +5411,7 @@ public struct ChunkedPayloadResponse: Sendable {
 fileprivate let _protobuf_package = "meshtastic"
 
 extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSET\0\u{1}TLORA_V2\0\u{1}TLORA_V1\0\u{1}TLORA_V2_1_1P6\0\u{1}TBEAM\0\u{1}HELTEC_V2_0\0\u{1}TBEAM_V0P7\0\u{1}T_ECHO\0\u{1}TLORA_V1_1P3\0\u{1}RAK4631\0\u{1}HELTEC_V2_1\0\u{1}HELTEC_V1\0\u{1}LILYGO_TBEAM_S3_CORE\0\u{1}RAK11200\0\u{1}NANO_G1\0\u{1}TLORA_V2_1_1P8\0\u{1}TLORA_T3_S3\0\u{1}NANO_G1_EXPLORER\0\u{1}NANO_G2_ULTRA\0\u{1}LORA_TYPE\0\u{1}WIPHONE\0\u{1}WIO_WM1110\0\u{1}RAK2560\0\u{1}HELTEC_HRU_3601\0\u{1}HELTEC_WIRELESS_BRIDGE\0\u{1}STATION_G1\0\u{1}RAK11310\0\u{1}MAKERFABS_TRACKER\0\u{1}MAKERFABS_RESERVED\0\u{1}CANARYONE\0\u{1}RP2040_LORA\0\u{1}STATION_G2\0\u{1}LORA_RELAY_V1\0\u{1}T_ECHO_PLUS\0\u{1}PPR\0\u{1}GENIEBLOCKS\0\u{1}NRF52_UNKNOWN\0\u{1}PORTDUINO\0\u{1}ANDROID_SIM\0\u{1}DIY_V1\0\u{1}NRF52840_PCA10059\0\u{1}DR_DEV\0\u{1}M5STACK\0\u{1}HELTEC_V3\0\u{1}HELTEC_WSL_V3\0\u{1}BETAFPV_2400_TX\0\u{1}BETAFPV_900_NANO_TX\0\u{1}RPI_PICO\0\u{1}HELTEC_WIRELESS_TRACKER\0\u{1}HELTEC_WIRELESS_PAPER\0\u{1}T_DECK\0\u{1}T_WATCH_S3\0\u{1}PICOMPUTER_S3\0\u{1}HELTEC_HT62\0\u{1}EBYTE_ESP32_S3\0\u{1}ESP32_S3_PICO\0\u{1}CHATTER_2\0\u{1}HELTEC_WIRELESS_PAPER_V1_0\0\u{1}HELTEC_WIRELESS_TRACKER_V1_0\0\u{1}UNPHONE\0\u{1}TD_LORAC\0\u{1}CDEBYTE_EORA_S3\0\u{1}TWC_MESH_V4\0\u{1}NRF52_PROMICRO_DIY\0\u{1}RADIOMASTER_900_BANDIT_NANO\0\u{1}HELTEC_CAPSULE_SENSOR_V3\0\u{1}HELTEC_VISION_MASTER_T190\0\u{1}HELTEC_VISION_MASTER_E213\0\u{1}HELTEC_VISION_MASTER_E290\0\u{1}HELTEC_MESH_NODE_T114\0\u{1}SENSECAP_INDICATOR\0\u{1}TRACKER_T1000_E\0\u{1}RAK3172\0\u{1}WIO_E5\0\u{1}RADIOMASTER_900_BANDIT\0\u{1}ME25LS01_4Y10TD\0\u{1}RP2040_FEATHER_RFM95\0\u{1}M5STACK_COREBASIC\0\u{1}M5STACK_CORE2\0\u{1}RPI_PICO2\0\u{1}M5STACK_CORES3\0\u{1}SEEED_XIAO_S3\0\u{1}MS24SF1\0\u{1}TLORA_C6\0\u{1}WISMESH_TAP\0\u{1}ROUTASTIC\0\u{1}MESH_TAB\0\u{1}MESHLINK\0\u{1}XIAO_NRF52_KIT\0\u{1}THINKNODE_M1\0\u{1}THINKNODE_M2\0\u{1}T_ETH_ELITE\0\u{1}HELTEC_SENSOR_HUB\0\u{1}MUZI_BASE\0\u{1}HELTEC_MESH_POCKET\0\u{1}SEEED_SOLAR_NODE\0\u{1}NOMADSTAR_METEOR_PRO\0\u{1}CROWPANEL\0\u{1}LINK_32\0\u{1}SEEED_WIO_TRACKER_L1\0\u{1}SEEED_WIO_TRACKER_L1_EINK\0\u{1}MUZI_R1_NEO\0\u{1}T_DECK_PRO\0\u{1}T_LORA_PAGER\0\u{1}M5STACK_RESERVED\0\u{1}WISMESH_TAG\0\u{1}RAK3312\0\u{1}THINKNODE_M5\0\u{1}HELTEC_MESH_SOLAR\0\u{1}T_ECHO_LITE\0\u{1}HELTEC_V4\0\u{1}M5STACK_C6L\0\u{1}M5STACK_CARDPUTER_ADV\0\u{1}HELTEC_WIRELESS_TRACKER_V2\0\u{1}T_WATCH_ULTRA\0\u{1}THINKNODE_M3\0\u{1}WISMESH_TAP_V2\0\u{1}RAK3401\0\u{1}RAK6421\0\u{1}THINKNODE_M4\0\u{1}THINKNODE_M6\0\u{1}MESHSTICK_1262\0\u{1}TBEAM_1_WATT\0\u{1}T5_S3_EPAPER_PRO\0\u{1}TBEAM_BPF\0\u{1}MINI_EPAPER_S3\0\u{1}TDISPLAY_S3_PRO\0\u{1}HELTEC_MESH_NODE_T096\0\u{1}MESH_TRACKER_X1\0\u{1}THINKNODE_M7\0\u{1}THINKNODE_M8\0\u{1}THINKNODE_M9\0\u{1}HELTEC_V4_R8\0\u{1}HELTEC_MESH_NODE_T1\0\u{1}STATION_G3\0\u{1}T_IMPULSE_PLUS\0\u{1}T_ECHO_CARD\0\u{1}SEEED_WIO_TRACKER_L2\0\u{1}CROWPANEL_P4\0\u{1}HELTEC_MESH_TOWER_V2\0\u{1}MESHNOLOGY_W10\0\u{1}HELTEC_RC32\0\u{1}HELTEC_RC52\0\u{1}HELTEC_RCC6\0\u{1}SEEED_WIO_TRACKER_L1_PRO_1W\0\u{1}MESHNOLOGY_W12\0\u{1}MESHPAGER_X2\0\u{1}T_CONNECT_PRO\0\u{1}AXIOMETA_GENESIS_MINI\0\u{1}MAKERFABS_NOMAD_TERMINAL\0\u{1}THINKNODE_MX\0\u{2}i\u{1}PRIVATE_HW\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSET\0\u{1}TLORA_V2\0\u{1}TLORA_V1\0\u{1}TLORA_V2_1_1P6\0\u{1}TBEAM\0\u{1}HELTEC_V2_0\0\u{1}TBEAM_V0P7\0\u{1}T_ECHO\0\u{1}TLORA_V1_1P3\0\u{1}RAK4631\0\u{1}HELTEC_V2_1\0\u{1}HELTEC_V1\0\u{1}LILYGO_TBEAM_S3_CORE\0\u{1}RAK11200\0\u{1}NANO_G1\0\u{1}TLORA_V2_1_1P8\0\u{1}TLORA_T3_S3\0\u{1}NANO_G1_EXPLORER\0\u{1}NANO_G2_ULTRA\0\u{1}LORA_TYPE\0\u{1}WIPHONE\0\u{1}WIO_WM1110\0\u{1}RAK2560\0\u{1}HELTEC_HRU_3601\0\u{1}HELTEC_WIRELESS_BRIDGE\0\u{1}STATION_G1\0\u{1}RAK11310\0\u{1}MAKERFABS_TRACKER\0\u{1}MAKERFABS_RESERVED\0\u{1}CANARYONE\0\u{1}RP2040_LORA\0\u{1}STATION_G2\0\u{1}LORA_RELAY_V1\0\u{1}T_ECHO_PLUS\0\u{1}PPR\0\u{1}GENIEBLOCKS\0\u{1}NRF52_UNKNOWN\0\u{1}PORTDUINO\0\u{1}ANDROID_SIM\0\u{1}DIY_V1\0\u{1}NRF52840_PCA10059\0\u{1}DR_DEV\0\u{1}M5STACK\0\u{1}HELTEC_V3\0\u{1}HELTEC_WSL_V3\0\u{1}BETAFPV_2400_TX\0\u{1}BETAFPV_900_NANO_TX\0\u{1}RPI_PICO\0\u{1}HELTEC_WIRELESS_TRACKER\0\u{1}HELTEC_WIRELESS_PAPER\0\u{1}T_DECK\0\u{1}T_WATCH_S3\0\u{1}PICOMPUTER_S3\0\u{1}HELTEC_HT62\0\u{1}EBYTE_ESP32_S3\0\u{1}ESP32_S3_PICO\0\u{1}CHATTER_2\0\u{1}HELTEC_WIRELESS_PAPER_V1_0\0\u{1}HELTEC_WIRELESS_TRACKER_V1_0\0\u{1}UNPHONE\0\u{1}TD_LORAC\0\u{1}CDEBYTE_EORA_S3\0\u{1}TWC_MESH_V4\0\u{1}NRF52_PROMICRO_DIY\0\u{1}RADIOMASTER_900_BANDIT_NANO\0\u{1}HELTEC_CAPSULE_SENSOR_V3\0\u{1}HELTEC_VISION_MASTER_T190\0\u{1}HELTEC_VISION_MASTER_E213\0\u{1}HELTEC_VISION_MASTER_E290\0\u{1}HELTEC_MESH_NODE_T114\0\u{1}SENSECAP_INDICATOR\0\u{1}TRACKER_T1000_E\0\u{1}RAK3172\0\u{1}WIO_E5\0\u{1}RADIOMASTER_900_BANDIT\0\u{1}ME25LS01_4Y10TD\0\u{1}RP2040_FEATHER_RFM95\0\u{1}M5STACK_COREBASIC\0\u{1}M5STACK_CORE2\0\u{1}RPI_PICO2\0\u{1}M5STACK_CORES3\0\u{1}SEEED_XIAO_S3\0\u{1}MS24SF1\0\u{1}TLORA_C6\0\u{1}WISMESH_TAP\0\u{1}ROUTASTIC\0\u{1}MESH_TAB\0\u{1}MESHLINK\0\u{1}XIAO_NRF52_KIT\0\u{1}THINKNODE_M1\0\u{1}THINKNODE_M2\0\u{1}T_ETH_ELITE\0\u{1}HELTEC_SENSOR_HUB\0\u{1}MUZI_BASE\0\u{1}HELTEC_MESH_POCKET\0\u{1}SEEED_SOLAR_NODE\0\u{1}NOMADSTAR_METEOR_PRO\0\u{1}CROWPANEL\0\u{1}LINK_32\0\u{1}SEEED_WIO_TRACKER_L1\0\u{1}SEEED_WIO_TRACKER_L1_EINK\0\u{1}MUZI_R1_NEO\0\u{1}T_DECK_PRO\0\u{1}T_LORA_PAGER\0\u{1}M5STACK_RESERVED\0\u{1}WISMESH_TAG\0\u{1}RAK3312\0\u{1}THINKNODE_M5\0\u{1}HELTEC_MESH_SOLAR\0\u{1}T_ECHO_LITE\0\u{1}HELTEC_V4\0\u{1}M5STACK_C6L\0\u{1}M5STACK_CARDPUTER_ADV\0\u{1}HELTEC_WIRELESS_TRACKER_V2\0\u{1}T_WATCH_ULTRA\0\u{1}THINKNODE_M3\0\u{1}WISMESH_TAP_V2\0\u{1}RAK3401\0\u{1}RAK6421\0\u{1}THINKNODE_M4\0\u{1}THINKNODE_M6\0\u{1}MESHSTICK_1262\0\u{1}TBEAM_1_WATT\0\u{1}T5_S3_EPAPER_PRO\0\u{1}TBEAM_BPF\0\u{1}MINI_EPAPER_S3\0\u{1}TDISPLAY_S3_PRO\0\u{1}HELTEC_MESH_NODE_T096\0\u{1}MESH_TRACKER_X1\0\u{1}THINKNODE_M7\0\u{1}THINKNODE_M8\0\u{1}THINKNODE_M9\0\u{1}HELTEC_V4_R8\0\u{1}HELTEC_MESH_NODE_T1\0\u{1}STATION_G3\0\u{1}T_IMPULSE_PLUS\0\u{1}T_ECHO_CARD\0\u{1}SEEED_WIO_TRACKER_L2\0\u{1}CROWPANEL_P4\0\u{1}HELTEC_MESH_TOWER_V2\0\u{1}MESHNOLOGY_W10\0\u{1}HELTEC_RC32\0\u{1}HELTEC_RC52\0\u{1}HELTEC_RCC6\0\u{1}SEEED_WIO_TRACKER_L1_PRO_1W\0\u{1}MESHNOLOGY_W12\0\u{1}MESHPAGER_X2\0\u{1}T_CONNECT_PRO\0\u{1}AXIOMETA_GENESIS_MINI\0\u{1}MAKERFABS_NOMAD_TERMINAL\0\u{1}THINKNODE_MX\0\u{1}NODARA\0\u{1}HELTEC_MESH_POCKET_V2\0\u{2}g\u{1}PRIVATE_HW\0")
 }
 
 extension Constants: SwiftProtobuf._ProtoNameProviding {
@@ -6543,7 +6978,7 @@ extension QueueStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
 
 extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".FromRadio"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{1}packet\0\u{3}my_info\0\u{3}node_info\0\u{1}config\0\u{3}log_record\0\u{3}config_complete_id\0\u{1}rebooted\0\u{1}moduleConfig\0\u{1}channel\0\u{1}queueStatus\0\u{1}xmodemPacket\0\u{1}metadata\0\u{1}mqttClientProxyMessage\0\u{1}fileInfo\0\u{1}clientNotification\0\u{1}deviceuiConfig\0\u{3}lockdown_status\0\u{3}region_presets\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{1}packet\0\u{3}my_info\0\u{3}node_info\0\u{1}config\0\u{3}log_record\0\u{3}config_complete_id\0\u{1}rebooted\0\u{1}moduleConfig\0\u{1}channel\0\u{1}queueStatus\0\u{1}xmodemPacket\0\u{1}metadata\0\u{1}mqttClientProxyMessage\0\u{1}fileInfo\0\u{1}clientNotification\0\u{1}deviceuiConfig\0\u{3}lockdown_status\0\u{3}region_presets\0\u{4}\u{2}display_frame\0\u{3}display_palette\0")
 
   fileprivate class _StorageClass {
     var _id: UInt32 = 0
@@ -6803,6 +7238,32 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
             _storage._payloadVariant = .regionPresets(v)
           }
         }()
+        case 21: try {
+          var v: DisplayFrame?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .displayFrame(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .displayFrame(v)
+          }
+        }()
+        case 22: try {
+          var v: DisplayPalette?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .displayPalette(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .displayPalette(v)
+          }
+        }()
         default: break
         }
       }
@@ -6891,6 +7352,14 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
         guard case .regionPresets(let v)? = _storage._payloadVariant else { preconditionFailure() }
         try visitor.visitSingularMessageField(value: v, fieldNumber: 19)
       }()
+      case .displayFrame?: try {
+        guard case .displayFrame(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 21)
+      }()
+      case .displayPalette?: try {
+        guard case .displayPalette(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 22)
+      }()
       case nil: break
       }
     }
@@ -6908,6 +7377,205 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
       }
       if !storagesAreEqual {return false}
     }
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension DisplayFrame: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".DisplayFrame"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}width\0\u{1}height\0\u{1}format\0\u{3}frame_id\0\u{1}offset\0\u{3}total_size\0\u{1}data\0\u{3}rect_x\0\u{3}rect_y\0\u{3}rect_width\0\u{3}rect_height\0\u{3}palette_signature\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.width) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.height) }()
+      case 3: try { try decoder.decodeSingularEnumField(value: &self.format) }()
+      case 4: try { try decoder.decodeSingularUInt32Field(value: &self.frameID) }()
+      case 5: try { try decoder.decodeSingularUInt32Field(value: &self.offset) }()
+      case 6: try { try decoder.decodeSingularUInt32Field(value: &self.totalSize) }()
+      case 7: try { try decoder.decodeSingularBytesField(value: &self.data) }()
+      case 8: try { try decoder.decodeSingularUInt32Field(value: &self.rectX) }()
+      case 9: try { try decoder.decodeSingularUInt32Field(value: &self.rectY) }()
+      case 10: try { try decoder.decodeSingularUInt32Field(value: &self.rectWidth) }()
+      case 11: try { try decoder.decodeSingularUInt32Field(value: &self.rectHeight) }()
+      case 12: try { try decoder.decodeSingularUInt32Field(value: &self.paletteSignature) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.width != 0 {
+      try visitor.visitSingularUInt32Field(value: self.width, fieldNumber: 1)
+    }
+    if self.height != 0 {
+      try visitor.visitSingularUInt32Field(value: self.height, fieldNumber: 2)
+    }
+    if self.format != .unspecified {
+      try visitor.visitSingularEnumField(value: self.format, fieldNumber: 3)
+    }
+    if self.frameID != 0 {
+      try visitor.visitSingularUInt32Field(value: self.frameID, fieldNumber: 4)
+    }
+    if self.offset != 0 {
+      try visitor.visitSingularUInt32Field(value: self.offset, fieldNumber: 5)
+    }
+    if self.totalSize != 0 {
+      try visitor.visitSingularUInt32Field(value: self.totalSize, fieldNumber: 6)
+    }
+    if !self.data.isEmpty {
+      try visitor.visitSingularBytesField(value: self.data, fieldNumber: 7)
+    }
+    if self.rectX != 0 {
+      try visitor.visitSingularUInt32Field(value: self.rectX, fieldNumber: 8)
+    }
+    if self.rectY != 0 {
+      try visitor.visitSingularUInt32Field(value: self.rectY, fieldNumber: 9)
+    }
+    if self.rectWidth != 0 {
+      try visitor.visitSingularUInt32Field(value: self.rectWidth, fieldNumber: 10)
+    }
+    if self.rectHeight != 0 {
+      try visitor.visitSingularUInt32Field(value: self.rectHeight, fieldNumber: 11)
+    }
+    if self.paletteSignature != 0 {
+      try visitor.visitSingularUInt32Field(value: self.paletteSignature, fieldNumber: 12)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: DisplayFrame, rhs: DisplayFrame) -> Bool {
+    if lhs.width != rhs.width {return false}
+    if lhs.height != rhs.height {return false}
+    if lhs.format != rhs.format {return false}
+    if lhs.frameID != rhs.frameID {return false}
+    if lhs.offset != rhs.offset {return false}
+    if lhs.totalSize != rhs.totalSize {return false}
+    if lhs.data != rhs.data {return false}
+    if lhs.rectX != rhs.rectX {return false}
+    if lhs.rectY != rhs.rectY {return false}
+    if lhs.rectWidth != rhs.rectWidth {return false}
+    if lhs.rectHeight != rhs.rectHeight {return false}
+    if lhs.paletteSignature != rhs.paletteSignature {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension DisplayFrame.Format: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0FORMAT_UNSPECIFIED\0\u{1}MONO_VLSB\0\u{1}RGB565\0")
+}
+
+extension DisplayPalette: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".DisplayPalette"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}signature\0\u{3}default_on_color\0\u{3}default_off_color\0\u{3}region_offset\0\u{3}region_total\0\u{1}regions\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.signature) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.defaultOnColor) }()
+      case 3: try { try decoder.decodeSingularUInt32Field(value: &self.defaultOffColor) }()
+      case 4: try { try decoder.decodeSingularUInt32Field(value: &self.regionOffset) }()
+      case 5: try { try decoder.decodeSingularUInt32Field(value: &self.regionTotal) }()
+      case 6: try { try decoder.decodeRepeatedMessageField(value: &self.regions) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.signature != 0 {
+      try visitor.visitSingularUInt32Field(value: self.signature, fieldNumber: 1)
+    }
+    if self.defaultOnColor != 0 {
+      try visitor.visitSingularUInt32Field(value: self.defaultOnColor, fieldNumber: 2)
+    }
+    if self.defaultOffColor != 0 {
+      try visitor.visitSingularUInt32Field(value: self.defaultOffColor, fieldNumber: 3)
+    }
+    if self.regionOffset != 0 {
+      try visitor.visitSingularUInt32Field(value: self.regionOffset, fieldNumber: 4)
+    }
+    if self.regionTotal != 0 {
+      try visitor.visitSingularUInt32Field(value: self.regionTotal, fieldNumber: 5)
+    }
+    if !self.regions.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.regions, fieldNumber: 6)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: DisplayPalette, rhs: DisplayPalette) -> Bool {
+    if lhs.signature != rhs.signature {return false}
+    if lhs.defaultOnColor != rhs.defaultOnColor {return false}
+    if lhs.defaultOffColor != rhs.defaultOffColor {return false}
+    if lhs.regionOffset != rhs.regionOffset {return false}
+    if lhs.regionTotal != rhs.regionTotal {return false}
+    if lhs.regions != rhs.regions {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension DisplayPalette.ColorRegion: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = DisplayPalette.protoMessageName + ".ColorRegion"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}x\0\u{1}y\0\u{1}width\0\u{1}height\0\u{3}on_color\0\u{3}off_color\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.x) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.y) }()
+      case 3: try { try decoder.decodeSingularUInt32Field(value: &self.width) }()
+      case 4: try { try decoder.decodeSingularUInt32Field(value: &self.height) }()
+      case 5: try { try decoder.decodeSingularUInt32Field(value: &self.onColor) }()
+      case 6: try { try decoder.decodeSingularUInt32Field(value: &self.offColor) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.x != 0 {
+      try visitor.visitSingularUInt32Field(value: self.x, fieldNumber: 1)
+    }
+    if self.y != 0 {
+      try visitor.visitSingularUInt32Field(value: self.y, fieldNumber: 2)
+    }
+    if self.width != 0 {
+      try visitor.visitSingularUInt32Field(value: self.width, fieldNumber: 3)
+    }
+    if self.height != 0 {
+      try visitor.visitSingularUInt32Field(value: self.height, fieldNumber: 4)
+    }
+    if self.onColor != 0 {
+      try visitor.visitSingularUInt32Field(value: self.onColor, fieldNumber: 5)
+    }
+    if self.offColor != 0 {
+      try visitor.visitSingularUInt32Field(value: self.offColor, fieldNumber: 6)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: DisplayPalette.ColorRegion, rhs: DisplayPalette.ColorRegion) -> Bool {
+    if lhs.x != rhs.x {return false}
+    if lhs.y != rhs.y {return false}
+    if lhs.width != rhs.width {return false}
+    if lhs.height != rhs.height {return false}
+    if lhs.onColor != rhs.onColor {return false}
+    if lhs.offColor != rhs.offColor {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -7550,7 +8218,168 @@ extension Neighbor: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
 
 extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeviceMetadata"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}firmware_version\0\u{3}device_state_version\0\u{1}canShutdown\0\u{1}hasWifi\0\u{1}hasBluetooth\0\u{1}hasEthernet\0\u{1}role\0\u{3}position_flags\0\u{3}hw_model\0\u{1}hasRemoteHardware\0\u{1}hasPKC\0\u{3}excluded_modules\0\u{4}\u{2}has_xeddsa\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}firmware_version\0\u{3}device_state_version\0\u{1}canShutdown\0\u{1}hasWifi\0\u{1}hasBluetooth\0\u{1}hasEthernet\0\u{1}role\0\u{3}position_flags\0\u{3}hw_model\0\u{1}hasRemoteHardware\0\u{1}hasPKC\0\u{3}excluded_modules\0\u{4}\u{2}has_xeddsa\0\u{2}\u{2}display\0")
+
+  fileprivate class _StorageClass {
+    var _firmwareVersion: String = String()
+    var _deviceStateVersion: UInt32 = 0
+    var _canShutdown: Bool = false
+    var _hasWifi_p: Bool = false
+    var _hasBluetooth_p: Bool = false
+    var _hasEthernet_p: Bool = false
+    var _role: Config.DeviceConfig.Role = .client
+    var _positionFlags: UInt32 = 0
+    var _hwModel: HardwareModel = .unset
+    var _hasRemoteHardware_p: Bool = false
+    var _hasPkc_p: Bool = false
+    var _excludedModules: UInt32 = 0
+    var _hasXeddsa_p: Bool = false
+    var _display: DisplayInfo? = nil
+
+      // This property is used as the initial default value for new instances of the type.
+      // The type itself is protecting the reference to its storage via CoW semantics.
+      // This will force a copy to be made of this reference when the first mutation occurs;
+      // hence, it is safe to mark this as `nonisolated(unsafe)`.
+      static nonisolated(unsafe) let defaultInstance = _StorageClass()
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _firmwareVersion = source._firmwareVersion
+      _deviceStateVersion = source._deviceStateVersion
+      _canShutdown = source._canShutdown
+      _hasWifi_p = source._hasWifi_p
+      _hasBluetooth_p = source._hasBluetooth_p
+      _hasEthernet_p = source._hasEthernet_p
+      _role = source._role
+      _positionFlags = source._positionFlags
+      _hwModel = source._hwModel
+      _hasRemoteHardware_p = source._hasRemoteHardware_p
+      _hasPkc_p = source._hasPkc_p
+      _excludedModules = source._excludedModules
+      _hasXeddsa_p = source._hasXeddsa_p
+      _display = source._display
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeSingularStringField(value: &_storage._firmwareVersion) }()
+        case 2: try { try decoder.decodeSingularUInt32Field(value: &_storage._deviceStateVersion) }()
+        case 3: try { try decoder.decodeSingularBoolField(value: &_storage._canShutdown) }()
+        case 4: try { try decoder.decodeSingularBoolField(value: &_storage._hasWifi_p) }()
+        case 5: try { try decoder.decodeSingularBoolField(value: &_storage._hasBluetooth_p) }()
+        case 6: try { try decoder.decodeSingularBoolField(value: &_storage._hasEthernet_p) }()
+        case 7: try { try decoder.decodeSingularEnumField(value: &_storage._role) }()
+        case 8: try { try decoder.decodeSingularUInt32Field(value: &_storage._positionFlags) }()
+        case 9: try { try decoder.decodeSingularEnumField(value: &_storage._hwModel) }()
+        case 10: try { try decoder.decodeSingularBoolField(value: &_storage._hasRemoteHardware_p) }()
+        case 11: try { try decoder.decodeSingularBoolField(value: &_storage._hasPkc_p) }()
+        case 12: try { try decoder.decodeSingularUInt32Field(value: &_storage._excludedModules) }()
+        case 14: try { try decoder.decodeSingularBoolField(value: &_storage._hasXeddsa_p) }()
+        case 16: try { try decoder.decodeSingularMessageField(value: &_storage._display) }()
+        default: break
+        }
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      if !_storage._firmwareVersion.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._firmwareVersion, fieldNumber: 1)
+      }
+      if _storage._deviceStateVersion != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._deviceStateVersion, fieldNumber: 2)
+      }
+      if _storage._canShutdown != false {
+        try visitor.visitSingularBoolField(value: _storage._canShutdown, fieldNumber: 3)
+      }
+      if _storage._hasWifi_p != false {
+        try visitor.visitSingularBoolField(value: _storage._hasWifi_p, fieldNumber: 4)
+      }
+      if _storage._hasBluetooth_p != false {
+        try visitor.visitSingularBoolField(value: _storage._hasBluetooth_p, fieldNumber: 5)
+      }
+      if _storage._hasEthernet_p != false {
+        try visitor.visitSingularBoolField(value: _storage._hasEthernet_p, fieldNumber: 6)
+      }
+      if _storage._role != .client {
+        try visitor.visitSingularEnumField(value: _storage._role, fieldNumber: 7)
+      }
+      if _storage._positionFlags != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._positionFlags, fieldNumber: 8)
+      }
+      if _storage._hwModel != .unset {
+        try visitor.visitSingularEnumField(value: _storage._hwModel, fieldNumber: 9)
+      }
+      if _storage._hasRemoteHardware_p != false {
+        try visitor.visitSingularBoolField(value: _storage._hasRemoteHardware_p, fieldNumber: 10)
+      }
+      if _storage._hasPkc_p != false {
+        try visitor.visitSingularBoolField(value: _storage._hasPkc_p, fieldNumber: 11)
+      }
+      if _storage._excludedModules != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._excludedModules, fieldNumber: 12)
+      }
+      if _storage._hasXeddsa_p != false {
+        try visitor.visitSingularBoolField(value: _storage._hasXeddsa_p, fieldNumber: 14)
+      }
+      try { if let v = _storage._display {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 16)
+      } }()
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: DeviceMetadata, rhs: DeviceMetadata) -> Bool {
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._firmwareVersion != rhs_storage._firmwareVersion {return false}
+        if _storage._deviceStateVersion != rhs_storage._deviceStateVersion {return false}
+        if _storage._canShutdown != rhs_storage._canShutdown {return false}
+        if _storage._hasWifi_p != rhs_storage._hasWifi_p {return false}
+        if _storage._hasBluetooth_p != rhs_storage._hasBluetooth_p {return false}
+        if _storage._hasEthernet_p != rhs_storage._hasEthernet_p {return false}
+        if _storage._role != rhs_storage._role {return false}
+        if _storage._positionFlags != rhs_storage._positionFlags {return false}
+        if _storage._hwModel != rhs_storage._hwModel {return false}
+        if _storage._hasRemoteHardware_p != rhs_storage._hasRemoteHardware_p {return false}
+        if _storage._hasPkc_p != rhs_storage._hasPkc_p {return false}
+        if _storage._excludedModules != rhs_storage._excludedModules {return false}
+        if _storage._hasXeddsa_p != rhs_storage._hasXeddsa_p {return false}
+        if _storage._display != rhs_storage._display {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension DisplayInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".DisplayInfo"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}width\0\u{1}height\0\u{1}format\0\u{3}panel_class\0\u{3}has_touch\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -7558,84 +8387,48 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeSingularStringField(value: &self.firmwareVersion) }()
-      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.deviceStateVersion) }()
-      case 3: try { try decoder.decodeSingularBoolField(value: &self.canShutdown) }()
-      case 4: try { try decoder.decodeSingularBoolField(value: &self.hasWifi_p) }()
-      case 5: try { try decoder.decodeSingularBoolField(value: &self.hasBluetooth_p) }()
-      case 6: try { try decoder.decodeSingularBoolField(value: &self.hasEthernet_p) }()
-      case 7: try { try decoder.decodeSingularEnumField(value: &self.role) }()
-      case 8: try { try decoder.decodeSingularUInt32Field(value: &self.positionFlags) }()
-      case 9: try { try decoder.decodeSingularEnumField(value: &self.hwModel) }()
-      case 10: try { try decoder.decodeSingularBoolField(value: &self.hasRemoteHardware_p) }()
-      case 11: try { try decoder.decodeSingularBoolField(value: &self.hasPkc_p) }()
-      case 12: try { try decoder.decodeSingularUInt32Field(value: &self.excludedModules) }()
-      case 14: try { try decoder.decodeSingularBoolField(value: &self.hasXeddsa_p) }()
+      case 1: try { try decoder.decodeSingularUInt32Field(value: &self.width) }()
+      case 2: try { try decoder.decodeSingularUInt32Field(value: &self.height) }()
+      case 3: try { try decoder.decodeSingularEnumField(value: &self.format) }()
+      case 4: try { try decoder.decodeSingularEnumField(value: &self.panelClass) }()
+      case 5: try { try decoder.decodeSingularBoolField(value: &self.hasTouch_p) }()
       default: break
       }
     }
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if !self.firmwareVersion.isEmpty {
-      try visitor.visitSingularStringField(value: self.firmwareVersion, fieldNumber: 1)
+    if self.width != 0 {
+      try visitor.visitSingularUInt32Field(value: self.width, fieldNumber: 1)
     }
-    if self.deviceStateVersion != 0 {
-      try visitor.visitSingularUInt32Field(value: self.deviceStateVersion, fieldNumber: 2)
+    if self.height != 0 {
+      try visitor.visitSingularUInt32Field(value: self.height, fieldNumber: 2)
     }
-    if self.canShutdown != false {
-      try visitor.visitSingularBoolField(value: self.canShutdown, fieldNumber: 3)
+    if self.format != .unspecified {
+      try visitor.visitSingularEnumField(value: self.format, fieldNumber: 3)
     }
-    if self.hasWifi_p != false {
-      try visitor.visitSingularBoolField(value: self.hasWifi_p, fieldNumber: 4)
+    if self.panelClass != .unspecified {
+      try visitor.visitSingularEnumField(value: self.panelClass, fieldNumber: 4)
     }
-    if self.hasBluetooth_p != false {
-      try visitor.visitSingularBoolField(value: self.hasBluetooth_p, fieldNumber: 5)
-    }
-    if self.hasEthernet_p != false {
-      try visitor.visitSingularBoolField(value: self.hasEthernet_p, fieldNumber: 6)
-    }
-    if self.role != .client {
-      try visitor.visitSingularEnumField(value: self.role, fieldNumber: 7)
-    }
-    if self.positionFlags != 0 {
-      try visitor.visitSingularUInt32Field(value: self.positionFlags, fieldNumber: 8)
-    }
-    if self.hwModel != .unset {
-      try visitor.visitSingularEnumField(value: self.hwModel, fieldNumber: 9)
-    }
-    if self.hasRemoteHardware_p != false {
-      try visitor.visitSingularBoolField(value: self.hasRemoteHardware_p, fieldNumber: 10)
-    }
-    if self.hasPkc_p != false {
-      try visitor.visitSingularBoolField(value: self.hasPkc_p, fieldNumber: 11)
-    }
-    if self.excludedModules != 0 {
-      try visitor.visitSingularUInt32Field(value: self.excludedModules, fieldNumber: 12)
-    }
-    if self.hasXeddsa_p != false {
-      try visitor.visitSingularBoolField(value: self.hasXeddsa_p, fieldNumber: 14)
+    if self.hasTouch_p != false {
+      try visitor.visitSingularBoolField(value: self.hasTouch_p, fieldNumber: 5)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  public static func ==(lhs: DeviceMetadata, rhs: DeviceMetadata) -> Bool {
-    if lhs.firmwareVersion != rhs.firmwareVersion {return false}
-    if lhs.deviceStateVersion != rhs.deviceStateVersion {return false}
-    if lhs.canShutdown != rhs.canShutdown {return false}
-    if lhs.hasWifi_p != rhs.hasWifi_p {return false}
-    if lhs.hasBluetooth_p != rhs.hasBluetooth_p {return false}
-    if lhs.hasEthernet_p != rhs.hasEthernet_p {return false}
-    if lhs.role != rhs.role {return false}
-    if lhs.positionFlags != rhs.positionFlags {return false}
-    if lhs.hwModel != rhs.hwModel {return false}
-    if lhs.hasRemoteHardware_p != rhs.hasRemoteHardware_p {return false}
-    if lhs.hasPkc_p != rhs.hasPkc_p {return false}
-    if lhs.excludedModules != rhs.excludedModules {return false}
-    if lhs.hasXeddsa_p != rhs.hasXeddsa_p {return false}
+  public static func ==(lhs: DisplayInfo, rhs: DisplayInfo) -> Bool {
+    if lhs.width != rhs.width {return false}
+    if lhs.height != rhs.height {return false}
+    if lhs.format != rhs.format {return false}
+    if lhs.panelClass != rhs.panelClass {return false}
+    if lhs.hasTouch_p != rhs.hasTouch_p {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
+}
+
+extension DisplayInfo.PanelClass: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0PANEL_CLASS_UNSPECIFIED\0\u{1}OLED\0\u{1}LCD\0\u{1}TFT\0\u{1}EINK\0\u{1}HUB75\0")
 }
 
 extension LoRaPresetGroup: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {

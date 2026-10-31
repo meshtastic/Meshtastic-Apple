@@ -32,7 +32,7 @@ struct MaintenanceUf2ManifestStoreTests {
 		"""
 		{ "manifestVersion": \(version),
 		  "otafixReleaseTag": "\(tag)",
-		  "otafixBase": "https://github.com/meshtastic/Adafruit_nRF52_Bootloader_OTAFIX/releases/download/\(tag)",
+		  "otafixBase": "https://github.com/meshtastic/nRF52_Bootloader/releases/download/\(tag)",
 		  "otafixByBoardId": { "WisBlock-RAK4631-Board": { "otafixBoardSlug": "wiscore_rak4631_board", "sha256": "\(digest)" } },
 		  "otafixSupportedTargets": ["rak4631"]\(erase) }
 		"""

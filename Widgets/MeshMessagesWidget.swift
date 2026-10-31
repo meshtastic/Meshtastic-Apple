@@ -68,10 +68,12 @@ struct MeshMessagesWidget: Widget {
 		}
 		.configurationDisplayName("Messages")
 		.description("Unread counts and your latest mesh messages.")
-		.supportedFamilies([
-			.systemMedium, .systemLarge,
-			.accessoryInline, .accessoryRectangular
-		])
+		// The Lock Screen sizes don't exist on Vision Pro.
+		#if os(iOS)
+		.supportedFamilies([.systemMedium, .systemLarge, .accessoryInline, .accessoryRectangular])
+		#else
+		.supportedFamilies([.systemMedium, .systemLarge])
+		#endif
 	}
 }
 
@@ -93,10 +95,12 @@ struct MeshMessagesWidgetView: View {
 	@ViewBuilder
 	private func content(_ snapshot: WidgetSnapshot) -> some View {
 		switch family {
+		#if os(iOS)
 		case .accessoryInline:
 			MessagesInlineView(snapshot: snapshot)
 		case .accessoryRectangular:
 			MessagesRectangularView(snapshot: snapshot)
+		#endif
 		case .systemLarge:
 			MessagesListView(snapshot: snapshot, rowLimit: 5)
 		default:
@@ -107,8 +111,10 @@ struct MeshMessagesWidgetView: View {
 	@ViewBuilder
 	private var noDataView: some View {
 		switch family {
+		#if os(iOS)
 		case .accessoryInline:
 			Text("Open Meshtastic")
+		#endif
 		default:
 			VStack(spacing: 6) {
 				Image(systemName: "message")

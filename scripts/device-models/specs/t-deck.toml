@@ -11,3 +11,7 @@ source = "https://wiki.lilygo.cc/products/t-deck-series/t-deck/"
 confidence = "vendor"
 edge_radius_mm = 2.0
 front_edge_radius_mm = 2.0
+
+# The display's visible area, for the radio's live screen.
+[screen]
+bbox = [755.65, 633.64, 1256.17, 1011.1]

@@ -9,7 +9,7 @@ import CoreLocation
 import SwiftData
 import SwiftUI
 
-/// The live team roster on the tent's whiteboard in the cinema: the connected radio and the
+/// The favorites board on the tent's whiteboard in the cinema: the connected radio and the
 /// favorite nodes, with when each was last heard, its battery, signal, hops, and distance and
 /// bearing from the radio. Drawn as marker on the board, to be read from across the tent.
 /// Tapping a row centers the 3D map on the node and opens its detail on the front screen.
@@ -85,7 +85,8 @@ struct TeamStatusBoard: View {
 
 	private func title(radioName: String?) -> some View {
 		HStack(alignment: .firstTextBaseline) {
-			Text("Team Status", comment: "Cinema: title of the live team roster on the tent's whiteboard")
+			star
+			Text("Team Favorites", comment: "Cinema: title of the favorites board on the tent's whiteboard")
 				.textCase(.uppercase)
 				.font(BoardStyle.marker(92))
 				.foregroundStyle(BoardStyle.blue)
@@ -114,6 +115,20 @@ struct TeamStatusBoard: View {
 			MeshLogo(height: 44)
 				.padding(.leading, 18)
 		}
+	}
+
+	/// The gold star before the title, outlined in ink so it shows on the board.
+	private var star: some View {
+		Image(systemName: "star.fill")
+			.font(.system(size: 84, weight: .bold))
+			.foregroundStyle(BoardStyle.gold)
+			.overlay {
+				Image(systemName: "star")
+					.font(.system(size: 84, weight: .bold))
+					.foregroundStyle(BoardStyle.ink)
+			}
+			.padding(.trailing, 12)
+			.accessibilityHidden(true)
 	}
 
 	private var headerRow: some View {
@@ -438,29 +453,6 @@ private struct TeamRow: View {
 		} else {
 			Text(verbatim: "—")
 		}
-	}
-}
-
-/// Marker on a whiteboard. The surface matches the blank board in the tent image, which has a
-/// light on it so it is this light, and every ink below reads at a WCAG contrast of at least 4.5:1
-/// across the gradient.
-/// Top / bottom: ink 7.8 / 6.6, blue 6.8 / 5.7, red 5.7 / 4.8, green 5.7 / 4.8, faded 5.6 / 4.7.
-private enum BoardStyle {
-	static let surface = LinearGradient(
-		colors: [Color(red: 184 / 255, green: 164 / 255, blue: 134 / 255), Color(red: 170 / 255, green: 150 / 255, blue: 121 / 255)],
-		startPoint: .top,
-		endPoint: .bottom
-	)
-	static let ink = Color(red: 0.07, green: 0.07, blue: 0.08)
-	static let blue = Color(red: 0.04, green: 0.10, blue: 0.33)
-	static let red = Color(red: 0.38, green: 0.02, blue: 0.02)
-	static let green = Color(red: 0, green: 0.21, blue: 0.07)
-	/// Nodes not heard lately, hints and missing values.
-	static let faded = Color(red: 0.19, green: 0.18, blue: 0.17)
-
-	/// The board's handwriting, falling back to the system font where Chalkboard isn't installed.
-	static func marker(_ size: CGFloat) -> Font {
-		.custom("ChalkboardSE-Regular", fixedSize: size)
 	}
 }
 #endif

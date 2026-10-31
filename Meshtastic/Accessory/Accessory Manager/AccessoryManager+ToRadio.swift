@@ -1489,6 +1489,8 @@ extension AccessoryManager {
 				NeighborLinkEntity.deleteAll(forNodes: [node.num], in: context)
 				context.delete(node)
 				try context.save()
+				// A Node Tracker widget may be set to it.
+				WidgetDataBroker.shared.refresh(.config)
 			} catch {
 				let nsError = error as NSError
 				Logger.data.error("🚫 Error deleting node: \(nsError, privacy: .public)")

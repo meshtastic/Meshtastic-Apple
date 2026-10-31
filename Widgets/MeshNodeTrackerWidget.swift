@@ -14,79 +14,6 @@ import CoreLocation
 import SwiftUI
 import WidgetKit
 
-// MARK: - Configuration
-
-/// A node the user can pick in the widget's configuration. AppIntents stores
-/// only the entity's identifier and rehydrates it through the query, so the
-/// name fields do not persist on their own — `entities(for:)` must answer
-/// every identifier it is asked for, or the stored configuration dissolves
-/// and the widget silently retargets.
-struct TrackedNodeEntity: AppEntity {
-	static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "Node")
-	static let defaultQuery = TrackedNodeQuery()
-
-	/// The node number as a string.
-	let id: String
-	let longName: String
-	let shortName: String
-
-	var nodeNum: Int64? { Int64(id) }
-
-	var displayRepresentation: DisplayRepresentation {
-		DisplayRepresentation(title: "\(longName)", subtitle: "\(shortName)")
-	}
-
-	init(node: NodeSnapshot) {
-		self.id = String(node.num)
-		self.longName = node.longName
-		self.shortName = node.shortName
-	}
-
-	/// A node that is no longer in the snapshot: keep its identity and fall
-	/// back to the hex naming the app uses for nodes without user info.
-	init(identifier: String) {
-		self.id = identifier
-		if let num = Int64(identifier) {
-			let hex = String(format: "%08x", UInt32(truncatingIfNeeded: num))
-			self.longName = "Node \(hex)"
-			self.shortName = String(hex.suffix(4))
-		} else {
-			self.longName = "Unknown node"
-			self.shortName = "?"
-		}
-	}
-}
-
-struct TrackedNodeQuery: EntityQuery {
-	func entities(for identifiers: [String]) async throws -> [TrackedNodeEntity] {
-		let nodes = WidgetSnapshotStore.load()?.nodes ?? []
-		return identifiers.map { id in
-			if let node = nodes.first(where: { String($0.num) == id }) {
-				return TrackedNodeEntity(node: node)
-			}
-			return TrackedNodeEntity(identifier: id)
-		}
-	}
-
-	/// The picker list: the snapshot's nodes, favorites first — the same order
-	/// the app wrote them in.
-	func suggestedEntities() async throws -> [TrackedNodeEntity] {
-		(WidgetSnapshotStore.load()?.nodes ?? []).map(TrackedNodeEntity.init)
-	}
-
-	func defaultResult() async -> TrackedNodeEntity? {
-		try? await suggestedEntities().first
-	}
-}
-
-struct TrackNodeIntent: WidgetConfigurationIntent {
-	static let title: LocalizedStringResource = "Track Node"
-	static let description = IntentDescription("Pick a node to keep an eye on.")
-
-	@Parameter(title: "Node")
-	var node: TrackedNodeEntity?
-}
-
 // MARK: - Timeline
 
 struct NodeTrackerEntry: TimelineEntry {
@@ -96,6 +23,13 @@ struct NodeTrackerEntry: TimelineEntry {
 	/// The node's current data, nil when it dropped out of the snapshot.
 	let node: NodeSnapshot?
 	let snapshot: WidgetSnapshot?
+
+	/// The node is no longer in the node database: deleted, or the radio was
+	/// switched. It comes back by itself if the radio hears it again.
+	var isMissing: Bool {
+		guard node == nil, let id = configured?.id else { return false }
+		return snapshot?.missingTrackedNodes?.contains { String($0.num) == id } ?? false
+	}
 
 	var isStale: Bool {
 		guard let snapshot else { return false }
@@ -161,14 +95,19 @@ struct MeshNodeTrackerWidget: Widget {
 		AppIntentConfiguration(kind: "MeshNodeTracker", intent: TrackNodeIntent.self, provider: NodeTrackerProvider()) { entry in
 			NodeTrackerWidgetView(entry: entry)
 				.containerBackground(Color(UIColor.systemBackground), for: .widget)
-				.widgetURL(entry.configured?.nodeNum.flatMap { URL(string: "meshtastic:///nodes?nodenum=\($0)") })
+				// A node that's gone has no detail to open; the list does.
+				.widgetURL(entry.isMissing
+					? URL(string: "meshtastic:///nodes")
+					: entry.configured?.nodeNum.flatMap { URL(string: "meshtastic:///nodes?nodenum=\($0)") })
 		}
 		.configurationDisplayName("Node Tracker")
 		.description("Battery, signal and last heard for a node you pick.")
-		.supportedFamilies([
-			.systemSmall, .systemMedium,
-			.accessoryInline, .accessoryCircular, .accessoryRectangular
-		])
+		// The Lock Screen sizes don't exist on Vision Pro.
+		#if os(iOS)
+		.supportedFamilies([.systemSmall, .systemMedium, .accessoryInline, .accessoryCircular, .accessoryRectangular])
+		#else
+		.supportedFamilies([.systemSmall, .systemMedium])
+		#endif
 	}
 }
 
@@ -190,22 +129,25 @@ struct NodeTrackerWidgetView: View {
 	@ViewBuilder
 	private func content(_ configured: TrackedNodeEntity) -> some View {
 		switch family {
+		#if os(iOS)
 		case .accessoryInline:
-			TrackerInlineView(configured: configured, node: entry.node)
+			TrackerInlineView(configured: configured, node: entry.node, isMissing: entry.isMissing)
 		case .accessoryCircular:
-			TrackerCircularView(configured: configured, node: entry.node)
+			TrackerCircularView(configured: configured, node: entry.node, isMissing: entry.isMissing)
 		case .accessoryRectangular:
-			TrackerRectangularView(configured: configured, node: entry.node)
+			TrackerRectangularView(configured: configured, node: entry.node, isMissing: entry.isMissing)
+		#endif
 		case .systemMedium:
-			TrackerMediumView(configured: configured, node: entry.node, snapshot: entry.snapshot)
+			TrackerMediumView(configured: configured, node: entry.node, snapshot: entry.snapshot, isMissing: entry.isMissing)
 		default:
-			TrackerSmallView(configured: configured, node: entry.node)
+			TrackerSmallView(configured: configured, node: entry.node, isMissing: entry.isMissing)
 		}
 	}
 
 	@ViewBuilder
 	private var noNodeView: some View {
 		switch family {
+		#if os(iOS)
 		case .accessoryInline:
 			Text("Choose a node")
 		case .accessoryCircular:
@@ -213,6 +155,7 @@ struct NodeTrackerWidgetView: View {
 				.font(.title2)
 				.widgetAccentable()
 				.accessibilityLabel("Choose a node to track")
+		#endif
 		default:
 			VStack(spacing: 6) {
 				Image(systemName: "person.crop.circle.badge.questionmark")
@@ -233,6 +176,7 @@ struct NodeTrackerWidgetView: View {
 private struct TrackerSmallView: View {
 	let configured: TrackedNodeEntity
 	let node: NodeSnapshot?
+	let isMissing: Bool
 
 	var body: some View {
 		VStack(alignment: .leading, spacing: 4) {
@@ -253,9 +197,7 @@ private struct TrackerSmallView: View {
 				}
 				HeardFooter(node: node)
 			} else {
-				Text("Not in recent nodes")
-					.font(.caption2)
-					.foregroundStyle(.secondary)
+				AbsentNote(isMissing: isMissing, showsHint: true)
 			}
 		}
 	}
@@ -265,6 +207,7 @@ private struct TrackerMediumView: View {
 	let configured: TrackedNodeEntity
 	let node: NodeSnapshot?
 	let snapshot: WidgetSnapshot?
+	let isMissing: Bool
 
 	var body: some View {
 		HStack(spacing: 12) {
@@ -285,9 +228,7 @@ private struct TrackerMediumView: View {
 				if let node {
 					HeardFooter(node: node)
 				} else {
-					Text("Not in recent nodes")
-						.font(.caption2)
-						.foregroundStyle(.secondary)
+					AbsentNote(isMissing: isMissing, showsHint: true)
 				}
 			}
 			Spacer()
@@ -313,10 +254,13 @@ private struct TrackerMediumView: View {
 private struct TrackerInlineView: View {
 	let configured: TrackedNodeEntity
 	let node: NodeSnapshot?
+	let isMissing: Bool
 
 	var body: some View {
 		if let node, let lastHeard = node.lastHeard {
 			Text("\(configured.shortName) · \(lastHeard, style: .relative) ago")
+		} else if isMissing {
+			Text("\(configured.shortName) · not in node list")
 		} else {
 			Text("\(configured.shortName) · not seen")
 		}
@@ -327,6 +271,7 @@ private struct TrackerCircularView: View {
 	@Environment(\.isLuminanceReduced) private var isLuminanceReduced
 	let configured: TrackedNodeEntity
 	let node: NodeSnapshot?
+	let isMissing: Bool
 
 	var body: some View {
 		Gauge(value: Double(node?.signalRating ?? 0), in: 0...3) {
@@ -337,7 +282,7 @@ private struct TrackerCircularView: View {
 					.font(.headline)
 					.minimumScaleFactor(0.5)
 					.lineLimit(1)
-				Text("signal")
+				Text(isMissing ? "not listed" : "signal")
 					.font(.system(size: 8, weight: .semibold))
 					.foregroundStyle(.secondary)
 			}
@@ -351,6 +296,7 @@ private struct TrackerCircularView: View {
 private struct TrackerRectangularView: View {
 	let configured: TrackedNodeEntity
 	let node: NodeSnapshot?
+	let isMissing: Bool
 
 	var body: some View {
 		VStack(alignment: .leading, spacing: 1) {
@@ -371,15 +317,44 @@ private struct TrackerRectangularView: View {
 				.font(.caption)
 				HeardFooter(node: node)
 			} else {
-				Text("Not in recent nodes")
-					.font(.caption2)
-					.foregroundStyle(.secondary)
+				AbsentNote(isMissing: isMissing, showsHint: false)
 			}
 		}
 	}
 }
 
 // MARK: Pieces
+
+/// What shows in place of a node's readings when the snapshot doesn't have it.
+private struct AbsentNote: View {
+	let isMissing: Bool
+	/// The way to pick another node; the Lock Screen has no room for it.
+	let showsHint: Bool
+
+	var body: some View {
+		// Never cut short: without room for the hint, the note shows alone.
+		ViewThatFits(in: .vertical) {
+			if isMissing, showsHint {
+				VStack(alignment: .leading, spacing: 1) {
+					note
+					Text("Touch and hold to choose another node")
+						.font(.caption2)
+						.foregroundStyle(.tertiary)
+						.fixedSize(horizontal: false, vertical: true)
+				}
+			}
+			note
+		}
+	}
+
+	private var note: some View {
+		Text(isMissing ? "No longer in your node list" : "Not in recent nodes")
+			.font(.caption2)
+			.foregroundStyle(.secondary)
+			.minimumScaleFactor(0.7)
+			.fixedSize(horizontal: false, vertical: true)
+	}
+}
 
 private struct OnlineDot: View {
 	let node: NodeSnapshot?
