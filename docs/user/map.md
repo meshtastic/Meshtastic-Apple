@@ -82,7 +82,7 @@ On the 3D spatial map, the **link** button in the toolbar draws the same direct 
 
 ### Buildings on the spatial map (Apple Vision Pro)
 
-**Buildings** in the 3D spatial map's map menu raises the buildings from your downloaded offline maps on the terrain, at their height from OpenStreetMap, with the same height exaggeration as the hills. It is offered where a downloaded street map covers part of the table, and is off by default. A map downloaded at **High detail** has every building; a **Standard** map has only the largest. Buildings without a height in OpenStreetMap stand about two floors tall. The further the table is zoomed out, the fewer are drawn: every building on a table a few kilometers across, only the larger ones on a wider one, and none past about 20 km. Building data © OpenStreetMap contributors.
+**Buildings** in the 3D spatial map's map menu raises the buildings from your downloaded offline maps on the terrain, at their real height from OpenStreetMap. The hills are stretched upward so they stand out; the buildings aren't. It is offered where a downloaded street map covers part of the table, and is off by default. A map downloaded at **High detail** has every building; a **Standard** map has only the largest. Buildings without a height in OpenStreetMap stand about two floors tall. The further the table is zoomed out, the fewer are drawn: every building on a table a few kilometers across, only the larger ones on a wider one, and none past about 20 km. Building data © OpenStreetMap contributors.
 
 ### Offline Maps
 

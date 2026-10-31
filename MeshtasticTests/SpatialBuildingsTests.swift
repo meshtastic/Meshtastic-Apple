@@ -80,11 +80,12 @@ struct SpatialBuildingsTests {
 		}
 	}
 
-	@Test("a building stands on the ground and rises at the terrain's height scale")
+	@Test("a building stands on the ground and rises to its real height, not the terrain's stretched one")
 	func heights() throws {
 		let geometry = flatGeometry()
 		let transform = geometry.transform
-		let scale = Float(transform.verticalExaggeration * transform.scale)
+		#expect(transform.verticalExaggeration > 1)
+		let scale = Float(transform.scale)
 		let tower = SpatialBuildings.mesh([square(side: 40, height: 100)], geometry: geometry)
 		#expect(abs(try #require(tower.positions.map(\.y).max()) - 100 * scale) < 1e-6)
 		#expect(abs(try #require(tower.positions.map(\.y).min())) < 1e-6)
