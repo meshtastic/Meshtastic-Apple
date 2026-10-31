@@ -14,25 +14,49 @@ import OSLog
 /// `FromRadio.display_frame` and `display_palette`.
 extension AccessoryManager {
 
-	/// Asks the radio to stream its screen. The stream isn't kept across a reboot or reconnect,
-	/// so call this again after one.
-	func startDisplayMirror() async {
-		guard !displayMirror.isStreaming else { return }
-		displayMirror.begin()
-		var admin = AdminMessage()
-		admin.setDisplayMirror = true
-		// If the request never went out, don't leave the session marked as streaming.
-		if !(await sendDisplayMirrorAdmin(admin, description: "Started screen mirroring")) {
-			displayMirror.end()
+	/// Asks the radio to stream its screen for `owner`. The stream isn't kept across a reboot or
+	/// reconnect, so call this again after one.
+	func startDisplayMirror(for owner: DisplayMirrorOwner) {
+		displayMirror.claim(owner)
+		if !displayMirror.isStreaming {
+			displayMirror.begin()
 		}
+		syncDisplayMirror()
 	}
 
-	func stopDisplayMirror() async {
-		guard displayMirror.isStreaming else { return }
-		displayMirror.end()
-		var admin = AdminMessage()
-		admin.setDisplayMirror = false
-		await sendDisplayMirrorAdmin(admin, description: "Stopped screen mirroring")
+	/// Drops `owner`'s interest, and stops the stream once nobody else wants it.
+	func stopDisplayMirror(for owner: DisplayMirrorOwner) {
+		displayMirror.release(owner)
+		if displayMirror.owners.isEmpty, displayMirror.isStreaming {
+			displayMirror.end()
+		}
+		syncDisplayMirror()
+	}
+
+	/// Tells the radio whether to stream, one message at a time. A view can start the stream while
+	/// a stop is still on its way, so each message is decided from what's wanted when it's sent,
+	/// and an older stop can't land after a newer start.
+	private func syncDisplayMirror() {
+		guard displayMirror.commandTask == nil else { return }
+		displayMirror.commandTask = Task { [weak self] in
+			while let self, !Task.isCancelled {
+				let wanted = displayMirror.isStreaming
+				guard wanted != displayMirror.radioStreaming else { break }
+				var admin = AdminMessage()
+				admin.setDisplayMirror = wanted
+				let sent = await sendDisplayMirrorAdmin(admin, description: wanted ? "Started screen mirroring" : "Stopped screen mirroring")
+				guard !Task.isCancelled else { return }
+				if sent {
+					displayMirror.radioStreaming = wanted
+				} else {
+					// Don't leave the session marked as streaming when the request never went out,
+					// so the next start tries again. A failed stop is left for the next change.
+					if wanted { displayMirror.end() }
+					break
+				}
+			}
+			self?.displayMirror.commandTask = nil
+		}
 	}
 
 	/// Asks for one frame now, even if the screen hasn't changed. Useful on e-ink, which redraws slowly.

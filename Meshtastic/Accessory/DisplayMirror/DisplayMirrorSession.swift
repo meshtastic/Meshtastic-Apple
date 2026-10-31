@@ -9,6 +9,12 @@ import CoreGraphics
 import Foundation
 import MeshtasticProtobufs
 
+/// The views that can ask for the radio's screen. The stream stays on while any of them wants it.
+enum DisplayMirrorOwner: Hashable {
+	case deviceScreen
+	case deviceModel
+}
+
 /// The connected radio's screen as the app last saw it. AccessoryManager feeds it chunks and
 /// clears it when the connection closes, so an old screen is never shown as live.
 @MainActor
@@ -19,6 +25,12 @@ final class DisplayMirrorSession {
 	private(set) var image: CGImage?
 	/// Whether the app has asked the radio to stream its screen.
 	private(set) var isStreaming = false
+	/// Who wants the stream now.
+	@ObservationIgnored private(set) var owners: Set<DisplayMirrorOwner> = []
+	/// What the radio was last told, so only a change is sent.
+	@ObservationIgnored var radioStreaming = false
+	/// Sends the on/off changes to the radio one at a time, in order.
+	@ObservationIgnored var commandTask: Task<Void, Never>?
 
 	@ObservationIgnored private var assembler = DisplayFrameAssembler()
 	@ObservationIgnored private var lastFrame: DisplayMirrorFrame?
@@ -35,6 +47,14 @@ final class DisplayMirrorSession {
 
 	func end() {
 		isStreaming = false
+	}
+
+	func claim(_ owner: DisplayMirrorOwner) {
+		owners.insert(owner)
+	}
+
+	func release(_ owner: DisplayMirrorOwner) {
+		owners.remove(owner)
 	}
 
 	func handle(_ chunk: DisplayFrame) {
@@ -56,6 +76,11 @@ final class DisplayMirrorSession {
 	func reset() {
 		clear()
 		isStreaming = false
+		// The views ask again when the radio reconnects, and it has forgotten the stream.
+		owners.removeAll()
+		radioStreaming = false
+		commandTask?.cancel()
+		commandTask = nil
 	}
 
 	private func clear() {

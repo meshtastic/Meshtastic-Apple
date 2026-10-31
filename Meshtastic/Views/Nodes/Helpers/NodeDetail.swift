@@ -68,6 +68,7 @@ struct NodeDetail: View {
 	@State private var latestPowerMetrics: TelemetryEntity?
 	@State private var logAvailability = NodeDetailLogAvailability()
 	@State private var showingShareContactQR = false
+	@State private var deviceModelFullScreen: DeviceModelFullScreenRequest?
 
 	init(node: NodeInfoEntity, nodeNum: Int64, showMapLink: Bool = true) {
 		self.node = node
@@ -186,7 +187,7 @@ struct NodeDetail: View {
 	@ViewBuilder
 	private var nodeDetailList: some View {
 		List {
-			NodeInfoItem(nodeNum: nodeNum)
+			NodeInfoItem(nodeNum: nodeNum, liveScreen: liveScreen)
 				.id(nodeNum)
 			nodeSection
 			environmentSection
@@ -197,6 +198,21 @@ struct NodeDetail: View {
 			administrationSection
 		}
 		.listStyle(.insetGrouped)
+		// The 3D model opens full screen from here rather than from its row: a sheet on a list row is
+		// rebuilt whenever the list rebuilds the row, which it does every few seconds.
+		.environment(\.presentDeviceModelFullScreen) { deviceModelFullScreen = $0 }
+		// A plain sheet, not hostedSheet: the full-screen view brings its own navigation bar.
+		.sheet(item: $deviceModelFullScreen) { request in
+			if #available(iOS 18.0, macCatalyst 18.0, *) {
+				DeviceModelFullScreen(request: request, liveScreen: liveScreen)
+			}
+		}
+	}
+
+	/// Show the radio's live screen on its 3D model. Screen mirroring only works over the local
+	/// connection, so only for the connected radio, while connected, when it reports a display.
+	private var liveScreen: Bool {
+		nodeNum == accessoryManager.activeDeviceNum && accessoryManager.isConnected && node.metadata?.hasDisplay == true
 	}
 
 	// MARK: - Node Section

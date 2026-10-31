@@ -59,23 +59,21 @@ struct DeviceScreenView: View {
 		}
 		.navigationTitle("Device Screen")
 		.navigationBarTitleDisplayMode(.inline)
-		.task { await startIfVisible() }
+		.onAppear { startIfVisible() }
 		.onDisappear {
-			Task { await accessoryManager.stopDisplayMirror() }
+			accessoryManager.stopDisplayMirror(for: .deviceScreen)
 		}
 		.onChange(of: scenePhase) { _, phase in
-			Task {
-				if phase == .active {
-					await startIfVisible()
-				} else {
-					await accessoryManager.stopDisplayMirror()
-				}
+			if phase == .active {
+				startIfVisible()
+			} else {
+				accessoryManager.stopDisplayMirror(for: .deviceScreen)
 			}
 		}
 		.onChange(of: accessoryManager.isConnected) { _, connected in
 			// The radio forgets the stream on reconnect, so ask again.
 			if connected {
-				Task { await startIfVisible() }
+				startIfVisible()
 			}
 		}
 		.onReceive(NotificationCenter.default.publisher(for: .GCKeyboardDidConnect)) { _ in
@@ -251,9 +249,9 @@ struct DeviceScreenView: View {
 		}
 	}
 
-	private func startIfVisible() async {
+	private func startIfVisible() {
 		guard accessoryManager.isConnected, scenePhase == .active else { return }
-		await accessoryManager.startDisplayMirror()
+		accessoryManager.startDisplayMirror(for: .deviceScreen)
 	}
 }
 
