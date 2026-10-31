@@ -33,6 +33,7 @@ struct SpatialMapWindow: View {
 	/// Shared with the 2D map's Weather Radar setting.
 	@AppStorage("meshMapShowWeatherRadar") private var showWeatherRadar = false
 	@ObservedObject private var weatherRadar = WeatherRadarAvailability.shared
+	@AppStorage("spatialMapShowBuildings") private var showBuildings = false
 	@AppStorage("spatialMapShowLabels") private var showLabels = true
 	@AppStorage("spatialMapShowTraffic") private var showTraffic = true
 	@AppStorage("spatialMapShowDirectLinks") private var showLinks = false
@@ -53,7 +54,7 @@ struct SpatialMapWindow: View {
 	private var preset: ModemPresets { ModemPresets(rawValue: UserDefaults.modemPreset) ?? .longFast }
 
 	private var refreshKey: String {
-		"\(mapLayer.rawValue)|\(darkMap)|\(showContours)|\(showWeatherRadar)|\(preciseLocationsOnly)|\(showLinks)|\(coverageMode.rawValue)|\(accessoryManager.activeDeviceNum ?? 0)|\(accessoryManager.isInBackground)"
+		"\(mapLayer.rawValue)|\(darkMap)|\(showContours)|\(showWeatherRadar)|\(showBuildings)|\(preciseLocationsOnly)|\(showLinks)|\(coverageMode.rawValue)|\(accessoryManager.activeDeviceNum ?? 0)|\(accessoryManager.isInBackground)"
 	}
 
 	var body: some View {
@@ -74,7 +75,7 @@ struct SpatialMapWindow: View {
 		.ornament(attachmentAnchor: .scene(.bottomFront)) {
 			SpatialMapOrnament(
 				model: model, traffic: traffic, mapLayer: $mapLayer, darkMap: $darkMap, showContours: $showContours,
-				showWeatherRadar: $showWeatherRadar, showLabels: $showLabels, showLinks: $showLinks, showTraffic: $showTraffic, autoTerrain: $autoTerrain,
+				showWeatherRadar: $showWeatherRadar, showBuildings: $showBuildings, showLabels: $showLabels, showLinks: $showLinks, showTraffic: $showTraffic, autoTerrain: $autoTerrain,
 				coverageMode: $coverageMode, coverageOpacity: $coverageOpacity, showRoute: show(route:)
 			)
 		}
@@ -280,6 +281,7 @@ struct SpatialMapWindow: View {
 		model.showContours = showContours
 		model.showWeatherRadar = showWeatherRadar
 		model.weatherRadarOffered = weatherRadar.isOffered
+		model.showBuildings = showBuildings
 		model.showLinks = showLinks
 		model.autoDownloadTerrain = autoTerrain
 		model.coverageMode = coverageMode
@@ -406,6 +408,7 @@ struct SpatialMapOrnament: View {
 	@Binding var darkMap: Bool
 	@Binding var showContours: Bool
 	@Binding var showWeatherRadar: Bool
+	@Binding var showBuildings: Bool
 	@Binding var showLabels: Bool
 	@Binding var showLinks: Bool
 	@Binding var showTraffic: Bool
@@ -442,6 +445,12 @@ struct SpatialMapOrnament: View {
 				if weatherRadar.isOffered {
 					Toggle(isOn: $showWeatherRadar) {
 						Label(String(localized: "Weather Radar"), systemImage: "cloud.rain")
+					}
+				}
+				// Only where a downloaded street map has the outlines to raise.
+				if model.buildingsAvailable(regions: offline.regions) {
+					Toggle(isOn: $showBuildings) {
+						Label(String(localized: "Buildings", comment: "Spatial map menu: raise the buildings from the downloaded offline map on the terrain"), systemImage: "building.2")
 					}
 				}
 				coverageMenu

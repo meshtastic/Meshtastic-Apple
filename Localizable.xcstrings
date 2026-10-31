@@ -26724,6 +26724,9 @@
         }
       }
     },
+    "Buildings" : {
+      "comment" : "Spatial map menu: raise the buildings from the downloaded offline map on the terrain"
+    },
     "Burning Man" : {
       "comment" : "FirmwareEditions.name",
       "localizations" : {

@@ -482,6 +482,33 @@ extension OfflineVectorTileProvider {
 		return polys
 	}
 
+	/// The building outlines in one tile with their heights in meters, each cut to the tile so a
+	/// building over a tile edge isn't drawn twice. Holes are left out. The spatial map raises these.
+	nonisolated static func buildings(tile: TileID, source: OfflineTileSource) -> [SpatialBuildingFootprint] {
+		guard let vector = parse(tile: tile, source: source) else { return [] }
+		let tileBounds = TerrainStore.tileBounds(z: tile.z, x: tile.x, y: tile.y)
+		var result: [SpatialBuildingFootprint] = []
+		for feature in vector.features(for: "buildings") {
+			let height = SpatialBuildingFootprint.meters(feature.properties["height"])
+			let minHeight = SpatialBuildingFootprint.meters(feature.properties["min_height"]) ?? 0
+			func add(_ rings: [[GISTools.Coordinate3D]]) {
+				guard let outer = rings.first else { return }
+				let outline = clipPolygon(outer.map(coord), to: tileBounds)
+				guard outline.count >= 3 else { return }
+				result.append(SpatialBuildingFootprint(outline: outline, height: height, minHeight: minHeight))
+			}
+			switch feature.geometry {
+			case let polygon as GISTools.Polygon:
+				add(polygon.rings.map(\.coordinates))
+			case let multi as GISTools.MultiPolygon:
+				for polygon in multi.polygons { add(polygon.rings.map(\.coordinates)) }
+			default:
+				break
+			}
+		}
+		return result
+	}
+
 	/// The water layer carries every polygonal water body (ocean, lake, dock, reef, basin…).
 	nonisolated private static func appendWater(in vector: VectorTile, bounds: GeoBounds?, into polys: inout [OfflineMapPolygon], id: () -> String) {
 		for feature in vector.features(for: "water") {
