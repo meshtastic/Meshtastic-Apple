@@ -404,18 +404,24 @@ private struct LegacyTabContent<Content: View>: View {
 /// On the Mac the tabs live in the window's toolbar, which the first tab view puts there. A node
 /// switch rebuilds the tab view, and the new one keeps the toolbar it finds instead of installing
 /// its own, so the tabs stop responding (#2776). Removing the toolbar along with the old tab view
-/// lets the new one install a working one.
+/// lets the new one install a working one. Only on removal: a full-screen cover such as the lockdown
+/// gate also takes the tab view out of the window, and it comes back expecting its toolbar.
 private struct TabToolbarReset: UIViewRepresentable {
 	func makeUIView(context: Context) -> ResetView { ResetView() }
 
 	func updateUIView(_ uiView: ResetView, context: Context) {}
 
+	static func dismantleUIView(_ uiView: ResetView, coordinator: ()) {
+		uiView.scene?.titlebar?.toolbar = nil
+	}
+
 	final class ResetView: UIView {
-		override func willMove(toWindow newWindow: UIWindow?) {
-			super.willMove(toWindow: newWindow)
-			if newWindow == nil {
-				window?.windowScene?.titlebar?.toolbar = nil
-			}
+		/// The scene whose toolbar the tab view put up, kept while a cover has it out of the window.
+		weak var scene: UIWindowScene?
+
+		override func didMoveToWindow() {
+			super.didMoveToWindow()
+			if let windowScene = window?.windowScene { scene = windowScene }
 		}
 	}
 }
