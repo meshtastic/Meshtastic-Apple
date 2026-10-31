@@ -666,20 +666,91 @@ extension PMTilesExtractor {
 		return (start, end)
 	}
 
-	/// The production fetcher: one `Range` request per call, bypassing the URL cache.
+	/// The production fetcher: one `Range` request per call, bypassing the URL cache. A host
+	/// that ignores the range answers 200 with the whole file; the transfer is cancelled once
+	/// it passes the end of the range, so a 16 KiB check of a multi-gigabyte archive never
+	/// buffers the archive.
 	static func rangeFetcher(session: URLSession) -> RangeFetcher {
 		{ url, range, ifMatch in
 			var request = URLRequest(url: url)
 			request.setValue("bytes=\(range.lowerBound)-\(range.upperBound)", forHTTPHeaderField: "Range")
 			if let ifMatch { request.setValue(ifMatch, forHTTPHeaderField: "If-Match") }
 			request.cachePolicy = .reloadIgnoringLocalCacheData
-			let (data, response) = try await session.data(for: request)
-			guard let http = response as? HTTPURLResponse else { throw PMTilesExtractorError.rangeRequestFailed(-1) }
+			// A 200 holds the file from byte 0, so the range ends `upperBound + 1` bytes in.
+			let loader = BoundedRangeLoader(wholeFileLimit: Int(clamping: range.upperBound) &+ 1)
+			let (data, http) = try await loader.load(request, in: session)
 			var headers: [String: String] = [:]
 			for (name, value) in http.allHeaderFields {
 				if let name = name as? String, let value = value as? String { headers[name] = value }
 			}
 			return RangeResponse(statusCode: http.statusCode, headers: headers, body: data)
+		}
+	}
+}
+
+/// One range request read in chunks as they arrive. A 200 is cut off once it holds
+/// `wholeFileLimit` bytes; any other status is read to the end.
+private final class BoundedRangeLoader: NSObject, URLSessionDataDelegate, @unchecked Sendable {
+	private let wholeFileLimit: Int
+	private let lock = NSLock()
+	private var body = Data()
+	private var response: HTTPURLResponse?
+	private var continuation: CheckedContinuation<(Data, HTTPURLResponse), Error>?
+
+	init(wholeFileLimit: Int) {
+		self.wholeFileLimit = wholeFileLimit
+	}
+
+	func load(_ request: URLRequest, in session: URLSession) async throws -> (Data, HTTPURLResponse) {
+		let task = session.dataTask(with: request)
+		task.delegate = self
+		return try await withTaskCancellationHandler {
+			try await withCheckedThrowingContinuation { continuation in
+				lock.withLock { self.continuation = continuation }
+				task.resume()
+			}
+		} onCancel: {
+			task.cancel()
+		}
+	}
+
+	private func finish(_ result: Result<(Data, HTTPURLResponse), Error>) {
+		let continuation = lock.withLock {
+			defer { self.continuation = nil }
+			return self.continuation
+		}
+		continuation?.resume(with: result)
+	}
+
+	func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse) async -> URLSession.ResponseDisposition {
+		guard let http = response as? HTTPURLResponse else {
+			finish(.failure(PMTilesExtractorError.rangeRequestFailed(-1)))
+			return .cancel
+		}
+		lock.withLock { self.response = http }
+		return .allow
+	}
+
+	func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+		let done: (Data, HTTPURLResponse)? = lock.withLock {
+			body.append(data)
+			guard let response, response.statusCode == 200, body.count >= wholeFileLimit else { return nil }
+			return (body, response)
+		}
+		if let done {
+			dataTask.cancel()
+			finish(.success(done))
+		}
+	}
+
+	func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+		let (body, response) = lock.withLock { (self.body, self.response) }
+		if let error {
+			finish(.failure(error))
+		} else if let response {
+			finish(.success((body, response)))
+		} else {
+			finish(.failure(PMTilesExtractorError.rangeRequestFailed(-1)))
 		}
 	}
 }

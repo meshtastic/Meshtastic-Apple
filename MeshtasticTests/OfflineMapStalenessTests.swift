@@ -107,3 +107,52 @@ struct OfflineMapStalenessTests {
 		#expect(decoded.terrain?.regionalETag == nil)
 	}
 }
+
+/// The real `URLSession` fetcher against a host that ignores `Range` and sends the whole file.
+@Suite("Range fetcher against a host that ignores Range", .serialized)
+struct PMTilesRangeFetcherTests {
+
+	/// Answers every request with 200 and a 64 MiB body in 64 KiB chunks, counting what it sent.
+	final class WholeFileProtocol: URLProtocol, @unchecked Sendable {
+		static let chunk = Data(repeating: 7, count: 64 << 10)
+		static let chunkCount = 1_024
+		nonisolated(unsafe) static var sentChunks = 0
+		private let lock = NSLock()
+		private var stopped = false
+
+		override static func canInit(with request: URLRequest) -> Bool { true }
+		override static func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+
+		override func startLoading() {
+			Self.sentChunks = 0
+			guard let url = request.url, let client else { return }
+			let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: "HTTP/1.1", headerFields: ["ETag": "\"v2\""])!
+			client.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+			DispatchQueue.global().async {
+				for _ in 0..<Self.chunkCount {
+					if self.lock.withLock({ self.stopped }) { return }
+					client.urlProtocol(self, didLoad: Self.chunk)
+					Self.sentChunks += 1
+					Thread.sleep(forTimeInterval: 0.001)
+				}
+				client.urlProtocolDidFinishLoading(self)
+			}
+		}
+
+		override func stopLoading() {
+			lock.withLock { stopped = true }
+		}
+	}
+
+	@Test("a 16 KiB check stops reading instead of taking the whole file")
+	func boundedWholeFile() async throws {
+		let configuration = URLSessionConfiguration.ephemeral
+		configuration.protocolClasses = [WholeFileProtocol.self]
+		let extractor = PMTilesExtractor(session: URLSession(configuration: configuration))
+		let etag = try await extractor.currentETag(of: URL(string: "https://example.com/planet.pmtiles")!)
+		#expect(etag == "\"v2\"")
+		// Give the stub a moment to see the cancel, then check it stopped long before the end.
+		try await Task.sleep(for: .milliseconds(100))
+		#expect(WholeFileProtocol.sentChunks < WholeFileProtocol.chunkCount / 4)
+	}
+}
