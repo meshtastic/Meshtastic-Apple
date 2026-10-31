@@ -237,3 +237,29 @@ enum SpatialLookout {
 		return parts
 	}
 }
+
+/// Where the lookout stands when nodes are on its summit.
+enum SpatialLookoutSpot {
+	/// The summit itself when no pin is within `clearance`, else the nearest spot around it that
+	/// clears every pin, trying behind the cab first. Nil means stand on the summit. When nothing
+	/// clears them all, the spot that keeps farthest from the nearest one.
+	static func spot(summit: SIMD2<Float>, pins: [SIMD2<Float>], clearance: Float) -> SIMD2<Float>? {
+		func room(_ point: SIMD2<Float>) -> Float {
+			pins.map { simd_distance($0, point) }.min() ?? .infinity
+		}
+		guard room(summit) < clearance else { return nil }
+		// Behind the cab, then alternately either side of it, round to the front.
+		let back = Float(SpatialLookout.frontHeading * .pi / 180) + .pi
+		let steps = 12
+		var candidates: [SIMD2<Float>] = []
+		for ring in [clearance, clearance * 2] {
+			for index in 0...steps / 2 {
+				for sign: Float in index == 0 || index == steps / 2 ? [1] : [1, -1] {
+					let angle = back + sign * Float(index) * 2 * .pi / Float(steps)
+					candidates.append(summit + SIMD2(sin(angle), -cos(angle)) * ring)
+				}
+			}
+		}
+		return candidates.first { room($0) >= clearance } ?? candidates.max { room($0) < room($1) }
+	}
+}

@@ -77,4 +77,25 @@ struct SpatialLookoutTests {
 		#expect(SpatialLookout.coordinate(siteID: "north,east") == nil)
 		#expect(SpatialLookout.coordinate(siteID: "95,10") == nil)
 	}
+
+	@Test("the lookout stands on the summit when no node is there")
+	func spotClearSummit() {
+		#expect(SpatialLookoutSpot.spot(summit: .zero, pins: [[0.1, 0]], clearance: 0.02) == nil)
+	}
+
+	@Test("the lookout steps aside clear of every node on the summit, not just the nearest")
+	func spotClearsAllPins() throws {
+		let pins: [SIMD2<Float>] = [[-0.010, 0], [0.012, 0]]
+		let spot = try #require(SpatialLookoutSpot.spot(summit: .zero, pins: pins, clearance: 0.022))
+		for pin in pins {
+			#expect(simd_distance(spot, pin) >= 0.022 - 1e-6)
+		}
+	}
+
+	@Test("the lookout steps behind its cab first")
+	func spotBehindCab() throws {
+		let spot = try #require(SpatialLookoutSpot.spot(summit: .zero, pins: [.zero], clearance: 0.02))
+		let back = Float(SpatialLookout.frontHeading * .pi / 180) + .pi
+		#expect(simd_distance(spot, SIMD2(sin(back), -cos(back)) * 0.02) < 1e-5)
+	}
 }

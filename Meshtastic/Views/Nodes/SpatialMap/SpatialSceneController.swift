@@ -799,24 +799,17 @@ extension SpatialSceneController {
 	/// catwalk and a tower's base just clear of each other.
 	private static let lookoutClearance: Float = 0.022
 
-	/// On the summit, or stepped aside behind the cab when a node stands there, so a repeater on
-	/// the same peak keeps its place and both can be seen.
+	/// On the summit, or stepped aside when nodes stand there, so a repeater on the same peak keeps
+	/// its place and both can be seen.
 	func placeLookout() {
 		guard let lookout, let placement, let coordinate = lookoutCoordinate else { return }
 		var position = placement.position(coordinate)
 		let clearance = Self.lookoutClearance * counterScale
-		let crowding = pins.values
+		let summit = SIMD2(position.x, position.z)
+		let nearby = pins.values
 			.map { SIMD2($0.holder.position.x, $0.holder.position.z) }
-			.filter { simd_distance($0, SIMD2(position.x, position.z)) < clearance }
-			.min { simd_distance($0, SIMD2(position.x, position.z)) < simd_distance($1, SIMD2(position.x, position.z)) }
-		if let crowding {
-			var away = SIMD2(position.x, position.z) - crowding
-			if simd_length(away) < clearance * 0.05 {
-				// Right on top of each other: step back, opposite the way the cab faces.
-				let bearing = Float(SpatialLookout.frontHeading * .pi / 180)
-				away = [-sin(bearing), cos(bearing)]
-			}
-			let spot = crowding + simd_normalize(away) * clearance
+			.filter { simd_distance($0, summit) < clearance * 2 }
+		if let spot = SpatialLookoutSpot.spot(summit: summit, pins: nearby, clearance: clearance) {
 			position = placement.position(placement.transform.coordinate(x: spot.x, z: spot.y))
 		}
 		lookout.position = position

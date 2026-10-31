@@ -52,7 +52,9 @@ struct SpatialMapView: View {
 				scene.apply(weatherRadar: model.weatherRadarEntity, revision: model.weatherRadarRevision)
 				scene.apply(coverage: model.coverageEntity, revision: model.coverageRevision, opacity: model.coverageOpacity)
 				scene.apply(nodes: model.nodes)
-				scene.apply(lookout: cinemaEnvironment == .fireLookout ? SpatialLookout.coordinate(siteID: lookoutSiteID) : nil)
+				scene.apply(lookout: cinemaEnvironment == .fireLookout
+					? SpatialLookout.coordinate(siteID: lookoutSiteID).flatMap { model.lookoutStands(on: $0) ? $0 : nil }
+					: nil)
 				scene.apply(target: liveZoom.flatMap { model.circle(forZoom: $0) } ?? model.targetCircle)
 				traffic.applyBaseGlow()
 				// Hidden while a trace route is shown, as on the 2D map, so the two sets of colored
