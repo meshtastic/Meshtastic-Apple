@@ -277,7 +277,7 @@ final class OfflineMapManager: ObservableObject {
 					throw OfflineMapError.storageLimit(reason)
 				}
 				await self.markDownloading(id: regionID, estimatedBytes: plan.payloadBytes)
-				try await extractor.extract(plan: plan, to: archive.url) { [weak self] written, total in
+				let written = try await extractor.extract(plan: plan, to: archive.url) { [weak self] written, total in
 					Task { @MainActor in self?.updateProgress(id: regionID, written: written, total: total) }
 				}
 				let hasValidHeader = await Task.detached(priority: .utility) {
@@ -286,7 +286,7 @@ final class OfflineMapManager: ObservableObject {
 				guard hasValidHeader else { throw PMTilesExtractorError.badHeader }
 				let region = OfflineMapRegion(
 					id: regionID, name: finalName, fileName: archive.fileName,
-					bounds: plan.bounds, minZoom: plan.minZoom, maxZoom: plan.maxZoom,
+					bounds: written.bounds, minZoom: written.minZoom, maxZoom: written.maxZoom,
 					fileSize: 0, sourceBuild: build.build
 				)
 				await self.finishDownload(id: regionID, region: region, removing: replacing)
@@ -750,7 +750,7 @@ extension OfflineMapManager {
 			let used = await MainActor.run { Self.storageCounted(in: self.regions, forAppManaged: appManaged) }
 			guard used - freeing + plan.payloadBytes <= Self.maxTotalBytes else { return nil }
 			if let maxBytes, plan.payloadBytes > maxBytes { return nil }
-			try await extractor.extract(plan: plan, to: destination)
+			let written = try await extractor.extract(plan: plan, to: destination)
 			let hasValidHeader = await Task.detached(priority: .utility) {
 				PMTilesArchive.header(url: destination) != nil
 			}.value
@@ -758,7 +758,7 @@ extension OfflineMapManager {
 				try? FileManager.default.removeItem(at: destination)
 				return nil
 			}
-			return plan.maxZoom
+			return written.maxZoom
 		} catch is CancellationError {
 			throw CancellationError()
 		} catch PMTilesExtractorError.cancelled {
@@ -844,7 +844,7 @@ extension OfflineMapManager {
 					throw OfflineMapError.storageLimit(String(localized: "This would exceed the \(limit) total offline storage limit. Remove a map first."))
 				}
 				self.markDownloading(id: regionID, estimatedBytes: plan.payloadBytes)
-				try await extractor.extract(plan: plan, to: archive.url) { [weak self] written, total in
+				let written = try await extractor.extract(plan: plan, to: archive.url) { [weak self] written, total in
 					Task { @MainActor in self?.updateProgress(id: regionID, written: written, total: total) }
 				}
 				let hasValidHeader = await Task.detached(priority: .utility) {
@@ -854,7 +854,7 @@ extension OfflineMapManager {
 				// The requested area, not the plan's, so the next check sees the same area.
 				let region = OfflineMapRegion(
 					id: regionID, name: name, fileName: archive.fileName,
-					bounds: area, minZoom: plan.minZoom, maxZoom: plan.maxZoom,
+					bounds: area, minZoom: written.minZoom, maxZoom: written.maxZoom,
 					fileSize: 0, sourceBuild: build.build, managedBy: managedBy
 				)
 				self.finishDownload(id: regionID, region: region, removing: nil)
