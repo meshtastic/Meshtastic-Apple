@@ -395,6 +395,9 @@
         }
       }
     },
+    "Connect to the radio to see its screen." : {
+
+    },
     "Couldn't Import Map File" : {
       "localizations" : {
         "es" : {
@@ -410,6 +413,9 @@
           }
         }
       }
+    },
+    "E-ink screens redraw slowly. Tap Refresh for the latest picture." : {
+
     },
     "Enter Showcase" : {
       "comment" : "Spatial map: open the showcase immersive space, closing this volume",
@@ -540,11 +546,17 @@
         }
       }
     },
+    "Not Connected" : {
+
+    },
     "Pick up to turn it over" : {
       "comment" : "Cinema: VoiceOver hint for the device model on the stand in front of the seat"
     },
     "Put the model away" : {
       "comment" : "Cinema: button on the card beside a device model on the stand; takes the model away"
+    },
+    "Radio screen" : {
+
     },
     "Radios on this page" : {
       "comment" : "Showcase: menu listing the radios on the wall rack page that's showing; picking one opens its card",
@@ -640,6 +652,9 @@
           }
         }
       }
+    },
+    "Refresh" : {
+
     },
     "Seated" : {
       "comment" : "Showcase: the viewer is sitting in the chair",
@@ -825,6 +840,9 @@
           }
         }
       }
+    },
+    "Waiting for the radio's screen" : {
+
     },
     "Wall rack" : {
       "comment" : "Showcase: VoiceOver label for the rack of radios on the wall",
@@ -1330,6 +1348,21 @@
           }
         }
       }
+    },
+    "%@ E-ink" : {
+
+    },
+    "%@ LCD" : {
+
+    },
+    "%@ LED matrix" : {
+
+    },
+    "%@ OLED" : {
+
+    },
+    "%@ TFT" : {
+
     },
     "%@ · %@" : {
       "comment" : "Spatial map trace route menu: hops, then when the route came back, e.g. \"3 Hops · 2 hours ago\"",
