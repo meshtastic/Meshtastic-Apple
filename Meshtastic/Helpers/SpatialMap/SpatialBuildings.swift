@@ -16,6 +16,11 @@ struct SpatialBuildingFootprint: Sendable {
 	let height: Double?
 	/// Where a building part starts above the ground, for the upper floors of a tower.
 	let minHeight: Double
+	/// A piece of a building drawn in parts, like a tower's legs, deck and spire.
+	var isPart = false
+	/// Courtyards: rings inside the outline that the building doesn't cover. The mesh fills
+	/// them in; they only keep a part standing in a courtyard from hiding the building.
+	var holes: [[CLLocationCoordinate2D]] = []
 
 	/// A tile property read as meters: vector tiles store numbers as doubles or integers.
 	static func meters(_ value: Any?) -> Double? {
@@ -86,8 +91,65 @@ enum SpatialBuildings {
 			tileCount += tiles.count
 			decoded.append(coverage)
 		}
+		guard let withoutOutlines = withoutOutlinesOfParts(footprints) else { return nil }
+		footprints = withoutOutlines
 		Logger.services.info("🧊 [Spatial] Buildings: \(footprints.count) from \(tileCount) tiles in \(String(format: "%.2f", Date().timeIntervalSince(started)), privacy: .public)s")
 		return footprints
+	}
+
+	/// A building drawn in parts is drawn by its parts alone. Its outline covers the whole
+	/// footprint at the full height, so drawn as well it hides them: the Space Needle comes out as
+	/// one tall column. An outline with a point of a part inside it (and not in one of its
+	/// courtyards) is left out. Nil when cancelled.
+	static func withoutOutlinesOfParts(_ footprints: [SpatialBuildingFootprint]) -> [SpatialBuildingFootprint]? {
+		let points = footprints.filter(\.isPart).compactMap { interiorPoint($0.outline) }
+		guard !points.isEmpty else { return footprints }
+		var kept: [SpatialBuildingFootprint] = []
+		kept.reserveCapacity(footprints.count)
+		for footprint in footprints {
+			if Task.isCancelled { return nil }
+			let coversPart = !footprint.isPart && points.contains { point in
+				contains(footprint.outline, point) && !footprint.holes.contains { contains($0, point) }
+			}
+			if !coversPart { kept.append(footprint) }
+		}
+		return kept
+	}
+
+	/// A point inside the outline even when it's concave, where the average of the corners can
+	/// fall outside (a U-shaped part): the middle of the largest triangle filling it. Worked in
+	/// meters-ish offsets from the first corner so Float keeps sub-meter precision.
+	static func interiorPoint(_ outline: [CLLocationCoordinate2D]) -> CLLocationCoordinate2D? {
+		guard let origin = outline.first else { return nil }
+		var points = Self.outline(outline.map { c in
+			SIMD2(Float((c.longitude - origin.longitude) * 1e5), Float((c.latitude - origin.latitude) * 1e5))
+		})
+		guard points.count >= 3 else { return nil }
+		if signedArea(points) < 0 { points.reverse() }
+		let roof = triangulate(points)
+		var best: (area: Float, middle: SIMD2<Float>)?
+		for t in stride(from: 0, to: roof.count, by: 3) {
+			let a = points[Int(roof[t])], b = points[Int(roof[t + 1])], c = points[Int(roof[t + 2])]
+			let area = abs((b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x))
+			if area > best?.area ?? 0 { best = (area, (a + b + c) / 3) }
+		}
+		guard let middle = best?.middle else { return nil }
+		return CLLocationCoordinate2D(latitude: origin.latitude + Double(middle.y) / 1e5, longitude: origin.longitude + Double(middle.x) / 1e5)
+	}
+
+	/// Whether the point is inside the outline, by counting the edges a line east from it crosses.
+	static func contains(_ outline: [CLLocationCoordinate2D], _ point: CLLocationCoordinate2D) -> Bool {
+		var inside = false
+		var j = outline.count - 1
+		for i in outline.indices {
+			let a = outline[i], b = outline[j]
+			if (a.latitude > point.latitude) != (b.latitude > point.latitude),
+			   point.longitude < (b.longitude - a.longitude) * (point.latitude - a.latitude) / (b.latitude - a.latitude) + a.longitude {
+				inside.toggle()
+			}
+			j = i
+		}
+		return inside
 	}
 
 	// MARK: Mesh

@@ -491,11 +491,13 @@ extension OfflineVectorTileProvider {
 		for feature in vector.features(for: "buildings") {
 			let height = SpatialBuildingFootprint.meters(feature.properties["height"])
 			let minHeight = SpatialBuildingFootprint.meters(feature.properties["min_height"]) ?? 0
+			let isPart = feature.properties["kind"] as? String == "building_part"
 			func add(_ rings: [[GISTools.Coordinate3D]]) {
 				guard let outer = rings.first else { return }
 				let outline = clipPolygon(outer.map(coord), to: tileBounds)
 				guard outline.count >= 3 else { return }
-				result.append(SpatialBuildingFootprint(outline: outline, height: height, minHeight: minHeight))
+				let holes = rings.dropFirst().map { clipPolygon($0.map(coord), to: tileBounds) }.filter { $0.count >= 3 }
+				result.append(SpatialBuildingFootprint(outline: outline, height: height, minHeight: minHeight, isPart: isPart, holes: holes))
 			}
 			switch feature.geometry {
 			case let polygon as GISTools.Polygon:

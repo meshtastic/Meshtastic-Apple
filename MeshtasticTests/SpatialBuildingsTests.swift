@@ -22,14 +22,14 @@ struct SpatialBuildingsTests {
 	}
 
 	/// A square `side` meters across, centered `east` and `north` meters from the circle's center.
-	private func square(side: Double, east: Double = 0, north: Double = 0, height: Double? = 20, minHeight: Double = 0) -> SpatialBuildingFootprint {
+	private func square(side: Double, east: Double = 0, north: Double = 0, height: Double? = 20, minHeight: Double = 0, isPart: Bool = false) -> SpatialBuildingFootprint {
 		let metersPerLon = circle.metersPerDegreeLongitude
 		let metersPerLat = SpatialFrame.metersPerDegreeLatitude
 		let corners: [(Double, Double)] = [(-1, -1), (1, -1), (1, 1), (-1, 1)]
 		let outline = corners.map { x, y in
 			CLLocationCoordinate2D(latitude: circle.latitude + (north + y * side / 2) / metersPerLat, longitude: circle.longitude + (east + x * side / 2) / metersPerLon)
 		}
-		return SpatialBuildingFootprint(outline: outline, height: height, minHeight: minHeight)
+		return SpatialBuildingFootprint(outline: outline, height: height, minHeight: minHeight, isPart: isPart)
 	}
 
 	@Test("heights are read from doubles and integers, and anything else is no height")
@@ -101,6 +101,50 @@ struct SpatialBuildingsTests {
 		// Middle inside the edge, outer corners past it.
 		let straddling = SpatialBuildings.mesh([square(side: 40, east: 965)], geometry: flatGeometry())
 		#expect(straddling.triangleCount == 0)
+	}
+
+	@Test("a building drawn in parts is drawn by its parts, not its outline")
+	func parts() {
+		let tower = square(side: 40, height: 184)
+		let legs = square(side: 20, height: 150, isPart: true)
+		let deck = square(side: 38, height: 160, minHeight: 150, isPart: true)
+		let neighbor = square(side: 20, east: 300)
+		let kept = SpatialBuildings.withoutOutlinesOfParts([tower, legs, deck, neighbor]) ?? []
+		#expect(kept.count == 3)
+		#expect(!kept.contains { $0.height == 184 })
+		#expect(kept.contains { $0.height == 20 })
+	}
+
+	/// A U, `side` meters across with arms `arm` wide, centered `east` meters from the center:
+	/// the average of its corners sits in the gap between the arms.
+	private func uShape(side: Double, arm: Double, east: Double = 0, height: Double? = 20, isPart: Bool = false) -> SpatialBuildingFootprint {
+		let metersPerLon = circle.metersPerDegreeLongitude
+		let metersPerLat = SpatialFrame.metersPerDegreeLatitude
+		let h = side / 2
+		let corners: [(Double, Double)] = [(-h, -h), (h, -h), (h, h), (h - arm, h), (h - arm, -h + arm), (-h + arm, -h + arm), (-h + arm, h), (-h, h)]
+		let outline = corners.map { x, y in
+			CLLocationCoordinate2D(latitude: circle.latitude + y / metersPerLat, longitude: circle.longitude + (east + x) / metersPerLon)
+		}
+		return SpatialBuildingFootprint(outline: outline, height: height, minHeight: 0, isPart: isPart)
+	}
+
+	@Test("a U-shaped part hides its U-shaped outline, though the corners' average is in the gap")
+	func concavePart() throws {
+		let part = uShape(side: 40, arm: 8, height: 30, isPart: true)
+		let point = try #require(SpatialBuildings.interiorPoint(part.outline))
+		#expect(SpatialBuildings.contains(part.outline, point))
+		let kept = SpatialBuildings.withoutOutlinesOfParts([uShape(side: 40, arm: 8, height: 60), part]) ?? []
+		#expect(kept.count == 1)
+		#expect(kept.first?.isPart == true)
+	}
+
+	@Test("a part standing in another building's courtyard doesn't hide that building")
+	func partInCourtyard() {
+		var block = square(side: 100, height: 25)
+		block.holes = [square(side: 60).outline]
+		let kiosk = square(side: 10, height: 5, isPart: true)
+		let kept = SpatialBuildings.withoutOutlinesOfParts([block, kiosk]) ?? []
+		#expect(kept.count == 2)
 	}
 
 	@Test("over the budget, the biggest buildings are kept")
