@@ -61,9 +61,10 @@ CEILING = 2.35
 BAY = 2 * HALF / 4
 POST = 0.1
 SILL_DEPTH = 0.32
-# The catwalk outside, and its railing.
+# The catwalk outside, and its railing: low enough that the sill hides it from the seat. At a
+# real 1 m its top rail ran across every window, in front of the nodes the app marks outside.
 CATWALK = 0.95
-RAIL = 1.0
+RAIL = 0.7
 
 DEVICE_MODELS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "Meshtastic", "Resources", "DeviceModels")
 

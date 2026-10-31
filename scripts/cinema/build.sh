@@ -35,9 +35,9 @@ hdri() {
 
 # "Sunset Forest", the view out of the tent's door and windows.
 hdri sunset_forest 4k
-# "Kiara 8" at sunset, the mountains round the fire lookout. 8K, since it is most of the view.
+# "Kiara 8" at sunset, the light on the fire lookout's cab.
 hdri kiara_8_sunset 8k
-# A clear sunset sky with no horizon in it, for the lookout when the app draws real terrain.
+# A clear sunset sky with no horizon in it, over the lookout's forest view and real terrain.
 hdri kloppenheim_06_puresky 4k
 
 # Pinned so a new release can't quietly change the artwork.
@@ -74,6 +74,20 @@ sky() {
 	echo "Wrote $DEST/$name.heic"
 }
 
+# Renders <script>.py as <name>.heic, a landscape an environment with a cutout image shows behind
+# its glass: view <name> <script> <hdri file> <rotation> <strength>.
+view() {
+	local name="$1" script="$2" file="$3" rotation="$4" strength="$5"
+	rm -f "$HERE/out/$name.png"
+	if [ "$PREVIEW" = 1 ]; then
+		"$BLENDER" -b --python-exit-code 1 -P "$HERE/$script.py" -- --hdri "$file" --rotation "$rotation" --strength "$strength" --out "$HERE/out/${name}_preview.png" --width 2048 --samples 32
+		return
+	fi
+	"$BLENDER" -b --python-exit-code 1 -P "$HERE/$script.py" -- --hdri "$file" --rotation "$rotation" --strength "$strength" --out "$HERE/out/$name.png" --width 4096 --samples 128
+	sips -s format heic -s formatOptions "$HEIC_QUALITY" "$HERE/out/$name.png" --out "$DEST/$name.heic" >/dev/null
+	echo "Wrote $DEST/$name.heic"
+}
+
 PREVIEW=0
 if [ "${1:-}" = "--preview" ]; then
 	PREVIEW=1
@@ -82,8 +96,8 @@ fi
 environment sar_tent
 environment ham_shack
 environment fire_lookout
-# The lookout's skies: the sunset it was lit by, and a clear sky with the sun in the same place
-# (both suns were found by rendering each sky alone and looking for its brightest pixel) and no
-# mountains in it, for behind real terrain.
-sky fire_lookout_sky kiara_8_sunset_8k.hdr 3 1
+# The lookout's skies, both with the sun where the Kiara sunset that lights the cab has it (each
+# sun was found by rendering the sky alone and looking for its brightest pixel): forested ridges
+# seen from the tower under a clear sunset, and that clear sky alone, for behind real terrain.
+view fire_lookout_sky forest_view kloppenheim_06_puresky_4k.hdr 5.5 1
 sky fire_lookout_puresky kloppenheim_06_puresky_4k.hdr 5.5 1
