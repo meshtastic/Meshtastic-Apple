@@ -20,6 +20,8 @@ struct NodeList: View {
 	@State private var isPresentingPositionSentAlert = false
 	@State private var isPresentingPositionFailedAlert = false
 	@State private var isPresentingDeleteNodeAlert = false
+	/// Whether a node is on a Node Tracker widget, for the delete confirmation.
+	@ObservedObject private var trackedWidgets = TrackedWidgetNodes.shared
 	@State private var deleteNodeId: Int64 = 0
 	@State private var shareContactNode: NodeInfoEntity?
 	@State private var nodeForDisplayNameEdit: NodeInfoEntity?
@@ -229,7 +231,7 @@ struct NodeList: View {
 		.hostedConfirmation("Are you sure?", isPresented: $isPresentingDeleteNodeAlert, titleVisibility: .visible) {
 			deleteNodeButton
 		} message: {
-			if TrackedWidgetNodes.shared.nums.contains(deleteNodeId) {
+			if trackedWidgets.contains(deleteNodeId) {
 				Text(TrackedWidgetNodes.deleteWarning)
 			}
 		}

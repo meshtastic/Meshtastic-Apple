@@ -165,9 +165,10 @@ final class WidgetDataBroker {
 		let generation = PersistenceController.shared.containerGeneration
 		let needsStoredStats = latestLocalStats == nil
 		await TrackedWidgetNodes.shared.refresh()
+		// Nil if iOS hasn't answered yet; the last snapshot's missing list stands until it does.
 		let tracked = TrackedWidgetNodes.shared.nums
 		let data = await Task.detached(priority: .utility) {
-			Self.readDatabase(container: container, radioNum: radioNum, tracked: tracked, needsStoredStats: needsStoredStats)
+			Self.readDatabase(container: container, radioNum: radioNum, tracked: tracked ?? [], needsStoredStats: needsStoredStats)
 		}.value
 		// The store was reset while reading; what was read belongs to the old one. Build again
 		// from the new store.
@@ -186,7 +187,10 @@ final class WidgetDataBroker {
 		}
 
 		let nodes = data.nodes
-		let missing = Self.missingTrackedNodes(data.missingTracked, previous: WidgetSnapshotStore.load())
+		let previous = WidgetSnapshotStore.load()
+		let missing = tracked == nil
+			? previous?.missingTrackedNodes ?? []
+			: Self.missingTrackedNodes(data.missingTracked, previous: previous)
 		let unreadChannels = data.unreadChannels
 		let unreadDMs = data.unreadDMs
 		let recent = data.recentMessages

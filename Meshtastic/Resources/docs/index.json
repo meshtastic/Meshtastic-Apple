@@ -6,15 +6,16 @@
         "navOrder": 2,
         "keywords": [
             "radio",
+            "node",
             "app",
             "tap",
             "bluetooth",
             "screen",
             "device",
             "off",
-            "node",
             "meshtastic",
             "connected",
+            "widget",
             "live",
             "ios",
             "connect",
@@ -25,18 +26,17 @@
             "shows",
             "power",
             "one",
+            "list",
             "connection",
+            "choose",
             "then",
+            "switch",
             "settings",
             "mesh",
             "lock",
-            "list",
-            "choose",
-            "ble",
-            "widget",
-            "via"
+            "heard"
         ],
-        "charCount": 4624
+        "charCount": 5037
     },
     {
         "id": "carplay",

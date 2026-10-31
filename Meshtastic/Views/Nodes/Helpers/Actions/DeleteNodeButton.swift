@@ -12,6 +12,8 @@ struct DeleteNodeButton: View {
 	@Environment(\.dismiss) private var dismiss
 	@Environment(\.presentationHost) private var presentationHost
 	@State private var isPresentingAlert = false
+	/// Whether a node is on a Node Tracker widget, for the delete confirmation.
+	@ObservedObject private var trackedWidgets = TrackedWidgetNodes.shared
 
 	var body: some View {
 		if node.num != connectedNode.num {
@@ -35,7 +37,7 @@ struct DeleteNodeButton: View {
 					Button("OK") {	}.keyboardShortcut(.defaultAction)
 				} message: {
 					// One Text: an alert's message doesn't stack views.
-					if TrackedWidgetNodes.shared.nums.contains(node.num) {
+					if trackedWidgets.contains(node.num) {
 						Text("Delete Node?") + Text(" ") + Text(TrackedWidgetNodes.deleteWarning)
 					} else {
 						Text("Delete Node?")
@@ -71,7 +73,7 @@ struct DeleteNodeButton: View {
 					}
 				}
 			} message: {
-				if TrackedWidgetNodes.shared.nums.contains(node.num) {
+				if trackedWidgets.contains(node.num) {
 					Text(TrackedWidgetNodes.deleteWarning)
 				}
 			}
