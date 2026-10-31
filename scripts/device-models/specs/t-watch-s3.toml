@@ -13,3 +13,7 @@ edge_radius_mm = 6.0
 front_edge_radius_mm = 2.0
 appendage = "outside"
 appendage_depth_mm = 3.0
+
+# The display's visible area, for the radio's live screen.
+[screen]
+bbox = [817.71, 721.76, 1196.74, 1110.36]

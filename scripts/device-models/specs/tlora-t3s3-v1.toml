@@ -25,3 +25,7 @@ tip_radius_mm = 2.53
 name = "Display"
 bbox = [686.5, 1107.9, 1142.5, 1336.1]
 h = 3.0
+
+# The display's visible area, for the radio's live screen.
+[screen]
+bbox = [768.07, 1115.45, 1059.18, 1272.19]

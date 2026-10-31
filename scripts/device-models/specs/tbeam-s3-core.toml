@@ -35,3 +35,7 @@ h = 21.0
 radius_mm = 2.0
 back = true
 side_color = "#1c1c1c"
+
+# The display's visible area, for the radio's live screen.
+[screen]
+bbox = [877.29, 1159.42, 1169.83, 1316.55]

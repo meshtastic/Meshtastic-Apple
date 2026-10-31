@@ -11,3 +11,7 @@ source = "https://www.tinytronics.nl/en/tools-and-mounting/enclosures/others/enc
 confidence = "retailer"
 edge_radius_mm = 3.0
 front_edge_radius_mm = 2.0
+
+# The display's visible area, for the radio's live screen.
+[screen]
+bbox = [787.14, 943.38, 1216.59, 1167.8]

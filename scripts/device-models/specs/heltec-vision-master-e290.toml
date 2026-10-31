@@ -16,3 +16,8 @@ confidence = "vendor"
 name = "Display"
 bbox = [541.37, 740.86, 1491.87, 1182.66]
 h = 2.5
+
+# The display's visible area, for the radio's live screen: the drawing shows only the module,
+# so this is the panel's 66.9 x 29.1 mm active area, centered in it.
+[screen]
+bbox = [609.6, 784.7, 1423.6, 1138.9]

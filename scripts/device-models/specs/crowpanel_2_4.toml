@@ -377,3 +377,7 @@ name = "TFSocket"
 material = "metal"
 center_mm = [19.05, -0.1, -0.6]
 size_mm = [15.5, 0.1, 2.0]
+
+# The display's visible area, for the radio's live screen.
+[screen]
+bbox = [15.97, 7.59, 64.93, 44.31]
