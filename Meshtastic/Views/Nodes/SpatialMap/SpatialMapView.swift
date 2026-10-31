@@ -29,6 +29,9 @@ struct SpatialMapView: View {
 	@GestureState private var isPinching = false
 	/// The volume's size, so a resize runs the update closure and refits the map.
 	@State private var volumeSize: Size3D = .zero
+	/// The cinema's room and the summit its lookout stands on, so the map can show the lookout there.
+	@AppStorage("cinemaEnvironment") private var cinemaEnvironment: CinemaEnvironment = .sarTent
+	@AppStorage("cinemaLookoutSite") private var lookoutSiteID = ""
 
 	var body: some View {
 		GeometryReader3D { proxy in
@@ -49,6 +52,9 @@ struct SpatialMapView: View {
 				scene.apply(weatherRadar: model.weatherRadarEntity, revision: model.weatherRadarRevision)
 				scene.apply(coverage: model.coverageEntity, revision: model.coverageRevision, opacity: model.coverageOpacity)
 				scene.apply(nodes: model.nodes)
+				scene.apply(lookout: cinemaEnvironment == .fireLookout
+					? SpatialLookout.coordinate(siteID: lookoutSiteID).flatMap { model.lookoutStands(on: $0) ? $0 : nil }
+					: nil)
 				scene.apply(target: liveZoom.flatMap { model.circle(forZoom: $0) } ?? model.targetCircle)
 				traffic.applyBaseGlow()
 				// Hidden while a trace route is shown, as on the 2D map, so the two sets of colored

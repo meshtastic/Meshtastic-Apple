@@ -32,6 +32,8 @@ The third place is a fire lookout: a glass cab on a summit at sunset, with the s
 
 If you've downloaded terrain for the [3D map](map.md), the view out the windows can be the real thing. The control panel's **Summit** picker lists up to ten of the highest mountains in the downloaded area, highest first, with how far each is from your radio and which way. Pick one and the cab stands on it, with the terrain around it out every window, lit by the same sunset. Every node with a position is marked out the windows where it really is from there, by bearing and distance, with its name and how far away it is; tap a marker to center the 3D map on the node and open its details on the screen. A node behind a shuttered bay is out of sight. **Painted sunset** puts the painted mountains back.
 
+While the cab stands on a summit, the 3D map shows the lookout there too: the cab on its braced timber tower, facing the way the screen does. If a node stands on the same summit, the lookout stands just beside it.
+
 ## Control panel
 
 - **Environment**: the place the screen is set in: the search and rescue tent, or a ham shack, a wood-paneled radio room with an operating desk, a window out to the antenna tower, and the same boards; its status board is net control's check-in board, standing portrait beside the screen; or a fire lookout, a glass cab on a summit at sunset.
