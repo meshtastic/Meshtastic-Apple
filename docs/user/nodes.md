@@ -242,6 +242,8 @@ For many radios, the hardware image can turn into a 3D model of the device: tap 
 
 When the radio you're connected to has a screen and its firmware can share it, the connected node's detail view shows **Device Screen** under **Administration**. Open it to see the radio's screen live in the app, drawn pixel for pixel. The radio only sends its screen while this view is open and the app is in front; it stops when you leave. **Refresh** asks for the current picture right away, which helps on e-ink screens that redraw slowly.
 
+Below the screen are the radio's buttons: four directions around **OK**, with **Back** underneath. Hold a direction to repeat it, or hold **OK** for a long press. You can also swipe on the screen to move in that direction. On radios with a touch screen, tapping the picture touches the same spot on the radio, and holding it long-presses there. With a keyboard attached, including on a Mac, **Use Keyboard** sends the arrow keys, Return and Esc to the radio until you turn it off; an outline around the screen shows when it's on.
+
 The screen only comes over your direct connection to the radio, never over the mesh, so it isn't available for other nodes. Firmware that can't share its screen doesn't show the row.
 
 ### Where to Buy
