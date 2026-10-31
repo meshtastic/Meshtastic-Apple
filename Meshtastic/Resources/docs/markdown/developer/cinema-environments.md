@@ -79,6 +79,8 @@ What's outside the room, and much of its light, comes from an HDRI: a 360° phot
 
 4K is enough when the HDRI is only seen through a door or windows, as in the tent. When it's most of the view, as on a hilltop or in a fire lookout's glass cab, use 8K or more, or it will look soft.
 
+An environment whose outside the app may replace, as it replaces the fire lookout's with real terrain, renders with `render_room(..., cutout=True)`: the HDRI still lights the room, but the image is left transparent wherever the camera saw past the room's geometry, glass included. The app then shows a sky sphere behind it, rendered from an HDRI alone by `sky.py` (a `sky <name> <hdri file> <rotation> <strength>` line in `build.sh`), and `CinemaEnvironment` says which sky images the environment has and where their sun is.
+
 ## Rules for assets
 
 - Everything must be CC0 or your own work, with its source in `scripts/cinema/README.md`. No manufacturer logos or other marks.

@@ -6,9 +6,9 @@
 #  Copyright(c) Garth Vander Houwen 10/23/26.
 #
 #  Draws the flat textures the scenes use: a topo map, a blank whiteboard, and the Meshtastic
-#  banner, Chirpy poster and Meshtastic Solutions plaque; and for the ham shack, a wall of QSL
-#  cards, two clock faces, a radio's display, two meter faces, an FT8 screen, a band plan chart, and its books' spines and covers. All but the branding are
-#  generated here.
+#  banner, Chirpy poster and Meshtastic Solutions plaque; for the ham shack, a wall of QSL
+#  cards, two clock faces, a radio's display, two meter faces, an FT8 screen, a band plan chart, and its books' spines and covers; and
+#  for the fire lookout, its radio display. All but the branding are generated here.
 #  The branding uses the app's own artwork, rasterized from its SVGs with resvg (the resvg-py
 #  package), so it is never redrawn. Writes PNGs into cache/.
 #  build.sh runs it with uv, which supplies Pillow, numpy and resvg-py.
@@ -443,6 +443,21 @@ def book_cover(path, title, line, color, ink, w=880, h=1120):
             row = (row + " " + word).strip()
     rows.append(row)
     draw.multiline_text((w / 2, h * 0.84), "\n".join(rows), fill=ink, font=small, anchor="mm", align="center")
+
+
+# MARK: - Fire lookout
+
+def lookout_radio(path, w=900, h=270):
+    """The lookout's VHF base radio display: the channel and a lit S-meter."""
+    image = Image.new("RGB", (w, h), (4, 18, 10))
+    draw = ImageDraw.Draw(image)
+    green = (120, 255, 150)
+    dim = (30, 80, 45)
+    draw.text((w - 40, 170), "151.145", fill=green, font=font("Arial Bold.ttf", 130), anchor="rs")
+    draw.text((40, 60), "FM  CH 3", fill=green, font=font("Arial Bold.ttf", 44), anchor="ls")
+    for i in range(30):
+        x = 40 + i * 27
+        draw.rectangle([x, 200, x + 18, 240], fill=green if i < 9 else dim)
     image.save(path)
 
 
@@ -470,6 +485,7 @@ def main():
         book_spine(os.path.join(OUT, f"spine_{i:02d}.png"), title, author, color, thickness, height)
     for i, (title, line, color, ink) in enumerate(COVERS):
         book_cover(os.path.join(OUT, f"cover_{i}.png"), title, line, color, ink)
+    lookout_radio(os.path.join(OUT, "lookout_radio.png"))
     print("textures written to", OUT)
 
 

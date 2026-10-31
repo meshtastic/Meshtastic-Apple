@@ -12,6 +12,7 @@ import SwiftUI
 enum CinemaEnvironment: String, CaseIterable, Identifiable {
 	case sarTent
 	case hamShack
+	case fireLookout
 
 	var id: String { rawValue }
 
@@ -21,6 +22,8 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 			String(localized: "Search and Rescue Tent", comment: "Cinema environment: inside a search and rescue command tent")
 		case .hamShack:
 			String(localized: "Ham Shack", comment: "Cinema environment: inside an amateur radio operator's radio room")
+		case .fireLookout:
+			String(localized: "Fire Lookout", comment: "Cinema environment: inside a fire lookout cab on a mountain summit")
 		}
 	}
 
@@ -29,6 +32,7 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 		switch self {
 		case .sarTent: "sar_tent"
 		case .hamShack: "ham_shack"
+		case .fireLookout: "fire_lookout"
 		}
 	}
 
@@ -36,7 +40,7 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 	/// board; the ham shack's is where net control logs the check-ins.
 	var statusBoardTitle: String {
 		switch self {
-		case .sarTent:
+		case .sarTent, .fireLookout:
 			String(localized: "Status Board", comment: "Cinema: title of the board of the nodes' status messages in the tent")
 		case .hamShack:
 			String(localized: "Net Check-In", comment: "Cinema: title of the ham shack's status board, where net control logs the check-ins")
@@ -48,17 +52,46 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 	var statusBoardPortrait: Bool {
 		switch self {
 		case .sarTent, .hamShack: true
+		case .fireLookout: false
 		}
 	}
 
 	/// What the status board says while no node has a status message.
 	var statusBoardEmptyTitle: String {
 		switch self {
-		case .sarTent:
+		case .sarTent, .fireLookout:
 			String(localized: "No status yet", comment: "Cinema: shown on the tent's status board while no node has a status message")
 		case .hamShack:
 			String(localized: "No check-ins yet", comment: "Cinema: shown on the ham shack's check-in board while no node has a status message")
 		}
+	}
+
+	/// Whether the image is a cutout: transparent wherever the camera saw past the room's glass, so
+	/// a sky, and real terrain when the app has some, are drawn behind it.
+	var isCutout: Bool {
+		self == .fireLookout
+	}
+
+	/// The sky painted behind a cutout: the one the room was lit by, with its own horizon.
+	var skyImageName: String? {
+		switch self {
+		case .fireLookout: "fire_lookout_sky"
+		default: nil
+		}
+	}
+
+	/// The same sky with nothing below the horizon, for behind real terrain.
+	var clearSkyImageName: String? {
+		switch self {
+		case .fireLookout: "fire_lookout_puresky"
+		default: nil
+		}
+	}
+
+	/// Where the sun is in a cutout's sky, so terrain can be shaded to match: degrees clockwise
+	/// from the image's center, and above the horizon.
+	var sun: (azimuth: Float, elevation: Float) {
+		(134, 5)
 	}
 
 	/// Turns the backdrop and its boards together about the viewer, radians to the left, so the
@@ -67,7 +100,7 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 	/// image needs nudging.
 	var frontRotation: Float {
 		switch self {
-		case .sarTent, .hamShack: 0
+		case .sarTent, .hamShack, .fireLookout: 0
 		}
 	}
 
@@ -86,6 +119,12 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 				UIColor(red: 0.85, green: 0.84, blue: 0.80, alpha: 1),
 				UIColor(red: 0.55, green: 0.36, blue: 0.18, alpha: 1),
 				UIColor(red: 0.05, green: 0.08, blue: 0.07, alpha: 1)
+			)
+		case .fireLookout:
+			(
+				UIColor(red: 0.35, green: 0.45, blue: 0.70, alpha: 1),
+				UIColor(red: 0.90, green: 0.60, blue: 0.30, alpha: 1),
+				UIColor(red: 0.30, green: 0.22, blue: 0.15, alpha: 1)
 			)
 		}
 	}

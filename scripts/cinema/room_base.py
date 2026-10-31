@@ -271,10 +271,12 @@ def configure_render(options):
     scene.render.filepath = options["out"]
 
 
-def render_room(build, hdri, hdri_rotation=0.0, hdri_strength=0.4):
+def render_room(build, hdri, hdri_rotation=0.0, hdri_strength=0.4, cutout=False):
     """Starts an empty scene, calls `build()` to add the room, its furniture, lights and boards,
     renders the panorama and writes its anchors. `build()` must place the screen with
-    screen_anchor()."""
+    screen_anchor(). With `cutout`, the HDRI lights the room but isn't painted: the image is
+    transparent wherever the camera sees past the room's geometry, through glass included, so the
+    app can put its own sky and terrain behind it."""
     options = arguments()
     bpy.ops.wm.read_factory_settings(use_empty=True)
     ANCHORS.clear()
@@ -284,6 +286,12 @@ def render_room(build, hdri, hdri_rotation=0.0, hdri_strength=0.4):
     build_world(hdri, hdri_rotation, hdri_strength)
     camera = build_camera()
     configure_render(options)
+    if cutout:
+        scene = bpy.context.scene
+        scene.render.film_transparent = True
+        scene.cycles.film_transparent_glass = True
+        scene.cycles.film_transparent_roughness = 0.1
+        scene.render.image_settings.color_mode = "RGBA"
     if options["blend"]:
         bpy.ops.wm.save_as_mainfile(filepath=os.path.abspath(options["blend"]))
     if os.path.exists(options["out"]):

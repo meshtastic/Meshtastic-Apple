@@ -5,6 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 10/23/26.
 //
 #if os(visionOS)
+import CoreLocation
 import RealityKit
 import SwiftData
 import SwiftUI
@@ -41,6 +42,17 @@ struct CinemaSpace: View {
 	@State private var modelRequest: CinemaModelRequest?
 	/// The front screen's section and navigation, kept here so they outlive its attachment.
 	@StateObject private var screen = CinemaScreenModel()
+	/// The fire lookout's summits, and the terrain and node labels for the chosen one.
+	@State private var lookout = LookoutScene()
+	@AppStorage("cinemaLookoutSite") private var lookoutSiteID = ""
+	@State private var terrain: ModelEntity?
+	/// The site the terrain and labels are built for; nil for the painted sunset.
+	@State private var terrainSiteID: String?
+	/// The site a terrain is being built for. The cinema opening refreshes the lookout from two
+	/// tasks at once, and only one of them should build.
+	@State private var buildingSiteID: String?
+	@State private var labelPanels = LabelPanels()
+	@State private var radioCoordinate: CLLocationCoordinate2D?
 
 	var body: some View {
 		RealityView { content, attachments in
@@ -59,6 +71,10 @@ struct CinemaSpace: View {
 			// the first frame that has it.
 			fitBoards = content.subscribe(to: SceneEvents.Update.self) { _ in
 				placeBoards()
+				// A label's size is only known once it has laid out, like a board's.
+				if labelPanels.unsized {
+					placeLabels { labelPanels.placed[$0] }
+				}
 			}
 		} update: { _, attachments in
 			if let panel = attachments.entity(for: Attachments.panel) {
@@ -70,14 +86,22 @@ struct CinemaSpace: View {
 			boards.setStrip(attachments.entity(for: Attachments.tabStrip))
 			modelStand.setTag(attachments.entity(for: Attachments.modelTag))
 			placeBoards()
+			placeLabels { attachments.entity(for: $0) }
 		} attachments: {
 			Attachment(id: Attachments.panel) {
 				// The map counts as open while the cinema is reopening it, so the button doesn't
 				// show for the second in between.
-				CinemaPanel(environment: $environment, spatialMapOpen: appState.spatialMapWindowCount > 0 || appState.spatialMapReopening) {
+				CinemaPanel(environment: $environment, sites: lookout.sites, siteID: $lookoutSiteID, radioCoordinate: radioCoordinate, lookoutNote: lookoutNote, spatialMapOpen: appState.spatialMapWindowCount > 0 || appState.spatialMapReopening) {
 					openWindow(id: SpatialMapScene.id, value: SpatialMapSceneKey.shared)
 				} onLeave: {
 					Task { await dismissImmersiveSpace() }
+				}
+			}
+			ForEach(lookout.labels) { label in
+				Attachment(id: LabelPanels.id(for: label)) {
+					LookoutNodeLabel(label: label) {
+						showNode(label.id)
+					}
 				}
 			}
 			if let container, !appState.isDatabaseResetting, anchors?.board(.teamStatus) != nil {
@@ -127,10 +151,39 @@ struct CinemaSpace: View {
 			stage.position = [0, anchors?.eyeHeight ?? CinemaAnchors.seatedEyeHeight, 0]
 			stage.orientation = simd_quatf(angle: environment.frontRotation, axis: [0, 1, 0])
 			boards.unfitAll()
-			let next = await CinemaBackdrop.make(environment)
-			backdrop?.removeFromParent()
-			stage.addChild(next)
-			backdrop = next
+			await replaceBackdrop(clearSky: false)
+			await refreshLookout()
+		}
+		.task(id: lookoutSiteID) {
+			await refreshLookout()
+		}
+		.task(id: terrainSiteID) {
+			// The labels follow the nodes' positions, which move slowly.
+			guard let container, let site = terrainSiteID.flatMap({ lookout.site(for: $0) }) else {
+				lookout.labels = []
+				return
+			}
+			while !Task.isCancelled {
+				if !appState.isDatabaseResetting {
+					let context = ModelContext(container)
+					let radioNum = accessoryManager.isConnected ? accessoryManager.activeDeviceNum : nil
+					lookout.labels = await lookout.labels(for: site, context: context, radioNum: radioNum)
+				}
+				try? await Task.sleep(for: .seconds(60))
+			}
+		}
+		.task(id: accessoryManager.isConnected ? accessoryManager.activeDeviceNum : nil) {
+			// Where the radio is, for each summit's distance and direction in the picker.
+			guard let container, let radioNum = accessoryManager.isConnected ? accessoryManager.activeDeviceNum : nil else {
+				radioCoordinate = nil
+				return
+			}
+			while !Task.isCancelled {
+				if !appState.isDatabaseResetting {
+					radioCoordinate = getNodeInfo(id: radioNum, context: ModelContext(container))?.latestPosition?.nodeCoordinate
+				}
+				try? await Task.sleep(for: .seconds(60))
+			}
 		}
 		.task(id: modelRequest) {
 			await modelStand.show(modelRequest, environment: environment)
@@ -236,6 +289,147 @@ struct CinemaSpace: View {
 		static let panel = "panel"
 		static let tabStrip = "screenTabs"
 		static let modelTag = "modelTag"
+	}
+
+	/// The node labels out the lookout's windows that have been hung.
+	private final class LabelPanels {
+		var placed: [String: Entity] = [:]
+		/// The line from each lifted label down to its node's spot.
+		var leaders: [String: ModelEntity] = [:]
+		/// A label hasn't laid out yet, so it couldn't be scaled; the frame update tries again.
+		var unsized = false
+
+		static func id(for label: LookoutLabel) -> String {
+			"node-\(label.id)"
+		}
+	}
+
+	/// What the panel says in the lookout while there is no summit to pick.
+	private var lookoutNote: String? {
+		switch lookout.status {
+		case .searching:
+			String(localized: "Looking for summits in the downloaded terrain…", comment: "Cinema lookout: shown on the panel while the summits are being found")
+		case .noTerrain:
+			String(localized: "Download terrain for the 3D map to stand the lookout on a real summit.", comment: "Cinema lookout: shown on the panel when no terrain has been downloaded")
+		case .noSummits:
+			String(localized: "No summits found in the downloaded terrain.", comment: "Cinema lookout: shown on the panel when the downloaded terrain gave no summits")
+		case .idle, .ready:
+			nil
+		}
+	}
+
+	/// The backdrop for the environment: its image, and for a cutout, the sky behind it.
+	private func replaceBackdrop(clearSky: Bool) async {
+		let next = await CinemaBackdrop.make(environment, clearSky: clearSky)
+		backdrop?.removeFromParent()
+		stage.addChild(next)
+		backdrop = next
+	}
+
+	/// Puts the terrain for the chosen summit out the lookout's windows, with the clear sky behind
+	/// it, or takes it away for the painted sunset or another environment.
+	private func refreshLookout() async {
+		guard environment.isCutout else {
+			terrain?.removeFromParent()
+			terrain = nil
+			terrainSiteID = nil
+			return
+		}
+		if lookout.sites.isEmpty {
+			await lookout.prepare()
+		}
+		let site = lookout.site(for: lookoutSiteID)
+		guard site?.id != terrainSiteID || (site != nil && terrain == nil) else { return }
+		if let site, buildingSiteID == site.id { return }
+		terrain?.removeFromParent()
+		terrain = nil
+		terrainSiteID = nil
+		guard let site else {
+			await replaceBackdrop(clearSky: false)
+			return
+		}
+		buildingSiteID = site.id
+		let built = await lookout.terrain(for: site, sun: environment.sun)
+		if buildingSiteID == site.id {
+			buildingSiteID = nil
+		}
+		guard let entity = built, lookoutSiteID == site.id, environment.isCutout else { return }
+		await replaceBackdrop(clearSky: true)
+		terrain?.removeFromParent()
+		stage.addChild(entity)
+		terrain = entity
+		terrainSiteID = site.id
+	}
+
+	/// Hangs each node's label out the windows where the node is: lifted clear of the sill and of
+	/// the labels for nearer nodes, on a leader line down to its spot, facing the viewer and the
+	/// same share of the view whatever its distance.
+	private func placeLabels(_ entityFor: (String) -> Entity?) {
+		var keep: Set<String> = []
+		var unsized = false
+		let entities = lookout.labels.map { entityFor(LabelPanels.id(for: $0)) }
+		// A label's height over its width, from the first one that has laid out.
+		var heightRatio = 0.3
+		for case let entity? in entities {
+			let extents = entity.visualBounds(relativeTo: entity).extents
+			if extents.x > 0 {
+				heightRatio = Double(extents.y / extents.x)
+				break
+			}
+		}
+		let spots = LookoutTerrain.spots(for: lookout.labels, heightRatio: heightRatio)
+		let halfHeightDegrees = LookoutTerrain.labelWidthDegrees * heightRatio / 2
+		let widthPerDepth = Float(2 * tan(LookoutTerrain.labelWidthDegrees / 2 * .pi / 180))
+		for (index, label) in lookout.labels.enumerated() {
+			let id = LabelPanels.id(for: label)
+			guard let entity = entities[index] else { continue }
+			keep.insert(id)
+			let spot = spots[index]
+			if entity.parent !== stage {
+				stage.addChild(entity)
+				entity.components.set(BillboardComponent())
+				labelPanels.placed[id] = entity
+			}
+			let width = entity.visualBounds(relativeTo: entity).extents.x
+			if width > 0 {
+				entity.scale = SIMD3(repeating: widthPerDepth * spot.depth / width)
+			} else {
+				unsized = true
+			}
+			entity.position = LookoutTerrain.direction(azimuth: spot.azimuth, elevation: spot.center) * spot.depth
+			let leader = labelPanels.leaders[id] ?? {
+				let made = ModelEntity(mesh: .generateBox(size: 1), materials: [UnlitMaterial(color: .white)])
+				made.name = "leader-\(id)"
+				stage.addChild(made)
+				labelPanels.leaders[id] = made
+				return made
+			}()
+			let top = LookoutTerrain.direction(azimuth: spot.azimuth, elevation: spot.center - halfHeightDegrees) * spot.depth
+			let ground = LookoutTerrain.direction(azimuth: spot.azimuth, elevation: spot.elevation) * spot.depth
+			let run = ground - top
+			let length = simd_length(run)
+			leader.isEnabled = spot.lift > 0.3 && length > 0.01
+			if leader.isEnabled {
+				leader.position = (ground + top) / 2
+				leader.orientation = simd_quatf(from: SIMD3(0, -1, 0), to: run / length)
+				leader.scale = SIMD3(0.0025 * spot.depth, length, 0.0025 * spot.depth)
+			}
+		}
+		for (id, entity) in labelPanels.placed where !keep.contains(id) {
+			entity.removeFromParent()
+			labelPanels.placed[id] = nil
+			labelPanels.leaders[id]?.removeFromParent()
+			labelPanels.leaders[id] = nil
+		}
+		labelPanels.unsized = unsized
+	}
+
+	/// Centers the 3D map on the node, opening the map if it isn't open, and puts the node's
+	/// detail on the front screen, as the boards do.
+	private func showNode(_ nodeNum: Int64) {
+		appState.spatialMapFocus = SpatialMapFocusRequest(nodeNum: nodeNum)
+		openWindow(id: SpatialMapScene.id, value: SpatialMapSceneKey.shared)
+		appState.cinemaScreenRequest = .node(nodeNum)
 	}
 
 	/// A board's view with the store and app state it reads, remade on a database reset.
