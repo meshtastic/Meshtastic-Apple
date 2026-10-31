@@ -5,8 +5,10 @@
 #
 #  Copyright(c) Garth Vander Houwen 10/23/26.
 #
-#  Draws the flat textures the tent scenes use: a topo map, a blank whiteboard, and the Meshtastic
-#  banner, Chirpy poster and Meshtastic Solutions plaque. The map and board are generated here.
+#  Draws the flat textures the scenes use: a topo map, a blank whiteboard, and the Meshtastic
+#  banner, Chirpy poster and Meshtastic Solutions plaque; for the ham shack, a wall of QSL
+#  cards, two clock faces, a radio's display, two meter faces, an FT8 screen, a band plan chart, and its books' spines and covers; and
+#  for the fire lookout, its radio display. All but the branding are generated here.
 #  The branding uses the app's own artwork, rasterized from its SVGs with resvg (the resvg-py
 #  package), so it is never redrawn. Writes PNGs into cache/.
 #  build.sh runs it with uv, which supplies Pillow, numpy and resvg-py.
@@ -19,6 +21,8 @@ import random
 import numpy as np
 import resvg_py
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
+
+from ham_books import COVERS, SPINES
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
@@ -220,6 +224,243 @@ def solutions_plaque(path, w=2016, h=992):
     image.convert("RGB").save(path)
 
 
+# MARK: - Ham shack
+
+def qsl_wall(path, w=1800, h=1200):
+    """A corkboard of QSL cards, 0.9 by 0.6 m (2000 px a meter): postcards hams trade to confirm a
+    contact. Drawn without call signs, so none belongs to a real station; each says QSL and 73
+    ("best regards") over a simple scene."""
+    rng = random.Random(73)
+    cork = fractal_noise(w, h, seed=5, octaves=5)
+    base = np.stack([150 + 50 * cork, 108 + 38 * cork, 66 + 26 * cork], axis=-1)
+    speckle = np.random.default_rng(3).random((h, w)) < 0.06
+    base[speckle] *= 0.78
+    image = Image.fromarray(np.clip(base, 0, 255).astype(np.uint8)).convert("RGBA")
+    big = font("Arial Bold.ttf", 64)
+    small = font("Arial.ttf", 30)
+    palettes = [
+        ((30, 70, 140), (240, 200, 60)), ((170, 40, 40), (250, 240, 220)), ((20, 110, 80), (250, 250, 245)),
+        ((240, 240, 235), (30, 30, 40)), ((250, 200, 60), (40, 40, 60)), ((60, 40, 110), (250, 170, 60)),
+        ((235, 120, 40), (255, 255, 255)), ((40, 140, 200), (255, 255, 255)),
+    ]
+    card_w, card_h = 280, 180
+    for row in range(4):
+        for col in range(6):
+            if rng.random() < 0.12:
+                continue
+            ground, ink = rng.choice(palettes)
+            card = Image.new("RGBA", (card_w, card_h), (*ground, 255))
+            draw = ImageDraw.Draw(card)
+            scene = rng.randrange(3)
+            if scene == 0:  # mountains
+                peaks = [(0, card_h)] + [(x, card_h - rng.randint(40, 110)) for x in range(0, card_w + 40, 40)] + [(card_w, card_h)]
+                draw.polygon(peaks, fill=tuple(int(c * 0.7) for c in ground))
+            elif scene == 1:  # a tower with waves
+                cx = rng.randint(50, card_w - 50)
+                draw.line([(cx, card_h - 10), (cx - 18, card_h - 10), (cx, 40), (cx + 18, card_h - 10)], fill=ink, width=4)
+                for r in (30, 50, 70):
+                    draw.arc([cx - r, 40 - r, cx + r, 40 + r], -60, 60, fill=ink, width=3)
+            else:  # a stripe
+                draw.rectangle([0, card_h * 0.55, card_w, card_h * 0.75], fill=ink)
+            draw.text((16, 12), "QSL", fill=ink, font=big)
+            draw.text((card_w - 70, card_h - 44), "73", fill=ink, font=small)
+            card = card.rotate(rng.uniform(-6, 6), expand=True, resample=Image.BICUBIC)
+            x = 60 + col * 285 + rng.randint(-12, 12)
+            y = 60 + row * 270 + rng.randint(-12, 12)
+            shadow = Image.new("RGBA", card.size, (0, 0, 0, 0))
+            shadow.paste((0, 0, 0, 90), mask=card.getchannel("A"))
+            image.alpha_composite(shadow.filter(ImageFilter.GaussianBlur(6)), (x + 6, y + 8))
+            image.alpha_composite(card, (x, y))
+            pin = ImageDraw.Draw(image)
+            px, py = x + card.width // 2, y + 14
+            pin.ellipse([px - 9, py - 9, px + 9, py + 9], fill=rng.choice([(200, 30, 30), (30, 90, 200), (240, 200, 30)]))
+    image.convert("RGB").save(path)
+
+
+def clock_face(path, label, w=800):
+    """A wall clock's round dial, with `label` under the center. Hams keep one clock on UTC, for the
+    log, beside one on local time. The hands are modeled in the scene, not drawn here."""
+    image = Image.new("RGB", (w, w), (245, 243, 236))
+    draw = ImageDraw.Draw(image)
+    c = w / 2
+    for tick in range(60):
+        angle = math.radians(tick * 6)
+        outer, inner = c * 0.92, c * (0.80 if tick % 5 == 0 else 0.87)
+        width = 10 if tick % 5 == 0 else 4
+        draw.line([(c + outer * math.sin(angle), c - outer * math.cos(angle)), (c + inner * math.sin(angle), c - inner * math.cos(angle))], fill=(25, 25, 30), width=width)
+    numerals = font("Arial Bold.ttf", int(w * 0.09))
+    for hour in range(1, 13):
+        angle = math.radians(hour * 30)
+        draw.text((c + c * 0.66 * math.sin(angle), c - c * 0.66 * math.cos(angle)), str(hour), fill=(25, 25, 30), font=numerals, anchor="mm")
+    draw.text((c, c * 1.38), label, fill=(170, 30, 30), font=font("Arial Bold.ttf", int(w * 0.07)), anchor="mm")
+    image.save(path)
+
+
+def radio_display(path, frequency, mode, w=900, h=300):
+    """A radio's amber display: the frequency, the mode, and an S-meter."""
+    image = Image.new("RGB", (w, h), (24, 14, 4))
+    draw = ImageDraw.Draw(image)
+    amber = (255, 168, 40)
+    dim = (90, 55, 12)
+    draw.text((w - 40, 185), frequency, fill=amber, font=font("Arial Bold.ttf", 120), anchor="rs")
+    small = font("Arial Bold.ttf", 44)
+    draw.text((40, 60), mode, fill=amber, font=small, anchor="ls")
+    draw.text((160, 60), "VFO-A", fill=dim, font=small, anchor="ls")
+    lit = sum(map(ord, frequency)) % 18 + 4
+    for i in range(30):
+        x = 40 + i * 27
+        draw.rectangle([x, 220, x + 18, 262], fill=amber if i < lit else dim)
+    draw.text((40, 290), "S 1  3  5  7  9  +20  +40", fill=dim, font=font("Arial.ttf", 26), anchor="ls")
+    image.save(path)
+
+
+def meter_face(path, label, needle, w=600, h=400):
+    """An analog panel meter: a cream face with an arc scale, `label` under it, and its needle at
+    `needle` (0 to 1 of full scale)."""
+    image = Image.new("RGB", (w, h), (238, 230, 205))
+    draw = ImageDraw.Draw(image)
+    cx, cy, r = w / 2, h * 0.95, h * 0.75
+    draw.arc([cx - r, cy - r, cx + r, cy + r], 215, 325, fill=(30, 30, 30), width=5)
+    draw.arc([cx - r, cy - r, cx + r, cy + r], 300, 325, fill=(190, 30, 30), width=9)
+    for i in range(11):
+        angle = math.radians(215 + i * 11)
+        inner = r * (0.88 if i % 5 == 0 else 0.93)
+        draw.line([(cx + inner * math.cos(angle), cy + inner * math.sin(angle)), (cx + r * math.cos(angle), cy + r * math.sin(angle))], fill=(30, 30, 30), width=4)
+    draw.text((cx, h * 0.62), label, fill=(30, 30, 30), font=font("Arial Bold.ttf", 46), anchor="mm")
+    angle = math.radians(215 + 110 * needle)
+    draw.line([(cx, cy), (cx + r * 1.02 * math.cos(angle), cy + r * 1.02 * math.sin(angle))], fill=(20, 20, 20), width=5)
+    image.save(path)
+
+
+def waterfall(path, w=1600, h=960):
+    """A computer screen running an FT8 program: a band of decoded messages over the blue
+    waterfall, with the yellow streaks of signals in it. The decodes use no call signs."""
+    rng = np.random.default_rng(8)
+    image = Image.new("RGB", (w, h), (236, 236, 238))
+    draw = ImageDraw.Draw(image)
+    draw.rectangle([0, 0, w, 54], fill=(52, 54, 70))
+    draw.text((24, 27), "FT8  14.074 MHz  20m", fill=(240, 240, 245), font=font("Arial Bold.ttf", 30), anchor="lm")
+    mono = font("Courier New Bold.ttf", 30)
+    lines = ["CQ  DX", "73", "RR73", "-12", "R-08", "CQ  POTA", "+03", "73  GL"]
+    for i in range(9):
+        y = 80 + i * 38
+        fill = (255, 250, 200) if i % 3 == 0 else (236, 236, 238)
+        draw.rectangle([16, y - 4, w - 16, y + 30], fill=fill)
+        text = f"{(i * 15) % 60:02d}{(i * 7) % 60:02d}00  {rng.integers(-20, 10):+3d}  {rng.uniform(-0.5, 0.9):+.1f}  {rng.integers(300, 2800):4d}  ~  {lines[i % len(lines)]}"
+        draw.text((28, y), text, fill=(20, 20, 30), font=mono)
+    top = 440
+    field = rng.random((h - top, w)) * 0.35
+    for _ in range(26):
+        x = int(rng.integers(40, w - 80))
+        y0 = int(rng.integers(0, h - top - 80))
+        length = int(rng.integers(60, h - top - y0))
+        field[y0:y0 + length, x:x + 22] += rng.uniform(0.6, 1.2)
+    field = np.clip(field, 0, 1.4)
+    r = np.clip(field * 255 - 140, 0, 255)
+    g = np.clip(field * 230 - 40, 0, 255)
+    b = np.clip(110 + field * 120, 0, 255)
+    fall = Image.fromarray(np.stack([r, g, b], axis=-1).astype(np.uint8)).filter(ImageFilter.GaussianBlur(1.5))
+    image.paste(fall, (0, top))
+    image.save(path)
+
+
+def band_plan(path, w=1800, h=1200):
+    """A wall chart of the amateur bands from 160 meters to 70 centimeters: one bar per band,
+    split into CW, data and phone, the way the printed band plans hams pin up are laid out."""
+    image = Image.new("RGB", (w, h), (248, 246, 238))
+    draw = ImageDraw.Draw(image)
+    draw.rectangle([0, 0, w, 130], fill=CHARCOAL)
+    draw.text((w / 2, 65), "AMATEUR RADIO BANDS", fill=(255, 255, 255), font=font("Arial Bold.ttf", 72), anchor="mm")
+    bands = ["160 m", "80 m", "40 m", "30 m", "20 m", "17 m", "15 m", "12 m", "10 m", "6 m", "2 m", "70 cm"]
+    label = font("Arial Bold.ttf", 48)
+    legend = font("Arial.ttf", 38)
+    rng = random.Random(4)
+    row = (h - 260) / len(bands)
+    colors = [(70, 110, 190), (240, 170, 50), (200, 70, 60)]
+    for i, band in enumerate(bands):
+        y = 160 + i * row
+        draw.text((40, y + row / 2), band, fill=(30, 30, 40), font=label, anchor="lm")
+        x0, x1 = 260, w - 60
+        cw, data = rng.uniform(0.15, 0.3), rng.uniform(0.1, 0.2)
+        stops = [x0, x0 + (x1 - x0) * cw, x0 + (x1 - x0) * (cw + data), x1]
+        for color, a, b in zip(colors, stops, stops[1:]):
+            draw.rectangle([a, y + 10, b, y + row - 10], fill=color)
+    for j, (color, name) in enumerate(zip(colors, ("CW", "DATA", "PHONE"))):
+        x = 260 + j * 420
+        draw.rectangle([x, h - 80, x + 50, h - 40], fill=color)
+        draw.text((x + 70, h - 60), name, fill=(30, 30, 40), font=legend, anchor="lm")
+    image.save(path)
+
+
+def book_spine(path, title, author, color, thickness, height, scale=3000):
+    """A clothbound book's spine at `scale` pixels a meter: gold bands at the head and foot, the
+    title running down it and the author across the foot, the way American spines read."""
+    w, h = max(int(thickness * scale), 40), int(height * scale)
+    image = Image.new("RGB", (w, h), color)
+    draw = ImageDraw.Draw(image)
+    gold = (226, 190, 110)
+    light = sum(color) > 450
+    ink = (30, 26, 22) if light else gold
+    for y in (int(h * 0.05), int(h * 0.93)):
+        draw.rectangle([0, y, w, y + max(4, h // 120)], fill=ink)
+    # The title, set along the spine and turned to read top to bottom.
+    length = int(h * 0.7)
+    size = int(w * 0.62)
+    face = font("Georgia Bold.ttf", size)
+    while draw.textlength(title, font=face) > length and size > 10:
+        size -= 2
+        face = font("Georgia Bold.ttf", size)
+    strip = Image.new("RGBA", (length, w), (0, 0, 0, 0))
+    ImageDraw.Draw(strip).text((length / 2, w / 2), title, fill=ink, font=face, anchor="mm")
+    strip = strip.rotate(-90, expand=True)
+    image.paste(strip, (0, int(h * 0.1)), strip)
+    small = font("Georgia.ttf", max(10, int(w * 0.2)))
+    surname = author.split()[-1]
+    draw.text((w / 2, h * 0.88), surname, fill=ink, font=small, anchor="mm")
+    cloth = np.asarray(image, dtype=float) * weave((w, h), len(title), 0.1)[..., None]
+    Image.fromarray(np.clip(cloth, 0, 255).astype(np.uint8)).save(path)
+
+
+def book_cover(path, title, line, color, ink, w=880, h=1120):
+    """A book's front cover, for the books stood face out: a big title over a line of small type."""
+    image = Image.new("RGB", (w, h), color)
+    draw = ImageDraw.Draw(image)
+    draw.rectangle([40, 40, w - 40, h - 40], outline=ink, width=8)
+    # As big as fits: the widest line stays clear of the border.
+    size = 170
+    big = font("Georgia Bold.ttf", size)
+    while max(draw.textlength(row, font=big) for row in title.split("\n")) > w - 180 and size > 60:
+        size -= 4
+        big = font("Georgia Bold.ttf", size)
+    draw.multiline_text((w / 2, h * 0.42), title, fill=ink, font=big, anchor="mm", align="center", spacing=10)
+    small = font("Georgia Italic.ttf", 44)
+    words, rows, row = line.split(), [], ""
+    for word in words:
+        if draw.textlength(row + " " + word, font=small) > w - 160:
+            rows.append(row)
+            row = word
+        else:
+            row = (row + " " + word).strip()
+    rows.append(row)
+    draw.multiline_text((w / 2, h * 0.84), "\n".join(rows), fill=ink, font=small, anchor="mm", align="center")
+
+
+# MARK: - Fire lookout
+
+def lookout_radio(path, w=900, h=270):
+    """The lookout's VHF base radio display: the channel and a lit S-meter."""
+    image = Image.new("RGB", (w, h), (4, 18, 10))
+    draw = ImageDraw.Draw(image)
+    green = (120, 255, 150)
+    dim = (30, 80, 45)
+    draw.text((w - 40, 170), "151.145", fill=green, font=font("Arial Bold.ttf", 130), anchor="rs")
+    draw.text((40, 60), "FM  CH 3", fill=green, font=font("Arial Bold.ttf", 44), anchor="ls")
+    for i in range(30):
+        x = 40 + i * 27
+        draw.rectangle([x, 200, x + 18, 240], fill=green if i < 9 else dim)
+    image.save(path)
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     topo_map(os.path.join(OUT, "topo.png"))
@@ -227,6 +468,24 @@ def main():
     banner(os.path.join(OUT, "banner.png"))
     chirpy_poster(os.path.join(OUT, "chirpy_poster.png"))
     solutions_plaque(os.path.join(OUT, "solutions_plaque.png"))
+    qsl_wall(os.path.join(OUT, "qsl_wall.png"))
+    clock_face(os.path.join(OUT, "clock_utc.png"), "UTC")
+    clock_face(os.path.join(OUT, "clock_local.png"), "LOCAL")
+    # 20 meter FT8; the 2 meter and 70 centimeter FM calling frequencies; 40 meter CW.
+    radio_display(os.path.join(OUT, "radio_display.png"), "14.074.00", "USB")
+    radio_display(os.path.join(OUT, "radio_display_2m.png"), "146.520", "FM")
+    radio_display(os.path.join(OUT, "radio_display_70cm.png"), "446.000", "FM")
+    radio_display(os.path.join(OUT, "radio_display_40m.png"), "7.030.00", "CW")
+    meter_face(os.path.join(OUT, "meter_power.png"), "WATTS", 0.4)
+    meter_face(os.path.join(OUT, "meter_swr.png"), "SWR", 0.12)
+    meter_face(os.path.join(OUT, "meter_volts.png"), "VOLTS", 0.69)
+    waterfall(os.path.join(OUT, "waterfall.png"))
+    band_plan(os.path.join(OUT, "band_plan.png"))
+    for i, (title, author, color, thickness, height) in enumerate(SPINES):
+        book_spine(os.path.join(OUT, f"spine_{i:02d}.png"), title, author, color, thickness, height)
+    for i, (title, line, color, ink) in enumerate(COVERS):
+        book_cover(os.path.join(OUT, f"cover_{i}.png"), title, line, color, ink)
+    lookout_radio(os.path.join(OUT, "lookout_radio.png"))
     print("textures written to", OUT)
 
 

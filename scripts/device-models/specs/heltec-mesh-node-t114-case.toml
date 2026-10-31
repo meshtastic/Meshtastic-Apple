@@ -20,3 +20,7 @@ end = [926.87, 278.33]
 # Radius from the drawn width at the base; the drawing tapers it toward the tip.
 radius_mm = 3.98
 tip_radius_mm = 2.79
+
+# The display's visible area, for the radio's live screen.
+[screen]
+bbox = [900.05, 973.19, 1102.08, 1327.84]

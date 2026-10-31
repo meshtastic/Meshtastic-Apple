@@ -395,6 +395,9 @@
         }
       }
     },
+    "Connect to the radio to see its screen." : {
+
+    },
     "Couldn't Import Map File" : {
       "localizations" : {
         "es" : {
@@ -410,6 +413,9 @@
           }
         }
       }
+    },
+    "E-ink screens redraw slowly. Tap Refresh for the latest picture." : {
+
     },
     "Enter Showcase" : {
       "comment" : "Spatial map: open the showcase immersive space, closing this volume",
@@ -556,6 +562,9 @@
         }
       }
     },
+    "Not Connected" : {
+
+    },
     "Pick up to turn it over" : {
       "comment" : "Cinema: VoiceOver hint for the device model on the stand in front of the seat",
       "localizations" : {
@@ -577,6 +586,36 @@
           }
         }
       }
+    },
+    "Up" : {
+
+    },
+    "Long Press" : {
+
+    },
+    "Use Keyboard" : {
+
+    },
+    "Stop Using Keyboard" : {
+
+    },
+    "Arrow keys, Return and Esc go to the radio." : {
+
+    },
+    "Zoom to Case" : {
+
+    },
+    "Zoom Out" : {
+
+    },
+    "Zoom to Screen" : {
+
+    },
+    "Full Screen" : {
+      "comment" : "Button on a radio's 3D model: open the model full screen"
+    },
+    "Radio screen" : {
+
     },
     "Radios on this page" : {
       "comment" : "Showcase: menu listing the radios on the wall rack page that's showing; picking one opens its card",
@@ -672,6 +711,9 @@
           }
         }
       }
+    },
+    "Refresh" : {
+
     },
     "Seated" : {
       "comment" : "Showcase: the viewer is sitting in the chair",
@@ -873,6 +915,9 @@
           }
         }
       }
+    },
+    "Waiting for the radio's screen" : {
+
     },
     "Wall rack" : {
       "comment" : "Showcase: VoiceOver label for the rack of radios on the wall",
@@ -1378,6 +1423,21 @@
           }
         }
       }
+    },
+    "%@ E-ink" : {
+
+    },
+    "%@ LCD" : {
+
+    },
+    "%@ LED matrix" : {
+
+    },
+    "%@ OLED" : {
+
+    },
+    "%@ TFT" : {
+
     },
     "%@ · %@" : {
       "comment" : "Spatial map trace route menu: hops, then when the route came back, e.g. \"3 Hops · 2 hours ago\"",
@@ -6276,6 +6336,9 @@
         }
       }
     },
+    "Net Check-In" : {
+      "comment" : "Cinema: title of the ham shack's status board, where net control logs the check-ins"
+    },
     "Network config received: %@" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -6384,6 +6447,9 @@
           }
         }
       }
+    },
+    "No check-ins yet" : {
+      "comment" : "Cinema: shown on the ham shack's check-in board while no node has a status message"
     },
     "No erase image is available for SoftDevice S140 %@ right now. Nothing was written — try again later." : {
       "localizations" : {
@@ -99640,6 +99706,9 @@
         }
       }
     },
+    "No status yet" : {
+      "comment" : "Cinema: shown on the tent's status board while no node has a status message"
+    },
     "Node" : {
       "localizations" : {
         "da" : {
@@ -101034,6 +101103,9 @@
           }
         }
       }
+    },
+    "Nodes that broadcast a status message are listed here as they're heard." : {
+      "comment" : "Cinema status board: how the empty board fills"
     },
     "Noise" : {
       "localizations" : {
@@ -128739,6 +128811,9 @@
         }
       }
     },
+    "Set your radio's status in its node details to post it here." : {
+      "comment" : "Cinema status board: hint shown while the connected radio has no status message of its own"
+    },
     "Sets the maximum number of hops, default is 3. Increasing hops also increases congestion and should be used carefully. 0 hop broadcast messages will not get ACKs." : {
       "localizations" : {
         "da" : {
@@ -135033,6 +135108,9 @@
         }
       }
     },
+    "Status Board" : {
+      "comment" : "Cinema: title of the board of the nodes' status messages in the tent"
+    },
     "Status Message" : {
       "localizations" : {
         "ko" : {
@@ -137468,16 +137546,8 @@
         }
       }
     },
-    "Team Status" : {
-      "comment" : "Cinema: title of the live team roster on the tent's whiteboard",
-      "localizations" : {
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "團隊狀態"
-          }
-        }
-      }
+    "Team Favorites" : {
+      "comment" : "Cinema: title of the favorites board on the tent's whiteboard"
     },
     "telemetry" : {
       "comment" : "Search keyword",
@@ -143127,6 +143197,9 @@
           }
         }
       }
+    },
+    "This node is on a Node Tracker widget. The widget will say it's no longer in your node list until you choose another node or the node is heard again." : {
+      "comment" : "Delete node confirmation: the node is shown on a Node Tracker widget"
     },
     "This offline map is already installed." : {
       "comment" : "Error message displayed when trying to install an already installed offline map.",

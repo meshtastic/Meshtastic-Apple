@@ -31,8 +31,9 @@ The image is flat: one picture, with no depth of its own. That decides what look
 | Board | Id | Required | What the app draws |
 |---|---|---|---|
 | Screen | `screen` | Yes | The app's sections, with tabs above. Use `screen_anchor()`; it's 2.6 m wide by default, in the screen's shape. Nothing is drawn in the image there. |
-| Team Status | `teamStatus` | No | Favorite nodes and the connected radio. The tent uses a 1.35 × 0.9 m whiteboard. |
+| Team Favorites | `teamStatus` | No | Favorite nodes and the connected radio. The tent uses a 1.35 × 0.9 m whiteboard. |
 | Trace route | `traceRoute` | No | The latest trace route's card. The tent uses a 1.1 × 0.9 m framed print. |
+| Status | `nodeStatus` | No | The nodes' status messages, the connected radio's first. `CinemaEnvironment` titles it for the place and says whether it stands portrait (2:3) or lies landscape (3:2). The tent uses a 0.8 × 1.2 m portrait whiteboard beside the screen. |
 
 A board is a plane passed to `anchor("<id>", plane, width, height)`. The plane's +X is the board's right and its +Z faces the viewer. Paint the board blank in the image (the app covers it), and light it about as bright as the panel will be, so the frame around it matches. The app skips any optional board an environment leaves out.
 
@@ -77,6 +78,8 @@ The build fails if the scene has no screen, or if its HDRI isn't in `cache/`.
 What's outside the room, and much of its light, comes from an HDRI: a 360° photo that keeps how bright each part of the scene really is. Poly Haven's are CC0. Add one with an `hdri <name> <resolution>` line in `build.sh`, which downloads it to `cache/<name>_<resolution>.hdr`, and pass that file name to `render_room`. `hdri_rotation` turns it (in degrees) to put the sun where you want it, and `hdri_strength` sets how much light it gives.
 
 4K is enough when the HDRI is only seen through a door or windows, as in the tent. When it's most of the view, as on a hilltop or in a fire lookout's glass cab, use 8K or more, or it will look soft.
+
+An environment whose outside the app may replace, as it replaces the fire lookout's with real terrain, renders with `render_room(..., cutout=True)`: the HDRI still lights the room, but the image is left transparent wherever the camera saw past the room's geometry, glass included. The app then shows a sky sphere behind it, rendered from an HDRI alone by `sky.py` (a `sky <name> <hdri file> <rotation> <strength>` line in `build.sh`), and `CinemaEnvironment` says which sky images the environment has and where their sun is.
 
 ## Rules for assets
 

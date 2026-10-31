@@ -404,3 +404,7 @@ material = "hole"
 center_mm = [16.0, 37.5, -14.05]
 size_mm = [1.5, 1.5, 0.3]
 radius_mm = 0.75
+
+# The display's visible area, for the radio's live screen.
+[screen]
+bbox = [627.92, 619.34, 800.07, 714.24]

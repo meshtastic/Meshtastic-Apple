@@ -27,9 +27,33 @@ Since the camera, eye height and axes come from `room_base.py`, the anchors an e
 
 ## Search and rescue tent
 
-`sar_tent.py` furnishes the tent as a search and rescue command post. The comms table is on the left, with the "Comms equipment provided by Meshtastic Solutions" plaque on the wall above it. The door is on the right, with a SenseCAP Solar Node on a tripod just past it (the app's own model of it, `Meshtastic/Resources/DeviceModels/seeed_solar.usdz`) and a blank print in a thin dark frame on the wall beside it, hung from the eave. The map table is on the back wall to the right, with a lit work lamp hanging over it. The Meshtastic banner hangs on the back wall, behind the viewer, with Chirpy's poster to its left. There is a clear vinyl window high on each side wall, with its cover rolled up above it; the vinyl catches soft reflections of the string lights. The floor is a ripstop groundsheet with seams, fold creases and a darker band at the walls, and nothing on it but the tables, the tripod and the whiteboard's stand. The whiteboard behind the viewer's left shoulder is blank: the app draws the live team roster over it. The print is blank too: the app draws the latest trace route's share card on it. A hidden light on each makes the painted board as bright as the panel the app draws, so the frame around the panel matches it.
+`sar_tent.py` furnishes the tent as a search and rescue command post. The comms table is on the left, with the "Comms equipment provided by Meshtastic Solutions" plaque on the wall above it. The door is on the right, with a SenseCAP Solar Node on a tripod just past it (the app's own model of it, `Meshtastic/Resources/DeviceModels/seeed_solar.usdz`) and a blank print in a thin dark frame on the wall beside it, hung from the eave. The map table is on the back wall to the right, with a lit work lamp hanging over it. The Meshtastic banner hangs on the back wall, behind the viewer. Chirpy's poster is pinned to the front wall, to the left of the screen. There is a clear vinyl window high on each side wall, with its cover rolled up above it; the vinyl catches soft reflections of the string lights. The floor is a ripstop groundsheet with seams, fold creases and a darker band at the walls, and nothing on it but the tables, the tripod and the two whiteboards' stands. The whiteboard behind the viewer's left shoulder is blank: the app draws the live team roster over it. The print is blank too: the app draws the latest trace route's share card on it. A second, portrait whiteboard stands at the front wall to the right of the screen: the app draws the nodes' status messages over it. A hidden light on each makes the painted board as bright as the panel the app draws, so the frame around the panel matches it.
 
 The render also writes `sar_tent_anchors.json`, which `build.sh` copies next to the image. It says where each board the app draws on sits, relative to the camera, in RealityKit's axes. The app places its panels from it, so moving a board and re-rendering moves the panel with it. The app pushes each panel out along the lines from the camera until it sits just inside the backdrop sphere, and grows it to match, so it covers the same part of the view and has the same stereo depth as the painted tent around it.
+
+## Ham shack
+
+`ham_shack.py` builds an amateur radio shack on `room_base.py`, with no tent: a 5.4 × 5.4 m room, every wall 2.7 m from the viewer, with knotty pine paneling, a dark green carpet and a flush ceiling light. The front wall is plain plaster for the screen, with Chirpy's poster to its left and a portrait whiteboard, net control's check-in board, to its right: the app draws the nodes' status messages on it.
+
+- **Left wall:** the operating desk runs along it. On the desk:
+  - an HF radio with its amber display on the 20 meter FT8 frequency
+  - a power supply and an SWR meter
+  - a desk mic and a straight key
+  - a computer running FT8
+  - the open log and an arm lamp
+  - three Meshtastic radios, from the app's own models at real size: a T-Deck, a T1000-E and a WisMesh Pocket
+
+  Coax runs up the wall to a feedthrough panel. Above the back of the desk is a shelf with two stacks of radios, each on a different band, with headphones hung under it and round UTC and local clocks above it. The whiteboard the app draws the team roster on is above the front of the desk, and a band plan chart hangs past the far end of the desk.
+- **Right wall:** a paneled door, then a double-hung window looking out on the dusk forest and a lattice tower with a beam and a vertical. The print the app draws the latest trace route on hangs between the door and the front corner.
+- **Back wall:** the Meshtastic banner and a corkboard of QSL cards over a bookcase of made-up ham books (*SWR: It's Fine*, *The Joy of Coax*, *Morse Code in 30 Years* and more, by authors like Anne Tenna and Watt Ever), with four stood face out on top. The titles and authors are in `ham_books.py`.
+
+The QSL cards, the clock dials, the radio displays, the meter faces, the FT8 screen, the band plan and the book spines and covers are drawn by `make_textures.py`. The QSL cards and the FT8 screen show no call signs, so none belongs to a real station.
+
+## Fire lookout
+
+`fire_lookout.py` builds a fire lookout on `room_base.py`, with no tent: a 4.6 × 4.6 m glass-walled cab on a 40 m tower on a summit, with a low wall all round, windows above it on every side, a wide sill shelf under them, and a catwalk with a railing outside, low enough that the sill hides it from the seat. The storm shutters are propped open over the windows except where the app needs a plain surface: the two middle bays in front are shuttered for the screen, two on the left behind the whiteboards the app draws the team roster and the nodes' status messages on, and one on the right behind the print it draws the latest trace route on. Inside are the fire finder, a cot with a sleeping bag and pillow, a box stove on a hearth pad with split firewood stacked beside it, a stool, a lit kerosene lantern, and on the sill binoculars, a mug, the logbook, a radio and a T-Echo; outside, a Solar Node on the railing and a flag.
+
+The image is a cutout (`render_room(..., cutout=True)`): the sunset HDRI lights the cab but isn't painted, so the image is transparent through the glass, reflections and all. The app draws a sky sphere behind it: `fire_lookout_sky.heic`, the view from the tower that `forest_view.py` renders (forested slopes falling away to valleys and blue ridges, under the clear sunset sky below); or, when it draws real terrain from the elevation tiles downloaded for the spatial map, `fire_lookout_puresky.heic`, a clear sunset sky turned so its sun is in the same place (each sun was found by rendering the sky alone and looking for its brightest pixel). The app shades that terrain to the same sun (`CinemaEnvironment.sun`), and takes the cab's front to face 156° true, so the sunset is in the west-northwest.
 
 ## HEIC
 
@@ -46,7 +70,10 @@ The render also writes `sar_tent_anchors.json`, which `build.sh` copies next to 
 
 ## Sources
 
-- The tent, furniture and lighting are modeled in `room_base.py`, `tent_base.py` and `sar_tent.py`.
-- The topo map and the whiteboard are drawn by `make_textures.py`.
+- The tent, the ham shack, their furniture and lighting are modeled in `room_base.py`, `tent_base.py`, `sar_tent.py` and `ham_shack.py`.
+- The radios on the shack's desk and the Solar Node in the tent are the app's own device models from `Meshtastic/Resources/DeviceModels`.
+- The topo map, the whiteboard and the ham shack's cards, clocks, displays, meters and chart are drawn by `make_textures.py`.
 - The banner, poster and plaque use the app's own artwork, rasterized from its SVGs by `make_textures.py` with resvg (the `resvg-py` package; chosen because it needs no system libraries, unlike cairosvg, and keeps transparency, unlike `qlmanage`): the Meshtastic mark (`Meshtastic/Resources/AppIcon.icon/Assets/Meshtastic Logo.svg`), the wordmark (`meshtastic-wordmark-white.imageset`), Chirpy (`Chirpy.imageset`) and the Meshtastic Solutions mark (`MeshtasticSolutionsMark.imageset`). The plaque follows the layout of the one in the visionOS Hardware Showcase.
 - The forest seen through the door and the windows is the "Sunset Forest" HDRI from Poly Haven (https://polyhaven.com/a/sunset_forest), released under CC0. `build.sh` downloads it into `cache/`.
+- The lookout's cab is lit by the "Kiara 8 Sunset" HDRI from Poly Haven (https://polyhaven.com/a/kiara_8_sunset), CC0; the sky over the forest view and behind real terrain is "Kloppenheim 06 (Pure Sky)" from Poly Haven (https://polyhaven.com/a/kloppenheim_06_puresky), CC0.
+- The display of the lookout's radio on its sill is drawn by `make_textures.py`. The T-Echo and the Solar Node are the app's own models.

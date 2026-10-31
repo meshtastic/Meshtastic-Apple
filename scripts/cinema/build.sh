@@ -35,6 +35,10 @@ hdri() {
 
 # "Sunset Forest", the view out of the tent's door and windows.
 hdri sunset_forest 4k
+# "Kiara 8" at sunset, the light on the fire lookout's cab.
+hdri kiara_8_sunset 8k
+# A clear sunset sky with no horizon in it, over the lookout's forest view and real terrain.
+hdri kloppenheim_06_puresky 4k
 
 # Pinned so a new release can't quietly change the artwork.
 uv run --quiet --with pillow==13.0.0 --with numpy==2.5.4 --with resvg-py==0.5.0 python "$HERE/make_textures.py"
@@ -56,9 +60,44 @@ environment() {
 	echo "Wrote $DEST/$name.heic and ${name}_anchors.json"
 }
 
+# Renders an HDRI alone as <name>.heic, the sky an environment with a cutout image shows behind
+# its glass: sky <name> <hdri file> <rotation> <strength>.
+sky() {
+	local name="$1" file="$2" rotation="$3" strength="$4"
+	rm -f "$HERE/out/$name.png"
+	if [ "$PREVIEW" = 1 ]; then
+		"$BLENDER" -b --python-exit-code 1 -P "$HERE/sky.py" -- --hdri "$file" --rotation "$rotation" --strength "$strength" --out "$HERE/out/${name}_preview.png" --width 2048 --samples 16
+		return
+	fi
+	"$BLENDER" -b --python-exit-code 1 -P "$HERE/sky.py" -- --hdri "$file" --rotation "$rotation" --strength "$strength" --out "$HERE/out/$name.png" --width 4096 --samples 16
+	sips -s format heic -s formatOptions "$HEIC_QUALITY" "$HERE/out/$name.png" --out "$DEST/$name.heic" >/dev/null
+	echo "Wrote $DEST/$name.heic"
+}
+
+# Renders <script>.py as <name>.heic, a landscape an environment with a cutout image shows behind
+# its glass: view <name> <script> <hdri file> <rotation> <strength>.
+view() {
+	local name="$1" script="$2" file="$3" rotation="$4" strength="$5"
+	rm -f "$HERE/out/$name.png"
+	if [ "$PREVIEW" = 1 ]; then
+		"$BLENDER" -b --python-exit-code 1 -P "$HERE/$script.py" -- --hdri "$file" --rotation "$rotation" --strength "$strength" --out "$HERE/out/${name}_preview.png" --width 2048 --samples 32
+		return
+	fi
+	"$BLENDER" -b --python-exit-code 1 -P "$HERE/$script.py" -- --hdri "$file" --rotation "$rotation" --strength "$strength" --out "$HERE/out/$name.png" --width 4096 --samples 128
+	sips -s format heic -s formatOptions "$HEIC_QUALITY" "$HERE/out/$name.png" --out "$DEST/$name.heic" >/dev/null
+	echo "Wrote $DEST/$name.heic"
+}
+
 PREVIEW=0
 if [ "${1:-}" = "--preview" ]; then
 	PREVIEW=1
 fi
 
 environment sar_tent
+environment ham_shack
+environment fire_lookout
+# The lookout's skies, both with the sun where the Kiara sunset that lights the cab has it (each
+# sun was found by rendering the sky alone and looking for its brightest pixel): forested ridges
+# seen from the tower under a clear sunset, and that clear sky alone, for behind real terrain.
+view fire_lookout_sky forest_view kloppenheim_06_puresky_4k.hdr 5.5 1
+sky fire_lookout_puresky kloppenheim_06_puresky_4k.hdr 5.5 1

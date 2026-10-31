@@ -259,9 +259,11 @@ targets:
       # platformFilter restores the pre-XcodeGen `platformFilter = ios` on these
       # embeds: a Mac Catalyst build must not embed watchOS/iOS-only content
       # ("built for macOS but contains embedded content built for watchOS").
+      # visionOS too: a native visionOS app only gets widgets from an
+      # extension built for visionOS.
       - target: WidgetsExtension
         embed: true
-        platformFilter: iOS
+        destinationFilters: [iOS, visionOS]
       - target: MeshtasticMessages
         embed: true
         platformFilter: iOS
@@ -477,12 +479,13 @@ targets:
           PRODUCT_NAME: "$(TARGET_NAME)"
           PROVISIONING_PROFILE_SPECIFIER: ""
           SKIP_INSTALL: "YES"
-          SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
+          SUPPORTED_PLATFORMS: "iphoneos iphonesimulator xros xrsimulator"
           SUPPORTS_MACCATALYST: "YES"
           SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: "NO"
           SWIFT_EMIT_LOC_STRINGS: "YES"
           SWIFT_VERSION: "5.0"
-          TARGETED_DEVICE_FAMILY: "1,2"
+          TARGETED_DEVICE_FAMILY: "1,2,7"
+          XROS_DEPLOYMENT_TARGET: "26.0"
         Release:
           ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: "AccentColor"
           ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME: "WidgetBackground"
@@ -506,12 +509,13 @@ targets:
           PRODUCT_NAME: "$(TARGET_NAME)"
           PROVISIONING_PROFILE_SPECIFIER: ""
           SKIP_INSTALL: "YES"
-          SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
+          SUPPORTED_PLATFORMS: "iphoneos iphonesimulator xros xrsimulator"
           SUPPORTS_MACCATALYST: "YES"
           SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: "NO"
           SWIFT_EMIT_LOC_STRINGS: "YES"
           SWIFT_VERSION: "5.0"
-          TARGETED_DEVICE_FAMILY: "1,2"
+          TARGETED_DEVICE_FAMILY: "1,2,7"
+          XROS_DEPLOYMENT_TARGET: "26.0"
 
   MeshtasticMessages:
     type: app-extension.messages

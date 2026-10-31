@@ -55,6 +55,7 @@ COPYRIGHT = (
 GENERATOR = "Meshtastic-Apple scripts/device-models/svg2usdz.py"
 
 AUTO_LAYER_MM = 0.3      # relief of color regions on the face in auto mode
+SCREEN_MM = 0.1          # thickness of the Screen part over the drawn display
 SAMPLE_MM = 0.5          # target spacing of points along curves
 SIMPLIFY_MM = 0.05       # outline simplification tolerance
 
@@ -390,6 +391,33 @@ def auto_material(hexcolor):
     hue, light, sat = colorsys.rgb_to_hls(r, g, b)
     metal = 0.08 <= hue <= 0.17 and sat > 0.35 and light > 0.4
     return {"color": hexcolor, "roughness": 0.3 if metal else 0.55, "metallic": 1.0 if metal else 0.0}
+
+
+def front_over(parts, x, y):
+    """The highest z of any triangle whose footprint contains (x, y), and the part it belongs to."""
+    best, owner = None, None
+    for name, (meshes, _, _) in parts.items():
+        for m in meshes:
+            z = front_z_of(m, x, y)
+            if z is not None and (best is None or z > best):
+                best, owner = z, name
+    return best, owner
+
+
+def front_z_of(m, x, y):
+    """The highest z of a mesh's triangles whose footprint contains (x, y), or None."""
+    t = m.triangles
+    a, b, c = t[:, 0], t[:, 1], t[:, 2]
+    d = (b[:, 1] - c[:, 1]) * (a[:, 0] - c[:, 0]) + (c[:, 0] - b[:, 0]) * (a[:, 1] - c[:, 1])
+    ok = np.abs(d) > 1e-12
+    d = np.where(ok, d, 1)
+    u = ((b[:, 1] - c[:, 1]) * (x - c[:, 0]) + (c[:, 0] - b[:, 0]) * (y - c[:, 1])) / d
+    v = ((c[:, 1] - a[:, 1]) * (x - c[:, 0]) + (a[:, 0] - c[:, 0]) * (y - c[:, 1])) / d
+    w = 1 - u - v
+    inside = ok & (u >= -1e-9) & (v >= -1e-9) & (w >= -1e-9)
+    if inside.any():
+        return (u * a[:, 2] + v * b[:, 2] + w * c[:, 2])[inside].max()
+    return None
 
 
 def prim_name(s):
@@ -829,6 +857,34 @@ def build(spec, svg_path):
     # buttons and screws on any face, stands. In mm, in the model's frame.
     for sd in spec.get("solid", []):
         add(sd["name"], [solid_mesh(sd, depth)], material_for(sd["material"]))
+
+    # The display's visible area as its own part named Screen, so apps can find it and show the
+    # radio's live screen there. It sits on whatever is frontmost under it, in that part's material.
+    sc = spec.get("screen")
+    if sc:
+        if "Screen" in parts:
+            sys.exit(f"{svg_path}: [screen] given, but a part is already named Screen")
+        x0, y0, x1, y1 = sc["bbox"]
+        (ax, ay), (bx_, by) = to_mm(x0, y0), to_mm(x1, y1)
+        g = box(min(ax, bx_), min(ay, by), max(ax, bx_), max(ay, by))
+        # Probe a grid over the area, a little in from the edges: the sheet goes in front of
+        # everything there, so nothing drawn on the screen pokes through the live picture.
+        gx0, gy0, gx1, gy1 = g.bounds
+        hits = [front_over(parts, gx0 + (gx1 - gx0) * fx, gy0 + (gy1 - gy0) * fy)
+                for fx in np.linspace(0.1, 0.9, 5) for fy in np.linspace(0.1, 0.9, 5)]
+        if any(z is None for z, _ in hits):
+            sys.exit(f"{svg_path}: [screen] bbox isn't all over the model")
+        zs = [z for z, _ in hits]
+        if max(zs) - min(zs) > 1.0:
+            warnings.append(f"[screen] spans parts {max(zs) - min(zs):.1f} mm apart in depth; check its bbox")
+        if sc.get("color"):
+            smat = "c_" + sc["color"].lstrip("#").lower()
+            materials.setdefault(smat, auto_material(sc["color"]))
+        else:
+            # The material of the part under most of the area: the screen as the model shows it.
+            owners = [parts[name][1] for _, name in hits]
+            smat = max(set(owners), key=owners.count)
+        add("Screen", extrude(g, max(zs), SCREEN_MM), smat)
 
     if not parts:
         sys.exit(f"{svg_path}: nothing was built")

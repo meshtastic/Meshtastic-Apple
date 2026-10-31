@@ -11,3 +11,7 @@ source = "https://resource.heltec.cn/download/MeshPocket/datasheet/MeshPocket_1.
 confidence = "vendor"
 edge_radius_mm = 3.0
 front_edge_radius_mm = 2.0
+
+# The display's visible area, for the radio's live screen.
+[screen]
+bbox = [439.49, 398.62, 764.36, 562.19]

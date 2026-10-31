@@ -56,3 +56,7 @@ end = [194.4, -453.5]
 radius_mm = 4.33
 tip_radius_mm = 3.03
 material = "whip"
+
+# The display's visible area, for the radio's live screen.
+[screen]
+bbox = [33.72, 121.25, 206.02, 214.65]

@@ -71,6 +71,9 @@ final class SpatialMapModel {
 	private(set) var imageryUnavailable = false
 	private(set) var isBuildingTerrain = false
 	private(set) var terrainMessage: String?
+	/// The downloaded terrain the last build used, so the cinema's lookout only stands on a summit
+	/// that's still downloaded. Nil until a build finishes.
+	private(set) var downloadedTerrain: [GeoBounds]?
 	private(set) var routes: [SpatialRouteSnapshot] = []
 	/// The trace route picked in the trace route menu. It stays drawn after the flyover lands, so its
 	/// badges and SNR can be read, until it is cleared.
@@ -377,6 +380,14 @@ final class SpatialMapModel {
 		return offlineBasemapCovers(bounds, regions: regions)
 	}
 
+	/// Whether the cinema's lookout can stand on `summit`: in the downloaded terrain, or not known
+	/// yet while the terrain is still building. The cinema picks its summits from the downloaded
+	/// terrain, and keeps a removed one until it next looks.
+	func lookoutStands(on summit: CLLocationCoordinate2D) -> Bool {
+		guard !isBuildingTerrain, let downloadedTerrain else { return true }
+		return downloadedTerrain.contains { $0.contains(summit) }
+	}
+
 	private func offlineBasemapCovers(_ bounds: GeoBounds, regions: [OfflineMapRegion]) -> Bool {
 		checkImportedBasemaps(regions)
 		return SpatialOfflineMap.covers(bounds, basemaps: SpatialOfflineMap.basemapBounds(regions, checked: vectorBasemaps))
@@ -441,6 +452,7 @@ final class SpatialMapModel {
 				let entity = try await SpatialTerrainEntity.make(model)
 				guard !Task.isCancelled, buildKey == key else { return }
 				terrainEntity = entity
+				downloadedTerrain = sources.map(\.bounds)
 				textureSource = model.textureSource
 				imageryUnavailable = model.imageryUnavailable
 				// Key the build by what it drew, so falling back (or not) doesn't rebuild it again.

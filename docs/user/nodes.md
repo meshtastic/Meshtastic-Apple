@@ -238,6 +238,16 @@ For supported devices, the support tier is shown below the hardware name:
 
 For many radios, the hardware image can turn into a 3D model of the device: tap the image, or the rotate button on it. Drag to turn the model and pinch to zoom; the photo button switches back to the picture. On iPhones and iPads that support augmented reality, and on Apple Vision Pro, the AR button places the model in the room around you at its real size. Most models ship with the app and work offline; any that don't are downloaded the first time they're shown.
 
+### Device Screen
+
+When the radio you're connected to has a screen and its firmware can share it, the connected node's detail view shows **Device Screen** under **Administration**. Open it to see the radio's screen live in the app, drawn pixel for pixel. The radio only sends its screen while this view is open and the app is in front; it stops when you leave. **Refresh** asks for the current picture right away, which helps on e-ink screens that redraw slowly.
+
+Below the screen are the radio's buttons: four directions around **OK**, with **Back** underneath. Hold a direction to repeat it, or hold **OK** for a long press. You can also swipe on the screen to move in that direction. On radios with a touch screen, tapping the picture touches the same spot on the radio, and holding it long-presses there. With a keyboard attached, including on a Mac, **Use Keyboard** sends the arrow keys, Return and Esc to the radio until you turn it off; an outline around the screen shows when it's on.
+
+The radio's 3D model at the top of the same node detail shows its screen live too, on the model's own display, while the model is open.
+
+The screen only comes over your direct connection to the radio, never over the mesh, so it isn't available for other nodes. Firmware that can't share its screen doesn't show the row.
+
 ### Where to Buy
 
 For devices with known purchase links, an **I want one** section appears below the hardware info. It shows the official vendor link and regional marketplace options (Amazon, Rokland, AliExpress, and others) sourced from [msh.to](https://msh.to).
