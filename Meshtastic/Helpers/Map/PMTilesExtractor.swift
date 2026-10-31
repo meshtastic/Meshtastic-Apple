@@ -412,7 +412,7 @@ final class PMTilesExtractor {
 		}
 		// A whole-file reply that ends inside the directory would parse as an empty one.
 		guard UInt64(raw.count) == length else { throw PMTilesExtractorError.rangeMismatch }
-		let decompressed = compression == .gzip ? (PMTilesArchive.gunzip(raw) ?? raw) : raw
+		guard let decompressed = PMTilesArchive.decode(raw, compression: compression) else { throw PMTilesExtractorError.badHeader }
 		let entries = PMTilesArchive.deserializeDirectory(decompressed)
 		leafCache[key] = entries
 		return entries
