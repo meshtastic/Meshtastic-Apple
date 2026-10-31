@@ -167,6 +167,7 @@ enum SpatialOfflineMap {
 	struct Shapes: @unchecked Sendable {
 		let polygons: [OfflineMapPolygon]
 		let polylines: [OfflineMapPolyline]
+		var labels: [OfflineMapLabel] = []
 	}
 
 	/// Decodes the downloaded basemaps that touch the box. Nil when none do, or when cancelled.
@@ -176,6 +177,8 @@ enum SpatialOfflineMap {
 		let bounds = frame.bounds
 		var polygons: [OfflineMapPolygon] = []
 		var polylines: [OfflineMapPolyline] = []
+		var labels: [OfflineMapLabel] = []
+		var labelKeys: Set<String> = []
 		var tileCount = 0
 		var decoded: [GeoBounds] = []
 		let started = Date()
@@ -195,10 +198,11 @@ enum SpatialOfflineMap {
 			decoded.append(coverage)
 			polygons += result.polygons
 			polylines += result.polylines
+			labels += result.labels.filter { labelKeys.insert($0.key).inserted }
 		}
 		guard tileCount > 0 else { return nil }
-		Logger.services.info("🧊 [Spatial] Offline map: \(polygons.count) fills, \(polylines.count) lines from \(tileCount) tiles in \(String(format: "%.2f", Date().timeIntervalSince(started)), privacy: .public)s")
-		return Shapes(polygons: polygons, polylines: polylines)
+		Logger.services.info("🧊 [Spatial] Offline map: \(polygons.count) fills, \(polylines.count) lines, \(labels.count) labels from \(tileCount) tiles in \(String(format: "%.2f", Date().timeIntervalSince(started)), privacy: .public)s")
+		return Shapes(polygons: polygons, polylines: polylines, labels: labels)
 	}
 
 	/// The tiles that touch this basemap's coverage and are not wholly inside a basemap already decoded.

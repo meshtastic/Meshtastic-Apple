@@ -106,6 +106,11 @@ final class SpatialTerrainBuilder: Sendable {
 				texture = contoured
 			}
 		}
+		// Names go on last, over the shading and contours, as on the Apple layers.
+		if textureSource == .offlineMap, let labels = basemap?.labels, !labels.isEmpty,
+		   let labeled = SpatialOfflineLabels.draw(labels, over: texture, frame: frame, dark: options.dark) {
+			texture = labeled
+		}
 		Logger.services.info("🧊 [Spatial] Built terrain \(grid.columns)x\(grid.rows) (\(geometry.surfaceTriangleCount) triangles, terrain: \(grid.hasAnyTerrain), \(String(describing: textureSource), privacy: .public)) in \(String(format: "%.2f", Date().timeIntervalSince(started)), privacy: .public)s")
 		return SpatialTerrainModel(bounds: bounds, geometry: geometry, texture: texture, textureSource: textureSource, imageryUnavailable: imageryUnavailable)
 	}
