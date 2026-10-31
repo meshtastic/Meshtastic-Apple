@@ -74,6 +74,8 @@ final class PMTilesExtractor {
 		/// range request. Nil when the host sends none (or only a weak one): then a
 		/// replaced archive can't be told apart and the copy is unverified.
 		let sourceETag: String?
+		/// The archive's Last-Modified at planning time, when the host sent one.
+		let sourceLastModified: Date?
 		let header: PMTilesHeader
 		/// The extracted region's geometry and effective zoom range (clamped to the source).
 		let bounds: GeoBounds
@@ -136,12 +138,18 @@ final class PMTilesExtractor {
 	}
 	private var leafCache: [DirectoryKey: [PMTilesArchive.Entry]] = [:]
 
+	/// The extraction time written into each archive's metadata. Injectable so tests
+	/// can compare two extracts byte for byte.
+	private let now: @Sendable () -> Date
+
 	init(session: URLSession = .shared) {
 		fetch = Self.rangeFetcher(session: session)
+		now = { .now }
 	}
 
-	init(fetchRange: @escaping RangeFetcher) {
+	init(fetchRange: @escaping RangeFetcher, now: @escaping @Sendable () -> Date = { .now }) {
 		fetch = fetchRange
+		self.now = now
 	}
 
 	// MARK: - Build resolution
@@ -242,7 +250,7 @@ final class PMTilesExtractor {
 			.map { PMTilesArchive.Entry(tileID: $0.tileID, offset: outputBySource[$0.source] ?? 0, length: $0.length, runLength: 1) }
 			.sorted { $0.tileID < $1.tileID }
 
-		return Plan(sourceURL: sourceURL, sourceBuild: sourceBuild, sourceETag: source.etag, header: header, bounds: bounds, minZoom: lo, maxZoom: hi, blobs: blobs, entries: entries)
+		return Plan(sourceURL: sourceURL, sourceBuild: sourceBuild, sourceETag: source.etag, sourceLastModified: head.lastModified, header: header, bounds: bounds, minZoom: lo, maxZoom: hi, blobs: blobs, entries: entries)
 	}
 
 	/// Convenience: resolve the latest build and return the exact download size for a region.
@@ -300,7 +308,7 @@ final class PMTilesExtractor {
 	/// Writes one plan's header, directory, metadata and tile payloads to an open file.
 	private func write(plan: Plan, to handle: FileHandle, onProgress: (@Sendable (Int64, Int64) -> Void)?) async throws {
 		let rootDir = Self.serializeDirectory(plan.entries)
-		let metadata = Self.metadataJSON()
+		let metadata = Self.metadataJSON(sourceBuild: plan.sourceBuild, sourceETag: plan.sourceETag, extractedAt: now())
 		let tileDataOffset = UInt64(127 + rootDir.count + metadata.count)
 		let tileDataLength = plan.blobs.reduce(UInt64(0)) { $0 + UInt64($1.length) }
 
@@ -509,13 +517,9 @@ final class PMTilesExtractor {
 		return Data(out)
 	}
 
-	static func metadataJSON() -> Data {
-		let json = #"{"attribution":"© OpenStreetMap, Protomaps","name":"Meshtastic offline region"}"#
-		return Data(json.utf8)
-	}
-
 	private func estimatedOverhead(_ plan: Plan) -> Int {
-		Self.serializeDirectory(plan.entries).count + Self.metadataJSON().count + 127
+		Self.serializeDirectory(plan.entries).count
+			+ Self.metadataJSON(sourceBuild: plan.sourceBuild, sourceETag: plan.sourceETag, extractedAt: now()).count + 127
 	}
 
 	// swiftlint:disable:next function_parameter_count
@@ -578,10 +582,27 @@ final class PMTilesExtractor {
 
 extension PMTilesExtractor {
 
-	/// The bytes of one range plus the archive's strong ETag, if the host sent one.
+	/// The bytes of one range plus the archive's strong ETag and Last-Modified, if sent.
 	private struct Chunk {
 		let body: Data
 		let etag: String?
+		var lastModified: Date?
+	}
+
+	/// The archive's current strong ETag, from one 16 KiB range fetch, or nil when the
+	/// host sends none. What a staleness check compares a download's stored tag with.
+	func currentETag(of url: URL) async throws -> String? {
+		try await fetchRange(url, start: 0, end: 16_383, ifMatch: nil).etag
+	}
+
+	/// An HTTP-date (`Fri, 11 Sep 2026 14:58:22 GMT`).
+	static func parseHTTPDate(_ value: String?) -> Date? {
+		guard let value else { return nil }
+		let formatter = DateFormatter()
+		formatter.locale = Locale(identifier: "en_US_POSIX")
+		formatter.timeZone = TimeZone(identifier: "GMT")
+		formatter.dateFormat = "EEE, dd MMM yyyy HH:mm:ss zzz"
+		return formatter.date(from: value)
 	}
 
 	/// One validated range. 412 and 416, or a 206 whose strong ETag differs from
@@ -611,7 +632,7 @@ extension PMTilesExtractor {
 		if response.statusCode == 200 {
 			guard let first = Int(exactly: start), first < body.count else { throw PMTilesExtractorError.rangeMismatch }
 			let last = min(first + wanted, body.count)
-			return Chunk(body: Data(body[(base + first)..<(base + last)]), etag: etag)
+			return Chunk(body: Data(body[(base + first)..<(base + last)]), etag: etag, lastModified: Self.parseHTTPDate(response.header("Last-Modified")))
 		}
 		// The header can claim the whole UInt64 span; the add must not trap.
 		guard let contentRange = response.header("Content-Range"),
@@ -620,7 +641,7 @@ extension PMTilesExtractor {
 			  !overflow, UInt64(body.count) == length else {
 			throw PMTilesExtractorError.rangeMismatch
 		}
-		return Chunk(body: body.count > wanted ? Data(body[base..<(base + wanted)]) : body, etag: etag)
+		return Chunk(body: body.count > wanted ? Data(body[base..<(base + wanted)]) : body, etag: etag, lastModified: Self.parseHTTPDate(response.header("Last-Modified")))
 	}
 
 	/// A validator worth sending: non-empty and strong. A weak tag (`W/"…"`) says the
@@ -645,20 +666,113 @@ extension PMTilesExtractor {
 		return (start, end)
 	}
 
-	/// The production fetcher: one `Range` request per call, bypassing the URL cache.
+	/// The production fetcher: one `Range` request per call, bypassing the URL cache. A host
+	/// that ignores the range answers 200 with the whole file; the transfer is cancelled once
+	/// it passes the end of the range, so a 16 KiB check of a multi-gigabyte archive never
+	/// buffers the archive.
 	static func rangeFetcher(session: URLSession) -> RangeFetcher {
 		{ url, range, ifMatch in
 			var request = URLRequest(url: url)
 			request.setValue("bytes=\(range.lowerBound)-\(range.upperBound)", forHTTPHeaderField: "Range")
 			if let ifMatch { request.setValue(ifMatch, forHTTPHeaderField: "If-Match") }
 			request.cachePolicy = .reloadIgnoringLocalCacheData
-			let (data, response) = try await session.data(for: request)
-			guard let http = response as? HTTPURLResponse else { throw PMTilesExtractorError.rangeRequestFailed(-1) }
+			// A 200 holds the file from byte 0, so the range ends `upperBound + 1` bytes in.
+			let loader = BoundedRangeLoader(wholeFileLimit: Int(clamping: range.upperBound) &+ 1)
+			let (data, http) = try await loader.load(request, in: session)
 			var headers: [String: String] = [:]
 			for (name, value) in http.allHeaderFields {
 				if let name = name as? String, let value = value as? String { headers[name] = value }
 			}
 			return RangeResponse(statusCode: http.statusCode, headers: headers, body: data)
 		}
+	}
+}
+
+/// One range request read in chunks as they arrive. A 200 is cut off once it holds
+/// `wholeFileLimit` bytes; any other status is read to the end.
+private final class BoundedRangeLoader: NSObject, URLSessionDataDelegate, @unchecked Sendable {
+	private let wholeFileLimit: Int
+	private let lock = NSLock()
+	private var body = Data()
+	private var response: HTTPURLResponse?
+	private var continuation: CheckedContinuation<(Data, HTTPURLResponse), Error>?
+
+	init(wholeFileLimit: Int) {
+		self.wholeFileLimit = wholeFileLimit
+	}
+
+	func load(_ request: URLRequest, in session: URLSession) async throws -> (Data, HTTPURLResponse) {
+		let task = session.dataTask(with: request)
+		task.delegate = self
+		return try await withTaskCancellationHandler {
+			try await withCheckedThrowingContinuation { continuation in
+				lock.withLock { self.continuation = continuation }
+				task.resume()
+			}
+		} onCancel: {
+			task.cancel()
+		}
+	}
+
+	private func finish(_ result: Result<(Data, HTTPURLResponse), Error>) {
+		let continuation = lock.withLock {
+			defer { self.continuation = nil }
+			return self.continuation
+		}
+		continuation?.resume(with: result)
+	}
+
+	func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse) async -> URLSession.ResponseDisposition {
+		guard let http = response as? HTTPURLResponse else {
+			finish(.failure(PMTilesExtractorError.rangeRequestFailed(-1)))
+			return .cancel
+		}
+		lock.withLock { self.response = http }
+		return .allow
+	}
+
+	func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+		let done: (Data, HTTPURLResponse)? = lock.withLock {
+			body.append(data)
+			guard let response, response.statusCode == 200, body.count >= wholeFileLimit else { return nil }
+			return (body, response)
+		}
+		if let done {
+			dataTask.cancel()
+			finish(.success(done))
+		}
+	}
+
+	func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+		let (body, response) = lock.withLock { (self.body, self.response) }
+		if let error {
+			finish(.failure(error))
+		} else if let response {
+			finish(.success((body, response)))
+		} else {
+			finish(.failure(PMTilesExtractorError.rangeRequestFailed(-1)))
+		}
+	}
+}
+
+// MARK: - Metadata
+
+extension PMTilesExtractor {
+
+	/// Keys this app adds to an extracted archive's metadata, next to the attribution.
+	enum MetadataKey {
+		static let sourceBuild = "meshtastic:source_build"
+		static let sourceETag = "meshtastic:source_etag"
+		static let extractedAt = "meshtastic:extracted_at"
+	}
+
+	/// The archive's metadata JSON: the attribution and name, plus where and when the
+	/// tiles came from. Keys are sorted so the same inputs give the same bytes.
+	static func metadataJSON(sourceBuild: String? = nil, sourceETag: String? = nil, extractedAt: Date? = nil) -> Data {
+		var json = ["attribution": "© OpenStreetMap, Protomaps", "name": "Meshtastic offline region"]
+		json[MetadataKey.sourceBuild] = sourceBuild
+		json[MetadataKey.sourceETag] = sourceETag
+		json[MetadataKey.extractedAt] = extractedAt.map { ISO8601DateFormatter().string(from: $0) }
+		return (try? JSONSerialization.data(withJSONObject: json, options: [.sortedKeys, .withoutEscapingSlashes])) ?? Data("{}".utf8)
 	}
 }

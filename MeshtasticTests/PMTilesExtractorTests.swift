@@ -416,7 +416,8 @@ struct PMTilesExtractorRangeIntegrityTests {
 	}
 
 	private func extract(from server: FakeRangeServer) async throws -> (file: Data, plan: PMTilesExtractor.Plan) {
-		let extractor = PMTilesExtractor(fetchRange: server.fetcher)
+		// A fixed clock: the extraction time goes into the metadata, and these compare files.
+		let extractor = PMTilesExtractor(fetchRange: server.fetcher, now: { Date(timeIntervalSince1970: 1_800_000_000) })
 		let plan = try await extractor.makePlan(sourceURL: url, sourceBuild: "test", bounds: world, minZoom: 1, maxZoom: 1)
 		let destination = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).pmtiles")
 		defer { try? FileManager.default.removeItem(at: destination) }
@@ -555,5 +556,59 @@ struct PMTilesExtractorRangeIntegrityTests {
 		#expect(PMTilesExtractor.strongETag("W/\"abc\"") == nil)
 		#expect(PMTilesExtractor.strongETag("") == nil)
 		#expect(PMTilesExtractor.strongETag(nil) == nil)
+	}
+}
+
+@Suite("PMTilesExtractor provenance")
+struct PMTilesExtractorProvenanceTests {
+
+	private let url = URL(fileURLWithPath: "/build.pmtiles")
+	private let world = GeoBounds(minLon: -180, minLat: -85, maxLon: 180, maxLat: 85)
+	private let extractedAt = Date(timeIntervalSince1970: 1_800_000_000)
+
+	private func extractor(etag: String?, lastModified: String?) -> PMTilesExtractor {
+		let archive = makeArchive(tiles: [ArchiveTile(z: 0, x: 0, y: 0, payload: Data("tile".utf8))], minZoom: 0, maxZoom: 0)
+		return PMTilesExtractor(fetchRange: { _, range, _ in
+			let start = Int(range.lowerBound)
+			let end = min(Int(range.upperBound), archive.count - 1)
+			var headers = ["Content-Range": "bytes \(start)-\(end)/\(archive.count)"]
+			headers["ETag"] = etag
+			headers["Last-Modified"] = lastModified
+			return .init(statusCode: 206, headers: headers, body: archive.subdata(in: start..<(end + 1)))
+		}, now: { [extractedAt] in extractedAt })
+	}
+
+	/// The metadata JSON of a written archive, found through its header.
+	private func metadata(of file: Data) throws -> [String: String] {
+		func u64(_ at: Int) -> Int { Int(file.subdata(in: at..<(at + 8)).withUnsafeBytes { $0.loadUnaligned(as: UInt64.self).littleEndian }) }
+		let json = file.subdata(in: u64(24)..<(u64(24) + u64(32)))
+		return try #require(try JSONSerialization.jsonObject(with: json) as? [String: String])
+	}
+
+	@Test func extractWritesSourceBuildETagAndTimeIntoMetadata() async throws {
+		let extractor = extractor(etag: "\"abc-519\"", lastModified: "Fri, 11 Sep 2026 14:58:22 GMT")
+		let plan = try await extractor.makePlan(sourceURL: url, sourceBuild: "20261030", bounds: world, minZoom: 0, maxZoom: 0)
+		let destination = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).pmtiles")
+		defer { try? FileManager.default.removeItem(at: destination) }
+		try await extractor.extract(plan: plan, to: destination)
+
+		let json = try metadata(of: Data(contentsOf: destination))
+		#expect(json["attribution"] == "© OpenStreetMap, Protomaps")
+		#expect(json[PMTilesExtractor.MetadataKey.sourceBuild] == "20261030")
+		#expect(json[PMTilesExtractor.MetadataKey.sourceETag] == "\"abc-519\"")
+		#expect(json[PMTilesExtractor.MetadataKey.extractedAt] == "2027-01-15T08:00:00Z")
+		#expect(PMTilesArchive(url: destination)?.tileData(z: 0, x: 0, y: 0) == Data("tile".utf8))
+	}
+
+	@Test func planKeepsLastModified() async throws {
+		let plan = try await extractor(etag: nil, lastModified: "Fri, 11 Sep 2026 14:58:22 GMT")
+			.makePlan(sourceURL: url, sourceBuild: "Mapterhorn", bounds: world, minZoom: 0, maxZoom: 0)
+		#expect(plan.sourceLastModified == Date(timeIntervalSince1970: 1_789_138_702))
+		#expect(plan.sourceETag == nil)
+	}
+
+	@Test func metadataWithoutProvenanceKeepsOnlyAttributionAndName() throws {
+		let json = try #require(try JSONSerialization.jsonObject(with: PMTilesExtractor.metadataJSON()) as? [String: String])
+		#expect(Set(json.keys) == ["attribution", "name"])
 	}
 }
