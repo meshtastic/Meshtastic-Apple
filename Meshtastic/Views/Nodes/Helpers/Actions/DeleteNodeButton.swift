@@ -34,7 +34,12 @@ struct DeleteNodeButton: View {
 				) {
 					Button("OK") {	}.keyboardShortcut(.defaultAction)
 				} message: {
-					Text("Delete Node?")
+					// One Text: an alert's message doesn't stack views.
+					if TrackedWidgetNodes.shared.nums.contains(node.num) {
+						Text("Delete Node?") + Text(" ") + Text(TrackedWidgetNodes.deleteWarning)
+					} else {
+						Text("Delete Node?")
+					}
 				}
 			}
 			.hostedConfirmation(
@@ -65,6 +70,13 @@ struct DeleteNodeButton: View {
 						}
 					}
 				}
+			} message: {
+				if TrackedWidgetNodes.shared.nums.contains(node.num) {
+					Text(TrackedWidgetNodes.deleteWarning)
+				}
+			}
+			.task {
+				await TrackedWidgetNodes.shared.refresh()
 			}
 		}
 	}

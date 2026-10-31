@@ -228,6 +228,13 @@ struct NodeList: View {
 		}
 		.hostedConfirmation("Are you sure?", isPresented: $isPresentingDeleteNodeAlert, titleVisibility: .visible) {
 			deleteNodeButton
+		} message: {
+			if TrackedWidgetNodes.shared.nums.contains(deleteNodeId) {
+				Text(TrackedWidgetNodes.deleteWarning)
+			}
+		}
+		.task {
+			await TrackedWidgetNodes.shared.refresh()
 		}
 		.hostedSheet(item: $shareContactNode) { selectedNode in
 			// Mirror NodeDetail's rule: only your own (connected) node is marked
