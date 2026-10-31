@@ -169,6 +169,10 @@ struct ClusterMapOverlay: Identifiable {
 	let id: AnyHashable
 	let overlay: MKOverlay
 	let style: ClusterMapOverlayStyle
+	/// Item ids the overlay belongs to, such as the nodes a precision circle is drawn for. It's
+	/// hidden while every one of them is inside a cluster, so a cluster badge doesn't sit on stray
+	/// circles.
+	var owners: [AnyHashable] = []
 }
 
 /// A standalone, non-clustering map annotation hosting an arbitrary SwiftUI view (route start/finish
@@ -485,6 +489,10 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		private var overlaysByID: [AnyHashable: ClusterMapOverlay] = [:]
 		/// Per-MKOverlay style, keyed by object identity, for O(1) lookup in `rendererFor`.
 		private var styleByOverlay: [ObjectIdentifier: ClusterMapOverlayStyle] = [:]
+		/// Per-MKOverlay owners, for overlays hidden while their items are clustered.
+		private var ownersByOverlay: [ObjectIdentifier: [AnyHashable]] = [:]
+		/// Items inside a cluster now, refreshed as clusters form and break up.
+		private var clusteredIDs: Set<AnyHashable> = []
 
 		/// True while `updateUIView` is mutating the map. Mutating annotations/overlays hosts SwiftUI
 		/// pins and writes the region binding back, either of which can synchronously re-invalidate
@@ -728,9 +736,11 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 					if existing.overlay === entry.overlay { continue } // unchanged
 					toRemove.append(existing.overlay)
 					styleByOverlay[ObjectIdentifier(existing.overlay)] = nil
+					ownersByOverlay[ObjectIdentifier(existing.overlay)] = nil
 				}
 				overlaysByID[entry.id] = entry
 				styleByOverlay[ObjectIdentifier(entry.overlay)] = entry.style
+				ownersByOverlay[ObjectIdentifier(entry.overlay)] = entry.owners.isEmpty ? nil : entry.owners
 				toAdd.append(entry)
 			}
 
@@ -738,6 +748,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 			for id in overlaysByID.keys where !seen.contains(id) {
 				if let gone = overlaysByID.removeValue(forKey: id) {
 					styleByOverlay[ObjectIdentifier(gone.overlay)] = nil
+					ownersByOverlay[ObjectIdentifier(gone.overlay)] = nil
 					toRemove.append(gone.overlay)
 				}
 			}
@@ -1018,13 +1029,42 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 			renderer.lineDashPattern = style.lineDash
 			renderer.lineDashPhase = style.lineDashPhase
 			renderer.lineCap = style.lineCap
+			renderer.alpha = isHiddenByCluster(overlay) ? 0 : 1
 			return renderer
+		}
+
+		// MARK: Overlays of clustered items
+
+		private func isHiddenByCluster(_ overlay: MKOverlay) -> Bool {
+			guard let owners = ownersByOverlay[ObjectIdentifier(overlay)] else { return false }
+			return owners.allSatisfy(clusteredIDs.contains)
+		}
+
+		/// Hides the overlays whose items have all gone into clusters, and shows them again when the
+		/// clusters break up.
+		func refreshClusteredOverlays(on mapView: MKMapView) {
+			guard !ownersByOverlay.isEmpty else { return }
+			let clustered = Set(mapView.annotations
+				.compactMap { $0 as? MKClusterAnnotation }
+				.flatMap(\.memberAnnotations)
+				.compactMap { ($0 as? ItemAnnotation<Item>).map { AnyHashable($0.identifier) } })
+			guard clustered != clusteredIDs else { return }
+			clusteredIDs = clustered
+			for entry in overlaysByID.values where !entry.owners.isEmpty {
+				mapView.renderer(for: entry.overlay)?.alpha = isHiddenByCluster(entry.overlay) ? 0 : 1
+			}
+		}
+
+		/// Clusters form and break up as views come and go.
+		func mapView(_ mapView: MKMapView, didAdd views: [MKAnnotationView]) {
+			refreshClusteredOverlays(on: mapView)
 		}
 
 		// MARK: Camera write-back (user gestures → region binding), loop-guarded
 
 		func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
 			updatePitchControl(for: mapView)
+			refreshClusteredOverlays(on: mapView)
 			// Ignore the callback caused by our own external write (guard #1).
 			guard !isApplyingExternalRegion else {
 				isApplyingExternalRegion = false
@@ -1149,6 +1189,10 @@ extension ItemAnnotation: AnyClusteredAnnotation {
 private class HostingAnnotationViewBase: MKAnnotationView {
 	/// The persistent `UIView & UIContentView` made from a `UIHostingConfiguration`.
 	private var hostContentView: (UIView & UIContentView)?
+	/// The view's size as a share of what it draws. MapKit clusters views whose frames touch, so a
+	/// smaller frame lets pins overlap before they merge. The content draws past the frame, and
+	/// taps anywhere on it still land.
+	var collisionScale: CGFloat = 1
 
 	override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
 		super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
@@ -1180,15 +1224,38 @@ private class HostingAnnotationViewBase: MKAnnotationView {
 		// Size the annotation view to the hosted content so hit-testing / anchoring are correct.
 		let target = hostContentView?.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize)
 			?? CGSize(width: 40, height: 40)
-		frame = CGRect(origin: frame.origin, size: CGSize(width: max(target.width, 1),
-														  height: max(target.height, 1)))
+		// Resize about the center: MapKit has already placed the center on the coordinate, and
+		// changing the frame from its old corner would move the pin until the next layout.
+		bounds = CGRect(origin: .zero, size: CGSize(width: max(target.width * collisionScale, 1),
+													height: max(target.height * collisionScale, 1)))
 		centerOffset = .zero // MapKit places the view's CENTER on the coordinate — what we want.
 	}
+
+	/// Taps land anywhere on the drawn content, which can be larger than the frame.
+	override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+		if let hostContentView, hostContentView.frame.contains(point) { return true }
+		return super.point(inside: point, with: event)
+	}
+}
+
+/// How much of a pin or cluster badge counts when MapKit decides what to merge. Half the circle:
+/// pins can overlap by half before they merge, so the map groups only pins that would cover each
+/// other's names.
+enum ClusterMapCollision {
+	static let scale: CGFloat = 0.5
 }
 
 /// Hosts an arbitrary SwiftUI pin. Registered with the map so MapKit dequeues / reuses it.
 private final class HostingAnnotationView: HostingAnnotationViewBase {
 	static let reuseID = "ClusterMapView.pin"
+
+	override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
+		super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
+		collisionScale = ClusterMapCollision.scale
+	}
+
+	@available(*, unavailable)
+	required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
 
 	/// MapKit reads `clusteringIdentifier` off the annotation VIEW when forming clusters; mirror the
 	/// annotation's identifier onto the view whenever the (reused) annotation is reassigned.
@@ -1208,6 +1275,7 @@ private final class HostingClusterView: HostingAnnotationViewBase {
 	override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
 		super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
 		displayPriority = .defaultHigh // clusters win over individual pins when they overlap
+		collisionScale = ClusterMapCollision.scale
 	}
 
 	@available(*, unavailable)

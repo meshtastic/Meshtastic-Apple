@@ -1799,7 +1799,7 @@ struct MeshMapMK: View {
 	private func linkCoordinate(for position: PositionEntity) -> CLLocationCoordinate2D? {
 		if position.isPreciseLocation { return position.nodeCoordinate }
 		guard position.isReducedPrecision, !preciseLocationsOnly else { return nil }
-		return position.fuzzedNodeCoordinate
+		return position.nodeCoordinate
 	}
 
 	/// SNR pills for the direct links that fit at the current zoom.
@@ -1961,8 +1961,11 @@ struct MeshMapMK: View {
 
 		// Reduced-precision accuracy circles, deduped by location + precision (lowest nodeNum wins).
 		var lowestNumForKey: [ReducedPrecisionMapCircleKey: Int64] = [:]
+		// The pins each circle is drawn for, so it hides while they're all clustered.
+		var ownersForKey: [ReducedPrecisionMapCircleKey: [AnyHashable]] = [:]
 		for snap in visiblePositionSnapshots where PositionEntity.reducedPrecisionBits ~= snap.precisionBits {
 			let key = ReducedPrecisionMapCircleKey(latitudeI: snap.latitudeI, longitudeI: snap.longitudeI, precisionBits: snap.precisionBits)
+			ownersForKey[key, default: []].append(AnyHashable(MeshMapItem.node(snap).id))
 			if let existing = lowestNumForKey[key] {
 				if snap.nodeNum < existing { lowestNumForKey[key] = snap.nodeNum }
 			} else {
@@ -1977,7 +1980,8 @@ struct MeshMapMK: View {
 			result.append(ClusterMapOverlay(
 				id: "circle-\(nodeNum)",
 				overlay: MKCircle(center: center, radius: radius),
-				style: ClusterMapOverlayStyle(strokeUIColor: .white, fillUIColor: color.withAlphaComponent(0.25), lineWidth: 1)
+				style: ClusterMapOverlayStyle(strokeUIColor: .white, fillUIColor: color.withAlphaComponent(0.25), lineWidth: 1),
+				owners: ownersForKey[key] ?? []
 			))
 		}
 
@@ -2003,11 +2007,9 @@ struct MeshMapMK: View {
 
 	private func makePositionSnapshots(from positions: [PositionEntity]) -> [MeshMapPositionSnapshot] {
 		positions.compactMap { position -> MeshMapPositionSnapshot? in
-			let coordinate: CLLocationCoordinate2D = if position.isPreciseLocation {
-				position.nodeCoordinate ?? LocationsHandler.DefaultLocation
-			} else {
-				position.fuzzedNodeCoordinate ?? LocationsHandler.DefaultLocation
-			}
+			// An imprecise node sits at the center of its precision circle. Nodes stacked on the same
+			// spot open a picker when tapped, so they don't need nudging apart to be tappable.
+			let coordinate = position.nodeCoordinate ?? LocationsHandler.DefaultLocation
 			let precisionBits = position.precisionBits
 			// Was `reducedPrecisionBits ~= precisionBits || precisionBits == 32`, which silently
 			// dropped positions with precisionBits == 0 (isPreciseLocation's other "precise" sentinel)
