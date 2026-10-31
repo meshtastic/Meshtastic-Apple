@@ -47,6 +47,8 @@ final class SpatialSceneController {
 	let coverageContainer = Entity()
 	/// Holds the weather radar overlay, under the coverage.
 	let weatherRadarContainer = Entity()
+	/// Holds the raised buildings, hidden while a zoom is previewed.
+	let buildingsContainer = Entity()
 	let nodesContainer = Entity()
 	let selectionContainer = Entity()
 	let trafficContainer = Entity()
@@ -295,6 +297,7 @@ final class SpatialSceneController {
 		updateCounterScale()
 		updatePinVisibility()
 		updateLookoutVisibility()
+		updateBuildingsVisibility()
 	}
 
 	/// Hides pins that would stand past the rim, with their labels, links and selection.
@@ -763,6 +766,26 @@ extension SpatialSceneController {
 			weatherRadarEntity = entity
 		}
 		weatherRadarContainer.isEnabled = weatherRadarEntity != nil && terrainEntity != nil && revision != nil && revision == placement?.revision
+	}
+
+	/// Swaps in the raised buildings. The model drops them as soon as the terrain under them is
+	/// replaced, so whatever is here stands on the terrain shown. Hidden while a zoom is previewed:
+	/// enlarged, they would stand past the rim.
+	func apply(buildings entity: ModelEntity?) {
+		if buildingsContainer.parent == nil { terrainAnchor.addChild(buildingsContainer) }
+		let current = buildingsContainer.children.first
+		if current !== entity {
+			current?.removeFromParent()
+			if let entity {
+				buildingsContainer.addChild(entity)
+				applyLight(to: entity)
+			}
+		}
+		updateBuildingsVisibility()
+	}
+
+	fileprivate func updateBuildingsVisibility() {
+		buildingsContainer.isEnabled = !buildingsContainer.children.isEmpty && preview == .identity
 	}
 }
 extension SpatialSceneController {
