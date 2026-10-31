@@ -54,7 +54,7 @@ enum LookoutTerrain {
 	static let maxRadius = 90_000.0
 	/// The true bearing the cab's front (the screen) faces, so the painted sunset sits in the
 	/// west-northwest where a sunset is.
-	static let frontHeading = 156.0
+	static let frontHeading = SpatialLookout.frontHeading
 	/// Earth's radius with the usual allowance for refraction: far ridges sit below a flat horizon.
 	static let earthRadius = 7_450_000.0
 	/// The cab's floor stands this far above the summit, on its footing, as a lookout does; the
