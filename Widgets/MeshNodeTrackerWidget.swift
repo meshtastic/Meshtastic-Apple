@@ -165,10 +165,12 @@ struct MeshNodeTrackerWidget: Widget {
 		}
 		.configurationDisplayName("Node Tracker")
 		.description("Battery, signal and last heard for a node you pick.")
-		.supportedFamilies([
-			.systemSmall, .systemMedium,
-			.accessoryInline, .accessoryCircular, .accessoryRectangular
-		])
+		// The Lock Screen sizes don't exist on Vision Pro.
+		#if os(iOS)
+		.supportedFamilies([.systemSmall, .systemMedium, .accessoryInline, .accessoryCircular, .accessoryRectangular])
+		#else
+		.supportedFamilies([.systemSmall, .systemMedium])
+		#endif
 	}
 }
 
@@ -190,12 +192,14 @@ struct NodeTrackerWidgetView: View {
 	@ViewBuilder
 	private func content(_ configured: TrackedNodeEntity) -> some View {
 		switch family {
+		#if os(iOS)
 		case .accessoryInline:
 			TrackerInlineView(configured: configured, node: entry.node)
 		case .accessoryCircular:
 			TrackerCircularView(configured: configured, node: entry.node)
 		case .accessoryRectangular:
 			TrackerRectangularView(configured: configured, node: entry.node)
+		#endif
 		case .systemMedium:
 			TrackerMediumView(configured: configured, node: entry.node, snapshot: entry.snapshot)
 		default:
@@ -206,6 +210,7 @@ struct NodeTrackerWidgetView: View {
 	@ViewBuilder
 	private var noNodeView: some View {
 		switch family {
+		#if os(iOS)
 		case .accessoryInline:
 			Text("Choose a node")
 		case .accessoryCircular:
@@ -213,6 +218,7 @@ struct NodeTrackerWidgetView: View {
 				.font(.title2)
 				.widgetAccentable()
 				.accessibilityLabel("Choose a node to track")
+		#endif
 		default:
 			VStack(spacing: 6) {
 				Image(systemName: "person.crop.circle.badge.questionmark")

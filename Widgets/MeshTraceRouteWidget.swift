@@ -57,8 +57,16 @@ struct MeshTraceRouteWidget: Widget {
 		}
 		.configurationDisplayName("Trace Route")
 		.description("Your most recent trace route, requested or seen on the mesh.")
-		.supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
 		.contentMarginsDisabled()
+		#if os(visionOS)
+		// On Vision Pro it hangs on a wall like the print in the cinema tent:
+		// printed on paper, standing off the wall, up to a board-sized print.
+		.supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .systemExtraLarge])
+		.widgetTexture(.paper)
+		.supportedMountingStyles([.elevated])
+		#else
+		.supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
+		#endif
 	}
 }
 
@@ -71,6 +79,10 @@ struct MeshTraceRouteWidgetView: View {
 	var body: some View {
 		if let route = entry.route {
 			switch family {
+			#if os(visionOS)
+			case .systemExtraLarge:
+				RouteBoardView(route: route, map: mapImage(wide: true, route: route))
+			#endif
 			case .systemLarge:
 				RouteLargeView(route: route, map: mapImage(wide: true, route: route))
 			case .systemMedium:
@@ -203,6 +215,45 @@ private struct RouteLargeView: View {
 		.padding(14)
 	}
 }
+
+#if os(visionOS)
+/// The board-sized print for a wall on Vision Pro: the map on the left, the
+/// route beside it. Seen from across the room the system asks for less
+/// detail, and the board keeps only the map, the title and the age.
+private struct RouteBoardView: View {
+	@Environment(\.levelOfDetail) private var levelOfDetail
+	let route: WidgetTraceRoute
+	let map: UIImage?
+
+	var body: some View {
+		HStack(alignment: .top, spacing: 18) {
+			if let map {
+				RouteMapImage(image: map)
+					.frame(maxWidth: .infinity, maxHeight: .infinity)
+			}
+			VStack(alignment: .leading, spacing: 10) {
+				RouteHeader(route: route, compact: false)
+				RouteTitle(route: route, font: simplified ? .title.weight(.semibold) : .title3.weight(.semibold), lineLimit: 3)
+				if !simplified {
+					StatTiles(route: route)
+					VStack(alignment: .leading, spacing: 8) {
+						HopChain(stops: route.forward, color: RouteStyle.forward, size: 24)
+						if !route.back.isEmpty {
+							HopChain(stops: route.back, color: RouteStyle.back, size: 24, startRing: .white, endRing: RouteStyle.brand)
+						}
+					}
+				}
+				Spacer(minLength: 0)
+				AgeLine(route: route)
+			}
+			.frame(maxWidth: map == nil ? .infinity : 280, alignment: .leading)
+		}
+		.padding(18)
+	}
+
+	private var simplified: Bool { levelOfDetail == .simplified }
+}
+#endif
 
 // MARK: Pieces
 
