@@ -68,7 +68,19 @@ final class LookoutScene {
 			return
 		}
 		bounds = union
+		// The files the search and the peak names read, so a list found in files that have since
+		// gone isn't kept.
+		let terrainFiles = Set(sources.flatMap { [$0.globalURL.lastPathComponent] + ($0.regionalURL.map { [$0.lastPathComponent] } ?? []) })
+		let basemapFiles = Set(OfflineMapManager.persistedRegionFiles().filter { $0.region.hasBasemap }.map(\.url.lastPathComponent))
+		let maps = LookoutSiteCacheKey.maps(in: manager.regions, terrainFiles: terrainFiles, basemapFiles: basemapFiles)
+		if let kept = LookoutSiteCache.sites(for: maps) {
+			sites = kept
+			status = sites.isEmpty ? .noSummits : .ready
+			Logger.services.info("🎬 [Cinema] Lookout sites: \(self.sites.count, privacy: .public) kept from the last search")
+			return
+		}
 		sites = await LookoutPeakNames.named(await LookoutTerrain.sites(in: union, source: store))
+		LookoutSiteCache.store(sites, for: maps)
 		status = sites.isEmpty ? .noSummits : .ready
 		Logger.services.info("🎬 [Cinema] Lookout sites: \(self.sites.count, privacy: .public) in the downloaded terrain \(union.minLat, privacy: .public)..\(union.maxLat, privacy: .public), \(union.minLon, privacy: .public)..\(union.maxLon, privacy: .public)")
 	}

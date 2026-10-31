@@ -14,7 +14,7 @@ import simd
 
 /// A summit the fire lookout can stand on: one of the highest points in the terrain the app has
 /// downloaded for the spatial map.
-struct LookoutSite: Identifiable, Hashable, Sendable {
+struct LookoutSite: Identifiable, Hashable, Codable, Sendable {
 	let latitude: Double
 	let longitude: Double
 	/// Meters above sea level.
