@@ -11,7 +11,7 @@ import UIKit
 /// Marks the bezel and handles, so a tap on them doesn't clear the selection.
 struct SpatialWheelComponent: Component {}
 
-/// The compass bezel around the disk's rim, with N E S W on top, and eight handles sticking out
+/// The compass bezel around the disk's rim, with N E S W on top and on its outer wall, and eight handles sticking out
 /// like a ship's wheel. It sits in the rotating model, so north on the bezel stays with the map.
 /// Its own sizes are in meters: the entity is counter-scaled against the model's scale.
 @MainActor
@@ -27,6 +27,10 @@ final class SpatialWheelEntity {
 	private var shape: Shape?
 	private let bezel = ModelEntity()
 	private let marks = Entity()
+	/// The same letters standing on the bezel's outer wall, read from beside the table.
+	private let sideMarks = Entity()
+	/// E, S and W's height as built, to size the side letters to the wall. N is built a size up.
+	private var sideLetterHeight: Float = 0
 	private var handles: [Entity] = []
 
 	private static let bezelMaterial: PhysicallyBasedMaterial = {
@@ -51,7 +55,9 @@ final class SpatialWheelEntity {
 		bezel.name = "bezel"
 		root.addChild(bezel)
 		root.addChild(marks)
+		root.addChild(sideMarks)
 		addMarks()
+		addSideMarks()
 		for _ in 0..<SpatialWheelLayout.handleCount {
 			let handle = makeHandle()
 			handles.append(handle)
@@ -91,6 +97,17 @@ final class SpatialWheelEntity {
 			mark.position = [p.x, top + 0.0005, p.y]
 		}
 
+		// Side letters stand on the outer wall below the chamfer, halfway up it, sized so E, S and
+		// W fill most of its height, as the top letters fill the bezel's width.
+		let wallTop = top - min(SpatialWheelLayout.chamfer, width / 3, max(top - bottom, 0) / 2)
+		let wallHeight = max(wallTop - bottom, 0)
+		let fit = sideLetterHeight > 0 && wallHeight > 0 ? wallHeight * 0.72 / sideLetterHeight : 1
+		for (mark, point) in zip(sideMarks.children, SpatialWheelLayout.compassPoints) {
+			let p = SpatialWheelLayout.point(distance: inner + width, angle: point.angle)
+			mark.position = [p.x, (wallTop + bottom) / 2, p.y]
+			mark.scale = SIMD3(repeating: fit)
+		}
+
 		let knobY = max(top - SpatialWheelLayout.knobRadius - 0.002, bottom + SpatialWheelLayout.knobRadius)
 		let spokeStart = inner + width - 0.002
 		for (handle, angle) in zip(handles, SpatialWheelLayout.handleAngles) {
@@ -123,6 +140,32 @@ final class SpatialWheelEntity {
 			// At angle a the center is in direction a + π; turn the letter's top (-z) to face it.
 			holder.orientation = simd_quatf(angle: point.angle + .pi / 2, axis: [0, 1, 0])
 			marks.addChild(holder)
+		}
+	}
+
+	/// The four letters again, standing upright on the outer wall facing out, raised off it. N is red.
+	private func addSideMarks() {
+		for point in SpatialWheelLayout.compassPoints {
+			let isNorth = point.letter == "N"
+			let mesh = MeshResource.generateText(
+				point.letter,
+				extrusionDepth: 0.0008,
+				font: .systemFont(ofSize: isNorth ? 0.015 : 0.013, weight: .heavy),
+				containerFrame: .zero,
+				alignment: .center,
+				lineBreakMode: .byClipping
+			)
+			let letter = ModelEntity(mesh: mesh, materials: [UnlitMaterial(color: isNorth ? .systemRed : .white)])
+			// Center the glyph on its own origin with its back on the wall.
+			let bounds = mesh.bounds
+			letter.position = [-bounds.center.x, -bounds.center.y, -bounds.min.z + 0.0002]
+			if !isNorth { sideLetterHeight = max(sideLetterHeight, bounds.extents.y) }
+			let holder = Entity()
+			holder.name = "side-mark-\(point.letter)"
+			holder.addChild(letter)
+			// At angle a the wall faces out along a; turn the letter's face (+z) that way.
+			holder.orientation = simd_quatf(angle: point.angle + .pi / 2, axis: [0, 1, 0])
+			sideMarks.addChild(holder)
 		}
 	}
 
