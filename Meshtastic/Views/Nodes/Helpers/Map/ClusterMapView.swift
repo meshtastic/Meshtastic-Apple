@@ -60,6 +60,9 @@ struct ClusterMapOverlayStyle {
 	/// the direction of travel. Two lines over the same leg in opposite directions both shift to
 	/// their own right, so they sit side by side.
 	var sideOffset: CGFloat = 0
+	/// The stroke width in points at each map zoom level, in place of `lineWidth`, set again when the
+	/// zoom changes. A zoom where it is 0 hides the overlay.
+	var widthAtZoom: (@Sendable (Double) -> CGFloat)?
 }
 
 /// An `MKPolylineRenderer` that also draws small chevrons along the line pointing in the direction of
@@ -1030,7 +1033,50 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 			renderer.lineDashPhase = style.lineDashPhase
 			renderer.lineCap = style.lineCap
 			renderer.alpha = isHiddenByCluster(overlay) ? 0 : 1
+			if let widthAtZoom = style.widthAtZoom {
+				applyZoomWidth(widthAtZoom, to: renderer, zoom: zoomLevel(of: mapView))
+			}
 			return renderer
+		}
+
+		// MARK: Widths that follow the zoom
+
+		/// The map zoom at the center of the view, from the map distance across 100 points there.
+		/// Unlike `visibleMapRect`, whose width grows as the map turns, this stays put when the
+		/// map is rotated.
+		private func zoomLevel(of mapView: MKMapView) -> Double {
+			let center = CGPoint(x: mapView.bounds.midX, y: mapView.bounds.midY)
+			let span: CGFloat = 100
+			let left = MKMapPoint(mapView.convert(CGPoint(x: center.x - span / 2, y: center.y), toCoordinateFrom: mapView))
+			let right = MKMapPoint(mapView.convert(CGPoint(x: center.x + span / 2, y: center.y), toCoordinateFrom: mapView))
+			let mapDistance = hypot(right.x - left.x, right.y - left.y)
+			guard mapDistance > 0, mapDistance.isFinite else { return 0 }
+			return OfflineMapPalette.zoomLevel(zoomScale: span / mapDistance)
+		}
+
+		/// Sets a renderer's width for `zoom`; true when that changed it.
+		@discardableResult
+		private func applyZoomWidth(_ widthAtZoom: (Double) -> CGFloat, to renderer: MKOverlayPathRenderer, zoom: Double) -> Bool {
+			let width = widthAtZoom(zoom)
+			let alpha: CGFloat = width > 0 ? 1 : 0
+			guard abs(renderer.lineWidth - width) > 0.01 || renderer.alpha != alpha else { return false }
+			renderer.lineWidth = width
+			renderer.alpha = alpha
+			return true
+		}
+
+		/// Sets the zoom-width overlays (the offline map's roads) for the zoom the map has settled at.
+		/// MapKit's own line renderers are kept, so they draw with the rest of the map; the width
+		/// steps when a zoom gesture ends. Only a renderer whose width changed is redrawn, so a pan
+		/// redraws nothing and a small zoom across a road's first stop still shows it.
+		func refreshZoomWidths(on mapView: MKMapView) {
+			let zoom = zoomLevel(of: mapView)
+			for entry in overlaysByID.values {
+				guard let widthAtZoom = entry.style.widthAtZoom,
+					  let renderer = mapView.renderer(for: entry.overlay) as? MKOverlayPathRenderer,
+					  applyZoomWidth(widthAtZoom, to: renderer, zoom: zoom) else { continue }
+				renderer.setNeedsDisplay()
+			}
 		}
 
 		// MARK: Overlays of clustered items
@@ -1065,6 +1111,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
 			updatePitchControl(for: mapView)
 			refreshClusteredOverlays(on: mapView)
+			refreshZoomWidths(on: mapView)
 			// Ignore the callback caused by our own external write (guard #1).
 			guard !isApplyingExternalRegion else {
 				isApplyingExternalRegion = false

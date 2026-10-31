@@ -6,6 +6,7 @@
 //
 import CoreGraphics
 import Foundation
+import MapKit
 import Testing
 import UIKit
 @testable import Meshtastic
@@ -149,19 +150,44 @@ struct SpatialOfflineMapTests {
 	// MARK: Styling
 
 	@Test func lightStrokesMatchTheTwoDMap() {
-		let strokes = SpatialOfflineMap.strokes(dark: false)
+		let strokes = SpatialOfflineMap.strokes(dark: false, zoom: 14)
 		#expect(strokes.map(\.role) == [.river, .minorRoad, .mediumRoad, .majorRoad, .minorRoad, .mediumRoad, .majorRoad, .rail])
 		// Casings come first and are wider than the fills drawn over them.
-		#expect(strokes[1].width == OfflineMapPalette.roadCasingWidth(.minorRoad) * SpatialOfflineMap.strokeScale)
-		#expect(strokes[6].width == OfflineMapPalette.roadWidth(.majorRoad) * SpatialOfflineMap.strokeScale)
+		#expect(strokes[1].width == OfflineMapPalette.roadCasingWidth(.minorRoad, zoom: 14) * SpatialOfflineMap.strokeScale)
+		#expect(strokes[1].width > strokes[4].width)
+		#expect(strokes[6].width == OfflineMapPalette.roadWidth(.majorRoad, zoom: 14) * SpatialOfflineMap.strokeScale)
 		#expect(strokes[6].color == OfflineMapPalette.roadFill(.majorRoad, dark: false))
 		#expect(strokes.last?.dash.isEmpty == false)
 	}
 
 	@Test func darkStrokesHaveNoCasing() {
-		let strokes = SpatialOfflineMap.strokes(dark: true)
+		let strokes = SpatialOfflineMap.strokes(dark: true, zoom: 14)
 		#expect(strokes.map(\.role) == [.river, .minorRoad, .mediumRoad, .majorRoad, .rail])
 		#expect(strokes[3].color == OfflineMapPalette.roadFill(.majorRoad, dark: true))
+	}
+
+	@Test func aRegionLeavesOutTheStreets() {
+		// About 60 km across in a 2048-texel texture: the main roads, thin, and no residential grid.
+		let region = GeoBounds(minLon: -122.7, minLat: 47.3, maxLon: -121.9, maxLat: 47.85)
+		let zoom = SpatialOfflineMap.styleZoom(bounds: region, width: 2048)
+		#expect(zoom > 10 && zoom < 12)
+		let strokes = SpatialOfflineMap.strokes(dark: true, zoom: zoom)
+		#expect(strokes.map(\.role) == [.river, .mediumRoad, .majorRoad, .rail])
+		#expect(strokes[2].width < 2 * SpatialOfflineMap.strokeScale)
+	}
+
+	@Test func roadsWidenWithZoom() {
+		#expect(OfflineMapPalette.roadWidth(.minorRoad, zoom: 11.9) == 0)
+		#expect(OfflineMapPalette.roadWidth(.minorRoad, zoom: 12) > 0)
+		#expect(OfflineMapPalette.roadWidth(.mediumRoad, zoom: 8) == 0)
+		#expect(OfflineMapPalette.roadWidth(.majorRoad, zoom: 8) > 0)
+		#expect(abs(OfflineMapPalette.roadWidth(.majorRoad, zoom: 13.5) - 2.8) < 1e-9)
+		#expect(OfflineMapPalette.roadWidth(.majorRoad, zoom: 20) == 12)
+		#expect(OfflineMapPalette.roadCasingWidth(.minorRoad, zoom: 11) == 0)
+		#expect(abs(OfflineMapPalette.roadCasingWidth(.majorRoad, zoom: 15) - OfflineMapPalette.roadWidth(.majorRoad, zoom: 15) - 1.4) < 1e-9)
+		// Zoom 0 is the world in 256 points.
+		#expect(abs(OfflineMapPalette.zoomLevel(zoomScale: 256 / MKMapSize.world.width) - 0) < 1e-9)
+		#expect(abs(OfflineMapPalette.zoomLevel(zoomScale: 1024 / MKMapSize.world.width) - 2) < 1e-9)
 	}
 
 	@Test func drawPaintsWaterAndRoads() throws {
@@ -171,6 +197,8 @@ struct SpatialOfflineMapTests {
 											 space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
 		context.setFillColor(OfflineMapPalette.earth(dark: false).cgColor)
 		context.fill(CGRect(x: 0, y: 0, width: 64, height: 64))
+		// At this scale a major road is about a texel wide, so draw it hard-edged to find it.
+		context.setShouldAntialias(false)
 		// Water over the western half, a major road across the middle of the eastern half.
 		let water = OfflineMapPolygon(id: "w", role: .water, coordinates: [
 			.init(latitude: 47.4, longitude: -122.5), .init(latitude: 47.8, longitude: -122.5),
@@ -190,9 +218,8 @@ struct SpatialOfflineMapTests {
 		// Water is the light blue: blue well above red.
 		let west = pixel(10, 32)
 		#expect(west[2] > west[0] + 40)
-		// The road is white in light mode.
-		let roadPixel = pixel(48, 32)
-		#expect(roadPixel.allSatisfy { $0 > 250 })
+		// The road is white in light mode, in a row near the middle.
+		#expect((30...34).contains { pixel(48, $0).allSatisfy { $0 > 250 } })
 		// Land elsewhere stays the earth color, not white.
 		let land = pixel(48, 8)
 		#expect(land[2] < 245)
