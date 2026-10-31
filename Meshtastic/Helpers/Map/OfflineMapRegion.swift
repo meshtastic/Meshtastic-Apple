@@ -24,6 +24,13 @@ struct OfflineMapTerrain: Codable, Hashable {
 	var downloadedAt: Date
 	/// Highest zoom level with terrain data: 12 when global-only, higher with a regional extract.
 	var maxZoom: Int
+	/// Strong ETag of Mapterhorn's global archive when this was extracted. Optional and
+	/// additive: nil for terrain downloaded before it was recorded, meaning unknown.
+	var globalETag: String?
+	/// The global archive's Last-Modified when this was extracted (Mapterhorn has no build id).
+	var globalLastModified: Date?
+	/// Strong ETag of the regional z6 archive the high-resolution extract came from.
+	var regionalETag: String?
 }
 
 /// Metadata describing one downloaded offline map region. The geometry is stored
@@ -44,6 +51,9 @@ struct OfflineMapRegion: Identifiable, Codable, Hashable {
 	var updatedDate: Date
 	/// Protomaps daily build the tiles were extracted from, e.g. `"20260623"`.
 	var sourceBuild: String
+	/// Strong ETag of the build archive the basemap was extracted from. Optional and
+	/// additive: nil for imports and for regions downloaded before it was recorded.
+	var sourceETag: String?
 	/// False for terrain-only downloads: no basemap archive exists, only the
 	/// terrain extracts (drawn over Apple maps). Optional and additive — manifests
 	/// written before terrain-only support decode with `nil`, meaning true.
@@ -75,6 +85,7 @@ struct OfflineMapRegion: Identifiable, Codable, Hashable {
 		createdDate: Date = .now,
 		updatedDate: Date = .now,
 		sourceBuild: String,
+		sourceETag: String? = nil,
 		includesBasemap: Bool = true,
 		terrain: OfflineMapTerrain? = nil,
 		managedBy: String? = nil
@@ -92,6 +103,7 @@ struct OfflineMapRegion: Identifiable, Codable, Hashable {
 		self.createdDate = createdDate
 		self.updatedDate = updatedDate
 		self.sourceBuild = sourceBuild
+		self.sourceETag = sourceETag
 		self.includesBasemap = includesBasemap
 		self.terrain = terrain
 		self.managedBy = managedBy
