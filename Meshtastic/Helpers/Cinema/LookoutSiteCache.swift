@@ -4,10 +4,35 @@
 //
 //  Copyright(c) Garth Vander Houwen 10/30/26.
 //
-#if os(visionOS)
 import Foundation
 import OSLog
 
+/// What the fire lookout's summits are found in, as a string to compare: each download's terrain
+/// and basemap files that are on disk now, and when its terrain was fetched. Renaming a download
+/// doesn't change it. Outside the visionOS-only cache so it can be tested.
+enum LookoutSiteCacheKey {
+	/// - Parameters:
+	///   - terrainFiles: names of the terrain files the summit search reads, the ones on disk.
+	///   - basemapFiles: names of the basemap files the peak names are read from, the ones on disk.
+	static func maps(in regions: [OfflineMapRegion], terrainFiles: Set<String>, basemapFiles: Set<String>) -> String {
+		regions
+			.map { region in
+				let terrain = region.terrain.flatMap { terrainFiles.contains($0.fileName) ? $0 : nil }
+				return [
+					region.id.uuidString,
+					region.hasBasemap && basemapFiles.contains(region.fileName) ? region.fileName : "",
+					region.sourceBuild,
+					terrain?.fileName ?? "",
+					terrain?.regionalFileName.flatMap { terrainFiles.contains($0) ? $0 : nil } ?? "",
+					terrain.map { String($0.downloadedAt.timeIntervalSince1970) } ?? ""
+				].joined(separator: "|")
+			}
+			.sorted()
+			.joined(separator: "\n")
+	}
+}
+
+#if os(visionOS)
 /// The fire lookout's summits, kept on disk so they're found once per set of downloads rather
 /// than each time the cinema opens. They're found again when a download is added, removed or
 /// refreshed, since that's what they're found in.
@@ -19,24 +44,6 @@ enum LookoutSiteCache {
 		let version: Int
 		let maps: String
 		let sites: [LookoutSite]
-	}
-
-	/// What the summits are found in: each download's basemap and terrain files, and when the
-	/// terrain was fetched. Renaming a download doesn't change it.
-	static func maps(in regions: [OfflineMapRegion]) -> String {
-		regions
-			.map { region in
-				[
-					region.id.uuidString,
-					region.hasBasemap ? region.fileName : "",
-					region.sourceBuild,
-					region.terrain?.fileName ?? "",
-					region.terrain?.regionalFileName ?? "",
-					region.terrain.map { String($0.downloadedAt.timeIntervalSince1970) } ?? ""
-				].joined(separator: "|")
-			}
-			.sorted()
-			.joined(separator: "\n")
 	}
 
 	/// The summits found in `maps`, if they were found before.
