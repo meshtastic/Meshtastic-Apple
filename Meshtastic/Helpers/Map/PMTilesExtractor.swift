@@ -125,12 +125,13 @@ final class PMTilesExtractor {
 	}
 
 	private let fetch: RangeFetcher
-	/// Decoded directories, keyed by archive AND offset. One extractor plans the global
-	/// terrain archive and then a regional one, and every PMTiles file keeps its root
-	/// directory at offset 127, so an offset-only key handed the second plan the first
-	/// archive's directory.
+	/// Decoded directories, keyed by archive, version AND offset. One extractor plans the
+	/// global terrain archive and then a regional one, and every PMTiles file keeps its
+	/// root directory at offset 127, so an offset-only key handed the second plan the first
+	/// archive's directory. The ETag keeps a replaced archive from reusing the old one's.
 	private struct DirectoryKey: Hashable {
 		let url: URL
+		let etag: String?
 		let offset: UInt64
 	}
 	private var leafCache: [DirectoryKey: [PMTilesArchive.Entry]] = [:]
@@ -387,7 +388,7 @@ final class PMTilesExtractor {
 	}
 
 	private func directory(at offset: UInt64, length: UInt64, compression: PMTilesCompression, source: Source, prefetched: Data?) async throws -> [PMTilesArchive.Entry] {
-		let key = DirectoryKey(url: source.url, offset: offset)
+		let key = DirectoryKey(url: source.url, etag: source.etag, offset: offset)
 		if let cached = leafCache[key] { return cached }
 		let raw: Data
 		// Overflow-safe range math (matches #2192): guard the add and the Int conversions so a
@@ -401,6 +402,8 @@ final class PMTilesExtractor {
 		} else {
 			return []
 		}
+		// A whole-file reply that ends inside the directory would parse as an empty one.
+		guard UInt64(raw.count) == length else { throw PMTilesExtractorError.rangeMismatch }
 		let decompressed = compression == .gzip ? (PMTilesArchive.gunzip(raw) ?? raw) : raw
 		let entries = PMTilesArchive.deserializeDirectory(decompressed)
 		leafCache[key] = entries
@@ -582,8 +585,8 @@ extension PMTilesExtractor {
 	}
 
 	/// One validated range. 412 and 416, or a 206 whose strong ETag differs from
-	/// `ifMatch`, mean the archive was replaced. A 206 must start where asked and carry
-	/// as many bytes as its Content-Range says. A 200 means the Range header was
+	/// `ifMatch`, mean the archive was replaced. A 206 must carry a Content-Range that
+	/// starts where asked, and as many bytes as it says. A 200 means the Range header was
 	/// ignored and the whole file came back; the range is cut out of it, and a body
 	/// that ends before the range starts is an error.
 	private func fetchRange(_ url: URL, start: UInt64, end: UInt64, ifMatch: String?) async throws -> Chunk {
@@ -610,12 +613,11 @@ extension PMTilesExtractor {
 			let last = min(first + wanted, body.count)
 			return Chunk(body: Data(body[(base + first)..<(base + last)]), etag: etag)
 		}
-		if let contentRange = response.header("Content-Range") {
-			guard let parsed = Self.parseContentRange(contentRange), parsed.start == start,
-				  UInt64(body.count) == parsed.end - parsed.start + 1 else {
-				throw PMTilesExtractorError.rangeMismatch
-			}
-		} else if body.isEmpty {
+		// The header can claim the whole UInt64 span; the add must not trap.
+		guard let contentRange = response.header("Content-Range"),
+			  let parsed = Self.parseContentRange(contentRange), parsed.start == start,
+			  case let (length, overflow) = (parsed.end - parsed.start).addingReportingOverflow(1),
+			  !overflow, UInt64(body.count) == length else {
 			throw PMTilesExtractorError.rangeMismatch
 		}
 		return Chunk(body: body.count > wanted ? Data(body[base..<(base + wanted)]) : body, etag: etag)

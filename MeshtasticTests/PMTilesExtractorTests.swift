@@ -227,7 +227,7 @@ struct PMTilesExtractorDirectoryCacheTests {
 			let start = Int(range.lowerBound)
 			guard start < data.count else { return .init(statusCode: 416, body: Data()) }
 			let end = min(Int(range.upperBound), data.count - 1)
-			return .init(statusCode: 206, body: data.subdata(in: start..<(end + 1)))
+			return .init(statusCode: 206, headers: ["Content-Range": "bytes \(start)-\(end)/\(data.count)"], body: data.subdata(in: start..<(end + 1)))
 		}
 	}
 
@@ -337,6 +337,14 @@ private final class FakeRangeServer: @unchecked Sendable {
 		contentRangeSkew = amount
 	}
 
+	private var contentRangeOverride: String??
+
+	/// Send this Content-Range on 206s instead of the right one; nil leaves it out.
+	func overrideContentRange(_ value: String?) {
+		lock.lock(); defer { lock.unlock() }
+		contentRangeOverride = .some(value)
+	}
+
 	/// In whole-file mode, send only the first `count` bytes of the file.
 	func truncateWholeFile(to count: Int) {
 		lock.lock(); defer { lock.unlock() }
@@ -376,6 +384,7 @@ private final class FakeRangeServer: @unchecked Sendable {
 			guard start < archive.count else { return .init(statusCode: 416, headers: headers, body: Data()) }
 			let end = min(Int(range.upperBound), archive.count - 1)
 			headers["Content-Range"] = "bytes \(UInt64(start) + contentRangeSkew)-\(end)/\(archive.count)"
+			if case .some(let override) = contentRangeOverride { headers["Content-Range"] = override }
 			return .init(statusCode: 206, headers: headers, body: archive.subdata(in: start..<(end + 1)))
 		}
 	}
@@ -479,6 +488,38 @@ struct PMTilesExtractorRangeIntegrityTests {
 	@Test func contentRangeMismatchFails() async throws {
 		let server = FakeRangeServer(archive: archiveA, etag: "\"a-1\"")
 		server.skewContentRange(by: 1)
+		let extractor = PMTilesExtractor(fetchRange: server.fetcher)
+
+		await #expect(throws: PMTilesExtractorError.rangeMismatch) {
+			try await extractor.makePlan(sourceURL: url, sourceBuild: "test", bounds: world, minZoom: 1, maxZoom: 1)
+		}
+	}
+
+	@Test func partialResponseWithoutContentRangeFails() async throws {
+		let server = FakeRangeServer(archive: archiveA, etag: "\"a-1\"")
+		server.overrideContentRange(nil)
+		let extractor = PMTilesExtractor(fetchRange: server.fetcher)
+
+		await #expect(throws: PMTilesExtractorError.rangeMismatch) {
+			try await extractor.makePlan(sourceURL: url, sourceBuild: "test", bounds: world, minZoom: 1, maxZoom: 1)
+		}
+	}
+
+	@Test func contentRangeSpanningAllOfUInt64FailsWithoutTrapping() async throws {
+		let server = FakeRangeServer(archive: archiveA, etag: "\"a-1\"")
+		server.overrideContentRange("bytes 0-18446744073709551615/*")
+		let extractor = PMTilesExtractor(fetchRange: server.fetcher)
+
+		await #expect(throws: PMTilesExtractorError.rangeMismatch) {
+			try await extractor.makePlan(sourceURL: url, sourceBuild: "test", bounds: world, minZoom: 1, maxZoom: 1)
+		}
+	}
+
+	@Test func wholeFileEndingInsideTheDirectoryFails() async throws {
+		// The file stops 3 bytes into the root directory, so the header fetch can't hold
+		// it and the directory fetch comes back short.
+		let server = FakeRangeServer(archive: archiveA, etag: "\"a-1\"", mode: .wholeFile)
+		server.truncateWholeFile(to: 130)
 		let extractor = PMTilesExtractor(fetchRange: server.fetcher)
 
 		await #expect(throws: PMTilesExtractorError.rangeMismatch) {
