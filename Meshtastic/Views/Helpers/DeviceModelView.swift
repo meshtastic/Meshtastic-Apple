@@ -41,9 +41,9 @@ struct DeviceModelView<Placeholder: View>: View {
 	@State private var stage: DeviceModelStage?
 	/// The model as loaded, kept out of any scene so the full-screen view can have its own copy.
 	@State private var loadedModel: Entity?
-	@State private var fullScreenStage: DeviceModelStage?
-	/// How close the full-screen model is: the zoom button steps through the stage's levels.
-	@State private var zoomLevel: DeviceModelStage.ZoomLevel = .model
+	/// Full screen opened here, when nothing above offers to present it.
+	@State private var localFullScreen: DeviceModelFullScreenRequest?
+	@Environment(\.presentDeviceModelFullScreen) private var presentFullScreen
 	/// The file the model came from, handed to Quick Look for "View in your space".
 	@State private var modelURL: URL?
 	@State private var quickLookURL: URL?
@@ -164,78 +164,20 @@ struct DeviceModelView<Placeholder: View>: View {
 		#if os(iOS)
 		.quickLookPreview($quickLookURL)
 		#endif
-		.sheet(item: $fullScreenStage) { fullStage in
-			NavigationStack {
-				VStack(spacing: 16) {
-					// Held still and facing you, so the screen stays readable while you press its buttons.
-					DeviceModelRealityView(
-						stage: fullStage,
-						autoRotate: false,
-						screenSource: liveScreen ? accessoryManager.displayMirror : nil,
-						dragsTilt: true
-					)
-					.accessibilityElement(children: .ignore)
-					.accessibilityLabel(String(
-						localized: "3D model of \(shownName)",
-						comment: "Accessibility label for the rotating 3D model of a radio; the argument is the device name"
-					))
-					if liveScreen, !showsChirpy {
-						DeviceRemoteControl { event in
-							Task { await accessoryManager.sendDisplayInput(event) }
-						}
-					}
-				}
-				.padding()
-				// Drags turn the model, so they mustn't close the sheet.
-				.interactiveDismissDisabled()
-				.navigationTitle(shownName)
-				#if !os(macOS)
-				.navigationBarTitleDisplayMode(.inline)
-				#endif
-				.toolbar {
-					ToolbarItem(placement: .cancellationAction) {
-						Button {
-							fullScreenStage = nil
-						} label: {
-							Label("Close", systemImage: "xmark")
-						}
-					}
-					if fullStage.zoomLevels.count > 1 {
-						ToolbarItem(placement: .primaryAction) {
-							zoomButton(for: fullStage)
-						}
-					}
-				}
-			}
-			.presentationDetents([.large])
-		}
-	}
-
-	/// Steps in from the whole model to the case without its antenna, then the screen, then back out.
-	private func zoomButton(for fullStage: DeviceModelStage) -> some View {
-		let levels = fullStage.zoomLevels
-		let next = levels[((levels.firstIndex(of: zoomLevel) ?? 0) + 1) % levels.count]
-		return Button {
-			fullStage.zoom(to: next)
-			zoomLevel = next
-		} label: {
-			switch next {
-			case .model:
-				Label("Zoom Out", systemImage: "minus.magnifyingglass")
-			case .body:
-				Label("Zoom to Case", systemImage: "plus.magnifyingglass")
-			case .screen:
-				Label("Zoom to Screen", systemImage: "plus.magnifyingglass")
-			}
+		.sheet(item: $localFullScreen) { request in
+			DeviceModelFullScreen(request: request, liveScreen: liveScreen)
 		}
 	}
 
 	private var fullScreenButton: some View {
 		Button {
 			guard let loadedModel else { return }
-			// A scene can only hold an entity once, so the full-screen view turns its own copy.
-			fullScreenStage = DeviceModelStage(model: loadedModel.clone(recursive: true), facingFront: true)
-			zoomLevel = .model
+			let request = DeviceModelFullScreenRequest(model: loadedModel, name: shownName, isChirpy: showsChirpy)
+			if let presentFullScreen {
+				presentFullScreen(request)
+			} else {
+				localFullScreen = request
+			}
 		} label: {
 			Image(systemName: "arrow.up.left.and.arrow.down.right")
 				.font(.body.weight(.semibold))
@@ -323,6 +265,108 @@ struct DeviceModelView<Placeholder: View>: View {
 		showsModel = false
 		unavailable = true
 	}
+}
+
+/// A model to open full screen.
+struct DeviceModelFullScreenRequest: Identifiable {
+	let id = UUID()
+	let model: Entity
+	let name: String
+	let isChirpy: Bool
+}
+
+extension EnvironmentValues {
+	/// Opens a 3D model full screen from outside the list it sits in. A sheet attached to a list
+	/// row is rebuilt whenever the list rebuilds that row, and its 3D view with it.
+	@Entry var presentDeviceModelFullScreen: ((DeviceModelFullScreenRequest) -> Void)?
+}
+
+/// The model in a large sheet, held still and facing you, with the radio's buttons under it and a
+/// zoom button that steps from the whole model to the case to the screen.
+@available(iOS 18.0, macCatalyst 18.0, visionOS 1.0, *)
+struct DeviceModelFullScreen: View {
+	let request: DeviceModelFullScreenRequest
+	/// Show the radio's live screen and its buttons: the connected radio, while connected, with a display.
+	let liveScreen: Bool
+
+	@Environment(\.dismiss) private var dismiss
+	/// A scene can only hold an entity once, so this view turns its own copy.
+	@State private var stage: DeviceModelStage
+	/// How close the model is: the zoom button steps through the stage's levels.
+	@State private var zoomLevel: DeviceModelStage.ZoomLevel = .model
+
+	private var accessoryManager: AccessoryManager { AccessoryManager.shared }
+
+	init(request: DeviceModelFullScreenRequest, liveScreen: Bool) {
+		self.request = request
+		self.liveScreen = liveScreen && !request.isChirpy
+		_stage = State(initialValue: DeviceModelStage(model: request.model.clone(recursive: true), facingFront: true))
+	}
+
+	var body: some View {
+		NavigationStack {
+			VStack(spacing: 16) {
+				DeviceModelRealityView(
+					stage: stage,
+					autoRotate: false,
+					screenSource: liveScreen ? accessoryManager.displayMirror : nil,
+					dragsTilt: true
+				)
+				.accessibilityElement(children: .ignore)
+				.accessibilityLabel(String(
+					localized: "3D model of \(request.name)",
+					comment: "Accessibility label for the rotating 3D model of a radio; the argument is the device name"
+				))
+				if liveScreen {
+					DeviceRemoteControl { event in
+						Task { await accessoryManager.sendDisplayInput(event) }
+					}
+				}
+			}
+			.padding()
+			// Drags turn the model, so they mustn't close the sheet.
+			.interactiveDismissDisabled()
+			.navigationTitle(request.name)
+			#if !os(macOS)
+			.navigationBarTitleDisplayMode(.inline)
+			#endif
+			.toolbar {
+				ToolbarItem(placement: .cancellationAction) {
+					Button {
+						dismiss()
+					} label: {
+						Label("Close", systemImage: "xmark")
+					}
+				}
+				if stage.zoomLevels.count > 1 {
+					ToolbarItem(placement: .primaryAction) {
+						zoomButton
+					}
+				}
+			}
+		}
+		.presentationDetents([.large])
+	}
+
+	/// Steps in from the whole model to the case without its antenna, then the screen, then back out.
+	private var zoomButton: some View {
+		let levels = stage.zoomLevels
+		let next = levels[((levels.firstIndex(of: zoomLevel) ?? 0) + 1) % levels.count]
+		return Button {
+			stage.zoom(to: next)
+			zoomLevel = next
+		} label: {
+			switch next {
+			case .model:
+				Label("Zoom Out", systemImage: "minus.magnifyingglass")
+			case .body:
+				Label("Zoom to Case", systemImage: "plus.magnifyingglass")
+			case .screen:
+				Label("Zoom to Screen", systemImage: "plus.magnifyingglass")
+			}
+		}
+	}
+
 }
 
 @available(iOS 18.0, macCatalyst 18.0, visionOS 1.0, *)
@@ -790,9 +834,6 @@ final class DeviceModelStage {
 		pivot.orientation = simd_quatf(angle: pitch, axis: [1, 0, 0]) * simd_quatf(angle: yaw, axis: [0, 1, 0])
 	}
 }
-
-@available(iOS 18.0, macCatalyst 18.0, visionOS 1.0, *)
-extension DeviceModelStage: Identifiable {}
 
 @available(iOS 18.0, macCatalyst 18.0, visionOS 1.0, *)
 private extension Entity {
