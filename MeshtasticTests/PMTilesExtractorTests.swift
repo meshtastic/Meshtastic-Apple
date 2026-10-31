@@ -207,3 +207,83 @@ struct PMTilesFullFileRoundTripTests {
 		#expect(archive.tileData(z: 14, x: 0, y: 0) == nil)
 	}
 }
+
+@Suite("PMTilesExtractor directory cache")
+struct PMTilesExtractorDirectoryCacheTests {
+
+	private let world = GeoBounds(minLon: -180, minLat: -85, maxLon: 180, maxLat: 85)
+	private let planetURL = URL(fileURLWithPath: "/planet.pmtiles")
+	private let regionalURL = URL(fileURLWithPath: "/6-10-22.pmtiles")
+
+	/// Two archives whose root directories both sit at offset 127, as every PMTiles
+	/// file's does: the planet holds only z0, the regional archive only z1.
+	private func extractor() -> PMTilesExtractor {
+		let archives = [
+			planetURL: makeArchive(tiles: [ArchiveTile(z: 0, x: 0, y: 0, payload: Data("planet".utf8))], minZoom: 0, maxZoom: 0),
+			regionalURL: makeArchive(tiles: [ArchiveTile(z: 1, x: 0, y: 0, payload: Data("regional".utf8))], minZoom: 1, maxZoom: 1)
+		]
+		return PMTilesExtractor { url, range in
+			guard let data = archives[url] else { return .init(statusCode: 404, body: Data()) }
+			let start = Int(range.lowerBound)
+			guard start < data.count else { return .init(statusCode: 416, body: Data()) }
+			let end = min(Int(range.upperBound), data.count - 1)
+			return .init(statusCode: 206, body: data.subdata(in: start..<(end + 1)))
+		}
+	}
+
+	@Test func secondArchiveOnTheSameExtractorPlansFromItsOwnDirectory() async throws {
+		let extractor = extractor()
+		let planet = try await extractor.makePlan(sourceURL: planetURL, sourceBuild: "planet", bounds: world, minZoom: 0, maxZoom: 0)
+		#expect(planet.tileCount == 1)
+
+		// With the cache keyed by offset alone this read the planet's root directory,
+		// found no z1 tile, and threw `noTilesInArea`.
+		let regional = try await extractor.makePlan(sourceURL: regionalURL, sourceBuild: "regional", bounds: world, minZoom: 1, maxZoom: 1)
+		#expect(regional.tileCount == 1)
+		#expect(regional.payloadBytes == 8)
+	}
+
+	@Test func secondArchiveExtractsItsOwnTiles() async throws {
+		let extractor = extractor()
+		_ = try await extractor.makePlan(sourceURL: planetURL, sourceBuild: "planet", bounds: world, minZoom: 0, maxZoom: 0)
+		let plan = try await extractor.makePlan(sourceURL: regionalURL, sourceBuild: "regional", bounds: world, minZoom: 1, maxZoom: 1)
+		let url = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID().uuidString).pmtiles")
+		defer { try? FileManager.default.removeItem(at: url) }
+		try await extractor.extract(plan: plan, to: url)
+
+		let written = try #require(PMTilesArchive(url: url))
+		#expect(written.tileData(z: 1, x: 0, y: 0) == Data("regional".utf8))
+		#expect(written.tileData(z: 0, x: 0, y: 0) == nil)
+	}
+}
+
+private struct ArchiveTile {
+	let z: UInt8
+	let x: UInt32
+	let y: UInt32
+	let payload: Data
+}
+
+/// A complete single-directory PMTiles file with uncompressed payloads, laid out the way
+/// `PMTilesExtractor.extract` writes one.
+private func makeArchive(tiles: [ArchiveTile], minZoom: Int, maxZoom: Int) -> Data {
+	var tileData = Data()
+	var entries: [PMTilesArchive.Entry] = []
+	for tile in tiles {
+		let id = PMTilesArchive.zxyToTileID(z: tile.z, x: tile.x, y: tile.y)
+		entries.append(.init(tileID: id, offset: UInt64(tileData.count), length: UInt32(tile.payload.count), runLength: 1))
+		tileData.append(tile.payload)
+	}
+	entries.sort { $0.tileID < $1.tileID }
+	let root = PMTilesExtractor.serializeDirectory(entries)
+	let metadata = PMTilesExtractor.metadataJSON()
+	let header = PMTilesExtractor.buildHeader(
+		rootDirOffset: 127, rootDirLength: UInt64(root.count),
+		metadataOffset: UInt64(127 + root.count), metadataLength: UInt64(metadata.count),
+		tileDataOffset: UInt64(127 + root.count + metadata.count), tileDataLength: UInt64(tileData.count),
+		numTiles: UInt64(entries.count),
+		bounds: GeoBounds(minLon: -180, minLat: -85, maxLon: 180, maxLat: 85),
+		minZoom: minZoom, maxZoom: maxZoom, tileType: .png, tileCompression: .none
+	)
+	return header + root + metadata + tileData
+}

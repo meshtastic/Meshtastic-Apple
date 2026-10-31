@@ -80,11 +80,34 @@ final class PMTilesExtractor {
 		let outputOffset: UInt64
 	}
 
-	private let session: URLSession
-	private var leafCache: [UInt64: [PMTilesArchive.Entry]] = [:]
+	/// One answer to a range request: the status and the bytes. The extractor needs
+	/// nothing else from the transport.
+	struct RangeResponse {
+		let statusCode: Int
+		let body: Data
+	}
+
+	/// Fetches one byte range of a remote archive. The default goes through
+	/// `URLSession`; tests hand in a closure that serves archives from memory.
+	typealias RangeFetcher = @Sendable (URL, ClosedRange<UInt64>) async throws -> RangeResponse
+
+	private let fetch: RangeFetcher
+	/// Decoded directories, keyed by archive AND offset. One extractor plans the global
+	/// terrain archive and then a regional one, and every PMTiles file keeps its root
+	/// directory at offset 127, so an offset-only key handed the second plan the first
+	/// archive's directory.
+	private struct DirectoryKey: Hashable {
+		let url: URL
+		let offset: UInt64
+	}
+	private var leafCache: [DirectoryKey: [PMTilesArchive.Entry]] = [:]
 
 	init(session: URLSession = .shared) {
-		self.session = session
+		fetch = Self.rangeFetcher(session: session)
+	}
+
+	init(fetchRange: @escaping RangeFetcher) {
+		fetch = fetchRange
 	}
 
 	// MARK: - Build resolution
@@ -290,7 +313,8 @@ final class PMTilesExtractor {
 	}
 
 	private func directory(at offset: UInt64, length: UInt64, compression: PMTilesCompression, sourceURL: URL, prefetched: Data?) async throws -> [PMTilesArchive.Entry] {
-		if let cached = leafCache[offset] { return cached }
+		let key = DirectoryKey(url: sourceURL, offset: offset)
+		if let cached = leafCache[key] { return cached }
 		let raw: Data
 		// Overflow-safe range math (matches #2192): guard the add and the Int conversions so a
 		// crafted header/directory offset can't trap while planning an extraction.
@@ -305,23 +329,31 @@ final class PMTilesExtractor {
 		}
 		let decompressed = compression == .gzip ? (PMTilesArchive.gunzip(raw) ?? raw) : raw
 		let entries = PMTilesArchive.deserializeDirectory(decompressed)
-		leafCache[offset] = entries
+		leafCache[key] = entries
 		return entries
 	}
 
 	// MARK: - HTTP range fetch
 
 	private func fetchRange(_ url: URL, start: UInt64, end: UInt64) async throws -> Data {
-		var request = URLRequest(url: url)
-		request.setValue("bytes=\(start)-\(end)", forHTTPHeaderField: "Range")
-		request.cachePolicy = .reloadIgnoringLocalCacheData
-		let (data, response) = try await session.data(for: request)
-		guard let http = response as? HTTPURLResponse else { throw PMTilesExtractorError.rangeRequestFailed(-1) }
-		guard http.statusCode == 206 || http.statusCode == 200 else {
-			Logger.services.error("🗺️ [Offline] Range \(start, privacy: .public)-\(end, privacy: .public) of \(url.absoluteString, privacy: .public) failed: HTTP \(http.statusCode, privacy: .public)")
-			throw PMTilesExtractorError.rangeRequestFailed(http.statusCode)
+		let response = try await fetch(url, start...end)
+		guard response.statusCode == 206 || response.statusCode == 200 else {
+			Logger.services.error("🗺️ [Offline] Range \(start, privacy: .public)-\(end, privacy: .public) of \(url.absoluteString, privacy: .public) failed: HTTP \(response.statusCode, privacy: .public)")
+			throw PMTilesExtractorError.rangeRequestFailed(response.statusCode)
 		}
-		return data
+		return response.body
+	}
+
+	/// The production fetcher: one `Range` request per call, bypassing the URL cache.
+	static func rangeFetcher(session: URLSession) -> RangeFetcher {
+		{ url, range in
+			var request = URLRequest(url: url)
+			request.setValue("bytes=\(range.lowerBound)-\(range.upperBound)", forHTTPHeaderField: "Range")
+			request.cachePolicy = .reloadIgnoringLocalCacheData
+			let (data, response) = try await session.data(for: request)
+			guard let http = response as? HTTPURLResponse else { throw PMTilesExtractorError.rangeRequestFailed(-1) }
+			return RangeResponse(statusCode: http.statusCode, body: data)
+		}
 	}
 
 	// MARK: - Tile enumeration
