@@ -71,10 +71,12 @@ struct MeshLocalStatsWidget: Widget {
 		}
 		.configurationDisplayName("Mesh Status")
 		.description("Connection, nodes online and your radio's local stats.")
-		.supportedFamilies([
-			.systemSmall, .systemMedium, .systemLarge,
-			.accessoryInline, .accessoryCircular, .accessoryRectangular
-		])
+		// The Lock Screen sizes don't exist on Vision Pro.
+		#if os(iOS)
+		.supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .accessoryInline, .accessoryCircular, .accessoryRectangular])
+		#else
+		.supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
+		#endif
 	}
 }
 
@@ -98,12 +100,14 @@ struct MeshStatusWidgetView: View {
 	@ViewBuilder
 	private func content(_ snapshot: WidgetSnapshot) -> some View {
 		switch family {
+		#if os(iOS)
 		case .accessoryInline:
 			InlineView(snapshot: snapshot)
 		case .accessoryCircular:
 			CircularView(snapshot: snapshot)
 		case .accessoryRectangular:
 			RectangularView(snapshot: snapshot)
+		#endif
 		case .systemMedium:
 			MediumView(snapshot: snapshot)
 		case .systemLarge:
@@ -116,6 +120,7 @@ struct MeshStatusWidgetView: View {
 	@ViewBuilder
 	private var noDataView: some View {
 		switch family {
+		#if os(iOS)
 		case .accessoryInline:
 			Text("Open Meshtastic")
 		case .accessoryCircular:
@@ -124,6 +129,7 @@ struct MeshStatusWidgetView: View {
 				.font(.title2)
 				.widgetAccentable()
 				.accessibilityLabel("Open Meshtastic to load mesh data")
+		#endif
 		default:
 			VStack(spacing: 6) {
 				Image(systemName: "antenna.radiowaves.left.and.right.slash")
