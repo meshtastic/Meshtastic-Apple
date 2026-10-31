@@ -782,7 +782,7 @@ enum OfflineMapPalette {
 	static func fill(_ role: OfflineFeatureRole, dark: Bool) -> UIColor? {
 		switch role {
 		case .water: return dark ? UIColor(red: 0.094, green: 0.169, blue: 0.267, alpha: 1) : UIColor(red: 0.667, green: 0.831, blue: 0.953, alpha: 1)
-		case .park, .green: return dark ? UIColor(red: 0.122, green: 0.176, blue: 0.133, alpha: 1) : UIColor(red: 0.776, green: 0.882, blue: 0.706, alpha: 1)
+		case .park, .green: return dark ? UIColor(red: 0.125, green: 0.204, blue: 0.145, alpha: 1) : UIColor(red: 0.776, green: 0.882, blue: 0.706, alpha: 1)
 		case .land: return earth(dark: dark)
 		default: return nil
 		}
@@ -796,9 +796,9 @@ enum OfflineMapPalette {
 	/// Road fill: white centerline (light) or a lighter-than-land gray (dark).
 	static func roadFill(_ role: OfflineFeatureRole, dark: Bool) -> UIColor? {
 		switch role {
-		case .majorRoad: return dark ? UIColor(red: 0.46, green: 0.46, blue: 0.49, alpha: 1) : .white
-		case .mediumRoad: return dark ? UIColor(red: 0.38, green: 0.38, blue: 0.41, alpha: 1) : .white
-		case .minorRoad: return dark ? UIColor(red: 0.31, green: 0.31, blue: 0.34, alpha: 1) : .white
+		case .majorRoad: return dark ? UIColor(red: 0.40, green: 0.40, blue: 0.43, alpha: 1) : .white
+		case .mediumRoad: return dark ? UIColor(red: 0.31, green: 0.31, blue: 0.34, alpha: 1) : .white
+		case .minorRoad: return dark ? UIColor(red: 0.24, green: 0.24, blue: 0.27, alpha: 1) : .white
 		default: return nil
 		}
 	}
@@ -812,18 +812,46 @@ enum OfflineMapPalette {
 		}
 	}
 
-	static func roadWidth(_ role: OfflineFeatureRole) -> CGFloat {
+	/// Road width in points at a map zoom level, as `(zoom, width)` stops. Below the first stop the
+	/// road isn't drawn: streets appear at zoom 12 and medium roads at 9, so a city or region view
+	/// shows the main roads and not the whole grid. Close up they widen like the roads they are.
+	static func roadWidthStops(_ role: OfflineFeatureRole) -> [(zoom: Double, width: CGFloat)] {
 		switch role {
-		case .majorRoad: return 3.0
-		case .mediumRoad: return 2.2
-		case .minorRoad: return 1.3
-		default: return 1.0
+		case .majorRoad: return [(5, 0.4), (9, 0.9), (12, 1.6), (15, 4), (18, 12)]
+		case .mediumRoad: return [(9, 0.3), (12, 0.9), (15, 3), (18, 10)]
+		case .minorRoad: return [(12, 0.3), (13, 0.6), (15, 2), (18, 9)]
+		default: return [(0, 1)]
 		}
 	}
 
-	/// Casing is ~1.4 pt wider than the fill (about 0.7 pt of outline each side).
-	static func roadCasingWidth(_ role: OfflineFeatureRole) -> CGFloat {
-		roadWidth(role) + 1.4
+	/// Road width in points at `zoom`, 0 when the road isn't drawn at that zoom.
+	static func roadWidth(_ role: OfflineFeatureRole, zoom: Double) -> CGFloat {
+		interpolate(roadWidthStops(role), at: zoom)
+	}
+
+	/// The casing outlines a road wherever it is drawn: a hairline each side zoomed out, which keeps
+	/// a thin white road visible on pale land, growing to about 0.7 pt each side by zoom 14.
+	static func roadCasingWidth(_ role: OfflineFeatureRole, zoom: Double) -> CGFloat {
+		let width = roadWidth(role, zoom: zoom)
+		guard width > 0 else { return 0 }
+		return width + interpolate([(0, 0.6), (12, 0.6), (14, 1.4)], at: zoom)
+	}
+
+	/// The width between the stops either side of `zoom`, and the last stop's past the end. 0 before
+	/// the first stop.
+	static func interpolate(_ stops: [(zoom: Double, width: CGFloat)], at zoom: Double) -> CGFloat {
+		guard let first = stops.first, zoom >= first.zoom else { return 0 }
+		for (low, high) in zip(stops, stops.dropFirst()) where zoom < high.zoom {
+			let t = (zoom - low.zoom) / (high.zoom - low.zoom)
+			return low.width + CGFloat(t) * (high.width - low.width)
+		}
+		return stops.last?.width ?? 0
+	}
+
+	/// The map zoom level for a MapKit zoom scale (screen points per map point): zoom 0 is the
+	/// world in 256 points.
+	static func zoomLevel(zoomScale: MKZoomScale) -> Double {
+		log2(Double(zoomScale) * MKMapSize.world.width / 256)
 	}
 
 	/// Rail / admin-boundary stroke color (single dashed line, both modes).

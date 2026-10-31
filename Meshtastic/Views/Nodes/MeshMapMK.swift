@@ -1922,13 +1922,15 @@ struct MeshMapMK: View {
 			return shapes.isEmpty ? nil : MKMultiPolyline(shapes)
 		}
 		let roadClasses: [OfflineFeatureRole] = [.minorRoad, .mediumRoad, .majorRoad]
-		// Casing pass (light mode only) gives the Apple white-road-with-outline look.
+		// Casing pass (light mode only) gives the Apple white-road-with-outline look. Widths follow
+		// the zoom, and smaller roads are left out when zoomed out (see `roadWidthStops`).
 		for role in roadClasses {
 			guard let casing = OfflineMapPalette.roadCasing(role, dark: dark), let multi = roadMultiPolyline(role) else { continue }
 			result.append(ClusterMapOverlay(
 				id: "offline-road-casing-\(role)",
 				overlay: multi,
-				style: ClusterMapOverlayStyle(strokeUIColor: casing, fillUIColor: nil, lineWidth: OfflineMapPalette.roadCasingWidth(role), lineCap: .round, level: .aboveRoads)
+				style: ClusterMapOverlayStyle(strokeUIColor: casing, fillUIColor: nil, lineCap: .round, level: .aboveRoads,
+											  widthAtZoom: { OfflineMapPalette.roadCasingWidth(role, zoom: $0) })
 			))
 		}
 		// Fill pass — white centerlines (light) / lighter-than-land gray (dark).
@@ -1937,7 +1939,8 @@ struct MeshMapMK: View {
 			result.append(ClusterMapOverlay(
 				id: "offline-road-fill-\(role)",
 				overlay: multi,
-				style: ClusterMapOverlayStyle(strokeUIColor: fill, fillUIColor: nil, lineWidth: OfflineMapPalette.roadWidth(role), lineCap: .round, level: .aboveRoads)
+				style: ClusterMapOverlayStyle(strokeUIColor: fill, fillUIColor: nil, lineCap: .round, level: .aboveRoads,
+											  widthAtZoom: { OfflineMapPalette.roadWidth(role, zoom: $0) })
 			))
 		}
 		// Rail + admin boundaries (single dashed stroke, both modes).
