@@ -146,15 +146,16 @@ struct DeviceModelView<Placeholder: View>: View {
 				giveUp()
 			}
 		}
+		// A task rather than onChange, so it runs again when the view comes back on screen.
 		.task(id: wantsMirror) {
 			if wantsMirror {
-				await accessoryManager.startDisplayMirror(for: .deviceModel)
+				accessoryManager.startDisplayMirror(for: .deviceModel)
 			} else {
-				await accessoryManager.stopDisplayMirror(for: .deviceModel)
+				accessoryManager.stopDisplayMirror(for: .deviceModel)
 			}
 		}
 		.onDisappear {
-			Task { await accessoryManager.stopDisplayMirror(for: .deviceModel) }
+			accessoryManager.stopDisplayMirror(for: .deviceModel)
 		}
 		.onChange(of: modelName) {
 			showsModel = false

@@ -27,6 +27,10 @@ final class DisplayMirrorSession {
 	private(set) var isStreaming = false
 	/// Who wants the stream now.
 	@ObservationIgnored private(set) var owners: Set<DisplayMirrorOwner> = []
+	/// What the radio was last told, so only a change is sent.
+	@ObservationIgnored var radioStreaming = false
+	/// Sends the on/off changes to the radio one at a time, in order.
+	@ObservationIgnored var commandTask: Task<Void, Never>?
 
 	@ObservationIgnored private var assembler = DisplayFrameAssembler()
 	@ObservationIgnored private var lastFrame: DisplayMirrorFrame?
@@ -72,8 +76,11 @@ final class DisplayMirrorSession {
 	func reset() {
 		clear()
 		isStreaming = false
-		// The views ask again when the radio reconnects.
+		// The views ask again when the radio reconnects, and it has forgotten the stream.
 		owners.removeAll()
+		radioStreaming = false
+		commandTask?.cancel()
+		commandTask = nil
 	}
 
 	private func clear() {
