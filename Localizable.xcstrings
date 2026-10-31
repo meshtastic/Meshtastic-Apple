@@ -137275,8 +137275,8 @@
         }
       }
     },
-    "Team Status" : {
-      "comment" : "Cinema: title of the live team roster on the tent's whiteboard"
+    "Team Favorites" : {
+      "comment" : "Cinema: title of the favorites board on the tent's whiteboard"
     },
     "telemetry" : {
       "comment" : "Search keyword",

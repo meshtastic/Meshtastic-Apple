@@ -114,7 +114,7 @@
             "control",
             "closes"
         ],
-        "charCount": 2500
+        "charCount": 2503
     },
     {
         "id": "discovery",
@@ -972,7 +972,7 @@
             "panel",
             "one"
         ],
-        "charCount": 6192
+        "charCount": 6195
     },
     {
         "id": "codebase",

@@ -31,7 +31,7 @@ The image is flat: one picture, with no depth of its own. That decides what look
 | Board | Id | Required | What the app draws |
 |---|---|---|---|
 | Screen | `screen` | Yes | The app's sections, with tabs above. Use `screen_anchor()`; it's 2.6 m wide by default, in the screen's shape. Nothing is drawn in the image there. |
-| Team Status | `teamStatus` | No | Favorite nodes and the connected radio. The tent uses a 1.35 × 0.9 m whiteboard. |
+| Team Favorites | `teamStatus` | No | Favorite nodes and the connected radio. The tent uses a 1.35 × 0.9 m whiteboard. |
 | Trace route | `traceRoute` | No | The latest trace route's card. The tent uses a 1.1 × 0.9 m framed print. |
 
 A board is a plane passed to `anchor("<id>", plane, width, height)`. The plane's +X is the board's right and its +Z faces the viewer. Paint the board blank in the image (the app covers it), and light it about as bright as the panel will be, so the frame around it matches. The app skips any optional board an environment leaves out.
