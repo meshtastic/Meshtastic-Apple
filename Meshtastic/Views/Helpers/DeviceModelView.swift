@@ -17,15 +17,19 @@ import ARKit
 /// turning slowly. The model is only fetched once asked for. If it can't be loaded, the badge goes
 /// away and the image stays. Once it's showing, "View in your space" stands it in the room at real
 /// size (in the Vision Pro cinema, on a stand in the tent), and tapping it seven times swaps it for
-/// Chirpy.
+/// Chirpy. For the connected radio, its live screen shows on the model's display.
 @available(iOS 18.0, macCatalyst 18.0, visionOS 1.0, *)
 struct DeviceModelView<Placeholder: View>: View {
 	let modelName: String
 	let deviceName: String
 	/// The node it's a model of, for the live readings beside it in the Vision Pro cinema.
 	var nodeNum: Int64?
+	/// Show the radio's own screen on the model. Only for the connected radio, when it reports a display.
+	var liveScreen = false
 	@ViewBuilder let placeholder: () -> Placeholder
 
+	@EnvironmentObject private var accessoryManager: AccessoryManager
+	@Environment(\.scenePhase) private var scenePhase
 	@Environment(\.accessibilityReduceMotion) private var reduceMotion
 	@State private var showsModel = false
 	@State private var isLoading = false
@@ -45,6 +49,11 @@ struct DeviceModelView<Placeholder: View>: View {
 	private var shownModelName: String { showsChirpy ? DeviceModelCatalog.chirpy : modelName }
 	private var shownName: String { showsChirpy ? "Chirpy" : deviceName }
 
+	/// Stream the screen while the model with a display is showing and the app is in front.
+	private var wantsMirror: Bool {
+		liveScreen && stage?.hasScreen == true && accessoryManager.isConnected && scenePhase == .active
+	}
+
 	var body: some View {
 		// Bottom left: the supported-hardware rosette sits bottom right on the same image.
 		ZStack(alignment: .bottomLeading) {
@@ -53,7 +62,11 @@ struct DeviceModelView<Placeholder: View>: View {
 					.opacity(stage == nil ? 1 : 0)
 					.accessibilityHidden(stage != nil)
 				if let stage {
-					DeviceModelRealityView(stage: stage, autoRotate: !reduceMotion)
+					DeviceModelRealityView(
+						stage: stage,
+						autoRotate: !reduceMotion,
+						screenImage: liveScreen ? accessoryManager.displayMirror.image : nil
+					)
 						// RealityView adds its content once, so a new model needs a new view.
 						.id(ObjectIdentifier(stage))
 						.transition(.opacity)
@@ -113,6 +126,16 @@ struct DeviceModelView<Placeholder: View>: View {
 				await DeviceModelSource.shared.discardCachedFile(for: name)
 				giveUp()
 			}
+		}
+		.task(id: wantsMirror) {
+			if wantsMirror {
+				await accessoryManager.startDisplayMirror(for: .deviceModel)
+			} else {
+				await accessoryManager.stopDisplayMirror(for: .deviceModel)
+			}
+		}
+		.onDisappear {
+			Task { await accessoryManager.stopDisplayMirror(for: .deviceModel) }
 		}
 		.onChange(of: modelName) {
 			showsModel = false
@@ -207,6 +230,7 @@ struct DeviceModelView<Placeholder: View>: View {
 private struct DeviceModelRealityView: View {
 	let stage: DeviceModelStage
 	let autoRotate: Bool
+	let screenImage: CGImage?
 
 	#if os(visionOS)
 	@Environment(\.physicalMetrics) private var metrics
@@ -227,6 +251,7 @@ private struct DeviceModelRealityView: View {
 				}
 			} update: { _ in
 				stage.autoRotate = autoRotate
+				stage.showScreen(screenImage)
 				#if os(visionOS)
 				// Real meters in a window: fit the model's sphere into the view's shorter side.
 				let side = min(proxy.size.width, proxy.size.height)
@@ -313,6 +338,16 @@ final class DeviceModelStage {
 	private var userTookOver = false
 	private(set) var isDragging = false
 
+	/// The front of the model's `Screen` part, in the model's own space, where the radio's live
+	/// screen is drawn.
+	private var screenBounds: BoundingBox?
+	private let screenPlane = ModelEntity()
+	private var screenTexture: TextureResource?
+	private var screenShape: ScreenShape?
+	private var lastScreenImage: CGImage?
+
+	var hasScreen: Bool { screenBounds != nil }
+
 	/// The radius the model's bounding sphere is scaled to: scene units on iOS, where the camera
 	/// is placed to fit 1, and meters on visionOS, where the view sets it from its size.
 	#if os(visionOS)
@@ -334,6 +369,14 @@ final class DeviceModelStage {
 		radius = max(sweep, extents.y / 2, 0.0001)
 		sphereRadius = max(simd_length(extents) / 2, radius)
 		model.position = -bounds.center
+		if let screen = model.findEntity(named: "Screen") {
+			let screenBox = screen.visualBounds(relativeTo: model)
+			if !screenBox.isEmpty {
+				screenBounds = screenBox
+				screenPlane.isEnabled = false
+				model.addChild(screenPlane)
+			}
+		}
 		holder.addChild(model)
 		pivot.addChild(holder)
 		applyScale()
@@ -425,6 +468,77 @@ final class DeviceModelStage {
 	func endZoom() {
 		zoomStart = zoomFactor
 	}
+
+	struct ScreenShape: Equatable {
+		let width: Float
+		let height: Float
+		let turned: Bool
+	}
+
+	/// The picture's size on a display `slotWidth` by `slotHeight`: its own shape, as large as fits,
+	/// turned a quarter when the display is mounted the other way round.
+	nonisolated static func screenShape(imageWidth: Int, imageHeight: Int, slotWidth: Float, slotHeight: Float) -> ScreenShape {
+		let aspect = Float(imageWidth) / Float(max(imageHeight, 1))
+		let turned = (aspect > 1.05 && slotHeight > slotWidth * 1.05) || (aspect < 0.95 && slotWidth > slotHeight * 1.05)
+		// The picture's width runs along the display's height when it's turned.
+		let along = turned ? slotHeight : slotWidth
+		let across = turned ? slotWidth : slotHeight
+		let width = min(along, across * aspect)
+		return ScreenShape(width: width, height: width / aspect, turned: turned)
+	}
+
+	/// Draws the radio's screen on the model's display, or hides it. The picture keeps its own shape
+	/// inside the display, turned a quarter if the display is mounted the other way round, with no
+	/// lighting so it reads like a lit screen.
+	func showScreen(_ image: CGImage?) {
+		guard let screenBounds else { return }
+		guard let image else {
+			screenPlane.isEnabled = false
+			lastScreenImage = nil
+			return
+		}
+		guard image !== lastScreenImage else { return }
+		lastScreenImage = image
+		let shape = Self.screenShape(
+			imageWidth: image.width,
+			imageHeight: image.height,
+			slotWidth: screenBounds.extents.x,
+			slotHeight: screenBounds.extents.y
+		)
+
+		do {
+			if let screenTexture {
+				try screenTexture.replace(withImage: image, options: .init(semantic: .color))
+			} else {
+				let texture = try TextureResource(image: image, options: .init(semantic: .color))
+				screenTexture = texture
+				var material = UnlitMaterial()
+				material.color = .init(tint: .white, texture: .init(texture, sampler: Self.nearestSampler))
+				screenPlane.model = ModelComponent(mesh: .generatePlane(width: 1, height: 1), materials: [material])
+			}
+		} catch {
+			Logger.services.error("Device model screen: couldn't make a texture: \(error.localizedDescription, privacy: .public)")
+			return
+		}
+		if shape != screenShape {
+			screenShape = shape
+			screenPlane.scale = [shape.width, shape.height, 1]
+			screenPlane.orientation = shape.turned ? simd_quatf(angle: .pi / 2, axis: [0, 0, 1]) : simd_quatf()
+			// Just in front of the display's face, so the case around it can't cover it.
+			let center = screenBounds.center
+			screenPlane.position = [center.x, center.y, screenBounds.max.z + 0.00005]
+		}
+		screenPlane.isEnabled = true
+	}
+
+	/// Each radio pixel stays a crisp square, however close the camera gets.
+	private static let nearestSampler: MaterialParameters.Texture.Sampler = {
+		let descriptor = MTLSamplerDescriptor()
+		descriptor.minFilter = .nearest
+		descriptor.magFilter = .nearest
+		descriptor.mipFilter = .notMipmapped
+		return MaterialParameters.Texture.Sampler(descriptor)
+	}()
 
 	private func applyScale() {
 		holder.scale = .init(repeating: fitRadius / radius * zoomFactor)

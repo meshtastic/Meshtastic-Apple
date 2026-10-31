@@ -61,14 +61,14 @@ struct DeviceScreenView: View {
 		.navigationBarTitleDisplayMode(.inline)
 		.task { await startIfVisible() }
 		.onDisappear {
-			Task { await accessoryManager.stopDisplayMirror() }
+			Task { await accessoryManager.stopDisplayMirror(for: .deviceScreen) }
 		}
 		.onChange(of: scenePhase) { _, phase in
 			Task {
 				if phase == .active {
 					await startIfVisible()
 				} else {
-					await accessoryManager.stopDisplayMirror()
+					await accessoryManager.stopDisplayMirror(for: .deviceScreen)
 				}
 			}
 		}
@@ -253,7 +253,7 @@ struct DeviceScreenView: View {
 
 	private func startIfVisible() async {
 		guard accessoryManager.isConnected, scenePhase == .active else { return }
-		await accessoryManager.startDisplayMirror()
+		await accessoryManager.startDisplayMirror(for: .deviceScreen)
 	}
 }
 

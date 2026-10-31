@@ -14,9 +14,10 @@ import OSLog
 /// `FromRadio.display_frame` and `display_palette`.
 extension AccessoryManager {
 
-	/// Asks the radio to stream its screen. The stream isn't kept across a reboot or reconnect,
-	/// so call this again after one.
-	func startDisplayMirror() async {
+	/// Asks the radio to stream its screen for `owner`. The stream isn't kept across a reboot or
+	/// reconnect, so call this again after one.
+	func startDisplayMirror(for owner: DisplayMirrorOwner) async {
+		displayMirror.claim(owner)
 		guard !displayMirror.isStreaming else { return }
 		displayMirror.begin()
 		var admin = AdminMessage()
@@ -27,8 +28,10 @@ extension AccessoryManager {
 		}
 	}
 
-	func stopDisplayMirror() async {
-		guard displayMirror.isStreaming else { return }
+	/// Drops `owner`'s interest, and stops the stream once nobody else wants it.
+	func stopDisplayMirror(for owner: DisplayMirrorOwner) async {
+		displayMirror.release(owner)
+		guard displayMirror.owners.isEmpty, displayMirror.isStreaming else { return }
 		displayMirror.end()
 		var admin = AdminMessage()
 		admin.setDisplayMirror = false

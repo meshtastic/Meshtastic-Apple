@@ -186,7 +186,11 @@ struct NodeDetail: View {
 	@ViewBuilder
 	private var nodeDetailList: some View {
 		List {
-			NodeInfoItem(nodeNum: nodeNum)
+			// Screen mirroring only works over the local connection, so only for the connected radio.
+			NodeInfoItem(
+				nodeNum: nodeNum,
+				liveScreen: nodeNum == accessoryManager.activeDeviceNum && node.metadata?.hasDisplay == true
+			)
 				.id(nodeNum)
 			nodeSection
 			environmentSection
