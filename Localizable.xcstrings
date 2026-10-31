@@ -555,6 +555,21 @@
     "Put the model away" : {
       "comment" : "Cinema: button on the card beside a device model on the stand; takes the model away"
     },
+    "Up" : {
+
+    },
+    "Long Press" : {
+
+    },
+    "Use Keyboard" : {
+
+    },
+    "Stop Using Keyboard" : {
+
+    },
+    "Arrow keys, Return and Esc go to the radio." : {
+
+    },
     "Radio screen" : {
 
     },
