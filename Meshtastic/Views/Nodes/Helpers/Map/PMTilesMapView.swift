@@ -47,6 +47,30 @@ struct OfflineMapPolyline: Identifiable {
 	let coordinates: [CLLocationCoordinate2D]
 }
 
+/// A name to print on the offline map: a place (city, town, neighborhood) or a body of water, from
+/// the basemap's `places` and `water` layers.
+struct OfflineMapLabel: Sendable, Equatable {
+	enum Kind: Int, Sendable, Comparable {
+		// In order of importance: a city wins a spot over a town, a town over a lake.
+		case region, city, town, water, village, suburb, neighborhood
+
+		static func < (lhs: Kind, rhs: Kind) -> Bool { lhs.rawValue < rhs.rawValue }
+	}
+
+	let name: String
+	let coordinate: CLLocationCoordinate2D
+	let kind: Kind
+	/// The basemap's `min_zoom`: the label is printed from this map zoom on.
+	let minZoom: Double
+	/// The basemap's `population_rank` (0–15): bigger places first within a kind.
+	let rank: Int
+
+	/// The same label decoded from two tiles has the same key.
+	var key: String { "\(kind.rawValue)|\(name)|\(coordinate.latitude)|\(coordinate.longitude)" }
+
+	static func == (lhs: OfflineMapLabel, rhs: OfflineMapLabel) -> Bool { lhs.key == rhs.key }
+}
+
 /// Region identity required to bind an archive consistently before and after the manager loads.
 struct OfflineVectorSourceBinding: Equatable {
 	let url: URL
@@ -67,6 +91,7 @@ struct OfflineVectorSourceBinding: Equatable {
 struct BuildResult {
 	let polygons: [OfflineMapPolygon]
 	let polylines: [OfflineMapPolyline]
+	var labels: [OfflineMapLabel] = []
 	let stats: OfflineDecodeStats
 }
 
@@ -258,6 +283,8 @@ final class OfflineVectorTileProvider: ObservableObject {
 		var rawSegmentsByRole: [OfflineFeatureRole: [[CLLocationCoordinate2D]]] = [:]
 		var rawSegmentCount = 0
 		var rawVertexCount = 0
+		var labels: [OfflineMapLabel] = []
+		var labelKeys: Set<String> = []
 		let decodeDuration = clock.measure {
 			for tile in tiles {
 				if shouldStop() { break }
@@ -265,6 +292,10 @@ final class OfflineVectorTileProvider: ObservableObject {
 					let decoded = decode(tile: tile, source: source, bounds: bounds)
 					for polygon in decoded.polys where boundingMeters(polygon.coordinates) >= minFillMeters {
 						polys.append(polygon)
+					}
+					// A label near a tile edge is repeated in the neighbor's buffer.
+					for label in decoded.labels where labelKeys.insert(label.key).inserted {
+						labels.append(label)
 					}
 					for line in decoded.lines {
 						rawSegmentsByRole[line.role, default: []].append(line.coordinates)
@@ -302,7 +333,7 @@ final class OfflineVectorTileProvider: ObservableObject {
 			decode: decodeDuration,
 			stitch: stitchDuration
 		)
-		return BuildResult(polygons: polys, polylines: lines, stats: stats)
+		return BuildResult(polygons: polys, polylines: lines, labels: labels, stats: stats)
 	}
 
 	/// Headless benchmark entry point: open the archive, pick tiles, and run the full build pipeline.
@@ -516,8 +547,15 @@ extension OfflineVectorTileProvider {
 		}
 	}
 
-	nonisolated private static func decode(tile: TileID, source: OfflineTileSource, bounds: GeoBounds?) -> (polys: [OfflineMapPolygon], lines: [OfflineMapPolyline]) {
-		guard let vector = parse(tile: tile, source: source) else { return ([], []) }
+	/// What one tile decodes to.
+	struct DecodedTile {
+		var polys: [OfflineMapPolygon] = []
+		var lines: [OfflineMapPolyline] = []
+		var labels: [OfflineMapLabel] = []
+	}
+
+	nonisolated private static func decode(tile: TileID, source: OfflineTileSource, bounds: GeoBounds?) -> DecodedTile {
+		guard let vector = parse(tile: tile, source: source) else { return DecodedTile() }
 		var polys: [OfflineMapPolygon] = []
 		var lines: [OfflineMapPolyline] = []
 		var counter = 0
@@ -548,7 +586,68 @@ extension OfflineVectorTileProvider {
 			appendPolylines(feature.geometry, role: role, bounds: bounds, into: &lines, id: nextID)
 		}
 		// Boundaries (the neighborhood/admin outline overlay) intentionally omitted.
-		return (polys, lines)
+		return DecodedTile(polys: polys, lines: lines, labels: labels(in: vector, bounds: bounds))
+	}
+
+	/// The named places and water bodies in a tile that fall inside `bounds`.
+	nonisolated static func labels(in vector: VectorTile, bounds: GeoBounds?) -> [OfflineMapLabel] {
+		var result: [OfflineMapLabel] = []
+		func add(_ feature: GISTools.Feature, kind: OfflineMapLabel.Kind) {
+			guard let point = feature.geometry as? GISTools.Point, let name = localizedName(feature.properties) else { return }
+			let coordinate = coord(point.coordinate)
+			if let bounds, !(bounds.minLat...bounds.maxLat).contains(coordinate.latitude) || !(bounds.minLon...bounds.maxLon).contains(coordinate.longitude) { return }
+			let minZoom = number(feature.properties["min_zoom"]) ?? 0
+			let rank = Int(number(feature.properties["population_rank"]) ?? 0)
+			result.append(OfflineMapLabel(name: name, coordinate: coordinate, kind: kind, minZoom: minZoom, rank: rank))
+		}
+		for feature in vector.features(for: "places") {
+			guard let kind = placeKind(kind: feature.properties["kind"] as? String, kindDetail: feature.properties["kind_detail"] as? String) else { continue }
+			add(feature, kind: kind)
+		}
+		// Lakes, bays and the sea carry a labeled point beside their polygons.
+		for feature in vector.features(for: "water") where feature.geometry is GISTools.Point {
+			add(feature, kind: .water)
+		}
+		return result
+	}
+
+	/// The label kind for a `places` feature; nil for countries, which are too big for the maps here.
+	nonisolated static func placeKind(kind: String?, kindDetail: String?) -> OfflineMapLabel.Kind? {
+		switch kind {
+		case "region": return .region
+		case "locality":
+			switch kindDetail {
+			case "city": return .city
+			case "town": return .town
+			default: return .village
+			}
+		case "macrohood": return .suburb
+		case "neighbourhood": return .neighborhood
+		default: return nil
+		}
+	}
+
+	/// The name in the app's language when the basemap has it (`name:fr`, `name:zh-Hant`), else the
+	/// local name.
+	nonisolated static func localizedName(_ properties: [String: Sendable], language: Locale.Language = Locale.current.language) -> String? {
+		if let code = language.languageCode?.identifier {
+			if let script = language.script?.identifier, let name = properties["name:\(code)-\(script)"] as? String, !name.isEmpty { return name }
+			if let name = properties["name:\(code)"] as? String, !name.isEmpty { return name }
+		}
+		guard let name = properties["name"] as? String, !name.isEmpty else { return nil }
+		return name
+	}
+
+	/// A tile property read as a number: vector tiles store numbers as doubles or integers.
+	nonisolated private static func number(_ value: Any?) -> Double? {
+		switch value {
+		case let number as Double: return number
+		case let number as Float: return Double(number)
+		case let number as Int: return Double(number)
+		case let number as Int64: return Double(number)
+		case let number as UInt64: return Double(number)
+		default: return nil
+		}
 	}
 
 	nonisolated static func roadRole(kind: String?, kindDetail: String?) -> OfflineFeatureRole {
