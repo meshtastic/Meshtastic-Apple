@@ -9,8 +9,8 @@ import Foundation
 import MeshtasticProtobufs
 import OSLog
 
-/// Turns the connected radio's screen stream on and off (design#142). Both admin messages only
-/// work over the local connection and need no session passkey; frames come back as
+/// Turns the connected radio's screen stream on and off and presses its buttons (design#142).
+/// These admin messages only work over the local connection and need no session passkey; frames come back as
 /// `FromRadio.display_frame` and `display_palette`.
 extension AccessoryManager {
 
@@ -40,6 +40,19 @@ extension AccessoryManager {
 		var admin = AdminMessage()
 		admin.getDisplayFrameRequest = true
 		await sendDisplayMirrorAdmin(admin, description: "Requested a screen frame")
+	}
+
+	/// Presses a button on the radio. Touch events carry the panel pixel that was touched.
+	func sendDisplayInput(_ event: DisplayInputEvent, at point: DisplayTouchPoint? = nil) async {
+		var input = AdminMessage.InputEvent()
+		input.eventCode = event.rawValue
+		if let point {
+			input.touchX = point.x
+			input.touchY = point.y
+		}
+		var admin = AdminMessage()
+		admin.sendInputEvent = input
+		await sendDisplayMirrorAdmin(admin, description: "Sent screen input \(event.rawValue)")
 	}
 
 	@discardableResult

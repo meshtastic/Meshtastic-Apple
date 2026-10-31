@@ -5,16 +5,26 @@
 //  Copyright(c) Garth Vander Houwen 10/30/26.
 //
 
+import GameController
 import MeshtasticProtobufs
 import SwiftUI
 
-/// The connected radio's own screen, live. Streams only while this view is on screen and the
-/// app is active, and stops when it closes (design#142).
+/// The connected radio's own screen, live, with its buttons. Streams only while this view is on
+/// screen and the app is active, and stops when it closes (design#142).
 struct DeviceScreenView: View {
 
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 	@Environment(\.scenePhase) private var scenePhase
 	let metadata: DeviceMetadataEntity
+
+	@FocusState private var keyboardCaptured: Bool
+	@State private var hasKeyboard = DeviceScreenView.keyboardAttached
+	@State private var pressStart: Date?
+	@State private var lastKeyRepeat = Date.distantPast
+
+	private static var keyboardAttached: Bool {
+		ProcessInfo.processInfo.isMacCatalystApp || GCKeyboard.coalesced != nil
+	}
 
 	private var aspectRatio: CGFloat {
 		CGFloat(max(metadata.displayWidth, 1)) / CGFloat(max(metadata.displayHeight, 1))
@@ -30,6 +40,9 @@ struct DeviceScreenView: View {
 				ScrollView {
 					VStack(spacing: 16) {
 						screen
+						DeviceRemoteControl { event in
+							Task { await accessoryManager.sendDisplayInput(event) }
+						}
 						details
 					}
 					.padding(16)
@@ -65,6 +78,15 @@ struct DeviceScreenView: View {
 				Task { await startIfVisible() }
 			}
 		}
+		.onReceive(NotificationCenter.default.publisher(for: .GCKeyboardDidConnect)) { _ in
+			hasKeyboard = Self.keyboardAttached
+		}
+		.onReceive(NotificationCenter.default.publisher(for: .GCKeyboardDidDisconnect)) { _ in
+			hasKeyboard = Self.keyboardAttached
+			if !hasKeyboard {
+				keyboardCaptured = false
+			}
+		}
 		.trackScreen(.deviceScreen)
 	}
 
@@ -75,6 +97,13 @@ struct DeviceScreenView: View {
 					.resizable()
 					.interpolation(.none)
 					.aspectRatio(aspectRatio, contentMode: .fit)
+					.overlay {
+						GeometryReader { proxy in
+							Color.clear
+								.contentShape(Rectangle())
+								.gesture(screenGesture(renderedSize: proxy.size))
+						}
+					}
 					.accessibilityElement()
 					.accessibilityLabel("Radio screen")
 			} else {
@@ -93,6 +122,79 @@ struct DeviceScreenView: View {
 		}
 		.padding(10)
 		.background(.black, in: RoundedRectangle(cornerRadius: 12))
+		.overlay {
+			if keyboardCaptured {
+				RoundedRectangle(cornerRadius: 12)
+					.strokeBorder(Color.accentColor, lineWidth: 3)
+			}
+		}
+		.focusable(hasKeyboard)
+		.focused($keyboardCaptured)
+		.focusEffectDisabled()
+		.onKeyPress(keys: [.upArrow, .downArrow, .leftArrow, .rightArrow, .return, .space, .escape, .delete], phases: .all) { press in
+			handleKey(press)
+		}
+	}
+
+	/// A swipe sends a direction. On touch screens a tap touches the pixel under it and a long
+	/// press long-presses it; the radio times the long press itself, so it's sent once.
+	private func screenGesture(renderedSize: CGSize) -> some Gesture {
+		DragGesture(minimumDistance: 0)
+			.onChanged { _ in
+				if pressStart == nil {
+					pressStart = .now
+				}
+			}
+			.onEnded { value in
+				let heldFor = pressStart.map { Date.now.timeIntervalSince($0) } ?? 0
+				pressStart = nil
+				if let direction = DisplayInputMapping.swipeDirection(for: value.translation) {
+					send(direction)
+					return
+				}
+				guard metadata.displayHasTouch,
+					  let point = DisplayInputMapping.panelPoint(
+						for: value.location,
+						in: renderedSize,
+						panelWidth: Int(metadata.displayWidth),
+						panelHeight: Int(metadata.displayHeight)
+					  ) else { return }
+				send(heldFor >= DisplayInputMapping.longPressDuration ? .select : .userPress, at: point)
+			}
+	}
+
+	/// Arrow keys, Return/Space and Esc/Delete go to the radio while the screen has keyboard focus.
+	/// Key-ups are swallowed too, and anything held with Command, Control or Option is left alone.
+	private func handleKey(_ press: KeyPress) -> KeyPress.Result {
+		guard press.modifiers.isDisjoint(with: [.command, .control, .option]) else { return .ignored }
+		let event: DisplayInputEvent
+		switch press.key {
+		case .upArrow: event = .up
+		case .downArrow: event = .down
+		case .leftArrow: event = .left
+		case .rightArrow: event = .right
+		case .return, .space: event = .select
+		case .escape, .delete: event = .back
+		default: return .ignored
+		}
+		switch press.phase {
+		case .down:
+			send(event)
+		case .repeat:
+			// Only directions repeat, and no faster than the on-screen ring does.
+			let now = Date.now
+			if event.isDirection, now.timeIntervalSince(lastKeyRepeat) >= 0.1 {
+				lastKeyRepeat = now
+				send(event)
+			}
+		default:
+			break
+		}
+		return .handled
+	}
+
+	private func send(_ event: DisplayInputEvent, at point: DisplayTouchPoint? = nil) {
+		Task { await accessoryManager.sendDisplayInput(event, at: point) }
 	}
 
 	private var details: some View {
@@ -105,10 +207,28 @@ struct DeviceScreenView: View {
 					.font(.footnote)
 					.foregroundStyle(.secondary)
 			}
-			Button {
-				Task { await accessoryManager.requestDisplayFrame() }
-			} label: {
-				Label("Refresh", systemImage: "arrow.clockwise")
+			if keyboardCaptured {
+				Text("Arrow keys, Return and Esc go to the radio.")
+					.font(.footnote)
+					.foregroundStyle(.secondary)
+			}
+			HStack {
+				Button {
+					Task { await accessoryManager.requestDisplayFrame() }
+				} label: {
+					Label("Refresh", systemImage: "arrow.clockwise")
+				}
+				if hasKeyboard {
+					Button {
+						keyboardCaptured.toggle()
+					} label: {
+						if keyboardCaptured {
+							Label("Stop Using Keyboard", systemImage: "keyboard.chevron.compact.down")
+						} else {
+							Label("Use Keyboard", systemImage: "keyboard")
+						}
+					}
+				}
 			}
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.roundedRectangle)
