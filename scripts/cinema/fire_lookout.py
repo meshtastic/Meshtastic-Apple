@@ -709,8 +709,7 @@ SOLAR_NODE_MOUNT = Vector((0.0027, 0.117, -0.0376))
 
 
 def outside():
-    """On the catwalk: a Solar Node on a mast clamped to a railing post outside the right window
-    and the Meshtastic flag on a staff at the front-right corner."""
+    """On the catwalk: a Solar Node on a mast clamped to a railing post outside the right window."""
     steel = material("MastSteel", (0.15, 0.15, 0.16), 0.4, metallic=0.9)
     clamp = material("Clamp", (0.02, 0.02, 0.02), 0.45)
     # The node, up above the railing where the window frames it, panel turned to the seat.
@@ -730,14 +729,6 @@ def outside():
     mount_local = root.matrix_world @ SOLAR_NODE_MOUNT
     turn = Matrix.Rotation(yaw + math.pi / 2, 4, "Z") @ Matrix.Rotation(-tilt, 4, "X")
     root.matrix_world = Matrix.Translation(mount) @ turn @ Matrix.Translation(-mount_local) @ root.matrix_world
-
-    # The flag on a staff lashed to the front-right corner post, hanging in the still evening.
-    fx, fy = HALF + CATWALK - 0.06, HALF + CATWALK - 0.06
-    cylinder("FlagStaff", 0.014, (fx, fy, RAIL - 0.3), (fx, fy, 2.6), steel)
-    sphere("StaffFinial", 0.025, (fx, fy, 2.62), material("Finial", (0.78, 0.6, 0.3), 0.3, metallic=1.0), segments=12)
-    banner = image_material("Flag", os.path.join(CACHE, "banner.png"), 0.9)
-    flag = plane("Flag", 0.6, 0.3, (fx - 0.3, fy + 0.02, 2.4), (math.pi / 2, 0, 0), banner)
-    flag.rotation_euler = (math.pi / 2, 0, math.radians(-8))
 
 
 # MARK: - Boards
