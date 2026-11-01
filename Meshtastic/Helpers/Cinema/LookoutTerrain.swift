@@ -294,22 +294,29 @@ enum LookoutTerrain {
 
 	// MARK: The mesh
 
+	/// How far the terrain reaches from `site`: to the farthest corner of the downloaded box, at
+	/// most `maxRadius`.
+	static func outerRadius(site: LookoutSite, bounds: GeoBounds) -> Double {
+		let corners = [(bounds.minLat, bounds.minLon), (bounds.minLat, bounds.maxLon), (bounds.maxLat, bounds.minLon), (bounds.maxLat, bounds.maxLon)]
+		let reach = corners.map { CLLocationCoordinate2D(latitude: $0.0, longitude: $0.1).distance(from: site.coordinate) }.max() ?? maxRadius
+		return min(maxRadius, max(5_000, reach))
+	}
+
 	/// Builds the terrain around `site`, out to `bounds` and at most `maxRadius`. `sun` is where the
-	/// painted sky's sun is, degrees clockwise from the cab's front and above the horizon.
-	static func build(site: LookoutSite, bounds: GeoBounds, source: any ElevationTileSource, sun: (azimuth: Float, elevation: Float)) async -> LookoutTerrainModel? {
+	/// painted sky's sun is, degrees clockwise from the cab's front and above the horizon. The ground
+	/// is colored from `landCover` where it has the point, else by height.
+	static func build(site: LookoutSite, bounds: GeoBounds, source: any ElevationTileSource, landCover: OfflineLandCoverMap? = nil, sun: (azimuth: Float, elevation: Float)) async -> LookoutTerrainModel? {
 		let sampler = Sampler(source: source)
 		let floor = Double(site.elevation) + cabHeight
 		let eye = floor + eyeHeight
 		let metersPerDegreeLatitude = SpatialFrame.metersPerDegreeLatitude
 		let metersPerDegreeLongitude = metersPerDegreeLatitude * cos(site.latitude * .pi / 180)
-		// Out to the farthest corner of the downloaded box.
-		let corners = [(bounds.minLat, bounds.minLon), (bounds.minLat, bounds.maxLon), (bounds.maxLat, bounds.minLon), (bounds.maxLat, bounds.maxLon)]
-		let reach = corners.map { CLLocationCoordinate2D(latitude: $0.0, longitude: $0.1).distance(from: site.coordinate) }.max() ?? maxRadius
-		let outerRadius = min(maxRadius, max(5_000, reach))
+		let outerRadius = outerRadius(site: site, bounds: bounds)
 
 		let columns = spokes + 1
 		var elevations = [Float](repeating: 0, count: rings * columns)
 		var known = [Bool](repeating: false, count: rings * columns)
+		var covers = [OfflineLandCover?](repeating: nil, count: rings * columns)
 		var distances = [Double](repeating: 0, count: rings)
 		var lowest = Float.greatestFiniteMagnitude
 		for ring in 0..<rings {
@@ -320,6 +327,7 @@ enum LookoutTerrain {
 				let bearing = Double(spoke % spokes) / Double(spokes) * 2 * .pi
 				let latitude = site.latitude + distance * cos(bearing) / metersPerDegreeLatitude
 				let longitude = site.longitude + distance * sin(bearing) / metersPerDegreeLongitude
+				covers[ring * columns + spoke] = landCover?.cover(latitude: latitude, longitude: longitude)
 				if var elevation = await sampler.elevation(latitude: latitude, longitude: longitude, zoom: zoom) {
 					// The tower's footing cuts the summit flat: nothing right around it stands above
 					// its floor.
@@ -370,24 +378,31 @@ enum LookoutTerrain {
 			}
 		}
 
-		guard let texture = shade(local: local, elevations: elevations, distances: distances, lowest: lowest, highest: highest, sun: sun) else { return nil }
+		let ground = Ground(elevations: elevations, covers: covers, lowest: lowest, highest: highest, latitude: site.latitude)
+		guard let texture = shade(local: local, ground: ground, distances: distances, sun: sun) else { return nil }
 		return LookoutTerrainModel(site: site, positions: positions, textureCoordinates: uvs, indices: indices, texture: texture)
 	}
 
-	/// One pixel per sample: the ground's color for its height, lit from the painted sun and fading
-	/// into the sunset haze with distance.
-	private static func shade(local: [SIMD3<Double>], elevations: [Float], distances: [Double], lowest: Float, highest: Float, sun: (azimuth: Float, elevation: Float)) -> CGImage? {
+	/// What's known about each sample's ground, for the shading.
+	private struct Ground {
+		let elevations: [Float]
+		let covers: [OfflineLandCover?]
+		let lowest: Float
+		let highest: Float
+		let latitude: Double
+	}
+
+	/// One pixel per sample: the ground's color, lit from the painted sun and fading into the haze
+	/// with distance. The sunset warms the light a little; it used to turn every green to olive and
+	/// tan, so the view read as desert.
+	private static func shade(local: [SIMD3<Double>], ground: Ground, distances: [Double], sun: (azimuth: Float, elevation: Float)) -> CGImage? {
 		let columns = spokes + 1
 		let sunAzimuth = Double(sun.azimuth + Float(frontHeading)) * .pi / 180
 		let sunElevation = Double(sun.elevation) * .pi / 180
 		let light = SIMD3<Double>(sin(sunAzimuth) * cos(sunElevation), sin(sunElevation), cos(sunAzimuth) * cos(sunElevation))
-		let forest = SIMD3<Double>(0.14, 0.21, 0.11)
-		let rock = SIMD3<Double>(0.46, 0.40, 0.34)
-		let snow = SIMD3<Double>(0.90, 0.90, 0.93)
-		let water = SIMD3<Double>(0.30, 0.38, 0.46)
-		let haze = SIMD3<Double>(0.86, 0.64, 0.50)
-		let sunlight = SIMD3<Double>(1.0, 0.78, 0.58)
-		let range = Double(max(1, highest - lowest))
+		let haze = SIMD3<Double>(0.78, 0.73, 0.70)
+		let sunlight = SIMD3<Double>(1.0, 0.88, 0.76)
+		let range = Double(max(1, ground.highest - ground.lowest))
 
 		var pixels = [UInt8](repeating: 255, count: rings * columns * 4)
 		for ring in 0..<rings {
@@ -402,21 +417,12 @@ enum LookoutTerrain {
 				let length = simd_length(normal)
 				normal = length > 0 ? normal / length : SIMD3(0, 1, 0)
 
-				let height = Double(elevations[index])
-				let t = (height - Double(lowest)) / range
-				var color: SIMD3<Double>
-				if height <= 0.5 {
-					color = water
-				} else if t < 0.55 {
-					color = forest
-				} else if t < 0.8 {
-					color = simd_mix(forest, rock, SIMD3(repeating: (t - 0.55) / 0.25))
-				} else {
-					color = simd_mix(rock, snow, SIMD3(repeating: min(1, (t - 0.8) / 0.15)))
-				}
+				let height = Double(ground.elevations[index])
+				let t = (height - Double(ground.lowest)) / range
+				var color = LookoutGroundColor.color(cover: ground.covers[index], elevation: height, latitude: ground.latitude, heightFraction: t)
 				let lit = max(0, simd_dot(normal, light))
-				color *= 0.45 + 0.55 * lit * sunlight
-				let fog = 1 - exp(-distance / 35_000)
+				color *= 0.5 + 0.5 * lit * sunlight
+				let fog = 1 - exp(-distance / 60_000)
 				color = simd_mix(color, haze, SIMD3(repeating: fog))
 
 				// Ring 0 on the bottom row: texture v runs up from the bottom of the image.

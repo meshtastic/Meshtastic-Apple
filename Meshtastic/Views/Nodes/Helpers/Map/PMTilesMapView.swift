@@ -25,6 +25,39 @@ import Combine
 // This avoids a second map, rasterization, occlusion, and the two layers drifting apart during
 // camera moves.
 
+/// What covers the ground, from the basemap's `landcover`, `landuse` and `water` layers.
+enum OfflineLandCover: UInt8, CaseIterable, Sendable {
+	case forest = 1, grass, farmland, scrub, barren, glacier, urban, water, park
+
+	/// The cover a feature stands for, nil for kinds that don't say what the ground looks like
+	/// (protected areas, which can take in a whole range, and schools).
+	init?(layer: String, kind: String?) {
+		switch (layer, kind) {
+		case ("water", _): self = .water
+		case ("landcover", "forest"), ("landuse", "forest"), ("landuse", "wood"): self = .forest
+		case ("landcover", "grassland"), ("landuse", "grass"), ("landuse", "grassland"), ("landuse", "meadow"),
+			 ("landuse", "heath"), ("landuse", "wetland"), ("landuse", "golf_course"): self = .grass
+		case ("landcover", "farmland"), ("landuse", "farmland"), ("landuse", "farmyard"), ("landuse", "orchard"),
+			 ("landuse", "vineyard"), ("landuse", "allotments"): self = .farmland
+		case ("landcover", "scrub"), ("landuse", "scrub"): self = .scrub
+		case ("landcover", "barren"), ("landuse", "bare_rock"), ("landuse", "scree"), ("landuse", "sand"),
+			 ("landuse", "beach"), ("landuse", "quarry"): self = .barren
+		case ("landcover", "glacier"), ("landuse", "glacier"): self = .glacier
+		case ("landcover", "urban_area"), ("landuse", "residential"), ("landuse", "commercial"), ("landuse", "industrial"),
+			 ("landuse", "retail"), ("landuse", "railway"): self = .urban
+		case ("landuse", "park"), ("landuse", "garden"), ("landuse", "recreation_ground"), ("landuse", "pitch"),
+			 ("landuse", "playground"), ("landuse", "cemetery"): self = .park
+		default: return nil
+		}
+	}
+}
+
+/// One area of land cover: an outer ring and its holes.
+struct OfflineLandArea: @unchecked Sendable {
+	let cover: OfflineLandCover
+	let rings: [[CLLocationCoordinate2D]]
+}
+
 /// Semantic role for an offline vector feature, mapped to a color/width at render time so a single
 /// decode serves both light and dark appearance.
 enum OfflineFeatureRole {
@@ -650,6 +683,24 @@ extension OfflineVectorTileProvider {
 		return result
 	}
 	#endif
+
+	/// Land cover in one tile, from the given layers: the basemap's broad `landcover` classes, its
+	/// finer `landuse` areas and its water, each a polygon (outer ring, then holes) tagged with
+	/// what covers it. Areas this doesn't recognize are left out.
+	nonisolated static func landCover(tile: TileID, source: OfflineTileSource, layers: [String]) -> [OfflineLandArea] {
+		guard let vector = parse(tile: tile, source: source) else { return [] }
+		var result: [OfflineLandArea] = []
+		for layer in layers {
+			for feature in vector.features(for: layer) {
+				let kind = (feature.properties["kind"] as? String) ?? (feature.properties["pmap:kind"] as? String)
+				guard let cover = OfflineLandCover(layer: layer, kind: kind) else { continue }
+				for rings in polygonRings(feature.geometry) where !rings.isEmpty {
+					result.append(OfflineLandArea(cover: cover, rings: rings.map { $0.map(coord) }))
+				}
+			}
+		}
+		return result
+	}
 
 	/// The water layer carries every polygonal water body (ocean, lake, dock, reef, basin…).
 	/// With `tile`, each polygon records its feature for deduplication across tiles.
