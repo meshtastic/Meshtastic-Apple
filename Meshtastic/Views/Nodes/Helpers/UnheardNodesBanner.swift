@@ -146,15 +146,31 @@ struct UnheardNodesBanner: View {
 							isConfirming = true
 						} label: {
 							Text("Delete")
+								#if os(visionOS)
+								.foregroundStyle(.white)
+								#endif
 						}
 						.buttonStyle(.borderedProminent)
+						#if os(visionOS)
+						// visionOS draws the destructive role as red text on a pale fill, which washes
+						// out on the cinema's screen, so both buttons get a solid fill there.
+						.tint(.red)
+						#endif
 
 						Button {
 							dismiss(connectedNodeNum: connectedNodeNum)
 						} label: {
 							Text("Keep")
+								#if os(visionOS)
+								.foregroundStyle(.white)
+								#endif
 						}
+						#if os(visionOS)
+						.buttonStyle(.borderedProminent)
+						.tint(.accentFill)
+						#else
 						.buttonStyle(.bordered)
+						#endif
 					}
 					.buttonBorderShape(.capsule)
 					.controlSize(.regular)
