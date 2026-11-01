@@ -19,8 +19,19 @@ import OSLog
 /// One region's terrain data: the archive locations plus the coverage box.
 struct TerrainSource: Sendable, Equatable {
 	let globalURL: URL
-	let regionalURL: URL?
+	/// High-resolution extracts, one per Mapterhorn z6 archive the region reaches.
+	let regionalURLs: [URL]
 	let bounds: GeoBounds
+
+	init(globalURL: URL, regionalURLs: [URL], bounds: GeoBounds) {
+		self.globalURL = globalURL
+		self.regionalURLs = regionalURLs
+		self.bounds = bounds
+	}
+
+	init(globalURL: URL, regionalURL: URL?, bounds: GeoBounds) {
+		self.init(globalURL: globalURL, regionalURLs: regionalURL.map { [$0] } ?? [], bounds: bounds)
+	}
 }
 
 actor TerrainStore {
@@ -32,9 +43,10 @@ actor TerrainStore {
 
 	private struct OpenSource {
 		let archive: PMTilesArchive
-		let regional: PMTilesArchive?
+		let regionals: [PMTilesArchive]
 		let bounds: GeoBounds
-		var maxZoom: Int { Int(regional?.header.maxZoom ?? archive.header.maxZoom) }
+		var maxZoom: Int { regionals.map { Int($0.header.maxZoom) }.reduce(Int(archive.header.maxZoom), max) }
+
 	}
 
 	private var sources: [OpenSource] = []
@@ -60,8 +72,8 @@ actor TerrainStore {
 				Logger.services.error("🗺️ [Terrain] Could not open terrain archive at \(source.globalURL.lastPathComponent, privacy: .public)")
 				return nil
 			}
-			let regional = source.regionalURL.flatMap { PMTilesArchive(url: $0) }
-			return OpenSource(archive: archive, regional: regional, bounds: source.bounds)
+			let regionals = source.regionalURLs.compactMap { PMTilesArchive(url: $0) }
+			return OpenSource(archive: archive, regionals: regionals, bounds: source.bounds)
 		}
 	}
 
@@ -79,21 +91,24 @@ actor TerrainStore {
 		source(covering: z, x: x, y: y).map { Self.dataMaxZoom(open: $0, z: z, x: x, y: y) }
 	}
 
-	/// The regional archive's max zoom where it has this tile or one of its ancestors in its zoom
-	/// range; else the global archive's. The regional header's bounds are the area asked for, not
-	/// where tiles are: Mapterhorn has none over the sea, so a tile there falls back to global.
+	/// The deepest max zoom of the regional archives that have this tile or one of its ancestors in
+	/// their zoom range; else the global archive's. A regional header's bounds are the area asked
+	/// for, not where tiles are: Mapterhorn has none over the sea, and none at all in z6 tiles it
+	/// has no regional archive for, so a tile there falls back to global.
 	private static func dataMaxZoom(open: OpenSource, z: Int, x: Int, y: Int) -> Int {
-		if let regional = open.regional {
+		let tile = tileBounds(z: z, x: x, y: y)
+		var deepest: Int?
+		for regional in open.regionals where intersects(regional.header.bounds, tile) {
 			let top = Int(regional.header.maxZoom)
 			let bottom = Int(regional.header.minZoom)
-			if z >= bottom {
-				for zoom in stride(from: min(z, top), through: bottom, by: -1)
-				where regional.hasTile(z: UInt8(zoom), x: UInt32(x >> (z - zoom)), y: UInt32(y >> (z - zoom))) {
-					return top
-				}
+			guard z >= bottom, top > deepest ?? Int.min else { continue }
+			for zoom in stride(from: min(z, top), through: bottom, by: -1)
+			where regional.hasTile(z: UInt8(zoom), x: UInt32(x >> (z - zoom)), y: UInt32(y >> (z - zoom))) {
+				deepest = top
+				break
 			}
 		}
-		return Int(open.archive.header.maxZoom)
+		return deepest ?? Int(open.archive.header.maxZoom)
 	}
 
 	/// Whether any configured region covers the given tile at all.
@@ -118,8 +133,8 @@ actor TerrainStore {
 	func elevationTile(z: Int, x: Int, y: Int, margin: Int = 1) -> ElevationTile? {
 		guard let open = source(covering: z, x: x, y: y) else { return nil }
 
-		// Clamp to the archive's max zoom: above it, sample the covering ancestor.
-		// Per tile, so a gap in the regional data falls back to the global archive's data.
+		// Clamp to the data's max zoom here: above it, sample the covering ancestor. Per tile, so
+		// where no regional archive has data the global archive's is used.
 		let dataZoom = min(z, Self.dataMaxZoom(open: open, z: z, x: x, y: y))
 		let zoomDelta = z - dataZoom
 		let scale = 1 << zoomDelta          // how many map tiles per data tile edge
@@ -207,7 +222,7 @@ actor TerrainStore {
 	/// The tile at exactly `z/x/y` from a downloaded region, undecoded and not cached, so a coverage
 	/// estimate can decode its tiles in parallel off this actor.
 	func coverageTile(z: Int, x: Int, y: Int) -> CoverageTile {
-		guard let open = source(covering: z, x: x, y: y), z <= open.maxZoom else { return .notHeld }
+		guard let open = source(covering: z, x: x, y: y), z <= Self.dataMaxZoom(open: open, z: z, x: x, y: y) else { return .notHeld }
 		if let data = tileData(open: open, z: z, x: x, y: y) { return .data(data) }
 		let carriesZoom = z >= Int(open.archive.header.minZoom) && z <= Int(open.archive.header.maxZoom)
 		return carriesZoom && Self.contains(open.bounds, Self.tileBounds(z: z, x: x, y: y)) ? .sea : .notHeld
@@ -305,11 +320,12 @@ actor TerrainStore {
 		return decoded
 	}
 
-	/// A tile's bytes, from the regional archive when it has the tile, else the global one.
+	/// A tile's bytes, from a regional archive that has the tile, else the global one.
 	private func tileData(open: OpenSource, z: Int, x: Int, y: Int) -> Data? {
-		if let regional = open.regional, z >= Int(regional.header.minZoom), z <= Int(regional.header.maxZoom),
-		   let data = regional.tileData(z: UInt8(z), x: UInt32(x), y: UInt32(y)) {
-			return data
+		let tile = Self.tileBounds(z: z, x: x, y: y)
+		for regional in open.regionals where z >= Int(regional.header.minZoom) && z <= Int(regional.header.maxZoom)
+			&& Self.intersects(regional.header.bounds, tile) {
+			if let data = regional.tileData(z: UInt8(z), x: UInt32(x), y: UInt32(y)) { return data }
 		}
 		return open.archive.tileData(z: UInt8(z), x: UInt32(x), y: UInt32(y))
 	}
