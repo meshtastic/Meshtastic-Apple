@@ -299,11 +299,15 @@ def build_railing(rail):
 # MARK: - Furniture
 
 def fire_finder():
-    """The fire finder: a round map table on a wooden cabinet, with a brass sighting ring and its
-    two sights, pointed out over the mountains. The map is the topo print."""
+    """The fire finder, an Osborne: a round map table on a wooden cabinet, the map inside a brass
+    azimuth ring graduated in degrees, and a sighting bar across it with a rear sight (a plate with
+    a narrow slit) and a front sight (an open frame with one vertical hair). The sights stand low
+    and open, so from the seat they don't cover the window behind the table, and the bar is turned
+    across the line of sight so both show."""
     x, y = 1.05, -0.7
     wood = material("FinderCabinet", (0.5, 0.36, 0.2), 0.5)
     brass = material("FinderBrass", (0.72, 0.56, 0.28), 0.3, metallic=1.0)
+    engraving = material("FinderEngraving", (0.12, 0.09, 0.05), 0.6)
     box("FinderCabinet", (0.5, 0.5, 0.92), (x, y, 0.46), wood, bevel=0.005)
     box("FinderDrawer", (0.44, 0.02, 0.12), (x, y - 0.25, 0.7), material("Drawer", (0.42, 0.3, 0.16), 0.5))
     sphere("DrawerPull", 0.012, (x, y - 0.27, 0.7), brass, segments=12)
@@ -312,18 +316,51 @@ def fire_finder():
 
     def disc(bm):
         bm.loops.layers.uv.new()
-        bmesh.ops.create_circle(bm, cap_ends=True, segments=64, radius=0.37, calc_uvs=True)
+        bmesh.ops.create_circle(bm, cap_ends=True, segments=64, radius=0.35, calc_uvs=True)
     mesh_object("FinderMap", disc, image_material("FinderTopo", os.path.join(CACHE, "topo.png"), 0.8), (x, y, top + 0.001))
-    torus("FinderRing", 0.38, 0.012, (x, y, top + 0.02), brass)
-    # The sighting bar across the ring, with a sight at each end: a slit at the back and a hair at
-    # the front, turned toward the right-hand mountains.
-    bearing = math.radians(-35)
+
+    # The azimuth circle: a flat brass band round the map with a tick every 5 degrees, longer every
+    # 10 and longest every 90, and a raised rim outside it.
+    def band(bm):
+        outer = bmesh.ops.create_circle(bm, cap_ends=False, segments=96, radius=0.385)["verts"]
+        inner = bmesh.ops.create_circle(bm, cap_ends=False, segments=96, radius=0.352)["verts"]
+        for i in range(96):
+            bm.faces.new((outer[i], outer[(i + 1) % 96], inner[(i + 1) % 96], inner[i]))
+    mesh_object("FinderAzimuth", band, brass, (x, y, top + 0.004))
+    torus("FinderRim", 0.39, 0.008, (x, y, top + 0.006), brass)
+    for degrees in range(0, 360, 5):
+        length = 0.022 if degrees % 90 == 0 else 0.015 if degrees % 10 == 0 else 0.008
+        angle = math.radians(degrees)
+        radius = 0.385 - length / 2
+        box("FinderTick", (length, 0.0018, 0.0008),
+            (x + radius * math.cos(angle), y + radius * math.sin(angle), top + 0.0045), engraving, rotation=(0, 0, angle))
+
+    # The sighting bar turns on a pivot at the center. From the seat the table lies about 34
+    # degrees right of straight ahead, so a bar turned 50 degrees from that line shows both sights
+    # apart instead of one behind the other.
+    bearing = math.radians(16)
     across = Vector((math.cos(bearing), math.sin(bearing), 0))
-    box("SightBar", (0.8, 0.03, 0.008), (x, y, top + 0.03), brass, rotation=(0, 0, bearing))
-    for end, tall in ((-1, 0.14), (1, 0.12)):
-        pos = Vector((x, y, top + 0.03)) + across * end * 0.37
-        box("Sight", (0.006, 0.05, tall), pos + Vector((0, 0, tall / 2)), brass, rotation=(0, 0, bearing))
-    cylinder("FinderPivot", 0.02, (x, y, top), (x, y, top + 0.045), brass, segments=20)
+    side = Vector((-math.sin(bearing), math.cos(bearing), 0))
+    deck = top + 0.012
+    box("SightBar", (0.76, 0.024, 0.005), (x, y, deck), brass, rotation=(0, 0, bearing))
+    cylinder("FinderPivot", 0.018, (x, y, top), (x, y, deck + 0.006), brass, segments=20)
+
+    # Rear sight: two thin plates with a slit between them, joined at the foot and the top. The slit
+    # is wider than a real one's 2-3 mm so it reads in the panorama, about 11 pixels a degree.
+    rear = Vector((x, y, deck)) + across * -0.36
+    tall = 0.06
+    for sign in (-1, 1):
+        box("RearSightPlate", (0.003, 0.016, tall), rear + side * sign * 0.011 + Vector((0, 0, tall / 2)), brass, rotation=(0, 0, bearing))
+    for z in (0.004, tall - 0.004):
+        box("RearSightBridge", (0.003, 0.038, 0.008), rear + Vector((0, 0, z)), brass, rotation=(0, 0, bearing))
+
+    # Front sight: an open frame with a single vertical hair down the middle.
+    front = Vector((x, y, deck)) + across * 0.36
+    tall = 0.07
+    for sign in (-1, 1):
+        box("FrontSightPost", (0.004, 0.004, tall), front + side * sign * 0.022 + Vector((0, 0, tall / 2)), brass, rotation=(0, 0, bearing))
+    box("FrontSightTop", (0.004, 0.048, 0.004), front + Vector((0, 0, tall)), brass, rotation=(0, 0, bearing))
+    cylinder("FrontSightHair", 0.001, front, front + Vector((0, 0, tall)), engraving, segments=6)
 
 
 def bumpy(mat, scale, strength, colors=None):
