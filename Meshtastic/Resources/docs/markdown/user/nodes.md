@@ -244,6 +244,8 @@ When the radio you're connected to has a screen and its firmware can share it, t
 
 Below the screen are the radio's buttons: four directions around **OK**, with **Back** underneath. Hold a direction to repeat it, or hold **OK** for a long press. You can also swipe on the screen to move in that direction. On radios with a touch screen, tapping the picture touches the same spot on the radio, and holding it long-presses there. With a keyboard attached, including on a Mac, **Use Keyboard** sends the arrow keys, Return and Esc to the radio until you turn it off; an outline around the screen shows when it's on.
 
+The radio's 3D model at the top of the same node detail shows its screen live too, on the model's own display, while the model is open.
+
 The screen only comes over your direct connection to the radio, never over the mesh, so it isn't available for other nodes. Firmware that can't share its screen doesn't show the row.
 
 ### Where to Buy

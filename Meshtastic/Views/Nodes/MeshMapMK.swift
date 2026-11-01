@@ -43,6 +43,7 @@ struct MeshMapMK: View {
 	@AppStorage("enableOfflineTiles") private var enableOfflineTiles = false
 	@AppStorage("enableMapClustering") private var enableMapClustering = true
 	@AppStorage("meshMapShowHillshade") private var showHillshade = false
+	@AppStorage("meshMapHillshadeSkyOcclusion") private var hillshadeSkyOcclusion = false
 	@AppStorage("meshMapShowContours") private var showContours = false
 	/// Contour generation + the shared TerrainStore behind hillshade and contours (spec 018).
 	@StateObject private var terrainContours = TerrainContourProvider()
@@ -805,6 +806,9 @@ struct MeshMapMK: View {
 				reloadOfflineSource()
 				refreshTerrainSources()
 			}
+			.onChange(of: hillshadeSkyOcclusion) {
+				rebuildHillshadeOverlay()
+			}
 			.onChange(of: showHillshade) {
 				rebuildHillshadeOverlay()
 			}
@@ -1314,7 +1318,8 @@ struct MeshMapMK: View {
 									hillshadeOverlay = HillshadeTileOverlay(
 										store: terrainContours.store,
 										darkAppearance: colorScheme == .dark,
-										cacheDirectory: offlineMapManager.terrainHillshadeCacheDirectory(dark: colorScheme == .dark)
+										cacheDirectory: offlineMapManager.terrainHillshadeCacheDirectory(dark: colorScheme == .dark, skyOcclusion: hillshadeSkyOcclusion),
+										skyOcclusion: hillshadeSkyOcclusion
 									)
 								}
 

@@ -1081,7 +1081,7 @@ extension OfflineMapManager {
 	/// generation (the set of terrain downloadedAt stamps) changes — a re-download
 	/// or region delete invalidates every cached tile. One subdirectory per
 	/// appearance so light and dark shading never mix.
-	func terrainHillshadeCacheDirectory(dark: Bool) -> URL? {
+	func terrainHillshadeCacheDirectory(dark: Bool, skyOcclusion: Bool = false) -> URL? {
 		guard let root = directoryURL()?.appendingPathComponent("terrain-cache", isDirectory: true) else { return nil }
 		// The renderer version participates in the generation so a rendering change
 		// (clipping, shading tweaks) invalidates tiles cached by an older build.
@@ -1096,7 +1096,7 @@ extension OfflineMapManager {
 			try? FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
 			try? generation.write(to: marker, atomically: true, encoding: .utf8)
 		}
-		let sub = root.appendingPathComponent(dark ? "dark" : "light", isDirectory: true)
+		let sub = root.appendingPathComponent((dark ? "dark" : "light") + (skyOcclusion ? "-sky" : ""), isDirectory: true)
 		try? FileManager.default.createDirectory(at: sub, withIntermediateDirectories: true)
 		return sub
 	}
