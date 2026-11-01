@@ -639,20 +639,12 @@ extension OfflineVectorTileProvider {
 			let height = SpatialBuildingFootprint.meters(feature.properties["height"])
 			let minHeight = SpatialBuildingFootprint.meters(feature.properties["min_height"]) ?? 0
 			let isPart = feature.properties["kind"] as? String == "building_part"
-			func add(_ rings: [[GISTools.Coordinate3D]]) {
-				guard let outer = rings.first else { return }
+			for rings in polygonRings(feature.geometry) {
+				guard let outer = rings.first else { continue }
 				let outline = clipPolygon(outer.map(coord), to: tileBounds)
-				guard outline.count >= 3 else { return }
+				guard outline.count >= 3 else { continue }
 				let holes = rings.dropFirst().map { clipPolygon($0.map(coord), to: tileBounds) }.filter { $0.count >= 3 }
 				result.append(SpatialBuildingFootprint(outline: outline, height: height, minHeight: minHeight, isPart: isPart, holes: holes))
-			}
-			switch feature.geometry {
-			case let polygon as GISTools.Polygon:
-				add(polygon.rings.map(\.coordinates))
-			case let multi as GISTools.MultiPolygon:
-				for polygon in multi.polygons { add(polygon.rings.map(\.coordinates)) }
-			default:
-				break
 			}
 		}
 		return result
@@ -925,16 +917,59 @@ extension OfflineVectorTileProvider {
 			}
 			polys.append(OfflineMapPolygon(id: id(), role: role, coordinates: outer, interiorRings: interiors, origin: origin))
 		}
+		for rings in polygonRings(geometry) {
+			add(rings)
+		}
+	}
+
+	/// A decoded polygon geometry as polygons of rings, each outer ring first and its holes after.
+	///
+	/// mvt-tools groups rings by a winding rule that is backwards for tiles that follow the vector
+	/// tile spec, which every Protomaps build does: it starts a new polygon at each hole and files
+	/// the second and later outer rings as holes. A strait came out as a hole, so it drew as land,
+	/// and enclosed islands drew as water. It keeps the rings in tile order, though, and the spec
+	/// makes a polygon's first ring its outer one, so they're grouped again here: rings winding like
+	/// the first start a new polygon, the others are holes in the one before. That holds whichever
+	/// way the encoder wound them, so tiles mvt-tools wrote itself still come out right.
+	nonisolated static func polygonRings(_ geometry: GISTools.GeoJsonGeometry) -> [[[GISTools.Coordinate3D]]] {
+		let rings: [[GISTools.Coordinate3D]]
 		switch geometry {
 		case let polygon as GISTools.Polygon:
-			add(polygon.rings.map(\.coordinates))
+			rings = polygon.rings.map(\.coordinates)
 		case let multi as GISTools.MultiPolygon:
-			for polygon in multi.polygons {
-				add(polygon.rings.map(\.coordinates))
-			}
+			rings = multi.polygons.flatMap { $0.rings.map(\.coordinates) }
 		default:
-			break
+			return []
 		}
+		guard let first = rings.first else { return [] }
+		// A first ring with no area can't say: take the spec's winding, outer rings clockwise on the map.
+		let firstArea = signedArea(first)
+		let outerIsNegative = firstArea == 0 || firstArea < 0
+		var result: [[[GISTools.Coordinate3D]]] = []
+		for ring in rings {
+			let area = signedArea(ring)
+			if result.isEmpty || (area != 0 && (area < 0) == outerIsNegative) {
+				result.append([ring])
+			} else {
+				result[result.count - 1].append(ring)
+			}
+		}
+		return result
+	}
+
+	/// The shoelace sum in degrees, positive when a ring runs counter-clockwise on the map. Only its
+	/// sign is used. Measured from the ring's first point: from the origin the products are around
+	/// 6,000 for a ring near Seattle, and a ring a meter across loses its sign to rounding.
+	nonisolated private static func signedArea(_ ring: [GISTools.Coordinate3D]) -> Double {
+		guard ring.count >= 3, let origin = ring.first else { return 0 }
+		var sum = 0.0
+		for index in ring.indices {
+			let a = ring[index], b = ring[(index + 1) % ring.count]
+			let ax = a.longitude - origin.longitude, ay = a.latitude - origin.latitude
+			let bx = b.longitude - origin.longitude, by = b.latitude - origin.latitude
+			sum += ax * by - bx * ay
+		}
+		return sum
 	}
 
 	/// A feature's `min_zoom` (or an older basemap's `pmap:min_zoom`), 0 when it has none.
