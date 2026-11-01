@@ -10,7 +10,7 @@ The Map tab shows all nodes that have shared a position, overlaid on an Apple Ma
 
 The map **reopens where you last left it** — your last-viewed area and zoom are remembered between launches, so you don't have to pan back after every relaunch. On a fresh install (before you've moved the map) it frames your current location, then your connected radio, then the center of your nodes.
 
-The map's buttons sit in the bottom corners, like in Apple Maps. On the left, **3D** tilts the map and **2D** flattens it again, the location button follows your position, and the compass appears once the map is turned. The 3D button is hidden when the map is zoomed out too far to tilt. On the right, one bar holds the coverage estimate, filter, legend and map options buttons.
+The map's buttons sit where Apple Maps puts them. **3D** tilts the map and **2D** flattens it again, the location button follows your position, and the compass appears once the map is turned. On iPhone these are in the bottom left corner; on iPad, Mac and Apple Vision Pro they're in the top right. The 3D button is hidden when the map is zoomed out too far to tilt. In the bottom right corner, one bar holds the coverage estimate, filter, legend and map options buttons.
 
 ## Node Pins
 

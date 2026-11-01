@@ -470,7 +470,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		private var coverageAreasApplied: [GeoBounds] = []
 		private var coverageDark = false
 
-		// Custom map controls (compass + pitch toggle), pinned bottom-trailing above the button bar.
+		// Custom map controls (compass + pitch toggle); see `installControls` for where they sit.
 		private weak var hostMapView: MKMapView?
 		private var controlsStack: UIStackView?
 		private var controlsBottomConstraint: NSLayoutConstraint?
@@ -557,20 +557,21 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 			userTrackingCircle?.isHidden = !config.showsUserLocation
 			mapView.showsScale = config.showsScale
 			updatePitchControl(for: mapView)
-			// A custom compass + pitch toggle are installed in `installControls` (bottom-leading); the
-			// built-in top-right compass is disabled there.
+			// A custom compass + pitch toggle are installed in `installControls`; the built-in
+			// compass is disabled there.
 			mapView.isPitchEnabled = config.showsPitchControl
 		}
 
-		// MARK: Custom controls (pitch toggle, tracking and compass, bottom-leading)
+		// MARK: Custom controls (pitch toggle, tracking and compass)
 
-		/// Installs (once) a pitch toggle, tracking button and compass pinned to the map's bottom-leading
-		/// safe area, lifted by `bottomInset`, like the Maps app. Disables the built-in compass.
+		/// Installs (once) a pitch toggle, tracking button and compass, like the Maps app: in the
+		/// map's bottom-leading safe area on a phone, lifted by `bottomInset`, and top-trailing on an
+		/// iPad, a Mac and Vision Pro. Disables the built-in compass.
 		func installControls(on mapView: MKMapView, bottomInset: CGFloat) {
 			hostMapView = mapView
 			mapView.showsCompass = false
-			if let controlsBottomConstraint {
-				controlsBottomConstraint.constant = -bottomInset
+			if controlsStack != nil {
+				controlsBottomConstraint?.constant = -bottomInset
 				return
 			}
 			let compass = MKCompassButton(mapView: mapView)
@@ -597,17 +598,25 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 			stack.alignment = .center
 			stack.translatesAutoresizingMaskIntoConstraints = false
 			mapView.addSubview(stack)
-			let bottom = stack.bottomAnchor.constraint(equalTo: mapView.safeAreaLayoutGuide.bottomAnchor, constant: -bottomInset)
-			NSLayoutConstraint.activate([
-				stack.leadingAnchor.constraint(equalTo: mapView.safeAreaLayoutGuide.leadingAnchor, constant: 12),
-				bottom
-			])
+			let guide = mapView.safeAreaLayoutGuide
+			if UIDevice.current.userInterfaceIdiom == .phone {
+				let bottom = stack.bottomAnchor.constraint(equalTo: guide.bottomAnchor, constant: -bottomInset)
+				NSLayoutConstraint.activate([
+					stack.leadingAnchor.constraint(equalTo: guide.leadingAnchor, constant: 12),
+					bottom
+				])
+				controlsBottomConstraint = bottom
+			} else {
+				NSLayoutConstraint.activate([
+					stack.trailingAnchor.constraint(equalTo: guide.trailingAnchor, constant: -12),
+					stack.topAnchor.constraint(equalTo: guide.topAnchor, constant: 12)
+				])
+			}
 			controlsStack = stack
-			controlsBottomConstraint = bottom
 			updatePitchControl(for: mapView)
 		}
 
-		/// A round button on the map's leading side, like the Maps app's: Liquid Glass where the OS
+		/// A round map button, like the Maps app's: Liquid Glass where the OS
 		/// has it, a translucent disc before that.
 		static func controlCircle(around control: UIView) -> UIView {
 			let size: CGFloat = 48
