@@ -1349,7 +1349,35 @@ struct MeshMapMK: View {
 									result += traceRouteLabelDecorations
 									result += geoJSONDecorations
 									result += terrainLabelDecorations
+									result += offlinePlaceLabelDecorations
 									return result
+								}
+
+								/// Place and water names from the offline map, while it stands in for the Apple
+								/// map with no network to draw Apple's names (display-only).
+								private var offlinePlaceLabelDecorations: [ClusterMapDecoration] {
+									guard shouldRenderOfflineMaps, !offlineMapConnectivity.isNetworkAvailable, selectedTraceRoute == nil,
+										  let region = visibleRegion else { return [] }
+									let dark = colorScheme == .dark
+									let zoom = Double(TerrainContourProvider.zoomLevel(for: region))
+									return OfflineMapLabels.visible(offlineVectors.labels, in: region, zoom: zoom).map { label in
+										let style = SpatialOfflineLabels.style(for: label.kind)
+										let halo = Color(SpatialOfflineLabels.haloColor(dark: dark))
+										return ClusterMapDecoration(
+											id: "offline-label-\(label.key)",
+											coordinate: label.coordinate,
+											content: AnyView(
+												Text(verbatim: style.uppercase ? label.name.uppercased() : label.name)
+													.font(Font(style.font))
+													.kerning(style.kern)
+													.foregroundColor(Color(SpatialOfflineLabels.textColor(for: label.kind, dark: dark)))
+													.shadow(color: halo, radius: 1)
+													.shadow(color: halo, radius: 1)
+													.fixedSize()
+													.allowsHitTesting(false)
+											)
+										)
+									}
 								}
 
 								/// Elevation labels for the index contours (display-only).

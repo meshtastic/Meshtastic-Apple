@@ -108,6 +108,12 @@ struct OfflineMapLabel: Sendable, Equatable {
 	var key: String { "\(kind.rawValue)|\(name)|\(coordinate.latitude)|\(coordinate.longitude)" }
 
 	static func == (lhs: OfflineMapLabel, rhs: OfflineMapLabel) -> Bool { lhs.key == rhs.key }
+
+	/// Most important first: the lowest `min_zoom` (shown from furthest out), then the bigger kind
+	/// of place, then the bigger population, then by name so the order is stable.
+	static func ranked(_ labels: [OfflineMapLabel]) -> [OfflineMapLabel] {
+		labels.sorted { ($0.minZoom, $0.kind, -$0.rank, $0.name) < ($1.minZoom, $1.kind, -$1.rank, $1.name) }
+	}
 }
 
 /// Region identity required to bind an archive consistently before and after the manager loads.
@@ -167,6 +173,8 @@ final class OfflineVectorTileProvider: ObservableObject {
 	/// Full road network (incl. the residential/neighborhood grid), stitched into long polylines.
 	/// Rendered as a few batched MKMultiPolylines per role, so the whole grid stays smooth.
 	@Published private(set) var roads: [OfflineMapPolyline] = []
+	/// Place and water names, most important first (see `OfflineMapLabel.ranked`).
+	@Published private(set) var labels: [OfflineMapLabel] = []
 	/// Bumped once each time a decode publishes, so observers rebuild exactly once per decode.
 	@Published private(set) var revision = 0
 
@@ -240,6 +248,7 @@ final class OfflineVectorTileProvider: ObservableObject {
 		didLoad = false
 		polygons = []
 		roads = []
+		labels = []
 		revision += 1   // drop the old overlays now; the decode publishes the merged new set
 		// NOTE: does NOT decode here — the caller decodes lazily (only when a region is on screen).
 	}
@@ -270,6 +279,8 @@ final class OfflineVectorTileProvider: ObservableObject {
 		queue.async { [weak self] in
 			var allPolygons: [OfflineMapPolygon] = []
 			var allRoads: [OfflineMapPolyline] = []
+			var allLabels: [OfflineMapLabel] = []
+			var labelKeys: Set<String> = []
 			for (index, entry) in snapshot.enumerated() {
 				let tiles = Self.tiles(
 					bounds: entry.bounds,
@@ -293,11 +304,15 @@ final class OfflineVectorTileProvider: ObservableObject {
 					namespaced.id = "\(index)/\(line.id)"
 					return namespaced
 				})
+				// Overlapping regions carry the same names.
+				allLabels += result.labels.filter { labelKeys.insert($0.key).inserted }
 			}
+			let rankedLabels = OfflineMapLabel.ranked(allLabels)
 			Task { @MainActor [weak self] in
 				guard let self else { return }
 				self.polygons = allPolygons
 				self.roads = allRoads
+				self.labels = rankedLabels
 				self.revision += 1
 			}
 		}
