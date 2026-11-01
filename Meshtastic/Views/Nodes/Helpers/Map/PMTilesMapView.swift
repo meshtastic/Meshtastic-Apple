@@ -33,18 +33,40 @@ enum OfflineFeatureRole {
 }
 
 struct OfflineMapPolygon: Identifiable {
-	let id: String
+	/// From the map feature's own id when it has one (`role/featureID/part`), so the same
+	/// feature has the same id on every build; otherwise `tile/counter`.
+	var id: String
 	let role: OfflineFeatureRole
 	let coordinates: [CLLocationCoordinate2D]
 	/// Interior rings (holes) — islands in a lake, clearings in a park. Rendered
 	/// via MKPolygon(interiorPolygons:); dropping them floods islands solid.
 	var interiorRings: [[CLLocationCoordinate2D]] = []
+	/// Where this piece came from, for telling copies of one feature apart while decoding.
+	var origin: OfflineFeatureOrigin?
 }
 
 struct OfflineMapPolyline: Identifiable {
-	let id: String
+	/// From the smallest map feature id among the segments stitched into it, when they have
+	/// ids (`role/featureID`); otherwise `role/cCounter`.
+	var id: String
 	let role: OfflineFeatureRole
 	let coordinates: [CLLocationCoordinate2D]
+	/// The map feature this segment came from, while decoding.
+	var featureID: UInt64?
+}
+
+/// Which feature a decoded polygon belongs to and which tile it was read from. A feature near a
+/// tile edge is in both tiles (the neighbor carries it in its buffer), so this is what finds the
+/// copies.
+struct OfflineFeatureOrigin {
+	/// The vector tile's feature id. Protomaps encodes the OSM element type above bit 44 and the
+	/// OSM id below, so it is unique across nodes, ways and relations.
+	let featureID: UInt64
+	/// The polygon's index within a multipolygon feature.
+	let part: Int
+	let tile: String
+	/// The outer ring lies inside its tile, so this copy is the whole feature.
+	let isWholeInTile: Bool
 }
 
 /// A name to print on the offline map: a place (city, town, neighborhood) or a body of water, from
@@ -242,13 +264,18 @@ final class OfflineVectorTileProvider: ObservableObject {
 				let result = Self.build(source: entry.source, bounds: entry.bounds, tiles: tiles)
 				Logger.services.info("📦 [Offline] region \(index): \(result.stats.description)")
 				// Namespace ids per source so merged overlays never collide in the map's id-diff.
-				allPolygons.append(contentsOf: result.polygons.map {
-					OfflineMapPolygon(id: "\(index)/\($0.id)", role: $0.role, coordinates: $0.coordinates)
+				// Rebuilding the polygon here used to drop its holes, flooding islands and clearings.
+				allPolygons.append(contentsOf: result.polygons.map { polygon in
+					var namespaced = polygon
+					namespaced.id = "\(index)/\(polygon.id)"
+					return namespaced
 				})
 				// All road classes (incl. the residential grid); footways were already dropped at decode.
-				for line in result.polylines {
-					allRoads.append(OfflineMapPolyline(id: "\(index)/\(line.id)", role: line.role, coordinates: line.coordinates))
-				}
+				allRoads.append(contentsOf: result.polylines.map { line in
+					var namespaced = line
+					namespaced.id = "\(index)/\(line.id)"
+					return namespaced
+				})
 			}
 			Task { @MainActor [weak self] in
 				guard let self else { return }
@@ -280,7 +307,7 @@ final class OfflineVectorTileProvider: ObservableObject {
 	) -> BuildResult {
 		let clock = ContinuousClock()
 		var polys: [OfflineMapPolygon] = []
-		var rawSegmentsByRole: [OfflineFeatureRole: [[CLLocationCoordinate2D]]] = [:]
+		var rawSegmentsByRole: [OfflineFeatureRole: [OfflineMapPolyline]] = [:]
 		var rawSegmentCount = 0
 		var rawVertexCount = 0
 		var labels: [OfflineMapLabel] = []
@@ -298,26 +325,38 @@ final class OfflineVectorTileProvider: ObservableObject {
 						labels.append(label)
 					}
 					for line in decoded.lines {
-						rawSegmentsByRole[line.role, default: []].append(line.coordinates)
+						rawSegmentsByRole[line.role, default: []].append(line)
 						rawSegmentCount += 1
 						rawVertexCount += line.coordinates.count
 					}
 				}
 			}
+			polys = identified(polys)
 		}
 
 		var lines: [OfflineMapPolyline] = []
 		var counter = 0
+		var usedIDs: [String: Int] = [:]
 		var stitchedVertexCount = 0
 		let stitchDuration = clock.measure {
 			for role in roadDrawOrder {
 				guard let segments = rawSegmentsByRole[role] else { continue }
-				for chain in stitch(segments) where chain.count >= 2 {
+				for chain in stitch(segments.map(\.coordinates)) where chain.coordinates.count >= 2 {
 					// Boundaries aren't length-filtered (admin lines can be long but sparse).
-					if role != .boundary, lengthMeters(chain) < minRoadMeters { continue }
-					counter += 1
-					stitchedVertexCount += chain.count
-					lines.append(OfflineMapPolyline(id: "\(role)/\(counter)", role: role, coordinates: chain))
+					if role != .boundary, lengthMeters(chain.coordinates) < minRoadMeters { continue }
+					stitchedVertexCount += chain.coordinates.count
+					let id: String
+					if let featureID = chain.members.compactMap({ segments[$0].featureID }).min() {
+						// A way can end up in two chains (its pieces in two tiles didn't meet).
+						let base = "\(role)/\(featureID)"
+						let seen = usedIDs[base, default: 0]
+						usedIDs[base] = seen + 1
+						id = seen == 0 ? base : "\(base)#\(seen)"
+					} else {
+						counter += 1
+						id = "\(role)/c\(counter)"
+					}
+					lines.append(OfflineMapPolyline(id: id, role: role, coordinates: chain.coordinates))
 				}
 			}
 		}
@@ -398,8 +437,14 @@ extension OfflineVectorTileProvider {
 	/// Greedily joins segments that share an endpoint into longer polylines. SwiftUI `Map` makes one
 	/// overlay per polyline, so fewer/longer polylines = far less MapKit overlay-layer work, with an
 	/// identical rendered result (segments are only joined where their endpoints actually coincide).
-	nonisolated private static func stitch(_ segments: [[CLLocationCoordinate2D]]) -> [[CLLocationCoordinate2D]] {
-		guard segments.count > 1 else { return segments }
+	/// A stitched road and the indices of the segments it was made from.
+	struct StitchedChain {
+		var coordinates: [CLLocationCoordinate2D]
+		var members: [Int]
+	}
+
+	nonisolated private static func stitch(_ segments: [[CLLocationCoordinate2D]]) -> [StitchedChain] {
+		guard segments.count > 1 else { return segments.indices.map { StitchedChain(coordinates: segments[$0], members: [$0]) } }
 		struct PointKey: Hashable { let x: Int32; let y: Int32 }
 		func key(_ coordinate: CLLocationCoordinate2D) -> PointKey {
 			PointKey(x: Int32((coordinate.longitude * 100_000).rounded()),
@@ -425,22 +470,25 @@ extension OfflineVectorTileProvider {
 			return nil
 		}
 
-		var result: [[CLLocationCoordinate2D]] = []
+		var result: [StitchedChain] = []
 		for start in segments.indices where !used[start] {
 			used[start] = true
 			var chain = segments[start]
+			var members = [start]
 			// Extend the tail: append segments whose start coincides with the chain's last point.
 			while let next = segment(touching: chain[chain.count - 1]) {
 				used[next.index] = true
+				members.append(next.index)
 				chain.append(contentsOf: next.oriented.dropFirst()) // skip the shared point
 			}
 			// Extend the head: prepend segments whose start coincides with the chain's first point.
 			while let prev = segment(touching: chain[0]) {
 				used[prev.index] = true
+				members.append(prev.index)
 				// `oriented` starts at the shared point; reverse so it ENDS at it, then prepend.
 				chain.insert(contentsOf: prev.oriented.reversed().dropLast(), at: 0)
 			}
-			result.append(chain)
+			result.append(StitchedChain(coordinates: chain, members: members))
 		}
 		return result
 	}
@@ -543,9 +591,10 @@ extension OfflineVectorTileProvider {
 	}
 
 	/// The water layer carries every polygonal water body (ocean, lake, dock, reef, basin…).
-	nonisolated private static func appendWater(in vector: VectorTile, bounds: GeoBounds?, into polys: inout [OfflineMapPolygon], id: () -> String) {
+	/// With `tile`, each polygon records its feature for deduplication across tiles.
+	nonisolated private static func appendWater(in vector: VectorTile, bounds: GeoBounds?, into polys: inout [OfflineMapPolygon], id: () -> String, tile: TileID? = nil) {
 		for feature in vector.features(for: "water") {
-			appendPolygons(feature.geometry, role: .water, bounds: bounds, into: &polys, id: id)
+			appendPolygons(feature.geometry, role: .water, bounds: bounds, into: &polys, id: id, source: tile.flatMap { FeatureSource(feature, tile: $0) })
 		}
 	}
 
@@ -567,16 +616,16 @@ extension OfflineVectorTileProvider {
 		for feature in vector.features(for: "landuse") {
 			let kind = (feature.properties["kind"] as? String) ?? (feature.properties["pmap:kind"] as? String)
 			guard let kind, parkKinds.contains(kind) else { continue } // parks only, skip generic land
-			appendPolygons(feature.geometry, role: .park, bounds: bounds, into: &polys, id: nextID)
+			appendPolygons(feature.geometry, role: .park, bounds: bounds, into: &polys, id: nextID, source: FeatureSource(feature, tile: tile))
 		}
-		appendWater(in: vector, bounds: bounds, into: &polys, id: nextID)
+		appendWater(in: vector, bounds: bounds, into: &polys, id: nextID, tile: tile)
 		// The water layer also carries river/stream/canal CENTERLINES as LineStrings — in
 		// current basemap builds there is no separate physical_line layer, so
 		// waterway lines must come from here too or narrow rivers render as land.
 		for feature in vector.features(for: "water") {
 			let kind = (feature.properties["kind"] as? String) ?? (feature.properties["pmap:kind"] as? String)
 			if kind == "river" || kind == "stream" || kind == "canal" {
-				appendPolylines(feature.geometry, role: .river, bounds: bounds, into: &lines, id: nextID)
+				appendPolylines(feature.geometry, role: .river, bounds: bounds, into: &lines, id: nextID, featureID: featureID(feature))
 			}
 		}
 		// All roads (incl. the residential/neighborhood street grid); footpaths are still skipped.
@@ -585,7 +634,7 @@ extension OfflineVectorTileProvider {
 			let kindDetail = (feature.properties["kind_detail"] as? String) ?? (feature.properties["pmap:kind_detail"] as? String)
 			let role = roadRole(kind: kind, kindDetail: kindDetail)
 			if role == .path { continue } // footways/cycleways: high count, low basemap value
-			appendPolylines(feature.geometry, role: role, bounds: bounds, into: &lines, id: nextID)
+			appendPolylines(feature.geometry, role: role, bounds: bounds, into: &lines, id: nextID, featureID: featureID(feature))
 		}
 		// Boundaries (the neighborhood/admin outline overlay) intentionally omitted.
 		return DecodedTile(polys: polys, lines: lines, labels: labels(in: vector, bounds: bounds))
@@ -688,7 +737,70 @@ extension OfflineVectorTileProvider {
 	/// MapKit to diff and redraw, without visibly changing shapes at basemap scale.
 	nonisolated private static let simplifyEpsilon = 0.00008
 
-	nonisolated private static func appendPolygons(_ geometry: GISTools.GeoJsonGeometry, role: OfflineFeatureRole, bounds: GeoBounds?, into polys: inout [OfflineMapPolygon], id: () -> String) {
+	/// A decoded feature's id and tile, for `OfflineFeatureOrigin`. Nil without a feature id.
+	struct FeatureSource {
+		let featureID: UInt64
+		let tile: TileID
+
+		init?(_ feature: GISTools.Feature, tile: TileID) {
+			guard let featureID = OfflineVectorTileProvider.featureID(feature) else { return nil }
+			self.featureID = featureID
+			self.tile = tile
+		}
+	}
+
+	/// The vector tile's id for a feature. mvt-tools gives a feature without one a random
+	/// string, which isn't stable, so only numeric ids count.
+	nonisolated static func featureID(_ feature: GISTools.Feature) -> UInt64? {
+		switch feature.id {
+		case .uint(let value)?: return UInt64(value)
+		case .int(let value)? where value >= 0: return UInt64(value)
+		default: return nil
+		}
+	}
+
+	/// One copy of each feature: when a tile holds the whole feature, its copy stands and the
+	/// pieces of it in neighbors' buffers are dropped. A feature cut by a tile edge keeps every
+	/// tile's piece; geometry is never merged. Ids come from the feature id.
+	nonisolated static func identified(_ polygons: [OfflineMapPolygon]) -> [OfflineMapPolygon] {
+		var groups: [String: [Int]] = [:]
+		var order: [String] = []
+		for (index, polygon) in polygons.enumerated() {
+			guard let origin = polygon.origin else { continue }
+			let key = "\(polygon.role)/\(origin.featureID)"
+			if groups[key] == nil { order.append(key) }
+			groups[key, default: []].append(index)
+		}
+		var result = polygons
+		var keep = [Bool](repeating: true, count: polygons.count)
+		for key in order {
+			guard let members = groups[key] else { continue }
+			var tiles: [String] = []
+			for index in members where !tiles.contains(polygons[index].origin?.tile ?? "") {
+				tiles.append(polygons[index].origin?.tile ?? "")
+			}
+			let wholeTile = tiles.first { tile in
+				members.allSatisfy { polygons[$0].origin?.tile != tile || polygons[$0].origin?.isWholeInTile == true }
+			}
+			for index in members {
+				guard let origin = polygons[index].origin else { continue }
+				if let wholeTile {
+					if origin.tile == wholeTile {
+						result[index].id = "\(key)/\(origin.part)"
+					} else {
+						keep[index] = false
+					}
+				} else {
+					result[index].id = "\(key)/\(origin.tile)/\(origin.part)"
+				}
+			}
+		}
+		return result.indices.filter { keep[$0] }.map { result[$0] }
+	}
+
+	nonisolated private static func appendPolygons(_ geometry: GISTools.GeoJsonGeometry, role: OfflineFeatureRole, bounds: GeoBounds?, into polys: inout [OfflineMapPolygon], id: () -> String, source: FeatureSource? = nil) {
+		let tileBounds = source.map { TerrainStore.tileBounds(z: $0.tile.z, x: $0.tile.x, y: $0.tile.y) }
+		var part = 0
 		func prepared(_ ring: [GISTools.Coordinate3D]) -> [CLLocationCoordinate2D]? {
 			var coords = ring.map(coord)
 			if let bounds { coords = clipPolygon(coords, to: bounds) }
@@ -696,11 +808,22 @@ extension OfflineVectorTileProvider {
 			return coords.count >= 3 ? coords : nil
 		}
 		func add(_ rings: [[GISTools.Coordinate3D]]) {
+			defer { part += 1 }
 			guard let outerRing = rings.first, let outer = prepared(outerRing) else { return }
 			// Interior rings are holes (islands in water, clearings in parks) —
 			// dropping them painted islands solid blue.
 			let interiors = rings.dropFirst().compactMap(prepared)
-			polys.append(OfflineMapPolygon(id: id(), role: role, coordinates: outer, interiorRings: interiors))
+			var origin: OfflineFeatureOrigin?
+			if let source, let tileBounds {
+				// A hair of slack: a ring that ends exactly on the tile edge is still whole.
+				let slack = (tileBounds.maxLon - tileBounds.minLon) * 1e-6
+				let whole = outerRing.allSatisfy { point in
+					point.longitude >= tileBounds.minLon - slack && point.longitude <= tileBounds.maxLon + slack
+						&& point.latitude >= tileBounds.minLat - slack && point.latitude <= tileBounds.maxLat + slack
+				}
+				origin = OfflineFeatureOrigin(featureID: source.featureID, part: part, tile: source.tile.key, isWholeInTile: whole)
+			}
+			polys.append(OfflineMapPolygon(id: id(), role: role, coordinates: outer, interiorRings: interiors, origin: origin))
 		}
 		switch geometry {
 		case let polygon as GISTools.Polygon:
@@ -714,14 +837,14 @@ extension OfflineVectorTileProvider {
 		}
 	}
 
-	nonisolated private static func appendPolylines(_ geometry: GISTools.GeoJsonGeometry, role: OfflineFeatureRole, bounds: GeoBounds?, into lines: inout [OfflineMapPolyline], id: () -> String) {
+	nonisolated private static func appendPolylines(_ geometry: GISTools.GeoJsonGeometry, role: OfflineFeatureRole, bounds: GeoBounds?, into lines: inout [OfflineMapPolyline], id: () -> String, featureID: UInt64? = nil) {
 		func add(_ line: [GISTools.Coordinate3D]) {
 			let coords = line.map(coord)
 			let runs = bounds.map { clipPolyline(coords, to: $0) } ?? [coords]
 			for run in runs {
 				let simplified = simplify(run, epsilon: simplifyEpsilon)
 				if simplified.count >= 2 {
-					lines.append(OfflineMapPolyline(id: id(), role: role, coordinates: simplified))
+					lines.append(OfflineMapPolyline(id: id(), role: role, coordinates: simplified, featureID: featureID))
 				}
 			}
 		}
