@@ -5,6 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 10/23/26.
 //
 #if os(visionOS)
+import CoreLocation
 import RealityKit
 import SwiftData
 import SwiftUI
@@ -12,7 +13,8 @@ import SwiftUI
 /// Root of the cinema immersive space: an environment around the viewer and a small panel to
 /// change the environment, open the 3D map or leave. The front wall is a screen that shows
 /// the app's sections, picked from a tab strip above it. The tent's whiteboard shows the live
-/// team roster, and the print by the door the latest trace route. "View in your space" on a 3D
+/// team roster, the print by the door the latest trace route, and the second whiteboard the
+/// nodes' status messages. "View in your space" on a 3D
 /// model stands it in front of the seat. The main window closes while
 /// the space is open and the 3D map opens in front of the viewer instead.
 struct CinemaSpace: View {
@@ -40,6 +42,24 @@ struct CinemaSpace: View {
 	@State private var modelRequest: CinemaModelRequest?
 	/// The front screen's section and navigation, kept here so they outlive its attachment.
 	@StateObject private var screen = CinemaScreenModel()
+	/// The fire lookout's summits, and the terrain and node labels for the chosen one.
+	@State private var lookout = LookoutScene()
+	@AppStorage("cinemaLookoutSite") private var lookoutSiteID = ""
+	/// Eighth turns clockwise the lookout is turned from the panel.
+	@AppStorage(SpatialLookout.turnsKey) private var lookoutTurns = 0
+	@State private var terrain: ModelEntity?
+	/// The site the terrain and labels are built for; nil for the painted sunset.
+	@State private var terrainSiteID: String?
+	/// The bearing the cab faced when the terrain was built; the labels are placed from it too.
+	@State private var terrainHeading = SpatialLookout.frontHeading
+	/// The terrain being built, and the site and facing it's for. The cinema opening refreshes the
+	/// lookout from two tasks at once; the second waits on the first one's build instead of
+	/// starting another. The build is its own task so a caller being cancelled doesn't stop it.
+	@State private var lookoutBuild: LookoutBuild?
+	@State private var markerPanels = LookoutMarkerPanels()
+	/// The node card open beside a marker out the lookout's windows.
+	@State private var lookoutCard: LookoutCardSelection?
+	@State private var radioCoordinate: CLLocationCoordinate2D?
 
 	var body: some View {
 		RealityView { content, attachments in
@@ -58,6 +78,10 @@ struct CinemaSpace: View {
 			// the first frame that has it.
 			fitBoards = content.subscribe(to: SceneEvents.Update.self) { _ in
 				placeBoards()
+				// A marker's size is only known once it has laid out, like a board's.
+				if markerPanels.unsized {
+					placeMarkers { markerPanels.entity(for: $0) }
+				}
 			}
 		} update: { _, attachments in
 			if let panel = attachments.entity(for: Attachments.panel) {
@@ -69,14 +93,33 @@ struct CinemaSpace: View {
 			boards.setStrip(attachments.entity(for: Attachments.tabStrip))
 			modelStand.setTag(attachments.entity(for: Attachments.modelTag))
 			placeBoards()
+			placeMarkers { attachments.entity(for: $0) }
 		} attachments: {
 			Attachment(id: Attachments.panel) {
 				// The map counts as open while the cinema is reopening it, so the button doesn't
 				// show for the second in between.
-				CinemaPanel(environment: $environment, spatialMapOpen: appState.spatialMapWindowCount > 0 || appState.spatialMapReopening) {
+				CinemaPanel(environment: $environment, sites: lookout.sites, siteID: $lookoutSiteID, turns: $lookoutTurns, radioCoordinate: radioCoordinate, lookoutNote: lookoutNote, spatialMapOpen: appState.spatialMapWindowCount > 0 || appState.spatialMapReopening) {
 					openWindow(id: SpatialMapScene.id, value: SpatialMapSceneKey.shared)
 				} onLeave: {
 					Task { await dismissImmersiveSpace() }
+				}
+			}
+			ForEach(markers, id: \.lead.id) { spot in
+				Attachment(id: LookoutMarkerPanels.id(for: spot)) {
+					LookoutNodeMarker(labels: spot.labels) {
+						lookoutCard = lookoutCard?.lead == spot.lead.id ? nil : LookoutCardSelection(lead: spot.lead.id)
+					}
+				}
+			}
+			if let container, !appState.isDatabaseResetting, let selection = lookoutCard, let spot = markers.first(where: { $0.lead.id == selection.lead }) {
+				Attachment(id: LookoutMarkerPanels.cardID) {
+					LookoutNodeCard(labels: spot.labels, chosen: Binding { lookoutCard?.chosen } set: { lookoutCard?.chosen = $0 }, onShowOnMap: showOnMap) { nodeNum in
+						appState.cinemaScreenRequest = .node(nodeNum)
+					} onClose: {
+						lookoutCard = nil
+					}
+					.id(appState.databaseResetID)
+					.modelContainer(container)
 				}
 			}
 			if let container, !appState.isDatabaseResetting, anchors?.board(.teamStatus) != nil {
@@ -87,6 +130,11 @@ struct CinemaSpace: View {
 			if let container, !appState.isDatabaseResetting, anchors?.board(.traceRoute) != nil {
 				Attachment(id: CinemaBoard.traceRoute.rawValue) {
 					live(TraceRouteBoard(), container: container)
+				}
+			}
+			if let container, !appState.isDatabaseResetting, anchors?.board(.nodeStatus) != nil {
+				Attachment(id: CinemaBoard.nodeStatus.rawValue) {
+					live(NodeStatusBoard(environment: environment), container: container)
 				}
 			}
 			if let modelRequest {
@@ -121,13 +169,51 @@ struct CinemaSpace: View {
 			stage.position = [0, anchors?.eyeHeight ?? CinemaAnchors.seatedEyeHeight, 0]
 			stage.orientation = simd_quatf(angle: environment.frontRotation, axis: [0, 1, 0])
 			boards.unfitAll()
-			let next = await CinemaBackdrop.make(environment)
-			backdrop?.removeFromParent()
-			stage.addChild(next)
-			backdrop = next
+			await replaceBackdrop(clearSky: false)
+			await refreshLookout()
+		}
+		.task(id: lookoutSiteID) {
+			await refreshLookout()
+		}
+		.task(id: lookoutTurns) {
+			await refreshLookout()
+		}
+		.task(id: terrainSiteID) {
+			// The labels follow the nodes' positions, which move slowly.
+			guard let container, let site = terrainSiteID.flatMap({ lookout.site(for: $0) }) else {
+				lookout.labels = []
+				return
+			}
+			while !Task.isCancelled {
+				if !appState.isDatabaseResetting {
+					let context = ModelContext(container)
+					let radioNum = accessoryManager.isConnected ? accessoryManager.activeDeviceNum : nil
+					lookout.labels = await lookout.labels(for: site, context: context, radioNum: radioNum)
+				}
+				try? await Task.sleep(for: .seconds(60))
+			}
+		}
+		.task(id: accessoryManager.isConnected ? accessoryManager.activeDeviceNum : nil) {
+			// Where the radio is, for each summit's distance and direction in the picker.
+			guard let container, let radioNum = accessoryManager.isConnected ? accessoryManager.activeDeviceNum : nil else {
+				radioCoordinate = nil
+				return
+			}
+			while !Task.isCancelled {
+				if !appState.isDatabaseResetting {
+					radioCoordinate = getNodeInfo(id: radioNum, context: ModelContext(container))?.latestPosition?.nodeCoordinate
+				}
+				try? await Task.sleep(for: .seconds(60))
+			}
 		}
 		.task(id: modelRequest) {
 			await modelStand.show(modelRequest, environment: environment)
+		}
+		.onChange(of: lookout.labels) {
+			// The nodes move and the markers regroup; a card whose marker is gone closes.
+			if let lead = lookoutCard?.lead, !markers.contains(where: { $0.lead.id == lead }) {
+				lookoutCard = nil
+			}
 		}
 		.onAppear {
 			appState.cinemaOpen = true
@@ -226,10 +312,107 @@ struct CinemaSpace: View {
 		}
 	}
 
+	private struct LookoutBuild {
+		let siteID: String
+		let heading: Double
+		let task: Task<ModelEntity?, Never>
+	}
+
 	private enum Attachments {
 		static let panel = "panel"
 		static let tabStrip = "screenTabs"
 		static let modelTag = "modelTag"
+	}
+
+	/// What the panel says in the lookout while there is no summit to pick.
+	private var lookoutNote: String? {
+		switch lookout.status {
+		case .searching:
+			String(localized: "Looking for summits in the downloaded terrain…", comment: "Cinema lookout: shown on the panel while the summits are being found")
+		case .noTerrain:
+			String(localized: "Download terrain for the 3D map to stand the lookout on a real summit.", comment: "Cinema lookout: shown on the panel when no terrain has been downloaded")
+		case .noSummits:
+			String(localized: "No summits found in the downloaded terrain.", comment: "Cinema lookout: shown on the panel when the downloaded terrain gave no summits")
+		case .idle, .ready:
+			nil
+		}
+	}
+
+	/// The backdrop for the environment: its image, and for a cutout, the sky behind it.
+	private func replaceBackdrop(clearSky: Bool) async {
+		let next = await CinemaBackdrop.make(environment, clearSky: clearSky)
+		backdrop?.removeFromParent()
+		stage.addChild(next)
+		backdrop = next
+	}
+
+	/// Puts the terrain for the chosen summit out the lookout's windows, with the clear sky behind
+	/// it, or takes it away for the painted sunset or another environment.
+	private func refreshLookout() async {
+		guard environment.isCutout else {
+			terrain?.removeFromParent()
+			terrain = nil
+			terrainSiteID = nil
+			return
+		}
+		if lookout.sites.isEmpty {
+			await lookout.prepare()
+		}
+		let site = lookout.site(for: lookoutSiteID)
+		let heading = SpatialLookout.heading(turns: lookoutTurns)
+		guard site?.id != terrainSiteID || heading != terrainHeading || (site != nil && terrain == nil) else { return }
+		terrain?.removeFromParent()
+		terrain = nil
+		terrainSiteID = nil
+		guard let site else {
+			lookoutBuild?.task.cancel()
+			lookoutBuild = nil
+			await replaceBackdrop(clearSky: false)
+			return
+		}
+		let build: Task<ModelEntity?, Never>
+		if let current = lookoutBuild, current.siteID == site.id, current.heading == heading {
+			build = current.task
+		} else {
+			lookoutBuild?.task.cancel()
+			let sun = environment.sun
+			build = Task { await lookout.terrain(for: site, heading: heading, sun: sun) }
+			lookoutBuild = LookoutBuild(siteID: site.id, heading: heading, task: build)
+		}
+		let built = await build.value
+		if lookoutBuild?.task == build {
+			lookoutBuild = nil
+		}
+		// Kept only if the summit and the turn are still the ones chosen, and the other caller
+		// waiting on the same build hasn't already put it up. Checked again after the backdrop
+		// changes, since either can change while it does.
+		func stillWanted() -> Bool {
+			lookoutSiteID == site.id && SpatialLookout.heading(turns: lookoutTurns) == heading && environment.isCutout
+				&& !(terrain != nil && terrainSiteID == site.id && terrainHeading == heading)
+		}
+		guard let entity = built, stillWanted() else { return }
+		await replaceBackdrop(clearSky: true)
+		guard stillWanted() else { return }
+		terrain?.removeFromParent()
+		stage.addChild(entity)
+		terrain = entity
+		terrainSiteID = site.id
+		terrainHeading = heading
+	}
+
+	/// The markers out the lookout's windows, nearest node first.
+	private var markers: [LookoutTerrain.MarkerSpot] {
+		LookoutTerrain.markers(for: lookout.labels, heading: terrainHeading)
+	}
+
+	private func placeMarkers(_ entityFor: (String) -> Entity?) {
+		markerPanels.place(markers, selected: lookoutCard?.lead, on: stage, entityFor: entityFor)
+	}
+
+	/// Centers the 3D map on the node, opening the map if it isn't open.
+	private func showOnMap(_ nodeNum: Int64) {
+		appState.spatialMapFocus = SpatialMapFocusRequest(nodeNum: nodeNum)
+		openWindow(id: SpatialMapScene.id, value: SpatialMapSceneKey.shared)
 	}
 
 	/// A board's view with the store and app state it reads, remade on a database reset.

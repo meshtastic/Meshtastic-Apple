@@ -16,3 +16,7 @@ confidence = "vendor"
 name = "Display"
 bbox = [790.95, 817.15, 1313.35, 1147.45]
 h = 3.0
+
+# The display's visible area, for the radio's live screen.
+[screen]
+bbox = [790.91, 817.13, 1313.38, 1147.49]

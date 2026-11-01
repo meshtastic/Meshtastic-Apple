@@ -265,6 +265,10 @@ struct UnheardNodesBanner: View {
 				Logger.data.error("Could not remove unheard node \(node.num.toHex(), privacy: .public): \(error.localizedDescription, privacy: .public)")
 			}
 		}
+		if removed > 0 {
+			// A Node Tracker widget may be set to one of them.
+			WidgetDataBroker.shared.refresh(.config)
+		}
 		Logger.data.info("Removed \(removed, privacy: .public) nodes not heard on the current LoRa settings, \(failed, privacy: .public) failed, \(recovered, privacy: .public) heard again before removal")
 
 		removalResult = UnheardNodesStrings.removalResult(removed: removed, keptAsHeard: recovered, failed: failed)

@@ -50,6 +50,14 @@ import OSLog
 	// This is an Optional to ensure it can be nilled out after use.
 	private var permissionContinuation: CheckedContinuation<CLAuthorizationStatus, Never>?
 
+	// The timeout task for the pending permission request. Cancelled when the request completes
+	// so a stale timeout cannot resume a later request's continuation.
+	private var permissionTimeoutTask: Task<Void, Never>?
+
+	// Identifies the current permission request so a stale timeout task can only
+	// resume the continuation of the request that created it.
+	private var permissionRequestID = 0
+
 	// A flag to prevent multiple concurrent permission requests
 	private var isRequestingPermission = false
 
@@ -66,10 +74,23 @@ import OSLog
 		}
 		// Set flag to indicate a request is in progress
 		isRequestingPermission = true
+		// This defer block ensures `isRequestingPermission` is reset and `permissionContinuation` is nilled out
+		// regardless of how the `withCheckedContinuation` block exits (success, error, or cancellation).
+		// It acts as a final cleanup mechanism.
+		defer {
+			self.isRequestingPermission = false
+			// This nil assignment is somewhat redundant with the one in locationManagerDidChangeAuthorization
+			// and the timeout Task, but it provides an extra layer of safety.
+			self.permissionContinuation = nil
+			self.permissionTimeoutTask?.cancel()
+			self.permissionTimeoutTask = nil
+		}
 
 		return await withCheckedContinuation { continuation in
 			// Store the continuation.
 			self.permissionContinuation = continuation
+			self.permissionRequestID += 1
+			let requestID = self.permissionRequestID
 
 			// Request authorization. The response will come via `locationManagerDidChangeAuthorization`.
 			#if os(visionOS)
@@ -81,16 +102,18 @@ import OSLog
 			// Add a timeout to ensure the continuation is always resumed.
 			// If the delegate method doesn't fire within a reasonable time (e.g., 10 seconds),
 			// we'll resume the continuation with .notDetermined to prevent a leak.
-			Task { @MainActor in // Ensure this task runs on the MainActor
+			self.permissionTimeoutTask = Task { @MainActor in // Ensure this task runs on the MainActor
 				do {
 					try await Task.sleep(for: .seconds(5)) // Wait for 5 seconds
-					if let currentContinuation = self.permissionContinuation {
-						// If the continuation hasn't been nilled out yet, it means
-						// locationManagerDidChangeAuthorization hasn't been called.
-						Logger.services.warning("📍 [App] Location permission request timed out. Resuming continuation with .notDetermined.")
-						currentContinuation.resume(returning: .denied)
-						self.permissionContinuation = nil // Clear the reference
-					}
+					// Bail out if this timeout belongs to a request that already completed;
+					// the stored continuation may belong to a newer request.
+					guard requestID == self.permissionRequestID,
+						  let currentContinuation = self.permissionContinuation else { return }
+					// If the continuation hasn't been nilled out yet, it means
+					// locationManagerDidChangeAuthorization hasn't been called.
+					Logger.services.warning("📍 [App] Location permission request timed out. Resuming continuation with .notDetermined.")
+					currentContinuation.resume(returning: .denied)
+					self.permissionContinuation = nil // Clear the reference
 				} catch is CancellationError {
 					// This task was cancelled, likely because the main continuation was already resumed
 					// by locationManagerDidChangeAuthorization. This is expected and safe.
@@ -99,15 +122,6 @@ import OSLog
 					Logger.services.error("💥 [App] Error in permission timeout task: \(error.localizedDescription, privacy: .public)")
 				}
 			}
-		}
-		// This defer block ensures `isRequestingPermission` is reset and `permissionContinuation` is nilled out
-		// regardless of how the `withCheckedContinuation` block exits (success, error, or cancellation).
-		// It acts as a final cleanup mechanism.
-		defer {
-			self.isRequestingPermission = false
-			// This nil assignment is somewhat redundant with the one in locationManagerDidChangeAuthorization
-			// and the timeout Task, but it provides an extra layer of safety.
-			self.permissionContinuation = nil
 		}
 	}
 
@@ -126,7 +140,13 @@ import OSLog
 		// This prevents attempting to resume the same continuation multiple times,
 		// which would lead to a runtime crash.
 		self.permissionContinuation = nil
-		self.isRequestingPermission = false // Reset the flag as the request has completed
+		// Cancel the timeout task so it cannot resume a later request's continuation.
+		self.permissionTimeoutTask?.cancel()
+		self.permissionTimeoutTask = nil
+		// `isRequestingPermission` is left to the request's own defer. Resuming queues the
+		// request's continuation rather than running it, so clearing the flag here would let
+		// a call made before it runs start a second request, whose continuation that defer
+		// would then throw away.
 	}
 
 	override init() {

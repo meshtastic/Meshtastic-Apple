@@ -564,3 +564,7 @@ material = "groove"
 center_mm = [-33.99, 14.55, -9.32]
 size_mm = [13.01, 2.35, 0.04]
 confidence = "estimated from photos"
+
+# The display's visible area, for the radio's live screen.
+[screen]
+bbox = [76.9, 347.08, 511.21, 677.78]

@@ -7,9 +7,9 @@
   <link rel="stylesheet" href="../assets/docs.css">
 </head>
 <body data-page="tak-protocol">
-<h1>TAK Protocol</h1>
+<h1 id="tak-protocol">TAK Protocol</h1>
 <p>The app implements three CoT (Cursor-on-Target) wire formats over LoRa: two legacy V1 paths and one V2 path that uses the <a href="https://github.com/meshtastic/TAKPacket-SDK">TAKPacket-SDK</a> for zstd-dictionary compression and richer typed payloads. This page documents the choice of format, the receive dispatch, and the supporting infrastructure.</p>
-<h2>Wire Formats</h2>
+<h2 id="wire-formats">Wire Formats</h2>
 <table>
 <thead>
 <tr>
@@ -41,7 +41,7 @@
 </tbody>
 </table>
 <p>V2 carries the full typed CoT vocabulary: PLI, GeoChat, shapes, markers, routes, casevac, emergency, and task. V1 ATAK_PLUGIN carries PLI and GeoChat only; everything else falls back to the V1 ATAK_FORWARDER path.</p>
-<h2>Per-send Fork</h2>
+<h2 id="per-send-fork">Per-send Fork</h2>
 <p><code>TAKMeshtasticBridge.sendToMesh(_:clientInfo:)</code> chooses the format on every send based on <code>AccessoryManager.supportsTAKv2</code>, which checks the connected radio's firmware version:</p>
 <pre><code class="language-swift">if accessoryManager.supportsTAKv2 {
     // V2: SDK-driven path
@@ -69,7 +69,7 @@
 }
 </code></pre>
 <p>The fork is per-send (not per-session) so a radio that upgrades mid-session jumps to V2 immediately.</p>
-<h2>Receive Dispatch</h2>
+<h2 id="receive-dispatch">Receive Dispatch</h2>
 <p><code>AccessoryManager.swift</code>'s exhaustive portnum switch dispatches incoming TAK packets to handlers in <code>AccessoryManager+TAK.swift</code>:</p>
 <table>
 <thead>
@@ -97,7 +97,7 @@
 </tr>
 </tbody>
 </table>
-<h2>TAKPacket-SDK</h2>
+<h2 id="takpacket-sdk">TAKPacket-SDK</h2>
 <p>The <a href="https://github.com/meshtastic/TAKPacket-SDK">TAKPacket-SDK</a> Swift Package is pinned in <code>Meshtastic.xcworkspace/.../Package.resolved</code>. The bridge uses three APIs:</p>
 <ul>
 <li><code>MeshtasticTAK.CotXmlParser().parse(_:)</code> — parses CoT XML into a <code>TAKPacketV2</code> protobuf. <code>throws</code>; callers must <code>try</code>.</li>
@@ -105,10 +105,10 @@
 <li><code>MeshtasticTAK.CotXmlBuilder().build(_:)</code> — round-trips <code>TAKPacketV2</code> back to CoT XML for forwarding to TAK clients.</li>
 </ul>
 <p>The wire MTU constant <code>maxWirePayloadBytes = 225</code> reflects the LoRa frame budget after the Meshtastic envelope.</p>
-<h2>Identity Admin</h2>
+<h2 id="identity-admin">Identity Admin</h2>
 <p><code>TAKIdentitySection</code> (embedded in <code>TAKServerConfig</code>) reads <code>node.takConfig</code> for the current team and role values. When the node has no TAK config cached, <code>requestTakConfigIfNeeded()</code> fires an admin request via <code>AccessoryManager.requestTAKModuleConfig(fromUser:toUser:)</code> so first-time users don't see a perma-spinner.</p>
 <p>Saving the identity dispatches <code>AccessoryManager.saveTAKModuleConfig(config:fromUser:toUser:)</code>, which packages a <code>ModuleConfig.TAKConfig</code> inside an <code>AdminMessage</code> and ships it on the admin port.</p>
-<h2>Offline Queue</h2>
+<h2 id="offline-queue">Offline Queue</h2>
 <p><code>TAKServerManager</code> buffers outgoing CoT for delivery when a TAK client reconnects:</p>
 <pre><code class="language-swift">private enum QueuedPayload {
     case message(CoTMessage)
@@ -116,7 +116,7 @@
 }
 </code></pre>
 <p><code>broadcast(_:)</code> enqueues <code>.message</code> payloads; <code>broadcastRawXml(_:)</code> enqueues <code>.rawXml</code> so V2 shapes / routes / markers retain their detail elements. The queue has a 5-minute TTL and a 50-entry cap. <code>drainOfflineQueue()</code> dispatches the right path per payload variant when a client (re)connects.</p>
-<h2>Route Data Packages</h2>
+<h2 id="route-data-packages">Route Data Packages</h2>
 <p><code>RouteDataPackageGenerator</code> (in <code>Meshtastic/Helpers/TAK/</code>) converts route CoT (<code>b-m-r</code>) into KML-inside-zip ATAK data packages that the user can sideload into iTAK (which silently ignores route CoT received over its TCP streaming connection).</p>
 <p>The pipeline:</p>
 <ol>
@@ -126,12 +126,12 @@
 <li><code>saveToDocuments(fileName:zipData:)</code> writes the zip to <code>Documents/TAK Routes/&lt;sanitizedUid&gt;.zip</code> (creating the directory on first use).</li>
 <li><code>AccessoryManager+TAK.handleATAKPluginV2Packet(_:)</code> posts a <code>Notification</code> titled <strong>Route Received</strong> with the route callsign as subtitle and body <strong>Saved to Files → Meshtastic → TAK Routes. Open in iTAK to import.</strong></li>
 </ol>
-<h2>Capabilities</h2>
+<h2 id="capabilities">Capabilities</h2>
 <p><code>AccessoryManager.supportsTAKv2</code> is the canonical gate. It enables V2 only when the active radio reports a supported, well-formed version; an unavailable, malformed, or older version uses V1.</p>
 <pre><code class="language-swift">var supportsTAKv2: Bool { Self.isTAKv2Supported(firmwareVersion: connectedVersion) }
 </code></pre>
 <p>The capability parser accepts numeric <code>major.minor.patch</code> versions and an optional hexadecimal build suffix, such as <code>2.8.0.3a0c08b</code>. Use this property (rather than parsing the firmware version inline) anywhere a V1/V2 decision is needed. Future TAK SDK features that require a higher firmware version should add a sibling property with a clear cut-off so the bridge stays declarative.</p>
-<h2>Related Files</h2>
+<h2 id="related-files">Related Files</h2>
 <ul>
 <li><code>Meshtastic/Helpers/TAK/TAKMeshtasticBridge.swift</code> — V1/V2 fork in <code>sendToMesh</code>.</li>
 <li><code>Meshtastic/Accessory/Accessory Manager/AccessoryManager+TAK.swift</code> — send and receive handlers.</li>

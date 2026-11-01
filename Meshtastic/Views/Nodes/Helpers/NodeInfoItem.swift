@@ -32,7 +32,11 @@ struct NodeInfoItem: View {
 
 	@Query private var users: [UserEntity]
 
-	init(nodeNum: Int64) {
+	/// Show the radio's live screen on its 3D model: the connected radio, while connected, when it reports a display.
+	let liveScreen: Bool
+
+	init(nodeNum: Int64, liveScreen: Bool = false) {
+		self.liveScreen = liveScreen
 		_users = Query(filter: #Predicate<UserEntity> { $0.num == nodeNum })
 	}
 
@@ -42,7 +46,7 @@ struct NodeInfoItem: View {
 		// query drops deleted users and re-renders when live hardware metadata changes.
 		if let user = users.first,
 			let summary = NodeInfoItemSummary(user: user) {
-			NodeInfoHardwareSection(summary: summary)
+			NodeInfoHardwareSection(summary: summary, liveScreen: liveScreen)
 				.id(summary.hwModelId)
 		} else {
 			EmptyView()
@@ -54,13 +58,15 @@ struct NodeInfoItem: View {
 /// relationship, so the detail can continue rendering safely after the node is detached.
 private struct NodeInfoHardwareSection: View {
 	let summary: NodeInfoItemSummary
+	let liveScreen: Bool
 	@Query private var hardware: [DeviceHardwareEntity]
 	@EnvironmentObject private var meshtasticAPI: MeshtasticAPI
 	/// The 3D model for this hardware, worked out off the layout pass like the device image.
 	@State private var deviceModelFile: String?
 
-	init(summary: NodeInfoItemSummary) {
+	init(summary: NodeInfoItemSummary, liveScreen: Bool) {
 		self.summary = summary
+		self.liveScreen = liveScreen
 		let hardwareModel = summary.hwModelId
 		_hardware = Query(
 			filter: #Predicate<DeviceHardwareEntity> { $0.hwModel == hardwareModel },
@@ -149,7 +155,7 @@ private struct NodeInfoHardwareSection: View {
 	private var heroImage: some View {
 		let image = DeviceHardwareImage(hwId: Int32(summary.hwModelId))
 		if let deviceModelFile, #available(iOS 18.0, macCatalyst 18.0, *) {
-			DeviceModelView(modelName: deviceModelFile, deviceName: modelName, nodeNum: summary.nodeNum) { image }
+			DeviceModelView(modelName: deviceModelFile, deviceName: modelName, nodeNum: summary.nodeNum, liveScreen: liveScreen) { image }
 		} else {
 			image
 		}

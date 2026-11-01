@@ -329,3 +329,6 @@ center_mm = [48.5, -0.1, -0.85]
 size_mm = [14.5, 0.3, 2.0]
 radius_mm = 0.3
 
+# The display's visible area, for the radio's live screen.
+[screen]
+bbox = [13.0, 7.45, 121.0, 72.45]

@@ -47,6 +47,8 @@ final class SpatialSceneController {
 	let coverageContainer = Entity()
 	/// Holds the weather radar overlay, under the coverage.
 	let weatherRadarContainer = Entity()
+	/// Holds the raised buildings, hidden while a zoom is previewed.
+	let buildingsContainer = Entity()
 	let nodesContainer = Entity()
 	let selectionContainer = Entity()
 	let trafficContainer = Entity()
@@ -147,6 +149,11 @@ final class SpatialSceneController {
 	/// The built terrain scaled and shifted toward a zoom that is still building.
 	private var preview = SpatialZoom.Preview.identity
 	private var previewTarget: SpatialCircle?
+	/// The fire lookout on the cinema's chosen summit, with where and for which placement it was put.
+	private var lookout: Entity?
+	private var lookoutCoordinate: CLLocationCoordinate2D?
+	private var lookoutPlacementRevision = -1
+	private var lookoutHeading = SpatialLookout.frontHeading
 
 	init() {
 		// A flat disk of radius 0.5, scaled to the map once there is one.
@@ -210,6 +217,7 @@ final class SpatialSceneController {
 		guard counter != counterScale else { return }
 		counterScale = counter
 		for pin in pins.values { pin.holder.scale = SIMD3(repeating: counter) }
+		placeLookout()
 		updateHitShapes()
 		if let selection = appliedSelection, let pin = pins[selection], pin.shown {
 			placeSelection(at: pin.holder.position, top: pin.top)
@@ -289,6 +297,8 @@ final class SpatialSceneController {
 		}
 		updateCounterScale()
 		updatePinVisibility()
+		updateLookoutVisibility()
+		updateBuildingsVisibility()
 	}
 
 	/// Hides pins that would stand past the rim, with their labels, links and selection.
@@ -361,6 +371,7 @@ final class SpatialSceneController {
 		}
 		if moved || restyled { beaconsStale = true }
 		if moved {
+			placeLookout()
 			measureGaps()
 			updatePinVisibility()
 		}
@@ -757,10 +768,90 @@ extension SpatialSceneController {
 		}
 		weatherRadarContainer.isEnabled = weatherRadarEntity != nil && terrainEntity != nil && revision != nil && revision == placement?.revision
 	}
+
+	/// Swaps in the raised buildings. The model drops them as soon as the terrain under them is
+	/// replaced, so whatever is here stands on the terrain shown. Hidden while a zoom is previewed:
+	/// enlarged, they would stand past the rim.
+	func apply(buildings entity: ModelEntity?) {
+		if buildingsContainer.parent == nil { terrainAnchor.addChild(buildingsContainer) }
+		let current = buildingsContainer.children.first
+		if current !== entity {
+			current?.removeFromParent()
+			if let entity {
+				buildingsContainer.addChild(entity)
+				applyLight(to: entity)
+			}
+		}
+		updateBuildingsVisibility()
+	}
+
+	fileprivate func updateBuildingsVisibility() {
+		buildingsContainer.isEnabled = !buildingsContainer.children.isEmpty && preview == .identity
+	}
 }
 extension SpatialSceneController {
 	fileprivate func applyLight(to entity: Entity) {
 		SpatialMapLight.apply(ownLight, to: entity)
+	}
+}
+
+// MARK: Fire lookout
+
+extension SpatialSceneController {
+	/// Stands the fire lookout on `coordinate`, the summit the cinema's lookout room is on, with its
+	/// cab facing `heading`, or takes it away for nil. Moved onto the new ground whenever the terrain
+	/// is rebuilt.
+	func apply(lookout coordinate: CLLocationCoordinate2D?, heading: Double = SpatialLookout.frontHeading) {
+		guard let placement else { return }
+		let same = coordinate?.latitude == lookoutCoordinate?.latitude && coordinate?.longitude == lookoutCoordinate?.longitude
+		guard !same || placement.revision != lookoutPlacementRevision || heading != lookoutHeading else { return }
+		lookoutCoordinate = coordinate
+		lookoutPlacementRevision = placement.revision
+		if heading != lookoutHeading {
+			lookoutHeading = heading
+			lookout?.removeFromParent()
+			lookout = nil
+		}
+		guard let coordinate else {
+			lookout?.removeFromParent()
+			lookout = nil
+			return
+		}
+		if lookout == nil, let made = SpatialLookoutParts.make(heading: heading) {
+			applyLight(to: made)
+			nodesContainer.addChild(made)
+			lookout = made
+		}
+		placeLookout()
+	}
+
+	/// How far the lookout's middle stands from a node's on the same summit, in room meters: its
+	/// catwalk and a tower's base just clear of each other.
+	private static let lookoutClearance: Float = 0.022
+
+	/// On the summit, or stepped aside when nodes stand there, so a repeater on the same peak keeps
+	/// its place and both can be seen.
+	func placeLookout() {
+		guard let lookout, let placement, let coordinate = lookoutCoordinate else { return }
+		var position = placement.position(coordinate)
+		let clearance = Self.lookoutClearance * counterScale
+		let summit = SIMD2(position.x, position.z)
+		let nearby = pins.values
+			.map { SIMD2($0.holder.position.x, $0.holder.position.z) }
+			.filter { simd_distance($0, summit) < clearance * 2 }
+		if let spot = SpatialLookoutSpot.spot(summit: summit, pins: nearby, clearance: clearance, heading: lookoutHeading) {
+			position = placement.position(placement.transform.coordinate(x: spot.x, z: spot.y))
+		}
+		lookout.position = position
+		lookout.scale = SIMD3(repeating: counterScale)
+		updateLookoutVisibility()
+	}
+
+	/// Hidden when the summit is past the rim of the circle shown.
+	private func updateLookoutVisibility() {
+		guard let lookout, let placement else { return }
+		let p = preview.apply(x: lookout.position.x, z: lookout.position.z)
+		lookout.isEnabled = SpatialZoom.isOnDisk(x: p.x, z: p.y, diskRadius: placement.diskRadius)
 	}
 }
 

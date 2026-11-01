@@ -23,7 +23,7 @@
 		3233E2EC4CCC91360E23F283 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = F17AFA19C2AAB3C3ADFB1E33 /* AppState.swift */; };
 		33007286B0A108FF6655CC25 /* MeshtasticProtobufs in Frameworks */ = {isa = PBXBuildFile; productRef = 69904575C8FBB8A536663F9E /* MeshtasticProtobufs */; };
 		3F091ECD7900D90169754B93 /* DatadogCrashReporting in Frameworks */ = {isa = PBXBuildFile; productRef = 43547F7F6DDB3842969DA369 /* DatadogCrashReporting */; };
-		40510578B699E4E44B9F1A70 /* WidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E4053FDE501FD7E0A02CEA8D /* WidgetsExtension.appex */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		40510578B699E4E44B9F1A70 /* WidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = E4053FDE501FD7E0A02CEA8D /* WidgetsExtension.appex */; platformFilters = (ios, xros, ); settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		4584CB8BEA4226A1154EB385 /* OfflineMapManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E531C14ABE7F1491959BBE3 /* OfflineMapManager.swift */; };
 		4701C2F3A8A60ADE516D7FA0 /* MeshtasticTAK in Frameworks */ = {isa = PBXBuildFile; productRef = F98E8431879FC7025B658B08 /* MeshtasticTAK */; };
 		4748BFF7E7AEF9C8EDA23D91 /* AppIntentVocabulary.plist in Resources */ = {isa = PBXBuildFile; fileRef = E2CAB95992E03077B24E30B5 /* AppIntentVocabulary.plist */; };
@@ -1374,7 +1374,10 @@
 		};
 		9FFAEA9121B6A0A05F35FE59 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			platformFilter = ios;
+			platformFilters = (
+				ios,
+				xros,
+			);
 			target = A2F1595BC848E48B138C58E1 /* WidgetsExtension */;
 			targetProxy = 0C865737C7AD7739BD8C50B0 /* PBXContainerItemProxy */;
 		};
@@ -1644,12 +1647,13 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator xros xrsimulator";
 				SUPPORTS_MACCATALYST = YES;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				XROS_DEPLOYMENT_TARGET = 26.0;
 			};
 			name = Release;
 		};
@@ -1796,12 +1800,13 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator xros xrsimulator";
 				SUPPORTS_MACCATALYST = YES;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,7";
+				XROS_DEPLOYMENT_TARGET = 26.0;
 			};
 			name = Debug;
 		};

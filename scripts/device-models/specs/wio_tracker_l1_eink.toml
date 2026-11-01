@@ -131,3 +131,7 @@ center_mm = [-14.8, 5.4, -2.85]
 size_mm = [8.0, 3.5, 4.5]
 radius_mm = 0.3
 confidence = "estimated from photos"
+
+# The display's visible area, for the radio's live screen.
+[screen]
+bbox = [38.97, 20.39, 531.97, 264.86]

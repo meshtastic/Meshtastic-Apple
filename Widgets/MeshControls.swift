@@ -10,6 +10,7 @@
 //  these hand off to the app rather than act on their own.
 //
 
+#if os(iOS)
 import AppIntents
 import SwiftUI
 import WidgetKit
@@ -58,3 +59,4 @@ struct MeshMapControl: ControlWidget {
 		.description("Open the Meshtastic node map.")
 	}
 }
+#endif

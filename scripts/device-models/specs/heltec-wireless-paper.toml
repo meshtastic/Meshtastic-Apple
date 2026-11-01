@@ -17,3 +17,7 @@ confidence = "estimated"
 name = "Display"
 bbox = [655.03, 816.15, 1412.63, 1176.25]
 h = 2.5
+
+# The display's visible area, for the radio's live screen.
+[screen]
+bbox = [712.79, 826.99, 1398.58, 1163.37]

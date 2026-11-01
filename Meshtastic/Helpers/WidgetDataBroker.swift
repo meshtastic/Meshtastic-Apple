@@ -164,8 +164,11 @@ final class WidgetDataBroker {
 		let container = PersistenceController.shared.container
 		let generation = PersistenceController.shared.containerGeneration
 		let needsStoredStats = latestLocalStats == nil
+		await TrackedWidgetNodes.shared.refresh()
+		// Nil if iOS hasn't answered yet; the last snapshot's missing list stands until it does.
+		let tracked = TrackedWidgetNodes.shared.nums
 		let data = await Task.detached(priority: .utility) {
-			Self.readDatabase(container: container, radioNum: radioNum, needsStoredStats: needsStoredStats)
+			Self.readDatabase(container: container, radioNum: radioNum, tracked: tracked ?? [], needsStoredStats: needsStoredStats)
 		}.value
 		// The store was reset while reading; what was read belongs to the old one. Build again
 		// from the new store.
@@ -184,6 +187,10 @@ final class WidgetDataBroker {
 		}
 
 		let nodes = data.nodes
+		let previous = WidgetSnapshotStore.load()
+		let missing = tracked == nil
+			? previous?.missingTrackedNodes ?? []
+			: Self.missingTrackedNodes(data.missingTracked, previous: previous)
 		let unreadChannels = data.unreadChannels
 		let unreadDMs = data.unreadDMs
 		let recent = data.recentMessages
@@ -200,7 +207,8 @@ final class WidgetDataBroker {
 			totalNodeCount: data.totalNodeCount,
 			unreadChannelMessages: unreadChannels,
 			unreadDirectMessages: unreadDMs,
-			recentMessages: recent
+			recentMessages: recent,
+			missingTrackedNodes: missing.isEmpty ? nil : missing
 		)
 		WidgetSnapshotStore.save(snapshot)
 		MeshLiveActivityManager.shared.meshStatusDidUpdate(snapshot)
@@ -227,13 +235,15 @@ final class WidgetDataBroker {
 		var radioBatteryLevel: Int32?
 		var storedLocalStats: LocalStatsSnapshot?
 		var nodes: [NodeSnapshot] = []
+		/// Tracked node numbers with no node in the database.
+		var missingTracked: [Int64] = []
 		var totalNodeCount = 0
 		var unreadChannels = 0
 		var unreadDMs = 0
 		var recentMessages: [MessageSnapshot] = []
 	}
 
-	nonisolated private static func readDatabase(container: ModelContainer, radioNum: Int64?, needsStoredStats: Bool) -> DatabaseRead {
+	nonisolated private static func readDatabase(container: ModelContainer, radioNum: Int64?, tracked: Set<Int64>, needsStoredStats: Bool) -> DatabaseRead {
 		let context = ModelContext(container)
 		var read = DatabaseRead()
 		let radioNode = radioNum.flatMap { getNodeInfo(id: $0, context: context) }
@@ -272,11 +282,28 @@ final class WidgetDataBroker {
 		}
 
 		let preset = (radioNode?.loRaConfig?.modemPreset).flatMap { ModemPresets(rawValue: Int($0)) }
-		read.nodes = fetchNodeSnapshots(context: context, preset: preset, radioNum: radioNum)
+		read.nodes = fetchNodeSnapshots(context: context, preset: preset, radioNum: radioNum, tracked: tracked)
+		let present = Set(read.nodes.map(\.num))
+		read.missingTracked = tracked.subtracting(present).sorted()
 		read.totalNodeCount = (try? context.fetchCount(FetchDescriptor<NodeInfoEntity>())) ?? read.nodes.count
 		(read.unreadChannels, read.unreadDMs) = fetchUnreadCounts(context: context)
-		read.recentMessages = fetchRecentMessages(context: context, radioNum: radioNum, radioNode: radioNode)
+		read.recentMessages = fetchRecentMessages(context: context, radioNum: radioNum)
 		return read
+	}
+
+	/// Tracked nodes that aren't in the database, named as the last snapshot had
+	/// them; one never seen gets the hex name the app uses for unnamed nodes.
+	nonisolated static func missingTrackedNodes(_ nums: [Int64], previous: WidgetSnapshot?) -> [MissingNodeSnapshot] {
+		nums.map { num in
+			if let node = previous?.nodes.first(where: { $0.num == num }) {
+				return MissingNodeSnapshot(num: num, longName: node.longName, shortName: node.shortName)
+			}
+			if let node = previous?.missingTrackedNodes?.first(where: { $0.num == num }) {
+				return node
+			}
+			let hex = String(format: "%08x", UInt32(truncatingIfNeeded: num))
+			return MissingNodeSnapshot(num: num, longName: "Node \(hex)", shortName: String(hex.suffix(4)))
+		}
 	}
 
 	private static func connectionState(for manager: AccessoryManager) -> WidgetConnectionState {
@@ -285,7 +312,7 @@ final class WidgetDataBroker {
 		return .disconnected
 	}
 
-	nonisolated private static func fetchNodeSnapshots(context: ModelContext, preset: ModemPresets?, radioNum: Int64?) -> [NodeSnapshot] {
+	nonisolated private static func fetchNodeSnapshots(context: ModelContext, preset: ModemPresets?, radioNum: Int64?, tracked: Set<Int64>) -> [NodeSnapshot] {
 		// Two fetches: favorites by the scalar flag (so an offline favorite is
 		// never lost to the recency window), then the most recently heard.
 		// No `user != nil` in either predicate — optional-relationship nil
@@ -314,6 +341,15 @@ final class WidgetDataBroker {
 			)
 			if let radioNode = try? context.fetch(radioDescriptor).first, radioNode.user != nil {
 				selected.append(radioNode)
+			}
+		}
+		// A node on a Node Tracker widget is always there, however long ago it was heard.
+		for num in tracked where !selected.contains(where: { $0.num == num }) {
+			let trackedDescriptor = FetchDescriptor<NodeInfoEntity>(
+				predicate: #Predicate<NodeInfoEntity> { $0.num == num }
+			)
+			if let trackedNode = try? context.fetch(trackedDescriptor).first {
+				selected.append(trackedNode)
 			}
 		}
 		return selected.map { node in
@@ -358,7 +394,27 @@ final class WidgetDataBroker {
 		return (channels, dms)
 	}
 
-	nonisolated private static func fetchRecentMessages(context: ModelContext, radioNum: Int64?, radioNode: NodeInfoEntity?) -> [MessageSnapshot] {
+	/// The radio's channel names by index, fetched rather than read through
+	/// `myInfo.channels`: a channel refresh on the main context deletes and replaces every
+	/// channel, and this context never learns of those deletes, so following the relationship
+	/// could read a deleted channel and trap. A fetch returns only channels that still exist.
+	nonisolated static func fetchChannelNames(context: ModelContext, radioNum: Int64) -> [Int32: String] {
+		let descriptor = FetchDescriptor<ChannelEntity>(
+			predicate: #Predicate<ChannelEntity> { $0.myInfoChannel?.myNodeNum == radioNum && $0.role > 0 }
+		)
+		var names: [Int32: String] = [:]
+		for channel in (try? context.fetch(descriptor)) ?? [] {
+			let fallback = channel.index == 0 ? String(localized: "Primary", comment: "ChannelRoles.description") : channelLabel(channel.index)
+			names[channel.index] = (channel.name?.isEmpty ?? true) ? fallback : channel.name!
+		}
+		return names
+	}
+
+	nonisolated private static func channelLabel(_ index: Int32) -> String {
+		String(localized: "Channel \(index)", comment: "A label for a channel index. The argument is the channel index.")
+	}
+
+	nonisolated private static func fetchRecentMessages(context: ModelContext, radioNum: Int64?) -> [MessageSnapshot] {
 		var descriptor = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate<MessageEntity> { $0.isEmoji == false && $0.admin == false },
 			sortBy: [SortDescriptor(\.messageTimestamp, order: .reverse)]
@@ -368,11 +424,7 @@ final class WidgetDataBroker {
 		descriptor.fetchLimit = 16
 		let fetched = (try? context.fetch(descriptor)) ?? []
 
-		var channelNames: [Int32: String] = [:]
-		for channel in radioNode?.myInfo?.channels ?? [] where channel.role > 0 {
-			let fallback = channel.index == 0 ? "Primary" : "Channel \(channel.index)"
-			channelNames[channel.index] = (channel.name?.isEmpty ?? true) ? fallback : channel.name!
-		}
+		let channelNames = radioNum.map { fetchChannelNames(context: context, radioNum: $0) } ?? [:]
 
 		var seenIds = Set<Int64>()
 		var snapshots: [MessageSnapshot] = []
@@ -386,7 +438,7 @@ final class WidgetDataBroker {
 				let partner = fromUser.num == radioNum ? toUser.num : fromUser.num
 				kind = .directMessage(userNum: partner)
 			} else {
-				let name = channelNames[message.channel] ?? "Channel \(message.channel)"
+				let name = channelNames[message.channel] ?? channelLabel(message.channel)
 				kind = .channel(index: message.channel, name: name)
 			}
 			snapshots.append(MessageSnapshot(

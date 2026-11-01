@@ -310,6 +310,12 @@
         }
       }
     },
+    "%lld Nodes" : {
+      "comment" : "Cinema lookout: title of the card listing the nodes a marker out the window stands for"
+    },
+    "%lld nodes near %@, %lld meters, bearing %lld degrees" : {
+      "comment" : "Cinema lookout: VoiceOver label for a marker out the window that stands for several nodes close together"
+    },
     "%lld radios" : {
       "comment" : "Showcase: how many radios are in the room",
       "localizations" : {
@@ -377,6 +383,9 @@
         }
       }
     },
+    "Back to the list" : {
+      "comment" : "Cinema lookout: button on a node's card that goes back to the list of nodes the marker stands for"
+    },
     "Brought to you by" : {
       "comment" : "Showcase: plaque on the wall naming who made the showcase, above the Meshtastic Solutions name",
       "extractionState" : "extracted_with_value",
@@ -395,6 +404,9 @@
         }
       }
     },
+    "Connect to the radio to see its screen." : {
+
+    },
     "Couldn't Import Map File" : {
       "localizations" : {
         "es" : {
@@ -410,6 +422,9 @@
           }
         }
       }
+    },
+    "E-ink screens redraw slowly. Tap Refresh for the latest picture." : {
+
     },
     "Enter Showcase" : {
       "comment" : "Spatial map: open the showcase immersive space, closing this volume",
@@ -556,6 +571,9 @@
         }
       }
     },
+    "Not Connected" : {
+
+    },
     "Pick up to turn it over" : {
       "comment" : "Cinema: VoiceOver hint for the device model on the stand in front of the seat",
       "localizations" : {
@@ -577,6 +595,39 @@
           }
         }
       }
+    },
+    "Show on Screen" : {
+      "comment" : "Cinema lookout: button on a node's card that opens the node's details on the cinema's front screen"
+    },
+    "Up" : {
+
+    },
+    "Long Press" : {
+
+    },
+    "Use Keyboard" : {
+
+    },
+    "Stop Using Keyboard" : {
+
+    },
+    "Arrow keys, Return and Esc go to the radio." : {
+
+    },
+    "Zoom to Case" : {
+
+    },
+    "Zoom Out" : {
+
+    },
+    "Zoom to Screen" : {
+
+    },
+    "Full Screen" : {
+      "comment" : "Button on a radio's 3D model: open the model full screen"
+    },
+    "Radio screen" : {
+
     },
     "Radios on this page" : {
       "comment" : "Showcase: menu listing the radios on the wall rack page that's showing; picking one opens its card",
@@ -672,6 +723,9 @@
           }
         }
       }
+    },
+    "Refresh" : {
+
     },
     "Seated" : {
       "comment" : "Showcase: the viewer is sitting in the chair",
@@ -873,6 +927,9 @@
           }
         }
       }
+    },
+    "Waiting for the radio's screen" : {
+
     },
     "Wall rack" : {
       "comment" : "Showcase: VoiceOver label for the rack of radios on the wall",
@@ -1378,6 +1435,21 @@
           }
         }
       }
+    },
+    "%@ E-ink" : {
+
+    },
+    "%@ LCD" : {
+
+    },
+    "%@ LED matrix" : {
+
+    },
+    "%@ OLED" : {
+
+    },
+    "%@ TFT" : {
+
     },
     "%@ · %@" : {
       "comment" : "Spatial map trace route menu: hops, then when the route came back, e.g. \"3 Hops · 2 hours ago\"",
@@ -6276,6 +6348,9 @@
         }
       }
     },
+    "Net Check-In" : {
+      "comment" : "Cinema: title of the ham shack's status board, where net control logs the check-ins"
+    },
     "Network config received: %@" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -6384,6 +6459,9 @@
           }
         }
       }
+    },
+    "No check-ins yet" : {
+      "comment" : "Cinema: shown on the ham shack's check-in board while no node has a status message"
     },
     "No erase image is available for SoftDevice S140 %@ right now. Nothing was written — try again later." : {
       "localizations" : {
@@ -8317,7 +8395,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "另有 %lld 個節點"
+            "value" : "還有 %lld 個"
           }
         }
       }
@@ -24547,7 +24625,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "基地"
+            "value" : "基準點"
           }
         }
       }
@@ -26657,6 +26735,9 @@
           }
         }
       }
+    },
+    "Buildings" : {
+      "comment" : "Spatial map menu: raise the buildings from the downloaded offline map on the terrain"
     },
     "Burning Man" : {
       "comment" : "FirmwareEditions.name",
@@ -34072,7 +34153,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "連線無線電並將追蹤中的節點加入最愛，即可在這裡查看。"
+            "value" : "連線無線電並將您追蹤的節點加入最愛，即可在此列出。"
           }
         }
       }
@@ -35834,7 +35915,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在 App 視窗中繼續操作"
+            "value" : "請在應用程式視窗中繼續"
           }
         }
       }
@@ -36671,7 +36752,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "無法下載涵蓋範圍估算所需的地形資料。"
+            "value" : "無法下載涵蓋範圍估算所需的地形。"
           }
         }
       }
@@ -51844,6 +51925,30 @@
         }
       }
     },
+    "Faces east" : {
+      "comment" : "Cinema: which way the fire lookout's cab faces"
+    },
+    "Faces north" : {
+      "comment" : "Cinema: which way the fire lookout's cab faces"
+    },
+    "Faces northeast" : {
+      "comment" : "Cinema: which way the fire lookout's cab faces"
+    },
+    "Faces northwest" : {
+      "comment" : "Cinema: which way the fire lookout's cab faces"
+    },
+    "Faces south" : {
+      "comment" : "Cinema: which way the fire lookout's cab faces"
+    },
+    "Faces southeast" : {
+      "comment" : "Cinema: which way the fire lookout's cab faces"
+    },
+    "Faces southwest" : {
+      "comment" : "Cinema: which way the fire lookout's cab faces"
+    },
+    "Faces west" : {
+      "comment" : "Cinema: which way the fire lookout's cab faces"
+    },
     "Factory Erase" : {
       "comment" : "Settings control",
       "localizations" : {
@@ -52553,7 +52658,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "將節點加入最愛，即可顯示在白板上。"
+            "value" : "將節點加入最愛即可新增至看板。"
           }
         }
       }
@@ -53780,17 +53885,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "韌體 %1$@ 不再受支援。需要版本 %2$@ 或更新版本才能使用應用程式。無線電保持連線，以便您可以在此處更新。"
-          }
-        }
-      }
-    },
-    "Firmware before 2.8.1 replaces a custom root topic with msh/<REGION> whenever the LoRa region is saved." : {
-      "comment" : "MQTT root topic: warning on older firmware",
-      "localizations" : {
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "2.8.1 之前的韌體在每次儲存 LoRa 地區時，都會將自訂根主題替換為 msh/<REGION>。"
           }
         }
       }
@@ -91716,7 +91810,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "回傳多久以前的已儲存訊息（以分鐘為單位）。設為 0 時使用 240。"
+            "value" : "回傳已儲存訊息的時間範圍（分鐘）。設為 0 時使用 240。"
           }
         }
       }
@@ -92016,7 +92110,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "最多儲存的訊息數量。設為 0 時使用可用 PSRAM 的四分之三。"
+            "value" : "最多可儲存的訊息數量。設為 0 時使用可用 PSRAM 的四分之三。"
           }
         }
       }
@@ -98819,6 +98913,16 @@
         }
       }
     },
+    "No Meshtastic nRF52 Bootloader is available for board \"%@\". Nothing was written." : {
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "沒有適用於主機板「%@」的 Meshtastic nRF52 開機載入程式。未寫入任何內容。"
+          }
+        }
+      }
+    },
     "No Nearby Meshes" : {
       "comment" : "A title for a view that shows when a user has no nearby meshes.",
       "isCommentAutoGenerated" : true,
@@ -98898,6 +99002,7 @@
     },
     "No OTAFIX bootloader is available for board \"%@\". Nothing was written." : {
       "comment" : "A board ID is a 16-character hexadecimal string.",
+      "extractionState" : "stale",
       "isCommentAutoGenerated" : true,
       "localizations" : {
         "es" : {
@@ -99278,7 +99383,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "尚未連線無線電"
+            "value" : "未連線無線電"
           }
         }
       }
@@ -99565,7 +99670,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "尚無團隊成員"
+            "value" : "尚無團隊"
           }
         }
       }
@@ -99624,10 +99729,13 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "尚無追蹤路由紀錄"
+            "value" : "尚無追蹤路由"
           }
         }
       }
+    },
+    "No status yet" : {
+      "comment" : "Cinema: shown on the tent's status board while no node has a status message"
     },
     "Node" : {
       "localizations" : {
@@ -101023,6 +101131,9 @@
           }
         }
       }
+    },
+    "Nodes that broadcast a status message are listed here as they're heard." : {
+      "comment" : "Cinema status board: how the empty board fills"
     },
     "Noise" : {
       "localizations" : {
@@ -103695,7 +103806,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "開啟 App 視窗"
+            "value" : "開啟應用程式視窗"
           }
         }
       }
@@ -103782,7 +103893,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在 App 視窗中開啟"
+            "value" : "在應用程式視窗中開啟"
           }
         }
       }
@@ -104818,6 +104929,7 @@
       }
     },
     "OTAFIX is Meshtastic's improved nRF52 bootloader with faster, more reliable Bluetooth firmware updates. Factory erase wipes the radio's flash from its bootloader drive — the recovery path when firmware cannot boot." : {
+      "extractionState" : "stale",
       "localizations" : {
         "es" : {
           "stringUnit" : {
@@ -104835,6 +104947,7 @@
     },
     "OTAFIX is Meshtastic's improved nRF52 bootloader with faster, more reliable Bluetooth firmware updates. The upgrade is written from the device's own bootloader drive." : {
       "comment" : "A description of the bootloader upgrade process.",
+      "extractionState" : "stale",
       "isCommentAutoGenerated" : true,
       "localizations" : {
         "es" : {
@@ -110561,7 +110674,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "降水資料來自 NOAA 雷達，僅涵蓋美國本土相連的 48 州，需要網路連線。"
+            "value" : "降水資料來自 NOAA 雷達，僅涵蓋美國本土 48 州。需要網路連線。"
           }
         }
       }
@@ -112905,6 +113018,9 @@
           }
         }
       }
+    },
+    "Radio firmware 2.7.12–2.8.0 resets this root topic to the new region's default when the LoRa region is changed (%@ for the current region). After changing the region, return here, restore your custom root topic, and tap Save. Fixed in radio firmware 2.8.1 and later." : {
+      "comment" : "MQTT custom-root reset warning. The placeholder is the default root for the radio's current region, e.g. msh/US. Versions refer to radio firmware, not the Apple app."
     },
     "Radius" : {
       "localizations" : {
@@ -122933,7 +123049,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "分頁"
+            "value" : "區塊"
           }
         }
       }
@@ -128726,6 +128842,9 @@
         }
       }
     },
+    "Set your radio's status in its node details to post it here." : {
+      "comment" : "Cinema status board: hint shown while the connected radio has no status message of its own"
+    },
     "Sets the maximum number of hops, default is 3. Increasing hops also increases congestion and should be used carefully. 0 hop broadcast messages will not get ACKs." : {
       "localizations" : {
         "da" : {
@@ -129110,6 +129229,12 @@
           }
         }
       }
+    },
+    "Shade Valleys" : {
+      "comment" : "Map settings: darken valley floors in the hillshade by how little sky they see"
+    },
+    "Darkens valley floors and gorges, which see less of the sky. Shading takes longer to draw." : {
+      "comment" : "Map settings: explains the Shade Valleys hillshade option"
     },
     "share" : {
       "comment" : "Search keyword",
@@ -135020,6 +135145,9 @@
         }
       }
     },
+    "Status Board" : {
+      "comment" : "Cinema: title of the board of the nodes' status messages in the tent"
+    },
     "Status Message" : {
       "localizations" : {
         "ko" : {
@@ -137455,16 +137583,8 @@
         }
       }
     },
-    "Team Status" : {
-      "comment" : "Cinema: title of the live team roster on the tent's whiteboard",
-      "localizations" : {
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "團隊狀態"
-          }
-        }
-      }
+    "Team Favorites" : {
+      "comment" : "Cinema: title of the favorites board on the tent's whiteboard"
     },
     "telemetry" : {
       "comment" : "Search keyword",
@@ -139583,7 +139703,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "這裡會顯示您最近傳送或接收到的追蹤路由結果。"
+            "value" : "您送出或收到的最新追蹤路由會顯示在這裡。"
           }
         }
       }
@@ -139756,6 +139876,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Meshtastic Apple App 需要韌體 %@ 或更新版本。較舊的韌體版本已不再支援，可能有相容性問題或缺少功能。"
+          }
+        }
+      }
+    },
+    "The Meshtastic nRF52 Bootloader (formerly OTAFIX) makes Bluetooth firmware updates faster and more reliable. Factory erase wipes the radio's flash from its bootloader drive, and is the recovery path when firmware cannot boot." : {
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meshtastic nRF52 開機載入程式（前稱 OTAFIX）讓藍牙韌體更新更快、更可靠。原廠清除會透過開機載入程式磁碟機，清除無線電模組的快閃記憶體，這是韌體無法啟動時的復原方式。"
+          }
+        }
+      }
+    },
+    "The Meshtastic nRF52 Bootloader (formerly OTAFIX) makes Bluetooth firmware updates faster and more reliable. The upgrade is written from the device's own bootloader drive." : {
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Meshtastic nRF52 開機載入程式（前稱 OTAFIX）讓藍牙韌體更新更快、更可靠。升級檔會透過裝置本身的開機載入程式磁碟機寫入。"
           }
         }
       }
@@ -143095,6 +143235,9 @@
         }
       }
     },
+    "This node is on a Node Tracker widget. The widget will say it's no longer in your node list until you choose another node or the node is heard again." : {
+      "comment" : "Delete node confirmation: the node is shown on a Node Tracker widget"
+    },
     "This offline map is already installed." : {
       "comment" : "Error message displayed when trying to install an already installed offline map.",
       "isCommentAutoGenerated" : true,
@@ -145256,7 +145399,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "主題長度上限為 31 位元組（æ、ø 和 å 各占 2 個位元組）。"
+            "value" : "主題最多 31 個位元組（æ、ø 和 å 各佔兩個位元組）。"
           }
         }
       }
@@ -147560,6 +147703,9 @@
         }
       }
     },
+    "Turn Lookout" : {
+      "comment" : "Cinema: title over the dial that turns the fire lookout, so the screen looks out over another part of the view"
+    },
     "Turn on Bluetooth in Settings to see nearby radios." : {
       "comment" : "Connect tab: subtitle shown in Available Radios when the BLE transport reports Bluetooth is powered off (#2175)",
       "localizations" : {
@@ -149206,7 +149352,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "最多 31 位元組，不能以斜線開頭或結尾，也不能包含 + 或 #。"
+            "value" : "最多 31 個位元組，開頭與結尾不可為斜線，不可包含 + 或 #。"
           }
         }
       }
@@ -154828,7 +154974,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "氣象雷達"
+            "value" : "天氣雷達"
           }
         }
       }
@@ -158760,6 +158906,9 @@
           }
         }
       }
+    },
+    "Zoom" : {
+      "comment" : "Spatial map: slider setting how far the map is zoomed in, from the whole mesh to the most detail"
     },
     "Zoom in" : {
       "comment" : "Spatial map: show a smaller area on the table in more detail",

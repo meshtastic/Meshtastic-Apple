@@ -14,6 +14,22 @@ Recent user-facing changes from roughly the last 12 months. Newest at the top.
 Show roughly the last 12 months of changes; archive entries older than a year by removing them.
 -->
 
+**Nov 2026** — [Cinema](cinema.md#fire-lookout) — On Apple Vision Pro, nodes out the fire lookout's windows are small chips on stems, standing at different heights where they're close together, and tapping one opens a card beside it with the node's details and buttons to show it on the 3D map or the screen.
+
+**Nov 2026** — [Cinema](cinema.md#fire-lookout) — On Apple Vision Pro, the fire lookout's shutters are all open, so the view shows round the screen and boards, the awnings are propped up out of the windows, and the cab stands 6 m (20 ft) lower.
+
+**Nov 2026** — [Cinema](cinema.md#fire-lookout) — On Apple Vision Pro, the **Turn Lookout** dial in the Cinema panel turns the fire lookout an eighth of a turn at a time, so the screen can face whichever part of the view you want.
+
+**Nov 2026** — [Map & Waypoints](map.md#map-options) — Hillshade has a Shade Valleys option that also darkens valley floors and gorges by how much of the sky they see, and hillshade now fades out past the zoom the downloaded terrain reaches instead of drawing made-up detail.
+
+**Oct 2026** — [Cinema](cinema.md#fire-lookout) — On Apple Vision Pro, the 3D map shows the fire lookout, cab and tower, on the summit you picked for it in the Cinema.
+
+**Oct 2026** — [Cinema](cinema.md#fire-lookout) — On Apple Vision Pro, a fire lookout to sit in: a glass cab on a summit at sunset. With terrain downloaded for the 3D map, it stands on one of the highest mountains in it, with the real terrain out the windows and every node marked where it is by bearing and distance.
+
+**Oct 2026** — [Cinema](cinema.md#boards) — On Apple Vision Pro, the tent has a second whiteboard: the status messages of your radio and of the latest nodes heard with one.
+
+**Oct 2026** — [Cinema](cinema.md) — On Apple Vision Pro, the Cinema has a second place to sit: a ham shack, with the app on the wall over an operating desk of radios, a window out to the antenna tower, and your team, the latest trace route and the net's check-ins on the same boards as in the tent.
+
 **Oct 2026** — [Bluetooth Device Connection](bluetooth.md#widgets-and-controls) — The Connect screen's Live Activity row is now **Widgets**: one sheet to start or switch the Live Activity and to see which widgets and controls are on your screens, with how to add the rest.
 
 **Oct 2026** — [Cinema](cinema.md) — On Apple Vision Pro, a search and rescue tent with the app on a big screen, the 3D map in front of you, your team on the whiteboard and the latest trace route on the wall.

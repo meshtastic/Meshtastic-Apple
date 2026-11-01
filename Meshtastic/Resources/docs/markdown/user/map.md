@@ -18,6 +18,8 @@ Each node that has reported a GPS position appears as a colored circle pin on th
 
 Pins update automatically when a new position packet is received from the mesh.
 
+With node clustering on, pins only merge into a numbered badge once they overlap by about half, so nearby nodes stay separate as long as their names can be read. A node with an approximate position sits at the center of its precision circle, and the circle is hidden while the node is inside a badge.
+
 ### Overlapping nodes at the same spot
 
 When several nodes report the *same* (or nearly the same) location — for example radios sitting on one desk, or nodes broadcasting a reduced-precision position — their pins stack on top of each other and can't be pulled apart by zooming. Tapping the stack (or the numbered count badge, when node clustering is on) opens a **Select a Node** list of every node at that spot. Pick one to open its detail view. This works whether or not clustering is enabled, so an occluded node is always reachable.
@@ -65,10 +67,17 @@ Tap the **info button** (`info.circle`) in the button bar on the right to open t
 | Traffic | Show Apple Maps live traffic |
 | Points of Interest | Show Apple Maps points of interest |
 | Weather Radar | Show NOAA precipitation radar over the map, refreshed every five minutes. Only offered in the lower 48 United States (where the radar has data) and needs a network connection. Radar data from NOAA/NCEP. |
+| Hillshade | Shade the terrain's relief, lit from the northwest, over areas of your offline maps that have terrain. Standard map layer only, including when **Offline Tiles** is on. The shading draws at full strength to one zoom past the terrain data and fades out over the next: from street level in where only the global (zoom 12) terrain is downloaded, and further in where high-resolution terrain is. |
+| Shade Valleys | Shown when Hillshade is on, off by default. Also darkens valley floors and gorges by how much of the sky they see, looking out in eight directions, up to about a kilometer when zoomed out and less when zoomed in close, so deep valleys read as deep. Shading takes longer to draw with it on. |
+| Contour Lines | Elevation contours over areas of your offline maps that have terrain, on every map layer. |
 
 ### Opening the spatial map (Apple Vision Pro)
 
 On Apple Vision Pro, the round glass menu under the app's tab bar, at the window's left edge, opens the 3D spatial map from any tab, the [Hardware Showcase](showcase.md) and the [Cinema](cinema.md). The map wheel button on the 2D map opens it too.
+
+### Zooming the spatial map (Apple Vision Pro)
+
+The zoom slider in the spatial map's toolbar sets how much of the mesh is on the table. All the way left shows the whole mesh; each equal step to the right doubles the zoom, and the zoom shows next to the slider. The terrain is redrawn when you let go of the slider. Pinching the table zooms too, and **Show in 3D** on a node zooms in on it.
 
 ### Direct links on the spatial map (Apple Vision Pro)
 
@@ -77,6 +86,10 @@ On the 3D spatial map, the **link** button in the toolbar draws the same direct 
 ### Weather radar on the spatial map (Apple Vision Pro)
 
 **Weather Radar** in the 3D spatial map's map menu, next to Contour Lines, drapes NOAA precipitation radar over the terrain, following the hills, at the same strength as on the 2D map. It is the 2D map's setting and is offered the same way: in the lower 48 United States, with a network connection. The radar is fetched when the map opens, when the area on the table changes, and every five minutes while it is shown. It is hidden while the device is offline, and when the table shows an area outside the radar's coverage. Radar data from NOAA/NCEP.
+
+### Buildings on the spatial map (Apple Vision Pro)
+
+**Buildings** in the 3D spatial map's map menu raises the buildings from your downloaded offline maps on the terrain, at their height from OpenStreetMap, with the same height exaggeration as the hills. It is offered where a downloaded street map covers part of the table, and is off by default. A map downloaded at **High detail** has every building; a **Standard** map has only the largest. On Vision Pro, downloads start at High detail. Buildings without a height in OpenStreetMap stand about two floors tall. The further the table is zoomed out, the fewer are drawn: every building on a table a few kilometers across, only the larger ones on a wider one, and none past about 20 km. Building data © OpenStreetMap contributors.
 
 ### Offline Maps
 
@@ -88,7 +101,7 @@ To use a map file you already have, open the offline map list and tap **Import M
 
 ### Offline map for the spatial map (Apple Vision Pro)
 
-The 3D spatial map needs elevation data to show hills and valleys, and a street map to draw on when there is no internet connection. With **Download Terrain Automatically** on (in the spatial map's map menu, on by default), the app keeps one full offline map of its own, named **Spatial Map area** in the offline map list: the Standard detail street map plus terrain for the mesh. It works like any other offline map, so it also shows on the 2D map when offline tiles are in use. Where it overlaps one of your own maps, both are drawn. The spatial map creates it the first time you open it. After that it grows while the app is open on Vision Pro, not only while the spatial map is: the app checks the mesh's area shortly after launch, after each new connection, and every five minutes while a radio is connected. A terrain-only region from an earlier version is replaced with a full one the next time the app checks. If you delete the region in Offline Maps, it comes back only the next time you open the spatial map. The area is the one the spatial map would show, around your connected radio, with the map filters left off. Your own offline map regions are never changed, and this one never blocks them: it doesn't count toward your map count or the total storage limit for your downloads. It only grows while there is room under that limit, counting your maps too. Where your maps already have streets and terrain for the whole area, nothing more is downloaded. If the street map for the area is over the per-map limit, a smaller area around the mesh is tried. If none fits, the street map you already have is kept, terrain is downloaded for the rest, and the spatial map says so. A failed download is retried later, and a cancelled one is not retried for that area. Turn the setting off to stop automatic downloads; **Download Terrain** in the spatial map's toolbar still downloads on request.
+The 3D spatial map needs elevation data to show hills and valleys, and a street map to draw on when there is no internet connection. With **Download Terrain Automatically** on (in the spatial map's map menu, on by default), the app keeps one full offline map of its own, named **Spatial Map area** in the offline map list: the High detail street map plus terrain for the mesh. Where High detail would be over the size limits, it uses Standard. It works like any other offline map, so it also shows on the 2D map when offline tiles are in use. Where it overlaps one of your own maps, both are drawn. The spatial map creates it the first time you open it. After that it grows while the app is open on Vision Pro, not only while the spatial map is: the app checks the mesh's area shortly after launch, after each new connection, and every five minutes while a radio is connected. A terrain-only region from an earlier version is replaced with a full one the next time the app checks. If you delete the region in Offline Maps, it comes back only the next time you open the spatial map. The area is the one the spatial map would show, around your connected radio, with the map filters left off. Your own offline map regions are never changed, and this one never blocks them: it doesn't count toward your map count or the total storage limit for your downloads. It only grows while there is room under that limit, counting your maps too. Where your maps already have streets and terrain for the whole area, nothing more is downloaded. If the street map for the area is over the per-map limit, a smaller area around the mesh is tried. If none fits, the street map you already have is kept, terrain is downloaded for the rest, and the spatial map says so. A failed download is retried later, and a cancelled one is not retried for that area. Turn the setting off to stop automatic downloads; **Download Terrain** in the spatial map's toolbar still downloads on request.
 
 When no node has a position yet, there is no mesh area to download. The spatial map then shows the newest offline map you downloaded yourself, centered on the table, and switches to the mesh as soon as positions arrive. If you have no downloaded maps, it opens **Download New Map** a few seconds after it opens, so you can search for a place and download one; the table moves to that map when the download finishes. This happens once each time the spatial map opens, and only while **Download Terrain Automatically** is on.
 

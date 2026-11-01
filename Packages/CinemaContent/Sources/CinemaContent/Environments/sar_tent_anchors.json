@@ -1,5 +1,26 @@
 {
   "boards": {
+    "nodeStatus": {
+      "center": [
+        1.9,
+        0.2,
+        -2.68
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "right": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "size": [
+        0.8,
+        1.2
+      ]
+    },
     "screen": {
       "center": [
         0.0,
@@ -64,6 +85,6 @@
       ]
     }
   },
-  "comment": "Written by scripts/cinema/tent_base.py. Meters, RealityKit axes (+X right, +Y up, -Z toward the image's center), relative to the camera the image was rendered from.",
+  "comment": "Written by scripts/cinema/room_base.py. Meters, RealityKit axes (+X right, +Y up, -Z toward the image's center), relative to the camera the image was rendered from.",
   "eyeHeight": 1.15
 }

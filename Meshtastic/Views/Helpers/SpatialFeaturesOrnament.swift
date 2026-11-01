@@ -73,12 +73,21 @@ struct SpatialFeaturesOrnament: View {
 extension View {
 	/// Hangs `SpatialFeaturesOrnament` off the window's leading edge, below the tab bar.
 	func spatialFeaturesOrnament() -> some View {
-		// Below the tab bar, which the system centers on this edge, and in line with it.
-		// An offset hides an ornament, so padding moves it out from the window instead.
-		ornament(attachmentAnchor: .scene(UnitPoint(x: 0, y: 0.8)), contentAlignment: .trailing) {
+		// The tab bar is centered on this edge at a fixed height, so hang from the middle and pad
+		// down past it; a point partway down a short window lands on the bottom tabs. An offset
+		// hides an ornament, so padding moves it instead.
+		ornament(attachmentAnchor: .scene(UnitPoint(x: 0, y: 0.5)), contentAlignment: .topTrailing) {
 			SpatialFeaturesOrnament()
+				.padding(.top, SpatialFeaturesOrnamentLayout.tabBarHalfHeight + SpatialFeaturesOrnamentLayout.gap)
 				.padding(.trailing, 28)
 		}
 	}
+}
+
+enum SpatialFeaturesOrnamentLayout {
+	/// Half the height of the five-tab bar, in points.
+	static let tabBarHalfHeight: CGFloat = 150
+	/// Between the bottom of the tab bar and the top of the capsule.
+	static let gap: CGFloat = 20
 }
 #endif

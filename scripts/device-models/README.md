@@ -80,6 +80,13 @@ Other optional entries, with coordinates in SVG units:
 - `[[ball]]`: a sphere at `center` with `radius_mm`, for a knob the drawing
   shows flat. It replaces the drawing inside `cut_bbox`.
 
+`[screen]` marks the display: `bbox` is its visible area in SVG units. It
+becomes a part named `Screen`, laid on whatever is frontmost there in the color
+drawn there (or `color`). The app finds it by that name to show the connected
+radio's live screen on the model, and the name carries into the flasher's GLBs
+for Android. Give one to every device with a display. A hand-tuned model can
+name its own `[[part]]` `Screen` instead.
+
 `[materials]` entries take `color`, `roughness`, `metallic`, `opacity` and
 `emissive` (a fraction of the color, so dim viewer lighting can't wash it out).
 An entry named `c_<hex>` overrides the material picked for that fill color.

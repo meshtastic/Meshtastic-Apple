@@ -16,7 +16,9 @@ struct WidgetsBundle: WidgetBundle {
 		MeshMessagesWidget()
 		MeshNodeMapWidget()
 		MeshTraceRouteWidget()
-		#if !targetEnvironment(macCatalyst)
+		// Live Activities and controls are iPhone and iPad only; there are none
+		// on the Mac or Vision Pro.
+		#if os(iOS) && !targetEnvironment(macCatalyst)
 		#if canImport(ActivityKit)
 		MeshLiveActivity()
 		#endif

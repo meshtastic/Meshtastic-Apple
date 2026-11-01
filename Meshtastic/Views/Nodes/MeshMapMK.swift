@@ -43,6 +43,7 @@ struct MeshMapMK: View {
 	@AppStorage("enableOfflineTiles") private var enableOfflineTiles = false
 	@AppStorage("enableMapClustering") private var enableMapClustering = true
 	@AppStorage("meshMapShowHillshade") private var showHillshade = false
+	@AppStorage("meshMapHillshadeSkyOcclusion") private var hillshadeSkyOcclusion = false
 	@AppStorage("meshMapShowContours") private var showContours = false
 	/// Contour generation + the shared TerrainStore behind hillshade and contours (spec 018).
 	@StateObject private var terrainContours = TerrainContourProvider()
@@ -805,6 +806,9 @@ struct MeshMapMK: View {
 				reloadOfflineSource()
 				refreshTerrainSources()
 			}
+			.onChange(of: hillshadeSkyOcclusion) {
+				rebuildHillshadeOverlay()
+			}
 			.onChange(of: showHillshade) {
 				rebuildHillshadeOverlay()
 			}
@@ -1314,7 +1318,8 @@ struct MeshMapMK: View {
 									hillshadeOverlay = HillshadeTileOverlay(
 										store: terrainContours.store,
 										darkAppearance: colorScheme == .dark,
-										cacheDirectory: offlineMapManager.terrainHillshadeCacheDirectory(dark: colorScheme == .dark)
+										cacheDirectory: offlineMapManager.terrainHillshadeCacheDirectory(dark: colorScheme == .dark, skyOcclusion: hillshadeSkyOcclusion),
+										skyOcclusion: hillshadeSkyOcclusion
 									)
 								}
 
@@ -1349,7 +1354,35 @@ struct MeshMapMK: View {
 									result += traceRouteLabelDecorations
 									result += geoJSONDecorations
 									result += terrainLabelDecorations
+									result += offlinePlaceLabelDecorations
 									return result
+								}
+
+								/// Place and water names from the offline map, while it stands in for the Apple
+								/// map with no network to draw Apple's names (display-only).
+								private var offlinePlaceLabelDecorations: [ClusterMapDecoration] {
+									guard shouldRenderOfflineMaps, !offlineMapConnectivity.isNetworkAvailable, selectedTraceRoute == nil,
+										  let region = visibleRegion else { return [] }
+									let dark = colorScheme == .dark
+									let zoom = Double(TerrainContourProvider.zoomLevel(for: region))
+									return OfflineMapLabels.visible(offlineVectors.labels, in: region, zoom: zoom).map { label in
+										let style = SpatialOfflineLabels.style(for: label.kind)
+										let halo = Color(SpatialOfflineLabels.haloColor(dark: dark))
+										return ClusterMapDecoration(
+											id: "offline-label-\(label.key)",
+											coordinate: label.coordinate,
+											content: AnyView(
+												Text(verbatim: style.uppercase ? label.name.uppercased() : label.name)
+													.font(Font(style.font))
+													.kerning(style.kern)
+													.foregroundColor(Color(SpatialOfflineLabels.textColor(for: label.kind, dark: dark)))
+													.shadow(color: halo, radius: 1)
+													.shadow(color: halo, radius: 1)
+													.fixedSize()
+													.allowsHitTesting(false)
+											)
+										)
+									}
 								}
 
 								/// Elevation labels for the index contours (display-only).
@@ -1799,7 +1832,7 @@ struct MeshMapMK: View {
 	private func linkCoordinate(for position: PositionEntity) -> CLLocationCoordinate2D? {
 		if position.isPreciseLocation { return position.nodeCoordinate }
 		guard position.isReducedPrecision, !preciseLocationsOnly else { return nil }
-		return position.fuzzedNodeCoordinate
+		return position.nodeCoordinate
 	}
 
 	/// SNR pills for the direct links that fit at the current zoom.
@@ -1895,26 +1928,39 @@ struct MeshMapMK: View {
 
 		// 2b) Rivers/streams as centerlines, under the road network.
 		let linesByRole = Dictionary(grouping: offlineVectors.roads, by: { $0.role })
-		if let rivers = linesByRole[.river] {
-			let shapes = rivers.compactMap { line -> MKPolyline? in
+		// Small streams and rail sidings show only from `farBandZoom` on: a width of 0 hides an overlay.
+		let bandZoom = OfflineVectorTileProvider.farBandZoom
+		struct LineBand {
+			let id: String
+			let lines: [OfflineMapPolyline]
+			let widthAtZoom: (@Sendable (Double) -> CGFloat)?
+		}
+		func lineBands(_ role: OfflineFeatureRole, width: CGFloat) -> [LineBand] {
+			let lines = linesByRole[role] ?? []
+			return [LineBand(id: "far", lines: lines.filter { OfflineVectorTileProvider.isFar(minZoom: $0.minZoom) }, widthAtZoom: nil),
+					LineBand(id: "near", lines: lines.filter { !OfflineVectorTileProvider.isFar(minZoom: $0.minZoom) }, widthAtZoom: { $0 < bandZoom ? 0 : width })]
+		}
+		for band in lineBands(.river, width: 1.4) {
+			let shapes = band.lines.compactMap { line -> MKPolyline? in
 				guard line.coordinates.count >= 2 else { return nil }
 				var coords = line.coordinates
 				return MKPolyline(coordinates: &coords, count: coords.count)
 			}
 			if !shapes.isEmpty {
 				result.append(ClusterMapOverlay(
-					id: "offline-rivers",
+					id: "offline-rivers-\(band.id)",
 					overlay: MKMultiPolyline(shapes),
-					style: ClusterMapOverlayStyle(strokeUIColor: OfflineMapPalette.riverStroke(dark: dark), fillUIColor: nil, lineWidth: 1.4, level: .aboveRoads)
+					style: ClusterMapOverlayStyle(strokeUIColor: OfflineMapPalette.riverStroke(dark: dark), fillUIColor: nil, lineWidth: 1.4, level: .aboveRoads,
+												  widthAtZoom: band.widthAtZoom)
 				))
 			}
 		}
 
-		// 3) Roads, batched per role into MKMultiPolylines (keeps the dense grid to a few overlays).
-		let roadsByRole = linesByRole
-		func roadMultiPolyline(_ role: OfflineFeatureRole) -> MKMultiPolyline? {
-			guard let lines = roadsByRole[role] else { return nil }
-			let shapes = lines.compactMap { line -> MKPolyline? in
+		// 3) Roads, batched per role and structure into MKMultiPolylines (keeps the dense grid to a
+		// few overlays). Each batch is one color and width, so what draws over what comes from the
+		// order of the batches: tunnels, then roads on the ground by class, then bridges.
+		func roadMultiPolyline(_ role: OfflineFeatureRole, _ structure: OfflineRoadStructure) -> MKMultiPolyline? {
+			let shapes = (linesByRole[role] ?? []).filter { $0.structure == structure }.compactMap { line -> MKPolyline? in
 				guard line.coordinates.count >= 2 else { return nil }
 				var coords = line.coordinates
 				return MKPolyline(coordinates: &coords, count: coords.count)
@@ -1922,32 +1968,58 @@ struct MeshMapMK: View {
 			return shapes.isEmpty ? nil : MKMultiPolyline(shapes)
 		}
 		let roadClasses: [OfflineFeatureRole] = [.minorRoad, .mediumRoad, .majorRoad]
-		// Casing pass (light mode only) gives the Apple white-road-with-outline look.
+		// Tunnels first, under every road: faded and dashed, with no casing.
 		for role in roadClasses {
-			guard let casing = OfflineMapPalette.roadCasing(role, dark: dark), let multi = roadMultiPolyline(role) else { continue }
+			guard let stroke = OfflineMapPalette.tunnelStroke(role, dark: dark), let multi = roadMultiPolyline(role, .tunnel) else { continue }
 			result.append(ClusterMapOverlay(
-				id: "offline-road-casing-\(role)",
+				id: "offline-road-tunnel-\(role)",
 				overlay: multi,
-				style: ClusterMapOverlayStyle(strokeUIColor: casing, fillUIColor: nil, lineWidth: OfflineMapPalette.roadCasingWidth(role), lineCap: .round, level: .aboveRoads)
+				style: ClusterMapOverlayStyle(strokeUIColor: stroke, fillUIColor: nil, lineDash: [4, 3], lineCap: .butt, level: .aboveRoads,
+											  widthAtZoom: { OfflineMapPalette.roadWidth(role, zoom: $0) })
 			))
 		}
-		// Fill pass — white centerlines (light) / lighter-than-land gray (dark).
-		for role in roadClasses {
-			guard let fill = OfflineMapPalette.roadFill(role, dark: dark), let multi = roadMultiPolyline(role) else { continue }
-			result.append(ClusterMapOverlay(
-				id: "offline-road-fill-\(role)",
-				overlay: multi,
-				style: ClusterMapOverlayStyle(strokeUIColor: fill, fillUIColor: nil, lineWidth: OfflineMapPalette.roadWidth(role), lineCap: .round, level: .aboveRoads)
-			))
+		// Then the roads on the ground, and bridges over them, each a casing pass (light mode only,
+		// the Apple white-road-with-outline look) and a fill pass. Widths follow the zoom, and smaller
+		// roads are left out when zoomed out (see `roadWidthStops`).
+		for structure in [OfflineRoadStructure.surface, .bridge] {
+			let prefix = structure == .bridge ? "offline-road-bridge" : "offline-road"
+			for role in roadClasses {
+				guard let casing = OfflineMapPalette.roadCasing(role, dark: dark), let multi = roadMultiPolyline(role, structure) else { continue }
+				result.append(ClusterMapOverlay(
+					id: "\(prefix)-casing-\(role)",
+					overlay: multi,
+					style: ClusterMapOverlayStyle(strokeUIColor: casing, fillUIColor: nil, lineCap: .round, level: .aboveRoads,
+												  widthAtZoom: { OfflineMapPalette.roadCasingWidth(role, zoom: $0) })
+				))
+			}
+			// Fill pass — white centerlines (light) / lighter-than-land gray (dark).
+			for role in roadClasses {
+				guard let fill = OfflineMapPalette.roadFill(role, dark: dark), let multi = roadMultiPolyline(role, structure) else { continue }
+				result.append(ClusterMapOverlay(
+					id: "\(prefix)-fill-\(role)",
+					overlay: multi,
+					style: ClusterMapOverlayStyle(strokeUIColor: fill, fillUIColor: nil, lineCap: .round, level: .aboveRoads,
+												  widthAtZoom: { OfflineMapPalette.roadWidth(role, zoom: $0) })
+				))
+			}
 		}
 		// Rail + admin boundaries (single dashed stroke, both modes).
 		for role in [OfflineFeatureRole.rail, .boundary] {
-			guard let color = OfflineMapPalette.line(role, dark: dark), let multi = roadMultiPolyline(role) else { continue }
-			result.append(ClusterMapOverlay(
-				id: "offline-line-\(role)",
-				overlay: multi,
-				style: ClusterMapOverlayStyle(strokeUIColor: color, fillUIColor: nil, lineWidth: 1.0, lineDash: [2, 3], lineCap: .butt, level: .aboveRoads)
-			))
+			guard let color = OfflineMapPalette.line(role, dark: dark) else { continue }
+			for band in lineBands(role, width: 1.0) {
+				let shapes = band.lines.compactMap { line -> MKPolyline? in
+					guard line.coordinates.count >= 2 else { return nil }
+					var coords = line.coordinates
+					return MKPolyline(coordinates: &coords, count: coords.count)
+				}
+				guard !shapes.isEmpty else { continue }
+				result.append(ClusterMapOverlay(
+					id: "offline-line-\(role)-\(band.id)",
+					overlay: MKMultiPolyline(shapes),
+					style: ClusterMapOverlayStyle(strokeUIColor: color, fillUIColor: nil, lineWidth: 1.0, lineDash: [2, 3], lineCap: .butt, level: .aboveRoads,
+												  widthAtZoom: band.widthAtZoom)
+				))
+			}
 		}
 
 		offlineVectorOverlays = result
@@ -1961,8 +2033,11 @@ struct MeshMapMK: View {
 
 		// Reduced-precision accuracy circles, deduped by location + precision (lowest nodeNum wins).
 		var lowestNumForKey: [ReducedPrecisionMapCircleKey: Int64] = [:]
+		// The pins each circle is drawn for, so it hides while they're all clustered.
+		var ownersForKey: [ReducedPrecisionMapCircleKey: [AnyHashable]] = [:]
 		for snap in visiblePositionSnapshots where PositionEntity.reducedPrecisionBits ~= snap.precisionBits {
 			let key = ReducedPrecisionMapCircleKey(latitudeI: snap.latitudeI, longitudeI: snap.longitudeI, precisionBits: snap.precisionBits)
+			ownersForKey[key, default: []].append(AnyHashable(MeshMapItem.node(snap).id))
 			if let existing = lowestNumForKey[key] {
 				if snap.nodeNum < existing { lowestNumForKey[key] = snap.nodeNum }
 			} else {
@@ -1977,7 +2052,8 @@ struct MeshMapMK: View {
 			result.append(ClusterMapOverlay(
 				id: "circle-\(nodeNum)",
 				overlay: MKCircle(center: center, radius: radius),
-				style: ClusterMapOverlayStyle(strokeUIColor: .white, fillUIColor: color.withAlphaComponent(0.25), lineWidth: 1)
+				style: ClusterMapOverlayStyle(strokeUIColor: .white, fillUIColor: color.withAlphaComponent(0.25), lineWidth: 1),
+				owners: ownersForKey[key] ?? []
 			))
 		}
 
@@ -2003,11 +2079,9 @@ struct MeshMapMK: View {
 
 	private func makePositionSnapshots(from positions: [PositionEntity]) -> [MeshMapPositionSnapshot] {
 		positions.compactMap { position -> MeshMapPositionSnapshot? in
-			let coordinate: CLLocationCoordinate2D = if position.isPreciseLocation {
-				position.nodeCoordinate ?? LocationsHandler.DefaultLocation
-			} else {
-				position.fuzzedNodeCoordinate ?? LocationsHandler.DefaultLocation
-			}
+			// An imprecise node sits at the center of its precision circle. Nodes stacked on the same
+			// spot open a picker when tapped, so they don't need nudging apart to be tappable.
+			let coordinate = position.nodeCoordinate ?? LocationsHandler.DefaultLocation
 			let precisionBits = position.precisionBits
 			// Was `reducedPrecisionBits ~= precisionBits || precisionBits == 32`, which silently
 			// dropped positions with precisionBits == 0 (isPreciseLocation's other "precise" sentinel)

@@ -11,9 +11,9 @@
 //  can't render them — that would require a vector renderer such as MapLibre.
 //
 
-import Compression
 import Foundation
 import OSLog
+import zlib
 
 /// Tile payload formats a PMTiles archive can hold (header byte 99).
 enum PMTilesTileType: UInt8 {
@@ -40,6 +40,16 @@ struct GeoBounds: Equatable, Sendable {
 	let minLat: Double
 	let maxLon: Double
 	let maxLat: Double
+
+	/// Lon/lat box of a Web-Mercator tile.
+	static func tile(z: Int, x: Int, y: Int) -> GeoBounds {
+		let n = Double(1 << z)
+		let minLon = Double(x) / n * 360 - 180
+		let maxLon = Double(x + 1) / n * 360 - 180
+		let maxLat = atan(sinh(.pi * (1 - 2 * Double(y) / n))) * 180 / .pi
+		let minLat = atan(sinh(.pi * (1 - 2 * Double(y + 1) / n))) * 180 / .pi
+		return GeoBounds(minLon: minLon, minLat: minLat, maxLon: maxLon, maxLat: maxLat)
+	}
 }
 
 /// Parsed 127-byte PMTiles v3 header.
@@ -138,6 +148,18 @@ final class PMTilesArchive {
 	/// Returns the raw tile payload for slippy-map coordinates (z, x, y), decompressed
 	/// if needed, or `nil` if the archive has no tile there.
 	func tileData(z: UInt8, x: UInt32, y: UInt32) -> Data? {
+		guard let entry = tileEntry(z: z, x: x, y: y),
+			  let raw = slice(offset: entry.offset, length: entry.length) else { return nil }
+		return decompress(raw, using: header.tileCompression)
+	}
+
+	/// Whether the archive has a tile at (z, x, y), from its directory alone: no payload is read.
+	func hasTile(z: UInt8, x: UInt32, y: UInt32) -> Bool {
+		tileEntry(z: z, x: x, y: y) != nil
+	}
+
+	/// Where a tile's payload sits in the file, by walking the directories.
+	private func tileEntry(z: UInt8, x: UInt32, y: UInt32) -> (offset: UInt64, length: UInt32)? {
 		guard z >= header.minZoom, z <= header.maxZoom else { return nil }
 		let tileID = PMTilesArchive.zxyToTileID(z: z, x: x, y: y)
 
@@ -169,8 +191,8 @@ final class PMTilesArchive {
 				dirLength = UInt64(entry.length)
 			} else {
 				let (tileOffset, overflow) = header.tileDataOffset.addingReportingOverflow(entry.offset)
-				guard !overflow, let raw = slice(offset: tileOffset, length: entry.length) else { return nil }
-				return decompress(raw, using: header.tileCompression)
+				guard !overflow, entry.length > 0 else { return nil }
+				return (tileOffset, entry.length)
 			}
 		}
 		return nil
@@ -319,55 +341,65 @@ final class PMTilesArchive {
 	// MARK: - Decompression
 
 	private func decompress(_ data: Data, using compression: PMTilesCompression) -> Data? {
+		PMTilesArchive.decode(data, compression: compression)
+	}
+
+	/// The most one tile or directory may inflate to. A real tile is a few hundred KiB; this
+	/// stops a corrupt or hostile payload from exhausting memory.
+	static let maxInflatedBytes = 64 << 20
+
+	/// Decodes bytes stored with `compression`. Passes them through only when the archive
+	/// declares none, never by looking at the bytes. Nil for a codec this reader doesn't
+	/// handle, or for gzip that doesn't inflate cleanly.
+	static func decode(_ data: Data, compression: PMTilesCompression) -> Data? {
 		switch compression {
 		case .none:
 			return data
 		case .gzip:
-			return PMTilesArchive.gunzip(data)
+			return inflate(data)
 		case .brotli, .zstd, .unknown:
 			Logger.services.error("📦 [PMTiles] Unsupported compression \(compression.rawValue) — only none/gzip handled.")
 			return nil
 		}
 	}
 
-	/// Inflates a gzip member using Apple's Compression framework (which only does raw
-	/// DEFLATE), by parsing and skipping the gzip header and trailer.
-	static func gunzip(_ data: Data) -> Data? {
-		let bytes = [UInt8](data)
-		guard bytes.count >= 18, bytes[0] == 0x1F, bytes[1] == 0x8B, bytes[2] == 0x08 else {
-			return data // not gzip — assume already-raw payload
-		}
-		var index = 10
-		let flags = bytes[3]
-		if flags & 0x04 != 0, index + 2 <= bytes.count { // FEXTRA
-			let xlen = Int(bytes[index]) | (Int(bytes[index + 1]) << 8)
-			index += 2 + xlen
-		}
-		if flags & 0x08 != 0 { while index < bytes.count, bytes[index] != 0 { index += 1 }; index += 1 } // FNAME
-		if flags & 0x10 != 0 { while index < bytes.count, bytes[index] != 0 { index += 1 }; index += 1 } // FCOMMENT
-		if flags & 0x02 != 0 { index += 2 } // FHCRC
-		guard index < bytes.count - 8 else { return nil }
+	/// Inflates a gzip or zlib stream with zlib (window bits 15 + 32 detects either wrapper), so the
+	/// trailer is checked: a bad CRC or size, a stream cut short, or bytes left after its end all
+	/// give nil, never a partial tile. Output past `maxInflatedBytes` gives nil too.
+	static func inflate(_ data: Data, limit: Int = maxInflatedBytes) -> Data? {
+		guard !data.isEmpty else { return nil }
+		var stream = z_stream()
+		guard inflateInit2_(&stream, 15 + 32, ZLIB_VERSION, Int32(MemoryLayout<z_stream>.size)) == Z_OK else { return nil }
+		defer { inflateEnd(&stream) }
 
-		let deflate = data.subdata(in: (data.startIndex + index)..<(data.endIndex - 8))
-		// ISIZE (uncompressed size mod 2^32) is the last 4 bytes, little-endian.
-		let isize = Int(bytes[bytes.count - 4]) | (Int(bytes[bytes.count - 3]) << 8)
-			| (Int(bytes[bytes.count - 2]) << 16) | (Int(bytes[bytes.count - 1]) << 24)
-		return rawInflate(deflate, hint: isize > 0 ? isize : deflate.count * 8)
-	}
-
-	private static func rawInflate(_ data: Data, hint: Int) -> Data? {
-		var capacity = max(hint, 4096)
-		for _ in 0..<6 { // grow if the hint was too small
-			let dst = UnsafeMutablePointer<UInt8>.allocate(capacity: capacity)
-			defer { dst.deallocate() }
-			let written = data.withUnsafeBytes { src -> Int in
-				guard let base = src.bindMemory(to: UInt8.self).baseAddress else { return 0 }
-				return compression_decode_buffer(dst, capacity, base, data.count, nil, COMPRESSION_ZLIB)
+		let chunkSize = 64 * 1024
+		var chunk = [UInt8](repeating: 0, count: chunkSize)
+		var output = Data()
+		var status = Z_OK
+		var overLimit = false
+		data.withUnsafeBytes { input in
+			stream.next_in = UnsafeMutablePointer(mutating: input.bindMemory(to: Bytef.self).baseAddress)
+			stream.avail_in = uInt(input.count)
+			while status == Z_OK {
+				let produced: Int = chunk.withUnsafeMutableBufferPointer { buffer in
+					stream.next_out = buffer.baseAddress
+					stream.avail_out = uInt(chunkSize)
+					status = zlib.inflate(&stream, Z_NO_FLUSH)
+					return chunkSize - Int(stream.avail_out)
+				}
+				guard output.count + produced <= limit else {
+					overLimit = true
+					return
+				}
+				output.append(contentsOf: chunk[0..<produced])
 			}
-			if written > 0 && written < capacity { return Data(bytes: dst, count: written) }
-			if written == capacity { capacity *= 2; continue } // likely truncated — retry larger
-			return written > 0 ? Data(bytes: dst, count: written) : nil
 		}
-		return nil
+		// Z_BUF_ERROR here means the input ran out before the stream ended: truncated.
+		guard !overLimit, status == Z_STREAM_END, stream.avail_in == 0 else {
+			let reason = overLimit ? "larger than \(limit) bytes" : "zlib status \(status), \(stream.avail_in) bytes unread"
+			Logger.services.error("📦 [PMTiles] Could not inflate \(data.count, privacy: .public) bytes: \(reason, privacy: .public)")
+			return nil
+		}
+		return output
 	}
 }

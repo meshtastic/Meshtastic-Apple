@@ -33,6 +33,7 @@ struct SpatialMapWindow: View {
 	/// Shared with the 2D map's Weather Radar setting.
 	@AppStorage("meshMapShowWeatherRadar") private var showWeatherRadar = false
 	@ObservedObject private var weatherRadar = WeatherRadarAvailability.shared
+	@AppStorage("spatialMapShowBuildings") private var showBuildings = false
 	@AppStorage("spatialMapShowLabels") private var showLabels = true
 	@AppStorage("spatialMapShowTraffic") private var showTraffic = true
 	@AppStorage("spatialMapShowDirectLinks") private var showLinks = false
@@ -53,7 +54,7 @@ struct SpatialMapWindow: View {
 	private var preset: ModemPresets { ModemPresets(rawValue: UserDefaults.modemPreset) ?? .longFast }
 
 	private var refreshKey: String {
-		"\(mapLayer.rawValue)|\(darkMap)|\(showContours)|\(showWeatherRadar)|\(preciseLocationsOnly)|\(showLinks)|\(coverageMode.rawValue)|\(accessoryManager.activeDeviceNum ?? 0)|\(accessoryManager.isInBackground)"
+		"\(mapLayer.rawValue)|\(darkMap)|\(showContours)|\(showWeatherRadar)|\(showBuildings)|\(preciseLocationsOnly)|\(showLinks)|\(coverageMode.rawValue)|\(accessoryManager.activeDeviceNum ?? 0)|\(accessoryManager.isInBackground)"
 	}
 
 	var body: some View {
@@ -74,7 +75,7 @@ struct SpatialMapWindow: View {
 		.ornament(attachmentAnchor: .scene(.bottomFront)) {
 			SpatialMapOrnament(
 				model: model, traffic: traffic, mapLayer: $mapLayer, darkMap: $darkMap, showContours: $showContours,
-				showWeatherRadar: $showWeatherRadar, showLabels: $showLabels, showLinks: $showLinks, showTraffic: $showTraffic, autoTerrain: $autoTerrain,
+				showWeatherRadar: $showWeatherRadar, showBuildings: $showBuildings, showLabels: $showLabels, showLinks: $showLinks, showTraffic: $showTraffic, autoTerrain: $autoTerrain,
 				coverageMode: $coverageMode, coverageOpacity: $coverageOpacity, showRoute: show(route:)
 			)
 		}
@@ -169,8 +170,17 @@ struct SpatialMapWindow: View {
 			appState.spatialMapWindowCount += 1
 			claimFocus()
 			claimRoute()
+			// On its own, as when the app was killed with the cinema open (which had closed the
+			// app's window) and launched again: bring the window back. Closing the volume instead
+			// left nothing to open. A moment first, in case the window is on its way, and never
+			// while a space is open, since those close the window on purpose.
 			if !Self.mainWindowIsOpen {
-				close()
+				Task {
+					try? await Task.sleep(for: .seconds(1.5))
+					if appState.mainWindowCount == 0, !appState.cinemaOpen, !appState.showcaseOpen, UIApplication.shared.applicationState != .background {
+						CinemaScene.reopenMainWindow(openWindow, appState: appState)
+					}
+				}
 			}
 		}
 		.onDisappear {
@@ -271,6 +281,7 @@ struct SpatialMapWindow: View {
 		model.showContours = showContours
 		model.showWeatherRadar = showWeatherRadar
 		model.weatherRadarOffered = weatherRadar.isOffered
+		model.showBuildings = showBuildings
 		model.showLinks = showLinks
 		model.autoDownloadTerrain = autoTerrain
 		model.coverageMode = coverageMode
@@ -397,6 +408,7 @@ struct SpatialMapOrnament: View {
 	@Binding var darkMap: Bool
 	@Binding var showContours: Bool
 	@Binding var showWeatherRadar: Bool
+	@Binding var showBuildings: Bool
 	@Binding var showLabels: Bool
 	@Binding var showLinks: Bool
 	@Binding var showTraffic: Bool
@@ -435,6 +447,12 @@ struct SpatialMapOrnament: View {
 						Label(String(localized: "Weather Radar"), systemImage: "cloud.rain")
 					}
 				}
+				// Only where a downloaded street map has the outlines to raise.
+				if model.buildingsAvailable(regions: offline.regions) {
+					Toggle(isOn: $showBuildings) {
+						Label(String(localized: "Buildings", comment: "Spatial map menu: raise the buildings from the downloaded offline map on the terrain"), systemImage: "building.2")
+					}
+				}
 				coverageMenu
 				Toggle(isOn: $autoTerrain) {
 					Label(String(localized: "Download Terrain Automatically", comment: "Spatial map menu: keep the volume's area covered by elevation data without asking"), systemImage: "arrow.down.circle.dotted")
@@ -459,38 +477,7 @@ struct SpatialMapOrnament: View {
 
 			terrainDownload
 
-			Button {
-				model.setZoom(model.clampedZoom(model.zoom / 2))
-			} label: {
-				Image(systemName: "minus.magnifyingglass")
-			}
-			.disabled(model.zoom <= 1.01)
-			.help(String(localized: "Zoom out", comment: "Spatial map: show a wider area on the table"))
-			.accessibilityLabel(String(localized: "Zoom out", comment: "Spatial map: show a wider area on the table"))
-			Button {
-				model.setZoom(model.clampedZoom(model.zoom * 2))
-			} label: {
-				Image(systemName: "plus.magnifyingglass")
-			}
-			.disabled(model.clampedZoom(model.zoom * 2) <= model.zoom + 0.01)
-			.help(String(localized: "Zoom in", comment: "Spatial map: show a smaller area on the table in more detail"))
-			.accessibilityLabel(String(localized: "Zoom in", comment: "Spatial map: show a smaller area on the table in more detail"))
-			if model.zoom > 1.01 {
-				Button {
-					model.resetZoom()
-				} label: {
-					Label {
-						Text(verbatim: "\(model.zoom.formatted(.number.precision(.fractionLength(0...1))))×")
-					} icon: {
-						Image(systemName: "plus.magnifyingglass")
-					}
-					.labelStyle(.titleAndIcon)
-					.fixedSize()
-				}
-				.help(String(localized: "Reset zoom", comment: "Spatial map: button showing how far the map is zoomed in; tapping it zooms back out to the whole mesh"))
-				.accessibilityLabel(String(localized: "Reset zoom", comment: "Spatial map: button showing how far the map is zoomed in; tapping it zooms back out to the whole mesh"))
-				.accessibilityValue(Text(verbatim: "\(model.zoom.formatted(.number.precision(.fractionLength(0...1))))×"))
-			}
+			SpatialZoomSlider(model: model)
 
 			Divider().frame(height: 20)
 
@@ -671,6 +658,55 @@ struct SpatialMapOrnament: View {
 		let size = "\(Measurement(value: area.width, unit: UnitLength.meters).formatted(style)) × \(Measurement(value: area.height, unit: UnitLength.meters).formatted(style))"
 		let bytes = ByteCountFormatter.string(fromByteCount: SpatialTerrainAutoDecision.estimatedBytes(target), countStyle: .file)
 		return String(localized: "Downloads about \(bytes) of street map and elevation data for a \(size) area around the mesh.", comment: "Spatial map: offline map download confirmation; the arguments are the download size, e.g. 40 MB, and the area's width × height, e.g. 98 km × 104 km")
+	}
+}
+
+/// Zoom as one slider: the whole mesh at the left end, so there is no reset button to hit by
+/// mistake. Each equal stretch of the slider doubles the zoom, and the terrain is built when the
+/// slider is let go.
+struct SpatialZoomSlider: View {
+	let model: SpatialMapModel
+	/// Where the slider is while it's dragged, as the power of two of the zoom.
+	@State private var dragging: Double?
+	@State private var isEditing = false
+
+	private var top: Double { log2(max(model.maximumZoom, 1)) }
+
+	var body: some View {
+		let zoom = dragging.map { pow(2, $0) } ?? model.zoom
+		HStack(spacing: 8) {
+			Slider(
+				// VoiceOver moves the slider without a drag, so its steps zoom straight away.
+				value: Binding(get: { dragging ?? log2(max(model.zoom, 1)) }, set: { isEditing ? (dragging = $0) : apply($0) }),
+				in: 0...max(top, 0.01)
+			) {
+				Text("Zoom", comment: "Spatial map: slider setting how far the map is zoomed in, from the whole mesh to the most detail")
+			} minimumValueLabel: {
+				Image(systemName: "minus.magnifyingglass")
+					.accessibilityLabel(String(localized: "Zoom out", comment: "Spatial map: show a wider area on the table"))
+			} maximumValueLabel: {
+				Image(systemName: "plus.magnifyingglass")
+					.accessibilityLabel(String(localized: "Zoom in", comment: "Spatial map: show a smaller area on the table in more detail"))
+			} onEditingChanged: { editing in
+				isEditing = editing
+				guard !editing, let dragging else { return }
+				apply(dragging)
+				self.dragging = nil
+			}
+			.frame(width: 180)
+			.disabled(top < 0.01)
+			.accessibilityValue(Text(verbatim: "\(zoom.formatted(.number.precision(.fractionLength(0...1))))×"))
+			Text(verbatim: "\(zoom.formatted(.number.precision(.fractionLength(0...1))))×")
+				.font(.caption)
+				.monospacedDigit()
+				.fixedSize()
+				.frame(minWidth: 36, alignment: .leading)
+		}
+	}
+
+	private func apply(_ position: Double) {
+		// The first few percent of the slider is the whole mesh, however far it can zoom.
+		model.setZoom(position <= top * 0.03 ? 1 : pow(2, position))
 	}
 }
 

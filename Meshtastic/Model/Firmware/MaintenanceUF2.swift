@@ -471,7 +471,7 @@ enum OTAFIXBootloader {
 	static let bundledReleaseTag = "0.9.2-OTAFIX2.5"
 
 	private static let bundledBase =
-		"https://github.com/meshtastic/Adafruit_nRF52_Bootloader_OTAFIX/releases/download/\(bundledReleaseTag)"
+		"https://github.com/meshtastic/nRF52_Bootloader/releases/download/\(bundledReleaseTag)"
 
 	private static func asset(board: String, sha256: String) -> MaintenanceUF2 {
 		let name = "update-\(board)_bootloader-\(bundledReleaseTag)_nosd.uf2"
