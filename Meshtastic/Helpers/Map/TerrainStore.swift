@@ -72,6 +72,30 @@ actor TerrainStore {
 		sources.map(\.maxZoom).max()
 	}
 
+	/// The deepest zoom with real elevation data for a tile: the regional archive's when it reaches
+	/// this tile, else the global one's. Nil when no region covers the tile. Past it, tiles are the
+	/// data stretched (see `elevationTile`).
+	func dataMaxZoom(z: Int, x: Int, y: Int) -> Int? {
+		source(covering: z, x: x, y: y).map { Self.dataMaxZoom(open: $0, z: z, x: x, y: y) }
+	}
+
+	/// The regional archive's max zoom where it has this tile or one of its ancestors in its zoom
+	/// range; else the global archive's. The regional header's bounds are the area asked for, not
+	/// where tiles are: Mapterhorn has none over the sea, so a tile there falls back to global.
+	private static func dataMaxZoom(open: OpenSource, z: Int, x: Int, y: Int) -> Int {
+		if let regional = open.regional {
+			let top = Int(regional.header.maxZoom)
+			let bottom = Int(regional.header.minZoom)
+			if z >= bottom {
+				for zoom in stride(from: min(z, top), through: bottom, by: -1)
+				where regional.hasTile(z: UInt8(zoom), x: UInt32(x >> (z - zoom)), y: UInt32(y >> (z - zoom))) {
+					return top
+				}
+			}
+		}
+		return Int(open.archive.header.maxZoom)
+	}
+
 	/// Whether any configured region covers the given tile at all.
 	func covers(z: Int, x: Int, y: Int) -> Bool {
 		source(covering: z, x: x, y: y) != nil
@@ -95,7 +119,8 @@ actor TerrainStore {
 		guard let open = source(covering: z, x: x, y: y) else { return nil }
 
 		// Clamp to the archive's max zoom: above it, sample the covering ancestor.
-		let dataZoom = min(z, open.maxZoom)
+		// Per tile, so a gap in the regional data falls back to the global archive's data.
+		let dataZoom = min(z, Self.dataMaxZoom(open: open, z: z, x: x, y: y))
 		let zoomDelta = z - dataZoom
 		let scale = 1 << zoomDelta          // how many map tiles per data tile edge
 		let dataX = x >> zoomDelta
@@ -287,6 +312,11 @@ actor TerrainStore {
 			return data
 		}
 		return open.archive.tileData(z: UInt8(z), x: UInt32(x), y: UInt32(y))
+	}
+
+	/// Whether two boxes overlap.
+	static func intersects(_ a: GeoBounds, _ b: GeoBounds) -> Bool {
+		a.minLon < b.maxLon && a.maxLon > b.minLon && a.minLat < b.maxLat && a.maxLat > b.minLat
 	}
 
 	/// Whether `bounds` holds all of `tile`.

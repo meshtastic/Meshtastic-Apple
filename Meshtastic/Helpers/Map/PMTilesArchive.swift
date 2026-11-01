@@ -148,6 +148,18 @@ final class PMTilesArchive {
 	/// Returns the raw tile payload for slippy-map coordinates (z, x, y), decompressed
 	/// if needed, or `nil` if the archive has no tile there.
 	func tileData(z: UInt8, x: UInt32, y: UInt32) -> Data? {
+		guard let entry = tileEntry(z: z, x: x, y: y),
+			  let raw = slice(offset: entry.offset, length: entry.length) else { return nil }
+		return decompress(raw, using: header.tileCompression)
+	}
+
+	/// Whether the archive has a tile at (z, x, y), from its directory alone: no payload is read.
+	func hasTile(z: UInt8, x: UInt32, y: UInt32) -> Bool {
+		tileEntry(z: z, x: x, y: y) != nil
+	}
+
+	/// Where a tile's payload sits in the file, by walking the directories.
+	private func tileEntry(z: UInt8, x: UInt32, y: UInt32) -> (offset: UInt64, length: UInt32)? {
 		guard z >= header.minZoom, z <= header.maxZoom else { return nil }
 		let tileID = PMTilesArchive.zxyToTileID(z: z, x: x, y: y)
 
@@ -179,8 +191,8 @@ final class PMTilesArchive {
 				dirLength = UInt64(entry.length)
 			} else {
 				let (tileOffset, overflow) = header.tileDataOffset.addingReportingOverflow(entry.offset)
-				guard !overflow, let raw = slice(offset: tileOffset, length: entry.length) else { return nil }
-				return decompress(raw, using: header.tileCompression)
+				guard !overflow, entry.length > 0 else { return nil }
+				return (tileOffset, entry.length)
 			}
 		}
 		return nil
