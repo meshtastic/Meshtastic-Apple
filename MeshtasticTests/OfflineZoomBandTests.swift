@@ -40,6 +40,10 @@ struct OfflineZoomBandTests {
 			try line(from: 0.1, to: 0.5, north: 0.7, id: 10, properties: ["kind": "rail", "min_zoom": 7.0]),
 			try line(from: 0.5, to: 0.9, north: 0.7, id: 11, properties: ["kind": "rail", "min_zoom": 15.0])
 		], for: "roads")
+		return try build(vector, minRoadMeters: 0)
+	}
+
+	private func build(_ vector: VectorTile, minRoadMeters: Double) throws -> BuildResult {
 		let payload = try #require(vector.data())
 		let entries = [PMTilesArchive.Entry(tileID: PMTilesArchive.zxyToTileID(z: UInt8(tile.z), x: UInt32(tile.x), y: UInt32(tile.y)), offset: 0, length: UInt32(payload.count), runLength: 1)]
 		let root = PMTilesExtractor.serializeDirectory(entries)
@@ -53,7 +57,7 @@ struct OfflineZoomBandTests {
 		try (header + root + payload).write(to: url)
 		defer { try? FileManager.default.removeItem(at: url) }
 		let source = try #require(PMTilesArchive(url: url))
-		return OfflineVectorTileProvider.build(source: source, bounds: bounds, tiles: [tile], minFillMeters: 0, minRoadMeters: 0)
+		return OfflineVectorTileProvider.build(source: source, bounds: bounds, tiles: [tile], minFillMeters: 0, minRoadMeters: minRoadMeters)
 	}
 
 	@Test func theBandEndsAtZoomEleven() {
@@ -67,6 +71,28 @@ struct OfflineZoomBandTests {
 		let byID = Dictionary(uniqueKeysWithValues: try build().polylines.map { ($0.id, $0.minZoom) })
 		#expect(byID["river/1"] == 8)
 		#expect(byID["river/2"] == 13)
+	}
+
+	/// Rail pieces meeting at one junction, built with the default 60 m minimum length. A (far) and
+	/// B (near) are each about 33 m but 66 m together; C (far) is a 23 m spur off the same junction.
+	private func junction() throws -> BuildResult {
+		var vector = try #require(VectorTile(x: tile.x, y: tile.y, z: tile.z))
+		vector.setFeatures([
+			try line(from: 0.48, to: 0.50, north: 0.5, id: 21, properties: ["kind": "rail", "min_zoom": 7.0]),
+			try line(from: 0.50, to: 0.52, north: 0.5, id: 22, properties: ["kind": "rail", "min_zoom": 15.0]),
+			try spur(id: 23)
+		], for: "roads")
+		return try build(vector, minRoadMeters: OfflineVectorTileProvider.defaultMinRoadMeters)
+	}
+
+	private func spur(id: UInt) throws -> GISTools.Feature {
+		let made: GISTools.LineString? = GISTools.LineString([point(0.50, 0.5), point(0.50, 0.514)])
+		return GISTools.Feature(try #require(made), id: .uint(.init(id)), properties: ["kind": "rail", "min_zoom": 7.0])
+	}
+
+	@Test func lengthIsJudgedBeforeTheLineIsSplitByBand() throws {
+		let ids = Set(try junction().polylines.map(\.id))
+		#expect(ids == ["rail/21", "rail/22"])
 	}
 
 	@Test func linesInDifferentBandsAreNotStitchedTogether() throws {

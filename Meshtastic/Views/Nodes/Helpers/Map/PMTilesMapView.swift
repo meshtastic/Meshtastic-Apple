@@ -353,26 +353,31 @@ final class OfflineVectorTileProvider: ObservableObject {
 		let stitchDuration = clock.measure {
 			for role in roadDrawOrder {
 				guard let roleSegments = rawSegmentsByRole[role] else { continue }
-				// Stitched per band, so a line shown zoomed out never joins one that isn't.
-				let bands = [roleSegments.filter { isFar(minZoom: $0.minZoom) }, roleSegments.filter { !isFar(minZoom: $0.minZoom) }]
-				for segments in bands where !segments.isEmpty {
-					for chain in stitch(segments.map(\.coordinates)) where chain.coordinates.count >= 2 {
-						// Boundaries aren't length-filtered (admin lines can be long but sparse).
-						if role != .boundary, lengthMeters(chain.coordinates) < minRoadMeters { continue }
-						stitchedVertexCount += chain.coordinates.count
-						let id: String
-						if let featureID = chain.members.compactMap({ segments[$0].featureID }).min() {
-							// A way can end up in two chains (its pieces in two tiles didn't meet).
-							let base = "\(role)/\(featureID)"
-							let seen = usedIDs[base, default: 0]
-							usedIDs[base] = seen + 1
-							id = seen == 0 ? base : "\(base)#\(seen)"
-						} else {
-							counter += 1
-							id = "\(role)/c\(counter)"
+				for whole in stitch(roleSegments.map(\.coordinates)) where whole.coordinates.count >= 2 {
+					// Length is judged on the whole line, before it's split by band: two short pieces
+					// either side of zoom 11 make one line long enough to keep.
+					// Boundaries aren't length-filtered (admin lines can be long but sparse).
+					if role != .boundary, lengthMeters(whole.coordinates) < minRoadMeters { continue }
+					// Stitched again per band, so a line shown zoomed out never joins one that isn't.
+					let members = whole.members.map { roleSegments[$0] }
+					let bands = [members.filter { isFar(minZoom: $0.minZoom) }, members.filter { !isFar(minZoom: $0.minZoom) }]
+					for segments in bands where !segments.isEmpty {
+						for chain in stitch(segments.map(\.coordinates)) where chain.coordinates.count >= 2 {
+							stitchedVertexCount += chain.coordinates.count
+							let id: String
+							if let featureID = chain.members.compactMap({ segments[$0].featureID }).min() {
+								// A way can end up in two chains (its pieces in two tiles didn't meet).
+								let base = "\(role)/\(featureID)"
+								let seen = usedIDs[base, default: 0]
+								usedIDs[base] = seen + 1
+								id = seen == 0 ? base : "\(base)#\(seen)"
+							} else {
+								counter += 1
+								id = "\(role)/c\(counter)"
+							}
+							let minZoom = chain.members.map { segments[$0].minZoom }.max() ?? 0
+							lines.append(OfflineMapPolyline(id: id, role: role, coordinates: chain.coordinates, minZoom: minZoom))
 						}
-						let minZoom = chain.members.map { segments[$0].minZoom }.max() ?? 0
-						lines.append(OfflineMapPolyline(id: id, role: role, coordinates: chain.coordinates, minZoom: minZoom))
 					}
 				}
 			}
