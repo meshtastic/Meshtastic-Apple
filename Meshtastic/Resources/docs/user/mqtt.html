@@ -91,6 +91,8 @@
 </tr>
 </tbody>
 </table>
+<div class="warning-callout"><strong>Warning — Custom root topic reset</strong>
+Radio firmware <strong>2.7.12 through 2.8.0</strong> has a bug that can replace a custom root starting with <code>msh</code>, such as <code>msh/US/bayarea</code>, with the new region's default (<code>msh/EU_868</code> after switching to EU_868, for example) when the LoRa region is changed. Saving other LoRa settings leaves it alone. After changing the region, return to <strong>MQTT</strong>, restore your custom <strong>Root Topic</strong>, and tap <strong>Save</strong>. Read the setting back from the radio to confirm it was saved. The fix is in <strong>radio firmware 2.8.1 and later</strong>; updating the Apple app alone does not fix the radio.</div>
 <h2 id="topic-structure">Topic Structure</h2>
 <p>Meshtastic publishes to:</p>
 <pre><code>&lt;root_topic&gt;/&lt;region&gt;/&lt;channel_index&gt;/&lt;node_id&gt;/&lt;packet_type&gt;
