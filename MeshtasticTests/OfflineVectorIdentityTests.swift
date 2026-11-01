@@ -51,6 +51,11 @@ struct OfflineVectorIdentityTests {
 		let noID = try lake([ring(0.50, 0.50, 0.55, 0.55)], id: nil)
 		// A hole winds the other way from its outer ring; that is how MVT tells them apart.
 		let island = try lake([ring(0.10, 0.10, 0.40, 0.40), ring(0.20, 0.20, 0.30, 0.30).reversed()], id: 1003)
+		// One feature, two lakes: one whole in A inside B's buffer, one only in B.
+		let nearPart: GISTools.Polygon? = GISTools.Polygon([ring(0.95, 0.20, 0.98, 0.25)])
+		let farPart: GISTools.Polygon? = GISTools.Polygon([ring(1.40, 0.20, 1.45, 0.25)])
+		let parts: GISTools.MultiPolygon? = GISTools.MultiPolygon([try #require(nearPart), try #require(farPart)])
+		let pair = GISTools.Feature(try #require(parts), id: .uint(1004), properties: ["kind": "lake"])
 		let line: GISTools.LineString? = GISTools.LineString([point(0.5, 0.8), point(0.9, 0.8), point(1.2, 0.8), point(1.5, 0.8)])
 		let roadLine = try #require(line)
 		let road = GISTools.Feature(roadLine, id: .uint(3001), properties: ["kind": "minor_road"])
@@ -58,7 +63,7 @@ struct OfflineVectorIdentityTests {
 		var payloads: [(id: UInt64, data: Data)] = []
 		for tile in [tileA, tileB] {
 			var vector = try #require(VectorTile(x: tile.x, y: tile.y, z: tile.z))
-			vector.setFeatures([wholeNearEdge, acrossEdge, noID, island], for: "water")
+			vector.setFeatures([wholeNearEdge, acrossEdge, noID, island, pair], for: "water")
 			vector.setFeatures([road], for: "roads")
 			let data = try #require(vector.data(options: .init(bufferSize: .pixel(16))))
 			payloads.append((PMTilesArchive.zxyToTileID(z: UInt8(tile.z), x: UInt32(tile.x), y: UInt32(tile.y)), data))
@@ -100,6 +105,16 @@ struct OfflineVectorIdentityTests {
 		defer { try? FileManager.default.removeItem(at: url) }
 		let ids = try build(url).polygons.map(\.id).filter { $0.hasPrefix("water/1002/") }
 		#expect(Set(ids) == ["water/1002/\(tileA.key)/0", "water/1002/\(tileB.key)/0"])
+	}
+
+	@Test func partOnlyOneTileHasIsKeptNextToAWholePart() throws {
+		let url = try archive()
+		defer { try? FileManager.default.removeItem(at: url) }
+		let polygons = try build(url).polygons.filter { $0.id.hasPrefix("water/1004/") }
+		// The near lake once (B's buffer copy dropped) and the far lake, which only B has.
+		#expect(polygons.count == 2)
+		#expect(polygons.contains { $0.id.hasPrefix("water/1004/\(tileA.key)/") })
+		#expect(polygons.contains { $0.id.hasPrefix("water/1004/\(tileB.key)/") && $0.coordinates.allSatisfy { $0.longitude > boundsA.maxLon } })
 	}
 
 	@Test func featureWithoutAnIDKeepsTheTileCounter() throws {

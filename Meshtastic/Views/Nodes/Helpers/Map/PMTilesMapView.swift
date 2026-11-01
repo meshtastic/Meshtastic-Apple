@@ -62,11 +62,13 @@ struct OfflineFeatureOrigin {
 	/// The vector tile's feature id. Protomaps encodes the OSM element type above bit 44 and the
 	/// OSM id below, so it is unique across nodes, ways and relations.
 	let featureID: UInt64
-	/// The polygon's index within a multipolygon feature.
+	/// The polygon's index within a multipolygon feature, counted within its tile.
 	let part: Int
 	let tile: String
-	/// The outer ring lies inside its tile, so this copy is the whole feature.
-	let isWholeInTile: Bool
+	/// The tile this piece was read from.
+	let tileBounds: GeoBounds
+	/// The outer ring's box as the tile stored it, buffer included.
+	let ringBounds: GeoBounds
 }
 
 /// A name to print on the offline map: a place (city, town, neighborhood) or a body of water, from
@@ -759,9 +761,12 @@ extension OfflineVectorTileProvider {
 		}
 	}
 
-	/// One copy of each feature: when a tile holds the whole feature, its copy stands and the
-	/// pieces of it in neighbors' buffers are dropped. A feature cut by a tile edge keeps every
-	/// tile's piece; geometry is never merged. Ids come from the feature id.
+	/// Drops the copies of a feature that neighboring tiles carry in their buffers. A tile holds
+	/// everything inside it, so a piece from one tile lying wholly inside another tile that also has
+	/// the feature is that tile's buffer copy. Anything reaching into its own tile is kept, so a
+	/// part of a multipolygon that only one tile has is never lost, and a feature cut by a tile edge
+	/// keeps each tile's piece. Geometry is never merged. Ids come from the feature id, qualified by
+	/// tile when pieces from more than one tile remain.
 	nonisolated static func identified(_ polygons: [OfflineMapPolygon]) -> [OfflineMapPolygon] {
 		var groups: [String: [Int]] = [:]
 		var order: [String] = []
@@ -775,27 +780,32 @@ extension OfflineVectorTileProvider {
 		var keep = [Bool](repeating: true, count: polygons.count)
 		for key in order {
 			guard let members = groups[key] else { continue }
-			var tiles: [String] = []
-			for index in members where !tiles.contains(polygons[index].origin?.tile ?? "") {
-				tiles.append(polygons[index].origin?.tile ?? "")
+			var tiles: [String: GeoBounds] = [:]
+			for index in members {
+				if let origin = polygons[index].origin { tiles[origin.tile] = origin.tileBounds }
 			}
-			let wholeTile = tiles.first { tile in
-				members.allSatisfy { polygons[$0].origin?.tile != tile || polygons[$0].origin?.isWholeInTile == true }
-			}
+			var kept: [Int] = []
 			for index in members {
 				guard let origin = polygons[index].origin else { continue }
-				if let wholeTile {
-					if origin.tile == wholeTile {
-						result[index].id = "\(key)/\(origin.part)"
-					} else {
-						keep[index] = false
-					}
-				} else {
-					result[index].id = "\(key)/\(origin.tile)/\(origin.part)"
+				let isBufferCopy = tiles.contains { tile, bounds in
+					tile != origin.tile && Self.contains(bounds, origin.ringBounds)
 				}
+				if isBufferCopy { keep[index] = false } else { kept.append(index) }
+			}
+			let oneTile = Set(kept.compactMap { polygons[$0].origin?.tile }).count == 1
+			for index in kept {
+				guard let origin = polygons[index].origin else { continue }
+				result[index].id = oneTile ? "\(key)/\(origin.part)" : "\(key)/\(origin.tile)/\(origin.part)"
 			}
 		}
 		return result.indices.filter { keep[$0] }.map { result[$0] }
+	}
+
+	/// Whether `outer` holds all of `inner`, with a hair of slack for a ring ending on the edge.
+	nonisolated private static func contains(_ outer: GeoBounds, _ inner: GeoBounds) -> Bool {
+		let slack = (outer.maxLon - outer.minLon) * 1e-6
+		return inner.minLon >= outer.minLon - slack && inner.maxLon <= outer.maxLon + slack
+			&& inner.minLat >= outer.minLat - slack && inner.maxLat <= outer.maxLat + slack
 	}
 
 	nonisolated private static func appendPolygons(_ geometry: GISTools.GeoJsonGeometry, role: OfflineFeatureRole, bounds: GeoBounds?, into polys: inout [OfflineMapPolygon], id: () -> String, source: FeatureSource? = nil) {
@@ -814,14 +824,14 @@ extension OfflineVectorTileProvider {
 			// dropping them painted islands solid blue.
 			let interiors = rings.dropFirst().compactMap(prepared)
 			var origin: OfflineFeatureOrigin?
-			if let source, let tileBounds {
-				// A hair of slack: a ring that ends exactly on the tile edge is still whole.
-				let slack = (tileBounds.maxLon - tileBounds.minLon) * 1e-6
-				let whole = outerRing.allSatisfy { point in
-					point.longitude >= tileBounds.minLon - slack && point.longitude <= tileBounds.maxLon + slack
-						&& point.latitude >= tileBounds.minLat - slack && point.latitude <= tileBounds.maxLat + slack
+			if let source, let tileBounds, let first = outerRing.first {
+				var box = (minLon: first.longitude, minLat: first.latitude, maxLon: first.longitude, maxLat: first.latitude)
+				for point in outerRing {
+					box.minLon = min(box.minLon, point.longitude); box.maxLon = max(box.maxLon, point.longitude)
+					box.minLat = min(box.minLat, point.latitude); box.maxLat = max(box.maxLat, point.latitude)
 				}
-				origin = OfflineFeatureOrigin(featureID: source.featureID, part: part, tile: source.tile.key, isWholeInTile: whole)
+				let ringBounds = GeoBounds(minLon: box.minLon, minLat: box.minLat, maxLon: box.maxLon, maxLat: box.maxLat)
+				origin = OfflineFeatureOrigin(featureID: source.featureID, part: part, tile: source.tile.key, tileBounds: tileBounds, ringBounds: ringBounds)
 			}
 			polys.append(OfflineMapPolygon(id: id(), role: role, coordinates: outer, interiorRings: interiors, origin: origin))
 		}
