@@ -282,8 +282,8 @@ extension EnvironmentValues {
 	@Entry var presentDeviceModelFullScreen: ((DeviceModelFullScreenRequest) -> Void)?
 }
 
-/// The model in a large sheet, held still and facing you, with the radio's buttons under it and a
-/// zoom button that steps from the whole model to the case to the screen.
+/// The model in a large sheet, held still and facing you. With the radio's live screen, its buttons
+/// sit under it and a zoom button steps from the whole model to the case to the screen.
 @available(iOS 18.0, macCatalyst 18.0, visionOS 1.0, *)
 struct DeviceModelFullScreen: View {
 	let request: DeviceModelFullScreenRequest
@@ -339,7 +339,8 @@ struct DeviceModelFullScreen: View {
 						Label("Close", systemImage: "xmark")
 					}
 				}
-				if stage.zoomLevels.count > 1 {
+				// Zooming in is for reading the radio's live screen; without it the whole model is enough.
+				if liveScreen && stage.zoomLevels.count > 1 {
 					ToolbarItem(placement: .primaryAction) {
 						zoomButton
 					}
