@@ -3096,7 +3096,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "地圖影像無法使用；改為顯示地形陰影"
+            "value" : "無法取得地圖影像，改為顯示地形陰影"
           }
         }
       }
@@ -5371,8 +5371,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "廣播訊息內容"
+            "state" : "translated",
+            "value" : "信標廣播的訊息內容，最多 60 位元組。"
           }
         }
       }
@@ -5694,8 +5694,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "逾時（毫秒）"
+            "state" : "translated",
+            "value" : "將收到的序列資料視為完整封包前的等待時間。設為 0 時使用 250 毫秒。"
           }
         }
       }
@@ -6512,7 +6512,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "節點詳細資料"
+            "value" : "節點詳細資訊"
           }
         }
       }
@@ -6672,7 +6672,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "選擇一條追蹤路由，沿著路徑飛行並將其保留繪製在地圖上。"
+            "value" : "選擇一條追蹤路由，即可沿路徑飛越，並將路線保留在地圖上。"
           }
         }
       }
@@ -20352,7 +20352,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "所有估算"
+            "value" : "所有估算結果"
           }
         }
       }
@@ -36869,7 +36869,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "無法查詢您所在位置的地名。"
+            "value" : "無法取得您所在位置的地名。"
           }
         }
       }
@@ -38091,7 +38091,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "藍色虛線為返回發起端的路徑。若兩條路徑經過同一段，兩條線會並排顯示。"
+            "value" : "藍色虛線表示返回發起節點的路徑。若去程與回程共用同一路段，兩條線會並排顯示。"
           }
         }
       }
@@ -46670,7 +46670,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "每一段根據其跳躍 SNR 著色 — 綠色（良好）、黃色（一般）、橙色（差）、紅色（無）。"
+            "value" : "每一段根據其跳躍 SNR 著色 — 綠色（良好）、黃色（尚可）、橘色（差）、紅色（無）。"
           }
         }
       }
@@ -50689,7 +50689,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "估算 %@"
+            "value" : "%@估算"
           }
         }
       }
@@ -58813,7 +58813,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在 %2$lld 個主題上收聽到 %1$lld 則訊息"
+            "value" : "在 %2$lld 個主題中收到 %1$lld 則訊息"
           }
         }
       }
@@ -60153,7 +60153,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "跳數編號"
+            "value" : "跳點編號"
           }
         }
       }
@@ -68096,7 +68096,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "淺色"
+            "value" : "淡"
           }
         }
       }
@@ -68412,7 +68412,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "收聽 %@ 一分鐘，且不會發布任何內容。訊息代理伺服器只會看到您的 IP 位址與隨機的客戶端 ID，而不是您的節點。您的位置絕不會傳送給訊息代理伺服器；Apple 的地理編碼器會將其轉換為各列中的州與城市名稱。選擇一列會填入「根主題」欄位；在您點選「儲存」之前，不會傳送任何內容到無線電。"
+            "value" : "收聽 %@ 一分鐘，且不會發布任何內容。訊息代理伺服器會看到您的 IP 位址與隨機的客戶端 ID，而不是您的節點。您的位置絕不會傳送給訊息代理伺服器；Apple 的地理編碼器會將其轉換為各列中的州與城市名稱。選擇一列會填入「根主題」欄位；在您點選「儲存」之前，不會傳送任何內容到無線電。"
           }
         }
       }
@@ -84447,8 +84447,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "按鍵發話 GPIO 接腳編號。"
+            "state" : "translated",
+            "value" : "按鍵發話（PTT）GPIO 接腳編號。設為 0 時使用 GPIO 39。"
           }
         }
       }
@@ -86632,7 +86632,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在線"
+            "value" : "高電位觸發"
           }
         }
       }
@@ -96673,7 +96673,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "最近的 %@"
+            "value" : "最近距離 %@"
           }
         }
       }
@@ -98780,7 +98780,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "尚無位置。請連線已定位的無線電，或允許位置存取權限，以查看州與城市主題。"
+            "value" : "尚未取得位置。請連線已定位的無線電，或允許位置存取權限，以查看州與城市主題。"
           }
         }
       }
@@ -115303,7 +115303,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "中繼 %lld"
+            "value" : "中繼節點 %lld"
           }
         }
       }
@@ -115451,7 +115451,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "中繼節點依序編號，去程以橘色填滿，回程以藍色外框標示。"
+            "value" : "中繼節點依序編號，去程以橘色實心標示，回程以藍色外框標示。"
           }
         }
       }
@@ -123645,7 +123645,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "查看訊息代理伺服器上您附近有哪些活躍的根主題，並從中選擇一個。"
+            "value" : "查看您所用的訊息代理伺服器上，附近有哪些活躍的根主題，並從中選擇一個。"
           }
         }
       }
@@ -124625,7 +124625,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已選擇的節點"
+            "value" : "選取的節點"
           }
         }
       }
@@ -130457,7 +130457,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "顯示通知"
+            "value" : "取消靜音"
           }
         }
       }
@@ -132485,7 +132485,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "訊號：普通"
+            "value" : "訊號：尚可"
           }
         }
       }
@@ -133909,7 +133909,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "橘色實線為前往目標的路徑；箭頭指向傳遞方向。"
+            "value" : "橘色實線表示前往目標節點的路徑；箭頭指向傳遞方向。"
           }
         }
       }
@@ -135014,7 +135014,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "州或省"
+            "value" : "州／省"
           }
         }
       }
@@ -135923,7 +135923,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "強"
+            "value" : "濃"
           }
         }
       }
@@ -139604,7 +139604,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "完整版面配置中的漸層條顯示整體訊號品質，從紅色（無訊號）經橙色、黃色到綠色（訊號良好）。它結合了相對於數據機預設的 SNR 和 RSSI。"
+            "value" : "完整版面配置中的漸層條顯示整體訊號品質，從紅色（無訊號）經橘色、黃色到綠色（訊號良好）。它結合了相對於數據機預設的 SNR 和 RSSI。"
           }
         }
       }
@@ -140416,7 +140416,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "發起端的簡稱以綠色圓環標示，目標的簡稱以白色圓環標示。"
+            "value" : "發起節點的簡稱以綠色圓環標示；目標節點的簡稱以白色圓環標示。"
           }
         }
       }
@@ -140442,7 +140442,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "每一段上的標籤會顯示其 SNR，並以綠色（良好）、黃色（普通）、橘色（不佳）或紅色（無）標示。會重疊的標籤將隱藏，直到您放大為止。"
+            "value" : "每一段上的標籤會顯示其 SNR，並以綠色（良好）、黃色（尚可）、橘色（差）或紅色（無）標示。會重疊的標籤將隱藏，直到您放大為止。"
           }
         }
       }
@@ -145421,7 +145421,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "主題不能包含空格或控制字元。"
+            "value" : "主題不能包含空白字元或控制字元。"
           }
         }
       }
@@ -146014,7 +146014,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "追蹤路由（在 %@ 秒）"
+            "value" : "追蹤路由（%@ 秒後）"
           }
         }
       }
@@ -148780,7 +148780,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "未知的中繼器"
+            "value" : "未知中繼節點"
           }
         }
       }
