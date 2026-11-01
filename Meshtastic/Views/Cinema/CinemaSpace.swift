@@ -45,12 +45,17 @@ struct CinemaSpace: View {
 	/// The fire lookout's summits, and the terrain and node labels for the chosen one.
 	@State private var lookout = LookoutScene()
 	@AppStorage("cinemaLookoutSite") private var lookoutSiteID = ""
+	/// Eighth turns clockwise the lookout is turned from the panel.
+	@AppStorage(SpatialLookout.turnsKey) private var lookoutTurns = 0
 	@State private var terrain: ModelEntity?
 	/// The site the terrain and labels are built for; nil for the painted sunset.
 	@State private var terrainSiteID: String?
-	/// The site a terrain is being built for. The cinema opening refreshes the lookout from two
-	/// tasks at once, and only one of them should build.
-	@State private var buildingSiteID: String?
+	/// The bearing the cab faced when the terrain was built; the labels are placed from it too.
+	@State private var terrainHeading = SpatialLookout.frontHeading
+	/// The terrain being built, and the site and facing it's for. The cinema opening refreshes the
+	/// lookout from two tasks at once; the second waits on the first one's build instead of
+	/// starting another. The build is its own task so a caller being cancelled doesn't stop it.
+	@State private var lookoutBuild: LookoutBuild?
 	@State private var labelPanels = LabelPanels()
 	@State private var radioCoordinate: CLLocationCoordinate2D?
 
@@ -91,7 +96,7 @@ struct CinemaSpace: View {
 			Attachment(id: Attachments.panel) {
 				// The map counts as open while the cinema is reopening it, so the button doesn't
 				// show for the second in between.
-				CinemaPanel(environment: $environment, sites: lookout.sites, siteID: $lookoutSiteID, radioCoordinate: radioCoordinate, lookoutNote: lookoutNote, spatialMapOpen: appState.spatialMapWindowCount > 0 || appState.spatialMapReopening) {
+				CinemaPanel(environment: $environment, sites: lookout.sites, siteID: $lookoutSiteID, turns: $lookoutTurns, radioCoordinate: radioCoordinate, lookoutNote: lookoutNote, spatialMapOpen: appState.spatialMapWindowCount > 0 || appState.spatialMapReopening) {
 					openWindow(id: SpatialMapScene.id, value: SpatialMapSceneKey.shared)
 				} onLeave: {
 					Task { await dismissImmersiveSpace() }
@@ -155,6 +160,9 @@ struct CinemaSpace: View {
 			await refreshLookout()
 		}
 		.task(id: lookoutSiteID) {
+			await refreshLookout()
+		}
+		.task(id: lookoutTurns) {
 			await refreshLookout()
 		}
 		.task(id: terrainSiteID) {
@@ -285,6 +293,12 @@ struct CinemaSpace: View {
 		}
 	}
 
+	private struct LookoutBuild {
+		let siteID: String
+		let heading: Double
+		let task: Task<ModelEntity?, Never>
+	}
+
 	private enum Attachments {
 		static let panel = "panel"
 		static let tabStrip = "screenTabs"
@@ -339,26 +353,45 @@ struct CinemaSpace: View {
 			await lookout.prepare()
 		}
 		let site = lookout.site(for: lookoutSiteID)
-		guard site?.id != terrainSiteID || (site != nil && terrain == nil) else { return }
-		if let site, buildingSiteID == site.id { return }
+		let heading = SpatialLookout.heading(turns: lookoutTurns)
+		guard site?.id != terrainSiteID || heading != terrainHeading || (site != nil && terrain == nil) else { return }
 		terrain?.removeFromParent()
 		terrain = nil
 		terrainSiteID = nil
 		guard let site else {
+			lookoutBuild?.task.cancel()
+			lookoutBuild = nil
 			await replaceBackdrop(clearSky: false)
 			return
 		}
-		buildingSiteID = site.id
-		let built = await lookout.terrain(for: site, sun: environment.sun)
-		if buildingSiteID == site.id {
-			buildingSiteID = nil
+		let build: Task<ModelEntity?, Never>
+		if let current = lookoutBuild, current.siteID == site.id, current.heading == heading {
+			build = current.task
+		} else {
+			lookoutBuild?.task.cancel()
+			let sun = environment.sun
+			build = Task { await lookout.terrain(for: site, heading: heading, sun: sun) }
+			lookoutBuild = LookoutBuild(siteID: site.id, heading: heading, task: build)
 		}
-		guard let entity = built, lookoutSiteID == site.id, environment.isCutout else { return }
+		let built = await build.value
+		if lookoutBuild?.task == build {
+			lookoutBuild = nil
+		}
+		// Kept only if the summit and the turn are still the ones chosen, and the other caller
+		// waiting on the same build hasn't already put it up. Checked again after the backdrop
+		// changes, since either can change while it does.
+		func stillWanted() -> Bool {
+			lookoutSiteID == site.id && SpatialLookout.heading(turns: lookoutTurns) == heading && environment.isCutout
+				&& !(terrain != nil && terrainSiteID == site.id && terrainHeading == heading)
+		}
+		guard let entity = built, stillWanted() else { return }
 		await replaceBackdrop(clearSky: true)
+		guard stillWanted() else { return }
 		terrain?.removeFromParent()
 		stage.addChild(entity)
 		terrain = entity
 		terrainSiteID = site.id
+		terrainHeading = heading
 	}
 
 	/// Hangs each node's label out the windows where the node is: lifted clear of the sill and of
@@ -377,7 +410,7 @@ struct CinemaSpace: View {
 				break
 			}
 		}
-		let spots = LookoutTerrain.spots(for: lookout.labels, heightRatio: heightRatio)
+		let spots = LookoutTerrain.spots(for: lookout.labels, heightRatio: heightRatio, heading: terrainHeading)
 		let halfHeightDegrees = LookoutTerrain.labelWidthDegrees * heightRatio / 2
 		let widthPerDepth = Float(2 * tan(LookoutTerrain.labelWidthDegrees / 2 * .pi / 180))
 		for (index, label) in lookout.labels.enumerated() {

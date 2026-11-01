@@ -29,7 +29,7 @@ extension LookoutTerrain {
 
 	/// Spots for `labels` in order, nearest first, lifting each above any earlier label it would
 	/// cover. `heightRatio` is a label's height over its width.
-	static func spots(for labels: [LookoutLabel], heightRatio: Double) -> [LabelSpot] {
+	static func spots(for labels: [LookoutLabel], heightRatio: Double, heading: Double = frontHeading) -> [LabelSpot] {
 		let halfHeight = labelWidthDegrees * heightRatio / 2
 		struct Placed {
 			let azimuth: Double
@@ -38,7 +38,7 @@ extension LookoutTerrain {
 		}
 		var placed: [Placed] = []
 		return labels.map { label in
-			let azimuth = (label.bearing - frontHeading + 360).truncatingRemainder(dividingBy: 360)
+			let azimuth = (label.bearing - heading + 360).truncatingRemainder(dividingBy: 360)
 			let drop = label.distance * label.distance / (2 * earthRadius)
 			let elevation = atan2(label.rise - drop, label.distance) * 180 / .pi
 			var center = max(elevation, lowestLabelDegrees)

@@ -75,8 +75,8 @@ enum LookoutTerrain {
 
 	/// The unit direction, in the cinema's frame, of a point at a true `bearing` and horizontal
 	/// `distance` from the eye, `rise` meters above it before the Earth's curve is taken off.
-	static func direction(bearing: Double, distance: Double, rise: Double) -> SIMD3<Float> {
-		let azimuth = (bearing - frontHeading) * .pi / 180
+	static func direction(bearing: Double, distance: Double, rise: Double, heading: Double = frontHeading) -> SIMD3<Float> {
+		let azimuth = (bearing - heading) * .pi / 180
 		let drop = distance * distance / (2 * earthRadius)
 		let flat = SIMD3<Float>(Float(sin(azimuth) * distance), Float(rise - drop), Float(-cos(azimuth) * distance))
 		return simd_normalize(flat)
@@ -305,7 +305,10 @@ enum LookoutTerrain {
 	/// Builds the terrain around `site`, out to `bounds` and at most `maxRadius`. `sun` is where the
 	/// painted sky's sun is, degrees clockwise from the cab's front and above the horizon. The ground
 	/// is colored from `landCover` where it has the point, else by height.
-	static func build(site: LookoutSite, bounds: GeoBounds, source: any ElevationTileSource, landCover: OfflineLandCoverMap? = nil, sun: (azimuth: Float, elevation: Float)) async -> LookoutTerrainModel? {
+	static func build(
+		site: LookoutSite, bounds: GeoBounds, source: any ElevationTileSource, landCover: OfflineLandCoverMap? = nil,
+		heading: Double = frontHeading, sun: (azimuth: Float, elevation: Float)
+	) async -> LookoutTerrainModel? {
 		let sampler = Sampler(source: source)
 		let floor = Double(site.elevation) + cabHeight
 		let eye = floor + eyeHeight
@@ -361,7 +364,7 @@ enum LookoutTerrain {
 				let radians = bearing * .pi / 180
 				let elevation = Double(elevations[index])
 				local[index] = SIMD3(sin(radians) * distance, elevation, cos(radians) * distance)
-				positions[index] = direction(bearing: bearing, distance: distance, rise: elevation - eye) * depth(distance)
+				positions[index] = direction(bearing: bearing, distance: distance, rise: elevation - eye, heading: heading) * depth(distance)
 				uvs[index] = SIMD2(Float(spoke) / Float(spokes), Float(ring) / Float(rings - 1))
 			}
 		}
@@ -378,7 +381,7 @@ enum LookoutTerrain {
 			}
 		}
 
-		let ground = Ground(elevations: elevations, covers: covers, lowest: lowest, highest: highest, latitude: site.latitude)
+		let ground = Ground(elevations: elevations, covers: covers, lowest: lowest, highest: highest, latitude: site.latitude, heading: heading)
 		guard let texture = shade(local: local, ground: ground, distances: distances, sun: sun) else { return nil }
 		return LookoutTerrainModel(site: site, positions: positions, textureCoordinates: uvs, indices: indices, texture: texture)
 	}
@@ -390,6 +393,8 @@ enum LookoutTerrain {
 		let lowest: Float
 		let highest: Float
 		let latitude: Double
+		/// The bearing the cab faces; the painted sun is placed from it.
+		let heading: Double
 	}
 
 	/// One pixel per sample: the ground's color, lit from the painted sun and fading into the haze
@@ -397,7 +402,7 @@ enum LookoutTerrain {
 	/// tan, so the view read as desert.
 	private static func shade(local: [SIMD3<Double>], ground: Ground, distances: [Double], sun: (azimuth: Float, elevation: Float)) -> CGImage? {
 		let columns = spokes + 1
-		let sunAzimuth = Double(sun.azimuth + Float(frontHeading)) * .pi / 180
+		let sunAzimuth = (Double(sun.azimuth) + ground.heading) * .pi / 180
 		let sunElevation = Double(sun.elevation) * .pi / 180
 		let light = SIMD3<Double>(sin(sunAzimuth) * cos(sunElevation), sin(sunElevation), cos(sunAzimuth) * cos(sunElevation))
 		let haze = SIMD3<Double>(0.78, 0.73, 0.70)
