@@ -101,6 +101,25 @@ def bay_center(index):
     return -HALF + (index + 0.5) * BAY
 
 
+# The front's two middle posts stand in from the even spacing, so two thirds of each is behind the
+# screen's bezel from the seat and the outer front bays show more of the view. Set by eye in the
+# headset.
+SCREEN_POST = 1.045
+
+
+def posts(side):
+    """Where the posts stand along `side`, corner to corner."""
+    if side == "front":
+        return [-HALF, -SCREEN_POST, 0, SCREEN_POST, HALF]
+    return [-HALF + i * BAY for i in range(5)]
+
+
+def bays(side):
+    """The center and width, between post centers, of each bay along `side`."""
+    edges = posts(side)
+    return [((a + b) / 2, b - a) for a, b in zip(edges, edges[1:])]
+
+
 DOOR = ("back", 0)
 ROSTER = ("left", 2)
 STATUS = ("left", 1)
@@ -214,19 +233,17 @@ def build_cab():
         # The header over the windows.
         box("Header" + side, along(side, 2 * HALF + 0.2, WALL, CEILING - HEAD), at(side, 0, -WALL / 2, (HEAD + CEILING) / 2), wall_mat)
         # Posts between the bays, and at the corners.
-        for i in range(5):
-            u = -HALF + i * BAY
+        for u in posts(side):
             box("Post" + side, along(side, POST, WALL, HEAD - KNEE), at(side, u, -WALL / 2, (KNEE + HEAD) / 2), frame)
-        for bay in range(4):
-            u = bay_center(bay)
+        for bay, (u, bay_width) in enumerate(bays(side)):
             if (side, bay) == DOOR:
                 build_door(side, u, frame, glass)
                 continue
-            pane_w, pane_h = BAY - POST, HEAD - KNEE
+            pane_w, pane_h = bay_width - POST, HEAD - KNEE
             plane("Glass" + side, pane_w, pane_h, at(side, u, -WALL / 2, (KNEE + HEAD) / 2), facing_in(side), glass)
             # A muntin across each pane, a little above the middle.
             box("Muntin" + side, along(side, pane_w, 0.03, 0.03), at(side, u, -WALL / 2, KNEE + pane_h * 0.62), frame)
-            build_shutter(side, u, shutter_out, frame)
+            build_shutter(side, u, bay_width, shutter_out, frame)
 
     build_railing(rail)
 
@@ -282,11 +299,11 @@ def u_direction(side):
 YAW = {"front": 0, "right": -math.pi / 2, "back": math.pi, "left": math.pi / 2}
 
 
-def build_shutter(side, u, outside, prop_mat):
+def build_shutter(side, u, bay_width, outside, prop_mat):
     """A storm shutter the width of a bay, hinged at the top of the window and propped open as an
     awning, tipped up a little more steeply than the line of sight through the top of the glass from
     the seat (about 22 degrees), so it stays out of the view."""
-    width, height, thick = BAY - 0.02, HEAD - KNEE + 0.08, 0.035
+    width, height, thick = bay_width - 0.02, HEAD - KNEE + 0.08, 0.035
     hinge = Vector(at(side, u, 0.03, HEAD + 0.04))
     nx, ny = SIDES[side]
     outward = Vector((nx, ny, 0))
