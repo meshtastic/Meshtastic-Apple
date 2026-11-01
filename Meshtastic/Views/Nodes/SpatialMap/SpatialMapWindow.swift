@@ -705,9 +705,8 @@ struct SpatialZoomSlider: View {
 	}
 
 	private func apply(_ position: Double) {
-		// Close to the left end is the whole mesh.
-		let zoom = pow(2, position)
-		model.setZoom(zoom < 1.05 ? 1 : zoom)
+		// The first few percent of the slider is the whole mesh, however far it can zoom.
+		model.setZoom(position <= top * 0.03 ? 1 : pow(2, position))
 	}
 }
 

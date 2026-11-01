@@ -72,6 +72,10 @@ Tap the **info button** (`info.circle`) in the button bar on the right to open t
 
 On Apple Vision Pro, the round glass menu under the app's tab bar, at the window's left edge, opens the 3D spatial map from any tab, the [Hardware Showcase](showcase.md) and the [Cinema](cinema.md). The map wheel button on the 2D map opens it too.
 
+### Zooming the spatial map (Apple Vision Pro)
+
+The zoom slider in the spatial map's toolbar sets how much of the mesh is on the table. All the way left shows the whole mesh; each equal step to the right doubles the zoom, and the zoom shows next to the slider. The terrain is redrawn when you let go of the slider. Pinching the table zooms too, and **Show in 3D** on a node zooms in on it.
+
 ### Direct links on the spatial map (Apple Vision Pro)
 
 On the 3D spatial map, the **link** button in the toolbar draws the same direct links as the 2D map, between the tops of the pins. It is off by default and has its own setting. Lines use the signal quality colors, are dashed when only one direction is known, and fade as they get older. To keep the volume smooth, at most 12 SNR pills are shown: the selected node's links when a node is selected, otherwise the newest links, your radio's first. Links are hidden while a trace route is shown.
