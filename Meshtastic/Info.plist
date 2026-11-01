@@ -132,7 +132,7 @@
 		<string>_meshtastic._tcp</string>
 	</array>
 	<key>NSCameraUsageDescription</key>
-	<string>We use the camera to share channels using a QR Code</string>
+	<string>The camera scans QR codes to share channels, and shows your radio's 3D model in the room around you.</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>We use local networking to connect to network-based nodes.</string>
 	<key>NSSiriUsageDescription</key>
