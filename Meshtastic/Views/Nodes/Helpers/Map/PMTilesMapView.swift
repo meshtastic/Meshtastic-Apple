@@ -55,6 +55,18 @@ struct OfflineMapPolyline: Identifiable {
 	var featureID: UInt64?
 	/// The basemap's `min_zoom`; for a stitched line, the highest of its segments'. 0 when absent.
 	var minZoom: Double = 0
+	/// Whether a road runs in a tunnel, on a bridge or on the ground. Stitched only with its own kind.
+	var structure: OfflineRoadStructure = .surface
+	/// The basemap's `sort_rank`: within a road class, higher ranks draw on top. For a stitched
+	/// road, the highest of its segments'.
+	var sortRank = 0
+}
+
+/// Where a road runs, in drawing order: tunnels under everything, bridges over the other roads.
+enum OfflineRoadStructure: Int, CaseIterable, Comparable {
+	case tunnel, surface, bridge
+
+	static func < (lhs: Self, rhs: Self) -> Bool { lhs.rawValue < rhs.rawValue }
 }
 
 /// Which feature a decoded polygon belongs to and which tile it was read from. A feature near a
@@ -352,35 +364,47 @@ final class OfflineVectorTileProvider: ObservableObject {
 		var stitchedVertexCount = 0
 		let stitchDuration = clock.measure {
 			for role in roadDrawOrder {
-				guard let roleSegments = rawSegmentsByRole[role] else { continue }
-				for whole in stitch(roleSegments.map(\.coordinates)) where whole.coordinates.count >= 2 {
-					// Length is judged on the whole line, before it's split by band: two short pieces
-					// either side of zoom 11 make one line long enough to keep.
-					// Boundaries aren't length-filtered (admin lines can be long but sparse).
-					if role != .boundary, lengthMeters(whole.coordinates) < minRoadMeters { continue }
-					// Stitched again per band, so a line shown zoomed out never joins one that isn't.
-					let members = whole.members.map { roleSegments[$0] }
-					let bands = [members.filter { isFar(minZoom: $0.minZoom) }, members.filter { !isFar(minZoom: $0.minZoom) }]
-					for segments in bands where !segments.isEmpty {
-						for chain in stitch(segments.map(\.coordinates)) where chain.coordinates.count >= 2 {
-							stitchedVertexCount += chain.coordinates.count
-							let id: String
-							if let featureID = chain.members.compactMap({ segments[$0].featureID }).min() {
-								// A way can end up in two chains (its pieces in two tiles didn't meet).
-								let base = "\(role)/\(featureID)"
-								let seen = usedIDs[base, default: 0]
-								usedIDs[base] = seen + 1
-								id = seen == 0 ? base : "\(base)#\(seen)"
-							} else {
-								counter += 1
-								id = "\(role)/c\(counter)"
+				guard let allSegments = rawSegmentsByRole[role] else { continue }
+				// A bridge or tunnel is stitched apart from the road it carries on from.
+				for structure in OfflineRoadStructure.allCases {
+					let roleSegments = allSegments.filter { $0.structure == structure }
+					for whole in stitch(roleSegments.map(\.coordinates)) where whole.coordinates.count >= 2 {
+						// Length is judged on the whole line, before it's split by band: two short pieces
+						// either side of zoom 11 make one line long enough to keep.
+						// Boundaries aren't length-filtered (admin lines can be long but sparse).
+						if role != .boundary, lengthMeters(whole.coordinates) < minRoadMeters { continue }
+						// Stitched again per band, so a line shown zoomed out never joins one that isn't.
+						let members = whole.members.map { roleSegments[$0] }
+						let bands = [members.filter { isFar(minZoom: $0.minZoom) }, members.filter { !isFar(minZoom: $0.minZoom) }]
+						for segments in bands where !segments.isEmpty {
+							for chain in stitch(segments.map(\.coordinates)) where chain.coordinates.count >= 2 {
+								stitchedVertexCount += chain.coordinates.count
+								let id: String
+								if let featureID = chain.members.compactMap({ segments[$0].featureID }).min() {
+									// A way can end up in two chains (its pieces in two tiles didn't meet).
+									let base = "\(role)/\(featureID)"
+									let seen = usedIDs[base, default: 0]
+									usedIDs[base] = seen + 1
+									id = seen == 0 ? base : "\(base)#\(seen)"
+								} else {
+									counter += 1
+									id = "\(role)/c\(counter)"
+								}
+								var line = OfflineMapPolyline(id: id, role: role, coordinates: chain.coordinates)
+								line.minZoom = chain.members.map { segments[$0].minZoom }.max() ?? 0
+								line.structure = structure
+								line.sortRank = chain.members.map { segments[$0].sortRank }.max() ?? 0
+								lines.append(line)
 							}
-							let minZoom = chain.members.map { segments[$0].minZoom }.max() ?? 0
-							lines.append(OfflineMapPolyline(id: id, role: role, coordinates: chain.coordinates, minZoom: minZoom))
 						}
 					}
 				}
 			}
+			// Lowest sort_rank first, so the more important roads of a class draw over the rest;
+			// ties keep their order.
+			lines = lines.enumerated()
+				.sorted { ($0.element.sortRank, $0.offset) < ($1.element.sortRank, $1.offset) }
+				.map(\.element)
 		}
 
 		let stats = OfflineDecodeStats(
@@ -659,7 +683,14 @@ extension OfflineVectorTileProvider {
 			let kindDetail = (feature.properties["kind_detail"] as? String) ?? (feature.properties["pmap:kind_detail"] as? String)
 			let role = roadRole(kind: kind, kindDetail: kindDetail)
 			if role == .path { continue } // footways/cycleways: high count, low basemap value
+			let first = lines.count
 			appendPolylines(feature.geometry, role: role, bounds: bounds, into: &lines, id: nextID, featureID: featureID(feature), minZoom: minZoom(feature))
+			let structure = roadStructure(feature.properties)
+			let sortRank = number(feature.properties["sort_rank"]).flatMap { $0.isFinite ? Int(min(max($0, -100_000), 100_000)) : nil } ?? 0
+			for index in first..<lines.count {
+				lines[index].structure = structure
+				lines[index].sortRank = sortRank
+			}
 		}
 		// Boundaries (the neighborhood/admin outline overlay) intentionally omitted.
 		return DecodedTile(polys: polys, lines: lines, labels: labels(in: vector, bounds: bounds))
@@ -742,8 +773,24 @@ extension OfflineVectorTileProvider {
 		}
 	}
 
+	/// A road's structure from the current schema's `is_tunnel` / `is_bridge`, or an older
+	/// basemap's `pmap:level` (below 0 a tunnel, above 0 a bridge).
+	nonisolated static func roadStructure(_ properties: [String: Sendable]) -> OfflineRoadStructure {
+		func flag(_ value: Any?) -> Bool {
+			if let bool = value as? Bool { return bool }
+			return (number(value) ?? 0) != 0
+		}
+		if flag(properties["is_tunnel"]) { return .tunnel }
+		if flag(properties["is_bridge"]) { return .bridge }
+		guard let level = number(properties["pmap:level"]) else { return .surface }
+		return level < 0 ? .tunnel : level > 0 ? .bridge : .surface
+	}
+
 	nonisolated static func roadRole(kind: String?, kindDetail: String?) -> OfflineFeatureRole {
 		if kind == "path", kindDetail == "pedestrian" { return .minorRoad }
+		// The current schema has no medium kind: secondary and tertiary roads are major roads
+		// with that detail.
+		if kind == "major_road", kindDetail == "secondary" || kindDetail == "tertiary" { return .mediumRoad }
 		switch kind {
 		case "highway", "motorway", "freeway", "major_road", "trunk", "primary": return .majorRoad
 		case "medium_road", "secondary", "tertiary": return .mediumRoad
@@ -1080,6 +1127,12 @@ enum OfflineMapPalette {
 		case .minorRoad: return dark ? UIColor(red: 0.24, green: 0.24, blue: 0.27, alpha: 1) : .white
 		default: return nil
 		}
+	}
+
+	/// A road in a tunnel: the casing color (light) or the road's own gray (dark), faded, drawn dashed
+	/// with no casing under the rest of the roads.
+	static func tunnelStroke(_ role: OfflineFeatureRole, dark: Bool) -> UIColor? {
+		(roadCasing(role, dark: dark) ?? roadFill(role, dark: dark))?.withAlphaComponent(0.6)
 	}
 
 	/// Road casing (light mode only): a warm-gray outline that makes the white roads read on pale land.

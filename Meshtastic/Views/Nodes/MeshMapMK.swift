@@ -1923,11 +1923,11 @@ struct MeshMapMK: View {
 			}
 		}
 
-		// 3) Roads, batched per role into MKMultiPolylines (keeps the dense grid to a few overlays).
-		let roadsByRole = linesByRole
-		func roadMultiPolyline(_ role: OfflineFeatureRole) -> MKMultiPolyline? {
-			guard let lines = roadsByRole[role] else { return nil }
-			let shapes = lines.compactMap { line -> MKPolyline? in
+		// 3) Roads, batched per role and structure into MKMultiPolylines (keeps the dense grid to a
+		// few overlays). Each batch keeps the decoder's sort_rank order, so within a class the more
+		// important roads draw on top.
+		func roadMultiPolyline(_ role: OfflineFeatureRole, _ structure: OfflineRoadStructure) -> MKMultiPolyline? {
+			let shapes = (linesByRole[role] ?? []).filter { $0.structure == structure }.compactMap { line -> MKPolyline? in
 				guard line.coordinates.count >= 2 else { return nil }
 				var coords = line.coordinates
 				return MKPolyline(coordinates: &coords, count: coords.count)
@@ -1935,26 +1935,40 @@ struct MeshMapMK: View {
 			return shapes.isEmpty ? nil : MKMultiPolyline(shapes)
 		}
 		let roadClasses: [OfflineFeatureRole] = [.minorRoad, .mediumRoad, .majorRoad]
-		// Casing pass (light mode only) gives the Apple white-road-with-outline look. Widths follow
-		// the zoom, and smaller roads are left out when zoomed out (see `roadWidthStops`).
+		// Tunnels first, under every road: faded and dashed, with no casing.
 		for role in roadClasses {
-			guard let casing = OfflineMapPalette.roadCasing(role, dark: dark), let multi = roadMultiPolyline(role) else { continue }
+			guard let stroke = OfflineMapPalette.tunnelStroke(role, dark: dark), let multi = roadMultiPolyline(role, .tunnel) else { continue }
 			result.append(ClusterMapOverlay(
-				id: "offline-road-casing-\(role)",
+				id: "offline-road-tunnel-\(role)",
 				overlay: multi,
-				style: ClusterMapOverlayStyle(strokeUIColor: casing, fillUIColor: nil, lineCap: .round, level: .aboveRoads,
-											  widthAtZoom: { OfflineMapPalette.roadCasingWidth(role, zoom: $0) })
-			))
-		}
-		// Fill pass — white centerlines (light) / lighter-than-land gray (dark).
-		for role in roadClasses {
-			guard let fill = OfflineMapPalette.roadFill(role, dark: dark), let multi = roadMultiPolyline(role) else { continue }
-			result.append(ClusterMapOverlay(
-				id: "offline-road-fill-\(role)",
-				overlay: multi,
-				style: ClusterMapOverlayStyle(strokeUIColor: fill, fillUIColor: nil, lineCap: .round, level: .aboveRoads,
+				style: ClusterMapOverlayStyle(strokeUIColor: stroke, fillUIColor: nil, lineDash: [4, 3], lineCap: .butt, level: .aboveRoads,
 											  widthAtZoom: { OfflineMapPalette.roadWidth(role, zoom: $0) })
 			))
+		}
+		// Then the roads on the ground, and bridges over them, each a casing pass (light mode only,
+		// the Apple white-road-with-outline look) and a fill pass. Widths follow the zoom, and smaller
+		// roads are left out when zoomed out (see `roadWidthStops`).
+		for structure in [OfflineRoadStructure.surface, .bridge] {
+			let prefix = structure == .bridge ? "offline-road-bridge" : "offline-road"
+			for role in roadClasses {
+				guard let casing = OfflineMapPalette.roadCasing(role, dark: dark), let multi = roadMultiPolyline(role, structure) else { continue }
+				result.append(ClusterMapOverlay(
+					id: "\(prefix)-casing-\(role)",
+					overlay: multi,
+					style: ClusterMapOverlayStyle(strokeUIColor: casing, fillUIColor: nil, lineCap: .round, level: .aboveRoads,
+												  widthAtZoom: { OfflineMapPalette.roadCasingWidth(role, zoom: $0) })
+				))
+			}
+			// Fill pass — white centerlines (light) / lighter-than-land gray (dark).
+			for role in roadClasses {
+				guard let fill = OfflineMapPalette.roadFill(role, dark: dark), let multi = roadMultiPolyline(role, structure) else { continue }
+				result.append(ClusterMapOverlay(
+					id: "\(prefix)-fill-\(role)",
+					overlay: multi,
+					style: ClusterMapOverlayStyle(strokeUIColor: fill, fillUIColor: nil, lineCap: .round, level: .aboveRoads,
+												  widthAtZoom: { OfflineMapPalette.roadWidth(role, zoom: $0) })
+				))
+			}
 		}
 		// Rail + admin boundaries (single dashed stroke, both modes).
 		for role in [OfflineFeatureRole.rail, .boundary] {
