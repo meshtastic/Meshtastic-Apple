@@ -133,7 +133,7 @@ struct NodeMapSwiftUI: View {
 			.onChange(of: showConvexHull) {
 				refreshPositions()
 			}
-			.safeAreaInset(edge: .bottom, alignment: .trailing) {
+			.overlay(alignment: .bottomTrailing) {
 				controlButtons
 			}
 			.onDisappear {
@@ -177,7 +177,9 @@ struct NodeMapSwiftUI: View {
 				LookAroundPreview(initialScene: scene)
 					.frame(height: horizontalSizeClass == .regular ? 400 : 250)
 					.clipShape(RoundedRectangle(cornerRadius: 12))
-					.padding(.horizontal, 20)
+					.padding(.leading, 20)
+					// Clear of the control bar on the trailing side.
+					.padding(.trailing, 72)
 			}
 		}
 	}
@@ -188,13 +190,15 @@ struct NodeMapSwiftUI: View {
 				PositionAltitudeChart(node: node)
 					.frame(height: horizontalSizeClass == .regular ? 400 : 250)
 					.clipShape(RoundedRectangle(cornerRadius: 12))
-					.padding(.horizontal, 20)
+					.padding(.leading, 20)
+					// Clear of the control bar on the trailing side.
+					.padding(.trailing, 72)
 			}
 		}
 	}
 
 	private var controlButtons: some View {
-		HStack {
+		MapControlBar {
 			Button(action: {
 				withAnimation {
 					isShowingLegend = !isShowingLegend
@@ -204,7 +208,6 @@ struct NodeMapSwiftUI: View {
 			}
 			.accessibilityLabel(isShowingLegend ? Text("Hide legend") : Text("Show legend"))
 			.accessibilityHint(Text("Toggles the map legend"))
-			.glassButtonStyle()
 
 			Button(action: {
 				withAnimation {
@@ -214,7 +217,6 @@ struct NodeMapSwiftUI: View {
 				Image(systemName: isEditingSettings ? "info.circle.fill" : "info.circle")
 			}
 			.accessibilityLabel(isEditingSettings ? Text("Hide map settings") : Text("Show map settings"))
-			.glassButtonStyle()
 
 			if scene != nil {
 				Button(action: {
@@ -226,7 +228,6 @@ struct NodeMapSwiftUI: View {
 					Image(systemName: isLookingAround ? "binoculars.fill" : "binoculars")
 				}
 				.accessibilityLabel(isLookingAround ? Text("Exit look around") : Text("Look around"))
-				.glassButtonStyle()
 			}
 
 			if totalPositionCount > 1 {
@@ -239,11 +240,10 @@ struct NodeMapSwiftUI: View {
 					Image(systemName: isShowingAltitude ? "mountain.2.fill" : "mountain.2")
 				}
 				.accessibilityLabel(isShowingAltitude ? Text("Hide altitude chart") : Text("Show altitude chart"))
-				.glassButtonStyle()
 			}
 		}
-		.controlSize(.regular)
-		.padding(5)
+		.padding(.trailing, 12)
+		.padding(.bottom, 12)
 	}
 
 	private func updateMapStyle(for layer: MapLayer) {
