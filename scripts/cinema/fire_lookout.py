@@ -850,9 +850,9 @@ def build():
     lantern()
     sill_things()
     build_boards()
-    # On the shuttered front bays, high enough that its bottom clears the sill shelf from the seat.
+    # On the shuttered front bays, low enough that the tab strip above it stays under the ceiling.
     # Narrower than the tent's since the wall is closer; it covers about the same part of the view.
-    screen_anchor((0, HALF - WALL - 0.03, EYE_HEIGHT + 0.42), (math.pi / 2, 0, 0), width=2.0)
+    screen_anchor((0, HALF - WALL - 0.03, EYE_HEIGHT + 0.34), (math.pi / 2, 0, 0), width=2.0)
 
 
 # Kiara 8 at sunset, turned so the sun is behind the viewer's right shoulder, lighting the cab
