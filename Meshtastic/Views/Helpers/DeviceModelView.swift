@@ -499,7 +499,14 @@ final class DeviceModelStage {
 	/// The model's center, in its own space.
 	private var modelCenter: SIMD3<Float> = .zero
 	/// Half the view's width and height at the model, in scene units, set by the view.
-	var viewHalfExtents: SIMD2<Float> = [1, 1]
+	var viewHalfExtents: SIMD2<Float> = [1, 1] {
+		didSet { if viewHalfExtents != oldValue { refit() } }
+	}
+	/// The level the model is fitted to, kept as the view changes size, until a drag or pinch
+	/// takes over.
+	private var fitLevel: ZoomLevel?
+	/// The whole model, in its own space.
+	private var modelBounds: BoundingBox
 	private var zoomStart: Float = 1
 	private var userTookOver = false
 	private(set) var isDragging = false
@@ -539,11 +546,11 @@ final class DeviceModelStage {
 	/// is placed to fit 1, and meters on visionOS, where the view sets it from its size.
 	#if os(visionOS)
 	var fitRadius: Float = 0.07 {
-		didSet { if fitRadius != oldValue { applyScale() } }
+		didSet { if fitRadius != oldValue { refit() } }
 	}
 	#else
 	var fitRadius: Float = 1 {
-		didSet { if fitRadius != oldValue { applyScale() } }
+		didSet { if fitRadius != oldValue { refit() } }
 	}
 	#endif
 
@@ -552,9 +559,11 @@ final class DeviceModelStage {
 		if facingFront {
 			yaw = 0
 			pitch = 0
+			fitLevel = .model
 		}
 		source = model
 		let bounds = model.visualBounds(relativeTo: nil)
+		modelBounds = bounds
 		// Turning about Y sweeps the footprint's diagonal, so that and the height are what has
 		// to fit; a full bounding sphere leaves tall, thin devices looking small.
 		let extents = bounds.extents
@@ -677,6 +686,7 @@ final class DeviceModelStage {
 	func beginDrag() {
 		isDragging = true
 		userTookOver = true
+		fitLevel = nil
 		dragStartYaw = yaw
 		dragStartPitch = pitch
 	}
@@ -694,19 +704,9 @@ final class DeviceModelStage {
 
 	func zoom(by magnification: Float) {
 		userTookOver = true
+		fitLevel = nil
 		zoomFactor = min(max(zoomStart * magnification, 0.6), max(2.2, zoomStart))
 		applyScale()
-	}
-
-	/// Square on to the viewer again, at the starting size.
-	func faceFront() {
-		yaw = 0
-		pitch = 0
-		zoomFactor = 1
-		zoomStart = 1
-		focus = .zero
-		applyScale()
-		applyOrientation()
 	}
 
 	func endZoom() {
@@ -785,10 +785,13 @@ final class DeviceModelStage {
 	}()
 
 	/// Faces the model square on and zooms to `level`: the part fills as much of the view as fits.
+	/// The whole model is fitted by its own shape rather than the sphere it turns in, so a wide
+	/// board fills a narrow view instead of running off its sides.
 	func zoom(to level: ZoomLevel) {
+		fitLevel = level
 		switch level {
 		case .model:
-			faceFront()
+			zoom(toFit: modelBounds)
 		case .body:
 			if let bodyBounds { zoom(toFit: bodyBounds) }
 		case .screen:
@@ -818,6 +821,15 @@ final class DeviceModelStage {
 		focus = [center.x, center.y]
 		applyScale()
 		applyOrientation()
+	}
+
+	/// Fits the model to its level again after the view changes size, or just rescales it.
+	private func refit() {
+		if let fitLevel {
+			zoom(to: fitLevel)
+		} else {
+			applyScale()
+		}
 	}
 
 	private func applyScale() {
