@@ -27,6 +27,23 @@ final class HillshadeTileOverlay: MKTileOverlay {
 	/// terrain download instead of on every map session. Nil disables the cache.
 	private let cacheDirectory: URL?
 
+	/// Zooms past the terrain's own data that still shade at full strength. Global terrain stops at
+	/// zoom 12, about 30 m a sample; one zoom on, the stretched data still reads as relief.
+	static let overzoomAllowance = 1
+	/// Zooms after that over which the shading fades to nothing. Further in it isn't drawn: it would
+	/// be smooth slopes invented between samples. Contours still draw.
+	static let fadeZooms = 1
+
+	/// How strongly to shade a tile at `zoom` when the data stops at `dataMaxZoom`: 1 up to the
+	/// allowance, then stepping down to 0.
+	static func strength(zoom: Int, dataMaxZoom: Int) -> Double {
+		let full = dataMaxZoom + overzoomAllowance
+		guard zoom > full else { return 1 }
+		let past = zoom - full
+		guard past <= fadeZooms else { return 0 }
+		return 1 - Double(past) / Double(fadeZooms + 1)
+	}
+
 	/// Sun position for Horn shading: standard cartographic northwest light.
 	private static let azimuthRadians = 315.0 * Double.pi / 180
 	private static let altitudeRadians = 45.0 * Double.pi / 180
@@ -52,6 +69,16 @@ final class HillshadeTileOverlay: MKTileOverlay {
 				result(cached, nil)
 				return
 			}
+			// Past the data's own zoom the shading fades out, and is skipped once it's gone.
+			guard let dataMaxZoom = await store.dataMaxZoom(z: path.z, x: path.x, y: path.y) else {
+				result(Self.emptyTile, nil)
+				return
+			}
+			let strength = Self.strength(zoom: path.z, dataMaxZoom: dataMaxZoom)
+			guard strength > 0 else {
+				result(Self.emptyTile, nil)
+				return
+			}
 			guard let tile = await store.elevationTile(z: path.z, x: path.x, y: path.y, margin: 2),
 				  let coverage = await store.coverage(z: path.z, x: path.x, y: path.y) else {
 				// Outside coverage: an empty (fully transparent) tile, not an error —
@@ -62,7 +89,7 @@ final class HillshadeTileOverlay: MKTileOverlay {
 			}
 			let metersPerSample = TerrainStore.metersPerSample(z: path.z, y: path.y, size: tile.size)
 			let clip = Self.clipRect(tile: tile, path: path, coverage: coverage)
-			let png = Self.renderShadow(tile: tile, metersPerSample: metersPerSample, maxAlpha: alphaCap, clip: clip)
+			let png = Self.renderShadow(tile: tile, metersPerSample: metersPerSample, maxAlpha: alphaCap * CGFloat(strength), clip: clip)
 			if let png, let cacheURL {
 				try? png.write(to: cacheURL, options: .atomic)
 			}

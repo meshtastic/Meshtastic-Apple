@@ -72,6 +72,17 @@ actor TerrainStore {
 		sources.map(\.maxZoom).max()
 	}
 
+	/// The deepest zoom with real elevation data for a tile: the regional archive's when it reaches
+	/// this tile, else the global one's. Nil when no region covers the tile. Past it, tiles are the
+	/// data stretched (see `elevationTile`).
+	func dataMaxZoom(z: Int, x: Int, y: Int) -> Int? {
+		guard let open = source(covering: z, x: x, y: y) else { return nil }
+		if let regional = open.regional, Self.intersects(regional.header.bounds, Self.tileBounds(z: z, x: x, y: y)) {
+			return Int(regional.header.maxZoom)
+		}
+		return Int(open.archive.header.maxZoom)
+	}
+
 	/// Whether any configured region covers the given tile at all.
 	func covers(z: Int, x: Int, y: Int) -> Bool {
 		source(covering: z, x: x, y: y) != nil
@@ -287,6 +298,11 @@ actor TerrainStore {
 			return data
 		}
 		return open.archive.tileData(z: UInt8(z), x: UInt32(x), y: UInt32(y))
+	}
+
+	/// Whether two boxes overlap.
+	static func intersects(_ a: GeoBounds, _ b: GeoBounds) -> Bool {
+		a.minLon < b.maxLon && a.maxLon > b.minLon && a.minLat < b.maxLat && a.maxLat > b.minLat
 	}
 
 	/// Whether `bounds` holds all of `tile`.
