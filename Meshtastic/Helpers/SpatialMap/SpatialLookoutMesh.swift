@@ -84,18 +84,33 @@ enum SpatialLookout {
 	/// room.
 	static let frontHeading = 156.0
 
-	/// Where the cinema keeps how many eighth turns clockwise the lookout is turned.
-	static let turnsKey = "cinemaLookoutTurns"
+	/// How many steps the lookout turns in, all the way round.
+	static let turnSteps = 16
 
-	/// The bearing the cab faces after `turns` eighth turns clockwise.
-	static func heading(turns: Int) -> Double {
-		(frontHeading + 45 * Double((turns % 8 + 8) % 8)).truncatingRemainder(dividingBy: 360)
+	/// Where the cinema keeps how many sixteenth turns clockwise the lookout is turned.
+	static let turnsKey = "cinemaLookoutSixteenthTurns"
+	/// Where it kept them when the lookout turned in eighths.
+	private static let eighthTurnsKey = "cinemaLookoutTurns"
+
+	/// Carries a turn saved in eighths over to sixteenths, once.
+	static func migrateEighthTurns(_ defaults: UserDefaults = .standard) {
+		guard let eighths = defaults.object(forKey: eighthTurnsKey) as? Int else { return }
+		if defaults.object(forKey: turnsKey) == nil {
+			defaults.set(eighths * 2, forKey: turnsKey)
+		}
+		defaults.removeObject(forKey: eighthTurnsKey)
 	}
 
-	/// The eighth turns that face the cab nearest to `bearing`, 0..<8.
+	/// The bearing the cab faces after `turns` sixteenth turns clockwise.
+	static func heading(turns: Int) -> Double {
+		let step = 360 / Double(turnSteps)
+		return (frontHeading + step * Double((turns % turnSteps + turnSteps) % turnSteps)).truncatingRemainder(dividingBy: 360)
+	}
+
+	/// The sixteenth turns that face the cab nearest to `bearing`, 0..<16.
 	static func turns(nearest bearing: Double) -> Int {
-		let steps = Int(((bearing - frontHeading) / 45).rounded())
-		return (steps % 8 + 8) % 8
+		let steps = Int(((bearing - frontHeading) / (360 / Double(turnSteps))).rounded())
+		return (steps % turnSteps + turnSteps) % turnSteps
 	}
 
 	/// Turn about y that points the model's front (+z) along `heading` on the map, where x runs
@@ -106,17 +121,25 @@ enum SpatialLookout {
 
 	static var yaw: Float { yaw() }
 
-	/// Which way the cab faces, to the nearest of eight compass points.
+	/// Which way the cab faces, to the nearest of sixteen compass points.
 	static func facing(heading: Double) -> String {
-		switch Int(((heading + 22.5).truncatingRemainder(dividingBy: 360) + 360).truncatingRemainder(dividingBy: 360) / 45) {
+		switch Int(((heading + 11.25).truncatingRemainder(dividingBy: 360) + 360).truncatingRemainder(dividingBy: 360) / 22.5) {
 		case 0: String(localized: "Faces north", comment: "Cinema: which way the fire lookout's cab faces")
-		case 1: String(localized: "Faces northeast", comment: "Cinema: which way the fire lookout's cab faces")
-		case 2: String(localized: "Faces east", comment: "Cinema: which way the fire lookout's cab faces")
-		case 3: String(localized: "Faces southeast", comment: "Cinema: which way the fire lookout's cab faces")
-		case 4: String(localized: "Faces south", comment: "Cinema: which way the fire lookout's cab faces")
-		case 5: String(localized: "Faces southwest", comment: "Cinema: which way the fire lookout's cab faces")
-		case 6: String(localized: "Faces west", comment: "Cinema: which way the fire lookout's cab faces")
-		default: String(localized: "Faces northwest", comment: "Cinema: which way the fire lookout's cab faces")
+		case 1: String(localized: "Faces north-northeast", comment: "Cinema: which way the fire lookout's cab faces")
+		case 2: String(localized: "Faces northeast", comment: "Cinema: which way the fire lookout's cab faces")
+		case 3: String(localized: "Faces east-northeast", comment: "Cinema: which way the fire lookout's cab faces")
+		case 4: String(localized: "Faces east", comment: "Cinema: which way the fire lookout's cab faces")
+		case 5: String(localized: "Faces east-southeast", comment: "Cinema: which way the fire lookout's cab faces")
+		case 6: String(localized: "Faces southeast", comment: "Cinema: which way the fire lookout's cab faces")
+		case 7: String(localized: "Faces south-southeast", comment: "Cinema: which way the fire lookout's cab faces")
+		case 8: String(localized: "Faces south", comment: "Cinema: which way the fire lookout's cab faces")
+		case 9: String(localized: "Faces south-southwest", comment: "Cinema: which way the fire lookout's cab faces")
+		case 10: String(localized: "Faces southwest", comment: "Cinema: which way the fire lookout's cab faces")
+		case 11: String(localized: "Faces west-southwest", comment: "Cinema: which way the fire lookout's cab faces")
+		case 12: String(localized: "Faces west", comment: "Cinema: which way the fire lookout's cab faces")
+		case 13: String(localized: "Faces west-northwest", comment: "Cinema: which way the fire lookout's cab faces")
+		case 14: String(localized: "Faces northwest", comment: "Cinema: which way the fire lookout's cab faces")
+		default: String(localized: "Faces north-northwest", comment: "Cinema: which way the fire lookout's cab faces")
 		}
 	}
 

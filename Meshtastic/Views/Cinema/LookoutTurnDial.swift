@@ -7,15 +7,15 @@
 #if os(visionOS)
 import SwiftUI
 
-/// A compass dial on the cinema panel for which way the fire lookout's cab faces, in eighth turns.
-/// Tap one of its eight marks or drag round it; the turn is made when you let go, so the terrain
+/// A compass dial on the cinema panel for which way the fire lookout's cab faces, in sixteenth turns.
+/// Tap one of its marks or drag round it; the turn is made when you let go, so the terrain
 /// isn't rebuilt for every mark passed on the way.
 struct LookoutTurnDial: View {
 	@Binding var turns: Int
 	/// Where a drag is pointing, before it's let go.
 	@State private var dragTurns: Int?
 
-	private static let size: CGFloat = 140
+	private static let size: CGFloat = 200
 
 	var body: some View {
 		let shown = dragTurns ?? turns
@@ -33,8 +33,8 @@ struct LookoutTurnDial: View {
 		.accessibilityValue(Text(verbatim: SpatialLookout.facing(heading: heading)))
 		.accessibilityAdjustableAction { direction in
 			switch direction {
-			case .increment: turns = (turns + 1) % 8
-			case .decrement: turns = (turns + 7) % 8
+			case .increment: turns = (turns + 1) % SpatialLookout.turnSteps
+			case .decrement: turns = (turns + SpatialLookout.turnSteps - 1) % SpatialLookout.turnSteps
 			@unknown default: break
 			}
 		}
@@ -47,18 +47,20 @@ struct LookoutTurnDial: View {
 				.fill(.quaternary)
 			ForEach(Array(["N", "E", "S", "W"].enumerated()), id: \.offset) { index, letter in
 				Text(verbatim: letter)
-					.font(.caption.weight(.semibold))
+					.font(.callout.weight(.semibold))
 					.foregroundStyle(.secondary)
 					.offset(Self.offset(bearing: Double(index) * 90, radius: radius * 0.62))
 			}
-			ForEach(0..<8, id: \.self) { mark in
+			ForEach(0..<SpatialLookout.turnSteps, id: \.self) { mark in
+				// Every other mark is an eighth turn, drawn larger than the sixteenths between.
+				let size: CGFloat = mark == shown ? 18 : mark.isMultiple(of: 2) ? 11 : 7
 				Circle()
 					.fill(mark == shown ? Color.accentColor : Color.secondary.opacity(0.6))
-					.frame(width: mark == shown ? 14 : 9, height: mark == shown ? 14 : 9)
+					.frame(width: size, height: size)
 					.offset(Self.offset(bearing: SpatialLookout.heading(turns: mark), radius: radius * 0.86))
 			}
 			Image(systemName: "location.north.fill")
-				.font(.system(size: 26))
+				.font(.system(size: 38))
 				.foregroundStyle(Color.accentColor)
 				.rotationEffect(.degrees(heading))
 		}
