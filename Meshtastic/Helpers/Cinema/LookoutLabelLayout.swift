@@ -14,10 +14,11 @@ extension LookoutTerrain {
 	static let stemDegrees = LookoutMarkerGrouping.stemDegrees
 	static let lowestMarkerDegrees = LookoutMarkerGrouping.lowestMarkerDegrees
 
-	/// One marker out the windows: a node, or the nodes whose markers would overlap, nearest first.
-	/// The marker stands over the nearest of them. `azimuth` is degrees clockwise from the cab's
-	/// front, `elevation` the nearest node's direction above level, `center` the marker's middle,
-	/// and `depth` how far out it is drawn.
+	/// One marker out the windows: a node, or, where there's no room, the nodes whose markers would
+	/// cover each other, nearest first. The marker stands over the nearest of them. `azimuth` is
+	/// degrees clockwise from the cab's front, `elevation` the nearest node's direction above level,
+	/// `center` the marker's middle, raised to clear its neighbors, and `depth` how far out it is
+	/// drawn.
 	struct MarkerSpot {
 		let labels: [LookoutLabel]
 		let azimuth: Double
@@ -27,27 +28,26 @@ extension LookoutTerrain {
 
 		var lead: LookoutLabel { labels[0] }
 		/// Where the stem meets the ground, or the bottom of the view for a node below it.
-		var stemFoot: Double { center - markerWidthDegrees / 2 - stemDegrees }
+		var stemFoot: Double { LookoutMarkerGrouping.stemFoot(elevation: elevation) }
 	}
 
-	/// Markers for `labels`, which come nearest first, with nodes that would overlap sharing one,
-	/// seen from a cab facing `heading`.
+	/// Markers for `labels`, which come nearest first, seen from a cab facing `heading`.
 	static func markers(for labels: [LookoutLabel], heading: Double = frontHeading) -> [MarkerSpot] {
 		let points = labels.map { label in
 			let azimuth = (label.bearing - heading + 360).truncatingRemainder(dividingBy: 360)
 			let drop = label.distance * label.distance / (2 * earthRadius)
 			return (azimuth: azimuth, elevation: atan2(label.rise - drop, label.distance) * 180 / .pi)
 		}
-		return LookoutMarkerGrouping.groups(points).map { group in
-			let lead = points[group[0]]
+		return LookoutMarkerGrouping.markers(points).map { marker in
+			let lead = points[marker.members[0]]
 			// Just in front of the ground at the nearest node's distance, so nearer ridges hide it
 			// as they would, and whatever is behind it doesn't.
 			return MarkerSpot(
-				labels: group.map { labels[$0] },
+				labels: marker.members.map { labels[$0] },
 				azimuth: lead.azimuth,
 				elevation: lead.elevation,
-				center: LookoutMarkerGrouping.center(elevation: lead.elevation),
-				depth: depth(labels[group[0]].distance) - 3
+				center: marker.center,
+				depth: depth(labels[marker.members[0]].distance) - 3
 			)
 		}
 	}

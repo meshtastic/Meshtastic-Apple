@@ -85,8 +85,8 @@
         "keywords": [
             "screen",
             "map",
-            "app",
             "node",
+            "app",
             "tent",
             "radio",
             "open",
@@ -114,7 +114,7 @@
             "view",
             "under"
         ],
-        "charCount": 5006
+        "charCount": 5095
     },
     {
         "id": "discovery",
@@ -788,10 +788,10 @@
             "map",
             "settings",
             "now",
-            "nodes",
             "new",
             "apple",
             "app",
+            "nodes",
             "node",
             "messages",
             "mesh",
@@ -800,10 +800,10 @@
             "vision",
             "pro",
             "firmware",
-            "one",
             "oct",
             "screen",
             "radios",
+            "one",
             "device",
             "radio",
             "page",
@@ -816,7 +816,7 @@
             "live",
             "list"
         ],
-        "charCount": 11139
+        "charCount": 11154
     },
     {
         "id": "adding-features",
