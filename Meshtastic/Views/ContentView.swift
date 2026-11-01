@@ -54,12 +54,19 @@ struct ContentView: View {
 					DeviceOnboarding()
 				}
 			)
+			// The covers get their environment objects by hand. On Mac Catalyst the cover's
+			// content can be built without them, and the first @EnvironmentObject read trapped
+			// in the firmware gate's header on every launch with an old-firmware radio (#2846).
 			.fullScreenCover(isPresented: $isShowingLockdownGate) {
 				LockdownSheet()
 					.trackScreen(.lockdown)
+					.environmentObject(accessoryManager)
+					.environmentObject(lockdown)
 			}
 			.fullScreenCover(isPresented: $isShowingFirmwareGate) {
 				FirmwareUpdateGate()
+					.environmentObject(accessoryManager)
+					.environmentObject(MeshtasticAPI.shared)
 			}
 			.onAppear {
 				// Trust the first-launch flag only when this process can actually read it. Launched
