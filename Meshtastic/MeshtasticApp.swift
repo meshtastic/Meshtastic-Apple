@@ -55,6 +55,9 @@ struct MeshtasticAppleApp: App {
 #endif
 
 		let appState = AppState()
+#if os(visionOS)
+		SpatialLookout.migrateEighthTurns()
+#endif
 
 		if Self.shouldInitializeAppServices {
 			// Initialize Datadog

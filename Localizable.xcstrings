@@ -51928,7 +51928,19 @@
     "Faces east" : {
       "comment" : "Cinema: which way the fire lookout's cab faces"
     },
+    "Faces east-northeast" : {
+      "comment" : "Cinema: which way the fire lookout's cab faces"
+    },
+    "Faces east-southeast" : {
+      "comment" : "Cinema: which way the fire lookout's cab faces"
+    },
     "Faces north" : {
+      "comment" : "Cinema: which way the fire lookout's cab faces"
+    },
+    "Faces north-northeast" : {
+      "comment" : "Cinema: which way the fire lookout's cab faces"
+    },
+    "Faces north-northwest" : {
       "comment" : "Cinema: which way the fire lookout's cab faces"
     },
     "Faces northeast" : {
@@ -51940,6 +51952,12 @@
     "Faces south" : {
       "comment" : "Cinema: which way the fire lookout's cab faces"
     },
+    "Faces south-southeast" : {
+      "comment" : "Cinema: which way the fire lookout's cab faces"
+    },
+    "Faces south-southwest" : {
+      "comment" : "Cinema: which way the fire lookout's cab faces"
+    },
     "Faces southeast" : {
       "comment" : "Cinema: which way the fire lookout's cab faces"
     },
@@ -51947,6 +51965,12 @@
       "comment" : "Cinema: which way the fire lookout's cab faces"
     },
     "Faces west" : {
+      "comment" : "Cinema: which way the fire lookout's cab faces"
+    },
+    "Faces west-northwest" : {
+      "comment" : "Cinema: which way the fire lookout's cab faces"
+    },
+    "Faces west-southwest" : {
       "comment" : "Cinema: which way the fire lookout's cab faces"
     },
     "Factory Erase" : {
