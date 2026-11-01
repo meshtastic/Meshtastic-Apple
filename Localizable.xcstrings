@@ -129202,6 +129202,12 @@
         }
       }
     },
+    "Shade Valleys" : {
+      "comment" : "Map settings: darken valley floors in the hillshade by how little sky they see"
+    },
+    "Darkens valley floors and gorges, which see less of the sky. Shading takes longer to draw." : {
+      "comment" : "Map settings: explains the Shade Valleys hillshade option"
+    },
     "share" : {
       "comment" : "Search keyword",
       "localizations" : {
