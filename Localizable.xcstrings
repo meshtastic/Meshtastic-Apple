@@ -158870,6 +158870,9 @@
         }
       }
     },
+    "Zoom" : {
+      "comment" : "Spatial map: slider setting how far the map is zoomed in, from the whole mesh to the most detail"
+    },
     "Zoom in" : {
       "comment" : "Spatial map: show a smaller area on the table in more detail",
       "localizations" : {

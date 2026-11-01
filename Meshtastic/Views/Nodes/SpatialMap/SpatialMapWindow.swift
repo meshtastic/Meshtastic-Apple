@@ -477,38 +477,7 @@ struct SpatialMapOrnament: View {
 
 			terrainDownload
 
-			Button {
-				model.setZoom(model.clampedZoom(model.zoom / 2))
-			} label: {
-				Image(systemName: "minus.magnifyingglass")
-			}
-			.disabled(model.zoom <= 1.01)
-			.help(String(localized: "Zoom out", comment: "Spatial map: show a wider area on the table"))
-			.accessibilityLabel(String(localized: "Zoom out", comment: "Spatial map: show a wider area on the table"))
-			Button {
-				model.setZoom(model.clampedZoom(model.zoom * 2))
-			} label: {
-				Image(systemName: "plus.magnifyingglass")
-			}
-			.disabled(model.clampedZoom(model.zoom * 2) <= model.zoom + 0.01)
-			.help(String(localized: "Zoom in", comment: "Spatial map: show a smaller area on the table in more detail"))
-			.accessibilityLabel(String(localized: "Zoom in", comment: "Spatial map: show a smaller area on the table in more detail"))
-			if model.zoom > 1.01 {
-				Button {
-					model.resetZoom()
-				} label: {
-					Label {
-						Text(verbatim: "\(model.zoom.formatted(.number.precision(.fractionLength(0...1))))×")
-					} icon: {
-						Image(systemName: "plus.magnifyingglass")
-					}
-					.labelStyle(.titleAndIcon)
-					.fixedSize()
-				}
-				.help(String(localized: "Reset zoom", comment: "Spatial map: button showing how far the map is zoomed in; tapping it zooms back out to the whole mesh"))
-				.accessibilityLabel(String(localized: "Reset zoom", comment: "Spatial map: button showing how far the map is zoomed in; tapping it zooms back out to the whole mesh"))
-				.accessibilityValue(Text(verbatim: "\(model.zoom.formatted(.number.precision(.fractionLength(0...1))))×"))
-			}
+			SpatialZoomSlider(model: model)
 
 			Divider().frame(height: 20)
 
@@ -689,6 +658,56 @@ struct SpatialMapOrnament: View {
 		let size = "\(Measurement(value: area.width, unit: UnitLength.meters).formatted(style)) × \(Measurement(value: area.height, unit: UnitLength.meters).formatted(style))"
 		let bytes = ByteCountFormatter.string(fromByteCount: SpatialTerrainAutoDecision.estimatedBytes(target), countStyle: .file)
 		return String(localized: "Downloads about \(bytes) of street map and elevation data for a \(size) area around the mesh.", comment: "Spatial map: offline map download confirmation; the arguments are the download size, e.g. 40 MB, and the area's width × height, e.g. 98 km × 104 km")
+	}
+}
+
+/// Zoom as one slider: the whole mesh at the left end, so there is no reset button to hit by
+/// mistake. Each equal stretch of the slider doubles the zoom, and the terrain is built when the
+/// slider is let go.
+struct SpatialZoomSlider: View {
+	let model: SpatialMapModel
+	/// Where the slider is while it's dragged, as the power of two of the zoom.
+	@State private var dragging: Double?
+	@State private var isEditing = false
+
+	private var top: Double { log2(max(model.maximumZoom, 1)) }
+
+	var body: some View {
+		let zoom = dragging.map { pow(2, $0) } ?? model.zoom
+		HStack(spacing: 8) {
+			Slider(
+				// VoiceOver moves the slider without a drag, so its steps zoom straight away.
+				value: Binding(get: { dragging ?? log2(max(model.zoom, 1)) }, set: { isEditing ? (dragging = $0) : apply($0) }),
+				in: 0...max(top, 0.01)
+			) {
+				Text("Zoom", comment: "Spatial map: slider setting how far the map is zoomed in, from the whole mesh to the most detail")
+			} minimumValueLabel: {
+				Image(systemName: "minus.magnifyingglass")
+					.accessibilityLabel(String(localized: "Zoom out", comment: "Spatial map: show a wider area on the table"))
+			} maximumValueLabel: {
+				Image(systemName: "plus.magnifyingglass")
+					.accessibilityLabel(String(localized: "Zoom in", comment: "Spatial map: show a smaller area on the table in more detail"))
+			} onEditingChanged: { editing in
+				isEditing = editing
+				guard !editing, let dragging else { return }
+				apply(dragging)
+				self.dragging = nil
+			}
+			.frame(width: 180)
+			.disabled(top < 0.01)
+			.accessibilityValue(Text(verbatim: "\(zoom.formatted(.number.precision(.fractionLength(0...1))))×"))
+			Text(verbatim: "\(zoom.formatted(.number.precision(.fractionLength(0...1))))×")
+				.font(.caption)
+				.monospacedDigit()
+				.fixedSize()
+				.frame(minWidth: 36, alignment: .leading)
+		}
+	}
+
+	private func apply(_ position: Double) {
+		// Close to the left end is the whole mesh.
+		let zoom = pow(2, position)
+		model.setZoom(zoom < 1.05 ? 1 : zoom)
 	}
 }
 
