@@ -85,12 +85,7 @@ actor TerrainStore {
 
 	/// Lon/lat box of a Web-Mercator tile.
 	static func tileBounds(z: Int, x: Int, y: Int) -> GeoBounds {
-		let n = Double(1 << z)
-		let minLon = Double(x) / n * 360 - 180
-		let maxLon = Double(x + 1) / n * 360 - 180
-		let maxLat = atan(sinh(.pi * (1 - 2 * Double(y) / n))) * 180 / .pi
-		let minLat = atan(sinh(.pi * (1 - 2 * Double(y + 1) / n))) * 180 / .pi
-		return GeoBounds(minLon: minLon, minLat: minLat, maxLon: maxLon, maxLat: maxLat)
+		GeoBounds.tile(z: z, x: x, y: y)
 	}
 
 	/// The elevation grid for a map tile at any zoom, with `margin` edge pixels

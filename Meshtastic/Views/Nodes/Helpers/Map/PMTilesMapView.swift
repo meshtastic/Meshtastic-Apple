@@ -583,11 +583,13 @@ extension OfflineVectorTileProvider {
 		return polys
 	}
 
+	// The TV target doesn't build the spatial map, where SpatialBuildingFootprint lives.
+	#if !os(tvOS)
 	/// The building outlines in one tile with their heights in meters, each cut to the tile so a
 	/// building over a tile edge isn't drawn twice. Holes are left out. The spatial map raises these.
 	nonisolated static func buildings(tile: TileID, source: OfflineTileSource) -> [SpatialBuildingFootprint] {
 		guard let vector = parse(tile: tile, source: source) else { return [] }
-		let tileBounds = TerrainStore.tileBounds(z: tile.z, x: tile.x, y: tile.y)
+		let tileBounds = GeoBounds.tile(z: tile.z, x: tile.x, y: tile.y)
 		var result: [SpatialBuildingFootprint] = []
 		for feature in vector.features(for: "buildings") {
 			let height = SpatialBuildingFootprint.meters(feature.properties["height"])
@@ -611,6 +613,7 @@ extension OfflineVectorTileProvider {
 		}
 		return result
 	}
+	#endif
 
 	/// The water layer carries every polygonal water body (ocean, lake, dock, reef, basin…).
 	/// With `tile`, each polygon records its feature for deduplication across tiles.
@@ -829,7 +832,7 @@ extension OfflineVectorTileProvider {
 	}
 
 	nonisolated private static func appendPolygons(_ geometry: GISTools.GeoJsonGeometry, role: OfflineFeatureRole, bounds: GeoBounds?, into polys: inout [OfflineMapPolygon], id: () -> String, source: FeatureSource? = nil) {
-		let tileBounds = source.map { TerrainStore.tileBounds(z: $0.tile.z, x: $0.tile.x, y: $0.tile.y) }
+		let tileBounds = source.map { GeoBounds.tile(z: $0.tile.z, x: $0.tile.x, y: $0.tile.y) }
 		var part = 0
 		func prepared(_ ring: [GISTools.Coordinate3D]) -> [CLLocationCoordinate2D]? {
 			var coords = ring.map(coord)
