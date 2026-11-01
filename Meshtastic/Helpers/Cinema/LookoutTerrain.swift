@@ -57,9 +57,9 @@ enum LookoutTerrain {
 	static let frontHeading = SpatialLookout.frontHeading
 	/// Earth's radius with the usual allowance for refraction: far ridges sit below a flat horizon.
 	static let earthRadius = 7_450_000.0
-	/// The cab's floor stands this far above the summit, on a tower taller than most real ones
-	/// (under 30 m), so the view looks down onto the ground around the summit.
-	static let cabHeight = 40.0
+	/// The cab's floor stands this far above the summit, on a tower a little taller than most real
+	/// ones (under 30 m), so the view looks down onto the ground around the summit.
+	static let cabHeight = 34.0
 	/// The seated eye above the cab's floor.
 	static let eyeHeight = 1.15
 

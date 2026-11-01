@@ -10,11 +10,10 @@
 #    Blender -b -P fire_lookout.py -- --out out/fire_lookout.png --width 4096 --samples 160
 #
 #  The cab is a square room with a low wall all round, windows above it on every side, a wide sill
-#  shelf under them, and a catwalk with a railing outside. The storm shutters are propped open
-#  over the windows except where the app needs a plain surface: the two middle bays in front are
-#  shuttered for the screen, two on the left behind the whiteboards the app draws the team roster
-#  and the nodes' status messages on, and one on the right behind the print it draws the latest
-#  trace route on. The
+#  shelf under them, and a catwalk with a railing outside. The storm shutters are all propped open
+#  as awnings, above the line of sight through the glass, so the view shows round the screen in
+#  front, the two whiteboards on the left the app draws the team roster and the nodes' status
+#  messages on, and the print on the right it draws the latest trace route on. The
 #  fire finder stands to the right, the cot is along the back wall with the stove in the back-left
 #  corner and the door back-right, and a lantern hangs from the ceiling. The mountains and the
 #  sunset are the Kiara 8 HDRI from Poly Haven.
@@ -102,9 +101,6 @@ def bay_center(index):
     return -HALF + (index + 0.5) * BAY
 
 
-# Bays with their shutters closed, by side: the screen's two in front, and one on each side
-# behind a board.
-CLOSED = {"front": (1, 2), "left": (1, 2), "right": (1,), "back": ()}
 DOOR = ("back", 0)
 ROSTER = ("left", 2)
 STATUS = ("left", 1)
@@ -188,18 +184,17 @@ def build_cab():
     sill = material("Sill", (0.5, 0.36, 0.2), 0.5)
     glass = glass_material()
     shutter_out = material("ShutterOut", (0.22, 0.26, 0.2), 0.7)
-    shutter_in = material("ShutterIn", (0.44, 0.34, 0.2), 0.8)
     rail = material("Rail", (0.24, 0.26, 0.2), 0.7)
 
     size = 2 * (HALF + CATWALK)
     box("Deck", (size, size, 0.06), (0, 0, -0.03), deck)
     box("Floor", (2 * HALF, 2 * HALF, 0.02), (0, 0, 0.0), floor)
     box("Ceiling", (2 * HALF + 0.3, 2 * HALF + 0.3, 0.05), (0, 0, CEILING + 0.025), ceiling)
-    # Ceiling joists, and the eaves outside over the catwalk.
+    # Ceiling joists, and short eaves outside: the shutters are the awnings over the catwalk.
     joist = material("Joist", (0.5, 0.38, 0.22), 0.55)
     for x in (-1.5 * BAY, -0.5 * BAY, 0.5 * BAY, 1.5 * BAY):
         box("Joist", (0.08, 2 * HALF + 0.3, 0.12), (x, 0, CEILING - 0.06), joist)
-    box("Eave", (size + 0.2, size + 0.2, 0.08), (0, 0, CEILING + 0.09), joist)
+    box("Eave", (2 * HALF + 0.5, 2 * HALF + 0.5, 0.08), (0, 0, CEILING + 0.09), joist)
 
     for side in SIDES:
         wall_mat = paint if SIDES[side][1] else paint_y
@@ -223,8 +218,7 @@ def build_cab():
             plane("Glass" + side, pane_w, pane_h, at(side, u, -WALL / 2, (KNEE + HEAD) / 2), facing_in(side), glass)
             # A muntin across each pane, a little above the middle.
             box("Muntin" + side, along(side, pane_w, 0.03, 0.03), at(side, u, -WALL / 2, KNEE + pane_h * 0.62), frame)
-            closed = bay in CLOSED[side]
-            build_shutter(side, u, closed, shutter_out, shutter_in, frame)
+            build_shutter(side, u, shutter_out, frame)
 
     build_railing(rail)
 
@@ -239,29 +233,26 @@ def u_direction(side):
 YAW = {"front": 0, "right": -math.pi / 2, "back": math.pi, "left": math.pi / 2}
 
 
-def build_shutter(side, u, closed, outside, inside, prop_mat):
-    """A storm shutter the width of a bay, hinged at the top: propped open as an awning over the
-    window, or closed down over it."""
+def build_shutter(side, u, outside, prop_mat):
+    """A storm shutter the width of a bay, hinged at the top of the window and propped open as an
+    awning, tipped up a little more steeply than the line of sight through the top of the glass from
+    the seat (about 22 degrees), so it stays out of the view."""
     width, height, thick = BAY - 0.02, HEAD - KNEE + 0.08, 0.035
     hinge = Vector(at(side, u, 0.03, HEAD + 0.04))
     nx, ny = SIDES[side]
     outward = Vector((nx, ny, 0))
-    if closed:
-        center = hinge + Vector((0, 0, -height / 2))
-        box("ShutterClosed" + side, along(side, width, thick, height), center, outside)
-        # Its inner face, as seen through the glass: bare plywood.
-        plane("ShutterBack" + side, width, height, center - outward * (thick / 2 + 0.001), facing_in(side), inside)
-        return
-    # Open: swung up to 80 degrees from the wall, propped on two struts to the outer sill. The box
-    # is tipped about its own X so its height runs from the hinge out along `direction`.
-    angle = math.radians(80)
-    direction = outward * math.sin(angle) - Vector((0, 0, math.cos(angle)))
+    # The box is tipped about its own X so its height runs from the hinge out along `direction`.
+    lift = math.radians(25)
+    angle = math.pi / 2 + lift
+    direction = outward * math.cos(lift) + Vector((0, 0, math.sin(lift)))
     center = hinge + direction * height / 2
     box("ShutterOpen" + side, (width, thick, height), center, outside, rotation=(angle + math.pi, 0, YAW[side]))
-    far = hinge + direction * (height - 0.05)
+    # Propped on two struts from the header just above the window, steeper than the shutter so
+    # they stay above the line of sight too.
+    far = hinge + direction * (height * 0.55)
     udir = u_direction(side)
     for du in (-width / 2 + 0.1, width / 2 - 0.1):
-        foot = Vector(at(side, u + du, 0.05, KNEE + 0.03))
+        foot = Vector(at(side, u + du, 0.02, HEAD + 0.1))
         cylinder("ShutterProp", 0.012, foot, far + udir * du, prop_mat, segments=8)
 
 
