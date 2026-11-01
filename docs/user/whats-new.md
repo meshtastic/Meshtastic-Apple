@@ -14,6 +14,8 @@ Recent user-facing changes from roughly the last 12 months. Newest at the top.
 Show roughly the last 12 months of changes; archive entries older than a year by removing them.
 -->
 
+**Nov 2026** — [Cinema](cinema.md#fire-lookout) — On Apple Vision Pro, the fire lookout's shutters are all open, so the view shows round the screen and boards, the awnings are propped up out of the windows, and the cab stands 6 m (20 ft) lower.
+
 **Nov 2026** — [Cinema](cinema.md#fire-lookout) — On Apple Vision Pro, the **Turn Lookout** dial in the Cinema panel turns the fire lookout an eighth of a turn at a time, so the screen can face whichever part of the view you want.
 
 **Nov 2026** — [Map & Waypoints](map.md#map-options) — Hillshade has a Shade Valleys option that also darkens valley floors and gorges by how much of the sky they see, and hillshade now fades out past the zoom the downloaded terrain reaches instead of drawing made-up detail.
