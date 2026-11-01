@@ -657,7 +657,7 @@ def lantern():
 
 def sill_things():
     """What a lookout keeps on the sill shelf: the VHF radio and a Meshtastic radio on the right,
-    binoculars by the screen, a mug and a logbook on the left, and a water jug on the floor."""
+    and binoculars by the screen. The left sill is kept clear."""
     body = material("RadioBody", (0.06, 0.06, 0.065), 0.4, metallic=0.3)
     knob = material("Knob", (0.02, 0.02, 0.02), 0.35)
     shelf = KNEE + 0.035
@@ -668,21 +668,47 @@ def sill_things():
     cylinder("VHFKnob", 0.018, (rx - 0.11, ry - 0.08, shelf + 0.05), (rx - 0.13, ry - 0.08, shelf + 0.05), knob, segments=20)
     cylinder("VHFAntennaLead", 0.004, (rx, ry + 0.13, shelf + 0.06), (rx + 0.05, ry + 0.3, shelf + 0.06), knob, segments=6)
     place_model("t-echo.usdz", (rx - 0.02, ry + 0.3), -0.3, flat=False)
-    # Binoculars on the front sill beside the screen.
-    bx, by = 1.6, HALF - WALL - 0.16
-    for dx in (-0.035, 0.035):
-        cylinder("Binocular", 0.025, (bx + dx, by - 0.08, shelf + 0.028), (bx + dx, by + 0.08, shelf + 0.028), body, segments=20)
-    box("BinocularBridge", (0.05, 0.08, 0.02), (bx, by, shelf + 0.03), body)
-    # A mug and the logbook on the left sill.
-    mug = material("Mug", (0.2, 0.3, 0.35), 0.4)
-    cylinder("Mug", 0.04, (-HALF + WALL + 0.15, 1.6, shelf), (-HALF + WALL + 0.15, 1.6, shelf + 0.1), mug, segments=24)
-    torus("MugHandle", 0.025, 0.006, (-HALF + WALL + 0.19, 1.6, shelf + 0.05), mug, rotation=(0, 0, 0))
-    box("Logbook", (0.2, 0.26, 0.025), (-HALF + WALL + 0.17, 1.95, shelf + 0.013), material("Logbook", (0.12, 0.2, 0.14), 0.6), bevel=0.003)
-    cylinder("Pencil", 0.004, (-HALF + WALL + 0.1, 1.85, shelf + 0.03), (-HALF + WALL + 0.25, 1.92, shelf + 0.03), material("Pencil", (0.9, 0.7, 0.1), 0.5), segments=6)
-    # A water jug by the stove.
-    jug = material("Jug", (0.2, 0.35, 0.6), 0.3)
-    cylinder("WaterJug", 0.14, (-1.3, -1.95, 0.02), (-1.3, -1.95, 0.42), jug, segments=32)
-    cylinder("JugCap", 0.04, (-1.3, -1.95, 0.42), (-1.3, -1.95, 0.46), material("JugCap", (0.9, 0.9, 0.9), 0.4), segments=20)
+    # Binoculars on the front sill beside the screen, turned a little as if just put down.
+    binoculars((1.6, HALF - WALL - 0.17), math.radians(-20), shelf)
+
+
+def tube(name, radius, start, end, mat, segments=48):
+    """A cylinder with its end edges rounded a little, so small parts read as turned metal and
+    molded rubber rather than smooth-shaded blobs."""
+    obj = cylinder(name, radius, start, end, mat, segments=segments)
+    bevel = obj.modifiers.new("Bevel", "BEVEL")
+    bevel.width = min(radius * 0.15, 0.003)
+    bevel.segments = 3
+    bevel.harden_normals = True
+    return obj
+
+
+def binoculars(center, yaw, shelf):
+    """Porro prism binoculars lying on the sill: rubber-armored objective barrels with coated
+    lenses, prism housings stepping in to the eyepieces and their eyecups, and the center hinge
+    with its focus wheel. Built along +y (objectives forward) and turned by `yaw` about `center`."""
+    armor = material("BinocularArmor", (0.035, 0.04, 0.035), 0.8)
+    metal = material("BinocularMetal", (0.07, 0.07, 0.075), 0.3, metallic=0.85)
+    lens = material("BinocularLens", (0.12, 0.08, 0.22), 0.04, metallic=0.7)
+    turn = Matrix.Rotation(yaw, 3, "Z")
+
+    def at_local(x, y, z):
+        return Vector(center + (0,)) + turn @ Vector((x, y, 0)) + Vector((0, 0, shelf + z))
+
+    r = 0.029
+    for side in (-1, 1):
+        x = side * 0.05
+        tube("BinocularBarrel", r, at_local(x, 0.0, r), at_local(x, 0.085, r), armor)
+        tube("BinocularRim", r + 0.002, at_local(x, 0.082, r), at_local(x, 0.092, r), metal)
+        tube("BinocularLens", r - 0.005, at_local(x, 0.088, r), at_local(x, 0.0925, r), lens, segments=32)
+        box("BinocularPrism", (0.058, 0.07, 0.05), at_local(side * 0.044, -0.03, r + 0.002), armor, rotation=(0, 0, yaw), bevel=0.01)
+        ex = side * 0.032
+        tube("BinocularEyepiece", 0.014, at_local(ex, -0.06, r + 0.006), at_local(ex, -0.09, r + 0.006), metal)
+        tube("BinocularEyecup", 0.019, at_local(ex, -0.09, r + 0.006), at_local(ex, -0.108, r + 0.006), armor)
+    tube("BinocularHinge", 0.011, at_local(0, -0.075, r + 0.012), at_local(0, 0.05, r + 0.012), metal)
+    tube("BinocularFocus", 0.017, at_local(0, -0.058, r + 0.012), at_local(0, -0.036, r + 0.012), armor)
+    for y in (0.035, -0.07):
+        box("BinocularBridge", (0.07, 0.022, 0.012), at_local(0, y, r + 0.014), metal, rotation=(0, 0, yaw), bevel=0.003)
 
 
 def place_model(file_name, at_xy, yaw, flat):
@@ -700,35 +726,6 @@ def place_model(file_name, at_xy, yaw, flat):
     cx = (min(c.x for c in corners) + max(c.x for c in corners)) / 2
     cy = (min(c.y for c in corners) + max(c.y for c in corners)) / 2
     root.matrix_world = Matrix.Translation((at_xy[0] - cx, at_xy[1] - cy, KNEE + 0.035 - low)) @ root.matrix_world
-
-
-# MARK: - Outside
-
-SOLAR_NODE = os.path.join(DEVICE_MODELS, "seeed_solar.usdz")
-SOLAR_NODE_MOUNT = Vector((0.0027, 0.117, -0.0376))
-
-
-def outside():
-    """On the catwalk: a Solar Node on a mast clamped to a railing post outside the right window."""
-    steel = material("MastSteel", (0.15, 0.15, 0.16), 0.4, metallic=0.9)
-    clamp = material("Clamp", (0.02, 0.02, 0.02), 0.45)
-    # The node, up above the railing where the window frames it, panel turned to the seat.
-    px, py = HALF + CATWALK - 0.06, 0.6
-    mast_top = (px, py, 1.95)
-    cylinder("NodeMast", 0.016, (px, py, RAIL - 0.3), mast_top, steel)
-    for z in (RAIL - 0.2, RAIL - 0.02):
-        box("MastClamp", (0.1, 0.05, 0.04), (px, py, z), clamp)
-    tilt = math.radians(20)
-    yaw = math.atan2(-py, -px)
-    facing = Vector((math.cos(yaw), math.sin(yaw), 0))
-    mount = Vector((px, py, 1.75)) + facing * 0.045
-    cylinder("NodeArm", 0.01, (px, py, mount.z), mount - facing * 0.008, clamp)
-    before = set(bpy.data.objects)
-    bpy.ops.wm.usd_import(filepath=os.path.abspath(SOLAR_NODE))
-    root = next(obj for obj in bpy.data.objects if obj not in before and obj.parent is None)
-    mount_local = root.matrix_world @ SOLAR_NODE_MOUNT
-    turn = Matrix.Rotation(yaw + math.pi / 2, 4, "Z") @ Matrix.Rotation(-tilt, 4, "X")
-    root.matrix_world = Matrix.Translation(mount) @ turn @ Matrix.Translation(-mount_local) @ root.matrix_world
 
 
 # MARK: - Boards
@@ -797,7 +794,6 @@ def build():
     stool()
     lantern()
     sill_things()
-    outside()
     build_boards()
     # On the shuttered front bays, high enough that its bottom clears the sill shelf from the seat.
     # Narrower than the tent's since the wall is closer; it covers about the same part of the view.
