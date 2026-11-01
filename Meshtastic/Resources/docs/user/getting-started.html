@@ -27,16 +27,18 @@
 <p>The connection indicator turns green when the radio is paired and communicating.</p>
 <div class="tips-callout"><strong>Tip:</strong> If your device does not appear, make sure Bluetooth is enabled in iOS Settings and that the radio is within range (roughly 10 meters for initial pairing).</div>
 <h3 id="first-launch-setup">First-Launch Setup</h3>
-<p>The first time you open the app, a short guided setup walks you through the permissions Meshtastic uses, in order. Each screen explains what the permission is for, and you can change any of these later in iOS Settings. Granting a permission or tapping <strong>Continue</strong> advances to the next step.</p>
-<p><strong>1. Bluetooth</strong> — required to discover and connect to your radio.</p>
+<p>The first time the app opens, a short guided setup says what Meshtastic is and walks through the permissions the app uses, in order. Each screen explains what the permission is for, and any of them can be changed later in iOS Settings. Tapping <strong>Continue</strong> advances to the next step, after granting or declining the permission.</p>
+<p><strong>1. Welcome</strong> — what Meshtastic does, how it treats location (the radio shares none until it is turned on, and public channels only ever get an approximate location), and a note that the next screens set up the features you want.</p>
+<p><img src="../assets/screenshots/onboarding_welcome.png" alt="Welcome screen" /></p>
+<p><strong>2. Bluetooth</strong> — required to discover and connect to your radio.</p>
 <p><img src="../assets/screenshots/onboarding_bluetooth.png" alt="Bluetooth permission screen" /></p>
-<p><strong>2. Local Network</strong> — lets the app find radios connected over Wi-Fi or Ethernet.</p>
+<p><strong>3. Local Network</strong> — lets the app find radios connected over Wi-Fi or Ethernet.</p>
 <p><img src="../assets/screenshots/onboarding_localNetwork.png" alt="Local Network permission screen" /></p>
-<p><strong>3. Notifications</strong> — toggle which alerts you want before granting permission: incoming messages, new nodes, low battery, and critical alerts that bypass silent mode and Do Not Disturb.</p>
+<p><strong>4. Notifications</strong> — toggle which alerts you want before granting permission: incoming messages, new nodes, low battery, and critical alerts that bypass silent mode and Do Not Disturb.</p>
 <p><img src="../assets/screenshots/onboarding_notifications.png" alt="Notifications permission screen" /></p>
-<p><strong>4. Location</strong> — optional; lets your phone supply position to the mesh and keep the map updated in the background. This step is skipped if you have already granted location access.</p>
+<p><strong>5. Location</strong> — optional; lets your phone supply position to your radio and keep the map updated in the background. The phone's location goes only to the connected radio. Public channels get an approximate location, never the exact position. This step is skipped if location access was already granted.</p>
 <p><img src="../assets/screenshots/onboarding_location.png" alt="Location permission screen" /></p>
-<p><strong>5. Siri &amp; Shortcuts</strong> — optional; enables voice commands and CarPlay messaging.</p>
+<p><strong>6. Siri &amp; Shortcuts</strong> — optional; enables voice commands and CarPlay messaging.</p>
 <p><img src="../assets/screenshots/onboarding_siri.png" alt="Siri and Shortcuts permission screen" /></p>
 <h2 id="step-3-set-your-name-and-short-id">Step 3: Set Your Name and Short ID</h2>
 <ol>

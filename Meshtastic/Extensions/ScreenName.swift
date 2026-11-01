@@ -135,6 +135,7 @@ enum ScreenName: String, CaseIterable {
 
 	// MARK: Onboarding
 
+	case onboardingWelcome = "Onboarding Welcome"
 	case onboardingNotifications = "Onboarding Notifications"
 	case onboardingLocation = "Onboarding Location"
 	case onboardingBluetooth = "Onboarding Bluetooth"

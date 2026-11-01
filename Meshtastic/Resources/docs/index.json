@@ -201,37 +201,37 @@
         "navOrder": 1,
         "keywords": [
             "radio",
-            "step",
             "meshtastic",
             "app",
+            "step",
+            "location",
             "nodes",
             "name",
             "tap",
             "tab",
             "settings",
-            "mesh",
             "device",
             "messages",
+            "mesh",
             "connect",
             "bluetooth",
             "short",
             "see",
+            "position",
             "permission",
-            "open",
             "node",
+            "next",
             "nearby",
             "map",
-            "location",
             "ios",
             "first",
+            "connected",
+            "channels",
             "within",
-            "tip",
-            "time",
-            "tapping",
-            "started",
-            "setup"
+            "welcome",
+            "want"
         ],
-        "charCount": 2900
+        "charCount": 3289
     },
     {
         "id": "lockdown",
@@ -803,10 +803,10 @@
             "oct",
             "screen",
             "radios",
+            "page",
             "one",
             "device",
             "radio",
-            "page",
             "local",
             "channel",
             "bluetooth",
@@ -816,7 +816,7 @@
             "live",
             "list"
         ],
-        "charCount": 11156
+        "charCount": 11353
     },
     {
         "id": "adding-features",

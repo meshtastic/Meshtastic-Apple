@@ -5,8 +5,10 @@
 //  Copyright(c) Garth Vander Houwen 2026.
 //
 
+import CoreLocation
 import Foundation
 import Testing
+import UserNotifications
 @testable import Meshtastic
 
 // MARK: - SetupGuide Enum
@@ -16,10 +18,10 @@ struct SetupGuideTests {
 
 	@Test func allCasesExist() {
 		let cases: [DeviceOnboarding.SetupGuide] = [
-			.notifications, .location,
+			.welcome, .notifications, .location,
 			.localNetwork, .bluetooth, .siri
 		]
-		#expect(cases.count == 5)
+		#expect(cases.count == 6)
 	}
 
 	@Test func isHashable() {
@@ -34,15 +36,79 @@ struct SetupGuideTests {
 		#expect(DeviceOnboarding.SetupGuide.bluetooth == .bluetooth)
 		#expect(DeviceOnboarding.SetupGuide.notifications != .siri)
 		#expect(DeviceOnboarding.SetupGuide.location != .localNetwork)
+		#expect(DeviceOnboarding.SetupGuide.welcome != .bluetooth)
 	}
 
 	@Test func allCasesAreUnique() {
 		let cases: [DeviceOnboarding.SetupGuide] = [
-			.notifications, .location,
+			.welcome, .notifications, .location,
 			.localNetwork, .bluetooth, .siri
 		]
 		let unique = Set(cases)
 		#expect(unique.count == cases.count)
+	}
+
+	@Test func everyCaseHasAScreenName() {
+		let cases: [DeviceOnboarding.SetupGuide] = [
+			.welcome, .notifications, .location,
+			.localNetwork, .bluetooth, .siri
+		]
+		let names = Set(cases.map(\.screenName))
+		#expect(names.count == cases.count)
+		#expect(DeviceOnboarding.SetupGuide.welcome.screenName == .onboardingWelcome)
+	}
+}
+
+// MARK: - Step Order
+
+@Suite("DeviceOnboarding next step")
+struct OnboardingNextStepTests {
+
+	let view = DeviceOnboarding()
+
+	private func next(
+		after step: DeviceOnboarding.SetupGuide?,
+		location: CLAuthorizationStatus = .notDetermined
+	) -> DeviceOnboarding.SetupGuide? {
+		view.nextStep(
+			after: step,
+			notificationStatus: .notDetermined,
+			criticalAlertSetting: .notSupported,
+			locationStatus: location
+		)
+	}
+
+	@Test func startsWithWelcome() {
+		#expect(next(after: nil) == .welcome)
+	}
+
+	@Test func welcomeLeadsToBluetooth() {
+		#expect(next(after: .welcome) == .bluetooth)
+	}
+
+	@Test func bluetoothLeadsToLocalNetwork() {
+		#expect(next(after: .bluetooth) == .localNetwork)
+	}
+
+	@Test func localNetworkLeadsToNotifications() {
+		#expect(next(after: .localNetwork) == .notifications)
+	}
+
+	@Test func notificationsLeadToLocationWhenUndetermined() {
+		#expect(next(after: .notifications, location: .notDetermined) == .location)
+	}
+
+	@Test func notificationsSkipLocationWhenAlreadyAllowed() {
+		#expect(next(after: .notifications, location: .authorizedAlways) == .siri)
+		#expect(next(after: .notifications, location: .authorizedWhenInUse) == .siri)
+	}
+
+	@Test func locationLeadsToSiri() {
+		#expect(next(after: .location) == .siri)
+	}
+
+	@Test func siriIsLast() {
+		#expect(next(after: .siri) == nil)
 	}
 }
 
@@ -68,6 +134,12 @@ struct OnboardingStringFormatterTests {
 		let string = view.createLocationString()
 		#expect(string.description.contains("location"))
 		#expect(string.description.contains("settings"))
+	}
+
+	@Test func locationStringLeadsWithPrivacy() {
+		let string = view.createLocationString()
+		#expect(string.description.contains("approximate"))
+		#expect(string.description.contains("only to your connected radio"))
 	}
 
 	@Test func locationStringHasSettingsLink() {
