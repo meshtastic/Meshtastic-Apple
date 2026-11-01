@@ -143,7 +143,10 @@ import OSLog
 		// Cancel the timeout task so it cannot resume a later request's continuation.
 		self.permissionTimeoutTask?.cancel()
 		self.permissionTimeoutTask = nil
-		self.isRequestingPermission = false // Reset the flag as the request has completed
+		// `isRequestingPermission` is left to the request's own defer. Resuming queues the
+		// request's continuation rather than running it, so clearing the flag here would let
+		// a call made before it runs start a second request, whose continuation that defer
+		// would then throw away.
 	}
 
 	override init() {
@@ -160,9 +163,9 @@ import OSLog
 		self.manager.distanceFilter = 10
 		#if !os(visionOS)
 		if CLLocationManager.headingAvailable() {
-			self.manager.headingFilter = 1 // Update heading when it changes by 1 degree
-			self.manager.headingOrientation = .portrait // Adjust based on device orientation
-		}
+				self.manager.headingFilter = 1 // Update heading when it changes by 1 degree
+				self.manager.headingOrientation = .portrait // Adjust based on device orientation
+			}
 		#endif
 	}
 
