@@ -294,22 +294,22 @@
             "position",
             "mesh",
             "maps",
+            "apple",
             "shows",
             "route",
             "line",
             "coverage",
-            "apple",
             "open",
             "file",
             "area",
+            "vision",
             "signal",
             "radio",
+            "pro",
             "out",
-            "estimate",
-            "downloaded",
-            "button"
+            "estimate"
         ],
-        "charCount": 23686
+        "charCount": 23779
     },
     {
         "id": "messages",
