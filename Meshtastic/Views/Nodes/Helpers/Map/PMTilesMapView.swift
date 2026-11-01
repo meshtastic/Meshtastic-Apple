@@ -942,7 +942,9 @@ extension OfflineVectorTileProvider {
 			return []
 		}
 		guard let first = rings.first else { return [] }
-		let outerIsNegative = signedArea(first) < 0
+		// A first ring with no area can't say: take the spec's winding, outer rings clockwise on the map.
+		let firstArea = signedArea(first)
+		let outerIsNegative = firstArea == 0 || firstArea < 0
 		var result: [[[GISTools.Coordinate3D]]] = []
 		for ring in rings {
 			let area = signedArea(ring)
@@ -956,13 +958,16 @@ extension OfflineVectorTileProvider {
 	}
 
 	/// The shoelace sum in degrees, positive when a ring runs counter-clockwise on the map. Only its
-	/// sign is used.
+	/// sign is used. Measured from the ring's first point: from the origin the products are around
+	/// 6,000 for a ring near Seattle, and a ring a meter across loses its sign to rounding.
 	nonisolated private static func signedArea(_ ring: [GISTools.Coordinate3D]) -> Double {
-		guard ring.count >= 3 else { return 0 }
+		guard ring.count >= 3, let origin = ring.first else { return 0 }
 		var sum = 0.0
 		for index in ring.indices {
 			let a = ring[index], b = ring[(index + 1) % ring.count]
-			sum += a.longitude * b.latitude - b.longitude * a.latitude
+			let ax = a.longitude - origin.longitude, ay = a.latitude - origin.latitude
+			let bx = b.longitude - origin.longitude, by = b.latitude - origin.latitude
+			sum += ax * by - bx * ay
 		}
 		return sum
 	}

@@ -54,6 +54,15 @@ struct OfflinePolygonRingTests {
 		#expect(shape(groups) == [[8, 2], [4]])
 	}
 
+	@Test func aTinyFirstRingFarFromTheOriginKeepsItsWinding() throws {
+		// A 0.1 m outer ring near Seattle, then a larger outer ring and an island: summed from
+		// (0, 0) the first ring's area rounds to zero and the grouping turns backwards.
+		let tiny = square(-122.3, 47.6, 1e-6, clockwise: true)
+		let decoded = try multi([[tiny], [square(-122.2, 47.6, 0.05, clockwise: true)], [square(-122.18, 47.62, 0.01)]])
+		let groups = OfflineVectorTileProvider.polygonRings(decoded)
+		#expect(groups.map(\.count) == [1, 2])
+	}
+
 	@Test func aSingleRingIsOnePolygon() throws {
 		let made: GISTools.Polygon? = GISTools.Polygon([square(0, 0, 1, clockwise: true)])
 		#expect(OfflineVectorTileProvider.polygonRings(try #require(made)).count == 1)
