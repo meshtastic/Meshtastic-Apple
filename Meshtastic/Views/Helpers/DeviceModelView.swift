@@ -348,6 +348,12 @@ struct DeviceModelFullScreen: View {
 			}
 		}
 		.presentationDetents([.large])
+		// Without the live screen the zoom button goes, so go back to the whole model with it.
+		.onChange(of: liveScreen) { _, live in
+			guard !live, zoomLevel != .model else { return }
+			stage.zoom(to: .model)
+			zoomLevel = .model
+		}
 	}
 
 	/// Steps in from the whole model to the case without its antenna, then the screen, then back out.
@@ -706,7 +712,9 @@ final class DeviceModelStage {
 	func zoom(by magnification: Float) {
 		userTookOver = true
 		fitLevel = nil
-		zoomFactor = min(max(zoomStart * magnification, 0.6), max(2.2, zoomStart))
+		// A wide model in a narrow view fits below 0.6, and pinching in mustn't jump it bigger.
+		let smallest = min(0.6, fitFactor(for: modelBounds))
+		zoomFactor = min(max(zoomStart * magnification, smallest), max(2.2, zoomStart))
 		applyScale()
 	}
 
@@ -803,6 +811,16 @@ final class DeviceModelStage {
 	private func zoom(toFit box: BoundingBox) {
 		yaw = 0
 		pitch = 0
+		zoomFactor = fitFactor(for: box)
+		zoomStart = zoomFactor
+		let center = box.center - modelCenter
+		focus = [center.x, center.y]
+		applyScale()
+		applyOrientation()
+	}
+
+	/// The zoom at which `box`, seen square on, fills as much of the view as fits.
+	private func fitFactor(for box: BoundingBox) -> Float {
 		let half = SIMD2(box.extents.x, box.extents.y) / 2
 		let room = viewHalfExtents * 0.9
 		// The part's front is nearer the camera than the model's middle, so perspective makes it
@@ -816,12 +834,7 @@ final class DeviceModelStage {
 		#endif
 		let fitX = room.x / (half.x + room.x * perspective)
 		let fitY = room.y / (half.y + room.y * perspective)
-		zoomFactor = min(fitX, fitY) / (fitRadius / radius)
-		zoomStart = zoomFactor
-		let center = box.center - modelCenter
-		focus = [center.x, center.y]
-		applyScale()
-		applyOrientation()
+		return min(fitX, fitY) / (fitRadius / radius)
 	}
 
 	/// Fits the model to its level again after the view changes size, or just rescales it.
