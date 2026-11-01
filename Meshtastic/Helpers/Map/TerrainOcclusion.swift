@@ -25,13 +25,17 @@ enum TerrainOcclusion {
 		min(maxRadiusSamples, max(2, Int((radiusMeters / max(metersPerSample, 0.01)).rounded(.up))))
 	}
 
-	/// Distances along a look, in samples: every sample to 6, then a quarter further each step.
+	/// Distances along a look, in samples: every sample to 6, then a quarter further each step,
+	/// ending at `radius` itself so the far edge of the look is always read.
 	static func steps(radius: Int) -> [Int] {
 		var result: [Int] = []
 		var distance = 1
 		while distance <= radius {
 			result.append(distance)
 			distance = max(distance + 1, Int(Double(distance) * 1.25))
+		}
+		if let last = result.last, last < radius {
+			result.append(radius)
 		}
 		return result
 	}

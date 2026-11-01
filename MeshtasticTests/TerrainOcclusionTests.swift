@@ -56,6 +56,7 @@ struct TerrainOcclusionTests {
 		#expect(TerrainOcclusion.radiusSamples(metersPerSample: 100) == 10)
 		#expect(TerrainOcclusion.radiusSamples(metersPerSample: 26) == TerrainOcclusion.maxRadiusSamples)
 		#expect(TerrainOcclusion.radiusSamples(metersPerSample: 6.5) == TerrainOcclusion.maxRadiusSamples)
-		#expect(TerrainOcclusion.steps(radius: 32) == [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 15, 18, 22, 27])
+		#expect(TerrainOcclusion.steps(radius: 32) == [1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 15, 18, 22, 27, 32])
+		#expect(TerrainOcclusion.steps(radius: 9).last == 9)
 	}
 }
