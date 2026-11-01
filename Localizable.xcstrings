@@ -310,6 +310,12 @@
         }
       }
     },
+    "%lld Nodes" : {
+      "comment" : "Cinema lookout: title of the card listing the nodes a marker out the window stands for"
+    },
+    "%lld nodes near %@, %lld meters, bearing %lld degrees" : {
+      "comment" : "Cinema lookout: VoiceOver label for a marker out the window that stands for several nodes close together"
+    },
     "%lld radios" : {
       "comment" : "Showcase: how many radios are in the room",
       "localizations" : {
@@ -376,6 +382,9 @@
           }
         }
       }
+    },
+    "Back to the list" : {
+      "comment" : "Cinema lookout: button on a node's card that goes back to the list of nodes the marker stands for"
     },
     "Brought to you by" : {
       "comment" : "Showcase: plaque on the wall naming who made the showcase, above the Meshtastic Solutions name",
@@ -586,6 +595,9 @@
           }
         }
       }
+    },
+    "Show on Screen" : {
+      "comment" : "Cinema lookout: button on a node's card that opens the node's details on the cinema's front screen"
     },
     "Up" : {
 

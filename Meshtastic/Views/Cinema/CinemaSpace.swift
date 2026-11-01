@@ -56,7 +56,9 @@ struct CinemaSpace: View {
 	/// lookout from two tasks at once; the second waits on the first one's build instead of
 	/// starting another. The build is its own task so a caller being cancelled doesn't stop it.
 	@State private var lookoutBuild: LookoutBuild?
-	@State private var labelPanels = LabelPanels()
+	@State private var markerPanels = LookoutMarkerPanels()
+	/// The node card open beside a marker out the lookout's windows.
+	@State private var lookoutCard: LookoutCardSelection?
 	@State private var radioCoordinate: CLLocationCoordinate2D?
 
 	var body: some View {
@@ -76,9 +78,9 @@ struct CinemaSpace: View {
 			// the first frame that has it.
 			fitBoards = content.subscribe(to: SceneEvents.Update.self) { _ in
 				placeBoards()
-				// A label's size is only known once it has laid out, like a board's.
-				if labelPanels.unsized {
-					placeLabels { labelPanels.placed[$0] }
+				// A marker's size is only known once it has laid out, like a board's.
+				if markerPanels.unsized {
+					placeMarkers { markerPanels.entity(for: $0) }
 				}
 			}
 		} update: { _, attachments in
@@ -91,7 +93,7 @@ struct CinemaSpace: View {
 			boards.setStrip(attachments.entity(for: Attachments.tabStrip))
 			modelStand.setTag(attachments.entity(for: Attachments.modelTag))
 			placeBoards()
-			placeLabels { attachments.entity(for: $0) }
+			placeMarkers { attachments.entity(for: $0) }
 		} attachments: {
 			Attachment(id: Attachments.panel) {
 				// The map counts as open while the cinema is reopening it, so the button doesn't
@@ -102,11 +104,22 @@ struct CinemaSpace: View {
 					Task { await dismissImmersiveSpace() }
 				}
 			}
-			ForEach(lookout.labels) { label in
-				Attachment(id: LabelPanels.id(for: label)) {
-					LookoutNodeLabel(label: label) {
-						showNode(label.id)
+			ForEach(markers, id: \.lead.id) { spot in
+				Attachment(id: LookoutMarkerPanels.id(for: spot)) {
+					LookoutNodeMarker(labels: spot.labels) {
+						lookoutCard = lookoutCard?.lead == spot.lead.id ? nil : LookoutCardSelection(lead: spot.lead.id)
 					}
+				}
+			}
+			if let container, !appState.isDatabaseResetting, let selection = lookoutCard, let spot = markers.first(where: { $0.lead.id == selection.lead }) {
+				Attachment(id: LookoutMarkerPanels.cardID) {
+					LookoutNodeCard(labels: spot.labels, chosen: Binding { lookoutCard?.chosen } set: { lookoutCard?.chosen = $0 }, onShowOnMap: showOnMap) { nodeNum in
+						appState.cinemaScreenRequest = .node(nodeNum)
+					} onClose: {
+						lookoutCard = nil
+					}
+					.id(appState.databaseResetID)
+					.modelContainer(container)
 				}
 			}
 			if let container, !appState.isDatabaseResetting, anchors?.board(.teamStatus) != nil {
@@ -195,6 +208,12 @@ struct CinemaSpace: View {
 		}
 		.task(id: modelRequest) {
 			await modelStand.show(modelRequest, environment: environment)
+		}
+		.onChange(of: lookout.labels) {
+			// The nodes move and the markers regroup; a card whose marker is gone closes.
+			if let lead = lookoutCard?.lead, !markers.contains(where: { $0.lead.id == lead }) {
+				lookoutCard = nil
+			}
 		}
 		.onAppear {
 			appState.cinemaOpen = true
@@ -305,19 +324,6 @@ struct CinemaSpace: View {
 		static let modelTag = "modelTag"
 	}
 
-	/// The node labels out the lookout's windows that have been hung.
-	private final class LabelPanels {
-		var placed: [String: Entity] = [:]
-		/// The line from each lifted label down to its node's spot.
-		var leaders: [String: ModelEntity] = [:]
-		/// A label hasn't laid out yet, so it couldn't be scaled; the frame update tries again.
-		var unsized = false
-
-		static func id(for label: LookoutLabel) -> String {
-			"node-\(label.id)"
-		}
-	}
-
 	/// What the panel says in the lookout while there is no summit to pick.
 	private var lookoutNote: String? {
 		switch lookout.status {
@@ -394,75 +400,19 @@ struct CinemaSpace: View {
 		terrainHeading = heading
 	}
 
-	/// Hangs each node's label out the windows where the node is: lifted clear of the sill and of
-	/// the labels for nearer nodes, on a leader line down to its spot, facing the viewer and the
-	/// same share of the view whatever its distance.
-	private func placeLabels(_ entityFor: (String) -> Entity?) {
-		var keep: Set<String> = []
-		var unsized = false
-		let entities = lookout.labels.map { entityFor(LabelPanels.id(for: $0)) }
-		// A label's height over its width, from the first one that has laid out.
-		var heightRatio = 0.3
-		for case let entity? in entities {
-			let extents = entity.visualBounds(relativeTo: entity).extents
-			if extents.x > 0 {
-				heightRatio = Double(extents.y / extents.x)
-				break
-			}
-		}
-		let spots = LookoutTerrain.spots(for: lookout.labels, heightRatio: heightRatio, heading: terrainHeading)
-		let halfHeightDegrees = LookoutTerrain.labelWidthDegrees * heightRatio / 2
-		let widthPerDepth = Float(2 * tan(LookoutTerrain.labelWidthDegrees / 2 * .pi / 180))
-		for (index, label) in lookout.labels.enumerated() {
-			let id = LabelPanels.id(for: label)
-			guard let entity = entities[index] else { continue }
-			keep.insert(id)
-			let spot = spots[index]
-			if entity.parent !== stage {
-				stage.addChild(entity)
-				entity.components.set(BillboardComponent())
-				labelPanels.placed[id] = entity
-			}
-			let width = entity.visualBounds(relativeTo: entity).extents.x
-			if width > 0 {
-				entity.scale = SIMD3(repeating: widthPerDepth * spot.depth / width)
-			} else {
-				unsized = true
-			}
-			entity.position = LookoutTerrain.direction(azimuth: spot.azimuth, elevation: spot.center) * spot.depth
-			let leader = labelPanels.leaders[id] ?? {
-				let made = ModelEntity(mesh: .generateBox(size: 1), materials: [UnlitMaterial(color: .white)])
-				made.name = "leader-\(id)"
-				stage.addChild(made)
-				labelPanels.leaders[id] = made
-				return made
-			}()
-			let top = LookoutTerrain.direction(azimuth: spot.azimuth, elevation: spot.center - halfHeightDegrees) * spot.depth
-			let ground = LookoutTerrain.direction(azimuth: spot.azimuth, elevation: spot.elevation) * spot.depth
-			let run = ground - top
-			let length = simd_length(run)
-			leader.isEnabled = spot.lift > 0.3 && length > 0.01
-			if leader.isEnabled {
-				leader.position = (ground + top) / 2
-				leader.orientation = simd_quatf(from: SIMD3(0, -1, 0), to: run / length)
-				leader.scale = SIMD3(0.0025 * spot.depth, length, 0.0025 * spot.depth)
-			}
-		}
-		for (id, entity) in labelPanels.placed where !keep.contains(id) {
-			entity.removeFromParent()
-			labelPanels.placed[id] = nil
-			labelPanels.leaders[id]?.removeFromParent()
-			labelPanels.leaders[id] = nil
-		}
-		labelPanels.unsized = unsized
+	/// The markers out the lookout's windows, nearest node first.
+	private var markers: [LookoutTerrain.MarkerSpot] {
+		LookoutTerrain.markers(for: lookout.labels, heading: terrainHeading)
 	}
 
-	/// Centers the 3D map on the node, opening the map if it isn't open, and puts the node's
-	/// detail on the front screen, as the boards do.
-	private func showNode(_ nodeNum: Int64) {
+	private func placeMarkers(_ entityFor: (String) -> Entity?) {
+		markerPanels.place(markers, selected: lookoutCard?.lead, on: stage, entityFor: entityFor)
+	}
+
+	/// Centers the 3D map on the node, opening the map if it isn't open.
+	private func showOnMap(_ nodeNum: Int64) {
 		appState.spatialMapFocus = SpatialMapFocusRequest(nodeNum: nodeNum)
 		openWindow(id: SpatialMapScene.id, value: SpatialMapSceneKey.shared)
-		appState.cinemaScreenRequest = .node(nodeNum)
 	}
 
 	/// A board's view with the store and app state it reads, remade on a database reset.

@@ -14,6 +14,8 @@ Recent user-facing changes from roughly the last 12 months. Newest at the top.
 Show roughly the last 12 months of changes; archive entries older than a year by removing them.
 -->
 
+**Nov 2026** — [Cinema](cinema.md#fire-lookout) — On Apple Vision Pro, nodes out the fire lookout's windows are small chips on stems, standing at different heights where they're close together, and tapping one opens a card beside it with the node's details and buttons to show it on the 3D map or the screen.
+
 **Nov 2026** — [Cinema](cinema.md#fire-lookout) — On Apple Vision Pro, the fire lookout's shutters are all open, so the view shows round the screen and boards, the awnings are propped up out of the windows, and the cab stands 6 m (20 ft) lower.
 
 **Nov 2026** — [Cinema](cinema.md#fire-lookout) — On Apple Vision Pro, the **Turn Lookout** dial in the Cinema panel turns the fire lookout an eighth of a turn at a time, so the screen can face whichever part of the view you want.

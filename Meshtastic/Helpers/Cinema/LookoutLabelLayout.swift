@@ -8,53 +8,47 @@
 import Foundation
 import simd
 
-/// Where the nodes' labels hang out the lookout's windows.
+/// Where the nodes' markers hang out the lookout's windows.
 extension LookoutTerrain {
-	/// How wide a node's label is in degrees of the view, whatever its distance.
-	static let labelWidthDegrees = 6.0
-	/// The lowest a label's center hangs. The sill is about 6.6° below level from the seat, so a
-	/// node down in the valley still shows, on a leader line to where it is.
-	static let lowestLabelDegrees = -4.0
+	static let markerWidthDegrees = LookoutMarkerGrouping.markerWidthDegrees
+	static let stemDegrees = LookoutMarkerGrouping.stemDegrees
+	static let lowestMarkerDegrees = LookoutMarkerGrouping.lowestMarkerDegrees
 
-	/// Where a node's label hangs: the node's direction from the eye, in degrees clockwise from
-	/// the cab's front and above level, the label's center after it was lifted clear of the sill
-	/// and of the labels placed before it, and how far out it is drawn.
-	struct LabelSpot {
+	/// One marker out the windows: a node, or, where there's no room, the nodes whose markers would
+	/// cover each other, nearest first. The marker stands over the nearest of them. `azimuth` is
+	/// degrees clockwise from the cab's front, `elevation` the nearest node's direction above level,
+	/// `center` the marker's middle, raised to clear its neighbors, and `depth` how far out it is
+	/// drawn.
+	struct MarkerSpot {
+		let labels: [LookoutLabel]
 		let azimuth: Double
 		let elevation: Double
 		let center: Double
 		let depth: Float
-		var lift: Double { center - elevation }
+
+		var lead: LookoutLabel { labels[0] }
+		/// Where the stem meets the ground, or the bottom of the view for a node below it.
+		var stemFoot: Double { LookoutMarkerGrouping.stemFoot(elevation: elevation) }
 	}
 
-	/// Spots for `labels` in order, nearest first, lifting each above any earlier label it would
-	/// cover. `heightRatio` is a label's height over its width.
-	static func spots(for labels: [LookoutLabel], heightRatio: Double, heading: Double = frontHeading) -> [LabelSpot] {
-		let halfHeight = labelWidthDegrees * heightRatio / 2
-		struct Placed {
-			let azimuth: Double
-			let bottom: Double
-			let top: Double
-		}
-		var placed: [Placed] = []
-		return labels.map { label in
+	/// Markers for `labels`, which come nearest first, seen from a cab facing `heading`.
+	static func markers(for labels: [LookoutLabel], heading: Double = frontHeading) -> [MarkerSpot] {
+		let points = labels.map { label in
 			let azimuth = (label.bearing - heading + 360).truncatingRemainder(dividingBy: 360)
 			let drop = label.distance * label.distance / (2 * earthRadius)
-			let elevation = atan2(label.rise - drop, label.distance) * 180 / .pi
-			var center = max(elevation, lowestLabelDegrees)
-			var lifted = true
-			while lifted {
-				lifted = false
-				for other in placed where azimuthGap(azimuth, other.azimuth) < labelWidthDegrees
-					&& center - halfHeight < other.top && center + halfHeight > other.bottom {
-					center = other.top + halfHeight + 0.3
-					lifted = true
-				}
-			}
-			placed.append(Placed(azimuth: azimuth, bottom: center - halfHeight, top: center + halfHeight))
-			// Just in front of the ground at the node's distance, so nearer ridges hide it as they
-			// would, and whatever is behind it doesn't.
-			return LabelSpot(azimuth: azimuth, elevation: elevation, center: center, depth: depth(label.distance) - 3)
+			return (azimuth: azimuth, elevation: atan2(label.rise - drop, label.distance) * 180 / .pi)
+		}
+		return LookoutMarkerGrouping.markers(points).map { marker in
+			let lead = points[marker.members[0]]
+			// Just in front of the ground at the nearest node's distance, so nearer ridges hide it
+			// as they would, and whatever is behind it doesn't.
+			return MarkerSpot(
+				labels: marker.members.map { labels[$0] },
+				azimuth: lead.azimuth,
+				elevation: lead.elevation,
+				center: marker.center,
+				depth: depth(labels[marker.members[0]].distance) - 3
+			)
 		}
 	}
 
@@ -64,11 +58,6 @@ extension LookoutTerrain {
 		let around = azimuth * .pi / 180
 		let up = elevation * .pi / 180
 		return SIMD3(Float(sin(around) * cos(up)), Float(sin(up)), Float(-cos(around) * cos(up)))
-	}
-
-	private static func azimuthGap(_ a: Double, _ b: Double) -> Double {
-		let gap = abs(a - b).truncatingRemainder(dividingBy: 360)
-		return min(gap, 360 - gap)
 	}
 }
 #endif

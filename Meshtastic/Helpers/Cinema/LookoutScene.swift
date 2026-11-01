@@ -132,6 +132,7 @@ final class LookoutScene {
 				distance: distance,
 				bearing: Self.bearing(from: site.coordinate, to: coordinate),
 				rise: Double(position.altitude),
+				altitude: nil,
 				isRadio: node.num == radioNum
 			))
 		}
@@ -141,12 +142,12 @@ final class LookoutScene {
 		// there, else the eye's level, which puts it on the horizon.
 		var placed: [LookoutLabel] = []
 		for label in found {
-			var ground = label.rise
-			if ground <= 0 {
+			var altitude: Double? = label.rise > 0 ? label.rise : nil
+			if altitude == nil {
 				let coordinate = Self.destination(from: site.coordinate, bearing: label.bearing, distance: label.distance)
-				ground = await store.elevation(at: coordinate) ?? eye
+				altitude = await store.elevation(at: coordinate)
 			}
-			placed.append(LookoutLabel(id: label.id, shortName: label.shortName, longName: label.longName, distance: label.distance, bearing: label.bearing, rise: ground - eye, isRadio: label.isRadio))
+			placed.append(LookoutLabel(id: label.id, shortName: label.shortName, longName: label.longName, distance: label.distance, bearing: label.bearing, rise: (altitude ?? eye) - eye, altitude: altitude, isRadio: label.isRadio))
 		}
 		return placed
 	}
