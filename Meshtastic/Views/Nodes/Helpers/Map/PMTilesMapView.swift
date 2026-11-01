@@ -53,6 +53,8 @@ struct OfflineMapPolyline: Identifiable {
 	let coordinates: [CLLocationCoordinate2D]
 	/// The map feature this segment came from, while decoding.
 	var featureID: UInt64?
+	/// The basemap's `min_zoom`; for a stitched line, the highest of its segments'. 0 when absent.
+	var minZoom: Double = 0
 }
 
 /// Which feature a decoded polygon belongs to and which tile it was read from. A feature near a
@@ -288,6 +290,14 @@ final class OfflineVectorTileProvider: ObservableObject {
 		}
 	}
 
+	/// Rail and waterways whose `min_zoom` is above this are drawn only from this zoom on, so a
+	/// zoomed-out map isn't covered in sidings and small streams. Roads already thin by zoom
+	/// through their widths (see `OfflineMapPalette.roadWidthStops`).
+	nonisolated static let farBandZoom: Double = 11
+
+	/// Whether a line with this `min_zoom` shows below `farBandZoom`.
+	nonisolated static func isFar(minZoom: Double) -> Bool { minZoom <= farBandZoom }
+
 	/// Painter's order for stitched road layers (earlier = underneath).
 	nonisolated private static let roadDrawOrder: [OfflineFeatureRole] = [.river, .path, .minorRoad, .mediumRoad, .majorRoad, .rail, .boundary]
 
@@ -342,23 +352,33 @@ final class OfflineVectorTileProvider: ObservableObject {
 		var stitchedVertexCount = 0
 		let stitchDuration = clock.measure {
 			for role in roadDrawOrder {
-				guard let segments = rawSegmentsByRole[role] else { continue }
-				for chain in stitch(segments.map(\.coordinates)) where chain.coordinates.count >= 2 {
+				guard let roleSegments = rawSegmentsByRole[role] else { continue }
+				for whole in stitch(roleSegments.map(\.coordinates)) where whole.coordinates.count >= 2 {
+					// Length is judged on the whole line, before it's split by band: two short pieces
+					// either side of zoom 11 make one line long enough to keep.
 					// Boundaries aren't length-filtered (admin lines can be long but sparse).
-					if role != .boundary, lengthMeters(chain.coordinates) < minRoadMeters { continue }
-					stitchedVertexCount += chain.coordinates.count
-					let id: String
-					if let featureID = chain.members.compactMap({ segments[$0].featureID }).min() {
-						// A way can end up in two chains (its pieces in two tiles didn't meet).
-						let base = "\(role)/\(featureID)"
-						let seen = usedIDs[base, default: 0]
-						usedIDs[base] = seen + 1
-						id = seen == 0 ? base : "\(base)#\(seen)"
-					} else {
-						counter += 1
-						id = "\(role)/c\(counter)"
+					if role != .boundary, lengthMeters(whole.coordinates) < minRoadMeters { continue }
+					// Stitched again per band, so a line shown zoomed out never joins one that isn't.
+					let members = whole.members.map { roleSegments[$0] }
+					let bands = [members.filter { isFar(minZoom: $0.minZoom) }, members.filter { !isFar(minZoom: $0.minZoom) }]
+					for segments in bands where !segments.isEmpty {
+						for chain in stitch(segments.map(\.coordinates)) where chain.coordinates.count >= 2 {
+							stitchedVertexCount += chain.coordinates.count
+							let id: String
+							if let featureID = chain.members.compactMap({ segments[$0].featureID }).min() {
+								// A way can end up in two chains (its pieces in two tiles didn't meet).
+								let base = "\(role)/\(featureID)"
+								let seen = usedIDs[base, default: 0]
+								usedIDs[base] = seen + 1
+								id = seen == 0 ? base : "\(base)#\(seen)"
+							} else {
+								counter += 1
+								id = "\(role)/c\(counter)"
+							}
+							let minZoom = chain.members.map { segments[$0].minZoom }.max() ?? 0
+							lines.append(OfflineMapPolyline(id: id, role: role, coordinates: chain.coordinates, minZoom: minZoom))
+						}
 					}
-					lines.append(OfflineMapPolyline(id: id, role: role, coordinates: chain.coordinates))
 				}
 			}
 		}
@@ -627,7 +647,7 @@ extension OfflineVectorTileProvider {
 		for feature in vector.features(for: "water") {
 			let kind = (feature.properties["kind"] as? String) ?? (feature.properties["pmap:kind"] as? String)
 			if kind == "river" || kind == "stream" || kind == "canal" {
-				appendPolylines(feature.geometry, role: .river, bounds: bounds, into: &lines, id: nextID, featureID: featureID(feature))
+				appendPolylines(feature.geometry, role: .river, bounds: bounds, into: &lines, id: nextID, featureID: featureID(feature), minZoom: minZoom(feature))
 			}
 		}
 		// All roads (incl. the residential/neighborhood street grid); footpaths are still skipped.
@@ -636,7 +656,7 @@ extension OfflineVectorTileProvider {
 			let kindDetail = (feature.properties["kind_detail"] as? String) ?? (feature.properties["pmap:kind_detail"] as? String)
 			let role = roadRole(kind: kind, kindDetail: kindDetail)
 			if role == .path { continue } // footways/cycleways: high count, low basemap value
-			appendPolylines(feature.geometry, role: role, bounds: bounds, into: &lines, id: nextID, featureID: featureID(feature))
+			appendPolylines(feature.geometry, role: role, bounds: bounds, into: &lines, id: nextID, featureID: featureID(feature), minZoom: minZoom(feature))
 		}
 		// Boundaries (the neighborhood/admin outline overlay) intentionally omitted.
 		return DecodedTile(polys: polys, lines: lines, labels: labels(in: vector, bounds: bounds))
@@ -847,14 +867,20 @@ extension OfflineVectorTileProvider {
 		}
 	}
 
-	nonisolated private static func appendPolylines(_ geometry: GISTools.GeoJsonGeometry, role: OfflineFeatureRole, bounds: GeoBounds?, into lines: inout [OfflineMapPolyline], id: () -> String, featureID: UInt64? = nil) {
+	/// A feature's `min_zoom` (or an older basemap's `pmap:min_zoom`), 0 when it has none.
+	nonisolated static func minZoom(_ feature: GISTools.Feature) -> Double {
+		let value = number(feature.properties["min_zoom"] ?? feature.properties["pmap:min_zoom"]) ?? 0
+		return value.isFinite ? value : 0
+	}
+
+	nonisolated private static func appendPolylines(_ geometry: GISTools.GeoJsonGeometry, role: OfflineFeatureRole, bounds: GeoBounds?, into lines: inout [OfflineMapPolyline], id: () -> String, featureID: UInt64? = nil, minZoom: Double = 0) {
 		func add(_ line: [GISTools.Coordinate3D]) {
 			let coords = line.map(coord)
 			let runs = bounds.map { clipPolyline(coords, to: $0) } ?? [coords]
 			for run in runs {
 				let simplified = simplify(run, epsilon: simplifyEpsilon)
 				if simplified.count >= 2 {
-					lines.append(OfflineMapPolyline(id: id(), role: role, coordinates: simplified, featureID: featureID))
+					lines.append(OfflineMapPolyline(id: id(), role: role, coordinates: simplified, featureID: featureID, minZoom: minZoom))
 				}
 			}
 		}

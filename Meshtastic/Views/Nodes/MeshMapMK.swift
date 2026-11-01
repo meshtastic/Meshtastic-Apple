@@ -1895,17 +1895,30 @@ struct MeshMapMK: View {
 
 		// 2b) Rivers/streams as centerlines, under the road network.
 		let linesByRole = Dictionary(grouping: offlineVectors.roads, by: { $0.role })
-		if let rivers = linesByRole[.river] {
-			let shapes = rivers.compactMap { line -> MKPolyline? in
+		// Small streams and rail sidings show only from `farBandZoom` on: a width of 0 hides an overlay.
+		let bandZoom = OfflineVectorTileProvider.farBandZoom
+		struct LineBand {
+			let id: String
+			let lines: [OfflineMapPolyline]
+			let widthAtZoom: (@Sendable (Double) -> CGFloat)?
+		}
+		func lineBands(_ role: OfflineFeatureRole, width: CGFloat) -> [LineBand] {
+			let lines = linesByRole[role] ?? []
+			return [LineBand(id: "far", lines: lines.filter { OfflineVectorTileProvider.isFar(minZoom: $0.minZoom) }, widthAtZoom: nil),
+					LineBand(id: "near", lines: lines.filter { !OfflineVectorTileProvider.isFar(minZoom: $0.minZoom) }, widthAtZoom: { $0 < bandZoom ? 0 : width })]
+		}
+		for band in lineBands(.river, width: 1.4) {
+			let shapes = band.lines.compactMap { line -> MKPolyline? in
 				guard line.coordinates.count >= 2 else { return nil }
 				var coords = line.coordinates
 				return MKPolyline(coordinates: &coords, count: coords.count)
 			}
 			if !shapes.isEmpty {
 				result.append(ClusterMapOverlay(
-					id: "offline-rivers",
+					id: "offline-rivers-\(band.id)",
 					overlay: MKMultiPolyline(shapes),
-					style: ClusterMapOverlayStyle(strokeUIColor: OfflineMapPalette.riverStroke(dark: dark), fillUIColor: nil, lineWidth: 1.4, level: .aboveRoads)
+					style: ClusterMapOverlayStyle(strokeUIColor: OfflineMapPalette.riverStroke(dark: dark), fillUIColor: nil, lineWidth: 1.4, level: .aboveRoads,
+												  widthAtZoom: band.widthAtZoom)
 				))
 			}
 		}
@@ -1945,12 +1958,21 @@ struct MeshMapMK: View {
 		}
 		// Rail + admin boundaries (single dashed stroke, both modes).
 		for role in [OfflineFeatureRole.rail, .boundary] {
-			guard let color = OfflineMapPalette.line(role, dark: dark), let multi = roadMultiPolyline(role) else { continue }
-			result.append(ClusterMapOverlay(
-				id: "offline-line-\(role)",
-				overlay: multi,
-				style: ClusterMapOverlayStyle(strokeUIColor: color, fillUIColor: nil, lineWidth: 1.0, lineDash: [2, 3], lineCap: .butt, level: .aboveRoads)
-			))
+			guard let color = OfflineMapPalette.line(role, dark: dark) else { continue }
+			for band in lineBands(role, width: 1.0) {
+				let shapes = band.lines.compactMap { line -> MKPolyline? in
+					guard line.coordinates.count >= 2 else { return nil }
+					var coords = line.coordinates
+					return MKPolyline(coordinates: &coords, count: coords.count)
+				}
+				guard !shapes.isEmpty else { continue }
+				result.append(ClusterMapOverlay(
+					id: "offline-line-\(role)-\(band.id)",
+					overlay: MKMultiPolyline(shapes),
+					style: ClusterMapOverlayStyle(strokeUIColor: color, fillUIColor: nil, lineWidth: 1.0, lineDash: [2, 3], lineCap: .butt, level: .aboveRoads,
+												  widthAtZoom: band.widthAtZoom)
+				))
+			}
 		}
 
 		offlineVectorOverlays = result
