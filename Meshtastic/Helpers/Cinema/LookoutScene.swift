@@ -94,9 +94,13 @@ final class LookoutScene {
 		guard let bounds else { return nil }
 		let radius = LookoutTerrain.outerRadius(site: site, bounds: bounds)
 		let center = site.coordinate
-		let landCover = await Task.detached(priority: .userInitiated) {
+		// Off the main actor, and stopped with this task: leaving the lookout mid-build shouldn't leave
+		// tiles decoding for a view nobody sees.
+		let build = Task.detached(priority: .userInitiated) {
 			OfflineLandCoverMap.make(center: center, radius: radius, files: OfflineMapManager.persistedRegionFiles())
-		}.value
+		}
+		let landCover = await withTaskCancellationHandler { await build.value } onCancel: { build.cancel() }
+		if Task.isCancelled { return nil }
 		guard let model = await LookoutTerrain.build(site: site, bounds: bounds, source: store, landCover: landCover, sun: sun) else { return nil }
 		do {
 			return try await LookoutTerrain.entity(for: model)

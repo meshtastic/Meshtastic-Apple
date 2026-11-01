@@ -30,7 +30,9 @@ struct OfflineLandCoverTests {
 		#expect(OfflineLandCover(layer: "landuse", kind: "wood") == .forest)
 		#expect(OfflineLandCover(layer: "landuse", kind: "orchard") == .farmland)
 		#expect(OfflineLandCover(layer: "water", kind: "lake") == .water)
-		#expect(OfflineLandCover(layer: "landuse", kind: "park") == nil)
+		#expect(OfflineLandCover(layer: "landuse", kind: "park") == .park)
+		#expect(OfflineLandCover(layer: "landuse", kind: "cemetery") == .park)
+		#expect(OfflineLandCover(layer: "landuse", kind: "nature_reserve") == nil)
 		#expect(OfflineLandCover(layer: "landuse", kind: nil) == nil)
 	}
 
@@ -53,6 +55,7 @@ struct OfflineLandCoverTests {
 		#expect(LookoutGroundColor.color(cover: .forest, elevation: line + 400, latitude: 47, heightFraction: 0.9) == LookoutGroundColor.snow)
 		#expect(LookoutGroundColor.color(cover: .water, elevation: line + 400, latitude: 47, heightFraction: 0.9) == LookoutGroundColor.water)
 		#expect(LookoutGroundColor.color(cover: .glacier, elevation: 1_500, latitude: 47, heightFraction: 0.5) == LookoutGroundColor.snow)
+		#expect(LookoutGroundColor.color(cover: .park, elevation: 50, latitude: 47, heightFraction: 0.1) == LookoutGroundColor.park)
 		// Without cover, height decides, as before.
 		#expect(LookoutGroundColor.color(cover: nil, elevation: 0, latitude: 47, heightFraction: 0) == LookoutGroundColor.water)
 		#expect(LookoutGroundColor.color(cover: nil, elevation: 500, latitude: 47, heightFraction: 0.3) == LookoutGroundColor.forest)
@@ -88,6 +91,6 @@ struct OfflineLandCoverTests {
 		let source = try #require(PMTilesArchive(url: url))
 
 		let areas = OfflineVectorTileProvider.landCover(tile: tile, source: source, layers: ["landcover", "landuse", "water"])
-		#expect(areas.map(\.cover) == [.forest, .water])   // the park says nothing about the ground
+		#expect(areas.map(\.cover) == [.forest, .park, .water])
 	}
 }

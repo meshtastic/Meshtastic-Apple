@@ -27,10 +27,10 @@ import Combine
 
 /// What covers the ground, from the basemap's `landcover`, `landuse` and `water` layers.
 enum OfflineLandCover: UInt8, CaseIterable, Sendable {
-	case forest = 1, grass, farmland, scrub, barren, glacier, urban, water
+	case forest = 1, grass, farmland, scrub, barren, glacier, urban, water, park
 
 	/// The cover a feature stands for, nil for kinds that don't say what the ground looks like
-	/// (parks, protected areas, schools).
+	/// (protected areas, which can take in a whole range, and schools).
 	init?(layer: String, kind: String?) {
 		switch (layer, kind) {
 		case ("water", _): self = .water
@@ -45,6 +45,8 @@ enum OfflineLandCover: UInt8, CaseIterable, Sendable {
 		case ("landcover", "glacier"), ("landuse", "glacier"): self = .glacier
 		case ("landcover", "urban_area"), ("landuse", "residential"), ("landuse", "commercial"), ("landuse", "industrial"),
 			 ("landuse", "retail"), ("landuse", "railway"): self = .urban
+		case ("landuse", "park"), ("landuse", "garden"), ("landuse", "recreation_ground"), ("landuse", "pitch"),
+			 ("landuse", "playground"), ("landuse", "cemetery"): self = .park
 		default: return nil
 		}
 	}

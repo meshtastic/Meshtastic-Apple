@@ -120,6 +120,8 @@ enum LookoutGroundColor {
 	static let snow = SIMD3<Double>(0.90, 0.92, 0.95)
 	static let urban = SIMD3<Double>(0.48, 0.47, 0.46)
 	static let water = SIMD3<Double>(0.22, 0.33, 0.45)
+	/// Mown grass and trees: a little brighter than grassland.
+	static let park = SIMD3<Double>(0.30, 0.44, 0.22)
 	static let rock = SIMD3<Double>(0.46, 0.40, 0.34)
 
 	/// Roughly where snow lies through summer, in meters: about 2,100 m at 47°, higher toward the
@@ -141,6 +143,7 @@ enum LookoutGroundColor {
 		case .barren: color = barren
 		case .glacier: return snow
 		case .urban: color = urban
+		case .park: color = park
 		case .water: return water
 		case nil:
 			if elevation <= 0.5 { return water }
