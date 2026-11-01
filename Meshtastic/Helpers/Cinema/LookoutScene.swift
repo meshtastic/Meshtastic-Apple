@@ -92,7 +92,12 @@ final class LookoutScene {
 	/// The terrain around `site` as an entity, or nil if it can't be built.
 	func terrain(for site: LookoutSite, sun: (azimuth: Float, elevation: Float)) async -> ModelEntity? {
 		guard let bounds else { return nil }
-		guard let model = await LookoutTerrain.build(site: site, bounds: bounds, source: store, sun: sun) else { return nil }
+		let radius = LookoutTerrain.outerRadius(site: site, bounds: bounds)
+		let center = site.coordinate
+		let landCover = await Task.detached(priority: .userInitiated) {
+			OfflineLandCoverMap.make(center: center, radius: radius, files: OfflineMapManager.persistedRegionFiles())
+		}.value
+		guard let model = await LookoutTerrain.build(site: site, bounds: bounds, source: store, landCover: landCover, sun: sun) else { return nil }
 		do {
 			return try await LookoutTerrain.entity(for: model)
 		} catch {
