@@ -145,8 +145,29 @@ html = re.sub(r"<blockquote>\s*<p>(.*?)</p>\s*</blockquote>", repl, html, flags=
 print(html, end="")
 ')"
 
-    # Rewrite internal .md hrefs to .html so in-app WKWebView links work
-    html_content="$(echo "$html_content" | sed 's|href="\([^"]*\)\.md"|href="\1.html"|g')"
+    # Rewrite internal .md hrefs to .html so in-app WKWebView links work, keeping any #heading,
+    # and give each heading the id the docs site (Jekyll's kramdown) gives it, so those links land.
+    html_content="$(echo "$html_content" | python3 -c '
+import html, re, sys
+
+page = sys.stdin.read()
+page = re.sub(r"href=\"((?!https?:)[^\"#]*)\.md(#[^\"]*)?\"", lambda m: "href=\"" + m.group(1) + ".html" + (m.group(2) or "") + "\"", page)
+
+used = {}
+
+def heading_id(text):
+    # kramdown: drop everything before the first letter, keep letters, digits, spaces and
+    # hyphens, spaces to hyphens, lowercase; repeats get -1, -2 and so on.
+    text = html.unescape(re.sub(r"<[^>]*>", "", text))
+    text = re.sub(r"^[^a-zA-Z]+", "", text)
+    slug = re.sub(r"[^a-zA-Z0-9 -]", "", text).replace(" ", "-").lower() or "section"
+    count = used.get(slug, 0)
+    used[slug] = count + 1
+    return slug if count == 0 else f"{slug}-{count}"
+
+page = re.sub(r"<h([1-6])>(.*?)</h\1>", lambda m: f"<h{m.group(1)} id=\"{heading_id(m.group(2))}\">{m.group(2)}</h{m.group(1)}>", page, flags=re.DOTALL)
+print(page, end="")
+')"
 
     local title
     # Extract first H1 as title; fall back to stem
@@ -231,6 +252,30 @@ for section in user developer; do
         PAGE_COUNT=$((PAGE_COUNT + 1))
     done
 done
+
+# ── Check heading links ───────────────────────────────────────────────────────
+# A link to a heading that isn't there opens the page at the top; warn so it gets fixed.
+python3 - "$OUTPUT_DIR" <<'PY'
+import os, re, sys
+
+root = sys.argv[1]
+ids = {}
+for section in ("user", "developer"):
+    folder = os.path.join(root, section)
+    if not os.path.isdir(folder):
+        continue
+    for name in os.listdir(folder):
+        if name.endswith(".html"):
+            with open(os.path.join(folder, name)) as f:
+                ids[os.path.join(folder, name)] = (f.read(),)
+for path, (page,) in ids.items():
+    for target, anchor in re.findall(r"href=\"((?!https?:)[^\"#]*)#([^\"]+)\"", page):
+        target_path = os.path.normpath(os.path.join(os.path.dirname(path), target)) if target else path
+        if target_path not in ids:
+            continue
+        if f"id=\"{anchor}\"" not in ids[target_path][0]:
+            print(f"::warning::{os.path.relpath(path, root)} links to #{anchor} in {os.path.relpath(target_path, root)}, which has no such heading")
+PY
 
 # ── Write index.json ──────────────────────────────────────────────────────────
 INDEX_JSON="["

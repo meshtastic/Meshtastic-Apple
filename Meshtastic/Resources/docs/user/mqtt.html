@@ -7,9 +7,9 @@
   <link rel="stylesheet" href="../assets/docs.css">
 </head>
 <body data-page="mqtt">
-<h1>MQTT</h1>
+<h1 id="mqtt">MQTT</h1>
 <p>The MQTT module allows a Meshtastic node to bridge mesh traffic to an MQTT broker, extending the mesh over the internet and enabling integration with home automation systems.</p>
-<h2>What MQTT Does</h2>
+<h2 id="what-mqtt-does">What MQTT Does</h2>
 <p>A node with MQTT enabled acts as a gateway: it publishes received mesh packets to an MQTT broker and optionally subscribes to a topic so that remote nodes can inject packets back into the local mesh.</p>
 <table>
 <thead>
@@ -38,7 +38,7 @@
 </tbody>
 </table>
 <p>This enables two mesh networks in different physical locations to appear as one logical network — as long as at least one node in each location has internet access.</p>
-<h2>Configuring MQTT</h2>
+<h2 id="configuring-mqtt">Configuring MQTT</h2>
 <p>Go to <strong>Settings → MQTT</strong>:</p>
 <p><img src="../assets/screenshots/mqttConfig.png" alt="MQTT Config" /></p>
 <table>
@@ -91,19 +91,19 @@
 </tr>
 </tbody>
 </table>
-<h2>Topic Structure</h2>
+<h2 id="topic-structure">Topic Structure</h2>
 <p>Meshtastic publishes to:</p>
 <pre><code>&lt;root_topic&gt;/&lt;region&gt;/&lt;channel_index&gt;/&lt;node_id&gt;/&lt;packet_type&gt;
 </code></pre>
 <p>Example: <code>msh/US/2/!a1b2c3d4/text</code></p>
-<h2>Security Considerations</h2>
+<h2 id="security-considerations">Security Considerations</h2>
 <ul>
 <li>Enabling MQTT with an insecure channel broadcasts location and messages to the internet.</li>
 <li>The channel security indicator shows <strong>Insecure with MQTT</strong> (🔓⚠️) when a channel is unencrypted and MQTT is active.</li>
 <li>Always use <strong>Encryption Enabled</strong> in production to protect message content.</li>
 <li>Consider using a private broker rather than the public <code>mqtt.meshtastic.org</code>.</li>
 </ul>
-<h2>Public Broker</h2>
+<h2 id="public-broker">Public Broker</h2>
 <p>The public MQTT broker at <code>mqtt.meshtastic.org</code> is available for testing. <strong>Do not transmit sensitive information over the public broker.</strong> Use it only for initial setup verification.</p>
 </body>
 </html>

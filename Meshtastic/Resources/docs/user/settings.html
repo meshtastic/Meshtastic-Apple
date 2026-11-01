@@ -7,11 +7,11 @@
   <link rel="stylesheet" href="../assets/docs.css">
 </head>
 <body data-page="settings">
-<h1>Settings</h1>
+<h1 id="settings">Settings</h1>
 <p>The Settings tab lets you configure the app and your connected Meshtastic radio.</p>
-<h2>App Settings</h2>
+<h2 id="app-settings">App Settings</h2>
 <p>General app preferences including map style, notification behavior, and theme. These affect only the app — not the radio.</p>
-<h3>Notifications</h3>
+<h3 id="notifications">Notifications</h3>
 <p>Which alerts the app raises is set per type in the iOS Settings app, under <strong>Settings → Meshtastic</strong>, in the <strong>Notifications</strong> section. <strong>Open Settings</strong> in App Settings takes you straight there. Every toggle is on by default.</p>
 <table>
 <thead>
@@ -40,17 +40,17 @@
 </tbody>
 </table>
 <p>Turning a toggle off suppresses only the alert — messages, reactions, waypoints, and nodes are still received and still appear in the app. Muting a channel or a sender in the app silences that conversation regardless of these settings.</p>
-<h3>Data Management</h3>
+<h3 id="data-management">Data Management</h3>
 <ul>
 <li><strong>Erase All App Data</strong> — clears the local database, translation cache, and all stored settings, then immediately reloads the bundled device hardware catalog. Use this as a last resort.</li>
 <li><strong>NodeDB Reset</strong> — resets the node database on your connected radio. When prompted, you can choose to <strong>Preserve Favorites</strong> so your starred nodes are retained after the reset.</li>
 <li><strong>Reset App Settings</strong> — restores default app preferences without affecting your node database.</li>
 </ul>
-<h2>Radio Configuration</h2>
+<h2 id="radio-configuration">Radio Configuration</h2>
 <p>Radio configuration requires a connected node. Select your node from the <strong>Configure</strong> section if you have multiple nodes.</p>
-<h3>Node selection</h3>
+<h3 id="node-selection">Node selection</h3>
 <p>The Configure picker lists live nodes from the current node database, with favorites first. If the node database is reset or the selected node disappears, Settings clears that selection instead of opening configuration for a stale node. Reconnect to a radio or choose a currently listed node to continue configuring it.</p>
-<h3>LoRa</h3>
+<h3 id="lora">LoRa</h3>
 <p>LoRa settings control how your radio communicates on the mesh:</p>
 <table>
 <thead>
@@ -88,12 +88,12 @@
 </table>
 <p>On firmware <strong>2.8.0 or later</strong>, the radio tells the app which modem presets are legal in each region. When you pick a region, the Presets list narrows to the compatible set, and if your current preset isn't allowed there the app switches you to that region's default. Setting the region to <strong>US</strong> on a newly flashed node moves the stock <strong>Long Fast</strong> preset to <strong>Long Turbo</strong> — Long Fast's bandwidth is not US-compliant — while a deliberately chosen preset that is legal in the US is kept. Amateur (ham) bands such as the Tiny and Narrow presets are marked <strong>licensed</strong> — the app shows a warning, and you should enable <strong>Licensed Operator</strong> (and set your call sign) in <strong>User</strong> config before transmitting. On older firmware the full preset list is shown unchanged.</p>
 <p>Saving LoRa settings may reboot the radio and briefly disconnect it. If the radio reports a region from newer firmware that this app does not recognize, choose a supported region before saving.</p>
-<h3>Channels</h3>
+<h3 id="channels">Channels</h3>
 <p>Manage up to 8 channels (0–7). Channel 0 is the primary broadcast channel. Additional channels create isolated messaging groups with their own encryption keys.</p>
 <p>When sharing channels, the share screen shows a QR code and link, and — on iPhones with NFC hardware (iOS 18 or later) — a <strong>Write to NFC Tag</strong> button. Hold a writable NFC tag near the top of your iPhone to save the channel link to it, replacing any content the tag already held; tapping that tag on another phone opens the same add-or-replace channels flow the QR code does.</p>
-<h3>Security</h3>
+<h3 id="security">Security</h3>
 <p>Configure PKI (Public Key Infrastructure) encryption for direct messages. Requires firmware 2.5+.</p>
-<h4>Packet Authenticity</h4>
+<h4 id="packet-authenticity">Packet Authenticity</h4>
 <p>Firmware that reports XEdDSA support can authenticate the sender of a mesh packet. <strong>Protection Level</strong> controls what the radio does with traffic it cannot authenticate:</p>
 <table>
 <thead>
@@ -121,7 +121,7 @@
 <p>The selector is disabled when the connected radio does not report XEdDSA support, or has not reported its capability yet — update that radio's firmware to configure the policy. Note that a verified signature proves which key sent a packet; it does not prove that a reported position or sensor reading is true or current.</p>
 <p>This setting matches the Meshtastic app for Android, and the policy is enforced by the radio rather than the app.</p>
 <p>On hardened lockdown-firmware radios, this page also shows a <strong>Lockdown</strong> section with the session status, a <strong>Lock Now</strong> button, and a <strong>Forget Stored Passphrase</strong> button. See <a href="lockdown.html">Lockdown Mode</a>.</p>
-<h3>User</h3>
+<h3 id="user">User</h3>
 <p>Set your Long Name (display name) and Short Name (4-character/emoji identifier shown in the node circle).</p>
 <p>Both limits are counted in UTF-8 bytes rather than characters, because that is how the radio stores them. Most emoji are four bytes, so a single emoji fills the short name; some older symbols are smaller. Typing past the limit stops rather than cutting a character in half.</p>
 <p>How long a Long Name can be depends on the radio. Firmware 2.8 and later keeps
@@ -133,14 +133,14 @@ connected to.</p>
 are now connected to would keep. Note that a 2.8 radio hearing an older one
 still stores only 24 bytes of its name, so a longer name is shortened by
 everyone else's radio even when your own keeps it.</p>
-<h3>Bluetooth</h3>
+<h3 id="bluetooth">Bluetooth</h3>
 <p>BLE radio settings including PIN mode and power saving. Changes apply on next radio restart.</p>
-<h3>Device</h3>
+<h3 id="device">Device</h3>
 <p>Device role, serial output, debug log streaming, and node info broadcast interval.</p>
 <p>The <strong>Repeater</strong> role is deprecated and can no longer be selected for new configurations. If a node is still set to Repeater it is shown as &quot;Repeater (Deprecated)&quot; with a reminder to switch it to a Router-based role (Router or Router Late).</p>
-<h3>Display</h3>
+<h3 id="display">Display</h3>
 <p>Screen timeout, auto-carousel of screens, flip screen for alternate mounting orientations, and OLED contrast.</p>
-<h4>Compass Orientation</h4>
+<h4 id="compass-orientation">Compass Orientation</h4>
 <p>Controls which direction the on-device compass points when the screen is at rest. Use this when your radio is mounted at an angle or upside-down.</p>
 <table>
 <thead>
@@ -184,7 +184,7 @@ everyone else's radio even when your own keeps it.</p>
 </tr>
 </tbody>
 </table>
-<h3>Network</h3>
+<h3 id="network">Network</h3>
 <p>Wi-Fi SSID/password for TCP connection, NTP and syslog servers, UDP broadcast, and
 Ethernet. Each section appears only on hardware that has the radio it configures, so a
 board with neither Wi-Fi nor Ethernet shows nothing here.</p>
@@ -194,13 +194,13 @@ network for its address and the static fields are not shown.</p>
 required: a static setup missing any of them leaves the node unreachable, so Save stays
 disabled until all three are complete and well formed. A malformed entry is shown in
 red. <strong>DNS is optional</strong> and may be left blank, which stores it as unset.</p>
-<h3>Position</h3>
+<h3 id="position">Position</h3>
 <p>GPS update interval, position precision, and smart position broadcasting. Enable <strong>Broadcast Position</strong> to share your location with the mesh.</p>
 <p>The GPS pin settings (the receive, transmit and enable GPIOs) are for boards where you wire up the GPS yourself. On a board whose maker builds the GPS in, they are hidden, here and in settings search.</p>
 <p>The <strong>GPS Mode</strong> selector (Enabled / Disabled / Not Present) is the single source of truth for the GPS state that the app writes to the radio. The older on/off <code>gpsEnabled</code> field it replaced is deprecated: the app no longer writes it, but still reads it from older firmware so existing devices keep working. No action is needed when upgrading — your GPS setting is preserved.</p>
-<h3>Power</h3>
+<h3 id="power">Power</h3>
 <p>Battery saving profiles, sleep modes, and minimum wake time. Critical for solar-powered router nodes.</p>
-<h2>Module Configuration</h2>
+<h2 id="module-configuration">Module Configuration</h2>
 <p>Optional feature modules. A module's settings appear only when your connected node
 can actually use them, which means two things: the radio's firmware build did not
 leave the module out, and the firmware is new enough to have it at all. Where a
@@ -273,7 +273,7 @@ screen may briefly appear before the radio finishes identifying itself.</p>
 </tr>
 </tbody>
 </table>
-<h3>Mesh Beacon</h3>
+<h3 id="mesh-beacon">Mesh Beacon</h3>
 <p>A mesh beacon lets nearby radios find your mesh and join it. It is available on nodes running firmware <strong>2.8.0 or later</strong>, and needs a LoRa region set first. The beacon always uses the radio's own region, and offers the radio's own modem preset.</p>
 <table>
 <thead>
@@ -314,7 +314,7 @@ screen may briefly appear before the radio finishes identifying itself.</p>
 </tbody>
 </table>
 <p>A frequency slot must be within the range for the region and preset; the screen shows the range when a value is outside it.</p>
-<h2>Tools</h2>
+<h2 id="tools">Tools</h2>
 <p>The <strong>Tools</strong> entry appears only on iPhones with NFC hardware running iOS 18 or later; it is hidden on iPads, Mac Catalyst, and any device without an NFC radio.</p>
 <p>It contains an <strong>NFC Tags</strong> section:</p>
 <table>
@@ -337,17 +337,17 @@ screen may briefly appear before the radio finishes identifying itself.</p>
 </table>
 <p>If a scanned tag holds something other than a Meshtastic contact or channel link, or its channel settings can't be read, the scan reports the problem rather than appearing to succeed.</p>
 <p>Tags written by the Meshtastic app for Android are interchangeable with these — both platforms write the same contact and channel links.</p>
-<h2>Firmware Updates</h2>
+<h2 id="firmware-updates">Firmware Updates</h2>
 <p>Check for and apply OTA firmware updates to your connected radio directly from the app. See <a href="firmware.html">Firmware Updates</a> for full details.</p>
-<h2>Tools</h2>
+<h2 id="tools-1">Tools</h2>
 <p>The <strong>Tools</strong> screen (Settings → Tools) provides utilities for backing up, restoring, and sharing your connected radio's configuration.</p>
-<h3>Create Node Contact NFC Tag</h3>
+<h3 id="create-node-contact-nfc-tag">Create Node Contact NFC Tag</h3>
 <p>Write your node's contact card to an NFC tag so others can add you by tapping it. Requires a connected node and NFC-capable hardware.</p>
-<h3>Export Device Configuration</h3>
+<h3 id="export-device-configuration">Export Device Configuration</h3>
 <p>Save the connected node's full configuration — radio, module, and channel settings — to a <code>.cfg</code> file you can back up or import onto another device. The format matches the Android app and the <code>meshtastic</code> CLI.</p>
 <div class="warning-callout"><strong>Warning — Backups contain secrets</strong>
 The exported file includes your node's private key, admin keys, channel keys (PSKs), and Wi-Fi/MQTT passwords. Anyone with the file can join and administer your mesh, so store and share it only with people you trust.</div>
-<h3>Import Device Configuration</h3>
+<h3 id="import-device-configuration">Import Device Configuration</h3>
 <p>Apply a saved <code>.cfg</code> configuration file to the connected node. After you pick a file, a review sheet shows what it contains, grouped into sections you can turn on or off before applying:</p>
 <table>
 <thead>
@@ -398,9 +398,9 @@ Importing writes the selected settings — including any secrets in the file —
 <p>MQTT and Serial settings are applied after the main transaction because either can drop the Bluetooth link before the transaction is committed. If that disconnect interrupts them, the result shows <strong>Needs a Second Pass</strong> so you can reconnect and apply those sections separately. If the radio disconnects before acknowledging the commit, the result warns that saving was not confirmed.</p>
 <p>You can cancel while a setting is being sent over Bluetooth or TCP; cancellation typically completes quickly. The app stops sending additional sections, then commits the sections already applied so the radio does not remain in an unfinished edit transaction. If the transport callback does not settle, the sheet allows dismissal after 15 seconds. A write already handed to the operating system may still reach the radio, so review the result before retrying.</p>
 <p>Because the radio can silently discard settings it accepts, imports that reboot the radio show <strong>Check What Applied</strong> while the app waits for it to reconnect. Once the radio sends its configuration back, the app automatically compares each imported section against what the radio actually holds. If that check can't run, tap <strong>Verify Against the Radio</strong> to try again. Re-running an import is safe.</p>
-<h2>Automatic Documentation Translation</h2>
+<h2 id="automatic-documentation-translation">Automatic Documentation Translation</h2>
 <p>On devices running iOS 26 or later, the in-app documentation is automatically translated to your device language when it differs from English.</p>
-<h3>How It Works</h3>
+<h3 id="how-it-works">How It Works</h3>
 <ul>
 <li><strong>Language detection</strong>: The app reads your device's primary language setting each time you open a documentation page.</li>
 <li><strong>On-device translation</strong>: Pages are translated using Apple's on-device Translation framework (iOS 26+). If a language is not supported by the Translation framework, the app falls back to the on-device Foundation model (iOS 26+ only).</li>
@@ -408,9 +408,9 @@ Importing writes the selected settings — including any secrets in the file —
 <li><strong>Caching</strong>: Translated pages are stored locally so they load instantly on subsequent visits.</li>
 <li><strong>Background prefetch</strong>: After the current page is translated, remaining pages are translated in the background at low priority.</li>
 </ul>
-<h3>Fallback to English</h3>
+<h3 id="fallback-to-english">Fallback to English</h3>
 <p>If translation is unavailable (older than iOS 26, unsupported language, or language pack not downloaded), the original English documentation is displayed. The app never shows blank or broken pages.</p>
-<h3>Cache Management</h3>
+<h3 id="cache-management">Cache Management</h3>
 <ul>
 <li>Translated files are stored in Application Support and persist across app launches.</li>
 <li>A 50 MB per-language limit is enforced using least-recently-used eviction.</li>
