@@ -113019,8 +113019,8 @@
         }
       }
     },
-    "Radio firmware 2.7.12–2.8.0 resets this root topic to %@ when the LoRa region is changed. After changing the region, return here, restore your custom root topic, and tap Save. Fixed in radio firmware 2.8.1 and later." : {
-      "comment" : "MQTT custom-root reset warning. The placeholder is the radio region default, e.g. msh/US. Versions refer to radio firmware, not the Apple app."
+    "Radio firmware 2.7.12–2.8.0 resets this root topic to the new region's default when the LoRa region is changed (%@ for the current region). After changing the region, return here, restore your custom root topic, and tap Save. Fixed in radio firmware 2.8.1 and later." : {
+      "comment" : "MQTT custom-root reset warning. The placeholder is the default root for the radio's current region, e.g. msh/US. Versions refer to radio firmware, not the Apple app."
     },
     "Radius" : {
       "localizations" : {

@@ -308,7 +308,7 @@ private struct RootTopicField: View {
 				.foregroundStyle(.red)
 		}
 		if olderFirmwareReplacesRoot {
-			Label("Radio firmware 2.7.12–2.8.0 resets this root topic to \(regionTopic) when the LoRa region is changed. After changing the region, return here, restore your custom root topic, and tap Save. Fixed in radio firmware 2.8.1 and later.", systemImage: "exclamationmark.triangle")
+			Label("Radio firmware 2.7.12–2.8.0 resets this root topic to the new region's default when the LoRa region is changed (\(regionTopic) for the current region). After changing the region, return here, restore your custom root topic, and tap Save. Fixed in radio firmware 2.8.1 and later.", systemImage: "exclamationmark.triangle")
 				.font(.caption)
 				.foregroundStyle(.orange)
 		}
