@@ -198,11 +198,19 @@ def build_cab():
 
     for side in SIDES:
         wall_mat = paint if SIDES[side][1] else paint_y
-        # The low wall, with its inner face WALL inside the outer face.
-        box("KneeWall" + side, along(side, 2 * HALF + 0.2, WALL, KNEE), at(side, 0, -WALL / 2, KNEE / 2), wall_mat)
-        # The sill shelf inside, and a drip sill outside.
-        box("Sill" + side, along(side, 2 * HALF + 0.1, SILL_DEPTH, 0.035), at(side, 0, -WALL - SILL_DEPTH / 2 + 0.03, KNEE + 0.017), sill)
-        box("OuterSill" + side, along(side, 2 * HALF + 0.2, 0.06, 0.03), at(side, 0, 0.03, KNEE + 0.01), frame)
+        # The low wall, with its inner face WALL inside the outer face, the sill shelf inside, and a
+        # drip sill outside. All three stop at the door's posts, so the door shows from the floor.
+        for start, end in wall_runs(side, HALF + 0.1):
+            box("KneeWall" + side, along(side, end - start, WALL, KNEE), at(side, (start + end) / 2, -WALL / 2, KNEE / 2), wall_mat)
+            box("OuterSill" + side, along(side, end - start, 0.06, 0.03), at(side, (start + end) / 2, 0.03, KNEE + 0.01), frame)
+        for start, end in wall_runs(side, HALF + 0.05):
+            if side == DOOR_HINGE_SILL:
+                end -= SILL_TAPER
+                sill_taper(side, end, HALF - WALL, sill)
+            if side == DOOR[0] and abs(start - door_edges()[1]) < 0.001:
+                start += SILL_TAPER
+                sill_taper(side, start, start - SILL_TAPER, sill)
+            box("Sill" + side, along(side, end - start, SILL_DEPTH, 0.035), at(side, (start + end) / 2, -WALL - SILL_DEPTH / 2 + 0.03, KNEE + 0.017), sill)
         # The header over the windows.
         box("Header" + side, along(side, 2 * HALF + 0.2, WALL, CEILING - HEAD), at(side, 0, -WALL / 2, (HEAD + CEILING) / 2), wall_mat)
         # Posts between the bays, and at the corners.
@@ -221,6 +229,47 @@ def build_cab():
             build_shutter(side, u, shutter_out, frame)
 
     build_railing(rail)
+
+
+def door_edges():
+    """Where the door's opening starts and ends along its side, between its posts."""
+    u = bay_center(DOOR[1])
+    return u - BAY / 2 + POST / 2, u + BAY / 2 - POST / 2
+
+
+def wall_runs(side, reach):
+    """The stretches along `side`, out to `reach` either way from its middle, that aren't the
+    door's opening between its posts."""
+    if side != DOOR[0]:
+        return [(-reach, reach)]
+    left, right = door_edges()
+    return [(start, end) for start, end in ((-reach, left), (right, reach)) if end - start > 0.001]
+
+
+# The sills either side of the door would stick out across the doorway: the right wall's, which
+# ends in the back corner beside the hinge, and the back wall's beside the knob. Their last stretch
+# toward the door tapers to nothing instead, cut back on a diagonal.
+DOOR_HINGE_SILL = "right"
+SILL_TAPER = 0.6
+
+
+def sill_taper(side, full, thin, mat):
+    """A wedge of sill along `side` from full depth at `full` to nothing at `thin`."""
+    inner, outer = -WALL - SILL_DEPTH + 0.03, -WALL + 0.03
+    corners = [(full, outer), (full, inner), (thin, outer)]
+    bottom, top = KNEE, KNEE + 0.035
+
+    def build(bm):
+        low = [bm.verts.new(at(side, cu, co, bottom)) for cu, co in corners]
+        high = [bm.verts.new(at(side, cu, co, top)) for cu, co in corners]
+        bm.faces.new(low)
+        bm.faces.new(high)
+        for i in range(3):
+            j = (i + 1) % 3
+            bm.faces.new((low[i], low[j], high[j], high[i]))
+        bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+
+    mesh_object("SillTaper" + side, build, mat)
 
 
 def u_direction(side):
@@ -260,17 +309,23 @@ def build_door(side, u, frame, glass):
     """A half-glass door in its bay, with Chirpy's poster on the inside of its lower panel."""
     width = BAY - POST
     paint = material("Door", (0.86, 0.84, 0.76), 0.5)
-    box("DoorLower", along(side, width, 0.04, KNEE + 0.02), at(side, u, -WALL / 2, (KNEE + 0.02) / 2 + 0.01), paint)
+    # The lower panel, the rail and the stiles are each a little thicker than the last, so their
+    # faces never lie in the same plane.
+    box("DoorLower", along(side, width, 0.03, KNEE + 0.02), at(side, u, -WALL / 2, (KNEE + 0.02) / 2 + 0.01), paint)
     plane("DoorGlass", width - 0.12, HEAD - KNEE - 0.1, at(side, u, -WALL / 2, (KNEE + HEAD) / 2), facing_in(side), glass)
     for du in (-width / 2 + 0.03, width / 2 - 0.03):
-        box("DoorStile", along(side, 0.06, 0.04, HEAD - KNEE), at(side, u + du, -WALL / 2, (KNEE + HEAD) / 2), paint)
+        box("DoorStile", along(side, 0.06, 0.05, HEAD - KNEE), at(side, u + du, -WALL / 2, (KNEE + HEAD) / 2), paint)
     box("DoorRail", along(side, width, 0.04, 0.06), at(side, u, -WALL / 2, KNEE + 0.03), paint)
     box("DoorTop", along(side, width, 0.04, 0.05), at(side, u, -WALL / 2, HEAD - 0.025), paint)
     brass = material("Brass", (0.78, 0.6, 0.3), 0.3, metallic=1.0)
-    knob = Vector(at(side, u + width / 2 - 0.09, -WALL / 2 - 0.02, 0.95))
+    # On the lower panel, just under the rail.
+    knob = Vector(at(side, u + width / 2 - 0.1, -WALL / 2 - 0.015, KNEE - 0.07))
     nx, ny = SIDES[side]
-    sphere("DoorKnob", 0.025, knob - Vector((nx, ny, 0)) * 0.05, brass, segments=16)
-    cylinder("DoorKnobNeck", 0.008, knob, knob - Vector((nx, ny, 0)) * 0.05, brass, segments=10)
+    # Bigger than life, so it reads as a knob from the seat across the cab.
+    inward = Vector((nx, ny, 0))
+    cylinder("DoorKnobRose", 0.034, knob, knob - inward * 0.01, brass, segments=32)
+    cylinder("DoorKnobNeck", 0.012, knob, knob - inward * 0.075, brass, segments=16)
+    sphere("DoorKnob", 0.04, knob - inward * 0.075, brass, segments=24)
     poster = image_material("ChirpyPoster", os.path.join(CACHE, "chirpy_poster.png"), 0.7)
     plane("Poster", 0.38, 0.53, at(side, u, -WALL / 2 - 0.021, 0.48), facing_in(side), poster)
 
