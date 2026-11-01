@@ -84,12 +84,18 @@ enum SpatialLookout {
 	/// room.
 	static let frontHeading = 156.0
 
-	/// Where the cinema keeps how many quarter turns clockwise the lookout is turned.
+	/// Where the cinema keeps how many eighth turns clockwise the lookout is turned.
 	static let turnsKey = "cinemaLookoutTurns"
 
-	/// The bearing the cab faces after `turns` quarter turns clockwise.
+	/// The bearing the cab faces after `turns` eighth turns clockwise.
 	static func heading(turns: Int) -> Double {
-		(frontHeading + 90 * Double((turns % 4 + 4) % 4)).truncatingRemainder(dividingBy: 360)
+		(frontHeading + 45 * Double((turns % 8 + 8) % 8)).truncatingRemainder(dividingBy: 360)
+	}
+
+	/// The eighth turns that face the cab nearest to `bearing`, 0..<8.
+	static func turns(nearest bearing: Double) -> Int {
+		let steps = Int(((bearing - frontHeading) / 45).rounded())
+		return (steps % 8 + 8) % 8
 	}
 
 	/// Turn about y that points the model's front (+z) along `heading` on the map, where x runs

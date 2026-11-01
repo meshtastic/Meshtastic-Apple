@@ -45,7 +45,7 @@ struct CinemaSpace: View {
 	/// The fire lookout's summits, and the terrain and node labels for the chosen one.
 	@State private var lookout = LookoutScene()
 	@AppStorage("cinemaLookoutSite") private var lookoutSiteID = ""
-	/// Quarter turns clockwise the lookout is turned from the panel.
+	/// Eighth turns clockwise the lookout is turned from the panel.
 	@AppStorage(SpatialLookout.turnsKey) private var lookoutTurns = 0
 	@State private var terrain: ModelEntity?
 	/// The site the terrain and labels are built for; nil for the painted sunset.

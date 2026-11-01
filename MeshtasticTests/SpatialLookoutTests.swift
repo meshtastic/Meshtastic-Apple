@@ -99,19 +99,32 @@ struct SpatialLookoutTests {
 		#expect(simd_distance(spot, SIMD2(sin(back), -cos(back)) * 0.02) < 1e-5)
 	}
 
-	@Test("each turn moves the cab a quarter turn clockwise, and four turns bring it back")
+	@Test("each turn moves the cab an eighth of a turn clockwise, and eight turns bring it back")
 	func turns() {
 		#expect(SpatialLookout.heading(turns: 0) == SpatialLookout.frontHeading)
-		#expect(SpatialLookout.heading(turns: 1) == 246)
-		#expect(SpatialLookout.heading(turns: 2) == 336)
-		#expect(SpatialLookout.heading(turns: 3) == 66)
-		#expect(SpatialLookout.heading(turns: 4) == SpatialLookout.frontHeading)
-		#expect(SpatialLookout.heading(turns: -1) == 66)
+		#expect(SpatialLookout.heading(turns: 1) == 201)
+		#expect(SpatialLookout.heading(turns: 2) == 246)
+		#expect(SpatialLookout.heading(turns: 4) == 336)
+		#expect(SpatialLookout.heading(turns: 5) == 21)
+		#expect(SpatialLookout.heading(turns: 7) == 111)
+		#expect(SpatialLookout.heading(turns: 8) == SpatialLookout.frontHeading)
+		#expect(SpatialLookout.heading(turns: -1) == 111)
+	}
+
+	@Test("the dial picks the turn whose facing is nearest where it's touched")
+	func nearestTurn() {
+		for turns in 0..<8 {
+			let heading = SpatialLookout.heading(turns: turns)
+			#expect(SpatialLookout.turns(nearest: heading) == turns)
+			#expect(SpatialLookout.turns(nearest: heading + 20) == turns)
+			#expect(SpatialLookout.turns(nearest: heading - 20 + 360) == turns)
+		}
+		#expect(SpatialLookout.turns(nearest: 0) == 5)
 	}
 
 	@Test("a turned cab's front faces its new bearing on the map")
 	func turnedYaw() {
-		for turns in 0..<4 {
+		for turns in 0..<8 {
 			let heading = SpatialLookout.heading(turns: turns)
 			let front = simd_quatf(angle: SpatialLookout.yaw(heading: heading), axis: [0, 1, 0]).act([0, 0, 1])
 			let bearing = heading * .pi / 180

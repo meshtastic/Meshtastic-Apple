@@ -97,24 +97,24 @@
             "out",
             "stands",
             "beside",
+            "tap",
             "sunset",
             "route",
             "fire",
             "details",
             "back",
             "while",
+            "way",
             "under",
             "trace",
-            "tap",
             "status",
             "shows",
             "same",
             "panel",
-            "model",
-            "heard",
-            "front"
+            "one",
+            "model"
         ],
-        "charCount": 4361
+        "charCount": 4456
     },
     {
         "id": "discovery",
@@ -816,7 +816,7 @@
             "jul",
             "from"
         ],
-        "charCount": 10638
+        "charCount": 10652
     },
     {
         "id": "adding-features",

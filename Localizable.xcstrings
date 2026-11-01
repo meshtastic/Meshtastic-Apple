@@ -147700,7 +147700,7 @@
       }
     },
     "Turn Lookout" : {
-      "comment" : "Cinema: turns the fire lookout a quarter turn clockwise, so the screen looks out over another part of the view"
+      "comment" : "Cinema: title over the dial that turns the fire lookout, so the screen looks out over another part of the view"
     },
     "Turn on Bluetooth in Settings to see nearby radios." : {
       "comment" : "Connect tab: subtitle shown in Available Radios when the BLE transport reports Bluetooth is powered off (#2175)",

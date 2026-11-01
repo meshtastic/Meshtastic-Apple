@@ -16,7 +16,7 @@ struct CinemaPanel: View {
 	let sites: [LookoutSite]
 	/// The chosen summit's id, or empty for the forest sunset.
 	@Binding var siteID: String
-	/// Quarter turns clockwise the lookout is turned.
+	/// Eighth turns clockwise the lookout is turned.
 	@Binding var turns: Int
 	/// Where the connected radio is, to say how far each summit is from it.
 	let radioCoordinate: CLLocationCoordinate2D?
@@ -44,23 +44,10 @@ struct CinemaPanel: View {
 					}
 				}
 				.pickerStyle(.menu)
-				// The world turns round the cab, so the screen looks out over another quarter of the
+				// The world turns round the cab, so the screen looks out over another part of the
 				// view. The forest sunset is painted, so there's nothing to turn there.
 				if !siteID.isEmpty {
-					Button {
-						turns = (turns + 1) % 4
-					} label: {
-						Label {
-							VStack(alignment: .leading) {
-								Text("Turn Lookout", comment: "Cinema: turns the fire lookout a quarter turn clockwise, so the screen looks out over another part of the view")
-								Text(verbatim: SpatialLookout.facing(heading: SpatialLookout.heading(turns: turns)))
-									.font(.caption)
-									.foregroundStyle(.secondary)
-							}
-						} icon: {
-							Image(systemName: "arrow.clockwise")
-						}
-					}
+					LookoutTurnDial(turns: $turns)
 				}
 			} else if environment.isCutout, let lookoutNote {
 				Text(verbatim: lookoutNote)
