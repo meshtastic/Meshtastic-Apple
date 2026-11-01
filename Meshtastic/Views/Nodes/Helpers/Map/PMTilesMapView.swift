@@ -57,8 +57,9 @@ struct OfflineMapPolyline: Identifiable {
 	var minZoom: Double = 0
 	/// Whether a road runs in a tunnel, on a bridge or on the ground. Stitched only with its own kind.
 	var structure: OfflineRoadStructure = .surface
-	/// The basemap's `sort_rank`: within a road class, higher ranks draw on top. For a stitched
-	/// road, the highest of its segments'.
+	/// The basemap's `sort_rank`, the importance it gives the road. For a stitched road, the
+	/// highest of its segments'. Lines come out in this order; the maps draw each road class and
+	/// structure as one batch of one style, so it doesn't change what they draw.
 	var sortRank = 0
 }
 
@@ -400,8 +401,7 @@ final class OfflineVectorTileProvider: ObservableObject {
 					}
 				}
 			}
-			// Lowest sort_rank first, so the more important roads of a class draw over the rest;
-			// ties keep their order.
+			// Lowest sort_rank first, ties in their order, so the output order is the basemap's.
 			lines = lines.enumerated()
 				.sorted { ($0.element.sortRank, $0.offset) < ($1.element.sortRank, $1.offset) }
 				.map(\.element)

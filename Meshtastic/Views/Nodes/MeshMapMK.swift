@@ -1924,8 +1924,8 @@ struct MeshMapMK: View {
 		}
 
 		// 3) Roads, batched per role and structure into MKMultiPolylines (keeps the dense grid to a
-		// few overlays). Each batch keeps the decoder's sort_rank order, so within a class the more
-		// important roads draw on top.
+		// few overlays). Each batch is one color and width, so what draws over what comes from the
+		// order of the batches: tunnels, then roads on the ground by class, then bridges.
 		func roadMultiPolyline(_ role: OfflineFeatureRole, _ structure: OfflineRoadStructure) -> MKMultiPolyline? {
 			let shapes = (linesByRole[role] ?? []).filter { $0.structure == structure }.compactMap { line -> MKPolyline? in
 				guard line.coordinates.count >= 2 else { return nil }
