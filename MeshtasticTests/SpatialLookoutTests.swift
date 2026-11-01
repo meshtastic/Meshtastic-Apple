@@ -98,4 +98,44 @@ struct SpatialLookoutTests {
 		let back = Float(SpatialLookout.frontHeading * .pi / 180) + .pi
 		#expect(simd_distance(spot, SIMD2(sin(back), -cos(back)) * 0.02) < 1e-5)
 	}
+
+	@Test("each turn moves the cab a quarter turn clockwise, and four turns bring it back")
+	func turns() {
+		#expect(SpatialLookout.heading(turns: 0) == SpatialLookout.frontHeading)
+		#expect(SpatialLookout.heading(turns: 1) == 246)
+		#expect(SpatialLookout.heading(turns: 2) == 336)
+		#expect(SpatialLookout.heading(turns: 3) == 66)
+		#expect(SpatialLookout.heading(turns: 4) == SpatialLookout.frontHeading)
+		#expect(SpatialLookout.heading(turns: -1) == 66)
+	}
+
+	@Test("a turned cab's front faces its new bearing on the map")
+	func turnedYaw() {
+		for turns in 0..<4 {
+			let heading = SpatialLookout.heading(turns: turns)
+			let front = simd_quatf(angle: SpatialLookout.yaw(heading: heading), axis: [0, 1, 0]).act([0, 0, 1])
+			let bearing = heading * .pi / 180
+			#expect(abs(front.x - Float(sin(bearing))) < 0.0001, "\(turns)")
+			#expect(abs(front.z + Float(cos(bearing))) < 0.0001, "\(turns)")
+		}
+	}
+
+	@Test("the caption names the nearest compass point")
+	func facing() {
+		#expect(SpatialLookout.facing(heading: 0) == "Faces north")
+		#expect(SpatialLookout.facing(heading: 350) == "Faces north")
+		#expect(SpatialLookout.facing(heading: 66) == "Faces northeast")
+		#expect(SpatialLookout.facing(heading: 70) == "Faces east")
+		#expect(SpatialLookout.facing(heading: 156) == "Faces southeast")
+		#expect(SpatialLookout.facing(heading: 246) == "Faces southwest")
+		#expect(SpatialLookout.facing(heading: 336) == "Faces northwest")
+	}
+
+	@Test("a turned lookout still steps behind its cab first")
+	func spotBehindTurnedCab() throws {
+		let heading = SpatialLookout.heading(turns: 1)
+		let spot = try #require(SpatialLookoutSpot.spot(summit: .zero, pins: [.zero], clearance: 0.02, heading: heading))
+		let back = Float(heading * .pi / 180) + .pi
+		#expect(simd_distance(spot, SIMD2(sin(back), -cos(back)) * 0.02) < 1e-5)
+	}
 }

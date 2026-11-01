@@ -38,6 +38,7 @@ While the cab stands on a summit, the 3D map shows the lookout there too: the ca
 
 - **Environment**: the place the screen is set in: the search and rescue tent, or a ham shack, a wood-paneled radio room with an operating desk, a window out to the antenna tower, and the same boards; its status board is net control's check-in board, standing portrait beside the screen; or a fire lookout, a glass cab on a summit at sunset.
 - **Summit**: in the fire lookout, with terrain downloaded, which summit the cab stands on, or the forest sunset.
+- **Turn Lookout**: with a summit picked, turns the cab a quarter turn clockwise, so the screen looks out over another part of the view. The caption under it says which way the cab faces. The cab on the 3D map turns with it.
 - **Open 3D Map**: shown while the 3D map is closed.
 - **Move it**: pinch the bar under the panel and drag it wherever you want it.
 - **Leave**: closes the tent and brings back the app's window.
