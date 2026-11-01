@@ -145,20 +145,21 @@ struct UnheardNodesBanner: View {
 							// lag, and the removal re-checks each node anyway.
 							isConfirming = true
 						} label: {
-							Text("Remove Them")
-								.frame(minWidth: 48, minHeight: 48)
+							Text("Delete")
+								.foregroundStyle(.white)
 						}
 						.buttonStyle(.borderedProminent)
-						.tint(.accentFill)
+						.tint(.red)
 
 						Button {
 							dismiss(connectedNodeNum: connectedNodeNum)
 						} label: {
 							Text("Keep")
-								.frame(minWidth: 48, minHeight: 48)
 						}
 						.buttonStyle(.bordered)
 					}
+					.buttonBorderShape(.capsule)
+					.controlSize(.regular)
 				}
 			}
 			Spacer(minLength: 0)
@@ -175,7 +176,7 @@ struct UnheardNodesBanner: View {
 			Button(role: .destructive) {
 				Task { await removeUnheardNodes(connectedNodeNum: connectedNodeNum) }
 			} label: {
-				Text("Remove", comment: "Confirms removing nodes not heard on the current LoRa settings")
+				Text("Delete")
 			}
 			Button(role: .cancel) { } label: {
 				Text("Cancel")
