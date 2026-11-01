@@ -52,10 +52,10 @@ struct CinemaSpace: View {
 	@State private var terrainSiteID: String?
 	/// The bearing the cab faced when the terrain was built; the labels are placed from it too.
 	@State private var terrainHeading = SpatialLookout.frontHeading
-	/// The site and facing a terrain is being built for. The cinema opening refreshes the lookout
-	/// from two tasks at once, and only one of them should build.
-	@State private var buildingSiteID: String?
-	@State private var buildingHeading: Double?
+	/// The terrain being built, and the site and facing it's for. The cinema opening refreshes the
+	/// lookout from two tasks at once; the second waits on the first one's build instead of
+	/// starting another. The build is its own task so a caller being cancelled doesn't stop it.
+	@State private var lookoutBuild: LookoutBuild?
 	@State private var labelPanels = LabelPanels()
 	@State private var radioCoordinate: CLLocationCoordinate2D?
 
@@ -293,6 +293,12 @@ struct CinemaSpace: View {
 		}
 	}
 
+	private struct LookoutBuild {
+		let siteID: String
+		let heading: Double
+		let task: Task<ModelEntity?, Never>
+	}
+
 	private enum Attachments {
 		static let panel = "panel"
 		static let tabStrip = "screenTabs"
@@ -349,24 +355,38 @@ struct CinemaSpace: View {
 		let site = lookout.site(for: lookoutSiteID)
 		let heading = SpatialLookout.heading(turns: lookoutTurns)
 		guard site?.id != terrainSiteID || heading != terrainHeading || (site != nil && terrain == nil) else { return }
-		if let site, buildingSiteID == site.id, buildingHeading == heading { return }
 		terrain?.removeFromParent()
 		terrain = nil
 		terrainSiteID = nil
 		guard let site else {
+			lookoutBuild?.task.cancel()
+			lookoutBuild = nil
 			await replaceBackdrop(clearSky: false)
 			return
 		}
-		buildingSiteID = site.id
-		buildingHeading = heading
-		let built = await lookout.terrain(for: site, heading: heading, sun: environment.sun)
-		if buildingSiteID == site.id, buildingHeading == heading {
-			buildingSiteID = nil
-			buildingHeading = nil
+		let build: Task<ModelEntity?, Never>
+		if let current = lookoutBuild, current.siteID == site.id, current.heading == heading {
+			build = current.task
+		} else {
+			lookoutBuild?.task.cancel()
+			let sun = environment.sun
+			build = Task { await lookout.terrain(for: site, heading: heading, sun: sun) }
+			lookoutBuild = LookoutBuild(siteID: site.id, heading: heading, task: build)
 		}
-		// Kept only if the summit and the turn are still the ones chosen.
-		guard let entity = built, lookoutSiteID == site.id, SpatialLookout.heading(turns: lookoutTurns) == heading, environment.isCutout else { return }
+		let built = await build.value
+		if lookoutBuild?.task == build {
+			lookoutBuild = nil
+		}
+		// Kept only if the summit and the turn are still the ones chosen, and the other caller
+		// waiting on the same build hasn't already put it up. Checked again after the backdrop
+		// changes, since either can change while it does.
+		func stillWanted() -> Bool {
+			lookoutSiteID == site.id && SpatialLookout.heading(turns: lookoutTurns) == heading && environment.isCutout
+				&& !(terrain != nil && terrainSiteID == site.id && terrainHeading == heading)
+		}
+		guard let entity = built, stillWanted() else { return }
 		await replaceBackdrop(clearSky: true)
+		guard stillWanted() else { return }
 		terrain?.removeFromParent()
 		stage.addChild(entity)
 		terrain = entity
