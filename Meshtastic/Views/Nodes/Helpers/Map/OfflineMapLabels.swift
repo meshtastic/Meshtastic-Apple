@@ -27,7 +27,10 @@ enum OfflineMapLabels {
 		var result: [OfflineMapLabel] = []
 		for label in ranked where label.minZoom <= zoom {
 			let row = Int(((label.coordinate.latitude - minLat) / cellLat).rounded(.down))
-			let column = Int(((label.coordinate.longitude - minLon) / cellLon).rounded(.down))
+			// East of the view's west edge, wrapped, so a view across ±180° keeps the far side.
+			var east = (label.coordinate.longitude - minLon).truncatingRemainder(dividingBy: 360)
+			if east < 0 { east += 360 }
+			let column = Int((east / cellLon).rounded(.down))
 			guard (0..<rows).contains(row), (0..<columns).contains(column), taken.insert(row * columns + column).inserted else { continue }
 			result.append(label)
 			if result.count == rows * columns { break }
