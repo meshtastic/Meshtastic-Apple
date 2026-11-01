@@ -589,8 +589,17 @@ final class OfflineMapManager: ObservableObject {
 	private func removeTerrainFiles(for region: OfflineMapRegion) {
 		guard let dir = directoryURL() else { return }
 		let derived = Self.terrainFileNames(forBasemap: region.fileName)
-		let names = Set([region.terrain?.fileName, region.terrain?.regionalFileName, derived.global, derived.regional].compactMap { $0 })
-		for name in names {
+		let recorded = [region.terrain?.fileName] + (region.terrain?.regionalFiles.map(\.fileName) ?? [])
+		for name in Set((recorded + [derived.global]).compactMap { $0 }) {
+			try? FileManager.default.removeItem(at: dir.appendingPathComponent(name))
+		}
+		Self.removeRegionalTerrainFiles(forBasemap: region.fileName, in: dir)
+	}
+
+	/// Deletes every high-resolution terrain file named for a basemap, recorded or not.
+	nonisolated static func removeRegionalTerrainFiles(forBasemap fileName: String, in dir: URL) {
+		let prefix = terrainFileNames(forBasemap: fileName).regional.replacingOccurrences(of: ".pmtiles", with: "")
+		for name in (try? FileManager.default.contentsOfDirectory(atPath: dir.path)) ?? [] where name.hasPrefix(prefix) && name.hasSuffix(".pmtiles") {
 			try? FileManager.default.removeItem(at: dir.appendingPathComponent(name))
 		}
 	}
@@ -642,14 +651,21 @@ extension OfflineMapManager {
 
 	/// Terrain archive file names derived from the region's basemap archive name,
 	/// e.g. `"<uuid>.pmtiles"` → `"<uuid>-terrain.pmtiles"` / `"<uuid>-terrain-hi.pmtiles"`.
+	/// The regional name is the one older builds wrote for their single extract.
 	nonisolated static func terrainFileNames(forBasemap fileName: String) -> (global: String, regional: String) {
 		let stem = (fileName as NSString).deletingPathExtension
 		return ("\(stem)-terrain.pmtiles", "\(stem)-terrain-hi.pmtiles")
 	}
 
+	/// The high-resolution extract from one z6 archive, e.g. `"<uuid>-terrain-hi-6-10-22.pmtiles"`.
+	nonisolated static func regionalTerrainFileName(forBasemap fileName: String, tileX: UInt32, tileY: UInt32) -> String {
+		let stem = (fileName as NSString).deletingPathExtension
+		return "\(stem)-terrain-hi-6-\(tileX)-\(tileY).pmtiles"
+	}
+
 	/// Downloads Mapterhorn elevation data for an existing region: a global z0–12
-	/// extract of the region's bounds, plus a z13–15 extract when a single regional
-	/// high-resolution archive covers the area. Failure never touches the basemap —
+	/// extract of the region's bounds, plus a z13–15 extract from each regional
+	/// high-resolution archive the area reaches. Failure never touches the basemap —
 	/// the region stays usable and terrain can be retried. `includeRegional: false` skips the
 	/// z13–15 extract; `maxBytes` caps the whole terrain download (global plus regional).
 	/// `freeing` is what a finished download will delete, credited against the storage limit.
@@ -674,7 +690,6 @@ extension OfflineMapManager {
 		}
 		let names = Self.terrainFileNames(forBasemap: current.fileName)
 		let globalURL = dir.appendingPathComponent(names.global)
-		let regionalURL = dir.appendingPathComponent(names.regional)
 		activeDownload = OfflineMapDownloadProgress(
 			id: current.id,
 			name: String(localized: "Terrain for \(current.name)"),
@@ -713,28 +728,29 @@ extension OfflineMapManager {
 				}.value
 				guard hasValidHeader else { throw PMTilesExtractorError.badHeader }
 
-				var regional: RegionalTerrainExtract?
+				var regionals: [RegionalTerrainExtract] = []
 				if includeRegional {
-					regional = try await self.extractRegionalTerrain(
-						extractor: extractor, bounds: current.bounds, to: regionalURL,
-						maxBytes: maxBytes.map { $0 - plan.payloadBytes }, freeing: freeing,
-						appManaged: current.isAppManaged
+					// The global extract isn't on the region yet, so the ceiling counts it here.
+					let counted = await MainActor.run { Self.storageCounted(in: self.regions, forAppManaged: current.isAppManaged) }
+					let room = Self.maxTotalBytes - (counted - freeing + plan.payloadBytes)
+					regionals = try await Self.extractRegionalTerrain(
+						extractor: extractor, bounds: current.bounds, directory: dir, basemapFileName: current.fileName,
+						budget: min(room, maxBytes.map { $0 - plan.payloadBytes } ?? room)
 					)
 				}
 				await self.finishTerrainDownload(
 					id: current.id,
 					globalName: names.global,
-					regionalName: regional != nil ? names.regional : nil,
-					maxZoom: regional?.maxZoom ?? Self.terrainGlobalMaxZoom,
-					provenance: TerrainProvenance(globalETag: global.sourceETag, globalLastModified: global.sourceLastModified, regionalETag: regional?.etag)
+					regionals: regionals,
+					provenance: TerrainProvenance(globalETag: global.sourceETag, globalLastModified: global.sourceLastModified)
 				)
 			} catch is CancellationError {
 				try? FileManager.default.removeItem(at: globalURL)
-				try? FileManager.default.removeItem(at: regionalURL)
+				Self.removeRegionalTerrainFiles(forBasemap: current.fileName, in: dir)
 				await self.clearDownload(id: current.id)
 			} catch {
 				try? FileManager.default.removeItem(at: globalURL)
-				try? FileManager.default.removeItem(at: regionalURL)
+				Self.removeRegionalTerrainFiles(forBasemap: current.fileName, in: dir)
 				let message = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
 				Logger.services.error("🗺️ [Terrain] Download failed: \(message, privacy: .public)")
 				await self.failDownload(id: current.id, message: message)
@@ -742,62 +758,87 @@ extension OfflineMapManager {
 		}
 	}
 
-	/// What the regional extract wrote: its max zoom and the source's ETag.
-	private struct RegionalTerrainExtract {
+	/// One regional extract written to disk: what the region records, plus its max zoom.
+	struct RegionalTerrainExtract {
+		let record: OfflineMapRegionalTerrain
 		let maxZoom: Int
-		let etag: String?
 	}
 
-	/// Where a finished terrain download came from, recorded on the region.
+	/// Where a finished terrain download's global extract came from, recorded on the region.
 	private struct TerrainProvenance {
 		let globalETag: String?
 		let globalLastModified: Date?
-		let regionalETag: String?
 	}
 
-	/// Mapterhorn's regional high-resolution archive for the region's bounds, or nil when
-	/// the bounds span more than one z6 tile.
+	/// Mapterhorn's regional high-resolution archive for one z6 tile.
+	nonisolated static func regionalTerrainArchive(tileX: UInt32, tileY: UInt32) -> URL? {
+		URL(string: "https://download.mapterhorn.com/6-\(tileX)-\(tileY).pmtiles")
+	}
+
+	/// The regional archive for bounds inside one z6 tile, or nil when they span more. Where an
+	/// older manifest recorded one extract, this is the archive it came from.
 	nonisolated static func regionalTerrainArchive(for bounds: GeoBounds) -> URL? {
 		let tiles = z6Tiles(intersecting: bounds)
 		guard tiles.count == 1, let tile = tiles.first else { return nil }
-		return URL(string: "https://download.mapterhorn.com/6-\(tile.x)-\(tile.y).pmtiles")
+		return regionalTerrainArchive(tileX: tile.x, tileY: tile.y)
 	}
 
-	/// Attempts the optional high-resolution regional extract. Returns what it wrote on
-	/// success, or nil when the bounds span multiple z6 archives, no archive exists, or
-	/// the extract fails — global-only terrain is normal, never an error. Only
-	/// cancellation propagates.
-	private func extractRegionalTerrain(extractor: PMTilesExtractor, bounds: GeoBounds, to destination: URL, maxBytes: Int64? = nil, freeing: Int64 = 0, appManaged: Bool = false) async throws -> RegionalTerrainExtract? {
-		guard let source = Self.regionalTerrainArchive(for: bounds),
-			  await extractor.archiveExists(source) else { return nil }
-		do {
-			let plan = try await extractor.makePlan(
-				sourceURL: source, sourceBuild: "Mapterhorn",
-				bounds: bounds, minZoom: Self.terrainRegionalMinZoom, maxZoom: Self.terrainRegionalMaxZoom
+	/// The optional high-resolution extracts: from each z6 archive the bounds reach, the part of the
+	/// bounds inside that archive's tile, into its own file. A missing archive (Mapterhorn has no
+	/// high-resolution data there) or a failed extract is skipped; global-only terrain is normal,
+	/// never an error. `budget` caps everything extracted here together: the smaller of what's left
+	/// of the per-map limit and of the storage ceiling. An archive that would pass it is skipped.
+	/// Only cancellation propagates.
+	nonisolated static func extractRegionalTerrain(
+		extractor: PMTilesExtractor,
+		bounds: GeoBounds,
+		directory: URL,
+		basemapFileName: String,
+		budget: Int64
+	) async throws -> [RegionalTerrainExtract] {
+		var extracts: [RegionalTerrainExtract] = []
+		var written: Int64 = 0
+		for tile in z6Tiles(intersecting: bounds) {
+			try Task.checkCancellation()
+			let tileBounds = GeoBounds.tile(z: 6, x: Int(tile.x), y: Int(tile.y))
+			let area = GeoBounds(
+				minLon: max(bounds.minLon, tileBounds.minLon), minLat: max(bounds.minLat, tileBounds.minLat),
+				maxLon: min(bounds.maxLon, tileBounds.maxLon), maxLat: min(bounds.maxLat, tileBounds.maxLat)
 			)
-			// Same storage ceiling as the global extract (the global file is on
-			// disk by now, so this count already includes it).
-			let used = await MainActor.run { Self.storageCounted(in: self.regions, forAppManaged: appManaged) }
-			guard used - freeing + plan.payloadBytes <= Self.maxTotalBytes else { return nil }
-			if let maxBytes, plan.payloadBytes > maxBytes { return nil }
-			let written = try await extractor.extract(plan: plan, to: destination)
-			let hasValidHeader = await Task.detached(priority: .utility) {
-				PMTilesArchive.header(url: destination) != nil
-			}.value
-			guard hasValidHeader else {
+			guard area.minLon < area.maxLon, area.minLat < area.maxLat,
+				  let source = regionalTerrainArchive(tileX: tile.x, tileY: tile.y),
+				  await extractor.archiveExists(source) else { continue }
+			let destination = directory.appendingPathComponent(regionalTerrainFileName(forBasemap: basemapFileName, tileX: tile.x, tileY: tile.y))
+			do {
+				let plan = try await extractor.makePlan(
+					sourceURL: source, sourceBuild: "Mapterhorn",
+					bounds: area, minZoom: terrainRegionalMinZoom, maxZoom: terrainRegionalMaxZoom
+				)
+				guard written + plan.payloadBytes <= budget else {
+					Logger.services.info("🗺️ [Terrain] Regional extract 6-\(tile.x, privacy: .public)-\(tile.y, privacy: .public) skipped: over the storage limit")
+					continue
+				}
+				let plannedWritten = try await extractor.extract(plan: plan, to: destination)
+				guard PMTilesArchive.header(url: destination) != nil else {
+					try? FileManager.default.removeItem(at: destination)
+					continue
+				}
+				let size = (try? destination.resourceValues(forKeys: [.fileSizeKey]).fileSize).flatMap { $0 }.map(Int64.init)
+				written += size ?? plan.payloadBytes
+				extracts.append(RegionalTerrainExtract(
+					record: OfflineMapRegionalTerrain(fileName: destination.lastPathComponent, tileX: tile.x, tileY: tile.y, etag: plannedWritten.sourceETag),
+					maxZoom: plannedWritten.maxZoom
+				))
+			} catch is CancellationError {
+				throw CancellationError()
+			} catch PMTilesExtractorError.cancelled {
+				throw CancellationError()
+			} catch {
 				try? FileManager.default.removeItem(at: destination)
-				return nil
+				Logger.services.info("🗺️ [Terrain] Regional extract 6-\(tile.x, privacy: .public)-\(tile.y, privacy: .public) skipped: \(error.localizedDescription, privacy: .public)")
 			}
-			return RegionalTerrainExtract(maxZoom: written.maxZoom, etag: written.sourceETag)
-		} catch is CancellationError {
-			throw CancellationError()
-		} catch PMTilesExtractorError.cancelled {
-			throw CancellationError()
-		} catch {
-			try? FileManager.default.removeItem(at: destination)
-			Logger.services.info("🗺️ [Terrain] Regional extract skipped: \(error.localizedDescription, privacy: .public)")
-			return nil
 		}
+		return extracts
 	}
 
 	/// Name of the offline map the visionOS spatial map keeps for the mesh.
@@ -989,7 +1030,8 @@ extension OfflineMapManager {
 	}
 
 	/// Records the finished terrain extract on its region and saves the manifest.
-	private func finishTerrainDownload(id: UUID, globalName: String, regionalName: String?, maxZoom: Int, provenance: TerrainProvenance) {
+	private func finishTerrainDownload(id: UUID, globalName: String, regionals: [RegionalTerrainExtract], provenance: TerrainProvenance) {
+		let regionalNames = regionals.map(\.record.fileName)
 		guard activeDownload?.id == id, downloadLifecycle.end(id: id) else { return }
 		downloadTask = nil
 		activeDownload = nil
@@ -1002,14 +1044,14 @@ extension OfflineMapManager {
 		guard let index = regions.firstIndex(where: { $0.id == id }) else {
 			// The region disappeared mid-download; don't leave orphaned archives.
 			try? FileManager.default.removeItem(at: dir.appendingPathComponent(globalName))
-			if let regionalName {
-				try? FileManager.default.removeItem(at: dir.appendingPathComponent(regionalName))
+			for name in regionalNames {
+				try? FileManager.default.removeItem(at: dir.appendingPathComponent(name))
 			}
 			completion?(nil)
 			return
 		}
 		var byteCount: Int64 = 0
-		for name in [globalName, regionalName].compactMap({ $0 }) {
+		for name in [globalName] + regionalNames {
 			let url = dir.appendingPathComponent(name)
 			if let size = try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize {
 				byteCount += Int64(size)
@@ -1017,13 +1059,14 @@ extension OfflineMapManager {
 		}
 		regions[index].terrain = OfflineMapTerrain(
 			fileName: globalName,
-			regionalFileName: regionalName,
+			regionalFileName: regionals.first?.record.fileName,
 			byteCount: byteCount,
 			downloadedAt: .now,
-			maxZoom: maxZoom,
+			maxZoom: regionals.map(\.maxZoom).reduce(Self.terrainGlobalMaxZoom, max),
 			globalETag: provenance.globalETag,
 			globalLastModified: provenance.globalLastModified,
-			regionalETag: provenance.regionalETag
+			regionalETag: regionals.first?.record.etag,
+			regionalArchives: regionals.map(\.record)
 		)
 		save()
 		completion?(regions[index])
@@ -1065,10 +1108,10 @@ extension OfflineMapManager {
 			guard let terrain = region.terrain else { return nil }
 			let globalURL = dir.appendingPathComponent(terrain.fileName)
 			guard FileManager.default.fileExists(atPath: globalURL.path) else { return nil }
-			let regionalURL = terrain.regionalFileName
-				.map { dir.appendingPathComponent($0) }
-				.flatMap { FileManager.default.fileExists(atPath: $0.path) ? $0 : nil }
-			return TerrainSource(globalURL: globalURL, regionalURL: regionalURL, bounds: region.bounds)
+			let regionalURLs = terrain.regionalFiles
+				.map { dir.appendingPathComponent($0.fileName) }
+				.filter { FileManager.default.fileExists(atPath: $0.path) }
+			return TerrainSource(globalURL: globalURL, regionalURLs: regionalURLs, bounds: region.bounds)
 		}
 	}
 	#endif
@@ -1097,8 +1140,12 @@ extension OfflineMapManager {
 
 	nonisolated static func terrainStaleness(of terrain: OfflineMapTerrain, bounds: GeoBounds, extractor: PMTilesExtractor) async -> OfflineMapStaleness {
 		var checks: [(url: URL?, stored: String?)] = [(URL(string: terrainGlobalArchive), terrain.globalETag)]
-		if terrain.regionalFileName != nil {
-			checks.append((regionalTerrainArchive(for: bounds), terrain.regionalETag))
+		for regional in terrain.regionalFiles {
+			// An extract recorded before regions could span several z6 archives came from the one
+			// its bounds sit in.
+			let url = regional.tileX.flatMap { x in regional.tileY.flatMap { regionalTerrainArchive(tileX: x, tileY: $0) } }
+				?? regionalTerrainArchive(for: bounds)
+			checks.append((url, regional.etag))
 		}
 		var result = OfflineMapStaleness.fresh
 		for check in checks {

@@ -11,12 +11,25 @@
 import Foundation
 import MapKit
 
+/// One high-resolution terrain extract: the part of the region inside one of Mapterhorn's z6
+/// regional archives (`6-{x}-{y}.pmtiles`).
+struct OfflineMapRegionalTerrain: Codable, Hashable {
+	var fileName: String
+	/// The z6 tile naming the source archive; nil for an extract recorded before a region could
+	/// reach more than one.
+	var tileX: UInt32?
+	var tileY: UInt32?
+	/// Strong ETag of the source archive when this was extracted.
+	var etag: String?
+}
+
 /// Elevation data downloaded alongside a region: Mapterhorn terrain extracts of
 /// the same bounding box. Absent for regions downloaded before terrain support.
 struct OfflineMapTerrain: Codable, Hashable {
 	/// File name of the global (z0–12) terrain extract, e.g. `"<uuid>-terrain.pmtiles"`.
 	var fileName: String
-	/// File name of the optional high-resolution regional extract, e.g. `"<uuid>-terrain-hi.pmtiles"`.
+	/// File name of the high-resolution extract, from manifests that recorded only one. Newer
+	/// downloads set it to their first extract too, so an older build still finds one.
 	var regionalFileName: String?
 	/// Combined size of the terrain archives on disk.
 	var byteCount: Int64
@@ -31,6 +44,15 @@ struct OfflineMapTerrain: Codable, Hashable {
 	var globalLastModified: Date?
 	/// Strong ETag of the regional z6 archive the high-resolution extract came from.
 	var regionalETag: String?
+	/// The high-resolution extracts, one per z6 archive the region reaches. Optional and additive:
+	/// older manifests record one extract in `regionalFileName`.
+	var regionalArchives: [OfflineMapRegionalTerrain]?
+
+	/// Every high-resolution extract: `regionalArchives`, or the single one an older manifest records.
+	var regionalFiles: [OfflineMapRegionalTerrain] {
+		if let regionalArchives { return regionalArchives }
+		return regionalFileName.map { [OfflineMapRegionalTerrain(fileName: $0, etag: regionalETag)] } ?? []
+	}
 }
 
 /// Metadata describing one downloaded offline map region. The geometry is stored
