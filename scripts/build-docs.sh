@@ -146,7 +146,7 @@ print(html, end="")
 ')"
 
     # Rewrite internal .md hrefs to .html so in-app WKWebView links work, keeping any #heading,
-    # and give each heading the id the docs site (Jekyll's kramdown) gives it, so those links land.
+    # and give each heading the id the docs site (Jekyll's kramdown, GFM input) gives it, so those links land.
     html_content="$(echo "$html_content" | python3 -c '
 import html, re, sys
 
@@ -156,11 +156,10 @@ page = re.sub(r"href=\"((?!https?:)[^\"#]*)\.md(#[^\"]*)?\"", lambda m: "href=\"
 used = {}
 
 def heading_id(text):
-    # kramdown: drop everything before the first letter, keep letters, digits, spaces and
-    # hyphens, spaces to hyphens, lowercase; repeats get -1, -2 and so on.
-    text = html.unescape(re.sub(r"<[^>]*>", "", text))
-    text = re.sub(r"^[^a-zA-Z]+", "", text)
-    slug = re.sub(r"[^a-zA-Z0-9 -]", "", text).replace(" ", "-").lower() or "section"
+    # kramdown GFM: lowercase, keep word characters, hyphens, spaces and tabs, spaces and tabs
+    # to hyphens; repeats get -1, -2 and so on.
+    text = html.unescape(re.sub(r"<[^>]*>", "", text)).lower()
+    slug = re.sub(r"[ \t]", "-", re.sub(r"[^\w\- \t]", "", text)) or "section"
     count = used.get(slug, 0)
     used[slug] = count + 1
     return slug if count == 0 else f"{slug}-{count}"
@@ -272,6 +271,8 @@ for path, (page,) in ids.items():
     for target, anchor in re.findall(r"href=\"((?!https?:)[^\"#]*)#([^\"]+)\"", page):
         target_path = os.path.normpath(os.path.join(os.path.dirname(path), target)) if target else path
         if target_path not in ids:
+            if target.endswith(".html") and os.path.dirname(os.path.dirname(target_path)) == os.path.normpath(root):
+                print(f"::warning::{os.path.relpath(path, root)} links to {os.path.relpath(target_path, root)}, which isn't a docs page")
             continue
         if f"id=\"{anchor}\"" not in ids[target_path][0]:
             print(f"::warning::{os.path.relpath(path, root)} links to #{anchor} in {os.path.relpath(target_path, root)}, which has no such heading")
