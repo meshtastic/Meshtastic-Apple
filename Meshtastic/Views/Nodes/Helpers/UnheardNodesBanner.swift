@@ -146,10 +146,8 @@ struct UnheardNodesBanner: View {
 							isConfirming = true
 						} label: {
 							Text("Delete")
-								.foregroundStyle(.white)
 						}
 						.buttonStyle(.borderedProminent)
-						.tint(.red)
 
 						Button {
 							dismiss(connectedNodeNum: connectedNodeNum)
