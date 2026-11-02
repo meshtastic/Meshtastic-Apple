@@ -54,7 +54,6 @@
 		B80DB8962DBDE2284BC9664A /* urls.json in Resources */ = {isa = PBXBuildFile; fileRef = B079D165838E646EE754DC6E /* urls.json */; };
 		B97B830773C8597258C1A96F /* MeshtasticProtobufs in Frameworks */ = {isa = PBXBuildFile; productRef = 838679D32875D367B9FC8FBF /* MeshtasticProtobufs */; };
 		BB73AFBEB76A7B00550C8F2F /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = A7443D3C9E82A023A4388EFC /* InfoPlist.strings */; };
-		C435B3FDDC80FBF45F9D6CDB /* Certificates in Resources */ = {isa = PBXBuildFile; fileRef = 25BA43A8304E6CC120811070 /* Certificates */; };
 		C5B1D5B4B38940E115D61856 /* ShowcaseContent in Frameworks */ = {isa = PBXBuildFile; platformFilters = (xros, ); productRef = 854C16DCEE2F871D2485DEE3 /* ShowcaseContent */; };
 		C6148418734B3ADB2741CB8E /* PMTilesExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9297A8F3E4AAC1F74C05844 /* PMTilesExtractor.swift */; };
 		D8EAA0284C5F4F9CE9941A1D /* MeshtasticMessages.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 591BC4981F3D80C31349BEED /* MeshtasticMessages.appex */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -145,7 +144,6 @@
 		122531D8C1D7CC809C6EF3B7 /* WriteContinuationStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WriteContinuationStore.swift; sourceTree = "<group>"; };
 		1A740EACFF7FA4000F22EF4E /* Meshtastic.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Meshtastic.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		25A13454C9C85CEBBBC2DD1F /* he */ = {isa = PBXFileReference; lastKnownFileType = text.plist; name = he; path = he.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
-		25BA43A8304E6CC120811070 /* Certificates */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Certificates; path = Meshtastic/Resources/Certificates; sourceTree = SOURCE_ROOT; };
 		2625B7E87368ACBC51E821F5 /* MeshtasticDataModelV 38.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 38.xcdatamodel"; sourceTree = "<group>"; };
 		26351F51CD01C94D8D82486A /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		28E116C9AE5DEDB5FD2F3EE8 /* MeshtasticDataModelV 48.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 48.xcdatamodel"; sourceTree = "<group>"; };
@@ -825,7 +823,6 @@
 				D744131C1600FC47CB596573 /* AppIcon_MPowered.icon */,
 				6776764BA24154B603C76018 /* AppIcon.icon */,
 				6D159B66B1877A7506D1AB20 /* AppIconDebug.icon */,
-				25BA43A8304E6CC120811070 /* Certificates */,
 				C6BCC32505771F08628D70D7 /* DeviceHardware.json */,
 				C9A178D4960C8B5434676256 /* DeviceModels */,
 				6B3F64B089C3A398FEBE6C9C /* docs */,
@@ -1216,7 +1213,6 @@
 				F0F15E85A1D7193379E705C4 /* AppIcon_MPowered.icon in Resources */,
 				4748BFF7E7AEF9C8EDA23D91 /* AppIntentVocabulary.plist in Resources */,
 				FF64E74D859119DFCC57BD80 /* Assets.xcassets in Resources */,
-				C435B3FDDC80FBF45F9D6CDB /* Certificates in Resources */,
 				2C99DFD1FEA08461A9B0D104 /* DeviceHardware.json in Resources */,
 				6CABB3DA5BDD75359320B657 /* InfoPlist.strings in Resources */,
 				BB73AFBEB76A7B00550C8F2F /* InfoPlist.strings in Resources */,

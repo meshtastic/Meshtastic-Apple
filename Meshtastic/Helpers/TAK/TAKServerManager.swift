@@ -15,7 +15,7 @@ import MeshtasticProtobufs
 
 enum TAKServerError: LocalizedError {
 	case noServerCertificate
-	case noClientCACertificate
+	case certificatesUnavailable(String)
 	case tlsConfigurationFailed
 	case listenerFailed(String)
 	case clientNotFound
@@ -26,8 +26,8 @@ enum TAKServerError: LocalizedError {
 		switch self {
 		case .noServerCertificate:
 			return "No server certificate configured. Import a .p12 file with the server certificate and private key."
-		case .noClientCACertificate:
-			return "No client CA certificate configured. Import the CA certificate (.pem) used to sign client certificates."
+		case .certificatesUnavailable(let reason):
+			return "Could not issue the TAK certificates: \(reason)"
 		case .tlsConfigurationFailed:
 			return "Failed to configure TLS settings."
 		case .listenerFailed(let reason):
@@ -63,6 +63,9 @@ final class TAKServerManager: ObservableObject {
 	@Published var lastError: String?
 	@Published private(set) var primaryChannelIssues: [PrimaryChannelIssue] = []
 	@Published private(set) var readOnlyMode = false
+	/// A TAK client presented a certificate this install didn't issue, so it is set up with an
+	/// old or another install's data package. Cleared when the issued client connects.
+	@Published var clientNeedsReimport = false
 	
 	/// User toggle for read-only mode - locked to true if channel has issues
 	@AppStorage("takServerReadOnly") var userReadOnlyMode = false
@@ -270,6 +273,20 @@ final class TAKServerManager: ObservableObject {
 		let parameters: NWParameters
 
 		if useTLS {
+			// The certificates for this install, issued the first time. Off the main actor:
+			// three RSA keys take a moment.
+			let issued: TAKIssuedCertificates
+			do {
+				issued = try await Task.detached(priority: .userInitiated) {
+					try TAKCertificateManager.shared.ensureIssuedCertificates()
+				}.value
+			} catch {
+				let serverError = TAKServerError.certificatesUnavailable(error.localizedDescription)
+				lastError = serverError.localizedDescription
+				enabled = false
+				throw serverError
+			}
+
 			// Validate we have a server certificate for TLS mode
 			guard let identity = TAKCertificateManager.shared.getServerIdentity() else {
 				let error = TAKServerError.noServerCertificate
@@ -306,52 +323,26 @@ final class TAKServerManager: ObservableObject {
 				true
 			)
 
-			// Set up client certificate validation
-			let clientCAs = TAKCertificateManager.shared.getClientCACertificates()
-			Logger.tak.info("Loaded \(clientCAs.count) CA certificate(s) for client validation")
-			if !clientCAs.isEmpty {
-				for (index, ca) in clientCAs.enumerated() {
-					if let summary = SecCertificateCopySubjectSummary(ca) as String? {
-						Logger.tak.info("CA[\(index)]: \(summary)")
-					}
-				}
-				let trustRoots = clientCAs as CFArray
-				sec_protocol_options_set_verify_block(
-					tlsOptions.securityProtocolOptions,
-					{ _, secTrust, completion in
-						// Convert sec_trust_t to SecTrust
-						let trust = sec_trust_copy_ref(secTrust).takeRetainedValue()
-
-						// Set policy for client certificate validation
-						// Use SSL policy with server=false to validate client certificates
-						// This properly accepts clientAuth ExtendedKeyUsage
-						let clientPolicy = SecPolicyCreateSSL(false, nil)
-						SecTrustSetPolicies(trust, clientPolicy)
-
-						SecTrustSetAnchorCertificates(trust, trustRoots)
-						SecTrustSetAnchorCertificatesOnly(trust, true)
-						var error: CFError?
-						let isValid = SecTrustEvaluateWithError(trust, &error)
-						if let error = error {
-							Logger.tak.error("Client cert validation error: \(error.localizedDescription)")
+			// Only the client certificate issued for this install gets in: not another
+			// install's, not one from an earlier build, and not anything else this CA signed.
+			let issuedClient = issued.clientCertificate
+			sec_protocol_options_set_verify_block(
+				tlsOptions.securityProtocolOptions,
+				{ _, secTrust, completion in
+					let trust = sec_trust_copy_ref(secTrust).takeRetainedValue()
+					let presented = (SecTrustCopyCertificateChain(trust) as? [SecCertificate])?.first
+						.map { SecCertificateCopyData($0) as Data }
+					let accepted = presented == issuedClient
+					if !accepted {
+						Logger.tak.warning("Rejected a TAK client whose certificate this install did not issue")
+						Task { @MainActor in
+							TAKServerManager.shared.clientNeedsReimport = true
 						}
-						Logger.tak.info("Client certificate validation: \(isValid ? "passed" : "failed")")
-						completion(isValid)
-					},
-					queue
-				)
-			} else {
-				// No client CAs configured: keep mTLS enabled but reject all client certificates
-				Logger.tak.warning("mTLS enabled but no CA certificates configured for client validation; all client connections will be rejected")
-				sec_protocol_options_set_verify_block(
-					tlsOptions.securityProtocolOptions,
-					{ _, _, completion in
-						Logger.tak.error("Rejecting client connection because no client CA certificates are configured")
-						completion(false)
-					},
-					queue
-				)
-			}
+					}
+					completion(accepted)
+				},
+				queue
+			)
 
 			// TCP options
 			let tcpOptions = NWProtocolTCP.Options()
@@ -439,6 +430,25 @@ final class TAKServerManager: ObservableObject {
 		try await start()
 	}
 
+	/// Issue a new CA, server and client certificate. Connected clients are dropped, and every
+	/// TAK client needs the data package again.
+	func regenerateCertificates() async throws {
+		let wasEnabled = enabled
+		stop()
+		do {
+			_ = try await Task.detached(priority: .userInitiated) {
+				try TAKCertificateManager.shared.regenerateCertificates()
+			}.value
+		} catch {
+			lastError = TAKServerError.certificatesUnavailable(error.localizedDescription).localizedDescription
+			throw error
+		}
+		clientNeedsReimport = false
+		if wasEnabled {
+			try await start()
+		}
+	}
+
 	// MARK: - State Handling
 
 	private func handleListenerState(_ state: NWListener.State) {
@@ -498,6 +508,7 @@ final class TAKServerManager: ObservableObject {
 		switch event {
 		case .connected(let clientInfo):
 			connectedClients.append(clientInfo)
+			clientNeedsReimport = false
 			Logger.tak.info("TAK client connected: \(clientInfo.displayName) (total connected: \(self.connections.count))")
 
 			// Drain any messages that arrived while no clients were connected

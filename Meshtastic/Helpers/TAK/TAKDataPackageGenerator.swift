@@ -11,7 +11,7 @@ import UIKit
 
 /// Generates TAK data packages (.zip) for configuring TAK clients
 /// to connect to the Meshtastic TAK server
-final class TAKDataPackageGenerator {
+final class TAKDataPackageGenerator: @unchecked Sendable {
 
 	static let shared = TAKDataPackageGenerator()
 
@@ -36,6 +36,26 @@ final class TAKDataPackageGenerator {
 	) -> URL? {
 		let fileManager = FileManager.default
 
+		// The certificates for this install: the client's identity and what it trusts. Issued
+		// here if the server has never run.
+		let certificates = TAKCertificateManager.shared
+		let truststore: Data
+		let clientP12: Data
+		let password: String
+		do {
+			let issued = try certificates.ensureIssuedCertificates()
+			guard let store = try certificates.truststoreForExport() else {
+				Logger.tak.error("No truststore to export")
+				return nil
+			}
+			truststore = store
+			clientP12 = issued.clientP12
+			password = issued.password
+		} catch {
+			Logger.tak.error("Could not get the certificates for the data package: \(error.localizedDescription)")
+			return nil
+		}
+
 		// Create temporary directory for package contents
 		let packageName = "Meshtastic_TAK_Server"
 		let tempDir = fileManager.temporaryDirectory.appendingPathComponent(packageName)
@@ -47,18 +67,12 @@ final class TAKDataPackageGenerator {
 			}
 			try fileManager.createDirectory(at: tempDir, withIntermediateDirectories: true)
 
-			// Determine user client certificate filename
-			let userClientCertFileName: String
-			if let customName = userCertName {
-				userClientCertFileName = "\(customName).p12"
-			} else {
-				// Use device name as default (sanitize for filename safety)
-				let deviceName = UIDevice.current.name
-					.replacingOccurrences(of: " ", with: "_")
-					.replacingOccurrences(of: "'", with: "")
-					.replacingOccurrences(of: "\"", with: "")
-				userClientCertFileName = "\(deviceName).p12"
-			}
+			// The client certificate file, named for the device (made safe for a file name)
+			let baseName = (userCertName ?? UIDevice.current.name)
+				.replacingOccurrences(of: " ", with: "_")
+				.replacingOccurrences(of: "'", with: "")
+				.replacingOccurrences(of: "\"", with: "")
+			let userClientCertFileName = "\(baseName).p12"
 
 			// Generate preference file at package root (flat structure for TAK client compatibility)
 			let prefFileName = "meshtastic-server.pref"
@@ -67,31 +81,17 @@ final class TAKDataPackageGenerator {
 				port: port,
 				useTLS: useTLS,
 				description: description,
-				userClientCertFileName: userClientCertFileName
+				certificates: (fileName: userClientCertFileName, password: password)
 			)
 			let configPrefURL = tempDir.appendingPathComponent(prefFileName)
 			try configPref.write(to: configPrefURL, atomically: true, encoding: .utf8)
 			Logger.tak.debug("Created \(prefFileName)")
 
-			// Copy certificates (only needed for TLS/mTLS mode)
+			// The certificates, only for TLS. The truststore holds certificates and no key.
 			if useTLS {
-				// Truststore (server cert for verifying server) - uses custom if available
-				if let serverP12Data = TAKCertificateManager.shared.getActiveServerP12Data() {
-					let truststoreURL = tempDir.appendingPathComponent("truststore.p12")
-					try serverP12Data.write(to: truststoreURL)
-					Logger.tak.debug("Created truststore.p12 (custom: \(TAKCertificateManager.shared.hasCustomServerCertificate()))")
-				} else {
-					Logger.tak.warning("No server certificate data available")
-				}
-
-				// User client certificate for mTLS - uses custom if available
-				if let clientP12Data = TAKCertificateManager.shared.getActiveClientP12Data() {
-					let clientURL = tempDir.appendingPathComponent(userClientCertFileName)
-					try clientP12Data.write(to: clientURL)
-					Logger.tak.debug("Created \(userClientCertFileName) (custom: \(TAKCertificateManager.shared.hasCustomClientP12()))")
-				} else {
-					Logger.tak.warning("No client certificate data available")
-				}
+				try truststore.write(to: tempDir.appendingPathComponent("truststore.p12"))
+				try clientP12.write(to: tempDir.appendingPathComponent(userClientCertFileName))
+				Logger.tak.debug("Created truststore.p12 and \(userClientCertFileName)")
 			}
 
 			// Generate manifest.xml at root level (not in subdirectory)
@@ -147,12 +147,13 @@ final class TAKDataPackageGenerator {
 		port: Int,
 		useTLS: Bool,
 		description: String,
-		userClientCertFileName: String
+		certificates: (fileName: String, password: String)
 	) -> String {
 		let protocolType = useTLS ? "ssl" : "tcp"
-		// Use active certificate passwords (custom if available, otherwise bundled)
-		let serverPassword = TAKCertificateManager.shared.getActiveServerCertificatePassword()
-		let clientPassword = TAKCertificateManager.shared.getActiveClientCertificatePassword()
+		// One password on both files, made with the certificates.
+		let serverPassword = certificates.password
+		let clientPassword = certificates.password
+		let userClientCertFileName = certificates.fileName
 
 		if useTLS {
 			// TLS mode with mTLS (mutual TLS with client certificate)

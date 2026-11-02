@@ -16044,7 +16044,8 @@
             "value" : "已內建供 localhost 連線使用的預設自簽憑證。如有需要可匯入自訂 .p12。客戶端 CA（.pem）用於驗證連線的 TAK 客戶端。"
           }
         }
-      }
+      },
+      "extractionState" : "stale"
     },
     "A local stats request has been sent to %@. Responses can take some time." : {
       "comment" : "An alert message explaining that a local stats request has been sent to a specific node. The placeholder is replaced with the node name.",
@@ -17663,7 +17664,8 @@
             "value" : "新增 CA"
           }
         }
-      }
+      },
+      "extractionState" : "stale"
     },
     "Add channel" : {
       "comment" : "A button that adds a channel to the current mesh.",
@@ -32431,7 +32433,8 @@
             "value" : "客戶端 CA 憑證"
           }
         }
-      }
+      },
+      "extractionState" : "stale"
     },
     "Client Configuration" : {
       "localizations" : {
@@ -39245,7 +39248,8 @@
             "value" : "全部刪除"
           }
         }
-      }
+      },
+      "extractionState" : "stale"
     },
     "Delete all air quality metrics?" : {
       "comment" : "Confirmation button to clear the air quality metrics log.",
@@ -63847,7 +63851,8 @@
             "value" : "匯入 .pem"
           }
         }
-      }
+      },
+      "extractionState" : "stale"
     },
     "Import behavior" : {
       "comment" : "A section that lets the",
@@ -115779,7 +115784,8 @@
             "value" : "重新載入內建憑證"
           }
         }
-      }
+      },
+      "extractionState" : "stale"
     },
     "Remote admin" : {
       "comment" : "A label for a button that sends a local stats request using the remote admin encryption method.",
@@ -158903,6 +158909,27 @@
           }
         }
       }
+    },
+    "Regenerate Certificates?" : {
+
+    },
+    "Regenerate" : {
+
+    },
+    "A new certificate authority, server certificate and client certificate are issued, and connected TAK clients are dropped. Every TAK client needs the data package again." : {
+
+    },
+    "A TAK client tried to connect with a certificate this install didn't issue. Remove its old Meshtastic connection, then export the data package again and import it." : {
+
+    },
+    "Valid until %@, and renewed before then." : {
+
+    },
+    "Regenerate Certificates" : {
+
+    },
+    "The app issued these certificates for this install, and only the client set up from this install's data package can connect. Import a custom .p12 only if your TAK client needs a particular server certificate." : {
+
     }
   },
   "version" : "1.1"

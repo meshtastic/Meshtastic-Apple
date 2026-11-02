@@ -77,9 +77,11 @@ The pickers stay disabled until the connected radio reports its TAK module confi
 <div class="tips-callout"><strong>Tip — Primary channel requirements</strong>
 The TAK Server runs in <strong>read-only mode</strong> until your primary channel has a non-default name and a non-default 256-bit encryption key. Use the <strong>Fix Channel</strong> button on the warning banner to apply a recommended TAK preset (Short Fast, new AES key, name &quot;TAK&quot;) in one tap.</div>
 <h3 id="certificates">Certificates</h3>
-<p>Import a P12 (PKCS#12) or PEM bundle for mTLS-protected ATAK / iTAK connections. The app stores the certificates encrypted in the keychain — they're not visible to other apps or to iTunes/Finder file sharing.</p>
+<p>The app issues its own certificates the first time the server starts: a certificate authority, a server certificate for <code>127.0.0.1</code>, and one client certificate. They belong to this install alone, so a TAK client set up from another phone's data package, or from a package exported before this version, can't connect here. The app keeps them in the keychain, where other apps and iTunes/Finder file sharing can't see them, and they stay on this device if you restore a backup elsewhere.</p>
+<p>The server certificate is good for two years and is renewed under the same authority before it runs out, so your TAK client keeps working without a new package. <strong>Regenerate Certificates</strong> issues a whole new set; every TAK client then needs the data package again. If a TAK client tries to connect with a certificate this install didn't issue, the Certificates section says so.</p>
+<p>You can still import your own server identity as a P12 (PKCS#12). The data package then trusts that certificate instead; the client certificate is always the one the app issued.</p>
 <h3 id="data-package">Data Package</h3>
-<p>Export a TAK data package zip that you can sideload into ATAK / iTAK. The client uses it to find and trust the app's local server without manually entering a host, port, or certificate.</p>
+<p>Export a TAK data package zip that you can sideload into ATAK / iTAK. The client uses it to find and trust the app's local server without manually entering a host, port, or certificate. The package holds the client certificate and its key, and a truststore with the certificate authority's certificate and nothing else. Importing it over an existing Meshtastic connection keeps the client's old certificates in some TAK clients: remove the old connection first, then import.</p>
 <h2 id="receiving-routes">Receiving Routes</h2>
 <p>When another node on the mesh sends a route CoT (<code>b-m-r</code>), the app automatically writes it as a KML data package to <code>Documents/TAK Routes/</code> and posts an iOS notification so you don't miss it:</p>
 <table>
@@ -115,7 +117,8 @@ The <code>TAK Routes</code> folder is created the first time a route arrives. If
 <ul>
 <li>Make sure the in-app TAK Server is enabled in <strong>Settings → TAK Server</strong>.</li>
 <li>Confirm your primary channel has a non-default name <strong>and</strong> encryption key — the server runs in read-only mode otherwise. Use <strong>Fix Channel</strong> in the warning banner if shown.</li>
-<li>For mTLS clients, confirm a P12 / PEM bundle was imported under <strong>Certificates</strong>.</li>
+<li>Export the data package again and import it in the client. A package from before the app issued its own certificates, or from another phone, no longer connects. Remove the old Meshtastic connection in the client before importing, so it doesn't keep the old certificates.</li>
+<li>If <strong>Certificates</strong> says a client tried to connect with a certificate the app didn't issue, that's the same fix.</li>
 </ul>
 <p><strong>Routes don't show up in iTAK</strong></p>
 <ul>

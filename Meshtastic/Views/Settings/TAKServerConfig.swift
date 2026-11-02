@@ -11,11 +11,6 @@ import OSLog
 @preconcurrency import SwiftData
 import MeshtasticProtobufs
 
-enum CertificateImportType {
-	case p12
-	case pem
-}
-
 struct TAKServerConfig: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject var accessoryManager: AccessoryManager
@@ -27,7 +22,7 @@ struct TAKServerConfig: View {
 	@StateObject private var takServer = TAKServerManager.shared
 	@Environment(\.dismiss) private var dismiss
 	@State private var showingFileImporter = false
-	@State private var importType: CertificateImportType = .p12
+	@State private var showingRegenerateConfirm = false
 	@State private var p12Password = ""
 	@State private var showingPasswordPrompt = false
 	@State private var pendingP12Data: Data?
@@ -72,15 +67,18 @@ struct TAKServerConfig: View {
 		}
 		.fileImporter(
 			isPresented: $showingFileImporter,
-			allowedContentTypes: importType == .p12 ? [UTType(filenameExtension: "p12") ?? .pkcs12, .pkcs12] : [UTType(filenameExtension: "pem") ?? .plainText],
+			allowedContentTypes: [UTType(filenameExtension: "p12") ?? .pkcs12, .pkcs12],
 			allowsMultipleSelection: false
 		) { result in
-			switch importType {
-			case .p12:
-				handleP12Import(result)
-			case .pem:
-				handlePEMImport(result)
+			handleP12Import(result)
+		}
+		.hostedAlert("Regenerate Certificates?", isPresented: $showingRegenerateConfirm) {
+			Button("Cancel", role: .cancel) {}
+			Button("Regenerate", role: .destructive) {
+				regenerateCertificates()
 			}
+		} message: {
+			Text("A new certificate authority, server certificate and client certificate are issued, and connected TAK clients are dropped. Every TAK client needs the data package again.")
 		}
 		.hostedFormAlert("Enter P12 Password", isPresented: $showingPasswordPrompt) {
 			SecureField("Password", text: $p12Password)
@@ -310,6 +308,16 @@ struct TAKServerConfig: View {
 
 	private var certificatesSection: some View {
 		Section {
+			if takServer.clientNeedsReimport {
+				Label {
+					Text("A TAK client tried to connect with a certificate this install didn't issue. Remove its old Meshtastic connection, then export the data package again and import it.")
+						.font(.callout)
+				} icon: {
+					Image(systemName: "exclamationmark.triangle.fill")
+						.foregroundStyle(.orange)
+				}
+			}
+
 			// Server Certificate
 			VStack(alignment: .leading, spacing: 8) {
 				HStack {
@@ -329,10 +337,14 @@ struct TAKServerConfig: View {
 						.font(.caption)
 						.foregroundColor(.secondary)
 				}
+				if !certManager.hasCustomServerCertificate(), let notAfter = certManager.issuedCertificates()?.serverNotAfter {
+					Text("Valid until \(notAfter.formatted(date: .abbreviated, time: .omitted)), and renewed before then.")
+						.font(.caption)
+						.foregroundColor(.secondary)
+				}
 
 				HStack {
 					Button {
-						importType = .p12
 						showingFileImporter = true
 					} label: {
 						Text("Import Custom .p12")
@@ -343,6 +355,7 @@ struct TAKServerConfig: View {
 					if certManager.hasCustomServerCertificate() {
 						Button {
 							certManager.resetToDefaultServerCertificate()
+							restartIfRunning()
 						} label: {
 							Text("Reset to Default")
 						}
@@ -352,66 +365,15 @@ struct TAKServerConfig: View {
 			}
 			.padding(.vertical, 4)
 
-			// Client CA Certificate
-			VStack(alignment: .leading, spacing: 8) {
-				HStack {
-					Label("Client CA Certificate", systemImage: "person.badge.shield.checkmark")
-					Spacer()
-					if certManager.hasClientCACertificate() {
-						Image(systemName: "checkmark.circle.fill")
-							.foregroundColor(.green)
-					} else {
-						Image(systemName: "xmark.circle.fill")
-							.foregroundColor(.red)
-					}
-				}
-
-				let caInfo = certManager.getClientCACertificateInfo()
-				if !caInfo.isEmpty {
-					ForEach(caInfo, id: \.self) { info in
-						Text(info)
-							.font(.caption)
-							.foregroundColor(.secondary)
-					}
-				}
-
-				HStack {
-					Button {
-						importType = .pem
-						showingFileImporter = true
-					} label: {
-						Text(certManager.hasClientCACertificate() ? "Add CA" : "Import .pem")
-					}
-					.hostedWindowOnly()
-					.buttonStyle(.bordered)
-
-					if certManager.hasClientCACertificate() {
-						Button(role: .destructive) {
-							certManager.deleteClientCACertificates()
-						} label: {
-							Text("Delete All")
-						}
-						.buttonStyle(.bordered)
-					}
-				}
-			}
-			.padding(.vertical, 4)
-
-			// Reset to bundled defaults
-			Button {
-				certManager.reloadBundledCertificates()
-				if takServer.isRunning {
-					Task {
-						try? await takServer.restart()
-					}
-				}
+			Button(role: .destructive) {
+				showingRegenerateConfirm = true
 			} label: {
-				Label("Reload Bundled Certificates", systemImage: "arrow.triangle.2.circlepath")
+				Label("Regenerate Certificates", systemImage: "arrow.triangle.2.circlepath")
 			}
 		} header: {
 			Text("TLS Certificates")
 		} footer: {
-			Text("A default self-signed certificate is included for localhost connections. Import a custom .p12 if needed. Client CA (.pem) validates connecting TAK clients.")
+			Text("The app issued these certificates for this install, and only the client set up from this install's data package can connect. Import a custom .p12 only if your TAK client needs a particular server certificate.")
 		}
 	}
 
@@ -481,6 +443,7 @@ struct TAKServerConfig: View {
 		do {
 			_ = try certManager.importServerIdentity(from: data, password: p12Password)
 			Logger.tak.info("Server certificate imported successfully")
+			restartIfRunning()
 		} catch {
 			importError = error.localizedDescription
 			showingImportError = true
@@ -490,30 +453,21 @@ struct TAKServerConfig: View {
 		pendingP12Data = nil
 	}
 
-	private func handlePEMImport(_ result: Result<[URL], Error>) {
-		switch result {
-		case .success(let urls):
-			guard let url = urls.first else { return }
+	private func restartIfRunning() {
+		guard takServer.isRunning else { return }
+		Task {
+			try? await takServer.restart()
+		}
+	}
 
-			guard url.startAccessingSecurityScopedResource() else {
-				importError = "Cannot access file"
-				showingImportError = true
-				return
-			}
-			defer { url.stopAccessingSecurityScopedResource() }
-
+	private func regenerateCertificates() {
+		Task {
 			do {
-				let data = try Data(contentsOf: url)
-				_ = try certManager.importClientCACertificate(from: data)
-				Logger.tak.info("Client CA certificate imported successfully")
+				try await takServer.regenerateCertificates()
 			} catch {
 				importError = error.localizedDescription
 				showingImportError = true
 			}
-
-		case .failure(let error):
-			importError = error.localizedDescription
-			showingImportError = true
 		}
 	}
 
@@ -537,18 +491,26 @@ struct TAKServerConfig: View {
 	// MARK: - Data Package Generation
 
 	private func generateAndShareDataPackage() {
-		guard let url = TAKDataPackageGenerator.shared.generateDataPackage(
-			port: TAKServerManager.defaultTLSPort,
-			useTLS: true,
-			description: "Meshtastic TAK Server"
-		) else {
-			importError = "Failed to generate data package"
-			showingImportError = true
-			return
+		let clientName = UIDevice.current.name
+		let port = TAKServerManager.defaultTLSPort
+		Task {
+			// Issuing the certificates the first time takes a moment; keep it off the main thread.
+			let url = await Task.detached(priority: .userInitiated) {
+				TAKDataPackageGenerator.shared.generateDataPackage(
+					port: port,
+					useTLS: true,
+					description: "Meshtastic TAK Server",
+					userCertName: clientName
+				)
+			}.value
+			guard let url else {
+				importError = "Failed to generate data package"
+				showingImportError = true
+				return
+			}
+			dataPackageURL = url
+			showingFileExporter = true
 		}
-
-		dataPackageURL = url
-		showingFileExporter = true
 	}
 }
 

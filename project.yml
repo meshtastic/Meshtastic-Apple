@@ -240,8 +240,6 @@ targets:
       - path: "Meshtastic/Resources/AppIcon_MPowered.icon"
       - path: "Meshtastic/Resources/docs"
         type: folder
-      - path: "Meshtastic/Resources/Certificates"
-        type: folder
       - path: "Localizable.xcstrings"
       - path: "Settings.bundle"
       # Must be compiled into Meshtastic.momd and land in the bundle: the Core Data ->
