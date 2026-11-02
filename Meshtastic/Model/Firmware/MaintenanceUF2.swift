@@ -521,6 +521,10 @@ enum OTAFIXBootloader {
 			board: "mesh_tracker_x1",
 			sha256: "4254b0561338f3199a84ee96b84dee5f8f14a909fb58d5b3b678fdb1366cbbd5"
 		),
+		"nRF52840-MeshTracker-X1-v1": asset(
+			board: "mesh_tracker_x1",
+			sha256: "4254b0561338f3199a84ee96b84dee5f8f14a909fb58d5b3b678fdb1366cbbd5"
+		),
 		"nRF52840-Meshtastic-Generic-S140v6": asset(
 			board: "meshtastic_6.1.1",
 			sha256: "6beb1e3c6a810df39cd5ceba4640af729f958c5767534cf55137ea505f4c3cca"
