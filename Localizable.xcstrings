@@ -444,6 +444,9 @@
         }
       }
     },
+    "Custom Modem Settings" : {
+      "comment" : "Radio setup preset page row title"
+    },
     "E-ink screens redraw slowly. Tap Refresh for the latest picture." : {
 
     },
@@ -736,6 +739,9 @@
     },
     "Your radio must use the frequencies allowed where you are. With the wrong region nothing nearby will hear you." : {
       "comment" : "Radio setup region intro"
+    },
+    "Your radio uses its own bandwidth, spread factor and coding rate. They stay until you choose a preset here." : {
+      "comment" : "Radio setup preset page row"
     },
     "your radio's primary channel to \"%@\"" : {
       "comment" : "Beacon switch prompt; one of the changes listed"

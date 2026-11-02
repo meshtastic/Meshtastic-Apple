@@ -145,6 +145,26 @@ struct RadioSetupModelTests {
 		#expect(model.preset == .shortFast)
 	}
 
+	@Test func customModemSettingsSurviveARegionChange() {
+		var lora = Config.LoRaConfig()
+		lora.usePreset = false
+		lora.region = .us
+		lora.modemPreset = .longFast
+		lora.bandwidth = 125
+		let custom = RadioSetupModel(
+			nodeNum: 1, deviceName: "Radio", hardwareName: nil, hardwareModelId: nil, firmwareVersion: nil,
+			supports2_8: true, appliesWithoutReboot: true, isLicensed: false, longNameLimit: 24,
+			loRaConfig: lora, longName: "", shortName: "")
+		let anz = RegionPresetInfo(presets: [.longTurbo], defaultPreset: .longTurbo, licensedOnly: false)
+		custom.selectRegion(.anz, regionInfo: anz)
+		#expect(!custom.draft.usePreset, "only the region changed")
+		#expect(custom.preset == .longFast, "no preset rule runs while the radio is on custom settings")
+		#expect(custom.hasLoRaChanges)
+		#expect(custom.presetSummary == "Custom")
+		custom.selectPreset(.longTurbo)
+		#expect(custom.draft.usePreset, "choosing a preset is the explicit switch")
+	}
+
 	@Test func oldFirmwareNeverChangesThePreset() {
 		let model = model(supports2_8: false)
 		model.selectRegion(.us, regionInfo: nil)

@@ -64,6 +64,14 @@ struct RadioSetupPresetPage: View {
 			if let warning = model.usBandwidthWarning {
 				OnboardingFeatureRow(symbol: "exclamationmark.triangle.fill", color: .orange, text: warning)
 			}
+			if !model.draft.usePreset {
+				OnboardingFeatureRow(
+					symbol: "slider.horizontal.3",
+					color: .orange,
+					title: String(localized: "Custom Modem Settings", comment: "Radio setup preset page row title"),
+					text: String(localized: "Your radio uses its own bandwidth, spread factor and coding rate. They stay until you choose a preset here.", comment: "Radio setup preset page row")
+				)
+			}
 		}
 	}
 }
