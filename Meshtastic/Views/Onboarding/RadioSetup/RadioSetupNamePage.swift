@@ -52,7 +52,8 @@ struct RadioSetupNamePage: View {
 				.frame(maxWidth: .infinity)
 				.accessibilityHidden(true)
 			VStack(spacing: 0) {
-				NameRow(title: String(localized: "Long Name"), text: longName)
+				// The long name needs the row's width, so its label sits above the field.
+				NameRow(title: String(localized: "Long Name"), text: longName, labelAbove: true)
 				Divider()
 					.padding(.leading, 16)
 				NameRow(title: String(localized: "Short Name"), text: shortName)
@@ -78,15 +79,16 @@ struct RadioSetupNamePage: View {
 	}
 }
 
-/// One row of the names form: the label, and the field at the trailing edge. At
-/// accessibility sizes the field goes under the label so neither is squeezed.
+/// One row of the names form: the label, and the field at the trailing edge, or under
+/// the label when it needs the width. At accessibility sizes every row stacks.
 private struct NameRow: View {
 	let title: String
 	@Binding var text: String
+	var labelAbove = false
 	@Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
 	var body: some View {
-		let stacked = dynamicTypeSize.isAccessibilitySize
+		let stacked = labelAbove || dynamicTypeSize.isAccessibilitySize
 		let layout = stacked
 			? AnyLayout(VStackLayout(alignment: .leading, spacing: 4))
 			: AnyLayout(HStackLayout(spacing: 12))
