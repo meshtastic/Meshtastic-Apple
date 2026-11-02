@@ -5,23 +5,16 @@
 //  Copyright(c) Garth Vander Houwen 11/2/26.
 //
 //  A setup row with a control at its trailing edge: the same symbol, title and text as
-//  `OnboardingFeatureRow`, with a picker, text field or value where that row puts a switch.
+//  `OnboardingFeatureRow`, with a picker or value where that row puts a switch.
 //
 
 import SwiftUI
 
 struct OnboardingControlRow<Control: View>: View {
-	/// Where the control sits at regular text sizes. A picker or value fits beside the
-	/// title; a text field needs the row's width, so it goes under the title.
-	enum Placement {
-		case trailing, below
-	}
-
 	let symbol: String
 	let color: Color
 	let title: String
 	let text: String?
-	let placement: Placement
 	let control: () -> Control
 
 	@Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -33,14 +26,12 @@ struct OnboardingControlRow<Control: View>: View {
 		color: Color = .accentColor,
 		title: String,
 		text: String? = nil,
-		placement: Placement = .trailing,
 		@ViewBuilder control: @escaping () -> Control
 	) {
 		self.symbol = symbol
 		self.color = color
 		self.title = title
 		self.text = text
-		self.placement = placement
 		self.control = control
 	}
 
@@ -52,16 +43,6 @@ struct OnboardingControlRow<Control: View>: View {
 				titleAndText
 				control()
 					.frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-			}
-			.frame(maxWidth: .infinity, alignment: .leading)
-		} else if placement == .below {
-			HStack(alignment: .center, spacing: 12) {
-				icon
-				VStack(alignment: .leading, spacing: 8) {
-					titleAndText
-					control()
-						.frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-				}
 			}
 			.frame(maxWidth: .infinity, alignment: .leading)
 		} else {
@@ -102,7 +83,6 @@ struct OnboardingControlRow<Control: View>: View {
 
 #Preview("Control rows") {
 	@Previewable @State var region = 1
-	@Previewable @State var name = "Meshtastic 1234"
 	VStack(alignment: .leading, spacing: 24) {
 		OnboardingControlRow(symbol: "globe.americas.fill", color: .red, title: "Region") {
 			Picker("Region", selection: $region) {
@@ -111,9 +91,12 @@ struct OnboardingControlRow<Control: View>: View {
 			}
 			.labelsHidden()
 		}
-		OnboardingControlRow(symbol: "person.crop.rectangle.fill", color: .indigo, title: "Long Name", text: "Up to 24 bytes.", placement: .below) {
-			TextField("Long Name", text: $name)
-				.textFieldStyle(.roundedBorder)
+		OnboardingControlRow(symbol: "dot.radiowaves.left.and.right", title: "Preset", text: "Recommended for United States: Long Range - Turbo") {
+			Picker("Preset", selection: $region) {
+				Text("Long Range - Turbo").tag(1)
+				Text("Long Range - Fast").tag(3)
+			}
+			.labelsHidden()
 		}
 	}
 	.padding(24)
