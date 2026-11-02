@@ -22,11 +22,9 @@ struct DiscoveryScanView: View {
 	@State private var selectedChannels: Set<BeaconChannel> = []
 	@State private var dwellMinutes: Int = 15
 	@State private var showHistory = false
-	/// Ensures beacon-advertised presets are pre-selected only once per appearance, so the seed
-	/// never fights a deliberate deselection the user makes afterward.
-	@State private var didAutoSelectBeaconPresets = false
-	/// Same one-shot pre-selection guard for beacon-advertised custom channels.
-	@State private var didAutoSelectBeaconChannels = false
+	/// Ensures the default selection is applied only once per appearance, so the seed never
+	/// fights a deliberate deselection the user makes afterward. New Scan applies it again.
+	@State private var didApplyDefaultSelection = false
 
 	@State private var engine: DiscoveryScanEngine?
 
@@ -56,6 +54,24 @@ struct DiscoveryScanView: View {
 		guard let raw = (try? context.fetch(descriptor))?.first?.loRaConfig?.regionCode,
 			  let region = RegionCodes(rawValue: Int(raw)) else { return nil }
 		return region.protoEnumValue()
+	}
+
+	/// Pre-select the presets beacons advertised plus the most-popular public presets, and the
+	/// custom channels beacons advertised. Union-only: never clears the user's own choices.
+	private func applyDefaultSelection() {
+		selectedPresets.formUnion(beaconPresets)
+		selectedPresets.formUnion(Set(popularPresets).intersection(Set(availablePresets)))
+		selectedChannels.formUnion(beaconChannels)
+	}
+
+	/// Clear the finished scan and return to the setup with the default selection applied again,
+	/// so the beacons the scan just heard are pre-selected for the next one.
+	private func startNewScan(_ engine: DiscoveryScanEngine) {
+		selectedPresets = []
+		selectedChannels = []
+		engine.session = nil
+		engine.currentState = .idle
+		applyDefaultSelection()
 	}
 
 	/// Most-common public-mesh presets from MQTT telemetry (LongFast dominant, MediumFast a distant
@@ -112,18 +128,12 @@ struct DiscoveryScanView: View {
 				engine?.configure(accessoryManager: accessoryManager, modelContext: context)
 				engine?.checkForInterruptedSessions(context: context)
 				// Auto-select presets we've heard beacons for plus the most-popular public-mesh
-				// presets, once, so a fresh scan covers any mesh a beacon advertised and the presets
-				// most meshes actually use. Union-only: never clears the user's own choices, and gated
-				// so it runs a single time and never fights a deliberate deselection afterward.
-				if !didAutoSelectBeaconPresets {
-					didAutoSelectBeaconPresets = true
-					selectedPresets.formUnion(beaconPresets)
-					selectedPresets.formUnion(Set(popularPresets).intersection(Set(availablePresets)))
-				}
-				// Same one-shot pre-selection for custom channels a beacon advertised.
-				if !didAutoSelectBeaconChannels {
-					didAutoSelectBeaconChannels = true
-					selectedChannels.formUnion(beaconChannels)
+				// presets, and the channels beacons advertised, once, so a fresh scan covers any
+				// mesh a beacon told us about and the presets most meshes actually use. Gated so it
+				// runs a single time and never fights a deliberate deselection afterward.
+				if !didApplyDefaultSelection {
+					didApplyDefaultSelection = true
+					applyDefaultSelection()
 				}
 			}
 		}
@@ -283,10 +293,7 @@ struct DiscoveryScanView: View {
 				}
 				.buttonStyle(.bordered)
 				Button {
-					selectedPresets = []
-					selectedChannels = []
-					engine.session = nil
-					engine.currentState = .idle
+					startNewScan(engine)
 				} label: {
 					Label("New Scan", systemImage: "arrow.counterclockwise")
 				}
@@ -395,10 +402,7 @@ struct DiscoveryScanView: View {
 				}
 			} else if engine.currentState == .complete {
 				Button {
-					selectedPresets = []
-					selectedChannels = []
-					engine.session = nil
-					engine.currentState = .idle
+					startNewScan(engine)
 				} label: {
 					Label("New Scan", systemImage: "arrow.counterclockwise")
 				}
