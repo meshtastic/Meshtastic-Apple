@@ -2077,6 +2077,26 @@ struct DeviceOnboardingSnapshotTests {
 		view.environmentObject(AccessoryManager.shared)
 	}
 
+	@Test("Welcome screen")
+	func welcomeScreen() async {
+		await assertViewSnapshot(of: screen(DeviceOnboarding().welcomeView), width: 390, height: 844, named: "onboarding_welcome", forDocs: true)
+	}
+
+	@Test("Welcome screen in dark mode")
+	func welcomeScreenDark() async {
+		await assertViewSnapshot(of: screen(DeviceOnboarding().welcomeView), width: 390, height: 844, colorScheme: .dark, named: "onboarding_welcome_dark")
+	}
+
+	// At accessibility text sizes the rows stack the symbol above the text instead of
+	// squeezing the text beside it.
+	@Test("Notifications screen at an accessibility text size")
+	func notificationsScreenAccessibility() async {
+		await assertViewSnapshot(
+			of: screen(DeviceOnboarding().notificationView).environment(\.dynamicTypeSize, .accessibility3),
+			width: 390, height: 1400, named: "onboarding_notifications_accessibility"
+		)
+	}
+
 	@Test("Bluetooth permission screen")
 	func bluetoothScreen() async {
 		await assertViewSnapshot(of: screen(DeviceOnboarding().bluetoothView), width: 390, height: 844, named: "onboarding_bluetooth", forDocs: true)

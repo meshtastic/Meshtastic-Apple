@@ -31,25 +31,29 @@ The connection indicator turns green when the radio is paired and communicating.
 
 ### First-Launch Setup
 
-The first time you open the app, a short guided setup walks you through the permissions Meshtastic uses, in order. Each screen explains what the permission is for, and you can change any of these later in iOS Settings. Granting a permission or tapping **Continue** advances to the next step.
+The first time the app opens, a short guided setup says what Meshtastic is and walks through the permissions the app uses, in order. Each screen explains what the permission is for, and any of them can be changed later in iOS Settings. Tapping **Continue** advances to the next step, after granting or declining the permission.
 
-**1. Bluetooth** — required to discover and connect to your radio.
+**1. Welcome** — what Meshtastic does, how it treats location (the radio shares none until it is turned on, and the app only lets public channels share an approximate location), and a note that the next screens set up the features you want.
+
+![Welcome screen](../assets/screenshots/onboarding_welcome.png)
+
+**2. Bluetooth** — required to discover and connect to your radio.
 
 ![Bluetooth permission screen](../assets/screenshots/onboarding_bluetooth.png)
 
-**2. Local Network** — lets the app find radios connected over Wi-Fi or Ethernet.
+**3. Local Network** — lets the app find radios connected over Wi-Fi or Ethernet.
 
 ![Local Network permission screen](../assets/screenshots/onboarding_localNetwork.png)
 
-**3. Notifications** — toggle which alerts you want before granting permission: incoming messages, new nodes, low battery, and critical alerts that bypass silent mode and Do Not Disturb.
+**4. Notifications** — toggle which alerts you want before granting permission: incoming messages, new nodes, low battery, and critical alerts that bypass silent mode and Do Not Disturb.
 
 ![Notifications permission screen](../assets/screenshots/onboarding_notifications.png)
 
-**4. Location** — optional; lets your phone supply position to the mesh and keep the map updated in the background. This step is skipped if you have already granted location access.
+**5. Location** — optional; lets your phone supply position to your radio and keep the map updated in the background. The phone's location goes only to the connected radio. The app only lets public channels share an approximate location, and radios on firmware 2.8 or later enforce the same limit on the radio. On older firmware, a public channel set to full precision from another client still sends the exact position. This step is skipped if location access was already granted.
 
 ![Location permission screen](../assets/screenshots/onboarding_location.png)
 
-**5. Siri & Shortcuts** — optional; enables voice commands and CarPlay messaging.
+**6. Siri & Shortcuts** — optional; enables voice commands and CarPlay messaging.
 
 ![Siri and Shortcuts permission screen](../assets/screenshots/onboarding_siri.png)
 
