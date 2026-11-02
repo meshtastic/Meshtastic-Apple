@@ -139,6 +139,7 @@ struct DocBundleTests {
 		}
 
 		let limitBytes: Int64 = 15 * 1024 * 1024  // 15 MB
-		#expect(totalBytes < limitBytes, "Docs bundle is \(totalBytes) bytes — exceeds 15 MB limit")
+		// build-docs.sh fails only above the limit, so a bundle exactly at it passes here too.
+		#expect(totalBytes <= limitBytes, "Docs bundle is \(totalBytes) bytes — exceeds 15 MB limit")
 	}
 }
