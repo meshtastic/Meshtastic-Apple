@@ -49,7 +49,7 @@ For ESP32 BLE updates, the app waits for the radio's final verification response
 Radios with an nRF52 processor can install Meshtastic's OTAFIX bootloader, which makes Bluetooth firmware updates faster and more reliable. When your connected radio supports it, a **Bootloader** section appears on the Firmware Updates screen.
 
 1. Tap **Upgrade Bootloader** and follow the steps: reboot the radio into DFU mode (or double-press its reset button) and connect it to this device with a USB cable. The radio appears as a USB drive.
-2. Choose the radio's drive in the file picker. The app reads the drive's `INFO_UF2.TXT` file to identify the board — the board on the drive decides which image is installed, so the wrong file can never be written to your hardware.
+2. Choose the radio's drive in the file picker. The app reads the drive's `INFO_UF2.TXT` file to identify the board, and the board on the drive decides which image is installed. A few boards ship a bootloader that reports another board's name, such as a Wio Tracker L1 Pro 1W reporting the plain L1. For those the app also uses the connected radio's model, so pick the drive of the radio you are connected to. The image's file name, shown before you install, names the board it was built for.
 3. Tap **Install Bootloader Update**. The app downloads the image for your board, checks it against the checksum published for that board, and writes it to the drive. The radio installs the bootloader and reboots itself.
 
 If the drive is not a bootloader drive, the board is not one OTAFIX supports, or the download does not match its checksum, nothing is written.

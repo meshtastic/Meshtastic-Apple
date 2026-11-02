@@ -214,6 +214,7 @@ struct MaintenanceUf2ManifestStoreTests {
 		let store = MaintenanceUf2ManifestStore.isolatedForTesting()
 		let before = store.releaseTag
 		#expect(!store.apply(rawBytes: Data(overridePayload(overrideSlug: "../evil").utf8)))
+		#expect(!store.apply(rawBytes: Data(overridePayload(overrideSlug: "wio_é").utf8)))
 		#expect(!store.apply(rawBytes: Data(overridePayload(overrideDigest: "ZZ").utf8)))
 		#expect(store.releaseTag == before)
 	}

@@ -209,7 +209,12 @@ private struct MaintenanceUf2ManifestPayload: Decodable {
 		}
 		let overrides = otafixByBoardId.values.flatMap { ($0.targetOverrides ?? [:]).values }
 		guard otafixByBoardId.values.allSatisfy({ safeSlug($0.otafixBoardSlug) && isLowercaseHexDigest($0.sha256) }),
-			  overrides.allSatisfy({ safeSlug($0.otafixBoardSlug) && isLowercaseHexDigest($0.sha256) })
+			  // Checked as the file name it becomes, so an override that would be dropped later
+			  // rejects the manifest instead of quietly falling back to the row's own image.
+			  overrides.allSatisfy({
+				  isSafeUf2FileName("update-\($0.otafixBoardSlug)_bootloader-\(otafixReleaseTag)_nosd.uf2")
+					  && isLowercaseHexDigest($0.sha256)
+			  })
 		else {
 			return false
 		}
@@ -491,8 +496,8 @@ enum NRF52FactoryErase {
 /// projects (`heltec_t114` vs `heltec-mesh-node-t114`), USB VID/PID collide
 /// across boards, and the XIAO nRF52840 BLE / BLE Sense split differs *only* by
 /// Board-ID — installing the wrong one over UF2 is unrecoverable without SWD.
-/// The connected node's platformio target is a UX gate only: it decides whether
-/// the upgrade is offered, never which image is written.
+/// The connected node's platformio target decides whether the upgrade is offered,
+/// and picks between images only where a Board-ID row lists `targetOverrides`.
 enum OTAFIXBootloader {
 
 	// MARK: Bundled audited seed
