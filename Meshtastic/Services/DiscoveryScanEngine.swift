@@ -970,8 +970,8 @@ extension DiscoveryScanEngine {
 		// overrides and all — rather than rebuilding a partial config that would drop the
 		// user's frequency slot and other settings (#1952).
 		guard let homeLoRaConfig, let accessoryManager, let context = modelContext else {
-			Logger.discovery.info("📡 [Discovery] No home config to restore → Idle")
-			cleanupAndIdle()
+			Logger.discovery.info("📡 [Discovery] No home config to restore")
+			cleanupAfterScan()
 			return
 		}
 
@@ -980,7 +980,7 @@ extension DiscoveryScanEngine {
 			  let fromUser = connectedNode.user,
 			  let toUser = connectedNode.user else {
 			Logger.discovery.error("📡 [Discovery] Cannot restore home config — no connected node")
-			cleanupAndIdle()
+			cleanupAfterScan()
 			return
 		}
 
@@ -991,7 +991,7 @@ extension DiscoveryScanEngine {
 			Logger.discovery.error("📡 [Discovery] Failed to restore home config: \(error.localizedDescription)")
 		}
 
-		cleanupAndIdle()
+		cleanupAfterScan()
 	}
 
 	// MARK: - Session Finalization (T019)
@@ -1087,7 +1087,10 @@ extension DiscoveryScanEngine {
 		Logger.discovery.info("📡 [Discovery] State: \(oldState) → \(newState)")
 	}
 
-	private func cleanupAndIdle() {
+	/// Tear the scan down and leave the finished session on screen, so its summary, map and
+	/// New Scan stay available until the user starts another scan (the view clears the session
+	/// and returns the engine to idle). Without a session there is nothing to show, so go idle.
+	private func cleanupAfterScan() {
 		dwellTask?.cancel()
 		reconnectTimeoutTask?.cancel()
 		connectionObserver?.cancel()
@@ -1107,7 +1110,7 @@ extension DiscoveryScanEngine {
 		activeTarget = nil
 		activeTargetLabel = ""
 		scanChannelIsCustom = false
-		transitionTo(.idle)
+		transitionTo(session == nil ? .idle : .complete)
 	}
 
 	// MARK: - Read Local Stats from SwiftData

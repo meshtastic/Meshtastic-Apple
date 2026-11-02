@@ -263,8 +263,11 @@ struct DiscoveryScanEngineTests {
 		#expect(engine.session != nil)
 
 		await engine.stopScan()
-		// Tears down cleanly back to idle without any radio calls (nothing was snapshotted).
-		#expect(engine.currentState == .idle)
+		// Tears down cleanly without any radio calls (nothing was snapshotted) and keeps the
+		// finished session on screen until the user starts a new scan.
+		#expect(engine.currentState == .complete)
+		#expect(!engine.isScanning)
+		#expect(engine.session != nil)
 		withExtendedLifetime(manager) {}
 	}
 
