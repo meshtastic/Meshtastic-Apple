@@ -40,6 +40,15 @@ def fetch(url):
         return response.read()
 
 
+def read_bundled(path):
+    """The bundled seed's parsed content, or None when it is missing or not JSON."""
+    try:
+        with open(path, "rb") as existing:
+            return json.loads(existing.read())
+    except (OSError, ValueError):
+        return None
+
+
 def sync(file_name, url, guard):
     path = os.path.join(RESOURCES_DIR, file_name)
     try:
@@ -52,13 +61,9 @@ def sync(file_name, url, guard):
         print(f"{file_name}: degraded response from {url}; keeping the bundled copy", file=sys.stderr)
         return False
 
-    try:
-        with open(path, "rb") as existing:
-            if json.loads(existing.read()) == doc:
-                print(f"{file_name}: up to date")
-                return True
-    except (OSError, ValueError):
-        pass
+    if read_bundled(path) == doc:
+        print(f"{file_name}: up to date")
+        return True
     with open(path, "wb") as out:
         out.write(body)
     print(f"{file_name}: updated from {url}")
