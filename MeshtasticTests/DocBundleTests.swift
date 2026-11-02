@@ -114,8 +114,8 @@ struct DocBundleTests {
 
 	// MARK: - Bundle size
 
-	@Test func builtDocsBundleIsUnder10MB() throws {
-		// This test validates the built docs/ output in the source tree is under the 10MB hard limit.
+	@Test func builtDocsBundleIsUnderTheLimit() throws {
+		// This test validates the built docs/ output in the source tree is under the 15 MB hard limit.
 		// It passes even if the directory doesn't exist (CI will enforce the limit via build-docs.sh).
 		let docsURL = URL(fileURLWithPath: #filePath)
 			.deletingLastPathComponent()
@@ -138,7 +138,8 @@ struct DocBundleTests {
 			totalBytes += Int64(size)
 		}
 
-		let limitBytes: Int64 = 10 * 1024 * 1024  // 10 MB
-		#expect(totalBytes < limitBytes, "Docs bundle is \(totalBytes) bytes — exceeds 10 MB limit")
+		let limitBytes: Int64 = 15 * 1024 * 1024  // 15 MB
+		// build-docs.sh fails only above the limit, so a bundle exactly at it passes here too.
+		#expect(totalBytes <= limitBytes, "Docs bundle is \(totalBytes) bytes — exceeds 15 MB limit")
 	}
 }

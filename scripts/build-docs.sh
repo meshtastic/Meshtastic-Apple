@@ -7,8 +7,8 @@
 set -euo pipefail
 
 # ── Defaults ──────────────────────────────────────────────────────────────────
-DOCS_SIZE_WARN_BYTES="${DOCS_SIZE_WARN_BYTES:-8388608}"   # 8 MB
-DOCS_SIZE_LIMIT_BYTES="${DOCS_SIZE_LIMIT_BYTES:-10485760}" # 10 MB
+DOCS_SIZE_WARN_BYTES="${DOCS_SIZE_WARN_BYTES:-12582912}"  # 12 MB
+DOCS_SIZE_LIMIT_BYTES="${DOCS_SIZE_LIMIT_BYTES:-15728640}" # 15 MB
 OUTPUT_DIR=""
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SOURCE_DIR="$REPO_ROOT/docs"

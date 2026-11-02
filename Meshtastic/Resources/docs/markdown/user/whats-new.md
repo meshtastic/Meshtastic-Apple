@@ -14,6 +14,8 @@ Recent user-facing changes from roughly the last 12 months. Newest at the top.
 Show roughly the last 12 months of changes; archive entries older than a year by removing them.
 -->
 
+**Nov 2026** — [Local Mesh Discovery](discovery.md#running-a-scan) — A finished scan stays on screen until **New Scan**, which starts the next setup with the beacons the scan just heard and the popular presets already selected.
+
 **Nov 2026** — [Cinema](cinema.md#fire-lookout) — On Apple Vision Pro, a node's card out the fire lookout's windows opens beside its marker as you see it from where you are, and sits on a bar you can pinch to move it.
 
 **Nov 2026** — [Cinema](cinema.md#radio-models) — On Apple Vision Pro, the connected radio's model on the cinema's stand shows its screen live, the card beside it has the radio's buttons and a size slider up to five times real size, and the stand and card turn to face you.

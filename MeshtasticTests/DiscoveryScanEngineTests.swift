@@ -271,6 +271,38 @@ struct DiscoveryScanEngineTests {
 		withExtendedLifetime(manager) {}
 	}
 
+	/// New Scan hands the finished session back: the engine drops it and is idle again, so a
+	/// scan can start. `cleanupAfterScan` leaves that to the caller on purpose.
+	@MainActor
+	@Test func resetForNewScanClearsTheFinishedSessionAndGoesIdle() async {
+		let engine = DiscoveryScanEngine()
+		let manager = AccessoryManager(transports: [])
+		engine.configure(accessoryManager: manager, modelContext: sharedModelContainer.mainContext)
+		await engine.startCurrentPresetScan()
+		await engine.stopScan()
+		#expect(engine.currentState == .complete)
+
+		engine.resetForNewScan()
+		#expect(engine.currentState == .idle)
+		#expect(engine.session == nil)
+		withExtendedLifetime(manager) {}
+	}
+
+	@MainActor
+	@Test func resetForNewScanIsRefusedMidScan() async {
+		let engine = DiscoveryScanEngine()
+		let manager = AccessoryManager(transports: [])
+		engine.configure(accessoryManager: manager, modelContext: sharedModelContainer.mainContext)
+		await engine.startCurrentPresetScan()
+		#expect(engine.currentState == .dwell)
+
+		engine.resetForNewScan()
+		#expect(engine.currentState == .dwell, "a running scan is not thrown away")
+		#expect(engine.session != nil)
+		await engine.stopScan()
+		withExtendedLifetime(manager) {}
+	}
+
 	// MARK: - State Enumeration
 
 	@Test func allScanStatesExist() {
