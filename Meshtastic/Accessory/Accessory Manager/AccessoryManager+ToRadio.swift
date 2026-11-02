@@ -1036,6 +1036,94 @@ extension AccessoryManager {
 		return (targetRegion, targetPreset)
 	}
 
+	/// Which join action a beacon supports on the connected radio (contract C6). Reads the
+	/// connected node's LoRa config and primary channel and delegates to the pure decision in
+	/// `LoRaChannelCalculator`.
+	@MainActor
+	func beaconJoinOption(for beacon: DiscoveredBeaconEntity) -> BeaconJoinOption {
+		let node = activeConnection?.device.num.flatMap { getNodeInfo(id: $0, context: context) }
+		return LoRaChannelCalculator.beaconJoinOption(
+			hasOfferChannel: beacon.hasOfferChannel,
+			offerChannelName: beacon.offerChannelName,
+			offeredPreset: beacon.offeredPreset,
+			offerRegion: beacon.offerRegion,
+			offeredFrequencySlot: beacon.offeredFrequencySlot,
+			regionPresets: loRaRegionPresets,
+			isConnected: isConnected,
+			loRaConfig: node?.loRaConfig,
+			primaryChannelName: beaconPrimaryChannelName(for: node)
+		)
+	}
+
+	/// The connected node's primary channel name for slot derivation. Mirrors the Channels
+	/// editor's firmware-accurate rule: use the named primary channel; when the primary is the
+	/// unnamed default public channel, fall back to the preset's default channel name (what the
+	/// firmware hashes), which is what makes the slot comparison correct.
+	@MainActor
+	func beaconPrimaryChannelName(for node: NodeInfoEntity?) -> String {
+		guard let node else { return "" }
+		if let primary = node.myInfo?.channels.first(where: { $0.index == 0 || $0.role == 1 }),
+		   let name = primary.name, !name.isEmpty {
+			return name
+		}
+		if node.loRaConfig?.usePreset == false {
+			return "Custom"
+		}
+		guard let preset = ModemPresets(rawValue: Int(node.loRaConfig?.modemPreset ?? 0)) else {
+			return "LongFast"
+		}
+		return preset.androidChannelName
+	}
+
+	/// What the Switch confirmation says a join changes on the connected radio.
+	@MainActor
+	func beaconSwitchPrompt(for beacon: DiscoveredBeaconEntity) -> String {
+		let preset = beaconJoinRegionAndPreset(region: beacon.offeredRegion, preset: beacon.offeredPreset).preset
+		return Self.beaconSwitchPrompt(
+			channelName: beacon.offerChannelName,
+			preset: preset,
+			region: beacon.offeredRegion,
+			frequencySlot: beacon.offeredFrequencySlot,
+			appliesWithoutReboot: appliesLoRaConfigWithoutReboot)
+	}
+
+	/// Names everything the join changes: the preset is always set (the region default when the
+	/// beacon sent none), and a pinned slot replaces the derived one. Before firmware 2.8 the
+	/// LoRa change reboots the radio; from 2.8 it applies live.
+	nonisolated static func beaconSwitchPrompt(
+		channelName: String,
+		preset: ModemPresets,
+		region: RegionCodes?,
+		frequencySlot: Int?,
+		appliesWithoutReboot: Bool
+	) -> String {
+		var changes = [
+			String.localizedStringWithFormat(
+				String(localized: "your radio's primary channel to \"%@\"", comment: "Beacon switch prompt; one of the changes listed"),
+				channelName),
+			String.localizedStringWithFormat(
+				String(localized: "the %@ preset", comment: "Beacon switch prompt; one of the changes listed"),
+				preset.description)
+		]
+		if let region {
+			changes.append(String.localizedStringWithFormat(
+				String(localized: "region %@", comment: "Beacon switch prompt; one of the changes listed"),
+				region.description))
+		}
+		if let slot = frequencySlot {
+			changes.append(String.localizedStringWithFormat(
+				String(localized: "frequency slot %lld", comment: "Beacon switch prompt; one of the changes listed"),
+				Int64(slot)))
+		}
+		let applies = appliesWithoutReboot
+			? String(localized: "Your radio switches to the new mesh without a reboot.", comment: "Beacon switch prompt, firmware 2.8")
+			: String(localized: "Your radio will reboot and reconnect on the new mesh.", comment: "Beacon switch prompt, older firmware")
+		return String.localizedStringWithFormat(
+			String(localized: "This sets %@. %@ Your previous channel settings will be replaced.",
+				   comment: "Beacon switch prompt; the first argument lists the changes, the second says whether the radio reboots"),
+			ListFormatter.localizedString(byJoining: changes), applies)
+	}
+
 	/// Join a mesh advertised by a beacon: set the primary channel to the offered channel (name +
 	/// PSK), then apply the offered region/preset. The channel change lands first (no reboot); the
 	/// LoRa config change reboots the radio onto the advertised mesh. `region` falls back to the
