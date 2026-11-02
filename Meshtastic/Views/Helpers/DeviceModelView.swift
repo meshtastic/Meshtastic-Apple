@@ -521,10 +521,8 @@ final class DeviceModelStage {
 	/// The front of the model's `Screen` part, in the model's own space, where the radio's live
 	/// screen is drawn.
 	private var screenBounds: BoundingBox?
-	private var screenPlane = ModelEntity()
-	private var screenTexture: TextureResource?
-	private var screenShape: ScreenShape?
-	private var lastScreenImage: CGImage?
+	/// The live screen on the entities showing the stage now.
+	private var screen: DeviceModelScreen?
 
 	var hasScreen: Bool { screenBounds != nil }
 	/// The radio's live screen, drawn on the model each frame it changes.
@@ -578,12 +576,7 @@ final class DeviceModelStage {
 		radius = max(sweep, extents.y / 2, 0.0001)
 		sphereRadius = max(simd_length(extents) / 2, radius)
 		modelCenter = bounds.center
-		if let screen = model.findEntity(named: "Screen") {
-			let screenBox = screen.visualBounds(relativeTo: model)
-			if !screenBox.isEmpty {
-				screenBounds = screenBox
-			}
-		}
+		screenBounds = DeviceModelScreen.bounds(of: model)
 		// The model generator names antenna parts with these words.
 		var body = BoundingBox.empty
 		var hasAntenna = false
@@ -610,14 +603,7 @@ final class DeviceModelStage {
 		model.position = -modelCenter
 		pivot = Entity()
 		holder = Entity()
-		screenPlane = ModelEntity()
-		screenTexture = nil
-		screenShape = nil
-		lastScreenImage = nil
-		if screenBounds != nil {
-			screenPlane.isEnabled = false
-			model.addChild(screenPlane)
-		}
+		screen = screenBounds.map { DeviceModelScreen(bounds: $0, on: model) }
 		holder.addChild(model)
 		pivot.addChild(holder)
 		root.addChild(pivot)
@@ -683,8 +669,8 @@ final class DeviceModelStage {
 	#endif
 
 	func advance(by seconds: Float) {
-		// A cheap check: it only redraws when the radio has sent a new picture.
-		showScreen(screenSource?.image)
+		// Cheap: it only redraws when the radio has sent a new picture.
+		screen?.show(screenSource?.image)
 		guard autoRotate, !userTookOver else { return }
 		yaw += Self.spinSpeed * min(seconds, 0.1)
 		applyOrientation()
@@ -721,77 +707,6 @@ final class DeviceModelStage {
 	func endZoom() {
 		zoomStart = zoomFactor
 	}
-
-	struct ScreenShape: Equatable {
-		let width: Float
-		let height: Float
-		let turned: Bool
-	}
-
-	/// The picture's size on a display `slotWidth` by `slotHeight`: its own shape, as large as fits,
-	/// turned a quarter when the display is mounted the other way round.
-	nonisolated static func screenShape(imageWidth: Int, imageHeight: Int, slotWidth: Float, slotHeight: Float) -> ScreenShape {
-		let aspect = Float(imageWidth) / Float(max(imageHeight, 1))
-		let turned = (aspect > 1.05 && slotHeight > slotWidth * 1.05) || (aspect < 0.95 && slotWidth > slotHeight * 1.05)
-		// The picture's width runs along the display's height when it's turned.
-		let along = turned ? slotHeight : slotWidth
-		let across = turned ? slotWidth : slotHeight
-		let width = min(along, across * aspect)
-		return ScreenShape(width: width, height: width / aspect, turned: turned)
-	}
-
-	/// Draws the radio's screen on the model's display, or hides it. The picture keeps its own shape
-	/// inside the display, turned a quarter if the display is mounted the other way round, with no
-	/// lighting so it reads like a lit screen.
-	func showScreen(_ image: CGImage?) {
-		guard let screenBounds else { return }
-		guard let image else {
-			screenPlane.isEnabled = false
-			lastScreenImage = nil
-			return
-		}
-		guard image !== lastScreenImage else { return }
-		lastScreenImage = image
-		let shape = Self.screenShape(
-			imageWidth: image.width,
-			imageHeight: image.height,
-			slotWidth: screenBounds.extents.x,
-			slotHeight: screenBounds.extents.y
-		)
-
-		do {
-			if let screenTexture {
-				try screenTexture.replace(withImage: image, options: .init(semantic: .color))
-			} else {
-				let texture = try TextureResource(image: image, options: .init(semantic: .color))
-				screenTexture = texture
-				var material = UnlitMaterial()
-				material.color = .init(tint: .white, texture: .init(texture, sampler: Self.nearestSampler))
-				screenPlane.model = ModelComponent(mesh: .generatePlane(width: 1, height: 1), materials: [material])
-			}
-		} catch {
-			Logger.services.error("Device model screen: couldn't make a texture: \(error.localizedDescription, privacy: .public)")
-			return
-		}
-		if shape != screenShape {
-			screenShape = shape
-			screenPlane.scale = [shape.width, shape.height, 1]
-			screenPlane.orientation = shape.turned ? simd_quatf(angle: .pi / 2, axis: [0, 0, 1]) : simd_quatf()
-			// Just in front of the display's face, so the case around it can't cover it.
-			let center = screenBounds.center
-			screenPlane.position = [center.x, center.y, screenBounds.max.z + 0.00005]
-		}
-		screenPlane.isEnabled = true
-	}
-
-	/// Each radio pixel stays a crisp square, however close the camera gets.
-	private static let nearestSampler: MaterialParameters.Texture.Sampler = {
-		let descriptor = MTLSamplerDescriptor()
-		descriptor.minFilter = .nearest
-		descriptor.magFilter = .nearest
-		descriptor.mipFilter = .notMipmapped
-		return MaterialParameters.Texture.Sampler(descriptor)
-	}()
 
 	/// Faces the model square on and zooms to `level`: the part fills as much of the view as fits.
 	/// The whole model is fitted by its own shape rather than the sphere it turns in, so a wide

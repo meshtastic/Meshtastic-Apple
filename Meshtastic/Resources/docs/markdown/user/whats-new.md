@@ -14,6 +14,8 @@ Recent user-facing changes from roughly the last 12 months. Newest at the top.
 Show roughly the last 12 months of changes; archive entries older than a year by removing them.
 -->
 
+**Nov 2026** — [Cinema](cinema.md#radio-models) — On Apple Vision Pro, the connected radio's model on the cinema's stand shows its screen live, the card beside it has the radio's buttons and a size slider up to five times real size, and the stand and card turn to face you.
+
 **Nov 2026** — [Getting Started](getting-started.md#step-3-set-up-your-radio) — A radio that connects with no LoRa region opens a short setup for its region, preset and name, and **Set Up Radio** on the Connect screen and in Settings opens it any time.
 
 **Nov 2026** — [Getting Started](getting-started.md#first-launch-setup) — First-launch setup opens with a welcome page about off-grid messaging and location privacy, and the permission pages are restyled with plain icons and larger text.
