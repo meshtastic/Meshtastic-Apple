@@ -14,7 +14,7 @@ struct DeviceModelScreenTests {
 	@available(iOS 18.0, macCatalyst 18.0, *)
 	@Test("A wide picture on a wide display keeps its shape and fills the width")
 	func fitsWidth() {
-		let shape = DeviceModelStage.screenShape(imageWidth: 128, imageHeight: 64, slotWidth: 0.0214, slotHeight: 0.0118)
+		let shape = DeviceModelScreen.shape(imageWidth: 128, imageHeight: 64, slotWidth: 0.0214, slotHeight: 0.0118)
 		#expect(!shape.turned)
 		#expect(abs(shape.width - 0.0214) < 1e-6)
 		#expect(abs(shape.height - 0.0107) < 1e-6)
@@ -23,7 +23,7 @@ struct DeviceModelScreenTests {
 	@available(iOS 18.0, macCatalyst 18.0, *)
 	@Test("A wide picture on a taller display fills the height")
 	func fitsHeight() {
-		let shape = DeviceModelStage.screenShape(imageWidth: 320, imageHeight: 240, slotWidth: 0.06, slotHeight: 0.03)
+		let shape = DeviceModelScreen.shape(imageWidth: 320, imageHeight: 240, slotWidth: 0.06, slotHeight: 0.03)
 		#expect(!shape.turned)
 		#expect(abs(shape.height - 0.03) < 1e-6)
 		#expect(abs(shape.width - 0.04) < 1e-6)
@@ -32,7 +32,7 @@ struct DeviceModelScreenTests {
 	@available(iOS 18.0, macCatalyst 18.0, *)
 	@Test("A wide picture on a display mounted upright is turned a quarter")
 	func turnsSideways() {
-		let shape = DeviceModelStage.screenShape(imageWidth: 240, imageHeight: 135, slotWidth: 0.0174, slotHeight: 0.0305)
+		let shape = DeviceModelScreen.shape(imageWidth: 240, imageHeight: 135, slotWidth: 0.0174, slotHeight: 0.0305)
 		#expect(shape.turned)
 		// Its width runs along the display's height.
 		#expect(shape.width <= 0.0305 + 1e-6)
@@ -42,7 +42,7 @@ struct DeviceModelScreenTests {
 	@available(iOS 18.0, macCatalyst 18.0, *)
 	@Test("A square picture is never turned")
 	func squareStays() {
-		let shape = DeviceModelStage.screenShape(imageWidth: 200, imageHeight: 200, slotWidth: 0.02, slotHeight: 0.03)
+		let shape = DeviceModelScreen.shape(imageWidth: 200, imageHeight: 200, slotWidth: 0.02, slotHeight: 0.03)
 		#expect(!shape.turned)
 		#expect(abs(shape.width - 0.02) < 1e-6)
 	}

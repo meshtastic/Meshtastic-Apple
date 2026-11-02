@@ -13,6 +13,8 @@ import MeshtasticProtobufs
 enum DisplayMirrorOwner: Hashable {
 	case deviceScreen
 	case deviceModel
+	/// The model on the stand in the Vision Pro cinema.
+	case cinemaStand
 }
 
 /// The connected radio's screen as the app last saw it. AccessoryManager feeds it chunks and

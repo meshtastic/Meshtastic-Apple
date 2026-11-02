@@ -12,22 +12,35 @@ import RealityKit
 
 /// A device model on a clear stand in front of the viewer in the cinema, from "View in your space"
 /// on a 3D model: at real size and within reach, to pick up and turn over like the showcase's
-/// models. Its live readings hang beside it, and a bar under it moves the lot. It stands in the air
+/// models. Its readings hang beside it, and a bar under it moves the lot; the bar, the model and
+/// the card keep facing the viewer, like the card on the 3D map. The connected radio's model shows
+/// its screen live, and can stand at up to five times its size to read it. It stands in the air
 /// rather than on something in the image: the image is painted far away, so a real-size model on a
 /// painted table would float.
-@MainActor
+@MainActor @Observable
 final class CinemaModelStand {
-	let root = Entity()
+	@ObservationIgnored let root = Entity()
 	/// Pinch and drag to move the stand, the model and its readings.
-	private let grabber = CinemaModelStand.makeGrabber()
+	@ObservationIgnored private let grabber = CinemaModelStand.makeGrabber()
 	/// The model on its stand and its light, emptied for the next model. The readings hang from the
 	/// grabber, so a new model doesn't take them down.
-	private let shelf = Entity()
-	private var light: Entity?
-	/// The model's height on its stand, for hanging the readings beside it.
-	private var standHeight: Float = 0
+	@ObservationIgnored private let shelf = Entity()
+	@ObservationIgnored private var light: Entity?
+	/// The model on its stand, scaled by the zoom.
+	@ObservationIgnored private var holder: Entity?
+	/// The model's size on its stand at real size, for hanging the readings beside it.
+	@ObservationIgnored private var standSize = CinemaModelStandLayout.Size.none
 	/// The readings card, placed again once the model's height is known.
-	private var tag: Entity?
+	@ObservationIgnored private var tag: Entity?
+	/// The model's display, when it has one to draw the radio's screen on.
+	@ObservationIgnored private var screen: DeviceModelScreen?
+	/// Where the radio's live screen comes from. Nil leaves the model's own blank display.
+	@ObservationIgnored weak var screenSource: DisplayMirrorSession?
+
+	/// Whether the model on the stand has a display the radio's screen can be drawn on.
+	private(set) var hasScreen = false
+	/// How many times its real size the model stands at.
+	private(set) var zoom: Float = 1
 
 	/// In front of the seat and to the left, clear of the panel on the right, about where a hand
 	/// rests. Meters from the space's origin on the floor.
@@ -36,7 +49,7 @@ final class CinemaModelStand {
 	init() {
 		root.name = "CinemaModelStand"
 		root.position = Self.place
-		// Turned to face the seat.
+		// Turned to face the seat; the bar then keeps turning the lot toward the viewer.
 		root.orientation = simd_quatf(angle: atan2(-Self.place.x, -Self.place.z), axis: [0, 1, 0])
 		root.addChild(grabber)
 		// The bar sits just in front of and below the stand.
@@ -49,6 +62,7 @@ final class CinemaModelStand {
 	/// Shows the model `request` names, in place of any other, or takes the stand away for nil.
 	func show(_ request: CinemaModelRequest?, environment: CinemaEnvironment) async {
 		clear()
+		zoom = 1
 		guard let request else {
 			grabber.isEnabled = false
 			return
@@ -70,7 +84,10 @@ final class CinemaModelStand {
 		ShowcaseDisplays.matte(model)
 		let holder = Entity()
 		holder.name = "stand-\(request.modelName)"
-		standHeight = ShowcaseDisplays.stand(model, in: holder)
+		let height = ShowcaseDisplays.stand(model, in: holder)
+		standSize = CinemaModelStandLayout.Size(height: height, halfWidth: holder.visualBounds(relativeTo: holder).extents.x / 2)
+		screen = DeviceModelScreen(on: model)
+		hasScreen = screen != nil
 		model.components.set(Self.accessibility(for: request))
 		if light == nil {
 			light = await Self.light(for: environment)
@@ -81,15 +98,38 @@ final class CinemaModelStand {
 			Self.receive(light, in: holder)
 		}
 		shelf.addChild(holder)
+		self.holder = holder
+		applyZoom()
 		placeTag()
 	}
 
 	func clear() {
 		shelf.children.removeAll()
-		standHeight = 0
+		holder = nil
+		screen = nil
+		hasScreen = false
+		standSize = .none
 	}
 
-	/// Hangs the readings beside the model, facing the seat like the stand. Nil takes down the
+	/// Draws the radio's screen as it is now on the model's display. Called every frame; it only
+	/// redraws when the radio has sent a new picture.
+	func refreshScreen() {
+		screen?.show(screenSource?.image)
+	}
+
+	/// Stands the model at `zoom` times its real size, still on its base, and moves the card clear
+	/// of it.
+	func setZoom(_ zoom: Float) {
+		self.zoom = CinemaModelStandLayout.clampZoom(zoom)
+		applyZoom()
+		placeTag()
+	}
+
+	private func applyZoom() {
+		holder?.scale = SIMD3(repeating: zoom)
+	}
+
+	/// Hangs the readings beside the model, facing the viewer like the stand. Nil takes down the
 	/// card SwiftUI dropped; a new one replaces the old.
 	func setTag(_ tag: Entity?) {
 		if self.tag !== tag {
@@ -104,8 +144,8 @@ final class CinemaModelStand {
 		if tag.parent !== grabber {
 			grabber.addChild(tag)
 		}
-		let height = tag.visualBounds(relativeTo: tag).extents.y
-		tag.position = shelf.position + [0.2, max(standHeight, 0.08) / 2 + height / 2, 0]
+		let size = tag.visualBounds(relativeTo: tag).extents
+		tag.position = shelf.position + CinemaModelStandLayout.cardOffset(stand: standSize, zoom: zoom, cardWidth: size.x, cardHeight: size.y)
 	}
 
 	/// Names the model for VoiceOver, like a model on the showcase's tables.
@@ -118,7 +158,8 @@ final class CinemaModelStand {
 		return component
 	}
 
-	/// A bar like a window's, the cinema panel's twin.
+	/// A bar like a window's, the cinema panel's twin. It turns to face the viewer, and the stand,
+	/// the model and the card hang from it, so they all do.
 	private static func makeGrabber() -> Entity {
 		var material = UnlitMaterial(color: .white)
 		material.blending = .transparent(opacity: .init(floatLiteral: 0.55))
@@ -136,6 +177,7 @@ final class CinemaModelStand {
 		manipulation.dynamics.primaryRotationBehavior = .none
 		manipulation.dynamics.secondaryRotationBehavior = .none
 		bar.components.set(manipulation)
+		bar.components.set(BillboardComponent())
 		var accessibility = AccessibilityComponent()
 		accessibility.isAccessibilityElement = true
 		accessibility.label = LocalizedStringResource("Move the model stand", comment: "Cinema: VoiceOver label for the bar under the device model's stand that moves it")

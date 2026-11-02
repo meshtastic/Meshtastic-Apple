@@ -40,6 +40,8 @@ struct CinemaSpace: View {
 	/// A device model on a stand in front of the seat, from "View in your space" on a 3D model.
 	@State private var modelStand = CinemaModelStand()
 	@State private var modelRequest: CinemaModelRequest?
+	/// Whether the radio the model on the stand is of reports a display, read with the model.
+	@State private var modelHasDisplay = false
 	/// The front screen's section and navigation, kept here so they outlive its attachment.
 	@StateObject private var screen = CinemaScreenModel()
 	/// The fire lookout's summits, and the terrain and node labels for the chosen one.
@@ -78,6 +80,7 @@ struct CinemaSpace: View {
 			// the first frame that has it.
 			fitBoards = content.subscribe(to: SceneEvents.Update.self) { _ in
 				placeBoards()
+				modelStand.refreshScreen()
 				// A marker's size is only known once it has laid out, like a board's.
 				if markerPanels.unsized {
 					placeMarkers { markerPanels.entity(for: $0) }
@@ -141,9 +144,13 @@ struct CinemaSpace: View {
 				Attachment(id: Attachments.modelTag) {
 					// Without the store, the card only names the device.
 					if let container, !appState.isDatabaseResetting {
-						CinemaModelTag(request: modelRequest) { self.modelRequest = nil }
-							.id(appState.databaseResetID)
-							.modelContainer(container)
+						CinemaModelTag(request: modelRequest, liveScreen: standLiveScreen, zoom: modelStand.zoom, onZoom: { modelStand.setZoom($0) }, onInput: { event in
+							Task { await accessoryManager.sendDisplayInput(event) }
+						}) {
+							self.modelRequest = nil
+						}
+						.id(appState.databaseResetID)
+						.modelContainer(container)
 					} else {
 						CinemaModelTag(request: CinemaModelRequest(modelName: modelRequest.modelName, deviceName: modelRequest.deviceName, nodeNum: nil)) {
 							self.modelRequest = nil
@@ -206,8 +213,35 @@ struct CinemaSpace: View {
 				try? await Task.sleep(for: .seconds(60))
 			}
 		}
+		#if DEBUG
+		.task {
+			// Simulator screenshots: `--meshtastic-cinema-model <model>` stands that model, as the
+			// connected radio's once one connects, within a few seconds, else as a plain device.
+			let arguments = CommandLine.arguments
+			guard let index = arguments.firstIndex(of: "--meshtastic-cinema-model"), index + 1 < arguments.count else { return }
+			for _ in 0..<40 where !accessoryManager.isConnected {
+				try? await Task.sleep(for: .milliseconds(500))
+			}
+			let name = arguments[index + 1]
+			modelRequest = CinemaModelRequest(modelName: name, deviceName: name, nodeNum: accessoryManager.isConnected ? accessoryManager.activeDeviceNum : nil)
+		}
+		#endif
 		.task(id: modelRequest) {
+			modelHasDisplay = false
+			if let container, !appState.isDatabaseResetting, let nodeNum = modelRequest?.nodeNum {
+				modelHasDisplay = getNodeInfo(id: nodeNum, context: ModelContext(container))?.metadata?.hasDisplay == true
+			}
 			await modelStand.show(modelRequest, environment: environment)
+		}
+		// The stream is only wanted while the connected radio's model is on the stand. Asked for
+		// again after a reconnect, which forgets it.
+		.task(id: standLiveScreen) {
+			modelStand.screenSource = standLiveScreen ? accessoryManager.displayMirror : nil
+			if standLiveScreen {
+				accessoryManager.startDisplayMirror(for: .cinemaStand)
+			} else {
+				accessoryManager.stopDisplayMirror(for: .cinemaStand)
+			}
 		}
 		.onChange(of: lookout.labels) {
 			// The nodes move and the markers regroup; a card whose marker is gone closes.
@@ -248,6 +282,8 @@ struct CinemaSpace: View {
 			fitBoards = nil
 			CinemaScene.showModel = nil
 			modelRequest = nil
+			modelStand.screenSource = nil
+			accessoryManager.stopDisplayMirror(for: .cinemaStand)
 			appState.cinemaOpen = false
 			screen.unregister(from: appState.sceneRouters)
 			// Bring the main window back. Not when the app went to the background, which closes the
@@ -398,6 +434,14 @@ struct CinemaSpace: View {
 		terrain = entity
 		terrainSiteID = site.id
 		terrainHeading = heading
+	}
+
+	/// Show the connected radio's screen live on the model on the stand: the model is of the
+	/// connected radio, the radio reports a display, and the model has one to draw it on. The
+	/// screen only comes over the local connection, as in the Device Screen view.
+	private var standLiveScreen: Bool {
+		guard let nodeNum = modelRequest?.nodeNum, modelHasDisplay, modelStand.hasScreen else { return false }
+		return nodeNum == accessoryManager.activeDeviceNum && accessoryManager.isConnected
 	}
 
 	/// The markers out the lookout's windows, nearest node first.

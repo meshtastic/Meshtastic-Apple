@@ -18,7 +18,9 @@ The [3D spatial map](map.md) opens in front of you when you enter, at its larges
 
 ## Radio models
 
-On a node's details, the AR button on the radio's [3D model](nodes.md) stands the model on a clear stand in front of you, at real size. Pinch it to pick it up and turn it over; let go and it goes back on the stand. The card beside it shows the node's name, when it was last heard, its battery, signal and hops. Pinch the bar under the stand to move it, and the X on the card puts the model away. Outside the tent, the AR button places the model in the room around you instead.
+On a node's details, the AR button on the radio's [3D model](nodes.md) stands the model on a clear stand in front of you, at real size. Pinch it to pick it up and turn it over; let go and it goes back on the stand. The card beside it shows the node's name, when it was last heard, its battery, signal and hops. Pinch the bar under the stand to move it; the stand, the model and the card turn to face you wherever it goes, like the card on the 3D map. The X on the card puts the model away. Outside the tent, the AR button places the model in the room around you instead.
+
+For the radio you're connected to, the model shows its screen live, the same picture as the [Device Screen](nodes.md#device-screen) view. The card then has a size slider, from real size up to five times it so the screen is easy to read from the seat, and the radio's buttons: four directions around **OK**, with **Back** underneath.
 
 ## Boards
 
