@@ -7,9 +7,9 @@
   <link rel="stylesheet" href="../assets/docs.css">
 </head>
 <body data-page="carplay">
-<h1>CarPlay Architecture</h1>
+<h1 id="carplay-architecture">CarPlay Architecture</h1>
 <p>This page covers the implementation of the CarPlay feature. For the user-facing guide see <a href="../user/carplay.html">CarPlay</a>.</p>
-<h2>Components</h2>
+<h2 id="components">Components</h2>
 <table>
 <thead>
 <tr>
@@ -51,12 +51,12 @@
 </tr>
 </tbody>
 </table>
-<h2>Template Updates</h2>
+<h2 id="template-updates">Template Updates</h2>
 <p>The scene delegate subscribes to <code>AccessoryManager.shared.$isConnected</code> with a <strong>300 ms debounce</strong> and calls <code>updateSections(_:)</code> on existing <code>CPListTemplate</code> instances rather than rebuilding the whole template tree. This minimises flicker during reconnects and avoids triggering CarPlay's rate-limit on template replacement.</p>
-<h2>Intent Donation De-duplication</h2>
+<h2 id="intent-donation-de-duplication">Intent Donation De-duplication</h2>
 <p>Intent donations are de-duplicated per CarPlay session using an in-memory <code>Set</code>. This avoids repeated IPC calls to the intents daemon on every list refresh (which happens on a timer while CarPlay is connected).</p>
 <p>When a new CarPlay session starts, the set is cleared and up to 50 unread messages are batch-donated so Siri can read them back on demand.</p>
-<h2>Adding a New Intent</h2>
+<h2 id="adding-a-new-intent">Adding a New Intent</h2>
 <ol>
 <li>Create a handler in <code>Meshtastic/Intents/</code> conforming to the appropriate <code>INIntent</code> protocol.</li>
 <li>Register the handler in <code>IntentHandler.swift</code>'s <code>handler(for:)</code> switch.</li>

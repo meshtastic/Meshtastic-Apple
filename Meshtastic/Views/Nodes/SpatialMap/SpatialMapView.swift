@@ -32,6 +32,7 @@ struct SpatialMapView: View {
 	/// The cinema's room and the summit its lookout stands on, so the map can show the lookout there.
 	@AppStorage("cinemaEnvironment") private var cinemaEnvironment: CinemaEnvironment = .sarTent
 	@AppStorage("cinemaLookoutSite") private var lookoutSiteID = ""
+	@AppStorage(SpatialLookout.turnsKey) private var lookoutTurns = 0
 
 	var body: some View {
 		GeometryReader3D { proxy in
@@ -50,11 +51,12 @@ struct SpatialMapView: View {
 				scene.apply(placement: model.placement)
 				scene.apply(terrainEntity: model.terrainEntity, building: model.isBuildingTerrain)
 				scene.apply(weatherRadar: model.weatherRadarEntity, revision: model.weatherRadarRevision)
+				scene.apply(buildings: model.buildingsEntity)
 				scene.apply(coverage: model.coverageEntity, revision: model.coverageRevision, opacity: model.coverageOpacity)
 				scene.apply(nodes: model.nodes)
 				scene.apply(lookout: cinemaEnvironment == .fireLookout
 					? SpatialLookout.coordinate(siteID: lookoutSiteID).flatMap { model.lookoutStands(on: $0) ? $0 : nil }
-					: nil)
+					: nil, heading: SpatialLookout.heading(turns: lookoutTurns))
 				scene.apply(target: liveZoom.flatMap { model.circle(forZoom: $0) } ?? model.targetCircle)
 				traffic.applyBaseGlow()
 				// Hidden while a trace route is shown, as on the 2D map, so the two sets of colored

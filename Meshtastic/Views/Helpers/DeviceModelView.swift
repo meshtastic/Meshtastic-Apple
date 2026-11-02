@@ -282,8 +282,8 @@ extension EnvironmentValues {
 	@Entry var presentDeviceModelFullScreen: ((DeviceModelFullScreenRequest) -> Void)?
 }
 
-/// The model in a large sheet, held still and facing you, with the radio's buttons under it and a
-/// zoom button that steps from the whole model to the case to the screen.
+/// The model in a large sheet, held still and facing you. With the radio's live screen, its buttons
+/// sit under it and a zoom button steps from the whole model to the case to the screen.
 @available(iOS 18.0, macCatalyst 18.0, visionOS 1.0, *)
 struct DeviceModelFullScreen: View {
 	let request: DeviceModelFullScreenRequest
@@ -291,6 +291,8 @@ struct DeviceModelFullScreen: View {
 	let liveScreen: Bool
 
 	@Environment(\.dismiss) private var dismiss
+	/// On the cinema's screen the view is a pushed page, which has its own back button.
+	@Environment(\.presentationHost) private var presentationHost
 	/// A scene can only hold an entity once, so this view turns its own copy.
 	@State private var stage: DeviceModelStage
 	/// How close the model is: the zoom button steps through the stage's levels.
@@ -305,33 +307,50 @@ struct DeviceModelFullScreen: View {
 	}
 
 	var body: some View {
-		NavigationStack {
-			VStack(spacing: 16) {
-				DeviceModelRealityView(
-					stage: stage,
-					autoRotate: false,
-					screenSource: liveScreen ? accessoryManager.displayMirror : nil,
-					dragsTilt: true
-				)
-				.accessibilityElement(children: .ignore)
-				.accessibilityLabel(String(
-					localized: "3D model of \(request.name)",
-					comment: "Accessibility label for the rotating 3D model of a radio; the argument is the device name"
-				))
-				if liveScreen {
-					DeviceRemoteControl { event in
-						Task { await accessoryManager.sendDisplayInput(event) }
-					}
+		Group {
+			if presentationHost == .panel {
+				content
+			} else {
+				NavigationStack { content }
+			}
+		}
+		.presentationDetents([.large])
+		// Without the live screen the zoom button goes, so go back to the whole model with it.
+		.onChange(of: liveScreen) { _, live in
+			guard !live, zoomLevel != .model else { return }
+			stage.zoom(to: .model)
+			zoomLevel = .model
+		}
+	}
+
+	private var content: some View {
+		VStack(spacing: 16) {
+			DeviceModelRealityView(
+				stage: stage,
+				autoRotate: false,
+				screenSource: liveScreen ? accessoryManager.displayMirror : nil,
+				dragsTilt: true
+			)
+			.accessibilityElement(children: .ignore)
+			.accessibilityLabel(String(
+				localized: "3D model of \(request.name)",
+				comment: "Accessibility label for the rotating 3D model of a radio; the argument is the device name"
+			))
+			if liveScreen {
+				DeviceRemoteControl { event in
+					Task { await accessoryManager.sendDisplayInput(event) }
 				}
 			}
-			.padding()
-			// Drags turn the model, so they mustn't close the sheet.
-			.interactiveDismissDisabled()
-			.navigationTitle(request.name)
-			#if !os(macOS)
-			.navigationBarTitleDisplayMode(.inline)
-			#endif
-			.toolbar {
+		}
+		.padding()
+		// Drags turn the model, so they mustn't close the sheet.
+		.interactiveDismissDisabled()
+		.navigationTitle(request.name)
+		#if !os(macOS)
+		.navigationBarTitleDisplayMode(.inline)
+		#endif
+		.toolbar {
+			if presentationHost == .window {
 				ToolbarItem(placement: .cancellationAction) {
 					Button {
 						dismiss()
@@ -339,14 +358,14 @@ struct DeviceModelFullScreen: View {
 						Label("Close", systemImage: "xmark")
 					}
 				}
-				if stage.zoomLevels.count > 1 {
-					ToolbarItem(placement: .primaryAction) {
-						zoomButton
-					}
+			}
+			// Zooming in is for reading the radio's live screen; without it the whole model is enough.
+			if liveScreen && stage.zoomLevels.count > 1 {
+				ToolbarItem(placement: .primaryAction) {
+					zoomButton
 				}
 			}
 		}
-		.presentationDetents([.large])
 	}
 
 	/// Steps in from the whole model to the case without its antenna, then the screen, then back out.
@@ -499,7 +518,14 @@ final class DeviceModelStage {
 	/// The model's center, in its own space.
 	private var modelCenter: SIMD3<Float> = .zero
 	/// Half the view's width and height at the model, in scene units, set by the view.
-	var viewHalfExtents: SIMD2<Float> = [1, 1]
+	var viewHalfExtents: SIMD2<Float> = [1, 1] {
+		didSet { if viewHalfExtents != oldValue { refit() } }
+	}
+	/// The level the model is fitted to, kept as the view changes size, until a drag or pinch
+	/// takes over.
+	private var fitLevel: ZoomLevel?
+	/// The whole model, in its own space.
+	private var modelBounds: BoundingBox
 	private var zoomStart: Float = 1
 	private var userTookOver = false
 	private(set) var isDragging = false
@@ -507,10 +533,8 @@ final class DeviceModelStage {
 	/// The front of the model's `Screen` part, in the model's own space, where the radio's live
 	/// screen is drawn.
 	private var screenBounds: BoundingBox?
-	private var screenPlane = ModelEntity()
-	private var screenTexture: TextureResource?
-	private var screenShape: ScreenShape?
-	private var lastScreenImage: CGImage?
+	/// The live screen on the entities showing the stage now.
+	private var screen: DeviceModelScreen?
 
 	var hasScreen: Bool { screenBounds != nil }
 	/// The radio's live screen, drawn on the model each frame it changes.
@@ -539,11 +563,11 @@ final class DeviceModelStage {
 	/// is placed to fit 1, and meters on visionOS, where the view sets it from its size.
 	#if os(visionOS)
 	var fitRadius: Float = 0.07 {
-		didSet { if fitRadius != oldValue { applyScale() } }
+		didSet { if fitRadius != oldValue { refit() } }
 	}
 	#else
 	var fitRadius: Float = 1 {
-		didSet { if fitRadius != oldValue { applyScale() } }
+		didSet { if fitRadius != oldValue { refit() } }
 	}
 	#endif
 
@@ -552,9 +576,11 @@ final class DeviceModelStage {
 		if facingFront {
 			yaw = 0
 			pitch = 0
+			fitLevel = .model
 		}
 		source = model
 		let bounds = model.visualBounds(relativeTo: nil)
+		modelBounds = bounds
 		// Turning about Y sweeps the footprint's diagonal, so that and the height are what has
 		// to fit; a full bounding sphere leaves tall, thin devices looking small.
 		let extents = bounds.extents
@@ -562,12 +588,7 @@ final class DeviceModelStage {
 		radius = max(sweep, extents.y / 2, 0.0001)
 		sphereRadius = max(simd_length(extents) / 2, radius)
 		modelCenter = bounds.center
-		if let screen = model.findEntity(named: "Screen") {
-			let screenBox = screen.visualBounds(relativeTo: model)
-			if !screenBox.isEmpty {
-				screenBounds = screenBox
-			}
-		}
+		screenBounds = DeviceModelScreen.bounds(of: model)
 		// The model generator names antenna parts with these words.
 		var body = BoundingBox.empty
 		var hasAntenna = false
@@ -594,14 +615,7 @@ final class DeviceModelStage {
 		model.position = -modelCenter
 		pivot = Entity()
 		holder = Entity()
-		screenPlane = ModelEntity()
-		screenTexture = nil
-		screenShape = nil
-		lastScreenImage = nil
-		if screenBounds != nil {
-			screenPlane.isEnabled = false
-			model.addChild(screenPlane)
-		}
+		screen = screenBounds.map { DeviceModelScreen(bounds: $0, on: model) }
 		holder.addChild(model)
 		pivot.addChild(holder)
 		root.addChild(pivot)
@@ -667,8 +681,8 @@ final class DeviceModelStage {
 	#endif
 
 	func advance(by seconds: Float) {
-		// A cheap check: it only redraws when the radio has sent a new picture.
-		showScreen(screenSource?.image)
+		// Cheap: it only redraws when the radio has sent a new picture.
+		screen?.show(screenSource?.image)
 		guard autoRotate, !userTookOver else { return }
 		yaw += Self.spinSpeed * min(seconds, 0.1)
 		applyOrientation()
@@ -677,6 +691,7 @@ final class DeviceModelStage {
 	func beginDrag() {
 		isDragging = true
 		userTookOver = true
+		fitLevel = nil
 		dragStartYaw = yaw
 		dragStartPitch = pitch
 	}
@@ -694,101 +709,25 @@ final class DeviceModelStage {
 
 	func zoom(by magnification: Float) {
 		userTookOver = true
-		zoomFactor = min(max(zoomStart * magnification, 0.6), max(2.2, zoomStart))
+		fitLevel = nil
+		// A wide model in a narrow view fits below 0.6, and pinching in mustn't jump it bigger.
+		let smallest = min(0.6, fitFactor(for: modelBounds))
+		zoomFactor = min(max(zoomStart * magnification, smallest), max(2.2, zoomStart))
 		applyScale()
-	}
-
-	/// Square on to the viewer again, at the starting size.
-	func faceFront() {
-		yaw = 0
-		pitch = 0
-		zoomFactor = 1
-		zoomStart = 1
-		focus = .zero
-		applyScale()
-		applyOrientation()
 	}
 
 	func endZoom() {
 		zoomStart = zoomFactor
 	}
 
-	struct ScreenShape: Equatable {
-		let width: Float
-		let height: Float
-		let turned: Bool
-	}
-
-	/// The picture's size on a display `slotWidth` by `slotHeight`: its own shape, as large as fits,
-	/// turned a quarter when the display is mounted the other way round.
-	nonisolated static func screenShape(imageWidth: Int, imageHeight: Int, slotWidth: Float, slotHeight: Float) -> ScreenShape {
-		let aspect = Float(imageWidth) / Float(max(imageHeight, 1))
-		let turned = (aspect > 1.05 && slotHeight > slotWidth * 1.05) || (aspect < 0.95 && slotWidth > slotHeight * 1.05)
-		// The picture's width runs along the display's height when it's turned.
-		let along = turned ? slotHeight : slotWidth
-		let across = turned ? slotWidth : slotHeight
-		let width = min(along, across * aspect)
-		return ScreenShape(width: width, height: width / aspect, turned: turned)
-	}
-
-	/// Draws the radio's screen on the model's display, or hides it. The picture keeps its own shape
-	/// inside the display, turned a quarter if the display is mounted the other way round, with no
-	/// lighting so it reads like a lit screen.
-	func showScreen(_ image: CGImage?) {
-		guard let screenBounds else { return }
-		guard let image else {
-			screenPlane.isEnabled = false
-			lastScreenImage = nil
-			return
-		}
-		guard image !== lastScreenImage else { return }
-		lastScreenImage = image
-		let shape = Self.screenShape(
-			imageWidth: image.width,
-			imageHeight: image.height,
-			slotWidth: screenBounds.extents.x,
-			slotHeight: screenBounds.extents.y
-		)
-
-		do {
-			if let screenTexture {
-				try screenTexture.replace(withImage: image, options: .init(semantic: .color))
-			} else {
-				let texture = try TextureResource(image: image, options: .init(semantic: .color))
-				screenTexture = texture
-				var material = UnlitMaterial()
-				material.color = .init(tint: .white, texture: .init(texture, sampler: Self.nearestSampler))
-				screenPlane.model = ModelComponent(mesh: .generatePlane(width: 1, height: 1), materials: [material])
-			}
-		} catch {
-			Logger.services.error("Device model screen: couldn't make a texture: \(error.localizedDescription, privacy: .public)")
-			return
-		}
-		if shape != screenShape {
-			screenShape = shape
-			screenPlane.scale = [shape.width, shape.height, 1]
-			screenPlane.orientation = shape.turned ? simd_quatf(angle: .pi / 2, axis: [0, 0, 1]) : simd_quatf()
-			// Just in front of the display's face, so the case around it can't cover it.
-			let center = screenBounds.center
-			screenPlane.position = [center.x, center.y, screenBounds.max.z + 0.00005]
-		}
-		screenPlane.isEnabled = true
-	}
-
-	/// Each radio pixel stays a crisp square, however close the camera gets.
-	private static let nearestSampler: MaterialParameters.Texture.Sampler = {
-		let descriptor = MTLSamplerDescriptor()
-		descriptor.minFilter = .nearest
-		descriptor.magFilter = .nearest
-		descriptor.mipFilter = .notMipmapped
-		return MaterialParameters.Texture.Sampler(descriptor)
-	}()
-
 	/// Faces the model square on and zooms to `level`: the part fills as much of the view as fits.
+	/// The whole model is fitted by its own shape rather than the sphere it turns in, so a wide
+	/// board fills a narrow view instead of running off its sides.
 	func zoom(to level: ZoomLevel) {
+		fitLevel = level
 		switch level {
 		case .model:
-			faceFront()
+			zoom(toFit: modelBounds)
 		case .body:
 			if let bodyBounds { zoom(toFit: bodyBounds) }
 		case .screen:
@@ -799,6 +738,16 @@ final class DeviceModelStage {
 	private func zoom(toFit box: BoundingBox) {
 		yaw = 0
 		pitch = 0
+		zoomFactor = fitFactor(for: box)
+		zoomStart = zoomFactor
+		let center = box.center - modelCenter
+		focus = [center.x, center.y]
+		applyScale()
+		applyOrientation()
+	}
+
+	/// The zoom at which `box`, seen square on, fills as much of the view as fits.
+	private func fitFactor(for box: BoundingBox) -> Float {
 		let half = SIMD2(box.extents.x, box.extents.y) / 2
 		let room = viewHalfExtents * 0.9
 		// The part's front is nearer the camera than the model's middle, so perspective makes it
@@ -812,12 +761,16 @@ final class DeviceModelStage {
 		#endif
 		let fitX = room.x / (half.x + room.x * perspective)
 		let fitY = room.y / (half.y + room.y * perspective)
-		zoomFactor = min(fitX, fitY) / (fitRadius / radius)
-		zoomStart = zoomFactor
-		let center = box.center - modelCenter
-		focus = [center.x, center.y]
-		applyScale()
-		applyOrientation()
+		return min(fitX, fitY) / (fitRadius / radius)
+	}
+
+	/// Fits the model to its level again after the view changes size, or just rescales it.
+	private func refit() {
+		if let fitLevel {
+			zoom(to: fitLevel)
+		} else {
+			applyScale()
+		}
 	}
 
 	private func applyScale() {

@@ -17,6 +17,8 @@ The Meshtastic app connects to your radio over Bluetooth Low Energy (BLE). You c
 
 The app remembers your preferred device and reconnects automatically when the radio is in range.
 
+A radio that connects with no LoRa region set opens the radio setup flow (region, preset and name). **Set Up Radio** on the Connect screen opens it again any time; see [Getting Started](getting-started.md#step-3-set-up-your-radio).
+
 ## Disconnecting a Radio
 
 Swipe left on a connected radio in the Connect view and tap **Disconnect**. The radio continues operating on the mesh — it just stops syncing with the app.
@@ -85,6 +87,10 @@ The app displays the Bluetooth signal strength of nearby devices during scanning
 
 **App asks for Bluetooth permission**
 - Grant permission in iOS Settings → Privacy & Security → Bluetooth → Meshtastic.
+
+**Apple Vision Pro: pairing stops where the PIN would go**
+- visionOS can't enter a Bluetooth PIN, so a radio set to a Random or Fixed PIN can't pair with the headset. The Connect screen says so when it happens.
+- Set the radio's Bluetooth pairing mode to **No PIN (Just Works)** from another device (Settings → Bluetooth in the app on an iPhone, iPad or Mac), then connect again.
 
 ---
 

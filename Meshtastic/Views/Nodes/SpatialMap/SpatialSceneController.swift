@@ -47,6 +47,8 @@ final class SpatialSceneController {
 	let coverageContainer = Entity()
 	/// Holds the weather radar overlay, under the coverage.
 	let weatherRadarContainer = Entity()
+	/// Holds the raised buildings, hidden while a zoom is previewed.
+	let buildingsContainer = Entity()
 	let nodesContainer = Entity()
 	let selectionContainer = Entity()
 	let trafficContainer = Entity()
@@ -151,6 +153,7 @@ final class SpatialSceneController {
 	private var lookout: Entity?
 	private var lookoutCoordinate: CLLocationCoordinate2D?
 	private var lookoutPlacementRevision = -1
+	private var lookoutHeading = SpatialLookout.frontHeading
 
 	init() {
 		// A flat disk of radius 0.5, scaled to the map once there is one.
@@ -295,6 +298,7 @@ final class SpatialSceneController {
 		updateCounterScale()
 		updatePinVisibility()
 		updateLookoutVisibility()
+		updateBuildingsVisibility()
 	}
 
 	/// Hides pins that would stand past the rim, with their labels, links and selection.
@@ -764,6 +768,26 @@ extension SpatialSceneController {
 		}
 		weatherRadarContainer.isEnabled = weatherRadarEntity != nil && terrainEntity != nil && revision != nil && revision == placement?.revision
 	}
+
+	/// Swaps in the raised buildings. The model drops them as soon as the terrain under them is
+	/// replaced, so whatever is here stands on the terrain shown. Hidden while a zoom is previewed:
+	/// enlarged, they would stand past the rim.
+	func apply(buildings entity: ModelEntity?) {
+		if buildingsContainer.parent == nil { terrainAnchor.addChild(buildingsContainer) }
+		let current = buildingsContainer.children.first
+		if current !== entity {
+			current?.removeFromParent()
+			if let entity {
+				buildingsContainer.addChild(entity)
+				applyLight(to: entity)
+			}
+		}
+		updateBuildingsVisibility()
+	}
+
+	fileprivate func updateBuildingsVisibility() {
+		buildingsContainer.isEnabled = !buildingsContainer.children.isEmpty && preview == .identity
+	}
 }
 extension SpatialSceneController {
 	fileprivate func applyLight(to entity: Entity) {
@@ -774,20 +798,26 @@ extension SpatialSceneController {
 // MARK: Fire lookout
 
 extension SpatialSceneController {
-	/// Stands the fire lookout on `coordinate`, the summit the cinema's lookout room is on, or takes
-	/// it away for nil. Moved onto the new ground whenever the terrain is rebuilt.
-	func apply(lookout coordinate: CLLocationCoordinate2D?) {
+	/// Stands the fire lookout on `coordinate`, the summit the cinema's lookout room is on, with its
+	/// cab facing `heading`, or takes it away for nil. Moved onto the new ground whenever the terrain
+	/// is rebuilt.
+	func apply(lookout coordinate: CLLocationCoordinate2D?, heading: Double = SpatialLookout.frontHeading) {
 		guard let placement else { return }
 		let same = coordinate?.latitude == lookoutCoordinate?.latitude && coordinate?.longitude == lookoutCoordinate?.longitude
-		guard !same || placement.revision != lookoutPlacementRevision else { return }
+		guard !same || placement.revision != lookoutPlacementRevision || heading != lookoutHeading else { return }
 		lookoutCoordinate = coordinate
 		lookoutPlacementRevision = placement.revision
+		if heading != lookoutHeading {
+			lookoutHeading = heading
+			lookout?.removeFromParent()
+			lookout = nil
+		}
 		guard let coordinate else {
 			lookout?.removeFromParent()
 			lookout = nil
 			return
 		}
-		if lookout == nil, let made = SpatialLookoutParts.make() {
+		if lookout == nil, let made = SpatialLookoutParts.make(heading: heading) {
 			applyLight(to: made)
 			nodesContainer.addChild(made)
 			lookout = made
@@ -809,7 +839,7 @@ extension SpatialSceneController {
 		let nearby = pins.values
 			.map { SIMD2($0.holder.position.x, $0.holder.position.z) }
 			.filter { simd_distance($0, summit) < clearance * 2 }
-		if let spot = SpatialLookoutSpot.spot(summit: summit, pins: nearby, clearance: clearance) {
+		if let spot = SpatialLookoutSpot.spot(summit: summit, pins: nearby, clearance: clearance, heading: lookoutHeading) {
 			position = placement.position(placement.transform.coordinate(x: spot.x, z: spot.y))
 		}
 		lookout.position = position

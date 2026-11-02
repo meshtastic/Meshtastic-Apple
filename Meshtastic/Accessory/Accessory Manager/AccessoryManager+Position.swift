@@ -79,9 +79,10 @@ extension AccessoryManager {
 
 		positionPacket.latitudeI = Int32(lastLocation.coordinate.latitude * 1e7)
 		positionPacket.longitudeI = Int32(lastLocation.coordinate.longitude * 1e7)
-		let timestamp = lastLocation.timestamp
-		positionPacket.time = UInt32(timestamp.timeIntervalSince1970)
-		positionPacket.timestamp = UInt32(timestamp.timeIntervalSince1970)
+		// The radio sets its clock from `time`, so it is the phone's clock now. The fix can be
+		// much older when the phone isn't moving; its time goes in `timestamp`.
+		positionPacket.time = UInt32(Date().timeIntervalSince1970)
+		positionPacket.timestamp = UInt32(lastLocation.timestamp.timeIntervalSince1970)
 		positionPacket.altitude = Int32(lastLocation.altitude)
 		positionPacket.satsInView = UInt32(LocationsHandler.satsInView)
 		positionPacket.setSpeedTrackAndHae(from: lastLocation)

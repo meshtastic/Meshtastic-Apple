@@ -26,13 +26,36 @@ final class HillshadeTileOverlay: MKTileOverlay {
 	/// Rendered tiles persist here (z/x/y.png) so shading computes once per
 	/// terrain download instead of on every map session. Nil disables the cache.
 	private let cacheDirectory: URL?
+	/// Darken valleys by how little sky they see (`TerrainOcclusion`).
+	private let skyOcclusion: Bool
+
+	/// How much the sky occlusion darkens, at its strongest.
+	static let occlusionStrength: Float = 0.6
+
+	/// Zooms past the terrain's own data that still shade at full strength. Global terrain stops at
+	/// zoom 12, about 30 m a sample; one zoom on, the stretched data still reads as relief.
+	static let overzoomAllowance = 1
+	/// Zooms after that over which the shading fades to nothing. Further in it isn't drawn: it would
+	/// be smooth slopes invented between samples. Contours still draw.
+	static let fadeZooms = 1
+
+	/// How strongly to shade a tile at `zoom` when the data stops at `dataMaxZoom`: 1 up to the
+	/// allowance, then stepping down to 0.
+	static func strength(zoom: Int, dataMaxZoom: Int) -> Double {
+		let full = dataMaxZoom + overzoomAllowance
+		guard zoom > full else { return 1 }
+		let past = zoom - full
+		guard past <= fadeZooms else { return 0 }
+		return 1 - Double(past) / Double(fadeZooms + 1)
+	}
 
 	/// Sun position for Horn shading: standard cartographic northwest light.
 	private static let azimuthRadians = 315.0 * Double.pi / 180
 	private static let altitudeRadians = 45.0 * Double.pi / 180
 
-	init(store: TerrainStore, darkAppearance: Bool, cacheDirectory: URL? = nil) {
+	init(store: TerrainStore, darkAppearance: Bool, cacheDirectory: URL? = nil, skyOcclusion: Bool = false) {
 		self.store = store
+		self.skyOcclusion = skyOcclusion
 		self.maxShadowAlpha = darkAppearance ? 0.42 : 0.32
 		self.cacheDirectory = cacheDirectory
 		super.init(urlTemplate: nil)
@@ -45,6 +68,7 @@ final class HillshadeTileOverlay: MKTileOverlay {
 	override func loadTile(at path: MKTileOverlayPath, result: @escaping (Data?, Error?) -> Void) {
 		let store = store
 		let alphaCap = maxShadowAlpha
+		let skyOcclusion = skyOcclusion
 		let cacheURL = cacheDirectory?
 			.appendingPathComponent("\(path.z)-\(path.x)-\(path.y).png")
 		Task.detached(priority: .utility) {
@@ -52,7 +76,21 @@ final class HillshadeTileOverlay: MKTileOverlay {
 				result(cached, nil)
 				return
 			}
-			guard let tile = await store.elevationTile(z: path.z, x: path.x, y: path.y, margin: 2),
+			// Past the data's own zoom the shading fades out, and is skipped once it's gone.
+			guard let dataMaxZoom = await store.dataMaxZoom(z: path.z, x: path.x, y: path.y) else {
+				result(Self.emptyTile, nil)
+				return
+			}
+			let strength = Self.strength(zoom: path.z, dataMaxZoom: dataMaxZoom)
+			guard strength > 0 else {
+				result(Self.emptyTile, nil)
+				return
+			}
+			// Sky occlusion looks out up to its radius past each sample, so the tile carries that much
+			// of its neighbors.
+			let metersPerSample = TerrainStore.metersPerSample(z: path.z, y: path.y, size: TerrainStore.tileSize)
+			let radius = skyOcclusion ? TerrainOcclusion.radiusSamples(metersPerSample: metersPerSample) : 0
+			guard let tile = await store.elevationTile(z: path.z, x: path.x, y: path.y, margin: max(2, radius)),
 				  let coverage = await store.coverage(z: path.z, x: path.x, y: path.y) else {
 				// Outside coverage: an empty (fully transparent) tile, not an error —
 				// MapKit treats errors as retryable and would hammer loadTile. Not
@@ -60,9 +98,9 @@ final class HillshadeTileOverlay: MKTileOverlay {
 				result(Self.emptyTile, nil)
 				return
 			}
-			let metersPerSample = TerrainStore.metersPerSample(z: path.z, y: path.y, size: tile.size)
 			let clip = Self.clipRect(tile: tile, path: path, coverage: coverage)
-			let png = Self.renderShadow(tile: tile, metersPerSample: metersPerSample, maxAlpha: alphaCap, clip: clip)
+			let occlusion = skyOcclusion ? TerrainOcclusion.compute(tile: tile, metersPerSample: metersPerSample, radius: radius) : nil
+			let png = Self.renderShadow(tile: tile, metersPerSample: metersPerSample, maxAlpha: alphaCap * CGFloat(strength), clip: clip, occlusion: occlusion)
 			if let png, let cacheURL {
 				try? png.write(to: cacheURL, options: .atomic)
 			}
@@ -116,7 +154,7 @@ final class HillshadeTileOverlay: MKTileOverlay {
 	/// Horn 3×3 shading over the tile's grid (the 1px margin keeps edges seamless),
 	/// emitted as a black tile whose per-pixel alpha encodes shadow depth. Pixels
 	/// outside `clip` stay fully transparent (past the region boundary).
-	static func renderShadow(tile: ElevationTile, metersPerSample: Double, maxAlpha: CGFloat, clip: PixelRect? = nil) -> Data? {
+	static func renderShadow(tile: ElevationTile, metersPerSample: Double, maxAlpha: CGFloat, clip: PixelRect? = nil, occlusion: [UInt8]? = nil) -> Data? {
 		let size = tile.size
 		var alphas = [UInt8](repeating: 0, count: size * size)
 		let cellSize = Float(max(metersPerSample, 0.0001))
@@ -185,13 +223,21 @@ final class HillshadeTileOverlay: MKTileOverlay {
 				// which the ≤0 m clamp can't remove. No shading below 0.5 m, full
 				// above 3 m — real land that low is flat and barely shaded anyway.
 				let center = sample(px, py)
-				shadow *= min(max((center - 0.5) / 2.5, 0), 1)
+				let seaFade = min(max((center - 0.5) / 2.5, 0), 1)
+				shadow *= seaFade
 				// Local-relief fade: on a water surface every pixel sits within noise
 				// of its neighborhood minimum, at any lake elevation; a real hillside
 				// pixel stands well above its local minimum. Valley bottoms fade too,
 				// which is fine — they're flat.
 				let localMin = min(min(min(a, b), min(c, d)), min(min(f, g), min(h, i)))
 				shadow *= min(max((center - localMin - 0.3) / 1.2, 0), 1)
+				// Valleys darken by the sky they don't see, whichever way they face the sun. Only the
+				// sea fade applies: a valley floor is flat, and the local-relief fade would clear it
+				// where it should be darkest, leaving a hard edge where the floor starts to slope.
+				if let occlusion {
+					let hidden = occlusionStrength * Float(occlusion[py * size + px]) / 255 * seaFade
+					shadow = 1 - (1 - shadow) * (1 - hidden)
+				}
 				alphas[py * size + px] = UInt8(min(255, shadow * cap * 255))
 			}
 		}

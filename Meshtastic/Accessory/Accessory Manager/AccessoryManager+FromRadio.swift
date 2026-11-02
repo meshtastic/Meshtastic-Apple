@@ -433,6 +433,10 @@ extension AccessoryManager {
 		// Local config parses out the variants.  Should we do that here maybe?
 		await MeshPackets.shared.localConfig(config: config, nodeNum: Int64(truncatingIfNeeded: deviceNum), nodeLongName: longName)
 
+		if case .lora(let lora)? = config.payloadVariant {
+			connectedLoRaRegionCode = lora.region.rawValue
+		}
+
 		// Handle Timezone
 		if config.payloadVariant == Config.OneOf_PayloadVariant.device(config.device) {
 			var dc = config.device

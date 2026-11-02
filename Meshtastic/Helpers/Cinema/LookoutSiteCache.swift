@@ -23,7 +23,7 @@ enum LookoutSiteCacheKey {
 					region.hasBasemap && basemapFiles.contains(region.fileName) ? region.fileName : "",
 					region.sourceBuild,
 					terrain?.fileName ?? "",
-					terrain?.regionalFileName.flatMap { terrainFiles.contains($0) ? $0 : nil } ?? "",
+					(terrain?.regionalFiles.map(\.fileName).filter(terrainFiles.contains) ?? []).joined(separator: ","),
 					terrain.map { String($0.downloadedAt.timeIntervalSince1970) } ?? ""
 				].joined(separator: "|")
 			}

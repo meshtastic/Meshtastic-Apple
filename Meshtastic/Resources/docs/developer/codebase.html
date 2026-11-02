@@ -7,8 +7,8 @@
   <link rel="stylesheet" href="../assets/docs.css">
 </head>
 <body data-page="codebase">
-<h1>Codebase Guide</h1>
-<h2>Top-Level Structure</h2>
+<h1 id="codebase-guide">Codebase Guide</h1>
+<h2 id="top-level-structure">Top-Level Structure</h2>
 <pre><code>Meshtastic/
 ├── MeshtasticApp.swift         # @main App struct
 ├── MeshtasticAppDelegate.swift # UIApplicationDelegate (SiriKit)
@@ -38,7 +38,7 @@ MeshtasticTests/                # Test target (Swift Testing)
 scripts/                        # Build and utility scripts
 specs/                          # Feature specs (speckit workflow)
 </code></pre>
-<h2>Project Generation</h2>
+<h2 id="project-generation">Project Generation</h2>
 <p><code>Meshtastic.xcodeproj</code> is generated from <code>project.yml</code> by <a href="https://github.com/yonaskolb/XcodeGen">XcodeGen</a> rather than hand-maintained. <code>project.yml</code> is the source of truth for targets, build settings, and schemes; the generated <code>.xcodeproj</code> is still committed so the repo builds without installing XcodeGen first.</p>
 <p>Most source directories — including <code>Meshtastic/Views/</code>, <code>Meshtastic/Model/</code>, <code>Meshtastic/Accessory/</code>, <code>MeshtasticTests/</code>, <code>Shared/</code>, and <code>Widgets/</code> — are configured as <code>type: syncedFolder</code> (Xcode 16 synchronized groups). A new file added under one of these directories is picked up automatically; there is no membership checkbox or pbxproj entry to add.</p>
 <p>If you change <code>project.yml</code> (or <code>.xcodegen-version</code>), regenerate the project and commit the result:</p>
@@ -46,7 +46,7 @@ specs/                          # Feature specs (speckit workflow)
 </code></pre>
 <p>The <code>xcodegen-drift.yml</code> CI check regenerates the project on every PR that touches <code>project.yml</code>, <code>.xcodegen-version</code>, <code>Meshtastic.xcodeproj/**</code>, or any <code>.swift</code> file, and fails if the committed project doesn't exactly match — this is what keeps the generated project honest as the source of truth stays in <code>project.yml</code>. XcodeGen's output is version-sensitive, so <code>.xcodegen-version</code> pins an exact release; install that exact version (not whatever Homebrew currently carries) before regenerating locally.</p>
 <p>Keep sibling group names unique. XcodeGen 2.46.0 does not produce a stable order when two root groups have the same display name, which makes the drift check intermittent. Shared tvOS sources used by the visionOS target therefore live under the distinct virtual group <code>Meshtastic TV (Vision shared)</code> rather than a second root group named <code>Meshtastic TV</code>.</p>
-<h2>Key Files</h2>
+<h2 id="key-files">Key Files</h2>
 <table>
 <thead>
 <tr>
@@ -85,7 +85,7 @@ specs/                          # Feature specs (speckit workflow)
 </tr>
 </tbody>
 </table>
-<h2>Extension File Pattern</h2>
+<h2 id="extension-file-pattern">Extension File Pattern</h2>
 <p>Large manager classes are split into <code>+Extension</code> files grouped by concern:</p>
 <pre><code class="language-swift">// AccessoryManager.swift — properties and init only
 // AccessoryManager+Connect.swift — connection lifecycle
@@ -93,16 +93,16 @@ specs/                          # Feature specs (speckit workflow)
 // AccessoryManager+FromRadio.swift — inbound packet handling
 </code></pre>
 <p>Follow the same pattern when adding new subsystems to <code>AccessoryManager</code> or other large classes.</p>
-<h2>Logging</h2>
+<h2 id="logging">Logging</h2>
 <p>All logging uses typed <code>Logger</code> instances from <code>Meshtastic/Extensions/Logger.swift</code>. Never use <code>print()</code>.</p>
 <pre><code class="language-swift">Logger.mesh.debug(&quot;Packet received: \(packet.id)&quot;)
 Logger.transport.error(&quot;BLE write failed: \(error)&quot;)
 </code></pre>
 <p>Available categories: <code>.admin</code>, <code>.data</code>, <code>.docs</code>, <code>.mesh</code>, <code>.mqtt</code>, <code>.radio</code>, <code>.services</code>, <code>.statistics</code>, <code>.transport</code>, <code>.tak</code></p>
-<h2>View Hierarchy</h2>
+<h2 id="view-hierarchy">View Hierarchy</h2>
 <p>Views are in <code>Meshtastic/Views/</code>. Each major feature has its own subdirectory. The root <code>ContentView</code> hosts a <code>TabView</code> keyed on <code>NavigationState</code>.</p>
 <p>Views that need connectivity inject <code>@EnvironmentObject var bleManager: BLEManager</code> (legacy name; newer code uses <code>AccessoryManager</code>). Views that need navigation inject <code>@EnvironmentObject var router: Router</code>.</p>
-<h2>Localization</h2>
+<h2 id="localization">Localization</h2>
 <p>All user-visible strings must use <code>String(localized:)</code> or <code>LocalizedStringKey</code>. The source strings file is <code>Localizable.xcstrings</code> in the project root.</p>
 </body>
 </html>

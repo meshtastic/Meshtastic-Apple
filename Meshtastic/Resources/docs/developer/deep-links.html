@@ -7,15 +7,15 @@
   <link rel="stylesheet" href="../assets/docs.css">
 </head>
 <body data-page="deep-links">
-<h1>Deep Links</h1>
+<h1 id="deep-links">Deep Links</h1>
 <p>The app registers the <code>meshtastic:///</code> URL scheme. Use <code>Router.route(url:)</code> to handle incoming URLs. Deep links work from Safari, Shortcuts, Siri Intents, and other apps.</p>
-<h2>Adding a New Deep Link</h2>
+<h2 id="adding-a-new-deep-link">Adding a New Deep Link</h2>
 <ol>
 <li>Add a case to the appropriate <code>*NavigationState</code> enum in <code>Meshtastic/Router/NavigationState.swift</code>.</li>
 <li>Update <code>Router</code>'s routing helpers in <code>Meshtastic/Router/Router.swift</code>.</li>
 <li>Document the URL in the table below.</li>
 </ol>
-<h2>Messages</h2>
+<h2 id="messages">Messages</h2>
 <table>
 <thead>
 <tr>
@@ -38,7 +38,7 @@
 </tr>
 </tbody>
 </table>
-<h2>Connect</h2>
+<h2 id="connect">Connect</h2>
 <table>
 <thead>
 <tr>
@@ -53,7 +53,7 @@
 </tr>
 </tbody>
 </table>
-<h2>Nodes</h2>
+<h2 id="nodes">Nodes</h2>
 <table>
 <thead>
 <tr>
@@ -72,7 +72,7 @@
 </tr>
 </tbody>
 </table>
-<h2>Map</h2>
+<h2 id="map">Map</h2>
 <table>
 <thead>
 <tr>
@@ -95,7 +95,7 @@
 </tr>
 </tbody>
 </table>
-<h2>Settings</h2>
+<h2 id="settings">Settings</h2>
 <p>Settings URLs take no query parameters. The only path variant is
 <code>localMeshDiscovery/history</code>, which opens Local Mesh Discovery directly to its
 history view.</p>

@@ -60,6 +60,9 @@ struct ClusterMapOverlayStyle {
 	/// the direction of travel. Two lines over the same leg in opposite directions both shift to
 	/// their own right, so they sit side by side.
 	var sideOffset: CGFloat = 0
+	/// The stroke width in points at each map zoom level, in place of `lineWidth`, set again when the
+	/// zoom changes. A zoom where it is 0 hides the overlay.
+	var widthAtZoom: (@Sendable (Double) -> CGFloat)?
 }
 
 /// An `MKPolylineRenderer` that also draws small chevrons along the line pointing in the direction of
@@ -467,7 +470,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		private var coverageAreasApplied: [GeoBounds] = []
 		private var coverageDark = false
 
-		// Custom map controls (compass + pitch toggle), pinned bottom-trailing above the button bar.
+		// Custom map controls (compass + pitch toggle); see `installControls` for where they sit.
 		private weak var hostMapView: MKMapView?
 		private var controlsStack: UIStackView?
 		private var controlsBottomConstraint: NSLayoutConstraint?
@@ -554,20 +557,21 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 			userTrackingCircle?.isHidden = !config.showsUserLocation
 			mapView.showsScale = config.showsScale
 			updatePitchControl(for: mapView)
-			// A custom compass + pitch toggle are installed in `installControls` (bottom-leading); the
-			// built-in top-right compass is disabled there.
+			// A custom compass + pitch toggle are installed in `installControls`; the built-in
+			// compass is disabled there.
 			mapView.isPitchEnabled = config.showsPitchControl
 		}
 
-		// MARK: Custom controls (pitch toggle, tracking and compass, bottom-leading)
+		// MARK: Custom controls (pitch toggle, tracking and compass)
 
-		/// Installs (once) a pitch toggle, tracking button and compass pinned to the map's bottom-leading
-		/// safe area, lifted by `bottomInset`, like the Maps app. Disables the built-in compass.
+		/// Installs (once) a pitch toggle, tracking button and compass, like the Maps app: in the
+		/// map's bottom-leading safe area on a phone, lifted by `bottomInset`, and top-trailing on an
+		/// iPad, a Mac and Vision Pro. Disables the built-in compass.
 		func installControls(on mapView: MKMapView, bottomInset: CGFloat) {
 			hostMapView = mapView
 			mapView.showsCompass = false
-			if let controlsBottomConstraint {
-				controlsBottomConstraint.constant = -bottomInset
+			if controlsStack != nil {
+				controlsBottomConstraint?.constant = -bottomInset
 				return
 			}
 			let compass = MKCompassButton(mapView: mapView)
@@ -594,17 +598,25 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 			stack.alignment = .center
 			stack.translatesAutoresizingMaskIntoConstraints = false
 			mapView.addSubview(stack)
-			let bottom = stack.bottomAnchor.constraint(equalTo: mapView.safeAreaLayoutGuide.bottomAnchor, constant: -bottomInset)
-			NSLayoutConstraint.activate([
-				stack.leadingAnchor.constraint(equalTo: mapView.safeAreaLayoutGuide.leadingAnchor, constant: 12),
-				bottom
-			])
+			let guide = mapView.safeAreaLayoutGuide
+			if UIDevice.current.userInterfaceIdiom == .phone {
+				let bottom = stack.bottomAnchor.constraint(equalTo: guide.bottomAnchor, constant: -bottomInset)
+				NSLayoutConstraint.activate([
+					stack.leadingAnchor.constraint(equalTo: guide.leadingAnchor, constant: 12),
+					bottom
+				])
+				controlsBottomConstraint = bottom
+			} else {
+				NSLayoutConstraint.activate([
+					stack.trailingAnchor.constraint(equalTo: guide.trailingAnchor, constant: -12),
+					stack.topAnchor.constraint(equalTo: guide.topAnchor, constant: 12)
+				])
+			}
 			controlsStack = stack
-			controlsBottomConstraint = bottom
 			updatePitchControl(for: mapView)
 		}
 
-		/// A round button on the map's leading side, like the Maps app's: Liquid Glass where the OS
+		/// A round map button, like the Maps app's: Liquid Glass where the OS
 		/// has it, a translucent disc before that.
 		static func controlCircle(around control: UIView) -> UIView {
 			let size: CGFloat = 48
@@ -1030,7 +1042,50 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 			renderer.lineDashPhase = style.lineDashPhase
 			renderer.lineCap = style.lineCap
 			renderer.alpha = isHiddenByCluster(overlay) ? 0 : 1
+			if let widthAtZoom = style.widthAtZoom {
+				applyZoomWidth(widthAtZoom, to: renderer, zoom: zoomLevel(of: mapView))
+			}
 			return renderer
+		}
+
+		// MARK: Widths that follow the zoom
+
+		/// The map zoom at the center of the view, from the map distance across 100 points there.
+		/// Unlike `visibleMapRect`, whose width grows as the map turns, this stays put when the
+		/// map is rotated.
+		private func zoomLevel(of mapView: MKMapView) -> Double {
+			let center = CGPoint(x: mapView.bounds.midX, y: mapView.bounds.midY)
+			let span: CGFloat = 100
+			let left = MKMapPoint(mapView.convert(CGPoint(x: center.x - span / 2, y: center.y), toCoordinateFrom: mapView))
+			let right = MKMapPoint(mapView.convert(CGPoint(x: center.x + span / 2, y: center.y), toCoordinateFrom: mapView))
+			let mapDistance = hypot(right.x - left.x, right.y - left.y)
+			guard mapDistance > 0, mapDistance.isFinite else { return 0 }
+			return OfflineMapPalette.zoomLevel(zoomScale: span / mapDistance)
+		}
+
+		/// Sets a renderer's width for `zoom`; true when that changed it.
+		@discardableResult
+		private func applyZoomWidth(_ widthAtZoom: (Double) -> CGFloat, to renderer: MKOverlayPathRenderer, zoom: Double) -> Bool {
+			let width = widthAtZoom(zoom)
+			let alpha: CGFloat = width > 0 ? 1 : 0
+			guard abs(renderer.lineWidth - width) > 0.01 || renderer.alpha != alpha else { return false }
+			renderer.lineWidth = width
+			renderer.alpha = alpha
+			return true
+		}
+
+		/// Sets the zoom-width overlays (the offline map's roads) for the zoom the map has settled at.
+		/// MapKit's own line renderers are kept, so they draw with the rest of the map; the width
+		/// steps when a zoom gesture ends. Only a renderer whose width changed is redrawn, so a pan
+		/// redraws nothing and a small zoom across a road's first stop still shows it.
+		func refreshZoomWidths(on mapView: MKMapView) {
+			let zoom = zoomLevel(of: mapView)
+			for entry in overlaysByID.values {
+				guard let widthAtZoom = entry.style.widthAtZoom,
+					  let renderer = mapView.renderer(for: entry.overlay) as? MKOverlayPathRenderer,
+					  applyZoomWidth(widthAtZoom, to: renderer, zoom: zoom) else { continue }
+				renderer.setNeedsDisplay()
+			}
 		}
 
 		// MARK: Overlays of clustered items
@@ -1065,6 +1120,7 @@ struct ClusterMapView<Item: Identifiable, Pin: View, Cluster: View>: UIViewRepre
 		func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
 			updatePitchControl(for: mapView)
 			refreshClusteredOverlays(on: mapView)
+			refreshZoomWidths(on: mapView)
 			// Ignore the callback caused by our own external write (guard #1).
 			guard !isApplyingExternalRegion else {
 				isApplyingExternalRegion = false

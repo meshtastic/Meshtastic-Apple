@@ -16,6 +16,8 @@ struct CinemaPanel: View {
 	let sites: [LookoutSite]
 	/// The chosen summit's id, or empty for the forest sunset.
 	@Binding var siteID: String
+	/// Eighth turns clockwise the lookout is turned.
+	@Binding var turns: Int
 	/// Where the connected radio is, to say how far each summit is from it.
 	let radioCoordinate: CLLocationCoordinate2D?
 	/// Why there is no summit to pick, while there isn't.
@@ -42,6 +44,11 @@ struct CinemaPanel: View {
 					}
 				}
 				.pickerStyle(.menu)
+				// The world turns round the cab, so the screen looks out over another part of the
+				// view. The forest sunset is painted, so there's nothing to turn there.
+				if !siteID.isEmpty {
+					LookoutTurnDial(turns: $turns)
+				}
 			} else if environment.isCutout, let lookoutNote {
 				Text(verbatim: lookoutNote)
 					.font(.caption)

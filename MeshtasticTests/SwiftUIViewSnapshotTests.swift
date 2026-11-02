@@ -1643,8 +1643,17 @@ struct MQTTConfigSnapshotTests {
 	@MainActor
 	func mqttForm() async throws {
 		let node = try makeNode()
+		node.mqttConfig?.root = "msh/US/bayarea"
+		let lora = LoRaConfigEntity()
+		lora.regionCode = 1
+		sharedModelContainer.mainContext.insert(lora)
+		node.loRaConfig = lora
 		AccessoryManager.shared.isConnected = true
 		AccessoryManager.shared.activeDeviceNum = node.num
+		// Render the custom-root warning on affected radio firmware.
+		let firmwareVersion = UserDefaults.firmwareVersion
+		UserDefaults.firmwareVersion = "2.7.26"
+		defer { UserDefaults.firmwareVersion = firmwareVersion }
 		// Consent is the app's own record; the form reads it on load.
 		let consent = UserDefaults.mapReportingOptIn
 		UserDefaults.mapReportingOptIn = true
@@ -1654,7 +1663,7 @@ struct MQTTConfigSnapshotTests {
 				.environmentObject(AccessoryManager.shared)
 				.modelContainer(sharedModelContainer)
 		}
-		await assertViewSnapshot(of: view, width: 390, height: 1800, named: "mqttConfigForm")
+		await assertViewSnapshot(of: view, width: 390, height: 2200, named: "mqttConfigForm")
 	}
 
 	@Test("MQTT settings form")
@@ -2066,6 +2075,26 @@ struct DeviceOnboardingSnapshotTests {
 
 	private func screen<V: View>(_ view: V) -> some View {
 		view.environmentObject(AccessoryManager.shared)
+	}
+
+	@Test("Welcome screen")
+	func welcomeScreen() async {
+		await assertViewSnapshot(of: screen(DeviceOnboarding().welcomeView), width: 390, height: 844, named: "onboarding_welcome", forDocs: true)
+	}
+
+	@Test("Welcome screen in dark mode")
+	func welcomeScreenDark() async {
+		await assertViewSnapshot(of: screen(DeviceOnboarding().welcomeView), width: 390, height: 844, colorScheme: .dark, named: "onboarding_welcome_dark")
+	}
+
+	// At accessibility text sizes the rows stack the symbol above the text instead of
+	// squeezing the text beside it.
+	@Test("Notifications screen at an accessibility text size")
+	func notificationsScreenAccessibility() async {
+		await assertViewSnapshot(
+			of: screen(DeviceOnboarding().notificationView).environment(\.dynamicTypeSize, .accessibility3),
+			width: 390, height: 1400, named: "onboarding_notifications_accessibility"
+		)
 	}
 
 	@Test("Bluetooth permission screen")
@@ -3050,5 +3079,83 @@ struct TraceRouteLogSnapshotTests {
 			width: 800,
 			colorScheme: .dark,
 			named: "traceRouteHopTimeline_regular_dark")
+	}
+}
+
+// MARK: - Radio Setup Snapshot Tests
+
+// The pages render from a model built of plain values. AccessoryManager is injected for
+// the region map and the saves, and the shared container for the hardware image's query.
+
+@Suite("RadioSetup Snapshots")
+@MainActor
+struct RadioSetupSnapshotTests {
+
+	private func model(region: RegionCodes = .unset, preset: ModemPresets = .longFast) -> RadioSetupModel {
+		var lora = Config.LoRaConfig()
+		lora.usePreset = true
+		lora.region = region.protoEnumValue()
+		lora.modemPreset = preset.protoEnumValue()
+		return RadioSetupModel(
+			nodeNum: 0x1234, deviceName: "Meshtastic 1234", hardwareName: "T-Beam", hardwareModelId: nil,
+			firmwareVersion: "2.8.0", supports2_8: true, appliesWithoutReboot: true, isLicensed: false,
+			longNameLimit: 24, loRaConfig: lora, longName: "Meshtastic 1234", shortName: "1234")
+	}
+
+	private func screen<V: View>(_ view: V) -> some View {
+		view
+			.environmentObject(AccessoryManager.shared)
+			.modelContainer(sharedModelContainer)
+	}
+
+	@Test("Intro page")
+	func intro() async {
+		await assertViewSnapshot(of: screen(RadioSetupIntroPage(model: model(), onNotNow: {})), width: 390, height: 844, named: "radio_setup_intro", forDocs: true)
+	}
+
+	/// A fresh radio with the phone's region setting pointing at the US.
+	private func suggestedModel() -> RadioSetupModel {
+		let model = model()
+		model.applySuggestedRegion(.us, regionInfo: nil)
+		return model
+	}
+
+	@Test("Region page with the phone's region pre-selected")
+	func region() async {
+		await assertViewSnapshot(of: screen(RadioSetupRegionPage(model: suggestedModel())), width: 390, height: 844, named: "radio_setup_region", forDocs: true)
+	}
+
+	@Test("Region page when the phone's region gave no answer")
+	func regionUnset() async {
+		await assertViewSnapshot(of: screen(RadioSetupRegionPage(model: model())), width: 390, height: 844, named: "radio_setup_region_unset")
+	}
+
+	@Test("Preset page for a US radio")
+	func preset() async {
+		await assertViewSnapshot(of: screen(RadioSetupPresetPage(model: model(region: .us, preset: .longTurbo))), width: 390, height: 844, named: "radio_setup_preset", forDocs: true)
+	}
+
+	@Test("Name page")
+	func name() async {
+		await assertViewSnapshot(of: screen(RadioSetupNamePage(model: model(region: .us, preset: .longTurbo))), width: 390, height: 844, named: "radio_setup_name", forDocs: true)
+	}
+
+	@Test("Done page")
+	func done() async {
+		await assertViewSnapshot(of: screen(RadioSetupDonePage(model: model(region: .us, preset: .longTurbo), onDone: {})), width: 390, height: 844, named: "radio_setup_done", forDocs: true)
+	}
+
+	@Test("Region page in dark mode")
+	func regionDark() async {
+		await assertViewSnapshot(of: screen(RadioSetupRegionPage(model: suggestedModel())), width: 390, height: 844, colorScheme: .dark, named: "radio_setup_region_dark")
+	}
+
+	// The control rows put their picker or field under the text at accessibility sizes.
+	@Test("Name page at an accessibility text size")
+	func nameAccessibility() async {
+		await assertViewSnapshot(
+			of: screen(RadioSetupNamePage(model: model(region: .us, preset: .longTurbo))).environment(\.dynamicTypeSize, .accessibility3),
+			width: 390, height: 1400, named: "radio_setup_name_accessibility"
+		)
 	}
 }

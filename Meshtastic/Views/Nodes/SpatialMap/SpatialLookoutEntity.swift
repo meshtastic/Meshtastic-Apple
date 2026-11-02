@@ -13,7 +13,8 @@ import UIKit
 enum SpatialLookoutParts {
 	private static var meshes: [SpatialLookout.Part: MeshResource]?
 
-	static func make() -> Entity? {
+	/// The lookout with its cab facing `heading`.
+	static func make(heading: Double = SpatialLookout.frontHeading) -> Entity? {
 		if meshes == nil {
 			var built: [SpatialLookout.Part: MeshResource] = [:]
 			for (part, data) in SpatialLookout.geometry() where data.triangleCount > 0 {
@@ -26,7 +27,7 @@ enum SpatialLookoutParts {
 		let lookout = Entity()
 		lookout.name = "fireLookout"
 		let body = Entity()
-		body.orientation = simd_quatf(angle: SpatialLookout.yaw, axis: [0, 1, 0])
+		body.orientation = simd_quatf(angle: SpatialLookout.yaw(heading: heading), axis: [0, 1, 0])
 		for part in SpatialLookout.Part.allCases {
 			guard let mesh = meshes[part] else { continue }
 			body.addChild(ModelEntity(mesh: mesh, materials: [material(part)]))

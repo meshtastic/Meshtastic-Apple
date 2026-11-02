@@ -27,7 +27,6 @@ struct Connect: View {
 	/// rather than fetched in `body`, which re-ran a TelemetryEntity query on every render.
 	@State private var connectedBatteryLevel: Int32?
 	@State private var firmwareUpdateNotice: FirmwareUpdateNotice?
-	@State var isUnsetRegion = false
 	@State var showSecurityVersionNag = false
 	@ObservedObject private var liveActivities = MeshLiveActivityManager.shared
 #if os(iOS) && !targetEnvironment(macCatalyst)
@@ -38,6 +37,7 @@ struct Connect: View {
 	@Environment(\.scenePhase) private var scenePhase
 	@Environment(\.eventFirmwarePresentation) private var eventPresentation
 	@Environment(\.openEventFirmwareInfo) private var openEventFirmwareInfo
+	@Environment(\.openRadioSetup) private var openRadioSetup
 	@State private var pendingNymeaDevice: NymeaDiscoveredDevice?
 	@State private var isSwitchingRadio = false
 	@State private var showingShutdownConfirm = false
@@ -95,9 +95,10 @@ struct Connect: View {
 		return ModemPresets(rawValue: Int(loRaConfig.modemPreset))?.description
 	}
 
-	private var loRaConfigDestination: some View {
-		LoRaConfig(node: safeNode, onSuccessfulSave: handleSuccessfulLoRaSave)
-			.trackScreen(SettingsNavigationState.lora.screenName)
+	/// The connected radio reported no LoRa region. Read from the manager, which the radio's
+	/// config and the app's own LoRa saves keep current.
+	private var isUnsetRegion: Bool {
+		accessoryManager.connectedLoRaRegionCode == RegionCodes.unset.rawValue
 	}
 
 	/// Returns `node` only while it is still a live SwiftData object (`modelContext != nil`),
@@ -334,14 +335,23 @@ struct Connect: View {
 							// connection is not yet authorized. Non-lockdown
 							// firmware leaves the coordinator at .none, so the
 							// banner shows normally there too.
-							if isUnsetRegion && !lockdown.isBlockingSession {
-								HStack {
-									NavigationLink {
-										loRaConfigDestination
-									} label: {
-										Label("Set LoRa Region", systemImage: "globe.americas.fill")
-											.foregroundColor(.red)
-											.font(.title)
+							// A radio with no region cannot talk to anyone, so the setup row shouts
+							// until it has one, then stays as a quiet way back into the flow.
+							if !lockdown.isBlockingSession, let deviceNum = accessoryManager.activeDeviceNum {
+								Button {
+									openRadioSetup(deviceNum)
+								} label: {
+									if isUnsetRegion {
+										VStack(alignment: .leading, spacing: 2) {
+											Label("Set Up Radio", systemImage: "globe.americas.fill")
+												.font(.title)
+											Text("Region not set")
+												.font(.caption)
+										}
+										.foregroundColor(.red)
+									} else {
+										Label("Set Up Radio", systemImage: "checklist")
+											.font(.callout)
 									}
 								}
 							}
@@ -663,12 +673,6 @@ struct Connect: View {
 		}
 	}
 
-	private func handleSuccessfulLoRaSave(_ savedNodeNum: Int64, _ savedRegion: RegionCodes) {
-		guard accessoryManager.state == .subscribed,
-			  savedNodeNum == accessoryManager.activeDeviceNum else { return }
-		isUnsetRegion = savedRegion == .unset
-	}
-
 	@MainActor
 	private func refreshConnectedNodeState() {
 		guard let deviceNum = accessoryManager.activeDeviceNum,
@@ -685,11 +689,6 @@ struct Connect: View {
 
 		do {
 			node = try context.fetch(fetchNodeInfoRequest).first
-			if let loRaConfig = node?.loRaConfig, loRaConfig.regionCode == RegionCodes.unset.rawValue {
-				isUnsetRegion = true
-			} else {
-				isUnsetRegion = false
-			}
 		} catch {
 			node = nil
 			firmwareUpdateNotice = nil

@@ -14,7 +14,7 @@
 | Install cmark-gfm | `brew install cmark-gfm` | `cmark-gfm` binary |
 | Build docs | `bash scripts/build-docs.sh --output _site/beta` | HTML files, `index.json`, CSS in `_site/beta/` |
 | Copy snapshots | `bash scripts/copy-snapshots.sh --output _site/beta/assets/screenshots` | PNGs |
-| Check bundle size | Built into `build-docs.sh` — exits non-zero if > 10 MB, warning at 8 MB | Pass/fail |
+| Check bundle size | Built into `build-docs.sh` — exits non-zero if > 15 MB, warning at 12 MB | Pass/fail |
 | Upload Pages artifact | `actions/upload-pages-artifact@v3` | Artifact |
 | Deploy | `actions/deploy-pages@v4` | Live GitHub Pages update |
 
@@ -23,8 +23,8 @@
 | Failure | Behaviour |
 |---------|-----------|
 | `cmark-gfm` install fails | Workflow fails; no deployment |
-| Bundle size > 10 MB | `build-docs.sh` exits 1; workflow fails; no deployment |
-| Bundle size > 8 MB (warn) | `build-docs.sh` emits `::warning::` annotation; workflow continues |
+| Bundle size > 15 MB | `build-docs.sh` exits 1; workflow fails; no deployment |
+| Bundle size > 12 MB (warn) | `build-docs.sh` emits `::warning::` annotation; workflow continues |
 | Snapshot copy finds 0 PNGs | `copy-snapshots.sh` emits `::warning::` annotation; continues (docs deploy without screenshots) |
 
 ---
@@ -76,8 +76,8 @@ Exit codes:
   1   Hard failure (cmark-gfm not found, or bundle size > DOCS_SIZE_LIMIT_BYTES)
 
 Environment variables:
-  DOCS_SIZE_WARN_BYTES    Default: 8388608  (8 MB) — emits ::warning:: annotation
-  DOCS_SIZE_LIMIT_BYTES   Default: 10485760 (10 MB) — exits 1
+  DOCS_SIZE_WARN_BYTES    Default: 12582912 (12 MB) — emits ::warning:: annotation
+  DOCS_SIZE_LIMIT_BYTES   Default: 15728640 (15 MB) — exits 1
 
 Output structure:
   <dir>/

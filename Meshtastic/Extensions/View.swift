@@ -72,8 +72,9 @@ extension View {
 	@ViewBuilder
 	private func glassButtonStyleOS26() -> some View {
 		#if os(visionOS)
-		// White like the tab bar's icons; a bordered button draws its label in the accent color.
-		self.buttonStyle(.bordered).tint(.white)
+		// Glass behind a label in the text color, like the map's control bar. A bordered button
+		// here fills with its tint, so the map's buttons came out as solid pills.
+		self.buttonStyle(VisionGlassButtonStyle())
 		#else
 		self.buttonStyle(.glass)
 		#endif
@@ -139,3 +140,20 @@ private struct SheetCloseButton: ViewModifier {
 		}
 	}
 }
+
+#if os(visionOS)
+/// A round glass button for an icon, or a glass capsule around an icon and title.
+private struct VisionGlassButtonStyle: ButtonStyle {
+	func makeBody(configuration: Configuration) -> some View {
+		configuration.label
+			.font(.system(size: 20, weight: .medium))
+			.foregroundStyle(.primary)
+			.padding(12)
+			.frame(minWidth: 48, minHeight: 48)
+			.glassBackgroundEffect(in: Capsule())
+			.contentShape(Capsule())
+			.hoverEffect()
+			.opacity(configuration.isPressed ? 0.5 : 1)
+	}
+}
+#endif

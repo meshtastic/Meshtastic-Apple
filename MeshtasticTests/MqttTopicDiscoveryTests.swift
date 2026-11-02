@@ -147,13 +147,14 @@ struct MqttTopicDiscoveryTests {
 	}
 
 	@Test func olderFirmwareWarning() {
-		func warns(_ root: String, known: Bool = true, atLeast: Bool = false) -> Bool {
-			MqttRootTopic.olderFirmwareReplaces(root: root, regionTopic: "msh/US", firmwareKnown: known, firmwareAtLeast281: atLeast)
+		func warns(_ root: String, known: Bool = true, introduced: Bool = true, fixed: Bool = false) -> Bool {
+			MqttRootTopic.olderFirmwareReplaces(root: root, regionTopic: "msh/US", firmwareKnown: known, firmwareAtLeast2712: introduced, firmwareAtLeast281: fixed)
 		}
-		#expect(warns("msh/US/WA", known: true, atLeast: false))
-		#expect(!warns("msh/US/WA", known: true, atLeast: true))
-		#expect(!warns("msh/US/WA", known: false, atLeast: false))
-		#expect(!warns("msh/US/WA", known: false, atLeast: true))
+		#expect(!warns("msh/US/bayarea", introduced: false)) // 2.7.11 and earlier
+		#expect(warns("msh/US/bayarea")) // 2.7.12 through 2.8.0
+		#expect(!warns("msh/US/bayarea", fixed: true)) // 2.8.1 and later
+		#expect(!warns("msh/US/bayarea", known: false))
+		#expect(!warns("msh/US/bayarea", known: false, fixed: true))
 		for root in ["msh/US", "msh", "", "mymesh"] {
 			#expect(!warns(root), "\(root) should never warn")
 		}

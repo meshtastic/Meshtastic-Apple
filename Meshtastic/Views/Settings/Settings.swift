@@ -22,7 +22,6 @@ struct SettingsNodeSnapshot: Identifiable, Equatable {
 	let favorite: Bool
 	let canRemoteAdmin: Bool
 	let hasSessionPasskey: Bool
-	let hasMetadata: Bool
 	let hasTAKConfig: Bool
 	let userLongName: String?
 	let userIsLicensed: Bool
@@ -106,11 +105,9 @@ struct SettingsNodeSnapshot: Identifiable, Equatable {
 		if let metadata = node.metadata,
 			metadata.modelContext != nil,
 			!metadata.isDeleted {
-			hasMetadata = true
 			excludedModules = Int(metadata.excludedModules)
 			firmwareVersion = metadata.firmwareVersion
 		} else {
-			hasMetadata = false
 			excludedModules = 0
 			firmwareVersion = nil
 		}
@@ -129,6 +126,7 @@ struct Settings: View {
 	@Environment(\.modelContext) private var context
 	@Environment(\.colorScheme) private var colorScheme
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	@Environment(\.openRadioSetup) private var openRadioSetup
 	/// Node snapshots for the admin picker / config gating, refreshed on a throttled cadence (see the
 	/// `.task` in `body`) instead of a live `@Query`. A live query re-evaluated this whole view's
 	/// `body` on every node write — and TabView keeps Settings alive on other tabs, so under heavy
@@ -270,6 +268,20 @@ struct Settings: View {
 
 	var radioConfigurationSection: some View {
 		Section("Radio Configuration") {
+			// The guided setup for the connected radio: region, preset and name. Not offered
+			// while a remote node is selected; it only ever writes to the connected radio.
+			if accessoryManager.isConnected, let deviceNum = accessoryManager.activeDeviceNum,
+			   selectedNode == 0 || selectedNode == preferredNodeNum {
+				Button {
+					openRadioSetup(deviceNum)
+				} label: {
+					Label {
+						Text("Set Up Radio")
+					} icon: {
+						Image(systemName: "checklist")
+					}
+				}
+			}
 			let node = nodeSnapshot(for: preferredNodeNum)
 			if let node,
 				let regionCode = node.regionCode,
@@ -777,7 +789,7 @@ struct Settings: View {
 												accessoryManager.activeConnection?.device.transportType.icon ?? Image(systemName: "questionmark.circle")
 											}
 											.tag(Int(node.num))
-										} else if node.canRemoteAdmin && UserDefaults.enableAdministration && node.hasSessionPasskey { /// Nodes using the new PKI system
+										} else if node.canRemoteAdmin && node.hasSessionPasskey {
 											Label {
 												Text("Remote PKI Admin: \(node.userLongName ?? "Unknown".localized)")
 											} icon: {
@@ -785,23 +797,9 @@ struct Settings: View {
 											}
 											.font(.caption2)
 											.tag(Int(node.num))
-										} else if !UserDefaults.enableAdministration && node.hasMetadata { /// Nodes using the old admin system
-											Label {
-												Text("Remote Legacy Admin: \(node.userLongName ?? "Unknown".localized)")
-											} icon: {
-												Image(systemName: "av.remote")
-											}
-											.tag(Int(node.num))
-										} else if UserDefaults.enableAdministration && node.userIsPkiEncrypted {
+										} else if node.canRemoteAdmin && node.userIsPkiEncrypted {
 											Label {
 												Text("Request PKI Admin: \(node.userLongName?.addingVariationSelectors ?? "Unknown".localized)")
-											} icon: {
-												Image(systemName: "rectangle.and.hand.point.up.left")
-											}
-											.tag(Int(node.num))
-										} else if !UserDefaults.enableAdministration {
-											Label {
-												Text("Request Legacy Admin: \(node.userLongName?.addingVariationSelectors ?? "Unknown".localized)")
 											} icon: {
 												Image(systemName: "rectangle.and.hand.point.up.left")
 											}

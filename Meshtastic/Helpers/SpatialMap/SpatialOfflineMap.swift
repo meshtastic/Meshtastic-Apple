@@ -104,6 +104,13 @@ enum SpatialOfflineMap {
 		return zoom
 	}
 
+	/// The 2D map zoom that draws the box at the texture's size, counting `strokeScale` texels as one
+	/// point, so a texture of a city shows what the 2D map would at that size.
+	static func styleZoom(bounds: GeoBounds, width: CGFloat) -> Double {
+		let lonSpan = max(bounds.maxLon - bounds.minLon, 1e-9)
+		return log2(Double(width / strokeScale) / 256 * 360 / lonSpan)
+	}
+
 	/// The tiles at `zoom` that the box touches.
 	static func tiles(bounds: GeoBounds, zoom: Int) -> [OfflineVectorTileProvider.TileID] {
 		let northWest = TerrainStore.tilePixel(latitude: bounds.maxLat, longitude: bounds.minLon, z: zoom, size: 256)
@@ -132,17 +139,20 @@ enum SpatialOfflineMap {
 	static let fillOrder: [OfflineFeatureRole] = [.park, .green, .water]
 
 	/// The 2D offline map's line passes in its order: rivers, road casings (light only), road fills,
-	/// then dashed rail. Widths are scaled by `strokeScale`.
-	static func strokes(dark: Bool) -> [Stroke] {
+	/// then dashed rail. Road widths are the 2D map's at `zoom`, and roads too small for that zoom
+	/// are left out. Widths are scaled by `strokeScale`.
+	static func strokes(dark: Bool, zoom: Double) -> [Stroke] {
 		var result = [Stroke(role: .river, color: OfflineMapPalette.riverStroke(dark: dark), width: 1.4 * strokeScale, dash: [], cap: .round)]
 		let roads: [OfflineFeatureRole] = [.minorRoad, .mediumRoad, .majorRoad]
 		for role in roads {
-			guard let casing = OfflineMapPalette.roadCasing(role, dark: dark) else { continue }
-			result.append(Stroke(role: role, color: casing, width: OfflineMapPalette.roadCasingWidth(role) * strokeScale, dash: [], cap: .round))
+			let width = OfflineMapPalette.roadCasingWidth(role, zoom: zoom)
+			guard width > 0, let casing = OfflineMapPalette.roadCasing(role, dark: dark) else { continue }
+			result.append(Stroke(role: role, color: casing, width: width * strokeScale, dash: [], cap: .round))
 		}
 		for role in roads {
-			guard let fill = OfflineMapPalette.roadFill(role, dark: dark) else { continue }
-			result.append(Stroke(role: role, color: fill, width: OfflineMapPalette.roadWidth(role) * strokeScale, dash: [], cap: .round))
+			let width = OfflineMapPalette.roadWidth(role, zoom: zoom)
+			guard width > 0, let fill = OfflineMapPalette.roadFill(role, dark: dark) else { continue }
+			result.append(Stroke(role: role, color: fill, width: width * strokeScale, dash: [], cap: .round))
 		}
 		if let rail = OfflineMapPalette.line(.rail, dark: dark) {
 			result.append(Stroke(role: .rail, color: rail, width: strokeScale, dash: [2 * strokeScale, 3 * strokeScale], cap: .butt))
@@ -157,6 +167,7 @@ enum SpatialOfflineMap {
 	struct Shapes: @unchecked Sendable {
 		let polygons: [OfflineMapPolygon]
 		let polylines: [OfflineMapPolyline]
+		var labels: [OfflineMapLabel] = []
 	}
 
 	/// Decodes the downloaded basemaps that touch the box. Nil when none do, or when cancelled.
@@ -166,6 +177,8 @@ enum SpatialOfflineMap {
 		let bounds = frame.bounds
 		var polygons: [OfflineMapPolygon] = []
 		var polylines: [OfflineMapPolyline] = []
+		var labels: [OfflineMapLabel] = []
+		var labelKeys: Set<String> = []
 		var tileCount = 0
 		var decoded: [GeoBounds] = []
 		let started = Date()
@@ -185,10 +198,11 @@ enum SpatialOfflineMap {
 			decoded.append(coverage)
 			polygons += result.polygons
 			polylines += result.polylines
+			labels += result.labels.filter { labelKeys.insert($0.key).inserted }
 		}
 		guard tileCount > 0 else { return nil }
-		Logger.services.info("🧊 [Spatial] Offline map: \(polygons.count) fills, \(polylines.count) lines from \(tileCount) tiles in \(String(format: "%.2f", Date().timeIntervalSince(started)), privacy: .public)s")
-		return Shapes(polygons: polygons, polylines: polylines)
+		Logger.services.info("🧊 [Spatial] Offline map: \(polygons.count) fills, \(polylines.count) lines, \(labels.count) labels from \(tileCount) tiles in \(String(format: "%.2f", Date().timeIntervalSince(started)), privacy: .public)s")
+		return Shapes(polygons: polygons, polylines: polylines, labels: labels)
 	}
 
 	/// The tiles that touch this basemap's coverage and are not wholly inside a basemap already decoded.
@@ -232,7 +246,7 @@ enum SpatialOfflineMap {
 			return path
 		}
 		context.setLineJoin(.round)
-		for stroke in strokes(dark: dark) {
+		for stroke in strokes(dark: dark, zoom: styleZoom(bounds: frame.bounds, width: size.width)) {
 			guard let path = path(stroke.role), !path.isEmpty else { continue }
 			context.setStrokeColor(stroke.color.cgColor)
 			context.setLineWidth(stroke.width)

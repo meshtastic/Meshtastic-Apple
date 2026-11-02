@@ -47,18 +47,32 @@ struct NodeAdministrationTests {
 		).first)
 	}
 
+	/// A PKI response from `num`. Unless `solicited` is false, a matching request to `num`
+	/// is recorded first, as the app does when it sends one.
 	private func adminPacket(
 		from num: Int64,
 		message: AdminMessage,
 		to: Int64 = NodeAdministrationTests.myNum,
-		requestID: UInt32 = 4242
+		requestID: UInt32? = nil,
+		solicited: Bool = true,
+		pkiEncrypted: Bool = true
 	) throws -> MeshPacket {
+		let id = UInt32.random(in: 0x1000...UInt32.max)
+		if solicited {
+			var request = MeshPacket()
+			request.id = id
+			request.to = UInt32(num)
+			request.decoded.portnum = .adminApp
+			request.decoded.wantResponse = true
+			AdminRequestTracker.recordIfAdminRequest(request)
+		}
 		var packet = MeshPacket()
 		packet.from = UInt32(num)
 		packet.to = UInt32(to)
+		packet.pkiEncrypted = pkiEncrypted
 		packet.decoded.portnum = .adminApp
 		packet.decoded.payload = try message.serializedData()
-		packet.decoded.requestID = requestID
+		packet.decoded.requestID = requestID ?? id
 		return packet
 	}
 
@@ -261,6 +275,42 @@ struct NodeAdministrationTests {
 
 		let node = try fetchNode(num: num, in: container)
 		#expect(!node.hasBeenAdministered)
+		#expect(node.sessionPasskey == nil)
+	}
+
+	@Test func unsolicitedSecurityResponseIsNotStored() async throws {
+		// Any node can send a config "response" nobody asked for. It must not become the
+		// node's stored config, which the Security form would send back on Save.
+		let (mesh, container) = try freshMesh()
+		let num: Int64 = 0xBBEE22
+		try seedNode(num: num, in: container)
+
+		var security = Config.SecurityConfig()
+		security.adminKey = [Data(repeating: 0xA1, count: 32)]
+		security.isManaged = true
+		var config = Config()
+		config.security = security
+		var admin = AdminMessage()
+		admin.sessionPasskey = Data([0x01])
+		admin.getConfigResponse = config
+		await mesh.adminAppPacket(packet: try adminPacket(from: num, message: admin, solicited: false), connectedNodeNum: Self.myNum)
+
+		let node = try fetchNode(num: num, in: container)
+		#expect(node.securityConfig == nil)
+		#expect(node.sessionPasskey == nil)
+		#expect(!node.hasBeenAdministered)
+	}
+
+	@Test func remoteResponseWithoutPKIIsNotStored() async throws {
+		let (mesh, container) = try freshMesh()
+		let num: Int64 = 0xCCFF33
+		try seedNode(num: num, in: container)
+
+		let admin = deviceConfigResponse(passkey: Data([0x01]))
+		await mesh.adminAppPacket(packet: try adminPacket(from: num, message: admin, pkiEncrypted: false), connectedNodeNum: Self.myNum)
+
+		let node = try fetchNode(num: num, in: container)
+		#expect(node.deviceConfig == nil)
 		#expect(node.sessionPasskey == nil)
 	}
 

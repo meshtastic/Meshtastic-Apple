@@ -25,7 +25,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from room_base import CACHE, EYE_HEIGHT, arguments, build_camera, build_world, configure_render, link  # noqa: E402
 
 # The cab floor stands this far above the summit (LookoutTerrain.cabHeight in the app).
-TOWER = 40.0
+TOWER = 34.0
 # Ground at distance r is drawn from the summit out to here, far enough that its edge is the horizon.
 REACH = 120_000.0
 RINGS = 260

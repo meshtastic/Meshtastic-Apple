@@ -28,11 +28,17 @@ enum AccessoryError: Error, LocalizedError {
 	/// reflash, or its Bluetooth settings being cleared. Nothing the app does fixes it; the
 	/// stale pairing has to be removed in Settings first.
 	case bondLost
+	/// The radio asked for a Bluetooth PIN on a platform that can't enter one. visionOS allows
+	/// the pairing and then drops the link where iOS would show the PIN sheet, so a radio set to
+	/// a Random or Fixed PIN can't pair until its mode is changed from another device.
+	case pinEntryUnsupported
 	
 	/// Said the same way whichever code the failure arrives under. iOS reports a stale
 	/// pairing as CBError 14, as CBError.encryptionTimedOut, or as a CBATTError about
 	/// authentication or encryption, and the advice is the same for all of them.
 	static let bondLostAdvice = "The radio has deleted its stored pairing information, but your device has not. To resolve this, you must forget the radio under Settings > Bluetooth to clear the old, now invalid, pairing information.".localized
+
+	static let pinEntryUnsupportedAdvice = "Pairing stopped. Apple Vision Pro can't enter a Bluetooth PIN, so a radio set to a Random or Fixed PIN can't pair with it. Set the radio's Bluetooth pairing mode to No PIN (Just Works) from another device, then connect again.".localized
 
 	var errorDescription: String? {
 		switch self {
@@ -69,6 +75,8 @@ enum AccessoryError: Error, LocalizedError {
 			}
 		case .bondLost:
 			return Self.bondLostAdvice
+		case .pinEntryUnsupported:
+			return Self.pinEntryUnsupportedAdvice
 		case .coreBluetoothATTError(let attError):
 			// Map specific CBATTError values to a more user-friendly message
 			switch attError.code {
@@ -282,6 +290,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// firmware predates the feature or hasn't sent it yet — callers must treat an
 	/// absent region (or an empty map) as "no constraint". Reset on disconnect.
 	@Published var loRaRegionPresets: [Config.LoRaConfig.RegionCode: RegionPresetInfo] = [:]
+	/// The connected radio's LoRa region as last reported or saved, by raw `RegionCode` value.
+	/// Nil until the radio sends its LoRa config, and after it disconnects. The Connect screen
+	/// and the radio setup trigger read it instead of fetching the config entity.
+	@Published var connectedLoRaRegionCode: Int?
 
 	var activeConnection: (device: Device, connection: any Connection)?
 
@@ -678,6 +690,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			self.activeConnection = nil
 		}
 		self.activeDeviceNum = nil
+		self.connectedLoRaRegionCode = nil
 		self.firmwareUpdateRequired = false
 		// A dropped connection never finishes its download; the reconnect brings a fresh one.
 		loraChangeTracker.reset()
@@ -854,6 +867,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			  await active.connection.isConnected else {
 			throw AccessoryError.connectionFailed("Not connected to any device")
 		}
+		// Before the send, so a fast reply from the connected radio finds its request.
+		AdminRequestTracker.recordIfAdminRequest(data.packet)
 		try await active.connection.send(data)
 		if let debugDescription {
 			Logger.transport.info("📻 \(debugDescription, privacy: .public)")

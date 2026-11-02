@@ -73,7 +73,7 @@ struct RegionSelectorView: View {
 	@ObservedObject private var manager = OfflineMapManager.shared
 	@State private var camera: MapCameraPosition
 	@State private var bounds: GeoBounds?
-	@State private var detail: OfflineMapDetailLevel = .standard
+	@State private var detail: OfflineMapDetailLevel = .preferred
 	/// What the download includes (basemap, terrain, or both).
 	@State private var content: OfflineDownloadContent = .mapAndTerrain
 	/// One-shot: when resizing, the selection seeds from the region's saved bounds.

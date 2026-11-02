@@ -418,13 +418,9 @@ extension NodeInfoEntity {
 		return false
 	}
 
+	/// Remote admin is PKI only; the legacy admin channel is not supported.
 	var canRemoteAdmin: Bool {
-		if UserDefaults.enableAdministration {
-			return true
-		} else {
-			let adminChannel = myInfo?.channels.filter { $0.name?.lowercased() == "admin" }
-			return adminChannel?.count ?? 0 > 0
-		}
+		UserDefaults.enableAdministration
 	}
 }
 

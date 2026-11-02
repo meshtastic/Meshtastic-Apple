@@ -24,6 +24,7 @@ struct MapSettingsForm: View {
 	@AppStorage("mapOverlaysEnabled") private var mapOverlaysEnabled = false
 	@AppStorage("enableOfflineTiles") private var enableOfflineTiles = false
 	@AppStorage("meshMapShowHillshade") private var showHillshade = false
+	@AppStorage("meshMapHillshadeSkyOcclusion") private var hillshadeSkyOcclusion = false
 	@AppStorage("meshMapShowContours") private var showContours = false
 	/// Terrain toggles are disabled until at least one region has terrain data.
 	/// When the last terrain region disappears, the stored values reset so a
@@ -199,6 +200,20 @@ struct MapSettingsForm: View {
 							}
 						}
 						.disabled(!hasTerrainData)
+						if showHillshade {
+							Toggle(isOn: $hillshadeSkyOcclusion) {
+								Label {
+									VStack(alignment: .leading) {
+										Text("Shade Valleys", comment: "Map settings: darken valley floors in the hillshade by how little sky they see")
+										Text("Darkens valley floors and gorges, which see less of the sky. Shading takes longer to draw.", comment: "Map settings: explains the Shade Valleys hillshade option")
+											.font(.caption)
+											.foregroundColor(.secondary)
+									}
+								} icon: {
+									Image(systemName: "sun.haze")
+								}
+							}
+						}
 						Toggle(isOn: $showContours) {
 							Label {
 								VStack(alignment: .leading) {

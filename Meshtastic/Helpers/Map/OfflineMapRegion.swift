@@ -11,12 +11,25 @@
 import Foundation
 import MapKit
 
+/// One high-resolution terrain extract: the part of the region inside one of Mapterhorn's z6
+/// regional archives (`6-{x}-{y}.pmtiles`).
+struct OfflineMapRegionalTerrain: Codable, Hashable {
+	var fileName: String
+	/// The z6 tile naming the source archive; nil for an extract recorded before a region could
+	/// reach more than one.
+	var tileX: UInt32?
+	var tileY: UInt32?
+	/// Strong ETag of the source archive when this was extracted.
+	var etag: String?
+}
+
 /// Elevation data downloaded alongside a region: Mapterhorn terrain extracts of
 /// the same bounding box. Absent for regions downloaded before terrain support.
 struct OfflineMapTerrain: Codable, Hashable {
 	/// File name of the global (z0–12) terrain extract, e.g. `"<uuid>-terrain.pmtiles"`.
 	var fileName: String
-	/// File name of the optional high-resolution regional extract, e.g. `"<uuid>-terrain-hi.pmtiles"`.
+	/// File name of the high-resolution extract, from manifests that recorded only one. Newer
+	/// downloads set it to their first extract too, so an older build still finds one.
 	var regionalFileName: String?
 	/// Combined size of the terrain archives on disk.
 	var byteCount: Int64
@@ -24,6 +37,22 @@ struct OfflineMapTerrain: Codable, Hashable {
 	var downloadedAt: Date
 	/// Highest zoom level with terrain data: 12 when global-only, higher with a regional extract.
 	var maxZoom: Int
+	/// Strong ETag of Mapterhorn's global archive when this was extracted. Optional and
+	/// additive: nil for terrain downloaded before it was recorded, meaning unknown.
+	var globalETag: String?
+	/// The global archive's Last-Modified when this was extracted (Mapterhorn has no build id).
+	var globalLastModified: Date?
+	/// Strong ETag of the regional z6 archive the high-resolution extract came from.
+	var regionalETag: String?
+	/// The high-resolution extracts, one per z6 archive the region reaches. Optional and additive:
+	/// older manifests record one extract in `regionalFileName`.
+	var regionalArchives: [OfflineMapRegionalTerrain]?
+
+	/// Every high-resolution extract: `regionalArchives`, or the single one an older manifest records.
+	var regionalFiles: [OfflineMapRegionalTerrain] {
+		if let regionalArchives { return regionalArchives }
+		return regionalFileName.map { [OfflineMapRegionalTerrain(fileName: $0, etag: regionalETag)] } ?? []
+	}
 }
 
 /// Metadata describing one downloaded offline map region. The geometry is stored
@@ -44,6 +73,9 @@ struct OfflineMapRegion: Identifiable, Codable, Hashable {
 	var updatedDate: Date
 	/// Protomaps daily build the tiles were extracted from, e.g. `"20260623"`.
 	var sourceBuild: String
+	/// Strong ETag of the build archive the basemap was extracted from. Optional and
+	/// additive: nil for imports and for regions downloaded before it was recorded.
+	var sourceETag: String?
 	/// False for terrain-only downloads: no basemap archive exists, only the
 	/// terrain extracts (drawn over Apple maps). Optional and additive — manifests
 	/// written before terrain-only support decode with `nil`, meaning true.
@@ -75,6 +107,7 @@ struct OfflineMapRegion: Identifiable, Codable, Hashable {
 		createdDate: Date = .now,
 		updatedDate: Date = .now,
 		sourceBuild: String,
+		sourceETag: String? = nil,
 		includesBasemap: Bool = true,
 		terrain: OfflineMapTerrain? = nil,
 		managedBy: String? = nil
@@ -92,6 +125,7 @@ struct OfflineMapRegion: Identifiable, Codable, Hashable {
 		self.createdDate = createdDate
 		self.updatedDate = updatedDate
 		self.sourceBuild = sourceBuild
+		self.sourceETag = sourceETag
 		self.includesBasemap = includesBasemap
 		self.terrain = terrain
 		self.managedBy = managedBy

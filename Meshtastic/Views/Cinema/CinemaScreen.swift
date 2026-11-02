@@ -180,6 +180,8 @@ struct CinemaScreen: View {
 	@EnvironmentObject private var appState: AppState
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 	@EnvironmentObject private var lockdown: LockdownCoordinator
+	/// The radio setup flow, from the Set Up Radio rows on Connect and Settings.
+	@State private var radioSetupRequest: RadioSetupRequest?
 
 	var body: some View {
 		let section = model.section
@@ -200,10 +202,28 @@ struct CinemaScreen: View {
 			}
 			.id(appState.databaseResetID)
 			.panelPresentationHost(model.presenter)
+			.environment(\.openRadioSetup) { nodeNum in
+				radioSetupRequest = RadioSetupRequest(nodeNum: nodeNum)
+			}
 			// The pages are the model's and outlive the gate: one up when the gate goes up would
 			// stay over it, and come back when it drops.
+			// Picking another section from the tab strip closes the flow, which would hide it.
+			.onChange(of: model.section) {
+				radioSetupRequest = nil
+			}
 			.onChange(of: gated) { _, gated in
-				if gated { model.presenter.popAll() }
+				if gated {
+					model.presenter.popAll()
+					radioSetupRequest = nil
+				}
+			}
+			// The flow has a navigation stack of its own, which can't go on the screen's page
+			// stack, so it covers the section instead of being pushed.
+			.opacity(radioSetupRequest == nil ? 1 : 0)
+			.overlay {
+				if let request = radioSetupRequest {
+					RadioSetupFlow(nodeNum: request.nodeNum) { radioSetupRequest = nil }
+				}
 			}
 		}
 		.frame(width: Self.size.width, height: Self.size.height)

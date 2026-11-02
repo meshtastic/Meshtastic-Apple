@@ -1412,18 +1412,22 @@ actor MeshPackets {
 
 	func adminAppPacket (packet: MeshPacket, connectedNodeNum: Int64? = nil) {
 		if let adminMessage = try? AdminMessage(serializedBytes: packet.decoded.payload) {
-			// The session key from a reply to a request we sent, addressed to the connected
-			// node. An unsolicited or forwarded admin message, or one with no key, leaves the
-			// stored session alone.
-			let responsePasskey: Data?
-			if let connectedNodeNum,
-			   packet.decoded.requestID != 0,
-			   Int64(packet.to) == connectedNodeNum,
-			   !adminMessage.sessionPasskey.isEmpty {
-				responsePasskey = adminMessage.sessionPasskey
-			} else {
-				responsePasskey = nil
+			// A response is only applied when it answers a request this app sent to that node.
+			// Anything else would be stored as the node's settings and sent back on Save.
+			switch adminMessage.payloadVariant {
+			case .getChannelResponse, .getOwnerResponse, .getConfigResponse, .getModuleConfigResponse,
+				 .getCannedMessageModuleMessagesResponse, .getDeviceMetadataResponse, .getRingtoneResponse,
+				 .getDeviceConnectionStatusResponse, .getNodeRemoteHardwarePinsResponse, .getUiConfigResponse:
+				guard AdminRequestTracker.consumeResponse(packet, connectedNodeNum: connectedNodeNum) else {
+					Logger.admin.warning("🚫 Dropped admin response from \(packet.from.toHex(), privacy: .public) that does not answer a request we sent")
+					return
+				}
+			default:
+				break
 			}
+			// The session key from a reply to a request we sent. One with no key leaves the
+			// stored session alone.
+			let responsePasskey: Data? = adminMessage.sessionPasskey.isEmpty ? nil : adminMessage.sessionPasskey
 
 			if adminMessage.payloadVariant == AdminMessage.OneOf_PayloadVariant.getCannedMessageModuleMessagesResponse(adminMessage.getCannedMessageModuleMessagesResponse) {
 
@@ -1511,11 +1515,9 @@ actor MeshPackets {
 			}
 			// An admin *response* carrying a session passkey is proof an admin request we
 			// sent to this node succeeded, so remember that it has been administered.
-			// Marking requires a response variant (never a request another node sent),
-			// a response correlated to a request (requestID != 0), and a packet addressed
-			// to the connected node — an unsolicited or forwarded admin message never
-			// unlocks the remote-admin UI. Runs after the handlers above so a node first
-			// heard via a metadata response exists by now.
+			// Responses that answer no request were dropped above, so an unsolicited or
+			// forwarded admin message never unlocks the remote-admin UI. Runs after the
+			// handlers above so a node first heard via a metadata response exists by now.
 			if responsePasskey != nil {
 				switch adminMessage.payloadVariant {
 				case .getChannelResponse, .getOwnerResponse, .getConfigResponse, .getModuleConfigResponse,

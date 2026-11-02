@@ -98,4 +98,74 @@ struct SpatialLookoutTests {
 		let back = Float(SpatialLookout.frontHeading * .pi / 180) + .pi
 		#expect(simd_distance(spot, SIMD2(sin(back), -cos(back)) * 0.02) < 1e-5)
 	}
+
+	@Test("each turn moves the cab a sixteenth of a turn clockwise, and sixteen turns bring it back")
+	func turns() {
+		#expect(SpatialLookout.heading(turns: 0) == SpatialLookout.frontHeading)
+		#expect(SpatialLookout.heading(turns: 1) == 178.5)
+		#expect(SpatialLookout.heading(turns: 2) == 201)
+		#expect(SpatialLookout.heading(turns: 8) == 336)
+		#expect(SpatialLookout.heading(turns: 10) == 21)
+		#expect(SpatialLookout.heading(turns: 15) == 133.5)
+		#expect(SpatialLookout.heading(turns: 16) == SpatialLookout.frontHeading)
+		#expect(SpatialLookout.heading(turns: -1) == 133.5)
+	}
+
+	@Test("the dial picks the turn whose facing is nearest where it's touched")
+	func nearestTurn() {
+		for turns in 0..<SpatialLookout.turnSteps {
+			let heading = SpatialLookout.heading(turns: turns)
+			#expect(SpatialLookout.turns(nearest: heading) == turns)
+			#expect(SpatialLookout.turns(nearest: heading + 10) == turns)
+			#expect(SpatialLookout.turns(nearest: heading - 10 + 360) == turns)
+		}
+		#expect(SpatialLookout.turns(nearest: 0) == 9)
+	}
+
+	@Test("a turn saved in eighths carries over as the same facing in sixteenths, once")
+	func migrateEighths() throws {
+		let defaults = try #require(UserDefaults(suiteName: "SpatialLookoutTests.migrate"))
+		defaults.removePersistentDomain(forName: "SpatialLookoutTests.migrate")
+		defaults.set(3, forKey: "cinemaLookoutTurns")
+		SpatialLookout.migrateEighthTurns(defaults)
+		#expect(defaults.integer(forKey: SpatialLookout.turnsKey) == 6)
+		#expect(defaults.object(forKey: "cinemaLookoutTurns") == nil)
+		defaults.set(5, forKey: SpatialLookout.turnsKey)
+		SpatialLookout.migrateEighthTurns(defaults)
+		#expect(defaults.integer(forKey: SpatialLookout.turnsKey) == 5)
+		defaults.removePersistentDomain(forName: "SpatialLookoutTests.migrate")
+	}
+
+	@Test("a turned cab's front faces its new bearing on the map")
+	func turnedYaw() {
+		for turns in 0..<SpatialLookout.turnSteps {
+			let heading = SpatialLookout.heading(turns: turns)
+			let front = simd_quatf(angle: SpatialLookout.yaw(heading: heading), axis: [0, 1, 0]).act([0, 0, 1])
+			let bearing = heading * .pi / 180
+			#expect(abs(front.x - Float(sin(bearing))) < 0.0001, "\(turns)")
+			#expect(abs(front.z + Float(cos(bearing))) < 0.0001, "\(turns)")
+		}
+	}
+
+	@Test("the caption names the nearest of sixteen compass points")
+	func facing() {
+		#expect(SpatialLookout.facing(heading: 0) == "Faces north")
+		#expect(SpatialLookout.facing(heading: 350) == "Faces north")
+		#expect(SpatialLookout.facing(heading: 21) == "Faces north-northeast")
+		#expect(SpatialLookout.facing(heading: 46) == "Faces northeast")
+		#expect(SpatialLookout.facing(heading: 66) == "Faces east-northeast")
+		#expect(SpatialLookout.facing(heading: 85) == "Faces east")
+		#expect(SpatialLookout.facing(heading: 156) == "Faces south-southeast")
+		#expect(SpatialLookout.facing(heading: 178.5) == "Faces south")
+		#expect(SpatialLookout.facing(heading: 246) == "Faces west-southwest")
+		#expect(SpatialLookout.facing(heading: 336) == "Faces north-northwest")
+	}
+
+	@Test("a turned lookout still steps behind its cab first")
+	func spotBehindTurnedCab() throws {
+		let heading = SpatialLookout.heading(turns: 1)
+		let spot = try #require(SpatialLookoutSpot.spot(summit: .zero, pins: [.zero], clearance: 0.02, heading: heading))
+		let back = Float(heading * .pi / 180) + .pi
+		#expect(simd_distance(spot, SIMD2(sin(back), -cos(back)) * 0.02) < 1e-5)
+	}
 }

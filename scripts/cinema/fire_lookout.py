@@ -10,11 +10,10 @@
 #    Blender -b -P fire_lookout.py -- --out out/fire_lookout.png --width 4096 --samples 160
 #
 #  The cab is a square room with a low wall all round, windows above it on every side, a wide sill
-#  shelf under them, and a catwalk with a railing outside. The storm shutters are propped open
-#  over the windows except where the app needs a plain surface: the two middle bays in front are
-#  shuttered for the screen, two on the left behind the whiteboards the app draws the team roster
-#  and the nodes' status messages on, and one on the right behind the print it draws the latest
-#  trace route on. The
+#  shelf under them, and a catwalk with a railing outside. The storm shutters are all propped open
+#  as awnings, above the line of sight through the glass, so the view shows round the screen in
+#  front, the two whiteboards on the left the app draws the team roster and the nodes' status
+#  messages on, and the print on the right it draws the latest trace route on. The
 #  fire finder stands to the right, the cot is along the back wall with the stove in the back-left
 #  corner and the door back-right, and a lantern hangs from the ceiling. The mountains and the
 #  sunset are the Kiara 8 HDRI from Poly Haven.
@@ -102,9 +101,25 @@ def bay_center(index):
     return -HALF + (index + 0.5) * BAY
 
 
-# Bays with their shutters closed, by side: the screen's two in front, and one on each side
-# behind a board.
-CLOSED = {"front": (1, 2), "left": (1, 2), "right": (1,), "back": ()}
+# The front's two middle posts stand in from the even spacing, so two thirds of each is behind the
+# screen's bezel from the seat and the outer front bays show more of the view. Set by eye in the
+# headset.
+SCREEN_POST = 1.045
+
+
+def posts(side):
+    """Where the posts stand along `side`, corner to corner."""
+    if side == "front":
+        return [-HALF, -SCREEN_POST, 0, SCREEN_POST, HALF]
+    return [-HALF + i * BAY for i in range(5)]
+
+
+def bays(side):
+    """The center and width, between post centers, of each bay along `side`."""
+    edges = posts(side)
+    return [((a + b) / 2, b - a) for a, b in zip(edges, edges[1:])]
+
+
 DOOR = ("back", 0)
 ROSTER = ("left", 2)
 STATUS = ("left", 1)
@@ -188,45 +203,90 @@ def build_cab():
     sill = material("Sill", (0.5, 0.36, 0.2), 0.5)
     glass = glass_material()
     shutter_out = material("ShutterOut", (0.22, 0.26, 0.2), 0.7)
-    shutter_in = material("ShutterIn", (0.44, 0.34, 0.2), 0.8)
     rail = material("Rail", (0.24, 0.26, 0.2), 0.7)
 
     size = 2 * (HALF + CATWALK)
     box("Deck", (size, size, 0.06), (0, 0, -0.03), deck)
     box("Floor", (2 * HALF, 2 * HALF, 0.02), (0, 0, 0.0), floor)
     box("Ceiling", (2 * HALF + 0.3, 2 * HALF + 0.3, 0.05), (0, 0, CEILING + 0.025), ceiling)
-    # Ceiling joists, and the eaves outside over the catwalk.
+    # Ceiling joists, and short eaves outside: the shutters are the awnings over the catwalk.
     joist = material("Joist", (0.5, 0.38, 0.22), 0.55)
     for x in (-1.5 * BAY, -0.5 * BAY, 0.5 * BAY, 1.5 * BAY):
         box("Joist", (0.08, 2 * HALF + 0.3, 0.12), (x, 0, CEILING - 0.06), joist)
-    box("Eave", (size + 0.2, size + 0.2, 0.08), (0, 0, CEILING + 0.09), joist)
+    box("Eave", (2 * HALF + 0.5, 2 * HALF + 0.5, 0.08), (0, 0, CEILING + 0.09), joist)
 
     for side in SIDES:
         wall_mat = paint if SIDES[side][1] else paint_y
-        # The low wall, with its inner face WALL inside the outer face.
-        box("KneeWall" + side, along(side, 2 * HALF + 0.2, WALL, KNEE), at(side, 0, -WALL / 2, KNEE / 2), wall_mat)
-        # The sill shelf inside, and a drip sill outside.
-        box("Sill" + side, along(side, 2 * HALF + 0.1, SILL_DEPTH, 0.035), at(side, 0, -WALL - SILL_DEPTH / 2 + 0.03, KNEE + 0.017), sill)
-        box("OuterSill" + side, along(side, 2 * HALF + 0.2, 0.06, 0.03), at(side, 0, 0.03, KNEE + 0.01), frame)
+        # The low wall, with its inner face WALL inside the outer face, the sill shelf inside, and a
+        # drip sill outside. All three stop at the door's posts, so the door shows from the floor.
+        for start, end in wall_runs(side, HALF + 0.1):
+            box("KneeWall" + side, along(side, end - start, WALL, KNEE), at(side, (start + end) / 2, -WALL / 2, KNEE / 2), wall_mat)
+            box("OuterSill" + side, along(side, end - start, 0.06, 0.03), at(side, (start + end) / 2, 0.03, KNEE + 0.01), frame)
+        for start, end in wall_runs(side, HALF + 0.05):
+            if side == DOOR_HINGE_SILL:
+                end -= SILL_TAPER
+                sill_taper(side, end, HALF - WALL, sill)
+            if side == DOOR[0] and abs(start - door_edges()[1]) < 0.001:
+                start += SILL_TAPER
+                sill_taper(side, start, start - SILL_TAPER, sill)
+            box("Sill" + side, along(side, end - start, SILL_DEPTH, 0.035), at(side, (start + end) / 2, -WALL - SILL_DEPTH / 2 + 0.03, KNEE + 0.017), sill)
         # The header over the windows.
         box("Header" + side, along(side, 2 * HALF + 0.2, WALL, CEILING - HEAD), at(side, 0, -WALL / 2, (HEAD + CEILING) / 2), wall_mat)
         # Posts between the bays, and at the corners.
-        for i in range(5):
-            u = -HALF + i * BAY
+        for u in posts(side):
             box("Post" + side, along(side, POST, WALL, HEAD - KNEE), at(side, u, -WALL / 2, (KNEE + HEAD) / 2), frame)
-        for bay in range(4):
-            u = bay_center(bay)
+        for bay, (u, bay_width) in enumerate(bays(side)):
             if (side, bay) == DOOR:
                 build_door(side, u, frame, glass)
                 continue
-            pane_w, pane_h = BAY - POST, HEAD - KNEE
+            pane_w, pane_h = bay_width - POST, HEAD - KNEE
             plane("Glass" + side, pane_w, pane_h, at(side, u, -WALL / 2, (KNEE + HEAD) / 2), facing_in(side), glass)
             # A muntin across each pane, a little above the middle.
             box("Muntin" + side, along(side, pane_w, 0.03, 0.03), at(side, u, -WALL / 2, KNEE + pane_h * 0.62), frame)
-            closed = bay in CLOSED[side]
-            build_shutter(side, u, closed, shutter_out, shutter_in, frame)
+            build_shutter(side, u, bay_width, shutter_out, frame)
 
     build_railing(rail)
+
+
+def door_edges():
+    """Where the door's opening starts and ends along its side, between its posts."""
+    u = bay_center(DOOR[1])
+    return u - BAY / 2 + POST / 2, u + BAY / 2 - POST / 2
+
+
+def wall_runs(side, reach):
+    """The stretches along `side`, out to `reach` either way from its middle, that aren't the
+    door's opening between its posts."""
+    if side != DOOR[0]:
+        return [(-reach, reach)]
+    left, right = door_edges()
+    return [(start, end) for start, end in ((-reach, left), (right, reach)) if end - start > 0.001]
+
+
+# The sills either side of the door would stick out across the doorway: the right wall's, which
+# ends in the back corner beside the hinge, and the back wall's beside the knob. Their last stretch
+# toward the door tapers to nothing instead, cut back on a diagonal.
+DOOR_HINGE_SILL = "right"
+SILL_TAPER = 0.6
+
+
+def sill_taper(side, full, thin, mat):
+    """A wedge of sill along `side` from full depth at `full` to nothing at `thin`."""
+    inner, outer = -WALL - SILL_DEPTH + 0.03, -WALL + 0.03
+    corners = [(full, outer), (full, inner), (thin, outer)]
+    bottom, top = KNEE, KNEE + 0.035
+
+    def build(bm):
+        low = [bm.verts.new(at(side, cu, co, bottom)) for cu, co in corners]
+        high = [bm.verts.new(at(side, cu, co, top)) for cu, co in corners]
+        bm.faces.new(low)
+        bm.faces.new(high)
+        for i in range(3):
+            j = (i + 1) % 3
+            bm.faces.new((low[i], low[j], high[j], high[i]))
+        bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+
+    mesh_object("SillTaper" + side, build, mat)
 
 
 def u_direction(side):
@@ -239,29 +299,26 @@ def u_direction(side):
 YAW = {"front": 0, "right": -math.pi / 2, "back": math.pi, "left": math.pi / 2}
 
 
-def build_shutter(side, u, closed, outside, inside, prop_mat):
-    """A storm shutter the width of a bay, hinged at the top: propped open as an awning over the
-    window, or closed down over it."""
-    width, height, thick = BAY - 0.02, HEAD - KNEE + 0.08, 0.035
+def build_shutter(side, u, bay_width, outside, prop_mat):
+    """A storm shutter the width of a bay, hinged at the top of the window and propped open as an
+    awning, tipped up a little more steeply than the line of sight through the top of the glass from
+    the seat (about 22 degrees), so it stays out of the view."""
+    width, height, thick = bay_width - 0.02, HEAD - KNEE + 0.08, 0.035
     hinge = Vector(at(side, u, 0.03, HEAD + 0.04))
     nx, ny = SIDES[side]
     outward = Vector((nx, ny, 0))
-    if closed:
-        center = hinge + Vector((0, 0, -height / 2))
-        box("ShutterClosed" + side, along(side, width, thick, height), center, outside)
-        # Its inner face, as seen through the glass: bare plywood.
-        plane("ShutterBack" + side, width, height, center - outward * (thick / 2 + 0.001), facing_in(side), inside)
-        return
-    # Open: swung up to 80 degrees from the wall, propped on two struts to the outer sill. The box
-    # is tipped about its own X so its height runs from the hinge out along `direction`.
-    angle = math.radians(80)
-    direction = outward * math.sin(angle) - Vector((0, 0, math.cos(angle)))
+    # The box is tipped about its own X so its height runs from the hinge out along `direction`.
+    lift = math.radians(25)
+    angle = math.pi / 2 + lift
+    direction = outward * math.cos(lift) + Vector((0, 0, math.sin(lift)))
     center = hinge + direction * height / 2
     box("ShutterOpen" + side, (width, thick, height), center, outside, rotation=(angle + math.pi, 0, YAW[side]))
-    far = hinge + direction * (height - 0.05)
+    # Propped on two struts from the header just above the window, steeper than the shutter so
+    # they stay above the line of sight too.
+    far = hinge + direction * (height * 0.55)
     udir = u_direction(side)
     for du in (-width / 2 + 0.1, width / 2 - 0.1):
-        foot = Vector(at(side, u + du, 0.05, KNEE + 0.03))
+        foot = Vector(at(side, u + du, 0.02, HEAD + 0.1))
         cylinder("ShutterProp", 0.012, foot, far + udir * du, prop_mat, segments=8)
 
 
@@ -269,17 +326,23 @@ def build_door(side, u, frame, glass):
     """A half-glass door in its bay, with Chirpy's poster on the inside of its lower panel."""
     width = BAY - POST
     paint = material("Door", (0.86, 0.84, 0.76), 0.5)
-    box("DoorLower", along(side, width, 0.04, KNEE + 0.02), at(side, u, -WALL / 2, (KNEE + 0.02) / 2 + 0.01), paint)
+    # The lower panel, the rail and the stiles are each a little thicker than the last, so their
+    # faces never lie in the same plane.
+    box("DoorLower", along(side, width, 0.03, KNEE + 0.02), at(side, u, -WALL / 2, (KNEE + 0.02) / 2 + 0.01), paint)
     plane("DoorGlass", width - 0.12, HEAD - KNEE - 0.1, at(side, u, -WALL / 2, (KNEE + HEAD) / 2), facing_in(side), glass)
     for du in (-width / 2 + 0.03, width / 2 - 0.03):
-        box("DoorStile", along(side, 0.06, 0.04, HEAD - KNEE), at(side, u + du, -WALL / 2, (KNEE + HEAD) / 2), paint)
+        box("DoorStile", along(side, 0.06, 0.05, HEAD - KNEE), at(side, u + du, -WALL / 2, (KNEE + HEAD) / 2), paint)
     box("DoorRail", along(side, width, 0.04, 0.06), at(side, u, -WALL / 2, KNEE + 0.03), paint)
     box("DoorTop", along(side, width, 0.04, 0.05), at(side, u, -WALL / 2, HEAD - 0.025), paint)
     brass = material("Brass", (0.78, 0.6, 0.3), 0.3, metallic=1.0)
-    knob = Vector(at(side, u + width / 2 - 0.09, -WALL / 2 - 0.02, 0.95))
+    # On the lower panel, just under the rail.
+    knob = Vector(at(side, u + width / 2 - 0.1, -WALL / 2 - 0.015, KNEE - 0.07))
     nx, ny = SIDES[side]
-    sphere("DoorKnob", 0.025, knob - Vector((nx, ny, 0)) * 0.05, brass, segments=16)
-    cylinder("DoorKnobNeck", 0.008, knob, knob - Vector((nx, ny, 0)) * 0.05, brass, segments=10)
+    # Bigger than life, so it reads as a knob from the seat across the cab.
+    inward = Vector((nx, ny, 0))
+    cylinder("DoorKnobRose", 0.034, knob, knob - inward * 0.01, brass, segments=32)
+    cylinder("DoorKnobNeck", 0.012, knob, knob - inward * 0.075, brass, segments=16)
+    sphere("DoorKnob", 0.04, knob - inward * 0.075, brass, segments=24)
     poster = image_material("ChirpyPoster", os.path.join(CACHE, "chirpy_poster.png"), 0.7)
     plane("Poster", 0.38, 0.53, at(side, u, -WALL / 2 - 0.021, 0.48), facing_in(side), poster)
 
@@ -299,11 +362,15 @@ def build_railing(rail):
 # MARK: - Furniture
 
 def fire_finder():
-    """The fire finder: a round map table on a wooden cabinet, with a brass sighting ring and its
-    two sights, pointed out over the mountains. The map is the topo print."""
+    """The fire finder, an Osborne: a round map table on a wooden cabinet, the map inside a brass
+    azimuth ring graduated in degrees, and a sighting bar across it with a rear sight (a plate with
+    a narrow slit) and a front sight (an open frame with one vertical hair). The sights stand low
+    and open, so from the seat they don't cover the window behind the table, and the bar is turned
+    across the line of sight so both show."""
     x, y = 1.05, -0.7
     wood = material("FinderCabinet", (0.5, 0.36, 0.2), 0.5)
     brass = material("FinderBrass", (0.72, 0.56, 0.28), 0.3, metallic=1.0)
+    engraving = material("FinderEngraving", (0.12, 0.09, 0.05), 0.6)
     box("FinderCabinet", (0.5, 0.5, 0.92), (x, y, 0.46), wood, bevel=0.005)
     box("FinderDrawer", (0.44, 0.02, 0.12), (x, y - 0.25, 0.7), material("Drawer", (0.42, 0.3, 0.16), 0.5))
     sphere("DrawerPull", 0.012, (x, y - 0.27, 0.7), brass, segments=12)
@@ -312,18 +379,51 @@ def fire_finder():
 
     def disc(bm):
         bm.loops.layers.uv.new()
-        bmesh.ops.create_circle(bm, cap_ends=True, segments=64, radius=0.37, calc_uvs=True)
+        bmesh.ops.create_circle(bm, cap_ends=True, segments=64, radius=0.35, calc_uvs=True)
     mesh_object("FinderMap", disc, image_material("FinderTopo", os.path.join(CACHE, "topo.png"), 0.8), (x, y, top + 0.001))
-    torus("FinderRing", 0.38, 0.012, (x, y, top + 0.02), brass)
-    # The sighting bar across the ring, with a sight at each end: a slit at the back and a hair at
-    # the front, turned toward the right-hand mountains.
-    bearing = math.radians(-35)
+
+    # The azimuth circle: a flat brass band round the map with a tick every 5 degrees, longer every
+    # 10 and longest every 90, and a raised rim outside it.
+    def band(bm):
+        outer = bmesh.ops.create_circle(bm, cap_ends=False, segments=96, radius=0.385)["verts"]
+        inner = bmesh.ops.create_circle(bm, cap_ends=False, segments=96, radius=0.352)["verts"]
+        for i in range(96):
+            bm.faces.new((outer[i], outer[(i + 1) % 96], inner[(i + 1) % 96], inner[i]))
+    mesh_object("FinderAzimuth", band, brass, (x, y, top + 0.004))
+    torus("FinderRim", 0.39, 0.008, (x, y, top + 0.006), brass)
+    for degrees in range(0, 360, 5):
+        length = 0.022 if degrees % 90 == 0 else 0.015 if degrees % 10 == 0 else 0.008
+        angle = math.radians(degrees)
+        radius = 0.385 - length / 2
+        box("FinderTick", (length, 0.0018, 0.0008),
+            (x + radius * math.cos(angle), y + radius * math.sin(angle), top + 0.0045), engraving, rotation=(0, 0, angle))
+
+    # The sighting bar turns on a pivot at the center. From the seat the table lies about 34
+    # degrees right of straight ahead, so a bar turned 50 degrees from that line shows both sights
+    # apart instead of one behind the other.
+    bearing = math.radians(16)
     across = Vector((math.cos(bearing), math.sin(bearing), 0))
-    box("SightBar", (0.8, 0.03, 0.008), (x, y, top + 0.03), brass, rotation=(0, 0, bearing))
-    for end, tall in ((-1, 0.14), (1, 0.12)):
-        pos = Vector((x, y, top + 0.03)) + across * end * 0.37
-        box("Sight", (0.006, 0.05, tall), pos + Vector((0, 0, tall / 2)), brass, rotation=(0, 0, bearing))
-    cylinder("FinderPivot", 0.02, (x, y, top), (x, y, top + 0.045), brass, segments=20)
+    side = Vector((-math.sin(bearing), math.cos(bearing), 0))
+    deck = top + 0.012
+    box("SightBar", (0.76, 0.024, 0.005), (x, y, deck), brass, rotation=(0, 0, bearing))
+    cylinder("FinderPivot", 0.018, (x, y, top), (x, y, deck + 0.006), brass, segments=20)
+
+    # Rear sight: two thin plates with a slit between them, joined at the foot and the top. The slit
+    # is wider than a real one's 2-3 mm so it reads in the panorama, about 11 pixels a degree.
+    rear = Vector((x, y, deck)) + across * -0.36
+    tall = 0.06
+    for sign in (-1, 1):
+        box("RearSightPlate", (0.003, 0.016, tall), rear + side * sign * 0.011 + Vector((0, 0, tall / 2)), brass, rotation=(0, 0, bearing))
+    for z in (0.004, tall - 0.004):
+        box("RearSightBridge", (0.003, 0.038, 0.008), rear + Vector((0, 0, z)), brass, rotation=(0, 0, bearing))
+
+    # Front sight: an open frame with a single vertical hair down the middle.
+    front = Vector((x, y, deck)) + across * 0.36
+    tall = 0.07
+    for sign in (-1, 1):
+        box("FrontSightPost", (0.004, 0.004, tall), front + side * sign * 0.022 + Vector((0, 0, tall / 2)), brass, rotation=(0, 0, bearing))
+    box("FrontSightTop", (0.004, 0.048, 0.004), front + Vector((0, 0, tall)), brass, rotation=(0, 0, bearing))
+    cylinder("FrontSightHair", 0.001, front, front + Vector((0, 0, tall)), engraving, segments=6)
 
 
 def bumpy(mat, scale, strength, colors=None):
@@ -629,7 +729,7 @@ def lantern():
 
 def sill_things():
     """What a lookout keeps on the sill shelf: the VHF radio and a Meshtastic radio on the right,
-    binoculars by the screen, a mug and a logbook on the left, and a water jug on the floor."""
+    and binoculars by the screen. The left sill is kept clear."""
     body = material("RadioBody", (0.06, 0.06, 0.065), 0.4, metallic=0.3)
     knob = material("Knob", (0.02, 0.02, 0.02), 0.35)
     shelf = KNEE + 0.035
@@ -640,21 +740,47 @@ def sill_things():
     cylinder("VHFKnob", 0.018, (rx - 0.11, ry - 0.08, shelf + 0.05), (rx - 0.13, ry - 0.08, shelf + 0.05), knob, segments=20)
     cylinder("VHFAntennaLead", 0.004, (rx, ry + 0.13, shelf + 0.06), (rx + 0.05, ry + 0.3, shelf + 0.06), knob, segments=6)
     place_model("t-echo.usdz", (rx - 0.02, ry + 0.3), -0.3, flat=False)
-    # Binoculars on the front sill beside the screen.
-    bx, by = 1.6, HALF - WALL - 0.16
-    for dx in (-0.035, 0.035):
-        cylinder("Binocular", 0.025, (bx + dx, by - 0.08, shelf + 0.028), (bx + dx, by + 0.08, shelf + 0.028), body, segments=20)
-    box("BinocularBridge", (0.05, 0.08, 0.02), (bx, by, shelf + 0.03), body)
-    # A mug and the logbook on the left sill.
-    mug = material("Mug", (0.2, 0.3, 0.35), 0.4)
-    cylinder("Mug", 0.04, (-HALF + WALL + 0.15, 1.6, shelf), (-HALF + WALL + 0.15, 1.6, shelf + 0.1), mug, segments=24)
-    torus("MugHandle", 0.025, 0.006, (-HALF + WALL + 0.19, 1.6, shelf + 0.05), mug, rotation=(0, 0, 0))
-    box("Logbook", (0.2, 0.26, 0.025), (-HALF + WALL + 0.17, 1.95, shelf + 0.013), material("Logbook", (0.12, 0.2, 0.14), 0.6), bevel=0.003)
-    cylinder("Pencil", 0.004, (-HALF + WALL + 0.1, 1.85, shelf + 0.03), (-HALF + WALL + 0.25, 1.92, shelf + 0.03), material("Pencil", (0.9, 0.7, 0.1), 0.5), segments=6)
-    # A water jug by the stove.
-    jug = material("Jug", (0.2, 0.35, 0.6), 0.3)
-    cylinder("WaterJug", 0.14, (-1.3, -1.95, 0.02), (-1.3, -1.95, 0.42), jug, segments=32)
-    cylinder("JugCap", 0.04, (-1.3, -1.95, 0.42), (-1.3, -1.95, 0.46), material("JugCap", (0.9, 0.9, 0.9), 0.4), segments=20)
+    # Binoculars on the front sill beside the screen, turned a little as if just put down.
+    binoculars((1.6, HALF - WALL - 0.17), math.radians(-20), shelf)
+
+
+def tube(name, radius, start, end, mat, segments=48):
+    """A cylinder with its end edges rounded a little, so small parts read as turned metal and
+    molded rubber rather than smooth-shaded blobs."""
+    obj = cylinder(name, radius, start, end, mat, segments=segments)
+    bevel = obj.modifiers.new("Bevel", "BEVEL")
+    bevel.width = min(radius * 0.15, 0.003)
+    bevel.segments = 3
+    bevel.harden_normals = True
+    return obj
+
+
+def binoculars(center, yaw, shelf):
+    """Porro prism binoculars lying on the sill: rubber-armored objective barrels with coated
+    lenses, prism housings stepping in to the eyepieces and their eyecups, and the center hinge
+    with its focus wheel. Built along +y (objectives forward) and turned by `yaw` about `center`."""
+    armor = material("BinocularArmor", (0.035, 0.04, 0.035), 0.8)
+    metal = material("BinocularMetal", (0.07, 0.07, 0.075), 0.3, metallic=0.85)
+    lens = material("BinocularLens", (0.12, 0.08, 0.22), 0.04, metallic=0.7)
+    turn = Matrix.Rotation(yaw, 3, "Z")
+
+    def at_local(x, y, z):
+        return Vector(center + (0,)) + turn @ Vector((x, y, 0)) + Vector((0, 0, shelf + z))
+
+    r = 0.029
+    for side in (-1, 1):
+        x = side * 0.05
+        tube("BinocularBarrel", r, at_local(x, 0.0, r), at_local(x, 0.085, r), armor)
+        tube("BinocularRim", r + 0.002, at_local(x, 0.082, r), at_local(x, 0.092, r), metal)
+        tube("BinocularLens", r - 0.005, at_local(x, 0.088, r), at_local(x, 0.0925, r), lens, segments=32)
+        box("BinocularPrism", (0.058, 0.07, 0.05), at_local(side * 0.044, -0.03, r + 0.002), armor, rotation=(0, 0, yaw), bevel=0.01)
+        ex = side * 0.032
+        tube("BinocularEyepiece", 0.014, at_local(ex, -0.06, r + 0.006), at_local(ex, -0.09, r + 0.006), metal)
+        tube("BinocularEyecup", 0.019, at_local(ex, -0.09, r + 0.006), at_local(ex, -0.108, r + 0.006), armor)
+    tube("BinocularHinge", 0.011, at_local(0, -0.075, r + 0.012), at_local(0, 0.05, r + 0.012), metal)
+    tube("BinocularFocus", 0.017, at_local(0, -0.058, r + 0.012), at_local(0, -0.036, r + 0.012), armor)
+    for y in (0.035, -0.07):
+        box("BinocularBridge", (0.07, 0.022, 0.012), at_local(0, y, r + 0.014), metal, rotation=(0, 0, yaw), bevel=0.003)
 
 
 def place_model(file_name, at_xy, yaw, flat):
@@ -672,44 +798,6 @@ def place_model(file_name, at_xy, yaw, flat):
     cx = (min(c.x for c in corners) + max(c.x for c in corners)) / 2
     cy = (min(c.y for c in corners) + max(c.y for c in corners)) / 2
     root.matrix_world = Matrix.Translation((at_xy[0] - cx, at_xy[1] - cy, KNEE + 0.035 - low)) @ root.matrix_world
-
-
-# MARK: - Outside
-
-SOLAR_NODE = os.path.join(DEVICE_MODELS, "seeed_solar.usdz")
-SOLAR_NODE_MOUNT = Vector((0.0027, 0.117, -0.0376))
-
-
-def outside():
-    """On the catwalk: a Solar Node on a mast clamped to a railing post outside the right window
-    and the Meshtastic flag on a staff at the front-right corner."""
-    steel = material("MastSteel", (0.15, 0.15, 0.16), 0.4, metallic=0.9)
-    clamp = material("Clamp", (0.02, 0.02, 0.02), 0.45)
-    # The node, up above the railing where the window frames it, panel turned to the seat.
-    px, py = HALF + CATWALK - 0.06, 0.6
-    mast_top = (px, py, 1.95)
-    cylinder("NodeMast", 0.016, (px, py, RAIL - 0.3), mast_top, steel)
-    for z in (RAIL - 0.2, RAIL - 0.02):
-        box("MastClamp", (0.1, 0.05, 0.04), (px, py, z), clamp)
-    tilt = math.radians(20)
-    yaw = math.atan2(-py, -px)
-    facing = Vector((math.cos(yaw), math.sin(yaw), 0))
-    mount = Vector((px, py, 1.75)) + facing * 0.045
-    cylinder("NodeArm", 0.01, (px, py, mount.z), mount - facing * 0.008, clamp)
-    before = set(bpy.data.objects)
-    bpy.ops.wm.usd_import(filepath=os.path.abspath(SOLAR_NODE))
-    root = next(obj for obj in bpy.data.objects if obj not in before and obj.parent is None)
-    mount_local = root.matrix_world @ SOLAR_NODE_MOUNT
-    turn = Matrix.Rotation(yaw + math.pi / 2, 4, "Z") @ Matrix.Rotation(-tilt, 4, "X")
-    root.matrix_world = Matrix.Translation(mount) @ turn @ Matrix.Translation(-mount_local) @ root.matrix_world
-
-    # The flag on a staff lashed to the front-right corner post, hanging in the still evening.
-    fx, fy = HALF + CATWALK - 0.06, HALF + CATWALK - 0.06
-    cylinder("FlagStaff", 0.014, (fx, fy, RAIL - 0.3), (fx, fy, 2.6), steel)
-    sphere("StaffFinial", 0.025, (fx, fy, 2.62), material("Finial", (0.78, 0.6, 0.3), 0.3, metallic=1.0), segments=12)
-    banner = image_material("Flag", os.path.join(CACHE, "banner.png"), 0.9)
-    flag = plane("Flag", 0.6, 0.3, (fx - 0.3, fy + 0.02, 2.4), (math.pi / 2, 0, 0), banner)
-    flag.rotation_euler = (math.pi / 2, 0, math.radians(-8))
 
 
 # MARK: - Boards
@@ -778,11 +866,10 @@ def build():
     stool()
     lantern()
     sill_things()
-    outside()
     build_boards()
-    # On the shuttered front bays, high enough that its bottom clears the sill shelf from the seat.
+    # On the shuttered front bays, low enough that the tab strip above it stays under the ceiling.
     # Narrower than the tent's since the wall is closer; it covers about the same part of the view.
-    screen_anchor((0, HALF - WALL - 0.03, EYE_HEIGHT + 0.42), (math.pi / 2, 0, 0), width=2.0)
+    screen_anchor((0, HALF - WALL - 0.03, EYE_HEIGHT + 0.34), (math.pi / 2, 0, 0), width=2.0)
 
 
 # Kiara 8 at sunset, turned so the sun is behind the viewer's right shoulder, lighting the cab

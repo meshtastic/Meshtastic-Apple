@@ -127,6 +127,14 @@ final class SpatialMapModel {
 	/// The key whose failed fetch was tried again, so each is tried again once.
 	private var weatherRadarRetriedKey: String?
 	private var weatherRadarRetryTask: Task<Void, Never>?
+	/// Raise the downloaded basemap's buildings on the terrain. Set from the window's setting.
+	var showBuildings = false { didSet { if showBuildings != oldValue { rebuildBuildingsIfNeeded() } } }
+	/// Only ever the buildings for the terrain that is up.
+	private(set) var buildingsEntity: ModelEntity?
+	/// The placement the buildings were built for.
+	private var buildingsRevision: Int?
+	private var buildingsKey: String?
+	private var buildingsTask: Task<Void, Never>?
 	/// Set by the window when the volume closes. A terrain build that finishes after that must
 	/// not start a radar fetch for a table no one sees.
 	var isClosed = false {
@@ -265,6 +273,7 @@ final class SpatialMapModel {
 		terrainEntity = nil
 		textureSource = nil
 		placement = nil
+		takeDownBuildings()
 		fullCircle = nil
 		showingDownloadedMap = false
 		zoom = 1
@@ -353,6 +362,7 @@ final class SpatialMapModel {
 		updateLabels()
 		rebuildCoverageIfNeeded()
 		rebuildWeatherRadarIfNeeded()
+		rebuildBuildingsIfNeeded()
 	}
 
 	/// Reads the routes in the background and publishes them here. A read still running is left
@@ -378,6 +388,13 @@ final class SpatialMapModel {
 	func offlineLayerAvailable(regions: [OfflineMapRegion]) -> Bool {
 		guard let bounds = targetCircle?.bounds else { return false }
 		return offlineBasemapCovers(bounds, regions: regions)
+	}
+
+	/// Whether a downloaded vector basemap touches the box being shown, so it may have buildings.
+	func buildingsAvailable(regions: [OfflineMapRegion]) -> Bool {
+		guard let bounds = targetCircle?.bounds else { return false }
+		checkImportedBasemaps(regions)
+		return SpatialOfflineMap.basemapBounds(regions, checked: vectorBasemaps).contains { $0.intersects(bounds) }
 	}
 
 	/// Whether the cinema's lookout can stand on `summit`: in the downloaded terrain, or not known
@@ -466,6 +483,7 @@ final class SpatialMapModel {
 				isBuildingTerrain = false
 				rebuildCoverageIfNeeded()
 				rebuildWeatherRadarIfNeeded()
+				rebuildBuildingsIfNeeded()
 			} catch is CancellationError {
 			} catch {
 				guard buildKey == key else { return }
@@ -476,6 +494,7 @@ final class SpatialMapModel {
 				if placement?.circle != circle {
 					// The old terrain is for another circle.
 					terrainEntity = nil
+					takeDownBuildings()
 					placementRevision += 1
 					placement = Self.flatPlacement(circle, revision: placementRevision)
 				}
@@ -767,6 +786,62 @@ extension SpatialMapModel {
 		if weatherRadarRevision != nil { weatherRadarRevision = nil }
 		weatherRadarDraped = nil
 		weatherRadarCache = nil
+	}
+}
+// MARK: - Buildings
+
+extension SpatialMapModel {
+	/// Rebuilds the buildings when the terrain, the setting or the downloaded basemaps change. The
+	/// tiles are decoded and the mesh built off the main actor; the terrain's revision is in the key,
+	/// so every rebuilt terrain (zoom, layer, dark map) gets buildings standing on its own ground.
+	private func rebuildBuildingsIfNeeded() {
+		guard let placement, let geometry = placement.geometry else { return }
+		let basemaps = OfflineMapManager.shared.regions.filter(\.hasBasemap)
+			.map { "\($0.id)\(Int($0.updatedDate.timeIntervalSince1970))" }
+			.sorted()
+			.joined(separator: ",")
+		let key = "\(placement.revision)|\(showBuildings)|\(buildDark)|\(basemaps)"
+		guard key != buildingsKey else { return }
+		buildingsKey = key
+		buildingsTask?.cancel()
+		// Built for other ground: down now, in the same pass that puts the new terrain up.
+		if buildingsRevision != placement.revision { clearBuildings() }
+		guard showBuildings else {
+			clearBuildings()
+			return
+		}
+		let bounds = placement.bounds
+		let dark = buildDark
+		buildingsTask = Task {
+			let worker = Task.detached(priority: .utility) { () -> SpatialMeshData? in
+				guard let footprints = SpatialBuildings.decode(bounds: bounds) else { return nil }
+				return SpatialBuildings.mesh(footprints, geometry: geometry)
+			}
+			// A detached task isn't cancelled with this one; pass it on so a superseded decode stops.
+			let mesh = await withTaskCancellationHandler { await worker.value } onCancel: { worker.cancel() }
+			guard !Task.isCancelled, buildingsKey == key, let mesh else { return }
+			do {
+				let entity = try await SpatialBuildingsEntity.make(mesh, dark: dark)
+				guard !Task.isCancelled, buildingsKey == key else { return }
+				Logger.services.info("🧊 [Spatial] Buildings: \(mesh.triangleCount, privacy: .public) triangles on terrain \(placement.revision, privacy: .public)")
+				buildingsEntity = entity
+				buildingsRevision = entity == nil ? nil : placement.revision
+			} catch {
+				Logger.services.error("🧊 [Spatial] Buildings failed: \(error.localizedDescription, privacy: .public)")
+			}
+		}
+	}
+
+	/// The terrain is gone: no buildings, and none from a build still running.
+	private func takeDownBuildings() {
+		buildingsTask?.cancel()
+		buildingsKey = nil
+		clearBuildings()
+	}
+
+	private func clearBuildings() {
+		if buildingsEntity != nil { buildingsEntity = nil }
+		if buildingsRevision != nil { buildingsRevision = nil }
 	}
 }
 #endif

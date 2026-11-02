@@ -859,13 +859,15 @@ struct MeshTVMapView: UIViewRepresentable {
 				return shapes.isEmpty ? nil : MKMultiPolyline(shapes)
 			}
 			let roadClasses: [OfflineFeatureRole] = [.minorRoad, .mediumRoad, .majorRoad]
+			// One set of widths, the phone map's at street level, read from across the room.
+			let roadZoom = 14.0
 			for role in roadClasses {
 				guard let casing = OfflineMapPalette.roadCasing(role, dark: dark), let multi = multiPolyline(role) else { continue }
-				add(multi, OfflineOverlayStyle(fill: nil, stroke: casing, lineWidth: OfflineMapPalette.roadCasingWidth(role)))
+				add(multi, OfflineOverlayStyle(fill: nil, stroke: casing, lineWidth: OfflineMapPalette.roadCasingWidth(role, zoom: roadZoom)))
 			}
 			for role in roadClasses {
 				guard let fill = OfflineMapPalette.roadFill(role, dark: dark), let multi = multiPolyline(role) else { continue }
-				add(multi, OfflineOverlayStyle(fill: nil, stroke: fill, lineWidth: OfflineMapPalette.roadWidth(role)))
+				add(multi, OfflineOverlayStyle(fill: nil, stroke: fill, lineWidth: OfflineMapPalette.roadWidth(role, zoom: roadZoom)))
 			}
 			for role in [OfflineFeatureRole.rail, .boundary] {
 				guard let color = OfflineMapPalette.line(role, dark: dark), let multi = multiPolyline(role) else { continue }

@@ -150,7 +150,7 @@ struct TerrainDownloadTests {
 		)
 		manager.add(region)
 		defer { manager.remove(region) }
-		#expect(manager.terrainSources().contains { $0.globalURL == globalURL && $0.regionalURL == regionalURL })
+		#expect(manager.terrainSources().contains { $0.globalURL == globalURL && $0.regionalURLs == [regionalURL] })
 
 		manager.remove(region)
 

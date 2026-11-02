@@ -47,12 +47,12 @@ This:
 - Converts every `.md` in `docs/user/` and `docs/developer/` to HTML using `cmark-gfm`
 - Injects the shared CSS (`Meshtastic/Resources/docs/assets/docs.css`)
 - Builds `Meshtastic/Resources/docs/index.json` (keyword index)
-- Prints bundle size; warns if > 8 MB, fails if > 10 MB
+- Prints bundle size; warns if > 12 MB, fails if > 15 MB
 
 **On success** you'll see:
 ```
 ✅ Built 25 pages → Meshtastic/Resources/docs/
-📦 Bundle size: 3.2 MB / 10 MB limit
+📦 Bundle size: 3.2 MB / 15 MB limit
 ```
 
 ## 4. Copy screenshots into the bundle
@@ -116,7 +116,7 @@ The CI pipeline also regenerates assets on every push to `main`, but committing 
 **`cmark-gfm: command not found`**  
 Run `brew install cmark-gfm`.
 
-**Bundle size exceeds 10 MB**  
+**Bundle size exceeds 15 MB**  
 Reduce screenshot resolution or remove lower-priority snapshots from `copy-snapshots.sh`. Raise the limit by editing `DOCS_SIZE_LIMIT_BYTES` in `build-docs.sh` with a PR justification.
 
 **AI assistant not visible**  

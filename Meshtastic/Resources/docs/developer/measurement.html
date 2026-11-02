@@ -7,16 +7,16 @@
   <link rel="stylesheet" href="../assets/docs.css">
 </head>
 <body data-page="measurement">
-<h1>Measurement &amp; Locale</h1>
-<p>How the app converts metric device data to locale-aware display values. All rules are defined in <a href="https://github.com/meshtastic/design/blob/master/standards/meshtastic_design_standards_latest.html">Meshtastic Design Standards v1.4, Section 10</a>.</p>
-<h2>Core Principle</h2>
+<h1 id="measurement--locale">Measurement &amp; Locale</h1>
+<p>How the app converts metric device data to locale-aware display values. All rules are defined in <a href="https://github.com/meshtastic/design/blob/master/standards/meshtastic_design_standards_v1_4.md#10-units-measurement--locale">Meshtastic Design Standards v1.4, Section 10</a>.</p>
+<h2 id="core-principle">Core Principle</h2>
 <p>Meshtastic devices transmit all data in <strong>metric SI units</strong>. The app wraps raw values in Swift <code>Measurement</code> types with the correct source unit, then lets the OS format them for the user's locale. No manual <code>if metric … else imperial</code> branching is needed for most quantities.</p>
 <pre><code>Device (protobuf, always metric)
   → Wrap in Measurement&lt;Unit&gt;(value:, unit: .sourceUnit)
   → Format with .formatted(.measurement(...)) or MeasurementFormatter
   → Display (auto-converted to user's locale)
 </code></pre>
-<h2>Protobuf Source Units</h2>
+<h2 id="protobuf-source-units">Protobuf Source Units</h2>
 <p>These are the canonical units the device sends. Always use these as the source unit when constructing <code>Measurement</code> values:</p>
 <table>
 <thead>
@@ -70,15 +70,15 @@
 </tbody>
 </table>
 <div class="warning-callout"><strong>Warning — <code>CLLocation.speed</code> returns m/s, not km/h.</strong> When wrapping GPS speed, use <code>UnitSpeed.metersPerSecond</code>. Getting the source unit wrong produces silently incorrect conversions.</div>
-<h2>Formatting APIs</h2>
-<h3><code>.formatted(.measurement(...))</code></h3>
+<h2 id="formatting-apis">Formatting APIs</h2>
+<h3 id="formattedmeasurement"><code>.formatted(.measurement(...))</code></h3>
 <p>Preferred for inline text. Auto-converts to the user's locale:</p>
 <pre><code class="language-swift">let speed = Measurement(value: newLocation.speed, unit: UnitSpeed.metersPerSecond)
 Text(speed.formatted(.measurement(width: .abbreviated,
     numberFormatStyle: .number.precision(.fractionLength(0)))))
 // → &quot;12 km/h&quot; or &quot;7 mph&quot;
 </code></pre>
-<h3><code>MeasurementFormatter</code></h3>
+<h3 id="measurementformatter"><code>MeasurementFormatter</code></h3>
 <p>Used when you need more control (e.g., natural scaling for distances):</p>
 <pre><code class="language-swift">let formatter = MeasurementFormatter()
 formatter.unitOptions = .naturalScale  // 500m stays &quot;500 m&quot;, 2500m → &quot;2.5 km&quot;
@@ -86,12 +86,12 @@ formatter.numberFormatter.maximumFractionDigits = 1
 let distance = Measurement(value: meters, unit: UnitLength.meters)
 return formatter.string(from: distance)
 </code></pre>
-<h3><code>MKDistanceFormatter</code></h3>
+<h3 id="mkdistanceformatter"><code>MKDistanceFormatter</code></h3>
 <p>Used for map-related distances. Automatically picks m/km or ft/mi:</p>
 <pre><code class="language-swift">let distanceFormatter = MKDistanceFormatter()
 Text(distanceFormatter.string(fromDistance: Double(meters)))
 </code></pre>
-<h3>Temperature</h3>
+<h3 id="temperature">Temperature</h3>
 <p>Use the <code>formattedTemperature()</code> extension on <code>Float</code> (defined in <code>Meshtastic/Extensions/Float.swift</code>):</p>
 <pre><code class="language-swift">// Auto-converts °C → °F based on locale
 Text(temperature.formattedTemperature())
@@ -100,8 +100,8 @@ Text(temperature.formattedTemperature())
 <pre><code class="language-swift">let displayValue = temperature.localeTemperature()  // Double in user's preferred unit
 </code></pre>
 <p>Both methods use <code>kCFLocaleTemperatureUnitKey</code> to detect the user's temperature preference.</p>
-<h2>Locale Detection</h2>
-<h3>Temperature Unit</h3>
+<h2 id="locale-detection">Locale Detection</h2>
+<h3 id="temperature-unit">Temperature Unit</h3>
 <pre><code class="language-swift">let locale = NSLocale.current as NSLocale
 let localeUnit = locale.object(forKey: NSLocale.Key(rawValue: &quot;kCFLocaleTemperatureUnitKey&quot;))
 if (localeUnit as? String) == &quot;Fahrenheit&quot; {
@@ -109,11 +109,11 @@ if (localeUnit as? String) == &quot;Fahrenheit&quot; {
 }
 </code></pre>
 <div class="warning-callout"><strong>Warning — Never force-unwrap locale queries.</strong> <code>localeUnit</code> can be <code>nil</code> on some OS versions. Always use <code>as? String</code> with a safe default (Celsius).</div>
-<h3>Measurement System</h3>
+<h3 id="measurement-system">Measurement System</h3>
 <pre><code class="language-swift">let usesMetric = Locale.current.measurementSystem == .metric
 </code></pre>
 <p>Used for quantities where <code>Measurement</code> formatting doesn't fully apply (e.g., choosing decimal precision for rainfall: 0 decimals for mm, 1 for inches).</p>
-<h2>Units That Never Convert</h2>
+<h2 id="units-that-never-convert">Units That Never Convert</h2>
 <p>These are displayed as-is regardless of locale:</p>
 <table>
 <thead>
@@ -151,7 +151,7 @@ if (localeUnit as? String) == &quot;Fahrenheit&quot; {
 </tr>
 </tbody>
 </table>
-<h2>Charts &amp; Graphs</h2>
+<h2 id="charts--graphs">Charts &amp; Graphs</h2>
 <p>Chart axes, tooltips, and annotations must also display locale-aware units:</p>
 <pre><code class="language-swift">// Altitude chart Y-axis (PositionAltitudeChart.swift)
 AxisValueLabel(&quot;&quot;&quot;
@@ -163,7 +163,7 @@ AxisValueLabel(&quot;&quot;&quot;
             numberFormatStyle: .number.precision(.fractionLength(0))))
 &quot;&quot;&quot;)
 </code></pre>
-<h2>Date &amp; Time</h2>
+<h2 id="date--time">Date &amp; Time</h2>
 <table>
 <thead>
 <tr>
@@ -201,7 +201,7 @@ AxisValueLabel(&quot;&quot;&quot;
 </tbody>
 </table>
 <p>Never hardcode 12-hour or 24-hour format — let the OS handle it via locale-aware formatters.</p>
-<h2>File Map</h2>
+<h2 id="file-map">File Map</h2>
 <table>
 <thead>
 <tr>
@@ -256,7 +256,7 @@ AxisValueLabel(&quot;&quot;&quot;
 </tr>
 </tbody>
 </table>
-<h2>Checklist for New Telemetry Fields</h2>
+<h2 id="checklist-for-new-telemetry-fields">Checklist for New Telemetry Fields</h2>
 <p>When adding a new sensor value or telemetry display:</p>
 <ol>
 <li>Identify the protobuf source unit from the device schema</li>

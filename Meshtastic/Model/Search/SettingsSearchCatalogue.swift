@@ -305,6 +305,13 @@ enum SettingsSearchCatalogue {
 			screenTitle: String(localized: "Local Mesh Discovery", comment: "Settings screen"),
 			sectionTitle: String(localized: "Discovery Map", comment: "Settings section"),
 			listSection: .general,
+			label: String(localized: "New Scan", comment: "Settings control"),
+			requiresConnection: false),
+		.init(
+			destination: .localMeshDiscovery,
+			screenTitle: String(localized: "Local Mesh Discovery", comment: "Settings screen"),
+			sectionTitle: String(localized: "Discovery Map", comment: "Settings section"),
+			listSection: .general,
 			label: String(localized: "Dwell Duration", comment: "Settings control"),
 			requiresConnection: false),
 		.init(

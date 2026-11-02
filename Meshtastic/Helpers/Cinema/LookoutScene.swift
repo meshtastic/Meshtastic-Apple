@@ -70,7 +70,7 @@ final class LookoutScene {
 		bounds = union
 		// The files the search and the peak names read, so a list found in files that have since
 		// gone isn't kept.
-		let terrainFiles = Set(sources.flatMap { [$0.globalURL.lastPathComponent] + ($0.regionalURL.map { [$0.lastPathComponent] } ?? []) })
+		let terrainFiles = Set(sources.flatMap { [$0.globalURL.lastPathComponent] + $0.regionalURLs.map(\.lastPathComponent) })
 		let basemapFiles = Set(OfflineMapManager.persistedRegionFiles().filter { $0.region.hasBasemap }.map(\.url.lastPathComponent))
 		let maps = LookoutSiteCacheKey.maps(in: manager.regions, terrainFiles: terrainFiles, basemapFiles: basemapFiles)
 		if let kept = LookoutSiteCache.sites(for: maps) {
@@ -90,9 +90,18 @@ final class LookoutScene {
 	}
 
 	/// The terrain around `site` as an entity, or nil if it can't be built.
-	func terrain(for site: LookoutSite, sun: (azimuth: Float, elevation: Float)) async -> ModelEntity? {
+	func terrain(for site: LookoutSite, heading: Double, sun: (azimuth: Float, elevation: Float)) async -> ModelEntity? {
 		guard let bounds else { return nil }
-		guard let model = await LookoutTerrain.build(site: site, bounds: bounds, source: store, sun: sun) else { return nil }
+		let radius = LookoutTerrain.outerRadius(site: site, bounds: bounds)
+		let center = site.coordinate
+		// Off the main actor, and stopped with this task: leaving the lookout mid-build shouldn't leave
+		// tiles decoding for a view nobody sees.
+		let build = Task.detached(priority: .userInitiated) {
+			OfflineLandCoverMap.make(center: center, radius: radius, files: OfflineMapManager.persistedRegionFiles())
+		}
+		let landCover = await withTaskCancellationHandler { await build.value } onCancel: { build.cancel() }
+		if Task.isCancelled { return nil }
+		guard let model = await LookoutTerrain.build(site: site, bounds: bounds, source: store, landCover: landCover, heading: heading, sun: sun) else { return nil }
 		do {
 			return try await LookoutTerrain.entity(for: model)
 		} catch {
@@ -123,6 +132,7 @@ final class LookoutScene {
 				distance: distance,
 				bearing: Self.bearing(from: site.coordinate, to: coordinate),
 				rise: Double(position.altitude),
+				altitude: nil,
 				isRadio: node.num == radioNum
 			))
 		}
@@ -132,12 +142,12 @@ final class LookoutScene {
 		// there, else the eye's level, which puts it on the horizon.
 		var placed: [LookoutLabel] = []
 		for label in found {
-			var ground = label.rise
-			if ground <= 0 {
+			var altitude: Double? = label.rise > 0 ? label.rise : nil
+			if altitude == nil {
 				let coordinate = Self.destination(from: site.coordinate, bearing: label.bearing, distance: label.distance)
-				ground = await store.elevation(at: coordinate) ?? eye
+				altitude = await store.elevation(at: coordinate)
 			}
-			placed.append(LookoutLabel(id: label.id, shortName: label.shortName, longName: label.longName, distance: label.distance, bearing: label.bearing, rise: ground - eye, isRadio: label.isRadio))
+			placed.append(LookoutLabel(id: label.id, shortName: label.shortName, longName: label.longName, distance: label.distance, bearing: label.bearing, rise: (altitude ?? eye) - eye, altitude: altitude, isRadio: label.isRadio))
 		}
 		return placed
 	}

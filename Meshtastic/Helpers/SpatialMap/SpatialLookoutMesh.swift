@@ -80,13 +80,67 @@ enum SpatialLookout {
 	/// From the ground to the tip of the lightning rod.
 	static var height: Float { eaveHeight + roofRise + rodHeight }
 
-	/// The true bearing the cab's front faces, here and in the cinema's lookout room.
+	/// The true bearing the cab's front faces before it's turned, here and in the cinema's lookout
+	/// room.
 	static let frontHeading = 156.0
 
-	/// Turn about y that points the model's front (+z) along `frontHeading` on the map, where x runs
+	/// How many steps the lookout turns in, all the way round.
+	static let turnSteps = 16
+
+	/// Where the cinema keeps how many sixteenth turns clockwise the lookout is turned.
+	static let turnsKey = "cinemaLookoutSixteenthTurns"
+	/// Where it kept them when the lookout turned in eighths.
+	private static let eighthTurnsKey = "cinemaLookoutTurns"
+
+	/// Carries a turn saved in eighths over to sixteenths, once.
+	static func migrateEighthTurns(_ defaults: UserDefaults = .standard) {
+		guard let eighths = defaults.object(forKey: eighthTurnsKey) as? Int else { return }
+		if defaults.object(forKey: turnsKey) == nil {
+			defaults.set(eighths * 2, forKey: turnsKey)
+		}
+		defaults.removeObject(forKey: eighthTurnsKey)
+	}
+
+	/// The bearing the cab faces after `turns` sixteenth turns clockwise.
+	static func heading(turns: Int) -> Double {
+		let step = 360 / Double(turnSteps)
+		return (frontHeading + step * Double((turns % turnSteps + turnSteps) % turnSteps)).truncatingRemainder(dividingBy: 360)
+	}
+
+	/// The sixteenth turns that face the cab nearest to `bearing`, 0..<16.
+	static func turns(nearest bearing: Double) -> Int {
+		let steps = Int(((bearing - frontHeading) / (360 / Double(turnSteps))).rounded())
+		return (steps % turnSteps + turnSteps) % turnSteps
+	}
+
+	/// Turn about y that points the model's front (+z) along `heading` on the map, where x runs
 	/// east and z south.
-	static var yaw: Float {
-		Float(.pi - frontHeading * .pi / 180)
+	static func yaw(heading: Double = frontHeading) -> Float {
+		Float(.pi - heading * .pi / 180)
+	}
+
+	static var yaw: Float { yaw() }
+
+	/// Which way the cab faces, to the nearest of sixteen compass points.
+	static func facing(heading: Double) -> String {
+		switch Int(((heading + 11.25).truncatingRemainder(dividingBy: 360) + 360).truncatingRemainder(dividingBy: 360) / 22.5) {
+		case 0: String(localized: "Faces north", comment: "Cinema: which way the fire lookout's cab faces")
+		case 1: String(localized: "Faces north-northeast", comment: "Cinema: which way the fire lookout's cab faces")
+		case 2: String(localized: "Faces northeast", comment: "Cinema: which way the fire lookout's cab faces")
+		case 3: String(localized: "Faces east-northeast", comment: "Cinema: which way the fire lookout's cab faces")
+		case 4: String(localized: "Faces east", comment: "Cinema: which way the fire lookout's cab faces")
+		case 5: String(localized: "Faces east-southeast", comment: "Cinema: which way the fire lookout's cab faces")
+		case 6: String(localized: "Faces southeast", comment: "Cinema: which way the fire lookout's cab faces")
+		case 7: String(localized: "Faces south-southeast", comment: "Cinema: which way the fire lookout's cab faces")
+		case 8: String(localized: "Faces south", comment: "Cinema: which way the fire lookout's cab faces")
+		case 9: String(localized: "Faces south-southwest", comment: "Cinema: which way the fire lookout's cab faces")
+		case 10: String(localized: "Faces southwest", comment: "Cinema: which way the fire lookout's cab faces")
+		case 11: String(localized: "Faces west-southwest", comment: "Cinema: which way the fire lookout's cab faces")
+		case 12: String(localized: "Faces west", comment: "Cinema: which way the fire lookout's cab faces")
+		case 13: String(localized: "Faces west-northwest", comment: "Cinema: which way the fire lookout's cab faces")
+		case 14: String(localized: "Faces northwest", comment: "Cinema: which way the fire lookout's cab faces")
+		default: String(localized: "Faces north-northwest", comment: "Cinema: which way the fire lookout's cab faces")
+		}
 	}
 
 	/// The coordinate in a lookout site's ID, "latitude,longitude"; nil for anything else.
@@ -241,15 +295,15 @@ enum SpatialLookout {
 /// Where the lookout stands when nodes are on its summit.
 enum SpatialLookoutSpot {
 	/// The summit itself when no pin is within `clearance`, else the nearest spot around it that
-	/// clears every pin, trying behind the cab first. Nil means stand on the summit. When nothing
-	/// clears them all, the spot that keeps farthest from the nearest one.
-	static func spot(summit: SIMD2<Float>, pins: [SIMD2<Float>], clearance: Float) -> SIMD2<Float>? {
+	/// clears every pin, trying behind the cab (facing `heading`) first. Nil means stand on the
+	/// summit. When nothing clears them all, the spot that keeps farthest from the nearest one.
+	static func spot(summit: SIMD2<Float>, pins: [SIMD2<Float>], clearance: Float, heading: Double = SpatialLookout.frontHeading) -> SIMD2<Float>? {
 		func room(_ point: SIMD2<Float>) -> Float {
 			pins.map { simd_distance($0, point) }.min() ?? .infinity
 		}
 		guard room(summit) < clearance else { return nil }
 		// Behind the cab, then alternately either side of it, round to the front.
-		let back = Float(SpatialLookout.frontHeading * .pi / 180) + .pi
+		let back = Float(heading * .pi / 180) + .pi
 		let steps = 12
 		var candidates: [SIMD2<Float>] = []
 		for ring in [clearance, clearance * 2] {
