@@ -291,6 +291,8 @@ struct DeviceModelFullScreen: View {
 	let liveScreen: Bool
 
 	@Environment(\.dismiss) private var dismiss
+	/// On the cinema's screen the view is a pushed page, which has its own back button.
+	@Environment(\.presentationHost) private var presentationHost
 	/// A scene can only hold an entity once, so this view turns its own copy.
 	@State private var stage: DeviceModelStage
 	/// How close the model is: the zoom button steps through the stage's levels.
@@ -305,46 +307,11 @@ struct DeviceModelFullScreen: View {
 	}
 
 	var body: some View {
-		NavigationStack {
-			VStack(spacing: 16) {
-				DeviceModelRealityView(
-					stage: stage,
-					autoRotate: false,
-					screenSource: liveScreen ? accessoryManager.displayMirror : nil,
-					dragsTilt: true
-				)
-				.accessibilityElement(children: .ignore)
-				.accessibilityLabel(String(
-					localized: "3D model of \(request.name)",
-					comment: "Accessibility label for the rotating 3D model of a radio; the argument is the device name"
-				))
-				if liveScreen {
-					DeviceRemoteControl { event in
-						Task { await accessoryManager.sendDisplayInput(event) }
-					}
-				}
-			}
-			.padding()
-			// Drags turn the model, so they mustn't close the sheet.
-			.interactiveDismissDisabled()
-			.navigationTitle(request.name)
-			#if !os(macOS)
-			.navigationBarTitleDisplayMode(.inline)
-			#endif
-			.toolbar {
-				ToolbarItem(placement: .cancellationAction) {
-					Button {
-						dismiss()
-					} label: {
-						Label("Close", systemImage: "xmark")
-					}
-				}
-				// Zooming in is for reading the radio's live screen; without it the whole model is enough.
-				if liveScreen && stage.zoomLevels.count > 1 {
-					ToolbarItem(placement: .primaryAction) {
-						zoomButton
-					}
-				}
+		Group {
+			if presentationHost == .panel {
+				content
+			} else {
+				NavigationStack { content }
 			}
 		}
 		.presentationDetents([.large])
@@ -353,6 +320,51 @@ struct DeviceModelFullScreen: View {
 			guard !live, zoomLevel != .model else { return }
 			stage.zoom(to: .model)
 			zoomLevel = .model
+		}
+	}
+
+	private var content: some View {
+		VStack(spacing: 16) {
+			DeviceModelRealityView(
+				stage: stage,
+				autoRotate: false,
+				screenSource: liveScreen ? accessoryManager.displayMirror : nil,
+				dragsTilt: true
+			)
+			.accessibilityElement(children: .ignore)
+			.accessibilityLabel(String(
+				localized: "3D model of \(request.name)",
+				comment: "Accessibility label for the rotating 3D model of a radio; the argument is the device name"
+			))
+			if liveScreen {
+				DeviceRemoteControl { event in
+					Task { await accessoryManager.sendDisplayInput(event) }
+				}
+			}
+		}
+		.padding()
+		// Drags turn the model, so they mustn't close the sheet.
+		.interactiveDismissDisabled()
+		.navigationTitle(request.name)
+		#if !os(macOS)
+		.navigationBarTitleDisplayMode(.inline)
+		#endif
+		.toolbar {
+			if presentationHost == .window {
+				ToolbarItem(placement: .cancellationAction) {
+					Button {
+						dismiss()
+					} label: {
+						Label("Close", systemImage: "xmark")
+					}
+				}
+			}
+			// Zooming in is for reading the radio's live screen; without it the whole model is enough.
+			if liveScreen && stage.zoomLevels.count > 1 {
+				ToolbarItem(placement: .primaryAction) {
+					zoomButton
+				}
+			}
 		}
 	}
 
