@@ -49,7 +49,14 @@ struct MeshBeaconRemoteConfigTests {
 		packet.to = UInt32(Self.myNum)
 		packet.decoded.portnum = .adminApp
 		packet.decoded.payload = try admin.serializedData()
-		packet.decoded.requestID = 4242
+		packet.decoded.requestID = UInt32.random(in: 0x1000...UInt32.max)
+		packet.pkiEncrypted = true
+		var request = MeshPacket()
+		request.id = packet.decoded.requestID
+		request.to = packet.from
+		request.decoded.portnum = .adminApp
+		request.decoded.wantResponse = true
+		AdminRequestTracker.recordIfAdminRequest(request)
 
 		await mesh.adminAppPacket(packet: packet, connectedNodeNum: Self.myNum)
 
@@ -90,7 +97,14 @@ struct MeshBeaconRemoteConfigTests {
 		packet.to = UInt32(Self.myNum)
 		packet.decoded.portnum = .adminApp
 		packet.decoded.payload = try admin.serializedData()
-		packet.decoded.requestID = 4242
+		packet.decoded.requestID = UInt32.random(in: 0x1000...UInt32.max)
+		packet.pkiEncrypted = true
+		var request = MeshPacket()
+		request.id = packet.decoded.requestID
+		request.to = packet.from
+		request.decoded.portnum = .adminApp
+		request.decoded.wantResponse = true
+		AdminRequestTracker.recordIfAdminRequest(request)
 
 		await mesh.adminAppPacket(packet: packet, connectedNodeNum: Self.myNum)
 

@@ -2780,6 +2780,13 @@ extension AccessoryManager {
 
 	public func saveSecurityConfig(config: Config.SecurityConfig, fromUser: UserEntity, toUser: UserEntity) async throws -> Int64 {
 
+		var config = config
+		// A remote node never reports its private key, so one in its stored record did not
+		// come from it. Only send a private key the user set on this screen; an empty one
+		// leaves the node's key as it is.
+		if fromUser != toUser, config.privateKey == toUser.userNode?.securityConfig?.privateKey ?? Data() {
+			config.privateKey = Data()
+		}
 		var adminPacket = AdminMessage()
 		adminPacket.setConfig.security = config
 		if fromUser != toUser {

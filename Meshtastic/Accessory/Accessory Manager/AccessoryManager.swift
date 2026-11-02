@@ -867,6 +867,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			  await active.connection.isConnected else {
 			throw AccessoryError.connectionFailed("Not connected to any device")
 		}
+		// Before the send, so a fast reply from the connected radio finds its request.
+		AdminRequestTracker.recordIfAdminRequest(data.packet)
 		try await active.connection.send(data)
 		if let debugDescription {
 			Logger.transport.info("📻 \(debugDescription, privacy: .public)")
