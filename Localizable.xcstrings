@@ -356,6 +356,9 @@
         }
       }
     },
+    "A few settings get your radio talking on the mesh. You can change them later in Settings." : {
+      "comment" : "Radio setup intro"
+    },
     "Add a map file you already have. It's copied into the app and added to this list." : {
       "localizations" : {
         "es" : {
@@ -404,8 +407,23 @@
         }
       }
     },
+    "Change any of these in Settings." : {
+      "comment" : "Radio setup done footer"
+    },
     "Channels are encrypted. Your radio shares no location until you turn it on. Public channels can be logged by anyone nearby, so this app only lets them share an approximate location. Your precise location goes only to private channels you choose." : {
 
+    },
+    "Choose a Preset" : {
+      "comment" : "Radio setup preset title"
+    },
+    "Choose Your Region" : {
+      "comment" : "Radio setup region title"
+    },
+    "Choose a region" : {
+
+    },
+    "Confirm Your Region" : {
+      "comment" : "Radio setup region title when one was pre-selected"
     },
     "Connect to the radio to see its screen." : {
 
@@ -456,6 +474,9 @@
         }
       }
     },
+    "Firmware %@" : {
+      "comment" : "Radio setup intro; the argument is the version"
+    },
     "frequency slot %lld" : {
       "comment" : "Beacon switch prompt; one of the changes listed"
     },
@@ -476,6 +497,9 @@
           }
         }
       }
+    },
+    "How your radio shows up for others." : {
+      "comment" : "Radio setup intro row"
     },
     "Import MBTiles or PMTiles File" : {
       "localizations" : {
@@ -566,6 +590,9 @@
         }
       }
     },
+    "Name Your Radio" : {
+      "comment" : "Radio setup name title"
+    },
     "Next rack page" : {
       "comment" : "Showcase: show the next page of the wall rack",
       "localizations" : {
@@ -580,8 +607,14 @@
     "Not Connected" : {
 
     },
+    "Not set" : {
+      "comment" : "Radio setup summary"
+    },
     "Off-Grid Messaging" : {
 
+    },
+    "Other people see these in their node lists and on the map." : {
+      "comment" : "Radio setup name intro"
     },
     "Pick up to turn it over" : {
       "comment" : "Cinema: VoiceOver hint for the device model on the stand in front of the seat",
@@ -593,6 +626,12 @@
           }
         }
       }
+    },
+    "Picked from your phone's region setting. Your radio must use the frequencies allowed where you are, so change it if you are somewhere else." : {
+      "comment" : "Radio setup region intro when one was pre-selected"
+    },
+    "Presets trade range for speed. Long Range reaches farther and Short Range sends faster. Everyone on a mesh must use the same one." : {
+      "comment" : "Radio setup preset intro"
     },
     "Privacy First" : {
 
@@ -608,23 +647,53 @@
         }
       }
     },
+    "Recommended for %@: %@" : {
+      "comment" : "Radio setup preset row; region, then preset"
+    },
+    "Radio Not Found" : {
+
+    },
     "region %@" : {
       "comment" : "Beacon switch prompt; one of the changes listed"
     },
+    "Save and Continue" : {
+      "comment" : "Radio setup button"
+    },
+    "Region not set" : {
+
+    },
     "Send text, positions and more over LoRa radios. No cell service or internet needed." : {
+
+    },
+    "Set Up Radio" : {
 
     },
     "Set Up the Features You Want" : {
 
     },
+    "Set Up Your Radio" : {
+      "comment" : "Radio setup intro title"
+    },
     "Show on Screen" : {
       "comment" : "Cinema lookout: button on a node's card that opens the node's details on the cinema's front screen"
+    },
+    "Skip" : {
+
     },
     "the %@ preset" : {
       "comment" : "Beacon switch prompt; one of the changes listed"
     },
     "The next few screens let you choose notifications, location sharing and Siri. Change any of them later in Settings." : {
 
+    },
+    "The short name shows in your node's circle: up to 4 characters or one emoji." : {
+      "comment" : "Radio setup name footer"
+    },
+    "The range and speed your mesh uses." : {
+      "comment" : "Radio setup intro row"
+    },
+    "This region has an hourly duty cycle of %lld%%." : {
+      "comment" : "Radio setup region footer"
     },
     "This sets %@. %@ Your previous channel settings will be replaced." : {
       "comment" : "Beacon switch prompt; the first argument lists the changes, the second says whether the radio reboots"
@@ -644,8 +713,29 @@
     "Arrow keys, Return and Esc go to the radio." : {
 
     },
+    "You're All Set" : {
+      "comment" : "Radio setup done title"
+    },
+    "Waiting for your radio to reconnect" : {
+      "comment" : "Radio setup name page"
+    },
+    "Where you are, so the radio uses legal frequencies." : {
+      "comment" : "Radio setup intro row"
+    },
     "Your phone's location goes only to your connected radio. Your radio shares nothing until you turn it on. This app only lets public channels share an approximate location. Radios on firmware 2.8 or later enforce the same limit. You can change location permissions at any time from settings." : {
 
+    },
+    "Your radio restarts to apply this and reconnects in a few seconds." : {
+      "comment" : "Radio setup preset footer"
+    },
+    "Your radio is restarting with its new LoRa settings. Saving the name works once it is back." : {
+      "comment" : "Radio setup name page"
+    },
+    "Your radio is not connected. Reconnect and try again." : {
+      "comment" : "Radio setup save error"
+    },
+    "Your radio must use the frequencies allowed where you are. With the wrong region nothing nearby will hear you." : {
+      "comment" : "Radio setup region intro"
     },
     "your radio's primary channel to \"%@\"" : {
       "comment" : "Beacon switch prompt; one of the changes listed"

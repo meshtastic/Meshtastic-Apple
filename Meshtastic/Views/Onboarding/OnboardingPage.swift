@@ -17,6 +17,13 @@ struct OnboardingPage<Rows: View>: View {
 	let intro: AttributedString?
 	let footer: String?
 	let buttonTitle: String
+	/// False keeps the main button disabled: a choice the page needs has not been made.
+	let isContinueEnabled: Bool
+	/// Shown above the footer, in orange. A failed save says why here and the page stays.
+	let errorMessage: String?
+	/// A plain button under the main one: Skip, Not Now.
+	let secondaryButtonTitle: String?
+	let secondaryAction: (() -> Void)?
 	let action: () async -> Void
 	let rows: () -> Rows
 
@@ -29,6 +36,10 @@ struct OnboardingPage<Rows: View>: View {
 		intro: AttributedString? = nil,
 		footer: String? = nil,
 		buttonTitle: String = String(localized: "Continue"),
+		isContinueEnabled: Bool = true,
+		errorMessage: String? = nil,
+		secondaryButtonTitle: String? = nil,
+		secondaryAction: (() -> Void)? = nil,
 		action: @escaping () async -> Void,
 		@ViewBuilder rows: @escaping () -> Rows
 	) {
@@ -36,6 +47,10 @@ struct OnboardingPage<Rows: View>: View {
 		self.intro = intro
 		self.footer = footer
 		self.buttonTitle = buttonTitle
+		self.isContinueEnabled = isContinueEnabled
+		self.errorMessage = errorMessage
+		self.secondaryButtonTitle = secondaryButtonTitle
+		self.secondaryAction = secondaryAction
 		self.action = action
 		self.rows = rows
 	}
@@ -68,6 +83,19 @@ struct OnboardingPage<Rows: View>: View {
 				.padding(.bottom, 16)
 			}
 			VStack(spacing: 12) {
+				if let errorMessage {
+					Label {
+						Text(errorMessage)
+					} icon: {
+						Image(systemName: "exclamationmark.triangle.fill")
+					}
+					.foregroundStyle(.orange)
+					.font(.callout)
+					.multilineTextAlignment(.leading)
+					.fixedSize(horizontal: false, vertical: true)
+					.frame(maxWidth: 480)
+					.padding(.horizontal, 24)
+				}
 				if let footer {
 					Text(footer)
 						.font(.footnote)
@@ -89,7 +117,17 @@ struct OnboardingPage<Rows: View>: View {
 						.frame(maxWidth: 400)
 				}
 				.capsuleButtonStyle()
-				.disabled(isWorking)
+				.disabled(isWorking || !isContinueEnabled)
+				if let secondaryButtonTitle, let secondaryAction {
+					Button(action: secondaryAction) {
+						// The label is the tap target, so it carries the minimum height.
+						Text(secondaryButtonTitle)
+							.font(.body)
+							.frame(minHeight: 44)
+							.padding(.horizontal, 24)
+					}
+					.disabled(isWorking)
+				}
 			}
 			.padding(.bottom)
 		}

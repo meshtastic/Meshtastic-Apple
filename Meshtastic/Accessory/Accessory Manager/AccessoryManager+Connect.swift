@@ -38,6 +38,7 @@ extension AccessoryManager {
 		lastConnectionError = nil
 		firmwareUpdateRequired = false
 		self.activeDeviceNum = nil
+		self.connectedLoRaRegionCode = nil
 		packetsSent = 0
 		packetsReceived = 0
 		packetsAtLastIngestRecycle = 0

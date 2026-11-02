@@ -18,6 +18,9 @@ struct ContentView: View {
 	@ObservedObject var router: Router
 	@State var isShowingDeviceOnboardingFlow: Bool = false
 	@State private var isShowingEventFirmwareInfo: Bool = false
+	/// The radio setup flow, up while this holds a node. Real @State for the same reason as
+	/// the gates below: a computed presentation binding does not converge on iOS 17.
+	@State private var radioSetupRequest: RadioSetupRequest?
 
 	/// True when the connected device's lockdown state requires the user to act
 	/// (provision a passphrase, unlock, or wait out a backoff). The sheet is
@@ -54,6 +57,13 @@ struct ContentView: View {
 					DeviceOnboarding()
 				}
 			)
+			.hostedSheet(item: $radioSetupRequest) { request in
+				RadioSetupFlow(nodeNum: request.nodeNum)
+					.environmentObject(accessoryManager)
+			}
+			.environment(\.openRadioSetup) { nodeNum in
+				openRadioSetup(nodeNum: nodeNum)
+			}
 			// The covers get their environment objects by hand. On Mac Catalyst the cover's
 			// content can be built without them, and the first @EnvironmentObject read trapped
 			// in the firmware gate's header on every launch with an old-firmware radio (#2846).
@@ -97,6 +107,14 @@ struct ContentView: View {
 			.onChange(of: UserDefaults.showDeviceOnboarding) {_, newValue in
 				isShowingDeviceOnboardingFlow = newValue
 			}
+			// The radio setup flow waits on the LoRa config, the subscription and every gate,
+			// so each of them gets a chance to open it.
+			.onChange(of: accessoryManager.connectedLoRaRegionCode) { _, _ in presentRadioSetupIfNeeded() }
+			.onChange(of: accessoryManager.state) { _, _ in presentRadioSetupIfNeeded() }
+			.onChange(of: isShowingDeviceOnboardingFlow) { _, _ in presentRadioSetupIfNeeded() }
+			.onChange(of: isShowingLockdownGate) { _, _ in presentRadioSetupIfNeeded() }
+			.onChange(of: isShowingFirmwareGate) { _, _ in presentRadioSetupIfNeeded() }
+			.onChange(of: appState.isDatabaseResetting) { _, _ in presentRadioSetupIfNeeded() }
 			.task {
 #if DEBUG
 				MarketingCapture.simulateEventFirmwareIfNeeded(accessoryManager)
@@ -106,6 +124,35 @@ struct ContentView: View {
 				await SwitchStress.runIfNeeded(accessoryManager: accessoryManager, appState: appState, router: router)
 #endif
 			}
+	}
+
+	// MARK: - Radio setup
+
+	/// Opens the radio setup flow on its own, once per radio, when the connected radio has no
+	/// LoRa region and nothing else is in the way. The radio is marked as offered before the
+	/// flow opens, so one the user closes, or the app loses, never comes back by itself; the
+	/// Set Up Radio rows on Connect and Settings open it any time.
+	private func presentRadioSetupIfNeeded() {
+		guard radioSetupRequest == nil, let nodeNum = accessoryManager.activeDeviceNum else { return }
+		let trigger = RadioSetupTrigger(
+			nodeNum: nodeNum,
+			regionCode: accessoryManager.connectedLoRaRegionCode,
+			offered: UserDefaults.radioSetupOfferedNodeNumSet,
+			isSubscribed: accessoryManager.state == .subscribed,
+			isFirstLaunchFlowShowing: isShowingDeviceOnboardingFlow,
+			isLockdownBlocking: isShowingLockdownGate,
+			isFirmwareGateActive: isShowingFirmwareGate,
+			isDatabaseResetting: appState.isDatabaseResetting)
+		guard trigger.shouldPresent else { return }
+		UserDefaults.markRadioSetupOffered(nodeNum: nodeNum)
+		radioSetupRequest = RadioSetupRequest(nodeNum: nodeNum)
+	}
+
+	/// Opens the flow from a row on Connect or Settings. The gates win: a locked-down or
+	/// outdated radio cannot be set up until they clear.
+	private func openRadioSetup(nodeNum: Int64) {
+		guard !isShowingLockdownGate, !isShowingFirmwareGate, !isShowingDeviceOnboardingFlow else { return }
+		radioSetupRequest = RadioSetupRequest(nodeNum: nodeNum)
 	}
 
 	// MARK: - Tab Reselection
@@ -150,7 +197,7 @@ struct ContentView: View {
 		if appState.isDatabaseResetting {
 			DatabaseResettingPlaceholder()
 		} else {
-			ActiveContent(appState: appState, router: router, isOnboarding: isShowingDeviceOnboardingFlow) {
+			ActiveContent(appState: appState, router: router, isOnboarding: isShowingDeviceOnboardingFlow || radioSetupRequest != nil) {
 				tabContent
 			}
 		}
@@ -163,9 +210,9 @@ struct ContentView: View {
 		@ObservedObject var appState: AppState
 		@ObservedObject var router: Router
 		@EnvironmentObject var accessoryManager: AccessoryManager
-		/// True while the first-launch device-onboarding sheet is up. The event sheet
-		/// must not auto-present over it — two sheets presented from different levels
-		/// of the tree fight, and the event sheet ends up covering onboarding.
+		/// True while the first-launch device-onboarding sheet or the radio setup flow is
+		/// up. The event sheet must not auto-present over them — two sheets presented from
+		/// different levels of the tree fight, and the event sheet ends up on top.
 		let isOnboarding: Bool
 		@Query private var eventFirmwareEditions: [EventFirmwareEntity]
 		@State private var isShowingEventFirmwareInfo: Bool = false

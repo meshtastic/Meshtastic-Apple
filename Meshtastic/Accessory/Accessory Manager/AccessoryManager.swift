@@ -282,6 +282,10 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// firmware predates the feature or hasn't sent it yet — callers must treat an
 	/// absent region (or an empty map) as "no constraint". Reset on disconnect.
 	@Published var loRaRegionPresets: [Config.LoRaConfig.RegionCode: RegionPresetInfo] = [:]
+	/// The connected radio's LoRa region as last reported or saved, by raw `RegionCode` value.
+	/// Nil until the radio sends its LoRa config, and after it disconnects. The Connect screen
+	/// and the radio setup trigger read it instead of fetching the config entity.
+	@Published var connectedLoRaRegionCode: Int?
 
 	var activeConnection: (device: Device, connection: any Connection)?
 
@@ -678,6 +682,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 			self.activeConnection = nil
 		}
 		self.activeDeviceNum = nil
+		self.connectedLoRaRegionCode = nil
 		self.firmwareUpdateRequired = false
 		// A dropped connection never finishes its download; the reconnect brings a fresh one.
 		loraChangeTracker.reset()
