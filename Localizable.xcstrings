@@ -404,7 +404,7 @@
         }
       }
     },
-    "Channels are encrypted. Your radio shares no location until you turn it on. Public channels can be logged by anyone nearby and only ever get an approximate location. Your precise location goes only to private channels you choose." : {
+    "Channels are encrypted. Your radio shares no location until you turn it on. Public channels can be logged by anyone nearby, so this app only lets them share an approximate location. Your precise location goes only to private channels you choose." : {
 
     },
     "Connect to the radio to see its screen." : {
@@ -632,7 +632,7 @@
     "Arrow keys, Return and Esc go to the radio." : {
 
     },
-    "Your phone's location goes only to your connected radio. Your radio shares nothing until you turn it on. Public channels get an approximate location and never your exact position. You can change location permissions at any time from settings." : {
+    "Your phone's location goes only to your connected radio. Your radio shares nothing until you turn it on. This app only lets public channels share an approximate location. Radios on firmware 2.8 or later enforce the same limit. You can change location permissions at any time from settings." : {
 
     },
     "Zoom to Case" : {

@@ -33,7 +33,7 @@ The connection indicator turns green when the radio is paired and communicating.
 
 The first time the app opens, a short guided setup says what Meshtastic is and walks through the permissions the app uses, in order. Each screen explains what the permission is for, and any of them can be changed later in iOS Settings. Tapping **Continue** advances to the next step, after granting or declining the permission.
 
-**1. Welcome** — what Meshtastic does, how it treats location (the radio shares none until it is turned on, and public channels only ever get an approximate location), and a note that the next screens set up the features you want.
+**1. Welcome** — what Meshtastic does, how it treats location (the radio shares none until it is turned on, and the app only lets public channels share an approximate location), and a note that the next screens set up the features you want.
 
 ![Welcome screen](../assets/screenshots/onboarding_welcome.png)
 
@@ -49,7 +49,7 @@ The first time the app opens, a short guided setup says what Meshtastic is and w
 
 ![Notifications permission screen](../assets/screenshots/onboarding_notifications.png)
 
-**5. Location** — optional; lets your phone supply position to your radio and keep the map updated in the background. The phone's location goes only to the connected radio. Public channels get an approximate location, never the exact position. This step is skipped if location access was already granted.
+**5. Location** — optional; lets your phone supply position to your radio and keep the map updated in the background. The phone's location goes only to the connected radio. The app only lets public channels share an approximate location, and radios on firmware 2.8 or later enforce the same limit on the radio. On older firmware, a public channel set to full precision from another client still sends the exact position. This step is skipped if location access was already granted.
 
 ![Location permission screen](../assets/screenshots/onboarding_location.png)
 

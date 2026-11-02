@@ -201,8 +201,8 @@
         "navOrder": 1,
         "keywords": [
             "radio",
-            "meshtastic",
             "app",
+            "meshtastic",
             "step",
             "location",
             "nodes",
@@ -213,25 +213,25 @@
             "device",
             "messages",
             "mesh",
+            "lets",
             "connect",
             "bluetooth",
             "short",
+            "set",
             "see",
+            "radios",
+            "public",
             "position",
             "permission",
+            "only",
             "node",
             "next",
             "nearby",
             "map",
             "ios",
-            "first",
-            "connected",
-            "channels",
-            "within",
-            "welcome",
-            "want"
+            "first"
         ],
-        "charCount": 3289
+        "charCount": 3476
     },
     {
         "id": "lockdown",

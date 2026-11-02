@@ -69,7 +69,7 @@ struct DeviceOnboarding: View {
 			OnboardingFeatureRow(
 				symbol: "lock.shield",
 				title: String(localized: "Privacy First"),
-				text: String(localized: "Channels are encrypted. Your radio shares no location until you turn it on. Public channels can be logged by anyone nearby and only ever get an approximate location. Your precise location goes only to private channels you choose.")
+				text: String(localized: "Channels are encrypted. Your radio shares no location until you turn it on. Public channels can be logged by anyone nearby, so this app only lets them share an approximate location. Your precise location goes only to private channels you choose.")
 			)
 			OnboardingFeatureRow(
 				symbol: "slider.horizontal.3",
@@ -368,7 +368,7 @@ extension DeviceOnboarding {
 	}
 
 	func createLocationString() -> AttributedString {
-		linkingSettings(AttributedString(localized: "Your phone's location goes only to your connected radio. Your radio shares nothing until you turn it on. Public channels get an approximate location and never your exact position. You can change location permissions at any time from settings."))
+		linkingSettings(AttributedString(localized: "Your phone's location goes only to your connected radio. Your radio shares nothing until you turn it on. This app only lets public channels share an approximate location. Radios on firmware 2.8 or later enforce the same limit. You can change location permissions at any time from settings."))
 	}
 
 	func createLocalNetworkString() -> AttributedString {
