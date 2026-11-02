@@ -32,6 +32,8 @@ extension EnvironmentValues {
 
 struct RadioSetupFlow: View {
 	let nodeNum: Int64
+	/// Closes the flow where it isn't a sheet, like on the cinema's screen. Nil dismisses.
+	var onClose: (() -> Void)?
 
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 	@Environment(\.modelContext) private var context
@@ -42,10 +44,14 @@ struct RadioSetupFlow: View {
 	var body: some View {
 		Group {
 			if let model {
-				RadioSetupPages(model: model, onFinished: { dismiss() })
+				RadioSetupPages(model: model, onFinished: close)
 			} else if hasLoaded {
 				// The node is not in the store, which only happens when a reset emptied it.
-				ContentUnavailableView("Radio Not Found", systemImage: "antenna.radiowaves.left.and.right.slash")
+				ContentUnavailableView {
+					Label("Radio Not Found", systemImage: "antenna.radiowaves.left.and.right.slash")
+				} actions: {
+					Button("Close", action: close)
+				}
 			} else {
 				ProgressView()
 			}
@@ -57,12 +63,16 @@ struct RadioSetupFlow: View {
 		}
 		// A different radio took over mid-flow; its settings are not the ones on screen.
 		.onChange(of: accessoryManager.activeDeviceNum) { _, num in
-			if let num, num != nodeNum { dismiss() }
+			if let num, num != nodeNum { close() }
 		}
 		.onChange(of: accessoryManager.state) { _, state in
 			if state == .subscribed { model?.isAwaitingReconnect = false }
 		}
 		.interactiveDismissDisabled(model?.isSaving == true)
+	}
+
+	private func close() {
+		if let onClose { onClose() } else { dismiss() }
 	}
 }
 

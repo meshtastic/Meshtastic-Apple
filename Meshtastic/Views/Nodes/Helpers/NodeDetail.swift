@@ -201,8 +201,8 @@ struct NodeDetail: View {
 		// The 3D model opens full screen from here rather than from its row: a sheet on a list row is
 		// rebuilt whenever the list rebuilds the row, which it does every few seconds.
 		.environment(\.presentDeviceModelFullScreen) { deviceModelFullScreen = $0 }
-		// A plain sheet, not hostedSheet: the full-screen view brings its own navigation bar.
-		.sheet(item: $deviceModelFullScreen) { request in
+		// A sheet in a window; on the cinema's screen, where sheets never show, a pushed page.
+		.hostedSheet(item: $deviceModelFullScreen) { request in
 			if #available(iOS 18.0, macCatalyst 18.0, *) {
 				DeviceModelFullScreen(request: request, liveScreen: liveScreen)
 			}
