@@ -22,7 +22,11 @@ final class DeviceModelScreen {
 	private let plane = ModelEntity()
 	private var texture: TextureResource?
 	private var shape: Shape?
+	/// The picture on the display, recorded once its texture is made.
 	private var lastImage: CGImage?
+	/// A picture whose texture failed, skipped until the source supplies another so the error
+	/// isn't retried and logged every frame.
+	private var failedImage: CGImage?
 
 	/// Where a model's display is, when it has a part named Screen with something in it.
 	static func bounds(of model: Entity) -> BoundingBox? {
@@ -68,10 +72,10 @@ final class DeviceModelScreen {
 		guard let image else {
 			plane.isEnabled = false
 			lastImage = nil
+			failedImage = nil
 			return
 		}
-		guard image !== lastImage else { return }
-		lastImage = image
+		guard image !== lastImage, image !== failedImage else { return }
 		let shape = Self.shape(
 			imageWidth: image.width,
 			imageHeight: image.height,
@@ -90,9 +94,12 @@ final class DeviceModelScreen {
 				plane.model = ModelComponent(mesh: .generatePlane(width: 1, height: 1), materials: [material])
 			}
 		} catch {
+			failedImage = image
 			Logger.services.error("Device model screen: couldn't make a texture: \(error.localizedDescription, privacy: .public)")
 			return
 		}
+		lastImage = image
+		failedImage = nil
 		if shape != self.shape {
 			self.shape = shape
 			plane.scale = [shape.width, shape.height, 1]
