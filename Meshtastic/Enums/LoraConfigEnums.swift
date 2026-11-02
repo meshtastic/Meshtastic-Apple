@@ -603,12 +603,17 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 			base = base.filter { !$0.isTurbo }
 		}
 		var presets = base
-		if supports2_8, let info = regionInfo, !info.presets.isEmpty {
-			let constrained = base.filter { info.presets.contains($0.protoEnumValue()) }
-			if !constrained.isEmpty { presets = constrained }
+		// The radio's map constrains the list on 2.8. A map that names nothing offered here
+		// is as good as no map at all.
+		let constrained = supports2_8
+			? base.filter { regionInfo?.presets.contains($0.protoEnumValue()) == true }
+			: []
+		if !constrained.isEmpty {
+			presets = constrained
 		} else if region?.allowsBandLimitedPresets != true {
-			// No map from the radio (it is sent with the config, which some reconnects skip).
-			// Lite, Narrow and Tiny are never legal outside their regions, so don't offer them.
+			// No usable map from the radio (it is sent with the config, which some reconnects
+			// skip). Lite, Narrow and Tiny are never legal outside their regions, so don't
+			// offer them.
 			presets = presets.filter { !$0.isBandLimited }
 		}
 		// Whatever the radio is actually set to stays visible, whether it was filtered out

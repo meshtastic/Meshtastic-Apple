@@ -15,9 +15,10 @@ struct BeaconSwitchPromptTests {
 	@Test func namesEverythingTheJoinChanges() {
 		let prompt = AccessoryManager.beaconSwitchPrompt(
 			channelName: "MyMesh", preset: .longFast, region: .us, frequencySlot: 20, appliesWithoutReboot: false)
-		let expected = "This sets your radio's primary channel to \"MyMesh\", the \(ModemPresets.longFast.description) preset, "
-			+ "region \(RegionCodes.us.description) and frequency slot 20."
-		#expect(prompt.hasPrefix(expected))
+		#expect(prompt.hasPrefix("This sets your radio's primary channel to \"MyMesh\","))
+		#expect(prompt.contains("the \(ModemPresets.longFast.description) preset"))
+		#expect(prompt.contains("region \(RegionCodes.us.description)"))
+		#expect(prompt.contains("frequency slot 20."))
 	}
 
 	@Test func aBeaconWithoutRegionOrSlotNamesOnlyTheChannelAndPreset() {

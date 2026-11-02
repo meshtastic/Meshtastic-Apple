@@ -116,10 +116,16 @@ struct LoRaPresetRegionTests {
 	@Test("A map that matches nothing offered falls back to the region's own rules")
 	func emptyIntersectionFallsBack() {
 		// The EU strips Turbo first, so a map listing only Turbo would leave nothing to offer.
-		let info = RegionPresetInfo(presets: [.longTurbo], defaultPreset: .longTurbo, licensedOnly: false)
-		let presets = ModemPresets.available(forRegion: .eu868, current: nil, supports2_8: true, regionInfo: info)
-		#expect(!presets.isEmpty)
-		#expect(!presets.contains(.longTurbo))
+		let turboOnly = RegionPresetInfo(presets: [.longTurbo], defaultPreset: .longTurbo, licensedOnly: false)
+		let eu = ModemPresets.available(forRegion: .eu868, current: nil, supports2_8: true, regionInfo: turboOnly)
+		#expect(!eu.isEmpty)
+		#expect(!eu.contains(.longTurbo))
+		// A map naming only a preset this app has no case for leaves the US list as if there
+		// were no map, so the band-limited presets stay out.
+		let unknownOnly = RegionPresetInfo(presets: [.veryLongSlow], defaultPreset: .veryLongSlow, licensedOnly: false)
+		let us = ModemPresets.available(forRegion: .us, current: nil, supports2_8: true, regionInfo: unknownOnly)
+		#expect(us.contains(.longFast))
+		#expect(!us.contains(.liteFast))
 	}
 
 	@Test("Old firmware ignores the map and never offers the 2.8 presets")

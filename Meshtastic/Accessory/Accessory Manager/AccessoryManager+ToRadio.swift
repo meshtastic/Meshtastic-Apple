@@ -1097,14 +1097,31 @@ extension AccessoryManager {
 		frequencySlot: Int?,
 		appliesWithoutReboot: Bool
 	) -> String {
-		var parts = ["This sets your radio's primary channel to \"\(channelName)\"", "the \(preset.description) preset"]
-		if let region { parts.append("region \(region.description)") }
-		if let slot = frequencySlot { parts.append("frequency slot \(slot)") }
-		let joined = parts.dropLast().joined(separator: ", ") + " and " + (parts.last ?? "")
+		var changes = [
+			String.localizedStringWithFormat(
+				String(localized: "your radio's primary channel to \"%@\"", comment: "Beacon switch prompt; one of the changes listed"),
+				channelName),
+			String.localizedStringWithFormat(
+				String(localized: "the %@ preset", comment: "Beacon switch prompt; one of the changes listed"),
+				preset.description)
+		]
+		if let region {
+			changes.append(String.localizedStringWithFormat(
+				String(localized: "region %@", comment: "Beacon switch prompt; one of the changes listed"),
+				region.description))
+		}
+		if let slot = frequencySlot {
+			changes.append(String.localizedStringWithFormat(
+				String(localized: "frequency slot %lld", comment: "Beacon switch prompt; one of the changes listed"),
+				Int64(slot)))
+		}
 		let applies = appliesWithoutReboot
-			? "Your radio switches to the new mesh without a reboot."
-			: "Your radio will reboot and reconnect on the new mesh."
-		return "\(joined). \(applies) Your previous channel settings will be replaced."
+			? String(localized: "Your radio switches to the new mesh without a reboot.", comment: "Beacon switch prompt, firmware 2.8")
+			: String(localized: "Your radio will reboot and reconnect on the new mesh.", comment: "Beacon switch prompt, older firmware")
+		return String.localizedStringWithFormat(
+			String(localized: "This sets %@. %@ Your previous channel settings will be replaced.",
+				   comment: "Beacon switch prompt; the first argument lists the changes, the second says whether the radio reboots"),
+			ListFormatter.localizedString(byJoining: changes), applies)
 	}
 
 	/// Join a mesh advertised by a beacon: set the primary channel to the offered channel (name +

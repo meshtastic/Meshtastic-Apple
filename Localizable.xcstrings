@@ -456,6 +456,9 @@
         }
       }
     },
+    "frequency slot %lld" : {
+      "comment" : "Beacon switch prompt; one of the changes listed"
+    },
     "Hide App" : {
       "comment" : "Showcase: close the app's window while in the showcase",
       "extractionState" : "extracted_with_value",
@@ -605,6 +608,9 @@
         }
       }
     },
+    "region %@" : {
+      "comment" : "Beacon switch prompt; one of the changes listed"
+    },
     "Send text, positions and more over LoRa radios. No cell service or internet needed." : {
 
     },
@@ -614,8 +620,14 @@
     "Show on Screen" : {
       "comment" : "Cinema lookout: button on a node's card that opens the node's details on the cinema's front screen"
     },
+    "the %@ preset" : {
+      "comment" : "Beacon switch prompt; one of the changes listed"
+    },
     "The next few screens let you choose notifications, location sharing and Siri. Change any of them later in Settings." : {
 
+    },
+    "This sets %@. %@ Your previous channel settings will be replaced." : {
+      "comment" : "Beacon switch prompt; the first argument lists the changes, the second says whether the radio reboots"
     },
     "Up" : {
 
@@ -634,6 +646,15 @@
     },
     "Your phone's location goes only to your connected radio. Your radio shares nothing until you turn it on. This app only lets public channels share an approximate location. Radios on firmware 2.8 or later enforce the same limit. You can change location permissions at any time from settings." : {
 
+    },
+    "your radio's primary channel to \"%@\"" : {
+      "comment" : "Beacon switch prompt; one of the changes listed"
+    },
+    "Your radio switches to the new mesh without a reboot." : {
+      "comment" : "Beacon switch prompt, firmware 2.8"
+    },
+    "Your radio will reboot and reconnect on the new mesh." : {
+      "comment" : "Beacon switch prompt, older firmware"
     },
     "Zoom to Case" : {
 
