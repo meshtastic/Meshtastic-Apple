@@ -419,7 +419,7 @@ struct DiscoveryScanView: View {
 		case .reconnecting: return "Reconnecting..."
 		case .dwell: return "Collecting Data"
 		case .analysis: return "Analyzing..."
-		case .complete: return "Complete"
+		case .complete: return engine.session?.completionStatus == "stopped" ? "Stopped" : "Complete"
 		case .paused: return "Paused — Waiting for Connection"
 		case .restoring: return "Restoring Home Preset..."
 		}
@@ -480,7 +480,10 @@ extension DiscoveryScanView {
 	/// default. One that pinned a slot its region doesn't have is left out, since the scan can't
 	/// tune to it.
 	var beaconChannels: [BeaconChannel] {
-		let descriptor = FetchDescriptor<DiscoveredBeaconEntity>()
+		// Newest first, so a channel heard again with a new key is the one the dedupe keeps.
+		let descriptor = FetchDescriptor<DiscoveredBeaconEntity>(
+			sortBy: [SortDescriptor(\.timestamp, order: .reverse)]
+		)
 		guard let beacons = try? context.fetch(descriptor) else { return [] }
 		// Offers for channels the radio already has are not invitations (design#140).
 		let joined = configuredChannelOfferKeys(context: context)
