@@ -587,6 +587,51 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 		selectable(supports2_8: false)
 	}
 
+	/// The presets a picker offers for `region` on this firmware, with whatever the radio is
+	/// actually set to kept in the list. The legal set depends on the region and on a map the
+	/// radio advertises (`regionInfo`), which some reconnects skip.
+	static func available(
+		forRegion region: RegionCodes?,
+		current: ModemPresets?,
+		supports2_8: Bool,
+		regionInfo: RegionPresetInfo?
+	) -> [ModemPresets] {
+		var base = selectable(supports2_8: supports2_8)
+		// The EU band plans cap bandwidth below what Turbo uses, so those are not offered
+		// at all there rather than offered with a warning.
+		if region?.prohibitsTurboPresets == true {
+			base = base.filter { !$0.isTurbo }
+		}
+		var presets = base
+		if supports2_8, let info = regionInfo, !info.presets.isEmpty {
+			let constrained = base.filter { info.presets.contains($0.protoEnumValue()) }
+			if !constrained.isEmpty { presets = constrained }
+		} else if region?.allowsBandLimitedPresets != true {
+			// No map from the radio (it is sent with the config, which some reconnects skip).
+			// Lite, Narrow and Tiny are never legal outside their regions, so don't offer them.
+			presets = presets.filter { !$0.isBandLimited }
+		}
+		// Whatever the radio is actually set to stays visible, whether it was filtered out
+		// for being deprecated or for being Turbo in a region that forbids it. Otherwise
+		// the picker renders blank and the user cannot see what their radio is on, let
+		// alone that it is the thing they are being steered away from.
+		if let current, !presets.contains(current) {
+			presets.append(current)
+		}
+		return presets
+	}
+
+	/// Every non-Turbo preset stays selectable in the US, but none of their bandwidths is
+	/// US-compliant on 2.8, so a picker warns rather than blocks. Nil when there is nothing
+	/// to warn about.
+	static func usBandwidthWarning(region: RegionCodes?, preset: ModemPresets?, supports2_8: Bool) -> String? {
+		guard supports2_8, region == .us, let preset, !preset.isTurbo else { return nil }
+		return String.localizedStringWithFormat(
+			String(localized: "%@'s bandwidth is not compliant in the US. The Turbo presets are recommended.",
+				   comment: "LoRa preset warning; the argument is the preset's name"),
+			preset.description)
+	}
+
 	/// Decides which modem preset to pre-select when the region changes, given the
 	/// firmware's advertised compatibility info for that region. Returns `nil` to
 	/// keep the current selection. Pure (no view state) so it can be unit-tested.

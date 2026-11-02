@@ -8569,6 +8569,9 @@
       },
       "shouldTranslate" : false
     },
+    "%@'s bandwidth is not compliant in the US. The Turbo presets are recommended." : {
+      "comment" : "LoRa preset warning; the argument is the preset's name"
+    },
     "%@ - %@" : {
       "localizations" : {
         "da" : {

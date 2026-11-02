@@ -212,10 +212,7 @@ private struct RegionRow: View {
 					.font(.callout)
 			}
 			if LoRaRegionValidation.supportedRegion(rawValue: config.region.rawValue) == nil {
-				Label("This radio uses a newer region that this app does not support. Choose a supported region before saving.",
-					  systemImage: "exclamationmark.triangle.fill")
-					.foregroundStyle(.orange)
-					.font(.callout)
+				UnsupportedRegionNotice()
 			}
 		}
 		if let info = presetInfo, info.licensedOnly {
@@ -225,7 +222,7 @@ private struct RegionRow: View {
 }
 
 /// Shown for a band only licensed amateur operators may transmit on.
-private struct LicensedBandNotice: View {
+struct LicensedBandNotice: View {
 	let isLicensed: Bool
 
 	var body: some View {
@@ -250,6 +247,16 @@ private struct LicensedBandNotice: View {
 	}
 }
 
+/// Shown when the radio reports a region this app cannot write back.
+struct UnsupportedRegionNotice: View {
+	var body: some View {
+		Label("This radio uses a newer region that this app does not support. Choose a supported region before saving.",
+			  systemImage: "exclamationmark.triangle.fill")
+			.foregroundStyle(.orange)
+			.font(.callout)
+	}
+}
+
 /// The modem preset, constrained to what the region allows. The legal set depends on
 /// the region chosen in this same message and on a map the radio advertises, neither of
 /// which the schema can state.
@@ -267,32 +274,14 @@ private struct ModemPresetRow: View {
 				set: { if let preset = Config.LoRaConfig.ModemPreset(rawValue: $0) { config.modemPreset = preset } })
 	}
 
+	private var region: RegionCodes? { RegionCodes(rawValue: config.region.rawValue) }
+
 	private var available: [ModemPresets] {
-		var base = ModemPresets.selectable(supports2_8: supports2_8)
-		// The EU band plans cap bandwidth below what Turbo uses, so those are not offered
-		// at all there rather than offered with a warning.
-		if RegionCodes(rawValue: config.region.rawValue)?.prohibitsTurboPresets == true {
-			base = base.filter { !$0.isTurbo }
-		}
-		var presets = base
-		if supports2_8,
-		   let code = RegionCodes(rawValue: config.region.rawValue)?.protoEnumValue(),
-		   let info = accessoryManager.loRaRegionPresets[code], !info.presets.isEmpty {
-			let constrained = base.filter { info.presets.contains($0.protoEnumValue()) }
-			if !constrained.isEmpty { presets = constrained }
-		} else if RegionCodes(rawValue: config.region.rawValue)?.allowsBandLimitedPresets != true {
-			// No map from the radio (it is sent with the config, which some reconnects skip).
-			// Lite, Narrow and Tiny are never legal outside their regions, so don't offer them.
-			presets = presets.filter { !$0.isBandLimited }
-		}
-		// Whatever the radio is actually set to stays visible, whether it was filtered out
-		// for being deprecated or for being Turbo in a region that forbids it. Otherwise
-		// the picker renders blank and the user cannot see what their radio is on, let
-		// alone that it is the thing they are being steered away from.
-		if let current = ModemPresets(rawValue: config.modemPreset.rawValue), !presets.contains(current) {
-			presets.append(current)
-		}
-		return presets
+		ModemPresets.available(
+			forRegion: region,
+			current: ModemPresets(rawValue: config.modemPreset.rawValue),
+			supports2_8: supports2_8,
+			regionInfo: region.flatMap { accessoryManager.loRaRegionPresets[$0.protoEnumValue()] })
 	}
 
 	var body: some View {
@@ -308,13 +297,12 @@ private struct ModemPresetRow: View {
 					.foregroundColor(.gray)
 					.font(.callout)
 			}
-			// Every non-Turbo preset stays selectable in the US, but none of their
-			// bandwidths is US-compliant on 2.8 - warn rather than block.
-			if supports2_8,
-			   config.region.rawValue == RegionCodes.us.rawValue,
-			   let preset = ModemPresets(rawValue: config.modemPreset.rawValue), !preset.isTurbo {
+			if let warning = ModemPresets.usBandwidthWarning(
+				region: region,
+				preset: ModemPresets(rawValue: config.modemPreset.rawValue),
+				supports2_8: supports2_8) {
 				Label {
-					Text("\(preset.description)'s bandwidth is not compliant in the US. The Turbo presets are recommended.")
+					Text(warning)
 						.foregroundColor(.gray)
 						.font(.caption)
 				} icon: {

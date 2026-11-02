@@ -31,11 +31,9 @@ struct LoRaPresetRegionTests {
 	// all: it could not see what its own radio was on.
 	@Test("Whatever the radio is set to stays in the list")
 	func configuredPresetSurvivesFiltering() {
-		let euOffered = ModemPresets.allCases.filter { !$0.isTurbo }
 		for configured in [ModemPresets.longTurbo, .shortTurbo, .mediumTurbo, .longSlow] {
-			var presets = euOffered
-            if !presets.contains(configured) { presets.append(configured) }
-			#expect(presets.contains(configured),
+			let presets = ModemPresets.available(forRegion: .eu868, current: configured, supports2_8: true, regionInfo: nil)
+			#expect(presets.last == configured,
 					"\(configured) is what the radio reports; hiding it leaves a blank picker")
 		}
 	}
@@ -52,7 +50,9 @@ struct LoRaPresetRegionTests {
 	// not compliant there on 2.8 firmware. Turbo is what the band plan expects.
 	@Test("Every non-Turbo preset is the one warned about in the US")
 	func usWarnsEveryNonTurboPreset() {
-		let warned = ModemPresets.allCases.filter { !$0.isTurbo }
+		let warned = ModemPresets.allCases.filter {
+			ModemPresets.usBandwidthWarning(region: .us, preset: $0, supports2_8: true) != nil
+		}
 		#expect(warned.contains(.longFast), "the preset that used to be the only one warned about")
 		#expect(warned.contains(.medFast))
 		#expect(warned.contains(.shortSlow))
@@ -67,5 +67,73 @@ struct LoRaPresetRegionTests {
 		#expect(RegionCodes.itu22M.allowsBandLimitedPresets)
 		let bandLimited = ModemPresets.allCases.filter(\.isBandLimited)
 		#expect(Set(bandLimited) == [.liteFast, .liteSlow, .narrowFast, .narrowSlow, .tinyFast, .tinySlow])
+	}
+
+	@Test("The warning names the preset and only applies to the US on 2.8")
+	func usWarningScope() {
+		let warning = ModemPresets.usBandwidthWarning(region: .us, preset: .longFast, supports2_8: true)
+		#expect(warning?.contains(ModemPresets.longFast.description) == true)
+		#expect(ModemPresets.usBandwidthWarning(region: .us, preset: .longTurbo, supports2_8: true) == nil)
+		#expect(ModemPresets.usBandwidthWarning(region: .eu868, preset: .longFast, supports2_8: true) == nil)
+		#expect(ModemPresets.usBandwidthWarning(region: .us, preset: .longFast, supports2_8: false) == nil)
+		#expect(ModemPresets.usBandwidthWarning(region: nil, preset: .longFast, supports2_8: true) == nil)
+	}
+
+	// MARK: - The list a picker offers
+
+	@Test("Without a map, the EU keeps its band-limited presets and loses Turbo")
+	func euWithoutMap() {
+		let presets = ModemPresets.available(forRegion: .eu868, current: nil, supports2_8: true, regionInfo: nil)
+		#expect(!presets.contains(.longTurbo))
+		#expect(presets.contains(.liteFast))
+		#expect(presets.contains(.longFast))
+		#expect(!presets.contains(.longSlow), "deprecated")
+	}
+
+	@Test("Without a map, the US keeps Turbo and loses the band-limited presets")
+	func usWithoutMap() {
+		let presets = ModemPresets.available(forRegion: .us, current: nil, supports2_8: true, regionInfo: nil)
+		#expect(presets.contains(.longTurbo))
+		#expect(presets.contains(.longFast))
+		#expect(!presets.contains(.liteFast))
+		#expect(!presets.contains(.tinyFast))
+	}
+
+	@Test("A region the app does not know is treated like one without band-limited presets")
+	func unknownRegion() {
+		let presets = ModemPresets.available(forRegion: nil, current: nil, supports2_8: true, regionInfo: nil)
+		#expect(presets.contains(.longTurbo))
+		#expect(!presets.contains(.liteFast))
+	}
+
+	@Test("The radio's map constrains the list")
+	func mapConstrains() {
+		let info = RegionPresetInfo(presets: [.longFast, .longTurbo], defaultPreset: .longTurbo, licensedOnly: false)
+		let presets = ModemPresets.available(forRegion: .us, current: nil, supports2_8: true, regionInfo: info)
+		#expect(Set(presets) == [.longFast, .longTurbo])
+	}
+
+	@Test("A map that matches nothing offered falls back to the region's own rules")
+	func emptyIntersectionFallsBack() {
+		// The EU strips Turbo first, so a map listing only Turbo would leave nothing to offer.
+		let info = RegionPresetInfo(presets: [.longTurbo], defaultPreset: .longTurbo, licensedOnly: false)
+		let presets = ModemPresets.available(forRegion: .eu868, current: nil, supports2_8: true, regionInfo: info)
+		#expect(!presets.isEmpty)
+		#expect(!presets.contains(.longTurbo))
+	}
+
+	@Test("Old firmware ignores the map and never offers the 2.8 presets")
+	func oldFirmware() {
+		let info = RegionPresetInfo(presets: [.liteFast, .longFast], defaultPreset: .longFast, licensedOnly: false)
+		let presets = ModemPresets.available(forRegion: .eu868, current: nil, supports2_8: false, regionInfo: info)
+		#expect(!presets.contains(.liteFast))
+		#expect(presets.contains(.longFast))
+		#expect(presets.contains(.shortFast))
+	}
+
+	@Test("A current preset the list already has is not repeated")
+	func currentPresetNotDuplicated() {
+		let presets = ModemPresets.available(forRegion: .us, current: .longFast, supports2_8: true, regionInfo: nil)
+		#expect(presets.filter { $0 == .longFast }.count == 1)
 	}
 }
