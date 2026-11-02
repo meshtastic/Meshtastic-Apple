@@ -129,6 +129,7 @@ struct Settings: View {
 	@Environment(\.modelContext) private var context
 	@Environment(\.colorScheme) private var colorScheme
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	@Environment(\.openRadioSetup) private var openRadioSetup
 	/// Node snapshots for the admin picker / config gating, refreshed on a throttled cadence (see the
 	/// `.task` in `body`) instead of a live `@Query`. A live query re-evaluated this whole view's
 	/// `body` on every node write — and TabView keeps Settings alive on other tabs, so under heavy
@@ -270,6 +271,20 @@ struct Settings: View {
 
 	var radioConfigurationSection: some View {
 		Section("Radio Configuration") {
+			// The guided setup for the connected radio: region, preset and name. Not offered
+			// while a remote node is selected; it only ever writes to the connected radio.
+			if accessoryManager.isConnected, let deviceNum = accessoryManager.activeDeviceNum,
+			   selectedNode == 0 || selectedNode == preferredNodeNum {
+				Button {
+					openRadioSetup(deviceNum)
+				} label: {
+					Label {
+						Text("Set Up Radio")
+					} icon: {
+						Image(systemName: "checklist")
+					}
+				}
+			}
 			let node = nodeSnapshot(for: preferredNodeNum)
 			if let node,
 				let regionCode = node.regionCode,

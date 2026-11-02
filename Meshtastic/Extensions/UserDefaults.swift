@@ -96,6 +96,7 @@ extension UserDefaults {
 		case useEventTheme
 		case pairedPeripheralIds
 		case migratedPreferredPeripheralPairing
+		case radioSetupOfferedNodeNums
 	}
 
 	func reset() {
@@ -219,6 +220,21 @@ extension UserDefaults {
 		var keys = firmwareUpdateNotificationKeySet
 		keys.insert(key)
 		firmwareUpdateNotificationKeys = keys.sorted()
+	}
+
+	/// Radios the setup flow has opened for on its own, by node number, so it offers itself
+	/// once per radio. Opening it from Connect or Settings does not count.
+	@UserDefault(.radioSetupOfferedNodeNums, defaultValue: [])
+	static var radioSetupOfferedNodeNums: [Int]
+
+	static var radioSetupOfferedNodeNumSet: Set<Int64> {
+		Set(radioSetupOfferedNodeNums.map { Int64($0) })
+	}
+
+	static func markRadioSetupOffered(nodeNum: Int64) {
+		var nums = radioSetupOfferedNodeNumSet
+		nums.insert(nodeNum)
+		radioSetupOfferedNodeNums = nums.map { Int($0) }.sorted()
 	}
 
 	/// UUIDs of BLE peripherals we have successfully bonded with (subscription to an

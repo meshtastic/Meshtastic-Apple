@@ -40,21 +40,30 @@
 <p><img src="../assets/screenshots/onboarding_location.png" alt="Location permission screen" /></p>
 <p><strong>6. Siri &amp; Shortcuts</strong> — optional; enables voice commands and CarPlay messaging.</p>
 <p><img src="../assets/screenshots/onboarding_siri.png" alt="Siri and Shortcuts permission screen" /></p>
-<h2 id="step-3-set-your-name-and-short-id">Step 3: Set Your Name and Short ID</h2>
+<h2 id="step-3-set-up-your-radio">Step 3: Set Up Your Radio</h2>
+<p>The first time a radio connects with no LoRa region set, the app opens a short setup for it. <strong>Set Up Radio</strong> on the Connect screen, and at the top of <strong>Settings → Radio Configuration</strong>, opens it again any time.</p>
+<p><img src="../assets/screenshots/radio_setup_intro.png" alt="Radio setup intro" /></p>
 <ol>
-<li>Go to <strong>Settings → User</strong>.</li>
-<li>Enter a <strong>Long Name</strong> (your display name, up to 39 characters).</li>
-<li>Enter a <strong>Short Name</strong> (up to 4 characters or an emoji — shown in the node circle).</li>
-<li>Tap <strong>Save</strong>.</li>
+<li>
+<p><strong>Region</strong> — where you are, so the radio uses legal frequencies. The page starts on the region matching your phone's region setting; confirm it, or change it if you are somewhere else. Using the wrong region is illegal and will prevent communication with other nodes in your area.</p>
+<p><img src="../assets/screenshots/radio_setup_region.png" alt="Radio setup region page" /></p>
+</li>
+<li>
+<p><strong>Preset</strong> — the range and speed your mesh uses; everyone on a mesh must use the same one. On firmware 2.8 the list is limited to what is legal in your region, and a newly flashed radio in the US moves from Long Fast to Long Turbo. Saving applies live on 2.8; older firmware restarts and reconnects.</p>
+<p><img src="../assets/screenshots/radio_setup_preset.png" alt="Radio setup preset page" /></p>
+</li>
+<li>
+<p><strong>Name</strong> — a <strong>Long Name</strong> (up to 24 bytes on firmware 2.8, 39 before) and a <strong>Short Name</strong> (up to 4 characters or one emoji, shown in the node circle) that other people see. This page can be skipped, and licensed operators do not see it: their name comes from the call sign in <strong>Settings → User</strong>.</p>
+<p><img src="../assets/screenshots/radio_setup_name.png" alt="Radio setup name page" /></p>
+</li>
 </ol>
-<p>Your name broadcasts to nearby nodes automatically.</p>
+<p>The last page reads back what the radio is set to.</p>
+<p><img src="../assets/screenshots/radio_setup_done.png" alt="Radio setup done page" /></p>
 <h2 id="step-4-explore-the-mesh">Step 4: Explore the Mesh</h2>
 <p>Once connected, the app shows nearby nodes in the <strong>Nodes</strong> tab. Tap any node to see details like signal strength, last heard time, and position.</p>
 <p>Send your first message by tapping the <strong>Messages</strong> tab and selecting the primary channel.</p>
 <div class="tips-callout"><strong>Tip — Quick navigation</strong>
 Tap the currently active tab icon to jump back to the top-level view from anywhere in that tab.</div>
-<h2 id="step-5-check-your-settings">Step 5: Check Your Settings</h2>
-<p>Visit <strong>Settings → LoRa</strong> to verify your region code matches your location. Using the wrong region is illegal and will prevent communication with other nodes in your area.</p>
 <h2 id="next-steps">Next Steps</h2>
 <ul>
 <li><a href="bluetooth.html">Bluetooth Device Connection</a> — manage multiple radios</li>

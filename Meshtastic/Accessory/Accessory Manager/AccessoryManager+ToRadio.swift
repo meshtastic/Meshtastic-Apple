@@ -3188,6 +3188,9 @@ extension AccessoryManager {
 
 		try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 
+		if toUser.num == activeDeviceNum {
+			connectedLoRaRegionCode = config.region.rawValue
+		}
 		await MeshPackets.shared.upsertLoRaConfigPacket(config: config, nodeNum: toUser.num)
 
 		return Int64(meshPacket.id)

@@ -14,6 +14,8 @@ Recent user-facing changes from roughly the last 12 months. Newest at the top.
 Show roughly the last 12 months of changes; archive entries older than a year by removing them.
 -->
 
+**Nov 2026** — [Getting Started](getting-started.md#step-3-set-up-your-radio) — A radio that connects with no LoRa region opens a short setup for its region, preset and name, and **Set Up Radio** on the Connect screen and in Settings opens it any time.
+
 **Nov 2026** — [Getting Started](getting-started.md#first-launch-setup) — First-launch setup opens with a welcome page about off-grid messaging and location privacy, and the permission pages are restyled with plain icons and larger text.
 
 **Nov 2026** — [Cinema](cinema.md#fire-lookout) — On Apple Vision Pro, nodes out the fire lookout's windows are small chips on stems, standing at different heights where they're close together, and tapping one opens a card beside it with the node's details and buttons to show it on the 3D map or the screen.

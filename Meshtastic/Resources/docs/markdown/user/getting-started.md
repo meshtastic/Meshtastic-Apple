@@ -57,14 +57,27 @@ The first time the app opens, a short guided setup says what Meshtastic is and w
 
 ![Siri and Shortcuts permission screen](../assets/screenshots/onboarding_siri.png)
 
-## Step 3: Set Your Name and Short ID
+## Step 3: Set Up Your Radio
 
-1. Go to **Settings → User**.
-2. Enter a **Long Name** (your display name, up to 39 characters).
-3. Enter a **Short Name** (up to 4 characters or an emoji — shown in the node circle).
-4. Tap **Save**.
+The first time a radio connects with no LoRa region set, the app opens a short setup for it. **Set Up Radio** on the Connect screen, and at the top of **Settings → Radio Configuration**, opens it again any time.
 
-Your name broadcasts to nearby nodes automatically.
+![Radio setup intro](../assets/screenshots/radio_setup_intro.png)
+
+1. **Region** — where you are, so the radio uses legal frequencies. The page starts on the region matching your phone's region setting; confirm it, or change it if you are somewhere else. Using the wrong region is illegal and will prevent communication with other nodes in your area.
+
+   ![Radio setup region page](../assets/screenshots/radio_setup_region.png)
+
+2. **Preset** — the range and speed your mesh uses; everyone on a mesh must use the same one. On firmware 2.8 the list is limited to what is legal in your region, and a newly flashed radio in the US moves from Long Fast to Long Turbo. Saving applies live on 2.8; older firmware restarts and reconnects.
+
+   ![Radio setup preset page](../assets/screenshots/radio_setup_preset.png)
+
+3. **Name** — a **Long Name** (up to 24 bytes on firmware 2.8, 39 before) and a **Short Name** (up to 4 characters or one emoji, shown in the node circle) that other people see. This page can be skipped, and licensed operators do not see it: their name comes from the call sign in **Settings → User**.
+
+   ![Radio setup name page](../assets/screenshots/radio_setup_name.png)
+
+The last page reads back what the radio is set to.
+
+![Radio setup done page](../assets/screenshots/radio_setup_done.png)
 
 ## Step 4: Explore the Mesh
 
@@ -74,10 +87,6 @@ Send your first message by tapping the **Messages** tab and selecting the primar
 
 > **Tip — Quick navigation**
 > Tap the currently active tab icon to jump back to the top-level view from anywhere in that tab.
-
-## Step 5: Check Your Settings
-
-Visit **Settings → LoRa** to verify your region code matches your location. Using the wrong region is illegal and will prevent communication with other nodes in your area.
 
 ## Next Steps
 

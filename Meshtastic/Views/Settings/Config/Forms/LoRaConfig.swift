@@ -45,16 +45,6 @@ struct LoRaConfig: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 	let node: NodeInfoEntity?
-	/// Connect.swift follows a successful save to re-read the channel it just moved to.
-	let onSuccessfulSave: (_ nodeNum: Int64, _ region: RegionCodes) -> Void
-
-	init(
-		node: NodeInfoEntity?,
-		onSuccessfulSave: @escaping (_ nodeNum: Int64, _ region: RegionCodes) -> Void = { _, _ in }
-	) {
-		self.node = node
-		self.onSuccessfulSave = onSuccessfulSave
-	}
 
 	private typealias F = Config.LoRaConfig.Fields
 
@@ -157,7 +147,7 @@ struct LoRaConfig: View {
 										comment: "LoRa save confirmation"),
 			request: accessoryManager.requestLoRaConfig,
 			save: { config, from, to in
-				guard let region = Self.supportedRegion(config) else { return }
+				guard Self.supportedRegion(config) != nil else { return }
 				if let deviceNum = accessoryManager.activeDeviceNum,
 				   let connectedNode = getNodeInfo(id: deviceNum, context: context),
 				   connectedNode.num == node?.user?.num ?? 0 {
@@ -170,7 +160,6 @@ struct LoRaConfig: View {
 				if to.num == accessoryManager.activeDeviceNum {
 					accessoryManager.refreshNodeDatabaseAfterLoRaChange()
 				}
-				onSuccessfulSave(to.num, region)
 			})
 		.navigationTitle("LoRa Config")
 	}
