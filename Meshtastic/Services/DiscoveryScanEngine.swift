@@ -1087,9 +1087,21 @@ extension DiscoveryScanEngine {
 		Logger.discovery.info("📡 [Discovery] State: \(oldState) → \(newState)")
 	}
 
+	/// Clears the finished session and returns to idle, ready for `startScan()`. The view's New
+	/// Scan calls this. `cleanupAfterScan` leaves the session in place on purpose, so the
+	/// return to idle is the caller's to make; nothing else puts a finished engine back to idle.
+	func resetForNewScan() {
+		guard !isScanning else {
+			Logger.discovery.warning("📡 [Discovery] Cannot reset for a new scan — still scanning")
+			return
+		}
+		session = nil
+		transitionTo(.idle)
+	}
+
 	/// Tear the scan down and leave the finished session on screen, so its summary, map and
-	/// New Scan stay available until the user starts another scan (the view clears the session
-	/// and returns the engine to idle). Without a session there is nothing to show, so go idle.
+	/// New Scan stay available until the user starts another scan (`resetForNewScan()` clears
+	/// the session and returns to idle). Without a session there is nothing to show, so go idle.
 	private func cleanupAfterScan() {
 		dwellTask?.cancel()
 		reconnectTimeoutTask?.cancel()

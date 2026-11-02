@@ -69,8 +69,7 @@ struct DiscoveryScanView: View {
 	private func startNewScan(_ engine: DiscoveryScanEngine) {
 		selectedPresets = []
 		selectedChannels = []
-		engine.session = nil
-		engine.currentState = .idle
+		engine.resetForNewScan()
 		applyDefaultSelection()
 	}
 
@@ -94,7 +93,6 @@ struct DiscoveryScanView: View {
 		}
 		return Set(presets).intersection(available)
 	}
-
 
 	var body: some View {
 		GeometryReader { proxy in

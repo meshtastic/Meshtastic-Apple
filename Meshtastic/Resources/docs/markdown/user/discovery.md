@@ -27,7 +27,7 @@ On supported devices running iOS 26+, the on-device AI assistant analyses the sc
 1. Go to **Settings → Local Mesh Discovery**.
 2. Tap **Start Scan**.
 3. The scanner cycles through settings automatically. Each cycle takes a few minutes — do not close the app during a scan.
-4. When the scan completes, results appear ranked by node count and channel activity.
+4. When the scan completes, results appear ranked by node count and channel activity. They stay on screen, with the map and the summary, until you tap **New Scan**, which brings the setup back with the presets and channels the scan heard beacons for already selected. A scan you stop early shows as **Stopped** with whatever it collected.
 
 ### Analyze Current Preset
 
