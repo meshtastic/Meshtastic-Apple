@@ -14,6 +14,8 @@ Recent user-facing changes from roughly the last 12 months. Newest at the top.
 Show roughly the last 12 months of changes; archive entries older than a year by removing them.
 -->
 
+**Nov 2026** — [Bluetooth](bluetooth.md#troubleshooting) — On Apple Vision Pro, when a radio asks for a Bluetooth PIN while pairing, the Connect screen says the headset can't enter one and to set the radio's pairing mode to No PIN (Just Works) from another device.
+
 **Nov 2026** — [Local Mesh Discovery](discovery.md#running-a-scan) — A finished scan stays on screen until **New Scan**, which starts the next setup with the beacons the scan just heard and the popular presets already selected.
 
 **Nov 2026** — [Cinema](cinema.md#fire-lookout) — On Apple Vision Pro, a node's card out the fire lookout's windows opens beside its marker as you see it from where you are, and sits on a bar you can pinch to move it.

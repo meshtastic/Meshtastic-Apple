@@ -28,11 +28,17 @@ enum AccessoryError: Error, LocalizedError {
 	/// reflash, or its Bluetooth settings being cleared. Nothing the app does fixes it; the
 	/// stale pairing has to be removed in Settings first.
 	case bondLost
+	/// The radio asked for a Bluetooth PIN on a platform that can't enter one. visionOS allows
+	/// the pairing and then drops the link where iOS would show the PIN sheet, so a radio set to
+	/// a Random or Fixed PIN can't pair until its mode is changed from another device.
+	case pinEntryUnsupported
 	
 	/// Said the same way whichever code the failure arrives under. iOS reports a stale
 	/// pairing as CBError 14, as CBError.encryptionTimedOut, or as a CBATTError about
 	/// authentication or encryption, and the advice is the same for all of them.
 	static let bondLostAdvice = "The radio has deleted its stored pairing information, but your device has not. To resolve this, you must forget the radio under Settings > Bluetooth to clear the old, now invalid, pairing information.".localized
+
+	static let pinEntryUnsupportedAdvice = "Pairing stopped. Apple Vision Pro can't enter a Bluetooth PIN, so a radio set to a Random or Fixed PIN can't pair with it. Set the radio's Bluetooth pairing mode to No PIN (Just Works) from another device, then connect again.".localized
 
 	var errorDescription: String? {
 		switch self {
@@ -69,6 +75,8 @@ enum AccessoryError: Error, LocalizedError {
 			}
 		case .bondLost:
 			return Self.bondLostAdvice
+		case .pinEntryUnsupported:
+			return Self.pinEntryUnsupportedAdvice
 		case .coreBluetoothATTError(let attError):
 			// Map specific CBATTError values to a more user-friendly message
 			switch attError.code {

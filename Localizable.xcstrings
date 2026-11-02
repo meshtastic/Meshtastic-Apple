@@ -7759,6 +7759,9 @@
         }
       }
     },
+    "Pairing stopped. Apple Vision Pro can't enter a Bluetooth PIN, so a radio set to a Random or Fixed PIN can't pair with it. Set the radio's Bluetooth pairing mode to No PIN (Just Works) from another device, then connect again." : {
+      "extractionState" : "manual"
+    },
     "The radio reported an unknown delivery error." : {
       "extractionState" : "manual",
       "localizations" : {
