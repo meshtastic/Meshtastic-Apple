@@ -28,6 +28,12 @@ struct LookoutCardSelection: Equatable {
 	/// The marker the card was last hung beside. The card is placed once per marker, and then
 	/// stays wherever the viewer moves it.
 	private var cardPlacedBeside: Int64?
+	/// Where the bar was put when the card was hung from the image's eye point because the head
+	/// wasn't tracked yet. Nil once it was hung from the head.
+	private var cardPlacedWithoutHead: SIMD3<Float>?
+	/// The card was hung without the head; once the head is tracked it's hung again from there,
+	/// unless the viewer has moved it.
+	var cardAwaitingHead: Bool { cardPlacedWithoutHead != nil }
 	/// A marker or the card hasn't laid out yet, so it couldn't be scaled; the frame update tries
 	/// again.
 	private(set) var unsized = false
@@ -106,11 +112,13 @@ struct LookoutCardSelection: Equatable {
 			card?.removeFromParent()
 			card = entity
 			cardPlacedBeside = nil
+			cardPlacedWithoutHead = nil
 		}
 		guard let spot, let entity else {
 			entity?.removeFromParent()
 			cardGrabber.isEnabled = false
 			cardPlacedBeside = nil
+			cardPlacedWithoutHead = nil
 			return true
 		}
 		if let room = stage.parent, cardGrabber.parent !== room {
@@ -125,12 +133,21 @@ struct LookoutCardSelection: Equatable {
 		// The card sits just above the bar, however tall it is now.
 		entity.position = [0, size.y / 2 + Self.grabberGap, 0]
 		cardGrabber.isEnabled = true
-		guard cardPlacedBeside != spot.lead.id else { return true }
+		if cardPlacedBeside == spot.lead.id {
+			// Hung once already. Only a card hung before the head was tracked, and not moved since,
+			// is hung again, from the head.
+			guard let placedAt = cardPlacedWithoutHead, head != nil else { return true }
+			guard simd_distance(cardGrabber.position(relativeTo: nil), placedAt) < 0.001 else {
+				cardPlacedWithoutHead = nil
+				return true
+			}
+		}
 		cardPlacedBeside = spot.lead.id
 		let marker = stage.convert(position: LookoutTerrain.direction(azimuth: spot.azimuth, elevation: spot.center) * spot.depth, to: nil)
 		let eye = head ?? stage.convert(position: .zero, to: nil)
 		let center = LookoutCardPlacement.center(eye: eye, marker: marker, markerWidthDegrees: LookoutTerrain.markerWidthDegrees, cardHalfWidth: size.x / 2)
 		cardGrabber.setPosition(center - [0, size.y / 2 + Self.grabberGap, 0], relativeTo: nil)
+		cardPlacedWithoutHead = head == nil ? cardGrabber.position(relativeTo: nil) : nil
 		return true
 	}
 

@@ -84,7 +84,8 @@ struct CinemaSpace: View {
 				placeBoards()
 				modelStand.refreshScreen()
 				// A marker's size is only known once it has laid out, like a board's.
-				if markerPanels.unsized {
+				// So is a card hung before the head was tracked, once it is.
+				if markerPanels.unsized || (markerPanels.cardAwaitingHead && headTracker.headPosition != nil) {
 					placeMarkers { markerPanels.entity(for: $0) }
 				}
 			}
