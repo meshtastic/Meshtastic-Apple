@@ -47,7 +47,11 @@ struct RadioSetupFlow: View {
 				RadioSetupPages(model: model, onFinished: close)
 			} else if hasLoaded {
 				// The node is not in the store, which only happens when a reset emptied it.
-				ContentUnavailableView("Radio Not Found", systemImage: "antenna.radiowaves.left.and.right.slash")
+				ContentUnavailableView {
+					Label("Radio Not Found", systemImage: "antenna.radiowaves.left.and.right.slash")
+				} actions: {
+					Button("Close", action: close)
+				}
 			} else {
 				ProgressView()
 			}

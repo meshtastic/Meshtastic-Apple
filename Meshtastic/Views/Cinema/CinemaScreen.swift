@@ -207,6 +207,10 @@ struct CinemaScreen: View {
 			}
 			// The pages are the model's and outlive the gate: one up when the gate goes up would
 			// stay over it, and come back when it drops.
+			// Picking another section from the tab strip closes the flow, which would hide it.
+			.onChange(of: model.section) {
+				radioSetupRequest = nil
+			}
 			.onChange(of: gated) { _, gated in
 				if gated {
 					model.presenter.popAll()
