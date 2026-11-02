@@ -59,6 +59,8 @@ struct CinemaSpace: View {
 	/// starting another. The build is its own task so a caller being cancelled doesn't stop it.
 	@State private var lookoutBuild: LookoutBuild?
 	@State private var markerPanels = LookoutMarkerPanels()
+	/// Where the viewer's head is, so a marker's card opens beside the marker as they see it.
+	@State private var headTracker = CinemaHeadTracker()
 	/// The node card open beside a marker out the lookout's windows.
 	@State private var lookoutCard: LookoutCardSelection?
 	@State private var radioCoordinate: CLLocationCoordinate2D?
@@ -82,7 +84,8 @@ struct CinemaSpace: View {
 				placeBoards()
 				modelStand.refreshScreen()
 				// A marker's size is only known once it has laid out, like a board's.
-				if markerPanels.unsized {
+				// So is a card hung before the head was tracked, once it is.
+				if markerPanels.unsized || (markerPanels.cardAwaitingHead && headTracker.headPosition != nil) {
 					placeMarkers { markerPanels.entity(for: $0) }
 				}
 			}
@@ -243,6 +246,9 @@ struct CinemaSpace: View {
 				accessoryManager.stopDisplayMirror(for: .cinemaStand)
 			}
 		}
+		.task {
+			await headTracker.start()
+		}
 		.onChange(of: lookout.labels) {
 			// The nodes move and the markers regroup; a card whose marker is gone closes.
 			if let lead = lookoutCard?.lead, !markers.contains(where: { $0.lead.id == lead }) {
@@ -280,6 +286,7 @@ struct CinemaSpace: View {
 		.onDisappear {
 			fitBoards?.cancel()
 			fitBoards = nil
+			headTracker.stop()
 			CinemaScene.showModel = nil
 			modelRequest = nil
 			modelStand.screenSource = nil
@@ -450,7 +457,7 @@ struct CinemaSpace: View {
 	}
 
 	private func placeMarkers(_ entityFor: (String) -> Entity?) {
-		markerPanels.place(markers, selected: lookoutCard?.lead, on: stage, entityFor: entityFor)
+		markerPanels.place(markers, selected: lookoutCard?.lead, on: stage, head: headTracker.headPosition, entityFor: entityFor)
 	}
 
 	/// Centers the 3D map on the node, opening the map if it isn't open.
