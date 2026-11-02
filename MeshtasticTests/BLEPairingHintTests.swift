@@ -322,3 +322,66 @@ final class LostBondTests {
 	}
 
 }
+
+// MARK: - Pairing where no PIN can be typed
+
+@Suite("Pairing without a PIN sheet", .serialized)
+final class PINEntryUnsupportedTests {
+
+	private let radio = UUID(uuidString: "00000000-0000-0000-0000-0000000000DD")!
+	private let originalPairedIds: [String]
+
+	init() {
+		originalPairedIds = UserDefaults.pairedPeripheralIds
+		UserDefaults.pairedPeripheralIds = []
+	}
+
+	deinit {
+		UserDefaults.pairedPeripheralIds = originalPairedIds
+	}
+
+	private func isPINEntryUnsupported(_ error: Error?) -> Bool {
+		guard let accessoryError = error as? AccessoryError, case .pinEntryUnsupported = accessoryError else { return false }
+		return true
+	}
+
+	@Test func aFirstPairingThatFailsWhereThePINGoesIsThePIN() {
+		// visionOS: never paired with this radio, and the subscription that would show the PIN
+		// sheet failed. That is the PIN the headset can't enter, not a mistyped one.
+		let reported = BLEConnection.bondLostError(for: radio, error: CBATTError(.insufficientAuthentication), canEnterPIN: false)
+		#expect(isPINEntryUnsupported(reported))
+	}
+
+	@Test func aRadioPairedBeforeStillReportsALostBond() {
+		UserDefaults.rememberPairedPeripheral(radio)
+		let reported = BLEConnection.bondLostError(for: radio, error: CBATTError(.insufficientEncryption), canEnterPIN: false)
+		guard case AccessoryError.bondLost = reported else {
+			Issue.record("a radio paired before reported \(reported) instead of bondLost")
+			return
+		}
+	}
+
+	@Test func wherePINsCanBeTypedTheErrorIsKept() {
+		let reported = BLEConnection.bondLostError(for: radio, error: CBATTError(.insufficientAuthentication), canEnterPIN: true)
+		#expect((reported as? CBATTError)?.code == .insufficientAuthentication)
+	}
+
+	@Test func aDropWhilePairingIsThePINOnlyForAFirstPairingWithoutASheet() {
+		#expect(isPINEntryUnsupported(BLEConnection.pairingDropError(hadBond: false, canEnterPIN: false)))
+		#expect(BLEConnection.pairingDropError(hadBond: true, canEnterPIN: false) == nil,
+				"a radio paired before has no PIN to enter, so its drop keeps its own error")
+		#expect(BLEConnection.pairingDropError(hadBond: false, canEnterPIN: true) == nil,
+				"where the PIN sheet shows, a drop is the user cancelling it or the radio going away")
+	}
+
+	@Test func itEndsTheConnectAndIsNeverReconnected() {
+		#expect(BLEConnection.terminatesConnectRetries(AccessoryError.pinEntryUnsupported))
+		#expect(BLEConnection.shouldReconnect(after: AccessoryError.pinEntryUnsupported) == false)
+	}
+
+	@Test func theMessageSaysWhatToSet() {
+		let message = AccessoryError.pinEntryUnsupported.errorDescription ?? ""
+		#expect(message.contains("No PIN (Just Works)"))
+		#expect(message.contains("Vision Pro"))
+	}
+}

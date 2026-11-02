@@ -88,6 +88,10 @@ The app displays the Bluetooth signal strength of nearby devices during scanning
 **App asks for Bluetooth permission**
 - Grant permission in iOS Settings → Privacy & Security → Bluetooth → Meshtastic.
 
+**Apple Vision Pro: pairing stops where the PIN would go**
+- visionOS can't enter a Bluetooth PIN, so a radio set to a Random or Fixed PIN can't pair with the headset. The Connect screen says so when it happens.
+- Set the radio's Bluetooth pairing mode to **No PIN (Just Works)** from another device (Settings → Bluetooth in the app on an iPhone, iPad or Mac), then connect again.
+
 ---
 
 {: .tip }

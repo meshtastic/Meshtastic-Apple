@@ -83,10 +83,15 @@ actor BLEConnection: Connection {
 		// bonding did not complete. Forget the paired hint so the next attempt uses the
 		// long pairing window instead of the fast reconnect timeout (self-heals a stale
 		// hint left by a bond the user removed via iOS Settings > Bluetooth).
+		var error = error
 		if isAwaitingNotifyConfirmation {
 			isAwaitingNotifyConfirmation = false
 			pendingNotifyConfirmations.removeAll()
+			let hadBond = UserDefaults.isPairedPeripheral(peripheral.identifier)
 			UserDefaults.forgetPairedPeripheral(peripheral.identifier)
+			if let pinError = Self.pairingDropError(hadBond: hadBond, canEnterPIN: Self.platformCanEnterPIN) {
+				error = pinError
+			}
 		}
 
 		// If we're torn down while the connect handshake is still suspended (e.g. the user
@@ -730,7 +735,7 @@ extension BLEConnection {
 	/// Bluetooth codes and need opposite advice — clear the pairing in Settings, or try the
 	/// PIN again. Having paired with this radio before is what separates them. Clearing the
 	/// hint also self-heals the connect timeout back to the long pairing window.
-	static func bondLostError(for peripheralID: UUID, error: Error) -> Error {
+	static func bondLostError(for peripheralID: UUID, error: Error, canEnterPIN: Bool = platformCanEnterPIN) -> Error {
 		guard isPairingFailure(error) else { return error }
 		let hadBond = UserDefaults.isPairedPeripheral(peripheralID)
 		UserDefaults.forgetPairedPeripheral(peripheralID)
@@ -742,16 +747,41 @@ extension BLEConnection {
 		if let cbError = error as? CBError, cbError.code == .peerRemovedPairingInformation {
 			return AccessoryError.bondLost
 		}
-		return hadBond ? AccessoryError.bondLost : error
+		if hadBond { return AccessoryError.bondLost }
+		// A first pairing that fails where the PIN would be typed, on a platform that can't type
+		// one, is the PIN itself. Retrying can't fix it, so say what can.
+		return canEnterPIN ? error : AccessoryError.pinEntryUnsupported
+	}
+
+	/// Whether this platform can show the Bluetooth PIN sheet. visionOS allows the pairing and
+	/// then drops the link where iOS would ask for the PIN, so a radio set to a PIN can't pair.
+	static let platformCanEnterPIN: Bool = {
+		#if os(visionOS)
+		return false
+		#else
+		return true
+		#endif
+	}()
+
+	/// What to report instead when the link drops while the connect is still waiting on its
+	/// pairing subscription, or nil to keep the drop's own error. On a platform that can't enter
+	/// a PIN, a first pairing ending here is the PIN sheet it can't show. A radio paired before
+	/// has no PIN to enter, so its drop means something else. Pure so it can be tested without a
+	/// peripheral.
+	static func pairingDropError(hadBond: Bool, canEnterPIN: Bool) -> AccessoryError? {
+		guard !hadBond, !canEnterPIN else { return nil }
+		return .pinEntryUnsupported
 	}
 
 	/// Whether a connect failure can never be fixed by trying again.
 	///
-	/// A lost bond needs the user to forget the device in iOS Settings > Bluetooth — every retry
-	/// re-fails the same way, and retrying it is the reconnect loop this exists to end. Pure so the
-	/// policy is testable without a peripheral.
+	/// A lost bond needs the user to forget the device in iOS Settings > Bluetooth, and a PIN this
+	/// platform can't enter needs the radio's pairing mode changed from another device — every
+	/// retry re-fails the same way, and retrying it is the reconnect loop this exists to end. Pure
+	/// so the policy is testable without a peripheral.
 	static func terminatesConnectRetries(_ error: Error) -> Bool {
 		if case AccessoryError.bondLost = error { return true }
+		if case AccessoryError.pinEntryUnsupported = error { return true }
 		if let cbError = error as? CBError, cbError.code == .peerRemovedPairingInformation { return true }
 		return false
 	}

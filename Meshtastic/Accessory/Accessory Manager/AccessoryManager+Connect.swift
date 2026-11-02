@@ -112,15 +112,17 @@ extension AccessoryManager {
 					// first inbound packet and is cleared by Step 0's closeConnection() reset(), so
 					// there's no explicit start to make here — it stays correct across connect retries.
 				} catch let error where BLEConnection.terminatesConnectRetries(error) {
-					// A lost bond cannot be fixed by retrying or reconnecting — the user has to
-					// forget the device in iOS Settings. The old catch matched only the raw CBError,
-					// but the transport maps that into AccessoryError.bondLost before throwing, so
-					// the mapped error fell through to retryAll and looped. Kill auto-reconnect
-					// before cancelling or discovery immediately starts the loop again.
+					// A lost bond, or a PIN this platform can't enter, cannot be fixed by retrying
+					// or reconnecting — the user has to forget the device in iOS Settings, or change
+					// the radio's pairing mode from another device. The old catch matched only the
+					// raw CBError, but the transport maps that into AccessoryError.bondLost before
+					// throwing, so the mapped error fell through to retryAll and looped. Kill
+					// auto-reconnect before cancelling or discovery immediately starts the loop again.
 					self.shouldAutomaticallyConnectToPreferredPeripheralAfterError = false
 					self.autoReconnectSuspendedForSession = true
-					self.lastConnectionError = AccessoryError.bondLost
-					await self.connectionStepper?.cancelCurrentlyExecutingStep(withError: AccessoryError.bondLost, cancelFullProcess: true)
+					let terminal = error as? AccessoryError ?? AccessoryError.bondLost
+					self.lastConnectionError = terminal
+					await self.connectionStepper?.cancelCurrentlyExecutingStep(withError: terminal, cancelFullProcess: true)
 				}
 			}
 			
