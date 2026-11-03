@@ -299,11 +299,14 @@ final class NodeBackupManager: NodeBackupManaging {
 			throw CocoaError(.fileNoSuchFile, userInfo: [NSFilePathErrorKey: sourceURL.path])
 		}
 
-		// Create or clean destination directory
-		if fileManager.fileExists(atPath: nodeBackupDir.path) {
-			try fileManager.removeItem(at: nodeBackupDir)
+		// Copy into a staging folder and swap it in only once the copy and checksum succeed, so a
+		// failure part way through leaves the radio's previous backup as it was.
+		let stagingDir = backupBaseURL.appendingPathComponent(nodeDirName + ".partial", isDirectory: true)
+		if fileManager.fileExists(atPath: stagingDir.path) {
+			try fileManager.removeItem(at: stagingDir)
 		}
-		try fileManager.createDirectory(at: nodeBackupDir, withIntermediateDirectories: true)
+		try fileManager.createDirectory(at: stagingDir, withIntermediateDirectories: true)
+		defer { try? fileManager.removeItem(at: stagingDir) }
 
 		// Copy files on background thread
 		let fileSize = try await Task.detached(priority: .userInitiated) { [fileManager] in
@@ -311,7 +314,7 @@ final class NodeBackupManager: NodeBackupManaging {
 
 			// Copy .store
 			let sqliteSrc = sourceURL
-			let sqliteDst = nodeBackupDir.appendingPathComponent(Self.storeFileName)
+			let sqliteDst = stagingDir.appendingPathComponent(Self.storeFileName)
 			if fileManager.fileExists(atPath: sqliteSrc.path) {
 				try fileManager.copyItem(at: sqliteSrc, to: sqliteDst)
 				let attrs = try fileManager.attributesOfItem(atPath: sqliteDst.path)
@@ -320,7 +323,7 @@ final class NodeBackupManager: NodeBackupManaging {
 
 			// Copy .sqlite-wal if present
 			let walSrc = sourceURL.deletingLastPathComponent().appendingPathComponent(Self.walFileName)
-			let walDst = nodeBackupDir.appendingPathComponent(Self.walFileName)
+			let walDst = stagingDir.appendingPathComponent(Self.walFileName)
 			if fileManager.fileExists(atPath: walSrc.path) {
 				try fileManager.copyItem(at: walSrc, to: walDst)
 				let attrs = try fileManager.attributesOfItem(atPath: walDst.path)
@@ -329,7 +332,7 @@ final class NodeBackupManager: NodeBackupManaging {
 
 			// Copy .sqlite-shm if present
 			let shmSrc = sourceURL.deletingLastPathComponent().appendingPathComponent(Self.shmFileName)
-			let shmDst = nodeBackupDir.appendingPathComponent(Self.shmFileName)
+			let shmDst = stagingDir.appendingPathComponent(Self.shmFileName)
 			if fileManager.fileExists(atPath: shmSrc.path) {
 				try fileManager.copyItem(at: shmSrc, to: shmDst)
 				let attrs = try fileManager.attributesOfItem(atPath: shmDst.path)
@@ -340,8 +343,13 @@ final class NodeBackupManager: NodeBackupManaging {
 		}.value
 
 		// Compute checksum
-		let sqliteDst = nodeBackupDir.appendingPathComponent(Self.storeFileName)
+		let sqliteDst = stagingDir.appendingPathComponent(Self.storeFileName)
 		let checksum = try await computeChecksum(for: sqliteDst)
+
+		if fileManager.fileExists(atPath: nodeBackupDir.path) {
+			try fileManager.removeItem(at: nodeBackupDir)
+		}
+		try fileManager.moveItem(at: stagingDir, to: nodeBackupDir)
 
 		// Update index
 		let entry = BackupEntry(
