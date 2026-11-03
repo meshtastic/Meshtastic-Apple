@@ -100,12 +100,7 @@ class PersistenceController {
 	/// (the first-unlock store reopen) are exempt because their views mount after the swap.
 	func recreateContainer() {
 		let schema = Schema(versionedSchema: MeshtasticSchema.current)
-		let config = ModelConfiguration(
-			storeName,
-			schema: schema,
-			isStoredInMemoryOnly: inMemory,
-			allowsSave: true
-		)
+		let config = Self.storeConfiguration(storeName, schema: schema, inMemory: inMemory)
 		do {
 			// Mirror init()'s open logic: on-disk stores go through the migration plan so a
 			// reopen behaves identically to launch if a schema migration ever applies here.
@@ -137,7 +132,7 @@ class PersistenceController {
 			return
 		}
 		let schema = Schema(versionedSchema: MeshtasticSchema.current)
-		let config = ModelConfiguration(storeName, schema: schema, isStoredInMemoryOnly: false, allowsSave: true)
+		let config = Self.storeConfiguration(storeName, schema: schema, inMemory: false)
 		// Park, don't unlink — a leaked previous container may still hold the store open
 		// (see restoreStoreFromBackup); unlinking it live invalidates its fds and the broken
 		// container traps on the next save notification in the process.
@@ -209,18 +204,28 @@ class PersistenceController {
 		}
 	}
 
-	init(inMemory: Bool = false, storeName: String = "Meshtastic") {
+	/// The name of the app's on-disk store.
+	nonisolated static let defaultStoreName = "Meshtastic"
+
+	/// The configuration every on-disk open uses. SwiftData decides where the file goes: with the
+	/// app group entitlement it is the group container, not the app's own Application Support, so
+	/// anything that reads the store files takes the location from here (see `storeURL`).
+	nonisolated static func storeConfiguration(_ storeName: String, schema: Schema, inMemory: Bool) -> ModelConfiguration {
+		ModelConfiguration(storeName, schema: schema, isStoredInMemoryOnly: inMemory, allowsSave: true)
+	}
+
+	/// Where the app's store file is on disk.
+	nonisolated static var storeURL: URL {
+		storeConfiguration(defaultStoreName, schema: Schema(versionedSchema: MeshtasticSchema.current), inMemory: false).url
+	}
+
+	init(inMemory: Bool = false, storeName: String = PersistenceController.defaultStoreName) {
 		self.storeName = storeName
 		self.inMemory = inMemory
 		let isTestEnvironment = NSClassFromString("XCTestCase") != nil || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
 		let schema = Schema(versionedSchema: MeshtasticSchema.current)
 
-		let config = ModelConfiguration(
-			storeName,
-			schema: schema,
-			isStoredInMemoryOnly: inMemory,
-			allowsSave: true
-		)
+		let config = Self.storeConfiguration(storeName, schema: schema, inMemory: inMemory)
 
 #if DEBUG
 		if !inMemory && !isTestEnvironment && PerformanceSeedData.configuration?.resetStore == true {

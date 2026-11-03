@@ -113,7 +113,7 @@ final class NodeBackupManager: NodeBackupManaging {
 	/// Initializer for testing with a custom base URL.
 	///
 	/// `activeStoreURL` points `createBackup` at a store the test owns. Without it the manager reads
-	/// the live Application Support store, which the schema-history tests open and replace through
+	/// the live store, which the schema-history tests open and replace through
 	/// the real `PersistenceController` — so a full parallel run could catch it mid-manipulation and
 	/// fail tests that pass in isolation.
 	init(baseURL: URL, activeStoreURL: URL? = nil) {
@@ -287,14 +287,18 @@ final class NodeBackupManager: NodeBackupManaging {
 		let nodeDirName = deviceKey ?? BackupKey.forNode(nodeNum)
 		let nodeBackupDir = backupBaseURL.appendingPathComponent(nodeDirName, isDirectory: true)
 
+		// A missing store is a failure, not an empty backup: callers clear the database once this
+		// returns. Checked before the radio's previous backup is removed below, so that one survives.
+		let sourceURL = self.activeDatabaseURL()
+		guard fileManager.fileExists(atPath: sourceURL.path) else {
+			throw CocoaError(.fileNoSuchFile, userInfo: [NSFilePathErrorKey: sourceURL.path])
+		}
+
 		// Create or clean destination directory
 		if fileManager.fileExists(atPath: nodeBackupDir.path) {
 			try fileManager.removeItem(at: nodeBackupDir)
 		}
 		try fileManager.createDirectory(at: nodeBackupDir, withIntermediateDirectories: true)
-
-		// Get source database path
-		let sourceURL = self.activeDatabaseURL()
 
 		// Copy files on background thread
 		let fileSize = try await Task.detached(priority: .userInitiated) { [fileManager] in
@@ -648,11 +652,10 @@ final class NodeBackupManager: NodeBackupManaging {
 
 	// MARK: - Helpers
 
-	/// Returns the URL to the active SQLite database file.
-	private func activeDatabaseURL() -> URL {
-		if let activeStoreURLOverride { return activeStoreURLOverride }
-		let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-		return appSupport.appendingPathComponent("Meshtastic.store")
+	/// The live store file. SwiftData keeps it in the app group container, so the path comes
+	/// from the store's configuration rather than from Application Support.
+	func activeDatabaseURL() -> URL {
+		activeStoreURLOverride ?? PersistenceController.storeURL
 	}
 
 	// MARK: - Full Database Restore via Import

@@ -656,6 +656,9 @@
     "Radio Not Found" : {
 
     },
+    "Radio Not Switched" : {
+
+    },
     "region %@" : {
       "comment" : "Beacon switch prompt; one of the changes listed"
     },
@@ -143329,6 +143332,9 @@
           }
         }
       }
+    },
+    "This radio's messages and nodes could not be backed up, so nothing was deleted." : {
+
     },
     "This radio's channels aren't available, so a channel can't be offered. Connect to it directly to set one." : {
       "localizations" : {

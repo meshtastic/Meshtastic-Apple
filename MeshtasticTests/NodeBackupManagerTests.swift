@@ -164,6 +164,55 @@ struct NodeBackupManagerTests {
 		}
 	}
 
+	@Test("a failed backup keeps the radio's previous backup")
+	@MainActor
+	func testFailedBackupKeepsPreviousBackup() async throws {
+		let tempDir = try makeTempDir()
+		defer { cleanup(tempDir) }
+
+		let storeURL = try createFakeDatabase(at: tempDir.appendingPathComponent("ActiveDB", isDirectory: true))
+		let backupDir = tempDir.appendingPathComponent("Backups", isDirectory: true)
+		let manager = NodeBackupManager(baseURL: backupDir, activeStoreURL: storeURL)
+
+		guard case .success(let first) = await manager.createBackup(forNode: 55555, deviceId: nil, nodeName: "Kept") else {
+			Issue.record("first backup did not succeed")
+			return
+		}
+
+		// The store goes missing, so the next backup has nothing to copy.
+		try FileManager.default.removeItem(at: storeURL)
+		let second = await manager.createBackup(forNode: 55555, deviceId: nil, nodeName: "Lost")
+		guard case .skipped = second else {
+			Issue.record("backup succeeded with no store: \(second)")
+			return
+		}
+
+		let kept = backupDir.appendingPathComponent(first.backupPath, isDirectory: true)
+			.appendingPathComponent("Meshtastic.store")
+		#expect(FileManager.default.fileExists(atPath: kept.path))
+		#expect(manager.listBackups().first { $0.nodeNum == 55555 }?.nodeName == "Kept")
+	}
+
+	// MARK: - Live store location
+
+	@Test("without an override, backups copy the store SwiftData opens")
+	@MainActor
+	func testDefaultStoreURLIsTheLiveStore() throws {
+		let tempDir = try makeTempDir()
+		defer { cleanup(tempDir) }
+
+		let manager = NodeBackupManager(baseURL: tempDir.appendingPathComponent("Backups", isDirectory: true))
+		let schema = Schema(versionedSchema: MeshtasticSchema.current)
+		let liveConfig = PersistenceController.storeConfiguration(PersistenceController.defaultStoreName, schema: schema, inMemory: false)
+		#expect(manager.activeDatabaseURL() == liveConfig.url)
+
+		// With the app group, SwiftData keeps the store in the group container, not in the
+		// app's own Application Support, which is where backups used to look.
+		if let group = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.gvh.MeshtasticClient") {
+			#expect(manager.activeDatabaseURL().standardizedFileURL.path.hasPrefix(group.standardizedFileURL.path))
+		}
+	}
+
 	// MARK: - T016: restoreFromBackup Success Case
 
 	@Test("restoreFromBackup imports entities when valid backup exists")
