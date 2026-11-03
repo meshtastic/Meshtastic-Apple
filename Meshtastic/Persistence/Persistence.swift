@@ -361,6 +361,10 @@ class PersistenceController {
 				Logger.data.error("⬆️ CoreDataMigrationService failed: \(error.localizedDescription, privacy: .public)")
 			}
 		}
+
+		// ── Step 3: one-time recovery of the store the app group move left behind ──
+		// Runs before any radio connects, so nothing else is writing the store.
+		LegacyStoreRecovery.recoverIfNeeded(into: container, liveStoreURL: config.url)
 	}
 
 	@MainActor

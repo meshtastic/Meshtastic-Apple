@@ -788,11 +788,11 @@
             "map",
             "settings",
             "apple",
+            "app",
             "radio",
             "now",
             "new",
             "cinema",
-            "app",
             "vision",
             "pro",
             "nodes",
@@ -802,11 +802,11 @@
             "messages",
             "mesh",
             "jun",
+            "one",
+            "from",
             "firmware",
             "radios",
-            "one",
             "oct",
-            "from",
             "device",
             "bluetooth",
             "page",
@@ -816,7 +816,7 @@
             "live",
             "channel"
         ],
-        "charCount": 12985
+        "charCount": 12997
     },
     {
         "id": "adding-features",

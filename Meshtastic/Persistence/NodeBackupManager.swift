@@ -250,6 +250,11 @@ final class NodeBackupManager: NodeBackupManaging {
 	///   change when a radio upgrades to 2.8, so a backup keyed on one is orphaned by the upgrade.
 	///   Pass nil for a radio that reports none and the backup keeps the old node-number key.
 	func createBackup(forNode nodeNum: Int64, deviceId: Data?, nodeName: String?) async -> NodeBackupResult {
+		await createBackup(forNode: nodeNum, deviceId: deviceId, nodeName: nodeName, from: nil)
+	}
+
+	/// - Parameter sourceURL: The store to copy. Nil copies the live store.
+	func createBackup(forNode nodeNum: Int64, deviceId: Data?, nodeName: String?, from sourceURL: URL?) async -> NodeBackupResult {
 		Logger.backup.info("Creating backup for node \(nodeNum)")
 
 		// T026: Check disk space
@@ -261,7 +266,7 @@ final class NodeBackupManager: NodeBackupManaging {
 		// Retry-once logic (FR-004)
 		for attempt in 1...2 {
 			do {
-				let entry = try await performBackup(forNode: nodeNum, deviceId: deviceId, nodeName: nodeName)
+				let entry = try await performBackup(forNode: nodeNum, deviceId: deviceId, nodeName: nodeName, sourceURL: sourceURL)
 				Logger.backup.info("Backup created for node \(nodeNum): \(entry.fileSize) bytes, checksum: \(entry.checksum, privacy: .public)")
 				return .success(entry)
 			} catch {
@@ -277,7 +282,7 @@ final class NodeBackupManager: NodeBackupManaging {
 		return .skipped(reason: "Backup failed unexpectedly")
 	}
 
-	private func performBackup(forNode nodeNum: Int64, deviceId: Data?, nodeName: String?) async throws -> BackupEntry {
+	private func performBackup(forNode nodeNum: Int64, deviceId: Data?, nodeName: String?, sourceURL: URL?) async throws -> BackupEntry {
 		// Fall back to the device id already recorded for this node. Callers resolve it from the
 		// store, which can come back nil part way through a connect or a radio switch, and minting a
 		// node-number key then would sit a second backup beside the device-keyed one for the same
@@ -289,7 +294,7 @@ final class NodeBackupManager: NodeBackupManaging {
 
 		// A missing store is a failure, not an empty backup: callers clear the database once this
 		// returns. Checked before the radio's previous backup is removed below, so that one survives.
-		let sourceURL = self.activeDatabaseURL()
+		let sourceURL = sourceURL ?? self.activeDatabaseURL()
 		guard fileManager.fileExists(atPath: sourceURL.path) else {
 			throw CocoaError(.fileNoSuchFile, userInfo: [NSFilePathErrorKey: sourceURL.path])
 		}
@@ -637,6 +642,23 @@ final class NodeBackupManager: NodeBackupManaging {
 		saveIndex()
 
 		Logger.backup.info("Re-keyed the backup for node \(surviving.nodeNum) onto its device id, dropping \(candidates.count - 1) duplicate(s)")
+	}
+
+	/// Removes the backups made after `date` that belong to none of the given radios. Returns
+	/// how many went.
+	@discardableResult
+	func removeBackups(createdAfter date: Date, exceptNodes nodeNums: Set<Int64>, exceptDevices deviceKeys: Set<String>) -> Int {
+		let stale = backupIndex.entries.values.filter { entry in
+			guard entry.createdAt > date, !nodeNums.contains(entry.nodeNum) else { return false }
+			if let deviceId = entry.deviceId, deviceKeys.contains(deviceId) { return false }
+			return true
+		}
+		var removed = 0
+		for entry in stale where removeBackup(forKey: entry.key, reason: "copied from the store left behind by the app group move") {
+			removed += 1
+		}
+		if removed > 0 { saveIndex() }
+		return removed
 	}
 
 	@discardableResult

@@ -11,10 +11,13 @@ extension NodeBackupManager {
 
 	// MARK: - Import Helpers
 
-	nonisolated static func importNodes(from backupContext: ModelContext, into liveContext: ModelContext) throws -> [Int64: NodeInfoEntity] {
+	/// With `existing`, nodes the live store already has are kept as they are and returned in the
+	/// map, so the rows imported after them link to the live node.
+	nonisolated static func importNodes(from backupContext: ModelContext, into liveContext: ModelContext, existing: StoreMergeIndex? = nil) throws -> [Int64: NodeInfoEntity] {
 		let backupNodes = try backupContext.fetch(FetchDescriptor<NodeInfoEntity>())
-		var nodesByNum: [Int64: NodeInfoEntity] = [:]
+		var nodesByNum: [Int64: NodeInfoEntity] = existing?.nodesByNum ?? [:]
 		for src in backupNodes {
+			if existing?.nodesByNum[src.num] != nil { continue }
 			let dst = NodeInfoEntity()
 			dst.bleName = src.bleName
 			dst.channel = src.channel
@@ -43,10 +46,11 @@ extension NodeBackupManager {
 		return nodesByNum
 	}
 
-	nonisolated static func importUsers(from backupContext: ModelContext, into liveContext: ModelContext, nodesByNum: [Int64: NodeInfoEntity]) throws -> [Int64: UserEntity] {
+	nonisolated static func importUsers(from backupContext: ModelContext, into liveContext: ModelContext, nodesByNum: [Int64: NodeInfoEntity], existing: StoreMergeIndex? = nil) throws -> [Int64: UserEntity] {
 		let backupUsers = try backupContext.fetch(FetchDescriptor<UserEntity>())
-		var usersByNum: [Int64: UserEntity] = [:]
+		var usersByNum: [Int64: UserEntity] = existing?.usersByNum ?? [:]
 		for src in backupUsers {
+			if existing?.usersByNum[src.num] != nil { continue }
 			// Each `dst` is a freshly-created entity that we insert into the live context — this copy never
 			// overwrites the public key of an already-populated *live* record, so the inbound-mesh
 			// first-wins key protection (UpdateSwiftData / MeshPackets) doesn't apply here. This is a
@@ -79,10 +83,12 @@ extension NodeBackupManager {
 		return usersByNum
 	}
 
-	nonisolated static func importMyInfo(from backupContext: ModelContext, into liveContext: ModelContext, nodesByNum: [Int64: NodeInfoEntity]) throws -> [Int64: MyInfoEntity] {
+	/// With `existing`, a radio the live store already has keeps its own record and channels.
+	nonisolated static func importMyInfo(from backupContext: ModelContext, into liveContext: ModelContext, nodesByNum: [Int64: NodeInfoEntity], existing: StoreMergeIndex? = nil) throws -> [Int64: MyInfoEntity] {
 		let backupMyInfos = try backupContext.fetch(FetchDescriptor<MyInfoEntity>())
 		var myInfosByNodeNum: [Int64: MyInfoEntity] = [:]
 		for src in backupMyInfos {
+			if existing?.myInfoNodeNums.contains(src.myNodeNum) == true { continue }
 			let dst = MyInfoEntity()
 			dst.bleName = src.bleName
 			dst.deviceId = src.deviceId
@@ -101,9 +107,13 @@ extension NodeBackupManager {
 		return myInfosByNodeNum
 	}
 
-	nonisolated static func importChannels(from backupContext: ModelContext, into liveContext: ModelContext, myInfosByNodeNum: [Int64: MyInfoEntity]) throws {
+	nonisolated static func importChannels(from backupContext: ModelContext, into liveContext: ModelContext, myInfosByNodeNum: [Int64: MyInfoEntity], existing: StoreMergeIndex? = nil) throws {
 		let backupChannels = try backupContext.fetch(FetchDescriptor<ChannelEntity>())
 		for src in backupChannels {
+			// Merging, a channel comes only with a radio record imported above.
+			if existing != nil {
+				guard let srcNum = src.myInfoChannel?.myInfoNode?.num, myInfosByNodeNum[srcNum] != nil else { continue }
+			}
 			let dst = ChannelEntity()
 			dst.downlinkEnabled = src.downlinkEnabled
 			dst.id = src.id
@@ -123,9 +133,10 @@ extension NodeBackupManager {
 		}
 	}
 
-	nonisolated static func importMetadata(from backupContext: ModelContext, into liveContext: ModelContext, nodesByNum: [Int64: NodeInfoEntity]) throws {
+	nonisolated static func importMetadata(from backupContext: ModelContext, into liveContext: ModelContext, nodesByNum: [Int64: NodeInfoEntity], existing: StoreMergeIndex? = nil) throws {
 		let backupMetadata = try backupContext.fetch(FetchDescriptor<DeviceMetadataEntity>())
 		for src in backupMetadata {
+			if let num = src.metadataNode?.num, existing?.metadataNodeNums.contains(num) == true { continue }
 			let dst = DeviceMetadataEntity()
 			dst.canShutdown = src.canShutdown
 			dst.deviceStateVersion = src.deviceStateVersion
@@ -151,9 +162,11 @@ extension NodeBackupManager {
 		}
 	}
 
-	nonisolated static func importPositions(from backupContext: ModelContext, into liveContext: ModelContext, nodesByNum: [Int64: NodeInfoEntity]) throws {
+	nonisolated static func importPositions(from backupContext: ModelContext, into liveContext: ModelContext, nodesByNum: [Int64: NodeInfoEntity], existing: StoreMergeIndex? = nil) throws {
 		let backupPositions = try backupContext.fetch(FetchDescriptor<PositionEntity>())
 		for src in backupPositions {
+			let srcNum = src.nodePosition?.num ?? 0
+			if let existing, existing.positionKeys.contains(.init(num: srcNum, kind: 0, time: src.time)) { continue }
 			let dst = PositionEntity()
 			dst.altitude = src.altitude
 			dst.heading = src.heading
@@ -167,6 +180,8 @@ extension NodeBackupManager {
 			dst.snr = src.snr
 			dst.speed = src.speed
 			dst.time = src.time
+			// A node the live store already has keeps its own latest position.
+			if existing?.nodesByNum[srcNum] != nil { dst.latest = false }
 			if let srcNode = src.nodePosition, let liveNode = nodesByNum[srcNode.num] {
 				dst.nodePosition = liveNode
 				if dst.latest { liveNode.latestPositionCache = dst }
@@ -175,12 +190,13 @@ extension NodeBackupManager {
 		}
 	}
 
-	nonisolated static func importTelemetry(from backupContext: ModelContext, into liveContext: ModelContext, nodesByNum: [Int64: NodeInfoEntity]) throws {
+	nonisolated static func importTelemetry(from backupContext: ModelContext, into liveContext: ModelContext, nodesByNum: [Int64: NodeInfoEntity], existing: StoreMergeIndex? = nil) throws {
 		let backupTelemetry = try backupContext.fetch(FetchDescriptor<TelemetryEntity>())
 		for src in backupTelemetry {
 			// Backups made before `nodeNum` existed only link the row to its node, so fall back
 			// to that. Rows whose node is not in the backup were never shown, so they stay out.
 			guard let nodeNum = src.ownerNodeNum, nodesByNum[nodeNum] != nil else { continue }
+			if let existing, existing.telemetryKeys.contains(.init(num: nodeNum, kind: src.metricsType, time: src.time)) { continue }
 			let dst = TelemetryEntity()
 			dst.metricsType = src.metricsType
 			dst.time = src.time
@@ -238,9 +254,11 @@ extension NodeBackupManager {
 		}
 	}
 
-	nonisolated static func importMessages(from backupContext: ModelContext, into liveContext: ModelContext, usersByNum: [Int64: UserEntity]) throws {
+	nonisolated static func importMessages(from backupContext: ModelContext, into liveContext: ModelContext, usersByNum: [Int64: UserEntity], existing: StoreMergeIndex? = nil) throws {
 		let backupMessages = try backupContext.fetch(FetchDescriptor<MessageEntity>())
 		for src in backupMessages {
+			// messageId is unique, so a second copy would overwrite the live one on save.
+			if existing?.messageIds.contains(src.messageId) == true { continue }
 			let dst = MessageEntity()
 			dst.ackError = src.ackError
 			dst.ackSNR = src.ackSNR
@@ -278,9 +296,10 @@ extension NodeBackupManager {
 		}
 	}
 
-	nonisolated static func importWaypoints(from backupContext: ModelContext, into liveContext: ModelContext) throws {
+	nonisolated static func importWaypoints(from backupContext: ModelContext, into liveContext: ModelContext, existing: StoreMergeIndex? = nil) throws {
 		let backupWaypoints = try backupContext.fetch(FetchDescriptor<WaypointEntity>())
 		for src in backupWaypoints {
+			if existing?.waypointIds.contains(src.id) == true { continue }
 			let dst = WaypointEntity()
 			dst.created = src.created
 			dst.createdBy = src.createdBy
@@ -308,9 +327,10 @@ extension NodeBackupManager {
 		}
 	}
 
-	nonisolated static func importTraceRoutes(from backupContext: ModelContext, into liveContext: ModelContext, nodesByNum: [Int64: NodeInfoEntity]) throws {
+	nonisolated static func importTraceRoutes(from backupContext: ModelContext, into liveContext: ModelContext, nodesByNum: [Int64: NodeInfoEntity], existing: StoreMergeIndex? = nil) throws {
 		let backupTraceRoutes = try backupContext.fetch(FetchDescriptor<TraceRouteEntity>())
 		for src in backupTraceRoutes {
+			if existing?.traceRouteIds.contains(src.id) == true { continue }
 			let dst = TraceRouteEntity()
 			dst.id = src.id
 			dst.hasPositions = src.hasPositions
@@ -360,9 +380,10 @@ extension NodeBackupManager {
 		}
 	}
 
-	nonisolated static func importPaxCounters(from backupContext: ModelContext, into liveContext: ModelContext, nodesByNum: [Int64: NodeInfoEntity]) throws {
+	nonisolated static func importPaxCounters(from backupContext: ModelContext, into liveContext: ModelContext, nodesByNum: [Int64: NodeInfoEntity], existing: StoreMergeIndex? = nil) throws {
 		let backupPax = try backupContext.fetch(FetchDescriptor<PaxCounterEntity>())
 		for src in backupPax {
+			if let existing, existing.paxKeys.contains(.init(num: src.paxNode?.num ?? 0, kind: 0, time: src.time)) { continue }
 			let dst = PaxCounterEntity()
 			dst.ble = src.ble
 			dst.time = src.time
