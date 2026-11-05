@@ -154,15 +154,36 @@ struct LegacyStoreRecoveryTests {
 			defaults: freshDefaults()
 		)
 		#expect(outcome == .filedAsBackup(nodeNum: 100))
-		#expect(!backups.hasBackup(forNode: 300))
-		#expect(backups.hasBackup(forNode: 400))
 
-		// The backup is copied in a task; give it a moment.
-		for _ in 0..<100 where !backups.hasBackup(forNode: 100) {
+		// The backup is copied in a task, and the copies are removed only after it lands.
+		for _ in 0..<100 where !backups.hasBackup(forNode: 100) || backups.hasBackup(forNode: 300) {
 			try await Task.sleep(for: .milliseconds(20))
 		}
 		#expect(backups.hasBackup(forNode: 100))
+		#expect(!backups.hasBackup(forNode: 300))
+		#expect(backups.hasBackup(forNode: 400))
 		#expect(try ModelContext(live).fetch(FetchDescriptor<MessageEntity>()).isEmpty)
+	}
+
+	@Test("a failed attempt is retried on later launches, a limited number of times")
+	func testFailureRetries() throws {
+		let dir = try makeTempDir()
+		defer { try? FileManager.default.removeItem(at: dir) }
+		let legacyURL = dir.appendingPathComponent("AppSupport/Meshtastic.store")
+		try FileManager.default.createDirectory(at: legacyURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+		try Data("not a store".utf8).write(to: legacyURL)
+		let liveURL = dir.appendingPathComponent("Group/Meshtastic.store")
+		let live = try makeStore(at: liveURL)
+
+		let defaults = freshDefaults()
+		func attempt() -> LegacyStoreRecovery.Outcome {
+			LegacyStoreRecovery.recoverIfNeeded(into: live, liveStoreURL: liveURL, legacyStoreURL: legacyURL, defaults: defaults)
+		}
+		for _ in 0..<LegacyStoreRecovery.maxAttempts {
+			#expect(attempt() == .failed)
+		}
+		#expect(attempt() == .nothingToDo)
+		#expect(FileManager.default.fileExists(atPath: legacyURL.path))
 	}
 
 	@Test("nothing happens when the store never moved")

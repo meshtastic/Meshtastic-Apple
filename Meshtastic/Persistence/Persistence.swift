@@ -226,6 +226,8 @@ class PersistenceController {
 		let schema = Schema(versionedSchema: MeshtasticSchema.current)
 
 		let config = Self.storeConfiguration(storeName, schema: schema, inMemory: inMemory)
+		// Set when the on-disk store could not be opened and the app runs on a throwaway one.
+		var usingVolatileStore = false
 
 #if DEBUG
 		if !inMemory && !isTestEnvironment && PerformanceSeedData.configuration?.resetStore == true {
@@ -341,6 +343,7 @@ class PersistenceController {
 				do {
 					container = try ModelContainer(for: schema, configurations: memoryConfig)
 					container.mainContext.autosaveEnabled = false
+					usingVolatileStore = true
 				} catch let memoryError {
 					// An in-memory store cannot fail for file reasons; if it does,
 					// the schema itself is invalid and there is no safe recovery.
@@ -363,8 +366,11 @@ class PersistenceController {
 		}
 
 		// ── Step 3: one-time recovery of the store the app group move left behind ──
-		// Runs before any radio connects, so nothing else is writing the store.
-		LegacyStoreRecovery.recoverIfNeeded(into: container, liveStoreURL: config.url)
+		// Runs before any radio connects, so nothing else is writing the store. Not into a
+		// throwaway in-memory store: the old file would be marked recovered and the data lost.
+		if !usingVolatileStore {
+			LegacyStoreRecovery.recoverIfNeeded(into: container, liveStoreURL: config.url)
+		}
 	}
 
 	@MainActor

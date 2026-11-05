@@ -347,9 +347,10 @@ final class NodeBackupManager: NodeBackupManaging {
 		let checksum = try await computeChecksum(for: sqliteDst)
 
 		if fileManager.fileExists(atPath: nodeBackupDir.path) {
-			try fileManager.removeItem(at: nodeBackupDir)
+			_ = try fileManager.replaceItemAt(nodeBackupDir, withItemAt: stagingDir)
+		} else {
+			try fileManager.moveItem(at: stagingDir, to: nodeBackupDir)
 		}
-		try fileManager.moveItem(at: stagingDir, to: nodeBackupDir)
 
 		// Update index
 		let entry = BackupEntry(

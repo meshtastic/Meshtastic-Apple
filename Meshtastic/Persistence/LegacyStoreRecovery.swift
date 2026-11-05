@@ -17,7 +17,8 @@ import SwiftData
 /// Once, at launch, before any radio connects: the old store is merged into the live one when
 /// they belong to the same radio (or the live one has no radio yet), and otherwise filed as that
 /// radio's backup. Backups copied from it under other radios are removed. The old file is then
-/// renamed so this does not run again; it is kept, not deleted.
+/// renamed so this does not run again; it is kept, not deleted. A failed attempt is retried on the
+/// next launch, up to `maxAttempts` times.
 enum LegacyStoreRecovery {
 
 	enum Outcome: Equatable {
@@ -27,7 +28,8 @@ enum LegacyStoreRecovery {
 		case failed
 	}
 
-	nonisolated static let attemptedKey = "legacyStoreRecoveryAttempted"
+	nonisolated static let attemptsKey = "legacyStoreRecoveryAttempts"
+	nonisolated static let maxAttempts = 3
 	nonisolated static let recoveredSuffix = ".recovered"
 
 	/// Where the store was before the app group.
@@ -50,9 +52,11 @@ enum LegacyStoreRecovery {
 			  fm.fileExists(atPath: legacyStoreURL.path) else {
 			return .nothingToDo
 		}
-		// Set before the work so a crash part way through can't repeat on every launch.
-		guard !defaults.bool(forKey: attemptedKey) else { return .nothingToDo }
-		defaults.set(true, forKey: attemptedKey)
+		// Counted before the work, so a crash part way through can't repeat on every launch.
+		// Success renames the old file, which ends the retries on its own.
+		let attempts = defaults.integer(forKey: attemptsKey)
+		guard attempts < maxAttempts else { return .nothingToDo }
+		defaults.set(attempts + 1, forKey: attemptsKey)
 
 		// When the old build last wrote the store. Backups made after it are copies of it.
 		let frozenAt = ["", "-wal"].compactMap { suffix in
@@ -72,19 +76,23 @@ enum LegacyStoreRecovery {
 			let liveContext = container.mainContext
 			let liveNums = Set(try liveContext.fetch(FetchDescriptor<MyInfoEntity>()).map(\.myNodeNum))
 
-			// Copies of the old store filed under other radios hold the wrong radio's data.
-			let removed = backups.removeBackups(
-				createdAfter: frozenAt.addingTimeInterval(60),
-				exceptNodes: legacyNums,
-				exceptDevices: legacyDeviceKeys
-			)
-			if removed > 0 {
-				Logger.backup.warning("💾 Removed \(removed) backups copied from the old store under other radios")
+			// Copies of the old store filed under other radios hold the wrong radio's data. Removed
+			// only once the old store's data is safe, in the live store or in its own backup.
+			func removeCopiedBackups() {
+				let removed = backups.removeBackups(
+					createdAfter: frozenAt.addingTimeInterval(60),
+					exceptNodes: legacyNums,
+					exceptDevices: legacyDeviceKeys
+				)
+				if removed > 0 {
+					Logger.backup.warning("💾 Removed \(removed) backups copied from the old store under other radios")
+				}
 			}
 
 			if liveNums.isEmpty || !liveNums.isDisjoint(with: legacyNums) {
 				try merge(from: legacyContext, into: liveContext)
 				parkLegacyStore(at: legacyStoreURL)
+				removeCopiedBackups()
 				Logger.data.info("💾 Merged the store left in Application Support into the live store")
 				return .merged
 			}
@@ -103,13 +111,16 @@ enum LegacyStoreRecovery {
 				let result = await backups.createBackup(forNode: nodeNum, deviceId: deviceId, nodeName: legacyName, from: legacyStoreURL)
 				if case .success = result {
 					parkLegacyStore(at: legacyStoreURL)
+					removeCopiedBackups()
 					Logger.data.info("💾 Filed the store left in Application Support as the backup for node \(nodeNum.toHex(), privacy: .public)")
 				} else {
-					Logger.data.error("💾 Could not file the old store as a backup; it stays where it is")
+					Logger.data.error("💾 Could not file the old store as a backup; it stays where it is and is tried again next launch")
 				}
 			}
 			return .filedAsBackup(nodeNum: nodeNum)
 		} catch {
+			// Drop a partial merge so a later save of the main context doesn't write it.
+			container.mainContext.rollback()
 			Logger.data.error("💾 Recovering the store left in Application Support failed; it stays where it is: \(error.localizedDescription, privacy: .public)")
 			return .failed
 		}
