@@ -656,6 +656,9 @@
     "Radio Not Found" : {
 
     },
+    "Radio Not Switched" : {
+
+    },
     "region %@" : {
       "comment" : "Beacon switch prompt; one of the changes listed"
     },
@@ -26755,6 +26758,9 @@
           }
         }
       }
+    },
+    "Bringing in messages and nodes from an earlier version…" : {
+
     },
     "Broadcast a Beacon" : {
       "comment" : "A toggle that enables a mesh beacon to be advertised.",
@@ -143330,6 +143336,9 @@
         }
       }
     },
+    "This radio's messages and nodes could not be backed up, so nothing was deleted." : {
+
+    },
     "This radio's channels aren't available, so a channel can't be offered. Connect to it directly to set one." : {
       "localizations" : {
         "en" : {
@@ -149970,6 +149979,9 @@
           }
         }
       }
+    },
+    "Updating Your Data" : {
+
     },
     "Upgrade Bootloader" : {
       "comment" : "Settings control",

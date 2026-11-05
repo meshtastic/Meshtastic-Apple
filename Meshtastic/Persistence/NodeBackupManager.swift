@@ -113,7 +113,7 @@ final class NodeBackupManager: NodeBackupManaging {
 	/// Initializer for testing with a custom base URL.
 	///
 	/// `activeStoreURL` points `createBackup` at a store the test owns. Without it the manager reads
-	/// the live Application Support store, which the schema-history tests open and replace through
+	/// the live store, which the schema-history tests open and replace through
 	/// the real `PersistenceController` — so a full parallel run could catch it mid-manipulation and
 	/// fail tests that pass in isolation.
 	init(baseURL: URL, activeStoreURL: URL? = nil) {
@@ -250,6 +250,11 @@ final class NodeBackupManager: NodeBackupManaging {
 	///   change when a radio upgrades to 2.8, so a backup keyed on one is orphaned by the upgrade.
 	///   Pass nil for a radio that reports none and the backup keeps the old node-number key.
 	func createBackup(forNode nodeNum: Int64, deviceId: Data?, nodeName: String?) async -> NodeBackupResult {
+		await createBackup(forNode: nodeNum, deviceId: deviceId, nodeName: nodeName, from: nil)
+	}
+
+	/// - Parameter sourceURL: The store to copy. Nil copies the live store.
+	func createBackup(forNode nodeNum: Int64, deviceId: Data?, nodeName: String?, from sourceURL: URL?) async -> NodeBackupResult {
 		Logger.backup.info("Creating backup for node \(nodeNum)")
 
 		// T026: Check disk space
@@ -261,7 +266,7 @@ final class NodeBackupManager: NodeBackupManaging {
 		// Retry-once logic (FR-004)
 		for attempt in 1...2 {
 			do {
-				let entry = try await performBackup(forNode: nodeNum, deviceId: deviceId, nodeName: nodeName)
+				let entry = try await performBackup(forNode: nodeNum, deviceId: deviceId, nodeName: nodeName, sourceURL: sourceURL)
 				Logger.backup.info("Backup created for node \(nodeNum): \(entry.fileSize) bytes, checksum: \(entry.checksum, privacy: .public)")
 				return .success(entry)
 			} catch {
@@ -277,7 +282,7 @@ final class NodeBackupManager: NodeBackupManaging {
 		return .skipped(reason: "Backup failed unexpectedly")
 	}
 
-	private func performBackup(forNode nodeNum: Int64, deviceId: Data?, nodeName: String?) async throws -> BackupEntry {
+	private func performBackup(forNode nodeNum: Int64, deviceId: Data?, nodeName: String?, sourceURL: URL?) async throws -> BackupEntry {
 		// Fall back to the device id already recorded for this node. Callers resolve it from the
 		// store, which can come back nil part way through a connect or a radio switch, and minting a
 		// node-number key then would sit a second backup beside the device-keyed one for the same
@@ -287,52 +292,41 @@ final class NodeBackupManager: NodeBackupManaging {
 		let nodeDirName = deviceKey ?? BackupKey.forNode(nodeNum)
 		let nodeBackupDir = backupBaseURL.appendingPathComponent(nodeDirName, isDirectory: true)
 
-		// Create or clean destination directory
-		if fileManager.fileExists(atPath: nodeBackupDir.path) {
-			try fileManager.removeItem(at: nodeBackupDir)
+		// A missing store is a failure, not an empty backup: callers clear the database once this
+		// returns. Checked before the radio's previous backup is removed below, so that one survives.
+		let sourceURL = sourceURL ?? self.activeDatabaseURL()
+		guard fileManager.fileExists(atPath: sourceURL.path) else {
+			throw CocoaError(.fileNoSuchFile, userInfo: [NSFilePathErrorKey: sourceURL.path])
 		}
-		try fileManager.createDirectory(at: nodeBackupDir, withIntermediateDirectories: true)
 
-		// Get source database path
-		let sourceURL = self.activeDatabaseURL()
+		// Copy into a staging folder and swap it in only once the copy and checksum succeed, so a
+		// failure part way through leaves the radio's previous backup as it was.
+		let stagingDir = backupBaseURL.appendingPathComponent(nodeDirName + ".partial", isDirectory: true)
+		if fileManager.fileExists(atPath: stagingDir.path) {
+			try fileManager.removeItem(at: stagingDir)
+		}
+		try fileManager.createDirectory(at: stagingDir, withIntermediateDirectories: true)
+		defer { try? fileManager.removeItem(at: stagingDir) }
 
-		// Copy files on background thread
+		// One consistent snapshot of the store, WAL included. The radio can still be connected and
+		// writing while this runs; copying the store and WAL files one after the other could catch
+		// them at different moments.
 		let fileSize = try await Task.detached(priority: .userInitiated) { [fileManager] in
-			var totalSize: Int64 = 0
-
-			// Copy .store
-			let sqliteSrc = sourceURL
-			let sqliteDst = nodeBackupDir.appendingPathComponent(Self.storeFileName)
-			if fileManager.fileExists(atPath: sqliteSrc.path) {
-				try fileManager.copyItem(at: sqliteSrc, to: sqliteDst)
-				let attrs = try fileManager.attributesOfItem(atPath: sqliteDst.path)
-				totalSize += (attrs[.size] as? Int64) ?? 0
-			}
-
-			// Copy .sqlite-wal if present
-			let walSrc = sourceURL.deletingLastPathComponent().appendingPathComponent(Self.walFileName)
-			let walDst = nodeBackupDir.appendingPathComponent(Self.walFileName)
-			if fileManager.fileExists(atPath: walSrc.path) {
-				try fileManager.copyItem(at: walSrc, to: walDst)
-				let attrs = try fileManager.attributesOfItem(atPath: walDst.path)
-				totalSize += (attrs[.size] as? Int64) ?? 0
-			}
-
-			// Copy .sqlite-shm if present
-			let shmSrc = sourceURL.deletingLastPathComponent().appendingPathComponent(Self.shmFileName)
-			let shmDst = nodeBackupDir.appendingPathComponent(Self.shmFileName)
-			if fileManager.fileExists(atPath: shmSrc.path) {
-				try fileManager.copyItem(at: shmSrc, to: shmDst)
-				let attrs = try fileManager.attributesOfItem(atPath: shmDst.path)
-				totalSize += (attrs[.size] as? Int64) ?? 0
-			}
-
-			return totalSize
+			let snapshotURL = stagingDir.appendingPathComponent(Self.storeFileName)
+			try Self.snapshotStore(at: sourceURL, to: snapshotURL)
+			let attrs = try fileManager.attributesOfItem(atPath: snapshotURL.path)
+			return (attrs[.size] as? Int64) ?? 0
 		}.value
 
 		// Compute checksum
-		let sqliteDst = nodeBackupDir.appendingPathComponent(Self.storeFileName)
+		let sqliteDst = stagingDir.appendingPathComponent(Self.storeFileName)
 		let checksum = try await computeChecksum(for: sqliteDst)
+
+		if fileManager.fileExists(atPath: nodeBackupDir.path) {
+			_ = try fileManager.replaceItemAt(nodeBackupDir, withItemAt: stagingDir)
+		} else {
+			try fileManager.moveItem(at: stagingDir, to: nodeBackupDir)
+		}
 
 		// Update index
 		let entry = BackupEntry(
@@ -428,6 +422,24 @@ final class NodeBackupManager: NodeBackupManaging {
 		try executeSQLite("PRAGMA wal_checkpoint(TRUNCATE);", database: database)
 		try executeSQLite("PRAGMA journal_mode=DELETE;", database: database)
 		try executeSQLite("VACUUM;", database: database)
+	}
+
+	/// Writes a consistent copy of the store at `sourceURL` to `destinationURL` with `VACUUM INTO`,
+	/// which reads one transaction's view of the store and its WAL and leaves the source alone.
+	nonisolated private static func snapshotStore(at sourceURL: URL, to destinationURL: URL) throws {
+		var database: OpaquePointer?
+		let openFlags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_FULLMUTEX
+		guard sqlite3_open_v2(sourceURL.path, &database, openFlags, nil) == SQLITE_OK, let database else {
+			let message = database.flatMap { sqlite3_errmsg($0).map { String(cString: $0) } } ?? "Unable to open the store"
+			sqlite3_close(database)
+			throw AccessoryError.appError(message)
+		}
+		defer {
+			sqlite3_close(database)
+		}
+		sqlite3_busy_timeout(database, 5_000)
+		let destination = destinationURL.path.replacingOccurrences(of: "'", with: "''")
+		try executeSQLite("VACUUM INTO '\(destination)';", database: database)
 	}
 
 	nonisolated private static func executeSQLite(_ sql: String, database: OpaquePointer) throws {
@@ -635,6 +647,23 @@ final class NodeBackupManager: NodeBackupManaging {
 		Logger.backup.info("Re-keyed the backup for node \(surviving.nodeNum) onto its device id, dropping \(candidates.count - 1) duplicate(s)")
 	}
 
+	/// Removes the backups made after `date` that belong to none of the given radios. Returns
+	/// how many went.
+	@discardableResult
+	func removeBackups(createdAfter date: Date, before endDate: Date, exceptNodes nodeNums: Set<Int64>, exceptDevices deviceKeys: Set<String>) -> Int {
+		let stale = backupIndex.entries.values.filter { entry in
+			guard entry.createdAt > date, entry.createdAt < endDate, !nodeNums.contains(entry.nodeNum) else { return false }
+			if let deviceId = entry.deviceId, deviceKeys.contains(deviceId) { return false }
+			return true
+		}
+		var removed = 0
+		for entry in stale where removeBackup(forKey: entry.key, reason: "copied from the store left behind by the app group move") {
+			removed += 1
+		}
+		if removed > 0 { saveIndex() }
+		return removed
+	}
+
 	@discardableResult
 	func deleteBackup(forKey key: String) -> Bool {
 		guard removeBackup(forKey: key, reason: "deleted by the user") else { return false }
@@ -648,11 +677,10 @@ final class NodeBackupManager: NodeBackupManaging {
 
 	// MARK: - Helpers
 
-	/// Returns the URL to the active SQLite database file.
-	private func activeDatabaseURL() -> URL {
-		if let activeStoreURLOverride { return activeStoreURLOverride }
-		let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-		return appSupport.appendingPathComponent("Meshtastic.store")
+	/// The live store file. SwiftData keeps it in the app group container, so the path comes
+	/// from the store's configuration rather than from Application Support.
+	func activeDatabaseURL() -> URL {
+		activeStoreURLOverride ?? PersistenceController.storeURL
 	}
 
 	// MARK: - Full Database Restore via Import

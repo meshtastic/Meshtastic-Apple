@@ -195,10 +195,16 @@ extension AccessoryManager {
 		// connecting one. A backup restored for this radio always contains its own MyInfo row,
 		// so a legitimate switch+restore never trips this — including legacy backups that may
 		// carry extra foreign rows from the pre-fix bleed era.
-		await defensiveResetIfForeignDatabase(
+		guard await defensiveResetIfForeignDatabase(
 			incomingNodeNum: Int64(myNodeInfo.myNodeNum),
 			incomingDeviceId: myNodeInfo.deviceID
-		)
+		) else {
+			// The other radio's data could not be backed up, so the store still holds it. Nothing
+			// from this radio may land in it: drop the connection and say why.
+			radioSwitchFailure = RadioSwitchBackupError().localizedDescription
+			Task { try? await self.disconnect() }
+			return
+		}
 
 		let myInfoId = await MeshPackets.shared.myInfoPacket(myInfo: myNodeInfo, peripheralId: connectedDeviceId)
 
@@ -250,16 +256,18 @@ extension AccessoryManager {
 	/// so nothing is lost, clear the store, repoint the container, and refresh the UI. See the
 	/// call site in `handleMyInfo` for when this can happen. No-ops for a fresh install (no
 	/// MyInfo rows) and for reconnects/restores (a MyInfo row for the incoming node exists).
-	private func defensiveResetIfForeignDatabase(incomingNodeNum: Int64, incomingDeviceId: Data) async {
+	/// Returns false when the store holds another radio's data that could not be backed up, so
+	/// nothing from this radio may be saved into it.
+	private func defensiveResetIfForeignDatabase(incomingNodeNum: Int64, incomingDeviceId: Data) async -> Bool {
 		// Fresh throwaway context: no stale registrations, and this runs before any ingest for
 		// the new radio, so what it sees is exactly what the previous session left behind.
 		let checkContext = ModelContext(context.container)
 		guard let myInfos = try? checkContext.fetch(FetchDescriptor<MyInfoEntity>()), !myInfos.isEmpty else {
-			return // Fresh/empty store — nothing to protect.
+			return true // Fresh/empty store — nothing to protect.
 		}
 		let nums = myInfos.map(\.myNodeNum)
 		guard !nums.contains(incomingNodeNum) else {
-			return // The store already belongs to (or was restored for) this radio.
+			return true // The store already belongs to (or was restored for) this radio.
 		}
 
 		// Same radio, new number. A firmware upgrade to 2.8 changes the node number a radio
@@ -273,12 +281,12 @@ extension AccessoryManager {
 		if !incomingDeviceId.isEmpty,
 		   let sameRadio = myInfos.first(where: { $0.deviceId == incomingDeviceId }) {
 			await renumberStore(from: sameRadio.myNodeNum, to: incomingNodeNum, deviceId: incomingDeviceId)
-			return
+			return true
 		}
 		if let connectedDeviceId = activeConnection?.device.id.uuidString,
 		   let sameRadio = myInfos.first(where: { $0.peripheralId == connectedDeviceId }) {
 			await renumberStore(from: sameRadio.myNodeNum, to: incomingNodeNum, deviceId: incomingDeviceId)
-			return
+			return true
 		}
 
 		Logger.data.warning("💾 [Database] Connected to node \(incomingNodeNum.toHex(), privacy: .public) but the store belongs to \(nums.map { $0.toHex() }.joined(separator: ", "), privacy: .public) — backing up and resetting to prevent cross-device node bleed")
@@ -290,11 +298,17 @@ extension AccessoryManager {
 			let previousName = devices.first(where: { $0.num == previousNum })?.longName
 			// The outgoing radio's own device id, not the one now connected.
 			let previousDeviceId = myInfos.first(where: { $0.myNodeNum == previousNum })?.deviceId
-			_ = await NodeBackupManager.shared.createBackup(
+			let backup = await NodeBackupManager.shared.createBackup(
 				forNode: previousNum,
 				deviceId: previousDeviceId,
 				nodeName: previousName
 			)
+			// Without a backup, clearing deletes the other radio's messages for good. Keep the
+			// store, and keep this radio out of it.
+			guard case .success = backup else {
+				Logger.data.error("💾 [Database] Could not back up node \(previousNum.toHex(), privacy: .public) — keeping the store and disconnecting")
+				return false
+			}
 		}
 
 		let cleared = await MeshPackets.shared.clearDatabase(includeRoutes: false)
@@ -307,6 +321,7 @@ extension AccessoryManager {
 		// Pops views, repoints the container (recreating the MeshPackets actor), and bumps
 		// databaseResetID so @Query views rebind before the new radio's data starts landing.
 		await resetDatabaseAfterClear()
+		return true
 	}
 
 	/// Rewrites the store from the node number this radio used to report to the one it reports
@@ -320,7 +335,10 @@ extension AccessoryManager {
 		await MeshPackets.shared.flushDebouncedSaves()
 		let previousName = devices.first(where: { $0.num == oldNum })?.longName
 		// Same physical radio either side of the renumber, so the backup keys on the id it reports now.
-		_ = await NodeBackupManager.shared.createBackup(forNode: oldNum, deviceId: deviceId, nodeName: previousName)
+		if case .skipped(let reason) = await NodeBackupManager.shared.createBackup(forNode: oldNum, deviceId: deviceId, nodeName: previousName) {
+			// The rewrite keeps every row, so it goes ahead without the safety net.
+			Logger.data.warning("💾 [Database] Renumbering without a backup: \(reason, privacy: .public)")
+		}
 
 		// Detail views bound to the old node have to unmount before its identity changes
 		// underneath them, the same reason the reset path pops first. Every open

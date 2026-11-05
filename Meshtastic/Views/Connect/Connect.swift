@@ -40,6 +40,7 @@ struct Connect: View {
 	@Environment(\.openRadioSetup) private var openRadioSetup
 	@State private var pendingNymeaDevice: NymeaDiscoveredDevice?
 	@State private var isSwitchingRadio = false
+	@State private var showingSwitchFailure = false
 	@State private var showingShutdownConfirm = false
 	@State private var showingShareContactQR = false
 	@State private var showingWidgetsSheet = false
@@ -534,6 +535,14 @@ struct Connect: View {
 					}
 				}
 			}
+			.onChange(of: accessoryManager.radioSwitchFailure) { _, failure in
+				if failure != nil { showingSwitchFailure = true }
+			}
+			.hostedAlert("Radio Not Switched", isPresented: $showingSwitchFailure) {
+				Button("OK", role: .cancel) { accessoryManager.radioSwitchFailure = nil }
+			} message: {
+				Text(accessoryManager.radioSwitchFailure ?? "")
+			}
 			.navigationTitle("Connect")
 			.toolbar {
 				ToolbarItem(placement: .topBarLeading) {
@@ -986,8 +995,11 @@ func performRadioSwitch(_ device: Device, isSwitchingRadio: Binding<Bool>, acces
 // up front and disconnect nils activeDeviceNum — the "current" node resolved to the
 // target and the backup was silently skipped on every switch, losing everything written
 // since the previous backup.
+/// Returns false when the current radio's data needed a backup and it failed. Callers clear the
+/// store next, so they stop instead: the clear would delete that radio's messages for good.
 @MainActor
-func backupCurrentDatabase(forTargetNode targetNodeNum: Int64?, currentNodeNum: Int64?, accessoryManager: AccessoryManager) async {
+@discardableResult
+func backupCurrentDatabase(forTargetNode targetNodeNum: Int64?, currentNodeNum: Int64?, accessoryManager: AccessoryManager) async -> Bool {
 	let currentNodeName = currentNodeNum.flatMap { num in
 		accessoryManager.devices.first(where: { $0.num == num })?.longName
 	}
@@ -1006,7 +1018,8 @@ func backupCurrentDatabase(forTargetNode targetNodeNum: Int64?, currentNodeNum: 
 		case .success(let entry):
 			Logger.backup.info("💾 Backup created: \(entry.fileSize) bytes for node \(currentNodeNum)")
 		case .skipped(let reason):
-			Logger.backup.warning("💾 Backup skipped: \(reason, privacy: .public)")
+			Logger.backup.error("💾 Backup failed: \(reason, privacy: .public)")
+			return false
 		case .noBackupFound:
 			break
 		}
@@ -1014,6 +1027,14 @@ func backupCurrentDatabase(forTargetNode targetNodeNum: Int64?, currentNodeNum: 
 		Logger.backup.info("💾 Skipping current backup because target backup is for the active node")
 	} else {
 		Logger.backup.warning("💾 No current node num — skipping backup")
+	}
+	return true
+}
+
+/// The current radio's data could not be backed up, so nothing was cleared.
+struct RadioSwitchBackupError: LocalizedError {
+	var errorDescription: String? {
+		String(localized: "This radio's messages and nodes could not be backed up, so nothing was deleted.")
 	}
 }
 
@@ -1026,8 +1047,10 @@ func backupCurrentAndRestoreDatabase(
 	router: Router,
 	selectedTab: NavigationState.Tab,
 	disconnectCurrentDevice: Bool = false
-) async -> NodeBackupResult {
-	await backupCurrentDatabase(forTargetNode: targetNodeNum, currentNodeNum: currentNodeNum, accessoryManager: accessoryManager)
+) async throws -> NodeBackupResult {
+	guard await backupCurrentDatabase(forTargetNode: targetNodeNum, currentNodeNum: currentNodeNum, accessoryManager: accessoryManager) else {
+		throw RadioSwitchBackupError()
+	}
 
 	if disconnectCurrentDevice, accessoryManager.allowDisconnect {
 		Logger.backup.info("💾 Disconnecting current device before restore")
@@ -1125,7 +1148,7 @@ func backupCurrentAndRestoreDatabase(
 /// Flow:
 /// 1. Capture current node number
 /// 2. Flush pending writes
-/// 3. Create backup of current node's database (full SQLite file copy)
+/// 3. Create backup of current node's database (full SQLite file copy); stop here if it fails
 /// 4. Disconnect from current device
 /// 5. Clear database via MeshPackets actor (empties @Query results safely)
 /// 6. Swap database files and recreate ModelContainer (full restore)
@@ -1155,6 +1178,8 @@ func switchToDevice(
 	// (a plain connect, no clear) dumped the previous radio's nodes on top of the target's
 	// freshly restored database. The node num moves with it (0 = unknown for a never-seen
 	// radio) so nothing keyed on the num keeps pointing at the abandoned node.
+	let previousPeripheralId = UserDefaults.preferredPeripheralId
+	let previousPeripheralNum = UserDefaults.preferredPeripheralNum
 	UserDefaults.preferredPeripheralId = device.id.uuidString
 	UserDefaults.preferredPeripheralNum = Int(targetNodeNum ?? 0)
 
@@ -1170,22 +1195,29 @@ func switchToDevice(
 		}
 	}
 
-	// 4. Disconnect from current device
-	if accessoryManager.allowDisconnect {
-		try? await accessoryManager.disconnect()
+	// Back up, disconnect, clear (always) and restore (when the target has a backup). The clear
+	// runs even when the target node number is unknown — a switch to a never-seen radio
+	// previously skipped it and dumped the new radio's nodes on top of the old radio's data.
+	// The backup comes before the disconnect so a failed one leaves the user where they were.
+	let restoreResult: NodeBackupResult
+	do {
+		restoreResult = try await backupCurrentAndRestoreDatabase(
+			forNode: targetNodeNum,
+			currentNodeNum: currentNodeNum,
+			accessoryManager: accessoryManager,
+			appState: appState,
+			router: router,
+			selectedTab: .connect,
+			disconnectCurrentDevice: true
+		)
+	} catch {
+		Logger.backup.error("💾 Switch stopped before clearing: \(error.localizedDescription, privacy: .public)")
+		UserDefaults.preferredPeripheralId = previousPeripheralId
+		UserDefaults.preferredPeripheralNum = previousPeripheralNum
+		accessoryManager.radioSwitchFailure = error.localizedDescription
+		onRestoreComplete?()
+		return
 	}
-
-	// Clear (always) and restore (when the target has a backup). Runs even when the target
-	// node number is unknown — a switch to a never-seen radio previously skipped the clear
-	// and dumped the new radio's nodes on top of the old radio's data.
-	let restoreResult = await backupCurrentAndRestoreDatabase(
-		forNode: targetNodeNum,
-		currentNodeNum: currentNodeNum,
-		accessoryManager: accessoryManager,
-		appState: appState,
-		router: router,
-		selectedTab: .connect
-	)
 	switch restoreResult {
 	case .success:
 		Logger.backup.info("💾 Backup restored for target node \(targetNodeNum.map { String($0) } ?? "?", privacy: .public)")

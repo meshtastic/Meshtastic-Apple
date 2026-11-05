@@ -68,7 +68,9 @@ enum CoreDataMigrationService {
 	/// - Throws: Any error encountered while reading Core Data or writing
 	///   SwiftData.  The caller is responsible for surfacing this to the user
 	///   rather than silently destroying data.
-	@MainActor
+	///
+	/// Uses its own contexts, so it can run off the main thread: a large store
+	/// takes longer than iOS allows an app to launch (#2891).
 	static func migrate(into swiftDataContainer: ModelContainer) throws {
 		Logger.data.info("⬆️ CoreDataMigrationService: beginning legacy migration")
 
@@ -82,10 +84,19 @@ enum CoreDataMigrationService {
 		preexistingMyInfoNums = []
 
 		let coreDataContainer = try makeCoreDataContainer()
-		let cdContext = coreDataContainer.viewContext
+		let cdContext = coreDataContainer.newBackgroundContext()
 		cdContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+		try cdContext.performAndWait {
+			try migrate(from: cdContext, into: ModelContext(swiftDataContainer))
+		}
 
-		let sdContext = swiftDataContainer.mainContext
+		// ── Rename old store so this migration never runs again ──────────────
+		renameOldStore()
+		Logger.data.info("⬆️ CoreDataMigrationService: legacy store renamed – migration complete")
+	}
+
+	private static func migrate(from cdContext: NSManagedObjectContext, into sdContext: ModelContext) throws {
+		sdContext.autosaveEnabled = false
 
 		// ── Phase 1: nodes, users, info (no inter-entity dependencies) ──────
 		let nodeMap   = try migrateNodes(cdContext: cdContext, sdContext: sdContext)
@@ -115,10 +126,6 @@ enum CoreDataMigrationService {
 		// ── Persist ──────────────────────────────────────────────────────────
 		try sdContext.save()
 		Logger.data.info("⬆️ CoreDataMigrationService: SwiftData save complete")
-
-		// ── Rename old store so this migration never runs again ──────────────
-		renameOldStore()
-		Logger.data.info("⬆️ CoreDataMigrationService: legacy store renamed – migration complete")
 	}
 }
 

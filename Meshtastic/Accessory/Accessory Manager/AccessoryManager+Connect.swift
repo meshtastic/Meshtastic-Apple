@@ -25,6 +25,8 @@ extension AccessoryManager {
 		retries: Int? = nil
 	) async throws {
 		Logger.transport.info("AccessoryManager.connect(to: \(device.name, privacy: .public), withConnection: \(withConnection != nil), wantConfig: \(wantConfig), wantDatabase: \(wantDatabase), versionCheck: \(versionCheck), refreshDeviceHardwareFromAPI: \(refreshDeviceHardwareFromAPI))")
+		// A radio writes to the store as soon as it connects; older data is brought in first.
+		await StoreUpgrade.waitUntilFinished()
 		// Prevent new connection if one is active
 		if activeConnection != nil {
 			throw AccessoryError.connectionFailed("Already connected to a device")

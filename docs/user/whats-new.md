@@ -14,6 +14,8 @@ Recent user-facing changes from roughly the last 12 months. Newest at the top.
 Show roughly the last 12 months of changes; archive entries older than a year by removing them.
 -->
 
+**Nov 2026** — [Settings](settings.md#data-management) — Messages, nodes and telemetry from before 2.7.25 are recovered when the app starts, or for another radio, when you switch to it: that update moved the app's database and left the old one unused. Switching radios backs up the previous radio again, and if the backup fails the switch stops and nothing is deleted. Bringing in data from an earlier version now happens after the app opens, so a large database no longer gets the app closed at launch.
+
 **Nov 2026** — [TAK](tak.md#certificates) — The TAK server issues its own certificates for each install instead of a set shared by every copy of the app, so only the client you set up from this phone's data package can connect. Export and import the data package again; remove the old Meshtastic connection in ATAK or iTAK first.
 
 **Nov 2026** — [Bluetooth](bluetooth.md#troubleshooting) — On Apple Vision Pro, when a radio asks for a Bluetooth PIN while pairing, the Connect screen says the headset can't enter one and to set the radio's pairing mode to No PIN (Just Works) from another device.
