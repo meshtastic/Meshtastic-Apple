@@ -36,7 +36,7 @@ class PersistenceController {
 
 	/// Remembered so the store can be reopened in a fresh container — see `recreateContainer()`.
 	private let storeName: String
-	private let inMemory: Bool
+	let inMemory: Bool
 
 	var context: ModelContext {
 		container.mainContext
@@ -47,6 +47,10 @@ class PersistenceController {
 	/// the user's first unlock — Bluetooth state restoration does this after a phone reboot).
 	/// The real store is untouched on disk and is reopened by `observeFirstUnlockToReopenStore()`.
 	private(set) var isProvisionalPendingFirstUnlock = false
+
+	/// True when the on-disk store could not be opened at all and the app runs on a throwaway
+	/// in-memory one for this session.
+	private(set) var isUsingVolatileStore = false
 
 	/// Distinguishes "the store file is locked by data protection" from "the store file is corrupt".
 	/// Before the first unlock, `open(2)` on a file protected with the default
@@ -226,8 +230,6 @@ class PersistenceController {
 		let schema = Schema(versionedSchema: MeshtasticSchema.current)
 
 		let config = Self.storeConfiguration(storeName, schema: schema, inMemory: inMemory)
-		// Set when the on-disk store could not be opened and the app runs on a throwaway one.
-		var usingVolatileStore = false
 
 #if DEBUG
 		if !inMemory && !isTestEnvironment && PerformanceSeedData.configuration?.resetStore == true {
@@ -343,7 +345,7 @@ class PersistenceController {
 				do {
 					container = try ModelContainer(for: schema, configurations: memoryConfig)
 					container.mainContext.autosaveEnabled = false
-					usingVolatileStore = true
+					isUsingVolatileStore = true
 				} catch let memoryError {
 					// An in-memory store cannot fail for file reasons; if it does,
 					// the schema itself is invalid and there is no safe recovery.
@@ -352,25 +354,8 @@ class PersistenceController {
 			}
 		}
 
-		// ── Step 2: one-time Core Data → SwiftData migration ─────────────────
-		// Runs only when upgrading from 2.7.12 (or earlier) which used Core Data.
-		guard !inMemory, !isTestEnvironment else { return }
-		if CoreDataMigrationService.legacyStoreExists() {
-			do {
-				try CoreDataMigrationService.migrate(into: container)
-			} catch {
-				// Log but do not crash — the SwiftData store is usable even if
-				// migration fails; the user will simply start fresh on this device.
-				Logger.data.error("⬆️ CoreDataMigrationService failed: \(error.localizedDescription, privacy: .public)")
-			}
-		}
-
-		// ── Step 3: one-time recovery of the store the app group move left behind ──
-		// Runs before any radio connects, so nothing else is writing the store. Not into a
-		// throwaway in-memory store: the old file would be marked recovered and the data lost.
-		if !usingVolatileStore {
-			LegacyStoreRecovery.recoverIfNeeded(into: container, liveStoreURL: config.url)
-		}
+		// The Core Data migration and the recovery of the store the app group move left behind
+		// run after launch, off the main thread: see StoreUpgrade.
 	}
 
 	@MainActor

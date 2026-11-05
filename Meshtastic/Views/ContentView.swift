@@ -195,7 +195,7 @@ struct ContentView: View {
 	@ViewBuilder
 	private var gatedContent: some View {
 		if appState.isDatabaseResetting {
-			DatabaseResettingPlaceholder()
+			DatabaseResettingPlaceholder(isUpgradingStore: appState.isUpgradingStore)
 		} else {
 			ActiveContent(appState: appState, router: router, isOnboarding: isShowingDeviceOnboardingFlow || radioSetupRequest != nil) {
 				tabContent
@@ -410,16 +410,28 @@ struct ContentView: View {
 /// traps in the stale bridge, the "silent" half of Datadog 324bff02) and by ContentView's
 /// inner gate (defense in depth).
 struct DatabaseResettingPlaceholder: View {
+	var isUpgradingStore = false
+
 	var body: some View {
 		VStack(spacing: 16) {
 			ProgressView()
 				.controlSize(.large)
-			Text("Switching Radios")
-				.font(.title3)
-			Text("Backing up and restoring the node database…")
-				.font(.callout)
-				.foregroundColor(.gray)
+			if isUpgradingStore {
+				Text("Updating Your Data")
+					.font(.title3)
+				Text("Bringing in messages and nodes from an earlier version…")
+					.font(.callout)
+					.foregroundColor(.gray)
+			} else {
+				Text("Switching Radios")
+					.font(.title3)
+				Text("Backing up and restoring the node database…")
+					.font(.callout)
+					.foregroundColor(.gray)
+			}
 		}
+		.multilineTextAlignment(.center)
+		.padding(.horizontal)
 		.frame(maxWidth: .infinity, maxHeight: .infinity)
 	}
 }

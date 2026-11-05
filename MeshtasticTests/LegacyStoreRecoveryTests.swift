@@ -77,7 +77,7 @@ struct LegacyStoreRecoveryTests {
 	}
 
 	@Test("the old store merges into the live one for the same radio")
-	func testMergeSameRadio() throws {
+	func testMergeSameRadio() async throws {
 		let dir = try makeTempDir()
 		defer { try? FileManager.default.removeItem(at: dir) }
 		let legacyURL = dir.appendingPathComponent("AppSupport/Meshtastic.store")
@@ -93,7 +93,7 @@ struct LegacyStoreRecoveryTests {
 		try liveContext.save()
 
 		let defaults = freshDefaults()
-		let outcome = LegacyStoreRecovery.recoverIfNeeded(
+		let outcome = await LegacyStoreRecovery.recoverIfNeeded(
 			into: live,
 			liveStoreURL: liveURL,
 			legacyStoreURL: legacyURL,
@@ -117,7 +117,7 @@ struct LegacyStoreRecoveryTests {
 		// Renamed, not deleted, and not run a second time.
 		#expect(!FileManager.default.fileExists(atPath: legacyURL.path))
 		#expect(FileManager.default.fileExists(atPath: legacyURL.path + LegacyStoreRecovery.recoveredSuffix))
-		#expect(LegacyStoreRecovery.recoverIfNeeded(into: live, liveStoreURL: liveURL, legacyStoreURL: legacyURL, defaults: defaults) == .nothingToDo)
+		#expect(await LegacyStoreRecovery.recoverIfNeeded(into: live, liveStoreURL: liveURL, legacyStoreURL: legacyURL, defaults: defaults) == .nothingToDo)
 	}
 
 	@Test("for another radio the old store becomes its backup, and copies under other radios go")
@@ -146,7 +146,7 @@ struct LegacyStoreRecoveryTests {
 		try JSONEncoder().encode(index).write(to: backupDir.appendingPathComponent("backup-index.json"))
 		let backups = NodeBackupManager(baseURL: backupDir)
 
-		let outcome = LegacyStoreRecovery.recoverIfNeeded(
+		let outcome = await LegacyStoreRecovery.recoverIfNeeded(
 			into: live,
 			liveStoreURL: liveURL,
 			legacyStoreURL: legacyURL,
@@ -155,10 +155,6 @@ struct LegacyStoreRecoveryTests {
 		)
 		#expect(outcome == .filedAsBackup(nodeNum: 100))
 
-		// The backup is copied in a task, and the copies are removed only after it lands.
-		for _ in 0..<100 where !backups.hasBackup(forNode: 100) || backups.hasBackup(forNode: 300) {
-			try await Task.sleep(for: .milliseconds(20))
-		}
 		#expect(backups.hasBackup(forNode: 100))
 		#expect(!backups.hasBackup(forNode: 300))
 		#expect(backups.hasBackup(forNode: 400))
@@ -166,7 +162,7 @@ struct LegacyStoreRecoveryTests {
 	}
 
 	@Test("a failed attempt is retried on later launches, a limited number of times")
-	func testFailureRetries() throws {
+	func testFailureRetries() async throws {
 		let dir = try makeTempDir()
 		defer { try? FileManager.default.removeItem(at: dir) }
 		let legacyURL = dir.appendingPathComponent("AppSupport/Meshtastic.store")
@@ -176,22 +172,22 @@ struct LegacyStoreRecoveryTests {
 		let live = try makeStore(at: liveURL)
 
 		let defaults = freshDefaults()
-		func attempt() -> LegacyStoreRecovery.Outcome {
-			LegacyStoreRecovery.recoverIfNeeded(into: live, liveStoreURL: liveURL, legacyStoreURL: legacyURL, defaults: defaults)
+		func attempt() async -> LegacyStoreRecovery.Outcome {
+			await LegacyStoreRecovery.recoverIfNeeded(into: live, liveStoreURL: liveURL, legacyStoreURL: legacyURL, defaults: defaults)
 		}
 		for _ in 0..<LegacyStoreRecovery.maxAttempts {
-			#expect(attempt() == .failed)
+			#expect(await attempt() == .failed)
 		}
-		#expect(attempt() == .nothingToDo)
+		#expect(await attempt() == .nothingToDo)
 		#expect(FileManager.default.fileExists(atPath: legacyURL.path))
 	}
 
 	@Test("nothing happens when the store never moved")
-	func testSameLocationDoesNothing() throws {
+	func testSameLocationDoesNothing() async throws {
 		let dir = try makeTempDir()
 		defer { try? FileManager.default.removeItem(at: dir) }
 		let url = dir.appendingPathComponent("Meshtastic.store")
 		let live = try makeStore(at: url)
-		#expect(LegacyStoreRecovery.recoverIfNeeded(into: live, liveStoreURL: url, legacyStoreURL: url, defaults: freshDefaults()) == .nothingToDo)
+		#expect(await LegacyStoreRecovery.recoverIfNeeded(into: live, liveStoreURL: url, legacyStoreURL: url, defaults: freshDefaults()) == .nothingToDo)
 	}
 }

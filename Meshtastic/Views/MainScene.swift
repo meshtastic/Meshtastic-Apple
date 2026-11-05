@@ -128,7 +128,7 @@ struct MainScene: View {
 			// stale bridge traps on the next save (Datadog 324bff02). The
 			// router stays on this view, above the gate, so the window keeps
 			// its tab.
-			DatabaseResettingPlaceholder()
+			DatabaseResettingPlaceholder(isUpgradingStore: appState.isUpgradingStore)
 		} else {
 			loadedContent
 		}

@@ -14,11 +14,11 @@ import SwiftData
 /// where nothing read or wrote it again, so its history disappeared from the app. Backups kept
 /// copying that file, filed under whichever radio was being switched away from.
 ///
-/// Once, at launch, before any radio connects: the old store is merged into the live one when
-/// they belong to the same radio (or the live one has no radio yet), and otherwise filed as that
-/// radio's backup. Backups copied from it under other radios are removed. The old file is then
-/// renamed so this does not run again; it is kept, not deleted. A failed attempt is retried on the
-/// next launch, up to `maxAttempts` times.
+/// Once, after launch and before any radio connects (see `StoreUpgrade`): the old store is merged
+/// into the live one when they belong to the same radio (or the live one has no radio yet), and
+/// otherwise filed as that radio's backup. Backups copied from it under other radios are removed.
+/// The old file is then renamed so this does not run again; it is kept, not deleted. A failed
+/// attempt is retried on the next launch, up to `maxAttempts` times.
 enum LegacyStoreRecovery {
 
 	enum Outcome: Equatable {
@@ -38,6 +38,31 @@ enum LegacyStoreRecovery {
 			.appendingPathComponent("Meshtastic.store")
 	}
 
+	/// Whether there is an old store left to recover.
+	nonisolated static func isPending(
+		liveStoreURL: URL,
+		legacyStoreURL: URL = legacyStoreURL,
+		defaults: UserDefaults = .standard
+	) -> Bool {
+		legacyStoreURL.standardizedFileURL != liveStoreURL.standardizedFileURL
+			&& FileManager.default.fileExists(atPath: legacyStoreURL.path)
+			&& defaults.integer(forKey: attemptsKey) < maxAttempts
+	}
+
+	/// The old store's radio, read off the main thread.
+	private struct LegacyRadio: Sendable {
+		let nodeNum: Int64
+		let deviceId: Data?
+		let name: String?
+	}
+
+	private struct Inspection: Sendable {
+		let legacyNums: Set<Int64>
+		let legacyDeviceKeys: Set<String>
+		let merged: Bool
+		let radio: LegacyRadio?
+	}
+
 	@MainActor
 	@discardableResult
 	static func recoverIfNeeded(
@@ -46,93 +71,100 @@ enum LegacyStoreRecovery {
 		legacyStoreURL: URL = legacyStoreURL,
 		backups: NodeBackupManager = .shared,
 		defaults: UserDefaults = .standard
-	) -> Outcome {
-		let fm = FileManager.default
-		guard legacyStoreURL.standardizedFileURL != liveStoreURL.standardizedFileURL,
-			  fm.fileExists(atPath: legacyStoreURL.path) else {
+	) async -> Outcome {
+		guard isPending(liveStoreURL: liveStoreURL, legacyStoreURL: legacyStoreURL, defaults: defaults) else {
 			return .nothingToDo
 		}
 		// Counted before the work, so a crash part way through can't repeat on every launch.
 		// Success renames the old file, which ends the retries on its own.
-		let attempts = defaults.integer(forKey: attemptsKey)
-		guard attempts < maxAttempts else { return .nothingToDo }
-		defaults.set(attempts + 1, forKey: attemptsKey)
+		defaults.set(defaults.integer(forKey: attemptsKey) + 1, forKey: attemptsKey)
 
 		// When the old build last wrote the store. Backups made after it are copies of it.
+		let fm = FileManager.default
 		let frozenAt = ["", "-wal"].compactMap { suffix in
 			(try? fm.attributesOfItem(atPath: legacyStoreURL.path + suffix))?[.modificationDate] as? Date
 		}.max() ?? .distantPast
 
+		let inspection: Inspection
 		do {
-			let schema = Schema(versionedSchema: MeshtasticSchema.current)
-			let legacyContainer = try NodeBackupManager.stagedBackupContainer(for: legacyStoreURL, schema: schema)
-			let legacyContext = ModelContext(legacyContainer)
-			legacyContext.autosaveEnabled = false
-
-			let legacyMyInfos = try legacyContext.fetch(FetchDescriptor<MyInfoEntity>())
-			let legacyNums = Set(legacyMyInfos.map(\.myNodeNum))
-			let legacyDeviceKeys = Set(legacyMyInfos.compactMap { BackupKey.forDevice($0.deviceId) })
-
-			let liveContext = container.mainContext
-			let liveNums = Set(try liveContext.fetch(FetchDescriptor<MyInfoEntity>()).map(\.myNodeNum))
-
-			// Copies of the old store filed under other radios hold the wrong radio's data. Removed
-			// only once the old store's data is safe, in the live store or in its own backup.
-			func removeCopiedBackups() {
-				let removed = backups.removeBackups(
-					createdAfter: frozenAt.addingTimeInterval(60),
-					exceptNodes: legacyNums,
-					exceptDevices: legacyDeviceKeys
-				)
-				if removed > 0 {
-					Logger.backup.warning("💾 Removed \(removed) backups copied from the old store under other radios")
-				}
-			}
-
-			if liveNums.isEmpty || !liveNums.isDisjoint(with: legacyNums) {
-				try merge(from: legacyContext, into: liveContext)
-				parkLegacyStore(at: legacyStoreURL)
-				removeCopiedBackups()
-				Logger.data.info("💾 Merged the store left in Application Support into the live store")
-				return .merged
-			}
-
-			// A different radio: the old store becomes that radio's backup, restored when the
-			// user switches to it.
-			guard let legacyInfo = legacyMyInfos.first else {
-				parkLegacyStore(at: legacyStoreURL)
-				return .nothingToDo
-			}
-			let legacyName = try legacyContext.fetch(FetchDescriptor<UserEntity>())
-				.first { $0.num == legacyInfo.myNodeNum }?.longName
-			let nodeNum = legacyInfo.myNodeNum
-			let deviceId = legacyInfo.deviceId
-			Task { @MainActor in
-				let result = await backups.createBackup(forNode: nodeNum, deviceId: deviceId, nodeName: legacyName, from: legacyStoreURL)
-				if case .success = result {
-					parkLegacyStore(at: legacyStoreURL)
-					removeCopiedBackups()
-					Logger.data.info("💾 Filed the store left in Application Support as the backup for node \(nodeNum.toHex(), privacy: .public)")
-				} else {
-					Logger.data.error("💾 Could not file the old store as a backup; it stays where it is and is tried again next launch")
-				}
-			}
-			return .filedAsBackup(nodeNum: nodeNum)
+			// Off the main thread: a merge of a large store takes a while.
+			inspection = try await Task.detached(priority: .userInitiated) {
+				try inspectAndMergeIfSameRadio(legacyStoreURL: legacyStoreURL, into: container)
+			}.value
 		} catch {
-			// Drop a partial merge so a later save of the main context doesn't write it.
-			container.mainContext.rollback()
 			Logger.data.error("💾 Recovering the store left in Application Support failed; it stays where it is: \(error.localizedDescription, privacy: .public)")
 			return .failed
 		}
+
+		// Copies of the old store filed under other radios hold the wrong radio's data. Removed
+		// only once the old store's data is safe, in the live store or in its own backup.
+		func removeCopiedBackups() {
+			let removed = backups.removeBackups(
+				createdAfter: frozenAt.addingTimeInterval(60),
+				exceptNodes: inspection.legacyNums,
+				exceptDevices: inspection.legacyDeviceKeys
+			)
+			if removed > 0 {
+				Logger.backup.warning("💾 Removed \(removed) backups copied from the old store under other radios")
+			}
+		}
+
+		if inspection.merged {
+			parkLegacyStore(at: legacyStoreURL)
+			removeCopiedBackups()
+			Logger.data.info("💾 Merged the store left in Application Support into the live store")
+			return .merged
+		}
+
+		// A different radio: the old store becomes that radio's backup, restored when the
+		// user switches to it.
+		guard let radio = inspection.radio else {
+			parkLegacyStore(at: legacyStoreURL)
+			return .nothingToDo
+		}
+		let result = await backups.createBackup(forNode: radio.nodeNum, deviceId: radio.deviceId, nodeName: radio.name, from: legacyStoreURL)
+		guard case .success = result else {
+			Logger.data.error("💾 Could not file the old store as a backup; it stays where it is and is tried again next launch")
+			return .failed
+		}
+		parkLegacyStore(at: legacyStoreURL)
+		removeCopiedBackups()
+		Logger.data.info("💾 Filed the store left in Application Support as the backup for node \(radio.nodeNum.toHex(), privacy: .public)")
+		return .filedAsBackup(nodeNum: radio.nodeNum)
+	}
+
+	/// Reads which radio the old store belongs to and, when the live store is for the same radio
+	/// or none yet, merges it in. Uses its own contexts; nothing is saved unless the merge succeeds.
+	private nonisolated static func inspectAndMergeIfSameRadio(legacyStoreURL: URL, into container: ModelContainer) throws -> Inspection {
+		let schema = Schema(versionedSchema: MeshtasticSchema.current)
+		let legacyContainer = try NodeBackupManager.stagedBackupContainer(for: legacyStoreURL, schema: schema)
+		let legacyContext = ModelContext(legacyContainer)
+		legacyContext.autosaveEnabled = false
+
+		let legacyMyInfos = try legacyContext.fetch(FetchDescriptor<MyInfoEntity>())
+		let legacyNums = Set(legacyMyInfos.map(\.myNodeNum))
+		let legacyDeviceKeys = Set(legacyMyInfos.compactMap { BackupKey.forDevice($0.deviceId) })
+
+		let liveContext = ModelContext(container)
+		liveContext.autosaveEnabled = false
+		let liveNums = Set(try liveContext.fetch(FetchDescriptor<MyInfoEntity>()).map(\.myNodeNum))
+
+		if liveNums.isEmpty || !liveNums.isDisjoint(with: legacyNums) {
+			try merge(from: legacyContext, into: liveContext)
+			return Inspection(legacyNums: legacyNums, legacyDeviceKeys: legacyDeviceKeys, merged: true, radio: nil)
+		}
+		let radio = legacyMyInfos.first.map { info in
+			LegacyRadio(
+				nodeNum: info.myNodeNum,
+				deviceId: info.deviceId,
+				name: (try? legacyContext.fetch(FetchDescriptor<UserEntity>()))?.first { $0.num == info.myNodeNum }?.longName
+			)
+		}
+		return Inspection(legacyNums: legacyNums, legacyDeviceKeys: legacyDeviceKeys, merged: false, radio: radio)
 	}
 
 	/// Adds what the old store has and the live one doesn't, linked to the live nodes and users.
-	@MainActor
-	static func merge(from legacyContext: ModelContext, into liveContext: ModelContext) throws {
-		let hadAutosave = liveContext.autosaveEnabled
-		liveContext.autosaveEnabled = false
-		defer { liveContext.autosaveEnabled = hadAutosave }
-
+	nonisolated static func merge(from legacyContext: ModelContext, into liveContext: ModelContext) throws {
 		let existing = try StoreMergeIndex(liveContext)
 		let nodesByNum = try NodeBackupManager.importNodes(from: legacyContext, into: liveContext, existing: existing)
 		let usersByNum = try NodeBackupManager.importUsers(from: legacyContext, into: liveContext, nodesByNum: nodesByNum, existing: existing)

@@ -786,9 +786,9 @@
         "navOrder": 0,
         "keywords": [
             "map",
+            "app",
             "settings",
             "apple",
-            "app",
             "radio",
             "now",
             "new",
@@ -802,8 +802,8 @@
             "messages",
             "mesh",
             "jun",
-            "one",
             "from",
+            "one",
             "firmware",
             "radios",
             "oct",
@@ -816,7 +816,7 @@
             "live",
             "channel"
         ],
-        "charCount": 13066
+        "charCount": 13201
     },
     {
         "id": "adding-features",
