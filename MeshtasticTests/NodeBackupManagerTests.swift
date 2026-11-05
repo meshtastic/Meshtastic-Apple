@@ -7,6 +7,7 @@
 
 import Testing
 import Foundation
+import SQLite3
 import CryptoKit
 import SwiftData
 @testable import Meshtastic
@@ -24,11 +25,21 @@ struct NodeBackupManagerTests {
 		return tmp
 	}
 
-	/// Creates a fake SQLite database file in the given directory.
+	/// Creates a small SQLite database in the given directory. Backups snapshot it with SQLite, so
+	/// it has to be a real database.
 	private func createFakeDatabase(at directory: URL, content: String = "fake-sqlite-data") throws -> URL {
 		try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
 		let sqliteURL = directory.appendingPathComponent("Meshtastic.store")
-		try Data(content.utf8).write(to: sqliteURL)
+		var database: OpaquePointer?
+		guard sqlite3_open(sqliteURL.path, &database) == SQLITE_OK else {
+			sqlite3_close(database)
+			throw CocoaError(.fileWriteUnknown)
+		}
+		defer { sqlite3_close(database) }
+		let escaped = content.replacingOccurrences(of: "'", with: "''")
+		guard sqlite3_exec(database, "CREATE TABLE fake(value TEXT); INSERT INTO fake VALUES('\(escaped)');", nil, nil, nil) == SQLITE_OK else {
+			throw CocoaError(.fileWriteUnknown)
+		}
 		return sqliteURL
 	}
 
@@ -102,6 +113,40 @@ struct NodeBackupManagerTests {
 		case .noBackupFound:
 			Issue.record("createBackup should never return .noBackupFound")
 		}
+	}
+
+	@Test("a backup taken while the store is open includes rows still in the WAL")
+	@MainActor
+	func testBackupIncludesWAL() async throws {
+		let tempDir = try makeTempDir()
+		defer { cleanup(tempDir) }
+		let dbDir = tempDir.appendingPathComponent("ActiveDB", isDirectory: true)
+		try FileManager.default.createDirectory(at: dbDir, withIntermediateDirectories: true)
+		let storeURL = dbDir.appendingPathComponent("Meshtastic.store")
+
+		// Held open for the whole backup, with nothing checkpointed into the store file.
+		var database: OpaquePointer?
+		#expect(sqlite3_open(storeURL.path, &database) == SQLITE_OK)
+		defer { sqlite3_close(database) }
+		let setup = "PRAGMA journal_mode=WAL; PRAGMA wal_autocheckpoint=0; CREATE TABLE t(v INTEGER); INSERT INTO t VALUES(1),(2),(3);"
+		#expect(sqlite3_exec(database, setup, nil, nil, nil) == SQLITE_OK)
+
+		let backupDir = tempDir.appendingPathComponent("Backups", isDirectory: true)
+		let manager = NodeBackupManager(baseURL: backupDir, activeStoreURL: storeURL)
+		guard case .success(let entry) = await manager.createBackup(forNode: 31337, deviceId: nil, nodeName: nil) else {
+			Issue.record("backup did not succeed")
+			return
+		}
+
+		let backupURL = backupDir.appendingPathComponent(entry.backupPath).appendingPathComponent("Meshtastic.store")
+		var backup: OpaquePointer?
+		#expect(sqlite3_open_v2(backupURL.path, &backup, SQLITE_OPEN_READONLY, nil) == SQLITE_OK)
+		defer { sqlite3_close(backup) }
+		var statement: OpaquePointer?
+		#expect(sqlite3_prepare_v2(backup, "SELECT COUNT(*) FROM t", -1, &statement, nil) == SQLITE_OK)
+		defer { sqlite3_finalize(statement) }
+		#expect(sqlite3_step(statement) == SQLITE_ROW)
+		#expect(sqlite3_column_int(statement, 0) == 3)
 	}
 
 	// MARK: - T011: createBackup Overwrite Case
@@ -751,7 +796,6 @@ struct NodeBackupManagerTests {
 		#expect(FileManager.default.fileExists(atPath: backupDir.appendingPathComponent("abcd").path))
 	}
 
-
 	// MARK: - Review fixes
 
 	@Test("a node- key needs a real node number, so user folders are not swept")
@@ -825,7 +869,6 @@ struct NodeBackupManagerTests {
 		#expect(manager.listBackups().contains { $0.nodeNum == 1000 })
 		#expect(FileManager.default.fileExists(atPath: backupDir.appendingPathComponent("node-1000").path))
 	}
-
 
 	@Test("connecting clears a duplicate left beside a device-keyed backup")
 	@MainActor

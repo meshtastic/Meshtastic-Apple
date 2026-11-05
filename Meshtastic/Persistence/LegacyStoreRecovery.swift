@@ -29,6 +29,7 @@ enum LegacyStoreRecovery {
 	}
 
 	nonisolated static let attemptsKey = "legacyStoreRecoveryAttempts"
+	nonisolated static let firstAttemptKey = "legacyStoreRecoveryFirstAttempt"
 	nonisolated static let maxAttempts = 3
 	nonisolated static let recoveredSuffix = ".recovered"
 
@@ -78,6 +79,12 @@ enum LegacyStoreRecovery {
 		// Counted before the work, so a crash part way through can't repeat on every launch.
 		// Success renames the old file, which ends the retries on its own.
 		defaults.set(defaults.integer(forKey: attemptsKey) + 1, forKey: attemptsKey)
+		// Backups made from here on copy the live store, so they are never the old store's copies,
+		// even if this attempt fails and a later one does the cleanup.
+		if defaults.object(forKey: firstAttemptKey) == nil {
+			defaults.set(Date(), forKey: firstAttemptKey)
+		}
+		let firstAttempt = defaults.object(forKey: firstAttemptKey) as? Date ?? Date()
 
 		// When the old build last wrote the store. Backups made after it are copies of it.
 		let fm = FileManager.default
@@ -101,6 +108,7 @@ enum LegacyStoreRecovery {
 		func removeCopiedBackups() {
 			let removed = backups.removeBackups(
 				createdAfter: frozenAt.addingTimeInterval(60),
+				before: firstAttempt,
 				exceptNodes: inspection.legacyNums,
 				exceptDevices: inspection.legacyDeviceKeys
 			)

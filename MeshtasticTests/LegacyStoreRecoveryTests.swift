@@ -132,10 +132,16 @@ struct LegacyStoreRecoveryTests {
 		insertMyInfo(300, into: live.mainContext)
 		try live.mainContext.save()
 
-		// One backup made from the frozen store under another radio, one made long before.
+		// One backup copied from the frozen store under another radio, one made long before, and
+		// one made after recovery first ran, which copies the live store and must be kept.
 		let backupDir = dir.appendingPathComponent("Backups", isDirectory: true)
 		var index = BackupIndex()
-		for (num, created) in [(Int64(300), Date().addingTimeInterval(3600)), (Int64(400), Date.distantPast)] {
+		let backupDates = [
+			(Int64(300), Date().addingTimeInterval(-3600)),
+			(Int64(400), Date.distantPast),
+			(Int64(500), Date().addingTimeInterval(3600))
+		]
+		for (num, created) in backupDates {
 			let path = BackupKey.forNode(num)
 			let folder = backupDir.appendingPathComponent(path, isDirectory: true)
 			try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
@@ -145,6 +151,12 @@ struct LegacyStoreRecoveryTests {
 		}
 		try JSONEncoder().encode(index).write(to: backupDir.appendingPathComponent("backup-index.json"))
 		let backups = NodeBackupManager(baseURL: backupDir)
+		// The old build last wrote the store a day ago. Set last: SQLite touches the files when the
+		// store written above is closed.
+		let frozenAt = Date().addingTimeInterval(-86_400)
+		for suffix in ["", "-wal"] where FileManager.default.fileExists(atPath: legacyURL.path + suffix) {
+			try FileManager.default.setAttributes([.modificationDate: frozenAt], ofItemAtPath: legacyURL.path + suffix)
+		}
 
 		let outcome = await LegacyStoreRecovery.recoverIfNeeded(
 			into: live,
@@ -158,6 +170,7 @@ struct LegacyStoreRecoveryTests {
 		#expect(backups.hasBackup(forNode: 100))
 		#expect(!backups.hasBackup(forNode: 300))
 		#expect(backups.hasBackup(forNode: 400))
+		#expect(backups.hasBackup(forNode: 500))
 		#expect(try ModelContext(live).fetch(FetchDescriptor<MessageEntity>()).isEmpty)
 	}
 

@@ -308,38 +308,14 @@ final class NodeBackupManager: NodeBackupManaging {
 		try fileManager.createDirectory(at: stagingDir, withIntermediateDirectories: true)
 		defer { try? fileManager.removeItem(at: stagingDir) }
 
-		// Copy files on background thread
+		// One consistent snapshot of the store, WAL included. The radio can still be connected and
+		// writing while this runs; copying the store and WAL files one after the other could catch
+		// them at different moments.
 		let fileSize = try await Task.detached(priority: .userInitiated) { [fileManager] in
-			var totalSize: Int64 = 0
-
-			// Copy .store
-			let sqliteSrc = sourceURL
-			let sqliteDst = stagingDir.appendingPathComponent(Self.storeFileName)
-			if fileManager.fileExists(atPath: sqliteSrc.path) {
-				try fileManager.copyItem(at: sqliteSrc, to: sqliteDst)
-				let attrs = try fileManager.attributesOfItem(atPath: sqliteDst.path)
-				totalSize += (attrs[.size] as? Int64) ?? 0
-			}
-
-			// Copy .sqlite-wal if present
-			let walSrc = sourceURL.deletingLastPathComponent().appendingPathComponent(Self.walFileName)
-			let walDst = stagingDir.appendingPathComponent(Self.walFileName)
-			if fileManager.fileExists(atPath: walSrc.path) {
-				try fileManager.copyItem(at: walSrc, to: walDst)
-				let attrs = try fileManager.attributesOfItem(atPath: walDst.path)
-				totalSize += (attrs[.size] as? Int64) ?? 0
-			}
-
-			// Copy .sqlite-shm if present
-			let shmSrc = sourceURL.deletingLastPathComponent().appendingPathComponent(Self.shmFileName)
-			let shmDst = stagingDir.appendingPathComponent(Self.shmFileName)
-			if fileManager.fileExists(atPath: shmSrc.path) {
-				try fileManager.copyItem(at: shmSrc, to: shmDst)
-				let attrs = try fileManager.attributesOfItem(atPath: shmDst.path)
-				totalSize += (attrs[.size] as? Int64) ?? 0
-			}
-
-			return totalSize
+			let snapshotURL = stagingDir.appendingPathComponent(Self.storeFileName)
+			try Self.snapshotStore(at: sourceURL, to: snapshotURL)
+			let attrs = try fileManager.attributesOfItem(atPath: snapshotURL.path)
+			return (attrs[.size] as? Int64) ?? 0
 		}.value
 
 		// Compute checksum
@@ -446,6 +422,24 @@ final class NodeBackupManager: NodeBackupManaging {
 		try executeSQLite("PRAGMA wal_checkpoint(TRUNCATE);", database: database)
 		try executeSQLite("PRAGMA journal_mode=DELETE;", database: database)
 		try executeSQLite("VACUUM;", database: database)
+	}
+
+	/// Writes a consistent copy of the store at `sourceURL` to `destinationURL` with `VACUUM INTO`,
+	/// which reads one transaction's view of the store and its WAL and leaves the source alone.
+	nonisolated private static func snapshotStore(at sourceURL: URL, to destinationURL: URL) throws {
+		var database: OpaquePointer?
+		let openFlags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_FULLMUTEX
+		guard sqlite3_open_v2(sourceURL.path, &database, openFlags, nil) == SQLITE_OK, let database else {
+			let message = database.flatMap { sqlite3_errmsg($0).map { String(cString: $0) } } ?? "Unable to open the store"
+			sqlite3_close(database)
+			throw AccessoryError.appError(message)
+		}
+		defer {
+			sqlite3_close(database)
+		}
+		sqlite3_busy_timeout(database, 5_000)
+		let destination = destinationURL.path.replacingOccurrences(of: "'", with: "''")
+		try executeSQLite("VACUUM INTO '\(destination)';", database: database)
 	}
 
 	nonisolated private static func executeSQLite(_ sql: String, database: OpaquePointer) throws {
@@ -656,9 +650,9 @@ final class NodeBackupManager: NodeBackupManaging {
 	/// Removes the backups made after `date` that belong to none of the given radios. Returns
 	/// how many went.
 	@discardableResult
-	func removeBackups(createdAfter date: Date, exceptNodes nodeNums: Set<Int64>, exceptDevices deviceKeys: Set<String>) -> Int {
+	func removeBackups(createdAfter date: Date, before endDate: Date, exceptNodes nodeNums: Set<Int64>, exceptDevices deviceKeys: Set<String>) -> Int {
 		let stale = backupIndex.entries.values.filter { entry in
-			guard entry.createdAt > date, !nodeNums.contains(entry.nodeNum) else { return false }
+			guard entry.createdAt > date, entry.createdAt < endDate, !nodeNums.contains(entry.nodeNum) else { return false }
 			if let deviceId = entry.deviceId, deviceKeys.contains(deviceId) { return false }
 			return true
 		}
