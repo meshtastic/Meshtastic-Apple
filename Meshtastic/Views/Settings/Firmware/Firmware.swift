@@ -313,7 +313,7 @@ private struct FirmwareContentView: View {
 			}
 		}
 		.hostedSheet(isPresented: $showBootloaderUpgrade) {
-			BootloaderUpgradeView()
+			BootloaderUpgradeView(platformioTarget: firmwareTarget)
 		}
 		.hostedSheet(isPresented: $showFactoryErase) {
 			FactoryEraseView()
