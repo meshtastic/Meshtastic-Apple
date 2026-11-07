@@ -186,7 +186,7 @@ def trace_route_print(hook_mat):
     board_light("PrintLight", (back - 0.9, y, 2.02), (back, y, z + 0.05), width - 0.2, 3.3)
 
 
-# The app's own model of the SenseCAP Solar Node, at real size (scripts/device-models).
+# The app's own model of the SenseCAP Solar Node, at real size (meshtastic/3d-assets).
 SOLAR_NODE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "Meshtastic", "Resources", "DeviceModels", "seeed_solar.usdz")
 # Where its back mount is in the model, in meters: between the two threaded inserts on the back of
 # the box (see specs/seeed_solar.toml), in the model's own axes (Y up, +Z out of the panel).
