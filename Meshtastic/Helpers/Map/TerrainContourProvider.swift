@@ -166,10 +166,7 @@ final class TerrainContourProvider: ObservableObject {
 					}
 				}
 			}
-			let labels = labelCandidates
-				.sorted { $0.pointCount > $1.pointCount }
-				.prefix(24)
-				.map(\.label)
+			let labels = Self.sparseLabels(labelCandidates, zoom: genZoom)
 			let built = TerrainContourGeometry(
 				minorLines: MKMultiPolyline(minor),
 				indexLines: MKMultiPolyline(index),
@@ -193,6 +190,31 @@ final class TerrainContourProvider: ObservableObject {
 				self.revision += 1
 			}
 		}
+	}
+
+	/// The labels to show, longest lines first, each at least `minTileSeparation` generation tiles
+	/// from the ones before it and at most `limit` in all, so they're spread out like a printed
+	/// map's rather than bunched where the lines crowd together. A generation tile is about half
+	/// the screen across.
+	nonisolated static func sparseLabels(
+		_ candidates: [(pointCount: Int, label: TerrainContourLabel)],
+		zoom: Int,
+		minTileSeparation: Double = 0.5,
+		limit: Int = 12
+	) -> [TerrainContourLabel] {
+		let scale = pow(2, Double(zoom))
+		func tilePoint(_ coordinate: CLLocationCoordinate2D) -> CGPoint {
+			let latitude = min(max(coordinate.latitude, -85), 85) * .pi / 180
+			return CGPoint(x: (coordinate.longitude + 180) / 360 * scale, y: (1 - log(tan(latitude) + 1 / cos(latitude)) / .pi) / 2 * scale)
+		}
+		var chosen: [(point: CGPoint, label: TerrainContourLabel)] = []
+		for candidate in candidates.sorted(by: { $0.pointCount > $1.pointCount }) {
+			guard chosen.count < limit else { break }
+			let point = tilePoint(candidate.label.coordinate)
+			guard !chosen.contains(where: { hypot($0.point.x - point.x, $0.point.y - point.y) < minTileSeparation }) else { continue }
+			chosen.append((point, candidate.label))
+		}
+		return chosen.map(\.label)
 	}
 
 	/// "1250 m" / "4000 ft" per the user's measurement system.

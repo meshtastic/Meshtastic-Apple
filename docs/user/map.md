@@ -69,7 +69,7 @@ Tap the **info button** (`info.circle`) in the button bar on the right to open t
 | Weather Radar | Show NOAA precipitation radar over the map, refreshed every five minutes. Only offered in the lower 48 United States (where the radar has data) and needs a network connection. Radar data from NOAA/NCEP. |
 | Hillshade | Shade the terrain's relief, lit from the northwest, over areas of your offline maps that have terrain. Standard map layer only, including when **Offline Tiles** is on. The shading draws at full strength to one zoom past the terrain data and fades out over the next: from street level in where only the global (zoom 12) terrain is downloaded, and further in where high-resolution terrain is. |
 | Shade Valleys | Shown when Hillshade is on, off by default. Also darkens valley floors and gorges by how much of the sky they see, looking out in eight directions, up to about a kilometer when zoomed out and less when zoomed in close, so deep valleys read as deep. Shading takes longer to draw with it on. |
-| Contour Lines | Elevation contours over areas of your offline maps that have terrain, on every map layer. |
+| Contour Lines | Elevation contours over areas of your offline maps that have terrain, on every map layer. Every fifth line is heavier and now and then carries its elevation, in feet or meters by your measurement setting, spread out like a printed map's. On the Apple Vision Pro 3D map the number sits in a gap in its line. |
 
 ### Opening the spatial map (Apple Vision Pro)
 

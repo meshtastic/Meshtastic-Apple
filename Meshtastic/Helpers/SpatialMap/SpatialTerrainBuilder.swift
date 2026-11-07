@@ -102,7 +102,7 @@ final class SpatialTerrainBuilder: Sendable {
 			let tiles = await SpatialTerrainContours.tiles(frame: frame, width: texture.width, dataZoom: dataZoom, intervals: intervals, source: elevation)
 			try Task.checkCancellation()
 			let imagery = textureSource == .appleMaps(.satellite) || textureSource == .appleMaps(.hybrid)
-			if let contoured = SpatialTerrainContours.draw(tiles, over: texture, frame: frame, imagery: imagery) {
+			if let contoured = SpatialTerrainContours.draw(tiles, over: texture, frame: frame, imagery: imagery, metric: options.metric) {
 				texture = contoured
 			}
 		}

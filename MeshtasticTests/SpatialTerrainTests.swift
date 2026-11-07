@@ -319,7 +319,7 @@ struct SpatialTerrainTests {
 		#expect(tiles.allSatisfy { $0.clip.minLon >= bounds.minLon - 1e-9 && $0.clip.maxLat <= bounds.maxLat + 1e-9 }, "lines are clipped to the download")
 		var levelsSeen = Set<Int>()
 		for tile in tiles {
-			for (lines, isIndex) in [(tile.minor, false), (tile.index, true)] {
+			for (lines, isIndex) in [(tile.minor, false), (tile.index.map(\.coordinates), true)] {
 				for line in lines {
 					let start = SpatialTextureRenderer.canvasPoint(line[0], frame: frame, size: size)
 					// Which level this line is, from where it starts; then every point must sit on that level's row.
@@ -341,6 +341,7 @@ struct SpatialTerrainTests {
 				}
 			}
 		}
+		#expect(tiles.flatMap(\.index).allSatisfy { Int($0.elevation) % 500 == 0 }, "index lines carry the elevation they follow")
 		#expect(levelsSeen.isSuperset(of: [200, 300, 400, 500, 600, 700, 800, 900, 1000]))
 		#expect(levelsSeen.allSatisfy { (100...1100).contains($0) }, "nothing drawn inside the box lies off the slope")
 	}
