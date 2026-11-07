@@ -77,3 +77,7 @@ The image is a cutout (`render_room(..., cutout=True)`): the sunset HDRI lights 
 - The forest seen through the door and the windows is the "Sunset Forest" HDRI from Poly Haven (https://polyhaven.com/a/sunset_forest), released under CC0. `build.sh` downloads it into `cache/`.
 - The lookout's cab is lit by the "Kiara 8 Sunset" HDRI from Poly Haven (https://polyhaven.com/a/kiara_8_sunset), CC0; the sky over the forest view and behind real terrain is "Kloppenheim 06 (Pure Sky)" from Poly Haven (https://polyhaven.com/a/kloppenheim_06_puresky), CC0.
 - The display of the lookout's radio on its sill is drawn by `make_textures.py`. The T-Echo and the Solar Node are the app's own models.
+
+## Banana for scale
+
+`banana_for_scale.py` builds the banana that stands beside a model on the stand, at real size, from `drawings/banana_icon.svg` ("Banana icon" by Keistutis on [Openclipart](https://openclipart.org/detail/189457/banana), CC0). It renders the drawing without its shadow, stands it on end with the stem up, inflates the outline into a round banana 18.5 cm tall, and lays the drawing on its front and back. Run `uv run scripts/cinema/banana_for_scale.py`; it writes `Packages/CinemaContent/Sources/CinemaContent/Props/banana_for_scale.usdz`.

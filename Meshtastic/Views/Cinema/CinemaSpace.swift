@@ -152,13 +152,13 @@ struct CinemaSpace: View {
 					if let container, !appState.isDatabaseResetting {
 						CinemaModelTag(request: modelRequest, liveScreen: standLiveScreen, zoom: modelStand.zoom, onZoom: { modelStand.setZoom($0) }, onInput: { event in
 							Task { await accessoryManager.sendDisplayInput(event) }
-						}) {
+						}, showsBanana: modelStand.showsBanana, onBanana: { modelStand.setBanana($0) }) {
 							self.modelRequest = nil
 						}
 						.id(appState.databaseResetID)
 						.modelContainer(container)
 					} else {
-						CinemaModelTag(request: CinemaModelRequest(modelName: modelRequest.modelName, deviceName: modelRequest.deviceName, nodeNum: nil)) {
+						CinemaModelTag(request: CinemaModelRequest(modelName: modelRequest.modelName, deviceName: modelRequest.deviceName, nodeNum: nil), showsBanana: modelStand.showsBanana, onBanana: { modelStand.setBanana($0) }) {
 							self.modelRequest = nil
 						}
 					}

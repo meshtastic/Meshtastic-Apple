@@ -10,7 +10,8 @@ import SwiftUI
 
 /// The card beside a model on the cinema's stand: the device, and when the model is of a node,
 /// that node's live readings. While the connected radio's screen is live on the model, the card
-/// also has a slider that makes the model up to five times its size, and the radio's buttons.
+/// also has a slider that makes the model up to five times its size, and the radio's buttons. A
+/// button lays a banana beside the model for scale.
 struct CinemaModelTag: View {
 	let request: CinemaModelRequest
 	/// The radio's screen is live on the model: show the zoom and the radio's buttons.
@@ -19,6 +20,9 @@ struct CinemaModelTag: View {
 	var zoom: Float = 1
 	var onZoom: (Float) -> Void = { _ in }
 	var onInput: (DisplayInputEvent) -> Void = { _ in }
+	/// A banana lies beside the model.
+	var showsBanana = false
+	var onBanana: (Bool) -> Void = { _ in }
 	let onClose: () -> Void
 	@Environment(\.modelContext) private var context
 	@State private var reading: CinemaNodeReading?
@@ -48,6 +52,14 @@ struct CinemaModelTag: View {
 			if let reading {
 				CinemaNodeReadings(reading: reading)
 			}
+			Toggle(isOn: Binding(get: { showsBanana }, set: onBanana)) {
+				Label {
+					Text("Banana for Scale", comment: "Cinema: button on the card beside a device model on the stand; lays a real-size banana beside it")
+				} icon: {
+					Image("custom.banana")
+				}
+			}
+			.toggleStyle(.button)
 			if liveScreen {
 				Divider()
 				zoomSlider
