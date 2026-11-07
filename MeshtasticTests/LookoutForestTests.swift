@@ -12,30 +12,58 @@ import Testing
 @Suite("Fire lookout forest")
 struct LookoutForestTests {
 
-	@Test("the trees stand in the same places every time, off the summit and inside 2.6 km")
-	func spots() {
-		let spots = LookoutForest.spots()
-		#expect(spots == LookoutForest.spots())
-		let kept = spots.filter(\.kept)
-		#expect(!kept.isEmpty)
-		#expect(kept.allSatisfy { $0.distance >= LookoutForest.nearest && $0.distance <= LookoutForest.farthest })
-		#expect(kept.allSatisfy { (0..<360).contains($0.bearing) })
-		// Thinned toward the far edge: fewer survive in the last stretch than just inside it.
-		let edge = kept.filter { $0.distance > 2_400 }.count
-		let inside = kept.filter { $0.distance > 1_500 && $0.distance <= 1_700 }.count
-		#expect(edge < inside)
+	private func spots(to farthest: Double) -> [LookoutForest.Spot] {
+		var result: [LookoutForest.Spot] = []
+		LookoutForest.forEachSpot(farthest: farthest) { result.append($0); return true }
+		return result
 	}
 
-	@Test("every tree fits the triangle budget, and is the painting's size")
-	func budgetAndSize() {
-		let kept = LookoutForest.spots().filter(\.kept)
-		let triangles = kept.reduce(0) { $0 + LookoutForest.triangles(at: $1.distance) }
-		// All of them would fit, so on fully forested ground the band reaches 2.6 km.
-		#expect(triangles <= LookoutForest.triangleBudget)
-		let near = kept.filter { $0.distance < LookoutForest.nearDetail }
-		#expect(near.allSatisfy { (0.6...1.5).contains($0.scale) })
-		let tallest = LookoutForest.nearCones.map(\.tip).max() ?? 0
-		#expect(tallest == 12.5)
+	@Test("the spots are the same every time, off the summit, nearest first, and far trees stand larger")
+	func spotsAreStable() {
+		let spots = spots(to: 6_000)
+		#expect(spots == self.spots(to: 6_000))
+		#expect(spots.allSatisfy { $0.distance >= LookoutForest.nearest * 0.9 })
+		#expect(spots.allSatisfy { (0..<360).contains($0.bearing) })
+		#expect((spots.first?.distance ?? 0) < (spots.last?.distance ?? 0))
+		// Near trees keep the painting's sizes; at 6 km a stand looks as tall as one at 2.4 km.
+		#expect(spots.filter { $0.distance < LookoutForest.paintedReach }.allSatisfy { (0.6...1.5).contains($0.scale) })
+		#expect(spots.filter { $0.distance > 5_900 }.allSatisfy { $0.scale > 1.4 })
+	}
+
+	@Test("the band starts at the first forest above the sill, skipping ground under it and ground behind a ridge")
+	func bandStartsAtFirstVisibleForest() {
+		let spokes = 4
+		// Rings out from the summit: steep slopes under the sill, then a valley floor in view.
+		let distances: [Double] = [100, 500, 1_000, 3_000, 6_000, 9_000]
+		let profile: [Float] = [1_950, 1_500, 1_100, 1_100, 1_300, 1_500]
+		let elevations = profile.flatMap { Array(repeating: $0, count: spokes + 1) }
+		let view = LookoutForest.view(distances: distances, elevations: elevations, spokes: spokes, eye: 2_000, earthRadius: 7_450_000) { _ in true }
+		// 3 km: 900 m below at 3 km is 16.7° down, under the sill. 6 km: 700 m below is 6.7°, still
+		// under it. 9 km: 500 m below is about 3.2°, above the sill.
+		#expect(view.bands[0] == LookoutForest.Band(start: 9_000, end: 9_000 * LookoutForest.bandDepth))
+		// No forest anywhere: no band.
+		let bare = LookoutForest.view(distances: distances, elevations: elevations, spokes: spokes, eye: 2_000, earthRadius: 7_450_000) { _ in false }
+		#expect(bare.bands.allSatisfy { $0 == nil })
+	}
+
+	@Test("ground behind a nearer ridge is hidden")
+	func horizon() {
+		let spokes = 1
+		let distances: [Double] = [200, 2_000, 4_000]
+		// A ridge at 2 km as high as the eye, then lower ground behind it.
+		let elevations: [Float] = [1_000, 1_000, 2_000, 2_000, 1_900, 1_900]
+		let view = LookoutForest.view(distances: distances, elevations: elevations, spokes: spokes, eye: 2_000, earthRadius: 7_450_000) { _ in true }
+		#expect(view.bands[0]?.start == 2_000)
+		// At 4 km the ridge stands higher in the view than the ground there.
+		let behind = (1_900.0 - 2_000 - 4_000 * 4_000 / (2 * 7_450_000.0)) / 4_000
+		#expect(view.horizon[2 * (spokes + 1)] > behind)
+	}
+
+	@Test("the painting's tree, and the triangle cost by detail")
+	func sizeAndCost() {
+		#expect(LookoutForest.nearCones.map(\.tip).max() == 12.5)
+		#expect(LookoutForest.triangles(at: 100) == LookoutForest.nearCones.count * LookoutForest.nearSides)
+		#expect(LookoutForest.triangles(at: 5_000) == LookoutForest.farCones.count * LookoutForest.farSides)
 	}
 
 	@Test("trees grow on forest, or with no land cover, on the ground painted forest, never near the snow line")

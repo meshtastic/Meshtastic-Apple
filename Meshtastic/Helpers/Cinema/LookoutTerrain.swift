@@ -417,11 +417,11 @@ enum LookoutTerrain {
 		return LookoutTerrainModel(site: site, positions: positions, textureCoordinates: uvs, indices: indices, texture: texture, trees: trees)
 	}
 
-	/// Conifers on the forested ground from just off the summit out to 2.6 km, like the painted
-	/// sunset's near forest (see `LookoutForest`). Each stands on the terrain as it's drawn, and
-	/// every corner is placed along its own line of sight like the terrain's, so the trees keep
-	/// their true size in the view and sit in front of or behind the ground where they should.
-	/// Nil when no spot is forest, or the task is cancelled.
+	/// Conifers on the first forested ground that shows over the cab's sill in each direction (see
+	/// `LookoutForest`). Each stands on the terrain as it's drawn, and every corner is placed along
+	/// its own line of sight like the terrain's, so the trees sit in front of or behind the ground
+	/// where they should. Trees hidden behind nearer ground aren't drawn. Nil when no forest shows,
+	/// or the task is cancelled.
 	private static func forest(
 		site: LookoutSite, eye: Double, ground: Ground, distances: [Double], landCover: OfflineLandCoverMap?,
 		sun: (azimuth: Float, elevation: Float)
@@ -432,24 +432,46 @@ enum LookoutTerrain {
 		let sunElevation = Double(sun.elevation) * .pi / 180
 		let light = SIMD3<Double>(sin(sunAzimuth) * cos(sunElevation), sin(sunElevation), cos(sunAzimuth) * cos(sunElevation))
 		let range = Double(max(1, ground.highest - ground.lowest))
+		func forested(_ cover: OfflineLandCover?, _ elevation: Double) -> Bool {
+			LookoutForest.isForest(cover: cover, elevation: elevation, latitude: site.latitude, heightFraction: (elevation - Double(ground.lowest)) / range)
+		}
+		let view = LookoutForest.view(distances: distances, elevations: ground.elevations, spokes: spokes, eye: eye, earthRadius: earthRadius) { index in
+			forested(ground.covers[index], Double(ground.elevations[index]))
+		}
+		guard let farthest = view.bands.compactMap({ $0?.end }).max() else { return nil }
+		let sill = -tan(LookoutForest.sillDepression * .pi / 180)
+		let columns = spokes + 1
+		let tallest = LookoutForest.nearCones.map(\.tip).max() ?? 12.5
 
 		var positions: [SIMD3<Float>] = []
 		var uvs: [SIMD2<Float>] = []
 		var triangles = 0
 		var count = 0
-		for (index, spot) in LookoutForest.spots().enumerated() where spot.kept {
-			if index.isMultiple(of: 1_024), Task.isCancelled { return nil }
+		var looked = 0
+		var cancelled = false
+		LookoutForest.forEachSpot(farthest: min(farthest, distances.last ?? farthest)) { spot in
+			looked += 1
+			if looked.isMultiple(of: 4_096), Task.isCancelled {
+				cancelled = true
+				return false
+			}
+			let spoke = min(spokes - 1, Int(spot.bearing / 360 * Double(spokes)))
+			guard let band = view.bands[spoke], spot.distance >= band.start, spot.distance <= band.end else { return true }
 			let cost = LookoutForest.triangles(at: spot.distance)
-			guard triangles + cost <= LookoutForest.triangleBudget else { break }
-			guard let height = LookoutForest.groundElevation(bearing: spot.bearing, distance: spot.distance, distances: distances, elevations: ground.elevations, spokes: spokes) else { continue }
+			guard triangles + cost <= LookoutForest.triangleBudget else { return false }
+			guard let height = LookoutForest.groundElevation(bearing: spot.bearing, distance: spot.distance, distances: distances, elevations: ground.elevations, spokes: spokes) else { return true }
+			// Only trees whose tops show over the sill and over the nearer ground.
+			let drop = spot.distance * spot.distance / (2 * earthRadius)
+			let top = (Double(height) + tallest * spot.scale - eye - drop) / spot.distance
+			let ring = LookoutForest.ring(inside: spot.distance, distances: distances)
+			guard top > sill, top > view.horizon[ring * columns + spoke] else { return true }
 			let radians = spot.bearing * .pi / 180
 			let east = sin(radians) * spot.distance
 			let north = cos(radians) * spot.distance
 			let cover = landCover?.cover(latitude: site.latitude + north / metersPerDegreeLatitude, longitude: site.longitude + east / metersPerDegreeLongitude)
-			let fraction = (Double(height) - Double(ground.lowest)) / range
-			guard LookoutForest.isForest(cover: cover, elevation: Double(height), latitude: site.latitude, heightFraction: fraction) else { continue }
+			guard forested(cover, Double(height)) else { return true }
 			// Sunk a little, so no tree shows a gap under it on a slope.
-			let base = SIMD3<Double>(east, Double(height) - 0.5, north)
+			let base = SIMD3<Double>(east, Double(height) - 0.5 * spot.scale, north)
 			for face in LookoutForest.faces(turn: spot.turn, scale: spot.scale, near: spot.distance < LookoutForest.nearDetail) {
 				let uv = LookoutForest.paletteCoordinate(shade: spot.shade, lit: max(0, simd_dot(face.normal, light)))
 				for corner in face.corners {
@@ -463,9 +485,11 @@ enum LookoutTerrain {
 			}
 			triangles += cost
 			count += 1
+			return true
 		}
-		guard count > 0, let palette = LookoutForest.palette() else { return nil }
-		Logger.services.info("🎬 [Cinema] Lookout trees: \(count, privacy: .public) on the forested ground, \(triangles, privacy: .public) triangles")
+		let bands = view.bands.compactMap { $0 }
+		Logger.services.info("🎬 [Cinema] Lookout trees: \(count, privacy: .public) (\(triangles, privacy: .public) triangles) in bands on \(bands.count, privacy: .public) of \(spokes, privacy: .public) bearings, nearest \(Int(bands.map(\.start).min() ?? 0), privacy: .public) m")
+		guard !cancelled, count > 0, let palette = LookoutForest.palette() else { return nil }
 		return LookoutForestMesh(positions: positions, textureCoordinates: uvs, indices: (0..<UInt32(positions.count)).map { $0 }, palette: palette, treeCount: count)
 	}
 

@@ -8,22 +8,29 @@ import CoreGraphics
 import Foundation
 import simd
 
-/// The conifers on the forested ground near the fire lookout, like the near forest of the painted
-/// sunset (scripts/cinema/forest_view.py): stacked cones about 12.5 m tall, varied in size, shade
-/// and turn, from just off the summit out to 2.6 km. Past that the ground's forest color stands in,
-/// as in the painting. Only the parts that don't need RealityKit live here, so they can be tested.
+/// The conifers on the forested ground seen from the fire lookout, like the near forest of the
+/// painted sunset (scripts/cinema/forest_view.py): stacked cones varied in size, shade and turn.
+/// The painting's gentle summit shows its trees just past the tower. A real mountain falls away
+/// steeply, and the ground for kilometers around sits under the cab's sill, so the trees go on the
+/// first forested ground that shows above the sill in each direction: a band from there out to
+/// `bandDepth` times as far. They're drawn as stands about as tall in the view as the painting's
+/// trees, so the band reads as a tree line rather than specks. Only the parts that don't need
+/// RealityKit live here, so they can be tested.
 enum LookoutForest {
 	/// The summit is left clear this far out, as in the painting.
 	static let nearest = 150.0
-	/// Trees reach this far, then the ground's color stands in.
-	static let farthest = 2_600.0
-	/// Toward the far edge trees thin out, so the band fades into the ground instead of ending at a line.
-	static let fadeFrom = 1_900.0
+	/// The painting's trees stand out to 2.6 km; a tree that far keeps its own size, and a farther
+	/// one is drawn as a stand that looks as tall from the cab.
+	static let paintedReach = 2_400.0
+	/// Each band runs from the first forested ground in view out to this many times as far.
+	static let bandDepth = 1.6
+	/// Nothing lower than this below the horizon shows over the sill: it is 0.94 m high and 2.2 m
+	/// out from a 1.15 m seated eye (KNEE, SILL and EYE_HEIGHT in scripts/cinema/fire_lookout.py).
+	static let sillDepression = 5.5
 	/// Trees are this far apart near the summit…
 	static let nearSpacing = 8.0
-	/// …and farther out, this much of the view apart (about 1.25°), so the far band isn't
-	/// packed with trees too small to see.
-	static let angularSpacing = 0.022
+	/// …and farther out, this much of the view apart (about 0.4°).
+	static let angularSpacing = 0.007
 	/// Closer than this a tree gets two cones; farther, one.
 	static let nearDetail = 450.0
 	/// The most triangles the trees may take, on top of the terrain's.
@@ -36,21 +43,25 @@ enum LookoutForest {
 	struct Spot: Equatable {
 		let bearing: Double
 		let distance: Double
-		/// 0.6–1.5, as in the painting, and a little larger in the far band.
+		/// 0.6–1.5 as in the painting, times how much farther than the painting's trees it stands.
 		let scale: Double
 		/// Radians about the vertical.
 		let turn: Double
 		let shade: Int
-		/// Whether this spot survives the thinning at the summit's edge and the band's far edge.
-		let kept: Bool
+	}
+
+	/// The stretch of one direction trees are planted in.
+	struct Band: Equatable {
+		let start: Double
+		let end: Double
 	}
 
 	// MARK: Spots
 
-	/// Every place a tree could stand, nearest first: rings whose spacing grows with distance,
-	/// each spot jittered. The same every time, so turning the lookout keeps the same trees.
-	static func spots() -> [Spot] {
-		var result: [Spot] = []
+	/// Calls `body` with every place a tree could stand out to `farthest`, nearest first: rings
+	/// whose spacing grows with distance, each spot jittered. The same every time, so turning the
+	/// lookout keeps the same trees. Stops when `body` returns false.
+	static func forEachSpot(farthest: Double, _ body: (Spot) -> Bool) {
 		var distance = nearest
 		var ring = 0
 		while distance <= farthest {
@@ -58,30 +69,50 @@ enum LookoutForest {
 			let count = max(1, Int(2 * .pi * distance / spacing))
 			for index in 0..<count {
 				let h = hash(ring, index)
-				let jitterOut = (unit(h, 0) - 0.5) * 0.8 * spacing
-				let jitterAround = (unit(h, 1) - 0.5) * 0.8
-				let d = distance + jitterOut
-				let bearing = (Double(index) + 0.5 + jitterAround) / Double(count) * 360
-				// Thinned in over the first 90 m off the summit, like the painting's ramp, and
-				// out over the far edge.
-				let inner = smoothstep(nearest, nearest + 90, d)
-				let outer = 1 - smoothstep(fadeFrom, farthest, d)
-				let kept = d >= nearest && d <= farthest && unit(h, 2) < inner * outer
-				// Far trees stand a little larger, so the band still reads as forest from the cab.
-				let grown = 1 + 0.6 * smoothstep(nearDetail, farthest, d)
-				result.append(Spot(
+				let d = distance + (unit(h, 0) - 0.5) * 0.8 * spacing
+				let bearing = (Double(index) + 0.5 + (unit(h, 1) - 0.5) * 0.8) / Double(count) * 360
+				let spot = Spot(
 					bearing: bearing.truncatingRemainder(dividingBy: 360),
 					distance: d,
-					scale: (0.6 + 0.9 * unit(h, 3)) * grown,
+					scale: (0.6 + 0.9 * unit(h, 3)) * max(1, d / paintedReach),
 					turn: unit(h, 4) * 2 * .pi,
-					shade: min(shades - 1, Int(unit(h, 5) * Double(shades))),
-					kept: kept
-				))
+					shade: min(shades - 1, Int(unit(h, 5) * Double(shades)))
+				)
+				guard body(spot) else { return }
 			}
 			distance += spacing
 			ring += 1
 		}
-		return result
+	}
+
+	/// What the cab sees in each direction, from the terrain's rings and spokes: the band trees go
+	/// in (or nil where no forest shows), and how high the nearer ground reaches in the view at
+	/// each sample, as the tangent of its angle above the eye's horizontal.
+	struct View {
+		let bands: [Band?]
+		let horizon: [Double]
+	}
+
+	/// Walks out each spoke. Ground shows when it's above the sill's line and above every nearer
+	/// sample; the band starts at the first such sample that's forest.
+	static func view(distances: [Double], elevations: [Float], spokes: Int, eye: Double, earthRadius: Double, isForest: (_ index: Int) -> Bool) -> View {
+		let columns = spokes + 1
+		let sill = -tan(sillDepression * .pi / 180)
+		var bands = [Band?](repeating: nil, count: spokes)
+		var horizon = [Double](repeating: -.infinity, count: distances.count * columns)
+		for spoke in 0..<spokes {
+			var highest = -Double.infinity
+			for (ring, distance) in distances.enumerated() {
+				let index = ring * columns + spoke
+				horizon[index] = highest
+				let slope = (Double(elevations[index]) - eye - distance * distance / (2 * earthRadius)) / distance
+				if bands[spoke] == nil, distance >= nearest, slope > sill, slope >= highest, isForest(index) {
+					bands[spoke] = Band(start: distance, end: distance * bandDepth)
+				}
+				highest = max(highest, slope)
+			}
+		}
+		return View(bands: bands, horizon: horizon)
 	}
 
 	/// Whether trees grow on this ground: forest in the basemap's land cover, or with no land
@@ -95,18 +126,24 @@ enum LookoutForest {
 		}
 	}
 
+	/// The ring just inside `distance`, by the terrain's ring distances (nearest first).
+	static func ring(inside distance: Double, distances: [Double]) -> Int {
+		var low = 0, high = distances.count - 1
+		while high - low > 1 {
+			let middle = (low + high) / 2
+			if distances[middle] <= distance { low = middle } else { high = middle }
+		}
+		return low
+	}
+
 	/// The ground's height under a point, read from the terrain's own rings and spokes the way
 	/// its triangles are drawn, so a tree stands on the surface that's shown rather than on the
 	/// true ground, which can sit well above or below it between the far rings.
 	static func groundElevation(bearing: Double, distance: Double, distances: [Double], elevations: [Float], spokes: Int) -> Float? {
 		guard let first = distances.first, let last = distances.last, distance >= first, distance <= last else { return nil }
 		let columns = spokes + 1
-		// The ring just inside the point.
-		var low = 0, high = distances.count - 1
-		while high - low > 1 {
-			let middle = (low + high) / 2
-			if distances[middle] <= distance { low = middle } else { high = middle }
-		}
+		let low = ring(inside: distance, distances: distances)
+		let high = min(low + 1, distances.count - 1)
 		let outward = Float((distance - distances[low]) / max(distances[high] - distances[low], 1e-9))
 		let around = bearing / 360 * Double(spokes)
 		let spoke = min(spokes - 1, max(0, Int(around)))
