@@ -35,7 +35,7 @@ Some radios report a specialized firmware target that is not a separate entry in
 
 For ESP32 BLE updates, the app waits for the radio's final verification response before showing success. If the radio reports an error or does not send the final success response, the app keeps the update in a failed state instead of treating the upload as complete.
 
-For nRF52 Bluetooth updates, if the connection drops during the transfer, the app starts the update over from the beginning: the progress ring goes back to 0 and shows **Reconnecting...**. It tries up to three times, and not after you tap **Stop Update** or once the radio is installing the new firmware. A radio with bootloader 2.6.0 or later accepts the fresh start. An older bootloader may still finish, or end with a connection error after the third try.
+If an nRF52 Bluetooth update loses the radio partway, the app starts it over and shows **Reconnecting...**, up to three times. Bootloader 2.6.0 and later accept the fresh start.
 
 | Icon | Progress | Description |
 |------|----------|-------------|
@@ -109,7 +109,7 @@ The metadata feed is informational. The app does not download or install firmwar
 **Update fails mid-way**
 - Keep the radio within 1–2 meters of your phone during the update.
 - If the radio appears bricked after a failed update, it can usually be recovered using the [Meshtastic Flasher](https://flasher.meshtastic.org/) on a computer.
-- With bootloader 2.6.0 and later, a dropped Bluetooth update can start over without resetting the radio, and the app restarts it on its own up to three times. A radio with no firmware waits for a Bluetooth update on battery. Plugged into a computer, it shows as the bootloader drive and does not advertise over Bluetooth; copy the firmware `.uf2` for your board onto the drive, or use the Meshtastic Flasher.
+- With bootloader 2.6.0 and later, a dropped Bluetooth update can start over without resetting the radio. A radio with no firmware waits for a Bluetooth update on battery. Plugged into a computer, it shows as the bootloader drive and does not advertise over Bluetooth; copy the firmware `.uf2` for your board onto the drive, or use the Meshtastic Flasher.
 
 **Firmware below the supported minimum**
 The radio stays connected and the app shows the firmware update screen, with everything else blocked until the radio is updated. Update from that screen, or disconnect to use a different radio.
