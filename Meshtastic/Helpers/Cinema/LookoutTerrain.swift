@@ -81,7 +81,7 @@ enum LookoutTerrain {
 	/// west-northwest where a sunset is.
 	static let frontHeading = SpatialLookout.frontHeading
 	/// Earth's radius with the usual allowance for refraction: far ridges sit below a flat horizon.
-	static let earthRadius = 7_450_000.0
+	static let earthRadius = LookoutForest.earthRadius
 	/// The cab's floor stands this far above the summit, on a tower a little taller than most real
 	/// ones (under 30 m), so the view looks down onto the ground around the summit.
 	static let cabHeight = 34.0
@@ -435,7 +435,7 @@ enum LookoutTerrain {
 		func forested(_ cover: OfflineLandCover?, _ elevation: Double) -> Bool {
 			LookoutForest.isForest(cover: cover, elevation: elevation, latitude: site.latitude, heightFraction: (elevation - Double(ground.lowest)) / range)
 		}
-		let view = LookoutForest.view(distances: distances, elevations: ground.elevations, spokes: spokes, eye: eye, earthRadius: earthRadius) { index in
+		let view = LookoutForest.view(distances: distances, elevations: ground.elevations, spokes: spokes, eye: eye) { index in
 			forested(ground.covers[index], Double(ground.elevations[index]))
 		}
 		guard let farthest = view.bands.compactMap({ $0?.end }).max() else { return nil }

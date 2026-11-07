@@ -37,12 +37,12 @@ struct LookoutForestTests {
 		let distances: [Double] = [100, 500, 1_000, 3_000, 6_000, 9_000]
 		let profile: [Float] = [1_950, 1_500, 1_100, 1_100, 1_300, 1_500]
 		let elevations = profile.flatMap { Array(repeating: $0, count: spokes + 1) }
-		let view = LookoutForest.view(distances: distances, elevations: elevations, spokes: spokes, eye: 2_000, earthRadius: 7_450_000) { _ in true }
+		let view = LookoutForest.view(distances: distances, elevations: elevations, spokes: spokes, eye: 2_000) { _ in true }
 		// 3 km: 900 m below at 3 km is 16.7° down, under the sill. 6 km: 700 m below is 6.7°, still
 		// under it. 9 km: 500 m below is about 3.2°, above the sill.
 		#expect(view.bands[0] == LookoutForest.Band(start: 9_000, end: 9_000 * LookoutForest.bandDepth))
 		// No forest anywhere: no band.
-		let bare = LookoutForest.view(distances: distances, elevations: elevations, spokes: spokes, eye: 2_000, earthRadius: 7_450_000) { _ in false }
+		let bare = LookoutForest.view(distances: distances, elevations: elevations, spokes: spokes, eye: 2_000) { _ in false }
 		#expect(bare.bands.allSatisfy { $0 == nil })
 	}
 
@@ -52,7 +52,7 @@ struct LookoutForestTests {
 		let distances: [Double] = [200, 2_000, 4_000]
 		// A ridge at 2 km as high as the eye, then lower ground behind it.
 		let elevations: [Float] = [1_000, 1_000, 2_000, 2_000, 1_900, 1_900]
-		let view = LookoutForest.view(distances: distances, elevations: elevations, spokes: spokes, eye: 2_000, earthRadius: 7_450_000) { _ in true }
+		let view = LookoutForest.view(distances: distances, elevations: elevations, spokes: spokes, eye: 2_000) { _ in true }
 		#expect(view.bands[0]?.start == 2_000)
 		// At 4 km the ridge stands higher in the view than the ground there.
 		let behind = (1_900.0 - 2_000 - 4_000 * 4_000 / (2 * 7_450_000.0)) / 4_000

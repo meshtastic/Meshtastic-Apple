@@ -27,6 +27,8 @@ enum LookoutForest {
 	/// Nothing lower than this below the horizon shows over the sill: it is 0.94 m high and 2.2 m
 	/// out from a 1.15 m seated eye (KNEE, SILL and EYE_HEIGHT in scripts/cinema/fire_lookout.py).
 	static let sillDepression = 5.5
+	/// Earth's radius with refraction, as `LookoutTerrain` uses: far ground sits below a flat horizon.
+	static let earthRadius = 7_450_000.0
 	/// Trees are this far apart near the summit…
 	static let nearSpacing = 8.0
 	/// …and farther out, this much of the view apart (about 0.4°).
@@ -95,7 +97,7 @@ enum LookoutForest {
 
 	/// Walks out each spoke. Ground shows when it's above the sill's line and above every nearer
 	/// sample; the band starts at the first such sample that's forest.
-	static func view(distances: [Double], elevations: [Float], spokes: Int, eye: Double, earthRadius: Double, isForest: (_ index: Int) -> Bool) -> View {
+	static func view(distances: [Double], elevations: [Float], spokes: Int, eye: Double, isForest: (_ index: Int) -> Bool) -> View {
 		let columns = spokes + 1
 		let sill = -tan(sillDepression * .pi / 180)
 		var bands = [Band?](repeating: nil, count: spokes)
