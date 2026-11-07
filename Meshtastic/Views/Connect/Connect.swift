@@ -23,9 +23,6 @@ struct Connect: View {
 	@Environment(\.openURL) private var openURL
 	@State var router: Router
 	@State var node: NodeInfoEntity?
-	/// Cached battery level for the connected node. Refreshed on an interval (see `.task`)
-	/// rather than fetched in `body`, which re-ran a TelemetryEntity query on every render.
-	@State private var connectedBatteryLevel: Int32?
 	@State private var firmwareUpdateNotice: FirmwareUpdateNotice?
 	@State var showSecurityVersionNag = false
 	@ObservedObject private var liveActivities = MeshLiveActivityManager.shared
@@ -138,7 +135,7 @@ struct Connect: View {
 									VStack(alignment: .center) {
 										CircleText(text: safeNode?.user?.shortName?.addingVariationSelectors ?? "?", color: Color(UIColor(hex: UInt32(safeNode?.num ?? 0))), circleSize: 90)
 											.padding(.trailing, 5)
-										if let batteryLevel = connectedBatteryLevel {
+										if let batteryLevel = safeNode?.batteryLevel, batteryLevel > 0 {
 											BatteryCompact(batteryLevel: batteryLevel, font: .caption, iconFont: .callout, color: .accentColor)
 												.padding(.trailing, 5)
 										}
@@ -629,15 +626,6 @@ struct Connect: View {
 		.onChange(of: scenePhase) { _, _ in updateNymeaDiscovery() }
 		.onChange(of: accessoryManager.isConnected) { _, _ in updateNymeaDiscovery() }
 		.onChange(of: accessoryManager.isConnecting) { _, _ in updateNymeaDiscovery() }
-		.task(id: safeNode?.num) {
-			// Refresh the connected node's battery on an interval instead of fetching in
-			// `body` (which re-ran the TelemetryEntity query on every render — costly while
-			// ingestion churns the node @Query). Battery changes slowly, so 15s is plenty.
-			while !Task.isCancelled {
-				connectedBatteryLevel = latestBatteryLevel(for: node)
-				try? await Task.sleep(for: .seconds(15))
-			}
-		}
 	}
 
 	/// The cached branding for the currently connected event edition, or nil when on vanilla
@@ -651,20 +639,6 @@ struct Connect: View {
 			metadata: eventFirmwareEditions,
 			deviceFirmwareVersion: accessoryManager.connectedVersion
 		)?.info
-	}
-
-	/// Fetch only the latest device metrics battery level without faulting all telemetries.
-	private func latestBatteryLevel(for node: NodeInfoEntity?) -> Int32? {
-		guard let nodeNum = node?.num else { return nil }
-		let metricsType: Int32 = 0
-		var descriptor = FetchDescriptor<TelemetryEntity>(
-			predicate: TelemetryEntity.predicate(forNode: nodeNum, metricsType: metricsType),
-			sortBy: [SortDescriptor(\TelemetryEntity.time, order: .reverse)]
-		)
-		descriptor.fetchLimit = 1
-		guard let result = try? context.fetch(descriptor).first else { return nil }
-		let level = result.batteryLevel ?? 0
-		return level > 0 ? level : nil
 	}
 
 	/// Starts nymea passive discovery only when the Connect view is foreground-visible

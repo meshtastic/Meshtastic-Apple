@@ -554,6 +554,9 @@ extension MeshPackets {
 						telemetry.channelUtilization = nodeInfoMessage.deviceMetrics.channelUtilization
 						telemetry.airUtilTx = nodeInfoMessage.deviceMetrics.airUtilTx
 						telemetry.nodeNum = fetchedNode[0].num
+						if nodeInfoMessage.deviceMetrics.hasBatteryLevel {
+							fetchedNode[0].updateBatteryLevel(Int32(truncatingIfNeeded: nodeInfoMessage.deviceMetrics.batteryLevel), at: Date())
+						}
 					}
 					if nodeInfoMessage.hasUser {
 						fetchedNode[0].user?.userId = nodeInfoMessage.num.toHex()

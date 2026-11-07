@@ -10,6 +10,11 @@ import SwiftData
 
 @Model
 final class NodeInfoEntity {
+	/// Latest battery level from this node's device metrics, kept here so views can show it
+	/// without searching telemetry history (#2898). Nil until a reading arrives.
+	var batteryLevel: Int32?
+	/// When `batteryLevel` was reported, so a replayed older reading can't replace a newer one.
+	var batteryLevelTime: Date?
 	var bleName: String?
 	var channel: Int32 = 0
 	var favorite: Bool = false

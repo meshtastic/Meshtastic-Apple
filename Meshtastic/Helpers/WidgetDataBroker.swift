@@ -249,7 +249,7 @@ final class WidgetDataBroker {
 		let radioNode = radioNum.flatMap { getNodeInfo(id: $0, context: context) }
 		read.radioLongName = radioNode?.user?.longName
 		read.radioShortName = radioNode?.user?.shortName
-		read.radioBatteryLevel = radioNode?.latestDeviceMetrics?.batteryLevel
+		read.radioBatteryLevel = radioNode?.batteryLevel
 
 		// Fetched with the backfill-aware helper, never the telemetries inverse
 		// relationship — ingest deliberately leaves it nil and faulting it loads
@@ -366,7 +366,7 @@ final class WidgetDataBroker {
 				longName: node.user?.longName ?? "Unknown".localized,
 				shortName: node.user?.shortName ?? "?",
 				colorSeed: UInt32(truncatingIfNeeded: node.num),
-				batteryLevel: node.latestDeviceMetrics?.batteryLevel,
+				batteryLevel: node.batteryLevel,
 				snr: hasSignal ? node.snr : nil,
 				rssi: hasSignal ? node.rssi : nil,
 				signalRating: rating,
