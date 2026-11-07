@@ -4,11 +4,13 @@
 
 **Created**: 2026-11-07
 
-**Status**: Implemented; this spec records what shipped
+**Status**: Implemented; this spec records what shipped. The firmware 2.8 status and
+nearby meshes pages are in #2906, not yet merged.
 
 **Input**: A new user should learn what Meshtastic is before the app asks for permissions,
 and a radio connected for the first time should be walked through the settings it needs to
-talk to anyone: region, preset and name.
+talk to anyone: region, preset and name, and on firmware 2.8 a status message and the
+meshes nearby.
 
 ## Audience
 
@@ -29,7 +31,7 @@ The app now has two flows that share one page style:
 | flow | when it opens | what it covers |
 |---|---|---|
 | First-launch setup | the first launch of the app | welcome, then Bluetooth, local network, notifications, location and Siri permissions |
-| Radio setup | on its own once per radio with no region, or from a Set Up Radio row | region, preset, name |
+| Radio setup | on its own once per radio with no region, or from a Set Up Radio row | region, preset, name; on 2.8 also status and nearby meshes |
 
 The first-launch setup is about the phone. The radio setup is about the radio, and only
 ever writes to the connected radio.
@@ -42,6 +44,7 @@ ever writes to the connected radio.
 | Preset rules per region moved where the setup can reach them | #2871 |
 | Radio setup flow, its automatic trigger and the Set Up Radio rows | #2873 |
 | Radio setup and the 3D model open on the Vision Pro cinema's screen | #2881 |
+| Status message and Nearby Meshes page on firmware 2.8 | #2906 (open) |
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -171,6 +174,39 @@ from Connect or Settings.
 4. **Given** the setup closed with Not Now, **When** the same radio reconnects later,
    **Then** the setup does not open by itself again.
 
+---
+
+### User Story 6 - A 2.8 radio finds the meshes around it (Priority: P3)
+
+On firmware 2.8 a radio can set a status message and listen for beacons that nearby meshes
+broadcast. The setup offers both, so a new user can find a local mesh without knowing
+where Local Mesh Discovery is.
+
+**Why this priority**: A radio set up on the default channel may hear nobody. A mesh
+nearby that advertises itself is the quickest way onto one.
+
+**Independent Test**: Run the setup on a 2.8 radio and on an older one. Only the 2.8
+radio shows the status row and the Nearby Meshes page.
+
+**Acceptance Scenarios**:
+
+1. **Given** a 2.8 radio, **When** the name page shows, **Then** the names box has a third
+   row, Status, starting with the radio's current status.
+2. **Given** a status typed on the name page, **When** the user taps Save and Continue,
+   **Then** the status is saved with the names and shows in the node list at once.
+3. **Given** a 2.8 radio, **When** the name page is done, or the preset page for a
+   licensed operator, **Then** the Nearby Meshes page shows before the done page.
+4. **Given** the Nearby Meshes page, **When** the user turns on Listen for Beacons,
+   **Then** only the listen flag of the radio's beacon config changes.
+5. **Given** beacons heard outside a scan, **When** the page shows, **Then** up to five are
+   listed, newest first, with Join, and with Add when the mesh runs on the radio's own
+   preset and frequency slot.
+6. **Given** the Nearby Meshes page, **When** the user taps Scan for Meshes or Broadcast a
+   Beacon, **Then** Local Mesh Discovery or the Mesh Beacon settings open inside the setup,
+   and Back returns to it.
+7. **Given** firmware older than 2.8, **When** the setup runs, **Then** neither the status
+   row nor the Nearby Meshes page shows.
+
 ### Edge Cases
 
 - **Config not received yet**: the automatic trigger waits until the radio's region is
@@ -195,6 +231,12 @@ from Connect or Settings.
   radio are not cut until the user edits them.
 - **Node missing from the store**: after a reset emptied the store, the setup shows "Radio
   Not Found".
+- **Beacon config not received yet**: Listen for Beacons stays disabled and says it is
+  waiting. The page asks the radio for its beacon config.
+- **Listening but nothing heard**: the page says so. A beacon interval is at least an
+  hour, so a mesh can take that long to show up.
+- **Licensed operator on 2.8**: the name page, and with it the status row, is skipped. The
+  Nearby Meshes page still shows.
 
 ## Requirements *(mandatory)*
 
@@ -262,10 +304,12 @@ from Connect or Settings.
 **Flow**
 
 - **FR-021**: The pages MUST follow intro → region → preset → name → done, with the name
-  page left out for licensed operators.
+  page left out for licensed operators. On firmware 2.8 the Nearby Meshes page comes
+  before done.
 - **FR-022**: The intro MUST offer Not Now, which closes the setup with nothing saved.
   The name page MUST offer Skip.
-- **FR-023**: The done page MUST read back the region, preset (or "Custom") and name.
+- **FR-023**: The done page MUST read back the region, preset (or "Custom") and name, and
+  on 2.8 the status and whether the radio listens for beacons.
 - **FR-024**: The flow MUST keep its own copy of what it shows, so a restart or reconnect
   mid-flow leaves it standing. Saves MUST look up the connected radio's user at save time.
   **(iOS only: the model holds no SwiftData objects.)**
@@ -290,6 +334,20 @@ from Connect or Settings.
 - **FR-032**: On Apple Vision Pro's cinema screen, where sheets never show, the radio
   setup MUST cover the current section and close through a callback.
 
+**Status and nearby meshes (firmware 2.8)**
+
+- **FR-033**: On 2.8 the name page MUST include a Status field, starting with the radio's
+  configured status, or its broadcast one when none is configured. It MUST be limited to
+  80 bytes as typed.
+- **FR-034**: The status MUST be saved with the names, only when it changed, through the
+  Status Message module config.
+- **FR-035**: Listen for Beacons MUST write the radio's stored beacon config back with only
+  the listen flag changed. It MUST stay disabled until the radio has sent its beacon config.
+- **FR-036**: The page MUST list beacons heard outside a scan, newest first, at most five,
+  with the same Join and Add actions and confirmations as Local Mesh Discovery.
+- **FR-037**: The page MUST link to Local Mesh Discovery and to the Mesh Beacon settings.
+- **FR-038**: Below 2.8 the status field and the Nearby Meshes page MUST NOT show.
+
 ### Key Entities
 
 - **RadioSetupModel**: the setup's state. Plain values copied from the node (names,
@@ -299,6 +357,10 @@ from Connect or Settings.
 - **RegionCodes.suggested(forCountryCode:)**: a country-to-region table. It returns nil
   where there is no clear answer.
 - **ModemPresets.presetToSelect**: the preset rules in FR-010.
+- **MeshBeaconConfigValues(entity:)**: the stored beacon config as values, so one setting
+  can change and the rest go back as they were (FR-035).
+- **BeaconJoinController**: the Join, Add and Replace actions and their confirmations,
+  shared with Local Mesh Discovery.
 - **AccessoryManager.connectedLoRaRegionCode**: the connected radio's region. It is set
   from its config and from the app's own LoRa saves, and cleared on disconnect.
 
@@ -315,7 +377,9 @@ from Connect or Settings.
 
 - `RadioSetupModel`: page order including the licensed skip, region and preset choices on
   2.8 and older firmware, the restart warning following the firmware gate, name trimming,
-  the save gates, and the summaries.
+  the save gates, the summaries, the Nearby Meshes page only on 2.8, and the status limit.
+- `MeshBeaconConfigValues(entity:)`: a listen change keeps the offer, message, slot,
+  interval and targets.
 - `RadioSetupTrigger`: opens once for an unset region, and not before the config arrives,
   before the subscription, or while any gate is up.
 - `LoRa presets by region`: the preset list with and without the region map, on old and
@@ -332,8 +396,8 @@ from Connect or Settings.
 
 ## Out of Scope
 
-- Channel setup, and joining a mesh from a QR code or a beacon. Local Mesh Discovery
-  covers joining a mesh a beacon advertises.
+- Channel setup, and joining a mesh from a QR code. Joining from a beacon is covered
+  only for beacons already heard (FR-036); scanning stays in Local Mesh Discovery.
 - Setting up a remote node.
 - Moving the first-launch permission pages to after a radio is connected.
 
@@ -343,5 +407,7 @@ from Connect or Settings.
   region connects?
 - Should the region suggestion come from the phone's region setting, as here, or from its
   location?
+- Should the setup turn on listening for beacons by default on 2.8, rather than leaving
+  it to the user?
 - Should every client use the same country-to-region table? It is not in the protobufs or
   the firmware today.
