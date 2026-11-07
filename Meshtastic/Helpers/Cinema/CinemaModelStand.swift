@@ -47,9 +47,10 @@ final class CinemaModelStand {
 	/// A banana lies beside the model for scale. Kept from one model to the next.
 	private(set) var showsBanana = false
 
-	/// In front of the seat and to the left, clear of the panel on the right, about where a hand
-	/// rests. Meters from the space's origin on the floor.
-	private static let place: SIMD3<Float> = [-0.35, 0.8, -0.6]
+	/// In front of the seat and to the left, clear of the panel on the right, with its base a
+	/// little below the seated eye (`CinemaAnchors.seatedEyeHeight`, 1.15 m) so a handheld radio
+	/// stands about at eye level. Meters from the space's origin on the floor.
+	private static let place: SIMD3<Float> = [-0.35, CinemaAnchors.seatedEyeHeight - 0.1, -0.6]
 
 	init() {
 		root.name = "CinemaModelStand"
