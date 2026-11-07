@@ -3140,6 +3140,37 @@ struct RadioSetupSnapshotTests {
 		await assertViewSnapshot(of: screen(RadioSetupNamePage(model: model(region: .us, preset: .longTurbo))), width: 390, height: 844, named: "radio_setup_name", forDocs: true)
 	}
 
+	@Test("Nearby meshes page")
+	func beacons() async {
+		// The radio listening, with one mesh heard, in a store of its own.
+		guard let container = try? ModelContainer(
+			for: Schema(versionedSchema: MeshtasticSchema.current),
+			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+		) else {
+			Issue.record("Could not make an in-memory store")
+			return
+		}
+		let context = container.mainContext
+		let node = NodeInfoEntity()
+		node.num = 0x1234
+		context.insert(node)
+		let beaconConfig = MeshBeaconConfigEntity()
+		beaconConfig.flags = MeshBeaconFlags.listenEnabled
+		context.insert(beaconConfig)
+		node.meshBeaconConfig = beaconConfig
+		let beacon = DiscoveredBeaconEntity()
+		beacon.nodeNum = 0x5678
+		beacon.longName = "Puget Sound Mesh"
+		beacon.message = "Weekly net Tuesdays at 7"
+		context.insert(beacon)
+		await assertViewSnapshot(
+			of: NavigationStack { RadioSetupBeaconsPage(model: model(region: .us, preset: .longTurbo)) }
+				.environmentObject(AccessoryManager.shared)
+				.modelContainer(container),
+			width: 390, height: 844, named: "radio_setup_beacons", forDocs: true
+		)
+	}
+
 	@Test("Done page")
 	func done() async {
 		await assertViewSnapshot(of: screen(RadioSetupDonePage(model: model(region: .us, preset: .longTurbo), onDone: {})), width: 390, height: 844, named: "radio_setup_done", forDocs: true)

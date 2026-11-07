@@ -14,7 +14,7 @@ import MeshtasticProtobufs
 import SwiftData
 
 enum RadioSetupStep: Hashable, CaseIterable {
-	case intro, region, preset, name, done
+	case intro, region, preset, name, beacons, done
 
 	var screenName: ScreenName {
 		switch self {
@@ -22,6 +22,7 @@ enum RadioSetupStep: Hashable, CaseIterable {
 		case .region: .radioSetupRegion
 		case .preset: .radioSetupPreset
 		case .name: .radioSetupName
+		case .beacons: .radioSetupBeacons
 		case .done: .radioSetupDone
 		}
 	}
@@ -30,6 +31,8 @@ enum RadioSetupStep: Hashable, CaseIterable {
 @MainActor @Observable
 final class RadioSetupModel {
 	static let shortNameBytes = 4
+	/// The firmware caps a status message at 80 bytes of UTF-8.
+	static let statusBytes = 80
 
 	let nodeNum: Int64
 	let deviceName: String
@@ -51,6 +54,11 @@ final class RadioSetupModel {
 	private(set) var loadedShortName: String
 	private(set) var longName: String
 	private(set) var shortName: String
+	/// The status message, on 2.8. Set from the name page.
+	private(set) var loadedStatus: String
+	private(set) var status: String
+	/// Whether the radio listens for beacons, as the beacons page last saw it. Nil before it opens.
+	var listensForBeacons: Bool?
 
 	/// The region taken from the phone's region setting when the radio had none, so the
 	/// region page can say where it came from. Nil when the radio already had one or the
@@ -76,6 +84,7 @@ final class RadioSetupModel {
 		loRaConfig: Config.LoRaConfig,
 		longName: String,
 		shortName: String,
+		status: String = "",
 		isUnmessagable: Bool = false
 	) {
 		self.nodeNum = nodeNum
@@ -94,6 +103,8 @@ final class RadioSetupModel {
 		self.loadedShortName = shortName
 		self.longName = longName
 		self.shortName = shortName
+		self.loadedStatus = status
+		self.status = status
 	}
 
 	/// Copies what the flow needs from the node in the store. Nil when the node is not there.
@@ -119,6 +130,11 @@ final class RadioSetupModel {
 			loRaConfig: lora,
 			longName: node.user?.longName ?? "",
 			shortName: node.user?.shortName ?? "",
+			status: supports2_8
+				? NodeNameLimits.trimmed(
+					NodeInfoEntity.statusMessagePrefill(configured: node.statusMessageConfig?.nodeStatus, live: node.nodeStatus),
+					toBytes: Self.statusBytes)
+				: "",
 			isUnmessagable: node.user?.unmessagable ?? false
 		)
 		let suggested = RegionCodes.suggested(for: .current)
@@ -145,6 +161,8 @@ final class RadioSetupModel {
 
 	var hasNameChanges: Bool { longName != loadedLongName || shortName != loadedShortName }
 
+	var hasStatusChanges: Bool { supports2_8 && status != loadedStatus }
+
 	var canSaveName: Bool {
 		!longName.trimmingCharacters(in: .whitespaces).isEmpty && !shortName.isEmpty && !isAwaitingReconnect
 	}
@@ -170,6 +188,10 @@ final class RadioSetupModel {
 	var nameSummary: String {
 		guard !longName.isEmpty else { return String(localized: "Not set", comment: "Radio setup summary") }
 		return shortName.isEmpty ? longName : "\(longName) (\(shortName))"
+	}
+
+	var statusSummary: String {
+		status.isEmpty ? String(localized: "Not set", comment: "Radio setup summary") : status
 	}
 
 	var usBandwidthWarning: String? {
@@ -226,22 +248,28 @@ final class RadioSetupModel {
 		shortName = NodeNameLimits.trimmed(typed.withoutVariationSelectors, toBytes: Self.shortNameBytes)
 	}
 
+	func setStatus(_ typed: String) {
+		status = NodeNameLimits.trimmed(typed, toBytes: Self.statusBytes)
+	}
+
 	// MARK: - Steps
 
 	/// The page after `step`. Licensed operators skip the name page: their long name is made
-	/// from the call sign in User Config.
-	static func nextStep(after step: RadioSetupStep, isLicensed: Bool) -> RadioSetupStep? {
+	/// from the call sign in User Config. The beacons page is for firmware 2.8 and later.
+	static func nextStep(after step: RadioSetupStep, isLicensed: Bool, supports2_8: Bool = false) -> RadioSetupStep? {
+		let afterName: RadioSetupStep = supports2_8 ? .beacons : .done
 		switch step {
-		case .intro: .region
-		case .region: .preset
-		case .preset: isLicensed ? .done : .name
-		case .name: .done
-		case .done: nil
+		case .intro: return .region
+		case .region: return .preset
+		case .preset: return isLicensed ? afterName : .name
+		case .name: return afterName
+		case .beacons: return .done
+		case .done: return nil
 		}
 	}
 
 	func advance(from step: RadioSetupStep) {
-		guard let next = Self.nextStep(after: step, isLicensed: isLicensed) else { return }
+		guard let next = Self.nextStep(after: step, isLicensed: isLicensed, supports2_8: supports2_8) else { return }
 		path.append(next)
 	}
 
@@ -308,6 +336,56 @@ final class RadioSetupModel {
 		} catch {
 			saveError = error.localizedDescription
 			return false
+		}
+	}
+
+	/// Writes the status message when it changed, on 2.8. Returns whether the flow may move on.
+	@discardableResult
+	func saveStatus(using accessoryManager: AccessoryManager, context: ModelContext) async -> Bool {
+		guard hasStatusChanges else { return true }
+		guard let user = connectedUser(accessoryManager, context) else {
+			saveError = Self.notConnectedMessage
+			return false
+		}
+		isSaving = true
+		saveError = nil
+		defer { isSaving = false }
+		var config = ModuleConfig.StatusMessageConfig()
+		config.nodeStatus = status
+		do {
+			_ = try await accessoryManager.saveStatusMessageModuleConfig(config: config, fromUser: user, toUser: user)
+			// The node list shows the new status now rather than at the next broadcast.
+			if let node = user.userNode {
+				node.nodeStatus = status.isEmpty ? nil : status
+				node.statusMessageConfig?.nodeStatus = status
+				try? context.save()
+			}
+			loadedStatus = status
+			return true
+		} catch {
+			saveError = error.localizedDescription
+			return false
+		}
+	}
+
+	/// Turns listening for beacons on or off, keeping the rest of the radio's beacon settings.
+	/// Needs the radio's beacon config in the store.
+	func setListening(_ listen: Bool, using accessoryManager: AccessoryManager, context: ModelContext) async {
+		guard let user = connectedUser(accessoryManager, context) else {
+			saveError = Self.notConnectedMessage
+			return
+		}
+		guard let stored = user.userNode?.meshBeaconConfig else { return }
+		var values = MeshBeaconConfigValues(entity: stored)
+		values.flags = MeshBeaconFlags.setting(values.flags, MeshBeaconFlags.listenEnabled, to: listen)
+		isSaving = true
+		saveError = nil
+		defer { isSaving = false }
+		do {
+			_ = try await accessoryManager.saveMeshBeaconModuleConfig(config: values.config, fromUser: user, toUser: user)
+			listensForBeacons = listen
+		} catch {
+			saveError = error.localizedDescription
 		}
 	}
 }

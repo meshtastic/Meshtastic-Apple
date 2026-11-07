@@ -120,6 +120,24 @@ struct MeshBeaconConfigValues: Equatable {
 
 	init() {}
 
+	/// The config as stored, for a write that changes one setting and keeps the rest. Targets
+	/// are sorted because the relationship has no order.
+	init(entity: MeshBeaconConfigEntity) {
+		flags = entity.flags
+		message = entity.broadcastMessage
+		// The primary channel's name is empty, so its key marks the offer as present.
+		hasOfferChannel = !entity.broadcastOfferChannelName.isEmpty || !entity.broadcastOfferChannelPSK.isEmpty
+		offerChannelName = entity.broadcastOfferChannelName
+		offerChannelPSK = entity.broadcastOfferChannelPSK
+		offerRegion = entity.broadcastOfferRegion
+		offerPreset = entity.broadcastOfferPreset
+		offerFrequencySlot = entity.broadcastOfferFrequencySlot
+		intervalSecs = entity.broadcastIntervalSecs
+		targets = entity.broadcastTargets
+			.sorted { ($0.channelIndex, $0.preset, $0.frequencySlot) < ($1.channelIndex, $1.preset, $1.frequencySlot) }
+			.map { MeshBeaconTargetValues(preset: $0.preset, region: $0.region, channelIndex: $0.channelIndex, frequencySlot: $0.frequencySlot) }
+	}
+
 	init(config: ModuleConfig.MeshBeaconConfig) {
 		flags = Int32(truncatingIfNeeded: config.flags)
 		message = config.broadcastMessage

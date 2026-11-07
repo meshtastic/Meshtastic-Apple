@@ -37,6 +37,24 @@ struct RadioSetupDonePage: View {
 					title: String(localized: "Name", comment: "Radio setup row title"),
 					text: model.nameSummary
 				)
+				if model.supports2_8 {
+					OnboardingFeatureRow(
+						symbol: "text.bubble",
+						color: .teal,
+						title: String(localized: "Status", comment: "Radio setup name page; the node's status message"),
+						text: model.statusSummary
+					)
+				}
+			}
+			if let listening = model.listensForBeacons {
+				OnboardingFeatureRow(
+					symbol: "antenna.radiowaves.left.and.right",
+					color: .purple,
+					title: String(localized: "Nearby Meshes", comment: "Radio setup beacons title"),
+					text: listening
+						? String(localized: "Listening for beacons", comment: "Radio setup done page; nearby meshes row")
+						: String(localized: "Not listening for beacons", comment: "Radio setup done page; nearby meshes row")
+				)
 			}
 		}
 	}

@@ -14,6 +14,8 @@ Recent user-facing changes from roughly the last 12 months. Newest at the top.
 Show roughly the last 12 months of changes; archive entries older than a year by removing them.
 -->
 
+**Nov 2026** — [Getting Started](getting-started.md#step-3-set-up-your-radio) — On firmware 2.8, radio setup asks for an optional status message with the name, and ends on a Nearby Meshes page to listen for beacons, join a mesh heard so far, scan, or broadcast your own.
+
 **Nov 2026** — [Firmware Updates](firmware.md#installing-an-update) — When an nRF52 Bluetooth update loses the radio partway, the app starts it over from the beginning, up to three times, so it can finish instead of leaving the radio stuck in update mode.
 
 **Nov 2026** — [Nodes](nodes.md#device-screen) — On iPhone and iPad, the AR button on the connected radio's 3D model stands it on a table or the floor at its real size with its screen live, and the radio's buttons under the camera view.

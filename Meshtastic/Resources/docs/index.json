@@ -36,7 +36,7 @@
             "switch",
             "stops"
         ],
-        "charCount": 5591
+        "charCount": 5637
     },
     {
         "id": "carplay",
@@ -202,36 +202,36 @@
         "keywords": [
             "radio",
             "app",
+            "mesh",
             "meshtastic",
+            "firmware",
             "step",
             "set",
+            "see",
             "region",
-            "mesh",
             "location",
             "tab",
-            "see",
+            "settings",
+            "opens",
             "nodes",
             "name",
-            "firmware",
             "device",
             "connect",
             "time",
             "tap",
-            "settings",
+            "short",
+            "only",
+            "node",
+            "nearby",
             "messages",
             "lets",
             "from",
             "first",
             "bluetooth",
             "uses",
-            "short",
-            "setup",
-            "screen",
-            "radios",
-            "public",
-            "position"
+            "setup"
         ],
-        "charCount": 4172
+        "charCount": 4638
     },
     {
         "id": "lockdown",
@@ -465,7 +465,7 @@
             "contact",
             "channels"
         ],
-        "charCount": 20080
+        "charCount": 20130
     },
     {
         "id": "showcase",
@@ -789,9 +789,9 @@
             "app",
             "map",
             "settings",
+            "nov",
             "apple",
             "now",
-            "nov",
             "new",
             "nodes",
             "cinema",
@@ -799,24 +799,24 @@
             "screen",
             "pro",
             "node",
-            "messages",
             "mesh",
-            "from",
             "firmware",
+            "messages",
+            "from",
             "jun",
             "one",
             "bluetooth",
             "radios",
+            "page",
             "oct",
             "device",
-            "page",
             "local",
             "live",
             "region",
             "meshtastic",
             "lookout"
         ],
-        "charCount": 13772
+        "charCount": 13996
     },
     {
         "id": "adding-features",
