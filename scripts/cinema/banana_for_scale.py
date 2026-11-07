@@ -47,7 +47,8 @@ COPYRIGHT = ("Made for Meshtastic from \"Banana icon\" by Keistutis, Openclipart
 
 def render():
     """The drawing as RGBA, without the shadow under it, turned so the stem is at the top."""
-    svg = open(DRAWING).read()
+    with open(DRAWING) as drawing:
+        svg = drawing.read()
     shadow = 'style="fill:url(#radialGradient3907)"'
     if shadow not in svg:
         raise SystemExit("the drawing's shadow (radialGradient3907) wasn't found; check the drawing")
