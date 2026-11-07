@@ -33,14 +33,14 @@ enum LookoutForest {
 	static let earthRadius = 7_450_000.0
 	/// Trees are this far apart near the summit…
 	static let nearSpacing = 8.0
-	/// …and farther out, this much of the view apart (about 0.26°), a dense forest like the painting's.
-	static let angularSpacing = 0.0045
+	/// …and farther out, this much of the view apart (about 0.17°), a dense forest like the painting's.
+	static let angularSpacing = 0.003
 	/// Closer than this a tree gets two cones; farther, one.
 	static let nearDetail = 450.0
 	/// From here out a tree is one flat shape facing the cab.
 	static let cardsFrom = 1_500.0
 	/// The most triangles the trees may take, on top of the terrain's.
-	static let triangleBudget = 400_000
+	static let triangleBudget = 600_000
 	/// Shades of green across the palette, and light levels down it.
 	static let shades = 8
 	static let lightLevels = 16
@@ -207,7 +207,8 @@ enum LookoutForest {
 		let length = simd_length(toward)
 		toward = length > 0 ? toward / length : SIMD3(0, 0, 1)
 		let right = simd_normalize(simd_cross(SIMD3(0, 1, 0), toward))
-		let half = cone.radius * width
+		// A little wider than the cone, so neighbors overlap into canopy rather than leaving gaps.
+		let half = cone.radius * width * 1.3
 		let bottom = base + SIMD3(0, cone.base * height, 0)
 		let left = bottom - right * half
 		let middle = bottom
