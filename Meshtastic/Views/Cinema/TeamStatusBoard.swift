@@ -266,7 +266,7 @@ struct TeamStatusBoard: View {
 			longName: user?.longName ?? hexName(node.num),
 			lastHeard: node.lastHeard,
 			status: status,
-			batteryLevel: node.latestDeviceMetrics?.batteryLevel,
+			batteryLevel: node.batteryLevel,
 			signalRating: signal,
 			hopsAway: node.viaMqtt ? nil : node.hopsAway,
 			distance: distance,

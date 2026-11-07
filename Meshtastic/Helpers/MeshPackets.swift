@@ -629,7 +629,7 @@ actor MeshPackets {
 		}
 
 		return .found(LiveActivityNodeReading(
-			battery: node.latestDeviceMetrics?.batteryLevel,
+			battery: node.batteryLevel,
 			signalRating: signalRating,
 			lastHeard: node.lastHeard,
 			hopsAway: node.hopsAway,
@@ -1175,6 +1175,10 @@ actor MeshPackets {
 						telemetry.channelUtilization = nodeInfo.deviceMetrics.channelUtilization
 						telemetry.airUtilTx = nodeInfo.deviceMetrics.airUtilTx
 						telemetry.nodeNum = newNode.num
+						if nodeInfo.deviceMetrics.hasBatteryLevel {
+							let reported = nodeInfo.lastHeard > 0 ? Date(timeIntervalSince1970: TimeInterval(nodeInfo.lastHeard)) : nil
+							newNode.updateBatteryLevel(Int32(truncatingIfNeeded: nodeInfo.deviceMetrics.batteryLevel), at: reported)
+						}
 					}
 					if nodeInfo.lastHeard > 0 {
 						newNode.firstHeard = Date(timeIntervalSince1970: TimeInterval(Int64(nodeInfo.lastHeard)))
@@ -1366,6 +1370,10 @@ actor MeshPackets {
 						newTelemetry.channelUtilization = nodeInfo.deviceMetrics.channelUtilization
 						newTelemetry.airUtilTx = nodeInfo.deviceMetrics.airUtilTx
 						newTelemetry.nodeNum = fetchedNode[0].num
+						if nodeInfo.deviceMetrics.hasBatteryLevel {
+							let reported = nodeInfo.lastHeard > 0 ? Date(timeIntervalSince1970: TimeInterval(nodeInfo.lastHeard)) : nil
+							fetchedNode[0].updateBatteryLevel(Int32(truncatingIfNeeded: nodeInfo.deviceMetrics.batteryLevel), at: reported)
+						}
 					}
 
 					if nodeInfo.hasPosition {
@@ -1799,6 +1807,9 @@ actor MeshPackets {
 			// Link by node number, not through `nodeTelemetry`: setting the relationship makes
 			// SwiftData load every telemetry row this node has to update its inverse array.
 			telemetry.nodeNum = packetFrom
+			if telemetry.metricsType == 0, let level = telemetry.batteryLevel, let time = telemetry.time {
+				node.updateBatteryLevel(level, at: time)
+			}
 
 			// Keep telemetry bounded as a soft cap during bursts; counting
 			// and sorting every telemetry packet does not scale on large meshes.

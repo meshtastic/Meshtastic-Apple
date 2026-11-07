@@ -17,8 +17,16 @@ extension NodeBackupManager {
 		let backupNodes = try backupContext.fetch(FetchDescriptor<NodeInfoEntity>())
 		var nodesByNum: [Int64: NodeInfoEntity] = existing?.nodesByNum ?? [:]
 		for src in backupNodes {
-			if existing?.nodesByNum[src.num] != nil { continue }
+			if let live = existing?.nodesByNum[src.num] {
+				// Kept as it is, except for a newer battery reading from the backup.
+				if let level = src.batteryLevel, let time = src.batteryLevelTime {
+					live.updateBatteryLevel(level, at: time)
+				}
+				continue
+			}
 			let dst = NodeInfoEntity()
+			dst.batteryLevel = src.batteryLevel
+			dst.batteryLevelTime = src.batteryLevelTime
 			dst.bleName = src.bleName
 			dst.channel = src.channel
 			dst.favorite = src.favorite
