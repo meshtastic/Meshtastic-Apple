@@ -151,10 +151,11 @@ struct UnheardNodesBanner: View {
 								#endif
 						}
 						.buttonStyle(.borderedProminent)
-						// A prominent button fills with the accent color whatever its role, so the red
-						// has to be set. On visionOS the white label above keeps it readable on the
-						// cinema's screen.
+						#if os(visionOS)
+						// visionOS draws the destructive role as red text on a pale fill, which washes
+						// out on the cinema's screen, so both buttons get a solid fill there.
 						.tint(.red)
+						#endif
 
 						Button {
 							dismiss(connectedNodeNum: connectedNodeNum)

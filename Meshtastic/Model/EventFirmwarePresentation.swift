@@ -147,7 +147,9 @@ private struct EventFirmwareTintScopeCore<Content: View>: View {
 
 	var body: some View {
 		content
-			.tint(cachedTint)
+			// Accent color rather than tint: an explicit tint overrides the red of destructive
+			// buttons, the accent color leaves it alone.
+			.accentColor(cachedTint)
 			.onAppear(perform: updateTint)
 			.onChange(of: tintInputs) {
 				updateTint()
