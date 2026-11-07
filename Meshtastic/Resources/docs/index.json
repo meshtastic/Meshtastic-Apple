@@ -89,32 +89,32 @@
             "node",
             "card",
             "app",
-            "tent",
-            "open",
             "cab",
+            "tent",
+            "stands",
+            "open",
             "beside",
             "window",
             "summit",
-            "stands",
             "model",
             "lookout",
+            "view",
             "out",
+            "from",
             "tap",
+            "stand",
             "size",
             "one",
-            "from",
             "back",
-            "view",
             "under",
             "turn",
             "sunset",
-            "stand",
             "shows",
+            "show",
             "same",
-            "route",
-            "round"
+            "route"
         ],
-        "charCount": 5931
+        "charCount": 6194
     },
     {
         "id": "discovery",
@@ -791,9 +791,9 @@
             "apple",
             "app",
             "vision",
-            "settings",
             "pro",
             "cinema",
+            "settings",
             "now",
             "new",
             "nodes",
@@ -811,12 +811,12 @@
             "oct",
             "device",
             "waypoints",
+            "lookout",
             "local",
             "live",
-            "show",
-            "set"
+            "view"
         ],
-        "charCount": 14701
+        "charCount": 14920
     },
     {
         "id": "adding-features",
