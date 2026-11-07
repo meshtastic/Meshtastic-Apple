@@ -148,5 +148,6 @@ enum ScreenName: String, CaseIterable {
 	case radioSetupRegion = "Radio Setup Region"
 	case radioSetupPreset = "Radio Setup Preset"
 	case radioSetupName = "Radio Setup Name"
+	case radioSetupBeacons = "Radio Setup Beacons"
 	case radioSetupDone = "Radio Setup Done"
 }

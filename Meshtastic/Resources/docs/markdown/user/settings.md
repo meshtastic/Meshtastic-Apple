@@ -41,7 +41,7 @@ The Configure picker lists live nodes from the current node database, with favor
 
 ### LoRa
 
-**Set Up Radio**, at the top of Radio Configuration, walks through region, preset and name for the connected radio; see [Getting Started](getting-started.md#step-3-set-up-your-radio). The LoRa screen has every setting:
+**Set Up Radio**, at the top of Radio Configuration, walks through region, preset and name for the connected radio, and on firmware 2.8 its status and nearby meshes; see [Getting Started](getting-started.md#step-3-set-up-your-radio). The LoRa screen has every setting:
 
 | Setting | Description |
 |---------|-------------|

@@ -399,6 +399,9 @@
         }
       }
     },
+    "Advertise your own mesh so people nearby can find and join it." : {
+      "comment" : "Radio setup beacons page"
+    },
     "Also: %@" : {
       "comment" : "Showcase model card: other devices drawn with the same model; the argument is a list of device names",
       "localizations" : {
@@ -599,6 +602,9 @@
         }
       }
     },
+    "Hear beacons from meshes nearby. They show here and in Local Mesh Discovery." : {
+      "comment" : "Radio setup beacons page; the listen setting"
+    },
     "Hide App" : {
       "comment" : "Showcase: close the app's window while in the showcase",
       "extractionState" : "extracted_with_value",
@@ -655,6 +661,12 @@
         }
       }
     },
+    "Listening for beacons" : {
+      "comment" : "Radio setup done page; nearby meshes row"
+    },
+    "Local Mesh Discovery listens on each preset in turn and reports who it hears." : {
+      "comment" : "Radio setup beacons page"
+    },
     "Made by %@" : {
       "comment" : "Showcase model card and VoiceOver: the device's maker",
       "localizations" : {
@@ -665,6 +677,9 @@
           }
         }
       }
+    },
+    "Meshes near you can advertise themselves with a beacon. Listen for them to see what's around and join one." : {
+      "comment" : "Radio setup beacons intro"
     },
     "Meshtastic Hardware Showcase" : {
       "comment" : "Showcase: title of the immersive space's control panel",
@@ -739,6 +754,9 @@
         }
       }
     },
+    "None heard yet. A mesh's beacon can take an hour or more to arrive." : {
+      "comment" : "Radio setup beacons page; listening but nothing heard"
+    },
     "Not Connected" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -748,6 +766,9 @@
           }
         }
       }
+    },
+    "Not listening for beacons" : {
+      "comment" : "Radio setup done page; nearby meshes row"
     },
     "Not set" : {
       "comment" : "Radio setup summary",
@@ -891,6 +912,9 @@
         }
       }
     },
+    "Scan for Meshes" : {
+      "comment" : "Radio setup beacons page; opens Local Mesh Discovery"
+    },
     "Send text, positions and more over LoRa radios. No cell service or internet needed." : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -952,6 +976,9 @@
           }
         }
       }
+    },
+    "Status is a short note other people see in their node lists." : {
+      "comment" : "Radio setup name footer; the node's status message"
     },
     "the %@ preset" : {
       "comment" : "Beacon switch prompt; one of the changes listed",
@@ -1067,6 +1094,9 @@
           }
         }
       }
+    },
+    "Waiting for your radio's beacon settings." : {
+      "comment" : "Radio setup beacons page; the listen setting has not arrived from the radio yet"
     },
     "You're All Set" : {
       "comment" : "Radio setup done title",
