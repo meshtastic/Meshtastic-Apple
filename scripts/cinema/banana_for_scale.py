@@ -16,7 +16,8 @@
 
 The drawing, drawings/banana_icon.svg ("Banana icon" by Keistutis on Openclipart, CC0), is
 rendered without its drop shadow and stood on end, stem up. Its outline is inflated into a round
-banana at real size, and the rendered drawing is laid on its front and back. It writes
+banana at real size, and the rendered drawing is laid on its front and back. The front carries an
+oval white label with the Meshtastic logo, like a grocery store sticker. It writes
 Packages/CinemaContent/Sources/CinemaContent/Props/banana_for_scale.usdz.
 """
 
@@ -27,7 +28,7 @@ import tempfile
 import numpy as np
 import resvg_py
 from matplotlib.path import Path as Outline
-from PIL import Image
+from PIL import Image, ImageDraw
 from pxr import Gf, Sdf, Usd, UsdGeom, UsdShade, UsdUtils
 from scipy import ndimage
 from scipy.spatial import Delaunay
@@ -36,11 +37,15 @@ from skimage import measure
 HERE = os.path.dirname(os.path.abspath(__file__))
 DRAWING = os.path.join(HERE, "drawings", "banana_icon.svg")
 OUT = os.path.join(HERE, "..", "..", "Packages", "CinemaContent", "Sources", "CinemaContent", "Props", "banana_for_scale.usdz")
+LOGO = os.path.join(HERE, "..", "..", "Meshtastic", "Assets.xcassets", "logo-black.imageset", "Mesh_Logo_Black.svg")
 
 # Tip to the top of the stem, standing up: a medium banana.
 HEIGHT_M = 0.185
 # Pixels between the mesh's inside points, about a millimeter.
 GRID = 10
+# The label, about the size of a real banana sticker: its long side runs along the banana.
+LABEL_LENGTH_M = 0.026
+LABEL_WIDTH_M = 0.017
 COPYRIGHT = ("Made for Meshtastic from \"Banana icon\" by Keistutis, Openclipart, "
              "dedicated to the public domain (CC0).")
 
@@ -66,6 +71,43 @@ def silhouette(image):
     sizes = ndimage.sum(mask, labels, range(1, count + 1))
     mask = labels == (int(np.argmax(sizes)) + 1)
     return ndimage.binary_fill_holes(mask)
+
+
+def labeled(texture, mask, meters_per_px):
+    """The texture with an oval white label and the Meshtastic logo halfway up the banana, in
+    the middle of its width, turned to run along it with the logo reading upward."""
+    inside = ndimage.distance_transform_edt(mask)
+    rows, cols = np.nonzero(mask)
+    row = (rows.min() + rows.max()) // 2
+    col = int(np.argmax(inside[row]))
+    # The banana's direction there: the long axis of the banana within a few centimeters.
+    reach = 0.03 / meters_per_px
+    near = (rows - row) ** 2 + (cols - col) ** 2 < reach ** 2
+    spread = np.cov(np.vstack([cols[near], rows[near]]))
+    values, vectors = np.linalg.eigh(spread)
+    along = vectors[:, np.argmax(values)]
+    # Pointing up the banana, so the logo reads from the tip toward the stem.
+    if along[1] > 0:
+        along = -along
+    angle = np.degrees(np.arctan2(-along[1], along[0]))
+
+    # Drawn four times larger and scaled down, for smooth edges.
+    scale = 4
+    length = int(round(LABEL_LENGTH_M / meters_per_px)) * scale
+    width = int(round(LABEL_WIDTH_M / meters_per_px)) * scale
+    label = Image.new("RGBA", (length, width), (0, 0, 0, 0))
+    ImageDraw.Draw(label).ellipse([0, 0, length - 1, width - 1], fill=(250, 250, 247, 255))
+    with open(LOGO) as drawing:
+        logo_svg = drawing.read()
+    logo_width = int(length * 0.58)
+    logo = Image.open(io.BytesIO(bytes(resvg_py.svg_to_bytes(svg_string=logo_svg, width=logo_width)))).convert("RGBA")
+    label.alpha_composite(logo, ((length - logo.width) // 2, (width - logo.height) // 2))
+    label = label.resize((length // scale, width // scale), Image.LANCZOS)
+    label = label.rotate(angle, resample=Image.BICUBIC, expand=True)
+
+    out = texture.convert("RGBA")
+    out.alpha_composite(label, (int(col - label.width / 2), int(row - label.height / 2)))
+    return out.convert("RGB")
 
 
 def build():
@@ -108,8 +150,10 @@ def build():
     vertices = np.vstack([np.column_stack([x, y, z]), np.column_stack([x, y, -z])[edge:]])
     back = np.concatenate([np.arange(edge), np.arange(count, 2 * count - edge)])
     faces = np.vstack([faces, back[faces][:, ::-1]])
-    uv = np.column_stack([points[:, 1] / (w - 1), 1 - points[:, 0] / (h - 1)])
-    uvs = np.vstack([uv, uv[edge:]])
+    # The texture is two pictures side by side: the front with the label on the left, the back
+    # without it on the right.
+    uv = np.column_stack([points[:, 1] / (w - 1) / 2, 1 - points[:, 0] / (h - 1)])
+    uvs = np.vstack([uv, uv[edge:] + [0.5, 0]])
     # Stood on its lowest point, centered across and front to back.
     vertices[:, 1] -= vertices[:, 1].min()
     vertices[:, 0] -= (vertices[:, 0].min() + vertices[:, 0].max()) / 2
@@ -120,12 +164,26 @@ def build():
         faces = faces[:, ::-1]
         normals = -normals
 
+    # The back's faces get their own copy of the outline's points, carrying the back's half of
+    # the texture; the normals were worked out with the two sides joined, so the rim stays smooth.
+    front_faces = len(faces) // 2
+    rim = np.arange(edge)
+    rim_copy = len(vertices) + rim
+    vertices = np.vstack([vertices, vertices[rim]])
+    normals = np.vstack([normals, normals[rim]])
+    uvs = np.vstack([uvs, uv[rim] + [0.5, 0]])
+    back_faces = faces[front_faces:]
+    faces[front_faces:] = np.where(back_faces < edge, rim_copy[np.minimum(back_faces, edge - 1)], back_faces)
+
     # The drawing as the texture, its see-through edges filled with the nearest banana color so
     # the rim doesn't pick up black.
     rgb = image[:, :, :3]
     solid = image[:, :, 3] > 40
     nearest = ndimage.distance_transform_edt(~solid, return_distances=False, return_indices=True)
-    texture = Image.fromarray(rgb[nearest[0], nearest[1]].astype(np.uint8), "RGB")
+    peel = Image.fromarray(rgb[nearest[0], nearest[1]].astype(np.uint8), "RGB")
+    texture = Image.new("RGB", (w * 2, h))
+    texture.paste(labeled(peel, mask, meters_per_px), (0, 0))
+    texture.paste(peel, (w, 0))
     return vertices, normals, uvs, faces, texture
 
 
