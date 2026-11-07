@@ -4,8 +4,7 @@
 
 **Created**: 2026-11-07
 
-**Status**: Implemented; this spec records what shipped. The firmware 2.8 status and
-nearby meshes pages are in #2906, not yet merged.
+**Status**: Implemented; this spec records what shipped
 
 **Input**: A new user should learn what Meshtastic is before the app asks for permissions,
 and a radio connected for the first time should be walked through the settings it needs to
@@ -44,7 +43,7 @@ ever writes to the connected radio.
 | Preset rules per region moved where the setup can reach them | #2871 |
 | Radio setup flow, its automatic trigger and the Set Up Radio rows | #2873 |
 | Radio setup and the 3D model open on the Vision Pro cinema's screen | #2881 |
-| Status message and Nearby Meshes page on firmware 2.8 | #2906 (open) |
+| Status message and Nearby Meshes page on firmware 2.8 | #2906 |
 
 ## User Scenarios & Testing *(mandatory)*
 
