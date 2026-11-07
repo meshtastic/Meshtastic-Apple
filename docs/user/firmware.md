@@ -35,6 +35,8 @@ Some radios report a specialized firmware target that is not a separate entry in
 
 For ESP32 BLE updates, the app waits for the radio's final verification response before showing success. If the radio reports an error or does not send the final success response, the app keeps the update in a failed state instead of treating the upload as complete.
 
+If an nRF52 Bluetooth update loses the radio partway, the app starts it over and shows **Reconnecting...**, up to three times. Bootloader 2.6.0 and later accept the fresh start.
+
 | Icon | Progress | Description |
 |------|----------|-------------|
 | ![0%](../assets/screenshots/progressZero.png) | Starting | Update initiating — firmware binary downloading. |

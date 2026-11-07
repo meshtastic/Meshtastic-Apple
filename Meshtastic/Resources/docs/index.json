@@ -173,13 +173,13 @@
             "hardware",
             "file",
             "meshtastic",
+            "shows",
             "from",
             "board",
-            "shows",
-            "copy",
             "bluetooth",
-            "without",
             "nrf52",
+            "copy",
+            "without",
             "version",
             "target",
             "tap",
@@ -192,7 +192,7 @@
             "uf2",
             "supported"
         ],
-        "charCount": 10030
+        "charCount": 10204
     },
     {
         "id": "getting-started",
@@ -785,14 +785,14 @@
         "section": "user",
         "navOrder": 0,
         "keywords": [
-            "map",
-            "app",
-            "settings",
             "radio",
+            "app",
+            "map",
+            "settings",
             "apple",
             "now",
-            "new",
             "nov",
+            "new",
             "nodes",
             "cinema",
             "vision",
@@ -801,14 +801,14 @@
             "node",
             "messages",
             "mesh",
-            "jun",
             "from",
             "firmware",
+            "jun",
             "one",
+            "bluetooth",
             "radios",
             "oct",
             "device",
-            "bluetooth",
             "page",
             "local",
             "live",
@@ -816,7 +816,7 @@
             "meshtastic",
             "lookout"
         ],
-        "charCount": 13552
+        "charCount": 13772
     },
     {
         "id": "adding-features",

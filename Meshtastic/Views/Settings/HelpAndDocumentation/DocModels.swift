@@ -319,16 +319,20 @@ final class DocBundle {
 		.prefix(maxPages)
 		.map { $0.page }
 
-		// Trim to token budget using charCount / 3.5 estimate
+		return Self.fitToBudget(scored, tokenBudget: tokenBudget)
+	}
+
+	/// Keeps pages in rank order while they fit, using a charCount / 3.5 token estimate. A page
+	/// too big for what is left is skipped, not the end of the list, so smaller pages ranked
+	/// below it still go in.
+	nonisolated static func fitToBudget(_ pages: [DocPage], tokenBudget: Int) -> [DocPage] {
 		var selected: [DocPage] = []
 		var estimatedTokens = 0
-		for page in scored {
+		for page in pages {
 			let pageTokens = Int(Double(page.charCount) / 3.5)
 			if estimatedTokens + pageTokens <= tokenBudget {
 				selected.append(page)
 				estimatedTokens += pageTokens
-			} else {
-				break
 			}
 		}
 		return selected
