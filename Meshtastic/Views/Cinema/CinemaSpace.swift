@@ -403,6 +403,17 @@ struct CinemaSpace: View {
 
 	/// Puts the terrain for the chosen summit out the lookout's windows, with the clear sky behind
 	/// it, or takes it away for the painted sunset or another environment.
+	/// The circle the 3D map shows around the mesh, before any zoom; with no node positions, the
+	/// newest map the user downloaded, as the 3D map does. The lookout's summits are found in it.
+	private func lookoutArea() async -> SpatialCircle? {
+		if let container, !appState.isDatabaseResetting {
+			let preciseOnly = UserDefaults.standard.bool(forKey: SpatialTerrainKeeper.preciseOnlyKey)
+			let nodes = (try? await SpatialMeshAreaReader.nodes(container: container, preciseOnly: preciseOnly, connectedNodeNum: accessoryManager.activeDeviceNum)) ?? []
+			if let circle = SpatialMapArea.meshCircle(nodes) { return circle }
+		}
+		return SpatialMapArea.downloadedMapCircle(offlineMaps.regions)
+	}
+
 	/// The downloads the lookout's summits and terrain come from, as they change.
 	private var lookoutMaps: [String] {
 		offlineMaps.regions.map { "\($0.id)|\($0.terrain?.downloadedAt.timeIntervalSince1970 ?? 0)" }
@@ -415,9 +426,7 @@ struct CinemaSpace: View {
 			terrainSiteID = nil
 			return
 		}
-		if lookout.sites.isEmpty {
-			await lookout.prepare()
-		}
+		await lookout.prepare(area: await lookoutArea())
 		let site = lookout.site(for: lookoutSiteID)
 		let heading = SpatialLookout.heading(turns: lookoutTurns)
 		guard site?.id != terrainSiteID || heading != terrainHeading || (site != nil && terrain == nil) else { return }
