@@ -46,6 +46,7 @@ struct CinemaSpace: View {
 	@StateObject private var screen = CinemaScreenModel()
 	/// The fire lookout's summits, and the terrain and node labels for the chosen one.
 	@State private var lookout = LookoutScene()
+	@ObservedObject private var offlineMaps = OfflineMapManager.shared
 	@AppStorage("cinemaLookoutSite") private var lookoutSiteID = ""
 	/// Eighth turns clockwise the lookout is turned from the panel.
 	@AppStorage(SpatialLookout.turnsKey) private var lookoutTurns = 0
@@ -184,6 +185,17 @@ struct CinemaSpace: View {
 		}
 		.task(id: lookoutSiteID) {
 			await refreshLookout()
+		}
+		// A map deleted or downloaded changes the summits and the terrain around them, so both are
+		// found and built again.
+		.onChange(of: lookoutMaps) {
+			lookout.forgetSites()
+			lookoutBuild?.task.cancel()
+			lookoutBuild = nil
+			terrain?.removeFromParent()
+			terrain = nil
+			terrainSiteID = nil
+			Task { await refreshLookout() }
 		}
 		.task(id: lookoutTurns) {
 			await refreshLookout()
@@ -391,6 +403,11 @@ struct CinemaSpace: View {
 
 	/// Puts the terrain for the chosen summit out the lookout's windows, with the clear sky behind
 	/// it, or takes it away for the painted sunset or another environment.
+	/// The downloads the lookout's summits and terrain come from, as they change.
+	private var lookoutMaps: [String] {
+		offlineMaps.regions.map { "\($0.id)|\($0.terrain?.downloadedAt.timeIntervalSince1970 ?? 0)" }
+	}
+
 	private func refreshLookout() async {
 		guard environment.isCutout else {
 			terrain?.removeFromParent()

@@ -64,6 +64,12 @@ enum LookoutSiteCache {
 		}
 	}
 
+	/// Forgets the kept summits, so the next search runs again.
+	static func clear() {
+		guard let url = fileURL() else { return }
+		try? FileManager.default.removeItem(at: url)
+	}
+
 	private static func fileURL() -> URL? {
 		FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first?
 			.appendingPathComponent("LookoutSites.json")

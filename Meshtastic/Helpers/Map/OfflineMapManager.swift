@@ -582,6 +582,10 @@ final class OfflineMapManager: ObservableObject {
 		removeTerrainFiles(for: region)
 		regions.removeAll { $0.id == region.id }
 		save()
+		#if os(visionOS)
+		// The fire lookout's summits were found in this map; find them again in what's left.
+		LookoutSiteCache.clear()
+		#endif
 	}
 
 	/// Deletes a region's terrain archives — both the manifest-recorded names and the

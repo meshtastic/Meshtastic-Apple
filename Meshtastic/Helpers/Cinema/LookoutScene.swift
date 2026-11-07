@@ -36,6 +36,8 @@ final class LookoutScene {
 	private static let maxLabels = 40
 
 	private var preparing: Task<Void, Never>?
+	/// Bumped by `forgetSites()`, so a search that started before it doesn't put back what it found.
+	private var generation = 0
 
 	/// Reads the downloaded terrain and finds the summits in it. A call while a search is running
 	/// waits for that one rather than starting another.
@@ -47,16 +49,19 @@ final class LookoutScene {
 		let search = Task { await self.search() }
 		preparing = search
 		await search.value
-		preparing = nil
+		// A search started after `forgetSites()` may be the one running now.
+		if preparing == search { preparing = nil }
 	}
 
 	private func search() async {
+		let started = generation
 		status = .searching
 		let manager = OfflineMapManager.shared
 		manager.loadIfNeeded()
 		let sources = manager.terrainSources()
 		Logger.services.info("🎬 [Cinema] Lookout: \(sources.count, privacy: .public) terrain sources among \(manager.regions.count, privacy: .public) offline regions")
 		await store.configure(sources: sources)
+		guard generation == started else { return }
 		var union: GeoBounds?
 		for source in sources {
 			union = union.map { $0.union(source.bounds) } ?? source.bounds
@@ -79,10 +84,22 @@ final class LookoutScene {
 			Logger.services.info("🎬 [Cinema] Lookout sites: \(self.sites.count, privacy: .public) kept from the last search")
 			return
 		}
-		sites = await LookoutPeakNames.named(await LookoutTerrain.sites(in: union, source: store))
+		let found = await LookoutPeakNames.named(await LookoutTerrain.sites(in: union, source: store))
+		guard generation == started else { return }
+		sites = found
 		LookoutSiteCache.store(sites, for: maps)
 		status = sites.isEmpty ? .noSummits : .ready
 		Logger.services.info("🎬 [Cinema] Lookout sites: \(self.sites.count, privacy: .public) in the downloaded terrain \(union.minLat, privacy: .public)..\(union.maxLat, privacy: .public), \(union.minLon, privacy: .public)..\(union.maxLon, privacy: .public)")
+	}
+
+	/// Drops the summits found so far, after the downloaded maps changed, so the next
+	/// `prepare()` searches what's there now.
+	func forgetSites() {
+		generation += 1
+		preparing = nil
+		sites = []
+		bounds = nil
+		status = .idle
 	}
 
 	func site(for id: String) -> LookoutSite? {
