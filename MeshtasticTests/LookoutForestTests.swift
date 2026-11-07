@@ -18,16 +18,15 @@ struct LookoutForestTests {
 		return result
 	}
 
-	@Test("the spots are the same every time, off the summit, nearest first, and far trees stand larger")
+	@Test("the near spots are the same every time, off the summit, nearest first, at true size")
 	func spotsAreStable() {
-		let spots = spots(to: 6_000)
-		#expect(spots == self.spots(to: 6_000))
+		let spots = spots(to: 1_500)
+		#expect(spots == self.spots(to: 1_500))
 		#expect(spots.allSatisfy { $0.distance >= LookoutForest.nearest * 0.9 })
 		#expect(spots.allSatisfy { (0..<360).contains($0.bearing) })
 		#expect((spots.first?.distance ?? 0) < (spots.last?.distance ?? 0))
-		// Near trees keep the painting's sizes. Far stands are wider, and taller more slowly.
-		#expect(spots.filter { $0.distance < LookoutForest.paintedReach }.allSatisfy { (0.6...1.5).contains($0.width) && $0.width == $0.height })
-		#expect(spots.filter { $0.distance > 5_900 }.allSatisfy { $0.width > 1.4 && $0.height < $0.width })
+		// Every tree is the painting's size.
+		#expect(spots.allSatisfy { (0.6...1.5).contains($0.width) && $0.width == $0.height })
 	}
 
 	@Test("ground under the sill, or behind a nearer ridge, is hidden")
@@ -53,15 +52,29 @@ struct LookoutForestTests {
 		#expect(LookoutForest.density(at: LookoutForest.reach) == 0)
 	}
 
-	@Test("a far tree is two triangles facing the cab, split into a sunlit side and a shaded side")
-	func card() {
-		let base = SIMD3<Double>(0, 500, 5_000)
-		let faces = LookoutForest.card(at: base, width: 2, height: 1.5)
-		#expect(faces.count == 2 && LookoutForest.triangles(at: 5_000) == 2)
-		// The shape lies across the line to the cab: every corner the same distance north.
-		#expect(faces.flatMap(\.corners).allSatisfy { abs($0.z - 5_000) < 1e-9 })
-		// Its halves lean to opposite sides.
-		#expect(faces[0].normal.x * faces[1].normal.x < 0)
+	@Test("rows come nearest first, one per spoke at each step, the same every time")
+	func rows() {
+		var rows: [LookoutForest.Row] = []
+		LookoutForest.forEachRow(farthest: 2_000, spokes: 8) { rows.append($0); return true }
+		var again: [LookoutForest.Row] = []
+		LookoutForest.forEachRow(farthest: 2_000, spokes: 8) { again.append($0); return true }
+		#expect(rows == again)
+		#expect(rows.count.isMultiple(of: 8) && !rows.isEmpty)
+		#expect((rows.first?.distance ?? 0) < (rows.last?.distance ?? 0))
+		#expect(rows.allSatisfy { $0.distance > LookoutForest.rowsFrom * 0.99 })
+	}
+
+	@Test("a row reads its own stretch of trees from the band for its haze and the sun's side")
+	func rowCoordinates() throws {
+		let near = LookoutForest.rowCoordinates(offset: 0.5, width: 20, distance: 2_000, sunOnRight: false)
+		let lit = LookoutForest.rowCoordinates(offset: 0.5, width: 20, distance: 2_000, sunOnRight: true)
+		let far = LookoutForest.rowCoordinates(offset: 0.5, width: 20, distance: 14_000, sunOnRight: false)
+		#expect(abs(Double(near.u1 - near.u0) - 20 / LookoutForest.rowTextureMeters) < 1e-6)
+		#expect(near.u0 >= 0 && near.u1 <= 1)
+		#expect(lit.v0 > near.v0 && far.v0 > lit.v0)
+		#expect(near.v1 < lit.v0)
+		let image = try #require(LookoutForest.rowTexture(width: 256, bandHeight: 32))
+		#expect(image.height == 32 * LookoutForest.rowBands)
 	}
 
 	@Test("the painting's tree, and the triangle cost by detail")

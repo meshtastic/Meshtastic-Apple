@@ -8,22 +8,19 @@ import CoreGraphics
 import Foundation
 import simd
 
-/// The conifers on the forested ground seen from the fire lookout, like the painted sunset's
-/// forest (scripts/cinema/forest_view.py), which covers every forested hill in view with trees.
-/// A real mountain falls away steeply, and the ground for kilometers around sits under the cab's
-/// sill, so trees go only where they'd show: on forested ground above the sill's line and not
-/// behind nearer ground, out to `reach`. Near trees are the painting's stacked cones; past
-/// `cardsFrom` each is one flat tree facing the cab, sunlit on one side, which is all a tree that
-/// far shows. Far trees are drawn as stands about as tall in the view as the painting's trees, so
-/// the forest reads from the cab rather than as specks. Only the parts that don't need RealityKit
-/// live here, so they can be tested.
+/// The forest on the ground seen from the fire lookout, like the painted sunset's
+/// (scripts/cinema/forest_view.py): true-size conifers packed so they overlap into a carpet of
+/// treetops that shrinks and hazes with distance. Within `rowsFrom` each tree is the painting's
+/// stacked cones. Farther out, where one tree is only a few pixels, the forest is drawn as rows:
+/// strips standing on the ground and facing the cab, each painted with a row of the painting's
+/// trees, see-through between their tops. Rows stack one behind another so the slopes fill with
+/// trees the way the painting's do. Everything goes only where it'd show: on forested ground above
+/// the sill's line and not behind nearer ground. Only the parts that don't need RealityKit live
+/// here, so they can be tested.
 enum LookoutForest {
 	/// The summit is left clear this far out, as in the painting.
 	static let nearest = 150.0
-	/// The painting's trees stand out to 2.6 km; a tree that far keeps its own size, and a farther
-	/// one is drawn as a stand that looks as wide from the cab.
-	static let paintedReach = 2_400.0
-	/// Trees thin out from `fadeFrom` and stop at `reach`, where the haze has softened the hills.
+	/// The forest thins out from `fadeFrom` and stops at `reach`, where the haze has taken the hills.
 	static let fadeFrom = 10_000.0
 	static let reach = 15_000.0
 	/// Nothing lower than this below the horizon shows over the sill: it is 0.94 m high and 2.2 m
@@ -31,35 +28,36 @@ enum LookoutForest {
 	static let sillDepression = 5.5
 	/// Earth's radius with refraction, as `LookoutTerrain` uses: far ground sits below a flat horizon.
 	static let earthRadius = 7_450_000.0
-	/// Trees are this far apart near the summit…
-	static let nearSpacing = 8.0
-	/// …and farther out, this much of the view apart (about 0.17°), a dense forest like the painting's.
-	static let angularSpacing = 0.003
+	/// Near trees are this far apart, about the painting's one tree to 30 m².
+	static let nearSpacing = 5.5
 	/// Closer than this a tree gets two cones; farther, one.
 	static let nearDetail = 450.0
-	/// From here out a tree is one flat shape facing the cab.
-	static let cardsFrom = 1_500.0
-	/// The most triangles the trees may take, on top of the terrain's.
+	/// From here out the forest is rows.
+	static let rowsFrom = 1_500.0
+	/// Each row stands this much farther out than the one before it.
+	static let rowStep = 0.012
+	/// A row's strip: how tall, and how much forest its texture shows across.
+	static let rowHeight = 24.0
+	static let rowTextureMeters = 140.0
+	/// The most triangles the forest may take, on top of the terrain's.
 	static let triangleBudget = 600_000
 	/// Shades of green across the palette, and light levels down it.
 	static let shades = 8
 	static let lightLevels = 16
-	/// Haze levels across the palette, from none to `maxHaze`, the haze at about 40 km.
+	/// Haze levels, from none to `maxHaze`, the haze at about 23 km.
 	static let hazeLevels = 8
-	static let maxHaze = 0.5
-	/// The terrain's haze: its color, and how far it takes to cover half the view.
-	static let hazeColor = SIMD3<Double>(0.78, 0.73, 0.70)
-	static let hazeDistance = 60_000.0
+	static let maxHaze = 0.6
+	/// The painting's haze: a cool gray, taking half the view by about 17 km (forest_view.py's
+	/// `1 - exp(-d / 25 km)`). The terrain uses it too, so far ridges fade the way the painting's do.
+	static let hazeColor = SIMD3<Double>(0.60, 0.60, 0.62)
+	static let hazeDistance = 25_000.0
 
 	/// Where a tree stands and how it looks, by its true bearing (degrees) and distance from the site.
 	struct Spot: Equatable {
 		let bearing: Double
 		let distance: Double
-		/// Across: 0.6–1.5 as in the painting, times how much farther than the painting's trees it
-		/// stands, so a far stand is as wide in the view.
+		/// 0.6–1.5 times the painting's 12.5 m tree, across and up.
 		let width: Double
-		/// Up: the same, but growing more slowly with distance, so a far stand reads as canopy
-		/// rather than a spike.
 		let height: Double
 		/// Radians about the vertical.
 		let turn: Double
@@ -76,26 +74,25 @@ enum LookoutForest {
 
 	// MARK: Spots
 
-	/// Calls `body` with every place a tree could stand out to `farthest`, nearest first: rings
-	/// whose spacing grows with distance, each spot jittered. The same every time, so turning the
+	/// Calls `body` with every place a near tree could stand out to `farthest`, nearest first:
+	/// rings `nearSpacing` apart, each spot jittered. The same every time, so turning the
 	/// lookout keeps the same trees. Stops when `body` returns false.
 	static func forEachSpot(farthest: Double, _ body: (Spot) -> Bool) {
 		var distance = nearest
 		var ring = 0
 		while distance <= farthest {
-			let spacing = max(nearSpacing, distance * angularSpacing)
+			let spacing = nearSpacing
 			let count = max(1, Int(2 * .pi * distance / spacing))
 			for index in 0..<count {
 				let h = hash(ring, index)
 				let d = distance + (unit(h, 0) - 0.5) * 0.8 * spacing
 				let size = 0.6 + 0.9 * unit(h, 3)
-				let grown = max(1, d / paintedReach)
 				let bearing = (Double(index) + 0.5 + (unit(h, 1) - 0.5) * 0.8) / Double(count) * 360
 				let spot = Spot(
 					bearing: bearing.truncatingRemainder(dividingBy: 360),
 					distance: d,
-					width: size * grown,
-					height: size * pow(grown, 0.6),
+					width: size,
+					height: size,
 					turn: unit(h, 4) * 2 * .pi,
 					shade: min(shades - 1, Int(unit(h, 5) * Double(shades))),
 					chance: unit(h, 2)
@@ -191,35 +188,121 @@ enum LookoutForest {
 	static let farCones = [Cone(radius: 2.4, base: 1.5, tip: 12.5)]
 	static let farSides = 5
 
-	/// Triangles one tree takes at `distance`.
+	/// Triangles one near tree takes at `distance`.
 	static func triangles(at distance: Double) -> Int {
-		if distance >= cardsFrom { return 2 }
-		return distance < nearDetail ? nearCones.count * nearSides : farCones.count * farSides
+		distance < nearDetail ? nearCones.count * nearSides : farCones.count * farSides
 	}
 
-	/// A far tree as one flat shape standing at `base` (meters, east/up/north from the site's
-	/// foot) and facing the eye straight above the site: a triangle the tree's width and height,
-	/// split down the middle into the half the sun lights and the half in shade, as a cone shows
-	/// from far off. Each half's normal leans out to its side.
-	static func card(at base: SIMD3<Double>, width: Double, height: Double) -> [(corners: [SIMD3<Double>], normal: SIMD3<Double>)] {
-		let cone = farCones[0]
-		var toward = SIMD3<Double>(-base.x, 0, -base.z)
-		let length = simd_length(toward)
-		toward = length > 0 ? toward / length : SIMD3(0, 0, 1)
-		let right = simd_normalize(simd_cross(SIMD3(0, 1, 0), toward))
-		// A little wider than the cone, so neighbors overlap into canopy rather than leaving gaps.
-		let half = cone.radius * width * 1.3
-		let bottom = base + SIMD3(0, cone.base * height, 0)
-		let left = bottom - right * half
-		let middle = bottom
-		let rightCorner = bottom + right * half
-		let tip = base + SIMD3(0, cone.tip * height, 0)
-		let slant = cone.radius / (cone.tip - cone.base)
-		let up = SIMD3<Double>(0, slant, 0)
-		return [
-			([left, middle, tip], simd_normalize(toward - right * 0.8 + up)),
-			([middle, rightCorner, tip], simd_normalize(toward + right * 0.8 + up))
-		]
+	// MARK: Rows
+
+	/// One strip of forest: `distance` out, across the terrain's spoke `spoke`, its texture starting
+	/// `offset` (0–1) of the way along the row of painted trees.
+	struct Row: Equatable {
+		let distance: Double
+		let spoke: Int
+		let offset: Double
+		/// 0..<1, for thinning toward the far edge.
+		let chance: Double
+	}
+
+	/// Calls `body` with every row out to `farthest`, nearest first, one per spoke at each step,
+	/// jittered so the rows don't line up. The same every time. Stops when `body` returns false.
+	static func forEachRow(farthest: Double, spokes: Int, _ body: (Row) -> Bool) {
+		var distance = rowsFrom
+		var step = 0
+		while distance <= farthest {
+			for spoke in 0..<spokes {
+				let h = hash(step + 1_000_000, spoke)
+				let row = Row(
+					distance: distance * (1 + rowStep * (unit(h, 0) - 0.5) * 0.8),
+					spoke: spoke,
+					offset: unit(h, 1),
+					chance: unit(h, 2)
+				)
+				guard body(row) else { return }
+			}
+			distance *= 1 + rowStep
+			step += 1
+		}
+	}
+
+	/// The texture's bands: a haze level, and which side the sun lights.
+	static var rowBands: Int { hazeLevels * 2 }
+
+	/// The part of the row texture a strip `width` meters across shows: its own stretch of the row,
+	/// in the band for its haze and the side the sun is on. A strip wider than the texture shows
+	/// all of it, stretched.
+	struct RowCoordinates: Equatable {
+		let u0: Float
+		let u1: Float
+		let v0: Float
+		let v1: Float
+	}
+
+	static func rowCoordinates(offset: Double, width: Double, distance: Double, sunOnRight: Bool) -> RowCoordinates {
+		let span = min(1, width / rowTextureMeters)
+		let u0 = offset * (1 - span)
+		let fog = 1 - exp(-distance / hazeDistance)
+		let level = Int((min(1, fog / maxHaze) * Double(hazeLevels - 1)).rounded())
+		let band = Double(level * 2 + (sunOnRight ? 1 : 0))
+		// Inset a little, so sampling never reaches the next band.
+		return RowCoordinates(u0: Float(u0), u1: Float(u0 + span), v0: Float((band + 0.01) / Double(rowBands)), v1: Float((band + 0.97) / Double(rowBands)))
+	}
+
+	/// The row texture: bands of the painting's trees, packed in two layers so they overlap,
+	/// each band hazed to its level and lit from the left or the right. Transparent above the
+	/// treetops, so the hills behind show between them; a solid strip of canopy at the bottom, so
+	/// no row shows the ground through its trees' feet.
+	static func rowTexture(width: Int = 1_024, bandHeight: Int = 128) -> CGImage? {
+		let height = bandHeight * rowBands
+		let space = CGColorSpaceCreateDeviceRGB()
+		guard let context = CGContext(data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: 0, space: space, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
+		let sunlight = SIMD3<Double>(1.0, 0.88, 0.76)
+		let pixelsPerMeter = Double(width) / rowTextureMeters
+		let rise = Double(bandHeight - 4) / rowHeight
+		func cgColor(_ c: SIMD3<Double>) -> CGColor {
+			CGColor(colorSpace: space, components: [CGFloat(min(1, c.x)), CGFloat(min(1, c.y)), CGFloat(min(1, c.z)), 1]) ?? CGColor(gray: 0, alpha: 1)
+		}
+		// The painting's tree: three stacked cones.
+		let tiers = [Cone(radius: 2.4, base: 2, tip: 8), Cone(radius: 1.8, base: 5.5, tip: 10.5), Cone(radius: 1.1, base: 8.5, tip: 12.5)]
+		for band in 0..<rowBands {
+			let fog = maxHaze * Double(band / 2) / Double(hazeLevels - 1)
+			let sunOnRight = band % 2 == 1
+			let floor = Double(band * bandHeight + 2)
+			func hazed(_ c: SIMD3<Double>, extra: Double = 0) -> SIMD3<Double> {
+				simd_mix(c, hazeColor, SIMD3(repeating: min(1, fog + extra)))
+			}
+			// Canopy at the trees' feet.
+			context.setFillColor(cgColor(hazed(darkest * 0.85)))
+			context.fill(CGRect(x: 0, y: floor, width: Double(width), height: 3 * rise))
+			// Two layers: the back one smaller, darker and a touch hazier, then the front one.
+			for layer in 0..<2 {
+				let count = Int(rowTextureMeters / (layer == 0 ? 2.6 : 3.2))
+				for index in 0..<count {
+					let h = hash(band * 7 + layer, index)
+					let size = (0.6 + 0.9 * unit(h, 0)) * (layer == 0 ? 0.85 : 1)
+					let x = (Double(index) + unit(h, 1)) / Double(count) * Double(width)
+					let base = simd_mix(darkest, lightest, SIMD3(repeating: unit(h, 2)))
+					let lit = hazed(base * (0.55 + 0.45 * sunlight) * (layer == 0 ? 0.85 : 1), extra: layer == 0 ? 0.03 : 0)
+					let shadow = hazed(base * 0.55 * (layer == 0 ? 0.85 : 1), extra: layer == 0 ? 0.03 : 0)
+					for tier in tiers {
+						let r = tier.radius * size * pixelsPerMeter
+						let y0 = floor + tier.base * size * rise
+						let y1 = floor + tier.tip * size * rise
+						for (side, color) in [(-1.0, sunOnRight ? shadow : lit), (1.0, sunOnRight ? lit : shadow)] {
+							context.setFillColor(cgColor(color))
+							context.beginPath()
+							context.move(to: CGPoint(x: x, y: y0))
+							context.addLine(to: CGPoint(x: x + side * r, y: y0))
+							context.addLine(to: CGPoint(x: x, y: y1))
+							context.closePath()
+							context.fillPath()
+						}
+					}
+				}
+			}
+		}
+		return context.makeImage()
 	}
 
 	/// One tree's faces in meters around its base (east, up, north), turned by `turn` and sized:
