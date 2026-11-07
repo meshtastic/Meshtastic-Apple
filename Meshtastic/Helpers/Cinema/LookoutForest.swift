@@ -8,22 +8,24 @@ import CoreGraphics
 import Foundation
 import simd
 
-/// The conifers on the forested ground seen from the fire lookout, like the near forest of the
-/// painted sunset (scripts/cinema/forest_view.py): stacked cones varied in size, shade and turn.
-/// The painting's gentle summit shows its trees just past the tower. A real mountain falls away
-/// steeply, and the ground for kilometers around sits under the cab's sill, so the trees go on the
-/// first forested ground that shows above the sill in each direction: a band from there out to
-/// `bandDepth` times as far. They're drawn as stands about as tall in the view as the painting's
-/// trees, so the band reads as a tree line rather than specks. Only the parts that don't need
-/// RealityKit live here, so they can be tested.
+/// The conifers on the forested ground seen from the fire lookout, like the painted sunset's
+/// forest (scripts/cinema/forest_view.py), which covers every forested hill in view with trees.
+/// A real mountain falls away steeply, and the ground for kilometers around sits under the cab's
+/// sill, so trees go only where they'd show: on forested ground above the sill's line and not
+/// behind nearer ground, out to `reach`. Near trees are the painting's stacked cones; past
+/// `cardsFrom` each is one flat tree facing the cab, sunlit on one side, which is all a tree that
+/// far shows. Far trees are drawn as stands about as tall in the view as the painting's trees, so
+/// the forest reads from the cab rather than as specks. Only the parts that don't need RealityKit
+/// live here, so they can be tested.
 enum LookoutForest {
 	/// The summit is left clear this far out, as in the painting.
 	static let nearest = 150.0
 	/// The painting's trees stand out to 2.6 km; a tree that far keeps its own size, and a farther
-	/// one is drawn as a stand that looks as tall from the cab.
+	/// one is drawn as a stand that looks as wide from the cab.
 	static let paintedReach = 2_400.0
-	/// Each band runs from the first forested ground in view out to this many times as far.
-	static let bandDepth = 1.35
+	/// Trees thin out from `fadeFrom` and stop at `reach`, where the haze has softened the hills.
+	static let fadeFrom = 10_000.0
+	static let reach = 15_000.0
 	/// Nothing lower than this below the horizon shows over the sill: it is 0.94 m high and 2.2 m
 	/// out from a 1.15 m seated eye (KNEE, SILL and EYE_HEIGHT in scripts/cinema/fire_lookout.py).
 	static let sillDepression = 5.5
@@ -31,12 +33,14 @@ enum LookoutForest {
 	static let earthRadius = 7_450_000.0
 	/// Trees are this far apart near the summit…
 	static let nearSpacing = 8.0
-	/// …and farther out, this much of the view apart (about 0.26°), a dense fringe like the painting's.
+	/// …and farther out, this much of the view apart (about 0.26°), a dense forest like the painting's.
 	static let angularSpacing = 0.0045
 	/// Closer than this a tree gets two cones; farther, one.
 	static let nearDetail = 450.0
+	/// From here out a tree is one flat shape facing the cab.
+	static let cardsFrom = 1_500.0
 	/// The most triangles the trees may take, on top of the terrain's.
-	static let triangleBudget = 300_000
+	static let triangleBudget = 400_000
 	/// Shades of green across the palette, and light levels down it.
 	static let shades = 8
 	static let lightLevels = 16
@@ -60,21 +64,14 @@ enum LookoutForest {
 		/// Radians about the vertical.
 		let turn: Double
 		let shade: Int
-		/// 0..<1, for thinning the band's edges.
+		/// 0..<1, for thinning toward the far edge.
 		let chance: Double
 	}
 
-	/// The stretch of one direction trees are planted in.
-	struct Band: Equatable {
-		let start: Double
-		let end: Double
-
-		/// How likely a tree is to stand `distance` along the band: thinning in over its first fifth
-		/// and out over its far part, so it has no hard edge.
-		func density(at distance: Double) -> Double {
-			let t = (distance - start) / max(end - start, 1)
-			return LookoutForest.smoothstep(0, 0.2, t) * (1 - LookoutForest.smoothstep(0.55, 1, t))
-		}
+	/// How likely a tree is to stand at `distance`: all of them out to `fadeFrom`, then fewer to
+	/// none at `reach`, so the forest has no hard edge.
+	static func density(at distance: Double) -> Double {
+		1 - smoothstep(fadeFrom, reach, distance)
 	}
 
 	// MARK: Spots
@@ -110,34 +107,33 @@ enum LookoutForest {
 		}
 	}
 
-	/// What the cab sees in each direction, from the terrain's rings and spokes: the band trees go
-	/// in (or nil where no forest shows), and how high the nearer ground reaches in the view at
-	/// each sample, as the tangent of its angle above the eye's horizontal.
-	struct View {
-		let bands: [Band?]
-		let horizon: [Double]
-	}
-
-	/// Walks out each spoke. Ground shows when it's above the sill's line and above every nearer
-	/// sample; the band starts at the first such sample that's forest.
-	static func view(distances: [Double], elevations: [Float], spokes: Int, eye: Double, isForest: (_ index: Int) -> Bool) -> View {
+	/// How high the nearer ground reaches in the cab's view at each of the terrain's samples, as the
+	/// tangent of its angle above the eye's horizontal: ground behind it is hidden.
+	static func horizon(distances: [Double], elevations: [Float], spokes: Int, eye: Double) -> [Double] {
 		let columns = spokes + 1
-		let sill = -tan(sillDepression * .pi / 180)
-		var bands = [Band?](repeating: nil, count: spokes)
 		var horizon = [Double](repeating: -.infinity, count: distances.count * columns)
 		for spoke in 0..<spokes {
 			var highest = -Double.infinity
 			for (ring, distance) in distances.enumerated() {
 				let index = ring * columns + spoke
 				horizon[index] = highest
-				let slope = (Double(elevations[index]) - eye - distance * distance / (2 * earthRadius)) / distance
-				if bands[spoke] == nil, distance >= nearest, slope > sill, slope >= highest, isForest(index) {
-					bands[spoke] = Band(start: distance, end: distance * bandDepth)
-				}
-				highest = max(highest, slope)
+				highest = max(highest, slope(elevation: Double(elevations[index]), distance: distance, eye: eye))
 			}
 		}
-		return View(bands: bands, horizon: horizon)
+		return horizon
+	}
+
+	/// A point's height in the cab's view, as the tangent of its angle above the eye's horizontal,
+	/// with the Earth's curve taken off.
+	static func slope(elevation: Double, distance: Double, eye: Double) -> Double {
+		(elevation - eye - distance * distance / (2 * earthRadius)) / distance
+	}
+
+	/// Whether a tree whose top stands at `top` shows over the sill and over `horizon`, the nearer
+	/// ground's height in the view.
+	static func shows(top: Double, distance: Double, eye: Double, horizon: Double) -> Bool {
+		let angle = slope(elevation: top, distance: distance, eye: eye)
+		return angle > -tan(sillDepression * .pi / 180) && angle > horizon
 	}
 
 	/// Whether trees grow on this ground: forest in the basemap's land cover, or with no land
@@ -197,7 +193,32 @@ enum LookoutForest {
 
 	/// Triangles one tree takes at `distance`.
 	static func triangles(at distance: Double) -> Int {
-		distance < nearDetail ? nearCones.count * nearSides : farCones.count * farSides
+		if distance >= cardsFrom { return 2 }
+		return distance < nearDetail ? nearCones.count * nearSides : farCones.count * farSides
+	}
+
+	/// A far tree as one flat shape standing at `base` (meters, east/up/north from the site's
+	/// foot) and facing the eye straight above the site: a triangle the tree's width and height,
+	/// split down the middle into the half the sun lights and the half in shade, as a cone shows
+	/// from far off. Each half's normal leans out to its side.
+	static func card(at base: SIMD3<Double>, width: Double, height: Double) -> [(corners: [SIMD3<Double>], normal: SIMD3<Double>)] {
+		let cone = farCones[0]
+		var toward = SIMD3<Double>(-base.x, 0, -base.z)
+		let length = simd_length(toward)
+		toward = length > 0 ? toward / length : SIMD3(0, 0, 1)
+		let right = simd_normalize(simd_cross(SIMD3(0, 1, 0), toward))
+		let half = cone.radius * width
+		let bottom = base + SIMD3(0, cone.base * height, 0)
+		let left = bottom - right * half
+		let middle = bottom
+		let rightCorner = bottom + right * half
+		let tip = base + SIMD3(0, cone.tip * height, 0)
+		let slant = cone.radius / (cone.tip - cone.base)
+		let up = SIMD3<Double>(0, slant, 0)
+		return [
+			([left, middle, tip], simd_normalize(toward - right * 0.8 + up)),
+			([middle, rightCorner, tip], simd_normalize(toward + right * 0.8 + up))
+		]
 	}
 
 	/// One tree's faces in meters around its base (east, up, north), turned by `turn` and sized:

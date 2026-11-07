@@ -30,40 +30,45 @@ struct LookoutForestTests {
 		#expect(spots.filter { $0.distance > 5_900 }.allSatisfy { $0.width > 1.4 && $0.height < $0.width })
 	}
 
-	@Test("the band starts at the first forest above the sill, skipping ground under it and ground behind a ridge")
-	func bandStartsAtFirstVisibleForest() {
-		let spokes = 4
-		// Rings out from the summit: steep slopes under the sill, then a valley floor in view.
-		let distances: [Double] = [100, 500, 1_000, 3_000, 6_000, 9_000]
-		let profile: [Float] = [1_950, 1_500, 1_100, 1_100, 1_300, 1_500]
-		let elevations = profile.flatMap { Array(repeating: $0, count: spokes + 1) }
-		let view = LookoutForest.view(distances: distances, elevations: elevations, spokes: spokes, eye: 2_000) { _ in true }
-		// 3 km: 900 m below at 3 km is 16.7° down, under the sill. 6 km: 700 m below is 6.7°, still
-		// under it. 9 km: 500 m below is about 3.2°, above the sill.
-		#expect(view.bands[0] == LookoutForest.Band(start: 9_000, end: 9_000 * LookoutForest.bandDepth))
-		// No forest anywhere: no band.
-		let bare = LookoutForest.view(distances: distances, elevations: elevations, spokes: spokes, eye: 2_000) { _ in false }
-		#expect(bare.bands.allSatisfy { $0 == nil })
+	@Test("ground under the sill, or behind a nearer ridge, is hidden")
+	func visibility() {
+		let spokes = 1
+		let eye = 2_000.0
+		// Steep slopes under the sill: 900 m below at 3 km is about 17° down.
+		#expect(!LookoutForest.shows(top: 1_100, distance: 3_000, eye: eye, horizon: -.infinity))
+		// 500 m below at 9 km is about 3.2° down, above the sill.
+		#expect(LookoutForest.shows(top: 1_500, distance: 9_000, eye: eye, horizon: -.infinity))
+		// A ridge at 2 km as high as the eye hides lower ground behind it.
+		let distances: [Double] = [200, 2_000, 4_000]
+		let elevations: [Float] = [1_000, 1_000, 2_000, 2_000, 1_900, 1_900]
+		let horizon = LookoutForest.horizon(distances: distances, elevations: elevations, spokes: spokes, eye: eye)
+		#expect(!LookoutForest.shows(top: 1_920, distance: 4_000, eye: eye, horizon: horizon[2 * (spokes + 1)]))
+		#expect(LookoutForest.shows(top: 2_100, distance: 4_000, eye: eye, horizon: horizon[2 * (spokes + 1)]))
 	}
 
-	@Test("ground behind a nearer ridge is hidden")
-	func horizon() {
-		let spokes = 1
-		let distances: [Double] = [200, 2_000, 4_000]
-		// A ridge at 2 km as high as the eye, then lower ground behind it.
-		let elevations: [Float] = [1_000, 1_000, 2_000, 2_000, 1_900, 1_900]
-		let view = LookoutForest.view(distances: distances, elevations: elevations, spokes: spokes, eye: 2_000) { _ in true }
-		#expect(view.bands[0]?.start == 2_000)
-		// At 4 km the ridge stands higher in the view than the ground there.
-		let behind = (1_900.0 - 2_000 - 4_000 * 4_000 / (2 * 7_450_000.0)) / 4_000
-		#expect(view.horizon[2 * (spokes + 1)] > behind)
+	@Test("trees thin out toward the reach, with no hard edge")
+	func density() {
+		#expect(LookoutForest.density(at: 5_000) == 1)
+		#expect(LookoutForest.density(at: 12_500) > 0 && LookoutForest.density(at: 12_500) < 1)
+		#expect(LookoutForest.density(at: LookoutForest.reach) == 0)
+	}
+
+	@Test("a far tree is two triangles facing the cab, split into a sunlit side and a shaded side")
+	func card() {
+		let base = SIMD3<Double>(0, 500, 5_000)
+		let faces = LookoutForest.card(at: base, width: 2, height: 1.5)
+		#expect(faces.count == 2 && LookoutForest.triangles(at: 5_000) == 2)
+		// The shape lies across the line to the cab: every corner the same distance north.
+		#expect(faces.flatMap(\.corners).allSatisfy { abs($0.z - 5_000) < 1e-9 })
+		// Its halves lean to opposite sides.
+		#expect(faces[0].normal.x * faces[1].normal.x < 0)
 	}
 
 	@Test("the painting's tree, and the triangle cost by detail")
 	func sizeAndCost() {
 		#expect(LookoutForest.nearCones.map(\.tip).max() == 12.5)
 		#expect(LookoutForest.triangles(at: 100) == LookoutForest.nearCones.count * LookoutForest.nearSides)
-		#expect(LookoutForest.triangles(at: 5_000) == LookoutForest.farCones.count * LookoutForest.farSides)
+		#expect(LookoutForest.triangles(at: 1_000) == LookoutForest.farCones.count * LookoutForest.farSides)
 	}
 
 	@Test("trees grow on forest, or with no land cover, on the ground painted forest, never near the snow line")
@@ -107,13 +112,5 @@ struct LookoutForestTests {
 		// Farther trees read from hazier columns.
 		let far = LookoutForest.paletteCoordinate(shade: 0, lit: 0, distance: 30_000)
 		#expect(far.x > bright.x)
-	}
-
-	@Test("a band thins in at its near edge and out at its far edge")
-	func bandEdges() {
-		let band = LookoutForest.Band(start: 4_000, end: 6_400)
-		#expect(band.density(at: 4_000) == 0)
-		#expect(band.density(at: 5_000) > 0.9)
-		#expect(band.density(at: 6_400) == 0)
 	}
 }
