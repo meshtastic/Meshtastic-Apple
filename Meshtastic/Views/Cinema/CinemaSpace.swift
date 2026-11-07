@@ -59,6 +59,8 @@ struct CinemaSpace: View {
 	/// lookout from two tasks at once; the second waits on the first one's build instead of
 	/// starting another. The build is its own task so a caller being cancelled doesn't stop it.
 	@State private var lookoutBuild: LookoutBuild?
+	/// The downloads the summits and terrain were last found for, so a change can be told from the first run.
+	@State private var lookoutMapsSeen: [String]?
 	@State private var markerPanels = LookoutMarkerPanels()
 	/// Where the viewer's head is, so a marker's card opens beside the marker as they see it.
 	@State private var headTracker = CinemaHeadTracker()
@@ -188,14 +190,17 @@ struct CinemaSpace: View {
 		}
 		// A map deleted or downloaded changes the summits and the terrain around them, so both are
 		// found and built again.
-		.onChange(of: lookoutMaps) {
-			lookout.forgetSites()
-			lookoutBuild?.task.cancel()
-			lookoutBuild = nil
-			terrain?.removeFromParent()
-			terrain = nil
-			terrainSiteID = nil
-			Task { await refreshLookout() }
+		.task(id: lookoutMaps) {
+			if let seen = lookoutMapsSeen, seen != lookoutMaps {
+				lookout.forgetSites()
+				lookoutBuild?.task.cancel()
+				lookoutBuild = nil
+				terrain?.removeFromParent()
+				terrain = nil
+				terrainSiteID = nil
+			}
+			lookoutMapsSeen = lookoutMaps
+			await refreshLookout()
 		}
 		.task(id: lookoutTurns) {
 			await refreshLookout()
@@ -426,7 +431,10 @@ struct CinemaSpace: View {
 			terrainSiteID = nil
 			return
 		}
+		let maps = lookoutMaps
 		await lookout.prepare(area: await lookoutArea())
+		// The maps changing or the view going away while the summits were found makes this refresh stale.
+		guard !Task.isCancelled, lookoutMaps == maps else { return }
 		let site = lookout.site(for: lookoutSiteID)
 		let heading = SpatialLookout.heading(turns: lookoutTurns)
 		guard site?.id != terrainSiteID || heading != terrainHeading || (site != nil && terrain == nil) else { return }
@@ -456,7 +464,8 @@ struct CinemaSpace: View {
 		// waiting on the same build hasn't already put it up. Checked again after the backdrop
 		// changes, since either can change while it does.
 		func stillWanted() -> Bool {
-			lookoutSiteID == site.id && SpatialLookout.heading(turns: lookoutTurns) == heading && environment.isCutout
+			!Task.isCancelled && lookoutMaps == maps
+				&& lookoutSiteID == site.id && SpatialLookout.heading(turns: lookoutTurns) == heading && environment.isCutout
 				&& !(terrain != nil && terrainSiteID == site.id && terrainHeading == heading)
 		}
 		guard let entity = built, stillWanted() else { return }

@@ -79,7 +79,7 @@ final class LookoutScene {
 		let sources = manager.terrainSources()
 		Logger.services.info("🎬 [Cinema] Lookout: \(sources.count, privacy: .public) terrain sources among \(manager.regions.count, privacy: .public) offline regions")
 		await store.configure(sources: sources)
-		guard generation == started else { return }
+		guard generation == started, !Task.isCancelled else { return }
 		var union: GeoBounds?
 		for source in sources {
 			union = union.map { $0.union(source.bounds) } ?? source.bounds
@@ -117,9 +117,10 @@ final class LookoutScene {
 			return
 		}
 		// The box around the circle has corners outside it; summits there aren't on the map either.
-		let summits = await LookoutTerrain.sites(in: searchBox, source: store).filter { area?.contains($0.coordinate) ?? true }
+		let summits = await LookoutTerrain.sites(in: searchBox, source: store, area: area)
+		guard generation == started, !Task.isCancelled else { return }
 		let found = await LookoutPeakNames.named(summits)
-		guard generation == started else { return }
+		guard generation == started, !Task.isCancelled else { return }
 		sites = found
 		LookoutSiteCache.store(sites, for: maps)
 		status = sites.isEmpty ? .noSummits : .ready
@@ -130,6 +131,8 @@ final class LookoutScene {
 	/// `prepare()` searches what's there now.
 	func forgetSites() {
 		generation += 1
+		// The old search's results would be thrown away; stop it rather than let it run beside the next one.
+		preparing?.cancel()
 		preparing = nil
 		sites = []
 		bounds = nil
