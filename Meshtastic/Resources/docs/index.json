@@ -87,20 +87,21 @@
             "map",
             "radio",
             "node",
-            "app",
             "card",
+            "app",
             "tent",
             "open",
             "cab",
+            "beside",
             "window",
             "summit",
-            "lookout",
-            "beside",
             "stands",
+            "model",
+            "lookout",
             "out",
             "tap",
+            "size",
             "one",
-            "model",
             "from",
             "back",
             "view",
@@ -111,10 +112,9 @@
             "shows",
             "same",
             "route",
-            "round",
-            "nodes"
+            "round"
         ],
-        "charCount": 5628
+        "charCount": 5825
     },
     {
         "id": "discovery",
@@ -787,16 +787,16 @@
         "keywords": [
             "map",
             "radio",
-            "app",
             "nov",
             "apple",
+            "app",
             "settings",
             "vision",
             "pro",
+            "cinema",
             "now",
             "new",
             "nodes",
-            "cinema",
             "screen",
             "node",
             "mesh",
@@ -816,7 +816,7 @@
             "show",
             "set"
         ],
-        "charCount": 14416
+        "charCount": 14565
     },
     {
         "id": "adding-features",

@@ -5,8 +5,8 @@
 //
 //  Copyright(c) Garth Vander Houwen 10/23/26.
 //
-//  The 360° environment images for the visionOS cinema. A separate package so the images only
-//  ship in the visionOS app. scripts/cinema builds them.
+//  The 360° environment images and the props for the visionOS cinema. A separate package so they
+//  only ship in the visionOS app. scripts/cinema builds them.
 
 import PackageDescription
 
@@ -19,6 +19,6 @@ let package = Package(
 		.library(name: "CinemaContent", targets: ["CinemaContent"])
 	],
 	targets: [
-		.target(name: "CinemaContent", resources: [.copy("Environments")])
+		.target(name: "CinemaContent", resources: [.copy("Environments"), .copy("Props")])
 	]
 )

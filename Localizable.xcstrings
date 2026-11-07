@@ -424,6 +424,12 @@
         }
       }
     },
+    "Banana for Scale" : {
+      "comment" : "Cinema: button on the card beside a device model on the stand; lays a real-size banana beside it"
+    },
+    "Banana for scale" : {
+      "comment" : "Cinema: VoiceOver label for the banana beside the device model on the stand"
+    },
     "Brought to you by" : {
       "comment" : "Showcase: plaque on the wall naming who made the showcase, above the Meshtastic Solutions name",
       "extractionState" : "extracted_with_value",

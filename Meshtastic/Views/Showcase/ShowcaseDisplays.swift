@@ -197,7 +197,7 @@ final class ShowcaseDisplays {
 	}
 
 	/// Clear acrylic, like a store's display stands.
-	private static let clearAcrylic: PhysicallyBasedMaterial = {
+	static let clearAcrylic: PhysicallyBasedMaterial = {
 		var material = PhysicallyBasedMaterial()
 		material.baseColor = .init(tint: .white)
 		material.roughness = 0.05

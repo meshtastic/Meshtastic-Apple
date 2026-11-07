@@ -14,6 +14,8 @@ Recent user-facing changes from roughly the last 12 months. Newest at the top.
 Show roughly the last 12 months of changes; archive entries older than a year by removing them.
 -->
 
+**Nov 2026** — [Cinema](cinema.md#radio-models) — On Apple Vision Pro, **Banana for Scale** on the card beside a radio's model in the cinema stands a real-size banana next to it.
+
 **Nov 2026** — [Map & Waypoints](map.md#map-options) — Contour lines on the Apple Vision Pro 3D map show their elevation, set in a gap along the line like a printed topographic map, and the 2D map's contour labels are spread further apart.
 
 **Nov 2026** — [Map & Waypoints](map.md#offline-maps) — The offline map names parks, schools, hospitals and other landmarks, and on Apple Vision Pro the 3D map's Offline layer prints street names along their streets.

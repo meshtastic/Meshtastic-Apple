@@ -36,11 +36,16 @@ final class CinemaModelStand {
 	@ObservationIgnored private var screen: DeviceModelScreen?
 	/// Where the radio's live screen comes from. Nil leaves the model's own blank display.
 	@ObservationIgnored weak var screenSource: DisplayMirrorSession?
+	/// The banana for scale on its own plate, made the first time it's shown.
+	@ObservationIgnored private var banana: Entity?
+	@ObservationIgnored private var bananaLoad: Task<Void, Never>?
 
 	/// Whether the model on the stand has a display the radio's screen can be drawn on.
 	private(set) var hasScreen = false
 	/// How many times its real size the model stands at.
 	private(set) var zoom: Float = 1
+	/// A banana lies beside the model for scale. Kept from one model to the next.
+	private(set) var showsBanana = false
 
 	/// In front of the seat and to the left, clear of the panel on the right, about where a hand
 	/// rests. Meters from the space's origin on the floor.
@@ -100,10 +105,12 @@ final class CinemaModelStand {
 		shelf.addChild(holder)
 		self.holder = holder
 		applyZoom()
+		placeBanana()
 		placeTag()
 	}
 
 	func clear() {
+		banana?.removeFromParent()
 		shelf.children.removeAll()
 		holder = nil
 		screen = nil
@@ -123,6 +130,42 @@ final class CinemaModelStand {
 		self.zoom = CinemaModelStandLayout.clampZoom(zoom)
 		applyZoom()
 		placeTag()
+	}
+
+	/// Lays a banana beside the model, or takes it away.
+	func setBanana(_ shown: Bool) {
+		showsBanana = shown
+		placeBanana()
+	}
+
+	/// On the model's left, away from the card, standing on a plate like the model's. It's in the
+	/// model's holder, so it grows with the size slider and the comparison stays true. Loaded the
+	/// first time it's shown.
+	private func placeBanana() {
+		guard showsBanana, let holder else {
+			banana?.removeFromParent()
+			return
+		}
+		guard let banana else {
+			if bananaLoad == nil {
+				bananaLoad = Task { [weak self] in
+					let made = await BananaForScale.make(plateThickness: ShowcaseDisplays.standThickness, plateMaterial: ShowcaseDisplays.clearAcrylic)
+					guard let self else { return }
+					self.bananaLoad = nil
+					self.banana = made
+					if made != nil { self.placeBanana() }
+				}
+			}
+			return
+		}
+		// Its side toward the model stands a little clear of the model's side.
+		banana.position = [-(standSize.halfWidth + 0.03), 0, 0]
+		if banana.parent !== holder {
+			holder.addChild(banana)
+			if let light {
+				Self.receive(light, in: banana)
+			}
+		}
 	}
 
 	private func applyZoom() {
