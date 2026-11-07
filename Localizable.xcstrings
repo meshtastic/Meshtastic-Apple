@@ -830,6 +830,9 @@
         }
       }
     },
+    "Pinch and drag the list to see all %lld." : {
+      "comment" : "Cinema team board: hint when there are more nodes than fit; the argument is how many rows the list has"
+    },
     "Presets trade range for speed. Long Range reaches farther and Short Range sends faster. Everyone on a mesh must use the same one." : {
       "comment" : "Radio setup preset intro",
       "localizations" : {

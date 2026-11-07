@@ -114,7 +114,7 @@
             "route",
             "round"
         ],
-        "charCount": 5863
+        "charCount": 5931
     },
     {
         "id": "discovery",
@@ -790,8 +790,8 @@
             "nov",
             "apple",
             "app",
-            "settings",
             "vision",
+            "settings",
             "pro",
             "cinema",
             "now",
@@ -816,7 +816,7 @@
             "show",
             "set"
         ],
-        "charCount": 14565
+        "charCount": 14701
     },
     {
         "id": "adding-features",

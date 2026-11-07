@@ -24,7 +24,7 @@ For the radio you're connected to, the model shows its screen live, the same pic
 
 ## Boards
 
-- **Team Favorites**, on the whiteboard: your favorite nodes and the connected radio, with when each was last heard, its battery, signal, hops and distance from the radio. Tap a node to center the 3D map on it and open its details on the screen.
+- **Team Favorites**, on the whiteboard: your favorite nodes and the connected radio, with when each was last heard, its battery, signal, hops and distance from the radio. Tap a node to center the 3D map on it and open its details on the screen. With more favorites than fit, pinch and drag the list to scroll it.
 - **The latest trace route**, on the framed print (by the door in the tent, beside the window in the ham shack): the same card the trace route widget shows, for the last trace route you sent or heard. Tap it to show the route on the screen's map and fly it on the 3D map.
 - **Status Board**, on the portrait whiteboard beside the screen: your radio's own status message, then the nodes heard with one, latest first, as many as fit, with a count of the rest. Tap a node to center the 3D map on it and open its details on the screen. Set your radio's status from its node details.
 
