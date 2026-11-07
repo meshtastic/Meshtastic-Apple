@@ -95,6 +95,8 @@ On the 3D spatial map, the **link** button in the toolbar draws the same direct 
 
 A dedicated section of the sheet for working without a connection: a link opens the list of downloaded map regions to manage them or download new ones, and the **Offline Tiles** toggle overlays a downloaded region on the base map so it keeps rendering with no internet connection.
 
+The offline map prints names from the downloaded map: places, lakes and bays, and landmarks such as parks, schools, hospitals and peaks. On the 2D map they show when there's no network to draw Apple's names. On Apple Vision Pro, the 3D spatial map's **Offline** layer always prints them, and street names too, set along their street from zoom 12 for main roads to zoom 14 for side streets.
+
 #### Importing a map file
 
 To use a map file you already have, open the offline map list and tap **Import MBTiles or PMTiles File**, or the import button in the corner of the screen. You can also open a `.mbtiles` or `.pmtiles` file from the Files app. The app checks the file, copies it in, and adds it to the list, where it counts toward the same limits as a downloaded map: 512 MB per map (1 GB on Apple Vision Pro), 10 maps, and 3 GB in total. A file that is already installed, is too large, or isn't a map is turned down with a message. It shows on the map with the **Offline Tiles** toggle, like a downloaded map.
