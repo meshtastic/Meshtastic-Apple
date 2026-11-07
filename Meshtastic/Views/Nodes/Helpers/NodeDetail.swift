@@ -217,7 +217,7 @@ struct NodeDetail: View {
 		#if os(iOS) && !targetEnvironment(macCatalyst)
 		.fullScreenCover(item: $deviceModelInSpace) { request in
 			if #available(iOS 18.0, *) {
-				DeviceModelARView(request: request)
+				DeviceModelARView(request: request, liveScreen: liveScreen)
 			}
 		}
 		#endif

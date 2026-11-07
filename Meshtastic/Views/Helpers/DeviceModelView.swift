@@ -172,7 +172,7 @@ struct DeviceModelView<Placeholder: View>: View {
 		}
 		#if os(iOS) && !targetEnvironment(macCatalyst)
 		.fullScreenCover(item: $localInSpace) { request in
-			DeviceModelARView(request: request)
+			DeviceModelARView(request: request, liveScreen: liveScreen)
 		}
 		#endif
 	}

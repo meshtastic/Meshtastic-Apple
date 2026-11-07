@@ -15,8 +15,11 @@ import RealityKit
 @available(iOS 18.0, *)
 struct DeviceModelARView: View {
 	let request: DeviceModelFullScreenRequest
+	/// The radio is still connected with its screen to show. When it stops being, the view closes.
+	let liveScreen: Bool
 
 	@Environment(\.dismiss) private var dismiss
+	@Environment(\.scenePhase) private var scenePhase
 	/// A scene can only hold an entity once, so this view stands its own copy.
 	@State private var stage: DeviceModelStage
 	/// Whether a surface has been found for the model to stand on.
@@ -24,8 +27,9 @@ struct DeviceModelARView: View {
 
 	private var accessoryManager: AccessoryManager { AccessoryManager.shared }
 
-	init(request: DeviceModelFullScreenRequest) {
+	init(request: DeviceModelFullScreenRequest, liveScreen: Bool) {
 		self.request = request
+		self.liveScreen = liveScreen
 		_stage = State(initialValue: DeviceModelStage(model: request.model.clone(recursive: true), facingFront: true))
 	}
 
@@ -85,9 +89,20 @@ struct DeviceModelARView: View {
 			}
 			.padding()
 		}
-		// Its own claim on the stream: the model view behind this cover may go off screen.
-		.task { accessoryManager.startDisplayMirror(for: .deviceModelAR) }
+		// Its own claim on the stream, while the app is in front: the model view behind this cover
+		// may go off screen.
+		.task(id: scenePhase == .active) {
+			if scenePhase == .active {
+				accessoryManager.startDisplayMirror(for: .deviceModelAR)
+			} else {
+				accessoryManager.stopDisplayMirror(for: .deviceModelAR)
+			}
+		}
 		.onDisappear { accessoryManager.stopDisplayMirror(for: .deviceModelAR) }
+		// Without the radio there is no screen to show and nothing for the buttons to drive.
+		.onChange(of: liveScreen) { _, live in
+			if !live { dismiss() }
+		}
 	}
 
 	/// Sideways drags turn the model on its surface; it never tilts off it.
