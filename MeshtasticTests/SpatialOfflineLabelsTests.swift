@@ -7,6 +7,8 @@
 import CoreGraphics
 import CoreLocation
 import Foundation
+import GISTools
+import MVTTools
 import Testing
 import UIKit
 @testable import Meshtastic
@@ -110,5 +112,86 @@ struct SpatialOfflineLabelsTests {
 		}
 		#expect(darkest < 90)
 		#expect(lightest > 200)
+	}
+
+	// MARK: Landmarks and streets
+
+	private func street(_ name: String, from start: (Double, Double), to end: (Double, Double), minZoom: Double = 8) -> OfflineMapLabel {
+		let a = CLLocationCoordinate2D(latitude: start.0, longitude: start.1)
+		let b = CLLocationCoordinate2D(latitude: end.0, longitude: end.1)
+		let middle = CLLocationCoordinate2D(latitude: (a.latitude + b.latitude) / 2, longitude: (a.longitude + b.longitude) / 2)
+		return OfflineMapLabel(name: name, coordinate: middle, kind: .road, minZoom: minZoom, rank: 3, along: (a, b))
+	}
+
+	@Test("a tile gives landmark names from the pois layer and street names from the roads layer")
+	func landmarksAndStreetsFromATile() throws {
+		let bounds = GeoBounds.tile(z: 14, x: 2624, y: 5722)
+		let middle = GISTools.Coordinate3D(latitude: (bounds.minLat + bounds.maxLat) / 2, longitude: (bounds.minLon + bounds.maxLon) / 2)
+		let west = GISTools.Coordinate3D(latitude: middle.latitude, longitude: bounds.minLon + 0.1 * (bounds.maxLon - bounds.minLon))
+		let east = GISTools.Coordinate3D(latitude: middle.latitude, longitude: bounds.maxLon - 0.1 * (bounds.maxLon - bounds.minLon))
+		var vector = try #require(VectorTile(x: 2624, y: 5722, z: 14))
+		vector.setFeatures([
+			GISTools.Feature(GISTools.Point(middle), properties: ["kind": "park", "name": "Volunteer Park", "min_zoom": 13.0]),
+			GISTools.Feature(GISTools.Point(middle), properties: ["kind": "retail", "name": "Corner Shop", "min_zoom": 15.0])
+		], for: "pois")
+		let decoded: GISTools.LineString? = GISTools.LineString([west, east])
+		let line = try #require(decoded)
+		vector.setFeatures([
+			GISTools.Feature(line, properties: ["kind": "major_road", "kind_detail": "primary", "name": "Main Street", "min_zoom": 8.0]),
+			GISTools.Feature(line, properties: ["kind": "path", "kind_detail": "footway", "name": "Trail"])
+		], for: "roads")
+		let labels = OfflineVectorTileProvider.labels(in: vector, bounds: bounds)
+		#expect(labels.filter { $0.kind == .landmark }.map(\.name) == ["Volunteer Park"])
+		let streets = labels.filter { $0.kind == .road }
+		#expect(streets.map(\.name) == ["Main Street"])
+		// A main road's name waits for zoom 12 even when the road itself shows from further out.
+		#expect(streets.first?.minZoom == 12)
+		#expect(streets.first?.along != nil)
+	}
+
+	@Test("a street name follows the longest straight stretch, and a short one gets none")
+	func straightRuns() throws {
+		// A long run east, a sharp turn north, then a short run.
+		let points = [
+			CLLocationCoordinate2D(latitude: 47.6, longitude: -122.33),
+			CLLocationCoordinate2D(latitude: 47.6, longitude: -122.32),
+			CLLocationCoordinate2D(latitude: 47.6, longitude: -122.31),
+			CLLocationCoordinate2D(latitude: 47.601, longitude: -122.31)
+		]
+		let run = try #require(OfflineVectorTileProvider.longestStraightRun(points, within: nil))
+		#expect(run.start.longitude == -122.33)
+		#expect(run.end.longitude == -122.31)
+		let short = [CLLocationCoordinate2D(latitude: 47.6, longitude: -122.33), CLLocationCoordinate2D(latitude: 47.6, longitude: -122.3299)]
+		#expect(OfflineVectorTileProvider.longestStraightRun(short, within: nil) == nil)
+	}
+
+	@Test("a street name reads left to right whichever way the street was drawn")
+	func readableAngles() {
+		let east = SpatialOfflineLabels.readableAngle(from: CGPoint(x: 0, y: 0), to: CGPoint(x: 10, y: 10))
+		let west = SpatialOfflineLabels.readableAngle(from: CGPoint(x: 10, y: 10), to: CGPoint(x: 0, y: 0))
+		#expect(abs(east - west) < 0.0001)
+		#expect(abs(east - .pi / 4) < 0.0001)
+	}
+
+	@Test("the same street's name is printed once nearby, again further along, and not on a stretch shorter than the name")
+	func streetSpacing() {
+		let frame = SpatialFrame(bounds: box)
+		let labels = [
+			street("Aurora Avenue", from: (47.60, -122.42), to: (47.60, -122.36)),
+			street("Aurora Avenue", from: (47.61, -122.42), to: (47.61, -122.36)),
+			street("Aurora Avenue", from: (47.60, -122.24), to: (47.60, -122.18)),
+			street("Tiny Lane", from: (47.55, -122.30), to: (47.55, -122.2999))
+		]
+		let placed = SpatialOfflineLabels.place(labels, frame: frame, size: size, zoom: 14, dark: false)
+		#expect(placed.map(\.label.name) == ["Aurora Avenue", "Aurora Avenue"])
+		#expect(placed.allSatisfy { abs($0.angle) < 0.01 })
+	}
+
+	@Test("a landmark gives way to a place in the same spot")
+	func landmarksYieldToPlaces() {
+		let frame = SpatialFrame(bounds: box)
+		let labels = [label("Volunteer Park", .landmark), label("Capitol Hill", .neighborhood)]
+		let placed = SpatialOfflineLabels.place(labels, frame: frame, size: size, zoom: 14, dark: false)
+		#expect(placed.map(\.label.name) == ["Capitol Hill"])
 	}
 }

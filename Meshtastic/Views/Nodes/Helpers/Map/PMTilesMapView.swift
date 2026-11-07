@@ -119,12 +119,14 @@ struct OfflineFeatureOrigin {
 	let ringBounds: GeoBounds
 }
 
-/// A name to print on the offline map: a place (city, town, neighborhood) or a body of water, from
-/// the basemap's `places` and `water` layers.
+/// A name to print on the offline map: a place (city, town, neighborhood), a body of water, a
+/// landmark such as a park or school, or a road, from the basemap's `places`, `water`, `pois` and
+/// `roads` layers.
 struct OfflineMapLabel: Sendable, Equatable {
 	enum Kind: Int, Sendable, Comparable {
-		// In order of importance: a city wins a spot over a town, a town over a lake.
-		case region, city, town, water, village, suburb, neighborhood
+		// In order of importance: a city wins a spot over a town, a town over a lake, any place
+		// over a park, and a park over a street.
+		case region, city, town, water, village, suburb, neighborhood, landmark, road
 
 		static func < (lhs: Kind, rhs: Kind) -> Bool { lhs.rawValue < rhs.rawValue }
 	}
@@ -134,8 +136,11 @@ struct OfflineMapLabel: Sendable, Equatable {
 	let kind: Kind
 	/// The basemap's `min_zoom`: the label is printed from this map zoom on.
 	let minZoom: Double
-	/// The basemap's `population_rank` (0–15): bigger places first within a kind.
+	/// The basemap's `population_rank` (0–15): bigger places first within a kind. For a road, its
+	/// class: major roads first.
 	let rank: Int
+	/// For a road: the straight stretch of it the name is set along. Nil for a name set level.
+	var along: (start: CLLocationCoordinate2D, end: CLLocationCoordinate2D)?
 
 	/// The same label decoded from two tiles has the same key.
 	var key: String { "\(kind.rawValue)|\(name)|\(coordinate.latitude)|\(coordinate.longitude)" }
@@ -759,7 +764,7 @@ extension OfflineVectorTileProvider {
 		return DecodedTile(polys: polys, lines: lines, labels: labels(in: vector, bounds: bounds))
 	}
 
-	/// The named places and water bodies in a tile that fall inside `bounds`.
+	/// The named places, water bodies, landmarks and roads in a tile that fall inside `bounds`.
 	nonisolated static func labels(in vector: VectorTile, bounds: GeoBounds?) -> [OfflineMapLabel] {
 		var result: [OfflineMapLabel] = []
 		func add(_ feature: GISTools.Feature, kind: OfflineMapLabel.Kind) {
@@ -778,7 +783,104 @@ extension OfflineVectorTileProvider {
 		for feature in vector.features(for: "water") where feature.geometry is GISTools.Point {
 			add(feature, kind: .water)
 		}
+		for feature in vector.features(for: "pois") where isLandmark(feature.properties) {
+			add(feature, kind: .landmark)
+		}
+		for feature in vector.features(for: "roads") {
+			guard let name = localizedName(feature.properties) else { continue }
+			let kind = (feature.properties["kind"] as? String) ?? (feature.properties["pmap:kind"] as? String)
+			let kindDetail = (feature.properties["kind_detail"] as? String) ?? (feature.properties["pmap:kind_detail"] as? String)
+			let role = roadRole(kind: kind, kindDetail: kindDetail)
+			guard let nameZoom = roadNameMinZoom(role) else { continue }
+			let minZoom = max(number(feature.properties["min_zoom"] ?? feature.properties["pmap:min_zoom"]) ?? 0, nameZoom)
+			let rank = role == .majorRoad ? 3 : role == .mediumRoad ? 2 : 1
+			for line in lineStrings(feature.geometry) {
+				guard let run = longestStraightRun(line.map(coord), within: bounds) else { continue }
+				let middle = CLLocationCoordinate2D(latitude: (run.start.latitude + run.end.latitude) / 2, longitude: (run.start.longitude + run.end.longitude) / 2)
+				result.append(OfflineMapLabel(name: name, coordinate: middle, kind: .road, minZoom: minZoom, rank: rank, along: run))
+			}
+		}
 		return result
+	}
+
+	/// The kinds of `pois` worth a name on the map, the ones a printed map names. Shops, offices and
+	/// the landuse names the layer also carries are left out.
+	nonisolated static let landmarkKinds: Set<String> = [
+		"park", "nature_reserve", "national_park", "protected_area", "forest", "garden", "golf_course",
+		"school", "college", "university", "hospital", "stadium", "zoo", "theme_park", "museum",
+		"attraction", "aerodrome", "airport", "peak", "volcano", "beach", "marina", "cemetery", "library"
+	]
+
+	nonisolated static func isLandmark(_ properties: [String: Sendable]) -> Bool {
+		let kind = (properties["kind"] as? String) ?? (properties["pmap:kind"] as? String)
+		return kind.map(landmarkKinds.contains) ?? false
+	}
+
+	/// The map zoom a road's name shows from, by class: highways and main roads from further out
+	/// than side streets. Nil for paths and rail, which get no name.
+	nonisolated static func roadNameMinZoom(_ role: OfflineFeatureRole) -> Double? {
+		switch role {
+		case .majorRoad: return 12
+		case .mediumRoad: return 13
+		case .minorRoad: return 14
+		default: return nil
+		}
+	}
+
+	nonisolated private static func lineStrings(_ geometry: GISTools.GeoJsonGeometry) -> [[GISTools.Coordinate3D]] {
+		switch geometry {
+		case let line as GISTools.LineString: return [line.coordinates]
+		case let lines as GISTools.MultiLineString: return lines.coordinates
+		default: return []
+		}
+	}
+
+	/// The longest stretch of a line that runs straight, turning no more than `maxTurn` degrees from
+	/// its first segment, with its middle inside `bounds`. A road name is set along it, so it reads
+	/// straight. Nil when no stretch is at least `minimumMeters` long.
+	nonisolated static func longestStraightRun(
+		_ points: [CLLocationCoordinate2D],
+		within bounds: GeoBounds?,
+		maxTurn: Double = 12,
+		minimumMeters: Double = 40
+	) -> (start: CLLocationCoordinate2D, end: CLLocationCoordinate2D)? {
+		guard points.count >= 2 else { return nil }
+		// Local meters around the line, accurate enough to compare directions and lengths.
+		let metersPerDegree = 111_320.0
+		let cosLat = cos(points[0].latitude * .pi / 180)
+		func vector(_ a: CLLocationCoordinate2D, _ b: CLLocationCoordinate2D) -> (x: Double, y: Double) {
+			((b.longitude - a.longitude) * metersPerDegree * cosLat, (b.latitude - a.latitude) * metersPerDegree)
+		}
+		func turn(_ a: Double, _ b: Double) -> Double {
+			var difference = abs(a - b).truncatingRemainder(dividingBy: 360)
+			if difference > 180 { difference = 360 - difference }
+			return difference
+		}
+		var best: (start: CLLocationCoordinate2D, end: CLLocationCoordinate2D)?
+		var bestLength = 0.0
+		func consider(_ start: Int, _ end: Int) {
+			let (x, y) = vector(points[start], points[end])
+			let length = hypot(x, y)
+			guard length >= minimumMeters, length > bestLength else { return }
+			let middle = CLLocationCoordinate2D(latitude: (points[start].latitude + points[end].latitude) / 2, longitude: (points[start].longitude + points[end].longitude) / 2)
+			if let bounds, !(bounds.minLat...bounds.maxLat).contains(middle.latitude) || !(bounds.minLon...bounds.maxLon).contains(middle.longitude) { return }
+			best = (points[start], points[end])
+			bestLength = length
+		}
+		var runStart = 0
+		var runHeading: Double?
+		for index in 1..<points.count {
+			let (x, y) = vector(points[index - 1], points[index])
+			guard x != 0 || y != 0 else { continue }
+			let heading = atan2(y, x) * 180 / .pi
+			if let runHeading, turn(heading, runHeading) > maxTurn {
+				consider(runStart, index - 1)
+				runStart = index - 1
+			}
+			if runHeading == nil || runStart == index - 1 { runHeading = heading }
+		}
+		consider(runStart, points.count - 1)
+		return best
 	}
 
 	/// The label kind for a `places` feature's properties, from the current schema's `kind` and
