@@ -4,6 +4,20 @@
 //
 //  Copyright(c) Garth Vander Houwen 10/30/26.
 //
+/// How prominent a summit has to be to make the fire lookout's list. Outside the visionOS-only
+/// code so it can be tested.
+enum LookoutSummitBar {
+	/// Prominence bars in meters, strictest first: real mountains, then hills, then bumps.
+	static let steps: [Float] = [300, 150, 50, 0]
+	/// Enough summits to choose from; the bar is lowered until this many clear it.
+	static let enough = 10
+
+	/// The strictest bar at least `enough` of these prominences clear, or the lowest bar.
+	static func bar(for prominences: [Float]) -> Float {
+		steps.first { least in prominences.filter { $0 >= least }.count >= enough } ?? steps[steps.count - 1]
+	}
+}
+
 #if os(visionOS)
 import CoreGraphics
 import CoreLocation
@@ -87,7 +101,7 @@ enum LookoutTerrain {
 	/// The mountains in `bounds`: the highest peaks that stand well clear of the ground around them,
 	/// at least 3 km apart, highest first, at most `count` of them. Picking by height alone would
 	/// fill the list with the shoulders of the one or two tallest mountains.
-	static func sites(in bounds: GeoBounds, source: any ElevationTileSource, count: Int = 10) async -> [LookoutSite] {
+	static func sites(in bounds: GeoBounds, source: any ElevationTileSource, count: Int = 20) async -> [LookoutSite] {
 		let frame = SpatialFrame(bounds: bounds)
 		// About 250 m cells, up to 600 across; a whole state gets cells near 800 m.
 		let columns = min(600, max(48, Int(frame.widthMeters / 250)))
@@ -96,12 +110,10 @@ enum LookoutTerrain {
 			return []
 		}
 		let peaks = prominentPeaks(in: grid)
-		// Real mountains have 300 m of prominence; a flatter download makes do with less.
-		var chosen: [Peak] = []
-		for least: Float in [300, 100, 0] {
-			chosen = peaks.filter { $0.prominence >= least }
-			if chosen.count >= min(count, 3) { break }
-		}
+		// Real mountains have 300 m of prominence. Where only a few do, hills with less join them,
+		// so a lowland mesh still has summits to choose from.
+		let least = LookoutSummitBar.bar(for: peaks.map(\.prominence))
+		let chosen = peaks.filter { $0.prominence >= least }
 		var sites: [LookoutSite] = []
 		for peak in chosen where sites.count < count {
 			let column = peak.index % grid.columns

@@ -38,7 +38,7 @@ enum LookoutSiteCacheKey {
 /// refreshed, since that's what they're found in.
 enum LookoutSiteCache {
 	/// Bump when the summit search or naming changes, so lists found the old way are found again.
-	private static let version = 1
+	private static let version = 2
 
 	private struct Entry: Codable {
 		let version: Int
