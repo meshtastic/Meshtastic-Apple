@@ -398,14 +398,14 @@
             "node",
             "nodes",
             "device",
-            "contact",
             "radio",
+            "contact",
             "from",
             "key",
+            "shows",
             "only",
             "name",
             "heard",
-            "shows",
             "public",
             "firmware",
             "screen",
@@ -423,10 +423,10 @@
             "row",
             "packets",
             "one",
-            "channel",
-            "model"
+            "model",
+            "connected"
         ],
-        "charCount": 17034
+        "charCount": 17243
     },
     {
         "id": "settings",
@@ -788,17 +788,17 @@
             "map",
             "app",
             "settings",
-            "apple",
             "radio",
+            "apple",
             "now",
             "new",
-            "cinema",
-            "vision",
-            "pro",
             "nov",
             "nodes",
-            "node",
+            "cinema",
+            "vision",
             "screen",
+            "pro",
+            "node",
             "messages",
             "mesh",
             "jun",
@@ -811,12 +811,12 @@
             "bluetooth",
             "page",
             "local",
+            "live",
             "region",
             "meshtastic",
-            "lookout",
-            "live"
+            "lookout"
         ],
-        "charCount": 13341
+        "charCount": 13552
     },
     {
         "id": "adding-features",

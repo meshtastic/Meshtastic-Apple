@@ -17,7 +17,7 @@ import ARKit
 /// turning slowly. The model is only fetched once asked for. If it can't be loaded, the badge goes
 /// away and the image stays. Once it's showing, "View in your space" stands it in the room at real
 /// size (in the Vision Pro cinema, on a stand in the tent), and tapping it seven times swaps it for
-/// Chirpy. For the connected radio, its live screen shows on the model's display.
+/// Chirpy. For the connected radio, its live screen shows on the model's display, in the room too.
 @available(iOS 18.0, macCatalyst 18.0, visionOS 1.0, *)
 struct DeviceModelView<Placeholder: View>: View {
 	let modelName: String
@@ -43,6 +43,8 @@ struct DeviceModelView<Placeholder: View>: View {
 	@State private var loadedModel: Entity?
 	/// Full screen opened here, when nothing above offers to present it.
 	@State private var localFullScreen: DeviceModelFullScreenRequest?
+	/// The AR view opened here, when nothing above offers to present it.
+	@State private var localInSpace: DeviceModelFullScreenRequest?
 	@Environment(\.presentDeviceModelFullScreen) private var presentFullScreen
 	/// The file the model came from, handed to Quick Look for "View in your space".
 	@State private var modelURL: URL?
@@ -168,6 +170,11 @@ struct DeviceModelView<Placeholder: View>: View {
 		.sheet(item: $localFullScreen) { request in
 			DeviceModelFullScreen(request: request, liveScreen: liveScreen)
 		}
+		#if os(iOS) && !targetEnvironment(macCatalyst)
+		.fullScreenCover(item: $localInSpace) { request in
+			DeviceModelARView(request: request, liveScreen: liveScreen)
+		}
+		#endif
 	}
 
 	private var fullScreenButton: some View {
@@ -217,8 +224,18 @@ struct DeviceModelView<Placeholder: View>: View {
 				_ = PreviewApplication.open(urls: [modelURL])
 			}
 			#else
-			// Quick Look shows the model at its own size, which is the real one.
-			quickLookURL = modelURL
+			if liveScreen, !showsChirpy, stage?.hasScreen == true, let loadedModel {
+				// Quick Look can't show the live screen, so the connected radio gets its own AR view.
+				let request = DeviceModelFullScreenRequest(model: loadedModel, name: shownName, isChirpy: false, inSpace: true)
+				if let presentFullScreen {
+					presentFullScreen(request)
+				} else {
+					localInSpace = request
+				}
+			} else {
+				// Quick Look shows the model at its own size, which is the real one.
+				quickLookURL = modelURL
+			}
 			#endif
 		} label: {
 			Image(systemName: "arkit")
@@ -268,12 +285,13 @@ struct DeviceModelView<Placeholder: View>: View {
 	}
 }
 
-/// A model to open full screen.
+/// A model to open full screen, or in the room with the AR view.
 struct DeviceModelFullScreenRequest: Identifiable {
 	let id = UUID()
 	let model: Entity
 	let name: String
 	let isChirpy: Bool
+	var inSpace = false
 }
 
 extension EnvironmentValues {
@@ -503,6 +521,8 @@ final class DeviceModelStage {
 	#endif
 	var subscription: EventSubscription?
 	var autoRotate = true
+	/// Vertical drags tilt the model. Off when it stands on a surface in the room.
+	var tiltsOnDrag = true
 
 	private var radius: Float = 1
 	/// Half the model's bounding box diagonal: the farthest any part gets from its center,
@@ -655,6 +675,28 @@ final class DeviceModelStage {
 		return root
 	}
 
+	/// A fresh set of entities for a view with a camera of its own, the AR view: the model at its
+	/// real size, standing on its base at the origin, upright and still, with its live screen but
+	/// no camera or lights. The pivot turns it on its base.
+	func makeStandingScene() -> Entity {
+		let root = Entity()
+		let model = source.clone(recursive: true)
+		let bounds = model.visualBounds(relativeTo: nil)
+		model.position = [-bounds.center.x, -bounds.min.y, -bounds.center.z]
+		pivot = Entity()
+		holder = Entity()
+		screen = screenBounds.map { DeviceModelScreen(bounds: $0, on: model) }
+		holder.addChild(model)
+		pivot.addChild(holder)
+		root.addChild(pivot)
+		yaw = 0
+		pitch = 0
+		autoRotate = false
+		tiltsOnDrag = false
+		applyOrientation()
+		return root
+	}
+
 	#if !os(visionOS)
 	/// Far enough back that a sphere of radius 1 fits the camera's 30° vertical field of view.
 	private static let cameraDistance: Float = 1.02 / sin(15 * .pi / 180)
@@ -699,7 +741,9 @@ final class DeviceModelStage {
 	func drag(by translation: CGSize) {
 		guard isDragging else { return }
 		yaw = dragStartYaw + Float(translation.width) * 0.012
-		pitch = min(max(dragStartPitch + Float(translation.height) * 0.008, -1.2), 1.2)
+		if tiltsOnDrag {
+			pitch = min(max(dragStartPitch + Float(translation.height) * 0.008, -1.2), 1.2)
+		}
 		applyOrientation()
 	}
 

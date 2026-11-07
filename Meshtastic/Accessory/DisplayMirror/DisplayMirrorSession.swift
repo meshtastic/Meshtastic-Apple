@@ -15,6 +15,8 @@ enum DisplayMirrorOwner: Hashable {
 	case deviceModel
 	/// The model on the stand in the Vision Pro cinema.
 	case cinemaStand
+	/// The model in the room, in the AR view.
+	case deviceModelAR
 }
 
 /// The connected radio's screen as the app last saw it. AccessoryManager feeds it chunks and

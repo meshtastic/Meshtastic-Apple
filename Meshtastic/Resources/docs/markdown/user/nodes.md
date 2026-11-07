@@ -236,7 +236,7 @@ For supported devices, the support tier is shown below the hardware name:
 
 ### 3D Model
 
-For many radios, the hardware image can turn into a 3D model of the device: tap the image, or the rotate button on it. Drag to turn the model and pinch to zoom; the photo button switches back to the picture. On iPhones and iPads that support augmented reality, and on Apple Vision Pro, the AR button places the model in the room around you at its real size. Most models ship with the app and work offline; any that don't are downloaded the first time they're shown.
+For many radios, the hardware image can turn into a 3D model of the device: tap the image, or the rotate button on it. Drag to turn the model and pinch to zoom; the photo button switches back to the picture. On iPhones and iPads that support augmented reality, and on Apple Vision Pro, the AR button places the model in the room around you at its real size. For the radio you're connected to, the model in the room shows its live screen, with the radio's buttons under the camera view, and a sideways drag turns it on its surface. Most models ship with the app and work offline; any that don't are downloaded the first time they're shown.
 
 ### Device Screen
 
@@ -244,7 +244,7 @@ When the radio you're connected to has a screen and its firmware can share it, t
 
 Below the screen are the radio's buttons: four directions around **OK**, with **Back** underneath. Hold a direction to repeat it, or hold **OK** for a long press. You can also swipe on the screen to move in that direction. On radios with a touch screen, tapping the picture touches the same spot on the radio, and holding it long-presses there. With a keyboard attached, including on a Mac, **Use Keyboard** sends the arrow keys, Return and Esc to the radio until you turn it off; an outline around the screen shows when it's on.
 
-The radio's 3D model at the top of the same node detail shows its screen live too, on the model's own display, while the model is open. So does the model on the stand in the Apple Vision Pro [cinema](cinema.md#radio-models), with the radio's buttons on the card beside it.
+The radio's 3D model at the top of the same node detail shows its screen live too, on the model's own display, while the model is open, and in the room from the AR button. So does the model on the stand in the Apple Vision Pro [cinema](cinema.md#radio-models), with the radio's buttons on the card beside it.
 
 The screen only comes over your direct connection to the radio, never over the mesh, so it isn't available for other nodes. Firmware that can't share its screen doesn't show the row.
 
