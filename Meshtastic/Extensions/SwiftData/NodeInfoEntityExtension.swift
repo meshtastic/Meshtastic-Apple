@@ -174,6 +174,13 @@ extension NodeInfoEntity {
 		return (try? ctx.fetch(descriptor)) ?? []
 	}
 
+	/// Stores a device metrics battery reading unless a newer one is already stored.
+	func updateBatteryLevel(_ level: Int32, at time: Date) {
+		if let current = batteryLevelTime, time < current { return }
+		batteryLevel = level
+		batteryLevelTime = time
+	}
+
 	var latestDeviceMetrics: TelemetryEntity? {
 		guard let ctx = modelContext else { return nil }
 		let nodeNum = self.num

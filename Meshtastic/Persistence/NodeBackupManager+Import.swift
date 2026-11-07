@@ -19,6 +19,8 @@ extension NodeBackupManager {
 		for src in backupNodes {
 			if existing?.nodesByNum[src.num] != nil { continue }
 			let dst = NodeInfoEntity()
+			dst.batteryLevel = src.batteryLevel
+			dst.batteryLevelTime = src.batteryLevelTime
 			dst.bleName = src.bleName
 			dst.channel = src.channel
 			dst.favorite = src.favorite
