@@ -4,6 +4,20 @@
 //
 //  Copyright(c) Garth Vander Houwen 10/30/26.
 //
+/// How prominent a summit has to be to make the fire lookout's list. Outside the visionOS-only
+/// code so it can be tested.
+enum LookoutSummitBar {
+	/// Prominence bars in meters, strictest first: real mountains, then hills, then bumps.
+	static let steps: [Float] = [300, 150, 50, 0]
+	/// Enough summits to choose from; the bar is lowered until this many clear it.
+	static let enough = 10
+
+	/// The strictest bar at least `enough` of these prominences clear, or the lowest bar.
+	static func bar(for prominences: [Float]) -> Float {
+		steps.first { least in prominences.filter { $0 >= least }.count >= enough } ?? steps[steps.count - 1]
+	}
+}
+
 #if os(visionOS)
 import CoreGraphics
 import CoreLocation
@@ -85,9 +99,10 @@ enum LookoutTerrain {
 	// MARK: Sites
 
 	/// The mountains in `bounds`: the highest peaks that stand well clear of the ground around them,
-	/// at least 3 km apart, highest first, at most `count` of them. Picking by height alone would
-	/// fill the list with the shoulders of the one or two tallest mountains.
-	static func sites(in bounds: GeoBounds, source: any ElevationTileSource, count: Int = 10) async -> [LookoutSite] {
+	/// at least 3 km apart, highest first, at most `count` of them, all inside `area` when one is
+	/// given. Picking by height alone would fill the list with the shoulders of the one or two
+	/// tallest mountains. Empty when the task is cancelled.
+	static func sites(in bounds: GeoBounds, source: any ElevationTileSource, area: SpatialCircle? = nil, count: Int = 20) async -> [LookoutSite] {
 		let frame = SpatialFrame(bounds: bounds)
 		// About 250 m cells, up to 600 across; a whole state gets cells near 800 m.
 		let columns = min(600, max(48, Int(frame.widthMeters / 250)))
@@ -96,38 +111,41 @@ enum LookoutTerrain {
 			return []
 		}
 		let peaks = prominentPeaks(in: grid)
-		// Real mountains have 300 m of prominence; a flatter download makes do with less.
-		var chosen: [Peak] = []
-		for least: Float in [300, 100, 0] {
-			chosen = peaks.filter { $0.prominence >= least }
-			if chosen.count >= min(count, 3) { break }
-		}
-		var sites: [LookoutSite] = []
-		for peak in chosen where sites.count < count {
-			let column = peak.index % grid.columns
-			let row = peak.index / grid.columns
-			let latitude = bounds.maxLat - (bounds.maxLat - bounds.minLat) * (Double(row) + 0.5) / Double(grid.rows)
-			let longitude = bounds.minLon + (bounds.maxLon - bounds.minLon) * (Double(column) + 0.5) / Double(grid.columns)
-			let coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
-			if sites.contains(where: { $0.coordinate.distance(from: coordinate) < 3_000 }) { continue }
-			sites.append(LookoutSite(latitude: latitude, longitude: longitude, elevation: peak.elevation, name: nil))
-		}
+		// Real mountains have 300 m of prominence. Where only a few do, hills with less join them,
+		// so a lowland mesh still has summits to choose from.
+		let least = LookoutSummitBar.bar(for: peaks.map(\.prominence))
+		let chosen = peaks.filter { $0.prominence >= least }
 		// The coarse grid only says which cell the summit is in, give or take one; the finest
 		// tiles say where in it.
 		let cell = max(frame.widthMeters / Double(grid.columns), frame.depthMeters / Double(grid.rows))
 		let zoom = min(14, await source.finestDataZoom() ?? 12)
 		let sampler = Sampler(source: source)
-		var refined: [LookoutSite] = []
-		for site in sites {
-			refined.append(await refine(site, within: cell, zoom: zoom, sampler: sampler))
-		}
-		// Two coarse summits can climb to the same top when the cells are wide; keep the higher.
+		var coarse: [CLLocationCoordinate2D] = []
 		var distinct: [LookoutSite] = []
-		for site in refined.sorted(by: { $0.elevation > $1.elevation })
-			where !distinct.contains(where: { $0.coordinate.distance(from: site.coordinate) < 3_000 }) {
+		// Refined one at a time until there are `count` inside the area, so summits outside it
+		// don't take places in the list.
+		for peak in chosen where distinct.count < count {
+			if Task.isCancelled { return [] }
+			let column = peak.index % grid.columns
+			let row = peak.index / grid.columns
+			let latitude = bounds.maxLat - (bounds.maxLat - bounds.minLat) * (Double(row) + 0.5) / Double(grid.rows)
+			let longitude = bounds.minLon + (bounds.maxLon - bounds.minLon) * (Double(column) + 0.5) / Double(grid.columns)
+			let coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+			if coarse.contains(where: { $0.distance(from: coordinate) < 3_000 }) { continue }
+			coarse.append(coordinate)
+			// Refining moves a summit by a cell and a half at most, so one further out can't reach the area.
+			if let area, area.distanceMeters(to: coordinate) > area.radiusMeters + cell * 1.5 { continue }
+			let site = await refine(LookoutSite(latitude: latitude, longitude: longitude, elevation: peak.elevation, name: nil), within: cell, zoom: zoom, sampler: sampler)
+			guard area?.contains(site.coordinate) ?? true else { continue }
+			// Two coarse summits can climb to the same top when the cells are wide; keep the higher.
+			if let near = distinct.firstIndex(where: { $0.coordinate.distance(from: site.coordinate) < 3_000 }) {
+				if site.elevation > distinct[near].elevation { distinct[near] = site }
+				continue
+			}
 			distinct.append(site)
 		}
-		return distinct
+		if Task.isCancelled { return [] }
+		return distinct.sorted { $0.elevation > $1.elevation }
 	}
 
 	/// The highest ground in each cell of a coarse grid over the downloaded area, row-major from the

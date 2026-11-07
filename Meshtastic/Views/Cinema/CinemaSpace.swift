@@ -46,6 +46,7 @@ struct CinemaSpace: View {
 	@StateObject private var screen = CinemaScreenModel()
 	/// The fire lookout's summits, and the terrain and node labels for the chosen one.
 	@State private var lookout = LookoutScene()
+	@ObservedObject private var offlineMaps = OfflineMapManager.shared
 	@AppStorage("cinemaLookoutSite") private var lookoutSiteID = ""
 	/// Eighth turns clockwise the lookout is turned from the panel.
 	@AppStorage(SpatialLookout.turnsKey) private var lookoutTurns = 0
@@ -58,6 +59,8 @@ struct CinemaSpace: View {
 	/// lookout from two tasks at once; the second waits on the first one's build instead of
 	/// starting another. The build is its own task so a caller being cancelled doesn't stop it.
 	@State private var lookoutBuild: LookoutBuild?
+	/// The downloads the summits and terrain were last found for, so a change can be told from the first run.
+	@State private var lookoutMapsSeen: [String]?
 	@State private var markerPanels = LookoutMarkerPanels()
 	/// Where the viewer's head is, so a marker's card opens beside the marker as they see it.
 	@State private var headTracker = CinemaHeadTracker()
@@ -183,6 +186,20 @@ struct CinemaSpace: View {
 			await refreshLookout()
 		}
 		.task(id: lookoutSiteID) {
+			await refreshLookout()
+		}
+		// A map deleted or downloaded changes the summits and the terrain around them, so both are
+		// found and built again.
+		.task(id: lookoutMaps) {
+			if let seen = lookoutMapsSeen, seen != lookoutMaps {
+				lookout.forgetSites()
+				lookoutBuild?.task.cancel()
+				lookoutBuild = nil
+				terrain?.removeFromParent()
+				terrain = nil
+				terrainSiteID = nil
+			}
+			lookoutMapsSeen = lookoutMaps
 			await refreshLookout()
 		}
 		.task(id: lookoutTurns) {
@@ -391,6 +408,22 @@ struct CinemaSpace: View {
 
 	/// Puts the terrain for the chosen summit out the lookout's windows, with the clear sky behind
 	/// it, or takes it away for the painted sunset or another environment.
+	/// The circle the 3D map shows around the mesh, before any zoom; with no node positions, the
+	/// newest map the user downloaded, as the 3D map does. The lookout's summits are found in it.
+	private func lookoutArea() async -> SpatialCircle? {
+		if let container, !appState.isDatabaseResetting {
+			let preciseOnly = UserDefaults.standard.bool(forKey: SpatialTerrainKeeper.preciseOnlyKey)
+			let nodes = (try? await SpatialMeshAreaReader.nodes(container: container, preciseOnly: preciseOnly, connectedNodeNum: accessoryManager.activeDeviceNum)) ?? []
+			if let circle = SpatialMapArea.meshCircle(nodes) { return circle }
+		}
+		return SpatialMapArea.downloadedMapCircle(offlineMaps.regions)
+	}
+
+	/// The downloads the lookout's summits and terrain come from, as they change.
+	private var lookoutMaps: [String] {
+		offlineMaps.regions.map { "\($0.id)|\($0.terrain?.downloadedAt.timeIntervalSince1970 ?? 0)" }
+	}
+
 	private func refreshLookout() async {
 		guard environment.isCutout else {
 			terrain?.removeFromParent()
@@ -398,9 +431,10 @@ struct CinemaSpace: View {
 			terrainSiteID = nil
 			return
 		}
-		if lookout.sites.isEmpty {
-			await lookout.prepare()
-		}
+		let maps = lookoutMaps
+		await lookout.prepare(area: await lookoutArea())
+		// The maps changing or the view going away while the summits were found makes this refresh stale.
+		guard !Task.isCancelled, lookoutMaps == maps else { return }
 		let site = lookout.site(for: lookoutSiteID)
 		let heading = SpatialLookout.heading(turns: lookoutTurns)
 		guard site?.id != terrainSiteID || heading != terrainHeading || (site != nil && terrain == nil) else { return }
@@ -430,7 +464,8 @@ struct CinemaSpace: View {
 		// waiting on the same build hasn't already put it up. Checked again after the backdrop
 		// changes, since either can change while it does.
 		func stillWanted() -> Bool {
-			lookoutSiteID == site.id && SpatialLookout.heading(turns: lookoutTurns) == heading && environment.isCutout
+			!Task.isCancelled && lookoutMaps == maps
+				&& lookoutSiteID == site.id && SpatialLookout.heading(turns: lookoutTurns) == heading && environment.isCutout
 				&& !(terrain != nil && terrainSiteID == site.id && terrainHeading == heading)
 		}
 		guard let entity = built, stillWanted() else { return }
