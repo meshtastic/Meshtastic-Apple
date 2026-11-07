@@ -124,7 +124,7 @@ private struct LiveActivityLockScreen: View {
 
 	var body: some View {
 		// The Lock Screen draws an all-black card when the root is a bare
-		// availability branch, so keep a container around it.
+		// availability branch, so keep a container around it (#2900).
 		ZStack {
 			if #available(iOS 18.0, *) {
 				FamilyAwareLockScreen(activity: activity)
