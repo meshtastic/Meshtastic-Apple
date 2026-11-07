@@ -433,6 +433,12 @@ enum SettingsSearchCatalogue {
 			destination: .tak,
 			screenTitle: String(localized: "TAK Server", comment: "Settings screen"),
 			listSection: .configure,
+			label: String(localized: "Regenerate Certificates", comment: "Settings control"),
+			requiresConnection: true),
+		.init(
+			destination: .tak,
+			screenTitle: String(localized: "TAK Server", comment: "Settings screen"),
+			listSection: .configure,
 			label: String(localized: "Download TAK Server Data Package", comment: "Settings control"),
 			requiresConnection: true),
 		.init(

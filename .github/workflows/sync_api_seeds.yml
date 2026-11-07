@@ -1,0 +1,70 @@
+name: Sync API Seeds
+
+on:
+  schedule:
+    # Nightly at 3 AM UTC, an hour after Sync Device Images
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+# main only takes changes through a pull request, so the run opens one.
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync-api-seeds:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Refresh the bundled seeds
+      id: sync
+      # A seed whose fetch or guard fails keeps its bundled copy and fails this step,
+      # but the others still go into the pull request.
+      continue-on-error: true
+      run: python3 scripts/sync_api_seeds.py
+
+    - name: Open or update the pull request
+      id: pr
+      # Opens a PR only when a seed changed. Later runs update the same branch, and the
+      # PR is closed if main catches up.
+      uses: peter-evans/create-pull-request@22a9089034f40e5a961c8808d113e2c98fb63676 # v7.0.11
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: "Sync bundled API seeds"
+        title: "Sync bundled API seeds"
+        body: |
+          Offline seeds refreshed from https://api.meshtastic.org/resource/eventFirmware
+          and https://msh.to/api/urls.
+
+          Opened by workflow run [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+        branch: chore/sync-api-seeds
+        delete-branch: true
+        add-paths: |
+          Meshtastic/Resources/event_firmware.json
+          Meshtastic/Resources/urls.json
+
+    - name: Summary
+      env:
+        OPERATION: ${{ steps.pr.outputs.pull-request-operation }}
+        PR_URL: ${{ steps.pr.outputs.pull-request-url }}
+        SYNC: ${{ steps.sync.outcome }}
+      run: |
+        case "$OPERATION" in
+          created|updated) echo "Seeds changed: $PR_URL ($OPERATION)" ;;
+          closed) echo "No differences from main; closed $PR_URL" ;;
+          *) echo "No changes; seeds are up to date" ;;
+        esac
+        if [ "$SYNC" != "success" ]; then
+          echo "A seed failed to fetch or failed its guard; see the refresh step." >&2
+          exit 1
+        fi

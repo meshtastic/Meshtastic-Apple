@@ -311,10 +311,26 @@
       }
     },
     "%lld Nodes" : {
-      "comment" : "Cinema lookout: title of the card listing the nodes a marker out the window stands for"
+      "comment" : "Cinema lookout: title of the card listing the nodes a marker out the window stands for",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld 個節點"
+          }
+        }
+      }
     },
     "%lld nodes near %@, %lld meters, bearing %lld degrees" : {
-      "comment" : "Cinema lookout: VoiceOver label for a marker out the window that stands for several nodes close together"
+      "comment" : "Cinema lookout: VoiceOver label for a marker out the window that stands for several nodes close together",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%2$@ 附近有 %1$lld 個節點，距離 %3$lld 公尺，方位 %4$lld 度"
+          }
+        }
+      }
     },
     "%lld radios" : {
       "comment" : "Showcase: how many radios are in the room",
@@ -357,7 +373,15 @@
       }
     },
     "A few settings get your radio talking on the mesh. You can change them later in Settings." : {
-      "comment" : "Radio setup intro"
+      "comment" : "Radio setup intro",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "只要幾項設定，就能讓您的無線電加入 Mesh 網路通訊。之後可隨時在「設定」中變更。"
+          }
+        }
+      }
     },
     "Add a map file you already have. It's copied into the app and added to this list." : {
       "localizations" : {
@@ -387,7 +411,15 @@
       }
     },
     "Back to the list" : {
-      "comment" : "Cinema lookout: button on a node's card that goes back to the list of nodes the marker stands for"
+      "comment" : "Cinema lookout: button on a node's card that goes back to the list of nodes the marker stands for",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "返回列表"
+          }
+        }
+      }
     },
     "Brought to you by" : {
       "comment" : "Showcase: plaque on the wall naming who made the showcase, above the Meshtastic Solutions name",
@@ -408,25 +440,78 @@
       }
     },
     "Change any of these in Settings." : {
-      "comment" : "Radio setup done footer"
+      "comment" : "Radio setup done footer",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "這些項目都可以在「設定」中變更。"
+          }
+        }
+      }
     },
     "Channels are encrypted. Your radio shares no location until you turn it on. Public channels can be logged by anyone nearby, so this app only lets them share an approximate location. Your precise location goes only to private channels you choose." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "頻道皆已加密。在您開啟前，無線電不會分享任何位置。公開頻道可能被附近任何人記錄，因此本 App 只允許在公開頻道分享大略位置；您的精確位置只會傳送到您選擇的私人頻道。"
+          }
+        }
+      }
     },
     "Choose a Preset" : {
-      "comment" : "Radio setup preset title"
+      "comment" : "Radio setup preset title",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選擇預設"
+          }
+        }
+      }
     },
     "Choose Your Region" : {
-      "comment" : "Radio setup region title"
+      "comment" : "Radio setup region title",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選擇您的區域"
+          }
+        }
+      }
     },
     "Choose a region" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選擇區域"
+          }
+        }
+      }
     },
     "Confirm Your Region" : {
-      "comment" : "Radio setup region title when one was pre-selected"
+      "comment" : "Radio setup region title when one was pre-selected",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "確認您的區域"
+          }
+        }
+      }
     },
     "Connect to the radio to see its screen." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "連線到無線電即可查看其螢幕。"
+          }
+        }
+      }
     },
     "Couldn't Import Map File" : {
       "localizations" : {
@@ -445,10 +530,25 @@
       }
     },
     "Custom Modem Settings" : {
-      "comment" : "Radio setup preset page row title"
+      "comment" : "Radio setup preset page row title",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自訂數據機設定"
+          }
+        }
+      }
     },
     "E-ink screens redraw slowly. Tap Refresh for the latest picture." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "電子紙螢幕更新較慢，點一下「重新整理」以取得最新畫面。"
+          }
+        }
+      }
     },
     "Enter Showcase" : {
       "comment" : "Spatial map: open the showcase immersive space, closing this volume",
@@ -478,10 +578,26 @@
       }
     },
     "Firmware %@" : {
-      "comment" : "Radio setup intro; the argument is the version"
+      "comment" : "Radio setup intro; the argument is the version",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "韌體 %@"
+          }
+        }
+      }
     },
     "frequency slot %lld" : {
-      "comment" : "Beacon switch prompt; one of the changes listed"
+      "comment" : "Beacon switch prompt; one of the changes listed",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "頻率槽位 %lld"
+          }
+        }
+      }
     },
     "Hide App" : {
       "comment" : "Showcase: close the app's window while in the showcase",
@@ -502,7 +618,15 @@
       }
     },
     "How your radio shows up for others." : {
-      "comment" : "Radio setup intro row"
+      "comment" : "Radio setup intro row",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "其他人看到的您的無線電名稱。"
+          }
+        }
+      }
     },
     "Import MBTiles or PMTiles File" : {
       "localizations" : {
@@ -594,7 +718,15 @@
       }
     },
     "Name Your Radio" : {
-      "comment" : "Radio setup name title"
+      "comment" : "Radio setup name title",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "為無線電命名"
+          }
+        }
+      }
     },
     "Next rack page" : {
       "comment" : "Showcase: show the next page of the wall rack",
@@ -608,16 +740,46 @@
       }
     },
     "Not Connected" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未連線"
+          }
+        }
+      }
     },
     "Not set" : {
-      "comment" : "Radio setup summary"
+      "comment" : "Radio setup summary",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未設定"
+          }
+        }
+      }
     },
     "Off-Grid Messaging" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "離網通訊"
+          }
+        }
+      }
     },
     "Other people see these in their node lists and on the map." : {
-      "comment" : "Radio setup name intro"
+      "comment" : "Radio setup name intro",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "其他人會在節點列表與地圖上看到這些名稱。"
+          }
+        }
+      }
     },
     "Pick up to turn it over" : {
       "comment" : "Cinema: VoiceOver hint for the device model on the stand in front of the seat",
@@ -631,13 +793,36 @@
       }
     },
     "Picked from your phone's region setting. Your radio must use the frequencies allowed where you are, so change it if you are somewhere else." : {
-      "comment" : "Radio setup region intro when one was pre-selected"
+      "comment" : "Radio setup region intro when one was pre-selected",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "依據手機的地區設定選取。無線電必須使用所在地允許的頻率，若您身在其他地區，請加以變更。"
+          }
+        }
+      }
     },
     "Presets trade range for speed. Long Range reaches farther and Short Range sends faster. Everyone on a mesh must use the same one." : {
-      "comment" : "Radio setup preset intro"
+      "comment" : "Radio setup preset intro",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "預設會在距離與速度之間取捨：長距離傳得更遠，短距離傳得更快。同一個 Mesh 網路中的所有人都必須使用相同的預設。"
+          }
+        }
+      }
     },
     "Privacy First" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隱私優先"
+          }
+        }
+      }
     },
     "Put the model away" : {
       "comment" : "Cinema: button on the card beside a device model on the stand; takes the model away",
@@ -651,121 +836,419 @@
       }
     },
     "Recommended for %@: %@" : {
-      "comment" : "Radio setup preset row; region, then preset"
+      "comment" : "Radio setup preset row; region, then preset",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 建議使用：%@"
+          }
+        }
+      }
     },
     "Radio Not Found" : {
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "找不到無線電"
+          }
+        }
+      }
+    },
+    "Radio Not Switched" : {
 
     },
     "region %@" : {
-      "comment" : "Beacon switch prompt; one of the changes listed"
+      "comment" : "Beacon switch prompt; one of the changes listed",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "區域 %@"
+          }
+        }
+      }
     },
     "Save and Continue" : {
-      "comment" : "Radio setup button"
+      "comment" : "Radio setup button",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "儲存並繼續"
+          }
+        }
+      }
     },
     "Region not set" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尚未設定區域"
+          }
+        }
+      }
     },
     "Send text, positions and more over LoRa radios. No cell service or internet needed." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "透過 LoRa 無線電傳送文字、位置等資訊，不需要行動網路或網際網路。"
+          }
+        }
+      }
     },
     "Set Up Radio" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定無線電"
+          }
+        }
+      }
     },
     "Set Up the Features You Want" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定您想要的功能"
+          }
+        }
+      }
     },
     "Set Up Your Radio" : {
-      "comment" : "Radio setup intro title"
+      "comment" : "Radio setup intro title",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定您的無線電"
+          }
+        }
+      }
     },
     "Show on Screen" : {
-      "comment" : "Cinema lookout: button on a node's card that opens the node's details on the cinema's front screen"
+      "comment" : "Cinema lookout: button on a node's card that opens the node's details on the cinema's front screen",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在螢幕上顯示"
+          }
+        }
+      }
     },
     "Skip" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "略過"
+          }
+        }
+      }
     },
     "the %@ preset" : {
-      "comment" : "Beacon switch prompt; one of the changes listed"
+      "comment" : "Beacon switch prompt; one of the changes listed",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 預設"
+          }
+        }
+      }
     },
     "The next few screens let you choose notifications, location sharing and Siri. Change any of them later in Settings." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "接下來幾個畫面可讓您選擇通知、位置分享與 Siri 設定，之後都可以在「設定」中變更。"
+          }
+        }
+      }
     },
     "The short name shows in your node's circle: up to 4 characters or one emoji." : {
-      "comment" : "Radio setup name footer"
+      "comment" : "Radio setup name footer",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "簡短名稱會顯示在節點的圓圈中：最多 4 個字元或一個表情符號。"
+          }
+        }
+      }
     },
     "The range and speed your mesh uses." : {
-      "comment" : "Radio setup intro row"
+      "comment" : "Radio setup intro row",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "您的 Mesh 網路所使用的距離與速度。"
+          }
+        }
+      }
     },
     "This region has an hourly duty cycle of %lld%%." : {
-      "comment" : "Radio setup region footer"
+      "comment" : "Radio setup region footer",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此區域的每小時工作週期為 %lld%%。"
+          }
+        }
+      }
     },
     "This sets %@. %@ Your previous channel settings will be replaced." : {
-      "comment" : "Beacon switch prompt; the first argument lists the changes, the second says whether the radio reboots"
+      "comment" : "Beacon switch prompt; the first argument lists the changes, the second says whether the radio reboots",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "這將設定%@。%@您先前的頻道設定將被取代。"
+          }
+        }
+      }
     },
     "Up" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上"
+          }
+        }
+      }
     },
     "Long Press" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "長按"
+          }
+        }
+      }
     },
     "Use Keyboard" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用鍵盤"
+          }
+        }
+      }
     },
     "Stop Using Keyboard" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "停止使用鍵盤"
+          }
+        }
+      }
     },
     "Arrow keys, Return and Esc go to the radio." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "方向鍵、Return 與 Esc 鍵會傳送到無線電。"
+          }
+        }
+      }
     },
     "You're All Set" : {
-      "comment" : "Radio setup done title"
+      "comment" : "Radio setup done title",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定完成"
+          }
+        }
+      }
     },
     "Waiting for your radio to reconnect" : {
-      "comment" : "Radio setup name page"
+      "comment" : "Radio setup name page",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在等待無線電重新連線"
+          }
+        }
+      }
     },
     "Where you are, so the radio uses legal frequencies." : {
-      "comment" : "Radio setup intro row"
+      "comment" : "Radio setup intro row",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "您所在的地區，讓無線電使用合法頻率。"
+          }
+        }
+      }
     },
     "Your phone's location goes only to your connected radio. Your radio shares nothing until you turn it on. This app only lets public channels share an approximate location. Radios on firmware 2.8 or later enforce the same limit. You can change location permissions at any time from settings." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "手機的位置只會傳送到已連線的無線電。在您開啟前，無線電不會分享任何內容。本 App 只允許公開頻道分享大略位置，韌體 2.8 或更新版本的無線電也會強制執行相同限制。您隨時可以在設定中變更位置權限。"
+          }
+        }
+      }
     },
     "Your radio restarts to apply this and reconnects in a few seconds." : {
-      "comment" : "Radio setup preset footer"
+      "comment" : "Radio setup preset footer",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無線電將重新啟動以套用此設定，並在幾秒後重新連線。"
+          }
+        }
+      }
     },
     "Your radio is restarting with its new LoRa settings. Saving the name works once it is back." : {
-      "comment" : "Radio setup name page"
+      "comment" : "Radio setup name page",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無線電正以新的 LoRa 設定重新啟動，重新連線後即可儲存名稱。"
+          }
+        }
+      }
     },
     "Your radio is not connected. Reconnect and try again." : {
-      "comment" : "Radio setup save error"
+      "comment" : "Radio setup save error",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無線電未連線，請重新連線後再試一次。"
+          }
+        }
+      }
     },
     "Your radio must use the frequencies allowed where you are. With the wrong region nothing nearby will hear you." : {
-      "comment" : "Radio setup region intro"
+      "comment" : "Radio setup region intro",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無線電必須使用所在地允許的頻率。若區域設定錯誤，附近將沒有任何節點能收到您的訊號。"
+          }
+        }
+      }
     },
     "Your radio uses its own bandwidth, spread factor and coding rate. They stay until you choose a preset here." : {
-      "comment" : "Radio setup preset page row"
+      "comment" : "Radio setup preset page row",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "您的無線電使用自訂的頻寬、擴頻因子與編碼率，在您於此選擇預設前會維持不變。"
+          }
+        }
+      }
     },
     "your radio's primary channel to \"%@\"" : {
-      "comment" : "Beacon switch prompt; one of the changes listed"
+      "comment" : "Beacon switch prompt; one of the changes listed",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無線電的主要頻道為「%@」"
+          }
+        }
+      }
     },
     "Your radio switches to the new mesh without a reboot." : {
-      "comment" : "Beacon switch prompt, firmware 2.8"
+      "comment" : "Beacon switch prompt, firmware 2.8",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無線電將直接切換到新的 Mesh 網路，無需重新開機。"
+          }
+        }
+      }
     },
     "Your radio will reboot and reconnect on the new mesh." : {
-      "comment" : "Beacon switch prompt, older firmware"
+      "comment" : "Beacon switch prompt, older firmware",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無線電將重新開機，並在新的 Mesh 網路上重新連線。"
+          }
+        }
+      }
     },
     "Zoom to Case" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "放大至機殼"
+          }
+        }
+      }
     },
     "Zoom Out" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "縮小"
+          }
+        }
+      }
     },
     "Zoom to Screen" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "放大至螢幕"
+          }
+        }
+      }
     },
     "Full Screen" : {
-      "comment" : "Button on a radio's 3D model: open the model full screen"
+      "comment" : "Button on a radio's 3D model: open the model full screen",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全螢幕"
+          }
+        }
+      }
     },
     "Radio screen" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無線電螢幕"
+          }
+        }
+      }
     },
     "Radios on this page" : {
       "comment" : "Showcase: menu listing the radios on the wall rack page that's showing; picking one opens its card",
@@ -863,7 +1346,14 @@
       }
     },
     "Refresh" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重新整理"
+          }
+        }
+      }
     },
     "Seated" : {
       "comment" : "Showcase: the viewer is sitting in the chair",
@@ -1067,7 +1557,14 @@
       }
     },
     "Waiting for the radio's screen" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在等待無線電螢幕畫面"
+          }
+        }
+      }
     },
     "Wall rack" : {
       "comment" : "Showcase: VoiceOver label for the rack of radios on the wall",
@@ -1575,19 +2072,54 @@
       }
     },
     "%@ E-ink" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 電子紙"
+          }
+        }
+      }
     },
     "%@ LCD" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ LCD"
+          }
+        }
+      }
     },
     "%@ LED matrix" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ LED 矩陣"
+          }
+        }
+      }
     },
     "%@ OLED" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ OLED"
+          }
+        }
+      }
     },
     "%@ TFT" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ TFT"
+          }
+        }
+      }
     },
     "%@ · %@" : {
       "comment" : "Spatial map trace route menu: hops, then when the route came back, e.g. \"3 Hops · 2 hours ago\"",
@@ -3451,8 +3983,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "節點資訊廣播間隔（秒）"
+            "state" : "translated",
+            "value" : "節點資訊的傳送頻率。預設為 3 小時，最短 1 小時。"
           }
         }
       }
@@ -3570,8 +4102,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "OLED SH1107 128x128"
+            "state" : "translated",
+            "value" : "SH1107 128x128"
           }
         }
       }
@@ -3587,8 +4119,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "OLED SH1107 旋轉"
+            "state" : "translated",
+            "value" : "SH1107 旋轉"
           }
         }
       }
@@ -3791,8 +4323,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "SX126x 接收增益增強"
+            "state" : "translated",
+            "value" : "在 SX126x 系列無線電上啟用 RX 增強增益模式。"
           }
         }
       }
@@ -4386,8 +4918,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "電池供電時關機延遲（秒）"
+            "state" : "translated",
+            "value" : "移除外部電源後，裝置經過多久關機。設為 0 可停用；低於 30 秒的值會提高為 30 秒。"
           }
         }
       }
@@ -4438,8 +4970,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "用於管理操作的金鑰"
+            "state" : "translated",
+            "value" : "獲授權向此節點傳送管理訊息的公鑰（最多三組）。"
           }
         }
       }
@@ -4812,8 +5344,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "CODEC2 700C"
+            "state" : "translated",
+            "value" : "700 bps（700C）"
           }
         }
       }
@@ -5033,8 +5565,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "輸入代理按壓腳位"
+            "state" : "translated",
+            "value" : "編碼器按鍵使用的 GPIO 腳位。"
           }
         }
       }
@@ -5135,8 +5667,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "監控 GPIO 腳位"
+            "state" : "translated",
+            "value" : "監看狀態變化的 GPIO 腳位。設為 0 會停用此模組。"
           }
         }
       }
@@ -5169,8 +5701,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "狀態廣播間隔（秒）"
+            "state" : "translated",
+            "value" : "無論是否偵測到變化，將偵測感測器狀態傳送到 Mesh 網路的頻率。設為 0 時僅在偵測到時傳送。"
           }
         }
       }
@@ -5475,8 +6007,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "地圖報告發布間隔（秒）"
+            "state" : "translated",
+            "value" : "地圖回報的發布頻率。最短 1 小時。"
           }
         }
       }
@@ -5492,8 +6024,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "廣播間隔（秒）"
+            "state" : "translated",
+            "value" : "信標的廣播頻率。最短 1 小時。"
           }
         }
       }
@@ -5628,8 +6160,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "更新間隔（秒）"
+            "state" : "translated",
+            "value" : "廣播鄰居資訊的頻率。最短 4 小時。"
           }
         }
       }
@@ -5662,8 +6194,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "PAX 計數器更新間隔"
+            "state" : "translated",
+            "value" : "將裝置計數傳送到 Mesh 網路的頻率。"
           }
         }
       }
@@ -5713,8 +6245,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "傳送者間隔（秒）"
+            "state" : "translated",
+            "value" : "此裝置會依所選間隔傳送範圍測試訊息。設為 0 會停止傳送。"
           }
         }
       }
@@ -6070,8 +6602,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "NodeInfo 直接回應最大跳數"
+            "state" : "translated",
+            "value" : "對於在此跳點數以內的請求者，直接以快取回應 NodeInfo 請求。路由器最多 3 跳；其他角色只回應直接相鄰的節點。"
           }
         }
       }
@@ -6487,7 +7019,15 @@
       }
     },
     "Net Check-In" : {
-      "comment" : "Cinema: title of the ham shack's status board, where net control logs the check-ins"
+      "comment" : "Cinema: title of the ham shack's status board, where net control logs the check-ins",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通聯報到"
+          }
+        }
+      }
     },
     "Network config received: %@" : {
       "extractionState" : "manual",
@@ -6599,7 +7139,15 @@
       }
     },
     "No check-ins yet" : {
-      "comment" : "Cinema: shown on the ham shack's check-in board while no node has a status message"
+      "comment" : "Cinema: shown on the ham shack's check-in board while no node has a status message",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尚無報到紀錄"
+          }
+        }
+      }
     },
     "No erase image is available for SoftDevice S140 %@ right now. Nothing was written — try again later." : {
       "localizations" : {
@@ -7760,7 +8308,15 @@
       }
     },
     "Pairing stopped. Apple Vision Pro can't enter a Bluetooth PIN, so a radio set to a Random or Fixed PIN can't pair with it. Set the radio's Bluetooth pairing mode to No PIN (Just Works) from another device, then connect again." : {
-      "extractionState" : "manual"
+      "extractionState" : "manual",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "配對已停止。Apple Vision Pro 無法輸入藍牙 PIN 碼，因此設為隨機或固定 PIN 碼的無線電無法與其配對。請從其他裝置將無線電的藍牙配對模式設為「無 PIN 碼（直接配對）」，再重新連線。"
+          }
+        }
+      }
     },
     "The radio reported an unknown delivery error." : {
       "extractionState" : "manual",
@@ -8690,7 +9246,15 @@
       "shouldTranslate" : false
     },
     "%@'s bandwidth is not compliant in the US. The Turbo presets are recommended." : {
-      "comment" : "LoRa preset warning; the argument is the preset's name"
+      "comment" : "LoRa preset warning; the argument is the preset's name",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 的頻寬不符合美國法規，建議使用極速預設。"
+          }
+        }
+      }
     },
     "%@ - %@" : {
       "localizations" : {
@@ -24771,7 +25335,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "基準點"
+            "value" : "本機"
           }
         }
       }
@@ -26756,6 +27320,9 @@
         }
       }
     },
+    "Bringing in messages and nodes from an earlier version…" : {
+
+    },
     "Broadcast a Beacon" : {
       "comment" : "A toggle that enables a mesh beacon to be advertised.",
       "isCommentAutoGenerated" : true,
@@ -26883,7 +27450,15 @@
       }
     },
     "Buildings" : {
-      "comment" : "Spatial map menu: raise the buildings from the downloaded offline map on the terrain"
+      "comment" : "Spatial map menu: raise the buildings from the downloaded offline map on the terrain",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "建築物"
+          }
+        }
+      }
     },
     "Burning Man" : {
       "comment" : "FirmwareEditions.name",
@@ -36899,7 +37474,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "無法下載涵蓋範圍估算所需的地形。"
+            "value" : "無法下載涵蓋範圍估算所需的地形資料。"
           }
         }
       }
@@ -52074,52 +52649,180 @@
       }
     },
     "Faces east" : {
-      "comment" : "Cinema: which way the fire lookout's cab faces"
+      "comment" : "Cinema: which way the fire lookout's cab faces",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "朝東"
+          }
+        }
+      }
     },
     "Faces east-northeast" : {
-      "comment" : "Cinema: which way the fire lookout's cab faces"
+      "comment" : "Cinema: which way the fire lookout's cab faces",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "朝東北東"
+          }
+        }
+      }
     },
     "Faces east-southeast" : {
-      "comment" : "Cinema: which way the fire lookout's cab faces"
+      "comment" : "Cinema: which way the fire lookout's cab faces",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "朝東南東"
+          }
+        }
+      }
     },
     "Faces north" : {
-      "comment" : "Cinema: which way the fire lookout's cab faces"
+      "comment" : "Cinema: which way the fire lookout's cab faces",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "朝北"
+          }
+        }
+      }
     },
     "Faces north-northeast" : {
-      "comment" : "Cinema: which way the fire lookout's cab faces"
+      "comment" : "Cinema: which way the fire lookout's cab faces",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "朝北北東"
+          }
+        }
+      }
     },
     "Faces north-northwest" : {
-      "comment" : "Cinema: which way the fire lookout's cab faces"
+      "comment" : "Cinema: which way the fire lookout's cab faces",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "朝北北西"
+          }
+        }
+      }
     },
     "Faces northeast" : {
-      "comment" : "Cinema: which way the fire lookout's cab faces"
+      "comment" : "Cinema: which way the fire lookout's cab faces",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "朝東北"
+          }
+        }
+      }
     },
     "Faces northwest" : {
-      "comment" : "Cinema: which way the fire lookout's cab faces"
+      "comment" : "Cinema: which way the fire lookout's cab faces",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "朝西北"
+          }
+        }
+      }
     },
     "Faces south" : {
-      "comment" : "Cinema: which way the fire lookout's cab faces"
+      "comment" : "Cinema: which way the fire lookout's cab faces",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "朝南"
+          }
+        }
+      }
     },
     "Faces south-southeast" : {
-      "comment" : "Cinema: which way the fire lookout's cab faces"
+      "comment" : "Cinema: which way the fire lookout's cab faces",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "朝南南東"
+          }
+        }
+      }
     },
     "Faces south-southwest" : {
-      "comment" : "Cinema: which way the fire lookout's cab faces"
+      "comment" : "Cinema: which way the fire lookout's cab faces",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "朝南南西"
+          }
+        }
+      }
     },
     "Faces southeast" : {
-      "comment" : "Cinema: which way the fire lookout's cab faces"
+      "comment" : "Cinema: which way the fire lookout's cab faces",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "朝東南"
+          }
+        }
+      }
     },
     "Faces southwest" : {
-      "comment" : "Cinema: which way the fire lookout's cab faces"
+      "comment" : "Cinema: which way the fire lookout's cab faces",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "朝西南"
+          }
+        }
+      }
     },
     "Faces west" : {
-      "comment" : "Cinema: which way the fire lookout's cab faces"
+      "comment" : "Cinema: which way the fire lookout's cab faces",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "朝西"
+          }
+        }
+      }
     },
     "Faces west-northwest" : {
-      "comment" : "Cinema: which way the fire lookout's cab faces"
+      "comment" : "Cinema: which way the fire lookout's cab faces",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "朝西北西"
+          }
+        }
+      }
     },
     "Faces west-southwest" : {
-      "comment" : "Cinema: which way the fire lookout's cab faces"
+      "comment" : "Cinema: which way the fire lookout's cab faces",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "朝西南西"
+          }
+        }
+      }
     },
     "Factory Erase" : {
       "comment" : "Settings control",
@@ -74995,7 +75698,7 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "固定 PIN 碼"
           }
         }
@@ -75031,7 +75734,7 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "隨機 PIN 碼"
           }
         }
@@ -75547,8 +76250,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "控制裝置上的閃爍 LED。對於大多數裝置而言，這將能控制最多 4 顆 LED 其中之一，但充電指示燈和 GPS 指示燈無法被控制。"
+            "state" : "translated",
+            "value" : "關閉裝置上閃爍的 LED。在大多數裝置上，這是最多 4 顆 LED 中的一顆；充電與 GPS 指示燈無法控制。"
           }
         }
       }
@@ -75643,8 +76346,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "LED 心跳燈 (Heartbeat)"
+            "state" : "translated",
+            "value" : "停用 LED 心跳燈"
           }
         }
       }
@@ -75793,8 +76496,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "與「全部」行為相同，但略過封包解碼直接轉發。僅適用於中繼器角色。在其他角色上設定此項將採用「全部」行為。"
+            "state" : "translated",
+            "value" : "行為與「全部」相同。略過封包解碼僅適用於中繼器角色，而該角色已不再支援。"
           }
         }
       }
@@ -75829,8 +76532,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "轉發任何觀察到的訊息，只要它位於我們的私人頻道上，或來自具有相同 LoRa 參數的其他頻道。"
+            "state" : "translated",
+            "value" : "轉發任何觀察到的訊息，只要它位於我們的私人頻道上，或來自具有相同 LoRa 設定的其他頻道。"
           }
         }
       }
@@ -75943,8 +76646,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "僅轉發核心 Portnum 的封包：NodeInfo、Text、Position、Telemetry 和 Routing。"
+            "state" : "translated",
+            "value" : "忽略非核心埠號的封包（例如範圍測試、PAX 計數器與 ATAK），且不轉發。核心埠號包括 Text、Position、NodeInfo、Telemetry、Routing、Admin、Waypoint、Traceroute 與 Store and Forward。"
           }
         }
       }
@@ -75979,8 +76682,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "與「僅本地」一樣忽略來自外部 Mesh 的訊息，但更進一步，也忽略不在節點已知列表中的節點所傳來的訊息。"
+            "state" : "translated",
+            "value" : "與「僅本地」一樣忽略來自外部 Mesh 的訊息，並更進一步忽略不在節點已知列表中的節點所傳來的訊息。"
           }
         }
       }
@@ -76015,8 +76718,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "忽略來自開放或無法解密之外部 Mesh 的訊息。僅轉發節點本地主要／次要頻道上的訊息。"
+            "state" : "translated",
+            "value" : "忽略來自開放或無法解密之外部 Mesh 的訊息，僅轉發節點本地主要／次要頻道上的訊息。"
           }
         }
       }
@@ -76051,8 +76754,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "僅允許 SENSOR、TRACKER 和 TAK_TRACKER 角色使用，將停止所有轉發，與 CLIENT_MUTE 角色類似。"
+            "state" : "translated",
+            "value" : "禁止所有轉發，效果如同靜音客戶端角色。路由器與延遲路由器角色不可使用。"
           }
         }
       }
@@ -76087,8 +76790,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "用於屋頂節點，從附近多個靜音客戶端節點更廣泛地分發訊息。"
+            "state" : "translated",
+            "value" : "設於屋頂或閣樓的節點：對來自或傳往最愛節點的封包，以延遲路由器方式轉發；其他封包則以客戶端方式處理。"
           }
         }
       }
@@ -76195,8 +76898,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "連接 App 使用或獨立運作的訊息裝置。"
+            "state" : "translated",
+            "value" : "連線 App 使用或獨立運作的訊息裝置。"
           }
         }
       }
@@ -76327,7 +77030,7 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "定期將位置以訊息形式廣播到預設頻道，以協助尋回裝置。"
           }
         }
@@ -76435,8 +77138,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "僅用於塔頂或山頂的基礎設施節點。不可用於屋頂或移動中的節點。需要極佳的涵蓋範圍。會顯示在節點列表中。"
+            "state" : "translated",
+            "value" : "僅用於塔頂或山頂的基礎設施節點，不可用於屋頂或移動中的節點。需要極佳的涵蓋範圍。會顯示在節點列表中。"
           }
         }
       }
@@ -77383,7 +78086,7 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "雙色顯示器反轉頂部列"
           }
         }
@@ -78037,7 +78740,7 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "SH1106"
           }
         }
@@ -78055,7 +78758,7 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "SH1107"
           }
         }
@@ -78073,7 +78776,7 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "SSD1306"
           }
         }
@@ -78865,8 +79568,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "您的節點運作頻率是根據地區、數據機預設值，以及此欄位共同計算得出。當此欄位設為 0 時，系統會根據主要頻道名稱自動計算頻率槽位。"
+            "state" : "translated",
+            "value" : "節點的運作頻率由區域、數據機預設與此欄位共同計算。設為 0 時，由區域選擇頻率槽位，通常依據主要頻道名稱決定。"
           }
         }
       }
@@ -79171,7 +79874,7 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "允許上傳至 MQTT"
           }
         }
@@ -80329,7 +81032,7 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "2.4 GHz"
           }
         }
@@ -80905,8 +81608,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "發射 功率 TX dBm"
+            "state" : "translated",
+            "value" : "tx|power|dbm|output|發射|功率|輸出"
           }
         }
       }
@@ -81283,8 +81986,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "啟用乙太網路將會停用與 App 的藍牙連線。"
+            "state" : "translated",
+            "value" : "在 ESP32 板上，啟用乙太網路會停用與 App 的藍牙連線。"
           }
         }
       }
@@ -81457,8 +82160,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "啟用 Wi-Fi 將會停用與 App 的藍牙連線。"
+            "state" : "translated",
+            "value" : "啟用 Wi-Fi 會停用與 App 的藍牙連線。"
           }
         }
       }
@@ -82063,7 +82766,7 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "GPS 啟用 GPIO"
           }
         }
@@ -83089,8 +83792,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "此設定會讓裝置盡可能休眠，包括 LoRa 無線電（用於 Tracker 和 Sensor 角色）。若您要搭配手機 App，或裝置沒有使用者按鈕，請不要使用此設定。"
+            "state" : "translated",
+            "value" : "讓所有元件盡可能休眠；在追蹤器與感測器角色上也包括 LoRa 無線電。若要搭配手機 App 使用，或裝置沒有使用者按鍵，請勿使用此設定。"
           }
         }
       }
@@ -83617,8 +84320,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "裝置由 Mesh 遠端管理，使用者無法存取任何裝置設定。"
+            "state" : "translated",
+            "value" : "設定由 Mesh 管理員使用管理金鑰變更，而非透過本機 App。至少需要一組管理金鑰。"
           }
         }
       }
@@ -84517,8 +85220,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "I2S DIN"
+            "state" : "translated",
+            "value" : "I2S 資料輸出腳位"
           }
         }
       }
@@ -84541,8 +85244,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "I2S SCK"
+            "state" : "translated",
+            "value" : "I2S 時脈腳位"
           }
         }
       }
@@ -84565,8 +85268,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "I2S SD"
+            "state" : "translated",
+            "value" : "I2S 資料輸入腳位"
           }
         }
       }
@@ -84589,8 +85292,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "I2S WS"
+            "state" : "translated",
+            "value" : "I2S 字組選擇腳位"
           }
         }
       }
@@ -84745,8 +85448,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "逆時針旋轉操作"
+            "state" : "translated",
+            "value" : "逆時針旋轉事件"
           }
         }
       }
@@ -85561,8 +86264,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "編碼器 1"
+            "state" : "translated",
+            "value" : "旋轉編碼器"
           }
         }
       }
@@ -85753,8 +86456,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "上 下 1"
+            "state" : "translated",
+            "value" : "上／下／選擇輸入"
           }
         }
       }
@@ -85849,7 +86552,7 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
+            "state" : "translated",
             "value" : "觸發類型"
           }
         }
@@ -86515,8 +87218,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "是否使用 INPUT_PULLUP 模式來設定 GPIO 腳位。僅在板子使用上拉電阻時適用。"
+            "state" : "translated",
+            "value" : "在監看腳位上啟用內部上拉電阻。"
           }
         }
       }
@@ -86611,8 +87314,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "使用上拉電阻"
+            "state" : "translated",
+            "value" : "使用內部上拉電阻"
           }
         }
       }
@@ -88291,8 +88994,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "我已閱讀並理解上述內容，並自願同意透過 MQTT 未加密地傳輸我的節點資料。"
+            "state" : "translated",
+            "value" : "同意將此節點的詳細資料與大略位置以未加密方式發布到 MQTT 地圖。未同意時不會傳送任何地圖回報。"
           }
         }
       }
@@ -88309,8 +89012,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "回報位置"
+            "state" : "translated",
+            "value" : "在地圖上分享"
           }
         }
       }
@@ -89263,8 +89966,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "TLS 對於公開的 Meshtastic MQTT 伺服器是必要的"
+            "state" : "translated",
+            "value" : "透過 TLS 連線到 MQTT 伺服器。"
           }
         }
       }
@@ -89551,8 +90254,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "是否除了 MQTT 與 PhoneAPI 外，也透過 LoRa 傳送鄰居資訊。使用預設金鑰與名稱的頻道不適用。"
+            "state" : "translated",
+            "value" : "除了 MQTT 與已連線的 App 外，是否也透過 LoRa 傳送鄰居資訊。使用預設金鑰與名稱的頻道無法使用。"
           }
         }
       }
@@ -89863,8 +90566,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "啟用後，人流計數器模組將透過 WiFi 和藍牙計算經過的人數。必須停用 WiFi 和藍牙才能讓 PAX 計數器正常工作。"
+            "state" : "translated",
+            "value" : "啟用後，PAX 計數器模組會計算附近的 Wi-Fi 與藍牙裝置。Wi-Fi 與藍牙都必須停用，PAX 計數器才能運作。"
           }
         }
       }
@@ -90493,8 +91196,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "若啟用，您傳送的所有封包都會回傳至您的裝置。"
+            "state" : "translated",
+            "value" : "若啟用，您傳送的所有封包都會透過序列埠回傳。"
           }
         }
       }
@@ -91231,8 +91934,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "CALTOPO"
+            "state" : "translated",
+            "value" : "CalTopo"
           }
         }
       }
@@ -93427,8 +94130,8 @@
         },
         "zh-Hant-TW" : {
           "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "每個時間窗內超過此數量即捨棄該傳送者。"
+            "state" : "translated",
+            "value" : "單一節點在 5 分鐘內可傳送的無法解密封包數量上限，超過後將捨棄該節點的封包。"
           }
         }
       }
@@ -99842,7 +100545,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "尚無團隊"
+            "value" : "尚無團隊成員"
           }
         }
       }
@@ -99907,7 +100610,15 @@
       }
     },
     "No status yet" : {
-      "comment" : "Cinema: shown on the tent's status board while no node has a status message"
+      "comment" : "Cinema: shown on the tent's status board while no node has a status message",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尚無狀態"
+          }
+        }
+      }
     },
     "Node" : {
       "localizations" : {
@@ -101305,7 +102016,15 @@
       }
     },
     "Nodes that broadcast a status message are listed here as they're heard." : {
-      "comment" : "Cinema status board: how the empty board fills"
+      "comment" : "Cinema status board: how the empty board fills",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "廣播狀態訊息的節點在收到後會列在這裡。"
+          }
+        }
+      }
     },
     "Noise" : {
       "localizations" : {
@@ -113192,7 +113911,15 @@
       }
     },
     "Radio firmware 2.7.12–2.8.0 resets this root topic to the new region's default when the LoRa region is changed (%@ for the current region). After changing the region, return here, restore your custom root topic, and tap Save. Fixed in radio firmware 2.8.1 and later." : {
-      "comment" : "MQTT custom-root reset warning. The placeholder is the default root for the radio's current region, e.g. msh/US. Versions refer to radio firmware, not the Apple app."
+      "comment" : "MQTT custom-root reset warning. The placeholder is the default root for the radio's current region, e.g. msh/US. Versions refer to radio firmware, not the Apple app.",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無線電韌體 2.7.12–2.8.0 在變更 LoRa 區域時，會將此根主題重設為新區域的預設值（目前區域為 %@）。變更區域後，請回到此處恢復自訂的根主題，然後點一下「儲存」。此問題已在無線電韌體 2.8.1 及更新版本中修正。"
+          }
+        }
+      }
     },
     "Radius" : {
       "localizations" : {
@@ -128822,7 +129549,15 @@
       }
     },
     "Set your radio's status in its node details to post it here." : {
-      "comment" : "Cinema status board: hint shown while the connected radio has no status message of its own"
+      "comment" : "Cinema status board: hint shown while the connected radio has no status message of its own",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在無線電的節點詳細資料中設定狀態，即可顯示於此。"
+          }
+        }
+      }
     },
     "Sets the maximum number of hops, default is 3. Increasing hops also increases congestion and should be used carefully. 0 hop broadcast messages will not get ACKs." : {
       "localizations" : {
@@ -129210,10 +129945,26 @@
       }
     },
     "Shade Valleys" : {
-      "comment" : "Map settings: darken valley floors in the hillshade by how little sky they see"
+      "comment" : "Map settings: darken valley floors in the hillshade by how little sky they see",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "山谷陰影"
+          }
+        }
+      }
     },
     "Darkens valley floors and gorges, which see less of the sky. Shading takes longer to draw." : {
-      "comment" : "Map settings: explains the Shade Valleys hillshade option"
+      "comment" : "Map settings: explains the Shade Valleys hillshade option",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "加深天空較少照到的谷底與峽谷。陰影需要較長時間繪製。"
+          }
+        }
+      }
     },
     "share" : {
       "comment" : "Search keyword",
@@ -135125,7 +135876,15 @@
       }
     },
     "Status Board" : {
-      "comment" : "Cinema: title of the board of the nodes' status messages in the tent"
+      "comment" : "Cinema: title of the board of the nodes' status messages in the tent",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "狀態看板"
+          }
+        }
+      }
     },
     "Status Message" : {
       "localizations" : {
@@ -137563,7 +138322,15 @@
       }
     },
     "Team Favorites" : {
-      "comment" : "Cinema: title of the favorites board on the tent's whiteboard"
+      "comment" : "Cinema: title of the favorites board on the tent's whiteboard",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "團隊最愛"
+          }
+        }
+      }
     },
     "telemetry" : {
       "comment" : "Search keyword",
@@ -143215,7 +143982,15 @@
       }
     },
     "This node is on a Node Tracker widget. The widget will say it's no longer in your node list until you choose another node or the node is heard again." : {
-      "comment" : "Delete node confirmation: the node is shown on a Node Tracker widget"
+      "comment" : "Delete node confirmation: the node is shown on a Node Tracker widget",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此節點位於「節點追蹤」小工具上。在您選擇其他節點或再次收到此節點之前，小工具會顯示它已不在您的節點列表中。"
+          }
+        }
+      }
     },
     "This offline map is already installed." : {
       "comment" : "Error message displayed when trying to install an already installed offline map.",
@@ -143329,6 +144104,9 @@
           }
         }
       }
+    },
+    "This radio's messages and nodes could not be backed up, so nothing was deleted." : {
+
     },
     "This radio's channels aren't available, so a channel can't be offered. Connect to it directly to set one." : {
       "localizations" : {
@@ -147683,7 +148461,15 @@
       }
     },
     "Turn Lookout" : {
-      "comment" : "Cinema: title over the dial that turns the fire lookout, so the screen looks out over another part of the view"
+      "comment" : "Cinema: title over the dial that turns the fire lookout, so the screen looks out over another part of the view",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "轉動瞭望視角"
+          }
+        }
+      }
     },
     "Turn on Bluetooth in Settings to see nearby radios." : {
       "comment" : "Connect tab: subtitle shown in Available Radios when the BLE transport reports Bluetooth is powered off (#2175)",
@@ -149970,6 +150756,9 @@
           }
         }
       }
+    },
+    "Updating Your Data" : {
+
     },
     "Upgrade Bootloader" : {
       "comment" : "Settings control",
@@ -154953,7 +155742,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "天氣雷達"
+            "value" : "氣象雷達"
           }
         }
       }
@@ -158886,7 +159675,15 @@
       }
     },
     "Zoom" : {
-      "comment" : "Spatial map: slider setting how far the map is zoomed in, from the whole mesh to the most detail"
+      "comment" : "Spatial map: slider setting how far the map is zoomed in, from the whole mesh to the most detail",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "縮放"
+          }
+        }
+      }
     },
     "Zoom in" : {
       "comment" : "Spatial map: show a smaller area on the table in more detail",
@@ -158911,25 +159708,74 @@
       }
     },
     "Regenerate Certificates?" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "要重新產生憑證嗎？"
+          }
+        }
+      }
     },
     "Regenerate" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重新產生"
+          }
+        }
+      }
     },
     "A new certificate authority, server certificate and client certificate are issued, and connected TAK clients are dropped. Every TAK client needs the data package again." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "將簽發新的憑證授權單位（CA）、伺服器憑證與客戶端憑證，並中斷已連線的 TAK 客戶端。每個 TAK 客戶端都需要重新匯入資料包。"
+          }
+        }
+      }
     },
     "A TAK client tried to connect with a certificate this install didn't issue. Remove its old Meshtastic connection, then export the data package again and import it." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有 TAK 客戶端嘗試使用非此安裝所簽發的憑證連線。請移除其舊的 Meshtastic 連線，然後重新匯出資料包並匯入。"
+          }
+        }
+      }
     },
     "Valid until %@, and renewed before then." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有效期限至 %@，並會在到期前自動更新。"
+          }
+        }
+      }
     },
     "Regenerate Certificates" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重新產生憑證"
+          }
+        }
+      }
     },
     "The app issued these certificates for this install, and only the client set up from this install's data package can connect. Import a custom .p12 only if your TAK client needs a particular server certificate." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "這些憑證由本 App 為此安裝所簽發，只有使用此安裝資料包設定的客戶端才能連線。僅在您的 TAK 客戶端需要特定伺服器憑證時，才匯入自訂的 .p12。"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

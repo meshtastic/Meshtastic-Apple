@@ -72,6 +72,10 @@ class AppState: ObservableObject {
 	/// switching nodes"). The databaseResetID bump alone runs AFTER the swap, which is
 	/// too late for subscriptions that are live during it.
 	@Published var isDatabaseResetting = false
+	/// True while StoreUpgrade brings older data into the store. Set together with
+	/// `isDatabaseResetting`, which keeps views off the store; this only changes what the
+	/// placeholder says.
+	@Published var isUpgradingStore = false
 	/// Bumped immediately after the SwiftData container is recreated (repointToFreshContainer)
 	/// so the scene body re-evaluates and `.modelContainer(...)` hands the NEW container to the
 	/// environment. @Query subscriptions then re-bind in place — no view teardown. This is the

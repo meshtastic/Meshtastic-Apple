@@ -16,15 +16,13 @@ struct AppData: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
 	@State private var documentsFiles = [URL]()
 	@State private var applicationSupportFiles = [URL]()
+	/// The live store's files, which SwiftData keeps in the app group container.
+	@State private var activeDatabaseFiles = [URL]()
 	@State private var exportDocument = BinaryFileDocument(data: Data())
 	@State private var exportFilename = ""
 	@State private var exportContentType: UTType = .data
 	@State private var isExporting = false
 	private var idiom: UIUserInterfaceIdiom { UIDevice.current.userInterfaceIdiom }
-
-	private var activeDatabaseFiles: [URL] {
-		applicationSupportFiles.filter(isActiveDatabaseFile)
-	}
 
 	private var nonDatabaseApplicationSupportFiles: [URL] {
 		applicationSupportFiles.filter { !isActiveDatabaseFile($0) }
@@ -126,6 +124,10 @@ struct AppData: View {
 		documentsFiles = []
 		applicationSupportFiles = []
 		loadApplicationSupportFiles()
+		let storeURL = PersistenceController.storeURL
+		activeDatabaseFiles = ["", "-wal", "-shm"]
+			.map { URL(fileURLWithPath: storeURL.path + $0) }
+			.filter { FileManager.default.fileExists(atPath: $0.path) }
 
 		guard let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
 			Logger.data.error("🗂️ nil default document directory path for backup, core data backup failed.")
@@ -168,13 +170,7 @@ struct AppData: View {
 	}
 
 	private func isActiveDatabaseFile(_ file: URL) -> Bool {
-		guard let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first,
-			file.deletingLastPathComponent() == appSupport else {
-			return false
-		}
-
-		let name = file.lastPathComponent
-		return name == "Meshtastic.store" || name == "Meshtastic.store-wal" || name == "Meshtastic.store-shm"
+		activeDatabaseFiles.contains { $0.standardizedFileURL == file.standardizedFileURL }
 	}
 
 	private func fileDisplayName(for file: URL) -> String {

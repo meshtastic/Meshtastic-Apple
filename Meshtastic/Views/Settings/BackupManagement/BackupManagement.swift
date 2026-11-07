@@ -197,15 +197,21 @@ struct BackupManagement: View {
 			let num = Int64(UserDefaults.preferredPeripheralNum)
 			return num > 0 ? num : nil
 		}()
-		let restoreResult = await backupCurrentAndRestoreDatabase(
-			forNode: entry.nodeNum,
-			currentNodeNum: currentNodeNum,
-			accessoryManager: accessoryManager,
-			appState: accessoryManager.appState,
-			router: router,
-			selectedTab: .settings,
-			disconnectCurrentDevice: true
-		)
+		let restoreResult: NodeBackupResult
+		do {
+			restoreResult = try await backupCurrentAndRestoreDatabase(
+				forNode: entry.nodeNum,
+				currentNodeNum: currentNodeNum,
+				accessoryManager: accessoryManager,
+				appState: accessoryManager.appState,
+				router: router,
+				selectedTab: .settings,
+				disconnectCurrentDevice: true
+			)
+		} catch {
+			restoreErrorMessage = error.localizedDescription
+			return
+		}
 
 		switch restoreResult {
 		case .success:
