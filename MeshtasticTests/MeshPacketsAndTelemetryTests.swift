@@ -1211,6 +1211,20 @@ struct TelemetryPacketIngestTests {
 		#expect(node?.batteryLevel == 80)
 		#expect(node?.batteryLevelTime == Date(timeIntervalSince1970: 1_700_000_500))
 	}
+
+	/// A reading with the same time as the stored one is a replay, and one with no time of its own
+	/// only replaces a level that has no time either.
+	@Test func updateBatteryLevel_keepsTimedReadingOverReplayAndUntimed() {
+		let node = NodeInfoEntity()
+		let time = Date(timeIntervalSince1970: 1_700_000_500)
+		node.updateBatteryLevel(50, at: nil)
+		#expect(node.batteryLevel == 50)
+		node.updateBatteryLevel(80, at: time)
+		node.updateBatteryLevel(70, at: time)
+		node.updateBatteryLevel(60, at: nil)
+		#expect(node.batteryLevel == 80)
+		#expect(node.batteryLevelTime == time)
+	}
 }
 
 // MARK: - PAX counter ingestion

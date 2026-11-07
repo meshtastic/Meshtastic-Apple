@@ -1176,7 +1176,7 @@ actor MeshPackets {
 						telemetry.airUtilTx = nodeInfo.deviceMetrics.airUtilTx
 						telemetry.nodeNum = newNode.num
 						if nodeInfo.deviceMetrics.hasBatteryLevel {
-							let reported = nodeInfo.lastHeard > 0 ? Date(timeIntervalSince1970: TimeInterval(nodeInfo.lastHeard)) : Date()
+							let reported = nodeInfo.lastHeard > 0 ? Date(timeIntervalSince1970: TimeInterval(nodeInfo.lastHeard)) : nil
 							newNode.updateBatteryLevel(Int32(truncatingIfNeeded: nodeInfo.deviceMetrics.batteryLevel), at: reported)
 						}
 					}
@@ -1371,7 +1371,7 @@ actor MeshPackets {
 						newTelemetry.airUtilTx = nodeInfo.deviceMetrics.airUtilTx
 						newTelemetry.nodeNum = fetchedNode[0].num
 						if nodeInfo.deviceMetrics.hasBatteryLevel {
-							let reported = nodeInfo.lastHeard > 0 ? Date(timeIntervalSince1970: TimeInterval(nodeInfo.lastHeard)) : Date()
+							let reported = nodeInfo.lastHeard > 0 ? Date(timeIntervalSince1970: TimeInterval(nodeInfo.lastHeard)) : nil
 							fetchedNode[0].updateBatteryLevel(Int32(truncatingIfNeeded: nodeInfo.deviceMetrics.batteryLevel), at: reported)
 						}
 					}
