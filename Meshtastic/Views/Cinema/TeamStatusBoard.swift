@@ -165,14 +165,19 @@ struct TeamStatusBoard: View {
 
 	@ViewBuilder
 	private func footer(_ roster: Roster) -> some View {
-		if roster.hiddenCount > 0 {
-			Text("+\(roster.hiddenCount) more", comment: "Cinema team board: how many favorite nodes didn't fit on the board")
-				.font(BoardStyle.marker(40))
-				.foregroundStyle(BoardStyle.faded)
-		} else if roster.members.count > Self.visibleRows {
-			Text("Pinch and drag the list to see all \(roster.members.count).", comment: "Cinema team board: hint when there are more nodes than fit; the argument is how many rows the list has")
-				.font(BoardStyle.marker(40))
-				.foregroundStyle(BoardStyle.faded)
+		// The list scrolls past the visible rows even when the read limit leaves some out, so the
+		// hint shows with the count of the rest.
+		if roster.members.count > Self.visibleRows || roster.hiddenCount > 0 {
+			HStack(spacing: 24) {
+				if roster.members.count > Self.visibleRows {
+					Text("Pinch and drag the list to see all \(roster.members.count).", comment: "Cinema team board: hint when there are more nodes than fit; the argument is how many rows the list has")
+				}
+				if roster.hiddenCount > 0 {
+					Text("+\(roster.hiddenCount) more", comment: "Cinema team board: how many favorite nodes didn't fit on the board")
+				}
+			}
+			.font(BoardStyle.marker(40))
+			.foregroundStyle(BoardStyle.faded)
 		} else if roster.favoriteCount == 0 {
 			Text("Favorite nodes to add them to the board.", comment: "Cinema team board: hint shown when only the connected radio is listed")
 				.font(BoardStyle.marker(40))
