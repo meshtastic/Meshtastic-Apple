@@ -25,9 +25,9 @@ struct LookoutForestTests {
 		#expect(spots.allSatisfy { $0.distance >= LookoutForest.nearest * 0.9 })
 		#expect(spots.allSatisfy { (0..<360).contains($0.bearing) })
 		#expect((spots.first?.distance ?? 0) < (spots.last?.distance ?? 0))
-		// Near trees keep the painting's sizes; at 6 km a stand looks as tall as one at 2.4 km.
-		#expect(spots.filter { $0.distance < LookoutForest.paintedReach }.allSatisfy { (0.6...1.5).contains($0.scale) })
-		#expect(spots.filter { $0.distance > 5_900 }.allSatisfy { $0.scale > 1.4 })
+		// Near trees keep the painting's sizes. Far stands are wider, and taller more slowly.
+		#expect(spots.filter { $0.distance < LookoutForest.paintedReach }.allSatisfy { (0.6...1.5).contains($0.width) && $0.width == $0.height })
+		#expect(spots.filter { $0.distance > 5_900 }.allSatisfy { $0.width > 1.4 && $0.height < $0.width })
 	}
 
 	@Test("the band starts at the first forest above the sill, skipping ground under it and ground behind a ridge")
@@ -96,13 +96,24 @@ struct LookoutForestTests {
 
 	@Test("the cones are faceted, upright, and lit from the palette")
 	func shapeAndPalette() throws {
-		let faces = LookoutForest.faces(turn: 0.3, scale: 1, near: true)
+		let faces = LookoutForest.faces(turn: 0.3, width: 1, height: 1, near: true)
 		#expect(faces.count == LookoutForest.triangles(at: 100))
 		#expect(faces.allSatisfy { $0.normal.y > 0 && abs(simd_length($0.normal) - 1) < 1e-9 })
 		let image = try #require(LookoutForest.palette())
-		#expect(image.width == LookoutForest.shades && image.height == LookoutForest.lightLevels)
-		let dark = LookoutForest.paletteCoordinate(shade: 0, lit: 0)
-		let bright = LookoutForest.paletteCoordinate(shade: LookoutForest.shades - 1, lit: 1)
+		#expect(image.width == LookoutForest.shades * LookoutForest.hazeLevels && image.height == LookoutForest.lightLevels)
+		let dark = LookoutForest.paletteCoordinate(shade: 0, lit: 0, distance: 1_000)
+		let bright = LookoutForest.paletteCoordinate(shade: LookoutForest.shades - 1, lit: 1, distance: 1_000)
 		#expect(dark.x < bright.x && dark.y < bright.y)
+		// Farther trees read from hazier columns.
+		let far = LookoutForest.paletteCoordinate(shade: 0, lit: 0, distance: 30_000)
+		#expect(far.x > bright.x)
+	}
+
+	@Test("a band thins in at its near edge and out at its far edge")
+	func bandEdges() {
+		let band = LookoutForest.Band(start: 4_000, end: 6_400)
+		#expect(band.density(at: 4_000) == 0)
+		#expect(band.density(at: 5_000) > 0.9)
+		#expect(band.density(at: 6_400) == 0)
 	}
 }

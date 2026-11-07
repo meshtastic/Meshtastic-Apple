@@ -23,7 +23,7 @@ enum LookoutForest {
 	/// one is drawn as a stand that looks as tall from the cab.
 	static let paintedReach = 2_400.0
 	/// Each band runs from the first forested ground in view out to this many times as far.
-	static let bandDepth = 1.6
+	static let bandDepth = 1.35
 	/// Nothing lower than this below the horizon shows over the sill: it is 0.94 m high and 2.2 m
 	/// out from a 1.15 m seated eye (KNEE, SILL and EYE_HEIGHT in scripts/cinema/fire_lookout.py).
 	static let sillDepression = 5.5
@@ -31,31 +31,50 @@ enum LookoutForest {
 	static let earthRadius = 7_450_000.0
 	/// Trees are this far apart near the summit…
 	static let nearSpacing = 8.0
-	/// …and farther out, this much of the view apart (about 0.4°).
-	static let angularSpacing = 0.007
+	/// …and farther out, this much of the view apart (about 0.26°), a dense fringe like the painting's.
+	static let angularSpacing = 0.0045
 	/// Closer than this a tree gets two cones; farther, one.
 	static let nearDetail = 450.0
 	/// The most triangles the trees may take, on top of the terrain's.
-	static let triangleBudget = 250_000
+	static let triangleBudget = 300_000
 	/// Shades of green across the palette, and light levels down it.
 	static let shades = 8
 	static let lightLevels = 16
+	/// Haze levels across the palette, from none to `maxHaze`, the haze at about 40 km.
+	static let hazeLevels = 8
+	static let maxHaze = 0.5
+	/// The terrain's haze: its color, and how far it takes to cover half the view.
+	static let hazeColor = SIMD3<Double>(0.78, 0.73, 0.70)
+	static let hazeDistance = 60_000.0
 
 	/// Where a tree stands and how it looks, by its true bearing (degrees) and distance from the site.
 	struct Spot: Equatable {
 		let bearing: Double
 		let distance: Double
-		/// 0.6–1.5 as in the painting, times how much farther than the painting's trees it stands.
-		let scale: Double
+		/// Across: 0.6–1.5 as in the painting, times how much farther than the painting's trees it
+		/// stands, so a far stand is as wide in the view.
+		let width: Double
+		/// Up: the same, but growing more slowly with distance, so a far stand reads as canopy
+		/// rather than a spike.
+		let height: Double
 		/// Radians about the vertical.
 		let turn: Double
 		let shade: Int
+		/// 0..<1, for thinning the band's edges.
+		let chance: Double
 	}
 
 	/// The stretch of one direction trees are planted in.
 	struct Band: Equatable {
 		let start: Double
 		let end: Double
+
+		/// How likely a tree is to stand `distance` along the band: thinning in over its first fifth
+		/// and out over its far part, so it has no hard edge.
+		func density(at distance: Double) -> Double {
+			let t = (distance - start) / max(end - start, 1)
+			return LookoutForest.smoothstep(0, 0.2, t) * (1 - LookoutForest.smoothstep(0.55, 1, t))
+		}
 	}
 
 	// MARK: Spots
@@ -72,13 +91,17 @@ enum LookoutForest {
 			for index in 0..<count {
 				let h = hash(ring, index)
 				let d = distance + (unit(h, 0) - 0.5) * 0.8 * spacing
+				let size = 0.6 + 0.9 * unit(h, 3)
+				let grown = max(1, d / paintedReach)
 				let bearing = (Double(index) + 0.5 + (unit(h, 1) - 0.5) * 0.8) / Double(count) * 360
 				let spot = Spot(
 					bearing: bearing.truncatingRemainder(dividingBy: 360),
 					distance: d,
-					scale: (0.6 + 0.9 * unit(h, 3)) * max(1, d / paintedReach),
+					width: size * grown,
+					height: size * pow(grown, 0.6),
 					turn: unit(h, 4) * 2 * .pi,
-					shade: min(shades - 1, Int(unit(h, 5) * Double(shades)))
+					shade: min(shades - 1, Int(unit(h, 5) * Double(shades))),
+					chance: unit(h, 2)
 				)
 				guard body(spot) else { return }
 			}
@@ -177,20 +200,20 @@ enum LookoutForest {
 		distance < nearDetail ? nearCones.count * nearSides : farCones.count * farSides
 	}
 
-	/// One tree's faces in meters around its base (east, up, north), turned by `turn` and scaled:
+	/// One tree's faces in meters around its base (east, up, north), turned by `turn` and sized:
 	/// each face its own three corners and its own normal, so the cones read faceted like the
 	/// painting's low-poly ones.
-	static func faces(turn: Double, scale: Double, near: Bool) -> [(corners: [SIMD3<Double>], normal: SIMD3<Double>)] {
+	static func faces(turn: Double, width: Double, height: Double, near: Bool) -> [(corners: [SIMD3<Double>], normal: SIMD3<Double>)] {
 		let cones = near ? nearCones : farCones
 		let sides = near ? nearSides : farSides
 		var result: [(corners: [SIMD3<Double>], normal: SIMD3<Double>)] = []
 		for cone in cones {
-			let tip = SIMD3<Double>(0, cone.tip * scale, 0)
+			let tip = SIMD3<Double>(0, cone.tip * height, 0)
 			for side in 0..<sides {
 				let a0 = turn + Double(side) / Double(sides) * 2 * .pi
 				let a1 = turn + Double(side + 1) / Double(sides) * 2 * .pi
-				let p0 = SIMD3(sin(a0) * cone.radius * scale, cone.base * scale, cos(a0) * cone.radius * scale)
-				let p1 = SIMD3(sin(a1) * cone.radius * scale, cone.base * scale, cos(a1) * cone.radius * scale)
+				let p0 = SIMD3(sin(a0) * cone.radius * width, cone.base * height, cos(a0) * cone.radius * width)
+				let p1 = SIMD3(sin(a1) * cone.radius * width, cone.base * height, cos(a1) * cone.radius * width)
 				var normal = simd_normalize(simd_cross(p1 - p0, tip - p0))
 				if normal.y < 0 { normal = -normal }
 				result.append(([p0, p1, tip], normal))
@@ -205,18 +228,22 @@ enum LookoutForest {
 	static let darkest = SIMD3<Double>(0.11, 0.19, 0.12)
 	static let lightest = SIMD3<Double>(0.22, 0.28, 0.17)
 
-	/// The palette: shades across, light levels down, each lit the way the terrain's ground is,
-	/// half its color in shadow and the rest by the warm sunset light.
+	/// The palette: shades within each haze level across, light levels down. Each is lit the way the
+	/// terrain's ground is, half its color in shadow and the rest by the warm sunset light, then
+	/// faded into the terrain's haze, so a tree is as hazy as the ground it stands on.
 	static func palette() -> CGImage? {
 		let sunlight = SIMD3<Double>(1.0, 0.88, 0.76)
-		var pixels = [UInt8](repeating: 255, count: shades * lightLevels * 4)
+		let width = shades * hazeLevels
+		var pixels = [UInt8](repeating: 255, count: width * lightLevels * 4)
 		for level in 0..<lightLevels {
 			let lit = Double(level) / Double(lightLevels - 1)
-			for shade in 0..<shades {
+			for column in 0..<width {
+				let shade = column % shades
+				let fog = maxHaze * Double(column / shades) / Double(hazeLevels - 1)
 				let base = simd_mix(darkest, lightest, SIMD3(repeating: Double(shade) / Double(shades - 1)))
-				let color = base * (0.5 + 0.5 * lit * sunlight)
+				let color = simd_mix(base * (0.5 + 0.5 * lit * sunlight), hazeColor, SIMD3(repeating: fog))
 				// Level 0 on the bottom row: texture v runs up from the bottom of the image.
-				let offset = ((lightLevels - 1 - level) * shades + shade) * 4
+				let offset = ((lightLevels - 1 - level) * width + column) * 4
 				pixels[offset] = UInt8(clamping: Int(min(1, color.x) * 255))
 				pixels[offset + 1] = UInt8(clamping: Int(min(1, color.y) * 255))
 				pixels[offset + 2] = UInt8(clamping: Int(min(1, color.z) * 255))
@@ -224,15 +251,19 @@ enum LookoutForest {
 		}
 		let space = CGColorSpaceCreateDeviceRGB()
 		return pixels.withUnsafeMutableBytes { bytes -> CGImage? in
-			guard let context = CGContext(data: bytes.baseAddress, width: shades, height: lightLevels, bitsPerComponent: 8, bytesPerRow: shades * 4, space: space, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
+			guard let context = CGContext(data: bytes.baseAddress, width: width, height: lightLevels, bitsPerComponent: 8, bytesPerRow: width * 4, space: space, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
 			return context.makeImage()
 		}
 	}
 
-	/// Where in the palette a face of `shade` lit by `lit` (0–1) reads its color: a texel's center.
-	static func paletteCoordinate(shade: Int, lit: Double) -> SIMD2<Float> {
+	/// Where in the palette a face of `shade`, lit by `lit` (0–1), `distance` meters away reads its
+	/// color: a texel's center.
+	static func paletteCoordinate(shade: Int, lit: Double, distance: Double) -> SIMD2<Float> {
 		let level = Int((min(1, max(0, lit)) * Double(lightLevels - 1)).rounded())
-		return SIMD2(Float((Double(shade) + 0.5) / Double(shades)), Float((Double(level) + 0.5) / Double(lightLevels)))
+		let fog = 1 - exp(-distance / hazeDistance)
+		let haze = Int((min(1, fog / maxHaze) * Double(hazeLevels - 1)).rounded())
+		let column = haze * shades + shade
+		return SIMD2(Float((Double(column) + 0.5) / Double(shades * hazeLevels)), Float((Double(level) + 0.5) / Double(lightLevels)))
 	}
 
 	// MARK: Helpers
@@ -256,7 +287,7 @@ enum LookoutForest {
 		return Double(x >> 11) / Double(1 << 53)
 	}
 
-	private static func smoothstep(_ edge0: Double, _ edge1: Double, _ x: Double) -> Double {
+	fileprivate static func smoothstep(_ edge0: Double, _ edge1: Double, _ x: Double) -> Double {
 		let t = min(max((x - edge0) / (edge1 - edge0), 0), 1)
 		return t * t * (3 - 2 * t)
 	}

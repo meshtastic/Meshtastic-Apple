@@ -456,13 +456,14 @@ enum LookoutTerrain {
 				return false
 			}
 			let spoke = min(spokes - 1, Int(spot.bearing / 360 * Double(spokes)))
-			guard let band = view.bands[spoke], spot.distance >= band.start, spot.distance <= band.end else { return true }
+			guard let band = view.bands[spoke], spot.distance >= band.start, spot.distance <= band.end,
+				  spot.chance < band.density(at: spot.distance) else { return true }
 			let cost = LookoutForest.triangles(at: spot.distance)
 			guard triangles + cost <= LookoutForest.triangleBudget else { return false }
 			guard let height = LookoutForest.groundElevation(bearing: spot.bearing, distance: spot.distance, distances: distances, elevations: ground.elevations, spokes: spokes) else { return true }
 			// Only trees whose tops show over the sill and over the nearer ground.
 			let drop = spot.distance * spot.distance / (2 * earthRadius)
-			let top = (Double(height) + tallest * spot.scale - eye - drop) / spot.distance
+			let top = (Double(height) + tallest * spot.height - eye - drop) / spot.distance
 			let ring = LookoutForest.ring(inside: spot.distance, distances: distances)
 			guard top > sill, top > view.horizon[ring * columns + spoke] else { return true }
 			let radians = spot.bearing * .pi / 180
@@ -471,9 +472,9 @@ enum LookoutTerrain {
 			let cover = landCover?.cover(latitude: site.latitude + north / metersPerDegreeLatitude, longitude: site.longitude + east / metersPerDegreeLongitude)
 			guard forested(cover, Double(height)) else { return true }
 			// Sunk a little, so no tree shows a gap under it on a slope.
-			let base = SIMD3<Double>(east, Double(height) - 0.5 * spot.scale, north)
-			for face in LookoutForest.faces(turn: spot.turn, scale: spot.scale, near: spot.distance < LookoutForest.nearDetail) {
-				let uv = LookoutForest.paletteCoordinate(shade: spot.shade, lit: max(0, simd_dot(face.normal, light)))
+			let base = SIMD3<Double>(east, Double(height) - 0.5 * spot.height, north)
+			for face in LookoutForest.faces(turn: spot.turn, width: spot.width, height: spot.height, near: spot.distance < LookoutForest.nearDetail) {
+				let uv = LookoutForest.paletteCoordinate(shade: spot.shade, lit: max(0, simd_dot(face.normal, light)), distance: spot.distance)
 				for corner in face.corners {
 					let point = base + corner
 					let distance = max(1, hypot(point.x, point.z))
