@@ -5,6 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 11/7/26.
 //
 
+import OSLog
 import SwiftData
 import SwiftUI
 
@@ -107,7 +108,12 @@ struct RadioSetupBeaconsPage: View {
 		.task {
 			// The radio sends its module configs when it connects; ask again if this one is missing.
 			guard node?.meshBeaconConfig == nil, let user = node?.user else { return }
-			try? await accessoryManager.requestMeshBeaconModuleConfig(fromUser: user, toUser: user)
+			do {
+				try await accessoryManager.requestMeshBeaconModuleConfig(fromUser: user, toUser: user)
+			} catch {
+				Logger.mesh.error("📡 [Beacon] Radio setup could not request the beacon config: \(error.localizedDescription, privacy: .public)")
+				model.saveError = error.localizedDescription
+			}
 		}
 	}
 }
