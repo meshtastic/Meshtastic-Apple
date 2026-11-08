@@ -39,6 +39,14 @@ enum LookoutForest {
 	/// A row's strip: how tall, and how much forest its texture shows across.
 	static let rowHeight = 24.0
 	static let rowTextureMeters = 140.0
+	/// Past this a row's trees are drawn larger, wider and taller together, so a forest seen from
+	/// a high summit, kilometers out, still shows trees rather than a few pixels of texture.
+	static let rowGrowFrom = 2_500.0
+
+	/// How many times true size a row `distance` out is drawn: 1 near, about 2× at 10 km.
+	static func rowScale(at distance: Double) -> Double {
+		pow(max(1, distance / rowGrowFrom), 0.5)
+	}
 	/// The most triangles the forest may take, on top of the terrain's.
 	static let triangleBudget = 600_000
 	/// Shades of green across the palette, and light levels down it.
@@ -240,7 +248,7 @@ enum LookoutForest {
 	}
 
 	static func rowCoordinates(offset: Double, width: Double, distance: Double, sunOnRight: Bool) -> RowCoordinates {
-		let span = min(1, width / rowTextureMeters)
+		let span = min(1, width / (rowTextureMeters * rowScale(at: distance)))
 		let u0 = offset * (1 - span)
 		let fog = 1 - exp(-distance / hazeDistance)
 		let level = Int((min(1, fog / maxHaze) * Double(hazeLevels - 1)).rounded())

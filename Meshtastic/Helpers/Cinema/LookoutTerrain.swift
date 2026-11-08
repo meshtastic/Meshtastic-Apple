@@ -517,9 +517,13 @@ enum LookoutTerrain {
 			let left = Double(row.spoke) * spokeWidth
 			let right = left + spokeWidth
 			let middle = left + spokeWidth / 2
+			let tall = LookoutForest.rowHeight * LookoutForest.rowScale(at: row.distance)
+			// Forest across the whole strip, so none stands out over a field or a town.
 			guard let low = surface(left, row.distance), let high = surface(right, row.distance), let center = surface(middle, row.distance),
-				  shows(top: center + LookoutForest.rowHeight * 0.6, bearing: middle, distance: row.distance),
-				  forested(bearing: middle, distance: row.distance, elevation: center) else { return true }
+				  shows(top: center + tall * 0.6, bearing: middle, distance: row.distance),
+				  forested(bearing: middle, distance: row.distance, elevation: center),
+				  forested(bearing: left, distance: row.distance, elevation: low),
+				  forested(bearing: right, distance: row.distance, elevation: high) else { return true }
 			let width = row.distance * spokeWidth * .pi / 180
 			let sunOnRight = sin((sunBearing - middle) * .pi / 180) > 0
 			let uv = LookoutForest.rowCoordinates(offset: row.offset, width: width, distance: row.distance, sunOnRight: sunOnRight)
@@ -531,7 +535,7 @@ enum LookoutTerrain {
 			let start = UInt32(rowPositions.count)
 			rowPositions += [
 				place(at(left, low - 2)), place(at(right, high - 2)),
-				place(at(right, high - 2 + LookoutForest.rowHeight)), place(at(left, low - 2 + LookoutForest.rowHeight))
+				place(at(right, high - 2 + tall)), place(at(left, low - 2 + tall))
 			]
 			rowUVs += [SIMD2(uv.u0, uv.v0), SIMD2(uv.u1, uv.v0), SIMD2(uv.u1, uv.v1), SIMD2(uv.u0, uv.v1)]
 			rowIndices += [start, start + 1, start + 2, start, start + 2, start + 3]
