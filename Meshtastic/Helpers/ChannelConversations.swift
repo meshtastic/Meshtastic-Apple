@@ -124,6 +124,20 @@ enum ChannelConversations {
 		return channel
 	}
 
+	/// The channel a notification's reply or tapback goes out on: the one the message it answers
+	/// is stored under now. The notification carries the slot the message arrived on, which is
+	/// stale once its channel moves, while reconciling moves the message along. nil when the
+	/// message is gone or its conversation is archived, so nothing is sent.
+	static func replyChannel(forMessageId messageId: Int64, in context: ModelContext) -> Int32? {
+		var descriptor = FetchDescriptor<MessageEntity>(predicate: #Predicate { $0.messageId == messageId })
+		descriptor.fetchLimit = 1
+		guard let message = try? context.fetch(descriptor).first, message.channel >= 0 else {
+			Logger.services.info("💬 Not answering message \(messageId, privacy: .public) from a notification: its channel is no longer on the radio")
+			return nil
+		}
+		return message.channel
+	}
+
 	/// Archived conversations that still hold messages, newest archive first. Copied out as
 	/// values: the records are rewritten on another context, and a view holding one of those
 	/// objects after it was deleted there would trap on its next read.
