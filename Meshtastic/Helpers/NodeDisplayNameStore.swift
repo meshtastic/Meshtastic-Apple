@@ -16,10 +16,20 @@ enum NodeDisplayNameStore {
 	/// `Notification` struct (LocalNotificationManager.swift) that shadows Foundation's.
 	static let didChangeNotification = NSNotification.Name("NodeDisplayNameStoreDidChange")
 
+	/// Decoded names, kept in memory so lists, searches and sorts don't decode the JSON once per
+	/// node. Only `setDisplayName` writes the key, so it refreshes this as it saves.
+	private static let lock = NSLock()
+	nonisolated(unsafe) private static var cache: [String: String]?
+
 	/// Returns the local display name for a node, or nil if none is set.
 	static func displayName(for nodeNum: Int64) -> String? {
 		let all = load()
 		return all[storageKey(nodeNum)]
+	}
+
+	/// Whether any node has a display name, so lists can skip re-sorting when none do.
+	static var hasDisplayNames: Bool {
+		!load().isEmpty
 	}
 
 	/// Sets the local display name for a node. Pass nil to clear.
@@ -40,6 +50,15 @@ enum NodeDisplayNameStore {
 	}
 
 	private static func load() -> [String: String] {
+		lock.lock()
+		defer { lock.unlock() }
+		if let cache { return cache }
+		let decoded = decode()
+		cache = decoded
+		return decoded
+	}
+
+	private static func decode() -> [String: String] {
 		guard let data = UserDefaults.standard.data(forKey: key),
 		      let decoded = try? JSONDecoder().decode([String: String].self, from: data) else {
 			return [:]
@@ -50,5 +69,8 @@ enum NodeDisplayNameStore {
 	private static func save(_ dict: [String: String]) {
 		guard let data = try? JSONEncoder().encode(dict) else { return }
 		UserDefaults.standard.set(data, forKey: key)
+		lock.lock()
+		cache = dict
+		lock.unlock()
 	}
 }

@@ -1956,7 +1956,7 @@ actor MeshPackets {
 	) -> Notification {
 		var notification = Notification(
 			id: ("notification.id.\(message.messageId)"),
-			title: "\(message.fromUser?.longName ?? "Unknown".localized)",
+			title: "\(message.fromUser?.displayLongName ?? "Unknown".localized)",
 			subtitle: "AKA \(message.fromUser?.shortName ?? "?")",
 			content: content,
 			target: "messages",
@@ -2249,7 +2249,7 @@ actor MeshPackets {
 								// and capture only the resulting value — a deferred Task must not hold `newMessage`
 								// (a context-bound model), since a device switch can reset this context first
 								// ("destroyed by ModelContext.reset").
-								let senderName = newMessage.fromUser?.longName ?? "Unknown".localized
+								let senderName = newMessage.fromUser?.displayLongName ?? "Unknown".localized
 								let dmUserNum = Int64(packet.from)
 								var dmNotification: Notification?
 								if newMessage.isEmoji == false {
@@ -2307,7 +2307,7 @@ actor MeshPackets {
 									// notifications are off or the channel is muted; a muted sender still wins.
 									let isSelfMentioned = !(newMessage.fromUser?.mute ?? false)
 										&& MentionParser.containsMention(of: connectedNode, in: messageText ?? "")
-									let senderName = newMessage.fromUser?.longName ?? "Unknown".localized
+									let senderName = newMessage.fromUser?.displayLongName ?? "Unknown".localized
 									let channelUserNum = Int64(newMessage.fromUser?.userId ?? "0")
 									var channelNotification: Notification?
 									if channelNotificationsEnabled || isSelfMentioned {

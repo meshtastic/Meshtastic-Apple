@@ -86,7 +86,7 @@ final class WidgetTraceRouteRenderer {
 		let preset = ModemPresets(rawValue: UserDefaults.modemPreset) ?? .longFast
 		let legs = TraceRouteLegs(route: route, preset: preset) { num in
 			guard num != 0, num != TraceRouteLegs.unknownRepeaterNum else { return nil }
-			return getNodeInfo(id: num, context: context).map(TraceRouteLegs.NodeDetails.init(node:))
+			return getNodeInfo(id: num, context: context).map { TraceRouteLegs.NodeDetails(node: $0) }
 		}
 		let positions = route.nodePositionsByNum.compactMapValues { $0.coordinate }
 		let square = Self.model(route: route, legs: legs, positions: positions, size: Self.squareSize)

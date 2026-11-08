@@ -402,9 +402,9 @@
             "contact",
             "from",
             "key",
+            "name",
             "shows",
             "only",
-            "name",
             "heard",
             "screen",
             "public",
@@ -418,15 +418,15 @@
             "direct",
             "app",
             "open",
+            "one",
             "long",
             "links",
+            "show",
             "see",
             "row",
-            "packets",
-            "one",
-            "connected"
+            "packets"
         ],
-        "charCount": 17849
+        "charCount": 18050
     },
     {
         "id": "settings",

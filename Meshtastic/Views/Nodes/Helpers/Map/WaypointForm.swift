@@ -327,7 +327,7 @@ struct WaypointForm: View {
 								Text("Created by")
 									.font(.caption)
 									.foregroundStyle(.secondary)
-								Text(created.user?.longName ?? "Unknown")
+								Text(created.user?.localLongName ?? "Unknown")
 									.font(.body)
 							}
 						}
@@ -343,7 +343,7 @@ struct WaypointForm: View {
 								Text("Last updated by")
 									.font(.caption)
 									.foregroundStyle(.secondary)
-								Text(updated.user?.longName ?? "Unknown")
+								Text(updated.user?.localLongName ?? "Unknown")
 									.font(.body)
 							}
 						}

@@ -217,7 +217,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 
 			return nodes.compactMap { node -> CPMessageListItem? in
 				guard let user = node.user else { return nil }
-				let name = user.longName ?? user.shortName ?? "Unknown"
+				let name = user.localLongName ?? user.shortName ?? "Unknown"
 				let unreadCount = unreadCounts[node.num] ?? 0
 				let hasUnread = unreadCount > 0
 				let convId = "dm-\(node.num)"
@@ -353,7 +353,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 					if lhsLastMessage != rhsLastMessage {
 						return lhsLastMessage > rhsLastMessage
 					}
-					return (lhs.longName ?? lhs.shortName ?? "") < (rhs.longName ?? rhs.shortName ?? "")
+					return (lhs.localLongName ?? lhs.shortName ?? "") < (rhs.localLongName ?? rhs.shortName ?? "")
 				}
 				.prefix(24)
 			let nodeNums = filteredUsers.compactMap { $0.userNode?.num }
@@ -362,7 +362,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 
 			return filteredUsers.compactMap { user -> CPMessageListItem? in
 				guard let node = user.userNode else { return nil }
-				let name = user.longName ?? user.shortName ?? "Unknown"
+				let name = user.localLongName ?? user.shortName ?? "Unknown"
 				let nodeNum = node.num
 				let unreadCount = unreadCounts[nodeNum] ?? 0
 				let hasUnread = unreadCount > 0

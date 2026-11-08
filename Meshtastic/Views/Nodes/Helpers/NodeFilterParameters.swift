@@ -240,6 +240,7 @@ final class NodeFilterParameters: ObservableObject {
 				node.user?.hwModel,
 				node.user?.hwDisplayName,
 				node.user?.longName,
+				node.user?.localLongName,
 				node.user?.shortName
 			].compactMap { $0 }.contains { $0.localizedCaseInsensitiveContains(text) }
 			if !matchesSearch { return false }
