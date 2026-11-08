@@ -40,9 +40,9 @@ While the cab stands on a summit, the 3D map shows the lookout there too: the ca
 
 ## Castle tower
 
-The fourth place is the open top of a medieval castle tower on a summit at sunset: a stone roof with battlements all round, low enough that the whole horizon shows over them, a round turret on each corner, and the Meshtastic banner flying behind you. Pick **Gray** or **Pink** stone on the control panel.
+The fourth place is the open top of a medieval castle tower on a summit at sunset: a stone roof with low battlements all round, so the horizon and the valleys below show over them, open corners on round turrets, and the Meshtastic banner flying behind you. Pick **Gray** or **Pink** stone on the control panel.
 
-Everything the fire lookout does, the castle does too: the same **Summit** picker and **Turn Lookout** dial, the real terrain with its forest, and a marker for every node, with its card. With no roof and no windows, the markers stand clear of the battlements all round.
+Everything the fire lookout does, the castle does too: the same **Summit** picker and **Turn Lookout** dial, the real terrain with its forest, and a marker for every node, with its card. With no roof and no windows, the view is open all round.
 
 The boards are parchment scrolls hanging from oak frames: Team Favorites and the Status Board on the frame to your left, the latest trace route on the one to your right. Tap a scroll's top or bottom roller to roll it up out of the way, and see the view behind it; tap a roller again to let it down. Each scroll stays as you left it.
 

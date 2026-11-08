@@ -9,15 +9,15 @@
 #
 #    Blender -b -P castle_tower.py -- --out out/castle_tower_gray.png --width 4096 --samples 160 --stone gray
 #
-#  The roof is a 6 m square of flagstones inside a crenellated parapet whose merlons top out just
-#  under the seated eye, so the whole horizon shows over them, with a round bartizan corbelled out
-#  from each corner. There is no roof over it. The screen stands in front on an oak frame. The app's
-#  boards are scrolls: two hang from one oak frame on the left, for the team roster and the nodes'
-#  status messages, and one from a frame on the right, for the latest trace route. Only the frames
-#  and the cords are painted; the app draws each scroll, rollers and all, so a scroll rolled up
-#  shows the view behind it. Behind the seat are the trapdoor down into the tower, a lit brazier, an
-#  oak bench and, on the back-left bartizan, a pole flying the Meshtastic banner. `--stone` picks
-#  gray or pink stone. The light is the Kiara 8 sunset the fire lookout is lit by.
+#  The roof is a 6 m square of flagstones inside a low crenellated parapet whose merlons top out
+#  about 6° below level from the seat, so the horizon and the valleys show over them, with a round
+#  bartizan corbelled out from each open corner. There is no roof over it. The screen stands in
+#  front on an oak frame. The app's boards are scrolls: two hang from one oak frame on the left, for
+#  the team roster and the nodes' status messages, and one from a frame on the right, for the latest
+#  trace route. Only the frames and the cords are painted; the app draws each scroll, rollers and
+#  all, so a scroll rolled up shows the view behind it. Behind the seat are the trapdoor down into
+#  the tower, a lit brazier, an oak bench and, on the back-left bartizan, a pole flying the
+#  Meshtastic banner. `--stone` picks gray or pink stone. The light is the Kiara 8 sunset the fire lookout is lit by.
 
 import math
 import os
@@ -54,10 +54,12 @@ from room_base import (  # noqa: E402
 HALF = 3.0
 WALL = 0.45
 OUTER = HALF + WALL
-# The parapet up to the crenels' sills, then the merlons up to just under the seated eye.
-SILL = 0.72
-MERLON_TOP = 1.02
-# Seven merlons a side, outer corner to outer corner, the middle one in front behind the screen.
+# The parapet up to the crenels' sills, then the merlons, their tops about 6° below level from the
+# seat like the fire lookout's sill, so the valleys below the summit show over them.
+SILL = 0.55
+MERLON_TOP = 0.82
+# Merlons spaced as seven a side, outer corner to outer corner, the middle one in front behind the
+# screen; the corner ones are left off, so the corners are open.
 MERLONS = 7
 MERLON_WIDTH = 0.55
 # The round bartizan on each corner, centered on the corner of the parapet's outer faces.
@@ -230,23 +232,6 @@ def along(side, length, thickness, height):
     return (length, thickness, height) if side in ("front", "back") else (thickness, length, height)
 
 
-def ring_sector(name, center, inner, outer, bottom, top, start, end, mat, segments=12):
-    """A slice of a thick ring about the vertical through `center`, from angle `start` to `end`."""
-    def build(bm):
-        rings = []
-        for i in range(segments + 1):
-            a = start + (end - start) * i / segments
-            c, s = math.cos(a), math.sin(a)
-            rings.append([bm.verts.new((center[0] + r * c, center[1] + r * s, z)) for r, z in ((inner, bottom), (outer, bottom), (outer, top), (inner, top))])
-        for a, b in zip(rings, rings[1:]):
-            for k in range(4):
-                bm.faces.new((a[k], b[k], b[(k + 1) % 4], a[(k + 1) % 4]))
-        bm.faces.new(list(reversed(rings[0])))
-        bm.faces.new(rings[-1])
-        bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
-    return mesh_object(name, build, mat)
-
-
 def cone(name, center, r_bottom, r_top, bottom, top, mat, segments=32):
     def build(bm):
         bmesh.ops.create_cone(bm, cap_ends=True, segments=segments, radius1=r_bottom, radius2=r_top, depth=top - bottom)
@@ -272,25 +257,18 @@ def build_tower(stone):
         reach = OUTER if side in ("front", "back") else HALF
         box("Parapet" + side, along(side, 2 * reach, WALL, SILL - 0.06), on_side(side, 0, WALL / 2, (SILL - 0.06) / 2), wall, bevel=0.01)
         box("ParapetCoping" + side, along(side, 2 * reach, WALL + 0.06, 0.06), on_side(side, 0, WALL / 2, SILL - 0.03), coping, bevel=0.012)
-        for u in merlon_centers():
-            if side in ("left", "right") and abs(u) > HALF:
-                continue
+        for u in merlon_centers()[1:-1]:
             box("Merlon" + side, along(side, MERLON_WIDTH, WALL, MERLON_TOP - SILL - 0.05), on_side(side, u, WALL / 2, (SILL + MERLON_TOP - 0.05) / 2), wall, bevel=0.015)
             box("MerlonCap" + side, along(side, MERLON_WIDTH + 0.04, WALL + 0.04, 0.05), on_side(side, u, WALL / 2, MERLON_TOP - 0.025), coping, bevel=0.012)
 
     # A round bartizan on each corner, corbelled out on a cone of stone, its top level with the
-    # crenels' sills and merlons round the outside.
+    # crenels' sills and nothing on it, so the corners stay open.
     for sx in (-1, 1):
         for sy in (-1, 1):
             center = (sx * OUTER, sy * OUTER)
             cylinder("Bartizan", BARTIZAN, (center[0], center[1], -1.4), (center[0], center[1], SILL - 0.06), wall, segments=48)
             cylinder("BartizanCoping", BARTIZAN + 0.03, (center[0], center[1], SILL - 0.06), (center[0], center[1], SILL), coping, segments=48)
             cone("BartizanCorbel", center, 0.25, BARTIZAN, -2.6, -1.4, wall)
-            out = math.atan2(sy, sx)
-            for k in range(5):
-                a = out - math.radians(100) + k * math.radians(50)
-                ring_sector("BartizanMerlon", center, BARTIZAN - 0.32, BARTIZAN, SILL, MERLON_TOP - 0.05, a - 0.2, a + 0.2, wall, segments=4)
-                ring_sector("BartizanMerlonCap", center, BARTIZAN - 0.34, BARTIZAN + 0.02, MERLON_TOP - 0.05, MERLON_TOP, a - 0.21, a + 0.21, coping, segments=4)
 
 
 # MARK: - Frames

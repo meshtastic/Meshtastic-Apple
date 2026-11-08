@@ -98,13 +98,6 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 		self == .castleTower
 	}
 
-	/// The lowest a node's marker out round it stands, in degrees above level: above the sill the
-	/// lookout's glass starts at, about 6.6° below level from the seat, and above the castle's
-	/// merlons, about 2.2° below.
-	var lowestMarkerDegrees: Double {
-		self == .castleTower ? -1.5 : LookoutMarkerGrouping.lowestMarkerDegrees
-	}
-
 	/// The sky painted behind a cutout: the one the room was lit by, with its own horizon. The
 	/// castle is lit as the lookout is, so it shares the lookout's skies.
 	var skyImageName: String? {

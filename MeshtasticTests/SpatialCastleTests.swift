@@ -45,6 +45,28 @@ struct SpatialCastleTests {
 		}
 	}
 
+	@Test("every point of the stone has a place on the block texture, the blocks running level up the walls")
+	func blockMapping() throws {
+		let stone = try #require(SpatialCastle.geometry()[.stone])
+		let uvs = SpatialCastle.textureCoordinates(stone)
+		#expect(uvs.count == stone.positions.count)
+		#expect(uvs.allSatisfy { $0.x.isFinite && $0.y.isFinite })
+		// On the front wall, a course higher is a course further up the texture.
+		let front = SpatialMeshData(positions: [[0, 0.01, SpatialCastle.keepHalf], [0, 0.01 + SpatialCastle.blockHeight, SpatialCastle.keepHalf]], normals: [[0, 0, 1], [0, 0, 1]])
+		let mapped = SpatialCastle.textureCoordinates(front)
+		#expect(abs((mapped[1].y - mapped[0].y) * Float(SpatialCastle.tileBlocks) - 1) < 0.0001)
+		#expect(mapped[1].x == mapped[0].x)
+	}
+
+	@Test("the windows sit between the string courses and clear the corners' bartizans")
+	func windows() {
+		for window in SpatialCastle.windows {
+			#expect(window.bottom - 0.0007 > SpatialCastle.courses[0])
+			#expect(window.bottom + window.height < SpatialCastle.courses[1] - 0.0005)
+			#expect(abs(window.along) + window.width / 2 + 0.00035 < SpatialCastle.keepHalf - SpatialCastle.bartizanRadius)
+		}
+	}
+
 	@Test("the castle stands on about the lookout's footprint and height, so it steps aside the same way")
 	func likeTheLookout() {
 		let positions = SpatialCastle.geometry().values.flatMap(\.positions)

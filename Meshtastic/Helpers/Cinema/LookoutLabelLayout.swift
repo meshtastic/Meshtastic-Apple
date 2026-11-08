@@ -12,6 +12,7 @@ import simd
 extension LookoutTerrain {
 	static let markerWidthDegrees = LookoutMarkerGrouping.markerWidthDegrees
 	static let stemDegrees = LookoutMarkerGrouping.stemDegrees
+	static let lowestMarkerDegrees = LookoutMarkerGrouping.lowestMarkerDegrees
 
 	/// One marker out the windows: a node, or, where there's no room, the nodes whose markers would
 	/// cover each other, nearest first. The marker stands over the nearest of them. `azimuth` is
@@ -24,23 +25,20 @@ extension LookoutTerrain {
 		let elevation: Double
 		let center: Double
 		let depth: Float
-		/// The lowest its stem reaches.
-		let lowest: Double
 
 		var lead: LookoutLabel { labels[0] }
 		/// Where the stem meets the ground, or the bottom of the view for a node below it.
-		var stemFoot: Double { LookoutMarkerGrouping.stemFoot(elevation: elevation, lowest: lowest) }
+		var stemFoot: Double { LookoutMarkerGrouping.stemFoot(elevation: elevation) }
 	}
 
-	/// Markers for `labels`, which come nearest first, seen from a cab facing `heading`, none
-	/// lower than `lowest` degrees above level.
-	static func markers(for labels: [LookoutLabel], heading: Double = frontHeading, lowest: Double = LookoutMarkerGrouping.lowestMarkerDegrees) -> [MarkerSpot] {
+	/// Markers for `labels`, which come nearest first, seen from a cab facing `heading`.
+	static func markers(for labels: [LookoutLabel], heading: Double = frontHeading) -> [MarkerSpot] {
 		let points = labels.map { label in
 			let azimuth = (label.bearing - heading + 360).truncatingRemainder(dividingBy: 360)
 			let drop = label.distance * label.distance / (2 * earthRadius)
 			return (azimuth: azimuth, elevation: atan2(label.rise - drop, label.distance) * 180 / .pi)
 		}
-		return LookoutMarkerGrouping.markers(points, lowest: lowest).map { marker in
+		return LookoutMarkerGrouping.markers(points).map { marker in
 			let lead = points[marker.members[0]]
 			// Just in front of the ground at the nearest node's distance, so nearer ridges hide it
 			// as they would, and whatever is behind it doesn't.
@@ -49,8 +47,7 @@ extension LookoutTerrain {
 				azimuth: lead.azimuth,
 				elevation: lead.elevation,
 				center: marker.center,
-				depth: depth(labels[marker.members[0]].distance) - 3,
-				lowest: lowest
+				depth: depth(labels[marker.members[0]].distance) - 3
 			)
 		}
 	}

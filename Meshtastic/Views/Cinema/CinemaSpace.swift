@@ -499,7 +499,7 @@ struct CinemaSpace: View {
 
 	/// The markers out the lookout's windows, nearest node first.
 	private var markers: [LookoutTerrain.MarkerSpot] {
-		LookoutTerrain.markers(for: lookout.labels, heading: terrainHeading, lowest: environment.lowestMarkerDegrees)
+		LookoutTerrain.markers(for: lookout.labels, heading: terrainHeading)
 	}
 
 	private func placeMarkers(_ entityFor: (String) -> Entity?) {

@@ -27,15 +27,6 @@ struct LookoutMarkerTests {
 		#expect(Grouping.stemFoot(elevation: -30) == Grouping.lowestMarkerDegrees)
 	}
 
-	@Test("a place with a higher wall keeps its markers above it")
-	func higherWall() {
-		// The castle's merlons stand higher in the view than the lookout's sill.
-		let markers = Grouping.markers([(100, -3)], lowest: -1.5)
-		#expect(markers == [Grouping.Marker(members: [0], center: Grouping.center(elevation: -1.5))])
-		#expect(Grouping.stemFoot(elevation: -3, lowest: -1.5) == -1.5)
-		#expect(Grouping.stemFoot(elevation: 1, lowest: -1.5) == 1)
-	}
-
 	@Test("a node whose marker would cover one already placed gets its own on a taller stem")
 	func raised() {
 		let markers = Grouping.markers([(100, 0), (100.5, 0)])
