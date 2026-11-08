@@ -6,6 +6,8 @@
 //
 
 #if os(iOS) && !targetEnvironment(macCatalyst)
+import ARKit
+import AVFoundation
 import Combine
 import RealityKit
 import ReplayKit
@@ -308,8 +310,19 @@ private struct DeviceModelCameraView: UIViewRepresentable {
 
 	private static let facingName = "DeviceModelARFacing"
 
-	func makeUIView(context: Context) -> ARView {
-		let view = ARView(frame: .zero, cameraMode: .ar, automaticallyConfigureSession: true)
+	func makeUIView(context: Context) -> CameraFeedView {
+		let feed = CameraFeedView()
+		let view = ARView(frame: feed.bounds, cameraMode: .ar, automaticallyConfigureSession: true)
+		// On iOS 27, once a non-AR RealityKit view has drawn in the app, the AR view draws a black
+		// camera picture every other time it opens. It draws only the model here, over the camera
+		// picture drawn underneath from the session's frames.
+		view.environment.background = .color(.clear)
+		view.backgroundColor = .clear
+		view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+		view.session.delegate = context.coordinator
+		feed.addSubview(view)
+		context.coordinator.feed = feed
+		context.coordinator.view = view
 		// Any horizontal surface; the model stands on it at its own size.
 		let anchor = AnchorEntity(.plane(.horizontal, classification: .any, minimumBounds: [0.1, 0.1]))
 		// Turned to face the camera when it lands, so the banana stands on the viewer's left.
@@ -326,12 +339,12 @@ private struct DeviceModelCameraView: UIViewRepresentable {
 			facing.orientation = simd_quatf(angle: atan2(camera.x, camera.z), axis: [0, 1, 0])
 			placed.wrappedValue = true
 		}
-		return view
+		return feed
 	}
 
-	func updateUIView(_ view: ARView, context: Context) {
+	func updateUIView(_ feed: CameraFeedView, context: Context) {
 		stage.screenSource = screenSource
-		guard let facing = view.scene.anchors.first?.children.first(where: { $0.name == Self.facingName }) else { return }
+		guard let facing = context.coordinator.view?.scene.anchors.first?.children.first(where: { $0.name == Self.facingName }) else { return }
 		// One banana at a time: a different one, or none, takes the last one down.
 		for child in facing.children where child.name == "Banana" && child !== banana {
 			child.removeFromParent()
@@ -346,14 +359,80 @@ private struct DeviceModelCameraView: UIViewRepresentable {
 
 	func makeCoordinator() -> Coordinator { Coordinator() }
 
-	static func dismantleUIView(_ view: ARView, coordinator: Coordinator) {
+	static func dismantleUIView(_ feed: CameraFeedView, coordinator: Coordinator) {
 		coordinator.update?.cancel()
-		view.session.pause()
+		coordinator.view?.session.pause()
 	}
 
-	/// Keeps the per-frame update running while the view is up.
-	final class Coordinator {
+	/// Keeps the per-frame update running while the view is up, and passes each camera frame to the
+	/// picture underneath.
+	final class Coordinator: NSObject, ARSessionDelegate {
 		var update: Cancellable?
+		weak var feed: CameraFeedView?
+		weak var view: ARView?
+
+		func session(_ session: ARSession, didUpdate frame: ARFrame) {
+			feed?.show(frame.capturedImage)
+		}
+	}
+}
+
+/// The camera picture, filling the view the way the AR view fills it, so the model drawn over it
+/// lines up.
+private final class CameraFeedView: UIView {
+	private let picture = AVSampleBufferDisplayLayer()
+	private var format: CMVideoFormatDescription?
+
+	override init(frame: CGRect) {
+		super.init(frame: frame)
+		backgroundColor = .black
+		picture.videoGravity = .resizeAspectFill
+		layer.addSublayer(picture)
+	}
+
+	required init?(coder: NSCoder) {
+		fatalError("init(coder:) has not been implemented")
+	}
+
+	override func layoutSubviews() {
+		super.layoutSubviews()
+		// The camera's frames come in landscape, the right way up with the Home Screen's dock on the right.
+		let angle: CGFloat = switch window?.windowScene?.effectiveGeometry.interfaceOrientation ?? .portrait {
+		case .landscapeRight: 0
+		case .landscapeLeft: .pi
+		case .portraitUpsideDown: -.pi / 2
+		default: .pi / 2
+		}
+		let turned = angle != 0 && angle != .pi
+		CATransaction.begin()
+		CATransaction.setDisableActions(true)
+		picture.setAffineTransform(.identity)
+		picture.bounds = CGRect(origin: .zero, size: turned ? CGSize(width: bounds.height, height: bounds.width) : bounds.size)
+		picture.position = CGPoint(x: bounds.midX, y: bounds.midY)
+		picture.setAffineTransform(CGAffineTransform(rotationAngle: angle))
+		CATransaction.commit()
+	}
+
+	/// Shows one camera frame.
+	func show(_ image: CVPixelBuffer) {
+		if format.map({ !CMVideoFormatDescriptionMatchesImageBuffer($0, imageBuffer: image) }) ?? true {
+			format = nil
+			CMVideoFormatDescriptionCreateForImageBuffer(allocator: nil, imageBuffer: image, formatDescriptionOut: &format)
+		}
+		guard let format else { return }
+		var timing = CMSampleTimingInfo(duration: .invalid, presentationTimeStamp: .zero, decodeTimeStamp: .invalid)
+		var sample: CMSampleBuffer?
+		CMSampleBufferCreateReadyWithImageBuffer(allocator: nil, imageBuffer: image, formatDescription: format, sampleTiming: &timing, sampleBufferOut: &sample)
+		guard let sample else { return }
+		if let attachments = CMSampleBufferGetSampleAttachmentsArray(sample, createIfNecessary: true), CFArrayGetCount(attachments) > 0 {
+			let first = unsafeBitCast(CFArrayGetValueAtIndex(attachments, 0), to: CFMutableDictionary.self)
+			CFDictionarySetValue(first, Unmanaged.passUnretained(kCMSampleAttachmentKey_DisplayImmediately).toOpaque(), Unmanaged.passUnretained(kCFBooleanTrue).toOpaque())
+		}
+		let renderer = picture.sampleBufferRenderer
+		if renderer.status == .failed {
+			renderer.flush()
+		}
+		renderer.enqueue(sample)
 	}
 }
 #endif
