@@ -39,13 +39,14 @@ enum LookoutForest {
 	/// A row's strip: how tall, and how much forest its texture shows across.
 	static let rowHeight = 24.0
 	static let rowTextureMeters = 140.0
-	/// Past this a row's trees are drawn larger, wider and taller together, so a forest seen from
-	/// a high summit, kilometers out, still shows trees rather than a few pixels of texture.
-	static let rowGrowFrom = 2_500.0
+	/// Past this a row's trees stop shrinking in the view: they're drawn larger, wider and taller
+	/// together, as big in the view as a true-size tree here, about the painting's middle trees.
+	/// A forest seen from a high summit, kilometers out, still shows trees rather than texture.
+	static let rowGrowFrom = 2_000.0
 
-	/// How many times true size a row `distance` out is drawn: 1 near, about 2× at 10 km.
+	/// How many times true size a row `distance` out is drawn: 1 near, 5× at 10 km.
 	static func rowScale(at distance: Double) -> Double {
-		pow(max(1, distance / rowGrowFrom), 0.5)
+		max(1, distance / rowGrowFrom)
 	}
 	/// The most triangles the forest may take, on top of the terrain's.
 	static let triangleBudget = 600_000
@@ -280,9 +281,10 @@ enum LookoutForest {
 			func hazed(_ c: SIMD3<Double>, extra: Double = 0) -> SIMD3<Double> {
 				simd_mix(c, hazeColor, SIMD3(repeating: min(1, fog + extra)))
 			}
-			// Canopy at the trees' feet.
-			context.setFillColor(cgColor(hazed(darkest * 0.85)))
-			context.fill(CGRect(x: 0, y: floor, width: Double(width), height: 3 * rise))
+			// Canopy at the trees' feet, low and in the trees' own shadow color, so where one row
+			// stands over the next it doesn't draw a dark line.
+			context.setFillColor(cgColor(hazed(simd_mix(darkest, lightest, SIMD3(repeating: 0.4)) * 0.55)))
+			context.fill(CGRect(x: 0, y: floor, width: Double(width), height: 1.5 * rise))
 			// Two layers: the back one smaller, darker and a touch hazier, then the front one.
 			for layer in 0..<2 {
 				let count = Int(rowTextureMeters / (layer == 0 ? 2.6 : 3.2))
