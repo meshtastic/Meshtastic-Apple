@@ -406,14 +406,14 @@
             "only",
             "name",
             "heard",
+            "screen",
             "public",
             "firmware",
-            "screen",
+            "model",
             "messages",
             "hardware",
             "detail",
             "shown",
-            "model",
             "list",
             "direct",
             "open",
@@ -426,7 +426,7 @@
             "one",
             "connected"
         ],
-        "charCount": 17347
+        "charCount": 17642
     },
     {
         "id": "settings",
@@ -811,12 +811,12 @@
             "oct",
             "device",
             "waypoints",
+            "view",
             "lookout",
             "local",
-            "live",
-            "view"
+            "live"
         ],
-        "charCount": 15035
+        "charCount": 15126
     },
     {
         "id": "adding-features",
