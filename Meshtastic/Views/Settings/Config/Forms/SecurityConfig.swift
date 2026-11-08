@@ -492,6 +492,12 @@ private struct ManagedDeviceRow: View {
 					.foregroundColor(.gray)
 					.font(.callout)
 			}
+			// A managed node takes settings only from an admin key holder, so losing every
+			// admin key leaves no way in short of a wipe (the legacy admin channel aside, which
+			// this app doesn't offer).
+			Text("If every admin key is lost, a managed node can't be configured again until it is erased and reflashed with the [Web Flasher](https://flasher.meshtastic.org).")
+				.foregroundColor(.gray)
+				.font(.callout)
 			if !hasAdminKey {
 				Label("An admin key must be set before enabling managed mode.",
 					  systemImage: "exclamationmark.triangle.fill")

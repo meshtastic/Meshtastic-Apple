@@ -82,6 +82,10 @@ The selector is disabled when the connected radio does not report XEdDSA support
 
 This setting matches the Meshtastic app for Android, and the policy is enforced by the radio rather than the app.
 
+#### Managed Device
+
+**Managed Device** makes the radio accept configuration only from a holder of one of its admin keys, so it can't be turned on until an admin key is set. Losing one admin key is fine while another still works. If every admin key is lost, the radio can't be configured again until it is erased and reflashed with the [Web Flasher](https://flasher.meshtastic.org). The one exception is the legacy admin channel: if it was turned on with another client, the radio still accepts settings sent over that channel. This app doesn't offer that setting.
+
 On hardened lockdown-firmware radios, this page also shows a **Lockdown** section with the session status, a **Lock Now** button, and a **Forget Stored Passphrase** button. See [Lockdown Mode](lockdown.md).
 
 ### User
