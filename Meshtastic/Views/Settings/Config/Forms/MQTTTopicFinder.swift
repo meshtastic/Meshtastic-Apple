@@ -70,7 +70,9 @@ struct MQTTTopicFinder: View {
 			regionTopic: "msh/" + region.topic,
 			regionName: region.description,
 			place: place,
-			at: place == nil ? nil : coordinate,
+			// Community roots placed by radius only need the coordinate, so they still show while
+			// the place name is loading or when the geocoder fails (offline, for example).
+			at: coordinate,
 			directory: directory,
 			activity: sampler.activity
 		)
@@ -294,7 +296,9 @@ struct MQTTTopicFinder: View {
 
 	/// One geocoder call per coordinate; `.task(id:)` cancels and replaces on change and on dismiss.
 	/// The previous place stays on screen until the new one arrives. Only a locality makes a city
-	/// rung: a county is not a city, and the local roots come from discovery anyway.
+	/// rung: a county is not a city, and the local roots come from discovery anyway. Names come back
+	/// in US English whatever the phone's language, so the directory's subdivision names match and
+	/// the roots agree with Android.
 	private func geocode() async {
 		geocodeFailed = false
 		guard let coordinate, autoStart, region != nil else {
@@ -302,7 +306,7 @@ struct MQTTTopicFinder: View {
 			return
 		}
 		let location = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
-		let placemark = try? await CLGeocoder().reverseGeocodeLocation(location).first
+		let placemark = try? await CLGeocoder().reverseGeocodeLocation(location, preferredLocale: Locale(identifier: "en_US")).first
 		guard !Task.isCancelled else { return }
 		geocodeFailed = placemark == nil
 		place = placemark.map {
