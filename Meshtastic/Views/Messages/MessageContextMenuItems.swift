@@ -28,7 +28,9 @@ struct MessageContextMenuItems: View {
 			if message.xeddsaSigned {
 				Label("Signed · verified", systemImage: "checkmark.shield.fill")
 			}
-			Text("Channel") + Text(": \(message.channel)")
+			if !tapBackDestination.isArchived {
+				Text("Channel") + Text(": \(message.channel)")
+			}
 		}
 		.onAppear {
 			// relayDisplay() is @MainActor and reads the shared main ModelContext plus
@@ -40,16 +42,19 @@ struct MessageContextMenuItems: View {
 			relayDisplay = message.relayDisplay()
 		}
 
-		Button("Tapback") {
-			// The context menu needs a moment to dismiss before the focus state can be changed.
-			DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-				onTapback()
+		// An archived conversation can't be sent to. Copy, details and delete below still apply.
+		if !tapBackDestination.isArchived {
+			Button("Tapback") {
+				// The context menu needs a moment to dismiss before the focus state can be changed.
+				DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+					onTapback()
+				}
 			}
-		}
 
-		Button(action: onReply) {
-			Text("Reply")
-			Image(systemName: "arrowshape.turn.up.left")
+			Button(action: onReply) {
+				Text("Reply")
+				Image(systemName: "arrowshape.turn.up.left")
+			}
 		}
 
 		if canTranslate {

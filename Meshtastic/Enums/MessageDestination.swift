@@ -17,6 +17,15 @@ enum MessageDestination {
 		}
 	}
 
+	/// An archived channel conversation: its channel has left the radio, so nothing can be sent,
+	/// replied or reacted to in it.
+	var isArchived: Bool {
+		switch self {
+		case .user: return false
+		case let .channel(channel): return channel.index < 0
+		}
+	}
+
 	/// Whether the detection-sensor badge overlays messages sent to this destination. Detection
 	/// Sensor telemetry only ever overlays channel broadcasts, never direct messages.
 	var showsDetectionSensorBadge: Bool {

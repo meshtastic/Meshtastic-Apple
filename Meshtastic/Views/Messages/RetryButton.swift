@@ -22,6 +22,11 @@ struct RetryButton: View {
 		self.onMessageSent = onMessageSent
 	}
 
+	/// The status still shows in an archived conversation, but there is nowhere to send it.
+	private var canRetry: Bool {
+		status.canRetry && !destination.isArchived
+	}
+
 	var body: some View {
 		Button {
 			isShowingDetails = true
@@ -34,7 +39,7 @@ struct RetryButton: View {
 		.accessibilityLabel(String(localized: "Message status", comment: "VoiceOver label for the message delivery status button"))
 		.accessibilityHint(status.detail)
 		.hostedAlert(status.text, isPresented: $isShowingDetails) {
-			if status.canRetry {
+			if canRetry {
 				Button("Try Again", action: retryMessage)
 			}
 			Button("Cancel", role: .cancel) {}
@@ -49,7 +54,7 @@ struct RetryButton: View {
 	/// timestamp: the row disappeared from the conversation and a different one appeared at the
 	/// bottom. A send that threw left nothing behind at all, so the text was gone.
 	private func retryMessage() {
-		guard status.canRetry, accessoryManager.isConnected else {
+		guard canRetry, accessoryManager.isConnected else {
 			return
 		}
 		let messageID = message.messageId

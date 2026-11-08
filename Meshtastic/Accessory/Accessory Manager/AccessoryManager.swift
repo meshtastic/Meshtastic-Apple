@@ -1292,6 +1292,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				lastConfigRefresh = Date()
 				if let completedNodeNum = refresh.nodeNum {
 					await MeshPackets.shared.commitChannelRefreshStage(for: completedNodeNum, owner: refresh.owner)
+					// The first point where both the whole channel set and the LoRa config are in.
+					await reconcileChannelConversations()
 					MeshShareSnapshotBuilder.refresh(nodeNum: completedNodeNum, context: context)
 					WidgetDataBroker.shared.refresh(.config)
 				}

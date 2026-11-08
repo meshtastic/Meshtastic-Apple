@@ -395,9 +395,7 @@ struct Channels: View {
 				Logger.data.error("Unresolved Core Data error in the channel editor. Error: \(nsError, privacy: .public)")
 			}
 		} else {
-			for object in selectedChannel.allPrivateMessages {
-				context.delete(object)
-			}
+			// Its messages stay: the reconcile below archives them.
 			let channelIdx = channel.index
 			var nodeDescriptor = FetchDescriptor<NodeInfoEntity>(
 				predicate: #Predicate { $0.channel == channelIdx }
@@ -422,6 +420,7 @@ struct Channels: View {
 		if node.num == accessoryManager.activeDeviceNum {
 			MeshShareSnapshotBuilder.refresh(nodeNum: node.num, context: context)
 			WidgetDataBroker.shared.refresh(.config)
+			await accessoryManager.reconcileChannelConversations()
 		}
 
 		self.selectedChannel = nil
