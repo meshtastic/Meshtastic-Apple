@@ -310,6 +310,9 @@
         }
       }
     },
+    "%lld bytes of input dropped, the node is not keeping up" : {
+
+    },
     "%lld Nodes" : {
       "comment" : "Cinema lookout: title of the card listing the nodes a marker out the window stands for",
       "localizations" : {
@@ -413,6 +416,9 @@
         }
       }
     },
+    "Applies to the next key" : {
+
+    },
     "Back to the list" : {
       "comment" : "Cinema lookout: button on a node's card that goes back to the list of nodes the marker stands for",
       "localizations" : {
@@ -501,6 +507,15 @@
         }
       }
     },
+    "Closing…" : {
+
+    },
+    "Clear Screen" : {
+
+    },
+    "Command" : {
+
+    },
     "Confirm Your Region" : {
       "comment" : "Radio setup region title when one was pre-selected",
       "localizations" : {
@@ -521,6 +536,18 @@
           }
         }
       }
+    },
+    "Connect to your radio to open a remote shell." : {
+
+    },
+    "Could not open the session (%@). The node must list your radio's public key as an admin key, and be in range." : {
+
+    },
+    "Copy All Output" : {
+
+    },
+    "Control" : {
+
     },
     "Couldn't Import Map File" : {
       "localizations" : {
@@ -549,6 +576,9 @@
         }
       }
     },
+    "Down arrow" : {
+
+    },
     "E-ink screens redraw slowly. Tap Refresh for the latest picture." : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -558,6 +588,9 @@
           }
         }
       }
+    },
+    "End" : {
+
     },
     "Enter Showcase" : {
       "comment" : "Spatial map: open the showcase immersive space, closing this volume",
@@ -569,6 +602,12 @@
           }
         }
       }
+    },
+    "Error from the node: %@" : {
+
+    },
+    "Escape" : {
+
     },
     "File is too large. Maximum size is %@." : {
       "localizations" : {
@@ -608,6 +647,9 @@
         }
       }
     },
+    "Full-screen programs need more than the mesh can carry, so their output may not display correctly." : {
+
+    },
     "Hear beacons from meshes nearby. They show here and in Local Mesh Discovery." : {
       "comment" : "Radio setup beacons page; the listen setting"
     },
@@ -629,6 +671,9 @@
         }
       }
     },
+    "Home" : {
+
+    },
     "How your radio shows up for others." : {
       "comment" : "Radio setup intro row",
       "localizations" : {
@@ -639,6 +684,9 @@
           }
         }
       }
+    },
+    "Hyphen" : {
+
     },
     "Import MBTiles or PMTiles File" : {
       "localizations" : {
@@ -656,6 +704,9 @@
         }
       }
     },
+    "Larger Text" : {
+
+    },
     "Leave" : {
       "comment" : "Showcase: close the immersive space",
       "localizations" : {
@@ -666,6 +717,15 @@
           }
         }
       }
+    },
+    "Line Mode" : {
+
+    },
+    "Line mode sends a whole command at once, which is lighter on a busy mesh." : {
+
+    },
+    "Left arrow" : {
+
     },
     "Listening for beacons" : {
       "comment" : "Radio setup done page; nearby meshes row"
@@ -697,6 +757,9 @@
           }
         }
       }
+    },
+    "More options" : {
+
     },
     "Move the cinema panel" : {
       "comment" : "Cinema: VoiceOver label for the bar under the panel that moves it",
@@ -760,6 +823,9 @@
         }
       }
     },
+    "No reply from the node. It must list your radio's public key as an admin key, and be in range." : {
+
+    },
     "None heard yet. A mesh's beacon can take an hour or more to arrive." : {
       "comment" : "Radio setup beacons page; listening but nothing heard"
     },
@@ -797,6 +863,18 @@
         }
       }
     },
+    "Opening session…" : {
+
+    },
+    "Open, %lld ms round trip" : {
+
+    },
+    "Open" : {
+
+    },
+    "Opens a shell on this node, starting a remote admin session first if needed" : {
+
+    },
     "Other people see these in their node lists and on the map." : {
       "comment" : "Radio setup name intro",
       "localizations" : {
@@ -807,6 +885,15 @@
           }
         }
       }
+    },
+    "Paste" : {
+
+    },
+    "Page up" : {
+
+    },
+    "Page down" : {
+
     },
     "Pick up to turn it over" : {
       "comment" : "Cinema: VoiceOver hint for the device model on the stand in front of the seat",
@@ -889,6 +976,9 @@
     "Radio Not Switched" : {
 
     },
+    "Reconnect" : {
+
+    },
     "region %@" : {
       "comment" : "Beacon switch prompt; one of the changes listed",
       "localizations" : {
@@ -899,6 +989,15 @@
           }
         }
       }
+    },
+    "Right arrow" : {
+
+    },
+    "Remote Shell" : {
+
+    },
+    "Remote admin session active" : {
+
     },
     "Save and Continue" : {
       "comment" : "Radio setup button",
@@ -933,6 +1032,15 @@
           }
         }
       }
+    },
+    "Session closed: %@" : {
+
+    },
+    "Session closed" : {
+
+    },
+    "Session failed" : {
+
     },
     "Set Up Radio" : {
       "localizations" : {
@@ -986,8 +1094,23 @@
         }
       }
     },
+    "Starting remote admin session…" : {
+
+    },
+    "Smaller Text" : {
+
+    },
+    "Slash" : {
+
+    },
     "Status is a short note other people see in their node lists." : {
       "comment" : "Radio setup name footer; the node's status message"
+    },
+    "Terminal output" : {
+
+    },
+    "Tab" : {
+
     },
     "the %@ preset" : {
       "comment" : "Beacon switch prompt; one of the changes listed",
@@ -1010,6 +1133,15 @@
         }
       }
     },
+    "The node refused the session. It must list your radio's public key as an admin key." : {
+
+    },
+    "The node stopped answering." : {
+
+    },
+    "The node asked for input this device no longer holds." : {
+
+    },
     "The short name shows in your node's circle: up to 4 characters or one emoji." : {
       "comment" : "Radio setup name footer",
       "localizations" : {
@@ -1031,6 +1163,15 @@
           }
         }
       }
+    },
+    "This node isn't in the node list." : {
+
+    },
+    "This node hasn't shared a public key yet, so a remote shell can't be opened to it." : {
+
+    },
+    "This node's firmware is older than 2.8.2, which added the remote shell. Update it to use the shell." : {
+
     },
     "This region has an hourly duty cycle of %lld%%." : {
       "comment" : "Radio setup region footer",
@@ -1074,6 +1215,9 @@
         }
       }
     },
+    "Up arrow" : {
+
+    },
     "Use Keyboard" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -1103,6 +1247,9 @@
           }
         }
       }
+    },
+    "Waiting for the node, last heard %lld s ago" : {
+
     },
     "Waiting for your radio's beacon settings." : {
       "comment" : "Radio setup beacons page; the listen setting has not arrived from the radio yet"
@@ -1361,6 +1508,9 @@
           }
         }
       }
+    },
+    "Pipe" : {
+      "comment" : "Remote shell key bar: accessibility label"
     },
     "Previous rack page" : {
       "comment" : "Showcase: show the previous page of the wall rack",
@@ -8052,6 +8202,9 @@
           }
         }
       }
+    },
+    "Show Keyboard" : {
+      "comment" : "Remote shell key bar: accessibility label"
     },
     "Shows the mesh on a terrain model in a volume." : {
       "comment" : "VoiceOver hint for the button that opens the spatial map volume",
@@ -60295,6 +60448,9 @@
           }
         }
       }
+    },
+    "Hide Keyboard" : {
+      "comment" : "Remote shell key bar: accessibility label"
     },
     "Hide legend" : {
       "comment" : "A label for a button that hides the map legend.",
@@ -144788,6 +144944,9 @@
           }
         }
       }
+    },
+    "Tilde" : {
+      "comment" : "Remote shell key bar: accessibility label"
     },
     "Tile Server" : {
       "comment" : "OverlayType.localized: map overlay kind",

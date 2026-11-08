@@ -55,6 +55,7 @@ struct NodeDetail: View {
 	@EnvironmentObject var router: Router
 	@State private var showingShutdownConfirm: Bool = false
 	@State private var showingRebootConfirm: Bool = false
+	@State private var showingRemoteShell = false
 	@State private var dateFormatRelative: Bool = true
 	@Bindable	var node: NodeInfoEntity
 	private let nodeNum: Int64
@@ -213,6 +214,15 @@ struct NodeDetail: View {
 			if #available(iOS 18.0, macCatalyst 18.0, *) {
 				DeviceModelFullScreen(request: request, liveScreen: liveScreen)
 			}
+		}
+		// Here rather than on the Remote Shell row, so a reconnect that hides the row doesn't
+		// close the shell.
+		.hostedFullScreenCover(isPresented: $showingRemoteShell) {
+			RemoteShellView(
+				nodeNum: nodeNum,
+				nodeName: currentUser?.displayLongName ?? nodeNum.toHex(),
+				accessoryManager: accessoryManager
+			)
 		}
 		#if os(iOS) && !targetEnvironment(macCatalyst)
 		.fullScreenCover(item: $deviceModelInSpace) { request in
@@ -970,14 +980,40 @@ struct NodeDetail: View {
 
 	// MARK: - Administration Section
 
+	/// Linux `meshtasticd` nodes on 2.8.2 or later, or whose version isn't known yet, offer a
+	/// remote shell. It runs over remote admin, so never for the connected radio.
+	private var showsRemoteShell: Bool {
+		UserDefaults.enableAdministration
+			&& nodeNum != accessoryManager.activeDeviceNum
+			&& node.isLinuxNative
+			&& node.firmwareSupportsRemoteShell
+	}
+
 	@ViewBuilder
 	private var administrationSection: some View {
-		if let metadata = node.metadata,
+		if node.metadata != nil || showsRemoteShell,
 		   connectedNode != nil,
 		   accessoryManager.isConnected {
-			Section("Administration") {
+			let metadata = node.metadata
+			Section {
+				if showsRemoteShell {
+					Button {
+						showingRemoteShell = true
+					} label: {
+						Label {
+							VStack(alignment: .leading, spacing: 2) {
+								Text("Remote Shell")
+								Text("Opens a shell on this node, starting a remote admin session first if needed")
+									.font(.caption)
+									.foregroundStyle(.secondary)
+							}
+						} icon: {
+							Image(systemName: "apple.terminal")
+						}
+					}
+				}
 				// Screen mirroring only works over the local connection, so only for the connected radio.
-				if nodeNum == accessoryManager.activeDeviceNum, metadata.hasDisplay {
+				if let metadata, nodeNum == accessoryManager.activeDeviceNum, metadata.hasDisplay {
 					NavigationLink {
 						DeviceScreenView(metadata: metadata)
 					} label: {
@@ -1012,7 +1048,7 @@ struct NodeDetail: View {
 					}
 					.disabled(administrationUserPair == nil)
 				}
-				if metadata.canShutdown {
+				if metadata?.canShutdown == true {
 					Button {
 						showingShutdownConfirm = true
 					} label: {
@@ -1037,32 +1073,40 @@ struct NodeDetail: View {
 					}
 					.disabled(administrationUserPair == nil)
 				}
-				Button {
-					showingRebootConfirm = true
-				} label: {
-					Label(
-						"Reboot",
-						systemImage: "arrow.triangle.2.circlepath"
-					)
-				}.hostedConfirmation(
-					"Are you sure?",
-					isPresented: $showingRebootConfirm
-				) {
-					Button("Reboot node?", role: .destructive) {
-						Task {
-							guard let administrationUserPair else { return }
-							do {
-								try await accessoryManager.sendReboot(
-									fromUser: administrationUserPair.fromUser,
-									toUser: administrationUserPair.toUser
-								)
-							} catch {
-								Logger.mesh.warning("Reboot Failed")
+				if metadata != nil {
+					Button {
+						showingRebootConfirm = true
+					} label: {
+						Label(
+							"Reboot",
+							systemImage: "arrow.triangle.2.circlepath"
+						)
+					}.hostedConfirmation(
+						"Are you sure?",
+						isPresented: $showingRebootConfirm
+					) {
+						Button("Reboot node?", role: .destructive) {
+							Task {
+								guard let administrationUserPair else { return }
+								do {
+									try await accessoryManager.sendReboot(
+										fromUser: administrationUserPair.fromUser,
+										toUser: administrationUserPair.toUser
+									)
+								} catch {
+									Logger.mesh.warning("Reboot Failed")
+								}
 							}
 						}
 					}
+					.disabled(administrationUserPair == nil)
 				}
-				.disabled(administrationUserPair == nil)
+			} header: {
+				Text("Administration")
+			} footer: {
+				if showsRemoteShell, RemoteShellSession.adminSessionIsActive(node) {
+					Text("Remote admin session active")
+				}
 			}
 		}
 	}
