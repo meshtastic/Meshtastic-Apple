@@ -48,6 +48,21 @@ enum LookoutForest {
 	static func rowScale(at distance: Double) -> Double {
 		max(1, distance / rowGrowFrom)
 	}
+	/// Where the forest first shows past the near trees in a direction, its first stretch is the
+	/// painting's front band: big 3D trees, `frontBoost` times a row's size at the front, shrinking
+	/// to a row's size `frontDepth` times as far out. On a high, steep summit that's the closest
+	/// forest in view, kilometers out, and without it the view has no trees in front of the carpet.
+	static let frontDepth = 1.2
+	static let frontBoost = 2.5
+	/// The most triangles the front band may take, of the forest's.
+	static let frontBudget = 250_000
+
+	/// How many times true size a front tree `distance` out is drawn, with the band starting at `front`.
+	static func frontScale(at distance: Double, from front: Double) -> Double {
+		let along = min(1, max(0, log(distance / front) / log(frontDepth)))
+		return rowScale(at: distance) * (1 + (frontBoost - 1) * (1 - along))
+	}
+
 	/// The most triangles the forest may take, on top of the terrain's.
 	static let triangleBudget = 600_000
 	/// Shades of green across the palette, and light levels down it.
@@ -110,6 +125,37 @@ enum LookoutForest {
 			}
 			distance += spacing
 			ring += 1
+		}
+	}
+
+	/// Calls `body` with every place a front tree could stand across `spoke`, from `front` out
+	/// through the band, nearest first: spaced like the near trees at the trees' drawn size, each
+	/// jittered and sized. The same every time. Stops when `body` returns false.
+	static func forEachFrontSpot(spoke: Int, spokes: Int, from front: Double, _ body: (Spot) -> Bool) {
+		let spokeWidth = 360 / Double(spokes)
+		var distance = front
+		var step = 0
+		while distance < front * frontDepth {
+			let scale = frontScale(at: distance, from: front)
+			let spacing = nearSpacing * scale
+			let count = max(1, Int((distance * spokeWidth * .pi / 180 / spacing).rounded()))
+			for index in 0..<count {
+				let h = hash(spoke + 2_000_000, step * 1_024 + index)
+				let size = (0.6 + 0.9 * unit(h, 3)) * scale
+				let across = (Double(index) + 0.5 + (unit(h, 1) - 0.5) * 0.8) / Double(count)
+				let spot = Spot(
+					bearing: ((Double(spoke) + across) * spokeWidth).truncatingRemainder(dividingBy: 360),
+					distance: distance + (unit(h, 0) - 0.5) * 0.8 * spacing,
+					width: size,
+					height: size,
+					turn: unit(h, 4) * 2 * .pi,
+					shade: min(shades - 1, Int(unit(h, 5) * Double(shades))),
+					chance: unit(h, 2)
+				)
+				guard body(spot) else { return }
+			}
+			distance += spacing
+			step += 1
 		}
 	}
 

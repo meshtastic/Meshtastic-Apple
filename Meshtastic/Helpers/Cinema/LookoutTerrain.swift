@@ -472,21 +472,17 @@ enum LookoutTerrain {
 		var trees = 0
 		let tallest = LookoutForest.nearCones.map(\.tip).max() ?? 12.5
 		var looked = 0
-		LookoutForest.forEachSpot(farthest: min(LookoutForest.rowsFrom, reach)) { spot in
-			looked += 1
-			if looked.isMultiple(of: 4_096), Task.isCancelled {
-				cancelled = true
-				return false
-			}
-			let cost = LookoutForest.triangles(at: spot.distance)
-			guard triangles + cost <= LookoutForest.triangleBudget else { return false }
+		/// Plants a tree if it stands on forest and shows. False once the forest is out of triangles.
+		func plant(_ spot: LookoutForest.Spot, near: Bool, budget: Int = LookoutForest.triangleBudget) -> Bool {
+			let cost = near ? LookoutForest.nearCones.count * LookoutForest.nearSides : LookoutForest.farCones.count * LookoutForest.farSides
+			guard triangles + cost <= budget else { return false }
 			guard let height = surface(spot.bearing, spot.distance),
 				  shows(top: height + tallest * spot.height, bearing: spot.bearing, distance: spot.distance),
 				  forested(bearing: spot.bearing, distance: spot.distance, elevation: height) else { return true }
 			let radians = spot.bearing * .pi / 180
 			// Sunk a little, so no tree shows a gap under it on a slope.
-			let base = SIMD3<Double>(sin(radians) * spot.distance, height - 0.5, cos(radians) * spot.distance)
-			for face in LookoutForest.faces(turn: spot.turn, width: spot.width, height: spot.height, near: spot.distance < LookoutForest.nearDetail) {
+			let base = SIMD3<Double>(sin(radians) * spot.distance, height - 0.5 * spot.height, cos(radians) * spot.distance)
+			for face in LookoutForest.faces(turn: spot.turn, width: spot.width, height: spot.height, near: near) {
 				let uv = LookoutForest.paletteCoordinate(shade: spot.shade, lit: max(0, simd_dot(face.normal, light)), distance: spot.distance)
 				for corner in face.corners {
 					treePositions.append(place(base + corner))
@@ -497,7 +493,35 @@ enum LookoutTerrain {
 			trees += 1
 			return true
 		}
+		LookoutForest.forEachSpot(farthest: min(LookoutForest.rowsFrom, reach)) { spot in
+			looked += 1
+			if looked.isMultiple(of: 4_096), Task.isCancelled {
+				cancelled = true
+				return false
+			}
+			return plant(spot, near: spot.distance < LookoutForest.nearDetail)
+		}
 		if cancelled { return nil }
+
+		// The front band: big trees where the forest first shows in each direction past the near
+		// trees. Where near trees show, they're the front already.
+		let nearTriangles = triangles
+		for spoke in 0..<spokes {
+			if Task.isCancelled { return nil }
+			let bearing = (Double(spoke) + 0.5) * 360 / Double(spokes)
+			var front: Double?
+			for (ring, distance) in distances.enumerated() where distance >= LookoutForest.nearest && distance <= reach {
+				let elevation = Double(ground.elevations[ring * columns + spoke])
+				if shows(top: elevation + tallest, bearing: bearing, distance: distance),
+				   forested(bearing: bearing, distance: distance, elevation: elevation) {
+					front = distance
+					break
+				}
+			}
+			guard let front, front >= LookoutForest.rowsFrom else { continue }
+			let budget = min(LookoutForest.triangleBudget, nearTriangles + LookoutForest.frontBudget)
+			LookoutForest.forEachFrontSpot(spoke: spoke, spokes: spokes, from: front) { plant($0, near: true, budget: budget) }
+		}
 
 		// Rows of painted trees beyond, one strip per spoke at each step out.
 		var rowPositions: [SIMD3<Float>] = []

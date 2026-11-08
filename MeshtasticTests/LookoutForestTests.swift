@@ -52,6 +52,21 @@ struct LookoutForestTests {
 		#expect(LookoutForest.density(at: LookoutForest.reach) == 0)
 	}
 
+	@Test("the front band starts big and shrinks to a row's size, the same every time")
+	func frontBand() {
+		let front = 6_000.0
+		#expect(abs(LookoutForest.frontScale(at: front, from: front) - LookoutForest.frontBoost * LookoutForest.rowScale(at: front)) < 1e-9)
+		let back = front * LookoutForest.frontDepth
+		#expect(abs(LookoutForest.frontScale(at: back, from: front) - LookoutForest.rowScale(at: back)) < 1e-9)
+		var spots: [LookoutForest.Spot] = []
+		LookoutForest.forEachFrontSpot(spoke: 40, spokes: 720, from: front) { spots.append($0); return true }
+		var again: [LookoutForest.Spot] = []
+		LookoutForest.forEachFrontSpot(spoke: 40, spokes: 720, from: front) { again.append($0); return true }
+		#expect(spots == again && !spots.isEmpty)
+		#expect(spots.allSatisfy { $0.bearing >= 20 && $0.bearing <= 20.5 })
+		#expect(spots.allSatisfy { $0.distance > front * 0.95 && $0.distance < back * 1.05 })
+	}
+
 	@Test("rows come nearest first, one per spoke at each step, the same every time")
 	func rows() {
 		var rows: [LookoutForest.Row] = []
