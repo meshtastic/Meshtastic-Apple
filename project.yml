@@ -221,7 +221,7 @@ targets:
         type: syncedFolder
       - path: "Meshtastic/Resources/images"
         type: syncedFolder
-      # Real-size device models (iPhone, iPad, Mac and Vision Pro).
+      # Real-size device models, Chirpy and the banana for scale (iPhone, iPad, Mac and Vision Pro).
       - path: "Meshtastic/Resources/DeviceModels"
         type: syncedFolder
       - path: "Meshtastic/MeshtasticApp.swift"

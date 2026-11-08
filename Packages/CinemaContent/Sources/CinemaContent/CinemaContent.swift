@@ -16,8 +16,3 @@ public func cinemaEnvironmentImageURL(named name: String) -> URL? {
 public func cinemaEnvironmentAnchorsURL(named name: String) -> URL? {
 	Bundle.module.url(forResource: "\(name)_anchors", withExtension: "json", subdirectory: "Environments")
 }
-
-/// A prop for the cinema, such as the banana that stands beside a model for scale, by name.
-public func cinemaPropURL(named name: String) -> URL? {
-	Bundle.module.url(forResource: name, withExtension: "usdz", subdirectory: "Props")
-}

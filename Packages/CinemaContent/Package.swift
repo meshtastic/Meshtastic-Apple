@@ -19,6 +19,6 @@ let package = Package(
 		.library(name: "CinemaContent", targets: ["CinemaContent"])
 	],
 	targets: [
-		.target(name: "CinemaContent", resources: [.copy("Environments"), .copy("Props")])
+		.target(name: "CinemaContent", resources: [.copy("Environments")])
 	]
 )
