@@ -49,6 +49,8 @@ struct DeviceModelView<Placeholder: View>: View {
 	@Environment(\.presentDeviceModelFullScreen) private var presentFullScreen
 	/// The file the model came from, handed to Quick Look for "View in your space".
 	@State private var modelURL: URL?
+	/// The copyright notice embedded in the model's file, shown from the full-screen view.
+	@State private var copyright: String?
 	@State private var quickLookURL: URL?
 	@State private var showsChirpy = false
 	@State private var chirpyTaps = 0
@@ -123,6 +125,7 @@ struct DeviceModelView<Placeholder: View>: View {
 				stage = nil
 				loadedModel = nil
 				modelURL = nil
+				copyright = nil
 				return
 			}
 			let name = shownModelName
@@ -139,6 +142,7 @@ struct DeviceModelView<Placeholder: View>: View {
 				loadedModel = entity.clone(recursive: true)
 				stage = DeviceModelStage(model: entity)
 				modelURL = url
+				copyright = await Task.detached(priority: .utility) { DeviceModelNotice.copyright(inUSDZ: url) }.value
 			} catch {
 				// A different model was picked while this one loaded; its failure says
 				// nothing about the new one, which would stay marked unavailable.
@@ -181,7 +185,7 @@ struct DeviceModelView<Placeholder: View>: View {
 	private var fullScreenButton: some View {
 		Button {
 			guard let loadedModel else { return }
-			let request = DeviceModelFullScreenRequest(model: loadedModel, name: shownName, isChirpy: showsChirpy)
+			let request = DeviceModelFullScreenRequest(model: loadedModel, name: shownName, isChirpy: showsChirpy, copyright: copyright)
 			if let presentFullScreen {
 				presentFullScreen(request)
 			} else {
@@ -228,7 +232,7 @@ struct DeviceModelView<Placeholder: View>: View {
 			if let loadedModel {
 				// The app's own AR view rather than Quick Look, which can't show the live screen
 				// or the banana. It has Quick Look's AR and Object views, Record and Share.
-				let request = DeviceModelFullScreenRequest(model: loadedModel, name: shownName, isChirpy: showsChirpy, inSpace: true, fileURL: modelURL)
+				let request = DeviceModelFullScreenRequest(model: loadedModel, name: shownName, isChirpy: showsChirpy, inSpace: true, fileURL: modelURL, copyright: copyright)
 				if let presentFullScreen {
 					presentFullScreen(request)
 				} else {
@@ -296,6 +300,8 @@ struct DeviceModelFullScreenRequest: Identifiable {
 	var inSpace = false
 	/// The model's file, for the AR view's share button.
 	var fileURL: URL?
+	/// The copyright notice from the model's file, behind the full-screen view's info button.
+	var copyright: String?
 }
 
 extension EnvironmentValues {
@@ -319,6 +325,7 @@ struct DeviceModelFullScreen: View {
 	@State private var stage: DeviceModelStage
 	/// How close the model is: the zoom button steps through the stage's levels.
 	@State private var zoomLevel: DeviceModelStage.ZoomLevel = .model
+	@State private var showsCopyright = false
 
 	private var accessoryManager: AccessoryManager { AccessoryManager.shared }
 
@@ -378,6 +385,23 @@ struct DeviceModelFullScreen: View {
 						dismiss()
 					} label: {
 						Label("Close", systemImage: "xmark")
+					}
+				}
+			}
+			if let copyright = request.copyright {
+				ToolbarItem(placement: .secondaryAction) {
+					Button {
+						showsCopyright = true
+					} label: {
+						Label(String(localized: "Model Copyright", comment: "Button in the full-screen 3D model view: show the model's copyright notice"), systemImage: "info.circle")
+					}
+					.popover(isPresented: $showsCopyright) {
+						Text(copyright)
+							.font(.footnote)
+							.fixedSize(horizontal: false, vertical: true)
+							.padding()
+							.frame(idealWidth: 320)
+							.presentationCompactAdaptation(.popover)
 					}
 				}
 			}

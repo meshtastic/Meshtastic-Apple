@@ -408,25 +408,25 @@
             "heard",
             "screen",
             "public",
-            "firmware",
             "model",
+            "firmware",
             "messages",
             "hardware",
             "detail",
             "shown",
             "list",
             "direct",
+            "app",
             "open",
             "long",
             "links",
-            "app",
             "see",
             "row",
             "packets",
             "one",
             "connected"
         ],
-        "charCount": 17642
+        "charCount": 17849
     },
     {
         "id": "settings",
