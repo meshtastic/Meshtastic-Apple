@@ -22,7 +22,7 @@ import ARKit
 struct DeviceModelView<Placeholder: View>: View {
 	let modelName: String
 	let deviceName: String
-	/// The node it's a model of, for the live readings beside it in the AR view and the Vision Pro cinema.
+	/// The node it's a model of, for the live readings beside it in the Vision Pro cinema.
 	var nodeNum: Int64?
 	/// Show the radio's own screen on the model. Only for the connected radio, while it's connected
 	/// and reports a display.
@@ -225,9 +225,9 @@ struct DeviceModelView<Placeholder: View>: View {
 			}
 			#else
 			if let loadedModel {
-				// The app's own AR view rather than Quick Look, which can't show the live screen,
-				// the node's readings or the banana.
-				let request = DeviceModelFullScreenRequest(model: loadedModel, name: shownName, isChirpy: showsChirpy, inSpace: true, nodeNum: showsChirpy ? nil : nodeNum)
+				// The app's own AR view rather than Quick Look, which can't show the live screen
+				// or the banana. It has Quick Look's AR and Object views, Record and Share.
+				let request = DeviceModelFullScreenRequest(model: loadedModel, name: shownName, isChirpy: showsChirpy, inSpace: true, fileURL: modelURL)
 				if let presentFullScreen {
 					presentFullScreen(request)
 				} else {
@@ -293,8 +293,8 @@ struct DeviceModelFullScreenRequest: Identifiable {
 	let name: String
 	let isChirpy: Bool
 	var inSpace = false
-	/// The node it's a model of, for its readings beside it in the AR view. Nil for Chirpy.
-	var nodeNum: Int64?
+	/// The model's file, for the AR view's share button.
+	var fileURL: URL?
 }
 
 extension EnvironmentValues {
@@ -411,7 +411,7 @@ struct DeviceModelFullScreen: View {
 }
 
 @available(iOS 18.0, macCatalyst 18.0, visionOS 1.0, *)
-private struct DeviceModelRealityView: View {
+struct DeviceModelRealityView: View {
 	let stage: DeviceModelStage
 	let autoRotate: Bool
 	/// Where the radio's live screen comes from. The stage reads it as it draws, so a new picture

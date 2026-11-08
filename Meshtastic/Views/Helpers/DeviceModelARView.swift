@@ -6,106 +6,122 @@
 //
 
 #if os(iOS) && !targetEnvironment(macCatalyst)
-import SwiftData
-import SwiftUI
+import ARKit
+import Combine
 import RealityKit
+import ReplayKit
+import SwiftUI
 
-/// A radio's model in the room at its real size, standing on a table or the floor. A card over the
-/// camera view has the node's live readings and a button that stands a banana beside the model for
-/// scale. The connected radio's model shows its live screen, with the radio's buttons under the
-/// camera view. Quick Look can place a model too, but can't change its texture or add to it.
+/// A radio's model at its real size, standing on a table or the floor and turned to face you, or on
+/// its own in the Object view. Like Quick Look it can record the screen and share the model's file;
+/// unlike Quick Look it can stand a banana beside the model for scale, and the connected radio's
+/// model shows its live screen, with the radio's buttons under the camera view.
 @available(iOS 18.0, *)
 struct DeviceModelARView: View {
 	let request: DeviceModelFullScreenRequest
 	/// The radio is connected with its screen to show. Only the connected radio's model gets it.
 	let liveScreen: Bool
 
+	/// The camera view, or the model on its own.
+	enum Mode: Hashable {
+		case room
+		case object
+	}
+
 	@Environment(\.dismiss) private var dismiss
 	@Environment(\.scenePhase) private var scenePhase
-	@Environment(\.modelContext) private var context
-	/// A scene can only hold an entity once, so this view stands its own copy.
+	@State private var mode = Mode.room
+	/// A scene can only hold an entity once, so each view stands its own copy.
 	@State private var stage: DeviceModelStage
+	@State private var objectStage: DeviceModelStage
 	/// Whether a surface has been found for the model to stand on.
 	@State private var placed = false
-	@State private var reading: CinemaNodeReading?
 	/// A banana stands beside the model.
 	@State private var showsBanana = false
 	/// The banana, loaded the first time it's shown.
 	@State private var banana: Entity?
-	/// How far the model reaches from its middle however it's turned, so the banana lies clear of it.
+	@State private var recording = false
+	/// The finished recording, to save or share.
+	@State private var recordingPreview: RPPreviewViewController?
+	/// How far the model reaches from its middle however it's turned, so the banana stands clear of it.
 	private let reach: Float
 
 	private var accessoryManager: AccessoryManager { AccessoryManager.shared }
-	private static let anchorName = "DeviceModelARAnchor"
 
 	init(request: DeviceModelFullScreenRequest, liveScreen: Bool) {
 		self.request = request
 		self.liveScreen = liveScreen
 		_stage = State(initialValue: DeviceModelStage(model: request.model.clone(recursive: true), facingFront: true))
+		_objectStage = State(initialValue: DeviceModelStage(model: request.model.clone(recursive: true), facingFront: true))
 		let extents = request.model.visualBounds(relativeTo: nil).extents
 		reach = simd_length(SIMD2(extents.x, extents.z)) / 2
 	}
 
-	/// The radio's live screen on the model and its buttons under the camera view.
+	/// The radio's live screen on the model and its buttons under the view.
 	private var showsLiveScreen: Bool {
 		liveScreen && !request.isChirpy && stage.hasScreen
 	}
 
 	var body: some View {
 		ZStack {
-			RealityView { content in
-				content.camera = .spatialTracking
-				// Any horizontal surface; the model stands on it at its own size.
-				let anchor = AnchorEntity(.plane(.horizontal, classification: .any, minimumBounds: [0.1, 0.1]))
-				anchor.name = Self.anchorName
-				anchor.addChild(stage.makeStandingScene())
-				content.add(anchor)
-				let placed = $placed
-				stage.subscription = content.subscribe(to: SceneEvents.Update.self) { [weak stage] event in
-					stage?.advance(by: Float(event.deltaTime))
-					if anchor.isAnchored, !placed.wrappedValue {
-						placed.wrappedValue = true
-					}
-				}
-			} update: { content in
-				stage.screenSource = showsLiveScreen ? accessoryManager.displayMirror : nil
-				guard let anchor = content.entities.first(where: { $0.name == Self.anchorName }) else { return }
-				if showsBanana, let banana {
-					if banana.parent == nil {
-						// On the model's left, as on the cinema's stand, a little clear of it.
-						banana.position = [-(reach + 0.03), 0, 0]
-						anchor.addChild(banana)
-					}
-				} else {
-					banana?.removeFromParent()
-				}
+			switch mode {
+			case .room:
+				DeviceModelCameraView(
+					stage: stage,
+					screenSource: showsLiveScreen ? accessoryManager.displayMirror : nil,
+					banana: showsBanana ? banana : nil,
+					bananaOffset: -(reach + 0.03),
+					placed: $placed
+				)
+				.ignoresSafeArea()
+				.gesture(turnGesture)
+				.accessibilityElement(children: .ignore)
+				.accessibilityLabel(String(
+					localized: "3D model of \(request.name) in your space",
+					comment: "Accessibility label for the camera view showing a radio's 3D model in the room; the argument is the device name"
+				))
+			case .object:
+				DeviceModelRealityView(
+					stage: objectStage,
+					autoRotate: false,
+					screenSource: showsLiveScreen ? accessoryManager.displayMirror : nil,
+					dragsTilt: true
+				)
+				.background(Color(white: 0.92))
+				.ignoresSafeArea()
+				.accessibilityElement(children: .ignore)
+				.accessibilityLabel(String(
+					localized: "3D model of \(request.name)",
+					comment: "Accessibility label for the rotating 3D model of a radio; the argument is the device name"
+				))
 			}
-			.ignoresSafeArea()
-			.gesture(turnGesture)
-			.accessibilityElement(children: .ignore)
-			.accessibilityLabel(String(
-				localized: "3D model of \(request.name) in your space",
-				comment: "Accessibility label for the camera view showing a radio's 3D model in the room; the argument is the device name"
-			))
 
+			// Out of the recording, apart from the button that stops it.
 			VStack(spacing: 16) {
-				card
+				if !recording {
+					topBar
+				}
 				Spacer()
-				if !placed {
+				if mode == .room, !placed, !recording {
 					Text("Point the camera at a table or the floor.", comment: "Hint in the camera view while it looks for a surface to stand the radio's 3D model on")
 						.font(.callout)
 						.padding(12)
 						.background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 				}
-				if showsLiveScreen {
+				if showsLiveScreen, !recording {
 					DeviceRemoteControl { event in
 						Task { await accessoryManager.sendDisplayInput(event) }
 					}
 					.padding(16)
 					.background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
 				}
+				recordButton
 			}
 			.padding()
+		}
+		.sheet(item: $recordingPreview) { preview in
+			RecordingPreview(controller: preview)
+				.ignoresSafeArea()
 		}
 		// Its own claim on the stream, while the app is in front: the model view behind this cover
 		// may go off screen.
@@ -116,16 +132,15 @@ struct DeviceModelARView: View {
 				accessoryManager.stopDisplayMirror(for: .deviceModelAR)
 			}
 		}
-		.onDisappear { accessoryManager.stopDisplayMirror(for: .deviceModelAR) }
-		.task(id: request.nodeNum) {
-			guard let nodeNum = request.nodeNum else {
-				reading = nil
-				return
+		.onDisappear {
+			accessoryManager.stopDisplayMirror(for: .deviceModelAR)
+			if recording {
+				RPScreenRecorder.shared().stopRecording { _, _ in }
 			}
-			while !Task.isCancelled {
-				reading = CinemaNodeReading(nodeNum: nodeNum, context: context)
-				try? await Task.sleep(for: .seconds(CinemaNodeReading.refresh))
-			}
+		}
+		// Back in the room the model lands again, turned to face the camera.
+		.onChange(of: mode) { _, mode in
+			if mode == .room { placed = false }
 		}
 		.task(id: showsBanana) {
 			if showsBanana, banana == nil {
@@ -134,24 +149,29 @@ struct DeviceModelARView: View {
 		}
 	}
 
-	/// The node's name and readings, the banana button, and the close button, like the card beside
-	/// a model on the Vision Pro cinema's stand.
-	private var card: some View {
-		VStack(alignment: .leading, spacing: 10) {
-			HStack(alignment: .top, spacing: 10) {
-				if let reading {
-					CircleText(text: reading.shortName, color: Color(UIColor(hex: UInt32(truncatingIfNeeded: reading.num))), circleSize: 40)
+	/// The banana button, the AR and Object views, Share and Close.
+	private var topBar: some View {
+		VStack(spacing: 12) {
+			HStack {
+				Picker(selection: $mode) {
+					Text("AR", comment: "Tab in the AR view: the radio's 3D model in the room through the camera").tag(Mode.room)
+					Text("Object", comment: "Tab in the AR view: the radio's 3D model on its own, without the camera").tag(Mode.object)
+				} label: {
+					Text("View", comment: "Accessibility label for the AR and Object tabs in the AR view")
 				}
-				VStack(alignment: .leading, spacing: 2) {
-					Text(reading?.longName ?? request.name)
-						.font(.headline)
-					if reading != nil {
-						Text(request.name)
-							.font(.subheadline)
-							.foregroundStyle(.secondary)
+				.pickerStyle(.segmented)
+				.frame(maxWidth: 200)
+				Spacer()
+				if let fileURL = request.fileURL {
+					ShareLink(item: fileURL) {
+						Label("Share", systemImage: "square.and.arrow.up")
+							.labelStyle(.iconOnly)
+							.font(.body.weight(.semibold))
+							.frame(width: 36, height: 36)
+							.background(.ultraThinMaterial, in: Circle())
 					}
+					.buttonStyle(.plain)
 				}
-				Spacer(minLength: 8)
 				Button {
 					dismiss()
 				} label: {
@@ -163,23 +183,58 @@ struct DeviceModelARView: View {
 				}
 				.buttonStyle(.plain)
 			}
-			if let reading {
-				CinemaNodeReadings(reading: reading)
-			}
-			Toggle(isOn: $showsBanana) {
-				Label {
-					Text("Banana for Scale", comment: "Cinema: button on the card beside a device model on the stand; lays a real-size banana beside it")
-				} icon: {
-					// Stem up, like the banana on the cinema's stand.
-					Image("custom.banana")
-						.rotationEffect(.degrees(-90))
+			if mode == .room {
+				HStack {
+					Toggle(isOn: $showsBanana) {
+						Label {
+							Text("Banana for Scale", comment: "Cinema: button on the card beside a device model on the stand; lays a real-size banana beside it")
+						} icon: {
+							// Stem up, like the banana beside the model.
+							Image("custom.banana")
+								.rotationEffect(.degrees(-90))
+						}
+					}
+					.toggleStyle(.button)
+					.buttonBorderShape(.roundedRectangle)
+					.background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+					Spacer()
 				}
 			}
-			.toggleStyle(.button)
 		}
-		.padding(16)
-		.frame(maxWidth: 420, alignment: .leading)
-		.background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+	}
+
+	/// Records the screen, without the controls, like Quick Look's record button. When it stops, the
+	/// recording opens to save or share.
+	private var recordButton: some View {
+		Button {
+			if recording {
+				RPScreenRecorder.shared().stopRecording { preview, _ in
+					Task { @MainActor in
+						recording = false
+						recordingPreview = preview
+					}
+				}
+			} else {
+				RPScreenRecorder.shared().startRecording { error in
+					Task { @MainActor in
+						recording = error == nil
+					}
+				}
+			}
+		} label: {
+			ZStack {
+				Circle()
+					.strokeBorder(.white, lineWidth: 4)
+					.frame(width: 64, height: 64)
+				RoundedRectangle(cornerRadius: recording ? 6 : 26, style: .continuous)
+					.fill(.red)
+					.frame(width: recording ? 26 : 52, height: recording ? 26 : 52)
+			}
+		}
+		.buttonStyle(.plain)
+		.accessibilityLabel(recording
+			? String(localized: "Stop Recording", comment: "Button in the AR view: stop recording the screen and open the recording")
+			: String(localized: "Record", comment: "Button in the AR view: record the screen with the radio's 3D model"))
 	}
 
 	/// Sideways drags turn the model on its surface; it never tilts off it.
@@ -190,6 +245,97 @@ struct DeviceModelARView: View {
 				stage.drag(by: value.translation)
 			}
 			.onEnded { _ in stage.endDrag() }
+	}
+}
+
+extension RPPreviewViewController: @retroactive Identifiable {}
+
+/// ReplayKit's own screen for a finished recording, with its save and share buttons.
+private struct RecordingPreview: UIViewControllerRepresentable {
+	let controller: RPPreviewViewController
+
+	func makeUIViewController(context: Context) -> RPPreviewViewController {
+		controller.previewControllerDelegate = context.coordinator
+		return controller
+	}
+
+	func updateUIViewController(_ controller: RPPreviewViewController, context: Context) {}
+
+	func makeCoordinator() -> Coordinator { Coordinator() }
+
+	final class Coordinator: NSObject, RPPreviewViewControllerDelegate {
+		func previewControllerDidFinish(_ controller: RPPreviewViewController) {
+			controller.dismiss(animated: true)
+		}
+	}
+}
+
+/// The camera view with the model standing on the first table or floor it finds, turned to face the
+/// camera. An `ARView` that runs its own session: RealityView's tracking camera, and `ARView`
+/// setting up its own session, both left the camera picture black on an iPhone running iOS 27.
+@available(iOS 18.0, *)
+private struct DeviceModelCameraView: UIViewRepresentable {
+	let stage: DeviceModelStage
+	weak var screenSource: DisplayMirrorSession?
+	/// The banana to stand beside the model, or nil for none.
+	let banana: Entity?
+	/// Where along x the banana's near side stands, clear of the model however it's turned.
+	let bananaOffset: Float
+	@Binding var placed: Bool
+
+	private static let facingName = "DeviceModelARFacing"
+
+	func makeUIView(context: Context) -> ARView {
+		let view = ARView(frame: .zero, cameraMode: .ar, automaticallyConfigureSession: false)
+		view.renderOptions = [.disableCameraGrain, .disableHDR, .disableMotionBlur, .disableDepthOfField, .disableFaceMesh, .disablePersonOcclusion, .disableGroundingShadows, .disableAREnvironmentLighting]
+		let configuration = ARWorldTrackingConfiguration()
+		configuration.planeDetection = [.horizontal]
+		view.session.run(configuration)
+
+		// Any horizontal surface; the model stands on it at its own size.
+		let anchor = AnchorEntity(.plane(.horizontal, classification: .any, minimumBounds: [0.1, 0.1]))
+		// Turned to face the camera when it lands, so the banana stands on the viewer's left.
+		let facing = Entity()
+		facing.name = Self.facingName
+		facing.addChild(stage.makeStandingScene())
+		anchor.addChild(facing)
+		view.scene.addAnchor(anchor)
+		let placed = $placed
+		context.coordinator.update = view.scene.subscribe(to: SceneEvents.Update.self) { [weak stage, weak view] event in
+			stage?.advance(by: Float(event.deltaTime))
+			guard anchor.isAnchored, !placed.wrappedValue, let view else { return }
+			let camera = facing.convert(position: view.cameraTransform.translation, from: nil)
+			facing.orientation = simd_quatf(angle: atan2(camera.x, camera.z), axis: [0, 1, 0])
+			placed.wrappedValue = true
+		}
+		return view
+	}
+
+	func updateUIView(_ view: ARView, context: Context) {
+		stage.screenSource = screenSource
+		guard let facing = view.scene.anchors.first?.children.first(where: { $0.name == Self.facingName }) else { return }
+		// One banana at a time: a different one, or none, takes the last one down.
+		for child in facing.children where child.name == "Banana" && child !== banana {
+			child.removeFromParent()
+		}
+		if let banana, banana.parent !== facing {
+			// On the model's left, as on the cinema's stand.
+			banana.name = "Banana"
+			banana.position = [bananaOffset, 0, 0]
+			facing.addChild(banana)
+		}
+	}
+
+	func makeCoordinator() -> Coordinator { Coordinator() }
+
+	static func dismantleUIView(_ view: ARView, coordinator: Coordinator) {
+		coordinator.update?.cancel()
+		view.session.pause()
+	}
+
+	/// Keeps the per-frame update running while the view is up.
+	final class Coordinator {
+		var update: Cancellable?
 	}
 }
 #endif

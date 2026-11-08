@@ -4,11 +4,12 @@
 //
 //  Copyright(c) Garth Vander Houwen 11/1/26.
 //
+#if os(visionOS)
 import SwiftData
 import SwiftUI
 
 /// A node's last heard, battery, signal and hops, for the cards beside a model on the stand and
-/// beside a node out the lookout's windows, and the panel under the model in the AR view.
+/// beside a node out the lookout's windows.
 struct CinemaNodeReadings: View {
 	let reading: CinemaNodeReading
 
@@ -75,3 +76,4 @@ struct CinemaNodeReading {
 		hopsAway = node.viaMqtt ? nil : node.hopsAway
 	}
 }
+#endif

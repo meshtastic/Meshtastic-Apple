@@ -403,9 +403,9 @@
             "from",
             "key",
             "shows",
+            "only",
             "name",
             "heard",
-            "only",
             "public",
             "firmware",
             "screen",
@@ -426,7 +426,7 @@
             "one",
             "connected"
         ],
-        "charCount": 17456
+        "charCount": 17347
     },
     {
         "id": "settings",
@@ -796,8 +796,8 @@
             "settings",
             "now",
             "nodes",
-            "node",
             "new",
+            "node",
             "screen",
             "mesh",
             "firmware",
@@ -816,7 +816,7 @@
             "live",
             "view"
         ],
-        "charCount": 15069
+        "charCount": 15035
     },
     {
         "id": "adding-features",
