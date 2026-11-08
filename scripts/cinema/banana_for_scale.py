@@ -10,8 +10,8 @@
 #   "usd-core",
 # ]
 # ///
-"""Builds the banana that stands beside a model on the cinema's stand, and lies beside one in the
-AR view, for scale.
+"""Builds the banana that stands beside a model on the cinema's stand, and beside one in the AR
+view, for scale.
 
     uv run scripts/cinema/banana_for_scale.py
 

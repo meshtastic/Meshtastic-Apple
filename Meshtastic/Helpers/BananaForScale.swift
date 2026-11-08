@@ -8,7 +8,7 @@ import OSLog
 import RealityKit
 
 /// A banana at its real size, about 18.5 cm tip to stem, beside a device model for scale: standing
-/// on the Vision Pro cinema's stand, or lying on the table in the iPhone and iPad AR view. The model
+/// on the Vision Pro cinema's stand, or on the table in the iPhone and iPad AR view. The model
 /// is built from a public domain drawing by `scripts/cinema/banana_for_scale.py`, standing on its
 /// tip with the drawing's front facing +z.
 @available(iOS 18.0, macCatalyst 18.0, visionOS 2.0, *)
@@ -34,18 +34,16 @@ enum BananaForScale {
 		return banana
 	}
 
-	/// The banana lying on its back with its label up, running along x with its near side at x = 0
-	/// and the rest of it toward -x, resting on y = 0. Nil if the model won't load.
+	/// The banana standing on its tip with the stem up, as on the cinema's stand, on y = 0 with its
+	/// side toward the model at x = 0 and the rest of it toward -x. Nil if the model won't load.
 	@MainActor
-	static func lyingDown() async -> Entity? {
+	static func standing() async -> Entity? {
 		guard let banana = await load() else { return nil }
-		// The front turned up, then the length turned from front-to-back to side-to-side.
-		banana.orientation = simd_quatf(angle: .pi / 2, axis: [0, 1, 0]) * simd_quatf(angle: -.pi / 2, axis: [1, 0, 0])
-		let lying = Entity()
-		lying.addChild(banana)
-		let bounds = banana.visualBounds(relativeTo: lying)
+		let standing = Entity()
+		standing.addChild(banana)
+		let bounds = banana.visualBounds(relativeTo: standing)
 		banana.position = [-bounds.max.x, -bounds.min.y, -bounds.center.z]
-		return lying
+		return standing
 	}
 
 	#if os(visionOS)

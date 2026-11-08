@@ -11,7 +11,7 @@ import SwiftUI
 import RealityKit
 
 /// A radio's model in the room at its real size, standing on a table or the floor. A card over the
-/// camera view has the node's live readings and a button that lays a banana beside the model for
+/// camera view has the node's live readings and a button that stands a banana beside the model for
 /// scale. The connected radio's model shows its live screen, with the radio's buttons under the
 /// camera view. Quick Look can place a model too, but can't change its texture or add to it.
 @available(iOS 18.0, *)
@@ -28,7 +28,7 @@ struct DeviceModelARView: View {
 	/// Whether a surface has been found for the model to stand on.
 	@State private var placed = false
 	@State private var reading: CinemaNodeReading?
-	/// A banana lies beside the model.
+	/// A banana stands beside the model.
 	@State private var showsBanana = false
 	/// The banana, loaded the first time it's shown.
 	@State private var banana: Entity?
@@ -129,7 +129,7 @@ struct DeviceModelARView: View {
 		}
 		.task(id: showsBanana) {
 			if showsBanana, banana == nil {
-				banana = await BananaForScale.lyingDown()
+				banana = await BananaForScale.standing()
 			}
 		}
 	}

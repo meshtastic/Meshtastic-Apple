@@ -18,7 +18,7 @@ Show roughly the last 12 months of changes; archive entries older than a year by
 
 **Nov 2026** — [Cinema](cinema.md#boards) — On Apple Vision Pro, the Team Favorites board scrolls: pinch and drag it to see favorites past the first eight.
 
-**Nov 2026** — [Nodes](nodes.md#3d-model) — On iPhone and iPad, the AR button opens every node's model in the app's own AR view, with a card of the node's readings and **Banana for Scale**, which lays a real-size banana beside it.
+**Nov 2026** — [Nodes](nodes.md#3d-model) — On iPhone and iPad, the AR button opens every node's model in the app's own AR view, with a card of the node's readings and **Banana for Scale**, which stands a real-size banana beside it.
 
 **Nov 2026** — [Cinema](cinema.md#radio-models) — On Apple Vision Pro, **Banana for Scale** on the card beside a radio's model in the cinema stands a real-size banana next to it.
 
