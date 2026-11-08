@@ -531,10 +531,9 @@ final class SpatialSceneController {
 		detailEntity?.position = card
 		detailEntity?.scale = SIMD3(repeating: counterScale)
 		detailEntity?.isEnabled = true
-		let direction = bottom - top
-		tether.position = top + direction / 2
-		tether.scale = [counterScale, max(simd_length(direction), 0.001), counterScale]
-		tether.orientation = simd_quatf(from: [0, 1, 0], to: simd_normalize(direction))
+		tether.position = (top + bottom) / 2
+		tether.scale = [counterScale, max(simd_length(bottom - top), 0.001), counterScale]
+		tether.orientation = simd_quatf(from: [0, 1, 0], to: simd_normalize(bottom - top))
 		tether.isEnabled = true
 	}
 }
