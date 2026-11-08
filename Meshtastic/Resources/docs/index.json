@@ -441,9 +441,9 @@
             "firmware",
             "device",
             "region",
+            "channel",
             "connected",
             "from",
-            "channel",
             "only",
             "nodes",
             "messages",
@@ -456,16 +456,16 @@
             "set",
             "default",
             "shows",
+            "setting",
             "lora",
             "language",
             "before",
             "beacon",
-            "setting",
+            "still",
             "position",
-            "contact",
-            "channels"
+            "contact"
         ],
-        "charCount": 20413
+        "charCount": 20651
     },
     {
         "id": "showcase",

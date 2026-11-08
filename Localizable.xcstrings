@@ -63799,6 +63799,9 @@
         }
       }
     },
+    "If every admin key is lost, a managed node can't be configured again until it is erased and reflashed with the [Web Flasher](https://flasher.meshtastic.org)." : {
+
+    },
     "If set, any packets you send will be echoed back to your device." : {
       "localizations" : {
         "da" : {
@@ -63886,9 +63889,6 @@
           }
         }
       }
-    },
-    "If the admin key is lost, a managed node can't be configured again until it is erased and reflashed with the [Web Flasher](https://flasher.meshtastic.org)." : {
-
     },
     "If the default region topic is too busy you can choose a more local topic." : {
       "localizations" : {
