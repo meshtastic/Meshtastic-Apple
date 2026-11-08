@@ -123,6 +123,8 @@ enum LookoutGroundColor {
 	/// Mown grass and trees: a little brighter than grassland.
 	static let park = SIMD3<Double>(0.30, 0.44, 0.22)
 	static let rock = SIMD3<Double>(0.46, 0.40, 0.34)
+	/// With no land cover, ground below this share of the view's height range is painted forest.
+	static let forestBandTop = 0.55
 
 	/// Roughly where snow lies through summer, in meters: about 2,100 m at 47°, higher toward the
 	/// equator.
@@ -147,8 +149,8 @@ enum LookoutGroundColor {
 		case .water: return water
 		case nil:
 			if elevation <= 0.5 { return water }
-			if t < 0.55 { return forest }
-			if t < 0.8 { return simd_mix(forest, rock, SIMD3(repeating: (t - 0.55) / 0.25)) }
+			if t < forestBandTop { return forest }
+			if t < 0.8 { return simd_mix(forest, rock, SIMD3(repeating: (t - forestBandTop) / (0.8 - forestBandTop))) }
 			return simd_mix(rock, snow, SIMD3(repeating: min(1, (t - 0.8) / 0.15)))
 		}
 		let snowed = min(1, max(0, (elevation - snowLine(latitude: latitude)) / 400))
