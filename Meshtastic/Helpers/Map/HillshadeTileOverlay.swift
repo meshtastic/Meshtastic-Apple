@@ -120,7 +120,7 @@ final class HillshadeTileOverlay: MKTileOverlay {
 				bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue | CGBitmapInfo.byteOrder32Big.rawValue
 			)?.makeImage()
 		}
-		guard let image, let data = pngData(from: image) else { return Data() }
+		guard let image, let data = pngData(image) else { return Data() }
 		return data
 	}()
 
@@ -155,6 +155,27 @@ final class HillshadeTileOverlay: MKTileOverlay {
 	/// emitted as a black tile whose per-pixel alpha encodes shadow depth. Pixels
 	/// outside `clip` stay fully transparent (past the region boundary).
 	static func renderShadow(tile: ElevationTile, metersPerSample: Double, maxAlpha: CGFloat, clip: PixelRect? = nil, occlusion: [UInt8]? = nil) -> Data? {
+		shadowImage(tile: tile, metersPerSample: metersPerSample, maxAlpha: maxAlpha, clip: clip, occlusion: occlusion).flatMap(pngData)
+	}
+
+	/// The median of the nine values in `v`, which it reorders, by a fixed set of 19 swaps (Paeth's
+	/// network). Sorting an array for every pixel was most of the time spent shading.
+	static func median9(_ v: UnsafeMutableBufferPointer<Float>) -> Float {
+		@inline(__always) func order(_ a: Int, _ b: Int) {
+			if v[a] > v[b] { v.swapAt(a, b) }
+		}
+		order(1, 2); order(4, 5); order(7, 8)
+		order(0, 1); order(3, 4); order(6, 7)
+		order(1, 2); order(4, 5); order(7, 8)
+		order(0, 3); order(5, 8); order(4, 7)
+		order(3, 6); order(1, 4); order(2, 5)
+		order(4, 7); order(4, 2); order(6, 4)
+		order(4, 2)
+		return v[4]
+	}
+
+	/// The shading for one tile as an image: premultiplied black, the shadow in the alpha.
+	static func shadowImage(tile: ElevationTile, metersPerSample: Double, maxAlpha: CGFloat, clip: PixelRect? = nil, occlusion: [UInt8]? = nil) -> CGImage? {
 		let size = tile.size
 		var alphas = [UInt8](repeating: 0, count: size * size)
 		let cellSize = Float(max(metersPerSample, 0.0001))
@@ -174,20 +195,20 @@ final class HillshadeTileOverlay: MKTileOverlay {
 		let filteredWidth = clipRange.maxX - clipRange.minX + 3
 		let filteredHeight = clipRange.maxY - clipRange.minY + 3
 		var filtered = [Float](repeating: 0, count: filteredWidth * filteredHeight)
-		var window = [Float](repeating: 0, count: 9)
-		for fy in 0..<filteredHeight {
-			let py = filteredMinY + fy
-			for fx in 0..<filteredWidth {
-				let px = filteredMinX + fx
-				var count = 0
-				for dy in -1...1 {
-					for dx in -1...1 {
-						window[count] = max(0, tile.gridElevation(x: px + dx, y: py + dy))
-						count += 1
+		withUnsafeTemporaryAllocation(of: Float.self, capacity: 9) { window in
+			for fy in 0..<filteredHeight {
+				let py = filteredMinY + fy
+				for fx in 0..<filteredWidth {
+					let px = filteredMinX + fx
+					var count = 0
+					for dy in -1...1 {
+						for dx in -1...1 {
+							window[count] = max(0, tile.gridElevation(x: px + dx, y: py + dy))
+							count += 1
+						}
 					}
+					filtered[fy * filteredWidth + fx] = median9(window)
 				}
-				window.sort()
-				filtered[fy * filteredWidth + fx] = window[4]
 			}
 		}
 		func sample(_ px: Int, _ py: Int) -> Float {
@@ -254,11 +275,10 @@ final class HillshadeTileOverlay: MKTileOverlay {
 				bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue | CGBitmapInfo.byteOrder32Big.rawValue
 			)?.makeImage()
 		}
-		guard let image else { return nil }
-		return pngData(from: image)
+		return image
 	}
 
-	private static func pngData(from image: CGImage) -> Data? {
+	private static func pngData(_ image: CGImage) -> Data? {
 		let data = NSMutableData()
 		guard let destination = CGImageDestinationCreateWithData(data, "public.png" as CFString, 1, nil) else { return nil }
 		CGImageDestinationAddImage(destination, image, nil)
