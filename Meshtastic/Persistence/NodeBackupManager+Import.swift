@@ -348,6 +348,7 @@ extension NodeBackupManager {
 			dst.routeBackText = src.routeBackText
 			dst.routeText = src.routeText
 			dst.sent = src.sent
+			dst.tracedBy = src.tracedBy
 			dst.snr = src.snr
 			dst.time = src.time
 			dst.sentAt = src.sentAt

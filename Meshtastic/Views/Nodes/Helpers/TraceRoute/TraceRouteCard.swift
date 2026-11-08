@@ -23,7 +23,8 @@ enum TraceRouteColors {
 /// One trace route in a log: when, what came back, and chips for the hop counts and round trip.
 struct TraceRouteCard: View {
 	let model: TraceRouteCardModel
-	/// "Observed" or "Requested" under the title in the app-wide log.
+	/// "Requested" under the title in the app-wide log. A route this app didn't request is labeled
+	/// in every log.
 	var showsOrigin = false
 
 	var body: some View {
@@ -49,10 +50,14 @@ struct TraceRouteCard: View {
 				if model.hasRoute {
 					chips
 				}
-				if showsOrigin {
-					Text(model.state == .observed ? "Observed" : "Requested")
+				if let originLabel = model.state.originLabel {
+					Text(originLabel)
 						.font(.caption2)
-						.foregroundStyle(model.state == .observed ? Color.orange : Color.accentColor)
+						.foregroundStyle(Color.orange)
+				} else if showsOrigin {
+					Text("Requested")
+						.font(.caption2)
+						.foregroundStyle(Color.accentColor)
 				}
 			}
 			Spacer(minLength: 0)
@@ -62,7 +67,7 @@ struct TraceRouteCard: View {
 	}
 
 	private var systemImage: String {
-		if model.hasRoute && model.hopsTowards == 0 {
+		if model.state.hasRoute && model.hopsTowards == 0 {
 			return "person.line.dotted.person"
 		}
 		return model.state.systemImage
@@ -70,7 +75,7 @@ struct TraceRouteCard: View {
 
 	private var iconColor: Color {
 		switch model.state {
-		case .complete, .observed: .accentColor
+		case .complete, .observed, .tracedBy: .accentColor
 		case .pending: .secondary
 		case .noResponse, .rateLimited: .orange
 		}

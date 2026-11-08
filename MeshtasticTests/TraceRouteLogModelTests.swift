@@ -102,6 +102,7 @@ struct TraceRouteChartTests {
 		let points = TraceRouteChartPoint.points(from: [
 			entry(3, 300, .complete, towards: 2, back: 3, roundTrip: 9),
 			entry(2, 200, .noResponse),
+			entry(4, 150, .tracedBy, towards: 2, back: nil),
 			entry(1, 100, .observed, towards: 1, back: nil)
 		])
 		#expect(points.map(\.id) == [1, 3])

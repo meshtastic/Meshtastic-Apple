@@ -44,6 +44,8 @@ extension TraceRouteNodePositionEntity {
 enum TraceRouteState: Equatable {
 	/// A response we saw on the mesh for someone else's request.
 	case observed
+	/// Another node traced a route to us; only the inbound route is known.
+	case tracedBy
 	/// We sent the request and are still inside the wait window.
 	case pending
 	/// We sent the request and nothing came back in time.
@@ -56,19 +58,31 @@ enum TraceRouteState: Equatable {
 	/// How long to wait for a response before calling it no response.
 	static let responseWindow: TimeInterval = 120
 
-	/// Short text for the state; nil for `complete` and `observed`, whose rows show the hops.
+	/// Short text for the state; nil for `complete`, `observed` and `tracedBy`, whose rows show the hops.
 	var label: String? {
 		switch self {
 		case .pending: String(localized: "Waiting for response", comment: "Trace route state: request sent, no answer yet")
 		case .noResponse: String(localized: "No response", comment: "Trace route state: request sent, nothing came back")
 		case .rateLimited: String(localized: "Rate limited")
-		case .observed, .complete: nil
+		case .observed, .complete, .tracedBy: nil
+		}
+	}
+
+	/// Whether there is a route to show: one that came back, or the inbound route of a trace to us.
+	var hasRoute: Bool { self == .complete || self == .observed || self == .tracedBy }
+
+	/// Marks a route this app didn't request, so it isn't mistaken for one the operator ran.
+	var originLabel: String? {
+		switch self {
+		case .observed: String(localized: "Observed", comment: "Trace route: a response to a request this app didn't send")
+		case .tracedBy: String(localized: "Traced us", comment: "Trace route: another node traced a route to our radio")
+		default: nil
 		}
 	}
 
 	var systemImage: String {
 		switch self {
-		case .observed, .complete: "point.3.connected.trianglepath.dotted"
+		case .observed, .complete, .tracedBy: "point.3.connected.trianglepath.dotted"
 		case .pending: "hourglass"
 		case .noResponse: "person.slash"
 		case .rateLimited: "square.and.arrow.up.trianglebadge.exclamationmark"
@@ -92,6 +106,7 @@ extension TraceRouteEntity {
 
 	/// The state of this trace route at `now`.
 	func state(now: Date = .now) -> TraceRouteState {
+		if tracedBy { return .tracedBy }
 		if rateLimited { return .rateLimited }
 		if response { return sent ? .complete : .observed }
 		// Older records marked a rate-limited request by clearing `sent`; observed routes are only
@@ -104,7 +119,7 @@ extension TraceRouteEntity {
 	/// The icon for a log row: a direct route gets the two-person symbol.
 	func rowSystemImage(now: Date = .now) -> String {
 		let state = state(now: now)
-		if (state == .complete || state == .observed) && hopsTowards == 0 {
+		if state.hasRoute && hopsTowards == 0 {
 			return "person.line.dotted.person"
 		}
 		return state.systemImage

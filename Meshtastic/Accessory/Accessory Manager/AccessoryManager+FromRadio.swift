@@ -673,10 +673,14 @@ extension AccessoryManager {
 		}
 
 		if let routingMessage = try? RouteDiscovery(serializedBytes: packet.decoded.payload) {
-			// Full responses only: a trace route response always carries the originating request id.
-			// A zero request id means this is an in-flight request (or a request targeting us), which
-			// we don't persist.
+			// A trace route response always carries the originating request id. A zero request id is a
+			// request: one addressed to us means another node traced a route to us, which our radio
+			// answers itself and we keep in that node's log. Any other request is in flight and ignored.
 			guard packet.decoded.requestID != 0 else {
+				if packet.decoded.wantResponse, Int64(packet.to) == deviceNum, Int64(packet.from) != deviceNum {
+					recordTracedBy(packet, routingMessage: routingMessage, deviceNum: deviceNum)
+					return
+				}
 				Logger.mesh.info("🪧 Ignoring trace route request (no response) from \(packet.from.toHex(), privacy: .public)")
 				return
 			}
@@ -712,10 +716,13 @@ extension AccessoryManager {
 			traceRoute.fromNum = originatorNum
 			traceRoute.toNum = targetNum
 
-			// Used for display/position lookups. The `node` relationship stays set only for routes we
-			// initiated; observed routes are surfaced in the global trace route log instead.
+			// Used for display/position lookups. An observed route also goes in the responder's own
+			// log, labeled observed, as well as the global trace route log.
 			let originatorNode = getNodeInfo(id: originatorNum, context: context)
 			let targetNodeInfo = (initiatedByUs ? existingTraceRoute?.node : nil) ?? getNodeInfo(id: targetNum, context: context)
+			if !initiatedByUs {
+				traceRoute.node = targetNodeInfo
+			}
 
 			// Reprocessing an existing record (e.g. a rebroadcast we re-observe): drop the previous
 			// hops before rebuilding so we don't accumulate orphaned/duplicate hop rows.
@@ -843,6 +850,85 @@ extension AccessoryManager {
 			}
 			let logString = String.localizedStringWithFormat("Trace Route request returned: %@".localized, routeString)
 			Logger.mesh.info("🪧 \(logString, privacy: .public)")
+		}
+	}
+
+	/// Records a trace route another node ran to us, in that node's log. Our radio answers the request
+	/// itself, so the app sees only the request: the route it took to reach us, with no response, no
+	/// round trip and no return leg. No alert is raised, since nobody here asked for it. Keyed by the
+	/// request's packet id, so a rebroadcast of the same request updates the record in place.
+	private func recordTracedBy(_ packet: MeshPacket, routingMessage: RouteDiscovery, deviceNum: Int64) {
+		let requesterNum = Int64(packet.from)
+		let traceRoute: TraceRouteEntity
+		if let existing = getTraceRoute(id: Int64(packet.id), context: context) {
+			guard existing.tracedBy else { return }
+			traceRoute = existing
+			for hop in traceRoute.hops {
+				context.delete(hop)
+			}
+		} else {
+			traceRoute = TraceRouteEntity()
+			context.insert(traceRoute)
+			traceRoute.id = Int64(packet.id)
+		}
+		traceRoute.tracedBy = true
+		traceRoute.sent = false
+		traceRoute.response = false
+		traceRoute.fromNum = requesterNum
+		traceRoute.toNum = deviceNum
+		traceRoute.node = getNodeInfo(id: requesterNum, context: context)
+		traceRoute.hopsTowards = Int32(routingMessage.route.count)
+		traceRoute.hopsBack = -1
+
+		let requesterName = traceRoute.node?.user?.longName ?? requesterNum.toHex()
+		let deviceName = getNodeInfo(id: deviceNum, context: context)?.user?.longName ?? deviceNum.toHex()
+		var hopNodes: [TraceRouteHopEntity] = []
+		let originHop = TraceRouteHopEntity()
+		context.insert(originHop)
+		originHop.time = Date()
+		originHop.num = requesterNum
+		originHop.name = requesterName
+		originHop.index = 0
+		originHop.snr = -32
+		hopNodes.append(originHop)
+		var routeString = "\(requesterName) --> "
+		for (index, node) in routingMessage.route.enumerated() {
+			let hopNode = traceRouteHopNode(num: node)
+			let traceRouteHop = TraceRouteHopEntity()
+			context.insert(traceRouteHop)
+			traceRouteHop.time = Date()
+			traceRouteHop.snr = routingMessage.snrTowards.count > index ? Float(routingMessage.snrTowards[index]) / 4 : -32
+			traceRouteHop.num = Int64(node)
+			traceRouteHop.index = Int32(index + 1)
+			hopNodes.append(traceRouteHop)
+			let hopName = hopNode?.user?.longName ?? (node == UInt32.max ? "Repeater" : node.toHex())
+			let snrLabel = traceRouteHop.snr != -32 ? String(traceRouteHop.snr) : "unknown ".localized
+			routeString += "\(hopName) (\(snrLabel)dB) --> "
+		}
+		// Our radio's own reading of the last leg, when it added one.
+		let ownHop = TraceRouteHopEntity()
+		context.insert(ownHop)
+		ownHop.time = Date()
+		ownHop.num = deviceNum
+		ownHop.name = deviceName
+		ownHop.index = Int32(routingMessage.route.count + 1)
+		let lastIndex = routingMessage.route.count
+		ownHop.snr = routingMessage.snrTowards.count > lastIndex ? Float(routingMessage.snrTowards[lastIndex]) / 4 : -32
+		hopNodes.append(ownHop)
+		routeString += "\(deviceName) (\(ownHop.snr != -32 ? String(ownHop.snr) : "unknown ".localized)dB)"
+
+		traceRoute.routeText = routeString
+		traceRoute.routeBackText = nil
+		traceRoute.hops = hopNodes
+		traceRoute.time = Date()
+		snapshotTraceRoutePositions(for: traceRoute, packet: packet, routingMessage: routingMessage)
+
+		do {
+			try context.save()
+			Logger.data.info("💾 Saved trace route from \(requesterNum.toHex(), privacy: .public) to us")
+		} catch {
+			let nsError = error as NSError
+			Logger.data.error("Error saving trace route to us: \(nsError, privacy: .public)")
 		}
 	}
 
