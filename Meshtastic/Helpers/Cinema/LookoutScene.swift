@@ -36,27 +36,50 @@ final class LookoutScene {
 	private static let maxLabels = 40
 
 	private var preparing: Task<Void, Never>?
+	/// Bumped by `forgetSites()`, so a search that started before it doesn't put back what it found.
+	private var generation = 0
+	/// The area the summits were found in, as `areaKey` writes it; nil before a search.
+	private var searchedArea: String?
 
-	/// Reads the downloaded terrain and finds the summits in it. A call while a search is running
-	/// waits for that one rather than starting another.
-	func prepare() async {
+	/// Reads the downloaded terrain and finds the summits in it, inside `area`: the circle the 3D
+	/// map shows around the mesh. The terrain download reaches well past that circle, and a summit
+	/// out there isn't on the map. Nil searches all the terrain. Does nothing when the summits for
+	/// this area are already found. A call while a search is running waits for that one rather
+	/// than starting another.
+	func prepare(area: SpatialCircle?) async {
+		let key = Self.areaKey(area)
+		if key != searchedArea {
+			forgetSites()
+			searchedArea = key
+		}
+		guard status == .idle || status == .searching else { return }
 		if let preparing {
 			await preparing.value
 			return
 		}
-		let search = Task { await self.search() }
+		let search = Task { await self.search(area: area) }
 		preparing = search
 		await search.value
-		preparing = nil
+		// A search started after `forgetSites()` may be the one running now.
+		if preparing == search { preparing = nil }
 	}
 
-	private func search() async {
+	/// The area as a string to compare and keep with the summits, rounded so a node moving a
+	/// little doesn't start a new search.
+	static func areaKey(_ area: SpatialCircle?) -> String {
+		guard let area else { return "all" }
+		return String(format: "%.2f,%.2f,%.0f", area.latitude, area.longitude, (area.radiusMeters / 1_000).rounded())
+	}
+
+	private func search(area: SpatialCircle?) async {
+		let started = generation
 		status = .searching
 		let manager = OfflineMapManager.shared
 		manager.loadIfNeeded()
 		let sources = manager.terrainSources()
 		Logger.services.info("🎬 [Cinema] Lookout: \(sources.count, privacy: .public) terrain sources among \(manager.regions.count, privacy: .public) offline regions")
 		await store.configure(sources: sources)
+		guard generation == started, !Task.isCancelled else { return }
 		var union: GeoBounds?
 		for source in sources {
 			union = union.map { $0.union(source.bounds) } ?? source.bounds
@@ -67,22 +90,54 @@ final class LookoutScene {
 			status = .noTerrain
 			return
 		}
+		// The terrain out the windows is all of it; the summits are searched for only inside the map's circle.
 		bounds = union
+		var searchBox = union
+		if let area {
+			let box = area.bounds
+			guard union.intersects(box) else {
+				sites = []
+				status = .noSummits
+				return
+			}
+			searchBox = GeoBounds(
+				minLon: max(union.minLon, box.minLon), minLat: max(union.minLat, box.minLat),
+				maxLon: min(union.maxLon, box.maxLon), maxLat: min(union.maxLat, box.maxLat)
+			)
+		}
 		// The files the search and the peak names read, so a list found in files that have since
 		// gone isn't kept.
 		let terrainFiles = Set(sources.flatMap { [$0.globalURL.lastPathComponent] + $0.regionalURLs.map(\.lastPathComponent) })
 		let basemapFiles = Set(OfflineMapManager.persistedRegionFiles().filter { $0.region.hasBasemap }.map(\.url.lastPathComponent))
-		let maps = LookoutSiteCacheKey.maps(in: manager.regions, terrainFiles: terrainFiles, basemapFiles: basemapFiles)
+		let maps = LookoutSiteCacheKey.maps(in: manager.regions, terrainFiles: terrainFiles, basemapFiles: basemapFiles) + "\n" + Self.areaKey(area)
 		if let kept = LookoutSiteCache.sites(for: maps) {
 			sites = kept
 			status = sites.isEmpty ? .noSummits : .ready
 			Logger.services.info("🎬 [Cinema] Lookout sites: \(self.sites.count, privacy: .public) kept from the last search")
 			return
 		}
-		sites = await LookoutPeakNames.named(await LookoutTerrain.sites(in: union, source: store))
+		// The box around the circle has corners outside it; summits there aren't on the map either.
+		let summits = await LookoutTerrain.sites(in: searchBox, source: store, area: area)
+		guard generation == started, !Task.isCancelled else { return }
+		let found = await LookoutPeakNames.named(summits)
+		guard generation == started, !Task.isCancelled else { return }
+		sites = found
 		LookoutSiteCache.store(sites, for: maps)
 		status = sites.isEmpty ? .noSummits : .ready
-		Logger.services.info("🎬 [Cinema] Lookout sites: \(self.sites.count, privacy: .public) in the downloaded terrain \(union.minLat, privacy: .public)..\(union.maxLat, privacy: .public), \(union.minLon, privacy: .public)..\(union.maxLon, privacy: .public)")
+		Logger.services.info("🎬 [Cinema] Lookout sites: \(self.sites.count, privacy: .public) in the map's area \(searchBox.minLat, privacy: .public)..\(searchBox.maxLat, privacy: .public), \(searchBox.minLon, privacy: .public)..\(searchBox.maxLon, privacy: .public)")
+	}
+
+	/// Drops the summits found so far, after the downloaded maps changed, so the next
+	/// `prepare()` searches what's there now.
+	func forgetSites() {
+		generation += 1
+		// The old search's results would be thrown away; stop it rather than let it run beside the next one.
+		preparing?.cancel()
+		preparing = nil
+		sites = []
+		bounds = nil
+		status = .idle
+		searchedArea = nil
 	}
 
 	func site(for id: String) -> LookoutSite? {

@@ -28,8 +28,12 @@ struct CinemaSpace: View {
 	@Environment(\.openWindow) private var openWindow
 	@Environment(\.dismissWindow) private var dismissWindow
 	@AppStorage("cinemaEnvironment") private var environment: CinemaEnvironment = .sarTent
+	@AppStorage(CastleStone.key) private var stone: CastleStone = .gray
 	@State private var world = Entity()
 	@State private var backdrop: Entity?
+	/// The stone and the sky the backdrop up now was made with, so a change of stone keeps the sky.
+	@State private var backdropStone: CastleStone?
+	@State private var backdropClearSky = false
 	@State private var panelGrabber = Self.makePanelGrabber()
 	/// The point the image was rendered from, fixed at the seated eye height and turned so the
 	/// image's center is in front. The backdrop and the boards hang from it, so one turn moves both.
@@ -46,6 +50,7 @@ struct CinemaSpace: View {
 	@StateObject private var screen = CinemaScreenModel()
 	/// The fire lookout's summits, and the terrain and node labels for the chosen one.
 	@State private var lookout = LookoutScene()
+	@ObservedObject private var offlineMaps = OfflineMapManager.shared
 	@AppStorage("cinemaLookoutSite") private var lookoutSiteID = ""
 	/// Eighth turns clockwise the lookout is turned from the panel.
 	@AppStorage(SpatialLookout.turnsKey) private var lookoutTurns = 0
@@ -58,6 +63,8 @@ struct CinemaSpace: View {
 	/// lookout from two tasks at once; the second waits on the first one's build instead of
 	/// starting another. The build is its own task so a caller being cancelled doesn't stop it.
 	@State private var lookoutBuild: LookoutBuild?
+	/// The downloads the summits and terrain were last found for, so a change can be told from the first run.
+	@State private var lookoutMapsSeen: [String]?
 	@State private var markerPanels = LookoutMarkerPanels()
 	/// Where the viewer's head is, so a marker's card opens beside the marker as they see it.
 	@State private var headTracker = CinemaHeadTracker()
@@ -104,7 +111,7 @@ struct CinemaSpace: View {
 			Attachment(id: Attachments.panel) {
 				// The map counts as open while the cinema is reopening it, so the button doesn't
 				// show for the second in between.
-				CinemaPanel(environment: $environment, sites: lookout.sites, siteID: $lookoutSiteID, turns: $lookoutTurns, radioCoordinate: radioCoordinate, lookoutNote: lookoutNote, spatialMapOpen: appState.spatialMapWindowCount > 0 || appState.spatialMapReopening) {
+				CinemaPanel(environment: $environment, stone: $stone, sites: lookout.sites, siteID: $lookoutSiteID, turns: $lookoutTurns, radioCoordinate: radioCoordinate, lookoutNote: lookoutNote, spatialMapOpen: appState.spatialMapWindowCount > 0 || appState.spatialMapReopening) {
 					openWindow(id: SpatialMapScene.id, value: SpatialMapSceneKey.shared)
 				} onLeave: {
 					Task { await dismissImmersiveSpace() }
@@ -130,17 +137,17 @@ struct CinemaSpace: View {
 			}
 			if let container, !appState.isDatabaseResetting, anchors?.board(.teamStatus) != nil {
 				Attachment(id: CinemaBoard.teamStatus.rawValue) {
-					live(TeamStatusBoard(), container: container)
+					live(scroll(TeamStatusBoard(), .teamStatus), container: container)
 				}
 			}
 			if let container, !appState.isDatabaseResetting, anchors?.board(.traceRoute) != nil {
 				Attachment(id: CinemaBoard.traceRoute.rawValue) {
-					live(TraceRouteBoard(), container: container)
+					live(scroll(TraceRouteBoard(), .traceRoute), container: container)
 				}
 			}
 			if let container, !appState.isDatabaseResetting, anchors?.board(.nodeStatus) != nil {
 				Attachment(id: CinemaBoard.nodeStatus.rawValue) {
-					live(NodeStatusBoard(environment: environment), container: container)
+					live(scroll(NodeStatusBoard(environment: environment), .nodeStatus), container: container)
 				}
 			}
 			if let modelRequest {
@@ -149,13 +156,13 @@ struct CinemaSpace: View {
 					if let container, !appState.isDatabaseResetting {
 						CinemaModelTag(request: modelRequest, liveScreen: standLiveScreen, zoom: modelStand.zoom, onZoom: { modelStand.setZoom($0) }, onInput: { event in
 							Task { await accessoryManager.sendDisplayInput(event) }
-						}) {
+						}, showsBanana: modelStand.showsBanana, onBanana: { modelStand.setBanana($0) }) {
 							self.modelRequest = nil
 						}
 						.id(appState.databaseResetID)
 						.modelContainer(container)
 					} else {
-						CinemaModelTag(request: CinemaModelRequest(modelName: modelRequest.modelName, deviceName: modelRequest.deviceName, nodeNum: nil)) {
+						CinemaModelTag(request: CinemaModelRequest(modelName: modelRequest.modelName, deviceName: modelRequest.deviceName, nodeNum: nil), showsBanana: modelStand.showsBanana, onBanana: { modelStand.setBanana($0) }) {
 							self.modelRequest = nil
 						}
 					}
@@ -179,10 +186,29 @@ struct CinemaSpace: View {
 			stage.position = [0, anchors?.eyeHeight ?? CinemaAnchors.seatedEyeHeight, 0]
 			stage.orientation = simd_quatf(angle: environment.frontRotation, axis: [0, 1, 0])
 			boards.unfitAll()
-			await replaceBackdrop(clearSky: false)
+			// Real terrain already up for the summit stays when the lookout and the castle swap.
+			await replaceBackdrop(clearSky: terrain != nil && environment.standsOnSummit)
 			await refreshLookout()
 		}
+		.task(id: stone) {
+			guard environment.hasStone, backdrop != nil, backdropStone != stone else { return }
+			await replaceBackdrop(clearSky: backdropClearSky)
+		}
 		.task(id: lookoutSiteID) {
+			await refreshLookout()
+		}
+		// A map deleted or downloaded changes the summits and the terrain around them, so both are
+		// found and built again.
+		.task(id: lookoutMaps) {
+			if let seen = lookoutMapsSeen, seen != lookoutMaps {
+				lookout.forgetSites()
+				lookoutBuild?.task.cancel()
+				lookoutBuild = nil
+				terrain?.removeFromParent()
+				terrain = nil
+				terrainSiteID = nil
+			}
+			lookoutMapsSeen = lookoutMaps
 			await refreshLookout()
 		}
 		.task(id: lookoutTurns) {
@@ -234,7 +260,7 @@ struct CinemaSpace: View {
 			if let container, !appState.isDatabaseResetting, let nodeNum = modelRequest?.nodeNum {
 				modelHasDisplay = getNodeInfo(id: nodeNum, context: ModelContext(container))?.metadata?.hasDisplay == true
 			}
-			await modelStand.show(modelRequest, environment: environment)
+			await modelStand.show(modelRequest, environment: environment, stone: stone)
 		}
 		// The stream is only wanted while the connected radio's model is on the stand. Asked for
 		// again after a reconnect, which forgets it.
@@ -382,25 +408,49 @@ struct CinemaSpace: View {
 	}
 
 	/// The backdrop for the environment: its image, and for a cutout, the sky behind it.
+	/// Dropped if the task is cancelled or the environment or stone changed while it loaded, so a
+	/// slower, older call can't replace the newer backdrop.
 	private func replaceBackdrop(clearSky: Bool) async {
-		let next = await CinemaBackdrop.make(environment, clearSky: clearSky)
+		let environment = environment
+		let stone = stone
+		let next = await CinemaBackdrop.make(environment, stone: stone, clearSky: clearSky)
+		guard !Task.isCancelled, environment == self.environment, stone == self.stone else { return }
 		backdrop?.removeFromParent()
 		stage.addChild(next)
 		backdrop = next
+		backdropStone = stone
+		backdropClearSky = clearSky
 	}
 
 	/// Puts the terrain for the chosen summit out the lookout's windows, with the clear sky behind
 	/// it, or takes it away for the painted sunset or another environment.
+	/// The circle the 3D map shows around the mesh, before any zoom; with no node positions, the
+	/// newest map the user downloaded, as the 3D map does. The lookout's summits are found in it.
+	private func lookoutArea() async -> SpatialCircle? {
+		if let container, !appState.isDatabaseResetting {
+			let preciseOnly = UserDefaults.standard.bool(forKey: SpatialTerrainKeeper.preciseOnlyKey)
+			let nodes = (try? await SpatialMeshAreaReader.nodes(container: container, preciseOnly: preciseOnly, connectedNodeNum: accessoryManager.activeDeviceNum)) ?? []
+			if let circle = SpatialMapArea.meshCircle(nodes) { return circle }
+		}
+		return SpatialMapArea.downloadedMapCircle(offlineMaps.regions)
+	}
+
+	/// The downloads the lookout's summits and terrain come from, as they change.
+	private var lookoutMaps: [String] {
+		offlineMaps.regions.map { "\($0.id)|\($0.terrain?.downloadedAt.timeIntervalSince1970 ?? 0)" }
+	}
+
 	private func refreshLookout() async {
-		guard environment.isCutout else {
+		guard environment.standsOnSummit else {
 			terrain?.removeFromParent()
 			terrain = nil
 			terrainSiteID = nil
 			return
 		}
-		if lookout.sites.isEmpty {
-			await lookout.prepare()
-		}
+		let maps = lookoutMaps
+		await lookout.prepare(area: await lookoutArea())
+		// The maps changing or the view going away while the summits were found makes this refresh stale.
+		guard !Task.isCancelled, lookoutMaps == maps else { return }
 		let site = lookout.site(for: lookoutSiteID)
 		let heading = SpatialLookout.heading(turns: lookoutTurns)
 		guard site?.id != terrainSiteID || heading != terrainHeading || (site != nil && terrain == nil) else { return }
@@ -430,7 +480,8 @@ struct CinemaSpace: View {
 		// waiting on the same build hasn't already put it up. Checked again after the backdrop
 		// changes, since either can change while it does.
 		func stillWanted() -> Bool {
-			lookoutSiteID == site.id && SpatialLookout.heading(turns: lookoutTurns) == heading && environment.isCutout
+			!Task.isCancelled && lookoutMaps == maps
+				&& lookoutSiteID == site.id && SpatialLookout.heading(turns: lookoutTurns) == heading && environment.standsOnSummit
 				&& !(terrain != nil && terrainSiteID == site.id && terrainHeading == heading)
 		}
 		guard let entity = built, stillWanted() else { return }
@@ -464,6 +515,16 @@ struct CinemaSpace: View {
 	private func showOnMap(_ nodeNum: Int64) {
 		appState.spatialMapFocus = SpatialMapFocusRequest(nodeNum: nodeNum)
 		openWindow(id: SpatialMapScene.id, value: SpatialMapSceneKey.shared)
+	}
+
+	/// The board as a scroll where the environment's boards are scrolls.
+	@ViewBuilder
+	private func scroll(_ board: some View, _ id: CinemaBoard) -> some View {
+		if environment.hasScrolls {
+			CinemaScroll(board: id) { board }
+		} else {
+			board
+		}
 	}
 
 	/// A board's view with the store and app state it reads, remade on a database reset.

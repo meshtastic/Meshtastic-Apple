@@ -10,22 +10,6 @@ import MeshtasticProtobufs
 
 extension ChannelEntity {
 	@MainActor
-	var allPrivateMessages: [MessageEntity] {
-		let context = PersistenceController.shared.context
-		let channelIndex = self.index
-		// NOTE: toUser == nil is intentionally absent from the predicate — comparing an optional
-		// relationship to nil in a #Predicate crashes SwiftData on iOS 26. Filter in Swift instead.
-		var descriptor = FetchDescriptor<MessageEntity>(
-			predicate: #Predicate<MessageEntity> { msg in
-				msg.channel == channelIndex && msg.isEmoji == false
-			},
-			sortBy: [SortDescriptor(\.messageTimestamp, order: .forward)]
-		)
-		let messages = (try? context.fetch(descriptor)) ?? []
-		return messages.filter { $0.toUser == nil }
-	}
-
-	@MainActor
 	var mostRecentPrivateMessage: MessageEntity? {
 		let context = PersistenceController.shared.context
 		let channelIndex = self.index

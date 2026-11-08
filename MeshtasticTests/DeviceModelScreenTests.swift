@@ -6,6 +6,7 @@
 //
 
 import Testing
+import RealityKit
 @testable import Meshtastic
 
 @Suite("Live screen on the 3D model")
@@ -45,6 +46,24 @@ struct DeviceModelScreenTests {
 		let shape = DeviceModelScreen.shape(imageWidth: 200, imageHeight: 200, slotWidth: 0.02, slotHeight: 0.03)
 		#expect(!shape.turned)
 		#expect(abs(shape.width - 0.02) < 1e-6)
+	}
+
+	@available(iOS 18.0, macCatalyst 18.0, *)
+	@MainActor
+	@Test("In the room the model stands on its base at real size, wherever it was modeled")
+	func standsOnItsBase() {
+		let part = ModelEntity(mesh: .generateBox(size: [0.05, 0.02, 0.01]))
+		part.position = [0.3, 0.1, -0.2]
+		let model = Entity()
+		model.addChild(part)
+		let stage = DeviceModelStage(model: model)
+		let scene = stage.makeStandingScene()
+		let bounds = scene.visualBounds(relativeTo: nil)
+		#expect(abs(bounds.min.y) < 1e-5)
+		#expect(abs(bounds.center.x) < 1e-5)
+		#expect(abs(bounds.center.z) < 1e-5)
+		#expect(abs(bounds.extents.x - 0.05) < 1e-5)
+		#expect(abs(bounds.extents.y - 0.02) < 1e-5)
 	}
 }
 

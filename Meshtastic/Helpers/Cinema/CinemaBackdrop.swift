@@ -20,15 +20,15 @@ enum CinemaBackdrop {
 	/// A cutout's sky sits far out, past any terrain drawn between it and the room.
 	static let skyRadius: Float = 980
 
-	/// The sphere for `environment`, under one entity. For a cutout environment, a second sphere
+	/// The sphere for `environment`, built of `stone` where it's built of stone, under one entity. For a cutout environment, a second sphere
 	/// behind it with the sky: the one the room was lit by, or with `clearSky` the same sky with
 	/// nothing below the horizon, for when terrain is drawn.
-	static func make(_ environment: CinemaEnvironment, clearSky: Bool = false) async -> Entity {
+	static func make(_ environment: CinemaEnvironment, stone: CastleStone, clearSky: Bool = false) async -> Entity {
 		let root = Entity()
 		root.name = "CinemaBackdrop"
 
 		var roomMaterial = UnlitMaterial(color: environment.placeholderColors.horizon)
-		if let texture = await texture(for: environment) {
+		if let texture = await texture(for: environment, stone: stone) {
 			roomMaterial.color = .init(tint: .white, texture: .init(texture))
 			if environment.isCutout {
 				// The image's alpha is the glass: anything behind the sphere shows through it.
@@ -60,8 +60,8 @@ enum CinemaBackdrop {
 	}
 
 	/// The environment's image, or a gradient from its sky to its ground if the image won't load.
-	private static func texture(for environment: CinemaEnvironment) async -> TextureResource? {
-		if let texture = await texture(named: environment.imageName) {
+	private static func texture(for environment: CinemaEnvironment, stone: CastleStone) async -> TextureResource? {
+		if let texture = await texture(named: environment.imageName(stone: stone)) {
 			return texture
 		}
 		guard let image = placeholderImage(environment.placeholderColors) else { return nil }

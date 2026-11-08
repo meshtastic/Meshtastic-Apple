@@ -143,7 +143,7 @@ Enable the <strong>Via LoRa</strong> filter and disable <strong>Via MQTT</strong
 </tr>
 <tr>
 <td>Contour Lines</td>
-<td>Elevation contours over areas of your offline maps that have terrain, on every map layer.</td>
+<td>Elevation contours over areas of your offline maps that have terrain, on every map layer. Every fifth line is heavier and now and then carries its elevation, in feet or meters by your measurement setting, spread out like a printed map's. On the Apple Vision Pro 3D map the number sits in a gap in its line.</td>
 </tr>
 </tbody>
 </table>
@@ -159,6 +159,7 @@ Enable the <strong>Via LoRa</strong> filter and disable <strong>Via MQTT</strong
 <p><strong>Buildings</strong> in the 3D spatial map's map menu raises the buildings from your downloaded offline maps on the terrain, at their height from OpenStreetMap, with the same height exaggeration as the hills. It is offered where a downloaded street map covers part of the table, and is off by default. A map downloaded at <strong>High detail</strong> has every building; a <strong>Standard</strong> map has only the largest. On Vision Pro, downloads start at High detail. Buildings without a height in OpenStreetMap stand about two floors tall. The further the table is zoomed out, the fewer are drawn: every building on a table a few kilometers across, only the larger ones on a wider one, and none past about 20 km. Building data © OpenStreetMap contributors.</p>
 <h3 id="offline-maps">Offline Maps</h3>
 <p>A dedicated section of the sheet for working without a connection: a link opens the list of downloaded map regions to manage them or download new ones, and the <strong>Offline Tiles</strong> toggle overlays a downloaded region on the base map so it keeps rendering with no internet connection.</p>
+<p>The offline map prints names from the downloaded map: places, lakes and bays, and landmarks such as parks, schools, hospitals and peaks. On the 2D map they show when there's no network to draw Apple's names. On Apple Vision Pro, the 3D spatial map's <strong>Offline</strong> layer always prints them, and street names too, set along their street from zoom 12 for main roads to zoom 14 for side streets.</p>
 <h4 id="importing-a-map-file">Importing a map file</h4>
 <p>To use a map file you already have, open the offline map list and tap <strong>Import MBTiles or PMTiles File</strong>, or the import button in the corner of the screen. You can also open a <code>.mbtiles</code> or <code>.pmtiles</code> file from the Files app. The app checks the file, copies it in, and adds it to the list, where it counts toward the same limits as a downloaded map: 512 MB per map (1 GB on Apple Vision Pro), 10 maps, and 3 GB in total. A file that is already installed, is too large, or isn't a map is turned down with a message. It shows on the map with the <strong>Offline Tiles</strong> toggle, like a downloaded map.</p>
 <h3 id="offline-map-for-the-spatial-map-apple-vision-pro">Offline map for the spatial map (Apple Vision Pro)</h3>

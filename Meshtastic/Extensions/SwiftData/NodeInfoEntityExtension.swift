@@ -174,6 +174,19 @@ extension NodeInfoEntity {
 		return (try? ctx.fetch(descriptor)) ?? []
 	}
 
+	/// Stores a device metrics battery reading unless one as new or newer is already stored, so a
+	/// replayed packet can't put back an older level. A reading with no time of its own only
+	/// replaces a level that has no time either.
+	func updateBatteryLevel(_ level: Int32, at time: Date?) {
+		guard let time else {
+			if batteryLevelTime == nil { batteryLevel = level }
+			return
+		}
+		if let current = batteryLevelTime, time <= current { return }
+		batteryLevel = level
+		batteryLevelTime = time
+	}
+
 	var latestDeviceMetrics: TelemetryEntity? {
 		guard let ctx = modelContext else { return nil }
 		let nodeNum = self.num

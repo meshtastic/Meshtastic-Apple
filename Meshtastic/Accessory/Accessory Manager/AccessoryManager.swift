@@ -237,6 +237,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	@Published var activeDeviceNum: Int64?
 	@Published var allowDisconnect = false
 	@Published var lastConnectionError: Error?
+	/// Why the last radio switch stopped before clearing the store, for the Connect screen's alert.
+	@Published var radioSwitchFailure: String?
 	/// True while the connected radio's firmware is below `minimumVersion`. ContentView
 	/// presents the firmware update gate over the whole app while this is set.
 	@Published var firmwareUpdateRequired = false
@@ -1290,6 +1292,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 				lastConfigRefresh = Date()
 				if let completedNodeNum = refresh.nodeNum {
 					await MeshPackets.shared.commitChannelRefreshStage(for: completedNodeNum, owner: refresh.owner)
+					// The first point where both the whole channel set and the LoRa config are in.
+					await reconcileChannelConversations()
 					MeshShareSnapshotBuilder.refresh(nodeNum: completedNodeNum, context: context)
 					WidgetDataBroker.shared.refresh(.config)
 				}

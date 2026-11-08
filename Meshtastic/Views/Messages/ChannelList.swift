@@ -19,6 +19,7 @@ struct ChannelList: View {
 	@State private var isPresentingDeleteChannelMessagesConfirm: Bool = false
 	@State private var isPresentingTraceRouteSentAlert = false
 	@State private var showingHelp = false
+	@State private var archivedConversations: [ChannelConversationRecord] = []
 
 	private var visibleChannels: [ChannelEntity] {
 		guard let myInfo = node?.myInfo else { return [] }
@@ -45,6 +46,7 @@ struct ChannelList: View {
 		let localeDateFormat = DateFormatter.dateFormat(fromTemplate: "yyMMdd", options: 0, locale: Locale.current)
 		let dateFormatString = (localeDateFormat ?? "MM/dd/YY")
 
+		let isArchived = channel.index < 0
 		NavigationLink(value: channel) {
 			let mostRecent = channel.mostRecentPrivateMessage
 			let hasMessages = mostRecent != nil
@@ -65,12 +67,22 @@ struct ChannelList: View {
 			}
 			.accessibilityHidden(!hasUnreadMessages)
 			.accessibilityLabel(String(localized: "\(unreadCount) unread", comment: "VoiceOver: number of unread messages in a channel"))
-			CircleText(text: String(channel.index), color: .accentFill)
-				.brightness(0.2)
+			if isArchived {
+				Image(systemName: "archivebox")
+					.font(.title2)
+					.foregroundColor(.onSurfaceVariant)
+					.frame(width: 45, height: 45)
+					.accessibilityHidden(true)
+			} else {
+				CircleText(text: String(channel.index), color: .accentFill)
+					.brightness(0.2)
+			}
 
 			VStack(alignment: .leading) {
 				HStack {
-					ChannelLock(channel: channel)
+					if !isArchived {
+						ChannelLock(channel: channel)
+					}
 					if channel.name?.isEmpty ?? false {
 						if channel.role == 1 {
 							Text(String(localized: "Primary Channel"))
@@ -110,6 +122,12 @@ struct ChannelList: View {
 						Image(systemName: "bell.slash")
 							.accessibilityLabel(String(localized: "Muted", comment: "VoiceOver: channel notifications are muted"))
 					}
+				}
+
+				if isArchived {
+					Text("Archived, no longer on the radio")
+						.font(.caption)
+						.foregroundColor(.onSurfaceVariant)
 				}
 
 				if hasMessages {
@@ -170,6 +188,26 @@ struct ChannelList: View {
 			}
 	}
 
+	/// A conversation whose channel has left the radio. Read only, so the only action is
+	/// deleting it.
+	@ViewBuilder
+	private func makeArchivedListItem(myInfo: MyInfoEntity, record: ChannelConversationRecord) -> some View {
+		let channel = ChannelConversations.archivedChannel(for: record)
+		makeChannelRow(myInfo: myInfo, channel: channel)
+			.alignmentGuide(.listRowSeparatorLeading) {
+				$0[.leading]
+			}
+			.frame(minHeight: 62)
+			.contextMenu {
+				Button(role: .destructive) {
+					isPresentingDeleteChannelMessagesConfirm = true
+					channelToDeleteMessages = channel
+				} label: {
+					Label("Delete Messages", systemImage: "trash")
+				}
+			}
+	}
+
 	var body: some View {
 		VStack {
 			// Display Contacts for the rest of the non admin channels
@@ -177,6 +215,14 @@ struct ChannelList: View {
 				List(selection: $channelSelection) {
 					ForEach(visibleChannels) { (channel: ChannelEntity) in
 						makeChannelListItem(node: node, myInfo: myInfo, channel: channel)
+					}
+					// After every live channel, whatever their slots.
+					if !archivedConversations.isEmpty {
+						Section("Archived") {
+							ForEach(archivedConversations, id: \.key) { record in
+								makeArchivedListItem(myInfo: myInfo, record: record)
+							}
+						}
 					}
 				}
 				.olderThanOS26 { $0.padding([.top, .bottom]) }
@@ -187,10 +233,18 @@ struct ChannelList: View {
 					titleVisibility: .visible
 				) {
 					Button(role: .destructive) {
+						guard let channel = channelToDeleteMessages else { return }
+						let key = channel.index
 						Task {
-							await MeshPackets.shared.deleteChannelMessages(channel: channelToDeleteMessages!)
+							if key < 0 {
+								await MeshPackets.shared.deleteArchivedConversation(key: key)
+							} else {
+								await MeshPackets.shared.deleteChannelMessages(channel: channel)
+							}
 							await MainActor.run {
 								channelToDeleteMessages = nil
+								if channelSelection?.index == key && key < 0 { channelSelection = nil }
+								archivedConversations = ChannelConversations.archivedConversations(in: context)
 							}
 						}
 					} label: {
@@ -199,6 +253,14 @@ struct ChannelList: View {
 				}
 			}
 			Spacer()
+		}
+		.task { archivedConversations = ChannelConversations.archivedConversations(in: context) }
+		// A reconcile posts this after it moves messages, as do new messages and deletes.
+		.onReceive(
+			NotificationCenter.default.publisher(for: .meshMessagesDidChange)
+				.debounce(for: .milliseconds(300), scheduler: DispatchQueue.main)
+		) { _ in
+			archivedConversations = ChannelConversations.archivedConversations(in: context)
 		}
 		.hostedSheet(isPresented: $showingHelp) {
 			ChannelsHelp()

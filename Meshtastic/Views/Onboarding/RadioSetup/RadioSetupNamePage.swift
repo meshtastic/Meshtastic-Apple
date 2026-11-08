@@ -25,6 +25,10 @@ struct RadioSetupNamePage: View {
 		Binding(get: { model.shortName }, set: { model.setShortName($0) })
 	}
 
+	private var status: Binding<String> {
+		Binding(get: { model.status }, set: { model.setStatus($0) })
+	}
+
 	/// The same color the node lists give this node's circle.
 	private var nodeColor: Color {
 		Color(UIColor(hex: UInt32(truncatingIfNeeded: model.nodeNum)))
@@ -34,7 +38,7 @@ struct RadioSetupNamePage: View {
 		OnboardingPage(
 			title: String(localized: "Name Your Radio", comment: "Radio setup name title"),
 			intro: AttributedString(localized: "Other people see these in their node lists and on the map.", comment: "Radio setup name intro"),
-			buttonTitle: model.hasNameChanges
+			buttonTitle: model.hasNameChanges || model.hasStatusChanges
 				? String(localized: "Save and Continue", comment: "Radio setup button")
 				: String(localized: "Continue"),
 			isContinueEnabled: model.canSaveName,
@@ -42,7 +46,8 @@ struct RadioSetupNamePage: View {
 			secondaryButtonTitle: String(localized: "Skip"),
 			secondaryAction: { model.advance(from: .name) },
 			action: {
-				if await model.saveName(using: accessoryManager, context: context) {
+				if await model.saveName(using: accessoryManager, context: context),
+				   await model.saveStatus(using: accessoryManager, context: context) {
 					model.advance(from: .name)
 				}
 			}
@@ -57,11 +62,19 @@ struct RadioSetupNamePage: View {
 				Divider()
 					.padding(.leading, 16)
 				NameRow(title: String(localized: "Short Name"), text: shortName)
+				if model.supports2_8 {
+					Divider()
+						.padding(.leading, 16)
+					NameRow(title: String(localized: "Status", comment: "Radio setup name page; the node's status message"), text: status, placeholder: String(localized: "Optional"))
+				}
 			}
 			.background(.fill.tertiary, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 			VStack(alignment: .leading, spacing: 4) {
 				Text(String.localizedStringWithFormat(String(localized: "Long Name can be up to %lld bytes long."), Int64(model.longNameLimit)))
 				Text("The short name shows in your node's circle: up to 4 characters or one emoji.", comment: "Radio setup name footer")
+				if model.supports2_8 {
+					Text("Status is a short note other people see in their node lists.", comment: "Radio setup name footer; the node's status message")
+				}
 			}
 			.font(.footnote)
 			.foregroundStyle(.secondary)
@@ -85,6 +98,8 @@ private struct NameRow: View {
 	let title: String
 	@Binding var text: String
 	var labelAbove = false
+	/// Shown in the empty field. The title when nil.
+	var placeholder: String?
 	@Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
 	var body: some View {
@@ -95,7 +110,7 @@ private struct NameRow: View {
 		layout {
 			Text(title)
 				.font(.body)
-			TextField(title, text: $text)
+			TextField(placeholder ?? title, text: $text)
 				.multilineTextAlignment(stacked ? .leading : .trailing)
 				.disableAutocorrection(true)
 				.frame(minHeight: 44)

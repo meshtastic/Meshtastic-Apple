@@ -107,6 +107,26 @@ struct TraceRouteStateTests {
 		#expect(TraceRouteState.rateLimited.label != nil)
 		#expect(TraceRouteState.complete.label == nil)
 		#expect(TraceRouteState.observed.label == nil)
+		#expect(TraceRouteState.tracedBy.label == nil)
+	}
+
+	@Test("A trace to us is its own state, whatever else the record holds")
+	func tracedBy() {
+		let route = route(sent: false, response: false)
+		route.tracedBy = true
+		#expect(route.state(now: sentTime) == .tracedBy)
+		#expect(!route.observed)
+		#expect(route.roundTrip == nil)
+	}
+
+	@Test("Only routes this app didn't request carry an origin label")
+	func originLabels() {
+		#expect(TraceRouteState.observed.originLabel != nil)
+		#expect(TraceRouteState.tracedBy.originLabel != nil)
+		#expect(TraceRouteState.complete.originLabel == nil)
+		#expect(TraceRouteState.pending.originLabel == nil)
+		#expect(TraceRouteState.noResponse.originLabel == nil)
+		#expect(TraceRouteState.rateLimited.originLabel == nil)
 	}
 
 	@Test("Direct routes get the two-person icon, others the state icon")

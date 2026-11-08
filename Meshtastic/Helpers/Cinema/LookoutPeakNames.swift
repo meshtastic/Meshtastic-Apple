@@ -33,9 +33,10 @@ enum LookoutPeakNames {
 	static func named(_ sites: [LookoutSite]) async -> [LookoutSite] {
 		let files = OfflineMapManager.persistedRegionFiles().filter { $0.region.hasBasemap }
 		guard !files.isEmpty else { return sites }
-		return await Task.detached(priority: .utility) {
+		let lookup = Task.detached(priority: .utility) {
 			lookUp(sites, in: files)
-		}.value
+		}
+		return await withTaskCancellationHandler { await lookup.value } onCancel: { lookup.cancel() }
 	}
 
 	private struct Candidate {
@@ -91,6 +92,7 @@ enum LookoutPeakNames {
 		var named = sites
 		var usedReserveNames: Set<String> = []
 		for index in order {
+			if Task.isCancelled { break }
 			let site = sites[index]
 			guard site.name == nil, let source = sources.first(where: { $0.bounds.contains(site.coordinate) }) else { continue }
 			let reserveZoom = min(11, Int(source.source.tileMaxZoom))

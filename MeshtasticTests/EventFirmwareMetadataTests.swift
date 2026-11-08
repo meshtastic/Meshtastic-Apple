@@ -39,6 +39,13 @@ struct EventFirmwareMetadataTests {
 		#expect(FirmwareEditions(editionKey: "NOT_A_REAL_EVENT") == nil)
 	}
 
+	/// The bundled seed is refreshed by the Sync API Seeds workflow, so it must keep decoding.
+	@Test func bundledSeedDecodes() throws {
+		let url = try #require(Bundle.main.url(forResource: "event_firmware", withExtension: "json"))
+		let decoded = try EventFirmwareManifestDecoder.decode(Data(contentsOf: url))
+		#expect(!decoded.editions.isEmpty)
+	}
+
 	/// Drift guard for protobuf bumps. `FirmwareEditions(from:)` maps by raw value and falls back
 	/// to `.vanilla`, so a new firmware edition added upstream compiles fine and silently loses its
 	/// event badge, name and description until it is mirrored here.

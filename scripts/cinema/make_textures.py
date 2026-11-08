@@ -8,7 +8,8 @@
 #  Draws the flat textures the scenes use: a topo map, a blank whiteboard, and the Meshtastic
 #  banner, Chirpy poster and Meshtastic Solutions plaque; for the ham shack, a wall of QSL
 #  cards, two clock faces, a radio's display, two meter faces, an FT8 screen, a band plan chart, and its books' spines and covers; and
-#  for the fire lookout, its radio display. All but the branding are generated here.
+#  for the fire lookout, its radio display; and for the castle tower, its Meshtastic banner. All but
+#  the branding are generated here.
 #  The branding uses the app's own artwork, rasterized from its SVGs with resvg (the resvg-py
 #  package), so it is never redrawn. Writes PNGs into cache/.
 #  build.sh runs it with uv, which supplies Pillow, numpy and resvg-py.
@@ -461,6 +462,24 @@ def lookout_radio(path, w=900, h=270):
     image.save(path)
 
 
+def castle_banner(path, w=1000, h=1500):
+    """The castle tower's hanging banner, 1.0 by 1.5 m: the Meshtastic mark on Meshtastic charcoal
+    over the wordmark, inside a gold border, woven like the tent's banner."""
+    image = Image.new("RGBA", (w, h), (*CHARCOAL, 255))
+    draw = ImageDraw.Draw(image)
+    gold = (196, 152, 62)
+    border = int(w * 0.045)
+    draw.rectangle([border, border, w - 1 - border, h - 1 - border], outline=gold, width=int(border * 0.6))
+    mark = svg(MARK_SVG, int(w * 0.62))
+    wordmark = svg(WORDMARK_SVG, int(w * 0.7))
+    gap = int(h * 0.06)
+    top = (h - mark.height - gap - wordmark.height) // 2
+    image.alpha_composite(mark, ((w - mark.width) // 2, top))
+    image.alpha_composite(wordmark, ((w - wordmark.width) // 2, top + mark.height + gap))
+    pixels = np.asarray(image.convert("RGB"), dtype=float) * weave((w, h), 23, 0.14)[..., None]
+    Image.fromarray(np.clip(pixels, 0, 255).astype(np.uint8)).save(path)
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     topo_map(os.path.join(OUT, "topo.png"))
@@ -486,6 +505,7 @@ def main():
     for i, (title, line, color, ink) in enumerate(COVERS):
         book_cover(os.path.join(OUT, f"cover_{i}.png"), title, line, color, ink)
     lookout_radio(os.path.join(OUT, "lookout_radio.png"))
+    castle_banner(os.path.join(OUT, "castle_banner.png"))
     print("textures written to", OUT)
 
 

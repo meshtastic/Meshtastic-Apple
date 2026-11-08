@@ -38,7 +38,7 @@ enum LookoutSiteCacheKey {
 /// refreshed, since that's what they're found in.
 enum LookoutSiteCache {
 	/// Bump when the summit search or naming changes, so lists found the old way are found again.
-	private static let version = 1
+	private static let version = 2
 
 	private struct Entry: Codable {
 		let version: Int
@@ -62,6 +62,12 @@ enum LookoutSiteCache {
 		} catch {
 			Logger.services.error("🎬 [Cinema] Couldn't keep the lookout summits: \(error.localizedDescription, privacy: .public)")
 		}
+	}
+
+	/// Forgets the kept summits, so the next search runs again.
+	static func clear() {
+		guard let url = fileURL() else { return }
+		try? FileManager.default.removeItem(at: url)
 	}
 
 	private static func fileURL() -> URL? {

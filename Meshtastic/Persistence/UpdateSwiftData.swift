@@ -422,6 +422,9 @@ extension MeshPackets {
 					// signing (not just the connected one); the connected radio's NodeDB dump path
 					// (MeshPackets.nodeInfoPacket) keeps sourcing it from the radio's own database.
 					newNode.hasXeddsaSigned = packet.xeddsaSigned
+					if nodeInfoMessage.hasDeviceMetrics, nodeInfoMessage.deviceMetrics.hasBatteryLevel {
+						newNode.updateBatteryLevel(Int32(truncatingIfNeeded: nodeInfoMessage.deviceMetrics.batteryLevel), at: packet.rxTime > 0 ? Date(timeIntervalSince1970: TimeInterval(packet.rxTime)) : nil)
+					}
 				}
 				if packet.hopStart != 0 && packet.hopLimit <= packet.hopStart {
 					newNode.hopsAway = Int32(truncatingIfNeeded: packet.hopStart - packet.hopLimit)
@@ -554,6 +557,9 @@ extension MeshPackets {
 						telemetry.channelUtilization = nodeInfoMessage.deviceMetrics.channelUtilization
 						telemetry.airUtilTx = nodeInfoMessage.deviceMetrics.airUtilTx
 						telemetry.nodeNum = fetchedNode[0].num
+						if nodeInfoMessage.deviceMetrics.hasBatteryLevel {
+							fetchedNode[0].updateBatteryLevel(Int32(truncatingIfNeeded: nodeInfoMessage.deviceMetrics.batteryLevel), at: packet.rxTime > 0 ? Date(timeIntervalSince1970: TimeInterval(packet.rxTime)) : nil)
+						}
 					}
 					if nodeInfoMessage.hasUser {
 						fetchedNode[0].user?.userId = nodeInfoMessage.num.toHex()

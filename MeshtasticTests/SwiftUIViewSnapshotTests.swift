@@ -1608,11 +1608,13 @@ struct NodeDetailSnapshotTests {
 @Suite("MQTTConfig Snapshots")
 struct MQTTConfigSnapshotTests {
 
+	/// Each test passes its own `num`: `num` is unique, and a second node with the same
+	/// number left unsaved edits behind that crashed a later suite's save.
 	@MainActor
-	private func makeNode() throws -> NodeInfoEntity {
+	private func makeNode(num: Int64) throws -> NodeInfoEntity {
 		let context = sharedModelContainer.mainContext
 		let node = NodeInfoEntity()
-		node.num = 0xC0FF_EE0E
+		node.num = num
 		context.insert(node)
 		let user = UserEntity()
 		user.num = node.num
@@ -1642,12 +1644,13 @@ struct MQTTConfigSnapshotTests {
 	@Test("MQTT form, public server with map reporting consented")
 	@MainActor
 	func mqttForm() async throws {
-		let node = try makeNode()
+		let node = try makeNode(num: 0xC0FF_EE0E)
 		node.mqttConfig?.root = "msh/US/bayarea"
 		let lora = LoRaConfigEntity()
 		lora.regionCode = 1
 		sharedModelContainer.mainContext.insert(lora)
 		node.loRaConfig = lora
+		try sharedModelContainer.mainContext.save()
 		AccessoryManager.shared.isConnected = true
 		AccessoryManager.shared.activeDeviceNum = node.num
 		// Render the custom-root warning on affected radio firmware.
@@ -1681,11 +1684,12 @@ struct MQTTConfigSnapshotTests {
 	@Test("Topic finder sheet, finished sample")
 	@MainActor
 	func topicFinderSheet() async throws {
-		let node = try makeNode()
+		let node = try makeNode(num: 0xC0FF_EE0D)
 		let lora = LoRaConfigEntity()
 		lora.regionCode = 1
 		sharedModelContainer.mainContext.insert(lora)
 		node.loRaConfig = lora
+		try sharedModelContainer.mainContext.save()
 		let mqtt = try #require(node.mqttConfig)
 		let config = ModuleConfig.MQTTConfig(entity: mqtt)
 		// A finished sample with two roots and one map report, driven through the handlers: no socket.
@@ -3138,6 +3142,37 @@ struct RadioSetupSnapshotTests {
 	@Test("Name page")
 	func name() async {
 		await assertViewSnapshot(of: screen(RadioSetupNamePage(model: model(region: .us, preset: .longTurbo))), width: 390, height: 844, named: "radio_setup_name", forDocs: true)
+	}
+
+	@Test("Nearby meshes page")
+	func beacons() async {
+		// The radio listening, with one mesh heard, in a store of its own.
+		guard let container = try? ModelContainer(
+			for: Schema(versionedSchema: MeshtasticSchema.current),
+			configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+		) else {
+			Issue.record("Could not make an in-memory store")
+			return
+		}
+		let context = container.mainContext
+		let node = NodeInfoEntity()
+		node.num = 0x1234
+		context.insert(node)
+		let beaconConfig = MeshBeaconConfigEntity()
+		beaconConfig.flags = MeshBeaconFlags.listenEnabled
+		context.insert(beaconConfig)
+		node.meshBeaconConfig = beaconConfig
+		let beacon = DiscoveredBeaconEntity()
+		beacon.nodeNum = 0x5678
+		beacon.longName = "Puget Sound Mesh"
+		beacon.message = "Weekly net Tuesdays at 7"
+		context.insert(beacon)
+		await assertViewSnapshot(
+			of: NavigationStack { RadioSetupBeaconsPage(model: model(region: .us, preset: .longTurbo)) }
+				.environmentObject(AccessoryManager.shared)
+				.modelContainer(container),
+			width: 390, height: 844, named: "radio_setup_beacons", forDocs: true
+		)
 	}
 
 	@Test("Done page")

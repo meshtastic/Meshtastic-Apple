@@ -524,16 +524,29 @@ final class SpatialSceneController {
 		ring.scale = SIMD3(repeating: counterScale)
 		ring.isEnabled = true
 		let top = base + [0, height * counterScale, 0]
-		let card = top + [0, 0.11 * counterScale, 0]
+		// The card's bottom edge clears the node's name tag; the line runs up to that edge, not
+		// into the card.
+		let bottom = top + [0, Self.cardGap * counterScale, 0]
+		let card = bottom + [0, cardHalfHeight() * counterScale, 0]
 		detailEntity?.position = card
 		detailEntity?.scale = SIMD3(repeating: counterScale)
 		detailEntity?.isEnabled = true
-		let direction = card - top
-		let length = simd_length(direction)
-		tether.position = top + direction / 2
-		tether.scale = [counterScale, max(length - 0.05 * counterScale, 0.001), counterScale]
-		tether.orientation = simd_quatf(from: [0, 1, 0], to: simd_normalize(direction))
+		tether.position = (top + bottom) / 2
+		tether.scale = [counterScale, max(simd_length(bottom - top), 0.001), counterScale]
+		tether.orientation = simd_quatf(from: [0, 1, 0], to: simd_normalize(bottom - top))
 		tether.isEnabled = true
+	}
+}
+
+extension SpatialSceneController {
+	/// From the top of a node to the bottom of its card, in room meters: above the name tag, which
+	/// sits 1.8 cm over the top and is about 1.6 cm tall.
+	private static let cardGap: Float = 0.045
+
+	/// Half the card's height in room meters, measured once it has been laid out.
+	private func cardHalfHeight() -> Float {
+		let measured = detailEntity.map { $0.visualBounds(relativeTo: $0).extents.y / 2 } ?? 0
+		return measured > 0.01 ? measured : 0.065
 	}
 }
 
@@ -797,17 +810,42 @@ extension SpatialSceneController {
 
 // MARK: Fire lookout
 
+/// What stands on the cinema's summit on the map: the fire lookout, or the castle tower in its stone.
+enum SpatialSummitModel: Equatable {
+	case fireLookout
+	case castleTower(CastleStone)
+
+	var entityName: String {
+		switch self {
+		case .fireLookout: "fireLookout"
+		case let .castleTower(stone): "castleTower-\(stone.rawValue)"
+		}
+	}
+
+	@MainActor
+	func make(heading: Double) -> Entity? {
+		let made = switch self {
+		case .fireLookout: SpatialLookoutParts.make(heading: heading)
+		case let .castleTower(stone): SpatialLookoutParts.makeCastle(heading: heading, stone: stone)
+		}
+		made?.name = entityName
+		return made
+	}
+}
+
 extension SpatialSceneController {
-	/// Stands the fire lookout on `coordinate`, the summit the cinema's lookout room is on, with its
-	/// cab facing `heading`, or takes it away for nil. Moved onto the new ground whenever the terrain
-	/// is rebuilt.
-	func apply(lookout coordinate: CLLocationCoordinate2D?, heading: Double = SpatialLookout.frontHeading) {
+	/// Stands `model`, the fire lookout or the castle tower, on `coordinate`, the summit the cinema's
+	/// room is on, with its front facing `heading`, or takes it away for nil. Moved onto the new
+	/// ground whenever the terrain is rebuilt.
+	func apply(lookout coordinate: CLLocationCoordinate2D?, heading: Double = SpatialLookout.frontHeading, model: SpatialSummitModel = .fireLookout) {
 		guard let placement else { return }
 		let same = coordinate?.latitude == lookoutCoordinate?.latitude && coordinate?.longitude == lookoutCoordinate?.longitude
-		guard !same || placement.revision != lookoutPlacementRevision || heading != lookoutHeading else { return }
+		// The model up is told by its entity's name.
+		let modelChanged = lookout.map { $0.name != model.entityName } ?? false
+		guard !same || placement.revision != lookoutPlacementRevision || heading != lookoutHeading || modelChanged else { return }
 		lookoutCoordinate = coordinate
 		lookoutPlacementRevision = placement.revision
-		if heading != lookoutHeading {
+		if heading != lookoutHeading || modelChanged {
 			lookoutHeading = heading
 			lookout?.removeFromParent()
 			lookout = nil
@@ -817,7 +855,7 @@ extension SpatialSceneController {
 			lookout = nil
 			return
 		}
-		if lookout == nil, let made = SpatialLookoutParts.make(heading: heading) {
+		if lookout == nil, let made = model.make(heading: heading) {
 			applyLight(to: made)
 			nodesContainer.addChild(made)
 			lookout = made

@@ -1174,6 +1174,57 @@ struct TelemetryPacketIngestTests {
 		#expect(latest?.pm100Environmental == nil)
 		#expect(latest?.nodeNum == Int64(nodeNum))
 	}
+
+	/// Builds a decoded device-metrics telemetry packet carrying a battery level.
+	private func makeDeviceMetricsPacket(from nodeNum: UInt32, batteryLevel: UInt32, reportedTime: UInt32) throws -> MeshPacket {
+		var metrics = DeviceMetrics()
+		metrics.batteryLevel = batteryLevel
+
+		var telemetry = Telemetry()
+		telemetry.deviceMetrics = metrics
+		telemetry.time = reportedTime
+
+		var dataMessage = DataMessage()
+		dataMessage.payload = try telemetry.serializedData()
+		dataMessage.portnum = .telemetryApp
+
+		var packet = MeshPacket()
+		packet.from = nodeNum
+		packet.to = UInt32.max
+		packet.rxTime = reportedTime
+		packet.decoded = dataMessage
+		return packet
+	}
+
+	/// The battery level is kept on the node so the Connect screen and widgets read it without
+	/// searching telemetry (#2898). A replayed older reading must not replace a newer one.
+	@Test func deviceMetricsTelemetry_storesLatestBatteryLevelOnNode() async throws {
+		let nodeNum: UInt32 = 0x2898_AA01
+		let mesh = MeshPackets(modelContainer: sharedModelContainer)
+		await mesh.telemetryPacket(packet: try makeDeviceMetricsPacket(from: nodeNum, batteryLevel: 80, reportedTime: 1_700_000_500), connectedNode: Self.connectedNode)
+		await mesh.telemetryPacket(packet: try makeDeviceMetricsPacket(from: nodeNum, batteryLevel: 95, reportedTime: 1_700_000_000), connectedNode: Self.connectedNode)
+		await mesh.flushDebouncedSaves()
+
+		let num = Int64(nodeNum)
+		let context = ModelContext(sharedModelContainer)
+		let node = try context.fetch(FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { $0.num == num })).first
+		#expect(node?.batteryLevel == 80)
+		#expect(node?.batteryLevelTime == Date(timeIntervalSince1970: 1_700_000_500))
+	}
+
+	/// A reading with the same time as the stored one is a replay, and one with no time of its own
+	/// only replaces a level that has no time either.
+	@Test func updateBatteryLevel_keepsTimedReadingOverReplayAndUntimed() {
+		let node = NodeInfoEntity()
+		let time = Date(timeIntervalSince1970: 1_700_000_500)
+		node.updateBatteryLevel(50, at: nil)
+		#expect(node.batteryLevel == 50)
+		node.updateBatteryLevel(80, at: time)
+		node.updateBatteryLevel(70, at: time)
+		node.updateBatteryLevel(60, at: nil)
+		#expect(node.batteryLevel == 80)
+		#expect(node.batteryLevelTime == time)
+	}
 }
 
 // MARK: - PAX counter ingestion

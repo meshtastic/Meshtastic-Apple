@@ -60,6 +60,29 @@ environment() {
 	echo "Wrote $DEST/$name.heic and ${name}_anchors.json"
 }
 
+# Renders <script>.py in one of its stones as <script>_<stone>.heic, and ships <script>_anchors.json,
+# which is the same for every stone: stone_environment <script> <stone>.
+stone_environment() {
+	local script="$1" stone="$2"
+	local name="${script}_${stone}"
+	rm -f "$HERE/out/$name.png" "$HERE/out/${name}_preview.png" "$HERE/out/${name}_anchors.json"
+	if [ "$PREVIEW" = 1 ]; then
+		"$BLENDER" -b --python-exit-code 1 -P "$HERE/$script.py" -- --out "$HERE/out/${name}_preview.png" --width 2048 --samples 48 --stone "$stone"
+		return
+	fi
+	"$BLENDER" -b --python-exit-code 1 -P "$HERE/$script.py" -- --out "$HERE/out/$name.png" --width 4096 --samples 160 --stone "$stone"
+	sips -s format heic -s formatOptions "$HEIC_QUALITY" "$HERE/out/$name.png" --out "$DEST/$name.heic" >/dev/null
+	# Every stone shares one anchors file, so a stone whose anchors differ from one rendered
+	# earlier in this run is an error.
+	if [ "${STONE_ANCHORS:-}" = "$script" ] && ! cmp -s "$HERE/out/${name}_anchors.json" "$DEST/${script}_anchors.json"; then
+		echo "error: ${name}_anchors.json differs from the other stones' anchors" >&2
+		exit 1
+	fi
+	cp "$HERE/out/${name}_anchors.json" "$DEST/${script}_anchors.json"
+	STONE_ANCHORS="$script"
+	echo "Wrote $DEST/$name.heic and ${script}_anchors.json"
+}
+
 # Renders an HDRI alone as <name>.heic, the sky an environment with a cutout image shows behind
 # its glass: sky <name> <hdri file> <rotation> <strength>.
 sky() {
@@ -101,3 +124,6 @@ environment fire_lookout
 # seen from the tower under a clear sunset, and that clear sky alone, for behind real terrain.
 view fire_lookout_sky forest_view kloppenheim_06_puresky_4k.hdr 5.5 1
 sky fire_lookout_puresky kloppenheim_06_puresky_4k.hdr 5.5 1
+# The castle tower, lit as the lookout is so it shares the lookout's skies, in each of its stones.
+stone_environment castle_tower gray
+stone_environment castle_tower pink

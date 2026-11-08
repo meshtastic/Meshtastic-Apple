@@ -5,6 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 11/2/26.
 //
 import Foundation
+import SwiftData
 import Testing
 import MeshtasticProtobufs
 @testable import Meshtastic
@@ -44,6 +45,14 @@ struct RadioSetupModelTests {
 
 	@Test func licensedOperatorsSkipTheNamePage() {
 		#expect(RadioSetupModel.nextStep(after: .preset, isLicensed: true) == .done)
+	}
+
+	@Test("On firmware 2.8 the beacons page comes after the name, or after the preset when licensed")
+	func testBeaconsStepOn28() {
+		#expect(RadioSetupModel.nextStep(after: .name, isLicensed: false, supports2_8: true) == .beacons)
+		#expect(RadioSetupModel.nextStep(after: .preset, isLicensed: true, supports2_8: true) == .beacons)
+		#expect(RadioSetupModel.nextStep(after: .beacons, isLicensed: false, supports2_8: true) == .done)
+		#expect(RadioSetupModel.nextStep(after: .name, isLicensed: false, supports2_8: false) == .done)
 	}
 
 	@Test func advancePushesTheNextPage() {
@@ -222,5 +231,48 @@ struct RadioSetupModelTests {
 		#expect(chosen.radioSummary == "T-Beam · Firmware 2.8.0")
 		let unnamed = model(longName: "", shortName: "")
 		#expect(unnamed.nameSummary == "Not set")
+	}
+
+	// MARK: Status and beacons
+
+	@Test func theStatusIsTrimmedToItsByteLimitAndOnlyChangesOn28() {
+		let current = model()
+		current.setStatus(String(repeating: "é", count: 60))
+		#expect(current.status.utf8.count <= RadioSetupModel.statusBytes)
+		#expect(current.hasStatusChanges)
+		#expect(current.statusSummary == current.status)
+		let older = model(supports2_8: false)
+		older.setStatus("On the trail")
+		#expect(!older.hasStatusChanges)
+	}
+
+	@Test func theStoredBeaconConfigRoundTripsForAListenChange() {
+		let context = ModelContext(sharedModelContainer)
+		let stored = MeshBeaconConfigEntity()
+		context.insert(stored)
+		stored.flags = MeshBeaconFlags.broadcastEnabled
+		stored.broadcastMessage = "Valley mesh"
+		stored.broadcastOfferChannelName = ""
+		stored.broadcastOfferChannelPSK = Data([1])
+		stored.broadcastOfferRegion = 1
+		stored.broadcastOfferPreset = 0
+		stored.broadcastOfferFrequencySlot = 20
+		stored.broadcastIntervalSecs = 7200
+		let target = BroadcastTargetEntity(preset: 0, region: 1, channelIndex: 0, frequencySlot: 0)
+		context.insert(target)
+		stored.broadcastTargets = [target]
+
+		var values = MeshBeaconConfigValues(entity: stored)
+		values.flags = MeshBeaconFlags.setting(values.flags, MeshBeaconFlags.listenEnabled, to: true)
+		let sent = MeshBeaconConfigValues(config: values.config)
+		#expect(MeshBeaconFlags.has(sent.flags, MeshBeaconFlags.listenEnabled))
+		#expect(MeshBeaconFlags.has(sent.flags, MeshBeaconFlags.broadcastEnabled))
+		// The primary channel has no name; its key keeps the offer.
+		#expect(sent.hasOfferChannel)
+		#expect(sent.offerChannelPSK == Data([1]))
+		#expect(sent.message == "Valley mesh")
+		#expect(sent.offerFrequencySlot == 20)
+		#expect(sent.intervalSecs == 7200)
+		#expect(sent.targets == [MeshBeaconTargetValues(preset: 0, region: 1, channelIndex: 0, frequencySlot: 0)])
 	}
 }

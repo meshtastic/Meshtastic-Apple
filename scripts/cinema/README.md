@@ -55,6 +55,12 @@ The QSL cards, the clock dials, the radio displays, the meter faces, the FT8 scr
 
 The image is a cutout (`render_room(..., cutout=True)`): the sunset HDRI lights the cab but isn't painted, so the image is transparent through the glass, reflections and all. The app draws a sky sphere behind it: `fire_lookout_sky.heic`, the view from the tower that `forest_view.py` renders (forested slopes falling away to valleys and blue ridges, under the clear sunset sky below); or, when it draws real terrain from the elevation tiles downloaded for the spatial map, `fire_lookout_puresky.heic`, a clear sunset sky turned so its sun is in the same place (each sun was found by rendering the sky alone and looking for its brightest pixel). The app shades that terrain to the same sun (`CinemaEnvironment.sun`), and takes the cab's front to face 156° true, so the sunset is in the west-northwest.
 
+## Castle tower
+
+`castle_tower.py` builds the open roof of a medieval square keep on `room_base.py`: a 6 m square of flagstones inside a low crenellated parapet of dressed stone, its merlons topping out about 6° below level from the seat, like the fire lookout's sill, so the horizon and the valleys show over them. Each corner is open, on a round bartizan corbelled out below it, and there is no roof. The screen stands in front on an oak frame with iron straps. The app's boards are scrolls: the team roster and the nodes' status messages hang from one oak gallows frame on the left, the latest trace route from one on the right. Only the frames, hooks and cords are painted; the app draws each scroll, so a scroll rolled up shows the view behind it. Behind the seat are an iron-strapped trapdoor down into the tower, a lit brazier, an oak bench, and a pole on the back-left bartizan flying the Meshtastic banner (`make_textures.py` draws it from the app's mark and wordmark).
+
+`--stone gray` or `--stone pink` picks the stone; `build.sh` renders both, as `castle_tower_gray.heic` and `castle_tower_pink.heic`, with one `castle_tower_anchors.json`. Like the lookout, the image is a cutout lit by Kiara 8 at the same turn, so the app shows the lookout's skies and real terrain behind it.
+
 ## HEIC
 
 `build.sh` converts the rendered PNG with `sips` at HEIC quality 88. That quality was picked by decoding the HEIC and comparing it with the PNG (PSNR and SSIM, over the whole image and over crops of the canvas, the banner, the plaque, the forest through the door and a window), and by looking at the same crops side by side. Quality 88 matched or beat the old JPEG at quality 85 in every crop, and no difference from the PNG could be seen in the crops at 3× zoom. For the tent at 4096 × 2048:
@@ -70,10 +76,14 @@ The image is a cutout (`render_room(..., cutout=True)`): the sunset HDRI lights 
 
 ## Sources
 
-- The tent, the ham shack, their furniture and lighting are modeled in `room_base.py`, `tent_base.py`, `sar_tent.py` and `ham_shack.py`.
+- The tent, the ham shack, the castle tower, their furniture and lighting are modeled in `room_base.py`, `tent_base.py`, `sar_tent.py`, `ham_shack.py` and `castle_tower.py`.
 - The radios on the shack's desk and the Solar Node in the tent are the app's own device models from `Meshtastic/Resources/DeviceModels`.
 - The topo map, the whiteboard and the ham shack's cards, clocks, displays, meters and chart are drawn by `make_textures.py`.
 - The banner, poster and plaque use the app's own artwork, rasterized from its SVGs by `make_textures.py` with resvg (the `resvg-py` package; chosen because it needs no system libraries, unlike cairosvg, and keeps transparency, unlike `qlmanage`): the Meshtastic mark (`Meshtastic/Resources/AppIcon.icon/Assets/Meshtastic Logo.svg`), the wordmark (`meshtastic-wordmark-white.imageset`), Chirpy (`Chirpy.imageset`) and the Meshtastic Solutions mark (`MeshtasticSolutionsMark.imageset`). The plaque follows the layout of the one in the visionOS Hardware Showcase.
 - The forest seen through the door and the windows is the "Sunset Forest" HDRI from Poly Haven (https://polyhaven.com/a/sunset_forest), released under CC0. `build.sh` downloads it into `cache/`.
 - The lookout's cab is lit by the "Kiara 8 Sunset" HDRI from Poly Haven (https://polyhaven.com/a/kiara_8_sunset), CC0; the sky over the forest view and behind real terrain is "Kloppenheim 06 (Pure Sky)" from Poly Haven (https://polyhaven.com/a/kloppenheim_06_puresky), CC0.
 - The display of the lookout's radio on its sill is drawn by `make_textures.py`. The T-Echo and the Solar Node are the app's own models.
+
+## Banana for scale
+
+`banana_for_scale.py` builds the banana that stands beside a model on the stand, and beside it in the iPhone and iPad AR view, at real size, from `drawings/banana_icon.svg` ("Banana icon" by Keistutis on [Openclipart](https://openclipart.org/detail/189457/banana), CC0). It renders the drawing without its shadow, stands it on end with the stem up, inflates the outline into a round banana 18.5 cm tall, and lays the drawing on its front and back. The front gets an oval white label with the Meshtastic logo (`Meshtastic/Assets.xcassets/logo-black.imageset`), halfway up and turned to run along the banana, with the logo upright; the back has its own copy of the drawing without it. Run `uv run scripts/cinema/banana_for_scale.py`; it writes `Meshtastic/Resources/DeviceModels/banana_for_scale.usdz`, in the app rather than the cinema's package so iOS ships it too.

@@ -4,7 +4,8 @@
 //
 //  Copyright(c) Garth Vander Houwen 11/2/26.
 //
-//  The guided setup for a connected radio: region, preset and name. Opens on its own the
+//  The guided setup for a connected radio: region, preset and name, then on firmware 2.8
+//  the status message and nearby meshes. Opens on its own the
 //  first time a radio with no region connects, and from the Set Up Radio rows on Connect and
 //  Settings.
 //
@@ -101,6 +102,8 @@ struct RadioSetupPages: View {
 							RadioSetupPresetPage(model: model)
 						case .name:
 							RadioSetupNamePage(model: model)
+						case .beacons:
+							RadioSetupBeaconsPage(model: model)
 						case .done:
 							RadioSetupDonePage(model: model, onDone: onFinished)
 						}

@@ -86,6 +86,15 @@ struct DocBundleTests {
 		#expect(result.count <= 1)
 	}
 
+	@Test func fitToBudgetSkipsAPageThatDoesNotFit() throws {
+		let url = try #require(URL(string: "file:///tmp/test.html"))
+		func page(_ id: String, tokens: Int) -> DocPage {
+			DocPage(id: id, title: id, section: .user, htmlURL: url, keywords: [], charCount: Int(Double(tokens) * 3.5), navOrder: 1)
+		}
+		let ranked = [page("small", tokens: 1000), page("big", tokens: 2500), page("smaller", tokens: 500)]
+		#expect(DocBundle.fitToBudget(ranked, tokenBudget: 3000).map(\.id) == ["small", "smaller"])
+	}
+
 	// MARK: - DocSection identifiable
 
 	@Test func docSectionIdentifiableId() {

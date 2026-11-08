@@ -69,6 +69,7 @@ struct NodeDetail: View {
 	@State private var logAvailability = NodeDetailLogAvailability()
 	@State private var showingShareContactQR = false
 	@State private var deviceModelFullScreen: DeviceModelFullScreenRequest?
+	@State private var deviceModelInSpace: DeviceModelFullScreenRequest?
 
 	init(node: NodeInfoEntity, nodeNum: Int64, showMapLink: Bool = true) {
 		self.node = node
@@ -200,13 +201,26 @@ struct NodeDetail: View {
 		.listStyle(.insetGrouped)
 		// The 3D model opens full screen from here rather than from its row: a sheet on a list row is
 		// rebuilt whenever the list rebuilds the row, which it does every few seconds.
-		.environment(\.presentDeviceModelFullScreen) { deviceModelFullScreen = $0 }
+		.environment(\.presentDeviceModelFullScreen) { request in
+			if request.inSpace {
+				deviceModelInSpace = request
+			} else {
+				deviceModelFullScreen = request
+			}
+		}
 		// A sheet in a window; on the cinema's screen, where sheets never show, a pushed page.
 		.hostedSheet(item: $deviceModelFullScreen) { request in
 			if #available(iOS 18.0, macCatalyst 18.0, *) {
 				DeviceModelFullScreen(request: request, liveScreen: liveScreen)
 			}
 		}
+		#if os(iOS) && !targetEnvironment(macCatalyst)
+		.fullScreenCover(item: $deviceModelInSpace) { request in
+			if #available(iOS 18.0, *) {
+				DeviceModelARView(request: request, liveScreen: liveScreen)
+			}
+		}
+		#endif
 	}
 
 	/// Show the radio's live screen on its 3D model. Screen mirroring only works over the local

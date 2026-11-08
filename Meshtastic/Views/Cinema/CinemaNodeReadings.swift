@@ -70,7 +70,7 @@ struct CinemaNodeReading {
 		shortName = user?.shortName ?? String(format: "%04x", UInt32(truncatingIfNeeded: node.num) & 0xffff)
 		longName = user?.longName ?? "!" + String(format: "%08x", UInt32(truncatingIfNeeded: node.num))
 		lastHeard = node.lastHeard
-		batteryLevel = node.latestDeviceMetrics?.batteryLevel
+		batteryLevel = node.batteryLevel
 		// Signal only for nodes heard directly, and never over MQTT, as on the boards.
 		snr = node.snr != 0 && !node.viaMqtt && node.hopsAway == 0 ? node.snr : nil
 		hopsAway = node.viaMqtt ? nil : node.hopsAway

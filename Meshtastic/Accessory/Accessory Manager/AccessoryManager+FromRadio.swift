@@ -195,10 +195,16 @@ extension AccessoryManager {
 		// connecting one. A backup restored for this radio always contains its own MyInfo row,
 		// so a legitimate switch+restore never trips this — including legacy backups that may
 		// carry extra foreign rows from the pre-fix bleed era.
-		await defensiveResetIfForeignDatabase(
+		guard await defensiveResetIfForeignDatabase(
 			incomingNodeNum: Int64(myNodeInfo.myNodeNum),
 			incomingDeviceId: myNodeInfo.deviceID
-		)
+		) else {
+			// The other radio's data could not be backed up, so the store still holds it. Nothing
+			// from this radio may land in it: drop the connection and say why.
+			radioSwitchFailure = RadioSwitchBackupError().localizedDescription
+			Task { try? await self.disconnect() }
+			return
+		}
 
 		let myInfoId = await MeshPackets.shared.myInfoPacket(myInfo: myNodeInfo, peripheralId: connectedDeviceId)
 
@@ -250,16 +256,18 @@ extension AccessoryManager {
 	/// so nothing is lost, clear the store, repoint the container, and refresh the UI. See the
 	/// call site in `handleMyInfo` for when this can happen. No-ops for a fresh install (no
 	/// MyInfo rows) and for reconnects/restores (a MyInfo row for the incoming node exists).
-	private func defensiveResetIfForeignDatabase(incomingNodeNum: Int64, incomingDeviceId: Data) async {
+	/// Returns false when the store holds another radio's data that could not be backed up, so
+	/// nothing from this radio may be saved into it.
+	private func defensiveResetIfForeignDatabase(incomingNodeNum: Int64, incomingDeviceId: Data) async -> Bool {
 		// Fresh throwaway context: no stale registrations, and this runs before any ingest for
 		// the new radio, so what it sees is exactly what the previous session left behind.
 		let checkContext = ModelContext(context.container)
 		guard let myInfos = try? checkContext.fetch(FetchDescriptor<MyInfoEntity>()), !myInfos.isEmpty else {
-			return // Fresh/empty store — nothing to protect.
+			return true // Fresh/empty store — nothing to protect.
 		}
 		let nums = myInfos.map(\.myNodeNum)
 		guard !nums.contains(incomingNodeNum) else {
-			return // The store already belongs to (or was restored for) this radio.
+			return true // The store already belongs to (or was restored for) this radio.
 		}
 
 		// Same radio, new number. A firmware upgrade to 2.8 changes the node number a radio
@@ -273,12 +281,12 @@ extension AccessoryManager {
 		if !incomingDeviceId.isEmpty,
 		   let sameRadio = myInfos.first(where: { $0.deviceId == incomingDeviceId }) {
 			await renumberStore(from: sameRadio.myNodeNum, to: incomingNodeNum, deviceId: incomingDeviceId)
-			return
+			return true
 		}
 		if let connectedDeviceId = activeConnection?.device.id.uuidString,
 		   let sameRadio = myInfos.first(where: { $0.peripheralId == connectedDeviceId }) {
 			await renumberStore(from: sameRadio.myNodeNum, to: incomingNodeNum, deviceId: incomingDeviceId)
-			return
+			return true
 		}
 
 		Logger.data.warning("💾 [Database] Connected to node \(incomingNodeNum.toHex(), privacy: .public) but the store belongs to \(nums.map { $0.toHex() }.joined(separator: ", "), privacy: .public) — backing up and resetting to prevent cross-device node bleed")
@@ -290,11 +298,17 @@ extension AccessoryManager {
 			let previousName = devices.first(where: { $0.num == previousNum })?.longName
 			// The outgoing radio's own device id, not the one now connected.
 			let previousDeviceId = myInfos.first(where: { $0.myNodeNum == previousNum })?.deviceId
-			_ = await NodeBackupManager.shared.createBackup(
+			let backup = await NodeBackupManager.shared.createBackup(
 				forNode: previousNum,
 				deviceId: previousDeviceId,
 				nodeName: previousName
 			)
+			// Without a backup, clearing deletes the other radio's messages for good. Keep the
+			// store, and keep this radio out of it.
+			guard case .success = backup else {
+				Logger.data.error("💾 [Database] Could not back up node \(previousNum.toHex(), privacy: .public) — keeping the store and disconnecting")
+				return false
+			}
 		}
 
 		let cleared = await MeshPackets.shared.clearDatabase(includeRoutes: false)
@@ -307,6 +321,7 @@ extension AccessoryManager {
 		// Pops views, repoints the container (recreating the MeshPackets actor), and bumps
 		// databaseResetID so @Query views rebind before the new radio's data starts landing.
 		await resetDatabaseAfterClear()
+		return true
 	}
 
 	/// Rewrites the store from the node number this radio used to report to the one it reports
@@ -320,7 +335,10 @@ extension AccessoryManager {
 		await MeshPackets.shared.flushDebouncedSaves()
 		let previousName = devices.first(where: { $0.num == oldNum })?.longName
 		// Same physical radio either side of the renumber, so the backup keys on the id it reports now.
-		_ = await NodeBackupManager.shared.createBackup(forNode: oldNum, deviceId: deviceId, nodeName: previousName)
+		if case .skipped(let reason) = await NodeBackupManager.shared.createBackup(forNode: oldNum, deviceId: deviceId, nodeName: previousName) {
+			// The rewrite keeps every row, so it goes ahead without the safety net.
+			Logger.data.warning("💾 [Database] Renumbering without a backup: \(reason, privacy: .public)")
+		}
 
 		// Detail views bound to the old node have to unmount before its identity changes
 		// underneath them, the same reason the reset path pops first. Every open
@@ -655,10 +673,14 @@ extension AccessoryManager {
 		}
 
 		if let routingMessage = try? RouteDiscovery(serializedBytes: packet.decoded.payload) {
-			// Full responses only: a trace route response always carries the originating request id.
-			// A zero request id means this is an in-flight request (or a request targeting us), which
-			// we don't persist.
+			// A trace route response always carries the originating request id. A zero request id is a
+			// request: one addressed to us means another node traced a route to us, which our radio
+			// answers itself and we keep in that node's log. Any other request is in flight and ignored.
 			guard packet.decoded.requestID != 0 else {
+				if packet.decoded.wantResponse, Int64(packet.to) == deviceNum, Int64(packet.from) != deviceNum {
+					recordTracedBy(packet, routingMessage: routingMessage, deviceNum: deviceNum)
+					return
+				}
 				Logger.mesh.info("🪧 Ignoring trace route request (no response) from \(packet.from.toHex(), privacy: .public)")
 				return
 			}
@@ -694,10 +716,13 @@ extension AccessoryManager {
 			traceRoute.fromNum = originatorNum
 			traceRoute.toNum = targetNum
 
-			// Used for display/position lookups. The `node` relationship stays set only for routes we
-			// initiated; observed routes are surfaced in the global trace route log instead.
+			// Used for display/position lookups. An observed route also goes in the responder's own
+			// log, labeled observed, as well as the global trace route log.
 			let originatorNode = getNodeInfo(id: originatorNum, context: context)
 			let targetNodeInfo = (initiatedByUs ? existingTraceRoute?.node : nil) ?? getNodeInfo(id: targetNum, context: context)
+			if !initiatedByUs {
+				traceRoute.node = targetNodeInfo
+			}
 
 			// Reprocessing an existing record (e.g. a rebroadcast we re-observe): drop the previous
 			// hops before rebuilding so we don't accumulate orphaned/duplicate hop rows.
@@ -825,6 +850,85 @@ extension AccessoryManager {
 			}
 			let logString = String.localizedStringWithFormat("Trace Route request returned: %@".localized, routeString)
 			Logger.mesh.info("🪧 \(logString, privacy: .public)")
+		}
+	}
+
+	/// Records a trace route another node ran to us, in that node's log. Our radio answers the request
+	/// itself, so the app sees only the request: the route it took to reach us, with no response, no
+	/// round trip and no return leg. No alert is raised, since nobody here asked for it. Keyed by the
+	/// request's packet id, so a rebroadcast of the same request updates the record in place.
+	private func recordTracedBy(_ packet: MeshPacket, routingMessage: RouteDiscovery, deviceNum: Int64) {
+		let requesterNum = Int64(packet.from)
+		let traceRoute: TraceRouteEntity
+		if let existing = getTraceRoute(id: Int64(packet.id), context: context) {
+			guard existing.tracedBy else { return }
+			traceRoute = existing
+			for hop in traceRoute.hops {
+				context.delete(hop)
+			}
+		} else {
+			traceRoute = TraceRouteEntity()
+			context.insert(traceRoute)
+			traceRoute.id = Int64(packet.id)
+		}
+		traceRoute.tracedBy = true
+		traceRoute.sent = false
+		traceRoute.response = false
+		traceRoute.fromNum = requesterNum
+		traceRoute.toNum = deviceNum
+		traceRoute.node = getNodeInfo(id: requesterNum, context: context)
+		traceRoute.hopsTowards = Int32(routingMessage.route.count)
+		traceRoute.hopsBack = -1
+
+		let requesterName = traceRoute.node?.user?.longName ?? requesterNum.toHex()
+		let deviceName = getNodeInfo(id: deviceNum, context: context)?.user?.longName ?? deviceNum.toHex()
+		var hopNodes: [TraceRouteHopEntity] = []
+		let originHop = TraceRouteHopEntity()
+		context.insert(originHop)
+		originHop.time = Date()
+		originHop.num = requesterNum
+		originHop.name = requesterName
+		originHop.index = 0
+		originHop.snr = -32
+		hopNodes.append(originHop)
+		var routeString = "\(requesterName) --> "
+		for (index, node) in routingMessage.route.enumerated() {
+			let hopNode = traceRouteHopNode(num: node)
+			let traceRouteHop = TraceRouteHopEntity()
+			context.insert(traceRouteHop)
+			traceRouteHop.time = Date()
+			traceRouteHop.snr = routingMessage.snrTowards.count > index ? Float(routingMessage.snrTowards[index]) / 4 : -32
+			traceRouteHop.num = Int64(node)
+			traceRouteHop.index = Int32(index + 1)
+			hopNodes.append(traceRouteHop)
+			let hopName = hopNode?.user?.longName ?? (node == UInt32.max ? "Repeater" : node.toHex())
+			let snrLabel = traceRouteHop.snr != -32 ? String(traceRouteHop.snr) : "unknown ".localized
+			routeString += "\(hopName) (\(snrLabel)dB) --> "
+		}
+		// Our radio's own reading of the last leg, when it added one.
+		let ownHop = TraceRouteHopEntity()
+		context.insert(ownHop)
+		ownHop.time = Date()
+		ownHop.num = deviceNum
+		ownHop.name = deviceName
+		ownHop.index = Int32(routingMessage.route.count + 1)
+		let lastIndex = routingMessage.route.count
+		ownHop.snr = routingMessage.snrTowards.count > lastIndex ? Float(routingMessage.snrTowards[lastIndex]) / 4 : -32
+		hopNodes.append(ownHop)
+		routeString += "\(deviceName) (\(ownHop.snr != -32 ? String(ownHop.snr) : "unknown ".localized)dB)"
+
+		traceRoute.routeText = routeString
+		traceRoute.routeBackText = nil
+		traceRoute.hops = hopNodes
+		traceRoute.time = Date()
+		snapshotTraceRoutePositions(for: traceRoute, packet: packet, routingMessage: routingMessage)
+
+		do {
+			try context.save()
+			Logger.data.info("💾 Saved trace route from \(requesterNum.toHex(), privacy: .public) to us")
+		} catch {
+			let nsError = error as NSError
+			Logger.data.error("Error saving trace route to us: \(nsError, privacy: .public)")
 		}
 	}
 

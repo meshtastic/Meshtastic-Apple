@@ -12,7 +12,8 @@ import SwiftUI
 /// The favorites board on the tent's whiteboard in the cinema: the connected radio and the
 /// favorite nodes, with when each was last heard, its battery, signal, hops, and distance and
 /// bearing from the radio. Drawn as marker on the board, to be read from across the tent.
-/// Tapping a row centers the 3D map on the node and opens its detail on the front screen.
+/// Tapping a row centers the 3D map on the node and opens its detail on the front screen. More
+/// favorites than fit scroll under the title, with a pinch and drag.
 struct TeamStatusBoard: View {
 	@EnvironmentObject private var appState: AppState
 	@EnvironmentObject private var accessoryManager: AccessoryManager
@@ -23,7 +24,10 @@ struct TeamStatusBoard: View {
 	/// The board's size in points. CinemaSpace scales the panel to the board in the image, so only
 	/// the 3:2 shape matters.
 	static let size = CGSize(width: 1800, height: 1200)
-	private static let maxRows = 8
+	/// The most rows read. Past this the footer counts the rest.
+	private static let maxRows = 100
+	/// About how many rows show before the list scrolls.
+	private static let visibleRows = 8
 	/// How often the rows are read from the store. The board is read from across the tent, so a
 	/// few seconds late is fine, and it keeps the store work off every packet.
 	private static let refreshInterval: Duration = .seconds(5)
@@ -66,16 +70,22 @@ struct TeamStatusBoard: View {
 					.fill(BoardStyle.ink)
 					.frame(height: 5)
 					.padding(.top, 8)
-				ForEach(roster.members) { member in
-					Button {
-						show(member.id)
-					} label: {
-						TeamRow(member: member, now: roster.date)
+				ScrollView(.vertical) {
+					LazyVStack(spacing: 0) {
+						ForEach(roster.members) { member in
+							Button {
+								show(member.id)
+							} label: {
+								TeamRow(member: member, now: roster.date)
+							}
+							.buttonStyle(.plain)
+							.hoverEffect(.highlight)
+						}
 					}
-					.buttonStyle(.plain)
-					.hoverEffect(.highlight)
 				}
-				Spacer(minLength: 0)
+				.scrollIndicators(roster.members.count > Self.visibleRows ? .visible : .hidden)
+				.scrollBounceBehavior(.basedOnSize)
+				.frame(maxHeight: .infinity, alignment: .top)
 				footer(roster)
 			}
 		}
@@ -155,10 +165,19 @@ struct TeamStatusBoard: View {
 
 	@ViewBuilder
 	private func footer(_ roster: Roster) -> some View {
-		if roster.hiddenCount > 0 {
-			Text("+\(roster.hiddenCount) more", comment: "Cinema team board: how many favorite nodes didn't fit on the board")
-				.font(BoardStyle.marker(40))
-				.foregroundStyle(BoardStyle.faded)
+		// The list scrolls past the visible rows even when the read limit leaves some out, so the
+		// hint shows with the count of the rest.
+		if roster.members.count > Self.visibleRows || roster.hiddenCount > 0 {
+			HStack(spacing: 24) {
+				if roster.members.count > Self.visibleRows {
+					Text("Pinch and drag the list to see all \(roster.members.count).", comment: "Cinema team board: hint when there are more nodes than fit; the argument is how many rows the list has")
+				}
+				if roster.hiddenCount > 0 {
+					Text("+\(roster.hiddenCount) more", comment: "Cinema team board: how many favorite nodes didn't fit on the board")
+				}
+			}
+			.font(BoardStyle.marker(40))
+			.foregroundStyle(BoardStyle.faded)
 		} else if roster.favoriteCount == 0 {
 			Text("Favorite nodes to add them to the board.", comment: "Cinema team board: hint shown when only the connected radio is listed")
 				.font(BoardStyle.marker(40))
@@ -200,8 +219,8 @@ struct TeamStatusBoard: View {
 		let hiddenCount: Int
 	}
 
-	/// Reads the radio and the favorites that fit on the board, most recently heard first. Only
-	/// the rows shown are looked up further, so the work doesn't grow with the favorites.
+	/// Reads the radio and the favorites, most recently heard first, up to `maxRows`. Only those
+	/// are looked up further, so the work doesn't grow past that with the favorites.
 	private func makeRoster() -> Roster {
 		let radio = accessoryManager.isConnected ? accessoryManager.activeDeviceNum.flatMap { getNodeInfo(id: $0, context: context) } : nil
 		// No node has a negative number, so this matches every favorite when there's no radio.
@@ -266,7 +285,7 @@ struct TeamStatusBoard: View {
 			longName: user?.longName ?? hexName(node.num),
 			lastHeard: node.lastHeard,
 			status: status,
-			batteryLevel: node.latestDeviceMetrics?.batteryLevel,
+			batteryLevel: node.batteryLevel,
 			signalRating: signal,
 			hopsAway: node.viaMqtt ? nil : node.hopsAway,
 			distance: distance,

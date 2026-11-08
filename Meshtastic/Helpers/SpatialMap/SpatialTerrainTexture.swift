@@ -6,7 +6,6 @@
 //
 import CoreGraphics
 import CoreLocation
-import ImageIO
 import MapKit
 import OSLog
 import UIKit
@@ -170,26 +169,43 @@ enum SpatialTextureRenderer {
 		let top = SpatialFrame.mercatorY(bounds.maxLat), bottom = SpatialFrame.mercatorY(bounds.minLat)
 		let maxAlpha: CGFloat = dark ? 0.42 : 0.32
 
-		for y in northWest.y...southEast.y {
-			for x in northWest.x...southEast.x {
-				if Task.isCancelled { return nil }
-				guard let coverage = await source.coverage(z: zoom, x: x, y: y),
-					  let tile = await source.elevationTile(z: zoom, x: x, y: y, margin: 2) else { continue }
-				let path = MKTileOverlayPath(x: x, y: y, z: zoom, contentScaleFactor: 1)
-				let clip = HillshadeTileOverlay.clipRect(tile: tile, path: path, coverage: coverage)
-				let metersPerSample = TerrainStore.metersPerSample(z: zoom, y: y, size: tileSize)
-				guard let png = HillshadeTileOverlay.renderShadow(tile: tile, metersPerSample: metersPerSample, maxAlpha: maxAlpha, clip: clip),
-					  let imageSource = CGImageSourceCreateWithData(png as CFData, nil),
-					  let shade = CGImageSourceCreateImageAtIndex(imageSource, 0, nil) else { continue }
-				let tileBounds = TerrainStore.tileBounds(z: zoom, x: x, y: y)
-				// Pixel rect of the tile within the canvas; CoreGraphics measures y from the bottom.
-				let left = (tileBounds.minLon - bounds.minLon) / lonSpan * Double(width)
-				let right = (tileBounds.maxLon - bounds.minLon) / lonSpan * Double(width)
-				let tileTop = (SpatialFrame.mercatorY(tileBounds.maxLat) - top) / (bottom - top) * Double(height)
-				let tileBottom = (SpatialFrame.mercatorY(tileBounds.minLat) - top) / (bottom - top) * Double(height)
-				let rect = CGRect(x: left, y: Double(height) - tileBottom, width: right - left, height: tileBottom - tileTop)
-				context.draw(shade, in: rect)
+		// The tiles are shaded side by side, a core each, then drawn in.
+		struct Shade: Sendable {
+			let x: Int
+			let y: Int
+			let image: CGImage
+		}
+		let shades = await withTaskGroup(of: Shade?.self) { group in
+			for y in northWest.y...southEast.y {
+				for x in northWest.x...southEast.x {
+					group.addTask {
+						if Task.isCancelled { return nil }
+						guard let coverage = await source.coverage(z: zoom, x: x, y: y),
+							  let tile = await source.elevationTile(z: zoom, x: x, y: y, margin: 2) else { return nil }
+						let path = MKTileOverlayPath(x: x, y: y, z: zoom, contentScaleFactor: 1)
+						let clip = HillshadeTileOverlay.clipRect(tile: tile, path: path, coverage: coverage)
+						let metersPerSample = TerrainStore.metersPerSample(z: zoom, y: y, size: tileSize)
+						return HillshadeTileOverlay.shadowImage(tile: tile, metersPerSample: metersPerSample, maxAlpha: maxAlpha, clip: clip)
+							.map { Shade(x: x, y: y, image: $0) }
+					}
+				}
 			}
+			var result: [Shade] = []
+			for await shade in group {
+				if let shade { result.append(shade) }
+			}
+			return result
+		}
+		if Task.isCancelled { return nil }
+		for shade in shades {
+			let tileBounds = TerrainStore.tileBounds(z: zoom, x: shade.x, y: shade.y)
+			// Pixel rect of the tile within the canvas; CoreGraphics measures y from the bottom.
+			let left = (tileBounds.minLon - bounds.minLon) / lonSpan * Double(width)
+			let right = (tileBounds.maxLon - bounds.minLon) / lonSpan * Double(width)
+			let tileTop = (SpatialFrame.mercatorY(tileBounds.maxLat) - top) / (bottom - top) * Double(height)
+			let tileBottom = (SpatialFrame.mercatorY(tileBounds.minLat) - top) / (bottom - top) * Double(height)
+			let rect = CGRect(x: left, y: Double(height) - tileBottom, width: right - left, height: tileBottom - tileTop)
+			context.draw(shade.image, in: rect)
 		}
 		return context.makeImage()
 	}

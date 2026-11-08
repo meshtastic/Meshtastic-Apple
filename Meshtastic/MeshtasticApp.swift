@@ -146,9 +146,15 @@ struct MeshtasticAppleApp: App {
 #endif
 
 		if Self.shouldInitializeAppServices {
-			// One-time copy of the node number onto telemetry saved by earlier versions.
 			if let persistenceController {
-				TelemetryNodeNumBackfill.startIfNeeded(persistence: persistenceController, appState: appState)
+				// Older data is brought into the store after launch; see StoreUpgrade.
+				StoreUpgrade.startIfNeeded(persistence: persistenceController, appState: appState)
+				// One-time copy of the node number onto telemetry saved by earlier versions. Waits
+				// for the upgrade, which it would otherwise stop for.
+				Task {
+					await StoreUpgrade.waitUntilFinished()
+					TelemetryNodeNumBackfill.startIfNeeded(persistence: persistenceController, appState: appState)
+				}
 			}
 			// Initialize map data manager
 			MapDataManager.shared.initialize()

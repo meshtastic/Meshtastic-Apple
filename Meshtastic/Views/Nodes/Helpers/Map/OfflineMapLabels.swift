@@ -25,7 +25,8 @@ enum OfflineMapLabels {
 		guard cellLat > 0, cellLon > 0 else { return [] }
 		var taken = Set<Int>()
 		var result: [OfflineMapLabel] = []
-		for label in ranked where label.minZoom <= zoom {
+		// Street names run along their street, which this map's level labels can't do.
+		for label in ranked where label.minZoom <= zoom && label.along == nil {
 			let row = Int(((label.coordinate.latitude - minLat) / cellLat).rounded(.down))
 			// East of the view's west edge, wrapped, so a view across ±180° keeps the far side.
 			var east = (label.coordinate.longitude - minLon).truncatingRemainder(dividingBy: 360)

@@ -10,8 +10,9 @@ import MeshtasticProtobufs
 import SwiftUI
 
 /// Listens to the broker for a minute and lists the root topics heard near the user: the geocoded
-/// region, state and city ladder with live node counts, then every other root in reach, then a
-/// typed one. Picking a row fills the form's root field; nothing reaches the radio until Save.
+/// region, country, state and city ladder and the community roots serving the area, with live node
+/// counts, then every other root in reach, then a typed one. Picking a row fills the form's root
+/// field; nothing reaches the radio until Save.
 struct MQTTTopicFinder: View {
 	@Binding var config: ModuleConfig.MQTTConfig
 	let node: NodeInfoEntity?
@@ -20,7 +21,9 @@ struct MQTTTopicFinder: View {
 	@StateObject private var sampler: MqttTopicSampler
 	@Environment(\.dismiss) private var dismiss
 	@Environment(\.scenePhase) private var scenePhase
-	@State private var ladder: [MqttTopicDiscovery.Rung] = []
+	/// nil until geocoded, and when there is no location
+	@State private var place: MqttTopicDiscovery.Place?
+	@State private var directory = MqttRootDirectory.bundled()
 	@State private var geocodeFailed = false
 	@State private var custom = ""
 
@@ -59,8 +62,20 @@ struct MQTTTopicFinder: View {
 		}
 	}
 
-	private var ranked: [MqttTopicDiscovery.RankedRoot] {
-		MqttTopicDiscovery.ranked(sampler.activity, ladder: ladder, from: coordinate)
+	/// Rebuilt from the latest snapshot: the country rung appears once the sample shows the broker
+	/// uses it.
+	private var plan: MqttTopicDiscovery.Plan {
+		guard let region else { return MqttTopicDiscovery.Plan(rungs: []) }
+		return MqttTopicDiscovery.plan(
+			regionTopic: "msh/" + region.topic,
+			regionName: region.description,
+			place: place,
+			// Community roots placed by radius only need the coordinate, so they still show while
+			// the place name is loading or when the geocoder fails (offline, for example).
+			at: coordinate,
+			directory: directory,
+			activity: sampler.activity
+		)
 	}
 
 	var body: some View {
@@ -87,6 +102,10 @@ struct MQTTTopicFinder: View {
 		// the sheet is open would freeze every row.
 		.environment(\.isEnabled, true)
 		.task(id: coordinateKey) { await geocode() }
+		.task {
+			guard autoStart, let fetched = await MqttRootDirectory.fetch() else { return }
+			directory = fetched
+		}
 		.onAppear { startSampling() }
 		.onDisappear { sampler.stop() }
 		.onChange(of: scenePhase) { _, phase in
@@ -144,7 +163,7 @@ struct MQTTTopicFinder: View {
 
 	private var ladderSection: some View {
 		Section {
-			ForEach(ladder) { rung in
+			ForEach(plan.rungs) { rung in
 				let live = MqttTopicDiscovery.activity(forRung: rung, in: sampler.activity)
 				let topic = live?.topic ?? rung.topic
 				TopicRow(
@@ -171,7 +190,7 @@ struct MQTTTopicFinder: View {
 
 	private var activeSection: some View {
 		Section {
-			let roots = ranked.prefix(30)
+			let roots = MqttTopicDiscovery.ranked(sampler.activity, plan: plan, from: coordinate).prefix(30)
 			if roots.isEmpty {
 				if sampler.phase == .finished {
 					ContentUnavailableView {
@@ -238,10 +257,14 @@ struct MQTTTopicFinder: View {
 		switch level {
 		case .region:
 			return String(localized: "Region")
+		case .country:
+			return String(localized: "Country", comment: "Topic finder: ladder level name")
 		case .state:
 			return String(localized: "State or province", comment: "Topic finder: ladder level name")
 		case .city:
 			return String(localized: "City", comment: "Topic finder: ladder level name")
+		case .community:
+			return String(localized: "Community mesh", comment: "Topic finder: a named community root from the shared directory that serves the user's area")
 		}
 	}
 
@@ -272,30 +295,23 @@ struct MQTTTopicFinder: View {
 	}
 
 	/// One geocoder call per coordinate; `.task(id:)` cancels and replaces on change and on dismiss.
-	/// The previous ladder stays on screen until the new one arrives. Only a locality makes a city
-	/// rung: a county is not a city, and the local roots come from discovery anyway.
+	/// The previous place stays on screen until the new one arrives. Only a locality makes a city
+	/// rung: a county is not a city, and the local roots come from discovery anyway. Names come back
+	/// in US English whatever the phone's language, so the directory's subdivision names match and
+	/// the roots agree with Android.
 	private func geocode() async {
 		geocodeFailed = false
-		guard let region else {
-			ladder = []
-			return
-		}
-		let regionTopic = "msh/" + region.topic
-		let regionName = region.description
-		guard let coordinate, autoStart else {
-			ladder = MqttTopicDiscovery.ladder(regionTopic: regionTopic, regionName: regionName, state: nil, city: nil)
+		guard let coordinate, autoStart, region != nil else {
+			place = nil
 			return
 		}
 		let location = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
-		let placemark = try? await CLGeocoder().reverseGeocodeLocation(location).first
+		let placemark = try? await CLGeocoder().reverseGeocodeLocation(location, preferredLocale: Locale(identifier: "en_US")).first
 		guard !Task.isCancelled else { return }
 		geocodeFailed = placemark == nil
-		ladder = MqttTopicDiscovery.ladder(
-			regionTopic: regionTopic,
-			regionName: regionName,
-			state: placemark?.administrativeArea,
-			city: placemark?.locality
-		)
+		place = placemark.map {
+			MqttTopicDiscovery.Place(countryCode: $0.isoCountryCode, state: $0.administrativeArea, city: $0.locality)
+		}
 	}
 }
 

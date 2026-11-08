@@ -40,6 +40,10 @@ struct ChannelMessageList: View {
 	@State private var tapbackText = ""
 	@FocusState var tapbackFocused: Bool
 
+	/// A conversation whose channel has left the radio. It reads like any other but can't be
+	/// sent to.
+	private var isArchived: Bool { MessageDestination.channel(channel).isArchived }
+
 	init(myInfo: MyInfoEntity, channel: ChannelEntity) {
 		self.myInfo = myInfo
 		self.channel = channel
@@ -358,21 +362,32 @@ struct ChannelMessageList: View {
 						processTapback()
 					}
 			}
-			TextMessageField(
-				destination: .channel(channel),
-				replyMessageId: $replyMessageId,
-				isFocused: $messageFieldFocused,
-				onMessageSent: {
-					let previousScrollRequest = bottomScrollRequest
-					loadMessages(markReadAfterLoad: routerIsShowingThisChannel())
-					if MessageScrollTracker.shouldFollowSend(
-						scrollRequestChangedDuringLoad: bottomScrollRequest != previousScrollRequest
-					) {
-						bottomScrollRequest &+= 1
+			if isArchived {
+				// Body text rather than a disabled composer, which would read as "not connected
+				// yet" and be skipped by VoiceOver.
+				Text("This channel is no longer on your radio. Its messages are kept here, but you can't send to it. Add the channel again to pick up the conversation.")
+					.font(.footnote)
+					.foregroundColor(.onSurfaceVariant)
+					.frame(maxWidth: .infinity, alignment: .leading)
+					.padding()
+					.background(Color(UIColor.secondarySystemBackground))
+			} else {
+				TextMessageField(
+					destination: .channel(channel),
+					replyMessageId: $replyMessageId,
+					isFocused: $messageFieldFocused,
+					onMessageSent: {
+						let previousScrollRequest = bottomScrollRequest
+						loadMessages(markReadAfterLoad: routerIsShowingThisChannel())
+						if MessageScrollTracker.shouldFollowSend(
+							scrollRequestChangedDuringLoad: bottomScrollRequest != previousScrollRequest
+						) {
+							bottomScrollRequest &+= 1
+						}
 					}
-				}
-			)
-			.fixedSize(horizontal: false, vertical: true)
+				)
+				.fixedSize(horizontal: false, vertical: true)
+			}
 		}
 		}
 		.navigationBarTitleDisplayMode(.inline)
@@ -382,8 +397,18 @@ struct ChannelMessageList: View {
 		.toolbar {
 			ToolbarItem(placement: .principal) {
 				HStack {
-					CircleText(text: String(channel.index), color: .accentFill, circleSize: 44).fixedSize()
-					Text(String(channel.name ?? "Unknown")).font(.headline)
+					if isArchived {
+						Image(systemName: "archivebox")
+							.accessibilityHidden(true)
+						VStack(alignment: .leading, spacing: 0) {
+							Text(String(channel.name ?? "Unknown")).font(.headline)
+							Text("Archived").font(.caption).foregroundColor(.onSurfaceVariant)
+						}
+						.accessibilityElement(children: .combine)
+					} else {
+						CircleText(text: String(channel.index), color: .accentFill, circleSize: 44).fixedSize()
+						Text(String(channel.name ?? "Unknown")).font(.headline)
+					}
 				}
 			}
 			ToolbarItem(placement: .navigationBarTrailing) {
