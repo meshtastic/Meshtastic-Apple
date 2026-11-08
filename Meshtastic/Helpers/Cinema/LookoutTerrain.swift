@@ -454,8 +454,9 @@ enum LookoutTerrain {
 		}
 		func shows(top: Double, bearing: Double, distance: Double) -> Bool {
 			let spoke = min(spokes - 1, Int(bearing / 360 * Double(spokes)))
-			let ring = LookoutForest.ring(inside: distance, distances: distances)
-			return LookoutForest.shows(top: top, distance: distance, eye: eye, horizon: horizon[ring * columns + spoke])
+			// The horizon past the ring just inside the point: it counts that ring too, which is nearer.
+			let past = min(LookoutForest.ring(inside: distance, distances: distances) + 1, distances.count - 1)
+			return LookoutForest.shows(top: top, distance: distance, eye: eye, horizon: horizon[past * columns + spoke])
 		}
 		func place(_ point: SIMD3<Double>) -> SIMD3<Float> {
 			let distance = max(1, hypot(point.x, point.z))
@@ -472,13 +473,14 @@ enum LookoutTerrain {
 		var trees = 0
 		let tallest = LookoutForest.nearCones.map(\.tip).max() ?? 12.5
 		var looked = 0
-		/// Plants a tree if it stands on forest and shows. False once the forest is out of triangles.
-		func plant(_ spot: LookoutForest.Spot, near: Bool, budget: Int = LookoutForest.triangleBudget) -> Bool {
+		/// Plants a tree if it stands on forest, shows, and fits in `budget`. One that doesn't fit is
+		/// skipped rather than ending the planting: a farther, simpler tree may still fit.
+		func plant(_ spot: LookoutForest.Spot, near: Bool, budget: Int = LookoutForest.triangleBudget) {
 			let cost = near ? LookoutForest.nearCones.count * LookoutForest.nearSides : LookoutForest.farCones.count * LookoutForest.farSides
-			guard triangles + cost <= budget else { return false }
+			guard triangles + cost <= budget else { return }
 			guard let height = surface(spot.bearing, spot.distance),
 				  shows(top: height + tallest * spot.height, bearing: spot.bearing, distance: spot.distance),
-				  forested(bearing: spot.bearing, distance: spot.distance, elevation: height) else { return true }
+				  forested(bearing: spot.bearing, distance: spot.distance, elevation: height) else { return }
 			let radians = spot.bearing * .pi / 180
 			// Sunk a little, so no tree shows a gap under it on a slope.
 			let base = SIMD3<Double>(sin(radians) * spot.distance, height - 0.5 * spot.height, cos(radians) * spot.distance)
@@ -491,7 +493,6 @@ enum LookoutTerrain {
 			}
 			triangles += cost
 			trees += 1
-			return true
 		}
 		LookoutForest.forEachSpot(farthest: min(LookoutForest.rowsFrom, reach)) { spot in
 			looked += 1
@@ -499,7 +500,8 @@ enum LookoutTerrain {
 				cancelled = true
 				return false
 			}
-			return plant(spot, near: spot.distance < LookoutForest.nearDetail)
+			plant(spot, near: spot.distance < LookoutForest.nearDetail)
+			return true
 		}
 		if cancelled { return nil }
 
@@ -520,7 +522,7 @@ enum LookoutTerrain {
 			}
 			guard let front, front >= LookoutForest.rowsFrom else { continue }
 			let budget = min(LookoutForest.triangleBudget, nearTriangles + LookoutForest.frontBudget)
-			LookoutForest.forEachFrontSpot(spoke: spoke, spokes: spokes, from: front) { plant($0, near: true, budget: budget) }
+			LookoutForest.forEachFrontSpot(spoke: spoke, spokes: spokes, from: front) { plant($0, near: true, budget: budget); return true }
 		}
 
 		// Rows of painted trees beyond, one strip per spoke at each step out.
@@ -657,14 +659,18 @@ enum LookoutTerrain {
 		material.faceCulling = .none
 		let entity = ModelEntity(mesh: mesh, materials: [material])
 		entity.name = "LookoutTerrain"
+		// The forest is extra scenery: if it can't be made, the terrain still shows without it.
 		if let forest = model.trees {
-			if let trees = forest.trees {
-				// No mipmaps: smaller levels would blend the palette's shades together on far trees.
-				let entity2 = try await part(trees, name: "LookoutTrees", mipmaps: false, cutout: false)
-				entity.addChild(entity2)
-			}
-			if let rows = forest.rows {
-				entity.addChild(try await part(rows, name: "LookoutForestRows", mipmaps: true, cutout: true))
+			do {
+				if let trees = forest.trees {
+					// No mipmaps: smaller levels would blend the palette's shades together on far trees.
+					entity.addChild(try await part(trees, name: "LookoutTrees", mipmaps: false, cutout: false))
+				}
+				if let rows = forest.rows {
+					entity.addChild(try await part(rows, name: "LookoutForestRows", mipmaps: true, cutout: true))
+				}
+			} catch {
+				Logger.services.error("🎬 [Cinema] Couldn't make the lookout's trees: \(error.localizedDescription, privacy: .public)")
 			}
 		}
 		return entity
