@@ -524,16 +524,29 @@ final class SpatialSceneController {
 		ring.scale = SIMD3(repeating: counterScale)
 		ring.isEnabled = true
 		let top = base + [0, height * counterScale, 0]
-		let card = top + [0, 0.11 * counterScale, 0]
+		// The card's bottom edge clears the node's name tag; the line runs up to that edge, not
+		// into the card.
+		let bottom = top + [0, Self.cardGap * counterScale, 0]
+		let card = bottom + [0, cardHalfHeight() * counterScale, 0]
 		detailEntity?.position = card
 		detailEntity?.scale = SIMD3(repeating: counterScale)
 		detailEntity?.isEnabled = true
-		let direction = card - top
-		let length = simd_length(direction)
-		tether.position = top + direction / 2
-		tether.scale = [counterScale, max(length - 0.05 * counterScale, 0.001), counterScale]
-		tether.orientation = simd_quatf(from: [0, 1, 0], to: simd_normalize(direction))
+		tether.position = (top + bottom) / 2
+		tether.scale = [counterScale, max(simd_length(bottom - top), 0.001), counterScale]
+		tether.orientation = simd_quatf(from: [0, 1, 0], to: simd_normalize(bottom - top))
 		tether.isEnabled = true
+	}
+}
+
+extension SpatialSceneController {
+	/// From the top of a node to the bottom of its card, in room meters: above the name tag, which
+	/// sits 1.8 cm over the top and is about 1.6 cm tall.
+	private static let cardGap: Float = 0.045
+
+	/// Half the card's height in room meters, measured once it has been laid out.
+	private func cardHalfHeight() -> Float {
+		let measured = detailEntity.map { $0.visualBounds(relativeTo: $0).extents.y / 2 } ?? 0
+		return measured > 0.01 ? measured : 0.065
 	}
 }
 
