@@ -78,6 +78,7 @@ With the Meshtastic nRF52 Bootloader 2.6.0 and later, the radio's drive works li
 - **Interrupted copy.** If the cable is pulled mid-copy, the radio has no firmware. Plug it in again and copy the firmware once more.
 - **Idle.** A radio with firmware boots it after 6 minutes in DFU mode with no activity. A radio with no firmware keeps waiting.
 - **Single-button boards.** On the T1000-E and MeshTracker X1, eject the drive to leave DFU mode without copying a file.
+- **Last fault.** After a Bluetooth stack fault, the next time the radio shows as a drive its `INFO_UF2.TXT` has a `Last-Fault` line, once. **Upgrade Bootloader** and **Factory Erase** show it when you choose the drive, and the app log keeps it. Include it when you report a problem with the radio.
 
 ## During the Transfer
 
