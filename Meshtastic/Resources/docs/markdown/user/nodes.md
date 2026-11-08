@@ -112,11 +112,11 @@ Older firmware doesn't report this, so the marker and the notice don't appear.
 
 Long-press any node in the list to access quick actions:
 
-- **Add to favorites / Remove from favorites** — star important nodes so they appear at the top of the list
+- **Message** — open a direct message conversation with this node
 - **Display name** — give a node a local nickname (see Display Names below)
 - **Status Message** — set the status your radio broadcasts to the mesh (connected node only, firmware 2.8+)
+- **Add to favorites / Remove from favorites** — star important nodes so they appear at the top of the list
 - **Mute notifications / Unmute** — silence alerts from this node
-- **Message** — open a direct message conversation with this node
 - **Trace Route** — discover the path messages take to reach this node (see [Trace Routes](traceroute.md))
 - **Ignore / Remove from ignored** — hide this node from normal views
 - **Remove** — remove the node from your local database
