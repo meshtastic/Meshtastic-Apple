@@ -5,6 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 10/15/26.
 //
 
+import Combine
 import SwiftUI
 import RealityKit
 import OSLog
@@ -428,6 +429,11 @@ struct DeviceModelRealityView: View {
 
 	var body: some View {
 		GeometryReader { proxy in
+			#if os(iOS) && !targetEnvironment(macCatalyst)
+			DeviceModelSceneView(stage: stage, autoRotate: autoRotate, screenSource: screenSource, size: proxy.size)
+				// An AR view stops it drawing, so it's made again once one closes.
+				.id(DeviceModelARSessions.shared.closed)
+			#else
 			RealityView { content in
 				content.add(stage.makeScene())
 				#if !os(visionOS)
@@ -455,6 +461,7 @@ struct DeviceModelRealityView: View {
 				stage.fitRadius = Float(metrics.convert(side, to: .meters)) * 0.42
 				#endif
 			}
+			#endif
 		}
 		.background { backdrop }
 		.contentShape(Rectangle())
@@ -504,6 +511,60 @@ struct DeviceModelRealityView: View {
 			.onEnded { _ in stage.endZoom() }
 	}
 }
+
+#if os(iOS) && !targetEnvironment(macCatalyst)
+/// Counts the AR views that have closed. A model view that was up while one ran has stopped
+/// drawing, and is made again when this changes.
+@MainActor @Observable
+final class DeviceModelARSessions {
+	static let shared = DeviceModelARSessions()
+	var closed = 0
+}
+
+/// The model drawn by an `ARView` with no camera rather than a `RealityView`. On iOS 27, once a
+/// `RealityView` has drawn in the app, every AR view after it shows a black camera picture; an
+/// `ARView` with no camera leaves the AR view's camera alone.
+@available(iOS 18.0, *)
+private struct DeviceModelSceneView: UIViewRepresentable {
+	let stage: DeviceModelStage
+	let autoRotate: Bool
+	weak var screenSource: DisplayMirrorSession?
+	let size: CGSize
+
+	func makeUIView(context: Context) -> ARView {
+		let view = ARView(frame: .zero, cameraMode: .nonAR, automaticallyConfigureSession: false)
+		// Clear, so the backdrop behind shows as it did around the RealityView.
+		view.environment.background = .color(.clear)
+		view.backgroundColor = .clear
+		let anchor = AnchorEntity(world: .zero)
+		anchor.addChild(stage.makeScene())
+		view.scene.addAnchor(anchor)
+		context.coordinator.update = view.scene.subscribe(to: SceneEvents.Update.self) { [weak stage] event in
+			stage?.advance(by: Float(event.deltaTime))
+		}
+		return view
+	}
+
+	func updateUIView(_ view: ARView, context: Context) {
+		stage.autoRotate = autoRotate
+		stage.screenSource = screenSource
+		// The camera shows a sphere of radius 1 top to bottom; the width follows the view's shape.
+		let halfHeight: Float = 1.02 / cos(15 * .pi / 180)
+		stage.viewHalfExtents = [halfHeight * Float(size.width / max(size.height, 1)), halfHeight]
+	}
+
+	func makeCoordinator() -> Coordinator { Coordinator() }
+
+	static func dismantleUIView(_ view: ARView, coordinator: Coordinator) {
+		coordinator.update?.cancel()
+	}
+
+	/// Keeps the per-frame update running while the view is up.
+	final class Coordinator {
+		var update: Cancellable?
+	}
+}
+#endif
 
 /// The RealityKit side: a pivot that turns, holding the model scaled and centered inside it.
 @available(iOS 18.0, macCatalyst 18.0, visionOS 1.0, *)

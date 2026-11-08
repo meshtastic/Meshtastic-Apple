@@ -6,7 +6,6 @@
 //
 
 #if os(iOS) && !targetEnvironment(macCatalyst)
-import ARKit
 import Combine
 import RealityKit
 import ReplayKit
@@ -133,6 +132,7 @@ struct DeviceModelARView: View {
 			}
 		}
 		.onDisappear {
+			DeviceModelARSessions.shared.closed += 1
 			accessoryManager.stopDisplayMirror(for: .deviceModelAR)
 			if recording {
 				RPScreenRecorder.shared().stopRecording { _, _ in }
@@ -271,8 +271,7 @@ private struct RecordingPreview: UIViewControllerRepresentable {
 }
 
 /// The camera view with the model standing on the first table or floor it finds, turned to face the
-/// camera. An `ARView` that runs its own session: RealityView's tracking camera, and `ARView`
-/// setting up its own session, both left the camera picture black on an iPhone running iOS 27.
+/// camera.
 @available(iOS 18.0, *)
 private struct DeviceModelCameraView: UIViewRepresentable {
 	let stage: DeviceModelStage
@@ -286,12 +285,7 @@ private struct DeviceModelCameraView: UIViewRepresentable {
 	private static let facingName = "DeviceModelARFacing"
 
 	func makeUIView(context: Context) -> ARView {
-		let view = ARView(frame: .zero, cameraMode: .ar, automaticallyConfigureSession: false)
-		view.renderOptions = [.disableCameraGrain, .disableHDR, .disableMotionBlur, .disableDepthOfField, .disableFaceMesh, .disablePersonOcclusion, .disableGroundingShadows, .disableAREnvironmentLighting]
-		let configuration = ARWorldTrackingConfiguration()
-		configuration.planeDetection = [.horizontal]
-		view.session.run(configuration)
-
+		let view = ARView(frame: .zero, cameraMode: .ar, automaticallyConfigureSession: true)
 		// Any horizontal surface; the model stands on it at its own size.
 		let anchor = AnchorEntity(.plane(.horizontal, classification: .any, minimumBounds: [0.1, 0.1]))
 		// Turned to face the camera when it lands, so the banana stands on the viewer's left.
