@@ -161,7 +161,10 @@ extension TraceRouteLegs {
 }
 
 extension TraceRouteLegs.NodeDetails {
-	init(node: NodeInfoEntity) {
-		self.init(longName: node.user?.longName, shortName: node.user?.shortName, viaMqtt: node.viaMqtt)
+	/// Names the node by its local display name, for what is shown on this device. Pass
+	/// `broadcastName` for anything that leaves it, such as the share image.
+	init(node: NodeInfoEntity, broadcastName: Bool = false) {
+		let longName = broadcastName ? node.user?.longName : node.user?.localLongName
+		self.init(longName: longName, shortName: node.user?.shortName, viaMqtt: node.viaMqtt)
 	}
 }

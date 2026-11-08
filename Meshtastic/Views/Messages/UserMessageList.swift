@@ -443,7 +443,7 @@ struct UserMessageList: View {
 			ToolbarItem(placement: .principal) {
 				HStack {
 					CircleText(text: user.shortName ?? "?", color: Color(UIColor(hex: UInt32(user.num))), circleSize: 44)
-					Text(user.longName ?? "Unknown").font(.headline)
+					Text(user.displayLongName).font(.headline)
 				}
 			}
 			ToolbarItem(placement: .navigationBarTrailing) {

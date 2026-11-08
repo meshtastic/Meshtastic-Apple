@@ -87,6 +87,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 		// the templates were frozen between connection changes and unread counts
 		// went stale for the whole drive.
 		NotificationCenter.default.publisher(for: .meshMessagesDidChange)
+			.merge(with: NotificationCenter.default.publisher(for: NodeDisplayNameStore.didChangeNotification))
 			.debounce(for: .milliseconds(500), scheduler: DispatchQueue.main)
 			.sink { [weak self] _ in
 				self?.refreshSections()
@@ -217,7 +218,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 
 			return nodes.compactMap { node -> CPMessageListItem? in
 				guard let user = node.user else { return nil }
-				let name = user.longName ?? user.shortName ?? "Unknown"
+				let name = user.localLongName ?? user.shortName ?? "Unknown"
 				let unreadCount = unreadCounts[node.num] ?? 0
 				let hasUnread = unreadCount > 0
 				let convId = "dm-\(node.num)"
@@ -253,7 +254,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 						trailingText: lastHeardText(node.lastHeard, now: now)
 					)
 					item.conversationIdentifier = convId
-					donateMessageIntentIfNeeded(conversationId: convId, toNodeNum: node.num, name: name)
+					donateMessageIntentIfNeeded(conversationId: convId, toNodeNum: node.num, name: user.longName ?? user.shortName ?? "Unknown")
 				}
 				item.userInfo = node.num
 
@@ -353,7 +354,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 					if lhsLastMessage != rhsLastMessage {
 						return lhsLastMessage > rhsLastMessage
 					}
-					return (lhs.longName ?? lhs.shortName ?? "") < (rhs.longName ?? rhs.shortName ?? "")
+					return (lhs.localLongName ?? lhs.shortName ?? "") < (rhs.localLongName ?? rhs.shortName ?? "")
 				}
 				.prefix(24)
 			let nodeNums = filteredUsers.compactMap { $0.userNode?.num }
@@ -362,7 +363,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 
 			return filteredUsers.compactMap { user -> CPMessageListItem? in
 				guard let node = user.userNode else { return nil }
-				let name = user.longName ?? user.shortName ?? "Unknown"
+				let name = user.localLongName ?? user.shortName ?? "Unknown"
 				let nodeNum = node.num
 				let unreadCount = unreadCounts[nodeNum] ?? 0
 				let hasUnread = unreadCount > 0
@@ -398,7 +399,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 						trailingText: lastHeardText(node.lastHeard, now: now)
 					)
 					item.conversationIdentifier = convId
-					donateMessageIntentIfNeeded(conversationId: convId, toNodeNum: nodeNum, name: name)
+					donateMessageIntentIfNeeded(conversationId: convId, toNodeNum: nodeNum, name: user.longName ?? user.shortName ?? "Unknown")
 				}
 				item.userInfo = nodeNum
 
@@ -462,6 +463,8 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 
 	/// Donates a contact intent for a DM conversation the first time it is seen this session.
 	/// Subsequent renders are no-ops, avoiding repeated IPC calls to the intents daemon.
+	/// `name` is the node's broadcast name: Siri can read or forward a donated intent, so the
+	/// local display name stays out of it.
 	private func donateMessageIntentIfNeeded(conversationId: String, toNodeNum: Int64, name: String) {
 		guard donatedComposeIds.insert(conversationId).inserted else { return }
 

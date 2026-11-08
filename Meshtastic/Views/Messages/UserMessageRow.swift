@@ -44,7 +44,7 @@ struct UserMessageRow: View {
 		if isCurrentUser {
 			parts = [String(localized: "You sent: \(text)", comment: "VoiceOver: label for a message you sent. %@ is the message text")]
 		} else {
-			let sender = message.fromUser?.longName ?? "Unknown".localized
+			let sender = message.fromUser?.displayLongName ?? "Unknown".localized
 			parts = [String(localized: "Message from \(sender): \(text)", comment: "VoiceOver: label for a received message. First value is the sender, second is the message text")]
 		}
 		parts.append(time)
@@ -160,7 +160,7 @@ struct UserMessageRow: View {
 					
 					// Sender Name Header
 					if !isCurrentUser && message.fromUser != nil {
-						Text("\(message.fromUser?.longName ?? "Unknown".localized ) (\(message.fromUser?.userId ?? "?"))")
+						Text("\(message.fromUser?.displayLongName ?? "Unknown".localized ) (\(message.fromUser?.userId ?? "?"))")
 							.font(.caption).foregroundColor(.gray).offset(y: 8)
 							.accessibilityHidden(true) // Folded into the message bubble's combined label
 					}

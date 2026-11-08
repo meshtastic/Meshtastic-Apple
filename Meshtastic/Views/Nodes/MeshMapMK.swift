@@ -756,6 +756,10 @@ struct MeshMapMK: View {
 				visiblePositionSnapshots = []
 			}
 		}
+		.onReceive(NotificationCenter.default.publisher(for: NodeDisplayNameStore.didChangeNotification)) { _ in
+			// Labels and the coincident picker's order come from display names.
+			refreshPositionState(force: true)
+		}
 		.onReceive(NotificationCenter.default.publisher(for: Foundation.Notification.Name.mapDataFileDeleted)) { notification in
 			if let deletedFileId = notification.object as? UUID {
 				enabledOverlayConfigs.remove(deletedFileId)
@@ -1653,7 +1657,7 @@ struct MeshMapMK: View {
 		// Node names for the endpoint circles; the lines and badges only need numbers and positions.
 		let legs = TraceRouteLegs(route: route, preset: modemPreset) { num in
 			guard num != 0, num != TraceRouteLegs.unknownRepeaterNum else { return nil }
-			return router.cachedNodeInfo(id: num, context: context).map(TraceRouteLegs.NodeDetails.init(node:))
+			return router.cachedNodeInfo(id: num, context: context).map { TraceRouteLegs.NodeDetails(node: $0) }
 		}
 		let positions = route.nodePositionsByNum.compactMapValues { $0.coordinate }
 		let layout = TraceRouteMapLayout(legs: legs, positions: positions)
@@ -2097,7 +2101,7 @@ struct MeshMapMK: View {
 					longitudeI: position.longitudeI,
 				precisionBits: precisionBits,
 				nodeNum: nodeNum,
-				longName: node?.user?.longName ?? "?",
+				longName: node?.user?.localLongName ?? "?",
 				shortName: node?.user?.shortName,
 				isOnline: node?.isOnline ?? false,
 				viaMqtt: node?.viaMqtt ?? true,

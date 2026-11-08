@@ -121,14 +121,15 @@ struct TraceRouteBoard: View {
 			card = nil
 			return
 		}
-		let key = "\(route.id)|\(route.hops.count)|\(route.nodePositions.count)"
+		// Display names name the hops, so a rename redraws the card too.
+		let key = "\(route.id)|\(route.hops.count)|\(route.nodePositions.count)|\(NodeDisplayNameStore.revision)"
 		if let card, card.key == key {
 			guard let retryAt = card.mapRetryAt, Date() >= retryAt else { return }
 		}
 		let preset = ModemPresets(rawValue: UserDefaults.modemPreset) ?? .longFast
 		let legs = TraceRouteLegs(route: route, preset: preset) { num in
 			guard num != 0, num != TraceRouteLegs.unknownRepeaterNum else { return nil }
-			return getNodeInfo(id: num, context: context).map(TraceRouteLegs.NodeDetails.init(node:))
+			return getNodeInfo(id: num, context: context).map { TraceRouteLegs.NodeDetails(node: $0) }
 		}
 		let routeId = route.id
 		let model = TraceRouteShareRenderer.fittingMap(TraceRouteShareModel(route: route, legs: legs, mapWidth: TraceRouteShareStyle.mapWidth))

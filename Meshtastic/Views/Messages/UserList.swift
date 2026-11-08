@@ -115,7 +115,7 @@ private struct FilteredUserList: View {
 			distanceBounds: filters.distanceFilter ? distanceBounds : nil,
 			context: context
 		)
-		return allUsers.filter {
+		let filtered = allUsers.filter {
 			filters.matches(
 				user: $0,
 				normalizedSearchText: searchText,
@@ -123,6 +123,17 @@ private struct FilteredUserList: View {
 				distanceBounds: distanceBounds,
 				lookup: filterLookup
 			)
+		}
+		// The query breaks ties by the broadcast long name; with display names set, break them by
+		// the name each row shows instead.
+		guard NodeDisplayNameStore.hasDisplayNames else { return filtered }
+		return filtered.sorted { lhs, rhs in
+			let lhsLastMessage = lhs.lastMessage ?? .distantPast
+			let rhsLastMessage = rhs.lastMessage ?? .distantPast
+			if lhsLastMessage != rhsLastMessage {
+				return lhsLastMessage > rhsLastMessage
+			}
+			return lhs.displayLongName.localizedStandardCompare(rhs.displayLongName) == .orderedAscending
 		}
 	}
 
@@ -416,7 +427,7 @@ fileprivate extension NodeFilterParameters {
 	) -> Bool {
 		// Search text
 		if !normalizedSearchText.isEmpty {
-			let matchesSearch = [user.userId, user.numString, user.hwModel, user.hwDisplayName, user.longName, user.shortName]
+			let matchesSearch = [user.userId, user.numString, user.hwModel, user.hwDisplayName, user.longName, user.localLongName, user.shortName]
 				.compactMap { $0?.lowercased() }
 				.contains { $0.contains(normalizedSearchText) }
 			if !matchesSearch { return false }
