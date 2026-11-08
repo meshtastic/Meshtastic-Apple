@@ -45,6 +45,26 @@ struct MqttTopicDiscoveryTests {
 
 	private let seattle = CLLocationCoordinate2D(latitude: 47.6062, longitude: -122.3321)
 
+	private func plan(
+		_ regionTopic: String = "msh/US",
+		_ regionName: String = "United States",
+		country: String? = nil,
+		state: String?,
+		city: String?,
+		at coordinate: CLLocationCoordinate2D? = nil,
+		directory: MqttRootDirectory = .empty,
+		activity: [String: Discovery.Activity] = [:]
+	) -> Discovery.Plan {
+		Discovery.plan(
+			regionTopic: regionTopic,
+			regionName: regionName,
+			place: Discovery.Place(countryCode: country, state: state, city: city),
+			at: coordinate,
+			directory: directory,
+			activity: activity
+		)
+	}
+
 	// MARK: Topic parsing
 
 	@Test func packetTopicParses() {
@@ -169,20 +189,20 @@ struct MqttTopicDiscoveryTests {
 	// MARK: Ladder
 
 	@Test func ladderHasThreeRungs() {
-		let ladder = Discovery.ladder(regionTopic: "msh/US", regionName: "United States", state: "WA", city: "Seattle")
+		let ladder = plan(state: "WA", city: "Seattle").rungs
 		#expect(ladder.map(\.topic) == ["msh/US", "msh/US/WA", "msh/US/WA/seattle"])
 		#expect(ladder.map(\.level) == [.region, .state, .city])
 		#expect(ladder.map(\.placeName) == ["United States", "WA", "Seattle"])
 	}
 
 	@Test func ladderDropsMissingRungs() {
-		#expect(Discovery.ladder(regionTopic: "msh/US", regionName: "United States", state: nil, city: nil).count == 1)
-		#expect(Discovery.ladder(regionTopic: "msh/US", regionName: "United States", state: "WA", city: nil).count == 2)
-		#expect(Discovery.ladder(regionTopic: "msh/US", regionName: "United States", state: nil, city: "Seattle").count == 1)
+		#expect(plan(state: nil, city: nil).rungs.count == 1)
+		#expect(plan(state: "WA", city: nil).rungs.count == 2)
+		#expect(plan(state: nil, city: "Seattle").rungs.count == 1)
 	}
 
 	@Test func ladderKeepsLettersInAnyScript() {
-		let bayern = Discovery.ladder(regionTopic: "msh/EU_868", regionName: "EU 868", state: "Bayern", city: "München")
+		let bayern = plan("msh/EU_868", "EU 868", state: "Bayern", city: "München").rungs
 		#expect(bayern.last?.topic == "msh/EU_868/Bayern/münchen")
 		#expect(Discovery.segment(from: "St. John's", lowercased: true) == "stjohns")
 		#expect(Discovery.segment(from: "Coeur d'Alene", lowercased: true) == "coeurdalene")
@@ -193,10 +213,10 @@ struct MqttTopicDiscoveryTests {
 		// Decomposed input (u + combining diaeresis) is composed first.
 		#expect(Discovery.segment(from: "Zu\u{0308}rich", lowercased: true) == "zürich")
 		let longCity = String(repeating: "x", count: 40)
-		let trimmed = Discovery.ladder(regionTopic: "msh/US", regionName: "United States", state: "WA", city: longCity)
+		let trimmed = plan(state: "WA", city: longCity).rungs
 		#expect(trimmed.count == 3)
 		#expect(trimmed.last?.topic.utf8.count == 31)
-		let tokyo = Discovery.ladder(regionTopic: "msh/JP", regionName: "Japan", state: "東京都", city: "渋谷区")
+		let tokyo = plan("msh/JP", "Japan", state: "東京都", city: "渋谷区").rungs
 		#expect(tokyo.map(\.level) == [.region, .state, .city])
 		#expect(tokyo.last?.topic == "msh/JP/東京都/渋谷区")
 		#expect(Discovery.segment(from: "!?.", lowercased: true) == nil)
@@ -303,7 +323,7 @@ struct MqttTopicDiscoveryTests {
 	}
 
 	@Test func rankingPrefersLadderThenDistanceThenCount() {
-		let ladder = Discovery.ladder(regionTopic: "msh/US", regionName: "United States", state: "WA", city: "Seattle")
+		let topics = plan(state: "WA", city: "Seattle")
 		// Positions are points about 40 km and 7 km from Seattle; the names only label the roots.
 		let tacoma = CLLocationCoordinate2D(latitude: 47.2529, longitude: -122.4443)
 		let bellingham = CLLocationCoordinate2D(latitude: 47.65, longitude: -122.40)
@@ -315,38 +335,38 @@ struct MqttTopicDiscoveryTests {
 			"msh/US/WA/seattle": self.activity(nodes: 5),
 			"msh/US/WA/" + String(repeating: "z", count: 30): self.activity(nodes: 9)
 		]
-		let ranked = Discovery.ranked(activity, ladder: ladder, from: seattle)
+		let ranked = Discovery.ranked(activity, plan: topics, from: seattle)
 		#expect(ranked.map(\.root) == ["msh/US/WA/bellingham", "msh/US/WA/tacoma", "msh/US/WA/olympia", "msh/US/FL"])
 		#expect(ranked.first?.ladderDepth == 2)
 		#expect(ranked.last?.ladderDepth == 1)
-		let seattleRung = ladder[2]
+		let seattleRung = topics.rungs[2]
 		#expect(Discovery.activity(forRung: seattleRung, in: activity)?.activity.nodeCount == 5)
 	}
 
 	@Test func rungMatchIsCaseInsensitive() {
-		let ladder = Discovery.ladder(regionTopic: "msh/US", regionName: "United States", state: "KS", city: "Topeka")
+		let topics = plan(state: "KS", city: "Topeka")
 		let activity = ["msh/US/KS/Topeka": self.activity(nodes: 2)]
-		let match = Discovery.activity(forRung: ladder[2], in: activity)
+		let match = Discovery.activity(forRung: topics.rungs[2], in: activity)
 		#expect(match?.topic == "msh/US/KS/Topeka")
 		#expect(match?.activity.nodeCount == 2)
-		#expect(Discovery.ranked(activity, ladder: ladder, from: nil).isEmpty)
+		#expect(Discovery.ranked(activity, plan: topics, from: nil).isEmpty)
 	}
 
 	@Test func rungPrefersItsOwnSpellingAndKeepsTheOther() {
-		let ladder = Discovery.ladder(regionTopic: "msh/US", regionName: "United States", state: "KS", city: "Topeka")
+		let topics = plan(state: "KS", city: "Topeka")
 		let activity = [
 			"msh/US/KS/Topeka": self.activity(nodes: 5),
 			"msh/US/KS/topeka": self.activity(nodes: 2)
 		]
-		let match = Discovery.activity(forRung: ladder[2], in: activity)
+		let match = Discovery.activity(forRung: topics.rungs[2], in: activity)
 		#expect(match?.topic == "msh/US/KS/topeka")
 		#expect(match?.activity.nodeCount == 2)
-		let ranked = Discovery.ranked(activity, ladder: ladder, from: nil)
+		let ranked = Discovery.ranked(activity, plan: topics, from: nil)
 		#expect(ranked.map(\.root) == ["msh/US/KS/Topeka"])
 		#expect(ranked.first?.activity.nodeCount == 5)
 
 		let variants = ["msh/US/KS/TOPEKA": self.activity(nodes: 1), "msh/US/KS/Topeka": self.activity(nodes: 3)]
-		#expect(Discovery.activity(forRung: ladder[2], in: variants)?.topic == "msh/US/KS/TOPEKA")
-		#expect(Discovery.ranked(variants, ladder: ladder, from: nil).map(\.root) == ["msh/US/KS/Topeka"])
+		#expect(Discovery.activity(forRung: topics.rungs[2], in: variants)?.topic == "msh/US/KS/TOPEKA")
+		#expect(Discovery.ranked(variants, plan: topics, from: nil).map(\.root) == ["msh/US/KS/Topeka"])
 	}
 }

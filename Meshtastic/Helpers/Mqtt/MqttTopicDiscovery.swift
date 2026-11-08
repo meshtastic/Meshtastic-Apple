@@ -176,27 +176,82 @@ enum MqttTopicDiscovery {
 	}
 
 	struct Rung: Identifiable, Equatable {
-		enum Level: Equatable { case region, state, city }
+		enum Level: Equatable { case region, country, state, city, community }
 		let level: Level
 		/// "msh/US/WA"
 		let topic: String
-		/// "Washington", or whatever the geocoder gave
+		/// "Washington", or whatever the geocoder gave; a community root's name from the directory
 		let placeName: String
 		var id: String { topic }
 	}
 
-	/// [region] + [state if segment(state) != nil] + [city if the state rung exists and segment(city) != nil].
-	/// Each rung is trimmed from the end of its last segment until it fits the byte cap; a rung whose last
-	/// segment empties is dropped together with anything below it.
-	static func ladder(regionTopic: String, regionName: String, state: String?, city: String?) -> [Rung] {
+	/// Where the user is, as the geocoder names it.
+	struct Place: Equatable {
+		/// ISO 3166-1 alpha-2
+		var countryCode: String?
+		var state: String?
+		var city: String?
+	}
+
+	/// The topics offered for a place, and the roots of the subdivisions that border it.
+	struct Plan: Equatable {
+		var rungs: [Rung]
+		/// Rank with the community roots, in the middle tier.
+		var neighborRoots: [String] = []
+	}
+
+	/// Region, then the country when the sample shows the broker uses it, then state and city, then the
+	/// directory's community roots that serve the place. Each ladder rung is trimmed from the end of its
+	/// last segment until it fits the byte cap; a rung whose last segment empties is dropped together
+	/// with anything below it. Rebuilt as `activity` grows, since the country level depends on it.
+	static func plan(
+		regionTopic: String,
+		regionName: String,
+		place: Place?,
+		at coordinate: CLLocationCoordinate2D?,
+		directory: MqttRootDirectory,
+		activity: [String: Activity] = [:]
+	) -> Plan {
 		var rungs = [Rung(level: .region, topic: regionTopic, placeName: regionName)]
-		guard let state, let stateSegment = segment(from: state, lowercased: false),
-			  let stateTopic = fitted(regionTopic, lastSegment: stateSegment) else { return rungs }
-		rungs.append(Rung(level: .state, topic: stateTopic, placeName: state))
-		guard let city, let citySegment = segment(from: city, lowercased: true),
-			  let cityTopic = fitted(stateTopic, lastSegment: citySegment) else { return rungs }
-		rungs.append(Rung(level: .city, topic: cityTopic, placeName: city))
-		return rungs
+		let countryCode = place?.countryCode?.uppercased()
+		let country = countryLevel(regionTopic: regionTopic, countryCode: countryCode, activity: activity)
+		let base = country?.topic ?? regionTopic
+		if let country, !country.flooded, let countryCode {
+			rungs.append(Rung(level: .country, topic: country.topic, placeName: Locale.current.localizedString(forRegionCode: countryCode) ?? countryCode))
+		}
+		var subdivision: String?
+		if let state = place?.state,
+		   let stateSegment = segment(from: directory.subdivisionSegment(countryCode: countryCode, name: state), lowercased: false),
+		   let stateTopic = fitted(base, lastSegment: stateSegment) {
+			rungs.append(Rung(level: .state, topic: stateTopic, placeName: state))
+			if let countryCode { subdivision = countryCode + "-" + stateSegment }
+			if let city = place?.city, let citySegment = segment(from: city, lowercased: true),
+			   let cityTopic = fitted(stateTopic, lastSegment: citySegment) {
+				rungs.append(Rung(level: .city, topic: cityTopic, placeName: city))
+			}
+		}
+		for entry in directory.entries(servingSubdivision: subdivision, at: coordinate)
+		where !rungs.contains(where: { MqttRootTopic.rootsMatch($0.topic, entry.root) }) {
+			rungs.append(Rung(level: .community, topic: entry.root, placeName: entry.name))
+		}
+		let neighborRoots = (subdivision.flatMap { directory.neighbors[$0] } ?? []).sorted().compactMap { code in
+			code.split(separator: "-", maxSplits: 1).last.map { base + "/" + $0 }
+		}
+		return Plan(rungs: rungs, neighborRoots: neighborRoots)
+	}
+
+	/// The country level, decided from the broker being sampled rather than a list of regions: present
+	/// when a heard root under the region has the country code as its next segment. A code equal to the
+	/// region's own segment ("msh/US/US") is a republisher's doubled root, not a country level. A country
+	/// root as busy as the region's own stream is no better to downlink, so it still prefixes the state
+	/// but is not offered.
+	private static func countryLevel(regionTopic: String, countryCode: String?, activity: [String: Activity]) -> (topic: String, flooded: Bool)? {
+		guard let countryCode, countryCode.count == 2,
+			  countryCode.caseInsensitiveCompare(MqttRootTopic.segments(regionTopic).last ?? "") != .orderedSame else { return nil }
+		let topic = regionTopic + "/" + countryCode
+		guard activity.keys.contains(where: { MqttRootTopic.root($0, hasPrefix: topic) }) else { return nil }
+		let packets = self.activity(forTopic: topic, in: activity)?.activity.packets ?? 0
+		return (topic, packets >= MqttTopicSampler.regionPacketCap)
 	}
 
 	private static func fitted(_ base: String, lastSegment: String) -> String? {
@@ -317,30 +372,55 @@ enum MqttTopicDiscovery {
 	}
 
 	struct RankedRoot: Identifiable {
+		enum Tier: Int, Comparable {
+			/// Under the user's state or city, or the country when nothing finer is known.
+			case ownArea
+			/// Under a community root or a neighboring state.
+			case nearby
+			case elsewhere
+
+			static func < (lhs: Tier, rhs: Tier) -> Bool { lhs.rawValue < rhs.rawValue }
+		}
+
 		let root: String
 		let activity: Activity
+		let tier: Tier
 		let ladderDepth: Int
 		let distance: CLLocationDistance?
 		var id: String { root }
 	}
 
-	/// Discovered roots that are not shown on a rung, ranked: more ladder rungs as a prefix first, then
-	/// roots with a map-reported position by distance, then node count, message count and name. The
-	/// view caps the list. Only the spelling a rung shows is left out; another case variant of the same
-	/// root is a separate topic on the broker and keeps its own row here.
-	static func ranked(_ activity: [String: Activity], ladder: [Rung], from: CLLocationCoordinate2D?) -> [RankedRoot] {
-		let shown = Set(ladder.compactMap { self.activity(forRung: $0, in: activity)?.topic })
+	/// Discovered roots that are not shown on a rung, ranked in three tiers (own area, nearby,
+	/// elsewhere), then within a tier by more ladder rungs as a prefix, roots with a map-reported
+	/// position by distance, node count, message count and name. The view caps the list. Only the
+	/// spelling a rung shows is left out; another case variant of the same root is a separate topic on
+	/// the broker and keeps its own row here.
+	static func ranked(_ activity: [String: Activity], plan: Plan, from: CLLocationCoordinate2D?) -> [RankedRoot] {
+		let shown = Set(plan.rungs.compactMap { self.activity(forTopic: $0.topic, in: activity)?.topic })
+		let ladder = plan.rungs.filter { $0.level != .community }
+		let finest = ladder.filter { $0.level == .state || $0.level == .city }
+		let ownArea = (finest.isEmpty ? ladder.filter { $0.level == .country } : finest).map(\.topic)
+		let nearby = plan.rungs.filter { $0.level == .community }.map(\.topic) + plan.neighborRoots
 		var roots: [RankedRoot] = []
 		for (root, entry) in activity {
 			if shown.contains(root) { continue }
 			if MqttRootTopic.problem(in: root) != nil { continue }
+			let tier: RankedRoot.Tier
+			if ownArea.contains(where: { MqttRootTopic.root(root, hasPrefix: $0) }) {
+				tier = .ownArea
+			} else if nearby.contains(where: { MqttRootTopic.root(root, hasPrefix: $0) }) {
+				tier = .nearby
+			} else {
+				tier = .elsewhere
+			}
 			let depth = ladder.filter { MqttRootTopic.root(root, hasPrefix: $0.topic) }.count
-			roots.append(RankedRoot(root: root, activity: entry, ladderDepth: depth, distance: entry.nearestDistance(from: from)))
+			roots.append(RankedRoot(root: root, activity: entry, tier: tier, ladderDepth: depth, distance: entry.nearestDistance(from: from)))
 		}
 		return roots.sorted(by: precedes)
 	}
 
 	private static func precedes(_ lhs: RankedRoot, _ rhs: RankedRoot) -> Bool {
+		if lhs.tier != rhs.tier { return lhs.tier < rhs.tier }
 		if lhs.ladderDepth != rhs.ladderDepth { return lhs.ladderDepth > rhs.ladderDepth }
 		switch (lhs.distance, rhs.distance) {
 		case let (near?, far?) where near != far: return near < far
@@ -358,8 +438,12 @@ enum MqttTopicDiscovery {
 	/// case-insensitive match ("msh/US/KS/Topeka" for the rung "msh/US/KS/topeka"), so the row does
 	/// not flip between variants from one snapshot to the next.
 	static func activity(forRung rung: Rung, in activity: [String: Activity]) -> (topic: String, activity: Activity)? {
-		if let exact = activity[rung.topic] { return (rung.topic, exact) }
-		guard let key = activity.keys.filter({ MqttRootTopic.rootsMatch($0, rung.topic) }).min(),
+		self.activity(forTopic: rung.topic, in: activity)
+	}
+
+	static func activity(forTopic topic: String, in activity: [String: Activity]) -> (topic: String, activity: Activity)? {
+		if let exact = activity[topic] { return (topic, exact) }
+		guard let key = activity.keys.filter({ MqttRootTopic.rootsMatch($0, topic) }).min(),
 			  let entry = activity[key] else { return nil }
 		return (key, entry)
 	}

@@ -233,6 +233,7 @@ targets:
       - path: "Meshtastic/Resources/DeviceHardware.json"
       - path: "Meshtastic/Resources/urls.json"
       - path: "Meshtastic/Resources/event_firmware.json"
+      - path: "Meshtastic/Resources/mqtt_roots.json"
       - path: "Meshtastic/Resources/AppIcon.icon"
       - path: "Meshtastic/Resources/AppIconDebug.icon"
       - path: "Meshtastic/Resources/AppIcon_Chirpy.icon"

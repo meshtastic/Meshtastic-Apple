@@ -33996,6 +33996,9 @@
         }
       }
     },
+    "Community mesh" : {
+      "comment" : "Topic finder: a named community root from the shared directory that serves the user's area"
+    },
     "Community supported Linux device." : {
       "localizations" : {
         "ko" : {
@@ -37949,6 +37952,9 @@
           }
         }
       }
+    },
+    "Country" : {
+      "comment" : "Topic finder: ladder level name"
     },
     "Counts are nodes heard during the sample. Busy topics fill in within seconds; quiet ones may stay at zero." : {
       "comment" : "Topic finder: ladder footer",
