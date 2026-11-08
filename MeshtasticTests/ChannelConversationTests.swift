@@ -253,6 +253,23 @@ struct ChannelConversationReconcileTests {
 		#expect(try channels(ModelContext(container)) == [1: 1])
 	}
 
+	@Test func notificationActionsFollowTheMessageToItsChannel() async throws {
+		let container = try makeContainer()
+		let context = ModelContext(container)
+		insertMessage(context, id: 1, channel: 1)
+		insertMessage(context, id: 2, channel: 2)
+		try context.save()
+		let mesh = MeshPackets(modelContainer: container)
+
+		_ = await mesh.reconcileChannelConversations(slots: [slot(0, "P"), slot(1, "A"), slot(2, "B")])
+		// A leaves and B shifts into slot 1: a notification for message 2 still says slot 2.
+		_ = await mesh.reconcileChannelConversations(slots: [slot(0, "P"), slot(1, "B")])
+		let reader = ModelContext(container)
+		#expect(ChannelConversations.replyChannel(forMessageId: 2, in: reader) == 1)
+		#expect(ChannelConversations.replyChannel(forMessageId: 1, in: reader) == nil)
+		#expect(ChannelConversations.replyChannel(forMessageId: 99, in: reader) == nil)
+	}
+
 	@Test func deletingAnArchiveRemovesItsMessagesAndRecord() async throws {
 		let container = try makeContainer()
 		let context = ModelContext(container)

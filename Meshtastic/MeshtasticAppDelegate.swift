@@ -140,8 +140,8 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 				markCarPlayMessagesAsRead(conversationId: threadId)
 			}
 		case "messageNotification.thumbsUpAction":
-			if let channel = userInfo["channel"] as? Int32,
-			   let replyID = userInfo["replyMessageId"] as? Int64 ?? userInfo["messageId"] as? Int64 {
+			if let replyID = userInfo["replyMessageId"] as? Int64 ?? userInfo["messageId"] as? Int64,
+			   let channel = ChannelConversations.replyChannel(forMessageId: replyID, in: PersistenceController.shared.context) {
 				Task {
 					do {
 						try await AccessoryManager.shared.sendMessage(
@@ -158,8 +158,8 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 				}
 			}
 		case "messageNotification.thumbsDownAction":
-			if let channel = userInfo["channel"] as? Int32,
-			   let replyID = userInfo["replyMessageId"] as? Int64 ?? userInfo["messageId"] as? Int64 {
+			if let replyID = userInfo["replyMessageId"] as? Int64 ?? userInfo["messageId"] as? Int64,
+			   let channel = ChannelConversations.replyChannel(forMessageId: replyID, in: PersistenceController.shared.context) {
 				Task {
 					do {
 						try await AccessoryManager.shared.sendMessage(
@@ -177,8 +177,8 @@ class MeshtasticAppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificat
 			}
 		case "messageNotification.replyInputAction":
 			if let userInput = (response as? UNTextInputNotificationResponse)?.userText,
-			   let channel = userInfo["channel"] as? Int32,
-			   let replyID = userInfo["replyMessageId"] as? Int64 ?? userInfo["messageId"] as? Int64 {
+			   let replyID = userInfo["replyMessageId"] as? Int64 ?? userInfo["messageId"] as? Int64,
+			   let channel = ChannelConversations.replyChannel(forMessageId: replyID, in: PersistenceController.shared.context) {
 				Task {
 					do {
 						try await AccessoryManager.shared.sendMessage(
