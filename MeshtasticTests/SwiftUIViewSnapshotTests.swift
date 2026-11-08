@@ -1684,7 +1684,7 @@ struct MQTTConfigSnapshotTests {
 	@Test("Topic finder sheet, finished sample")
 	@MainActor
 	func topicFinderSheet() async throws {
-		let node = try makeNode(num: 0xC0FF_EE0F)
+		let node = try makeNode(num: 0xC0FF_EE0D)
 		let lora = LoRaConfigEntity()
 		lora.regionCode = 1
 		sharedModelContainer.mainContext.insert(lora)
