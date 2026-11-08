@@ -26,6 +26,8 @@ final class CinemaModelStand {
 	/// grabber, so a new model doesn't take them down.
 	@ObservationIgnored private let shelf = Entity()
 	@ObservationIgnored private var light: Entity?
+	/// The environment image `light` was made from, so another environment or stone remakes it.
+	@ObservationIgnored private var lightImage: String?
 	/// The model on its stand, scaled by the zoom.
 	@ObservationIgnored private var holder: Entity?
 	/// The model's size on its stand at real size, for hanging the readings beside it.
@@ -95,8 +97,10 @@ final class CinemaModelStand {
 		screen = DeviceModelScreen(on: model)
 		hasScreen = screen != nil
 		model.components.set(Self.accessibility(for: request))
-		if light == nil {
-			light = await Self.light(for: environment.imageName(stone: stone))
+		let imageName = environment.imageName(stone: stone)
+		if light == nil || lightImage != imageName {
+			light = await Self.light(for: imageName)
+			lightImage = imageName
 		}
 		guard !Task.isCancelled else { return }
 		if let light {

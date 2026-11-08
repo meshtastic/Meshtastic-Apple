@@ -6,6 +6,7 @@
 //
 #if os(visionOS)
 import Metal
+import OSLog
 import RealityKit
 import UIKit
 
@@ -50,8 +51,12 @@ enum SpatialLookoutParts {
 					descriptor.textureCoordinates = MeshBuffers.TextureCoordinates(SpatialCastle.textureCoordinates(data))
 				}
 				descriptor.primitives = .triangles(data.indices)
-				guard let mesh = try? MeshResource.generate(from: [descriptor]) else { return nil }
-				built[part] = mesh
+				do {
+					built[part] = try MeshResource.generate(from: [descriptor])
+				} catch {
+					Logger.services.error("🏰 [SpatialMap] Couldn't make the castle's \(String(describing: part), privacy: .public) mesh: \(error.localizedDescription, privacy: .public)")
+					return nil
+				}
 			}
 			castleMeshes = built
 		}
@@ -101,7 +106,11 @@ enum SpatialLookoutParts {
 			}
 		}
 		guard let cgImage = image.cgImage else { return nil }
-		blockTexture = try? TextureResource(image: cgImage, options: .init(semantic: .color, mipmapsMode: .allocateAndGenerateAll))
+		do {
+			blockTexture = try TextureResource(image: cgImage, options: .init(semantic: .color, mipmapsMode: .allocateAndGenerateAll))
+		} catch {
+			Logger.services.error("🏰 [SpatialMap] Couldn't make the castle's block texture: \(error.localizedDescription, privacy: .public)")
+		}
 		return blockTexture
 	}
 

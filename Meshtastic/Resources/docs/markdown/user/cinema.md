@@ -46,7 +46,7 @@ Everything the fire lookout does, the castle does too: the same **Summit** picke
 
 The boards are parchment scrolls hanging from oak frames: Team Favorites and the Status Board on the frame to your left, the latest trace route on the one to your right. Tap a scroll's top or bottom roller to roll it up out of the way, and see the view behind it; tap a roller again to let it down. Each scroll stays as you left it.
 
-While you're on the castle, the 3D map shows a castle tower on the summit in the stone you picked, in place of the lookout.
+While the castle stands on a summit, the 3D map shows a castle tower on the summit in the stone you picked, in place of the lookout.
 
 ## Control panel
 

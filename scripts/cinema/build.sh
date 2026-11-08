@@ -72,7 +72,14 @@ stone_environment() {
 	fi
 	"$BLENDER" -b --python-exit-code 1 -P "$HERE/$script.py" -- --out "$HERE/out/$name.png" --width 4096 --samples 160 --stone "$stone"
 	sips -s format heic -s formatOptions "$HEIC_QUALITY" "$HERE/out/$name.png" --out "$DEST/$name.heic" >/dev/null
+	# Every stone shares one anchors file, so a stone whose anchors differ from one rendered
+	# earlier in this run is an error.
+	if [ "${STONE_ANCHORS:-}" = "$script" ] && ! cmp -s "$HERE/out/${name}_anchors.json" "$DEST/${script}_anchors.json"; then
+		echo "error: ${name}_anchors.json differs from the other stones' anchors" >&2
+		exit 1
+	fi
 	cp "$HERE/out/${name}_anchors.json" "$DEST/${script}_anchors.json"
+	STONE_ANCHORS="$script"
 	echo "Wrote $DEST/$name.heic and ${script}_anchors.json"
 }
 

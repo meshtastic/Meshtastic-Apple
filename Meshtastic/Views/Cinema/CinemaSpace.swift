@@ -408,8 +408,13 @@ struct CinemaSpace: View {
 	}
 
 	/// The backdrop for the environment: its image, and for a cutout, the sky behind it.
+	/// Dropped if the task is cancelled or the environment or stone changed while it loaded, so a
+	/// slower, older call can't replace the newer backdrop.
 	private func replaceBackdrop(clearSky: Bool) async {
+		let environment = environment
+		let stone = stone
 		let next = await CinemaBackdrop.make(environment, stone: stone, clearSky: clearSky)
+		guard !Task.isCancelled, environment == self.environment, stone == self.stone else { return }
 		backdrop?.removeFromParent()
 		stage.addChild(next)
 		backdrop = next
