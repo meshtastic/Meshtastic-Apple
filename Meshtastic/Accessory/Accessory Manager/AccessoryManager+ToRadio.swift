@@ -1336,6 +1336,9 @@ extension AccessoryManager {
 
 		// Mirror the added channel into local state so it appears immediately (no reboot / re-sync).
 		try applyLocalChannelMutation(channel, fromNum: deviceNum)
+		// No config refresh follows to reconcile, and a replaced slot still holds the previous
+		// channel's conversation.
+		await reconcileChannelConversations()
 
 		Logger.mesh.info("➕ [Beacon] Added advertised channel '\(channelName, privacy: .private)' to secondary slot \(targetIndex, privacy: .public) — no reboot")
 	}
