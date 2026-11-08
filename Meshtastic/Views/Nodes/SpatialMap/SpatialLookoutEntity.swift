@@ -8,7 +8,8 @@
 import RealityKit
 import UIKit
 
-/// The fire lookout as an entity: one model per material, built once and reused.
+/// The fire lookout, and the castle tower, as an entity: one model per material, built once and
+/// reused.
 @MainActor
 enum SpatialLookoutParts {
 	private static var meshes: [SpatialLookout.Part: MeshResource]?
@@ -34,6 +35,60 @@ enum SpatialLookoutParts {
 		}
 		lookout.addChild(body)
 		return lookout
+	}
+
+	/// The castle tower in `stone`, its front facing `heading`, for the castle room.
+	static func makeCastle(heading: Double = SpatialLookout.frontHeading, stone: CastleStone) -> Entity? {
+		if castleMeshes == nil {
+			var built: [SpatialCastle.Part: MeshResource] = [:]
+			for (part, data) in SpatialCastle.geometry() where data.triangleCount > 0 {
+				guard let mesh = try? data.meshResource() else { return nil }
+				built[part] = mesh
+			}
+			castleMeshes = built
+		}
+		guard let castleMeshes else { return nil }
+		let castle = Entity()
+		castle.name = "castleTower"
+		let body = Entity()
+		body.orientation = simd_quatf(angle: SpatialLookout.yaw(heading: heading), axis: [0, 1, 0])
+		for part in SpatialCastle.Part.allCases {
+			guard let mesh = castleMeshes[part] else { continue }
+			body.addChild(ModelEntity(mesh: mesh, materials: [castleMaterial(part, stone: stone)]))
+		}
+		castle.addChild(body)
+		return castle
+	}
+
+	private static var castleMeshes: [SpatialCastle.Part: MeshResource]?
+
+	private static func castleMaterial(_ part: SpatialCastle.Part, stone: CastleStone) -> PhysicallyBasedMaterial {
+		var material = PhysicallyBasedMaterial()
+		switch part {
+		case .stone:
+			// The stone of the castle room's image.
+			let color = switch stone {
+			case .gray: UIColor(red: 0.6, green: 0.59, blue: 0.56, alpha: 1)
+			case .pink: UIColor(red: 0.93, green: 0.33, blue: 0.6, alpha: 1)
+			}
+			material.baseColor = .init(tint: color)
+			material.roughness = 0.9
+		case .opening:
+			material.baseColor = .init(tint: UIColor(white: 0.06, alpha: 1))
+			material.roughness = 1.0
+		case .wood:
+			material.baseColor = .init(tint: UIColor(red: 0.3, green: 0.19, blue: 0.1, alpha: 1))
+			material.roughness = 0.85
+		case .banner:
+			// Meshtastic charcoal.
+			material.baseColor = .init(tint: UIColor(red: 0.17, green: 0.18, blue: 0.24, alpha: 1))
+			material.roughness = 0.9
+		case .metal:
+			material.baseColor = .init(tint: UIColor(red: 0.75, green: 0.6, blue: 0.25, alpha: 1))
+			material.metallic = 0.9
+			material.roughness = 0.35
+		}
+		return material
 	}
 
 	private static func material(_ part: SpatialLookout.Part) -> PhysicallyBasedMaterial {

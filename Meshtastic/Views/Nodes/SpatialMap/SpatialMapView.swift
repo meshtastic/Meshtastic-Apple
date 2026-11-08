@@ -33,6 +33,7 @@ struct SpatialMapView: View {
 	@AppStorage("cinemaEnvironment") private var cinemaEnvironment: CinemaEnvironment = .sarTent
 	@AppStorage("cinemaLookoutSite") private var lookoutSiteID = ""
 	@AppStorage(SpatialLookout.turnsKey) private var lookoutTurns = 0
+	@AppStorage(CastleStone.key) private var castleStone: CastleStone = .gray
 
 	var body: some View {
 		GeometryReader3D { proxy in
@@ -54,9 +55,9 @@ struct SpatialMapView: View {
 				scene.apply(buildings: model.buildingsEntity)
 				scene.apply(coverage: model.coverageEntity, revision: model.coverageRevision, opacity: model.coverageOpacity)
 				scene.apply(nodes: model.nodes)
-				scene.apply(lookout: cinemaEnvironment == .fireLookout
+				scene.apply(lookout: cinemaEnvironment.standsOnSummit
 					? SpatialLookout.coordinate(siteID: lookoutSiteID).flatMap { model.lookoutStands(on: $0) ? $0 : nil }
-					: nil, heading: SpatialLookout.heading(turns: lookoutTurns))
+					: nil, heading: SpatialLookout.heading(turns: lookoutTurns), model: cinemaEnvironment == .castleTower ? .castleTower(castleStone) : .fireLookout)
 				scene.apply(target: liveZoom.flatMap { model.circle(forZoom: $0) } ?? model.targetCircle)
 				traffic.applyBaseGlow()
 				// Hidden while a trace route is shown, as on the 2D map, so the two sets of colored

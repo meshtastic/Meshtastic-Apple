@@ -66,7 +66,7 @@ final class CinemaModelStand {
 	}
 
 	/// Shows the model `request` names, in place of any other, or takes the stand away for nil.
-	func show(_ request: CinemaModelRequest?, environment: CinemaEnvironment) async {
+	func show(_ request: CinemaModelRequest?, environment: CinemaEnvironment, stone: CastleStone) async {
 		clear()
 		zoom = 1
 		guard let request else {
@@ -96,7 +96,7 @@ final class CinemaModelStand {
 		hasScreen = screen != nil
 		model.components.set(Self.accessibility(for: request))
 		if light == nil {
-			light = await Self.light(for: environment)
+			light = await Self.light(for: environment.imageName(stone: stone))
 		}
 		guard !Task.isCancelled else { return }
 		if let light {
@@ -230,15 +230,15 @@ final class CinemaModelStand {
 	}
 
 	/// Light from the environment's own image, so the model is lit like the tent around it.
-	private static func light(for environment: CinemaEnvironment) async -> Entity? {
-		guard let url = cinemaEnvironmentImageURL(named: environment.imageName),
+	private static func light(for imageName: String) async -> Entity? {
+		guard let url = cinemaEnvironmentImageURL(named: imageName),
 			  let source = CGImageSourceCreateWithURL(url as CFURL, nil),
 			  let image = CGImageSourceCreateThumbnailAtIndex(source, 0, [
 				  kCGImageSourceCreateThumbnailFromImageAlways: true,
 				  kCGImageSourceThumbnailMaxPixelSize: 1024
 			  ] as CFDictionary) else { return nil }
 		do {
-			let resource = try await EnvironmentResource(equirectangular: image, withName: "CinemaStand-\(environment.rawValue)")
+			let resource = try await EnvironmentResource(equirectangular: image, withName: "CinemaStand-\(imageName)")
 			let light = Entity()
 			light.name = "CinemaStandLight"
 			light.components.set(ImageBasedLightComponent(source: .single(resource), intensityExponent: 1))

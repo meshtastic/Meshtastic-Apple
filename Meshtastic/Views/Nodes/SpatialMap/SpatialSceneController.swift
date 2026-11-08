@@ -810,17 +810,42 @@ extension SpatialSceneController {
 
 // MARK: Fire lookout
 
+/// What stands on the cinema's summit on the map: the fire lookout, or the castle tower in its stone.
+enum SpatialSummitModel: Equatable {
+	case fireLookout
+	case castleTower(CastleStone)
+
+	var entityName: String {
+		switch self {
+		case .fireLookout: "fireLookout"
+		case let .castleTower(stone): "castleTower-\(stone.rawValue)"
+		}
+	}
+
+	@MainActor
+	func make(heading: Double) -> Entity? {
+		let made = switch self {
+		case .fireLookout: SpatialLookoutParts.make(heading: heading)
+		case let .castleTower(stone): SpatialLookoutParts.makeCastle(heading: heading, stone: stone)
+		}
+		made?.name = entityName
+		return made
+	}
+}
+
 extension SpatialSceneController {
-	/// Stands the fire lookout on `coordinate`, the summit the cinema's lookout room is on, with its
-	/// cab facing `heading`, or takes it away for nil. Moved onto the new ground whenever the terrain
-	/// is rebuilt.
-	func apply(lookout coordinate: CLLocationCoordinate2D?, heading: Double = SpatialLookout.frontHeading) {
+	/// Stands `model`, the fire lookout or the castle tower, on `coordinate`, the summit the cinema's
+	/// room is on, with its front facing `heading`, or takes it away for nil. Moved onto the new
+	/// ground whenever the terrain is rebuilt.
+	func apply(lookout coordinate: CLLocationCoordinate2D?, heading: Double = SpatialLookout.frontHeading, model: SpatialSummitModel = .fireLookout) {
 		guard let placement else { return }
 		let same = coordinate?.latitude == lookoutCoordinate?.latitude && coordinate?.longitude == lookoutCoordinate?.longitude
-		guard !same || placement.revision != lookoutPlacementRevision || heading != lookoutHeading else { return }
+		// The model up is told by its entity's name.
+		let modelChanged = lookout.map { $0.name != model.entityName } ?? false
+		guard !same || placement.revision != lookoutPlacementRevision || heading != lookoutHeading || modelChanged else { return }
 		lookoutCoordinate = coordinate
 		lookoutPlacementRevision = placement.revision
-		if heading != lookoutHeading {
+		if heading != lookoutHeading || modelChanged {
 			lookoutHeading = heading
 			lookout?.removeFromParent()
 			lookout = nil
@@ -830,7 +855,7 @@ extension SpatialSceneController {
 			lookout = nil
 			return
 		}
-		if lookout == nil, let made = SpatialLookoutParts.make(heading: heading) {
+		if lookout == nil, let made = model.make(heading: heading) {
 			applyLight(to: made)
 			nodesContainer.addChild(made)
 			lookout = made

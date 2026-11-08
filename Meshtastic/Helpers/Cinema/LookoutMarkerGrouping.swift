@@ -14,8 +14,9 @@ enum LookoutMarkerGrouping {
 	/// How far a marker's stem reaches down from the marker toward its node, in degrees: about a
 	/// marker's height, so the marker stands clear of the ridge its node is on.
 	static let stemDegrees = 2.5
-	/// The lowest a marker's stem reaches. The sill is about 6.6° below level from the seat, so a
-	/// node down in the valley still shows, its marker standing at the bottom of the view.
+	/// The lowest a marker's stem reaches in the fire lookout. The sill is about 6.6° below level
+	/// from the seat, so a node down in the valley still shows, its marker standing at the bottom of
+	/// the view. Other places pass their own.
 	static let lowestMarkerDegrees = -4.0
 	/// How close two markers' centers can come, in degrees, before they're taken to cover each
 	/// other. A little under a marker's width, so neighbors may just touch.
@@ -31,25 +32,26 @@ enum LookoutMarkerGrouping {
 		let center: Double
 	}
 
-	/// The lowest a marker over a node `elevation` degrees above level stands.
-	static func center(elevation: Double) -> Double {
-		max(elevation, lowestMarkerDegrees) + stemDegrees + markerWidthDegrees / 2
+	/// The lowest a marker over a node `elevation` degrees above level stands, its stem reaching
+	/// no lower than `lowest`.
+	static func center(elevation: Double, lowest: Double = lowestMarkerDegrees) -> Double {
+		max(elevation, lowest) + stemDegrees + markerWidthDegrees / 2
 	}
 
 	/// Where the stem under a marker over a node `elevation` degrees above level ends.
-	static func stemFoot(elevation: Double) -> Double {
-		max(elevation, lowestMarkerDegrees)
+	static func stemFoot(elevation: Double, lowest: Double = lowestMarkerDegrees) -> Double {
+		max(elevation, lowest)
 	}
 
 	/// The markers for the nodes at `points` (azimuth and elevation in degrees, nearest node
 	/// first). Each node gets a marker of its own, raised on a taller stem when one already placed
 	/// is in the way; only when every height is taken does it join the marker nearest where its
 	/// own would have stood.
-	static func markers(_ points: [(azimuth: Double, elevation: Double)]) -> [Marker] {
+	static func markers(_ points: [(azimuth: Double, elevation: Double)], lowest: Double = lowestMarkerDegrees) -> [Marker] {
 		var markers: [Marker] = []
 		var azimuths: [Double] = []
 		for (index, point) in points.enumerated() {
-			let base = center(elevation: point.elevation)
+			let base = center(elevation: point.elevation, lowest: lowest)
 			func covers(_ marker: Int, at center: Double) -> Bool {
 				azimuthGap(point.azimuth, azimuths[marker]) < clearanceDegrees
 					&& abs(center - markers[marker].center) < clearanceDegrees
