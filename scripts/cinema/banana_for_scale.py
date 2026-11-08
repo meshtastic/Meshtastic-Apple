@@ -74,8 +74,8 @@ def silhouette(image):
 
 
 def labeled(texture, mask, meters_per_px):
-    """The texture with an oval white label and the Meshtastic logo halfway up the banana, in
-    the middle of its width, turned to run along it with the logo reading upward."""
+    """The texture with an oval white label halfway up the banana, in the middle of its width,
+    turned to run along it, with the Meshtastic logo upright on it."""
     inside = ndimage.distance_transform_edt(mask)
     rows, cols = np.nonzero(mask)
     row = (rows.min() + rows.max()) // 2
@@ -99,8 +99,11 @@ def labeled(texture, mask, meters_per_px):
     ImageDraw.Draw(label).ellipse([0, 0, length - 1, width - 1], fill=(250, 250, 247, 255))
     with open(LOGO) as drawing:
         logo_svg = drawing.read()
-    logo_width = int(length * 0.58)
+    # The label runs up the standing banana, so the logo is drawn across it and turned to stand
+    # upright, as wide as fits across the oval.
+    logo_width = int(width * 0.74)
     logo = Image.open(io.BytesIO(bytes(resvg_py.svg_to_bytes(svg_string=logo_svg, width=logo_width)))).convert("RGBA")
+    logo = logo.rotate(-90, expand=True)
     label.alpha_composite(logo, ((length - logo.width) // 2, (width - logo.height) // 2))
     label = label.resize((length // scale, width // scale), Image.LANCZOS)
     label = label.rotate(angle, resample=Image.BICUBIC, expand=True)
