@@ -237,8 +237,11 @@ struct RemoteShellLink {
 				finish(.failed(.noReply), sendClose: true)
 				return
 			}
-			if let open = history[1] {
+			if var open = history[1] {
 				outbox.append(open.frame)
+				open.lastSentAt = now
+				open.resent = true
+				history[1] = open
 			}
 			openWait = min(openWait * 2, 30)
 			self.nextOpenRetry = now.addingTimeInterval(openWait)

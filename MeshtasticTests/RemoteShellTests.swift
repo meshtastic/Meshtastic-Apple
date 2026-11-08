@@ -64,6 +64,24 @@ struct TerminalScreenTests {
 		#expect(text(screen) == ["é✓"])
 	}
 
+	@Test func brokenUTF8KeepsTheByteThatBrokeIt() {
+		var screen = TerminalScreen()
+		screen.feed(Data([0xC3, 0x41]))
+		#expect(text(screen) == ["\u{FFFD}A"])
+		screen.feed(Data([0xC3, 0xE2, 0x9C, 0x93]))
+		#expect(text(screen) == ["\u{FFFD}A\u{FFFD}✓"])
+	}
+
+	@Test func controlSequenceCountsAreBounded() {
+		#expect(screen("\u{1B}[100000000C").lines[0].count == TerminalScreen.maxColumns)
+		#expect(screen("ab\u{1B}[9223372036854775807C").lines[0].count == TerminalScreen.maxColumns)
+		#expect(screen("\u{1B}[100000000G").lines[0].count == TerminalScreen.maxColumns - 1)
+		let inserted = screen("abc\u{1B}[1G\u{1B}[100000000@")
+		#expect(inserted.lines[0].count == TerminalScreen.maxColumns)
+		#expect(text(screen("abc\u{1B}[1G\u{1B}[9223372036854775807P")) == [""])
+		#expect(text(screen("abc\u{1B}[2G\u{1B}[9223372036854775807X")) == ["a  "])
+	}
+
 	@Test func alternateScreenIsAFullScreenProgram() {
 		#expect(screen("\u{1B}[?1049h").fullScreenRequested)
 		#expect(!screen("\u{1B}[?2004h$ ").fullScreenRequested)
@@ -189,6 +207,15 @@ struct RemoteShellLinkTests {
 		let link = openLink()
 		#expect(link.phase == .open)
 		#expect(link.roundTrip == 0.5)
+	}
+
+	@Test func retriedOpenTakesNoRoundTripSample() {
+		var link = RemoteShellLink(sessionId: 7)
+		link.open(cols: 80, rows: 24, now: start)
+		link.tick(now: start.addingTimeInterval(5))
+		link.receive(frame(.openOk, seq: 1, ack: 1), now: start.addingTimeInterval(16))
+		#expect(link.phase == .open)
+		#expect(link.roundTrip == nil)
 	}
 
 	@Test func inputIsSequencedAndCarriesTheReceiveCursor() {

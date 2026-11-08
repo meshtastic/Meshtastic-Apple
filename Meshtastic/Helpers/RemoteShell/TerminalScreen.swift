@@ -50,6 +50,9 @@ struct TerminalScreen {
 
 	/// Lines kept for scrolling back.
 	static let maxLines = 2_000
+	/// How far a control sequence can move the cursor or widen a line, so a bad count from
+	/// the remote side can't grow a line without limit.
+	static let maxColumns = 1_000
 
 	private(set) var lines: [[Cell]] = [[]]
 	/// Column of the cursor on the last line.
@@ -158,7 +161,7 @@ struct TerminalScreen {
 		case 0x00...0x1F, 0x7F:
 			break
 		default:
-			if let character = utf8.decode(byte) {
+			for character in utf8.decode(byte) {
 				put(character)
 			}
 		}
@@ -192,6 +195,7 @@ struct TerminalScreen {
 
 	private mutating func controlSequence(final: UInt8, marker: UInt8?, parameters: [Int?]) {
 		let first = parameters.first.flatMap { $0 }
+		let count = min(max(first ?? 1, 1), Self.maxColumns)
 		if marker == 0x3F { // ?
 			let set = final == 0x68 // h; l resets
 			guard set || final == 0x6C else { return }
@@ -220,24 +224,24 @@ struct TerminalScreen {
 				break
 			}
 		case 0x43: // C, cursor forward
-			let target = cursorColumn + max(first ?? 1, 1)
+			let target = min(cursorColumn + count, max(cursorColumn, Self.maxColumns))
 			padLine(to: target)
 			cursorColumn = target
 		case 0x44: // D, cursor back
-			cursorColumn = max(0, cursorColumn - max(first ?? 1, 1))
+			cursorColumn = max(0, cursorColumn - count)
 		case 0x47: // G, cursor to column
-			let target = max((first ?? 1) - 1, 0)
+			let target = count - 1
 			padLine(to: target)
 			cursorColumn = target
 		case 0x50: // P, delete characters
-			deleteCharacters(max(first ?? 1, 1))
+			deleteCharacters(count)
 		case 0x40: // @, insert blanks
-			insertBlanks(max(first ?? 1, 1))
+			insertBlanks(count)
 		case 0x58: // X, erase characters
-			eraseCharacters(max(first ?? 1, 1))
+			eraseCharacters(count)
 		case 0x48, 0x66: // H, f: cursor position; only the column applies on a single line
 			let column = parameters.count > 1 ? (parameters[1] ?? 1) : 1
-			let target = max(column - 1, 0)
+			let target = min(max(column - 1, 0), Self.maxColumns - 1)
 			padLine(to: target)
 			cursorColumn = target
 		default:
@@ -349,7 +353,12 @@ struct TerminalScreen {
 	private mutating func insertBlanks(_ count: Int) {
 		let row = lines.count - 1
 		guard cursorColumn < lines[row].count else { return }
+		// Characters pushed past the right edge are dropped, as on a real terminal.
+		let width = max(lines[row].count, Self.maxColumns)
 		lines[row].insert(contentsOf: Array(repeating: Cell(character: " ", style: style), count: count), at: cursorColumn)
+		if lines[row].count > width {
+			lines[row].removeLast(lines[row].count - width)
+		}
 	}
 
 	private mutating func eraseCharacters(_ count: Int) {
@@ -385,28 +394,30 @@ struct UTF8Decoder {
 		expected = 0
 	}
 
-	mutating func decode(_ byte: UInt8) -> Character? {
+	/// The characters this byte completes: none mid-sequence, two when it ends a broken
+	/// sequence and is itself a character.
+	mutating func decode(_ byte: UInt8) -> [Character] {
 		if pending.isEmpty {
 			switch byte {
 			case 0x00...0x7F:
-				return Character(Unicode.Scalar(byte))
+				return [Character(Unicode.Scalar(byte))]
 			case 0xC0...0xDF: expected = 2
 			case 0xE0...0xEF: expected = 3
 			case 0xF0...0xF7: expected = 4
 			default:
-				return "\u{FFFD}"
+				return ["\u{FFFD}"]
 			}
 			pending = [byte]
-			return nil
+			return []
 		}
 		guard byte & 0xC0 == 0x80 else {
 			// A broken sequence: drop it and start over with this byte.
 			reset()
-			return "\u{FFFD}"
+			return ["\u{FFFD}"] + decode(byte)
 		}
 		pending.append(byte)
-		guard pending.count == expected else { return nil }
+		guard pending.count == expected else { return [] }
 		defer { reset() }
-		return String(bytes: pending, encoding: .utf8)?.first ?? "\u{FFFD}"
+		return [String(bytes: pending, encoding: .utf8)?.first ?? "\u{FFFD}"]
 	}
 }

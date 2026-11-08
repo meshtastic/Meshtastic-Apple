@@ -215,6 +215,15 @@ struct NodeDetail: View {
 				DeviceModelFullScreen(request: request, liveScreen: liveScreen)
 			}
 		}
+		// Here rather than on the Remote Shell row, so a reconnect that hides the row doesn't
+		// close the shell.
+		.hostedFullScreenCover(isPresented: $showingRemoteShell) {
+			RemoteShellView(
+				nodeNum: nodeNum,
+				nodeName: currentUser?.displayLongName ?? nodeNum.toHex(),
+				accessoryManager: accessoryManager
+			)
+		}
 		#if os(iOS) && !targetEnvironment(macCatalyst)
 		.fullScreenCover(item: $deviceModelInSpace) { request in
 			if #available(iOS 18.0, *) {
@@ -1001,13 +1010,6 @@ struct NodeDetail: View {
 						} icon: {
 							Image(systemName: "apple.terminal")
 						}
-					}
-					.hostedFullScreenCover(isPresented: $showingRemoteShell) {
-						RemoteShellView(
-							nodeNum: nodeNum,
-							nodeName: currentUser?.displayLongName ?? nodeNum.toHex(),
-							accessoryManager: accessoryManager
-						)
 					}
 				}
 				// Screen mirroring only works over the local connection, so only for the connected radio.

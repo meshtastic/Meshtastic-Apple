@@ -282,14 +282,16 @@ final class RemoteShellSession: ObservableObject {
 		guard !isSending, !sendQueue.isEmpty else { return }
 		isSending = true
 		let frame = sendQueue.removeFirst()
-		Task { [weak self, nodeNum, publicKey, accessoryManager] in
+		// Holds the session until the queue drains, so a CLOSE queued as the view goes away is
+		// still sent. Each task lives for one send.
+		Task { [self, nodeNum, publicKey, accessoryManager] in
 			do {
 				try await accessoryManager.sendRemoteShell(frame, to: nodeNum, publicKey: publicKey)
 			} catch {
 				Logger.mesh.error("💻 [Remote Shell] Send failed: \(error.localizedDescription, privacy: .public)")
 			}
-			self?.isSending = false
-			self?.flushSendQueue()
+			isSending = false
+			flushSendQueue()
 		}
 	}
 
