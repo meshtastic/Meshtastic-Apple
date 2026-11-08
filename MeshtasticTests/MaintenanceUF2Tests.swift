@@ -160,6 +160,35 @@ struct MaintenanceUF2Tests {
 		#expect(OTAFIXBootloader.parseBoardID(fromInfoText: "Board-ID:\r\n") == nil)
 	}
 
+	// MARK: - Last-Fault
+
+	private static let infoWithFault = "UF2 Bootloader 2.6.0\r\nModel: WisBlock RAK4631 Board\r\nBoard-ID: WisBlock-RAK4631-Board\r\nDate: Oct 20 2026\r\nFactory-Erase: UF2 family 0x4D455348\r\nSoftDevice: S140 6.1.1\r\nLast-Fault: id=0x1 pc=0xf4a2c info=0x8\r\n"
+
+	@Test func parsesTheLastFaultLine() {
+		#expect(OTAFIXBootloader.parseLastFault(fromInfoText: Self.infoWithFault) == BootloaderFault(id: 0x1, pc: 0xF4A2C, info: 0x8))
+	}
+
+	@Test func otherInfoLinesStillParseAlongsideTheFault() {
+		#expect(OTAFIXBootloader.parseBoardID(fromInfoText: Self.infoWithFault) == "WisBlock-RAK4631-Board")
+		#expect(NRF52FactoryErase.parseSoftDevice(fromInfoText: Self.infoWithFault) == .s140_6_1_1)
+		#expect(NRF52FactoryErase.parseFactoryEraseFamily(fromInfoText: Self.infoWithFault) == 0x4D45_5348)
+	}
+
+	@Test func lastFaultAcceptsZeroAndAnyCase() {
+		#expect(OTAFIXBootloader.parseLastFault(fromInfoText: "last-fault: ID=0x0 PC=0X0 info=0xDEADBEEF\n") == BootloaderFault(id: 0, pc: 0, info: 0xDEAD_BEEF))
+	}
+
+	@Test func lastFaultSummaryMatchesTheBootloaderFormat() {
+		#expect(BootloaderFault(id: 0x1, pc: 0xF4A2C, info: 0).summary == "id=0x1 pc=0xf4a2c info=0x0")
+	}
+
+	@Test func missingOrPartialLastFaultIsNil() {
+		#expect(OTAFIXBootloader.parseLastFault(fromInfoText: "Board-ID: X\r\nSoftDevice: S140 7.3.0\r\n") == nil)
+		#expect(OTAFIXBootloader.parseLastFault(fromInfoText: "Last-Fault: id=0x1 pc=0x2\r\n") == nil)
+		#expect(OTAFIXBootloader.parseLastFault(fromInfoText: "Last-Fault: id=0x1 pc=0xzz info=0x3\r\n") == nil)
+		#expect(OTAFIXBootloader.parseLastFault(fromInfoText: "Last-Fault:\r\n") == nil)
+	}
+
 	// MARK: - UX gate
 
 	@Test func supportedTargetsMatchTheAuditedSet() {
