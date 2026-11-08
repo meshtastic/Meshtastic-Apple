@@ -26,6 +26,8 @@ final class CinemaModelStand {
 	/// grabber, so a new model doesn't take them down.
 	@ObservationIgnored private let shelf = Entity()
 	@ObservationIgnored private var light: Entity?
+	/// The environment image `light` was made from, so another environment or stone remakes it.
+	@ObservationIgnored private var lightImage: String?
 	/// The model on its stand, scaled by the zoom.
 	@ObservationIgnored private var holder: Entity?
 	/// The model's size on its stand at real size, for hanging the readings beside it.
@@ -66,7 +68,7 @@ final class CinemaModelStand {
 	}
 
 	/// Shows the model `request` names, in place of any other, or takes the stand away for nil.
-	func show(_ request: CinemaModelRequest?, environment: CinemaEnvironment) async {
+	func show(_ request: CinemaModelRequest?, environment: CinemaEnvironment, stone: CastleStone) async {
 		clear()
 		zoom = 1
 		guard let request else {
@@ -95,8 +97,10 @@ final class CinemaModelStand {
 		screen = DeviceModelScreen(on: model)
 		hasScreen = screen != nil
 		model.components.set(Self.accessibility(for: request))
-		if light == nil {
-			light = await Self.light(for: environment)
+		let imageName = environment.imageName(stone: stone)
+		if light == nil || lightImage != imageName {
+			light = await Self.light(for: imageName)
+			lightImage = imageName
 		}
 		guard !Task.isCancelled else { return }
 		if let light {
@@ -230,15 +234,15 @@ final class CinemaModelStand {
 	}
 
 	/// Light from the environment's own image, so the model is lit like the tent around it.
-	private static func light(for environment: CinemaEnvironment) async -> Entity? {
-		guard let url = cinemaEnvironmentImageURL(named: environment.imageName),
+	private static func light(for imageName: String) async -> Entity? {
+		guard let url = cinemaEnvironmentImageURL(named: imageName),
 			  let source = CGImageSourceCreateWithURL(url as CFURL, nil),
 			  let image = CGImageSourceCreateThumbnailAtIndex(source, 0, [
 				  kCGImageSourceCreateThumbnailFromImageAlways: true,
 				  kCGImageSourceThumbnailMaxPixelSize: 1024
 			  ] as CFDictionary) else { return nil }
 		do {
-			let resource = try await EnvironmentResource(equirectangular: image, withName: "CinemaStand-\(environment.rawValue)")
+			let resource = try await EnvironmentResource(equirectangular: image, withName: "CinemaStand-\(imageName)")
 			let light = Entity()
 			light.name = "CinemaStandLight"
 			light.components.set(ImageBasedLightComponent(source: .single(resource), intensityExponent: 1))

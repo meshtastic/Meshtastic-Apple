@@ -28,8 +28,12 @@ struct CinemaSpace: View {
 	@Environment(\.openWindow) private var openWindow
 	@Environment(\.dismissWindow) private var dismissWindow
 	@AppStorage("cinemaEnvironment") private var environment: CinemaEnvironment = .sarTent
+	@AppStorage(CastleStone.key) private var stone: CastleStone = .gray
 	@State private var world = Entity()
 	@State private var backdrop: Entity?
+	/// The stone and the sky the backdrop up now was made with, so a change of stone keeps the sky.
+	@State private var backdropStone: CastleStone?
+	@State private var backdropClearSky = false
 	@State private var panelGrabber = Self.makePanelGrabber()
 	/// The point the image was rendered from, fixed at the seated eye height and turned so the
 	/// image's center is in front. The backdrop and the boards hang from it, so one turn moves both.
@@ -107,7 +111,7 @@ struct CinemaSpace: View {
 			Attachment(id: Attachments.panel) {
 				// The map counts as open while the cinema is reopening it, so the button doesn't
 				// show for the second in between.
-				CinemaPanel(environment: $environment, sites: lookout.sites, siteID: $lookoutSiteID, turns: $lookoutTurns, radioCoordinate: radioCoordinate, lookoutNote: lookoutNote, spatialMapOpen: appState.spatialMapWindowCount > 0 || appState.spatialMapReopening) {
+				CinemaPanel(environment: $environment, stone: $stone, sites: lookout.sites, siteID: $lookoutSiteID, turns: $lookoutTurns, radioCoordinate: radioCoordinate, lookoutNote: lookoutNote, spatialMapOpen: appState.spatialMapWindowCount > 0 || appState.spatialMapReopening) {
 					openWindow(id: SpatialMapScene.id, value: SpatialMapSceneKey.shared)
 				} onLeave: {
 					Task { await dismissImmersiveSpace() }
@@ -133,17 +137,17 @@ struct CinemaSpace: View {
 			}
 			if let container, !appState.isDatabaseResetting, anchors?.board(.teamStatus) != nil {
 				Attachment(id: CinemaBoard.teamStatus.rawValue) {
-					live(TeamStatusBoard(), container: container)
+					live(scroll(TeamStatusBoard(), .teamStatus), container: container)
 				}
 			}
 			if let container, !appState.isDatabaseResetting, anchors?.board(.traceRoute) != nil {
 				Attachment(id: CinemaBoard.traceRoute.rawValue) {
-					live(TraceRouteBoard(), container: container)
+					live(scroll(TraceRouteBoard(), .traceRoute), container: container)
 				}
 			}
 			if let container, !appState.isDatabaseResetting, anchors?.board(.nodeStatus) != nil {
 				Attachment(id: CinemaBoard.nodeStatus.rawValue) {
-					live(NodeStatusBoard(environment: environment), container: container)
+					live(scroll(NodeStatusBoard(environment: environment), .nodeStatus), container: container)
 				}
 			}
 			if let modelRequest {
@@ -182,8 +186,13 @@ struct CinemaSpace: View {
 			stage.position = [0, anchors?.eyeHeight ?? CinemaAnchors.seatedEyeHeight, 0]
 			stage.orientation = simd_quatf(angle: environment.frontRotation, axis: [0, 1, 0])
 			boards.unfitAll()
-			await replaceBackdrop(clearSky: false)
+			// Real terrain already up for the summit stays when the lookout and the castle swap.
+			await replaceBackdrop(clearSky: terrain != nil && environment.standsOnSummit)
 			await refreshLookout()
+		}
+		.task(id: stone) {
+			guard environment.hasStone, backdrop != nil, backdropStone != stone else { return }
+			await replaceBackdrop(clearSky: backdropClearSky)
 		}
 		.task(id: lookoutSiteID) {
 			await refreshLookout()
@@ -251,7 +260,7 @@ struct CinemaSpace: View {
 			if let container, !appState.isDatabaseResetting, let nodeNum = modelRequest?.nodeNum {
 				modelHasDisplay = getNodeInfo(id: nodeNum, context: ModelContext(container))?.metadata?.hasDisplay == true
 			}
-			await modelStand.show(modelRequest, environment: environment)
+			await modelStand.show(modelRequest, environment: environment, stone: stone)
 		}
 		// The stream is only wanted while the connected radio's model is on the stand. Asked for
 		// again after a reconnect, which forgets it.
@@ -399,11 +408,18 @@ struct CinemaSpace: View {
 	}
 
 	/// The backdrop for the environment: its image, and for a cutout, the sky behind it.
+	/// Dropped if the task is cancelled or the environment or stone changed while it loaded, so a
+	/// slower, older call can't replace the newer backdrop.
 	private func replaceBackdrop(clearSky: Bool) async {
-		let next = await CinemaBackdrop.make(environment, clearSky: clearSky)
+		let environment = environment
+		let stone = stone
+		let next = await CinemaBackdrop.make(environment, stone: stone, clearSky: clearSky)
+		guard !Task.isCancelled, environment == self.environment, stone == self.stone else { return }
 		backdrop?.removeFromParent()
 		stage.addChild(next)
 		backdrop = next
+		backdropStone = stone
+		backdropClearSky = clearSky
 	}
 
 	/// Puts the terrain for the chosen summit out the lookout's windows, with the clear sky behind
@@ -425,7 +441,7 @@ struct CinemaSpace: View {
 	}
 
 	private func refreshLookout() async {
-		guard environment.isCutout else {
+		guard environment.standsOnSummit else {
 			terrain?.removeFromParent()
 			terrain = nil
 			terrainSiteID = nil
@@ -465,7 +481,7 @@ struct CinemaSpace: View {
 		// changes, since either can change while it does.
 		func stillWanted() -> Bool {
 			!Task.isCancelled && lookoutMaps == maps
-				&& lookoutSiteID == site.id && SpatialLookout.heading(turns: lookoutTurns) == heading && environment.isCutout
+				&& lookoutSiteID == site.id && SpatialLookout.heading(turns: lookoutTurns) == heading && environment.standsOnSummit
 				&& !(terrain != nil && terrainSiteID == site.id && terrainHeading == heading)
 		}
 		guard let entity = built, stillWanted() else { return }
@@ -499,6 +515,16 @@ struct CinemaSpace: View {
 	private func showOnMap(_ nodeNum: Int64) {
 		appState.spatialMapFocus = SpatialMapFocusRequest(nodeNum: nodeNum)
 		openWindow(id: SpatialMapScene.id, value: SpatialMapSceneKey.shared)
+	}
+
+	/// The board as a scroll where the environment's boards are scrolls.
+	@ViewBuilder
+	private func scroll(_ board: some View, _ id: CinemaBoard) -> some View {
+		if environment.hasScrolls {
+			CinemaScroll(board: id) { board }
+		} else {
+			board
+		}
 	}
 
 	/// A board's view with the store and app state it reads, remade on a database reset.

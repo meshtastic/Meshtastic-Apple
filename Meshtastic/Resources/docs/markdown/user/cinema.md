@@ -6,7 +6,7 @@ nav_order: 17
 
 # Cinema (Apple Vision Pro)
 
-On Apple Vision Pro, the Cinema puts the app on a big screen inside a search and rescue comms tent, a ham shack or a fire lookout. Open it with the **tent** button in the round glass menu under the app's tab bar. The app's window closes while you're in the tent and comes back when you leave.
+On Apple Vision Pro, the Cinema puts the app on a big screen inside a search and rescue comms tent, a ham shack, a fire lookout or on top of a castle tower. Open it with the **tent** button in the round glass menu under the app's tab bar. The app's window closes while you're in the tent and comes back when you leave.
 
 ## The screen
 
@@ -38,10 +38,21 @@ Tap a marker to open its card beside it, so you don't have to turn to the screen
 
 While the cab stands on a summit, the 3D map shows the lookout there too: the cab on its braced timber tower, facing the way the screen does. If a node stands on the same summit, the lookout stands just beside it.
 
+## Castle tower
+
+The fourth place is the open top of a medieval castle tower on a summit at sunset: a stone roof with low battlements all round, so the horizon and the valleys below show over them, open corners on round turrets, and the Meshtastic banner flying behind you. Pick **Gray** or **Pink** stone on the control panel.
+
+Everything the fire lookout does, the castle does too: the same **Summit** picker and **Turn Lookout** dial, the real terrain with its forest, and a marker for every node, with its card. With no roof and no windows, the view is open all round.
+
+The boards are parchment scrolls hanging from oak frames: Team Favorites and the Status Board on the frame to your left, the latest trace route on the one to your right. Tap a scroll's top or bottom roller to roll it up out of the way, and see the view behind it; tap a roller again to let it down. Each scroll stays as you left it.
+
+While the castle stands on a summit, the 3D map shows a castle tower on the summit in the stone you picked, in place of the lookout.
+
 ## Control panel
 
-- **Environment**: the place the screen is set in: the search and rescue tent, or a ham shack, a wood-paneled radio room with an operating desk, a window out to the antenna tower, and the same boards; its status board is net control's check-in board, standing portrait beside the screen; or a fire lookout, a glass cab on a summit at sunset.
-- **Summit**: in the fire lookout, with terrain downloaded, which summit the cab stands on, or the forest sunset.
+- **Environment**: the place the screen is set in: the search and rescue tent, or a ham shack, a wood-paneled radio room with an operating desk, a window out to the antenna tower, and the same boards; its status board is net control's check-in board, standing portrait beside the screen; or a fire lookout, a glass cab on a summit at sunset; or a castle tower, an open stone roof on a summit at sunset.
+- **Stone**: on the castle tower, gray or pink.
+- **Summit**: in the fire lookout or on the castle tower, with terrain downloaded, which summit it stands on, or the forest sunset.
 - **Turn Lookout**: with a summit picked, a compass dial for which way the cab faces, so the screen looks out over another part of the view. Tap one of its sixteen marks, a sixteenth of a turn (22.5°) apart, or drag round it and let go. The eighths are drawn larger. The caption under it says which way the cab faces. The cab on the 3D map turns with it.
 - **Open 3D Map**: shown while the 3D map is closed.
 - **Move it**: pinch the bar under the panel and drag it wherever you want it.
