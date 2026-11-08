@@ -2281,7 +2281,7 @@ actor MeshPackets {
 									let scheduler = notificationScheduler
 									Task {@MainActor in
 										scheduler([notification])
-										Logger.services.debug("iOS Notification Scheduled for direct message from \(senderName, privacy: .public)")
+										Logger.services.debug("iOS Notification Scheduled for direct message from \(newMessage.fromUser?.num.toHex() ?? "?", privacy: .public)")
 									}
 								}
 							}

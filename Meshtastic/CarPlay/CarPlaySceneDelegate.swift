@@ -87,6 +87,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 		// the templates were frozen between connection changes and unread counts
 		// went stale for the whole drive.
 		NotificationCenter.default.publisher(for: .meshMessagesDidChange)
+			.merge(with: NotificationCenter.default.publisher(for: NodeDisplayNameStore.didChangeNotification))
 			.debounce(for: .milliseconds(500), scheduler: DispatchQueue.main)
 			.sink { [weak self] _ in
 				self?.refreshSections()
@@ -253,7 +254,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 						trailingText: lastHeardText(node.lastHeard, now: now)
 					)
 					item.conversationIdentifier = convId
-					donateMessageIntentIfNeeded(conversationId: convId, toNodeNum: node.num, name: name)
+					donateMessageIntentIfNeeded(conversationId: convId, toNodeNum: node.num, name: user.longName ?? user.shortName ?? "Unknown")
 				}
 				item.userInfo = node.num
 
@@ -398,7 +399,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 						trailingText: lastHeardText(node.lastHeard, now: now)
 					)
 					item.conversationIdentifier = convId
-					donateMessageIntentIfNeeded(conversationId: convId, toNodeNum: nodeNum, name: name)
+					donateMessageIntentIfNeeded(conversationId: convId, toNodeNum: nodeNum, name: user.longName ?? user.shortName ?? "Unknown")
 				}
 				item.userInfo = nodeNum
 
@@ -462,6 +463,8 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 
 	/// Donates a contact intent for a DM conversation the first time it is seen this session.
 	/// Subsequent renders are no-ops, avoiding repeated IPC calls to the intents daemon.
+	/// `name` is the node's broadcast name: Siri can read or forward a donated intent, so the
+	/// local display name stays out of it.
 	private func donateMessageIntentIfNeeded(conversationId: String, toNodeNum: Int64, name: String) {
 		guard donatedComposeIds.insert(conversationId).inserted else { return }
 

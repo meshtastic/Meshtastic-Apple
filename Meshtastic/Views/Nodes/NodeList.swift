@@ -683,7 +683,8 @@ fileprivate extension NodeFilterParameters {
 				node.user?.hwModel,
 				node.user?.hwDisplayName,
 				node.user?.longName,
-				node.user?.localLongName,
+				// By node number: a node without a user record can still have a display name.
+				NodeDisplayNameStore.displayName(for: node.num),
 				node.user?.shortName
 			].compactMap { $0 }.contains { $0.localizedCaseInsensitiveContains(normalizedSearchText) }
 			if !matchesSearch { return false }

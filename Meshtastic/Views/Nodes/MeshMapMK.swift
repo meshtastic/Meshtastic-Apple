@@ -756,6 +756,10 @@ struct MeshMapMK: View {
 				visiblePositionSnapshots = []
 			}
 		}
+		.onReceive(NotificationCenter.default.publisher(for: NodeDisplayNameStore.didChangeNotification)) { _ in
+			// Labels and the coincident picker's order come from display names.
+			refreshPositionState(force: true)
+		}
 		.onReceive(NotificationCenter.default.publisher(for: Foundation.Notification.Name.mapDataFileDeleted)) { notification in
 			if let deletedFileId = notification.object as? UUID {
 				enabledOverlayConfigs.remove(deletedFileId)

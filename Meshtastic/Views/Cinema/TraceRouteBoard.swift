@@ -121,7 +121,8 @@ struct TraceRouteBoard: View {
 			card = nil
 			return
 		}
-		let key = "\(route.id)|\(route.hops.count)|\(route.nodePositions.count)"
+		// Display names name the hops, so a rename redraws the card too.
+		let key = "\(route.id)|\(route.hops.count)|\(route.nodePositions.count)|\(NodeDisplayNameStore.revision)"
 		if let card, card.key == key {
 			guard let retryAt = card.mapRetryAt, Date() >= retryAt else { return }
 		}
