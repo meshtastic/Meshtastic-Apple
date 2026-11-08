@@ -126,6 +126,21 @@ struct MqttRootDirectoryTests {
 			== ["msh/US", "msh/US/IL", "msh/US/MeshSTL"])
 	}
 
+	@Test func communityRootsByRadiusNeedNoPlaceName() {
+		let directory = MqttRootDirectory(
+			entries: [MqttRootDirectory.Entry(root: "msh/US/MeshSTL", name: "St. Louis", center: [38.627, -90.199], radiusKm: 80)],
+			subdivisionSegments: ["US": ["missouri": "MO"]])
+		// The geocoder failed or hasn't answered yet: no place, but the coordinate is known.
+		let rungs = Discovery.plan(
+			regionTopic: "msh/US",
+			regionName: "US",
+			place: nil,
+			at: CLLocationCoordinate2D(latitude: 38.62, longitude: -90.15),
+			directory: directory
+		).rungs
+		#expect(rungs.map(\.topic) == ["msh/US", "msh/US/MeshSTL"])
+	}
+
 	// MARK: Ranking
 
 	@Test func neighboringStateRanksAboveUnrelatedRoots() {
