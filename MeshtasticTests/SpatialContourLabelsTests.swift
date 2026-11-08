@@ -47,6 +47,25 @@ struct SpatialContourLabelsTests {
 		#expect(SpatialTerrainContours.placeLabels(on: [line(500, zigzag)], metric: true, scale: 1, within: bounds, measure: measure).isEmpty)
 	}
 
+	@Test("a straight line with the terrain's small wiggles is still labeled")
+	func smallWiggles() {
+		var wiggly: [CGPoint] = []
+		for step in 0..<400 {
+			wiggly.append(CGPoint(x: 50 + CGFloat(step) * 4.8, y: 1000 + (step.isMultiple(of: 2) ? 0 : 3)))
+		}
+		#expect(!SpatialTerrainContours.placeLabels(on: [line(500, wiggly)], metric: true, scale: 1, within: bounds, measure: measure).isEmpty)
+	}
+
+	@Test("lines keep their width on flat ground and narrow on slopes")
+	func widthOnSlopes() {
+		let bounds = GeoBounds(minLon: 0, minLat: 0, maxLon: 1, maxLat: 1)
+		let flat = SpatialTerrainContours.Relief(bounds: bounds, columns: 3, rows: 3, heights: Array(repeating: 0.1, count: 9), cellWidth: 0.1, cellDepth: 0.1)
+		#expect(flat.widthFactor(at: CLLocationCoordinate2D(latitude: 0.5, longitude: 0.5)) == 1)
+		// Rising 0.1 per 0.1 eastward: a 45° slope, where a texel covers √2 of ground.
+		let slope = SpatialTerrainContours.Relief(bounds: bounds, columns: 3, rows: 3, heights: [0, 0.1, 0.2, 0, 0.1, 0.2, 0, 0.1, 0.2], cellWidth: 0.1, cellDepth: 0.1)
+		#expect(abs(slope.widthFactor(at: CLLocationCoordinate2D(latitude: 0.5, longitude: 0.5)) - 1 / 2.0.squareRoot()) < 0.001)
+	}
+
 	@Test("labels on neighboring lines keep their distance, and their number is capped")
 	func clearanceAndCap() {
 		// Index lines 20 points apart: far closer than two labels may be.
