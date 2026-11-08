@@ -248,6 +248,23 @@ The radio's 3D model at the top of the same node detail shows its screen live to
 
 The screen only comes over your direct connection to the radio, never over the mesh, so it isn't available for other nodes. Firmware that can't share its screen doesn't show the row.
 
+### Remote Shell
+
+A Linux `meshtasticd` node on firmware 2.8.2 or later shows **Remote Shell** under **Administration**. It opens a terminal that runs a shell on the node's computer, over the mesh. The row also shows while the node's firmware version isn't known yet; opening it asks for the version, and an older node says so. Remote administration must be turned on in the app's settings.
+
+The node only accepts a shell from a radio whose public key is in its admin key list, the same list remote administration uses, and the session travels as encrypted direct messages. Opening the shell starts a remote admin session first if one isn't up. If the node never answers, the app says so and names the two usual causes: the node doesn't list your radio's key as an admin key, or it's out of range. The shell works best between nodes that hear each other directly.
+
+The mesh carries a few hundred bytes a second, so the terminal is built for short commands:
+
+- The top of the screen always shows the session state and, once open, the measured round trip. When the node closes the session or stops answering, **Reconnect** starts a new one.
+- Once the node has echoed a character on the current line, what you type shows at once, underlined until the node echoes it. At a prompt that doesn't echo, such as a password prompt, nothing you type is drawn, and nothing is drawn on a line that asks for a password, passphrase or PIN.
+- When the node hasn't acknowledged input for a few seconds, a note shows how long ago it was last heard.
+- **Line Mode**, in the **⋯** menu, sends a whole command at once with a single transmission. Up and down recall earlier commands, and the chips above the box fill in common ones such as `uptime` and `df -h`. It's the lightest way to use the shell on a busy mesh. At a password prompt the box hides what you type and keeps it out of history.
+- On a touch screen, two rows of keys add ESC, TAB, the arrows, HOME, END, PGUP and PGDN, plus CTRL and ALT. Tap CTRL or ALT once to apply it to the next key, twice to lock it, and a third time to release it. With a hardware keyboard, Control and Option chords and the navigation keys go straight to the shell.
+- The menu also has **Paste**, **Copy All Output**, **Clear Screen** and text size. You can select and copy any output, and scrolling up while output arrives keeps your place. The terminal's bell is a light tap.
+
+Colors, bold, underline and progress lines that redraw in place all work. Full-screen programs such as `vi` or `top` need more than the mesh can carry, so the app shows a notice instead of drawing them.
+
 ### Where to Buy
 
 For devices with known purchase links, an **I want one** section appears below the hardware info. It shows the official vendor link and regional marketplace options (Amazon, Rokland, AliExpress, and others) sourced from [msh.to](https://msh.to).
