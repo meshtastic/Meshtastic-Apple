@@ -392,6 +392,12 @@ extension AccessoryManager {
 			return
 		}
 
+		// A negative channel is an archived conversation, whose channel has left the radio.
+		guard toUserNum > 0 || channel >= 0 else {
+			Logger.mesh.error("🚫 Not sending to archived channel conversation \(channel, privacy: .public)")
+			throw AccessoryError.appError("This channel is no longer on the radio")
+		}
+
 			let messageUsers = FetchDescriptor<UserEntity>(predicate: #Predicate { $0.num == fromUserNum || $0.num == toUserNum })
 
 			do {
@@ -577,6 +583,11 @@ extension AccessoryManager {
 
 		let toUserNum = message.toUser?.num ?? 0
 		let messageId = message.messageId
+		// Checked before the row is touched, so a refused retry leaves it exactly as it was.
+		guard toUserNum > 0 || message.channel >= 0 else {
+			Logger.mesh.error("🚫 Cannot resend \(messageId, privacy: .public); its channel is no longer on the radio")
+			throw AccessoryError.appError("This channel is no longer on the radio")
+		}
 
 		// Kept so the row can go back to failed if the transmit never leaves: otherwise the
 		// message sits in "Sending…" with no retry action until the ack timeout turns it into
@@ -3199,6 +3210,10 @@ extension AccessoryManager {
 			connectedLoRaRegionCode = config.region.rawValue
 		}
 		await MeshPackets.shared.upsertLoRaConfigPacket(config: config, nodeNum: toUser.num)
+		if toUser.num == activeDeviceNum {
+			// A preset change renames every blank named channel, which makes it a different one.
+			await reconcileChannelConversations(loRaConfig: config)
+		}
 
 		return Int64(meshPacket.id)
 	}

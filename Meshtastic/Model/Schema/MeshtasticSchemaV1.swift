@@ -19,6 +19,7 @@ enum MeshtasticSchemaV1: VersionedSchema {
 			MyInfoEntity.self,
 			MessageEntity.self,
 			ChannelEntity.self,
+			ChannelConversationEntity.self,
 			PositionEntity.self,
 			WaypointEntity.self,
 			DeviceMetadataEntity.self,

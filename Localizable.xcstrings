@@ -23533,6 +23533,12 @@
         }
       }
     },
+    "Archived" : {
+
+    },
+    "Archived, no longer on the radio" : {
+
+    },
     "Are you sure you want to delete this message?" : {
       "localizations" : {
         "da" : {
@@ -143068,6 +143074,9 @@
           }
         }
       }
+    },
+    "This channel is no longer on your radio. Its messages are kept here, but you can't send to it. Add the channel again to pick up the conversation." : {
+
     },
     "This connected device does not support packet signature verification." : {
       "comment" : "Summary shown when the connected radio lacks XEdDSA packet signature verification.",
