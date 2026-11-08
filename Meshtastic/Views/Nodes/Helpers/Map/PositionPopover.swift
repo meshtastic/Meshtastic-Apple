@@ -27,7 +27,7 @@ struct PositionPopover: View {
 			VStack {
 				HStack {
 					CircleText(text: position.nodePosition?.user?.shortName ?? "?", color: Color(nodeColor), circleSize: 65)
-					Text(position.nodePosition?.user?.longName ?? "Unknown")
+					Text(position.nodePosition?.user?.localLongName ?? "Unknown")
 						.font(.largeTitle)
 				}
 				Divider()
@@ -224,7 +224,7 @@ struct PositionPopover: View {
 			.navigationDestination(isPresented: $navigateToCompass) {
 				CompassView(
 					waypointLocation: position.nodeCoordinate ?? LocationsHandler.DefaultLocation,
-					waypointLongName: position.nodePosition?.user?.longName ?? "Unknown node",
+					waypointLongName: position.nodePosition?.user?.localLongName ?? "Unknown node",
 					waypointShortName: position.nodePosition?.user?.shortName ?? "???",
 					color: {
 					if let num = position.nodePosition?.user?.num, num != 0 {

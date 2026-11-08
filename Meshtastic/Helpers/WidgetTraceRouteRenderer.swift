@@ -59,6 +59,13 @@ final class WidgetTraceRouteRenderer {
 	/// newer observed route isn't lost if nothing else triggers a refresh.
 	private var deferredRefresh: Task<Void, Never>?
 
+	private init() {
+		// Hops are named by local display names, so a rename redraws the route.
+		NotificationCenter.default.addObserver(forName: NodeDisplayNameStore.didChangeNotification, object: nil, queue: .main) { _ in
+			MainActor.assumeIsolated { WidgetTraceRouteRenderer.shared.refresh() }
+		}
+	}
+
 	/// Called after a trace route is saved, and by the widget broker so a fresh
 	/// install or launch catches up. Cheap when nothing changed: one small fetch.
 	func refresh() {
@@ -69,8 +76,9 @@ final class WidgetTraceRouteRenderer {
 			return
 		}
 
-		// Changes when the route gets its response, more hops or position snapshots.
-		let key = "\(route.id)|\(route.hops.count)|\(route.nodePositions.count)"
+		// Changes when the route gets its response, more hops or position snapshots, or a node's
+		// display name changes.
+		let key = "\(route.id)|\(route.hops.count)|\(route.nodePositions.count)|\(NodeDisplayNameStore.revision)"
 		guard key != inFlightKey else { return }
 		if key == lastSavedKey {
 			// Already shown; only a map that failed to draw is worth another try.
@@ -86,7 +94,7 @@ final class WidgetTraceRouteRenderer {
 		let preset = ModemPresets(rawValue: UserDefaults.modemPreset) ?? .longFast
 		let legs = TraceRouteLegs(route: route, preset: preset) { num in
 			guard num != 0, num != TraceRouteLegs.unknownRepeaterNum else { return nil }
-			return getNodeInfo(id: num, context: context).map(TraceRouteLegs.NodeDetails.init(node:))
+			return getNodeInfo(id: num, context: context).map { TraceRouteLegs.NodeDetails(node: $0) }
 		}
 		let positions = route.nodePositionsByNum.compactMapValues { $0.coordinate }
 		let square = Self.model(route: route, legs: legs, positions: positions, size: Self.squareSize)

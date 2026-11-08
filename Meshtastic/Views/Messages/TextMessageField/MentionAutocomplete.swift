@@ -23,9 +23,11 @@ struct MentionAutocomplete: View {
 			: nodes.filter { node in
 				let user = node.user
 				let longName = (user?.longName ?? "").lowercased()
+				let displayName = (user?.localLongName ?? "").lowercased()
 				let shortName = (user?.shortName ?? "").lowercased()
 				let userId = (user?.userId ?? "").lowercased()
 				return longName.contains(trimmed)
+					|| displayName.contains(trimmed)
 					|| shortName.contains(trimmed)
 					|| userId.contains(trimmed)
 			}
@@ -73,7 +75,7 @@ private struct MentionAutocompleteRow: View {
 				circleSize: 36
 			)
 			VStack(alignment: .leading, spacing: 2) {
-				Text(node.user?.longName ?? "Unknown")
+				Text(node.user?.localLongName ?? "Unknown")
 					.font(.body)
 					.foregroundStyle(.primary)
 				if let userId = node.user?.userId {

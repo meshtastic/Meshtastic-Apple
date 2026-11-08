@@ -138,7 +138,7 @@ enum MentionParser {
 		)
 		descriptor.fetchLimit = 1
 		if let user = (try? context.fetch(descriptor))?.first {
-			if let name = user.longName, !name.isEmpty { return name }
+			if let name = user.localLongName, !name.isEmpty { return name }
 			if let name = user.shortName, !name.isEmpty { return name }
 		}
 		return "!\(String(format: "%08x", UInt32(bitPattern: Int32(truncatingIfNeeded: nodeNum))))"

@@ -20,6 +20,12 @@ extension UserEntity {
 		return longName ?? "Unknown".localized
 	}
 
+	/// The local display name if set, otherwise the broadcast long name; nil when neither exists,
+	/// so callers can keep their own fallback (short name, hex id).
+	var localLongName: String? {
+		NodeDisplayNameStore.displayName(for: num) ?? longName
+	}
+
 	/// The node's broadcast long name while a local display name is hiding it, otherwise nil.
 	/// Node details shows it as its own row so the real name can be seen without clearing
 	/// the display name (#2604).

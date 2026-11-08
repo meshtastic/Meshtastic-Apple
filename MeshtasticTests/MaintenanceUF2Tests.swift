@@ -32,6 +32,9 @@ struct MaintenanceUF2Tests {
 		"WisMesh-Tag",
 		"muzi-Base-Board",
 		"nRF52840-MeshTracker-X1",
+		"nRF52840-MeshTracker-X1-v1",
+		"nRF52840-Meshtastic-Generic-S140v6",
+		"nRF52840-Meshtastic-Generic-S140v7",
 		"nRF52840-SeeedSenseCAPSolarP1-v1",
 		"nRF52840-SeeedXiao-v1",
 		"nRF52840-SeeedXiaoSense-v1",
@@ -40,6 +43,7 @@ struct MaintenanceUF2Tests {
 		"nRF52840-ThinkNode-M3-v1",
 		"nRF52840-ThinkNodeM1-v1",
 		"nRF52840-ThinkNodeM6-v1",
+		"nRF52840-WioTracker-L1-Pro-1W",
 		"nRF52840-promicro"
 	]
 
@@ -52,25 +56,29 @@ struct MaintenanceUF2Tests {
 	/// against the release assets. A swapped pairing passes every structural check yet
 	/// writes a bootloader built for other hardware — this fixture is what fails then.
 	private static let auditedPairings: [String: (board: String, sha256Prefix: String)] = [
-		"HT-n5262": ("heltec_t114", "96a461dc"),
-		"Heltec-T096-v1": ("heltec_t096", "e81ca347"),
-		"Heltec-T1": ("heltec_t1", "112fa1f7"),
-		"MinewSemi-MX25LE01": ("minewsemi_mx25le01", "301937aa"),
-		"TRACKER L1": ("wio_tracker_l1", "4eb3c0aa"),
-		"WisBlock-RAK3401-Board": ("wiscore_rak3401", "33d1d5f4"),
-		"WisBlock-RAK4631-Board": ("wiscore_rak4631_board", "20044aef"),
-		"WisMesh-Tag": ("wismesh_tag", "22854589"),
-		"muzi-Base-Board": ("muzi_base", "bee189b0"),
-		"nRF52840-MeshTracker-X1": ("mesh_tracker_x1", "52764ebe"),
-		"nRF52840-SeeedSenseCAPSolarP1-v1": ("sensecap_solar_p1", "99bf9035"),
-		"nRF52840-SeeedXiao-v1": ("xiao_nrf52840_ble", "678a68ef"),
-		"nRF52840-SeeedXiaoSense-v1": ("xiao_nrf52840_ble_sense", "4a44832e"),
-		"nRF52840-T1000-E-v1": ("t1000_e", "58e30432"),
-		"nRF52840-TEcho-v1": ("lilygo_techo", "aea201b9"),
-		"nRF52840-ThinkNode-M3-v1": ("thinknode_m3", "fe810492"),
-		"nRF52840-ThinkNodeM1-v1": ("thinknode_m1", "0173e789"),
-		"nRF52840-ThinkNodeM6-v1": ("thinknode_m6", "17525b78"),
-		"nRF52840-promicro": ("promicro_nrf52840", "c5b3af91")
+		"HT-n5262": ("heltec_t114", "85300841"),
+		"Heltec-T096-v1": ("heltec_t096", "38945c43"),
+		"Heltec-T1": ("heltec_t1", "bd09e956"),
+		"MinewSemi-MX25LE01": ("minewsemi_mx25le01", "db382822"),
+		"TRACKER L1": ("wio_tracker_l1", "848a74ea"),
+		"WisBlock-RAK3401-Board": ("wiscore_rak3401", "59013a88"),
+		"WisBlock-RAK4631-Board": ("wiscore_rak4631_board", "9b5fd188"),
+		"WisMesh-Tag": ("wismesh_tag", "09917bfd"),
+		"muzi-Base-Board": ("muzi_base", "68d5915b"),
+		"nRF52840-MeshTracker-X1": ("mesh_tracker_x1", "4254b056"),
+		"nRF52840-MeshTracker-X1-v1": ("mesh_tracker_x1", "4254b056"),
+		"nRF52840-Meshtastic-Generic-S140v6": ("meshtastic_6.1.1", "6beb1e3c"),
+		"nRF52840-Meshtastic-Generic-S140v7": ("meshtastic_7.3.0", "779b1e21"),
+		"nRF52840-SeeedSenseCAPSolarP1-v1": ("sensecap_solar_p1", "b26235b2"),
+		"nRF52840-SeeedXiao-v1": ("xiao_nrf52840_ble", "9ee8ba03"),
+		"nRF52840-SeeedXiaoSense-v1": ("xiao_nrf52840_ble_sense", "13b76480"),
+		"nRF52840-T1000-E-v1": ("t1000_e", "c847a0dd"),
+		"nRF52840-TEcho-v1": ("lilygo_techo", "978498ea"),
+		"nRF52840-ThinkNode-M3-v1": ("thinknode_m3", "b53ed169"),
+		"nRF52840-ThinkNodeM1-v1": ("thinknode_m1", "c2c924df"),
+		"nRF52840-ThinkNodeM6-v1": ("thinknode_m6", "d0a0c441"),
+		"nRF52840-WioTracker-L1-Pro-1W": ("wio_tracker_l1_pro_1w", "0ea2857d"),
+		"nRF52840-promicro": ("promicro_nrf52840", "bd409226")
 	]
 
 	@Test func everyPairingMatchesTheAuditedFixture() throws {
@@ -98,6 +106,7 @@ struct MaintenanceUF2Tests {
 			"tracker-t1000-e",
 			"seeed_wio_tracker_L1",
 			"seeed_wio_tracker_L1_eink",
+			"seeed_wio_tracker_L1_Pro_1W",
 			"seeed_solar_node",
 			"seeed_xiao_nrf52840_kit",
 			"seeed_mesh_tracker_X1",
@@ -158,6 +167,35 @@ struct MaintenanceUF2Tests {
 
 	@Test func emptyBoardIDValueIsNil() {
 		#expect(OTAFIXBootloader.parseBoardID(fromInfoText: "Board-ID:\r\n") == nil)
+	}
+
+	// MARK: - Last-Fault
+
+	private static let infoWithFault = "UF2 Bootloader 2.6.0\r\nModel: WisBlock RAK4631 Board\r\nBoard-ID: WisBlock-RAK4631-Board\r\nDate: Oct 20 2026\r\nFactory-Erase: UF2 family 0x4D455348\r\nSoftDevice: S140 6.1.1\r\nLast-Fault: id=0x1 pc=0xf4a2c info=0x8\r\n"
+
+	@Test func parsesTheLastFaultLine() {
+		#expect(OTAFIXBootloader.parseLastFault(fromInfoText: Self.infoWithFault) == BootloaderFault(id: 0x1, pc: 0xF4A2C, info: 0x8))
+	}
+
+	@Test func otherInfoLinesStillParseAlongsideTheFault() {
+		#expect(OTAFIXBootloader.parseBoardID(fromInfoText: Self.infoWithFault) == "WisBlock-RAK4631-Board")
+		#expect(NRF52FactoryErase.parseSoftDevice(fromInfoText: Self.infoWithFault) == .s140_6_1_1)
+		#expect(NRF52FactoryErase.parseFactoryEraseFamily(fromInfoText: Self.infoWithFault) == 0x4D45_5348)
+	}
+
+	@Test func lastFaultAcceptsZeroAndAnyCase() {
+		#expect(OTAFIXBootloader.parseLastFault(fromInfoText: "last-fault: ID=0x0 PC=0X0 info=0xDEADBEEF\n") == BootloaderFault(id: 0, pc: 0, info: 0xDEAD_BEEF))
+	}
+
+	@Test func lastFaultSummaryMatchesTheBootloaderFormat() {
+		#expect(BootloaderFault(id: 0x1, pc: 0xF4A2C, info: 0).summary == "id=0x1 pc=0xf4a2c info=0x0")
+	}
+
+	@Test func missingOrPartialLastFaultIsNil() {
+		#expect(OTAFIXBootloader.parseLastFault(fromInfoText: "Board-ID: X\r\nSoftDevice: S140 7.3.0\r\n") == nil)
+		#expect(OTAFIXBootloader.parseLastFault(fromInfoText: "Last-Fault: id=0x1 pc=0x2\r\n") == nil)
+		#expect(OTAFIXBootloader.parseLastFault(fromInfoText: "Last-Fault: id=0x1 pc=0xzz info=0x3\r\n") == nil)
+		#expect(OTAFIXBootloader.parseLastFault(fromInfoText: "Last-Fault:\r\n") == nil)
 	}
 
 	// MARK: - UX gate

@@ -163,8 +163,8 @@
         "keywords": [
             "firmware",
             "radio",
-            "update",
             "app",
+            "update",
             "bootloader",
             "drive",
             "event",
@@ -174,25 +174,25 @@
             "file",
             "meshtastic",
             "shows",
+            "bluetooth",
             "from",
             "board",
-            "bluetooth",
             "nrf52",
             "copy",
             "without",
+            "erase",
             "version",
+            "uf2",
             "target",
             "tap",
-            "erase",
             "connected",
             "connect",
             "artwork",
             "wrong",
             "works",
-            "uf2",
             "supported"
         ],
-        "charCount": 10204
+        "charCount": 10485
     },
     {
         "id": "getting-started",
@@ -404,9 +404,9 @@
             "contact",
             "shows",
             "screen",
+            "name",
             "only",
             "heard",
-            "name",
             "firmware",
             "public",
             "model",
@@ -414,19 +414,19 @@
             "list",
             "app",
             "hardware",
+            "one",
             "mesh",
             "direct",
             "detail",
             "shown",
             "row",
             "open",
-            "one",
             "long",
             "tap",
             "links",
-            "see"
+            "show"
         ],
-        "charCount": 20709
+        "charCount": 20910
     },
     {
         "id": "settings",

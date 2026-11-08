@@ -240,6 +240,8 @@ final class NodeFilterParameters: ObservableObject {
 				node.user?.hwModel,
 				node.user?.hwDisplayName,
 				node.user?.longName,
+				// By node number: a node without a user record can still have a display name.
+				NodeDisplayNameStore.displayName(for: node.num),
 				node.user?.shortName
 			].compactMap { $0 }.contains { $0.localizedCaseInsensitiveContains(text) }
 			if !matchesSearch { return false }

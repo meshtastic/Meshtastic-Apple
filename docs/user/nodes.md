@@ -125,9 +125,9 @@ Open a node and choose **Track in Live Activity** to keep it on your Lock Screen
 
 ## Display Names
 
-You can give any node a local nickname that's shown throughout the app instead of its device long name — in the node list, node details, and messages. Set it from the node's long-press menu ("Display name") or from the **Name** row in Node Detail. The avatar circle always shows the node's actual short code, unaffected by the nickname. While a display name is set, Node Detail also shows the node's real long name in a **Long Name** row under **Name**.
+You can give any node a local nickname that's shown throughout the app instead of its device long name — in the node list, node details, messages, mentions, notifications, CarPlay, the map and trace routes. Searching for nodes or contacts finds them by either name, and lists sorted by name use the one they show. Set it from the node's long-press menu ("Display name") or from the **Name** row in Node Detail. The avatar circle always shows the node's actual short code, unaffected by the nickname. While a display name is set, Node Detail also shows the node's real long name in a **Long Name** row under **Name**.
 
-Display names are stored only on this device and are never sent over the mesh, shared, or exported — they don't change the node's real identity, so QR codes and contact sharing still use the device's actual name.
+Display names are stored only on this device and are never sent over the mesh, shared, or exported — they don't change the node's real identity, so QR codes, contact sharing, exports and the trace route share image still use the device's actual name.
 
 ## Filtering & Search
 
