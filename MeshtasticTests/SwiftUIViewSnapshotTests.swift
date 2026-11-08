@@ -1608,11 +1608,13 @@ struct NodeDetailSnapshotTests {
 @Suite("MQTTConfig Snapshots")
 struct MQTTConfigSnapshotTests {
 
+	/// Each test passes its own `num`: `num` is unique, and a second node with the same
+	/// number left unsaved edits behind that crashed a later suite's save.
 	@MainActor
-	private func makeNode() throws -> NodeInfoEntity {
+	private func makeNode(num: Int64) throws -> NodeInfoEntity {
 		let context = sharedModelContainer.mainContext
 		let node = NodeInfoEntity()
-		node.num = 0xC0FF_EE0E
+		node.num = num
 		context.insert(node)
 		let user = UserEntity()
 		user.num = node.num
@@ -1642,12 +1644,13 @@ struct MQTTConfigSnapshotTests {
 	@Test("MQTT form, public server with map reporting consented")
 	@MainActor
 	func mqttForm() async throws {
-		let node = try makeNode()
+		let node = try makeNode(num: 0xC0FF_EE0E)
 		node.mqttConfig?.root = "msh/US/bayarea"
 		let lora = LoRaConfigEntity()
 		lora.regionCode = 1
 		sharedModelContainer.mainContext.insert(lora)
 		node.loRaConfig = lora
+		try sharedModelContainer.mainContext.save()
 		AccessoryManager.shared.isConnected = true
 		AccessoryManager.shared.activeDeviceNum = node.num
 		// Render the custom-root warning on affected radio firmware.
@@ -1681,11 +1684,12 @@ struct MQTTConfigSnapshotTests {
 	@Test("Topic finder sheet, finished sample")
 	@MainActor
 	func topicFinderSheet() async throws {
-		let node = try makeNode()
+		let node = try makeNode(num: 0xC0FF_EE0D)
 		let lora = LoRaConfigEntity()
 		lora.regionCode = 1
 		sharedModelContainer.mainContext.insert(lora)
 		node.loRaConfig = lora
+		try sharedModelContainer.mainContext.save()
 		let mqtt = try #require(node.mqttConfig)
 		let config = ModuleConfig.MQTTConfig(entity: mqtt)
 		// A finished sample with two roots and one map report, driven through the handlers: no socket.
