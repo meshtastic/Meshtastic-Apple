@@ -217,9 +217,85 @@ struct TraceRouteParsingTests {
 		#expect(route.response)
 		#expect(route.fromNum == requester)
 		#expect(route.toNum == targetNum)
-		#expect(route.node == nil)
+		#expect(route.node?.num == targetNum)
+		#expect(route.state() == .observed)
 		#expect(route.sentAt == nil)
 		#expect(route.roundTrip == nil)
+	}
+
+	@Test("An observed route shows in the responder's own log")
+	func observedRouteInNodeLog() throws {
+		let (manager, context) = try makeManager()
+		let packet = try makeResponse(
+			requestID: 107, from: targetNum, to: deviceNum,
+			route: [], snrTowards: [8], routeBack: [], snrBack: [12]
+		)
+		manager.handleTraceRouteApp(packet)
+
+		let target = try #require(getNodeInfo(id: targetNum, context: context))
+		let log = target.safeTraceRoutes()
+		#expect(log.count == 1)
+		#expect(log.first?.state() == .observed)
+	}
+
+	@Test("A trace route another node ran to us goes in that node's log")
+	func tracedByRoute() throws {
+		let (manager, context) = try makeManager()
+		var packet = try makeResponse(
+			requestID: 0, from: targetNum, to: deviceNum,
+			route: [knownHopNum, unknownRepeater], snrTowards: [24, -128, 10]
+		)
+		packet.decoded.wantResponse = true
+		manager.handleTraceRouteApp(packet)
+
+		let route = try #require(try routes(context).first)
+		#expect(route.tracedBy)
+		#expect(!route.sent)
+		#expect(!route.response)
+		#expect(!route.observed)
+		#expect(route.state() == .tracedBy)
+		#expect(route.id == Int64(packet.id))
+		#expect(route.fromNum == targetNum)
+		#expect(route.toNum == deviceNum)
+		#expect(route.node?.num == targetNum)
+		#expect(route.hopsTowards == 2)
+		#expect(route.hopsBack == -1)
+		#expect(route.roundTrip == nil)
+
+		let hops = forwardHops(route)
+		#expect(hops.map(\.num) == [targetNum, Int64(knownHopNum), Int64(unknownRepeater), deviceNum])
+		#expect(hops.map(\.snr) == [-32, 6, -32, 2.5])
+		#expect(backHops(route).isEmpty)
+
+		let target = try #require(getNodeInfo(id: targetNum, context: context))
+		#expect(target.safeTraceRoutes().count == 1)
+	}
+
+	@Test("Seeing the same trace to us again updates the record in place")
+	func tracedByRebroadcastIsIdempotent() throws {
+		let (manager, context) = try makeManager()
+		var packet = try makeResponse(
+			requestID: 0, from: targetNum, to: deviceNum,
+			route: [knownHopNum], snrTowards: [24, 10]
+		)
+		packet.decoded.wantResponse = true
+		manager.handleTraceRouteApp(packet)
+		manager.handleTraceRouteApp(packet)
+
+		#expect(try routes(context).count == 1)
+		#expect(try context.fetch(FetchDescriptor<TraceRouteHopEntity>()).count == 3)
+	}
+
+	@Test("A trace route request addressed to another node is ignored")
+	func requestForOtherNodeIsIgnored() throws {
+		let (manager, context) = try makeManager()
+		var packet = try makeResponse(
+			requestID: 0, from: targetNum, to: Int64(knownHopNum),
+			route: [], snrTowards: []
+		)
+		packet.decoded.wantResponse = true
+		manager.handleTraceRouteApp(packet)
+		#expect(try routes(context).isEmpty)
 	}
 
 	@Test("Seeing the same response again updates the record in place")

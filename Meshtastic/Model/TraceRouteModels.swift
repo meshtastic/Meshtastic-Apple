@@ -20,6 +20,9 @@ final class TraceRouteEntity {
 	var routeBackText: String?
 	var routeText: String?
 	var sent: Bool = false
+	/// Another node traced a route to us. Only the inbound route is known: our radio answered the
+	/// request itself, so there is no response and no return leg.
+	var tracedBy: Bool = false
 	var snr: Float = 0.0
 	/// When the response arrived (or, before one does, when the request was sent).
 	var time: Date?
@@ -42,7 +45,7 @@ final class TraceRouteEntity {
 	var node: NodeInfoEntity?
 
 	/// True when this trace route was observed on the mesh rather than initiated by us.
-	var observed: Bool { !sent }
+	var observed: Bool { !sent && !tracedBy }
 
 	init() {}
 }

@@ -38,7 +38,7 @@ struct TraceRouteDetail: View {
 				}
 				actions(state: state)
 				switch state {
-				case .complete, .observed:
+				case .complete, .observed, .tracedBy:
 					Section {
 						TraceRouteHopTimeline(
 							legs: legs,
@@ -145,7 +145,7 @@ struct TraceRouteDetail: View {
 
 	@ViewBuilder
 	private func details(state: TraceRouteState) -> some View {
-		if state == .complete || state == .observed {
+		if state.hasRoute {
 			Section {
 				if let roundTrip = route.roundTrip {
 					LabeledContent(String(localized: "Round trip", comment: "Trace route: time from sending the request to getting the response")) {
