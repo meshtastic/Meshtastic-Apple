@@ -10,7 +10,8 @@
 #   "usd-core",
 # ]
 # ///
-"""Builds the banana that stands beside a model on the cinema's stand, for scale.
+"""Builds the banana that stands beside a model on the cinema's stand, and beside one in the AR
+view, for scale.
 
     uv run scripts/cinema/banana_for_scale.py
 
@@ -18,7 +19,7 @@ The drawing, drawings/banana_icon.svg ("Banana icon" by Keistutis on Openclipart
 rendered without its drop shadow and stood on end, stem up. Its outline is inflated into a round
 banana at real size, and the rendered drawing is laid on its front and back. The front carries an
 oval white label with the Meshtastic logo, like a grocery store sticker. It writes
-Packages/CinemaContent/Sources/CinemaContent/Props/banana_for_scale.usdz.
+Meshtastic/Resources/DeviceModels/banana_for_scale.usdz.
 """
 
 import io
@@ -36,7 +37,7 @@ from skimage import measure
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DRAWING = os.path.join(HERE, "drawings", "banana_icon.svg")
-OUT = os.path.join(HERE, "..", "..", "Packages", "CinemaContent", "Sources", "CinemaContent", "Props", "banana_for_scale.usdz")
+OUT = os.path.join(HERE, "..", "..", "Meshtastic", "Resources", "DeviceModels", "banana_for_scale.usdz")
 LOGO = os.path.join(HERE, "..", "..", "Meshtastic", "Assets.xcassets", "logo-black.imageset", "Mesh_Logo_Black.svg")
 
 # Tip to the top of the stem, standing up: a medium banana.

@@ -406,9 +406,10 @@
             "only",
             "name",
             "heard",
+            "screen",
             "public",
             "firmware",
-            "screen",
+            "model",
             "messages",
             "hardware",
             "detail",
@@ -423,10 +424,9 @@
             "row",
             "packets",
             "one",
-            "model",
             "connected"
         ],
-        "charCount": 17243
+        "charCount": 17642
     },
     {
         "id": "settings",
@@ -786,8 +786,8 @@
         "navOrder": 0,
         "keywords": [
             "map",
-            "radio",
             "nov",
+            "radio",
             "apple",
             "app",
             "vision",
@@ -795,10 +795,10 @@
             "cinema",
             "settings",
             "now",
-            "new",
             "nodes",
-            "screen",
+            "new",
             "node",
+            "screen",
             "mesh",
             "firmware",
             "messages",
@@ -811,12 +811,12 @@
             "oct",
             "device",
             "waypoints",
+            "view",
             "lookout",
             "local",
-            "live",
-            "show"
+            "live"
         ],
-        "charCount": 14861
+        "charCount": 15126
     },
     {
         "id": "adding-features",
