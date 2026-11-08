@@ -1509,6 +1509,9 @@
         }
       }
     },
+    "Pipe" : {
+      "comment" : "Remote shell key bar: accessibility label"
+    },
     "Previous rack page" : {
       "comment" : "Showcase: show the previous page of the wall rack",
       "localizations" : {
@@ -8199,6 +8202,9 @@
           }
         }
       }
+    },
+    "Show Keyboard" : {
+      "comment" : "Remote shell key bar: accessibility label"
     },
     "Shows the mesh on a terrain model in a volume." : {
       "comment" : "VoiceOver hint for the button that opens the spatial map volume",
@@ -60442,6 +60448,9 @@
           }
         }
       }
+    },
+    "Hide Keyboard" : {
+      "comment" : "Remote shell key bar: accessibility label"
     },
     "Hide legend" : {
       "comment" : "A label for a button that hides the map legend.",
@@ -144932,6 +144941,9 @@
           }
         }
       }
+    },
+    "Tilde" : {
+      "comment" : "Remote shell key bar: accessibility label"
     },
     "Tile Server" : {
       "comment" : "OverlayType.localized: map overlay kind",

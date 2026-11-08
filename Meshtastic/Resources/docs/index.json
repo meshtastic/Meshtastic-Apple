@@ -418,15 +418,15 @@
             "direct",
             "detail",
             "shown",
+            "row",
             "open",
             "one",
             "long",
-            "row",
-            "links",
             "tap",
+            "links",
             "see"
         ],
-        "charCount": 20391
+        "charCount": 20709
     },
     {
         "id": "settings",

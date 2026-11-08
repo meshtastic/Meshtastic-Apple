@@ -26,6 +26,10 @@ struct TerminalInputHandlers {
 	var chord: (Character, _ control: Bool, _ alt: Bool) -> Void
 	var paste: (String) -> Void
 	var size: (_ cols: Int, _ rows: Int) -> Void
+	/// A tap on the output.
+	var tapped: () -> Void
+	/// Pinching the output, with the scale since the pinch began.
+	var pinch: (_ scale: CGFloat, _ ended: Bool) -> Void
 }
 
 /// The terminal's output in a scrolling, selectable text view, with a hidden view that takes
@@ -72,6 +76,8 @@ final class TerminalContainerView: UIView, UITextViewDelegate {
 	private var fontSize: CGFloat = 13
 	private var drawnFont: UIFont?
 	private var reportedSize: (cols: Int, rows: Int)?
+	/// The size is reported once the pinch ends, so the node gets one resize, not one per step.
+	private var pinching = false
 
 	override init(frame: CGRect) {
 		super.init(frame: frame)
@@ -97,6 +103,7 @@ final class TerminalContainerView: UIView, UITextViewDelegate {
 		])
 		let tap = UITapGestureRecognizer(target: self, action: #selector(tapped))
 		textView.addGestureRecognizer(tap)
+		textView.addGestureRecognizer(UIPinchGestureRecognizer(target: self, action: #selector(pinched(_:))))
 	}
 
 	required init?(coder: NSCoder) {
@@ -111,7 +118,22 @@ final class TerminalContainerView: UIView, UITextViewDelegate {
 	}
 
 	@objc private func tapped() {
+		handlers?.tapped()
 		if takesKeyboard { focusKeyboard() }
+	}
+
+	@objc private func pinched(_ recognizer: UIPinchGestureRecognizer) {
+		switch recognizer.state {
+		case .began, .changed:
+			pinching = true
+			handlers?.pinch(recognizer.scale, false)
+		case .ended, .cancelled, .failed:
+			handlers?.pinch(recognizer.scale, true)
+			pinching = false
+			setNeedsLayout()
+		default:
+			break
+		}
 	}
 
 	func focusKeyboard() {
@@ -136,6 +158,7 @@ final class TerminalContainerView: UIView, UITextViewDelegate {
 	}
 
 	private func reportSize() {
+		guard !pinching else { return }
 		let font = self.font
 		let inset = textView.textContainerInset
 		let padding = textView.textContainer.lineFragmentPadding * 2
@@ -383,6 +406,11 @@ final class TerminalKeyInputView: UIView, UIKeyInput {
 		let alt = key.modifierFlags.contains(.alternate)
 		guard control || alt, !key.modifierFlags.contains(.command),
 			  let character = key.charactersIgnoringModifiers.first else { return false }
+		// On many layouts Option types ASCII the keycaps lack (`@`, `|`, `{`, `~`); let that
+		// through as text. Option characters outside ASCII, as on a US layout, stay Meta.
+		if alt, !control, let typed = key.characters.first, typed != character, typed.isASCII, !typed.isWhitespace {
+			return false
+		}
 		handlers?.chord(character, control, alt)
 		return true
 	}
