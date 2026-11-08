@@ -389,9 +389,9 @@ struct RemoteShellView: View {
 	}
 }
 
-/// The keys a touch keyboard lacks, in one row laid out like SwiftTerm's: Escape, Control and
-/// Tab on the left, the arrows and the keyboard button on the right, and Alt, symbols and the
-/// navigation keys between them, scrolling sideways when the row is narrow.
+/// The keys a touch keyboard lacks, in one row laid out like SwiftTerm's: Escape and Control on
+/// the left, the arrows on the right, and Tab, Alt, symbols, the navigation keys and the
+/// keyboard button between them, scrolling sideways when the row is narrow.
 struct TerminalKeyBar: View {
 	@ObservedObject var session: RemoteShellSession
 	/// In line mode the up and down arrows recall history instead of reaching the node.
@@ -410,23 +410,31 @@ struct TerminalKeyBar: View {
 			Group {
 				key("esc", label: "Escape", special: true) { session.send(.escape) }
 				modifier("ctrl", label: String(localized: "Control"), state: session.control) { session.control = session.control.next }
-				key(systemImage: "arrow.right.to.line.compact", label: "Tab", special: true) { session.send(.tab) }
 			}
 			.disabled(session.state != .open)
 			ScrollView(.horizontal, showsIndicators: false) {
 				HStack(spacing: 4) {
-					modifier("alt", label: String(localized: "Alt"), state: session.alt) { session.alt = session.alt.next }
-					ForEach(Self.symbols, id: \.text) { symbol in
-						key(symbol.text, label: symbol.label) { character(symbol.text) }
+					Group {
+						key(systemImage: "arrow.right.to.line.compact", label: "Tab", special: true) { session.send(.tab) }
+						modifier("alt", label: String(localized: "Alt"), state: session.alt) { session.alt = session.alt.next }
+						ForEach(Self.symbols, id: \.text) { symbol in
+							key(symbol.text, label: symbol.label) { character(symbol.text) }
+						}
+						key("home", label: "Home", special: true) { session.send(.home) }
+						key("end", label: "End", special: true) { session.send(.end) }
+						key("pgup", label: "Page up", special: true) { session.send(.pageUp) }
+						key("pgdn", label: "Page down", special: true) { session.send(.pageDown) }
 					}
-					key("home", label: "Home", special: true) { session.send(.home) }
-					key("end", label: "End", special: true) { session.send(.end) }
-					key("pgup", label: "Page up", special: true) { session.send(.pageUp) }
-					key("pgdn", label: "Page down", special: true) { session.send(.pageDown) }
+					.disabled(session.state != .open)
+					key(
+						systemImage: keyboardShown ? "keyboard.chevron.compact.down" : "keyboard",
+						label: keyboardShown ? "Hide Keyboard" : "Show Keyboard",
+						special: true,
+						action: toggleKeyboard
+					)
 				}
 				.padding(.vertical, 1)
 			}
-			.disabled(session.state != .open)
 			Group {
 				RepeatingKey(systemImage: "arrow.left", label: "Left arrow") { session.send(.left) }
 				RepeatingKey(systemImage: "arrow.down", label: "Down arrow") { arrow(.down) }
@@ -434,12 +442,6 @@ struct TerminalKeyBar: View {
 				RepeatingKey(systemImage: "arrow.right", label: "Right arrow") { session.send(.right) }
 			}
 			.disabled(session.state != .open)
-			key(
-				systemImage: keyboardShown ? "keyboard.chevron.compact.down" : "keyboard",
-				label: keyboardShown ? "Hide Keyboard" : "Show Keyboard",
-				special: true,
-				action: toggleKeyboard
-			)
 		}
 		.padding(.horizontal, 4)
 		.padding(.vertical, 3)
