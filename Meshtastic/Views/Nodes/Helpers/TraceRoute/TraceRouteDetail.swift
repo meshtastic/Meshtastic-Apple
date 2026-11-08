@@ -68,7 +68,11 @@ struct TraceRouteDetail: View {
 	}
 
 	private var targetName: String {
-		route.node?.user?.longName ?? findNode(route.toNum)?.user?.longName ?? route.toNum.toHex()
+		// A traced-by route's node is the requester; the target is us.
+		if route.tracedBy {
+			return findNode(route.toNum)?.user?.longName ?? route.toNum.toHex()
+		}
+		return route.node?.user?.longName ?? findNode(route.toNum)?.user?.longName ?? route.toNum.toHex()
 	}
 
 	private var title: String {
