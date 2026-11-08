@@ -91,30 +91,30 @@
             "app",
             "cab",
             "tent",
-            "stands",
+            "summit",
             "open",
             "beside",
             "window",
-            "summit",
+            "stands",
+            "out",
             "model",
             "lookout",
-            "view",
-            "out",
             "from",
+            "view",
             "tap",
-            "stand",
             "size",
+            "shows",
             "one",
+            "forest",
             "back",
             "under",
             "turn",
             "sunset",
-            "shows",
-            "show",
+            "stand",
             "same",
             "route"
         ],
-        "charCount": 6194
+        "charCount": 6315
     },
     {
         "id": "discovery",
@@ -814,9 +814,9 @@
             "lookout",
             "local",
             "live",
-            "view"
+            "show"
         ],
-        "charCount": 14920
+        "charCount": 14861
     },
     {
         "id": "adding-features",
