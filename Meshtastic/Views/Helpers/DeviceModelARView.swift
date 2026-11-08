@@ -194,9 +194,7 @@ struct DeviceModelARView: View {
 								.rotationEffect(.degrees(-90))
 						}
 					}
-					.toggleStyle(.button)
-					.buttonBorderShape(.roundedRectangle)
-					.background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+					.toggleStyle(OverCameraToggleStyle())
 					Spacer()
 				}
 			}
@@ -245,6 +243,32 @@ struct DeviceModelARView: View {
 				stage.drag(by: value.translation)
 			}
 			.onEnded { _ in stage.endDrag() }
+	}
+}
+
+/// A toggle button that reads over the camera picture: on a frosted background when off, filled
+/// with the accent color when on.
+private struct OverCameraToggleStyle: ToggleStyle {
+	func makeBody(configuration: Configuration) -> some View {
+		let shape = RoundedRectangle(cornerRadius: 8, style: .continuous)
+		Button {
+			configuration.isOn.toggle()
+		} label: {
+			configuration.label
+				.font(.body.weight(.semibold))
+				.foregroundStyle(configuration.isOn ? Color.white : Color.accentColor)
+				.padding(.horizontal, 14)
+				.padding(.vertical, 10)
+				.background {
+					if configuration.isOn {
+						shape.fill(Color.accentColor)
+					} else {
+						shape.fill(.ultraThinMaterial)
+					}
+				}
+		}
+		.buttonStyle(.plain)
+		.accessibilityAddTraits(configuration.isOn ? .isSelected : [])
 	}
 }
 
