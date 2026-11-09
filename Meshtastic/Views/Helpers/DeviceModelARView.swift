@@ -191,9 +191,7 @@ struct DeviceModelARView: View {
 						Label {
 							Text("Banana for Scale", comment: "Cinema: button on the card beside a device model on the stand; lays a real-size banana beside it")
 						} icon: {
-							// Stem up, like the banana beside the model.
 							Image("custom.banana")
-								.rotationEffect(.degrees(-90))
 						}
 					}
 					.toggleStyle(OverCameraToggleStyle())
