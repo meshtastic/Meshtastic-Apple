@@ -986,7 +986,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Bez nasłuchiwania beaconów"
+            "value" : "Nie nasłuchuje beaconów"
           }
         }
       }
@@ -1546,7 +1546,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Czekam na ustawienia beaconu z radia."
+            "value" : "Oczekiwanie na ustawienia beaconu z radia."
           }
         }
       }
@@ -1580,7 +1580,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Czekam na ponowne połączenie radia"
+            "value" : "Oczekiwanie na ponowne połączenie radia"
           }
         }
       }
@@ -1597,7 +1597,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Gdzie jesteś, aby radio używało legalnych częstotliwości."
+            "value" : "Gdzie jesteś, aby radio używało dozwolonych częstotliwości."
           }
         }
       }
@@ -3962,7 +3962,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Do najlepszego działania połączenia wymagany jest firmware w wersji co najmniej 2.7.4."
+            "value" : "Aby połączenie działało najlepiej, wymagany jest firmware w wersji co najmniej 2.7.4."
           }
         }
       }
@@ -9524,6 +9524,12 @@
             "state" : "translated",
             "value" : "「中斷 Meshtastic 連線」— 與已連線的 BLE 節點中斷連線。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "„Disconnect Meshtastic” — rozłącza połączony węzeł BLE."
+          }
         }
       }
     },
@@ -9595,6 +9601,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "「傳送 Meshtastic 私訊」— 將私人訊息傳送至節點。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "„Send a Meshtastic direct message” — wysyła prywatną wiadomość do węzła."
           }
         }
       }
@@ -9668,6 +9680,12 @@
             "state" : "translated",
             "value" : "「傳送 Meshtastic 群組訊息」— 將訊息傳送至 Mesh 頻道。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "„Send a Meshtastic group message” — wysyła wiadomość na kanał sieci."
+          }
         }
       }
     },
@@ -9738,7 +9756,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "„Wyłącz mój węzeł Meshtastic” lub „Uruchom ponownie mój węzeł Meshtastic”."
+            "value" : "„Shut down my Meshtastic node” lub „Restart my Meshtastic node”."
           }
         }
       }
@@ -18888,7 +18906,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Dodaj i odeślij mój"
+            "value" : "Dodaj i odeślij swój"
           }
         }
       }
@@ -19275,7 +19293,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Dodaj zachowuje ustawienia LoRa odbiorcy i dodaje wybrane kanały."
+            "value" : "„Dodaj” zachowuje ustawienia LoRa odbiorcy i dodaje wybrane kanały."
           }
         }
       }
@@ -118857,7 +118875,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Zastąp działa jak domyślnie w aplikacji Meshtastic i zawiera ustawienia LoRa radia."
+            "value" : "„Zastąp” to domyślne zachowanie aplikacji Meshtastic i zawiera ustawienia LoRa radia."
           }
         }
       }
@@ -126874,7 +126892,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Wybrane pakiety wysłane jako krytyczne zignorują przełącznik wyciszenia i tryb Nie przeszkadzać w centrum powiadomień systemu."
+            "value" : "Niektóre pakiety wysłane jako krytyczne ignorują przełącznik wyciszenia i tryb Nie przeszkadzać w centrum powiadomień systemu."
           }
         }
       }
@@ -127959,7 +127977,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Wyślij kartę Dodaj"
+            "value" : "Wyślij kartę „Dodaj”"
           }
         }
       }
@@ -128658,7 +128676,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Wyślij kartę Zastąp"
+            "value" : "Wyślij kartę „Zastąp”"
           }
         }
       }
@@ -134777,7 +134795,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Siła sygnału normalna"
+            "value" : "Siła sygnału: normalna"
           }
         }
       }
@@ -134801,7 +134819,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Siła sygnału silna"
+            "value" : "Siła sygnału: silna"
           }
         }
       }
@@ -134825,7 +134843,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Siła sygnału słaba"
+            "value" : "Siła sygnału: słaba"
           }
         }
       }
@@ -138895,7 +138913,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Wymień kontakty mesh"
+            "value" : "Wymień kontakty w sieci"
           }
         }
       }
@@ -149405,7 +149423,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "tłumacz"
+            "value" : "tłumaczenie"
           }
         }
       }
@@ -160204,7 +160222,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Wysłano przez Ciebie: %@"
+            "value" : "Twoja wiadomość: %@"
           }
         }
       }
