@@ -277,11 +277,10 @@ struct LocalStatsLog: View {
 				}
 			}
 
-			RequestLocalStatsButton(
+			TelemetryRequestButton(
 				node: node,
-				title: "Request",
-				cooldownTitle: "Wait",
-				systemImage: "arrow.clockwise"
+				kind: .localStats,
+				style: .labeled(title: "Request", cooldownTitle: "Wait")
 			)
 			.buttonStyle(.bordered)
 			.buttonBorderShape(.capsule)

@@ -40,6 +40,10 @@ struct ContentView: View {
 	/// blocking state clears it.
 	@State private var isShowingLockdownGate: Bool = false
 	@State private var isShowingFirmwareGate: Bool = false
+	/// A telemetry request a routing error answered. Shown here so it reaches the person after
+	/// they leave the node, since the error can take minutes to come back.
+	@State private var telemetryRequestFailure: TelemetryRequestLog.Failure?
+	@State private var isShowingTelemetryRequestFailure = false
 
 	init(appState: AppState, router: Router) {
 		self.appState = appState
@@ -115,6 +119,20 @@ struct ContentView: View {
 			.onChange(of: isShowingLockdownGate) { _, _ in presentRadioSetupIfNeeded() }
 			.onChange(of: isShowingFirmwareGate) { _, _ in presentRadioSetupIfNeeded() }
 			.onChange(of: appState.isDatabaseResetting) { _, _ in presentRadioSetupIfNeeded() }
+			.onReceive(TelemetryRequestTracker.shared.$failure) { failure in
+				guard let failure else { return }
+				telemetryRequestFailure = failure
+				isShowingTelemetryRequestFailure = true
+			}
+			.hostedAlert("Telemetry Request Failed", isPresented: $isShowingTelemetryRequestFailure) {
+				Button("OK", role: .cancel) {
+					TelemetryRequestTracker.shared.failure = nil
+				}
+			} message: {
+				if let failure = telemetryRequestFailure {
+					Text("The request for \(failure.kind.name) from \(failure.nodeName) failed: \(failure.reason)")
+				}
+			}
 			.task {
 #if DEBUG
 				MarketingCapture.simulateEventFirmwareIfNeeded(accessoryManager)

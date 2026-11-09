@@ -3276,51 +3276,50 @@ extension AccessoryManager {
 		return Int64(meshPacket.id)
 	}
 
-	func sendLocalStatsRequest(
+	/// Asks a node for one kind of telemetry. Returns the request's packet id, which a reply or
+	/// a routing error carries as its request id.
+	@discardableResult
+	func sendTelemetryRequest(
+		_ kind: TelemetryRequestKind,
 		destNum: Int64,
-		wantResponse: Bool,
 		transport: LocalStatsRequestTransport = .sharedChannel,
 		destinationPublicKey: Data? = nil
-	) async throws {
+	) async throws -> UInt32 {
 		guard let fromNodeNum = self.activeConnection?.device.num else {
-			Logger.services.error("Error while sending local stats request.  No active device.")
+			Logger.services.error("Error while sending telemetry request.  No active device.")
 			throw AccessoryError.ioFailed("No active device")
 		}
-
-		var telemetryPacket = Telemetry()
-		telemetryPacket.localStats = LocalStats()
 
 		var meshPacket = MeshPacket()
 		meshPacket.id = UInt32.random(in: UInt32(UInt8.max)..<UInt32.max)
 		meshPacket.to = UInt32(destNum)
 		meshPacket.from = UInt32(fromNodeNum)
 		meshPacket.wantAck = true
-		meshPacket.decoded.wantResponse = wantResponse
 		guard LocalStatsRequestTransport.configure(
 			&meshPacket,
 			transport: transport,
 			destinationPublicKey: destinationPublicKey
 		) else {
-			throw AccessoryError.ioFailed("sendLocalStatsRequest: Remote admin requires the destination public key")
+			throw AccessoryError.ioFailed("sendTelemetryRequest: Remote admin requires the destination public key")
 		}
 
 		var dataMessage = DataMessage()
-		if let serializedData: Data = try? telemetryPacket.serializedData() {
+		if let serializedData: Data = try? kind.telemetry.serializedData() {
 			dataMessage.payload = serializedData
 			dataMessage.portnum = PortNum.telemetryApp
-			dataMessage.wantResponse = wantResponse
+			dataMessage.wantResponse = true
 			meshPacket.decoded = dataMessage
 		} else {
-			throw AccessoryError.ioFailed("sendLocalStatsRequest: Unable to serialize telemetry packet")
+			throw AccessoryError.ioFailed("sendTelemetryRequest: Unable to serialize telemetry packet")
 		}
 
-		var toRadio: ToRadio!
-		toRadio = ToRadio()
+		var toRadio = ToRadio()
 		toRadio.packet = meshPacket
 
-		let logString = String.localizedStringWithFormat("📊 Sent Local Stats Request from: %@ to: %@".localized, String(fromNodeNum), String(destNum))
+		let logString = "📊 Sent \(kind.rawValue) telemetry request from: \(fromNodeNum) to: \(destNum)"
 		try await send(toRadio, debugDescription: logString)
 
-		Logger.mesh.info("📊 \(logString, privacy: .public)")
+		Logger.mesh.info("\(logString, privacy: .public)")
+		return meshPacket.id
 	}
 }

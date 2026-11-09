@@ -1109,6 +1109,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 						return
 					}
 					RemoteShellSession.deliverRouting(packet)
+					TelemetryRequestTracker.shared.deliverRouting(packet)
 					await MeshPackets.shared.routingPacket(packet: packet, connectedNodeNum: deviceNum)
 				case .adminApp:
 					await MeshPackets.shared.adminAppPacket(packet: packet, connectedNodeNum: self.activeDeviceNum)
@@ -1149,6 +1150,7 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 						Logger.mesh.error("🕸️ No active connection. Unable to determine connectedNodeNum for telemetryApp.")
 						return
 					}
+					TelemetryRequestTracker.shared.deliverReply(packet)
 					await MeshPackets.shared.telemetryPacket(packet: packet, connectedNode: deviceNum)
 				case .textMessageCompressedApp:
 					Logger.mesh.info("[Text Message Compressed] packet received from \(packet.from.toHex(), privacy: .public)")
