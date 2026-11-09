@@ -94,6 +94,29 @@ struct SpatialBuildingsTests {
 		#expect(abs(try #require(upper.positions.map(\.y).min()) - 60 * scale) < 1e-6)
 	}
 
+	@Test("a node up a building stands at its altitude, never above the roof, and off one stays down")
+	func roofs() throws {
+		let geometry = flatGeometry()
+		let transform = geometry.transform
+		let scale = Float(transform.verticalExaggeration * transform.scale)
+		let roofs = SpatialBuildings.build([square(side: 40, height: 280), square(side: 30, east: 200)], geometry: geometry, revision: 3).roofs
+		#expect(roofs.revision == 3)
+		func point(east: Double) -> SIMD2<Float> {
+			let p = transform.position(CLLocationCoordinate2D(latitude: circle.latitude, longitude: circle.longitude + east / circle.metersPerDegreeLongitude), altitude: 0)
+			return SIMD2(p.x, p.z)
+		}
+		let tower = point(east: 0)
+		#expect(abs(try #require(roofs.top(at: tower)) - 280 * scale) < 1e-5)
+		#expect(abs(try #require(roofs.height(forAltitude: 150, at: tower, ground: 0, transform: transform)) - 150 * scale) < 1e-5)
+		// GPS altitude past the roof stops at the roof.
+		#expect(abs(try #require(roofs.height(forAltitude: 346, at: tower, ground: 0, transform: transform)) - 280 * scale) < 1e-5)
+		// A few meters up is street level with a noisy altitude.
+		#expect(roofs.height(forAltitude: 2, at: tower, ground: 0, transform: transform) == nil)
+		#expect(abs(try #require(roofs.height(forAltitude: 100, at: point(east: 200), ground: 0, transform: transform)) - 20 * scale) < 1e-5)
+		#expect(roofs.top(at: point(east: 500)) == nil)
+		#expect(roofs.height(forAltitude: 100, at: point(east: 500), ground: 0, transform: transform) == nil)
+	}
+
 	@Test("buildings past the edge of the round map are left out")
 	func diskEdge() {
 		let mesh = SpatialBuildings.mesh([square(side: 40), square(side: 40, east: 990)], geometry: flatGeometry())

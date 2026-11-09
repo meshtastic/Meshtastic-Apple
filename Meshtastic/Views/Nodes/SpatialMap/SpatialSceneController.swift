@@ -125,6 +125,9 @@ final class SpatialSceneController {
 	private var hitShapes: [HitShapeKey: [ShapeResource]] = [:]
 	private var applied: [Int64: SpatialNodeSnapshot] = [:]
 	private var appliedPlacementRevision = -1
+	/// The roofs of the buildings that are up, and whether the pins stand on them yet.
+	private var roofs: SpatialRoofs?
+	private var roofsApplied = true
 	private(set) var placement: SpatialPlacement?
 	private var labelEntities: [Int64: Entity] = [:]
 	private let ring: ModelEntity
@@ -326,8 +329,9 @@ final class SpatialSceneController {
 
 	func apply(nodes: [SpatialNodeSnapshot]) {
 		guard let placement else { return }
-		let replaceAll = placement.revision != appliedPlacementRevision
+		let replaceAll = placement.revision != appliedPlacementRevision || !roofsApplied
 		appliedPlacementRevision = placement.revision
+		roofsApplied = true
 		let now = Date()
 		var seen = Set<Int64>()
 		var moved = false
@@ -342,7 +346,7 @@ final class SpatialSceneController {
 			}
 			if var pin = pins[node.id] {
 				if replaceAll || previous == nil || !Self.samePlace(previous!, node) {
-					pin.holder.position = placement.position(node.coordinate)
+					pin.holder.position = position(of: node, on: placement)
 					moved = true
 				}
 				if previous == nil || !Self.sameLook(previous!, node) {
@@ -353,7 +357,7 @@ final class SpatialSceneController {
 				pins[node.id] = pin
 			} else {
 				var pin = makePin(node)
-				pin.holder.position = placement.position(node.coordinate)
+				pin.holder.position = position(of: node, on: placement)
 				pin.holder.scale = SIMD3(repeating: counterScale)
 				pin.baseGlow = NodeActivityGlow.baseOpacity(NodeActivityGlow.tier(lastHeard: node.lastHeard, now: now))
 				pins[node.id] = pin
@@ -417,6 +421,18 @@ final class SpatialSceneController {
 		let shapes = [head, stem]
 		hitShapes[key] = shapes
 		return shapes
+	}
+
+	/// On the ground, or up a building drawn on the map when the node reports an altitude above
+	/// the ground there. Off a building the altitude is not used: GPS altitude is too noisy to
+	/// float a pin over open ground.
+	private func position(of node: SpatialNodeSnapshot, on placement: SpatialPlacement) -> SIMD3<Float> {
+		var position = placement.position(node.coordinate)
+		if let altitude = node.altitude, let roofs, roofs.revision == placement.revision,
+		   let height = roofs.height(forAltitude: altitude, at: SIMD2(position.x, position.z), ground: position.y, transform: placement.transform) {
+			position.y = height
+		}
+		return position
 	}
 
 	private static func samePlace(_ a: SpatialNodeSnapshot, _ b: SpatialNodeSnapshot) -> Bool {
@@ -785,7 +801,11 @@ extension SpatialSceneController {
 	/// Swaps in the raised buildings. The model drops them as soon as the terrain under them is
 	/// replaced, so whatever is here stands on the terrain shown. Hidden while a zoom is previewed:
 	/// enlarged, they would stand past the rim.
-	func apply(buildings entity: ModelEntity?) {
+	func apply(buildings entity: ModelEntity?, roofs: SpatialRoofs?) {
+		if self.roofs?.id != roofs?.id {
+			self.roofs = roofs
+			roofsApplied = false
+		}
 		if buildingsContainer.parent == nil { terrainAnchor.addChild(buildingsContainer) }
 		let current = buildingsContainer.children.first
 		if current !== entity {

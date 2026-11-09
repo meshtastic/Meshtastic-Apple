@@ -131,6 +131,8 @@ final class SpatialMapModel {
 	var showBuildings = false { didSet { if showBuildings != oldValue { rebuildBuildingsIfNeeded() } } }
 	/// Only ever the buildings for the terrain that is up.
 	private(set) var buildingsEntity: ModelEntity?
+	/// The roofs of the buildings that are up, for nodes standing on them.
+	private(set) var buildingRoofs: SpatialRoofs?
 	/// The placement the buildings were built for.
 	private var buildingsRevision: Int?
 	private var buildingsKey: String?
@@ -813,18 +815,21 @@ extension SpatialMapModel {
 		let bounds = placement.bounds
 		let dark = buildDark
 		buildingsTask = Task {
-			let worker = Task.detached(priority: .utility) { () -> SpatialMeshData? in
+			let revision = placement.revision
+			let worker = Task.detached(priority: .utility) { () -> (mesh: SpatialMeshData, roofs: SpatialRoofs)? in
 				guard let footprints = SpatialBuildings.decode(bounds: bounds) else { return nil }
-				return SpatialBuildings.mesh(footprints, geometry: geometry)
+				return SpatialBuildings.build(footprints, geometry: geometry, revision: revision)
 			}
 			// A detached task isn't cancelled with this one; pass it on so a superseded decode stops.
-			let mesh = await withTaskCancellationHandler { await worker.value } onCancel: { worker.cancel() }
-			guard !Task.isCancelled, buildingsKey == key, let mesh else { return }
+			let built = await withTaskCancellationHandler { await worker.value } onCancel: { worker.cancel() }
+			guard !Task.isCancelled, buildingsKey == key, let built else { return }
+			let mesh = built.mesh
 			do {
 				let entity = try await SpatialBuildingsEntity.make(mesh, dark: dark)
 				guard !Task.isCancelled, buildingsKey == key else { return }
 				Logger.services.info("🧊 [Spatial] Buildings: \(mesh.triangleCount, privacy: .public) triangles on terrain \(placement.revision, privacy: .public)")
 				buildingsEntity = entity
+				buildingRoofs = entity == nil ? nil : built.roofs
 				buildingsRevision = entity == nil ? nil : placement.revision
 			} catch {
 				Logger.services.error("🧊 [Spatial] Buildings failed: \(error.localizedDescription, privacy: .public)")
@@ -841,6 +846,7 @@ extension SpatialMapModel {
 
 	private func clearBuildings() {
 		if buildingsEntity != nil { buildingsEntity = nil }
+		if buildingRoofs != nil { buildingRoofs = nil }
 		if buildingsRevision != nil { buildingsRevision = nil }
 	}
 }

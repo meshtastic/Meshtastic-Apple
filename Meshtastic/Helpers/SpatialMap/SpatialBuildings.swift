@@ -35,6 +35,60 @@ struct SpatialBuildingFootprint: Sendable {
 	}
 }
 
+/// The roofs of the buildings drawn on the map, in model units, so a node reporting an altitude
+/// up a building can stand on it instead of at its foot.
+struct SpatialRoofs: Sendable {
+	struct Roof: Sendable {
+		let outline: [SIMD2<Float>]
+		let lower: SIMD2<Float>
+		let upper: SIMD2<Float>
+		let top: Float
+	}
+
+	/// Which build these are, so a scene can tell new roofs from the ones it has.
+	let id = UUID()
+	/// The placement the buildings were built for.
+	let revision: Int
+	var roofs: [Roof] = []
+
+	/// The highest roof over a point on the disk, nil when no building drawn covers it.
+	func top(at point: SIMD2<Float>) -> Float? {
+		var best: Float?
+		for roof in roofs where roof.top > best ?? -.infinity
+			&& point.x >= roof.lower.x && point.y >= roof.lower.y && point.x <= roof.upper.x && point.y <= roof.upper.y
+			&& Self.contains(roof.outline, point) {
+			best = roof.top
+		}
+		return best
+	}
+
+	/// Buildings rise this much over their ground before a node's altitude puts it up one, so a
+	/// GPS altitude a few meters off doesn't lift a node at street level onto a low roof.
+	static let minimumRise = 4.0
+
+	/// How high a node reporting `altitude` stands at `point`, whose ground is at `ground`: up the
+	/// building there as far as the altitude says, never above its roof. Nil keeps it on the
+	/// ground: no building there, or an altitude not clearly above the ground.
+	func height(forAltitude altitude: Double, at point: SIMD2<Float>, ground: Float, transform: SpatialModelTransform) -> Float? {
+		guard altitude - transform.altitude(forHeight: ground) >= Self.minimumRise, let top = top(at: point) else { return nil }
+		return max(ground, min(transform.height(forAltitude: altitude), top))
+	}
+
+	/// Whether the point is inside the outline, by counting the edges a line from it crosses.
+	static func contains(_ outline: [SIMD2<Float>], _ point: SIMD2<Float>) -> Bool {
+		var inside = false
+		var j = outline.count - 1
+		for i in outline.indices {
+			let a = outline[i], b = outline[j]
+			if (a.y > point.y) != (b.y > point.y), point.x < (b.x - a.x) * (point.y - a.y) / (b.y - a.y) + a.x {
+				inside.toggle()
+			}
+			j = i
+		}
+		return inside
+	}
+}
+
 /// The spatial map's Buildings option: the downloaded basemap's building outlines raised to their
 /// heights and stood on the terrain, as one mesh.
 enum SpatialBuildings {
@@ -159,6 +213,11 @@ enum SpatialBuildings {
 	/// A building with any corner past the disk's edge is left out, and the largest are kept first
 	/// when there are more triangles than `triangleBudget`.
 	static func mesh(_ footprints: [SpatialBuildingFootprint], geometry: SpatialTerrainGeometry, triangleBudget: Int = triangleBudget) -> SpatialMeshData {
+		build(footprints, geometry: geometry, revision: 0, triangleBudget: triangleBudget).mesh
+	}
+
+	/// The mesh, and the roofs of the buildings in it.
+	static func build(_ footprints: [SpatialBuildingFootprint], geometry: SpatialTerrainGeometry, revision: Int, triangleBudget: Int = triangleBudget) -> (mesh: SpatialMeshData, roofs: SpatialRoofs) {
 		let transform = geometry.transform
 		let heightScale = Float(transform.verticalExaggeration * transform.scale)
 		let limit = transform.diskRadius * diskShare
@@ -190,6 +249,7 @@ enum SpatialBuildings {
 		placed.sort { $0.area > $1.area }
 
 		var mesh = SpatialMeshData()
+		var roofs = SpatialRoofs(revision: revision)
 		var triangles = 0
 		for building in placed {
 			let roof = triangulate(building.outline)
@@ -197,8 +257,14 @@ enum SpatialBuildings {
 			guard triangles + cost <= triangleBudget else { break }
 			triangles += cost
 			mesh.addBuilding(outline: building.outline, roof: roof, bottom: building.bottom, top: building.top)
+			roofs.roofs.append(.init(
+				outline: building.outline,
+				lower: building.outline.reduce(SIMD2(repeating: .infinity)) { simd_min($0, $1) },
+				upper: building.outline.reduce(SIMD2(repeating: -.infinity)) { simd_max($0, $1) },
+				top: building.top
+			))
 		}
-		return mesh
+		return (mesh, roofs)
 	}
 
 	/// Drops repeated corners, including a last corner that closes the ring onto the first.
