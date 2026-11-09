@@ -311,7 +311,7 @@ enum TerminalRenderer {
 		}
 		foreground = TerminalPalette.legible(foreground, on: fill ?? background, text: (fill.map { TerminalPalette.luminance($0) < 0.5 } ?? isDark) ? .white : .black)
 		if style.dim {
-			foreground = foreground.withAlphaComponent(0.6)
+			foreground = TerminalPalette.dimmed(foreground, on: fill ?? background)
 		}
 		var attributes: [NSAttributedString.Key: Any] = [
 			.font: style.bold ? (style.italic ? fonts.boldItalic : fonts.bold) : (style.italic ? fonts.italic : fonts.regular),

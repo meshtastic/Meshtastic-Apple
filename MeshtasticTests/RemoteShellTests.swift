@@ -362,3 +362,38 @@ struct RemoteShellKeyTests {
 		}
 	}
 }
+
+@Suite("Terminal palette")
+struct TerminalPaletteTests {
+
+	private let backgrounds: [(String, UIColor)] = [("light", .white), ("dark", .black)]
+
+	@Test("Dim text keeps 4.5:1 for every standard color on both themes")
+	func dimKeepsContrast() {
+		for (name, background) in backgrounds {
+			let isDark = name == "dark"
+			for index in UInt8(0)..<16 {
+				let color = TerminalPalette.color(.ansi(index), dark: isDark)
+				let legible = TerminalPalette.legible(color, on: background, text: isDark ? .white : .black)
+				let dimmed = TerminalPalette.dimmed(legible, on: background)
+				#expect(TerminalPalette.contrast(dimmed, background) >= TerminalPalette.minimumContrast, "\(name) \(index)")
+			}
+		}
+	}
+
+	@Test("White text on a mid-gray background still reaches 4.5:1, dimmed or not")
+	func midGrayBackground() {
+		let gray = UIColor(red: 0.5, green: 0.5, blue: 0.5, alpha: 1)
+		let legible = TerminalPalette.legible(.white, on: gray, text: .white)
+		#expect(TerminalPalette.contrast(legible, gray) >= TerminalPalette.minimumContrast)
+		let dimmed = TerminalPalette.dimmed(legible, on: gray)
+		#expect(TerminalPalette.contrast(dimmed, gray) >= TerminalPalette.minimumContrast)
+	}
+
+	@Test("Dim text with room to spare is visibly dimmer")
+	func dimFadesWhenItCan() {
+		let dimmed = TerminalPalette.dimmed(.black, on: .white)
+		#expect(TerminalPalette.contrast(dimmed, .white) < TerminalPalette.contrast(.black, .white))
+		#expect(TerminalPalette.contrast(dimmed, .white) >= TerminalPalette.minimumContrast)
+	}
+}

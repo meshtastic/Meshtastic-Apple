@@ -270,9 +270,9 @@ The mesh carries a few hundred bytes a second, so the terminal is built for shor
 - **Line Mode**, in the **⋯** menu, sends a whole command at once with a single transmission. Up and down recall earlier commands, and the chips above the box fill in common ones such as `uptime` and `df -h`. It's the lightest way to use the shell on a busy mesh. At a password prompt the box hides what you type and keeps it out of history.
 - On a touch screen, a row of keys above the keyboard adds esc and ctrl on the left and the arrows on the right; hold an arrow to repeat it. Between them, swipe sideways for tab, alt, `~`, `|`, `/`, `-`, home, end, pgup and pgdn. Tap ctrl or alt once to apply it to the next key, twice to lock it, and a third time to release it. The keyboard key at the end puts the keyboard away; tap the output to bring it back. With a hardware keyboard, Control and Option chords and the navigation keys go straight to the shell, and Option still types the characters your layout puts on it, such as `@` or `|`.
 - Pinch the output to change the text size.
-- The menu also has **Paste**, **Copy All Output**, **Clear Screen** and text size. You can select and copy any output, and scrolling up while output arrives keeps your place. The terminal's bell is a light tap.
+- The menu also has **Paste**, **Copy All Output**, **Clear Screen**, **End Session** and text size. **End Session** closes the shell but keeps the screen open, showing Closing until the close has gone to your radio, then **Reconnect**. You can select and copy any output, and scrolling up while output arrives keeps your place. The terminal's bell is a light tap.
 
-Colors, bold, underline and progress lines that redraw in place all work. Full-screen programs such as `vi` or `top` need more than the mesh can carry, so the app shows a notice instead of drawing them.
+Colors, bold, dim, underline and progress lines that redraw in place all work. Colors and dim text are adjusted to stay readable on light and dark backgrounds. Full-screen programs such as `vi` or `top` need more than the mesh can carry, so the app shows a notice instead of drawing them.
 
 ### Where to Buy
 

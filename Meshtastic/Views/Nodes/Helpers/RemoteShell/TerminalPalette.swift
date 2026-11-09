@@ -47,15 +47,33 @@ enum TerminalPalette {
 		return UIColor(red: steps[cube / 36], green: steps[(cube / 6) % 6], blue: steps[cube % 6], alpha: 1)
 	}
 
-	/// `foreground`, blended toward `text` until it reads on `background`.
+	/// `foreground`, blended toward `text` until it reads on `background`. On a mid-gray
+	/// background that `text` itself doesn't read on, it blends toward black or white instead,
+	/// whichever reads better.
 	static func legible(_ foreground: UIColor, on background: UIColor, text: UIColor) -> UIColor {
+		var target = text
+		if contrast(text, background) < minimumContrast {
+			target = contrast(.black, background) >= contrast(.white, background) ? .black : .white
+		}
 		var color = foreground
 		var step: CGFloat = 0
 		while contrast(color, background) < minimumContrast, step < 1 {
 			step += 0.1
-			color = blend(foreground, text, step)
+			color = blend(foreground, target, step)
 		}
 		return color
+	}
+
+	/// Dim text: `foreground` faded toward `background` as far as it can go, up to 40%, while it
+	/// still meets 4.5:1. Text already at the limit stays as it is (design#163 requirement 6).
+	static func dimmed(_ foreground: UIColor, on background: UIColor) -> UIColor {
+		for amount in stride(from: CGFloat(0.4), to: 0, by: -0.05) {
+			let faded = blend(foreground, background, amount)
+			if contrast(faded, background) >= minimumContrast {
+				return faded
+			}
+		}
+		return foreground
 	}
 
 	static func contrast(_ first: UIColor, _ second: UIColor) -> CGFloat {
