@@ -375,6 +375,13 @@ struct DeviceModelFullScreen: View {
 		// Drags turn the model, so they mustn't close the sheet.
 		.interactiveDismissDisabled()
 		.navigationTitle(request.name)
+		// An alert, not a popover on the button: the button sits in the toolbar's overflow menu, which
+		// is gone by the time a popover would anchor to it, and UIKit throws.
+		.alert(copyrightTitle, isPresented: $showsCopyright) {
+			Button("OK", role: .cancel) {}
+		} message: {
+			Text(request.copyright ?? "")
+		}
 		#if !os(macOS)
 		.navigationBarTitleDisplayMode(.inline)
 		#endif
@@ -388,20 +395,12 @@ struct DeviceModelFullScreen: View {
 					}
 				}
 			}
-			if let copyright = request.copyright {
+			if request.copyright != nil {
 				ToolbarItem(placement: .secondaryAction) {
 					Button {
 						showsCopyright = true
 					} label: {
-						Label(String(localized: "Model Copyright", comment: "Button in the full-screen 3D model view: show the model's copyright notice"), systemImage: "info.circle")
-					}
-					.popover(isPresented: $showsCopyright) {
-						Text(copyright)
-							.font(.footnote)
-							.fixedSize(horizontal: false, vertical: true)
-							.padding()
-							.frame(idealWidth: 320)
-							.presentationCompactAdaptation(.popover)
+						Label(copyrightTitle, systemImage: "info.circle")
 					}
 				}
 			}
@@ -412,6 +411,10 @@ struct DeviceModelFullScreen: View {
 				}
 			}
 		}
+	}
+
+	private var copyrightTitle: String {
+		String(localized: "Model Copyright", comment: "Button in the full-screen 3D model view: show the model's copyright notice")
 	}
 
 	/// Steps in from the whole model to the case without its antenna, then the screen, then back out.
