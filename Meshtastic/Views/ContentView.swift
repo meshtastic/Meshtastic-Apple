@@ -140,6 +140,8 @@ struct ContentView: View {
 			}
 			.onChange(of: router.connectLinkRequest?.id) { _, _ in presentConnectLinkIfReady() }
 			.onChange(of: isShowingDeviceOnboardingFlow) { _, _ in presentConnectLinkIfReady() }
+			// A link that came in while another was being asked about.
+			.onChange(of: isShowingConnectLink) { _, showing in if !showing { presentConnectLinkIfReady() } }
 			.hostedAlert("Connect to this device?", isPresented: $isShowingConnectLink, presenting: connectLink) { link in
 				Button("Connect") { confirmConnectLink(link) }
 				Button("Cancel", role: .cancel) { connectLink = nil }

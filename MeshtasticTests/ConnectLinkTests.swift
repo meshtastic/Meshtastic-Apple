@@ -64,6 +64,15 @@ struct ConnectLinkTests {
 		#expect(!ConnectLink.canHandle(try #require(URL(string: "meshtastic://meshtastic/connect"))))
 	}
 
+	@Test func openedLinksOnEitherFormOfTheSchemeReachTheRouter() throws {
+		#expect(MainScene.IncomingURL(try #require(URL(string: "meshtastic://meshtastic/connections?address=xAA:BB:CC:DD:EE:FF&pin=012345"))) == .route)
+		#expect(MainScene.IncomingURL(try #require(URL(string: "meshtastic://meshtastic/nodes?nodenum=42"))) == .route)
+		#expect(MainScene.IncomingURL(try #require(URL(string: "meshtastic:///map"))) == .route)
+		#expect(MainScene.IncomingURL(try #require(URL(string: "meshtastic://other/nodes"))) == .ignored)
+		#expect(MainScene.IncomingURL(try #require(URL(string: "https://meshtastic.org/e/#CgMSAQE"))) == .channel)
+		#expect(MainScene.IncomingURL(URL(fileURLWithPath: "/tmp/overlay.geojson")) == .mapFile)
+	}
+
 	@MainActor
 	@Test func routerHoldsAGoodLinkAndOpensConnectForABadOne() throws {
 		let router = Router(navigationState: NavigationState(selectedTab: .messages))
