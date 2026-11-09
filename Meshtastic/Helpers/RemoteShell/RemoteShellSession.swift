@@ -300,6 +300,11 @@ final class RemoteShellSession: ObservableObject {
 				try await accessoryManager.sendRemoteShell(frame, to: nodeNum, publicKey: publicKey)
 			} catch {
 				Logger.mesh.error("💻 [Remote Shell] Send failed: \(error.localizedDescription, privacy: .public)")
+				// The node never heard the session end, so don't report it closed.
+				if state == .closing {
+					sendQueue.removeAll()
+					state = .failed(String(localized: "Couldn't tell the node to end the session: \(error.localizedDescription)"))
+				}
 			}
 			isSending = false
 			flushSendQueue()

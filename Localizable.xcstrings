@@ -1163,6 +1163,9 @@
     "The node stopped answering." : {
 
     },
+    "Couldn't tell the node to end the session: %@" : {
+
+    },
     "The node asked for input this device no longer holds." : {
 
     },

@@ -381,6 +381,15 @@ struct TerminalPaletteTests {
 		}
 	}
 
+	@Test("White text on a mid-gray background still reaches 4.5:1, dimmed or not")
+	func midGrayBackground() {
+		let gray = UIColor(red: 0.5, green: 0.5, blue: 0.5, alpha: 1)
+		let legible = TerminalPalette.legible(.white, on: gray, text: .white)
+		#expect(TerminalPalette.contrast(legible, gray) >= TerminalPalette.minimumContrast)
+		let dimmed = TerminalPalette.dimmed(legible, on: gray)
+		#expect(TerminalPalette.contrast(dimmed, gray) >= TerminalPalette.minimumContrast)
+	}
+
 	@Test("Dim text with room to spare is visibly dimmer")
 	func dimFadesWhenItCan() {
 		let dimmed = TerminalPalette.dimmed(.black, on: .white)

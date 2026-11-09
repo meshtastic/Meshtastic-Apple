@@ -47,13 +47,19 @@ enum TerminalPalette {
 		return UIColor(red: steps[cube / 36], green: steps[(cube / 6) % 6], blue: steps[cube % 6], alpha: 1)
 	}
 
-	/// `foreground`, blended toward `text` until it reads on `background`.
+	/// `foreground`, blended toward `text` until it reads on `background`. On a mid-gray
+	/// background that `text` itself doesn't read on, it blends toward black or white instead,
+	/// whichever reads better.
 	static func legible(_ foreground: UIColor, on background: UIColor, text: UIColor) -> UIColor {
+		var target = text
+		if contrast(text, background) < minimumContrast {
+			target = contrast(.black, background) >= contrast(.white, background) ? .black : .white
+		}
 		var color = foreground
 		var step: CGFloat = 0
 		while contrast(color, background) < minimumContrast, step < 1 {
 			step += 0.1
-			color = blend(foreground, text, step)
+			color = blend(foreground, target, step)
 		}
 		return color
 	}
