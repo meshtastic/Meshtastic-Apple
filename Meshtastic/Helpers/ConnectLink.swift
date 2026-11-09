@@ -25,7 +25,7 @@ struct ConnectLink: Identifiable, Equatable {
 
 	let id = UUID()
 	let address: Address
-	/// Six digits, leading zeros kept. Only on a Bluetooth address.
+	/// Six digits, 100000 to 999999. Only on a Bluetooth address.
 	let pin: String?
 
 	/// The address as the prompt shows it.
@@ -75,9 +75,10 @@ struct ConnectLink: Identifiable, Equatable {
 		}
 	}
 
-	/// Exactly six ASCII digits.
+	/// Six ASCII digits from 100000 to 999999. Firmware stores the PIN as a number, so one with a
+	/// leading zero could never match the radio's (design#177 requirement 3).
 	static func isPIN(_ value: String) -> Bool {
-		value.count == 6 && value.allSatisfy(\.isASCIIDigit)
+		value.count == 6 && value.allSatisfy(\.isASCIIDigit) && value.first != "0"
 	}
 
 	/// A host name or IPv4 address: letters, digits, dots and hyphens.

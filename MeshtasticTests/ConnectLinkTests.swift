@@ -17,10 +17,10 @@ struct ConnectLinkTests {
 		return ConnectLink.parse(components)
 	}
 
-	@Test func bluetoothLinkKeepsThePINsLeadingZeros() throws {
-		let parsed = try #require(link("meshtastic://meshtastic/connections?address=xaa:bb:cc:dd:ee:0f&pin=012345"))
+	@Test func bluetoothLinkCarriesItsPIN() throws {
+		let parsed = try #require(link("meshtastic://meshtastic/connections?address=xaa:bb:cc:dd:ee:0f&pin=100000"))
 		#expect(parsed.address == .bluetooth("AA:BB:CC:DD:EE:0F"))
-		#expect(parsed.pin == "012345")
+		#expect(parsed.pin == "100000")
 	}
 
 	@Test func parameterOrderDoesNotMatter() throws {
@@ -28,8 +28,9 @@ struct ConnectLinkTests {
 		#expect(parsed.pin == "654321")
 	}
 
+	/// Anything but 100000 to 999999, including a leading zero, since firmware stores the PIN as a number.
 	@Test func anythingButSixDigitsIsNoPIN() throws {
-		for pin in ["12345", "1234567", "12a456", "", "１２３４５６"] {
+		for pin in ["12345", "1234567", "12a456", "", "１２３４５６", "012345", "000000"] {
 			let parsed = try #require(link("meshtastic://meshtastic/connections?address=xAA:BB:CC:DD:EE:FF&pin=\(pin.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")"))
 			#expect(parsed.pin == nil, "pin \(pin)")
 		}
@@ -65,7 +66,7 @@ struct ConnectLinkTests {
 	}
 
 	@Test func openedLinksOnEitherFormOfTheSchemeReachTheRouter() throws {
-		#expect(MainScene.IncomingURL(try #require(URL(string: "meshtastic://meshtastic/connections?address=xAA:BB:CC:DD:EE:FF&pin=012345"))) == .route)
+		#expect(MainScene.IncomingURL(try #require(URL(string: "meshtastic://meshtastic/connections?address=xAA:BB:CC:DD:EE:FF&pin=123456"))) == .route)
 		#expect(MainScene.IncomingURL(try #require(URL(string: "meshtastic://meshtastic/nodes?nodenum=42"))) == .route)
 		#expect(MainScene.IncomingURL(try #require(URL(string: "meshtastic:///map"))) == .route)
 		#expect(MainScene.IncomingURL(try #require(URL(string: "meshtastic://other/nodes"))) == .ignored)
@@ -76,8 +77,8 @@ struct ConnectLinkTests {
 	@MainActor
 	@Test func routerHoldsAGoodLinkAndOpensConnectForABadOne() throws {
 		let router = Router(navigationState: NavigationState(selectedTab: .messages))
-		router.route(url: try #require(URL(string: "meshtastic://meshtastic/connections?address=xAA:BB:CC:DD:EE:FF&pin=000123")))
-		#expect(router.connectLinkRequest?.pin == "000123")
+		router.route(url: try #require(URL(string: "meshtastic://meshtastic/connections?address=xAA:BB:CC:DD:EE:FF&pin=999999")))
+		#expect(router.connectLinkRequest?.pin == "999999")
 		#expect(router.selectedTab == .messages, "nothing happens until the person confirms")
 
 		let bad = Router(navigationState: NavigationState(selectedTab: .messages))
@@ -95,9 +96,9 @@ struct ConnectLinkTests {
 	}
 
 	@Test func promptShowsTheAddressAndPIN() {
-		let withPIN = ConnectLink(address: .bluetooth("AA:BB:CC:DD:EE:FF"), pin: "012345")
+		let withPIN = ConnectLink(address: .bluetooth("AA:BB:CC:DD:EE:FF"), pin: "482915")
 		let message = ContentView.connectLinkMessage(withPIN)
-		#expect(message.contains("AA:BB:CC:DD:EE:FF") && message.contains("012345"))
+		#expect(message.contains("AA:BB:CC:DD:EE:FF") && message.contains("482915"))
 		let tcp = ConnectLink(address: .tcp(host: "10.0.0.5", port: 4403), pin: nil)
 		#expect(ContentView.connectLinkMessage(tcp).contains("10.0.0.5:4403"))
 	}
