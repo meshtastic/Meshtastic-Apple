@@ -18,6 +18,13 @@
 </ol>
 <p>The app remembers your preferred device and reconnects automatically when the radio is in range.</p>
 <p>A radio that connects with no LoRa region set opens the radio setup flow (region, preset and name, and on firmware 2.8 status and nearby meshes). <strong>Set Up Radio</strong> on the Connect screen opens it again any time; see <a href="getting-started.html#step-3-set-up-your-radio">Getting Started</a>.</p>
+<h2 id="connecting-from-a-qr-code-or-nfc-tag">Connecting from a QR Code or NFC Tag</h2>
+<p>Some radios show a connect code on their screen, and provisioning tools print one on a label. Scan it with the Camera app, or read an NFC tag with <strong>Settings → Tools → Scan NFC Tag</strong>, and the app asks <strong>Connect to this device?</strong> with the radio's address. Nothing happens until you tap <strong>Connect</strong>, and <strong>Cancel</strong> leaves your current connection alone.</p>
+<ul>
+<li><strong>Bluetooth radio:</strong> iOS doesn't let apps pick a radio by its Bluetooth address, so the Connect screen opens and you tap the radio in the list. If the code has a pairing PIN, the prompt shows it and the app copies it when you tap <strong>Connect</strong>; paste it when iOS asks to pair. The copied PIN stays on this device and clears after five minutes.</li>
+<li><strong>Network radio:</strong> the app connects to it over TCP, the same as a manual connection.</li>
+</ul>
+<p>A code with an address the app can't read opens the Connect screen without connecting. A code scanned before you finish first-time setup waits until setup is done.</p>
 <h2 id="disconnecting-a-radio">Disconnecting a Radio</h2>
 <p>Swipe left on a connected radio in the Connect view and tap <strong>Disconnect</strong>. The radio continues operating on the mesh — it just stops syncing with the app.</p>
 <h2 id="powering-off-a-radio">Powering Off a Radio</h2>

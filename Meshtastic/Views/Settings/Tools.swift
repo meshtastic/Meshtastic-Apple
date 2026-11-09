@@ -12,6 +12,7 @@ import OSLog
 @available(iOS 18, *)
 struct Tools: View {
 	@EnvironmentObject var accessoryManager: AccessoryManager
+	@EnvironmentObject private var router: Router
 	@Environment(\.modelContext) private var context
 
 	#if !targetEnvironment(macCatalyst) && !os(visionOS)
@@ -62,7 +63,7 @@ struct Tools: View {
 						} label: {
 							Label("Scan NFC Tag", systemImage: "wave.3.right.circle")
 						}
-						Text("Read a Meshtastic tag to add the contact or channel it contains.")
+						Text("Read a Meshtastic tag to add the contact or channel it contains, or connect to the radio it names.")
 							.font(.caption)
 							.foregroundStyle(.secondary)
 					}
@@ -104,7 +105,9 @@ struct Tools: View {
 	/// uses for incoming links: contact URLs go to ContactURLHandler, channel
 	/// URLs present the SaveChannelQRCode flow.
 	private func handleScannedURL(_ url: URL) {
-		if ContactURLHandler.canHandle(url) {
+		if ConnectLink.canHandle(url) {
+			router.route(url: url)
+		} else if ContactURLHandler.canHandle(url) {
 			if let pending = ContactURLHandler.makePendingContact(from: url, accessoryManager: accessoryManager) {
 				pendingContact = pending
 			}
@@ -121,8 +124,8 @@ struct Tools: View {
 				scanErrorMessage = String(localized: "Couldn't read the channel settings on this tag.")
 			}
 		} else {
-			Logger.services.error("NFC tag URL is not a Meshtastic contact or channel link")
-			scanErrorMessage = String(localized: "This tag doesn't hold a Meshtastic contact or channel link.")
+			Logger.services.error("NFC tag URL is not a Meshtastic contact, channel or connect link")
+			scanErrorMessage = String(localized: "This tag doesn't hold a Meshtastic contact, channel or connect link.")
 		}
 	}
 	#endif
@@ -132,5 +135,6 @@ struct Tools: View {
 #Preview {
 	Tools()
 		.environmentObject(AccessoryManager.shared)
+		.environmentObject(Router())
 		.modelContainer(PersistenceController.preview.container)
 }

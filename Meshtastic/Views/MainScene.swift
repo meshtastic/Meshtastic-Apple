@@ -212,7 +212,7 @@ struct MainScene: View {
 			}
 		} else if MeshtasticChannelURL.canHandle(url) {
 			handleChannelLinkURL(url, fromActivity: fromActivity)
-		} else if url.absoluteString.lowercased().contains("meshtastic:///") {
+		} else if Router.isRoutable(url) {
 			router.route(url: url)
 		}
 	}

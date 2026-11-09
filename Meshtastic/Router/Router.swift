@@ -61,6 +61,16 @@ class Router: ObservableObject {
 	@Published
 	var discoveryShowHistory: Bool = false
 
+	/// A connect link waiting for the person to confirm. The main window asks once onboarding is
+	/// out of the way, and clears it either way.
+	@Published
+	var connectLinkRequest: ConnectLink?
+
+	/// A TCP radio, as `host:port`, that a confirmed connect link asked Connect to connect to.
+	/// Connect clears it when it starts.
+	@Published
+	var pendingTCPConnection: String?
+
 	/// Computed property that assembles the individual per-tab properties into a `NavigationState`.
 	/// Provided for backward compatibility (e.g. tests) and convenience.
 	var navigationState: NavigationState {
@@ -147,8 +157,16 @@ class Router: ObservableObject {
 		}.store(in: &cancellables)
 	}
 
+	/// A `meshtastic:` link the router handles: `meshtastic:///<path>`, or `meshtastic://meshtastic/<path>`
+	/// as firmware and provisioning tools print them. Contact and channel links are handled first.
+	nonisolated static func isRoutable(_ url: URL) -> Bool {
+		guard url.scheme?.lowercased() == "meshtastic" else { return false }
+		let host = url.host ?? ""
+		return host.isEmpty || host.lowercased() == "meshtastic"
+	}
+
 	func route(url: URL) {
-		guard url.scheme == "meshtastic" else {
+		guard url.scheme?.lowercased() == "meshtastic" else {
 			Logger.services.error("🛣 [App] Received routing URL \(url, privacy: .public) with invalid scheme. Ignoring route.")
 			return
 		}
@@ -161,6 +179,8 @@ class Router: ObservableObject {
 			routeMessages(components)
 		} else if components.path == "/connect" {
 			selectedTab = .connect
+		} else if components.path == "/connections" {
+			routeConnections(components)
 		} else if components.path == "/nodes" {
 			routeNodes(components)
 		} else if components.path == "/map" {
@@ -200,6 +220,17 @@ class Router: ObservableObject {
 		selectedTab = .messages
 		messagesState = state
 		messagesSection = state?.sidebarSection
+	}
+
+	/// A connect link. A good one waits for the person to confirm; one with a missing, malformed or
+	/// unknown address opens Connect without connecting.
+	private func routeConnections(_ components: URLComponents) {
+		guard let link = ConnectLink.parse(components) else {
+			Logger.services.warning("🛣 [App] Connect link has no usable address; opening Connect")
+			selectedTab = .connect
+			return
+		}
+		connectLinkRequest = link
 	}
 
 	private func routeNodes(_ components: URLComponents) {

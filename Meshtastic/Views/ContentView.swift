@@ -44,6 +44,10 @@ struct ContentView: View {
 	/// they leave the node, since the error can take minutes to come back.
 	@State private var telemetryRequestFailure: TelemetryRequestLog.Failure?
 	@State private var isShowingTelemetryRequestFailure = false
+	/// The connect link being asked about. Held in the router until onboarding is done, then
+	/// copied here so the alert has real @State to bind to.
+	@State private var connectLink: ConnectLink?
+	@State private var isShowingConnectLink = false
 
 	init(appState: AppState, router: Router) {
 		self.appState = appState
@@ -92,6 +96,7 @@ struct ContentView: View {
 				if UserDefaults.firstLaunch && UIApplication.shared.isProtectedDataAvailable {
 					isShowingDeviceOnboardingFlow = true
 				}
+				presentConnectLinkIfReady()
 				// Present the gate if the device is already in a blocking state when
 				// this view appears.
 				isShowingLockdownGate = isLockdownGateActive
@@ -133,6 +138,14 @@ struct ContentView: View {
 					Text("The request for \(failure.kind.name) from \(failure.nodeName) failed: \(failure.reason)")
 				}
 			}
+			.onChange(of: router.connectLinkRequest?.id) { _, _ in presentConnectLinkIfReady() }
+			.onChange(of: isShowingDeviceOnboardingFlow) { _, _ in presentConnectLinkIfReady() }
+			.hostedAlert("Connect to this device?", isPresented: $isShowingConnectLink, presenting: connectLink) { link in
+				Button("Connect") { confirmConnectLink(link) }
+				Button("Cancel", role: .cancel) { connectLink = nil }
+			} message: { link in
+				Text(Self.connectLinkMessage(link))
+			}
 			.task {
 #if DEBUG
 				MarketingCapture.simulateEventFirmwareIfNeeded(accessoryManager)
@@ -142,6 +155,42 @@ struct ContentView: View {
 				await SwitchStress.runIfNeeded(accessoryManager: accessoryManager, appState: appState, router: router)
 #endif
 			}
+	}
+
+	// MARK: - Connect links
+
+	/// Asks about a connect link once the first-launch flow, which also asks for Bluetooth, is
+	/// closed. A link that came in during it waits in the router until then.
+	private func presentConnectLinkIfReady() {
+		guard !isShowingDeviceOnboardingFlow, !isShowingConnectLink, let link = router.connectLinkRequest else { return }
+		router.connectLinkRequest = nil
+		connectLink = link
+		isShowingConnectLink = true
+	}
+
+	static func connectLinkMessage(_ link: ConnectLink) -> String {
+		switch link.address {
+		case .bluetooth(let mac):
+			if let pin = link.pin {
+				return String(localized: "Bluetooth radio \(mac)\nPIN \(pin)\n\nThe PIN is copied when you connect. Choose the radio on Connect, then paste the PIN when iOS asks to pair.", comment: "Connect link prompt for a Bluetooth radio with a pairing PIN; the first value is its Bluetooth address")
+			}
+			return String(localized: "Bluetooth radio \(mac)\n\nChoose the radio on Connect.", comment: "Connect link prompt for a Bluetooth radio without a PIN; the value is its Bluetooth address")
+		case .tcp:
+			return String(localized: "Network radio \(link.displayAddress)", comment: "Connect link prompt for a radio reached over the network; the value is host:port")
+		}
+	}
+
+	/// Bluetooth: iOS doesn't let the app pick a radio by its hardware address, so the PIN is copied
+	/// and Connect opens for the person to choose it. TCP: Connect connects to it.
+	private func confirmConnectLink(_ link: ConnectLink) {
+		connectLink = nil
+		router.selectedTab = .connect
+		switch link.address {
+		case .bluetooth:
+			if let pin = link.pin { ConnectLink.copyPIN(pin) }
+		case .tcp:
+			router.pendingTCPConnection = link.displayAddress
+		}
 	}
 
 	// MARK: - Radio setup
