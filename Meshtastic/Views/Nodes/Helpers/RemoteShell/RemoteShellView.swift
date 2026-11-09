@@ -192,6 +192,12 @@ struct RemoteShellView: View {
 			} label: {
 				Label("Clear Screen", systemImage: "clear")
 			}
+			Button(role: .destructive) {
+				session.close()
+			} label: {
+				Label("End Session", systemImage: "xmark.circle")
+			}
+			.disabled(session.state != .open && session.state != .opening)
 			Divider()
 			Button {
 				textSize = min(textSize + 1, Self.textSizes.upperBound)
@@ -526,7 +532,8 @@ private struct TerminalKeyCap<Label: View>: View {
 			.font(.footnote.monospaced().weight(.medium))
 			.foregroundStyle(state == .locked ? Color(.systemBackground) : Color.primary)
 			.padding(.horizontal, 6)
-			.frame(minWidth: 36, minHeight: 38)
+			// 44 pt wide; with the vertical padding the tap target is 44 pt tall too (design#163).
+			.frame(minWidth: 44, minHeight: 38)
 			.background {
 				RoundedRectangle(cornerRadius: 5)
 					.fill(fill)

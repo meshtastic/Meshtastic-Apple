@@ -148,19 +148,30 @@ final class RemoteShellSession: ObservableObject {
 		start()
 	}
 
-	/// Ends the session, for leaving the screen.
+	/// Ends the session. It shows as closing until the CLOSE frame has gone to the radio, then
+	/// closed (design#163 requirement 4). Calling it again, as leaving the screen does, is a no-op.
 	func close() {
 		startTask?.cancel()
-		if link.phase == .opening || link.phase == .open {
-			state = .closing
-			link.close()
-			drain()
-		}
-		state = .closed(reason: nil)
 		tickTask?.cancel()
 		tickTask = nil
 		if Self.active === self {
 			Self.active = nil
+		}
+		guard link.phase == .opening || link.phase == .open else {
+			if state != .closing, !state.canReconnect {
+				state = .closed(reason: nil)
+			}
+			return
+		}
+		link.close()
+		state = .closing
+		drain()
+		finishClosingIfSent()
+	}
+
+	private func finishClosingIfSent() {
+		if state == .closing, !isSending, sendQueue.isEmpty {
+			state = .closed(reason: nil)
 		}
 	}
 
@@ -292,6 +303,7 @@ final class RemoteShellSession: ObservableObject {
 			}
 			isSending = false
 			flushSendQueue()
+			finishClosingIfSent()
 		}
 	}
 

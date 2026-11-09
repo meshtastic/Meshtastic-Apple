@@ -58,6 +58,18 @@ enum TerminalPalette {
 		return color
 	}
 
+	/// Dim text: `foreground` faded toward `background` as far as it can go, up to 40%, while it
+	/// still meets 4.5:1. Text already at the limit stays as it is (design#163 requirement 6).
+	static func dimmed(_ foreground: UIColor, on background: UIColor) -> UIColor {
+		for amount in stride(from: CGFloat(0.4), to: 0, by: -0.05) {
+			let faded = blend(foreground, background, amount)
+			if contrast(faded, background) >= minimumContrast {
+				return faded
+			}
+		}
+		return foreground
+	}
+
 	static func contrast(_ first: UIColor, _ second: UIColor) -> CGFloat {
 		let lighter = max(luminance(first), luminance(second))
 		let darker = min(luminance(first), luminance(second))
