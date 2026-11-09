@@ -1670,6 +1670,10 @@ actor MeshPackets {
 			if m.hasPm25Standard { parts.append("PM2.5 \(m.pm25Standard)") }
 			if m.hasPm10Standard { parts.append("PM1.0 \(m.pm10Standard)") }
 			if m.hasPm100Standard { parts.append("PM10 \(m.pm100Standard)") }
+		case .hostMetrics(let m)?:
+			parts.append("host")
+			parts.append(String(format: "load %.2f", Double(m.load1) / 100))
+			parts.append("free \(m.freememBytes / 1_048_576)MB")
 		default:
 			return ""
 		}
@@ -1695,7 +1699,8 @@ actor MeshPackets {
 				.environmentMetrics(telemetryMessage.environmentMetrics),
 				.localStats(telemetryMessage.localStats),
 				.powerMetrics(telemetryMessage.powerMetrics),
-				.airQualityMetrics(telemetryMessage.airQualityMetrics)
+				.airQualityMetrics(telemetryMessage.airQualityMetrics),
+				.hostMetrics(telemetryMessage.hostMetrics)
 			]
 			if !handledVariants.contains(where: { $0 == telemetryMessage.variant }) {
 				/// Other unhandled telemetry packets
@@ -1797,6 +1802,20 @@ actor MeshPackets {
 				telemetry.pm25Environmental = telemetryMessage.airQualityMetrics.hasPm25Environmental.then(telemetryMessage.airQualityMetrics.pm25Environmental)
 				telemetry.pm100Environmental = telemetryMessage.airQualityMetrics.hasPm100Environmental.then(telemetryMessage.airQualityMetrics.pm100Environmental)
 				telemetry.metricsType = 3
+			} else if telemetryMessage.variant == Telemetry.OneOf_Variant.hostMetrics(telemetryMessage.hostMetrics) {
+				// Host Metrics, from Linux meshtasticd nodes
+				Logger.data.debug("📈 [Telemetry] Host Metrics Received for Node: \(packet.from.toHex(), privacy: .public)")
+				let host = telemetryMessage.hostMetrics
+				telemetry.uptimeSeconds = Int32(truncatingIfNeeded: host.uptimeSeconds)
+				telemetry.hostFreeMemoryBytes = Int64(clamping: host.freememBytes)
+				telemetry.hostDiskFree1Bytes = Int64(clamping: host.diskfree1Bytes)
+				telemetry.hostDiskFree2Bytes = host.hasDiskfree2Bytes.then(Int64(clamping: host.diskfree2Bytes))
+				telemetry.hostDiskFree3Bytes = host.hasDiskfree3Bytes.then(Int64(clamping: host.diskfree3Bytes))
+				telemetry.hostLoad1 = Int32(clamping: host.load1)
+				telemetry.hostLoad5 = Int32(clamping: host.load5)
+				telemetry.hostLoad15 = Int32(clamping: host.load15)
+				telemetry.hostUserString = host.hasUserString.then(host.userString)
+				telemetry.metricsType = 5
 			}
 			telemetry.snr = packet.rxSnr
 			telemetry.rssi = packet.rxRssi

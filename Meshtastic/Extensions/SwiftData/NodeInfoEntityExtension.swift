@@ -258,6 +258,19 @@ extension NodeInfoEntity {
 		return try? ctx.fetch(descriptor).first
 	}
 
+	/// The newest host metrics from a Linux meshtasticd node.
+	var latestHostMetrics: TelemetryEntity? {
+		guard let ctx = modelContext else { return nil }
+		let nodeNum = self.num
+		let metricsType: Int32 = 5
+		var descriptor = FetchDescriptor<TelemetryEntity>(
+			predicate: TelemetryEntity.predicate(forNode: nodeNum, metricsType: metricsType),
+			sortBy: [SortDescriptor(\TelemetryEntity.time, order: .reverse)]
+		)
+		descriptor.fetchLimit = 1
+		return try? ctx.fetch(descriptor).first
+	}
+
 	var hasPositions: Bool {
 		guard let ctx = modelContext else { return false }
 		let nodeNum = self.num

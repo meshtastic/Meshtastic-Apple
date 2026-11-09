@@ -67,6 +67,7 @@ struct NodeDetail: View {
 	@State private var latestAirQualityMetrics: TelemetryEntity?
 	@State private var airQualityNowCastAQI: Int?
 	@State private var latestPowerMetrics: TelemetryEntity?
+	@State private var latestHostMetrics: TelemetryEntity?
 	@State private var logAvailability = NodeDetailLogAvailability()
 	@State private var showingShareContactQR = false
 	@State private var deviceModelFullScreen: DeviceModelFullScreenRequest?
@@ -195,6 +196,7 @@ struct NodeDetail: View {
 			environmentSection
 			airQualitySection
 			powerSection
+			hostSection
 			logsSection
 			actionsSection
 			administrationSection
@@ -734,6 +736,17 @@ struct NodeDetail: View {
 		}
 	}
 
+	// MARK: - Host Section
+
+	@ViewBuilder
+	private var hostSection: some View {
+		if let hostMetrics = latestHostMetrics {
+			Section("Host") {
+				HostMetricsReading(metrics: hostMetrics)
+			}
+		}
+	}
+
 	// MARK: - Logs Section
 
 	@ViewBuilder
@@ -876,6 +889,24 @@ struct NodeDetail: View {
 				.disabled(!node.hasLocalStats)
 				telemetryRequest(.localStats)
 			}
+			if node.isLinuxNative || latestHostMetrics != nil {
+				HStack {
+					NavigationLink {
+						HostMetricsLog(node: node)
+					} label: {
+						Label {
+							Text("Host Metrics Log")
+						} icon: {
+							Image(systemName: "server.rack")
+								.symbolRenderingMode(.multicolor)
+						}
+					}
+					.disabled(latestHostMetrics == nil)
+					if node.isLinuxNative {
+						telemetryRequest(.host)
+					}
+				}
+			}
 			if hasPax {
 				NavigationLink {
 					PaxCounterLog(node: node)
@@ -895,7 +926,7 @@ struct NodeDetail: View {
 	/// The request for a log's telemetry, beside its row: for another node, while connected.
 	@ViewBuilder
 	private func telemetryRequest(_ kind: TelemetryRequestKind) -> some View {
-		// activeDeviceNum, not connectedNode, which fetches; this runs five times per body.
+		// activeDeviceNum, not connectedNode, which fetches; this runs for every log row.
 		if accessoryManager.isConnected, let active = accessoryManager.activeDeviceNum, active != nodeNum {
 			TelemetryRequestButton(node: node, kind: kind)
 		}
@@ -1146,6 +1177,7 @@ struct NodeDetail: View {
 		latestAirQualityMetrics = airQualityMetrics
 		airQualityNowCastAQI = airQualityAQI
 		latestPowerMetrics = powerMetrics
+		latestHostMetrics = node.latestHostMetrics
 		latestPosition = position
 		logAvailability = NodeDetailLogAvailability(
 			hasDeviceMetrics: deviceMetrics != nil,
