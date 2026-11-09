@@ -119,6 +119,11 @@ final class TelemetryRequestTracker: ObservableObject {
 		log.sent(id: id, kind: kind, nodeName: nodeName, at: .now)
 	}
 
+	/// A request that never went out.
+	func forget(id: UInt32) {
+		log.replied(requestID: id)
+	}
+
 	func deliverRouting(_ packet: MeshPacket) {
 		guard packet.decoded.requestID != 0,
 			  let routing = try? Routing(serializedBytes: packet.decoded.payload),

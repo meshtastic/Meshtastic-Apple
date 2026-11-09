@@ -138,7 +138,7 @@ struct TelemetryRequestButton: View {
 		}
 	}
 
-	/// Sends the request, starts the cooldown and starts watching for a routing error.
+	/// Sends the request and starts the cooldown.
 	@MainActor
 	static func send(
 		_ kind: TelemetryRequestKind,
@@ -147,14 +147,14 @@ struct TelemetryRequestButton: View {
 		transport: LocalStatsRequestTransport,
 		accessoryManager: AccessoryManager
 	) async throws {
-		let id = try await accessoryManager.sendTelemetryRequest(
+		try await accessoryManager.sendTelemetryRequest(
 			kind,
 			destNum: node.num,
+			nodeName: nodeName,
 			transport: transport,
 			destinationPublicKey: node.user?.publicKey
 		)
 		RateLimitStorage.shared.actionOccured(forKey: kind.rateLimitKey, rateLimit: rateLimit)
-		TelemetryRequestTracker.shared.sent(id: id, kind: kind, nodeName: nodeName)
 	}
 }
 

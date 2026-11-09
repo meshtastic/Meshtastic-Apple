@@ -895,7 +895,8 @@ struct NodeDetail: View {
 	/// The request for a log's telemetry, beside its row: for another node, while connected.
 	@ViewBuilder
 	private func telemetryRequest(_ kind: TelemetryRequestKind) -> some View {
-		if accessoryManager.isConnected, connectedNode != nil, accessoryManager.activeDeviceNum != nodeNum {
+		// activeDeviceNum, not connectedNode, which fetches; this runs five times per body.
+		if accessoryManager.isConnected, let active = accessoryManager.activeDeviceNum, active != nodeNum {
 			TelemetryRequestButton(node: node, kind: kind)
 		}
 	}

@@ -3276,12 +3276,14 @@ extension AccessoryManager {
 		return Int64(meshPacket.id)
 	}
 
-	/// Asks a node for one kind of telemetry. Returns the request's packet id, which a reply or
-	/// a routing error carries as its request id.
+	/// Asks a node for one kind of telemetry, and watches for a routing error that answers it,
+	/// reported with `nodeName`. Returns the request's packet id, which a reply or a routing error
+	/// carries as its request id.
 	@discardableResult
 	func sendTelemetryRequest(
 		_ kind: TelemetryRequestKind,
 		destNum: Int64,
+		nodeName: String,
 		transport: LocalStatsRequestTransport = .sharedChannel,
 		destinationPublicKey: Data? = nil
 	) async throws -> UInt32 {
@@ -3317,7 +3319,14 @@ extension AccessoryManager {
 		toRadio.packet = meshPacket
 
 		let logString = "📊 Sent \(kind.rawValue) telemetry request from: \(fromNodeNum) to: \(destNum)"
-		try await send(toRadio, debugDescription: logString)
+		// Before the send, so a fast routing error from the connected radio finds its request.
+		TelemetryRequestTracker.shared.sent(id: meshPacket.id, kind: kind, nodeName: nodeName)
+		do {
+			try await send(toRadio, debugDescription: logString)
+		} catch {
+			TelemetryRequestTracker.shared.forget(id: meshPacket.id)
+			throw error
+		}
 
 		Logger.mesh.info("\(logString, privacy: .public)")
 		return meshPacket.id
