@@ -611,17 +611,18 @@ struct NodeDetail: View {
 								if let temperature = metrics.temperature?.shortFormattedTemperature() {
 									WeatherConditionsCompactWidget(temperature: String(temperature), symbolName: "cloud.sun", description: "TEMP")
 								}
-								if let humidity = metrics.relativeHumidity {
+								// Int(exactly:) skips a NaN or out-of-range value from the radio instead of trapping.
+								if let humidity = metrics.relativeHumidity, let humidityPercent = Int(exactly: humidity.rounded()) {
 									if let temperature = metrics.temperature {
 										let dewPoint = calculateDewPoint(temp: temperature, relativeHumidity: humidity)
 											.formatted(.number.precision(.fractionLength(0))) + "°"
-										HumidityCompactWidget(humidity: Int(humidity), dewPoint: dewPoint)
+										HumidityCompactWidget(humidity: humidityPercent, dewPoint: dewPoint)
 									} else {
-										HumidityCompactWidget(humidity: Int(humidity), dewPoint: nil)
+										HumidityCompactWidget(humidity: humidityPercent, dewPoint: nil)
 									}
 								}
 								if let pressure = metrics.barometricPressure {
-									PressureCompactWidget(pressure: pressure.formatted(.number.precision(.fractionLength(2))), unit: "hPA", low: pressure <= 1009.144)
+									PressureCompactWidget(pressure: pressure.formatted(.number.grouping(.never).precision(.fractionLength(0))), unit: "hPa", low: pressure <= 1009.144)
 								}
 								if let windSpeed = metrics.windSpeed {
 									let windSpeedMeasurement = Measurement(value: Double(windSpeed), unit: UnitSpeed.metersPerSecond)
@@ -653,20 +654,13 @@ struct NodeDetail: View {
 								if let radiation = metrics.radiation {
 									RadiationCompactWidget(radiation: radiation.formatted(.number.precision(.fractionLength(1))), unit: "µR/hr")
 								}
+								// The same units as the charts and tables, so the UK sees kg and mm here too.
 								if let weight = metrics.weight {
-									let weightMeasurement = Measurement(value: Double(weight), unit: UnitMass.kilograms)
-									let usesMetric = Locale.current.measurementSystem == .metric
-									let weightUnit = usesMetric ? UnitMass.kilograms : UnitMass.pounds
-									let weightLabel = usesMetric ? "kg" : "lbs"
-									WeightCompactWidget(weight: weightMeasurement.converted(to: weightUnit).value.formatted(.number.precision(.fractionLength(1))), unit: weightLabel)
+									WeightCompactWidget(weight: MetricsLocaleUnits.mass(fromKilograms: weight).formatted(.number.precision(.fractionLength(1))), unit: MetricsLocaleUnits.massLabel)
 								}
 								if let distance = metrics.distance {
-									let distMeasurement = Measurement(value: Double(distance), unit: UnitLength.millimeters)
-									let usesMetric = Locale.current.measurementSystem == .metric
-									let distUnit = usesMetric ? UnitLength.millimeters : UnitLength.inches
-									let distLabel = usesMetric ? "mm" : "in"
-									let distDecimals = usesMetric ? 0 : 1
-									DistanceCompactWidget(distance: distMeasurement.converted(to: distUnit).value.formatted(.number.precision(.fractionLength(distDecimals))), unit: distLabel)
+									let distDecimals = MetricsLocaleUnits.length == .millimeters ? 0 : 1
+									DistanceCompactWidget(distance: MetricsLocaleUnits.length(fromMillimeters: distance).formatted(.number.precision(.fractionLength(distDecimals))), unit: MetricsLocaleUnits.lengthLabel)
 								}
 								if let soilTemperature = metrics.soilTemperature {
 									let locale = NSLocale.current as NSLocale
@@ -694,7 +688,7 @@ struct NodeDetail: View {
 	@ViewBuilder
 	private var airQualitySection: some View {
 		if let metrics = latestAirQualityMetrics,
-		   metrics.pm25Standard != nil || metrics.pm10Standard != nil || metrics.pm100Standard != nil {
+		   metrics.pm25Standard != nil || metrics.pm10Standard != nil || metrics.pm100Standard != nil || metrics.co2 != nil {
 			Section("Air Quality") {
 				VStack {
 					// design#54: once ~12h of PM2.5 history exists, headline the NowCast-derived EPA AQI
@@ -714,6 +708,9 @@ struct NodeDetail: View {
 						if let pm100 = metrics.pm100Standard {
 							ParticulateMatterCompactWidget(label: "PM10", value: pm100)
 						}
+						if let co2 = metrics.co2 {
+							Co2CompactWidget(ppm: co2)
+						}
 					}
 					.padding(.bottom)
 				}
@@ -729,7 +726,7 @@ struct NodeDetail: View {
 		if let powerMetrics = latestPowerMetrics {
 			Section("Power") {
 				VStack {
-					PowerMetrics(metric: powerMetrics)
+					PowerMetrics(metric: powerMetrics, labels: node.powerChannelLabels)
 				}
 				.accessibilityElement(children: .combine)
 			}

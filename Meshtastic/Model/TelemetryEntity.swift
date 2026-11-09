@@ -41,6 +41,16 @@ final class TelemetryEntity {
 	var powerCh2Voltage: Float?
 	var powerCh3Current: Float?
 	var powerCh3Voltage: Float?
+	var powerCh4Current: Float?
+	var powerCh4Voltage: Float?
+	var powerCh5Current: Float?
+	var powerCh5Voltage: Float?
+	var powerCh6Current: Float?
+	var powerCh6Voltage: Float?
+	var powerCh7Current: Float?
+	var powerCh7Voltage: Float?
+	var powerCh8Current: Float?
+	var powerCh8Voltage: Float?
 	var radiation: Float?
 	var rainfall1H: Float?
 	var rainfall24H: Float?
@@ -69,6 +79,8 @@ final class TelemetryEntity {
 	var pm10Environmental: UInt32?
 	var pm25Environmental: UInt32?
 	var pm100Environmental: UInt32?
+	/// CO2 in ppm, from the same AirQualityMetrics variant (design#53).
+	var co2: UInt32?
 
 	// MARK: - Host Metrics
 	// From Linux meshtasticd nodes (metricsType 5). The host's uptime goes in `uptimeSeconds`.

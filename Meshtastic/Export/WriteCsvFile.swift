@@ -8,6 +8,18 @@
 import SwiftUI
 import OSLog
 
+/// A number for a CSV field, in a fixed locale so a decimal comma can't split the field; blank
+/// when there's no reading.
+private func csvNumber<T: BinaryFloatingPoint>(_ value: T?) -> String {
+	guard let value else { return "" }
+	return value.formatted(FloatingPointFormatStyle<T>(locale: Locale(identifier: "en_US_POSIX")).grouping(.never))
+}
+
+private func csvNumber<T: BinaryInteger>(_ value: T?) -> String {
+	guard let value else { return "" }
+	return value.formatted(IntegerFormatStyle<T>(locale: Locale(identifier: "en_US_POSIX")).grouping(.never))
+}
+
 func telemetryToCsvFile<S: Sequence>(telemetry: S, metricsType: Int) -> String where S.Element == TelemetryEntity {
 	var csvString: String = ""
 	if metricsType == 0 {
@@ -15,15 +27,15 @@ func telemetryToCsvFile<S: Sequence>(telemetry: S, metricsType: Int) -> String w
 		csvString = "\("battery.level".localized), \("Voltage".localized), \("Channel Utilization".localized), \("airtime".localized), \("Uptime".localized), \("Timestamp".localized)"
 		for dm in telemetry where dm.metricsType == 0 {
 			csvString += "\n"
-			csvString += dm.batteryLevel?.formatted(.number.grouping(.never)) ?? ""
+			csvString += csvNumber(dm.batteryLevel)
 			csvString += ", "
-			csvString += dm.voltage?.formatted(.number.grouping(.never)) ?? ""
+			csvString += csvNumber(dm.voltage)
 			csvString += ", "
-			csvString += dm.channelUtilization?.formatted(.number.grouping(.never)) ?? ""
+			csvString += csvNumber(dm.channelUtilization)
 			csvString += ", "
-			csvString += dm.airUtilTx?.formatted(.number.grouping(.never)) ?? ""
+			csvString += csvNumber(dm.airUtilTx)
 			csvString += ", "
-			csvString += dm.uptimeSeconds?.formatted(.number.grouping(.never)) ?? ""
+			csvString += csvNumber(dm.uptimeSeconds)
 			csvString += ", "
 			csvString += dm.time?.formatted(date: .numeric, time: .shortened).replacing(",", with: "") ?? ""
 		}
@@ -32,53 +44,51 @@ func telemetryToCsvFile<S: Sequence>(telemetry: S, metricsType: Int) -> String w
 		csvString = "Temperature, Relative Humidity, Barometric Pressure, Indoor Air Quality, Gas Resistance, \("Timestamp".localized)"
 		for dm in telemetry where dm.metricsType == 1 {
 			csvString += "\n"
-			csvString += dm.temperature?.formatted(.number.grouping(.never)) ?? ""
+			csvString += csvNumber(dm.temperature)
 			csvString += ", "
-			csvString += dm.relativeHumidity?.formatted(.number.grouping(.never)) ?? ""
+			csvString += csvNumber(dm.relativeHumidity)
 			csvString += ", "
-			csvString += dm.barometricPressure?.formatted(.number.grouping(.never)) ?? ""
+			csvString += csvNumber(dm.barometricPressure)
 			csvString += ", "
-			csvString += dm.iaq?.formatted(.number.grouping(.never)) ?? ""
+			csvString += csvNumber(dm.iaq)
 			csvString += ", "
-			csvString += dm.gasResistance?.formatted(.number.grouping(.never)) ?? ""
+			csvString += csvNumber(dm.gasResistance)
 			csvString += ", "
 			csvString += dm.time?.formatted(date: .numeric, time: .shortened).replacing(",", with: "") ?? ""
 		}
 	} else if metricsType == 2 {
-		// Create Power Metrics Header
-		csvString = "Channel 1 Voltage, Channel 1 Current, Channel 2 Voltage, Channel 2 Current, Channel 3 Voltage, Channel 3 Current, \("Timestamp".localized)"
+		// Create Power Metrics Header, one voltage and current pair per channel
+		csvString = (1...TelemetryEntity.powerChannelCount)
+			.map { "Channel \($0) Voltage, Channel \($0) Current" }
+			.joined(separator: ", ") + ", \("Timestamp".localized)"
 		for dm in telemetry where dm.metricsType == 2 {
 			csvString += "\n"
-			csvString += dm.powerCh1Voltage?.formatted(.number.grouping(.never)) ?? ""
-			csvString += ", "
-			csvString += dm.powerCh1Current?.formatted(.number.grouping(.never)) ?? ""
-			csvString += ", "
-			csvString += dm.powerCh2Voltage?.formatted(.number.grouping(.never)) ?? ""
-			csvString += ", "
-			csvString += dm.powerCh2Current?.formatted(.number.grouping(.never)) ?? ""
-			csvString += ", "
-			csvString += dm.powerCh3Voltage?.formatted(.number.grouping(.never)) ?? ""
-			csvString += ", "
-			csvString += dm.powerCh3Current?.formatted(.number.grouping(.never)) ?? ""
-			csvString += ", "
+			for index in 0..<TelemetryEntity.powerChannelCount {
+				csvString += csvNumber(dm.powerVoltage(channel: index))
+				csvString += ", "
+				csvString += csvNumber(dm.powerCurrent(channel: index))
+				csvString += ", "
+			}
 			csvString += dm.time?.formatted(date: .numeric, time: .shortened).replacing(",", with: "") ?? ""
 		}
 	} else if metricsType == 3 {
 		// Create Air Quality Metrics Header (particulate matter, µg/m³)
-		csvString = "PM1.0 Std, PM2.5 Std, PM10 Std, PM1.0 Env, PM2.5 Env, PM10 Env, \("Timestamp".localized)"
+		csvString = "PM1.0 Std, PM2.5 Std, PM10 Std, PM1.0 Env, PM2.5 Env, PM10 Env, CO2, \("Timestamp".localized)"
 		for dm in telemetry where dm.metricsType == 3 {
 			csvString += "\n"
-			csvString += dm.pm10Standard?.formatted(.number.grouping(.never)) ?? ""
+			csvString += csvNumber(dm.pm10Standard)
 			csvString += ", "
-			csvString += dm.pm25Standard?.formatted(.number.grouping(.never)) ?? ""
+			csvString += csvNumber(dm.pm25Standard)
 			csvString += ", "
-			csvString += dm.pm100Standard?.formatted(.number.grouping(.never)) ?? ""
+			csvString += csvNumber(dm.pm100Standard)
 			csvString += ", "
-			csvString += dm.pm10Environmental?.formatted(.number.grouping(.never)) ?? ""
+			csvString += csvNumber(dm.pm10Environmental)
 			csvString += ", "
-			csvString += dm.pm25Environmental?.formatted(.number.grouping(.never)) ?? ""
+			csvString += csvNumber(dm.pm25Environmental)
 			csvString += ", "
-			csvString += dm.pm100Environmental?.formatted(.number.grouping(.never)) ?? ""
+			csvString += csvNumber(dm.pm100Environmental)
+			csvString += ", "
+			csvString += csvNumber(dm.co2)
 			csvString += ", "
 			csvString += dm.time?.formatted(date: .numeric, time: .shortened).replacing(",", with: "") ?? ""
 		}
@@ -87,25 +97,25 @@ func telemetryToCsvFile<S: Sequence>(telemetry: S, metricsType: Int) -> String w
 		csvString = "Noise Floor, Uptime, Relayed, Canceled, Dupes, Packets Tx, Packets Rx, Bad Rx, Nodes Online, Total Nodes, \("Timestamp".localized)"
 		for dm in telemetry where dm.metricsType == 4 {
 			csvString += "\n"
-			csvString += dm.noiseFloor?.formatted(.number.grouping(.never)) ?? ""
+			csvString += csvNumber(dm.noiseFloor)
 			csvString += ", "
-			csvString += dm.uptimeSeconds?.formatted(.number.grouping(.never)) ?? ""
+			csvString += csvNumber(dm.uptimeSeconds)
 			csvString += ", "
-			csvString += dm.numTxRelay.formatted(.number.grouping(.never))
+			csvString += csvNumber(dm.numTxRelay)
 			csvString += ", "
-			csvString += dm.numTxRelayCanceled.formatted(.number.grouping(.never))
+			csvString += csvNumber(dm.numTxRelayCanceled)
 			csvString += ", "
-			csvString += dm.numRxDupe.formatted(.number.grouping(.never))
+			csvString += csvNumber(dm.numRxDupe)
 			csvString += ", "
-			csvString += dm.numPacketsTx.formatted(.number.grouping(.never))
+			csvString += csvNumber(dm.numPacketsTx)
 			csvString += ", "
-			csvString += dm.numPacketsRx.formatted(.number.grouping(.never))
+			csvString += csvNumber(dm.numPacketsRx)
 			csvString += ", "
-			csvString += dm.numPacketsRxBad.formatted(.number.grouping(.never))
+			csvString += csvNumber(dm.numPacketsRxBad)
 			csvString += ", "
-			csvString += dm.numOnlineNodes.formatted(.number.grouping(.never))
+			csvString += csvNumber(dm.numOnlineNodes)
 			csvString += ", "
-			csvString += dm.numTotalNodes.formatted(.number.grouping(.never))
+			csvString += csvNumber(dm.numTotalNodes)
 			csvString += ", "
 			csvString += dm.time?.formatted(date: .numeric, time: .shortened).replacing(",", with: "") ?? ""
 		}

@@ -512,14 +512,27 @@ struct AirQualityTelemetryExportTests {
 		let values = csv.split(separator: "\n").last?.split(separator: ",", omittingEmptySubsequences: false)
 			.map { $0.trimmingCharacters(in: .whitespaces) }
 
-		// Row = 6 PM columns + timestamp. pm25Standard is the 2nd field; every other PM column is blank.
-		#expect(values?.count == 7)
+		// Row = 6 PM columns + CO2 + timestamp. pm25Standard is the 2nd field; every other column is blank.
+		#expect(values?.count == 8)
 		#expect(values?[1] == "12")
 		#expect(values?[0] == "")
 		#expect(values?[2] == "")
 		#expect(values?[3] == "")
 		#expect(values?[4] == "")
 		#expect(values?[5] == "")
+		#expect(values?[6] == "")
+	}
+
+	@Test func csvWritesCo2AfterParticulateMatter() {
+		let telemetry = TelemetryEntity()
+		telemetry.metricsType = 3
+		telemetry.co2 = 850
+
+		let lines = telemetryToCsvFile(telemetry: [telemetry], metricsType: 3).split(separator: "\n")
+		#expect(lines.first?.contains("CO2") == true)
+		let values = lines.last?.split(separator: ",", omittingEmptySubsequences: false)
+			.map { $0.trimmingCharacters(in: .whitespaces) }
+		#expect(values?[6] == "850")
 	}
 }
 

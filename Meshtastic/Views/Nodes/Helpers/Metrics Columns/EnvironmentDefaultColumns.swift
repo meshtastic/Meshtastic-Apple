@@ -22,7 +22,7 @@ extension MetricsColumnList {
 				minWidth: 30, maxWidth: 45,
 				tableBody: { _, temp in
 					temp.map {
-						Text($0.formattedTemperature())
+						Text($0.formattedTemperature(fractionDigits: 1))
 					} ?? Text(verbatim: Constants.nilValueIndicator)
 				}),
 
@@ -48,7 +48,7 @@ extension MetricsColumnList {
 				minWidth: 30, maxWidth: 45,
 				tableBody: { _, dewPoint in
 					dewPoint.map {
-						Text("\($0.formattedTemperature())")
+						Text("\($0.formattedTemperature(fractionDigits: 1))")
 					} ?? Text(verbatim: Constants.nilValueIndicator)
 				}),
 			
@@ -201,14 +201,16 @@ extension MetricsColumnList {
 				visible: false,
 				tableBody: { _, speed in
 					speed.map {
+						// Converted as the chart is, so the two agree (design#53 requirement 2).
 						let windSpeed = Measurement(
-							value: Double($0), unit: UnitSpeed.metersPerSecond)
+							value: Double(MetricsLocaleUnits.windSpeed(fromMetersPerSecond: $0)), unit: MetricsLocaleUnits.windSpeed)
 						return Text(
 							windSpeed.formatted(
 								.measurement(
 									width: .abbreviated,
+									usage: .asProvided,
 									numberFormatStyle: .number.grouping(.never)
-													.precision(.fractionLength(0))))
+													.precision(.fractionLength(1))))
 						)
 					} ?? Text(verbatim: Constants.nilValueIndicator)
 				}),
@@ -224,14 +226,15 @@ extension MetricsColumnList {
 				tableBody: { _, rainfall in
 					rainfall.map {
 						let rain = Measurement(
-							value: Double($0), unit: UnitLength.millimeters)
+							value: Double(MetricsLocaleUnits.length(fromMillimeters: $0)), unit: MetricsLocaleUnits.length)
 						return Text(
 							rain.formatted(
 								.measurement(
 									width: .abbreviated,
+									usage: .asProvided,
 									numberFormatStyle: .number.grouping(.never)
 										.precision(
-										.fractionLength(0))))
+										.fractionLength(1))))
 						)
 					} ?? Text(Constants.nilValueIndicator)
 				}),
@@ -246,14 +249,15 @@ extension MetricsColumnList {
 				tableBody: { _, rainfall in
 					rainfall.map {
 						let rain = Measurement(
-							value: Double($0), unit: UnitLength.millimeters)
+							value: Double(MetricsLocaleUnits.length(fromMillimeters: $0)), unit: MetricsLocaleUnits.length)
 						return Text(
 							rain.formatted(
 								.measurement(
 									width: .abbreviated,
+									usage: .asProvided,
 									numberFormatStyle: .number.grouping(.never)
 										.precision(
-										.fractionLength(0))))
+										.fractionLength(1))))
 						)
 					} ?? Text(Constants.nilValueIndicator)
 				}),

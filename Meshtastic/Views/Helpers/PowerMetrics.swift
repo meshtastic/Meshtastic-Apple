@@ -12,57 +12,28 @@ struct PowerMetrics: View {
 	private let gridItemLayout = Array(repeating: GridItem(.flexible(), spacing: 10), count: 2)
 
 	let metric: TelemetryEntity
+	/// The node's power channel labels, so the tiles name channels as the log does.
+	var labels: [String] = []
 
 	var body: some View {
 
 		LazyVGrid(columns: gridItemLayout) {
-
-			if let powerCh1Voltage = metric.powerCh1Voltage {
-				PowerMetricCompactWidget(
-					type: .voltage,
-					value: powerCh1Voltage,
-					title: "Channel 1 Voltage"
-				)
-			}
-
-			if let powerCh1Current = metric.powerCh1Current {
-				PowerMetricCompactWidget(
-					type: .current,
-					value: powerCh1Current,
-					title: "Channel 1 Current"
-				)
-			}
-
-			if let powerCh2Voltage = metric.powerCh2Voltage {
-				PowerMetricCompactWidget(
-					type: .voltage,
-					value: powerCh2Voltage,
-					title: "Channel 2 Voltage"
-				)
-			}
-
-			if let powerCh2Current = metric.powerCh2Current {
-				PowerMetricCompactWidget(
-					type: .current,
-					value: powerCh2Current,
-					title: "Channel 2 Current"
-				)
-			}
-
-			if let powerCh3Voltage = metric.powerCh3Voltage {
-				PowerMetricCompactWidget(
-					type: .voltage,
-					value: powerCh3Voltage,
-					title: "Channel 3 Voltage"
-				)
-			}
-
-			if let powerCh3Current = metric.powerCh3Current {
-				PowerMetricCompactWidget(
-					type: .current,
-					value: powerCh3Current,
-					title: "Channel 3 Current"
-				)
+			ForEach(0..<TelemetryEntity.powerChannelCount, id: \.self) { index in
+				let name = PowerChannelLabel.name(index, in: labels)
+				if let voltage = metric.powerVoltage(channel: index) {
+					PowerMetricCompactWidget(
+						type: .voltage,
+						value: voltage,
+						title: String(localized: "\(name) Voltage", comment: "Power tile title. %@ is the channel's label, such as Solar or Channel 1.")
+					)
+				}
+				if let current = metric.powerCurrent(channel: index) {
+					PowerMetricCompactWidget(
+						type: .current,
+						value: current,
+						title: String(localized: "\(name) Current", comment: "Power tile title. %@ is the channel's label, such as Solar or Channel 1.")
+					)
+				}
 			}
 		}
 	}

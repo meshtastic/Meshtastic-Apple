@@ -42,6 +42,30 @@ extension MetricsColumnList {
 			pmColumn(id: "pm25Environmental", keyPath: \.pm25Environmental, name: "PM2.5 (Environmental)", abbreviatedName: "PM2.5 Env", visible: false),
 			pmColumn(id: "pm10Environmental", keyPath: \.pm10Environmental, name: "PM1.0 (Environmental)", abbreviatedName: "PM1.0 Env", visible: false),
 			pmColumn(id: "pm100Environmental", keyPath: \.pm100Environmental, name: "PM10 (Environmental)", abbreviatedName: "PM10 Env", visible: false),
+			MetricsTableColumn(
+				id: "co2",
+				keyPath: \.co2,
+				name: "CO2",
+				abbreviatedName: "CO2",
+				minWidth: 30, maxWidth: 70,
+				tableBody: { _, co2 in
+					if let co2 {
+						// A dot in the band's color, as the IAQ column does; colored text would be hard to read.
+						HStack(spacing: 4) {
+							Circle()
+								.fill(Co2Level.level(for: co2).color)
+								.frame(width: 8, height: 8)
+								.accessibilityHidden(true)
+							MetricsColumnWidth {
+								Text(verbatim: "\(co2.formatted(.number.grouping(.never))) ppm")
+							} compact: {
+								Text(co2.formatted(.number.grouping(.never)))
+							}
+						}
+					} else {
+						Text(verbatim: Constants.nilValueIndicator)
+					}
+				}),
 
 			// Timestamp Series Configuration -- for use in table only
 			MetricsTableColumn(

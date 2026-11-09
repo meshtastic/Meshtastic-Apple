@@ -67,82 +67,23 @@ class MetricsSeriesList: ObservableObject, RandomAccessCollection, RangeReplacea
 		return nil
 	}
 
-	// Calculates the chartRange based on the series configuration and data provided
-	// Besides checkign the range of the data, this function also obeys some series-level
-	// configuraiton, such as:
-	//   1. starting with a desired fixed range
-	//   2. obeying a minimum span
-	func chartRange<S: Sequence>(forData data: S) -> ClosedRange<Float> where S.Element == TelemetryEntity {
-		var globalLower: Float = .infinity
-		var globalUpper: Float = -.infinity
-
-		// Keep track of the range of each series
-		var range: [MetricsChartSeries: ClosedRange<Float>] = [:]
-
-		// Determine if there is an initial fixed range.
-		// The range might exapand past this initial range if the data goes beyond.
-		for aSeries in self.visible {
-			if let thisRange = aSeries.initialYAxisRange {
-				range[aSeries] = thisRange
-				if thisRange.upperBound > globalUpper {globalUpper = thisRange.upperBound}
-				if thisRange.lowerBound < globalLower {globalLower = thisRange.lowerBound}
+	/// The visible series that have a reading in `data`, grouped by axis in the order they're
+	/// listed, each group with the Y range for its readings. A series with no readings gets no
+	/// chart and no legend entry (design#53 requirement 11).
+	func chartGroups<S: Sequence>(forData data: S) -> [MetricsChartGroup] where S.Element == TelemetryEntity {
+		let points = Array(data)
+		var groups: [MetricsChartGroup] = []
+		for aSeries in visible {
+			let values = points.compactMap { aSeries.valueFor($0) }
+			guard !values.isEmpty else { continue }
+			if let index = groups.firstIndex(where: { $0.axis == aSeries.axis }) {
+				groups[index].series.append(aSeries)
+				groups[index].values.append(contentsOf: values)
+			} else {
+				groups.append(MetricsChartGroup(axis: aSeries.axis, series: [aSeries], values: values))
 			}
 		}
-
-		// Iterate through all the data. It would be easier to iterate
-		// the series then the data, but this way we only iterate the data once
-		for te in data {
-			for aSeries in self.visible {
-				var seriesUpper = range[aSeries]?.upperBound ?? -.infinity
-				var seriesLower = range[aSeries]?.lowerBound ?? .infinity
-
-				if let value = aSeries.valueFor(te) {
-					// Update the global bounds
-					if value > globalUpper {globalUpper = value}
-					if value < globalLower {globalLower = value}
-
-					// Update the series bounds if necessary
-					if value > seriesUpper || value < seriesLower {
-						if value > seriesUpper {
-							seriesUpper = value
-						}
-						if value < seriesLower {
-							seriesLower = value
-						}
-						if seriesUpper.isFinite && seriesLower.isFinite {
-							range[aSeries] = seriesLower...seriesUpper
-						}
-					}
-				}
-			}
-		}
-
-		// Go through each series one last time to obey the minimum span
-		for aSeries in self.visible {
-			if let minimumSpan = aSeries.minumumYAxisSpan,
-			   let currentRange = range[aSeries] {
-				let currentSpan = currentRange.upperBound - currentRange.lowerBound
-				if currentSpan < minimumSpan {
-					// Calculate the center of the range
-					let centerOfRange = currentRange.lowerBound + (currentSpan / 2)
-					let newLower = centerOfRange - (minimumSpan / 2.0)
-					let newUpper = centerOfRange + (minimumSpan / 2.0)
-
-					if newUpper > globalUpper {
-						globalUpper = newUpper
-					}
-					if newLower < globalLower {
-						globalLower = newLower
-					}
-				}
-			}
-		}
-
-		// Return default range if no data
-		if !globalLower.isFinite || !globalUpper.isFinite {
-			return 0.0...100.0
-		}
-		return globalLower...globalUpper
+		return groups
 	}
 
 	// Collection conformance
@@ -200,4 +141,20 @@ class MetricsSeriesList: ObservableObject, RandomAccessCollection, RangeReplacea
 		series.insert(newElement, at: index)
 	}
 
+}
+
+/// The series drawn on one chart, against one axis.
+struct MetricsChartGroup: Identifiable {
+	let axis: MetricsAxis
+	var series: [MetricsChartSeries]
+	fileprivate(set) var values: [Float]
+
+	var id: String { axis.id }
+
+	var range: ClosedRange<Float> { axis.range(for: values) }
+
+	func foregroundStyle(forAbbreviatedName name: String) -> AnyShapeStyle? {
+		guard let selected = series.first(where: { $0.abbreviatedName == name }) else { return nil }
+		return selected.foregroundStyle(range)
+	}
 }

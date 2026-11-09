@@ -36,23 +36,10 @@ struct EnvironmentMetricsLog: View {
 	var body: some View {
 		VStack {
 			if totalReadings > 0 {
-				let chartRange = applyMargins(seriesList.chartRange(forData: chartPoints))
 				VStack {
 					if chartData.count > 0 {
 						GroupBox(label: Label("\(totalReadings) Readings Total", systemImage: "chart.xyaxis.line")) {
-							Chart(seriesList.visible) { series in
-								ForEach(chartPoints, id: \.time) { dataPoint in
-									series.body(dataPoint, inChartRange: chartRange)
-								}
-							}
-							.chartXAxis(content: {
-								AxisMarks(position: .top)
-							})
-							.chartYScale(domain: chartRange)
-							.chartForegroundStyleScale { (seriesName: String) -> AnyShapeStyle in
-								return seriesList.foregroundStyle(forAbbreviatedName: seriesName, chartRange: chartRange) ?? AnyShapeStyle(Color.clear)
-							}
-							.chartLegend(position: .automatic, alignment: .bottom)
+							MetricsChartStack(groups: seriesList.chartGroups(forData: chartPoints), points: chartPoints)
 						}
 					}
 
@@ -185,15 +172,6 @@ struct EnvironmentMetricsLog: View {
 				}
 			}
 		)
-	}
-
-	// Helper.  Adds a little buffer to the Y axis range, but keeps Y=0
-	func applyMargins<T>(_ range: ClosedRange<T>) -> ClosedRange<T> where T: BinaryFloatingPoint {
-		let span = range.upperBound - range.lowerBound
-		let margin = span * 0.1
-		let lower = range.lowerBound == 0.0 ? 0.0  : range.lowerBound - margin
-		let upper = range.upperBound + margin
-		return lower...upper
 	}
 
 	private func refreshMetrics() {
