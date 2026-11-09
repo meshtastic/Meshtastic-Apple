@@ -215,6 +215,14 @@ extension NodeBackupManager {
 			dst.current = src.current
 			dst.distance = src.distance
 			dst.gasResistance = src.gasResistance
+			dst.hostDiskFree1Bytes = src.hostDiskFree1Bytes
+			dst.hostDiskFree2Bytes = src.hostDiskFree2Bytes
+			dst.hostDiskFree3Bytes = src.hostDiskFree3Bytes
+			dst.hostFreeMemoryBytes = src.hostFreeMemoryBytes
+			dst.hostLoad1 = src.hostLoad1
+			dst.hostLoad5 = src.hostLoad5
+			dst.hostLoad15 = src.hostLoad15
+			dst.hostUserString = src.hostUserString
 			dst.iaq = src.iaq
 			dst.irLux = src.irLux
 			dst.lux = src.lux

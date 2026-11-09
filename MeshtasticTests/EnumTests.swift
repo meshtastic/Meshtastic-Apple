@@ -255,7 +255,7 @@ struct MetricsTypesTests {
 	}
 
 	@Test func totalCaseCount_isFive() {
-		#expect(MetricsTypes.allCases.count == 5)
+		#expect(MetricsTypes.allCases.count == 6)
 	}
 
 	@Test func device_isDefaultZero() {

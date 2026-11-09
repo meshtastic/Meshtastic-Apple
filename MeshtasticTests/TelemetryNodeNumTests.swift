@@ -125,6 +125,41 @@ struct TelemetryNodeNumTests {
 		#expect(node.telemetries.isEmpty)
 	}
 
+	@Test("Host metrics are stored as their own kind, with their readings")
+	func hostMetricsStored() async throws {
+		let container = try makeContainer()
+		let nodeNum: UInt32 = 0x7E1E_0002
+		let mesh = MeshPackets(modelContainer: container)
+		await mesh.telemetryPacket(
+			packet: try makeTelemetryPacket(from: nodeNum) {
+				var host = HostMetrics()
+				host.uptimeSeconds = 86_400
+				host.freememBytes = 512 * 1_048_576
+				host.diskfree1Bytes = 8_000_000_000
+				host.load1 = 25
+				host.load5 = 50
+				host.load15 = 75
+				host.userString = "rack 2"
+				$0.hostMetrics = host
+			},
+			connectedNode: Self.connectedNode
+		)
+		await mesh.flushDebouncedSaves()
+
+		let context = ModelContext(container)
+		let row = try #require(try context.fetch(FetchDescriptor<TelemetryEntity>()).first)
+		#expect(row.metricsType == 5)
+		#expect(row.uptimeSeconds == 86_400)
+		#expect(row.hostFreeMemoryBytes == Int64(512 * 1_048_576))
+		#expect(row.hostDiskFree1Bytes == 8_000_000_000)
+		#expect(row.hostDiskFree2Bytes == nil)
+		#expect(row.hostLoad1 == 25)
+		#expect(row.hostLoad15 == 75)
+		#expect(row.hostUserString == "rack 2")
+		let node = try #require(try context.fetch(FetchDescriptor<NodeInfoEntity>()).first)
+		#expect(node.latestHostMetrics?.hostLoad5 == 50)
+	}
+
 	@Test("Device metrics carried in a node info packet store the node number")
 	func nodeInfoDeviceMetricsStoreNodeNum() async throws {
 		let container = try makeContainer()

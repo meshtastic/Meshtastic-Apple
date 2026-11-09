@@ -17,6 +17,8 @@ enum TelemetryRequestKind: String, CaseIterable, Identifiable {
 	case airQuality
 	case power
 	case localStats
+	/// Linux meshtasticd nodes only.
+	case host
 
 	var id: String { rawValue }
 
@@ -28,6 +30,7 @@ enum TelemetryRequestKind: String, CaseIterable, Identifiable {
 		case .airQuality: String(localized: "air quality metrics", comment: "Telemetry request: the kind of readings, used inside a sentence")
 		case .power: String(localized: "power metrics", comment: "Telemetry request: the kind of readings, used inside a sentence")
 		case .localStats: String(localized: "local stats", comment: "Telemetry request: the kind of readings, used inside a sentence")
+		case .host: String(localized: "host metrics", comment: "Telemetry request: the kind of readings, used inside a sentence")
 		}
 	}
 
@@ -39,6 +42,7 @@ enum TelemetryRequestKind: String, CaseIterable, Identifiable {
 		case .airQuality: String(localized: "Request Air Quality Metrics")
 		case .power: String(localized: "Request Power Metrics")
 		case .localStats: String(localized: "Request Local Stats")
+		case .host: String(localized: "Request Host Metrics")
 		}
 	}
 
@@ -56,6 +60,7 @@ enum TelemetryRequestKind: String, CaseIterable, Identifiable {
 		case .airQuality: telemetry.airQualityMetrics = AirQualityMetrics()
 		case .power: telemetry.powerMetrics = MeshtasticProtobufs.PowerMetrics()
 		case .localStats: telemetry.localStats = LocalStats()
+		case .host: telemetry.hostMetrics = HostMetrics()
 		}
 		return telemetry
 	}

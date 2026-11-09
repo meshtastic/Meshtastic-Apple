@@ -185,6 +185,7 @@ enum MetricsTypes: Int, CaseIterable, Identifiable {
 	case power = 2
 	case airQuality = 3
 	case stats = 4
+	case host = 5
 
 	var id: Int { self.rawValue }
 	var name: String {
@@ -199,6 +200,8 @@ enum MetricsTypes: Int, CaseIterable, Identifiable {
 			return "Air Quality Metrics"
 		case .stats:
 			return "Stats"
+		case .host:
+			return "Host Metrics"
 		}
 	}
 }

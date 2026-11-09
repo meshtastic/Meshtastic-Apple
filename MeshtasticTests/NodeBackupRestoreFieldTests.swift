@@ -135,6 +135,47 @@ struct NodeBackupRestoreFieldTests {
 		#expect(dst.nodeNum == 99)
 	}
 
+	@Test("Telemetry restore keeps host metrics")
+	func hostTelemetrySurvivesRestore() throws {
+		let backup = try makeContext()
+		let live = try makeContext()
+
+		let node = NodeInfoEntity()
+		node.num = 99
+		backup.insert(node)
+
+		let telemetry = TelemetryEntity()
+		telemetry.metricsType = 5
+		telemetry.uptimeSeconds = 3600
+		telemetry.hostFreeMemoryBytes = 1_000_000
+		telemetry.hostDiskFree1Bytes = 2_000_000
+		telemetry.hostDiskFree2Bytes = 3_000_000
+		telemetry.hostDiskFree3Bytes = 4_000_000
+		telemetry.hostLoad1 = 12
+		telemetry.hostLoad5 = 34
+		telemetry.hostLoad15 = 56
+		telemetry.hostUserString = "gateway"
+		telemetry.nodeNum = node.num
+		backup.insert(telemetry)
+		try backup.save()
+
+		let nodes = try NodeBackupManager.importNodes(from: backup, into: live)
+		try NodeBackupManager.importTelemetry(from: backup, into: live, nodesByNum: nodes)
+		try live.save()
+
+		let dst = try #require(try live.fetch(FetchDescriptor<TelemetryEntity>()).first)
+		#expect(dst.metricsType == 5)
+		#expect(dst.uptimeSeconds == 3600)
+		#expect(dst.hostFreeMemoryBytes == 1_000_000)
+		#expect(dst.hostDiskFree1Bytes == 2_000_000)
+		#expect(dst.hostDiskFree2Bytes == 3_000_000)
+		#expect(dst.hostDiskFree3Bytes == 4_000_000)
+		#expect(dst.hostLoad1 == 12)
+		#expect(dst.hostLoad5 == 34)
+		#expect(dst.hostLoad15 == 56)
+		#expect(dst.hostUserString == "gateway")
+	}
+
 	// MARK: - MessageEntity
 
 	@Test("Message restore keeps the XEdDSA signature flag")

@@ -494,7 +494,7 @@ struct CoTMessageParseRoundTripTests {
 struct MetricsTypesEnumTests {
 
 	@Test func allCases_count() {
-		#expect(MetricsTypes.allCases.count == 5)
+		#expect(MetricsTypes.allCases.count == 6)
 	}
 
 	@Test func allCases_haveNames() {

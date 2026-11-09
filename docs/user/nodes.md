@@ -171,6 +171,8 @@ Tap a node and scroll to the Logs section for detailed metrics:
 
 Since firmware 2.7.13 nodes don't broadcast telemetry by default, so asking is often the only way to see a node's readings. For another node, while you're connected, the Device Metrics, Environment Metrics, Air Quality Metrics, Power Metrics and Local Stats logs each have a request button (`arrow.clockwise`) beside them. Tapping it asks the node for that kind of reading and says the request was sent; each kind can be asked again after 30 seconds. The reply shows in node details and in that log, and a log with nothing in it yet opens once the reply arrives. If the mesh reports that the request failed, for example because the node has no such sensor or couldn't be reached, the app says so with the node, the kind of reading and the reason, even if you've left the node.
 
+Linux nodes running `meshtasticd` also have a **Host Metrics Log** (`server.rack`) with its own request button. Host metrics are the computer's uptime, free memory, load average (1, 5 and 15 minutes), free disk space and an optional note set on the node. The newest reading also shows in a **Host** section in node details.
+
 When a node has a known position, the Logs section also offers **Estimate Coverage** (`cellularbars`). It switches to the Map tab and opens the Site Planner coverage-estimate form prefilled from that node. See [Coverage Estimate (Site Planner)](map.md) on the Map page for the full flow.
 
 ## Local Stats and Noise Floor

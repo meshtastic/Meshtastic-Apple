@@ -21,6 +21,7 @@ struct TelemetryRequestTests {
 		#expect(TelemetryRequestKind.airQuality.telemetry.variant == .airQualityMetrics(AirQualityMetrics()))
 		#expect(TelemetryRequestKind.power.telemetry.variant == .powerMetrics(MeshtasticProtobufs.PowerMetrics()))
 		#expect(TelemetryRequestKind.localStats.telemetry.variant == .localStats(LocalStats()))
+		#expect(TelemetryRequestKind.host.telemetry.variant == .hostMetrics(HostMetrics()))
 	}
 
 	@Test func localStatsKeepsItsCooldownKey() {

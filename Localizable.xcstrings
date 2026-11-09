@@ -364,6 +364,9 @@
         }
       }
     },
+    "1 minute %lf, 5 minutes %lf, 15 minutes %lf" : {
+      "comment" : "VoiceOver value for a host's load averages"
+    },
     "3D model © Meshtastic LLC. The product and its name, logos and marks belong to %@." : {
       "comment" : "Showcase model card: who owns the model and who owns the product; the argument is the maker",
       "localizations" : {
@@ -40376,6 +40379,9 @@
         }
       }
     },
+    "Delete all host metrics?" : {
+      "comment" : "Host Metrics log: confirm deleting every reading"
+    },
     "Delete all local stats?" : {
       "localizations" : {
         "ko" : {
@@ -56819,6 +56825,18 @@
         }
       }
     },
+    "Free Disk Space" : {
+      "comment" : "Host metrics: free space on the node's main disk"
+    },
+    "Free Disk Space 2" : {
+      "comment" : "Host metrics: free space on the node's second disk"
+    },
+    "Free Disk Space 3" : {
+      "comment" : "Host metrics: free space on the node's third disk"
+    },
+    "Free Memory" : {
+      "comment" : "Host metrics: free memory on the node's computer"
+    },
     "Frequency" : {
       "localizations" : {
         "da" : {
@@ -61529,6 +61547,15 @@
           }
         }
       }
+    },
+    "Host" : {
+      "comment" : "Node details: section with the latest host metrics from a Linux node"
+    },
+    "host metrics" : {
+      "comment" : "Telemetry request: the kind of readings, used inside a sentence"
+    },
+    "Host Metrics Log" : {
+      "comment" : "Node details: log of host metrics from a Linux node"
     },
     "Hour" : {
       "localizations" : {
@@ -69450,6 +69477,9 @@
         }
       }
     },
+    "Linux nodes running meshtasticd send their uptime, free memory, load and free disk space." : {
+      "comment" : "Host Metrics log: shown before any readings arrive"
+    },
     "Listen for Beacons" : {
       "localizations" : {
         "es" : {
@@ -69573,6 +69603,9 @@
           }
         }
       }
+    },
+    "Load Average" : {
+      "comment" : "Host metrics: the computer's load over the last 1, 5 and 15 minutes"
     },
     "Load Earlier Messages" : {
       "comment" : "A button that loads older messages.",
@@ -99710,6 +99743,9 @@
         }
       }
     },
+    "No Host Metrics" : {
+      "comment" : "Host Metrics log: title shown before any readings arrive"
+    },
     "No Local Stats" : {
       "localizations" : {
         "ko" : {
@@ -117741,6 +117777,9 @@
       "comment" : "Node details: accessibility label for the button beside a log that asks the node for its readings"
     },
     "Request Environment Metrics" : {
+      "comment" : "Node details: accessibility label for the button beside a log that asks the node for its readings"
+    },
+    "Request Host Metrics" : {
       "comment" : "Node details: accessibility label for the button beside a log that asks the node for its readings"
     },
     "Request Local Stats" : {
