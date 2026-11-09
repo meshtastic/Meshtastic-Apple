@@ -306,6 +306,23 @@ struct SpatialTerrainTests {
 		}
 	}
 
+	@Test func contourSpacingWidensOnSteepGroundSeenWhole() {
+		#expect(SpatialTerrainContours.intervals(relief: 1500, metric: true, minimumMinor: 70).minor == 100)
+		#expect(SpatialTerrainContours.intervals(relief: 80, metric: true, minimumMinor: 0).minor == 10)
+		// A box 100 km across with a steady 1 in 2 slope, on a 2048 texel texture: about 49 m a
+		// texel, so lines 5 texels apart need about 122 m between them.
+		let bounds = GeoBounds(minLon: -122.66, minLat: 47.0, maxLon: -121.34, maxLat: 47.9)
+		let frame = SpatialFrame(bounds: bounds)
+		let columns = 11, rows = 11
+		let step = Float(frame.widthMeters / Double(columns - 1)) * 0.5
+		let heights = (0..<rows).flatMap { _ in (0..<columns).map { Float($0) * step } }
+		let grid = SpatialHeightGrid(columns: columns, rows: rows, heights: heights, covered: Array(repeating: true, count: heights.count), baseElevation: 0, maxElevation: heights.max() ?? 0)
+		let minimum = SpatialTerrainContours.minimumMinor(grid: grid, frame: frame, textureWidth: 2048)
+		#expect(abs(minimum - 0.5 * frame.widthMeters / 2048 * SpatialTerrainContours.minimumLineSpacing) < 1)
+		let flat = SpatialHeightGrid(columns: columns, rows: rows, heights: Array(repeating: 10, count: heights.count), covered: Array(repeating: true, count: heights.count), baseElevation: 10, maxElevation: 10)
+		#expect(SpatialTerrainContours.minimumMinor(grid: flat, frame: frame, textureWidth: 2048) == 0)
+	}
+
 	@Test func contoursOfASlopeLandOnTheRightRows() async throws {
 		let bounds = seattle
 		let source = SyntheticElevationSource(coverage: bounds) { latitude, _ in

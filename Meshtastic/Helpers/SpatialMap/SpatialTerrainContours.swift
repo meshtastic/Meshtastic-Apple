@@ -112,11 +112,43 @@ enum SpatialTerrainContours {
 	].map { ($0.0 * 0.3048, $0.1 * 0.3048) }
 
 	/// The finest spacing that keeps the box's relief to at most `maxMinorLines` minor lines
-	/// (about eight index lines), so steep ground stays readable on the texture.
-	static func intervals(relief: Double, metric: Bool, maxMinorLines: Double = 40) -> ContourIntervals {
+	/// (about eight index lines) and is at least `minimumMinor` meters, so steep ground stays
+	/// readable on the texture.
+	static func intervals(relief: Double, metric: Bool, maxMinorLines: Double = 40, minimumMinor: Double = 0) -> ContourIntervals {
 		let ladder = metric ? metricLadder : imperialLadder
-		let step = ladder.first { relief / $0.minor <= maxMinorLines } ?? ladder[ladder.count - 1]
+		let step = ladder.first { relief / $0.minor <= maxMinorLines && $0.minor >= minimumMinor } ?? ladder[ladder.count - 1]
 		return ContourIntervals(minor: step.minor, index: step.index)
+	}
+
+	/// Texels between neighboring minor lines on the box's steep ground. Closer than this they run
+	/// together into a white smear on a mountain range seen whole.
+	static let minimumLineSpacing = 5.0
+
+	/// The least minor spacing, in meters, that keeps lines `minimumLineSpacing` texels apart on
+	/// the box's steep ground: the slope nine tenths of the terrain is gentler than. A line every
+	/// `interval` meters up a slope is `interval / slope` meters apart on the ground.
+	static func minimumMinor(grid: SpatialHeightGrid, frame: SpatialFrame, textureWidth: Int) -> Double {
+		guard grid.columns >= 2, grid.rows >= 2, textureWidth > 0 else { return 0 }
+		let cellWidth = frame.widthMeters / Double(grid.columns - 1)
+		let cellDepth = frame.depthMeters / Double(grid.rows - 1)
+		guard cellWidth > 0, cellDepth > 0 else { return 0 }
+		var slopes: [Double] = []
+		slopes.reserveCapacity((grid.columns - 1) * (grid.rows - 1))
+		for row in 0..<(grid.rows - 1) {
+			for column in 0..<(grid.columns - 1) {
+				let here = row * grid.columns + column
+				let east = here + 1, south = here + grid.columns
+				guard grid.covered[here], grid.covered[east], grid.covered[south] else { continue }
+				let slopeX = Double(grid.heights[east] - grid.heights[here]) / cellWidth
+				let slopeZ = Double(grid.heights[south] - grid.heights[here]) / cellDepth
+				slopes.append((slopeX * slopeX + slopeZ * slopeZ).squareRoot())
+			}
+		}
+		guard !slopes.isEmpty else { return 0 }
+		slopes.sort()
+		let steep = slopes[min(slopes.count - 1, slopes.count * 9 / 10)]
+		let metersPerTexel = frame.widthMeters / Double(textureWidth)
+		return steep * metersPerTexel * minimumLineSpacing
 	}
 
 	/// Contours for the box from the downloaded terrain, read at a zoom where one tile is about
