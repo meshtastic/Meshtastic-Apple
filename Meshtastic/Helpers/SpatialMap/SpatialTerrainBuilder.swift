@@ -98,7 +98,8 @@ final class SpatialTerrainBuilder: Sendable {
 		guard var texture else { throw CancellationError() }
 		if options.contours, let dataZoom, grid.hasAnyTerrain {
 			let relief = Double(grid.maxElevation) - max(Double(grid.baseElevation), 0)
-			let intervals = SpatialTerrainContours.intervals(relief: relief, metric: options.metric)
+			let minimumMinor = SpatialTerrainContours.minimumMinor(grid: grid, frame: frame, textureWidth: texture.width)
+			let intervals = SpatialTerrainContours.intervals(relief: relief, metric: options.metric, minimumMinor: minimumMinor)
 			let tiles = await SpatialTerrainContours.tiles(frame: frame, width: texture.width, dataZoom: dataZoom, intervals: intervals, source: elevation)
 			try Task.checkCancellation()
 			let imagery = textureSource == .appleMaps(.satellite) || textureSource == .appleMaps(.hybrid)
