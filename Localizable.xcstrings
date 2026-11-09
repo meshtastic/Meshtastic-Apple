@@ -546,6 +546,9 @@
         }
       }
     },
+    "Connect to this device?" : {
+
+    },
     "Connect to your radio to open a remote shell." : {
 
     },
@@ -2816,6 +2819,12 @@
           }
         }
       }
+    },
+    "Bluetooth radio %@\n\nChoose the radio on Connect." : {
+      "comment" : "Connect link prompt for a Bluetooth radio without a PIN; the value is its Bluetooth address"
+    },
+    "Bluetooth radio %@\nPIN %@\n\nThe PIN is copied when you connect. Choose the radio on Connect, then paste the PIN when iOS asks to pair." : {
+      "comment" : "Connect link prompt for a Bluetooth radio with a pairing PIN; the first value is its Bluetooth address"
     },
     "Bootloader erase — **firmware is kept**" : {
       "extractionState" : "manual",
@@ -98269,6 +98278,9 @@
         }
       }
     },
+    "Network radio %@" : {
+      "comment" : "Connect link prompt for a radio reached over the network; the value is host:port"
+    },
     "Network Servers" : {
       "localizations" : {
         "ko" : {
@@ -114692,27 +114704,8 @@
         }
       }
     },
-    "Read a Meshtastic tag to add the contact or channel it contains." : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Meshtastic 태그를 읽어 태그에 포함된 연락처 또는 채널을 추가합니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lee una etiqueta de Meshtastic para añadir el contacto o canal que contiene."
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "讀取 Meshtastic 標籤以新增其包含的聯絡人或頻道。"
-          }
-        }
-      }
+    "Read a Meshtastic tag to add the contact or channel it contains, or connect to the radio it names." : {
+
     },
     "Read and reply to Meshtastic channel and direct messages directly from your car's display using CarPlay." : {
       "comment" : "A description of how to use CarPlay with Meshtastic.",
@@ -144457,27 +144450,8 @@
         }
       }
     },
-    "This tag doesn't hold a Meshtastic contact or channel link." : {
-      "localizations" : {
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "이 태그에는 Meshtastic 연락처 또는 채널 링크가 포함되어 있지 않습니다."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Esta etiqueta no contiene un enlace de contacto o canal de Meshtastic."
-          }
-        },
-        "zh-Hant-TW" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "此標籤不包含 Meshtastic 聯絡人或頻道連結。"
-          }
-        }
-      }
+    "This tag doesn't hold a Meshtastic contact, channel or connect link." : {
+
     },
     "This tool scans your local area to find nearby Meshtastic radios on different frequency settings. It switches between settings automatically, listens for a few minutes on each one, and then shows you which setting works best for your location based on how many radios it finds and how busy the airwaves are. On supported devices, local on-device AI will analyze your scan results and recommend the best setting — no internet connection required." : {
       "comment" : "A description of the functionality of the discovery scan tool.",

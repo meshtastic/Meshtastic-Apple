@@ -203,17 +203,43 @@ struct MainScene: View {
 		}
 	}
 
+	/// Which handler an opened URL goes to, first match wins.
+	enum IncomingURL: Equatable {
+		case mapFile
+		case contact
+		case channel
+		case route
+		case ignored
+
+		init(_ url: URL) {
+			if url.isFileURL {
+				self = .mapFile
+			} else if ContactURLHandler.canHandle(url) {
+				self = .contact
+			} else if MeshtasticChannelURL.canHandle(url) {
+				self = .channel
+			} else if Router.isRoutable(url) {
+				self = .route
+			} else {
+				self = .ignored
+			}
+		}
+	}
+
 	private func dispatchIncomingURL(_ url: URL, fromActivity: Bool) {
-		if url.isFileURL {
+		switch IncomingURL(url) {
+		case .mapFile:
 			router.importMapFile(url: url)
-		} else if ContactURLHandler.canHandle(url) {
+		case .contact:
 			if let pending = ContactURLHandler.makePendingContact(from: url, accessoryManager: accessoryManager) {
 				pendingContact = pending
 			}
-		} else if MeshtasticChannelURL.canHandle(url) {
+		case .channel:
 			handleChannelLinkURL(url, fromActivity: fromActivity)
-		} else if url.absoluteString.lowercased().contains("meshtastic:///") {
+		case .route:
 			router.route(url: url)
+		case .ignored:
+			break
 		}
 	}
 

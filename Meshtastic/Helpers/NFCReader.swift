@@ -50,7 +50,7 @@ final class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate 
 	}
 
 	/// Starts a read session and calls `onURL` (on the main actor) with the
-	/// first https/meshtastic URL found on the tag.
+	/// first contact, channel or connect link found on the tag.
 	func scanToRead(onURL: @escaping (URL) -> Void) {
 		// Tear down any in-flight session so a stale one can't race the new mode.
 		session?.invalidate()
@@ -198,6 +198,16 @@ final class NFCReader: NSObject, ObservableObject, NFCNDEFReaderSessionDelegate 
 		for message in messages {
 			for record in message.records {
 				guard let url = self.url(from: record) else { continue }
+				// A node's connect link carries its address in the query, not a fragment.
+				if ConnectLink.canHandle(url) {
+					Logger.services.info("Read NFC tag connect link")
+					session.alertMessage = String(localized: "NFC tag read successfully.")
+					session.invalidate()
+					Task { @MainActor in
+						onURL(url)
+					}
+					return
+				}
 				// Only deliver URLs the app can actually import: contact links
 				// (meshtastic.org/v/#) and channel links (meshtastic.org/e/ or
 				// meshtastic://e). Anything else falls through to the failure

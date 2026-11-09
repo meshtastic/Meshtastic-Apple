@@ -623,6 +623,12 @@ struct Connect: View {
 			refreshConnectedNodeState()
 		}
 		.onDisappear { nymeaProvisioning.stopDiscovery() }
+		// A confirmed connect link for a TCP radio.
+		.onReceive(router.$pendingTCPConnection) { connection in
+			guard let connection else { return }
+			router.pendingTCPConnection = nil
+			Task { await connectManually(connection, transportType: .tcp, isSwitchingRadio: $isSwitchingRadio, accessoryManager: accessoryManager, router: router) }
+		}
 		.onChange(of: scenePhase) { _, _ in updateNymeaDiscovery() }
 		.onChange(of: accessoryManager.isConnected) { _, _ in updateNymeaDiscovery() }
 		.onChange(of: accessoryManager.isConnecting) { _, _ in updateNymeaDiscovery() }
@@ -869,16 +875,8 @@ struct ManualConnectionMenu: View {
 			
 			Button("OK", action: {
 				if !connectionString.isEmpty {
-					if let device = selectedTransport.transport.device(forManualConnection: connectionString) {
-						if UserDefaults.preferredPeripheralId == device.id.uuidString {
-							Task {
-								try await selectedTransport.transport.manuallyConnect(toDevice: device)
-							}
-						} else {
-							Task {
-								await performRadioSwitch(device, isSwitchingRadio: $isSwitchingRadio, accessoryManager: accessoryManager, router: router)
-							}
-						}
+					Task {
+						await connectManually(connectionString, transportType: selectedTransport.transport.type, isSwitchingRadio: $isSwitchingRadio, accessoryManager: accessoryManager, router: router)
 					}
 				}
 			})
@@ -946,6 +944,22 @@ struct DeviceConnectRow: View {
 				}
 			}
 		}.padding([.bottom, .top])
+	}
+}
+
+/// Connects to a radio typed in by hand, or named by a connect link: reconnects when it is the
+/// preferred radio, otherwise switches to it.
+@MainActor
+func connectManually(_ connectionString: String, transportType: TransportType, isSwitchingRadio: Binding<Bool>, accessoryManager: AccessoryManager, router: Router) async {
+	guard let transport = accessoryManager.transportForType(transportType),
+		  let device = transport.device(forManualConnection: connectionString) else {
+		Logger.transport.error("🔗 Can't make a \(transportType.rawValue, privacy: .public) connection from \(connectionString, privacy: .private)")
+		return
+	}
+	if UserDefaults.preferredPeripheralId == device.id.uuidString {
+		try? await transport.manuallyConnect(toDevice: device)
+	} else {
+		await performRadioSwitch(device, isSwitchingRadio: isSwitchingRadio, accessoryManager: accessoryManager, router: router)
 	}
 }
 
