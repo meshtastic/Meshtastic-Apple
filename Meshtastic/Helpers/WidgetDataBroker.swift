@@ -37,6 +37,7 @@ final class WidgetDataBroker {
 		case config       // config complete, DB dump saved, channel saves
 		case messages     // ingest or mark-read (via .meshMessagesDidChange)
 		case localStats   // 15-minute LocalStats telemetry
+		case displayNames // a node's local display name changed
 	}
 
 	private var cancellables = Set<AnyCancellable>()
@@ -72,7 +73,7 @@ final class WidgetDataBroker {
 	private init() {
 		// Widgets name nodes by local display names, so a rename rebuilds them.
 		NotificationCenter.default.addObserver(forName: NodeDisplayNameStore.didChangeNotification, object: nil, queue: .main) { _ in
-			MainActor.assumeIsolated { WidgetDataBroker.shared.refresh(.config) }
+			MainActor.assumeIsolated { WidgetDataBroker.shared.refresh(.displayNames) }
 		}
 	}
 
@@ -493,6 +494,9 @@ final class WidgetDataBroker {
 					: [(.messages, 300), (.tracker, 300)])
 			case .localStats:
 				merge([(.stats, 300), (.tracker, 300), (.map, 900)])
+			case .displayNames:
+				// Names show in every widget, message senders included.
+				merge([(.stats, 60), (.tracker, 60), (.messages, 60), (.map, 900)])
 			}
 		}
 		for (kind, floor) in floors {
