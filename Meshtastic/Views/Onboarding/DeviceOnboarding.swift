@@ -322,14 +322,23 @@ struct DeviceOnboarding: View {
 			return .notifications
 		case .notifications:
 			if locationStatus.allowsLocationUse {
-				return .siri
+				return siriStep
 			}
 			return .location
 		case .location:
-			return .siri
+			return siriStep
 		case .siri:
 			return nil
 		}
+	}
+
+	/// No Siri step in NO_SIRI builds, which are signed without the Siri entitlement.
+	private var siriStep: SetupGuide? {
+		#if NO_SIRI
+		return nil
+		#else
+		return .siri
+		#endif
 	}
 
 	func goToNextStep(after step: SetupGuide?) async {
@@ -451,6 +460,8 @@ extension DeviceOnboarding {
 		#if targetEnvironment(macCatalyst)
 		// Siri authorization prompt is not available on Mac Catalyst
 		Logger.services.info("Siri permissions not available on Mac Catalyst")
+		#elseif NO_SIRI
+		Logger.services.info("Siri permissions not requested in a NO_SIRI build")
 		#else
 		await withCheckedContinuation { continuation in
 			INPreferences.requestSiriAuthorization { status in

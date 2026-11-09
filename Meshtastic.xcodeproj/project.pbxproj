@@ -155,6 +155,7 @@
 		2DB746426A829F22BD20E07C /* MeshtasticDataModelV14.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV14.xcdatamodel; sourceTree = "<group>"; };
 		2FF177FE5C8FCBDA2FA8099C /* MeshtasticDataModelV33.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModelV33.xcdatamodel; sourceTree = "<group>"; };
 		2FFB527D0E181BCC550DB9CF /* MeshtasticDataModelV 27.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 27.xcdatamodel"; sourceTree = "<group>"; };
+		3026281785101DB699D06321 /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.xcconfig; sourceTree = "<group>"; };
 		3191C07890D78978DBD3794B /* MeshtasticDataModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = MeshtasticDataModel.xcdatamodel; sourceTree = "<group>"; };
 		3213438021C94F7AA7D793B2 /* MeshtasticDataModelV 37.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 37.xcdatamodel"; sourceTree = "<group>"; };
 		391CFE3B9D9A0171B3C3C8E9 /* mqtt_roots.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = mqtt_roots.json; sourceTree = "<group>"; };
@@ -641,6 +642,14 @@
 			path = Extensions;
 			sourceTree = "<group>";
 		};
+		1AB7B138404902CE66E882D3 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				3026281785101DB699D06321 /* Signing.xcconfig */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
 		29F5EBC33E7FAC687E6B7F7D /* Preview Content */ = {
 			isa = PBXGroup;
 			children = (
@@ -798,6 +807,7 @@
 		C38AE1DFD847A4C81F189C1B = {
 			isa = PBXGroup;
 			children = (
+				1AB7B138404902CE66E882D3 /* Config */,
 				26351F51CD01C94D8D82486A /* Localizable.xcstrings */,
 				68569A5CFCF946568B4E32C5 /* Meshtastic */,
 				EA229AC7C87CBBD64EC61AA1 /* Meshtastic TV */,
@@ -1095,32 +1105,32 @@
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					55AF3400F316106F54C5485F = {
-						DevelopmentTeam = GCH7VS5Y9R;
+						DevelopmentTeam = "$(MESHTASTIC_DEVELOPMENT_TEAM)";
 						ProvisioningStyle = Automatic;
 					};
 					731011765CF28FC65E45163E = {
-						DevelopmentTeam = GCH7VS5Y9R;
+						DevelopmentTeam = "$(MESHTASTIC_DEVELOPMENT_TEAM)";
 						ProvisioningStyle = Automatic;
 					};
 					A2F1595BC848E48B138C58E1 = {
-						DevelopmentTeam = GCH7VS5Y9R;
+						DevelopmentTeam = "$(MESHTASTIC_DEVELOPMENT_TEAM)";
 						ProvisioningStyle = Automatic;
 					};
 					BD5F76AD88798DAA8768A6E5 = {
-						DevelopmentTeam = GCH7VS5Y9R;
+						DevelopmentTeam = "$(MESHTASTIC_DEVELOPMENT_TEAM)";
 						ProvisioningStyle = Automatic;
 						TestTargetID = 731011765CF28FC65E45163E;
 					};
 					C4BC64E061C609D15F5DFAF5 = {
-						DevelopmentTeam = GCH7VS5Y9R;
+						DevelopmentTeam = "$(MESHTASTIC_DEVELOPMENT_TEAM)";
 						ProvisioningStyle = Automatic;
 					};
 					C92DCD5C1ED45374936973F2 = {
-						DevelopmentTeam = GCH7VS5Y9R;
+						DevelopmentTeam = "$(MESHTASTIC_DEVELOPMENT_TEAM)";
 						ProvisioningStyle = Automatic;
 					};
 					FEF4168AE260CFE34C972EBB = {
-						DevelopmentTeam = GCH7VS5Y9R;
+						DevelopmentTeam = "$(MESHTASTIC_DEVELOPMENT_TEAM)";
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -1423,10 +1433,10 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = GCH7VS5Y9R;
+				DEVELOPMENT_TEAM = "$(MESHTASTIC_DEVELOPMENT_TEAM)";
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 2.7.28;
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.TVUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(MESHTASTIC_BUNDLE_ID_PREFIX).TVUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
 				SUPPORTED_PLATFORMS = "appletvos appletvsimulator";
@@ -1449,7 +1459,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
 				MARKETING_VERSION = 2.7.28;
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.MeshtasticTests;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(MESHTASTIC_BUNDLE_ID_PREFIX).MeshtasticTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = YES;
@@ -1474,7 +1484,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
 				MARKETING_VERSION = 2.7.28;
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.MeshtasticTests;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(MESHTASTIC_BUNDLE_ID_PREFIX).MeshtasticTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = YES;
@@ -1489,6 +1499,7 @@
 		};
 		67E591654DF7A3F0BC045D06 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3026281785101DB699D06321 /* Signing.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "";
@@ -1525,7 +1536,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = GCH7VS5Y9R;
+				DEVELOPMENT_TEAM = "$(MESHTASTIC_DEVELOPMENT_TEAM)";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -1543,6 +1554,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(MESHTASTIC_SWIFT_CONDITIONS)";
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_STRICT_CONCURRENCY = targeted;
@@ -1554,6 +1566,7 @@
 		};
 		6936E75845F3455F2F8A83BA /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3026281785101DB699D06321 /* Signing.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "";
@@ -1590,7 +1603,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = GCH7VS5Y9R;
+				DEVELOPMENT_TEAM = "$(MESHTASTIC_DEVELOPMENT_TEAM)";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -1614,7 +1627,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(MESHTASTIC_SWIFT_CONDITIONS)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_STRICT_CONCURRENCY = targeted;
 				SWIFT_VERSION = 6.0;
@@ -1643,7 +1656,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MARKETING_VERSION = 2.7.28;
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(MESHTASTIC_BUNDLE_ID_PREFIX).Widgets";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
@@ -1667,7 +1680,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = GCH7VS5Y9R;
+				DEVELOPMENT_TEAM = "$(MESHTASTIC_DEVELOPMENT_TEAM)";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MeshtasticMessages/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
@@ -1678,7 +1691,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 2.7.28;
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.MessagesExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(MESHTASTIC_BUNDLE_ID_PREFIX).MessagesExtension";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -1698,14 +1711,14 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = GCH7VS5Y9R;
+				DEVELOPMENT_TEAM = "$(MESHTASTIC_DEVELOPMENT_TEAM)";
 				INFOPLIST_FILE = "Meshtastic TV/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 2.7.28;
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(MESHTASTIC_BUNDLE_ID_PREFIX)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
 				SUPPORTED_PLATFORMS = "appletvos appletvsimulator";
@@ -1723,14 +1736,14 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = GCH7VS5Y9R;
+				DEVELOPMENT_TEAM = "$(MESHTASTIC_DEVELOPMENT_TEAM)";
 				INFOPLIST_FILE = "Meshtastic TV/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 2.7.28;
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(MESHTASTIC_BUNDLE_ID_PREFIX)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
 				SUPPORTED_PLATFORMS = "appletvos appletvsimulator";
@@ -1751,7 +1764,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = GCH7VS5Y9R;
+				DEVELOPMENT_TEAM = "$(MESHTASTIC_DEVELOPMENT_TEAM)";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MeshtasticMessages/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
@@ -1762,7 +1775,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 2.7.28;
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.MessagesExtension;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(MESHTASTIC_BUNDLE_ID_PREFIX).MessagesExtension";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -1796,7 +1809,7 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.6;
 				MARKETING_VERSION = 2.7.28;
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.Widgets;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(MESHTASTIC_BUNDLE_ID_PREFIX).Widgets";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
@@ -1819,20 +1832,20 @@
 				CODE_SIGN_ENTITLEMENTS = "Meshtastic Watch App/Meshtastic Watch App.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = GCH7VS5Y9R;
+				DEVELOPMENT_TEAM = "$(MESHTASTIC_DEVELOPMENT_TEAM)";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Meshtastic Watch App/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
 				INFOPLIST_KEY_CFBundleIconName = AppIcon;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Meshtastic needs your location to calculate distance and bearing to mesh nodes during foxhunt.";
-				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = gvh.MeshtasticClient;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = "$(MESHTASTIC_BUNDLE_ID_PREFIX)";
 				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 2.7.28;
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.watchkitapp;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(MESHTASTIC_BUNDLE_ID_PREFIX).watchkitapp";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
@@ -1849,10 +1862,10 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = GCH7VS5Y9R;
+				DEVELOPMENT_TEAM = "$(MESHTASTIC_DEVELOPMENT_TEAM)";
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 2.7.28;
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.TVUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(MESHTASTIC_BUNDLE_ID_PREFIX).TVUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
 				SUPPORTED_PLATFORMS = "appletvos appletvsimulator";
@@ -1872,20 +1885,20 @@
 				CODE_SIGN_ENTITLEMENTS = "Meshtastic Watch App/Meshtastic Watch App.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = GCH7VS5Y9R;
+				DEVELOPMENT_TEAM = "$(MESHTASTIC_DEVELOPMENT_TEAM)";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Meshtastic Watch App/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = Meshtastic;
 				INFOPLIST_KEY_CFBundleIconName = AppIcon;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Meshtastic needs your location to calculate distance and bearing to mesh nodes during foxhunt.";
-				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = gvh.MeshtasticClient;
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = "$(MESHTASTIC_BUNDLE_ID_PREFIX)";
 				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = NO;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 2.7.28;
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient.watchkitapp;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(MESHTASTIC_BUNDLE_ID_PREFIX).watchkitapp";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = watchos;
 				SKIP_INSTALL = YES;
@@ -1906,7 +1919,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = Meshtastic/Meshtastic.entitlements;
+				CODE_SIGN_ENTITLEMENTS = "$(MESHTASTIC_APP_ENTITLEMENTS)";
 				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = "Meshtastic/Meshtastic-Catalyst.entitlements";
 				"CODE_SIGN_ENTITLEMENTS[sdk=xros*]" = "Meshtastic/Meshtastic-visionOS.entitlements";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
@@ -1940,7 +1953,7 @@
 					"-weak_framework",
 					SwiftUI,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(MESHTASTIC_BUNDLE_ID_PREFIX)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator xros xrsimulator";
 				SUPPORTS_MACCATALYST = YES;
@@ -1961,7 +1974,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = Meshtastic/Meshtastic.entitlements;
+				CODE_SIGN_ENTITLEMENTS = "$(MESHTASTIC_APP_ENTITLEMENTS)";
 				"CODE_SIGN_ENTITLEMENTS[sdk=macosx*]" = "Meshtastic/Meshtastic-Catalyst.entitlements";
 				"CODE_SIGN_ENTITLEMENTS[sdk=xros*]" = "Meshtastic/Meshtastic-visionOS.entitlements";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
@@ -1995,7 +2008,7 @@
 					"-weak_framework",
 					SwiftUI,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = gvh.MeshtasticClient;
+				PRODUCT_BUNDLE_IDENTIFIER = "$(MESHTASTIC_BUNDLE_ID_PREFIX)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator xros xrsimulator";
 				SUPPORTS_MACCATALYST = YES;

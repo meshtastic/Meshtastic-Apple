@@ -101,3 +101,6 @@ marketing/
 
 # SwiftPM build output of the in-repo protoc plugin (scripts/gen_protos.sh, phase 5)
 scripts/protoc-gen-configform-swift/.build/
+
+## Local signing override (see Config/Local.xcconfig.example)
+Config/Local.xcconfig

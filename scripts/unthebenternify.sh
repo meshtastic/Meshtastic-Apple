@@ -1,4 +1,4 @@
 #!/bin/bash
 
-sed -i '' -e 's/6YF6QJH524/GCH7VS5Y9R/g' ./Meshtastic.xcodeproj/project.pbxproj
-sed -i '' -e 's/thebentern.Meshtastic/gvh.Meshtastic/g' ./Meshtastic.xcodeproj/project.pbxproj
+# Go back to the project's own team.
+rm -f "$(dirname "$0")/../Config/Local.xcconfig"
