@@ -490,7 +490,7 @@ extension MeshPackets {
 									Notification(
 										id: (UUID().uuidString),
 										title: "New Node".localized,
-										subtitle: "\(newUser.longName ?? "Unknown".localized)",
+										subtitle: "\(newUser.localLongName ?? "Unknown".localized)",
 										content: "New Node has been discovered".localized,
 										target: "nodes",
 										path: "meshtastic:///nodes?nodenum=\(newUser.num)"
@@ -743,7 +743,7 @@ extension MeshPackets {
 						position.nodePosition = fetchedNode[0]
 						fetchedNode[0].latestPositionCache = position
 
-						let geofenceNodeName = fetchedNode[0].user?.longName ?? fetchedNode[0].user?.shortName ?? "\(packet.from)"
+						let geofenceNodeName = fetchedNode[0].user?.localLongName ?? fetchedNode[0].user?.shortName ?? "\(packet.from)"
 						evaluateGeofences(nodeNum: posNum, latitudeI: positionMessage.latitudeI, longitudeI: positionMessage.longitudeI, nodeName: geofenceNodeName)
 
 						if !reusePreviousLatest && position.precisionBits != 32 && position.precisionBits != 0 {

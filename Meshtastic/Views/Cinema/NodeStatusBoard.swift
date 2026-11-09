@@ -202,7 +202,7 @@ struct NodeStatusBoard: View {
 		return Entry(
 			id: node.num,
 			shortName: user?.shortName ?? String(hexName(node.num).suffix(4)),
-			longName: user?.longName ?? hexName(node.num),
+			longName: user?.localLongName ?? hexName(node.num),
 			status: status,
 			lastHeard: node.lastHeard,
 			isRadio: isRadio,

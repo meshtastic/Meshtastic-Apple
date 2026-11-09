@@ -38,6 +38,10 @@ final class WatchSessionManager: NSObject, ObservableObject {
 		session.activate()
 		self.session = session
 		logger.info("WCSession activated on iOS")
+		// The Watch names nodes by local display names, so a rename sends them again.
+		NotificationCenter.default.addObserver(forName: NodeDisplayNameStore.didChangeNotification, object: nil, queue: .main) { [weak self] _ in
+			self?.sendNodesToWatch()
+		}
 	}
 
 	// MARK: - Public API
@@ -201,7 +205,7 @@ struct WatchNode: Codable, Sendable {
 
 		return WatchNode(
 			num: UInt32(nodeInfo.num),
-			longName: user.longName ?? "Unknown",
+			longName: user.localLongName ?? "Unknown",
 			shortName: user.shortName ?? "?",
 			latitude: latitude,
 			longitude: longitude,

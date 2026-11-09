@@ -69,7 +69,12 @@ final class WidgetDataBroker {
 	/// message actually changed, so a busy channel can't exhaust the budget.
 	private var lastWrittenMessagesKey: String?
 
-	private init() {}
+	private init() {
+		// Widgets name nodes by local display names, so a rename rebuilds them.
+		NotificationCenter.default.addObserver(forName: NodeDisplayNameStore.didChangeNotification, object: nil, queue: .main) { _ in
+			MainActor.assumeIsolated { WidgetDataBroker.shared.refresh(.config) }
+		}
+	}
 
 	/// Called once at app launch. Message changes funnel through the existing
 	/// .meshMessagesDidChange notification, which covers ingest and mark-read.
@@ -247,7 +252,7 @@ final class WidgetDataBroker {
 		let context = ModelContext(container)
 		var read = DatabaseRead()
 		let radioNode = radioNum.flatMap { getNodeInfo(id: $0, context: context) }
-		read.radioLongName = radioNode?.user?.longName
+		read.radioLongName = radioNode?.user?.localLongName
 		read.radioShortName = radioNode?.user?.shortName
 		read.radioBatteryLevel = radioNode?.batteryLevel
 
@@ -363,7 +368,7 @@ final class WidgetDataBroker {
 			let coordinate = node.latestPosition?.nodeCoordinate
 			return NodeSnapshot(
 				num: node.num,
-				longName: node.user?.longName ?? "Unknown".localized,
+				longName: node.user?.localLongName ?? "Unknown".localized,
 				shortName: node.user?.shortName ?? "?",
 				colorSeed: UInt32(truncatingIfNeeded: node.num),
 				batteryLevel: node.batteryLevel,
@@ -445,7 +450,7 @@ final class WidgetDataBroker {
 				messageId: message.messageId,
 				kind: kind,
 				senderShortName: fromUser.shortName ?? "?",
-				senderLongName: fromUser.longName ?? "Unknown".localized,
+				senderLongName: fromUser.localLongName ?? "Unknown".localized,
 				senderColorSeed: UInt32(truncatingIfNeeded: fromUser.num),
 				text: message.messagePayload ?? "",
 				timestamp: Date(timeIntervalSince1970: TimeInterval(message.messageTimestamp)),

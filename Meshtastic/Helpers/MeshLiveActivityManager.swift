@@ -122,14 +122,14 @@ final class MeshLiveActivityManager: ObservableObject {
 		if let num = mode.trackedNodeNum {
 			let user = getNodeInfo(id: num, context: context)?.user
 			nodeShortName = user?.shortName ?? String(num.toHex().suffix(4))
-			nodeLongName = user?.longName?.addingVariationSelectors ?? num.toHex()
+			nodeLongName = user?.localLongName?.addingVariationSelectors ?? num.toHex()
 		}
 		let attributes = Attributes(
 			mode: mode,
 			startedAt: Date(),
 			radioNum: radioNum,
 			radioShortName: radioUser?.shortName ?? "?",
-			radioLongName: radioUser?.longName?.addingVariationSelectors ?? String(localized: "Meshtastic"),
+			radioLongName: radioUser?.localLongName?.addingVariationSelectors ?? String(localized: "Meshtastic"),
 			nodeShortName: nodeShortName,
 			nodeLongName: nodeLongName
 		)

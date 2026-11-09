@@ -224,7 +224,7 @@ enum FirmwareUpdateNotifier {
 
 		return candidate(from: FirmwareUpdateNotificationSource(
 			nodeNum: node.num,
-			deviceName: node.user?.longName ?? accessoryManager.activeConnection?.device.longName ?? accessoryManager.activeConnection?.device.name,
+			deviceName: node.user?.localLongName ?? accessoryManager.activeConnection?.device.longName ?? accessoryManager.activeConnection?.device.name,
 			platformioTarget: platformioTarget,
 			architecture: hardware.architecture,
 			metadataVersion: node.metadata?.firmwareVersion,

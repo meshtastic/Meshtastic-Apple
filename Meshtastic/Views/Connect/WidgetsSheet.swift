@@ -213,7 +213,7 @@ struct WidgetsSheet: View {
 			return NodePickerRow(
 				num: node.num,
 				shortName: user.shortName ?? "?",
-				longName: user.longName ?? node.num.toHex(),
+				longName: user.localLongName ?? node.num.toHex(),
 				lastHeard: node.lastHeard,
 				favorite: node.favorite
 			)
