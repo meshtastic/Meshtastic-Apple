@@ -748,17 +748,20 @@ struct NodeDetail: View {
 		let hasPax = logAvailability.hasPax
 
 		Section("Logs") {
-			NavigationLink {
-				DeviceMetricsLog(node: node)
-			} label: {
-				Label {
-					Text("Device Metrics Log")
-				} icon: {
-					Image(systemName: "flipphone")
-						.symbolRenderingMode(.multicolor)
+			HStack {
+				NavigationLink {
+					DeviceMetricsLog(node: node)
+				} label: {
+					Label {
+						Text("Device Metrics Log")
+					} icon: {
+						Image(systemName: "flipphone")
+							.symbolRenderingMode(.multicolor)
+					}
 				}
+				.disabled(!hasDeviceMetrics)
+				telemetryRequest(.device)
 			}
-			.disabled(!hasDeviceMetrics)
 			if showMapLink {
 				NavigationLink {
 					NodeMapSwiftUI(node: node, showUserLocation: accessoryManager.activeDeviceNum == nodeNum)
@@ -795,28 +798,34 @@ struct NodeDetail: View {
 				}
 			}
 			.disabled(!hasPositions)
-			NavigationLink {
-				EnvironmentMetricsLog(node: node)
-			} label: {
-				Label {
-					Text("Environment Metrics Log")
-				} icon: {
-					Image(systemName: "cloud.sun.rain")
-						.symbolRenderingMode(.multicolor)
+			HStack {
+				NavigationLink {
+					EnvironmentMetricsLog(node: node)
+				} label: {
+					Label {
+						Text("Environment Metrics Log")
+					} icon: {
+						Image(systemName: "cloud.sun.rain")
+							.symbolRenderingMode(.multicolor)
+					}
 				}
+				.disabled(!hasEnvironmentMetrics)
+				telemetryRequest(.environment)
 			}
-			.disabled(!hasEnvironmentMetrics)
-			NavigationLink {
-				AirQualityMetricsLog(node: node)
-			} label: {
-				Label {
-					Text("Air Quality Metrics Log")
-				} icon: {
-					Image(systemName: "aqi.medium")
-						.symbolRenderingMode(.multicolor)
+			HStack {
+				NavigationLink {
+					AirQualityMetricsLog(node: node)
+				} label: {
+					Label {
+						Text("Air Quality Metrics Log")
+					} icon: {
+						Image(systemName: "aqi.medium")
+							.symbolRenderingMode(.multicolor)
+					}
 				}
+				.disabled(!hasAirQualityMetrics)
+				telemetryRequest(.airQuality)
 			}
-			.disabled(!hasAirQualityMetrics)
 			NavigationLink {
 				TraceRouteLog(node: node)
 			} label: {
@@ -828,17 +837,20 @@ struct NodeDetail: View {
 				}
 			}
 			.disabled(!hasTraceRoutes)
-			NavigationLink {
-				PowerMetricsLog(node: node)
-			} label: {
-				Label {
-					Text("Power Metrics Log")
-				} icon: {
-					Image(systemName: "bolt")
-						.symbolRenderingMode(.multicolor)
+			HStack {
+				NavigationLink {
+					PowerMetricsLog(node: node)
+				} label: {
+					Label {
+						Text("Power Metrics Log")
+					} icon: {
+						Image(systemName: "bolt")
+							.symbolRenderingMode(.multicolor)
+					}
 				}
+				.disabled(!hasPowerMetrics)
+				telemetryRequest(.power)
 			}
-			.disabled(!hasPowerMetrics)
 			NavigationLink {
 				DetectionSensorLog(node: node)
 			} label: {
@@ -850,17 +862,20 @@ struct NodeDetail: View {
 				}
 			}
 			.disabled(!hasDetectionSensorMetrics)
-			NavigationLink {
-				LocalStatsLog(node: node)
-			} label: {
-				Label {
-					Text("Local Stats Log")
-				} icon: {
-					Image(systemName: "chart.bar")
-						.symbolRenderingMode(.multicolor)
+			HStack {
+				NavigationLink {
+					LocalStatsLog(node: node)
+				} label: {
+					Label {
+						Text("Local Stats Log")
+					} icon: {
+						Image(systemName: "chart.bar")
+							.symbolRenderingMode(.multicolor)
+					}
 				}
+				.disabled(!node.hasLocalStats)
+				telemetryRequest(.localStats)
 			}
-			.disabled(!node.hasLocalStats)
 			if hasPax {
 				NavigationLink {
 					PaxCounterLog(node: node)
@@ -874,6 +889,15 @@ struct NodeDetail: View {
 				}
 				.disabled(!hasPax)
 			}
+		}
+	}
+
+	/// The request for a log's telemetry, beside its row: for another node, while connected.
+	@ViewBuilder
+	private func telemetryRequest(_ kind: TelemetryRequestKind) -> some View {
+		// activeDeviceNum, not connectedNode, which fetches; this runs five times per body.
+		if accessoryManager.isConnected, let active = accessoryManager.activeDeviceNum, active != nodeNum {
+			TelemetryRequestButton(node: node, kind: kind)
 		}
 	}
 
@@ -914,7 +938,6 @@ struct NodeDetail: View {
 						node: node,
 						connectedNode: connectedNode
 					)
-					RequestLocalStatsButton(node: node)
 					ExchangeUserInfoButton(
 						node: node,
 						connectedNode: connectedNode
