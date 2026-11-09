@@ -21,7 +21,7 @@ struct AllTraceRoutesLog: View {
 	@State private var openRouteID: PersistentIdentifier?
 
 	private var nodeNames: [Int64: String] {
-		Dictionary(nodes.map { ($0.num, $0.user?.longName ?? $0.num.toHex()) }, uniquingKeysWith: { first, _ in first })
+		Dictionary(nodes.map { ($0.num, $0.user?.localLongName ?? $0.num.toHex()) }, uniquingKeysWith: { first, _ in first })
 	}
 
 	var body: some View {

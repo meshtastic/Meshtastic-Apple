@@ -304,7 +304,7 @@ private struct BuildTestNodeSnapshot {
 	init(node: NodeInfoEntity) {
 		let role = DeviceRoles(rawValue: Int(node.user?.role ?? 0))
 		shortName = node.user?.shortName ?? "?"
-		longName = node.user?.longName?.addingVariationSelectors ?? "Unknown".localized
+		longName = node.user?.localLongName?.addingVariationSelectors ?? "Unknown".localized
 		isFavorite = node.favorite
 		isOnline = node.isOnline
 		lastHeardText = node.lastHeard?.formatted(date: .numeric, time: .shortened) ?? "Unknown Age".localized

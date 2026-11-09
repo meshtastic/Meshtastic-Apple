@@ -92,7 +92,7 @@ enum SpatialMapNodeSource {
 				coordinate: coordinate,
 				altitude: position.altitude == 0 ? nil : Double(position.altitude),
 				isPrecise: position.isPreciseLocation,
-				longName: node.user?.longName ?? "?",
+				longName: node.user?.localLongName ?? "?",
 				shortName: node.user?.shortName ?? "?",
 				isOnline: node.isOnline,
 				lastHeard: node.lastHeard,

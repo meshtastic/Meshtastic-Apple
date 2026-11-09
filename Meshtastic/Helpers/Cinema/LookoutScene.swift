@@ -183,7 +183,7 @@ final class LookoutScene {
 			found.append(LookoutLabel(
 				id: node.num,
 				shortName: node.liveUser?.shortName ?? String(String(format: "!%08x", UInt32(truncatingIfNeeded: node.num)).suffix(4)),
-				longName: node.liveUser?.longName ?? String(format: "!%08x", UInt32(truncatingIfNeeded: node.num)),
+				longName: node.liveUser?.localLongName ?? String(format: "!%08x", UInt32(truncatingIfNeeded: node.num)),
 				distance: distance,
 				bearing: Self.bearing(from: site.coordinate, to: coordinate),
 				rise: Double(position.altitude),

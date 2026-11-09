@@ -144,7 +144,7 @@ struct Connect: View {
 									VStack(alignment: .leading) {
 										if safeNode != nil {
 											HStack {
-												Text(connectedDevice.longName?.addingVariationSelectors ?? "Unknown".localized).font(.title2)
+												Text((connectedDevice.num.flatMap(NodeDisplayNameStore.displayName(for:)) ?? connectedDevice.longName)?.addingVariationSelectors ?? "Unknown".localized).font(.title2)
 												if connectedDevice.wasRestored {
 													Circle()
 														.fill(Color.gray)

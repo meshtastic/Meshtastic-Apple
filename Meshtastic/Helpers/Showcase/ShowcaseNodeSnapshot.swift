@@ -80,7 +80,7 @@ actor ShowcaseSnapshotReader {
 			return ShowcaseNodeSnapshot(
 				id: node.num,
 				shortName: user?.shortName ?? "?",
-				longName: user?.longName ?? node.num.toHex(),
+				longName: user?.localLongName ?? node.num.toHex(),
 				hwModel: user?.hwModel,
 				hardwareName: user?.hwDisplayName,
 				role: user.flatMap { DeviceRoles(rawValue: Int($0.role)) },

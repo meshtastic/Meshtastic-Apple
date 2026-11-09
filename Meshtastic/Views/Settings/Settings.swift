@@ -68,7 +68,7 @@ struct SettingsNodeSnapshot: Identifiable, Equatable {
 		if let user = node.user,
 			user.modelContext != nil,
 			!user.isDeleted {
-			userLongName = user.longName
+			userLongName = user.localLongName
 			hwModelId = user.hwModelId
 			userIsLicensed = user.isLicensed
 			userIsPkiEncrypted = user.pkiEncrypted

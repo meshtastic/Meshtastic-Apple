@@ -249,7 +249,7 @@ struct TeamStatusBoard: View {
 		}
 		return Roster(
 			date: .now,
-			radioName: radio.map { $0.liveUser?.longName ?? hexName($0.num) },
+			radioName: radio.map { $0.liveUser?.localLongName ?? hexName($0.num) },
 			members: members,
 			favoriteCount: favoriteCount,
 			hiddenCount: max(0, favoriteCount - favorites.count)
@@ -282,7 +282,7 @@ struct TeamStatusBoard: View {
 		return TeamMember(
 			id: node.num,
 			shortName: user?.shortName ?? String(hexName(node.num).suffix(4)),
-			longName: user?.longName ?? hexName(node.num),
+			longName: user?.localLongName ?? hexName(node.num),
 			lastHeard: node.lastHeard,
 			status: status,
 			batteryLevel: node.batteryLevel,

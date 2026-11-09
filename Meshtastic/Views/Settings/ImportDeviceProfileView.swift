@@ -138,7 +138,7 @@ struct ImportDeviceProfileView: View {
 	private var reviewList: some View {
 		List {
 			Section {
-				Text("Apply this saved configuration to \(connectedNode?.user?.longName ?? "the connected node").")
+				Text("Apply this saved configuration to \(connectedNode?.user?.localLongName ?? "the connected node").")
 					.font(.callout)
 				if !accessoryManager.isConnected {
 					Label("Connect to a radio before importing.", systemImage: "antenna.radiowaves.left.and.right.slash")

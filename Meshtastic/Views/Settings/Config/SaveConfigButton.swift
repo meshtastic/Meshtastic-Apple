@@ -37,7 +37,7 @@ struct SaveConfigButton: View {
 					isPresented: $isPresentingSaveConfirm,
 					titleVisibility: .visible
 				) {
-					let nodeName = node?.user?.longName ?? "Unknown".localized
+					let nodeName = node?.user?.localLongName ?? "Unknown".localized
 					let buttonText = String.localizedStringWithFormat("Save Config for %@".localized, nodeName)
 					Button(buttonText) {
 						onConfirmation()
@@ -65,7 +65,7 @@ struct SaveConfigButton: View {
 					isPresented: $isPresentingSaveConfirm,
 					titleVisibility: .visible
 				) {
-					let nodeName = node?.user?.longName ?? "Unknown".localized
+					let nodeName = node?.user?.localLongName ?? "Unknown".localized
 					let buttonText = String.localizedStringWithFormat("Save Config for %@".localized, nodeName)
 					Button(buttonText) {
 						onConfirmation()

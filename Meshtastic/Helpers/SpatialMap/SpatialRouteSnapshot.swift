@@ -123,7 +123,7 @@ enum SpatialRouteSource {
 		}
 		let originNums = Array(Set(drawable.map(\.route.fromNum)))
 		let origins = (try? context.fetch(FetchDescriptor<NodeInfoEntity>(predicate: #Predicate { originNums.contains($0.num) }))) ?? []
-		let names = Dictionary(origins.compactMap { node in node.user?.longName.map { (node.num, $0) } }, uniquingKeysWith: { first, _ in first })
+		let names = Dictionary(origins.compactMap { node in node.user?.localLongName.map { (node.num, $0) } }, uniquingKeysWith: { first, _ in first })
 		return Array(newestFirst(drawable.compactMap { snapshot($0.route, hops: $0.hops, originName: names[$0.route.fromNum]) }).prefix(routeLimit))
 	}
 
@@ -171,7 +171,7 @@ enum SpatialRouteSource {
 		return SpatialRouteSnapshot(
 			id: route.id, fromNum: route.fromNum, toNum: route.toNum,
 			originName: originName ?? route.fromNum.toHex(),
-			targetName: route.node?.user?.longName ?? route.toNum.toHex(),
+			targetName: route.node?.user?.localLongName ?? route.toNum.toHex(),
 			time: route.time ?? route.sentAt,
 			hopsTowards: Int(route.hopsTowards),
 			hopsBack: route.hopsBack >= 0 ? Int(route.hopsBack) : nil,

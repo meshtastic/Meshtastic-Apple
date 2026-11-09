@@ -213,7 +213,8 @@ struct WidgetsSheet: View {
 			return NodePickerRow(
 				num: node.num,
 				shortName: user.shortName ?? "?",
-				longName: user.longName ?? node.num.toHex(),
+				longName: user.localLongName ?? node.num.toHex(),
+				broadcastLongName: user.longName,
 				lastHeard: node.lastHeard,
 				favorite: node.favorite
 			)
@@ -258,6 +259,8 @@ struct NodePickerRow: Identifiable, Hashable {
 	let num: Int64
 	let shortName: String
 	let longName: String
+	/// The name the node broadcasts, so search still finds a node you've renamed.
+	let broadcastLongName: String?
 	let lastHeard: Date?
 	let favorite: Bool
 
@@ -318,6 +321,7 @@ private struct NodePicker: View {
 		guard !searchText.isEmpty else { return nodes }
 		return nodes.filter {
 			$0.longName.localizedCaseInsensitiveContains(searchText)
+				|| $0.broadcastLongName?.localizedCaseInsensitiveContains(searchText) == true
 				|| $0.shortName.localizedCaseInsensitiveContains(searchText)
 		}
 	}
