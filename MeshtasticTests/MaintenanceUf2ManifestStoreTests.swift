@@ -170,4 +170,52 @@ struct MaintenanceUf2ManifestStoreTests {
 		let bootloader = try #require(store.eraseSet.nrf52Bootloader)
 		#expect(!bootloader.image.fileName.contains("/"))
 	}
+
+	private func overridePayload(overrideSlug: String = "wio_tracker_l1_pro_1w", overrideDigest: String = String(repeating: "cd", count: 32)) -> String {
+		"""
+		{ "manifestVersion": 1,
+		  "otafixReleaseTag": "2.6.0",
+		  "otafixBase": "https://github.com/meshtastic/nRF52_Bootloader/releases/download/2.6.0",
+		  "otafixByBoardId": {
+		    "TRACKER L1": {
+		      "otafixBoardSlug": "wio_tracker_l1",
+		      "sha256": "\(String(repeating: "ab", count: 32))",
+		      "targetOverrides": { "seeed_wio_tracker_L1_Pro_1W": { "otafixBoardSlug": "\(overrideSlug)", "sha256": "\(overrideDigest)" } }
+		    }
+		  },
+		  "otafixSupportedTargets": ["seeed_wio_tracker_L1", "seeed_wio_tracker_L1_Pro_1W"] }
+		"""
+	}
+
+	@Test func aTargetOverrideWinsForItsTargetOnly() throws {
+		let store = MaintenanceUf2ManifestStore.isolatedForTesting()
+		#expect(store.apply(rawBytes: Data(overridePayload().utf8)))
+
+		let proImage = try #require(store.image(forBoardID: "TRACKER L1", platformioTarget: "seeed_wio_tracker_L1_Pro_1W"))
+		#expect(proImage.fileName == "update-wio_tracker_l1_pro_1w_bootloader-2.6.0_nosd.uf2")
+		#expect(proImage.sha256 == String(repeating: "cd", count: 32))
+
+		let caseFolded = try #require(store.image(forBoardID: "TRACKER L1", platformioTarget: " SEEED_WIO_TRACKER_L1_PRO_1W "))
+		#expect(caseFolded == proImage)
+
+		for target in [nil, "", "seeed_wio_tracker_L1"] {
+			let image = try #require(store.image(forBoardID: "TRACKER L1", platformioTarget: target))
+			#expect(image.fileName == "update-wio_tracker_l1_bootloader-2.6.0_nosd.uf2", "target \(target ?? "nil")")
+		}
+	}
+
+	@Test func aTargetAloneNeverSelectsAnImage() {
+		let store = MaintenanceUf2ManifestStore.isolatedForTesting()
+		#expect(store.apply(rawBytes: Data(overridePayload().utf8)))
+		#expect(store.image(forBoardID: "nRF52840-Unknown", platformioTarget: "seeed_wio_tracker_L1_Pro_1W") == nil)
+	}
+
+	@Test func anUnsafeOverrideRefusesTheManifest() {
+		let store = MaintenanceUf2ManifestStore.isolatedForTesting()
+		let before = store.releaseTag
+		#expect(!store.apply(rawBytes: Data(overridePayload(overrideSlug: "../evil").utf8)))
+		#expect(!store.apply(rawBytes: Data(overridePayload(overrideSlug: "wio_é").utf8)))
+		#expect(!store.apply(rawBytes: Data(overridePayload(overrideDigest: "ZZ").utf8)))
+		#expect(store.releaseTag == before)
+	}
 }

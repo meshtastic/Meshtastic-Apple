@@ -98,6 +98,14 @@ private struct MaintenanceUf2ManifestPayload: Decodable {
 		// here would invite exactly the confusion this file's own doc comments already spell out.
 		let otafixBoardSlug: String
 		let sha256: String
+		/// Images keyed by platformioTarget for boards whose stock bootloader reports this row's
+		/// Board-ID but need their own build (a stock Wio Tracker L1 Pro 1W reports `TRACKER L1`).
+		let targetOverrides: [String: Override]?
+	}
+
+	struct Override: Decodable {
+		let otafixBoardSlug: String
+		let sha256: String
 	}
 
 	struct EraseRow: Decodable {
@@ -128,11 +136,28 @@ private struct MaintenanceUf2ManifestPayload: Decodable {
 	func imagesByBoardID() -> [String: MaintenanceUF2] {
 		var result: [String: MaintenanceUF2] = [:]
 		for (boardID, asset) in otafixByBoardId {
-			let name = "update-\(asset.otafixBoardSlug)_bootloader-\(otafixReleaseTag)_nosd.uf2"
-			guard isSafeUf2FileName(name), let url = URL(string: "\(otafixBase)/\(name)") else { continue }
-			result[boardID] = MaintenanceUF2(url: url, fileName: name, sha256: asset.sha256)
+			guard let image = image(slug: asset.otafixBoardSlug, sha256: asset.sha256) else { continue }
+			result[boardID] = image
 		}
 		return result
+	}
+
+	/// Each row's `targetOverrides` as images, keyed by Board-ID then lowercased platformioTarget.
+	func overrideImagesByBoardID() -> [String: [String: MaintenanceUF2]] {
+		var result: [String: [String: MaintenanceUF2]] = [:]
+		for (boardID, asset) in otafixByBoardId {
+			for (target, override) in asset.targetOverrides ?? [:] {
+				guard let image = image(slug: override.otafixBoardSlug, sha256: override.sha256) else { continue }
+				result[boardID, default: [:]][target.lowercased()] = image
+			}
+		}
+		return result
+	}
+
+	private func image(slug: String, sha256: String) -> MaintenanceUF2? {
+		let name = "update-\(slug)_bootloader-\(otafixReleaseTag)_nosd.uf2"
+		guard isSafeUf2FileName(name), let url = URL(string: "\(otafixBase)/\(name)") else { return nil }
+		return MaintenanceUF2(url: url, fileName: name, sha256: sha256)
 	}
 
 	/// Resolves the erase rows into images served by the API's own asset route. A row whose
@@ -182,7 +207,14 @@ private struct MaintenanceUf2ManifestPayload: Decodable {
 		let safeSlug = { (slug: String) -> Bool in
 			!slug.isEmpty && slug.allSatisfy { $0.isLetter || $0.isNumber || $0 == "_" || $0 == "-" || $0 == "." }
 		}
-		guard otafixByBoardId.values.allSatisfy({ safeSlug($0.otafixBoardSlug) && isLowercaseHexDigest($0.sha256) })
+		let overrides = otafixByBoardId.values.flatMap { ($0.targetOverrides ?? [:]).values }
+		guard otafixByBoardId.values.allSatisfy({ safeSlug($0.otafixBoardSlug) && isLowercaseHexDigest($0.sha256) }),
+			  // Checked as the file name it becomes, so an override that would be dropped later
+			  // rejects the manifest instead of quietly falling back to the row's own image.
+			  overrides.allSatisfy({
+				  isSafeUf2FileName("update-\($0.otafixBoardSlug)_bootloader-\(otafixReleaseTag)_nosd.uf2")
+					  && isLowercaseHexDigest($0.sha256)
+			  })
 		else {
 			return false
 		}
@@ -210,6 +242,7 @@ final class MaintenanceUf2ManifestStore: @unchecked Sendable {
 	private let lock = NSLock()
 	private var _releaseTag: String
 	private var _imagesByBoardID: [String: MaintenanceUF2]
+	private var _overrideImagesByBoardID: [String: [String: MaintenanceUF2]] = [:]
 	private var _supportedTargets: Set<String>
 	private var _eraseSet: MaintenanceUf2EraseSet
 	private var lastRefreshAttempt: Date = .distantPast
@@ -237,6 +270,7 @@ final class MaintenanceUf2ManifestStore: @unchecked Sendable {
 		lock.lock()
 		_releaseTag = decoded.otafixReleaseTag
 		_imagesByBoardID = decoded.imagesByBoardID()
+		_overrideImagesByBoardID = decoded.overrideImagesByBoardID()
 		_supportedTargets = Set(decoded.otafixSupportedTargets)
 		_eraseSet = decoded.eraseSet()
 		lock.unlock()
@@ -272,8 +306,13 @@ final class MaintenanceUf2ManifestStore: @unchecked Sendable {
 		return _eraseSet
 	}
 
-	func image(forBoardID boardID: String) -> MaintenanceUF2? {
+	/// The row's override for `platformioTarget` when it has one, else the row's own image.
+	func image(forBoardID boardID: String, platformioTarget: String? = nil) -> MaintenanceUF2? {
 		lock.lock(); defer { lock.unlock() }
+		if let target = platformioTarget?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased(), !target.isEmpty,
+		   let override = _overrideImagesByBoardID[boardID]?[target] {
+			return override
+		}
 		return _imagesByBoardID[boardID]
 	}
 
@@ -457,8 +496,8 @@ enum NRF52FactoryErase {
 /// projects (`heltec_t114` vs `heltec-mesh-node-t114`), USB VID/PID collide
 /// across boards, and the XIAO nRF52840 BLE / BLE Sense split differs *only* by
 /// Board-ID — installing the wrong one over UF2 is unrecoverable without SWD.
-/// The connected node's platformio target is a UX gate only: it decides whether
-/// the upgrade is offered, never which image is written.
+/// The connected node's platformio target decides whether the upgrade is offered,
+/// and picks between images only where a Board-ID row lists `targetOverrides`.
 enum OTAFIXBootloader {
 
 	// MARK: Bundled audited seed
@@ -625,8 +664,14 @@ enum OTAFIXBootloader {
 	/// installed bootloader is not one we have a verified pairing for, and
 	/// writing a bootloader built for other hardware is unrecoverable without a
 	/// debug probe.
-	static func image(forBoardID boardID: String) -> MaintenanceUF2? {
-		MaintenanceUf2ManifestStore.shared.image(forBoardID: boardID.trimmingCharacters(in: .whitespaces))
+	///
+	/// `platformioTarget` is the connected node's build target. It only picks between images a
+	/// row already lists; a target alone never selects an image.
+	static func image(forBoardID boardID: String, platformioTarget: String? = nil) -> MaintenanceUF2? {
+		MaintenanceUf2ManifestStore.shared.image(
+			forBoardID: boardID.trimmingCharacters(in: .whitespaces),
+			platformioTarget: platformioTarget
+		)
 	}
 
 	/// The file every Adafruit-family UF2 bootloader exposes on its volume.

@@ -25,6 +25,9 @@ struct BootloaderUpgradeView: View {
 	@Environment(\.dismiss) var dismiss
 	@Environment(\.modelContext) var context
 
+	/// The connected node's build target, for boards whose stock bootloader shares another board's Board-ID.
+	var platformioTarget: String?
+
 	enum Phase: Equatable {
 		case idle
 		case resolved(boardID: String, image: MaintenanceUF2)
@@ -271,7 +274,7 @@ struct BootloaderUpgradeView: View {
 				phase = .failed(String(localized: "INFO_UF2.TXT has no Board-ID line, so the board cannot be identified safely."))
 				return
 			}
-			guard let image = OTAFIXBootloader.image(forBoardID: boardID) else {
+			guard let image = OTAFIXBootloader.image(forBoardID: boardID, platformioTarget: platformioTarget) else {
 				phase = .failed(String(localized: "No Meshtastic nRF52 Bootloader is available for board \"\(boardID)\". Nothing was written."))
 				return
 			}
