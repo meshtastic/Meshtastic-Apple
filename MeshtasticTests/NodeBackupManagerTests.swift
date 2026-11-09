@@ -253,7 +253,7 @@ struct NodeBackupManagerTests {
 
 		// With the app group, SwiftData keeps the store in the group container, not in the
 		// app's own Application Support, which is where backups used to look.
-		if let group = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "group.gvh.MeshtasticClient") {
+		if let group = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: WidgetSnapshotStore.appGroupID) {
 			#expect(manager.activeDatabaseURL().standardizedFileURL.path.hasPrefix(group.standardizedFileURL.path))
 		}
 	}

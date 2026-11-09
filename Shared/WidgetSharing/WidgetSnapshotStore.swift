@@ -20,7 +20,9 @@ import Foundation
 import OSLog
 
 enum WidgetSnapshotStore {
-	static let appGroupID = "group.gvh.MeshtasticClient"
+	/// From the `MeshtasticAppGroup` Info.plist key, set by Config/Signing.xcconfig so a local
+	/// signing override can change it.
+	static let appGroupID = Bundle.main.object(forInfoDictionaryKey: "MeshtasticAppGroup") as? String ?? "group.gvh.MeshtasticClient"
 	static let snapshotFilename = "widget-snapshot.json"
 
 	private static let logger = Logger(

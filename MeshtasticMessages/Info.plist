@@ -5,7 +5,7 @@
 	<key>CFBundleDisplayName</key>
 	<string>Meshtastic</string>
 	<key>MeshtasticMessageSharingAccessGroup</key>
-	<string>$(AppIdentifierPrefix)gvh.MeshtasticClient.MessagesSharing</string>
+	<string>$(AppIdentifierPrefix)$(MESHTASTIC_BUNDLE_ID_PREFIX).MessagesSharing</string>
 	<key>NSExtension</key>
 	<dict>
 		<key>NSExtensionAttributes</key>

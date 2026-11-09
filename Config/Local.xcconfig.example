@@ -1,0 +1,23 @@
+//
+//  Local.xcconfig.example
+//  Meshtastic
+//
+//  Copyright(c) Garth Vander Houwen 11/8/26.
+//
+
+// Copy to Local.xcconfig in this folder to sign with your own team. Local.xcconfig
+// is git-ignored, so these changes stay on your machine.
+
+// Your team ID, from Xcode's Signing & Capabilities or developer.apple.com.
+MESHTASTIC_DEVELOPMENT_TEAM = ABCDE12345
+
+// Bundle IDs and the app group have to be unique to your team.
+MESHTASTIC_BUNDLE_ID_PREFIX = com.example.MeshtasticClient
+MESHTASTIC_APP_GROUP = group.com.example.MeshtasticClient
+
+// A free personal team can't use Siri, CarPlay, WeatherKit, NFC, associated
+// domains, communication notifications or critical alerts. Sign with only the
+// capabilities it has, and leave out the Siri requests, which crash without
+// the Siri entitlement. Remove these two lines on a paid team with Siri.
+MESHTASTIC_APP_ENTITLEMENTS = Meshtastic/Meshtastic-PersonalTeam.entitlements
+MESHTASTIC_SWIFT_CONDITIONS = NO_SIRI

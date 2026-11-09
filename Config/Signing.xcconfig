@@ -1,0 +1,18 @@
+//
+//  Signing.xcconfig
+//  Meshtastic
+//
+//  Copyright(c) Garth Vander Houwen 11/8/26.
+//
+
+// The team, identifiers and app entitlements every target signs with. To build
+// with your own team, copy Local.xcconfig.example to Local.xcconfig (git-ignored)
+// in this folder and edit it. See docs/developer/contributing.md.
+
+MESHTASTIC_DEVELOPMENT_TEAM = GCH7VS5Y9R
+MESHTASTIC_BUNDLE_ID_PREFIX = gvh.MeshtasticClient
+MESHTASTIC_APP_GROUP = group.gvh.MeshtasticClient
+MESHTASTIC_APP_ENTITLEMENTS = Meshtastic/Meshtastic.entitlements
+MESHTASTIC_SWIFT_CONDITIONS =
+
+#include? "Local.xcconfig"
