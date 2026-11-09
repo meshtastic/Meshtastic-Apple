@@ -173,26 +173,26 @@
             "hardware",
             "file",
             "meshtastic",
+            "board",
             "shows",
             "bluetooth",
             "from",
-            "board",
             "nrf52",
             "copy",
+            "connected",
             "without",
             "erase",
             "version",
             "uf2",
             "target",
             "tap",
-            "connected",
+            "install",
             "connect",
             "artwork",
-            "wrong",
             "works",
             "supported"
         ],
-        "charCount": 10485
+        "charCount": 10744
     },
     {
         "id": "getting-started",
@@ -413,20 +413,20 @@
             "app",
             "messages",
             "list",
+            "one",
             "mesh",
             "hardware",
-            "one",
             "direct",
             "detail",
+            "under",
             "shown",
             "row",
             "open",
             "long",
             "tap",
-            "see",
-            "once"
+            "see"
         ],
-        "charCount": 22018
+        "charCount": 22724
     },
     {
         "id": "settings",
@@ -621,7 +621,7 @@
             "noise",
             "meshtastic"
         ],
-        "charCount": 3842
+        "charCount": 3875
     },
     {
         "id": "traceroute",

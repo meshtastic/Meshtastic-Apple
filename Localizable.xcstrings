@@ -310,6 +310,12 @@
         }
       }
     },
+    "%@ Current" : {
+      "comment" : "Power tile and log column title. %@ is the channel's label, such as Solar or Channel 1."
+    },
+    "%@ Voltage" : {
+      "comment" : "Power tile and log column title. %@ is the channel's label, such as Solar or Channel 1."
+    },
     "%lld bytes of input dropped, the node is not keeping up" : {
 
     },
@@ -612,6 +618,9 @@
     "Escape" : {
 
     },
+    "Evacuate" : {
+      "comment" : "CO2 level of 30000 ppm or more"
+    },
     "File is too large. Maximum size is %@." : {
       "localizations" : {
         "es" : {
@@ -638,6 +647,15 @@
           }
         }
       }
+    },
+    "Poor" : {
+      "comment" : "CO2 level from 2000 to 5000 ppm"
+    },
+    "Stuffy" : {
+      "comment" : "CO2 level from 1000 to 2000 ppm"
+    },
+    "Unsafe" : {
+      "comment" : "CO2 level from 5000 to 30000 ppm"
     },
     "frequency slot %lld" : {
       "comment" : "Beacon switch prompt; one of the changes listed",

@@ -19,6 +19,8 @@ private func pmSeries(id: String, keyPath: KeyPath<TelemetryEntity, UInt32?>, na
 		abbreviatedName: abbreviatedName,
 		// PM concentrations are reported in micrograms per cubic meter.
 		unit: "µg/m³",
+		// Zero-based, and apart from CO2, whose hundreds of ppm would flatten these (design#53).
+		axis: .zeroBased("pm"),
 		visible: visible,
 		foregroundStyle: { _ in
 			.linearGradient(colors: colors, startPoint: .bottom, endPoint: .top)
@@ -54,7 +56,34 @@ extension MetricsSeriesList {
 			pmSeries(id: "pm10Environmental", keyPath: \.pm10Environmental, name: "PM1.0 (Environmental)", abbreviatedName: "PM1.0 Env",
 					 colors: [Color(UIColor.systemYellow.darker(componentDelta: 0.4)), .yellow], visible: false),
 			pmSeries(id: "pm100Environmental", keyPath: \.pm100Environmental, name: "PM10 (Environmental)", abbreviatedName: "PM10 Env",
-					 colors: [Color(UIColor.systemIndigo.darker(componentDelta: 0.4)), .indigo], visible: false)
+					 colors: [Color(UIColor.systemIndigo.darker(componentDelta: 0.4)), .indigo], visible: false),
+			MetricsChartSeries(
+				id: "co2",
+				keyPath: \.co2,
+				name: "CO2",
+				abbreviatedName: "CO2",
+				unit: "ppm",
+				axis: .zeroBased("co2"),
+				foregroundStyle: { _ in Color.gray },
+				chartBody: { series, _, time, co2 in
+					if let co2 {
+						LineMark(
+							x: .value("Time", time),
+							y: .value(series.abbreviatedName, co2)
+						)
+						.interpolationMethod(.linear)
+						.foregroundStyle(by: .value("Series", series.abbreviatedName))
+						.lineStyle(series.strokeStyle)
+						.alignsMarkStylesWithPlotArea()
+						// Each reading is colored by its CO2 band, as IAQ is.
+						PointMark(
+							x: .value("Time", time),
+							y: .value(series.abbreviatedName, co2)
+						)
+						.symbol(Circle())
+						.foregroundStyle(Co2Level.level(for: co2).color)
+					}
+				})
 		])
 	}
 }

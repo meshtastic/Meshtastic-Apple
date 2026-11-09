@@ -39,23 +39,10 @@ struct AirQualityMetricsLog: View {
 			// Gate on recent (last 7 days) data, not the all-time count: a node with only older
 			// readings would otherwise satisfy the count but render an empty chart/table.
 			if !chartData.isEmpty {
-				let chartRange = applyMargins(seriesList.chartRange(forData: chartData))
 				VStack {
 					if chartData.count > 0 {
 						GroupBox(label: Label("\(totalReadings) Readings Total", systemImage: "chart.xyaxis.line")) {
-							Chart(seriesList.visible) { series in
-								ForEach(chartData, id: \.persistentModelID) { dataPoint in
-									series.body(dataPoint, inChartRange: chartRange)
-								}
-							}
-							.chartXAxis(content: {
-								AxisMarks(position: .top)
-							})
-							.chartYScale(domain: chartRange)
-							.chartForegroundStyleScale { (seriesName: String) -> AnyShapeStyle in
-								return seriesList.foregroundStyle(forAbbreviatedName: seriesName, chartRange: chartRange) ?? AnyShapeStyle(Color.clear)
-							}
-							.chartLegend(position: .automatic, alignment: .bottom)
+							MetricsChartStack(groups: seriesList.chartGroups(forData: chartData), points: chartData)
 						}
 					}
 
@@ -188,17 +175,6 @@ struct AirQualityMetricsLog: View {
 				}
 			}
 		)
-	}
-
-	// Helper.  Adds a little buffer to the Y axis range, but keeps Y=0
-	func applyMargins<T>(_ range: ClosedRange<T>) -> ClosedRange<T> where T: BinaryFloatingPoint {
-		let span = range.upperBound - range.lowerBound
-		// Constant readings produce a zero span (e.g. 42...42), a degenerate Y domain SwiftUI can't
-		// render — fall back to a minimum margin derived from the value (or a fixed floor at 0).
-		let margin = span > 0 ? span * 0.1 : Swift.max(range.upperBound * T(0.1), T(1))
-		let lower = range.lowerBound == 0.0 ? 0.0  : range.lowerBound - margin
-		let upper = range.upperBound + margin
-		return lower...upper
 	}
 
 	private func refreshMetrics() {

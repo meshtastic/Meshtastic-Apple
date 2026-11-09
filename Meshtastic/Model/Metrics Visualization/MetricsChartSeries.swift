@@ -45,9 +45,8 @@ class MetricsChartSeries: ObservableObject {
 	// Possibly converted to the proper units
 	let valueClosure: (TelemetryEntity) -> Float?
 
-	// Used for scaling the Y-axis
-	let initialYAxisRange: ClosedRange<Float>?
-	let minumumYAxisSpan: Float?
+	// The Y axis this series is drawn against. Series that share an axis share a chart.
+	let axis: MetricsAxis
 	// Main initializer
 	init<Value, ChartBody: ChartContent, ForegroundStyle: ShapeStyle>(
 		id: String,
@@ -55,8 +54,7 @@ class MetricsChartSeries: ObservableObject {
 		name: String,
 		abbreviatedName: String,
 		unit: String? = nil,
-		initialYAxisRange: ClosedRange<Float>? = nil,
-		minumumYAxisSpan: Float? = nil,
+		axis: MetricsAxis? = nil,
 		conversion: ((Value) -> Value)? = nil,
 		visible: Bool = true,
 		strokeStyle: StrokeStyle = StrokeStyle(lineWidth: 4),
@@ -69,8 +67,7 @@ class MetricsChartSeries: ObservableObject {
 		self.name = name
 		self.abbreviatedName = abbreviatedName
 		self.unit = unit
-		self.initialYAxisRange = initialYAxisRange
-		self.minumumYAxisSpan = minumumYAxisSpan
+		self.axis = axis ?? .padded(id)
 		self.visible = visible
 		self.strokeStyle = strokeStyle
 		
@@ -79,7 +76,9 @@ class MetricsChartSeries: ObservableObject {
 		self.foregroundStyle = { range in foregroundStyle(range).map({ AnyShapeStyle($0) }) }
 		self.chartBodyClosure = { series, range, entity in
 			guard let time = entity.time else { return nil }
-			let content = chartBody(series, range, time, entity[keyPath: keyPath])
+			// The chart draws the converted value, so it uses the same units as the table.
+			let raw = entity[keyPath: keyPath]
+			let content = chartBody(series, range, time, conversion?(raw) ?? raw)
 			// Per-mark VoiceOver descriptors, applied centrally so every telemetry series
 			// (AirQuality + Environment charts) becomes navigable with consistent phrasing.
 			let timeText = time.formatted(date: .abbreviated, time: .shortened)

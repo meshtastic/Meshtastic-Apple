@@ -239,6 +239,7 @@ extension NodeBackupManager {
 			dst.pm10Standard = src.pm10Standard
 			dst.pm25Environmental = src.pm25Environmental
 			dst.pm25Standard = src.pm25Standard
+			dst.co2 = src.co2
 			dst.pm100Environmental = src.pm100Environmental
 			dst.pm100Standard = src.pm100Standard
 			dst.powerCh1Current = src.powerCh1Current
@@ -247,6 +248,16 @@ extension NodeBackupManager {
 			dst.powerCh2Voltage = src.powerCh2Voltage
 			dst.powerCh3Current = src.powerCh3Current
 			dst.powerCh3Voltage = src.powerCh3Voltage
+			dst.powerCh4Current = src.powerCh4Current
+			dst.powerCh4Voltage = src.powerCh4Voltage
+			dst.powerCh5Current = src.powerCh5Current
+			dst.powerCh5Voltage = src.powerCh5Voltage
+			dst.powerCh6Current = src.powerCh6Current
+			dst.powerCh6Voltage = src.powerCh6Voltage
+			dst.powerCh7Current = src.powerCh7Current
+			dst.powerCh7Voltage = src.powerCh7Voltage
+			dst.powerCh8Current = src.powerCh8Current
+			dst.powerCh8Voltage = src.powerCh8Voltage
 			dst.radiation = src.radiation
 			dst.rainfall1H = src.rainfall1H
 			dst.rainfall24H = src.rainfall24H

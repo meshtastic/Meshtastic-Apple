@@ -45,27 +45,23 @@ func telemetryToCsvFile<S: Sequence>(telemetry: S, metricsType: Int) -> String w
 			csvString += dm.time?.formatted(date: .numeric, time: .shortened).replacing(",", with: "") ?? ""
 		}
 	} else if metricsType == 2 {
-		// Create Power Metrics Header
-		csvString = "Channel 1 Voltage, Channel 1 Current, Channel 2 Voltage, Channel 2 Current, Channel 3 Voltage, Channel 3 Current, \("Timestamp".localized)"
+		// Create Power Metrics Header, one voltage and current pair per channel
+		csvString = (1...TelemetryEntity.powerChannelCount)
+			.map { "Channel \($0) Voltage, Channel \($0) Current" }
+			.joined(separator: ", ") + ", \("Timestamp".localized)"
 		for dm in telemetry where dm.metricsType == 2 {
 			csvString += "\n"
-			csvString += dm.powerCh1Voltage?.formatted(.number.grouping(.never)) ?? ""
-			csvString += ", "
-			csvString += dm.powerCh1Current?.formatted(.number.grouping(.never)) ?? ""
-			csvString += ", "
-			csvString += dm.powerCh2Voltage?.formatted(.number.grouping(.never)) ?? ""
-			csvString += ", "
-			csvString += dm.powerCh2Current?.formatted(.number.grouping(.never)) ?? ""
-			csvString += ", "
-			csvString += dm.powerCh3Voltage?.formatted(.number.grouping(.never)) ?? ""
-			csvString += ", "
-			csvString += dm.powerCh3Current?.formatted(.number.grouping(.never)) ?? ""
-			csvString += ", "
+			for index in 0..<TelemetryEntity.powerChannelCount {
+				csvString += dm.powerVoltage(channel: index)?.formatted(.number.grouping(.never)) ?? ""
+				csvString += ", "
+				csvString += dm.powerCurrent(channel: index)?.formatted(.number.grouping(.never)) ?? ""
+				csvString += ", "
+			}
 			csvString += dm.time?.formatted(date: .numeric, time: .shortened).replacing(",", with: "") ?? ""
 		}
 	} else if metricsType == 3 {
 		// Create Air Quality Metrics Header (particulate matter, µg/m³)
-		csvString = "PM1.0 Std, PM2.5 Std, PM10 Std, PM1.0 Env, PM2.5 Env, PM10 Env, \("Timestamp".localized)"
+		csvString = "PM1.0 Std, PM2.5 Std, PM10 Std, PM1.0 Env, PM2.5 Env, PM10 Env, CO2, \("Timestamp".localized)"
 		for dm in telemetry where dm.metricsType == 3 {
 			csvString += "\n"
 			csvString += dm.pm10Standard?.formatted(.number.grouping(.never)) ?? ""
@@ -79,6 +75,8 @@ func telemetryToCsvFile<S: Sequence>(telemetry: S, metricsType: Int) -> String w
 			csvString += dm.pm25Environmental?.formatted(.number.grouping(.never)) ?? ""
 			csvString += ", "
 			csvString += dm.pm100Environmental?.formatted(.number.grouping(.never)) ?? ""
+			csvString += ", "
+			csvString += dm.co2?.formatted(.number.grouping(.never)) ?? ""
 			csvString += ", "
 			csvString += dm.time?.formatted(date: .numeric, time: .shortened).replacing(",", with: "") ?? ""
 		}

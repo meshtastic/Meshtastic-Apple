@@ -37,26 +37,10 @@ struct PowerMetricsLog: View {
 	// User-editable per-channel labels (e.g. "Solar", "Battery", "Load"), persisted per node so a
 	// user can tell which line is which without memorizing their wiring. Empty entries fall back to
 	// the generic "Channel N". Per meshtastic/design#53 / Meshtastic-Apple#2046.
-	@State private var channelLabels: [String] = ["", "", ""]
+	@State private var channelLabels: [String] = Array(repeating: "", count: TelemetryEntity.powerChannelCount)
 	@State private var isEditingLabels = false
-
-	var minMax: (min: Double, max: Double) {
-		let allValues = powerMetrics.flatMap { [
-			$0.powerCh1Voltage,
-			$0.powerCh1Current,
-			$0.powerCh2Voltage,
-			$0.powerCh2Current,
-			$0.powerCh3Voltage,
-			$0.powerCh3Current
-			].compactMap({$0}) // Remove nils
-		}
-
-		guard !allValues.isEmpty else {
-			return (min: -10, max: 10)
-		}
-
-		return (min: floor(Double(allValues.min()!)), max: ceil(Double(allValues.max()!)))
-	}
+	/// The channels, counting from zero, that report anything. Only these are charted and listed.
+	@State private var reportedChannels: [Int] = []
 
 	var body: some View {
 		VStack {
@@ -64,60 +48,22 @@ struct PowerMetricsLog: View {
 				if chartData.count > 0 {
 					GroupBox(label: Label("\(totalReadings) Readings Total", systemImage: "chart.xyaxis.line")) {
 
-						// allow switching between different channels
+						// allow switching between the channels that report
 						Picker("Select Channel", selection: $channelSelection) {
-							Text(displayLabel(0)).tag(0)
-							Text(displayLabel(1)).tag(1)
-							Text(displayLabel(2)).tag(2)
+							ForEach(reportedChannels, id: \.self) { index in
+								Text(displayLabel(index)).tag(index)
+							}
 						}
 
-						Chart {
-							ForEach(chartData, id: \.self) { point in
-
-								let voltage = channelSelection == 0 ? point.powerCh1Voltage : channelSelection == 1 ? point.powerCh2Voltage : point.powerCh3Voltage
-								let current = channelSelection == 0 ? point.powerCh1Current : channelSelection == 1 ? point.powerCh2Current : point.powerCh3Current
-
-								if let voltage {
-									LineMark(
-										x: .value("Time", point.time ?? Date()),
-										y: .value("Voltage", voltage)
-									)
-									.foregroundStyle(by: .value("Series", "Voltage".localized))
-									.interpolationMethod(.linear)
-									.accessibilityLabel(String(localized: "Voltage at \((point.time ?? Date()).formatted(date: .abbreviated, time: .shortened))", comment: "VoiceOver label for a voltage point on the power metrics chart. %@ is the timestamp."))
-									.accessibilityValue(String(localized: "\(voltage.formatted()) volts", comment: "VoiceOver value spoken as a voltage reading. %@ is the number."))
-								}
-
-								if let current {
-									LineMark(
-										x: .value("Time", point.time ?? Date()),
-										y: .value("Current", current)
-									)
-									.foregroundStyle(by: .value("Series", "Current".localized))
-									.interpolationMethod(.linear)
-									.accessibilityLabel(String(localized: "Current at \((point.time ?? Date()).formatted(date: .abbreviated, time: .shortened))", comment: "VoiceOver label for a current point on the power metrics chart. %@ is the timestamp."))
-									.accessibilityValue(String(localized: "\(current.formatted()) milliamps", comment: "VoiceOver value spoken as a current reading in milliamps. %@ is the number."))
-								}
+						// Volts and milliamps each get a chart of their own (design#53 requirement 5).
+						VStack(spacing: 12) {
+							if chartData.contains(where: { $0.powerVoltage(channel: channelSelection) != nil }) {
+								powerChart(.voltage)
 							}
-
-							if let chartSelection {
-								RuleMark(x: .value("Second", chartSelection, unit: .second))
-									.foregroundStyle(.tertiary.opacity(0.5))
-									.accessibilityHidden(true)
+							if chartData.contains(where: { $0.powerCurrent(channel: channelSelection) != nil }) {
+								powerChart(.current)
 							}
-
 						}
-						.chartXAxis(content: {
-							AxisMarks(position: .top)
-						})
-						.chartXAxis(.automatic)
-						.chartXSelection(value: $chartSelection)
-						.chartYScale(domain: minMax.min...minMax.max)
-						.chartForegroundStyleScale([
-							"Voltage".localized: .blue,
-							"Current".localized: .green
-						])
-						.chartLegend(position: .automatic, alignment: .bottom)
 					}
 				}
 				if !showsWideTable {
@@ -125,59 +71,21 @@ struct PowerMetricsLog: View {
 						TableColumn("Timestamp") { m in
 							HStack {
 								Text(m.time?.formatted(date: .numeric, time: .shortened) ?? "Unknown Age".localized)
-								Spacer()
-								HStack {
+								ForEach(reportedChannels, id: \.self) { index in
+									Spacer()
 									VStack {
-										Text(displayLabel(0))
+										Text(displayLabel(index))
 										HStack {
 											Image(systemName: "powerplug.fill")
 												.font(.caption)
 												.symbolRenderingMode(.multicolor)
-											m.powerCh1Voltage.map { Text("\(String(format: "%.2f", $0))V") } ?? Text(Constants.nilValueIndicator)
+											Text(voltageText(m.powerVoltage(channel: index)))
 										}
 										HStack {
 											Image(systemName: "bolt.fill")
 												.font(.caption)
 												.symbolRenderingMode(.multicolor)
-											m.powerCh1Current.map { Text("\(String(format: "%.2f", $0))mA") } ?? Text(Constants.nilValueIndicator)
-										}
-									}
-									.accessibilityElement(children: .combine)
-								}
-								Spacer()
-								HStack {
-									VStack {
-										Text(displayLabel(1))
-										HStack {
-											Image(systemName: "powerplug.fill")
-												.font(.caption)
-												.symbolRenderingMode(.multicolor)
-											m.powerCh2Voltage.map { Text("\(String(format: "%.2f", $0))V") } ?? Text(Constants.nilValueIndicator)
-										}
-										HStack {
-											Image(systemName: "bolt.fill")
-												.font(.caption)
-												.symbolRenderingMode(.multicolor)
-											m.powerCh2Current.map { Text("\(String(format: "%.2f", $0))mA") } ?? Text(Constants.nilValueIndicator)
-										}
-									}
-									.accessibilityElement(children: .combine)
-								}
-								Spacer()
-								HStack {
-									VStack {
-										Text(displayLabel(2))
-										HStack {
-											Image(systemName: "powerplug.fill")
-												.font(.caption)
-												.symbolRenderingMode(.multicolor)
-											m.powerCh3Voltage.map { Text("\(String(format: "%.2f", $0))V") } ?? Text(Constants.nilValueIndicator)
-										}
-										HStack {
-											Image(systemName: "bolt.fill")
-												.font(.caption)
-												.symbolRenderingMode(.multicolor)
-											m.powerCh3Current.map { Text("\(String(format: "%.2f", $0))mA") } ?? Text(Constants.nilValueIndicator)
+											Text(currentText(m.powerCurrent(channel: index)))
 										}
 									}
 									.accessibilityElement(children: .combine)
@@ -193,30 +101,14 @@ struct PowerMetricsLog: View {
 					}
 				} else {
 					Table(powerMetrics, selection: $selection, sortOrder: $sortOrder) {
-						TableColumn("Ch1 Voltage") { dm in
-							dm.powerCh1Voltage.map { Text("\(String(format: "%.2f", $0))V") } ?? Text(Constants.nilValueIndicator)
+						TableColumnForEach(tableColumns) { column in
+							TableColumn(column.title) { dm in
+								Text(column.isVoltage
+									 ? voltageText(dm.powerVoltage(channel: column.channel))
+									 : currentText(dm.powerCurrent(channel: column.channel)))
+							}
+							.width(min: 75)
 						}
-						.width(min: 75)
-						TableColumn("Ch1 Current") { dm in
-							dm.powerCh1Current.map { Text("\(String(format: "%.2f", $0))mA") } ?? Text(Constants.nilValueIndicator)
-						}
-						.width(min: 75)
-						TableColumn("Ch2 Voltage") { dm in
-							dm.powerCh2Voltage.map { Text("\(String(format: "%.2f", $0))V") } ?? Text(Constants.nilValueIndicator)
-						}
-						.width(min: 75)
-						TableColumn("Ch2 Current") { dm in
-							dm.powerCh2Current.map { Text("\(String(format: "%.2f", $0))mA") } ?? Text(Constants.nilValueIndicator)
-						}
-						.width(min: 75)
-						TableColumn("Ch3 Voltage") { dm in
-							dm.powerCh3Voltage.map { Text("\(String(format: "%.2f", $0))V") } ?? Text(Constants.nilValueIndicator)
-						}
-						.width(min: 75)
-						TableColumn("Ch3 Current") { dm in
-							dm.powerCh3Current.map { Text("\(String(format: "%.2f", $0))mA") } ?? Text(Constants.nilValueIndicator)
-						}
-						.width(min: 75)
 						TableColumn("Timestamp") { dm in
 							Text(dm.time?.formatted(date: .numeric, time: .shortened) ?? "Unknown Age".localized)
 						}
@@ -309,7 +201,7 @@ struct PowerMetricsLog: View {
 			SheetNavigationStack {
 				Form {
 					Section {
-						ForEach(0..<3, id: \.self) { index in
+						ForEach(0..<TelemetryEntity.powerChannelCount, id: \.self) { index in
 							TextField("Channel \(index + 1)", text: $channelLabels[index])
 								.autocorrectionDisabled()
 						}
@@ -365,6 +257,78 @@ struct PowerMetricsLog: View {
 		chartData = powerMetrics
 			.filter { ($0.time ?? Date.distantPast) >= oneWeekAgo }
 			.sorted { ($0.time ?? .distantPast) < ($1.time ?? .distantPast) }
+		reportedChannels = powerMetrics.reportedPowerChannels
+		// Open on a channel that has readings, not Channel 1 when it has none.
+		let charted = chartData.reportedPowerChannels
+		if !charted.contains(channelSelection), let first = charted.first {
+			channelSelection = first
+		}
+	}
+
+	// MARK: - Chart and table
+
+	private struct PowerColumn: Identifiable {
+		let channel: Int
+		let isVoltage: Bool
+		let title: String
+		var id: String { "\(channel)-\(isVoltage)" }
+	}
+
+	private var tableColumns: [PowerColumn] {
+		reportedChannels.flatMap { index in
+			let name = displayLabel(index)
+			return [
+				PowerColumn(channel: index, isVoltage: true, title: String(localized: "\(name) Voltage", comment: "Power log column. %@ is the channel's label, such as Solar or Channel 1.")),
+				PowerColumn(channel: index, isVoltage: false, title: String(localized: "\(name) Current", comment: "Power log column. %@ is the channel's label, such as Solar or Channel 1."))
+			]
+		}
+	}
+
+	private func voltageText(_ voltage: Float?) -> String {
+		voltage.map { "\($0.formatted(.number.precision(.fractionLength(2))))V" } ?? Constants.nilValueIndicator
+	}
+
+	private func currentText(_ current: Float?) -> String {
+		current.map { "\($0.formatted(.number.precision(.fractionLength(1))))mA" } ?? Constants.nilValueIndicator
+	}
+
+	private func powerChart(_ type: PowerMetricType) -> some View {
+		let isVoltage = type == .voltage
+		let name = isVoltage ? "Voltage".localized : "Current".localized
+		let values = chartData.compactMap { isVoltage ? $0.powerVoltage(channel: channelSelection) : $0.powerCurrent(channel: channelSelection) }
+		let range = MetricsAxis.padded(type.rawValue, minimumSpan: isVoltage ? 0.5 : 10).range(for: values)
+		return Chart {
+			ForEach(chartData, id: \.self) { point in
+				if let value = isVoltage ? point.powerVoltage(channel: channelSelection) : point.powerCurrent(channel: channelSelection) {
+					LineMark(
+						x: .value("Time", point.time ?? Date()),
+						y: .value(name, value)
+					)
+					.foregroundStyle(by: .value("Series", name))
+					.interpolationMethod(.linear)
+					.accessibilityLabel(isVoltage
+						? String(localized: "Voltage at \((point.time ?? Date()).formatted(date: .abbreviated, time: .shortened))", comment: "VoiceOver label for a voltage point on the power metrics chart. %@ is the timestamp.")
+						: String(localized: "Current at \((point.time ?? Date()).formatted(date: .abbreviated, time: .shortened))", comment: "VoiceOver label for a current point on the power metrics chart. %@ is the timestamp."))
+					.accessibilityValue(isVoltage
+						? String(localized: "\(value.formatted()) volts", comment: "VoiceOver value spoken as a voltage reading. %@ is the number.")
+						: String(localized: "\(value.formatted()) milliamps", comment: "VoiceOver value spoken as a current reading in milliamps. %@ is the number."))
+				}
+			}
+
+			if let chartSelection {
+				RuleMark(x: .value("Second", chartSelection, unit: .second))
+					.foregroundStyle(.tertiary.opacity(0.5))
+					.accessibilityHidden(true)
+			}
+		}
+		.chartXAxis(content: {
+			AxisMarks(position: .top)
+		})
+		.chartXSelection(value: $chartSelection)
+		.chartYScale(domain: range)
+		.chartForegroundStyleScale([name: isVoltage ? Color.blue : Color.green])
+		.chartLegend(position: .automatic, alignment: .bottom)
+		.frame(height: 150)
 	}
 
 	// MARK: - Channel labels
@@ -373,7 +337,7 @@ struct PowerMetricsLog: View {
 	/// deleted along with the node instead of accumulating indefinitely after it's forgotten.
 	private func loadChannelLabels() -> [String] {
 		let stored = node.powerChannelLabels
-		return (0..<3).map { index in index < stored.count ? stored[index] : "" }
+		return (0..<TelemetryEntity.powerChannelCount).map { index in index < stored.count ? stored[index] : "" }
 	}
 
 	private func saveChannelLabels() {
@@ -387,8 +351,7 @@ struct PowerMetricsLog: View {
 
 	/// The label shown for a power channel: the user's custom label, or the generic "Channel N" fallback.
 	private func displayLabel(_ index: Int) -> String {
-		let custom = index < channelLabels.count ? channelLabels[index].trimmingCharacters(in: .whitespaces) : ""
-		return custom.isEmpty ? String(format: "Channel %d".localized, index + 1) : custom
+		PowerChannelLabel.name(index, in: channelLabels)
 	}
 }
 

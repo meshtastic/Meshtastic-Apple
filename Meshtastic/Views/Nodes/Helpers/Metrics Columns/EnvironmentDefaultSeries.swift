@@ -20,7 +20,7 @@ extension MetricsSeriesList {
 				name: "Temperature",
 				abbreviatedName: "Temp",
 				unit: "°",
-				minumumYAxisSpan: 50.0,
+				axis: .temperature,
 				conversion: { t in t.map { Float($0.localeTemperature()) } },
 				foregroundStyle: { chartRange in
 					let locale = NSLocale.current as NSLocale
@@ -35,9 +35,8 @@ extension MetricsSeriesList {
 					if let temperature {
 						AreaMark(
 							x: .value("Time", time),
-							yStart: .value(series.abbreviatedName, chartRange?.lowerBound.doubleValue ?? 0.0),
-							yEnd: .value(
-								series.abbreviatedName, temperature.localeTemperature())
+							yStart: .value(series.abbreviatedName, chartRange?.lowerBound ?? 0),
+							yEnd: .value(series.abbreviatedName, temperature)
 						)
 						.interpolationMethod(.catmullRom)
 						.foregroundStyle(by: .value("Series", series.abbreviatedName))
@@ -46,8 +45,7 @@ extension MetricsSeriesList {
 						.opacity(0.6)
 						LineMark(
 							x: .value("Time", time),
-							y: .value(
-								series.abbreviatedName, temperature.localeTemperature())
+							y: .value(series.abbreviatedName, temperature)
 						)
 						.interpolationMethod(.catmullRom)
 						.foregroundStyle(by: .value("Series", series.abbreviatedName))
@@ -63,7 +61,7 @@ extension MetricsSeriesList {
 				name: "Relative Humidity",
 				abbreviatedName: "Hum",
 				unit: "%",
-				initialYAxisRange: 0.0...100.0,
+				axis: .percent,
 				foregroundStyle: { _ in
 						.linearGradient(
 							colors: [Color(UIColor.purple.darker(componentDelta: 0.2)), .purple],
@@ -89,7 +87,7 @@ extension MetricsSeriesList {
 				name: "Dew Point",
 				abbreviatedName: "Dew",
 				unit: "°",
-				minumumYAxisSpan: 50.0,
+				axis: .temperature,
 				conversion: { t in t.map { Float($0.localeTemperature()) } },
 				strokeStyle: StrokeStyle(lineWidth: 4, dash: [2, 2]),
 				foregroundStyle: { chartRange in
@@ -105,8 +103,7 @@ extension MetricsSeriesList {
 					if let dewPoint {
 						LineMark(
 							x: .value("Time", time),
-							y: .value(
-								series.abbreviatedName, dewPoint.localeTemperature())
+							y: .value(series.abbreviatedName, dewPoint)
 						)
 						.interpolationMethod(.catmullRom)
 						.foregroundStyle(by: .value("Series", series.abbreviatedName))
@@ -122,11 +119,7 @@ extension MetricsSeriesList {
 				name: "Barometric Pressure",
 				abbreviatedName: "Bar",
 				unit: "hPa",
-				// Anchor the axis to the typical sea-level range (~950–1050 hPa) instead of
-				// autoscaling tightly with the other environment series, so the absolute level is
-				// readable and small real changes stay visible. Expands if readings fall outside
-				// (e.g. high-altitude stations). Per meshtastic/design#53 / Meshtastic-Apple#2046.
-				initialYAxisRange: 950.0...1050.0,
+				axis: .pressure,
 				visible: false,
 				foregroundStyle: { _ in
 						.linearGradient(
@@ -153,6 +146,7 @@ extension MetricsSeriesList {
 				keyPath: \.iaq,
 				name: "Indoor Air Quality",
 				abbreviatedName: "IAQ",
+				axis: .zeroBased("iaq"),
 				visible: false,
 				foregroundStyle: { _ in .gray },
 				chartBody: { series, _, time, iaq in
@@ -182,6 +176,7 @@ extension MetricsSeriesList {
 				name: "Lux",
 				abbreviatedName: "Lux",
 				unit: "lx",
+				axis: .zeroBased("lux"),
 				visible: false,
 				foregroundStyle: { _ in
 						.linearGradient(
@@ -209,6 +204,7 @@ extension MetricsSeriesList {
 				name: "White Lux",
 				abbreviatedName: "White",
 				unit: "lx",
+				axis: .zeroBased("lux"),
 				visible: false,
 				foregroundStyle: { _ in
 						.linearGradient(
@@ -236,6 +232,7 @@ extension MetricsSeriesList {
 				name: "UV Lux",
 				abbreviatedName: "UV",
 				unit: "lx",
+				axis: .zeroBased("lux"),
 				visible: false,
 				foregroundStyle: { _ in
 						.linearGradient(
@@ -263,6 +260,7 @@ extension MetricsSeriesList {
 				name: "IR Lux",
 				abbreviatedName: "IR",
 				unit: "lx",
+				axis: .zeroBased("lux"),
 				visible: false,
 				foregroundStyle: { _ in
 						.linearGradient(
@@ -290,7 +288,7 @@ extension MetricsSeriesList {
 				name: "Radiation",
 				abbreviatedName: "☢️",
 				unit: "µR/h",
-				minumumYAxisSpan: 20.0,
+				axis: .zeroBased("radiation"),
 				visible: false,
 				foregroundStyle: { _ in
 						.linearGradient(
@@ -317,7 +315,13 @@ extension MetricsSeriesList {
 				keyPath: \.windSpeedAndDirection,
 				name: "Wind Speed/Direction",
 				abbreviatedName: "Speed/Dir",
-				unit: "m/s",
+				unit: MetricsLocaleUnits.windSpeedLabel,
+				axis: .zeroBased("wind"),
+				conversion: { wind in
+					wind.map {
+						WindSpeedAndDirection(windSpeed: MetricsLocaleUnits.windSpeed(fromMetersPerSecond: $0.windSpeed), windDirection: $0.windDirection)
+					}
+				},
 				visible: false,
 				foregroundStyle: { _ in
 						.linearGradient(
@@ -358,7 +362,9 @@ extension MetricsSeriesList {
 				keyPath: \.rainfall1H,
 				name: "Rainfall 1H",
 				abbreviatedName: "Rain 1H",
-				unit: "mm",
+				unit: MetricsLocaleUnits.lengthLabel,
+				axis: .zeroBased("rain"),
+				conversion: { rain in rain.map { MetricsLocaleUnits.length(fromMillimeters: $0) } },
 				visible: false,
 				foregroundStyle: { _ in
 						.linearGradient(
@@ -385,7 +391,9 @@ extension MetricsSeriesList {
 				keyPath: \.rainfall24H,
 				name: "Rainfall 24H",
 				abbreviatedName: "Rain 24H",
-				unit: "mm",
+				unit: MetricsLocaleUnits.lengthLabel,
+				axis: .zeroBased("rain"),
+				conversion: { rain in rain.map { MetricsLocaleUnits.length(fromMillimeters: $0) } },
 				visible: false,
 				foregroundStyle: { _ in
 						.linearGradient(
@@ -411,8 +419,10 @@ extension MetricsSeriesList {
 				id: "weight",
 				keyPath: \.weight,
 				name: "Weight",
-				abbreviatedName: "kg",
-				unit: "kg",
+				abbreviatedName: "Weight",
+				unit: MetricsLocaleUnits.massLabel,
+				axis: .padded("weight"),
+				conversion: { weight in weight.map { MetricsLocaleUnits.mass(fromKilograms: $0) } },
 				visible: false,
 				foregroundStyle: { _ in
 						.linearGradient(
@@ -439,7 +449,9 @@ extension MetricsSeriesList {
 				keyPath: \.distance,
 				name: "Distance",
 				abbreviatedName: "Dist",
-				unit: "mm",
+				unit: MetricsLocaleUnits.lengthLabel,
+				axis: .padded("distance"),
+				conversion: { distance in distance.map { MetricsLocaleUnits.length(fromMillimeters: $0) } },
 				visible: false,
 				foregroundStyle: { _ in
 						.linearGradient(
@@ -467,6 +479,8 @@ extension MetricsSeriesList {
 				name: "Soil Temperature",
 				abbreviatedName: "Soil Temp",
 				unit: "°",
+				axis: .temperature,
+				conversion: { t in t.map { Float($0.localeTemperature()) } },
 				visible: false,
 				foregroundStyle: { _ in
 						.linearGradient(
@@ -487,13 +501,14 @@ extension MetricsSeriesList {
 					}
 				}),
 
-			// Soil Temperature
+			// Soil Moisture
 			MetricsChartSeries(
 				id: "soilMoisture",
 				keyPath: \.soilMoisture,
 				name: "Soil Moisture",
 				abbreviatedName: "Moist",
 				unit: "%",
+				axis: .percent,
 				visible: false,
 				foregroundStyle: { _ in
 						.linearGradient(

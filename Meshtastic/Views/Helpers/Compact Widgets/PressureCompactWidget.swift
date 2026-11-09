@@ -34,8 +34,8 @@ struct PressureCompactWidget: View {
 	let gridItemLayout = Array(repeating: GridItem(.flexible(), spacing: 10), count: 2)
 	Form {
 		LazyVGrid(columns: gridItemLayout) {
-			PressureCompactWidget(pressure: "1004.76", unit: "hPA", low: true)
-			PressureCompactWidget(pressure: "1004.76", unit: "hPA", low: false)
+			PressureCompactWidget(pressure: "1005", unit: "hPa", low: true)
+			PressureCompactWidget(pressure: "1005", unit: "hPa", low: false)
 		}
 	}
 }

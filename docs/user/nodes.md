@@ -212,9 +212,11 @@ Importing a contact requires firmware 2.6.9 or later on the connected node.
 
 ### Air Quality
 
-Nodes with a particulate-matter sensor — reporting the firmware's Air Quality telemetry — show an **Air Quality** section with the latest PM2.5, PM1.0, and PM10 readings in µg/m³.
+Nodes with a particulate-matter or CO2 sensor — reporting the firmware's Air Quality telemetry — show an **Air Quality** section with the latest PM2.5, PM1.0, and PM10 readings in µg/m³ and CO2 in ppm. CO2 is marked Good under 1000 ppm, Stuffy under 2000, Poor under 5000, Unsafe under 30000, and Evacuate above that.
 
-An **Air Quality Metrics Log** entry appears under the node's logs, with a seven-day chart and table of the particulate-matter readings (configurable columns), a **Clear** action to delete stored readings, and **CSV export**.
+An **Air Quality Metrics Log** entry appears under the node's logs, with a seven-day chart and table of the readings (configurable columns), a **Clear** action to delete stored readings, and **CSV export**. Particulates and CO2 are charted separately, so CO2's hundreds of ppm don't flatten the particulate lines.
+
+The environment, air quality and power logs give each unit its own chart: temperature, humidity, pressure, light and so on are never drawn against one shared scale. Pressure uses a 100 hPa window, 950–1050 hPa near sea level, that moves with the readings for a node at altitude. Only readings the node actually sends are charted. The power log lists every channel that reports, up to eight, by the names you give them under **Label Channels**, and node details uses the same names.
 
 ### Signed Node
 

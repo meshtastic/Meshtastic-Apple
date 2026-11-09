@@ -1791,6 +1791,16 @@ actor MeshPackets {
 				telemetry.powerCh2Current = telemetryMessage.powerMetrics.hasCh2Current.then(telemetryMessage.powerMetrics.ch2Current)
 				telemetry.powerCh3Voltage = telemetryMessage.powerMetrics.hasCh3Voltage.then(telemetryMessage.powerMetrics.ch3Voltage)
 				telemetry.powerCh3Current = telemetryMessage.powerMetrics.hasCh3Current.then(telemetryMessage.powerMetrics.ch3Current)
+				telemetry.powerCh4Voltage = telemetryMessage.powerMetrics.hasCh4Voltage.then(telemetryMessage.powerMetrics.ch4Voltage)
+				telemetry.powerCh4Current = telemetryMessage.powerMetrics.hasCh4Current.then(telemetryMessage.powerMetrics.ch4Current)
+				telemetry.powerCh5Voltage = telemetryMessage.powerMetrics.hasCh5Voltage.then(telemetryMessage.powerMetrics.ch5Voltage)
+				telemetry.powerCh5Current = telemetryMessage.powerMetrics.hasCh5Current.then(telemetryMessage.powerMetrics.ch5Current)
+				telemetry.powerCh6Voltage = telemetryMessage.powerMetrics.hasCh6Voltage.then(telemetryMessage.powerMetrics.ch6Voltage)
+				telemetry.powerCh6Current = telemetryMessage.powerMetrics.hasCh6Current.then(telemetryMessage.powerMetrics.ch6Current)
+				telemetry.powerCh7Voltage = telemetryMessage.powerMetrics.hasCh7Voltage.then(telemetryMessage.powerMetrics.ch7Voltage)
+				telemetry.powerCh7Current = telemetryMessage.powerMetrics.hasCh7Current.then(telemetryMessage.powerMetrics.ch7Current)
+				telemetry.powerCh8Voltage = telemetryMessage.powerMetrics.hasCh8Voltage.then(telemetryMessage.powerMetrics.ch8Voltage)
+				telemetry.powerCh8Current = telemetryMessage.powerMetrics.hasCh8Current.then(telemetryMessage.powerMetrics.ch8Current)
 				telemetry.metricsType = 2
 			} else if telemetryMessage.variant == Telemetry.OneOf_Variant.airQualityMetrics(telemetryMessage.airQualityMetrics) {
 				// Air Quality Metrics — particulate matter (µg/m³). Issue #2040 / design#54.
@@ -1801,6 +1811,7 @@ actor MeshPackets {
 				telemetry.pm10Environmental = telemetryMessage.airQualityMetrics.hasPm10Environmental.then(telemetryMessage.airQualityMetrics.pm10Environmental)
 				telemetry.pm25Environmental = telemetryMessage.airQualityMetrics.hasPm25Environmental.then(telemetryMessage.airQualityMetrics.pm25Environmental)
 				telemetry.pm100Environmental = telemetryMessage.airQualityMetrics.hasPm100Environmental.then(telemetryMessage.airQualityMetrics.pm100Environmental)
+				telemetry.co2 = telemetryMessage.airQualityMetrics.hasCo2.then(telemetryMessage.airQualityMetrics.co2)
 				telemetry.metricsType = 3
 			} else if telemetryMessage.variant == Telemetry.OneOf_Variant.hostMetrics(telemetryMessage.hostMetrics) {
 				// Host Metrics, from Linux meshtasticd nodes
