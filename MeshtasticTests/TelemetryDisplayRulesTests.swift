@@ -136,4 +136,26 @@ struct TelemetryDisplayRulesTests {
 		#expect(lines.first?.split(separator: ",").count == 17)
 		#expect(lines.last?.split(separator: ",", omittingEmptySubsequences: false).count == 17)
 	}
+
+	@Test("Each power CSV value lands under its own channel's header, with a decimal point")
+	func powerCsvColumns() throws {
+		let row = TelemetryEntity()
+		row.metricsType = 2
+		row.powerCh1Voltage = 12.5
+		row.powerCh1Current = 101.5
+		row.powerCh3Current = 0
+		row.powerCh8Voltage = 3.25
+		row.powerCh8Current = 808.5
+		let lines = telemetryToCsvFile(telemetry: [row], metricsType: 2).split(separator: "\n")
+		let header = try #require(lines.first).split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+		let values = try #require(lines.last).split(separator: ",", omittingEmptySubsequences: false).map { $0.trimmingCharacters(in: .whitespaces) }
+		let byHeader = Dictionary(uniqueKeysWithValues: zip(header, values))
+		#expect(byHeader["Channel 1 Voltage"] == "12.5")
+		#expect(byHeader["Channel 1 Current"] == "101.5")
+		#expect(byHeader["Channel 2 Voltage"] == "")
+		// A reported zero is a reading, not a blank.
+		#expect(byHeader["Channel 3 Current"] == "0")
+		#expect(byHeader["Channel 8 Voltage"] == "3.25")
+		#expect(byHeader["Channel 8 Current"] == "808.5")
+	}
 }
