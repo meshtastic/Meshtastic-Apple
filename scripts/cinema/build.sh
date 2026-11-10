@@ -33,12 +33,30 @@ hdri() {
 	fi
 }
 
+# Downloads one of NASA's Earth images (public domain) into cache/ as <file>, from its path
+# under NASA's Earth Observatory image assets.
+nasa() {
+	local file="$1" path="$2"
+	if [ ! -f "$HERE/cache/$file" ]; then
+		curl -sfL -o "$HERE/cache/$file.part" "https://assets.science.nasa.gov/content/dam/science/esd/eo/images/$path"
+		mv "$HERE/cache/$file.part" "$HERE/cache/$file"
+	fi
+}
+
 # "Sunset Forest", the view out of the tent's door and windows.
 hdri sunset_forest 4k
 # "Kiara 8" at sunset, the light on the fire lookout's cab.
 hdri kiara_8_sunset 8k
 # A clear sunset sky with no horizon in it, over the lookout's forest view and real terrain.
 hdri kloppenheim_06_puresky 4k
+# The ground and the city lights in the view out of the space station's cupola: NASA's Blue Marble
+# Next Generation for July, with topography and bathymetry, cut down to 16384 wide, the largest
+# texture Blender's GPU render takes; and NASA's Black Marble 2016.
+nasa world.topo.bathy.200407.3x21600x10800.jpg bmng/bmng-topography-bathymetry/july/world.topo.bathy.200407.3x21600x10800.jpg
+nasa BlackMarble_2016_3km_gray.jpg imagerecords/144000/144897/BlackMarble_2016_3km_gray.jpg
+if [ ! -f "$HERE/cache/blue_marble_july_16384.jpg" ]; then
+	sips -Z 16384 -s formatOptions 95 "$HERE/cache/world.topo.bathy.200407.3x21600x10800.jpg" --out "$HERE/cache/blue_marble_july_16384.jpg" >/dev/null
+fi
 
 # Pinned so a new release can't quietly change the artwork.
 uv run --quiet --with pillow==13.0.0 --with numpy==2.5.4 --with resvg-py==0.5.0 python "$HERE/make_textures.py"
@@ -97,6 +115,20 @@ sky() {
 	echo "Wrote $DEST/$name.heic"
 }
 
+# Renders <script>.py as <name>.heic, a view that needs no HDRI, which an environment with a cutout
+# image shows behind its glass: painted <name> <script>.
+painted() {
+	local name="$1" script="$2"
+	rm -f "$HERE/out/$name.png"
+	if [ "$PREVIEW" = 1 ]; then
+		"$BLENDER" -b --python-exit-code 1 -P "$HERE/$script.py" -- --out "$HERE/out/${name}_preview.png" --width 2048 --samples 32
+		return
+	fi
+	"$BLENDER" -b --python-exit-code 1 -P "$HERE/$script.py" -- --out "$HERE/out/$name.png" --width 4096 --samples 128
+	sips -s format heic -s formatOptions "$HEIC_QUALITY" "$HERE/out/$name.png" --out "$DEST/$name.heic" >/dev/null
+	echo "Wrote $DEST/$name.heic"
+}
+
 # Renders <script>.py as <name>.heic, a landscape an environment with a cutout image shows behind
 # its glass: view <name> <script> <hdri file> <rotation> <strength>.
 view() {
@@ -127,3 +159,7 @@ sky fire_lookout_puresky kloppenheim_06_puresky_4k.hdr 5.5 1
 # The castle tower, lit as the lookout is so it shares the lookout's skies, in each of its stones.
 stone_environment castle_tower gray
 stone_environment castle_tower pink
+# The space station's module under its cupola, lit by its own lights, and Earth from orbit, the
+# view behind its windows.
+environment space_cupola
+painted space_earth space_earth

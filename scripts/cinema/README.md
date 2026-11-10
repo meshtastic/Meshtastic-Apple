@@ -61,6 +61,14 @@ The image is a cutout (`render_room(..., cutout=True)`): the sunset HDRI lights 
 
 `--stone gray` or `--stone pink` picks the stone; `build.sh` renders both, as `castle_tower_gray.heic` and `castle_tower_pink.heic`, with one `castle_tower_anchors.json`. Like the lookout, the image is a cutout lit by Kiara 8 at the same turn, so the app shows the lookout's skies and real terrain behind it.
 
+## Space station
+
+`space_cupola.py` builds a space station module on `room_base.py`, with no HDRI: the world is black and gives no light (`render_room(build, None, cutout=True)`), so the module is lit only by its own light strips and by the light through the cupola. The module is 4.6 m across and 4.9 m long, wider than a real node so its walls are at the distance the image reads well at, with its four long corners cut across at 45° for the utility runs and the light strips. Racks of off-white closeout panels line both sides, with fasteners, labels, drawer pulls, velcro, stowage bags, two experiment boxes with status lights, and blue handrails on standoffs. The deck has seat track and foot loops out by the racks, and nothing under the seat, since lines there bend into arcs across the view.
+
+Overhead and a little ahead of the seat, the cupola opens out of the ceiling on a round throat: six trapezoid windows leaning in round a round window at the top, in deep frames, with handles under them. Its glass is clear, so the image is transparent through it. The screen hangs on the plain front bulkhead, under the ceiling. The whiteboards the app draws the team roster and the nodes' status messages on are strapped to the left racks and the print it draws the latest trace route on to the right ones, each with a hidden light that makes it as bright as the panel the app draws. Two laptops on swing arms by the front bulkhead show a crew schedule and the station's ground track. Behind the print on the right is the ham radio station: a placard with the station's frequencies, the radio with its display on the 145.800 MHz voice downlink, a hand mic on a coiled cord and a headset, with a T-Echo (the app's own model) strapped beside it. Behind the seat are the hatch to the next module, the Meshtastic mission patch over it, Chirpy's poster taped beside it, cargo bags and overhead stowage under a net, and at the front corners a fire extinguisher and a breathing mask's bag under red labels.
+
+`space_earth.py` renders the view out of the windows, `space_earth.heic`: Earth from 420 km, centered up and behind the seat, so its edge crosses the cupola's front windows with black space below it. The ground is the Blue Marble, lit by a sun low on the left, with procedural clouds, a glow of air at the limb that turns red toward the night side, the Black Marble's city lights on the night side, and the sun's disk. `orbit.py` holds where Earth and the sun are, which both scripts use, so the light in the cupola comes from where the view puts Earth. The scene is in kilometers. Earth is overhead because the cupola is: the image is only transparent through the cupola's windows.
+
 ## HEIC
 
 `build.sh` converts the rendered PNG with `sips` at HEIC quality 88. That quality was picked by decoding the HEIC and comparing it with the PNG (PSNR and SSIM, over the whole image and over crops of the canvas, the banner, the plaque, the forest through the door and a window), and by looking at the same crops side by side. Quality 88 matched or beat the old JPEG at quality 85 in every crop, and no difference from the PNG could be seen in the crops at 3× zoom. For the tent at 4096 × 2048:
@@ -76,13 +84,15 @@ The image is a cutout (`render_room(..., cutout=True)`): the sunset HDRI lights 
 
 ## Sources
 
-- The tent, the ham shack, the castle tower, their furniture and lighting are modeled in `room_base.py`, `tent_base.py`, `sar_tent.py`, `ham_shack.py` and `castle_tower.py`.
+- The tent, the ham shack, the castle tower, the space station, their furniture and lighting are modeled in `room_base.py`, `tent_base.py`, `sar_tent.py`, `ham_shack.py`, `castle_tower.py` and `space_cupola.py`.
 - The radios on the shack's desk and the Solar Node in the tent are the app's own device models from `Meshtastic/Resources/DeviceModels`.
 - The topo map, the whiteboard and the ham shack's cards, clocks, displays, meters and chart are drawn by `make_textures.py`.
 - The banner, poster and plaque use the app's own artwork, rasterized from its SVGs by `make_textures.py` with resvg (the `resvg-py` package; chosen because it needs no system libraries, unlike cairosvg, and keeps transparency, unlike `qlmanage`): the Meshtastic mark (`Meshtastic/Resources/AppIcon.icon/Assets/Meshtastic Logo.svg`), the wordmark (`meshtastic-wordmark-white.imageset`), Chirpy (`Chirpy.imageset`) and the Meshtastic Solutions mark (`MeshtasticSolutionsMark.imageset`). The plaque follows the layout of the one in the visionOS Hardware Showcase.
 - The forest seen through the door and the windows is the "Sunset Forest" HDRI from Poly Haven (https://polyhaven.com/a/sunset_forest), released under CC0. `build.sh` downloads it into `cache/`.
 - The lookout's cab is lit by the "Kiara 8 Sunset" HDRI from Poly Haven (https://polyhaven.com/a/kiara_8_sunset), CC0; the sky over the forest view and behind real terrain is "Kloppenheim 06 (Pure Sky)" from Poly Haven (https://polyhaven.com/a/kloppenheim_06_puresky), CC0.
 - The display of the lookout's radio on its sill is drawn by `make_textures.py`. The T-Echo and the Solar Node are the app's own models.
+- The space station's mission patch (with the Meshtastic mark), ham radio placard and display, and laptop screens are drawn by `make_textures.py`. The ground track's map is made from the Blue Marble.
+- Earth in the view out of the cupola is NASA's Blue Marble Next Generation, July 2004, with topography and bathymetry (NASA Earth Observatory, Reto Stöckli; https://science.nasa.gov/earth/earth-observatory/), and its city lights are NASA's Black Marble 2016 (NASA Earth Observatory, Joshua Stevens and Miguel Román). Both are public domain. `build.sh` downloads them into `cache/` from assets.science.nasa.gov and cuts the Blue Marble down to 16384 wide, the largest texture Blender's GPU render takes. The clouds are procedural.
 
 ## Banana for scale
 

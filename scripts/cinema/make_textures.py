@@ -8,7 +8,9 @@
 #  Draws the flat textures the scenes use: a topo map, a blank whiteboard, and the Meshtastic
 #  banner, Chirpy poster and Meshtastic Solutions plaque; for the ham shack, a wall of QSL
 #  cards, two clock faces, a radio's display, two meter faces, an FT8 screen, a band plan chart, and its books' spines and covers; and
-#  for the fire lookout, its radio display; and for the castle tower, its Meshtastic banner. All but
+#  for the fire lookout, its radio display; for the castle tower, its Meshtastic banner; and for the
+#  space station, a mission patch, the ham radio station's placard and display, and two laptop
+#  screens. All but
 #  the branding are generated here.
 #  The branding uses the app's own artwork, rasterized from its SVGs with resvg (the resvg-py
 #  package), so it is never redrawn. Writes PNGs into cache/.
@@ -480,6 +482,141 @@ def castle_banner(path, w=1000, h=1500):
     Image.fromarray(np.clip(pixels, 0, 255).astype(np.uint8)).save(path)
 
 
+# MARK: - Space station
+
+def space_patch(path, w=1200):
+    """A round embroidered mission patch: the Meshtastic mark on a starry blue field over a strip
+    of Earth, ringed by the name in a gold border."""
+    image = Image.new("RGBA", (w, w), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(image)
+    c = w / 2
+    draw.ellipse([0, 0, w - 1, w - 1], fill=(196, 152, 62))
+    draw.ellipse([w * 0.03, w * 0.03, w * 0.97, w * 0.97], fill=(*CHARCOAL, 255))
+    field = w * 0.2
+    draw.ellipse([field, field, w - field, w - field], fill=(18, 34, 86))
+    rng = random.Random(9)
+    for _ in range(60):
+        a, r = rng.uniform(0, 2 * math.pi), rng.uniform(0, w * 0.29)
+        x, y = c + r * math.cos(a), c + r * math.sin(a) * 0.9 - w * 0.04
+        s = rng.choice((2, 3, 4))
+        draw.ellipse([x - s, y - s, x + s, y + s], fill=(235, 235, 240))
+    # Earth's curve across the bottom of the field.
+    mask = Image.new("L", (w, w), 0)
+    ImageDraw.Draw(mask).ellipse([field, field, w - field, w - field], fill=255)
+    earth = Image.new("RGBA", (w, w), (0, 0, 0, 0))
+    ImageDraw.Draw(earth).ellipse([-w * 0.4, w * 0.62, w * 1.4, w * 2.2], fill=(40, 110, 190))
+    ImageDraw.Draw(earth).ellipse([-w * 0.4, w * 0.62, w * 1.4, w * 2.2], outline=(150, 200, 255), width=10)
+    image.paste(earth, (0, 0), Image.composite(earth, Image.new("RGBA", (w, w)), mask))
+    mark = svg(MARK_SVG, int(w * 0.36))
+    image.alpha_composite(mark, (int(c - mark.width / 2), int(c - mark.height / 2 - w * 0.06)))
+    # The name round the top of the ring, a letter at a time.
+    face = system_font(int(w * 0.085), b"Bold")
+    text = "MESHTASTIC"
+    step = math.radians(13)
+    start = -math.pi / 2 - step * (len(text) - 1) / 2
+    for i, letter in enumerate(text):
+        a = start + i * step
+        glyph = Image.new("RGBA", (int(w * 0.14), int(w * 0.14)), (0, 0, 0, 0))
+        ImageDraw.Draw(glyph).text((glyph.width / 2, glyph.height / 2), letter, fill=(236, 236, 240), font=face, anchor="mm")
+        glyph = glyph.rotate(-math.degrees(a) - 90, resample=Image.BICUBIC)
+        r = w * 0.4
+        image.alpha_composite(glyph, (int(c + r * math.cos(a) - glyph.width / 2), int(c + r * math.sin(a) - glyph.height / 2)))
+    draw = ImageDraw.Draw(image)
+    lower = system_font(int(w * 0.06), b"Semibold")
+    draw.text((c, w * 0.88), "OFF GRID", fill=(196, 152, 62), font=lower, anchor="mm")
+    image.save(path)
+
+
+def space_placard(path, w=1400, h=700):
+    """The placard over the ham radio station: what it is and its frequencies, in black on the
+    station's off-white label stock."""
+    image = Image.new("RGB", (w, h), (236, 234, 226))
+    draw = ImageDraw.Draw(image)
+    draw.rectangle([18, 18, w - 19, h - 19], outline=(30, 30, 30), width=8)
+    draw.rectangle([18, 18, w - 19, 190], fill=(30, 30, 30))
+    draw.text((w / 2, 104), "AMATEUR RADIO STATION", fill=(236, 234, 226), font=system_font(96, b"Bold"), anchor="mm")
+    body = system_font(66, b"Semibold")
+    rows = ["VOICE DOWNLINK  145.800 MHz FM", "PACKET  145.825 MHz", "CREW CONTACTS WITH SCHOOLS"]
+    for i, row in enumerate(rows):
+        draw.text((w / 2, 300 + i * 120), row, fill=(30, 30, 30), font=body, anchor="mm")
+    image.save(path)
+
+
+def space_radio(path, w=900, h=300):
+    """The ham radio's display, tuned to the voice downlink."""
+    image = Image.new("RGB", (w, h), (20, 12, 2))
+    draw = ImageDraw.Draw(image)
+    amber = (255, 176, 60)
+    draw.text((w - 40, 190), "145.800", fill=amber, font=font("Arial Bold.ttf", 150), anchor="rs")
+    draw.text((40, 64), "FM", fill=amber, font=font("Arial Bold.ttf", 50), anchor="ls")
+    draw.text((w - 40, 64), "HI", fill=amber, font=font("Arial Bold.ttf", 44), anchor="rs")
+    for i in range(24):
+        x = 40 + i * 34
+        draw.rectangle([x, 230, x + 24, 266], fill=amber if i < 7 else (70, 44, 10))
+    image.save(path)
+
+
+def space_ground_track(path, w=1600, h=1000):
+    """A laptop's screen: the station's ground track over a dark world map, made from the Blue
+    Marble's land, with the next passes drawn as the usual sine waves."""
+    source = os.path.join(OUT, "blue_marble_july_16384.jpg")
+    image = Image.new("RGB", (w, h), (8, 14, 30))
+    top = 70
+    map_h = h - top - 40
+    if os.path.exists(source):
+        Image.MAX_IMAGE_PIXELS = None
+        world = np.asarray(Image.open(source).convert("RGB").resize((w, map_h), Image.BILINEAR), dtype=float)
+        land = (world[..., 1] + world[..., 0]) > world[..., 2] * 1.6
+        shade = np.where(land[..., None], np.array([46, 82, 70.0]), np.array([10, 22, 48.0]))
+        image.paste(Image.fromarray(shade.astype(np.uint8)), (0, top))
+    draw = ImageDraw.Draw(image)
+    for lon in range(0, w, w // 12):
+        draw.line([(lon, top), (lon, top + map_h)], fill=(30, 44, 70), width=1)
+    for lat in range(top, top + map_h, map_h // 6):
+        draw.line([(0, lat), (w, lat)], fill=(30, 44, 70), width=1)
+    # Inclination 51.6°, each orbit shifted 22.5° west.
+    for orbit, color in ((0, (255, 210, 80)), (1, (120, 170, 255)), (2, (80, 120, 200))):
+        points = []
+        for x in range(w):
+            lon = x / w * 360 - 180
+            lat = 51.6 * math.sin(math.radians(lon + 106.9 + orbit * 22.5))
+            points.append((x, top + (90 - lat) / 180 * map_h))
+        draw.line(points, fill=color, width=5 if orbit == 0 else 3)
+    sx, sy = w * (102 / 360), top + (90 - 25) / 180 * map_h
+    draw.ellipse([sx - 16, sy - 16, sx + 16, sy + 16], fill=(255, 255, 255), outline=(255, 210, 80), width=5)
+    draw.rectangle([0, 0, w, top], fill=(22, 30, 48))
+    draw.text((30, top / 2), "GROUND TRACK", fill=(220, 226, 240), font=system_font(40, b"Semibold"), anchor="lm")
+    draw.text((w - 30, top / 2), "ALT 420 km   7.66 km/s", fill=(160, 172, 196), font=system_font(34, b"Medium"), anchor="rm")
+    image.save(path)
+
+
+def space_checklist(path, w=1600, h=1000):
+    """A laptop's screen: the day's schedule, as the crew sees it."""
+    image = Image.new("RGB", (w, h), (236, 238, 242))
+    draw = ImageDraw.Draw(image)
+    draw.rectangle([0, 0, w, 90], fill=(38, 64, 120))
+    draw.text((30, 45), "CREW SCHEDULE", fill=(255, 255, 255), font=system_font(46, b"Semibold"), anchor="lm")
+    rows = [
+        ("06:00", "Post sleep"),
+        ("07:30", "Daily planning conference"),
+        ("08:10", "Mesh node battery swap"),
+        ("10:00", "Exercise"),
+        ("12:00", "Lunch"),
+        ("13:00", "Ham radio school contact"),
+        ("15:30", "Cupola Earth photography"),
+        ("18:00", "Mesh traffic check-in"),
+    ]
+    face = system_font(44, b"Regular")
+    bold = system_font(44, b"Semibold")
+    for i, (time, task) in enumerate(rows):
+        y = 150 + i * 102
+        if i % 2:
+            draw.rectangle([0, y - 51, w, y + 51], fill=(222, 226, 234))
+        draw.text((40, y), time, fill=(38, 64, 120), font=bold, anchor="lm")
+        draw.text((240, y), task, fill=(30, 32, 40), font=face, anchor="lm")
+    image.save(path)
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     topo_map(os.path.join(OUT, "topo.png"))
@@ -506,6 +643,11 @@ def main():
         book_cover(os.path.join(OUT, f"cover_{i}.png"), title, line, color, ink)
     lookout_radio(os.path.join(OUT, "lookout_radio.png"))
     castle_banner(os.path.join(OUT, "castle_banner.png"))
+    space_patch(os.path.join(OUT, "space_patch.png"))
+    space_placard(os.path.join(OUT, "space_placard.png"))
+    space_radio(os.path.join(OUT, "space_radio.png"))
+    space_ground_track(os.path.join(OUT, "space_ground_track.png"))
+    space_checklist(os.path.join(OUT, "space_checklist.png"))
     print("textures written to", OUT)
 
 
