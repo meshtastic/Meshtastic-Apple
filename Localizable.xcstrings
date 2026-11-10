@@ -311,10 +311,26 @@
       }
     },
     "%@ Current" : {
-      "comment" : "Power tile and log column title. %@ is the channel's label, such as Solar or Channel 1."
+      "comment" : "Power tile and log column title. %@ is the channel's label, such as Solar or Channel 1.",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ – natężenie"
+          }
+        }
+      }
     },
     "%@ Voltage" : {
-      "comment" : "Power tile and log column title. %@ is the channel's label, such as Solar or Channel 1."
+      "comment" : "Power tile and log column title. %@ is the channel's label, such as Solar or Channel 1.",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ – napięcie"
+          }
+        }
+      }
     },
     "%lld bytes of input dropped, the node is not keeping up" : {
 
@@ -593,6 +609,12 @@
             "state" : "translated",
             "value" : "連線到無線電即可查看其螢幕。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Połącz się z radiem, aby zobaczyć jego ekran."
+          }
         }
       }
     },
@@ -653,6 +675,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "電子紙螢幕更新較慢，點一下「重新整理」以取得最新畫面。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ekrany E-ink odświeżają się powoli. Stuknij „Odśwież”, aby zobaczyć aktualny obraz."
           }
         }
       }
@@ -977,6 +1005,12 @@
             "state" : "translated",
             "value" : "未連線"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie połączono"
+          }
         }
       }
     },
@@ -1034,7 +1068,14 @@
 
     },
     "Opens a shell on this node, starting a remote admin session first if needed" : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Otwiera powłokę na tym węźle, w razie potrzeby najpierw rozpoczynając sesję zdalnej administracji"
+          }
+        }
+      }
     },
     "Other people see these in their node lists and on the map." : {
       "comment" : "Radio setup name intro",
@@ -1198,10 +1239,24 @@
 
     },
     "Remote Shell" : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zdalna powłoka"
+          }
+        }
+      }
     },
     "Remote admin session active" : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sesja zdalnej administracji aktywna"
+          }
+        }
+      }
     },
     "Save and Continue" : {
       "comment" : "Radio setup button",
@@ -1491,6 +1546,12 @@
             "state" : "translated",
             "value" : "上"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "W górę"
+          }
         }
       }
     },
@@ -1500,6 +1561,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "長按"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Długie naciśnięcie"
           }
         }
       }
@@ -1514,6 +1581,12 @@
             "state" : "translated",
             "value" : "使用鍵盤"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Użyj klawiatury"
+          }
         }
       }
     },
@@ -1524,6 +1597,12 @@
             "state" : "translated",
             "value" : "停止使用鍵盤"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przestań używać klawiatury"
+          }
         }
       }
     },
@@ -1533,6 +1612,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "方向鍵、Return 與 Esc 鍵會傳送到無線電。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Strzałki, Return i Esc są przekazywane do radia."
           }
         }
       }
@@ -1784,6 +1869,12 @@
             "state" : "translated",
             "value" : "無線電螢幕"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ekran radia"
+          }
         }
       }
     },
@@ -1891,6 +1982,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "重新整理"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Odśwież"
           }
         }
       }
@@ -2102,6 +2199,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "正在等待無線電螢幕畫面"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Oczekiwanie na ekran radia"
           }
         }
       }
@@ -2693,6 +2796,12 @@
             "state" : "translated",
             "value" : "%@ 電子紙"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ E-ink"
+          }
         }
       }
     },
@@ -2701,6 +2810,12 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "%@ LCD"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "%@ LCD"
           }
         }
@@ -2713,6 +2828,12 @@
             "state" : "translated",
             "value" : "%@ LED 矩陣"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ matryca LED"
+          }
         }
       }
     },
@@ -2723,6 +2844,12 @@
             "state" : "translated",
             "value" : "%@ OLED"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ OLED"
+          }
         }
       }
     },
@@ -2731,6 +2858,12 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "%@ TFT"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "%@ TFT"
           }
         }
@@ -3106,6 +3239,12 @@
             "state" : "translated",
             "value" : "返回"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wstecz"
+          }
         }
       }
     },
@@ -3384,6 +3523,12 @@
             "state" : "translated",
             "value" : "頻道使用率"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wykorzystanie kanału "
+          }
         }
       }
     },
@@ -3394,6 +3539,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "充電中"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ładowanie"
           }
         }
       }
@@ -3470,6 +3621,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "社群硬體"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sprzęt społeczności"
           }
         }
       }
@@ -3727,6 +3884,12 @@
             "state" : "translated",
             "value" : "已停產的硬體"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wycofany sprzęt"
+          }
         }
       }
     },
@@ -3749,6 +3912,12 @@
             "state" : "translated",
             "value" : "距離"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "odległość"
+          }
         }
       }
     },
@@ -3759,6 +3928,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "下"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "W dół"
           }
         }
       }
@@ -3985,6 +4160,12 @@
             "state" : "translated",
             "value" : "隱藏未在目前 LoRa 上收到訊號的節點"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ukryj nieodebrane na obecnych ustawieniach LoRa"
+          }
         }
       }
     },
@@ -3995,6 +4176,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "跳數："
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Liczba skoków:"
           }
         }
       }
@@ -4238,6 +4425,12 @@
             "state" : "translated",
             "value" : "左"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "W lewo"
+          }
         }
       }
     },
@@ -4247,6 +4440,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "舊版硬體"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Starszy sprzęt"
           }
         }
       }
@@ -4280,6 +4479,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "記錄："
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dzienniki:"
           }
         }
       }
@@ -4376,6 +4581,12 @@
             "state" : "translated",
             "value" : "創客"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Maker"
+          }
         }
       }
     },
@@ -4386,6 +4597,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "創客硬體"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sprzęt maker"
           }
         }
       }
@@ -7828,6 +8045,12 @@
             "state" : "translated",
             "value" : "小眾硬體"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sprzęt niszowy"
+          }
         }
       }
     },
@@ -7925,6 +8148,12 @@
             "state" : "translated",
             "value" : "節點篩選器"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Filtry węzłów"
+          }
         }
       }
     },
@@ -7957,6 +8186,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "節點（%@）"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Węzły (%@)"
           }
         }
       }
@@ -8342,6 +8577,12 @@
             "state" : "translated",
             "value" : "取代已儲存的金鑰"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zastąp zapisany klucz"
+          }
         }
       }
     },
@@ -8418,6 +8659,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "右"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "W prawo"
           }
         }
       }
@@ -8726,6 +8973,12 @@
             "state" : "translated",
             "value" : "以 3D 顯示"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokaż w 3D"
+          }
         }
       }
     },
@@ -8838,6 +9091,12 @@
             "state" : "translated",
             "value" : "支援的硬體"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Obsługiwany sprzęt"
+          }
         }
       }
     },
@@ -8889,7 +9148,15 @@
       "comment" : "Alert title when the mesh reports that a telemetry request failed"
     },
     "Telemetry Requested" : {
-      "comment" : "Alert title after asking a node for telemetry"
+      "comment" : "Alert title after asking a node for telemetry",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysłano żądanie telemetrii"
+          }
+        }
+      }
     },
     "Trace routes" : {
       "comment" : "VoiceOver label for the spatial map trace route menu",
@@ -9087,6 +9354,12 @@
             "state" : "translated",
             "value" : "它們將從此應用程式和無線電（如果仍有的話）中移除。任何仍在外面的節點將在下次收到訊號時返回。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zostaną usunięte z aplikacji i z radia, jeśli nadal je ma. Węzły, które wciąż działają, wrócą, gdy zostaną ponownie odebrane."
+          }
         }
       }
     },
@@ -9119,6 +9392,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "這將取代您已有的金鑰"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "To zastąpi klucz, który już masz"
           }
         }
       }
@@ -9218,6 +9497,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "未收到訊號的節點"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nieodebrane węzły"
           }
         }
       }
@@ -15618,6 +15903,12 @@
             "state" : "translated",
             "value" : "距離 1 跳"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "1 skok"
+          }
         }
       }
     },
@@ -17728,6 +18019,12 @@
             "state" : "translated",
             "value" : "Mensaje de estado que se transmite a la red. Otros nodos verán este estado en la lista de nodos."
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Status rozgłaszany w sieci. Inne węzły zobaczą go na liście węzłów."
+          }
         }
       }
     },
@@ -17815,6 +18112,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已發送追蹤路由（Trace Route），但未收到任何回應。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysłano Trace Route, nie otrzymano odpowiedzi."
           }
         }
       }
@@ -18447,6 +18750,12 @@
             "state" : "translated",
             "value" : "動作"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Akcje"
+          }
         }
       }
     },
@@ -18926,6 +19235,12 @@
             "state" : "translated",
             "value" : "新增並分享我的"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dodaj i udostępnij mój"
+          }
         }
       }
     },
@@ -19273,6 +19588,12 @@
             "state" : "translated",
             "value" : "新增聯絡人"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dodaj kontakt"
+          }
         }
       }
     },
@@ -19364,6 +19685,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "將 Meshtastic 節點 %@ 新增為聯絡人"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dodaj węzeł Meshtastic %@ jako kontakt"
           }
         }
       }
@@ -19521,6 +19848,12 @@
             "state" : "translated",
             "value" : "加入最愛"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dodaj do ulubionych"
+          }
         }
       }
     },
@@ -19542,6 +19875,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "新增聯絡人會將其名稱和公鑰儲存到您已連線的節點，以便您可以安全地傳送訊息給他們。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dodanie kontaktu zapisuje jego nazwę i klucz publiczny w połączonym węźle, aby można było bezpiecznie wysyłać mu wiadomości."
           }
         }
       }
@@ -19981,6 +20320,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "遠端管理"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Administracja"
           }
         }
       }
@@ -20864,6 +21209,12 @@
             "state" : "translated",
             "value" : "空氣品質"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jakość powietrza"
+          }
         }
       }
     },
@@ -20950,6 +21301,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "空氣品質指標日誌"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dziennik jakości powietrza"
           }
         }
       }
@@ -21837,6 +22194,12 @@
             "state" : "translated",
             "value" : "全部"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wszystkie"
+          }
         }
       }
     },
@@ -22142,6 +22505,12 @@
             "state" : "translated",
             "value" : "高度"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wys."
+          }
         }
       }
     },
@@ -22229,6 +22598,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "高度"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysokość"
           }
         }
       }
@@ -23301,6 +23676,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "任何未送出的訊息都會重新傳送。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pominięte wiadomości zostaną dostarczone ponownie."
           }
         }
       }
@@ -25951,6 +26332,12 @@
             "state" : "translated",
             "value" : "Mala Rx"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Błędne Rx"
+          }
         }
       }
     },
@@ -26880,6 +27267,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "最佳／最差 SNR"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Najlepszy / najgorszy SNR"
           }
         }
       }
@@ -28345,6 +28738,12 @@
             "state" : "translated",
             "value" : "Nivel de Ruido (-85 dBm)"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zajęte pasmo (-85 dBm)"
+          }
         }
       }
     },
@@ -29154,6 +29553,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cancelado"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Anulowano"
           }
         }
       }
@@ -33103,6 +33508,12 @@
             "state" : "translated",
             "value" : "選擇此請求至 %@ 的加密方式。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybierz metodę szyfrowania tego żądania do %@."
+          }
         }
       }
     },
@@ -33302,6 +33713,12 @@
             "state" : "translated",
             "value" : "清除"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wyczyść"
+          }
         }
       }
     },
@@ -33490,6 +33907,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "清除記錄"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wyczyść dziennik"
           }
         }
       }
@@ -33739,6 +34162,12 @@
             "state" : "translated",
             "value" : "Elimina todos los filtros de nodos"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Czyści wszystkie aktywne filtry węzłów."
+          }
         }
       }
     },
@@ -33821,6 +34250,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Client Base 只應將您控制的其他節點加入最愛。使用不當會損害您本地的 Mesh。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Client Base powinien dodawać do ulubionych tylko inne węzły, którymi zarządzasz. Niewłaściwe użycie zaszkodzi lokalnej sieci."
           }
         }
       }
@@ -34051,6 +34486,12 @@
             "state" : "translated",
             "value" : "客戶端歷史紀錄"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Historia klienta"
+          }
         }
       }
     },
@@ -34138,6 +34579,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "客戶端歷史紀錄請求已送出"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysłano żądanie historii klienta"
           }
         }
       }
@@ -34882,6 +35329,12 @@
             "state" : "translated",
             "value" : "Dispositivo soportado por la comunidad Linux"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Urządzenie z Linuksem wspierane przez społeczność."
+          }
         }
       }
     },
@@ -35260,6 +35713,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "設定"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Konfiguracja"
           }
         }
       }
@@ -36635,6 +37094,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已連線的節點"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Połączony węzeł"
           }
         }
       }
@@ -38333,6 +38798,12 @@
             "state" : "translated",
             "value" : "Copiar %@"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kopiuj: %@"
+          }
         }
       }
     },
@@ -38622,6 +39093,12 @@
             "state" : "translated",
             "value" : "無法新增此聯絡人。請檢查您的節點是否已連線，然後重試。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie udało się dodać kontaktu. Sprawdź, czy węzeł jest połączony, i spróbuj ponownie."
+          }
         }
       }
     },
@@ -38698,11 +39175,25 @@
             "state" : "translated",
             "value" : "無法傳送本地統計資料請求"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie udało się wysłać żądania Local Stats"
+          }
         }
       }
     },
     "Couldn’t Send Request" : {
-      "comment" : "Alert title when a telemetry request could not be sent to the radio"
+      "comment" : "Alert title when a telemetry request could not be sent to the radio",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie udało się wysłać żądania"
+          }
+        }
+      }
     },
     "Couldn't Share" : {
       "comment" : "A title for an alert that indicates a failure to share.",
@@ -39470,6 +39961,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "電流"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Natężenie"
           }
         }
       }
@@ -40812,6 +41309,12 @@
             "state" : "translated",
             "value" : "刪除所有空氣品質指標嗎？"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Usunąć wszystkie pomiary jakości powietrza?"
+          }
         }
       }
     },
@@ -41152,11 +41655,25 @@
             "state" : "translated",
             "value" : "刪除所有環境指標？"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Usunąć wszystkie pomiary środowiskowe?"
+          }
         }
       }
     },
     "Delete all host metrics?" : {
-      "comment" : "Host Metrics log: confirm deleting every reading"
+      "comment" : "Host Metrics log: confirm deleting every reading",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Usunąć wszystkie pomiary hosta?"
+          }
+        }
+      }
     },
     "Delete all local stats?" : {
       "localizations" : {
@@ -41182,6 +41699,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "¿Borrar todas las estadísticas?"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Usunąć wszystkie Local Stats?"
           }
         }
       }
@@ -41277,6 +41800,12 @@
             "state" : "translated",
             "value" : "要刪除所有 PAX 資料嗎？"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Usunąć wszystkie dane PAX?"
+          }
         }
       }
     },
@@ -41352,6 +41881,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "刪除所有位置資料？"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Usunąć wszystkie pozycje?"
           }
         }
       }
@@ -41698,6 +42233,12 @@
             "state" : "translated",
             "value" : "刪除節點"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Usuń węzeł"
+          }
         }
       }
     },
@@ -41786,6 +42327,12 @@
             "state" : "translated",
             "value" : "刪除節點？"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Usunąć węzeł?"
+          }
         }
       }
     },
@@ -41867,6 +42414,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "刪除電源指標？"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Usunąć pomiary zasilania?"
           }
         }
       }
@@ -41994,6 +42547,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "描述"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Opis"
           }
         }
       }
@@ -42366,6 +42925,12 @@
             "state" : "translated",
             "value" : "已偵測"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wykryto"
+          }
         }
       }
     },
@@ -42453,6 +43018,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "偵測"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wykrycie"
           }
         }
       }
@@ -42542,6 +43113,12 @@
             "state" : "translated",
             "value" : "偵測事件"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zdarzenie wykrycia"
+          }
         }
       }
     },
@@ -42587,6 +43164,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "偵測事件"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zdarzenia wykrycia"
           }
         }
       }
@@ -42975,6 +43558,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "偵測感測器記錄"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dziennik czujnika wykrywania"
           }
         }
       }
@@ -44006,6 +44595,12 @@
             "state" : "translated",
             "value" : "裝置指標記錄"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dziennik pomiarów urządzenia"
+          }
         }
       }
     },
@@ -44401,6 +44996,12 @@
             "state" : "translated",
             "value" : "裝置螢幕"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ekran urządzenia"
+          }
         }
       }
     },
@@ -44670,6 +45271,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "直連"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bezpośrednio"
           }
         }
       }
@@ -46169,6 +46776,12 @@
             "state" : "translated",
             "value" : "顯示名稱"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wyświetlana nazwa"
+          }
         }
       }
     },
@@ -46186,6 +46799,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "顯示名稱"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wyświetlana nazwa"
           }
         }
       }
@@ -46444,6 +47063,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "距離"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Odległość"
           }
         }
       }
@@ -48212,6 +48837,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Duplicados"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Duplikaty"
           }
         }
       }
@@ -50626,6 +51257,12 @@
             "state" : "translated",
             "value" : "使用此 Mesh 頻道加密。用於一般分享。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Szyfrowane kanałem tej sieci. Używaj do zwykłego udostępniania."
+          }
         }
       }
     },
@@ -51497,6 +52134,12 @@
             "state" : "translated",
             "value" : "環境"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Środowisko"
+          }
         }
       }
     },
@@ -51673,6 +52316,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "環境指標記錄"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dziennik pomiarów środowiskowych"
           }
         }
       }
@@ -52460,6 +53109,12 @@
             "state" : "translated",
             "value" : "估算涵蓋範圍"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Oszacuj zasięg"
+          }
         }
       }
     },
@@ -52819,6 +53474,12 @@
             "state" : "translated",
             "value" : "交換位置"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wymień pozycje"
+          }
         }
       }
     },
@@ -52894,6 +53555,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "交換使用者資訊"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wymień dane użytkownika"
           }
         }
       }
@@ -54235,6 +54902,12 @@
             "state" : "translated",
             "value" : "無法交換使用者資訊。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie udało się wymienić danych użytkownika."
+          }
         }
       }
     },
@@ -54316,6 +54989,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "無法取得有效的位置進行交換。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie udało się uzyskać prawidłowej pozycji do wymiany"
           }
         }
       }
@@ -54404,6 +55083,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "無法取得有效的位置進行交換。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie udało się uzyskać prawidłowej pozycji do wymiany."
           }
         }
       }
@@ -54784,6 +55469,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "最愛"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ulubione"
           }
         }
       }
@@ -55534,6 +56225,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "搜尋節點"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Znajdź węzeł"
           }
         }
       }
@@ -56543,6 +57240,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "首次收到訊號"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pierwszy odbiór"
           }
         }
       }
@@ -57669,6 +58372,12 @@
             "state" : "translated",
             "value" : "去程跳數"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Skoki do celu"
+          }
         }
       }
     },
@@ -57679,6 +58388,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "去程路由"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Trasa do celu"
           }
         }
       }
@@ -57766,20 +58481,58 @@
             "state" : "translated",
             "value" : "在手錶上進行獵狐"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Foxhunt na zegarku"
+          }
         }
       }
     },
     "Free Disk Space" : {
-      "comment" : "Host metrics: free space on the node's main disk"
+      "comment" : "Host metrics: free space on the node's main disk",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wolne miejsce na dysku"
+          }
+        }
+      }
     },
     "Free Disk Space 2" : {
-      "comment" : "Host metrics: free space on the node's second disk"
+      "comment" : "Host metrics: free space on the node's second disk",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wolne miejsce na dysku 2"
+          }
+        }
+      }
     },
     "Free Disk Space 3" : {
-      "comment" : "Host metrics: free space on the node's third disk"
+      "comment" : "Host metrics: free space on the node's third disk",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wolne miejsce na dysku 3"
+          }
+        }
+      }
     },
     "Free Memory" : {
-      "comment" : "Host metrics: free memory on the node's computer"
+      "comment" : "Host metrics: free memory on the node's computer",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wolna pamięć"
+          }
+        }
+      }
     },
     "Frequency" : {
       "localizations" : {
@@ -60631,6 +61384,12 @@
             "state" : "translated",
             "value" : "硬體"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sprzęt"
+          }
         }
       }
     },
@@ -60729,6 +61488,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "朝向"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kierunek"
           }
         }
       }
@@ -61047,6 +61812,12 @@
             "state" : "translated",
             "value" : "這是我的 Meshtastic 聯絡人 — 讓我們在 Mesh 上保持聯繫。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Oto mój kontakt Meshtastic — bądźmy w kontakcie w sieci."
+          }
         }
       }
     },
@@ -61136,6 +61907,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "隱藏"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ukryte"
           }
         }
       }
@@ -61609,6 +62386,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ocultar filtros de nodos"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ukryj filtry węzłów"
           }
         }
       }
@@ -62154,6 +62937,12 @@
             "state" : "translated",
             "value" : "將可寫入的 NFC 標籤放在 iPhone 頂部附近以分享此聯絡人。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przyłóż zapisywalny tag NFC do górnej części iPhone’a, aby udostępnić ten kontakt."
+          }
         }
       }
     },
@@ -62248,6 +63037,12 @@
             "state" : "translated",
             "value" : "Saltos"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Skoki"
+          }
         }
       }
     },
@@ -62336,6 +63131,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "跳數"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Liczba skoków"
           }
         }
       }
@@ -62523,13 +63324,29 @@
       }
     },
     "Host" : {
-      "comment" : "Node details: section with the latest host metrics from a Linux node"
+      "comment" : "Node details: section with the latest host metrics from a Linux node",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Host"
+          }
+        }
+      }
     },
     "host metrics" : {
       "comment" : "Telemetry request: the kind of readings, used inside a sentence"
     },
     "Host Metrics Log" : {
-      "comment" : "Node details: log of host metrics from a Linux node"
+      "comment" : "Node details: log of host metrics from a Linux node",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dziennik pomiarów hosta"
+          }
+        }
+      }
     },
     "Hour" : {
       "localizations" : {
@@ -63442,6 +64259,12 @@
             "state" : "translated",
             "value" : "Cómo leerlo"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jak to odczytać"
+          }
         }
       }
     },
@@ -63889,6 +64712,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Quiero uno"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Chcę taki"
           }
         }
       }
@@ -65340,6 +66169,12 @@
             "state" : "translated",
             "value" : "Ignorar Nodo"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ignoruj"
+          }
         }
       }
     },
@@ -65604,6 +66439,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已忽略"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ignorowane"
           }
         }
       }
@@ -66660,6 +67501,12 @@
             "state" : "translated",
             "value" : "尚未完成"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Niekompletne"
+          }
         }
       }
     },
@@ -66769,6 +67616,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "室內空氣品質"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jakość powietrza w pomieszczeniu"
           }
         }
       }
@@ -68101,6 +68954,12 @@
             "state" : "translated",
             "value" : "跳至最新訊息"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przejdź do teraz"
+          }
         }
       }
     },
@@ -68119,6 +68978,12 @@
             "state" : "translated",
             "value" : "僅新增聯絡人"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tylko dodaj kontakt"
+          }
         }
       }
     },
@@ -68136,6 +69001,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "保留"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zachowaj"
           }
         }
       }
@@ -68694,6 +69565,12 @@
             "state" : "translated",
             "value" : "標記頻道"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nazwij kanały"
+          }
         }
       }
     },
@@ -68709,6 +69586,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "標記電源通道"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nazwij kanały zasilania"
           }
         }
       }
@@ -68819,6 +69702,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "最後收到訊號"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ostatni odbiór"
           }
         }
       }
@@ -69400,6 +70289,12 @@
             "state" : "translated",
             "value" : "Último"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Najnowszy"
+          }
         }
       }
     },
@@ -69487,6 +70382,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "緯度"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Szerokość geograficzna"
           }
         }
       }
@@ -70524,7 +71425,15 @@
       }
     },
     "Linux nodes running meshtasticd send their uptime, free memory, load and free disk space." : {
-      "comment" : "Host Metrics log: shown before any readings arrive"
+      "comment" : "Host Metrics log: shown before any readings arrive",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Węzły z Linuksem i meshtasticd wysyłają czas działania, wolną pamięć, obciążenie i wolne miejsce na dysku."
+          }
+        }
+      }
     },
     "Listen for Beacons" : {
       "localizations" : {
@@ -70657,7 +71566,15 @@
       }
     },
     "Load Average" : {
-      "comment" : "Host metrics: the computer's load over the last 1, 5 and 15 minutes"
+      "comment" : "Host metrics: the computer's load over the last 1, 5 and 15 minutes",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Średnie obciążenie"
+          }
+        }
+      }
     },
     "Load Earlier Messages" : {
       "comment" : "A button that loads older messages.",
@@ -70877,6 +71794,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "正在載入硬體資訊…"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wczytywanie informacji o sprzęcie…"
           }
         }
       }
@@ -71392,6 +72315,12 @@
             "state" : "translated",
             "value" : "Estadísticas Locales"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Local Stats"
+          }
         }
       }
     },
@@ -71419,6 +72348,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Registro de estadísticas locales"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dziennik Local Stats"
           }
         }
       }
@@ -72884,6 +73819,12 @@
             "state" : "translated",
             "value" : "紀錄"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dzienniki"
+          }
         }
       }
     },
@@ -73266,6 +74207,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "經度"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Długość geograficzna"
           }
         }
       }
@@ -73989,6 +74936,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Los valores más bajos suelen indicar un entorno con menos ruido."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Niższe wartości zwykle oznaczają mniej zakłóceń wokół odbiornika."
           }
         }
       }
@@ -74729,6 +75682,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "地圖"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mapa"
           }
         }
       }
@@ -96530,6 +97489,12 @@
             "state" : "translated",
             "value" : "訊息"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wiadomości"
+          }
         }
       }
     },
@@ -98385,6 +99350,12 @@
             "state" : "translated",
             "value" : "Silenciar Notificaciones"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wycisz powiadomienia"
+          }
         }
       }
     },
@@ -98716,6 +99687,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "導航至該節點"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nawiguj do węzła"
           }
         }
       }
@@ -99533,6 +100510,12 @@
             "state" : "translated",
             "value" : "網路狀態 橘"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Stan sieci: pomarańczowy"
+          }
         }
       }
     },
@@ -99620,6 +100603,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "網路狀態 紅"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Stan sieci: czerwony"
           }
         }
       }
@@ -100038,6 +101027,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "沒有空氣品質指標"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Brak pomiarów jakości powietrza"
           }
         }
       }
@@ -100597,6 +101592,12 @@
             "state" : "translated",
             "value" : "沒有裝置指標"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Brak pomiarów urządzenia"
+          }
         }
       }
     },
@@ -100756,6 +101757,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "沒有環境指標"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Brak pomiarów środowiskowych"
           }
         }
       }
@@ -100931,7 +101938,15 @@
       }
     },
     "No Host Metrics" : {
-      "comment" : "Host Metrics log: title shown before any readings arrive"
+      "comment" : "Host Metrics log: title shown before any readings arrive",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Brak pomiarów hosta"
+          }
+        }
+      }
     },
     "No Local Stats" : {
       "localizations" : {
@@ -100957,6 +101972,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No hay estadísticas locales"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Brak Local Stats"
           }
         }
       }
@@ -101386,6 +102407,12 @@
             "state" : "translated",
             "value" : "沒有 PAX 計數器日誌"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Brak dzienników PAX Counter"
+          }
         }
       }
     },
@@ -101473,6 +102500,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "沒有位置"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Brak pozycji"
           }
         }
       }
@@ -101562,6 +102595,12 @@
             "state" : "translated",
             "value" : "沒有電源指標"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Brak pomiarów zasilania"
+          }
         }
       }
     },
@@ -101650,6 +102689,12 @@
             "state" : "translated",
             "value" : "沒有公鑰"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Brak klucza publicznego"
+          }
         }
       }
     },
@@ -101722,6 +102767,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sin Métricas"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Brak odczytu"
           }
         }
       }
@@ -101840,6 +102891,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "未回報回程路由。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie zgłoszono trasy powrotnej."
           }
         }
       }
@@ -102001,6 +103058,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "沒有追蹤路由"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Brak Trace Route"
           }
         }
       }
@@ -102788,6 +103851,12 @@
             "state" : "translated",
             "value" : "節點地圖"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mapa węzłów"
+          }
         }
       }
     },
@@ -103020,6 +104089,12 @@
             "state" : "translated",
             "value" : "節點編號"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Numer węzła"
+          }
         }
       }
     },
@@ -103089,6 +104164,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "節點狀態"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Status węzła"
           }
         }
       }
@@ -103425,6 +104506,12 @@
             "state" : "translated",
             "value" : "Nodos en línea"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Węzły online"
+          }
         }
       }
     },
@@ -103492,6 +104579,12 @@
             "state" : "translated",
             "value" : "Nivel de ruido"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Poziom szumu"
+          }
         }
       }
     },
@@ -103548,6 +104641,12 @@
             "state" : "translated",
             "value" : "Info sobre nivel de ruido"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Informacje o poziomie szumu"
+          }
         }
       }
     },
@@ -103575,6 +104674,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sin lecturas de nivel de ruido"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Poziom szumu: brak odczytu"
           }
         }
       }
@@ -104796,6 +105901,12 @@
             "state" : "translated",
             "value" : "已觀察"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zaobserwowano"
+          }
         }
       }
     },
@@ -105864,6 +106975,12 @@
             "state" : "translated",
             "value" : "在線"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Online"
+          }
         }
       }
     },
@@ -106225,6 +107342,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "開啟指南針"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Otwórz kompas"
           }
         }
       }
@@ -108387,6 +109510,12 @@
             "state" : "translated",
             "value" : "Paquetes Rx"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pakiety Rx"
+          }
         }
       }
     },
@@ -108414,6 +109543,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Paquetes Tx"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pakiety Tx"
           }
         }
       }
@@ -109154,6 +110289,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "PAX 計數器日誌"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dziennik PAX Counter"
           }
         }
       }
@@ -110597,6 +111738,12 @@
             "state" : "translated",
             "value" : "已插入"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Podłączone do zasilania"
+          }
         }
       }
     },
@@ -111117,6 +112264,12 @@
             "state" : "translated",
             "value" : "位置交換失敗"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wymiana pozycji nie powiodła się"
+          }
         }
       }
     },
@@ -111520,6 +112673,12 @@
             "state" : "translated",
             "value" : "位置紀錄"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dziennik pozycji"
+          }
         }
       }
     },
@@ -111919,6 +113078,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "位置資料已送出"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysłano pozycję"
           }
         }
       }
@@ -112400,6 +113565,12 @@
             "state" : "translated",
             "value" : "電源通道標籤"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nazwy kanałów zasilania"
+          }
         }
       }
     },
@@ -112603,6 +113774,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "電源指標紀錄"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dziennik pomiarów zasilania"
           }
         }
       }
@@ -113055,6 +114232,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "使用電源"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zasilane"
           }
         }
       }
@@ -114236,6 +115419,12 @@
             "state" : "translated",
             "value" : "產品連結可能是聯盟連結 — 購買可能會為 Meshtastic 賺取佣金。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Linki do produktów mogą być linkami partnerskimi — zakupy mogą przynieść Meshtastic prowizję."
+          }
         }
       }
     },
@@ -114791,6 +115980,12 @@
             "state" : "translated",
             "value" : "公鑰"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Klucz publiczny"
+          }
         }
       }
     },
@@ -114966,6 +116161,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "公鑰與已知不符"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Niezgodny klucz publiczny"
           }
         }
       }
@@ -115300,6 +116501,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "輻射"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Promieniowanie"
           }
         }
       }
@@ -116159,6 +117366,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Las lecturas pueden variar rápidamente debido a los transmisores cercanos, la configuración de la antena, los filtros y las interferencias locales."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Odczyty mogą szybko się zmieniać przez pobliskie nadajniki, antenę, filtry i lokalne zakłócenia."
           }
         }
       }
@@ -117402,6 +118615,12 @@
             "state" : "translated",
             "value" : "重新整理裝置中繼資料(Metadata)"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Odśwież metadane urządzenia"
+          }
         }
       }
     },
@@ -117757,6 +118976,12 @@
             "state" : "translated",
             "value" : "Retransmitido"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przekazane"
+          }
         }
       }
     },
@@ -118060,6 +119285,12 @@
             "state" : "translated",
             "value" : "遠端管理"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zdalna administracja"
+          }
         }
       }
     },
@@ -118325,6 +119556,12 @@
             "state" : "translated",
             "value" : "移除"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Usuń"
+          }
         }
       }
     },
@@ -118529,6 +119766,12 @@
             "state" : "translated",
             "value" : "從最愛中移除"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Usuń z ulubionych"
+          }
         }
       }
     },
@@ -118611,6 +119854,12 @@
             "state" : "translated",
             "value" : "從忽略中移除"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Usuń z ignorowanych"
+          }
         }
       }
     },
@@ -118672,6 +119921,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "正在移除…"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Usuwanie…"
           }
         }
       }
@@ -119098,7 +120353,15 @@
       }
     },
     "Request" : {
-      "comment" : "Local Stats log: button that asks the node for its local stats"
+      "comment" : "Local Stats log: button that asks the node for its local stats",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wyślij żądanie"
+          }
+        }
+      }
     },
     "Request Air Quality Metrics" : {
       "comment" : "Node details: accessibility label for the button beside a log that asks the node for its readings"
@@ -119154,6 +120417,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "請求方法"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Metoda żądania"
           }
         }
       }
@@ -119276,11 +120545,25 @@
             "state" : "translated",
             "value" : "已請求"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysłano żądanie"
+          }
         }
       }
     },
     "Requested %@ from %@. The reply can take a while." : {
-      "comment" : "Alert after asking a node for telemetry: the kind of readings, then the node's name"
+      "comment" : "Alert after asking a node for telemetry: the kind of readings, then the node's name",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysłano żądanie %1$@ do %2$@. Odpowiedź może chwilę potrwać."
+          }
+        }
+      }
     },
     "Required" : {
       "comment" : "A field for entering a Wi-Fi password.",
@@ -119436,6 +120719,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "需要您的手機精確的GPS定位"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wymaga dokładnej pozycji GPS z telefonu"
           }
         }
       }
@@ -119744,6 +121033,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Restablecer filtros de nodo"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Resetuj filtry węzłów"
           }
         }
       }
@@ -121086,6 +122381,12 @@
             "state" : "translated",
             "value" : "回程跳數"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Skoki powrotne"
+          }
         }
       }
     },
@@ -121126,6 +122427,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "回程路由"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Trasa powrotna"
           }
         }
       }
@@ -121830,6 +123137,12 @@
             "state" : "translated",
             "value" : "角色"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rola"
+          }
         }
       }
     },
@@ -121917,6 +123230,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "角色"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Role"
           }
         }
       }
@@ -122105,6 +123424,12 @@
             "state" : "translated",
             "value" : "往返"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Czas w obie strony"
+          }
         }
       }
     },
@@ -122203,6 +123528,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "回程路徑：%@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Trasa powrotna: %@"
           }
         }
       }
@@ -122855,6 +124186,12 @@
             "state" : "translated",
             "value" : "去程路徑：%@"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Trasa: %@"
+          }
         }
       }
     },
@@ -122943,6 +124280,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "路徑"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Trasy"
           }
         }
       }
@@ -123579,6 +124922,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "衛星"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Satelity"
           }
         }
       }
@@ -124652,6 +126001,12 @@
             "state" : "translated",
             "value" : "掃描此 QR 碼以將 %@ 新增到另一個裝置。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zeskanuj ten kod QR, aby dodać %@ na innym urządzeniu."
+          }
         }
       }
     },
@@ -124858,6 +126213,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Desplaza el gráfico hasta la lectura más reciente."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przewija wykres do najnowszego odczytu"
           }
         }
       }
@@ -125116,6 +126477,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "秒"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sekunda"
           }
         }
       }
@@ -126329,6 +127696,12 @@
             "state" : "translated",
             "value" : "選擇一個節點"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybierz węzeł"
+          }
         }
       }
     },
@@ -126707,6 +128080,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "選擇頻道"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybierz kanał"
           }
         }
       }
@@ -128448,6 +129827,12 @@
             "state" : "translated",
             "value" : "傳送本地統計資料請求"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wyślij żądanie Local Stats"
+          }
         }
       }
     },
@@ -129970,6 +131355,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "系列"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Seria"
           }
         }
       }
@@ -131675,6 +133066,12 @@
             "state" : "translated",
             "value" : "分享"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Udostępnij"
+          }
         }
       }
     },
@@ -132192,6 +133589,12 @@
             "state" : "translated",
             "value" : "分享 QR 碼及連結"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Udostępnij kod QR i link"
+          }
         }
       }
     },
@@ -132362,6 +133765,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "共用頻道"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wspólny kanał"
           }
         }
       }
@@ -133190,6 +134599,12 @@
             "state" : "translated",
             "value" : "Mostrar filtros de nodos"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokaż filtry węzłów"
+          }
         }
       }
     },
@@ -133265,6 +134680,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "顯示節點"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokaż węzły"
           }
         }
       }
@@ -133699,6 +135120,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mostrando las últimas %1$lld de %2$lld posiciones. La exportación incluye todas las posiciones."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wyświetlono najnowsze %1$lld z %2$lld pozycji. Eksport zawiera wszystkie pozycje."
           }
         }
       }
@@ -134650,6 +136077,12 @@
             "state" : "translated",
             "value" : "訊號 %@"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sygnał %@"
+          }
         }
       }
     },
@@ -135147,6 +136580,12 @@
             "state" : "translated",
             "value" : "已簽署"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Podpisane"
+          }
         }
       }
     },
@@ -135220,6 +136659,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已簽署的節點"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Podpisany węzeł"
           }
         }
       }
@@ -135851,6 +137296,12 @@
             "state" : "translated",
             "value" : "SNR %@ dB"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "SNR %@ dB"
+          }
         }
       }
     },
@@ -136323,6 +137774,12 @@
             "state" : "translated",
             "value" : "土壤溼度"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wilgotność gleby"
+          }
         }
       }
     },
@@ -136410,6 +137867,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "土壤溫度"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Temp. gleby"
           }
         }
       }
@@ -136555,6 +138018,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "速度"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prędkość"
           }
         }
       }
@@ -137697,6 +139166,12 @@
             "state" : "translated",
             "value" : "Mensaje de estado"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Status"
+          }
         }
       }
     },
@@ -138164,6 +139639,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "儲存與轉送"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Store & Forward"
           }
         }
       }
@@ -140462,6 +141943,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "溫度"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Temperatura"
           }
         }
       }
@@ -143451,6 +144938,12 @@
             "state" : "translated",
             "value" : "La línea roja indica el nivel de -85 dBm, no es un umbral de fallo estricto."
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Czerwona linia oznacza zajęte pasmo przy -85 dBm, a nie twardą granicę awarii."
+          }
         }
       }
     },
@@ -144611,6 +146104,12 @@
             "state" : "translated",
             "value" : "他們要求交換聯絡人。您可以新增他們的聯絡人，並立即分享您最近連線的無線電的聯絡人。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ta osoba prosi o wymianę kontaktów. Możesz dodać jej kontakt i od razu odesłać kontakt ostatnio połączonego radia."
+          }
         }
       }
     },
@@ -144912,6 +146411,12 @@
             "state" : "translated",
             "value" : "此聯絡人不包含公鑰，因此無法新增。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ten kontakt nie zawiera klucza publicznego, więc nie można go dodać."
+          }
         }
       }
     },
@@ -144929,6 +146434,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "此聯絡人表示它是直接交給您的。無論如何都會新增 — 僅在屬實時確認。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ten kontakt twierdzi, że został Ci przekazany bezpośrednio. Zostanie dodany w każdym przypadku — potwierdź tylko, jeśli to prawda."
           }
         }
       }
@@ -145111,6 +146622,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "這可能需要一段時間，回應將會顯示在被發送節點的路由追蹤紀錄中。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "To może chwilę potrwać. Odpowiedź pojawi się w dzienniku Trace Route węzła, do którego wysłano żądanie."
           }
         }
       }
@@ -145357,6 +146874,12 @@
             "state" : "translated",
             "value" : "這是您的無線電"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "To jest Twoje radio"
+          }
         }
       }
     },
@@ -145580,6 +147103,12 @@
             "state" : "translated",
             "value" : "此名稱僅顯示在此裝置上。節點的真實名稱在分享和匯出時不變。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ta nazwa jest widoczna tylko na tym urządzeniu. Prawdziwa nazwa węzła pozostaje bez zmian przy udostępnianiu i eksporcie."
+          }
         }
       }
     },
@@ -145683,6 +147212,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "此節點尚未分享公鑰，因此無法傳送私訊給它。交換使用者資訊會要求一個。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ten węzeł nie udostępnił klucza publicznego, więc nie można wysyłać do niego wiadomości prywatnych. „Wymień dane użytkownika” poprosi o klucz."
           }
         }
       }
@@ -146658,6 +148193,12 @@
             "state" : "translated",
             "value" : "時間"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Czas"
+          }
         }
       }
     },
@@ -146818,6 +148359,12 @@
             "state" : "translated",
             "value" : "時間戳記"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Znacznik czasu"
+          }
         }
       }
     },
@@ -146828,6 +148375,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "時間範圍"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zakres czasu"
           }
         }
       }
@@ -148159,6 +149712,12 @@
             "state" : "translated",
             "value" : "總共"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Łącznie"
+          }
         }
       }
     },
@@ -148355,6 +149914,12 @@
             "state" : "translated",
             "value" : "PAX 總數"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Łącznie PAX"
+          }
         }
       }
     },
@@ -148538,6 +150103,12 @@
             "state" : "translated",
             "value" : "追蹤路由（Trace Route）"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Trace Route"
+          }
         }
       }
     },
@@ -148708,6 +150279,12 @@
             "state" : "translated",
             "value" : "追蹤路由（Trace Route）紀錄"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dziennik Trace Route"
+          }
         }
       }
     },
@@ -148795,6 +150372,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "追蹤路由（Trace Route）已送出"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysłano Trace Route"
           }
         }
       }
@@ -148884,6 +150467,12 @@
             "state" : "translated",
             "value" : "追蹤路由（Trace Route）已送給 %@"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysłano Trace Route do %@"
+          }
         }
       }
     },
@@ -148972,6 +150561,12 @@
             "state" : "translated",
             "value" : "給 %@ 的追蹤路由（Trace Route）未送出。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie wysłano Trace Route do %@."
+          }
         }
       }
     },
@@ -149059,6 +150654,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "路由追蹤（Trace Route）已被限速。您每 30 秒最多只能發送一次路由追蹤請求。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Trace Route został ograniczony. Możesz wysyłać Trace Route najwyżej raz na 30 sekund."
           }
         }
       }
@@ -150588,6 +152189,12 @@
             "state" : "translated",
             "value" : "類型"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Typ"
+          }
         }
       }
     },
@@ -150999,6 +152606,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "無法使用，因為此節點沒有公鑰。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Niedostępne, bo ten węzeł nie ma klucza publicznego."
           }
         }
       }
@@ -151433,6 +153046,12 @@
             "state" : "translated",
             "value" : "未知中繼節點"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nieznany przekaźnik"
+          }
         }
       }
     },
@@ -151443,6 +153062,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "未知訊號"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nieznany sygnał"
           }
         }
       }
@@ -151643,6 +153268,12 @@
             "state" : "translated",
             "value" : "未監測"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Niemonitorowane"
+          }
         }
       }
     },
@@ -151672,6 +153303,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Reactivar notificaciones"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wyłącz wyciszenie"
           }
         }
       }
@@ -153502,6 +155139,12 @@
             "state" : "translated",
             "value" : "已開機時間"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Czas działania"
+          }
         }
       }
     },
@@ -154789,6 +156432,12 @@
             "state" : "translated",
             "value" : "使用者 ID"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ID użytkownika"
+          }
         }
       }
     },
@@ -154865,6 +156514,12 @@
             "state" : "translated",
             "value" : "使用者資訊交換失敗"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wymiana danych użytkownika nie powiodła się"
+          }
         }
       }
     },
@@ -154940,6 +156595,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "使用者資訊已發送"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysłano dane użytkownika"
           }
         }
       }
@@ -155269,6 +156930,12 @@
             "state" : "translated",
             "value" : "使用 PKI。節點必須授權您的身分為遠端管理員。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Używa PKI. Węzeł musi autoryzować Cię jako zdalnego administratora."
+          }
         }
       }
     },
@@ -155384,6 +157051,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Utilizando la posición de su dispositivo conectado"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Używana jest pozycja połączonego urządzenia"
           }
         }
       }
@@ -155740,6 +157413,12 @@
             "state" : "translated",
             "value" : "由無線電驗證"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zweryfikowane przez radio"
+          }
         }
       }
     },
@@ -155755,6 +157434,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已驗證的聯絡人"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zweryfikowany kontakt"
           }
         }
       }
@@ -155789,6 +157474,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "親自驗證"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zweryfikowany osobiście"
           }
         }
       }
@@ -155950,6 +157641,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "請透過當面或電話比對公鑰，確認您正在傳訊的對象。此節點最新的公鑰與先前記錄的金鑰不符。如果金鑰變更是因為恢復原廠設定或其他刻意操作，您可以刪除該節點並讓它重新交換金鑰，但這也可能表示有更嚴重的安全問題。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sprawdź, z kim piszesz, porównując klucze publiczne osobiście lub przez telefon. Najnowszy klucz publiczny tego węzła nie zgadza się z wcześniej zapisanym. Jeśli zmiana klucza wynika z przywrócenia ustawień fabrycznych lub innego zamierzonego działania, możesz usunąć węzeł i pozwolić mu ponownie wymienić klucze. Może to jednak oznaczać poważniejszy problem z bezpieczeństwem."
           }
         }
       }
@@ -156249,6 +157946,12 @@
             "state" : "translated",
             "value" : "經由 LoRa"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przez LoRa"
+          }
         }
       }
     },
@@ -156350,6 +158053,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "經由 MQTT"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przez MQTT"
           }
         }
       }
@@ -156533,6 +158242,12 @@
             "state" : "translated",
             "value" : "可見"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Widoczne"
+          }
         }
       }
     },
@@ -156562,6 +158277,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Rango visible"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Widoczny zakres"
           }
         }
       }
@@ -156801,7 +158522,15 @@
       }
     },
     "Wait" : {
-      "comment" : "Local Stats log: shown with the seconds left before another request can be sent"
+      "comment" : "Local Stats log: shown with the seconds left before another request can be sent",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Poczekaj"
+          }
+        }
+      }
     },
     "Wait %lld s" : {
       "comment" : "Telemetry request button: seconds until another request can be sent"
@@ -157921,6 +159650,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "重量"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Waga"
           }
         }
       }
@@ -159225,6 +160960,12 @@
             "state" : "translated",
             "value" : "風"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wiatr"
+          }
         }
       }
     },
@@ -159909,6 +161650,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "是，我控制此節點"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tak, zarządzam tym węzłem"
           }
         }
       }
@@ -160653,6 +162400,12 @@
             "state" : "translated",
             "value" : "您的節點已為此聯絡人持有不同的公鑰。新增此金鑰將取代舊金鑰，您傳送給他們的訊息將使用新金鑰加密。只有在您預期金鑰會變更時才繼續——他們重設了節點或重新設定。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Twój węzeł ma już inny klucz publiczny dla tego kontaktu. Dodanie go zastąpi ten klucz, a Twoje wiadomości będą szyfrowane nowym. Kontynuuj tylko, jeśli spodziewasz się zmiany — np. ta osoba zresetowała lub ponownie skonfigurowała swój węzeł."
+          }
         }
       }
     },
@@ -161016,6 +162769,12 @@
             "state" : "translated",
             "value" : "您的位置已發送並附帶回傳位置的請求。當對方回傳其位置時，系統將通知您。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysłano Twoją pozycję z prośbą o odesłanie pozycji. Otrzymasz powiadomienie, gdy pozycja wróci."
+          }
         }
       }
     },
@@ -161198,6 +162957,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "您的無線電未在目前使用的設定上收到它們的訊號，或已不再擁有它們。最愛和已連線的節點會保留。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Radio nie odebrało ich na obecnych ustawieniach albo już ich nie ma. Ulubione i połączony węzeł zostają."
           }
         }
       }
@@ -161565,6 +163330,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已傳送您的使用者資訊，並請求對方回傳其使用者資訊。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysłano Twoje dane użytkownika z prośbą o odesłanie danych."
           }
         }
       }
