@@ -32,8 +32,18 @@ struct SpatialMapView: View {
 	/// The cinema's room and the summit its lookout stands on, so the map can show the lookout there.
 	@AppStorage("cinemaEnvironment") private var cinemaEnvironment: CinemaEnvironment = .sarTent
 	@AppStorage("cinemaLookoutSite") private var lookoutSiteID = ""
+	@AppStorage("cinemaRooftopSite") private var rooftopSiteID = ""
 	@AppStorage(SpatialLookout.turnsKey) private var lookoutTurns = 0
 	@AppStorage(CastleStone.key) private var castleStone: CastleStone = .gray
+
+	/// What stands where the cinema's room is.
+	private var summitModel: SpatialSummitModel {
+		switch cinemaEnvironment {
+		case .castleTower: .castleTower(castleStone)
+		case .cityRooftop: .cityRooftop
+		default: .fireLookout
+		}
+	}
 
 	var body: some View {
 		GeometryReader3D { proxy in
@@ -55,9 +65,9 @@ struct SpatialMapView: View {
 				scene.apply(buildings: model.buildingsEntity, roofs: model.buildingRoofs)
 				scene.apply(coverage: model.coverageEntity, revision: model.coverageRevision, opacity: model.coverageOpacity)
 				scene.apply(nodes: model.nodes)
-				scene.apply(lookout: cinemaEnvironment.standsOnSummit
-					? SpatialLookout.coordinate(siteID: lookoutSiteID).flatMap { model.lookoutStands(on: $0) ? $0 : nil }
-					: nil, heading: SpatialLookout.heading(turns: lookoutTurns), model: cinemaEnvironment == .castleTower ? .castleTower(castleStone) : .fireLookout)
+				scene.apply(lookout: cinemaEnvironment.siteKind != nil
+					? SpatialLookout.coordinate(siteID: cinemaEnvironment.siteKind == .rooftop ? rooftopSiteID : lookoutSiteID).flatMap { model.lookoutStands(on: $0) ? $0 : nil }
+					: nil, heading: SpatialLookout.heading(turns: lookoutTurns), model: summitModel)
 				scene.apply(target: liveZoom.flatMap { model.circle(forZoom: $0) } ?? model.targetCircle)
 				traffic.applyBaseGlow()
 				// Hidden while a trace route is shown, as on the 2D map, so the two sets of colored
