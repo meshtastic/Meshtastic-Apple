@@ -392,6 +392,12 @@
             "state" : "translated",
             "value" : "只要幾項設定，就能讓您的無線電加入 Mesh 網路通訊。之後可隨時在「設定」中變更。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kilka ustawień wystarczy, by radio zaczęło działać w sieci. Możesz je później zmienić w Ustawieniach."
+          }
         }
       }
     },
@@ -412,7 +418,15 @@
       }
     },
     "Advertise your own mesh so people nearby can find and join it." : {
-      "comment" : "Radio setup beacons page"
+      "comment" : "Radio setup beacons page",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rozgłaszaj własną sieć, aby osoby w pobliżu mogły ją znaleźć i do niej dołączyć."
+          }
+        }
+      }
     },
     "Also: %@" : {
       "comment" : "Showcase model card: other devices drawn with the same model; the argument is a list of device names",
@@ -471,6 +485,12 @@
             "state" : "translated",
             "value" : "這些項目都可以在「設定」中變更。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Każde z nich możesz zmienić w Ustawieniach."
+          }
         }
       }
     },
@@ -480,6 +500,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "頻道皆已加密。在您開啟前，無線電不會分享任何位置。公開頻道可能被附近任何人記錄，因此本 App 只允許在公開頻道分享大略位置；您的精確位置只會傳送到您選擇的私人頻道。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kanały są szyfrowane. Radio nie udostępnia lokalizacji, dopóki tego nie włączysz. Kanały publiczne może rejestrować każdy w pobliżu, dlatego aplikacja pozwala im udostępniać tylko przybliżoną lokalizację. Dokładna lokalizacja trafia wyłącznie do wybranych przez Ciebie kanałów prywatnych."
           }
         }
       }
@@ -492,6 +518,12 @@
             "state" : "translated",
             "value" : "選擇預設"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybierz preset"
+          }
         }
       }
     },
@@ -503,6 +535,12 @@
             "state" : "translated",
             "value" : "選擇您的區域"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybierz region"
+          }
         }
       }
     },
@@ -512,6 +550,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "選擇區域"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybierz region"
           }
         }
       }
@@ -532,6 +576,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "確認您的區域"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Potwierdź region"
           }
         }
       }
@@ -584,6 +634,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "自訂數據機設定"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Własne ustawienia modemu"
           }
         }
       }
@@ -651,6 +707,12 @@
             "state" : "translated",
             "value" : "韌體 %@"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Firmware %@"
+          }
         }
       }
     },
@@ -678,7 +740,15 @@
 
     },
     "Hear beacons from meshes nearby. They show here and in Local Mesh Discovery." : {
-      "comment" : "Radio setup beacons page; the listen setting"
+      "comment" : "Radio setup beacons page; the listen setting",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Odbieraj beacony sieci w pobliżu. Pojawią się tutaj i w Wykrywaniu lokalnych sieci."
+          }
+        }
+      }
     },
     "Hide App" : {
       "comment" : "Showcase: close the app's window while in the showcase",
@@ -708,6 +778,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "其他人看到的您的無線電名稱。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jak Twoje radio widzą inni."
           }
         }
       }
@@ -755,10 +831,26 @@
 
     },
     "Listening for beacons" : {
-      "comment" : "Radio setup done page; nearby meshes row"
+      "comment" : "Radio setup done page; nearby meshes row",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nasłuchiwanie beaconów"
+          }
+        }
+      }
     },
     "Local Mesh Discovery listens on each preset in turn and reports who it hears." : {
-      "comment" : "Radio setup beacons page"
+      "comment" : "Radio setup beacons page",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wykrywanie lokalnych sieci nasłuchuje po kolei na każdym presecie i pokazuje, kogo słyszy."
+          }
+        }
+      }
     },
     "Made by %@" : {
       "comment" : "Showcase model card and VoiceOver: the device's maker",
@@ -772,7 +864,15 @@
       }
     },
     "Meshes near you can advertise themselves with a beacon. Listen for them to see what's around and join one." : {
-      "comment" : "Radio setup beacons intro"
+      "comment" : "Radio setup beacons intro",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sieci w pobliżu mogą się rozgłaszać za pomocą beaconu. Nasłuchuj ich, aby zobaczyć, co jest w okolicy, i dołączyć do jednej z nich."
+          }
+        }
+      }
     },
     "Meshtastic Hardware Showcase" : {
       "comment" : "Showcase: title of the immersive space's control panel",
@@ -836,6 +936,12 @@
             "state" : "translated",
             "value" : "為無線電命名"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nazwij radio"
+          }
         }
       }
     },
@@ -854,7 +960,15 @@
 
     },
     "None heard yet. A mesh's beacon can take an hour or more to arrive." : {
-      "comment" : "Radio setup beacons page; listening but nothing heard"
+      "comment" : "Radio setup beacons page; listening but nothing heard",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Na razie nic nie słychać. Beacon sieci może dotrzeć dopiero po godzinie lub dłużej."
+          }
+        }
+      }
     },
     "Not Connected" : {
       "localizations" : {
@@ -867,7 +981,15 @@
       }
     },
     "Not listening for beacons" : {
-      "comment" : "Radio setup done page; nearby meshes row"
+      "comment" : "Radio setup done page; nearby meshes row",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie nasłuchuje beaconów"
+          }
+        }
+      }
     },
     "Not set" : {
       "comment" : "Radio setup summary",
@@ -876,6 +998,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "未設定"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie ustawiono"
           }
         }
       }
@@ -886,6 +1014,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "離網通訊"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wiadomości poza zasięgiem sieci"
           }
         }
       }
@@ -909,6 +1043,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "其他人會在節點列表與地圖上看到這些名稱。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Inni widzą je na swoich listach węzłów i na mapie."
           }
         }
       }
@@ -941,6 +1081,12 @@
             "state" : "translated",
             "value" : "依據手機的地區設定選取。無線電必須使用所在地允許的頻率，若您身在其他地區，請加以變更。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybrany na podstawie ustawień regionu w telefonie. Radio musi używać częstotliwości dozwolonych tam, gdzie jesteś, więc zmień go, jeśli jesteś gdzie indziej."
+          }
         }
       }
     },
@@ -955,6 +1101,12 @@
             "state" : "translated",
             "value" : "預設會在距離與速度之間取捨：長距離傳得更遠，短距離傳得更快。同一個 Mesh 網路中的所有人都必須使用相同的預設。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Presety to kompromis między zasięgiem a szybkością. Long Range sięga dalej, a Short Range wysyła szybciej. Wszyscy w sieci muszą używać tego samego."
+          }
         }
       }
     },
@@ -964,6 +1116,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "隱私優先"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prywatność przede wszystkim"
           }
         }
       }
@@ -987,6 +1145,12 @@
             "state" : "translated",
             "value" : "%@ 建議使用：%@"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zalecany dla %1$@: %2$@"
+          }
         }
       }
     },
@@ -997,11 +1161,24 @@
             "state" : "translated",
             "value" : "找不到無線電"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie znaleziono radia"
+          }
         }
       }
     },
     "Radio Not Switched" : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie przełączono radia"
+          }
+        }
+      }
     },
     "Reconnect" : {
 
@@ -1034,6 +1211,12 @@
             "state" : "translated",
             "value" : "儲存並繼續"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zapisz i kontynuuj"
+          }
         }
       }
     },
@@ -1044,11 +1227,25 @@
             "state" : "translated",
             "value" : "尚未設定區域"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie ustawiono regionu"
+          }
         }
       }
     },
     "Scan for Meshes" : {
-      "comment" : "Radio setup beacons page; opens Local Mesh Discovery"
+      "comment" : "Radio setup beacons page; opens Local Mesh Discovery",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Szukaj sieci"
+          }
+        }
+      }
     },
     "Send text, positions and more over LoRa radios. No cell service or internet needed." : {
       "localizations" : {
@@ -1056,6 +1253,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "透過 LoRa 無線電傳送文字、位置等資訊，不需要行動網路或網際網路。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysyłaj tekst, pozycje i nie tylko przez radia LoRa. Bez zasięgu komórkowego i internetu."
           }
         }
       }
@@ -1076,6 +1279,12 @@
             "state" : "translated",
             "value" : "設定無線電"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Skonfiguruj radio"
+          }
         }
       }
     },
@@ -1085,6 +1294,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "設定您想要的功能"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Skonfiguruj potrzebne funkcje"
           }
         }
       }
@@ -1096,6 +1311,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "設定您的無線電"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Skonfiguruj swoje radio"
           }
         }
       }
@@ -1118,6 +1339,12 @@
             "state" : "translated",
             "value" : "略過"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pomiń"
+          }
         }
       }
     },
@@ -1131,7 +1358,15 @@
 
     },
     "Status is a short note other people see in their node lists." : {
-      "comment" : "Radio setup name footer; the node's status message"
+      "comment" : "Radio setup name footer; the node's status message",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Status to krótka notatka, którą inni widzą na swoich listach węzłów."
+          }
+        }
+      }
     },
     "Terminal output" : {
 
@@ -1157,6 +1392,12 @@
             "state" : "translated",
             "value" : "接下來幾個畫面可讓您選擇通知、位置分享與 Siri 設定，之後都可以在「設定」中變更。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Na kolejnych ekranach wybierzesz powiadomienia, udostępnianie lokalizacji i Siri. Każde z nich możesz później zmienić w Ustawieniach."
+          }
         }
       }
     },
@@ -1180,6 +1421,12 @@
             "state" : "translated",
             "value" : "簡短名稱會顯示在節點的圓圈中：最多 4 個字元或一個表情符號。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Krótka nazwa pojawia się w kółku węzła: do 4 znaków albo jedno emoji."
+          }
         }
       }
     },
@@ -1190,6 +1437,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "您的 Mesh 網路所使用的距離與速度。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zasięg i szybkość, z których korzysta Twoja sieć."
           }
         }
       }
@@ -1210,6 +1463,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "此區域的每小時工作週期為 %lld%%。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ten region ma godzinowy limit czasu nadawania (duty cycle) %lld%%."
           }
         }
       }
@@ -1282,7 +1541,15 @@
 
     },
     "Waiting for your radio's beacon settings." : {
-      "comment" : "Radio setup beacons page; the listen setting has not arrived from the radio yet"
+      "comment" : "Radio setup beacons page; the listen setting has not arrived from the radio yet",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Oczekiwanie na ustawienia beaconu z radia."
+          }
+        }
+      }
     },
     "You're All Set" : {
       "comment" : "Radio setup done title",
@@ -1291,6 +1558,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "設定完成"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wszystko gotowe"
           }
         }
       }
@@ -1303,6 +1576,12 @@
             "state" : "translated",
             "value" : "正在等待無線電重新連線"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Oczekiwanie na ponowne połączenie radia"
+          }
         }
       }
     },
@@ -1314,6 +1593,12 @@
             "state" : "translated",
             "value" : "您所在的地區，讓無線電使用合法頻率。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Gdzie jesteś, aby radio używało dozwolonych częstotliwości."
+          }
         }
       }
     },
@@ -1323,6 +1608,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "手機的位置只會傳送到已連線的無線電。在您開啟前，無線電不會分享任何內容。本 App 只允許公開頻道分享大略位置，韌體 2.8 或更新版本的無線電也會強制執行相同限制。您隨時可以在設定中變更位置權限。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Lokalizacja telefonu trafia tylko do połączonego radia. Radio niczego nie udostępnia, dopóki tego nie włączysz. Aplikacja pozwala kanałom publicznym udostępniać tylko przybliżoną lokalizację. Radia z firmware 2.8 lub nowszym egzekwują ten sam limit. Uprawnienia do lokalizacji możesz w każdej chwili zmienić w ustawieniach."
           }
         }
       }
@@ -1335,6 +1626,12 @@
             "state" : "translated",
             "value" : "無線電將重新啟動以套用此設定，並在幾秒後重新連線。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Radio uruchomi się ponownie, aby to zastosować, i połączy się za kilka sekund."
+          }
         }
       }
     },
@@ -1345,6 +1642,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "無線電正以新的 LoRa 設定重新啟動，重新連線後即可儲存名稱。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Radio uruchamia się ponownie z nowymi ustawieniami LoRa. Nazwę zapiszesz, gdy wróci."
           }
         }
       }
@@ -1357,6 +1660,12 @@
             "state" : "translated",
             "value" : "無線電未連線，請重新連線後再試一次。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Radio nie jest połączone. Połącz je ponownie i spróbuj jeszcze raz."
+          }
         }
       }
     },
@@ -1368,6 +1677,12 @@
             "state" : "translated",
             "value" : "無線電必須使用所在地允許的頻率。若區域設定錯誤，附近將沒有任何節點能收到您的訊號。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Radio musi używać częstotliwości dozwolonych tam, gdzie jesteś. Przy złym regionie nikt w pobliżu Cię nie usłyszy."
+          }
         }
       }
     },
@@ -1378,6 +1693,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "您的無線電使用自訂的頻寬、擴頻因子與編碼率，在您於此選擇預設前會維持不變。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Radio używa własnej szerokości pasma, współczynnika rozpraszania i współczynnika kodowania. Pozostaną, dopóki nie wybierzesz tutaj presetu."
           }
         }
       }
@@ -1898,6 +2219,12 @@
             "state" : "translated",
             "value" : "即時動態"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aktywność na żywo"
+          }
         }
       }
     },
@@ -1916,6 +2243,12 @@
             "state" : "translated",
             "value" : "Mesh 狀態"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Stan sieci"
+          }
         }
       }
     },
@@ -1933,6 +2266,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "尚無可追蹤的節點"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Brak węzłów do śledzenia"
           }
         }
       }
@@ -1988,6 +2327,12 @@
             "state" : "translated",
             "value" : "搜尋節點"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Szukaj węzłów"
+          }
         }
       }
     },
@@ -2005,6 +2350,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "顯示內容"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokaż"
           }
         }
       }
@@ -2060,6 +2411,12 @@
             "state" : "translated",
             "value" : "開始即時動態"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rozpocznij Aktywność na żywo"
+          }
         }
       }
     },
@@ -2077,6 +2434,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "停止即時動態"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zatrzymaj Aktywność na żywo"
           }
         }
       }
@@ -2117,6 +2480,12 @@
             "state" : "translated",
             "value" : "切換即時動態"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zmień Aktywność na żywo"
+          }
         }
       }
     },
@@ -2153,6 +2522,12 @@
             "state" : "translated",
             "value" : "追蹤節點"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Śledź węzeł"
+          }
         }
       }
     },
@@ -2171,6 +2546,12 @@
             "state" : "translated",
             "value" : "正在追蹤 %@"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Śledzenie: %@"
+          }
         }
       }
     },
@@ -2188,6 +2569,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "正在追蹤節點"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Śledzenie węzła"
           }
         }
       }
@@ -2260,6 +2647,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "將持續更新至 %@。iOS 會在 8 小時後停止即時動態。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aktualizacje do %@. iOS kończy Aktywność na żywo po 8 godzinach."
           }
         }
       }
@@ -2641,6 +3034,12 @@
             "state" : "translated",
             "value" : "允許 Meshtastic 傳送訊息、節點事件和重要警報的通知給您。您可以隨時從設定更新通知權限。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pozwól aplikacji Meshtastic wysyłać powiadomienia o wiadomościach, zdarzeniach węzłów i alertach krytycznych. Uprawnienia do powiadomień możesz w każdej chwili zmienić w ustawieniach."
+          }
         }
       }
     },
@@ -2718,6 +3117,12 @@
             "state" : "translated",
             "value" : "背景連線"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Połączenia w tle"
+          }
         }
       }
     },
@@ -2728,6 +3133,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "不支援背景網路連線，當您離開應用程式時可能會中斷連線。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Połączenia sieciowe w tle nie są obsługiwane i mogą zostać przerwane po wyjściu z aplikacji."
           }
         }
       }
@@ -2806,6 +3217,12 @@
             "state" : "translated",
             "value" : "藍牙連線節點"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Węzły połączone przez Bluetooth"
+          }
         }
       }
     },
@@ -2816,6 +3233,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "藍牙低功耗支援背景連線。在可能的情況下，當應用程式在背景執行時，將保持與這些配件的連線。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bluetooth Low Energy obsługuje połączenia w tle. Gdy to możliwe, aplikacja pozostanie połączona z tymi akcesoriami, nawet gdy działa w tle."
           }
         }
       }
@@ -2888,6 +3311,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "位元組"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bajty"
           }
         }
       }
@@ -3086,6 +3515,12 @@
             "state" : "translated",
             "value" : "已連線的無線電"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Połączone radio"
+          }
         }
       }
     },
@@ -3096,6 +3531,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "聯絡人（%@）"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kontakty (%@)"
           }
         }
       }
@@ -3517,6 +3958,12 @@
             "state" : "translated",
             "value" : "為獲得最佳連線體驗，需要最低韌體版本 2.7.4。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aby połączenie działało najlepiej, wymagany jest firmware w wersji co najmniej 2.7.4."
+          }
         }
       }
     },
@@ -3845,6 +4292,12 @@
             "state" : "translated",
             "value" : "長距離 - 快速"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Long Range - Fast"
+          }
         }
       }
     },
@@ -3855,6 +4308,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "長距離 - 中等"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Long Range - Moderate"
           }
         }
       }
@@ -3877,6 +4336,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "長距離 - 極速"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Long Range - Turbo"
           }
         }
       }
@@ -4082,6 +4547,12 @@
             "state" : "translated",
             "value" : "Meshtastic 存取您的區域網路以連線 TCP 配件。您可以隨時從設定更新區域網路權限。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Meshtastic korzysta z sieci lokalnej, aby łączyć się z akcesoriami przez TCP. Uprawnienia do sieci lokalnej możesz w każdej chwili zmienić w ustawieniach."
+          }
         }
       }
     },
@@ -4093,6 +4564,12 @@
             "state" : "translated",
             "value" : "Meshtastic 支援 Siri、捷徑和 CarPlay，讓您可以免持傳送和接收訊息。您可以隨時從設定更新 Siri 權限。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Meshtastic obsługuje Siri, Skróty i CarPlay, dzięki czemu możesz wysyłać i odbierać wiadomości bez użycia rąk. Uprawnienia Siri możesz w każdej chwili zmienić w ustawieniach."
+          }
         }
       }
     },
@@ -4103,6 +4580,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Meshtastic 使用藍牙連線 BLE 配件。您可以隨時從設定更新權限。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Meshtastic używa Bluetooth do łączenia się z akcesoriami BLE. Uprawnienia możesz w każdej chwili zmienić w ustawieniach."
           }
         }
       }
@@ -7136,6 +7619,12 @@
             "state" : "translated",
             "value" : "最低韌體版本"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Minimalna wersja firmware"
+          }
         }
       }
     },
@@ -7267,6 +7756,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "網路型節點"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Węzły sieciowe"
           }
         }
       }
@@ -8492,6 +8987,12 @@
             "state" : "translated",
             "value" : "Meshtastic 應用程式可以連線和管理啟用網路功能的節點。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aplikacja Meshtastic może łączyć się z węzłami sieciowymi i nimi zarządzać."
+          }
         }
       }
     },
@@ -8502,6 +9003,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "最可靠的訊息體驗是使用藍牙低功耗連線的節點。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Najbardziej niezawodne przesyłanie wiadomości zapewniają węzły połączone przez Bluetooth Low Energy."
           }
         }
       }
@@ -9017,6 +9524,12 @@
             "state" : "translated",
             "value" : "「中斷 Meshtastic 連線」— 與已連線的 BLE 節點中斷連線。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "„Disconnect Meshtastic” — rozłącza połączony węzeł BLE."
+          }
         }
       }
     },
@@ -9088,6 +9601,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "「傳送 Meshtastic 私訊」— 將私人訊息傳送至節點。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "„Send a Meshtastic direct message” — wysyła prywatną wiadomość do węzła."
           }
         }
       }
@@ -9161,6 +9680,12 @@
             "state" : "translated",
             "value" : "「傳送 Meshtastic 群組訊息」— 將訊息傳送至 Mesh 頻道。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "„Send a Meshtastic group message” — wysyła wiadomość na kanał sieci."
+          }
         }
       }
     },
@@ -9226,6 +9751,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "“Apaga mi nodo Meshtastic\" or \"Reinicia mi nodo Meshtastic\"."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "„Shut down my Meshtastic node” lub „Restart my Meshtastic node”."
           }
         }
       }
@@ -11085,6 +11616,12 @@
             "state" : "translated",
             "value" : "%@ 活動資訊"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Informacje o wydarzeniu %@"
+          }
         }
       }
     },
@@ -11100,6 +11637,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ 已結束。請將您的節點更新至最新穩定版韌體。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wydarzenie %@ się zakończyło. Zaktualizuj węzeł do najnowszego stabilnego firmware."
           }
         }
       }
@@ -17627,6 +18170,12 @@
             "state" : "translated",
             "value" : "確認 SNR：%@ dB"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "SNR potwierdzenia: %@ dB"
+          }
         }
       }
     },
@@ -17714,6 +18263,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "確認時間: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Czas potwierdzenia: %@"
           }
         }
       }
@@ -18305,6 +18860,12 @@
             "state" : "translated",
             "value" : "新增"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dodaj"
+          }
         }
       }
     },
@@ -18340,6 +18901,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "新增並回覆我的"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dodaj i odeślij swój"
           }
         }
       }
@@ -18721,6 +19288,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "新增會保留接收者的 LoRa 設定並新增選取的頻道。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "„Dodaj” zachowuje ustawienia LoRa odbiorcy i dodaje wybrane kanały."
           }
         }
       }
@@ -20640,6 +21213,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "發送提醒"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Alert"
           }
         }
       }
@@ -23065,6 +23644,12 @@
             "state" : "translated",
             "value" : "應用通知"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Powiadomienia aplikacji"
+          }
         }
       }
     },
@@ -23300,6 +23885,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "在整個應用程式中套用活動醒目顏色，以及此工作表中可用的字型。標準導覽背景保持不變。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Stosuje kolory wyróżnień wydarzenia w całej aplikacji oraz dostępne czcionki w tym arkuszu. Standardowe tła nawigacji pozostają bez zmian."
           }
         }
       }
@@ -23703,10 +24294,24 @@
       }
     },
     "Archived" : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zarchiwizowany"
+          }
+        }
+      }
     },
     "Archived, no longer on the radio" : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zarchiwizowany, nie ma go już w radiu"
+          }
+        }
+      }
     },
     "Are you sure you want to delete this message?" : {
       "localizations" : {
@@ -23792,6 +24397,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "您確定要刪除這則訊息嗎？"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Czy na pewno chcesz usunąć tę wiadomość?"
           }
         }
       }
@@ -27142,6 +27753,12 @@
             "state" : "translated",
             "value" : "藍牙連線設定"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Łączność Bluetooth"
+          }
         }
       }
     },
@@ -27182,6 +27799,12 @@
             "state" : "translated",
             "value" : "藍牙已關閉"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bluetooth jest wyłączony"
+          }
         }
       }
     },
@@ -27204,6 +27827,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "粗體"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pogrubienie"
           }
         }
       }
@@ -27551,6 +28180,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "廣播信標"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nadawaj beacon"
           }
         }
       }
@@ -28146,6 +28781,12 @@
             "state" : "translated",
             "value" : "已使用位元組"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Użyte bajty"
+          }
         }
       }
     },
@@ -28468,6 +29109,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "取消回覆"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Anuluj odpowiedź"
           }
         }
       }
@@ -28924,6 +29571,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "CarPlay 訊息傳輸"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wiadomości w CarPlay"
           }
         }
       }
@@ -32064,6 +32717,12 @@
             "state" : "translated",
             "value" : "頻道，%lld 則未讀"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kanały, nieprzeczytane: %lld"
+          }
         }
       }
     },
@@ -33010,6 +33669,12 @@
             "state" : "translated",
             "value" : "清除翻譯"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Usuń tłumaczenie"
+          }
         }
       }
     },
@@ -33038,6 +33703,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Borrar rutas rastreadas."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Czyści wszystkie aktywne filtry kontaktów."
           }
         }
       }
@@ -33802,6 +34473,12 @@
             "state" : "translated",
             "value" : "代碼"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kod"
+          }
         }
       }
     },
@@ -34167,6 +34844,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "通訊中"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Komunikacja"
           }
         }
       }
@@ -35083,6 +35766,12 @@
             "state" : "translated",
             "value" : "連線"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Połącz"
+          }
         }
       }
     },
@@ -35925,6 +36614,12 @@
             "state" : "translated",
             "value" : "已連線的韌體：**%@**"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Firmware podłączonego urządzenia: **%@**"
+          }
         }
       }
     },
@@ -36422,6 +37117,12 @@
             "state" : "translated",
             "value" : "連線嘗試 %1$lld / %2$lld"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Próba połączenia %1$lld z %2$lld"
+          }
         }
       }
     },
@@ -36503,6 +37204,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "連線名稱"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nazwa połączenia"
           }
         }
       }
@@ -36620,6 +37327,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "聯絡人"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kontakt"
           }
         }
       }
@@ -36845,6 +37558,12 @@
             "state" : "translated",
             "value" : "繼續"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kontynuuj"
+          }
         }
       }
     },
@@ -36927,6 +37646,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "持續定位更新"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ciągłe aktualizacje lokalizacji"
           }
         }
       }
@@ -37994,6 +38719,12 @@
             "state" : "translated",
             "value" : "無法分享"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie udało się udostępnić"
+          }
         }
       }
     },
@@ -38646,6 +39377,12 @@
             "state" : "translated",
             "value" : "重要警示"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Alerty krytyczne"
+          }
         }
       }
     },
@@ -38987,6 +39724,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "自訂"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Własne"
           }
         }
       }
@@ -40767,6 +41510,12 @@
             "state" : "translated",
             "value" : "刪除訊息"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Usuń wiadomość"
+          }
         }
       }
     },
@@ -40854,6 +41603,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "刪除訊息"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Usuń wiadomości"
           }
         }
       }
@@ -41581,6 +42336,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "詳細資訊..."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Szczegóły…"
           }
         }
       }
@@ -43034,6 +43795,12 @@
             "state" : "translated",
             "value" : "裝置使用活動版本"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Urządzenie ma wersję firmware wydarzenia"
+          }
         }
       }
     },
@@ -44378,6 +45145,12 @@
             "state" : "translated",
             "value" : "私訊，%lld 則未讀"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wiadomości bezpośrednie, nieprzeczytane: %lld"
+          }
         }
       }
     },
@@ -44700,6 +45473,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "中斷節點連線"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rozłącz węzeł"
           }
         }
       }
@@ -45484,6 +46263,12 @@
             "state" : "translated",
             "value" : "顯示您的手機與其他具有位置資訊的 Meshtastic 節點之間的距離。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokazuj odległość między telefonem a innymi węzłami Meshtastic, które mają pozycję."
+          }
         }
       }
     },
@@ -45885,6 +46670,12 @@
             "state" : "translated",
             "value" : "距離篩選"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Filtry odległości"
+          }
         }
       }
     },
@@ -45966,6 +46757,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "距離測量"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pomiary odległości"
           }
         }
       }
@@ -46466,6 +47263,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "完成"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Gotowe"
           }
         }
       }
@@ -48190,6 +48993,12 @@
             "state" : "translated",
             "value" : "表情符號選擇器"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybór emoji"
+          }
         }
       }
     },
@@ -49201,6 +50010,12 @@
             "state" : "translated",
             "value" : "在 Mesh 地圖上顯示代表您手機的藍色位置點。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Włącza niebieską kropkę lokalizacji telefonu na mapie sieci."
+          }
         }
       }
     },
@@ -49764,6 +50579,12 @@
             "state" : "translated",
             "value" : "加密頻道包含其金鑰。只傳送給您信任的人。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zaszyfrowane kanały zawierają swój tajny klucz. Wysyłaj je tylko zaufanym osobom."
+          }
         }
       }
     },
@@ -49994,6 +50815,12 @@
             "state" : "translated",
             "value" : "加密金鑰不符"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Niezgodny klucz szyfrowania"
+          }
         }
       }
     },
@@ -50183,6 +51010,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "輸入主機名稱[:連接埠]"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wpisz nazwę hosta[:port]"
           }
         }
       }
@@ -50467,6 +51300,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "輸入所選文字的網址"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wpisz adres URL dla zaznaczonego tekstu"
           }
         }
       }
@@ -51767,6 +52606,12 @@
             "state" : "translated",
             "value" : "活動"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wydarzenie"
+          }
         }
       }
     },
@@ -51784,6 +52629,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "活動韌體"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Firmware wydarzenia"
           }
         }
       }
@@ -51879,6 +52730,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "活動中繼資料列出不同的建置"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Metadane wydarzenia podają inną wersję"
           }
         }
       }
@@ -53753,6 +54610,12 @@
             "state" : "translated",
             "value" : "最愛"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ulubiony"
+          }
         }
       }
     },
@@ -54484,6 +55347,12 @@
             "state" : "translated",
             "value" : "依與手機的距離篩選節點列表和 Mesh 地圖。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Filtruj listę węzłów i mapę sieci według odległości od telefonu."
+          }
         }
       }
     },
@@ -54571,6 +55440,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "搜尋聯絡人"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Znajdź kontakt"
           }
         }
       }
@@ -54747,6 +55622,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "在對話中搜尋"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Znajdź w rozmowie"
           }
         }
       }
@@ -54990,6 +55871,12 @@
             "state" : "translated",
             "value" : "韌體 %1$@ 不再受支援。需要版本 %2$@ 或更新版本才能使用應用程式。無線電保持連線，以便您可以在此處更新。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Firmware %1$@ nie jest już obsługiwany. Do korzystania z aplikacji wymagana jest wersja %2$@ lub nowsza. Radio pozostaje połączone, więc możesz je tutaj zaktualizować."
+          }
         }
       }
     },
@@ -55005,6 +55892,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "韌體版本"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Edycja firmware"
           }
         }
       }
@@ -55117,6 +56010,12 @@
             "state" : "translated",
             "value" : "韌體套件不會從活動中繼資料來源安裝。更新使用應用程式已驗證的韌體工作流程。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pakiety firmware nie są instalowane z metadanych wydarzenia. Aktualizacje korzystają ze sprawdzonego procesu aktualizacji firmware w aplikacji."
+          }
         }
       }
     },
@@ -55205,6 +56104,12 @@
             "state" : "translated",
             "value" : "有可用的韌體更新"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dostępna aktualizacja firmware"
+          }
         }
       }
     },
@@ -55276,6 +56181,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "韌體更新說明文件"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dokumentacja aktualizacji firmware"
           }
         }
       }
@@ -58192,6 +59103,12 @@
             "state" : "translated",
             "value" : "開始使用"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zaczynamy"
+          }
         }
       }
     },
@@ -60397,6 +61314,12 @@
             "state" : "translated",
             "value" : "靜音通知"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ukryj alerty"
+          }
         }
       }
     },
@@ -60443,6 +61366,12 @@
             "state" : "translated",
             "value" : "隱藏聯絡人篩選器"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ukryj filtry kontaktów"
+          }
         }
       }
     },
@@ -60476,6 +61405,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "隱藏說明"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ukryj pomoc"
           }
         }
       }
@@ -61489,6 +62424,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%d 跳"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Liczba skoków: %d"
           }
         }
       }
@@ -62572,6 +63513,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "如何更新"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jak zaktualizować"
           }
         }
       }
@@ -64828,6 +65775,12 @@
             "state" : "translated",
             "value" : "匯入行為"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sposób importu"
+          }
         }
       }
     },
@@ -65619,6 +66572,12 @@
             "state" : "translated",
             "value" : "傳入訊息"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wiadomości przychodzące"
+          }
         }
       }
     },
@@ -66293,6 +67252,12 @@
             "state" : "translated",
             "value" : "插入"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wstaw"
+          }
         }
       }
     },
@@ -66364,6 +67329,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "插入連結"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wstaw link"
           }
         }
       }
@@ -66780,6 +67751,12 @@
             "state" : "translated",
             "value" : "斜體"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kursywa"
+          }
         }
       }
     },
@@ -66851,6 +67828,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "加入"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dołącz"
           }
         }
       }
@@ -67297,6 +68280,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "即使在使用其他 App 時，也能持續更新 Mesh 地圖並將您的位置傳送到 Mesh。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aktualizuj mapę sieci i wysyłaj swoją pozycję do sieci także podczas korzystania z innych aplikacji."
           }
         }
       }
@@ -67980,6 +68969,12 @@
             "state" : "translated",
             "value" : "上次看到的裝置："
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ostatnio widziane urządzenie:"
+          }
         }
       }
     },
@@ -68055,6 +69050,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "上次看到的裝置：%@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ostatnio widziane urządzenie: %@"
           }
         }
       }
@@ -69491,6 +70492,12 @@
             "state" : "translated",
             "value" : "連結"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Link"
+          }
         }
       }
     },
@@ -69506,6 +70513,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "連結"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Linki"
           }
         }
       }
@@ -69525,6 +70538,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "監聽信標"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nasłuchuj beaconów"
           }
         }
       }
@@ -69708,6 +70727,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "載入更早期的訊息"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wczytaj wcześniejsze wiadomości"
           }
         }
       }
@@ -70313,6 +71338,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "本地網路權限"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dostęp do sieci lokalnej"
           }
         }
       }
@@ -71960,6 +72991,12 @@
             "state" : "translated",
             "value" : "完整名稱"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Długa nazwa"
+          }
         }
       }
     },
@@ -71975,6 +73012,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "長名稱最多可為 %lld 個位元組長。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Długa nazwa może mieć do %lld bajtów."
           }
         }
       }
@@ -72911,6 +73954,12 @@
             "state" : "translated",
             "value" : "電池電量低"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Niski poziom baterii"
+          }
         }
       }
     },
@@ -73422,6 +74471,12 @@
             "state" : "translated",
             "value" : "手動"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ręcznie"
+          }
         }
       }
     },
@@ -73515,6 +74570,12 @@
             "state" : "translated",
             "value" : "手動連線字串"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ręczny adres połączenia"
+          }
         }
       }
     },
@@ -73590,6 +74651,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "手動連線"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Połączenia ręczne"
           }
         }
       }
@@ -74328,6 +75395,12 @@
             "state" : "translated",
             "value" : "第 %1$lld 個符合項目，共 %2$lld 個"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wynik %1$lld z %2$lld"
+          }
         }
       }
     },
@@ -75049,6 +76122,12 @@
             "state" : "translated",
             "value" : "Mesh 地圖位置"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Lokalizacja na mapie sieci"
+          }
         }
       }
     },
@@ -75393,6 +76472,12 @@
             "state" : "translated",
             "value" : "Meshtastic 不收集任何個人資料。我們會匿名收集使用和崩潰資料來改善應用程式。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Meshtastic nie zbiera żadnych danych osobowych. Anonimowo zbieramy dane o użyciu i awariach, aby ulepszać aplikację."
+          }
         }
       }
     },
@@ -75575,6 +76660,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Meshtastic 使用您的手機位置來啟用多種功能。您可以在設定中隨時更新位置權限。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Meshtastic używa lokalizacji telefonu do obsługi wielu funkcji. Uprawnienia do lokalizacji możesz w każdej chwili zmienić w ustawieniach."
           }
         }
       }
@@ -94560,6 +95651,12 @@
             "state" : "translated",
             "value" : "訊息"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wiadomość"
+          }
         }
       }
     },
@@ -94777,6 +95874,12 @@
             "state" : "translated",
             "value" : "來自 %@ 的訊息：%@"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wiadomość od %1$@: %2$@"
+          }
         }
       }
     },
@@ -94960,6 +96063,12 @@
             "state" : "translated",
             "value" : "訊息大小"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rozmiar wiadomości"
+          }
         }
       }
     },
@@ -94982,6 +96091,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "訊息狀態"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Stan wiadomości"
           }
         }
       }
@@ -97293,6 +98408,12 @@
             "state" : "translated",
             "value" : "已靜音"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wyciszony"
+          }
         }
       }
     },
@@ -97413,6 +98534,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "名稱"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nazwa"
           }
         }
       }
@@ -97689,6 +98816,12 @@
             "state" : "translated",
             "value" : "附近的 Mesh"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sieci w pobliżu"
+          }
         }
       }
     },
@@ -97918,6 +99051,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "網路"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "sieć"
           }
         }
       }
@@ -98575,6 +99714,12 @@
             "state" : "translated",
             "value" : "新節點"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nowe węzły"
+          }
         }
       }
     },
@@ -98669,6 +99814,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "下一個符合項目"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Następny wynik"
           }
         }
       }
@@ -100007,6 +101158,12 @@
             "state" : "translated",
             "value" : "沒有符合項目"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Brak wyników"
+          }
         }
       }
     },
@@ -100584,6 +101741,12 @@
             "state" : "translated",
             "value" : "沒有最近的無線電"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Brak ostatniego radia"
+          }
         }
       }
     },
@@ -100948,6 +102111,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "節點"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Węzeł"
           }
         }
       }
@@ -102629,6 +103798,12 @@
             "state" : "translated",
             "value" : "未加密"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Niezaszyfrowany"
+          }
         }
       }
     },
@@ -102700,6 +103875,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "稍後再說"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie teraz"
           }
         }
       }
@@ -103053,6 +104234,12 @@
             "state" : "translated",
             "value" : "頻道訊息與私訊的通知。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Powiadomienia o wiadomościach na kanałach i bezpośrednich."
+          }
         }
       }
     },
@@ -103135,6 +104322,12 @@
             "state" : "translated",
             "value" : "已連線裝置的低電量警示通知。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Powiadomienia o niskim poziomie baterii podłączonego urządzenia."
+          }
         }
       }
     },
@@ -103216,6 +104409,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "新發現節點的通知"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Powiadomienia o nowo wykrytych węzłach."
           }
         }
       }
@@ -104058,6 +105257,12 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "OK"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "OK"
           }
         }
@@ -105171,6 +106376,12 @@
             "state" : "translated",
             "value" : "開啟 Meshtastic 並連線一次。您可以稍後在斷線時分享。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Otwórz Meshtastic i połącz się raz. Później możesz udostępniać bez połączenia."
+          }
         }
       }
     },
@@ -105269,6 +106480,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "開啟設定"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Otwórz Ustawienia"
           }
         }
       }
@@ -105405,6 +106622,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "開啟 Web Flasher"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Otwórz Web Flasher"
           }
         }
       }
@@ -105546,6 +106769,12 @@
             "state" : "translated",
             "value" : "開啟設定"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Otwiera Ustawienia"
+          }
         }
       }
     },
@@ -105561,6 +106790,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "選用"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Opcjonalnie"
           }
         }
       }
@@ -108356,6 +109591,12 @@
             "state" : "translated",
             "value" : "手機位置"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Lokalizacja telefonu"
+          }
         }
       }
     },
@@ -109953,6 +111194,12 @@
             "state" : "translated",
             "value" : "已請求位置交換"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Poproszono o wymianę pozycji"
+          }
         }
       }
     },
@@ -111445,6 +112692,12 @@
             "state" : "translated",
             "value" : "關機"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wyłącz"
+          }
         }
       }
     },
@@ -111965,6 +113218,12 @@
             "state" : "translated",
             "value" : "預設"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Preset"
+          }
         }
       }
     },
@@ -112335,6 +113594,12 @@
             "state" : "translated",
             "value" : "上一個符合項目"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Poprzedni wynik"
+          }
         }
       }
     },
@@ -112612,6 +113877,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "主要頻道"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kanał główny"
           }
         }
       }
@@ -114701,6 +115972,12 @@
             "state" : "translated",
             "value" : "來自 %2$@ 的表情回應 %1$@"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Reakcja %1$@ od %2$@"
+          }
         }
       }
     },
@@ -114775,6 +116052,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "使用 CarPlay 直接在車上螢幕閱讀並回覆 Meshtastic 頻道訊息與私訊。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Czytaj wiadomości z kanałów i bezpośrednie Meshtastic oraz odpowiadaj na nie prosto z ekranu samochodu dzięki CarPlay."
           }
         }
       }
@@ -115786,6 +117069,12 @@
             "state" : "translated",
             "value" : "建議的安全版本：**%@**"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zalecana bezpieczna wersja: **%@**"
+          }
         }
       }
     },
@@ -116352,6 +117641,12 @@
             "state" : "translated",
             "value" : "地區"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Region"
+          }
         }
       }
     },
@@ -116669,6 +117964,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "版本更新說明"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Informacje o wydaniu"
           }
         }
       }
@@ -117570,6 +118871,12 @@
             "state" : "translated",
             "value" : "取代符合 Meshtastic 應用程式預設，並包含無線電的 LoRa 設定。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "„Zastąp” to domyślne zachowanie aplikacji Meshtastic i zawiera ustawienia LoRa radia."
+          }
         }
       }
     },
@@ -117716,6 +119023,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "回覆：%@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Odpowiedź na: %@"
           }
         }
       }
@@ -118340,6 +119653,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Restablecer filtros de contacto"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Resetuj filtry kontaktów"
           }
         }
       }
@@ -119265,6 +120584,12 @@
             "state" : "translated",
             "value" : "正在取得節點 . ."
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pobieranie węzłów . ."
+          }
         }
       }
     },
@@ -119347,6 +120672,12 @@
             "state" : "translated",
             "value" : "正在檢索節點"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pobieranie węzłów"
+          }
         }
       }
     },
@@ -119422,6 +120753,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "正在檢索 %lld 個節點"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pobieranie węzłów %lld"
           }
         }
       }
@@ -119644,6 +120981,12 @@
             "state" : "translated",
             "value" : "重試中（第 %@ 次嘗試）"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ponawianie (próba %@)"
+          }
         }
       }
     },
@@ -119726,6 +121069,12 @@
             "state" : "translated",
             "value" : "重試中（第 %lld 次嘗試）"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ponawianie (próba %lld)"
+          }
         }
       }
     },
@@ -119795,6 +121144,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "在 Meshtastic 中檢閱"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przejrzyj w Meshtastic"
           }
         }
       }
@@ -124345,6 +125700,12 @@
             "state" : "translated",
             "value" : "安全性公告"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Komunikat bezpieczeństwa"
+          }
         }
       }
     },
@@ -124593,6 +125954,12 @@
             "state" : "translated",
             "value" : "建議進行安全性更新"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zalecana aktualizacja zabezpieczeń"
+          }
         }
       }
     },
@@ -124692,6 +126059,12 @@
             "state" : "translated",
             "value" : "選擇一個頻道"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybierz kanał"
+          }
         }
       }
     },
@@ -124780,6 +126153,12 @@
             "state" : "translated",
             "value" : "選擇一個對話"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybierz rozmowę"
+          }
         }
       }
     },
@@ -124867,6 +126246,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "選擇對話類型"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybierz rodzaj rozmowy"
           }
         }
       }
@@ -125503,6 +126888,12 @@
             "state" : "translated",
             "value" : "以重要等級傳送的特定封包將忽略系統通知中心的靜音開關與勿擾模式設定。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Niektóre pakiety wysłane jako krytyczne ignorują przełącznik wyciszenia i tryb Nie przeszkadzać w centrum powiadomień systemu."
+          }
         }
       }
     },
@@ -125936,6 +127327,12 @@
             "state" : "translated",
             "value" : "傳送私訊"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wyślij wiadomość bezpośrednią"
+          }
         }
       }
     },
@@ -126023,6 +127420,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "發送群組訊息"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wyślij wiadomość grupową"
           }
         }
       }
@@ -126570,6 +127973,12 @@
             "state" : "translated",
             "value" : "傳送新增卡片"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wyślij kartę „Dodaj”"
+          }
         }
       }
     },
@@ -126909,6 +128318,12 @@
             "state" : "translated",
             "value" : "傳送聯絡人交換"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wyślij wymianę kontaktów"
+          }
         }
       }
     },
@@ -127056,6 +128471,12 @@
             "state" : "translated",
             "value" : "傳送訊息"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wyślij wiadomość"
+          }
         }
       }
     },
@@ -127137,6 +128558,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "發送通知"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysyłaj powiadomienia"
           }
         }
       }
@@ -127244,6 +128671,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "傳送取代卡片"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wyślij kartę „Zastąp”"
           }
         }
       }
@@ -130059,6 +131492,12 @@
             "state" : "translated",
             "value" : "設定"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ustawienia"
+          }
         }
       }
     },
@@ -130347,6 +131786,12 @@
             "state" : "translated",
             "value" : "分享聯絡人"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Udostępnij kontakt"
+          }
         }
       }
     },
@@ -130527,6 +131972,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "分享位置"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Udostępniaj lokalizację"
           }
         }
       }
@@ -131089,6 +132540,12 @@
             "state" : "translated",
             "value" : "簡短名稱"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Krótka nazwa"
+          }
         }
       }
     },
@@ -131440,6 +132897,12 @@
             "state" : "translated",
             "value" : "取消靜音"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokaż alerty"
+          }
         }
       }
     },
@@ -131486,6 +132949,12 @@
             "state" : "translated",
             "value" : "顯示聯絡人篩選器"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokaż filtry kontaktów"
+          }
         }
       }
     },
@@ -131519,6 +132988,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "顯示說明"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokaż pomoc"
           }
         }
       }
@@ -132067,6 +133542,12 @@
             "state" : "translated",
             "value" : "顯示原始訊息"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokaż oryginał"
+          }
         }
       }
     },
@@ -132178,6 +133659,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "顯示翻譯"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokaż tłumaczenie"
           }
         }
       }
@@ -132634,6 +134121,12 @@
             "state" : "translated",
             "value" : "關機 / 重新啟動節點"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wyłącz / uruchom ponownie węzeł"
+          }
         }
       }
     },
@@ -132809,6 +134302,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "關閉節點？"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wyłączyć węzeł?"
           }
         }
       }
@@ -133292,6 +134791,12 @@
             "state" : "translated",
             "value" : "訊號強度正常"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Siła sygnału: normalna"
+          }
         }
       }
     },
@@ -133310,6 +134815,12 @@
             "state" : "translated",
             "value" : "訊號強度強"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Siła sygnału: silna"
+          }
         }
       }
     },
@@ -133327,6 +134838,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "訊號強度弱"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Siła sygnału: słaba"
           }
         }
       }
@@ -133664,6 +135181,12 @@
             "state" : "translated",
             "value" : "已簽署 · 已驗證"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Podpisano · zweryfikowano"
+          }
         }
       }
     },
@@ -133896,6 +135419,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Siri、捷徑與 CarPlay"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Siri, Skróty i CarPlay"
           }
         }
       }
@@ -136123,6 +137652,12 @@
             "state" : "translated",
             "value" : "狀態"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Status"
+          }
         }
       }
     },
@@ -136400,6 +137935,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "貼紙"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Naklejki"
           }
         }
       }
@@ -136903,6 +138444,12 @@
             "state" : "translated",
             "value" : "刪除線"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przekreślenie"
+          }
         }
       }
     },
@@ -137035,6 +138582,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已訂閱"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zasubskrybowano"
           }
         }
       }
@@ -137356,6 +138909,12 @@
             "state" : "translated",
             "value" : "交換 Mesh 聯絡人"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wymień kontakty w sieci"
+          }
         }
       }
     },
@@ -137519,6 +139078,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cambiando Radio"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przełączanie radia"
           }
         }
       }
@@ -138368,6 +139933,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "點一下以輸入表情符號"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Stuknij, aby wpisać emoji"
           }
         }
       }
@@ -142779,6 +144350,12 @@
             "state" : "translated",
             "value" : "該聯絡人的公鑰存在問題。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wystąpił problem z kluczem publicznym tego kontaktu."
+          }
         }
       }
     },
@@ -143288,7 +144865,14 @@
       }
     },
     "This channel is no longer on your radio. Its messages are kept here, but you can't send to it. Add the channel again to pick up the conversation." : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tego kanału nie ma już w radiu. Jego wiadomości zostają tutaj, ale nie możesz na niego wysyłać. Dodaj kanał ponownie, aby kontynuować rozmowę."
+          }
+        }
+      }
     },
     "This connected device does not support packet signature verification." : {
       "comment" : "Summary shown when the connected radio lacks XEdDSA packet signature verification.",
@@ -143433,6 +145017,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "此對話紀錄將會被刪除。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ta rozmowa zostanie usunięta."
           }
         }
       }
@@ -144366,7 +145956,14 @@
       }
     },
     "This radio's messages and nodes could not be backed up, so nothing was deleted." : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie udało się utworzyć kopii zapasowej wiadomości i węzłów tego radia, więc nic nie zostało usunięte."
+          }
+        }
+      }
     },
     "This radio's channels aren't available, so a channel can't be offered. Connect to it directly to set one." : {
       "localizations" : {
@@ -144446,6 +146043,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "此快照已超過 30 天。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ta migawka ma ponad 30 dni."
           }
         }
       }
@@ -147816,6 +149419,12 @@
             "state" : "translated",
             "value" : "翻譯"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "tłumaczenie"
+          }
         }
       }
     },
@@ -147887,6 +149496,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "翻譯"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przetłumacz"
           }
         }
       }
@@ -148704,6 +150319,12 @@
             "state" : "translated",
             "value" : "請再試一次"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Spróbuj ponownie"
+          }
         }
       }
     },
@@ -148737,6 +150358,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "在設定中開啟藍牙以查看附近的無線電。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Włącz Bluetooth w Ustawieniach, aby zobaczyć pobliskie radia."
           }
         }
       }
@@ -149281,6 +150908,12 @@
             "state" : "translated",
             "value" : "移除最愛"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Usuń z ulubionych"
+          }
         }
       }
     },
@@ -149399,6 +151032,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "美國"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Stany Zjednoczone"
           }
         }
       }
@@ -150411,6 +152050,12 @@
             "state" : "translated",
             "value" : "更新韌體"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zaktualizuj firmware"
+          }
         }
       }
     },
@@ -150928,6 +152573,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "更新使用應用程式已驗證的韌體工作流程。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aktualizacje korzystają ze sprawdzonego procesu aktualizacji firmware w aplikacji."
           }
         }
       }
@@ -152128,6 +153779,12 @@
             "state" : "translated",
             "value" : "使用活動主題"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Użyj motywu wydarzenia"
+          }
         }
       }
     },
@@ -152560,6 +154217,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "使用手機 GPS 將位置傳送到您的節點，而不是使用節點上的硬體 GPS。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Używaj GPS telefonu do wysyłania lokalizacji do węzła zamiast sprzętowego GPS w węźle."
           }
         }
       }
@@ -154184,6 +155847,12 @@
             "state" : "translated",
             "value" : "使用傳送者的金鑰驗證。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zweryfikowano kluczem nadawcy."
+          }
         }
       }
     },
@@ -154380,6 +156049,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "版本"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wersja"
           }
         }
       }
@@ -156319,6 +157994,12 @@
             "state" : "translated",
             "value" : "歡迎來到 Meshtastic"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Witaj w Meshtastic"
+          }
         }
       }
     },
@@ -157052,6 +158733,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wi-Fi 設定"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Konfiguracja Wi-Fi"
           }
         }
       }
@@ -158311,6 +159998,12 @@
             "state" : "translated",
             "value" : "昨天"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wczoraj"
+          }
         }
       }
     },
@@ -158525,6 +160218,12 @@
             "state" : "translated",
             "value" : "您傳送了：%@"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Twoja wiadomość: %@"
+          }
         }
       }
     },
@@ -158674,6 +160373,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "您已連線的裝置韌體版本低於 **%@**，其中包含已知安全漏洞。強烈建議更新韌體以保護您的裝置與網狀網路。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Podłączone urządzenie ma firmware starszy niż **%@**, który zawiera znane luki bezpieczeństwa. Zdecydowanie zalecamy aktualizację firmware, aby chronić urządzenie i sieć mesh."
           }
         }
       }
@@ -159400,6 +161105,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "您的公開身分和金鑰來自最近連線的無線電。收件人可以新增您並回傳他們的。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Twoja publiczna tożsamość i klucz pochodzą z ostatnio połączonego radia. Odbiorca może Cię dodać i odesłać swoje."
           }
         }
       }
