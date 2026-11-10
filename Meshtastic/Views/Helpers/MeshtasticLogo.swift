@@ -39,11 +39,13 @@ struct MeshtasticLogo: View {
 			.padding(.top, 5)
 		#else
 		if #available(iOS 26.0, macOS 26.0, *) {
-			VStack {
-				Image(colorScheme == .dark ? "logo-white" : "logo-black")
-					.resizable()
-					.scaledToFit()
-			}
+			// A fixed size, so the glass the bar draws around the item matches the logo. Left
+			// to fill whatever it was offered, the logo drew beside its glass on the open
+			// iPhone Duo.
+			Image(colorScheme == .dark ? "logo-white" : "logo-black")
+				.resizable()
+				.scaledToFit()
+				.frame(width: 28, height: 28)
 		} else {
 			VStack {
 				Image(colorScheme == .dark ? "logo-white" : "logo-black")

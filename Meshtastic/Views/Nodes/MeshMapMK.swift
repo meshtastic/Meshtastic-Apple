@@ -846,22 +846,25 @@ struct MeshMapMK: View {
 				ToolbarItem(placement: .topBarLeading) {
 					MeshtasticLogo()
 				}
-				ToolbarItem(placement: .topBarTrailing) {
-					HStack {
-						if supportsMultipleWindows && showOpenWindowButton && !isMapWindowOpen {
-							Button {
-								if router.selectedTab == .map {
-									router.selectedTab = .nodes
-								}
-								openWindow(id: "meshmap-window")
-								isMapWindowOpen = true
-							} label: {
-								Image(systemName: "macwindow.badge.plus")
+				// The window button and the indicator are separate items, so each gets its own
+				// glass. In one item they shared a single circle on the open iPhone Duo, too
+				// small for both.
+				if supportsMultipleWindows && showOpenWindowButton && !isMapWindowOpen {
+					ToolbarItem(placement: .topBarTrailing) {
+						Button {
+							if router.selectedTab == .map {
+								router.selectedTab = .nodes
 							}
-							.accessibilityLabel(String(localized: "Open map in new window", comment: "VoiceOver label for the open map in a new window button"))
+							openWindow(id: "meshmap-window")
+							isMapWindowOpen = true
+						} label: {
+							Image(systemName: "macwindow.badge.plus")
 						}
-						ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
+						.accessibilityLabel(String(localized: "Open map in new window", comment: "VoiceOver label for the open map in a new window button"))
 					}
+				}
+				ToolbarItem(placement: .topBarTrailing) {
+					ConnectedDevice(deviceConnected: accessoryManager.isConnected, name: accessoryManager.activeConnection?.device.shortName ?? "?")
 				}
 			}
 			.toolbarBackground(.hidden, for: .navigationBar)
