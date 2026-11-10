@@ -35,6 +35,7 @@ struct SpatialMapView: View {
 	@AppStorage("cinemaRooftopSite") private var rooftopSiteID = ""
 	@AppStorage(SpatialLookout.turnsKey) private var lookoutTurns = 0
 	@AppStorage(CastleStone.key) private var castleStone: CastleStone = .gray
+	@Environment(\.accessibilityReduceMotion) private var reduceMotion
 
 	/// What stands where the cinema's room is.
 	private var summitModel: SpatialSummitModel {
@@ -68,6 +69,7 @@ struct SpatialMapView: View {
 				scene.apply(lookout: cinemaEnvironment.siteKind != nil
 					? SpatialLookout.coordinate(siteID: cinemaEnvironment.siteKind == .rooftop ? rooftopSiteID : lookoutSiteID).flatMap { model.lookoutStands(on: $0) ? $0 : nil }
 					: nil, heading: SpatialLookout.heading(turns: lookoutTurns), model: summitModel)
+				scene.apply(station: cinemaEnvironment == .spaceStation, reduceMotion: reduceMotion)
 				scene.apply(target: liveZoom.flatMap { model.circle(forZoom: $0) } ?? model.targetCircle)
 				traffic.applyBaseGlow()
 				// Hidden while a trace route is shown, as on the 2D map, so the two sets of colored
