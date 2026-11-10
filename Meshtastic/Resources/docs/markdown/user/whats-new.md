@@ -14,6 +14,8 @@ Recent user-facing changes from roughly the last 12 months. Newest at the top.
 Show roughly the last 12 months of changes; archive entries older than a year by removing them.
 -->
 
+**Nov 2026** — [Cinema](cinema.md#lighthouse) — On Apple Vision Pro, the cinema can be set in a lighthouse's lantern room over the sea, standing on a real headland from the downloaded terrain, turned to face the open water.
+
 **Nov 2026** — [Cinema](cinema.md#castle-tower) — On Apple Vision Pro, the cinema can be set on top of a medieval castle tower, in gray or pink stone, on the same summits as the fire lookout, with its boards as scrolls you can roll up to see the view behind them.
 
 **Nov 2026** — [Cinema](cinema.md#fire-lookout) — On Apple Vision Pro, the fire lookout's real terrain has conifers on its forested ground, near and far, like the painted view's forest.

@@ -6,7 +6,7 @@ nav_order: 17
 
 # Cinema (Apple Vision Pro)
 
-On Apple Vision Pro, the Cinema puts the app on a big screen inside a search and rescue comms tent, a ham shack, a fire lookout or on top of a castle tower. Open it with the **tent** button in the round glass menu under the app's tab bar. The app's window closes while you're in the tent and comes back when you leave.
+On Apple Vision Pro, the Cinema puts the app on a big screen inside a search and rescue comms tent, a ham shack, a fire lookout, on top of a castle tower or in a lighthouse. Open it with the **tent** button in the round glass menu under the app's tab bar. The app's window closes while you're in the tent and comes back when you leave.
 
 ## The screen
 
@@ -48,12 +48,21 @@ The boards are parchment scrolls hanging from oak frames: Team Favorites and the
 
 While the castle stands on a summit, the 3D map shows a castle tower on the summit in the stone you picked, in place of the lookout.
 
+## Lighthouse
+
+The fifth place is the lantern room at the top of a lighthouse on a headland at sunset: glass all round above a low iron parapet, so the sea shows below you on every side, with the sun going down over the water on your left. The Fresnel lens stands behind you on its iron pedestal, lit, beside the hatch down to the watch room and the door out to the gallery. The screen hangs in the two front panes, the two whiteboards in panes on the left and the trace route print in one on the right.
+
+If you've downloaded terrain for the [3D map](map.md) along a coast, the view can be the real thing. The control panel's **Headland** picker lists up to 20 places on the coast around the mesh that look out over the most open sea, each with which way it faces, its height, and how far it is from your radio and which way. Pick one and the lighthouse stands on it, turned so the screen faces the open water, with the real coast and sea out every pane and a marker for every node, with its card, as in the fire lookout. Turn it with the same dial. **Sea view** puts the painted sea back. Without terrain along a coast, the panel says so and the painted sea stays.
+
+While the lighthouse stands on a headland, the 3D map shows a lighthouse there: a white tower with a railed gallery and a lit lantern under a red dome, facing the way the screen does.
+
 ## Control panel
 
-- **Environment**: the place the screen is set in: the search and rescue tent, or a ham shack, a wood-paneled radio room with an operating desk, a window out to the antenna tower, and the same boards; its status board is net control's check-in board, standing portrait beside the screen; or a fire lookout, a glass cab on a summit at sunset; or a castle tower, an open stone roof on a summit at sunset.
+- **Environment**: the place the screen is set in: the search and rescue tent, or a ham shack, a wood-paneled radio room with an operating desk, a window out to the antenna tower, and the same boards; its status board is net control's check-in board, standing portrait beside the screen; or a fire lookout, a glass cab on a summit at sunset; or a castle tower, an open stone roof on a summit at sunset; or a lighthouse, a glass lantern room over the sea at sunset.
 - **Stone**: on the castle tower, gray or pink.
 - **Summit**: in the fire lookout or on the castle tower, with terrain downloaded, which summit it stands on, or the forest sunset.
-- **Turn Lookout**: with a summit picked, a compass dial for which way the cab faces, so the screen looks out over another part of the view. Tap one of its sixteen marks, a sixteenth of a turn (22.5°) apart, or drag round it and let go. The eighths are drawn larger. The caption under it says which way the cab faces. The cab on the 3D map turns with it.
+- **Headland**: in the lighthouse, with terrain along a coast downloaded, which headland it stands on, or the sea view.
+- **Turn Lookout**: with a summit or headland picked, a compass dial for which way the cab faces, so the screen looks out over another part of the view. Tap one of its sixteen marks, a sixteenth of a turn (22.5°) apart, or drag round it and let go. The eighths are drawn larger. The caption under it says which way the cab faces. The cab on the 3D map turns with it.
 - **Open 3D Map**: shown while the 3D map is closed.
 - **Move it**: pinch the bar under the panel and drag it wherever you want it.
 - **Leave**: closes the tent and brings back the app's window.

@@ -13,6 +13,7 @@ import SwiftData
 
 /// What the fire lookout can look out on: the summits in the terrain downloaded for the spatial
 /// map, the terrain around the one chosen, and the nodes placed by bearing and distance from it.
+/// For the lighthouse, the same with headlands on the coast in place of summits.
 @MainActor
 @Observable
 final class LookoutScene {
@@ -25,8 +26,11 @@ final class LookoutScene {
 		case ready
 	}
 
-	/// The highest mountains in the downloaded terrain, highest first. Empty with no terrain.
+	/// The highest mountains in the downloaded terrain, highest first, or for the lighthouse the
+	/// headlands, best first. Empty with no terrain.
 	private(set) var sites: [LookoutSite] = []
+	/// What the sites are: summits or headlands, as the last `prepare()` asked.
+	private(set) var kind: LookoutSiteKind = .summit
 	private(set) var status: Status = .idle
 	/// The nodes out the windows, for the site the terrain was built for.
 	var labels: [LookoutLabel] = []
@@ -43,21 +47,22 @@ final class LookoutScene {
 
 	/// Reads the downloaded terrain and finds the summits in it, inside `area`: the circle the 3D
 	/// map shows around the mesh. The terrain download reaches well past that circle, and a summit
-	/// out there isn't on the map. Nil searches all the terrain. Does nothing when the summits for
-	/// this area are already found. A call while a search is running waits for that one rather
-	/// than starting another.
-	func prepare(area: SpatialCircle?) async {
-		let key = Self.areaKey(area)
+	/// out there isn't on the map. Nil searches all the terrain. `kind` says whether to look for
+	/// summits or headlands. Does nothing when the sites for this area and kind are already found.
+	/// A call while a search is running waits for that one rather than starting another.
+	func prepare(area: SpatialCircle?, kind: LookoutSiteKind = .summit) async {
+		let key = Self.areaKey(area) + "|" + kind.rawValue
 		if key != searchedArea {
 			forgetSites()
 			searchedArea = key
+			self.kind = kind
 		}
 		guard status == .idle || status == .searching else { return }
 		if let preparing {
 			await preparing.value
 			return
 		}
-		let search = Task { await self.search(area: area) }
+		let search = Task { await self.search(area: area, kind: kind) }
 		preparing = search
 		await search.value
 		// A search started after `forgetSites()` may be the one running now.
@@ -71,7 +76,7 @@ final class LookoutScene {
 		return String(format: "%.2f,%.2f,%.0f", area.latitude, area.longitude, (area.radiusMeters / 1_000).rounded())
 	}
 
-	private func search(area: SpatialCircle?) async {
+	private func search(area: SpatialCircle?, kind: LookoutSiteKind) async {
 		let started = generation
 		status = .searching
 		let manager = OfflineMapManager.shared
@@ -110,21 +115,27 @@ final class LookoutScene {
 		let terrainFiles = Set(sources.flatMap { [$0.globalURL.lastPathComponent] + $0.regionalURLs.map(\.lastPathComponent) })
 		let basemapFiles = Set(OfflineMapManager.persistedRegionFiles().filter { $0.region.hasBasemap }.map(\.url.lastPathComponent))
 		let maps = LookoutSiteCacheKey.maps(in: manager.regions, terrainFiles: terrainFiles, basemapFiles: basemapFiles) + "\n" + Self.areaKey(area)
-		if let kept = LookoutSiteCache.sites(for: maps) {
+		if let kept = LookoutSiteCache.sites(for: maps, kind: kind) {
 			sites = kept
 			status = sites.isEmpty ? .noSummits : .ready
 			Logger.services.info("🎬 [Cinema] Lookout sites: \(self.sites.count, privacy: .public) kept from the last search")
 			return
 		}
 		// The box around the circle has corners outside it; summits there aren't on the map either.
-		let summits = await LookoutTerrain.sites(in: searchBox, source: store, area: area)
-		guard generation == started, !Task.isCancelled else { return }
-		let found = await LookoutPeakNames.named(summits)
+		let found: [LookoutSite]
+		switch kind {
+		case .summit:
+			let summits = await LookoutTerrain.sites(in: searchBox, source: store, area: area)
+			guard generation == started, !Task.isCancelled else { return }
+			found = await LookoutPeakNames.named(summits)
+		case .coast:
+			found = await LookoutTerrain.coastSites(in: searchBox, source: store, area: area)
+		}
 		guard generation == started, !Task.isCancelled else { return }
 		sites = found
-		LookoutSiteCache.store(sites, for: maps)
+		LookoutSiteCache.store(sites, for: maps, kind: kind)
 		status = sites.isEmpty ? .noSummits : .ready
-		Logger.services.info("🎬 [Cinema] Lookout sites: \(self.sites.count, privacy: .public) in the map's area \(searchBox.minLat, privacy: .public)..\(searchBox.maxLat, privacy: .public), \(searchBox.minLon, privacy: .public)..\(searchBox.maxLon, privacy: .public)")
+		Logger.services.info("🎬 [Cinema] Lookout \(kind.rawValue, privacy: .public) sites: \(self.sites.count, privacy: .public) in the map's area \(searchBox.minLat, privacy: .public)..\(searchBox.maxLat, privacy: .public), \(searchBox.minLon, privacy: .public)..\(searchBox.maxLon, privacy: .public)")
 	}
 
 	/// Drops the summits found so far, after the downloaded maps changed, so the next
@@ -144,6 +155,18 @@ final class LookoutScene {
 		sites.first { $0.id == id }
 	}
 
+	/// The site found again for `id` after a new search: the same one, or one within 500 m of where
+	/// it was. A search over a changed area can put a headland a few meters off, giving it another id.
+	func site(near id: String) -> LookoutSite? {
+		if let same = site(for: id) { return same }
+		guard let coordinate = SpatialLookout.coordinate(siteID: id) else { return nil }
+		return sites
+			.map { (site: $0, distance: $0.coordinate.distance(from: coordinate)) }
+			.filter { $0.distance < 500 }
+			.min { $0.distance < $1.distance }?
+			.site
+	}
+
 	/// The terrain around `site` as an entity, or nil if it can't be built.
 	func terrain(for site: LookoutSite, heading: Double, sun: (azimuth: Float, elevation: Float)) async -> ModelEntity? {
 		guard let bounds else { return nil }
@@ -156,7 +179,7 @@ final class LookoutScene {
 		}
 		let landCover = await withTaskCancellationHandler { await build.value } onCancel: { build.cancel() }
 		if Task.isCancelled { return nil }
-		guard let model = await LookoutTerrain.build(site: site, bounds: bounds, source: store, landCover: landCover, heading: heading, sun: sun) else { return nil }
+		guard let model = await LookoutTerrain.build(site: site, bounds: bounds, source: store, landCover: landCover, heading: heading, standHeight: kind.standHeight, sun: sun) else { return nil }
 		do {
 			return try await LookoutTerrain.entity(for: model)
 		} catch {
@@ -174,7 +197,7 @@ final class LookoutScene {
 		descriptor.fetchLimit = 400
 		guard let nodes = try? context.fetch(descriptor) else { return [] }
 		let positions = NodeInfoEntity.latestPositions(for: nodes, context: context)
-		let eye = LookoutTerrain.eyeElevation(for: site)
+		let eye = LookoutTerrain.eyeElevation(for: site, standHeight: kind.standHeight)
 		var found: [LookoutLabel] = []
 		for node in nodes {
 			guard let position = positions[node.persistentModelID], let coordinate = position.nodeCoordinate else { continue }

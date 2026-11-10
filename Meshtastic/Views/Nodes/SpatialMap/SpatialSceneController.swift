@@ -830,15 +830,18 @@ extension SpatialSceneController {
 
 // MARK: Fire lookout
 
-/// What stands on the cinema's summit on the map: the fire lookout, or the castle tower in its stone.
+/// What stands on the cinema's site on the map: the fire lookout, the castle tower in its stone, or
+/// the lighthouse on its headland.
 enum SpatialSummitModel: Equatable {
 	case fireLookout
 	case castleTower(CastleStone)
+	case lighthouse
 
 	var entityName: String {
 		switch self {
 		case .fireLookout: "fireLookout"
 		case let .castleTower(stone): "castleTower-\(stone.rawValue)"
+		case .lighthouse: "lighthouse"
 		}
 	}
 
@@ -847,6 +850,7 @@ enum SpatialSummitModel: Equatable {
 		let made = switch self {
 		case .fireLookout: SpatialLookoutParts.make(heading: heading)
 		case let .castleTower(stone): SpatialLookoutParts.makeCastle(heading: heading, stone: stone)
+		case .lighthouse: SpatialLookoutParts.makeLighthouse(heading: heading)
 		}
 		made?.name = entityName
 		return made
@@ -854,8 +858,8 @@ enum SpatialSummitModel: Equatable {
 }
 
 extension SpatialSceneController {
-	/// Stands `model`, the fire lookout or the castle tower, on `coordinate`, the summit the cinema's
-	/// room is on, with its front facing `heading`, or takes it away for nil. Moved onto the new
+	/// Stands `model`, the fire lookout, the castle tower or the lighthouse, on `coordinate`, the
+	/// summit or headland the cinema's room is on, with its front facing `heading`, or takes it away for nil. Moved onto the new
 	/// ground whenever the terrain is rebuilt.
 	func apply(lookout coordinate: CLLocationCoordinate2D?, heading: Double = SpatialLookout.frontHeading, model: SpatialSummitModel = .fireLookout) {
 		guard let placement else { return }

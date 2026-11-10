@@ -27,7 +27,7 @@ import RealityKit
 import simd
 
 /// A summit the fire lookout can stand on: one of the highest points in the terrain the app has
-/// downloaded for the spatial map.
+/// downloaded for the spatial map. Or a headland the lighthouse can stand on, at the water's edge.
 struct LookoutSite: Identifiable, Hashable, Codable, Sendable {
 	let latitude: Double
 	let longitude: Double
@@ -35,6 +35,8 @@ struct LookoutSite: Identifiable, Hashable, Codable, Sendable {
 	let elevation: Float
 	/// The peak's name from the downloaded basemap, if it has one.
 	let name: String?
+	/// For a headland, the true bearing of the open water it looks out on; nil for a summit.
+	var facing: Double?
 
 	var id: String {
 		String(format: "%.4f,%.4f", latitude, longitude)
@@ -89,13 +91,13 @@ enum LookoutTerrain {
 	static let earthRadius = LookoutForest.earthRadius
 	/// The cab's floor stands this far above the summit, on a tower a little taller than most real
 	/// ones (under 30 m), so the view looks down onto the ground around the summit.
-	static let cabHeight = 34.0
+	static let cabHeight = LookoutSiteKind.summit.standHeight
 	/// The seated eye above the cab's floor.
 	static let eyeHeight = 1.15
 
-	/// The eye's elevation in the cab on `site`.
-	static func eyeElevation(for site: LookoutSite) -> Double {
-		Double(site.elevation) + cabHeight + eyeHeight
+	/// The eye's elevation in a room whose floor is `standHeight` above `site`.
+	static func eyeElevation(for site: LookoutSite, standHeight: Double = cabHeight) -> Double {
+		Double(site.elevation) + standHeight + eyeHeight
 	}
 	/// How far out a point `distance` meters away is drawn: from just past the room sphere to just
 	/// short of the sky, keeping the order of what's near and far.
@@ -162,6 +164,42 @@ enum LookoutTerrain {
 		}
 		if Task.isCancelled { return [] }
 		return distinct.sorted { $0.elevation > $1.elevation }
+	}
+
+	/// The headlands in `bounds` a lighthouse could stand on: land at the water's edge looking out
+	/// over the most open sea, at least 3 km apart, best first, at most `count` of them, all inside
+	/// `area` when one is given, each facing the middle of its open water. Empty with no coast, or
+	/// when the task is cancelled.
+	static func coastSites(in bounds: GeoBounds, source: any ElevationTileSource, area: SpatialCircle? = nil, count: Int = 20) async -> [LookoutSite] {
+		let frame = SpatialFrame(bounds: bounds)
+		let columns = min(600, max(48, Int(frame.widthMeters / 250)))
+		let rows = min(600, max(48, Int(frame.depthMeters / 250)))
+		guard let grid = await highestGrid(in: bounds, columns: columns, rows: rows, zoom: 10, source: source) else {
+			return []
+		}
+		let cellWidth = frame.widthMeters / Double(columns)
+		let cellHeight = frame.depthMeters / Double(rows)
+		let candidates = LookoutCoast.candidates(in: LookoutCoast.Grid(heights: grid.heights, covered: grid.covered, columns: columns, rows: rows, cellWidth: cellWidth, cellHeight: cellHeight))
+		if Task.isCancelled { return [] }
+		let zoom = min(14, await source.finestDataZoom() ?? 12)
+		let sampler = Sampler(source: source)
+		var chosen: [LookoutSite] = []
+		for candidate in candidates where chosen.count < count {
+			if Task.isCancelled { return [] }
+			let column = candidate.index % columns
+			let row = candidate.index / columns
+			let latitude = bounds.maxLat - (bounds.maxLat - bounds.minLat) * (Double(row) + 0.5) / Double(rows)
+			let longitude = bounds.minLon + (bounds.maxLon - bounds.minLon) * (Double(column) + 0.5) / Double(columns)
+			let coordinate = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+			guard area?.contains(coordinate) ?? true, !chosen.contains(where: { $0.coordinate.distance(from: coordinate) < 3_000 }) else { continue }
+			// The top of the headland within its cell, so the tower stands on the cliff top rather
+			// than the cell's middle, which may be over the water.
+			let coarse = LookoutSite(latitude: latitude, longitude: longitude, elevation: candidate.elevation, name: nil, facing: candidate.facing)
+			let site = await refine(coarse, within: max(cellWidth, cellHeight) / 2, zoom: zoom, sampler: sampler, steps: [(max(cellWidth, cellHeight) / 2, 25), (30, 5)])
+			guard site.elevation > 0 else { continue }
+			chosen.append(site)
+		}
+		return chosen
 	}
 
 	/// The highest ground in each cell of a coarse grid over the downloaded area, row-major from the
@@ -307,9 +345,9 @@ enum LookoutTerrain {
 	/// The highest point near `site` in the tiles at `zoom`: a first pass 100 m apart out to a cell
 	/// and a half away, since the coarse grid can put a summit a cell off, then 20 m and 5 m apart
 	/// around the best so far. The fine tiles decide the height, not the coarse grid.
-	private static func refine(_ site: LookoutSite, within cell: Double, zoom: Int, sampler: Sampler) async -> LookoutSite {
+	private static func refine(_ site: LookoutSite, within cell: Double, zoom: Int, sampler: Sampler, steps: [(reach: Double, step: Double)]? = nil) async -> LookoutSite {
 		var best: LookoutSite?
-		for (reach, step) in [(cell * 1.5, 100.0), (120, 20), (25, 5)] {
+		for (reach, step) in steps ?? [(cell * 1.5, 100.0), (120, 20), (25, 5)] {
 			let center = best ?? site
 			let metersPerDegreeLatitude = SpatialFrame.metersPerDegreeLatitude
 			let metersPerDegreeLongitude = metersPerDegreeLatitude * cos(center.latitude * .pi / 180)
@@ -318,7 +356,7 @@ enum LookoutTerrain {
 					let latitude = center.latitude + north / metersPerDegreeLatitude
 					let longitude = center.longitude + east / metersPerDegreeLongitude
 					if let elevation = await sampler.elevation(latitude: latitude, longitude: longitude, zoom: zoom), elevation > (best?.elevation ?? -.greatestFiniteMagnitude) {
-						best = LookoutSite(latitude: latitude, longitude: longitude, elevation: elevation, name: site.name)
+						best = LookoutSite(latitude: latitude, longitude: longitude, elevation: elevation, name: site.name, facing: site.facing)
 					}
 				}
 			}
@@ -336,15 +374,16 @@ enum LookoutTerrain {
 		return min(maxRadius, max(5_000, reach))
 	}
 
-	/// Builds the terrain around `site`, out to `bounds` and at most `maxRadius`. `sun` is where the
-	/// painted sky's sun is, degrees clockwise from the cab's front and above the horizon. The ground
-	/// is colored from `landCover` where it has the point, else by height.
+	/// Builds the terrain around `site`, out to `bounds` and at most `maxRadius`, seen from a room
+	/// whose floor is `standHeight` above it. `sun` is where the painted sky's sun is, degrees
+	/// clockwise from the cab's front and above the horizon. The ground is colored from `landCover`
+	/// where it has the point, else by height.
 	static func build(
 		site: LookoutSite, bounds: GeoBounds, source: any ElevationTileSource, landCover: OfflineLandCoverMap? = nil,
-		heading: Double = frontHeading, sun: (azimuth: Float, elevation: Float)
+		heading: Double = frontHeading, standHeight: Double = cabHeight, sun: (azimuth: Float, elevation: Float)
 	) async -> LookoutTerrainModel? {
 		let sampler = Sampler(source: source)
-		let floor = Double(site.elevation) + cabHeight
+		let floor = Double(site.elevation) + standHeight
 		let eye = floor + eyeHeight
 		let metersPerDegreeLatitude = SpatialFrame.metersPerDegreeLatitude
 		let metersPerDegreeLongitude = metersPerDegreeLatitude * cos(site.latitude * .pi / 180)

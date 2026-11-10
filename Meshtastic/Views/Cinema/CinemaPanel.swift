@@ -14,11 +14,12 @@ struct CinemaPanel: View {
 	@Binding var environment: CinemaEnvironment
 	/// The stone the castle tower is built of.
 	@Binding var stone: CastleStone
-	/// The summits the fire lookout can stand on, highest first; empty with no downloaded terrain.
+	/// The summits the fire lookout can stand on, highest first, or the headlands the lighthouse
+	/// can, best first; empty with no downloaded terrain.
 	let sites: [LookoutSite]
-	/// The chosen summit's id, or empty for the forest sunset.
+	/// The chosen site's id, or empty for the painted view.
 	@Binding var siteID: String
-	/// Eighth turns clockwise the lookout is turned.
+	/// Sixteenth turns clockwise the lookout or the lighthouse is turned.
 	@Binding var turns: Int
 	/// Where the connected radio is, to say how far each summit is from it.
 	let radioCoordinate: CLLocationCoordinate2D?
@@ -46,10 +47,17 @@ struct CinemaPanel: View {
 				.pickerStyle(.segmented)
 				.frame(maxWidth: 260)
 			}
-			if environment.standsOnSummit, !sites.isEmpty {
-				Picker(String(localized: "Summit", comment: "Cinema: picker for the summit the fire lookout stands on"), selection: $siteID) {
-					Text("Forest sunset", comment: "Cinema: the fire lookout's rendered forest view, with no real terrain")
-						.tag("")
+			if environment.standsOnSite, !sites.isEmpty {
+				Picker(environment.siteKind == .coast
+					? String(localized: "Headland", comment: "Cinema: picker for the headland on the coast the lighthouse stands on")
+					: String(localized: "Summit", comment: "Cinema: picker for the summit the fire lookout stands on"), selection: $siteID) {
+					if environment.siteKind == .coast {
+						Text("Sea view", comment: "Cinema: the lighthouse's rendered view of the sea, with no real terrain")
+							.tag("")
+					} else {
+						Text("Forest sunset", comment: "Cinema: the fire lookout's rendered forest view, with no real terrain")
+							.tag("")
+					}
 					ForEach(sites) { site in
 						Text(verbatim: title(for: site)).tag(site.id)
 					}
@@ -60,7 +68,7 @@ struct CinemaPanel: View {
 				if !siteID.isEmpty {
 					LookoutTurnDial(turns: $turns)
 				}
-			} else if environment.standsOnSummit, let lookoutNote {
+			} else if environment.standsOnSite, let lookoutNote {
 				Text(verbatim: lookoutNote)
 					.font(.caption)
 					.foregroundStyle(.secondary)
@@ -85,11 +93,13 @@ struct CinemaPanel: View {
 	}
 
 	/// The summit's height, and how far from the radio and which way, when the radio has a position.
+	/// A headland says which way it looks out to sea before its height.
 	private func title(for site: LookoutSite) -> String {
 		let unit: UnitLength = Locale.current.measurementSystem == .metric ? .meters : .feet
 		let height = Measurement(value: Double(site.elevation), unit: UnitLength.meters).converted(to: unit)
 			.formatted(.measurement(width: .abbreviated, usage: .asProvided, numberFormatStyle: .number.precision(.fractionLength(0))))
-		let named = site.name.map { "\($0), \(height)" } ?? height
+		let label = site.name ?? site.facing.map { SpatialLookout.facing(heading: $0) }
+		let named = label.map { "\($0), \(height)" } ?? height
 		guard let radioCoordinate else { return named }
 		let distance = Measurement(value: radioCoordinate.distance(from: site.coordinate), unit: UnitLength.meters)
 			.formatted(.measurement(width: .abbreviated, usage: .road, numberFormatStyle: .number.precision(.fractionLength(0...1))))
