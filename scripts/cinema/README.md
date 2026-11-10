@@ -61,6 +61,17 @@ The image is a cutout (`render_room(..., cutout=True)`): the sunset HDRI lights 
 
 `--stone gray` or `--stone pink` picks the stone; `build.sh` renders both, as `castle_tower_gray.heic` and `castle_tower_pink.heic`, with one `castle_tower_anchors.json`. Like the lookout, the image is a cutout lit by Kiara 8 at the same turn, so the app shows the lookout's skies and real terrain behind it.
 
+## Lighthouse
+
+`lighthouse.py` builds a lighthouse's lantern room on `room_base.py`, with no tent: a twelve-sided room glazed all round, its glass 2.4 m from the seat across the middle of each pane, a corner straight ahead so the two front panes meet behind the screen. The iron parapet under the glass is low (0.62 m), with a raised panel in each bay and a dark plinth along the floor, so the sea below shows over the wide sill down to about 14° below level. The gallery railing outside is kept under that line, so it never crosses the water in front of the nodes the app marks out there. Over the glass is a cream cornice ring and a shallow dome on dark ribs rising to the ventilator; outside, the dome's red cornice hangs a deep lip over the glass, which shows as a red band along the top of every pane. The floor is cast iron plates in rings and spokes, painted red oxide and worn.
+
+- **Behind the seat:** the third-order Fresnel lens on its fluted cast iron pedestal: a belt of refracting prisms round the middle and rings of reflecting prisms narrowing above and below, in a brass frame, with the lamp lit inside. To its left the open hatch down to the watch room, its cover thrown back on the floor and the ladder's rails coming up through it; to its right a stool and a brass oil can.
+- **Front:** the screen across the two front panes.
+- **Left:** the whiteboards the app draws the team roster and the nodes' status messages on, in the panes 45° and 75° round, in thin dark frames.
+- **Right:** the print the app draws the latest trace route on, 75° round, binoculars on the sill near the screen, and further round the VHF radio, a T-Echo and the logbook. The door out to the gallery is in the back right pane, half-glazed with a taller solid panel than the parapet and Chirpy's poster on it.
+
+The image is a cutout like the fire lookout's. It's lit by the Kiara 8 sunset turned 129° (the lookout's turned 126° more), which puts the sun low over the sea on the viewer's left, a little behind, lighting the room through the left panes and keeping its glare away from the screen. Behind the glass the app draws `lighthouse_sky.heic`, the view from the lantern that `sea_view.py` renders: open sea on every side but behind, where the headland the tower stands on, 30 m above the water, reaches back to a coast of low hills, under the clear sunset sky turned to match. The sea is glossy deep water with swell and chop that calm with distance, rougher the farther it is, so the sun lays a path across it. Or, behind real terrain, `lighthouse_puresky.heic`, that clear sky alone. The lighthouse stands on a headland the app finds on the downloaded terrain's coast (`LookoutCoast`), its floor 24 m up (the lookout's is 34 m), turned to face the most open water; `CinemaEnvironment.sun` puts the terrain's sun at 260° from the front.
+
 ## HEIC
 
 `build.sh` converts the rendered PNG with `sips` at HEIC quality 88. That quality was picked by decoding the HEIC and comparing it with the PNG (PSNR and SSIM, over the whole image and over crops of the canvas, the banner, the plaque, the forest through the door and a window), and by looking at the same crops side by side. Quality 88 matched or beat the old JPEG at quality 85 in every crop, and no difference from the PNG could be seen in the crops at 3× zoom. For the tent at 4096 × 2048:
@@ -83,6 +94,7 @@ The image is a cutout (`render_room(..., cutout=True)`): the sunset HDRI lights 
 - The forest seen through the door and the windows is the "Sunset Forest" HDRI from Poly Haven (https://polyhaven.com/a/sunset_forest), released under CC0. `build.sh` downloads it into `cache/`.
 - The lookout's cab is lit by the "Kiara 8 Sunset" HDRI from Poly Haven (https://polyhaven.com/a/kiara_8_sunset), CC0; the sky over the forest view and behind real terrain is "Kloppenheim 06 (Pure Sky)" from Poly Haven (https://polyhaven.com/a/kloppenheim_06_puresky), CC0.
 - The display of the lookout's radio on its sill is drawn by `make_textures.py`. The T-Echo and the Solar Node are the app's own models.
+- The lighthouse, its lens and its furniture are modeled in `lighthouse.py`, and the sea and the headland in `sea_view.py`. It reuses the lookout's radio display, Chirpy's poster and the whiteboard texture, and is lit and skied by the same two Poly Haven HDRIs as the lookout.
 
 ## Banana for scale
 
