@@ -127,3 +127,7 @@ sky fire_lookout_puresky kloppenheim_06_puresky_4k.hdr 5.5 1
 # The castle tower, lit as the lookout is so it shares the lookout's skies, in each of its stones.
 stone_environment castle_tower gray
 stone_environment castle_tower pink
+# The city rooftop, lit by the clear sunset the lookout's skies are painted from, at their turn:
+# behind real buildings it shows fire_lookout_puresky, and with none, a made-up city under that sky.
+environment city_rooftop
+view city_rooftop_sky city_view kloppenheim_06_puresky_4k.hdr 5.5 1

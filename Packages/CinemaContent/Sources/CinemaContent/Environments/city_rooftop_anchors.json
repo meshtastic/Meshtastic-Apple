@@ -1,0 +1,90 @@
+{
+  "boards": {
+    "nodeStatus": {
+      "center": [
+        2.1921,
+        -0.594,
+        -1.096
+      ],
+      "normal": [
+        -0.8749,
+        0.2079,
+        0.4374
+      ],
+      "right": [
+        0.4472,
+        0.0,
+        0.8944
+      ],
+      "size": [
+        0.58,
+        0.87
+      ]
+    },
+    "screen": {
+      "center": [
+        0.0,
+        0.34,
+        -2.67
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "right": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "size": [
+        2.4,
+        1.504
+      ]
+    },
+    "teamStatus": {
+      "center": [
+        -1.92,
+        0.34,
+        -2.679
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "right": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "size": [
+        1.0,
+        0.667
+      ]
+    },
+    "traceRoute": {
+      "center": [
+        1.92,
+        0.34,
+        -2.679
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "right": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "size": [
+        0.9,
+        0.74
+      ]
+    }
+  },
+  "comment": "Written by scripts/cinema/room_base.py. Meters, RealityKit axes (+X right, +Y up, -Z toward the image's center), relative to the camera the image was rendered from.",
+  "eyeHeight": 1.15
+}

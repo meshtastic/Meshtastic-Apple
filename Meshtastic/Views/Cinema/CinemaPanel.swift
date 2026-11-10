@@ -14,9 +14,10 @@ struct CinemaPanel: View {
 	@Binding var environment: CinemaEnvironment
 	/// The stone the castle tower is built of.
 	@Binding var stone: CastleStone
-	/// The summits the fire lookout can stand on, highest first; empty with no downloaded terrain.
+	/// The summits the fire lookout can stand on, highest first, or the rooftops the city rooftop can,
+	/// tallest first; empty with no downloaded terrain.
 	let sites: [LookoutSite]
-	/// The chosen summit's id, or empty for the forest sunset.
+	/// The chosen site's id, or empty for the painted view.
 	@Binding var siteID: String
 	/// Eighth turns clockwise the lookout is turned.
 	@Binding var turns: Int
@@ -46,7 +47,19 @@ struct CinemaPanel: View {
 				.pickerStyle(.segmented)
 				.frame(maxWidth: 260)
 			}
-			if environment.standsOnSummit, !sites.isEmpty {
+			if environment.siteKind == .rooftop, !sites.isEmpty {
+				Picker(String(localized: "Rooftop", comment: "Cinema: picker for the building the city rooftop stands on"), selection: $siteID) {
+					Text("City skyline", comment: "Cinema: the city rooftop's rendered skyline, with no real buildings")
+						.tag("")
+					ForEach(sites) { site in
+						Text(verbatim: title(for: site)).tag(site.id)
+					}
+				}
+				.pickerStyle(.menu)
+				if !siteID.isEmpty {
+					LookoutTurnDial(turns: $turns)
+				}
+			} else if environment.standsOnSummit, !sites.isEmpty {
 				Picker(String(localized: "Summit", comment: "Cinema: picker for the summit the fire lookout stands on"), selection: $siteID) {
 					Text("Forest sunset", comment: "Cinema: the fire lookout's rendered forest view, with no real terrain")
 						.tag("")
@@ -60,7 +73,7 @@ struct CinemaPanel: View {
 				if !siteID.isEmpty {
 					LookoutTurnDial(turns: $turns)
 				}
-			} else if environment.standsOnSummit, let lookoutNote {
+			} else if environment.siteKind != nil, let lookoutNote {
 				Text(verbatim: lookoutNote)
 					.font(.caption)
 					.foregroundStyle(.secondary)
@@ -84,12 +97,18 @@ struct CinemaPanel: View {
 		.glassBackgroundEffect()
 	}
 
-	/// The summit's height, and how far from the radio and which way, when the radio has a position.
+	/// The summit's height, or how tall the building is, and how far from the radio and which way,
+	/// when the radio has a position.
 	private func title(for site: LookoutSite) -> String {
 		let unit: UnitLength = Locale.current.measurementSystem == .metric ? .meters : .feet
-		let height = Measurement(value: Double(site.elevation), unit: UnitLength.meters).converted(to: unit)
+		let height = Measurement(value: Double(site.rooftop ?? site.elevation), unit: UnitLength.meters).converted(to: unit)
 			.formatted(.measurement(width: .abbreviated, usage: .asProvided, numberFormatStyle: .number.precision(.fractionLength(0))))
-		let named = site.name.map { "\($0), \(height)" } ?? height
+		let named: String
+		if site.rooftop != nil {
+			named = String(localized: "\(height) tall", comment: "Cinema: a building in the rooftop picker, by how tall it is")
+		} else {
+			named = site.name.map { "\($0), \(height)" } ?? height
+		}
 		guard let radioCoordinate else { return named }
 		let distance = Measurement(value: radioCoordinate.distance(from: site.coordinate), unit: UnitLength.meters)
 			.formatted(.measurement(width: .abbreviated, usage: .road, numberFormatStyle: .number.precision(.fractionLength(0...1))))
