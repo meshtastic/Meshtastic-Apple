@@ -51,7 +51,8 @@ struct DeviceModelCatalogTests {
 		let files = try FileManager.default.contentsOfDirectory(atPath: folder.path)
 			.filter { $0.hasSuffix(".usdz") }
 			.map { ($0 as NSString).deletingPathExtension }
-		#expect(Set(files) == DeviceModelCatalog.modelNames.union([DeviceModelCatalog.chirpy]))
+		// Chirpy and the banana for scale are bundled beside the device models but aren't hardware.
+		#expect(Set(files) == DeviceModelCatalog.modelNames.union([DeviceModelCatalog.chirpy, "banana_for_scale"]))
 	}
 
 	@Test("remote URL is on the web flasher")
