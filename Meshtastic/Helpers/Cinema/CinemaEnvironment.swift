@@ -15,6 +15,7 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 	case fireLookout
 	case castleTower
 	case cityRooftop
+	case spaceStation
 
 	var id: String { rawValue }
 
@@ -30,6 +31,8 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 			String(localized: "Castle Tower", comment: "Cinema environment: on the open top of a medieval castle tower on a mountain summit")
 		case .cityRooftop:
 			String(localized: "City Rooftop", comment: "Cinema environment: on the roof deck of a tall downtown building at dusk")
+		case .spaceStation:
+			String(localized: "Space Station", comment: "Cinema environment: inside a space station module under its cupola, with Earth through the windows")
 		}
 	}
 
@@ -42,6 +45,7 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 		case .fireLookout: "fire_lookout"
 		case .castleTower: "castle_tower"
 		case .cityRooftop: "city_rooftop"
+		case .spaceStation: "space_cupola"
 		}
 	}
 
@@ -59,7 +63,7 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 	/// board; the ham shack's is where net control logs the check-ins.
 	var statusBoardTitle: String {
 		switch self {
-		case .sarTent, .fireLookout, .castleTower, .cityRooftop:
+		case .sarTent, .fireLookout, .castleTower, .cityRooftop, .spaceStation:
 			String(localized: "Status Board", comment: "Cinema: title of the board of the nodes' status messages in the tent")
 		case .hamShack:
 			String(localized: "Net Check-In", comment: "Cinema: title of the ham shack's status board, where net control logs the check-ins")
@@ -71,14 +75,14 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 	var statusBoardPortrait: Bool {
 		switch self {
 		case .sarTent, .hamShack, .cityRooftop: true
-		case .fireLookout, .castleTower: false
+		case .fireLookout, .castleTower, .spaceStation: false
 		}
 	}
 
 	/// What the status board says while no node has a status message.
 	var statusBoardEmptyTitle: String {
 		switch self {
-		case .sarTent, .fireLookout, .castleTower, .cityRooftop:
+		case .sarTent, .fireLookout, .castleTower, .cityRooftop, .spaceStation:
 			String(localized: "No status yet", comment: "Cinema: shown on the tent's status board while no node has a status message")
 		case .hamShack:
 			String(localized: "No check-ins yet", comment: "Cinema: shown on the ham shack's check-in board while no node has a status message")
@@ -86,9 +90,10 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 	}
 
 	/// Whether the image is a cutout: transparent wherever the camera saw past the room's glass, so
-	/// a sky, and real terrain when the app has some, are drawn behind it.
+	/// a sky, and real terrain when the app has some, are drawn behind it. The space station has no
+	/// terrain, only Earth painted behind its windows.
 	var isCutout: Bool {
-		siteKind != nil
+		siteKind != nil || self == .spaceStation
 	}
 
 	/// What it stands on in the downloaded maps, with the real terrain and the nodes out round it:
@@ -128,11 +133,13 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 		switch self {
 		case .fireLookout, .castleTower: "fire_lookout_sky"
 		case .cityRooftop: "city_rooftop_sky"
+		case .spaceStation: "space_earth"
 		default: nil
 		}
 	}
 
-	/// The same sky with nothing below the horizon, for behind real terrain.
+	/// The same sky with nothing below the horizon, for behind real terrain. Only the environments
+	/// that stand on a summit have one.
 	var clearSkyImageName: String? {
 		switch self {
 		case .fireLookout, .castleTower, .cityRooftop: "fire_lookout_puresky"
@@ -152,7 +159,7 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 	/// image needs nudging.
 	var frontRotation: Float {
 		switch self {
-		case .sarTent, .hamShack, .fireLookout, .castleTower, .cityRooftop: 0
+		case .sarTent, .hamShack, .fireLookout, .castleTower, .cityRooftop, .spaceStation: 0
 		}
 	}
 
@@ -189,6 +196,12 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 				UIColor(red: 0.42, green: 0.55, blue: 0.75, alpha: 1),
 				UIColor(red: 0.82, green: 0.68, blue: 0.52, alpha: 1),
 				UIColor(red: 0.36, green: 0.27, blue: 0.19, alpha: 1)
+			)
+		case .spaceStation:
+			(
+				UIColor(red: 0.12, green: 0.25, blue: 0.50, alpha: 1),
+				UIColor(red: 0.72, green: 0.72, blue: 0.70, alpha: 1),
+				UIColor(red: 0.32, green: 0.32, blue: 0.31, alpha: 1)
 			)
 		}
 	}
