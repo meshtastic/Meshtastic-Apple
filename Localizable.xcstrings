@@ -8676,6 +8676,12 @@
             "state" : "translated",
             "value" : "角色：%@"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rola: %@"
+          }
         }
       }
     },
@@ -104375,6 +104381,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "節點"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Węzły"
           }
         }
       }
