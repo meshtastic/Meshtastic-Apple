@@ -10,8 +10,8 @@ import OSLog
 import RealityKit
 import UIKit
 
-/// The fire lookout, and the castle tower, as an entity: one model per material, built once and
-/// reused.
+/// The fire lookout, the castle tower and the space station, as entities: one model per material,
+/// built once and reused.
 @MainActor
 enum SpatialLookoutParts {
 	private static var meshes: [SpatialLookout.Part: MeshResource]?
@@ -74,6 +74,63 @@ enum SpatialLookoutParts {
 	}
 
 	private static var castleMeshes: [SpatialCastle.Part: MeshResource]?
+	private static var stationMeshes: [SpatialStation.Part: MeshResource]?
+
+	/// The space station that floats over the map while the cinema's room is the station.
+	static func makeStation() -> Entity? {
+		if stationMeshes == nil {
+			var built: [SpatialStation.Part: MeshResource] = [:]
+			for (part, data) in SpatialStation.geometry() where data.triangleCount > 0 {
+				var descriptor = MeshDescriptor()
+				descriptor.positions = MeshBuffers.Positions(data.positions)
+				descriptor.normals = MeshBuffers.Normals(data.normals)
+				descriptor.primitives = .triangles(data.indices)
+				do {
+					built[part] = try MeshResource.generate(from: [descriptor])
+				} catch {
+					Logger.services.error("🛰️ [SpatialMap] Couldn't make the space station's \(String(describing: part), privacy: .public) mesh: \(error.localizedDescription, privacy: .public)")
+					return nil
+				}
+			}
+			stationMeshes = built
+		}
+		guard let stationMeshes else { return nil }
+		let station = Entity()
+		station.name = "spaceStationBody"
+		for part in SpatialStation.Part.allCases {
+			guard let mesh = stationMeshes[part] else { continue }
+			station.addChild(ModelEntity(mesh: mesh, materials: [stationMaterial(part)]))
+		}
+		return station
+	}
+
+	private static func stationMaterial(_ part: SpatialStation.Part) -> PhysicallyBasedMaterial {
+		var material = PhysicallyBasedMaterial()
+		switch part {
+		case .truss:
+			material.baseColor = .init(tint: UIColor(white: 0.72, alpha: 1))
+			material.metallic = 0.6
+			material.roughness = 0.45
+		case .solar:
+			// The wings' amber, as they look in sunlight.
+			material.baseColor = .init(tint: UIColor(red: 0.62, green: 0.43, blue: 0.17, alpha: 1))
+			material.metallic = 0.35
+			material.roughness = 0.35
+		case .radiator:
+			material.baseColor = .init(tint: UIColor(white: 0.95, alpha: 1))
+			material.roughness = 0.7
+		case .module:
+			material.baseColor = .init(tint: UIColor(red: 0.9, green: 0.9, blue: 0.87, alpha: 1))
+			material.roughness = 0.6
+		case .window:
+			// Dark glass with the module's light behind it.
+			material.baseColor = .init(tint: UIColor(red: 0.08, green: 0.1, blue: 0.14, alpha: 1))
+			material.emissiveColor = .init(color: UIColor(red: 1, green: 0.95, blue: 0.85, alpha: 1))
+			material.emissiveIntensity = 0.5
+			material.roughness = 0.1
+		}
+		return material
+	}
 	private static var blockTexture: TextureResource?
 
 	/// Dressed stone blocks in running bond, `SpatialCastle.tileBlocks` across and up, with pale

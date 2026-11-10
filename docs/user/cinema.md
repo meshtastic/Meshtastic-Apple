@@ -6,7 +6,7 @@ nav_order: 17
 
 # Cinema (Apple Vision Pro)
 
-On Apple Vision Pro, the Cinema puts the app on a big screen inside a search and rescue comms tent, a ham shack, a fire lookout or on top of a castle tower. Open it with the **tent** button in the round glass menu under the app's tab bar. The app's window closes while you're in the tent and comes back when you leave.
+On Apple Vision Pro, the Cinema puts the app on a big screen inside a search and rescue comms tent, a ham shack, a fire lookout, on top of a castle tower or in a space station. Open it with the **tent** button in the round glass menu under the app's tab bar. The app's window closes while you're in the tent and comes back when you leave.
 
 ## The screen
 
@@ -48,9 +48,17 @@ The boards are parchment scrolls hanging from oak frames: Team Favorites and the
 
 While the castle stands on a summit, the 3D map shows a castle tower on the summit in the stone you picked, in place of the lookout.
 
+## Space station
+
+The fifth place is a module of a space station in orbit, 420 km up. The module is lined with racks of off-white panels, with handrails, stowed bags and laptops on swing arms. Above you and a little ahead, the cupola opens out of the ceiling: six windows round a round one at the top, with Earth through them and the sunlit ground under the station. Over the front windows you can see Earth's edge, with its thin blue line of air and black space beyond. The screen is on the plain front bulkhead. Team Favorites and the Status Board are strapped to the racks on your left, and the latest trace route to the racks on your right. Behind the print are the station's ham radio, tuned to its voice downlink, and a Meshtastic radio strapped beside it. Behind you are the hatch to the next module, the mission patch and Chirpy's poster.
+
+The station has no summit and no real terrain, so the **Summit** picker and the **Turn Lookout** dial don't show there.
+
+While the cinema is in the space station, the 3D map shows the station floating high over the middle of the mesh, above the highest ground and buildings, slowly circling it. It isn't where the real station is. With Reduce Motion on, it holds still.
+
 ## Control panel
 
-- **Environment**: the place the screen is set in: the search and rescue tent, or a ham shack, a wood-paneled radio room with an operating desk, a window out to the antenna tower, and the same boards; its status board is net control's check-in board, standing portrait beside the screen; or a fire lookout, a glass cab on a summit at sunset; or a castle tower, an open stone roof on a summit at sunset.
+- **Environment**: the place the screen is set in: the search and rescue tent, or a ham shack, a wood-paneled radio room with an operating desk, a window out to the antenna tower, and the same boards; its status board is net control's check-in board, standing portrait beside the screen; or a fire lookout, a glass cab on a summit at sunset; or a castle tower, an open stone roof on a summit at sunset; or a space station, a module under its cupola with Earth through the windows.
 - **Stone**: on the castle tower, gray or pink.
 - **Summit**: in the fire lookout or on the castle tower, with terrain downloaded, which summit it stands on, or the forest sunset.
 - **Turn Lookout**: with a summit picked, a compass dial for which way the cab faces, so the screen looks out over another part of the view. Tap one of its sixteen marks, a sixteenth of a turn (22.5°) apart, or drag round it and let go. The eighths are drawn larger. The caption under it says which way the cab faces. The cab on the 3D map turns with it.

@@ -83,6 +83,8 @@ What's outside the room, and much of its light, comes from an HDRI: a 360° phot
 
 An environment whose outside the app may replace, as it replaces the fire lookout's with real terrain, renders with `render_room(..., cutout=True)`: the HDRI still lights the room, but the image is left transparent wherever the camera saw past the room's geometry, glass included. The app then shows a sky sphere behind it, rendered from an HDRI alone by `sky.py` (a `sky <name> <hdri file> <rotation> <strength>` line in `build.sh`), and `CinemaEnvironment` says which sky images the environment has and where their sun is. The castle tower is lit by the same HDRI at the same turn as the fire lookout, so it uses the lookout's skies.
 
+A room with no HDRI at all, lit only by its own lights, passes `None` for the HDRI: `render_room(build, None, cutout=True)`. Its world is black and gives no light. The space station does this: its view out of the cupola is rendered by its own script, `space_earth.py`, with a `painted <name> <script>` line in `build.sh`. The station's racks, cupola and lights and the Earth view share where Earth and the sun are through `orbit.py`.
+
 An environment built in more than one stone or color renders once per variant with `stone_environment <script> <variant>` in `build.sh`, which passes `--stone <variant>` to the script, writes `<script>_<variant>.heic`, and ships one `<script>_anchors.json` for all of them. The castle tower does this for gray and pink.
 
 ## Rules for assets
