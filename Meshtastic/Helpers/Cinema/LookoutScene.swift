@@ -11,8 +11,10 @@ import OSLog
 import RealityKit
 import SwiftData
 
-/// What the fire lookout can look out on: the summits in the terrain downloaded for the spatial
-/// map, the terrain around the one chosen, and the nodes placed by bearing and distance from it.
+/// What the fire lookout, the castle tower and the city rooftop can look out on: the summits in the
+/// terrain downloaded for the spatial map, or the tallest buildings in its basemaps for the
+/// rooftop, the terrain (and for a rooftop, the city) around the one chosen, and the nodes placed
+/// by bearing and distance from it.
 @MainActor
 @Observable
 final class LookoutScene {
@@ -22,10 +24,13 @@ final class LookoutScene {
 		case searching
 		case noTerrain
 		case noSummits
+		/// No building with a height in the downloaded basemaps, for the rooftop.
+		case noBuildings
 		case ready
 	}
 
-	/// The highest mountains in the downloaded terrain, highest first. Empty with no terrain.
+	/// The highest mountains in the downloaded terrain, highest first, or for the rooftop the
+	/// tallest buildings, tallest first. Empty with no terrain.
 	private(set) var sites: [LookoutSite] = []
 	private(set) var status: Status = .idle
 	/// The nodes out the windows, for the site the terrain was built for.
@@ -38,16 +43,16 @@ final class LookoutScene {
 	private var preparing: Task<Void, Never>?
 	/// Bumped by `forgetSites()`, so a search that started before it doesn't put back what it found.
 	private var generation = 0
-	/// The area the summits were found in, as `areaKey` writes it; nil before a search.
+	/// The area and kind of site the sites were found for, as `areaKey` writes it; nil before a search.
 	private var searchedArea: String?
 
 	/// Reads the downloaded terrain and finds the summits in it, inside `area`: the circle the 3D
 	/// map shows around the mesh. The terrain download reaches well past that circle, and a summit
-	/// out there isn't on the map. Nil searches all the terrain. Does nothing when the summits for
-	/// this area are already found. A call while a search is running waits for that one rather
-	/// than starting another.
-	func prepare(area: SpatialCircle?) async {
-		let key = Self.areaKey(area)
+	/// out there isn't on the map. Nil searches all the terrain. With `kind` rooftop, finds the
+	/// tallest buildings instead. Does nothing when the sites for this area and kind are already
+	/// found. A call while a search is running waits for that one rather than starting another.
+	func prepare(area: SpatialCircle?, kind: LookoutSiteKind = .summit) async {
+		let key = Self.areaKey(area) + "|" + kind.rawValue
 		if key != searchedArea {
 			forgetSites()
 			searchedArea = key
@@ -57,7 +62,7 @@ final class LookoutScene {
 			await preparing.value
 			return
 		}
-		let search = Task { await self.search(area: area) }
+		let search = Task { await self.search(area: area, kind: kind) }
 		preparing = search
 		await search.value
 		// A search started after `forgetSites()` may be the one running now.
@@ -71,7 +76,7 @@ final class LookoutScene {
 		return String(format: "%.2f,%.2f,%.0f", area.latitude, area.longitude, (area.radiusMeters / 1_000).rounded())
 	}
 
-	private func search(area: SpatialCircle?) async {
+	private func search(area: SpatialCircle?, kind: LookoutSiteKind) async {
 		let started = generation
 		status = .searching
 		let manager = OfflineMapManager.shared
@@ -110,21 +115,63 @@ final class LookoutScene {
 		let terrainFiles = Set(sources.flatMap { [$0.globalURL.lastPathComponent] + $0.regionalURLs.map(\.lastPathComponent) })
 		let basemapFiles = Set(OfflineMapManager.persistedRegionFiles().filter { $0.region.hasBasemap }.map(\.url.lastPathComponent))
 		let maps = LookoutSiteCacheKey.maps(in: manager.regions, terrainFiles: terrainFiles, basemapFiles: basemapFiles) + "\n" + Self.areaKey(area)
-		if let kept = LookoutSiteCache.sites(for: maps) {
+		let none: Status = kind == .rooftop ? .noBuildings : .noSummits
+		if let kept = LookoutSiteCache.sites(for: maps, kind: kind) {
 			sites = kept
-			status = sites.isEmpty ? .noSummits : .ready
+			status = sites.isEmpty ? none : .ready
 			Logger.services.info("🎬 [Cinema] Lookout sites: \(self.sites.count, privacy: .public) kept from the last search")
 			return
 		}
-		// The box around the circle has corners outside it; summits there aren't on the map either.
-		let summits = await LookoutTerrain.sites(in: searchBox, source: store, area: area)
-		guard generation == started, !Task.isCancelled else { return }
-		let found = await LookoutPeakNames.named(summits)
+		let found: [LookoutSite]
+		if kind == .rooftop {
+			found = await rooftops(in: Self.rooftopBox(searchBox, area: area))
+		} else {
+			// The box around the circle has corners outside it; summits there aren't on the map either.
+			let summits = await LookoutTerrain.sites(in: searchBox, source: store, area: area)
+			guard generation == started, !Task.isCancelled else { return }
+			found = await LookoutPeakNames.named(summits)
+		}
 		guard generation == started, !Task.isCancelled else { return }
 		sites = found
-		LookoutSiteCache.store(sites, for: maps)
-		status = sites.isEmpty ? .noSummits : .ready
+		LookoutSiteCache.store(sites, for: maps, kind: kind)
+		status = sites.isEmpty ? none : .ready
 		Logger.services.info("🎬 [Cinema] Lookout sites: \(self.sites.count, privacy: .public) in the map's area \(searchBox.minLat, privacy: .public)..\(searchBox.maxLat, privacy: .public), \(searchBox.minLon, privacy: .public)..\(searchBox.maxLon, privacy: .public)")
+	}
+
+	/// The tallest buildings in `box`, each standing on the terrain's ground there. Ones the terrain
+	/// doesn't reach are left out, since there would be no ground to draw round them.
+	private func rooftops(in box: GeoBounds) async -> [LookoutSite] {
+		let files = OfflineMapManager.persistedRegionFiles()
+		let tiles = Self.rooftopSearchTiles
+		let decode = Task.detached(priority: .userInitiated) {
+			SpatialBuildings.decode(bounds: box, files: files, maxTiles: tiles) ?? []
+		}
+		let footprints = await withTaskCancellationHandler { await decode.value } onCancel: { decode.cancel() }
+		let tallest = RooftopSites.tallest(footprints)
+		let grounds = await store.elevations(at: tallest.map(\.coordinate))
+		return zip(tallest, grounds).compactMap { rooftop, ground in
+			ground.map { LookoutSite(latitude: rooftop.coordinate.latitude, longitude: rooftop.coordinate.longitude, elevation: Float($0), name: nil, rooftop: Float(rooftop.height)) }
+		}
+	}
+
+	/// Tiles decoded to find the tallest buildings. The search drops to zoom 13, where only the
+	/// bigger buildings are, before it gives up; the tallest are among them.
+	private static let rooftopSearchTiles = 160
+	/// The rooftop search covers at most this far from the area's center: a city's towers stand
+	/// together, and a bigger box would have no zoom with buildings in few enough tiles.
+	private static let rooftopSearchRadius = 12_000.0
+
+	/// The box the rooftops are searched in: `box`, cut down round the area's center to
+	/// `rooftopSearchRadius`.
+	private static func rooftopBox(_ box: GeoBounds, area: SpatialCircle?) -> GeoBounds {
+		let centerLatitude = area?.latitude ?? (box.minLat + box.maxLat) / 2
+		let centerLongitude = area?.longitude ?? (box.minLon + box.maxLon) / 2
+		let dLat = rooftopSearchRadius / SpatialFrame.metersPerDegreeLatitude
+		let dLon = dLat / max(0.01, cos(centerLatitude * .pi / 180))
+		return GeoBounds(
+			minLon: max(box.minLon, centerLongitude - dLon), minLat: max(box.minLat, centerLatitude - dLat),
+			maxLon: min(box.maxLon, centerLongitude + dLon), maxLat: min(box.maxLat, centerLatitude + dLat)
+		)
 	}
 
 	/// Drops the summits found so far, after the downloaded maps changed, so the next
@@ -144,9 +191,10 @@ final class LookoutScene {
 		sites.first { $0.id == id }
 	}
 
-	/// The site with this id, or the one a new search found close to where it was.
-	func site(near id: String) -> LookoutSite? {
-		site(for: id) ?? SpatialLookout.nearest(to: id, in: sites) { $0.coordinate }
+	/// The site with this id, or the one a new search found close to where it was: within 500 m for
+	/// a summit, and 30 m for a rooftop, since the next tower over can be closer than 500 m.
+	func site(near id: String, kind: LookoutSiteKind = .summit) -> LookoutSite? {
+		site(for: id) ?? SpatialLookout.nearest(to: id, in: sites, within: kind == .rooftop ? 30 : SpatialLookout.sameSiteDistance) { $0.coordinate }
 	}
 
 	/// The terrain around `site` as an entity, or nil if it can't be built.
@@ -162,10 +210,41 @@ final class LookoutScene {
 		let landCover = await withTaskCancellationHandler { await build.value } onCancel: { build.cancel() }
 		if Task.isCancelled { return nil }
 		guard let model = await LookoutTerrain.build(site: site, bounds: bounds, source: store, landCover: landCover, heading: heading, sun: sun) else { return nil }
+		let entity: ModelEntity
 		do {
-			return try await LookoutTerrain.entity(for: model)
+			entity = try await LookoutTerrain.entity(for: model)
 		} catch {
 			Logger.services.error("🎬 [Cinema] Couldn't make the lookout terrain: \(error.localizedDescription, privacy: .public)")
+			return nil
+		}
+		if site.rooftop != nil, let city = await city(around: site, heading: heading, sun: sun) {
+			entity.addChild(city)
+		}
+		if Task.isCancelled { return nil }
+		return entity
+	}
+
+	/// The buildings round a rooftop, standing on the terrain. Nil when there are none to draw; the
+	/// terrain shows without them.
+	private func city(around site: LookoutSite, heading: Double, sun: (azimuth: Float, elevation: Float)) async -> ModelEntity? {
+		let box = RooftopCity.bounds(around: site)
+		let files = OfflineMapManager.persistedRegionFiles()
+		let decode = Task.detached(priority: .userInitiated) {
+			SpatialBuildings.decode(bounds: box, files: files, maxTiles: RooftopCity.maxTiles) ?? []
+		}
+		let footprints = await withTaskCancellationHandler { await decode.value } onCancel: { decode.cancel() }
+		guard !footprints.isEmpty, !Task.isCancelled else { return nil }
+		// Each building stands on the ground at its first corner; the store is asked once for all.
+		let grounds = await store.elevations(at: footprints.map { $0.outline.first ?? site.coordinate })
+		let build = Task.detached(priority: .userInitiated) {
+			RooftopCity.build(site: site, footprints: footprints, grounds: grounds, heading: heading, sun: sun)
+		}
+		guard let model = await withTaskCancellationHandler(operation: { await build.value }, onCancel: { build.cancel() }) else { return nil }
+		Logger.services.info("🎬 [Cinema] Rooftop city: \(model.buildings, privacy: .public) of \(footprints.count, privacy: .public) buildings")
+		do {
+			return try await RooftopCity.entity(for: model)
+		} catch {
+			Logger.services.error("🎬 [Cinema] Couldn't make the rooftop city: \(error.localizedDescription, privacy: .public)")
 			return nil
 		}
 	}

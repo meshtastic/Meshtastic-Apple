@@ -26,18 +26,36 @@ import OSLog
 import RealityKit
 import simd
 
-/// A summit the fire lookout can stand on: one of the highest points in the terrain the app has
-/// downloaded for the spatial map.
+/// What a cinema environment stands on in the downloaded maps.
+enum LookoutSiteKind: String, Sendable {
+	/// A summit in the terrain, with a lookout tower or a castle on it.
+	case summit
+	/// The roof of one of the tallest buildings in the basemaps.
+	case rooftop
+}
+
+/// A place a cinema environment can stand: a summit, one of the highest points in the terrain the
+/// app has downloaded for the spatial map, or the roof of one of the tallest buildings in it.
 struct LookoutSite: Identifiable, Hashable, Codable, Sendable {
 	let latitude: Double
 	let longitude: Double
-	/// Meters above sea level.
+	/// The ground's height above sea level, in meters.
 	let elevation: Float
 	/// The peak's name from the downloaded basemap, if it has one.
 	let name: String?
+	/// On a rooftop, how tall the building is; nil on a summit.
+	var rooftop: Float?
 
+	/// How far above the ground the floor the viewer sits on is: the lookout's tower on a summit, the
+	/// building on a rooftop.
+	var standHeight: Double {
+		rooftop.map(Double.init) ?? LookoutTerrain.cabHeight
+	}
+
+	/// Its place to four decimals on a summit, and to five (about a meter) on a rooftop, so the map
+	/// can find the roof from it.
 	var id: String {
-		String(format: "%.4f,%.4f", latitude, longitude)
+		String(format: rooftop == nil ? "%.4f,%.4f" : "%.5f,%.5f", latitude, longitude)
 	}
 
 	var coordinate: CLLocationCoordinate2D {
@@ -95,7 +113,7 @@ enum LookoutTerrain {
 
 	/// The eye's elevation in the cab on `site`.
 	static func eyeElevation(for site: LookoutSite) -> Double {
-		Double(site.elevation) + cabHeight + eyeHeight
+		Double(site.elevation) + site.standHeight + eyeHeight
 	}
 	/// How far out a point `distance` meters away is drawn: from just past the room sphere to just
 	/// short of the sky, keeping the order of what's near and far.
@@ -344,7 +362,7 @@ enum LookoutTerrain {
 		heading: Double = frontHeading, sun: (azimuth: Float, elevation: Float)
 	) async -> LookoutTerrainModel? {
 		let sampler = Sampler(source: source)
-		let floor = Double(site.elevation) + cabHeight
+		let floor = Double(site.elevation) + site.standHeight
 		let eye = floor + eyeHeight
 		let metersPerDegreeLatitude = SpatialFrame.metersPerDegreeLatitude
 		let metersPerDegreeLongitude = metersPerDegreeLatitude * cos(site.latitude * .pi / 180)
