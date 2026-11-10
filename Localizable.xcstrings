@@ -1019,7 +1019,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Wiadomości poza zasięgiem sieci"
+            "value" : "Komunikacja off-grid"
           }
         }
       }
@@ -1698,7 +1698,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Radio używa własnej szerokości pasma, współczynnika rozpraszania i współczynnika kodowania. Pozostaną, dopóki nie wybierzesz tutaj presetu."
+            "value" : "Radio używa własnej szerokości pasma, spread factor i coding rate. Pozostaną, dopóki nie wybierzesz tutaj presetu."
           }
         }
       }
