@@ -805,6 +805,8 @@ extension SpatialSceneController {
 		if self.roofs?.id != roofs?.id {
 			self.roofs = roofs
 			roofsApplied = false
+			// The rooftop's model stands on the roof, which these may raise or take away.
+			placeLookout()
 		}
 		if buildingsContainer.parent == nil { terrainAnchor.addChild(buildingsContainer) }
 		let current = buildingsContainer.children.first
@@ -830,15 +832,18 @@ extension SpatialSceneController {
 
 // MARK: Fire lookout
 
-/// What stands on the cinema's summit on the map: the fire lookout, or the castle tower in its stone.
+/// What stands where the cinema's room is on the map: the fire lookout or the castle tower in its
+/// stone on a summit, or the city rooftop's water tower and mast on a roof.
 enum SpatialSummitModel: Equatable {
 	case fireLookout
 	case castleTower(CastleStone)
+	case cityRooftop
 
 	var entityName: String {
 		switch self {
 		case .fireLookout: "fireLookout"
 		case let .castleTower(stone): "castleTower-\(stone.rawValue)"
+		case .cityRooftop: "cityRooftop"
 		}
 	}
 
@@ -847,6 +852,7 @@ enum SpatialSummitModel: Equatable {
 		let made = switch self {
 		case .fireLookout: SpatialLookoutParts.make(heading: heading)
 		case let .castleTower(stone): SpatialLookoutParts.makeCastle(heading: heading, stone: stone)
+		case .cityRooftop: SpatialLookoutParts.makeRooftop(heading: heading)
 		}
 		made?.name = entityName
 		return made
@@ -855,8 +861,9 @@ enum SpatialSummitModel: Equatable {
 
 extension SpatialSceneController {
 	/// Stands `model`, the fire lookout or the castle tower, on `coordinate`, the summit the cinema's
-	/// room is on, with its front facing `heading`, or takes it away for nil. Moved onto the new
-	/// ground whenever the terrain is rebuilt.
+	/// room is on, or the rooftop's water tower and mast on the roof there, with its front facing
+	/// `heading`, or takes it away for nil. Moved onto the new ground whenever the terrain is rebuilt,
+	/// and onto the roof whenever the buildings are.
 	func apply(lookout coordinate: CLLocationCoordinate2D?, heading: Double = SpatialLookout.frontHeading, model: SpatialSummitModel = .fireLookout) {
 		guard let placement else { return }
 		let same = coordinate?.latitude == lookoutCoordinate?.latitude && coordinate?.longitude == lookoutCoordinate?.longitude
@@ -888,17 +895,24 @@ extension SpatialSceneController {
 	private static let lookoutClearance: Float = 0.022
 
 	/// On the summit, or stepped aside when nodes stand there, so a repeater on the same peak keeps
-	/// its place and both can be seen.
+	/// its place and both can be seen. The rooftop's model stays on its roof, which a step aside
+	/// could leave, standing on the top of the building drawn there.
 	func placeLookout() {
 		guard let lookout, let placement, let coordinate = lookoutCoordinate else { return }
 		var position = placement.position(coordinate)
-		let clearance = Self.lookoutClearance * counterScale
 		let summit = SIMD2(position.x, position.z)
-		let nearby = pins.values
-			.map { SIMD2($0.holder.position.x, $0.holder.position.z) }
-			.filter { simd_distance($0, summit) < clearance * 2 }
-		if let spot = SpatialLookoutSpot.spot(summit: summit, pins: nearby, clearance: clearance, heading: lookoutHeading) {
-			position = placement.position(placement.transform.coordinate(x: spot.x, z: spot.y))
+		if lookout.name == SpatialSummitModel.cityRooftop.entityName {
+			if let roofs, roofs.revision == placement.revision {
+				position.y = roofs.standHeight(at: summit, ground: position.y)
+			}
+		} else {
+			let clearance = Self.lookoutClearance * counterScale
+			let nearby = pins.values
+				.map { SIMD2($0.holder.position.x, $0.holder.position.z) }
+				.filter { simd_distance($0, summit) < clearance * 2 }
+			if let spot = SpatialLookoutSpot.spot(summit: summit, pins: nearby, clearance: clearance, heading: lookoutHeading) {
+				position = placement.position(placement.transform.coordinate(x: spot.x, z: spot.y))
+			}
 		}
 		lookout.position = position
 		lookout.scale = SIMD3(repeating: counterScale)
