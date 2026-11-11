@@ -156,18 +156,45 @@ enum SpatialBuildings {
 	/// one tall column. An outline with a point of a part inside it (and not in one of its
 	/// courtyards) is left out. Nil when cancelled.
 	static func withoutOutlinesOfParts(_ footprints: [SpatialBuildingFootprint]) -> [SpatialBuildingFootprint]? {
-		let points = footprints.filter(\.isPart).compactMap { interiorPoint($0.outline) }
+		// By latitude, so each outline only tests the points inside its own box: a downtown has
+		// tens of thousands of buildings and thousands of parts.
+		let points = footprints.filter(\.isPart).compactMap { interiorPoint($0.outline) }.sorted { $0.latitude < $1.latitude }
 		guard !points.isEmpty else { return footprints }
 		var kept: [SpatialBuildingFootprint] = []
 		kept.reserveCapacity(footprints.count)
 		for footprint in footprints {
 			if Task.isCancelled { return nil }
-			let coversPart = !footprint.isPart && points.contains { point in
-				contains(footprint.outline, point) && !footprint.holes.contains { contains($0, point) }
+			var coversPart = false
+			if !footprint.isPart, let first = footprint.outline.first {
+				var lower = first, upper = first
+				for corner in footprint.outline {
+					lower = CLLocationCoordinate2D(latitude: min(lower.latitude, corner.latitude), longitude: min(lower.longitude, corner.longitude))
+					upper = CLLocationCoordinate2D(latitude: max(upper.latitude, corner.latitude), longitude: max(upper.longitude, corner.longitude))
+				}
+				var index = firstIndex(in: points, atOrAbove: lower.latitude)
+				while index < points.count, points[index].latitude <= upper.latitude {
+					let point = points[index]
+					if point.longitude >= lower.longitude, point.longitude <= upper.longitude,
+					   contains(footprint.outline, point), !footprint.holes.contains(where: { contains($0, point) }) {
+						coversPart = true
+						break
+					}
+					index += 1
+				}
 			}
 			if !coversPart { kept.append(footprint) }
 		}
 		return kept
+	}
+
+	/// The first index in `points`, sorted by latitude, at or above `latitude`.
+	private static func firstIndex(in points: [CLLocationCoordinate2D], atOrAbove latitude: Double) -> Int {
+		var low = 0, high = points.count
+		while low < high {
+			let middle = (low + high) / 2
+			if points[middle].latitude < latitude { low = middle + 1 } else { high = middle }
+		}
+		return low
 	}
 
 	/// A point inside the outline even when it's concave, where the average of the corners can
