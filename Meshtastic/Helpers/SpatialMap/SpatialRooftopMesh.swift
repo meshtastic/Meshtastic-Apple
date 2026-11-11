@@ -35,7 +35,7 @@ enum SpatialRooftop {
 	private static let builtHeight = max(legHeight + tankHeight + roofHeight, mastHeight + 0.0004)
 	/// The sizes here are drawn small, and on a roof among towers that reads as a speck even zoomed
 	/// all the way in, so the whole water tower and mast are scaled up by this.
-	static let scale: Float = 4
+	static let scale: Float = 3
 	/// From the roof to the top of the mast.
 	static var height: Float { builtHeight * scale }
 	static let triangleBudget = 1_200
