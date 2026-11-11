@@ -103,6 +103,18 @@ struct RooftopSitesTests {
 		#expect(boxes.allSatisfy { $0.minLon >= box.minLon && $0.maxLon <= box.maxLon && $0.minLat >= box.minLat && $0.maxLat <= box.maxLat })
 	}
 
+	@Test("a rooftop past the search box's edge, from a tile reaching over it, gets no box, so none is inside out")
+	func refineBoxesSkipOutside() {
+		let box = GeoBounds(minLon: center.longitude - 0.01, minLat: center.latitude - 0.01, maxLon: center.longitude + 0.01, maxLat: center.latitude + 0.01)
+		let rooftops = RooftopSites.tallest([
+			square(side: 40, height: 200),
+			square(side: 40, east: 3_000, height: 250)
+		])
+		let boxes = RooftopSites.refineBoxes(around: rooftops, within: box)
+		#expect(boxes.count == 1)
+		#expect(boxes.allSatisfy { $0.minLon <= $0.maxLon && $0.minLat <= $0.maxLat })
+	}
+
 	@Test("a roof's area is measured in square meters")
 	func roofArea() {
 		#expect(abs(RooftopSites.roofArea(square(side: 20, height: 10).outline) - 400) < 4)
