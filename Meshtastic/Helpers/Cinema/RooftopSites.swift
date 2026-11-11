@@ -73,9 +73,13 @@ enum RooftopSites {
 	}
 
 	/// A box `radius` round each rooftop, kept inside `box`, with boxes that overlap joined into one,
-	/// so no tile is read twice for neighboring towers.
+	/// so no tile is read twice for neighboring towers. A rooftop outside `box` gets none: the first
+	/// pass reads whole tiles, which reach past the box, and its box cut to `box` would be inside out.
 	static func refineBoxes(around rooftops: [Rooftop], within box: GeoBounds, radius: Double = refineRadius) -> [GeoBounds] {
-		var boxes: [GeoBounds] = rooftops.map { rooftop in
+		let inside = rooftops.filter {
+			(box.minLat...box.maxLat).contains($0.coordinate.latitude) && (box.minLon...box.maxLon).contains($0.coordinate.longitude)
+		}
+		var boxes: [GeoBounds] = inside.map { rooftop in
 			let latitude = radius / SpatialFrame.metersPerDegreeLatitude
 			let longitude = latitude / cos(rooftop.coordinate.latitude * .pi / 180)
 			return GeoBounds(
