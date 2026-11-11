@@ -220,9 +220,21 @@ enum SpatialLookoutParts {
 			material.baseColor = .init(tint: UIColor(red: 0.62, green: 0.43, blue: 0.17, alpha: 1))
 			material.metallic = 0.35
 			material.roughness = 0.35
+		case .rollout:
+			// The newer cells' deep blue, with the sheen of glass over them.
+			material.baseColor = .init(tint: UIColor(red: 0.1, green: 0.13, blue: 0.27, alpha: 1))
+			material.metallic = 0.4
+			material.roughness = 0.25
 		case .radiator:
 			material.baseColor = .init(tint: UIColor(white: 0.95, alpha: 1))
 			material.roughness = 0.7
+		case .arm:
+			material.baseColor = .init(tint: UIColor(white: 0.93, alpha: 1))
+			material.roughness = 0.5
+		case .dark:
+			material.baseColor = .init(tint: UIColor(white: 0.22, alpha: 1))
+			material.metallic = 0.5
+			material.roughness = 0.5
 		case .module:
 			material.baseColor = .init(tint: UIColor(red: 0.9, green: 0.9, blue: 0.87, alpha: 1))
 			material.roughness = 0.6
