@@ -32,7 +32,12 @@ enum SpatialRooftop {
 	static let mastCenter = SIMD2<Float>(0.0042, -0.0008)
 	static let mastHeight: Float = 0.0165
 	static let boomLength: Float = 0.0070
-	static let height = max(legHeight + tankHeight + roofHeight, mastHeight + 0.0004)
+	private static let builtHeight = max(legHeight + tankHeight + roofHeight, mastHeight + 0.0004)
+	/// The sizes here are drawn small, and on a roof among towers that reads as a speck even zoomed
+	/// all the way in, so the whole water tower and mast are scaled up by this.
+	static let scale: Float = 3
+	/// From the roof to the top of the mast.
+	static var height: Float { builtHeight * scale }
 	static let triangleBudget = 1_200
 
 	static func geometry() -> [Part: SpatialMeshData] {
@@ -79,6 +84,9 @@ enum SpatialRooftop {
 			steel.addStrut(from: point - SIMD3(length / 2, 0, 0), to: point + SIMD3(length / 2, 0, 0), width: 0.00016)
 		}
 		parts[.steel] = steel
+		for part in Part.allCases {
+			if let scaled = parts[part]?.positions.map({ $0 * scale }) { parts[part]?.positions = scaled }
+		}
 		return parts
 	}
 }

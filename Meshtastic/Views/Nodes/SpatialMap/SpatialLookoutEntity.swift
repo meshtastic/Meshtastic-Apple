@@ -101,15 +101,17 @@ enum SpatialLookoutParts {
 	private static func rooftopMaterial(_ part: SpatialRooftop.Part) -> PhysicallyBasedMaterial {
 		var material = PhysicallyBasedMaterial()
 		switch part {
+		// Light, like the water tower on the cinema's deck, so it reads against the gray buildings.
 		case .staves:
-			material.baseColor = .init(tint: UIColor(red: 0.42, green: 0.28, blue: 0.17, alpha: 1))
-			material.roughness = 0.85
+			material.baseColor = .init(tint: UIColor(red: 0.72, green: 0.56, blue: 0.4, alpha: 1))
+			material.roughness = 0.8
 		case .roof:
-			material.baseColor = .init(tint: UIColor(red: 0.16, green: 0.14, blue: 0.13, alpha: 1))
-			material.roughness = 0.7
+			material.baseColor = .init(tint: UIColor(red: 0.55, green: 0.55, blue: 0.57, alpha: 1))
+			material.metallic = 0.3
+			material.roughness = 0.5
 		case .steel:
-			material.baseColor = .init(tint: UIColor(red: 0.5, green: 0.51, blue: 0.52, alpha: 1))
-			material.metallic = 0.8
+			material.baseColor = .init(tint: UIColor(red: 0.68, green: 0.69, blue: 0.7, alpha: 1))
+			material.metallic = 0.5
 			material.roughness = 0.4
 		}
 		return material

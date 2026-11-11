@@ -28,6 +28,8 @@ struct CinemaPanel: View {
 	/// Whether the 3D map is showing or on its way; the button to open it is only there while not.
 	let spatialMapOpen: Bool
 	let onOpenSpatialMap: () -> Void
+	/// Opens the 3D map zoomed in on the city rooftop, with the buildings on.
+	let onShowRooftop: () -> Void
 	let onLeave: () -> Void
 
 	var body: some View {
@@ -57,7 +59,10 @@ struct CinemaPanel: View {
 				}
 				.pickerStyle(.menu)
 				if !siteID.isEmpty {
-					LookoutTurnDial(turns: $turns)
+					LookoutTurnDial(title: environment.turnDialTitle, turns: $turns)
+					Button(action: onShowRooftop) {
+						Label(String(localized: "Show Rooftop", comment: "Cinema: button that opens the 3D map zoomed in on the city rooftop, with the buildings on"), systemImage: "building.2.crop.circle")
+					}
 				}
 			} else if environment.standsOnSummit, !sites.isEmpty {
 				Picker(String(localized: "Summit", comment: "Cinema: picker for the summit the fire lookout stands on"), selection: $siteID) {
@@ -71,7 +76,7 @@ struct CinemaPanel: View {
 				// The world turns round the cab, so the screen looks out over another part of the
 				// view. The forest sunset is painted, so there's nothing to turn there.
 				if !siteID.isEmpty {
-					LookoutTurnDial(turns: $turns)
+					LookoutTurnDial(title: environment.turnDialTitle, turns: $turns)
 				}
 			} else if environment.siteKind != nil, let lookoutNote {
 				Text(verbatim: lookoutNote)

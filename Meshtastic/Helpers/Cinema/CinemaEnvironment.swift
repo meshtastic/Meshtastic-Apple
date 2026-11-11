@@ -106,6 +106,16 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 		siteKind == .summit
 	}
 
+	/// The title over the panel's dial that turns the room on its site.
+	var turnDialTitle: String {
+		switch self {
+		case .cityRooftop:
+			String(localized: "Turn Rooftop", comment: "Cinema: title over the dial that turns the city rooftop, so the screen looks out over another part of the view")
+		default:
+			String(localized: "Turn Lookout", comment: "Cinema: title over the dial that turns the fire lookout, so the screen looks out over another part of the view")
+		}
+	}
+
 	/// Whether the boards are scrolls that roll up out of the view.
 	var hasScrolls: Bool {
 		self == .castleTower

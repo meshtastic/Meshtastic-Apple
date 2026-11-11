@@ -52,9 +52,9 @@ While the castle stands on a summit, the 3D map shows a castle tower on the summ
 
 The fifth place is the roof deck of a tall downtown building at sunset: wood decking with a glass railing round its edges, so the city shows past it on three sides, a wooden water tower and an air conditioning unit behind you, string lights overhead, and an antenna mast with a Yagi and a Solar Node. The screen is on the front wall of the stairwell, with Team Favorites to its left and the latest trace route to its right. The Status Board is the sandwich board standing on the deck to your right.
 
-If you've downloaded a map with terrain for the [3D map](map.md), the city past the railing can be the real one. The control panel's **Rooftop** picker lists up to 12 of the tallest buildings around the mesh whose heights are in the map, tallest first, with how far each is from your radio and which way. Pick one and the deck stands on its roof, with the real buildings out to about 3.5 km round it, standing on the real terrain, and the terrain beyond, lit by the same sunset. Every node with a position gets a marker and a card, as from the fire lookout, and the **Turn Lookout** dial turns the view. **City skyline** puts the painted city back, which is also what shows with no map downloaded.
+If you've downloaded a map with terrain for the [3D map](map.md), the city past the railing can be the real one. The control panel's **Rooftop** picker lists up to 12 of the tallest buildings around the mesh whose heights are in the map, tallest first, with how far each is from your radio and which way. Pick one and the deck stands on its roof, with the real buildings out to about 3.5 km round it, standing on the real terrain, and the terrain beyond, lit by the same sunset. Every node with a position gets a marker and a card, as from the fire lookout, and the **Turn Rooftop** dial turns the view. **City skyline** puts the painted city back, which is also what shows with no map downloaded.
 
-While the deck stands on a roof, the 3D map shows a small water tower and the mast with its Yagi on that roof, on top of the building when **Buildings** is on.
+While the deck stands on a roof, the 3D map shows a small water tower and the mast with its Yagi on that roof, on top of the building when **Buildings** is on. The panel's **Show Rooftop** button opens the 3D map zoomed all the way in on that roof, with **Buildings** turned on, so you can find it among the towers.
 
 ## Control panel
 
@@ -62,7 +62,8 @@ While the deck stands on a roof, the 3D map shows a small water tower and the ma
 - **Stone**: on the castle tower, gray or pink.
 - **Summit**: in the fire lookout or on the castle tower, with terrain downloaded, which summit it stands on, or the forest sunset.
 - **Rooftop**: on the city rooftop, with terrain downloaded, which building it stands on, or the painted city skyline.
-- **Turn Lookout**: with a summit or a rooftop picked, a compass dial for which way the cab faces, so the screen looks out over another part of the view. Tap one of its sixteen marks, a sixteenth of a turn (22.5°) apart, or drag round it and let go. The eighths are drawn larger. The caption under it says which way the cab faces. The cab on the 3D map turns with it.
+- **Show Rooftop**: on the city rooftop, with a building picked, opens the 3D map zoomed in on its roof with **Buildings** on.
+- **Turn Lookout** (**Turn Rooftop** on the city rooftop): with a summit or a rooftop picked, a compass dial for which way the cab faces, so the screen looks out over another part of the view. Tap one of its sixteen marks, a sixteenth of a turn (22.5°) apart, or drag round it and let go. The eighths are drawn larger. The caption under it says which way the cab faces. The cab on the 3D map turns with it.
 - **Open 3D Map**: shown while the 3D map is closed.
 - **Move it**: pinch the bar under the panel and drag it wherever you want it.
 - **Leave**: closes the tent and brings back the app's window.

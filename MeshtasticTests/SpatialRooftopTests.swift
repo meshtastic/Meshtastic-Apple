@@ -39,8 +39,8 @@ struct SpatialRooftopTests {
 		let total = parts.values.map(\.triangleCount).reduce(0, +)
 		#expect(total > 100 && total < SpatialRooftop.triangleBudget, "\(total)")
 		let ys = parts.values.flatMap { $0.positions.map(\.y) }
-		#expect(abs(try #require(ys.min())) < 0.0002)
-		#expect(abs(try #require(ys.max()) - SpatialRooftop.height) < 0.0003)
+		#expect(abs(try #require(ys.min())) < 0.0002 * SpatialRooftop.scale)
+		#expect(abs(try #require(ys.max()) - SpatialRooftop.height) < 0.0003 * SpatialRooftop.scale)
 		for (part, mesh) in parts {
 			#expect(mesh.triangleCount > 0, "\(part)")
 			#expect(mesh.positions.count == mesh.normals.count, "\(part)")

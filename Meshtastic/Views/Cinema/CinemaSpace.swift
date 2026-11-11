@@ -118,6 +118,9 @@ struct CinemaSpace: View {
 				// show for the second in between.
 				CinemaPanel(environment: $environment, stone: $stone, sites: lookout.sites, siteID: siteIDBinding, turns: $lookoutTurns, radioCoordinate: radioCoordinate, lookoutNote: lookoutNote, spatialMapOpen: appState.spatialMapWindowCount > 0 || appState.spatialMapReopening) {
 					openWindow(id: SpatialMapScene.id, value: SpatialMapSceneKey.shared)
+				} onShowRooftop: {
+					appState.spatialMapRooftop = SpatialMapRooftopRequest()
+					openWindow(id: SpatialMapScene.id, value: SpatialMapSceneKey.shared)
 				} onLeave: {
 					Task { await dismissImmersiveSpace() }
 				}
