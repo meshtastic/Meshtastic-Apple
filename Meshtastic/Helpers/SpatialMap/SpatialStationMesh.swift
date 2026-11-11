@@ -33,7 +33,7 @@ enum SpatialStation {
 	static let trussWidth: Float = 0.0034
 	/// The solar wings: pairs out along z from the truss at these points along it, each wing this
 	/// wide along the truss and this long out from it.
-	static let wingStations: [Float] = [-0.058, -0.045, 0.045, 0.058]
+	static let wingStations: [Float] = [-0.0535, -0.0415, 0.0415, 0.0535]
 	static let wingWidth: Float = 0.0105
 	static let wingLength: Float = 0.034
 	static let wingGap: Float = 0.003

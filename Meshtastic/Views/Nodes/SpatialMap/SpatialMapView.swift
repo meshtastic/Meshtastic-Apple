@@ -41,15 +41,6 @@ struct SpatialMapView: View {
 	@AppStorage(CastleStone.key) private var castleStone: CastleStone = .gray
 	@Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-	/// What stands where the cinema's room is.
-	private var summitModel: SpatialSummitModel {
-		switch cinemaEnvironment {
-		case .castleTower: .castleTower(castleStone)
-		case .cityRooftop: .cityRooftop
-		default: .fireLookout
-		}
-	}
-
 	var body: some View {
 		GeometryReader3D { proxy in
 			RealityView { content, _ in
