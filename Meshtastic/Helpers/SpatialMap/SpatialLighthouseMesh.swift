@@ -10,9 +10,9 @@ import simd
 /// The lighthouse the cinema's lantern room is in, drawn on the spatial map at the headland chosen
 /// for it, as the fire lookout is on its summit: a white tower tapering up from a stone plinth, a
 /// door at its foot and small windows up it, a railed gallery at the top, and over that the lantern,
-/// glazed all round and lit, under a red dome with a ventilator and a lightning rod. About as tall
-/// as the lookout and on about its footprint, so it steps aside from a node on the same headland
-/// the same way.
+/// glazed all round and lit, under a red dome with a ventilator and a lightning rod. Taller than
+/// the lookout and about as wide as its cab, and well inside the room the map keeps clear round
+/// it, so it steps aside from a node on the same headland the same way.
 enum SpatialLighthouse {
 	/// The parts drawn in their own material.
 	enum Part: CaseIterable {
@@ -59,8 +59,13 @@ enum SpatialLighthouse {
 	static var glassTop: Float { glassBottom + glassHeight }
 	static var domeBottom: Float { glassTop + corniceHeight }
 	static var domeTop: Float { domeBottom + domeRise }
+	/// From the ground to the tip of the lightning rod, before it's scaled up.
+	private static var builtHeight: Float { domeTop + ventHeight + rodHeight }
+	/// The sizes here are drawn at about the lookout's height, but a tower that slender reads as
+	/// tiny beside the lookout's wide cab, so the whole lighthouse is scaled up by this.
+	static let scale: Float = 1.6
 	/// From the ground to the tip of the lightning rod.
-	static var height: Float { domeTop + ventHeight + rodHeight }
+	static var height: Float { builtHeight * scale }
 
 	/// Half the tower's width at height `y` above the plinth, narrowing up to the gallery.
 	static func towerRadius(at y: Float) -> Float {
@@ -135,12 +140,15 @@ enum SpatialLighthouse {
 		add(.metal) { mesh in
 			mesh.addFrustum(sides: 8, bottomRadius: 0.0004, topRadius: 0.0007, bottom: domeTop - 0.0001, top: domeTop + ventHeight * 0.5)
 			mesh.addFrustum(sides: 8, bottomRadius: 0.0007, topRadius: 0.0002, bottom: domeTop + ventHeight * 0.5, top: domeTop + ventHeight)
-			mesh.addStrut(from: [0, domeTop + ventHeight - 0.0001, 0], to: [0, height, 0], width: 0.00018)
+			mesh.addStrut(from: [0, domeTop + ventHeight - 0.0001, 0], to: [0, builtHeight, 0], width: 0.00018)
 		}
 
 		// The struts' corners stick a hair below the ground where they lean; stand it on y = 0.
 		let lowest = parts.values.flatMap { $0.positions.map(\.y) }.min() ?? 0
-		for part in Part.allCases { parts[part]?.translate(by: [0, -lowest, 0]) }
+		for part in Part.allCases {
+			parts[part]?.translate(by: [0, -lowest, 0])
+			if let scaled = parts[part]?.positions.map({ $0 * scale }) { parts[part]?.positions = scaled }
+		}
 		return parts
 	}
 

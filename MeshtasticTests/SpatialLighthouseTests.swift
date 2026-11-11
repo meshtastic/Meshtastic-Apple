@@ -45,12 +45,12 @@ struct SpatialLighthouseTests {
 		}
 	}
 
-	@Test("about as tall as the fire lookout and on about its footprint, so it steps aside from a node the same way")
+	@Test("taller than the fire lookout and about as wide as its cab, so it doesn't look tiny beside it")
 	func lookoutSized() throws {
-		#expect(abs(SpatialLighthouse.height - SpatialLookout.height) < 0.008)
+		#expect(SpatialLighthouse.height > SpatialLookout.height * 1.3)
 		let xs = SpatialLighthouse.geometry().values.flatMap { $0.positions.map(\.x) }
 		let half = max(abs(try #require(xs.min())), try #require(xs.max()))
-		#expect(half <= SpatialLookout.deckHalf)
+		#expect(half >= SpatialLookout.cabHalf && half <= SpatialLookout.deckHalf * 1.4)
 	}
 
 	@Test("the door and windows are on the back, away from the lantern's front")
