@@ -34,6 +34,20 @@ enum SpatialSkyDeck {
 	static var height: Float { boxHeight * scale }
 	static let triangleBudget = 600
 
+	/// Where the cinema keeps the chosen deck's tower height in meters and the bearing it hangs out
+	/// along, "height,facing", for the map to hang its box at the roof and against the face.
+	static let towerKey = "cinemaSkyDeckTower"
+
+	static func tower(_ value: String) -> (height: Double, facing: Double)? {
+		let parts = value.split(separator: ",")
+		guard parts.count == 2, let height = Double(parts[0]), let facing = Double(parts[1]) else { return nil }
+		return (height, facing)
+	}
+
+	static func tower(height: Double, facing: Double) -> String {
+		"\(height),\(facing)"
+	}
+
 	static func geometry() -> [Part: SpatialMeshData] {
 		var parts: [Part: SpatialMeshData] = [:]
 		for part in Part.allCases { parts[part] = SpatialMeshData() }

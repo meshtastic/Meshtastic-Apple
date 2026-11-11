@@ -157,6 +157,8 @@ final class SpatialSceneController {
 	private var lookoutCoordinate: CLLocationCoordinate2D?
 	private var lookoutPlacementRevision = -1
 	private var lookoutHeading = SpatialLookout.frontHeading
+	/// The sky deck's tower height in meters, its box hung at that roof.
+	private var lookoutTowerHeight: Double?
 	/// The space station floating over the mesh while the cinema's room is the station: the entity
 	/// placed over the map's middle, the one turning round it, what they were last set up for, and
 	/// the highest ground under the map for the placement it was found for.
@@ -878,13 +880,14 @@ extension SpatialSceneController {
 	/// summit or headland the cinema's room is on, or the rooftop's water tower and mast on the roof
 	/// there, with its front facing `heading`, or takes it away for nil. Moved onto the new ground
 	/// whenever the terrain is rebuilt, and onto the roof whenever the buildings are.
-	func apply(lookout coordinate: CLLocationCoordinate2D?, heading: Double = SpatialLookout.frontHeading, model: SpatialSummitModel = .fireLookout) {
+	func apply(lookout coordinate: CLLocationCoordinate2D?, heading: Double = SpatialLookout.frontHeading, model: SpatialSummitModel = .fireLookout, towerHeight: Double? = nil) {
 		guard let placement else { return }
 		let same = coordinate?.latitude == lookoutCoordinate?.latitude && coordinate?.longitude == lookoutCoordinate?.longitude
 		// The model up is told by its entity's name.
 		let modelChanged = lookout.map { $0.name != model.entityName } ?? false
-		guard !same || placement.revision != lookoutPlacementRevision || heading != lookoutHeading || modelChanged else { return }
+		guard !same || placement.revision != lookoutPlacementRevision || heading != lookoutHeading || modelChanged || towerHeight != lookoutTowerHeight else { return }
 		lookoutCoordinate = coordinate
+		lookoutTowerHeight = towerHeight
 		lookoutPlacementRevision = placement.revision
 		if heading != lookoutHeading || modelChanged {
 			lookoutHeading = heading
@@ -920,13 +923,13 @@ extension SpatialSceneController {
 				position.y = roofs.standHeight(at: summit, ground: position.y)
 			}
 		} else if lookout.name == SpatialSummitModel.skyDeck.entityName {
-			// Back against the tower's face, its top at the roof: the roof is read just inside the
-			// face, since the seat itself is out past it.
-			let face = RooftopSites.face(behind: coordinate, facing: lookoutHeading)
-			position = placement.position(face)
-			let inside = placement.position(RooftopSites.tower(behind: coordinate, facing: lookoutHeading))
-			if let roofs, roofs.revision == placement.revision, let top = roofs.top(at: SIMD2(inside.x, inside.z)), top > position.y {
-				position.y = top - SpatialSkyDeck.height * counterScale
+			// Back against the tower's face, its top at the roof: the tower's height over the ground
+			// inside the face, scaled as the buildings drawn on the map are.
+			position = placement.position(RooftopSites.face(behind: coordinate, facing: lookoutHeading))
+			if let towerHeight = lookoutTowerHeight {
+				let ground = placement.position(RooftopSites.tower(behind: coordinate, facing: lookoutHeading)).y
+				let roof = ground + Float(towerHeight * placement.transform.verticalExaggeration * placement.transform.scale)
+				position.y = max(position.y, roof - SpatialSkyDeck.height * counterScale)
 			}
 		} else {
 			let clearance = Self.lookoutClearance * counterScale

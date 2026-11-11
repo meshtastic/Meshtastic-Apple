@@ -65,6 +65,7 @@ struct CinemaSpace: View {
 	@AppStorage(LookoutSiteKind.coast.turnsKey) private var coastTurns = 0
 	@AppStorage(LookoutSiteKind.rooftop.turnsKey) private var rooftopTurns = 0
 	@AppStorage(LookoutSiteKind.skyDeck.turnsKey) private var skyDeckTurns = 0
+	@AppStorage(SpatialSkyDeck.towerKey) private var skyDeckTower = ""
 	@State private var terrain: ModelEntity?
 	/// The site the terrain and labels are built for; nil for the painted sunset.
 	@State private var terrainSiteID: String?
@@ -241,6 +242,12 @@ struct CinemaSpace: View {
 			// A sky deck looks out from its tower's face: the screen turns to face out with it.
 			if let facing = lookout.site(for: skyDeckSiteID)?.facing {
 				skyDeckTurns = SpatialLookout.turns(nearest: facing)
+			}
+		}
+		.onChange(of: lookout.site(for: skyDeckSiteID), initial: true) { _, site in
+			// The map hangs its deck at this tower's roof, against the face it looks out from.
+			if let site, let height = site.rooftop, let facing = site.facing {
+				skyDeckTower = SpatialSkyDeck.tower(height: Double(height), facing: facing)
 			}
 		}
 		// A map deleted or downloaded changes the summits and the terrain around them, so both are

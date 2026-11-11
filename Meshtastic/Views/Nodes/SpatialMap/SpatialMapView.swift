@@ -40,6 +40,7 @@ struct SpatialMapView: View {
 	@AppStorage(LookoutSiteKind.coast.turnsKey) private var coastTurns = 0
 	@AppStorage(LookoutSiteKind.rooftop.turnsKey) private var rooftopTurns = 0
 	@AppStorage(LookoutSiteKind.skyDeck.turnsKey) private var skyDeckTurns = 0
+	@AppStorage(SpatialSkyDeck.towerKey) private var skyDeckTower = ""
 	@AppStorage(CastleStone.key) private var castleStone: CastleStone = .gray
 	@Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -65,7 +66,7 @@ struct SpatialMapView: View {
 				scene.apply(nodes: model.nodes)
 				scene.apply(lookout: cinemaEnvironment.standsOnSite
 					? SpatialLookout.coordinate(siteID: lookoutSiteID).flatMap { model.lookoutStands(on: $0) ? $0 : nil }
-					: nil, heading: SpatialLookout.heading(turns: lookoutTurns), model: summitModel)
+					: nil, heading: lookoutHeading, model: summitModel, towerHeight: skyDeck?.height)
 				scene.apply(station: cinemaEnvironment == .spaceStation, zoom: liveZoom ?? model.zoom, reduceMotion: reduceMotion)
 				scene.apply(target: liveZoom.flatMap { model.circle(forZoom: $0) } ?? model.targetCircle)
 				traffic.applyBaseGlow()
@@ -141,6 +142,16 @@ struct SpatialMapView: View {
 		case .skyDeck: skyDeckSiteID
 		default: summitSiteID
 		}
+	}
+
+	/// The sky deck's tower, when the room is the sky deck: its box hangs at that roof and faces
+	/// out from the face it hangs off, whichever way the room is turned.
+	private var skyDeck: (height: Double, facing: Double)? {
+		cinemaEnvironment == .skyDeck ? SpatialSkyDeck.tower(skyDeckTower) : nil
+	}
+
+	private var lookoutHeading: Double {
+		skyDeck?.facing ?? SpatialLookout.heading(turns: lookoutTurns)
 	}
 
 	private var lookoutTurns: Int {
