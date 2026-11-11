@@ -32,6 +32,9 @@ struct CinemaPanel: View {
 	/// Opens the 3D map zoomed in on the city rooftop, with the buildings on.
 	let onShowRooftop: () -> Void
 	let onLeave: () -> Void
+	/// Which side of Earth is under the space station's cupola, and how fast the ground goes by.
+	@AppStorage(CinemaEarthSide.key) private var earthSide: CinemaEarthSide = .day
+	@AppStorage(CinemaOrbit.speedKey) private var earthSpeed = 1
 
 	var body: some View {
 		VStack(spacing: 12) {
@@ -49,6 +52,23 @@ struct CinemaPanel: View {
 				}
 				.pickerStyle(.segmented)
 				.frame(maxWidth: 260)
+			}
+			if environment == .spaceStation {
+				Picker(String(localized: "Side of Earth", comment: "Cinema: picker for whether the sunlit or the dark side of Earth is under the space station's cupola"), selection: $earthSide) {
+					ForEach(CinemaEarthSide.allCases) { side in
+						Text(side.title).tag(side)
+					}
+				}
+				.pickerStyle(.segmented)
+				.frame(maxWidth: 260)
+				VStack(spacing: 4) {
+					Text("Orbit Speed \(CinemaOrbit.speed(earthSpeed))×", comment: "Cinema: how many times faster than real time Earth goes by under the space station; the argument is the multiple, e.g. 3")
+						.font(.callout)
+					Slider(value: Binding(get: { Double(CinemaOrbit.speed(earthSpeed)) }, set: { earthSpeed = CinemaOrbit.speed(Int($0.rounded())) }), in: 1...Double(CinemaOrbit.maximumSpeed), step: 1) {
+						Text("Orbit Speed", comment: "Cinema: slider for how many times faster than real time Earth goes by under the space station")
+					}
+					.frame(maxWidth: 260)
+				}
 			}
 			if environment.standsOnSite, !sites.isEmpty {
 				Picker(sitePickerTitle, selection: $siteID) {
