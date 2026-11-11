@@ -1072,7 +1072,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Otwiera powłokę na tym węźle, w razie potrzeby najpierw rozpoczynając sesję zdalnej administracji"
+            "value" : "Otwiera powłokę na tym węźle, w razie potrzeby najpierw rozpoczynając sesję zdalnego zarządzania"
           }
         }
       }
@@ -1253,7 +1253,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Sesja zdalnej administracji aktywna"
+            "value" : "Sesja zdalnego zarządzania aktywna"
           }
         }
       }
@@ -4484,7 +4484,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Dzienniki:"
+            "value" : "Logi:"
           }
         }
       }
@@ -18123,7 +18123,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Wysłano Trace Route, nie otrzymano odpowiedzi."
+            "value" : "Wysłano śledzenie trasy, nie otrzymano odpowiedzi."
           }
         }
       }
@@ -21312,7 +21312,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Dziennik jakości powietrza"
+            "value" : "Logi metryk jakości powietrza"
           }
         }
       }
@@ -33918,7 +33918,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Wyczyść dziennik"
+            "value" : "Wyczyść logi"
           }
         }
       }
@@ -39185,7 +39185,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Nie udało się wysłać żądania Local Stats"
+            "value" : "Nie udało się wysłać żądania statystyk lokalnych"
           }
         }
       }
@@ -41319,7 +41319,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Usunąć wszystkie pomiary jakości powietrza?"
+            "value" : "Usunąć wszystkie metryki jakości powietrza?"
           }
         }
       }
@@ -41665,7 +41665,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Usunąć wszystkie pomiary środowiskowe?"
+            "value" : "Usunąć wszystkie metryki środowiskowe?"
           }
         }
       }
@@ -41676,7 +41676,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Usunąć wszystkie pomiary hosta?"
+            "value" : "Usunąć wszystkie statystyki hosta?"
           }
         }
       }
@@ -41710,7 +41710,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Usunąć wszystkie Local Stats?"
+            "value" : "Usunąć wszystkie statystyki lokalne?"
           }
         }
       }
@@ -42425,7 +42425,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Usunąć pomiary zasilania?"
+            "value" : "Usunąć metryki zasilania?"
           }
         }
       }
@@ -43569,7 +43569,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Dziennik czujnika wykrywania"
+            "value" : "Logi czujnika wykrywania"
           }
         }
       }
@@ -44605,7 +44605,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Dziennik pomiarów urządzenia"
+            "value" : "Logi metryk urządzenia"
           }
         }
       }
@@ -52327,7 +52327,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Dziennik pomiarów środowiskowych"
+            "value" : "Logi metryk środowiskowych"
           }
         }
       }
@@ -53484,7 +53484,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Wymień pozycje"
+            "value" : "Poproś o pozycję"
           }
         }
       }
@@ -63349,7 +63349,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Dziennik pomiarów hosta"
+            "value" : "Logi statystyk hosta"
           }
         }
       }
@@ -72325,7 +72325,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Local Stats"
+            "value" : "Statystyki lokalne"
           }
         }
       }
@@ -72359,7 +72359,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Dziennik Local Stats"
+            "value" : "Logi statystyk lokalnych"
           }
         }
       }
@@ -73829,7 +73829,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Dzienniki"
+            "value" : "Logi"
           }
         }
       }
@@ -101038,7 +101038,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Brak pomiarów jakości powietrza"
+            "value" : "Brak metryk jakości powietrza"
           }
         }
       }
@@ -101602,7 +101602,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Brak pomiarów urządzenia"
+            "value" : "Brak metryk urządzenia"
           }
         }
       }
@@ -101768,7 +101768,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Brak pomiarów środowiskowych"
+            "value" : "Brak metryk środowiskowych"
           }
         }
       }
@@ -101949,7 +101949,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Brak pomiarów hosta"
+            "value" : "Brak statystyk hosta"
           }
         }
       }
@@ -101983,7 +101983,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Brak Local Stats"
+            "value" : "Brak statystyk lokalnych"
           }
         }
       }
@@ -102417,7 +102417,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Brak dzienników PAX Counter"
+            "value" : "Brak logów PAX Counter"
           }
         }
       }
@@ -102605,7 +102605,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Brak pomiarów zasilania"
+            "value" : "Brak metryk zasilania"
           }
         }
       }
@@ -103069,7 +103069,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Brak Trace Route"
+            "value" : "Brak śledzeń trasy"
           }
         }
       }
@@ -110306,7 +110306,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Dziennik PAX Counter"
+            "value" : "Logi PAX Counter"
           }
         }
       }
@@ -112280,7 +112280,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Wymiana pozycji nie powiodła się"
+            "value" : "Prośba o pozycję nie powiodła się"
           }
         }
       }
@@ -112689,7 +112689,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Dziennik pozycji"
+            "value" : "Logi pozycji"
           }
         }
       }
@@ -113791,7 +113791,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Dziennik pomiarów zasilania"
+            "value" : "Logi metryk zasilania"
           }
         }
       }
@@ -119301,7 +119301,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Zdalna administracja"
+            "value" : "Zdalne zarządzanie"
           }
         }
       }
@@ -129843,7 +129843,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Wyślij żądanie Local Stats"
+            "value" : "Wyślij żądanie statystyk lokalnych"
           }
         }
       }
@@ -146639,7 +146639,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "To może chwilę potrwać. Odpowiedź pojawi się w dzienniku Trace Route węzła, do którego wysłano żądanie."
+            "value" : "To może chwilę potrwać. Odpowiedź pojawi się w logach śledzenia trasy węzła, do którego wysłano żądanie."
           }
         }
       }
@@ -150119,7 +150119,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Trace Route"
+            "value" : "Śledzenie trasy"
           }
         }
       }
@@ -150295,7 +150295,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Dziennik Trace Route"
+            "value" : "Logi śledzenia trasy"
           }
         }
       }
@@ -150389,7 +150389,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Wysłano Trace Route"
+            "value" : "Wysłano śledzenie trasy"
           }
         }
       }
@@ -150483,7 +150483,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Wysłano Trace Route do %@"
+            "value" : "Wysłano śledzenie trasy do %@"
           }
         }
       }
@@ -150577,7 +150577,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Nie wysłano Trace Route do %@."
+            "value" : "Nie wysłano śledzenia trasy do %@."
           }
         }
       }
@@ -150671,7 +150671,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Trace Route został ograniczony. Możesz wysyłać Trace Route najwyżej raz na 30 sekund."
+            "value" : "Śledzenie trasy zostało ograniczone. Możesz je wysyłać najwyżej raz na 30 sekund."
           }
         }
       }
