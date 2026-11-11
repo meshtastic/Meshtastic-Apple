@@ -501,7 +501,9 @@ def back_wall():
     nodes, links = patch.node_tree.nodes, patch.node_tree.links
     tex = next(node for node in nodes if node.type == "TEX_IMAGE")
     links.new(tex.outputs["Alpha"], nodes["Principled BSDF"].inputs["Alpha"])
-    plane("Patch", 0.34, 0.34, (0, y + 0.105, 1.8), (math.pi / 2, 0, math.pi), patch)
+    # Between the hatch frame's top (1.59 m) and the light fixture overhead, so the whole patch
+    # shows when the viewer looks back.
+    plane("Patch", 0.3, 0.3, (0, y + 0.105, 1.755), (math.pi / 2, 0, math.pi), patch)
     poster = image_material("Chirpy", os.path.join(CACHE, "chirpy_poster.png"), 0.6)
     plane("Chirpy", 0.42, 0.59, (1.0, y + 0.105, 1.3), (math.pi / 2, 0, math.pi), poster)
     for dx, dz in ((-0.19, 0.27), (0.19, 0.27), (-0.19, -0.27), (0.19, -0.27)):
