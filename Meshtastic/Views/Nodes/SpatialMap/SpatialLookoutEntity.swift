@@ -235,6 +235,12 @@ enum SpatialLookoutParts {
 			material.baseColor = .init(tint: UIColor(white: 0.22, alpha: 1))
 			material.metallic = 0.5
 			material.roughness = 0.5
+		case .logo:
+			// Meshtastic green, glowing a little so it reads in the station's shade.
+			material.baseColor = .init(tint: UIColor(red: 103 / 255, green: 234 / 255, blue: 148 / 255, alpha: 1))
+			material.emissiveColor = .init(color: UIColor(red: 103 / 255, green: 234 / 255, blue: 148 / 255, alpha: 1))
+			material.emissiveIntensity = 0.3
+			material.roughness = 0.4
 		case .module:
 			material.baseColor = .init(tint: UIColor(red: 0.9, green: 0.9, blue: 0.87, alpha: 1))
 			material.roughness = 0.6

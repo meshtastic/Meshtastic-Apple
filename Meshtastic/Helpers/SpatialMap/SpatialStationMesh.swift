@@ -36,6 +36,8 @@ enum SpatialStation {
 		case arm
 		/// Payload carriers, Kibo's outdoor platform and Dragon's trunk.
 		case dark
+		/// The Meshtastic mark on the plate over the truss's middle.
+		case logo
 	}
 
 	/// The truss, along x.
@@ -130,8 +132,10 @@ enum SpatialStation {
 					}
 				}
 			}
+			// The plate over the middle the Meshtastic mark stands on.
+			mesh.addBox(center: [0, tw * 1.15 + 0.00015, 0], x * logoWidth * 0.55, up * 0.00015, z * logoWidth * 0.31)
 			// Canadarm2's mobile base on the truss's front face.
-			mesh.addBox(center: [0.008, tw + 0.0004, tw * 0.4], x * 0.0022, up * 0.0004, z * 0.0022)
+			mesh.addBox(center: [0.0108, tw + 0.0004, tw * 0.4], x * 0.0022, up * 0.0004, z * 0.0022)
 		}
 
 		// Eight wings, each two blankets either side of its mast, in panels of cells.
@@ -268,9 +272,9 @@ enum SpatialStation {
 
 		add(.arm) { mesh in
 			// Canadarm2 reaching out from its base: two booms between its joints.
-			let shoulder = SIMD3<Float>(0.008, tw + 0.0012, tw * 0.4)
-			let elbow = SIMD3<Float>(0.0115, 0.0085, 0.0062)
-			let wrist = SIMD3<Float>(0.0145, 0.0034, 0.0128)
+			let shoulder = SIMD3<Float>(0.0108, tw + 0.0012, tw * 0.4)
+			let elbow = SIMD3<Float>(0.0143, 0.0085, 0.0062)
+			let wrist = SIMD3<Float>(0.0173, 0.0034, 0.0128)
 			mesh.addTube(from: shoulder - up * 0.0004, to: shoulder + up * 0.0004, radius: 0.0005, sides: 10)
 			mesh.addTube(from: shoulder, to: elbow, radius: 0.00028, sides: 8)
 			mesh.addTube(from: elbow - x * 0.0004, to: elbow + x * 0.0004, radius: 0.0005, sides: 10)
@@ -298,8 +302,29 @@ enum SpatialStation {
 			mesh.addTube(from: [0, y, 0.0185], to: [0, y, 0.0189], radius: 0.0021, sides: 18)
 			mesh.addTube(from: [0, y, 0.0189], to: [0, y, 0.0218], radius: 0.0020, sides: 18)
 		}
+		add(.logo) { mesh in
+			// The Meshtastic mark, read from the front, standing proud of its plate: the slash and
+			// the two legs of the peak, each a convex piece.
+			let bottom = tw * 1.15 + 0.0003
+			for piece in logoOutline {
+				let outline = piece.map { SIMD2<Float>($0.x * logoWidth, -$0.y * logoWidth) }
+				let middle = outline.reduce(.zero, +) / Float(outline.count)
+				let ordered = outline.sorted { atan2($0.y - middle.y, $0.x - middle.x) < atan2($1.y - middle.y, $1.x - middle.x) }
+				mesh.addPrism(outline: ordered, bottom: bottom, top: bottom + 0.00025)
+			}
+		}
 		return parts
 	}
+
+	/// How wide the Meshtastic mark is on the plate over the truss's middle.
+	static let logoWidth: Float = 0.014
+	/// The Meshtastic mark from the app's logo artwork, a unit wide, centered, y up: the slash and
+	/// the peak's two legs.
+	static let logoOutline: [[SIMD2<Float>]] = [
+		[[-0.4401, -0.2634], [-0.1085, 0.223], [-0.1684, 0.2638], [-0.5, -0.2225]],
+		[[0.1556, 0.1526], [-0.1283, -0.2638], [-0.1882, -0.223], [0.1256, 0.2372], [0.1555, 0.253]],
+		[[0.1555, 0.253], [0.1855, 0.2373], [0.5, -0.2222], [0.4402, -0.2631], [0.1556, 0.1526]]
+	]
 }
 
 extension SpatialMeshData {
