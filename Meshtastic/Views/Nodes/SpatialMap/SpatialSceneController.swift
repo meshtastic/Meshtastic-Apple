@@ -947,9 +947,10 @@ private struct StationSetup: Equatable {
 
 extension SpatialSceneController {
 	/// Floats the space station high over the middle of the mesh, turning slowly round it, or takes
-	/// it away when `show` is false. With `reduceMotion` it holds still. The turn is one animation
+	/// it away when `show` is false. It grows with `zoom`, the map's zoom including a pinch in
+	/// progress. With `reduceMotion` it holds still. The turn is one animation
 	/// on the station's transform, played by RealityKit; nothing is rebuilt as it goes round.
-	func apply(station show: Bool, reduceMotion: Bool) {
+	func apply(station show: Bool, zoom: Double, reduceMotion: Bool) {
 		guard show, let placement else {
 			station?.removeFromParent()
 			station = nil
@@ -971,10 +972,11 @@ extension SpatialSceneController {
 			stationGround = (placement.revision, placement.geometry?.groundHeights.max() ?? 0)
 		}
 		let ceiling = volume.map { ($0.extents.y - 0.03) * counterScale }
+		let scale = counterScale * SpatialStation.growth(zoom: zoom)
 		let setup = StationSetup(
-			height: SpatialStation.height(terrainTop: stationGround?.top ?? 0, roofTop: roofs?.roofs.map(\.top).max(), counterScale: counterScale, ceiling: ceiling),
-			scale: counterScale,
-			radius: SpatialStation.orbitShare * placement.diskRadius / counterScale,
+			height: SpatialStation.height(terrainTop: stationGround?.top ?? 0, roofTop: roofs?.roofs.map(\.top).max(), counterScale: scale, ceiling: ceiling),
+			scale: scale,
+			radius: SpatialStation.orbitShare * placement.diskRadius / scale,
 			still: reduceMotion
 		)
 		guard setup != stationSetup else { return }

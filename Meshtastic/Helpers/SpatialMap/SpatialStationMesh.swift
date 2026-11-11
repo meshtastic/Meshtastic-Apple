@@ -12,7 +12,7 @@ import simd
 /// wings out at its ends and white radiators inboard of them, the pressurized modules strung across
 /// the truss's middle with the Russian segment's own small wings behind, and the cupola on the
 /// underside. Not where the real station is; just recognizable at a glance. Built in room meters,
-/// about 12 cm across the truss, and counter-scaled like the lookout.
+/// about 12 cm across the truss at the whole mesh, and growing as the map zooms in.
 enum SpatialStation {
 	/// The parts drawn in their own material.
 	enum Part: CaseIterable {
@@ -49,6 +49,15 @@ enum SpatialStation {
 	static let clearance: Float = 0.1
 	static let halfHeight: Float = 0.022
 	static let triangleBudget = 2_000
+	/// The most the station grows as the map zooms in, so it never fills the table.
+	static let maximumGrowth: Float = 3
+
+	/// How much bigger than at the whole mesh the station is drawn at `zoom`: as much bigger as
+	/// the map, up to `maximumGrowth`, so it comes closer as you zoom in like the ground under it.
+	static func growth(zoom: Double) -> Float {
+		guard zoom.isFinite else { return 1 }
+		return min(max(Float(zoom), 1), maximumGrowth)
+	}
 
 	/// How high the station's middle floats, in model units: `clearance` over the highest of the
 	/// terrain and the roofs, and under `ceiling` (the top of the volume) where there is one,
