@@ -6,6 +6,7 @@
 //
 import CoreLocation
 import Foundation
+import simd
 
 /// The rooftops the cinema's city rooftop can stand on: the tallest buildings in the downloaded
 /// basemaps. Outside the visionOS-only code so it can be tested.
@@ -15,6 +16,8 @@ enum RooftopSites {
 		let coordinate: CLLocationCoordinate2D
 		/// How tall the building is to its roof, in meters.
 		let height: Double
+		/// The roof's outline, for hanging a sky deck off one of its faces.
+		var outline: [CLLocationCoordinate2D] = []
 
 		static func == (lhs: Rooftop, rhs: Rooftop) -> Bool {
 			lhs.coordinate.latitude == rhs.coordinate.latitude && lhs.coordinate.longitude == rhs.coordinate.longitude && lhs.height == rhs.height
@@ -45,10 +48,85 @@ enum RooftopSites {
 			let location = CLLocation(latitude: point.latitude, longitude: point.longitude)
 			let clear = kept.allSatisfy { location.distance(from: CLLocation(latitude: $0.coordinate.latitude, longitude: $0.coordinate.longitude)) >= spacing }
 			if clear {
-				kept.append(Rooftop(coordinate: point, height: candidate.height))
+				kept.append(Rooftop(coordinate: point, height: candidate.height, outline: candidate.footprint.outline))
 			}
 		}
 		return kept
+	}
+
+	/// How far out from its tower's face the sky deck's seat is, in meters, as its image has it.
+	static let deckOverhang = 2.2
+	/// A face shorter than this, in meters, is a corner or a notch, too narrow to hang a deck off.
+	static let shortestFace = 8.0
+	/// Other towers this far from a face count against the view out from it, in meters.
+	static let viewReach = 1_500.0
+
+	/// Where a sky deck hangs off `rooftop`'s tower, and the true bearing it looks out along: out
+	/// from the middle of the face whose view the other tall towers in `others` block least, nearer
+	/// and taller ones the most, `deckOverhang` out from it. Nil when the roof has no outline or no
+	/// face wide enough.
+	static func deck(on rooftop: Rooftop, among others: [Rooftop]) -> (coordinate: CLLocationCoordinate2D, facing: Double)? {
+		guard rooftop.outline.count >= 3 else { return nil }
+		let origin = rooftop.coordinate
+		let metersPerDegreeLatitude = SpatialFrame.metersPerDegreeLatitude
+		let metersPerDegreeLongitude = metersPerDegreeLatitude * cos(origin.latitude * .pi / 180)
+		func local(_ c: CLLocationCoordinate2D) -> SIMD2<Double> {
+			SIMD2((c.longitude - origin.longitude) * metersPerDegreeLongitude, (c.latitude - origin.latitude) * metersPerDegreeLatitude)
+		}
+		var points = rooftop.outline.map(local)
+		if let first = points.first, let last = points.last, simd_distance(first, last) < 0.01 { points.removeLast() }
+		guard points.count >= 3 else { return nil }
+		// Counterclockwise, so each face's outward side is to the right of its direction.
+		var area = 0.0
+		for i in points.indices {
+			let p = points[i], q = points[(i + 1) % points.count]
+			area += p.x * q.y - q.x * p.y
+		}
+		if area < 0 { points.reverse() }
+		let towers = others.filter { simd_length(local($0.coordinate)) > 30 }.map { (place: local($0.coordinate), height: $0.height) }
+		struct Face {
+			let score: Double
+			let length: Double
+			let middle: SIMD2<Double>
+			let outward: SIMD2<Double>
+		}
+		var best: Face?
+		for i in points.indices {
+			let p = points[i], q = points[(i + 1) % points.count]
+			let length = simd_distance(p, q)
+			guard length >= shortestFace else { continue }
+			let along = (q - p) / length
+			let outward = SIMD2(along.y, -along.x)
+			let middle = (p + q) / 2
+			var score = 0.0
+			for tower in towers {
+				let toward = tower.place - middle
+				let distance = simd_length(toward)
+				guard distance <= viewReach else { continue }
+				score += max(0, simd_dot(outward, toward / distance)) * tower.height / max(distance, 50)
+			}
+			let face = Face(score: score, length: length, middle: middle, outward: outward)
+			if let current = best {
+				if score < current.score - 1e-9 || (abs(score - current.score) < 1e-9 && length > current.length) { best = face }
+			} else {
+				best = face
+			}
+		}
+		guard let best else { return nil }
+		let seat = best.middle + best.outward * deckOverhang
+		let coordinate = CLLocationCoordinate2D(latitude: origin.latitude + seat.y / metersPerDegreeLatitude, longitude: origin.longitude + seat.x / metersPerDegreeLongitude)
+		let facing = (atan2(best.outward.x, best.outward.y) * 180 / .pi + 360).truncatingRemainder(dividingBy: 360)
+		return (coordinate, facing)
+	}
+
+	/// The point `deckOverhang` and a little more back from a sky deck's seat along its bearing:
+	/// inside the tower it hangs off, so the city round it can leave that tower out.
+	static func tower(behind deck: CLLocationCoordinate2D, facing: Double) -> CLLocationCoordinate2D {
+		let back = deckOverhang + 1.5
+		let bearing = facing * .pi / 180
+		let metersPerDegreeLatitude = SpatialFrame.metersPerDegreeLatitude
+		let metersPerDegreeLongitude = metersPerDegreeLatitude * cos(deck.latitude * .pi / 180)
+		return CLLocationCoordinate2D(latitude: deck.latitude - back * cos(bearing) / metersPerDegreeLatitude, longitude: deck.longitude - back * sin(bearing) / metersPerDegreeLongitude)
 	}
 
 	/// How far round each first-pass rooftop the second pass looks, in meters: far enough to take

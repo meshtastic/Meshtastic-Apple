@@ -16,6 +16,8 @@ Show roughly the last 12 months of changes; archive entries older than a year by
 
 **Nov 2026** — [Cinema](cinema.md#lighthouse) — On Apple Vision Pro, the cinema can be set in a lighthouse's lantern room over the sea, standing on a real headland from the downloaded terrain, turned to face the open water.
 
+**Nov 2026** — [Cinema](cinema.md#sky-deck) — On Apple Vision Pro, the cinema can be set in a glass-floored sky deck hung off one of the tallest real towers in your downloaded map, looking straight down at the city.
+
 **Nov 2026** — [Cinema](cinema.md#city-rooftop) — On Apple Vision Pro, the cinema can be set on the roof deck of a tall downtown building at sunset, standing on one of the tallest real buildings in your downloaded map, with the city round it.
 
 **Nov 2026** — [Cinema](cinema.md#space-station) — On Apple Vision Pro, the cinema can be set in a space station module, with Earth through the cupola's windows overhead, drifting by as the station flies, by day or by night with its city lights, at up to ten times real speed.

@@ -7,12 +7,13 @@
 import Foundation
 
 /// What a cinema room with real terrain out its windows stands on: a summit, for the fire lookout
-/// and the castle tower, a headland on the coast, for the lighthouse, or the roof of one of the
-/// tallest buildings, for the city rooftop.
+/// and the castle tower, a headland on the coast, for the lighthouse, the roof of one of the
+/// tallest buildings, for the city rooftop, or the face of one, for the sky deck hung off it.
 enum LookoutSiteKind: String, Sendable, CaseIterable {
 	case summit
 	case coast
 	case rooftop
+	case skyDeck
 
 	/// How far the room's floor stands above the ground: the lookout's tower, or the lighthouse's.
 	/// A rooftop stands on its building, whose height each site carries, so it has none of its own.
@@ -20,7 +21,7 @@ enum LookoutSiteKind: String, Sendable, CaseIterable {
 		switch self {
 		case .summit: 34
 		case .coast: 24
-		case .rooftop: 0
+		case .rooftop, .skyDeck: 0
 		}
 	}
 
@@ -30,6 +31,7 @@ enum LookoutSiteKind: String, Sendable, CaseIterable {
 		case .summit: "cinemaLookoutSite"
 		case .coast: "cinemaLighthouseSite"
 		case .rooftop: "cinemaRooftopSite"
+		case .skyDeck: "cinemaSkyDeckSite"
 		}
 	}
 
@@ -39,6 +41,7 @@ enum LookoutSiteKind: String, Sendable, CaseIterable {
 		case .summit: SpatialLookout.turnsKey
 		case .coast: "cinemaLighthouseSixteenthTurns"
 		case .rooftop: "cinemaRooftopSixteenthTurns"
+		case .skyDeck: "cinemaSkyDeckSixteenthTurns"
 		}
 	}
 
@@ -49,6 +52,7 @@ enum LookoutSiteKind: String, Sendable, CaseIterable {
 		case .summit: "LookoutSites.json"
 		case .coast: "LighthouseSites.json"
 		case .rooftop: "RooftopSites.json"
+		case .skyDeck: "SkyDeckSites.json"
 		}
 	}
 }

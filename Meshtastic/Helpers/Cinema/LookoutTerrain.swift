@@ -38,8 +38,14 @@ struct LookoutSite: Identifiable, Hashable, Codable, Sendable {
 	let name: String?
 	/// On a rooftop, how tall the building is; nil elsewhere.
 	var rooftop: Float?
-	/// For a headland, the true bearing of the open water it looks out on; nil elsewhere.
+	/// For a headland, the true bearing of the open water it looks out on, and for a sky deck the
+	/// bearing it hangs out from its tower along; nil elsewhere.
 	var facing: Double?
+
+	/// Whether it's a sky deck: a building's height, and a bearing out from its face.
+	var isSkyDeck: Bool {
+		rooftop != nil && facing != nil
+	}
 
 	/// How far above the ground the floor the viewer sits on is: the lookout's tower on a summit, the
 	/// lighthouse's on a headland, the building on a rooftop.
@@ -408,8 +414,10 @@ enum LookoutTerrain {
 		var covers = [OfflineLandCover?](repeating: nil, count: rings * columns)
 		var distances = [Double](repeating: 0, count: rings)
 		var lowest = Float.greatestFiniteMagnitude
+		// A sky deck's glass floor shows the ground straight down, so its rings start right under it.
+		let inner = site.isSkyDeck ? 1.5 : innerRadius
 		for ring in 0..<rings {
-			let distance = innerRadius * pow(outerRadius / innerRadius, Double(ring) / Double(rings - 1))
+			let distance = inner * pow(outerRadius / inner, Double(ring) / Double(rings - 1))
 			distances[ring] = distance
 			let zoom = distance < 1_500 ? 14 : distance < 6_000 ? 12 : distance < 25_000 ? 11 : 10
 			for spoke in 0..<columns {

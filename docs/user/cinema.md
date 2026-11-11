@@ -6,7 +6,7 @@ nav_order: 17
 
 # Cinema (Apple Vision Pro)
 
-On Apple Vision Pro, the Cinema puts the app on a big screen inside a search and rescue comms tent, a ham shack, a fire lookout, on top of a castle tower, in a lighthouse, on a city rooftop or in a space station. Open it with the **tent** button in the round glass menu under the app's tab bar. The app's window closes while you're in the tent and comes back when you leave.
+On Apple Vision Pro, the Cinema puts the app on a big screen inside a search and rescue comms tent, a ham shack, a fire lookout, on top of a castle tower, in a lighthouse, on a city rooftop, in a sky deck or in a space station. Open it with the **tent** button in the round glass menu under the app's tab bar. The app's window closes while you're in the tent and comes back when you leave.
 
 ## The screen
 
@@ -64,9 +64,15 @@ If you've downloaded a map with terrain for the [3D map](map.md), the city past 
 
 While the deck stands on a roof, the 3D map shows a small water tower and the mast with its Yagi on that roof, on top of the building when **Buildings** is on.
 
+## Sky deck
+
+The seventh place is a glass box hung off the face of one of the tallest towers downtown, at the top. Its floor is glass from just behind your seat to the front wall, on a grid of slim steel beams, so you can look straight down past your feet to the streets far below. Its front and side walls are glass from floor to ceiling, with a low handrail inside them. Behind you is the tower's core, with the lift doors, the Meshtastic banner and Chirpy's poster. The screen hangs from the ceiling in front of you, with Team Favorites to its left, the Status Board to its right and the latest trace route on the left wall, all hung clear of the glass. Over the front of the box the ceiling is glass, and through it you can see a mast on the tower's roof with a Solar Node on it.
+
+If you've downloaded a map with terrain for the [3D map](map.md), the city below and around can be the real one. The control panel's **Tower** picker lists up to 12 of the tallest buildings around the mesh, as the rooftop's does, each with which way its deck looks out and how tall it is. The deck hangs off the face of the tower whose view the other tall towers block least, turned so the screen looks out from it, with the real buildings round it standing on the real terrain, right down to the street under the floor. Turn the view with the **Turn Sky Deck** dial. **Show Tower** opens the 3D map zoomed in on the tower with **Buildings** on. **City skyline** puts the painted city back, which is also what shows with no map downloaded.
+
 ## Space station
 
-The seventh place is a module of a space station in orbit, 420 km up. The module is lined with racks of off-white panels, with handrails, stowed bags and laptops on swing arms. Above you and a little ahead, the cupola opens out of the ceiling: six windows round a round one at the top, with Earth through them and the sunlit ground under the station. Over the front windows you can see Earth's edge, with its thin blue line of air and black space beyond. The screen is on the plain front bulkhead. Team Favorites and the Status Board are strapped to the racks on your left, and the latest trace route to the racks on your right. Behind the print are the station's ham radio, tuned to its voice downlink, and a Meshtastic radio strapped beside it. Behind you are the hatch to the next module, the mission patch and Chirpy's poster.
+The eighth place is a module of a space station in orbit, 420 km up. The module is lined with racks of off-white panels, with handrails, stowed bags and laptops on swing arms. Above you and a little ahead, the cupola opens out of the ceiling: six windows round a round one at the top, with Earth through them and the sunlit ground under the station. Over the front windows you can see Earth's edge, with its thin blue line of air and black space beyond. The screen is on the plain front bulkhead. Team Favorites and the Status Board are strapped to the racks on your left, and the latest trace route to the racks on your right. Behind the print are the station's ham radio, tuned to its voice downlink, and a Meshtastic radio strapped beside it. Behind you are the hatch to the next module, the mission patch and Chirpy's poster.
 
 Earth through the cupola is a real globe, not a painting: the ground drifts by under the station as it flies, at the speed the real station goes round Earth (once every 92 minutes), with the clouds drifting over it a little faster. The control panel sets which side of Earth is under you and how fast it goes by. By day the ground under the station is in sunlight; by night it's the dark side, with the lights of towns and cities and a thin dawn along one edge of Earth. With Reduce Motion on, Earth holds still.
 
@@ -76,12 +82,13 @@ While the cinema is in the space station, the 3D map shows the station floating 
 
 ## Control panel
 
-- **Environment**: the place the screen is set in: the search and rescue tent, or a ham shack, a wood-paneled radio room with an operating desk, a window out to the antenna tower, and the same boards; its status board is net control's check-in board, standing portrait beside the screen; or a fire lookout, a glass cab on a summit at sunset; or a castle tower, an open stone roof on a summit at sunset; or a lighthouse, a glass lantern room over the sea at sunset; or a city rooftop, a roof deck on a tall downtown building at sunset; or a space station, a module under its cupola with Earth through the windows.
+- **Environment**: the place the screen is set in: the search and rescue tent, or a ham shack, a wood-paneled radio room with an operating desk, a window out to the antenna tower, and the same boards; its status board is net control's check-in board, standing portrait beside the screen; or a fire lookout, a glass cab on a summit at sunset; or a castle tower, an open stone roof on a summit at sunset; or a lighthouse, a glass lantern room over the sea at sunset; or a city rooftop, a roof deck on a tall downtown building at sunset; or a sky deck, a glass-floored box hung off a tower, looking down at the city; or a space station, a module under its cupola with Earth through the windows.
 - **Stone**: on the castle tower, gray or pink.
 - **Summit**: in the fire lookout or on the castle tower, with terrain downloaded, which summit it stands on, or the forest sunset.
 - **Headland**: in the lighthouse, with terrain along a coast downloaded, which headland it stands on, or the sea view.
 - **Rooftop**: on the city rooftop, with terrain downloaded, which building it stands on, or the painted city skyline.
-- **Turn Lookout**, **Turn Tower**, **Turn Lighthouse** or **Turn Rooftop**: with a summit, headland or rooftop picked, a compass dial for which way the room faces, so the screen looks out over another part of the view. Tap one of its sixteen marks, a sixteenth of a turn (22.5°) apart, or drag round it and let go. The eighths are drawn larger. The caption under it says which way the room faces. The model on the 3D map turns with it.
+- **Tower**: in the sky deck, with terrain downloaded, which tower it hangs off, or the painted city skyline.
+- **Turn Lookout**, **Turn Tower**, **Turn Lighthouse**, **Turn Rooftop** or **Turn Sky Deck**: with a summit, headland, rooftop or tower picked, a compass dial for which way the room faces, so the screen looks out over another part of the view. Tap one of its sixteen marks, a sixteenth of a turn (22.5°) apart, or drag round it and let go. The eighths are drawn larger. The caption under it says which way the room faces. The model on the 3D map turns with it.
 - **Side of Earth**: in the space station, **Day** for the sunlit side under the cupola, or **Night** for the dark side with its city lights.
 - **Orbit Speed**: in the space station, how fast Earth goes by, from real time (1×) to ten times faster (10×).
 - **Open 3D Map**: shown while the 3D map is closed.

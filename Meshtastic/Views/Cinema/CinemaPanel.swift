@@ -76,7 +76,7 @@ struct CinemaPanel: View {
 					case .coast:
 						Text("Sea view", comment: "Cinema: the lighthouse's rendered view of the sea, with no real terrain")
 							.tag("")
-					case .rooftop:
+					case .rooftop, .skyDeck:
 						Text("City skyline", comment: "Cinema: the city rooftop's rendered skyline, with no real buildings")
 							.tag("")
 					default:
@@ -95,6 +95,10 @@ struct CinemaPanel: View {
 					if environment == .cityRooftop {
 						Button(action: onShowRooftop) {
 							Label(String(localized: "Show Rooftop", comment: "Cinema: button that opens the 3D map zoomed in on the city rooftop, with the buildings on"), systemImage: "building.2.crop.circle")
+						}
+					} else if environment == .skyDeck {
+						Button(action: onShowRooftop) {
+							Label(String(localized: "Show Tower", comment: "Cinema: button that opens the 3D map zoomed in on the tower the sky deck hangs off, with the buildings on"), systemImage: "building.2.crop.circle")
 						}
 					}
 				}
@@ -129,6 +133,8 @@ struct CinemaPanel: View {
 			String(localized: "Headland", comment: "Cinema: picker for the headland on the coast the lighthouse stands on")
 		case .rooftop:
 			String(localized: "Rooftop", comment: "Cinema: picker for the building the city rooftop stands on")
+		case .skyDeck:
+			String(localized: "Tower", comment: "Cinema: picker for the tower the sky deck hangs off")
 		default:
 			String(localized: "Summit", comment: "Cinema: picker for the summit the fire lookout stands on")
 		}
@@ -142,7 +148,9 @@ struct CinemaPanel: View {
 			.formatted(.measurement(width: .abbreviated, usage: .asProvided, numberFormatStyle: .number.precision(.fractionLength(0))))
 		let named: String
 		if site.rooftop != nil {
-			named = String(localized: "\(height) tall", comment: "Cinema: a building in the rooftop picker, by how tall it is")
+			let tall = String(localized: "\(height) tall", comment: "Cinema: a building in the rooftop picker, by how tall it is")
+			// A sky deck says which way it looks out from its tower first.
+			named = site.isSkyDeck ? site.facing.map { "\(SpatialLookout.facing(heading: $0)), \(tall)" } ?? tall : tall
 		} else {
 			let label = site.name ?? site.facing.map { SpatialLookout.facing(heading: $0) }
 			named = label.map { "\($0), \(height)" } ?? height

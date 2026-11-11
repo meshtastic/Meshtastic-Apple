@@ -61,7 +61,8 @@ struct SpatialMapView: View {
 				scene.apply(buildings: model.buildingsEntity, roofs: model.buildingRoofs)
 				scene.apply(coverage: model.coverageEntity, revision: model.coverageRevision, opacity: model.coverageOpacity)
 				scene.apply(nodes: model.nodes)
-				scene.apply(lookout: cinemaEnvironment.standsOnSite
+				// The sky deck hangs off a real tower, so it has no model of its own to stand there.
+				scene.apply(lookout: cinemaEnvironment.standsOnSite && cinemaEnvironment != .skyDeck
 					? SpatialLookout.coordinate(siteID: lookoutSiteID).flatMap { model.lookoutStands(on: $0) ? $0 : nil }
 					: nil, heading: SpatialLookout.heading(turns: lookoutTurns), model: summitModel)
 				scene.apply(station: cinemaEnvironment == .spaceStation, zoom: liveZoom ?? model.zoom, reduceMotion: reduceMotion)

@@ -59,10 +59,12 @@ struct CinemaSpace: View {
 	@AppStorage(LookoutSiteKind.summit.siteKey) private var summitSiteID = ""
 	@AppStorage(LookoutSiteKind.coast.siteKey) private var coastSiteID = ""
 	@AppStorage(LookoutSiteKind.rooftop.siteKey) private var rooftopSiteID = ""
+	@AppStorage(LookoutSiteKind.skyDeck.siteKey) private var skyDeckSiteID = ""
 	/// Sixteenth turns clockwise the lookout, the lighthouse and the rooftop are turned from the panel.
 	@AppStorage(LookoutSiteKind.summit.turnsKey) private var summitTurns = 0
 	@AppStorage(LookoutSiteKind.coast.turnsKey) private var coastTurns = 0
 	@AppStorage(LookoutSiteKind.rooftop.turnsKey) private var rooftopTurns = 0
+	@AppStorage(LookoutSiteKind.skyDeck.turnsKey) private var skyDeckTurns = 0
 	@State private var terrain: ModelEntity?
 	/// The site the terrain and labels are built for; nil for the painted sunset.
 	@State private var terrainSiteID: String?
@@ -125,7 +127,7 @@ struct CinemaSpace: View {
 				CinemaPanel(environment: $environment, stone: $stone, sites: lookout.kind == environment.siteKind ? lookout.sites : [], siteID: Binding { lookoutSiteID } set: { lookoutSiteID = $0 }, turns: Binding { lookoutTurns } set: { lookoutTurns = $0 }, radioCoordinate: radioCoordinate, lookoutNote: lookoutNote, spatialMapOpen: appState.spatialMapWindowCount > 0 || appState.spatialMapReopening) {
 					openWindow(id: SpatialMapScene.id, value: SpatialMapSceneKey.shared)
 				} onShowRooftop: {
-					appState.spatialMapRooftop = SpatialMapRooftopRequest()
+					appState.spatialMapRooftop = SpatialMapRooftopRequest(siteKey: environment.siteKind?.siteKey ?? LookoutSiteKind.rooftop.siteKey)
 					openWindow(id: SpatialMapScene.id, value: SpatialMapSceneKey.shared)
 				} onLeave: {
 					Task { await dismissImmersiveSpace() }
@@ -233,6 +235,12 @@ struct CinemaSpace: View {
 			// its turns allow.
 			if let facing = lookout.site(for: coastSiteID)?.facing {
 				coastTurns = SpatialLookout.turns(nearest: facing)
+			}
+		}
+		.onChange(of: skyDeckSiteID) {
+			// A sky deck looks out from its tower's face: the screen turns to face out with it.
+			if let facing = lookout.site(for: skyDeckSiteID)?.facing {
+				skyDeckTurns = SpatialLookout.turns(nearest: facing)
 			}
 		}
 		// A map deleted or downloaded changes the summits and the terrain around them, so both are
@@ -438,6 +446,7 @@ struct CinemaSpace: View {
 			switch environment.siteKind {
 			case .coast: coastSiteID
 			case .rooftop: rooftopSiteID
+			case .skyDeck: skyDeckSiteID
 			default: summitSiteID
 			}
 		}
@@ -445,6 +454,7 @@ struct CinemaSpace: View {
 			switch environment.siteKind {
 			case .coast: coastSiteID = newValue
 			case .rooftop: rooftopSiteID = newValue
+			case .skyDeck: skyDeckSiteID = newValue
 			default: summitSiteID = newValue
 			}
 		}
@@ -456,6 +466,7 @@ struct CinemaSpace: View {
 			switch environment.siteKind {
 			case .coast: coastTurns
 			case .rooftop: rooftopTurns
+			case .skyDeck: skyDeckTurns
 			default: summitTurns
 			}
 		}
@@ -463,6 +474,7 @@ struct CinemaSpace: View {
 			switch environment.siteKind {
 			case .coast: coastTurns = newValue
 			case .rooftop: rooftopTurns = newValue
+			case .skyDeck: skyDeckTurns = newValue
 			default: summitTurns = newValue
 			}
 		}
@@ -473,6 +485,7 @@ struct CinemaSpace: View {
 		switch environment.siteKind {
 		case .coast: lighthouseNote
 		case .rooftop: rooftopNote
+		case .skyDeck: skyDeckNote
 		default: summitNote
 		}
 	}
@@ -502,6 +515,16 @@ struct CinemaSpace: View {
 			String(localized: "No coastline found in the downloaded terrain.", comment: "Cinema lighthouse: shown on the panel when the downloaded terrain has no coast")
 		case .idle, .ready:
 			nil
+		}
+	}
+
+	/// What the panel says on the sky deck while there is no tower to pick.
+	private var skyDeckNote: String? {
+		switch lookout.status {
+		case .noTerrain:
+			String(localized: "Download a map with terrain for the 3D map to hang the sky deck on a real tower.", comment: "Cinema sky deck: shown on the panel when no terrain has been downloaded")
+		default:
+			rooftopNote
 		}
 	}
 

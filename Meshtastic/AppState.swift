@@ -160,13 +160,15 @@ class AppState: ObservableObject {
 		return spatialMapFocus.nodeNum
 	}
 
-	/// Asks the spatial map volume to zoom in on the cinema's city rooftop; claimed the same way.
+	/// Asks the spatial map volume to zoom in on the cinema's city rooftop or sky deck; claimed the
+	/// same way.
 	@Published var spatialMapRooftop: SpatialMapRooftopRequest?
 
-	func claimSpatialMapRooftop() -> Bool {
-		guard spatialMapRooftop != nil else { return false }
-		spatialMapRooftop = nil
-		return true
+	/// The key the asked-for site is kept under, or nil when nothing was asked.
+	func claimSpatialMapRooftop() -> String? {
+		guard let spatialMapRooftop else { return nil }
+		self.spatialMapRooftop = nil
+		return spatialMapRooftop.siteKey
 	}
 
 	/// A trace route the spatial map volume should fly once it is showing; claimed the same way.
