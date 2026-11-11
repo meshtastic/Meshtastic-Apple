@@ -119,10 +119,18 @@ enum RooftopSites {
 		return (coordinate, facing)
 	}
 
+	/// The point on the tower's face behind a sky deck's seat, `deckOverhang` back along its bearing.
+	static func face(behind deck: CLLocationCoordinate2D, facing: Double) -> CLLocationCoordinate2D {
+		offset(deck, back: deckOverhang, facing: facing)
+	}
+
 	/// The point `deckOverhang` and a little more back from a sky deck's seat along its bearing:
 	/// inside the tower it hangs off, so the city round it can leave that tower out.
 	static func tower(behind deck: CLLocationCoordinate2D, facing: Double) -> CLLocationCoordinate2D {
-		let back = deckOverhang + 1.5
+		offset(deck, back: deckOverhang + 1.5, facing: facing)
+	}
+
+	private static func offset(_ deck: CLLocationCoordinate2D, back: Double, facing: Double) -> CLLocationCoordinate2D {
 		let bearing = facing * .pi / 180
 		let metersPerDegreeLatitude = SpatialFrame.metersPerDegreeLatitude
 		let metersPerDegreeLongitude = metersPerDegreeLatitude * cos(deck.latitude * .pi / 180)

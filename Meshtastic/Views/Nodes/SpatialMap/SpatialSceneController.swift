@@ -840,12 +840,14 @@ extension SpatialSceneController {
 // MARK: Fire lookout
 
 /// What stands on the cinema's site on the map: the fire lookout, the castle tower in its stone,
-/// the lighthouse on its headland, or the city rooftop's water tower and mast on a roof.
+/// the lighthouse on its headland, the city rooftop's water tower and mast on a roof, or the sky
+/// deck hung off its tower.
 enum SpatialSummitModel: Equatable {
 	case fireLookout
 	case castleTower(CastleStone)
 	case lighthouse
 	case cityRooftop
+	case skyDeck
 
 	var entityName: String {
 		switch self {
@@ -853,6 +855,7 @@ enum SpatialSummitModel: Equatable {
 		case let .castleTower(stone): "castleTower-\(stone.rawValue)"
 		case .lighthouse: "lighthouse"
 		case .cityRooftop: "cityRooftop"
+		case .skyDeck: "skyDeck"
 		}
 	}
 
@@ -863,6 +866,7 @@ enum SpatialSummitModel: Equatable {
 		case let .castleTower(stone): SpatialLookoutParts.makeCastle(heading: heading, stone: stone)
 		case .lighthouse: SpatialLookoutParts.makeLighthouse(heading: heading)
 		case .cityRooftop: SpatialLookoutParts.makeRooftop(heading: heading)
+		case .skyDeck: SpatialLookoutParts.makeSkyDeck(heading: heading)
 		}
 		made?.name = entityName
 		return made
@@ -914,6 +918,15 @@ extension SpatialSceneController {
 		if lookout.name == SpatialSummitModel.cityRooftop.entityName {
 			if let roofs, roofs.revision == placement.revision {
 				position.y = roofs.standHeight(at: summit, ground: position.y)
+			}
+		} else if lookout.name == SpatialSummitModel.skyDeck.entityName {
+			// Back against the tower's face, its top at the roof: the roof is read just inside the
+			// face, since the seat itself is out past it.
+			let face = RooftopSites.face(behind: coordinate, facing: lookoutHeading)
+			position = placement.position(face)
+			let inside = placement.position(RooftopSites.tower(behind: coordinate, facing: lookoutHeading))
+			if let roofs, roofs.revision == placement.revision, let top = roofs.top(at: SIMD2(inside.x, inside.z)), top > position.y {
+				position.y = top - SpatialSkyDeck.height * counterScale
 			}
 		} else {
 			let clearance = Self.lookoutClearance * counterScale

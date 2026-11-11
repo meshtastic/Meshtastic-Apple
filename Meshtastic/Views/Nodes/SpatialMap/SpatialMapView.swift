@@ -35,9 +35,11 @@ struct SpatialMapView: View {
 	@AppStorage(LookoutSiteKind.summit.siteKey) private var summitSiteID = ""
 	@AppStorage(LookoutSiteKind.coast.siteKey) private var coastSiteID = ""
 	@AppStorage(LookoutSiteKind.rooftop.siteKey) private var rooftopSiteID = ""
+	@AppStorage(LookoutSiteKind.skyDeck.siteKey) private var skyDeckSiteID = ""
 	@AppStorage(LookoutSiteKind.summit.turnsKey) private var summitTurns = 0
 	@AppStorage(LookoutSiteKind.coast.turnsKey) private var coastTurns = 0
 	@AppStorage(LookoutSiteKind.rooftop.turnsKey) private var rooftopTurns = 0
+	@AppStorage(LookoutSiteKind.skyDeck.turnsKey) private var skyDeckTurns = 0
 	@AppStorage(CastleStone.key) private var castleStone: CastleStone = .gray
 	@Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -61,8 +63,7 @@ struct SpatialMapView: View {
 				scene.apply(buildings: model.buildingsEntity, roofs: model.buildingRoofs)
 				scene.apply(coverage: model.coverageEntity, revision: model.coverageRevision, opacity: model.coverageOpacity)
 				scene.apply(nodes: model.nodes)
-				// The sky deck hangs off a real tower, so it has no model of its own to stand there.
-				scene.apply(lookout: cinemaEnvironment.standsOnSite && cinemaEnvironment != .skyDeck
+				scene.apply(lookout: cinemaEnvironment.standsOnSite
 					? SpatialLookout.coordinate(siteID: lookoutSiteID).flatMap { model.lookoutStands(on: $0) ? $0 : nil }
 					: nil, heading: SpatialLookout.heading(turns: lookoutTurns), model: summitModel)
 				scene.apply(station: cinemaEnvironment == .spaceStation, zoom: liveZoom ?? model.zoom, reduceMotion: reduceMotion)
@@ -137,6 +138,7 @@ struct SpatialMapView: View {
 		switch cinemaEnvironment.siteKind {
 		case .coast: coastSiteID
 		case .rooftop: rooftopSiteID
+		case .skyDeck: skyDeckSiteID
 		default: summitSiteID
 		}
 	}
@@ -145,17 +147,19 @@ struct SpatialMapView: View {
 		switch cinemaEnvironment.siteKind {
 		case .coast: coastTurns
 		case .rooftop: rooftopTurns
+		case .skyDeck: skyDeckTurns
 		default: summitTurns
 		}
 	}
 
-	/// What stands on the site: the lookout, the castle in its stone, the lighthouse, or the
-	/// rooftop's water tower and mast.
+	/// What stands on the site: the lookout, the castle in its stone, the lighthouse, the
+	/// rooftop's water tower and mast, or the sky deck.
 	private var summitModel: SpatialSummitModel {
 		switch cinemaEnvironment {
 		case .castleTower: .castleTower(castleStone)
 		case .lighthouse: .lighthouse
 		case .cityRooftop: .cityRooftop
+		case .skyDeck: .skyDeck
 		default: .fireLookout
 		}
 	}

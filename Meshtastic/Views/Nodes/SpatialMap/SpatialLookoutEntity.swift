@@ -117,6 +117,55 @@ enum SpatialLookoutParts {
 		return material
 	}
 
+	/// The sky deck's glass box, opening out along `heading`, for the sky deck room.
+	static func makeSkyDeck(heading: Double = SpatialLookout.frontHeading) -> Entity? {
+		if skyDeckMeshes == nil {
+			var built: [SpatialSkyDeck.Part: MeshResource] = [:]
+			for (part, data) in SpatialSkyDeck.geometry() where data.triangleCount > 0 {
+				guard let mesh = try? data.meshResource() else { return nil }
+				built[part] = mesh
+			}
+			skyDeckMeshes = built
+		}
+		guard let skyDeckMeshes else { return nil }
+		let deck = Entity()
+		deck.name = "skyDeck"
+		let body = Entity()
+		body.orientation = simd_quatf(angle: SpatialLookout.yaw(heading: heading), axis: [0, 1, 0])
+		for part in SpatialSkyDeck.Part.allCases {
+			guard let mesh = skyDeckMeshes[part] else { continue }
+			body.addChild(ModelEntity(mesh: mesh, materials: [skyDeckMaterial(part)]))
+		}
+		deck.addChild(body)
+		return deck
+	}
+
+	private static var skyDeckMeshes: [SpatialSkyDeck.Part: MeshResource]?
+
+	private static func skyDeckMaterial(_ part: SpatialSkyDeck.Part) -> PhysicallyBasedMaterial {
+		var material = PhysicallyBasedMaterial()
+		switch part {
+		case .glass:
+			// Pale blue and see-through, a little lit from inside, so it reads against the gray tower.
+			material.baseColor = .init(tint: UIColor(red: 0.62, green: 0.82, blue: 0.95, alpha: 1))
+			material.emissiveColor = .init(color: UIColor(red: 0.6, green: 0.85, blue: 1, alpha: 1))
+			material.emissiveIntensity = 0.25
+			material.roughness = 0.1
+			material.metallic = 0.2
+			material.blending = .transparent(opacity: 0.5)
+		case .frame:
+			material.baseColor = .init(tint: UIColor(red: 0.2, green: 0.21, blue: 0.23, alpha: 1))
+			material.metallic = 0.6
+			material.roughness = 0.4
+		case .ceiling:
+			// The ceiling's downlights.
+			material.baseColor = .init(tint: UIColor(red: 1, green: 0.93, blue: 0.8, alpha: 1))
+			material.emissiveColor = .init(color: UIColor(red: 1, green: 0.9, blue: 0.7, alpha: 1))
+			material.emissiveIntensity = 0.8
+		}
+		return material
+	}
+
 	/// The lighthouse with its lantern's front facing `heading`, for the lighthouse room.
 	static func makeLighthouse(heading: Double = SpatialLookout.frontHeading) -> Entity? {
 		if lighthouseMeshes == nil {
