@@ -141,10 +141,14 @@ struct SpatialMapWindow: View {
 		.onChange(of: appState.spatialMapRoute?.id) {
 			claimRoute()
 		}
+		.onChange(of: appState.spatialMapRooftop?.id) {
+			claimRooftop()
+		}
 		.onChange(of: appState.spatialMapReopening) { _, reopening in
 			if !reopening {
 				claimFocus()
 				claimRoute()
+				claimRooftop()
 			}
 		}
 		.onChange(of: scenePhase) { _, phase in
@@ -332,6 +336,18 @@ struct SpatialMapWindow: View {
 		refresh()
 	}
 
+	/// Turns the buildings on and zooms all the way in on the cinema's city rooftop, as its panel
+	/// asks, so the water tower and mast can be seen standing on the roof. Buildings are off by
+	/// default and only drawn zoomed in, and the rooftop is one roof among thousands.
+	private func claimRooftop() {
+		guard !appState.spatialMapReopening, appState.claimSpatialMapRooftop(),
+			  let coordinate = SpatialLookout.coordinate(siteID: UserDefaults.standard.string(forKey: LookoutSiteKind.rooftop.siteKey) ?? "") else { return }
+		showBuildings = true
+		model.showBuildings = true
+		model.zoomInClosely(on: coordinate)
+		refresh()
+	}
+
 	/// Shows a trace route asked for by id, as picking it in the route menu does. The route may be
 	/// newer than the last read, so the routes are read again if it isn't there. A volume that just
 	/// opened waits for its table first. Like the focus, not while the cinema is about to reopen
@@ -420,9 +436,6 @@ struct SpatialMapOrnament: View {
 	@ObservedObject private var offline = OfflineMapManager.shared
 	@ObservedObject private var weatherRadar = WeatherRadarAvailability.shared
 	@State private var confirmingTerrainDownload = false
-	/// The cinema's room and the rooftop it's on, for the button that finds the rooftop on the map.
-	@AppStorage("cinemaEnvironment") private var cinemaEnvironment: CinemaEnvironment = .sarTent
-	@AppStorage(LookoutSiteKind.rooftop.siteKey) private var rooftopSiteID = ""
 
 	var body: some View {
 		HStack(spacing: 10) {
@@ -477,8 +490,6 @@ struct SpatialMapOrnament: View {
 				.accessibilityLabel(String(localized: "Live traffic", comment: "VoiceOver label for the spatial map traffic toggle"))
 
 			traceRoutes
-
-			rooftop
 
 			terrainDownload
 
@@ -558,22 +569,6 @@ struct SpatialMapOrnament: View {
 			}
 			.help(String(localized: "Clear trace route", comment: "VoiceOver label for the clear trace route button"))
 			.accessibilityLabel(String(localized: "Clear trace route", comment: "VoiceOver label for the clear trace route button"))
-		}
-	}
-
-	/// In the city rooftop, a button that turns the buildings on and zooms in on the rooftop, so its
-	/// water tower and mast can be seen standing on the roof. Buildings are off by default and only
-	/// drawn zoomed in, and the rooftop is one roof among thousands.
-	@ViewBuilder private var rooftop: some View {
-		if cinemaEnvironment == .cityRooftop, let coordinate = SpatialLookout.coordinate(siteID: rooftopSiteID) {
-			Button {
-				showBuildings = true
-				model.zoomIn(on: coordinate, to: model.maximumZoom)
-			} label: {
-				Image(systemName: "building.2.crop.circle")
-			}
-			.help(String(localized: "Show Rooftop", comment: "Spatial map: button that turns on the buildings and zooms in on the cinema's city rooftop"))
-			.accessibilityLabel(String(localized: "Show Rooftop", comment: "Spatial map: button that turns on the buildings and zooms in on the cinema's city rooftop"))
 		}
 	}
 

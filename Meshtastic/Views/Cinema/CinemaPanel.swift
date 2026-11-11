@@ -29,6 +29,8 @@ struct CinemaPanel: View {
 	/// Whether the 3D map is showing or on its way; the button to open it is only there while not.
 	let spatialMapOpen: Bool
 	let onOpenSpatialMap: () -> Void
+	/// Opens the 3D map zoomed in on the city rooftop, with the buildings on.
+	let onShowRooftop: () -> Void
 	let onLeave: () -> Void
 
 	var body: some View {
@@ -70,6 +72,11 @@ struct CinemaPanel: View {
 				// view. The forest sunset is painted, so there's nothing to turn there.
 				if !siteID.isEmpty {
 					LookoutTurnDial(title: environment.turnDialTitle, turns: $turns)
+					if environment == .cityRooftop {
+						Button(action: onShowRooftop) {
+							Label(String(localized: "Show Rooftop", comment: "Cinema: button that opens the 3D map zoomed in on the city rooftop, with the buildings on"), systemImage: "building.2.crop.circle")
+						}
+					}
 				}
 			} else if environment.standsOnSite, let lookoutNote {
 				Text(verbatim: lookoutNote)
