@@ -67,4 +67,13 @@ struct SpatialStationTests {
 		let tooLow = SpatialStation.height(terrainTop: 0.2, roofTop: nil, counterScale: scale, ceiling: 0.21)
 		#expect(tooLow >= 0.2 + SpatialStation.halfHeight * scale)
 	}
+
+	@Test("it grows with the map's zoom, never smaller than at the whole mesh and never past its cap")
+	func growsWithZoom() {
+		#expect(SpatialStation.growth(zoom: 1) == 1)
+		#expect(SpatialStation.growth(zoom: 0.5) == 1)
+		#expect(SpatialStation.growth(zoom: 2) == 2)
+		#expect(SpatialStation.growth(zoom: 40) == SpatialStation.maximumGrowth)
+		#expect(SpatialStation.growth(zoom: .nan) == 1)
+	}
 }

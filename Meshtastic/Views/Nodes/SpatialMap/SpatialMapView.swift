@@ -64,7 +64,7 @@ struct SpatialMapView: View {
 				scene.apply(lookout: cinemaEnvironment.standsOnSite
 					? SpatialLookout.coordinate(siteID: lookoutSiteID).flatMap { model.lookoutStands(on: $0) ? $0 : nil }
 					: nil, heading: SpatialLookout.heading(turns: lookoutTurns), model: summitModel)
-				scene.apply(station: cinemaEnvironment == .spaceStation, reduceMotion: reduceMotion)
+				scene.apply(station: cinemaEnvironment == .spaceStation, zoom: liveZoom ?? model.zoom, reduceMotion: reduceMotion)
 				scene.apply(target: liveZoom.flatMap { model.circle(forZoom: $0) } ?? model.targetCircle)
 				traffic.applyBaseGlow()
 				// Hidden while a trace route is shown, as on the 2D map, so the two sets of colored
