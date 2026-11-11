@@ -151,6 +151,21 @@ enum SpatialLookout {
 		return CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
 	}
 
+	/// How far a chosen site can move in a new search and still be the same one. The search is run
+	/// again when the downloads change, and a slightly different area can put a summit's highest
+	/// point a few meters off, under a new id.
+	static let sameSiteDistance = 500.0
+
+	/// The item nearest where the site with `id` was, if it's within `within` meters.
+	static func nearest<Site>(to id: String, in sites: [Site], within: Double = sameSiteDistance, coordinate: (Site) -> CLLocationCoordinate2D) -> Site? {
+		guard let target = Self.coordinate(siteID: id) else { return nil }
+		return sites
+			.map { (site: $0, distance: coordinate($0).distance(from: target)) }
+			.filter { $0.distance < within }
+			.min { $0.distance < $1.distance }?
+			.site
+	}
+
 	/// Half the tower's width at height `y`, narrowing from the piers to the catwalk.
 	static func towerHalf(at y: Float) -> Float {
 		baseHalf + (topHalf - baseHalf) * min(max(y / towerHeight, 0), 1)
