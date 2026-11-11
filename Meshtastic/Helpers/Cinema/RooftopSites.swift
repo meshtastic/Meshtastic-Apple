@@ -51,6 +51,56 @@ enum RooftopSites {
 		return kept
 	}
 
+	/// How far round each first-pass rooftop the second pass looks, in meters: far enough to take
+	/// in the towers standing with it.
+	static let refineRadius = 700.0
+	/// Tiles the second pass reads for each box round the first-pass rooftops.
+	static let refineTiles = 30
+
+	/// The tallest rooftops in `box`, read in two passes. A box as big as a city only fits the tile
+	/// cap at a coarse zoom, and a coarse tile keeps whole buildings but drops building parts, so a
+	/// tower mapped in parts, like Columbia Center, isn't there at all. Towers stand together, so
+	/// the second pass reads the boxes round the first pass's rooftops again at the finest zoom the
+	/// basemap has, where the parts are, and chooses from both. `decode` reads the buildings in a
+	/// box, using at most the given number of tiles; nil when cancelled.
+	static func search(in box: GeoBounds, maxTiles: Int, decode: (GeoBounds, Int) -> [SpatialBuildingFootprint]?) -> [Rooftop]? {
+		guard var footprints = decode(box, maxTiles) else { return nil }
+		for refine in refineBoxes(around: tallest(footprints), within: box) {
+			guard let fine = decode(refine, refineTiles) else { return nil }
+			footprints += fine
+		}
+		return tallest(footprints)
+	}
+
+	/// A box `radius` round each rooftop, kept inside `box`, with boxes that overlap joined into one,
+	/// so no tile is read twice for neighboring towers.
+	static func refineBoxes(around rooftops: [Rooftop], within box: GeoBounds, radius: Double = refineRadius) -> [GeoBounds] {
+		var boxes: [GeoBounds] = rooftops.map { rooftop in
+			let latitude = radius / SpatialFrame.metersPerDegreeLatitude
+			let longitude = latitude / cos(rooftop.coordinate.latitude * .pi / 180)
+			return GeoBounds(
+				minLon: max(rooftop.coordinate.longitude - longitude, box.minLon),
+				minLat: max(rooftop.coordinate.latitude - latitude, box.minLat),
+				maxLon: min(rooftop.coordinate.longitude + longitude, box.maxLon),
+				maxLat: min(rooftop.coordinate.latitude + latitude, box.maxLat)
+			)
+		}
+		var joined = true
+		while joined {
+			joined = false
+			outer: for i in boxes.indices {
+				for j in boxes.indices where j > i && boxes[i].intersects(boxes[j]) {
+					let a = boxes[i], b = boxes[j]
+					boxes[i] = GeoBounds(minLon: min(a.minLon, b.minLon), minLat: min(a.minLat, b.minLat), maxLon: max(a.maxLon, b.maxLon), maxLat: max(a.maxLat, b.maxLat))
+					boxes.remove(at: j)
+					joined = true
+					break outer
+				}
+			}
+		}
+		return boxes
+	}
+
 	/// The outline's area in square meters, close enough over a building's few tens of meters.
 	static func roofArea(_ outline: [CLLocationCoordinate2D]) -> Double {
 		guard let origin = outline.first, outline.count >= 3 else { return 0 }

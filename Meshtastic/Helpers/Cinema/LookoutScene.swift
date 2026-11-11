@@ -143,19 +143,20 @@ final class LookoutScene {
 	private func rooftops(in box: GeoBounds) async -> [LookoutSite] {
 		let files = OfflineMapManager.persistedRegionFiles()
 		let tiles = Self.rooftopSearchTiles
-		let decode = Task.detached(priority: .userInitiated) {
-			SpatialBuildings.decode(bounds: box, files: files, maxTiles: tiles) ?? []
+		let search = Task.detached(priority: .userInitiated) {
+			RooftopSites.search(in: box, maxTiles: tiles) { bounds, maxTiles in
+				SpatialBuildings.decode(bounds: bounds, files: files, maxTiles: maxTiles)
+			} ?? []
 		}
-		let footprints = await withTaskCancellationHandler { await decode.value } onCancel: { decode.cancel() }
-		let tallest = RooftopSites.tallest(footprints)
+		let tallest = await withTaskCancellationHandler { await search.value } onCancel: { search.cancel() }
 		let grounds = await store.elevations(at: tallest.map(\.coordinate))
 		return zip(tallest, grounds).compactMap { rooftop, ground in
 			ground.map { LookoutSite(latitude: rooftop.coordinate.latitude, longitude: rooftop.coordinate.longitude, elevation: Float($0), name: nil, rooftop: Float(rooftop.height)) }
 		}
 	}
 
-	/// Tiles decoded to find the tallest buildings. The search drops to zoom 13, where only the
-	/// bigger buildings are, before it gives up; the tallest are among them.
+	/// Tiles decoded in the first pass for the tallest buildings. The search drops to zoom 13, where
+	/// only whole buildings are, before it gives up; the second pass fills in towers drawn in parts.
 	private static let rooftopSearchTiles = 160
 	/// The rooftop search covers at most this far from the area's center: a city's towers stand
 	/// together, and a bigger box would have no zoom with buildings in few enough tiles.

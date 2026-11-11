@@ -37,8 +37,8 @@ enum LookoutSiteCacheKey {
 /// than each time the cinema opens. They're found again when a download is added, removed or
 /// refreshed, since that's what they're found in.
 enum LookoutSiteCache {
-	/// Bump when the summit search or naming changes, so lists found the old way are found again.
-	private static let version = 2
+	/// Bump when a site search or naming changes, so lists found the old way are found again.
+	private static let version = 3
 
 	private struct Entry: Codable {
 		let version: Int

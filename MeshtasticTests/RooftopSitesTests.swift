@@ -67,6 +67,42 @@ struct RooftopSitesTests {
 		}
 	}
 
+	@Test("a tower drawn only in parts, missing from the coarse first pass, wins over a shorter plain building beside it")
+	func partsTowerFoundInSecondPass() throws {
+		let plain = square(side: 40, east: -500, height: 260)
+		var tier = square(side: 27, height: 286)
+		tier.isPart = true
+		var lowerTier = square(side: 35, height: 280)
+		lowerTier.isPart = true
+		let box = GeoBounds(minLon: center.longitude - 0.15, minLat: center.latitude - 0.1, maxLon: center.longitude + 0.15, maxLat: center.latitude + 0.1)
+		var reads: [(GeoBounds, Int)] = []
+		let rooftops = try #require(RooftopSites.search(in: box, maxTiles: 160) { bounds, maxTiles in
+			reads.append((bounds, maxTiles))
+			// The whole box is read coarsely, without the parts; a small box finely, with them.
+			return bounds == box ? [plain] : [plain, tier, lowerTier]
+		})
+		#expect(rooftops.first?.height == 286)
+		#expect(rooftops.map(\.height) == [286, 260])
+		#expect(reads.count == 2)
+		#expect(reads.last?.1 == RooftopSites.refineTiles)
+	}
+
+	@Test("boxes round neighboring rooftops are joined, and a rooftop far off keeps its own")
+	func refineBoxesJoin() {
+		let box = GeoBounds(minLon: center.longitude - 0.15, minLat: center.latitude - 0.1, maxLon: center.longitude + 0.15, maxLat: center.latitude + 0.1)
+		let rooftops = RooftopSites.tallest([
+			square(side: 40, height: 200),
+			square(side: 40, east: 500, height: 180),
+			square(side: 40, east: 8_000, height: 150)
+		])
+		let boxes = RooftopSites.refineBoxes(around: rooftops, within: box)
+		#expect(boxes.count == 2)
+		for rooftop in rooftops {
+			#expect(boxes.contains { $0.minLat <= rooftop.coordinate.latitude && rooftop.coordinate.latitude <= $0.maxLat && $0.minLon <= rooftop.coordinate.longitude && rooftop.coordinate.longitude <= $0.maxLon })
+		}
+		#expect(boxes.allSatisfy { $0.minLon >= box.minLon && $0.maxLon <= box.maxLon && $0.minLat >= box.minLat && $0.maxLat <= box.maxLat })
+	}
+
 	@Test("a roof's area is measured in square meters")
 	func roofArea() {
 		#expect(abs(RooftopSites.roofArea(square(side: 20, height: 10).outline) - 400) < 4)
