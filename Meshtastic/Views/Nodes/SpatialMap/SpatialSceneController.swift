@@ -157,6 +157,13 @@ final class SpatialSceneController {
 	private var lookoutCoordinate: CLLocationCoordinate2D?
 	private var lookoutPlacementRevision = -1
 	private var lookoutHeading = SpatialLookout.frontHeading
+	/// The space station floating over the mesh while the cinema's room is the station: the entity
+	/// placed over the map's middle, the one turning round it, what they were last set up for, and
+	/// the highest ground under the map for the placement it was found for.
+	private var station: Entity?
+	private var stationOrbit: Entity?
+	private var stationSetup: StationSetup?
+	private var stationGround: (revision: Int, top: Float)?
 
 	init() {
 		// A flat disk of radius 0.5, scaled to the map once there is one.
@@ -927,6 +934,66 @@ extension SpatialSceneController {
 		guard let lookout, let placement else { return }
 		let p = preview.apply(x: lookout.position.x, z: lookout.position.z)
 		lookout.isEnabled = SpatialZoom.isOnDisk(x: p.x, z: p.y, diskRadius: placement.diskRadius)
+	}
+}
+
+// MARK: Space station
+
+/// Where the station floats and how it turns, so it's only set up again when one of them changes.
+private struct StationSetup: Equatable {
+	let height: Float
+	let scale: Float
+	/// How far out from the map's middle it turns, in the station's own room meters.
+	let radius: Float
+	let still: Bool
+}
+
+extension SpatialSceneController {
+	/// Floats the space station high over the middle of the mesh, turning slowly round it, or takes
+	/// it away when `show` is false. With `reduceMotion` it holds still. The turn is one animation
+	/// on the station's transform, played by RealityKit; nothing is rebuilt as it goes round.
+	func apply(station show: Bool, reduceMotion: Bool) {
+		guard show, let placement else {
+			station?.removeFromParent()
+			station = nil
+			stationOrbit = nil
+			stationSetup = nil
+			return
+		}
+		if station == nil, let made = SpatialLookoutParts.makeStation() {
+			let holder = Entity()
+			holder.name = "spaceStation"
+			holder.addChild(made)
+			applyLight(to: holder)
+			nodesContainer.addChild(holder)
+			station = holder
+			stationOrbit = made
+		}
+		guard let station, let stationOrbit else { return }
+		if stationGround?.revision != placement.revision {
+			stationGround = (placement.revision, placement.geometry?.groundHeights.max() ?? 0)
+		}
+		let ceiling = volume.map { ($0.extents.y - 0.03) * counterScale }
+		let setup = StationSetup(
+			height: SpatialStation.height(terrainTop: stationGround?.top ?? 0, roofTop: roofs?.roofs.map(\.top).max(), counterScale: counterScale, ceiling: ceiling),
+			scale: counterScale,
+			radius: SpatialStation.orbitShare * placement.diskRadius / counterScale,
+			still: reduceMotion
+		)
+		guard setup != stationSetup else { return }
+		let turning = stationSetup.map { $0.radius != setup.radius || $0.still != setup.still } ?? true
+		stationSetup = setup
+		station.position = [0, setup.height, 0]
+		station.scale = SIMD3(repeating: setup.scale)
+		guard turning else { return }
+		stationOrbit.stopAllAnimations()
+		stationOrbit.transform = Transform(translation: [setup.radius, 0, 0])
+		guard !setup.still else { return }
+		let orbit = OrbitAnimation(duration: SpatialStation.orbitPeriod, axis: [0, 1, 0], startTransform: stationOrbit.transform,
+		                           spinClockwise: false, orientToPath: true, rotationCount: 1, bindTarget: .transform, repeatMode: .repeat)
+		if let animation = try? AnimationResource.generate(with: orbit) {
+			stationOrbit.playAnimation(animation)
+		}
 	}
 }
 

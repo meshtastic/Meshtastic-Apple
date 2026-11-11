@@ -5,7 +5,7 @@
 #  Copyright(c) Garth Vander Houwen 10/29/26.
 #
 #  What every cinema environment shares, whatever room it is: the seated camera, the sky and
-#  light from an HDRI, the render settings, the anchors file the app places its live panels from,
+#  light from an HDRI (or none, for a room lit only by its own lights), the render settings, the anchors file the app places its live panels from,
 #  and small helpers for building the scene. An environment script builds its room and calls
 #  render_room(); tent_base.py builds the tent on top of this. See README.md.
 #
@@ -286,6 +286,15 @@ def build_world(hdri, rotation=0.0, strength=0.4):
     bpy.context.scene.world = world
 
 
+def build_dark_world():
+    """A black world that gives no light, for a room lit only by its own lights."""
+    world = bpy.data.worlds.new("World")
+    world.use_nodes = True
+    world.node_tree.nodes["Background"].inputs["Color"].default_value = (0, 0, 0, 1)
+    world.node_tree.nodes["Background"].inputs["Strength"].default_value = 0
+    bpy.context.scene.world = world
+
+
 def build_camera():
     data = bpy.data.cameras.new("Seat")
     data.type = "PANO"
@@ -330,14 +339,18 @@ def render_room(build, hdri, hdri_rotation=0.0, hdri_strength=0.4, cutout=False)
     renders the panorama and writes its anchors. `build()` must place the screen with
     screen_anchor(). With `cutout`, the HDRI lights the room but isn't painted: the image is
     transparent wherever the camera sees past the room's geometry, through glass included, so the
-    app can put its own sky and terrain behind it."""
+    app can put its own sky and terrain behind it. With `hdri` None the world is black and gives
+    no light, so the room is lit only by the lights `build()` adds."""
     options = arguments()
     bpy.ops.wm.read_factory_settings(use_empty=True)
     ANCHORS.clear()
     build()
     if "screen" not in ANCHORS:
         raise SystemExit("no screen: the environment must call screen_anchor()")
-    build_world(hdri, hdri_rotation, hdri_strength)
+    if hdri is None:
+        build_dark_world()
+    else:
+        build_world(hdri, hdri_rotation, hdri_strength)
     camera = build_camera()
     configure_render(options)
     if cutout:

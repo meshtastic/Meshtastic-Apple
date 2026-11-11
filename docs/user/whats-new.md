@@ -18,6 +18,8 @@ Show roughly the last 12 months of changes; archive entries older than a year by
 
 **Nov 2026** — [Cinema](cinema.md#city-rooftop) — On Apple Vision Pro, the cinema can be set on the roof deck of a tall downtown building at sunset, standing on one of the tallest real buildings in your downloaded map, with the city round it.
 
+**Nov 2026** — [Cinema](cinema.md#space-station) — On Apple Vision Pro, the cinema can be set in a space station module, with Earth through the cupola's windows overhead.
+
 **Nov 2026** — [Cinema](cinema.md#castle-tower) — On Apple Vision Pro, the cinema can be set on top of a medieval castle tower, in gray or pink stone, on the same summits as the fire lookout, with its boards as scrolls you can roll up to see the view behind them.
 
 **Nov 2026** — [Cinema](cinema.md#fire-lookout) — On Apple Vision Pro, the fire lookout's real terrain has conifers on its forested ground, near and far, like the painted view's forest.
