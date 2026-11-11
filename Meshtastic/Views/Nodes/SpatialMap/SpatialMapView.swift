@@ -29,11 +29,15 @@ struct SpatialMapView: View {
 	@GestureState private var isPinching = false
 	/// The volume's size, so a resize runs the update closure and refits the map.
 	@State private var volumeSize: Size3D = .zero
-	/// The cinema's room and the summit its lookout stands on, so the map can show the lookout there.
+	/// The cinema's room and the summit its lookout stands on, or the headland its lighthouse does,
+	/// so the map can show the lookout or the lighthouse there.
 	@AppStorage("cinemaEnvironment") private var cinemaEnvironment: CinemaEnvironment = .sarTent
-	@AppStorage("cinemaLookoutSite") private var lookoutSiteID = ""
-	@AppStorage("cinemaRooftopSite") private var rooftopSiteID = ""
-	@AppStorage(SpatialLookout.turnsKey) private var lookoutTurns = 0
+	@AppStorage(LookoutSiteKind.summit.siteKey) private var summitSiteID = ""
+	@AppStorage(LookoutSiteKind.coast.siteKey) private var coastSiteID = ""
+	@AppStorage(LookoutSiteKind.rooftop.siteKey) private var rooftopSiteID = ""
+	@AppStorage(LookoutSiteKind.summit.turnsKey) private var summitTurns = 0
+	@AppStorage(LookoutSiteKind.coast.turnsKey) private var coastTurns = 0
+	@AppStorage(LookoutSiteKind.rooftop.turnsKey) private var rooftopTurns = 0
 	@AppStorage(CastleStone.key) private var castleStone: CastleStone = .gray
 
 	/// What stands where the cinema's room is.
@@ -65,8 +69,8 @@ struct SpatialMapView: View {
 				scene.apply(buildings: model.buildingsEntity, roofs: model.buildingRoofs)
 				scene.apply(coverage: model.coverageEntity, revision: model.coverageRevision, opacity: model.coverageOpacity)
 				scene.apply(nodes: model.nodes)
-				scene.apply(lookout: cinemaEnvironment.siteKind != nil
-					? SpatialLookout.coordinate(siteID: cinemaEnvironment.siteKind == .rooftop ? rooftopSiteID : lookoutSiteID).flatMap { model.lookoutStands(on: $0) ? $0 : nil }
+				scene.apply(lookout: cinemaEnvironment.standsOnSite
+					? SpatialLookout.coordinate(siteID: lookoutSiteID).flatMap { model.lookoutStands(on: $0) ? $0 : nil }
 					: nil, heading: SpatialLookout.heading(turns: lookoutTurns), model: summitModel)
 				scene.apply(target: liveZoom.flatMap { model.circle(forZoom: $0) } ?? model.targetCircle)
 				traffic.applyBaseGlow()
@@ -131,6 +135,34 @@ struct SpatialMapView: View {
 			.onChange(of: isPinching) { _, pinching in
 				if !pinching { endPinch() }
 			}
+		}
+	}
+
+	/// The site the cinema's room stands on, for its kind of site.
+	private var lookoutSiteID: String {
+		switch cinemaEnvironment.siteKind {
+		case .coast: coastSiteID
+		case .rooftop: rooftopSiteID
+		default: summitSiteID
+		}
+	}
+
+	private var lookoutTurns: Int {
+		switch cinemaEnvironment.siteKind {
+		case .coast: coastTurns
+		case .rooftop: rooftopTurns
+		default: summitTurns
+		}
+	}
+
+	/// What stands on the site: the lookout, the castle in its stone, the lighthouse, or the
+	/// rooftop's water tower and mast.
+	private var summitModel: SpatialSummitModel {
+		switch cinemaEnvironment {
+		case .castleTower: .castleTower(castleStone)
+		case .lighthouse: .lighthouse
+		case .cityRooftop: .cityRooftop
+		default: .fireLookout
 		}
 	}
 

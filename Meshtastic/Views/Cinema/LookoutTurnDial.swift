@@ -11,6 +11,8 @@ import SwiftUI
 /// Tap one of its marks or drag round it; the turn is made when you let go, so the terrain
 /// isn't rebuilt for every mark passed on the way.
 struct LookoutTurnDial: View {
+	/// What the dial turns, such as "Turn Lookout".
+	let title: String
 	@Binding var turns: Int
 	/// Where a drag is pointing, before it's let go.
 	@State private var dragTurns: Int?
@@ -21,7 +23,7 @@ struct LookoutTurnDial: View {
 		let shown = dragTurns ?? turns
 		let heading = SpatialLookout.heading(turns: shown)
 		VStack(spacing: 6) {
-			Text("Turn Lookout", comment: "Cinema: title over the dial that turns the fire lookout, so the screen looks out over another part of the view")
+			Text(verbatim: title)
 				.font(.subheadline)
 			dial(shown: shown, heading: heading)
 			Text(verbatim: SpatialLookout.facing(heading: heading))
@@ -29,7 +31,7 @@ struct LookoutTurnDial: View {
 				.foregroundStyle(.secondary)
 		}
 		.accessibilityElement(children: .ignore)
-		.accessibilityLabel(Text("Turn Lookout", comment: "Cinema: title over the dial that turns the fire lookout, so the screen looks out over another part of the view"))
+		.accessibilityLabel(Text(verbatim: title))
 		.accessibilityValue(Text(verbatim: SpatialLookout.facing(heading: heading)))
 		.accessibilityAdjustableAction { direction in
 			switch direction {

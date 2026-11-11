@@ -832,17 +832,19 @@ extension SpatialSceneController {
 
 // MARK: Fire lookout
 
-/// What stands where the cinema's room is on the map: the fire lookout or the castle tower in its
-/// stone on a summit, or the city rooftop's water tower and mast on a roof.
+/// What stands on the cinema's site on the map: the fire lookout, the castle tower in its stone,
+/// the lighthouse on its headland, or the city rooftop's water tower and mast on a roof.
 enum SpatialSummitModel: Equatable {
 	case fireLookout
 	case castleTower(CastleStone)
+	case lighthouse
 	case cityRooftop
 
 	var entityName: String {
 		switch self {
 		case .fireLookout: "fireLookout"
 		case let .castleTower(stone): "castleTower-\(stone.rawValue)"
+		case .lighthouse: "lighthouse"
 		case .cityRooftop: "cityRooftop"
 		}
 	}
@@ -852,6 +854,7 @@ enum SpatialSummitModel: Equatable {
 		let made = switch self {
 		case .fireLookout: SpatialLookoutParts.make(heading: heading)
 		case let .castleTower(stone): SpatialLookoutParts.makeCastle(heading: heading, stone: stone)
+		case .lighthouse: SpatialLookoutParts.makeLighthouse(heading: heading)
 		case .cityRooftop: SpatialLookoutParts.makeRooftop(heading: heading)
 		}
 		made?.name = entityName
@@ -860,10 +863,10 @@ enum SpatialSummitModel: Equatable {
 }
 
 extension SpatialSceneController {
-	/// Stands `model`, the fire lookout or the castle tower, on `coordinate`, the summit the cinema's
-	/// room is on, or the rooftop's water tower and mast on the roof there, with its front facing
-	/// `heading`, or takes it away for nil. Moved onto the new ground whenever the terrain is rebuilt,
-	/// and onto the roof whenever the buildings are.
+	/// Stands `model`, the fire lookout, the castle tower or the lighthouse, on `coordinate`, the
+	/// summit or headland the cinema's room is on, or the rooftop's water tower and mast on the roof
+	/// there, with its front facing `heading`, or takes it away for nil. Moved onto the new ground
+	/// whenever the terrain is rebuilt, and onto the roof whenever the buildings are.
 	func apply(lookout coordinate: CLLocationCoordinate2D?, heading: Double = SpatialLookout.frontHeading, model: SpatialSummitModel = .fireLookout) {
 		guard let placement else { return }
 		let same = coordinate?.latitude == lookoutCoordinate?.latitude && coordinate?.longitude == lookoutCoordinate?.longitude

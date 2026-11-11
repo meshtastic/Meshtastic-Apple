@@ -10,8 +10,8 @@ import OSLog
 import RealityKit
 import UIKit
 
-/// The fire lookout, the castle tower and the city rooftop's water tower and mast, as an entity:
-/// one model per material, built once and reused.
+/// The fire lookout, the castle tower, the lighthouse and the city rooftop's water tower and mast,
+/// as entities: one model per material, built once and reused.
 @MainActor
 enum SpatialLookoutParts {
 	private static var meshes: [SpatialLookout.Part: MeshResource]?
@@ -111,6 +111,68 @@ enum SpatialLookoutParts {
 			material.baseColor = .init(tint: UIColor(red: 0.5, green: 0.51, blue: 0.52, alpha: 1))
 			material.metallic = 0.8
 			material.roughness = 0.4
+		}
+		return material
+	}
+
+	/// The lighthouse with its lantern's front facing `heading`, for the lighthouse room.
+	static func makeLighthouse(heading: Double = SpatialLookout.frontHeading) -> Entity? {
+		if lighthouseMeshes == nil {
+			var built: [SpatialLighthouse.Part: MeshResource] = [:]
+			for (part, data) in SpatialLighthouse.geometry() where data.triangleCount > 0 {
+				do {
+					built[part] = try data.meshResource()
+				} catch {
+					Logger.services.error("🗼 [SpatialMap] Couldn't make the lighthouse's \(String(describing: part), privacy: .public) mesh: \(error.localizedDescription, privacy: .public)")
+					return nil
+				}
+			}
+			lighthouseMeshes = built
+		}
+		guard let lighthouseMeshes else { return nil }
+		let lighthouse = Entity()
+		lighthouse.name = "lighthouse"
+		let body = Entity()
+		body.orientation = simd_quatf(angle: SpatialLookout.yaw(heading: heading), axis: [0, 1, 0])
+		for part in SpatialLighthouse.Part.allCases {
+			guard let mesh = lighthouseMeshes[part] else { continue }
+			body.addChild(ModelEntity(mesh: mesh, materials: [lighthouseMaterial(part)]))
+		}
+		lighthouse.addChild(body)
+		return lighthouse
+	}
+
+	private static var lighthouseMeshes: [SpatialLighthouse.Part: MeshResource]?
+
+	private static func lighthouseMaterial(_ part: SpatialLighthouse.Part) -> PhysicallyBasedMaterial {
+		var material = PhysicallyBasedMaterial()
+		switch part {
+		case .tower:
+			material.baseColor = .init(tint: UIColor(white: 0.95, alpha: 1))
+			material.roughness = 0.75
+		case .stone:
+			material.baseColor = .init(tint: UIColor(red: 0.55, green: 0.53, blue: 0.5, alpha: 1))
+			material.roughness = 0.9
+		case .opening:
+			material.baseColor = .init(tint: UIColor(white: 0.08, alpha: 1))
+			material.roughness = 1.0
+		case .iron:
+			material.baseColor = .init(tint: UIColor(red: 0.08, green: 0.1, blue: 0.09, alpha: 1))
+			material.roughness = 0.5
+		case .glass:
+			// The lamp lit behind the lantern's glass.
+			material.baseColor = .init(tint: UIColor(red: 0.2, green: 0.2, blue: 0.18, alpha: 1))
+			material.emissiveColor = .init(color: UIColor(red: 1, green: 0.85, blue: 0.55, alpha: 1))
+			material.emissiveIntensity = 0.9
+			material.roughness = 0.1
+			material.metallic = 0.3
+		case .dome:
+			material.baseColor = .init(tint: UIColor(red: 0.62, green: 0.08, blue: 0.06, alpha: 1))
+			material.roughness = 0.45
+		case .metal:
+			material.baseColor = .init(tint: UIColor(white: 0.8, alpha: 1))
+			material.metallic = 0.8
+			material.roughness = 0.3
 		}
 		return material
 	}
