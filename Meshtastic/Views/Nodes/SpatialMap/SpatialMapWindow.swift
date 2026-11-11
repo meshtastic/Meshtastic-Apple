@@ -420,6 +420,9 @@ struct SpatialMapOrnament: View {
 	@ObservedObject private var offline = OfflineMapManager.shared
 	@ObservedObject private var weatherRadar = WeatherRadarAvailability.shared
 	@State private var confirmingTerrainDownload = false
+	/// The cinema's room and the rooftop it's on, for the button that finds the rooftop on the map.
+	@AppStorage("cinemaEnvironment") private var cinemaEnvironment: CinemaEnvironment = .sarTent
+	@AppStorage(LookoutSiteKind.rooftop.siteKey) private var rooftopSiteID = ""
 
 	var body: some View {
 		HStack(spacing: 10) {
@@ -474,6 +477,8 @@ struct SpatialMapOrnament: View {
 				.accessibilityLabel(String(localized: "Live traffic", comment: "VoiceOver label for the spatial map traffic toggle"))
 
 			traceRoutes
+
+			rooftop
 
 			terrainDownload
 
@@ -553,6 +558,22 @@ struct SpatialMapOrnament: View {
 			}
 			.help(String(localized: "Clear trace route", comment: "VoiceOver label for the clear trace route button"))
 			.accessibilityLabel(String(localized: "Clear trace route", comment: "VoiceOver label for the clear trace route button"))
+		}
+	}
+
+	/// In the city rooftop, a button that turns the buildings on and zooms in on the rooftop, so its
+	/// water tower and mast can be seen standing on the roof. Buildings are off by default and only
+	/// drawn zoomed in, and the rooftop is one roof among thousands.
+	@ViewBuilder private var rooftop: some View {
+		if cinemaEnvironment == .cityRooftop, let coordinate = SpatialLookout.coordinate(siteID: rooftopSiteID) {
+			Button {
+				showBuildings = true
+				model.zoomIn(on: coordinate, to: model.maximumZoom)
+			} label: {
+				Image(systemName: "building.2.crop.circle")
+			}
+			.help(String(localized: "Show Rooftop", comment: "Spatial map: button that turns on the buildings and zooms in on the cinema's city rooftop"))
+			.accessibilityLabel(String(localized: "Show Rooftop", comment: "Spatial map: button that turns on the buildings and zooms in on the cinema's city rooftop"))
 		}
 	}
 

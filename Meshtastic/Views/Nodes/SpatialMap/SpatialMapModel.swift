@@ -247,9 +247,14 @@ final class SpatialMapModel {
 	/// Centers the map on a node, zoomed in at least as far as `SpatialZoom.focusZoom`.
 	func zoomIn(on nodeNum: Int64) {
 		guard let coordinate = nodesByNum[nodeNum]?.coordinate else { return }
+		zoomIn(on: coordinate, to: max(zoom, SpatialZoom.focusZoom))
+	}
+
+	/// Centers the map on a place and zooms in to `zoom`, as far as the map goes.
+	func zoomIn(on coordinate: CLLocationCoordinate2D, to zoom: Double) {
 		zoomCenter = coordinate
-		zoom = clampedZoom(max(zoom, SpatialZoom.focusZoom))
-		if zoom <= 1 { zoomCenter = nil }
+		self.zoom = clampedZoom(zoom)
+		if self.zoom <= 1 { zoomCenter = nil }
 		applyArea()
 	}
 
