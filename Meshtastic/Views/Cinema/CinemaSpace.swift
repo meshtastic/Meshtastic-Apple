@@ -29,6 +29,10 @@ struct CinemaSpace: View {
 	@Environment(\.dismissWindow) private var dismissWindow
 	@AppStorage("cinemaEnvironment") private var environment: CinemaEnvironment = .sarTent
 	@AppStorage(CastleStone.key) private var stone: CastleStone = .gray
+	/// Which side of Earth is under the space station's cupola, and how fast it goes by.
+	@AppStorage(CinemaEarthSide.key) private var earthSide: CinemaEarthSide = .day
+	@AppStorage(CinemaOrbit.speedKey) private var earthSpeed = 1
+	@Environment(\.accessibilityReduceMotion) private var reduceMotion
 	@State private var world = Entity()
 	@State private var backdrop: Entity?
 	/// The stone and the sky the backdrop up now was made with, so a change of stone keeps the sky.
@@ -201,6 +205,14 @@ struct CinemaSpace: View {
 		.task(id: stone) {
 			guard environment.hasStone, backdrop != nil, backdropStone != stone else { return }
 			await replaceBackdrop(clearSky: backdropClearSky)
+		}
+		// Day and night move the sun, so the globe is made again; the speed only changes its turn.
+		.task(id: earthSide) {
+			guard environment == .spaceStation, backdrop != nil else { return }
+			await replaceBackdrop(clearSky: false)
+		}
+		.onChange(of: earthSpin) { _, spin in
+			if let backdrop { CinemaEarth.setSpin(spin, in: backdrop) }
 		}
 		.task(id: chosenSiteID) {
 			await refreshLookout()
@@ -452,14 +464,22 @@ struct CinemaSpace: View {
 		}
 	}
 
+	/// How fast the space station's globe turns, from the panel's speed and Reduce Motion.
+	private var earthSpin: Float {
+		CinemaOrbit.radiansPerSecond(speed: earthSpeed, reduceMotion: reduceMotion)
+	}
+
 	/// The backdrop for the environment: its image, and for a cutout, the sky behind it.
 	/// Dropped if the task is cancelled or the environment or stone changed while it loaded, so a
 	/// slower, older call can't replace the newer backdrop, and also when `stillWanted` says no.
 	private func replaceBackdrop(clearSky: Bool, stillWanted: () -> Bool = { true }) async {
 		let environment = environment
 		let stone = stone
-		let next = await CinemaBackdrop.make(environment, stone: stone, clearSky: clearSky)
-		guard !Task.isCancelled, environment == self.environment, stone == self.stone, stillWanted() else { return }
+		let side = earthSide
+		let next = await CinemaBackdrop.make(environment, stone: stone, clearSky: clearSky, earthSide: side, earthSpin: earthSpin)
+		guard !Task.isCancelled, environment == self.environment, stone == self.stone, side == earthSide, stillWanted() else { return }
+		// The speed may have changed while the globe was made.
+		CinemaEarth.setSpin(earthSpin, in: next)
 		backdrop?.removeFromParent()
 		stage.addChild(next)
 		backdrop = next

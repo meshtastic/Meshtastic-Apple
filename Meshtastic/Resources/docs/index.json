@@ -86,35 +86,35 @@
             "map",
             "screen",
             "summit",
+            "station",
             "radio",
             "node",
+            "round",
             "rooftop",
+            "real",
             "open",
             "lookout",
             "card",
             "tower",
             "stands",
             "shows",
-            "round",
-            "out",
             "from",
             "city",
+            "under",
+            "out",
+            "one",
             "app",
             "view",
             "sunset",
-            "station",
             "roof",
-            "real",
-            "one",
+            "earth",
             "beside",
             "turn",
             "terrain",
             "tent",
-            "front",
-            "castle",
-            "cab"
+            "front"
         ],
-        "charCount": 10729
+        "charCount": 11478
     },
     {
         "id": "discovery",
@@ -808,15 +808,15 @@
             "set",
             "bluetooth",
             "view",
+            "real",
             "radios",
             "page",
             "oct",
             "lookout",
             "device",
-            "waypoints",
-            "real"
+            "waypoints"
         ],
-        "charCount": 15725
+        "charCount": 15831
     },
     {
         "id": "adding-features",

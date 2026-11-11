@@ -54,6 +54,15 @@ hdri kloppenheim_06_puresky 4k
 # texture Blender's GPU render takes; and NASA's Black Marble 2016.
 nasa world.topo.bathy.200407.3x21600x10800.jpg bmng/bmng-topography-bathymetry/july/world.topo.bathy.200407.3x21600x10800.jpg
 nasa BlackMarble_2016_3km_gray.jpg imagerecords/144000/144897/BlackMarble_2016_3km_gray.jpg
+# The clouds over the globe the app turns behind the cupola: the Blue Marble 2002 cloud layer.
+nasa_feature() {
+	local file="$1"
+	if [ ! -f "$HERE/cache/$file" ]; then
+		curl -sfL -o "$HERE/cache/$file.part" "https://assets.science.nasa.gov/content/dam/science/esd/eo/content-feature/bluemarble/images/$file"
+		mv "$HERE/cache/$file.part" "$HERE/cache/$file"
+	fi
+}
+nasa_feature cloud_combined_2048.jpg
 if [ ! -f "$HERE/cache/blue_marble_july_16384.jpg" ]; then
 	sips -Z 16384 -s formatOptions 95 "$HERE/cache/world.topo.bathy.200407.3x21600x10800.jpg" --out "$HERE/cache/blue_marble_july_16384.jpg" >/dev/null
 fi
@@ -168,3 +177,10 @@ view city_rooftop_sky city_view kloppenheim_06_puresky_4k.hdr 5.5 1
 # view behind its windows.
 environment space_cupola
 painted space_earth space_earth
+# The globe the app turns behind the cupola's windows: its ground, its night side's city lights and
+# its clouds, as textures. space_earth above stays as the view shown if they can't be loaded.
+uv run --quiet --with pillow==13.0.0 --with numpy==2.5.4 python "$HERE/earth_textures.py"
+for name in space_earth_ground space_earth_lights space_earth_clouds; do
+	sips -s format heic -s formatOptions "$HEIC_QUALITY" "$HERE/out/$name.png" --out "$DEST/$name.heic" >/dev/null
+	echo "Wrote $DEST/$name.heic"
+done

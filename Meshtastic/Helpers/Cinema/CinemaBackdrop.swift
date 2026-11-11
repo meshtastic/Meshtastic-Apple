@@ -22,8 +22,10 @@ enum CinemaBackdrop {
 
 	/// The sphere for `environment`, built of `stone` where it's built of stone, under one entity. For a cutout environment, a second sphere
 	/// behind it with the sky: the one the room was lit by, or with `clearSky` the same sky with
-	/// nothing below the horizon, for when terrain is drawn.
-	static func make(_ environment: CinemaEnvironment, stone: CastleStone, clearSky: Bool = false) async -> Entity {
+	/// nothing below the horizon, for when terrain is drawn. The space station has a real globe
+	/// instead, on `earthSide` and turning at `earthSpin` radians a second, falling back to its
+	/// painted view if the globe can't be made.
+	static func make(_ environment: CinemaEnvironment, stone: CastleStone, clearSky: Bool = false, earthSide: CinemaEarthSide = .day, earthSpin: Float = 0) async -> Entity {
 		let root = Entity()
 		root.name = "CinemaBackdrop"
 
@@ -37,7 +39,9 @@ enum CinemaBackdrop {
 		}
 		root.addChild(sphere("Room", radius: radius, material: roomMaterial))
 
-		if environment.isCutout, let name = clearSky ? environment.clearSkyImageName : environment.skyImageName {
+		if environment == .spaceStation, let earth = await CinemaEarth.make(side: earthSide, radiansPerSecond: earthSpin) {
+			root.addChild(earth)
+		} else if environment.isCutout, let name = clearSky ? environment.clearSkyImageName : environment.skyImageName {
 			var skyMaterial = UnlitMaterial(color: environment.placeholderColors.sky)
 			if let texture = await texture(named: name) {
 				skyMaterial.color = .init(tint: .white, texture: .init(texture))

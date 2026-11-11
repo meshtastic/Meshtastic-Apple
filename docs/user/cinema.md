@@ -60,6 +60,8 @@ While the deck stands on a roof, the 3D map shows a small water tower and the ma
 
 The sixth place is a module of a space station in orbit, 420 km up. The module is lined with racks of off-white panels, with handrails, stowed bags and laptops on swing arms. Above you and a little ahead, the cupola opens out of the ceiling: six windows round a round one at the top, with Earth through them and the sunlit ground under the station. Over the front windows you can see Earth's edge, with its thin blue line of air and black space beyond. The screen is on the plain front bulkhead. Team Favorites and the Status Board are strapped to the racks on your left, and the latest trace route to the racks on your right. Behind the print are the station's ham radio, tuned to its voice downlink, and a Meshtastic radio strapped beside it. Behind you are the hatch to the next module, the mission patch and Chirpy's poster.
 
+Earth through the cupola is a real globe, not a painting: the ground drifts by under the station as it flies, at the speed the real station goes round Earth (once every 92 minutes), with the clouds drifting over it a little faster. The control panel sets which side of Earth is under you and how fast it goes by. By day the ground under the station is in sunlight; by night it's the dark side, with the lights of towns and cities and a thin dawn along one edge of Earth. With Reduce Motion on, Earth holds still.
+
 The station has no summit and no real terrain, so the **Summit** picker and the **Turn Lookout** dial don't show there.
 
 While the cinema is in the space station, the 3D map shows the station floating high over the middle of the mesh, above the highest ground and buildings, slowly circling it. It isn't where the real station is. With Reduce Motion on, it holds still.
@@ -72,6 +74,8 @@ While the cinema is in the space station, the 3D map shows the station floating 
 - **Rooftop**: on the city rooftop, with terrain downloaded, which building it stands on, or the painted city skyline.
 - **Show Rooftop**: on the city rooftop, with a building picked, opens the 3D map zoomed in on its roof with **Buildings** on.
 - **Turn Lookout** (**Turn Rooftop** on the city rooftop): with a summit or a rooftop picked, a compass dial for which way the cab faces, so the screen looks out over another part of the view. Tap one of its sixteen marks, a sixteenth of a turn (22.5°) apart, or drag round it and let go. The eighths are drawn larger. The caption under it says which way the cab faces. The cab on the 3D map turns with it.
+- **Side of Earth**: in the space station, **Day** for the sunlit side under the cupola, or **Night** for the dark side with its city lights.
+- **Orbit Speed**: in the space station, how fast Earth goes by, from real time (1×) to ten times faster (10×).
 - **Open 3D Map**: shown while the 3D map is closed.
 - **Move it**: pinch the bar under the panel and drag it wherever you want it.
 - **Leave**: closes the tent and brings back the app's window.
