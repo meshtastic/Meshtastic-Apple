@@ -111,8 +111,9 @@ struct EnvironmentWidgetIntent: WidgetConfigurationIntent {
 	@Parameter(title: "Node")
 	var node: EnvironmentNodeEntity?
 
-	/// Every size takes the full list, so shrinking a widget keeps the first ones.
-	/// The literal is `EnvironmentMetric.maximumCount`.
-	@Parameter(title: "Readings", size: 8)
+	/// Every size takes the full list, so shrinking a widget keeps the first ones. No fixed
+	/// size: a fixed one shows that many empty rows, more than the edit card fits. The widget
+	/// uses the first `EnvironmentMetric.maximumCount`.
+	@Parameter(title: "Readings")
 	var metrics: [EnvironmentMetricEntity]?
 }
