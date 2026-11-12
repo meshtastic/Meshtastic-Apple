@@ -27,7 +27,6 @@ import os
 import random
 import sys
 
-import bmesh
 import bpy
 from mathutils import Matrix, Vector
 

@@ -102,7 +102,7 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 		switch self {
 		case .fireLookout, .castleTower: .summit
 		case .cityRooftop: .rooftop
-		case .sarTent, .hamShack: nil
+		case .sarTent, .hamShack, .spaceStation: nil
 		}
 	}
 
