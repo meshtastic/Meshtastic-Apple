@@ -5,7 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 11/11/26.
 //
 //  One node's environment readings as node details' tiles (meshtastic/design#179).
-//  Small shows the first two readings, medium the first four, large four at a time
+//  Small shows the first reading, medium the first four, large four at a time
 //  with a page button when more are picked; the extra large portrait size (iOS
 //  27 and Vision Pro) fits up to six and pages beyond that, and Vision Pro's
 //  extra large board shows all eight. It reads the snapshot the app writes and never sends anything
@@ -194,7 +194,7 @@ struct TelemetryWidgetView: View {
 		} else {
 			switch family {
 			case .systemSmall:
-				grid(Array(entry.metrics.prefix(2)), columns: 2, telemetry: telemetry)
+				grid(Array(entry.metrics.prefix(1)), columns: 1, telemetry: telemetry)
 			case .systemMedium:
 				bestFitGrid(Array(entry.metrics.prefix(4)), telemetry: telemetry)
 			#if os(visionOS)
