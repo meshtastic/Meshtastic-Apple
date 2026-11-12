@@ -90,6 +90,8 @@ struct MeshEnvironmentWidget: Widget {
 		}
 		.configurationDisplayName("Environment")
 		.description("Environment, air quality and power readings from a node you pick.")
+		// The view sets its own margins, so the large size can space its tiles from the edges.
+		.contentMarginsDisabled()
 		#if os(visionOS)
 		// On a wall it can stand off it or sit in it like a weather panel, and the
 		// board size has room for every reading at once.
@@ -115,7 +117,9 @@ private struct EnvironmentWidgetFamilyReader: View {
 }
 
 struct EnvironmentWidgetView: View {
-	@Environment(\.widgetContentMargins) private var contentMargins
+	/// The widget's margin, in place of the system's, which the widget turns off.
+	static let margin: CGFloat = 16
+
 	let entry: EnvironmentEntry
 	let family: WidgetFamily
 
@@ -124,12 +128,16 @@ struct EnvironmentWidgetView: View {
 			VStack(alignment: .leading, spacing: 8) {
 				if showsDetail {
 					EnvironmentHeader(configured: configured)
+						.padding(.horizontal, Self.margin)
 				}
 				if let environment = entry.environment, !entry.metrics.isEmpty {
 					tiles(environment)
+						// The large size spaces its tiles from the edges itself.
+						.padding(.horizontal, family == .systemLarge ? 0 : Self.margin)
 						.opacity(entry.isStale ? 0.55 : 1)
 					if showsDetail {
 						EnvironmentFooter(entry: entry, showsPageButton: family == .systemLarge)
+							.padding(.horizontal, Self.margin)
 					}
 				} else {
 					Spacer(minLength: 0)
@@ -137,9 +145,11 @@ struct EnvironmentWidgetView: View {
 						.font(.caption)
 						.foregroundStyle(.secondary)
 						.fixedSize(horizontal: false, vertical: true)
+						.padding(.horizontal, Self.margin)
 					Spacer(minLength: 0)
 				}
 			}
+			.padding(.vertical, Self.margin)
 		} else {
 			VStack(spacing: 6) {
 				Image(systemName: "thermometer.sun")
@@ -152,6 +162,7 @@ struct EnvironmentWidgetView: View {
 					.foregroundStyle(.secondary)
 					.fixedSize(horizontal: false, vertical: true)
 			}
+			.padding(Self.margin)
 		}
 	}
 
@@ -175,7 +186,7 @@ struct EnvironmentWidgetView: View {
 	/// Rows of `columns` square tiles, as large as the widget allows and centered.
 	/// With `rows`, empty slots are kept so the tiles stay the size of a full page.
 	/// With `evenEdges`, the space from the widget's side edges to the tiles is the
-	/// same as the space between them.
+	/// same as the space between them; the caller leaves the grid no side margin.
 	private func grid(_ metrics: [EnvironmentMetric], columns: Int, rows: Int? = nil, evenEdges: Bool = false, environment: EnvironmentSnapshot) -> some View {
 		let rowCount = rows ?? max(1, (metrics.count + columns - 1) / columns)
 		return VStack(spacing: 8) {
@@ -202,9 +213,6 @@ struct EnvironmentWidgetView: View {
 			}
 		}
 		.frame(maxWidth: .infinity)
-		// Out to the widget's edges, so the equal spaces are measured from them.
-		.padding(.leading, evenEdges ? -contentMargins.leading : 0)
-		.padding(.trailing, evenEdges ? -contentMargins.trailing : 0)
 	}
 
 	/// Seen from across the room on Vision Pro, the widget keeps the readings
