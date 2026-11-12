@@ -430,6 +430,12 @@
             "state" : "translated",
             "value" : "加入您已有的地圖檔案。檔案會複製到 App 並加入此清單。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dodaj plik mapy, który już masz. Zostanie skopiowany do aplikacji i dodany do tej listy."
+          }
         }
       }
     },
@@ -456,7 +462,14 @@
       }
     },
     "Applies to the next key" : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Działa dla następnego klawisza"
+          }
+        }
+      }
     },
     "Back to the list" : {
       "comment" : "Cinema lookout: button on a node's card that goes back to the list of nodes the marker stands for",
@@ -577,13 +590,34 @@
       }
     },
     "Closing…" : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zamykanie…"
+          }
+        }
+      }
     },
     "Clear Screen" : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wyczyść ekran"
+          }
+        }
+      }
     },
     "Command" : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Polecenie"
+          }
+        }
+      }
     },
     "Confirm Your Region" : {
       "comment" : "Radio setup region title when one was pre-selected",
@@ -628,7 +662,14 @@
 
     },
     "Copy All Output" : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kopiuj cały wynik"
+          }
+        }
+      }
     },
     "Control" : {
 
@@ -667,7 +708,14 @@
       }
     },
     "Down arrow" : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Strzałka w dół"
+          }
+        }
+      }
     },
     "E-ink screens redraw slowly. Tap Refresh for the latest picture." : {
       "localizations" : {
@@ -689,7 +737,15 @@
 
     },
     "End Session" : {
-      "comment" : "Remote shell menu: close the session without leaving the screen"
+      "comment" : "Remote shell menu: close the session without leaving the screen",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zakończ sesję"
+          }
+        }
+      }
     },
     "Enter Showcase" : {
       "comment" : "Spatial map: open the showcase immersive space, closing this volume",
@@ -765,7 +821,14 @@
       }
     },
     "Full-screen programs need more than the mesh can carry, so their output may not display correctly." : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Programy pełnoekranowe potrzebują więcej, niż sieć jest w stanie przesłać, więc ich wynik może wyświetlać się niepoprawnie."
+          }
+        }
+      }
     },
     "Hear beacons from meshes nearby. They show here and in Local Mesh Discovery." : {
       "comment" : "Radio setup beacons page; the listen setting",
@@ -817,7 +880,14 @@
       }
     },
     "Hyphen" : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Łącznik"
+          }
+        }
+      }
     },
     "Import MBTiles or PMTiles File" : {
       "localizations" : {
@@ -832,11 +902,24 @@
             "state" : "translated",
             "value" : "匯入 MBTiles 或 PMTiles 檔案"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Importuj plik MBTiles lub PMTiles"
+          }
         }
       }
     },
     "Larger Text" : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Większy tekst"
+          }
+        }
+      }
     },
     "Leave" : {
       "comment" : "Showcase: close the immersive space",
@@ -850,13 +933,34 @@
       }
     },
     "Line Mode" : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tryb linii"
+          }
+        }
+      }
     },
     "Line mode sends a whole command at once, which is lighter on a busy mesh." : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tryb linii wysyła całe polecenie naraz, co mniej obciąża zajętą sieć."
+          }
+        }
+      }
     },
     "Left arrow" : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Strzałka w lewo"
+          }
+        }
+      }
     },
     "Listening for beacons" : {
       "comment" : "Radio setup done page; nearby meshes row",
@@ -914,7 +1018,14 @@
       }
     },
     "More options" : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Więcej opcji"
+          }
+        }
+      }
     },
     "Move the cinema panel" : {
       "comment" : "Cinema: VoiceOver label for the bar under the panel that moves it",
@@ -1059,13 +1170,34 @@
       }
     },
     "Opening session…" : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Otwieranie sesji…"
+          }
+        }
+      }
     },
     "Open, %lld ms round trip" : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Otwarta, czas odpowiedzi %lld ms"
+          }
+        }
+      }
     },
     "Open" : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Otwarta"
+          }
+        }
+      }
     },
     "Opens a shell on this node, starting a remote admin session first if needed" : {
       "localizations" : {
@@ -1095,13 +1227,34 @@
       }
     },
     "Paste" : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wklej"
+          }
+        }
+      }
     },
     "Page up" : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Page Up"
+          }
+        }
+      }
     },
     "Page down" : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Page Down"
+          }
+        }
+      }
     },
     "Pick up to turn it over" : {
       "comment" : "Cinema: VoiceOver hint for the device model on the stand in front of the seat",
@@ -1222,7 +1375,14 @@
       }
     },
     "Reconnect" : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Połącz ponownie"
+          }
+        }
+      }
     },
     "region %@" : {
       "comment" : "Beacon switch prompt; one of the changes listed",
@@ -1236,7 +1396,14 @@
       }
     },
     "Right arrow" : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Strzałka w prawo"
+          }
+        }
+      }
     },
     "Remote Shell" : {
       "localizations" : {
@@ -1319,13 +1486,34 @@
       }
     },
     "Session closed: %@" : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sesja zamknięta: %@"
+          }
+        }
+      }
     },
     "Session closed" : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sesja zamknięta"
+          }
+        }
+      }
     },
     "Session failed" : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sesja nie powiodła się"
+          }
+        }
+      }
     },
     "Set Up Radio" : {
       "localizations" : {
@@ -1407,13 +1595,34 @@
       "comment" : "Cinema environment: in a glass-floored box hung off the top of one of the tallest towers downtown, looking straight down at the city"
     },
     "Starting remote admin session…" : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rozpoczynanie sesji zdalnego zarządzania…"
+          }
+        }
+      }
     },
     "Smaller Text" : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mniejszy tekst"
+          }
+        }
+      }
     },
     "Slash" : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ukośnik"
+          }
+        }
+      }
     },
     "Status is a short note other people see in their node lists." : {
       "comment" : "Radio setup name footer; the node's status message",
@@ -1427,7 +1636,14 @@
       }
     },
     "Terminal output" : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wynik terminala"
+          }
+        }
+      }
     },
     "Tab" : {
 
@@ -1575,7 +1791,14 @@
       }
     },
     "Up arrow" : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Strzałka w górę"
+          }
+        }
+      }
     },
     "Use Keyboard" : {
       "localizations" : {
@@ -1626,7 +1849,14 @@
       }
     },
     "Waiting for the node, last heard %lld s ago" : {
-
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Oczekiwanie na węzeł, ostatnio słyszany %lld s temu"
+          }
+        }
+      }
     },
     "Waiting for your radio's beacon settings." : {
       "comment" : "Radio setup beacons page; the listen setting has not arrived from the radio yet",
@@ -1955,7 +2185,15 @@
       }
     },
     "Pipe" : {
-      "comment" : "Remote shell key bar: accessibility label"
+      "comment" : "Remote shell key bar: accessibility label",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kreska pionowa"
+          }
+        }
+      }
     },
     "Previous rack page" : {
       "comment" : "Showcase: show the previous page of the wall rack",
@@ -2032,6 +2270,12 @@
             "state" : "translated",
             "value" : "以 2D 顯示地圖"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokaż mapę w 2D"
+          }
         }
       }
     },
@@ -2042,6 +2286,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "以 3D 顯示地圖"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokaż mapę w 3D"
           }
         }
       }
@@ -2792,6 +3042,12 @@
             "state" : "translated",
             "value" : "· %lld 個在範圍外"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "· poza mapą: %lld"
+          }
         }
       }
     },
@@ -3507,6 +3763,12 @@
             "state" : "translated",
             "value" : "置中"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wyśrodkuj"
+          }
         }
       }
     },
@@ -3734,6 +3996,12 @@
             "state" : "translated",
             "value" : "深色地圖"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ciemna mapa"
+          }
         }
       }
     },
@@ -3744,6 +4012,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "即時流量"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ruch na żywo"
           }
         }
       }
@@ -3952,6 +4226,12 @@
             "state" : "translated",
             "value" : "放置的圖釘"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Upuszczona pinezka"
+          }
         }
       }
     },
@@ -4084,6 +4364,12 @@
             "state" : "translated",
             "value" : "無法存取檔案：%@"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Brak dostępu do pliku: %@"
+          }
         }
       }
     },
@@ -4094,6 +4380,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "無法刪除檔案：%@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie udało się usunąć pliku: %@"
           }
         }
       }
@@ -4155,6 +4447,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已收到訊號"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Słyszany"
           }
         }
       }
@@ -4676,6 +4974,12 @@
             "state" : "translated",
             "value" : "無法取得地圖影像，改為顯示地形陰影"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Obraz mapy niedostępny; pokazywane jest cieniowanie terenu"
+          }
         }
       }
     },
@@ -4693,6 +4997,12 @@
             "state" : "translated",
             "value" : "無法取得地圖影像，改為顯示離線地圖"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Obraz mapy niedostępny; pokazywana jest mapa offline"
+          }
         }
       }
     },
@@ -4704,6 +5014,12 @@
             "state" : "translated",
             "value" : "地圖圖層"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Warstwa mapy"
+          }
         }
       }
     },
@@ -4714,6 +5030,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "地圖圖層"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Warstwa mapy"
           }
         }
       }
@@ -8136,6 +8458,12 @@
             "state" : "translated",
             "value" : "沒有含位置的追蹤路由"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Brak śledzeń trasy z pozycjami"
+          }
         }
       }
     },
@@ -8146,6 +8474,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "節點詳細資訊"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Szczegóły węzła"
           }
         }
       }
@@ -8173,6 +8507,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "節點標籤"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Etykiety węzłów"
           }
         }
       }
@@ -8290,6 +8630,12 @@
             "state" : "translated",
             "value" : "開啟 3D 地圖"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Otwórz mapę 3D"
+          }
         }
       }
     },
@@ -8318,6 +8664,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "選擇一條追蹤路由，即可沿路徑飛越，並將路線保留在地圖上。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybierz śledzenie trasy, aby przelecieć wzdłuż niego i zostawić je na mapie."
           }
         }
       }
@@ -8998,7 +9350,15 @@
       }
     },
     "Show Keyboard" : {
-      "comment" : "Remote shell key bar: accessibility label"
+      "comment" : "Remote shell key bar: accessibility label",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokaż klawiaturę"
+          }
+        }
+      }
     },
     "Shows the mesh on a terrain model in a volume." : {
       "comment" : "VoiceOver hint for the button that opens the spatial map volume",
@@ -9007,6 +9367,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "在立體空間中將 Mesh 網路顯示於地形模型上。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokazuje sieć na trójwymiarowym modelu terenu."
           }
         }
       }
@@ -9180,6 +9546,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "追蹤路由"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Śledzenia trasy"
           }
         }
       }
@@ -10753,6 +11125,12 @@
             "state" : "translated",
             "value" : "%1$@ · 已更新 %2$@"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ · Zaktualizowano %@"
+          }
         }
       }
     },
@@ -12092,6 +12470,12 @@
             "state" : "translated",
             "value" : "此裝置上已使用 %@"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zajęte na tym urządzeniu: %@"
+          }
         }
       }
     },
@@ -12144,6 +12528,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "將在此裝置上釋放 %@。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Na tym urządzeniu zwolni się %@."
           }
         }
       }
@@ -13347,6 +13737,12 @@
             "state" : "translated",
             "value" : "已下載 %1$lld · %2$@"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pobrane: %lld · %@"
+          }
         }
       }
     },
@@ -13693,6 +14089,12 @@
             "state" : "translated",
             "value" : "%lld 個功能"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Obiekty: %lld"
+          }
         }
       }
     },
@@ -13878,6 +14280,12 @@
             "state" : "translated",
             "value" : "%lld 個節點"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Węzły: %lld"
+          }
         }
       }
     },
@@ -13949,6 +14357,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$lld / %2$lld"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%lld z %lld"
           }
         }
       }
@@ -17772,6 +18186,12 @@
             "state" : "translated",
             "value" : "此節點先前的位置回報。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wcześniejsza pozycja zgłoszona przez ten węzeł."
+          }
         }
       }
     },
@@ -17841,6 +18261,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "顯示行進方向的先前位置回報。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wcześniejsza pozycja z kierunkiem ruchu."
           }
         }
       }
@@ -17985,6 +18411,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "共享的興趣點。長按地圖即可建立。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Udostępniony punkt orientacyjny. Przytrzymaj mapę, aby go utworzyć."
           }
         }
       }
@@ -19741,6 +20173,12 @@
             "state" : "translated",
             "value" : "新增地形"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dodaj teren"
+          }
         }
       }
     },
@@ -20109,6 +20547,12 @@
             "state" : "translated",
             "value" : "可調整。從此角向上滑動以展開，向下滑動以縮小地理圍欄區域"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Regulowany. Przesuń w górę, aby powiększyć, lub w dół, aby zmniejszyć obszar geofence od tego rogu"
+          }
         }
       }
     },
@@ -20131,6 +20575,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "可調整。從此角向上滑動以展開，向下滑動以縮小選取的區域"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Regulowany. Przesuń w górę, aby powiększyć, lub w dół, aby zmniejszyć zaznaczony obszar od tego rogu"
           }
         }
       }
@@ -22226,6 +22676,12 @@
             "state" : "translated",
             "value" : "所有估算結果"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wszystkie szacunki"
+          }
         }
       }
     },
@@ -22730,6 +23186,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "於 %@ 的海拔"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysokość o %@"
           }
         }
       }
@@ -23395,6 +23857,12 @@
             "state" : "translated",
             "value" : "涵蓋 Mesh 上所有 LoRa 節點位置的外框。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Obrys obejmujący pozycje wszystkich węzłów LoRa w sieci."
+          }
         }
       }
     },
@@ -23586,6 +24054,12 @@
             "state" : "translated",
             "value" : "天線增益（dBi）"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zysk anteny (dBi)"
+          }
         }
       }
     },
@@ -23603,6 +24077,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "天線高度"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysokość anteny"
           }
         }
       }
@@ -25011,6 +25491,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "區域對 %@ 來說太大。請縮小區域或選擇較低的詳細等級。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Obszar jest za duży dla poziomu %@. Zmniejsz obszar lub wybierz niższy poziom szczegółów."
           }
         }
       }
@@ -28474,6 +28960,12 @@
             "state" : "translated",
             "value" : "左下角控點"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Uchwyt dolnego lewego rogu"
+          }
         }
       }
     },
@@ -28496,6 +28988,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "右下角控點"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Uchwyt dolnego prawego rogu"
           }
         }
       }
@@ -28713,6 +29211,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "建築物"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Budynki"
           }
         }
       }
@@ -29540,6 +30044,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "取消地形下載"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Anuluj pobieranie terenu"
           }
         }
       }
@@ -33455,6 +33965,12 @@
             "state" : "translated",
             "value" : "選擇區域"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybierz obszar"
+          }
         }
       }
     },
@@ -33628,6 +34144,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "城市、公園等"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Miasta, parki i nie tylko"
           }
         }
       }
@@ -34034,6 +34556,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "清除追蹤路由"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wyczyść śledzenie trasy"
           }
         }
       }
@@ -34911,6 +35439,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "叢集節點"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Grupuj węzły"
           }
         }
       }
@@ -38149,6 +38683,12 @@
             "state" : "translated",
             "value" : "等高線"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Poziomice"
+          }
         }
       }
     },
@@ -38413,6 +38953,12 @@
             "state" : "translated",
             "value" : "凸包"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Obrys sieci"
+          }
         }
       }
     },
@@ -38500,6 +39046,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "經緯度"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Współrzędne"
           }
         }
       }
@@ -39130,6 +39682,12 @@
             "state" : "translated",
             "value" : "無法匯入離線地圖"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie udało się zaimportować mapy offline"
+          }
         }
       }
     },
@@ -39390,6 +39948,12 @@
             "state" : "translated",
             "value" : "涵蓋範圍"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zasięg"
+          }
         }
       }
     },
@@ -39400,6 +39964,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "涵蓋範圍估算"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Szacunek zasięgu"
           }
         }
       }
@@ -39419,6 +39989,12 @@
             "state" : "translated",
             "value" : "涵蓋範圍估算失敗"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Szacowanie zasięgu nie powiodło się"
+          }
         }
       }
     },
@@ -39429,6 +40005,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "涵蓋範圍圖例"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Legenda zasięgu"
           }
         }
       }
@@ -39451,6 +40033,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "涵蓋範圍不透明度"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Krycie zasięgu"
           }
         }
       }
@@ -39613,6 +40201,12 @@
             "state" : "translated",
             "value" : "建立路徑點"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Utwórz punkt orientacyjny"
+          }
         }
       }
     },
@@ -39640,6 +40234,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Creado por"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Utworzony przez"
           }
         }
       }
@@ -40108,6 +40708,12 @@
             "state" : "translated",
             "value" : "目前位置"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bieżąca lokalizacja"
+          }
         }
       }
     },
@@ -40293,6 +40899,12 @@
             "state" : "translated",
             "value" : "藍色虛線表示返回發起節點的路徑。若去程與回程共用同一路段，兩條線會並排顯示。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Niebieska przerywana linia z powrotem do nadawcy. Gdy obie trasy biegną tym samym odcinkiem, linie są obok siebie."
+          }
         }
       }
     },
@@ -40364,6 +40976,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "顯示已記錄路線的虛線。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przerywana linia pokazująca zapisaną trasę."
           }
         }
       }
@@ -41952,6 +42570,12 @@
             "state" : "translated",
             "value" : "為所有人刪除"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Usuń dla wszystkich"
+          }
         }
       }
     },
@@ -42456,6 +43080,12 @@
             "state" : "translated",
             "value" : "刪除路徑點"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Usuń punkt orientacyjny"
+          }
         }
       }
     },
@@ -42759,6 +43389,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "詳情"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Szczegółowość"
           }
         }
       }
@@ -45306,6 +45942,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "直接連結"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bezpośrednie połączenia"
           }
         }
       }
@@ -48219,6 +48861,12 @@
             "state" : "translated",
             "value" : "下載"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pobierz"
+          }
         }
       }
     },
@@ -48250,6 +48898,12 @@
             "state" : "translated",
             "value" : "下載地圖區域以便在無連線時使用。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pobierz obszary mapy, aby używać ich bez połączenia."
+          }
         }
       }
     },
@@ -48279,6 +48933,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "下載新地圖"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pobierz nową mapę"
           }
         }
       }
@@ -48362,6 +49022,12 @@
             "state" : "translated",
             "value" : "下載地形"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pobierz teren"
+          }
         }
       }
     },
@@ -48373,6 +49039,12 @@
             "state" : "translated",
             "value" : "自動下載地形"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pobieraj teren automatycznie"
+          }
         }
       }
     },
@@ -48383,6 +49055,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "要下載此區域的地形嗎？"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pobrać teren dla tego obszaru?"
           }
         }
       }
@@ -48504,6 +49182,12 @@
             "state" : "translated",
             "value" : "已下載的地圖"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pobrane mapy"
+          }
         }
       }
     },
@@ -48522,6 +49206,12 @@
             "state" : "translated",
             "value" : "當您沒有網路服務時，已下載的地圖隨時可用。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pobrane mapy działają, gdy nie masz zasięgu."
+          }
         }
       }
     },
@@ -48532,6 +49222,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "正在下載地形"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pobieranie terenu"
           }
         }
       }
@@ -48566,6 +49262,12 @@
             "state" : "translated",
             "value" : "將下載約 %1$@ 的街道地圖與海拔資料，涵蓋 Mesh 網路周圍 %2$@ 的區域。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pobiera około %@ mapy ulic i danych wysokości dla obszaru %@ wokół sieci."
+          }
         }
       }
     },
@@ -48576,6 +49278,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "下載海拔資料，讓地圖顯示山丘與山谷。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pobiera dane wysokości, aby mapa pokazywała wzniesienia i doliny."
           }
         }
       }
@@ -48607,6 +49315,12 @@
             "state" : "translated",
             "value" : "拖曳方框、其角落或地圖以框選區域"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przeciągnij prostokąt, jego rogi lub mapę, aby wyznaczyć obszar"
+          }
         }
       }
     },
@@ -48636,6 +49350,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "拖曳方框、其角落或地圖以框選地理圍欄區域"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przeciągnij prostokąt, jego rogi lub mapę, aby wyznaczyć obszar geofence"
           }
         }
       }
@@ -49274,6 +49994,12 @@
             "state" : "translated",
             "value" : "編輯邊界框"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Edytuj obszar"
+          }
         }
       }
     },
@@ -49296,6 +50022,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "編輯路徑點"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Edytuj punkt orientacyjny"
           }
         }
       }
@@ -49384,6 +50116,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "編輯路徑點"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Edycja punktu orientacyjnego"
           }
         }
       }
@@ -49500,6 +50238,12 @@
             "state" : "translated",
             "value" : "在每種地圖類型上，在已下載地形的區域上顯示海拔等高線。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Poziomice na obszarach z pobranym terenem, na każdym typie mapy."
+          }
         }
       }
     },
@@ -49515,6 +50259,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已下載此區域的山體陰影和等高線的海拔資料。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dane wysokości do cieniowania terenu i poziomic, pobrane dla tego obszaru."
           }
         }
       }
@@ -49533,6 +50283,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "山體陰影和等高線的海拔資料，繪製在 Apple 和離線地圖上。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dane wysokości do cieniowania terenu i poziomic, rysowane na mapach Apple i offline."
           }
         }
       }
@@ -53089,6 +53845,12 @@
             "state" : "translated",
             "value" : "估算"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Oszacuj"
+          }
         }
       }
     },
@@ -53111,6 +53873,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "估算涵蓋範圍"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Oszacuj zasięg"
           }
         }
       }
@@ -53147,6 +53915,12 @@
             "state" : "translated",
             "value" : "估算涵蓋範圍…"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Oszacuj zasięg…"
+          }
         }
       }
     },
@@ -53157,6 +53931,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@估算"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Oszacowano %@"
           }
         }
       }
@@ -53175,6 +53955,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "正在估算涵蓋範圍…"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Szacowanie zasięgu…"
           }
         }
       }
@@ -53617,6 +54403,12 @@
             "state" : "translated",
             "value" : "退出環顧"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zakończ Rozejrzyj się"
+          }
         }
       }
     },
@@ -53816,6 +54608,12 @@
             "state" : "translated",
             "value" : "過期"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wygasa"
+          }
         }
       }
     },
@@ -53903,6 +54701,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "過期"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wygasa"
           }
         }
       }
@@ -55613,6 +56417,12 @@
             "state" : "translated",
             "value" : "僅我的最愛"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tylko ulubione"
+          }
         }
       }
     },
@@ -55976,6 +56786,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "填入發射器座標。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wpisuje współrzędne nadajnika."
           }
         }
       }
@@ -57938,6 +58754,12 @@
             "state" : "translated",
             "value" : "飛越暫停 — Mesh 流量過高"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przelot wstrzymany — duży ruch w sieci"
+          }
         }
       }
     },
@@ -57967,6 +58789,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "飛越速度 %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prędkość przelotu %@"
           }
         }
       }
@@ -58657,6 +59485,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "頻率（MHz）"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Częstotliwość (MHz)"
           }
         }
       }
@@ -59579,6 +60413,12 @@
             "state" : "translated",
             "value" : "地理圍欄"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Geofence"
+          }
         }
       }
     },
@@ -59609,6 +60449,12 @@
             "state" : "translated",
             "value" : "地理圍欄區域"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Obszar geofence"
+          }
         }
       }
     },
@@ -59624,6 +60470,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "地理圍欄通知"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Powiadomienia geofence"
           }
         }
       }
@@ -60982,6 +61834,12 @@
             "state" : "translated",
             "value" : "地面海拔"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysokość terenu"
+          }
         }
       }
     },
@@ -60997,6 +61855,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "地面海拔從已下載的離線地圖地形讀取。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysokość terenu jest odczytywana z pobranych danych terenu mapy offline."
           }
         }
       }
@@ -61113,6 +61977,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "將附近的節點分組到一個編號的圖釘；點一下以放大。關閉以始終顯示每個節點。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Łączy pobliskie węzły w jedną pinezkę z liczbą; stuknij ją, aby przybliżyć. Wyłącz, aby zawsze widzieć każdy węzeł."
           }
         }
       }
@@ -61603,6 +62473,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "朝向：%@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kierunek: %@"
           }
         }
       }
@@ -62141,6 +63017,12 @@
             "state" : "translated",
             "value" : "隱藏海拔圖表"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ukryj wykres wysokości"
+          }
         }
       }
     },
@@ -62181,6 +63063,12 @@
             "state" : "translated",
             "value" : "隱藏涵蓋範圍"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ukryj zasięg"
+          }
         }
       }
     },
@@ -62214,7 +63102,15 @@
       }
     },
     "Hide Keyboard" : {
-      "comment" : "Remote shell key bar: accessibility label"
+      "comment" : "Remote shell key bar: accessibility label",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ukryj klawiaturę"
+          }
+        }
+      }
     },
     "Hide legend" : {
       "comment" : "A label for a button that hides the map legend.",
@@ -62284,6 +63180,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "隱藏圖例"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ukryj legendę"
           }
         }
       }
@@ -62356,6 +63258,12 @@
             "state" : "translated",
             "value" : "隱藏地圖圖例"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ukryj legendę mapy"
+          }
         }
       }
     },
@@ -62378,6 +63286,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "隱藏地圖設定"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ukryj ustawienia mapy"
           }
         }
       }
@@ -62459,6 +63373,12 @@
             "state" : "translated",
             "value" : "隱藏廣播大約位置的節點（以半透明精確度圓圈繪製的那些）。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ukrywa węzły, które nadają przybliżoną lokalizację (te z półprzezroczystym okręgiem dokładności)."
+          }
         }
       }
     },
@@ -62530,6 +63450,12 @@
             "state" : "translated",
             "value" : "隱藏地圖圖例。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ukrywa legendę mapy."
+          }
         }
       }
     },
@@ -62552,6 +63478,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "隱藏地圖設定面板。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ukrywa panel ustawień mapy."
           }
         }
       }
@@ -62581,6 +63513,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Oculta las opciones de filtro de nodos."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ukrywa opcje filtrowania węzłów."
           }
         }
       }
@@ -62727,6 +63665,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "山體陰影"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Cieniowanie terenu"
           }
         }
       }
@@ -63017,6 +63961,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "跳點編號"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Numery skoków"
           }
         }
       }
@@ -63340,6 +64290,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "跳數：%d"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Skoki: %d"
           }
         }
       }
@@ -65261,6 +66217,12 @@
             "state" : "translated",
             "value" : "圖示"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ikona"
+          }
         }
       }
     },
@@ -66548,6 +67510,12 @@
             "state" : "translated",
             "value" : "匯入"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Importuj"
+          }
         }
       }
     },
@@ -66896,6 +67864,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "匯入離線地圖"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Importuj mapę offline"
           }
         }
       }
@@ -67334,6 +68308,12 @@
             "state" : "translated",
             "value" : "包括步道、道路和興趣點。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zawiera szlaki, drogi i punkty orientacyjne."
+          }
         }
       }
     },
@@ -67351,6 +68331,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "包括步道、道路、興趣點以及山體陰影和等高線的地形資料。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zawiera szlaki, drogi, punkty orientacyjne i dane terenu do cieniowania i poziomic."
           }
         }
       }
@@ -67621,6 +68607,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "表示 GPS 精確度降低。節點位於陰影區域內的某處。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Oznacza obniżoną dokładność GPS. Węzeł jest gdzieś w zacienionym obszarze."
           }
         }
       }
@@ -69995,6 +70987,12 @@
             "state" : "translated",
             "value" : "Última actualización por"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ostatnio zaktualizowany przez"
+          }
         }
       }
     },
@@ -71152,6 +72150,12 @@
             "state" : "translated",
             "value" : "淡"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Słaby"
+          }
         }
       }
     },
@@ -71390,6 +72394,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "可直接互相收聽的節點之間會以線條相連，並依訊號品質上色。您無線電的連結來自它收聽到的節點；其他節點之間的連結則來自它們的鄰居資訊回報。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Linie między węzłami, które słyszą się bezpośrednio, w kolorze zależnym od jakości sygnału. Połączenia Twojego radia pochodzą z węzłów, które ono słyszy; połączenia między innymi węzłami pochodzą z ich raportów Neighbor Info."
           }
         }
       }
@@ -72305,6 +73315,12 @@
             "state" : "translated",
             "value" : "僅本地"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tylko lokalnie"
+          }
         }
       }
     },
@@ -72403,6 +73419,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ubicación"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Lokalizacja"
           }
         }
       }
@@ -72521,6 +73543,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "位置："
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Lokalizacja:"
           }
         }
       }
@@ -73485,6 +74513,12 @@
             "state" : "translated",
             "value" : "已上鎖"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zablokowany"
+          }
         }
       }
     },
@@ -74422,6 +75456,12 @@
             "state" : "translated",
             "value" : "環顧"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rozejrzyj się"
+          }
         }
       }
     },
@@ -75264,6 +76304,12 @@
             "state" : "translated",
             "value" : "管理地圖資料"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zarządzaj danymi mapy"
+          }
         }
       }
     },
@@ -75728,6 +76774,12 @@
             "state" : "translated",
             "value" : "地圖 + 地形"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mapa + teren"
+          }
         }
       }
     },
@@ -75745,6 +76797,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "地圖中心"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Środek mapy"
           }
         }
       }
@@ -75858,6 +76916,12 @@
             "state" : "translated",
             "value" : "地圖資料 © OpenStreetMap、Protomaps"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dane mapy © OpenStreetMap, Protomaps"
+          }
         }
       }
     },
@@ -75930,6 +76994,12 @@
             "state" : "translated",
             "value" : "地圖圖例"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Legenda mapy"
+          }
         }
       }
     },
@@ -75947,6 +77017,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "僅地圖"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tylko mapa"
           }
         }
       }
@@ -76035,6 +77111,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "地圖選項"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Opcje mapy"
           }
         }
       }
@@ -76264,6 +77346,12 @@
             "state" : "translated",
             "value" : "地圖已更新"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mapa zaktualizowana"
+          }
         }
       }
     },
@@ -76292,6 +77380,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mapterhorn 地形"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mapterhorn Terrain"
           }
         }
       }
@@ -76455,6 +77549,12 @@
             "state" : "translated",
             "value" : "最大範圍"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Maksymalny zasięg"
+          }
         }
       }
     },
@@ -76580,6 +77680,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "中"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Średni"
           }
         }
       }
@@ -76807,6 +77913,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mesh 涵蓋範圍"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zasięg sieci"
           }
         }
       }
@@ -98357,6 +99469,12 @@
             "state" : "translated",
             "value" : "向東移動"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przesuń na wschód"
+          }
         }
       }
     },
@@ -98379,6 +99497,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "向北移動"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przesuń na północ"
           }
         }
       }
@@ -98403,6 +99527,12 @@
             "state" : "translated",
             "value" : "移動選取範圍"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przesuń zaznaczenie"
+          }
         }
       }
     },
@@ -98426,6 +99556,12 @@
             "state" : "translated",
             "value" : "向南移動"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przesuń na południe"
+          }
         }
       }
     },
@@ -98448,6 +99584,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "向西移動"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przesuń na zachód"
           }
         }
       }
@@ -99428,6 +100570,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "我的位置"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Moja lokalizacja"
           }
         }
       }
@@ -100641,6 +101789,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "從不"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nigdy"
           }
         }
       }
@@ -101867,6 +103021,12 @@
             "state" : "translated",
             "value" : "沒有上傳任何檔案"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie przesłano plików"
+          }
         }
       }
     },
@@ -102177,6 +103337,12 @@
             "state" : "translated",
             "value" : "未上傳任何地圖資料檔案"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie przesłano plików z danymi mapy"
+          }
         }
       }
     },
@@ -102314,6 +103480,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "尚無離線地圖。下載一個區域以在無連線時使用地圖。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie masz jeszcze map offline. Pobierz obszar, aby używać mapy bez połączenia."
           }
         }
       }
@@ -102957,6 +104129,12 @@
             "state" : "translated",
             "value" : "無訊號"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Brak sygnału"
+          }
         }
       }
     },
@@ -103474,6 +104652,12 @@
             "state" : "translated",
             "value" : "過去 2 小時內曾收到訊號的節點。在地圖上以脈動圓環顯示。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Węzeł słyszany w ciągu ostatnich 2 godzin. Na mapie ma pulsujący pierścień."
+          }
         }
       }
     },
@@ -103561,6 +104745,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "節點歷史位置"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Historia węzłów"
           }
         }
       }
@@ -104022,6 +105212,12 @@
             "state" : "translated",
             "value" : "最近未收到訊號的節點。在地圖上不顯示脈動圓環。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Węzeł niesłyszany ostatnio. Na mapie nie ma pulsującego pierścienia."
+          }
         }
       }
     },
@@ -104257,6 +105453,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "具有作用中偵測感測器模組的節點。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Węzeł z aktywnym modułem czujnika wykrywania."
           }
         }
       }
@@ -105576,6 +106778,12 @@
             "state" : "translated",
             "value" : "進入時通知"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Powiadom po wejściu"
+          }
         }
       }
     },
@@ -105603,6 +106811,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "離開時通知"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Powiadom po wyjściu"
           }
         }
       }
@@ -105963,6 +107177,12 @@
             "state" : "translated",
             "value" : "關閉"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wył."
+          }
         }
       }
     },
@@ -105989,6 +107209,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "離線"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Offline"
           }
         }
       }
@@ -106050,6 +107276,12 @@
             "state" : "translated",
             "value" : "離線地圖"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "MAPA OFFLINE"
+          }
         }
       }
     },
@@ -106060,6 +107292,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "離線地圖儲存空間已滿。請在「離線地圖」中刪除一張地圖，以下載整個 Mesh 網路的地形。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Miejsce na mapy offline jest pełne. Usuń mapę w Mapach offline, aby pobrać teren dla całej sieci."
           }
         }
       }
@@ -106088,6 +107326,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "離線地圖"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mapy offline"
           }
         }
       }
@@ -106161,6 +107405,12 @@
             "state" : "translated",
             "value" : "離線節點"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Węzeł offline"
+          }
         }
       }
     },
@@ -106190,6 +107440,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "離線圖磚"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kafelki offline"
           }
         }
       }
@@ -106308,6 +107564,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "好的"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "OK"
           }
         }
       }
@@ -107080,6 +108342,12 @@
             "state" : "translated",
             "value" : "線上節點"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Węzeł online"
+          }
         }
       }
     },
@@ -107415,6 +108683,12 @@
             "state" : "translated",
             "value" : "Abrir en Maps"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Otwórz w Mapach"
+          }
         }
       }
     },
@@ -107507,6 +108781,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "在新視窗中開啟地圖"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Otwórz mapę w nowym oknie"
           }
         }
       }
@@ -108354,6 +109634,12 @@
             "state" : "translated",
             "value" : "起點與目標"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nadawca i cel"
+          }
         }
       }
     },
@@ -108750,6 +110036,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "去程路徑"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Trasa do celu"
           }
         }
       }
@@ -109704,6 +110996,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "調色盤"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Paleta"
           }
         }
       }
@@ -111865,6 +113163,12 @@
             "state" : "translated",
             "value" : "興趣點"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Punkty orientacyjne"
+          }
         }
       }
     },
@@ -112546,6 +113850,12 @@
             "state" : "translated",
             "value" : "位置歷史"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Historia pozycji"
+          }
         }
       }
     },
@@ -112617,6 +113927,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "位置歷史點"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Punkt historii pozycji"
           }
         }
       }
@@ -112952,6 +114268,12 @@
             "state" : "translated",
             "value" : "位置精度"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dokładność pozycji"
+          }
         }
       }
     },
@@ -113023,6 +114345,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "定位精度圓圈"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Okrąg dokładności pozycji"
           }
         }
       }
@@ -113212,6 +114540,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "含方向的位置"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pozycja z kierunkiem"
           }
         }
       }
@@ -114282,6 +115616,12 @@
             "state" : "translated",
             "value" : "降水資料來自 NOAA 雷達，僅涵蓋美國本土 48 州。需要網路連線。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Opady z radaru NOAA, tylko kontynentalne USA. Wymaga połączenia z siecią."
+          }
         }
       }
     },
@@ -114386,6 +115726,12 @@
             "state" : "translated",
             "value" : "僅精確位置"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tylko dokładne lokalizacje"
+          }
         }
       }
     },
@@ -114415,6 +115761,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "正在準備…"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przygotowywanie…"
           }
         }
       }
@@ -115435,6 +116787,12 @@
             "state" : "translated",
             "value" : "正在處理檔案..."
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przetwarzanie pliku…"
+          }
         }
       }
     },
@@ -115651,6 +117009,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Protomaps 戶外"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Protomaps Outdoors"
           }
         }
       }
@@ -116703,6 +118067,12 @@
             "state" : "translated",
             "value" : "半徑"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Promień"
+          }
         }
       }
     },
@@ -117116,6 +118486,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "重新估算涵蓋範圍…"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Oszacuj zasięg ponownie…"
           }
         }
       }
@@ -118032,6 +119408,12 @@
             "state" : "translated",
             "value" : "接收器"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Odbiornik"
+          }
         }
       }
     },
@@ -118042,6 +119424,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "接收端高度"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysokość odbiornika"
           }
         }
       }
@@ -119135,6 +120523,12 @@
             "state" : "translated",
             "value" : "中繼節點依序編號，去程以橘色實心標示，回程以藍色外框標示。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przekaźniki są ponumerowane po kolei: wypełnione na pomarańczowo w drodze do celu, z niebieskim obrysem w drodze powrotnej."
+          }
         }
       }
     },
@@ -119687,6 +121081,12 @@
             "state" : "translated",
             "value" : "移除邊界框"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Usuń obszar"
+          }
         }
       }
     },
@@ -119716,6 +121116,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "移除下載"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Usuń pobraną mapę"
           }
         }
       }
@@ -119909,6 +121315,12 @@
             "state" : "translated",
             "value" : "從此裝置移除"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Usuń z tego urządzenia"
+          }
         }
       }
     },
@@ -119938,6 +121350,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "移除此離線地圖嗎？"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Usunąć tę mapę offline?"
           }
         }
       }
@@ -119991,6 +121409,12 @@
             "state" : "translated",
             "value" : "重新命名"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zmień nazwę"
+          }
         }
       }
     },
@@ -120020,6 +121444,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "重新命名地圖"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zmień nazwę mapy"
           }
         }
       }
@@ -120359,6 +121789,12 @@
             "state" : "translated",
             "value" : "在地圖上重新定位地理圍欄區域"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przesuwa obszar geofence na mapie"
+          }
         }
       }
     },
@@ -120381,6 +121817,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "在地圖上重新定位選取的下載區域"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przesuwa zaznaczony obszar pobierania na mapie"
           }
         }
       }
@@ -121300,6 +122742,12 @@
             "state" : "translated",
             "value" : "調整區域大小"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zmień obszar"
+          }
         }
       }
     },
@@ -122169,6 +123617,12 @@
             "state" : "translated",
             "value" : "重試地形下載"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ponów pobieranie terenu"
+          }
         }
       }
     },
@@ -122449,6 +123903,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "回程路徑"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Trasa powrotna"
           }
         }
       }
@@ -123640,6 +125100,12 @@
             "state" : "translated",
             "value" : "路線終點"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Koniec trasy"
+          }
         }
       }
     },
@@ -123711,6 +125177,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "路線"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Linia trasy"
           }
         }
       }
@@ -123799,6 +125271,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "路徑線"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Linie tras"
           }
         }
       }
@@ -124130,6 +125608,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "路線起點"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Początek trasy"
           }
         }
       }
@@ -124746,6 +126230,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "執行站點規劃器涵蓋範圍估算並將其新增到地圖。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Szacuje zasięg w Site Planner i dodaje wynik do mapy."
           }
         }
       }
@@ -125583,6 +127073,12 @@
             "state" : "translated",
             "value" : "僅儲存在此裝置上 — 不透過 Mesh 分享。其他節點無法編輯，您隨時可以刪除。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zapisany tylko na tym urządzeniu — nie jest udostępniany w sieci. Inne węzły nie mogą go edytować, a Ty zawsze możesz go usunąć."
+          }
         }
       }
     },
@@ -125598,6 +127094,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "僅儲存在此裝置上 — 不透過 Mesh 傳送任何內容。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zapisany tylko na tym urządzeniu — nic nie jest wysyłane do sieci."
           }
         }
       }
@@ -127987,6 +129489,12 @@
             "state" : "translated",
             "value" : "選擇表情符號"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybierz emoji"
+          }
         }
       }
     },
@@ -128009,6 +129517,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "選取項目（%@）"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybierz element (%@)"
           }
         }
       }
@@ -128218,6 +129732,12 @@
             "state" : "translated",
             "value" : "選擇地圖檔案"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybierz plik mapy"
+          }
         }
       }
     },
@@ -128387,6 +129907,12 @@
             "state" : "translated",
             "value" : "選取的節點"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybrany węzeł"
+          }
         }
       }
     },
@@ -128474,6 +130000,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "發送"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wyślij"
           }
         }
       }
@@ -130190,6 +131722,12 @@
             "state" : "translated",
             "value" : "靈敏度（dBm）"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Czułość (dBm)"
+          }
         }
       }
     },
@@ -130911,6 +132449,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "序列: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Numer kolejny: %@"
           }
         }
       }
@@ -132275,6 +133819,12 @@
             "state" : "translated",
             "value" : "設定邊界框"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ustaw obszar"
+          }
         }
       }
     },
@@ -132292,6 +133842,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "從以下設定座標"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ustaw współrzędne z"
           }
         }
       }
@@ -132580,6 +134136,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "設定為目前位置"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ustaw bieżącą lokalizację"
           }
         }
       }
@@ -133055,6 +134617,12 @@
             "state" : "translated",
             "value" : "在已下載地形的區域上顯示陰影地形浮雕。僅限標準和離線地圖。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Cieniowana rzeźba terenu na obszarach z pobranym terenem. Tylko mapa standardowa i offline."
+          }
         }
       }
     },
@@ -133066,6 +134634,12 @@
             "state" : "translated",
             "value" : "山谷陰影"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Cieniuj doliny"
+          }
         }
       }
     },
@@ -133076,6 +134650,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "加深天空較少照到的谷底與峽谷。陰影需要較長時間繪製。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przyciemnia dna dolin i wąwozy, które widzą mniej nieba. Cieniowanie rysuje się dłużej."
           }
         }
       }
@@ -133426,6 +135006,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "分享離線地圖"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Udostępnij mapę offline"
           }
         }
       }
@@ -134368,6 +135954,12 @@
             "state" : "translated",
             "value" : "顯示海拔圖表"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokaż wykres wysokości"
+          }
         }
       }
     },
@@ -134407,6 +135999,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "顯示涵蓋範圍"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokaż zasięg"
           }
         }
       }
@@ -134509,6 +136107,12 @@
             "state" : "translated",
             "value" : "顯示圖例"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokaż legendę"
+          }
         }
       }
     },
@@ -134580,6 +136184,12 @@
             "state" : "translated",
             "value" : "顯示地圖圖例"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokaż legendę mapy"
+          }
         }
       }
     },
@@ -134602,6 +136212,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "顯示地圖設定"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokaż ustawienia mapy"
           }
         }
       }
@@ -135301,6 +136917,12 @@
             "state" : "translated",
             "value" : "在涵蓋區域上顯示已儲存的地圖。當 iOS 沒有網路路由時，它們也會自動顯示。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokazuje zapisane mapy na obszarach, które obejmują. Pojawiają się też same, gdy iOS nie ma połączenia z siecią."
+          }
         }
       }
     },
@@ -135372,6 +136994,12 @@
             "state" : "translated",
             "value" : "顯示地圖圖例"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokazuje legendę mapy."
+          }
         }
       }
     },
@@ -135394,6 +137022,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "顯示地圖設定面板。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokazuje panel ustawień mapy."
           }
         }
       }
@@ -135423,6 +137057,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Muestra las opciones de filtro de nodos."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokazuje opcje filtrowania węzłów."
           }
         }
       }
@@ -135956,6 +137596,12 @@
             "state" : "translated",
             "value" : "訊號"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sygnał"
+          }
         }
       }
     },
@@ -136174,6 +137820,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "訊號強度"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Siła sygnału"
           }
         }
       }
@@ -136741,6 +138393,12 @@
             "state" : "translated",
             "value" : "模擬選項"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Opcje symulacji"
+          }
         }
       }
     },
@@ -136926,6 +138584,12 @@
             "state" : "translated",
             "value" : "站點 / 發射器"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Lokalizacja / nadajnik"
+          }
         }
       }
     },
@@ -136949,6 +138613,12 @@
             "state" : "translated",
             "value" : "站點名稱"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nazwa lokalizacji"
+          }
         }
       }
     },
@@ -136966,6 +138636,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "站點規劃器"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Site Planner"
           }
         }
       }
@@ -137008,6 +138684,12 @@
             "state" : "translated",
             "value" : "大小"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rozmiar"
+          }
         }
       }
     },
@@ -137037,6 +138719,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "選取地圖的大小：%@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rozmiar zaznaczonej mapy: %@"
           }
         }
       }
@@ -137923,6 +139611,12 @@
             "state" : "translated",
             "value" : "橘色實線表示前往目標節點的路徑；箭頭指向傳遞方向。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ciągła pomarańczowa linia do celu; strzałki wskazują kierunek."
+          }
         }
       }
     },
@@ -137952,6 +139646,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "來源"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Źródło"
           }
         }
       }
@@ -138239,6 +139939,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "速度：%@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prędkość: %@"
           }
         }
       }
@@ -138869,6 +140575,12 @@
             "state" : "translated",
             "value" : "開始飛越"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rozpocznij przelot"
+          }
         }
       }
     },
@@ -139486,6 +141198,12 @@
             "state" : "translated",
             "value" : "停止飛越"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zatrzymaj przelot"
+          }
         }
       }
     },
@@ -139981,6 +141699,12 @@
             "state" : "translated",
             "value" : "濃"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mocny"
+          }
         }
       }
     },
@@ -140207,6 +141931,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已成功上傳「%1$@」，包含 %2$lld 個圖層"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przesłano „%@” z nakładkami: %lld"
           }
         }
       }
@@ -142146,6 +143876,12 @@
             "state" : "translated",
             "value" : "地形"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Teren"
+          }
         }
       }
     },
@@ -142162,6 +143898,12 @@
             "state" : "translated",
             "value" : "地形資料 © Mapterhorn"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dane terenu © Mapterhorn"
+          }
         }
       }
     },
@@ -142173,6 +143915,12 @@
             "state" : "translated",
             "value" : "地形資料 © [Mapterhorn](https://mapterhorn.com/attribution)"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dane terenu © [Mapterhorn](https://mapterhorn.com/attribution)"
+          }
         }
       }
     },
@@ -142183,6 +143931,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "地形下載失敗"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pobieranie terenu nie powiodło się"
           }
         }
       }
@@ -142218,6 +143972,12 @@
             "state" : "translated",
             "value" : "僅地形"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tylko teren"
+          }
         }
       }
     },
@@ -142233,6 +143993,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "僅地形 — 山體陰影和等高線"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tylko teren — cieniowanie i poziomice"
           }
         }
       }
@@ -142269,6 +144035,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "地形：%@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Teren: %@"
           }
         }
       }
@@ -143901,6 +145673,12 @@
             "state" : "translated",
             "value" : "Mesh 網路分布範圍過大，無法下載全部區域的地形。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sieć jest zbyt rozległa, aby pobrać teren dla całego jej obszaru."
+          }
         }
       }
     },
@@ -144515,6 +146293,12 @@
             "state" : "translated",
             "value" : "發起節點的簡稱以綠色圓環標示；目標節點的簡稱以白色圓環標示。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Krótka nazwa nadawcy ma zielony pierścień, a celu biały."
+          }
         }
       }
     },
@@ -144540,6 +146324,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "每一段上的標籤會顯示其 SNR，並以綠色（良好）、黃色（尚可）、橘色（差）或紅色（無）標示。會重疊的標籤將隱藏，直到您放大為止。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Etykieta na każdym odcinku pokazuje jego SNR: zielona (dobry), żółta (średni), pomarańczowa (słaby) lub czerwona (brak). Nakładające się etykiety są ukryte, dopóki nie przybliżysz mapy."
           }
         }
       }
@@ -145300,6 +147090,12 @@
             "state" : "translated",
             "value" : "空間地圖為 Mesh 網路保留的離線地圖，包含街道與地形。應用程式開啟時會隨 Mesh 網路擴大。您可隨時刪除；下次開啟空間地圖時會重新下載（在空間地圖中關閉「自動下載地形」即可停止）。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mapa offline sieci dla mapy 3D: ulice i teren. Rośnie razem z siecią, gdy aplikacja jest otwarta. Możesz ją usunąć w każdej chwili; mapa 3D pobierze ją ponownie przy następnym otwarciu (wyłącz tam „Pobieraj teren automatycznie”, aby temu zapobiec)."
+          }
         }
       }
     },
@@ -145398,6 +147194,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mesh 網路的街道地圖超過單張地圖的大小上限，因此只下載了地形。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mapa ulic dla sieci przekracza limit jednej mapy, więc pobrano tylko teren."
           }
         }
       }
@@ -148134,7 +149936,15 @@
       }
     },
     "Tilde" : {
-      "comment" : "Remote shell key bar: accessibility label"
+      "comment" : "Remote shell key bar: accessibility label",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tylda"
+          }
+        }
+      }
     },
     "Tile Server" : {
       "comment" : "OverlayType.localized: map overlay kind",
@@ -148917,6 +150727,12 @@
             "state" : "translated",
             "value" : "Marcas de tiempo"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Znaczniki czasu"
+          }
         }
       }
     },
@@ -149469,6 +151285,12 @@
             "state" : "translated",
             "value" : "切換地圖圖例顯示"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokazuje lub ukrywa legendę mapy"
+          }
         }
       }
     },
@@ -149563,6 +151385,12 @@
             "state" : "translated",
             "value" : "左上角控點"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Uchwyt górnego lewego rogu"
+          }
         }
       }
     },
@@ -149585,6 +151413,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "右上角控點"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Uchwyt górnego prawego rogu"
           }
         }
       }
@@ -150739,6 +152573,12 @@
             "state" : "translated",
             "value" : "追蹤路由：%1$@ → %2$@"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Śledzenie trasy: %@ → %@"
+          }
         }
       }
     },
@@ -150809,6 +152649,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "追蹤路由"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Śledzenia trasy"
           }
         }
       }
@@ -150993,6 +152839,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "交通狀況"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ruch drogowy"
           }
         }
       }
@@ -151537,6 +153389,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "發射功率（W）"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Moc nadawania (W)"
           }
         }
       }
@@ -152801,6 +154659,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "未知"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "nieznane"
           }
         }
       }
@@ -154531,6 +156395,12 @@
             "state" : "translated",
             "value" : "上傳錯誤"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Błąd przesyłania"
+          }
         }
       }
     },
@@ -154612,6 +156482,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "上傳GeoJSON檔案以顯示自訂地圖覆蓋層。檔案本機儲存，最大10MB。"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prześlij pliki GeoJSON, aby wyświetlić własne nakładki na mapie. Pliki są przechowywane lokalnie i mogą mieć do 10 MB."
           }
         }
       }
@@ -154695,6 +156571,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "上傳地圖資料"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prześlij dane mapy"
           }
         }
       }
@@ -154862,6 +156744,12 @@
             "state" : "translated",
             "value" : "上傳地圖覆蓋層"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prześlij nakładki map"
+          }
         }
       }
     },
@@ -155014,6 +156902,12 @@
             "state" : "translated",
             "value" : "上傳成功"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przesłano"
+          }
         }
       }
     },
@@ -155095,6 +156989,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已上傳的地圖覆蓋層"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przesłane nakładki map"
           }
         }
       }
@@ -155648,6 +157548,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "使用我的位置"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Użyj mojej lokalizacji"
           }
         }
       }
@@ -158014,6 +159920,12 @@
             "state" : "translated",
             "value" : "透過 MQTT"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "przez MQTT"
+          }
         }
       }
     },
@@ -159110,6 +161022,12 @@
             "state" : "translated",
             "value" : "路徑點"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Punkt orientacyjny"
+          }
         }
       }
     },
@@ -159191,6 +161109,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "路徑點傳送失敗"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie udało się wysłać punktu orientacyjnego"
           }
         }
       }
@@ -159280,6 +161204,12 @@
             "state" : "translated",
             "value" : "路徑點選項"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Opcje punktu orientacyjnego"
+          }
         }
       }
     },
@@ -159355,6 +161285,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "路徑點"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Punkty orientacyjne"
           }
         }
       }
@@ -159454,6 +161390,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "氣象雷達"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Radar pogodowy"
           }
         }
       }
@@ -163042,6 +164984,12 @@
             "state" : "translated",
             "value" : "您無線電的鄰居資訊模組已關閉，因此無法顯示其他節點之間的連結。"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Moduł Neighbor Info w Twoim radiu jest wyłączony, więc nie można pokazać połączeń między innymi węzłami."
+          }
         }
       }
     },
@@ -163471,6 +165419,12 @@
             "state" : "translated",
             "value" : "縮放"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Powiększenie"
+          }
         }
       }
     },
@@ -163482,6 +165436,12 @@
             "state" : "translated",
             "value" : "放大"
           }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przybliż"
+          }
         }
       }
     },
@@ -163492,6 +165452,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "縮小"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Oddal"
           }
         }
       }
