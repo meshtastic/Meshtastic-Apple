@@ -196,7 +196,7 @@ struct TelemetryWidgetView: View {
 			case .systemSmall:
 				grid(Array(entry.metrics.prefix(2)), columns: 2, telemetry: telemetry)
 			case .systemMedium:
-				grid(Array(entry.metrics.prefix(4)), columns: 4, telemetry: telemetry)
+				bestFitGrid(Array(entry.metrics.prefix(4)), telemetry: telemetry)
 			#if os(visionOS)
 			case .systemExtraLarge:
 				grid(Array(entry.metrics.prefix(TelemetryMetric.maximumCount)), columns: 4, telemetry: telemetry)
@@ -227,7 +227,7 @@ struct TelemetryWidgetView: View {
 
 	/// Pages for the sizes that page: large, and extra large portrait with more than six readings.
 	private var pageCount: Int {
-		usesEvenEdges ? entry.pageCount(pageSize: pageSize) : 1
+		family == .systemLarge || isExtraLargePortrait ? entry.pageCount(pageSize: pageSize) : 1
 	}
 
 	private var page: Int {
@@ -236,7 +236,7 @@ struct TelemetryWidgetView: View {
 
 	/// The sizes whose tiles are spaced from the widget's side edges by the grid itself.
 	private var usesEvenEdges: Bool {
-		family == .systemLarge || isExtraLargePortrait
+		family == .systemMedium || family == .systemLarge || isExtraLargePortrait
 	}
 
 	/// Rows of `columns` square tiles, as large as the widget allows and centered.
@@ -364,6 +364,7 @@ private struct TelemetryFooter: View {
 				Group {
 					if entry.isStale {
 						Label("Over 2 hours old · \(time, style: .relative) ago", systemImage: "clock.badge.exclamationmark")
+							.font(.system(size: 9))
 							.foregroundStyle(.orange)
 					} else {
 						Text("Updated \(time, style: .relative) ago")

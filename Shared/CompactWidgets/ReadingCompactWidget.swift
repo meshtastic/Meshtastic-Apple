@@ -19,20 +19,36 @@ struct ReadingCompactWidget: View {
 	var detail: String?
 	var valueColor: Color?
 
+	private var fillsTile: Bool { unit == nil && value.count < 4 }
+
 	var body: some View {
 		VStack(alignment: .leading) {
 			HStack(alignment: .firstTextBaseline) {
 				Image(systemName: systemImage)
 					.imageScale(.small)
 					.foregroundColor(.accentColor)
+				// Long names such as gas resistance wrap rather than shrink.
 				Text(verbatim: title)
 					.textCase(.uppercase)
 					.font(.callout)
+					.lineLimit(2)
+					.minimumScaleFactor(0.5)
 			}
 			HStack {
-				Text(value)
-					.font(value.count < 4 ? .system(size: 50) : .system(size: 40))
-					.foregroundStyle(valueColor ?? Color(uiColor: .label))
+				Group {
+					if fillsTile {
+						// A short reading with no unit beside it, such as IAQ, grows to fill the
+						// space between the title and its band.
+						Text(value)
+							.font(.system(size: 200))
+							.minimumScaleFactor(0.1)
+							.frame(maxHeight: .infinity, alignment: .leading)
+					} else {
+						Text(value)
+							.font(value.count < 4 ? .system(size: 50) : .system(size: 40))
+					}
+				}
+				.foregroundStyle(valueColor ?? Color(uiColor: .label))
 				if let unit {
 					Text(unit)
 						.font(.system(size: 14))
