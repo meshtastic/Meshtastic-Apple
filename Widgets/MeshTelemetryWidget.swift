@@ -110,11 +110,7 @@ struct MeshTelemetryWidget: Widget {
 	#if !os(visionOS)
 	/// The extra large portrait size arrived on iPhone in iOS 27.
 	private static var families: [WidgetFamily] {
-		var families: [WidgetFamily] = [.systemSmall, .systemMedium, .systemLarge]
-		if #available(iOS 27.0, *) {
-			families.append(.systemExtraLargePortrait)
-		}
-		return families
+		WidgetFamily.addingExtraLargePortrait(to: [.systemSmall, .systemMedium, .systemLarge])
 	}
 	#endif
 }
@@ -213,10 +209,7 @@ struct TelemetryWidgetView: View {
 
 	/// The tall size on iOS 27 and Vision Pro, with room for every reading.
 	private var isExtraLargePortrait: Bool {
-		if #available(iOS 27.0, visionOS 26.0, *) {
-			return family == .systemExtraLargePortrait
-		}
-		return false
+		family.isExtraLargePortrait
 	}
 
 	/// Readings on one page of this size.

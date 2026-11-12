@@ -348,7 +348,9 @@ extension SpatialMeshData {
 		for (n, u, v) in [(a, b, c), (b, c, a), (c, a, b)] {
 			for sign: Float in [-1, 1] {
 				let mid = center + n * sign
-				var quad = [mid - u - v, mid + u - v, mid + u + v, mid - u + v]
+				let low = mid - v
+				let high = mid + v
+				var quad: [SIMD3<Float>] = [low - u, low + u, high + u, high - u]
 				if simd_dot(simd_cross(quad[1] - quad[0], quad[2] - quad[0]), n * sign) < 0 { quad.reverse() }
 				let normal = simd_normalize(n * sign)
 				let first = UInt32(positions.count)

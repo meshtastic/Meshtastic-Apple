@@ -94,7 +94,9 @@ enum SpatialLighthouse {
 				let across = SIMD2(outward.y, -outward.x) * width / 2
 				let center = outward * radius
 				let depth = outward * 0.00012
-				let outline = [center - across - depth, center + across - depth, center + across + depth, center - across + depth]
+				let inner = center - depth
+				let outer = center + depth
+				let outline: [SIMD2<Float>] = [inner - across, inner + across, outer + across, outer - across]
 				mesh.addPrism(outline: Self.ordered(outline), bottom: bottom, top: bottom + height)
 			}
 			opening(along: .pi, bottom: plinthHeight, width: 0.0016, height: 0.0034)
