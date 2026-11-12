@@ -33,8 +33,8 @@ enum LookoutSiteCacheKey {
 }
 
 #if os(visionOS)
-/// The fire lookout's summits, kept on disk so they're found once per set of downloads rather
-/// than each time the cinema opens. They're found again when a download is added, removed or
+/// The fire lookout's summits, and the lighthouse's headlands, kept on disk so they're found once
+/// per set of downloads rather than each time the cinema opens. They're found again when a download is added, removed or
 /// refreshed, since that's what they're found in.
 enum LookoutSiteCache {
 	/// Bump when a site search or naming changes, so lists found the old way are found again.
@@ -66,21 +66,15 @@ enum LookoutSiteCache {
 
 	/// Forgets the kept sites, so the next search runs again.
 	static func clear() {
-		for kind in [LookoutSiteKind.summit, .rooftop, .skyDeck] {
+		for kind in LookoutSiteKind.allCases {
 			guard let url = fileURL(kind) else { continue }
 			try? FileManager.default.removeItem(at: url)
 		}
 	}
 
-	/// Each kind in its own file, so moving between the lookout, the rooftop and the sky deck keeps
-	/// each list.
 	private static func fileURL(_ kind: LookoutSiteKind) -> URL? {
-		let name = switch kind {
-		case .summit: "LookoutSites.json"
-		case .rooftop: "RooftopSites.json"
-		case .skyDeck: "SkyDeckSites.json"
-		}
-		return FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first?.appendingPathComponent(name)
+		FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first?
+			.appendingPathComponent(kind.cacheFileName)
 	}
 }
 #endif
