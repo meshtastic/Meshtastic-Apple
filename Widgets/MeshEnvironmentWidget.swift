@@ -266,7 +266,8 @@ struct EnvironmentTile: View {
 			.lineLimit(1)
 			.minimumScaleFactor(0.5)
 			if let detail = reading?.detail {
-				Text(detail)
+				// The IAQ band or wind direction, in English in the code; the catalog translates it.
+				Text(LocalizedStringKey(detail))
 					.font(.caption2)
 					.foregroundStyle(.secondary)
 					.lineLimit(1)

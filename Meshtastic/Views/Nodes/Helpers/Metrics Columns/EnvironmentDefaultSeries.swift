@@ -150,7 +150,8 @@ extension MetricsSeriesList {
 				visible: false,
 				foregroundStyle: { _ in .gray },
 				chartBody: { series, _, time, iaq in
-					if let iaq {
+					// A negative value can only come from a bad packet, and has no IAQ band.
+					if let iaq, iaq >= 0 {
 						let iaqEnum = Iaq.getIaq(for: Int(iaq))
 						PointMark(
 							x: .value("Time", time),

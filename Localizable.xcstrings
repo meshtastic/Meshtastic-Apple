@@ -4077,6 +4077,9 @@
         }
       }
     },
+    "Extremely Polluted" : {
+      "comment" : "Indoor air quality (IAQ) band"
+    },
     "Factory erase permanently removes the radio's owner, channels, identity keys, settings, Bluetooth bonds, and node database. Nothing is restored automatically." : {
       "extractionState" : "manual",
       "localizations" : {
@@ -49170,6 +49173,9 @@
         }
       }
     },
+    "East" : {
+      "comment" : "Wind direction the wind comes from"
+    },
     "Echo" : {
       "localizations" : {
         "da" : {
@@ -53436,6 +53442,9 @@
           }
         }
       }
+    },
+    "Excellent" : {
+      "comment" : "Indoor air quality (IAQ) band"
     },
     "Exchange Positions" : {
       "localizations" : {
@@ -61688,6 +61697,9 @@
           }
         }
       }
+    },
+    "Heavily Polluted" : {
+      "comment" : "Indoor air quality (IAQ) band"
     },
     "help" : {
       "comment" : "Search keyword",
@@ -71178,6 +71190,9 @@
           }
         }
       }
+    },
+    "Lightly Polluted" : {
+      "comment" : "Indoor air quality (IAQ) band"
     },
     "Limit all periodic broadcast intervals especially telemetry and position. If you need to increase hops, do it on nodes at the edges, not the ones in the middle. MQTT is not advised when you are duty cycle restricted because the gateway node is then doing all the work." : {
       "localizations" : {
@@ -98145,6 +98160,9 @@
         }
       }
     },
+    "Moderately Polluted" : {
+      "comment" : "Indoor air quality (IAQ) band"
+    },
     "Module Configuration" : {
       "localizations" : {
         "da" : {
@@ -104812,6 +104830,15 @@
           }
         }
       }
+    },
+    "North" : {
+      "comment" : "Wind direction the wind comes from"
+    },
+    "North East" : {
+      "comment" : "Wind direction the wind comes from"
+    },
+    "North West" : {
+      "comment" : "Wind direction the wind comes from"
     },
     "Not a valid route file" : {
       "localizations" : {
@@ -133084,6 +133111,9 @@
         }
       }
     },
+    "Severely Polluted" : {
+      "comment" : "Indoor air quality (IAQ) band"
+    },
     "Shaded terrain relief over areas with downloaded terrain. Standard and offline maps only." : {
       "localizations" : {
         "es" : {
@@ -138000,6 +138030,15 @@
           }
         }
       }
+    },
+    "South" : {
+      "comment" : "Wind direction the wind comes from"
+    },
+    "South East" : {
+      "comment" : "Wind direction the wind comes from"
+    },
+    "South West" : {
+      "comment" : "Wind direction the wind comes from"
     },
     "Spatial Map area" : {
       "comment" : "Name of the offline map (streets and terrain) the visionOS spatial map downloads and keeps up to date for the mesh",
@@ -159836,6 +159875,9 @@
           }
         }
       }
+    },
+    "West" : {
+      "comment" : "Wind direction the wind comes from"
     },
     "What does this do?" : {
       "comment" : "A title for a tip that describes what the discovery tool does.",

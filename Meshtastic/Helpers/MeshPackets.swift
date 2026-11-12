@@ -403,9 +403,9 @@ actor MeshPackets {
 	/// which SwiftData does not propagate to views, so the message lists cannot observe them.
 	/// One notification per save is enough for them to reload; observers debounce.
 	private var pendingMessageChange = false
-	/// Set when environment telemetry is stored. The Environment widget's snapshot reads on a
-	/// context of its own, so it refreshes after the save, when the reading is there to read.
-	private var pendingEnvironmentChange = false
+	/// Nodes whose environment telemetry is waiting to be saved. The Environment widget's snapshot
+	/// reads on a context of its own, so it refreshes after the save, when the reading is there to read.
+	private var pendingEnvironmentNodes: Set<Int64> = []
 
 	func noteMessageChange() {
 		pendingMessageChange = true
@@ -438,9 +438,10 @@ actor MeshPackets {
 				pendingMessageChange = false
 				postMessageChange()
 			}
-			if pendingEnvironmentChange {
-				pendingEnvironmentChange = false
-				Task { @MainActor in WidgetDataBroker.shared.refresh(.environment) }
+			if !pendingEnvironmentNodes.isEmpty {
+				let nodes = pendingEnvironmentNodes
+				pendingEnvironmentNodes = []
+				Task { @MainActor in WidgetDataBroker.shared.environmentReadingsSaved(from: nodes) }
 			}
 		} catch {
 			Logger.data.error("💥 [\(caller, privacy: .public)] Error saving: \(error.localizedDescription, privacy: .public)")
@@ -1879,7 +1880,7 @@ actor MeshPackets {
 				node.lastHeard = resolveTimestamp(packet.rxTime)
 			}
 			if telemetry.metricsType == 1 {
-				pendingEnvironmentChange = true
+				pendingEnvironmentNodes.insert(packetFrom)
 			}
 			scheduleDebouncedSave()
 			Logger.data.debug("📈 [TelemetryEntity] of type \(MetricsTypes(rawValue: Int(telemetry.metricsType))?.name ?? "Unknown Metrics Type", privacy: .public) buffered for Node: \(packet.from.toHex(), privacy: .public)")

@@ -57,6 +57,14 @@ final class WidgetDataBroker {
 	private var lastReload: [Kind: Date] = [:]
 	/// A map reload that was due while a map render was in flight.
 	private var mapReloadDeferred = false
+	/// An Environment reload held back by its floor, sent when the floor has passed.
+	private var deferredEnvironmentReload: Task<Void, Never>?
+	/// Nodes with environment readings, newest first, so the Environment widget can offer
+	/// nodes outside the recently heard ones. Nil until the first build looks them up; after
+	/// that, saved readings keep it current without scanning telemetry again.
+	private var environmentNodeNums: [Int64]?
+	/// How many nodes the snapshot carries for their environment readings alone.
+	nonisolated static let environmentNodeLimit = 12
 	/// LocalStats are keyed to the radio that produced them so a radio switch
 	/// can't show the previous radio's counters as the new one's.
 	private var latestLocalStats: LocalStatsSnapshot?
@@ -101,6 +109,14 @@ final class WidgetDataBroker {
 		latestLocalStats = stats
 		latestLocalStatsNodeNum = nodeNum
 		refresh(.localStats)
+	}
+
+	/// Called after environment telemetry from `nodes` is saved.
+	func environmentReadingsSaved(from nodes: Set<Int64>) {
+		if let known = environmentNodeNums {
+			environmentNodeNums = Array((Array(nodes) + known.filter { !nodes.contains($0) }).prefix(Self.environmentNodeLimit))
+		}
+		refresh(.environment)
 	}
 
 	func refresh(_ trigger: Trigger) {
@@ -176,8 +192,9 @@ final class WidgetDataBroker {
 		// Nil if iOS hasn't answered yet; the last snapshot's missing list stands until it does.
 		let trackers = TrackedWidgetNodes.shared
 		let tracked = trackers.nums.map { $0.union(trackers.environmentNums ?? []) }
+		let environmentNodes = environmentNodeNums
 		let data = await Task.detached(priority: .utility) {
-			Self.readDatabase(container: container, radioNum: radioNum, tracked: tracked ?? [], needsStoredStats: needsStoredStats)
+			Self.readDatabase(container: container, radioNum: radioNum, tracked: tracked ?? [], environmentNodes: environmentNodes, needsStoredStats: needsStoredStats)
 		}.value
 		// The store was reset while reading; what was read belongs to the old one. Build again
 		// from the new store.
@@ -185,6 +202,10 @@ final class WidgetDataBroker {
 			pendingTriggers.formUnion(triggers)
 			retry(after: 0)
 			return
+		}
+
+		if environmentNodeNums == nil {
+			environmentNodeNums = data.environmentNodes
 		}
 
 		// Fall back to the newest stored LocalStats telemetry when none has
@@ -250,9 +271,10 @@ final class WidgetDataBroker {
 		var unreadChannels = 0
 		var unreadDMs = 0
 		var recentMessages: [MessageSnapshot] = []
+		var environmentNodes: [Int64] = []
 	}
 
-	nonisolated private static func readDatabase(container: ModelContainer, radioNum: Int64?, tracked: Set<Int64>, needsStoredStats: Bool) -> DatabaseRead {
+	nonisolated private static func readDatabase(container: ModelContainer, radioNum: Int64?, tracked: Set<Int64>, environmentNodes: [Int64]?, needsStoredStats: Bool) -> DatabaseRead {
 		let context = ModelContext(container)
 		var read = DatabaseRead()
 		let radioNode = radioNum.flatMap { getNodeInfo(id: $0, context: context) }
@@ -291,7 +313,8 @@ final class WidgetDataBroker {
 		}
 
 		let preset = (radioNode?.loRaConfig?.modemPreset).flatMap { ModemPresets(rawValue: Int($0)) }
-		read.nodes = fetchNodeSnapshots(context: context, preset: preset, radioNum: radioNum, tracked: tracked)
+		read.environmentNodes = environmentNodes ?? fetchEnvironmentNodeNums(context: context)
+		read.nodes = fetchNodeSnapshots(context: context, preset: preset, radioNum: radioNum, tracked: tracked, environmentNodes: read.environmentNodes)
 		let present = Set(read.nodes.map(\.num))
 		read.missingTracked = tracked.subtracting(present).sorted()
 		read.totalNodeCount = (try? context.fetchCount(FetchDescriptor<NodeInfoEntity>())) ?? read.nodes.count
@@ -321,7 +344,23 @@ final class WidgetDataBroker {
 		return .disconnected
 	}
 
-	nonisolated private static func fetchNodeSnapshots(context: ModelContext, preset: ModemPresets?, radioNum: Int64?, tracked: Set<Int64>) -> [NodeSnapshot] {
+	/// The nodes with the newest environment telemetry. Telemetry has no index to sort by,
+	/// so this runs once per launch; saved readings keep the list current after that.
+	nonisolated private static func fetchEnvironmentNodeNums(context: ModelContext) -> [Int64] {
+		var descriptor = FetchDescriptor<TelemetryEntity>(
+			predicate: #Predicate<TelemetryEntity> { $0.metricsType == 1 },
+			sortBy: [SortDescriptor(\.time, order: .reverse)]
+		)
+		descriptor.fetchLimit = 500
+		var nums: [Int64] = []
+		for row in (try? context.fetch(descriptor)) ?? [] where row.nodeNum != 0 && !nums.contains(row.nodeNum) {
+			nums.append(row.nodeNum)
+			if nums.count == environmentNodeLimit { break }
+		}
+		return nums
+	}
+
+	nonisolated private static func fetchNodeSnapshots(context: ModelContext, preset: ModemPresets?, radioNum: Int64?, tracked: Set<Int64>, environmentNodes: [Int64]) -> [NodeSnapshot] {
 		// Two fetches: favorites by the scalar flag (so an offline favorite is
 		// never lost to the recency window), then the most recently heard.
 		// No `user != nil` in either predicate — optional-relationship nil
@@ -362,6 +401,16 @@ final class WidgetDataBroker {
 				selected.append(trackedNode)
 			}
 		}
+		// Nodes with environment readings, so the Environment widget can offer them even when
+		// they haven't been heard lately.
+		for num in environmentNodes where !selected.contains(where: { $0.num == num }) {
+			let environmentDescriptor = FetchDescriptor<NodeInfoEntity>(
+				predicate: #Predicate<NodeInfoEntity> { $0.num == num }
+			)
+			if let environmentNode = try? context.fetch(environmentDescriptor).first, environmentNode.user != nil {
+				selected.append(environmentNode)
+			}
+		}
 		return selected.map { node in
 			// Same display gate the app uses for signal: SNR present and not MQTT.
 			let hasSignal = node.snr != 0 && !node.viaMqtt
@@ -400,21 +449,23 @@ final class WidgetDataBroker {
 		)
 		descriptor.fetchLimit = 1
 		guard let row = try? context.fetch(descriptor).first, let time = row.time else { return nil }
+		// A NaN from a sensor can't be written as JSON, and would stop the whole snapshot saving.
+		func finite(_ value: Float?) -> Float? { value.flatMap { $0.isFinite ? $0 : nil } }
 		let environment = EnvironmentSnapshot(
 			time: time,
-			temperature: row.temperature,
-			relativeHumidity: row.relativeHumidity,
-			barometricPressure: row.barometricPressure,
-			gasResistance: row.gasResistance,
+			temperature: finite(row.temperature),
+			relativeHumidity: finite(row.relativeHumidity),
+			barometricPressure: finite(row.barometricPressure),
+			gasResistance: finite(row.gasResistance),
 			iaq: row.iaq,
-			lux: row.lux,
-			windSpeed: row.windSpeed,
+			lux: finite(row.lux),
+			windSpeed: finite(row.windSpeed),
 			windDirection: row.windDirection,
-			rainfall1H: row.rainfall1H,
-			soilTemperature: row.soilTemperature,
+			rainfall1H: finite(row.rainfall1H),
+			soilTemperature: finite(row.soilTemperature),
 			soilMoisture: row.soilMoisture,
-			radiation: row.radiation,
-			weight: row.weight
+			radiation: finite(row.radiation),
+			weight: finite(row.weight)
 		)
 		// A row with none of the widget's metrics, such as one with only distance, isn't one.
 		return environment.reportedMetrics.isEmpty ? nil : environment
@@ -539,7 +590,19 @@ final class WidgetDataBroker {
 		}
 		for (kind, floor) in floors {
 			let last = lastReload[kind] ?? .distantPast
-			guard Date().timeIntervalSince(last) >= floor else { continue }
+			let wait = floor - Date().timeIntervalSince(last)
+			guard wait <= 0 else {
+				// A reading inside the floor would otherwise wait for the next one, or for the
+				// widget's own stale reload two hours on; send it once the floor has passed.
+				if kind == .environment, deferredEnvironmentReload == nil {
+					deferredEnvironmentReload = Task { @MainActor [weak self] in
+						try? await Task.sleep(nanoseconds: UInt64(wait * 1_000_000_000))
+						guard !Task.isCancelled, let self else { return }
+						self.reload(.environment)
+					}
+				}
+				continue
+			}
 			// A map render in progress reloads the map itself when it's written,
 			// with the counts too; reloading now would spend a second reload on
 			// the old image. If the render fails it sends this one instead.
@@ -562,6 +625,10 @@ final class WidgetDataBroker {
 	/// toward its floor, whoever asked for it.
 	func reload(_ kind: Kind) {
 		if kind == .map { mapReloadDeferred = false }
+		if kind == .environment {
+			deferredEnvironmentReload?.cancel()
+			deferredEnvironmentReload = nil
+		}
 		lastReload[kind] = Date()
 		WidgetCenter.shared.reloadTimelines(ofKind: kind.rawValue)
 	}
