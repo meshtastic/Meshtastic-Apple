@@ -84,10 +84,12 @@ enum RooftopCity {
 			let distance: Double
 			let offset: Float
 		}
+		// A sky deck hangs off its tower's face, so the tower is found a little behind the seat.
+		let home = site.facing.map { RooftopSites.tower(behind: site.coordinate, facing: $0) } ?? site.coordinate
 		var placed: [Placed] = []
 		for (index, footprint) in footprints.enumerated() {
 			guard index < grounds.count, let ground = grounds[index] else { continue }
-			if SpatialBuildings.contains(footprint.outline, site.coordinate) { continue }
+			if SpatialBuildings.contains(footprint.outline, home) { continue }
 			var outline = footprint.outline.map { c in
 				SIMD2((c.longitude - site.longitude) * metersPerDegreeLongitude, (c.latitude - site.latitude) * metersPerDegreeLatitude)
 			}
@@ -100,7 +102,8 @@ enum RooftopCity {
 			guard nearest <= radius else { continue }
 			let height = max(footprint.height ?? SpatialBuildings.defaultHeight, 1)
 			let minHeight = min(max(footprint.minHeight, 0), height - 1)
-			guard ground + height - eye > -nearest * tan(deckDip * .pi / 180) else { continue }
+			// A sky deck's glass floor hides nothing below it.
+			guard site.isSkyDeck || ground + height - eye > -nearest * tan(deckDip * .pi / 180) else { continue }
 			// Each building's windows start somewhere different in the texture, so neighbors don't match.
 			let offset = Float(abs(Int(outline[0].x * 7 + outline[0].y * 13)) % 97) / 97
 			placed.append(Placed(outline: outline, bottom: ground + minHeight, top: ground + height, distance: nearest, offset: offset))

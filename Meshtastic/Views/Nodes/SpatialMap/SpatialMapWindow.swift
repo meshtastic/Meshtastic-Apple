@@ -337,12 +337,12 @@ struct SpatialMapWindow: View {
 		refresh()
 	}
 
-	/// Turns the buildings on and zooms all the way in on the cinema's city rooftop, as its panel
-	/// asks, so the water tower and mast can be seen standing on the roof. Buildings are off by
+	/// Turns the buildings on and zooms all the way in on the cinema's city rooftop or sky deck, as
+	/// its panel asks, so the water tower and mast, or the deck, can be seen on the tower. Buildings are off by
 	/// default and only drawn zoomed in, and the rooftop is one roof among thousands.
 	private func claimRooftop() {
-		guard !appState.spatialMapReopening, appState.claimSpatialMapRooftop(),
-			  let coordinate = SpatialLookout.coordinate(siteID: UserDefaults.standard.string(forKey: "cinemaRooftopSite") ?? "") else { return }
+		guard !appState.spatialMapReopening, let siteKey = appState.claimSpatialMapRooftop(),
+			  let coordinate = SpatialLookout.coordinate(siteID: UserDefaults.standard.string(forKey: siteKey) ?? "") else { return }
 		showBuildings = true
 		model.showBuildings = true
 		model.zoomInClosely(on: coordinate)

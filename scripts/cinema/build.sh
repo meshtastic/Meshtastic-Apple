@@ -173,6 +173,10 @@ stone_environment castle_tower pink
 environment city_rooftop
 view city_rooftop_sky city_view kloppenheim_06_puresky_4k.hdr 5.5 1
 
+# The sky deck, lit as the rooftop is, so it shares the rooftop's skies: its streets show under the
+# glass floor.
+environment sky_deck
+
 # The space station's module under its cupola, lit by its own lights, and Earth from orbit, the
 # view behind its windows.
 environment space_cupola

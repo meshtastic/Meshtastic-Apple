@@ -23,10 +23,12 @@ struct SpatialMapFocusRequest: Equatable {
 }
 
 /// A one-shot ask for the volume to fly a trace route, by its id; claimed once the volume is showing.
-/// A one-shot ask for the volume to zoom in on the cinema's city rooftop with the buildings on;
+/// A one-shot ask for the volume to zoom in on the cinema's city rooftop, or its sky deck's tower, with the buildings on;
 /// claimed once the volume is showing.
 struct SpatialMapRooftopRequest: Equatable {
 	let id = UUID()
+	/// Where the cinema keeps the site: the rooftop's, or the sky deck's.
+	var siteKey = "cinemaRooftopSite"
 }
 
 struct SpatialMapRouteRequest: Equatable {

@@ -115,7 +115,7 @@ final class LookoutScene {
 		let terrainFiles = Set(sources.flatMap { [$0.globalURL.lastPathComponent] + $0.regionalURLs.map(\.lastPathComponent) })
 		let basemapFiles = Set(OfflineMapManager.persistedRegionFiles().filter { $0.region.hasBasemap }.map(\.url.lastPathComponent))
 		let maps = LookoutSiteCacheKey.maps(in: manager.regions, terrainFiles: terrainFiles, basemapFiles: basemapFiles) + "\n" + Self.areaKey(area)
-		let none: Status = kind == .rooftop ? .noBuildings : .noSummits
+		let none: Status = kind == .summit ? .noSummits : .noBuildings
 		if let kept = LookoutSiteCache.sites(for: maps, kind: kind) {
 			sites = kept
 			status = sites.isEmpty ? none : .ready
@@ -123,9 +123,12 @@ final class LookoutScene {
 			return
 		}
 		let found: [LookoutSite]
-		if kind == .rooftop {
+		switch kind {
+		case .rooftop:
 			found = await rooftops(in: Self.rooftopBox(searchBox, area: area))
-		} else {
+		case .skyDeck:
+			found = await skyDecks(in: Self.rooftopBox(searchBox, area: area))
+		case .summit:
 			// The box around the circle has corners outside it; summits there aren't on the map either.
 			let summits = await LookoutTerrain.sites(in: searchBox, source: store, area: area)
 			guard generation == started, !Task.isCancelled else { return }
@@ -152,6 +155,26 @@ final class LookoutScene {
 		let grounds = await store.elevations(at: tallest.map(\.coordinate))
 		return zip(tallest, grounds).compactMap { rooftop, ground in
 			ground.map { LookoutSite(latitude: rooftop.coordinate.latitude, longitude: rooftop.coordinate.longitude, elevation: Float($0), name: nil, rooftop: Float(rooftop.height)) }
+		}
+	}
+
+	/// A sky deck hung off each of the tallest buildings in `box`, standing over the ground under
+	/// its seat. Ones the terrain doesn't reach, or whose roof has no face wide enough, are left out.
+	private func skyDecks(in box: GeoBounds) async -> [LookoutSite] {
+		let files = OfflineMapManager.persistedRegionFiles()
+		let tiles = Self.rooftopSearchTiles
+		let search = Task.detached(priority: .userInitiated) {
+			RooftopSites.searchWithNeighbors(in: box, maxTiles: tiles) { bounds, maxTiles in
+				SpatialBuildings.decode(bounds: bounds, files: files, maxTiles: maxTiles)
+			} ?? ([], [])
+		}
+		let (tallest, neighbors) = await withTaskCancellationHandler { await search.value } onCancel: { search.cancel() }
+		// Faces are scored against every tall building near, not just the ones the picker keeps.
+		let decks = tallest.compactMap { rooftop in RooftopSites.deck(on: rooftop, among: neighbors).map { (rooftop, $0) } }
+		let grounds = await store.elevations(at: decks.map(\.1.coordinate))
+		return zip(decks, grounds).compactMap { deck, ground in
+			let (rooftop, place) = deck
+			return ground.map { LookoutSite(latitude: place.coordinate.latitude, longitude: place.coordinate.longitude, elevation: Float($0), name: nil, rooftop: Float(rooftop.height), facing: place.facing) }
 		}
 	}
 
@@ -193,9 +216,9 @@ final class LookoutScene {
 	}
 
 	/// The site with this id, or the one a new search found close to where it was: within 500 m for
-	/// a summit, and 30 m for a rooftop, since the next tower over can be closer than 500 m.
+	/// a summit, and 30 m for a rooftop or a sky deck, since the next tower over can be closer than 500 m.
 	func site(near id: String, kind: LookoutSiteKind = .summit) -> LookoutSite? {
-		site(for: id) ?? SpatialLookout.nearest(to: id, in: sites, within: kind == .rooftop ? 30 : SpatialLookout.sameSiteDistance) { $0.coordinate }
+		site(for: id) ?? SpatialLookout.nearest(to: id, in: sites, within: kind == .summit ? SpatialLookout.sameSiteDistance : 30) { $0.coordinate }
 	}
 
 	/// The terrain around `site` as an entity, or nil if it can't be built.

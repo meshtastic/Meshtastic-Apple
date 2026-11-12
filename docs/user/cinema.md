@@ -6,7 +6,7 @@ nav_order: 17
 
 # Cinema (Apple Vision Pro)
 
-On Apple Vision Pro, the Cinema puts the app on a big screen inside a search and rescue comms tent, a ham shack, a fire lookout, on top of a castle tower, on a city rooftop or in a space station. Open it with the **tent** button in the round glass menu under the app's tab bar. The app's window closes while you're in the tent and comes back when you leave.
+On Apple Vision Pro, the Cinema puts the app on a big screen inside a search and rescue comms tent, a ham shack, a fire lookout, on top of a castle tower, on a city rooftop, in a space station or in a sky deck. Open it with the **tent** button in the round glass menu under the app's tab bar. The app's window closes while you're in the tent and comes back when you leave.
 
 ## The screen
 
@@ -66,14 +66,23 @@ The station has no summit and no real terrain, so the **Summit** picker and the 
 
 While the cinema is in the space station, the 3D map shows the station floating high over the middle of the mesh, above the highest ground and buildings, slowly circling it. It isn't where the real station is. With Reduce Motion on, it holds still.
 
+## Sky deck
+
+The seventh place is a glass box hung off the face of one of the tallest towers downtown, at the top. Its floor is glass from just behind your seat to the front wall, on a grid of slim steel beams, so you can look straight down past your feet to the streets far below. Its front and side walls are glass from floor to ceiling, with a low handrail inside them. Behind you is the tower's core, with the lift doors, the Meshtastic banner and Chirpy's poster. The screen hangs from the ceiling in front of you, with Team Favorites to its left, the Status Board to its right and the latest trace route on the left wall, all hung clear of the glass. Over the front of the box the ceiling is glass, and through it you can see a mast on the tower's roof with a Solar Node on it.
+
+If you've downloaded a map with terrain for the [3D map](map.md), the city below and around can be the real one. The control panel's **Tower** picker lists the tallest buildings around the mesh, as the rooftop's does, each with which way its deck looks out and how tall it is. The deck hangs off the face of the tower whose view the other tall towers block least, turned so the screen looks out from it, with the real buildings round it standing on the real terrain, right down to the street under the floor. Turn the view with the **Turn Sky Deck** dial. **City skyline** puts the painted city back, which is also what shows with no map downloaded.
+
+While the deck hangs off a tower, the 3D map shows a small glass box on that tower's face, just under its roof, looking out the way the deck does. **Show Tower** opens the 3D map zoomed all the way in on it, with **Buildings** turned on.
+
 ## Control panel
 
-- **Environment**: the place the screen is set in: the search and rescue tent, or a ham shack, a wood-paneled radio room with an operating desk, a window out to the antenna tower, and the same boards; its status board is net control's check-in board, standing portrait beside the screen; or a fire lookout, a glass cab on a summit at sunset; or a castle tower, an open stone roof on a summit at sunset; or a city rooftop, a roof deck over downtown at sunset; or a space station, a module under its cupola with Earth through the windows.
+- **Environment**: the place the screen is set in: the search and rescue tent, or a ham shack, a wood-paneled radio room with an operating desk, a window out to the antenna tower, and the same boards; its status board is net control's check-in board, standing portrait beside the screen; or a fire lookout, a glass cab on a summit at sunset; or a castle tower, an open stone roof on a summit at sunset; or a city rooftop, a roof deck over downtown at sunset; or a space station, a module under its cupola with Earth through the windows; or a sky deck, a glass-floored box hung off a tower, looking down at the city.
 - **Stone**: on the castle tower, gray or pink.
 - **Summit**: in the fire lookout or on the castle tower, with terrain downloaded, which summit it stands on, or the forest sunset.
 - **Rooftop**: on the city rooftop, with terrain downloaded, which building it stands on, or the painted city skyline.
-- **Show Rooftop**: on the city rooftop, with a building picked, opens the 3D map zoomed in on its roof with **Buildings** on.
-- **Turn Lookout** (**Turn Rooftop** on the city rooftop): with a summit or a rooftop picked, a compass dial for which way the cab faces, so the screen looks out over another part of the view. Tap one of its sixteen marks, a sixteenth of a turn (22.5°) apart, or drag round it and let go. The eighths are drawn larger. The caption under it says which way the cab faces. The cab on the 3D map turns with it.
+- **Tower**: in the sky deck, with terrain downloaded, which tower it hangs off, or the painted city skyline.
+- **Show Rooftop** (**Show Tower** in the sky deck): with a building picked, opens the 3D map zoomed in on its roof with **Buildings** on.
+- **Turn Lookout** (**Turn Rooftop** on the city rooftop, **Turn Sky Deck** in the sky deck): with a summit, rooftop or tower picked, a compass dial for which way the cab faces, so the screen looks out over another part of the view. Tap one of its sixteen marks, a sixteenth of a turn (22.5°) apart, or drag round it and let go. The eighths are drawn larger. The caption under it says which way the cab faces. The cab on the 3D map turns with it.
 - **Side of Earth**: in the space station, **Day** for the sunlit side under the cupola, or **Night** for the dark side with its city lights.
 - **Orbit Speed**: in the space station, how fast Earth goes by, from real time (1×) to ten times faster (10×).
 - **Open 3D Map**: shown while the 3D map is closed.
