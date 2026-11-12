@@ -650,7 +650,7 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 	/// 3. Keep the current preset when the firmware advertises it as legal in the
 	///    selected region.
 	/// 4. Otherwise, if the current preset is not legal in the region, fall back to
-	///    that region's advertised default.
+	///    the region's recommended preset.
 	static func presetToSelect(
 		forRegion region: Config.LoRaConfig.RegionCode,
 		factoryFresh: Bool,
@@ -673,7 +673,18 @@ enum ModemPresets: Int, CaseIterable, Identifiable {
 		}
 
 		guard let info = regionInfo, !info.presets.isEmpty else { return nil }
-		return ModemPresets(rawValue: info.defaultPreset.rawValue)
+		return recommended(forRegion: region, regionInfo: info)
+	}
+
+	/// The preset to recommend for a region on 2.8. The radio's region default, except in
+	/// the US, where the radio still reports Long Fast but only the Turbo presets are
+	/// bandwidth-compliant, so Long Turbo is recommended when the radio allows it. Allowed
+	/// is not the same as recommended: the other presets stay in the picker.
+	static func recommended(forRegion region: Config.LoRaConfig.RegionCode, regionInfo: RegionPresetInfo) -> ModemPresets? {
+		if region == .us, regionInfo.presets.contains(.longTurbo) {
+			return .longTurbo
+		}
+		return ModemPresets(rawValue: regionInfo.defaultPreset.rawValue)
 	}
 
 	var id: Int { self.rawValue }

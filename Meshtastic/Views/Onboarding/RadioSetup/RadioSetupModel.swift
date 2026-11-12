@@ -205,7 +205,7 @@ final class RadioSetupModel {
 	// MARK: - Choices
 
 	/// Picks a region and, on 2.8, the preset that goes with it: Long Turbo for a fresh US
-	/// radio, or the region's default when the current preset is not legal there. A fresh
+	/// radio, or the region's recommended preset when the current one is not legal there. A fresh
 	/// radio runs on a preset; a configured one keeps its mode, so custom modem settings
 	/// survive a region change until a preset is chosen on the next page.
 	func selectRegion(_ region: RegionCodes, regionInfo: RegionPresetInfo?) {
