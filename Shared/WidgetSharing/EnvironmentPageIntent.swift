@@ -6,7 +6,7 @@
 //
 //  The Environment widget's page button. Widgets can't scroll or take swipes,
 //  so a large widget set to more than four readings shows four at a time and
-//  this flips to the next four. It runs in the widget extension without
+//  this flips to the rest. It runs in the widget extension without
 //  opening the app and sends nothing over the mesh.
 //
 

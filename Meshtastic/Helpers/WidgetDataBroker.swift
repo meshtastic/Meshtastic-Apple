@@ -39,7 +39,7 @@ final class WidgetDataBroker {
 		case messages     // ingest or mark-read (via .meshMessagesDidChange)
 		case localStats   // 15-minute LocalStats telemetry
 		case displayNames // a node's local display name changed
-		case environment  // environment telemetry from any node
+		case environment  // environment, power or air quality telemetry from any node
 	}
 
 	private var cancellables = Set<AnyCancellable>()
@@ -344,11 +344,12 @@ final class WidgetDataBroker {
 		return .disconnected
 	}
 
-	/// The nodes with the newest environment telemetry. Telemetry has no index to sort by,
+	/// The nodes with the newest environment, power or air quality telemetry. Telemetry has no index to sort by,
 	/// so this runs once per launch; saved readings keep the list current after that.
 	nonisolated private static func fetchEnvironmentNodeNums(context: ModelContext) -> [Int64] {
 		var descriptor = FetchDescriptor<TelemetryEntity>(
-			predicate: #Predicate<TelemetryEntity> { $0.metricsType == 1 },
+			// Environment, power and air quality.
+			predicate: #Predicate<TelemetryEntity> { $0.metricsType >= 1 && $0.metricsType <= 3 },
 			sortBy: [SortDescriptor(\.time, order: .reverse)]
 		)
 		descriptor.fetchLimit = 500
@@ -435,39 +436,56 @@ final class WidgetDataBroker {
 				latitude: coordinate?.latitude,
 				longitude: coordinate?.longitude,
 				isFavorite: node.favorite,
-				environment: environmentSnapshot(context: context, nodeNum: node.num)
+				environment: environmentSnapshot(context: context, node: node)
 			)
 		}
 	}
 
-	/// The node's newest environment telemetry row, fetched by node number like
-	/// `latestEnvironmentMetrics` rather than through the telemetries relationship (#2485).
-	nonisolated private static func environmentSnapshot(context: ModelContext, nodeNum: Int64) -> EnvironmentSnapshot? {
-		var descriptor = FetchDescriptor<TelemetryEntity>(
-			predicate: TelemetryEntity.predicate(forNode: nodeNum, metricsType: 1),
-			sortBy: [SortDescriptor(\.time, order: .reverse)]
-		)
-		descriptor.fetchLimit = 1
-		guard let row = try? context.fetch(descriptor).first, let time = row.time else { return nil }
+	/// The node's newest environment, air quality and power telemetry rows, fetched by node
+	/// number like `latestEnvironmentMetrics` rather than through the telemetries relationship
+	/// (#2485). Nil when none of them has a reading the widget shows.
+	nonisolated private static func environmentSnapshot(context: ModelContext, node: NodeInfoEntity) -> EnvironmentSnapshot? {
+		let nodeNum = node.num
+		func latest(_ metricsType: Int32) -> TelemetryEntity? {
+			var descriptor = FetchDescriptor<TelemetryEntity>(
+				predicate: TelemetryEntity.predicate(forNode: nodeNum, metricsType: metricsType),
+				sortBy: [SortDescriptor(\.time, order: .reverse)]
+			)
+			descriptor.fetchLimit = 1
+			return (try? context.fetch(descriptor).first).flatMap { $0.time == nil ? nil : $0 }
+		}
+		let environmentRow = latest(1)
+		let airQualityRow = latest(3)
+		let powerRow = latest(2)
+		guard let time = [environmentRow, airQualityRow, powerRow].compactMap({ $0?.time }).max() else { return nil }
 		// A NaN from a sensor can't be written as JSON, and would stop the whole snapshot saving.
 		func finite(_ value: Float?) -> Float? { value.flatMap { $0.isFinite ? $0 : nil } }
+		let channels = 0..<TelemetryEntity.powerChannelCount
 		let environment = EnvironmentSnapshot(
 			time: time,
-			temperature: finite(row.temperature),
-			relativeHumidity: finite(row.relativeHumidity),
-			barometricPressure: finite(row.barometricPressure),
-			gasResistance: finite(row.gasResistance),
-			iaq: row.iaq,
-			lux: finite(row.lux),
-			windSpeed: finite(row.windSpeed),
-			windDirection: row.windDirection,
-			rainfall1H: finite(row.rainfall1H),
-			soilTemperature: finite(row.soilTemperature),
-			soilMoisture: row.soilMoisture,
-			radiation: finite(row.radiation),
-			weight: finite(row.weight)
+			temperature: finite(environmentRow?.temperature),
+			relativeHumidity: finite(environmentRow?.relativeHumidity),
+			barometricPressure: finite(environmentRow?.barometricPressure),
+			gasResistance: finite(environmentRow?.gasResistance),
+			iaq: environmentRow?.iaq,
+			lux: finite(environmentRow?.lux),
+			windSpeed: finite(environmentRow?.windSpeed),
+			windDirection: environmentRow?.windDirection,
+			windGust: finite(environmentRow?.windGust),
+			rainfall1H: finite(environmentRow?.rainfall1H),
+			soilTemperature: finite(environmentRow?.soilTemperature),
+			soilMoisture: environmentRow?.soilMoisture,
+			radiation: finite(environmentRow?.radiation),
+			weight: finite(environmentRow?.weight),
+			pm10Standard: airQualityRow?.pm10Standard,
+			pm25Standard: airQualityRow?.pm25Standard,
+			pm100Standard: airQualityRow?.pm100Standard,
+			co2: airQualityRow?.co2,
+			powerVoltages: powerRow.map { row in channels.map { finite(row.powerVoltage(channel: $0)) } },
+			powerCurrents: powerRow.map { row in channels.map { finite(row.powerCurrent(channel: $0)) } },
+			powerChannelNames: powerRow == nil ? nil : channels.map { PowerChannelLabel.name($0, in: node.powerChannelLabels) }
 		)
-		// A row with none of the widget's metrics, such as one with only distance, isn't one.
+		// Rows with none of the widget's readings, such as one with only distance, aren't one.
 		return environment.reportedMetrics.isEmpty ? nil : environment
 	}
 

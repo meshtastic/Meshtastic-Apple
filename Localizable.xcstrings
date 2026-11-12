@@ -31001,6 +31001,12 @@
         }
       }
     },
+    "Channel %lld Current" : {
+      "comment" : "Environment widget reading name for a power channel before its label is known. The argument is the channel number."
+    },
+    "Channel %lld Voltage" : {
+      "comment" : "Environment widget reading name for a power channel before its label is known. The argument is the channel number."
+    },
     "Channel 0 Included" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -34938,6 +34944,9 @@
           }
         }
       }
+    },
+    "CO2" : {
+      "comment" : "Environment widget reading name: carbon dioxide"
     },
     "Code" : {
       "comment" : "VoiceOver: inline code formatting toolbar button",
@@ -52449,6 +52458,9 @@
           }
         }
       }
+    },
+    "Environment, air quality and power readings from a node you pick." : {
+      "comment" : "Environment widget description in the widget gallery"
     },
     "erase" : {
       "comment" : "Search keyword",
@@ -111843,6 +111855,15 @@
         }
       }
     },
+    "PM1.0" : {
+      "comment" : "Environment widget reading name: particulate matter up to 1.0 µm"
+    },
+    "PM10" : {
+      "comment" : "Environment widget reading name: particulate matter up to 10 µm"
+    },
+    "PM2.5" : {
+      "comment" : "Environment widget reading name: particulate matter up to 2.5 µm"
+    },
     "Points of Interest" : {
       "localizations" : {
         "da" : {
@@ -142098,9 +142119,6 @@
           }
         }
       }
-    },
-    "Temperature, humidity and other readings from a node you pick." : {
-      "comment" : "Environment widget description in the widget gallery"
     },
     "Ten Minutes" : {
       "comment" : "GpsUpdateIntervals.description\nLocationUpdateInterval.description\nScreenCarouselIntervals.description\nScreenOnIntervals.description\nUpdateInterval.description",

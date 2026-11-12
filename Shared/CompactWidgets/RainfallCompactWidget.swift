@@ -35,7 +35,7 @@ struct RainfallCompactWidget: View {
 			}
 			HStack {
 				Text("\(rainfall)")
-					.font(rainfall.length < 4 ? .system(size: 50) : .system(size: 40) )
+					.font(rainfall.count < 4 ? .system(size: 50) : .system(size: 40) )
 				Text(unit)
 					.font(.system(size: 14))
 			}

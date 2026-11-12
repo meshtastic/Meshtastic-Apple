@@ -403,7 +403,7 @@ actor MeshPackets {
 	/// which SwiftData does not propagate to views, so the message lists cannot observe them.
 	/// One notification per save is enough for them to reload; observers debounce.
 	private var pendingMessageChange = false
-	/// Nodes whose environment telemetry is waiting to be saved. The Environment widget's snapshot
+	/// Nodes whose environment, power or air quality telemetry is waiting to be saved. The Environment widget's snapshot
 	/// reads on a context of its own, so it refreshes after the save, when the reading is there to read.
 	private var pendingEnvironmentNodes: Set<Int64> = []
 
@@ -1879,7 +1879,8 @@ actor MeshPackets {
 			if connectedNode == Int64(packet.from) || node.lastHeard == nil {
 				node.lastHeard = resolveTimestamp(packet.rxTime)
 			}
-			if telemetry.metricsType == 1 {
+			// Environment, power and air quality all show on the Environment widget.
+			if (1...3).contains(telemetry.metricsType) {
 				pendingEnvironmentNodes.insert(packetFrom)
 			}
 			scheduleDebouncedSave()

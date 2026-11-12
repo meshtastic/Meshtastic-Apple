@@ -4,10 +4,10 @@
 //
 //  Copyright(c) Garth Vander Houwen 11/11/26.
 //
-//  One node's environment readings as tiles (meshtastic/design#179). Small
-//  shows the first reading, medium the first two, large four at a time with a
-//  page button when more are picked; on Vision Pro the extra large board shows
-//  all eight. It reads the snapshot the app writes and never sends anything
+//  One node's environment readings as node details' tiles (meshtastic/design#179).
+//  Small shows the first two readings, medium the first three, large four at a time
+//  with a page button when more are picked; on Vision Pro the extra large
+//  board shows all eight. It reads the snapshot the app writes and never sends anything
 //  over the mesh.
 //
 
@@ -89,7 +89,7 @@ struct MeshEnvironmentWidget: Widget {
 					?? URL(string: "meshtastic:///nodes"))
 		}
 		.configurationDisplayName("Environment")
-		.description("Temperature, humidity and other readings from a node you pick.")
+		.description("Environment, air quality and power readings from a node you pick.")
 		#if os(visionOS)
 		// On a wall it can stand off it or sit in it like a weather panel, and the
 		// board size has room for every reading at once.
@@ -115,6 +115,7 @@ private struct EnvironmentWidgetFamilyReader: View {
 }
 
 struct EnvironmentWidgetView: View {
+	@Environment(\.widgetContentMargins) private var contentMargins
 	let entry: EnvironmentEntry
 	let family: WidgetFamily
 
@@ -158,41 +159,52 @@ struct EnvironmentWidgetView: View {
 	private func tiles(_ environment: EnvironmentSnapshot) -> some View {
 		switch family {
 		case .systemSmall:
-			EnvironmentTile(metric: entry.metrics[0], environment: environment, size: .large)
+			grid(Array(entry.metrics.prefix(2)), columns: 2, environment: environment)
 		case .systemMedium:
-			HStack(spacing: 8) {
-				ForEach(entry.metrics.prefix(2)) { metric in
-					EnvironmentTile(metric: metric, environment: environment, size: .large)
-				}
-			}
+			grid(Array(entry.metrics.prefix(3)), columns: 3, environment: environment)
 		#if os(visionOS)
 		case .systemExtraLarge:
 			grid(Array(entry.metrics.prefix(EnvironmentMetric.maximumCount)), columns: 4, environment: environment)
 		#endif
 		default:
-			grid(EnvironmentWidgetPage.metrics(entry.metrics, page: entry.page), columns: 2, environment: environment)
+			// Pages keep two rows, so a short last page keeps its tiles' size.
+			grid(EnvironmentWidgetPage.metrics(entry.metrics, page: entry.page), columns: 2, rows: 2, evenEdges: true, environment: environment)
 		}
 	}
 
-	/// Rows of `columns` tiles. A short last page keeps its tiles the size of a
-	/// full one, so flipping pages doesn't resize them.
-	private func grid(_ metrics: [EnvironmentMetric], columns: Int, environment: EnvironmentSnapshot) -> some View {
-		let rows = max(1, (metrics.count + columns - 1) / columns)
-		let fullRows = family == .systemLarge ? 2 : rows
+	/// Rows of `columns` square tiles, as large as the widget allows and centered.
+	/// With `rows`, empty slots are kept so the tiles stay the size of a full page.
+	/// With `evenEdges`, the space from the widget's side edges to the tiles is the
+	/// same as the space between them.
+	private func grid(_ metrics: [EnvironmentMetric], columns: Int, rows: Int? = nil, evenEdges: Bool = false, environment: EnvironmentSnapshot) -> some View {
+		let rowCount = rows ?? max(1, (metrics.count + columns - 1) / columns)
 		return VStack(spacing: 8) {
-			ForEach(0..<fullRows, id: \.self) { row in
-				HStack(spacing: 8) {
+			ForEach(0..<rowCount, id: \.self) { row in
+				HStack(spacing: evenEdges ? 0 : 8) {
 					ForEach(0..<columns, id: \.self) { column in
+						if evenEdges {
+							Spacer(minLength: 0)
+						}
 						let index = row * columns + column
 						if index < metrics.count {
-							EnvironmentTile(metric: metrics[index], environment: environment, size: .medium)
-						} else {
+							FittedTile {
+								EnvironmentCompactTile(metric: metrics[index], environment: environment)
+							}
+						} else if rows != nil {
 							Color.clear
+								.aspectRatio(1, contentMode: .fit)
 						}
+					}
+					if evenEdges {
+						Spacer(minLength: 0)
 					}
 				}
 			}
 		}
+		.frame(maxWidth: .infinity)
+		// Out to the widget's edges, so the equal spaces are measured from them.
+		.padding(.leading, evenEdges ? -contentMargins.leading : 0)
+		.padding(.trailing, evenEdges ? -contentMargins.trailing : 0)
 	}
 
 	/// Seen from across the room on Vision Pro, the widget keeps the readings
@@ -210,6 +222,28 @@ struct EnvironmentWidgetView: View {
 	#endif
 }
 
+/// Lays a tile out at a fixed size, then scales it to its square slot, so the
+/// widget's tiles keep node details' layout rather than reflowing smaller.
+private struct FittedTile<Content: View>: View {
+	/// Smaller than a tile on node details (about 165 points), so the reading
+	/// fills more of the widget's smaller squares.
+	private static var layoutSize: CGFloat { 125 }
+
+	@ViewBuilder let content: Content
+
+	var body: some View {
+		GeometryReader { geometry in
+			let size = geometry.size
+			let scale = max(0.1, min(size.width, size.height) / Self.layoutSize)
+			content
+				.frame(width: size.width / scale, height: size.height / scale)
+				.scaleEffect(scale)
+				.frame(width: size.width, height: size.height)
+		}
+		.aspectRatio(1, contentMode: .fit)
+	}
+}
+
 private struct EnvironmentHeader: View {
 	let configured: EnvironmentNodeEntity
 
@@ -223,61 +257,6 @@ private struct EnvironmentHeader: View {
 			Spacer(minLength: 4)
 			MeshLogo(height: 11)
 		}
-	}
-}
-
-/// One reading: its icon and name, then the value and unit. A reading the
-/// node no longer reports shows a dash, never zero.
-struct EnvironmentTile: View {
-	enum Size {
-		case medium
-		case large
-	}
-
-	let metric: EnvironmentMetric
-	let environment: EnvironmentSnapshot
-	let size: Size
-
-	var body: some View {
-		let reading = metric.reading(in: environment)
-		VStack(alignment: .leading, spacing: 2) {
-			HStack(spacing: 4) {
-				Image(systemName: metric.systemImage)
-					.font(.caption2.weight(.semibold))
-					.widgetAccentable()
-				Text(metric.title)
-					.textCase(.uppercase)
-					.font(.system(size: 10, weight: .semibold))
-					.lineLimit(1)
-					.minimumScaleFactor(0.6)
-			}
-			.foregroundStyle(.secondary)
-			Spacer(minLength: 0)
-			HStack(alignment: .firstTextBaseline, spacing: 2) {
-				Text(reading?.value ?? Constants.nilValueIndicator)
-					.font(.system(size: size == .large ? 34 : 28, weight: .semibold, design: .rounded))
-					.foregroundStyle(reading?.color ?? Color(uiColor: .label))
-				if let unit = reading?.unit {
-					Text(unit)
-						.font(.caption.weight(.semibold))
-						.foregroundStyle(.secondary)
-				}
-			}
-			.lineLimit(1)
-			.minimumScaleFactor(0.5)
-			if let detail = reading?.detail {
-				// The IAQ band or wind direction, in English in the code; the catalog translates it.
-				Text(LocalizedStringKey(detail))
-					.font(.caption2)
-					.foregroundStyle(.secondary)
-					.lineLimit(1)
-					.minimumScaleFactor(0.6)
-			}
-		}
-		.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-		.padding(8)
-		.background(.fill.tertiary, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-		.accessibilityElement(children: .combine)
 	}
 }
 

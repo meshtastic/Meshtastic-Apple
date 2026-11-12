@@ -4,8 +4,8 @@
 //
 //  Copyright(c) Garth Vander Houwen 11/11/26.
 //
-//  A node's newest environment telemetry for the Environment widget, and the
-//  metrics it can show (meshtastic/design#179). Readings stay in the units the
+//  A node's newest environment, air quality and power telemetry for the
+//  Environment widget, and the metrics it can show (meshtastic/design#179). Readings stay in the units the
 //  radio sends; the widget formats them the way node details does, so the
 //  same reading reads the same in both places.
 //
@@ -13,9 +13,10 @@
 import Foundation
 import SwiftUI
 
-/// The newest environment telemetry row for a node. Nil fields were not in
-/// the reading; a reported zero stays zero.
+/// A node's newest environment, air quality and power telemetry rows. Nil
+/// fields were not in the reading; a reported zero stays zero.
 struct EnvironmentSnapshot: Codable, Equatable {
+	/// When the newest of the three rows arrived.
 	let time: Date
 	var temperature: Float?
 	var relativeHumidity: Float?
@@ -29,6 +30,8 @@ struct EnvironmentSnapshot: Codable, Equatable {
 	var windSpeed: Float?
 	/// Degrees the wind comes from.
 	var windDirection: Int32?
+	/// Meters per second.
+	var windGust: Float?
 	/// Millimeters in the last hour.
 	var rainfall1H: Float?
 	var soilTemperature: Float?
@@ -37,6 +40,16 @@ struct EnvironmentSnapshot: Codable, Equatable {
 	var radiation: Float?
 	/// Kilograms.
 	var weight: Float?
+	/// Air quality: PM1.0, PM2.5 and PM10 in µg/m³, and CO2 in ppm.
+	var pm10Standard: UInt32?
+	var pm25Standard: UInt32?
+	var pm100Standard: UInt32?
+	var co2: UInt32?
+	/// Power channels 1 to 8: volts and milliamps, nil where not reported.
+	var powerVoltages: [Float?]?
+	var powerCurrents: [Float?]?
+	/// The channels' names as node details shows them: the node's labels, or Channel N.
+	var powerChannelNames: [String]?
 
 	/// Design#166: a reading over two hours old is never shown as current.
 	func isStale(at date: Date) -> Bool {
@@ -66,10 +79,24 @@ enum EnvironmentMetric: String, CaseIterable, Codable, Identifiable {
 	case soilMoisture
 	case radiation
 	case weight
+	case pm10
+	case pm25
+	case pm100
+	case co2
+	case power1Voltage, power1Current, power2Voltage, power2Current
+	case power3Voltage, power3Current, power4Voltage, power4Current
+	case power5Voltage, power5Current, power6Voltage, power6Current
+	case power7Voltage, power7Current, power8Voltage, power8Current
+
+	/// The power channel, counting from zero, and whether this is its voltage.
+	var powerChannel: (index: Int, isVoltage: Bool)? {
+		guard rawValue.hasPrefix("power"), let digit = rawValue.dropFirst(5).first?.wholeNumberValue else { return nil }
+		return (digit - 1, rawValue.hasSuffix("Voltage"))
+	}
 
 	/// How many metrics a widget can be set to.
 	static let maximumCount = 8
-	/// How many the widget shows before someone picks.
+	/// How many the widget shows before someone picks: a full large widget.
 	static let defaultCount = 4
 
 	var id: String { rawValue }
@@ -89,7 +116,29 @@ enum EnvironmentMetric: String, CaseIterable, Codable, Identifiable {
 		case .soilMoisture: "Soil Moisture"
 		case .radiation: "Radiation"
 		case .weight: "Weight"
+		case .pm10: "PM1.0"
+		case .pm25: "PM2.5"
+		case .pm100: "PM10"
+		case .co2: "CO2"
+		default:
+			// Power, before the node's channel names are known.
+			if let channel = powerChannel {
+				channel.isVoltage ? "Channel \(channel.index + 1) Voltage" : "Channel \(channel.index + 1) Current"
+			} else {
+				"\(rawValue)"
+			}
 		}
+	}
+
+	/// The title a tile shows: power channels by the node's labels, as node details names them.
+	func title(in environment: EnvironmentSnapshot?) -> String {
+		guard let channel = powerChannel, let names = environment?.powerChannelNames, channel.index < names.count else {
+			return String(localized: title)
+		}
+		let name = names[channel.index]
+		return channel.isVoltage
+			? String(localized: "\(name) Voltage", comment: "Power tile title. %@ is the channel's label, such as Solar or Channel 1.")
+			: String(localized: "\(name) Current", comment: "Power tile title. %@ is the channel's label, such as Solar or Channel 1.")
 	}
 
 	var systemImage: String {
@@ -107,6 +156,9 @@ enum EnvironmentMetric: String, CaseIterable, Codable, Identifiable {
 		case .soilMoisture: "drop.triangle"
 		case .radiation: "atom"
 		case .weight: "scalemass"
+		case .pm10, .pm25, .pm100: "aqi.medium"
+		case .co2: "carbon.dioxide.cloud"
+		default: powerChannel?.isVoltage == true ? "powerplug.fill" : "bolt.fill"
 		}
 	}
 
@@ -116,7 +168,7 @@ enum EnvironmentMetric: String, CaseIterable, Codable, Identifiable {
 	}
 
 	/// The formatted reading, or nil when the reading doesn't have it. The
-	/// units and precision match the environment tiles on node details:
+	/// units and precision match the tiles on node details:
 	/// temperature and pressure whole, pressure always in hPa, the rest in the
 	/// locale's units (design#53, design#99).
 	func reading(in environment: EnvironmentSnapshot) -> EnvironmentReading? {
@@ -162,7 +214,27 @@ enum EnvironmentMetric: String, CaseIterable, Codable, Identifiable {
 		case .weight:
 			guard let weight = environment.weight else { return nil }
 			return Self.decimal(MetricsLocaleUnits.mass(fromKilograms: weight), digits: 1, unit: MetricsLocaleUnits.massLabel)
+		case .pm10:
+			return environment.pm10Standard.map(Self.particulate)
+		case .pm25:
+			return environment.pm25Standard.map(Self.particulate)
+		case .pm100:
+			return environment.pm100Standard.map(Self.particulate)
+		case .co2:
+			guard let co2 = environment.co2 else { return nil }
+			let level = Co2Level.level(for: co2)
+			return EnvironmentReading(value: co2.formatted(.number.grouping(.never)), unit: "ppm", detail: level.description, color: level.color)
+		default:
+			guard let channel = powerChannel else { return nil }
+			let values = channel.isVoltage ? environment.powerVoltages : environment.powerCurrents
+			guard let values, channel.index < values.count, let value = values[channel.index] else { return nil }
+			// The power tile's precision: volts to two places, milliamps to one.
+			return channel.isVoltage ? Self.decimal(value, digits: 2, unit: "V") : Self.decimal(value, digits: 1, unit: "mA")
 		}
+	}
+
+	private static func particulate(_ value: UInt32) -> EnvironmentReading {
+		EnvironmentReading(value: value.formatted(.number.grouping(.never)), unit: "µg/m³", detail: nil, color: nil)
 	}
 
 	private static func temperature(_ celsius: Float) -> EnvironmentReading? {

@@ -55,7 +55,7 @@ struct WidgetEnvironmentTests {
 	}
 
 	@Test func defaultsToTheFirstFourInTheDesignOrder() {
-		let reading = EnvironmentSnapshot(time: now, temperature: 20, relativeHumidity: 50, barometricPressure: 1013, lux: 300, soilMoisture: 40)
+		let reading = EnvironmentSnapshot(time: now, temperature: 20, relativeHumidity: 50, barometricPressure: 1013, lux: 300, soilMoisture: 40, co2: 800)
 		#expect(EnvironmentMetric.defaults(for: reading) == [.temperature, .relativeHumidity, .barometricPressure, .dewPoint])
 		#expect(EnvironmentMetric.defaults(for: nil).isEmpty)
 	}
@@ -97,6 +97,33 @@ struct WidgetEnvironmentTests {
 		#expect(iaq?.value == "120")
 		#expect(iaq?.detail == Iaq.lightlyPolluted.description)
 		#expect(iaq?.color == Iaq.lightlyPolluted.color)
+	}
+
+	@Test func airQualityReadsAsNodeDetailsShowsIt() {
+		let reading = EnvironmentSnapshot(time: now, pm25Standard: 12, co2: 1240)
+		#expect(EnvironmentMetric.pm25.reading(in: reading)?.value == "12")
+		#expect(EnvironmentMetric.pm25.reading(in: reading)?.unit == "µg/m³")
+		let co2 = EnvironmentMetric.co2.reading(in: reading)
+		#expect(co2?.value == "1240")
+		#expect(co2?.detail == Co2Level.stuffy.description)
+		#expect(reading.reportedMetrics == [.pm25, .co2])
+	}
+
+	@Test func powerChannelsUseTheNodesLabels() {
+		var names = (1...8).map { "Channel \($0)" }
+		names[0] = "Solar"
+		let reading = EnvironmentSnapshot(
+			time: now,
+			powerVoltages: [12.6, nil, nil, nil, nil, nil, nil, nil],
+			powerCurrents: [310.44, nil, nil, nil, nil, nil, nil, 0],
+			powerChannelNames: names
+		)
+		#expect(EnvironmentMetric.power1Voltage.reading(in: reading)?.value == "12.60")
+		#expect(EnvironmentMetric.power1Current.reading(in: reading)?.value == "310.4")
+		#expect(EnvironmentMetric.power8Current.reading(in: reading)?.value == "0.0")
+		#expect(EnvironmentMetric.power2Voltage.reading(in: reading) == nil)
+		#expect(EnvironmentMetric.power1Voltage.title(in: reading).contains("Solar"))
+		#expect(reading.reportedMetrics == [.power1Voltage, .power1Current, .power8Current])
 	}
 
 	@Test func aReadingTurnsOldAtTwoHours() {
