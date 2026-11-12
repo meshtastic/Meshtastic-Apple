@@ -439,18 +439,18 @@
             "settings",
             "node",
             "firmware",
-            "device",
             "region",
+            "device",
             "channel",
             "connected",
             "from",
             "only",
+            "preset",
             "nodes",
             "messages",
             "mesh",
             "configuration",
             "tag",
-            "preset",
             "nfc",
             "name",
             "set",
@@ -465,7 +465,7 @@
             "position",
             "contact"
         ],
-        "charCount": 20651
+        "charCount": 20715
     },
     {
         "id": "showcase",

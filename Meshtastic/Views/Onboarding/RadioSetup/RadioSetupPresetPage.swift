@@ -24,10 +24,10 @@ struct RadioSetupPresetPage: View {
 			set: { if let preset = ModemPresets(rawValue: $0) { model.selectPreset(preset) } })
 	}
 
-	/// The radio's own default for the region, when it sent a map.
+	/// The recommended preset for the region, when the radio sent a map.
 	private var recommendation: String? {
 		guard let info = regionInfo, let region = model.region,
-			  let preset = ModemPresets(rawValue: info.defaultPreset.rawValue) else { return nil }
+			  let preset = ModemPresets.recommended(forRegion: model.draft.region, regionInfo: info) else { return nil }
 		return String.localizedStringWithFormat(
 			String(localized: "Recommended for %@: %@", comment: "Radio setup preset row; region, then preset"),
 			region.description, preset.description)

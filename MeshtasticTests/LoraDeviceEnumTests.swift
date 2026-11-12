@@ -1024,6 +1024,29 @@ struct LoRaPresetSelectionTests {
 		let result = ModemPresets.presetToSelect(forRegion: .us, factoryFresh: true, supports2_8: true, usePreset: true, regionInfo: usNoTurbo, currentPreset: nil)
 		#expect(result == .longFast)
 	}
+
+	// The US recommendation is Long Turbo even though the radio reports Long Fast as the
+	// region default. Long Fast stays allowed.
+	@Test func usRecommendsLongTurbo() {
+		#expect(ModemPresets.recommended(forRegion: .us, regionInfo: usInfo) == .longTurbo)
+		#expect(usInfo.presets.contains(.longFast))
+	}
+
+	@Test func usWithoutLongTurbo_recommendsRegionDefault() {
+		let usNoTurbo = RegionPresetInfo(presets: Set<Preset>([.longFast, .longSlow]), defaultPreset: .longFast, licensedOnly: false)
+		#expect(ModemPresets.recommended(forRegion: .us, regionInfo: usNoTurbo) == .longFast)
+	}
+
+	@Test func otherRegions_recommendRegionDefault() {
+		#expect(ModemPresets.recommended(forRegion: .euN868, regionInfo: euNarrowInfo) == .narrowSlow)
+	}
+
+	// A configured US radio on a preset the region doesn't allow moves to the
+	// recommended preset, not the reported default.
+	@Test func configuredUS_illegalPreset_movesToLongTurbo() {
+		let result = ModemPresets.presetToSelect(forRegion: .us, factoryFresh: false, supports2_8: true, usePreset: true, regionInfo: usInfo, currentPreset: .narrowFast)
+		#expect(result == .longTurbo)
+	}
 }
 
 @Suite("LoRa channel frequency calculation")
