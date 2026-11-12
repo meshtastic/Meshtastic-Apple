@@ -984,6 +984,12 @@
         }
       }
     },
+    "Next readings, page %lld of %lld" : {
+      "comment" : "Environment widget page button for VoiceOver. The arguments are the page shown and the number of pages."
+    },
+    "Next Telemetry Readings" : {
+      "comment" : "Telemetry widget: the page button action"
+    },
     "No reply from the node. It must list your radio's public key as an admin key, and be in range." : {
 
     },
@@ -1099,6 +1105,9 @@
     },
     "Page up" : {
 
+    },
+    "Pages" : {
+      "comment" : "Environment widget page button: how many pages there are"
     },
     "Page down" : {
 
@@ -2399,6 +2408,9 @@
           }
         }
       }
+    },
+    "Not in recent nodes" : {
+      "comment" : "Widget: the picked node is not in the recent nodes the app shares with widgets"
     },
     "One node's battery, signal, when it was last heard and how far away it is." : {
       "comment" : "Live Activity sheet: what the Track a Node mode shows",
@@ -3883,6 +3895,9 @@
         }
       }
     },
+    "Dew Point" : {
+      "comment" : "Environment widget: a reading name"
+    },
     "Discontinued Hardware" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -4064,6 +4079,9 @@
           }
         }
       }
+    },
+    "Extremely Polluted" : {
+      "comment" : "Indoor air quality (IAQ) band"
     },
     "Factory erase permanently removes the radio's owner, channels, identity keys, settings, Bluetooth bonds, and node database. Nothing is restored automatically." : {
       "extractionState" : "manual",
@@ -8311,6 +8329,9 @@
         }
       }
     },
+    "Pick a node, and any of its readings to leave out." : {
+      "comment" : "Telemetry widget settings description"
+    },
     "Pick a trace route to fly along it and leave it drawn on the map." : {
       "comment" : "VoiceOver hint for the spatial map trace route menu",
       "localizations" : {
@@ -9010,6 +9031,9 @@
           }
         }
       }
+    },
+    "Shows the next readings on a Telemetry widget." : {
+      "comment" : "Telemetry widget: the page button action description"
     },
     "Simple" : {
       "extractionState" : "manual",
@@ -14747,6 +14771,9 @@
           }
         }
       }
+    },
+    "%lld/%lld" : {
+      "comment" : "Environment widget page button: the page shown and the number of pages, such as 1/2"
     },
     "%llddb Transmit Power" : {
       "localizations" : {
@@ -30977,6 +31004,12 @@
         }
       }
     },
+    "Channel %lld Current" : {
+      "comment" : "Environment widget reading name for a power channel before its label is known. The argument is the channel number."
+    },
+    "Channel %lld Voltage" : {
+      "comment" : "Environment widget reading name for a power channel before its label is known. The argument is the channel number."
+    },
     "Channel 0 Included" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -34914,6 +34947,9 @@
           }
         }
       }
+    },
+    "CO2" : {
+      "comment" : "Environment widget reading name: carbon dioxide"
     },
     "Code" : {
       "comment" : "VoiceOver: inline code formatting toolbar button",
@@ -49149,6 +49185,9 @@
         }
       }
     },
+    "East" : {
+      "comment" : "Wind direction the wind comes from"
+    },
     "Echo" : {
       "localizations" : {
         "da" : {
@@ -52423,6 +52462,9 @@
         }
       }
     },
+    "Environment, air quality and power readings from a node you pick." : {
+      "comment" : "Environment widget description in the widget gallery"
+    },
     "erase" : {
       "comment" : "Search keyword",
       "localizations" : {
@@ -53415,6 +53457,9 @@
           }
         }
       }
+    },
+    "Excellent" : {
+      "comment" : "Indoor air quality (IAQ) band"
     },
     "Exchange Positions" : {
       "localizations" : {
@@ -59162,6 +59207,9 @@
         }
       }
     },
+    "Gas Resistance" : {
+      "comment" : "Environment widget: a reading name"
+    },
     "Gateway" : {
       "localizations" : {
         "ko" : {
@@ -61665,6 +61713,9 @@
         }
       }
     },
+    "Heavily Polluted" : {
+      "comment" : "Indoor air quality (IAQ) band"
+    },
     "help" : {
       "comment" : "Search keyword",
       "localizations" : {
@@ -61937,6 +61988,9 @@
           }
         }
       }
+    },
+    "Hidden Readings" : {
+      "comment" : "Telemetry widget settings: readings to leave off the widget"
     },
     "Hide alerts" : {
       "extractionState" : "stale",
@@ -71154,6 +71208,9 @@
           }
         }
       }
+    },
+    "Lightly Polluted" : {
+      "comment" : "Indoor air quality (IAQ) band"
     },
     "Limit all periodic broadcast intervals especially telemetry and position. If you need to increase hops, do it on nodes at the edges, not the ones in the middle. MQTT is not advised when you are duty cycle restricted because the gateway node is then doing all the work." : {
       "localizations" : {
@@ -98121,6 +98178,9 @@
         }
       }
     },
+    "Moderately Polluted" : {
+      "comment" : "Indoor air quality (IAQ) band"
+    },
     "Module Configuration" : {
       "localizations" : {
         "da" : {
@@ -102288,6 +102348,9 @@
         }
       }
     },
+    "No nodes have reported telemetry yet" : {
+      "comment" : "Telemetry widget: no node has sent environment, air quality or power readings"
+    },
     "No offline maps yet. Download an area to use the map without a connection." : {
       "comment" : "A message displayed when there are no offline maps available.",
       "isCommentAutoGenerated" : true,
@@ -103034,6 +103097,9 @@
           }
         }
       }
+    },
+    "No telemetry from this node" : {
+      "comment" : "Telemetry widget: the picked node has sent no environment, air quality or power readings"
     },
     "No time limit" : {
       "comment" : "A label that indicates that a lockdown session has no",
@@ -104782,6 +104848,15 @@
           }
         }
       }
+    },
+    "North" : {
+      "comment" : "Wind direction the wind comes from"
+    },
+    "North East" : {
+      "comment" : "Wind direction the wind comes from"
+    },
+    "North West" : {
+      "comment" : "Wind direction the wind comes from"
     },
     "Not a valid route file" : {
       "localizations" : {
@@ -109106,6 +109181,9 @@
         }
       }
     },
+    "Over 2 hours old · %@ ago" : {
+      "comment" : "Environment widget footer for an old reading. The argument is how long ago, such as 3 hr, 5 min."
+    },
     "Overlanding" : {
       "comment" : "ActivityType.description\nActivityType.fileNameString",
       "localizations" : {
@@ -111779,6 +111857,15 @@
           }
         }
       }
+    },
+    "PM1.0" : {
+      "comment" : "Environment widget reading name: particulate matter up to 1.0 µm"
+    },
+    "PM10" : {
+      "comment" : "Environment widget reading name: particulate matter up to 10 µm"
+    },
+    "PM2.5" : {
+      "comment" : "Environment widget reading name: particulate matter up to 2.5 µm"
     },
     "Points of Interest" : {
       "localizations" : {
@@ -116705,6 +116792,9 @@
           }
         }
       }
+    },
+    "Rain" : {
+      "comment" : "Environment widget: a reading name, rain in the last hour"
     },
     "RAK Rotary Encoder" : {
       "comment" : "ConfigPresets.description",
@@ -133042,6 +133132,9 @@
         }
       }
     },
+    "Severely Polluted" : {
+      "comment" : "Indoor air quality (IAQ) band"
+    },
     "Shaded terrain relief over areas with downloaded terrain. Standard and offline maps only." : {
       "localizations" : {
         "es" : {
@@ -137916,6 +138009,9 @@
         }
       }
     },
+    "Soil Temperature" : {
+      "comment" : "Environment widget: a reading name"
+    },
     "Solid orange line toward the target; arrows point in the direction of travel." : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -137955,6 +138051,15 @@
           }
         }
       }
+    },
+    "South" : {
+      "comment" : "Wind direction the wind comes from"
+    },
+    "South East" : {
+      "comment" : "Wind direction the wind comes from"
+    },
+    "South West" : {
+      "comment" : "Wind direction the wind comes from"
     },
     "Spatial Map area" : {
       "comment" : "Name of the offline map (streets and terrain) the visionOS spatial map downloads and keeps up to date for the mesh",
@@ -159788,6 +159893,9 @@
           }
         }
       }
+    },
+    "West" : {
+      "comment" : "Wind direction the wind comes from"
     },
     "What does this do?" : {
       "comment" : "A title for a tip that describes what the discovery tool does.",

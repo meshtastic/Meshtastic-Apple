@@ -100,7 +100,18 @@ class Router: ObservableObject {
 	}
 
 	/// The currently selected node in the NavigationSplitView detail pane.
-	@Published var selectedNodeNum: Int64?
+	@Published var selectedNodeNum: Int64? {
+		// A widget's request to open a node's Environment Metrics Log is for that node only:
+		// moving to another node, or to none, drops it, so a later visit opens plain details.
+		didSet {
+			if environmentLogNodeNum != nil, environmentLogNodeNum != selectedNodeNum {
+				environmentLogNodeNum = nil
+			}
+		}
+	}
+	/// A node whose Environment Metrics Log should open on top of its details, from the
+	/// Telemetry widget. Node details clears it once it has pushed the log.
+	@Published var environmentLogNodeNum: Int64?
 
 	// MARK: Node Object ID Cache
 
@@ -239,11 +250,15 @@ class Router: ObservableObject {
 			.value
 			.flatMap(Int64.init)
 
+		let metrics = components.queryItems?.first(where: { $0.name == "metrics" })?.value
+
 		selectedTab = .nodes
 		if let nodeId {
 			selectedNodeNum = nodeId
+			environmentLogNodeNum = metrics == "environment" ? nodeId : nil
 		} else {
 			selectedNodeNum = nil
+			environmentLogNodeNum = nil
 		}
 	}
 
@@ -260,6 +275,7 @@ class Router: ObservableObject {
 			messagesSection = nil
 		case .nodes:
 			selectedNodeNum = nil
+			environmentLogNodeNum = nil
 		case .map:
 			mapState = nil
 		case .settings:

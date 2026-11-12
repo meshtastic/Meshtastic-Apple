@@ -39,6 +39,7 @@ final class WidgetInventory: ObservableObject {
 	static let widgets: [WidgetKind] = [
 		WidgetKind(kind: "MeshLocalStats", title: "Mesh Status", systemImage: "antenna.radiowaves.left.and.right"),
 		WidgetKind(kind: "MeshNodeTracker", title: "Node Tracker", systemImage: "scope"),
+		WidgetKind(kind: "MeshTelemetry", title: "Telemetry", systemImage: "chart.bar.doc.horizontal"),
 		WidgetKind(kind: "MeshMessages", title: "Messages", systemImage: "message"),
 		WidgetKind(kind: "MeshNodeMap", title: "Node Map", systemImage: "map"),
 		WidgetKind(kind: "MeshTraceRoute", title: "Trace Route", systemImage: "point.3.connected.trianglepath.dotted")

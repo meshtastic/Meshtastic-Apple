@@ -22,7 +22,7 @@ struct RadiationCompactWidget: View {
 			}
 			HStack {
 				Text("\(radiation)")
-					.font(radiation.length < 4 ? .system(size: 50) : .system(size: 34) )
+					.font(radiation.count < 4 ? .system(size: 50) : .system(size: 34) )
 				Text(unit)
 					.font(.system(size: 14))
 			}

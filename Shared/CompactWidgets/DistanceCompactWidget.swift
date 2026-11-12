@@ -1,5 +1,5 @@
 //
-//  WeightCompactWidget.swift
+//  DistanceCompactWidget.swift
 //  Meshtastic
 //
 //  Created by Jake Bordens on 3/14/25.
@@ -7,23 +7,23 @@
 
 import SwiftUI
 
-struct WeightCompactWidget: View {
-	let weight: String
+struct DistanceCompactWidget: View {
+	let distance: String
 	let unit: String
 
 	var body: some View {
 		VStack(alignment: .leading) {
 			HStack(alignment: .firstTextBaseline) {
-				Image(systemName: "scalemass")
+				Image(systemName: "ruler")
 					.imageScale(.small)
 					.foregroundColor(.accentColor)
-				Text("Weight")
+				Text("Distance")
 					.textCase(.uppercase)
 					.font(.callout)
 			}
 			HStack {
-				Text("\(weight)")
-					.font(weight.length < 4 ? .system(size: 50) : .system(size: 40) )
+				Text("\(distance)")
+					.font(distance.count < 4 ? .system(size: 50) : .system(size: 40) )
 				Text(unit)
 					.font(.system(size: 14))
 			}
@@ -33,5 +33,5 @@ struct WeightCompactWidget: View {
 }
 
 #Preview {
-    WeightCompactWidget(weight: "123", unit: "kg")
+	DistanceCompactWidget(distance: "123", unit: "mm")
 }

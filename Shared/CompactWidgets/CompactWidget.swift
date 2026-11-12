@@ -9,15 +9,34 @@ import SwiftUI
 
 extension View {
 	/// The square tile every compact widget sits in. The tile takes its column's width and is as
-	/// tall as it is wide; text shrinks to fit inside rather than stretching the tile.
+	/// tall as it is wide. Its content is laid out at one size and scaled to the tile, so it fills
+	/// the tile the same way on node details and in the widget, at any size.
 	func compactWidgetTile() -> some View {
-		self
-			.lineLimit(1)
-			.minimumScaleFactor(0.4)
-			.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-			.padding()
-			.aspectRatio(1, contentMode: .fit)
-			.background(Color("Colors/MeshtasticTile"), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+		modifier(CompactWidgetTile())
+	}
+}
+
+private struct CompactWidgetTile: ViewModifier {
+
+	/// The side the content is laid out at. A node details tile on a phone is about 165 points,
+	/// so its readings come out about a third larger than this.
+	private static let layoutSide: CGFloat = 125
+
+	func body(content: Content) -> some View {
+		GeometryReader { geometry in
+			let side = min(geometry.size.width, geometry.size.height)
+			let scale = max(0.1, side / Self.layoutSide)
+			content
+				.lineLimit(1)
+				.minimumScaleFactor(0.4)
+				.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+				.padding(12)
+				.frame(width: Self.layoutSide, height: Self.layoutSide)
+				.background(Color("Colors/MeshtasticTile"), in: RoundedRectangle(cornerRadius: 15, style: .continuous))
+				.scaleEffect(scale)
+				.frame(width: geometry.size.width, height: geometry.size.height)
+		}
+		.aspectRatio(1, contentMode: .fit)
 	}
 }
 

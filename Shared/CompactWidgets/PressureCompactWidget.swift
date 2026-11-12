@@ -21,7 +21,7 @@ struct PressureCompactWidget: View {
 					.font(.caption)
 			}
 			Text(pressure)
-				.font(pressure.length < 7 ? .system(size: 35) : .system(size: 30) )
+				.font(pressure.count < 7 ? .system(size: 35) : .system(size: 30) )
 			Text(low ? "LOW" : "HIGH")
 				.padding(.bottom, 10)
 			Text(unit)

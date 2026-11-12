@@ -23,7 +23,7 @@ struct SoilTemperatureCompactWidget: View {
 			}
 			HStack {
 				Text("\(temperature)")
-					.font(temperature.length < 4 ? .system(size: 50) : .system(size: 40) )
+					.font(temperature.count < 4 ? .system(size: 50) : .system(size: 40) )
 				Text(unit)
 					.font(.system(size: 14))
 			}
@@ -48,7 +48,7 @@ struct SoilMoistureCompactWidget: View {
 			}
 			HStack {
 				Text("\(moisture)")
-					.font(moisture.length < 4 ? .system(size: 50) : .system(size: 40) )
+					.font(moisture.count < 4 ? .system(size: 50) : .system(size: 40) )
 				Text(unit)
 					.font(.system(size: 14))
 			}

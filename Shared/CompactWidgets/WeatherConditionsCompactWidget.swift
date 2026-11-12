@@ -22,7 +22,7 @@ struct WeatherConditionsCompactWidget: View {
 					.font(.caption)
 			}
 			Text(temperature)
-				.font(temperature.length < 4 ? .system(size: 72) : .system(size: 54) )
+				.font(temperature.count < 4 ? .system(size: 72) : .system(size: 54) )
 		}
 		.compactWidgetTile()
 	}

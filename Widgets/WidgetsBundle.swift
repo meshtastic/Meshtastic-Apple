@@ -13,6 +13,7 @@ struct WidgetsBundle: WidgetBundle {
 	var body: some Widget {
 		MeshLocalStatsWidget()
 		MeshNodeTrackerWidget()
+		MeshTelemetryWidget()
 		MeshMessagesWidget()
 		MeshNodeMapWidget()
 		MeshTraceRouteWidget()

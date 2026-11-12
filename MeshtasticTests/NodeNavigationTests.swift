@@ -59,6 +59,22 @@ struct NodeNavigationTests {
 		#expect(state.nodeListSelectedNodeNum == 9876543210)
 	}
 
+	@Test func deepLinkEnvironmentAsksForTheLog() async throws {
+		let router = await Router()
+		let url = try #require(URL(string: "meshtastic:///nodes?nodenum=42&metrics=environment"))
+		await router.route(url: url)
+		#expect(await router.selectedNodeNum == 42)
+		#expect(await router.environmentLogNodeNum == 42)
+	}
+
+	@Test func selectingAnotherNodeDropsTheLogRequest() async throws {
+		let router = await Router()
+		let url = try #require(URL(string: "meshtastic:///nodes?nodenum=42&metrics=environment"))
+		await router.route(url: url)
+		await router.navigateToNodeDetail(nodeNum: 7)
+		#expect(await router.environmentLogNodeNum == nil)
+	}
+
 	@Test func deepLinkNodesWithoutNodeNum() async throws {
 		let router = await Router()
 		let url = try #require(URL(string: "meshtastic:///nodes"))

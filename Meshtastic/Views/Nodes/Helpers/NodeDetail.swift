@@ -72,6 +72,8 @@ struct NodeDetail: View {
 	@State private var showingShareContactQR = false
 	@State private var deviceModelFullScreen: DeviceModelFullScreenRequest?
 	@State private var deviceModelInSpace: DeviceModelFullScreenRequest?
+	/// Pushed by a tap on the node's Telemetry widget.
+	@State private var showingEnvironmentLog = false
 
 	init(node: NodeInfoEntity, nodeNum: Int64, showMapLink: Bool = true) {
 		self.node = node
@@ -177,6 +179,14 @@ struct NodeDetail: View {
 						.contentMargins(.top, 0, for: .scrollContent)
 					.navigationTitle(String((currentUser?.displayLongName ?? "Unknown".localized).addingVariationSelectors))
 					.navigationBarTitleDisplayMode(.inline)
+					.navigationDestination(isPresented: $showingEnvironmentLog) {
+						EnvironmentMetricsLog(node: node)
+					}
+					.onChange(of: router.environmentLogNodeNum, initial: true) { _, num in
+						guard num == nodeNum else { return }
+						router.environmentLogNodeNum = nil
+						showingEnvironmentLog = true
+					}
 					.id(displayNameRefresh)
 			}
 		} else {
@@ -1194,31 +1204,6 @@ struct NodeDetail: View {
 			|| metrics.barometricPressure != nil || metrics.windSpeed != nil || metrics.rainfall1H != nil
 			|| metrics.rainfall24H != nil || metrics.radiation != nil || metrics.weight != nil
 			|| metrics.distance != nil || metrics.soilTemperature != nil || metrics.soilMoisture != nil
-	}
-}
-
-func cardinalValue(from heading: Double) -> String {
-	switch heading {
-	case 0 ..< 22.5:
-		return "North"
-	case 22.5 ..< 67.5:
-		return "North East"
-	case 67.5 ..< 112.5:
-		return "East"
-	case 112.5 ..< 157.5:
-		return "South East"
-	case 157.5 ..< 202.5:
-		return "South"
-	case 202.5 ..< 247.5:
-		return "South West"
-	case 247.5 ..< 292.5:
-		return "West"
-	case 292.5 ..< 337.5:
-		return "North West"
-	case 337.5 ... 360.0:
-		return "North"
-	default:
-		return ""
 	}
 }
 

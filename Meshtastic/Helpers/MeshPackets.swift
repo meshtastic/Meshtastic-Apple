@@ -403,6 +403,9 @@ actor MeshPackets {
 	/// which SwiftData does not propagate to views, so the message lists cannot observe them.
 	/// One notification per save is enough for them to reload; observers debounce.
 	private var pendingMessageChange = false
+	/// Nodes whose environment, power or air quality telemetry is waiting to be saved. The Telemetry widget's snapshot
+	/// reads on a context of its own, so it refreshes after the save, when the reading is there to read.
+	private var pendingTelemetryNodes: Set<Int64> = []
 
 	func noteMessageChange() {
 		pendingMessageChange = true
@@ -434,6 +437,11 @@ actor MeshPackets {
 			if pendingMessageChange {
 				pendingMessageChange = false
 				postMessageChange()
+			}
+			if !pendingTelemetryNodes.isEmpty {
+				let nodes = pendingTelemetryNodes
+				pendingTelemetryNodes = []
+				Task { @MainActor in WidgetDataBroker.shared.telemetryReadingsSaved(from: nodes) }
 			}
 		} catch {
 			Logger.data.error("💥 [\(caller, privacy: .public)] Error saving: \(error.localizedDescription, privacy: .public)")
@@ -1870,6 +1878,10 @@ actor MeshPackets {
 			// nil lastHeard (reads as never-heard until the next packet); backfill that case too.
 			if connectedNode == Int64(packet.from) || node.lastHeard == nil {
 				node.lastHeard = resolveTimestamp(packet.rxTime)
+			}
+			// Environment, power and air quality all show on the Telemetry widget.
+			if (1...3).contains(telemetry.metricsType) {
+				pendingTelemetryNodes.insert(packetFrom)
 			}
 			scheduleDebouncedSave()
 			Logger.data.debug("📈 [TelemetryEntity] of type \(MetricsTypes(rawValue: Int(telemetry.metricsType))?.name ?? "Unknown Metrics Type", privacy: .public) buffered for Node: \(packet.from.toHex(), privacy: .public)")
