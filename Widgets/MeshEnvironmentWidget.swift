@@ -6,8 +6,8 @@
 //
 //  One node's environment readings as node details' tiles (meshtastic/design#179).
 //  Small shows the first two readings, medium the first three, large four at a time
-//  with a page button when more are picked; on Vision Pro the extra large
-//  board shows all eight. It reads the snapshot the app writes and never sends anything
+//  with a page button when more are picked; the extra large portrait size (iOS
+//  27 and Vision Pro) and Vision Pro's extra large board show all eight. It reads the snapshot the app writes and never sends anything
 //  over the mesh.
 //
 
@@ -95,12 +95,23 @@ struct MeshEnvironmentWidget: Widget {
 		#if os(visionOS)
 		// On a wall it can stand off it or sit in it like a weather panel, and the
 		// board size has room for every reading at once.
-		.supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .systemExtraLarge])
+		.supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .systemExtraLarge, .systemExtraLargePortrait])
 		.supportedMountingStyles([.elevated, .recessed])
 		#else
-		.supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
+		.supportedFamilies(Self.families)
 		#endif
 	}
+
+	#if !os(visionOS)
+	/// The extra large portrait size arrived on iPhone in iOS 27.
+	private static var families: [WidgetFamily] {
+		var families: [WidgetFamily] = [.systemSmall, .systemMedium, .systemLarge]
+		if #available(iOS 27.0, *) {
+			families.append(.systemExtraLargePortrait)
+		}
+		return families
+	}
+	#endif
 }
 
 // MARK: - Views
@@ -133,7 +144,7 @@ struct EnvironmentWidgetView: View {
 				if let environment = entry.environment, !entry.metrics.isEmpty {
 					tiles(environment)
 						// The large size spaces its tiles from the edges itself.
-						.padding(.horizontal, family == .systemLarge ? 0 : Self.margin)
+						.padding(.horizontal, usesEvenEdges ? 0 : Self.margin)
 						.opacity(entry.isStale ? 0.55 : 1)
 					if showsDetail {
 						EnvironmentFooter(entry: entry, showsPageButton: family == .systemLarge)
@@ -168,51 +179,91 @@ struct EnvironmentWidgetView: View {
 
 	@ViewBuilder
 	private func tiles(_ environment: EnvironmentSnapshot) -> some View {
-		switch family {
-		case .systemSmall:
-			grid(Array(entry.metrics.prefix(2)), columns: 2, environment: environment)
-		case .systemMedium:
-			grid(Array(entry.metrics.prefix(3)), columns: 3, environment: environment)
-		#if os(visionOS)
-		case .systemExtraLarge:
-			grid(Array(entry.metrics.prefix(EnvironmentMetric.maximumCount)), columns: 4, environment: environment)
-		#endif
-		default:
-			// Pages keep two rows, so a short last page keeps its tiles' size.
-			grid(EnvironmentWidgetPage.metrics(entry.metrics, page: entry.page), columns: 2, rows: 2, evenEdges: true, environment: environment)
+		if isExtraLargePortrait {
+			grid(Array(entry.metrics.prefix(EnvironmentMetric.maximumCount)), columns: 2, rows: 4, evenEdges: true, environment: environment)
+		} else {
+			switch family {
+			case .systemSmall:
+				grid(Array(entry.metrics.prefix(2)), columns: 2, environment: environment)
+			case .systemMedium:
+				grid(Array(entry.metrics.prefix(3)), columns: 3, environment: environment)
+			#if os(visionOS)
+			case .systemExtraLarge:
+				grid(Array(entry.metrics.prefix(EnvironmentMetric.maximumCount)), columns: 4, environment: environment)
+			#endif
+			default:
+				// Pages keep two rows, so a short last page keeps its tiles' size.
+				grid(EnvironmentWidgetPage.metrics(entry.metrics, page: entry.page), columns: 2, rows: 2, evenEdges: true, environment: environment)
+			}
 		}
+	}
+
+	/// The tall size on iOS 27 and Vision Pro, with room for every reading.
+	private var isExtraLargePortrait: Bool {
+		if #available(iOS 27.0, visionOS 26.0, *) {
+			return family == .systemExtraLargePortrait
+		}
+		return false
+	}
+
+	/// The sizes whose tiles are spaced from the widget's side edges by the grid itself.
+	private var usesEvenEdges: Bool {
+		family == .systemLarge || isExtraLargePortrait
 	}
 
 	/// Rows of `columns` square tiles, as large as the widget allows and centered.
 	/// With `rows`, empty slots are kept so the tiles stay the size of a full page.
-	/// With `evenEdges`, the space from the widget's side edges to the tiles is the
-	/// same as the space between them; the caller leaves the grid no side margin.
+	/// With `evenEdges`, the spaces from the widget's side edges to the tiles and
+	/// between them are all equal; the caller leaves the grid no side margin.
+	@ViewBuilder
 	private func grid(_ metrics: [EnvironmentMetric], columns: Int, rows: Int? = nil, evenEdges: Bool = false, environment: EnvironmentSnapshot) -> some View {
 		let rowCount = rows ?? max(1, (metrics.count + columns - 1) / columns)
-		return VStack(spacing: 8) {
-			ForEach(0..<rowCount, id: \.self) { row in
-				HStack(spacing: evenEdges ? 0 : 8) {
-					ForEach(0..<columns, id: \.self) { column in
-						if evenEdges {
-							Spacer(minLength: 0)
-						}
-						let index = row * columns + column
-						if index < metrics.count {
-							FittedTile {
-								EnvironmentCompactTile(metric: metrics[index], environment: environment)
+		let spacing: CGFloat = 8
+		if evenEdges {
+			GeometryReader { geometry in
+				let size = geometry.size
+				let side = max(0, min(
+					(size.height - spacing * CGFloat(rowCount - 1)) / CGFloat(rowCount),
+					(size.width - spacing * CGFloat(columns + 1)) / CGFloat(columns)
+				))
+				let gap = (size.width - side * CGFloat(columns)) / CGFloat(columns + 1)
+				VStack(spacing: spacing) {
+					ForEach(0..<rowCount, id: \.self) { row in
+						HStack(spacing: gap) {
+							ForEach(0..<columns, id: \.self) { column in
+								cell(metrics, index: row * columns + column, environment: environment)
+									.frame(width: side, height: side)
 							}
-						} else if rows != nil {
-							Color.clear
-								.aspectRatio(1, contentMode: .fit)
 						}
 					}
-					if evenEdges {
-						Spacer(minLength: 0)
+				}
+				.frame(width: size.width, height: size.height)
+			}
+		} else {
+			VStack(spacing: spacing) {
+				ForEach(0..<rowCount, id: \.self) { row in
+					HStack(spacing: spacing) {
+						ForEach(0..<columns, id: \.self) { column in
+							let index = row * columns + column
+							if index < metrics.count || rows != nil {
+								cell(metrics, index: index, environment: environment)
+							}
+						}
 					}
 				}
 			}
+			.frame(maxWidth: .infinity)
 		}
-		.frame(maxWidth: .infinity)
+	}
+
+	@ViewBuilder
+	private func cell(_ metrics: [EnvironmentMetric], index: Int, environment: EnvironmentSnapshot) -> some View {
+		if index < metrics.count {
+			EnvironmentCompactTile(metric: metrics[index], environment: environment)
+		} else {
+			Color.clear
+				.aspectRatio(1, contentMode: .fit)
+		}
 	}
 
 	/// Seen from across the room on Vision Pro, the widget keeps the readings
@@ -228,28 +279,6 @@ struct EnvironmentWidgetView: View {
 	#if os(visionOS)
 	@Environment(\.levelOfDetail) private var levelOfDetail
 	#endif
-}
-
-/// Lays a tile out at a fixed size, then scales it to its square slot, so the
-/// widget's tiles keep node details' layout rather than reflowing smaller.
-private struct FittedTile<Content: View>: View {
-	/// Smaller than a tile on node details (about 165 points), so the reading
-	/// fills more of the widget's smaller squares.
-	private static var layoutSize: CGFloat { 125 }
-
-	@ViewBuilder let content: Content
-
-	var body: some View {
-		GeometryReader { geometry in
-			let size = geometry.size
-			let scale = max(0.1, min(size.width, size.height) / Self.layoutSize)
-			content
-				.frame(width: size.width / scale, height: size.height / scale)
-				.scaleEffect(scale)
-				.frame(width: size.width, height: size.height)
-		}
-		.aspectRatio(1, contentMode: .fit)
-	}
 }
 
 private struct EnvironmentHeader: View {
