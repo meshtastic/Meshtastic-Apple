@@ -409,12 +409,12 @@ struct CinemaSpace: View {
 
 	/// The backdrop for the environment: its image, and for a cutout, the sky behind it.
 	/// Dropped if the task is cancelled or the environment or stone changed while it loaded, so a
-	/// slower, older call can't replace the newer backdrop.
-	private func replaceBackdrop(clearSky: Bool) async {
+	/// slower, older call can't replace the newer backdrop, and also when `stillWanted` says no.
+	private func replaceBackdrop(clearSky: Bool, stillWanted: () -> Bool = { true }) async {
 		let environment = environment
 		let stone = stone
 		let next = await CinemaBackdrop.make(environment, stone: stone, clearSky: clearSky)
-		guard !Task.isCancelled, environment == self.environment, stone == self.stone else { return }
+		guard !Task.isCancelled, environment == self.environment, stone == self.stone, stillWanted() else { return }
 		backdrop?.removeFromParent()
 		stage.addChild(next)
 		backdrop = next
@@ -451,16 +451,25 @@ struct CinemaSpace: View {
 		await lookout.prepare(area: await lookoutArea())
 		// The maps changing or the view going away while the summits were found makes this refresh stale.
 		guard !Task.isCancelled, lookoutMaps == maps else { return }
+		// The chosen summit moved a little in a new search: keep it chosen under its new id. Setting
+		// the id refreshes again.
+		if lookout.site(for: lookoutSiteID) == nil, let moved = lookout.site(near: lookoutSiteID) {
+			lookoutSiteID = moved.id
+			return
+		}
 		let site = lookout.site(for: lookoutSiteID)
 		let heading = SpatialLookout.heading(turns: lookoutTurns)
-		guard site?.id != terrainSiteID || heading != terrainHeading || (site != nil && terrain == nil) else { return }
+		// Also when the summit has gone (a new search after the maps changed doesn't find it) but the
+		// clear sky put up for its terrain is still showing, so the painted view comes back.
+		guard site?.id != terrainSiteID || heading != terrainHeading || (site != nil && terrain == nil) || (site == nil && backdropClearSky) else { return }
 		terrain?.removeFromParent()
 		terrain = nil
 		terrainSiteID = nil
 		guard let site else {
 			lookoutBuild?.task.cancel()
 			lookoutBuild = nil
-			await replaceBackdrop(clearSky: false)
+			// Not put up if a summit was chosen meanwhile, whose own refresh puts up its terrain.
+			await replaceBackdrop(clearSky: false) { lookoutMaps == maps && lookout.site(for: lookoutSiteID) == nil }
 			return
 		}
 		let build: Task<ModelEntity?, Never>

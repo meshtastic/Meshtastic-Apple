@@ -144,6 +144,11 @@ final class LookoutScene {
 		sites.first { $0.id == id }
 	}
 
+	/// The site with this id, or the one a new search found close to where it was.
+	func site(near id: String) -> LookoutSite? {
+		site(for: id) ?? SpatialLookout.nearest(to: id, in: sites) { $0.coordinate }
+	}
+
 	/// The terrain around `site` as an entity, or nil if it can't be built.
 	func terrain(for site: LookoutSite, heading: Double, sun: (azimuth: Float, elevation: Float)) async -> ModelEntity? {
 		guard let bounds else { return nil }
