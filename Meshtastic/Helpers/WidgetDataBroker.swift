@@ -30,6 +30,7 @@ final class WidgetDataBroker {
 		case tracker = "MeshNodeTracker"
 		case messages = "MeshMessages"
 		case map = "MeshNodeMap"
+		case environment = "MeshEnvironment"
 	}
 
 	enum Trigger: Hashable {
@@ -38,6 +39,7 @@ final class WidgetDataBroker {
 		case messages     // ingest or mark-read (via .meshMessagesDidChange)
 		case localStats   // 15-minute LocalStats telemetry
 		case displayNames // a node's local display name changed
+		case environment  // environment telemetry from any node
 	}
 
 	private var cancellables = Set<AnyCancellable>()
@@ -172,7 +174,8 @@ final class WidgetDataBroker {
 		let needsStoredStats = latestLocalStats == nil
 		await TrackedWidgetNodes.shared.refresh()
 		// Nil if iOS hasn't answered yet; the last snapshot's missing list stands until it does.
-		let tracked = TrackedWidgetNodes.shared.nums
+		let trackers = TrackedWidgetNodes.shared
+		let tracked = trackers.nums.map { $0.union(trackers.environmentNums ?? []) }
 		let data = await Task.detached(priority: .utility) {
 			Self.readDatabase(container: container, radioNum: radioNum, tracked: tracked ?? [], needsStoredStats: needsStoredStats)
 		}.value
@@ -349,7 +352,8 @@ final class WidgetDataBroker {
 				selected.append(radioNode)
 			}
 		}
-		// A node on a Node Tracker widget is always there, however long ago it was heard.
+		// A node on a Node Tracker or Environment widget is always there, however long ago it
+		// was heard.
 		for num in tracked where !selected.contains(where: { $0.num == num }) {
 			let trackedDescriptor = FetchDescriptor<NodeInfoEntity>(
 				predicate: #Predicate<NodeInfoEntity> { $0.num == num }
@@ -381,9 +385,39 @@ final class WidgetDataBroker {
 				hopsAway: node.hopsAway,
 				latitude: coordinate?.latitude,
 				longitude: coordinate?.longitude,
-				isFavorite: node.favorite
+				isFavorite: node.favorite,
+				environment: environmentSnapshot(context: context, nodeNum: node.num)
 			)
 		}
+	}
+
+	/// The node's newest environment telemetry row, fetched by node number like
+	/// `latestEnvironmentMetrics` rather than through the telemetries relationship (#2485).
+	nonisolated private static func environmentSnapshot(context: ModelContext, nodeNum: Int64) -> EnvironmentSnapshot? {
+		var descriptor = FetchDescriptor<TelemetryEntity>(
+			predicate: TelemetryEntity.predicate(forNode: nodeNum, metricsType: 1),
+			sortBy: [SortDescriptor(\.time, order: .reverse)]
+		)
+		descriptor.fetchLimit = 1
+		guard let row = try? context.fetch(descriptor).first, let time = row.time else { return nil }
+		let environment = EnvironmentSnapshot(
+			time: time,
+			temperature: row.temperature,
+			relativeHumidity: row.relativeHumidity,
+			barometricPressure: row.barometricPressure,
+			gasResistance: row.gasResistance,
+			iaq: row.iaq,
+			lux: row.lux,
+			windSpeed: row.windSpeed,
+			windDirection: row.windDirection,
+			rainfall1H: row.rainfall1H,
+			soilTemperature: row.soilTemperature,
+			soilMoisture: row.soilMoisture,
+			radiation: row.radiation,
+			weight: row.weight
+		)
+		// A row with none of the widget's metrics, such as one with only distance, isn't one.
+		return environment.reportedMetrics.isEmpty ? nil : environment
 	}
 
 	/// Same fetch-and-split approach as AppState.refreshBadgeCount — comparing an
@@ -487,7 +521,7 @@ final class WidgetDataBroker {
 					? [(.stats, 0), (.tracker, 0), (.messages, 0), (.map, 0)]
 					: [(.stats, 300), (.tracker, 300), (.messages, 300), (.map, 900)])
 			case .config:
-				merge([(.stats, 60), (.tracker, 60), (.map, 900)])
+				merge([(.stats, 60), (.tracker, 60), (.map, 900), (.environment, 60)])
 			case .messages:
 				merge(messagesChanged
 					? [(.messages, 0), (.tracker, 300)]
@@ -496,7 +530,11 @@ final class WidgetDataBroker {
 				merge([(.stats, 300), (.tracker, 300), (.map, 900)])
 			case .displayNames:
 				// Names show in every widget, message senders included.
-				merge([(.stats, 60), (.tracker, 60), (.messages, 60), (.map, 900)])
+				merge([(.stats, 60), (.tracker, 60), (.messages, 60), (.map, 900), (.environment, 60)])
+			case .environment:
+				// Weather stations report every few minutes at most; a reading a few
+				// minutes late is fine and keeps the reload budget.
+				merge([(.environment, 300)])
 			}
 		}
 		for (kind, floor) in floors {

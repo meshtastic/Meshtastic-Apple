@@ -92,6 +92,9 @@ struct NodeSnapshot: Codable, Identifiable {
 	let latitude: Double?
 	let longitude: Double?
 	let isFavorite: Bool
+	/// The newest environment telemetry, for the Environment widget. Optional
+	/// so snapshots written before it still decode.
+	var environment: EnvironmentSnapshot?
 
 	var id: Int64 { num }
 }

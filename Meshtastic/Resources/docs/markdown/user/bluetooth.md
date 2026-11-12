@@ -55,9 +55,11 @@ On iOS 18 and later, a running Live Activity also appears in the Smart Stack on 
 
 ### Widgets and controls
 
-The same **Widgets** sheet lists the Meshtastic Home Screen and Lock Screen widgets (Mesh Status, Node Tracker, Messages, Node Map and Trace Route) and the Control Center controls, and shows which ones are on your screens. iOS doesn't let an app place a widget or a control, so the sheet gives the steps. On the Home Screen, touch and hold an empty spot, tap **Edit**, then **Add Widget**, and search for Meshtastic. On the Lock Screen, touch and hold it, tap **Customize**, then **Lock Screen**, tap the widget area and choose Meshtastic.
+The same **Widgets** sheet lists the Meshtastic Home Screen and Lock Screen widgets (Mesh Status, Node Tracker, Environment, Messages, Node Map and Trace Route) and the Control Center controls, and shows which ones are on your screens. iOS doesn't let an app place a widget or a control, so the sheet gives the steps. On the Home Screen, touch and hold an empty spot, tap **Edit**, then **Add Widget**, and search for Meshtastic. On the Lock Screen, touch and hold it, tap **Customize**, then **Lock Screen**, tap the widget area and choose Meshtastic.
 
 A Node Tracker widget keeps showing the node it's set to, however long ago the node was heard. If that node is deleted, or you switch to a radio that doesn't have it, the widget keeps its name and says it's no longer in your node list; touch and hold the widget to choose another node, or it fills in again when the node is next heard. Deleting a node that's on a Node Tracker widget says so in the confirmation.
+
+An Environment widget shows one node's sensor readings, such as temperature, humidity and pressure, in the same units as the node's details. Touch and hold it and choose **Edit Widget** to pick the node (only nodes that have sent environment readings are listed, your connected radio first) and up to eight readings, in order. The small size shows the first reading, the medium size the first two, and the large size four at a time: with more than four picked, tap the page button in its corner to see the next ones. On Apple Vision Pro, the extra large size shows all eight at once. A reading the node no longer sends shows a dash, and readings more than two hours old are dimmed and say so. Tap the widget to open the node's Environment Metrics Log.
 
 ## Managing Multiple Radios
 

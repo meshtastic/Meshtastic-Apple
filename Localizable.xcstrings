@@ -984,6 +984,9 @@
         }
       }
     },
+    "Next readings, page %lld of %lld" : {
+      "comment" : "Environment widget page button for VoiceOver. The arguments are the page shown and the number of pages."
+    },
     "No reply from the node. It must list your radio's public key as an admin key, and be in range." : {
 
     },
@@ -1099,6 +1102,9 @@
     },
     "Page up" : {
 
+    },
+    "Pages" : {
+      "comment" : "Environment widget page button: how many pages there are"
     },
     "Page down" : {
 
@@ -2399,6 +2405,9 @@
           }
         }
       }
+    },
+    "Not in recent nodes" : {
+      "comment" : "Widget: the picked node is not in the recent nodes the app shares with widgets"
     },
     "One node's battery, signal, when it was last heard and how far away it is." : {
       "comment" : "Live Activity sheet: what the Track a Node mode shows",
@@ -3882,6 +3891,9 @@
           }
         }
       }
+    },
+    "Dew Point" : {
+      "comment" : "Environment widget: a reading name"
     },
     "Discontinued Hardware" : {
       "localizations" : {
@@ -8044,6 +8056,9 @@
         }
       }
     },
+    "Next Environment Readings" : {
+      "comment" : "Environment widget: the page button action"
+    },
     "Niche Hardware" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -9010,6 +9025,9 @@
           }
         }
       }
+    },
+    "Shows the next readings on an Environment widget." : {
+      "comment" : "Environment widget: the page button action description"
     },
     "Simple" : {
       "extractionState" : "manual",
@@ -14747,6 +14765,9 @@
           }
         }
       }
+    },
+    "%lld/%lld" : {
+      "comment" : "Environment widget page button: the page shown and the number of pages, such as 1/2"
     },
     "%llddb Transmit Power" : {
       "localizations" : {
@@ -59162,6 +59183,9 @@
         }
       }
     },
+    "Gas Resistance" : {
+      "comment" : "Environment widget: a reading name"
+    },
     "Gateway" : {
       "localizations" : {
         "ko" : {
@@ -101788,6 +101812,9 @@
         }
       }
     },
+    "No environment readings from this node" : {
+      "comment" : "Environment widget: the picked node has sent no environment readings"
+    },
     "No files uploaded" : {
       "localizations" : {
         "de" : {
@@ -102287,6 +102314,9 @@
           }
         }
       }
+    },
+    "No nodes have reported environment readings yet" : {
+      "comment" : "Environment widget: no node has sent environment readings"
     },
     "No offline maps yet. Download an area to use the map without a connection." : {
       "comment" : "A message displayed when there are no offline maps available.",
@@ -109106,6 +109136,9 @@
         }
       }
     },
+    "Over 2 hours old · %@ ago" : {
+      "comment" : "Environment widget footer for an old reading. The argument is how long ago, such as 3 hr, 5 min."
+    },
     "Overlanding" : {
       "comment" : "ActivityType.description\nActivityType.fileNameString",
       "localizations" : {
@@ -110773,6 +110806,9 @@
           }
         }
       }
+    },
+    "Pick a node and the readings to show." : {
+      "comment" : "Environment widget settings description"
     },
     "Pin %lld" : {
       "localizations" : {
@@ -116706,6 +116742,9 @@
         }
       }
     },
+    "Rain" : {
+      "comment" : "Environment widget: a reading name, rain in the last hour"
+    },
     "RAK Rotary Encoder" : {
       "comment" : "ConfigPresets.description",
       "localizations" : {
@@ -117372,6 +117411,9 @@
           }
         }
       }
+    },
+    "Readings" : {
+      "comment" : "Environment widget settings: the readings to show, in order"
     },
     "Readings can vary quickly with nearby transmitters, antenna setup, filters, and local interference." : {
       "comment" : "A description of how noise floor readings can change.",
@@ -137916,6 +137958,9 @@
         }
       }
     },
+    "Soil Temperature" : {
+      "comment" : "Environment widget: a reading name"
+    },
     "Solid orange line toward the target; arrows point in the direction of travel." : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -142014,6 +142059,9 @@
           }
         }
       }
+    },
+    "Temperature, humidity and other readings from a node you pick." : {
+      "comment" : "Environment widget description in the widget gallery"
     },
     "Ten Minutes" : {
       "comment" : "GpsUpdateIntervals.description\nLocationUpdateInterval.description\nScreenCarouselIntervals.description\nScreenOnIntervals.description\nUpdateInterval.description",

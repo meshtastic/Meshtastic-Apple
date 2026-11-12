@@ -14,6 +14,7 @@ Recent user-facing changes from roughly the last 12 months. Newest at the top.
 Show roughly the last 12 months of changes; archive entries older than a year by removing them.
 -->
 
+**Nov 2026** — [Bluetooth](bluetooth.md#widgets-and-controls) — A new Environment widget shows a node's temperature, humidity and other sensor readings on the Home Screen. Pick up to eight; the large size shows four at a time with a button to see the next four.
 **Nov 2026** — [Bluetooth](bluetooth.md#widgets-and-controls) — The Node Map and Trace Route widgets come in the extra large portrait size on iPhone with iOS 27 and on Apple Vision Pro, with a tall map; the trace route one also shows both hop chains.
 
 **Nov 2026** — [Cinema](cinema.md#lighthouse) — On Apple Vision Pro, the cinema can be set in a lighthouse's lantern room over the sea, standing on a real headland from the downloaded terrain, turned to face the open water.
