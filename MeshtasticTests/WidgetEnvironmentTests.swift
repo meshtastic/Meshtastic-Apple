@@ -126,6 +126,20 @@ struct WidgetEnvironmentTests {
 		#expect(reading.reportedMetrics == [.power1Voltage, .power1Current, .power8Current])
 	}
 
+	@Test func bestFitPicksTheLargestTiles() {
+		// A tall widget with six readings: two columns of three beat two columns of four.
+		let tall = EnvironmentWidgetPage.bestFit(count: 6, in: CGSize(width: 360, height: 640), spacing: 8)
+		#expect(tall.columns == 2)
+		#expect(tall.rows == 3)
+		// One reading takes the whole width or height, whichever is shorter.
+		let one = EnvironmentWidgetPage.bestFit(count: 1, in: CGSize(width: 360, height: 300), spacing: 8)
+		#expect(one.columns == 1)
+		#expect(one.side == 300)
+		// A wide space with three readings puts them in a row.
+		let wide = EnvironmentWidgetPage.bestFit(count: 3, in: CGSize(width: 600, height: 180), spacing: 8)
+		#expect(wide.columns == 3)
+	}
+
 	@Test func aReadingTurnsOldAtTwoHours() {
 		let reading = EnvironmentSnapshot(time: now, temperature: 20)
 		#expect(!reading.isStale(at: now.addingTimeInterval(2 * 3600 - 1)))

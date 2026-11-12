@@ -43,6 +43,23 @@ enum EnvironmentWidgetPage {
 		max(1, (metricCount + pageSize - 1) / pageSize)
 	}
 
+	/// The columns and rows that give `count` square tiles the largest side in `size`,
+	/// with at least `spacing` between rows and across each row, edges included.
+	static func bestFit(count: Int, in size: CGSize, spacing: CGFloat) -> (columns: Int, rows: Int, side: CGFloat) {
+		var best = (columns: 1, rows: max(1, count), side: CGFloat(0))
+		for columns in 1...max(1, count) {
+			let rows = (count + columns - 1) / columns
+			let side = min(
+				(size.width - spacing * CGFloat(columns + 1)) / CGFloat(columns),
+				(size.height - spacing * CGFloat(max(0, rows - 1))) / CGFloat(max(1, rows))
+			)
+			if side > best.side {
+				best = (columns, max(1, rows), side)
+			}
+		}
+		return (best.columns, best.rows, max(0, best.side))
+	}
+
 	/// The metrics on `page`.
 	static func metrics(_ metrics: [EnvironmentMetric], page: Int) -> [EnvironmentMetric] {
 		Array(metrics.dropFirst(page * pageSize).prefix(pageSize))

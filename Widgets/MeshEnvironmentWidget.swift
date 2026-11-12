@@ -179,7 +179,7 @@ struct EnvironmentWidgetView: View {
 	@ViewBuilder
 	private func tiles(_ environment: EnvironmentSnapshot) -> some View {
 		if isExtraLargePortrait {
-			grid(Array(entry.metrics.prefix(EnvironmentMetric.maximumCount)), columns: 2, rows: 4, evenEdges: true, environment: environment)
+			bestFitGrid(Array(entry.metrics.prefix(EnvironmentMetric.maximumCount)), environment: environment)
 		} else {
 			switch family {
 			case .systemSmall:
@@ -191,8 +191,12 @@ struct EnvironmentWidgetView: View {
 				grid(Array(entry.metrics.prefix(EnvironmentMetric.maximumCount)), columns: 4, environment: environment)
 			#endif
 			default:
-				// Pages keep two rows, so a short last page keeps its tiles' size.
-				grid(EnvironmentWidgetPage.metrics(entry.metrics, page: entry.page), columns: 2, rows: 2, evenEdges: true, environment: environment)
+				if entry.pageCount > 1 {
+					// Pages keep two rows, so a short last page keeps its tiles' size.
+					grid(EnvironmentWidgetPage.metrics(entry.metrics, page: entry.page), columns: 2, rows: 2, evenEdges: true, environment: environment)
+				} else {
+					bestFitGrid(entry.metrics, environment: environment)
+				}
 			}
 		}
 	}
@@ -252,6 +256,31 @@ struct EnvironmentWidgetView: View {
 				}
 			}
 			.frame(maxWidth: .infinity)
+		}
+	}
+
+	/// The readings in whichever columns and rows make their tiles largest, spaced
+	/// evenly from the side edges like the large size's pages.
+	private func bestFitGrid(_ metrics: [EnvironmentMetric], environment: EnvironmentSnapshot) -> some View {
+		GeometryReader { geometry in
+			let size = geometry.size
+			let spacing: CGFloat = 8
+			let fit = EnvironmentWidgetPage.bestFit(count: metrics.count, in: size, spacing: spacing)
+			let gap = (size.width - fit.side * CGFloat(fit.columns)) / CGFloat(fit.columns + 1)
+			VStack(spacing: spacing) {
+				ForEach(0..<fit.rows, id: \.self) { row in
+					HStack(spacing: gap) {
+						ForEach(0..<fit.columns, id: \.self) { column in
+							let index = row * fit.columns + column
+							if index < metrics.count {
+								EnvironmentCompactTile(metric: metrics[index], environment: environment)
+									.frame(width: fit.side, height: fit.side)
+							}
+						}
+					}
+				}
+			}
+			.frame(width: size.width, height: size.height)
 		}
 	}
 
