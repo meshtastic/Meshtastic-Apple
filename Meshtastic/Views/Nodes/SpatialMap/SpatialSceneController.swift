@@ -842,12 +842,13 @@ extension SpatialSceneController {
 
 // MARK: Fire lookout
 
-/// What stands where the cinema's room is on the map: the fire lookout or the castle tower in its
-/// stone on a summit, the city rooftop's water tower and mast on a roof, or the sky deck hung off
-/// its tower.
+/// What stands on the cinema's site on the map: the fire lookout or the castle tower in its stone
+/// on a summit, the lighthouse on its headland, the city rooftop's water tower and mast on a roof,
+/// or the sky deck hung off its tower.
 enum SpatialSummitModel: Equatable {
 	case fireLookout
 	case castleTower(CastleStone)
+	case lighthouse
 	case cityRooftop
 	case skyDeck
 
@@ -855,6 +856,7 @@ enum SpatialSummitModel: Equatable {
 		switch self {
 		case .fireLookout: "fireLookout"
 		case let .castleTower(stone): "castleTower-\(stone.rawValue)"
+		case .lighthouse: "lighthouse"
 		case .cityRooftop: "cityRooftop"
 		case .skyDeck: "skyDeck"
 		}
@@ -865,6 +867,7 @@ enum SpatialSummitModel: Equatable {
 		let made = switch self {
 		case .fireLookout: SpatialLookoutParts.make(heading: heading)
 		case let .castleTower(stone): SpatialLookoutParts.makeCastle(heading: heading, stone: stone)
+		case .lighthouse: SpatialLookoutParts.makeLighthouse(heading: heading)
 		case .cityRooftop: SpatialLookoutParts.makeRooftop(heading: heading)
 		case .skyDeck: SpatialLookoutParts.makeSkyDeck(heading: heading)
 		}
@@ -874,11 +877,11 @@ enum SpatialSummitModel: Equatable {
 }
 
 extension SpatialSceneController {
-	/// Stands `model`, the fire lookout or the castle tower, on `coordinate`, the summit the cinema's
-	/// room is on, or the rooftop's water tower and mast on the roof there, with its front facing
-	/// `heading`, or takes it away for nil. Moved onto the new ground whenever the terrain is rebuilt,
-	/// and onto the roof whenever the buildings are. The sky deck hangs at `towerHeight`, its tower's
-	/// height in meters.
+	/// Stands `model`, the fire lookout, the castle tower or the lighthouse, on `coordinate`, the
+	/// summit or headland the cinema's room is on, or the rooftop's water tower and mast on the roof
+	/// there, with its front facing `heading`, or takes it away for nil. Moved onto the new ground
+	/// whenever the terrain is rebuilt, and onto the roof whenever the buildings are. The sky deck
+	/// hangs at `towerHeight`, its tower's height in meters.
 	func apply(lookout coordinate: CLLocationCoordinate2D?, heading: Double = SpatialLookout.frontHeading, model: SpatialSummitModel = .fireLookout, towerHeight: Double? = nil) {
 		guard let placement else { return }
 		let same = coordinate?.latitude == lookoutCoordinate?.latitude && coordinate?.longitude == lookoutCoordinate?.longitude

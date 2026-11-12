@@ -150358,6 +150358,9 @@
         }
       }
     },
+    "Turn Lighthouse" : {
+      "comment" : "Cinema: title over the dial that turns the lighthouse, so the screen looks out over another part of the view"
+    },
     "Turn Lookout" : {
       "comment" : "Cinema: title over the dial that turns the fire lookout, so the screen looks out over another part of the view",
       "localizations" : {

@@ -11,7 +11,7 @@ import SwiftUI
 /// Tap one of its marks or drag round it; the turn is made when you let go, so the terrain
 /// isn't rebuilt for every mark passed on the way.
 struct LookoutTurnDial: View {
-	/// What's turned: the lookout, or the rooftop.
+	/// What the dial turns, such as "Turn Lookout".
 	let title: String
 	@Binding var turns: Int
 	/// Where a drag is pointing, before it's let go.

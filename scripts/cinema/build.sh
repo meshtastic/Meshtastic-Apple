@@ -168,6 +168,12 @@ sky fire_lookout_puresky kloppenheim_06_puresky_4k.hdr 5.5 1
 # The castle tower, lit as the lookout is so it shares the lookout's skies, in each of its stones.
 stone_environment castle_tower gray
 stone_environment castle_tower pink
+# The lighthouse, lit by the same sunset as the lookout turned so the sun is low over the sea on the
+# viewer's left, and its skies with the sun in the same place: the sea seen from the lantern, and
+# the clear sky alone, for behind real terrain.
+environment lighthouse
+view lighthouse_sky sea_view kloppenheim_06_puresky_4k.hdr 131.5 1
+sky lighthouse_puresky kloppenheim_06_puresky_4k.hdr 131.5 1
 # The city rooftop, lit by the clear sunset the lookout's skies are painted from, at their turn:
 # behind real buildings it shows fire_lookout_puresky, and with none, a made-up city under that sky.
 environment city_rooftop

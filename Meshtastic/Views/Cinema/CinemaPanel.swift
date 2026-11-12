@@ -14,12 +14,13 @@ struct CinemaPanel: View {
 	@Binding var environment: CinemaEnvironment
 	/// The stone the castle tower is built of.
 	@Binding var stone: CastleStone
-	/// The summits the fire lookout can stand on, highest first, or the rooftops the city rooftop can,
-	/// tallest first; empty with no downloaded terrain.
+	/// The summits the fire lookout can stand on, highest first, the headlands the lighthouse can,
+	/// best first, or the rooftops the city rooftop can, tallest first; empty with no downloaded
+	/// terrain.
 	let sites: [LookoutSite]
 	/// The chosen site's id, or empty for the painted view.
 	@Binding var siteID: String
-	/// Eighth turns clockwise the lookout is turned.
+	/// Sixteenth turns clockwise the lookout or the lighthouse is turned.
 	@Binding var turns: Int
 	/// Where the connected radio is, to say how far each summit is from it.
 	let radioCoordinate: CLLocationCoordinate2D?
@@ -69,31 +70,19 @@ struct CinemaPanel: View {
 					.frame(maxWidth: 260)
 				}
 			}
-			if environment.siteKind == .rooftop || environment.siteKind == .skyDeck, !sites.isEmpty {
-				Picker(environment.siteKind == .skyDeck
-					? String(localized: "Tower", comment: "Cinema: picker for the tower the sky deck hangs off")
-					: String(localized: "Rooftop", comment: "Cinema: picker for the building the city rooftop stands on"), selection: $siteID) {
-					Text("City skyline", comment: "Cinema: the city rooftop's rendered skyline, with no real buildings")
-						.tag("")
-					ForEach(sites) { site in
-						Text(verbatim: title(for: site)).tag(site.id)
+			if environment.standsOnSite, !sites.isEmpty {
+				Picker(sitePickerTitle, selection: $siteID) {
+					switch environment.siteKind {
+					case .coast:
+						Text("Sea view", comment: "Cinema: the lighthouse's rendered view of the sea, with no real terrain")
+							.tag("")
+					case .rooftop, .skyDeck:
+						Text("City skyline", comment: "Cinema: the city rooftop's rendered skyline, with no real buildings")
+							.tag("")
+					default:
+						Text("Forest sunset", comment: "Cinema: the fire lookout's rendered forest view, with no real terrain")
+							.tag("")
 					}
-				}
-				.pickerStyle(.menu)
-				if !siteID.isEmpty {
-					LookoutTurnDial(title: environment.turnDialTitle, turns: $turns)
-					Button(action: onShowRooftop) {
-						if environment.siteKind == .skyDeck {
-							Label(String(localized: "Show Tower", comment: "Cinema: button that opens the 3D map zoomed in on the tower the sky deck hangs off, with the buildings on"), systemImage: "building.2.crop.circle")
-						} else {
-							Label(String(localized: "Show Rooftop", comment: "Cinema: button that opens the 3D map zoomed in on the city rooftop, with the buildings on"), systemImage: "building.2.crop.circle")
-						}
-					}
-				}
-			} else if environment.standsOnSummit, !sites.isEmpty {
-				Picker(String(localized: "Summit", comment: "Cinema: picker for the summit the fire lookout stands on"), selection: $siteID) {
-					Text("Forest sunset", comment: "Cinema: the fire lookout's rendered forest view, with no real terrain")
-						.tag("")
 					ForEach(sites) { site in
 						Text(verbatim: title(for: site)).tag(site.id)
 					}
@@ -103,8 +92,17 @@ struct CinemaPanel: View {
 				// view. The forest sunset is painted, so there's nothing to turn there.
 				if !siteID.isEmpty {
 					LookoutTurnDial(title: environment.turnDialTitle, turns: $turns)
+					if environment.siteKind == .skyDeck {
+						Button(action: onShowRooftop) {
+							Label(String(localized: "Show Tower", comment: "Cinema: button that opens the 3D map zoomed in on the tower the sky deck hangs off, with the buildings on"), systemImage: "building.2.crop.circle")
+						}
+					} else if environment.siteKind == .rooftop {
+						Button(action: onShowRooftop) {
+							Label(String(localized: "Show Rooftop", comment: "Cinema: button that opens the 3D map zoomed in on the city rooftop, with the buildings on"), systemImage: "building.2.crop.circle")
+						}
+					}
 				}
-			} else if environment.siteKind != nil, let lookoutNote {
+			} else if environment.standsOnSite, let lookoutNote {
 				Text(verbatim: lookoutNote)
 					.font(.caption)
 					.foregroundStyle(.secondary)
@@ -128,8 +126,22 @@ struct CinemaPanel: View {
 		.glassBackgroundEffect()
 	}
 
+	/// The site picker's title: what the environment stands on.
+	private var sitePickerTitle: String {
+		switch environment.siteKind {
+		case .coast:
+			String(localized: "Headland", comment: "Cinema: picker for the headland on the coast the lighthouse stands on")
+		case .rooftop:
+			String(localized: "Rooftop", comment: "Cinema: picker for the building the city rooftop stands on")
+		case .skyDeck:
+			String(localized: "Tower", comment: "Cinema: picker for the tower the sky deck hangs off")
+		default:
+			String(localized: "Summit", comment: "Cinema: picker for the summit the fire lookout stands on")
+		}
+	}
+
 	/// The summit's height, or how tall the building is, and how far from the radio and which way,
-	/// when the radio has a position.
+	/// when the radio has a position. A headland says which way it looks out to sea before its height.
 	private func title(for site: LookoutSite) -> String {
 		let unit: UnitLength = Locale.current.measurementSystem == .metric ? .meters : .feet
 		let height = Measurement(value: Double(site.rooftop ?? site.elevation), unit: UnitLength.meters).converted(to: unit)
@@ -140,7 +152,8 @@ struct CinemaPanel: View {
 			// A sky deck says which way it looks out from its tower first.
 			named = site.facing.map { "\(SpatialLookout.facing(heading: $0)), \(tall)" } ?? tall
 		} else {
-			named = site.name.map { "\($0), \(height)" } ?? height
+			let label = site.name ?? site.facing.map { SpatialLookout.facing(heading: $0) }
+			named = label.map { "\($0), \(height)" } ?? height
 		}
 		guard let radioCoordinate else { return named }
 		let distance = Measurement(value: radioCoordinate.distance(from: site.coordinate), unit: UnitLength.meters)

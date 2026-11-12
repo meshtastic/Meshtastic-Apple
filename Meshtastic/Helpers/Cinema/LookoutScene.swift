@@ -11,10 +11,10 @@ import OSLog
 import RealityKit
 import SwiftData
 
-/// What the fire lookout, the castle tower and the city rooftop can look out on: the summits in the
-/// terrain downloaded for the spatial map, or the tallest buildings in its basemaps for the
-/// rooftop, the terrain (and for a rooftop, the city) around the one chosen, and the nodes placed
-/// by bearing and distance from it.
+/// What the fire lookout, the castle tower, the lighthouse and the city rooftop can look out on:
+/// the summits in the terrain downloaded for the spatial map, the headlands on its coast for the
+/// lighthouse, or the tallest buildings in its basemaps for the rooftop; the terrain (and for a
+/// rooftop, the city) around the one chosen; and the nodes placed by bearing and distance from it.
 @MainActor
 @Observable
 final class LookoutScene {
@@ -29,9 +29,12 @@ final class LookoutScene {
 		case ready
 	}
 
-	/// The highest mountains in the downloaded terrain, highest first, or for the rooftop the
-	/// tallest buildings, tallest first. Empty with no terrain.
+	/// The highest mountains in the downloaded terrain, highest first, for the lighthouse the
+	/// headlands, best first, or for the rooftop the tallest buildings, tallest first. Empty with no
+	/// terrain.
 	private(set) var sites: [LookoutSite] = []
+	/// What the sites are: summits or headlands, as the last `prepare()` asked.
+	private(set) var kind: LookoutSiteKind = .summit
 	private(set) var status: Status = .idle
 	/// The nodes out the windows, for the site the terrain was built for.
 	var labels: [LookoutLabel] = []
@@ -48,14 +51,16 @@ final class LookoutScene {
 
 	/// Reads the downloaded terrain and finds the summits in it, inside `area`: the circle the 3D
 	/// map shows around the mesh. The terrain download reaches well past that circle, and a summit
-	/// out there isn't on the map. Nil searches all the terrain. With `kind` rooftop, finds the
-	/// tallest buildings instead. Does nothing when the sites for this area and kind are already
-	/// found. A call while a search is running waits for that one rather than starting another.
+	/// out there isn't on the map. Nil searches all the terrain. `kind` says whether to look for
+	/// summits, headlands or the tallest buildings. Does nothing when the sites for this area and
+	/// kind are already found. A call while a search is running waits for that one rather than
+	/// starting another.
 	func prepare(area: SpatialCircle?, kind: LookoutSiteKind = .summit) async {
 		let key = Self.areaKey(area) + "|" + kind.rawValue
 		if key != searchedArea {
 			forgetSites()
 			searchedArea = key
+			self.kind = kind
 		}
 		guard status == .idle || status == .searching else { return }
 		if let preparing {
@@ -115,7 +120,7 @@ final class LookoutScene {
 		let terrainFiles = Set(sources.flatMap { [$0.globalURL.lastPathComponent] + $0.regionalURLs.map(\.lastPathComponent) })
 		let basemapFiles = Set(OfflineMapManager.persistedRegionFiles().filter { $0.region.hasBasemap }.map(\.url.lastPathComponent))
 		let maps = LookoutSiteCacheKey.maps(in: manager.regions, terrainFiles: terrainFiles, basemapFiles: basemapFiles) + "\n" + Self.areaKey(area)
-		let none: Status = kind == .summit ? .noSummits : .noBuildings
+		let none: Status = kind == .rooftop || kind == .skyDeck ? .noBuildings : .noSummits
 		if let kept = LookoutSiteCache.sites(for: maps, kind: kind) {
 			sites = kept
 			status = sites.isEmpty ? none : .ready
@@ -124,8 +129,6 @@ final class LookoutScene {
 		}
 		let found: [LookoutSite]
 		switch kind {
-		case .rooftop:
-			found = await rooftops(in: Self.rooftopBox(searchBox, area: area))
 		case .skyDeck:
 			found = await skyDecks(in: Self.rooftopBox(searchBox, area: area))
 		case .summit:
@@ -133,12 +136,29 @@ final class LookoutScene {
 			let summits = await LookoutTerrain.sites(in: searchBox, source: store, area: area)
 			guard generation == started, !Task.isCancelled else { return }
 			found = await LookoutPeakNames.named(summits)
+		case .coast:
+			// A headland at the circle's edge looks out over sea past it, so the sea is read out to
+			// the open-water walk's reach beyond the circle, as far as the terrain goes. The sites are
+			// still kept inside the circle.
+			found = await LookoutTerrain.coastSites(in: Self.padded(searchBox, by: LookoutCoast.reach, within: union), source: store, area: area)
+		case .rooftop:
+			found = await rooftops(in: Self.rooftopBox(searchBox, area: area))
 		}
 		guard generation == started, !Task.isCancelled else { return }
 		sites = found
 		LookoutSiteCache.store(sites, for: maps, kind: kind)
 		status = sites.isEmpty ? none : .ready
-		Logger.services.info("🎬 [Cinema] Lookout sites: \(self.sites.count, privacy: .public) in the map's area \(searchBox.minLat, privacy: .public)..\(searchBox.maxLat, privacy: .public), \(searchBox.minLon, privacy: .public)..\(searchBox.maxLon, privacy: .public)")
+		Logger.services.info("🎬 [Cinema] Lookout \(kind.rawValue, privacy: .public) sites: \(self.sites.count, privacy: .public) in the map's area \(searchBox.minLat, privacy: .public)..\(searchBox.maxLat, privacy: .public), \(searchBox.minLon, privacy: .public)..\(searchBox.maxLon, privacy: .public)")
+	}
+
+	/// `box` grown by `meters` on every side, cut to `limit`.
+	private static func padded(_ box: GeoBounds, by meters: Double, within limit: GeoBounds) -> GeoBounds {
+		let dLat = meters / SpatialFrame.metersPerDegreeLatitude
+		let dLon = dLat / max(0.01, cos((box.minLat + box.maxLat) / 2 * .pi / 180))
+		return GeoBounds(
+			minLon: max(limit.minLon, box.minLon - dLon), minLat: max(limit.minLat, box.minLat - dLat),
+			maxLon: min(limit.maxLon, box.maxLon + dLon), maxLat: min(limit.maxLat, box.maxLat + dLat)
+		)
 	}
 
 	/// The tallest buildings in `box`, each standing on the terrain's ground there. Ones the terrain
@@ -218,7 +238,7 @@ final class LookoutScene {
 	/// The site with this id, or the one a new search found close to where it was: within 500 m for
 	/// a summit, and 30 m for a rooftop or a sky deck, since the next tower over can be closer than 500 m.
 	func site(near id: String, kind: LookoutSiteKind = .summit) -> LookoutSite? {
-		site(for: id) ?? SpatialLookout.nearest(to: id, in: sites, within: kind == .summit ? SpatialLookout.sameSiteDistance : 30) { $0.coordinate }
+		site(for: id) ?? SpatialLookout.nearest(to: id, in: sites, within: kind == .summit || kind == .coast ? SpatialLookout.sameSiteDistance : 30) { $0.coordinate }
 	}
 
 	/// The terrain around `site` as an entity, or nil if it can't be built.

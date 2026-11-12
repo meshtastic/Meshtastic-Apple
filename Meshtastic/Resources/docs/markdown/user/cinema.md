@@ -6,7 +6,7 @@ nav_order: 17
 
 # Cinema (Apple Vision Pro)
 
-On Apple Vision Pro, the Cinema puts the app on a big screen inside a search and rescue comms tent, a ham shack, a fire lookout, on top of a castle tower, on a city rooftop, in a space station or in a sky deck. Open it with the **tent** button in the round glass menu under the app's tab bar. The app's window closes while you're in the tent and comes back when you leave.
+On Apple Vision Pro, the Cinema puts the app on a big screen inside a search and rescue comms tent, a ham shack, a fire lookout, on top of a castle tower, in a lighthouse, on a city rooftop, in a space station or in a sky deck. Open it with the **tent** button in the round glass menu under the app's tab bar. The app's window closes while you're in the tent and comes back when you leave.
 
 ## The screen
 
@@ -48,9 +48,17 @@ The boards are parchment scrolls hanging from oak frames: Team Favorites and the
 
 While the castle stands on a summit, the 3D map shows a castle tower on the summit in the stone you picked, in place of the lookout.
 
+## Lighthouse
+
+The fifth place is the lantern room at the top of a lighthouse on a headland at sunset: glass all round above a low iron parapet, so the sea shows below you on every side, with the sun going down over the water on your left. The Fresnel lens stands behind you on its iron pedestal, lit, beside the hatch down to the watch room and the door out to the gallery. The screen hangs in the two front panes, the two whiteboards in panes on the left and the trace route print in one on the right.
+
+If you've downloaded terrain for the [3D map](map.md) along a coast, the view can be the real thing. The control panel's **Headland** picker lists up to 20 places on the coast around the mesh that look out over the most open sea, each with which way it faces, its height, and how far it is from your radio and which way. Pick one and the lighthouse stands on it, turned so the screen faces the open water, with the real coast and sea out every pane and a marker for every node, with its card, as in the fire lookout. Turn it with the **Turn Lighthouse** dial, which works like the lookout's. **Sea view** puts the painted sea back. Without terrain along a coast, the panel says so and the painted sea stays.
+
+While the lighthouse stands on a headland, the 3D map shows a lighthouse there: a white tower with a railed gallery and a lit lantern under a red dome, facing the way the screen does.
+
 ## City rooftop
 
-The fifth place is the roof deck of a tall downtown building at sunset: wood decking with a glass railing round its edges, so the city shows past it on three sides, a wooden water tower and an air conditioning unit behind you, string lights overhead, and an antenna mast with a Yagi and a Solar Node. The screen is on the front wall of the stairwell, with Team Favorites to its left and the latest trace route to its right. The Status Board is the sandwich board standing on the deck to your right.
+The sixth place is the roof deck of a tall downtown building at sunset: wood decking with a glass railing round its edges, so the city shows past it on three sides, a wooden water tower and an air conditioning unit behind you, string lights overhead, and an antenna mast with a Yagi and a Solar Node. The screen is on the front wall of the stairwell, with Team Favorites to its left and the latest trace route to its right. The Status Board is the sandwich board standing on the deck to your right.
 
 If you've downloaded a map with terrain for the [3D map](map.md), the city past the railing can be the real one. The control panel's **Rooftop** picker lists up to 12 of the tallest buildings around the mesh whose heights are in the map, tallest first, with how far each is from your radio and which way. Pick one and the deck stands on its roof, with the real buildings out to about 3.5 km round it, standing on the real terrain, and the terrain beyond, lit by the same sunset. Every node with a position gets a marker and a card, as from the fire lookout, and the **Turn Rooftop** dial turns the view. **City skyline** puts the painted city back, which is also what shows with no map downloaded.
 
@@ -76,13 +84,14 @@ While the deck hangs off a tower, the 3D map shows a small glass box on that tow
 
 ## Control panel
 
-- **Environment**: the place the screen is set in: the search and rescue tent, or a ham shack, a wood-paneled radio room with an operating desk, a window out to the antenna tower, and the same boards; its status board is net control's check-in board, standing portrait beside the screen; or a fire lookout, a glass cab on a summit at sunset; or a castle tower, an open stone roof on a summit at sunset; or a city rooftop, a roof deck over downtown at sunset; or a space station, a module under its cupola with Earth through the windows; or a sky deck, a glass-floored box hung off a tower, looking down at the city.
+- **Environment**: the place the screen is set in: the search and rescue tent, or a ham shack, a wood-paneled radio room with an operating desk, a window out to the antenna tower, and the same boards; its status board is net control's check-in board, standing portrait beside the screen; or a fire lookout, a glass cab on a summit at sunset; or a castle tower, an open stone roof on a summit at sunset; or a lighthouse, a glass lantern room over the sea at sunset; or a city rooftop, a roof deck over downtown at sunset; or a space station, a module under its cupola with Earth through the windows; or a sky deck, a glass-floored box hung off a tower, looking down at the city.
 - **Stone**: on the castle tower, gray or pink.
 - **Summit**: in the fire lookout or on the castle tower, with terrain downloaded, which summit it stands on, or the forest sunset.
+- **Headland**: in the lighthouse, with terrain along a coast downloaded, which headland it stands on, or the sea view.
 - **Rooftop**: on the city rooftop, with terrain downloaded, which building it stands on, or the painted city skyline.
 - **Tower**: in the sky deck, with terrain downloaded, which tower it hangs off, or the painted city skyline.
 - **Show Rooftop** (**Show Tower** in the sky deck): with a building picked, opens the 3D map zoomed in on its roof with **Buildings** on.
-- **Turn Lookout** (**Turn Rooftop** on the city rooftop, **Turn Sky Deck** in the sky deck): with a summit, rooftop or tower picked, a compass dial for which way the cab faces, so the screen looks out over another part of the view. Tap one of its sixteen marks, a sixteenth of a turn (22.5°) apart, or drag round it and let go. The eighths are drawn larger. The caption under it says which way the cab faces. The cab on the 3D map turns with it.
+- **Turn Lookout**, **Turn Lighthouse**, **Turn Rooftop** or **Turn Sky Deck**: with a summit, headland, rooftop or tower picked, a compass dial for which way the room faces, so the screen looks out over another part of the view. Tap one of its sixteen marks, a sixteenth of a turn (22.5°) apart, or drag round it and let go. The eighths are drawn larger. The caption under it says which way the room faces. The model on the 3D map turns with it.
 - **Side of Earth**: in the space station, **Day** for the sunlit side under the cupola, or **Night** for the dark side with its city lights.
 - **Orbit Speed**: in the space station, how fast Earth goes by, from real time (1×) to ten times faster (10×).
 - **Open 3D Map**: shown while the 3D map is closed.
