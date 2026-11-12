@@ -72,7 +72,7 @@ struct NodeDetail: View {
 	@State private var showingShareContactQR = false
 	@State private var deviceModelFullScreen: DeviceModelFullScreenRequest?
 	@State private var deviceModelInSpace: DeviceModelFullScreenRequest?
-	/// Pushed by a tap on the node's Environment widget.
+	/// Pushed by a tap on the node's Telemetry widget.
 	@State private var showingEnvironmentLog = false
 
 	init(node: NodeInfoEntity, nodeNum: Int64, showMapLink: Bool = true) {

@@ -30,7 +30,7 @@ final class WidgetDataBroker {
 		case tracker = "MeshNodeTracker"
 		case messages = "MeshMessages"
 		case map = "MeshNodeMap"
-		case environment = "MeshEnvironment"
+		case telemetry = "MeshTelemetry"
 	}
 
 	enum Trigger: Hashable {
@@ -39,7 +39,7 @@ final class WidgetDataBroker {
 		case messages     // ingest or mark-read (via .meshMessagesDidChange)
 		case localStats   // 15-minute LocalStats telemetry
 		case displayNames // a node's local display name changed
-		case environment  // environment, power or air quality telemetry from any node
+		case telemetry  // environment, power or air quality telemetry from any node
 	}
 
 	private var cancellables = Set<AnyCancellable>()
@@ -58,13 +58,13 @@ final class WidgetDataBroker {
 	/// A map reload that was due while a map render was in flight.
 	private var mapReloadDeferred = false
 	/// An Environment reload held back by its floor, sent when the floor has passed.
-	private var deferredEnvironmentReload: Task<Void, Never>?
-	/// Nodes with environment readings, newest first, so the Environment widget can offer
+	private var deferredTelemetryReload: Task<Void, Never>?
+	/// Nodes with environment, power or air quality readings, newest first, so the Telemetry widget can offer
 	/// nodes outside the recently heard ones. Nil until the first build looks them up; after
 	/// that, saved readings keep it current without scanning telemetry again.
-	private var environmentNodeNums: [Int64]?
+	private var telemetryNodeNums: [Int64]?
 	/// How many nodes the snapshot carries for their environment readings alone.
-	nonisolated static let environmentNodeLimit = 12
+	nonisolated static let telemetryNodeLimit = 12
 	/// LocalStats are keyed to the radio that produced them so a radio switch
 	/// can't show the previous radio's counters as the new one's.
 	private var latestLocalStats: LocalStatsSnapshot?
@@ -112,11 +112,11 @@ final class WidgetDataBroker {
 	}
 
 	/// Called after environment telemetry from `nodes` is saved.
-	func environmentReadingsSaved(from nodes: Set<Int64>) {
-		if let known = environmentNodeNums {
-			environmentNodeNums = Array((Array(nodes) + known.filter { !nodes.contains($0) }).prefix(Self.environmentNodeLimit))
+	func telemetryReadingsSaved(from nodes: Set<Int64>) {
+		if let known = telemetryNodeNums {
+			telemetryNodeNums = Array((Array(nodes) + known.filter { !nodes.contains($0) }).prefix(Self.telemetryNodeLimit))
 		}
-		refresh(.environment)
+		refresh(.telemetry)
 	}
 
 	func refresh(_ trigger: Trigger) {
@@ -191,10 +191,10 @@ final class WidgetDataBroker {
 		await TrackedWidgetNodes.shared.refresh()
 		// Nil if iOS hasn't answered yet; the last snapshot's missing list stands until it does.
 		let trackers = TrackedWidgetNodes.shared
-		let tracked = trackers.nums.map { $0.union(trackers.environmentNums ?? []) }
-		let environmentNodes = environmentNodeNums
+		let tracked = trackers.nums.map { $0.union(trackers.telemetryNums ?? []) }
+		let telemetryNodes = telemetryNodeNums
 		let data = await Task.detached(priority: .utility) {
-			Self.readDatabase(container: container, radioNum: radioNum, tracked: tracked ?? [], environmentNodes: environmentNodes, needsStoredStats: needsStoredStats)
+			Self.readDatabase(container: container, radioNum: radioNum, tracked: tracked ?? [], telemetryNodes: telemetryNodes, needsStoredStats: needsStoredStats)
 		}.value
 		// The store was reset while reading; what was read belongs to the old one. Build again
 		// from the new store.
@@ -204,8 +204,8 @@ final class WidgetDataBroker {
 			return
 		}
 
-		if environmentNodeNums == nil {
-			environmentNodeNums = data.environmentNodes
+		if telemetryNodeNums == nil {
+			telemetryNodeNums = data.telemetryNodes
 		}
 
 		// Fall back to the newest stored LocalStats telemetry when none has
@@ -271,10 +271,10 @@ final class WidgetDataBroker {
 		var unreadChannels = 0
 		var unreadDMs = 0
 		var recentMessages: [MessageSnapshot] = []
-		var environmentNodes: [Int64] = []
+		var telemetryNodes: [Int64] = []
 	}
 
-	nonisolated private static func readDatabase(container: ModelContainer, radioNum: Int64?, tracked: Set<Int64>, environmentNodes: [Int64]?, needsStoredStats: Bool) -> DatabaseRead {
+	nonisolated private static func readDatabase(container: ModelContainer, radioNum: Int64?, tracked: Set<Int64>, telemetryNodes: [Int64]?, needsStoredStats: Bool) -> DatabaseRead {
 		let context = ModelContext(container)
 		var read = DatabaseRead()
 		let radioNode = radioNum.flatMap { getNodeInfo(id: $0, context: context) }
@@ -313,8 +313,8 @@ final class WidgetDataBroker {
 		}
 
 		let preset = (radioNode?.loRaConfig?.modemPreset).flatMap { ModemPresets(rawValue: Int($0)) }
-		read.environmentNodes = environmentNodes ?? fetchEnvironmentNodeNums(context: context)
-		read.nodes = fetchNodeSnapshots(context: context, preset: preset, radioNum: radioNum, tracked: tracked, environmentNodes: read.environmentNodes)
+		read.telemetryNodes = telemetryNodes ?? fetchTelemetryNodeNums(context: context)
+		read.nodes = fetchNodeSnapshots(context: context, preset: preset, radioNum: radioNum, tracked: tracked, telemetryNodes: read.telemetryNodes)
 		let present = Set(read.nodes.map(\.num))
 		read.missingTracked = tracked.subtracting(present).sorted()
 		read.totalNodeCount = (try? context.fetchCount(FetchDescriptor<NodeInfoEntity>())) ?? read.nodes.count
@@ -346,7 +346,7 @@ final class WidgetDataBroker {
 
 	/// The nodes with the newest environment, power or air quality telemetry. Telemetry has no index to sort by,
 	/// so this runs once per launch; saved readings keep the list current after that.
-	nonisolated private static func fetchEnvironmentNodeNums(context: ModelContext) -> [Int64] {
+	nonisolated private static func fetchTelemetryNodeNums(context: ModelContext) -> [Int64] {
 		var descriptor = FetchDescriptor<TelemetryEntity>(
 			// Environment, power and air quality.
 			predicate: #Predicate<TelemetryEntity> { $0.metricsType >= 1 && $0.metricsType <= 3 },
@@ -356,12 +356,12 @@ final class WidgetDataBroker {
 		var nums: [Int64] = []
 		for row in (try? context.fetch(descriptor)) ?? [] where row.nodeNum != 0 && !nums.contains(row.nodeNum) {
 			nums.append(row.nodeNum)
-			if nums.count == environmentNodeLimit { break }
+			if nums.count == telemetryNodeLimit { break }
 		}
 		return nums
 	}
 
-	nonisolated private static func fetchNodeSnapshots(context: ModelContext, preset: ModemPresets?, radioNum: Int64?, tracked: Set<Int64>, environmentNodes: [Int64]) -> [NodeSnapshot] {
+	nonisolated private static func fetchNodeSnapshots(context: ModelContext, preset: ModemPresets?, radioNum: Int64?, tracked: Set<Int64>, telemetryNodes: [Int64]) -> [NodeSnapshot] {
 		// Two fetches: favorites by the scalar flag (so an offline favorite is
 		// never lost to the recency window), then the most recently heard.
 		// No `user != nil` in either predicate — optional-relationship nil
@@ -392,7 +392,7 @@ final class WidgetDataBroker {
 				selected.append(radioNode)
 			}
 		}
-		// A node on a Node Tracker or Environment widget is always there, however long ago it
+		// A node on a Node Tracker or Telemetry widget is always there, however long ago it
 		// was heard.
 		for num in tracked where !selected.contains(where: { $0.num == num }) {
 			let trackedDescriptor = FetchDescriptor<NodeInfoEntity>(
@@ -402,9 +402,9 @@ final class WidgetDataBroker {
 				selected.append(trackedNode)
 			}
 		}
-		// Nodes with environment readings, so the Environment widget can offer them even when
+		// Nodes with telemetry readings, so the Telemetry widget can offer them even when
 		// they haven't been heard lately.
-		for num in environmentNodes where !selected.contains(where: { $0.num == num }) {
+		for num in telemetryNodes where !selected.contains(where: { $0.num == num }) {
 			let environmentDescriptor = FetchDescriptor<NodeInfoEntity>(
 				predicate: #Predicate<NodeInfoEntity> { $0.num == num }
 			)
@@ -436,7 +436,7 @@ final class WidgetDataBroker {
 				latitude: coordinate?.latitude,
 				longitude: coordinate?.longitude,
 				isFavorite: node.favorite,
-				environment: environmentSnapshot(context: context, node: node)
+				telemetry: telemetrySnapshot(context: context, node: node)
 			)
 		}
 	}
@@ -444,7 +444,7 @@ final class WidgetDataBroker {
 	/// The node's newest environment, air quality and power telemetry rows, fetched by node
 	/// number like `latestEnvironmentMetrics` rather than through the telemetries relationship
 	/// (#2485). Nil when none of them has a reading the widget shows.
-	nonisolated private static func environmentSnapshot(context: ModelContext, node: NodeInfoEntity) -> EnvironmentSnapshot? {
+	nonisolated private static func telemetrySnapshot(context: ModelContext, node: NodeInfoEntity) -> TelemetrySnapshot? {
 		let nodeNum = node.num
 		func latest(_ metricsType: Int32) -> TelemetryEntity? {
 			var descriptor = FetchDescriptor<TelemetryEntity>(
@@ -461,7 +461,7 @@ final class WidgetDataBroker {
 		// A NaN from a sensor can't be written as JSON, and would stop the whole snapshot saving.
 		func finite(_ value: Float?) -> Float? { value.flatMap { $0.isFinite ? $0 : nil } }
 		let channels = 0..<TelemetryEntity.powerChannelCount
-		let environment = EnvironmentSnapshot(
+		let telemetry = TelemetrySnapshot(
 			time: time,
 			temperature: finite(environmentRow?.temperature),
 			relativeHumidity: finite(environmentRow?.relativeHumidity),
@@ -486,7 +486,7 @@ final class WidgetDataBroker {
 			powerChannelNames: powerRow == nil ? nil : channels.map { PowerChannelLabel.name($0, in: node.powerChannelLabels) }
 		)
 		// Rows with none of the widget's readings, such as one with only distance, aren't one.
-		return environment.reportedMetrics.isEmpty ? nil : environment
+		return telemetry.reportedMetrics.isEmpty ? nil : telemetry
 	}
 
 	/// Same fetch-and-split approach as AppState.refreshBadgeCount — comparing an
@@ -590,7 +590,7 @@ final class WidgetDataBroker {
 					? [(.stats, 0), (.tracker, 0), (.messages, 0), (.map, 0)]
 					: [(.stats, 300), (.tracker, 300), (.messages, 300), (.map, 900)])
 			case .config:
-				merge([(.stats, 60), (.tracker, 60), (.map, 900), (.environment, 60)])
+				merge([(.stats, 60), (.tracker, 60), (.map, 900), (.telemetry, 60)])
 			case .messages:
 				merge(messagesChanged
 					? [(.messages, 0), (.tracker, 300)]
@@ -599,11 +599,11 @@ final class WidgetDataBroker {
 				merge([(.stats, 300), (.tracker, 300), (.map, 900)])
 			case .displayNames:
 				// Names show in every widget, message senders included.
-				merge([(.stats, 60), (.tracker, 60), (.messages, 60), (.map, 900), (.environment, 60)])
-			case .environment:
+				merge([(.stats, 60), (.tracker, 60), (.messages, 60), (.map, 900), (.telemetry, 60)])
+			case .telemetry:
 				// Weather stations report every few minutes at most; a reading a few
 				// minutes late is fine and keeps the reload budget.
-				merge([(.environment, 300)])
+				merge([(.telemetry, 300)])
 			}
 		}
 		for (kind, floor) in floors {
@@ -612,11 +612,11 @@ final class WidgetDataBroker {
 			guard wait <= 0 else {
 				// A reading inside the floor would otherwise wait for the next one, or for the
 				// widget's own stale reload two hours on; send it once the floor has passed.
-				if kind == .environment, deferredEnvironmentReload == nil {
-					deferredEnvironmentReload = Task { @MainActor [weak self] in
+				if kind == .telemetry, deferredTelemetryReload == nil {
+					deferredTelemetryReload = Task { @MainActor [weak self] in
 						try? await Task.sleep(nanoseconds: UInt64(wait * 1_000_000_000))
 						guard !Task.isCancelled, let self else { return }
-						self.reload(.environment)
+						self.reload(.telemetry)
 					}
 				}
 				continue
@@ -643,9 +643,9 @@ final class WidgetDataBroker {
 	/// toward its floor, whoever asked for it.
 	func reload(_ kind: Kind) {
 		if kind == .map { mapReloadDeferred = false }
-		if kind == .environment {
-			deferredEnvironmentReload?.cancel()
-			deferredEnvironmentReload = nil
+		if kind == .telemetry {
+			deferredTelemetryReload?.cancel()
+			deferredTelemetryReload = nil
 		}
 		lastReload[kind] = Date()
 		WidgetCenter.shared.reloadTimelines(ofKind: kind.rawValue)

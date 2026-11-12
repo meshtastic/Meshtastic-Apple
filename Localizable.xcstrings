@@ -987,6 +987,9 @@
     "Next readings, page %lld of %lld" : {
       "comment" : "Environment widget page button for VoiceOver. The arguments are the page shown and the number of pages."
     },
+    "Next Telemetry Readings" : {
+      "comment" : "Telemetry widget: the page button action"
+    },
     "No reply from the node. It must list your radio's public key as an admin key, and be in range." : {
 
     },
@@ -8059,9 +8062,6 @@
         }
       }
     },
-    "Next Environment Readings" : {
-      "comment" : "Environment widget: the page button action"
-    },
     "Niche Hardware" : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -9029,8 +9029,8 @@
         }
       }
     },
-    "Shows the next readings on an Environment widget." : {
-      "comment" : "Environment widget: the page button action description"
+    "Shows the next readings on a Telemetry widget." : {
+      "comment" : "Telemetry widget: the page button action description"
     },
     "Simple" : {
       "extractionState" : "manual",
@@ -101842,9 +101842,6 @@
         }
       }
     },
-    "No environment readings from this node" : {
-      "comment" : "Environment widget: the picked node has sent no environment readings"
-    },
     "No files uploaded" : {
       "localizations" : {
         "de" : {
@@ -102345,8 +102342,8 @@
         }
       }
     },
-    "No nodes have reported environment readings yet" : {
-      "comment" : "Environment widget: no node has sent environment readings"
+    "No nodes have reported telemetry yet" : {
+      "comment" : "Telemetry widget: no node has sent environment, air quality or power readings"
     },
     "No offline maps yet. Download an area to use the map without a connection." : {
       "comment" : "A message displayed when there are no offline maps available.",
@@ -103094,6 +103091,9 @@
           }
         }
       }
+    },
+    "No telemetry from this node" : {
+      "comment" : "Telemetry widget: the picked node has sent no environment, air quality or power readings"
     },
     "No time limit" : {
       "comment" : "A label that indicates that a lockdown session has no",

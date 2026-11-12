@@ -26,6 +26,7 @@
             "connection",
             "activity",
             "settings",
+            "readings",
             "power",
             "pin",
             "list",
@@ -33,10 +34,9 @@
             "choose",
             "widgets",
             "time",
-            "then",
-            "set"
+            "then"
         ],
-        "charCount": 7521
+        "charCount": 7645
     },
     {
         "id": "carplay",
@@ -816,7 +816,7 @@
             "lookout",
             "device"
         ],
-        "charCount": 16696
+        "charCount": 16694
     },
     {
         "id": "adding-features",

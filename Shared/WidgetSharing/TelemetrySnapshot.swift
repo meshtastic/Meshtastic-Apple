@@ -1,11 +1,11 @@
 //
-//  EnvironmentSnapshot.swift
+//  TelemetrySnapshot.swift
 //  Meshtastic
 //
 //  Copyright(c) Garth Vander Houwen 11/11/26.
 //
 //  A node's newest environment, air quality and power telemetry for the
-//  Environment widget, and the metrics it can show (meshtastic/design#179). Readings stay in the units the
+//  Telemetry widget, and the metrics it can show (meshtastic/design#179). Readings stay in the units the
 //  radio sends; the widget formats them the way node details does, so the
 //  same reading reads the same in both places.
 //
@@ -15,7 +15,7 @@ import SwiftUI
 
 /// A node's newest environment, air quality and power telemetry rows. Nil
 /// fields were not in the reading; a reported zero stays zero.
-struct EnvironmentSnapshot: Codable, Equatable {
+struct TelemetrySnapshot: Codable, Equatable {
 	/// When the newest of the three rows arrived.
 	let time: Date
 	var temperature: Float?
@@ -57,15 +57,15 @@ struct EnvironmentSnapshot: Codable, Equatable {
 	}
 
 	/// The metrics this reading has, in the widget's order.
-	var reportedMetrics: [EnvironmentMetric] {
-		EnvironmentMetric.allCases.filter { $0.reading(in: self) != nil }
+	var reportedMetrics: [TelemetryMetric] {
+		TelemetryMetric.allCases.filter { $0.reading(in: self) != nil }
 	}
 }
 
-/// A metric the Environment widget can show, in the order design#179 lists
+/// A metric the Telemetry widget can show, in the order design#179 lists
 /// them. The order is also the default: until someone picks, the widget shows
 /// the first ones the node reports.
-enum EnvironmentMetric: String, CaseIterable, Codable, Identifiable {
+enum TelemetryMetric: String, CaseIterable, Codable, Identifiable {
 	case temperature
 	case relativeHumidity
 	case barometricPressure
@@ -131,8 +131,8 @@ enum EnvironmentMetric: String, CaseIterable, Codable, Identifiable {
 	}
 
 	/// The title a tile shows: power channels by the node's labels, as node details names them.
-	func title(in environment: EnvironmentSnapshot?) -> String {
-		guard let channel = powerChannel, let names = environment?.powerChannelNames, channel.index < names.count else {
+	func title(in telemetry: TelemetrySnapshot?) -> String {
+		guard let channel = powerChannel, let names = telemetry?.powerChannelNames, channel.index < names.count else {
 			return String(localized: title)
 		}
 		let name = names[channel.index]
@@ -163,100 +163,100 @@ enum EnvironmentMetric: String, CaseIterable, Codable, Identifiable {
 	}
 
 	/// The metrics to show before someone picks: the first ones the reading has.
-	static func defaults(for environment: EnvironmentSnapshot?) -> [EnvironmentMetric] {
-		Array((environment?.reportedMetrics ?? []).prefix(defaultCount))
+	static func defaults(for telemetry: TelemetrySnapshot?) -> [TelemetryMetric] {
+		Array((telemetry?.reportedMetrics ?? []).prefix(defaultCount))
 	}
 
 	/// The formatted reading, or nil when the reading doesn't have it. The
 	/// units and precision match the tiles on node details:
 	/// temperature and pressure whole, pressure always in hPa, the rest in the
 	/// locale's units (design#53, design#99).
-	func reading(in environment: EnvironmentSnapshot) -> EnvironmentReading? {
+	func reading(in telemetry: TelemetrySnapshot) -> TelemetryReading? {
 		switch self {
 		case .temperature:
-			return environment.temperature.flatMap(Self.temperature)
+			return telemetry.temperature.flatMap(Self.temperature)
 		case .relativeHumidity:
-			return environment.relativeHumidity.flatMap { Self.whole($0, unit: "%") }
+			return telemetry.relativeHumidity.flatMap { Self.whole($0, unit: "%") }
 		case .barometricPressure:
-			return environment.barometricPressure.flatMap { Self.whole($0, unit: "hPa") }
+			return telemetry.barometricPressure.flatMap { Self.whole($0, unit: "hPa") }
 		case .dewPoint:
-			guard let temperature = environment.temperature, let humidity = environment.relativeHumidity, humidity > 0 else { return nil }
+			guard let temperature = telemetry.temperature, let humidity = telemetry.relativeHumidity, humidity > 0 else { return nil }
 			let dewPoint = Float(calculateDewPoint(temp: temperature, relativeHumidity: humidity, convertToLocale: false))
 			return Self.temperature(dewPoint)
 		case .gasResistance:
-			return environment.gasResistance.flatMap { Self.decimal($0, digits: 1, unit: "MΩ") }
+			return telemetry.gasResistance.flatMap { Self.decimal($0, digits: 1, unit: "MΩ") }
 		case .iaq:
-			guard let iaq = environment.iaq, iaq >= 0 else { return nil }
+			guard let iaq = telemetry.iaq, iaq >= 0 else { return nil }
 			let level = Iaq.getIaq(for: Int(iaq))
-			return EnvironmentReading(value: "\(iaq)", unit: nil, detail: level.description, color: level.color)
+			return TelemetryReading(value: "\(iaq)", unit: nil, detail: level.description, color: level.color)
 		case .lux:
-			return environment.lux.flatMap { Self.whole($0, unit: "lx") }
+			return telemetry.lux.flatMap { Self.whole($0, unit: "lx") }
 		case .wind:
-			guard let speed = environment.windSpeed, speed.isFinite else { return nil }
+			guard let speed = telemetry.windSpeed, speed.isFinite else { return nil }
 			let value = MetricsLocaleUnits.windSpeed(fromMetersPerSecond: speed)
-			let direction = environment.windDirection.map { cardinalValue(from: Double($0)) }
-			return EnvironmentReading(
+			let direction = telemetry.windDirection.map { cardinalValue(from: Double($0)) }
+			return TelemetryReading(
 				value: value.formatted(.number.precision(.fractionLength(0))),
 				unit: MetricsLocaleUnits.windSpeedLabel,
 				detail: direction.flatMap { $0.isEmpty ? nil : $0 },
 				color: nil
 			)
 		case .rain:
-			guard let rain = environment.rainfall1H else { return nil }
+			guard let rain = telemetry.rainfall1H else { return nil }
 			let digits = MetricsLocaleUnits.length == .millimeters ? 0 : 1
 			return Self.decimal(MetricsLocaleUnits.length(fromMillimeters: rain), digits: digits, unit: MetricsLocaleUnits.lengthLabel)
 		case .soilTemperature:
-			return environment.soilTemperature.flatMap(Self.temperature)
+			return telemetry.soilTemperature.flatMap(Self.temperature)
 		case .soilMoisture:
-			return environment.soilMoisture.map { EnvironmentReading(value: "\($0)", unit: "%", detail: nil, color: nil) }
+			return telemetry.soilMoisture.map { TelemetryReading(value: "\($0)", unit: "%", detail: nil, color: nil) }
 		case .radiation:
-			return environment.radiation.flatMap { Self.decimal($0, digits: 1, unit: "µR/hr") }
+			return telemetry.radiation.flatMap { Self.decimal($0, digits: 1, unit: "µR/hr") }
 		case .weight:
-			guard let weight = environment.weight else { return nil }
+			guard let weight = telemetry.weight else { return nil }
 			return Self.decimal(MetricsLocaleUnits.mass(fromKilograms: weight), digits: 1, unit: MetricsLocaleUnits.massLabel)
 		case .pm10:
-			return environment.pm10Standard.map(Self.particulate)
+			return telemetry.pm10Standard.map(Self.particulate)
 		case .pm25:
-			return environment.pm25Standard.map(Self.particulate)
+			return telemetry.pm25Standard.map(Self.particulate)
 		case .pm100:
-			return environment.pm100Standard.map(Self.particulate)
+			return telemetry.pm100Standard.map(Self.particulate)
 		case .co2:
-			guard let co2 = environment.co2 else { return nil }
+			guard let co2 = telemetry.co2 else { return nil }
 			let level = Co2Level.level(for: co2)
-			return EnvironmentReading(value: co2.formatted(.number.grouping(.never)), unit: "ppm", detail: level.description, color: level.color)
+			return TelemetryReading(value: co2.formatted(.number.grouping(.never)), unit: "ppm", detail: level.description, color: level.color)
 		default:
 			guard let channel = powerChannel else { return nil }
-			let values = channel.isVoltage ? environment.powerVoltages : environment.powerCurrents
+			let values = channel.isVoltage ? telemetry.powerVoltages : telemetry.powerCurrents
 			guard let values, channel.index < values.count, let value = values[channel.index] else { return nil }
 			// The power tile's precision: volts to two places, milliamps to one.
 			return channel.isVoltage ? Self.decimal(value, digits: 2, unit: "V") : Self.decimal(value, digits: 1, unit: "mA")
 		}
 	}
 
-	private static func particulate(_ value: UInt32) -> EnvironmentReading {
-		EnvironmentReading(value: value.formatted(.number.grouping(.never)), unit: "µg/m³", detail: nil, color: nil)
+	private static func particulate(_ value: UInt32) -> TelemetryReading {
+		TelemetryReading(value: value.formatted(.number.grouping(.never)), unit: "µg/m³", detail: nil, color: nil)
 	}
 
-	private static func temperature(_ celsius: Float) -> EnvironmentReading? {
+	private static func temperature(_ celsius: Float) -> TelemetryReading? {
 		guard celsius.isFinite else { return nil }
 		// The same locale setting localeTemperature() converts by.
 		let fahrenheit = (NSLocale.current as NSLocale).object(forKey: NSLocale.Key(rawValue: "kCFLocaleTemperatureUnitKey")) as? String == "Fahrenheit"
-		return EnvironmentReading(value: celsius.localeTemperature().formatted(.number.precision(.fractionLength(0))), unit: fahrenheit ? "°F" : "°C", detail: nil, color: nil)
+		return TelemetryReading(value: celsius.localeTemperature().formatted(.number.precision(.fractionLength(0))), unit: fahrenheit ? "°F" : "°C", detail: nil, color: nil)
 	}
 
-	private static func whole(_ value: Float, unit: String) -> EnvironmentReading? {
+	private static func whole(_ value: Float, unit: String) -> TelemetryReading? {
 		guard value.isFinite else { return nil }
-		return EnvironmentReading(value: value.formatted(.number.grouping(.never).precision(.fractionLength(0))), unit: unit, detail: nil, color: nil)
+		return TelemetryReading(value: value.formatted(.number.grouping(.never).precision(.fractionLength(0))), unit: unit, detail: nil, color: nil)
 	}
 
-	private static func decimal(_ value: Float, digits: Int, unit: String) -> EnvironmentReading? {
+	private static func decimal(_ value: Float, digits: Int, unit: String) -> TelemetryReading? {
 		guard value.isFinite else { return nil }
-		return EnvironmentReading(value: value.formatted(.number.grouping(.never).precision(.fractionLength(digits))), unit: unit, detail: nil, color: nil)
+		return TelemetryReading(value: value.formatted(.number.grouping(.never).precision(.fractionLength(digits))), unit: unit, detail: nil, color: nil)
 	}
 }
 
 /// One metric's value as a tile shows it.
-struct EnvironmentReading: Equatable {
+struct TelemetryReading: Equatable {
 	let value: String
 	let unit: String?
 	/// A second line: the IAQ band or the wind's direction.

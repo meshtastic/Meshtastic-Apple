@@ -4,7 +4,7 @@
 //
 //  Copyright(c) Garth Vander Houwen 10/30/26.
 //
-//  The nodes the person's Node Tracker and Environment widgets are set to, as
+//  The nodes the person's Node Tracker and Telemetry widgets are set to, as
 //  iOS reports them. The widget snapshot always carries these nodes, and
 //  deleting one on a Node Tracker says it's on a widget.
 //
@@ -19,8 +19,8 @@ final class TrackedWidgetNodes: ObservableObject {
 
 	/// Nil until iOS has answered once.
 	@Published private(set) var nums: Set<Int64>?
-	/// The nodes Environment widgets are set to. Nil until iOS has answered once.
-	private(set) var environmentNums: Set<Int64>?
+	/// The nodes Telemetry widgets are set to. Nil until iOS has answered once.
+	private(set) var telemetryNums: Set<Int64>?
 	private var readAt: Date?
 	private var reading: Task<Void, Never>?
 
@@ -55,9 +55,9 @@ final class TrackedWidgetNodes: ObservableObject {
 					guard info.kind == "MeshNodeTracker" else { return nil }
 					return info.widgetConfigurationIntent(of: TrackNodeIntent.self)?.node?.nodeNum
 				})
-				environmentNums = Set(infos.compactMap { info in
-					guard info.kind == "MeshEnvironment" else { return nil }
-					return info.widgetConfigurationIntent(of: EnvironmentWidgetIntent.self)?.node?.nodeNum
+				telemetryNums = Set(infos.compactMap { info in
+					guard info.kind == "MeshTelemetry" else { return nil }
+					return info.widgetConfigurationIntent(of: TelemetryWidgetIntent.self)?.node?.nodeNum
 				})
 				readAt = .now
 			case .failure(let error):

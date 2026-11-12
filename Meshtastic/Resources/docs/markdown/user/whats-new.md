@@ -14,7 +14,7 @@ Recent user-facing changes from roughly the last 12 months. Newest at the top.
 Show roughly the last 12 months of changes; archive entries older than a year by removing them.
 -->
 
-**Nov 2026** — [Bluetooth](bluetooth.md#widgets-and-controls) — A new Environment widget shows a node's environment, air quality and power readings on the Home Screen, in the same tiles as the node's details. Pick up to eight; the large size shows four at a time with a button to see the rest.
+**Nov 2026** — [Bluetooth](bluetooth.md#widgets-and-controls) — A new Telemetry widget shows a node's environment, air quality and power readings on the Home Screen, in the same tiles as the node's details. Pick up to eight; the large size shows four at a time with a button to see the rest.
 
 **Nov 2026** — [Bluetooth](bluetooth.md#widgets-and-controls) — The Node Map and Trace Route widgets come in the extra large portrait size on iPhone with iOS 27 and on Apple Vision Pro, with a tall map; the trace route one also shows both hop chains.
 

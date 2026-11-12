@@ -110,7 +110,7 @@ class Router: ObservableObject {
 		}
 	}
 	/// A node whose Environment Metrics Log should open on top of its details, from the
-	/// Environment widget. Node details clears it once it has pushed the log.
+	/// Telemetry widget. Node details clears it once it has pushed the log.
 	@Published var environmentLogNodeNum: Int64?
 
 	// MARK: Node Object ID Cache

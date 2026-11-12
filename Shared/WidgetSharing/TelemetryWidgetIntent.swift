@@ -1,11 +1,11 @@
 //
-//  EnvironmentWidgetIntent.swift
+//  TelemetryWidgetIntent.swift
 //  Meshtastic
 //
 //  Copyright(c) Garth Vander Houwen 11/11/26.
 //
-//  The Environment widget's configuration: a node that reports environment
-//  telemetry and up to eight of its metrics, in order. Shared with the app so
+//  The Telemetry widget's configuration: a node that reports environment,
+//  air quality or power telemetry and up to eight of its metrics, in order. Shared with the app so
 //  it can ask iOS which nodes the widgets are set to and keep them in the
 //  snapshot.
 //
@@ -18,9 +18,9 @@ import WidgetKit
 
 /// A node with environment readings. Like `TrackedNodeEntity`, `entities(for:)`
 /// answers every identifier it's asked for, so a saved node never dissolves.
-struct EnvironmentNodeEntity: AppEntity {
+struct TelemetryNodeEntity: AppEntity {
 	static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "Node")
-	static let defaultQuery = EnvironmentNodeQuery()
+	static let defaultQuery = TelemetryNodeQuery()
 
 	/// The node number as a string.
 	let id: String
@@ -46,24 +46,24 @@ struct EnvironmentNodeEntity: AppEntity {
 	}
 }
 
-struct EnvironmentNodeQuery: EntityQuery {
-	func entities(for identifiers: [String]) async throws -> [EnvironmentNodeEntity] {
+struct TelemetryNodeQuery: EntityQuery {
+	func entities(for identifiers: [String]) async throws -> [TelemetryNodeEntity] {
 		// The tracker's query already falls back to the missing list and hex names.
-		try await TrackedNodeQuery().entities(for: identifiers).map(EnvironmentNodeEntity.init)
+		try await TrackedNodeQuery().entities(for: identifiers).map(TelemetryNodeEntity.init)
 	}
 
 	/// The nodes that have reported environment telemetry, the connected radio first.
-	func suggestedEntities() async throws -> [EnvironmentNodeEntity] {
-		Self.environmentNodes(in: WidgetSnapshotStore.load()).map(EnvironmentNodeEntity.init)
+	func suggestedEntities() async throws -> [TelemetryNodeEntity] {
+		Self.telemetryNodes(in: WidgetSnapshotStore.load()).map(TelemetryNodeEntity.init)
 	}
 
-	func defaultResult() async -> EnvironmentNodeEntity? {
+	func defaultResult() async -> TelemetryNodeEntity? {
 		try? await suggestedEntities().first
 	}
 
-	static func environmentNodes(in snapshot: WidgetSnapshot?) -> [NodeSnapshot] {
+	static func telemetryNodes(in snapshot: WidgetSnapshot?) -> [NodeSnapshot] {
 		guard let snapshot else { return [] }
-		let nodes = snapshot.nodes.filter { $0.environment != nil }
+		let nodes = snapshot.nodes.filter { $0.telemetry != nil }
 		let radio = nodes.filter { $0.num == snapshot.radioNodeNum }
 		return radio + nodes.filter { $0.num != snapshot.radioNodeNum }
 	}
@@ -71,11 +71,11 @@ struct EnvironmentNodeQuery: EntityQuery {
 
 // MARK: - Metrics
 
-struct EnvironmentMetricEntity: AppEntity {
+struct TelemetryMetricEntity: AppEntity {
 	static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "Metric")
-	static let defaultQuery = EnvironmentMetricQuery()
+	static let defaultQuery = TelemetryMetricQuery()
 
-	let metric: EnvironmentMetric
+	let metric: TelemetryMetric
 
 	var id: String { metric.rawValue }
 
@@ -84,36 +84,36 @@ struct EnvironmentMetricEntity: AppEntity {
 	}
 }
 
-struct EnvironmentMetricQuery: EntityQuery {
-	@IntentParameterDependency<EnvironmentWidgetIntent>(\.$node)
+struct TelemetryMetricQuery: EntityQuery {
+	@IntentParameterDependency<TelemetryWidgetIntent>(\.$node)
 	var intent
 
-	func entities(for identifiers: [String]) async throws -> [EnvironmentMetricEntity] {
-		identifiers.compactMap(EnvironmentMetric.init(rawValue:)).map(EnvironmentMetricEntity.init)
+	func entities(for identifiers: [String]) async throws -> [TelemetryMetricEntity] {
+		identifiers.compactMap(TelemetryMetric.init(rawValue:)).map(TelemetryMetricEntity.init)
 	}
 
 	/// The metrics the chosen node has reported, or every metric before a node is chosen.
-	func suggestedEntities() async throws -> [EnvironmentMetricEntity] {
+	func suggestedEntities() async throws -> [TelemetryMetricEntity] {
 		let snapshot = WidgetSnapshotStore.load()
-		let nodeID = intent?.node.id ?? EnvironmentNodeQuery.environmentNodes(in: snapshot).first.map { String($0.num) }
-		let environment = snapshot?.nodes.first { String($0.num) == nodeID }?.environment
-		let metrics = environment?.reportedMetrics ?? EnvironmentMetric.allCases
-		return metrics.map(EnvironmentMetricEntity.init)
+		let nodeID = intent?.node.id ?? TelemetryNodeQuery.telemetryNodes(in: snapshot).first.map { String($0.num) }
+		let telemetry = snapshot?.nodes.first { String($0.num) == nodeID }?.telemetry
+		let metrics = telemetry?.reportedMetrics ?? TelemetryMetric.allCases
+		return metrics.map(TelemetryMetricEntity.init)
 	}
 }
 
 // MARK: - Intent
 
-struct EnvironmentWidgetIntent: WidgetConfigurationIntent {
-	static let title: LocalizedStringResource = "Environment"
+struct TelemetryWidgetIntent: WidgetConfigurationIntent {
+	static let title: LocalizedStringResource = "Telemetry"
 	static let description = IntentDescription("Pick a node and the readings to show.")
 
 	@Parameter(title: "Node")
-	var node: EnvironmentNodeEntity?
+	var node: TelemetryNodeEntity?
 
 	/// Every size takes the full list, so shrinking a widget keeps the first ones. No fixed
 	/// size: a fixed one shows that many empty rows, more than the edit card fits. The widget
-	/// uses the first `EnvironmentMetric.maximumCount`.
+	/// uses the first `TelemetryMetric.maximumCount`.
 	@Parameter(title: "Readings")
-	var metrics: [EnvironmentMetricEntity]?
+	var metrics: [TelemetryMetricEntity]?
 }

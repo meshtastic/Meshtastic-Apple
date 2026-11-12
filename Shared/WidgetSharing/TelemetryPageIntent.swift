@@ -1,10 +1,10 @@
 //
-//  EnvironmentPageIntent.swift
+//  TelemetryPageIntent.swift
 //  Meshtastic
 //
 //  Copyright(c) Garth Vander Houwen 11/11/26.
 //
-//  The Environment widget's page button. Widgets can't scroll or take swipes,
+//  The Telemetry widget's page button. Widgets can't scroll or take swipes,
 //  so a large widget set to more than four readings shows four at a time and
 //  this flips to the rest. It runs in the widget extension without
 //  opening the app and sends nothing over the mesh.
@@ -14,8 +14,8 @@ import AppIntents
 import Foundation
 import WidgetKit
 
-enum EnvironmentWidgetPage {
-	static let kind = "MeshEnvironment"
+enum TelemetryWidgetPage {
+	static let kind = "MeshTelemetry"
 	/// Readings on one page of the large size.
 	static let pageSize = 4
 	/// Readings on one page of the extra large portrait size, with more than this picked.
@@ -23,7 +23,7 @@ enum EnvironmentWidgetPage {
 
 	/// WidgetKit doesn't say which copy of a widget is which, so the page is
 	/// kept per node: two large widgets on the same node flip together.
-	private static func key(_ nodeNum: Int64) -> String { "environmentWidgetPage.\(nodeNum)" }
+	private static func key(_ nodeNum: Int64) -> String { "telemetryWidgetPage.\(nodeNum)" }
 
 	private static var defaults: UserDefaults? { UserDefaults(suiteName: WidgetSnapshotStore.appGroupID) }
 
@@ -71,14 +71,14 @@ enum EnvironmentWidgetPage {
 	}
 
 	/// The metrics on `page`.
-	static func metrics(_ metrics: [EnvironmentMetric], page: Int, pageSize: Int = pageSize) -> [EnvironmentMetric] {
+	static func metrics(_ metrics: [TelemetryMetric], page: Int, pageSize: Int = pageSize) -> [TelemetryMetric] {
 		Array(metrics.dropFirst(page * pageSize).prefix(pageSize))
 	}
 }
 
-struct EnvironmentPageIntent: AppIntent {
-	static let title: LocalizedStringResource = "Next Environment Readings"
-	static let description = IntentDescription("Shows the next readings on an Environment widget.")
+struct TelemetryPageIntent: AppIntent {
+	static let title: LocalizedStringResource = "Next Telemetry Readings"
+	static let description = IntentDescription("Shows the next readings on a Telemetry widget.")
 	/// Only for the widget's button.
 	static let isDiscoverable = false
 
@@ -96,8 +96,8 @@ struct EnvironmentPageIntent: AppIntent {
 	}
 
 	func perform() async throws -> some IntentResult {
-		EnvironmentWidgetPage.advance(for: Int64(nodeNum), pageCount: pageCount)
-		WidgetCenter.shared.reloadTimelines(ofKind: EnvironmentWidgetPage.kind)
+		TelemetryWidgetPage.advance(for: Int64(nodeNum), pageCount: pageCount)
+		WidgetCenter.shared.reloadTimelines(ofKind: TelemetryWidgetPage.kind)
 		return .result()
 	}
 }
