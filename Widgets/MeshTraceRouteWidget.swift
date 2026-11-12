@@ -61,11 +61,11 @@ struct MeshTraceRouteWidget: Widget {
 		#if os(visionOS)
 		// On Vision Pro it hangs on a wall like the print in the cinema tent:
 		// printed on paper, standing off the wall, up to a board-sized print.
-		.supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .systemExtraLarge])
+		.supportedFamilies(WidgetFamily.addingExtraLargePortrait(to: [.systemSmall, .systemMedium, .systemLarge, .systemExtraLarge]))
 		.widgetTexture(.paper)
 		.supportedMountingStyles([.elevated])
 		#else
-		.supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
+		.supportedFamilies(WidgetFamily.addingExtraLargePortrait(to: [.systemSmall, .systemMedium, .systemLarge]))
 		#endif
 	}
 }
@@ -78,17 +78,21 @@ struct MeshTraceRouteWidgetView: View {
 
 	var body: some View {
 		if let route = entry.route {
-			switch family {
-			#if os(visionOS)
-			case .systemExtraLarge:
-				RouteBoardView(route: route, map: mapImage(wide: true, route: route))
-			#endif
-			case .systemLarge:
-				RouteLargeView(route: route, map: mapImage(wide: true, route: route))
-			case .systemMedium:
-				RouteMediumView(route: route, map: mapImage(wide: false, route: route))
-			default:
-				RouteSmallView(route: route, map: mapImage(wide: false, route: route))
+			if family.isExtraLargePortrait {
+				RouteTallView(route: route, map: mapImage(.tall, route: route))
+			} else {
+				switch family {
+				#if os(visionOS)
+				case .systemExtraLarge:
+					RouteBoardView(route: route, map: mapImage(.wide, route: route))
+				#endif
+				case .systemLarge:
+					RouteLargeView(route: route, map: mapImage(.wide, route: route))
+				case .systemMedium:
+					RouteMediumView(route: route, map: mapImage(.square, route: route))
+				default:
+					RouteSmallView(route: route, map: mapImage(.square, route: route))
+				}
 			}
 		} else {
 			VStack(spacing: 6) {
@@ -105,14 +109,16 @@ struct MeshTraceRouteWidgetView: View {
 		}
 	}
 
-	/// The rendered map; the gallery falls back to the bundled sample.
-	private func mapImage(wide: Bool, route: WidgetTraceRoute) -> UIImage? {
+	/// The rendered map; the gallery falls back to the bundled sample. A route
+	/// saved before the tall map existed shows its wide one.
+	private func mapImage(_ shape: WidgetMapShape, route: WidgetTraceRoute) -> UIImage? {
 		guard route.hasMap else { return nil }
-		if let data = WidgetTraceRouteStore.loadImageData(routeId: route.routeId, wide: wide),
-		   let image = UIImage(data: data) {
+		let data = WidgetTraceRouteStore.loadImageData(routeId: route.routeId, shape: shape)
+			?? (shape == .tall ? WidgetTraceRouteStore.loadImageData(routeId: route.routeId, shape: .wide) : nil)
+		if let data, let image = UIImage(data: data) {
 			return image
 		}
-		return entry.isPreview ? UIImage(named: wide ? "widget-traceroute-preview-wide" : "widget-traceroute-preview") : nil
+		return entry.isPreview ? UIImage(named: shape == .square ? "widget-traceroute-preview" : "widget-traceroute-preview-wide") : nil
 	}
 }
 
@@ -213,6 +219,36 @@ private struct RouteLargeView: View {
 			AgeLine(route: route)
 		}
 		.padding(14)
+	}
+}
+
+/// The tall size: a tall map, then the stats and both hop chains, which the
+/// large size only has room for without a map.
+private struct RouteTallView: View {
+	let route: WidgetTraceRoute
+	let map: UIImage?
+
+	var body: some View {
+		VStack(alignment: .leading, spacing: 10) {
+			RouteHeader(route: route, compact: false)
+			RouteTitle(route: route, font: .title3.weight(.semibold), lineLimit: 2)
+			if let map {
+				RouteMapImage(image: map)
+					.frame(maxWidth: .infinity, maxHeight: .infinity)
+			}
+			StatTiles(route: route)
+			VStack(alignment: .leading, spacing: 8) {
+				HopChain(stops: route.forward, color: RouteStyle.forward, size: 22)
+				if !route.back.isEmpty {
+					HopChain(stops: route.back, color: RouteStyle.back, size: 22, startRing: .white, endRing: RouteStyle.brand)
+				}
+			}
+			if map == nil {
+				Spacer(minLength: 0)
+			}
+			AgeLine(route: route)
+		}
+		.padding(16)
 	}
 }
 

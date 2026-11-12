@@ -116,7 +116,7 @@ struct MeshNodeMapWidget: Widget {
 		}
 		.configurationDisplayName("Node Map")
 		.description("Your mesh's nodes on a map.")
-		.supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
+		.supportedFamilies(WidgetFamily.addingExtraLargePortrait(to: [.systemSmall, .systemMedium, .systemLarge]))
 		.contentMarginsDisabled()
 	}
 }
@@ -130,7 +130,7 @@ struct MeshNodeMapWidgetView: View {
 	var body: some View {
 		if let summary = entry.summary, let map = mapImage {
 			content(summary: summary, map: map)
-		} else if entry.isPreview, let sample = UIImage(named: family == .systemLarge ? "widget-map-preview-wide" : "widget-map-preview") {
+		} else if entry.isPreview, let sample = UIImage(named: shape == .square ? "widget-map-preview" : "widget-map-preview-wide") {
 			// Any preview that can't load a real image shows the bundled sample.
 			content(summary: .preview, map: sample)
 		} else if entry.meta?.nodeCount == 0 {
@@ -144,20 +144,30 @@ struct MeshNodeMapWidgetView: View {
 	private func content(summary: NodeMapSummary, map: UIImage) -> some View {
 		// Data over two hours old dims the map; the age line says how old.
 		let mapView = ShareMapImage(image: map).opacity(entry.isStale ? 0.55 : 1)
-		switch family {
-		case .systemLarge:
-			MapLargeView(summary: summary, map: mapView)
-		case .systemMedium:
-			MapMediumView(summary: summary, map: mapView)
-		default:
-			MapSmallView(summary: summary, map: mapView)
+		if family.isExtraLargePortrait {
+			MapTallView(summary: summary, map: mapView)
+		} else {
+			switch family {
+			case .systemLarge:
+				MapLargeView(summary: summary, map: mapView)
+			case .systemMedium:
+				MapMediumView(summary: summary, map: mapView)
+			default:
+				MapSmallView(summary: summary, map: mapView)
+			}
 		}
 	}
 
-	/// The rendered map. The square one serves small and medium, the wide one
-	/// large.
+	private var shape: WidgetMapShape {
+		if family.isExtraLargePortrait { return .tall }
+		return family == .systemLarge ? .wide : .square
+	}
+
+	/// The rendered map for this size. Until the app renders the tall one, the
+	/// tall size shows the wide one.
 	private var mapImage: UIImage? {
-		WidgetMapStore.loadImageData(wide: family == .systemLarge).flatMap(UIImage.init(data:))
+		let data = WidgetMapStore.loadImageData(shape) ?? (shape == .tall ? WidgetMapStore.loadImageData(.wide) : nil)
+		return data.flatMap(UIImage.init(data:))
 	}
 
 	private func placeholder(icon: String, text: LocalizedStringKey) -> some View {
@@ -279,6 +289,37 @@ private struct MapLargeView<Map: View>: View {
 			AgeLine(summary: summary)
 		}
 		.padding(14)
+	}
+}
+
+/// The tall size: the large layout with the map filling the extra height.
+private struct MapTallView<Map: View>: View {
+	let summary: NodeMapSummary
+	let map: Map
+
+	var body: some View {
+		VStack(alignment: .leading, spacing: 10) {
+			MapHeader(summary: summary, compact: false)
+			Text(summary.title)
+				.font(.title3.weight(.semibold))
+				.lineLimit(2)
+				.minimumScaleFactor(0.7)
+			map
+				.frame(maxWidth: .infinity, maxHeight: .infinity)
+			HStack(spacing: 6) {
+				ShareStatTile(title: "On Map", value: "\(summary.onMap)")
+				// Disconnected, the online count is stale; the header's tag says why.
+				ShareStatTile(
+					title: "Online",
+					value: summary.connectionState == .connected ? "\(summary.online)" : "—",
+					color: summary.connectionState == .connected ? Style.brand : Style.secondaryText
+				)
+				ShareStatTile(title: "Farthest", value: summary.farthest.map(shareDistanceText) ?? "—")
+				ShareStatTile(title: "Favorites", value: "\(summary.favorites)", color: .yellow)
+			}
+			AgeLine(summary: summary)
+		}
+		.padding(16)
 	}
 }
 

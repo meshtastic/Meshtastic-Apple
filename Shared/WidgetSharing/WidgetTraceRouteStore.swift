@@ -66,10 +66,9 @@ enum WidgetTraceRouteStore {
 	}
 
 	/// Images are named for their route, so the sidecar can only ever point at
-	/// its own route's map. `wide` serves the large family; the square one
-	/// serves small and medium.
-	static func imageURL(routeId: Int64, wide: Bool) -> URL? {
-		containerURL?.appendingPathComponent("\(imagePrefix)\(routeId)-\(wide ? "wide" : "square").png")
+	/// its own route's map.
+	static func imageURL(routeId: Int64, shape: WidgetMapShape) -> URL? {
+		containerURL?.appendingPathComponent("\(imagePrefix)\(routeId)-\(shape.rawValue).png")
 	}
 
 	static var metaURL: URL? {
@@ -80,18 +79,16 @@ enum WidgetTraceRouteStore {
 	/// then removes the previous route's images. A failure part way leaves the
 	/// old sidecar pointing at the old images. Returns false when anything
 	/// failed, so the renderer can retry.
-	static func save(route: WidgetTraceRoute, squareImage: Data?, wideImage: Data?) -> Bool {
+	static func save(route: WidgetTraceRoute, images: [WidgetMapShape: Data]) -> Bool {
 		guard let metaURL else {
 			logger.warning("No app group container; widget trace route not written.")
 			return false
 		}
 		let options: Data.WritingOptions = [.atomic, .completeFileProtectionUntilFirstUserAuthentication]
 		do {
-			if let squareImage, let wideImage {
-				guard let squareURL = imageURL(routeId: route.routeId, wide: false),
-					  let wideURL = imageURL(routeId: route.routeId, wide: true) else { return false }
-				try squareImage.write(to: squareURL, options: options)
-				try wideImage.write(to: wideURL, options: options)
+			for (shape, image) in images {
+				guard let url = imageURL(routeId: route.routeId, shape: shape) else { return false }
+				try image.write(to: url, options: options)
 			}
 			let encoder = JSONEncoder()
 			encoder.dateEncodingStrategy = .millisecondsSince1970
@@ -121,8 +118,8 @@ enum WidgetTraceRouteStore {
 		return route
 	}
 
-	static func loadImageData(routeId: Int64, wide: Bool) -> Data? {
-		guard let url = imageURL(routeId: routeId, wide: wide) else { return nil }
+	static func loadImageData(routeId: Int64, shape: WidgetMapShape) -> Data? {
+		guard let url = imageURL(routeId: routeId, shape: shape) else { return nil }
 		return try? Data(contentsOf: url)
 	}
 
