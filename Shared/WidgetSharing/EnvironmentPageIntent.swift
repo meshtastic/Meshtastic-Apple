@@ -18,6 +18,8 @@ enum EnvironmentWidgetPage {
 	static let kind = "MeshEnvironment"
 	/// Readings on one page of the large size.
 	static let pageSize = 4
+	/// Readings on one page of the extra large portrait size, with more than this picked.
+	static let extraLargePortraitPageSize = 6
 
 	/// WidgetKit doesn't say which copy of a widget is which, so the page is
 	/// kept per node: two large widgets on the same node flip together.
@@ -25,10 +27,18 @@ enum EnvironmentWidgetPage {
 
 	private static var defaults: UserDefaults? { UserDefaults(suiteName: WidgetSnapshotStore.appGroupID) }
 
+	/// The page as stored, before wrapping to the pages a size has.
+	static func storedPage(for nodeNum: Int64) -> Int {
+		defaults?.integer(forKey: key(nodeNum)) ?? 0
+	}
+
 	/// The page to show, wrapped to the pages there are now.
 	static func page(for nodeNum: Int64, pageCount: Int) -> Int {
-		guard pageCount > 1 else { return 0 }
-		return (defaults?.integer(forKey: key(nodeNum)) ?? 0) % pageCount
+		wrap(storedPage(for: nodeNum), pageCount: pageCount)
+	}
+
+	static func wrap(_ page: Int, pageCount: Int) -> Int {
+		pageCount > 1 ? page % pageCount : 0
 	}
 
 	static func advance(for nodeNum: Int64, pageCount: Int) {
@@ -39,7 +49,7 @@ enum EnvironmentWidgetPage {
 		pageCount > 1 ? (page + 1) % pageCount : 0
 	}
 
-	static func pageCount(for metricCount: Int) -> Int {
+	static func pageCount(for metricCount: Int, pageSize: Int = pageSize) -> Int {
 		max(1, (metricCount + pageSize - 1) / pageSize)
 	}
 
@@ -61,7 +71,7 @@ enum EnvironmentWidgetPage {
 	}
 
 	/// The metrics on `page`.
-	static func metrics(_ metrics: [EnvironmentMetric], page: Int) -> [EnvironmentMetric] {
+	static func metrics(_ metrics: [EnvironmentMetric], page: Int, pageSize: Int = pageSize) -> [EnvironmentMetric] {
 		Array(metrics.dropFirst(page * pageSize).prefix(pageSize))
 	}
 }

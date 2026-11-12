@@ -126,6 +126,17 @@ struct WidgetEnvironmentTests {
 		#expect(reading.reportedMetrics == [.power1Voltage, .power1Current, .power8Current])
 	}
 
+	@Test func extraLargePortraitPagesBeyondSix() {
+		let metrics = Array(EnvironmentMetric.allCases.prefix(8))
+		let size = EnvironmentWidgetPage.extraLargePortraitPageSize
+		#expect(EnvironmentWidgetPage.pageCount(for: 6, pageSize: size) == 1)
+		#expect(EnvironmentWidgetPage.pageCount(for: 8, pageSize: size) == 2)
+		#expect(EnvironmentWidgetPage.metrics(metrics, page: 1, pageSize: size) == Array(metrics.suffix(2)))
+		// The stored page is shared with the large size; each size wraps it to its own pages.
+		#expect(EnvironmentWidgetPage.wrap(3, pageCount: 2) == 1)
+		#expect(EnvironmentWidgetPage.wrap(3, pageCount: 1) == 0)
+	}
+
 	@Test func bestFitPicksTheLargestTiles() {
 		// A tall widget with six readings: two columns of three beat two columns of four.
 		let tall = EnvironmentWidgetPage.bestFit(count: 6, in: CGSize(width: 360, height: 640), spacing: 8)

@@ -39,8 +39,17 @@ struct ReadingCompactWidget: View {
 				}
 			}
 			if let detail {
-				Text(LocalizedStringKey(detail))
-					.font(.caption)
+				// A band, such as IAQ's, gets a dot in its color, as the CO2 tile does.
+				HStack(spacing: 4) {
+					if let valueColor {
+						Circle()
+							.fill(valueColor)
+							.frame(width: 8, height: 8)
+							.accessibilityHidden(true)
+					}
+					Text(LocalizedStringKey(detail))
+						.font(.caption)
+				}
 			}
 		}
 		.compactWidgetTile()

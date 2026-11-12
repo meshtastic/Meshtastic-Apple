@@ -7,7 +7,8 @@
 //  One node's environment readings as node details' tiles (meshtastic/design#179).
 //  Small shows the first two readings, medium the first three, large four at a time
 //  with a page button when more are picked; the extra large portrait size (iOS
-//  27 and Vision Pro) and Vision Pro's extra large board show all eight. It reads the snapshot the app writes and never sends anything
+//  27 and Vision Pro) fits up to six and pages beyond that, and Vision Pro's
+//  extra large board shows all eight. It reads the snapshot the app writes and never sends anything
 //  over the mesh.
 //
 
@@ -25,14 +26,20 @@ struct EnvironmentEntry: TimelineEntry {
 	let node: NodeSnapshot?
 	/// The readings to show, in order.
 	let metrics: [EnvironmentMetric]
-	/// The large size's page.
-	let page: Int
+	/// The page as stored; each paging size wraps it to its own page count.
+	let storedPage: Int
 
 	var environment: EnvironmentSnapshot? { node?.environment }
 
 	var isStale: Bool { environment?.isStale(at: date) ?? false }
 
-	var pageCount: Int { EnvironmentWidgetPage.pageCount(for: metrics.count) }
+	func pageCount(pageSize: Int) -> Int {
+		EnvironmentWidgetPage.pageCount(for: metrics.count, pageSize: pageSize)
+	}
+
+	func page(pageSize: Int) -> Int {
+		EnvironmentWidgetPage.wrap(storedPage, pageCount: pageCount(pageSize: pageSize))
+	}
 }
 
 struct EnvironmentProvider: AppIntentTimelineProvider {
@@ -72,9 +79,8 @@ struct EnvironmentProvider: AppIntentTimelineProvider {
 		let node = snapshot?.nodes.first { String($0.num) == configured?.id }
 		let picked = (configuration.metrics ?? []).map(\.metric)
 		let metrics = picked.isEmpty ? EnvironmentMetric.defaults(for: node?.environment) : Array(picked.prefix(EnvironmentMetric.maximumCount))
-		let pageCount = EnvironmentWidgetPage.pageCount(for: metrics.count)
-		let page = configured?.nodeNum.map { EnvironmentWidgetPage.page(for: $0, pageCount: pageCount) } ?? 0
-		return EnvironmentEntry(date: date, configured: configured, node: node, metrics: metrics, page: page)
+		let storedPage = configured?.nodeNum.map(EnvironmentWidgetPage.storedPage(for:)) ?? 0
+		return EnvironmentEntry(date: date, configured: configured, node: node, metrics: metrics, storedPage: storedPage)
 	}
 }
 
@@ -146,7 +152,7 @@ struct EnvironmentWidgetView: View {
 						// The large size spaces its tiles from the edges itself.
 						.padding(.horizontal, usesEvenEdges ? 0 : Self.margin)
 					if showsDetail {
-						EnvironmentFooter(entry: entry, showsPageButton: family == .systemLarge)
+						EnvironmentFooter(entry: entry, page: page, pageCount: pageCount)
 							.padding(.horizontal, Self.margin)
 					}
 				} else {
@@ -179,7 +185,12 @@ struct EnvironmentWidgetView: View {
 	@ViewBuilder
 	private func tiles(_ environment: EnvironmentSnapshot) -> some View {
 		if isExtraLargePortrait {
-			bestFitGrid(Array(entry.metrics.prefix(EnvironmentMetric.maximumCount)), environment: environment)
+			if pageCount > 1 {
+				// Pages keep three rows, so the last page's tiles stay the size of the first's.
+				grid(EnvironmentWidgetPage.metrics(entry.metrics, page: page, pageSize: pageSize), columns: 2, rows: 3, evenEdges: true, environment: environment)
+			} else {
+				bestFitGrid(entry.metrics, environment: environment)
+			}
 		} else {
 			switch family {
 			case .systemSmall:
@@ -191,9 +202,9 @@ struct EnvironmentWidgetView: View {
 				grid(Array(entry.metrics.prefix(EnvironmentMetric.maximumCount)), columns: 4, environment: environment)
 			#endif
 			default:
-				if entry.pageCount > 1 {
+				if pageCount > 1 {
 					// Pages keep two rows, so a short last page keeps its tiles' size.
-					grid(EnvironmentWidgetPage.metrics(entry.metrics, page: entry.page), columns: 2, rows: 2, evenEdges: true, environment: environment)
+					grid(EnvironmentWidgetPage.metrics(entry.metrics, page: page, pageSize: pageSize), columns: 2, rows: 2, evenEdges: true, environment: environment)
 				} else {
 					bestFitGrid(entry.metrics, environment: environment)
 				}
@@ -207,6 +218,20 @@ struct EnvironmentWidgetView: View {
 			return family == .systemExtraLargePortrait
 		}
 		return false
+	}
+
+	/// Readings on one page of this size.
+	private var pageSize: Int {
+		isExtraLargePortrait ? EnvironmentWidgetPage.extraLargePortraitPageSize : EnvironmentWidgetPage.pageSize
+	}
+
+	/// Pages for the sizes that page: large, and extra large portrait with more than six readings.
+	private var pageCount: Int {
+		usesEvenEdges ? entry.pageCount(pageSize: pageSize) : 1
+	}
+
+	private var page: Int {
+		entry.page(pageSize: pageSize)
 	}
 
 	/// The sizes whose tiles are spaced from the widget's side edges by the grid itself.
@@ -327,7 +352,9 @@ private struct EnvironmentHeader: View {
 
 private struct EnvironmentFooter: View {
 	let entry: EnvironmentEntry
-	let showsPageButton: Bool
+	/// The page shown, and how many there are; one page shows no button.
+	let page: Int
+	let pageCount: Int
 
 	var body: some View {
 		HStack(spacing: 6) {
@@ -348,10 +375,10 @@ private struct EnvironmentFooter: View {
 				.minimumScaleFactor(0.7)
 			}
 			Spacer(minLength: 4)
-			if showsPageButton, entry.pageCount > 1, let nodeNum = entry.configured?.nodeNum {
-				Button(intent: EnvironmentPageIntent(nodeNum: nodeNum, pageCount: entry.pageCount)) {
+			if pageCount > 1, let nodeNum = entry.configured?.nodeNum {
+				Button(intent: EnvironmentPageIntent(nodeNum: nodeNum, pageCount: pageCount)) {
 					HStack(spacing: 3) {
-						Text("\(entry.page + 1)/\(entry.pageCount)")
+						Text("\(page + 1)/\(pageCount)")
 							.monospacedDigit()
 						Image(systemName: "chevron.right")
 					}
@@ -361,7 +388,7 @@ private struct EnvironmentFooter: View {
 					.background(.fill.secondary, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
 				}
 				.buttonStyle(.plain)
-				.accessibilityLabel("Next readings, page \(entry.page + 1) of \(entry.pageCount)")
+				.accessibilityLabel("Next readings, page \(page + 1) of \(pageCount)")
 			}
 		}
 	}
