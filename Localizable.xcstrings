@@ -65486,6 +65486,12 @@
     "Hybrid" : {
       "comment" : "MapLayer.localized: map layer style\nMeshMapTypes.description",
       "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Hybrydowa"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -65497,6 +65503,12 @@
     "Hybrid Flyover" : {
       "comment" : "MeshMapTypes.description",
       "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Hybrydowa 3D"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -113167,7 +113179,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Punkty orientacyjne"
+            "value" : "Ciekawe miejsca"
           }
         }
       }
@@ -126342,6 +126354,12 @@
     "Satellite" : {
       "comment" : "MapLayer.localized: map layer style\nMeshMapTypes.description",
       "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Satelitarna"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -126353,6 +126371,12 @@
     "Satellite Flyover" : {
       "comment" : "MeshMapTypes.description",
       "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Satelitarna 3D"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -140400,6 +140424,12 @@
             "value" : "표준"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Standardowa"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -140434,6 +140464,12 @@
     "Standard Muted" : {
       "comment" : "MeshMapTypes.description",
       "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Standardowa wyciszona"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
