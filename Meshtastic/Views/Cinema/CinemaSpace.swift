@@ -506,8 +506,10 @@ struct CinemaSpace: View {
 		let site = lookout.site(for: chosenSiteID)
 		let heading = SpatialLookout.heading(turns: lookoutTurns)
 		// Also when the site has gone (a new search after the maps changed doesn't find it) but the
-		// clear sky put up for its terrain is still showing, so the painted view comes back.
-		guard site?.id != terrainSiteID || heading != terrainHeading || kind != terrainKind || (site != nil && terrain == nil) || (site == nil && backdropClearSky) else { return }
+		// clear sky put up for its terrain is still showing, so the painted view comes back. The kind
+		// is only compared with a site chosen: with none, the painted view is already up and would be
+		// loaded again on every refresh.
+		guard site?.id != terrainSiteID || heading != terrainHeading || (site != nil && (kind != terrainKind || terrain == nil)) || (site == nil && backdropClearSky) else { return }
 		terrain?.removeFromParent()
 		terrain = nil
 		terrainSiteID = nil

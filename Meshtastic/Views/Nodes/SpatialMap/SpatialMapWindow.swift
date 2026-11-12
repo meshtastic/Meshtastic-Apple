@@ -174,6 +174,7 @@ struct SpatialMapWindow: View {
 			appState.spatialMapWindowCount += 1
 			claimFocus()
 			claimRoute()
+			claimRooftop()
 			// On its own, as when the app was killed with the cinema open (which had closed the
 			// app's window) and launched again: bring the window back. Closing the volume instead
 			// left nothing to open. A moment first, in case the window is on its way, and never

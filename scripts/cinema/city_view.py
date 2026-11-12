@@ -22,7 +22,7 @@ import sys
 import bmesh
 import bpy
 import numpy
-from mathutils import Vector, noise
+from mathutils import noise
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from room_base import CACHE, EYE_HEIGHT, arguments, build_camera, build_world, configure_render, link  # noqa: E402
