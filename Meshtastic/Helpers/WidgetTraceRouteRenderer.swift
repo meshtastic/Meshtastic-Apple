@@ -7,7 +7,7 @@
 //  Renders the trace route widget's map from the most recent trace route,
 //  requested or observed. It reuses the share image: the same model and the
 //  same map view, sized for the widget — a square for small and medium, a
-//  wide one for large. The route's details go to the store as plain values so
+//  wide one for large and a tall one for extra large portrait. The route's details go to the store as plain values so
 //  the widget lays them out itself and its times keep aging.
 //
 
@@ -22,10 +22,6 @@ final class WidgetTraceRouteRenderer {
 	static let shared = WidgetTraceRouteRenderer()
 
 	static let kind = "MeshTraceRoute"
-	/// Square map for small and medium, in points.
-	private static let squareSize = CGSize(width: 170, height: 170)
-	/// Wide map for large, in points.
-	private static let wideSize = CGSize(width: 330, height: 190)
 	/// The widget's render scale; tiles are snapshotted at the same scale so
 	/// they aren't stretched.
 	private static let scale: CGFloat = 3
@@ -97,15 +93,17 @@ final class WidgetTraceRouteRenderer {
 			return getNodeInfo(id: num, context: context).map { TraceRouteLegs.NodeDetails(node: $0) }
 		}
 		let positions = route.nodePositionsByNum.compactMapValues { $0.coordinate }
-		let square = Self.model(route: route, legs: legs, positions: positions, size: Self.squareSize)
-		let wide = Self.model(route: route, legs: legs, positions: positions, size: Self.wideSize)
-		let details = Self.details(route: route, model: square)
+		var models: [WidgetMapShape: TraceRouteShareModel] = [:]
+		for shape in WidgetMapShape.allCases {
+			models[shape] = Self.model(route: route, legs: legs, positions: positions, size: shape.size)
+		}
+		let details = Self.details(route: route, model: models[.square]!)
 		let observed = route.observed
 
 		inFlightKey = key
 		renderTask?.cancel()
 		renderTask = Task {
-			let outcome = await Self.render(details: details, square: square, wide: wide)
+			let outcome = await Self.render(details: details, models: models)
 			// A superseded render must not commit state for the older route.
 			if !Task.isCancelled {
 				switch outcome {
@@ -216,29 +214,31 @@ final class WidgetTraceRouteRenderer {
 		)
 	}
 
-	private static func render(details: WidgetTraceRoute, square: TraceRouteShareModel, wide: TraceRouteShareModel) async -> Outcome {
-		guard details.hasMap, let squareFrame = square.map, let wideFrame = wide.map else {
-			return save(details, square: nil, wide: nil) ? .saved : .failed
+	private static func render(details: WidgetTraceRoute, models: [WidgetMapShape: TraceRouteShareModel]) async -> Outcome {
+		guard details.hasMap, models.values.allSatisfy({ $0.map != nil }) else {
+			return save(details, images: [:]) ? .saved : .failed
 		}
-		// The share image's dark, muted tiles, so the widget matches it.
-		let squareTiles = await TraceRouteShareRenderer.snapshot(rect: squareFrame.rect, size: squareFrame.size, scale: scale)
-		let wideTiles = await TraceRouteShareRenderer.snapshot(rect: wideFrame.rect, size: wideFrame.size, scale: scale)
-		guard !Task.isCancelled else { return .failed }
-		guard let squareTiles, let wideTiles,
-			  let squareData = drawMap(frame: squareFrame, tiles: squareTiles, legs: square.legs)?.pngData(),
-			  let wideData = drawMap(frame: wideFrame, tiles: wideTiles, legs: wide.legs)?.pngData() else {
-			// Offline or a snapshotter error: show the new route's details now,
-			// like the share image leaves out a map it couldn't load.
-			Logger.services.warning("🧩 Widget trace route map render failed; saving the details without a map.")
-			var withoutMap = details
-			withoutMap.hasMap = false
-			return save(withoutMap, square: nil, wide: nil) ? .savedWithoutMap : .failed
+		var images: [WidgetMapShape: Data] = [:]
+		for (shape, model) in models {
+			guard let frame = model.map else { continue }
+			// The share image's dark, muted tiles, so the widget matches it.
+			let tiles = await TraceRouteShareRenderer.snapshot(rect: frame.rect, size: frame.size, scale: scale)
+			guard !Task.isCancelled else { return .failed }
+			guard let tiles, let data = drawMap(frame: frame, tiles: tiles, legs: model.legs)?.pngData() else {
+				// Offline or a snapshotter error: show the new route's details now,
+				// like the share image leaves out a map it couldn't load.
+				Logger.services.warning("🧩 Widget trace route map render failed; saving the details without a map.")
+				var withoutMap = details
+				withoutMap.hasMap = false
+				return save(withoutMap, images: [:]) ? .savedWithoutMap : .failed
+			}
+			images[shape] = data
 		}
-		return save(details, square: squareData, wide: wideData) ? .saved : .failed
+		return save(details, images: images) ? .saved : .failed
 	}
 
-	private static func save(_ details: WidgetTraceRoute, square: Data?, wide: Data?) -> Bool {
-		guard WidgetTraceRouteStore.save(route: details, squareImage: square, wideImage: wide) else { return false }
+	private static func save(_ details: WidgetTraceRoute, images: [WidgetMapShape: Data]) -> Bool {
+		guard WidgetTraceRouteStore.save(route: details, images: images) else { return false }
 		WidgetCenter.shared.reloadTimelines(ofKind: kind)
 		return true
 	}

@@ -785,9 +785,9 @@
         "section": "user",
         "navOrder": 0,
         "keywords": [
-            "cinema",
-            "nov",
             "map",
+            "nov",
+            "cinema",
             "apple",
             "vision",
             "pro",
@@ -796,14 +796,14 @@
             "settings",
             "now",
             "nodes",
-            "new",
             "node",
+            "new",
             "screen",
+            "one",
             "mesh",
             "from",
             "firmware",
             "set",
-            "one",
             "messages",
             "real",
             "jun",
@@ -816,7 +816,7 @@
             "device",
             "waypoints"
         ],
-        "charCount": 16225
+        "charCount": 16439
     },
     {
         "id": "adding-features",

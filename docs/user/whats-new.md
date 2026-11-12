@@ -14,6 +14,8 @@ Recent user-facing changes from roughly the last 12 months. Newest at the top.
 Show roughly the last 12 months of changes; archive entries older than a year by removing them.
 -->
 
+**Nov 2026** — [Bluetooth](bluetooth.md#widgets-and-controls) — The Node Map and Trace Route widgets come in the extra large portrait size on iPhone with iOS 27 and on Apple Vision Pro, with a tall map; the trace route one also shows both hop chains.
+
 **Nov 2026** — [Cinema](cinema.md#lighthouse) — On Apple Vision Pro, the cinema can be set in a lighthouse's lantern room over the sea, standing on a real headland from the downloaded terrain, turned to face the open water.
 
 **Nov 2026** — [Cinema](cinema.md#sky-deck) — On Apple Vision Pro, the cinema can be set in a glass-floored sky deck hung off one of the tallest real towers in your downloaded map, looking straight down at the city.

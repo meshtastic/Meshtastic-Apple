@@ -42,6 +42,26 @@ func stateText(_ state: WidgetConnectionState) -> String {
 	}
 }
 
+// MARK: - Extra large portrait
+
+extension WidgetFamily {
+	/// The tall size iPhone gained in iOS 27; Vision Pro has had it since visionOS 26.
+	var isExtraLargePortrait: Bool {
+		if #available(iOS 27.0, visionOS 26.0, *) {
+			return self == .systemExtraLargePortrait
+		}
+		return false
+	}
+
+	/// `families` plus extra large portrait where the system has it.
+	static func addingExtraLargePortrait(to families: [WidgetFamily]) -> [WidgetFamily] {
+		if #available(iOS 27.0, visionOS 26.0, *) {
+			return families + [.systemExtraLargePortrait]
+		}
+		return families
+	}
+}
+
 // MARK: - Share card look
 
 /// The trace route share image's palette. The map and trace route widgets

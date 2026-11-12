@@ -7,7 +7,7 @@
 //  Renders the map widget's images in the app, in the trace route share
 //  image's look: the same dark, muted tiles, node circles in their colors and
 //  the connected radio ringed in brand green — a square for small and medium,
-//  a wide one for large. Renders are throttled, and the throttle only
+//  a wide one for large and a tall one for extra large portrait. Renders are throttled, and the throttle only
 //  advances on success: a failed render (offline launch, snapshotter error)
 //  is retried by the next broker refresh instead of being silently dropped.
 //
@@ -21,13 +21,8 @@ import WidgetKit
 final class WidgetMapRenderer {
 	static let shared = WidgetMapRenderer()
 
-	/// Square map for small and medium, in points; the same sizes as the
-	/// trace route widget's maps.
-	private static let squareSize = CGSize(width: 170, height: 170)
-	/// Wide map for large, in points.
-	private static let wideSize = CGSize(width: 330, height: 190)
 	private static let scale: CGFloat = 3
-	/// Renders cost two snapshotter passes and a widget reload each, so at
+	/// Renders cost a snapshotter pass per shape and a widget reload each, so at
 	/// most one per fifteen minutes, movement or not.
 	private static let minimumInterval: TimeInterval = 15 * 60
 	/// Positions snap to a ~28 m grid before comparison, so GPS jitter does
@@ -137,25 +132,32 @@ final class WidgetMapRenderer {
 		}
 
 		let points = pins.map { MKMapPoint($0.coordinate) }
-		// The share image's framing: the pins' bounds with padding and a
-		// minimum span, widened to the map's shape so nothing is cropped.
-		let square = TraceRouteShareModel.frame(points: points, width: squareSize.width, height: squareSize.height)
-		let wide = TraceRouteShareModel.frame(points: points, width: wideSize.width, height: wideSize.height)
-		// Dark, muted tiles without points of interest, as on the share image.
-		let squareTiles = await TraceRouteShareRenderer.snapshot(rect: square.rect, size: square.size, scale: scale)
-		let wideTiles = await TraceRouteShareRenderer.snapshot(rect: wide.rect, size: wide.size, scale: scale)
-		// A cancelled (superseded) render must not overwrite the newer files.
-		guard !Task.isCancelled else { return false }
-		guard let squareTiles, let wideTiles,
-			  let squareImage = drawMap(tiles: squareTiles, rect: square.rect, size: square.size, pins: pins, radioNum: radioNum),
-			  let wideImage = drawMap(tiles: wideTiles, rect: wide.rect, size: wide.size, pins: pins, radioNum: radioNum) else {
-			Logger.services.warning("🧩 Widget map render produced no image.")
-			return false
+		var images: [WidgetMapShape: UIImage] = [:]
+		for shape in WidgetMapShape.allCases {
+			// The share image's framing: the pins' bounds with padding and a
+			// minimum span, widened to the map's shape so nothing is cropped.
+			let frame = TraceRouteShareModel.frame(points: points, width: shape.size.width, height: shape.size.height)
+			// Dark, muted tiles without points of interest, as on the share image.
+			let tiles = await TraceRouteShareRenderer.snapshot(rect: frame.rect, size: frame.size, scale: scale)
+			// A cancelled (superseded) render must not overwrite the newer files.
+			guard !Task.isCancelled else { return false }
+			guard let tiles, let image = drawMap(tiles: tiles, rect: frame.rect, size: frame.size, pins: pins, radioNum: radioNum) else {
+				Logger.services.warning("🧩 Widget map render produced no image.")
+				// The tall size can show the wide map, so keep the other two.
+				if shape == .tall { continue }
+				return false
+			}
+			images[shape] = image
 		}
 		// Drawing needs the main actor; encoding and writing the files don't.
+		let finished = images
 		let saved = await Task.detached(priority: .utility) {
-			guard let squareData = squareImage.pngData(), let wideData = wideImage.pngData() else { return false }
-			return WidgetMapStore.save(squareImage: squareData, wideImage: wideData, meta: meta)
+			var data: [WidgetMapShape: Data] = [:]
+			for (shape, image) in finished {
+				guard let png = image.pngData() else { return false }
+				data[shape] = png
+			}
+			return WidgetMapStore.save(images: data, meta: meta)
 		}.value
 		guard saved, !Task.isCancelled else { return false }
 		WidgetDataBroker.shared.reload(.map)

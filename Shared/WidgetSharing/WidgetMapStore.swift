@@ -97,6 +97,26 @@ struct WidgetMapStats: Equatable {
 	}
 }
 
+/// The shapes the Node Map and Trace Route widgets' maps are rendered in, one
+/// per widget size that shows a map.
+enum WidgetMapShape: String, CaseIterable {
+	/// Small and medium.
+	case square
+	/// Large.
+	case wide
+	/// Extra large portrait (iOS 27, Vision Pro).
+	case tall
+
+	/// The rendered size, in points.
+	var size: CGSize {
+		switch self {
+		case .square: CGSize(width: 170, height: 170)
+		case .wide: CGSize(width: 330, height: 190)
+		case .tall: CGSize(width: 330, height: 520)
+		}
+	}
+}
+
 enum WidgetMapStore {
 	static let metaFilename = "widget-map.json"
 
@@ -115,26 +135,34 @@ enum WidgetMapStore {
 		FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: WidgetSnapshotStore.appGroupID)
 	}
 
-	/// The square image serves small and medium; the wide one serves large.
-	static func imageURL(wide: Bool) -> URL? {
-		containerURL?.appendingPathComponent(wide ? "widget-map-wide.png" : "widget-map-square.png")
+	static func imageURL(_ shape: WidgetMapShape) -> URL? {
+		containerURL?.appendingPathComponent("widget-map-\(shape.rawValue).png")
 	}
 
 	static var metaURL: URL? {
 		containerURL?.appendingPathComponent(metaFilename)
 	}
 
-	/// Writes both images and then the meta sidecar. Returns false when
-	/// anything failed, so the renderer can retry instead of marking success.
-	static func save(squareImage: Data, wideImage: Data, meta: WidgetMapMeta) -> Bool {
-		guard let metaURL, let squareURL = imageURL(wide: false), let wideURL = imageURL(wide: true) else {
+	/// Writes the images and then the meta sidecar, and removes the image of
+	/// any shape left out, so the widget doesn't show an older map. Returns
+	/// false when anything failed, so the renderer can retry instead of
+	/// marking success.
+	static func save(images: [WidgetMapShape: Data], meta: WidgetMapMeta) -> Bool {
+		guard let metaURL else {
 			logger.warning("No app group container; widget map not written.")
 			return false
 		}
 		do {
 			let options: Data.WritingOptions = [.atomic, .completeFileProtectionUntilFirstUserAuthentication]
-			try squareImage.write(to: squareURL, options: options)
-			try wideImage.write(to: wideURL, options: options)
+			for (shape, image) in images {
+				guard let url = imageURL(shape) else { return false }
+				try image.write(to: url, options: options)
+			}
+			for shape in WidgetMapShape.allCases where images[shape] == nil {
+				if let url = imageURL(shape) {
+					try? FileManager.default.removeItem(at: url)
+				}
+			}
 			try encode(meta).write(to: metaURL, options: options)
 		} catch {
 			logger.error("Could not write the widget map: \(error.localizedDescription, privacy: .public)")
@@ -148,8 +176,8 @@ enum WidgetMapStore {
 	/// the widget then explains instead of prompting to open the app.
 	static func saveEmpty(meta: WidgetMapMeta) -> Bool {
 		guard let metaURL else { return false }
-		for wide in [false, true] {
-			if let url = imageURL(wide: wide) {
+		for shape in WidgetMapShape.allCases {
+			if let url = imageURL(shape) {
 				try? FileManager.default.removeItem(at: url)
 			}
 		}
@@ -172,8 +200,8 @@ enum WidgetMapStore {
 		return meta
 	}
 
-	static func loadImageData(wide: Bool) -> Data? {
-		guard let url = imageURL(wide: wide) else { return nil }
+	static func loadImageData(_ shape: WidgetMapShape) -> Data? {
+		guard let url = imageURL(shape) else { return nil }
 		return try? Data(contentsOf: url)
 	}
 
