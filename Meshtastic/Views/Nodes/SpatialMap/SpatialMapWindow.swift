@@ -141,10 +141,14 @@ struct SpatialMapWindow: View {
 		.onChange(of: appState.spatialMapRoute?.id) {
 			claimRoute()
 		}
+		.onChange(of: appState.spatialMapRooftop?.id) {
+			claimRooftop()
+		}
 		.onChange(of: appState.spatialMapReopening) { _, reopening in
 			if !reopening {
 				claimFocus()
 				claimRoute()
+				claimRooftop()
 			}
 		}
 		.onChange(of: scenePhase) { _, phase in
@@ -170,6 +174,7 @@ struct SpatialMapWindow: View {
 			appState.spatialMapWindowCount += 1
 			claimFocus()
 			claimRoute()
+			claimRooftop()
 			// On its own, as when the app was killed with the cinema open (which had closed the
 			// app's window) and launched again: bring the window back. Closing the volume instead
 			// left nothing to open. A moment first, in case the window is on its way, and never
@@ -329,6 +334,18 @@ struct SpatialMapWindow: View {
 	private func claimFocus() {
 		guard !appState.spatialMapReopening, let nodeNum = appState.claimSpatialMapFocus() else { return }
 		model.focus(on: nodeNum)
+		refresh()
+	}
+
+	/// Turns the buildings on and zooms all the way in on the cinema's city rooftop, as its panel
+	/// asks, so the water tower and mast can be seen standing on the roof. Buildings are off by
+	/// default and only drawn zoomed in, and the rooftop is one roof among thousands.
+	private func claimRooftop() {
+		guard !appState.spatialMapReopening, appState.claimSpatialMapRooftop(),
+			  let coordinate = SpatialLookout.coordinate(siteID: UserDefaults.standard.string(forKey: "cinemaRooftopSite") ?? "") else { return }
+		showBuildings = true
+		model.showBuildings = true
+		model.zoomInClosely(on: coordinate)
 		refresh()
 	}
 

@@ -186,6 +186,8 @@ final class SpatialMapModel {
 	private(set) var zoomCenter: CLLocationCoordinate2D?
 	/// A node to zoom in on once the next refresh has its position (Show in 3D).
 	private var pendingFocusNodeNum: Int64?
+	/// A place to zoom all the way in on once the map has its area.
+	private var pendingCloseFocus: CLLocationCoordinate2D?
 	private var buildLayer: MapLayer = .standard
 	private var buildDark = true
 	private var lastBoundsChange: Date?
@@ -247,9 +249,23 @@ final class SpatialMapModel {
 	/// Centers the map on a node, zoomed in at least as far as `SpatialZoom.focusZoom`.
 	func zoomIn(on nodeNum: Int64) {
 		guard let coordinate = nodesByNum[nodeNum]?.coordinate else { return }
+		zoomIn(on: coordinate, to: max(zoom, SpatialZoom.focusZoom))
+	}
+
+	/// Zooms all the way in on a place, now if the map has its area or else once it does.
+	func zoomInClosely(on coordinate: CLLocationCoordinate2D) {
+		if fullCircle != nil {
+			zoomIn(on: coordinate, to: maximumZoom)
+		} else {
+			pendingCloseFocus = coordinate
+		}
+	}
+
+	/// Centers the map on a place and zooms in to `zoom`, as far as the map goes.
+	func zoomIn(on coordinate: CLLocationCoordinate2D, to zoom: Double) {
 		zoomCenter = coordinate
-		zoom = clampedZoom(max(zoom, SpatialZoom.focusZoom))
-		if zoom <= 1 { zoomCenter = nil }
+		self.zoom = clampedZoom(zoom)
+		if self.zoom <= 1 { zoomCenter = nil }
 		applyArea()
 	}
 
@@ -345,6 +361,10 @@ final class SpatialMapModel {
 		if let pending = pendingFocusNodeNum, nodesByNum[pending] != nil {
 			pendingFocusNodeNum = nil
 			zoomIn(on: pending)
+		}
+		if let pending = pendingCloseFocus, fullCircle != nil {
+			pendingCloseFocus = nil
+			zoomIn(on: pending, to: maximumZoom)
 		}
 		buildLayer = layer
 		buildDark = dark

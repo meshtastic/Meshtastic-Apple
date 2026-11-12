@@ -37,8 +37,8 @@ enum LookoutSiteCacheKey {
 /// than each time the cinema opens. They're found again when a download is added, removed or
 /// refreshed, since that's what they're found in.
 enum LookoutSiteCache {
-	/// Bump when the summit search or naming changes, so lists found the old way are found again.
-	private static let version = 2
+	/// Bump when a site search or naming changes, so lists found the old way are found again.
+	private static let version = 3
 
 	private struct Entry: Codable {
 		let version: Int
@@ -46,16 +46,16 @@ enum LookoutSiteCache {
 		let sites: [LookoutSite]
 	}
 
-	/// The summits found in `maps`, if they were found before.
-	static func sites(for maps: String) -> [LookoutSite]? {
-		guard let url = fileURL(), let data = try? Data(contentsOf: url),
+	/// The sites of `kind` found in `maps`, if they were found before.
+	static func sites(for maps: String, kind: LookoutSiteKind = .summit) -> [LookoutSite]? {
+		guard let url = fileURL(kind), let data = try? Data(contentsOf: url),
 			  let entry = try? JSONDecoder().decode(Entry.self, from: data),
 			  entry.version == version, entry.maps == maps else { return nil }
 		return entry.sites
 	}
 
-	static func store(_ sites: [LookoutSite], for maps: String) {
-		guard let url = fileURL() else { return }
+	static func store(_ sites: [LookoutSite], for maps: String, kind: LookoutSiteKind = .summit) {
+		guard let url = fileURL(kind) else { return }
 		do {
 			let data = try JSONEncoder().encode(Entry(version: version, maps: maps, sites: sites))
 			try data.write(to: url, options: .atomic)
@@ -64,15 +64,18 @@ enum LookoutSiteCache {
 		}
 	}
 
-	/// Forgets the kept summits, so the next search runs again.
+	/// Forgets the kept sites, so the next search runs again.
 	static func clear() {
-		guard let url = fileURL() else { return }
-		try? FileManager.default.removeItem(at: url)
+		for kind in [LookoutSiteKind.summit, .rooftop] {
+			guard let url = fileURL(kind) else { continue }
+			try? FileManager.default.removeItem(at: url)
+		}
 	}
 
-	private static func fileURL() -> URL? {
+	/// Each kind in its own file, so moving between the lookout and the rooftop keeps both lists.
+	private static func fileURL(_ kind: LookoutSiteKind) -> URL? {
 		FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first?
-			.appendingPathComponent("LookoutSites.json")
+			.appendingPathComponent(kind == .summit ? "LookoutSites.json" : "RooftopSites.json")
 	}
 }
 #endif

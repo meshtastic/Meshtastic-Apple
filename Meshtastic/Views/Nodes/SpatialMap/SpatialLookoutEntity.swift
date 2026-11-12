@@ -10,8 +10,8 @@ import OSLog
 import RealityKit
 import UIKit
 
-/// The fire lookout, and the castle tower, as an entity: one model per material, built once and
-/// reused.
+/// The fire lookout, the castle tower and the city rooftop's water tower and mast, as an entity:
+/// one model per material, built once and reused.
 @MainActor
 enum SpatialLookoutParts {
 	private static var meshes: [SpatialLookout.Part: MeshResource]?
@@ -71,6 +71,50 @@ enum SpatialLookoutParts {
 		}
 		castle.addChild(body)
 		return castle
+	}
+
+	/// The city rooftop's water tower and mast, their front facing `heading`, for the rooftop room.
+	static func makeRooftop(heading: Double = SpatialLookout.frontHeading) -> Entity? {
+		if rooftopMeshes == nil {
+			var built: [SpatialRooftop.Part: MeshResource] = [:]
+			for (part, data) in SpatialRooftop.geometry() where data.triangleCount > 0 {
+				guard let mesh = try? data.meshResource() else { return nil }
+				built[part] = mesh
+			}
+			rooftopMeshes = built
+		}
+		guard let rooftopMeshes else { return nil }
+		let rooftop = Entity()
+		rooftop.name = "cityRooftop"
+		let body = Entity()
+		body.orientation = simd_quatf(angle: SpatialLookout.yaw(heading: heading), axis: [0, 1, 0])
+		for part in SpatialRooftop.Part.allCases {
+			guard let mesh = rooftopMeshes[part] else { continue }
+			body.addChild(ModelEntity(mesh: mesh, materials: [rooftopMaterial(part)]))
+		}
+		rooftop.addChild(body)
+		return rooftop
+	}
+
+	private static var rooftopMeshes: [SpatialRooftop.Part: MeshResource]?
+
+	private static func rooftopMaterial(_ part: SpatialRooftop.Part) -> PhysicallyBasedMaterial {
+		var material = PhysicallyBasedMaterial()
+		switch part {
+		// Light, like the water tower on the cinema's deck, so it reads against the gray buildings.
+		case .staves:
+			material.baseColor = .init(tint: UIColor(red: 0.72, green: 0.56, blue: 0.4, alpha: 1))
+			material.roughness = 0.8
+		case .roof:
+			material.baseColor = .init(tint: UIColor(red: 0.55, green: 0.55, blue: 0.57, alpha: 1))
+			material.metallic = 0.3
+			material.roughness = 0.5
+		case .steel:
+			material.baseColor = .init(tint: UIColor(red: 0.68, green: 0.69, blue: 0.7, alpha: 1))
+			material.metallic = 0.5
+			material.roughness = 0.4
+		}
+		return material
 	}
 
 	private static var castleMeshes: [SpatialCastle.Part: MeshResource]?

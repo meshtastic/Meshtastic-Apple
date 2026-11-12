@@ -244,16 +244,34 @@ actor TerrainStore {
 	/// Ground elevation in meters at a coordinate, or nil when no downloaded
 	/// terrain region covers it.
 	func elevation(at coordinate: CLLocationCoordinate2D) -> Double? {
+		elevations(at: [coordinate])[0]
+	}
+
+	/// `elevation(at:)` for each coordinate, in one trip to the store. Each tile is
+	/// sampled once for all the coordinates in it, so thousands of points cost a
+	/// few tiles, not a tile each.
+	func elevations(at coordinates: [CLLocationCoordinate2D]) -> [Double?] {
 		let z = Self.pointQueryZoom
-		let pixel = Self.tilePixel(latitude: coordinate.latitude, longitude: coordinate.longitude, z: z, size: Self.tileSize)
-		// Edge tiles are edge-clamped, so also require the coordinate itself to
-		// sit inside the covering region's box — never report a clamped border
-		// value for a point outside the download.
-		guard let box = coverage(z: z, x: pixel.x, y: pixel.y),
-			  coordinate.latitude >= box.minLat, coordinate.latitude <= box.maxLat,
-			  coordinate.longitude >= box.minLon, coordinate.longitude <= box.maxLon,
-			  let tile = elevationTile(z: z, x: pixel.x, y: pixel.y, margin: 1) else { return nil }
-		return Double(Self.sample(tile, px: pixel.px, py: pixel.py))
+		var tiles: [TileKey: ElevationTile?] = [:]
+		return coordinates.map { coordinate in
+			let pixel = Self.tilePixel(latitude: coordinate.latitude, longitude: coordinate.longitude, z: z, size: Self.tileSize)
+			// Edge tiles are edge-clamped, so also require the coordinate itself to
+			// sit inside the covering region's box — never report a clamped border
+			// value for a point outside the download.
+			guard let box = coverage(z: z, x: pixel.x, y: pixel.y),
+				  coordinate.latitude >= box.minLat, coordinate.latitude <= box.maxLat,
+				  coordinate.longitude >= box.minLon, coordinate.longitude <= box.maxLon else { return nil }
+			let key = TileKey(z: z, x: pixel.x, y: pixel.y)
+			let tile: ElevationTile?
+			if let sampled = tiles[key] {
+				tile = sampled
+			} else {
+				tile = elevationTile(z: z, x: pixel.x, y: pixel.y, margin: 1)
+				tiles[key] = tile
+			}
+			guard let tile else { return nil }
+			return Double(Self.sample(tile, px: pixel.px, py: pixel.py))
+		}
 	}
 
 	/// The Web-Mercator tile containing a coordinate at zoom `z`, plus the

@@ -120,8 +120,8 @@ enum SpatialBuildings {
 
 	/// Decodes the buildings of the downloaded basemaps that touch the box, deepest archive first. A
 	/// tile already inside a decoded basemap is not decoded again from an overlapping one. Nil when
-	/// cancelled.
-	static func decode(bounds: GeoBounds, files: [OfflineMapRegionFile] = OfflineMapManager.persistedRegionFiles()) -> [SpatialBuildingFootprint]? {
+	/// cancelled. `maxTiles` caps the tiles decoded from each basemap, as in `zoom(bounds:archiveMaxZoom:maxTiles:)`.
+	static func decode(bounds: GeoBounds, files: [OfflineMapRegionFile] = OfflineMapManager.persistedRegionFiles(), maxTiles: Int = maxTiles) -> [SpatialBuildingFootprint]? {
 		let started = Date()
 		let sources = files
 			.filter { $0.region.hasBasemap && $0.region.bounds.intersects(bounds) }
@@ -136,7 +136,7 @@ enum SpatialBuildings {
 		var tileCount = 0
 		for (source, coverage) in sources {
 			if Task.isCancelled { return nil }
-			guard let zoom = zoom(bounds: bounds, archiveMaxZoom: Int(source.tileMaxZoom)) else { continue }
+			guard let zoom = zoom(bounds: bounds, archiveMaxZoom: Int(source.tileMaxZoom), maxTiles: maxTiles) else { continue }
 			let tiles = SpatialOfflineMap.newTiles(SpatialOfflineMap.tiles(bounds: bounds, zoom: zoom), coverage: coverage, decoded: decoded)
 			for tile in tiles {
 				if Task.isCancelled { return nil }

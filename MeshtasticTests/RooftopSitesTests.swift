@@ -1,0 +1,123 @@
+//
+//  RooftopSitesTests.swift
+//  MeshtasticTests
+//
+//  Copyright(c) Garth Vander Houwen 11/9/26.
+//
+import CoreLocation
+import Foundation
+import Testing
+@testable import Meshtastic
+
+@Suite("City rooftop sites")
+struct RooftopSitesTests {
+
+	private let center = CLLocationCoordinate2D(latitude: 47.6062, longitude: -122.3321)
+
+	/// A square `side` meters across, centered `east` and `north` meters from the center.
+	private func square(side: Double, east: Double = 0, north: Double = 0, height: Double?) -> SpatialBuildingFootprint {
+		let metersPerLat = SpatialFrame.metersPerDegreeLatitude
+		let metersPerLon = metersPerLat * cos(center.latitude * .pi / 180)
+		let corners: [(Double, Double)] = [(-1, -1), (1, -1), (1, 1), (-1, 1)]
+		let outline = corners.map { x, y in
+			CLLocationCoordinate2D(latitude: center.latitude + (north + y * side / 2) / metersPerLat, longitude: center.longitude + (east + x * side / 2) / metersPerLon)
+		}
+		return SpatialBuildingFootprint(outline: outline, height: height, minHeight: 0)
+	}
+
+	@Test("the tallest buildings come first, and buildings with no height are left out")
+	func tallestFirst() {
+		let rooftops = RooftopSites.tallest([
+			square(side: 40, east: 0, height: 80),
+			square(side: 40, east: 600, height: 200),
+			square(side: 40, east: -600, height: 120),
+			square(side: 40, east: 1_200, height: nil)
+		])
+		#expect(rooftops.map(\.height) == [200, 120, 80])
+	}
+
+	@Test("a building beside a taller one is the same tower, and is left out")
+	func nearTallerIsSameTower() {
+		let rooftops = RooftopSites.tallest([
+			square(side: 40, height: 180),
+			// The podium, 60 m off the tower's middle.
+			square(side: 40, east: 60, height: 40),
+			square(side: 40, east: 400, height: 90)
+		])
+		#expect(rooftops.map(\.height) == [180, 90])
+	}
+
+	@Test("a roof too small to stand on, like a spire's, is left out")
+	func spiresAreLeftOut() {
+		let rooftops = RooftopSites.tallest([
+			square(side: 6, height: 300),
+			square(side: 30, east: 500, height: 150)
+		])
+		#expect(rooftops.map(\.height) == [150])
+	}
+
+	@Test("no more than the count asked for, and each rooftop is on its roof")
+	func countAndPlace() {
+		let footprints = (0..<20).map { square(side: 30, east: Double($0) * 300, height: Double(50 + $0)) }
+		let rooftops = RooftopSites.tallest(footprints, count: 5)
+		#expect(rooftops.count == 5)
+		#expect(rooftops.first?.height == 69)
+		for rooftop in rooftops {
+			#expect(footprints.contains { SpatialBuildings.contains($0.outline, rooftop.coordinate) && $0.height == rooftop.height })
+		}
+	}
+
+	@Test("a tower drawn only in parts, missing from the coarse first pass, wins over a shorter plain building beside it")
+	func partsTowerFoundInSecondPass() throws {
+		let plain = square(side: 40, east: -500, height: 260)
+		var tier = square(side: 27, height: 286)
+		tier.isPart = true
+		var lowerTier = square(side: 35, height: 280)
+		lowerTier.isPart = true
+		let box = GeoBounds(minLon: center.longitude - 0.15, minLat: center.latitude - 0.1, maxLon: center.longitude + 0.15, maxLat: center.latitude + 0.1)
+		var reads: [(GeoBounds, Int)] = []
+		let rooftops = try #require(RooftopSites.search(in: box, maxTiles: 160) { bounds, maxTiles in
+			reads.append((bounds, maxTiles))
+			// The whole box is read coarsely, without the parts; a small box finely, with them.
+			return bounds == box ? [plain] : [plain, tier, lowerTier]
+		})
+		#expect(rooftops.first?.height == 286)
+		#expect(rooftops.map(\.height) == [286, 260])
+		#expect(reads.count == 2)
+		#expect(reads.last?.1 == RooftopSites.refineTiles)
+	}
+
+	@Test("boxes round neighboring rooftops are joined, and a rooftop far off keeps its own")
+	func refineBoxesJoin() {
+		let box = GeoBounds(minLon: center.longitude - 0.15, minLat: center.latitude - 0.1, maxLon: center.longitude + 0.15, maxLat: center.latitude + 0.1)
+		let rooftops = RooftopSites.tallest([
+			square(side: 40, height: 200),
+			square(side: 40, east: 500, height: 180),
+			square(side: 40, east: 8_000, height: 150)
+		])
+		let boxes = RooftopSites.refineBoxes(around: rooftops, within: box)
+		#expect(boxes.count == 2)
+		for rooftop in rooftops {
+			#expect(boxes.contains { $0.minLat <= rooftop.coordinate.latitude && rooftop.coordinate.latitude <= $0.maxLat && $0.minLon <= rooftop.coordinate.longitude && rooftop.coordinate.longitude <= $0.maxLon })
+		}
+		#expect(boxes.allSatisfy { $0.minLon >= box.minLon && $0.maxLon <= box.maxLon && $0.minLat >= box.minLat && $0.maxLat <= box.maxLat })
+	}
+
+	@Test("a rooftop past the search box's edge, from a tile reaching over it, gets no box, so none is inside out")
+	func refineBoxesSkipOutside() {
+		let box = GeoBounds(minLon: center.longitude - 0.01, minLat: center.latitude - 0.01, maxLon: center.longitude + 0.01, maxLat: center.latitude + 0.01)
+		let rooftops = RooftopSites.tallest([
+			square(side: 40, height: 200),
+			square(side: 40, east: 3_000, height: 250)
+		])
+		let boxes = RooftopSites.refineBoxes(around: rooftops, within: box)
+		#expect(boxes.count == 1)
+		#expect(boxes.allSatisfy { $0.minLon <= $0.maxLon && $0.minLat <= $0.maxLat })
+	}
+
+	@Test("a roof's area is measured in square meters")
+	func roofArea() {
+		#expect(abs(RooftopSites.roofArea(square(side: 20, height: 10).outline) - 400) < 4)
+		#expect(RooftopSites.roofArea([center]) == 0)
+	}
+}
