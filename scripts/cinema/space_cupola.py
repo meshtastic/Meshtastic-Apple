@@ -428,7 +428,7 @@ def place_model(file_name, location, normal_side):
     bpy.ops.wm.usd_import(filepath=path)
     new = [obj for obj in bpy.data.objects if obj not in before]
     root = next(obj for obj in new if obj.parent is None)
-    # The models face +Y with Z up; turn this one to face the seat from the wall.
+    # The importer leaves the models facing -Y with Z up; turn this one to face the seat from the wall.
     root.matrix_world = Matrix.Rotation(normal_side * math.pi / 2, 4, "Z") @ root.matrix_world
     bpy.context.view_layer.update()
     corners = [obj.matrix_world @ Vector(corner) for obj in new if obj.type == "MESH" for corner in obj.bound_box]

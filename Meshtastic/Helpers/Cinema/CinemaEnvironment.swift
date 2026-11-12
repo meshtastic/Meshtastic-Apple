@@ -139,7 +139,7 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 	}
 
 	/// The same sky with nothing below the horizon, for behind real terrain. Only the environments
-	/// that stand on a summit have one.
+	/// that stand on a summit or a rooftop have one.
 	var clearSkyImageName: String? {
 		switch self {
 		case .fireLookout, .castleTower, .cityRooftop: "fire_lookout_puresky"

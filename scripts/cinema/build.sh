@@ -179,8 +179,11 @@ environment space_cupola
 painted space_earth space_earth
 # The globe the app turns behind the cupola's windows: its ground, its night side's city lights and
 # its clouds, as textures. space_earth above stays as the view shown if they can't be loaded.
-uv run --quiet --with pillow==13.0.0 --with numpy==2.5.4 python "$HERE/earth_textures.py"
-for name in space_earth_ground space_earth_lights space_earth_clouds; do
-	sips -s format heic -s formatOptions "$HEIC_QUALITY" "$HERE/out/$name.png" --out "$DEST/$name.heic" >/dev/null
-	echo "Wrote $DEST/$name.heic"
-done
+# A preview leaves the shipped textures alone, like the rooms.
+if [ "$PREVIEW" = 0 ]; then
+	uv run --quiet --with pillow==13.0.0 --with numpy==2.5.4 python "$HERE/earth_textures.py"
+	for name in space_earth_ground space_earth_lights space_earth_clouds; do
+		sips -s format heic -s formatOptions "$HEIC_QUALITY" "$HERE/out/$name.png" --out "$DEST/$name.heic" >/dev/null
+		echo "Wrote $DEST/$name.heic"
+	done
+fi

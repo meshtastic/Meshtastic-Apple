@@ -69,8 +69,9 @@ struct SpatialMapView: View {
 				scene.apply(lookout: cinemaEnvironment.siteKind != nil
 					? SpatialLookout.coordinate(siteID: cinemaEnvironment.siteKind == .rooftop ? rooftopSiteID : lookoutSiteID).flatMap { model.lookoutStands(on: $0) ? $0 : nil }
 					: nil, heading: SpatialLookout.heading(turns: lookoutTurns), model: summitModel)
-				scene.apply(station: cinemaEnvironment == .spaceStation, zoom: liveZoom ?? model.zoom, reduceMotion: reduceMotion)
+				// The pinch's preview first: it sets the scale the station is sized by.
 				scene.apply(target: liveZoom.flatMap { model.circle(forZoom: $0) } ?? model.targetCircle)
+				scene.apply(station: cinemaEnvironment == .spaceStation, zoom: liveZoom ?? model.zoom, reduceMotion: reduceMotion)
 				traffic.applyBaseGlow()
 				// Hidden while a trace route is shown, as on the 2D map, so the two sets of colored
 				// lines and pills can't be mixed up.

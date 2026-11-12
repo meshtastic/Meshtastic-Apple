@@ -95,12 +95,12 @@ enum CinemaEarth {
 			groundMaterial.emissiveColor = .init(color: .white, texture: .init(lights))
 			groundMaterial.emissiveIntensity = 1.4
 		}
-		if let globe = globe("Ground", radius: CinemaOrbit.globeRadius, material: groundMaterial, shade: shade) {
-			globe.position = center
-			globe.orientation = CinemaOrbit.orientation
-			globe.components.set(CinemaSpinComponent(axis: axis, radiansPerSecond: radiansPerSecond))
-			root.addChild(globe)
-		}
+		// Without the ground there's no Earth, so the painted one stands in.
+		guard let ground = globe("Ground", radius: CinemaOrbit.globeRadius, material: groundMaterial, shade: shade) else { return nil }
+		ground.position = center
+		ground.orientation = CinemaOrbit.orientation
+		ground.components.set(CinemaSpinComponent(axis: axis, radiansPerSecond: radiansPerSecond))
+		root.addChild(ground)
 
 		var cloudMaterial = PhysicallyBasedMaterial()
 		cloudMaterial.baseColor = .init(tint: UIColor(white: 0.96, alpha: 1))
@@ -215,23 +215,27 @@ enum CinemaEarth {
 	/// A sparse field of stars on black, the same every time.
 	private static func starTexture() async -> TextureResource? {
 		let width = 4096, height = 2048
-		var pixels = [UInt8](repeating: 0, count: width * height * 4)
-		var seed: UInt64 = 0x9E37_79B9_7F4A_7C15
-		func next() -> Double {
-			seed = seed &* 6_364_136_223_846_793_005 &+ 1_442_695_040_888_963_407
-			return Double(seed >> 11) / Double(1 << 53)
-		}
-		for i in 0..<(width * height) { pixels[i * 4 + 3] = 255 }
-		for _ in 0..<2_400 {
-			// Spread evenly over the sphere, not bunched at the poles.
-			let x = Int(next() * Double(width))
-			let y = Int(acos(1 - 2 * next()) / .pi * Double(height - 1))
-			let level = UInt8(60 + pow(next(), 3) * 195)
-			let i = (y * width + x) * 4
-			pixels[i] = level
-			pixels[i + 1] = level
-			pixels[i + 2] = UInt8(min(Int(level) + 12, 255))
-		}
+		// 32 MB of pixels, made off the main actor.
+		let pixels = await Task.detached(priority: .userInitiated) {
+			var pixels = [UInt8](repeating: 0, count: width * height * 4)
+			var seed: UInt64 = 0x9E37_79B9_7F4A_7C15
+			func next() -> Double {
+				seed = seed &* 6_364_136_223_846_793_005 &+ 1_442_695_040_888_963_407
+				return Double(seed >> 11) / Double(1 << 53)
+			}
+			for i in 0..<(width * height) { pixels[i * 4 + 3] = 255 }
+			for _ in 0..<2_400 {
+				// Spread evenly over the sphere, not bunched at the poles.
+				let x = Int(next() * Double(width))
+				let y = Int(acos(1 - 2 * next()) / .pi * Double(height - 1))
+				let level = UInt8(60 + pow(next(), 3) * 195)
+				let i = (y * width + x) * 4
+				pixels[i] = level
+				pixels[i + 1] = level
+				pixels[i + 2] = UInt8(min(Int(level) + 12, 255))
+			}
+			return pixels
+		}.value
 		return await rgbaTexture(pixels, width: width, height: height, semantic: .color)
 	}
 

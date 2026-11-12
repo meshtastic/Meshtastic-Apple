@@ -7,6 +7,7 @@
 #if os(visionOS)
 import CoreLocation
 import Foundation
+import OSLog
 import RealityKit
 import SwiftUI
 
@@ -980,18 +981,30 @@ extension SpatialSceneController {
 			still: reduceMotion
 		)
 		guard setup != stationSetup else { return }
-		let turning = stationSetup.map { $0.radius != setup.radius || $0.still != setup.still } ?? true
+		let previous = stationSetup
+		let turning = previous.map { $0.radius != setup.radius || $0.still != setup.still } ?? true
 		stationSetup = setup
 		station.position = [0, setup.height, 0]
 		station.scale = SIMD3(repeating: setup.scale)
 		guard turning else { return }
+		// A zoom only changes the radius: carry on from where the station is on its orbit.
+		let current = stationOrbit.transform
+		let flat = SIMD3<Float>(current.translation.x, 0, current.translation.z)
 		stationOrbit.stopAllAnimations()
-		stationOrbit.transform = Transform(translation: [setup.radius, 0, 0])
+		if let previous, !previous.still, !setup.still, simd_length(flat) > 0 {
+			stationOrbit.transform = Transform(rotation: current.rotation, translation: simd_normalize(flat) * setup.radius)
+		} else {
+			stationOrbit.transform = Transform(translation: [setup.radius, 0, 0])
+		}
 		guard !setup.still else { return }
 		let orbit = OrbitAnimation(duration: SpatialStation.orbitPeriod, axis: [0, 1, 0], startTransform: stationOrbit.transform,
 		                           spinClockwise: false, orientToPath: true, rotationCount: 1, bindTarget: .transform, repeatMode: .repeat)
-		if let animation = try? AnimationResource.generate(with: orbit) {
-			stationOrbit.playAnimation(animation)
+		do {
+			stationOrbit.playAnimation(try AnimationResource.generate(with: orbit))
+		} catch {
+			Logger.services.error("🛰️ [3D Map] Couldn't make the space station's orbit: \(error.localizedDescription, privacy: .public)")
+			// Tried again on the next update.
+			stationSetup = nil
 		}
 	}
 }

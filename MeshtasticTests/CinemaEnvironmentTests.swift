@@ -25,7 +25,7 @@ struct CinemaEnvironmentTests {
 		}
 	}
 
-	@Test("every cutout ships the sky painted behind it, and only a summit has a clear one")
+	@Test("every cutout ships the sky painted behind it, and only one standing on a summit or rooftop has a clear one")
 	func cutoutsHaveSkies() {
 		for environment in CinemaEnvironment.allCases {
 			if environment.isCutout {
@@ -34,7 +34,7 @@ struct CinemaEnvironmentTests {
 			} else {
 				#expect(environment.skyImageName == nil)
 			}
-			if environment.standsOnSummit {
+			if environment.siteKind != nil {
 				#expect(environment.clearSkyImageName.flatMap(cinemaEnvironmentImageURL(named:)) != nil, "\(environment) has no clear sky")
 			} else {
 				#expect(environment.clearSkyImageName == nil)
@@ -42,11 +42,11 @@ struct CinemaEnvironmentTests {
 		}
 	}
 
-	@Test("the space station is a cutout with Earth behind it, on no summit")
+	@Test("the space station is a cutout with Earth behind it, on no summit or rooftop")
 	func spaceStation() {
 		let station = CinemaEnvironment.spaceStation
 		#expect(station.isCutout)
-		#expect(!station.standsOnSummit)
+		#expect(station.siteKind == nil)
 		#expect(station.skyImageName == "space_earth")
 		#expect(!station.hasStone)
 		#expect(!station.hasScrolls)

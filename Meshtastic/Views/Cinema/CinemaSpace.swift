@@ -475,8 +475,14 @@ struct CinemaSpace: View {
 	private func replaceBackdrop(clearSky: Bool, stillWanted: () -> Bool = { true }) async {
 		let environment = environment
 		let stone = stone
-		let side = earthSide
-		let next = await CinemaBackdrop.make(environment, stone: stone, clearSky: clearSky, earthSide: side, earthSpin: earthSpin)
+		var side = earthSide
+		var next = await CinemaBackdrop.make(environment, stone: stone, clearSky: clearSky, earthSide: side, earthSpin: earthSpin)
+		// Day or night changed while the first backdrop was made: its own task skips a change
+		// before there's a backdrop, so make it again here for the side now chosen.
+		while !Task.isCancelled, environment == self.environment, stone == self.stone, side != earthSide {
+			side = earthSide
+			next = await CinemaBackdrop.make(environment, stone: stone, clearSky: clearSky, earthSide: side, earthSpin: earthSpin)
+		}
 		guard !Task.isCancelled, environment == self.environment, stone == self.stone, side == earthSide, stillWanted() else { return }
 		// The speed may have changed while the globe was made.
 		CinemaEarth.setSpin(earthSpin, in: next)
