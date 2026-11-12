@@ -54,10 +54,11 @@ struct WidgetTelemetryTests {
 		#expect(nodes.map(\.num) == [1, 3])
 	}
 
-	@Test func defaultsToTheFirstFourInTheDesignOrder() {
+	@Test func showsEveryReportedReadingLessTheHiddenOnes() {
 		let reading = TelemetrySnapshot(time: now, temperature: 20, relativeHumidity: 50, barometricPressure: 1013, lux: 300, soilMoisture: 40, co2: 800)
-		#expect(TelemetryMetric.defaults(for: reading) == [.temperature, .relativeHumidity, .barometricPressure, .dewPoint])
-		#expect(TelemetryMetric.defaults(for: nil).isEmpty)
+		#expect(TelemetryMetric.shown(in: reading, hiding: []) == [.temperature, .relativeHumidity, .barometricPressure, .dewPoint, .lux, .soilMoisture, .co2])
+		#expect(TelemetryMetric.shown(in: reading, hiding: [.dewPoint, .lux]) == [.temperature, .relativeHumidity, .barometricPressure, .soilMoisture, .co2])
+		#expect(TelemetryMetric.shown(in: nil, hiding: []).isEmpty)
 	}
 
 	@Test func offersOnlyMetricsTheNodeReported() {

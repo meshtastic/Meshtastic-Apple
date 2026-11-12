@@ -94,10 +94,6 @@ enum TelemetryMetric: String, CaseIterable, Codable, Identifiable {
 		return (digit - 1, rawValue.hasSuffix("Voltage"))
 	}
 
-	/// How many metrics a widget can be set to.
-	static let maximumCount = 8
-	/// How many the widget shows before someone picks: a full large widget.
-	static let defaultCount = 4
 
 	var id: String { rawValue }
 
@@ -162,9 +158,9 @@ enum TelemetryMetric: String, CaseIterable, Codable, Identifiable {
 		}
 	}
 
-	/// The metrics to show before someone picks: the first ones the reading has.
-	static func defaults(for telemetry: TelemetrySnapshot?) -> [TelemetryMetric] {
-		Array((telemetry?.reportedMetrics ?? []).prefix(defaultCount))
+	/// The readings a widget shows: every one the node reports, in this order, less the hidden ones.
+	static func shown(in telemetry: TelemetrySnapshot?, hiding hidden: [TelemetryMetric]) -> [TelemetryMetric] {
+		(telemetry?.reportedMetrics ?? []).filter { !hidden.contains($0) }
 	}
 
 	/// The formatted reading, or nil when the reading doesn't have it. The

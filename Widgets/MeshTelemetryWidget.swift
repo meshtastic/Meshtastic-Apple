@@ -4,12 +4,12 @@
 //
 //  Copyright(c) Garth Vander Houwen 11/11/26.
 //
-//  One node's environment readings as node details' tiles (meshtastic/design#179).
-//  Small shows the first reading, medium the first four, large four at a time
-//  with a page button when more are picked; the extra large portrait size (iOS
-//  27 and Vision Pro) fits up to six and pages beyond that, and Vision Pro's
-//  extra large board shows all eight. It reads the snapshot the app writes and never sends anything
-//  over the mesh.
+//  One node's telemetry as node details' tiles (meshtastic/design#179): every
+//  reading it reports, less any the person hides. Small shows the first, medium
+//  the first four, large four at a time with a page button when there are more;
+//  extra large portrait (iOS 27 and Vision Pro) fits up to six and pages beyond
+//  that, and Vision Pro's extra large board shows eight at a time. It reads the
+//  snapshot the app writes and never sends anything over the mesh.
 //
 
 import AppIntents
@@ -77,8 +77,7 @@ struct TelemetryProvider: AppIntentTimelineProvider {
 		let configured = configuration.node
 			?? TelemetryNodeQuery.telemetryNodes(in: snapshot).first.map(TelemetryNodeEntity.init)
 		let node = snapshot?.nodes.first { String($0.num) == configured?.id }
-		let picked = (configuration.metrics ?? []).map(\.metric)
-		let metrics = picked.isEmpty ? TelemetryMetric.defaults(for: node?.telemetry) : Array(picked.prefix(TelemetryMetric.maximumCount))
+		let metrics = TelemetryMetric.shown(in: node?.telemetry, hiding: (configuration.hidden ?? []).map(\.metric))
 		let storedPage = configured?.nodeNum.map(TelemetryWidgetPage.storedPage(for:)) ?? 0
 		return TelemetryEntry(date: date, configured: configured, node: node, metrics: metrics, storedPage: storedPage)
 	}
@@ -199,7 +198,7 @@ struct TelemetryWidgetView: View {
 				bestFitGrid(Array(entry.metrics.prefix(4)), telemetry: telemetry)
 			#if os(visionOS)
 			case .systemExtraLarge:
-				grid(Array(entry.metrics.prefix(TelemetryMetric.maximumCount)), columns: 4, telemetry: telemetry)
+				grid(TelemetryWidgetPage.metrics(entry.metrics, page: page, pageSize: pageSize), columns: 4, telemetry: telemetry)
 			#endif
 			default:
 				if pageCount > 1 {
@@ -222,12 +221,23 @@ struct TelemetryWidgetView: View {
 
 	/// Readings on one page of this size.
 	private var pageSize: Int {
-		isExtraLargePortrait ? TelemetryWidgetPage.extraLargePortraitPageSize : TelemetryWidgetPage.pageSize
+		if isExtraLargePortrait { return TelemetryWidgetPage.extraLargePortraitPageSize }
+		if isExtraLarge { return TelemetryWidgetPage.extraLargePageSize }
+		return TelemetryWidgetPage.pageSize
+	}
+
+	/// Vision Pro's board size.
+	private var isExtraLarge: Bool {
+		#if os(visionOS)
+		family == .systemExtraLarge
+		#else
+		false
+		#endif
 	}
 
 	/// Pages for the sizes that page: large, and extra large portrait with more than six readings.
 	private var pageCount: Int {
-		family == .systemLarge || isExtraLargePortrait ? entry.pageCount(pageSize: pageSize) : 1
+		family == .systemLarge || isExtraLargePortrait || isExtraLarge ? entry.pageCount(pageSize: pageSize) : 1
 	}
 
 	private var page: Int {

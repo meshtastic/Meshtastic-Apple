@@ -25,18 +25,18 @@
             "live",
             "connection",
             "activity",
+            "time",
             "settings",
+            "readings",
             "power",
             "pin",
             "list",
             "first",
             "choose",
             "widgets",
-            "time",
-            "then",
-            "size"
+            "then"
         ],
-        "charCount": 7640
+        "charCount": 7693
     },
     {
         "id": "carplay",
@@ -793,8 +793,8 @@
             "pro",
             "radio",
             "app",
-            "settings",
             "node",
+            "settings",
             "new",
             "now",
             "nodes",
@@ -808,15 +808,15 @@
             "bluetooth",
             "real",
             "jun",
-            "view",
             "shows",
+            "view",
             "radios",
             "page",
             "oct",
             "lookout",
             "device"
         ],
-        "charCount": 16694
+        "charCount": 16736
     },
     {
         "id": "adding-features",

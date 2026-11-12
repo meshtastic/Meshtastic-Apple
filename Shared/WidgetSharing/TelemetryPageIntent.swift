@@ -18,8 +18,10 @@ enum TelemetryWidgetPage {
 	static let kind = "MeshTelemetry"
 	/// Readings on one page of the large size.
 	static let pageSize = 4
-	/// Readings on one page of the extra large portrait size, with more than this picked.
+	/// Readings on one page of the extra large portrait size, with more than this shown.
 	static let extraLargePortraitPageSize = 6
+	/// Readings on one page of Vision Pro's extra large board.
+	static let extraLargePageSize = 8
 
 	/// WidgetKit doesn't say which copy of a widget is which, so the page is
 	/// kept per node: two large widgets on the same node flip together.

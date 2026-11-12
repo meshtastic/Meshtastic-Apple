@@ -106,14 +106,13 @@ struct TelemetryMetricQuery: EntityQuery {
 
 struct TelemetryWidgetIntent: WidgetConfigurationIntent {
 	static let title: LocalizedStringResource = "Telemetry"
-	static let description = IntentDescription("Pick a node and the readings to show.")
+	static let description = IntentDescription("Pick a node, and any of its readings to leave out.")
 
 	@Parameter(title: "Node")
 	var node: TelemetryNodeEntity?
 
-	/// Every size takes the full list, so shrinking a widget keeps the first ones. No fixed
-	/// size: a fixed one shows that many empty rows, more than the edit card fits. The widget
-	/// uses the first `TelemetryMetric.maximumCount`.
-	@Parameter(title: "Readings")
-	var metrics: [TelemetryMetricEntity]?
+	/// The widget shows every reading the node reports except these. Settings can't start with
+	/// a list filled in from the node, so the list is of readings to leave out rather than to show.
+	@Parameter(title: "Hidden Readings")
+	var hidden: [TelemetryMetricEntity]?
 }

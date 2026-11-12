@@ -8329,6 +8329,9 @@
         }
       }
     },
+    "Pick a node, and any of its readings to leave out." : {
+      "comment" : "Telemetry widget settings description"
+    },
     "Pick a trace route to fly along it and leave it drawn on the map." : {
       "comment" : "VoiceOver hint for the spatial map trace route menu",
       "localizations" : {
@@ -61986,6 +61989,9 @@
         }
       }
     },
+    "Hidden Readings" : {
+      "comment" : "Telemetry widget settings: readings to leave off the widget"
+    },
     "Hide alerts" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -110846,9 +110852,6 @@
         }
       }
     },
-    "Pick a node and the readings to show." : {
-      "comment" : "Environment widget settings description"
-    },
     "Pin %lld" : {
       "localizations" : {
         "da" : {
@@ -117459,9 +117462,6 @@
           }
         }
       }
-    },
-    "Readings" : {
-      "comment" : "Environment widget settings: the readings to show, in order"
     },
     "Readings can vary quickly with nearby transmitters, antenna setup, filters, and local interference." : {
       "comment" : "A description of how noise floor readings can change.",
