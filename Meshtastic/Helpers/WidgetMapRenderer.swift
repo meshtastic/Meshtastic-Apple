@@ -143,6 +143,8 @@ final class WidgetMapRenderer {
 			guard !Task.isCancelled else { return false }
 			guard let tiles, let image = drawMap(tiles: tiles, rect: frame.rect, size: frame.size, pins: pins, radioNum: radioNum) else {
 				Logger.services.warning("🧩 Widget map render produced no image.")
+				// The tall size can show the wide map, so keep the other two.
+				if shape == .tall { continue }
 				return false
 			}
 			images[shape] = image

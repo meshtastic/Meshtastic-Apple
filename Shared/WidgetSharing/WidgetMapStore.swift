@@ -143,8 +143,10 @@ enum WidgetMapStore {
 		containerURL?.appendingPathComponent(metaFilename)
 	}
 
-	/// Writes the images and then the meta sidecar. Returns false when
-	/// anything failed, so the renderer can retry instead of marking success.
+	/// Writes the images and then the meta sidecar, and removes the image of
+	/// any shape left out, so the widget doesn't show an older map. Returns
+	/// false when anything failed, so the renderer can retry instead of
+	/// marking success.
 	static func save(images: [WidgetMapShape: Data], meta: WidgetMapMeta) -> Bool {
 		guard let metaURL else {
 			logger.warning("No app group container; widget map not written.")
@@ -155,6 +157,11 @@ enum WidgetMapStore {
 			for (shape, image) in images {
 				guard let url = imageURL(shape) else { return false }
 				try image.write(to: url, options: options)
+			}
+			for shape in WidgetMapShape.allCases where images[shape] == nil {
+				if let url = imageURL(shape) {
+					try? FileManager.default.removeItem(at: url)
+				}
 			}
 			try encode(meta).write(to: metaURL, options: options)
 		} catch {
