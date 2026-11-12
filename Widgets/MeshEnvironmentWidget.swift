@@ -145,7 +145,6 @@ struct EnvironmentWidgetView: View {
 					tiles(environment)
 						// The large size spaces its tiles from the edges itself.
 						.padding(.horizontal, usesEvenEdges ? 0 : Self.margin)
-						.opacity(entry.isStale ? 0.55 : 1)
 					if showsDetail {
 						EnvironmentFooter(entry: entry, showsPageButton: family == .systemLarge)
 							.padding(.horizontal, Self.margin)
@@ -304,15 +303,18 @@ private struct EnvironmentFooter: View {
 	var body: some View {
 		HStack(spacing: 6) {
 			if let time = entry.environment?.time {
+				// An old reading isn't dimmed, which made the tiles hard to read; the line
+				// turns orange and says so instead.
 				Group {
 					if entry.isStale {
-						Text("Over 2 hours old · \(time, style: .relative) ago")
+						Label("Over 2 hours old · \(time, style: .relative) ago", systemImage: "clock.badge.exclamationmark")
+							.foregroundStyle(.orange)
 					} else {
 						Text("Updated \(time, style: .relative) ago")
+							.foregroundStyle(.secondary)
 					}
 				}
 				.font(.caption2)
-				.foregroundStyle(.secondary)
 				.lineLimit(1)
 				.minimumScaleFactor(0.7)
 			}

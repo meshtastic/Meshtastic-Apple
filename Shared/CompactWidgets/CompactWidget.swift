@@ -17,6 +17,7 @@ extension View {
 }
 
 private struct CompactWidgetTile: ViewModifier {
+
 	/// The side the content is laid out at. A node details tile on a phone is about 165 points,
 	/// so its readings come out about a third larger than this.
 	private static let layoutSide: CGFloat = 125
