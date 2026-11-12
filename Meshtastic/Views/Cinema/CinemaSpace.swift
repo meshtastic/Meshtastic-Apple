@@ -220,11 +220,17 @@ struct CinemaSpace: View {
 		.task(id: chosenSiteID) {
 			await refreshLookout()
 		}
+		// A sky deck looks out from its tower's face: the screen turns to face out with it when a
+		// tower is picked, when the sky deck is entered with one already picked, and when its tower
+		// is first found. Dial turns after that stay.
 		.onChange(of: skyDeckSiteID) {
-			// A sky deck looks out from its tower's face: the screen turns to face out with it.
-			if environment.siteKind == .skyDeck, let facing = lookout.site(for: skyDeckSiteID)?.facing {
-				lookoutTurns = SpatialLookout.turns(nearest: facing)
-			}
+			alignSkyDeckTurn()
+		}
+		.onChange(of: environment) {
+			alignSkyDeckTurn()
+		}
+		.onChange(of: lookout.site(for: skyDeckSiteID) != nil) { _, found in
+			if found { alignSkyDeckTurn() }
 		}
 		.onChange(of: lookout.site(for: skyDeckSiteID), initial: true) { _, site in
 			// The map hangs its deck at this tower's roof, against the face it looks out from.
@@ -544,6 +550,12 @@ struct CinemaSpace: View {
 		offlineMaps.regions.map { "\($0.id)|\($0.terrain?.downloadedAt.timeIntervalSince1970 ?? 0)" }
 	}
 
+	private func alignSkyDeckTurn() {
+		if environment.siteKind == .skyDeck, let facing = lookout.site(for: skyDeckSiteID)?.facing {
+			lookoutTurns = SpatialLookout.turns(nearest: facing)
+		}
+	}
+
 	private func refreshLookout() async {
 		guard let kind = environment.siteKind else {
 			terrain?.removeFromParent()
@@ -560,6 +572,13 @@ struct CinemaSpace: View {
 		// the id refreshes again.
 		if lookout.site(for: chosenSiteID) == nil, let moved = lookout.site(near: chosenSiteID, kind: kind) {
 			siteIDBinding.wrappedValue = moved.id
+			return
+		}
+		// The search is done and the sky deck's tower isn't in it: forget the tower, so the 3D map
+		// stops hanging a deck on it. Setting the id refreshes again, to the painted view.
+		if kind == .skyDeck, !skyDeckSiteID.isEmpty, lookout.site(for: skyDeckSiteID) == nil {
+			skyDeckSiteID = ""
+			skyDeckTower = ""
 			return
 		}
 		let site = lookout.site(for: chosenSiteID)

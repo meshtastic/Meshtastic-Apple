@@ -63,8 +63,9 @@ enum RooftopSites {
 
 	/// Where a sky deck hangs off `rooftop`'s tower, and the true bearing it looks out along: out
 	/// from the middle of the face whose view the other tall towers in `others` block least, nearer
-	/// and taller ones the most, `deckOverhang` out from it. Nil when the roof has no outline or no
-	/// face wide enough.
+	/// and taller ones the most, `deckOverhang` out from it. Buildings under half the tower's height
+	/// are below the deck and don't count, which also leaves out the tower's own podium. Nil when
+	/// the roof has no outline or no face wide enough.
 	static func deck(on rooftop: Rooftop, among others: [Rooftop]) -> (coordinate: CLLocationCoordinate2D, facing: Double)? {
 		guard rooftop.outline.count >= 3 else { return nil }
 		let origin = rooftop.coordinate
@@ -83,7 +84,7 @@ enum RooftopSites {
 			area += p.x * q.y - q.x * p.y
 		}
 		if area < 0 { points.reverse() }
-		let towers = others.filter { simd_length(local($0.coordinate)) > 30 }.map { (place: local($0.coordinate), height: $0.height) }
+		let towers = others.filter { simd_length(local($0.coordinate)) > 30 && $0.height >= rooftop.height / 2 }.map { (place: local($0.coordinate), height: $0.height) }
 		struct Face {
 			let score: Double
 			let length: Double
@@ -150,12 +151,23 @@ enum RooftopSites {
 	/// basemap has, where the parts are, and chooses from both. `decode` reads the buildings in a
 	/// box, using at most the given number of tiles; nil when cancelled.
 	static func search(in box: GeoBounds, maxTiles: Int, decode: (GeoBounds, Int) -> [SpatialBuildingFootprint]?) -> [Rooftop]? {
+		searchWithNeighbors(in: box, maxTiles: maxTiles, decode: decode)?.tallest
+	}
+
+	/// Up to this many tall buildings are kept to score a sky deck's faces against.
+	static let neighborCount = 150
+	/// Buildings closer together than this, in meters, count as one when scoring a face.
+	static let neighborSpacing = 30.0
+
+	/// `search`'s rooftops, and the tall buildings round them before the picker's limit and
+	/// spacing apply: a tower 70 m from another is left out of the picker, but still blocks the view.
+	static func searchWithNeighbors(in box: GeoBounds, maxTiles: Int, decode: (GeoBounds, Int) -> [SpatialBuildingFootprint]?) -> (tallest: [Rooftop], neighbors: [Rooftop])? {
 		guard var footprints = decode(box, maxTiles) else { return nil }
 		for refine in refineBoxes(around: tallest(footprints), within: box) {
 			guard let fine = decode(refine, refineTiles) else { return nil }
 			footprints += fine
 		}
-		return tallest(footprints)
+		return (tallest(footprints), tallest(footprints, count: neighborCount, spacing: neighborSpacing))
 	}
 
 	/// A box `radius` round each rooftop, kept inside `box`, with boxes that overlap joined into one,

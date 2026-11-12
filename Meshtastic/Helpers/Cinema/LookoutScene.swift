@@ -164,12 +164,13 @@ final class LookoutScene {
 		let files = OfflineMapManager.persistedRegionFiles()
 		let tiles = Self.rooftopSearchTiles
 		let search = Task.detached(priority: .userInitiated) {
-			RooftopSites.search(in: box, maxTiles: tiles) { bounds, maxTiles in
+			RooftopSites.searchWithNeighbors(in: box, maxTiles: tiles) { bounds, maxTiles in
 				SpatialBuildings.decode(bounds: bounds, files: files, maxTiles: maxTiles)
-			} ?? []
+			} ?? ([], [])
 		}
-		let tallest = await withTaskCancellationHandler { await search.value } onCancel: { search.cancel() }
-		let decks = tallest.compactMap { rooftop in RooftopSites.deck(on: rooftop, among: tallest).map { (rooftop, $0) } }
+		let (tallest, neighbors) = await withTaskCancellationHandler { await search.value } onCancel: { search.cancel() }
+		// Faces are scored against every tall building near, not just the ones the picker keeps.
+		let decks = tallest.compactMap { rooftop in RooftopSites.deck(on: rooftop, among: neighbors).map { (rooftop, $0) } }
 		let grounds = await store.elevations(at: decks.map(\.1.coordinate))
 		return zip(decks, grounds).compactMap { deck, ground in
 			let (rooftop, place) = deck

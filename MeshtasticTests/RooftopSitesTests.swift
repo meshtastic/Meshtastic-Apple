@@ -144,7 +144,7 @@ struct RooftopSitesTests {
 	func deckFacesAwayFromTowers() throws {
 		let tower = rooftop(side: 40, height: 250)
 		// Tall towers to the north and the east; the west and south are open, the west a little less.
-		let others = [tower, rooftop(side: 30, north: 300, height: 220), rooftop(side: 30, east: 300, height: 200), rooftop(side: 30, east: -900, height: 60)]
+		let others = [tower, rooftop(side: 30, north: 300, height: 220), rooftop(side: 30, east: 300, height: 200), rooftop(side: 30, east: -900, height: 150)]
 		let deck = try #require(RooftopSites.deck(on: tower, among: others))
 		#expect(abs(deck.facing - 180) < 1, "\(deck.facing)")
 		// The seat is over the street, the overhang out from the middle of the south face.
@@ -164,6 +164,28 @@ struct RooftopSitesTests {
 		let deck = try #require(RooftopSites.deck(on: RooftopSites.Rooftop(coordinate: center, height: 200, outline: outline), among: []))
 		#expect(abs(deck.facing) < 1 || abs(deck.facing - 180) < 1, "\(deck.facing)")
 		#expect(RooftopSites.deck(on: RooftopSites.Rooftop(coordinate: center, height: 200), among: []) == nil)
+	}
+
+	@Test("a tower close enough to be left out of the picker still blocks a sky deck's view")
+	func deckScoredAgainstNeighbors() throws {
+		let tower = square(side: 40, height: 250)
+		let neighbor = square(side: 30, north: 70, height: 230)
+		let box = GeoBounds(minLon: center.longitude - 0.01, minLat: center.latitude - 0.01, maxLon: center.longitude + 0.01, maxLat: center.latitude + 0.01)
+		let found = try #require(RooftopSites.searchWithNeighbors(in: box, maxTiles: 160) { _, _ in [tower, neighbor] })
+		#expect(found.tallest.map(\.height) == [250])
+		#expect(found.neighbors.map(\.height) == [250, 230])
+		let picked = try #require(found.tallest.first)
+		let deck = try #require(RooftopSites.deck(on: picked, among: found.neighbors))
+		#expect(abs(deck.facing) > 45 && abs(deck.facing - 360) > 45, "\(deck.facing)")
+	}
+
+	@Test("a building under half the tower's height, like its podium, doesn't count against a face")
+	func deckIgnoresLowBuildings() throws {
+		let tower = rooftop(side: 40, height: 250)
+		let podium = rooftop(side: 30, east: 60, height: 100)
+		let alone = try #require(RooftopSites.deck(on: tower, among: []))
+		let withPodium = try #require(RooftopSites.deck(on: tower, among: [podium]))
+		#expect(alone.facing == withPodium.facing)
 	}
 
 	@Test("the point behind a sky deck's seat is inside the tower it hangs off")
