@@ -28,7 +28,7 @@ struct CinemaPanel: View {
 	/// Whether the 3D map is showing or on its way; the button to open it is only there while not.
 	let spatialMapOpen: Bool
 	let onOpenSpatialMap: () -> Void
-	/// Opens the 3D map zoomed in on the city rooftop, with the buildings on.
+	/// Opens the 3D map zoomed in on the city rooftop, or the sky deck's tower, with the buildings on.
 	let onShowRooftop: () -> Void
 	let onLeave: () -> Void
 	/// Which side of Earth is under the space station's cupola, and how fast the ground goes by.
@@ -69,8 +69,10 @@ struct CinemaPanel: View {
 					.frame(maxWidth: 260)
 				}
 			}
-			if environment.siteKind == .rooftop, !sites.isEmpty {
-				Picker(String(localized: "Rooftop", comment: "Cinema: picker for the building the city rooftop stands on"), selection: $siteID) {
+			if environment.siteKind == .rooftop || environment.siteKind == .skyDeck, !sites.isEmpty {
+				Picker(environment.siteKind == .skyDeck
+					? String(localized: "Tower", comment: "Cinema: picker for the tower the sky deck hangs off")
+					: String(localized: "Rooftop", comment: "Cinema: picker for the building the city rooftop stands on"), selection: $siteID) {
 					Text("City skyline", comment: "Cinema: the city rooftop's rendered skyline, with no real buildings")
 						.tag("")
 					ForEach(sites) { site in
@@ -81,7 +83,11 @@ struct CinemaPanel: View {
 				if !siteID.isEmpty {
 					LookoutTurnDial(title: environment.turnDialTitle, turns: $turns)
 					Button(action: onShowRooftop) {
-						Label(String(localized: "Show Rooftop", comment: "Cinema: button that opens the 3D map zoomed in on the city rooftop, with the buildings on"), systemImage: "building.2.crop.circle")
+						if environment.siteKind == .skyDeck {
+							Label(String(localized: "Show Tower", comment: "Cinema: button that opens the 3D map zoomed in on the tower the sky deck hangs off, with the buildings on"), systemImage: "building.2.crop.circle")
+						} else {
+							Label(String(localized: "Show Rooftop", comment: "Cinema: button that opens the 3D map zoomed in on the city rooftop, with the buildings on"), systemImage: "building.2.crop.circle")
+						}
 					}
 				}
 			} else if environment.standsOnSummit, !sites.isEmpty {
@@ -130,7 +136,9 @@ struct CinemaPanel: View {
 			.formatted(.measurement(width: .abbreviated, usage: .asProvided, numberFormatStyle: .number.precision(.fractionLength(0))))
 		let named: String
 		if site.rooftop != nil {
-			named = String(localized: "\(height) tall", comment: "Cinema: a building in the rooftop picker, by how tall it is")
+			let tall = String(localized: "\(height) tall", comment: "Cinema: a building in the rooftop picker, by how tall it is")
+			// A sky deck says which way it looks out from its tower first.
+			named = site.facing.map { "\(SpatialLookout.facing(heading: $0)), \(tall)" } ?? tall
 		} else {
 			named = site.name.map { "\($0), \(height)" } ?? height
 		}

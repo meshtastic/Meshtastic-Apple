@@ -32,6 +32,8 @@ enum LookoutSiteKind: String, Sendable {
 	case summit
 	/// The roof of one of the tallest buildings in the basemaps.
 	case rooftop
+	/// The face of one of the tallest buildings, for the sky deck hung off it.
+	case skyDeck
 }
 
 /// A place a cinema environment can stand: a summit, one of the highest points in the terrain the
@@ -43,8 +45,15 @@ struct LookoutSite: Identifiable, Hashable, Codable, Sendable {
 	let elevation: Float
 	/// The peak's name from the downloaded basemap, if it has one.
 	let name: String?
-	/// On a rooftop, how tall the building is; nil on a summit.
+	/// On a rooftop or a sky deck, how tall the building is; nil on a summit.
 	var rooftop: Float?
+	/// For a sky deck, the true bearing it hangs out from its tower along; nil elsewhere.
+	var facing: Double?
+
+	/// Whether it's a sky deck: a building's height, and a bearing out from its face.
+	var isSkyDeck: Bool {
+		rooftop != nil && facing != nil
+	}
 
 	/// How far above the ground the floor the viewer sits on is: the lookout's tower on a summit, the
 	/// building on a rooftop.
@@ -374,8 +383,10 @@ enum LookoutTerrain {
 		var covers = [OfflineLandCover?](repeating: nil, count: rings * columns)
 		var distances = [Double](repeating: 0, count: rings)
 		var lowest = Float.greatestFiniteMagnitude
+		// A sky deck's glass floor shows the ground straight down, so its rings start right under it.
+		let inner = site.isSkyDeck ? 1.5 : innerRadius
 		for ring in 0..<rings {
-			let distance = innerRadius * pow(outerRadius / innerRadius, Double(ring) / Double(rings - 1))
+			let distance = inner * pow(outerRadius / inner, Double(ring) / Double(rings - 1))
 			distances[ring] = distance
 			let zoom = distance < 1_500 ? 14 : distance < 6_000 ? 12 : distance < 25_000 ? 11 : 10
 			for spoke in 0..<columns {

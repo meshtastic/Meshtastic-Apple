@@ -66,16 +66,21 @@ enum LookoutSiteCache {
 
 	/// Forgets the kept sites, so the next search runs again.
 	static func clear() {
-		for kind in [LookoutSiteKind.summit, .rooftop] {
+		for kind in [LookoutSiteKind.summit, .rooftop, .skyDeck] {
 			guard let url = fileURL(kind) else { continue }
 			try? FileManager.default.removeItem(at: url)
 		}
 	}
 
-	/// Each kind in its own file, so moving between the lookout and the rooftop keeps both lists.
+	/// Each kind in its own file, so moving between the lookout, the rooftop and the sky deck keeps
+	/// each list.
 	private static func fileURL(_ kind: LookoutSiteKind) -> URL? {
-		FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first?
-			.appendingPathComponent(kind == .summit ? "LookoutSites.json" : "RooftopSites.json")
+		let name = switch kind {
+		case .summit: "LookoutSites.json"
+		case .rooftop: "RooftopSites.json"
+		case .skyDeck: "SkyDeckSites.json"
+		}
+		return FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first?.appendingPathComponent(name)
 	}
 }
 #endif

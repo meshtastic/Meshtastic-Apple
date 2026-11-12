@@ -120,4 +120,58 @@ struct RooftopSitesTests {
 		#expect(abs(RooftopSites.roofArea(square(side: 20, height: 10).outline) - 400) < 4)
 		#expect(RooftopSites.roofArea([center]) == 0)
 	}
+
+	// MARK: Sky deck
+
+	/// A rooftop on a square `side` meters across, `east` and `north` meters from the center.
+	private func rooftop(side: Double, east: Double = 0, north: Double = 0, height: Double) -> RooftopSites.Rooftop {
+		let footprint = square(side: side, east: east, north: north, height: height)
+		let middle = CLLocationCoordinate2D(
+			latitude: footprint.outline.map(\.latitude).reduce(0, +) / 4,
+			longitude: footprint.outline.map(\.longitude).reduce(0, +) / 4
+		)
+		return RooftopSites.Rooftop(coordinate: middle, height: height, outline: footprint.outline)
+	}
+
+	/// Meters east and north of `b` from `a`.
+	private func offset(_ a: CLLocationCoordinate2D, _ b: CLLocationCoordinate2D) -> SIMD2<Double> {
+		let metersPerLat = SpatialFrame.metersPerDegreeLatitude
+		let metersPerLon = metersPerLat * cos(a.latitude * .pi / 180)
+		return SIMD2((b.longitude - a.longitude) * metersPerLon, (b.latitude - a.latitude) * metersPerLat)
+	}
+
+	@Test("a sky deck hangs out from the face whose view the other towers block least")
+	func deckFacesAwayFromTowers() throws {
+		let tower = rooftop(side: 40, height: 250)
+		// Tall towers to the north and the east; the west and south are open, the west a little less.
+		let others = [tower, rooftop(side: 30, north: 300, height: 220), rooftop(side: 30, east: 300, height: 200), rooftop(side: 30, east: -900, height: 60)]
+		let deck = try #require(RooftopSites.deck(on: tower, among: others))
+		#expect(abs(deck.facing - 180) < 1, "\(deck.facing)")
+		// The seat is over the street, the overhang out from the middle of the south face.
+		let seat = offset(tower.coordinate, deck.coordinate)
+		#expect(abs(seat.x) < 0.5)
+		#expect(abs(seat.y + 20 + RooftopSites.deckOverhang) < 0.5, "\(seat)")
+	}
+
+	@Test("with nothing round it, a sky deck hangs off the widest face, and none off a roof with no outline")
+	func deckOnWidestFace() throws {
+		let metersPerLat = SpatialFrame.metersPerDegreeLatitude
+		let metersPerLon = metersPerLat * cos(center.latitude * .pi / 180)
+		// 60 m east to west, 20 m north to south: the north and south faces are the wide ones.
+		let outline = [(-30.0, -10.0), (30, -10), (30, 10), (-30, 10)].map {
+			CLLocationCoordinate2D(latitude: center.latitude + $0.1 / metersPerLat, longitude: center.longitude + $0.0 / metersPerLon)
+		}
+		let deck = try #require(RooftopSites.deck(on: RooftopSites.Rooftop(coordinate: center, height: 200, outline: outline), among: []))
+		#expect(abs(deck.facing) < 1 || abs(deck.facing - 180) < 1, "\(deck.facing)")
+		#expect(RooftopSites.deck(on: RooftopSites.Rooftop(coordinate: center, height: 200), among: []) == nil)
+	}
+
+	@Test("the point behind a sky deck's seat is inside the tower it hangs off")
+	func towerBehindDeck() throws {
+		let tower = rooftop(side: 40, height: 250)
+		let deck = try #require(RooftopSites.deck(on: tower, among: [tower]))
+		#expect(!SpatialBuildings.contains(tower.outline, deck.coordinate))
+		#expect(SpatialBuildings.contains(tower.outline, RooftopSites.tower(behind: deck.coordinate, facing: deck.facing)))
+	}
+
 }

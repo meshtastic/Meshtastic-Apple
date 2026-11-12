@@ -33,6 +33,8 @@ struct SpatialMapView: View {
 	@AppStorage("cinemaEnvironment") private var cinemaEnvironment: CinemaEnvironment = .sarTent
 	@AppStorage("cinemaLookoutSite") private var lookoutSiteID = ""
 	@AppStorage("cinemaRooftopSite") private var rooftopSiteID = ""
+	@AppStorage(SpatialSkyDeck.siteKey) private var skyDeckSiteID = ""
+	@AppStorage(SpatialSkyDeck.towerKey) private var skyDeckTower = ""
 	@AppStorage(SpatialLookout.turnsKey) private var lookoutTurns = 0
 	@AppStorage(CastleStone.key) private var castleStone: CastleStone = .gray
 	@Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -42,8 +44,24 @@ struct SpatialMapView: View {
 		switch cinemaEnvironment {
 		case .castleTower: .castleTower(castleStone)
 		case .cityRooftop: .cityRooftop
+		case .skyDeck: .skyDeck
 		default: .fireLookout
 		}
+	}
+
+	/// The site the cinema's room stands on, for its kind of site.
+	private var siteID: String {
+		switch cinemaEnvironment.siteKind {
+		case .rooftop: rooftopSiteID
+		case .skyDeck: skyDeckSiteID
+		default: lookoutSiteID
+		}
+	}
+
+	/// The sky deck's tower, when the room is the sky deck: its box hangs at that roof and faces
+	/// out from the face it hangs off, whichever way the room is turned.
+	private var skyDeck: (height: Double, facing: Double)? {
+		cinemaEnvironment == .skyDeck ? SpatialSkyDeck.tower(skyDeckTower) : nil
 	}
 
 	var body: some View {
@@ -67,8 +85,8 @@ struct SpatialMapView: View {
 				scene.apply(coverage: model.coverageEntity, revision: model.coverageRevision, opacity: model.coverageOpacity)
 				scene.apply(nodes: model.nodes)
 				scene.apply(lookout: cinemaEnvironment.siteKind != nil
-					? SpatialLookout.coordinate(siteID: cinemaEnvironment.siteKind == .rooftop ? rooftopSiteID : lookoutSiteID).flatMap { model.lookoutStands(on: $0) ? $0 : nil }
-					: nil, heading: SpatialLookout.heading(turns: lookoutTurns), model: summitModel)
+					? SpatialLookout.coordinate(siteID: siteID).flatMap { model.lookoutStands(on: $0) ? $0 : nil }
+					: nil, heading: skyDeck?.facing ?? SpatialLookout.heading(turns: lookoutTurns), model: summitModel, towerHeight: skyDeck?.height)
 				// The pinch's preview first: it sets the scale the station is sized by.
 				scene.apply(target: liveZoom.flatMap { model.circle(forZoom: $0) } ?? model.targetCircle)
 				scene.apply(station: cinemaEnvironment == .spaceStation, zoom: liveZoom ?? model.zoom, reduceMotion: reduceMotion)

@@ -1348,6 +1348,9 @@
         }
       }
     },
+    "Sky Deck" : {
+      "comment" : "Cinema environment: in a glass-floored box hung off the top of one of the tallest towers downtown, looking straight down at the city"
+    },
     "Starting remote admin session…" : {
 
     },
@@ -2377,6 +2380,9 @@
           }
         }
       }
+    },
+    "Show Tower" : {
+      "comment" : "Cinema: button that opens the 3D map zoomed in on the tower the sky deck hangs off, with the buildings on"
     },
     "Signal %lld of 3" : {
       "comment" : "Widget: VoiceOver label for the signal bars; the argument is 0 to 3",
@@ -47584,6 +47590,9 @@
           }
         }
       }
+    },
+    "Download a map with terrain for the 3D map to hang the sky deck on a real tower." : {
+      "comment" : "Cinema sky deck: shown on the panel when no terrain has been downloaded"
     },
     "Download map areas to use without a connection." : {
       "localizations" : {
@@ -148471,6 +148480,9 @@
         }
       }
     },
+    "Tower" : {
+      "comment" : "Cinema: picker for the tower the sky deck hangs off"
+    },
     "Trace Route" : {
       "localizations" : {
         "da" : {
@@ -150388,6 +150400,9 @@
     },
     "Turn Rooftop" : {
       "comment" : "Cinema: title over the dial that turns the city rooftop, so the screen looks out over another part of the view"
+    },
+    "Turn Sky Deck" : {
+      "comment" : "Cinema: title over the dial that turns the sky deck, so the screen looks out over another part of the view"
     },
     "Twelve Hours" : {
       "comment" : "GpsUpdateIntervals.description\nUpdateInterval.description",

@@ -165,6 +165,8 @@ final class SpatialSceneController {
 	private var stationOrbit: Entity?
 	private var stationSetup: StationSetup?
 	private var stationGround: (revision: Int, top: Float)?
+	/// The sky deck's tower height in meters, its box hung at that roof.
+	private var lookoutTowerHeight: Double?
 
 	init() {
 		// A flat disk of radius 0.5, scaled to the map once there is one.
@@ -841,17 +843,20 @@ extension SpatialSceneController {
 // MARK: Fire lookout
 
 /// What stands where the cinema's room is on the map: the fire lookout or the castle tower in its
-/// stone on a summit, or the city rooftop's water tower and mast on a roof.
+/// stone on a summit, the city rooftop's water tower and mast on a roof, or the sky deck hung off
+/// its tower.
 enum SpatialSummitModel: Equatable {
 	case fireLookout
 	case castleTower(CastleStone)
 	case cityRooftop
+	case skyDeck
 
 	var entityName: String {
 		switch self {
 		case .fireLookout: "fireLookout"
 		case let .castleTower(stone): "castleTower-\(stone.rawValue)"
 		case .cityRooftop: "cityRooftop"
+		case .skyDeck: "skyDeck"
 		}
 	}
 
@@ -861,6 +866,7 @@ enum SpatialSummitModel: Equatable {
 		case .fireLookout: SpatialLookoutParts.make(heading: heading)
 		case let .castleTower(stone): SpatialLookoutParts.makeCastle(heading: heading, stone: stone)
 		case .cityRooftop: SpatialLookoutParts.makeRooftop(heading: heading)
+		case .skyDeck: SpatialLookoutParts.makeSkyDeck(heading: heading)
 		}
 		made?.name = entityName
 		return made
@@ -871,14 +877,16 @@ extension SpatialSceneController {
 	/// Stands `model`, the fire lookout or the castle tower, on `coordinate`, the summit the cinema's
 	/// room is on, or the rooftop's water tower and mast on the roof there, with its front facing
 	/// `heading`, or takes it away for nil. Moved onto the new ground whenever the terrain is rebuilt,
-	/// and onto the roof whenever the buildings are.
-	func apply(lookout coordinate: CLLocationCoordinate2D?, heading: Double = SpatialLookout.frontHeading, model: SpatialSummitModel = .fireLookout) {
+	/// and onto the roof whenever the buildings are. The sky deck hangs at `towerHeight`, its tower's
+	/// height in meters.
+	func apply(lookout coordinate: CLLocationCoordinate2D?, heading: Double = SpatialLookout.frontHeading, model: SpatialSummitModel = .fireLookout, towerHeight: Double? = nil) {
 		guard let placement else { return }
 		let same = coordinate?.latitude == lookoutCoordinate?.latitude && coordinate?.longitude == lookoutCoordinate?.longitude
 		// The model up is told by its entity's name.
 		let modelChanged = lookout.map { $0.name != model.entityName } ?? false
-		guard !same || placement.revision != lookoutPlacementRevision || heading != lookoutHeading || modelChanged else { return }
+		guard !same || placement.revision != lookoutPlacementRevision || heading != lookoutHeading || modelChanged || towerHeight != lookoutTowerHeight else { return }
 		lookoutCoordinate = coordinate
+		lookoutTowerHeight = towerHeight
 		lookoutPlacementRevision = placement.revision
 		if heading != lookoutHeading || modelChanged {
 			lookoutHeading = heading
@@ -912,6 +920,15 @@ extension SpatialSceneController {
 		if lookout.name == SpatialSummitModel.cityRooftop.entityName {
 			if let roofs, roofs.revision == placement.revision {
 				position.y = roofs.standHeight(at: summit, ground: position.y)
+			}
+		} else if lookout.name == SpatialSummitModel.skyDeck.entityName {
+			// Back against the tower's face, its top at the roof: the tower's height over the ground
+			// inside the face, scaled as the buildings drawn on the map are.
+			position = placement.position(RooftopSites.face(behind: coordinate, facing: lookoutHeading))
+			if let towerHeight = lookoutTowerHeight {
+				let ground = placement.position(RooftopSites.tower(behind: coordinate, facing: lookoutHeading)).y
+				let roof = ground + Float(towerHeight * placement.transform.verticalExaggeration * placement.transform.scale)
+				position.y = max(position.y, roof - SpatialSkyDeck.height * counterScale)
 			}
 		} else {
 			let clearance = Self.lookoutClearance * counterScale

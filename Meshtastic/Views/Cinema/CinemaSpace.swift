@@ -59,6 +59,9 @@ struct CinemaSpace: View {
 	@AppStorage("cinemaLookoutSite") private var lookoutSiteID = ""
 	/// The rooftop chosen for the city rooftop, kept apart from the summit so each is remembered.
 	@AppStorage("cinemaRooftopSite") private var rooftopSiteID = ""
+	/// The tower the sky deck hangs off, and its height and the way the deck faces, for the 3D map.
+	@AppStorage(SpatialSkyDeck.siteKey) private var skyDeckSiteID = ""
+	@AppStorage(SpatialSkyDeck.towerKey) private var skyDeckTower = ""
 	/// Eighth turns clockwise the lookout is turned from the panel.
 	@AppStorage(SpatialLookout.turnsKey) private var lookoutTurns = 0
 	@State private var terrain: ModelEntity?
@@ -123,7 +126,7 @@ struct CinemaSpace: View {
 				CinemaPanel(environment: $environment, stone: $stone, sites: lookout.sites, siteID: siteIDBinding, turns: $lookoutTurns, radioCoordinate: radioCoordinate, lookoutNote: lookoutNote, spatialMapOpen: appState.spatialMapWindowCount > 0 || appState.spatialMapReopening) {
 					openWindow(id: SpatialMapScene.id, value: SpatialMapSceneKey.shared)
 				} onShowRooftop: {
-					appState.spatialMapRooftop = SpatialMapRooftopRequest()
+					appState.spatialMapRooftop = SpatialMapRooftopRequest(siteKey: environment.siteKind == .skyDeck ? SpatialSkyDeck.siteKey : "cinemaRooftopSite")
 					openWindow(id: SpatialMapScene.id, value: SpatialMapSceneKey.shared)
 				} onLeave: {
 					Task { await dismissImmersiveSpace() }
@@ -216,6 +219,18 @@ struct CinemaSpace: View {
 		}
 		.task(id: chosenSiteID) {
 			await refreshLookout()
+		}
+		.onChange(of: skyDeckSiteID) {
+			// A sky deck looks out from its tower's face: the screen turns to face out with it.
+			if environment.siteKind == .skyDeck, let facing = lookout.site(for: skyDeckSiteID)?.facing {
+				lookoutTurns = SpatialLookout.turns(nearest: facing)
+			}
+		}
+		.onChange(of: lookout.site(for: skyDeckSiteID), initial: true) { _, site in
+			// The map hangs its deck at this tower's roof, against the face it looks out from.
+			if let site, let height = site.rooftop, let facing = site.facing {
+				skyDeckTower = SpatialSkyDeck.tower(height: Double(height), facing: facing)
+			}
 		}
 		// A map deleted or downloaded changes the summits and the terrain around them, so both are
 		// found and built again.
@@ -414,27 +429,35 @@ struct CinemaSpace: View {
 		static let modelTag = "modelTag"
 	}
 
-	/// The site chosen for the environment: the summit, or the rooftop.
+	/// The site chosen for the environment: the summit, the rooftop, or the sky deck's tower.
 	private var chosenSiteID: String {
-		environment.siteKind == .rooftop ? rooftopSiteID : lookoutSiteID
+		switch environment.siteKind {
+		case .rooftop: rooftopSiteID
+		case .skyDeck: skyDeckSiteID
+		default: lookoutSiteID
+		}
 	}
 
 	private var siteIDBinding: Binding<String> {
 		Binding {
 			chosenSiteID
 		} set: { id in
-			if environment.siteKind == .rooftop {
-				rooftopSiteID = id
-			} else {
-				lookoutSiteID = id
+			switch environment.siteKind {
+			case .rooftop: rooftopSiteID = id
+			case .skyDeck: skyDeckSiteID = id
+			default: lookoutSiteID = id
 			}
 		}
 	}
 
-	/// What the panel says in the lookout while there is no summit to pick, or on the rooftop while
-	/// there is no building.
+	/// What the panel says in the lookout while there is no summit to pick, on the rooftop while
+	/// there is no building, or on the sky deck while there is no tower.
 	private var lookoutNote: String? {
-		environment.siteKind == .rooftop ? rooftopNote : summitNote
+		switch environment.siteKind {
+		case .rooftop: rooftopNote
+		case .skyDeck: skyDeckNote
+		default: summitNote
+		}
 	}
 
 	private var summitNote: String? {
@@ -447,6 +470,16 @@ struct CinemaSpace: View {
 			String(localized: "No summits found in the downloaded terrain.", comment: "Cinema lookout: shown on the panel when the downloaded terrain gave no summits")
 		case .idle, .ready:
 			nil
+		}
+	}
+
+	/// What the panel says on the sky deck while there is no tower to pick.
+	private var skyDeckNote: String? {
+		switch lookout.status {
+		case .noTerrain:
+			String(localized: "Download a map with terrain for the 3D map to hang the sky deck on a real tower.", comment: "Cinema sky deck: shown on the panel when no terrain has been downloaded")
+		default:
+			rooftopNote
 		}
 	}
 

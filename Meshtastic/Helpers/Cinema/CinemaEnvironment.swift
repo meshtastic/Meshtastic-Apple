@@ -16,6 +16,7 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 	case castleTower
 	case cityRooftop
 	case spaceStation
+	case skyDeck
 
 	var id: String { rawValue }
 
@@ -33,6 +34,8 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 			String(localized: "City Rooftop", comment: "Cinema environment: on the roof deck of a tall downtown building at dusk")
 		case .spaceStation:
 			String(localized: "Space Station", comment: "Cinema environment: inside a space station module under its cupola, with Earth through the windows")
+		case .skyDeck:
+			String(localized: "Sky Deck", comment: "Cinema environment: in a glass-floored box hung off the top of one of the tallest towers downtown, looking straight down at the city")
 		}
 	}
 
@@ -46,6 +49,7 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 		case .castleTower: "castle_tower"
 		case .cityRooftop: "city_rooftop"
 		case .spaceStation: "space_cupola"
+		case .skyDeck: "sky_deck"
 		}
 	}
 
@@ -63,7 +67,7 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 	/// board; the ham shack's is where net control logs the check-ins.
 	var statusBoardTitle: String {
 		switch self {
-		case .sarTent, .fireLookout, .castleTower, .cityRooftop, .spaceStation:
+		case .sarTent, .fireLookout, .castleTower, .cityRooftop, .spaceStation, .skyDeck:
 			String(localized: "Status Board", comment: "Cinema: title of the board of the nodes' status messages in the tent")
 		case .hamShack:
 			String(localized: "Net Check-In", comment: "Cinema: title of the ham shack's status board, where net control logs the check-ins")
@@ -75,14 +79,14 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 	var statusBoardPortrait: Bool {
 		switch self {
 		case .sarTent, .hamShack, .cityRooftop: true
-		case .fireLookout, .castleTower, .spaceStation: false
+		case .fireLookout, .castleTower, .spaceStation, .skyDeck: false
 		}
 	}
 
 	/// What the status board says while no node has a status message.
 	var statusBoardEmptyTitle: String {
 		switch self {
-		case .sarTent, .fireLookout, .castleTower, .cityRooftop, .spaceStation:
+		case .sarTent, .fireLookout, .castleTower, .cityRooftop, .spaceStation, .skyDeck:
 			String(localized: "No status yet", comment: "Cinema: shown on the tent's status board while no node has a status message")
 		case .hamShack:
 			String(localized: "No check-ins yet", comment: "Cinema: shown on the ham shack's check-in board while no node has a status message")
@@ -97,11 +101,13 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 	}
 
 	/// What it stands on in the downloaded maps, with the real terrain and the nodes out round it:
-	/// a summit, or the roof of one of the tallest buildings. Nil for a room with no view of its own.
+	/// a summit, the roof of one of the tallest buildings, or the face of one for the sky deck. Nil for
+	/// a room with no view of its own.
 	var siteKind: LookoutSiteKind? {
 		switch self {
 		case .fireLookout, .castleTower: .summit
 		case .cityRooftop: .rooftop
+		case .skyDeck: .skyDeck
 		case .sarTent, .hamShack, .spaceStation: nil
 		}
 	}
@@ -116,6 +122,8 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 		switch self {
 		case .cityRooftop:
 			String(localized: "Turn Rooftop", comment: "Cinema: title over the dial that turns the city rooftop, so the screen looks out over another part of the view")
+		case .skyDeck:
+			String(localized: "Turn Sky Deck", comment: "Cinema: title over the dial that turns the sky deck, so the screen looks out over another part of the view")
 		default:
 			String(localized: "Turn Lookout", comment: "Cinema: title over the dial that turns the fire lookout, so the screen looks out over another part of the view")
 		}
@@ -128,11 +136,12 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 
 	/// The sky painted behind a cutout: the one the room was lit by, with its own horizon. The
 	/// castle is lit as the lookout is, so it shares the lookout's skies. The rooftop is lit by the
-	/// lookout's clear sky, with a made-up city under it.
+	/// lookout's clear sky, with a made-up city under it, and the sky deck shares it: its streets
+	/// show under the glass floor.
 	var skyImageName: String? {
 		switch self {
 		case .fireLookout, .castleTower: "fire_lookout_sky"
-		case .cityRooftop: "city_rooftop_sky"
+		case .cityRooftop, .skyDeck: "city_rooftop_sky"
 		case .spaceStation: "space_earth"
 		default: nil
 		}
@@ -142,7 +151,7 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 	/// that stand on a summit or a rooftop have one.
 	var clearSkyImageName: String? {
 		switch self {
-		case .fireLookout, .castleTower, .cityRooftop: "fire_lookout_puresky"
+		case .fireLookout, .castleTower, .cityRooftop, .skyDeck: "fire_lookout_puresky"
 		default: nil
 		}
 	}
@@ -159,7 +168,7 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 	/// image needs nudging.
 	var frontRotation: Float {
 		switch self {
-		case .sarTent, .hamShack, .fireLookout, .castleTower, .cityRooftop, .spaceStation: 0
+		case .sarTent, .hamShack, .fireLookout, .castleTower, .cityRooftop, .spaceStation, .skyDeck: 0
 		}
 	}
 
@@ -191,7 +200,7 @@ enum CinemaEnvironment: String, CaseIterable, Identifiable {
 				UIColor(red: 0.85, green: 0.70, blue: 0.50, alpha: 1),
 				UIColor(red: 0.30, green: 0.29, blue: 0.28, alpha: 1)
 			)
-		case .cityRooftop:
+		case .cityRooftop, .skyDeck:
 			(
 				UIColor(red: 0.42, green: 0.55, blue: 0.75, alpha: 1),
 				UIColor(red: 0.82, green: 0.68, blue: 0.52, alpha: 1),
