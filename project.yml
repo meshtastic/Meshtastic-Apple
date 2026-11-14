@@ -40,7 +40,7 @@ packages:
     majorVersion: 0.5.0
   swift-protobuf:
     url: https://github.com/apple/swift-protobuf.git
-    majorVersion: 1.26.0
+    majorVersion: 1.41.0
   MeshtasticProtobufs:
     path: MeshtasticProtobufs
   ShowcaseContent:

@@ -15,7 +15,7 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
@@ -33,7 +33,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 /// Note: This was formerly a Type enum named 'typ' with the same id #
 /// We have change to this 'portnum' based scheme for specifying app handlers for particular payloads.
 /// This change is backwards compatible by treating the legacy OPAQUE/CLEAR_TEXT values identically.
-public enum PortNum: SwiftProtobuf.Enum, Swift.CaseIterable {
+public nonisolated enum PortNum: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
 
   ///
@@ -426,6 +426,6 @@ public enum PortNum: SwiftProtobuf.Enum, Swift.CaseIterable {
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-extension PortNum: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension PortNum: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNKNOWN_APP\0\u{1}TEXT_MESSAGE_APP\0\u{1}REMOTE_HARDWARE_APP\0\u{1}POSITION_APP\0\u{1}NODEINFO_APP\0\u{1}ROUTING_APP\0\u{1}ADMIN_APP\0\u{1}TEXT_MESSAGE_COMPRESSED_APP\0\u{1}WAYPOINT_APP\0\u{1}AUDIO_APP\0\u{1}DETECTION_SENSOR_APP\0\u{1}ALERT_APP\0\u{1}KEY_VERIFICATION_APP\0\u{1}REMOTE_SHELL_APP\0\u{2}\u{13}REPLY_APP\0\u{1}IP_TUNNEL_APP\0\u{1}PAXCOUNTER_APP\0\u{1}STORE_FORWARD_PLUSPLUS_APP\0\u{1}NODE_STATUS_APP\0\u{1}MESH_BEACON_APP\0\u{1}PAGING_APP\0\u{2}\u{1a}SERIAL_APP\0\u{1}STORE_FORWARD_APP\0\u{1}RANGE_TEST_APP\0\u{1}TELEMETRY_APP\0\u{1}ZPS_APP\0\u{1}SIMULATOR_APP\0\u{1}TRACEROUTE_APP\0\u{1}NEIGHBORINFO_APP\0\u{1}ATAK_PLUGIN\0\u{1}MAP_REPORT_APP\0\u{1}POWERSTRESS_APP\0\u{1}LORAWAN_BRIDGE\0\u{1}RETICULUM_TUNNEL_APP\0\u{1}CAYENNE_APP\0\u{1}ATAK_PLUGIN_V2\0\u{1}LORA_OTA_APP\0\u{2}!GROUPALARM_APP\0\u{2}P\u{2}PRIVATE_APP\0\u{1}ATAK_FORWARDER\0\u{2}~\u{3}MAX\0")
 }

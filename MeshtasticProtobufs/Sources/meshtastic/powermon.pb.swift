@@ -15,14 +15,14 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
 
 /// Note: There are no 'PowerMon' messages normally in use (PowerMons are sent only as structured logs - slogs).
 /// But we wrap our State enum in this message to effectively nest a namespace (without our linter yelling at us)
-public struct PowerMon: Sendable {
+public nonisolated struct PowerMon: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -31,7 +31,7 @@ public struct PowerMon: Sendable {
 
   /// Any significant power changing event in meshtastic should be tagged with a powermon state transition.
   /// If you are making new meshtastic features feel free to add new entries at the end of this definition.
-  public enum State: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum State: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
     case none // = 0
     case cpuDeepSleep // = 1
@@ -128,7 +128,7 @@ public struct PowerMon: Sendable {
 
 ///
 /// PowerStress testing support via the C++ PowerStress module
-public struct PowerStressMessage: Sendable {
+public nonisolated struct PowerStressMessage: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -145,7 +145,7 @@ public struct PowerStressMessage: Sendable {
   /// What operation would we like the UUT to perform.
   /// note: senders should probably set want_response in their request packets, so that they can know when the state
   /// machine has started processing their request
-  public enum Opcode: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum Opcode: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
     ///
@@ -297,9 +297,9 @@ public struct PowerStressMessage: Sendable {
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "meshtastic"
+fileprivate nonisolated let _protobuf_package = "meshtastic"
 
-extension PowerMon: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension PowerMon: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PowerMon"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
@@ -318,11 +318,11 @@ extension PowerMon: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
   }
 }
 
-extension PowerMon.State: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension PowerMon.State: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0None\0\u{1}CPU_DeepSleep\0\u{1}CPU_LightSleep\0\u{2}\u{2}Vext1_On\0\u{2}\u{4}Lora_RXOn\0\u{2}\u{8}Lora_TXOn\0\u{2}\u{10}Lora_RXActive\0\u{2} BT_On\0\u{2}@\u{1}LED_On\0\u{2}@\u{2}Screen_On\0\u{2}@\u{4}Screen_Drawing\0\u{2}@\u{8}Wifi_On\0\u{2}@\u{10}GPS_Active\0")
 }
 
-extension PowerStressMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension PowerStressMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PowerStressMessage"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}cmd\0\u{3}num_seconds\0")
 
@@ -357,6 +357,6 @@ extension PowerStressMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
   }
 }
 
-extension PowerStressMessage.Opcode: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension PowerStressMessage.Opcode: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSET\0\u{1}PRINT_INFO\0\u{1}FORCE_QUIET\0\u{1}END_QUIET\0\u{2}\u{d}SCREEN_ON\0\u{1}SCREEN_OFF\0\u{2}\u{f}CPU_IDLE\0\u{1}CPU_DEEPSLEEP\0\u{1}CPU_FULLON\0\u{2}\u{e}LED_ON\0\u{1}LED_OFF\0\u{2}\u{f}LORA_OFF\0\u{1}LORA_TX\0\u{1}LORA_RX\0\u{2}\u{e}BT_OFF\0\u{1}BT_ON\0\u{2}\u{f}WIFI_OFF\0\u{1}WIFI_ON\0\u{2}\u{f}GPS_OFF\0\u{1}GPS_ON\0")
 }

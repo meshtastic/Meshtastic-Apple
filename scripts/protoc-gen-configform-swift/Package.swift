@@ -14,7 +14,7 @@ let package = Package(
     name: "protoc-gen-configform-swift",
     platforms: [.macOS(.v10_15)],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-protobuf.git", exact: "1.36.1")
+        .package(url: "https://github.com/apple/swift-protobuf.git", exact: "1.41.0")
     ],
     targets: [
         .executableTarget(

@@ -20,7 +20,7 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
@@ -32,7 +32,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 /// On a change that breaks the other side (renumbered fields, changed
 /// semantics, removed messages), raise the value of CURRENT. Do not add
 /// another entry: this enum carries a single constant, not a history.
-public enum InterdeviceVersion: SwiftProtobuf.Enum, Swift.CaseIterable {
+public nonisolated enum InterdeviceVersion: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
   case unspecified // = 0
 
@@ -71,7 +71,7 @@ public enum InterdeviceVersion: SwiftProtobuf.Enum, Swift.CaseIterable {
 }
 
 /// Defines the supported file operations
-public enum FileOperation: SwiftProtobuf.Enum, Swift.CaseIterable {
+public nonisolated enum FileOperation: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
   case get // = 0
   case post // = 1
@@ -116,7 +116,7 @@ public enum FileOperation: SwiftProtobuf.Enum, Swift.CaseIterable {
 /// Outcome of a file or directory operation. The requester must be able to
 /// tell a transient condition from a definitive one: BUSY is worth another
 /// try, NOT_FOUND is not.
-public enum FileStatus: SwiftProtobuf.Enum, Swift.CaseIterable {
+public nonisolated enum FileStatus: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
   case fileUnspecified // = 0
   case fileOk // = 1
@@ -184,7 +184,7 @@ public enum FileStatus: SwiftProtobuf.Enum, Swift.CaseIterable {
 }
 
 /// What to do with the SD card of the co-processor
-public enum SdCommand: SwiftProtobuf.Enum, Swift.CaseIterable {
+public nonisolated enum SdCommand: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
   case unspecified // = 0
 
@@ -233,7 +233,7 @@ public enum SdCommand: SwiftProtobuf.Enum, Swift.CaseIterable {
 }
 
 /// Message for file operations
-public struct FileTransfer: Sendable {
+public nonisolated struct FileTransfer: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -270,7 +270,7 @@ public struct FileTransfer: Sendable {
 }
 
 /// Message for structured directory listing
-public struct DirectoryListing: Sendable {
+public nonisolated struct DirectoryListing: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -305,7 +305,7 @@ public struct DirectoryListing: Sendable {
 /// A single I2C transaction: an optional write followed by an optional
 /// read with repeated start, matching the TwoWire usage of sensor drivers
 /// (beginTransmission/write.../endTransmission(false)/requestFrom)
-public struct I2CTransaction: Sendable {
+public nonisolated struct I2CTransaction: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -327,7 +327,7 @@ public struct I2CTransaction: Sendable {
 }
 
 /// SD card statistics
-public struct SdCardInfo: Sendable {
+public nonisolated struct SdCardInfo: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -365,7 +365,7 @@ public struct SdCardInfo: Sendable {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public enum CardType: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum CardType: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
     case none // = 0
     case mmc // = 1
@@ -415,7 +415,7 @@ public struct SdCardInfo: Sendable {
 
   }
 
-  public enum FatType: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum FatType: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
     case unknownFat // = 0
     case fat16 // = 1
@@ -461,7 +461,7 @@ public struct SdCardInfo: Sendable {
 }
 
 /// Result of an I2CTransaction
-public struct I2CResult: Sendable {
+public nonisolated struct I2CResult: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -473,7 +473,7 @@ public struct I2CResult: Sendable {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public enum Status: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum Status: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
     /// Never sent: an all-defaults (e.g. accidentally empty) message must
@@ -526,7 +526,7 @@ public struct I2CResult: Sendable {
 }
 
 /// Main message for interdevice communication
-public struct InterdeviceMessage: Sendable {
+public nonisolated struct InterdeviceMessage: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -670,7 +670,7 @@ public struct InterdeviceMessage: Sendable {
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   /// The message data
-  public enum OneOf_Data: Equatable, Sendable {
+  public nonisolated enum OneOf_Data: Equatable, Sendable {
     case nmea(String)
     case beep(UInt32)
     case i2CTransaction(I2CTransaction)
@@ -710,25 +710,25 @@ public struct InterdeviceMessage: Sendable {
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "meshtastic"
+fileprivate nonisolated let _protobuf_package = "meshtastic"
 
-extension InterdeviceVersion: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension InterdeviceVersion: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0INTERDEVICE_VERSION_UNSPECIFIED\0\u{2}\u{2}INTERDEVICE_VERSION_CURRENT\0")
 }
 
-extension FileOperation: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension FileOperation: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0GET\0\u{1}POST\0\u{1}PUT\0\u{1}DELETE\0")
 }
 
-extension FileStatus: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension FileStatus: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0FILE_UNSPECIFIED\0\u{1}FILE_OK\0\u{1}FILE_BUSY\0\u{1}FILE_NO_CARD\0\u{1}FILE_NOT_FOUND\0\u{1}FILE_OFFSET_CONFLICT\0\u{1}FILE_IO_ERROR\0\u{1}FILE_NOT_A_FILE\0")
 }
 
-extension SdCommand: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension SdCommand: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0SD_COMMAND_UNSPECIFIED\0\u{1}SD_MOUNT\0\u{1}SD_EJECT\0\u{1}SD_FORMAT\0")
 }
 
-extension FileTransfer: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension FileTransfer: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".FileTransfer"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}operation\0\u{1}filepath\0\u{1}filedata\0\u{1}status\0\u{1}message\0\u{1}offset\0\u{1}length\0\u{3}file_size\0")
 
@@ -793,7 +793,7 @@ extension FileTransfer: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
   }
 }
 
-extension DirectoryListing: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension DirectoryListing: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DirectoryListing"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}directory\0\u{1}filenames\0\u{1}status\0\u{1}message\0\u{1}offset\0\u{3}total_count\0")
 
@@ -848,7 +848,7 @@ extension DirectoryListing: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
   }
 }
 
-extension I2CTransaction: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension I2CTransaction: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".I2CTransaction"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}address\0\u{3}write_data\0\u{3}read_len\0")
 
@@ -888,7 +888,7 @@ extension I2CTransaction: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
   }
 }
 
-extension SdCardInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension SdCardInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SdCardInfo"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}present\0\u{3}card_type\0\u{3}fat_type\0\u{3}card_size\0\u{3}used_bytes\0\u{3}free_bytes\0\u{3}stats_valid\0\u{1}busy\0\u{1}unformatted\0")
 
@@ -958,15 +958,15 @@ extension SdCardInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
   }
 }
 
-extension SdCardInfo.CardType: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension SdCardInfo.CardType: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0NONE\0\u{1}MMC\0\u{1}SD\0\u{1}SDHC\0\u{1}SDXC\0\u{1}UNKNOWN_CARD\0")
 }
 
-extension SdCardInfo.FatType: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension SdCardInfo.FatType: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNKNOWN_FAT\0\u{1}FAT16\0\u{1}FAT32\0\u{1}EXFAT\0")
 }
 
-extension I2CResult: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension I2CResult: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".I2CResult"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}status\0\u{3}read_data\0")
 
@@ -1001,11 +1001,11 @@ extension I2CResult: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
   }
 }
 
-extension I2CResult.Status: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension I2CResult.Status: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSPECIFIED\0\u{1}OK\0\u{1}NACK_ADDRESS\0\u{1}NACK_DATA\0\u{1}ERROR\0")
 }
 
-extension InterdeviceMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension InterdeviceMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".InterdeviceMessage"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}nmea\0\u{1}beep\0\u{3}i2c_transaction\0\u{3}i2c_result\0\u{3}i2c_scan\0\u{3}i2c_scan_result\0\u{3}file_transfer\0\u{3}directory_listing\0\u{3}get_sd_info\0\u{3}sd_info\0\u{1}ping\0\u{1}pong\0\u{1}nack\0\u{3}sd_command\0\u{1}id\0")
 

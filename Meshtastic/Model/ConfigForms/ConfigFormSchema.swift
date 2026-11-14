@@ -119,6 +119,7 @@ extension Config.LoRaConfig: ConfigSchemaMessage {
 		static let configOkToMqtt = ConfigField<Config.LoRaConfig, Bool>(tag: 105, name: "config_ok_to_mqtt", keyPath: \.configOkToMqtt, identity: FieldIdentity(messageName: "meshtastic.Config.LoRaConfig", tag: 105))
 		static let femLnaMode = ConfigField<Config.LoRaConfig, Config.LoRaConfig.FEM_LNA_Mode>(tag: 106, name: "fem_lna_mode", keyPath: \.femLnaMode, identity: FieldIdentity(messageName: "meshtastic.Config.LoRaConfig", tag: 106))
 		static let serialHalOnly = ConfigField<Config.LoRaConfig, Bool>(tag: 107, name: "serial_hal_only", keyPath: \.serialHalOnly, identity: FieldIdentity(messageName: "meshtastic.Config.LoRaConfig", tag: 107))
+		static let transparentMode = ConfigField<Config.LoRaConfig, Bool>(tag: 108, name: "transparent_mode", keyPath: \.transparentMode, identity: FieldIdentity(messageName: "meshtastic.Config.LoRaConfig", tag: 108))
 	}
 
 	static let allFields: [AnyConfigField<Config.LoRaConfig>] = [
@@ -142,6 +143,7 @@ extension Config.LoRaConfig: ConfigSchemaMessage {
 		.init(Fields.configOkToMqtt, kind: .bool),
 		.init(Fields.femLnaMode, kind: .enumeration, enumTypeName: "meshtastic.Config.LoRaConfig.FEM_LNA_Mode"),
 		.init(Fields.serialHalOnly, kind: .bool),
+		.init(Fields.transparentMode, kind: .bool),
 	]
 }
 

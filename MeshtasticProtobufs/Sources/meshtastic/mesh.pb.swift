@@ -20,7 +20,7 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
@@ -30,7 +30,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 /// bin/build-all.sh script.
 /// Because they will be used to find firmware filenames in the android app for OTA updates.
 /// To match the old style filenames, _ is converted to -, p is converted to .
-public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
+public nonisolated enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
 
   ///
@@ -1155,7 +1155,7 @@ public enum HardwareModel: SwiftProtobuf.Enum, Swift.CaseIterable {
 
 ///
 /// Shared constants between device and phone
-public enum Constants: SwiftProtobuf.Enum, Swift.CaseIterable {
+public nonisolated enum Constants: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
 
   ///
@@ -1203,7 +1203,7 @@ public enum Constants: SwiftProtobuf.Enum, Swift.CaseIterable {
 /// The device might report these fault codes on the screen.
 /// If you encounter a fault code, please post on the meshtastic.discourse.group
 /// and we'll try to help.
-public enum CriticalErrorCode: SwiftProtobuf.Enum, Swift.CaseIterable {
+public nonisolated enum CriticalErrorCode: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
 
   ///
@@ -1335,7 +1335,7 @@ public enum CriticalErrorCode: SwiftProtobuf.Enum, Swift.CaseIterable {
 ///
 /// Enum to indicate to clients whether this firmware is a special firmware build, like an event.
 /// The first 16 values are reserved for non-event special firmwares, like the Smart Citizen use case.
-public enum FirmwareEdition: SwiftProtobuf.Enum, Swift.CaseIterable {
+public nonisolated enum FirmwareEdition: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
 
   ///
@@ -1435,7 +1435,7 @@ public enum FirmwareEdition: SwiftProtobuf.Enum, Swift.CaseIterable {
 /// Enum for modules excluded from a device's configuration.
 /// Each value represents a ModuleConfigType that can be toggled as excluded
 /// by setting its corresponding bit in the `excluded_modules` bitmask field.
-public enum ExcludedModules: SwiftProtobuf.Enum, Swift.CaseIterable {
+public nonisolated enum ExcludedModules: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
 
   ///
@@ -1603,7 +1603,7 @@ public enum ExcludedModules: SwiftProtobuf.Enum, Swift.CaseIterable {
 
 ///
 /// A GPS Position
-public struct Position: @unchecked Sendable {
+public nonisolated struct Position: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1820,7 +1820,7 @@ public struct Position: @unchecked Sendable {
 
   ///
   /// How the location was acquired: manual, onboard GPS, external (EUD) GPS
-  public enum LocSource: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum LocSource: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
     ///
@@ -1877,7 +1877,7 @@ public struct Position: @unchecked Sendable {
   ///
   /// How the altitude was acquired: manual, GPS int/ext, etc
   /// Default: same as location_source if present
-  public enum AltSource: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum AltSource: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
     ///
@@ -1964,7 +1964,7 @@ public struct Position: @unchecked Sendable {
 /// A few nodenums are reserved and will never be requested:
 /// 0xff - broadcast
 /// 0 through 3 - for future use
-public struct User: Sendable {
+public nonisolated struct User: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2038,7 +2038,7 @@ public struct User: Sendable {
 
 ///
 /// A message used in a traceroute
-public struct RouteDiscovery: Sendable {
+public nonisolated struct RouteDiscovery: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2066,7 +2066,7 @@ public struct RouteDiscovery: Sendable {
 
 ///
 /// A Routing control Data packet handled by the routing module
-public struct Routing: Sendable {
+public nonisolated struct Routing: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2133,7 +2133,7 @@ public struct Routing: Sendable {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public enum OneOf_Variant: Equatable, Sendable {
+  public nonisolated enum OneOf_Variant: Equatable, Sendable {
     ///
     /// A route request going from the requester
     case routeRequest(RouteDiscovery)
@@ -2150,7 +2150,7 @@ public struct Routing: Sendable {
   ///
   /// A failure in delivering a message (usually used for routing control messages, but might be provided in addition to ack.fail_id to provide
   /// details on the type of failure).
-  public enum Error: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum Error: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
     ///
@@ -2313,7 +2313,7 @@ public struct Routing: Sendable {
 /// (Formerly called SubPacket)
 /// The payload portion fo a packet, this is the actual bytes that are sent
 /// inside a radio packet (because from/to are broken out by the comms library)
-public struct DataMessage: Sendable {
+public nonisolated struct DataMessage: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2384,7 +2384,7 @@ public struct DataMessage: Sendable {
 
 ///
 /// The actual over-the-mesh message doing KeyVerification
-public struct KeyVerification: Sendable {
+public nonisolated struct KeyVerification: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2409,7 +2409,7 @@ public struct KeyVerification: Sendable {
 
 ///
 /// The actual over-the-mesh message doing store and forward++
-public struct StoreForwardPlusPlus: Sendable {
+public nonisolated struct StoreForwardPlusPlus: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2458,7 +2458,7 @@ public struct StoreForwardPlusPlus: Sendable {
 
   ///
   /// Enum of message types
-  public enum SFPP_message_type: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum SFPP_message_type: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
     ///
@@ -2531,7 +2531,7 @@ public struct StoreForwardPlusPlus: Sendable {
 
 ///
 /// The actual over-the-mesh message doing RemoteShell
-public struct RemoteShell: Sendable {
+public nonisolated struct RemoteShell: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2583,7 +2583,7 @@ public struct RemoteShell: Sendable {
   ///
   /// Values 1-63 are client->server requests.
   /// Values 64-127 are server->client responses/events.
-  public enum OpCode: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum OpCode: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
     case opUnset // = 0
 
@@ -2671,7 +2671,7 @@ public struct RemoteShell: Sendable {
 /// convention used by GeoJSON and PMTiles (min longitude, min latitude, max longitude, max latitude),
 /// so the box can drive an offline map extract directly.
 /// All coordinates are in degrees scaled by 1e-7 (same convention as Position and Waypoint).
-public struct BoundingBox: Sendable {
+public nonisolated struct BoundingBox: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2699,7 +2699,7 @@ public struct BoundingBox: Sendable {
 
 ///
 /// Waypoint message, used to share arbitrary locations across the mesh
-public struct Waypoint: Sendable {
+public nonisolated struct Waypoint: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2797,7 +2797,7 @@ public struct Waypoint: Sendable {
 
 ///
 /// Message for node status
-public struct StatusMessage: Sendable {
+public nonisolated struct StatusMessage: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2811,7 +2811,7 @@ public struct StatusMessage: Sendable {
 
 ///
 /// This message will be proxied over the PhoneAPI for the client to deliver to the MQTT server
-public struct MqttClientProxyMessage: Sendable {
+public nonisolated struct MqttClientProxyMessage: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2852,7 +2852,7 @@ public struct MqttClientProxyMessage: Sendable {
 
   ///
   /// The actual service envelope payload or text for mqtt pub / sub
-  public enum OneOf_PayloadVariant: Equatable, Sendable {
+  public nonisolated enum OneOf_PayloadVariant: Equatable, Sendable {
     ///
     /// Bytes
     case data(Data)
@@ -2869,7 +2869,7 @@ public struct MqttClientProxyMessage: Sendable {
 /// A packet envelope sent/received over the mesh
 /// only payload_variant is sent in the payload portion of the LORA packet.
 /// The other fields are either not sent at all, or sent in the special 16 byte LORA header.
-public struct MeshPacket: @unchecked Sendable {
+public nonisolated struct MeshPacket: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -3129,7 +3129,7 @@ public struct MeshPacket: @unchecked Sendable {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public enum OneOf_PayloadVariant: Equatable, Sendable {
+  public nonisolated enum OneOf_PayloadVariant: Equatable, Sendable {
     ///
     /// TODO: REPLACE
     case decoded(DataMessage)
@@ -3158,7 +3158,7 @@ public struct MeshPacket: @unchecked Sendable {
   /// So I bit the bullet and implemented a new (internal - not sent over the air)
   /// field in MeshPacket called 'priority'.
   /// And the transmission queue in the router object is now a priority queue.
-  public enum Priority: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum Priority: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
     ///
@@ -3260,7 +3260,7 @@ public struct MeshPacket: @unchecked Sendable {
 
   ///
   /// Identify if this is a delayed packet
-  public enum Delayed: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum Delayed: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
     ///
@@ -3309,7 +3309,7 @@ public struct MeshPacket: @unchecked Sendable {
 
   ///
   /// Enum to identify which transport mechanism this packet arrived over
-  public enum TransportMechanism: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum TransportMechanism: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
     ///
@@ -3404,7 +3404,7 @@ public struct MeshPacket: @unchecked Sendable {
   /// Reported, never enforced: an ack without a usable proof is acted on exactly as it was before
   /// proofs existed. The value exists so a client can tell a proven delivery receipt from an
   /// unproven one, and can tell "nobody proved this" from "somebody tried and failed".
-  public enum AckProofStatus: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum AckProofStatus: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
     ///
@@ -3486,7 +3486,7 @@ public struct MeshPacket: @unchecked Sendable {
   /// parities that redraw after the same frame never land on the same slot, and so are always at
   /// least a slot apart. Useful for a pair of nodes exchanging a stream, where the two ends
   /// otherwise collide with each other far more often than with the rest of the mesh.
-  public enum SlotParity: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum SlotParity: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
     ///
@@ -3555,7 +3555,7 @@ public struct MeshPacket: @unchecked Sendable {
 /// level etc) SET_CONFIG (switches device to a new set of radio params and
 /// preshared key, drops all existing nodes, force our node to rejoin this new group)
 /// Full information about a node on the mesh
-public struct NodeInfo: @unchecked Sendable {
+public nonisolated struct NodeInfo: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -3714,7 +3714,7 @@ public struct NodeInfo: @unchecked Sendable {
 /// Unique local debugging info for this node
 /// Note: we don't include position or the user info, because that will come in the
 /// Sent to the phone in response to WantNodes.
-public struct MyNodeInfo: Sendable {
+public nonisolated struct MyNodeInfo: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -3762,7 +3762,7 @@ public struct MyNodeInfo: Sendable {
 /// on the message it is assumed to be a continuation of the previously sent message.
 /// This allows the device code to use fixed maxlen 64 byte strings for messages,
 /// and then extend as needed by emitting multiple records.
-public struct LogRecord: Sendable {
+public nonisolated struct LogRecord: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -3787,7 +3787,7 @@ public struct LogRecord: Sendable {
 
   ///
   /// Log levels, chosen to match python logging conventions.
-  public enum Level: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum Level: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
     ///
@@ -3865,7 +3865,7 @@ public struct LogRecord: Sendable {
   public init() {}
 }
 
-public struct QueueStatus: Sendable {
+public nonisolated struct QueueStatus: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -3892,7 +3892,7 @@ public struct QueueStatus: Sendable {
 /// It will support READ and NOTIFY. When a new packet arrives the device will BLE notify?
 /// It will sit in that descriptor until consumed by the phone,
 /// at which point the next item in the FIFO will be populated.
-public struct FromRadio: @unchecked Sendable {
+public nonisolated struct FromRadio: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -4135,7 +4135,7 @@ public struct FromRadio: @unchecked Sendable {
 
   ///
   /// Log levels, chosen to match python logging conventions.
-  public enum OneOf_PayloadVariant: Equatable, Sendable {
+  public nonisolated enum OneOf_PayloadVariant: Equatable, Sendable {
     ///
     /// Log levels, chosen to match python logging conventions.
     case packet(MeshPacket)
@@ -4242,7 +4242,7 @@ public struct FromRadio: @unchecked Sendable {
 /// equals the number of bytes it has already accumulated for this frame_id,
 /// and discard the partial frame on any gap or frame_id change. An incomplete
 /// frame must never be rendered.
-public struct DisplayFrame: Sendable {
+public nonisolated struct DisplayFrame: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -4313,7 +4313,7 @@ public struct DisplayFrame: Sendable {
 
   ///
   /// Pixel encodings of the framebuffer bytes.
-  public enum Format: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum Format: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
     ///
@@ -4378,7 +4378,7 @@ public struct DisplayFrame: Sendable {
 /// overlap, regardless of chunk boundaries. A client holding partial chunks
 /// of a signature that no longer matches incoming chunks should discard
 /// them. All colors are RGB565 in logical bit layout (RRRRRGGGGGGBBBBB).
-public struct DisplayPalette: Sendable {
+public nonisolated struct DisplayPalette: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -4414,7 +4414,7 @@ public struct DisplayPalette: Sendable {
 
   ///
   /// One colorized rectangle of the display.
-  public struct ColorRegion: Sendable {
+  public nonisolated struct ColorRegion: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -4456,7 +4456,7 @@ public struct DisplayPalette: Sendable {
 /// with MESHTASTIC_LOCKDOWN). Sent immediately after config_complete_id
 /// to inform a freshly-connected unauthorized client what it must do,
 /// and again in response to each LockdownAuth admin command.
-public struct LockdownStatus: Sendable {
+public nonisolated struct LockdownStatus: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -4497,7 +4497,7 @@ public struct LockdownStatus: Sendable {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public enum State: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum State: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
     /// Default; should not be sent. 
@@ -4583,7 +4583,7 @@ public struct LockdownStatus: Sendable {
 /// To be used for important messages that should to be displayed to the user
 /// in the form of push notifications or validation messages when saving
 /// invalid configuration.
-public struct ClientNotification: Sendable {
+public nonisolated struct ClientNotification: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -4610,6 +4610,10 @@ public struct ClientNotification: Sendable {
   ///
   /// The message body of the notification
   public var message: String = String()
+
+  ///
+  /// Which firmware message this notification carries. UNSET when not known.
+  public var type: ClientNotification.NotificationType = .unset
 
   public var payloadVariant: ClientNotification.OneOf_PayloadVariant? = nil
 
@@ -4655,7 +4659,7 @@ public struct ClientNotification: Sendable {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public enum OneOf_PayloadVariant: Equatable, Sendable {
+  public nonisolated enum OneOf_PayloadVariant: Equatable, Sendable {
     case keyVerificationNumberInform(KeyVerificationNumberInform)
     case keyVerificationNumberRequest(KeyVerificationNumberRequest)
     case keyVerificationFinal(KeyVerificationFinal)
@@ -4664,12 +4668,392 @@ public struct ClientNotification: Sendable {
 
   }
 
+  ///
+  /// Identifies which firmware message a notification carries, so clients can
+  /// localize or act on it without parsing the message text.
+  public nonisolated enum NotificationType: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public typealias RawValue = Int
+
+    ///
+    /// Not set. Older firmware, or a message without its own type.
+    case unset // = 0
+
+    ///
+    /// Position packet rejected: location sharing is disabled on this channel.
+    case positionSharingDisabled // = 1
+
+    ///
+    /// Traceroute rejected: only one may be sent every 30 seconds.
+    case tracerouteRateLimited // = 2
+
+    ///
+    /// Traceroute rejected: multi-hop traceroute to the broadcast address is not allowed.
+    case tracerouteBroadcastRejected // = 3
+
+    ///
+    /// Send aborted: the duty cycle limit is exceeded. The message gives the minutes until sending resumes.
+    case dutyCycleLimitExceeded // = 4
+
+    ///
+    /// Power-saving tracker sent its position and is about to sleep for the broadcast interval.
+    case positionSentSleeping // = 5
+
+    ///
+    /// Power-saving sensor sent its telemetry and is about to sleep for the update interval.
+    case telemetrySentSleeping // = 6
+
+    ///
+    /// Incoming key verification: display the security number. Carries key_verification_number_inform.
+    case keyVerificationNumberInform // = 7
+
+    ///
+    /// Outgoing key verification: enter the security number shown on the remote node. Carries key_verification_number_request.
+    case keyVerificationNumberRequest // = 8
+
+    ///
+    /// Final confirmation of an incoming key verification. Carries key_verification_final.
+    case keyVerificationFinalIncoming // = 9
+
+    ///
+    /// Final confirmation of an outgoing key verification. Carries key_verification_final.
+    case keyVerificationFinalOutgoing // = 10
+
+    ///
+    /// Key verification is unavailable in licensed (ham) mode.
+    case keyVerificationLicensedUnavailable // = 11
+
+    ///
+    /// A remote node advertised this node's public key; the key may be compromised.
+    case duplicatedPublicKey // = 12
+
+    ///
+    /// Compromised (low-entropy) keys were detected at boot and regenerated.
+    case lowEntropyKeyRegenerated // = 13
+
+    ///
+    /// A restored key is a known low-entropy key; a new key was generated and the node number changed.
+    case lowEntropyKeyRestoreRejected // = 14
+
+    ///
+    /// Licensed mode activated: the admin channel and encryption were removed from all channels.
+    case licensedModeActivated // = 15
+
+    ///
+    /// Licensed signing needs an identity key; the node identity will change after key generation.
+    case licensedIdentityWillChange // = 16
+
+    ///
+    /// Licensed signing generated a new identity key; the node identity changed.
+    case licensedIdentityChanged // = 17
+
+    ///
+    /// Favorite or ignore refused: the protected-node limit is reached.
+    case protectedNodeLimitReached // = 18
+
+    ///
+    /// Rebroadcast mode NONE is not allowed for a router role; it was set to ALL.
+    case routerRebroadcastNoneRejected // = 19
+
+    ///
+    /// The packet signature policy is unavailable on this firmware build; it was set to COMPATIBLE.
+    case packetSignaturePolicyUnavailable // = 20
+
+    ///
+    /// Managed mode needs at least one admin public key; it was left disabled.
+    case managedModeRequiresAdminKey // = 21
+
+    ///
+    /// Precise position is not allowed on a public channel; precision was reduced.
+    case publicChannelPositionPrecisionReduced // = 22
+
+    ///
+    /// A channel has a blank PSK (no encryption) instead of the default key.
+    case channelBlankPsk // = 23
+
+    ///
+    /// A channel name looks like a mistyped modem preset name; the user should type it exactly.
+    case channelNamePresetMistype // = 24
+
+    ///
+    /// A channel name looks like a mistyped modem preset name; clearing it lets the preset name apply automatically.
+    case channelNamePresetMistypeClearName // = 42
+
+    ///
+    /// A channel resolves to or matches a modem preset but uses a non-default key.
+    case channelPresetNonDefaultKey // = 25
+
+    ///
+    /// After a modem preset change, a channel name still matches the old preset.
+    case channelNameMatchesOldPreset // = 26
+
+    ///
+    /// After a modem preset change, a channel name matches the new preset but won't auto-resolve.
+    case channelNameWontAutoResolve // = 27
+
+    ///
+    /// Name issues on one or more channels (several warnings combined).
+    case channelNameIssues // = 28
+
+    ///
+    /// PSK issues on one or more channels (several warnings combined).
+    case channelPskIssues // = 29
+
+    ///
+    /// Name and PSK issues on one or more channels (several warnings combined).
+    case channelNameAndPskIssues // = 30
+
+    ///
+    /// LoRa region code is not recognized.
+    case loraRegionUnrecognized // = 31
+
+    ///
+    /// LoRa region requires licensed mode.
+    case loraRegionRequiresLicense // = 32
+
+    ///
+    /// LoRa region needs a band (2.4 GHz or sub-GHz) this radio does not support.
+    case loraRegionUnsupportedByRadio // = 33
+
+    ///
+    /// The selected modem preset moved the node to a sibling region.
+    case loraPresetRegionSwap // = 34
+
+    ///
+    /// Modem preset is invalid for the region; the region default may have been applied.
+    case loraPresetInvalidForRegion // = 35
+
+    ///
+    /// Requested bandwidth is wider than the region's span; the region default may have been applied.
+    case loraBandwidthExceedsRegion // = 36
+
+    ///
+    /// Channel number is out of range for the region; a valid slot may have been applied.
+    case loraChannelNumInvalid // = 37
+
+    ///
+    /// Serial config rejected: overriding the console serial port needs an output-only mode (NMEA, CalTopo or MS Config).
+    case serialConsoleOverrideInvalid // = 38
+
+    ///
+    /// MQTT server could not be reached; the settings were saved anyway.
+    case mqttServerUnreachable // = 39
+
+    ///
+    /// MQTT config rejected: proxy_to_client_enabled is required on a node without a network.
+    case mqttProxyToClientRequired // = 40
+
+    ///
+    /// MQTT config rejected: the default server address must not have a port specified.
+    case mqttDefaultServerPortInvalid // = 41
+
+    ///
+    /// OTA refused: the provided ota_hash is invalid.
+    case otaInvalidHash // = 43
+
+    ///
+    /// OTA refused: no OTA loader partition was found.
+    case otaLoaderPartitionMissing // = 44
+
+    ///
+    /// OTA refused: the OTA loader partition does not hold a valid loader.
+    case otaLoaderInvalid // = 45
+
+    ///
+    /// OTA refused: the OTA loader does not support the requested mode (BLE or WiFi).
+    case otaModeUnsupported // = 46
+
+    ///
+    /// OTA accepted: rebooting into the OTA loader for the requested mode.
+    case otaRebooting // = 47
+
+    ///
+    /// OTA refused: switching to the OTA partition failed.
+    case otaPartitionSwitchFailed // = 48
+
+    ///
+    /// A NodeInfo update without a valid signature tried to change a known node's name or role,
+    /// and packet_signature_policy (Balanced or Strict) refused it. The stored identity is kept.
+    case unsignedIdentityUpdateIgnored // = 49
+    case UNRECOGNIZED(Int)
+
+    public init() {
+      self = .unset
+    }
+
+    public init?(rawValue: Int) {
+      switch rawValue {
+      case 0: self = .unset
+      case 1: self = .positionSharingDisabled
+      case 2: self = .tracerouteRateLimited
+      case 3: self = .tracerouteBroadcastRejected
+      case 4: self = .dutyCycleLimitExceeded
+      case 5: self = .positionSentSleeping
+      case 6: self = .telemetrySentSleeping
+      case 7: self = .keyVerificationNumberInform
+      case 8: self = .keyVerificationNumberRequest
+      case 9: self = .keyVerificationFinalIncoming
+      case 10: self = .keyVerificationFinalOutgoing
+      case 11: self = .keyVerificationLicensedUnavailable
+      case 12: self = .duplicatedPublicKey
+      case 13: self = .lowEntropyKeyRegenerated
+      case 14: self = .lowEntropyKeyRestoreRejected
+      case 15: self = .licensedModeActivated
+      case 16: self = .licensedIdentityWillChange
+      case 17: self = .licensedIdentityChanged
+      case 18: self = .protectedNodeLimitReached
+      case 19: self = .routerRebroadcastNoneRejected
+      case 20: self = .packetSignaturePolicyUnavailable
+      case 21: self = .managedModeRequiresAdminKey
+      case 22: self = .publicChannelPositionPrecisionReduced
+      case 23: self = .channelBlankPsk
+      case 24: self = .channelNamePresetMistype
+      case 25: self = .channelPresetNonDefaultKey
+      case 26: self = .channelNameMatchesOldPreset
+      case 27: self = .channelNameWontAutoResolve
+      case 28: self = .channelNameIssues
+      case 29: self = .channelPskIssues
+      case 30: self = .channelNameAndPskIssues
+      case 31: self = .loraRegionUnrecognized
+      case 32: self = .loraRegionRequiresLicense
+      case 33: self = .loraRegionUnsupportedByRadio
+      case 34: self = .loraPresetRegionSwap
+      case 35: self = .loraPresetInvalidForRegion
+      case 36: self = .loraBandwidthExceedsRegion
+      case 37: self = .loraChannelNumInvalid
+      case 38: self = .serialConsoleOverrideInvalid
+      case 39: self = .mqttServerUnreachable
+      case 40: self = .mqttProxyToClientRequired
+      case 41: self = .mqttDefaultServerPortInvalid
+      case 42: self = .channelNamePresetMistypeClearName
+      case 43: self = .otaInvalidHash
+      case 44: self = .otaLoaderPartitionMissing
+      case 45: self = .otaLoaderInvalid
+      case 46: self = .otaModeUnsupported
+      case 47: self = .otaRebooting
+      case 48: self = .otaPartitionSwitchFailed
+      case 49: self = .unsignedIdentityUpdateIgnored
+      default: self = .UNRECOGNIZED(rawValue)
+      }
+    }
+
+    public var rawValue: Int {
+      switch self {
+      case .unset: return 0
+      case .positionSharingDisabled: return 1
+      case .tracerouteRateLimited: return 2
+      case .tracerouteBroadcastRejected: return 3
+      case .dutyCycleLimitExceeded: return 4
+      case .positionSentSleeping: return 5
+      case .telemetrySentSleeping: return 6
+      case .keyVerificationNumberInform: return 7
+      case .keyVerificationNumberRequest: return 8
+      case .keyVerificationFinalIncoming: return 9
+      case .keyVerificationFinalOutgoing: return 10
+      case .keyVerificationLicensedUnavailable: return 11
+      case .duplicatedPublicKey: return 12
+      case .lowEntropyKeyRegenerated: return 13
+      case .lowEntropyKeyRestoreRejected: return 14
+      case .licensedModeActivated: return 15
+      case .licensedIdentityWillChange: return 16
+      case .licensedIdentityChanged: return 17
+      case .protectedNodeLimitReached: return 18
+      case .routerRebroadcastNoneRejected: return 19
+      case .packetSignaturePolicyUnavailable: return 20
+      case .managedModeRequiresAdminKey: return 21
+      case .publicChannelPositionPrecisionReduced: return 22
+      case .channelBlankPsk: return 23
+      case .channelNamePresetMistype: return 24
+      case .channelPresetNonDefaultKey: return 25
+      case .channelNameMatchesOldPreset: return 26
+      case .channelNameWontAutoResolve: return 27
+      case .channelNameIssues: return 28
+      case .channelPskIssues: return 29
+      case .channelNameAndPskIssues: return 30
+      case .loraRegionUnrecognized: return 31
+      case .loraRegionRequiresLicense: return 32
+      case .loraRegionUnsupportedByRadio: return 33
+      case .loraPresetRegionSwap: return 34
+      case .loraPresetInvalidForRegion: return 35
+      case .loraBandwidthExceedsRegion: return 36
+      case .loraChannelNumInvalid: return 37
+      case .serialConsoleOverrideInvalid: return 38
+      case .mqttServerUnreachable: return 39
+      case .mqttProxyToClientRequired: return 40
+      case .mqttDefaultServerPortInvalid: return 41
+      case .channelNamePresetMistypeClearName: return 42
+      case .otaInvalidHash: return 43
+      case .otaLoaderPartitionMissing: return 44
+      case .otaLoaderInvalid: return 45
+      case .otaModeUnsupported: return 46
+      case .otaRebooting: return 47
+      case .otaPartitionSwitchFailed: return 48
+      case .unsignedIdentityUpdateIgnored: return 49
+      case .UNRECOGNIZED(let i): return i
+      }
+    }
+
+    // The compiler won't synthesize support with the UNRECOGNIZED case.
+    public static let allCases: [ClientNotification.NotificationType] = [
+      .unset,
+      .positionSharingDisabled,
+      .tracerouteRateLimited,
+      .tracerouteBroadcastRejected,
+      .dutyCycleLimitExceeded,
+      .positionSentSleeping,
+      .telemetrySentSleeping,
+      .keyVerificationNumberInform,
+      .keyVerificationNumberRequest,
+      .keyVerificationFinalIncoming,
+      .keyVerificationFinalOutgoing,
+      .keyVerificationLicensedUnavailable,
+      .duplicatedPublicKey,
+      .lowEntropyKeyRegenerated,
+      .lowEntropyKeyRestoreRejected,
+      .licensedModeActivated,
+      .licensedIdentityWillChange,
+      .licensedIdentityChanged,
+      .protectedNodeLimitReached,
+      .routerRebroadcastNoneRejected,
+      .packetSignaturePolicyUnavailable,
+      .managedModeRequiresAdminKey,
+      .publicChannelPositionPrecisionReduced,
+      .channelBlankPsk,
+      .channelNamePresetMistype,
+      .channelNamePresetMistypeClearName,
+      .channelPresetNonDefaultKey,
+      .channelNameMatchesOldPreset,
+      .channelNameWontAutoResolve,
+      .channelNameIssues,
+      .channelPskIssues,
+      .channelNameAndPskIssues,
+      .loraRegionUnrecognized,
+      .loraRegionRequiresLicense,
+      .loraRegionUnsupportedByRadio,
+      .loraPresetRegionSwap,
+      .loraPresetInvalidForRegion,
+      .loraBandwidthExceedsRegion,
+      .loraChannelNumInvalid,
+      .serialConsoleOverrideInvalid,
+      .mqttServerUnreachable,
+      .mqttProxyToClientRequired,
+      .mqttDefaultServerPortInvalid,
+      .otaInvalidHash,
+      .otaLoaderPartitionMissing,
+      .otaLoaderInvalid,
+      .otaModeUnsupported,
+      .otaRebooting,
+      .otaPartitionSwitchFailed,
+      .unsignedIdentityUpdateIgnored,
+    ]
+
+  }
+
   public init() {}
 
   fileprivate var _replyID: UInt32? = nil
 }
 
-public struct KeyVerificationNumberInform: Sendable {
+public nonisolated struct KeyVerificationNumberInform: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -4685,7 +5069,7 @@ public struct KeyVerificationNumberInform: Sendable {
   public init() {}
 }
 
-public struct KeyVerificationNumberRequest: Sendable {
+public nonisolated struct KeyVerificationNumberRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -4699,7 +5083,7 @@ public struct KeyVerificationNumberRequest: Sendable {
   public init() {}
 }
 
-public struct KeyVerificationFinal: Sendable {
+public nonisolated struct KeyVerificationFinal: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -4717,7 +5101,7 @@ public struct KeyVerificationFinal: Sendable {
   public init() {}
 }
 
-public struct DuplicatedPublicKey: Sendable {
+public nonisolated struct DuplicatedPublicKey: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -4727,7 +5111,7 @@ public struct DuplicatedPublicKey: Sendable {
   public init() {}
 }
 
-public struct LowEntropyKey: Sendable {
+public nonisolated struct LowEntropyKey: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -4739,7 +5123,7 @@ public struct LowEntropyKey: Sendable {
 
 ///
 /// Individual File info for the device
-public struct FileInfo: Sendable {
+public nonisolated struct FileInfo: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -4760,7 +5144,7 @@ public struct FileInfo: Sendable {
 ///
 /// Packets/commands to the radio will be written (reliably) to the toRadio characteristic.
 /// Once the write completes the phone can assume it is handled.
-public struct ToRadio: Sendable {
+public nonisolated struct ToRadio: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -4840,7 +5224,7 @@ public struct ToRadio: Sendable {
 
   ///
   /// Log levels, chosen to match python logging conventions.
-  public enum OneOf_PayloadVariant: Equatable, Sendable {
+  public nonisolated enum OneOf_PayloadVariant: Equatable, Sendable {
     ///
     /// Send this packet on the mesh
     case packet(MeshPacket)
@@ -4874,7 +5258,7 @@ public struct ToRadio: Sendable {
 
 ///
 /// Compressed message payload
-public struct Compressed: Sendable {
+public nonisolated struct Compressed: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -4894,7 +5278,7 @@ public struct Compressed: Sendable {
 
 ///
 /// Full info on edges for a single node
-public struct NeighborInfo: Sendable {
+public nonisolated struct NeighborInfo: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -4922,7 +5306,7 @@ public struct NeighborInfo: Sendable {
 
 ///
 /// A single edge in the mesh
-public struct Neighbor: Sendable {
+public nonisolated struct Neighbor: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -4952,7 +5336,7 @@ public struct Neighbor: Sendable {
 
 ///
 /// Device metadata response
-public struct DeviceMetadata: @unchecked Sendable {
+public nonisolated struct DeviceMetadata: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -5064,6 +5448,29 @@ public struct DeviceMetadata: @unchecked Sendable {
   /// Clears the value of `display`. Subsequent reads from it will return its default value.
   public mutating func clearDisplay() {_uniqueStorage()._display = nil}
 
+  ///
+  /// The address this node's BLE radio advertises and accepts connections on, as
+  /// colon-separated uppercase hex, most significant byte first ("AA:BB:CC:DD:EE:FF").
+  /// Read from the BLE stack, so it is the address phones and other centrals see.
+  /// It can differ from User.macaddr: on ESP32, Bluetooth uses its own MAC derived
+  /// from the base MAC. Reported while Bluetooth is disabled in config whenever the
+  /// hardware address is known. Empty when the device has no BLE radio or the
+  /// address cannot be determined.
+  public var bleAddress: String {
+    get {_storage._bleAddress}
+    set {_uniqueStorage()._bleAddress = newValue}
+  }
+
+  ///
+  /// nRF52 bootloader version, packed as major << 16 | minor << 8 | patch, as the
+  /// bootloader hands it to the application at boot. Meshtastic nRF52 Bootloader
+  /// releases before 2.6.0 report 0.9.2, the same as stock Adafruit 0.9.2. 0 means
+  /// not reported: a non-nRF52 device, or firmware that predates this field.
+  public var bootloaderVersion: UInt32 {
+    get {_storage._bootloaderVersion}
+    set {_uniqueStorage()._bootloaderVersion = newValue}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -5074,7 +5481,7 @@ public struct DeviceMetadata: @unchecked Sendable {
 ///
 /// Static description of a device's display, sent inside DeviceMetadata
 /// during the connection handshake.
-public struct DisplayInfo: Sendable {
+public nonisolated struct DisplayInfo: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -5105,7 +5512,7 @@ public struct DisplayInfo: Sendable {
   ///
   /// Physical panel technology, as a hint for client rendering and refresh
   /// expectations.
-  public enum PanelClass: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum PanelClass: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
     ///
@@ -5183,7 +5590,7 @@ public struct DisplayInfo: Sendable {
 /// the same group (by index) via LoRaRegionPresetMap.region_groups. This keeps
 /// the whole map small enough to fit in a single FromRadio packet, since most
 /// regions share the one standard preset list.
-public struct LoRaPresetGroup: Sendable {
+public nonisolated struct LoRaPresetGroup: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -5210,7 +5617,7 @@ public struct LoRaPresetGroup: Sendable {
 
 ///
 /// Associates a single LoRa region with its preset group.
-public struct LoRaRegionPresets: Sendable {
+public nonisolated struct LoRaRegionPresets: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -5240,7 +5647,7 @@ public struct LoRaRegionPresets: Sendable {
 /// information and should not be restricted by the client (e.g. firmware that
 /// predates this message, or a region with no firmware table entry). Clients
 /// must also tolerate this whole message being absent.
-public struct LoRaRegionPresetMap: Sendable {
+public nonisolated struct LoRaRegionPresetMap: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -5262,7 +5669,7 @@ public struct LoRaRegionPresetMap: Sendable {
 ///
 /// A heartbeat message is sent to the node from the client to keep the connection alive.
 /// This is currently only needed to keep serial connections alive, but can be used by any PhoneAPI.
-public struct Heartbeat: Sendable {
+public nonisolated struct Heartbeat: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -5278,7 +5685,7 @@ public struct Heartbeat: Sendable {
 
 ///
 /// RemoteHardwarePins associated with a node
-public struct NodeRemoteHardwarePin: Sendable {
+public nonisolated struct NodeRemoteHardwarePin: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -5305,7 +5712,7 @@ public struct NodeRemoteHardwarePin: Sendable {
   fileprivate var _pin: RemoteHardwarePin? = nil
 }
 
-public struct ChunkedPayload: Sendable {
+public nonisolated struct ChunkedPayload: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -5333,7 +5740,7 @@ public struct ChunkedPayload: Sendable {
 
 ///
 /// Wrapper message for broken repeated oneof support
-public struct resend_chunks: Sendable {
+public nonisolated struct resend_chunks: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -5347,7 +5754,7 @@ public struct resend_chunks: Sendable {
 
 ///
 /// Responses to a ChunkedPayload request
-public struct ChunkedPayloadResponse: Sendable {
+public nonisolated struct ChunkedPayloadResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -5390,7 +5797,7 @@ public struct ChunkedPayloadResponse: Sendable {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public enum OneOf_PayloadVariant: Equatable, Sendable {
+  public nonisolated enum OneOf_PayloadVariant: Equatable, Sendable {
     ///
     /// Request to transfer chunked payload
     case requestTransfer(Bool)
@@ -5408,29 +5815,29 @@ public struct ChunkedPayloadResponse: Sendable {
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "meshtastic"
+fileprivate nonisolated let _protobuf_package = "meshtastic"
 
-extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension HardwareModel: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSET\0\u{1}TLORA_V2\0\u{1}TLORA_V1\0\u{1}TLORA_V2_1_1P6\0\u{1}TBEAM\0\u{1}HELTEC_V2_0\0\u{1}TBEAM_V0P7\0\u{1}T_ECHO\0\u{1}TLORA_V1_1P3\0\u{1}RAK4631\0\u{1}HELTEC_V2_1\0\u{1}HELTEC_V1\0\u{1}LILYGO_TBEAM_S3_CORE\0\u{1}RAK11200\0\u{1}NANO_G1\0\u{1}TLORA_V2_1_1P8\0\u{1}TLORA_T3_S3\0\u{1}NANO_G1_EXPLORER\0\u{1}NANO_G2_ULTRA\0\u{1}LORA_TYPE\0\u{1}WIPHONE\0\u{1}WIO_WM1110\0\u{1}RAK2560\0\u{1}HELTEC_HRU_3601\0\u{1}HELTEC_WIRELESS_BRIDGE\0\u{1}STATION_G1\0\u{1}RAK11310\0\u{1}MAKERFABS_TRACKER\0\u{1}MAKERFABS_RESERVED\0\u{1}CANARYONE\0\u{1}RP2040_LORA\0\u{1}STATION_G2\0\u{1}LORA_RELAY_V1\0\u{1}T_ECHO_PLUS\0\u{1}PPR\0\u{1}GENIEBLOCKS\0\u{1}NRF52_UNKNOWN\0\u{1}PORTDUINO\0\u{1}ANDROID_SIM\0\u{1}DIY_V1\0\u{1}NRF52840_PCA10059\0\u{1}DR_DEV\0\u{1}M5STACK\0\u{1}HELTEC_V3\0\u{1}HELTEC_WSL_V3\0\u{1}BETAFPV_2400_TX\0\u{1}BETAFPV_900_NANO_TX\0\u{1}RPI_PICO\0\u{1}HELTEC_WIRELESS_TRACKER\0\u{1}HELTEC_WIRELESS_PAPER\0\u{1}T_DECK\0\u{1}T_WATCH_S3\0\u{1}PICOMPUTER_S3\0\u{1}HELTEC_HT62\0\u{1}EBYTE_ESP32_S3\0\u{1}ESP32_S3_PICO\0\u{1}CHATTER_2\0\u{1}HELTEC_WIRELESS_PAPER_V1_0\0\u{1}HELTEC_WIRELESS_TRACKER_V1_0\0\u{1}UNPHONE\0\u{1}TD_LORAC\0\u{1}CDEBYTE_EORA_S3\0\u{1}TWC_MESH_V4\0\u{1}NRF52_PROMICRO_DIY\0\u{1}RADIOMASTER_900_BANDIT_NANO\0\u{1}HELTEC_CAPSULE_SENSOR_V3\0\u{1}HELTEC_VISION_MASTER_T190\0\u{1}HELTEC_VISION_MASTER_E213\0\u{1}HELTEC_VISION_MASTER_E290\0\u{1}HELTEC_MESH_NODE_T114\0\u{1}SENSECAP_INDICATOR\0\u{1}TRACKER_T1000_E\0\u{1}RAK3172\0\u{1}WIO_E5\0\u{1}RADIOMASTER_900_BANDIT\0\u{1}ME25LS01_4Y10TD\0\u{1}RP2040_FEATHER_RFM95\0\u{1}M5STACK_COREBASIC\0\u{1}M5STACK_CORE2\0\u{1}RPI_PICO2\0\u{1}M5STACK_CORES3\0\u{1}SEEED_XIAO_S3\0\u{1}MS24SF1\0\u{1}TLORA_C6\0\u{1}WISMESH_TAP\0\u{1}ROUTASTIC\0\u{1}MESH_TAB\0\u{1}MESHLINK\0\u{1}XIAO_NRF52_KIT\0\u{1}THINKNODE_M1\0\u{1}THINKNODE_M2\0\u{1}T_ETH_ELITE\0\u{1}HELTEC_SENSOR_HUB\0\u{1}MUZI_BASE\0\u{1}HELTEC_MESH_POCKET\0\u{1}SEEED_SOLAR_NODE\0\u{1}NOMADSTAR_METEOR_PRO\0\u{1}CROWPANEL\0\u{1}LINK_32\0\u{1}SEEED_WIO_TRACKER_L1\0\u{1}SEEED_WIO_TRACKER_L1_EINK\0\u{1}MUZI_R1_NEO\0\u{1}T_DECK_PRO\0\u{1}T_LORA_PAGER\0\u{1}M5STACK_RESERVED\0\u{1}WISMESH_TAG\0\u{1}RAK3312\0\u{1}THINKNODE_M5\0\u{1}HELTEC_MESH_SOLAR\0\u{1}T_ECHO_LITE\0\u{1}HELTEC_V4\0\u{1}M5STACK_C6L\0\u{1}M5STACK_CARDPUTER_ADV\0\u{1}HELTEC_WIRELESS_TRACKER_V2\0\u{1}T_WATCH_ULTRA\0\u{1}THINKNODE_M3\0\u{1}WISMESH_TAP_V2\0\u{1}RAK3401\0\u{1}RAK6421\0\u{1}THINKNODE_M4\0\u{1}THINKNODE_M6\0\u{1}MESHSTICK_1262\0\u{1}TBEAM_1_WATT\0\u{1}T5_S3_EPAPER_PRO\0\u{1}TBEAM_BPF\0\u{1}MINI_EPAPER_S3\0\u{1}TDISPLAY_S3_PRO\0\u{1}HELTEC_MESH_NODE_T096\0\u{1}MESH_TRACKER_X1\0\u{1}THINKNODE_M7\0\u{1}THINKNODE_M8\0\u{1}THINKNODE_M9\0\u{1}HELTEC_V4_R8\0\u{1}HELTEC_MESH_NODE_T1\0\u{1}STATION_G3\0\u{1}T_IMPULSE_PLUS\0\u{1}T_ECHO_CARD\0\u{1}SEEED_WIO_TRACKER_L2\0\u{1}CROWPANEL_P4\0\u{1}HELTEC_MESH_TOWER_V2\0\u{1}MESHNOLOGY_W10\0\u{1}HELTEC_RC32\0\u{1}HELTEC_RC52\0\u{1}HELTEC_RCC6\0\u{1}SEEED_WIO_TRACKER_L1_PRO_1W\0\u{1}MESHNOLOGY_W12\0\u{1}MESHPAGER_X2\0\u{1}T_CONNECT_PRO\0\u{1}AXIOMETA_GENESIS_MINI\0\u{1}MAKERFABS_NOMAD_TERMINAL\0\u{1}THINKNODE_MX\0\u{1}NODARA\0\u{1}HELTEC_MESH_POCKET_V2\0\u{2}g\u{1}PRIVATE_HW\0")
 }
 
-extension Constants: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Constants: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0ZERO\0\u{2}i\u{3}DATA_PAYLOAD_LEN\0")
 }
 
-extension CriticalErrorCode: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension CriticalErrorCode: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0NONE\0\u{1}TX_WATCHDOG\0\u{1}SLEEP_ENTER_WAIT\0\u{1}NO_RADIO\0\u{1}UNSPECIFIED\0\u{1}UBLOX_UNIT_FAILED\0\u{1}NO_AXP192\0\u{1}INVALID_RADIO_SETTING\0\u{1}TRANSMIT_FAILED\0\u{1}BROWNOUT\0\u{1}SX1262_FAILURE\0\u{1}RADIO_SPI_BUG\0\u{1}FLASH_CORRUPTION_RECOVERABLE\0\u{1}FLASH_CORRUPTION_UNRECOVERABLE\0")
 }
 
-extension FirmwareEdition: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension FirmwareEdition: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0VANILLA\0\u{1}SMART_CITIZEN\0\u{2}\u{f}OPEN_SAUCE\0\u{1}DEFCON\0\u{1}BURNING_MAN\0\u{1}HAMVENTION\0\u{1}FAB\0\u{1}DRAGON_CON\0\u{1}CCC\0\u{2}i\u{1}DIY_EDITION\0")
 }
 
-extension ExcludedModules: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension ExcludedModules: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0EXCLUDED_NONE\0\u{1}MQTT_CONFIG\0\u{1}SERIAL_CONFIG\0\u{2}\u{2}EXTNOTIF_CONFIG\0\u{2}\u{4}STOREFORWARD_CONFIG\0\u{2}\u{8}RANGETEST_CONFIG\0\u{2}\u{10}TELEMETRY_CONFIG\0\u{2} CANNEDMSG_CONFIG\0\u{2}@\u{1}AUDIO_CONFIG\0\u{2}@\u{2}REMOTEHARDWARE_CONFIG\0\u{2}@\u{4}NEIGHBORINFO_CONFIG\0\u{2}@\u{8}AMBIENTLIGHTING_CONFIG\0\u{2}@\u{10}DETECTIONSENSOR_CONFIG\0\u{2}@ PAXCOUNTER_CONFIG\0\u{2}@@\u{1}BLUETOOTH_CONFIG\0\u{2}@@\u{2}NETWORK_CONFIG\0\u{2}@@\u{4}STATUSMESSAGE_CONFIG\0\u{2}@@\u{8}TRAFFICMANAGEMENT_CONFIG\0\u{2}@@\u{10}TAK_CONFIG\0\u{2}@@ MESHBEACON_CONFIG\0")
 }
 
-extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Position"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}latitude_i\0\u{3}longitude_i\0\u{1}altitude\0\u{1}time\0\u{3}location_source\0\u{3}altitude_source\0\u{1}timestamp\0\u{3}timestamp_millis_adjust\0\u{3}altitude_hae\0\u{3}altitude_geoidal_separation\0\u{1}PDOP\0\u{1}HDOP\0\u{1}VDOP\0\u{3}gps_accuracy\0\u{3}ground_speed\0\u{3}ground_track\0\u{3}fix_quality\0\u{3}fix_type\0\u{3}sats_in_view\0\u{3}sensor_id\0\u{3}next_update\0\u{3}seq_number\0\u{3}precision_bits\0")
 
@@ -5654,15 +6061,15 @@ extension Position: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
   }
 }
 
-extension Position.LocSource: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Position.LocSource: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0LOC_UNSET\0\u{1}LOC_MANUAL\0\u{1}LOC_INTERNAL\0\u{1}LOC_EXTERNAL\0")
 }
 
-extension Position.AltSource: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Position.AltSource: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0ALT_UNSET\0\u{1}ALT_MANUAL\0\u{1}ALT_INTERNAL\0\u{1}ALT_EXTERNAL\0\u{1}ALT_BAROMETRIC\0")
 }
 
-extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".User"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{3}long_name\0\u{3}short_name\0\u{1}macaddr\0\u{3}hw_model\0\u{3}is_licensed\0\u{1}role\0\u{3}public_key\0\u{3}is_unmessagable\0")
 
@@ -5736,7 +6143,7 @@ extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
   }
 }
 
-extension RouteDiscovery: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension RouteDiscovery: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".RouteDiscovery"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}route\0\u{3}snr_towards\0\u{3}route_back\0\u{3}snr_back\0")
 
@@ -5781,7 +6188,7 @@ extension RouteDiscovery: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
   }
 }
 
-extension Routing: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Routing: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Routing"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}route_request\0\u{3}route_reply\0\u{3}error_reason\0\u{3}ack_proof\0")
 
@@ -5865,11 +6272,11 @@ extension Routing: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
   }
 }
 
-extension Routing.Error: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Routing.Error: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0NONE\0\u{1}NO_ROUTE\0\u{1}GOT_NAK\0\u{1}TIMEOUT\0\u{1}NO_INTERFACE\0\u{1}MAX_RETRANSMIT\0\u{1}NO_CHANNEL\0\u{1}TOO_LARGE\0\u{1}NO_RESPONSE\0\u{1}DUTY_CYCLE_LIMIT\0\u{2}\u{17}BAD_REQUEST\0\u{1}NOT_AUTHORIZED\0\u{1}PKI_FAILED\0\u{1}PKI_UNKNOWN_PUBKEY\0\u{1}ADMIN_BAD_SESSION_KEY\0\u{1}ADMIN_PUBLIC_KEY_UNAUTHORIZED\0\u{1}RATE_LIMIT_EXCEEDED\0\u{1}PKI_SEND_FAIL_PUBLIC_KEY\0")
 }
 
-extension DataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension DataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Data"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}portnum\0\u{1}payload\0\u{3}want_response\0\u{1}dest\0\u{1}source\0\u{3}request_id\0\u{3}reply_id\0\u{1}emoji\0\u{1}bitfield\0\u{3}xeddsa_signature\0")
 
@@ -5948,7 +6355,7 @@ extension DataMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
   }
 }
 
-extension KeyVerification: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension KeyVerification: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".KeyVerification"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}nonce\0\u{1}hash1\0\u{1}hash2\0")
 
@@ -5988,7 +6395,7 @@ extension KeyVerification: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
   }
 }
 
-extension StoreForwardPlusPlus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension StoreForwardPlusPlus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".StoreForwardPlusPlus"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}sfpp_message_type\0\u{3}message_hash\0\u{3}commit_hash\0\u{3}root_hash\0\u{1}message\0\u{3}encapsulated_id\0\u{3}encapsulated_to\0\u{3}encapsulated_from\0\u{3}encapsulated_rxtime\0\u{3}chain_count\0")
 
@@ -6063,11 +6470,11 @@ extension StoreForwardPlusPlus: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
   }
 }
 
-extension StoreForwardPlusPlus.SFPP_message_type: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension StoreForwardPlusPlus.SFPP_message_type: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0CANON_ANNOUNCE\0\u{1}CHAIN_QUERY\0\u{2}\u{2}LINK_REQUEST\0\u{1}LINK_PROVIDE\0\u{1}LINK_PROVIDE_FIRSTHALF\0\u{1}LINK_PROVIDE_SECONDHALF\0")
 }
 
-extension RemoteShell: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension RemoteShell: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".RemoteShell"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}op\0\u{3}session_id\0\u{1}seq\0\u{3}ack_seq\0\u{1}payload\0\u{1}cols\0\u{1}rows\0\u{1}flags\0\u{3}last_tx_seq\0\u{3}last_rx_seq\0")
 
@@ -6142,11 +6549,11 @@ extension RemoteShell: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
   }
 }
 
-extension RemoteShell.OpCode: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension RemoteShell.OpCode: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0OP_UNSET\0\u{1}OPEN\0\u{1}INPUT\0\u{1}RESIZE\0\u{1}CLOSE\0\u{1}PING\0\u{1}ACK\0\u{2}:OPEN_OK\0\u{1}OUTPUT\0\u{1}CLOSED\0\u{1}ERROR\0\u{1}PONG\0")
 }
 
-extension BoundingBox: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension BoundingBox: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".BoundingBox"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}longitude_west_i\0\u{3}latitude_south_i\0\u{3}longitude_east_i\0\u{3}latitude_north_i\0")
 
@@ -6191,7 +6598,7 @@ extension BoundingBox: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
   }
 }
 
-extension Waypoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Waypoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Waypoint"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{3}latitude_i\0\u{3}longitude_i\0\u{1}expire\0\u{3}locked_to\0\u{1}name\0\u{1}description\0\u{1}icon\0\u{3}geofence_radius\0\u{3}bounding_box\0\u{3}notify_on_enter\0\u{3}notify_on_exit\0\u{3}notify_favorites_only\0")
 
@@ -6285,7 +6692,7 @@ extension Waypoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
   }
 }
 
-extension StatusMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension StatusMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".StatusMessage"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}status\0")
 
@@ -6315,7 +6722,7 @@ extension StatusMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
   }
 }
 
-extension MqttClientProxyMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension MqttClientProxyMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".MqttClientProxyMessage"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}topic\0\u{1}data\0\u{1}text\0\u{1}retained\0")
 
@@ -6382,7 +6789,7 @@ extension MqttClientProxyMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageI
   }
 }
 
-extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".MeshPacket"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}from\0\u{1}to\0\u{1}channel\0\u{1}decoded\0\u{1}encrypted\0\u{1}id\0\u{3}rx_time\0\u{3}rx_snr\0\u{3}hop_limit\0\u{3}want_ack\0\u{1}priority\0\u{3}rx_rssi\0\u{1}delayed\0\u{3}via_mqtt\0\u{3}hop_start\0\u{3}public_key\0\u{3}pki_encrypted\0\u{3}next_hop\0\u{3}relay_node\0\u{3}tx_after\0\u{3}transport_mechanism\0\u{3}xeddsa_signed\0\u{3}ack_proof_status\0\u{3}slot_parity\0")
 
@@ -6634,27 +7041,27 @@ extension MeshPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
   }
 }
 
-extension MeshPacket.Priority: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension MeshPacket.Priority: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSET\0\u{1}MIN\0\u{2}\u{9}BACKGROUND\0\u{2}6DEFAULT\0\u{2}\u{6}RELIABLE\0\u{2}\u{a}RESPONSE\0\u{2}\u{14}HIGH\0\u{2}\u{a}ALERT\0\u{2}\u{a}ACK\0\u{2}\u{7}MAX\0")
 }
 
-extension MeshPacket.Delayed: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension MeshPacket.Delayed: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0NO_DELAY\0\u{1}DELAYED_BROADCAST\0\u{1}DELAYED_DIRECT\0")
 }
 
-extension MeshPacket.TransportMechanism: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension MeshPacket.TransportMechanism: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0TRANSPORT_INTERNAL\0\u{1}TRANSPORT_LORA\0\u{1}TRANSPORT_LORA_ALT1\0\u{1}TRANSPORT_LORA_ALT2\0\u{1}TRANSPORT_LORA_ALT3\0\u{1}TRANSPORT_MQTT\0\u{1}TRANSPORT_MULTICAST_UDP\0\u{1}TRANSPORT_API\0\u{1}TRANSPORT_UNICAST_UDP\0")
 }
 
-extension MeshPacket.AckProofStatus: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension MeshPacket.AckProofStatus: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0ACK_PROOF_ABSENT\0\u{1}ACK_PROOF_VALID\0\u{1}ACK_PROOF_INVALID\0\u{1}ACK_PROOF_NO_KEY\0")
 }
 
-extension MeshPacket.SlotParity: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension MeshPacket.SlotParity: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0SLOT_PARITY_UNSET\0\u{1}SLOT_PARITY_EVEN\0\u{1}SLOT_PARITY_ODD\0")
 }
 
-extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".NodeInfo"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}num\0\u{1}user\0\u{1}position\0\u{1}snr\0\u{3}last_heard\0\u{3}device_metrics\0\u{1}channel\0\u{3}via_mqtt\0\u{3}hops_away\0\u{3}is_favorite\0\u{3}is_ignored\0\u{3}is_key_manually_verified\0\u{3}is_muted\0\u{3}has_xeddsa_signed\0\u{3}heard_on_current_lora\0")
 
@@ -6822,7 +7229,7 @@ extension NodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
   }
 }
 
-extension MyNodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension MyNodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".MyNodeInfo"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}my_node_num\0\u{4}\u{7}reboot_count\0\u{4}\u{3}min_app_version\0\u{3}device_id\0\u{3}pio_env\0\u{3}firmware_edition\0\u{3}nodedb_count\0")
 
@@ -6882,7 +7289,7 @@ extension MyNodeInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
   }
 }
 
-extension LogRecord: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension LogRecord: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".LogRecord"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}message\0\u{1}time\0\u{1}source\0\u{1}level\0")
 
@@ -6927,11 +7334,11 @@ extension LogRecord: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
   }
 }
 
-extension LogRecord.Level: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension LogRecord.Level: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSET\0\u{2}\u{5}TRACE\0\u{2}\u{5}DEBUG\0\u{2}\u{a}INFO\0\u{2}\u{a}WARNING\0\u{2}\u{a}ERROR\0\u{2}\u{a}CRITICAL\0")
 }
 
-extension QueueStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension QueueStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".QueueStatus"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}res\0\u{1}free\0\u{1}maxlen\0\u{3}mesh_packet_id\0")
 
@@ -6976,7 +7383,7 @@ extension QueueStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
   }
 }
 
-extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".FromRadio"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{1}packet\0\u{3}my_info\0\u{3}node_info\0\u{1}config\0\u{3}log_record\0\u{3}config_complete_id\0\u{1}rebooted\0\u{1}moduleConfig\0\u{1}channel\0\u{1}queueStatus\0\u{1}xmodemPacket\0\u{1}metadata\0\u{1}mqttClientProxyMessage\0\u{1}fileInfo\0\u{1}clientNotification\0\u{1}deviceuiConfig\0\u{3}lockdown_status\0\u{3}region_presets\0\u{4}\u{2}display_frame\0\u{3}display_palette\0")
 
@@ -7382,7 +7789,7 @@ extension FromRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
   }
 }
 
-extension DisplayFrame: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension DisplayFrame: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DisplayFrame"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}width\0\u{1}height\0\u{1}format\0\u{3}frame_id\0\u{1}offset\0\u{3}total_size\0\u{1}data\0\u{3}rect_x\0\u{3}rect_y\0\u{3}rect_width\0\u{3}rect_height\0\u{3}palette_signature\0")
 
@@ -7467,11 +7874,11 @@ extension DisplayFrame: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
   }
 }
 
-extension DisplayFrame.Format: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension DisplayFrame.Format: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0FORMAT_UNSPECIFIED\0\u{1}MONO_VLSB\0\u{1}RGB565\0")
 }
 
-extension DisplayPalette: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension DisplayPalette: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DisplayPalette"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}signature\0\u{3}default_on_color\0\u{3}default_off_color\0\u{3}region_offset\0\u{3}region_total\0\u{1}regions\0")
 
@@ -7526,7 +7933,7 @@ extension DisplayPalette: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
   }
 }
 
-extension DisplayPalette.ColorRegion: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension DisplayPalette.ColorRegion: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = DisplayPalette.protoMessageName + ".ColorRegion"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}x\0\u{1}y\0\u{1}width\0\u{1}height\0\u{3}on_color\0\u{3}off_color\0")
 
@@ -7581,7 +7988,7 @@ extension DisplayPalette.ColorRegion: SwiftProtobuf.Message, SwiftProtobuf._Mess
   }
 }
 
-extension LockdownStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension LockdownStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".LockdownStatus"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}state\0\u{3}lock_reason\0\u{3}boots_remaining\0\u{3}valid_until_epoch\0\u{3}backoff_seconds\0")
 
@@ -7631,13 +8038,13 @@ extension LockdownStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
   }
 }
 
-extension LockdownStatus.State: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension LockdownStatus.State: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0STATE_UNSPECIFIED\0\u{1}NEEDS_PROVISION\0\u{1}LOCKED\0\u{1}UNLOCKED\0\u{1}UNLOCK_FAILED\0\u{1}DISABLED\0")
 }
 
-extension ClientNotification: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension ClientNotification: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ClientNotification"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}reply_id\0\u{1}time\0\u{1}level\0\u{1}message\0\u{4}\u{7}key_verification_number_inform\0\u{3}key_verification_number_request\0\u{3}key_verification_final\0\u{3}duplicated_public_key\0\u{3}low_entropy_key\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}reply_id\0\u{1}time\0\u{1}level\0\u{1}message\0\u{1}type\0\u{4}\u{6}key_verification_number_inform\0\u{3}key_verification_number_request\0\u{3}key_verification_final\0\u{3}duplicated_public_key\0\u{3}low_entropy_key\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -7649,6 +8056,7 @@ extension ClientNotification: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
       case 2: try { try decoder.decodeSingularFixed32Field(value: &self.time) }()
       case 3: try { try decoder.decodeSingularEnumField(value: &self.level) }()
       case 4: try { try decoder.decodeSingularStringField(value: &self.message) }()
+      case 5: try { try decoder.decodeSingularEnumField(value: &self.type) }()
       case 11: try {
         var v: KeyVerificationNumberInform?
         var hadOneofValue = false
@@ -7736,6 +8144,9 @@ extension ClientNotification: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     if !self.message.isEmpty {
       try visitor.visitSingularStringField(value: self.message, fieldNumber: 4)
     }
+    if self.type != .unset {
+      try visitor.visitSingularEnumField(value: self.type, fieldNumber: 5)
+    }
     switch self.payloadVariant {
     case .keyVerificationNumberInform?: try {
       guard case .keyVerificationNumberInform(let v)? = self.payloadVariant else { preconditionFailure() }
@@ -7767,13 +8178,18 @@ extension ClientNotification: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     if lhs.time != rhs.time {return false}
     if lhs.level != rhs.level {return false}
     if lhs.message != rhs.message {return false}
+    if lhs.type != rhs.type {return false}
     if lhs.payloadVariant != rhs.payloadVariant {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension KeyVerificationNumberInform: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension ClientNotification.NotificationType: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSET\0\u{1}POSITION_SHARING_DISABLED\0\u{1}TRACEROUTE_RATE_LIMITED\0\u{1}TRACEROUTE_BROADCAST_REJECTED\0\u{1}DUTY_CYCLE_LIMIT_EXCEEDED\0\u{1}POSITION_SENT_SLEEPING\0\u{1}TELEMETRY_SENT_SLEEPING\0\u{1}KEY_VERIFICATION_NUMBER_INFORM\0\u{1}KEY_VERIFICATION_NUMBER_REQUEST\0\u{1}KEY_VERIFICATION_FINAL_INCOMING\0\u{1}KEY_VERIFICATION_FINAL_OUTGOING\0\u{1}KEY_VERIFICATION_LICENSED_UNAVAILABLE\0\u{1}DUPLICATED_PUBLIC_KEY\0\u{1}LOW_ENTROPY_KEY_REGENERATED\0\u{1}LOW_ENTROPY_KEY_RESTORE_REJECTED\0\u{1}LICENSED_MODE_ACTIVATED\0\u{1}LICENSED_IDENTITY_WILL_CHANGE\0\u{1}LICENSED_IDENTITY_CHANGED\0\u{1}PROTECTED_NODE_LIMIT_REACHED\0\u{1}ROUTER_REBROADCAST_NONE_REJECTED\0\u{1}PACKET_SIGNATURE_POLICY_UNAVAILABLE\0\u{1}MANAGED_MODE_REQUIRES_ADMIN_KEY\0\u{1}PUBLIC_CHANNEL_POSITION_PRECISION_REDUCED\0\u{1}CHANNEL_BLANK_PSK\0\u{1}CHANNEL_NAME_PRESET_MISTYPE\0\u{1}CHANNEL_PRESET_NON_DEFAULT_KEY\0\u{1}CHANNEL_NAME_MATCHES_OLD_PRESET\0\u{1}CHANNEL_NAME_WONT_AUTO_RESOLVE\0\u{1}CHANNEL_NAME_ISSUES\0\u{1}CHANNEL_PSK_ISSUES\0\u{1}CHANNEL_NAME_AND_PSK_ISSUES\0\u{1}LORA_REGION_UNRECOGNIZED\0\u{1}LORA_REGION_REQUIRES_LICENSE\0\u{1}LORA_REGION_UNSUPPORTED_BY_RADIO\0\u{1}LORA_PRESET_REGION_SWAP\0\u{1}LORA_PRESET_INVALID_FOR_REGION\0\u{1}LORA_BANDWIDTH_EXCEEDS_REGION\0\u{1}LORA_CHANNEL_NUM_INVALID\0\u{1}SERIAL_CONSOLE_OVERRIDE_INVALID\0\u{1}MQTT_SERVER_UNREACHABLE\0\u{1}MQTT_PROXY_TO_CLIENT_REQUIRED\0\u{1}MQTT_DEFAULT_SERVER_PORT_INVALID\0\u{1}CHANNEL_NAME_PRESET_MISTYPE_CLEAR_NAME\0\u{1}OTA_INVALID_HASH\0\u{1}OTA_LOADER_PARTITION_MISSING\0\u{1}OTA_LOADER_INVALID\0\u{1}OTA_MODE_UNSUPPORTED\0\u{1}OTA_REBOOTING\0\u{1}OTA_PARTITION_SWITCH_FAILED\0\u{1}UNSIGNED_IDENTITY_UPDATE_IGNORED\0")
+}
+
+nonisolated extension KeyVerificationNumberInform: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".KeyVerificationNumberInform"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}nonce\0\u{3}remote_longname\0\u{3}security_number\0")
 
@@ -7813,7 +8229,7 @@ extension KeyVerificationNumberInform: SwiftProtobuf.Message, SwiftProtobuf._Mes
   }
 }
 
-extension KeyVerificationNumberRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension KeyVerificationNumberRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".KeyVerificationNumberRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}nonce\0\u{3}remote_longname\0")
 
@@ -7848,7 +8264,7 @@ extension KeyVerificationNumberRequest: SwiftProtobuf.Message, SwiftProtobuf._Me
   }
 }
 
-extension KeyVerificationFinal: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension KeyVerificationFinal: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".KeyVerificationFinal"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}nonce\0\u{3}remote_longname\0\u{1}isSender\0\u{3}verification_characters\0")
 
@@ -7893,7 +8309,7 @@ extension KeyVerificationFinal: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
   }
 }
 
-extension DuplicatedPublicKey: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension DuplicatedPublicKey: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DuplicatedPublicKey"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
@@ -7912,7 +8328,7 @@ extension DuplicatedPublicKey: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
   }
 }
 
-extension LowEntropyKey: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension LowEntropyKey: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".LowEntropyKey"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 
@@ -7931,7 +8347,7 @@ extension LowEntropyKey: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
   }
 }
 
-extension FileInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension FileInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".FileInfo"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}file_name\0\u{3}size_bytes\0")
 
@@ -7966,7 +8382,7 @@ extension FileInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
   }
 }
 
-extension ToRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension ToRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ToRadio"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}packet\0\u{4}\u{2}want_config_id\0\u{1}disconnect\0\u{1}xmodemPacket\0\u{1}mqttClientProxyMessage\0\u{1}heartbeat\0")
 
@@ -8091,7 +8507,7 @@ extension ToRadio: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
   }
 }
 
-extension Compressed: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Compressed: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Compressed"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}portnum\0\u{1}data\0")
 
@@ -8126,7 +8542,7 @@ extension Compressed: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
   }
 }
 
-extension NeighborInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension NeighborInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".NeighborInfo"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}node_id\0\u{3}last_sent_by_id\0\u{3}node_broadcast_interval_secs\0\u{1}neighbors\0")
 
@@ -8171,7 +8587,7 @@ extension NeighborInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
   }
 }
 
-extension Neighbor: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Neighbor: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Neighbor"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}node_id\0\u{1}snr\0\u{3}last_rx_time\0\u{3}node_broadcast_interval_secs\0")
 
@@ -8216,9 +8632,9 @@ extension Neighbor: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
   }
 }
 
-extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeviceMetadata"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}firmware_version\0\u{3}device_state_version\0\u{1}canShutdown\0\u{1}hasWifi\0\u{1}hasBluetooth\0\u{1}hasEthernet\0\u{1}role\0\u{3}position_flags\0\u{3}hw_model\0\u{1}hasRemoteHardware\0\u{1}hasPKC\0\u{3}excluded_modules\0\u{4}\u{2}has_xeddsa\0\u{2}\u{2}display\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}firmware_version\0\u{3}device_state_version\0\u{1}canShutdown\0\u{1}hasWifi\0\u{1}hasBluetooth\0\u{1}hasEthernet\0\u{1}role\0\u{3}position_flags\0\u{3}hw_model\0\u{1}hasRemoteHardware\0\u{1}hasPKC\0\u{3}excluded_modules\0\u{4}\u{2}has_xeddsa\0\u{2}\u{2}display\0\u{3}ble_address\0\u{4}\u{2}bootloader_version\0")
 
   fileprivate class _StorageClass {
     var _firmwareVersion: String = String()
@@ -8235,6 +8651,8 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     var _excludedModules: UInt32 = 0
     var _hasXeddsa_p: Bool = false
     var _display: DisplayInfo? = nil
+    var _bleAddress: String = String()
+    var _bootloaderVersion: UInt32 = 0
 
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
@@ -8259,6 +8677,8 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
       _excludedModules = source._excludedModules
       _hasXeddsa_p = source._hasXeddsa_p
       _display = source._display
+      _bleAddress = source._bleAddress
+      _bootloaderVersion = source._bootloaderVersion
     }
   }
 
@@ -8291,6 +8711,8 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
         case 12: try { try decoder.decodeSingularUInt32Field(value: &_storage._excludedModules) }()
         case 14: try { try decoder.decodeSingularBoolField(value: &_storage._hasXeddsa_p) }()
         case 16: try { try decoder.decodeSingularMessageField(value: &_storage._display) }()
+        case 17: try { try decoder.decodeSingularStringField(value: &_storage._bleAddress) }()
+        case 19: try { try decoder.decodeSingularUInt32Field(value: &_storage._bootloaderVersion) }()
         default: break
         }
       }
@@ -8345,6 +8767,12 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
       try { if let v = _storage._display {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 16)
       } }()
+      if !_storage._bleAddress.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._bleAddress, fieldNumber: 17)
+      }
+      if _storage._bootloaderVersion != 0 {
+        try visitor.visitSingularUInt32Field(value: _storage._bootloaderVersion, fieldNumber: 19)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -8368,6 +8796,8 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
         if _storage._excludedModules != rhs_storage._excludedModules {return false}
         if _storage._hasXeddsa_p != rhs_storage._hasXeddsa_p {return false}
         if _storage._display != rhs_storage._display {return false}
+        if _storage._bleAddress != rhs_storage._bleAddress {return false}
+        if _storage._bootloaderVersion != rhs_storage._bootloaderVersion {return false}
         return true
       }
       if !storagesAreEqual {return false}
@@ -8377,7 +8807,7 @@ extension DeviceMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
   }
 }
 
-extension DisplayInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension DisplayInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DisplayInfo"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}width\0\u{1}height\0\u{1}format\0\u{3}panel_class\0\u{3}has_touch\0")
 
@@ -8427,11 +8857,11 @@ extension DisplayInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
   }
 }
 
-extension DisplayInfo.PanelClass: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension DisplayInfo.PanelClass: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0PANEL_CLASS_UNSPECIFIED\0\u{1}OLED\0\u{1}LCD\0\u{1}TFT\0\u{1}EINK\0\u{1}HUB75\0")
 }
 
-extension LoRaPresetGroup: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension LoRaPresetGroup: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".LoRaPresetGroup"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}presets\0\u{3}default_preset\0\u{3}licensed_only\0")
 
@@ -8471,7 +8901,7 @@ extension LoRaPresetGroup: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
   }
 }
 
-extension LoRaRegionPresets: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension LoRaRegionPresets: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".LoRaRegionPresets"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}region\0\u{3}group_index\0")
 
@@ -8506,7 +8936,7 @@ extension LoRaRegionPresets: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
   }
 }
 
-extension LoRaRegionPresetMap: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension LoRaRegionPresetMap: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".LoRaRegionPresetMap"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}groups\0\u{3}region_groups\0")
 
@@ -8541,7 +8971,7 @@ extension LoRaRegionPresetMap: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
   }
 }
 
-extension Heartbeat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Heartbeat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Heartbeat"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}nonce\0")
 
@@ -8571,7 +9001,7 @@ extension Heartbeat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
   }
 }
 
-extension NodeRemoteHardwarePin: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension NodeRemoteHardwarePin: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".NodeRemoteHardwarePin"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}node_num\0\u{1}pin\0")
 
@@ -8610,7 +9040,7 @@ extension NodeRemoteHardwarePin: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
   }
 }
 
-extension ChunkedPayload: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension ChunkedPayload: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ChunkedPayload"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}payload_id\0\u{3}chunk_count\0\u{3}chunk_index\0\u{3}payload_chunk\0")
 
@@ -8655,7 +9085,7 @@ extension ChunkedPayload: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
   }
 }
 
-extension resend_chunks: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension resend_chunks: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".resend_chunks"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}chunks\0")
 
@@ -8685,7 +9115,7 @@ extension resend_chunks: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
   }
 }
 
-extension ChunkedPayloadResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension ChunkedPayloadResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ChunkedPayloadResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}payload_id\0\u{3}request_transfer\0\u{3}accept_transfer\0\u{3}resend_chunks\0")
 
