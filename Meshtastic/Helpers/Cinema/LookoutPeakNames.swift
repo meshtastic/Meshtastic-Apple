@@ -65,7 +65,7 @@ enum LookoutPeakNames {
 			let key = "\(path)/\(z)/\(x)/\(y)"
 			if let cached = tiles[key] { return cached }
 			let made = source.tileData(z: UInt8(z), x: UInt32(x), y: UInt32(y))
-				.flatMap { VectorTile(data: $0, x: x, y: y, z: z, projection: .epsg4326) }
+				.flatMap { try? VectorTile(mvtData: $0, x: x, y: y, z: z, projection: .epsg4326) }
 			tiles[key] = made
 			return made
 		}

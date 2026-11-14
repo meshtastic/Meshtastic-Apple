@@ -79,12 +79,12 @@ struct OfflineMapLabelsTests {
 		let bounds = GeoBounds.tile(z: tile.z, x: tile.x, y: tile.y)
 		let middle = GISTools.Coordinate3D(latitude: (bounds.minLat + bounds.maxLat) / 2, longitude: (bounds.minLon + bounds.maxLon) / 2)
 		let corner = GISTools.Coordinate3D(latitude: bounds.minLat + 0.1 * (bounds.maxLat - bounds.minLat), longitude: bounds.minLon + 0.1 * (bounds.maxLon - bounds.minLon))
-		var vector = try #require(VectorTile(x: tile.x, y: tile.y, z: tile.z))
+		var vector = try VectorTile(x: tile.x, y: tile.y, z: tile.z)
 		vector.setFeatures([
 			GISTools.Feature(GISTools.Point(corner), properties: ["kind": "locality", "kind_detail": "town", "name": "Smallville", "min_zoom": 10.0]),
 			GISTools.Feature(GISTools.Point(middle), properties: ["kind": "locality", "kind_detail": "city", "name": "Seattle", "min_zoom": 4.0])
 		], for: "places")
-		let payload = try #require(vector.data())
+		let payload = try #require(vector.mvtData())
 		let entries = [PMTilesArchive.Entry(tileID: PMTilesArchive.zxyToTileID(z: UInt8(tile.z), x: UInt32(tile.x), y: UInt32(tile.y)), offset: 0, length: UInt32(payload.count), runLength: 1)]
 		let root = PMTilesExtractor.serializeDirectory(entries)
 		let header = PMTilesExtractor.buildHeader(

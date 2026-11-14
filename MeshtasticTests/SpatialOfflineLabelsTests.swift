@@ -129,7 +129,7 @@ struct SpatialOfflineLabelsTests {
 		let middle = GISTools.Coordinate3D(latitude: (bounds.minLat + bounds.maxLat) / 2, longitude: (bounds.minLon + bounds.maxLon) / 2)
 		let west = GISTools.Coordinate3D(latitude: middle.latitude, longitude: bounds.minLon + 0.1 * (bounds.maxLon - bounds.minLon))
 		let east = GISTools.Coordinate3D(latitude: middle.latitude, longitude: bounds.maxLon - 0.1 * (bounds.maxLon - bounds.minLon))
-		var vector = try #require(VectorTile(x: 2624, y: 5722, z: 14))
+		var vector = try VectorTile(x: 2624, y: 5722, z: 14)
 		vector.setFeatures([
 			GISTools.Feature(GISTools.Point(middle), properties: ["kind": "park", "name": "Volunteer Park", "min_zoom": 13.0]),
 			GISTools.Feature(GISTools.Point(middle), properties: ["kind": "retail", "name": "Corner Shop", "min_zoom": 15.0])

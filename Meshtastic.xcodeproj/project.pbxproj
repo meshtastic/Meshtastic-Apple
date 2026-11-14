@@ -11,7 +11,7 @@
 		066F0545C2EDA31CC6E95E4E /* PMTilesArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62C4205D1043768766C64E87 /* PMTilesArchive.swift */; };
 		073B94B7F2F232C198151489 /* alpha.png in Resources */ = {isa = PBXBuildFile; fileRef = E8849D542B45F20F349E004D /* alpha.png */; };
 		073D5EF20134D41DF2AC5993 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C15787882CA30C9787154D /* Logger.swift */; };
-		0D14B1F2EE824455A78690F8 /* MVTTools in Frameworks */ = {isa = PBXBuildFile; productRef = 99BACD26F50E4FBA1E2FC365 /* MVTTools */; };
+		0D14B1F2EE824455A78690F8 /* VectorTiles in Frameworks */ = {isa = PBXBuildFile; productRef = 92C74A8872254993240395C3 /* VectorTiles */; };
 		128FDEAAE0542475BC4A3EDD /* Markdown in Frameworks */ = {isa = PBXBuildFile; productRef = C853ED2A7F391E6F315F93B3 /* Markdown */; };
 		13FAC446423FF3C9AC737EA0 /* PMTilesMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB006125B378C5233BD0B731 /* PMTilesMapView.swift */; };
 		1A042BDE2702C7388CE867EF /* DatadogLogs in Frameworks */ = {isa = PBXBuildFile; productRef = 7F3F27310C566077475C7105 /* DatadogLogs */; };
@@ -37,7 +37,7 @@
 		563422694131128F504A5E05 /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = E94055F00D3E29383E92FF74 /* Color.swift */; };
 		597DA0CDA9930BC262A72FCA /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 26351F51CD01C94D8D82486A /* Localizable.xcstrings */; };
 		5C31297EDE4B7294ECE538F4 /* AppIconDebug.icon in Resources */ = {isa = PBXBuildFile; fileRef = 6D159B66B1877A7506D1AB20 /* AppIconDebug.icon */; };
-		62715BFE38AD10319684E8E4 /* MVTTools in Frameworks */ = {isa = PBXBuildFile; productRef = 4FB45004C563B59043C53EAA /* MVTTools */; };
+		62715BFE38AD10319684E8E4 /* VectorTiles in Frameworks */ = {isa = PBXBuildFile; productRef = F7F9A0E23A4B806EDB2C8385 /* VectorTiles */; };
 		62C11A4D1644062EAD31615F /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = F15A1577564640951AD3EA40 /* Settings.bundle */; };
 		66EFBB4E473C796ACAFF58C2 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 6776764BA24154B603C76018 /* AppIcon.icon */; };
 		6742E3665676C65DDE17C453 /* Meshtastic.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 4C621B0715362CE25600901D /* Meshtastic.xcdatamodeld */; };
@@ -144,6 +144,7 @@
 		0E531C14ABE7F1491959BBE3 /* OfflineMapManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineMapManager.swift; sourceTree = "<group>"; };
 		122531D8C1D7CC809C6EF3B7 /* WriteContinuationStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WriteContinuationStore.swift; sourceTree = "<group>"; };
 		1A740EACFF7FA4000F22EF4E /* Meshtastic.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Meshtastic.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2502705ADA0C59D4DF0354B6 /* VectorTiles */ = {isa = PBXFileReference; lastKnownFileType = folder; name = VectorTiles; path = Packages/VectorTiles; sourceTree = SOURCE_ROOT; };
 		25A13454C9C85CEBBBC2DD1F /* he */ = {isa = PBXFileReference; lastKnownFileType = text.plist; name = he; path = he.lproj/AppIntentVocabulary.plist; sourceTree = "<group>"; };
 		2625B7E87368ACBC51E821F5 /* MeshtasticDataModelV 38.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = "MeshtasticDataModelV 38.xcdatamodel"; sourceTree = "<group>"; };
 		26351F51CD01C94D8D82486A /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
@@ -588,7 +589,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5631740093D563F017DA31D7 /* MeshtasticProtobufs in Frameworks */,
-				0D14B1F2EE824455A78690F8 /* MVTTools in Frameworks */,
+				0D14B1F2EE824455A78690F8 /* VectorTiles in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -626,7 +627,7 @@
 				F05DFDBFD6588DFEB6AD621F /* NordicDFU in Frameworks */,
 				FFBFB6ED7A28837B22E688F1 /* SwiftDraw in Frameworks */,
 				128FDEAAE0542475BC4A3EDD /* Markdown in Frameworks */,
-				62715BFE38AD10319684E8E4 /* MVTTools in Frameworks */,
+				62715BFE38AD10319684E8E4 /* VectorTiles in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -759,6 +760,7 @@
 				F6179C183A82544B392F3C60 /* Kp1812 */,
 				BF325A6359A74DDECD015FA1 /* MeshtasticProtobufs */,
 				B5CE7E1EEA0E7E9ED7E764F6 /* ShowcaseContent */,
+				2502705ADA0C59D4DF0354B6 /* VectorTiles */,
 			);
 			path = Packages;
 			sourceTree = "<group>";
@@ -935,7 +937,7 @@
 			name = "Meshtastic TV";
 			packageProductDependencies = (
 				52CBDF2188BAF9E2FB8B10A1 /* MeshtasticProtobufs */,
-				99BACD26F50E4FBA1E2FC365 /* MVTTools */,
+				92C74A8872254993240395C3 /* VectorTiles */,
 			);
 			productName = "Meshtastic TV";
 			productReference = A127CADA4845100E1C10B022 /* Meshtastic TV.app */;
@@ -1089,7 +1091,7 @@
 				D83D0451F77A9D92FFC852CA /* NordicDFU */,
 				9D120B166CA191FC578A9978 /* SwiftDraw */,
 				C853ED2A7F391E6F315F93B3 /* Markdown */,
-				4FB45004C563B59043C53EAA /* MVTTools */,
+				F7F9A0E23A4B806EDB2C8385 /* VectorTiles */,
 			);
 			productName = Meshtastic;
 			productReference = 1A740EACFF7FA4000F22EF4E /* Meshtastic.app */;
@@ -1167,13 +1169,13 @@
 				4E46BE4D3A1C5CF53B7D7592 /* XCRemoteSwiftPackageReference "SwiftDraw" */,
 				E115E799C219C48A4DB54A6B /* XCRemoteSwiftPackageReference "TAKPacket-SDK" */,
 				D4D6B3C078FD6A403FA6BA8D /* XCRemoteSwiftPackageReference "dd-sdk-ios" */,
-				B9243D356FA56FD1728AC3D3 /* XCRemoteSwiftPackageReference "mvt-tools" */,
 				4EFE4EEC5E27B5E40276A67C /* XCRemoteSwiftPackageReference "swift-markdown" */,
 				981964D4D54F32AEF37E646A /* XCRemoteSwiftPackageReference "swift-protobuf" */,
 				79932FC72F134122A3E2CD75 /* XCLocalSwiftPackageReference "Packages/CinemaContent" */,
 				A902507D583ADBDF7D161069 /* XCLocalSwiftPackageReference "Packages/Kp1812" */,
 				71B6C19C2660F20C79DC8366 /* XCLocalSwiftPackageReference "MeshtasticProtobufs" */,
 				28266D5DB9AF0516D1ADB47C /* XCLocalSwiftPackageReference "Packages/ShowcaseContent" */,
+				91D5CEECA397C2A93B5C3A44 /* XCLocalSwiftPackageReference "Packages/VectorTiles" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 5D4AFA4225AF7D85EE343B80 /* Products */;
@@ -2111,6 +2113,10 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/CinemaContent;
 		};
+		91D5CEECA397C2A93B5C3A44 /* XCLocalSwiftPackageReference "Packages/VectorTiles" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/VectorTiles;
+		};
 		A902507D583ADBDF7D161069 /* XCLocalSwiftPackageReference "Packages/Kp1812" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/Kp1812;
@@ -2123,7 +2129,7 @@
 			repositoryURL = "https://github.com/swhitty/SwiftDraw";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 0.25.3;
+				minimumVersion = 0.29.0;
 			};
 		};
 		4EFE4EEC5E27B5E40276A67C /* XCRemoteSwiftPackageReference "swift-markdown" */ = {
@@ -2131,7 +2137,7 @@
 			repositoryURL = "https://github.com/swiftlang/swift-markdown";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 0.5.0;
+				minimumVersion = 0.9.0;
 			};
 		};
 		51748190BCB4FEE8CFB4184C /* XCRemoteSwiftPackageReference "IOS-DFU-Library" */ = {
@@ -2139,7 +2145,7 @@
 			repositoryURL = "https://github.com/NordicSemiconductor/IOS-DFU-Library";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 4.16.0;
+				minimumVersion = 4.17.0;
 			};
 		};
 		981964D4D54F32AEF37E646A /* XCRemoteSwiftPackageReference "swift-protobuf" */ = {
@@ -2150,21 +2156,13 @@
 				minimumVersion = 1.26.0;
 			};
 		};
-		B9243D356FA56FD1728AC3D3 /* XCRemoteSwiftPackageReference "mvt-tools" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Outdooractive/mvt-tools.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.2.1;
-			};
-		};
 		D4D6B3C078FD6A403FA6BA8D /* XCRemoteSwiftPackageReference "dd-sdk-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/DataDog/dd-sdk-ios.git";
 			requirement = {
 				kind = versionRange;
 				maximumVersion = 4.0.0;
-				minimumVersion = 3.3.0;
+				minimumVersion = 3.22.0;
 			};
 		};
 		E115E799C219C48A4DB54A6B /* XCRemoteSwiftPackageReference "TAKPacket-SDK" */ = {
@@ -2172,7 +2170,7 @@
 			repositoryURL = "https://github.com/meshtastic/TAKPacket-SDK.git";
 			requirement = {
 				kind = upToNextMinorVersion;
-				minimumVersion = 0.9.1;
+				minimumVersion = 0.10.0;
 			};
 		};
 		EF8B64957FF0A454C2EE0FBB /* XCRemoteSwiftPackageReference "CocoaMQTT" */ = {
@@ -2180,7 +2178,7 @@
 			repositoryURL = "https://github.com/emqx/CocoaMQTT";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 2.0.0;
+				minimumVersion = 2.4.2;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -2199,11 +2197,6 @@
 		4AF5AACBB64F141EF02FC7DC /* MeshtasticProtobufs */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = MeshtasticProtobufs;
-		};
-		4FB45004C563B59043C53EAA /* MVTTools */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = B9243D356FA56FD1728AC3D3 /* XCRemoteSwiftPackageReference "mvt-tools" */;
-			productName = MVTTools;
 		};
 		52CBDF2188BAF9E2FB8B10A1 /* MeshtasticProtobufs */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -2240,10 +2233,9 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = ShowcaseContent;
 		};
-		99BACD26F50E4FBA1E2FC365 /* MVTTools */ = {
+		92C74A8872254993240395C3 /* VectorTiles */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = B9243D356FA56FD1728AC3D3 /* XCRemoteSwiftPackageReference "mvt-tools" */;
-			productName = MVTTools;
+			productName = VectorTiles;
 		};
 		9D120B166CA191FC578A9978 /* SwiftDraw */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -2268,6 +2260,10 @@
 			isa = XCSwiftPackageProductDependency;
 			package = D4D6B3C078FD6A403FA6BA8D /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
 			productName = DatadogRUM;
+		};
+		F7F9A0E23A4B806EDB2C8385 /* VectorTiles */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = VectorTiles;
 		};
 		F98E8431879FC7025B658B08 /* MeshtasticTAK */ = {
 			isa = XCSwiftPackageProductDependency;

@@ -73,11 +73,11 @@ struct OfflineLandCoverTests {
 		let forestShape: GISTools.Polygon? = GISTools.Polygon([ring(0.1, 0.1, 0.6, 0.6)])
 		let lakeShape: GISTools.Polygon? = GISTools.Polygon([ring(0.3, 0.3, 0.4, 0.4)])
 		let parkShape: GISTools.Polygon? = GISTools.Polygon([ring(0.7, 0.7, 0.8, 0.8)])
-		var vector = try #require(VectorTile(x: tile.x, y: tile.y, z: tile.z))
+		var vector = try VectorTile(x: tile.x, y: tile.y, z: tile.z)
 		vector.setFeatures([GISTools.Feature(try #require(forestShape), properties: ["kind": "forest"])], for: "landcover")
 		vector.setFeatures([GISTools.Feature(try #require(parkShape), properties: ["kind": "park"])], for: "landuse")
 		vector.setFeatures([GISTools.Feature(try #require(lakeShape), properties: ["kind": "lake"])], for: "water")
-		let payload = try #require(vector.data())
+		let payload = try #require(vector.mvtData())
 		let entries = [PMTilesArchive.Entry(tileID: PMTilesArchive.zxyToTileID(z: 10, x: 163, y: 357), offset: 0, length: UInt32(payload.count), runLength: 1)]
 		let root = PMTilesExtractor.serializeDirectory(entries)
 		let header = PMTilesExtractor.buildHeader(
