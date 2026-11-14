@@ -227,9 +227,11 @@ struct CinemaSpace: View {
 			// Real terrain already up for the summit stays when the lookout and the castle swap. A
 			// summit's isn't the lighthouse's or the rooftop's, and so on: that fades out once the new
 			// room is up, so the windows never show sky with no ground.
-			// The chosen site's ground starts being read now, while the room's backdrop loads.
-			if environment.standsOnSite {
-				Task { await prewarmLookout() }
+			// The chosen site's ground starts being read now, while the room's backdrop loads. A child
+			// of this task, so leaving the room stops it. A room off any site drops what was read.
+			async let warming: Void = prewarmLookout()
+			if !environment.standsOnSite {
+				lookout.cancelGround()
 			}
 			let keepsTerrain = terrain != nil && terrainKind == environment.siteKind
 			if !keepsTerrain {
@@ -241,6 +243,7 @@ struct CinemaSpace: View {
 			guard !Task.isCancelled else { return }
 			if !keepsTerrain { takeDownTerrain() }
 			await refreshLookout()
+			await warming
 		}
 		.task(id: stone) {
 			guard environment.hasStone, backdrop != nil, backdropStone != stone else { return }
@@ -288,6 +291,8 @@ struct CinemaSpace: View {
 		.task(id: lookoutMaps) {
 			if let seen = lookoutMapsSeen, seen != lookoutMaps {
 				lookout.forgetSites()
+				// The area may have come from a map that's gone.
+				lookoutAreaRead = nil
 				lookoutBuild?.task.cancel()
 				lookoutBuild = nil
 				// Built again from the new maps. The old view stays until then, or until its site
@@ -402,6 +407,7 @@ struct CinemaSpace: View {
 			fitBoards?.cancel()
 			fitBoards = nil
 			headTracker.stop()
+			lookout.cancelGround()
 			CinemaScene.showModel = nil
 			modelRequest = nil
 			modelStand.screenSource = nil
@@ -668,7 +674,10 @@ struct CinemaSpace: View {
 	/// Finds the sites and starts reading the chosen one's ground, ahead of `refreshLookout`.
 	private func prewarmLookout() async {
 		guard let kind = environment.siteKind else { return }
-		await lookout.prepare(area: await lookoutArea(), kind: kind)
+		let area = await lookoutArea()
+		// The room changed while the area was read: its own search mustn't be undone by this one.
+		guard !Task.isCancelled, environment.siteKind == kind else { return }
+		await lookout.prepare(area: area, kind: kind)
 		guard !Task.isCancelled, environment.siteKind == kind, let site = lookout.site(for: lookoutSiteID) else { return }
 		lookout.prewarm(site)
 	}
@@ -679,7 +688,10 @@ struct CinemaSpace: View {
 			return
 		}
 		let maps = lookoutMaps
-		await lookout.prepare(area: await lookoutArea(), kind: kind)
+		let area = await lookoutArea()
+		// As in the prewarm: a room changed meanwhile has its own search.
+		guard !Task.isCancelled, environment.siteKind == kind else { return }
+		await lookout.prepare(area: area, kind: kind)
 		guard environment.siteKind == kind else { return }
 		// The maps changing or the view going away while the summits were found makes this refresh stale.
 		guard !Task.isCancelled, lookoutMaps == maps, environment.siteKind == kind else { return }

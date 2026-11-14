@@ -252,6 +252,14 @@ final class LookoutScene {
 		cityRead = nil
 	}
 
+	/// Stops reading the ground and drops what was read, as the cinema leaves a site or closes. The
+	/// next build or prewarm reads it again.
+	func cancelGround() {
+		groundRead?.task.cancel()
+		groundRead = nil
+		cityRead = nil
+	}
+
 	/// Starts reading the ground round `site`, so its terrain is ready sooner once it's asked for.
 	func prewarm(_ site: LookoutSite) {
 		guard let bounds else { return }
