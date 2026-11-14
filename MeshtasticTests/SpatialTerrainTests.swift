@@ -93,6 +93,28 @@ struct SpatialTerrainTests {
 		#expect(heard.allSatisfy { $0.total == heard.count }, "the total is the tiles it reads")
 	}
 
+	@Test func aRedrawKeepsTheGroundAndChangesTheImage() async throws {
+		let bounds = seattle
+		let source = SyntheticElevationSource(coverage: bounds) { latitude, longitude in
+			Float(100 + (latitude - bounds.minLat) * 4000 + (longitude - bounds.minLon) * 2000)
+		}
+		let builder = SpatialTerrainBuilder(elevation: source)
+		var options = SpatialTerrainOptions()
+		// No network: the image is the terrain shading drawn here, not an Apple snapshot.
+		options.allowNetwork = false
+		options.maxTriangles = 20_000
+		options.textureEdge = 256
+		let built = try await builder.build(bounds: bounds, options: options)
+		options.dark = true
+		let redrawn = try await builder.redraw(built, options: options)
+		#expect(redrawn.geometry.positions == built.geometry.positions, "the surface is the same")
+		#expect(redrawn.grid == built.grid)
+		#expect(redrawn.texture.width == built.texture.width && redrawn.texture.height == built.texture.height)
+		let before = try #require(built.texture.dataProvider?.data as Data?)
+		let after = try #require(redrawn.texture.dataProvider?.data as Data?)
+		#expect(before != after, "the dark map draws a different image")
+	}
+
 	@Test func progressOnlyMovesForward() {
 		let start = SpatialTerrainProgress(phase: .elevation(done: 0, total: 40))
 		let oneTile = SpatialTerrainProgress(phase: .elevation(done: 1, total: 40))

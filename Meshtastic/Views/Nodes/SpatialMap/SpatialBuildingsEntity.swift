@@ -19,13 +19,23 @@ enum SpatialBuildingsEntity {
 		descriptor.normals = MeshBuffer(mesh.normals)
 		descriptor.primitives = .triangles(mesh.indices)
 		let resource = try await MeshResource(from: [descriptor])
+		let entity = ModelEntity(mesh: resource, materials: [material(dark: dark)])
+		entity.name = "buildings"
+		return entity
+	}
+
+	/// Shades the buildings for the dark map or the light one, without building them again.
+	@MainActor
+	static func setDark(_ dark: Bool, on entity: ModelEntity) {
+		entity.model?.materials = [material(dark: dark)]
+	}
+
+	private static func material(dark: Bool) -> PhysicallyBasedMaterial {
 		var material = PhysicallyBasedMaterial()
 		material.baseColor = .init(tint: UIColor(white: dark ? 0.55 : 0.9, alpha: 1))
 		material.roughness = 0.9
 		material.metallic = 0.0
-		let entity = ModelEntity(mesh: resource, materials: [material])
-		entity.name = "buildings"
-		return entity
+		return material
 	}
 }
 #endif

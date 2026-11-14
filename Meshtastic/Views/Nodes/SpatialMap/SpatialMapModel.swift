@@ -171,6 +171,12 @@ final class SpatialMapModel {
 	private let builder: SpatialTerrainBuilder
 	private var buildTask: Task<Void, Never>?
 	private var buildKey: String?
+	/// The terrain up now and the ground it stands on (box and terrain downloads), so a change of
+	/// layer, dark map or contours draws a new image for it instead of building it again.
+	private var builtModel: SpatialTerrainModel?
+	private var builtGroundKey: String?
+	/// The dark map's shade the buildings up now were given.
+	private var buildingsDark: Bool?
 	/// Whether each imported basemap holds vector tiles, by region ID. A raster import can't be
 	/// drawn as the Offline layer, so it never offers it.
 	private var vectorBasemaps: [UUID: Bool] = [:]
@@ -294,6 +300,8 @@ final class SpatialMapModel {
 		isBuildingTerrain = false
 		terrainProgress = nil
 		terrainEntity = nil
+		builtModel = nil
+		builtGroundKey = nil
 		textureSource = nil
 		placement = nil
 		takeDownBuildings()
@@ -470,18 +478,30 @@ final class SpatialMapModel {
 		// The Offline layer, and an Apple layer drawn from the offline map because imagery failed,
 		// also rebuild when a basemap is downloaded, updated or replaced. The Apple layers otherwise
 		// rebuild only when the area gains or loses a basemap (`offlineBasemap`).
+		// The ground: what the heights and the surface depend on. The rest of the key is the look.
+		let groundKey = "\(bounds.minLon),\(bounds.minLat),\(bounds.maxLon),\(bounds.maxLat)|\(terrainGeneration)"
 		func makeKey(usedFallback: Bool) -> String {
 			let basemaps = SpatialOfflineMap.basemapGeneration(regions, layer: layer, usedFallback: usedFallback)
-			return "\(bounds.minLon),\(bounds.minLat),\(bounds.maxLon),\(bounds.maxLat)|\(layer.rawValue)|\(dark)|\(contours)|\(metric)|\(offlineBasemap)|\(terrainGeneration)|\(basemaps)"
+			return "\(groundKey)|\(layer.rawValue)|\(dark)|\(contours)|\(metric)|\(offlineBasemap)|\(basemaps)"
 		}
 		let key = makeKey(usedFallback: imageryUnavailable)
 		guard key != buildKey else { return }
 		buildKey = key
 		buildTask?.cancel()
-		isBuildingTerrain = true
-		terrainProgress = SpatialTerrainProgress(phase: .elevation(done: 0, total: 0))
 		terrainMessage = nil
 		let sources = OfflineMapManager.shared.terrainSources()
+
+		// Built a moment ago, as when zooming back out or the window reopening: up again at once.
+		if let kept = SpatialTerrainCache.shared.terrain(for: key) {
+			isBuildingTerrain = false
+			terrainProgress = nil
+			put(kept.model, entity: kept.entity, circle: circle, groundKey: groundKey, sources: sources)
+			buildKey = makeKey(usedFallback: kept.model.imageryUnavailable)
+			return
+		}
+
+		isBuildingTerrain = true
+		terrainProgress = SpatialTerrainProgress(phase: .elevation(done: 0, total: 0))
 		var options = SpatialTerrainOptions()
 		options.layer = layer
 		options.offlineBasemap = offlineBasemap
@@ -490,6 +510,38 @@ final class SpatialMapModel {
 		options.metric = metric
 		let builder = builder
 		let store = terrainStore
+
+		// Only the look changed: a new image on the same surface, so the placement, buildings and
+		// overlays stay.
+		if let built = builtModel, builtGroundKey == groundKey, let entity = terrainEntity {
+			terrainProgress = SpatialTerrainProgress(phase: .drawing)
+			buildTask = Task {
+				do {
+					let redrawn = try await builder.redraw(built, options: options)
+					guard !Task.isCancelled, buildKey == key, terrainEntity === entity else { return }
+					try await SpatialTerrainEntity.setTexture(redrawn.texture, on: entity)
+					guard !Task.isCancelled, buildKey == key, terrainEntity === entity else { return }
+					builtModel = redrawn
+					textureSource = redrawn.textureSource
+					imageryUnavailable = redrawn.imageryUnavailable
+					buildKey = makeKey(usedFallback: redrawn.imageryUnavailable)
+					SpatialTerrainCache.shared.keep(redrawn, entity: entity, for: buildKey ?? key)
+					isBuildingTerrain = false
+					terrainProgress = nil
+					// The buildings take the dark map's shade.
+					rebuildBuildingsIfNeeded()
+				} catch is CancellationError {
+				} catch {
+					guard buildKey == key else { return }
+					Logger.services.error("🧊 [Spatial] Terrain redraw failed: \(error.localizedDescription, privacy: .public)")
+					terrainMessage = error.localizedDescription
+					isBuildingTerrain = false
+					terrainProgress = nil
+				}
+			}
+			return
+		}
+
 		buildTask = Task {
 			await store.configure(sources: sources)
 			do {
@@ -500,23 +552,12 @@ final class SpatialMapModel {
 				show(SpatialTerrainProgress(phase: .surface), forBuild: key)
 				let entity = try await SpatialTerrainEntity.make(model)
 				guard !Task.isCancelled, buildKey == key else { return }
-				terrainEntity = entity
-				downloadedTerrain = sources.map(\.bounds)
-				textureSource = model.textureSource
-				imageryUnavailable = model.imageryUnavailable
-				// Key the build by what it drew, so falling back (or not) doesn't rebuild it again.
-				buildKey = makeKey(usedFallback: model.imageryUnavailable)
-				placementRevision += 1
-				placement = SpatialPlacement(
-					circle: circle, geometry: model.geometry,
-					flat: SpatialModelTransform(frame: model.geometry.transform.frame, baseElevation: 0, maxElevation: 0),
-					revision: placementRevision
-				)
 				isBuildingTerrain = false
 				terrainProgress = nil
-				rebuildCoverageIfNeeded()
-				rebuildWeatherRadarIfNeeded()
-				rebuildBuildingsIfNeeded()
+				put(model, entity: entity, circle: circle, groundKey: groundKey, sources: sources)
+				// Key the build by what it drew, so falling back (or not) doesn't rebuild it again.
+				buildKey = makeKey(usedFallback: model.imageryUnavailable)
+				SpatialTerrainCache.shared.keep(model, entity: entity, for: buildKey ?? key)
 			} catch is CancellationError {
 			} catch {
 				guard buildKey == key else { return }
@@ -534,6 +575,26 @@ final class SpatialMapModel {
 				}
 			}
 		}
+	}
+
+	/// Puts a built terrain on the table, with a new placement the pins, buildings and overlays
+	/// follow.
+	private func put(_ model: SpatialTerrainModel, entity: ModelEntity, circle: SpatialCircle, groundKey: String, sources: [TerrainSource]) {
+		terrainEntity = entity
+		builtModel = model
+		builtGroundKey = groundKey
+		downloadedTerrain = sources.map(\.bounds)
+		textureSource = model.textureSource
+		imageryUnavailable = model.imageryUnavailable
+		placementRevision += 1
+		placement = SpatialPlacement(
+			circle: circle, geometry: model.geometry,
+			flat: SpatialModelTransform(frame: model.geometry.transform.frame, baseElevation: 0, maxElevation: 0),
+			revision: placementRevision
+		)
+		rebuildCoverageIfNeeded()
+		rebuildWeatherRadarIfNeeded()
+		rebuildBuildingsIfNeeded()
 	}
 
 	/// Moves the card on to `progress` if it's for the build still running and far enough along to
@@ -864,7 +925,12 @@ extension SpatialMapModel {
 			.map { "\($0.id)\(Int($0.updatedDate.timeIntervalSince1970))" }
 			.sorted()
 			.joined(separator: ",")
-		let key = "\(placement.revision)|\(showBuildings)|\(buildDark)|\(basemaps)"
+		// The dark map only shades them: the ones up are shaded again, not built again.
+		if let buildingsEntity, buildingsDark != buildDark {
+			SpatialBuildingsEntity.setDark(buildDark, on: buildingsEntity)
+			buildingsDark = buildDark
+		}
+		let key = "\(placement.revision)|\(showBuildings)|\(basemaps)"
 		guard key != buildingsKey else { return }
 		buildingsKey = key
 		buildingsTask?.cancel()
@@ -875,7 +941,6 @@ extension SpatialMapModel {
 			return
 		}
 		let bounds = placement.bounds
-		let dark = buildDark
 		buildingsTask = Task {
 			let revision = placement.revision
 			let worker = Task.detached(priority: .utility) { () -> (mesh: SpatialMeshData, roofs: SpatialRoofs)? in
@@ -887,8 +952,11 @@ extension SpatialMapModel {
 			guard !Task.isCancelled, buildingsKey == key, let built else { return }
 			let mesh = built.mesh
 			do {
+				let dark = buildDark
 				let entity = try await SpatialBuildingsEntity.make(mesh, dark: dark)
 				guard !Task.isCancelled, buildingsKey == key else { return }
+				// A change of dark map while they were made reshades them on the next pass.
+				buildingsDark = dark
 				Logger.services.info("🧊 [Spatial] Buildings: \(mesh.triangleCount, privacy: .public) triangles on terrain \(placement.revision, privacy: .public)")
 				buildingsEntity = entity
 				buildingRoofs = entity == nil ? nil : built.roofs
