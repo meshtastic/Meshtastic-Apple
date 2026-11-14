@@ -181,7 +181,10 @@ enum RooftopCity {
 	static func entity(for model: RooftopCityModel) async throws -> ModelEntity {
 		var descriptors: [MeshDescriptor] = []
 		var materials: [any RealityKit.Material] = []
-		let texture = try windowTexture().map { try TextureResource(image: $0, options: .init(semantic: .color, mipmapsMode: .allocateAndGenerateAll)) }
+		var texture: TextureResource?
+		if let image = try windowTexture() {
+			texture = try await TextureResource(image: image, options: .init(semantic: .color, mipmapsMode: .allocateAndGenerateAll))
+		}
 		let sampler = MTLSamplerDescriptor()
 		sampler.sAddressMode = .repeat
 		sampler.tAddressMode = .repeat
@@ -216,7 +219,8 @@ enum RooftopCity {
 			material.faceCulling = .none
 			materials.append(material)
 		}
-		let entity = ModelEntity(mesh: try MeshResource.generate(from: descriptors), materials: materials)
+		// Made off the main thread, so the immersive space keeps its frame rate while it's made.
+		let entity = ModelEntity(mesh: try await MeshResource(from: descriptors), materials: materials)
 		entity.name = "RooftopCity"
 		return entity
 	}

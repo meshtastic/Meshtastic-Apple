@@ -827,8 +827,8 @@
     "Reading elevation" : {
       "comment" : "Spatial map loading card: reading heights from the downloaded terrain"
     },
-    "Reading elevation: %lld of %lld tiles" : {
-      "comment" : "Spatial map loading card: reading heights from the downloaded terrain, tiles read so far and in all"
+    "Searching the Maps" : {
+      "comment" : "Cinema loading card: title while the downloaded maps are searched for summits, coastline or buildings"
     },
     "Step %lld of %lld: elevation" : {
       "comment" : "Spatial map loading card: which part of the download is running, the elevation data"

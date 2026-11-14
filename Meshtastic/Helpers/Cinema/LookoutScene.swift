@@ -38,6 +38,13 @@ final class LookoutScene {
 	private(set) var status: Status = .idle
 	/// The nodes out the windows, for the site the terrain was built for.
 	var labels: [LookoutLabel] = []
+	/// How far the terrain being built has got, for the card in front of the seat. Nil when none is.
+	private(set) var terrainProgress: SpatialTerrainProgress?
+	/// Whether terrain is being built. Changes only as a build starts and ends, so a view can show
+	/// the card on it without being redrawn for every step of the progress.
+	private(set) var isBuildingTerrain = false
+	/// Counts terrain builds, so an older one finishing doesn't clear a newer one's progress.
+	private var terrainBuild = 0
 	private let store = TerrainStore.shared
 	private var bounds: GeoBounds?
 	/// How many nodes get a label; the nearest ones.
@@ -244,6 +251,16 @@ final class LookoutScene {
 	/// The terrain around `site` as an entity, or nil if it can't be built.
 	func terrain(for site: LookoutSite, heading: Double, sun: (azimuth: Float, elevation: Float)) async -> ModelEntity? {
 		guard let bounds else { return nil }
+		terrainBuild += 1
+		let token = terrainBuild
+		terrainProgress = SpatialTerrainProgress(phase: .elevation(done: 0, total: 0))
+		isBuildingTerrain = true
+		defer {
+			if terrainBuild == token {
+				terrainProgress = nil
+				isBuildingTerrain = false
+			}
+		}
 		let radius = LookoutTerrain.outerRadius(site: site, bounds: bounds)
 		let center = site.coordinate
 		// Off the main actor, and stopped with this task: leaving the lookout mid-build shouldn't leave
@@ -253,7 +270,11 @@ final class LookoutScene {
 		}
 		let landCover = await withTaskCancellationHandler { await build.value } onCancel: { build.cancel() }
 		if Task.isCancelled { return nil }
-		guard let model = await LookoutTerrain.build(site: site, bounds: bounds, source: store, landCover: landCover, heading: heading, sun: sun) else { return nil }
+		let built = await LookoutTerrain.build(site: site, bounds: bounds, source: store, landCover: landCover, heading: heading, sun: sun) { progress in
+			Task { @MainActor [weak self] in self?.show(progress, forBuild: token) }
+		}
+		guard let model = built else { return nil }
+		show(SpatialTerrainProgress(phase: .surface), forBuild: token)
 		let entity: ModelEntity
 		do {
 			entity = try await LookoutTerrain.entity(for: model)
@@ -266,6 +287,13 @@ final class LookoutScene {
 		}
 		if Task.isCancelled { return nil }
 		return entity
+	}
+
+	/// Moves the card on to `progress` if it's for the build still running and far enough along to
+	/// be worth drawing again.
+	private func show(_ progress: SpatialTerrainProgress, forBuild token: Int) {
+		guard terrainBuild == token, let current = terrainProgress, current.isWorthShowing(progress) else { return }
+		terrainProgress = progress
 	}
 
 	/// The buildings round a rooftop, standing on the terrain. Nil when there are none to draw; the

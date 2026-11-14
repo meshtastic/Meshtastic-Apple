@@ -124,7 +124,7 @@ final class SpatialSceneController {
 	/// The card over the map while the terrain downloads or builds.
 	private var loadingCard: Entity?
 	/// Entities fading in or out, stepped each frame.
-	private var fades: [Fade] = []
+	private let fades = EntityFades()
 	private var coverageEntity: ModelEntity?
 	private var coverageOpacity: Float?
 	private var weatherRadarEntity: Entity?
@@ -1118,65 +1118,21 @@ enum SpatialMapLight {
 // MARK: - Fades and the loading card
 
 extension SpatialSceneController {
-	/// An entity's opacity stepping toward `target`, and what happens to it once there.
-	struct Fade {
-		enum End {
-			/// Stays, drawn normally again.
-			case keep
-			/// Stays, switched off.
-			case disable
-			/// Taken out of the scene.
-			case remove
-		}
-		let entity: Entity
-		let target: Float
-		let end: End
-	}
-
-	/// How long a fade takes, in seconds.
-	private static let fadeDuration: Float = 0.4
-
 	/// The card's attachment id.
 	static let loadingCardID = "terrainLoading"
 
 	/// Fades `entity` from its opacity now to `target`. One fading out is moved to the outgoing
 	/// container first, so the container it was in is free for its replacement.
-	func fade(_ entity: Entity, to target: Float, then end: Fade.End = .keep) {
-		fades.removeAll { $0.entity === entity }
+	func fade(_ entity: Entity, to target: Float, then end: EntityFades.End = .keep) {
 		if end == .remove, entity.parent !== outgoingContainer {
 			outgoingContainer.addChild(entity, preservingWorldTransform: true)
 		}
-		fades.append(Fade(entity: entity, target: target, end: end))
+		fades.fade(entity, to: target, then: end)
 	}
 
 	/// Moves each fade on by a frame.
 	func stepFades(deltaTime: Double) {
-		guard !fades.isEmpty else { return }
-		let step = Float(deltaTime) / Self.fadeDuration
-		fades.removeAll { fade in
-			let current = fade.entity.components[OpacityComponent.self]?.opacity ?? 1
-			let next = current < fade.target ? min(current + step, fade.target) : max(current - step, fade.target)
-			guard next == fade.target else {
-				fade.entity.components.set(OpacityComponent(opacity: next))
-				return false
-			}
-			switch fade.end {
-			case .keep:
-				// Fully shown needs no opacity, which RealityKit draws with blending.
-				if next >= 1 {
-					fade.entity.components.remove(OpacityComponent.self)
-				} else {
-					fade.entity.components.set(OpacityComponent(opacity: next))
-				}
-			case .disable:
-				fade.entity.isEnabled = false
-				fade.entity.components.remove(OpacityComponent.self)
-			case .remove:
-				fade.entity.removeFromParent()
-				fade.entity.components.remove(OpacityComponent.self)
-			}
-			return true
-		}
+		fades.step(deltaTime: deltaTime)
 	}
 
 	/// Puts the card over the middle of the map, facing the viewer, and takes it away when it's gone.
