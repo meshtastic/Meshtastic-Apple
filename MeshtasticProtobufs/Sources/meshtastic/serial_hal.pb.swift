@@ -20,12 +20,12 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
 
-public struct SerialHalCommand: Sendable {
+public nonisolated struct SerialHalCommand: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -46,7 +46,7 @@ public struct SerialHalCommand: Sendable {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public enum TypeEnum: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum TypeEnum: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
     case unset // = 0
     case pinMode // = 1
@@ -56,6 +56,21 @@ public struct SerialHalCommand: Sendable {
     case detachInterrupt // = 5
     case spiTransfer // = 6
     case noop // = 7
+
+    /// One radio SPI command: wait for BUSY (value) to read low, drive CS (pin)
+    /// low, transfer data, drive CS high, then wait for BUSY low again. The
+    /// response carries the received bytes in data and the BUSY level after the
+    /// second wait in value (0 = low, 1 = still high).
+    ///
+    /// Each wait is bounded by the device (the firmware uses 10 ms). If the
+    /// first wait times out, nothing is transferred and the response is ERROR
+    /// with value = 1; the host waits for BUSY itself and resends. If the second
+    /// wait times out, the response is OK with value = 1, and the host polls
+    /// BUSY with DIGITAL_READ before its next command.
+    ///
+    /// A value of 0xFFFFFFFF means no BUSY line: both waits are skipped, and the
+    /// response value is 0 and carries no meaning.
+    case spiTransaction // = 8
     case UNRECOGNIZED(Int)
 
     public init() {
@@ -72,6 +87,7 @@ public struct SerialHalCommand: Sendable {
       case 5: self = .detachInterrupt
       case 6: self = .spiTransfer
       case 7: self = .noop
+      case 8: self = .spiTransaction
       default: self = .UNRECOGNIZED(rawValue)
       }
     }
@@ -86,6 +102,7 @@ public struct SerialHalCommand: Sendable {
       case .detachInterrupt: return 5
       case .spiTransfer: return 6
       case .noop: return 7
+      case .spiTransaction: return 8
       case .UNRECOGNIZED(let i): return i
       }
     }
@@ -100,6 +117,7 @@ public struct SerialHalCommand: Sendable {
       .detachInterrupt,
       .spiTransfer,
       .noop,
+      .spiTransaction,
     ]
 
   }
@@ -107,7 +125,7 @@ public struct SerialHalCommand: Sendable {
   public init() {}
 }
 
-public struct SerialHalResponse: Sendable {
+public nonisolated struct SerialHalResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -132,7 +150,7 @@ public struct SerialHalResponse: Sendable {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public enum Result: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum Result: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
     case ok // = 0
     case error // = 1
@@ -179,9 +197,9 @@ public struct SerialHalResponse: Sendable {
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "meshtastic"
+fileprivate nonisolated let _protobuf_package = "meshtastic"
 
-extension SerialHalCommand: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension SerialHalCommand: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SerialHalCommand"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}transaction_id\0\u{1}type\0\u{1}pin\0\u{1}value\0\u{1}mode\0\u{1}data\0")
 
@@ -236,11 +254,11 @@ extension SerialHalCommand: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
   }
 }
 
-extension SerialHalCommand.TypeEnum: SwiftProtobuf._ProtoNameProviding {
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSET\0\u{1}PIN_MODE\0\u{1}DIGITAL_WRITE\0\u{1}DIGITAL_READ\0\u{1}ATTACH_INTERRUPT\0\u{1}DETACH_INTERRUPT\0\u{1}SPI_TRANSFER\0\u{1}NOOP\0")
+nonisolated extension SerialHalCommand.TypeEnum: SwiftProtobuf._ProtoNameProviding {
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSET\0\u{1}PIN_MODE\0\u{1}DIGITAL_WRITE\0\u{1}DIGITAL_READ\0\u{1}ATTACH_INTERRUPT\0\u{1}DETACH_INTERRUPT\0\u{1}SPI_TRANSFER\0\u{1}NOOP\0\u{1}SPI_TRANSACTION\0")
 }
 
-extension SerialHalResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension SerialHalResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SerialHalResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}transaction_id\0\u{1}result\0\u{1}value\0\u{1}data\0\u{1}error\0")
 
@@ -290,6 +308,6 @@ extension SerialHalResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
   }
 }
 
-extension SerialHalResponse.Result: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension SerialHalResponse.Result: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0OK\0\u{1}ERROR\0\u{1}BAD_REQUEST\0\u{1}UNSUPPORTED\0")
 }

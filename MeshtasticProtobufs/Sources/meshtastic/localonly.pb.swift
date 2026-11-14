@@ -15,12 +15,12 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
 
-public struct LocalConfig: @unchecked Sendable {
+public nonisolated struct LocalConfig: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -129,7 +129,7 @@ public struct LocalConfig: @unchecked Sendable {
   fileprivate var _storage = _StorageClass.defaultInstance
 }
 
-public struct LocalModuleConfig: @unchecked Sendable {
+public nonisolated struct LocalModuleConfig: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -339,9 +339,9 @@ public struct LocalModuleConfig: @unchecked Sendable {
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "meshtastic"
+fileprivate nonisolated let _protobuf_package = "meshtastic"
 
-extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".LocalConfig"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}device\0\u{1}position\0\u{1}power\0\u{1}network\0\u{1}display\0\u{1}lora\0\u{1}bluetooth\0\u{1}version\0\u{1}security\0")
 
@@ -467,7 +467,7 @@ extension LocalConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
   }
 }
 
-extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension LocalModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".LocalModuleConfig"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}mqtt\0\u{1}serial\0\u{3}external_notification\0\u{3}store_forward\0\u{3}range_test\0\u{1}telemetry\0\u{3}canned_message\0\u{1}version\0\u{1}audio\0\u{3}remote_hardware\0\u{3}neighbor_info\0\u{3}ambient_lighting\0\u{3}detection_sensor\0\u{1}paxcounter\0\u{1}statusmessage\0\u{3}traffic_management\0\u{1}tak\0\u{3}mesh_beacon\0")
 

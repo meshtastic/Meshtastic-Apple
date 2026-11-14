@@ -15,7 +15,7 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
@@ -30,7 +30,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 /// because no security yet (beyond the channel mechanism).
 /// It should be off by default and then protected based on some TBD mechanism
 /// (a special channel once multichannel support is included?)
-public struct HardwareMessage: Sendable {
+public nonisolated struct HardwareMessage: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -52,7 +52,7 @@ public struct HardwareMessage: Sendable {
 
   ///
   /// TODO: REPLACE
-  public enum TypeEnum: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum TypeEnum: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
     ///
@@ -127,9 +127,9 @@ public struct HardwareMessage: Sendable {
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "meshtastic"
+fileprivate nonisolated let _protobuf_package = "meshtastic"
 
-extension HardwareMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension HardwareMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".HardwareMessage"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}type\0\u{3}gpio_mask\0\u{3}gpio_value\0")
 
@@ -169,6 +169,6 @@ extension HardwareMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
   }
 }
 
-extension HardwareMessage.TypeEnum: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension HardwareMessage.TypeEnum: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSET\0\u{1}WRITE_GPIOS\0\u{1}WATCH_GPIOS\0\u{1}GPIOS_CHANGED\0\u{1}READ_GPIOS\0\u{1}READ_GPIOS_REPLY\0")
 }

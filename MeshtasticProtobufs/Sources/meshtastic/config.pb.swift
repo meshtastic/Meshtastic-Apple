@@ -20,12 +20,12 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
 
-public struct Config: Sendable {
+public nonisolated struct Config: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -118,7 +118,7 @@ public struct Config: Sendable {
 
   ///
   /// Payload Variant
-  public enum OneOf_PayloadVariant: Equatable, Sendable {
+  public nonisolated enum OneOf_PayloadVariant: Equatable, Sendable {
     case device(Config.DeviceConfig)
     case position(Config.PositionConfig)
     case power(Config.PowerConfig)
@@ -134,7 +134,7 @@ public struct Config: Sendable {
 
   ///
   /// Configuration
-  public struct DeviceConfig: Sendable {
+  public nonisolated struct DeviceConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -202,7 +202,7 @@ public struct Config: Sendable {
 
     ///
     /// Defines the device's role on the Mesh network
-    public enum Role: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public nonisolated enum Role: SwiftProtobuf.Enum, Swift.CaseIterable {
       public typealias RawValue = Int
 
       ///
@@ -355,7 +355,7 @@ public struct Config: Sendable {
 
     ///
     /// Defines the device's behavior for how messages are rebroadcast
-    public enum RebroadcastMode: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public nonisolated enum RebroadcastMode: SwiftProtobuf.Enum, Swift.CaseIterable {
       public typealias RawValue = Int
 
       ///
@@ -430,7 +430,7 @@ public struct Config: Sendable {
 
     ///
     /// Defines buzzer behavior for audio feedback
-    public enum BuzzerMode: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public nonisolated enum BuzzerMode: SwiftProtobuf.Enum, Swift.CaseIterable {
       public typealias RawValue = Int
 
       ///
@@ -503,7 +503,7 @@ public struct Config: Sendable {
 
   ///
   /// Position Config
-  public struct PositionConfig: Sendable {
+  public nonisolated struct PositionConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -579,7 +579,7 @@ public struct Config: Sendable {
     /// are always included (also time if GPS-synced)
     /// NOTE: the more fields are included, the larger the message will be -
     ///   leading to longer airtime and a higher risk of packet loss
-    public enum PositionFlags: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public nonisolated enum PositionFlags: SwiftProtobuf.Enum, Swift.CaseIterable {
       public typealias RawValue = Int
 
       ///
@@ -686,7 +686,7 @@ public struct Config: Sendable {
 
     }
 
-    public enum GpsMode: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public nonisolated enum GpsMode: SwiftProtobuf.Enum, Swift.CaseIterable {
       public typealias RawValue = Int
 
       ///
@@ -739,7 +739,7 @@ public struct Config: Sendable {
   ///
   /// Power Config\
   /// See [Power Config](/docs/settings/config/power) for additional power config details.
-  public struct PowerConfig: Sendable {
+  public nonisolated struct PowerConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -799,7 +799,7 @@ public struct Config: Sendable {
 
   ///
   /// Network Config
-  public struct NetworkConfig: Sendable {
+  public nonisolated struct NetworkConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -854,7 +854,7 @@ public struct Config: Sendable {
 
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-    public enum AddressMode: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public nonisolated enum AddressMode: SwiftProtobuf.Enum, Swift.CaseIterable {
       public typealias RawValue = Int
 
       ///
@@ -896,7 +896,7 @@ public struct Config: Sendable {
 
     ///
     /// Available flags auxiliary network protocols
-    public enum ProtocolFlags: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public nonisolated enum ProtocolFlags: SwiftProtobuf.Enum, Swift.CaseIterable {
       public typealias RawValue = Int
 
       ///
@@ -936,7 +936,7 @@ public struct Config: Sendable {
 
     }
 
-    public struct IpV4Config: Sendable {
+    public nonisolated struct IpV4Config: Sendable {
       // SwiftProtobuf.Message conformance is added in an extension below. See the
       // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
       // methods supported on all messages.
@@ -969,7 +969,7 @@ public struct Config: Sendable {
 
   ///
   /// Display Config
-  public struct DisplayConfig: Sendable {
+  public nonisolated struct DisplayConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -1044,7 +1044,7 @@ public struct Config: Sendable {
     ///
     /// Unused. Kept so the deprecated gps_format field still has a type; when
     /// firmware stopped reading that field is recorded on the field itself.
-    public enum DeprecatedGpsCoordinateFormat: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public nonisolated enum DeprecatedGpsCoordinateFormat: SwiftProtobuf.Enum, Swift.CaseIterable {
       public typealias RawValue = Int
       case unused // = 0
       case UNRECOGNIZED(Int)
@@ -1076,7 +1076,7 @@ public struct Config: Sendable {
 
     ///
     /// Unit display preference
-    public enum DisplayUnits: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public nonisolated enum DisplayUnits: SwiftProtobuf.Enum, Swift.CaseIterable {
       public typealias RawValue = Int
 
       ///
@@ -1118,7 +1118,7 @@ public struct Config: Sendable {
 
     ///
     /// Override OLED outo detect with this if it fails.
-    public enum OledType: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public nonisolated enum OledType: SwiftProtobuf.Enum, Swift.CaseIterable {
       public typealias RawValue = Int
 
       ///
@@ -1186,7 +1186,7 @@ public struct Config: Sendable {
 
     }
 
-    public enum DisplayMode: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public nonisolated enum DisplayMode: SwiftProtobuf.Enum, Swift.CaseIterable {
       public typealias RawValue = Int
 
       ///
@@ -1240,7 +1240,7 @@ public struct Config: Sendable {
 
     }
 
-    public enum CompassOrientation: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public nonisolated enum CompassOrientation: SwiftProtobuf.Enum, Swift.CaseIterable {
       public typealias RawValue = Int
 
       ///
@@ -1327,7 +1327,7 @@ public struct Config: Sendable {
 
   ///
   /// Lora Config
-  public struct LoRaConfig: @unchecked Sendable {
+  public nonisolated struct LoRaConfig: @unchecked Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -1522,9 +1522,18 @@ public struct Config: Sendable {
       set {_uniqueStorage()._serialHalOnly = newValue}
     }
 
+    ///
+    /// Act as a transparent LoRa modem: run RadioLib on-device but do no encryption, decryption, or mesh routing.
+    /// The connected client sets the PHY settings via this LoRaConfig, supplies fully-formed (already-encrypted) frames to transmit verbatim,
+    /// and receives every frame the radio hears delivered raw (never decrypted) back over the API.
+    public var transparentMode: Bool {
+      get {_storage._transparentMode}
+      set {_uniqueStorage()._transparentMode = newValue}
+    }
+
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-    public enum RegionCode: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public nonisolated enum RegionCode: SwiftProtobuf.Enum, Swift.CaseIterable {
       public typealias RawValue = Int
 
       ///
@@ -1823,7 +1832,7 @@ public struct Config: Sendable {
     ///
     /// Standard predefined channel settings
     /// Note: these mappings must match ModemPreset Choice in the device code.
-    public enum ModemPreset: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public nonisolated enum ModemPreset: SwiftProtobuf.Enum, Swift.CaseIterable {
       public typealias RawValue = Int
 
       ///
@@ -1998,7 +2007,7 @@ public struct Config: Sendable {
 
     }
 
-    public enum FEM_LNA_Mode: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public nonisolated enum FEM_LNA_Mode: SwiftProtobuf.Enum, Swift.CaseIterable {
       public typealias RawValue = Int
 
       ///
@@ -2050,7 +2059,7 @@ public struct Config: Sendable {
     fileprivate var _storage = _StorageClass.defaultInstance
   }
 
-  public struct BluetoothConfig: Sendable {
+  public nonisolated struct BluetoothConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -2069,7 +2078,7 @@ public struct Config: Sendable {
 
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-    public enum PairingMode: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public nonisolated enum PairingMode: SwiftProtobuf.Enum, Swift.CaseIterable {
       public typealias RawValue = Int
 
       ///
@@ -2119,7 +2128,7 @@ public struct Config: Sendable {
     public init() {}
   }
 
-  public struct SecurityConfig: Sendable {
+  public nonisolated struct SecurityConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -2157,29 +2166,50 @@ public struct Config: Sendable {
     public var adminChannelEnabled: Bool = false
 
     ///
-    /// Determines the packet signature policy applied to remotely received mesh packets.
+    /// Determines whether this device signs the packets it sends, and which received packets it accepts.
+    /// See PacketSignaturePolicy.
     public var packetSignaturePolicy: Config.SecurityConfig.PacketSignaturePolicy = .compatible
 
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
     ///
-    /// Controls how the device authenticates remotely received mesh packets.
-    public enum PacketSignaturePolicy: SwiftProtobuf.Enum, Swift.CaseIterable {
+    /// Controls whether the device signs the packets it sends with XEdDSA, and which received packets it accepts.
+    /// In every mode a packet whose signature is malformed or fails verification is dropped, except a traceroute,
+    /// and so is a signed NodeInfo whose public key is not the key that signed it or does not hash to the sender's
+    /// node number.
+    /// A traceroute is never signed, and a signature on one is ignored: every hop rewrites it.
+    /// A channel with use_aead set overrides this policy: its packets are never signed, and are not dropped
+    /// for lacking a signature, because the AES-CCM tag authenticates them.
+    public nonisolated enum PacketSignaturePolicy: SwiftProtobuf.Enum, Swift.CaseIterable {
       public typealias RawValue = Int
 
       ///
-      /// Accept unsigned packets for maximum compatibility while still rejecting malformed or invalid signatures.
-      /// This is the default to avoid legacy nodes dropping signed packets during rebroadcast.
+      /// Packets are not signed. Unsigned packets are accepted, including from nodes that have signed before,
+      /// and an unsigned NodeInfo may update such a node's name and role.
+      /// Signatures are still checked: a signed packet whose signature is malformed or fails verification is
+      /// dropped. A signature from a node whose key is not yet known cannot be checked, and the packet is
+      /// accepted as unsigned.
+      /// This is the default: firmware before 2.8 strips signatures when relaying.
       case compatible // = 0
 
       ///
-      /// Prefer authenticated packets while retaining compatibility with unsigned packets from nodes not known to sign.
-      /// Rejects unsigned, signable broadcasts from nodes that have previously signed.
+      /// Broadcasts are signed, and NodeInfo and position even when unicast. Licensed (ham) mode has no PKI, so it
+      /// also signs the unicasts PKI would cover; its acks carry an ack proof instead of a signature.
+      /// Unsigned packets are accepted, including from nodes that have signed before, but an unsigned NodeInfo
+      /// does not change the name or role of a node that has signed before.
+      /// Recommended only on a mesh with no relays running firmware older than 2.8: those strip signatures, so a
+      /// signer's NodeInfo relayed through them arrives unsigned and its name and role changes are not applied.
+      /// The same holds for a node that has signed before and no longer signs.
       case balanced // = 1
 
       ///
-      /// Accept only packets authenticated by a verified XEdDSA signature or successful PKI decryption.
-      /// Unsigned, malformed, invalid, or unverifiable packets are ignored.
+      /// Broadcasts are signed, and NodeInfo and position even when unicast. Licensed (ham) mode has no PKI, so it
+      /// also signs the unicasts PKI would cover; its acks carry an ack proof instead of a signature.
+      /// Only packets with a verified signature, or PKI-encrypted packets, are accepted.
+      /// Unsigned packets are dropped, except acks and other routing packets, which carry their own proof,
+      /// traceroutes, and key verification messages, which the users' security number authenticates.
+      /// A signature from a node whose key is not yet known cannot be checked, and the packet is dropped,
+      /// except a traceroute.
       case strict // = 2
       case UNRECOGNIZED(Int)
 
@@ -2219,7 +2249,7 @@ public struct Config: Sendable {
 
   ///
   /// Blank config request, strictly for getting the session key
-  public struct SessionkeyConfig: Sendable {
+  public nonisolated struct SessionkeyConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -2234,9 +2264,9 @@ public struct Config: Sendable {
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "meshtastic"
+fileprivate nonisolated let _protobuf_package = "meshtastic"
 
-extension Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Config"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}device\0\u{1}position\0\u{1}power\0\u{1}network\0\u{1}display\0\u{1}lora\0\u{1}bluetooth\0\u{1}security\0\u{1}sessionkey\0\u{3}device_ui\0")
 
@@ -2439,7 +2469,7 @@ extension Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
   }
 }
 
-extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Config.protoMessageName + ".DeviceConfig"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}role\0\u{3}serial_enabled\0\u{4}\u{2}button_gpio\0\u{3}buzzer_gpio\0\u{3}rebroadcast_mode\0\u{3}node_info_broadcast_secs\0\u{3}double_tap_as_button_press\0\u{3}is_managed\0\u{3}disable_triple_click\0\u{1}tzdef\0\u{3}led_heartbeat_disabled\0\u{3}buzzer_mode\0")
 
@@ -2524,19 +2554,19 @@ extension Config.DeviceConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
   }
 }
 
-extension Config.DeviceConfig.Role: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Config.DeviceConfig.Role: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0CLIENT\0\u{1}CLIENT_MUTE\0\u{1}ROUTER\0\u{1}ROUTER_CLIENT\0\u{1}REPEATER\0\u{1}TRACKER\0\u{1}SENSOR\0\u{1}TAK\0\u{1}CLIENT_HIDDEN\0\u{1}LOST_AND_FOUND\0\u{1}TAK_TRACKER\0\u{1}ROUTER_LATE\0\u{1}CLIENT_BASE\0")
 }
 
-extension Config.DeviceConfig.RebroadcastMode: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Config.DeviceConfig.RebroadcastMode: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0ALL\0\u{1}ALL_SKIP_DECODING\0\u{1}LOCAL_ONLY\0\u{1}KNOWN_ONLY\0\u{1}NONE\0\u{1}CORE_PORTNUMS_ONLY\0")
 }
 
-extension Config.DeviceConfig.BuzzerMode: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Config.DeviceConfig.BuzzerMode: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0ALL_ENABLED\0\u{1}DISABLED\0\u{1}NOTIFICATIONS_ONLY\0\u{1}SYSTEM_ONLY\0\u{1}DIRECT_MSG_ONLY\0")
 }
 
-extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Config.protoMessageName + ".PositionConfig"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}position_broadcast_secs\0\u{3}position_broadcast_smart_enabled\0\u{3}fixed_position\0\u{3}gps_enabled\0\u{3}gps_update_interval\0\u{3}gps_attempt_time\0\u{3}position_flags\0\u{3}rx_gpio\0\u{3}tx_gpio\0\u{3}broadcast_smart_minimum_distance\0\u{3}broadcast_smart_minimum_interval_secs\0\u{3}gps_en_gpio\0\u{3}gps_mode\0")
 
@@ -2626,15 +2656,15 @@ extension Config.PositionConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
   }
 }
 
-extension Config.PositionConfig.PositionFlags: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Config.PositionConfig.PositionFlags: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSET\0\u{1}ALTITUDE\0\u{1}ALTITUDE_MSL\0\u{2}\u{2}GEOIDAL_SEPARATION\0\u{2}\u{4}DOP\0\u{2}\u{8}HVDOP\0\u{2}\u{10}SATINVIEW\0\u{2} SEQ_NO\0\u{2}@\u{1}TIMESTAMP\0\u{2}@\u{2}HEADING\0\u{2}@\u{4}SPEED\0")
 }
 
-extension Config.PositionConfig.GpsMode: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Config.PositionConfig.GpsMode: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0DISABLED\0\u{1}ENABLED\0\u{1}NOT_PRESENT\0")
 }
 
-extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Config.protoMessageName + ".PowerConfig"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}is_power_saving\0\u{3}on_battery_shutdown_after_secs\0\u{3}adc_multiplier_override\0\u{3}wait_bluetooth_secs\0\u{4}\u{2}sds_secs\0\u{3}ls_secs\0\u{3}min_wake_secs\0\u{3}device_battery_ina_address\0\u{4}\u{17}powermon_enables\0")
 
@@ -2704,7 +2734,7 @@ extension Config.PowerConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
   }
 }
 
-extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Config.protoMessageName + ".NetworkConfig"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}wifi_enabled\0\u{4}\u{2}wifi_ssid\0\u{3}wifi_psk\0\u{3}ntp_server\0\u{3}eth_enabled\0\u{3}address_mode\0\u{3}ipv4_config\0\u{3}rsyslog_server\0\u{3}enabled_protocols\0\u{3}ipv6_enabled\0")
 
@@ -2783,15 +2813,15 @@ extension Config.NetworkConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
   }
 }
 
-extension Config.NetworkConfig.AddressMode: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Config.NetworkConfig.AddressMode: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0DHCP\0\u{1}STATIC\0")
 }
 
-extension Config.NetworkConfig.ProtocolFlags: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Config.NetworkConfig.ProtocolFlags: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0NO_BROADCAST\0\u{1}UDP_BROADCAST\0")
 }
 
-extension Config.NetworkConfig.IpV4Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Config.NetworkConfig.IpV4Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Config.NetworkConfig.protoMessageName + ".IpV4Config"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}ip\0\u{1}gateway\0\u{1}subnet\0\u{1}dns\0")
 
@@ -2836,7 +2866,7 @@ extension Config.NetworkConfig.IpV4Config: SwiftProtobuf.Message, SwiftProtobuf.
   }
 }
 
-extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Config.protoMessageName + ".DisplayConfig"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}screen_on_secs\0\u{3}gps_format\0\u{3}auto_screen_carousel_secs\0\u{3}compass_north_top\0\u{3}flip_screen\0\u{1}units\0\u{1}oled\0\u{1}displaymode\0\u{3}heading_bold\0\u{3}wake_on_tap_or_motion\0\u{3}compass_orientation\0\u{3}use_12h_clock\0\u{3}use_long_node_name\0\u{3}enable_message_bubbles\0")
 
@@ -2931,29 +2961,29 @@ extension Config.DisplayConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
   }
 }
 
-extension Config.DisplayConfig.DeprecatedGpsCoordinateFormat: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Config.DisplayConfig.DeprecatedGpsCoordinateFormat: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNUSED\0")
 }
 
-extension Config.DisplayConfig.DisplayUnits: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Config.DisplayConfig.DisplayUnits: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0METRIC\0\u{1}IMPERIAL\0")
 }
 
-extension Config.DisplayConfig.OledType: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Config.DisplayConfig.OledType: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0OLED_AUTO\0\u{1}OLED_SSD1306\0\u{1}OLED_SH1106\0\u{1}OLED_SH1107\0\u{1}OLED_SH1107_128_128\0\u{1}OLED_SH1107_ROTATED\0")
 }
 
-extension Config.DisplayConfig.DisplayMode: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Config.DisplayConfig.DisplayMode: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0DEFAULT\0\u{1}TWOCOLOR\0\u{1}INVERTED\0\u{1}COLOR\0")
 }
 
-extension Config.DisplayConfig.CompassOrientation: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Config.DisplayConfig.CompassOrientation: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0DEGREES_0\0\u{1}DEGREES_90\0\u{1}DEGREES_180\0\u{1}DEGREES_270\0\u{1}DEGREES_0_INVERTED\0\u{1}DEGREES_90_INVERTED\0\u{1}DEGREES_180_INVERTED\0\u{1}DEGREES_270_INVERTED\0")
 }
 
-extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Config.protoMessageName + ".LoRaConfig"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}use_preset\0\u{3}modem_preset\0\u{1}bandwidth\0\u{3}spread_factor\0\u{3}coding_rate\0\u{3}frequency_offset\0\u{1}region\0\u{3}hop_limit\0\u{3}tx_enabled\0\u{3}tx_power\0\u{3}channel_num\0\u{3}override_duty_cycle\0\u{3}sx126x_rx_boosted_gain\0\u{3}override_frequency\0\u{3}pa_fan_disabled\0\u{4}X\u{1}ignore_incoming\0\u{3}ignore_mqtt\0\u{3}config_ok_to_mqtt\0\u{3}fem_lna_mode\0\u{3}serial_hal_only\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}use_preset\0\u{3}modem_preset\0\u{1}bandwidth\0\u{3}spread_factor\0\u{3}coding_rate\0\u{3}frequency_offset\0\u{1}region\0\u{3}hop_limit\0\u{3}tx_enabled\0\u{3}tx_power\0\u{3}channel_num\0\u{3}override_duty_cycle\0\u{3}sx126x_rx_boosted_gain\0\u{3}override_frequency\0\u{3}pa_fan_disabled\0\u{4}X\u{1}ignore_incoming\0\u{3}ignore_mqtt\0\u{3}config_ok_to_mqtt\0\u{3}fem_lna_mode\0\u{3}serial_hal_only\0\u{3}transparent_mode\0")
 
   fileprivate class _StorageClass {
     var _usePreset: Bool = false
@@ -2976,6 +3006,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     var _configOkToMqtt: Bool = false
     var _femLnaMode: Config.LoRaConfig.FEM_LNA_Mode = .disabled
     var _serialHalOnly: Bool = false
+    var _transparentMode: Bool = false
 
       // This property is used as the initial default value for new instances of the type.
       // The type itself is protecting the reference to its storage via CoW semantics.
@@ -3006,6 +3037,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       _configOkToMqtt = source._configOkToMqtt
       _femLnaMode = source._femLnaMode
       _serialHalOnly = source._serialHalOnly
+      _transparentMode = source._transparentMode
     }
   }
 
@@ -3044,6 +3076,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
         case 105: try { try decoder.decodeSingularBoolField(value: &_storage._configOkToMqtt) }()
         case 106: try { try decoder.decodeSingularEnumField(value: &_storage._femLnaMode) }()
         case 107: try { try decoder.decodeSingularBoolField(value: &_storage._serialHalOnly) }()
+        case 108: try { try decoder.decodeSingularBoolField(value: &_storage._transparentMode) }()
         default: break
         }
       }
@@ -3112,6 +3145,9 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       if _storage._serialHalOnly != false {
         try visitor.visitSingularBoolField(value: _storage._serialHalOnly, fieldNumber: 107)
       }
+      if _storage._transparentMode != false {
+        try visitor.visitSingularBoolField(value: _storage._transparentMode, fieldNumber: 108)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -3141,6 +3177,7 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
         if _storage._configOkToMqtt != rhs_storage._configOkToMqtt {return false}
         if _storage._femLnaMode != rhs_storage._femLnaMode {return false}
         if _storage._serialHalOnly != rhs_storage._serialHalOnly {return false}
+        if _storage._transparentMode != rhs_storage._transparentMode {return false}
         return true
       }
       if !storagesAreEqual {return false}
@@ -3150,19 +3187,19 @@ extension Config.LoRaConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
   }
 }
 
-extension Config.LoRaConfig.RegionCode: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Config.LoRaConfig.RegionCode: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSET\0\u{1}US\0\u{1}EU_433\0\u{1}EU_868\0\u{1}CN\0\u{1}JP\0\u{1}ANZ\0\u{1}KR\0\u{1}TW\0\u{1}RU\0\u{1}IN\0\u{1}NZ_865\0\u{1}TH\0\u{1}LORA_24\0\u{1}UA_433\0\u{1}UA_868\0\u{1}MY_433\0\u{1}MY_919\0\u{1}SG_923\0\u{1}PH_433\0\u{1}PH_868\0\u{1}PH_915\0\u{1}ANZ_433\0\u{1}KZ_433\0\u{1}KZ_863\0\u{1}NP_865\0\u{1}BR_902\0\u{1}ITU1_2M\0\u{1}ITU2_2M\0\u{1}EU_866\0\u{1}EU_874\0\u{1}EU_917\0\u{1}EU_N_868\0\u{1}ITU3_2M\0\u{1}ITU1_70CM\0\u{1}ITU2_70CM\0\u{1}ITU3_70CM\0\u{1}ITU2_125CM\0")
 }
 
-extension Config.LoRaConfig.ModemPreset: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Config.LoRaConfig.ModemPreset: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0LONG_FAST\0\u{1}LONG_SLOW\0\u{1}VERY_LONG_SLOW\0\u{1}MEDIUM_SLOW\0\u{1}MEDIUM_FAST\0\u{1}SHORT_SLOW\0\u{1}SHORT_FAST\0\u{1}LONG_MODERATE\0\u{1}SHORT_TURBO\0\u{1}LONG_TURBO\0\u{1}LITE_FAST\0\u{1}LITE_SLOW\0\u{1}NARROW_FAST\0\u{1}NARROW_SLOW\0\u{1}TINY_FAST\0\u{1}TINY_SLOW\0\u{1}MEDIUM_TURBO\0")
 }
 
-extension Config.LoRaConfig.FEM_LNA_Mode: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Config.LoRaConfig.FEM_LNA_Mode: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0DISABLED\0\u{1}ENABLED\0\u{1}NOT_PRESENT\0")
 }
 
-extension Config.BluetoothConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Config.BluetoothConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Config.protoMessageName + ".BluetoothConfig"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}enabled\0\u{1}mode\0\u{3}fixed_pin\0")
 
@@ -3202,11 +3239,11 @@ extension Config.BluetoothConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageI
   }
 }
 
-extension Config.BluetoothConfig.PairingMode: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Config.BluetoothConfig.PairingMode: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0RANDOM_PIN\0\u{1}FIXED_PIN\0\u{1}NO_PIN\0")
 }
 
-extension Config.SecurityConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Config.SecurityConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Config.protoMessageName + ".SecurityConfig"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}public_key\0\u{3}private_key\0\u{3}admin_key\0\u{3}is_managed\0\u{3}serial_enabled\0\u{3}debug_log_api_enabled\0\u{4}\u{2}admin_channel_enabled\0\u{3}packet_signature_policy\0")
 
@@ -3271,11 +3308,11 @@ extension Config.SecurityConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
   }
 }
 
-extension Config.SecurityConfig.PacketSignaturePolicy: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Config.SecurityConfig.PacketSignaturePolicy: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0PACKET_SIGNATURE_POLICY_COMPATIBLE\0\u{1}PACKET_SIGNATURE_POLICY_BALANCED\0\u{1}PACKET_SIGNATURE_POLICY_STRICT\0")
 }
 
-extension Config.SessionkeyConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Config.SessionkeyConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Config.protoMessageName + ".SessionkeyConfig"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
 

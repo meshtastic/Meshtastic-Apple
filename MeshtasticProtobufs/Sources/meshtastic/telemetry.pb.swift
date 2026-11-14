@@ -15,14 +15,14 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
 
 ///
 /// Supported I2C Sensors for telemetry in Meshtastic
-public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
+public nonisolated enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
 
   ///
@@ -464,7 +464,7 @@ public enum TelemetrySensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
 
 ///
 /// Key native device metrics such as battery level
-public struct DeviceMetrics: Sendable {
+public nonisolated struct DeviceMetrics: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -537,7 +537,7 @@ public struct DeviceMetrics: Sendable {
 
 ///
 /// Weather station or other environmental metrics
-public struct EnvironmentMetrics: @unchecked Sendable {
+public nonisolated struct EnvironmentMetrics: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1006,7 +1006,7 @@ public struct EnvironmentMetrics: @unchecked Sendable {
 /// Chemistry reported by soil probes (RS-485/SDI-12 NPK probes) and by
 /// water-quality sondes. Split out of EnvironmentMetrics so that message stays
 /// within the mesh payload budget.
-public struct SoilWaterMetrics: Sendable {
+public nonisolated struct SoilWaterMetrics: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1199,7 +1199,7 @@ public struct SoilWaterMetrics: Sendable {
 
 ///
 /// Power Metrics (voltage / current / etc)
-public struct PowerMetrics: Sendable {
+public nonisolated struct PowerMetrics: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1424,7 +1424,7 @@ public struct PowerMetrics: Sendable {
 
 ///
 /// Air quality metrics
-public struct AirQualityMetrics: @unchecked Sendable {
+public nonisolated struct AirQualityMetrics: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1727,7 +1727,7 @@ public struct AirQualityMetrics: @unchecked Sendable {
 
 ///
 /// Local device mesh statistics
-public struct LocalStats: Sendable {
+public nonisolated struct LocalStats: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1801,7 +1801,7 @@ public struct LocalStats: Sendable {
 
 ///
 /// Traffic management statistics for mesh network optimization
-public struct TrafficManagementStats: Sendable {
+public nonisolated struct TrafficManagementStats: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1841,7 +1841,7 @@ public struct TrafficManagementStats: Sendable {
 
 ///
 /// Health telemetry metrics
-public struct HealthMetrics: Sendable {
+public nonisolated struct HealthMetrics: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1890,7 +1890,7 @@ public struct HealthMetrics: Sendable {
 
 ///
 /// Linux host metrics
-public struct HostMetrics: Sendable {
+public nonisolated struct HostMetrics: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1964,7 +1964,7 @@ public struct HostMetrics: Sendable {
 
 ///
 /// Types of Measurements the telemetry module is equipped to handle
-public struct Telemetry: @unchecked Sendable {
+public nonisolated struct Telemetry: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2073,7 +2073,7 @@ public struct Telemetry: @unchecked Sendable {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public enum OneOf_Variant: Equatable, Sendable {
+  public nonisolated enum OneOf_Variant: Equatable, Sendable {
     ///
     /// Key native device metrics such as battery level
     case deviceMetrics(DeviceMetrics)
@@ -2111,7 +2111,7 @@ public struct Telemetry: @unchecked Sendable {
 
 ///
 /// NAU7802 Telemetry configuration, for saving to flash
-public struct Nau7802Config: Sendable {
+public nonisolated struct Nau7802Config: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2131,7 +2131,7 @@ public struct Nau7802Config: Sendable {
 
 ///
 /// AS3935 lightning sensor state, for saving to flash
-public struct AS3935State: Sendable {
+public nonisolated struct AS3935State: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2148,7 +2148,7 @@ public struct AS3935State: Sendable {
 
 ///
 /// SEN5X State, for saving to flash (to be merged with SEN6XState)
-public struct SEN5XState: Sendable {
+public nonisolated struct SEN5XState: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2209,7 +2209,7 @@ public struct SEN5XState: Sendable {
 
 ///
 /// SEN6X State, for saving to flash
-public struct SEN6XState: Sendable {
+public nonisolated struct SEN6XState: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2270,13 +2270,13 @@ public struct SEN6XState: Sendable {
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "meshtastic"
+fileprivate nonisolated let _protobuf_package = "meshtastic"
 
-extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension TelemetrySensorType: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0SENSOR_UNSET\0\u{1}BME280\0\u{1}BME680\0\u{1}MCP9808\0\u{1}INA260\0\u{1}INA219\0\u{1}BMP280\0\u{1}SHTC3\0\u{1}LPS22\0\u{1}QMC6310\0\u{1}QMI8658\0\u{1}QMC5883L\0\u{1}SHT31\0\u{1}PMSA003I\0\u{1}INA3221\0\u{1}BMP085\0\u{1}RCWL9620\0\u{1}SHT4X\0\u{1}VEML7700\0\u{1}MLX90632\0\u{1}OPT3001\0\u{1}LTR390UV\0\u{1}TSL25911FN\0\u{1}AHT10\0\u{1}DFROBOT_LARK\0\u{1}NAU7802\0\u{1}BMP3XX\0\u{1}ICM20948\0\u{1}MAX17048\0\u{1}CUSTOM_SENSOR\0\u{1}MAX30102\0\u{1}MLX90614\0\u{1}SCD4X\0\u{1}RADSENS\0\u{1}INA226\0\u{1}DFROBOT_RAIN\0\u{1}DPS310\0\u{1}RAK12035\0\u{1}MAX17261\0\u{1}PCT2075\0\u{1}ADS1X15\0\u{1}ADS1X15_ALT\0\u{1}SFA30\0\u{1}SEN5X\0\u{1}TSL2561\0\u{1}BH1750\0\u{1}HDC1080\0\u{1}SHT21\0\u{1}STC31\0\u{1}SCD30\0\u{1}SHTXX\0\u{1}DS248X\0\u{1}MMC5983MA\0\u{1}ICM42607P\0\u{1}SPA06\0\u{1}HM330X\0\u{1}SEN6X\0\u{1}AS3935\0")
 }
 
-extension DeviceMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension DeviceMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeviceMetrics"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}battery_level\0\u{1}voltage\0\u{3}channel_utilization\0\u{3}air_util_tx\0\u{3}uptime_seconds\0")
 
@@ -2330,7 +2330,7 @@ extension DeviceMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
   }
 }
 
-extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".EnvironmentMetrics"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}temperature\0\u{3}relative_humidity\0\u{3}barometric_pressure\0\u{3}gas_resistance\0\u{1}voltage\0\u{1}current\0\u{1}iaq\0\u{1}distance\0\u{1}lux\0\u{3}white_lux\0\u{3}ir_lux\0\u{3}uv_lux\0\u{3}wind_direction\0\u{3}wind_speed\0\u{1}weight\0\u{3}wind_gust\0\u{3}wind_lull\0\u{1}radiation\0\u{3}rainfall_1h\0\u{3}rainfall_24h\0\u{3}soil_moisture\0\u{3}soil_temperature\0\u{3}one_wire_temperature\0\u{3}adc_voltage_ch0\0\u{3}adc_voltage_ch1\0\u{3}adc_voltage_ch2\0\u{3}adc_voltage_ch3\0\u{3}adc_voltage_ch4\0\u{3}adc_voltage_ch5\0\u{3}adc_voltage_ch6\0\u{3}adc_voltage_ch7\0\u{3}one_wire_temperature_ch0\0\u{3}one_wire_temperature_ch1\0\u{3}one_wire_temperature_ch2\0\u{3}one_wire_temperature_ch3\0\u{3}one_wire_temperature_ch4\0\u{3}one_wire_temperature_ch5\0\u{3}one_wire_temperature_ch6\0\u{3}one_wire_temperature_ch7\0\u{3}lightning_strike_count_1h\0\u{3}lightning_distance_km\0\u{b}soil_ph\0\u{b}ph\0\u{b}electrical_conductivity\0\u{b}salinity\0\u{b}nitrogen\0\u{b}phosphorus\0\u{b}potassium\0\u{b}dissolved_oxygen\0\u{b}orp\0\u{b}chemical_oxygen_demand\0\u{b}turbidity\0\u{b}nitrate\0\u{b}ammonium\0\u{b}biochemical_oxygen_demand\0\u{b}solar_irradiance\0\u{c}*\u{f}")
 
@@ -2680,7 +2680,7 @@ extension EnvironmentMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
   }
 }
 
-extension SoilWaterMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension SoilWaterMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SoilWaterMetrics"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}soil_ph\0\u{1}ph\0\u{3}electrical_conductivity\0\u{1}salinity\0\u{1}nitrogen\0\u{1}phosphorus\0\u{1}potassium\0\u{3}dissolved_oxygen\0\u{1}orp\0\u{3}chemical_oxygen_demand\0\u{1}turbidity\0\u{1}nitrate\0\u{1}ammonium\0\u{3}biochemical_oxygen_demand\0\u{3}solar_irradiance\0")
 
@@ -2784,7 +2784,7 @@ extension SoilWaterMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
   }
 }
 
-extension PowerMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension PowerMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PowerMetrics"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}ch1_voltage\0\u{3}ch1_current\0\u{3}ch2_voltage\0\u{3}ch2_current\0\u{3}ch3_voltage\0\u{3}ch3_current\0\u{3}ch4_voltage\0\u{3}ch4_current\0\u{3}ch5_voltage\0\u{3}ch5_current\0\u{3}ch6_voltage\0\u{3}ch6_current\0\u{3}ch7_voltage\0\u{3}ch7_current\0\u{3}ch8_voltage\0\u{3}ch8_current\0")
 
@@ -2893,7 +2893,7 @@ extension PowerMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
   }
 }
 
-extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".AirQualityMetrics"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}pm10_standard\0\u{3}pm25_standard\0\u{3}pm100_standard\0\u{3}pm10_environmental\0\u{3}pm25_environmental\0\u{3}pm100_environmental\0\u{3}particles_03um\0\u{3}particles_05um\0\u{3}particles_10um\0\u{3}particles_25um\0\u{3}particles_50um\0\u{3}particles_100um\0\u{1}co2\0\u{3}co2_temperature\0\u{3}co2_humidity\0\u{3}form_formaldehyde\0\u{3}form_humidity\0\u{3}form_temperature\0\u{3}pm40_standard\0\u{3}particles_40um\0\u{3}pm_temperature\0\u{3}pm_humidity\0\u{3}pm_voc_idx\0\u{3}pm_nox_idx\0\u{3}particles_tps\0\u{3}pm_status_flags\0")
 
@@ -3138,7 +3138,7 @@ extension AirQualityMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
   }
 }
 
-extension LocalStats: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension LocalStats: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".LocalStats"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}uptime_seconds\0\u{3}channel_utilization\0\u{3}air_util_tx\0\u{3}num_packets_tx\0\u{3}num_packets_rx\0\u{3}num_packets_rx_bad\0\u{3}num_online_nodes\0\u{3}num_total_nodes\0\u{3}num_rx_dupe\0\u{3}num_tx_relay\0\u{3}num_tx_relay_canceled\0\u{3}heap_total_bytes\0\u{3}heap_free_bytes\0\u{3}num_tx_dropped\0\u{3}noise_floor\0")
 
@@ -3238,7 +3238,7 @@ extension LocalStats: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
   }
 }
 
-extension TrafficManagementStats: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension TrafficManagementStats: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".TrafficManagementStats"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}packets_inspected\0\u{3}position_dedup_drops\0\u{3}nodeinfo_cache_hits\0\u{3}rate_limit_drops\0\u{3}unknown_packet_drops\0\u{3}hop_exhausted_packets\0\u{3}router_hops_preserved\0")
 
@@ -3298,7 +3298,7 @@ extension TrafficManagementStats: SwiftProtobuf.Message, SwiftProtobuf._MessageI
   }
 }
 
-extension HealthMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension HealthMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".HealthMetrics"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}heart_bpm\0\u{1}spO2\0\u{1}temperature\0")
 
@@ -3342,7 +3342,7 @@ extension HealthMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
   }
 }
 
-extension HostMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension HostMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".HostMetrics"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}uptime_seconds\0\u{3}freemem_bytes\0\u{3}diskfree1_bytes\0\u{3}diskfree2_bytes\0\u{3}diskfree3_bytes\0\u{1}load1\0\u{1}load5\0\u{1}load15\0\u{3}user_string\0")
 
@@ -3416,7 +3416,7 @@ extension HostMetrics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
   }
 }
 
-extension Telemetry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Telemetry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Telemetry"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}time\0\u{3}device_metrics\0\u{3}environment_metrics\0\u{3}air_quality_metrics\0\u{3}power_metrics\0\u{3}local_stats\0\u{3}health_metrics\0\u{3}host_metrics\0\u{3}traffic_management_stats\0\u{4}\u{2}soil_water_metrics\0")
 
@@ -3645,7 +3645,7 @@ extension Telemetry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
   }
 }
 
-extension Nau7802Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Nau7802Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Nau7802Config"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}zeroOffset\0\u{1}calibrationFactor\0")
 
@@ -3680,7 +3680,7 @@ extension Nau7802Config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
   }
 }
 
-extension AS3935State: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension AS3935State: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".AS3935State"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}tuning_cap_pf\0")
 
@@ -3710,7 +3710,7 @@ extension AS3935State: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
   }
 }
 
-extension SEN5XState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension SEN5XState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SEN5XState"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}last_cleaning_time\0\u{3}last_cleaning_valid\0\u{3}one_shot_mode\0\u{3}voc_state_time\0\u{3}voc_state_valid\0\u{3}voc_state_array\0")
 
@@ -3769,7 +3769,7 @@ extension SEN5XState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
   }
 }
 
-extension SEN6XState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension SEN6XState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SEN6XState"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}last_cleaning_time\0\u{3}last_cleaning_valid\0\u{3}one_shot_mode\0\u{3}voc_state_time\0\u{3}voc_state_valid\0\u{3}voc_state_array\0")
 

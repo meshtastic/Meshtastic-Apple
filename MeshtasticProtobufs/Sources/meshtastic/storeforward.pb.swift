@@ -20,14 +20,14 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
 
 ///
 /// TODO: REPLACE
-public struct StoreAndForward: Sendable {
+public nonisolated struct StoreAndForward: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -88,7 +88,7 @@ public struct StoreAndForward: Sendable {
 
   ///
   /// TODO: REPLACE
-  public enum OneOf_Variant: Equatable, Sendable {
+  public nonisolated enum OneOf_Variant: Equatable, Sendable {
     ///
     /// TODO: REPLACE
     case stats(StoreAndForward.Statistics)
@@ -107,7 +107,7 @@ public struct StoreAndForward: Sendable {
   ///
   /// 001 - 063 = From Router
   /// 064 - 127 = From Client
-  public enum RequestResponse: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum RequestResponse: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
     ///
@@ -249,7 +249,7 @@ public struct StoreAndForward: Sendable {
 
   ///
   /// TODO: REPLACE
-  public struct Statistics: Sendable {
+  public nonisolated struct Statistics: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -297,7 +297,7 @@ public struct StoreAndForward: Sendable {
 
   ///
   /// TODO: REPLACE
-  public struct History: Sendable {
+  public nonisolated struct History: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -322,7 +322,7 @@ public struct StoreAndForward: Sendable {
 
   ///
   /// TODO: REPLACE
-  public struct Heartbeat: Sendable {
+  public nonisolated struct Heartbeat: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -345,9 +345,9 @@ public struct StoreAndForward: Sendable {
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "meshtastic"
+fileprivate nonisolated let _protobuf_package = "meshtastic"
 
-extension StoreAndForward: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension StoreAndForward: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".StoreAndForward"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}rr\0\u{1}stats\0\u{1}history\0\u{1}heartbeat\0\u{1}text\0\u{3}original_id\0")
 
@@ -453,11 +453,11 @@ extension StoreAndForward: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
   }
 }
 
-extension StoreAndForward.RequestResponse: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension StoreAndForward.RequestResponse: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNSET\0\u{1}ROUTER_ERROR\0\u{1}ROUTER_HEARTBEAT\0\u{1}ROUTER_PING\0\u{1}ROUTER_PONG\0\u{1}ROUTER_BUSY\0\u{1}ROUTER_HISTORY\0\u{1}ROUTER_STATS\0\u{1}ROUTER_TEXT_DIRECT\0\u{1}ROUTER_TEXT_BROADCAST\0\u{2}7CLIENT_ERROR\0\u{1}CLIENT_HISTORY\0\u{1}CLIENT_STATS\0\u{1}CLIENT_PING\0\u{1}CLIENT_PONG\0\u{2}&CLIENT_ABORT\0")
 }
 
-extension StoreAndForward.Statistics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension StoreAndForward.Statistics: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = StoreAndForward.protoMessageName + ".Statistics"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}messages_total\0\u{3}messages_saved\0\u{3}messages_max\0\u{3}up_time\0\u{1}requests\0\u{3}requests_history\0\u{1}heartbeat\0\u{3}return_max\0\u{3}return_window\0")
 
@@ -527,7 +527,7 @@ extension StoreAndForward.Statistics: SwiftProtobuf.Message, SwiftProtobuf._Mess
   }
 }
 
-extension StoreAndForward.History: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension StoreAndForward.History: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = StoreAndForward.protoMessageName + ".History"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}history_messages\0\u{1}window\0\u{3}last_request\0")
 
@@ -567,7 +567,7 @@ extension StoreAndForward.History: SwiftProtobuf.Message, SwiftProtobuf._Message
   }
 }
 
-extension StoreAndForward.Heartbeat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension StoreAndForward.Heartbeat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = StoreAndForward.protoMessageName + ".Heartbeat"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}period\0\u{1}secondary\0")
 

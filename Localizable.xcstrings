@@ -79077,6 +79077,1206 @@
         }
       }
     },
+    "meshtastic.ClientNotification.NotificationType.CHANNEL_BLANK_PSK.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.CHANNEL_BLANK_PSK",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "A channel has a blank PSK (no encryption) instead of the default key."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.CHANNEL_BLANK_PSK.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.CHANNEL_BLANK_PSK",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Channel Has No Encryption"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.CHANNEL_NAME_AND_PSK_ISSUES.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.CHANNEL_NAME_AND_PSK_ISSUES",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "There may be name and PSK issues on one or more channels."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.CHANNEL_NAME_AND_PSK_ISSUES.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.CHANNEL_NAME_AND_PSK_ISSUES",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Channel Name and PSK Issues"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.CHANNEL_NAME_ISSUES.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.CHANNEL_NAME_ISSUES",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "There may be name issues on one or more channels."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.CHANNEL_NAME_ISSUES.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.CHANNEL_NAME_ISSUES",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Channel Name Issues"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.CHANNEL_NAME_MATCHES_OLD_PRESET.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.CHANNEL_NAME_MATCHES_OLD_PRESET",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "A channel name matches the previous modem preset. Rename it if it should follow the new preset."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.CHANNEL_NAME_MATCHES_OLD_PRESET.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.CHANNEL_NAME_MATCHES_OLD_PRESET",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Channel Name Matches Old Preset"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.CHANNEL_NAME_PRESET_MISTYPE.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.CHANNEL_NAME_PRESET_MISTYPE",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "A channel name looks like a mistyped modem preset name. Type the preset name exactly."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.CHANNEL_NAME_PRESET_MISTYPE.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.CHANNEL_NAME_PRESET_MISTYPE",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Channel Name Looks Mistyped"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.CHANNEL_NAME_PRESET_MISTYPE_CLEAR_NAME.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.CHANNEL_NAME_PRESET_MISTYPE_CLEAR_NAME",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "A channel name looks like a mistyped modem preset name. Clear the name to use the preset name automatically."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.CHANNEL_NAME_PRESET_MISTYPE_CLEAR_NAME.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.CHANNEL_NAME_PRESET_MISTYPE_CLEAR_NAME",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Clear Mistyped Channel Name"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.CHANNEL_NAME_WONT_AUTO_RESOLVE.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.CHANNEL_NAME_WONT_AUTO_RESOLVE",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "A channel name matches the new modem preset but won't update automatically. Clear the name to fix it."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.CHANNEL_NAME_WONT_AUTO_RESOLVE.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.CHANNEL_NAME_WONT_AUTO_RESOLVE",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Channel Name Won't Auto-Resolve"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.CHANNEL_PRESET_NON_DEFAULT_KEY.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.CHANNEL_PRESET_NON_DEFAULT_KEY",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "A channel matches a modem preset but uses a non-default key, so nodes using the default key can't decode it."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.CHANNEL_PRESET_NON_DEFAULT_KEY.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.CHANNEL_PRESET_NON_DEFAULT_KEY",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Preset Channel Uses Non-Default Key"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.CHANNEL_PSK_ISSUES.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.CHANNEL_PSK_ISSUES",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "There may be PSK issues on one or more channels."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.CHANNEL_PSK_ISSUES.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.CHANNEL_PSK_ISSUES",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Channel PSK Issues"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.DUPLICATED_PUBLIC_KEY.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.DUPLICATED_PUBLIC_KEY",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "A remote device has advertised your public key. Your key may be compromised; consider regenerating it."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.DUPLICATED_PUBLIC_KEY.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.DUPLICATED_PUBLIC_KEY",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Public Key Duplicated"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.DUTY_CYCLE_LIMIT_EXCEEDED.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.DUTY_CYCLE_LIMIT_EXCEEDED",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The duty cycle limit is exceeded. Sending resumes once airtime is available."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.DUTY_CYCLE_LIMIT_EXCEEDED.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.DUTY_CYCLE_LIMIT_EXCEEDED",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Duty Cycle Limit Exceeded"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.KEY_VERIFICATION_FINAL_INCOMING.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.KEY_VERIFICATION_FINAL_INCOMING",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Confirm that the verification code matches the remote node to finish the incoming key verification."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.KEY_VERIFICATION_FINAL_INCOMING.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.KEY_VERIFICATION_FINAL_INCOMING",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Confirm Incoming Key Verification"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.KEY_VERIFICATION_FINAL_OUTGOING.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.KEY_VERIFICATION_FINAL_OUTGOING",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Confirm that the verification code matches the remote node to finish the outgoing key verification."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.KEY_VERIFICATION_FINAL_OUTGOING.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.KEY_VERIFICATION_FINAL_OUTGOING",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Confirm Outgoing Key Verification"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.KEY_VERIFICATION_LICENSED_UNAVAILABLE.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.KEY_VERIFICATION_LICENSED_UNAVAILABLE",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Key verification is unavailable in licensed (ham) mode."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.KEY_VERIFICATION_LICENSED_UNAVAILABLE.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.KEY_VERIFICATION_LICENSED_UNAVAILABLE",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Key Verification Unavailable"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.KEY_VERIFICATION_NUMBER_INFORM.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.KEY_VERIFICATION_NUMBER_INFORM",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Give this security number to the user verifying your key."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.KEY_VERIFICATION_NUMBER_INFORM.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.KEY_VERIFICATION_NUMBER_INFORM",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Key Verification Security Number"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.KEY_VERIFICATION_NUMBER_REQUEST.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.KEY_VERIFICATION_NUMBER_REQUEST",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Enter the security number shown on the remote node."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.KEY_VERIFICATION_NUMBER_REQUEST.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.KEY_VERIFICATION_NUMBER_REQUEST",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Enter Key Verification Number"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.LICENSED_IDENTITY_CHANGED.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.LICENSED_IDENTITY_CHANGED",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Licensed signing generated a new identity key. This node's identity changed."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.LICENSED_IDENTITY_CHANGED.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.LICENSED_IDENTITY_CHANGED",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Node Identity Changed"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.LICENSED_IDENTITY_WILL_CHANGE.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.LICENSED_IDENTITY_WILL_CHANGE",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Licensed signing requires an identity key. This node's identity will change after key generation."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.LICENSED_IDENTITY_WILL_CHANGE.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.LICENSED_IDENTITY_WILL_CHANGE",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Node Identity Will Change"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.LICENSED_MODE_ACTIVATED.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.LICENSED_MODE_ACTIVATED",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Licensed mode removed the admin channel and encryption from all channels."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.LICENSED_MODE_ACTIVATED.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.LICENSED_MODE_ACTIVATED",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Licensed Mode Activated"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.LORA_BANDWIDTH_EXCEEDS_REGION.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.LORA_BANDWIDTH_EXCEEDS_REGION",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The requested bandwidth is wider than this region allows."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.LORA_BANDWIDTH_EXCEEDS_REGION.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.LORA_BANDWIDTH_EXCEEDS_REGION",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Bandwidth Too Wide for Region"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.LORA_CHANNEL_NUM_INVALID.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.LORA_CHANNEL_NUM_INVALID",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The frequency slot is out of range for this region."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.LORA_CHANNEL_NUM_INVALID.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.LORA_CHANNEL_NUM_INVALID",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Frequency Slot Invalid"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.LORA_PRESET_INVALID_FOR_REGION.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.LORA_PRESET_INVALID_FOR_REGION",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The modem preset is not valid for this region."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.LORA_PRESET_INVALID_FOR_REGION.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.LORA_PRESET_INVALID_FOR_REGION",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Preset Invalid for Region"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.LORA_PRESET_REGION_SWAP.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.LORA_PRESET_REGION_SWAP",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The selected modem preset moved the node to a compatible sibling region."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.LORA_PRESET_REGION_SWAP.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.LORA_PRESET_REGION_SWAP",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Region Changed for Preset"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.LORA_REGION_REQUIRES_LICENSE.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.LORA_REGION_REQUIRES_LICENSE",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "This LoRa region requires licensed mode."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.LORA_REGION_REQUIRES_LICENSE.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.LORA_REGION_REQUIRES_LICENSE",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Region Requires Licensed Mode"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.LORA_REGION_UNRECOGNIZED.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.LORA_REGION_UNRECOGNIZED",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The LoRa region code is not recognized."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.LORA_REGION_UNRECOGNIZED.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.LORA_REGION_UNRECOGNIZED",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Region Not Recognized"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.LORA_REGION_UNSUPPORTED_BY_RADIO.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.LORA_REGION_UNSUPPORTED_BY_RADIO",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "This LoRa region needs a frequency band this radio does not support."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.LORA_REGION_UNSUPPORTED_BY_RADIO.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.LORA_REGION_UNSUPPORTED_BY_RADIO",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Region Not Supported by Radio"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.LOW_ENTROPY_KEY_REGENERATED.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.LOW_ENTROPY_KEY_REGENERATED",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Compromised keys were detected and regenerated."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.LOW_ENTROPY_KEY_REGENERATED.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.LOW_ENTROPY_KEY_REGENERATED",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Compromised Keys Regenerated"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.LOW_ENTROPY_KEY_RESTORE_REJECTED.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.LOW_ENTROPY_KEY_RESTORE_REJECTED",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "That key is a known low-entropy key and can't be restored. A new secure key was generated and the node number changed."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.LOW_ENTROPY_KEY_RESTORE_REJECTED.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.LOW_ENTROPY_KEY_RESTORE_REJECTED",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Low-Entropy Key Rejected"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.MANAGED_MODE_REQUIRES_ADMIN_KEY.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.MANAGED_MODE_REQUIRES_ADMIN_KEY",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Managed mode needs at least one admin public key, so it was left disabled."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.MANAGED_MODE_REQUIRES_ADMIN_KEY.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.MANAGED_MODE_REQUIRES_ADMIN_KEY",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Admin Key Required"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.MQTT_DEFAULT_SERVER_PORT_INVALID.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.MQTT_DEFAULT_SERVER_PORT_INVALID",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The default MQTT server address must not have a port specified."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.MQTT_DEFAULT_SERVER_PORT_INVALID.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.MQTT_DEFAULT_SERVER_PORT_INVALID",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Invalid MQTT Server Port"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.MQTT_PROXY_TO_CLIENT_REQUIRED.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.MQTT_PROXY_TO_CLIENT_REQUIRED",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Nodes without a network connection must enable MQTT proxy to client."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.MQTT_PROXY_TO_CLIENT_REQUIRED.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.MQTT_PROXY_TO_CLIENT_REQUIRED",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "MQTT Proxy Required"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.MQTT_SERVER_UNREACHABLE.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.MQTT_SERVER_UNREACHABLE",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The MQTT server could not be reached. Settings were saved; check the server address and credentials."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.MQTT_SERVER_UNREACHABLE.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.MQTT_SERVER_UNREACHABLE",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "MQTT Server Unreachable"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.OTA_INVALID_HASH.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.OTA_INVALID_HASH",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Can't start the OTA update because the provided firmware hash is invalid."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.OTA_INVALID_HASH.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.OTA_INVALID_HASH",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Invalid OTA Hash"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.OTA_LOADER_INVALID.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.OTA_LOADER_INVALID",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Can't start the OTA update because the device does not have a valid OTA loader."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.OTA_LOADER_INVALID.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.OTA_LOADER_INVALID",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Invalid OTA Loader"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.OTA_LOADER_PARTITION_MISSING.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.OTA_LOADER_PARTITION_MISSING",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Can't start the OTA update because no OTA loader partition was found."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.OTA_LOADER_PARTITION_MISSING.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.OTA_LOADER_PARTITION_MISSING",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "OTA Loader Partition Missing"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.OTA_MODE_UNSUPPORTED.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.OTA_MODE_UNSUPPORTED",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The OTA loader does not support the requested update method."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.OTA_MODE_UNSUPPORTED.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.OTA_MODE_UNSUPPORTED",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "OTA Mode Unsupported"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.OTA_PARTITION_SWITCH_FAILED.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.OTA_PARTITION_SWITCH_FAILED",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Unable to switch to the OTA partition."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.OTA_PARTITION_SWITCH_FAILED.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.OTA_PARTITION_SWITCH_FAILED",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "OTA Partition Switch Failed"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.OTA_REBOOTING.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.OTA_REBOOTING",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Rebooting into the OTA loader to receive the update."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.OTA_REBOOTING.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.OTA_REBOOTING",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Rebooting to OTA"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.PACKET_SIGNATURE_POLICY_UNAVAILABLE.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.PACKET_SIGNATURE_POLICY_UNAVAILABLE",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The packet signature policy is unavailable on this firmware build, so it was set to Compatible."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.PACKET_SIGNATURE_POLICY_UNAVAILABLE.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.PACKET_SIGNATURE_POLICY_UNAVAILABLE",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Signature Policy Unavailable"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.POSITION_SENT_SLEEPING.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.POSITION_SENT_SLEEPING",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Position sent. The device will sleep until the next position broadcast."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.POSITION_SENT_SLEEPING.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.POSITION_SENT_SLEEPING",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Position Sent, Sleeping"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.POSITION_SHARING_DISABLED.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.POSITION_SHARING_DISABLED",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Location sharing is disabled on this channel."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.POSITION_SHARING_DISABLED.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.POSITION_SHARING_DISABLED",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Location Sharing Disabled"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.PROTECTED_NODE_LIMIT_REACHED.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.PROTECTED_NODE_LIMIT_REACHED",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The node can't be favorited or ignored because the protected-node limit is reached."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.PROTECTED_NODE_LIMIT_REACHED.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.PROTECTED_NODE_LIMIT_REACHED",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Protected Node Limit Reached"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.PUBLIC_CHANNEL_POSITION_PRECISION_REDUCED.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.PUBLIC_CHANNEL_POSITION_PRECISION_REDUCED",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Precise position is not allowed on a public channel, so precision was reduced."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.PUBLIC_CHANNEL_POSITION_PRECISION_REDUCED.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.PUBLIC_CHANNEL_POSITION_PRECISION_REDUCED",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Position Precision Reduced"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.ROUTER_REBROADCAST_NONE_REJECTED.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.ROUTER_REBROADCAST_NONE_REJECTED",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Rebroadcast mode can't be NONE for a router role, so it was set to ALL."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.ROUTER_REBROADCAST_NONE_REJECTED.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.ROUTER_REBROADCAST_NONE_REJECTED",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Rebroadcast Mode Changed"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.SERIAL_CONSOLE_OVERRIDE_INVALID.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.SERIAL_CONSOLE_OVERRIDE_INVALID",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Overriding the console serial port is only supported in NMEA, CalTopo, or MS Config output modes."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.SERIAL_CONSOLE_OVERRIDE_INVALID.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.SERIAL_CONSOLE_OVERRIDE_INVALID",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Invalid Serial Config"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.TELEMETRY_SENT_SLEEPING.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.TELEMETRY_SENT_SLEEPING",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Telemetry sent. The device will sleep until the next telemetry update."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.TELEMETRY_SENT_SLEEPING.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.TELEMETRY_SENT_SLEEPING",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Telemetry Sent, Sleeping"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.TRACEROUTE_BROADCAST_REJECTED.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.TRACEROUTE_BROADCAST_REJECTED",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Multi-hop traceroute to the broadcast address is not allowed."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.TRACEROUTE_BROADCAST_REJECTED.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.TRACEROUTE_BROADCAST_REJECTED",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Broadcast Traceroute Rejected"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.TRACEROUTE_RATE_LIMITED.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.TRACEROUTE_RATE_LIMITED",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Only one traceroute can be sent every 30 seconds."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.TRACEROUTE_RATE_LIMITED.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.TRACEROUTE_RATE_LIMITED",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Traceroute Rate Limited"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.UNSET.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.UNSET",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "A notification from the device."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.UNSET.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.UNSET",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Notification"
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.UNSIGNED_IDENTITY_UPDATE_IGNORED.description" : {
+      "comment" : "description of meshtastic.ClientNotification.NotificationType.UNSIGNED_IDENTITY_UPDATE_IGNORED",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "An unsigned update tried to change a known node's name or role and was ignored because of your security setting. Remove the node to accept its unsigned updates."
+          }
+        }
+      }
+    },
+    "meshtastic.ClientNotification.NotificationType.UNSIGNED_IDENTITY_UPDATE_IGNORED.label" : {
+      "comment" : "label of meshtastic.ClientNotification.NotificationType.UNSIGNED_IDENTITY_UPDATE_IGNORED",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Unsigned Update Ignored"
+          }
+        }
+      }
+    },
     "meshtastic.Config.BluetoothConfig.PairingMode.FIXED_PIN.label" : {
       "comment" : "label of meshtastic.Config.BluetoothConfig.PairingMode.FIXED_PIN",
       "extractionState" : "extracted_with_value",

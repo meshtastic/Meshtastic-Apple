@@ -20,12 +20,12 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
 
-public enum Team: SwiftProtobuf.Enum, Swift.CaseIterable {
+public nonisolated enum Team: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
 
   ///
@@ -158,7 +158,7 @@ public enum Team: SwiftProtobuf.Enum, Swift.CaseIterable {
 
 ///
 /// Role of the group member
-public enum MemberRole: SwiftProtobuf.Enum, Swift.CaseIterable {
+public nonisolated enum MemberRole: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
 
   ///
@@ -250,7 +250,7 @@ public enum MemberRole: SwiftProtobuf.Enum, Swift.CaseIterable {
 ///
 /// CoT how field values.
 /// Represents how the coordinates were generated.
-public enum CotHow: SwiftProtobuf.Enum, Swift.CaseIterable {
+public nonisolated enum CotHow: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
 
   ///
@@ -336,7 +336,7 @@ public enum CotHow: SwiftProtobuf.Enum, Swift.CaseIterable {
 /// Well-known CoT event types.
 /// When the type is known, use the enum value for efficient encoding.
 /// For unknown types, set cot_type_id to CotType_Other and populate cot_type_str.
-public enum CotType: SwiftProtobuf.Enum, Swift.CaseIterable {
+public nonisolated enum CotType: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
 
   ///
@@ -1193,7 +1193,7 @@ public enum CotType: SwiftProtobuf.Enum, Swift.CaseIterable {
 
 ///
 /// Geopoint and altitude source
-public enum GeoPointSource: SwiftProtobuf.Enum, Swift.CaseIterable {
+public nonisolated enum GeoPointSource: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
 
   ///
@@ -1249,7 +1249,7 @@ public enum GeoPointSource: SwiftProtobuf.Enum, Swift.CaseIterable {
 
 ///
 /// Packets for the official ATAK Plugin
-public struct TAKPacket: Sendable {
+public nonisolated struct TAKPacket: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1330,7 +1330,7 @@ public struct TAKPacket: Sendable {
 
   ///
   /// The payload of the packet
-  public enum OneOf_PayloadVariant: Equatable, Sendable {
+  public nonisolated enum OneOf_PayloadVariant: Equatable, Sendable {
     ///
     /// TAK position report
     case pli(PLI)
@@ -1353,7 +1353,7 @@ public struct TAKPacket: Sendable {
 
 ///
 /// ATAK GeoChat message
-public struct GeoChat: Sendable {
+public nonisolated struct GeoChat: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1444,7 +1444,7 @@ public struct GeoChat: Sendable {
   ///
   /// Receivers can detect a receipt by checking receipt_type != ReceiptType_None
   /// without re-parsing the envelope cot_type_id.
-  public enum ReceiptType: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum ReceiptType: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
     /// normal chat message
@@ -1500,7 +1500,7 @@ public struct GeoChat: Sendable {
 ///
 /// ATAK Group
 /// <__group role='Team Member' name='Cyan'/>
-public struct Group: Sendable {
+public nonisolated struct Group: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1522,7 +1522,7 @@ public struct Group: Sendable {
 ///
 /// ATAK EUD Status
 /// <status battery='100' />
-public struct Status: Sendable {
+public nonisolated struct Status: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1539,7 +1539,7 @@ public struct Status: Sendable {
 ///
 /// ATAK Contact
 /// <contact endpoint='0.0.0.0:4242:tcp' phone='+12345678' callsign='FALKE'/>
-public struct Contact: Sendable {
+public nonisolated struct Contact: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1559,7 +1559,7 @@ public struct Contact: Sendable {
 
 ///
 /// Position Location Information from ATAK
-public struct PLI: Sendable {
+public nonisolated struct PLI: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1594,7 +1594,7 @@ public struct PLI: Sendable {
 ///
 /// Aircraft track information from ADS-B or military air tracking.
 /// Covers the majority of observed real-world CoT traffic.
-public struct AircraftTrack: Sendable {
+public nonisolated struct AircraftTrack: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1659,7 +1659,7 @@ public struct AircraftTrack: Sendable {
 /// not. Absolute coordinates (values ~10^9) would cost sint32 varint 5 bytes
 /// per field, which is why TAKPacketV2's top-level latitude_i / longitude_i
 /// stay sfixed32 - only small values win with sint32.
-public struct CotGeoPoint: Sendable {
+public nonisolated struct CotGeoPoint: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1690,7 +1690,7 @@ public struct CotGeoPoint: Sendable {
 /// Colors use the Team enum as a 14-color palette (see color encoding below)
 /// with a fixed32 exact-ARGB fallback for custom user-picked colors that
 /// don't map to a palette entry.
-public struct DrawnShape: @unchecked Sendable {
+public nonisolated struct DrawnShape: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1835,7 +1835,7 @@ public struct DrawnShape: @unchecked Sendable {
   ///
   /// Shape kind discriminator. Drives receiver rendering and also controls
   /// which optional fields below are meaningful.
-  public enum Kind: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum Kind: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
     ///
@@ -1951,7 +1951,7 @@ public struct DrawnShape: @unchecked Sendable {
   /// explicitly. Parser sets this from (sawStrokeColor, sawFillColor) at the
   /// end of parse; builder uses it to decide which of <strokeColor> /
   /// <fillColor> to emit in the reconstructed XML.
-  public enum StyleMode: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum StyleMode: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
     ///
@@ -2021,7 +2021,7 @@ public struct DrawnShape: @unchecked Sendable {
 /// plus a-u-G / a-f-G / a-h-G / a-n-G with iconset paths. The marker position
 /// is carried on TAKPacketV2.latitude_i/longitude_i; fields below carry only
 /// the marker-specific metadata.
-public struct Marker: Sendable {
+public nonisolated struct Marker: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2072,7 +2072,7 @@ public struct Marker: Sendable {
   /// Marker kind. Used to pick sensible receiver defaults when the CoT type
   /// alone is ambiguous (e.g. a-u-G could be a 2525 symbol or a custom icon
   /// depending on the iconset path).
-  public enum Kind: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum Kind: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
     ///
@@ -2201,7 +2201,7 @@ public struct Marker: Sendable {
 /// TAKPacketV2.latitude_i/longitude_i; the target endpoint is carried as a
 /// CotGeoPoint - same delta-from-anchor encoding used by DrawnShape.vertices
 /// so a self-anchored RAB (common case) encodes in zero bytes.
-public struct RangeAndBearing: Sendable {
+public nonisolated struct RangeAndBearing: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2255,7 +2255,7 @@ public struct RangeAndBearing: Sendable {
 /// TAKPacketV2.latitude_i/longitude_i; subsequent waypoints and checkpoints
 /// are in `links`. Link count is capped at 16 by the nanopb pool; senders
 /// MUST truncate longer routes and set `truncated = true`.
-public struct Route: Sendable {
+public nonisolated struct Route: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2288,7 +2288,7 @@ public struct Route: Sendable {
 
   ///
   /// Travel method for the route.
-  public enum Method: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum Method: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
     ///
@@ -2358,7 +2358,7 @@ public struct Route: Sendable {
 
   ///
   /// Route direction (infil = ingress, exfil = egress).
-  public enum Direction: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum Direction: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
     ///
@@ -2408,7 +2408,7 @@ public struct Route: Sendable {
   ///
   /// Route waypoint or control point. Each link corresponds to one ATAK
   /// <link type=... point=...> entry inside the b-m-r event.
-  public struct Link: Sendable {
+  public nonisolated struct Link: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -2456,7 +2456,7 @@ public struct Route: Sendable {
 ///
 /// All numeric fields are tight varints so a complete 9-line request fits
 /// in well under 100 bytes of proto on the wire.
-public struct CasevacReport: @unchecked Sendable {
+public nonisolated struct CasevacReport: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2714,7 +2714,7 @@ public struct CasevacReport: @unchecked Sendable {
 
   ///
   /// Line 3: precedence / urgency.
-  public enum Precedence: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum Precedence: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
     case unspecified // = 0
 
@@ -2776,7 +2776,7 @@ public struct CasevacReport: @unchecked Sendable {
 
   ///
   /// Line 7: HLZ marking method.
-  public enum HlzMarking: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum HlzMarking: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
     case unspecified // = 0
     case panels // = 1
@@ -2828,7 +2828,7 @@ public struct CasevacReport: @unchecked Sendable {
 
   ///
   /// Line 6: security situation at the pickup zone.
-  public enum Security: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum Security: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
     case unspecified // = 0
 
@@ -2891,7 +2891,7 @@ public struct CasevacReport: @unchecked Sendable {
 /// Per-patient clinical summary record - one entry per patient in a CASEVAC.
 /// Maps directly to ATAK's <zMist> child element inside <zMistsMap>.
 /// All fields are optional free-text; senders populate what they have.
-public struct ZMistEntry: Sendable {
+public nonisolated struct ZMistEntry: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2934,7 +2934,7 @@ public struct ZMistEntry: Sendable {
 /// on cot_type_id so receivers that ignore payload_variant can still display
 /// the alert from the enum alone; the typed fields let modern receivers show
 /// the authoring unit and handle cancel-referencing without XML parsing.
-public struct EmergencyAlert: Sendable {
+public nonisolated struct EmergencyAlert: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2956,7 +2956,7 @@ public struct EmergencyAlert: Sendable {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public enum TypeEnum: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum TypeEnum: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
     case unspecified // = 0
 
@@ -3035,7 +3035,7 @@ public struct EmergencyAlert: Sendable {
 ///
 /// Fields are deliberately lean - this variant is closer to the MTU ceiling
 /// than the others, so every string is capped in options.
-public struct TaskRequest: Sendable {
+public nonisolated struct TaskRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -3065,7 +3065,7 @@ public struct TaskRequest: Sendable {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public enum Priority: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum Priority: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
     case unspecified // = 0
     case low // = 1
@@ -3111,7 +3111,7 @@ public struct TaskRequest: Sendable {
 
   }
 
-  public enum Status: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum Status: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
     case unspecified // = 0
 
@@ -3192,7 +3192,7 @@ public struct TaskRequest: Sendable {
 /// of those files. The `TAK` prefix matches the convention used by the
 /// outer `TAKPacketV2` wrapper and is unambiguous across all target
 /// languages (Swift, Kotlin, Python, TypeScript, C#).
-public struct TAKEnvironment: Sendable {
+public nonisolated struct TAKEnvironment: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -3232,7 +3232,7 @@ public struct TAKEnvironment: Sendable {
 /// Attaches to any TAKPacketV2 - a PLI with a sensor on the operator's head,
 /// an Aircraft with a FLIR turret, a Marker dropped on a UAV.
 /// Target wire cost: ~7-14 bytes compressed (dominated by model string).
-public struct SensorFov: Sendable {
+public nonisolated struct SensorFov: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -3288,7 +3288,7 @@ public struct SensorFov: Sendable {
   /// Coarse sensor category, inferred from `model` on parse when the source
   /// XML doesn't label it. Receivers that render differently per sensor
   /// class (thermal overlay vs daylight cone) use this.
-  public enum SensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum SensorType: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
     case unspecified // = 0
 
@@ -3372,7 +3372,7 @@ public struct SensorFov: Sendable {
 ///   <text>...</text>                - text
 ///   <chatroom-id>1</chatroom-id>    - chatroom_id
 ///   <voice/>                        - presence sets from_voice = true
-public struct TakTalkMessage: Sendable {
+public nonisolated struct TakTalkMessage: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -3400,6 +3400,11 @@ public struct TakTalkMessage: Sendable {
   /// icon. Proto3 only encodes when true so empty payload cost is 0 bytes.
   public var fromVoice: Bool = false
 
+  ///
+  /// Voice profile to speak this message with on the receiver, matching
+  /// VoiceProfile.voice_profile_id. Empty = the receiver's default voice.
+  public var voiceProfileID: String = String()
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -3413,7 +3418,7 @@ public struct TakTalkMessage: Sendable {
 /// GeoChat.room_id) to a display name and participant list. Not a chat
 /// message itself - these events are emitted by TAKTALK when rooms are
 /// created or memberships change.
-public struct TakTalkRoomData: Sendable {
+public nonisolated struct TakTalkRoomData: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -3451,6 +3456,73 @@ public struct TakTalkRoomData: Sendable {
 }
 
 ///
+/// A synthetic speech profile, so receivers can render a sender's TAKTALK
+/// messages in that sender's own voice.
+///
+/// Opaque model data, not audio: sent once per peer on request and cached,
+/// after which only text crosses the mesh. profile_data is compact binary
+/// that gains nothing from the TAK dictionary, so send it uncompressed.
+public nonisolated struct VoiceProfile: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// Stable identifier for this profile, matching
+  /// TakTalkMessage.voice_profile_id and GeoChat.voice_profile_id.
+  public var voiceProfileID: String = String()
+
+  ///
+  /// Friendly display name for the voice (e.g. "Alpha Lead").
+  public var voiceProfileName: String = String()
+
+  ///
+  /// The profile itself, opaque to this schema.
+  public var profileData: Data = Data()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+///
+/// Request for a peer's voice profile (CoT type y-).
+///
+/// Addressed with Marti; the reply is a VoiceProfile.
+public nonisolated struct VoiceProfileRequest: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// Profile wanted, matching VoiceProfile.voice_profile_id. Empty = whichever
+  /// profile the peer is currently using.
+  public var voiceProfileID: String = String()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+///
+/// Request for a room's name and roster (CoT type y-).
+///
+/// Addressed with Marti; the reply is a TakTalkRoomData.
+public nonisolated struct TakTalkRoomRequest: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  ///
+  /// Room UUID wanted, matching TakTalkRoomData.room_id.
+  public var roomID: String = String()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+///
 /// ATAK directed-routing recipient list (CoT <marti><dest callsign='X'/>…</marti>).
 ///
 /// Present when an event is addressed to specific TAK users rather than the
@@ -3463,7 +3535,7 @@ public struct TakTalkRoomData: Sendable {
 /// the typical event has 1-2 destinations and table overhead would erase the
 /// savings. Receivers that need the original XML element rebuild it from
 /// dest_callsign on emit.
-public struct Marti: Sendable {
+public nonisolated struct Marti: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -3487,7 +3559,7 @@ public struct Marti: Sendable {
 /// Sent on ATAK_PLUGIN_V2 port. The wire payload is:
 ///   [1 byte flags][zstd-compressed TAKPacketV2 protobuf]
 /// Flags byte: bits 0-5 = dictionary ID, bits 6-7 = reserved.
-public struct TAKPacketV2: @unchecked Sendable {
+public nonisolated struct TAKPacketV2: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -3697,64 +3769,11 @@ public struct TAKPacketV2: @unchecked Sendable {
   public mutating func clearSensorFov() {_uniqueStorage()._sensorFov = nil}
 
   ///
-  /// Low 14 bits of the event's `start` time, as epoch seconds.
-  ///
-  /// Restores a value the format otherwise drops entirely. The parser reads `time`
-  /// and `stale` only to derive `stale_seconds`, and never reads `start` at all, so
-  /// the builder has nothing to rebuild it from and sets `time = start = now` at
-  /// decode. A CoT that spent 40 s crossing the mesh therefore arrives stamped as
-  /// the freshest thing on the map, and no receiver can tell a 2-second-old
-  /// position from a 40-second-old one, which makes correct ordering of two
-  /// reports for one UID impossible.
-  ///
-  /// 14 bits rather than a full timestamp: any tag at 16 or above costs a 2-byte
-  /// key, and a value below 16384 fits a 2-byte varint where epoch seconds needs
-  /// five, so the field costs 4 bytes on the wire instead of 7.
-  ///
-  /// SENDERS: populate this only when `start` is within 8192 s of transmission,
-  /// and omit it otherwise. The encoding cannot express an older start and a
-  /// receiver cannot detect one: an out-of-range value reconstructs silently as a
-  /// plausible recent time in the wrong window. Transit and clock skew spend part
-  /// of that budget, so treat roughly two hours as the practical limit.
-  ///
-  /// RECEIVERS: rebuild the full value by selecting the candidate NEAREST your own
-  /// clock. Do not splice the low bits onto your current window.
-  ///
-  ///   delta = ((carried - now) % 16384 + 24576) % 16384 - 8192   // [-8192, 8191]
-  ///   start = now + delta
-  ///
-  /// (The + 24576 keeps the second remainder non-negative under both C and Python
-  /// remainder semantics.)
-  ///
-  /// The naive `(now & ~0x3FFF) | carried` is wrong at a window boundary in BOTH
-  /// directions, not just one. For a boundary B, a sender `start` of B read by a
-  /// receiver whose clock is at B - 1 yields B - 16384: a fresh event that appears
-  /// 4.55 hours old, which no future-side sanity check will catch. Nearest-
-  /// candidate is exact whenever the true start is within 8192 s of the receiver's
-  /// clock, which subsumes any realistic transit plus skew.
-  ///
-  /// Treat the result as trustworthy for ORDERING packets from a single sender,
-  /// where a constant clock offset cancels out. Before using it as an absolute
-  /// age, bound it: reject a start more than a few seconds in the future, or more
-  /// than about an hour in the past, and fall back to decode time. Keep both
-  /// bounds well inside the 8192 s half-window, because past that the
-  /// reconstruction is wrong rather than merely implausible.
-  ///
-  /// Ordering assumes the producer advances `start` on each emission, which ATAK
-  /// does because it sets `start = time`. A producer that holds `start` fixed
-  /// across updates cannot be ordered by this field.
-  ///
-  /// `optional` is deliberate, despite the v0.4.0 `altitude` experiment above
-  /// finding `optional` net-negative: that regressed because a genuine 0 m
-  /// altitude is common, whereas `start` mod 16384 is 0 for one second in 16384.
-  /// Here explicit presence costs essentially nothing and distinguishes "sender
-  /// did not populate this" from a legitimate zero.
-  ///
-  /// Tag 43 rather than the 27 held above for "future top-level annotations",
-  /// which is what this is: un-reserving 27 trips buf's RESERVED_MESSAGE_NO_DELETE
-  /// under the FILE breaking category this module enables, and every tag at 16 or
-  /// above costs the same 2-byte key, so the fresh tag is free. Move it to 27 if
-  /// you would rather except the rule.
+  /// Low 14 bits of the event's `start` time, as epoch seconds UTC. 14 bits rather
+  /// than a full timestamp, so the field costs 4 bytes on the wire instead of 7.
+  /// Order and deduplicates packets from a single sender. Valid only when within an
+  /// hour of current wall time. `optional` is deliberate. It costs essentially
+  /// nothing and distinguishes "sender did not populate this" from a legitimate zero.
   public var startEpochLo14: UInt32 {
     get {_storage._startEpochLo14 ?? 0}
     set {_uniqueStorage()._startEpochLo14 = newValue}
@@ -3917,11 +3936,43 @@ public struct TAKPacketV2: @unchecked Sendable {
     set {_uniqueStorage()._payloadVariant = .taktalkRoom(newValue)}
   }
 
+  ///
+  /// Sender's synthetic speech profile. See VoiceProfile.
+  public var voiceProfile: VoiceProfile {
+    get {
+      if case .voiceProfile(let v)? = _storage._payloadVariant {return v}
+      return VoiceProfile()
+    }
+    set {_uniqueStorage()._payloadVariant = .voiceProfile(newValue)}
+  }
+
+  ///
+  /// Request for a peer's voice profile (CoT type y-).
+  /// See VoiceProfileRequest.
+  public var voiceProfileRequest: VoiceProfileRequest {
+    get {
+      if case .voiceProfileRequest(let v)? = _storage._payloadVariant {return v}
+      return VoiceProfileRequest()
+    }
+    set {_uniqueStorage()._payloadVariant = .voiceProfileRequest(newValue)}
+  }
+
+  ///
+  /// Request for a room's name and roster (CoT type y-).
+  /// See TakTalkRoomRequest.
+  public var taktalkRoomRequest: TakTalkRoomRequest {
+    get {
+      if case .taktalkRoomRequest(let v)? = _storage._payloadVariant {return v}
+      return TakTalkRoomRequest()
+    }
+    set {_uniqueStorage()._payloadVariant = .taktalkRoomRequest(newValue)}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   ///
   /// The payload of the packet
-  public enum OneOf_PayloadVariant: Equatable, Sendable {
+  public nonisolated enum OneOf_PayloadVariant: Equatable, Sendable {
     ///
     /// ATAK GeoChat message
     case chat(GeoChat)
@@ -3966,6 +4017,17 @@ public struct TAKPacketV2: @unchecked Sendable {
     /// Resolves room UUIDs (used in TakTalkMessage.chatroom_id and
     /// GeoChat.room_id) to display name + roster on receivers.
     case taktalkRoom(TakTalkRoomData)
+    ///
+    /// Sender's synthetic speech profile. See VoiceProfile.
+    case voiceProfile(VoiceProfile)
+    ///
+    /// Request for a peer's voice profile (CoT type y-).
+    /// See VoiceProfileRequest.
+    case voiceProfileRequest(VoiceProfileRequest)
+    ///
+    /// Request for a room's name and roster (CoT type y-).
+    /// See TakTalkRoomRequest.
+    case taktalkRoomRequest(TakTalkRoomRequest)
 
   }
 
@@ -3976,29 +4038,29 @@ public struct TAKPacketV2: @unchecked Sendable {
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "meshtastic"
+fileprivate nonisolated let _protobuf_package = "meshtastic"
 
-extension Team: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Team: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0Unspecifed_Color\0\u{1}White\0\u{1}Yellow\0\u{1}Orange\0\u{1}Magenta\0\u{1}Red\0\u{1}Maroon\0\u{1}Purple\0\u{1}Dark_Blue\0\u{1}Blue\0\u{1}Cyan\0\u{1}Teal\0\u{1}Green\0\u{1}Dark_Green\0\u{1}Brown\0")
 }
 
-extension MemberRole: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension MemberRole: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0Unspecifed\0\u{1}TeamMember\0\u{1}TeamLead\0\u{1}HQ\0\u{1}Sniper\0\u{1}Medic\0\u{1}ForwardObserver\0\u{1}RTO\0\u{1}K9\0")
 }
 
-extension CotHow: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension CotHow: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0CotHow_Unspecified\0\u{1}CotHow_h_e\0\u{1}CotHow_m_g\0\u{1}CotHow_h_g_i_g_o\0\u{1}CotHow_m_r\0\u{1}CotHow_m_f\0\u{1}CotHow_m_p\0\u{1}CotHow_m_s\0")
 }
 
-extension CotType: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension CotType: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0CotType_Other\0\u{1}CotType_a_f_G_U_C\0\u{1}CotType_a_f_G_U_C_I\0\u{1}CotType_a_n_A_C_F\0\u{1}CotType_a_n_A_C_H\0\u{1}CotType_a_n_A_C\0\u{1}CotType_a_f_A_M_H\0\u{1}CotType_a_f_A_M\0\u{1}CotType_a_f_A_M_F_F\0\u{1}CotType_a_f_A_M_H_A\0\u{1}CotType_a_f_A_M_H_U_M\0\u{1}CotType_a_h_A_M_F_F\0\u{1}CotType_a_h_A_M_H_A\0\u{1}CotType_a_u_A_C\0\u{1}CotType_t_x_d_d\0\u{1}CotType_a_f_G_E_S_E\0\u{1}CotType_a_f_G_E_V_C\0\u{1}CotType_a_f_S\0\u{1}CotType_a_f_A_M_F\0\u{1}CotType_a_f_A_M_F_C_H\0\u{1}CotType_a_f_A_M_F_U_L\0\u{1}CotType_a_f_A_M_F_L\0\u{1}CotType_a_f_A_M_F_P\0\u{1}CotType_a_f_A_C_H\0\u{1}CotType_a_n_A_M_F_Q\0\u{1}CotType_b_t_f\0\u{1}CotType_b_r_f_h_c\0\u{1}CotType_b_a_o_pan\0\u{1}CotType_b_a_o_opn\0\u{1}CotType_b_a_o_can\0\u{1}CotType_b_a_o_tbl\0\u{1}CotType_b_a_g\0\u{1}CotType_a_f_G\0\u{1}CotType_a_f_G_U\0\u{1}CotType_a_h_G\0\u{1}CotType_a_u_G\0\u{1}CotType_a_n_G\0\u{1}CotType_b_m_r\0\u{1}CotType_b_m_p_w\0\u{1}CotType_b_m_p_s_p_i\0\u{1}CotType_u_d_f\0\u{1}CotType_u_d_r\0\u{1}CotType_u_d_c_c\0\u{1}CotType_u_rb_a\0\u{1}CotType_a_h_A\0\u{1}CotType_a_u_A\0\u{1}CotType_a_f_A_M_H_Q\0\u{1}CotType_a_f_A_C_F\0\u{1}CotType_a_f_A_C\0\u{1}CotType_a_f_A_C_L\0\u{1}CotType_a_f_A\0\u{1}CotType_a_f_A_M_H_C\0\u{1}CotType_a_n_A_M_F_F\0\u{1}CotType_a_u_A_C_F\0\u{1}CotType_a_f_G_U_C_F_T_A\0\u{1}CotType_a_f_G_U_C_V_S\0\u{1}CotType_a_f_G_U_C_R_X\0\u{1}CotType_a_f_G_U_C_I_Z\0\u{1}CotType_a_f_G_U_C_E_C_W\0\u{1}CotType_a_f_G_U_C_I_L\0\u{1}CotType_a_f_G_U_C_R_O\0\u{1}CotType_a_f_G_U_C_R_V\0\u{1}CotType_a_f_G_U_H\0\u{1}CotType_a_f_G_U_U_M_S_E\0\u{1}CotType_a_f_G_U_S_M_C\0\u{1}CotType_a_f_G_E_S\0\u{1}CotType_a_f_G_E\0\u{1}CotType_a_f_G_E_V_C_U\0\u{1}CotType_a_f_G_E_V_C_ps\0\u{1}CotType_a_u_G_E_V\0\u{1}CotType_a_f_S_N_N_R\0\u{1}CotType_a_f_F_B\0\u{1}CotType_b_m_p_s_p_loc\0\u{1}CotType_b_i_v\0\u{1}CotType_b_f_t_r\0\u{1}CotType_b_f_t_a\0\u{1}CotType_u_d_f_m\0\u{1}CotType_u_d_p\0\u{1}CotType_b_m_p_s_m\0\u{1}CotType_b_m_p_c\0\u{1}CotType_u_r_b_c_c\0\u{1}CotType_u_r_b_bullseye\0\u{1}CotType_a_f_G_E_V_A\0\u{1}CotType_a_n_A\0\u{1}CotType_a_u_G_U_C_F\0\u{1}CotType_a_n_G_U_C_F\0\u{1}CotType_a_h_G_U_C_F\0\u{1}CotType_a_f_G_U_C_F\0\u{1}CotType_a_u_G_I\0\u{1}CotType_a_n_G_I\0\u{1}CotType_a_h_G_I\0\u{1}CotType_a_f_G_I\0\u{1}CotType_a_u_G_E_X_M\0\u{1}CotType_a_n_G_E_X_M\0\u{1}CotType_a_h_G_E_X_M\0\u{1}CotType_a_f_G_E_X_M\0\u{1}CotType_a_u_S\0\u{1}CotType_a_n_S\0\u{1}CotType_a_h_S\0\u{1}CotType_a_u_G_U_C_I_d\0\u{1}CotType_a_n_G_U_C_I_d\0\u{1}CotType_a_h_G_U_C_I_d\0\u{1}CotType_a_f_G_U_C_I_d\0\u{1}CotType_a_u_G_E_V_A_T\0\u{1}CotType_a_n_G_E_V_A_T\0\u{1}CotType_a_h_G_E_V_A_T\0\u{1}CotType_a_f_G_E_V_A_T\0\u{1}CotType_a_u_G_U_C_I\0\u{1}CotType_a_n_G_U_C_I\0\u{1}CotType_a_h_G_U_C_I\0\u{1}CotType_a_n_G_E_V\0\u{1}CotType_a_h_G_E_V\0\u{1}CotType_a_f_G_E_V\0\u{1}CotType_b_m_p_w_GOTO\0\u{1}CotType_b_m_p_c_ip\0\u{1}CotType_b_m_p_c_cp\0\u{1}CotType_b_m_p_s_p_op\0\u{1}CotType_u_d_v\0\u{1}CotType_u_d_v_m\0\u{1}CotType_u_d_c_e\0\u{1}CotType_b_i_x_i\0\u{1}CotType_b_t_f_d\0\u{1}CotType_b_t_f_r\0\u{1}CotType_b_a_o_c\0\u{1}CotType_t_s\0\u{1}CotType_m_t_t\0\u{1}CotType_y\0")
 }
 
-extension GeoPointSource: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension GeoPointSource: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0GeoPointSource_Unspecified\0\u{1}GeoPointSource_GPS\0\u{1}GeoPointSource_USER\0\u{1}GeoPointSource_NETWORK\0")
 }
 
-extension TAKPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension TAKPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".TAKPacket"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}is_compressed\0\u{1}contact\0\u{1}group\0\u{1}status\0\u{1}pli\0\u{1}chat\0\u{1}detail\0")
 
@@ -4097,7 +4159,7 @@ extension TAKPacket: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
   }
 }
 
-extension GeoChat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension GeoChat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GeoChat"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}message\0\u{1}to\0\u{3}to_callsign\0\u{3}receipt_for_uid\0\u{3}receipt_type\0\u{1}lang\0\u{3}room_id\0\u{3}voice_profile_id\0")
 
@@ -4166,11 +4228,11 @@ extension GeoChat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
   }
 }
 
-extension GeoChat.ReceiptType: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension GeoChat.ReceiptType: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0ReceiptType_None\0\u{1}ReceiptType_Delivered\0\u{1}ReceiptType_Read\0")
 }
 
-extension Group: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Group: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Group"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}role\0\u{1}team\0")
 
@@ -4205,7 +4267,7 @@ extension Group: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase
   }
 }
 
-extension Status: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Status: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Status"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}battery\0")
 
@@ -4235,7 +4297,7 @@ extension Status: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
   }
 }
 
-extension Contact: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Contact: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Contact"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}callsign\0\u{3}device_callsign\0")
 
@@ -4270,7 +4332,7 @@ extension Contact: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
   }
 }
 
-extension PLI: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension PLI: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PLI"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}latitude_i\0\u{3}longitude_i\0\u{1}altitude\0\u{1}speed\0\u{1}course\0")
 
@@ -4320,7 +4382,7 @@ extension PLI: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, 
   }
 }
 
-extension AircraftTrack: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension AircraftTrack: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".AircraftTrack"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}icao\0\u{1}registration\0\u{1}flight\0\u{3}aircraft_type\0\u{1}squawk\0\u{1}category\0\u{3}rssi_x10\0\u{1}gps\0\u{3}cot_host_id\0")
 
@@ -4390,7 +4452,7 @@ extension AircraftTrack: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
   }
 }
 
-extension CotGeoPoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension CotGeoPoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".CotGeoPoint"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}lat_delta_i\0\u{3}lon_delta_i\0")
 
@@ -4425,7 +4487,7 @@ extension CotGeoPoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
   }
 }
 
-extension DrawnShape: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension DrawnShape: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DrawnShape"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}kind\0\u{1}style\0\u{3}major_cm\0\u{3}minor_cm\0\u{3}angle_deg\0\u{3}stroke_color\0\u{3}stroke_argb\0\u{3}stroke_weight_x10\0\u{3}fill_color\0\u{3}fill_argb\0\u{3}labels_on\0\u{2}\u{2}truncated\0\u{3}bullseye_distance_dm\0\u{3}bullseye_bearing_ref\0\u{3}bullseye_flags\0\u{3}bullseye_uid_ref\0\u{3}vertex_lat_deltas\0\u{3}vertex_lon_deltas\0\u{c}\u{c}\u{1}")
 
@@ -4610,15 +4672,15 @@ extension DrawnShape: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
   }
 }
 
-extension DrawnShape.Kind: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension DrawnShape.Kind: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0Kind_Unspecified\0\u{1}Kind_Circle\0\u{1}Kind_Rectangle\0\u{1}Kind_Freeform\0\u{1}Kind_Telestration\0\u{1}Kind_Polygon\0\u{1}Kind_RangingCircle\0\u{1}Kind_Bullseye\0\u{1}Kind_Ellipse\0\u{1}Kind_Vehicle2D\0\u{1}Kind_Vehicle3D\0")
 }
 
-extension DrawnShape.StyleMode: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension DrawnShape.StyleMode: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0StyleMode_Unspecified\0\u{1}StyleMode_StrokeOnly\0\u{1}StyleMode_FillOnly\0\u{1}StyleMode_StrokeAndFill\0")
 }
 
-extension Marker: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Marker: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Marker"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}kind\0\u{1}color\0\u{3}color_argb\0\u{1}readiness\0\u{3}parent_uid\0\u{3}parent_type\0\u{3}parent_callsign\0\u{1}iconset\0")
 
@@ -4683,11 +4745,11 @@ extension Marker: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
   }
 }
 
-extension Marker.Kind: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Marker.Kind: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0Kind_Unspecified\0\u{1}Kind_Spot\0\u{1}Kind_Waypoint\0\u{1}Kind_Checkpoint\0\u{1}Kind_SelfPosition\0\u{1}Kind_Symbol2525\0\u{1}Kind_SpotMap\0\u{1}Kind_CustomIcon\0\u{1}Kind_GoToPoint\0\u{1}Kind_InitialPoint\0\u{1}Kind_ContactPoint\0\u{1}Kind_ObservationPost\0\u{1}Kind_ImageMarker\0")
 }
 
-extension RangeAndBearing: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension RangeAndBearing: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".RangeAndBearing"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}anchor\0\u{3}anchor_uid\0\u{3}range_cm\0\u{3}bearing_cdeg\0\u{3}stroke_color\0\u{3}stroke_argb\0\u{3}stroke_weight_x10\0")
 
@@ -4751,7 +4813,7 @@ extension RangeAndBearing: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
   }
 }
 
-extension Route: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Route: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Route"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}method\0\u{1}direction\0\u{1}prefix\0\u{3}stroke_weight_x10\0\u{1}links\0\u{1}truncated\0")
 
@@ -4806,15 +4868,15 @@ extension Route: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase
   }
 }
 
-extension Route.Method: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Route.Method: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0Method_Unspecified\0\u{1}Method_Driving\0\u{1}Method_Walking\0\u{1}Method_Flying\0\u{1}Method_Swimming\0\u{1}Method_Watercraft\0")
 }
 
-extension Route.Direction: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Route.Direction: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0Direction_Unspecified\0\u{1}Direction_Infil\0\u{1}Direction_Exfil\0")
 }
 
-extension Route.Link: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Route.Link: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = Route.protoMessageName + ".Link"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}point\0\u{1}uid\0\u{1}callsign\0\u{3}link_type\0")
 
@@ -4863,7 +4925,7 @@ extension Route.Link: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
   }
 }
 
-extension CasevacReport: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension CasevacReport: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".CasevacReport"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}precedence\0\u{3}equipment_flags\0\u{3}litter_patients\0\u{3}ambulatory_patients\0\u{1}security\0\u{3}hlz_marking\0\u{3}zone_marker\0\u{3}us_military\0\u{3}us_civilian\0\u{3}non_us_military\0\u{3}non_us_civilian\0\u{1}epw\0\u{1}child\0\u{3}terrain_flags\0\u{1}frequency\0\u{1}title\0\u{3}medline_remarks\0\u{3}urgent_count\0\u{3}urgent_surgical_count\0\u{3}priority_count\0\u{3}routine_count\0\u{3}convenience_count\0\u{3}equipment_detail\0\u{3}zone_protected_coord\0\u{3}terrain_slope_dir\0\u{3}terrain_other_detail\0\u{3}marked_by\0\u{1}obstacles\0\u{3}winds_are_from\0\u{1}friendlies\0\u{1}enemy\0\u{3}hlz_remarks\0\u{1}zmist\0")
 
@@ -5153,19 +5215,19 @@ extension CasevacReport: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
   }
 }
 
-extension CasevacReport.Precedence: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension CasevacReport.Precedence: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0Precedence_Unspecified\0\u{1}Precedence_Urgent\0\u{1}Precedence_UrgentSurgical\0\u{1}Precedence_Priority\0\u{1}Precedence_Routine\0\u{1}Precedence_Convenience\0")
 }
 
-extension CasevacReport.HlzMarking: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension CasevacReport.HlzMarking: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0HlzMarking_Unspecified\0\u{1}HlzMarking_Panels\0\u{1}HlzMarking_PyroSignal\0\u{1}HlzMarking_Smoke\0\u{1}HlzMarking_None\0\u{1}HlzMarking_Other\0")
 }
 
-extension CasevacReport.Security: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension CasevacReport.Security: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0Security_Unspecified\0\u{1}Security_NoEnemy\0\u{1}Security_PossibleEnemy\0\u{1}Security_EnemyInArea\0\u{1}Security_EnemyInArmedContact\0")
 }
 
-extension ZMistEntry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension ZMistEntry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ZMistEntry"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}title\0\u{1}z\0\u{1}m\0\u{1}i\0\u{1}s\0\u{1}t\0")
 
@@ -5220,7 +5282,7 @@ extension ZMistEntry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
   }
 }
 
-extension EmergencyAlert: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension EmergencyAlert: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".EmergencyAlert"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}type\0\u{3}authoring_uid\0\u{3}cancel_reference_uid\0")
 
@@ -5260,11 +5322,11 @@ extension EmergencyAlert: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
   }
 }
 
-extension EmergencyAlert.TypeEnum: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension EmergencyAlert.TypeEnum: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0Type_Unspecified\0\u{1}Type_Alert911\0\u{1}Type_RingTheBell\0\u{1}Type_InContact\0\u{1}Type_GeoFenceBreached\0\u{1}Type_Custom\0\u{1}Type_Cancel\0")
 }
 
-extension TaskRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension TaskRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".TaskRequest"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}task_type\0\u{3}target_uid\0\u{3}assignee_uid\0\u{1}priority\0\u{1}status\0\u{1}note\0")
 
@@ -5319,15 +5381,15 @@ extension TaskRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
   }
 }
 
-extension TaskRequest.Priority: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension TaskRequest.Priority: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0Priority_Unspecified\0\u{1}Priority_Low\0\u{1}Priority_Normal\0\u{1}Priority_High\0\u{1}Priority_Critical\0")
 }
 
-extension TaskRequest.Status: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension TaskRequest.Status: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0Status_Unspecified\0\u{1}Status_Pending\0\u{1}Status_Acknowledged\0\u{1}Status_InProgress\0\u{1}Status_Completed\0\u{1}Status_Cancelled\0")
 }
 
-extension TAKEnvironment: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension TAKEnvironment: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".TAKEnvironment"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}temperature_c_x10\0\u{3}wind_direction_deg\0\u{3}wind_speed_cm_s\0")
 
@@ -5367,7 +5429,7 @@ extension TAKEnvironment: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
   }
 }
 
-extension SensorFov: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension SensorFov: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SensorFov"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}type\0\u{3}azimuth_deg\0\u{3}range_m\0\u{3}fov_horizontal_deg\0\u{3}fov_vertical_deg\0\u{3}elevation_deg\0\u{3}roll_deg\0\u{1}model\0")
 
@@ -5436,13 +5498,13 @@ extension SensorFov: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
   }
 }
 
-extension SensorFov.SensorType: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension SensorFov.SensorType: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0SensorType_Unspecified\0\u{1}SensorType_Camera\0\u{1}SensorType_Thermal\0\u{1}SensorType_Laser\0\u{1}SensorType_Nvg\0\u{1}SensorType_Rf\0\u{1}SensorType_Other\0")
 }
 
-extension TakTalkMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension TakTalkMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".TakTalkMessage"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}text\0\u{3}chatroom_id\0\u{1}lang\0\u{3}from_voice\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}text\0\u{3}chatroom_id\0\u{1}lang\0\u{3}from_voice\0\u{3}voice_profile_id\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -5454,6 +5516,7 @@ extension TakTalkMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
       case 2: try { try decoder.decodeSingularStringField(value: &self.chatroomID) }()
       case 3: try { try decoder.decodeSingularStringField(value: &self.lang) }()
       case 4: try { try decoder.decodeSingularBoolField(value: &self.fromVoice) }()
+      case 5: try { try decoder.decodeSingularStringField(value: &self.voiceProfileID) }()
       default: break
       }
     }
@@ -5472,6 +5535,9 @@ extension TakTalkMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     if self.fromVoice != false {
       try visitor.visitSingularBoolField(value: self.fromVoice, fieldNumber: 4)
     }
+    if !self.voiceProfileID.isEmpty {
+      try visitor.visitSingularStringField(value: self.voiceProfileID, fieldNumber: 5)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -5480,12 +5546,13 @@ extension TakTalkMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     if lhs.chatroomID != rhs.chatroomID {return false}
     if lhs.lang != rhs.lang {return false}
     if lhs.fromVoice != rhs.fromVoice {return false}
+    if lhs.voiceProfileID != rhs.voiceProfileID {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension TakTalkRoomData: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension TakTalkRoomData: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".TakTalkRoomData"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}sender_callsign\0\u{3}room_id\0\u{3}room_name\0\u{1}participants\0")
 
@@ -5530,7 +5597,107 @@ extension TakTalkRoomData: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
   }
 }
 
-extension Marti: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension VoiceProfile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".VoiceProfile"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}voice_profile_id\0\u{3}voice_profile_name\0\u{3}profile_data\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.voiceProfileID) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.voiceProfileName) }()
+      case 3: try { try decoder.decodeSingularBytesField(value: &self.profileData) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.voiceProfileID.isEmpty {
+      try visitor.visitSingularStringField(value: self.voiceProfileID, fieldNumber: 1)
+    }
+    if !self.voiceProfileName.isEmpty {
+      try visitor.visitSingularStringField(value: self.voiceProfileName, fieldNumber: 2)
+    }
+    if !self.profileData.isEmpty {
+      try visitor.visitSingularBytesField(value: self.profileData, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: VoiceProfile, rhs: VoiceProfile) -> Bool {
+    if lhs.voiceProfileID != rhs.voiceProfileID {return false}
+    if lhs.voiceProfileName != rhs.voiceProfileName {return false}
+    if lhs.profileData != rhs.profileData {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension VoiceProfileRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".VoiceProfileRequest"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}voice_profile_id\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.voiceProfileID) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.voiceProfileID.isEmpty {
+      try visitor.visitSingularStringField(value: self.voiceProfileID, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: VoiceProfileRequest, rhs: VoiceProfileRequest) -> Bool {
+    if lhs.voiceProfileID != rhs.voiceProfileID {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension TakTalkRoomRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".TakTalkRoomRequest"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}room_id\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.roomID) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.roomID.isEmpty {
+      try visitor.visitSingularStringField(value: self.roomID, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: TakTalkRoomRequest, rhs: TakTalkRoomRequest) -> Bool {
+    if lhs.roomID != rhs.roomID {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Marti: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Marti"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}dest_callsign\0")
 
@@ -5560,9 +5727,9 @@ extension Marti: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase
   }
 }
 
-extension TAKPacketV2: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension TAKPacketV2: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".TAKPacketV2"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}cot_type_id\0\u{1}how\0\u{1}callsign\0\u{1}team\0\u{1}role\0\u{3}latitude_i\0\u{3}longitude_i\0\u{1}altitude\0\u{1}speed\0\u{1}course\0\u{1}battery\0\u{3}geo_src\0\u{3}alt_src\0\u{1}uid\0\u{3}device_callsign\0\u{3}stale_seconds\0\u{3}tak_version\0\u{3}tak_device\0\u{3}tak_platform\0\u{3}tak_os\0\u{1}endpoint\0\u{1}phone\0\u{3}cot_type_str\0\u{1}remarks\0\u{1}environment\0\u{3}sensor_fov\0\u{2}\u{3}marti\0\u{2}\u{2}chat\0\u{1}aircraft\0\u{3}raw_detail\0\u{1}shape\0\u{1}marker\0\u{1}rab\0\u{1}route\0\u{1}casevac\0\u{1}emergency\0\u{1}task\0\u{1}taktalk\0\u{3}taktalk_room\0\u{3}start_epoch_lo14\0\u{c}\u{1b}\u{1}\u{c}\u{1c}\u{1}\u{c}\u{1e}\u{1}")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}cot_type_id\0\u{1}how\0\u{1}callsign\0\u{1}team\0\u{1}role\0\u{3}latitude_i\0\u{3}longitude_i\0\u{1}altitude\0\u{1}speed\0\u{1}course\0\u{1}battery\0\u{3}geo_src\0\u{3}alt_src\0\u{1}uid\0\u{3}device_callsign\0\u{3}stale_seconds\0\u{3}tak_version\0\u{3}tak_device\0\u{3}tak_platform\0\u{3}tak_os\0\u{1}endpoint\0\u{1}phone\0\u{3}cot_type_str\0\u{1}remarks\0\u{1}environment\0\u{3}sensor_fov\0\u{2}\u{3}marti\0\u{2}\u{2}chat\0\u{1}aircraft\0\u{3}raw_detail\0\u{1}shape\0\u{1}marker\0\u{1}rab\0\u{1}route\0\u{1}casevac\0\u{1}emergency\0\u{1}task\0\u{1}taktalk\0\u{3}taktalk_room\0\u{3}start_epoch_lo14\0\u{3}voice_profile\0\u{3}voice_profile_request\0\u{3}taktalk_room_request\0\u{c}\u{1b}\u{1}\u{c}\u{1c}\u{1}\u{c}\u{1e}\u{1}")
 
   fileprivate class _StorageClass {
     var _cotTypeID: CotType = .other
@@ -5830,6 +5997,45 @@ extension TAKPacketV2: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
           }
         }()
         case 43: try { try decoder.decodeSingularUInt32Field(value: &_storage._startEpochLo14) }()
+        case 44: try {
+          var v: VoiceProfile?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .voiceProfile(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .voiceProfile(v)
+          }
+        }()
+        case 45: try {
+          var v: VoiceProfileRequest?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .voiceProfileRequest(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .voiceProfileRequest(v)
+          }
+        }()
+        case 46: try {
+          var v: TakTalkRoomRequest?
+          var hadOneofValue = false
+          if let current = _storage._payloadVariant {
+            hadOneofValue = true
+            if case .taktalkRoomRequest(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._payloadVariant = .taktalkRoomRequest(v)
+          }
+        }()
         default: break
         }
       }
@@ -5972,11 +6178,26 @@ extension TAKPacketV2: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
         guard case .taktalkRoom(let v)? = _storage._payloadVariant else { preconditionFailure() }
         try visitor.visitSingularMessageField(value: v, fieldNumber: 42)
       }()
-      case nil: break
+      default: break
       }
       try { if let v = _storage._startEpochLo14 {
         try visitor.visitSingularUInt32Field(value: v, fieldNumber: 43)
       } }()
+      switch _storage._payloadVariant {
+      case .voiceProfile?: try {
+        guard case .voiceProfile(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 44)
+      }()
+      case .voiceProfileRequest?: try {
+        guard case .voiceProfileRequest(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 45)
+      }()
+      case .taktalkRoomRequest?: try {
+        guard case .taktalkRoomRequest(let v)? = _storage._payloadVariant else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 46)
+      }()
+      default: break
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }

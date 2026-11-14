@@ -15,12 +15,12 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
 
-public struct DeviceConnectionStatus: Sendable {
+public nonisolated struct DeviceConnectionStatus: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -81,7 +81,7 @@ public struct DeviceConnectionStatus: Sendable {
 
 ///
 /// WiFi connection status
-public struct WifiConnectionStatus: Sendable {
+public nonisolated struct WifiConnectionStatus: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -114,7 +114,7 @@ public struct WifiConnectionStatus: Sendable {
 
 ///
 /// Ethernet connection status
-public struct EthernetConnectionStatus: Sendable {
+public nonisolated struct EthernetConnectionStatus: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -139,7 +139,7 @@ public struct EthernetConnectionStatus: Sendable {
 
 ///
 /// Ethernet or WiFi connection status
-public struct NetworkConnectionStatus: Sendable {
+public nonisolated struct NetworkConnectionStatus: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -167,7 +167,7 @@ public struct NetworkConnectionStatus: Sendable {
 
 ///
 /// Bluetooth connection status
-public struct BluetoothConnectionStatus: Sendable {
+public nonisolated struct BluetoothConnectionStatus: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -191,7 +191,7 @@ public struct BluetoothConnectionStatus: Sendable {
 
 ///
 /// Serial connection status
-public struct SerialConnectionStatus: Sendable {
+public nonisolated struct SerialConnectionStatus: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -211,9 +211,9 @@ public struct SerialConnectionStatus: Sendable {
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "meshtastic"
+fileprivate nonisolated let _protobuf_package = "meshtastic"
 
-extension DeviceConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension DeviceConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeviceConnectionStatus"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}wifi\0\u{1}ethernet\0\u{1}bluetooth\0\u{1}serial\0")
 
@@ -262,7 +262,7 @@ extension DeviceConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageI
   }
 }
 
-extension WifiConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension WifiConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".WifiConnectionStatus"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}status\0\u{1}ssid\0\u{1}rssi\0")
 
@@ -306,7 +306,7 @@ extension WifiConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
   }
 }
 
-extension EthernetConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension EthernetConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".EthernetConnectionStatus"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}status\0")
 
@@ -340,7 +340,7 @@ extension EthernetConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._Messag
   }
 }
 
-extension NetworkConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension NetworkConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".NetworkConnectionStatus"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}ip_address\0\u{3}is_connected\0\u{3}is_mqtt_connected\0\u{3}is_syslog_connected\0")
 
@@ -385,7 +385,7 @@ extension NetworkConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._Message
   }
 }
 
-extension BluetoothConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension BluetoothConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".BluetoothConnectionStatus"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}pin\0\u{1}rssi\0\u{3}is_connected\0")
 
@@ -425,7 +425,7 @@ extension BluetoothConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._Messa
   }
 }
 
-extension SerialConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension SerialConnectionStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SerialConnectionStatus"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}baud\0\u{3}is_connected\0")
 

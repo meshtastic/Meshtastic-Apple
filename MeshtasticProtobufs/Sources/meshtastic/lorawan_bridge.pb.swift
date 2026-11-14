@@ -20,7 +20,7 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
@@ -28,7 +28,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 ///
 /// Payload for LORAWAN_BRIDGE packets. Tunnels raw LoRaWAN PHY payloads and their
 /// RF metadata so a gateway can reach a network server over a mesh.
-public struct LoRaWANBridge: Sendable {
+public nonisolated struct LoRaWANBridge: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -69,7 +69,7 @@ public struct LoRaWANBridge: Sendable {
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  public enum OneOf_Variant: Equatable, Sendable {
+  public nonisolated enum OneOf_Variant: Equatable, Sendable {
     case uplink(LoRaWANBridge.Uplink)
     case downlink(LoRaWANBridge.Downlink)
     case txResult(LoRaWANBridge.TxResult)
@@ -79,7 +79,7 @@ public struct LoRaWANBridge: Sendable {
 
   ///
   /// An uplink heard by the gateway, travelling towards the network server.
-  public struct Uplink: Sendable {
+  public nonisolated struct Uplink: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -135,7 +135,7 @@ public struct LoRaWANBridge: Sendable {
 
   ///
   /// A downlink from the network server, travelling towards the gateway.
-  public struct Downlink: Sendable {
+  public nonisolated struct Downlink: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -197,7 +197,7 @@ public struct LoRaWANBridge: Sendable {
 
   ///
   /// The remainder of a chunked Uplink or Downlink. Carries no RF metadata.
-  public struct PayloadChunk: Sendable {
+  public nonisolated struct PayloadChunk: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -222,7 +222,7 @@ public struct LoRaWANBridge: Sendable {
 
   ///
   /// The outcome of a downlink, reported back towards the network server.
-  public struct TxResult: Sendable {
+  public nonisolated struct TxResult: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -245,7 +245,7 @@ public struct LoRaWANBridge: Sendable {
     ///
     /// Values 0 to 7 mirror the Semtech TX_ACK error field. Keep every value non
     /// negative; enums encode as int32.
-    public enum Status: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public nonisolated enum Status: SwiftProtobuf.Enum, Swift.CaseIterable {
       public typealias RawValue = Int
       case none // = 0
       case tooLate // = 1
@@ -325,9 +325,9 @@ public struct LoRaWANBridge: Sendable {
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "meshtastic"
+fileprivate nonisolated let _protobuf_package = "meshtastic"
 
-extension LoRaWANBridge: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension LoRaWANBridge: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".LoRaWANBridge"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}uplink\0\u{1}downlink\0\u{3}tx_result\0\u{1}chunk\0")
 
@@ -428,7 +428,7 @@ extension LoRaWANBridge: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
   }
 }
 
-extension LoRaWANBridge.Uplink: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension LoRaWANBridge.Uplink: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = LoRaWANBridge.protoMessageName + ".Uplink"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}freq_hz\0\u{1}tmst\0\u{3}rssi_x10\0\u{3}snr_x10\0\u{3}radio_params\0\u{1}payload\0\u{3}payload_id\0\u{3}chunk_count\0\u{3}fsk_bitrate\0")
 
@@ -498,7 +498,7 @@ extension LoRaWANBridge.Uplink: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
   }
 }
 
-extension LoRaWANBridge.Downlink: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension LoRaWANBridge.Downlink: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = LoRaWANBridge.protoMessageName + ".Downlink"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}freq_hz\0\u{1}tmst\0\u{3}radio_params\0\u{3}power_dbm\0\u{1}immediate\0\u{3}invert_polarity\0\u{3}no_crc\0\u{3}may_defer\0\u{1}payload\0\u{3}payload_id\0\u{3}chunk_count\0\u{3}request_id\0")
 
@@ -583,7 +583,7 @@ extension LoRaWANBridge.Downlink: SwiftProtobuf.Message, SwiftProtobuf._MessageI
   }
 }
 
-extension LoRaWANBridge.PayloadChunk: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension LoRaWANBridge.PayloadChunk: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = LoRaWANBridge.protoMessageName + ".PayloadChunk"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}payload_id\0\u{3}chunk_index\0\u{3}payload_chunk\0")
 
@@ -623,7 +623,7 @@ extension LoRaWANBridge.PayloadChunk: SwiftProtobuf.Message, SwiftProtobuf._Mess
   }
 }
 
-extension LoRaWANBridge.TxResult: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension LoRaWANBridge.TxResult: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = LoRaWANBridge.protoMessageName + ".TxResult"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}tmst\0\u{1}status\0\u{3}request_id\0")
 
@@ -663,6 +663,6 @@ extension LoRaWANBridge.TxResult: SwiftProtobuf.Message, SwiftProtobuf._MessageI
   }
 }
 
-extension LoRaWANBridge.TxResult.Status: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension LoRaWANBridge.TxResult.Status: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0NONE\0\u{1}TOO_LATE\0\u{1}TOO_EARLY\0\u{1}COLLISION_PACKET\0\u{1}COLLISION_BEACON\0\u{1}TX_FREQ\0\u{1}TX_POWER\0\u{1}GPS_UNLOCKED\0\u{1}DEFERRED\0\u{1}DROPPED\0")
 }

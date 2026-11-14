@@ -15,7 +15,7 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
@@ -29,7 +29,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 /// is_favorite (10), and is_ignored (11). Steady-state code does not use
 /// this struct; it is dropped after migration completes. This file should be
 /// removed once DEVICESTATE_MIN_VER advances past 24.
-public struct NodeInfoLite_Legacy: @unchecked Sendable {
+public nonisolated struct NodeInfoLite_Legacy: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -125,7 +125,7 @@ public struct NodeInfoLite_Legacy: @unchecked Sendable {
 ///
 /// Legacy NodeDatabase shape: one repeated array of fat NodeInfoLite_Legacy
 /// with no satellite position/telemetry arrays.
-public struct NodeDatabase_Legacy: Sendable {
+public nonisolated struct NodeDatabase_Legacy: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -141,9 +141,9 @@ public struct NodeDatabase_Legacy: Sendable {
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "meshtastic"
+fileprivate nonisolated let _protobuf_package = "meshtastic"
 
-extension NodeInfoLite_Legacy: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension NodeInfoLite_Legacy: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".NodeInfoLite_Legacy"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}num\0\u{1}user\0\u{1}position\0\u{1}snr\0\u{3}last_heard\0\u{3}device_metrics\0\u{1}channel\0\u{3}via_mqtt\0\u{3}hops_away\0\u{3}is_favorite\0\u{3}is_ignored\0\u{3}next_hop\0\u{1}bitfield\0")
 
@@ -297,7 +297,7 @@ extension NodeInfoLite_Legacy: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
   }
 }
 
-extension NodeDatabase_Legacy: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension NodeDatabase_Legacy: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".NodeDatabase_Legacy"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}version\0\u{1}nodes\0")
 

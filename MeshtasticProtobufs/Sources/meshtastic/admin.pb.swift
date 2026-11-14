@@ -20,14 +20,14 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
 
 ///
 /// Firmware update mode for OTA updates
-public enum OTAMode: SwiftProtobuf.Enum, Swift.CaseIterable {
+public nonisolated enum OTAMode: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
 
   ///
@@ -78,7 +78,7 @@ public enum OTAMode: SwiftProtobuf.Enum, Swift.CaseIterable {
 /// This message is handled by the Admin module and is responsible for all settings/channel read/write operations.
 /// This message is used to do settings operations to both remote AND local nodes.
 /// (Prior to 1.2 these operations were done via special ToRadio operations)
-public struct AdminMessage: @unchecked Sendable {
+public nonisolated struct AdminMessage: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -736,7 +736,7 @@ public struct AdminMessage: @unchecked Sendable {
 
   ///
   /// TODO: REPLACE
-  public enum OneOf_PayloadVariant: Equatable, Sendable {
+  public nonisolated enum OneOf_PayloadVariant: Equatable, Sendable {
     ///
     /// Send the specified channel in the response to this message
     /// NOTE: This field is sent with the channel index + 1 (to ensure we never try to send 'zero' - which protobufs treats as not present)
@@ -955,7 +955,7 @@ public struct AdminMessage: @unchecked Sendable {
 
   ///
   /// TODO: REPLACE
-  public enum ConfigType: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum ConfigType: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
     ///
@@ -1053,7 +1053,7 @@ public struct AdminMessage: @unchecked Sendable {
 
   ///
   /// TODO: REPLACE
-  public enum ModuleConfigType: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum ModuleConfigType: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
     ///
@@ -1198,7 +1198,7 @@ public struct AdminMessage: @unchecked Sendable {
 
   }
 
-  public enum BackupLocation: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum BackupLocation: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
     ///
@@ -1240,7 +1240,7 @@ public struct AdminMessage: @unchecked Sendable {
 
   ///
   /// Input event message to be sent to the node.
-  public struct InputEvent: Sendable {
+  public nonisolated struct InputEvent: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -1269,7 +1269,7 @@ public struct AdminMessage: @unchecked Sendable {
   ///
   /// User is requesting an over the air update.
   /// Node will reboot into the OTA loader
-  public struct OTAEvent: Sendable {
+  public nonisolated struct OTAEvent: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -1308,7 +1308,7 @@ public struct AdminMessage: @unchecked Sendable {
 /// Firmware decides between provision and unlock based on its own state
 /// (whether a DEK file already exists). Clients do not need to track
 /// which case applies.
-public struct LockdownAuth: Sendable {
+public nonisolated struct LockdownAuth: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1406,7 +1406,7 @@ public struct LockdownAuth: Sendable {
 
 ///
 /// Parameters for setting up Meshtastic for ameteur radio usage
-public struct HamParameters: Sendable {
+public nonisolated struct HamParameters: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1441,7 +1441,7 @@ public struct HamParameters: Sendable {
 
 ///
 /// Response envelope for node_remote_hardware_pins
-public struct NodeRemoteHardwarePinsResponse: Sendable {
+public nonisolated struct NodeRemoteHardwarePinsResponse: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1455,7 +1455,7 @@ public struct NodeRemoteHardwarePinsResponse: Sendable {
   public init() {}
 }
 
-public struct SharedContact: Sendable {
+public nonisolated struct SharedContact: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1492,7 +1492,7 @@ public struct SharedContact: Sendable {
 
 ///
 /// This message is used by a client to initiate or complete a key verification
-public struct KeyVerificationAdmin: Sendable {
+public nonisolated struct KeyVerificationAdmin: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1522,7 +1522,7 @@ public struct KeyVerificationAdmin: Sendable {
 
   ///
   /// Three stages of this request.
-  public enum MessageType: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum MessageType: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
     ///
@@ -1582,7 +1582,7 @@ public struct KeyVerificationAdmin: Sendable {
   fileprivate var _securityNumber: UInt32? = nil
 }
 
-public struct SensorConfig: @unchecked Sendable {
+public nonisolated struct SensorConfig: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1671,7 +1671,7 @@ public struct SensorConfig: @unchecked Sendable {
   fileprivate var _storage = _StorageClass.defaultInstance
 }
 
-public struct SCD4X_config: Sendable {
+public nonisolated struct SCD4X_config: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1766,7 +1766,7 @@ public struct SCD4X_config: Sendable {
   fileprivate var _setPowerMode: Bool? = nil
 }
 
-public struct SEN5X_config: Sendable {
+public nonisolated struct SEN5X_config: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1813,7 +1813,7 @@ public struct SEN5X_config: Sendable {
   fileprivate var _startFanCleaning: Bool? = nil
 }
 
-public struct SEN6X_config: Sendable {
+public nonisolated struct SEN6X_config: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1920,7 +1920,7 @@ public struct SEN6X_config: Sendable {
   fileprivate var _factoryReset: Bool? = nil
 }
 
-public struct SCD30_config: Sendable {
+public nonisolated struct SCD30_config: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2003,7 +2003,7 @@ public struct SCD30_config: Sendable {
   fileprivate var _softReset: Bool? = nil
 }
 
-public struct SHTXX_config: Sendable {
+public nonisolated struct SHTXX_config: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2026,7 +2026,7 @@ public struct SHTXX_config: Sendable {
   fileprivate var _setAccuracy: UInt32? = nil
 }
 
-public struct DS248X_config: Sendable {
+public nonisolated struct DS248X_config: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2049,7 +2049,7 @@ public struct DS248X_config: Sendable {
   fileprivate var _mainTemperatureChannel: UInt32? = nil
 }
 
-public struct AS3935_config: Sendable {
+public nonisolated struct AS3935_config: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -2075,13 +2075,13 @@ public struct AS3935_config: Sendable {
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "meshtastic"
+fileprivate nonisolated let _protobuf_package = "meshtastic"
 
-extension OTAMode: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension OTAMode: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0NO_REBOOT_OTA\0\u{1}OTA_BLE\0\u{1}OTA_WIFI\0")
 }
 
-extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".AdminMessage"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}get_channel_request\0\u{3}get_channel_response\0\u{3}get_owner_request\0\u{3}get_owner_response\0\u{3}get_config_request\0\u{3}get_config_response\0\u{3}get_module_config_request\0\u{3}get_module_config_response\0\u{4}\u{2}get_canned_message_module_messages_request\0\u{3}get_canned_message_module_messages_response\0\u{3}get_device_metadata_request\0\u{3}get_device_metadata_response\0\u{3}get_ringtone_request\0\u{3}get_ringtone_response\0\u{3}get_device_connection_status_request\0\u{3}get_device_connection_status_response\0\u{3}set_ham_mode\0\u{3}get_node_remote_hardware_pins_request\0\u{3}get_node_remote_hardware_pins_response\0\u{3}enter_dfu_mode_request\0\u{3}delete_file_request\0\u{3}set_scale\0\u{3}backup_preferences\0\u{3}restore_preferences\0\u{3}remove_backup_preferences\0\u{3}send_input_event\0\u{4}\u{5}set_owner\0\u{3}set_channel\0\u{3}set_config\0\u{3}set_module_config\0\u{3}set_canned_message_module_messages\0\u{3}set_ringtone_message\0\u{3}remove_by_nodenum\0\u{3}set_favorite_node\0\u{3}remove_favorite_node\0\u{3}set_fixed_position\0\u{3}remove_fixed_position\0\u{3}set_time_only\0\u{3}get_ui_config_request\0\u{3}get_ui_config_response\0\u{3}store_ui_config\0\u{3}set_ignored_node\0\u{3}remove_ignored_node\0\u{3}toggle_muted_node\0\u{3}get_display_frame_request\0\u{3}set_display_mirror\0\u{4}\u{d}begin_edit_settings\0\u{3}commit_edit_settings\0\u{3}add_contact\0\u{3}key_verification\0\u{4}\u{1b}factory_reset_device\0\u{3}reboot_ota_seconds\0\u{3}exit_simulator\0\u{3}reboot_seconds\0\u{3}shutdown_seconds\0\u{3}factory_reset_config\0\u{3}nodedb_reset\0\u{3}session_passkey\0\u{3}ota_request\0\u{3}sensor_config\0\u{3}lockdown_auth\0")
 
@@ -2985,19 +2985,19 @@ extension AdminMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
   }
 }
 
-extension AdminMessage.ConfigType: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension AdminMessage.ConfigType: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0DEVICE_CONFIG\0\u{1}POSITION_CONFIG\0\u{1}POWER_CONFIG\0\u{1}NETWORK_CONFIG\0\u{1}DISPLAY_CONFIG\0\u{1}LORA_CONFIG\0\u{1}BLUETOOTH_CONFIG\0\u{1}SECURITY_CONFIG\0\u{1}SESSIONKEY_CONFIG\0\u{1}DEVICEUI_CONFIG\0")
 }
 
-extension AdminMessage.ModuleConfigType: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension AdminMessage.ModuleConfigType: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0MQTT_CONFIG\0\u{1}SERIAL_CONFIG\0\u{1}EXTNOTIF_CONFIG\0\u{1}STOREFORWARD_CONFIG\0\u{1}RANGETEST_CONFIG\0\u{1}TELEMETRY_CONFIG\0\u{1}CANNEDMSG_CONFIG\0\u{1}AUDIO_CONFIG\0\u{1}REMOTEHARDWARE_CONFIG\0\u{1}NEIGHBORINFO_CONFIG\0\u{1}AMBIENTLIGHTING_CONFIG\0\u{1}DETECTIONSENSOR_CONFIG\0\u{1}PAXCOUNTER_CONFIG\0\u{1}STATUSMESSAGE_CONFIG\0\u{1}TRAFFICMANAGEMENT_CONFIG\0\u{1}TAK_CONFIG\0\u{1}MESHBEACON_CONFIG\0")
 }
 
-extension AdminMessage.BackupLocation: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension AdminMessage.BackupLocation: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0FLASH\0\u{1}SD\0")
 }
 
-extension AdminMessage.InputEvent: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension AdminMessage.InputEvent: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = AdminMessage.protoMessageName + ".InputEvent"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}event_code\0\u{3}kb_char\0\u{3}touch_x\0\u{3}touch_y\0")
 
@@ -3042,7 +3042,7 @@ extension AdminMessage.InputEvent: SwiftProtobuf.Message, SwiftProtobuf._Message
   }
 }
 
-extension AdminMessage.OTAEvent: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension AdminMessage.OTAEvent: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = AdminMessage.protoMessageName + ".OTAEvent"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}reboot_ota_mode\0\u{3}ota_hash\0")
 
@@ -3077,7 +3077,7 @@ extension AdminMessage.OTAEvent: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
   }
 }
 
-extension LockdownAuth: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension LockdownAuth: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".LockdownAuth"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}passphrase\0\u{3}boots_remaining\0\u{3}valid_until_epoch\0\u{3}lock_now\0\u{3}max_session_seconds\0\u{1}disable\0")
 
@@ -3132,7 +3132,7 @@ extension LockdownAuth: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
   }
 }
 
-extension HamParameters: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension HamParameters: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".HamParameters"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}call_sign\0\u{3}tx_power\0\u{1}frequency\0\u{3}short_name\0\u{3}long_name\0")
 
@@ -3182,7 +3182,7 @@ extension HamParameters: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
   }
 }
 
-extension NodeRemoteHardwarePinsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension NodeRemoteHardwarePinsResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".NodeRemoteHardwarePinsResponse"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}node_remote_hardware_pins\0")
 
@@ -3212,7 +3212,7 @@ extension NodeRemoteHardwarePinsResponse: SwiftProtobuf.Message, SwiftProtobuf._
   }
 }
 
-extension SharedContact: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension SharedContact: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SharedContact"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}node_num\0\u{1}user\0\u{3}should_ignore\0\u{3}manually_verified\0")
 
@@ -3261,7 +3261,7 @@ extension SharedContact: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
   }
 }
 
-extension KeyVerificationAdmin: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension KeyVerificationAdmin: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".KeyVerificationAdmin"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}message_type\0\u{3}remote_nodenum\0\u{1}nonce\0\u{3}security_number\0")
 
@@ -3310,11 +3310,11 @@ extension KeyVerificationAdmin: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
   }
 }
 
-extension KeyVerificationAdmin.MessageType: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension KeyVerificationAdmin.MessageType: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0INITIATE_VERIFICATION\0\u{1}PROVIDE_SECURITY_NUMBER\0\u{1}DO_VERIFY\0\u{1}DO_NOT_VERIFY\0")
 }
 
-extension SensorConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension SensorConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SensorConfig"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}scd4x_config\0\u{3}sen5x_config\0\u{3}scd30_config\0\u{3}shtxx_config\0\u{3}ds248x_config\0\u{3}sen6x_config\0\u{3}as3935_config\0")
 
@@ -3426,7 +3426,7 @@ extension SensorConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
   }
 }
 
-extension SCD4X_config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension SCD4X_config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SCD4X_config"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}set_asc\0\u{3}set_target_co2_conc\0\u{3}set_temperature\0\u{3}set_altitude\0\u{3}set_ambient_pressure\0\u{3}factory_reset\0\u{3}set_power_mode\0")
 
@@ -3490,7 +3490,7 @@ extension SCD4X_config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
   }
 }
 
-extension SEN5X_config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension SEN5X_config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SEN5X_config"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}set_temperature\0\u{3}set_one_shot_mode\0\u{3}start_fan_cleaning\0")
 
@@ -3534,7 +3534,7 @@ extension SEN5X_config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
   }
 }
 
-extension SEN6X_config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension SEN6X_config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SEN6X_config"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}set_temperature\0\u{3}set_one_shot_mode\0\u{3}start_fan_cleaning\0\u{3}set_asc\0\u{3}set_target_co2_conc\0\u{3}set_altitude\0\u{3}set_ambient_pressure\0\u{3}factory_reset\0")
 
@@ -3603,7 +3603,7 @@ extension SEN6X_config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
   }
 }
 
-extension SCD30_config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension SCD30_config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SCD30_config"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}set_asc\0\u{3}set_target_co2_conc\0\u{3}set_temperature\0\u{3}set_altitude\0\u{3}set_measurement_interval\0\u{3}soft_reset\0")
 
@@ -3662,7 +3662,7 @@ extension SCD30_config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
   }
 }
 
-extension SHTXX_config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension SHTXX_config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".SHTXX_config"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}set_accuracy\0")
 
@@ -3696,7 +3696,7 @@ extension SHTXX_config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
   }
 }
 
-extension DS248X_config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension DS248X_config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DS248X_config"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}main_temperature_channel\0")
 
@@ -3730,7 +3730,7 @@ extension DS248X_config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
   }
 }
 
-extension AS3935_config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension AS3935_config: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".AS3935_config"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}set_tuning_cap_pf\0")
 

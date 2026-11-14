@@ -15,7 +15,7 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
@@ -23,7 +23,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 ///
 /// This abstraction is used to contain any configuration for provisioning a node on any client.
 /// It is useful for importing and exporting configurations.
-public struct DeviceProfile: Sendable {
+public nonisolated struct DeviceProfile: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -51,7 +51,8 @@ public struct DeviceProfile: Sendable {
   public mutating func clearShortName() {self._shortName = nil}
 
   ///
-  /// The url of the channels from our node
+  /// The url of the channels from our node.
+  /// Carries every channel's PSK, so it is as secret as they are.
   public var channelURL: String {
     get {_channelURL ?? String()}
     set {_channelURL = newValue}
@@ -156,9 +157,9 @@ public struct DeviceProfile: Sendable {
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "meshtastic"
+fileprivate nonisolated let _protobuf_package = "meshtastic"
 
-extension DeviceProfile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension DeviceProfile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeviceProfile"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}long_name\0\u{3}short_name\0\u{3}channel_url\0\u{1}config\0\u{3}module_config\0\u{3}fixed_position\0\u{1}ringtone\0\u{3}canned_messages\0\u{3}is_unmessagable\0\u{3}is_licensed\0")
 

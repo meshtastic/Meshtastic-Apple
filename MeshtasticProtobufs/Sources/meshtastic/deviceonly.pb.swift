@@ -20,14 +20,14 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
 
 ///
 /// Position with static location information only for NodeDBLite
-public struct PositionLite: Sendable {
+public nonisolated struct PositionLite: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -66,7 +66,7 @@ public struct PositionLite: Sendable {
   public init() {}
 }
 
-public struct UserLite: Sendable {
+public nonisolated struct UserLite: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -126,7 +126,7 @@ public struct UserLite: Sendable {
   fileprivate var _isUnmessagable: Bool? = nil
 }
 
-public struct NodeInfoLite: Sendable {
+public nonisolated struct NodeInfoLite: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -216,7 +216,7 @@ public struct NodeInfoLite: Sendable {
 /// FIXME, since we write this each time we enter deep sleep (and have infinite
 /// flash) it would be better to use some sort of append only data structure for
 /// the receive queue and use the preferences store for the other stuff
-public struct DeviceState: @unchecked Sendable {
+public nonisolated struct DeviceState: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -320,7 +320,7 @@ public struct DeviceState: @unchecked Sendable {
   fileprivate var _storage = _StorageClass.defaultInstance
 }
 
-public struct NodePositionEntry: Sendable {
+public nonisolated struct NodePositionEntry: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -343,7 +343,7 @@ public struct NodePositionEntry: Sendable {
   fileprivate var _position: PositionLite? = nil
 }
 
-public struct NodeTelemetryEntry: Sendable {
+public nonisolated struct NodeTelemetryEntry: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -366,7 +366,7 @@ public struct NodeTelemetryEntry: Sendable {
   fileprivate var _deviceMetrics: DeviceMetrics? = nil
 }
 
-public struct NodeEnvironmentEntry: Sendable {
+public nonisolated struct NodeEnvironmentEntry: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -389,7 +389,7 @@ public struct NodeEnvironmentEntry: Sendable {
   fileprivate var _environmentMetrics: EnvironmentMetrics? = nil
 }
 
-public struct NodeStatusEntry: Sendable {
+public nonisolated struct NodeStatusEntry: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -412,7 +412,7 @@ public struct NodeStatusEntry: Sendable {
   fileprivate var _status: StatusMessage? = nil
 }
 
-public struct NodeDatabase: Sendable {
+public nonisolated struct NodeDatabase: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -444,7 +444,7 @@ public struct NodeDatabase: Sendable {
 
 ///
 /// The on-disk saved channels
-public struct ChannelFile: Sendable {
+public nonisolated struct ChannelFile: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -466,7 +466,7 @@ public struct ChannelFile: Sendable {
 
 ///
 /// The on-disk backup of the node's preferences
-public struct BackupPreferences: Sendable {
+public nonisolated struct BackupPreferences: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -535,9 +535,9 @@ public struct BackupPreferences: Sendable {
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "meshtastic"
+fileprivate nonisolated let _protobuf_package = "meshtastic"
 
-extension PositionLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension PositionLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".PositionLite"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}latitude_i\0\u{3}longitude_i\0\u{1}altitude\0\u{1}time\0\u{3}location_source\0\u{3}precision_bits\0")
 
@@ -592,7 +592,7 @@ extension PositionLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
   }
 }
 
-extension UserLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension UserLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".UserLite"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}macaddr\0\u{3}long_name\0\u{3}short_name\0\u{3}hw_model\0\u{3}is_licensed\0\u{1}role\0\u{3}public_key\0\u{4}\u{2}is_unmessagable\0")
 
@@ -661,7 +661,7 @@ extension UserLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
   }
 }
 
-extension NodeInfoLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension NodeInfoLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".NodeInfoLite"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}num\0\u{2}\u{3}snr\0\u{3}last_heard\0\u{2}\u{2}channel\0\u{4}\u{2}hops_away\0\u{4}\u{3}next_hop\0\u{1}bitfield\0\u{3}long_name\0\u{3}short_name\0\u{3}hw_model\0\u{1}role\0\u{3}public_key\0\u{3}snr_q4\0\u{b}user\0\u{b}position\0\u{b}device_metrics\0\u{b}via_mqtt\0\u{b}is_favorite\0\u{b}is_ignored\0\u{c}\u{2}\u{1}\u{c}\u{3}\u{1}\u{c}\u{6}\u{1}\u{c}\u{8}\u{1}\u{c}\u{a}\u{1}\u{c}\u{b}\u{1}")
 
@@ -755,7 +755,7 @@ extension NodeInfoLite: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
   }
 }
 
-extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeviceState"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{4}\u{2}my_node\0\u{1}owner\0\u{4}\u{2}receive_queue\0\u{4}\u{2}rx_text_message\0\u{1}version\0\u{3}no_save\0\u{4}\u{2}did_gps_reset\0\u{3}rx_waypoint\0\u{3}node_remote_hardware_pins\0")
 
@@ -881,7 +881,7 @@ extension DeviceState: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
   }
 }
 
-extension NodePositionEntry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension NodePositionEntry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".NodePositionEntry"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}num\0\u{1}position\0")
 
@@ -920,7 +920,7 @@ extension NodePositionEntry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
   }
 }
 
-extension NodeTelemetryEntry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension NodeTelemetryEntry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".NodeTelemetryEntry"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}num\0\u{3}device_metrics\0")
 
@@ -959,7 +959,7 @@ extension NodeTelemetryEntry: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
   }
 }
 
-extension NodeEnvironmentEntry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension NodeEnvironmentEntry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".NodeEnvironmentEntry"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}num\0\u{3}environment_metrics\0")
 
@@ -998,7 +998,7 @@ extension NodeEnvironmentEntry: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
   }
 }
 
-extension NodeStatusEntry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension NodeStatusEntry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".NodeStatusEntry"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}num\0\u{1}status\0")
 
@@ -1037,7 +1037,7 @@ extension NodeStatusEntry: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
   }
 }
 
-extension NodeDatabase: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension NodeDatabase: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".NodeDatabase"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}version\0\u{1}nodes\0\u{1}positions\0\u{1}telemetry\0\u{1}status\0\u{1}environment\0")
 
@@ -1092,7 +1092,7 @@ extension NodeDatabase: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
   }
 }
 
-extension ChannelFile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension ChannelFile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ChannelFile"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}channels\0\u{1}version\0")
 
@@ -1127,7 +1127,7 @@ extension ChannelFile: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
   }
 }
 
-extension BackupPreferences: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension BackupPreferences: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".BackupPreferences"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}version\0\u{1}timestamp\0\u{1}config\0\u{3}module_config\0\u{1}channels\0\u{1}owner\0")
 

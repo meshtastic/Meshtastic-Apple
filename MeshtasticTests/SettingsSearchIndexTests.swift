@@ -85,6 +85,7 @@ struct SettingsSearchIndexTests {
 		"ignore_incoming": "no control - repeated field, no UI",
 		"fem_lna_mode": "no control - written but never edited",
 		"serial_hal_only": "no control - written but never edited",
+		"transparent_mode": "no control - written but never edited",
 		"map_report_settings": "nested message; its own fields are indexed separately"
 	]
 

@@ -20,12 +20,12 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
 
-public enum CompassMode: SwiftProtobuf.Enum, Swift.CaseIterable {
+public nonisolated enum CompassMode: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
 
   ///
@@ -72,7 +72,7 @@ public enum CompassMode: SwiftProtobuf.Enum, Swift.CaseIterable {
 
 }
 
-public enum Theme: SwiftProtobuf.Enum, Swift.CaseIterable {
+public nonisolated enum Theme: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
 
   ///
@@ -121,7 +121,7 @@ public enum Theme: SwiftProtobuf.Enum, Swift.CaseIterable {
 
 ///
 /// Localization
-public enum Language: SwiftProtobuf.Enum, Swift.CaseIterable {
+public nonisolated enum Language: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
 
   ///
@@ -315,7 +315,7 @@ public enum Language: SwiftProtobuf.Enum, Swift.CaseIterable {
 
 }
 
-public struct DeviceUIConfig: @unchecked Sendable {
+public nonisolated struct DeviceUIConfig: @unchecked Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -463,7 +463,7 @@ public struct DeviceUIConfig: @unchecked Sendable {
 
   ///
   /// How the GPS coordinates are displayed on the OLED screen.
-  public enum GpsCoordinateFormat: SwiftProtobuf.Enum, Swift.CaseIterable {
+  public nonisolated enum GpsCoordinateFormat: SwiftProtobuf.Enum, Swift.CaseIterable {
     public typealias RawValue = Int
 
     ///
@@ -551,7 +551,7 @@ public struct DeviceUIConfig: @unchecked Sendable {
   fileprivate var _storage = _StorageClass.defaultInstance
 }
 
-public struct NodeFilter: Sendable {
+public nonisolated struct NodeFilter: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -589,7 +589,7 @@ public struct NodeFilter: Sendable {
   public init() {}
 }
 
-public struct NodeHighlight: Sendable {
+public nonisolated struct NodeHighlight: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -619,7 +619,7 @@ public struct NodeHighlight: Sendable {
   public init() {}
 }
 
-public struct GeoPoint: Sendable {
+public nonisolated struct GeoPoint: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -641,7 +641,7 @@ public struct GeoPoint: Sendable {
   public init() {}
 }
 
-public struct Map: Sendable {
+public nonisolated struct Map: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -674,21 +674,21 @@ public struct Map: Sendable {
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "meshtastic"
+fileprivate nonisolated let _protobuf_package = "meshtastic"
 
-extension CompassMode: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension CompassMode: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0DYNAMIC\0\u{1}FIXED_RING\0\u{1}FREEZE_HEADING\0")
 }
 
-extension Theme: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Theme: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0DARK\0\u{1}LIGHT\0\u{1}RED\0")
 }
 
-extension Language: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Language: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0ENGLISH\0\u{1}FRENCH\0\u{1}GERMAN\0\u{1}ITALIAN\0\u{1}PORTUGUESE\0\u{1}SPANISH\0\u{1}SWEDISH\0\u{1}FINNISH\0\u{1}POLISH\0\u{1}TURKISH\0\u{1}SERBIAN\0\u{1}RUSSIAN\0\u{1}DUTCH\0\u{1}GREEK\0\u{1}NORWEGIAN\0\u{1}SLOVENIAN\0\u{1}UKRAINIAN\0\u{1}BULGARIAN\0\u{1}CZECH\0\u{1}DANISH\0\u{1}HUNGARIAN\0\u{1}AZERBAIJANI\0\u{2}\u{9}SIMPLIFIED_CHINESE\0\u{1}TRADITIONAL_CHINESE\0")
 }
 
-extension DeviceUIConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension DeviceUIConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".DeviceUIConfig"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}version\0\u{3}screen_brightness\0\u{3}screen_timeout\0\u{3}screen_lock\0\u{3}settings_lock\0\u{3}pin_code\0\u{1}theme\0\u{3}alert_enabled\0\u{3}banner_enabled\0\u{3}ring_tone_id\0\u{1}language\0\u{3}node_filter\0\u{3}node_highlight\0\u{3}calibration_data\0\u{3}map_data\0\u{3}compass_mode\0\u{3}screen_rgb_color\0\u{3}is_clockface_analog\0\u{3}gps_format\0")
 
@@ -884,11 +884,11 @@ extension DeviceUIConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
   }
 }
 
-extension DeviceUIConfig.GpsCoordinateFormat: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension DeviceUIConfig.GpsCoordinateFormat: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0DEC\0\u{1}DMS\0\u{1}UTM\0\u{1}MGRS\0\u{1}OLC\0\u{1}OSGR\0\u{1}MLS\0")
 }
 
-extension NodeFilter: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension NodeFilter: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".NodeFilter"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}unknown_switch\0\u{3}offline_switch\0\u{3}public_key_switch\0\u{3}hops_away\0\u{3}position_switch\0\u{3}node_name\0\u{1}channel\0")
 
@@ -948,7 +948,7 @@ extension NodeFilter: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
   }
 }
 
-extension NodeHighlight: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension NodeHighlight: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".NodeHighlight"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}chat_switch\0\u{3}position_switch\0\u{3}telemetry_switch\0\u{3}iaq_switch\0\u{3}node_name\0")
 
@@ -998,7 +998,7 @@ extension NodeHighlight: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
   }
 }
 
-extension GeoPoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension GeoPoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".GeoPoint"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}zoom\0\u{1}latitude\0\u{1}longitude\0")
 
@@ -1038,7 +1038,7 @@ extension GeoPoint: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
   }
 }
 
-extension Map: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension Map: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Map"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}home\0\u{1}style\0\u{3}follow_gps\0")
 

@@ -135,7 +135,9 @@ struct LoRaConfig: View {
 			.init(Self.ignoreIncomingField, "a repeated node list; not offered by this client"),
 			.init(F.frequencyOffset, "not offered by this client; unlabelled upstream"),
 			.init(F.femLnaMode, "not offered by this client; unlabelled upstream"),
-			.init(F.serialHalOnly, "not offered by this client; unlabelled upstream")
+			.init(F.serialHalOnly, "not offered by this client; unlabelled upstream"),
+			// Hands the radio to a client that does its own encryption and routing.
+			.init(F.transparentMode, "a raw modem mode for clients that run their own mesh; not offered by this client")
 		])
 	}
 

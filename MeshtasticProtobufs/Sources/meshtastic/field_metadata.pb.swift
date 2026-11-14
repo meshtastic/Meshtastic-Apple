@@ -15,7 +15,7 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
@@ -88,7 +88,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
 ///
 /// Downstream apps use this to drive UI decisions (e.g. hiding DIY-only settings
 /// on pre-assembled boards) directly from the protobuf schema.
-public struct FieldMetadata: Sendable {
+public nonisolated struct FieldMetadata: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -285,6 +285,30 @@ public struct FieldMetadata: Sendable {
   /// Clears the value of `oemFixedGps`. Subsequent reads from it will return its default value.
   public mutating func clearOemFixedGps() {self._oemFixedGps = nil}
 
+  ///
+  /// Field holds a SECRET: a password, PIN, passphrase or key whose value grants
+  /// access to the node, to its network, or to the traffic it carries. Knowing a
+  /// public key or a username does not, so neither is marked.
+  ///
+  /// Apps should mask the value by default (a password-style control with an
+  /// explicit reveal), keep it out of logs, crash reports, analytics and debug
+  /// dumps, and not include it in a shared export, QR code or screenshot without
+  /// the user knowingly choosing to.
+  ///
+  /// Handling metadata, not protection: it changes nothing on the wire, and the
+  /// firmware treats the field no differently. It marks the field alone. A
+  /// message that merely CONTAINS a sensitive field (`Config` holding
+  /// `SecurityConfig.private_key`) is not marked itself, so a consumer redacting
+  /// a whole message should walk into its submessages.
+  public var sensitive: Bool {
+    get {_sensitive ?? false}
+    set {_sensitive = newValue}
+  }
+  /// Returns true if `sensitive` has been explicitly set.
+  public var hasSensitive: Bool {self._sensitive != nil}
+  /// Clears the value of `sensitive`. Subsequent reads from it will return its default value.
+  public mutating func clearSensitive() {self._sensitive = nil}
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   public init() {}
@@ -301,6 +325,7 @@ public struct FieldMetadata: Sendable {
   fileprivate var _sinceFirmware: String? = nil
   fileprivate var _deprecatedSince: String? = nil
   fileprivate var _oemFixedGps: Bool? = nil
+  fileprivate var _sensitive: Bool? = nil
 }
 
 // MARK: - Extension support defined in field_metadata.proto.
@@ -312,7 +337,7 @@ public struct FieldMetadata: Sendable {
 // declaration. To avoid naming collisions, the names are prefixed with the name of
 // the scope where the extend directive occurs.
 
-extension SwiftProtobuf.Google_Protobuf_EnumValueOptions {
+nonisolated extension SwiftProtobuf.Google_Protobuf_EnumValueOptions {
 
   ///
   /// Attach the same metadata to an ENUM VALUE, e.g.
@@ -346,7 +371,7 @@ extension SwiftProtobuf.Google_Protobuf_EnumValueOptions {
   }
 }
 
-extension SwiftProtobuf.Google_Protobuf_FieldOptions {
+nonisolated extension SwiftProtobuf.Google_Protobuf_FieldOptions {
 
   ///
   /// Attach FieldMetadata to a field, e.g.
@@ -376,7 +401,7 @@ extension SwiftProtobuf.Google_Protobuf_FieldOptions {
 /// this .proto file. It can be used any place an `SwiftProtobuf.ExtensionMap` is needed
 /// in parsing, or it can be combined with other `SwiftProtobuf.SimpleExtensionMap`s to create
 /// a larger `SwiftProtobuf.SimpleExtensionMap`.
-public let FieldMetadata_Extensions: SwiftProtobuf.SimpleExtensionMap = [
+public nonisolated let FieldMetadata_Extensions: SwiftProtobuf.SimpleExtensionMap = [
   Extensions_field_metadata,
   Extensions_enum_value_metadata
 ]
@@ -390,7 +415,7 @@ public let FieldMetadata_Extensions: SwiftProtobuf.SimpleExtensionMap = [
 ///   uint32 rx_gpio = 8 [(meshtastic.field_metadata) = { diy_only: true }];
 ///
 /// Private-use extension number range is 50000-99999.
-public let Extensions_field_metadata = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalMessageExtensionField<FieldMetadata>, SwiftProtobuf.Google_Protobuf_FieldOptions>(
+public nonisolated let Extensions_field_metadata = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalMessageExtensionField<FieldMetadata>, SwiftProtobuf.Google_Protobuf_FieldOptions>(
   _protobuf_fieldNumber: 51001,
   fieldName: "meshtastic.field_metadata"
 )
@@ -411,18 +436,18 @@ public let Extensions_field_metadata = SwiftProtobuf.MessageExtension<SwiftProto
 ///
 /// Extension numbers are scoped per extendee, so sharing 51001 with the
 /// FieldOptions extension above is deliberate and not a conflict.
-public let Extensions_enum_value_metadata = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalMessageExtensionField<FieldMetadata>, SwiftProtobuf.Google_Protobuf_EnumValueOptions>(
+public nonisolated let Extensions_enum_value_metadata = SwiftProtobuf.MessageExtension<SwiftProtobuf.OptionalMessageExtensionField<FieldMetadata>, SwiftProtobuf.Google_Protobuf_EnumValueOptions>(
   _protobuf_fieldNumber: 51001,
   fieldName: "meshtastic.enum_value_metadata"
 )
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "meshtastic"
+fileprivate nonisolated let _protobuf_package = "meshtastic"
 
-extension FieldMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension FieldMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".FieldMetadata"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}diy_only\0\u{3}admin_only\0\u{3}min_value\0\u{3}max_value\0\u{1}unit\0\u{1}deprecated\0\u{1}label\0\u{1}description\0\u{1}keywords\0\u{3}since_firmware\0\u{3}deprecated_since\0\u{3}oem_fixed_gps\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}diy_only\0\u{3}admin_only\0\u{3}min_value\0\u{3}max_value\0\u{1}unit\0\u{1}deprecated\0\u{1}label\0\u{1}description\0\u{1}keywords\0\u{3}since_firmware\0\u{3}deprecated_since\0\u{3}oem_fixed_gps\0\u{1}sensitive\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -442,6 +467,7 @@ extension FieldMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
       case 10: try { try decoder.decodeSingularStringField(value: &self._sinceFirmware) }()
       case 11: try { try decoder.decodeSingularStringField(value: &self._deprecatedSince) }()
       case 12: try { try decoder.decodeSingularBoolField(value: &self._oemFixedGps) }()
+      case 13: try { try decoder.decodeSingularBoolField(value: &self._sensitive) }()
       default: break
       }
     }
@@ -488,6 +514,9 @@ extension FieldMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     try { if let v = self._oemFixedGps {
       try visitor.visitSingularBoolField(value: v, fieldNumber: 12)
     } }()
+    try { if let v = self._sensitive {
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 13)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -504,6 +533,7 @@ extension FieldMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     if lhs._sinceFirmware != rhs._sinceFirmware {return false}
     if lhs._deprecatedSince != rhs._deprecatedSince {return false}
     if lhs._oemFixedGps != rhs._oemFixedGps {return false}
+    if lhs._sensitive != rhs._sensitive {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

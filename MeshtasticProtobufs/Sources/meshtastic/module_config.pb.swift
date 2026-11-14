@@ -15,12 +15,12 @@ import SwiftProtobuf
 // incompatible with the version of SwiftProtobuf to which you are linking.
 // Please ensure that you are building against the same version of the API
 // that was used to generate this file.
-fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
+fileprivate nonisolated struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAPIVersionCheck {
   struct _2: SwiftProtobuf.ProtobufAPIVersion_2 {}
   typealias Version = _2
 }
 
-public enum RemoteHardwarePinType: SwiftProtobuf.Enum, Swift.CaseIterable {
+public nonisolated enum RemoteHardwarePinType: SwiftProtobuf.Enum, Swift.CaseIterable {
   public typealias RawValue = Int
 
   ///
@@ -69,7 +69,7 @@ public enum RemoteHardwarePinType: SwiftProtobuf.Enum, Swift.CaseIterable {
 
 ///
 /// Module Config
-public struct ModuleConfig: Sendable {
+public nonisolated struct ModuleConfig: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -252,7 +252,7 @@ public struct ModuleConfig: Sendable {
 
   ///
   /// TODO: REPLACE
-  public enum OneOf_PayloadVariant: Equatable, Sendable {
+  public nonisolated enum OneOf_PayloadVariant: Equatable, Sendable {
     ///
     /// TODO: REPLACE
     case mqtt(ModuleConfig.MQTTConfig)
@@ -309,7 +309,7 @@ public struct ModuleConfig: Sendable {
 
   ///
   /// MQTT Client Config
-  public struct MQTTConfig: Sendable {
+  public nonisolated struct MQTTConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -338,9 +338,11 @@ public struct ModuleConfig: Sendable {
 
     ///
     /// Whether to send encrypted or decrypted packets to MQTT.
-    /// This parameter is only honoured if you also set server
-    /// (the default official mqtt.meshtastic.org server can handle encrypted packets)
-    /// Decrypted packets may be useful for external systems that want to consume meshtastic packets
+    /// When false, packets on channels with uplink enabled are published decrypted, and decrypted packets
+    /// from the broker are accepted on channels with downlink enabled without channel authentication,
+    /// including on AES-CCM channels. This trusts the broker, and anyone who can publish to it, as much
+    /// as the channel's own members.
+    /// Decrypted packets may be useful for external systems that want to consume meshtastic packets.
     public var encryptionEnabled: Bool = false
 
     ///
@@ -386,7 +388,7 @@ public struct ModuleConfig: Sendable {
 
   ///
   /// Settings for reporting unencrypted information about our node to a map via MQTT
-  public struct MapReportSettings: Sendable {
+  public nonisolated struct MapReportSettings: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -410,7 +412,7 @@ public struct ModuleConfig: Sendable {
 
   ///
   /// RemoteHardwareModule Config
-  public struct RemoteHardwareConfig: Sendable {
+  public nonisolated struct RemoteHardwareConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -434,7 +436,7 @@ public struct ModuleConfig: Sendable {
 
   ///
   /// NeighborInfoModule Config
-  public struct NeighborInfoConfig: Sendable {
+  public nonisolated struct NeighborInfoConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -460,7 +462,7 @@ public struct ModuleConfig: Sendable {
 
   ///
   /// Detection Sensor Module Config
-  public struct DetectionSensorConfig: Sendable {
+  public nonisolated struct DetectionSensorConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -507,7 +509,7 @@ public struct ModuleConfig: Sendable {
 
     public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-    public enum TriggerType: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public nonisolated enum TriggerType: SwiftProtobuf.Enum, Swift.CaseIterable {
       public typealias RawValue = Int
 
       /// Event is triggered if pin is low
@@ -576,7 +578,7 @@ public struct ModuleConfig: Sendable {
 
   ///
   /// Audio Config for codec2 voice
-  public struct AudioConfig: Sendable {
+  public nonisolated struct AudioConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -613,7 +615,7 @@ public struct ModuleConfig: Sendable {
 
     ///
     /// Baudrate for codec2 voice
-    public enum Audio_Baud: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public nonisolated enum Audio_Baud: SwiftProtobuf.Enum, Swift.CaseIterable {
       public typealias RawValue = Int
       case codec2Default // = 0
       case codec23200 // = 1
@@ -702,7 +704,7 @@ public struct ModuleConfig: Sendable {
 
   ///
   /// Config for the Paxcounter Module
-  public struct PaxcounterConfig: Sendable {
+  public nonisolated struct PaxcounterConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -732,7 +734,7 @@ public struct ModuleConfig: Sendable {
   /// Every field uses the proto3 zero value to mean "disabled"; there is no
   /// "use the firmware default" sentinel. Firmware installs its own defaults when it
   /// first creates this config, and a client that writes 0 turns that feature off.
-  public struct TrafficManagementConfig: Sendable {
+  public nonisolated struct TrafficManagementConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -772,7 +774,7 @@ public struct ModuleConfig: Sendable {
 
   ///
   /// Serial Config
-  public struct SerialConfig: Sendable {
+  public nonisolated struct SerialConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -815,7 +817,7 @@ public struct ModuleConfig: Sendable {
 
     ///
     /// TODO: REPLACE
-    public enum Serial_Baud: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public nonisolated enum Serial_Baud: SwiftProtobuf.Enum, Swift.CaseIterable {
       public typealias RawValue = Int
       case baudDefault // = 0
       case baud110 // = 1
@@ -907,7 +909,7 @@ public struct ModuleConfig: Sendable {
 
     ///
     /// TODO: REPLACE
-    public enum Serial_Mode: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public nonisolated enum Serial_Mode: SwiftProtobuf.Enum, Swift.CaseIterable {
       public typealias RawValue = Int
       case `default` // = 0
       case simple // = 1
@@ -1002,7 +1004,7 @@ public struct ModuleConfig: Sendable {
 
   ///
   /// External Notifications Config
-  public struct ExternalNotificationConfig: Sendable {
+  public nonisolated struct ExternalNotificationConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -1085,7 +1087,7 @@ public struct ModuleConfig: Sendable {
 
   ///
   /// Store and Forward Module Config
-  public struct StoreForwardConfig: Sendable {
+  public nonisolated struct StoreForwardConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -1121,7 +1123,7 @@ public struct ModuleConfig: Sendable {
 
   ///
   /// Preferences for the RangeTestModule
-  public struct RangeTestConfig: Sendable {
+  public nonisolated struct RangeTestConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -1151,7 +1153,7 @@ public struct ModuleConfig: Sendable {
 
   ///
   /// Configuration for both device and environment metrics
-  public struct TelemetryConfig: Sendable {
+  public nonisolated struct TelemetryConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -1229,7 +1231,7 @@ public struct ModuleConfig: Sendable {
 
   ///
   /// Canned Messages Module Config
-  public struct CannedMessageConfig: Sendable {
+  public nonisolated struct CannedMessageConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -1288,7 +1290,7 @@ public struct ModuleConfig: Sendable {
 
     ///
     /// TODO: REPLACE
-    public enum InputEventChar: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public nonisolated enum InputEventChar: SwiftProtobuf.Enum, Swift.CaseIterable {
       public typealias RawValue = Int
 
       ///
@@ -1376,7 +1378,7 @@ public struct ModuleConfig: Sendable {
   ///
   ///Ambient Lighting Module - Settings for control of onboard LEDs to allow users to adjust the brightness levels and respective color levels.
   ///Initially created for the RAK14001 RGB LED module.
-  public struct AmbientLightingConfig: Sendable {
+  public nonisolated struct AmbientLightingConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -1408,7 +1410,7 @@ public struct ModuleConfig: Sendable {
 
   ///
   /// StatusMessage config - Allows setting a status message for a node to periodically rebroadcast
-  public struct StatusMessageConfig: Sendable {
+  public nonisolated struct StatusMessageConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -1424,7 +1426,7 @@ public struct ModuleConfig: Sendable {
 
   ///
   /// MeshBeacon module config
-  public struct MeshBeaconConfig: Sendable {
+  public nonisolated struct MeshBeaconConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -1500,7 +1502,7 @@ public struct ModuleConfig: Sendable {
     ///
     /// Boolean options for the beacon module, packed into the `flags` bitfield below.
     /// OR the FLAG_* values together; a flag is on when its bit is set.
-    public enum Flags: SwiftProtobuf.Enum, Swift.CaseIterable {
+    public nonisolated enum Flags: SwiftProtobuf.Enum, Swift.CaseIterable {
       public typealias RawValue = Int
 
       ///
@@ -1561,7 +1563,7 @@ public struct ModuleConfig: Sendable {
     ///
     /// One entry in the broadcast destination list.
     /// Each entry names one set of radio settings to send a beacon copy on.
-    public struct BroadcastTarget: Sendable {
+    public nonisolated struct BroadcastTarget: Sendable {
       // SwiftProtobuf.Message conformance is added in an extension below. See the
       // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
       // methods supported on all messages.
@@ -1628,7 +1630,7 @@ public struct ModuleConfig: Sendable {
 
   ///
   /// TAK team/role configuration
-  public struct TAKConfig: Sendable {
+  public nonisolated struct TAKConfig: Sendable {
     // SwiftProtobuf.Message conformance is added in an extension below. See the
     // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
     // methods supported on all messages.
@@ -1653,7 +1655,7 @@ public struct ModuleConfig: Sendable {
 
 ///
 /// A GPIO pin definition for remote hardware module
-public struct RemoteHardwarePin: Sendable {
+public nonisolated struct RemoteHardwarePin: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -1677,13 +1679,13 @@ public struct RemoteHardwarePin: Sendable {
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-fileprivate let _protobuf_package = "meshtastic"
+fileprivate nonisolated let _protobuf_package = "meshtastic"
 
-extension RemoteHardwarePinType: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension RemoteHardwarePinType: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0UNKNOWN\0\u{1}DIGITAL_READ\0\u{1}DIGITAL_WRITE\0")
 }
 
-extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".ModuleConfig"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}mqtt\0\u{1}serial\0\u{3}external_notification\0\u{3}store_forward\0\u{3}range_test\0\u{1}telemetry\0\u{3}canned_message\0\u{1}audio\0\u{3}remote_hardware\0\u{3}neighbor_info\0\u{3}ambient_lighting\0\u{3}detection_sensor\0\u{1}paxcounter\0\u{1}statusmessage\0\u{3}traffic_management\0\u{1}tak\0\u{3}mesh_beacon\0")
 
@@ -2005,7 +2007,7 @@ extension ModuleConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
   }
 }
 
-extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.protoMessageName + ".MQTTConfig"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}enabled\0\u{1}address\0\u{1}username\0\u{1}password\0\u{3}encryption_enabled\0\u{3}json_enabled\0\u{3}tls_enabled\0\u{1}root\0\u{3}proxy_to_client_enabled\0\u{3}map_reporting_enabled\0\u{3}map_report_settings\0")
 
@@ -2089,7 +2091,7 @@ extension ModuleConfig.MQTTConfig: SwiftProtobuf.Message, SwiftProtobuf._Message
   }
 }
 
-extension ModuleConfig.MapReportSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension ModuleConfig.MapReportSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.protoMessageName + ".MapReportSettings"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}publish_interval_secs\0\u{3}position_precision\0\u{3}should_report_location\0")
 
@@ -2129,7 +2131,7 @@ extension ModuleConfig.MapReportSettings: SwiftProtobuf.Message, SwiftProtobuf._
   }
 }
 
-extension ModuleConfig.RemoteHardwareConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension ModuleConfig.RemoteHardwareConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.protoMessageName + ".RemoteHardwareConfig"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}enabled\0\u{3}allow_undefined_pin_access\0\u{3}available_pins\0")
 
@@ -2169,7 +2171,7 @@ extension ModuleConfig.RemoteHardwareConfig: SwiftProtobuf.Message, SwiftProtobu
   }
 }
 
-extension ModuleConfig.NeighborInfoConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension ModuleConfig.NeighborInfoConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.protoMessageName + ".NeighborInfoConfig"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}enabled\0\u{3}update_interval\0\u{3}transmit_over_lora\0")
 
@@ -2209,7 +2211,7 @@ extension ModuleConfig.NeighborInfoConfig: SwiftProtobuf.Message, SwiftProtobuf.
   }
 }
 
-extension ModuleConfig.DetectionSensorConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension ModuleConfig.DetectionSensorConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.protoMessageName + ".DetectionSensorConfig"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}enabled\0\u{3}minimum_broadcast_secs\0\u{3}state_broadcast_secs\0\u{3}send_bell\0\u{1}name\0\u{3}monitor_pin\0\u{3}detection_trigger_type\0\u{3}use_pullup\0")
 
@@ -2274,11 +2276,11 @@ extension ModuleConfig.DetectionSensorConfig: SwiftProtobuf.Message, SwiftProtob
   }
 }
 
-extension ModuleConfig.DetectionSensorConfig.TriggerType: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension ModuleConfig.DetectionSensorConfig.TriggerType: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0LOGIC_LOW\0\u{1}LOGIC_HIGH\0\u{1}FALLING_EDGE\0\u{1}RISING_EDGE\0\u{1}EITHER_EDGE_ACTIVE_LOW\0\u{1}EITHER_EDGE_ACTIVE_HIGH\0")
 }
 
-extension ModuleConfig.AudioConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension ModuleConfig.AudioConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.protoMessageName + ".AudioConfig"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}codec2_enabled\0\u{3}ptt_pin\0\u{1}bitrate\0\u{3}i2s_ws\0\u{3}i2s_sd\0\u{3}i2s_din\0\u{3}i2s_sck\0")
 
@@ -2338,11 +2340,11 @@ extension ModuleConfig.AudioConfig: SwiftProtobuf.Message, SwiftProtobuf._Messag
   }
 }
 
-extension ModuleConfig.AudioConfig.Audio_Baud: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension ModuleConfig.AudioConfig.Audio_Baud: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0CODEC2_DEFAULT\0\u{1}CODEC2_3200\0\u{1}CODEC2_2400\0\u{1}CODEC2_1600\0\u{1}CODEC2_1400\0\u{1}CODEC2_1300\0\u{1}CODEC2_1200\0\u{1}CODEC2_700\0\u{1}CODEC2_700B\0\u{1}CODEC2_700C\0\u{1}CODEC2_450\0")
 }
 
-extension ModuleConfig.PaxcounterConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension ModuleConfig.PaxcounterConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.protoMessageName + ".PaxcounterConfig"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}enabled\0\u{3}paxcounter_update_interval\0\u{3}wifi_threshold\0\u{3}ble_threshold\0")
 
@@ -2387,7 +2389,7 @@ extension ModuleConfig.PaxcounterConfig: SwiftProtobuf.Message, SwiftProtobuf._M
   }
 }
 
-extension ModuleConfig.TrafficManagementConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension ModuleConfig.TrafficManagementConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.protoMessageName + ".TrafficManagementConfig"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{4}\u{4}position_min_interval_secs\0\u{4}\u{2}nodeinfo_direct_response_max_hops\0\u{4}\u{2}rate_limit_window_secs\0\u{3}rate_limit_max_packets\0\u{4}\u{2}unknown_packet_threshold\0\u{b}enabled\0\u{b}position_dedup_enabled\0\u{b}position_precision_bits\0\u{b}nodeinfo_direct_response\0\u{b}rate_limit_enabled\0\u{b}drop_unknown_enabled\0\u{b}exhaust_hop_telemetry\0\u{b}exhaust_hop_position\0\u{b}router_preserve_hops\0\u{c}\u{1}\u{1}\u{c}\u{2}\u{1}\u{c}\u{3}\u{1}\u{c}\u{5}\u{1}\u{c}\u{7}\u{1}\u{c}\u{a}\u{1}\u{c}\u{c}\u{1}\u{c}\u{d}\u{1}\u{c}\u{e}\u{1}")
 
@@ -2437,7 +2439,7 @@ extension ModuleConfig.TrafficManagementConfig: SwiftProtobuf.Message, SwiftProt
   }
 }
 
-extension ModuleConfig.SerialConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension ModuleConfig.SerialConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.protoMessageName + ".SerialConfig"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}enabled\0\u{1}echo\0\u{1}rxd\0\u{1}txd\0\u{1}baud\0\u{1}timeout\0\u{1}mode\0\u{3}override_console_serial_port\0")
 
@@ -2502,15 +2504,15 @@ extension ModuleConfig.SerialConfig: SwiftProtobuf.Message, SwiftProtobuf._Messa
   }
 }
 
-extension ModuleConfig.SerialConfig.Serial_Baud: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension ModuleConfig.SerialConfig.Serial_Baud: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0BAUD_DEFAULT\0\u{1}BAUD_110\0\u{1}BAUD_300\0\u{1}BAUD_600\0\u{1}BAUD_1200\0\u{1}BAUD_2400\0\u{1}BAUD_4800\0\u{1}BAUD_9600\0\u{1}BAUD_19200\0\u{1}BAUD_38400\0\u{1}BAUD_57600\0\u{1}BAUD_115200\0\u{1}BAUD_230400\0\u{1}BAUD_460800\0\u{1}BAUD_576000\0\u{1}BAUD_921600\0")
 }
 
-extension ModuleConfig.SerialConfig.Serial_Mode: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension ModuleConfig.SerialConfig.Serial_Mode: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0DEFAULT\0\u{1}SIMPLE\0\u{1}PROTO\0\u{1}TEXTMSG\0\u{1}NMEA\0\u{1}CALTOPO\0\u{1}WS85\0\u{1}VE_DIRECT\0\u{1}MS_CONFIG\0\u{1}LOG\0\u{1}LOGTEXT\0\u{1}MODBUS\0")
 }
 
-extension ModuleConfig.ExternalNotificationConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension ModuleConfig.ExternalNotificationConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.protoMessageName + ".ExternalNotificationConfig"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}enabled\0\u{3}output_ms\0\u{1}output\0\u{1}active\0\u{3}alert_message\0\u{3}alert_bell\0\u{3}use_pwm\0\u{3}output_vibra\0\u{3}output_buzzer\0\u{3}alert_message_vibra\0\u{3}alert_message_buzzer\0\u{3}alert_bell_vibra\0\u{3}alert_bell_buzzer\0\u{3}nag_timeout\0\u{3}use_i2s_as_buzzer\0")
 
@@ -2610,7 +2612,7 @@ extension ModuleConfig.ExternalNotificationConfig: SwiftProtobuf.Message, SwiftP
   }
 }
 
-extension ModuleConfig.StoreForwardConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension ModuleConfig.StoreForwardConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.protoMessageName + ".StoreForwardConfig"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}enabled\0\u{1}heartbeat\0\u{1}records\0\u{3}history_return_max\0\u{3}history_return_window\0\u{3}is_server\0")
 
@@ -2665,7 +2667,7 @@ extension ModuleConfig.StoreForwardConfig: SwiftProtobuf.Message, SwiftProtobuf.
   }
 }
 
-extension ModuleConfig.RangeTestConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension ModuleConfig.RangeTestConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.protoMessageName + ".RangeTestConfig"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}enabled\0\u{1}sender\0\u{1}save\0\u{3}clear_on_reboot\0")
 
@@ -2710,7 +2712,7 @@ extension ModuleConfig.RangeTestConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
   }
 }
 
-extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.protoMessageName + ".TelemetryConfig"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}device_update_interval\0\u{3}environment_update_interval\0\u{3}environment_measurement_enabled\0\u{3}environment_screen_enabled\0\u{3}environment_display_fahrenheit\0\u{3}air_quality_enabled\0\u{3}air_quality_interval\0\u{3}power_measurement_enabled\0\u{3}power_update_interval\0\u{3}power_screen_enabled\0\u{3}health_measurement_enabled\0\u{3}health_update_interval\0\u{3}health_screen_enabled\0\u{3}device_telemetry_enabled\0\u{3}air_quality_screen_enabled\0")
 
@@ -2810,7 +2812,7 @@ extension ModuleConfig.TelemetryConfig: SwiftProtobuf.Message, SwiftProtobuf._Me
   }
 }
 
-extension ModuleConfig.CannedMessageConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension ModuleConfig.CannedMessageConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.protoMessageName + ".CannedMessageConfig"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}rotary1_enabled\0\u{3}inputbroker_pin_a\0\u{3}inputbroker_pin_b\0\u{3}inputbroker_pin_press\0\u{3}inputbroker_event_cw\0\u{3}inputbroker_event_ccw\0\u{3}inputbroker_event_press\0\u{3}updown1_enabled\0\u{1}enabled\0\u{3}allow_input_source\0\u{3}send_bell\0")
 
@@ -2890,11 +2892,11 @@ extension ModuleConfig.CannedMessageConfig: SwiftProtobuf.Message, SwiftProtobuf
   }
 }
 
-extension ModuleConfig.CannedMessageConfig.InputEventChar: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension ModuleConfig.CannedMessageConfig.InputEventChar: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0NONE\0\u{2}\u{a}SELECT\0\u{2}\u{7}UP\0\u{1}DOWN\0\u{1}LEFT\0\u{1}RIGHT\0\u{2}\u{4}CANCEL\0\u{2}\u{3}BACK\0")
 }
 
-extension ModuleConfig.AmbientLightingConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension ModuleConfig.AmbientLightingConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.protoMessageName + ".AmbientLightingConfig"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}led_state\0\u{1}current\0\u{1}red\0\u{1}green\0\u{1}blue\0")
 
@@ -2944,7 +2946,7 @@ extension ModuleConfig.AmbientLightingConfig: SwiftProtobuf.Message, SwiftProtob
   }
 }
 
-extension ModuleConfig.StatusMessageConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension ModuleConfig.StatusMessageConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.protoMessageName + ".StatusMessageConfig"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}node_status\0")
 
@@ -2974,7 +2976,7 @@ extension ModuleConfig.StatusMessageConfig: SwiftProtobuf.Message, SwiftProtobuf
   }
 }
 
-extension ModuleConfig.MeshBeaconConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension ModuleConfig.MeshBeaconConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.protoMessageName + ".MeshBeaconConfig"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}flags\0\u{3}broadcast_offer_frequency_slot\0\u{4}\u{2}broadcast_message\0\u{3}broadcast_offer_channel\0\u{3}broadcast_offer_region\0\u{3}broadcast_offer_preset\0\u{4}\u{4}broadcast_interval_secs\0\u{4}\u{2}broadcast_targets\0\u{b}broadcast_send_as_node\0\u{b}broadcast_on_channel\0\u{b}broadcast_on_region\0\u{b}broadcast_on_preset\0\u{c}\u{3}\u{1}\u{c}\u{8}\u{1}\u{c}\u{9}\u{1}\u{c}\u{a}\u{1}")
 
@@ -3043,11 +3045,11 @@ extension ModuleConfig.MeshBeaconConfig: SwiftProtobuf.Message, SwiftProtobuf._M
   }
 }
 
-extension ModuleConfig.MeshBeaconConfig.Flags: SwiftProtobuf._ProtoNameProviding {
+nonisolated extension ModuleConfig.MeshBeaconConfig.Flags: SwiftProtobuf._ProtoNameProviding {
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{2}\0FLAG_NONE\0\u{1}FLAG_LISTEN_ENABLED\0\u{1}FLAG_BROADCAST_ENABLED\0\u{2}\u{2}FLAG_LEGACY_SPLIT\0")
 }
 
-extension ModuleConfig.MeshBeaconConfig.BroadcastTarget: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension ModuleConfig.MeshBeaconConfig.BroadcastTarget: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.MeshBeaconConfig.protoMessageName + ".BroadcastTarget"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}preset\0\u{1}region\0\u{4}\u{2}channel_index\0\u{3}frequency_slot\0")
 
@@ -3096,7 +3098,7 @@ extension ModuleConfig.MeshBeaconConfig.BroadcastTarget: SwiftProtobuf.Message, 
   }
 }
 
-extension ModuleConfig.TAKConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension ModuleConfig.TAKConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = ModuleConfig.protoMessageName + ".TAKConfig"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}team\0\u{1}role\0")
 
@@ -3131,7 +3133,7 @@ extension ModuleConfig.TAKConfig: SwiftProtobuf.Message, SwiftProtobuf._MessageI
   }
 }
 
-extension RemoteHardwarePin: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+nonisolated extension RemoteHardwarePin: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".RemoteHardwarePin"
   public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}gpio_pin\0\u{1}name\0\u{1}type\0")
 
