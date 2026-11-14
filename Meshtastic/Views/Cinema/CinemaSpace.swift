@@ -230,6 +230,8 @@ struct CinemaSpace: View {
 				lookoutBuild = nil
 			}
 			await replaceBackdrop(clearSky: keepsTerrain && environment.standsOnSite)
+			// Left again while the room loaded: the room now chosen decides what stays.
+			guard !Task.isCancelled else { return }
 			if !keepsTerrain { takeDownTerrain() }
 			await refreshLookout()
 		}
@@ -676,15 +678,18 @@ struct CinemaSpace: View {
 		// clear sky put up for its terrain is still showing, so the painted view comes back. The kind
 		// is only compared with a site chosen: with none, the painted view is already up and would be
 		// loaded again on every refresh.
-		guard site?.id != terrainSiteID || heading != terrainHeading || (site != nil && (kind != terrainKind || terrain == nil)) || (site == nil && backdropClearSky) else { return }
+		// Also with no site but terrain still up, kept while the maps changed, so it comes down.
+		guard site?.id != terrainSiteID || heading != terrainHeading || (site != nil && (kind != terrainKind || terrain == nil)) || (site == nil && (backdropClearSky || terrain != nil)) else { return }
 		// The view up now stays until what replaces it is ready.
 		guard let site else {
 			lookoutBuild?.task.cancel()
 			lookoutBuild = nil
 			// Not put up if a summit was chosen meanwhile, whose own refresh puts up its terrain.
 			func painted() -> Bool { lookoutMaps == maps && lookout.site(for: lookoutSiteID) == nil }
-			await replaceBackdrop(clearSky: false, stillWanted: painted)
-			if painted(), backdropClearSky == false { takeDownTerrain() }
+			if backdropClearSky {
+				await replaceBackdrop(clearSky: false, stillWanted: painted)
+			}
+			if !Task.isCancelled, painted(), !backdropClearSky { takeDownTerrain() }
 			return
 		}
 		let build: Task<ModelEntity?, Never>
