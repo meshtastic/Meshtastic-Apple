@@ -13,6 +13,9 @@ Recent user-facing changes from roughly the last 12 months. Newest at the top.
 **Month YYYY** — [Page title](relative/path.md) — One sentence describing what changed or why it matters.
 Show roughly the last 12 months of changes; archive entries older than a year by removing them.
 -->
+**Nov 2026** — [Settings](settings.md#channels) — A channel anyone can decrypt never shares a precise location, including one added from a QR code or link that asked for it, and a channel on the full length default key no longer offers Precise Location.
+
+
 **Nov 2026** — [Map](map.md#weather-radar-on-the-spatial-map-apple-vision-pro) — On Apple Vision Pro the weather radar floats over the 3D map's terrain as soft cloud with a shadow on the ground, and shows over the real terrain out the windows of the Cinema's fire lookout, castle, lighthouse, rooftop and sky deck.
 
 
