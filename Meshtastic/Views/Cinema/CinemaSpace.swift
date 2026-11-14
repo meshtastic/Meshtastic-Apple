@@ -88,6 +88,9 @@ struct CinemaSpace: View {
 	@State private var lookoutBuild: LookoutBuild?
 	/// The downloads the summits and terrain were last found for, so a change can be told from the first run.
 	@State private var lookoutMapsSeen: [String]?
+	/// The nodes' area being read, or read in the last few seconds: opening the cinema refreshes
+	/// the lookout from several tasks at once, and they share one read.
+	@State private var lookoutAreaRead: (started: Date, task: Task<SpatialCircle?, Never>)?
 	@State private var markerPanels = LookoutMarkerPanels()
 	/// Where the viewer's head is, so a marker's card opens beside the marker as they see it.
 	@State private var headTracker = CinemaHeadTracker()
@@ -224,6 +227,10 @@ struct CinemaSpace: View {
 			// Real terrain already up for the summit stays when the lookout and the castle swap. A
 			// summit's isn't the lighthouse's or the rooftop's, and so on: that fades out once the new
 			// room is up, so the windows never show sky with no ground.
+			// The chosen site's ground starts being read now, while the room's backdrop loads.
+			if environment.standsOnSite {
+				Task { await prewarmLookout() }
+			}
 			let keepsTerrain = terrain != nil && terrainKind == environment.siteKind
 			if !keepsTerrain {
 				lookoutBuild?.task.cancel()
@@ -630,6 +637,15 @@ struct CinemaSpace: View {
 	/// The circle the 3D map shows around the mesh, before any zoom; with no node positions, the
 	/// newest map the user downloaded, as the 3D map does. The lookout's summits are found in it.
 	private func lookoutArea() async -> SpatialCircle? {
+		if let lookoutAreaRead, Date().timeIntervalSince(lookoutAreaRead.started) < 10 {
+			return await lookoutAreaRead.task.value
+		}
+		let read = Task { await readLookoutArea() }
+		lookoutAreaRead = (Date(), read)
+		return await read.value
+	}
+
+	private func readLookoutArea() async -> SpatialCircle? {
 		if let container, !appState.isDatabaseResetting {
 			let preciseOnly = UserDefaults.standard.bool(forKey: SpatialTerrainKeeper.preciseOnlyKey)
 			let nodes = (try? await SpatialMeshAreaReader.nodes(container: container, preciseOnly: preciseOnly, connectedNodeNum: accessoryManager.activeDeviceNum)) ?? []
@@ -647,6 +663,14 @@ struct CinemaSpace: View {
 		if environment.siteKind == .skyDeck, let facing = lookout.site(for: skyDeckSiteID)?.facing {
 			lookoutTurns = SpatialLookout.turns(nearest: facing)
 		}
+	}
+
+	/// Finds the sites and starts reading the chosen one's ground, ahead of `refreshLookout`.
+	private func prewarmLookout() async {
+		guard let kind = environment.siteKind else { return }
+		await lookout.prepare(area: await lookoutArea(), kind: kind)
+		guard !Task.isCancelled, environment.siteKind == kind, let site = lookout.site(for: lookoutSiteID) else { return }
+		lookout.prewarm(site)
 	}
 
 	private func refreshLookout() async {
