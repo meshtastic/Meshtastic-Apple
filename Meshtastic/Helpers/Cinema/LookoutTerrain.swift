@@ -66,6 +66,22 @@ struct LookoutSite: Identifiable, Hashable, Codable, Sendable {
 }
 
 /// The terrain around a lookout site as a mesh and its shading, built off the main actor.
+/// The ground round a site as read from the tiles and the land cover: everything about the view
+/// that doesn't change as the room turns, so a turn draws it again without reading them.
+struct LookoutGround: Sendable {
+	let site: LookoutSite
+	/// The seated eye's height above sea level.
+	let eye: Double
+	/// Each sample's height, ring by ring out from the site, spoke by spoke round it.
+	let elevations: [Float]
+	let covers: [OfflineLandCover?]
+	/// Each ring's distance from the site.
+	let distances: [Double]
+	let lowest: Float
+	let highest: Float
+	let landCover: OfflineLandCoverMap?
+}
+
 struct LookoutTerrainModel: Sendable {
 	let site: LookoutSite
 	let positions: [SIMD3<Float>]
@@ -402,6 +418,17 @@ enum LookoutTerrain {
 		heading: Double = frontHeading, standHeight: Double? = nil, sun: (azimuth: Float, elevation: Float),
 		progress: @escaping @Sendable (SpatialTerrainProgress) -> Void = { _ in }
 	) async -> LookoutTerrainModel? {
+		guard let ground = await ground(site: site, bounds: bounds, source: source, landCover: landCover, standHeight: standHeight, progress: progress) else { return nil }
+		progress(SpatialTerrainProgress(phase: .drawing))
+		return model(from: ground, heading: heading, sun: sun)
+	}
+
+	/// Reads the ground round `site` from the tiles, ring by ring, and its cover from `landCover`.
+	/// `progress` hears each ring read. Nil when no tile has data, or the task is cancelled.
+	static func ground(
+		site: LookoutSite, bounds: GeoBounds, source: any ElevationTileSource, landCover: OfflineLandCoverMap? = nil,
+		standHeight: Double? = nil, progress: @escaping @Sendable (SpatialTerrainProgress) -> Void = { _ in }
+	) async -> LookoutGround? {
 		let sampler = Sampler(source: source)
 		let floor = Double(site.elevation) + (standHeight ?? site.standHeight)
 		let eye = floor + eyeHeight
@@ -441,13 +468,27 @@ enum LookoutTerrain {
 			if Task.isCancelled { return nil }
 			progress(SpatialTerrainProgress(phase: .elevation(done: ring + 1, total: rings)))
 		}
-		progress(SpatialTerrainProgress(phase: .drawing))
 		guard lowest < .greatestFiniteMagnitude else { return nil }
 		// Ground with no data takes the lowest level there is, which the haze mostly hides.
 		for index in 0..<elevations.count where !known[index] {
 			elevations[index] = lowest
 		}
 		let highest = elevations.max() ?? lowest
+		return LookoutGround(site: site, eye: eye, elevations: elevations, covers: covers, distances: distances, lowest: lowest, highest: highest, landCover: landCover)
+	}
+
+	/// The terrain drawn from `ground` for the cab facing `heading`, lit from `sun`. Nil if the task
+	/// is cancelled.
+	static func model(from sampled: LookoutGround, heading: Double, sun: (azimuth: Float, elevation: Float)) -> LookoutTerrainModel? {
+		let site = sampled.site
+		let eye = sampled.eye
+		let elevations = sampled.elevations
+		let covers = sampled.covers
+		let distances = sampled.distances
+		let lowest = sampled.lowest
+		let highest = sampled.highest
+		let landCover = sampled.landCover
+		let columns = spokes + 1
 
 		var positions = [SIMD3<Float>](repeating: .zero, count: rings * columns)
 		var uvs = [SIMD2<Float>](repeating: .zero, count: rings * columns)

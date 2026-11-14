@@ -45,6 +45,16 @@ final class LookoutScene {
 	private(set) var isBuildingTerrain = false
 	/// Counts terrain builds, so an older one finishing doesn't clear a newer one's progress.
 	private var terrainBuild = 0
+	/// The ground read for the last site, or being read: what a turn of the room draws again
+	/// without reading the tiles. A build that's cancelled for a turn leaves the read running.
+	private var groundRead: (siteID: String, task: Task<LookoutGround?, Never>)?
+	/// The rooftop's buildings and the ground under each, kept like the ground for its turns.
+	private struct CityRead {
+		let siteID: String
+		let footprints: [SpatialBuildingFootprint]
+		let grounds: [Double?]
+	}
+	private var cityRead: CityRead?
 	private let store = TerrainStore.shared
 	private var bounds: GeoBounds?
 	/// How many nodes get a label; the nearest ones.
@@ -236,6 +246,51 @@ final class LookoutScene {
 		bounds = nil
 		status = .idle
 		searchedArea = nil
+		// The ground came from the maps that changed.
+		groundRead?.task.cancel()
+		groundRead = nil
+		cityRead = nil
+	}
+
+	/// Stops reading the ground and drops what was read, as the cinema leaves a site or closes. The
+	/// next build or prewarm reads it again.
+	func cancelGround() {
+		groundRead?.task.cancel()
+		groundRead = nil
+		cityRead = nil
+	}
+
+	/// Starts reading the ground round `site`, so its terrain is ready sooner once it's asked for.
+	func prewarm(_ site: LookoutSite) {
+		guard let bounds else { return }
+		_ = ground(for: site, bounds: bounds)
+	}
+
+	/// The read of the ground round `site`: the one kept or running for it, or a new one. Reading
+	/// another site's ground stops the last one's.
+	private func ground(for site: LookoutSite, bounds: GeoBounds) -> Task<LookoutGround?, Never> {
+		if let groundRead, groundRead.siteID == site.id { return groundRead.task }
+		groundRead?.task.cancel()
+		let radius = LookoutTerrain.outerRadius(site: site, bounds: bounds)
+		let center = site.coordinate
+		let store = store
+		let task = Task { [weak self] () -> LookoutGround? in
+			// Off the main actor, and stopped with this task: leaving the lookout mid-read shouldn't
+			// leave tiles decoding for a view nobody sees.
+			let cover = Task.detached(priority: .userInitiated) {
+				OfflineLandCoverMap.make(center: center, radius: radius, files: OfflineMapManager.persistedRegionFiles())
+			}
+			let landCover = await withTaskCancellationHandler { await cover.value } onCancel: { cover.cancel() }
+			if Task.isCancelled { return nil }
+			return await LookoutTerrain.ground(site: site, bounds: bounds, source: store, landCover: landCover) { progress in
+				Task { @MainActor in
+					guard let self else { return }
+					self.show(progress, forBuild: self.terrainBuild)
+				}
+			}
+		}
+		groundRead = (site.id, task)
+		return task
 	}
 
 	func site(for id: String) -> LookoutSite? {
@@ -261,19 +316,19 @@ final class LookoutScene {
 				isBuildingTerrain = false
 			}
 		}
-		let radius = LookoutTerrain.outerRadius(site: site, bounds: bounds)
-		let center = site.coordinate
-		// Off the main actor, and stopped with this task: leaving the lookout mid-build shouldn't leave
-		// tiles decoding for a view nobody sees.
-		let build = Task.detached(priority: .userInitiated) {
-			OfflineLandCoverMap.make(center: center, radius: radius, files: OfflineMapManager.persistedRegionFiles())
+		// The ground for a site already read, as after a turn, is drawn again without reading it.
+		let reading = ground(for: site, bounds: bounds)
+		let read = await reading.value
+		if read == nil, groundRead?.task == reading {
+			// Nothing to keep: the next build reads it again.
+			groundRead = nil
 		}
-		let landCover = await withTaskCancellationHandler { await build.value } onCancel: { build.cancel() }
-		if Task.isCancelled { return nil }
-		let built = await LookoutTerrain.build(site: site, bounds: bounds, source: store, landCover: landCover, heading: heading, sun: sun) { progress in
-			Task { @MainActor [weak self] in self?.show(progress, forBuild: token) }
+		guard let read, !Task.isCancelled else { return nil }
+		show(SpatialTerrainProgress(phase: .drawing), forBuild: token)
+		let drawing = Task.detached(priority: .userInitiated) {
+			LookoutTerrain.model(from: read, heading: heading, sun: sun)
 		}
-		guard let model = built else { return nil }
+		guard let model = await withTaskCancellationHandler(operation: { await drawing.value }, onCancel: { drawing.cancel() }) else { return nil }
 		show(SpatialTerrainProgress(phase: .surface), forBuild: token)
 		let entity: ModelEntity
 		do {
@@ -299,15 +354,24 @@ final class LookoutScene {
 	/// The buildings round a rooftop, standing on the terrain. Nil when there are none to draw; the
 	/// terrain shows without them.
 	private func city(around site: LookoutSite, heading: Double, sun: (azimuth: Float, elevation: Float)) async -> ModelEntity? {
-		let box = RooftopCity.bounds(around: site)
-		let files = OfflineMapManager.persistedRegionFiles()
-		let decode = Task.detached(priority: .userInitiated) {
-			SpatialBuildings.decode(bounds: box, files: files, maxTiles: RooftopCity.maxTiles) ?? []
+		let footprints: [SpatialBuildingFootprint]
+		let grounds: [Double?]
+		if let cityRead, cityRead.siteID == site.id {
+			footprints = cityRead.footprints
+			grounds = cityRead.grounds
+		} else {
+			let box = RooftopCity.bounds(around: site)
+			let files = OfflineMapManager.persistedRegionFiles()
+			let decode = Task.detached(priority: .userInitiated) {
+				SpatialBuildings.decode(bounds: box, files: files, maxTiles: RooftopCity.maxTiles) ?? []
+			}
+			footprints = await withTaskCancellationHandler { await decode.value } onCancel: { decode.cancel() }
+			guard !footprints.isEmpty, !Task.isCancelled else { return nil }
+			// Each building stands on the ground at its first corner; the store is asked once for all.
+			grounds = await store.elevations(at: footprints.map { $0.outline.first ?? site.coordinate })
+			guard !Task.isCancelled else { return nil }
+			cityRead = CityRead(siteID: site.id, footprints: footprints, grounds: grounds)
 		}
-		let footprints = await withTaskCancellationHandler { await decode.value } onCancel: { decode.cancel() }
-		guard !footprints.isEmpty, !Task.isCancelled else { return nil }
-		// Each building stands on the ground at its first corner; the store is asked once for all.
-		let grounds = await store.elevations(at: footprints.map { $0.outline.first ?? site.coordinate })
 		let build = Task.detached(priority: .userInitiated) {
 			RooftopCity.build(site: site, footprints: footprints, grounds: grounds, heading: heading, sun: sun)
 		}
