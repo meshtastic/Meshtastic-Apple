@@ -115,7 +115,7 @@ final class SpatialMapModel {
 	var weatherRadarOffered = false { didSet { if weatherRadarOffered != oldValue { rebuildWeatherRadarIfNeeded() } } }
 	/// Set from the window's connectivity monitor. The radar is fetched only online and cleared offline.
 	var networkAvailable = true { didSet { if networkAvailable != oldValue { rebuildWeatherRadarIfNeeded() } } }
-	private(set) var weatherRadarEntity: ModelEntity?
+	private(set) var weatherRadarEntity: Entity?
 	/// The placement the weather radar overlay was built for.
 	private(set) var weatherRadarRevision: Int?
 	private var weatherRadarKey: String?
@@ -771,13 +771,23 @@ extension SpatialMapModel {
 			// The same image is already draped on this terrain.
 			if weatherRadarRevision == placement.revision, weatherRadarDraped === image { return }
 			do {
+				let radar = SpatialWeatherRadarImage(image: image)
+				let made = await Task.detached(priority: .userInitiated) { SpatialRainClouds.images(for: radar.image) }.value
+				guard !Task.isCancelled, weatherRadarKey == key else { return }
+				guard let images = made else {
+					// As after a failed fetch with nothing to keep: try once more soon, then clear.
+					// What's up is left alone only until then, so it never outlives its period.
+					Logger.services.error("🧊 [Spatial] Weather radar clouds couldn't be drawn")
+					clearWeatherRadar()
+					if !retried { retryWeatherRadar(key: key) }
+					return
+				}
 				if let entity = weatherRadarEntity, weatherRadarRevision == placement.revision {
-					// A new period on the same terrain: only the image changes.
-					let texture = try await SpatialOverlayEntity.texture(for: image)
+					// A new period on the same terrain: only the images change.
+					try await SpatialWeatherRadarEntity.setImages(images, on: entity)
 					guard !Task.isCancelled, weatherRadarKey == key else { return }
-					SpatialOverlayEntity.setTexture(texture, on: entity)
 				} else {
-					let entity = try await SpatialWeatherRadarEntity.make(geometry: geometry, image: image)
+					let entity = try await SpatialWeatherRadarEntity.make(geometry: geometry, images: images)
 					guard !Task.isCancelled, weatherRadarKey == key else { return }
 					weatherRadarEntity = entity
 					weatherRadarRevision = placement.revision

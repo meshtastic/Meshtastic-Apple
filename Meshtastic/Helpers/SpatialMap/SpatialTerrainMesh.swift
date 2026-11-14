@@ -284,4 +284,8 @@ extension SpatialTerrainGeometry {
 			uvs: Array(textureCoordinates.prefix(count)), indices: Array(indices.prefix(surfaceTriangleCount * 3))
 		)
 	}
+
+	/// How far the rain clouds' lowest sheet floats over the ground: just clear of it, following
+	/// the hills, with room under it for the shadow and the coverage.
+	static let cloudLift: Float = 0.01
 }
