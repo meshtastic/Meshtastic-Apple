@@ -5,7 +5,7 @@ import PackageDescription
 
 let package = Package(
 	name: "VectorTiles",
-	platforms: [.iOS(.v16), .macCatalyst(.v16), .macOS(.v15), .visionOS(.v1)],
+	platforms: [.iOS(.v16), .macCatalyst(.v16), .macOS(.v15), .tvOS(.v16), .visionOS(.v1)],
 	products: [
 		.library(name: "VectorTiles", targets: ["VectorTiles"])
 	],
