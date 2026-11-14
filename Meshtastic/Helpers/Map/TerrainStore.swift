@@ -164,7 +164,10 @@ actor TerrainStore {
 			return tile
 		case .sample(let input):
 			let tile = Self.resample(input, z: z, x: x, y: y, margin: margin)
-			await remember(tile, margin: margin, generation: input.generation)
+			// The sources changed while it was sampled: it may be from a region that's gone.
+			guard await remember(tile, margin: margin, generation: input.generation) else {
+				return await elevationTile(z: z, x: x, y: y, margin: margin)
+			}
 			return tile
 		}
 	}
@@ -215,7 +218,10 @@ actor TerrainStore {
 		let fracY = Double(y - dataY * scale) / Double(scale)
 
 		let baseKey = TileKey(z: dataZoom, x: dataX, y: dataY)
-		guard let base = await grid(open: open, key: baseKey).value() else { return nil }
+		let base = await grid(open: open, key: baseKey, generation: generation).value()
+		// The sources changed while it decoded: `open` may be gone, so start again with the new ones.
+		guard generation == self.generation else { return await prepare(z: z, x: x, y: y, margin: margin) }
+		guard let base else { return nil }
 		let tilePx = base.size
 		// Which neighbors the samples, margin and all, walk into: at most one tile each way.
 		let step = Double(tilePx) / Double(scale) / Double(Self.tileSize)
@@ -233,13 +239,14 @@ actor TerrainStore {
 			}
 		}
 		// Every neighbor's decode starts before any is waited on.
-		let pending = neighbors.map { ($0, grid(open: open, key: $0)) }
+		let pending = neighbors.map { ($0, grid(open: open, key: $0, generation: generation)) }
 		var grids = [baseKey: base.elevations]
 		for (key, lookup) in pending where grids[key] == nil {
 			if let neighbor = await lookup.value() {
 				grids[key] = neighbor.elevations
 			}
 		}
+		guard generation == self.generation else { return await prepare(z: z, x: x, y: y, margin: margin) }
 		return .sample(SampleInput(
 			dataZoom: dataZoom, dataX: dataX, dataY: dataY, scale: scale, fracX: fracX, fracY: fracY,
 			tilePx: tilePx, base: base.elevations, grids: grids, generation: generation
@@ -267,8 +274,12 @@ actor TerrainStore {
 			var tileX = input.dataX, tileY = input.dataY, lx = ix, ly = iy
 			if lx < 0 { tileX -= 1; lx += tilePx } else if lx >= tilePx { tileX += 1; lx -= tilePx }
 			if ly < 0 { tileY -= 1; ly += tilePx } else if ly >= tilePx { tileY += 1; ly -= tilePx }
+			// Past the world's edge there's no neighbor that way: clamp that axis to this tile's edge
+			// rather than wrap to its far side. The other axis still walks into its neighbor.
+			if tileX < 0 || tileX > maxIndex { tileX = input.dataX; lx = min(max(ix, 0), tilePx - 1) }
+			if tileY < 0 || tileY > maxIndex { tileY = input.dataY; ly = min(max(iy, 0), tilePx - 1) }
 			if tileX != input.dataX || tileY != input.dataY {
-				let key = TileKey(z: input.dataZoom, x: min(max(tileX, 0), maxIndex), y: min(max(tileY, 0), maxIndex))
+				let key = TileKey(z: input.dataZoom, x: tileX, y: tileY)
 				if let neighbor = input.grids[key] {
 					return neighbor[ly * tilePx + lx]
 				}
@@ -298,16 +309,18 @@ actor TerrainStore {
 		return ElevationTile(z: z, x: x, y: y, size: size, margin: margin, elevations: elevations)
 	}
 
-	/// Keeps a resampled tile for the next request, unless the sources changed meanwhile.
-	private func remember(_ tile: ElevationTile, margin: Int, generation: Int) {
-		guard generation == self.generation else { return }
+	/// Keeps a resampled tile for the next request. False when the sources changed meanwhile, so
+	/// the tile is from the old ones.
+	private func remember(_ tile: ElevationTile, margin: Int, generation: Int) -> Bool {
+		guard generation == self.generation else { return false }
 		let key = ElevationKey(z: tile.z, x: tile.x, y: tile.y, margin: margin)
-		guard tileCache[key] == nil else { return }
+		guard tileCache[key] == nil else { return true }
 		tileCache[key] = tile
 		tileOrder.append(key)
 		if tileOrder.count > tileCacheLimit {
 			tileCache.removeValue(forKey: tileOrder.removeFirst())
 		}
+		return true
 	}
 
 	// MARK: - Point queries
@@ -444,14 +457,15 @@ actor TerrainStore {
 
 	/// The raw decoded Mapterhorn grid for a data tile, preferring the regional archive when it has
 	/// the tile: cached (LRU, hits move to the back), already decoding, or decoded now off the actor.
-	private func grid(open: OpenSource, key: TileKey) -> GridLookup {
+	/// `generation` is the sources `open` came from; a decode for older sources isn't cached.
+	private func grid(open: OpenSource, key: TileKey, generation: Int) -> GridLookup {
+		guard generation == self.generation else { return .missing }
 		if let cached = decodeCache[key] {
 			touch(key, in: &decodeOrder)
 			return .ready(cached)
 		}
 		if let running = decoding[key] { return .running(running) }
 		guard let data = tileData(open: open, z: key.z, x: key.x, y: key.y) else { return .missing }
-		let generation = self.generation
 		let task = Task { () -> Grid? in
 			let decoded = await Task.detached(priority: Task.currentPriority) { TerrariumDecoder.decode(tileData: data) }.value
 			finishDecode(key, decoded, generation: generation)

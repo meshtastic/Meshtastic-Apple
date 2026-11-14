@@ -45,12 +45,12 @@ struct TerrainStoreSharingTests {
 		return data as Data
 	}
 
-	/// A terrain archive of the 3 by 3 block, the ground rising one meter per pixel eastward across
-	/// all of it, and a source for it.
-	private func rampSource() throws -> TerrainSource {
+	/// A terrain archive of the 3 by 3 block around `center` (less any past the world's edge), the
+	/// ground rising one meter per pixel eastward across all of it, and a source for it.
+	private func rampSource(center: (x: Int, y: Int) = (164, 357)) throws -> TerrainSource {
 		var tiles: [(id: UInt64, data: Data)] = []
 		for dy in -1...1 {
-			for dx in -1...1 {
+			for dx in -1...1 where center.x + dx >= 0 {
 				let column = (dx + 1) * pixels
 				let data = try terrariumPNG(size: pixels) { x, _ in Double(100 + column + x) }
 				tiles.append((PMTilesArchive.zxyToTileID(z: 10, x: UInt32(center.x + dx), y: UInt32(center.y + dy)), data))
@@ -63,7 +63,7 @@ struct TerrainStoreSharingTests {
 			return PMTilesArchive.Entry(tileID: tile.id, offset: offset, length: UInt32(tile.data.count), runLength: 1)
 		}
 		let payload = tiles.reduce(Data()) { $0 + $1.data }
-		let northWest = GeoBounds.tile(z: 10, x: center.x - 1, y: center.y - 1)
+		let northWest = GeoBounds.tile(z: 10, x: max(center.x - 1, 0), y: center.y - 1)
 		let southEast = GeoBounds.tile(z: 10, x: center.x + 1, y: center.y + 1)
 		let bounds = GeoBounds(minLon: northWest.minLon, minLat: southEast.minLat, maxLon: southEast.maxLon, maxLat: northWest.maxLat)
 		let root = PMTilesExtractor.serializeDirectory(entries)
@@ -86,6 +86,16 @@ struct TerrainStoreSharingTests {
 		let row = Array(tile.elevations[(tile.gridSize * 5)..<(tile.gridSize * 6)])
 		// Clamped to the tile's own edge, the first and last two would be equal.
 		#expect(zip(row, row.dropFirst()).allSatisfy { $0 < $1 }, "the ground keeps rising into both neighbors")
+	}
+
+	@Test func theMarginStopsAtTheWorldsEdge() async throws {
+		let store = TerrainStore()
+		await store.configure(sources: [try rampSource(center: (0, 357))])
+		let tile = try #require(await store.elevationTile(z: 10, x: 0, y: 357, margin: 1))
+		let row = Array(tile.elevations[(tile.gridSize * 5)..<(tile.gridSize * 6)])
+		// West of x = 0 there's nothing: the margin takes the tile's own west edge, not its east one.
+		#expect(abs(row[0] - row[1]) < 0.5)
+		#expect(row[0] < row[row.count - 1])
 	}
 
 	@Test func manyTasksGetTheSameTilesAsOne() async throws {
