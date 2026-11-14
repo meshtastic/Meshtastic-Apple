@@ -54,7 +54,8 @@ final class SpatialTerrainBuilder: Sendable {
 		self.elevation = elevation
 	}
 
-	nonisolated func build(bounds: GeoBounds, options: SpatialTerrainOptions) async throws -> SpatialTerrainModel {
+	/// Builds the model for `bounds`; `progress` hears each phase as it starts, and the heights read.
+	nonisolated func build(bounds: GeoBounds, options: SpatialTerrainOptions, progress: @escaping @Sendable (SpatialTerrainProgress) -> Void = { _ in }) async throws -> SpatialTerrainModel {
 		let started = Date()
 		let frame = SpatialFrame(bounds: bounds)
 		let pixelSize = SpatialTextureRenderer.pixelSize(for: frame, maxEdge: options.textureEdge)
@@ -71,11 +72,14 @@ final class SpatialTerrainBuilder: Sendable {
 		let grid: SpatialHeightGrid
 		if let dataZoom {
 			let plan = SpatialHeightGrid.plan(frame: frame, maxTriangles: options.maxTriangles, dataMaxZoom: dataZoom)
-			grid = try await SpatialHeightGrid.sample(frame: frame, plan: plan, source: elevation).cleaned()
+			grid = try await SpatialHeightGrid.sample(frame: frame, plan: plan, source: elevation) { done, total in
+				progress(SpatialTerrainProgress(phase: .elevation(done: done, total: total)))
+			}.cleaned()
 		} else {
 			grid = SpatialHeightGrid(columns: 2, rows: 2, heights: [0, 0, 0, 0], covered: [false, false, false, false], baseElevation: 0, maxElevation: 0)
 		}
 		try Task.checkCancellation()
+		progress(SpatialTerrainProgress(phase: .drawing))
 		let transform = SpatialModelTransform(
 			frame: frame, baseElevation: Double(grid.baseElevation), maxElevation: Double(grid.maxElevation),
 			verticalExaggeration: options.verticalExaggeration, modelSize: options.modelSize
