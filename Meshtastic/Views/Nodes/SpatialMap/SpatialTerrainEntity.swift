@@ -35,7 +35,10 @@ enum SpatialTerrainEntity {
 	/// dark map or contours.
 	@MainActor
 	static func setTexture(_ image: CGImage, on entity: ModelEntity) async throws {
-		entity.model?.materials = [try await material(image)]
+		let made = try await material(image)
+		// A redraw replaced while its image was made mustn't put it up over the newer one.
+		try Task.checkCancellation()
+		entity.model?.materials = [made]
 	}
 
 	@MainActor

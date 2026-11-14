@@ -525,7 +525,7 @@ final class SpatialMapModel {
 					textureSource = redrawn.textureSource
 					imageryUnavailable = redrawn.imageryUnavailable
 					buildKey = makeKey(usedFallback: redrawn.imageryUnavailable)
-					SpatialTerrainCache.shared.keep(redrawn, entity: entity, for: buildKey ?? key)
+					keepBuilt(redrawn, entity: entity)
 					isBuildingTerrain = false
 					terrainProgress = nil
 					// The buildings take the dark map's shade.
@@ -557,7 +557,7 @@ final class SpatialMapModel {
 				put(model, entity: entity, circle: circle, groundKey: groundKey, sources: sources)
 				// Key the build by what it drew, so falling back (or not) doesn't rebuild it again.
 				buildKey = makeKey(usedFallback: model.imageryUnavailable)
-				SpatialTerrainCache.shared.keep(model, entity: entity, for: buildKey ?? key)
+				keepBuilt(model, entity: entity)
 			} catch is CancellationError {
 			} catch {
 				guard buildKey == key else { return }
@@ -575,6 +575,13 @@ final class SpatialMapModel {
 				}
 			}
 		}
+	}
+
+	/// Keeps the terrain up now for zooming back and the window reopening. Not one drawn without
+	/// the Apple image it wanted: retrying the imagery would find it and never fetch the image.
+	private func keepBuilt(_ model: SpatialTerrainModel, entity: ModelEntity) {
+		guard !model.imageryUnavailable, let buildKey else { return }
+		SpatialTerrainCache.shared.keep(model, entity: entity, for: buildKey)
 	}
 
 	/// Puts a built terrain on the table, with a new placement the pins, buildings and overlays
