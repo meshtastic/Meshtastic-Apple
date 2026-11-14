@@ -23,6 +23,13 @@ struct ChannelForm: View {
 	@Binding var hasChanges: Bool
 	@Binding var hasValidKey: Bool
 	@Binding var supportedVersion: Bool
+	/// The primary channel's key, which a secondary with an empty key uses.
+	var primaryKey: Data?
+
+	/// A key that does not decode counts as empty, so precise location stays off while it is edited.
+	private var usesPublicKey: Bool {
+		ChannelIdentity.usesPublicKey(Data(base64Encoded: channelKey) ?? Data(), primary: channelRole == 1 ? nil : primaryKey)
+	}
 
 	var body: some View {
 		Form {
@@ -146,7 +153,7 @@ struct ChannelForm: View {
 					}
 
 					if positionsEnabled {
-						if (channelKey != "AQ==" && channelKeySize > 1)  && channelRole > 0 {
+						if !usesPublicKey && channelRole > 0 {
 							VStack(alignment: .leading) {
 								Toggle(isOn: $preciseLocation) {
 									Label("Precise Location", systemImage: "scope")
@@ -208,6 +215,14 @@ struct ChannelForm: View {
 			hasChanges = true
 		}
 		.onChange(of: channelKey) {
+			if usesPublicKey {
+				let ceiling = Double(ChannelIdentity.maxPublicKeyPositionPrecision)
+				if preciseLocation {
+					preciseLocation = false
+				} else if positionPrecision > ceiling {
+					positionPrecision = ceiling
+				}
+			}
 			hasChanges = true
 		}
 		.onChange(of: channelKeySize) {
@@ -223,7 +238,7 @@ struct ChannelForm: View {
 		}
 		.onChange(of: preciseLocation) { _, loc in
 			if loc == true {
-				if channelKey == "AQ==" || channelKeySize <= 1 {
+				if usesPublicKey {
 					preciseLocation = false
 				} else {
 					positionPrecision = 32
