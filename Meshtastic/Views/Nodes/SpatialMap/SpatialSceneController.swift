@@ -121,7 +121,9 @@ final class SpatialSceneController {
 	private var terrainEntity: ModelEntity?
 	private var coverageEntity: ModelEntity?
 	private var coverageOpacity: Float?
-	private var weatherRadarEntity: ModelEntity?
+	private var weatherRadarEntity: Entity?
+	/// Whether the radar's clouds were last set drifting (false) or still (true).
+	private var weatherRadarStill: Bool?
 	private var pins: [Int64: Pin] = [:]
 	private var hitShapes: [HitShapeKey: [ShapeResource]] = [:]
 	private var applied: [Int64: SpatialNodeSnapshot] = [:]
@@ -797,13 +799,18 @@ extension SpatialSceneController {
 		coverageContainer.isEnabled = coverageEntity != nil && terrainEntity != nil && revision != nil && revision == placement?.revision
 	}
 
-	/// Swaps in the weather radar overlay. Like the coverage, it only shows on the terrain it was
-	/// built for.
-	func apply(weatherRadar entity: ModelEntity?, revision: Int?) {
+	/// Swaps in the weather radar's clouds. Like the coverage, they only show on the terrain they
+	/// were built for. They drift, or hold still with `reduceMotion`.
+	func apply(weatherRadar entity: Entity?, revision: Int?, reduceMotion: Bool) {
 		if entity !== weatherRadarEntity {
 			weatherRadarEntity?.removeFromParent()
 			if let entity { weatherRadarContainer.addChild(entity) }
 			weatherRadarEntity = entity
+			weatherRadarStill = nil
+		}
+		if let weatherRadarEntity, weatherRadarStill != reduceMotion {
+			SpatialWeatherRadarEntity.setReduceMotion(reduceMotion, on: weatherRadarEntity)
+			weatherRadarStill = reduceMotion
 		}
 		weatherRadarContainer.isEnabled = weatherRadarEntity != nil && terrainEntity != nil && revision != nil && revision == placement?.revision
 	}

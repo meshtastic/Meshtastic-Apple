@@ -87,16 +87,17 @@
             "screen",
             "tower",
             "real",
-            "summit",
             "out",
-            "from",
-            "stands",
+            "terrain",
+            "summit",
             "shows",
-            "node",
+            "from",
             "deck",
+            "stands",
+            "node",
+            "way",
             "view",
             "turn",
-            "terrain",
             "station",
             "round",
             "radio",
@@ -107,14 +108,13 @@
             "under",
             "front",
             "card",
-            "way",
+            "rooftop",
             "glass",
             "sunset",
-            "rooftop",
             "roof",
-            "panel"
+            "show"
         ],
-        "charCount": 14917
+        "charCount": 15327
     },
     {
         "id": "discovery",
@@ -291,13 +291,13 @@
             "apple",
             "one",
             "each",
-            "same",
             "line",
+            "shows",
+            "same",
             "position",
             "mesh",
             "maps",
             "vision",
-            "shows",
             "route",
             "pro",
             "coverage",
@@ -309,7 +309,7 @@
             "signal",
             "radio"
         ],
-        "charCount": 24382
+        "charCount": 24627
     },
     {
         "id": "messages",
@@ -785,8 +785,8 @@
         "section": "user",
         "navOrder": 0,
         "keywords": [
-            "nov",
             "map",
+            "nov",
             "cinema",
             "apple",
             "vision",
@@ -804,19 +804,19 @@
             "from",
             "firmware",
             "set",
+            "real",
             "messages",
             "bluetooth",
-            "real",
-            "jun",
             "shows",
+            "jun",
+            "lookout",
             "view",
             "radios",
             "page",
             "oct",
-            "lookout",
-            "device"
+            "fire"
         ],
-        "charCount": 16736
+        "charCount": 16991
     },
     {
         "id": "adding-features",

@@ -65,7 +65,7 @@ struct SpatialMapView: View {
 				scene.fit(volume: content.convert(proxy.frame(in: .local), from: .local, to: .scene))
 				scene.apply(placement: model.placement)
 				scene.apply(terrainEntity: model.terrainEntity, building: model.isBuildingTerrain)
-				scene.apply(weatherRadar: model.weatherRadarEntity, revision: model.weatherRadarRevision)
+				scene.apply(weatherRadar: model.weatherRadarEntity, revision: model.weatherRadarRevision, reduceMotion: reduceMotion)
 				scene.apply(buildings: model.buildingsEntity, roofs: model.buildingRoofs)
 				scene.apply(coverage: model.coverageEntity, revision: model.coverageRevision, opacity: model.coverageOpacity)
 				scene.apply(nodes: model.nodes)

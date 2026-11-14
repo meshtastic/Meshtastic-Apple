@@ -6,6 +6,7 @@
 //
 #if os(visionOS)
 import CoreLocation
+import OSLog
 import RealityKit
 import SwiftData
 import SwiftUI
@@ -33,6 +34,10 @@ struct CinemaSpace: View {
 	@AppStorage(CinemaEarthSide.key) private var earthSide: CinemaEarthSide = .day
 	@AppStorage(CinemaOrbit.speedKey) private var earthSpeed = 1
 	@Environment(\.accessibilityReduceMotion) private var reduceMotion
+	/// Shared with the maps' Weather Radar setting: the rain shows as cloud out the windows too.
+	@AppStorage("meshMapShowWeatherRadar") private var showWeatherRadar = false
+	@ObservedObject private var weatherRadar = WeatherRadarAvailability.shared
+	@ObservedObject private var connectivity = OfflineMapConnectivityMonitor.shared
 	@State private var world = Entity()
 	@State private var backdrop: Entity?
 	/// The stone and the sky the backdrop up now was made with, so a change of stone keeps the sky.
@@ -291,6 +296,9 @@ struct CinemaSpace: View {
 				}
 				try? await Task.sleep(for: .seconds(60))
 			}
+		}
+		.task(id: RainCloudsKey(terrain: terrain.map(ObjectIdentifier.init), show: showWeatherRadar, offered: weatherRadar.isOffered, online: connectivity.isNetworkAvailable)) {
+			await showRainClouds()
 		}
 		.task(id: accessoryManager.isConnected ? accessoryManager.activeDeviceNum : nil) {
 			// Where the radio is, for each summit's distance and direction in the picker.
@@ -685,6 +693,61 @@ struct CinemaSpace: View {
 		terrainSiteID = site.id
 		terrainKind = kind
 		terrainHeading = heading
+	}
+
+	/// What the rain clouds out the windows follow: the terrain up, and whether the radar is
+	/// wanted, offered where the device is, and reachable.
+	private struct RainCloudsKey: Equatable {
+		let terrain: ObjectIdentifier?
+		let show: Bool
+		let offered: Bool
+		let online: Bool
+	}
+
+	/// Puts the weather radar over the terrain out the windows as cloud, and keeps it current each
+	/// five-minute period while the terrain is up. The clouds hang from the terrain, so they go
+	/// with it. A failed fetch leaves the last rain up for one more period.
+	private func showRainClouds() async {
+		guard let terrain, let siteID = terrainSiteID, let site = lookout.site(for: siteID) else { return }
+		let heading = terrainHeading
+		// Where the radar is offered follows the device, as on the maps; a change restarts this.
+		if showWeatherRadar { await weatherRadar.refresh() }
+		guard !Task.isCancelled else { return }
+		guard SpatialWeatherRadar.shouldFetch(show: showWeatherRadar, offered: weatherRadar.isOffered, networkAvailable: connectivity.isNetworkAvailable, center: site.coordinate) else {
+			terrain.findEntity(named: LookoutRainClouds.entityName)?.removeFromParent()
+			return
+		}
+		let frame = SpatialFrame(bounds: LookoutRainClouds.bounds(around: site))
+		var failures = 0
+		while !Task.isCancelled {
+			let period = WeatherRadar.refreshPeriod()
+			do {
+				let radar = try await SpatialWeatherRadar.fetch(SpatialWeatherRadar.plan(for: frame, refreshPeriod: period))
+				let current = terrain.findEntity(named: LookoutRainClouds.entityName)
+				let build = current == nil
+				let made = await Task.detached(priority: .utility) {
+					LookoutRainClouds.sheets(for: radar.image, site: site, heading: heading, frame: frame, withMeshes: build)
+				}.value
+				guard !Task.isCancelled, let made else { return }
+				if let current {
+					try await LookoutRainClouds.setImages(made.images, on: current)
+				} else {
+					let clouds = try await LookoutRainClouds.entity(meshes: made.meshes, images: made.images)
+					guard !Task.isCancelled else { return }
+					terrain.addChild(clouds)
+				}
+				failures = 0
+			} catch is CancellationError {
+				return
+			} catch {
+				failures += 1
+				Logger.services.info("🎬 [Cinema] Weather radar for the windows failed: \(error.localizedDescription, privacy: .public)")
+				// Rain more than a period old has moved on.
+				if failures > 1 { terrain.findEntity(named: LookoutRainClouds.entityName)?.removeFromParent() }
+			}
+			let next = Double(period + 1) * WeatherRadar.refreshInterval
+			guard (try? await Task.sleep(for: .seconds(max(1, next - Date.now.timeIntervalSince1970)))) != nil else { return }
+		}
 	}
 
 	/// Show the connected radio's screen live on the model on the stand: the model is of the

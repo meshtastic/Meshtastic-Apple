@@ -284,4 +284,25 @@ extension SpatialTerrainGeometry {
 			uvs: Array(textureCoordinates.prefix(count)), indices: Array(indices.prefix(surfaceTriangleCount * 3))
 		)
 	}
+
+	/// How far the rain clouds float over the highest ground: over the pins standing on it, so
+	/// they don't cut through them, with room to spare. The relief is capped to the model's height,
+	/// so this keeps them well inside the volume.
+	static let cloudClearance: Float = 0.07
+
+	/// The height of the rain clouds' flat deck, in model units.
+	var cloudDeckHeight: Float {
+		(positions.prefix(columns * rows).map(\.y).max() ?? 0) + Self.cloudClearance
+	}
+
+	/// The top surface flattened to `height`: the same grid and texture coordinates as the
+	/// terrain, so an image laid on it lines up with the ground under it, but level, as cloud is.
+	func deckSurface(height: Float) -> SpatialOverlayMesh {
+		let count = columns * rows
+		let positions = positions.prefix(count).map { SIMD3($0.x, height, $0.z) }
+		return SpatialOverlayMesh(
+			positions: positions, normals: Array(repeating: SIMD3(0, 1, 0), count: count),
+			uvs: Array(textureCoordinates.prefix(count)), indices: Array(indices.prefix(surfaceTriangleCount * 3))
+		)
+	}
 }

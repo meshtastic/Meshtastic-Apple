@@ -11,8 +11,8 @@ import UIKit
 
 /// An image draped over the terrain: a copy of the terrain's surface floating `lift` above it,
 /// with the image as an unlit, see-through material, so it follows the hills and uses the
-/// terrain's own texture coordinates. It has no collision or input target, so looks and taps go
-/// through to the pins and the terrain. The coverage and weather radar drapes are made here.
+/// terrain's own texture coordinates, or the same image on another surface. It has no collision or input target, so looks and taps go
+/// through to the pins and the terrain. The coverage drape and the weather radar's sheets are made here.
 enum SpatialOverlayEntity {
 	/// The drapes are drawn in their layer's order rather than by distance, so two see-through
 	/// sheets a hair apart never swap as the viewer moves.
@@ -20,7 +20,17 @@ enum SpatialOverlayEntity {
 
 	@MainActor
 	static func make(layer: SpatialOverlayLayer, geometry: SpatialTerrainGeometry, image: CGImage, opacity: Float) async throws -> ModelEntity {
-		let surface = geometry.overlaySurface(lift: layer.lift)
+		try await make(layer: layer, surface: geometry.overlaySurface(lift: layer.lift), image: image, opacity: opacity)
+	}
+
+	/// The image on a surface other than the terrain's own, such as the rain clouds' flat deck.
+	@MainActor
+	static func make(layer: SpatialOverlayLayer, surface: SpatialOverlayMesh, image: CGImage, opacity: Float) async throws -> ModelEntity {
+		try await make(layer: layer, surface: surface, texture: texture(for: image), opacity: opacity)
+	}
+
+	@MainActor
+	static func make(layer: SpatialOverlayLayer, surface: SpatialOverlayMesh, texture: TextureResource, opacity: Float) async throws -> ModelEntity {
 		var descriptor = MeshDescriptor(name: layer.name)
 		descriptor.positions = MeshBuffer(surface.positions)
 		descriptor.normals = MeshBuffer(surface.normals)
@@ -28,7 +38,6 @@ enum SpatialOverlayEntity {
 		descriptor.primitives = .triangles(surface.indices)
 		let mesh = try await MeshResource(from: [descriptor])
 
-		let texture = try await texture(for: image)
 		let sampler = MTLSamplerDescriptor()
 		sampler.sAddressMode = .clampToEdge
 		sampler.tAddressMode = .clampToEdge
