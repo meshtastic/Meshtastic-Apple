@@ -8,8 +8,8 @@
 import CoreGraphics
 import RealityKit
 
-/// The weather radar as cloud: NOAA rain on a few soft sheets floating level over the highest
-/// ground, drifting slowly up and down, with a faint shadow of it draped on the terrain. The shadow
+/// The weather radar as cloud: NOAA rain on a few soft sheets floating just over the terrain,
+/// following the hills, drifting slowly up and down, with a faint shadow of it draped on the terrain. The shadow
 /// sits under the coverage overlay and the sheets over it, and each is drawn in that order, so
 /// neither hides the other as the viewer moves.
 enum SpatialWeatherRadarEntity {
@@ -34,10 +34,9 @@ enum SpatialWeatherRadarEntity {
 
 		let sheets = Entity()
 		sheets.name = sheetsName
-		let deck = geometry.cloudDeckHeight
 		for (index, layer) in SpatialRainClouds.layers.enumerated() where index < images.sheets.count {
 			let sheet = try await SpatialOverlayEntity.make(
-				layer: sheetLayer(index), surface: geometry.deckSurface(height: deck + layer.rise), image: images.sheets[index], opacity: layer.opacity
+				layer: sheetLayer(index), surface: geometry.overlaySurface(lift: SpatialTerrainGeometry.cloudLift + layer.rise), image: images.sheets[index], opacity: layer.opacity
 			)
 			sheets.addChild(sheet)
 		}

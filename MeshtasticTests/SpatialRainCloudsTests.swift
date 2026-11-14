@@ -12,13 +12,6 @@ import Testing
 
 @Suite("Spatial rain clouds")
 struct SpatialRainCloudsTests {
-	let box = GeoBounds(minLon: -122.40, minLat: 47.55, maxLon: -122.30, maxLat: 47.65)
-
-	private func geometry() -> SpatialTerrainGeometry {
-		let grid = SpatialHeightGrid(columns: 3, rows: 3, heights: [0, 50, 0, 50, 200, 50, 0, 50, 0], covered: Array(repeating: true, count: 9), baseElevation: 0, maxElevation: 200)
-		return SpatialTerrainGeometry(grid: grid, transform: SpatialModelTransform(frame: SpatialFrame(bounds: box), baseElevation: 0, maxElevation: 200))
-	}
-
 	/// A square image, clear but for a solid block of `color` in the middle.
 	private func image(size: Int = 64, block: Int = 16, color: CGColor = CGColor(red: 0, green: 0.8, blue: 0, alpha: 1)) -> CGImage {
 		let context = CGContext(data: nil, width: size, height: size, bitsPerComponent: 8, bytesPerRow: size * 4,
@@ -42,20 +35,11 @@ struct SpatialRainCloudsTests {
 		pixels(image)[(y * image.width + x) * 4 + 3]
 	}
 
-	// MARK: Deck
+	// MARK: Height
 
-	@Test func deckFloatsLevelOverTheHighestGround() {
-		let geometry = geometry()
-		let count = geometry.columns * geometry.rows
-		let highest = geometry.positions.prefix(count).map(\.y).max()!
-		let height = geometry.cloudDeckHeight
-		#expect(height == highest + SpatialTerrainGeometry.cloudClearance)
-		let deck = geometry.deckSurface(height: height)
-		#expect(deck.positions.allSatisfy { $0.y == height })
-		let overlay = geometry.overlaySurface()
-		#expect(deck.uvs == overlay.uvs, "the radar lines up with the ground under it")
-		#expect(deck.indices == overlay.indices)
-		#expect(zip(deck.positions, overlay.positions).allSatisfy { $0.x == $1.x && $0.z == $1.z })
+	@Test func sheetsFloatJustOverTheGround() {
+		#expect(SpatialTerrainGeometry.cloudLift > SpatialTerrainGeometry.overlayLift, "over the coverage")
+		#expect(SpatialTerrainGeometry.cloudLift + SpatialRainClouds.layers.last!.rise < 0.03, "a little over the ground, not up at the pins' heads")
 	}
 
 	// MARK: Images
