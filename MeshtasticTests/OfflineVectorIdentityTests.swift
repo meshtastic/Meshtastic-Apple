@@ -62,10 +62,10 @@ struct OfflineVectorIdentityTests {
 
 		var payloads: [(id: UInt64, data: Data)] = []
 		for tile in [tileA, tileB] {
-			var vector = try #require(VectorTile(x: tile.x, y: tile.y, z: tile.z))
+			var vector = try VectorTile(x: tile.x, y: tile.y, z: tile.z)
 			vector.setFeatures([wholeNearEdge, acrossEdge, noID, island, pair], for: "water")
 			vector.setFeatures([road], for: "roads")
-			let data = try #require(vector.data(options: .init(bufferSize: .pixel(16))))
+			let data = try #require(vector.mvtData(options: .init(bufferSize: .pixel(16))))
 			payloads.append((PMTilesArchive.zxyToTileID(z: UInt8(tile.z), x: UInt32(tile.x), y: UInt32(tile.y)), data))
 		}
 		payloads.sort { $0.id < $1.id }

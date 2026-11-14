@@ -30,7 +30,7 @@ struct OfflineRoadOrderTests {
 	}
 
 	private func build() throws -> [OfflineMapPolyline] {
-		var vector = try #require(VectorTile(x: tile.x, y: tile.y, z: tile.z))
+		var vector = try VectorTile(x: tile.x, y: tile.y, z: tile.z)
 		let primary: [String: Sendable] = ["kind": "major_road", "kind_detail": "primary"]
 		vector.setFeatures([
 			// Listed high rank first, so the output order comes from sort_rank, not input order.
@@ -43,7 +43,7 @@ struct OfflineRoadOrderTests {
 			// A bridge in an older basemap's terms.
 			try road(from: 0.1, to: 0.9, north: 0.7, id: 6, ["pmap:kind": "major_road", "pmap:level": 1])
 		], for: "roads")
-		let payload = try #require(vector.data())
+		let payload = try #require(vector.mvtData())
 		let entries = [PMTilesArchive.Entry(tileID: PMTilesArchive.zxyToTileID(z: UInt8(tile.z), x: UInt32(tile.x), y: UInt32(tile.y)), offset: 0, length: UInt32(payload.count), runLength: 1)]
 		let root = PMTilesExtractor.serializeDirectory(entries)
 		let header = PMTilesExtractor.buildHeader(

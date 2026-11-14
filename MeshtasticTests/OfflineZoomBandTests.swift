@@ -30,7 +30,7 @@ struct OfflineZoomBandTests {
 	}
 
 	private func build() throws -> BuildResult {
-		var vector = try #require(VectorTile(x: tile.x, y: tile.y, z: tile.z))
+		var vector = try VectorTile(x: tile.x, y: tile.y, z: tile.z)
 		vector.setFeatures([
 			try line(from: 0.1, to: 0.9, north: 0.2, id: 1, properties: ["kind": "river", "min_zoom": 8.0]),
 			try line(from: 0.1, to: 0.9, north: 0.4, id: 2, properties: ["kind": "stream", "pmap:min_zoom": 13.0])
@@ -44,7 +44,7 @@ struct OfflineZoomBandTests {
 	}
 
 	private func build(_ vector: VectorTile, minRoadMeters: Double) throws -> BuildResult {
-		let payload = try #require(vector.data())
+		let payload = try #require(vector.mvtData())
 		let entries = [PMTilesArchive.Entry(tileID: PMTilesArchive.zxyToTileID(z: UInt8(tile.z), x: UInt32(tile.x), y: UInt32(tile.y)), offset: 0, length: UInt32(payload.count), runLength: 1)]
 		let root = PMTilesExtractor.serializeDirectory(entries)
 		let header = PMTilesExtractor.buildHeader(
@@ -76,7 +76,7 @@ struct OfflineZoomBandTests {
 	/// Rail pieces meeting at one junction, built with the default 60 m minimum length. A (far) and
 	/// B (near) are each about 33 m but 66 m together; C (far) is a 23 m spur off the same junction.
 	private func junction() throws -> BuildResult {
-		var vector = try #require(VectorTile(x: tile.x, y: tile.y, z: tile.z))
+		var vector = try VectorTile(x: tile.x, y: tile.y, z: tile.z)
 		vector.setFeatures([
 			try line(from: 0.48, to: 0.50, north: 0.5, id: 21, properties: ["kind": "rail", "min_zoom": 7.0]),
 			try line(from: 0.50, to: 0.52, north: 0.5, id: 22, properties: ["kind": "rail", "min_zoom": 15.0]),

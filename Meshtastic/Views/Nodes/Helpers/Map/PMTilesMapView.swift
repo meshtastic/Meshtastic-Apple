@@ -652,7 +652,7 @@ extension OfflineVectorTileProvider {
 
 	nonisolated private static func parse(tile: TileID, source: OfflineTileSource) -> VectorTile? {
 		guard let data = source.tileData(z: UInt8(tile.z), x: UInt32(tile.x), y: UInt32(tile.y)) else { return nil }
-		return VectorTile(data: data, x: tile.x, y: tile.y, z: tile.z, projection: .epsg4326)
+		return try? VectorTile(mvtData: data, x: tile.x, y: tile.y, z: tile.z, projection: .epsg4326)
 	}
 
 	/// The water bodies in one tile, clipped to `bounds`. The spatial map paints these onto its
@@ -827,7 +827,7 @@ extension OfflineVectorTileProvider {
 		}
 	}
 
-	nonisolated private static func lineStrings(_ geometry: GISTools.GeoJsonGeometry) -> [[GISTools.Coordinate3D]] {
+	nonisolated private static func lineStrings(_ geometry: GISTools.GeoJsonGeometry?) -> [[GISTools.Coordinate3D]] {
 		switch geometry {
 		case let line as GISTools.LineString: return [line.coordinates]
 		case let lines as GISTools.MultiLineString: return lines.coordinates
@@ -1043,7 +1043,7 @@ extension OfflineVectorTileProvider {
 			&& inner.minLat >= outer.minLat - slack && inner.maxLat <= outer.maxLat + slack
 	}
 
-	nonisolated private static func appendPolygons(_ geometry: GISTools.GeoJsonGeometry, role: OfflineFeatureRole, bounds: GeoBounds?, into polys: inout [OfflineMapPolygon], id: () -> String, source: FeatureSource? = nil) {
+	nonisolated private static func appendPolygons(_ geometry: GISTools.GeoJsonGeometry?, role: OfflineFeatureRole, bounds: GeoBounds?, into polys: inout [OfflineMapPolygon], id: () -> String, source: FeatureSource? = nil) {
 		let tileBounds = source.map { GeoBounds.tile(z: $0.tile.z, x: $0.tile.x, y: $0.tile.y) }
 		var part = 0
 		func prepared(_ ring: [GISTools.Coordinate3D]) -> [CLLocationCoordinate2D]? {
@@ -1084,7 +1084,7 @@ extension OfflineVectorTileProvider {
 	/// makes a polygon's first ring its outer one, so they're grouped again here: rings winding like
 	/// the first start a new polygon, the others are holes in the one before. That holds whichever
 	/// way the encoder wound them, so tiles mvt-tools wrote itself still come out right.
-	nonisolated static func polygonRings(_ geometry: GISTools.GeoJsonGeometry) -> [[[GISTools.Coordinate3D]]] {
+	nonisolated static func polygonRings(_ geometry: GISTools.GeoJsonGeometry?) -> [[[GISTools.Coordinate3D]]] {
 		let rings: [[GISTools.Coordinate3D]]
 		switch geometry {
 		case let polygon as GISTools.Polygon:
@@ -1131,7 +1131,7 @@ extension OfflineVectorTileProvider {
 		return value.isFinite ? value : 0
 	}
 
-	nonisolated private static func appendPolylines(_ geometry: GISTools.GeoJsonGeometry, role: OfflineFeatureRole, bounds: GeoBounds?, into lines: inout [OfflineMapPolyline], id: () -> String, featureID: UInt64? = nil, minZoom: Double = 0) {
+	nonisolated private static func appendPolylines(_ geometry: GISTools.GeoJsonGeometry?, role: OfflineFeatureRole, bounds: GeoBounds?, into lines: inout [OfflineMapPolyline], id: () -> String, featureID: UInt64? = nil, minZoom: Double = 0) {
 		func add(_ line: [GISTools.Coordinate3D]) {
 			let coords = line.map(coord)
 			let runs = bounds.map { clipPolyline(coords, to: $0) } ?? [coords]
