@@ -74,6 +74,8 @@ struct CinemaSpace: View {
 	@AppStorage(LookoutSiteKind.rooftop.turnsKey) private var rooftopTurns = 0
 	@AppStorage(LookoutSiteKind.skyDeck.turnsKey) private var skyDeckTurns = 0
 	@State private var terrain: ModelEntity?
+	/// Terrain fading in and out of the windows, stepped each frame.
+	@State private var fades = EntityFades()
 	/// The site the terrain and labels are built for; nil for the painted sunset.
 	@State private var terrainSiteID: String?
 	/// Whether that site is a summit, a headland or a rooftop.
@@ -108,7 +110,8 @@ struct CinemaSpace: View {
 			}
 			// A panel's size is only known once SwiftUI has laid it out, so boards are fitted on
 			// the first frame that has it.
-			fitBoards = content.subscribe(to: SceneEvents.Update.self) { _ in
+			fitBoards = content.subscribe(to: SceneEvents.Update.self) { event in
+				fades.step(deltaTime: event.deltaTime)
 				placeBoards()
 				modelStand.refreshScreen()
 				// A marker's size is only known once it has laid out, like a board's.
@@ -128,7 +131,15 @@ struct CinemaSpace: View {
 			modelStand.setTag(attachments.entity(for: Attachments.modelTag))
 			placeBoards()
 			placeMarkers { attachments.entity(for: $0) }
+			placeTerrainCard(attachments.entity(for: Attachments.terrainCard), over: attachments.entity(for: Attachments.panel))
 		} attachments: {
+			// While the sites are looked for or the view out the windows is built. The card reads the
+			// progress itself, so it moving doesn't redraw the whole space.
+			if environment.standsOnSite, lookout.isBuildingTerrain || lookout.status == .searching {
+				Attachment(id: Attachments.terrainCard) {
+					LookoutTerrainLoadingAttachment(lookout: lookout, searching: lookoutNote)
+				}
+			}
 			Attachment(id: Attachments.panel) {
 				// The map counts as open while the cinema is reopening it, so the button doesn't
 				// show for the second in between.
@@ -211,16 +222,15 @@ struct CinemaSpace: View {
 			stage.orientation = simd_quatf(angle: environment.frontRotation, axis: [0, 1, 0])
 			boards.unfitAll()
 			// Real terrain already up for the summit stays when the lookout and the castle swap. A
-			// summit's isn't the lighthouse's or the rooftop's, and so on.
-			if terrainKind != environment.siteKind {
+			// summit's isn't the lighthouse's or the rooftop's, and so on: that fades out once the new
+			// room is up, so the windows never show sky with no ground.
+			let keepsTerrain = terrain != nil && terrainKind == environment.siteKind
+			if !keepsTerrain {
 				lookoutBuild?.task.cancel()
 				lookoutBuild = nil
-				terrain?.removeFromParent()
-				terrain = nil
-				terrainSiteID = nil
-				terrainKind = nil
 			}
-			await replaceBackdrop(clearSky: terrain != nil && environment.standsOnSite)
+			await replaceBackdrop(clearSky: keepsTerrain && environment.standsOnSite)
+			if !keepsTerrain { takeDownTerrain() }
 			await refreshLookout()
 		}
 		.task(id: stone) {
@@ -271,10 +281,9 @@ struct CinemaSpace: View {
 				lookout.forgetSites()
 				lookoutBuild?.task.cancel()
 				lookoutBuild = nil
-				terrain?.removeFromParent()
-				terrain = nil
+				// Built again from the new maps. The old view stays until then, or until its site
+				// turns out to be gone and the painted view comes back.
 				terrainSiteID = nil
-				terrainKind = nil
 			}
 			lookoutMapsSeen = lookoutMaps
 			await refreshLookout()
@@ -462,6 +471,25 @@ struct CinemaSpace: View {
 		static let panel = "panel"
 		static let tabStrip = "screenTabs"
 		static let modelTag = "modelTag"
+		static let terrainCard = "terrainCard"
+	}
+
+	/// The terrain card stands on the panel, moving and turning with it. Below the screen it would be
+	/// behind the 3D map, which opens there.
+	private func placeTerrainCard(_ card: Entity?, over panel: Entity?) {
+		guard let card else { return }
+		if card.parent !== panelGrabber { panelGrabber.addChild(card) }
+		let panelTop = panel.map { $0.position.y + $0.visualBounds(relativeTo: $0).extents.y / 2 } ?? 0.3
+		let halfHeight = max(card.visualBounds(relativeTo: card).extents.y / 2, 0.05)
+		card.position = [0, panelTop + 0.02 + halfHeight, 0]
+	}
+
+	/// Takes the terrain out of the windows, fading it out.
+	private func takeDownTerrain() {
+		if let terrain { fades.fade(terrain, to: 0, then: .remove) }
+		terrain = nil
+		terrainSiteID = nil
+		terrainKind = nil
 	}
 
 	/// The chosen site's id for the environment's kind of site, or empty for the painted view.
@@ -621,10 +649,7 @@ struct CinemaSpace: View {
 
 	private func refreshLookout() async {
 		guard let kind = environment.siteKind else {
-			terrain?.removeFromParent()
-			terrain = nil
-			terrainSiteID = nil
-			terrainKind = nil
+			takeDownTerrain()
 			return
 		}
 		let maps = lookoutMaps
@@ -652,15 +677,14 @@ struct CinemaSpace: View {
 		// is only compared with a site chosen: with none, the painted view is already up and would be
 		// loaded again on every refresh.
 		guard site?.id != terrainSiteID || heading != terrainHeading || (site != nil && (kind != terrainKind || terrain == nil)) || (site == nil && backdropClearSky) else { return }
-		terrain?.removeFromParent()
-		terrain = nil
-		terrainSiteID = nil
-		terrainKind = nil
+		// The view up now stays until what replaces it is ready.
 		guard let site else {
 			lookoutBuild?.task.cancel()
 			lookoutBuild = nil
 			// Not put up if a summit was chosen meanwhile, whose own refresh puts up its terrain.
-			await replaceBackdrop(clearSky: false) { lookoutMaps == maps && lookout.site(for: lookoutSiteID) == nil }
+			func painted() -> Bool { lookoutMaps == maps && lookout.site(for: lookoutSiteID) == nil }
+			await replaceBackdrop(clearSky: false, stillWanted: painted)
+			if painted(), backdropClearSky == false { takeDownTerrain() }
 			return
 		}
 		let build: Task<ModelEntity?, Never>
@@ -685,14 +709,21 @@ struct CinemaSpace: View {
 				&& !(terrain != nil && terrainSiteID == site.id && terrainHeading == heading)
 		}
 		guard let entity = built, stillWanted() else { return }
-		await replaceBackdrop(clearSky: true)
-		guard stillWanted() else { return }
-		terrain?.removeFromParent()
+		// The new view fades in over the old one, which fades out.
+		let old = terrain
 		stage.addChild(entity)
+		fades.fadeIn(entity)
+		if let old { fades.fade(old, to: 0, then: .remove) }
 		terrain = entity
 		terrainSiteID = site.id
 		terrainKind = kind
 		terrainHeading = heading
+		// The painted view's sky has painted ground below the horizon. Once the terrain is in front
+		// of it, the clear sky takes its place behind, unseen.
+		if !backdropClearSky {
+			try? await Task.sleep(for: .milliseconds(500))
+			await replaceBackdrop(clearSky: true) { terrain === entity }
+		}
 	}
 
 	/// What the rain clouds out the windows follow: the terrain up, and whether the radar is
@@ -868,6 +899,21 @@ struct CinemaSpace: View {
 		accessibility.label = LocalizedStringResource("Move the cinema panel", comment: "Cinema: VoiceOver label for the bar under the panel that moves it")
 		bar.components.set(accessibility)
 		return bar
+	}
+}
+
+/// The terrain card as the cinema's attachment: it alone reads the build's progress.
+private struct LookoutTerrainLoadingAttachment: View {
+	let lookout: LookoutScene
+	/// What the panel says while the sites are looked for.
+	let searching: String?
+
+	var body: some View {
+		if let progress = lookout.terrainProgress {
+			SpatialTerrainLoadingCard(status: .building(progress), onRetry: {}, onClose: {})
+		} else if lookout.status == .searching {
+			SpatialTerrainLoadingCard(status: .searching(searching ?? ""), onRetry: {}, onClose: {})
+		}
 	}
 }
 #endif

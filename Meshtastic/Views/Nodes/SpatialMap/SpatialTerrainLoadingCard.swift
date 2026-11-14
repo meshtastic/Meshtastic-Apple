@@ -7,16 +7,19 @@
 #if os(visionOS)
 import SwiftUI
 
-/// What the card over the 3D map says: the map downloading, the terrain building, or why the
-/// terrain couldn't be built.
+/// What the card over the 3D map, or in front of the cinema's seat, says: the map downloading,
+/// sites being looked for, the terrain building, or why the terrain couldn't be built.
 enum SpatialTerrainLoadingStatus: Equatable {
 	case downloading(fraction: Double?, step: OfflineMapDownloadProgress.Step?)
+	/// Looking through the downloaded maps for the cinema's sites, with what it's looking for.
+	case searching(String)
 	case building(SpatialTerrainProgress)
 	case failed(String)
 }
 
-/// The card floating over the 3D map while its terrain downloads or builds, with how far it has
-/// got. A failed build shows its reason with Retry until the next build or Close.
+/// The card floating over the 3D map, or in front of the cinema's seat, while terrain downloads or
+/// builds, with how far it has got. A failed build shows its reason with Retry until the next build
+/// or Close.
 struct SpatialTerrainLoadingCard: View {
 	let status: SpatialTerrainLoadingStatus
 	let onRetry: () -> Void
@@ -45,7 +48,7 @@ struct SpatialTerrainLoadingCard: View {
 			switch status {
 			case .downloading(let fraction?, _):
 				ProgressView(value: fraction)
-			case .downloading(nil, _):
+			case .downloading(nil, _), .searching:
 				ProgressView()
 					.progressViewStyle(.linear)
 			case .building(let progress):
@@ -71,6 +74,8 @@ struct SpatialTerrainLoadingCard: View {
 			String(localized: "Downloading Map", comment: "Spatial map loading card: title while the street map for the area downloads")
 		case .downloading:
 			String(localized: "Downloading Terrain", comment: "Spatial map loading card: title while the elevation data for the area downloads")
+		case .searching:
+			String(localized: "Searching the Maps", comment: "Cinema loading card: title while the downloaded maps are searched for summits, coastline or buildings")
 		case .building:
 			String(localized: "Building Terrain", comment: "Spatial map loading card: title while the 3D terrain is being built")
 		case .failed:
@@ -88,10 +93,11 @@ struct SpatialTerrainLoadingCard: View {
 			}
 		case .downloading:
 			String(localized: "Elevation for the hills and valleys", comment: "Spatial map loading card: what the terrain download is for")
+		case .searching(let message):
+			message
 		case .building(let progress):
 			switch progress.phase {
-			case .elevation(let done, let total) where total > 0:
-				String(localized: "Reading elevation: \(done) of \(total) tiles", comment: "Spatial map loading card: reading heights from the downloaded terrain, tiles read so far and in all")
+			// The bar shows how far through; the cinema's view counts rings, not tiles.
 			case .elevation:
 				String(localized: "Reading elevation", comment: "Spatial map loading card: reading heights from the downloaded terrain")
 			case .drawing:

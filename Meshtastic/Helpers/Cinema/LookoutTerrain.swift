@@ -396,10 +396,11 @@ enum LookoutTerrain {
 	/// Builds the terrain around `site`, out to `bounds` and at most `maxRadius`, seen from a room
 	/// whose floor is `standHeight` above it. `sun` is where the painted sky's sun is, degrees
 	/// clockwise from the cab's front and above the horizon. The ground is colored from `landCover`
-	/// where it has the point, else by height.
+	/// where it has the point, else by height. `progress` hears each ring read, then the drawing.
 	static func build(
 		site: LookoutSite, bounds: GeoBounds, source: any ElevationTileSource, landCover: OfflineLandCoverMap? = nil,
-		heading: Double = frontHeading, standHeight: Double? = nil, sun: (azimuth: Float, elevation: Float)
+		heading: Double = frontHeading, standHeight: Double? = nil, sun: (azimuth: Float, elevation: Float),
+		progress: @escaping @Sendable (SpatialTerrainProgress) -> Void = { _ in }
 	) async -> LookoutTerrainModel? {
 		let sampler = Sampler(source: source)
 		let floor = Double(site.elevation) + (standHeight ?? site.standHeight)
@@ -438,7 +439,9 @@ enum LookoutTerrain {
 				}
 			}
 			if Task.isCancelled { return nil }
+			progress(SpatialTerrainProgress(phase: .elevation(done: ring + 1, total: rings)))
 		}
+		progress(SpatialTerrainProgress(phase: .drawing))
 		guard lowest < .greatestFiniteMagnitude else { return nil }
 		// Ground with no data takes the lowest level there is, which the haze mostly hides.
 		for index in 0..<elevations.count where !known[index] {
@@ -712,7 +715,8 @@ enum LookoutTerrain {
 		descriptor.positions = MeshBuffer(model.positions)
 		descriptor.textureCoordinates = MeshBuffer(model.textureCoordinates)
 		descriptor.primitives = .triangles(model.indices)
-		let mesh = try MeshResource.generate(from: [descriptor])
+		// Made off the main thread, so the immersive space keeps its frame rate while it's made.
+		let mesh = try await MeshResource(from: [descriptor])
 		let texture = try await TextureResource(image: model.texture, options: .init(semantic: .color))
 		var material = UnlitMaterial()
 		material.color = .init(tint: .white, texture: .init(texture))
@@ -752,7 +756,7 @@ enum LookoutTerrain {
 			material.blending = .transparent(opacity: .init(floatLiteral: 1))
 			material.opacityThreshold = 0.5
 		}
-		let entity = ModelEntity(mesh: try MeshResource.generate(from: [descriptor]), materials: [material])
+		let entity = ModelEntity(mesh: try await MeshResource(from: [descriptor]), materials: [material])
 		entity.name = name
 		return entity
 	}
