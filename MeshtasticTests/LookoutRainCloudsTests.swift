@@ -33,8 +33,9 @@ struct LookoutRainCloudsTests {
 		let frame = SpatialFrame(bounds: LookoutRainClouds.bounds(around: site))
 		let heading = LookoutTerrain.frontHeading
 		let mesh = LookoutRainClouds.mesh(site: site, heading: heading, frame: frame)
-		#expect(mesh.positions.count == LookoutRainClouds.rings * LookoutRainClouds.spokes)
-		#expect(mesh.indices.count == (LookoutRainClouds.rings - 1) * LookoutRainClouds.spokes * 6)
+		#expect(mesh.positions.count == LookoutRainClouds.rings * LookoutRainClouds.spokes + 1, "the rings and the cap's middle")
+		#expect(mesh.indices.count == (LookoutRainClouds.rings - 1) * LookoutRainClouds.spokes * 6 + LookoutRainClouds.spokes * 3)
+		#expect(mesh.positions.last!.y > 0, "the cap is overhead")
 		// The first ring's first spoke: due north, at the inner radius.
 		let rise = LookoutRainClouds.altitude(for: site) - LookoutTerrain.eyeElevation(for: site)
 		let expected = LookoutTerrain.direction(bearing: 0, distance: LookoutRainClouds.innerRadius, rise: rise, heading: heading)

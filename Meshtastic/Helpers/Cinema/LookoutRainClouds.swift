@@ -20,7 +20,7 @@ enum LookoutRainClouds {
 	/// Rings of the sheet from just past the roof out to the terrain's edge, and samples round each.
 	static let rings = 40
 	static let spokes = 360
-	/// The sheet starts this close, so it has no edge overhead in a room with no roof.
+	/// The first ring; inside it a cap closes the sheet over the site.
 	static let innerRadius = 100.0
 	static let maxRadius = LookoutTerrain.maxRadius
 	/// Where the cloud's base is, in meters above sea level, and at least how far over the site's
@@ -93,8 +93,17 @@ enum LookoutRainClouds {
 				uvs.append(SIMD2(Float(fraction.x), Float(SpatialTerrainGeometry.flipTextureV ? 1 - fraction.y : fraction.y)))
 			}
 		}
+		// The cap over the middle: one point straight above or below the eye, at the site, fanned
+		// to the first ring, so rain over the site has no hole in it.
+		let center = UInt32(positions.count)
+		positions.append(SIMD3<Float>(0, height >= 0 ? 1 : -1, 0) * LookoutTerrain.depth(0))
+		let middle = frame.mercatorFraction(latitude: site.latitude, longitude: site.longitude)
+		uvs.append(SIMD2(Float(middle.x), Float(SpatialTerrainGeometry.flipTextureV ? 1 - middle.y : middle.y)))
 		var indices: [UInt32] = []
-		indices.reserveCapacity((rings - 1) * spokes * 6)
+		indices.reserveCapacity((rings - 1) * spokes * 6 + spokes * 3)
+		for spoke in 0..<spokes {
+			indices += [center, UInt32(spoke), UInt32((spoke + 1) % spokes)]
+		}
 		for ring in 0..<(rings - 1) {
 			for spoke in 0..<spokes {
 				let next = (spoke + 1) % spokes
@@ -157,9 +166,14 @@ enum LookoutRainClouds {
 	/// Puts a new period's rain on the sheets without rebuilding them.
 	@MainActor
 	static func setImages(_ images: [CGImage], on root: Entity) async throws {
-		for (index, image) in images.enumerated() {
+		// Every texture first, so a failure leaves the old rain whole.
+		var textures: [TextureResource] = []
+		for image in images {
+			textures.append(try await SpatialOverlayEntity.texture(for: image))
+		}
+		for (index, texture) in textures.enumerated() {
 			guard let sheet = root.findEntity(named: "\(entityName)\(index)") as? ModelEntity else { continue }
-			SpatialOverlayEntity.setTexture(try await SpatialOverlayEntity.texture(for: image), on: sheet)
+			SpatialOverlayEntity.setTexture(texture, on: sheet)
 		}
 	}
 

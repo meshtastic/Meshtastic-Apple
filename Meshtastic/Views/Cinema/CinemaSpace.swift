@@ -728,7 +728,8 @@ struct CinemaSpace: View {
 				let made = await Task.detached(priority: .utility) {
 					LookoutRainClouds.sheets(for: radar.image, site: site, heading: heading, frame: frame, withMeshes: build)
 				}.value
-				guard !Task.isCancelled, let made else { return }
+				guard !Task.isCancelled else { return }
+				guard let made else { throw URLError(.cannotDecodeContentData) }
 				if let current {
 					try await LookoutRainClouds.setImages(made.images, on: current)
 				} else {

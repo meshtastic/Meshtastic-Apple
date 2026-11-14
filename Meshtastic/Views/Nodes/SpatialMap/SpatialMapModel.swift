@@ -775,7 +775,11 @@ extension SpatialMapModel {
 				let made = await Task.detached(priority: .userInitiated) { SpatialRainClouds.images(for: radar.image) }.value
 				guard !Task.isCancelled, weatherRadarKey == key else { return }
 				guard let images = made else {
+					// As after a failed fetch with nothing to keep: try once more soon, then clear.
+					// What's up is left alone only until then, so it never outlives its period.
 					Logger.services.error("🧊 [Spatial] Weather radar clouds couldn't be drawn")
+					clearWeatherRadar()
+					if !retried { retryWeatherRadar(key: key) }
 					return
 				}
 				if let entity = weatherRadarEntity, weatherRadarRevision == placement.revision {

@@ -46,14 +46,20 @@ enum SpatialWeatherRadarEntity {
 	}
 
 	/// Puts a new period's rain on the shadow and every sheet, without rebuilding their meshes.
+	/// Every texture is made first, so a failure leaves the old rain whole rather than half changed.
 	@MainActor
 	static func setImages(_ images: SpatialRainClouds.Images, on root: Entity) async throws {
-		if let shadow = root.findEntity(named: shadowLayer.name) as? ModelEntity {
-			SpatialOverlayEntity.setTexture(try await SpatialOverlayEntity.texture(for: images.shadow), on: shadow)
+		let shadow = try await SpatialOverlayEntity.texture(for: images.shadow)
+		var sheets: [TextureResource] = []
+		for image in images.sheets {
+			sheets.append(try await SpatialOverlayEntity.texture(for: image))
 		}
-		for (index, image) in images.sheets.enumerated() {
-			guard let sheet = root.findEntity(named: sheetLayer(index).name) as? ModelEntity else { continue }
-			SpatialOverlayEntity.setTexture(try await SpatialOverlayEntity.texture(for: image), on: sheet)
+		if let entity = root.findEntity(named: shadowLayer.name) as? ModelEntity {
+			SpatialOverlayEntity.setTexture(shadow, on: entity)
+		}
+		for (index, texture) in sheets.enumerated() {
+			guard let entity = root.findEntity(named: sheetLayer(index).name) as? ModelEntity else { continue }
+			SpatialOverlayEntity.setTexture(texture, on: entity)
 		}
 	}
 
