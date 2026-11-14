@@ -22,11 +22,31 @@ enum SpatialTerrainEntity {
 		descriptor.textureCoordinates = MeshBuffer(geometry.textureCoordinates)
 		descriptor.primitives = .triangles(geometry.indices)
 		let mesh = try await MeshResource(from: [descriptor])
+		let entity = ModelEntity(mesh: mesh, materials: [try await material(model.texture)])
+		entity.name = "terrain"
+		// Collide with the mesh itself, so the pins standing on it are never inside the terrain's
+		// hit shape and a look-and-pinch reaches them first.
+		entity.components.set(CollisionComponent.inputTarget([try await ShapeResource.generateStaticMesh(from: mesh)]))
+		entity.components.set(InputTargetComponent())
+		return entity
+	}
 
+	/// Lays a new image over the terrain, keeping its surface and hit shape: a change of layer,
+	/// dark map or contours.
+	@MainActor
+	static func setTexture(_ image: CGImage, on entity: ModelEntity) async throws {
+		let made = try await material(image)
+		// A redraw replaced while its image was made mustn't put it up over the newer one.
+		try Task.checkCancellation()
+		entity.model?.materials = [made]
+	}
+
+	@MainActor
+	private static func material(_ image: CGImage) async throws -> PhysicallyBasedMaterial {
 		var textureOptions = TextureResource.CreateOptions(semantic: .color)
 		textureOptions.mipmapsMode = .allocateAndGenerateAll
 		// No resource name: RealityKit reuses a named texture, so every rebuild would keep the first image.
-		let texture = try await TextureResource(image: model.texture, options: textureOptions)
+		let texture = try await TextureResource(image: image, options: textureOptions)
 		let sampler = MTLSamplerDescriptor()
 		sampler.sAddressMode = .clampToEdge
 		sampler.tAddressMode = .clampToEdge
@@ -39,14 +59,7 @@ enum SpatialTerrainEntity {
 		material.baseColor = .init(tint: .white, texture: .init(texture, sampler: .init(sampler)))
 		material.roughness = 1.0
 		material.metallic = 0.0
-
-		let entity = ModelEntity(mesh: mesh, materials: [material])
-		entity.name = "terrain"
-		// Collide with the mesh itself, so the pins standing on it are never inside the terrain's
-		// hit shape and a look-and-pinch reaches them first.
-		entity.components.set(CollisionComponent.inputTarget([try await ShapeResource.generateStaticMesh(from: mesh)]))
-		entity.components.set(InputTargetComponent())
-		return entity
+		return material
 	}
 }
 #endif
