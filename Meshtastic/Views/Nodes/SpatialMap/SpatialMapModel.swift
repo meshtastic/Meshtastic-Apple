@@ -167,7 +167,7 @@ final class SpatialMapModel {
 	static let autoDownloadSettleInterval: TimeInterval = 20
 
 	private var pinnedNodeNums: Set<Int64> = []
-	private let terrainStore = TerrainStore()
+	private let terrainStore = TerrainStore.shared
 	private let builder: SpatialTerrainBuilder
 	private var buildTask: Task<Void, Never>?
 	private var buildKey: String?

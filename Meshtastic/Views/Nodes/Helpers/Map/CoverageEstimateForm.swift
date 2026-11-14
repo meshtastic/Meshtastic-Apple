@@ -40,7 +40,7 @@ struct CoverageEstimateForm: View {
 	/// In-flight reverse geocode for the chosen coordinate; cancelled when a newer coordinate is picked.
 	@State private var geocodeTask: Task<Void, Never>?
 	/// Reads ground elevation for the chosen coordinate from downloaded offline terrain.
-	@State private var terrainStore = TerrainStore()
+	private let terrainStore = TerrainStore.shared
 	/// Terrain ground elevation (meters) at the current coordinate, when offline terrain covers it.
 	@State private var groundElevation: Double?
 
