@@ -319,7 +319,13 @@ struct MeshtasticAppleApp: App {
 			} else if let persistenceController {
 				// Stays mounted across a node switch so this window's router survives.
 				// The SwiftData tree unmounts inside MainScene.
+				// Given here as well as on the scene below: on some iOS 17 devices the scene's
+				// objects never reach this view, and MainScene traps reading appState at launch.
 				MainScene(persistenceController: persistenceController)
+					.environmentObject(appState)
+					.environmentObject(accessoryManager)
+					.environmentObject(lockdownCoordinator)
+					.environmentObject(MeshtasticAPI.shared)
 			}
 			}
 			.onChange(of: lockdownCoordinator.state) { _, newState in
