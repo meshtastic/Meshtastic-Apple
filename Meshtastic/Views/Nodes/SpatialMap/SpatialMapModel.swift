@@ -498,7 +498,9 @@ final class SpatialMapModel {
 				}
 				try Task.checkCancellation()
 				show(SpatialTerrainProgress(phase: .surface), forBuild: key)
+				let making = TerrainTiming.start("Spatial terrain entity")
 				let entity = try await SpatialTerrainEntity.make(model)
+				making.end("🧊 [Spatial] Made the terrain entity")
 				guard !Task.isCancelled, buildKey == key else { return }
 				terrainEntity = entity
 				downloadedTerrain = sources.map(\.bounds)
@@ -706,7 +708,9 @@ extension SpatialMapModel {
 			}.value
 			guard !Task.isCancelled, coverageKey == key, let rendered else { return }
 			do {
+				let making = TerrainTiming.start("Spatial coverage entity")
 				let entity = try await SpatialCoverageEntity.make(geometry: geometry, image: rendered.image, opacity: opacity)
+				making.end("🧊 [Spatial] Made the coverage entity")
 				guard !Task.isCancelled, coverageKey == key else { return }
 				coverageEntity = entity
 				coverageRevision = placement.revision
@@ -819,7 +823,9 @@ extension SpatialMapModel {
 					try await SpatialWeatherRadarEntity.setImages(images, on: entity)
 					guard !Task.isCancelled, weatherRadarKey == key else { return }
 				} else {
+					let making = TerrainTiming.start("Spatial radar entity")
 					let entity = try await SpatialWeatherRadarEntity.make(geometry: geometry, images: images)
+					making.end("🧊 [Spatial] Made the weather radar entity")
 					guard !Task.isCancelled, weatherRadarKey == key else { return }
 					weatherRadarEntity = entity
 					weatherRadarRevision = placement.revision
@@ -883,11 +889,15 @@ extension SpatialMapModel {
 				return SpatialBuildings.build(footprints, geometry: geometry, revision: revision)
 			}
 			// A detached task isn't cancelled with this one; pass it on so a superseded decode stops.
+			let building = TerrainTiming.start("Spatial buildings")
 			let built = await withTaskCancellationHandler { await worker.value } onCancel: { worker.cancel() }
+			building.end("🧊 [Spatial] Decoded and meshed the buildings")
 			guard !Task.isCancelled, buildingsKey == key, let built else { return }
 			let mesh = built.mesh
 			do {
+				let making = TerrainTiming.start("Spatial buildings entity")
 				let entity = try await SpatialBuildingsEntity.make(mesh, dark: dark)
+				making.end("🧊 [Spatial] Made the buildings entity")
 				guard !Task.isCancelled, buildingsKey == key else { return }
 				Logger.services.info("🧊 [Spatial] Buildings: \(mesh.triangleCount, privacy: .public) triangles on terrain \(placement.revision, privacy: .public)")
 				buildingsEntity = entity

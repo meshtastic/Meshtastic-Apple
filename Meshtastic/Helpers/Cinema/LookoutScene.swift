@@ -74,9 +74,11 @@ final class LookoutScene {
 			await preparing.value
 			return
 		}
+		let searching = TerrainTiming.start("Lookout site search")
 		let search = Task { await self.search(area: area, kind: kind) }
 		preparing = search
 		await search.value
+		searching.end("🎬 [Cinema] Lookout \(kind.rawValue) site search")
 		// A search started after `forgetSites()` may be the one running now.
 		if preparing == search { preparing = nil }
 	}
@@ -268,22 +270,33 @@ final class LookoutScene {
 		let build = Task.detached(priority: .userInitiated) {
 			OfflineLandCoverMap.make(center: center, radius: radius, files: OfflineMapManager.persistedRegionFiles())
 		}
+		let covering = TerrainTiming.start("Lookout land cover")
 		let landCover = await withTaskCancellationHandler { await build.value } onCancel: { build.cancel() }
+		covering.end("🎬 [Cinema] Lookout land cover")
 		if Task.isCancelled { return nil }
+		let building = TerrainTiming.start("Lookout terrain")
 		let built = await LookoutTerrain.build(site: site, bounds: bounds, source: store, landCover: landCover, heading: heading, sun: sun) { progress in
 			Task { @MainActor [weak self] in self?.show(progress, forBuild: token) }
 		}
+		building.end("🎬 [Cinema] Lookout terrain")
 		guard let model = built else { return nil }
 		show(SpatialTerrainProgress(phase: .surface), forBuild: token)
 		let entity: ModelEntity
 		do {
+			let making = TerrainTiming.start("Lookout terrain entity")
 			entity = try await LookoutTerrain.entity(for: model)
+			making.end("🎬 [Cinema] Made the lookout terrain entity")
 		} catch {
 			Logger.services.error("🎬 [Cinema] Couldn't make the lookout terrain: \(error.localizedDescription, privacy: .public)")
 			return nil
 		}
-		if site.rooftop != nil, let city = await city(around: site, heading: heading, sun: sun) {
-			entity.addChild(city)
+		if site.rooftop != nil {
+			let building = TerrainTiming.start("Rooftop city")
+			let city = await city(around: site, heading: heading, sun: sun)
+			building.end("🎬 [Cinema] Rooftop city built")
+			if let city {
+				entity.addChild(city)
+			}
 		}
 		if Task.isCancelled { return nil }
 		return entity

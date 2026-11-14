@@ -26,6 +26,8 @@ enum CinemaBackdrop {
 	/// instead, on `earthSide` and turning at `earthSpin` radians a second, falling back to its
 	/// painted view if the globe can't be made.
 	static func make(_ environment: CinemaEnvironment, stone: CastleStone, clearSky: Bool = false, earthSide: CinemaEarthSide = .day, earthSpin: Float = 0) async -> Entity {
+		let loading = TerrainTiming.start("Cinema backdrop")
+		defer { loading.end("🎬 [Cinema] Backdrop for \(environment.rawValue)\(clearSky ? " with the clear sky" : "")") }
 		let root = Entity()
 		root.name = "CinemaBackdrop"
 
