@@ -20,8 +20,8 @@ enum LookoutRainClouds {
 	/// Rings of the sheet from just past the roof out to the terrain's edge, and samples round each.
 	static let rings = 40
 	static let spokes = 360
-	/// Nearer than this the sheet is overhead, behind the roof.
-	static let innerRadius = 1_000.0
+	/// The sheet starts this close, so it has no edge overhead in a room with no roof.
+	static let innerRadius = 100.0
 	static let maxRadius = LookoutTerrain.maxRadius
 	/// Where the cloud's base is, in meters above sea level, and at least how far over the site's
 	/// ground it stays, so it floats over a high summit rather than through it.
@@ -59,10 +59,11 @@ enum LookoutRainClouds {
 	}
 
 	/// How much of the rain shows `distance` meters out: all of it close in, fading with the
-	/// terrain's haze, and none past the terrain's edge.
+	/// terrain's haze, and none past the terrain's edge. Far rain at cloud height sits only a degree
+	/// or so over the horizon, where it would draw as thin stripes, so it's mostly gone by then.
 	static func visibility(distance: Double) -> Double {
 		guard distance <= maxRadius else { return 0 }
-		return 1 - 0.85 * (1 - exp(-distance / LookoutForest.hazeDistance))
+		return exp(-distance / LookoutForest.hazeDistance)
 	}
 
 	/// The sheet's buffers.
@@ -175,6 +176,8 @@ enum LookoutRainClouds {
 		material.blending = .transparent(opacity: .init(floatLiteral: opacity))
 		// Seen from under it, whichever way its triangles wind.
 		material.faceCulling = .none
+		// Where there's no rain the sheet is clear, so it mustn't hide the sky drawn after it.
+		material.writesDepth = false
 		return material
 	}
 }
