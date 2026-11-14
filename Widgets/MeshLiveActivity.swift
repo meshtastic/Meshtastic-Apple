@@ -233,7 +233,7 @@ private struct HeardLine: View {
 		}
 		.font(.caption)
 		.foregroundStyle(activity.isStale ? Color.orange : .secondary)
-		.fixedSize()
+		// No fixedSize here; see LockScreenFooter.
 	}
 }
 
@@ -269,8 +269,9 @@ private struct LockScreenFooter: View {
 		} else if activity.trackedNum == nil {
 			// The node counts are the main reading, and they're only as fresh
 			// as the radio's last LocalStats.
+			// No fixedSize on text that counts by itself: it collapses the Lock
+			// Screen layout into a black card.
 			Text("Updated \(activity.state.statsAt ?? activity.state.updatedAt, style: .relative) ago")
-				.fixedSize()
 		}
 	}
 
@@ -505,7 +506,6 @@ private struct ExpandedBottom: View {
 	private var readings: some View {
 		if activity.trackedNum != nil {
 			HeardLine(activity: activity)
-				.fixedSize()
 			if let routeText = activity.routeText {
 				Text(routeText)
 					.font(.caption)
