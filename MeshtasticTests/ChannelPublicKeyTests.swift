@@ -53,8 +53,15 @@ struct ChannelPublicKeyTests {
 	func privateKeys() {
 		#expect(!ChannelIdentity.usesPublicKey(Self.privateKey16))
 		#expect(!ChannelIdentity.usesPublicKey(Self.privateKey32))
-		#expect(!ChannelIdentity.usesPublicKey(ChannelIdentity.defaultPSK.prefix(15)))
+		#expect(!ChannelIdentity.usesPublicKey(ChannelIdentity.defaultPSK.prefix(14)))
+		#expect(!ChannelIdentity.usesPublicKey(Data(repeating: 0x5A, count: 15)))
 		#expect(!ChannelIdentity.usesPublicKey(ChannelIdentity.defaultPSK + ChannelIdentity.defaultPSK))
+	}
+
+	@Test("A short key the radio pads into the default key family is public")
+	func paddedShortKey() {
+		#expect(ChannelIdentity.usesPublicKey(ChannelIdentity.defaultPSK.prefix(15)))
+		#expect(ChannelIdentity.usesPublicKey(Data(), primary: ChannelIdentity.defaultPSK.prefix(15)))
 	}
 
 	@Test("An empty secondary key follows the primary")

@@ -445,11 +445,11 @@
             "from",
             "connected",
             "only",
+            "key",
+            "mesh",
             "preset",
             "nodes",
             "messages",
-            "mesh",
-            "key",
             "configuration",
             "tag",
             "nfc",
@@ -465,7 +465,7 @@
             "beacon",
             "still"
         ],
-        "charCount": 21061
+        "charCount": 21196
     },
     {
         "id": "showcase",

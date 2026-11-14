@@ -1005,6 +1005,28 @@ extension AccessoryManager {
 		}
 	}
 
+	/// Holds every secondary that uses the primary's key to approximate location. Call it before
+	/// writing a public key to the primary: those secondaries become public with it, and the radio
+	/// keeps whatever precision they hold. Throws on the first failed write, so the caller never
+	/// goes on to make the primary public.
+	func capSecondariesInheritingPrimaryKey(of user: UserEntity) async throws {
+		let ceiling = Int32(ChannelIdentity.maxPublicKeyPositionPrecision)
+		let rows = canonicalValidUniqueChannels(from: user.userNode?.myInfo?.channels ?? [])
+		for row in rows where row.role == Int32(Channel.Role.secondary.rawValue) && (row.psk ?? Data()).isEmpty && row.positionPrecision > ceiling {
+			var channel = Channel()
+			channel.index = row.index
+			channel.role = .secondary
+			channel.settings.name = row.name ?? ""
+			channel.settings.uplinkEnabled = row.uplinkEnabled
+			channel.settings.downlinkEnabled = row.downlinkEnabled
+			channel.settings.moduleSettings.positionPrecision = UInt32(ceiling)
+			channel.settings.moduleSettings.isMuted = row.mute
+			_ = try await saveChannel(channel: channel, fromUser: user, toUser: user)
+			row.positionPrecision = ceiling
+			try context.save()
+		}
+	}
+
 	public func saveChannel(
 		channel requestedChannel: Channel,
 		fromUser: UserEntity,
@@ -1198,6 +1220,9 @@ extension AccessoryManager {
 		// firmware defaults moduleSettings to full precision (32), leaking exact GPS coordinates —
 		// mirrors addBeaconChannel's handling for the same "join someone else's mesh" scenario.
 		channel.settings.moduleSettings.positionPrecision = 0
+		if ChannelIdentity.usesPublicKey(effectivePSK) {
+			try await capSecondariesInheritingPrimaryKey(of: user)
+		}
 		_ = try await saveChannel(channel: channel, fromUser: user, toUser: user)
 
 		// 2. Apply region/preset (reboots). Carry the full existing LoRa config so unrelated fields

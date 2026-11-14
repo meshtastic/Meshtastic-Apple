@@ -62,6 +62,17 @@ actor MockChannelSetConnection: Connection {
 		}
 	}
 
+	/// Every channel write, in send order.
+	var sentChannels: [Channel] {
+		sentPackets.compactMap { toRadio in
+			guard case let .packet(meshPacket) = toRadio.payloadVariant,
+				  case let .decoded(dataMessage) = meshPacket.payloadVariant,
+				  let admin = try? AdminMessage(serializedBytes: dataMessage.payload),
+				  case let .setChannel(channel) = admin.payloadVariant else { return nil }
+			return channel
+		}
+	}
+
 	var sentChannelIndexes: [Int32] {
 		sentPackets.compactMap { toRadio in
 			guard case let .packet(meshPacket) = toRadio.payloadVariant,
@@ -449,6 +460,11 @@ struct ChannelSetSaveTests {
 		#expect(sentIndexes == [2], "the appended channel must take the first free secondary slot, never index 0")
 		#expect(try channelNames(for: deviceNum) == ["Only Secondary", "Appended"])
 	}
+}
+
+// MARK: - Position precision on public keys
+
+extension ChannelSetSaveTests {
 
 	private static let privateKey = Data(repeating: 0x5A, count: 32)
 
@@ -587,5 +603,59 @@ struct ChannelSetSaveTests {
 		_ = try await manager.saveChannel(channel: channel(index: 1, role: .secondary, psk: Data()), fromUser: user, toUser: user)
 
 		#expect(await connection.sentChannelPrecisions[1] == 15)
+	}
+
+	private func addSecondary(index: Int32, psk: Data, precision: Int32, to deviceNum: Int64) throws {
+		let context = PersistenceController.shared.context
+		let descriptor = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == deviceNum })
+		let myInfo = try #require(try context.fetch(descriptor).first)
+		let row = ChannelEntity()
+		row.id = index
+		row.index = index
+		row.name = "Secondary \(index)"
+		row.role = Int32(Channel.Role.secondary.rawValue)
+		row.psk = psk
+		row.positionPrecision = precision
+		row.uplinkEnabled = true
+		context.insert(row)
+		myInfo.channels.append(row)
+		try context.save()
+	}
+
+	@Test("Secondaries using the primary's key are held to approximate location before it goes public")
+	func capSecondariesInheritingPrimaryKey() async throws {
+		let deviceNum: Int64 = 123_456_805
+		let user = try seedRadio(deviceNum: deviceNum, primaryKey: Self.privateKey)
+		try addSecondary(index: 1, psk: Data(), precision: 32, to: deviceNum)
+		try addSecondary(index: 2, psk: Self.privateKey, precision: 32, to: deviceNum)
+		try addSecondary(index: 3, psk: Data(), precision: 13, to: deviceNum)
+		let connection = MockChannelSetConnection()
+		let manager = makeManager(connection: connection, deviceNum: deviceNum)
+
+		try await manager.capSecondariesInheritingPrimaryKey(of: user)
+
+		#expect(await connection.sentChannelIndexes == [1], "only the precise empty key secondary is rewritten")
+		#expect(await connection.sentChannelPrecisions[1] == 15)
+		let sent = try #require(await connection.sentChannels.first)
+		#expect(sent.role == .secondary)
+		#expect(sent.settings.psk.isEmpty)
+		#expect(sent.settings.name == "Secondary 1")
+		#expect(sent.settings.uplinkEnabled)
+		#expect(try channelRows(for: deviceNum).dropFirst().map(\.positionPrecision) == [15, 32, 13])
+	}
+
+	@Test("A failed secondary write stops before the primary can go public")
+	func capSecondariesStopsOnFailure() async throws {
+		let deviceNum: Int64 = 123_456_806
+		let user = try seedRadio(deviceNum: deviceNum, primaryKey: Self.privateKey)
+		try addSecondary(index: 1, psk: Data(), precision: 32, to: deviceNum)
+		let connection = MockChannelSetConnection(failureMode: .firstPacket)
+		let manager = makeManager(connection: connection, deviceNum: deviceNum)
+
+		await #expect(throws: (any Error).self) {
+			try await manager.capSecondariesInheritingPrimaryKey(of: user)
+		}
+
+		#expect(try channelRows(for: deviceNum).dropFirst().map(\.positionPrecision) == [32], "the stored row keeps what the radio still holds")
 	}
 }

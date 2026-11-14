@@ -374,6 +374,9 @@ struct Channels: View {
 		isSavingChannel = true
 		defer { isSavingChannel = false }
 		do {
+			if role == 1 && ChannelIdentity.usesPublicKey(psk) {
+				try await accessoryManager.capSecondariesInheritingPrimaryKey(of: user)
+			}
 			_ = try await accessoryManager.saveChannel(channel: channel, fromUser: user, toUser: user)
 		} catch {
 			Logger.mesh.error("Channel \(channel.index) save failed: \(error.localizedDescription, privacy: .public)")

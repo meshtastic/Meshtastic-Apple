@@ -23,6 +23,9 @@ extension ChannelIdentity {
 			return primary.map { usesPublicKey($0) } ?? true
 		case 1:
 			return true
+		case 2..<defaultPSK.count:
+			// The radio pads a short key with zeros, which can land in the default key family.
+			return usesPublicKey(psk + Data(count: defaultPSK.count - psk.count))
 		case defaultPSK.count:
 			// The last byte picks a member of the default key family, so it is not compared.
 			return psk.prefix(defaultPSK.count - 1) == defaultPSK.prefix(defaultPSK.count - 1)
