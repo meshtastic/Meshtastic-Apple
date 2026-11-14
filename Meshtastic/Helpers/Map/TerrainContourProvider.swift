@@ -70,7 +70,7 @@ final class TerrainContourProvider: ObservableObject {
 	/// generation stays small (≤ ~12 for a full screen).
 	private let maxGenerationTiles = 12
 
-	init(store: TerrainStore = TerrainStore()) {
+	init(store: TerrainStore = .shared) {
 		self.store = store
 	}
 

@@ -5,8 +5,9 @@
 //  Copyright(c) Garth Vander Houwen 8/16/26.
 //
 //  Serves elevation grids from a region's downloaded Mapterhorn terrain archives.
-//  All decoding happens inside the actor, off the main actor, so map rendering
-//  never blocks on it. Consumers (hillshade tiles, contour generation) request
+//  The actor keeps the archives and caches; decoding and resampling run off it, in
+//  parallel, and off the main actor, so map rendering never blocks on it. One store
+//  is shared by the 2D map, the 3D map and the cinema. Consumers request
 //  `ElevationTile`s for any map zoom: requests above the archived max zoom are
 //  answered by bilinear-sampling the covering ancestor tile (standard DEM
 //  overzoom), so terrain keeps rendering at street-level zooms.
@@ -36,6 +37,10 @@ struct TerrainSource: Sendable, Equatable {
 
 actor TerrainStore {
 
+	/// The store the app reads downloaded terrain through, so the 2D map, the 3D map and the
+	/// cinema share one cache of decoded tiles instead of each decoding the same ones.
+	static let shared = TerrainStore()
+
 	/// Output grid edge length (samples per tile, before margin). Mapterhorn tiles
 	/// are 512px; sampling to 256 quarters the decode-to-consumer cost and is
 	/// indistinguishable under hillshade/contour rendering.
@@ -51,22 +56,42 @@ actor TerrainStore {
 
 	private var sources: [OpenSource] = []
 	private var configuredSources: [TerrainSource] = []
-	/// Decoded raw Mapterhorn grids, LRU-evicted.
+	/// Bumped when the sources change, so a decode or resample started before isn't cached after.
+	private var generation = 0
 	private struct TileKey: Hashable {
 		let z: Int
 		let x: Int
 		let y: Int
 	}
-	private var decodeCache: [TileKey: (size: Int, elevations: [Float])] = [:]
+	/// A decoded raw Mapterhorn grid: its edge length and elevations.
+	private typealias Grid = (size: Int, elevations: [Float])
+	/// Decoded raw grids, LRU-evicted. A 512 px grid is about 1 MB.
+	private var decodeCache: [TileKey: Grid] = [:]
 	private var decodeOrder: [TileKey] = []
-	private let decodeCacheLimit = 24
+	private let decodeCacheLimit = 64
+	/// Decodes running, so a second request for the same tile waits for the first.
+	private var decoding: [TileKey: Task<Grid?, Never>] = [:]
+	/// Resampled tiles as handed out, LRU-evicted: callers often ask for the same tile again.
+	private struct ElevationKey: Hashable {
+		let z: Int
+		let x: Int
+		let y: Int
+		let margin: Int
+	}
+	private var tileCache: [ElevationKey: ElevationTile] = [:]
+	private var tileOrder: [ElevationKey] = []
+	private let tileCacheLimit = 64
 
 	/// (Re)points the store at the given terrain sources. Cheap when unchanged.
 	func configure(sources newSources: [TerrainSource]) {
 		guard newSources != configuredSources else { return }
 		configuredSources = newSources
+		generation += 1
 		decodeCache.removeAll()
 		decodeOrder.removeAll()
+		decoding.removeAll()
+		tileCache.removeAll()
+		tileOrder.removeAll()
 		sources = newSources.compactMap { source in
 			guard let archive = PMTilesArchive(url: source.globalURL) else {
 				Logger.services.error("🗺️ [Terrain] Could not open terrain archive at \(source.globalURL.lastPathComponent, privacy: .public)")
@@ -129,63 +154,130 @@ actor TerrainStore {
 
 	/// The elevation grid for a map tile at any zoom, with `margin` edge pixels
 	/// sampled from neighbors (edge-clamped at coverage boundaries). Nil when no
-	/// configured region covers the tile or nothing decodes.
-	func elevationTile(z: Int, x: Int, y: Int, margin: Int = 1) -> ElevationTile? {
+	/// configured region covers the tile or nothing decodes. The tiles are decoded
+	/// and resampled off the actor, so calls from several tasks run in parallel.
+	nonisolated func elevationTile(z: Int, x: Int, y: Int, margin: Int = 1) async -> ElevationTile? {
+		switch await prepare(z: z, x: x, y: y, margin: margin) {
+		case nil:
+			return nil
+		case .cached(let tile):
+			return tile
+		case .sample(let input):
+			let tile = Self.resample(input, z: z, x: x, y: y, margin: margin)
+			await remember(tile, margin: margin, generation: input.generation)
+			return tile
+		}
+	}
+
+	/// A tile ready to hand out, or what's needed to sample it.
+	private enum Prepared: Sendable {
+		case cached(ElevationTile)
+		case sample(SampleInput)
+	}
+
+	/// The data tile a map tile is sampled from, where in it, and the decoded grids it reaches into.
+	private struct SampleInput: Sendable {
+		let dataZoom: Int
+		let dataX: Int
+		let dataY: Int
+		/// How many map tiles per data tile edge.
+		let scale: Int
+		/// The map tile's sub-rect within the data tile, in [0, 1).
+		let fracX: Double
+		let fracY: Double
+		let tilePx: Int
+		let base: [Float]
+		/// The neighbors the margin reaches into, by tile. One missing failed to decode or is past
+		/// the world's edge.
+		let grids: [TileKey: [Float]]
+		let generation: Int
+	}
+
+	/// Finds the cached tile, or decodes the data tile and the neighbors the samples reach into, all
+	/// at once.
+	private func prepare(z: Int, x: Int, y: Int, margin: Int) async -> Prepared? {
+		let key = ElevationKey(z: z, x: x, y: y, margin: margin)
+		if let tile = tileCache[key] {
+			touch(key, in: &tileOrder)
+			return .cached(tile)
+		}
 		guard let open = source(covering: z, x: x, y: y) else { return nil }
+		let generation = self.generation
 
 		// Clamp to the data's max zoom here: above it, sample the covering ancestor. Per tile, so
 		// where no regional archive has data the global archive's is used.
 		let dataZoom = min(z, Self.dataMaxZoom(open: open, z: z, x: x, y: y))
 		let zoomDelta = z - dataZoom
-		let scale = 1 << zoomDelta          // how many map tiles per data tile edge
+		let scale = 1 << zoomDelta
 		let dataX = x >> zoomDelta
 		let dataY = y >> zoomDelta
-		// This tile's sub-rect within the data tile, in [0, 1).
 		let fracX = Double(x - dataX * scale) / Double(scale)
 		let fracY = Double(y - dataY * scale) / Double(scale)
 
-		let size = Self.tileSize
+		let baseKey = TileKey(z: dataZoom, x: dataX, y: dataY)
+		guard let base = await grid(open: open, key: baseKey).value() else { return nil }
+		let tilePx = base.size
+		// Which neighbors the samples, margin and all, walk into: at most one tile each way.
+		let step = Double(tilePx) / Double(scale) / Double(Self.tileSize)
+		let last = Self.tileSize + margin - 1
+		func reach(_ origin: Double) -> ClosedRange<Int> {
+			let low = Int((origin + (Double(-margin) + 0.5) * step - 0.5).rounded(.down))
+			let high = Int((origin + (Double(last) + 0.5) * step - 0.5).rounded(.down)) + 1
+			return (low < 0 ? -1 : 0)...(high >= tilePx ? 1 : 0)
+		}
+		let maxIndex = (1 << dataZoom) - 1
+		var neighbors: [TileKey] = []
+		for dy in reach(fracY * Double(tilePx)) {
+			for dx in reach(fracX * Double(tilePx)) where dx != 0 || dy != 0 {
+				neighbors.append(TileKey(z: dataZoom, x: min(max(dataX + dx, 0), maxIndex), y: min(max(dataY + dy, 0), maxIndex)))
+			}
+		}
+		// Every neighbor's decode starts before any is waited on.
+		let pending = neighbors.map { ($0, grid(open: open, key: $0)) }
+		var grids = [baseKey: base.elevations]
+		for (key, lookup) in pending where grids[key] == nil {
+			if let neighbor = await lookup.value() {
+				grids[key] = neighbor.elevations
+			}
+		}
+		return .sample(SampleInput(
+			dataZoom: dataZoom, dataX: dataX, dataY: dataY, scale: scale, fracX: fracX, fracY: fracY,
+			tilePx: tilePx, base: base.elevations, grids: grids, generation: generation
+		))
+	}
+
+	/// Bilinear samples of the data tile over the map tile, walking into a neighbor where a sample
+	/// leaves the data tile, and clamping to the data tile's edge where that neighbor is missing.
+	private static func resample(_ input: SampleInput, z: Int, x: Int, y: Int, margin: Int) -> ElevationTile {
+		let size = tileSize
 		let grid = size + 2 * margin
+		let tilePx = input.tilePx
+		let span = Double(tilePx) / Double(input.scale)
+		let originX = input.fracX * Double(tilePx)
+		let originY = input.fracY * Double(tilePx)
+		let step = span / Double(size)
+		let maxIndex = (1 << input.dataZoom) - 1
+		let base = input.base
 		var elevations = [Float](repeating: 0, count: grid * grid)
 
-		// Sample positions span the tile plus margin, expressed in data-tile pixel
-		// space (may fall outside [0, tilePx) — the sampler walks into neighbors).
-		guard let baseGrid = rawGrid(open: open, z: dataZoom, x: dataX, y: dataY) else { return nil }
-		let tilePx = baseGrid.size
-		let span = Double(tilePx) / Double(scale)   // data pixels covered by one output tile edge
-		let originX = fracX * Double(tilePx)
-		let originY = fracY * Double(tilePx)
-		let step = span / Double(size)
-		let maxIndex = (1 << dataZoom) - 1
-
-		// Grids memoized per neighbor offset for this call — the hot path never
-		// hashes strings or re-enters the cache per sample. `nil` marks a missing
-		// neighbor (decode failure or world edge).
-		var neighborGrids: [TileKey: [Float]?] = [TileKey(z: dataZoom, x: dataX, y: dataY): baseGrid.elevations]
-		func gridFor(tileX: Int, tileY: Int) -> [Float]? {
-			let key = TileKey(z: dataZoom, x: min(max(tileX, 0), maxIndex), y: min(max(tileY, 0), maxIndex))
-			if let cached = neighborGrids[key] { return cached }
-			let fetched = rawGrid(open: open, z: key.z, x: key.x, y: key.y)?.elevations
-			neighborGrids[key] = fetched
-			return fetched
-		}
 		// Integer point sample: walks into the neighbor tile when the coordinate
 		// leaves this one. When the neighbor is missing, clamps to THIS tile's
 		// nearest edge (never the wrapped opposite edge).
 		func point(_ ix: Int, _ iy: Int) -> Float {
-			var tileX = dataX, tileY = dataY, lx = ix, ly = iy
+			var tileX = input.dataX, tileY = input.dataY, lx = ix, ly = iy
 			if lx < 0 { tileX -= 1; lx += tilePx } else if lx >= tilePx { tileX += 1; lx -= tilePx }
 			if ly < 0 { tileY -= 1; ly += tilePx } else if ly >= tilePx { tileY += 1; ly -= tilePx }
-			if tileX != dataX || tileY != dataY {
-				if let neighbor = gridFor(tileX: tileX, tileY: tileY) {
+			if tileX != input.dataX || tileY != input.dataY {
+				let key = TileKey(z: input.dataZoom, x: min(max(tileX, 0), maxIndex), y: min(max(tileY, 0), maxIndex))
+				if let neighbor = input.grids[key] {
 					return neighbor[ly * tilePx + lx]
 				}
 				// Missing neighbor: clamp the ORIGINAL coordinate into the base tile.
 				let cx = min(max(ix, 0), tilePx - 1)
 				let cy = min(max(iy, 0), tilePx - 1)
-				return baseGrid.elevations[cy * tilePx + cx]
+				return base[cy * tilePx + cx]
 			}
-			return baseGrid.elevations[ly * tilePx + lx]
+			return base[ly * tilePx + lx]
 		}
 
 		for gy in 0..<grid {
@@ -204,6 +296,18 @@ actor TerrainStore {
 			}
 		}
 		return ElevationTile(z: z, x: x, y: y, size: size, margin: margin, elevations: elevations)
+	}
+
+	/// Keeps a resampled tile for the next request, unless the sources changed meanwhile.
+	private func remember(_ tile: ElevationTile, margin: Int, generation: Int) {
+		guard generation == self.generation else { return }
+		let key = ElevationKey(z: tile.z, x: tile.x, y: tile.y, margin: margin)
+		guard tileCache[key] == nil else { return }
+		tileCache[key] = tile
+		tileOrder.append(key)
+		if tileOrder.count > tileCacheLimit {
+			tileCache.removeValue(forKey: tileOrder.removeFirst())
+		}
 	}
 
 	// MARK: - Point queries
@@ -243,35 +347,40 @@ actor TerrainStore {
 
 	/// Ground elevation in meters at a coordinate, or nil when no downloaded
 	/// terrain region covers it.
-	func elevation(at coordinate: CLLocationCoordinate2D) -> Double? {
-		elevations(at: [coordinate])[0]
+	func elevation(at coordinate: CLLocationCoordinate2D) async -> Double? {
+		await elevations(at: [coordinate])[0]
 	}
 
 	/// `elevation(at:)` for each coordinate, in one trip to the store. Each tile is
 	/// sampled once for all the coordinates in it, so thousands of points cost a
 	/// few tiles, not a tile each.
-	func elevations(at coordinates: [CLLocationCoordinate2D]) -> [Double?] {
+	func elevations(at coordinates: [CLLocationCoordinate2D]) async -> [Double?] {
 		let z = Self.pointQueryZoom
 		var tiles: [TileKey: ElevationTile?] = [:]
-		return coordinates.map { coordinate in
+		var heights: [Double?] = []
+		heights.reserveCapacity(coordinates.count)
+		for coordinate in coordinates {
 			let pixel = Self.tilePixel(latitude: coordinate.latitude, longitude: coordinate.longitude, z: z, size: Self.tileSize)
 			// Edge tiles are edge-clamped, so also require the coordinate itself to
 			// sit inside the covering region's box — never report a clamped border
 			// value for a point outside the download.
 			guard let box = coverage(z: z, x: pixel.x, y: pixel.y),
 				  coordinate.latitude >= box.minLat, coordinate.latitude <= box.maxLat,
-				  coordinate.longitude >= box.minLon, coordinate.longitude <= box.maxLon else { return nil }
+				  coordinate.longitude >= box.minLon, coordinate.longitude <= box.maxLon else {
+				heights.append(nil)
+				continue
+			}
 			let key = TileKey(z: z, x: pixel.x, y: pixel.y)
 			let tile: ElevationTile?
 			if let sampled = tiles[key] {
 				tile = sampled
 			} else {
-				tile = elevationTile(z: z, x: pixel.x, y: pixel.y, margin: 1)
+				tile = await elevationTile(z: z, x: pixel.x, y: pixel.y, margin: 1)
 				tiles[key] = tile
 			}
-			guard let tile else { return nil }
-			return Double(Self.sample(tile, px: pixel.px, py: pixel.py))
+			heights.append(tile.map { Double(Self.sample($0, px: pixel.px, py: pixel.py)) })
 		}
+		return heights
 	}
 
 	/// The Web-Mercator tile containing a coordinate at zoom `z`, plus the
@@ -318,24 +427,58 @@ actor TerrainStore {
 		return metersPerTile / Double(size)
 	}
 
-	/// Raw decoded Mapterhorn grid for a data tile, preferring the regional
-	/// archive when it has the tile. LRU-cached (hits move to the back).
-	private func rawGrid(open: OpenSource, z: Int, x: Int, y: Int) -> (size: Int, elevations: [Float])? {
-		let key = TileKey(z: z, x: x, y: y)
-		if let cached = decodeCache[key] {
-			if let position = decodeOrder.firstIndex(of: key), position != decodeOrder.count - 1 {
-				decodeOrder.remove(at: position)
-				decodeOrder.append(key)
+	/// A decoded grid already cached, a decode running, or nothing to decode.
+	private enum GridLookup {
+		case ready(Grid)
+		case running(Task<Grid?, Never>)
+		case missing
+
+		func value() async -> Grid? {
+			switch self {
+			case .ready(let grid): grid
+			case .running(let task): await task.value
+			case .missing: nil
 			}
-			return cached
 		}
-		guard let data = tileData(open: open, z: z, x: x, y: y), let decoded = TerrariumDecoder.decode(tileData: data) else { return nil }
+	}
+
+	/// The raw decoded Mapterhorn grid for a data tile, preferring the regional archive when it has
+	/// the tile: cached (LRU, hits move to the back), already decoding, or decoded now off the actor.
+	private func grid(open: OpenSource, key: TileKey) -> GridLookup {
+		if let cached = decodeCache[key] {
+			touch(key, in: &decodeOrder)
+			return .ready(cached)
+		}
+		if let running = decoding[key] { return .running(running) }
+		guard let data = tileData(open: open, z: key.z, x: key.x, y: key.y) else { return .missing }
+		let generation = self.generation
+		let task = Task { () -> Grid? in
+			let decoded = await Task.detached(priority: Task.currentPriority) { TerrariumDecoder.decode(tileData: data) }.value
+			finishDecode(key, decoded, generation: generation)
+			return decoded
+		}
+		decoding[key] = task
+		return .running(task)
+	}
+
+	private func finishDecode(_ key: TileKey, _ decoded: Grid?, generation: Int) {
+		// Sources changed meanwhile: the caches were emptied and this tile may be another region's.
+		guard generation == self.generation else { return }
+		decoding[key] = nil
+		guard let decoded else { return }
 		decodeCache[key] = decoded
 		decodeOrder.append(key)
 		if decodeOrder.count > decodeCacheLimit {
 			decodeCache.removeValue(forKey: decodeOrder.removeFirst())
 		}
-		return decoded
+	}
+
+	/// Moves a cache hit to the back of its LRU order.
+	private func touch<Key: Hashable>(_ key: Key, in order: inout [Key]) {
+		if let position = order.firstIndex(of: key), position != order.count - 1 {
+			order.remove(at: position)
+			order.append(key)
+		}
 	}
 
 	/// A tile's bytes, from a regional archive that has the tile, else the global one.

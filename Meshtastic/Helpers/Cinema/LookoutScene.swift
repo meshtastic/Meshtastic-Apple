@@ -38,7 +38,7 @@ final class LookoutScene {
 	private(set) var status: Status = .idle
 	/// The nodes out the windows, for the site the terrain was built for.
 	var labels: [LookoutLabel] = []
-	private let store = TerrainStore()
+	private let store = TerrainStore.shared
 	private var bounds: GeoBounds?
 	/// How many nodes get a label; the nearest ones.
 	private static let maxLabels = 40
