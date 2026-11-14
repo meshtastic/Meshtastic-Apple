@@ -6,6 +6,7 @@
 //
 import CoreLocation
 import Foundation
+import os
 import simd
 import Testing
 import UIKit
@@ -75,6 +76,35 @@ struct SpatialTerrainTests {
 		#expect(abs(grid.heights[0] - 1100) < 2)
 		#expect(abs(grid.heights[(plan.rows - 1) * plan.columns] - 100) < 2)
 		#expect(abs(grid.heights[15 * plan.columns + 10] - 600) < 2)
+	}
+
+	@Test func samplingCountsEveryTileItReads() async throws {
+		let bounds = seattle
+		let source = SyntheticElevationSource(coverage: bounds) { _, _ in 100 }
+		let frame = SpatialFrame(bounds: bounds)
+		let plan = SpatialHeightGrid.Plan(columns: 21, rows: 31, samplingZoom: 12)
+		let counts = OSAllocatedUnfairLock<[(done: Int, total: Int)]>(initialState: [])
+		_ = try await SpatialHeightGrid.sample(frame: frame, plan: plan, source: source) { done, total in
+			counts.withLock { $0.append((done, total)) }
+		}
+		let heard = counts.withLock { $0 }
+		#expect(!heard.isEmpty)
+		#expect(heard.map(\.done) == Array(1...heard.count), "one call per tile, in order")
+		#expect(heard.allSatisfy { $0.total == heard.count }, "the total is the tiles it reads")
+	}
+
+	@Test func progressOnlyMovesForward() {
+		let start = SpatialTerrainProgress(phase: .elevation(done: 0, total: 40))
+		let oneTile = SpatialTerrainProgress(phase: .elevation(done: 1, total: 40))
+		let fiveTiles = SpatialTerrainProgress(phase: .elevation(done: 5, total: 40))
+		let drawing = SpatialTerrainProgress(phase: .drawing)
+		let surface = SpatialTerrainProgress(phase: .surface)
+		#expect(!start.isWorthShowing(oneTile), "under two percent isn't drawn again")
+		#expect(start.isWorthShowing(fiveTiles))
+		#expect(fiveTiles.isWorthShowing(drawing))
+		#expect(drawing.isWorthShowing(surface))
+		#expect(!surface.isWorthShowing(drawing), "a late height callback can't take it back")
+		#expect(surface.fraction < 1)
 	}
 
 	@Test func uncoveredGroundSitsAtTheLowestCoveredHeight() async throws {

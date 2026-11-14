@@ -506,6 +506,12 @@
         }
       }
     },
+    "Building Terrain" : {
+      "comment" : "Spatial map loading card: title while the 3D terrain is being built"
+    },
+    "Building the surface" : {
+      "comment" : "Spatial map loading card: making the 3D surface"
+    },
     "Change any of these in Settings." : {
       "comment" : "Radio setup done footer",
       "localizations" : {
@@ -674,6 +680,9 @@
     "Control" : {
 
     },
+    "Couldn't Build Terrain" : {
+      "comment" : "Spatial map loading card: title when building the 3D terrain failed"
+    },
     "Couldn't Import Map File" : {
       "localizations" : {
         "es" : {
@@ -717,6 +726,15 @@
         }
       }
     },
+    "Downloading Map" : {
+      "comment" : "Spatial map loading card: title while the street map for the area downloads"
+    },
+    "Downloading Terrain" : {
+      "comment" : "Spatial map loading card: title while the elevation data for the area downloads"
+    },
+    "Drawing the map" : {
+      "comment" : "Spatial map loading card: drawing the map image laid over the terrain"
+    },
     "E-ink screens redraw slowly. Tap Refresh for the latest picture." : {
       "localizations" : {
         "zh-Hant-TW" : {
@@ -732,6 +750,9 @@
           }
         }
       }
+    },
+    "Elevation for the hills and valleys" : {
+      "comment" : "Spatial map loading card: what the terrain download is for"
     },
     "End" : {
 
@@ -802,6 +823,18 @@
     },
     "Poor" : {
       "comment" : "CO2 level from 2000 to 5000 ppm"
+    },
+    "Reading elevation" : {
+      "comment" : "Spatial map loading card: reading heights from the downloaded terrain"
+    },
+    "Reading elevation: %lld of %lld tiles" : {
+      "comment" : "Spatial map loading card: reading heights from the downloaded terrain, tiles read so far and in all"
+    },
+    "Step %lld of %lld: elevation" : {
+      "comment" : "Spatial map loading card: which part of the download is running, the elevation data"
+    },
+    "Step %lld of %lld: streets" : {
+      "comment" : "Spatial map loading card: which part of the download is running, the street map"
     },
     "Stuffy" : {
       "comment" : "CO2 level from 1000 to 2000 ppm"

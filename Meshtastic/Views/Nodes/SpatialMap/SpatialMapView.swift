@@ -57,14 +57,17 @@ struct SpatialMapView: View {
 				scene.updateSubscription = content.subscribe(to: SceneEvents.Update.self) { event in
 					traffic.step(deltaTime: event.deltaTime)
 					scene.stepWheel(deltaTime: event.deltaTime)
+					scene.stepFades(deltaTime: event.deltaTime)
 					scene.stepBeacons(deltaTime: event.deltaTime)
 					scene.route.step(deltaTime: event.deltaTime)
 				}
 			} update: { content, attachments in
 				_ = volumeSize
 				scene.fit(volume: content.convert(proxy.frame(in: .local), from: .local, to: .scene))
-				scene.apply(placement: model.placement)
+				// The terrain before the placement: the old terrain fades out as it was shown, before
+				// the new placement resets the zoom preview.
 				scene.apply(terrainEntity: model.terrainEntity, building: model.isBuildingTerrain)
+				scene.apply(placement: model.placement)
 				scene.apply(weatherRadar: model.weatherRadarEntity, revision: model.weatherRadarRevision, reduceMotion: reduceMotion)
 				scene.apply(buildings: model.buildingsEntity, roofs: model.buildingRoofs)
 				scene.apply(coverage: model.coverageEntity, revision: model.coverageRevision, opacity: model.coverageOpacity)
@@ -82,7 +85,15 @@ struct SpatialMapView: View {
 				scene.apply(route: model.shownRoute, attachments: attachments, attachmentIDs: routeAttachmentIDs)
 				scene.apply(labels: model.labeledNodeNums, attachments: attachments)
 				scene.apply(selection: model.selectedNodeNum, attachments: attachments)
+				scene.apply(loadingCard: attachments.entity(for: SpatialSceneController.loadingCardID))
 			} attachments: {
+				// Shown while the terrain downloads or builds, or couldn't be built. The card reads the
+				// progress itself, so it changing doesn't run this view again.
+				if model.isBuildingTerrain || model.isDownloadingTerrain || model.terrainMessage != nil {
+					Attachment(id: SpatialSceneController.loadingCardID) {
+						SpatialTerrainLoadingAttachment(model: model)
+					}
+				}
 				ForEach(model.labeledNodeNums, id: \.self) { num in
 					Attachment(id: num) {
 						if let node = model.nodesByNum[num] {

@@ -70,6 +70,10 @@ final class SpatialMapModel {
 	/// The built texture is the offline fallback because the Apple map image could not be fetched.
 	private(set) var imageryUnavailable = false
 	private(set) var isBuildingTerrain = false
+	/// How far the terrain build has got, for the card over the map. Nil when nothing is building.
+	private(set) var terrainProgress: SpatialTerrainProgress?
+	/// Why the last terrain build failed, shown on the card over the map until it's dismissed or
+	/// the terrain builds again.
 	private(set) var terrainMessage: String?
 	/// The downloaded terrain the last build used, so the cinema's lookout only stands on a summit
 	/// that's still downloaded. Nil until a build finishes.
@@ -288,6 +292,7 @@ final class SpatialMapModel {
 		buildTask?.cancel()
 		buildKey = nil
 		isBuildingTerrain = false
+		terrainProgress = nil
 		terrainEntity = nil
 		textureSource = nil
 		placement = nil
@@ -474,6 +479,7 @@ final class SpatialMapModel {
 		buildKey = key
 		buildTask?.cancel()
 		isBuildingTerrain = true
+		terrainProgress = SpatialTerrainProgress(phase: .elevation(done: 0, total: 0))
 		terrainMessage = nil
 		let sources = OfflineMapManager.shared.terrainSources()
 		var options = SpatialTerrainOptions()
@@ -487,7 +493,11 @@ final class SpatialMapModel {
 		buildTask = Task {
 			await store.configure(sources: sources)
 			do {
-				let model = try await builder.build(bounds: bounds, options: options)
+				let model = try await builder.build(bounds: bounds, options: options) { progress in
+					Task { @MainActor [weak self] in self?.show(progress, forBuild: key) }
+				}
+				try Task.checkCancellation()
+				show(SpatialTerrainProgress(phase: .surface), forBuild: key)
 				let entity = try await SpatialTerrainEntity.make(model)
 				guard !Task.isCancelled, buildKey == key else { return }
 				terrainEntity = entity
@@ -503,6 +513,7 @@ final class SpatialMapModel {
 					revision: placementRevision
 				)
 				isBuildingTerrain = false
+				terrainProgress = nil
 				rebuildCoverageIfNeeded()
 				rebuildWeatherRadarIfNeeded()
 				rebuildBuildingsIfNeeded()
@@ -512,6 +523,7 @@ final class SpatialMapModel {
 				Logger.services.error("🧊 [Spatial] Terrain build failed: \(error.localizedDescription, privacy: .public)")
 				terrainMessage = error.localizedDescription
 				isBuildingTerrain = false
+				terrainProgress = nil
 				// Without terrain, put the pins on a flat disk for the circle they belong to.
 				if placement?.circle != circle {
 					// The old terrain is for another circle.
@@ -522,6 +534,26 @@ final class SpatialMapModel {
 				}
 			}
 		}
+	}
+
+	/// Moves the card on to `progress` if it's for the build still running and far enough along to
+	/// be worth drawing again.
+	private func show(_ progress: SpatialTerrainProgress, forBuild key: String) {
+		guard isBuildingTerrain, buildKey == key else { return }
+		if let current = terrainProgress, !current.isWorthShowing(progress) { return }
+		terrainProgress = progress
+	}
+
+	/// Builds the terrain again after it failed.
+	func retryTerrain() {
+		terrainMessage = nil
+		buildKey = nil
+		applyArea()
+	}
+
+	/// Takes the failed build's message off the map, leaving whatever is shown.
+	func dismissTerrainMessage() {
+		terrainMessage = nil
 	}
 
 	/// Builds the current area again after the network comes back, so an Apple layer that fell

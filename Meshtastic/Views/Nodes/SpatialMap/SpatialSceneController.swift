@@ -50,6 +50,8 @@ final class SpatialSceneController {
 	let weatherRadarContainer = Entity()
 	/// Holds the raised buildings, hidden while a zoom is previewed.
 	let buildingsContainer = Entity()
+	/// Terrain and buildings that have been replaced, fading out before they're removed.
+	let outgoingContainer = Entity()
 	let nodesContainer = Entity()
 	let selectionContainer = Entity()
 	let trafficContainer = Entity()
@@ -119,6 +121,10 @@ final class SpatialSceneController {
 
 	private var placeholder: ModelEntity
 	private var terrainEntity: ModelEntity?
+	/// The card over the map while the terrain downloads or builds.
+	private var loadingCard: Entity?
+	/// Entities fading in or out, stepped each frame.
+	private var fades: [Fade] = []
 	private var coverageEntity: ModelEntity?
 	private var coverageOpacity: Float?
 	private var weatherRadarEntity: Entity?
@@ -193,6 +199,9 @@ final class SpatialSceneController {
 		selectionContainer.addChild(ring)
 		selectionContainer.addChild(tether)
 		root.addChild(ownLight)
+		// Under the root, not the terrain anchor: what fades out keeps the zoom preview and size it
+		// was shown at while the anchor takes the new terrain's.
+		root.addChild(outgoingContainer)
 	}
 
 	static func transparentMaterial(_ color: UIColor, opacity: Float) -> UnlitMaterial {
@@ -268,18 +277,34 @@ final class SpatialSceneController {
 		applyFit()
 	}
 
+	/// Fades the new terrain in over the old one, which fades out. While a new circle builds, the
+	/// old terrain stays up with the zoom previewed on it.
 	func apply(terrainEntity entity: ModelEntity?, building: Bool) {
-		if entity !== terrainEntity {
-			terrainEntity?.removeFromParent()
-			if let entity {
-				terrainAnchor.addChild(entity)
-				applyLight(to: entity)
+		guard entity !== terrainEntity else { return }
+		if let old = terrainEntity {
+			// Looked at and pinched through while it fades: the pins are on the new terrain.
+			old.components.remove(InputTargetComponent.self)
+			fade(old, to: 0, then: .remove)
+			// Its buildings go with it. Hidden ones, under a zoom preview, just go.
+			if let buildings = buildingsContainer.children.first {
+				if buildingsContainer.isEnabled {
+					fade(buildings, to: 0, then: .remove)
+				} else {
+					buildings.removeFromParent()
+				}
 			}
-			terrainEntity = entity
 		}
-		// While a new circle builds, the old terrain stays up with the zoom previewed on it.
-		terrainEntity?.isEnabled = terrainEntity != nil
-		placeholder.isEnabled = terrainEntity == nil
+		if let entity {
+			terrainAnchor.addChild(entity)
+			applyLight(to: entity)
+			entity.components.set(OpacityComponent(opacity: 0))
+			fade(entity, to: 1)
+			fade(placeholder, to: 0, then: .disable)
+		} else {
+			placeholder.isEnabled = true
+			fade(placeholder, to: 1)
+		}
+		terrainEntity = entity
 	}
 
 	/// Shows the circle the map is heading for on the terrain that is built: scaled about the new
@@ -788,7 +813,11 @@ extension SpatialSceneController {
 	func apply(coverage entity: ModelEntity?, revision: Int?, opacity: Float) {
 		if entity !== coverageEntity {
 			coverageEntity?.removeFromParent()
-			if let entity { coverageContainer.addChild(entity) }
+			if let entity {
+				coverageContainer.addChild(entity)
+				entity.components.set(OpacityComponent(opacity: 0))
+				fade(entity, to: 1)
+			}
 			coverageEntity = entity
 			coverageOpacity = opacity
 		}
@@ -804,7 +833,11 @@ extension SpatialSceneController {
 	func apply(weatherRadar entity: Entity?, revision: Int?, reduceMotion: Bool) {
 		if entity !== weatherRadarEntity {
 			weatherRadarEntity?.removeFromParent()
-			if let entity { weatherRadarContainer.addChild(entity) }
+			if let entity {
+				weatherRadarContainer.addChild(entity)
+				entity.components.set(OpacityComponent(opacity: 0))
+				fade(entity, to: 1)
+			}
 			weatherRadarEntity = entity
 			weatherRadarStill = nil
 		}
@@ -828,10 +861,13 @@ extension SpatialSceneController {
 		if buildingsContainer.parent == nil { terrainAnchor.addChild(buildingsContainer) }
 		let current = buildingsContainer.children.first
 		if current !== entity {
-			current?.removeFromParent()
+			// Out with the terrain they stood on, and in once built on the new one.
+			if let current { fade(current, to: 0, then: .remove) }
 			if let entity {
 				buildingsContainer.addChild(entity)
 				applyLight(to: entity)
+				entity.components.set(OpacityComponent(opacity: 0))
+				fade(entity, to: 1)
 			}
 		}
 		updateBuildingsVisibility()
@@ -1078,5 +1114,92 @@ enum SpatialMapLight {
 			) else { return nil }
 		return try? EnvironmentResource(equirectangular: image)
 	}()
+}
+// MARK: - Fades and the loading card
+
+extension SpatialSceneController {
+	/// An entity's opacity stepping toward `target`, and what happens to it once there.
+	struct Fade {
+		enum End {
+			/// Stays, drawn normally again.
+			case keep
+			/// Stays, switched off.
+			case disable
+			/// Taken out of the scene.
+			case remove
+		}
+		let entity: Entity
+		let target: Float
+		let end: End
+	}
+
+	/// How long a fade takes, in seconds.
+	private static let fadeDuration: Float = 0.4
+
+	/// The card's attachment id.
+	static let loadingCardID = "terrainLoading"
+
+	/// Fades `entity` from its opacity now to `target`. One fading out is moved to the outgoing
+	/// container first, so the container it was in is free for its replacement.
+	func fade(_ entity: Entity, to target: Float, then end: Fade.End = .keep) {
+		fades.removeAll { $0.entity === entity }
+		if end == .remove, entity.parent !== outgoingContainer {
+			outgoingContainer.addChild(entity, preservingWorldTransform: true)
+		}
+		fades.append(Fade(entity: entity, target: target, end: end))
+	}
+
+	/// Moves each fade on by a frame.
+	func stepFades(deltaTime: Double) {
+		guard !fades.isEmpty else { return }
+		let step = Float(deltaTime) / Self.fadeDuration
+		fades.removeAll { fade in
+			let current = fade.entity.components[OpacityComponent.self]?.opacity ?? 1
+			let next = current < fade.target ? min(current + step, fade.target) : max(current - step, fade.target)
+			guard next == fade.target else {
+				fade.entity.components.set(OpacityComponent(opacity: next))
+				return false
+			}
+			switch fade.end {
+			case .keep:
+				// Fully shown needs no opacity, which RealityKit draws with blending.
+				if next >= 1 {
+					fade.entity.components.remove(OpacityComponent.self)
+				} else {
+					fade.entity.components.set(OpacityComponent(opacity: next))
+				}
+			case .disable:
+				fade.entity.isEnabled = false
+				fade.entity.components.remove(OpacityComponent.self)
+			case .remove:
+				fade.entity.removeFromParent()
+				fade.entity.components.remove(OpacityComponent.self)
+			}
+			return true
+		}
+	}
+
+	/// Puts the card over the middle of the map, facing the viewer, and takes it away when it's gone.
+	func apply(loadingCard entity: Entity?) {
+		if entity !== loadingCard {
+			loadingCard?.removeFromParent()
+			if let entity {
+				entity.components.set(BillboardComponent())
+				root.addChild(entity)
+			}
+			loadingCard = entity
+		}
+		placeLoadingCard()
+	}
+
+	/// Just above the highest terrain, or the flat disk, and below the volume's ceiling.
+	private func placeLoadingCard() {
+		guard let loadingCard, let volume else { return }
+		let surface = max(terrainEntity.map { $0.visualBounds(relativeTo: root).max.y } ?? 0, 0)
+		let halfHeight = max(loadingCard.visualBounds(relativeTo: loadingCard).extents.y / 2, 0.04)
+		// The root sits 3 cm above the volume's floor.
+		let highest = volume.extents.y - 0.04 - halfHeight
+		loadingCard.position = [0, min(surface + 0.04 + halfHeight, highest), 0]
+	}
 }
 #endif

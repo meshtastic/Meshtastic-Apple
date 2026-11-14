@@ -62,8 +62,15 @@ struct OfflineMapDownloadProgress: Identifiable, Equatable {
 		case failed(String)
 	}
 
+	/// Which part of a download in parts this is: the street map, then its terrain.
+	struct Step: Equatable {
+		let number: Int
+		let count: Int
+	}
+
 	let id: UUID
 	var name: String
+	var step: Step?
 	var state: State = .preparing
 	/// 0...1, or `nil` while indeterminate (e.g. preparing).
 	var fractionCompleted: Double?
@@ -678,6 +685,7 @@ extension OfflineMapManager {
 		includeRegional: Bool = true,
 		maxBytes: Int64? = nil,
 		freeing: Int64 = 0,
+		step: OfflineMapDownloadProgress.Step? = nil,
 		onCompletion: ((Bool) -> Void)? = nil
 	) {
 		loadIfNeeded()
@@ -697,6 +705,7 @@ extension OfflineMapManager {
 		activeDownload = OfflineMapDownloadProgress(
 			id: current.id,
 			name: String(localized: "Terrain for \(current.name)"),
+			step: step,
 			state: .preparing,
 			fractionCompleted: nil
 		)
@@ -876,7 +885,7 @@ extension OfflineMapManager {
 		}
 		let name = Self.spatialMapAreaName
 		let freeing = regions.filter { $0.managedBy == managedBy }.reduce(Int64(0)) { $0 + $1.totalByteCount }
-		activeDownload = OfflineMapDownloadProgress(id: regionID, name: name, state: .preparing, fractionCompleted: nil)
+		activeDownload = OfflineMapDownloadProgress(id: regionID, name: name, step: .init(number: 1, count: 2), state: .preparing, fractionCompleted: nil)
 		// The street map is done: terrain follows on the same region, in the same main-actor turn
 		// so nothing else can start in between.
 		downloadCompletion = { [weak self] region in
@@ -884,7 +893,7 @@ extension OfflineMapManager {
 				onCompletion(.failed)
 				return
 			}
-			self.downloadTerrain(for: region, includeRegional: includeRegional, maxBytes: Self.maxRegionBytes, freeing: freeing) { [weak self] success in
+			self.downloadTerrain(for: region, includeRegional: includeRegional, maxBytes: Self.maxRegionBytes, freeing: freeing, step: .init(number: 2, count: 2)) { [weak self] success in
 				self?.finishManaged(region, success: success)
 				onCompletion(success ? .full : .failed)
 			}

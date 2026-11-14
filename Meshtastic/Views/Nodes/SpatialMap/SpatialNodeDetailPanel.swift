@@ -142,8 +142,8 @@ struct SpatialNodeDetailPanel: View {
 	}
 
 	/// The card's buttons, in fixed colors like the rest of it: a dark platter, white label, and at
-	/// least 44 points each way to hit.
-	private struct CardButtonStyle: ButtonStyle {
+	/// least 44 points each way to hit. The terrain loading card uses them too.
+	struct CardButtonStyle: ButtonStyle {
 		enum Shape {
 			case circle, rounded
 		}

@@ -499,9 +499,6 @@ struct SpatialMapOrnament: View {
 			Divider().frame(height: 20)
 
 			HStack(spacing: 6) {
-				if model.isBuildingTerrain {
-					ProgressView().controlSize(.small)
-				}
 				Text("\(model.nodes.count) nodes", comment: "Spatial map: how many nodes are on the terrain")
 				if model.outsideCount > 0 {
 					Text("· \(model.outsideCount) outside", comment: "Spatial map: nodes too far away to fit on the terrain")

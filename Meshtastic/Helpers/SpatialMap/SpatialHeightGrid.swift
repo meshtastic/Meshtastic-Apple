@@ -61,8 +61,9 @@ struct SpatialHeightGrid: Equatable, Sendable {
 	}
 
 	/// Reads every vertex through the tiles at the plan's zoom, one tile fetch per tile. Vertices
-	/// outside the downloaded coverage are uncovered; the caller cleans and fills them.
-	static func sample(frame: SpatialFrame, plan: Plan, source: any ElevationTileSource) async throws -> SpatialHeightGrid {
+	/// outside the downloaded coverage are uncovered; the caller cleans and fills them. `progress`
+	/// hears the tiles read so far and how many there are.
+	static func sample(frame: SpatialFrame, plan: Plan, source: any ElevationTileSource, progress: (@Sendable (_ done: Int, _ total: Int) -> Void)? = nil) async throws -> SpatialHeightGrid {
 		let size = TerrainStore.tileSize
 		let z = plan.samplingZoom
 		let bounds = frame.bounds
@@ -77,6 +78,8 @@ struct SpatialHeightGrid: Equatable, Sendable {
 		struct Key: Hashable { let x: Int; let y: Int }
 		var tiles: [Key: (tile: ElevationTile, coverage: GeoBounds)?] = [:]
 		var currentTileRow = -1
+		let total = Set(columnPixels.map(\.x)).count * Set(rowPixels.map(\.y)).count
+		var done = 0
 		for (j, row) in rowPixels.enumerated() {
 			if row.y != currentTileRow {
 				tiles.removeAll(keepingCapacity: true)
@@ -96,6 +99,8 @@ struct SpatialHeightGrid: Equatable, Sendable {
 						entry = nil
 					}
 					tiles[key] = entry
+					done += 1
+					progress?(done, total)
 				}
 				guard let entry, entry.coverage.contains(CLLocationCoordinate2D(latitude: latitudes[j], longitude: longitudes[i])) else { continue }
 				let index = j * plan.columns + i
