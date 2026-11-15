@@ -256,7 +256,7 @@ The radio's 3D model at the top of the same node detail shows its screen live to
 
 The screen only comes over your direct connection to the radio, never over the mesh, so it isn't available for other nodes. Firmware that can't share its screen doesn't show the row.
 
-Sharing the screen needs firmware newer than 2.8.2 on a radio running BaseUI. InkHUD radios can't share theirs, and Meshtastic UI (MUI) radios only on firmware built with MUI mirroring, which no release enables. An MUI radio sends its screen to one connection at a time, so a second app gets no picture until the first stops.
+Sharing the screen needs firmware newer than 2.8.2 on a radio running BaseUI. InkHUD radios can't share theirs, and Meshtastic UI (MUI) radios only on firmware built with MUI mirroring, which no release enables, and only on boards that can also run BaseUI. An MUI radio sends its screen to one connection at a time, so a second app gets no picture until the first stops.
 
 ### Remote Shell
 
