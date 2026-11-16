@@ -127,7 +127,8 @@ struct LoRaChannelCalculator {
 	private func bandwidthMHz(region: RegionInfo) -> Double {
 		if usePreset {
 			let presetBandwidth = ModemPresets(rawValue: modemPreset)?.bandwidthMHz ?? 0
-			return presetBandwidth * (region.wideLoRa ? 3.25 : 1)
+			let widens = region.wideLoRa && ModemPresets(rawValue: modemPreset)?.widensOnWideLoRa == true
+			return presetBandwidth * (widens ? 3.25 : 1)
 		}
 		switch bandwidth {
 		case 31:
@@ -358,7 +359,7 @@ struct RegionInfo {
 		case .kz433:
 			self.init(freqStart: 433.075, freqEnd: 434.775)
 		case .kz863:
-			self.init(freqStart: 863.0, freqEnd: 868.0, wideLoRa: true)
+			self.init(freqStart: 863.0, freqEnd: 868.0)
 		case .np865:
 			self.init(freqStart: 865.0, freqEnd: 868.0)
 		case .br902:
@@ -424,6 +425,18 @@ extension ModemPresets {
 			return 0.0625
 		case .tinyFast, .tinySlow:
 			return 0.0156
+		}
+	}
+
+	/// Whether a wide-LoRa (2.4 GHz) region scales the bandwidth by 3.25. Firmware has no
+	/// wide variant of the Lite, Narrow and Tiny presets.
+	var widensOnWideLoRa: Bool {
+		switch self {
+		case .liteFast, .liteSlow, .narrowFast, .narrowSlow, .tinyFast, .tinySlow:
+			return false
+		case .longTurbo, .longFast, .longModerate, .longSlow, .medFast, .medSlow, .mediumTurbo,
+			.shortFast, .shortSlow, .shortTurbo:
+			return true
 		}
 	}
 }
