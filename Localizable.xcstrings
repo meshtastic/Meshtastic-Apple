@@ -73946,7 +73946,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Linie między węzłami, które słyszą się bezpośrednio, w kolorze zależnym od jakości sygnału. Połączenia Twojego radia pochodzą z węzłów, które ono słyszy; połączenia między innymi węzłami pochodzą z ich raportów Neighbor Info."
+            "value" : "Linie między węzłami, które słyszą się bezpośrednio, w kolorze zależnym od jakości sygnału. Połączenia Twojego radia pochodzą z węzłów, które ono słyszy; połączenia między innymi węzłami pochodzą z ich raportów Info o sąsiadach."
           }
         }
       }
@@ -104121,7 +104121,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Neighbor Info"
+            "value" : "Info o sąsiadach"
           }
         },
         "uk" : {
@@ -104157,7 +104157,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Konfiguracja Neighbor Info"
+            "value" : "Konfiguracja info o sąsiadach"
           }
         },
         "uk" : {
@@ -169330,7 +169330,7 @@
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Moduł Neighbor Info w Twoim radiu jest wyłączony, więc nie można pokazać połączeń między innymi węzłami."
+            "value" : "Moduł Info o sąsiadach w Twoim radiu jest wyłączony, więc nie można pokazać połączeń między innymi węzłami."
           }
         }
       }
