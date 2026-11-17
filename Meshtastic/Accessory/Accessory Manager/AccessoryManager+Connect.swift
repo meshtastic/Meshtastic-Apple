@@ -429,7 +429,12 @@ actor SequentialSteps {
 	
 	func run() async throws {
 		self.isRunning = true
+		defer { isRunning = false }
 		retryLoop: for attempt in 0..<maxRetries {
+			// An error reported during the previous attempt belongs to that attempt's connection.
+			if !cancelled {
+				externalError = nil
+			}
 			for stepNumber in 0..<steps.count {
 				if cancelled {
 					throw externalError ?? CancellationError()
@@ -484,6 +489,14 @@ actor SequentialSteps {
 							}
 						}
 					}
+					// The connection reported an error while this step ran, but the step finished
+					// anyway — not every step throws when cancelled. Fail the attempt here instead
+					// of carrying on to the next step and reporting a dead link as connected.
+					// Left set: a cancelled process rethrows it at the top of the next pass.
+					if let externalError {
+						Logger.transport.error("[Sequential Steps] Connection reported an error during step \(stepNumber, privacy: .public), which finished anyway; failing this attempt: \(externalError.localizedDescription, privacy: .public)")
+						throw externalError
+					}
 				} catch {
 					switch error {
 					case let SequentialStepError.timeout(stepNumber, afterWaiting):
@@ -496,17 +509,13 @@ actor SequentialSteps {
 						// TODO: we could have a .retryStepAndFail and a .retryStepAndContinue instead of just .retryStep to clarify the behavior here
 						continue retryLoop
 					case .fail:
-						isRunning = false
 						throw error
 					}
 				}
 			}
 			// We have finished all steps
-			isRunning = false
 			return
 		}
-		isRunning = false
-		// return
 		throw AccessoryError.tooManyRetries
 	}
 	
@@ -515,13 +524,20 @@ actor SequentialSteps {
 		self.currentlyExecutingStep?.cancel()
 	}
 	
-	func cancelCurrentlyExecutingStep(withError: Error?, cancelFullProcess: Bool = false) {
+	/// Hands an error from the connection to the running process.
+	///
+	/// Returns false if the process is no longer running, in which case nothing will act on
+	/// the error and the caller has to tear the connection down itself.
+	@discardableResult
+	func cancelCurrentlyExecutingStep(withError: Error?, cancelFullProcess: Bool = false) -> Bool {
+		guard isRunning else { return false }
 		self.externalError = withError
 		if cancelFullProcess {
 			cancel()
 		} else {
 			self.currentlyExecutingStep?.cancel()
 		}
+		return true
 	}
 	
 	func executeWithTimeout<ReturnType>(stepNumber: Int, timeout: Duration, operation: @escaping @Sendable () async throws -> ReturnType) -> Task<ReturnType, Error> {
