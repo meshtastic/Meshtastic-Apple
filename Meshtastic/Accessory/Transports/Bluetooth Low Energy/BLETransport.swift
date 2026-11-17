@@ -384,6 +384,7 @@ actor BLETransport: Transport {
 			throw AccessoryError.connectionFailed("Peripheral not found")
 		}
 		
+		var connectRequested = false
 		do {
 			let returnConnection = try await withTaskCancellationHandler {
 				let newConnection: BLEConnection = try await withCheckedThrowingContinuation { cont in
@@ -399,6 +400,7 @@ actor BLETransport: Transport {
 						return
 					}
 					centralManager.connect(peripheral)
+					connectRequested = true
 				}
 				self.activeConnection = newConnection
 				return newConnection
@@ -410,6 +412,12 @@ actor BLETransport: Transport {
 			Logger.transport.debug("🛜 [BLE] Connect complete.")
 			return returnConnection
 		} catch {
+			// Core Bluetooth never gives up on a connect request by itself. Left pending, it
+			// connects the radio when it comes back in range with nothing here waiting for it,
+			// and the radio stops advertising, so the app can't find it either.
+			if connectRequested {
+				centralManager?.cancelPeripheralConnection(peripheral)
+			}
 			connectionDidDisconnect(fromPeripheral: peripheral)
 			throw error
 		}
@@ -487,6 +495,12 @@ actor BLETransport: Transport {
 		guard let cont = connectContinuation,
 			  let connPeripheral = connectingPeripheral,
 			  peripheral.identifier == connPeripheral.identifier else {
+			if activeConnection == nil {
+				// A connect request outlived the attempt that made it. Nothing would ever use or
+				// close this link, so close it and let the radio advertise again.
+				Logger.transport.error("🛜 [BLE] \(peripheral.name ?? "Unknown", privacy: .public) connected with no connect waiting for it; disconnecting")
+				central.cancelPeripheralConnection(peripheral)
+			}
 			return
 		}
 		let connection = BLEConnection(peripheral: peripheral, central: central, transport: self)
