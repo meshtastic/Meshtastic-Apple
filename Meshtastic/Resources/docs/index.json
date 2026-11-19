@@ -405,15 +405,15 @@
             "contact",
             "screen",
             "only",
+            "firmware",
             "name",
             "heard",
-            "firmware",
             "public",
             "model",
             "app",
+            "one",
             "messages",
             "list",
-            "one",
             "mesh",
             "hardware",
             "open",
@@ -426,7 +426,7 @@
             "tap",
             "see"
         ],
-        "charCount": 23110
+        "charCount": 23481
     },
     {
         "id": "settings",
