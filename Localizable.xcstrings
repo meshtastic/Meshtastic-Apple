@@ -318,6 +318,12 @@
             "state" : "translated",
             "value" : "%@ – natężenie"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 電流"
+          }
         }
       }
     },
@@ -329,11 +335,24 @@
             "state" : "translated",
             "value" : "%@ – napięcie"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 電壓"
+          }
         }
       }
     },
     "%lld bytes of input dropped, the node is not keeping up" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已捨棄 %lld 位元組的輸入，節點處理速度跟不上"
+          }
+        }
+      }
     },
     "%lld Nodes" : {
       "comment" : "Cinema lookout: title of the card listing the nodes a marker out the window stands for",
@@ -387,7 +406,15 @@
       }
     },
     "1 minute %lf, 5 minutes %lf, 15 minutes %lf" : {
-      "comment" : "VoiceOver value for a host's load averages"
+      "comment" : "VoiceOver value for a host's load averages",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 分鐘 %lf，5 分鐘 %lf，15 分鐘 %lf"
+          }
+        }
+      }
     },
     "3D model © Meshtastic LLC. The product and its name, logos and marks belong to %@." : {
       "comment" : "Showcase model card: who owns the model and who owns the product; the argument is the maker",
@@ -447,6 +474,12 @@
             "state" : "translated",
             "value" : "Rozgłaszaj własną sieć, aby osoby w pobliżu mogły ją znaleźć i do niej dołączyć."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "廣播您自己的 Mesh，讓附近的人可以找到並加入。"
+          }
         }
       }
     },
@@ -468,6 +501,12 @@
             "state" : "translated",
             "value" : "Działa dla następnego klawisza"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "套用至下一個按鍵"
+          }
         }
       }
     },
@@ -483,10 +522,26 @@
       }
     },
     "Banana for Scale" : {
-      "comment" : "Cinema: button on the card beside a device model on the stand; lays a real-size banana beside it"
+      "comment" : "Cinema: button on the card beside a device model on the stand; lays a real-size banana beside it",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "放根香蕉比大小"
+          }
+        }
+      }
     },
     "Banana for scale" : {
-      "comment" : "Cinema: VoiceOver label for the banana beside the device model on the stand"
+      "comment" : "Cinema: VoiceOver label for the banana beside the device model on the stand",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用來比較大小的香蕉"
+          }
+        }
+      }
     },
     "Brought to you by" : {
       "comment" : "Showcase: plaque on the wall naming who made the showcase, above the Meshtastic Solutions name",
@@ -507,10 +562,26 @@
       }
     },
     "Building Terrain" : {
-      "comment" : "Spatial map loading card: title while the 3D terrain is being built"
+      "comment" : "Spatial map loading card: title while the 3D terrain is being built",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在建立地形"
+          }
+        }
+      }
     },
     "Building the surface" : {
-      "comment" : "Spatial map loading card: making the 3D surface"
+      "comment" : "Spatial map loading card: making the 3D surface",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在建立表面"
+          }
+        }
+      }
     },
     "Change any of these in Settings." : {
       "comment" : "Radio setup done footer",
@@ -602,6 +673,12 @@
             "state" : "translated",
             "value" : "Zamykanie…"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在關閉…"
+          }
         }
       }
     },
@@ -612,6 +689,12 @@
             "state" : "translated",
             "value" : "Wyczyść ekran"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清除畫面"
+          }
         }
       }
     },
@@ -621,6 +704,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Polecenie"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "指令"
           }
         }
       }
@@ -659,13 +748,34 @@
       }
     },
     "Connect to this device?" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "要連線到此裝置嗎？"
+          }
+        }
+      }
     },
     "Connect to your radio to open a remote shell." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "連線至您的無線電以開啟遠端 Shell。"
+          }
+        }
+      }
     },
     "Could not open the session (%@). The node must list your radio's public key as an admin key, and be in range." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法開啟工作階段（%@）。節點必須將您無線電的公鑰列為管理金鑰，且位於通訊範圍內。"
+          }
+        }
+      }
     },
     "Copy All Output" : {
       "localizations" : {
@@ -674,14 +784,35 @@
             "state" : "translated",
             "value" : "Kopiuj cały wynik"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "複製全部輸出"
+          }
         }
       }
     },
     "Control" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Control 鍵"
+          }
+        }
+      }
     },
     "Couldn't Build Terrain" : {
-      "comment" : "Spatial map loading card: title when building the 3D terrain failed"
+      "comment" : "Spatial map loading card: title when building the 3D terrain failed",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法建立地形"
+          }
+        }
+      }
     },
     "Couldn't Import Map File" : {
       "localizations" : {
@@ -723,17 +854,47 @@
             "state" : "translated",
             "value" : "Strzałka w dół"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "向下鍵"
+          }
         }
       }
     },
     "Downloading Map" : {
-      "comment" : "Spatial map loading card: title while the street map for the area downloads"
+      "comment" : "Spatial map loading card: title while the street map for the area downloads",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在下載地圖"
+          }
+        }
+      }
     },
     "Downloading Terrain" : {
-      "comment" : "Spatial map loading card: title while the elevation data for the area downloads"
+      "comment" : "Spatial map loading card: title while the elevation data for the area downloads",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在下載地形"
+          }
+        }
+      }
     },
     "Drawing the map" : {
-      "comment" : "Spatial map loading card: drawing the map image laid over the terrain"
+      "comment" : "Spatial map loading card: drawing the map image laid over the terrain",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在繪製地圖"
+          }
+        }
+      }
     },
     "E-ink screens redraw slowly. Tap Refresh for the latest picture." : {
       "localizations" : {
@@ -752,10 +913,25 @@
       }
     },
     "Elevation for the hills and valleys" : {
-      "comment" : "Spatial map loading card: what the terrain download is for"
+      "comment" : "Spatial map loading card: what the terrain download is for",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "山丘與谷地的高程資料"
+          }
+        }
+      }
     },
     "End" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "End 鍵"
+          }
+        }
+      }
     },
     "End Session" : {
       "comment" : "Remote shell menu: close the session without leaving the screen",
@@ -764,6 +940,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Zakończ sesję"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "結束工作階段"
           }
         }
       }
@@ -780,13 +962,35 @@
       }
     },
     "Error from the node: %@" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "節點回報錯誤：%@"
+          }
+        }
+      }
     },
     "Escape" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esc 鍵"
+          }
+        }
+      }
     },
     "Evacuate" : {
-      "comment" : "CO2 level of 30000 ppm or more"
+      "comment" : "CO2 level of 30000 ppm or more",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請立即撤離"
+          }
+        }
+      }
     },
     "File is too large. Maximum size is %@." : {
       "localizations" : {
@@ -822,25 +1026,81 @@
       }
     },
     "Poor" : {
-      "comment" : "CO2 level from 2000 to 5000 ppm"
+      "comment" : "CO2 level from 2000 to 5000 ppm",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "差"
+          }
+        }
+      }
     },
     "Reading elevation" : {
-      "comment" : "Spatial map loading card: reading heights from the downloaded terrain"
+      "comment" : "Spatial map loading card: reading heights from the downloaded terrain",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在讀取高程"
+          }
+        }
+      }
     },
     "Searching the Maps" : {
-      "comment" : "Cinema loading card: title while the downloaded maps are searched for summits, coastline or buildings"
+      "comment" : "Cinema loading card: title while the downloaded maps are searched for summits, coastline or buildings",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在搜尋地圖"
+          }
+        }
+      }
     },
     "Step %lld of %lld: elevation" : {
-      "comment" : "Spatial map loading card: which part of the download is running, the elevation data"
+      "comment" : "Spatial map loading card: which part of the download is running, the elevation data",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "步驟 %lld／%lld：高程"
+          }
+        }
+      }
     },
     "Step %lld of %lld: streets" : {
-      "comment" : "Spatial map loading card: which part of the download is running, the street map"
+      "comment" : "Spatial map loading card: which part of the download is running, the street map",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "步驟 %lld／%lld：街道"
+          }
+        }
+      }
     },
     "Stuffy" : {
-      "comment" : "CO2 level from 1000 to 2000 ppm"
+      "comment" : "CO2 level from 1000 to 2000 ppm",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "空氣不流通"
+          }
+        }
+      }
     },
     "Unsafe" : {
-      "comment" : "CO2 level from 5000 to 30000 ppm"
+      "comment" : "CO2 level from 5000 to 30000 ppm",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不安全"
+          }
+        }
+      }
     },
     "frequency slot %lld" : {
       "comment" : "Beacon switch prompt; one of the changes listed",
@@ -860,6 +1120,12 @@
             "state" : "translated",
             "value" : "Programy pełnoekranowe potrzebują więcej, niż sieć jest w stanie przesłać, więc ich wynik może wyświetlać się niepoprawnie."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "全螢幕程式所需的傳輸量超出 Mesh 的負荷，因此輸出可能無法正確顯示。"
+          }
         }
       }
     },
@@ -870,6 +1136,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Odbieraj beacony sieci w pobliżu. Pojawią się tutaj i w Wykrywaniu lokalnych sieci."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "收聽附近 Mesh 的信標。收到的信標會顯示在此處及「本地 Mesh 探索」中。"
           }
         }
       }
@@ -893,7 +1165,14 @@
       }
     },
     "Home" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Home 鍵"
+          }
+        }
+      }
     },
     "How your radio shows up for others." : {
       "comment" : "Radio setup intro row",
@@ -918,6 +1197,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Łącznik"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "連字號"
           }
         }
       }
@@ -951,6 +1236,12 @@
             "state" : "translated",
             "value" : "Większy tekst"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "放大文字"
+          }
         }
       }
     },
@@ -972,6 +1263,12 @@
             "state" : "translated",
             "value" : "Tryb linii"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "整行模式"
+          }
         }
       }
     },
@@ -982,6 +1279,12 @@
             "state" : "translated",
             "value" : "Tryb linii wysyła całe polecenie naraz, co mniej obciąża zajętą sieć."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "整行模式會一次傳送整個指令，可減輕繁忙 Mesh 的負擔。"
+          }
         }
       }
     },
@@ -991,6 +1294,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Strzałka w lewo"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "向左鍵"
           }
         }
       }
@@ -1003,6 +1312,12 @@
             "state" : "translated",
             "value" : "Nasłuchiwanie beaconów"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在收聽信標"
+          }
         }
       }
     },
@@ -1013,6 +1328,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wykrywanie lokalnych sieci nasłuchuje po kolei na każdym presecie i pokazuje, kogo słyszy."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本地 Mesh 探索會輪流在每個預設上收聽，並回報收聽到的節點。"
           }
         }
       }
@@ -1036,6 +1357,12 @@
             "state" : "translated",
             "value" : "Sieci w pobliżu mogą się rozgłaszać za pomocą beaconu. Nasłuchuj ich, aby zobaczyć, co jest w okolicy, i dołączyć do jednej z nich."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "您附近的 Mesh 可以透過信標廣播自己。收聽信標即可了解周遭有哪些 Mesh，並加入其中之一。"
+          }
         }
       }
     },
@@ -1056,6 +1383,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Więcej opcji"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更多選項"
           }
         }
       }
@@ -1129,13 +1462,36 @@
       }
     },
     "Next readings, page %lld of %lld" : {
-      "comment" : "Environment widget page button for VoiceOver. The arguments are the page shown and the number of pages."
+      "comment" : "Environment widget page button for VoiceOver. The arguments are the page shown and the number of pages.",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下一組讀數，第 %lld 頁，共 %lld 頁"
+          }
+        }
+      }
     },
     "Next Telemetry Readings" : {
-      "comment" : "Telemetry widget: the page button action"
+      "comment" : "Telemetry widget: the page button action",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下一組遙測讀數"
+          }
+        }
+      }
     },
     "No reply from the node. It must list your radio's public key as an admin key, and be in range." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "節點沒有回應。節點必須將您無線電的公鑰列為管理金鑰，且位於通訊範圍內。"
+          }
+        }
+      }
     },
     "None heard yet. A mesh's beacon can take an hour or more to arrive." : {
       "comment" : "Radio setup beacons page; listening but nothing heard",
@@ -1144,6 +1500,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Na razie nic nie słychać. Beacon sieci może dotrzeć dopiero po godzinie lub dłużej."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尚未收聽到任何信標。Mesh 的信標可能需要一小時以上才會送達。"
           }
         }
       }
@@ -1171,6 +1533,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nie nasłuchuje beaconów"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未收聽信標"
           }
         }
       }
@@ -1215,6 +1583,12 @@
             "state" : "translated",
             "value" : "Otwieranie sesji…"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在開啟工作階段…"
+          }
         }
       }
     },
@@ -1224,6 +1598,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Otwarta, czas odpowiedzi %lld ms"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已開啟，往返 %lld 毫秒"
           }
         }
       }
@@ -1235,6 +1615,12 @@
             "state" : "translated",
             "value" : "Otwarta"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已開啟"
+          }
         }
       }
     },
@@ -1244,6 +1630,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Otwiera powłokę na tym węźle, w razie potrzeby najpierw rozpoczynając sesję zdalnego zarządzania"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在此節點上開啟 Shell，必要時會先啟動遠端管理工作階段"
           }
         }
       }
@@ -1272,6 +1664,12 @@
             "state" : "translated",
             "value" : "Wklej"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "貼上"
+          }
         }
       }
     },
@@ -1282,11 +1680,25 @@
             "state" : "translated",
             "value" : "Page Up"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Page Up 鍵"
+          }
         }
       }
     },
     "Pages" : {
-      "comment" : "Environment widget page button: how many pages there are"
+      "comment" : "Environment widget page button: how many pages there are",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "頁數"
+          }
+        }
+      }
     },
     "Page down" : {
       "localizations" : {
@@ -1294,6 +1706,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Page Down"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Page Down 鍵"
           }
         }
       }
@@ -1327,7 +1745,15 @@
       }
     },
     "Pinch and drag the list to see all %lld." : {
-      "comment" : "Cinema team board: hint when there are more nodes than fit; the argument is how many rows the list has"
+      "comment" : "Cinema team board: hint when there are more nodes than fit; the argument is how many rows the list has",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "捏住並拖移列表即可查看全部 %lld 個。"
+          }
+        }
+      }
     },
     "Presets trade range for speed. Long Range reaches farther and Short Range sends faster. Everyone on a mesh must use the same one." : {
       "comment" : "Radio setup preset intro",
@@ -1413,6 +1839,12 @@
             "state" : "translated",
             "value" : "Nie przełączono radia"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未切換無線電"
+          }
         }
       }
     },
@@ -1422,6 +1854,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Połącz ponownie"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重新連線"
           }
         }
       }
@@ -1444,6 +1882,12 @@
             "state" : "translated",
             "value" : "Strzałka w prawo"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "向右鍵"
+          }
         }
       }
     },
@@ -1454,6 +1898,12 @@
             "state" : "translated",
             "value" : "Zdalna powłoka"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "遠端 Shell"
+          }
         }
       }
     },
@@ -1463,6 +1913,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sesja zdalnego zarządzania aktywna"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "遠端管理工作階段進行中"
           }
         }
       }
@@ -1508,6 +1964,12 @@
             "state" : "translated",
             "value" : "Szukaj sieci"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "掃描 Mesh"
+          }
         }
       }
     },
@@ -1534,6 +1996,12 @@
             "state" : "translated",
             "value" : "Sesja zamknięta: %@"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "工作階段已關閉：%@"
+          }
         }
       }
     },
@@ -1544,6 +2012,12 @@
             "state" : "translated",
             "value" : "Sesja zamknięta"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "工作階段已關閉"
+          }
         }
       }
     },
@@ -1553,6 +2027,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sesja nie powiodła się"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "工作階段失敗"
           }
         }
       }
@@ -1634,7 +2114,15 @@
       }
     },
     "Sky Deck" : {
-      "comment" : "Cinema environment: in a glass-floored box hung off the top of one of the tallest towers downtown, looking straight down at the city"
+      "comment" : "Cinema environment: in a glass-floored box hung off the top of one of the tallest towers downtown, looking straight down at the city",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "空中觀景台"
+          }
+        }
+      }
     },
     "Starting remote admin session…" : {
       "localizations" : {
@@ -1642,6 +2130,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Rozpoczynanie sesji zdalnego zarządzania…"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在啟動遠端管理工作階段…"
           }
         }
       }
@@ -1653,6 +2147,12 @@
             "state" : "translated",
             "value" : "Mniejszy tekst"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "縮小文字"
+          }
         }
       }
     },
@@ -1662,6 +2162,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ukośnik"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "斜線"
           }
         }
       }
@@ -1674,6 +2180,12 @@
             "state" : "translated",
             "value" : "Status to krótka notatka, którą inni widzą na swoich listach węzłów."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "狀態是其他人會在節點列表中看到的簡短說明。"
+          }
         }
       }
     },
@@ -1684,11 +2196,24 @@
             "state" : "translated",
             "value" : "Wynik terminala"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "終端機輸出"
+          }
         }
       }
     },
     "Tab" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tab 鍵"
+          }
+        }
+      }
     },
     "the %@ preset" : {
       "comment" : "Beacon switch prompt; one of the changes listed",
@@ -1718,16 +2243,44 @@
       }
     },
     "The node refused the session. It must list your radio's public key as an admin key." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "節點拒絕了工作階段。節點必須將您無線電的公鑰列為管理金鑰。"
+          }
+        }
+      }
     },
     "The node stopped answering." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "節點已停止回應。"
+          }
+        }
+      }
     },
     "Couldn't tell the node to end the session: %@" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法通知節點結束工作階段：%@"
+          }
+        }
+      }
     },
     "The node asked for input this device no longer holds." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "節點要求重送的輸入內容，此裝置已不再保留。"
+          }
+        }
+      }
     },
     "The short name shows in your node's circle: up to 4 characters or one emoji." : {
       "comment" : "Radio setup name footer",
@@ -1764,13 +2317,34 @@
       }
     },
     "This node isn't in the node list." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此節點不在節點列表中。"
+          }
+        }
+      }
     },
     "This node hasn't shared a public key yet, so a remote shell can't be opened to it." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此節點尚未分享公鑰，因此無法對它開啟遠端 Shell。"
+          }
+        }
+      }
     },
     "This node's firmware is older than 2.8.2, which added the remote shell. Update it to use the shell." : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此節點的韌體早於 2.8.2（遠端 Shell 自該版本起提供）。請更新韌體以使用 Shell。"
+          }
+        }
+      }
     },
     "This region has an hourly duty cycle of %lld%%." : {
       "comment" : "Radio setup region footer",
@@ -1839,6 +2413,12 @@
             "state" : "translated",
             "value" : "Strzałka w górę"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "向上鍵"
+          }
         }
       }
     },
@@ -1897,6 +2477,12 @@
             "state" : "translated",
             "value" : "Oczekiwanie na węzeł, ostatnio słyszany %lld s temu"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在等待節點，上次收到訊號為 %lld 秒前"
+          }
         }
       }
     },
@@ -1907,6 +2493,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Oczekiwanie na ustawienia beaconu z radia."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在等待無線電的信標設定。"
           }
         }
       }
@@ -2233,6 +2825,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kreska pionowa"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "垂直線"
           }
         }
       }
@@ -2693,7 +3291,15 @@
       }
     },
     "Not in recent nodes" : {
-      "comment" : "Widget: the picked node is not in the recent nodes the app shares with widgets"
+      "comment" : "Widget: the picked node is not in the recent nodes the app shares with widgets",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不在最近的節點中"
+          }
+        }
+      }
     },
     "One node's battery, signal, when it was last heard and how far away it is." : {
       "comment" : "Live Activity sheet: what the Track a Node mode shows",
@@ -2780,7 +3386,15 @@
       }
     },
     "Show Tower" : {
-      "comment" : "Cinema: button that opens the 3D map zoomed in on the tower the sky deck hangs off, with the buildings on"
+      "comment" : "Cinema: button that opens the 3D map zoomed in on the tower the sky deck hangs off, with the buildings on",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顯示大樓"
+          }
+        }
+      }
     },
     "Signal %lld of 3" : {
       "comment" : "Widget: VoiceOver label for the signal bars; the argument is 0 to 3",
@@ -2849,7 +3463,15 @@
       }
     },
     "Stop Recording" : {
-      "comment" : "Button in the AR view: stop recording the screen and open the recording"
+      "comment" : "Button in the AR view: stop recording the screen and open the recording",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "停止錄製"
+          }
+        }
+      }
     },
     "Swipe left to disconnect. Long press for more options." : {
       "comment" : "Bluetooth tip on the Connect screen",
@@ -3702,10 +4324,26 @@
       }
     },
     "Bluetooth radio %@\n\nChoose the radio on Connect." : {
-      "comment" : "Connect link prompt for a Bluetooth radio without a PIN; the value is its Bluetooth address"
+      "comment" : "Connect link prompt for a Bluetooth radio without a PIN; the value is its Bluetooth address",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "藍牙無線電 %@\n\n請在「連線」頁面選擇此無線電。"
+          }
+        }
+      }
     },
     "Bluetooth radio %@\nPIN %@\n\nThe PIN is copied when you connect. Choose the radio on Connect, then paste the PIN when iOS asks to pair." : {
-      "comment" : "Connect link prompt for a Bluetooth radio with a pairing PIN; the first value is its Bluetooth address"
+      "comment" : "Connect link prompt for a Bluetooth radio with a pairing PIN; the first value is its Bluetooth address",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "藍牙無線電 %@\nPIN 碼 %@\n\n連線時會複製 PIN 碼。請在「連線」頁面選擇此無線電，並在 iOS 要求配對時貼上 PIN 碼。"
+          }
+        }
+      }
     },
     "Bootloader erase — **firmware is kept**" : {
       "extractionState" : "manual",
@@ -4220,7 +4858,15 @@
       }
     },
     "device metrics" : {
-      "comment" : "Telemetry request: the kind of readings, used inside a sentence"
+      "comment" : "Telemetry request: the kind of readings, used inside a sentence",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "裝置指標"
+          }
+        }
+      }
     },
     "Device that does not forward packets from other devices." : {
       "extractionState" : "manual",
@@ -4245,7 +4891,15 @@
       }
     },
     "Dew Point" : {
-      "comment" : "Environment widget: a reading name"
+      "comment" : "Environment widget: a reading name",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "露點"
+          }
+        }
+      }
     },
     "Discontinued Hardware" : {
       "localizations" : {
@@ -4436,7 +5090,15 @@
       }
     },
     "Extremely Polluted" : {
-      "comment" : "Indoor air quality (IAQ) band"
+      "comment" : "Indoor air quality (IAQ) band",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "極度污染"
+          }
+        }
+      }
     },
     "Factory erase permanently removes the radio's owner, channels, identity keys, settings, Bluetooth bonds, and node database. Nothing is restored automatically." : {
       "extractionState" : "manual",
@@ -8476,7 +9138,15 @@
       }
     },
     "Night" : {
-      "comment" : "Cinema: the space station's view of Earth with the dark side and its city lights under the cupola"
+      "comment" : "Cinema: the space station's view of Earth with the dark side and its city lights under the cupola",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "夜晚"
+          }
+        }
+      }
     },
     "Nighttime" : {
       "extractionState" : "manual",
@@ -8757,7 +9427,15 @@
       }
     },
     "Pick a node, and any of its readings to leave out." : {
-      "comment" : "Telemetry widget settings description"
+      "comment" : "Telemetry widget settings description",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選擇一個節點，以及要略過的讀數。"
+          }
+        }
+      }
     },
     "Pick a trace route to fly along it and leave it drawn on the map." : {
       "comment" : "VoiceOver hint for the spatial map trace route menu",
@@ -8909,7 +9587,15 @@
       }
     },
     "power metrics" : {
-      "comment" : "Telemetry request: the kind of readings, used inside a sentence"
+      "comment" : "Telemetry request: the kind of readings, used inside a sentence",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "電源指標"
+          }
+        }
+      }
     },
     "Preparing" : {
       "extractionState" : "manual",
@@ -9501,6 +10187,12 @@
             "state" : "translated",
             "value" : "Pokaż klawiaturę"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顯示鍵盤"
+          }
         }
       }
     },
@@ -9522,7 +10214,15 @@
       }
     },
     "Shows the next readings on a Telemetry widget." : {
-      "comment" : "Telemetry widget: the page button action description"
+      "comment" : "Telemetry widget: the page button action description",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在遙測小工具上顯示下一組讀數。"
+          }
+        }
+      }
     },
     "Simple" : {
       "extractionState" : "manual",
@@ -9679,7 +10379,15 @@
       }
     },
     "Telemetry Request Failed" : {
-      "comment" : "Alert title when the mesh reports that a telemetry request failed"
+      "comment" : "Alert title when the mesh reports that a telemetry request failed",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "遙測請求失敗"
+          }
+        }
+      }
     },
     "Telemetry Requested" : {
       "comment" : "Alert title after asking a node for telemetry",
@@ -9688,6 +10396,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wysłano żądanie telemetrii"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已送出遙測請求"
           }
         }
       }
@@ -22091,7 +22805,15 @@
       }
     },
     "air quality metrics" : {
-      "comment" : "Telemetry request: the kind of readings, used inside a sentence"
+      "comment" : "Telemetry request: the kind of readings, used inside a sentence",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "空氣品質指標"
+          }
+        }
+      }
     },
     "Air Quality Metrics" : {
       "localizations" : {
@@ -25593,7 +26315,15 @@
       }
     },
     "AR" : {
-      "comment" : "Tab in the AR view: the radio's 3D model in the room through the camera"
+      "comment" : "Tab in the AR view: the radio's 3D model in the room through the camera",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AR"
+          }
+        }
+      }
     },
     "Architecture" : {
       "comment" : "A label displayed under the architecture of a device.",
@@ -25674,6 +26404,12 @@
             "state" : "translated",
             "value" : "Zarchiwizowany"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已封存"
+          }
         }
       }
     },
@@ -25683,6 +26419,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Zarchiwizowany, nie ma go już w radiu"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已封存，已不在無線電上"
           }
         }
       }
@@ -29664,7 +30406,14 @@
       }
     },
     "Bringing in messages and nodes from an earlier version…" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在匯入舊版本的訊息與節點…"
+          }
+        }
+      }
     },
     "Broadcast a Beacon" : {
       "comment" : "A toggle that enables a mesh beacon to be advertised.",
@@ -32160,10 +32909,26 @@
       }
     },
     "Channel %lld Current" : {
-      "comment" : "Environment widget reading name for a power channel before its label is known. The argument is the channel number."
+      "comment" : "Environment widget reading name for a power channel before its label is known. The argument is the channel number.",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通道 %lld 電流"
+          }
+        }
+      }
     },
     "Channel %lld Voltage" : {
-      "comment" : "Environment widget reading name for a power channel before its label is known. The argument is the channel number."
+      "comment" : "Environment widget reading name for a power channel before its label is known. The argument is the channel number.",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通道 %lld 電壓"
+          }
+        }
+      }
     },
     "Channel 0 Included" : {
       "extractionState" : "stale",
@@ -36212,7 +36977,15 @@
       }
     },
     "CO2" : {
-      "comment" : "Environment widget reading name: carbon dioxide"
+      "comment" : "Environment widget reading name: carbon dioxide",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CO2"
+          }
+        }
+      }
     },
     "Code" : {
       "comment" : "VoiceOver: inline code formatting toolbar button",
@@ -36646,6 +37419,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Sieć społeczności"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "社群 Mesh"
           }
         }
       }
@@ -40652,6 +41431,12 @@
             "state" : "translated",
             "value" : "Nie udało się wysłać żądania"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法傳送請求"
+          }
         }
       }
     },
@@ -40820,6 +41605,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Kraj"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "國家"
           }
         }
       }
@@ -42131,7 +42922,15 @@
       }
     },
     "Day" : {
-      "comment" : "Cinema: the space station's view of Earth with the sunlit side under the cupola"
+      "comment" : "Cinema: the space station's view of Earth with the sunlit side under the cupola",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "白天"
+          }
+        }
+      }
     },
     "Days before purging stale nodes" : {
       "comment" : "VoiceOver label for the purge stale nodes days slider",
@@ -43250,6 +44049,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Usunąć wszystkie statystyki hosta?"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "要刪除所有主機指標嗎？"
           }
         }
       }
@@ -49922,7 +50727,15 @@
       }
     },
     "Download a map with terrain for the 3D map to hang the sky deck on a real tower." : {
-      "comment" : "Cinema sky deck: shown on the panel when no terrain has been downloaded"
+      "comment" : "Cinema sky deck: shown on the panel when no terrain has been downloaded",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下載含地形的地圖後，3D 地圖才能將空中觀景台掛在真實的大樓上。"
+          }
+        }
+      }
     },
     "Download map areas to use without a connection." : {
       "localizations" : {
@@ -50933,7 +51746,15 @@
       }
     },
     "East" : {
-      "comment" : "Wind direction the wind comes from"
+      "comment" : "Wind direction the wind comes from",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "東"
+          }
+        }
+      }
     },
     "Echo" : {
       "localizations" : {
@@ -54023,7 +54844,15 @@
       }
     },
     "environment metrics" : {
-      "comment" : "Telemetry request: the kind of readings, used inside a sentence"
+      "comment" : "Telemetry request: the kind of readings, used inside a sentence",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "環境指標"
+          }
+        }
+      }
     },
     "Environment Metrics" : {
       "localizations" : {
@@ -54288,7 +55117,15 @@
       }
     },
     "Environment, air quality and power readings from a node you pick." : {
-      "comment" : "Environment widget description in the widget gallery"
+      "comment" : "Environment widget description in the widget gallery",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顯示您所選節點的環境、空氣品質與電源讀數。"
+          }
+        }
+      }
     },
     "erase" : {
       "comment" : "Search keyword",
@@ -55326,7 +56163,15 @@
       }
     },
     "Excellent" : {
-      "comment" : "Indoor air quality (IAQ) band"
+      "comment" : "Indoor air quality (IAQ) band",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "極佳"
+          }
+        }
+      }
     },
     "Exchange Positions" : {
       "localizations" : {
@@ -57579,7 +58424,7 @@
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "收藏項目和最近有訊息的節點會顯示在聯絡人列表的最上方。"
+            "value" : "最愛和最近有訊息的節點會顯示在聯絡人列表的最上方。"
           }
         }
       }
@@ -60611,6 +61456,12 @@
             "state" : "translated",
             "value" : "Wolne miejsce na dysku"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可用磁碟空間"
+          }
         }
       }
     },
@@ -60621,6 +61472,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wolne miejsce na dysku 2"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可用磁碟空間 2"
           }
         }
       }
@@ -60633,6 +61490,12 @@
             "state" : "translated",
             "value" : "Wolne miejsce na dysku 3"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可用磁碟空間 3"
+          }
         }
       }
     },
@@ -60643,6 +61506,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wolna pamięć"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可用記憶體"
           }
         }
       }
@@ -61279,7 +62148,15 @@
       }
     },
     "Gas Resistance" : {
-      "comment" : "Environment widget: a reading name"
+      "comment" : "Environment widget: a reading name",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "氣體電阻"
+          }
+        }
+      }
     },
     "Gateway" : {
       "localizations" : {
@@ -63869,7 +64746,15 @@
       }
     },
     "Heavily Polluted" : {
-      "comment" : "Indoor air quality (IAQ) band"
+      "comment" : "Indoor air quality (IAQ) band",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重度污染"
+          }
+        }
+      }
     },
     "help" : {
       "comment" : "Search keyword",
@@ -64157,7 +65042,15 @@
       }
     },
     "Hidden Readings" : {
-      "comment" : "Telemetry widget settings: readings to leave off the widget"
+      "comment" : "Telemetry widget settings: readings to leave off the widget",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隱藏的讀數"
+          }
+        }
+      }
     },
     "Hide alerts" : {
       "extractionState" : "stale",
@@ -64453,6 +65346,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ukryj klawiaturę"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隱藏鍵盤"
           }
         }
       }
@@ -65665,11 +66564,25 @@
             "state" : "translated",
             "value" : "Host"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "主機"
+          }
         }
       }
     },
     "host metrics" : {
-      "comment" : "Telemetry request: the kind of readings, used inside a sentence"
+      "comment" : "Telemetry request: the kind of readings, used inside a sentence",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "主機指標"
+          }
+        }
+      }
     },
     "Host Metrics Log" : {
       "comment" : "Node details: log of host metrics from a Linux node",
@@ -65678,6 +66591,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Logi statystyk hosta"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "主機指標記錄"
           }
         }
       }
@@ -68171,6 +69090,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Jeśli zgubisz wszystkie klucze administratora, zarządzanego węzła nie da się ponownie skonfigurować, dopóki nie zostanie wyczyszczony i wgrany od nowa przez [Web Flasher](https://flasher.meshtastic.org)."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "如果遺失所有管理金鑰，受管理的節點將無法再設定，必須清除並以 [Web Flasher](https://flasher.meshtastic.org) 重新燒錄後才能設定。"
           }
         }
       }
@@ -73698,7 +74623,15 @@
       }
     },
     "Lightly Polluted" : {
-      "comment" : "Indoor air quality (IAQ) band"
+      "comment" : "Indoor air quality (IAQ) band",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "輕度污染"
+          }
+        }
+      }
     },
     "Limit all periodic broadcast intervals especially telemetry and position. If you need to increase hops, do it on nodes at the edges, not the ones in the middle. MQTT is not advised when you are duty cycle restricted because the gateway node is then doing all the work." : {
       "localizations" : {
@@ -74010,6 +74943,12 @@
             "state" : "translated",
             "value" : "Węzły z Linuksem i meshtasticd wysyłają czas działania, wolną pamięć, obciążenie i wolne miejsce na dysku."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "執行 meshtasticd 的 Linux 節點會傳送已開機時間、可用記憶體、負載與可用磁碟空間。"
+          }
         }
       }
     },
@@ -74180,6 +75119,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Średnie obciążenie"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "平均負載"
           }
         }
       }
@@ -74926,7 +75871,15 @@
       }
     },
     "local stats" : {
-      "comment" : "Telemetry request: the kind of readings, used inside a sentence"
+      "comment" : "Telemetry request: the kind of readings, used inside a sentence",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本機統計"
+          }
+        }
+      }
     },
     "Local Stats" : {
       "localizations" : {
@@ -80726,6 +81679,12 @@
             "state" : "new",
             "value" : "A channel has a blank PSK (no encryption) instead of the default key."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有頻道使用空白 PSK（未加密），而非預設金鑰。"
+          }
         }
       }
     },
@@ -80737,6 +81696,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Channel Has No Encryption"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "頻道未加密"
           }
         }
       }
@@ -80750,6 +81715,12 @@
             "state" : "new",
             "value" : "There may be name and PSK issues on one or more channels."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一或多個頻道可能有名稱與 PSK 問題。"
+          }
         }
       }
     },
@@ -80761,6 +81732,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Channel Name and PSK Issues"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "頻道名稱與 PSK 問題"
           }
         }
       }
@@ -80774,6 +81751,12 @@
             "state" : "new",
             "value" : "There may be name issues on one or more channels."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一或多個頻道可能有名稱問題。"
+          }
         }
       }
     },
@@ -80785,6 +81768,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Channel Name Issues"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "頻道名稱問題"
           }
         }
       }
@@ -80798,6 +81787,12 @@
             "state" : "new",
             "value" : "A channel name matches the previous modem preset. Rename it if it should follow the new preset."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有頻道名稱與先前的數據機預設相同。若要讓它跟隨新預設，請重新命名。"
+          }
         }
       }
     },
@@ -80809,6 +81804,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Channel Name Matches Old Preset"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "頻道名稱與舊預設相同"
           }
         }
       }
@@ -80822,6 +81823,12 @@
             "state" : "new",
             "value" : "A channel name looks like a mistyped modem preset name. Type the preset name exactly."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有頻道名稱疑似拼錯的數據機預設名稱。請準確輸入預設名稱。"
+          }
         }
       }
     },
@@ -80833,6 +81840,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Channel Name Looks Mistyped"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "頻道名稱疑似拼錯"
           }
         }
       }
@@ -80846,6 +81859,12 @@
             "state" : "new",
             "value" : "A channel name looks like a mistyped modem preset name. Clear the name to use the preset name automatically."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有頻道名稱疑似拼錯的數據機預設名稱。請清除名稱，以自動使用預設名稱。"
+          }
         }
       }
     },
@@ -80857,6 +81876,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Clear Mistyped Channel Name"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清除拼錯的頻道名稱"
           }
         }
       }
@@ -80870,6 +81895,12 @@
             "state" : "new",
             "value" : "A channel name matches the new modem preset but won't update automatically. Clear the name to fix it."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有頻道名稱與新的數據機預設相同，但不會自動更新。請清除名稱以修正。"
+          }
         }
       }
     },
@@ -80881,6 +81912,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Channel Name Won't Auto-Resolve"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "頻道名稱不會自動更新"
           }
         }
       }
@@ -80894,6 +81931,12 @@
             "state" : "new",
             "value" : "A channel matches a modem preset but uses a non-default key, so nodes using the default key can't decode it."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有頻道符合數據機預設，但使用非預設金鑰，因此使用預設金鑰的節點無法解碼。"
+          }
         }
       }
     },
@@ -80905,6 +81948,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Preset Channel Uses Non-Default Key"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "預設頻道使用非預設金鑰"
           }
         }
       }
@@ -80918,6 +81967,12 @@
             "state" : "new",
             "value" : "There may be PSK issues on one or more channels."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一或多個頻道可能有 PSK 問題。"
+          }
         }
       }
     },
@@ -80929,6 +81984,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Channel PSK Issues"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "頻道 PSK 問題"
           }
         }
       }
@@ -80942,6 +82003,12 @@
             "state" : "new",
             "value" : "A remote device has advertised your public key. Your key may be compromised; consider regenerating it."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有遠端裝置廣播了您的公鑰。您的金鑰可能已外洩，建議重新產生。"
+          }
         }
       }
     },
@@ -80953,6 +82020,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Public Key Duplicated"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "公鑰重複"
           }
         }
       }
@@ -80966,6 +82039,12 @@
             "state" : "new",
             "value" : "The duty cycle limit is exceeded. Sending resumes once airtime is available."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已超過工作週期限制。待有可用的發射時間後將恢復傳送。"
+          }
         }
       }
     },
@@ -80977,6 +82056,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Duty Cycle Limit Exceeded"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已超過工作週期限制"
           }
         }
       }
@@ -80990,6 +82075,12 @@
             "state" : "new",
             "value" : "Confirm that the verification code matches the remote node to finish the incoming key verification."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請確認驗證碼與遠端節點相符，以完成傳入的金鑰驗證。"
+          }
         }
       }
     },
@@ -81001,6 +82092,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Confirm Incoming Key Verification"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "確認傳入的金鑰驗證"
           }
         }
       }
@@ -81014,6 +82111,12 @@
             "state" : "new",
             "value" : "Confirm that the verification code matches the remote node to finish the outgoing key verification."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請確認驗證碼與遠端節點相符，以完成傳出的金鑰驗證。"
+          }
         }
       }
     },
@@ -81025,6 +82128,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Confirm Outgoing Key Verification"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "確認傳出的金鑰驗證"
           }
         }
       }
@@ -81038,6 +82147,12 @@
             "state" : "new",
             "value" : "Key verification is unavailable in licensed (ham) mode."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "持照（業餘無線電）模式下無法使用金鑰驗證。"
+          }
         }
       }
     },
@@ -81049,6 +82164,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Key Verification Unavailable"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法使用金鑰驗證"
           }
         }
       }
@@ -81062,6 +82183,12 @@
             "state" : "new",
             "value" : "Give this security number to the user verifying your key."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請將此安全碼提供給正在驗證您金鑰的使用者。"
+          }
         }
       }
     },
@@ -81073,6 +82200,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Key Verification Security Number"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "金鑰驗證安全碼"
           }
         }
       }
@@ -81086,6 +82219,12 @@
             "state" : "new",
             "value" : "Enter the security number shown on the remote node."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請輸入遠端節點上顯示的安全碼。"
+          }
         }
       }
     },
@@ -81097,6 +82236,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Enter Key Verification Number"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "輸入金鑰驗證碼"
           }
         }
       }
@@ -81110,6 +82255,12 @@
             "state" : "new",
             "value" : "Licensed signing generated a new identity key. This node's identity changed."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "持照簽署已產生新的身分金鑰。此節點的身分已變更。"
+          }
         }
       }
     },
@@ -81121,6 +82272,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Node Identity Changed"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "節點身分已變更"
           }
         }
       }
@@ -81134,6 +82291,12 @@
             "state" : "new",
             "value" : "Licensed signing requires an identity key. This node's identity will change after key generation."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "持照簽署需要身分金鑰。產生金鑰後，此節點的身分將會變更。"
+          }
         }
       }
     },
@@ -81145,6 +82308,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Node Identity Will Change"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "節點身分即將變更"
           }
         }
       }
@@ -81158,6 +82327,12 @@
             "state" : "new",
             "value" : "Licensed mode removed the admin channel and encryption from all channels."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "持照模式已移除管理頻道，並移除所有頻道的加密。"
+          }
         }
       }
     },
@@ -81169,6 +82344,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Licensed Mode Activated"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已啟用持照模式"
           }
         }
       }
@@ -81182,6 +82363,12 @@
             "state" : "new",
             "value" : "The requested bandwidth is wider than this region allows."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "要求的頻寬超出此地區允許的範圍。"
+          }
         }
       }
     },
@@ -81193,6 +82380,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Bandwidth Too Wide for Region"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "頻寬超出地區限制"
           }
         }
       }
@@ -81206,6 +82399,12 @@
             "state" : "new",
             "value" : "The frequency slot is out of range for this region."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "頻率槽位超出此地區的範圍。"
+          }
         }
       }
     },
@@ -81217,6 +82416,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Frequency Slot Invalid"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "頻率槽位無效"
           }
         }
       }
@@ -81230,6 +82435,12 @@
             "state" : "new",
             "value" : "The modem preset is not valid for this region."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此數據機預設不適用於此地區。"
+          }
         }
       }
     },
@@ -81241,6 +82452,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Preset Invalid for Region"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "預設不適用於此地區"
           }
         }
       }
@@ -81254,6 +82471,12 @@
             "state" : "new",
             "value" : "The selected modem preset moved the node to a compatible sibling region."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "所選的數據機預設已將節點切換至相容的同系列地區。"
+          }
         }
       }
     },
@@ -81265,6 +82488,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Region Changed for Preset"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已依預設變更地區"
           }
         }
       }
@@ -81278,6 +82507,12 @@
             "state" : "new",
             "value" : "This LoRa region requires licensed mode."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此 LoRa 地區需要持照模式。"
+          }
         }
       }
     },
@@ -81289,6 +82524,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Region Requires Licensed Mode"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "地區需要持照模式"
           }
         }
       }
@@ -81302,6 +82543,12 @@
             "state" : "new",
             "value" : "The LoRa region code is not recognized."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法辨識此 LoRa 地區代碼。"
+          }
         }
       }
     },
@@ -81313,6 +82560,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Region Not Recognized"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法辨識地區"
           }
         }
       }
@@ -81326,6 +82579,12 @@
             "state" : "new",
             "value" : "This LoRa region needs a frequency band this radio does not support."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此 LoRa 地區需要此無線電不支援的頻段。"
+          }
         }
       }
     },
@@ -81337,6 +82596,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Region Not Supported by Radio"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無線電不支援此地區"
           }
         }
       }
@@ -81350,6 +82615,12 @@
             "state" : "new",
             "value" : "Compromised keys were detected and regenerated."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "偵測到已外洩的金鑰，並已重新產生。"
+          }
         }
       }
     },
@@ -81361,6 +82632,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Compromised Keys Regenerated"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已重新產生外洩的金鑰"
           }
         }
       }
@@ -81374,6 +82651,12 @@
             "state" : "new",
             "value" : "That key is a known low-entropy key and can't be restored. A new secure key was generated and the node number changed."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "該金鑰是已知的低熵金鑰，無法還原。已產生新的安全金鑰，且節點編號已變更。"
+          }
         }
       }
     },
@@ -81385,6 +82668,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Low-Entropy Key Rejected"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已拒絕低熵金鑰"
           }
         }
       }
@@ -81398,6 +82687,12 @@
             "state" : "new",
             "value" : "Managed mode needs at least one admin public key, so it was left disabled."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "管理模式至少需要一組管理公鑰，因此維持停用。"
+          }
         }
       }
     },
@@ -81409,6 +82704,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Admin Key Required"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要管理金鑰"
           }
         }
       }
@@ -81422,6 +82723,12 @@
             "state" : "new",
             "value" : "The default MQTT server address must not have a port specified."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "預設 MQTT 伺服器位址不得指定連接埠。"
+          }
         }
       }
     },
@@ -81433,6 +82740,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Invalid MQTT Server Port"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MQTT 伺服器連接埠無效"
           }
         }
       }
@@ -81446,6 +82759,12 @@
             "state" : "new",
             "value" : "Nodes without a network connection must enable MQTT proxy to client."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "沒有網路連線的節點必須啟用 MQTT 客戶端代理。"
+          }
         }
       }
     },
@@ -81457,6 +82776,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "MQTT Proxy Required"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "需要 MQTT 客戶端代理"
           }
         }
       }
@@ -81470,6 +82795,12 @@
             "state" : "new",
             "value" : "The MQTT server could not be reached. Settings were saved; check the server address and credentials."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法連線至 MQTT 伺服器。設定已儲存；請檢查伺服器位址與登入憑證。"
+          }
         }
       }
     },
@@ -81481,6 +82812,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "MQTT Server Unreachable"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法連線至 MQTT 伺服器"
           }
         }
       }
@@ -81494,6 +82831,12 @@
             "state" : "new",
             "value" : "Can't start the OTA update because the provided firmware hash is invalid."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "提供的韌體雜湊值無效，因此無法開始 OTA 更新。"
+          }
         }
       }
     },
@@ -81505,6 +82848,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Invalid OTA Hash"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OTA 雜湊值無效"
           }
         }
       }
@@ -81518,6 +82867,12 @@
             "state" : "new",
             "value" : "Can't start the OTA update because the device does not have a valid OTA loader."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "裝置沒有有效的 OTA 載入程式，因此無法開始 OTA 更新。"
+          }
         }
       }
     },
@@ -81529,6 +82884,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Invalid OTA Loader"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OTA 載入程式無效"
           }
         }
       }
@@ -81542,6 +82903,12 @@
             "state" : "new",
             "value" : "Can't start the OTA update because no OTA loader partition was found."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "找不到 OTA 載入程式分割區，因此無法開始 OTA 更新。"
+          }
         }
       }
     },
@@ -81553,6 +82920,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "OTA Loader Partition Missing"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "缺少 OTA 載入程式分割區"
           }
         }
       }
@@ -81566,6 +82939,12 @@
             "state" : "new",
             "value" : "The OTA loader does not support the requested update method."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OTA 載入程式不支援所要求的更新方式。"
+          }
         }
       }
     },
@@ -81577,6 +82956,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "OTA Mode Unsupported"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不支援此 OTA 模式"
           }
         }
       }
@@ -81590,6 +82975,12 @@
             "state" : "new",
             "value" : "Unable to switch to the OTA partition."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法切換至 OTA 分割區。"
+          }
         }
       }
     },
@@ -81601,6 +82992,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "OTA Partition Switch Failed"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OTA 分割區切換失敗"
           }
         }
       }
@@ -81614,6 +83011,12 @@
             "state" : "new",
             "value" : "Rebooting into the OTA loader to receive the update."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在重新啟動並進入 OTA 載入程式以接收更新。"
+          }
         }
       }
     },
@@ -81625,6 +83028,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Rebooting to OTA"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在重新啟動至 OTA"
           }
         }
       }
@@ -81638,6 +83047,12 @@
             "state" : "new",
             "value" : "The packet signature policy is unavailable on this firmware build, so it was set to Compatible."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此韌體版本不支援封包簽章政策，因此已設為「相容」。"
+          }
         }
       }
     },
@@ -81649,6 +83064,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Signature Policy Unavailable"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法使用簽章政策"
           }
         }
       }
@@ -81662,6 +83083,12 @@
             "state" : "new",
             "value" : "Position sent. The device will sleep until the next position broadcast."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已傳送位置。裝置將進入睡眠，直到下次廣播位置。"
+          }
         }
       }
     },
@@ -81673,6 +83100,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Position Sent, Sleeping"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已傳送位置，進入睡眠"
           }
         }
       }
@@ -81686,6 +83119,12 @@
             "state" : "new",
             "value" : "Location sharing is disabled on this channel."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此頻道已停用位置分享。"
+          }
         }
       }
     },
@@ -81697,6 +83136,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Location Sharing Disabled"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "位置分享已停用"
           }
         }
       }
@@ -81710,6 +83155,12 @@
             "state" : "new",
             "value" : "The node can't be favorited or ignored because the protected-node limit is reached."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已達受保護節點上限，因此無法將此節點加入最愛或忽略。"
+          }
         }
       }
     },
@@ -81721,6 +83172,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Protected Node Limit Reached"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已達受保護節點上限"
           }
         }
       }
@@ -81734,6 +83191,12 @@
             "state" : "new",
             "value" : "Precise position is not allowed on a public channel, so precision was reduced."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "公開頻道不允許精確位置，因此已降低精度。"
+          }
         }
       }
     },
@@ -81745,6 +83208,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Position Precision Reduced"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "位置精度已降低"
           }
         }
       }
@@ -81758,6 +83227,12 @@
             "state" : "new",
             "value" : "Rebroadcast mode can't be NONE for a router role, so it was set to ALL."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "路由器角色的中繼轉發模式不能設為 NONE，因此已改為 ALL。"
+          }
         }
       }
     },
@@ -81769,6 +83244,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Rebroadcast Mode Changed"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "中繼轉發模式已變更"
           }
         }
       }
@@ -81782,6 +83263,12 @@
             "state" : "new",
             "value" : "Overriding the console serial port is only supported in NMEA, CalTopo, or MS Config output modes."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "只有 NMEA、CalTopo 或 MS Config 輸出模式支援覆寫主控台序列埠。"
+          }
         }
       }
     },
@@ -81793,6 +83280,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Invalid Serial Config"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "序列埠設定無效"
           }
         }
       }
@@ -81806,6 +83299,12 @@
             "state" : "new",
             "value" : "Telemetry sent. The device will sleep until the next telemetry update."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已傳送遙測。裝置將進入睡眠，直到下次遙測更新。"
+          }
         }
       }
     },
@@ -81817,6 +83316,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Telemetry Sent, Sleeping"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已傳送遙測，進入睡眠"
           }
         }
       }
@@ -81830,6 +83335,12 @@
             "state" : "new",
             "value" : "Multi-hop traceroute to the broadcast address is not allowed."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不允許對廣播位址進行多跳點追蹤路由。"
+          }
         }
       }
     },
@@ -81841,6 +83352,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Broadcast Traceroute Rejected"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已拒絕廣播追蹤路由"
           }
         }
       }
@@ -81854,6 +83371,12 @@
             "state" : "new",
             "value" : "Only one traceroute can be sent every 30 seconds."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每 30 秒只能傳送一次追蹤路由。"
+          }
         }
       }
     },
@@ -81865,6 +83388,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Traceroute Rate Limited"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "追蹤路由頻率受限"
           }
         }
       }
@@ -81878,6 +83407,12 @@
             "state" : "new",
             "value" : "A notification from the device."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "來自裝置的通知。"
+          }
         }
       }
     },
@@ -81889,6 +83424,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Notification"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知"
           }
         }
       }
@@ -81902,6 +83443,12 @@
             "state" : "new",
             "value" : "An unsigned update tried to change a known node's name or role and was ignored because of your security setting. Remove the node to accept its unsigned updates."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "有未簽署的更新試圖變更已知節點的名稱或角色，因您的安全性設定而被忽略。移除該節點即可接受其未簽署的更新。"
+          }
         }
       }
     },
@@ -81913,6 +83460,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Unsigned Update Ignored"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已忽略未簽署的更新"
           }
         }
       }
@@ -102075,7 +103628,15 @@
       }
     },
     "Model Copyright" : {
-      "comment" : "Button in the full-screen 3D model view: show the model's copyright notice"
+      "comment" : "Button in the full-screen 3D model view: show the model's copyright notice",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "模型版權"
+          }
+        }
+      }
     },
     "Modem Presets" : {
       "comment" : "A heading for the list of available modem presets.",
@@ -102161,7 +103722,15 @@
       }
     },
     "Moderately Polluted" : {
-      "comment" : "Indoor air quality (IAQ) band"
+      "comment" : "Indoor air quality (IAQ) band",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "中度污染"
+          }
+        }
+      }
     },
     "Module Configuration" : {
       "localizations" : {
@@ -104554,7 +106123,15 @@
       }
     },
     "Network radio %@" : {
-      "comment" : "Connect link prompt for a radio reached over the network; the value is host:port"
+      "comment" : "Connect link prompt for a radio reached over the network; the value is host:port",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "網路無線電 %@"
+          }
+        }
+      }
     },
     "Network Servers" : {
       "localizations" : {
@@ -106152,6 +107729,12 @@
             "state" : "translated",
             "value" : "Brak statystyk hosta"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "沒有主機指標"
+          }
         }
       }
     },
@@ -106493,7 +108076,15 @@
       }
     },
     "No nodes have reported telemetry yet" : {
-      "comment" : "Telemetry widget: no node has sent environment, air quality or power readings"
+      "comment" : "Telemetry widget: no node has sent environment, air quality or power readings",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尚無節點回報遙測"
+          }
+        }
+      }
     },
     "No offline maps yet. Download an area to use the map without a connection." : {
       "comment" : "A message displayed when there are no offline maps available.",
@@ -107261,7 +108852,15 @@
       }
     },
     "No telemetry from this node" : {
-      "comment" : "Telemetry widget: the picked node has sent no environment, air quality or power readings"
+      "comment" : "Telemetry widget: the picked node has sent no environment, air quality or power readings",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此節點沒有遙測資料"
+          }
+        }
+      }
     },
     "No time limit" : {
       "comment" : "A label that indicates that a lockdown session has no",
@@ -109072,13 +110671,37 @@
       }
     },
     "North" : {
-      "comment" : "Wind direction the wind comes from"
+      "comment" : "Wind direction the wind comes from",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "北"
+          }
+        }
+      }
     },
     "North East" : {
-      "comment" : "Wind direction the wind comes from"
+      "comment" : "Wind direction the wind comes from",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "東北"
+          }
+        }
+      }
     },
     "North West" : {
-      "comment" : "Wind direction the wind comes from"
+      "comment" : "Wind direction the wind comes from",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "西北"
+          }
+        }
+      }
     },
     "Not a valid route file" : {
       "localizations" : {
@@ -110245,7 +111868,15 @@
       }
     },
     "Object" : {
-      "comment" : "Tab in the AR view: the radio's 3D model on its own, without the camera"
+      "comment" : "Tab in the AR view: the radio's 3D model on its own, without the camera",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "物件"
+          }
+        }
+      }
     },
     "Observed" : {
       "comment" : "Trace route: a response to a request this app didn't send",
@@ -112787,10 +114418,26 @@
       }
     },
     "Orbit Speed" : {
-      "comment" : "Cinema: slider for how many times faster than real time Earth goes by under the space station"
+      "comment" : "Cinema: slider for how many times faster than real time Earth goes by under the space station",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "軌道速度"
+          }
+        }
+      }
     },
     "Orbit Speed %lld×" : {
-      "comment" : "Cinema: how many times faster than real time Earth goes by under the space station; the argument is the multiple, e.g. 3"
+      "comment" : "Cinema: how many times faster than real time Earth goes by under the space station; the argument is the multiple, e.g. 3",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "軌道速度 %lld×"
+          }
+        }
+      }
     },
     "Origin & Target" : {
       "comment" : "A label displayed for the originator and target nodes in a trace route.",
@@ -113590,7 +115237,15 @@
       }
     },
     "Over 2 hours old · %@ ago" : {
-      "comment" : "Environment widget footer for an old reading. The argument is how long ago, such as 3 hr, 5 min."
+      "comment" : "Environment widget footer for an old reading. The argument is how long ago, such as 3 hr, 5 min.",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已超過 2 小時 · %@前"
+          }
+        }
+      }
     },
     "Overlanding" : {
       "comment" : "ActivityType.description\nActivityType.fileNameString",
@@ -116321,13 +117976,37 @@
       }
     },
     "PM1.0" : {
-      "comment" : "Environment widget reading name: particulate matter up to 1.0 µm"
+      "comment" : "Environment widget reading name: particulate matter up to 1.0 µm",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PM1.0"
+          }
+        }
+      }
     },
     "PM10" : {
-      "comment" : "Environment widget reading name: particulate matter up to 10 µm"
+      "comment" : "Environment widget reading name: particulate matter up to 10 µm",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PM10"
+          }
+        }
+      }
     },
     "PM2.5" : {
-      "comment" : "Environment widget reading name: particulate matter up to 2.5 µm"
+      "comment" : "Environment widget reading name: particulate matter up to 2.5 µm",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PM2.5"
+          }
+        }
+      }
     },
     "Points of Interest" : {
       "localizations" : {
@@ -121424,7 +123103,15 @@
       }
     },
     "Rain" : {
-      "comment" : "Environment widget: a reading name, rain in the last hour"
+      "comment" : "Environment widget: a reading name, rain in the last hour",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "雨量"
+          }
+        }
+      }
     },
     "RAK Rotary Encoder" : {
       "comment" : "ConfigPresets.description",
@@ -121965,6 +123652,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Odczytaj tag Meshtastic, aby dodać zapisany na nim kontakt lub kanał albo połączyć się ze wskazanym radiem."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "讀取 Meshtastic 標籤，以新增其中的聯絡人或頻道，或連線至標籤指定的無線電。"
           }
         }
       }
@@ -123155,7 +124848,15 @@
       }
     },
     "Record" : {
-      "comment" : "Button in the AR view: record the screen with the radio's 3D model"
+      "comment" : "Button in the AR view: record the screen with the radio's 3D model",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "錄製"
+          }
+        }
+      }
     },
     "Recorded trace route paths showing the hops a message took through the mesh to reach this node." : {
       "localizations" : {
@@ -125264,20 +126965,58 @@
             "state" : "translated",
             "value" : "Wyślij żądanie"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請求"
+          }
         }
       }
     },
     "Request Air Quality Metrics" : {
-      "comment" : "Node details: accessibility label for the button beside a log that asks the node for its readings"
+      "comment" : "Node details: accessibility label for the button beside a log that asks the node for its readings",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請求空氣品質指標"
+          }
+        }
+      }
     },
     "Request Device Metrics" : {
-      "comment" : "Node details: accessibility label for the button beside a log that asks the node for its readings"
+      "comment" : "Node details: accessibility label for the button beside a log that asks the node for its readings",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請求裝置指標"
+          }
+        }
+      }
     },
     "Request Environment Metrics" : {
-      "comment" : "Node details: accessibility label for the button beside a log that asks the node for its readings"
+      "comment" : "Node details: accessibility label for the button beside a log that asks the node for its readings",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請求環境指標"
+          }
+        }
+      }
     },
     "Request Host Metrics" : {
-      "comment" : "Node details: accessibility label for the button beside a log that asks the node for its readings"
+      "comment" : "Node details: accessibility label for the button beside a log that asks the node for its readings",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請求主機指標"
+          }
+        }
+      }
     },
     "Request Local Stats" : {
       "localizations" : {
@@ -125420,7 +127159,15 @@
       }
     },
     "Request Power Metrics" : {
-      "comment" : "Node details: accessibility label for the button beside a log that asks the node for its readings"
+      "comment" : "Node details: accessibility label for the button beside a log that asks the node for its readings",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請求電源指標"
+          }
+        }
+      }
     },
     "Requested" : {
       "comment" : "A label indicating that a trace route was requested.",
@@ -125465,6 +127212,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wysłano żądanie %1$@ do %2$@. Odpowiedź może chwilę potrwać."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已向 %2$@ 請求%1$@。回覆可能需要一段時間。"
           }
         }
       }
@@ -138358,7 +140111,15 @@
       }
     },
     "Severely Polluted" : {
-      "comment" : "Indoor air quality (IAQ) band"
+      "comment" : "Indoor air quality (IAQ) band",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "嚴重污染"
+          }
+        }
+      }
     },
     "Shaded terrain relief over areas with downloaded terrain. Standard and offline maps only." : {
       "localizations" : {
@@ -140436,7 +142197,15 @@
       }
     },
     "Show Rooftop" : {
-      "comment" : "Cinema: button that opens the 3D map zoomed in on the city rooftop, with the buildings on"
+      "comment" : "Cinema: button that opens the 3D map zoomed in on the city rooftop, with the buildings on",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顯示屋頂"
+          }
+        }
+      }
     },
     "Show Translation" : {
       "comment" : "A label for a button that toggles whether the translation of a message is shown.",
@@ -141290,7 +143059,15 @@
       }
     },
     "Side of Earth" : {
-      "comment" : "Cinema: picker for whether the sunlit or the dark side of Earth is under the space station's cupola"
+      "comment" : "Cinema: picker for whether the sunlit or the dark side of Earth is under the space station's cupola",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "地球日夜面"
+          }
+        }
+      }
     },
     "Sign in over SSH to change the default username and password." : {
       "localizations" : {
@@ -143385,7 +145162,15 @@
       }
     },
     "Soil Temperature" : {
-      "comment" : "Environment widget: a reading name"
+      "comment" : "Environment widget: a reading name",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "土壤溫度"
+          }
+        }
+      }
     },
     "Solid orange line toward the target; arrows point in the direction of travel." : {
       "localizations" : {
@@ -143440,13 +145225,37 @@
       }
     },
     "South" : {
-      "comment" : "Wind direction the wind comes from"
+      "comment" : "Wind direction the wind comes from",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "南"
+          }
+        }
+      }
     },
     "South East" : {
-      "comment" : "Wind direction the wind comes from"
+      "comment" : "Wind direction the wind comes from",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "東南"
+          }
+        }
+      }
     },
     "South West" : {
-      "comment" : "Wind direction the wind comes from"
+      "comment" : "Wind direction the wind comes from",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "西南"
+          }
+        }
+      }
     },
     "Spatial Map area" : {
       "comment" : "Name of the offline map (streets and terrain) the visionOS spatial map downloads and keeps up to date for the mesh",
@@ -148327,7 +150136,15 @@
       }
     },
     "The bootloader recorded a fault before this boot. Include this line when you report a problem with this radio." : {
-      "comment" : "Bootloader drive sheets: shown above the Last-Fault line the bootloader reported"
+      "comment" : "Bootloader drive sheets: shown above the Last-Fault line the bootloader reported",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開機載入程式在此次開機前記錄了一個故障。回報此無線電的問題時，請附上這一行。"
+          }
+        }
+      }
     },
     "The broker closed the connection." : {
       "comment" : "Topic finder: sampler error",
@@ -150806,7 +152623,15 @@
       }
     },
     "The request for %@ from %@ failed: %@" : {
-      "comment" : "Telemetry request failed: the kind of readings, the node's name, then the reason the mesh gave"
+      "comment" : "Telemetry request failed: the kind of readings, the node's name, then the reason the mesh gave",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "向 %2$@ 請求%1$@失敗：%3$@"
+          }
+        }
+      }
     },
     "The root topic to use for MQTT." : {
       "localizations" : {
@@ -152177,6 +154002,12 @@
             "state" : "translated",
             "value" : "Tego kanału nie ma już w radiu. Jego wiadomości zostają tutaj, ale nie możesz na niego wysyłać. Dodaj kanał ponownie, aby kontynuować rozmowę."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此頻道已不在您的無線電上。訊息仍保留在這裡，但您無法在此頻道傳送訊息。重新新增此頻道即可繼續對話。"
+          }
         }
       }
     },
@@ -153364,6 +155195,12 @@
             "state" : "translated",
             "value" : "Nie udało się utworzyć kopii zapasowej wiadomości i węzłów tego radia, więc nic nie zostało usunięte."
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法備份此無線電的訊息與節點，因此未刪除任何資料。"
+          }
         }
       }
     },
@@ -153479,6 +155316,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Ten tag nie zawiera kontaktu, kanału ani linku połączenia Meshtastic."
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此標籤不含 Meshtastic 聯絡人、頻道或連線連結。"
           }
         }
       }
@@ -154005,6 +155848,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tylda"
+          }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "波浪號"
           }
         }
       }
@@ -155985,7 +157834,15 @@
       }
     },
     "Tower" : {
-      "comment" : "Cinema: picker for the tower the sky deck hangs off"
+      "comment" : "Cinema: picker for the tower the sky deck hangs off",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "大樓"
+          }
+        }
+      }
     },
     "Trace Route" : {
       "localizations" : {
@@ -156753,7 +158610,15 @@
       }
     },
     "Traced us" : {
-      "comment" : "Trace route: another node traced a route to our radio"
+      "comment" : "Trace route: another node traced a route to our radio",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "對本機追蹤路由"
+          }
+        }
+      }
     },
     "Traceroute Complete" : {
       "comment" : "Notification title when a trace route you sent gets a response",
@@ -157941,7 +159806,15 @@
       }
     },
     "Turn Lighthouse" : {
-      "comment" : "Cinema: title over the dial that turns the lighthouse, so the screen looks out over another part of the view"
+      "comment" : "Cinema: title over the dial that turns the lighthouse, so the screen looks out over another part of the view",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "轉動燈塔視角"
+          }
+        }
+      }
     },
     "Turn Lookout" : {
       "comment" : "Cinema: title over the dial that turns the fire lookout, so the screen looks out over another part of the view",
@@ -157984,10 +159857,26 @@
       }
     },
     "Turn Rooftop" : {
-      "comment" : "Cinema: title over the dial that turns the city rooftop, so the screen looks out over another part of the view"
+      "comment" : "Cinema: title over the dial that turns the city rooftop, so the screen looks out over another part of the view",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "轉動屋頂視角"
+          }
+        }
+      }
     },
     "Turn Sky Deck" : {
-      "comment" : "Cinema: title over the dial that turns the sky deck, so the screen looks out over another part of the view"
+      "comment" : "Cinema: title over the dial that turns the sky deck, so the screen looks out over another part of the view",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "轉動空中觀景台視角"
+          }
+        }
+      }
     },
     "Twelve Hours" : {
       "comment" : "GpsUpdateIntervals.description\nUpdateInterval.description",
@@ -160361,7 +162250,14 @@
       }
     },
     "Updating Your Data" : {
-
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在更新您的資料"
+          }
+        }
+      }
     },
     "Upgrade Bootloader" : {
       "comment" : "Settings control",
@@ -164155,7 +166051,15 @@
       }
     },
     "View" : {
-      "comment" : "Accessibility label for the AR and Object tabs in the AR view"
+      "comment" : "Accessibility label for the AR and Object tabs in the AR view",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "檢視"
+          }
+        }
+      }
     },
     "Via Mqtt" : {
       "localizations" : {
@@ -164723,11 +166627,25 @@
             "state" : "translated",
             "value" : "Poczekaj"
           }
+        },
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "等待"
+          }
         }
       }
     },
     "Wait %lld s" : {
-      "comment" : "Telemetry request button: seconds until another request can be sent"
+      "comment" : "Telemetry request button: seconds until another request can be sent",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請等待 %lld 秒"
+          }
+        }
+      }
     },
     "waiting" : {
       "localizations" : {
@@ -166005,7 +167923,15 @@
       }
     },
     "West" : {
-      "comment" : "Wind direction the wind comes from"
+      "comment" : "Wind direction the wind comes from",
+      "localizations" : {
+        "zh-Hant-TW" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "西"
+          }
+        }
+      }
     },
     "What does this do?" : {
       "comment" : "A title for a tip that describes what the discovery tool does.",
