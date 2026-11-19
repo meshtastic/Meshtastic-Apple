@@ -44,6 +44,9 @@ struct SpatialMapWindow: View {
 	@State private var showingMapSearch = false
 	/// Flies a route asked for by id once the routes and the table are ready.
 	@State private var routeRequestTask: Task<Void, Never>?
+	/// Closes the volume once the app's window has stayed gone. Cancelled when a window appears
+	/// or the volume goes, so an older wait can't close it during a later window change.
+	@State private var closeWithoutWindowTask: Task<Void, Never>?
 
 	init() {
 		let scene = SpatialSceneController()
@@ -180,13 +183,14 @@ struct SpatialMapWindow: View {
 			// still hasn't come. A moment first, in case the window is on its way, and never
 			// while a space is open, since those close the window on purpose.
 			if appState.mainWindowCount == 0 {
-				Task {
+				closeWithoutWindowTask?.cancel()
+				closeWithoutWindowTask = Task {
 					try? await Task.sleep(for: .seconds(1.5))
-					guard appState.mainWindowCount == 0, !appState.cinemaOpen, !appState.showcaseOpen,
+					guard !Task.isCancelled, appState.mainWindowCount == 0, !appState.cinemaOpen, !appState.showcaseOpen,
 						  UIApplication.shared.applicationState != .background else { return }
 					CinemaScene.reopenMainWindow(openWindow, appState: appState)
 					try? await Task.sleep(for: .seconds(3))
-					if appState.mainWindowCount == 0, !appState.cinemaOpen, !appState.showcaseOpen {
+					if !Task.isCancelled, appState.mainWindowCount == 0, !appState.cinemaOpen, !appState.showcaseOpen {
 						close()
 					}
 				}
@@ -197,15 +201,18 @@ struct SpatialMapWindow: View {
 			SpatialTerrainKeeper.shared.volumeDisappeared()
 			appState.spatialMapWindowCount = max(0, appState.spatialMapWindowCount - 1)
 			routeRequestTask?.cancel()
+			closeWithoutWindowTask?.cancel()
 		}
 		// The volume only stays open beside the app's window. Closed with it, so it is never
 		// left on its own, where reopening the app brings back the volume and not the window.
 		// Not while a space is open: the cinema and the showcase close the window on purpose.
 		.onChange(of: appState.mainWindowCount) { _, count in
+			closeWithoutWindowTask?.cancel()
+			closeWithoutWindowTask = nil
 			guard count == 0 else { return }
-			Task {
+			closeWithoutWindowTask = Task {
 				try? await Task.sleep(for: .seconds(1))
-				if appState.mainWindowCount == 0, !appState.cinemaOpen, !appState.showcaseOpen {
+				if !Task.isCancelled, appState.mainWindowCount == 0, !appState.cinemaOpen, !appState.showcaseOpen {
 					close()
 				}
 			}
