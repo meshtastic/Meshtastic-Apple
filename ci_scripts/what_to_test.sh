@@ -78,16 +78,26 @@ touches_app() {
 		| grep -q .
 }
 
-# The opening paragraph of a pull request description's "## Summary" section, as plain text:
+# The opening paragraph of a pull request description's "## Summary" section (not CodeRabbit's
+# "## Summary by CodeRabbit"), skipping lines that only link issues, as plain text:
 # Markdown links keep their text, code spans and emphasis lose their marks, and a long
 # paragraph is cut at the last sentence that fits.
 summary_of() {
 	awk -v max="$MAX_SUMMARY" '
-		/^##[ \t]+Summary/ { inside = 1; next }
+		# A line that only links issues, like "Fixes #123" or "Closes #1, #2", means nothing to
+		# a tester.
+		function issue_link_only(line,   ref) {
+			line = tolower(line)
+			ref = "(#[0-9]+|https?://[^ ]+)"
+			sub(/^[ \t]*[-*][ \t]+/, "", line)
+			return line ~ ("^[ \t]*(fix(es|ed)?|close[sd]?|resolve[sd]?|part of|refs?|related to|see)[ \t:]+" ref "([ \t]*,?[ \t]*(and[ \t]+)?" ref ")*[ \t.]*$")
+		}
+		/^##[ \t]+Summary[ \t]*$/ { inside = 1; next }
 		inside && comment { if (/-->/) comment = 0; next }
 		inside && /^[ \t]*<!--/ { if ($0 !~ /-->/) comment = 1; next }
 		inside && /^#/ { exit }
 		inside && /^[ \t]*$/ { if (text != "") exit; next }
+		inside && issue_link_only($0) { next }
 		inside { sub(/^[ \t]*[-*][ \t]+/, ""); text = text (text == "" ? "" : " ") $0 }
 		END {
 			while (match(text, /\[[^]]*\]\([^)]*\)/)) {
