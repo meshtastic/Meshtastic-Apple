@@ -32,6 +32,10 @@ actor BLETransport: Transport {
 	private var connectingPeripheral: CBPeripheral?
 	private var activeConnection: BLEConnection?
 	private var connectContinuation: CheckedContinuation<BLEConnection, Error>?
+	/// Set for the whole of `connect(to:)`. A failed attempt's continuation is cleared before its
+	/// catch runs, so this is what turns a new attempt away until then; otherwise that catch would
+	/// cancel the new attempt's request and clear its state.
+	private var connectAttemptInProgress = false
 	private var restoredConnectContinuation: CheckedContinuation<Void, Error>?
 	private var setupCompleteGate: AsyncGate
 	private var restoreInProgress: Bool = false
@@ -374,9 +378,11 @@ actor BLETransport: Transport {
 	}
 
 	func connect(to device: Device) async throws -> any Connection {
-		guard activeConnection == nil, connectContinuation == nil else {
+		guard activeConnection == nil, connectContinuation == nil, !connectAttemptInProgress else {
 			throw AccessoryError.connectionFailed("BLE transport is busy: already connecting or connected")
 		}
+		connectAttemptInProgress = true
+		defer { connectAttemptInProgress = false }
 
 		pauseScanningForConnection()
 		guard let peripheral = resolvePeripheral(for: device) else {

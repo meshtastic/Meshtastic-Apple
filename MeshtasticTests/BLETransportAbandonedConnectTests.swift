@@ -68,7 +68,7 @@ private final class RecordingCentralManager: CBCentralManager, @unchecked Sendab
 
 	private(set) var calls: [Call] = []
 	private let peripheral: CBPeripheral
-	private let connectSignal: Signal
+	var connectSignal: Signal
 
 	init(peripheral: CBPeripheral, connectSignal: Signal) {
 		self.peripheral = peripheral
@@ -145,6 +145,33 @@ struct BLETransportAbandonedConnectTests {
 		_ = try await connection.value
 
 		#expect(centralManager.calls == [.connect(peripheral.identifier)])
+	}
+
+	@Test func connectAfterAFailedAttemptGoesThrough() async throws {
+		let peripheral = TestPeripheral.shared
+		let firstConnect = Signal()
+		let centralManager = RecordingCentralManager(peripheral: peripheral, connectSignal: firstConnect)
+		let transport = BLETransport(createCentralManagerImmediately: false, centralManager: centralManager)
+		let device = Device(id: UUID(), name: "Test Radio", transportType: .ble, identifier: peripheral.identifier.uuidString)
+
+		let failed = Task { try await transport.connect(to: device) }
+		await firstConnect.wait()
+		failed.cancel()
+		_ = try? await failed.value
+
+		// The transport turns new attempts away while one is in progress; that has to end with it.
+		let secondConnect = Signal()
+		centralManager.connectSignal = secondConnect
+		let retry = Task { try await transport.connect(to: device) }
+		await secondConnect.wait()
+		await transport.handleDidConnect(peripheral: peripheral, central: centralManager)
+		_ = try await retry.value
+
+		#expect(centralManager.calls == [
+			.connect(peripheral.identifier),
+			.cancelConnection(peripheral.identifier),
+			.connect(peripheral.identifier)
+		])
 	}
 
 	@Test func bluetoothTurnedOffDuringConnectSendsNoCancel() async {

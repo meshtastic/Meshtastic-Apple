@@ -1340,12 +1340,12 @@
             "only",
             "error",
             "disconnect",
+            "attempt",
             "accessorymanager",
             "transport",
             "tcp",
             "from",
             "ble",
-            "attempt",
             "step",
             "one",
             "never",
@@ -1362,7 +1362,7 @@
             "after",
             "writes"
         ],
-        "charCount": 17994
+        "charCount": 18196
     },
     {
         "id": "whats-new",
