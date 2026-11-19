@@ -414,8 +414,9 @@ actor BLETransport: Transport {
 		} catch {
 			// Core Bluetooth never gives up on a connect request by itself. Left pending, it
 			// connects the radio when it comes back in range with nothing here waiting for it,
-			// and the radio stops advertising, so the app can't find it either.
-			if connectRequested {
+			// and the radio stops advertising, so the app can't find it either. Turning Bluetooth
+			// off already drops the request, and Core Bluetooth rejects the cancel then.
+			if connectRequested, centralManager?.state == .poweredOn {
 				centralManager?.cancelPeripheralConnection(peripheral)
 			}
 			connectionDidDisconnect(fromPeripheral: peripheral)
@@ -424,6 +425,12 @@ actor BLETransport: Transport {
 	}
 
 	func handlePeripheralDisconnect(peripheral: CBPeripheral) {
+		// Cancelling a connect request also reports a disconnect. If a newer connect to the same
+		// radio has started by the time it gets here, it belongs to the old attempt.
+		if peripheral.state == .connecting || peripheral.state == .connected {
+			Logger.transport.debug("🛜 [BLETransport] Ignoring disconnect for \(peripheral.name ?? "Unknown", privacy: .public); a newer connect is under way")
+			return
+		}
 		if let continuation = self.connectContinuation,
 		   self.connectingPeripheral?.identifier == peripheral.identifier {
 			// Disconnect arrived while still waiting for didConnect — resume the
@@ -495,7 +502,9 @@ actor BLETransport: Transport {
 		guard let cont = connectContinuation,
 			  let connPeripheral = connectingPeripheral,
 			  peripheral.identifier == connPeripheral.identifier else {
-			if activeConnection == nil {
+			// During a restore, iOS can finish its own reconnect before the restore code has set
+			// activeConnection, so leave that link alone.
+			if activeConnection == nil, !restoreInProgress {
 				// A connect request outlived the attempt that made it. Nothing would ever use or
 				// close this link, so close it and let the radio advertise again.
 				Logger.transport.error("🛜 [BLE] \(peripheral.name ?? "Unknown", privacy: .public) connected with no connect waiting for it; disconnecting")

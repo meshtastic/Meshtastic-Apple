@@ -39,6 +39,11 @@ private final class TestPeripheral: CBPeripheral, @unchecked Sendable {
 	override var identifier: UUID { Self.testIdentifier }
 	override var name: String? { "Test Radio" }
 
+	/// What Core Bluetooth would report for this peripheral. The suite runs serially, and each
+	/// test that changes it puts it back.
+	nonisolated(unsafe) static var reportedState: CBPeripheralState = .disconnected
+	override var state: CBPeripheralState { Self.reportedState }
+
 	/// One instance kept for the whole run: this double skips CBPeripheral's initializer, and its
 	/// dealloc then removes an observer that was never added and crashes.
 	static let shared = make()
@@ -71,7 +76,8 @@ private final class RecordingCentralManager: CBCentralManager, @unchecked Sendab
 		super.init(delegate: nil, queue: nil, options: nil)
 	}
 
-	override var state: CBManagerState { .poweredOn }
+	var reportedState: CBManagerState = .poweredOn
+	override var state: CBManagerState { reportedState }
 	override var isScanning: Bool { false }
 
 	override func stopScan() {}
@@ -92,7 +98,8 @@ private final class RecordingCentralManager: CBCentralManager, @unchecked Sendab
 	}
 }
 
-@Suite("BLETransport abandoned connect", .timeLimit(.minutes(1)))
+// Serialized because every test uses the one shared peripheral double.
+@Suite("BLETransport abandoned connect", .serialized, .timeLimit(.minutes(1)))
 struct BLETransportAbandonedConnectTests {
 	@Test func cancelledConnectCancelsTheRequestWithCoreBluetooth() async {
 		let peripheral = TestPeripheral.shared
@@ -138,5 +145,41 @@ struct BLETransportAbandonedConnectTests {
 		_ = try await connection.value
 
 		#expect(centralManager.calls == [.connect(peripheral.identifier)])
+	}
+
+	@Test func bluetoothTurnedOffDuringConnectSendsNoCancel() async {
+		let peripheral = TestPeripheral.shared
+		let connectSignal = Signal()
+		let centralManager = RecordingCentralManager(peripheral: peripheral, connectSignal: connectSignal)
+		let transport = BLETransport(createCentralManagerImmediately: false, centralManager: centralManager)
+		let device = Device(id: UUID(), name: "Test Radio", transportType: .ble, identifier: peripheral.identifier.uuidString)
+
+		let connection = Task { try await transport.connect(to: device) }
+		await connectSignal.wait()
+
+		centralManager.reportedState = .poweredOff
+		await transport.handleCentralState(.poweredOff, central: centralManager)
+		_ = try? await connection.value
+
+		#expect(centralManager.calls == [.connect(peripheral.identifier)])
+	}
+
+	@Test func disconnectFromAnEarlierCancelDoesNotFailANewConnect() async throws {
+		let peripheral = TestPeripheral.shared
+		defer { TestPeripheral.reportedState = .disconnected }
+		let connectSignal = Signal()
+		let centralManager = RecordingCentralManager(peripheral: peripheral, connectSignal: connectSignal)
+		let transport = BLETransport(createCentralManagerImmediately: false, centralManager: centralManager)
+		let device = Device(id: UUID(), name: "Test Radio", transportType: .ble, identifier: peripheral.identifier.uuidString)
+
+		let connection = Task { try await transport.connect(to: device) }
+		await connectSignal.wait()
+		TestPeripheral.reportedState = .connecting
+
+		// The disconnect Core Bluetooth reports for the previous attempt's cancel, arriving late.
+		await transport.handlePeripheralDisconnect(peripheral: peripheral)
+		await transport.handleDidConnect(peripheral: peripheral, central: centralManager)
+
+		_ = try await connection.value
 	}
 }
