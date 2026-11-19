@@ -72,7 +72,7 @@ extension AccessoryManager {
 		let connectStepTimeout: Duration = isFirstTimeBLEBond ? .seconds(90) : .seconds(5)
 
 		// Prepare to connect
-		self.connectionStepper = SequentialSteps(maxRetries: retries ?? maxRetries, retryDelay: retryDelay) {
+		let stepper = SequentialSteps(maxRetries: retries ?? maxRetries, retryDelay: retryDelay) {
 			
 			// Step 0
 			Step { @MainActor retryAttempt in
@@ -338,11 +338,17 @@ extension AccessoryManager {
 												  connectionRestored: connectionWasRestored))
 				}
 			}
+
+			// Step 9: Confirm the link is still up before calling it connected
+			Step { @MainActor _ in
+				try await self.confirmLinkIsUp()
+			}
 		}
+		self.connectionStepper = stepper
 		
 		// Run the connection process
 		do {
-			try await connectionStepper?.run()
+			try await stepper.run()
 			Logger.transport.debug("🔗 [Connect] ConnectionStepper completed.")
 			// The scan pause covers the whole handshake — pairing happens during the
 			// notify subscription, after the link comes up — so resume only now that
@@ -361,9 +367,26 @@ extension AccessoryManager {
 			self.lastConnectionError = error
 		}
 		
-		// All done, one way or another, clean up
-		self.connectionStepper = nil
+		// All done, one way or another, clean up. A connect started meanwhile, after a drop
+		// that came in once these steps had finished, has stored its own stepper: leave that one.
+		if self.connectionStepper === stepper {
+			self.connectionStepper = nil
+		}
 	}
+	/// Throws unless the active connection reports itself connected. The connect process ends
+	/// with this, so a link that dropped while it ran fails the attempt instead of being
+	/// reported as connected, whether or not the disconnect event reached the process.
+	///
+	/// For Bluetooth this is the peripheral's own state, which Core Bluetooth updates as soon as
+	/// the link drops. For TCP it's the socket's state, which can stay ready until the heartbeat
+	/// notices a dead link, so there this only catches a drop the socket already knows about.
+	func confirmLinkIsUp() async throws {
+		guard let connection = activeConnection?.connection, await connection.isConnected else {
+			Logger.transport.error("🔗 [Connect] The link dropped while connecting; failing this attempt")
+			throw AccessoryError.disconnected("The link dropped while connecting")
+		}
+	}
+
 	/// The firmware version this node last reported, from its own stored metadata.
 	///
 	/// Per node on purpose. `UserDefaults.firmwareVersion` holds whichever radio was version
@@ -429,7 +452,12 @@ actor SequentialSteps {
 	
 	func run() async throws {
 		self.isRunning = true
+		defer { isRunning = false }
 		retryLoop: for attempt in 0..<maxRetries {
+			// An error reported during the previous attempt belongs to that attempt's connection.
+			if !cancelled {
+				externalError = nil
+			}
 			for stepNumber in 0..<steps.count {
 				if cancelled {
 					throw externalError ?? CancellationError()
@@ -484,6 +512,14 @@ actor SequentialSteps {
 							}
 						}
 					}
+					// The connection reported an error while this step ran, but the step finished
+					// anyway — not every step throws when cancelled. Fail the attempt here instead
+					// of carrying on to the next step and reporting a dead link as connected.
+					// Left set: a cancelled process rethrows it at the top of the next pass.
+					if let externalError {
+						Logger.transport.error("[Sequential Steps] Connection reported an error during step \(stepNumber, privacy: .public), which finished anyway; failing this attempt: \(externalError.localizedDescription, privacy: .public)")
+						throw externalError
+					}
 				} catch {
 					switch error {
 					case let SequentialStepError.timeout(stepNumber, afterWaiting):
@@ -491,22 +527,23 @@ actor SequentialSteps {
 					default:
 						Logger.transport.error("[Outer Step Retry Loop] Sequential process failed on step \(stepNumber) with error: \(error.localizedDescription, privacy: .public)")
 					}
+					// A cancelled process ends here with its error. Going round the retry loop
+					// would, on the last attempt, end it with tooManyRetries instead.
+					if cancelled {
+						throw externalError ?? error
+					}
 					switch currentStep.failureBehavior {
 					case .retryAll, .retryStep:
 						// TODO: we could have a .retryStepAndFail and a .retryStepAndContinue instead of just .retryStep to clarify the behavior here
 						continue retryLoop
 					case .fail:
-						isRunning = false
 						throw error
 					}
 				}
 			}
 			// We have finished all steps
-			isRunning = false
 			return
 		}
-		isRunning = false
-		// return
 		throw AccessoryError.tooManyRetries
 	}
 	
@@ -515,13 +552,20 @@ actor SequentialSteps {
 		self.currentlyExecutingStep?.cancel()
 	}
 	
-	func cancelCurrentlyExecutingStep(withError: Error?, cancelFullProcess: Bool = false) {
+	/// Hands an error from the connection to the running process.
+	///
+	/// Returns false if the process is no longer running, in which case nothing will act on
+	/// the error and the caller has to tear the connection down itself.
+	@discardableResult
+	func cancelCurrentlyExecutingStep(withError: Error?, cancelFullProcess: Bool = false) -> Bool {
+		guard isRunning else { return false }
 		self.externalError = withError
 		if cancelFullProcess {
 			cancel()
 		} else {
 			self.currentlyExecutingStep?.cancel()
 		}
+		return true
 	}
 	
 	func executeWithTimeout<ReturnType>(stepNumber: Int, timeout: Duration, operation: @escaping @Sendable () async throws -> ReturnType) -> Task<ReturnType, Error> {

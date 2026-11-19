@@ -942,11 +942,17 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 
 				lastConnectionError = error
 				
-				if let connectionStepper = self.connectionStepper {
-					// If we're in the midst of a connection process, tell the stepper that something happened
-					// This cancels retry connection attempts if we've been asked not to reconnect
-					await connectionStepper.cancelCurrentlyExecutingStep(withError: error, cancelFullProcess: !shouldAutomaticallyConnectToPreferredPeripheralAfterError)
+				// If we're in the midst of a connection process, tell the stepper that something happened
+				// This cancels retry connection attempts if we've been asked not to reconnect.
+				// A stepper that has already finished its steps won't act on the error, so fall
+				// through and close the connection here instead.
+				if let connectionStepper = self.connectionStepper,
+				   await connectionStepper.cancelCurrentlyExecutingStep(withError: error, cancelFullProcess: !shouldAutomaticallyConnectToPreferredPeripheralAfterError) {
+					// The stepper fails the current attempt and retries or gives up.
 				} else {
+					if self.connectionStepper != nil {
+						Logger.transport.error("🚨 [Accessory] Connect process had already finished its steps; closing the connection here")
+					}
 					// Normal processing.  Expose the error and disconnect
 					try? await self.closeConnection()
 					

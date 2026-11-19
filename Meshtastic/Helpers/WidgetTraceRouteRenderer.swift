@@ -95,7 +95,7 @@ final class WidgetTraceRouteRenderer {
 		let positions = route.nodePositionsByNum.compactMapValues { $0.coordinate }
 		var models: [WidgetMapShape: TraceRouteShareModel] = [:]
 		for shape in WidgetMapShape.allCases {
-			models[shape] = Self.model(route: route, legs: legs, positions: positions, size: shape.size)
+			models[shape] = Self.model(route: route, legs: legs, positions: positions, size: Self.mapSize(shape))
 		}
 		let details = Self.details(route: route, model: models[.square]!)
 		let observed = route.observed
@@ -171,6 +171,13 @@ final class WidgetTraceRouteRenderer {
 			let state = route.state()
 			return state == .complete || state == .observed
 		}
+	}
+
+	/// The tall widget shares its height with the stats and both hop chains,
+	/// so its map is drawn near square to fill the width, not at the node map's
+	/// full-height shape.
+	private static func mapSize(_ shape: WidgetMapShape) -> CGSize {
+		shape == .tall ? CGSize(width: 330, height: 300) : shape.size
 	}
 
 	private static func model(

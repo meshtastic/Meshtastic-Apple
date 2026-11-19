@@ -222,29 +222,39 @@ private struct LargeView: View {
 					Spacer(minLength: 0)
 				}
 				Divider()
-				// The full Android local-stats set, two labeled columns.
+				// The full Android local-stats set, two labeled columns. The rows
+				// spread over the height left, so the widget has no empty gap
+				// above the footer.
 				HStack(alignment: .top, spacing: 20) {
-					VStack(spacing: 7) {
-						StatLine(label: "Sent", value: countText(stats.packetsSent))
-						StatLine(label: "Received", value: countText(stats.packetsReceived))
-						StatLine(label: "Error Rate", value: errorRateText(stats))
-						StatLine(label: "Duplicates", value: countText(stats.packetsReceivedDupe))
+					VStack(spacing: 0) {
+						StatLine(label: "Sent", value: countText(stats.packetsSent), font: .subheadline)
+						Spacer(minLength: 6)
+						StatLine(label: "Received", value: countText(stats.packetsReceived), font: .subheadline)
+						Spacer(minLength: 6)
+						StatLine(label: "Error Rate", value: errorRateText(stats), font: .subheadline)
+						Spacer(minLength: 6)
+						StatLine(label: "Duplicates", value: countText(stats.packetsReceivedDupe), font: .subheadline)
 					}
-					VStack(spacing: 7) {
-						StatLine(label: "Relayed", value: countText(stats.packetsRelayed))
-						StatLine(label: "Relay Canceled", value: countText(stats.packetsRelayCanceled))
-						StatLine(label: "Bad Received", value: countText(stats.packetsReceivedBad))
-						StatLine(label: "Nodes Online", value: nodesText(snapshot))
+					VStack(spacing: 0) {
+						StatLine(label: "Relayed", value: countText(stats.packetsRelayed), font: .subheadline)
+						Spacer(minLength: 6)
+						StatLine(label: "Relay Canceled", value: countText(stats.packetsRelayCanceled), font: .subheadline)
+						Spacer(minLength: 6)
+						StatLine(label: "Bad Received", value: countText(stats.packetsReceivedBad), font: .subheadline)
+						Spacer(minLength: 6)
+						StatLine(label: "Nodes Online", value: nodesText(snapshot), font: .subheadline)
 					}
 				}
+				.frame(maxHeight: .infinity)
+				Divider()
 			} else {
 				Text("No local stats yet — they arrive about every 15 minutes while connected.")
 					.font(.caption)
 					.foregroundStyle(.secondary)
 				Label("\(nodesText(snapshot)) nodes", systemImage: "dot.radiowaves.left.and.right")
 					.font(.callout.weight(.semibold))
+				Spacer(minLength: 0)
 			}
-			Spacer(minLength: 0)
 			BottomBar(snapshot: snapshot)
 		}
 	}
@@ -254,6 +264,7 @@ private struct LargeView: View {
 private struct StatLine: View {
 	let label: LocalizedStringKey
 	let value: String
+	var font: Font = .caption
 
 	var body: some View {
 		HStack(spacing: 6) {
@@ -264,8 +275,9 @@ private struct StatLine: View {
 				.fontWeight(.semibold)
 				.monospacedDigit()
 		}
-		.font(.caption)
+		.font(font)
 		.lineLimit(1)
+		.minimumScaleFactor(0.7)
 	}
 }
 
