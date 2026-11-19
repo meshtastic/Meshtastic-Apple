@@ -338,6 +338,11 @@ extension AccessoryManager {
 												  connectionRestored: connectionWasRestored))
 				}
 			}
+
+			// Step 9: Confirm the link is still up before calling it connected
+			Step { @MainActor _ in
+				try await self.confirmLinkIsUp()
+			}
 		}
 		
 		// Run the connection process
@@ -364,6 +369,20 @@ extension AccessoryManager {
 		// All done, one way or another, clean up
 		self.connectionStepper = nil
 	}
+	/// Throws unless the active connection reports itself connected. The connect process ends
+	/// with this, so a link that dropped while it ran fails the attempt instead of being
+	/// reported as connected, whether or not the disconnect event reached the process.
+	///
+	/// For Bluetooth this is the peripheral's own state, which Core Bluetooth updates as soon as
+	/// the link drops. For TCP it's the socket's state, which can stay ready until the heartbeat
+	/// notices a dead link, so there this only catches a drop the socket already knows about.
+	func confirmLinkIsUp() async throws {
+		guard let connection = activeConnection?.connection, await connection.isConnected else {
+			Logger.transport.error("🔗 [Connect] The link dropped while connecting; failing this attempt")
+			throw AccessoryError.disconnected("The link dropped while connecting")
+		}
+	}
+
 	/// The firmware version this node last reported, from its own stored metadata.
 	///
 	/// Per node on purpose. `UserDefaults.firmwareVersion` holds whichever radio was version

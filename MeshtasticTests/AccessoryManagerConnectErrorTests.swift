@@ -16,7 +16,11 @@ import MeshtasticProtobufs
 
 private actor StubConnection: Connection {
 	let type: TransportType = .ble
-	var isConnected = true
+	var isConnected: Bool
+
+	init(isConnected: Bool = true) {
+		self.isConnected = isConnected
+	}
 
 	func send(_ data: ToRadio) async throws {}
 	func connect() async throws -> AsyncStream<ConnectionEvent> { AsyncStream { $0.finish() } }
@@ -40,7 +44,7 @@ private struct LinkLost: Error {}
 @MainActor
 @Suite("AccessoryManager connect errors", .serialized, .timeLimit(.minutes(1)))
 struct AccessoryManagerConnectErrorTests {
-	private func makeManager() -> AccessoryManager {
+	private func makeManager(linkUp: Bool = true) -> AccessoryManager {
 		let manager = AccessoryManager(transports: [])
 		let device = Device(
 			id: UUID(),
@@ -49,7 +53,7 @@ struct AccessoryManagerConnectErrorTests {
 			identifier: "connect-error-test-radio",
 			connectionState: .connected
 		)
-		manager.activeConnection = (device: device, connection: StubConnection())
+		manager.activeConnection = (device: device, connection: StubConnection(isConnected: linkUp))
 		// Keeps closeConnection() from restarting discovery.
 		manager.isSwitchingDevices = true
 		manager.context = PersistenceController.shared.context
@@ -105,5 +109,27 @@ struct AccessoryManagerConnectErrorTests {
 		// The connect process retried, and the connection it owns was left to it.
 		#expect(await log.entries == ["0:start", "1:start"])
 		#expect(manager.activeConnection != nil)
+	}
+
+	@Test func linkThatIsUpPassesTheFinalCheck() async throws {
+		let manager = makeManager()
+		try await manager.confirmLinkIsUp()
+	}
+
+	/// The connection's own state decides, so a drop whose event never reached the connect
+	/// process still fails the attempt.
+	@Test func droppedLinkFailsTheFinalCheck() async {
+		let manager = makeManager(linkUp: false)
+		await #expect(throws: AccessoryError.self) {
+			try await manager.confirmLinkIsUp()
+		}
+	}
+
+	@Test func noConnectionFailsTheFinalCheck() async {
+		let manager = makeManager()
+		manager.activeConnection = nil
+		await #expect(throws: AccessoryError.self) {
+			try await manager.confirmLinkIsUp()
+		}
 	}
 }
