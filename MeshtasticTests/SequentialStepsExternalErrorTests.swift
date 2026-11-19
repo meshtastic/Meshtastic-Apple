@@ -83,6 +83,23 @@ struct SequentialStepsExternalErrorTests {
 		#expect(await stepper.cancelCurrentlyExecutingStep(withError: LinkLost()) == false)
 	}
 
+	/// On the last attempt, with no step after it, the link error still ends the process
+	/// rather than tooManyRetries.
+	@Test func errorThatEndsTheProcessOnTheLastAttemptKeepsItsError() async throws {
+		let box = StepperBox()
+		let stepper = SequentialSteps(maxRetries: 1, retryDelay: .milliseconds(1)) {
+			Step { _ in
+				await box.stepper?.cancelCurrentlyExecutingStep(withError: LinkLost(), cancelFullProcess: true)
+			}
+		}
+		box.stepper = stepper
+
+		await #expect(throws: LinkLost.self) {
+			try await stepper.run()
+		}
+		#expect(await stepper.isRunning == false)
+	}
+
 	@Test func finishedStepperRefusesTheError() async throws {
 		let stepper = SequentialSteps(maxRetries: 1, retryDelay: .milliseconds(1)) {
 			Step { _ in }

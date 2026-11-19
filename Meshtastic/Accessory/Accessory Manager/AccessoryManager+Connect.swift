@@ -72,7 +72,7 @@ extension AccessoryManager {
 		let connectStepTimeout: Duration = isFirstTimeBLEBond ? .seconds(90) : .seconds(5)
 
 		// Prepare to connect
-		self.connectionStepper = SequentialSteps(maxRetries: retries ?? maxRetries, retryDelay: retryDelay) {
+		let stepper = SequentialSteps(maxRetries: retries ?? maxRetries, retryDelay: retryDelay) {
 			
 			// Step 0
 			Step { @MainActor retryAttempt in
@@ -344,10 +344,11 @@ extension AccessoryManager {
 				try await self.confirmLinkIsUp()
 			}
 		}
+		self.connectionStepper = stepper
 		
 		// Run the connection process
 		do {
-			try await connectionStepper?.run()
+			try await stepper.run()
 			Logger.transport.debug("🔗 [Connect] ConnectionStepper completed.")
 			// The scan pause covers the whole handshake — pairing happens during the
 			// notify subscription, after the link comes up — so resume only now that
@@ -366,8 +367,11 @@ extension AccessoryManager {
 			self.lastConnectionError = error
 		}
 		
-		// All done, one way or another, clean up
-		self.connectionStepper = nil
+		// All done, one way or another, clean up. A connect started meanwhile, after a drop
+		// that came in once these steps had finished, has stored its own stepper: leave that one.
+		if self.connectionStepper === stepper {
+			self.connectionStepper = nil
+		}
 	}
 	/// Throws unless the active connection reports itself connected. The connect process ends
 	/// with this, so a link that dropped while it ran fails the attempt instead of being
@@ -522,6 +526,11 @@ actor SequentialSteps {
 						Logger.transport.info("[Outer Step Retry Loop] Sequential process timed out on step \(stepNumber) after waiting \(afterWaiting)")
 					default:
 						Logger.transport.error("[Outer Step Retry Loop] Sequential process failed on step \(stepNumber) with error: \(error.localizedDescription, privacy: .public)")
+					}
+					// A cancelled process ends here with its error. Going round the retry loop
+					// would, on the last attempt, end it with tooManyRetries instead.
+					if cancelled {
+						throw externalError ?? error
 					}
 					switch currentStep.failureBehavior {
 					case .retryAll, .retryStep:
