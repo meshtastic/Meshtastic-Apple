@@ -147,6 +147,41 @@ struct BLETransportAbandonedConnectTests {
 		#expect(centralManager.calls == [.connect(peripheral.identifier)])
 	}
 
+	@Test func connectionDuringARestoreIsKept() async {
+		let peripheral = TestPeripheral.shared
+		let lookupStarted = Signal()
+		let releaseLookup = Signal()
+		let centralManager = RecordingCentralManager(peripheral: peripheral, connectSignal: Signal())
+		let transport = BLETransport(
+			createCentralManagerImmediately: false,
+			centralManager: centralManager,
+			restoredNodeNames: { _ in
+				await lookupStarted.markReached()
+				await releaseLookup.wait()
+				return (nil, nil)
+			}
+		)
+		// The restore only looks up the radio's names when a preferred radio is saved.
+		let savedNodeNum = UserDefaults.preferredPeripheralNum
+		UserDefaults.preferredPeripheralNum = 1
+		defer { UserDefaults.preferredPeripheralNum = savedNodeNum }
+
+		let restore = Task {
+			await transport.handleWillRestoreState(dict: [CBCentralManagerRestoredStatePeripheralsKey: [peripheral]], central: centralManager)
+		}
+		// The restore is now paused before it sets the active connection.
+		await lookupStarted.wait()
+
+		// iOS finishes its own reconnect in that gap.
+		await transport.handleDidConnect(peripheral: peripheral, central: centralManager)
+
+		#expect(centralManager.calls.isEmpty)
+
+		// The peripheral reports disconnected, so the restore ends here without connecting.
+		await releaseLookup.markReached()
+		await restore.value
+	}
+
 	@Test func anotherDidConnectKeepsTheActiveConnection() async throws {
 		let peripheral = TestPeripheral.shared
 		let connectSignal = Signal()

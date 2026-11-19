@@ -63,7 +63,8 @@ actor BLETransport: Transport {
 	private var cleanupTask: Task<Void, Never>?
 	private var scanningPausedForConnection = false
 	private let discoverySetupHandler: (@Sendable () async -> Void)?
-	
+	private let restoredNodeNames: @Sendable (Int64) async -> (longName: String?, shortName: String?)
+
 	// Transport properties
 	let supportsManualConnection: Bool = false
 	let requiresPeriodicHeartbeat = false
@@ -73,13 +74,17 @@ actor BLETransport: Transport {
 	///   authorization already does. Tests that drive `handleCentralState` directly need this: a
 	///   real manager reports the host's actual Bluetooth state on its own schedule, and that
 	///   incidental value lands in `status` at an unpredictable point mid-test.
+	/// - Parameter restoredNodeNames: Looks up a restored radio's names by node number. Tests pass
+	///   their own to hold a state restore partway through.
 	init(
 		createCentralManagerImmediately: Bool = true,
 		centralManager: CBCentralManager? = nil,
-		discoverySetupHandler: (@Sendable () async -> Void)? = nil
+		discoverySetupHandler: (@Sendable () async -> Void)? = nil,
+		restoredNodeNames: @escaping @Sendable (Int64) async -> (longName: String?, shortName: String?) = { await BLETransport.nodeNamesFromStore($0) }
 	) {
 		self.centralManager = centralManager
 		self.discoverySetupHandler = discoverySetupHandler
+		self.restoredNodeNames = restoredNodeNames
 		self.discoveredPeripherals = [:]
 		self.discoveredDeviceContinuation = nil
 		self.delegate = BLEDelegate()
@@ -541,6 +546,25 @@ actor BLETransport: Transport {
 		self.connectingPeripheral = nil
 	}
 	
+	/// Reads a restored radio's names from the app's store.
+	static func nodeNamesFromStore(_ nodeNum: Int64) async -> (longName: String?, shortName: String?) {
+		await MainActor.run {
+			do {
+				let descriptor = FetchDescriptor<NodeInfoEntity>(
+					predicate: #Predicate { $0.num == nodeNum }
+				)
+				let context = PersistenceController.shared.context
+				let fetchedNodes = try context.fetch(descriptor)
+				if let first = fetchedNodes.first {
+					return (first.user?.longName, first.user?.shortName)
+				}
+			} catch {
+				// No-op
+			}
+			return (nil, nil)
+		}
+	}
+
 	func handleWillRestoreState(dict: [String: Any], central: CBCentralManager) async {
 		/// GVH - To test this you need to simulate the app getting killed in the background by the OS you can do this by stopping  the debugger while the app is connected to a device in the background
 		/// You will see Message from debugger: killed after you see this message, power off and back on your meshtastic device, bring the app back to the foreground and
@@ -565,26 +589,11 @@ actor BLETransport: Transport {
 		
 		// Get the device name
 		if let nodeNum {
-			let nodeNumVal = Int64(nodeNum)
-			let names: (String?, String?) = await MainActor.run {
-				do {
-					let descriptor = FetchDescriptor<NodeInfoEntity>(
-						predicate: #Predicate { $0.num == nodeNumVal }
-					)
-					let context = PersistenceController.shared.context
-					let fetchedNodes = try context.fetch(descriptor)
-					if let first = fetchedNodes.first {
-						return (first.user?.longName, first.user?.shortName)
-					}
-				} catch {
-					// No-op
-				}
-				return (nil, nil)
-			}
-			if let longName = names.0 {
+			let names = await restoredNodeNames(nodeNum)
+			if let longName = names.longName {
 				device.longName = longName
 			}
-			if let shortName = names.1 {
+			if let shortName = names.shortName {
 				device.shortName = shortName
 			}
 		}
