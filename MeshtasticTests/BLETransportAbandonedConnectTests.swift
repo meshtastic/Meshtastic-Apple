@@ -191,6 +191,32 @@ struct BLETransportAbandonedConnectTests {
 		#expect(centralManager.calls == [.connect(peripheral.identifier)])
 	}
 
+	@Test func realDisconnectStillFailsAPendingConnect() async {
+		let peripheral = TestPeripheral.shared
+		let connectSignal = Signal()
+		let centralManager = RecordingCentralManager(peripheral: peripheral, connectSignal: connectSignal)
+		let transport = BLETransport(createCentralManagerImmediately: false, centralManager: centralManager)
+		let device = Device(id: UUID(), name: "Test Radio", transportType: .ble, identifier: peripheral.identifier.uuidString)
+
+		let connection = Task { try await transport.connect(to: device) }
+		await connectSignal.wait()
+
+		// A real drop: the peripheral no longer shows as connecting.
+		TestPeripheral.reportedState = .disconnected
+		await transport.handlePeripheralDisconnect(peripheral: peripheral)
+		// If the disconnect were ignored, this cancel is what would end the connect instead.
+		connection.cancel()
+
+		do {
+			_ = try await connection.value
+			Issue.record("The connect succeeded after the radio disconnected")
+		} catch AccessoryError.connectionFailed(let message) {
+			#expect(message == "Peripheral disconnected before connection completed")
+		} catch {
+			Issue.record("The disconnect was ignored; the connect only ended when cancelled: \(error)")
+		}
+	}
+
 	@Test func disconnectFromAnEarlierCancelDoesNotFailANewConnect() async throws {
 		let peripheral = TestPeripheral.shared
 		defer { TestPeripheral.reportedState = .disconnected }
