@@ -233,12 +233,7 @@ private struct RouteTallView: View {
 			RouteHeader(route: route, compact: false)
 			RouteTitle(route: route, font: .title3.weight(.semibold), lineLimit: 2)
 			if let map {
-				// Fills the space left over, trimming the map's edges rather
-				// than leaving it a narrow strip down the middle.
-				Color.clear
-					.frame(maxWidth: .infinity, maxHeight: .infinity)
-					.overlay { RouteMapImage(image: map, contentMode: .fill) }
-					.clipped()
+				RouteMapFill(image: map)
 			}
 			StatTiles(route: route)
 			VStack(alignment: .leading, spacing: 8) {
@@ -275,10 +270,7 @@ private struct RouteBoardView: View {
 			}
 			RouteTitle(route: route, font: simplified ? .largeTitle.weight(.semibold) : .title2.weight(.semibold), lineLimit: 1)
 			if let map {
-				Color.clear
-					.frame(maxWidth: .infinity, maxHeight: .infinity)
-					.overlay { RouteMapImage(image: map, contentMode: .fill) }
-					.clipped()
+				RouteMapFill(image: map)
 			}
 			if !simplified {
 				HStack(alignment: .center, spacing: 16) {
@@ -304,6 +296,30 @@ private struct RouteBoardView: View {
 #endif
 
 // MARK: Pieces
+
+/// The map filling the space left over rather than sitting in it as a narrow strip, trimming
+/// at most a tenth of the map from any side. The route sits inside about 15% of margin on
+/// each side, so the trim never reaches its endpoints.
+private struct RouteMapFill: View {
+	static let maxTrimPerSide: CGFloat = 0.1
+	let image: UIImage
+
+	var body: some View {
+		GeometryReader { proxy in
+			let space = proxy.size
+			let source = image.size
+			if space.width > 0, space.height > 0, source.width > 0, source.height > 0 {
+				let fit = min(space.width / source.width, space.height / source.height)
+				let fill = max(space.width / source.width, space.height / source.height)
+				let scale = min(fill, fit / (1 - 2 * Self.maxTrimPerSide))
+				RouteMapImage(image: image)
+					.frame(width: source.width * scale, height: source.height * scale)
+					.frame(width: space.width, height: space.height)
+					.clipped()
+			}
+		}
+	}
+}
 
 /// The Meshtastic mark, "Trace Route" in brand green and, for a route seen on
 /// the mesh, an "Observed" tag.
