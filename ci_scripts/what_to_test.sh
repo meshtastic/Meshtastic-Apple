@@ -90,6 +90,9 @@ summary_of() {
 			line = tolower(line)
 			ref = "(#[0-9]+|https?://[^ ]+)"
 			sub(/^[ \t]*[-*][ \t]+/, "", line)
+			# A Markdown link like [#123](url) counts as the plain reference.
+			gsub(/\]\([^)]*\)/, "", line)
+			gsub(/\[/, "", line)
 			return line ~ ("^[ \t]*(fix(es|ed)?|close[sd]?|resolve[sd]?|part of|refs?|related to|see)[ \t:]+" ref "([ \t]*,?[ \t]*(and[ \t]+)?" ref ")*[ \t.]*$")
 		}
 		/^##[ \t]+Summary[ \t]*$/ { inside = 1; next }
