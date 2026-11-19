@@ -3271,6 +3271,12 @@
     "• After the file is written the radio erases itself; the drive disappears and comes back a couple of seconds later." : {
       "extractionState" : "manual",
       "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• Po zapisaniu pliku radio samo się wymazuje; dysk znika i pojawia się ponownie po kilku sekundach."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3282,6 +3288,12 @@
     "• On a bootloader that erases itself, the installed firmware stays and starts as a brand-new device when you unplug the radio. Install new firmware from the Firmware Updates screen only if you want to." : {
       "extractionState" : "manual",
       "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• W bootloaderze, który sam się wymazuje, zainstalowany firmware zostaje i po odłączeniu radia uruchamia się jako zupełnie nowe urządzenie. Nowy firmware instaluj na ekranie aktualizacji oprogramowania tylko wtedy, gdy chcesz."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3293,6 +3305,12 @@
     "• On older bootloaders only the SoftDevice and bootloader remain, so install firmware next from the Firmware Updates screen." : {
       "extractionState" : "manual",
       "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• W starszych bootloaderach zostają tylko SoftDevice i bootloader, więc potem zainstaluj firmware na ekranie aktualizacji oprogramowania."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3304,6 +3322,12 @@
     "• The download is verified against a pinned checksum, and its header is cross-checked against what the drive reported, before anything is written." : {
       "extractionState" : "manual",
       "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• Pobrany plik jest sprawdzany z przypisaną sumą kontrolną, a jego nagłówek porównywany z tym, co zgłosił dysk, zanim cokolwiek zostanie zapisane."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3625,6 +3649,12 @@
     "Beacon Channels" : {
       "extractionState" : "manual",
       "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kanały z beaconów"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3698,6 +3728,12 @@
     "Bootloader erase — **firmware is kept**" : {
       "extractionState" : "manual",
       "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wymazanie przez bootloader — **firmware zostaje**"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3876,6 +3912,12 @@
     "Choose the drive above to identify the bootloader." : {
       "extractionState" : "manual",
       "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybierz dysk powyżej, aby rozpoznać bootloader."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3947,6 +3989,12 @@
     "Completed" : {
       "extractionState" : "manual",
       "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zakończono"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4297,6 +4345,12 @@
     "Erase file written. The radio is wiping its settings and comes back as a bootloader drive in a few seconds. Unplug it to start the installed firmware as a brand-new device, or install firmware from the Firmware Updates screen." : {
       "extractionState" : "manual",
       "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zapisano plik wymazania. Radio czyści ustawienia i za kilka sekund wróci jako dysk bootloadera. Odłącz je, aby uruchomić zainstalowany firmware jako zupełnie nowe urządzenie, albo zainstaluj firmware na ekranie aktualizacji oprogramowania."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4399,6 +4453,12 @@
     "Factory erase permanently removes the radio's owner, channels, identity keys, settings, Bluetooth bonds, and node database. Nothing is restored automatically." : {
       "extractionState" : "manual",
       "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wymazanie fabryczne trwale usuwa właściciela radia, kanały, klucze tożsamości, ustawienia, powiązania Bluetooth i bazę węzłów. Nic nie zostanie przywrócone automatycznie."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4466,6 +4526,12 @@
     "Firmware Update" : {
       "extractionState" : "manual",
       "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aktualizacja oprogramowania"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4544,6 +4610,12 @@
     "Idle" : {
       "extractionState" : "manual",
       "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bezczynny"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -4998,6 +5070,12 @@
     "Manually Start BLE OTA" : {
       "extractionState" : "manual",
       "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Uruchom ręcznie BLE OTA"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -5009,6 +5087,12 @@
     "Manually Start WIFI OTA" : {
       "extractionState" : "manual",
       "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Uruchom ręcznie Wi-Fi OTA"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8471,6 +8555,12 @@
     },
     "No erase image is available for SoftDevice S140 %@ right now. Nothing was written — try again later." : {
       "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dla SoftDevice S140 %@ nie ma teraz obrazu wymazania. Nic nie zostało zapisane — spróbuj ponownie później."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8866,6 +8956,12 @@
     "Preparing" : {
       "extractionState" : "manual",
       "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przygotowywanie"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9224,6 +9320,12 @@
     "Select the device's drive in the file picker. The app reads the drive's INFO_UF2.TXT to choose the erase file: newer bootloaders erase themselves with one file for every board, older ones need an image matched to their SoftDevice version. The wrong file can never be written." : {
       "extractionState" : "manual",
       "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybierz dysk urządzenia w oknie wyboru plików. Aplikacja odczyta plik INFO_UF2.TXT z dysku, aby wybrać plik wymazania: nowsze bootloadery wymazują się jednym plikiem dla każdej płytki, starsze wymagają obrazu dopasowanego do wersji SoftDevice. Złego pliku nie da się zapisać."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9682,6 +9784,12 @@
     "The erase file is not the one the bootloader expects. Nothing was written." : {
       "extractionState" : "manual",
       "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Plik wymazania nie jest tym, którego oczekuje bootloader. Nic nie zostało zapisane."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9727,6 +9835,12 @@
     "The owner, channels, identity keys, settings, Bluetooth bonds, and node database are permanently removed." : {
       "extractionState" : "manual",
       "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Właściciel, kanały, klucze tożsamości, ustawienia, powiązania Bluetooth i baza węzłów zostaną trwale usunięte."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9915,6 +10029,12 @@
     "Transferring" : {
       "extractionState" : "manual",
       "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przesyłanie"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11326,6 +11446,12 @@
             "value" : "%1$@ (%2$lld)"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ (%lld)"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -11372,6 +11498,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ (posición %2$d)"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ (slot %d)"
           }
         },
         "zh-Hant-TW" : {
@@ -12276,6 +12408,12 @@
             "value" : "%@ 유지 시간"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Czas nasłuchu: %@"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -12442,6 +12580,12 @@
             "value" : "%@ de datos de malla"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ danych z sieci"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12474,6 +12618,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ por ciento"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ procent"
           }
         },
         "zh-Hant-TW" : {
@@ -13843,6 +13993,12 @@
             "value" : "%lld개 중복 수신"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Duplikaty: %lld"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -14244,6 +14400,12 @@
             "value" : "%lld개 Mesh"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sieci: %lld"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -14385,6 +14547,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld nodes en línea"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Węzły online: %lld"
           }
         },
         "zh-Hant-TW" : {
@@ -14545,6 +14713,12 @@
             "value" : "%lld por ciento"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%lld procent"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -14681,6 +14855,12 @@
             "value" : "%lld개 수신됨"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Odebrane: %lld"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -14751,6 +14931,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld회 중계 취소됨"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Anulowane przekazania: %lld"
           }
         },
         "pt-BR" : {
@@ -14825,6 +15011,12 @@
             "value" : "%lld회 중계됨"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przekazane: %lld"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -14895,6 +15087,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld개 송신함"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysłane: %lld"
           }
         },
         "pt-BR" : {
@@ -15060,6 +15258,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$lld/%2$lld 노드 온라인"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Węzły online: %lld/%lld"
           }
         },
         "pt-BR" : {
@@ -15498,6 +15702,12 @@
             "value" : "• Después de escribir el archivo, el dispositivo instala el gestor de arranque y se reinicia; la unidad desaparece y vuelve."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• Po zapisaniu pliku urządzenie instaluje bootloader i samo się restartuje; dysk znika i pojawia się ponownie."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15532,6 +15742,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "• Si no se reconoce la placa, no se escribe nada — no se puede recuperar un bootloader para la placa equivocada a través de USB."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• Jeśli płytka nie zostanie rozpoznana, nic nie jest zapisywane — bootloadera dla złej płytki nie da się naprawić przez USB."
           }
         },
         "zh-Hant-TW" : {
@@ -15598,6 +15814,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "• 파일 선택기에서 **위치** 화면으로 돌아가세요."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• W oknie wyboru plików cofnij się aż do **Miejsca**."
           }
         },
         "pt-BR" : {
@@ -15672,6 +15894,12 @@
             "value" : "• USB 장치를 선택한 다음 **저장**을 누르세요."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• Wybierz urządzenie USB i stuknij **Zachowaj**."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -15744,6 +15972,12 @@
             "value" : "• 아래의 **펌웨어를 USB에 저장** 버튼을 누르세요."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• Stuknij przycisk **Zapisz firmware na USB** poniżej."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -15782,6 +16016,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "• La descarga se verifica mediante una suma de comprobación fija antes de que se escriba nada."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• Pobrany plik jest sprawdzany z przypisaną sumą kontrolną, zanim cokolwiek zostanie zapisane."
           }
         },
         "zh-Hant-TW" : {
@@ -15848,6 +16088,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "• 다운로드된 펌웨어 파일 이름은 iOS 캐싱을 방지하기 위해 `.uf2`로 끝나는 임의의 문자열입니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• Nazwa pliku będzie losowym ciągiem kończącym się na `.uf2`, aby iOS nie użył pamięci podręcznej."
           }
         },
         "pt-BR" : {
@@ -15920,6 +16166,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "• 업데이트가 완료되면 장치 연결이 바로 끊기므로 파일 저장 실패 오류가 표시될 수 있습니다. 이는 정상적인 현상입니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "• Może pojawić się błąd, że nie udało się zapisać pliku. To normalne, bo urządzenie rozłącza się zaraz po aktualizacji."
           }
         },
         "pt-BR" : {
@@ -16627,6 +16879,12 @@
             "value" : "15분"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "15 min"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -16787,6 +17045,12 @@
             "value" : "30분"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "30 min"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -16857,6 +17121,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "45분"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "45 min"
           }
         },
         "pt-BR" : {
@@ -17019,6 +17289,12 @@
             "value" : "60분"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "60 min"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -17179,6 +17455,12 @@
             "value" : "90분"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "90 min"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -17337,6 +17619,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "120분"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "120 min"
           }
         },
         "pt-BR" : {
@@ -17562,6 +17850,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "180분"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "180 min"
           }
         },
         "pt-BR" : {
@@ -17982,6 +18276,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Un icono de baliza marca un preajuste de una baliza anunciada — también preseleccionada."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ikona beaconu oznacza preset ogłaszany przez beacon — on też jest wstępnie zaznaczony."
           }
         },
         "zh-Hant-TW" : {
@@ -18489,6 +18789,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La estrella marca los ajustes preestablecidos que utilizan la mayoría de las mallas públicas."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Gwiazdka oznacza presety używane przez większość publicznych sieci — są wstępnie zaznaczone."
           }
         },
         "zh-Hant-TW" : {
@@ -19424,6 +19730,12 @@
             "value" : "활성 프리셋"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aktywny preset"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -19830,6 +20142,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Agregar canal"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dodaj kanał"
           }
         },
         "zh-Hant-TW" : {
@@ -20250,6 +20568,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "¿Añadir este canal?"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dodać ten kanał?"
           }
         },
         "zh-Hant-TW" : {
@@ -21256,6 +21580,12 @@
             "value" : "고급 사용자 전용"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tylko dla zaawansowanych."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -21314,6 +21644,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Anunciado por una baliza"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ogłaszany przez beacon"
           }
         },
         "zh-Hant-TW" : {
@@ -22755,6 +23091,12 @@
             "value" : "Todas los canales secundarios están ocupados. Elija un canal secundario existente para reemplazarlo - su canal principal nunca se toca."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wszystkie sloty kanałów dodatkowych są zajęte. Wybierz kanał dodatkowy do zastąpienia — kanał główny nigdy nie jest zmieniany."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22891,6 +23233,12 @@
             "value" : "Alpha"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Alpha"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -22941,6 +23289,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ya se ha unido"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Już dołączono"
           }
         },
         "zh-Hant-TW" : {
@@ -23946,6 +24300,12 @@
             "value" : "현재 프리셋 분석"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Analizuj bieżący preset"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24005,6 +24365,12 @@
             "value" : "Analizando %@ de los datos recopilados"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Analizowanie %@ zebranych danych"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24051,6 +24417,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "분석 중..."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Analizowanie..."
           }
         },
         "pt-BR" : {
@@ -25195,6 +25567,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "기기 아키텍처"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Architektura"
           }
         },
         "pt-BR" : {
@@ -26517,6 +26895,12 @@
             "value" : "평균 채널 사용률"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Średnie wykorzystanie kanału"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -26564,6 +26948,12 @@
             "value" : "Volver a la actualización del firmware"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wróć do aktualizacji oprogramowania"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26580,6 +26970,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Volver a Actualizar"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wróć do aktualizacji"
           }
         },
         "zh-Hant-TW" : {
@@ -27741,6 +28137,12 @@
             "value" : "Balizas"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Beacony"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27787,6 +28189,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "펌웨어 업데이트 시작"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rozpocznij aktualizację"
           }
         },
         "pt-BR" : {
@@ -28245,6 +28653,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "BLE OTA 업데이트"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aktualizacja BLE OTA"
           }
         },
         "pt-BR" : {
@@ -28725,6 +29139,12 @@
             "value" : "Bluetooth no disponible."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bluetooth jest niedostępny."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28974,6 +29394,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Actualizar Bootloader"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aktualizacja bootloadera"
           }
         },
         "zh-Hant-TW" : {
@@ -30794,6 +31220,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "채널 사용률"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wyk. kanału"
           }
         },
         "pt-BR" : {
@@ -33725,6 +34157,12 @@
     "Channels and frequency slots advertised by beacons. Selecting one tunes the scan to that mesh so its traffic can be decoded." : {
       "comment" : "Footer under the Beacon Channels section of Local Mesh Discovery setup. Rows are private channels, or the public channel on a fixed frequency slot, that beacons advertised.",
       "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kanały i sloty częstotliwości ogłaszane przez beacony. Wybranie jednego dostraja skanowanie do tej sieci, aby można było odczytać jej ruch."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33925,6 +34363,12 @@
             "value" : "Salto de Chirpy"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Chirpy Hop"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -34050,6 +34494,12 @@
             "value" : "Elegir unidad del Bootloader"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybierz dysk bootloadera"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -34064,6 +34514,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Elija la unidad de arriba para identificar la placa."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybierz dysk powyżej, aby rozpoznać płytkę."
           }
         },
         "zh-Hant-TW" : {
@@ -36097,6 +36553,12 @@
     "Complete" : {
       "comment" : "NodeListDensity.description",
       "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pełna"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -36143,6 +36605,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "로컬 메시 탐색 스캔을 완료하여 결과를 확인하세요."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wykonaj skanowanie w Wykrywaniu lokalnych sieci, aby zobaczyć tu wyniki."
           }
         },
         "pt-BR" : {
@@ -37291,6 +37759,12 @@
             "value" : "Conectar a tu dispositivo via Bluetooth o Wi-Fi para actualizar el firmware de forma inalámbrica."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Połącz się z urządzeniem przez Bluetooth lub Wi-Fi, aby aktualizować oprogramowanie bezprzewodowo (OTA)."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -37410,6 +37884,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "장치를 안정적인 전원에 연결하세요."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Podłącz urządzenie do stabilnego zasilania."
           }
         },
         "pt-BR" : {
@@ -39509,6 +39989,12 @@
             "value" : "No se pudo conectar al dispositivo."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie można połączyć się z urządzeniem."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -39626,6 +40112,12 @@
             "value" : "No se pudo instalar la actualización: %@"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie udało się zainstalować aktualizacji: %@"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -39653,6 +40145,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se pudo abrir la unidad seleccionada."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie można otworzyć wybranego dysku."
           }
         },
         "zh-Hant-TW" : {
@@ -39684,6 +40182,12 @@
             "value" : "No se pudo escribir la imagen de borrado: %@"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie udało się zapisać obrazu wymazania: %@"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -39700,6 +40204,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se pudo agregar el canal"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie udało się dodać kanału"
           }
         },
         "zh-Hant-TW" : {
@@ -39869,6 +40379,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se pudo cambiar de canal"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie udało się przełączyć kanału"
           }
         },
         "zh-Hant-TW" : {
@@ -40718,6 +41234,12 @@
             "value" : "현재 소프트웨어 버전"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bieżąca wersja oprogramowania"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -40794,6 +41316,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "현재 프리셋"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bieżący preset"
           }
         },
         "uk" : {
@@ -41240,6 +41768,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "날짜"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Data"
           }
         },
         "pt-BR" : {
@@ -43398,6 +43932,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "데스크톱 권장"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zalecany komputer"
           }
         },
         "pt-BR" : {
@@ -45768,6 +46308,12 @@
             "value" : "DFU 펌웨어 업데이트"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aktualizacja oprogramowania DFU"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -46916,6 +47462,12 @@
             "value" : "Descubre mallas a tu alrededor"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Odkryj sieci wokół siebie"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -46961,6 +47513,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "탐색 지도"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mapa wykrywania"
           }
         },
         "pt-BR" : {
@@ -48194,6 +48752,12 @@
             "value" : "업데이트 중 앱을 종료하지 마세요."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie zamykaj aplikacji podczas aktualizacji."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -48233,6 +48797,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No cierres la aplicación ni desactives el Bluetooth mientras se esté realizando la actualización."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie zamykaj aplikacji i nie wyłączaj Bluetootha podczas aktualizacji."
           }
         },
         "zh-Hant-TW" : {
@@ -49204,6 +49774,12 @@
             "value" : "다운로드됨"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pobrane"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -49307,6 +49883,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Descargar, verificar y grabar…"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pobieranie, weryfikacja i zapis…"
           }
         },
         "zh-Hant-TW" : {
@@ -49735,6 +50317,12 @@
             "value" : "유지 시간"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Czas nasłuchu"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -49803,6 +50391,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "프리셋별 유지 시간"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Czas nasłuchu na preset"
           }
         },
         "pt-BR" : {
@@ -52350,6 +52944,12 @@
             "value" : "장치가 충전되어 있는지 확인하세요."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Upewnij się, że urządzenie jest naładowane."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -53452,6 +54052,12 @@
             "value" : "Borrar todo"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wymaż wszystko"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -53468,6 +54074,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Se ha borrado la imagen escrita. La radio está borrando su memoria flash y se reiniciará en el gestor de arranque. A continuación, instale el firmware desde la pantalla de Actualizaciones de firmware."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zapisano obraz wymazania. Radio czyści pamięć flash i uruchomi się w bootloaderze — potem zainstaluj firmware na ekranie aktualizacji oprogramowania."
           }
         },
         "zh-Hant-TW" : {
@@ -53488,6 +54100,12 @@
             "value" : "Borrar esta radio"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wymaż to radio"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -53504,6 +54122,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "¿Borrar esta radio?"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wymazać to radio?"
           }
         },
         "zh-Hant-TW" : {
@@ -53527,6 +54151,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Error"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Błąd"
           }
         },
         "zh-Hant-TW" : {
@@ -53579,6 +54209,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "오류: %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Błąd: %@"
           }
         },
         "pt-BR" : {
@@ -53663,6 +54299,12 @@
             "value" : "ESP32 BLE 업데이트 도구"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ESP32 BLE Updater"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -53731,6 +54373,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ESP32 OTA 업데이트를 사용하려면 펌웨어 %@ 이상이 필요합니다. 먼저 Web Flasher를 사용하여 장치 펌웨어를 업데이트하세요."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aktualizacja ESP32 przez OTA wymaga firmware'u %@ lub nowszego. Najpierw zaktualizuj firmware urządzenia za pomocą Web Flashera."
           }
         },
         "pt-BR" : {
@@ -53803,6 +54451,12 @@
             "value" : "ESP32 업데이트"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aktualizacja ESP32"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -53871,6 +54525,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ESP32 WiFi 업데이트 도구"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ESP32 WiFi Updater"
           }
         },
         "pt-BR" : {
@@ -55072,6 +55732,12 @@
             "value" : "Exportar resumen del escaneo como PDF"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Eksportuj podsumowanie skanowania do PDF"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -55487,6 +56153,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Borrado de fábrica"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wymazanie fabryczne"
           }
         },
         "zh-Hant-TW" : {
@@ -57671,6 +58343,12 @@
             "value" : "펌웨어 릴리즈"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wydania oprogramowania"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -57841,6 +58519,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "펌웨어 업데이트가 필요합니다"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wymagana aktualizacja firmware'u"
           }
         },
         "pt-BR" : {
@@ -59221,6 +59905,12 @@
             "value" : "보안상의 이유로 iOS에서는 외부 USB 장치에 직접 파일을 쓸 수 없습니다. 파일을 수동으로 저장해야 합니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ze względów bezpieczeństwa iOS nie może zapisywać bezpośrednio na zewnętrznych urządzeniach USB. Musisz zapisać plik ręcznie."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -60042,6 +60732,12 @@
             "value" : "가장 먼 노드 거리"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Najdalszy węzeł"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -60435,6 +61131,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "로컬 AI 추천 생성 중…"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Generowanie lokalnej rekomendacji AI..."
           }
         },
         "pt-BR" : {
@@ -62601,6 +63303,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Escuchado en %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Usłyszany na %@"
           }
         },
         "zh-Hant-TW" : {
@@ -65730,6 +66438,12 @@
             "value" : "제가 무엇을 하는지 알고 있습니다"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wiem, co robię"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -66663,6 +67377,12 @@
             "value" : "연결된 경우 아래 버튼을 사용하여 DFU 모드로 진입합니다. 또는 장치의 리셋 버튼을 빠르게 두 번 누르세요."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jeśli urządzenie jest połączone, użyj przycisku poniżej, aby uruchomić je ponownie w trybie DFU. W przeciwnym razie szybko naciśnij dwa razy przycisk reset urządzenia."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -67200,6 +67920,12 @@
             "value" : "Si su dispositivo tiene el actualizador adecuado cargado en la partición OTA_1, puede intentar utilizar el proceso de actualización BLE."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jeśli na partycji OTA_1 urządzenia jest właściwy updater, możesz spróbować aktualizacji przez BLE."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -67214,6 +67940,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Si su dispositivo tiene el actualizador adecuado cargado en la partición OTA_1, puede intentar utilizar el proceso de actualización por WiFi."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jeśli na partycji OTA_1 urządzenia jest właściwy updater, możesz spróbować aktualizacji przez Wi-Fi."
           }
         },
         "zh-Hant-TW" : {
@@ -68117,6 +68849,12 @@
             "value" : "중요 안내 사항"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ważne uwagi"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -68262,6 +69000,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "En curso"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "W toku"
           }
         },
         "zh-Hant-TW" : {
@@ -68836,6 +69580,12 @@
             "value" : "El archivo INFO_UF2.TXT no tiene una línea de Board-ID, por lo que no se puede identificar la placa de forma segura."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "W pliku INFO_UF2.TXT nie ma linii Board-ID, więc nie da się bezpiecznie rozpoznać płytki."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -68882,6 +69632,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "인프라 노드 수"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Infrastruktura"
           }
         },
         "pt-BR" : {
@@ -69344,6 +70100,12 @@
             "value" : "설치"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zainstaluj"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -69384,6 +70146,12 @@
             "value" : "Instalar actualización del gestor de arranque"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zainstaluj aktualizację bootloadera"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -69398,6 +70166,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Región LoRa prevista"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Docelowy region LoRa"
           }
         },
         "zh-Hant-TW" : {
@@ -70163,6 +70937,12 @@
             "value" : "장치를 휴대폰 가까이 유지하세요."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Trzymaj urządzenie blisko telefonu."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -70282,6 +71062,12 @@
             "value" : "Mantente a la Espera"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Czekaj dalej"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -70297,6 +71083,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mantén tu dispositivo cerca de tu teléfono durante la actualización."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Trzymaj urządzenie blisko telefonu podczas aktualizacji."
           }
         },
         "zh-Hant-TW" : {
@@ -71204,6 +71996,12 @@
             "value" : "최종 업데이트: %@"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ostatnia aktualizacja: %@"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -71274,6 +72072,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "최종 업데이트: 없음"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ostatnia aktualizacja: nigdy"
           }
         },
         "pt-BR" : {
@@ -76128,6 +76932,12 @@
             "value" : "Mantenimiento"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Konserwacja"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -78406,6 +79216,12 @@
             "value" : "Las mallas que se anuncian a través de balizas aparecerán aquí."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tu pojawią się sieci ogłaszające się przez beacony."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -78424,6 +79240,12 @@
             "value" : "Las mallas detectadas se anuncian mediante balizas, fuera del escaneo. Estas también se preseleccionan en la configuración del siguiente escaneo."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sieci ogłaszające się przez beacony, usłyszane poza skanowaniem. Zostaną też wstępnie zaznaczone przy konfiguracji następnego skanowania."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -78440,6 +79262,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Las mallas anunciadas mediante balizas."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sieci ogłaszające się przez beacony."
           }
         },
         "zh-Hant-TW" : {
@@ -100492,6 +101320,12 @@
             "value" : "모뎀 프리셋"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Presety modemu"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -100720,6 +101554,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "**%1$@**에서 가장 많은 노드를 발견했습니다(%2$lld개)"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Najwięcej węzłów wykryto na **%@** (%lld)"
           }
         },
         "pt-BR" : {
@@ -103232,6 +104072,12 @@
             "value" : "새 스캔"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nowe skanowanie"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -103377,6 +104223,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nocturna"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nightly"
           }
         },
         "zh-Hant-TW" : {
@@ -104121,6 +104973,12 @@
             "value" : "탐색 세션 없음"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Brak sesji wykrywania"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -104375,6 +105233,12 @@
             "value" : "이 장치용으로 다운로드된 펌웨어가 없습니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie pobrano żadnego oprogramowania dla tego urządzenia."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -104517,6 +105381,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "아직 수집된 로컬 통계 데이터가 없습니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie zebrano danych LocalStats"
           }
         },
         "pt-BR" : {
@@ -104722,6 +105592,12 @@
             "value" : "No hay Mallas Cercanas"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Brak sieci w pobliżu"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -104738,6 +105614,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Actualmente no hay ninguna compilación nocturna disponible para este dispositivo."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dla tego urządzenia nie ma teraz wersji nightly."
           }
         },
         "zh-Hant-TW" : {
@@ -105143,6 +106025,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "사용 가능한 프리셋 데이터 없음"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Brak danych o presetach"
           }
         },
         "pt-BR" : {
@@ -106929,6 +107817,12 @@
             "value" : "Nodos que anuncian una red a la que unirse. Un preajuste ofrecido por una baliza se añade automáticamente al escaneo."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Węzły ogłaszające sieć, do której można dołączyć. Preset oferowany przez beacon jest automatycznie dodawany do skanowania."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -106945,6 +107839,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "nodos descubiertos"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "wykrytych węzłów"
           }
         },
         "zh-Hant-TW" : {
@@ -106987,6 +107887,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "발견된 노드 수"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wykryte węzły"
           }
         },
         "pt-BR" : {
@@ -107072,6 +107978,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "노이즈"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Szum"
           }
         },
         "uk" : {
@@ -107264,6 +108176,12 @@
             "value" : "Nordic DFU 업데이트"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aktualizacja Nordic DFU"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -107428,6 +108346,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "No está diseñado para este dispositivo"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie dla tego urządzenia"
           }
         },
         "zh-Hant-TW" : {
@@ -107665,6 +108589,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "참고: 업데이트 중에는 기기 연결이 일시적으로 끊어집니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Uwaga: podczas aktualizacji urządzenie zostanie na chwilę rozłączone."
           }
         },
         "pt-BR" : {
@@ -110050,6 +110980,12 @@
             "value" : "로컬 파일 열기…"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Otwórz plik lokalny..."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -110468,6 +111404,12 @@
             "value" : "Abre las actualizaciones de firmware"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Otwiera aktualizacje oprogramowania"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -110489,6 +111431,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Abre Meshtastic Flasher"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Otwiera Meshtastic Flasher"
           }
         },
         "zh-Hant-TW" : {
@@ -113081,6 +114029,12 @@
             "value" : "프리셋별 결과"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wyniki dla presetów"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -113787,6 +114741,12 @@
             "value" : "장치를 DFU 모드로 전환한 다음 USB로 연결하세요."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przełącz urządzenie w tryb DFU i podłącz je przez USB."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -113829,6 +114789,12 @@
             "value" : "Pon tu dispositivo en modo DFU y conéctalo mediante USB. Aparecerá como una unidad USB."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przełącz urządzenie w tryb DFU i podłącz je przez USB. Pojawi się jako dysk USB."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -113845,6 +114811,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Coloca tu dispositivo en modo DFU y conéctalo mediante USB. Aparecerá como una unidad USB. Una radio que no arranca puede entrar en modo DFU pulsando dos veces su botón de reinicio."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przełącz urządzenie w tryb DFU i podłącz je przez USB. Pojawi się jako dysk USB. Radio, które się nie uruchamia, nadal można przełączyć w DFU, naciskając dwa razy przycisk reset."
           }
         },
         "zh-Hant-TW" : {
@@ -113911,6 +114883,12 @@
             "value" : "Platform IO"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "PlatformIO"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -113951,6 +114929,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Juega a Chirpy Hop"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zagraj w Chirpy Hop"
           }
         },
         "zh-Hant-TW" : {
@@ -114219,6 +115203,12 @@
             "value" : "Por favor, no abandone esta pantalla hasta que la actualización se complete. ¡Puede jugar a Chirpy Hop mientras espera!"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nie opuszczaj tego ekranu, dopóki aktualizacja się nie zakończy. W międzyczasie możesz spokojnie zagrać w Chirpy Hop!"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -114338,6 +115328,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "펌웨어 정보를 불러오려면 장치를 다시 연결하세요."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Połącz się ponownie z urządzeniem, aby wczytać informacje o oprogramowaniu."
           }
         },
         "pt-BR" : {
@@ -117266,6 +118262,12 @@
             "value" : "스캔한 프리셋 수"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przeskanowane presety"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -119871,6 +120873,12 @@
             "value" : "분석 다시 실행"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Uruchom analizę ponownie"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -120262,6 +121270,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "재부팅 및 업데이트 시작"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Uruchom ponownie i zacznij aktualizację"
           }
         },
         "pt-BR" : {
@@ -120878,6 +121892,12 @@
             "value" : "Reconozido **%@**"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rozpoznano **%@**"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -120924,6 +121944,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "추천"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rekomendacja"
           }
         },
         "pt-BR" : {
@@ -121393,6 +122419,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Actualizar la lista de firmware"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Odśwież listę oprogramowania"
           }
         },
         "zh-Hant-TW" : {
@@ -122943,6 +123975,12 @@
             "value" : "¿Qué canal reemplazar?"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Który kanał zastąpić?"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -123094,6 +124132,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Informa sobre su ajuste actual utilizando todo lo que ya se ha recopilado, cada nodo conocido con su mensaje, sensor y estadísticas de RF, sin cambio o reinicio preestablecido. Funciona incluso sin radio conectada."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Raport o bieżącym presecie na podstawie wszystkiego, co już zebrano — każdy znany węzeł ze statystykami wiadomości, czujników i stanu RF — bez zmiany presetu i restartu. Działa nawet bez połączonego radia."
           }
         },
         "zh-Hant-TW" : {
@@ -123453,6 +124497,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Requiere > %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wymaga %@+"
           }
         },
         "zh-Hant-TW" : {
@@ -124912,6 +125962,12 @@
             "value" : "다시 시도"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ponów próbę"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
@@ -124997,6 +126053,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "업데이트 다시 시도"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ponów aktualizację"
           }
         },
         "pt-BR" : {
@@ -125415,6 +126477,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "RF 상태"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Stan RF"
           }
         },
         "pt-BR" : {
@@ -128211,6 +129279,12 @@
             "value" : "펌웨어를 USB에 저장"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zapisz firmware na USB"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -128700,6 +129774,12 @@
             "value" : "스캔 진행 상황"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Postęp skanowania"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -128770,6 +129850,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "스캔 요약"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Podsumowanie skanowania"
           }
         },
         "pt-BR" : {
@@ -131186,6 +132272,12 @@
             "value" : "Seleccione la unidad del dispositivo en el selector de archivos (por ejemplo, FTHR840BOOT o RAK4631). La placa se identifica a partir del archivo INFO_UF2.TXT que el gestor de arranque publica allí."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybierz dysk urządzenia w oknie wyboru plików (na przykład FTHR840BOOT lub RAK4631). Płytka jest rozpoznawana na podstawie pliku INFO_UF2.TXT, który publikuje tam bootloader."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -132946,6 +134038,12 @@
             "value" : "Enviar reinicio a DFU"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wyślij polecenie restartu do DFU"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -133363,6 +134461,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "센서 패킷 수"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pakiety z czujników"
           }
         },
         "pt-BR" : {
@@ -134755,6 +135859,12 @@
             "value" : "탐색 세션 세부 정보"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Szczegóły sesji"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -134827,6 +135937,12 @@
             "value" : "탐색 기록"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Historia sesji"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -134897,6 +136013,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "세션 개요"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Podsumowanie sesji"
           }
         },
         "pt-BR" : {
@@ -135131,6 +136253,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Configure una región LoRa antes de instalar el firmware."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ustaw region LoRa przed instalacją oprogramowania."
           }
         },
         "zh-Hant-TW" : {
@@ -139762,6 +140890,12 @@
             "value" : "Desde %@ · escuchado por primera vez → última vez"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "od %@ · pierwszy odbiór → ostatni odbiór"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -140093,6 +141227,12 @@
     "Slot %lld" : {
       "comment" : "Subtitle on a Local Mesh Discovery beacon row for the public channel on a fixed frequency slot. %lld is the 1-based slot number.",
       "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Slot %lld"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -141703,6 +142843,12 @@
             "value" : "안정 버전"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Stabilna"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -141743,6 +142889,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ESTABLE"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "STABILNA"
           }
         },
         "zh-Hant-TW" : {
@@ -141998,6 +143150,12 @@
             "value" : "스캔 시작"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rozpocznij skanowanie"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -142068,6 +143226,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "상태"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Stan"
           }
         },
         "pt-BR" : {
@@ -142371,6 +143535,12 @@
             "value" : "1단계: 기기 연결"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Krok 1: Podłącz urządzenie"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -142411,6 +143581,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Paso 2: Elija la unidad del gestor de arranque"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Krok 2: Wybierz dysk bootloadera"
           }
         },
         "zh-Hant-TW" : {
@@ -142461,6 +143637,12 @@
             "value" : "2단계: 파일 저장"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Krok 2: Zapisz plik"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -142503,6 +143685,12 @@
             "value" : "Paso 3: Borrar"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Krok 3: Wymazanie"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -142517,6 +143705,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Paso 3: Instalar"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Krok 3: Instalacja"
           }
         },
         "zh-Hant-TW" : {
@@ -142620,6 +143814,12 @@
             "value" : "스캔 중지"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zatrzymaj skanowanie"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -142661,6 +143861,12 @@
             "value" : "¿Detener la actualización?"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zatrzymać aktualizację?"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -142676,6 +143882,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Detener actualización"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zatrzymaj aktualizację"
           }
         },
         "zh-Hant-TW" : {
@@ -143323,6 +144535,12 @@
             "value" : "Patrón sugerido"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sugerowany wzorzec pliku"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -143550,6 +144768,12 @@
             "value" : "Barrido con los ajustes preestablecidos del módem para encontrar nodos cercanos, o analiza tu ajuste actual de todo lo que ya has recopilado."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przeskanuj presety modemu, aby znaleźć węzły w pobliżu, albo przeanalizuj bieżący preset na podstawie już zebranych danych."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -143634,6 +144858,12 @@
             "value" : "Cambiar"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przełącz"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -143652,6 +144882,12 @@
             "value" : "Cambia a este canal"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przełącz na ten kanał"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -143668,6 +144904,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "¿Cambiar a este canal?"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przełączyć na ten kanał?"
           }
         },
         "zh-Hant-TW" : {
@@ -144580,6 +145822,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Toca para saltar o desliza hacia abajo para agacharte."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Stuknij, aby skoczyć, albo przesuń w dół, aby się schylić"
           }
         },
         "zh-Hant-TW" : {
@@ -145565,6 +146813,12 @@
             "value" : "메시지 수"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wiadomości tekstowe"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -145605,6 +146859,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Esa carpeta no es una unidad de arranque UF2 — no se encontró el archivo INFO_UF2.TXT. Seleccione la unidad que el dispositivo monta en modo DFU."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ten folder nie jest dyskiem bootloadera UF2 — nie znaleziono INFO_UF2.TXT. Wybierz dysk, który urządzenie montuje w trybie DFU."
           }
         },
         "zh-Hant-TW" : {
@@ -145651,6 +146911,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "이 기기에서는 **Web Flasher**를 사용하거나 USB 또는 BLE를 통한 업데이트를 지원하지 않습니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "**Web Flasher** nie obsługuje aktualizacji tego urządzenia ani przez USB lub BLE."
           }
         },
         "pt-BR" : {
@@ -145813,7 +147079,15 @@
       }
     },
     "The bootloader recorded a fault before this boot. Include this line when you report a problem with this radio." : {
-      "comment" : "Bootloader drive sheets: shown above the Last-Fault line the bootloader reported"
+      "comment" : "Bootloader drive sheets: shown above the Last-Fault line the bootloader reported",
+      "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bootloader zarejestrował błąd przed tym uruchomieniem. Dołącz tę linię, gdy zgłaszasz problem z tym radiem."
+          }
+        }
+      }
     },
     "The broker closed the connection." : {
       "comment" : "Topic finder: sampler error",
@@ -146363,6 +147637,12 @@
             "value" : "El dispositivo no pudo iniciar su actualizador. Utilice el Web Flasher a través de USB."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Urządzenie nie mogło uruchomić programu aktualizującego. Użyj Web Flashera przez USB."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -146378,6 +147658,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "El dispositivo se desconectó."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Urządzenie się rozłączyło."
           }
         },
         "zh-Hant-TW" : {
@@ -146397,6 +147683,12 @@
             "value" : "El dispositivo no ofrece el servicio de actualización."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Urządzenie nie udostępnia usługi aktualizacji."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -146412,6 +147704,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "El dispositivo nunca apareció en modo de actualización."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Urządzenie nie pojawiło się w trybie aktualizacji."
           }
         },
         "zh-Hant-TW" : {
@@ -146431,6 +147729,12 @@
             "value" : "El dispositivo nunca confirmó el canal de estado."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Urządzenie nie potwierdziło kanału statusu."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -146448,6 +147752,12 @@
             "value" : "El dispositivo rechazó la suma de comprobación de este archivo de firmware. Intenta descargarlo de nuevo."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Urządzenie odrzuciło sumę kontrolną tego pliku firmware'u. Spróbuj pobrać go ponownie."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -146463,6 +147773,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "El dispositivo permanece en modo de actualización hasta que finalice o hasta que lo apagues y lo vuelvas a encender."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Urządzenie pozostaje w trybie aktualizacji, dopóki aktualizacja się nie zakończy albo dopóki go nie wyłączysz i włączysz ponownie."
           }
         },
         "zh-Hant-TW" : {
@@ -146641,6 +147957,12 @@
             "value" : "La imagen descargada no coincide con su suma de verificación. No se ha escrito nada — inténtelo de nuevo más tarde."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pobrany obraz nie zgadza się z przypisaną sumą kontrolną. Nic nie zostało zapisane — spróbuj ponownie później."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -146655,6 +147977,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La unidad no informa de ningún SoftDevice compatible con este borrado (S140 6.1.1 o 7.3.0), por lo que no se puede seleccionar la imagen correcta de forma segura. No se escribió nada."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dysk nie zgłasza obsługiwanej wersji SoftDevice (S140 6.1.1 lub 7.3.0), więc nie da się bezpiecznie wybrać właściwego obrazu. Nic nie zostało zapisane."
           }
         },
         "zh-Hant-TW" : {
@@ -146684,6 +148012,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La imagen de borrado no coincide con el SoftDevice de la radio. No se escribió nada."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Obraz wymazania nie pasuje do SoftDevice radia. Nic nie zostało zapisane."
           }
         },
         "zh-Hant-TW" : {
@@ -147131,6 +148465,12 @@
     },
     "The Meshtastic nRF52 Bootloader (formerly OTAFIX) makes Bluetooth firmware updates faster and more reliable. Factory erase wipes the radio's flash from its bootloader drive, and is the recovery path when firmware cannot boot." : {
       "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Meshtastic nRF52 Bootloader (dawniej OTAFIX) sprawia, że aktualizacje przez Bluetooth są szybsze i bardziej niezawodne. Wymazanie fabryczne czyści pamięć flash radia z poziomu dysku bootloadera i pozwala odzyskać urządzenie, gdy firmware się nie uruchamia."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -147141,6 +148481,12 @@
     },
     "The Meshtastic nRF52 Bootloader (formerly OTAFIX) makes Bluetooth firmware updates faster and more reliable. The upgrade is written from the device's own bootloader drive." : {
       "localizations" : {
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Meshtastic nRF52 Bootloader (dawniej OTAFIX) sprawia, że aktualizacje przez Bluetooth są szybsze i bardziej niezawodne. Aktualizacja jest zapisywana z dysku bootloadera samego urządzenia."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -148082,6 +149428,12 @@
             "value" : "ESP32 장치를 업데이트하는 권장 방법은 데스크톱 컴퓨터의 Chrome 기반 브라우저에서 **Web Flasher**를 사용하는 것입니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zalecany sposób aktualizacji urządzeń ESP32 to **Web Flasher** na komputerze (przeglądarka oparta na Chrome)."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -148702,6 +150054,12 @@
             "value" : "El actualizador de este dispositivo no admite esta conexión. Una instalación completa mediante Web Flasher a través de USB lo reemplaza."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Program aktualizujący na tym urządzeniu nie obsługuje tego połączenia. Pełna instalacja przez Web Flasher po USB go zastąpi."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -148717,6 +150075,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Al servicio de actualización le falta una característica."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "W usłudze aktualizacji brakuje charakterystyki."
           }
         },
         "zh-Hant-TW" : {
@@ -149856,6 +151220,12 @@
             "value" : "Este dispositivo no tiene instalado un actualizador, por lo que no puede actualizarse a través de Bluetooth o Wi-Fi. Una instalación completa mediante Web Flasher a través de USB añade uno."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "To urządzenie nie ma zainstalowanego programu aktualizującego, więc nie może się aktualizować przez Bluetooth ani Wi-Fi. Pełna instalacja przez Web Flasher po USB go doda."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -149871,6 +151241,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Este dispositivo no dispone de una partición para el actualizador, por lo que no puede actualizarse a través de Bluetooth o Wi-Fi. Utilice Web Flasher mediante USB."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "To urządzenie nie ma partycji na program aktualizujący, więc nie może się aktualizować przez Bluetooth ani Wi-Fi. Użyj Web Flashera przez USB."
           }
         },
         "zh-Hant-TW" : {
@@ -150739,6 +152115,12 @@
             "value" : "Es posible que esta región requiera un archivo de firmware específico para la configuración regional a fin de lograr una correcta visualización del texto en el dispositivo."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ten region może wymagać firmware'u w wersji dla danego języka, aby tekst na urządzeniu wyświetlał się poprawnie."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -151465,6 +152847,12 @@
             "value" : "남은 시간"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pozostały czas"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -151822,6 +153210,12 @@
             "value" : "Se agotó el tiempo de espera al conectar con el dispositivo."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przekroczono czas łączenia z urządzeniem."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -151839,6 +153233,12 @@
             "value" : "Se agotó el tiempo de espera al leer el servicio de actualización del dispositivo."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przekroczono czas odczytu usługi aktualizacji urządzenia."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -151854,6 +153254,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Se agotó el tiempo de espera al escribir en el dispositivo."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Przekroczono czas zapisu na urządzenie."
           }
         },
         "zh-Hant-TW" : {
@@ -153038,6 +154444,12 @@
             "value" : "탐색 세션의 총 유지 시간"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Łączny czas nasłuchu"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -153231,6 +154643,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "총 고유 노드 수"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Łącznie unikalnych węzłów"
           }
         },
         "pt-BR" : {
@@ -155681,6 +157099,12 @@
             "value" : "UF2 펌웨어 업데이트"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aktualizacja oprogramowania UF2"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -156371,6 +157795,12 @@
             "value" : "NO LISTADO"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "NIEOPUBLIKOWANA"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -156955,6 +158385,12 @@
             "value" : "Actualización Completa"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aktualizacja zakończona"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -157011,6 +158447,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Actualización interrumpida"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aktualizacja przerwana"
           }
         },
         "zh-Hant-TW" : {
@@ -157124,6 +158566,12 @@
             "value" : "Progreso de actualización"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Postęp aktualizacji"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -157170,6 +158618,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "업데이트 경고"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ostrzeżenie o aktualizacji"
           }
         },
         "pt-BR" : {
@@ -157547,6 +159001,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "업데이트 중..."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aktualizowanie..."
           }
         },
         "pt-BR" : {
@@ -161022,6 +162482,12 @@
             "value" : "올바른 펌웨어를 선택했는지 확인하세요."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sprawdź, czy wybrano właściwy firmware."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -161440,6 +162906,12 @@
             "value" : "탐색 세션 전체 요약 보기"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokaż pełne podsumowanie"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -161532,6 +163004,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "탐색 세션 요약 보기"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokaż podsumowanie"
           }
         },
         "pt-BR" : {
@@ -161631,6 +163109,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Visite meshtastic.org/docs para obtener guías, información de hardware y consejos de la comunidad."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Na meshtastic.org/docs znajdziesz poradniki, informacje o sprzęcie i wskazówki społeczności."
           }
         },
         "zh-Hant-TW" : {
@@ -163903,6 +165387,12 @@
             "value" : "Wi-Fi"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wi-Fi"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -164077,6 +165567,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wi-Fi OTA 업데이트"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aktualizacja Wi-Fi OTA"
           }
         },
         "pt-BR" : {
@@ -164490,6 +165986,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Grabó %@. El dispositivo está instalando el gestor de arranque y se reiniciará automáticamente."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zapisano %@. Urządzenie instaluje bootloader i samo się uruchomi ponownie."
           }
         },
         "zh-Hant-TW" : {
@@ -165164,6 +166666,12 @@
             "value" : "장치에 새 펌웨어를 플래시하려고 합니다. 이 과정에는 위험이 따릅니다. 업데이트가 실패할 수 있으며, 경우에 따라 부트로더를 다시 플래시해야 할 수도 있습니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Za chwilę wgrasz nowy firmware na urządzenie. Ten proces wiąże się z ryzykiem. Aktualizacja może się nie udać, a w niektórych przypadkach może być konieczne ponowne wgranie bootloadera."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -165305,6 +166813,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Puedes jugar a Chirpy Hop sin problemas mientras esperas a que finalice la actualización."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Czekając na zakończenie aktualizacji, możesz spokojnie zagrać w Chirpy Hop."
           }
         },
         "zh-Hant-TW" : {
