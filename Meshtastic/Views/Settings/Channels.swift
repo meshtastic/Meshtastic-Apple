@@ -198,7 +198,7 @@ struct Channels: View {
 								preciseLocation = true
 								positionsEnabled = true
 								if isPublic {
-									positionPrecision = 14
+									positionPrecision = Double(ChannelIdentity.maxPublicKeyPositionPrecision)
 									preciseLocation = false
 								}
 							} else if !supportedVersion && channelRole == 2 {
@@ -208,8 +208,8 @@ struct Channels: View {
 							} else {
 								if isPublic {
 									preciseLocation = false
-									if (positionPrecision > 0 && positionPrecision < 11) || positionPrecision > 14 {
-										positionPrecision = 14
+									if (positionPrecision > 0 && positionPrecision < 11) || positionPrecision > Double(ChannelIdentity.maxPublicKeyPositionPrecision) {
+										positionPrecision = Double(ChannelIdentity.maxPublicKeyPositionPrecision)
 									}
 								} else if positionPrecision == 32 {
 									preciseLocation = true

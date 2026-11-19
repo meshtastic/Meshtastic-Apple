@@ -244,7 +244,7 @@ struct ChannelForm: View {
 					positionPrecision = 32
 				}
 			} else {
-				positionPrecision = 14
+				positionPrecision = Double(ChannelIdentity.maxPublicKeyPositionPrecision)
 			}
 			hasChanges = true
 		}
