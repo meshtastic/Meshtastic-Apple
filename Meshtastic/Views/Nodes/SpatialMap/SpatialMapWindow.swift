@@ -44,6 +44,9 @@ struct SpatialMapWindow: View {
 	@State private var showingMapSearch = false
 	/// Flies a route asked for by id once the routes and the table are ready.
 	@State private var routeRequestTask: Task<Void, Never>?
+	/// Closes the volume once the app's window has stayed gone. Cancelled when a window appears
+	/// or the volume goes, so an older wait can't close it during a later window change.
+	@State private var closeWithoutWindowTask: Task<Void, Never>?
 
 	init() {
 		let scene = SpatialSceneController()
@@ -176,14 +179,19 @@ struct SpatialMapWindow: View {
 			claimRoute()
 			claimRooftop()
 			// On its own, as when the app was killed with the cinema open (which had closed the
-			// app's window) and launched again: bring the window back. Closing the volume instead
-			// left nothing to open. A moment first, in case the window is on its way, and never
+			// app's window) and launched again: bring the window back, and close the volume if it
+			// still hasn't come. A moment first, in case the window is on its way, and never
 			// while a space is open, since those close the window on purpose.
-			if !Self.mainWindowIsOpen {
-				Task {
+			if appState.mainWindowCount == 0 {
+				closeWithoutWindowTask?.cancel()
+				closeWithoutWindowTask = Task {
 					try? await Task.sleep(for: .seconds(1.5))
-					if appState.mainWindowCount == 0, !appState.cinemaOpen, !appState.showcaseOpen, UIApplication.shared.applicationState != .background {
-						CinemaScene.reopenMainWindow(openWindow, appState: appState)
+					guard !Task.isCancelled, appState.mainWindowCount == 0, !appState.cinemaOpen, !appState.showcaseOpen,
+						  UIApplication.shared.applicationState != .background else { return }
+					CinemaScene.reopenMainWindow(openWindow, appState: appState)
+					try? await Task.sleep(for: .seconds(3))
+					if !Task.isCancelled, appState.mainWindowCount == 0, !appState.cinemaOpen, !appState.showcaseOpen {
+						close()
 					}
 				}
 			}
@@ -193,10 +201,20 @@ struct SpatialMapWindow: View {
 			SpatialTerrainKeeper.shared.volumeDisappeared()
 			appState.spatialMapWindowCount = max(0, appState.spatialMapWindowCount - 1)
 			routeRequestTask?.cancel()
+			closeWithoutWindowTask?.cancel()
 		}
-		.onReceive(NotificationCenter.default.publisher(for: UIScene.didDisconnectNotification)) { _ in
-			if !Self.mainWindowIsOpen {
-				close()
+		// The volume only stays open beside the app's window. Closed with it, so it is never
+		// left on its own, where reopening the app brings back the volume and not the window.
+		// Not while a space is open: the cinema and the showcase close the window on purpose.
+		.onChange(of: appState.mainWindowCount) { _, count in
+			closeWithoutWindowTask?.cancel()
+			closeWithoutWindowTask = nil
+			guard count == 0 else { return }
+			closeWithoutWindowTask = Task {
+				try? await Task.sleep(for: .seconds(1))
+				if !Task.isCancelled, appState.mainWindowCount == 0, !appState.cinemaOpen, !appState.showcaseOpen {
+					close()
+				}
 			}
 		}
 		.trackScreen(.spatialMap)
@@ -405,15 +423,6 @@ struct SpatialMapWindow: View {
 		appState.pendingRoute = PendingRoute(url: url, bringForward: true)
 		// With no main window, open one; it takes the route as it appears.
 		CinemaScene.reopenMainWindow(openWindow, appState: appState)
-	}
-
-	/// Any scene that is not one of the secondary windows.
-	static var mainWindowIsOpen: Bool {
-		UIApplication.shared.connectedScenes.contains {
-			$0.activationState != .unattached
-				&& $0.session.configuration.name != "meshmap-window"
-				&& $0.session.configuration.name != SpatialMapScene.id
-		}
 	}
 }
 
