@@ -366,10 +366,15 @@ final class WidgetDataBroker {
 		// never lost to the recency window), then the most recently heard.
 		// No `user != nil` in either predicate — optional-relationship nil
 		// comparisons in #Predicate crash SwiftData on iOS 26; filter in Swift.
-		let favoritesDescriptor = FetchDescriptor<NodeInfoEntity>(
+		//
+		// Every fetch loads the node's user with it. This context never hears about another
+		// context's deletes, so a user left as a fault traps when its name is read if the node
+		// was removed meanwhile; a user loaded here reads its stored values.
+		var favoritesDescriptor = FetchDescriptor<NodeInfoEntity>(
 			predicate: #Predicate<NodeInfoEntity> { $0.favorite == true },
 			sortBy: [SortDescriptor(\.lastHeard, order: .reverse)]
 		)
+		favoritesDescriptor.relationshipKeyPathsForPrefetching = [\.user]
 		let favorites = ((try? context.fetch(favoritesDescriptor)) ?? [])
 			.filter { $0.user != nil }
 
@@ -377,6 +382,7 @@ final class WidgetDataBroker {
 			sortBy: [SortDescriptor(\.lastHeard, order: .reverse)]
 		)
 		recentDescriptor.fetchLimit = 60
+		recentDescriptor.relationshipKeyPathsForPrefetching = [\.user]
 		let recent = ((try? context.fetch(recentDescriptor)) ?? [])
 			.filter { $0.user != nil && !$0.favorite }
 
@@ -385,9 +391,10 @@ final class WidgetDataBroker {
 		// The tracker measures distance from the radio's own node, so the radio
 		// must survive the cap even when favorites alone fill it.
 		if let radioNum, !selected.contains(where: { $0.num == radioNum }) {
-			let radioDescriptor = FetchDescriptor<NodeInfoEntity>(
+			var radioDescriptor = FetchDescriptor<NodeInfoEntity>(
 				predicate: #Predicate<NodeInfoEntity> { $0.num == radioNum }
 			)
+			radioDescriptor.relationshipKeyPathsForPrefetching = [\.user]
 			if let radioNode = try? context.fetch(radioDescriptor).first, radioNode.user != nil {
 				selected.append(radioNode)
 			}
@@ -395,9 +402,10 @@ final class WidgetDataBroker {
 		// A node on a Node Tracker or Telemetry widget is always there, however long ago it
 		// was heard.
 		for num in tracked where !selected.contains(where: { $0.num == num }) {
-			let trackedDescriptor = FetchDescriptor<NodeInfoEntity>(
+			var trackedDescriptor = FetchDescriptor<NodeInfoEntity>(
 				predicate: #Predicate<NodeInfoEntity> { $0.num == num }
 			)
+			trackedDescriptor.relationshipKeyPathsForPrefetching = [\.user]
 			if let trackedNode = try? context.fetch(trackedDescriptor).first {
 				selected.append(trackedNode)
 			}
@@ -405,9 +413,10 @@ final class WidgetDataBroker {
 		// Nodes with telemetry readings, so the Telemetry widget can offer them even when
 		// they haven't been heard lately.
 		for num in telemetryNodes where !selected.contains(where: { $0.num == num }) {
-			let environmentDescriptor = FetchDescriptor<NodeInfoEntity>(
+			var environmentDescriptor = FetchDescriptor<NodeInfoEntity>(
 				predicate: #Predicate<NodeInfoEntity> { $0.num == num }
 			)
+			environmentDescriptor.relationshipKeyPathsForPrefetching = [\.user]
 			if let environmentNode = try? context.fetch(environmentDescriptor).first, environmentNode.user != nil {
 				selected.append(environmentNode)
 			}

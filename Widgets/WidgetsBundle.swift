@@ -11,12 +11,12 @@ import SwiftUI
 @main
 struct WidgetsBundle: WidgetBundle {
 	var body: some Widget {
-		MeshLocalStatsWidget()
-		MeshNodeTrackerWidget()
-		MeshTelemetryWidget()
-		MeshMessagesWidget()
 		MeshNodeMapWidget()
 		MeshTraceRouteWidget()
+		MeshTelemetryWidget()
+		MeshNodeTrackerWidget()
+		MeshMessagesWidget()
+		MeshLocalStatsWidget()
 		// Live Activities and controls are iPhone and iPad only; there are none
 		// on the Mac or Vision Pro.
 		#if os(iOS) && !targetEnvironment(macCatalyst)
