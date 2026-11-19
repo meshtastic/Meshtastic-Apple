@@ -147,6 +147,24 @@ struct BLETransportAbandonedConnectTests {
 		#expect(centralManager.calls == [.connect(peripheral.identifier)])
 	}
 
+	@Test func anotherDidConnectKeepsTheActiveConnection() async throws {
+		let peripheral = TestPeripheral.shared
+		let connectSignal = Signal()
+		let centralManager = RecordingCentralManager(peripheral: peripheral, connectSignal: connectSignal)
+		let transport = BLETransport(createCentralManagerImmediately: false, centralManager: centralManager)
+		let device = Device(id: UUID(), name: "Test Radio", transportType: .ble, identifier: peripheral.identifier.uuidString)
+
+		let connection = Task { try await transport.connect(to: device) }
+		await connectSignal.wait()
+		await transport.handleDidConnect(peripheral: peripheral, central: centralManager)
+		_ = try await connection.value
+
+		// Nothing is waiting for this one, but the link is the one already in use.
+		await transport.handleDidConnect(peripheral: peripheral, central: centralManager)
+
+		#expect(centralManager.calls == [.connect(peripheral.identifier)])
+	}
+
 	@Test func connectAfterAFailedAttemptGoesThrough() async throws {
 		let peripheral = TestPeripheral.shared
 		let firstConnect = Signal()
