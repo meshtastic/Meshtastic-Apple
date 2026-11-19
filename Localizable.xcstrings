@@ -6624,6 +6624,12 @@
             "value" : "450 bps"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "450 bps"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6638,6 +6644,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "700 bps (700C)"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "700 bps (700C)"
           }
         },
@@ -6658,6 +6670,12 @@
             "value" : "1200 bps"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "1200 bps"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6672,6 +6690,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "1300 bps"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "1300 bps"
           }
         },
@@ -6692,6 +6716,12 @@
             "value" : "1400 bps"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "1400 bps"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6706,6 +6736,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "1600 bps"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "1600 bps"
           }
         },
@@ -6726,6 +6762,12 @@
             "value" : "2400 bps"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "2400 bps"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6740,6 +6782,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "3200 bps"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "3200 bps"
           }
         },
@@ -6760,6 +6808,12 @@
             "value" : "Default"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Domyślna"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6775,6 +6829,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Input event for counter-clockwise rotation"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zdarzenie wejścia przy obrocie w lewo"
           }
         },
         "zh-Hant-TW" : {
@@ -6794,6 +6854,12 @@
             "value" : "Input event for clockwise rotation"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zdarzenie wejścia przy obrocie w prawo"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6809,6 +6875,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Input event for encoder press"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zdarzenie wejścia przy naciśnięciu enkodera"
           }
         },
         "zh-Hant-TW" : {
@@ -6828,6 +6900,12 @@
             "value" : "GPIO pin for rotary encoder A port."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pin GPIO dla portu A enkodera obrotowego."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6843,6 +6921,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "GPIO pin for rotary encoder B port."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pin GPIO dla portu B enkodera obrotowego."
           }
         },
         "zh-Hant-TW" : {
@@ -6862,6 +6946,12 @@
             "value" : "GPIO pin for the encoder press button."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pin GPIO przycisku enkodera."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6877,6 +6967,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Enable rotary encoder"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Włącz enkoder obrotowy"
           }
         },
         "zh-Hant-TW" : {
@@ -6896,6 +6992,12 @@
             "value" : "Send bell character with messages"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysyłaj znak dzwonka z wiadomościami"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6911,6 +7013,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Enable up/down/select input"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Włącz wejście góra/dół/wybierz"
           }
         },
         "zh-Hant-TW" : {
@@ -6930,6 +7038,12 @@
             "value" : "Type of trigger event"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rodzaj zdarzenia wyzwalającego"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6945,6 +7059,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Minimum time between detection broadcasts."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Minimalny czas między wysłaniem kolejnych wykryć."
           }
         },
         "zh-Hant-TW" : {
@@ -6964,6 +7084,12 @@
             "value" : "GPIO pin watched for state changes. 0 disables the module."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pin GPIO obserwowany pod kątem zmian stanu. 0 wyłącza moduł."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -6979,6 +7105,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sensor name for mesh messages"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nazwa czujnika w wiadomościach w sieci"
           }
         },
         "zh-Hant-TW" : {
@@ -6998,6 +7130,12 @@
             "value" : "How often to send the detection sensor state to the mesh, whether or not anything was detected. 0 sends only on detection."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jak często wysyłać stan czujnika do sieci, niezależnie od tego, czy coś wykryto. 0 wysyła tylko przy wykryciu."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7013,6 +7151,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Either Edge High"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dowolne zbocze, stan wysoki"
           }
         },
         "zh-Hant-TW" : {
@@ -7032,6 +7176,12 @@
             "value" : "Either Edge Low"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dowolne zbocze, stan niski"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7047,6 +7197,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Falling Edge"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zbocze opadające"
           }
         },
         "zh-Hant-TW" : {
@@ -7066,6 +7222,12 @@
             "value" : "High"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Stan wysoki"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7081,6 +7243,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Low"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Stan niski"
           }
         },
         "zh-Hant-TW" : {
@@ -7100,6 +7268,12 @@
             "value" : "Rising Edge"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zbocze narastające"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7115,6 +7289,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Buzz on bell character"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Buzzer po znaku dzwonka"
           }
         },
         "zh-Hant-TW" : {
@@ -7134,6 +7314,12 @@
             "value" : "Vibrate on bell character"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wibracja po znaku dzwonka"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7149,6 +7335,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Alert on bell character"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Alarm po znaku dzwonka"
           }
         },
         "zh-Hant-TW" : {
@@ -7168,6 +7360,12 @@
             "value" : "Buzz on incoming message"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Buzzer po nowej wiadomości"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7183,6 +7381,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Alert on incoming message"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Alarm po nowej wiadomości"
           }
         },
         "zh-Hant-TW" : {
@@ -7202,6 +7406,12 @@
             "value" : "Enable external notifications"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Włącz powiadomienia zewnętrzne"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7217,6 +7427,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "How long the notification lasts."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jak długo trwa powiadomienie."
           }
         },
         "zh-Hant-TW" : {
@@ -7236,6 +7452,12 @@
             "value" : "Buzzer output pin"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pin wyjściowy buzzera"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7251,6 +7473,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "In GPIO mode, how long to keep the output on."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "W trybie GPIO: jak długo utrzymywać wyjście włączone."
           }
         },
         "zh-Hant-TW" : {
@@ -7270,6 +7498,12 @@
             "value" : "Vibration motor output pin"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pin wyjściowy silnika wibracyjnego"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7285,6 +7519,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "GPIO pin driven on notification. Defaults to the board's EXT_NOTIFY_OUT pin."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pin GPIO sterowany przy powiadomieniu. Domyślnie pin EXT_NOTIFY_OUT płytki."
           }
         },
         "zh-Hant-TW" : {
@@ -7304,6 +7544,12 @@
             "value" : "How often a map report is published. Minimum 1 hour."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jak często publikowany jest raport mapy. Minimum 1 godzina."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7319,6 +7565,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "How often a beacon is broadcast. Minimum 1 hour."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jak często wysyłany jest beacon. Minimum 1 godzina."
           }
         },
         "zh-Hant-TW" : {
@@ -7338,6 +7590,12 @@
             "value" : "Message for beacon broadcasts, up to 60 bytes."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wiadomość wysyłana w beaconie, do 60 bajtów."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7353,6 +7611,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "MQTT server address"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Adres serwera MQTT"
           }
         },
         "zh-Hant-TW" : {
@@ -7372,6 +7636,12 @@
             "value" : "Enable MQTT gateway"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Włącz bramę MQTT"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7387,6 +7657,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Send encrypted packets to MQTT"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysyłaj zaszyfrowane pakiety do MQTT"
           }
         },
         "zh-Hant-TW" : {
@@ -7406,6 +7682,12 @@
             "value" : "MQTT password"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Hasło MQTT"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7421,6 +7703,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "MQTT root topic"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Temat główny MQTT"
           }
         },
         "zh-Hant-TW" : {
@@ -7440,6 +7728,12 @@
             "value" : "MQTT username"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nazwa użytkownika MQTT"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7457,6 +7751,12 @@
             "value" : "How often to broadcast neighbor info. Minimum 4 hours."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jak często wysyłać Info o sąsiadach. Minimum 4 godziny."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7471,6 +7771,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "dBm"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "dBm"
           }
         },
@@ -7491,6 +7797,12 @@
             "value" : "How often to send the device counts to the mesh."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jak często wysyłać liczbę urządzeń do sieci."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7505,6 +7817,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "dBm"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "dBm"
           }
         },
@@ -7525,6 +7843,12 @@
             "value" : "Enable range test module"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Włącz moduł Range Test"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7542,6 +7866,12 @@
             "value" : "This device will send out range test messages on the selected interval. 0 disables sending."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "To urządzenie będzie wysyłać wiadomości Range Test w wybranym odstępie. 0 wyłącza wysyłanie."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7556,6 +7886,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "s"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "s"
           }
         },
@@ -7576,6 +7912,12 @@
             "value" : "Serial baud rate"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prędkość transmisji portu szeregowego"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7591,6 +7933,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Enable serial module"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Włącz moduł portu szeregowego"
           }
         },
         "zh-Hant-TW" : {
@@ -7610,6 +7958,12 @@
             "value" : "Serial module operation mode"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tryb pracy modułu portu szeregowego"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7625,6 +7979,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "RX pin number"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Numer pinu RX"
           }
         },
         "zh-Hant-TW" : {
@@ -7644,6 +8004,12 @@
             "value" : "Default"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Domyślny"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7659,6 +8025,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "How long to wait before treating received serial data as a complete packet. 0 uses 250 ms."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jak długo czekać, zanim odebrane dane szeregowe zostaną uznane za pełny pakiet. 0 oznacza 250 ms."
           }
         },
         "zh-Hant-TW" : {
@@ -7678,6 +8050,12 @@
             "value" : "TX pin number"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Numer pinu TX"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7693,6 +8071,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "TAK member role"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rola członka TAK"
           }
         },
         "zh-Hant-TW" : {
@@ -7712,6 +8096,12 @@
             "value" : "TAK team color"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kolor zespołu TAK"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7727,6 +8117,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Collect air quality metrics"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zbieraj metryki jakości powietrza"
           }
         },
         "zh-Hant-TW" : {
@@ -7746,6 +8142,12 @@
             "value" : "How often air quality metrics are sent over the mesh."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jak często metryki jakości powietrza są wysyłane do sieci."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7761,6 +8163,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "How often device metrics are sent over the mesh."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jak często metryki urządzenia są wysyłane do sieci."
           }
         },
         "zh-Hant-TW" : {
@@ -7780,6 +8188,12 @@
             "value" : "Display environment in Fahrenheit"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokazuj dane środowiskowe w stopniach Fahrenheita"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7795,6 +8209,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Collect environment measurements"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zbieraj pomiary środowiskowe"
           }
         },
         "zh-Hant-TW" : {
@@ -7814,6 +8234,12 @@
             "value" : "Display environment measurements on device"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokazuj pomiary środowiskowe na urządzeniu"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7829,6 +8255,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "How often environment metrics are sent over the mesh."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jak często metryki środowiskowe są wysyłane do sieci."
           }
         },
         "zh-Hant-TW" : {
@@ -7848,6 +8280,12 @@
             "value" : "Collect power metrics"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zbieraj metryki zasilania"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7863,6 +8301,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Display power metrics on device"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokazuj metryki zasilania na urządzeniu"
           }
         },
         "zh-Hant-TW" : {
@@ -7882,6 +8326,12 @@
             "value" : "How often power metrics are sent over the mesh."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jak często metryki zasilania są wysyłane do sieci."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7897,6 +8347,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Answer NodeInfo requests from cache for requestors within this many hops. Capped at 3 on routers; other roles answer direct neighbors only."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Odpowiadaj z pamięci podręcznej na żądania NodeInfo od węzłów oddalonych o najwyżej tyle skoków. Na routerach maksymalnie 3; inne role odpowiadają tylko bezpośrednim sąsiadom."
           }
         },
         "zh-Hant-TW" : {
@@ -7916,6 +8372,12 @@
             "value" : "Positions from the same node arriving sooner than this are dropped."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pozycje od tego samego węzła, które przychodzą częściej niż co tyle, są odrzucane."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7931,6 +8393,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "The time window packets are counted over."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Okno czasowe, w którym liczone są pakiety."
           }
         },
         "zh-Hant-TW" : {
@@ -89344,6 +89812,12 @@
             "value" : "The blue level of the ambient lighting LED."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Poziom niebieskiego diody LED oświetlenia otoczenia."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -89360,6 +89834,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "color|colour|rgb|led|ambient|lighting"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "color|colour|rgb|led|ambient|lighting|kolor|oświetlenie"
           }
         },
         "zh-Hant-TW" : {
@@ -89380,6 +89860,12 @@
             "value" : "Blue"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Niebieski"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -89398,6 +89884,12 @@
             "value" : "Drive current for the LED output."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prąd zasilania wyjścia LED."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -89414,6 +89906,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "led|brightness|ambient|lighting"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "led|brightness|ambient|lighting|jasność|oświetlenie"
           }
         },
         "zh-Hant-TW" : {
@@ -89476,6 +89974,12 @@
             "value" : "전류"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prąd"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -89530,6 +90034,12 @@
             "value" : "The green level of the ambient lighting LED."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Poziom zielonego diody LED oświetlenia otoczenia."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -89548,6 +90058,12 @@
             "value" : "color|colour|rgb|led|ambient|lighting"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "color|colour|rgb|led|ambient|lighting|kolor|oświetlenie"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -89564,6 +90080,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Green"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zielony"
           }
         },
         "zh-Hant-TW" : {
@@ -89624,6 +90146,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "LED 상태 (켜짐/꺼짐)"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Stan diody LED (wł./wył.)"
           }
         },
         "pt-BR" : {
@@ -89716,6 +90244,12 @@
             "value" : "LED 상태"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Stan LED"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -89770,6 +90304,12 @@
             "value" : "The red level of the ambient lighting LED."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Poziom czerwonego diody LED oświetlenia otoczenia."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -89786,6 +90326,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "color|colour|rgb|led|ambient|lighting"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "color|colour|rgb|led|ambient|lighting|kolor|oświetlenie"
           }
         },
         "zh-Hant-TW" : {
@@ -89806,6 +90352,12 @@
             "value" : "Red"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Czerwony"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -89822,6 +90374,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "The Codec2 bitrate to use. The sample rate is always 8 kHz. Lower bitrates use less bandwidth but reduce audio quality."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bitrate Codec2. Częstotliwość próbkowania to zawsze 8 kHz. Niższy bitrate zużywa mniej pasma, ale obniża jakość dźwięku."
           }
         },
         "zh-Hant-TW" : {
@@ -89846,6 +90404,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "비트레이트"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bitrate"
           }
         },
         "uk" : {
@@ -89878,6 +90442,12 @@
             "value" : "Mesh 음성 통신을 위한 Codec2 오디오 인코딩/디코딩을 활성화합니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Włącz kodowanie i dekodowanie dźwięku Codec2 do komunikacji głosowej przez sieć."
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -89908,6 +90478,12 @@
             "value" : "Codec2 활성화됨"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Codec2 włączony"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -89930,6 +90506,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "I2S Data Out Pin"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pin I2S Data Out"
           }
         },
         "uk" : {
@@ -89956,6 +90538,12 @@
             "value" : "I2S Clock Pin"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pin I2S Clock"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -89980,6 +90568,12 @@
             "value" : "I2S Data In Pin"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pin I2S Data In"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -90002,6 +90596,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "I2S Word Select Pin"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pin I2S Word Select"
           }
         },
         "uk" : {
@@ -90034,6 +90634,12 @@
             "value" : "PTT GPIO 핀 번호입니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Numer pinu GPIO dla PTT (push-to-talk). 0 oznacza GPIO 39."
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -90062,6 +90668,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "PTT 핀"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pin PTT"
           }
         },
         "uk" : {
@@ -90128,6 +90740,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "시계 반대 방향 회전 이벤트"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zdarzenie obrotu w lewo"
           }
         },
         "pt-BR" : {
@@ -90226,6 +90844,12 @@
             "value" : "시계 방향 회전 이벤트"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zdarzenie obrotu w prawo"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -90320,6 +90944,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "엔코더 버튼 누름 이벤트"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zdarzenie naciśnięcia enkodera"
           }
         },
         "pt-BR" : {
@@ -90418,6 +91048,12 @@
             "value" : "핀 A"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pin A"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -90512,6 +91148,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "핀 B"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pin B"
           }
         },
         "pt-BR" : {
@@ -90610,6 +91252,12 @@
             "value" : "버튼 핀"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pin przycisku"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -90662,6 +91310,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Back"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wstecz"
           }
         },
         "zh-Hant-TW" : {
@@ -90796,6 +91450,12 @@
             "value" : "Down"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "W dół"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -90812,6 +91472,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Left"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "W lewo"
           }
         },
         "zh-Hant-TW" : {
@@ -90832,6 +91498,12 @@
             "value" : "None"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Brak"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -90848,6 +91520,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Right"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "W prawo"
           }
         },
         "zh-Hant-TW" : {
@@ -90868,6 +91546,12 @@
             "value" : "Select"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wybierz"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -90884,6 +91568,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Up"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "W górę"
           }
         },
         "zh-Hant-TW" : {
@@ -90944,6 +91634,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "로터리 인코더 1"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Enkoder obrotowy"
           }
         },
         "pt-BR" : {
@@ -91042,6 +91738,12 @@
             "value" : "벨 신호 보내기"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysyłaj dzwonek"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -91136,6 +91838,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "위아래 1"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wejście góra/dół/wybierz"
           }
         },
         "pt-BR" : {
@@ -91234,6 +91942,12 @@
             "value" : "트리거 유형"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Typ wyzwalacza"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -91330,6 +92044,12 @@
             "value" : "감지 센서 모듈을 활성화합니다. 센서가 있는 노드뿐만 아니라 감지 센서 문자 메시지를 수신하거나 로그 및 차트를 확인하려는 모든 노드에서도 활성화해야 합니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Włącza moduł czujnika wykrywania. Musi być włączony zarówno na węźle z czujnikiem, jak i na węzłach, które mają odbierać wiadomości czujnika albo pokazywać jego log i wykres."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -91384,6 +92104,12 @@
             "value" : "Detection Sensor Enabled"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Czujnik wykrywania włączony"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -91402,6 +92128,12 @@
             "value" : "Minimum time between detection broadcasts"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Minimalny czas między wysłaniem kolejnych wykryć"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -91417,6 +92149,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "new",
+            "value" : "s"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "s"
           }
         },
@@ -91478,6 +92216,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "모니터링할 GPIO 핀"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Monitorowany pin GPIO"
           }
         },
         "pt-BR" : {
@@ -91576,6 +92320,12 @@
             "value" : "이름"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nazwa"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -91670,6 +92420,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "알림 메시지와 함께 ASCII 벨 신호를 전송합니다. 벨 신호로 외부 알림을 트리거할 때 유용합니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysyłaj znak dzwonka ASCII z wiadomością alarmową. Przydatne do wyzwalania zewnętrznego powiadomienia po dzwonku."
           }
         },
         "pt-BR" : {
@@ -91768,6 +92524,12 @@
             "value" : "벨 신호 보내기"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysyłaj dzwonek"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -91822,6 +92584,12 @@
             "value" : "State Broadcast Interval"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Interwał wysyłania stanu"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -91837,6 +92605,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "new",
+            "value" : "s"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "s"
           }
         },
@@ -91898,6 +92672,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "GPIO 핀에 INPUT_PULLUP 모드를 사용할지 여부입니다. 핀에 풀업 저항을 사용하는 보드에서만 적용됩니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Włącz wewnętrzny rezystor podciągający na monitorowanym pinie."
           }
         },
         "pt-BR" : {
@@ -91996,6 +92776,12 @@
             "value" : "풀업 저항 사용"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Użyj wewnętrznego pull-upu"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -92090,6 +92876,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "활성화하면 'output' 핀이 액티브 HIGH가 되고, 비활성화하면 액티브 LOW가 됩니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Po włączeniu pin wyjściowy jest aktywny w stanie wysokim, po wyłączeniu w stanie niskim."
           }
         },
         "pt-BR" : {
@@ -92188,6 +92980,12 @@
             "value" : "활성"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aktywny"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -92282,6 +93080,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "벨 수신 시 GPIO 부저 울림"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Buzzer GPIO po odebraniu dzwonka"
           }
         },
         "pt-BR" : {
@@ -92380,6 +93184,12 @@
             "value" : "벨 수신 시 GPIO 진동 모터 진동"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Silnik wibracyjny GPIO po odebraniu dzwonka"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -92474,6 +93284,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "벨 수신 시 알림"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Alarm po odebraniu dzwonka"
           }
         },
         "pt-BR" : {
@@ -92572,6 +93388,12 @@
             "value" : "메시지 수신 시 GPIO 부저 울림"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Buzzer GPIO po odebraniu wiadomości"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -92668,6 +93490,12 @@
             "value" : "메시지 수신 시 GPIO 진동 모터 진동"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Silnik wibracyjny GPIO po odebraniu wiadomości"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -92720,6 +93548,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Vibra Motor Alert"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Alarm silnikiem wibracyjnym"
           }
         },
         "zh-Hant-TW" : {
@@ -92782,6 +93616,12 @@
             "value" : "메시지 수신 시 알림"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Alarm po odebraniu wiadomości"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -92836,6 +93676,12 @@
             "value" : "External Notification Enabled"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Powiadomienia zewnętrzne włączone"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -92852,6 +93698,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Nag Timeout"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Czas przypominania"
           }
         },
         "zh-Hant-TW" : {
@@ -92872,6 +93724,12 @@
             "value" : "s"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "s"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -92888,6 +93746,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Output pin buzzer GPIO"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "GPIO pinu buzzera"
           }
         },
         "zh-Hant-TW" : {
@@ -92950,6 +93814,12 @@
             "value" : "GPIO 출력 시간"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Czas działania wyjścia GPIO"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -93001,6 +93871,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "new",
+            "value" : "ms"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "ms"
           }
         },
@@ -93062,6 +93938,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "진동 모터 GPIO 출력 핀"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "GPIO pinu silnika wibracyjnego"
           }
         },
         "pt-BR" : {
@@ -93160,6 +94042,12 @@
             "value" : "GPIO 출력 핀"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "GPIO pinu wyjściowego"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -93254,6 +94142,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "내장 I2S 오디오 출력을 지원하는 장치에서 스피커를 버저처럼 사용하여 RTTTL을 재생할 수 있도록 합니다. 예를 들어 T-Watch S3와 T-Deck은 이 기능을 지원합니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pozwala urządzeniom z natywnym wyjściem audio I2S odtwarzać RTTTL przez głośnik jak buzzer. Mają to np. T-Watch S3 i T-Deck."
           }
         },
         "pt-BR" : {
@@ -93352,6 +94246,12 @@
             "value" : "I2S를 버저로 사용"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Użyj I2S jako buzzera"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -93446,6 +94346,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "멜로디를 재생할 때 켜기/끄기 출력 대신 PWM 출력(RAK Buzzer 등)을 사용합니다. 이 옵션을 사용하면 출력, 출력 지속 시간 및 활성화 설정은 무시되며, 대신 장치 설정의 버저 GPIO 옵션을 사용합니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Używaj wyjścia PWM (jak RAK Buzzer) do melodii zamiast wyjścia wł./wył. Ignoruje wtedy ustawienia wyjścia, czasu działania i aktywności, a używa opcji GPIO buzzera z konfiguracji urządzenia."
           }
         },
         "pt-BR" : {
@@ -93544,6 +94450,12 @@
             "value" : "PWM 버저 사용"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Użyj buzzera PWM"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -93598,6 +94510,12 @@
             "value" : "Map Publish Interval"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Interwał publikacji mapy"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -93613,6 +94531,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "new",
+            "value" : "s"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "s"
           }
         },
@@ -93676,6 +94600,12 @@
             "value" : "위 내용을 읽고 이해했습니다. MQTT를 통해 내 노드 데이터를 암호화되지 않은 상태로 전송하는 것에 자발적으로 동의합니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zgoda na publikację danych tego węzła i jego przybliżonej lokalizacji bez szyfrowania na mapie MQTT. Bez niej raport mapy nie jest wysyłany."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -93730,6 +94660,12 @@
             "value" : "Share on Map"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Udostępniaj na mapie"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -93748,6 +94684,12 @@
             "value" : "Interval"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Interwał"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -93763,6 +94705,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "new",
+            "value" : "s"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "s"
           }
         },
@@ -93824,6 +94772,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "메시지"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wiadomość"
           }
         },
         "pt-BR" : {
@@ -93922,6 +94876,12 @@
             "value" : "주소"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Adres"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -93974,6 +94934,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "MQTT Enabled"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "MQTT włączone"
           }
         },
         "zh-Hant-TW" : {
@@ -94034,6 +95000,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "암호화 활성화"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Szyfrowanie włączone"
           }
         },
         "pt-BR" : {
@@ -94132,6 +95104,12 @@
             "value" : "노드는 설정된 MQTT 서버로 주기적으로 암호화되지 않은 지도 보고 패킷을 전송합니다. 여기에는 ID, 짧은 이름과 긴 이름, 대략적인 위치, 하드웨어 모델, 역할, 펌웨어 버전, LoRa 지역, 모뎀 프리셋 및 기본 채널 이름이 포함됩니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Węzeł będzie okresowo wysyłać niezaszyfrowany raport mapy do skonfigurowanego serwera MQTT. Zawiera on ID, krótką i długą nazwę, przybliżoną lokalizację, model sprzętu, rolę, wersję firmware, region LoRa, preset modemu i nazwę kanału głównego."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -94184,6 +95162,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Map Reporting"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Raportowanie mapy"
           }
         },
         "zh-Hant-TW" : {
@@ -94358,6 +95342,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "휴대폰의 네트워크 연결을 사용하여 MQTT에 연결합니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Używa połączenia sieciowego telefonu do łączenia z MQTT."
           }
         },
         "pt-BR" : {
@@ -94570,6 +95560,12 @@
             "value" : "루트 토픽"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Temat główny"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -94660,6 +95656,12 @@
             "value" : "공개 Meshtastic MQTT 서버를 사용하려면 TLS가 필요합니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Łącz się z serwerem MQTT przez TLS."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -94742,6 +95744,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "TLS 활성화됨"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "TLS włączony"
           }
         },
         "pt-BR" : {
@@ -94918,6 +95926,12 @@
             "value" : "이웃 정보 브로드캐스트를 활성화합니다. Mesh 토폴로지 시각화를 위해 직접 수신한 이웃 노드 정보를 주기적으로 전송합니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Włącz wysyłanie Info o sąsiadach. Okresowo wysyła informacje o bezpośrednio słyszanych sąsiadach, co pomaga zobrazować topologię sieci."
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -94942,6 +95956,12 @@
             "value" : "Neighbor Info Enabled"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Info o sąsiadach włączone"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -94964,6 +95984,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "MQTT 및 PhoneAPI와 함께 LoRa를 통해 이웃 정보를 전송할지 여부입니다. 기본 키와 이름을 사용하는 채널에서는 사용할 수 없습니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Czy wysyłać Info o sąsiadach przez LoRa, oprócz MQTT i połączonej aplikacji. Niedostępne na kanałach z domyślnym kluczem i nazwą."
           }
         },
         "uk" : {
@@ -94994,6 +96020,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "LoRa를 통한 송신"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nadawaj przez LoRa"
           }
         },
         "uk" : {
@@ -95062,6 +96094,12 @@
             "value" : "업데이트 간격"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Interwał aktualizacji"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -95116,6 +96154,12 @@
             "value" : "s"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "s"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -95138,6 +96182,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "BLE 장치 수 집계에 사용할 RSSI 임계값입니다. 기본값은 −80 dBm입니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Próg RSSI dla zliczania urządzeń BLE. Domyślnie −80 dBm."
           }
         },
         "uk" : {
@@ -95168,6 +96218,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "BLE 임계값"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Próg BLE"
           }
         },
         "uk" : {
@@ -95242,6 +96298,12 @@
             "value" : "활성화하면 PAX 카운터 모듈이 WiFi와 Bluetooth를 사용하여 주변을 지나가는 사람 수를 계산합니다. PAX 카운터가 작동하려면 WiFi와 Bluetooth가 모두 비활성화되어 있어야 합니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Po włączeniu moduł PAX Counter zlicza pobliskie urządzenia Wi-Fi i Bluetooth. Aby PAX Counter działał, Wi-Fi i Bluetooth muszą być wyłączone."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -95300,6 +96362,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "PAX Counter Enabled"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "PAX Counter włączony"
           }
         },
         "zh-Hant-TW" : {
@@ -95362,6 +96430,12 @@
             "value" : "업데이트 간격"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Interwał aktualizacji"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -95416,6 +96490,12 @@
             "value" : "s"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "s"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -95438,6 +96518,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Wi-Fi 장치 수 집계에 사용할 RSSI 임계값입니다. 기본값은 −80 dBm입니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Próg RSSI dla zliczania urządzeń Wi-Fi. Domyślnie −80 dBm."
           }
         },
         "uk" : {
@@ -95470,6 +96556,12 @@
             "value" : "Wi-Fi 임계값"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Próg Wi-Fi"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -95492,6 +96584,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Range Test Enabled"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Range Test włączony"
           }
         },
         "zh-Hant-TW" : {
@@ -95552,6 +96650,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "거리 테스트 메시지의 세부 정보를 CSV 파일로 저장합니다. 현재는 웹 서버가 있는 ESP32 장치에서만 사용할 수 있습니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zapisuje plik CSV ze szczegółami wiadomości Range Test; obecnie tylko na urządzeniach ESP32 z serwerem WWW."
           }
         },
         "pt-BR" : {
@@ -95722,6 +96826,12 @@
             "value" : "Sender Interval"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Interwał nadawcy"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -95780,6 +96890,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "보드레이트"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prędkość (baud)"
           }
         },
         "pt-BR" : {
@@ -95876,6 +96992,12 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "설정하면 전송한 모든 패킷이 장치로 반송됩니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Po włączeniu każdy wysłany pakiet jest odsyłany z powrotem przez port szeregowy."
           }
         },
         "pt-BR" : {
@@ -95980,6 +97102,12 @@
             "value" : "에코"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Echo"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -96038,6 +97166,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Serial Enabled"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Port szeregowy włączony"
           }
         },
         "zh-Hant-TW" : {
@@ -96214,6 +97348,12 @@
             "value" : "수신 데이터(RXD) GPIO 핀"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pin GPIO odbioru danych (rxd)"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -96268,6 +97408,12 @@
             "value" : "110 Baud"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "110 bodów"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -96284,6 +97430,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "300 Baud"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "300 bodów"
           }
         },
         "zh-Hant-TW" : {
@@ -96304,6 +97456,12 @@
             "value" : "600 Baud"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "600 bodów"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -96320,6 +97478,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "1200 Baud"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "1200 bodów"
           }
         },
         "zh-Hant-TW" : {
@@ -96340,6 +97504,12 @@
             "value" : "2400 Baud"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "2400 bodów"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -96356,6 +97526,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "4800 Baud"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "4800 bodów"
           }
         },
         "zh-Hant-TW" : {
@@ -96376,6 +97552,12 @@
             "value" : "9600 Baud"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "9600 bodów"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -96392,6 +97574,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "19200 Baud"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "19200 bodów"
           }
         },
         "zh-Hant-TW" : {
@@ -96412,6 +97600,12 @@
             "value" : "38400 Baud"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "38400 bodów"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -96428,6 +97622,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "57600 Baud"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "57600 bodów"
           }
         },
         "zh-Hant-TW" : {
@@ -96448,6 +97648,12 @@
             "value" : "115200 Baud"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "115200 bodów"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -96464,6 +97670,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "230400 Baud"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "230400 bodów"
           }
         },
         "zh-Hant-TW" : {
@@ -96484,6 +97696,12 @@
             "value" : "460800 Baud"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "460800 bodów"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -96502,6 +97720,12 @@
             "value" : "576000 Baud"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "576000 bodów"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -96518,6 +97742,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "921600 Baud"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "921600 bodów"
           }
         },
         "zh-Hant-TW" : {
@@ -96652,6 +97882,12 @@
             "value" : "CalTopo"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "CalTopo"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -96670,6 +97906,12 @@
             "value" : "NMEA Positions"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pozycje NMEA"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -96685,6 +97927,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "new",
+            "value" : "Protobufs"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "Protobufs"
           }
         },
@@ -96706,6 +97954,12 @@
             "value" : "Simple"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prosty"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -96722,6 +97976,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Text Message"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wiadomość tekstowa"
           }
         },
         "zh-Hant-TW" : {
@@ -96856,6 +98116,12 @@
             "value" : "ms"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ms"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -96914,6 +98180,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "송신 데이터(TXD) GPIO 핀"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pin GPIO nadawania danych (txd)"
           }
         },
         "pt-BR" : {
@@ -97012,6 +98284,12 @@
             "value" : "Store and Forward 모듈을 활성화합니다."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Włącza moduł Store & Forward."
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -97064,6 +98342,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Store and Forward Enabled"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Store & Forward włączony"
           }
         },
         "zh-Hant-TW" : {
@@ -97124,6 +98408,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "서버의 존재를 알리기 위해 하트비트를 전송합니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysyłaj heartbeat, aby ogłaszać obecność serwera."
           }
         },
         "pt-BR" : {
@@ -97294,6 +98584,12 @@
             "value" : "Maximum number of stored messages returned per request. 0 uses 25."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Maksymalna liczba zapisanych wiadomości zwracanych na jedno żądanie. 0 oznacza 25."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -97354,6 +98650,12 @@
             "value" : "기록 반환 최대 개수"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Maks. zwracanej historii"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -97400,6 +98702,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "How far back, in minutes, stored messages are returned. 0 uses 240."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Z ilu ostatnich minut zwracane są zapisane wiadomości. 0 oznacza 240."
           }
         },
         "zh-Hant-TW" : {
@@ -97460,6 +98768,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "기록 반환 시간 범위"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Okno zwracanej historii"
           }
         },
         "pt-BR" : {
@@ -97550,6 +98864,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "이 장치를 Store and Forward 서버로 사용합니다. PSRAM이 탑재된 ESP32 장치가 필요합니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Włącz to urządzenie jako serwer Store & Forward. Wymaga urządzenia ESP32 z PSRAM."
           }
         },
         "pt-BR" : {
@@ -97648,6 +98968,12 @@
             "value" : "서버"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Serwer"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -97700,6 +99026,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Maximum number of messages to store. 0 uses three quarters of free PSRAM."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Maksymalna liczba zapisanych wiadomości. 0 oznacza trzy czwarte wolnej PSRAM."
           }
         },
         "zh-Hant-TW" : {
@@ -97760,6 +99092,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "레코드 수"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Liczba rekordów"
           }
         },
         "pt-BR" : {
@@ -97858,6 +99196,12 @@
             "value" : "역할"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rola"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -97948,6 +99292,12 @@
             "value" : "팀"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Zespół"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -97996,6 +99346,12 @@
             "value" : "대기질 측정 활성화"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Metryki jakości powietrza włączone"
+          }
+        },
         "uk" : {
           "stringUnit" : {
             "state" : "translated",
@@ -98020,6 +99376,12 @@
             "value" : "Air Quality Metrics Interval"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Interwał metryk jakości powietrza"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -98035,6 +99397,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "new",
+            "value" : "s"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "s"
           }
         },
@@ -98090,6 +99458,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "장치 측정 데이터를 Mesh 네트워크로 브로드캐스트할 수 있습니다. 비활성화하면 측정 데이터는 연결된 클라이언트에만 전송됩니다."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Włącz wysyłanie metryk urządzenia do sieci. Po wyłączeniu metryki trafiają tylko do połączonych klientów."
           }
         },
         "pt-BR" : {
@@ -98176,6 +99550,12 @@
             "value" : "장치 측정 데이터 브로드캐스트"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Wysyłaj metryki urządzenia"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -98224,6 +99604,12 @@
             "value" : "Device Metrics Interval"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Interwał metryk urządzenia"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -98239,6 +99625,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "new",
+            "value" : "s"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "s"
           }
         },
@@ -98300,6 +99692,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "화씨 표시"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokazuj w Fahrenheitach"
           }
         },
         "pt-BR" : {
@@ -98392,6 +99790,12 @@
             "value" : "환경 측정 데이터 활성화"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Metryki środowiskowe włączone"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -98482,6 +99886,12 @@
             "value" : "장치 화면에 표시"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pokazuj na ekranie urządzenia"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -98536,6 +99946,12 @@
             "value" : "Environment Metrics Interval"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Interwał metryk środowiskowych"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -98551,6 +99967,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "new",
+            "value" : "s"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "s"
           }
         },
@@ -98570,6 +99992,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Power Measurement Enabled"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pomiar zasilania włączony"
           }
         },
         "zh-Hant-TW" : {
@@ -98632,6 +100060,12 @@
             "value" : "전력 정보 화면"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ekran zasilania"
+          }
+        },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -98686,6 +100120,12 @@
             "value" : "Power Metrics Interval"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Interwał metryk zasilania"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -98701,6 +100141,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "new",
+            "value" : "s"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "s"
           }
         },
@@ -98722,6 +100168,12 @@
             "value" : "Direct NodeInfo Max Hops"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Maks. skoków dla bezpośredniego NodeInfo"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -98740,6 +100192,12 @@
             "value" : "Minimum Position Interval"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Minimalny interwał pozycji"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -98755,6 +100213,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "new",
+            "value" : "s"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "s"
           }
         },
@@ -98776,6 +100240,12 @@
             "value" : "The most packets one node may send per window."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Najwięcej pakietów, ile jeden węzeł może wysłać w oknie."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -98792,6 +100262,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Rate Limit Max Packets"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Limit pakietów"
           }
         },
         "zh-Hant-TW" : {
@@ -98812,6 +100288,12 @@
             "value" : "Rate Limit Window"
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Okno limitu"
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -98827,6 +100309,12 @@
         "en" : {
           "stringUnit" : {
             "state" : "new",
+            "value" : "s"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
             "value" : "s"
           }
         },
@@ -98848,6 +100336,12 @@
             "value" : "Undecryptable packets one node may send in 5 minutes before it is dropped."
           }
         },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ile pakietów nie do odszyfrowania jeden węzeł może wysłać w 5 minut, zanim zostanie odrzucony."
+          }
+        },
         "zh-Hant-TW" : {
           "stringUnit" : {
             "state" : "translated",
@@ -98864,6 +100358,12 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "Unknown Packet Threshold"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Próg nieznanych pakietów"
           }
         },
         "zh-Hant-TW" : {
