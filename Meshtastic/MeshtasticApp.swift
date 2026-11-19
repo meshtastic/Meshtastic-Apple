@@ -406,6 +406,8 @@ struct MeshtasticAppleApp: App {
 		.windowResizability(.contentMinSize)
 		#if os(visionOS)
 		.windowStyle(.plain)
+		// Launching the app opens the main window, never this one.
+		.defaultLaunchBehavior(.suppressed)
 		#endif
 
 		#if os(visionOS)
@@ -429,6 +431,9 @@ struct MeshtasticAppleApp: App {
 		.windowResizability(.contentSize)
 		.volumeWorldAlignment(.gravityAligned)
 		.restorationBehavior(.disabled)
+		// visionOS launches into the last window that was closed. The volume is never the app's
+		// first window: launching opens the main window, which opens the volume.
+		.defaultLaunchBehavior(.suppressed)
 		.handlesExternalEvents(matching: [])
 
 		// The mesh as radios in a showcase. Same gates and environment as the spatial map volume.
