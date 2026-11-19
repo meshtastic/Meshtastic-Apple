@@ -97,17 +97,18 @@ enum ShareCardStyle {
 /// opaque image would otherwise flatten into a solid block.
 struct ShareMapImage: View {
 	let image: UIImage
+	var contentMode: ContentMode = .fit
 
 	var body: some View {
 		if #available(iOS 18.0, *) {
 			Image(uiImage: image)
 				.resizable()
 				.widgetAccentedRenderingMode(.fullColor)
-				.scaledToFit()
+				.aspectRatio(contentMode: contentMode)
 		} else {
 			Image(uiImage: image)
 				.resizable()
-				.scaledToFit()
+				.aspectRatio(contentMode: contentMode)
 		}
 	}
 }

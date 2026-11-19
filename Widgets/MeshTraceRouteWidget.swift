@@ -233,8 +233,12 @@ private struct RouteTallView: View {
 			RouteHeader(route: route, compact: false)
 			RouteTitle(route: route, font: .title3.weight(.semibold), lineLimit: 2)
 			if let map {
-				RouteMapImage(image: map)
+				// Fills the space left over, trimming the map's edges rather
+				// than leaving it a narrow strip down the middle.
+				Color.clear
 					.frame(maxWidth: .infinity, maxHeight: .infinity)
+					.overlay { RouteMapImage(image: map, contentMode: .fill) }
+					.clipped()
 			}
 			StatTiles(route: route)
 			VStack(alignment: .leading, spacing: 8) {
@@ -253,36 +257,44 @@ private struct RouteTallView: View {
 }
 
 #if os(visionOS)
-/// The board-sized print for a wall on Vision Pro: the map on the left, the
-/// route beside it. Seen from across the room the system asks for less
-/// detail, and the board keeps only the map, the title and the age.
+/// The board-sized print for a wall on Vision Pro, laid out like the large
+/// size: the map across the full width, then the stats and both hop chains
+/// on one row. Seen from across the room the system asks for less detail, and
+/// the board keeps only the title, the map and the age.
 private struct RouteBoardView: View {
 	@Environment(\.levelOfDetail) private var levelOfDetail
 	let route: WidgetTraceRoute
 	let map: UIImage?
 
 	var body: some View {
-		HStack(alignment: .top, spacing: 18) {
-			if let map {
-				RouteMapImage(image: map)
-					.frame(maxWidth: .infinity, maxHeight: .infinity)
-			}
-			VStack(alignment: .leading, spacing: 10) {
+		VStack(alignment: .leading, spacing: 12) {
+			HStack(spacing: 8) {
 				RouteHeader(route: route, compact: false)
-				RouteTitle(route: route, font: simplified ? .title.weight(.semibold) : .title3.weight(.semibold), lineLimit: 3)
-				if !simplified {
-					StatTiles(route: route)
-					VStack(alignment: .leading, spacing: 8) {
-						HopChain(stops: route.forward, color: RouteStyle.forward, size: 24)
-						if !route.back.isEmpty {
-							HopChain(stops: route.back, color: RouteStyle.back, size: 24, startRing: .white, endRing: RouteStyle.brand)
-						}
-					}
-				}
-				Spacer(minLength: 0)
+				Spacer(minLength: 8)
 				AgeLine(route: route)
 			}
-			.frame(maxWidth: map == nil ? .infinity : 280, alignment: .leading)
+			RouteTitle(route: route, font: simplified ? .largeTitle.weight(.semibold) : .title2.weight(.semibold), lineLimit: 1)
+			if let map {
+				Color.clear
+					.frame(maxWidth: .infinity, maxHeight: .infinity)
+					.overlay { RouteMapImage(image: map, contentMode: .fill) }
+					.clipped()
+			}
+			if !simplified {
+				HStack(alignment: .center, spacing: 16) {
+					StatTiles(route: route)
+					VStack(alignment: .leading, spacing: 8) {
+						HopChain(stops: route.forward, color: RouteStyle.forward, size: 26)
+						if !route.back.isEmpty {
+							HopChain(stops: route.back, color: RouteStyle.back, size: 26, startRing: .white, endRing: RouteStyle.brand)
+						}
+					}
+					.fixedSize()
+				}
+			}
+			if map == nil {
+				Spacer(minLength: 0)
+			}
 		}
 		.padding(18)
 	}
