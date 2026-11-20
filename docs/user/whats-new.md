@@ -13,6 +13,8 @@ Recent user-facing changes from roughly the last 12 months. Newest at the top.
 **Month YYYY** — [Page title](relative/path.md) — One sentence describing what changed or why it matters.
 Show roughly the last 12 months of changes; archive entries older than a year by removing them.
 -->
+**Nov 2026** — [Cinema](cinema.md#control-panel) — On Apple Vision Pro, the Cinema's ham shack is fuller: many more radios on the operating desk, a soldering bench, a rack with a repeater and an amplifier, an old tube receiver under the window, and more of the app's radios around the room.
+
 **Nov 2026** — [Settings](settings.md#channels) — A channel anyone can decrypt never shares a precise location, including one added from a QR code or link that asked for it, and a channel on the full length default key no longer offers Precise Location.
 
 

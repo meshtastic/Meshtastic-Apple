@@ -14,7 +14,7 @@ SPINES = [
     ("73 Ways to Say Goodbye", "Seymour Signals", (34, 92, 58), 0.035, 0.25),
     ("QRP: Doing More With Less", "Milli Watts", (196, 150, 40), 0.03, 0.23),
     ("The Joy of Coax", "Bea Lun", (58, 36, 86), 0.055, 0.29),
-    ("Crimpin' Ain't Easy", "Ann Derson", (190, 60, 30), 0.045, 0.27),
+    ("Crimpin' Ain't Easy", "Ben Meadors", (190, 60, 30), 0.045, 0.27),
     ("Ferrite Beads and Other Lies", "Toro Idal", (40, 40, 44), 0.04, 0.27),
     ("Grounding for the Ungrounded", "Earl Thing", (110, 70, 34), 0.045, 0.28),
     ("Sunspots: A Waiting Game", "Sol R. Cycle", (210, 110, 30), 0.04, 0.26),
@@ -43,10 +43,10 @@ SPINES = [
 ]
 
 # Covers stood face out on top of the bookcase, big enough to read from the seat: title, a line
-# under it, cover color, title color.
+# under it, cover color, title color, and the author's name over the line, or None for none.
 COVERS = [
-    ("SWR:\nIT'S\nFINE", "and other things we tell ourselves", (36, 52, 90), (250, 214, 90)),
-    ("THE\nJOY OF\nCOAX", "fully illustrated, 50 ohm edition", (128, 30, 34), (250, 242, 225)),
-    ("ONE\nMORE\nANTENNA", "a family's story", (30, 90, 60), (250, 250, 245)),
-    ("CRIMPIN'\nAIN'T\nEASY", "four hundred PL-259s later", (190, 60, 30), (250, 242, 225)),
+    ("SWR:\nIT'S\nFINE", "and other things we tell ourselves", (36, 52, 90), (250, 214, 90), None),
+    ("THE\nJOY OF\nCOAX", "fully illustrated, 50 ohm edition", (128, 30, 34), (250, 242, 225), None),
+    ("ONE\nMORE\nANTENNA", "a family's story", (30, 90, 60), (250, 250, 245), None),
+    ("CRIMPIN'\nAIN'T\nEASY", "four hundred PL-259s later", (190, 60, 30), (250, 242, 225), "BEN MEADORS"),
 ]

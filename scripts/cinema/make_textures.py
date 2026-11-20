@@ -335,6 +335,52 @@ def meter_face(path, label, needle, w=600, h=400):
     image.save(path)
 
 
+def readout(path, text, ink, back, w=600, h=240):
+    """A small digital readout, like a soldering station's set temperature or a multimeter's
+    reading: `text` big in `ink` on `back`."""
+    image = Image.new("RGB", (w, h), back)
+    draw = ImageDraw.Draw(image)
+    draw.text((w - 30, h / 2), text, fill=ink, font=font("Arial Bold.ttf", int(h * 0.62)), anchor="rm")
+    image.save(path)
+
+
+def scope_screen(path, w=800, h=500):
+    """An oscilloscope's screen: a dim graticule with a yellow sine and a cyan square wave."""
+    image = Image.new("RGB", (w, h), (6, 10, 14))
+    draw = ImageDraw.Draw(image)
+    for i in range(1, 10):
+        draw.line([(i * w / 10, 0), (i * w / 10, h)], fill=(40, 48, 56), width=2)
+    for j in range(1, 8):
+        draw.line([(0, j * h / 8), (w, j * h / 8)], fill=(40, 48, 56), width=2)
+    sine = [(x, h * 0.32 - h * 0.18 * math.sin(x / w * 6 * math.pi)) for x in range(0, w, 4)]
+    draw.line(sine, fill=(250, 220, 60), width=5)
+    square = []
+    for x in range(0, w, 4):
+        high = int(x / (w / 8)) % 2 == 0
+        square.append((x, h * (0.62 if high else 0.82)))
+    draw.line(square, fill=(70, 210, 230), width=5)
+    image.save(path)
+
+
+def slide_rule_dial(path, w=1000, h=260):
+    """A tube receiver's slide-rule dial: cream glass with band scales and a red pointer."""
+    image = Image.new("RGB", (w, h), (236, 214, 160))
+    draw = ImageDraw.Draw(image)
+    ink = (60, 40, 20)
+    small = font("Arial.ttf", 26)
+    for row, (label, start, stop) in enumerate((("MC", 0.55, 1.6), ("A", 1.6, 4.0), ("B", 4.0, 10.0), ("C", 10.0, 30.0))):
+        y = 40 + row * 56
+        draw.text((20, y + 6), label, fill=ink, font=small, anchor="lm")
+        draw.line([(70, y + 20), (w - 30, y + 20)], fill=ink, width=2)
+        for i in range(11):
+            x = 70 + i * (w - 100) / 10
+            draw.line([(x, y + 12), (x, y + 28)], fill=ink, width=2)
+            if i % 2 == 0:
+                draw.text((x, y + 4), f"{start + (stop - start) * i / 10:.1f}", fill=ink, font=font("Arial.ttf", 20), anchor="mm")
+    draw.line([(w * 0.58, 15), (w * 0.58, h - 15)], fill=(200, 30, 20), width=6)
+    image.save(path)
+
+
 def waterfall(path, w=1600, h=960):
     """A computer screen running an FT8 program: a band of decoded messages over the blue
     waterfall, with the yellow streaks of signals in it. The decodes use no call signs."""
@@ -424,8 +470,9 @@ def book_spine(path, title, author, color, thickness, height, scale=3000):
     Image.fromarray(np.clip(cloth, 0, 255).astype(np.uint8)).save(path)
 
 
-def book_cover(path, title, line, color, ink, w=880, h=1120):
-    """A book's front cover, for the books stood face out: a big title over a line of small type."""
+def book_cover(path, title, line, color, ink, author=None, w=880, h=1120):
+    """A book's front cover, for the books stood face out: a big title, the author's name if it
+    has one, and a line of small type."""
     image = Image.new("RGB", (w, h), color)
     draw = ImageDraw.Draw(image)
     draw.rectangle([40, 40, w - 40, h - 40], outline=ink, width=8)
@@ -436,6 +483,8 @@ def book_cover(path, title, line, color, ink, w=880, h=1120):
         size -= 4
         big = font("Georgia Bold.ttf", size)
     draw.multiline_text((w / 2, h * 0.42), title, fill=ink, font=big, anchor="mm", align="center", spacing=10)
+    if author:
+        draw.text((w / 2, h * 0.72), author, fill=ink, font=font("Georgia Bold.ttf", 58), anchor="mm")
     small = font("Georgia Italic.ttf", 44)
     words, rows, row = line.split(), [], ""
     for word in words:
@@ -636,12 +685,37 @@ def main():
     meter_face(os.path.join(OUT, "meter_power.png"), "WATTS", 0.4)
     meter_face(os.path.join(OUT, "meter_swr.png"), "SWR", 0.12)
     meter_face(os.path.join(OUT, "meter_volts.png"), "VOLTS", 0.69)
+    # The bigger rigs: a base station on 10 meters, the linear amplifier's meters, and the
+    # repeater in the rack on its 2 meter pair.
+    radio_display(os.path.join(OUT, "radio_display_10m.png"), "28.400.00", "USB")
+    radio_display(os.path.join(OUT, "radio_display_80m.png"), "3.885.00", "AM")
+    radio_display(os.path.join(OUT, "radio_display_repeater.png"), "147.090", "RPT")
+    # The rest of the radios on the desk: a 20 meter phone net, 6 meters, 15 meter CW, 220, a QRP
+    # rig on 30 meters, and a 70 centimeter repeater.
+    radio_display(os.path.join(OUT, "radio_display_20m.png"), "14.300.00", "USB")
+    radio_display(os.path.join(OUT, "radio_display_6m.png"), "50.125.00", "USB")
+    radio_display(os.path.join(OUT, "radio_display_15m.png"), "21.060.00", "CW")
+    radio_display(os.path.join(OUT, "radio_display_220.png"), "223.500", "FM")
+    radio_display(os.path.join(OUT, "radio_display_30m.png"), "10.116.00", "CW")
+    radio_display(os.path.join(OUT, "radio_display_440rpt.png"), "442.200", "RPT")
+    meter_face(os.path.join(OUT, "meter_plate.png"), "PLATE mA", 0.55)
+    meter_face(os.path.join(OUT, "meter_grid.png"), "GRID mA", 0.3)
+    # The soldering bench: the iron's and the hot air's set temperatures, and the multimeter
+    # checking a board's 3.3 volt rail.
+    readout(os.path.join(OUT, "readout_iron.png"), "350°", (255, 60, 40), (12, 4, 4))
+    readout(os.path.join(OUT, "readout_air.png"), "380°", (90, 200, 255), (4, 8, 14))
+    readout(os.path.join(OUT, "readout_meter.png"), "3.31", (20, 24, 18), (168, 180, 150))
+    # The bench supply powering a board at 5 volts, drawing 120 mA, and the scope probing it.
+    readout(os.path.join(OUT, "readout_volts.png"), "5.00", (255, 50, 40), (12, 4, 4))
+    readout(os.path.join(OUT, "readout_amps.png"), "0.12", (60, 255, 90), (4, 12, 6))
+    scope_screen(os.path.join(OUT, "scope_screen.png"))
+    slide_rule_dial(os.path.join(OUT, "slide_rule_dial.png"))
     waterfall(os.path.join(OUT, "waterfall.png"))
     band_plan(os.path.join(OUT, "band_plan.png"))
     for i, (title, author, color, thickness, height) in enumerate(SPINES):
         book_spine(os.path.join(OUT, f"spine_{i:02d}.png"), title, author, color, thickness, height)
-    for i, (title, line, color, ink) in enumerate(COVERS):
-        book_cover(os.path.join(OUT, f"cover_{i}.png"), title, line, color, ink)
+    for i, (title, line, color, ink, author) in enumerate(COVERS):
+        book_cover(os.path.join(OUT, f"cover_{i}.png"), title, line, color, ink, author)
     lookout_radio(os.path.join(OUT, "lookout_radio.png"))
     castle_banner(os.path.join(OUT, "castle_banner.png"))
     space_patch(os.path.join(OUT, "space_patch.png"))
