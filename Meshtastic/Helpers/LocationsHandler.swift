@@ -169,23 +169,17 @@ import OSLog
 		#endif
 	}
 
-	/// Starts live location updates.
-	/// - Returns: `true` if this call started them, `false` if they were already running or
-	///   location access isn't granted. A caller that stops updates when it is done should
-	///   only do so when it started them.
-	@discardableResult
-	func startLocationUpdates() -> Bool {
+	func startLocationUpdates() {
 		let status = self.manager.authorizationStatus
 		// Guard against starting updates without proper authorization.
 		guard status.allowsLocationUse else {
 			Logger.services.warning("📍 [App] Cannot start location updates: insufficient authorization status: \(status.rawValue)")
-			return false
+			return
 		}
-		guard !locationDeliveryStarted else { return false }
+		guard !locationDeliveryStarted else { return }
 		Logger.services.info("📍 [App] Starting location updates")
 		updatesStarted = true
 		beginLocationDelivery()
-		return true
 	}
 
 	func beginLocationDelivery() {
