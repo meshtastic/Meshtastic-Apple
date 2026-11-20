@@ -24,6 +24,8 @@ struct CompassView: View {
 	// Haptic alignment tracking
 	private let alignmentTolerance: Double = 5.0
 	@State private var inAlignment = false
+	/// Whether opening the compass started location updates, so closing it only stops those.
+	@State private var startedLocationUpdates = false
 
 	private let dialRadius: CGFloat = 140
 
@@ -79,7 +81,7 @@ struct CompassView: View {
 		SheetNavigationStack {
 			ZStack {
 				VStack(spacing: 0) {
-				
+
 					if waypointLongName != nil || waypointLocation != nil {
 						Spacer()
 						VStack(spacing: 4) {
@@ -195,11 +197,16 @@ struct CompassView: View {
 			.statusBar(hidden: true)
 			.onAppear {
 				locationsHandler.startHeadingUpdates()
-				locationsHandler.startLocationUpdates()
+				startedLocationUpdates = locationsHandler.startLocationUpdates()
 			}
 			.onDisappear {
 				locationsHandler.stopHeadingUpdates()
-				locationsHandler.stopLocationUpdates()
+				// The app starts location updates at launch for the map, distances and
+				// position sharing; leave them running unless the compass started them.
+				if startedLocationUpdates {
+					locationsHandler.stopLocationUpdates()
+					startedLocationUpdates = false
+				}
 			}
 			.navigationTitle("Compass")
 			.if(showsCloseButton) { $0.sheetCloseButton() }
