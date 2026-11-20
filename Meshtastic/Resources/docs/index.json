@@ -114,7 +114,7 @@
             "roof",
             "show"
         ],
-        "charCount": 15327
+        "charCount": 15443
     },
     {
         "id": "discovery",
@@ -808,15 +808,15 @@
             "messages",
             "bluetooth",
             "shows",
+            "radios",
             "jun",
             "lookout",
             "view",
-            "radios",
             "page",
             "oct",
             "fire"
         ],
-        "charCount": 17221
+        "charCount": 17485
     },
     {
         "id": "adding-features",
