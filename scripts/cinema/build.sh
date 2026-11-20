@@ -17,6 +17,9 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$HERE/../.." && pwd)"
 BLENDER="${BLENDER:-/Applications/Blender.app/Contents/MacOS/Blender}"
 DEST="$ROOT/Packages/CinemaContent/Sources/CinemaContent/Environments"
+# Full-size width. At 4096 the lettering on the tent's plaque was soft; at 8192 it is sharp.
+# See README.md.
+WIDTH=8192
 # HEIC quality, picked by comparing against the rendered PNG; see README.md.
 HEIC_QUALITY=88
 mkdir -p "$HERE/cache" "$HERE/out"
@@ -44,7 +47,7 @@ nasa() {
 }
 
 # "Sunset Forest", the view out of the tent's door and windows.
-hdri sunset_forest 4k
+hdri sunset_forest 8k
 # "Kiara 8" at sunset, the light on the fire lookout's cab.
 hdri kiara_8_sunset 8k
 # A clear sunset sky with no horizon in it, over the lookout's forest view and real terrain.
@@ -74,13 +77,14 @@ uv run --quiet --with pillow==13.0.0 --with numpy==2.5.4 --with resvg-py==0.5.0 
 environment() {
 	local name="$1"
 	# Blender exits 0 when a script raises unless told otherwise, and a failed render would
-	# otherwise leave the last run's image and anchors here to be shipped.
+	# otherwise leave the last run's image and anchors here to be shipped. --factory-startup keeps
+	# the user's own Blender startup file, preferences and add-ons out of the render.
 	rm -f "$HERE/out/$name.png" "$HERE/out/${name}_preview.png" "$HERE/out/${name}_anchors.json"
 	if [ "$PREVIEW" = 1 ]; then
-		"$BLENDER" -b --python-exit-code 1 -P "$HERE/$name.py" -- --out "$HERE/out/${name}_preview.png" --width 2048 --samples 48
+		"$BLENDER" -b --factory-startup --python-exit-code 1 -P "$HERE/$name.py" -- --out "$HERE/out/${name}_preview.png" --width 2048 --samples 48
 		return
 	fi
-	"$BLENDER" -b --python-exit-code 1 -P "$HERE/$name.py" -- --out "$HERE/out/$name.png" --width 4096 --samples 160
+	"$BLENDER" -b --factory-startup --python-exit-code 1 -P "$HERE/$name.py" -- --out "$HERE/out/$name.png" --width "$WIDTH" --samples 160
 	sips -s format heic -s formatOptions "$HEIC_QUALITY" "$HERE/out/$name.png" --out "$DEST/$name.heic" >/dev/null
 	# Where the app puts its live panels; must ship with the image it was rendered with.
 	cp "$HERE/out/${name}_anchors.json" "$DEST/${name}_anchors.json"
@@ -94,10 +98,10 @@ stone_environment() {
 	local name="${script}_${stone}"
 	rm -f "$HERE/out/$name.png" "$HERE/out/${name}_preview.png" "$HERE/out/${name}_anchors.json"
 	if [ "$PREVIEW" = 1 ]; then
-		"$BLENDER" -b --python-exit-code 1 -P "$HERE/$script.py" -- --out "$HERE/out/${name}_preview.png" --width 2048 --samples 48 --stone "$stone"
+		"$BLENDER" -b --factory-startup --python-exit-code 1 -P "$HERE/$script.py" -- --out "$HERE/out/${name}_preview.png" --width 2048 --samples 48 --stone "$stone"
 		return
 	fi
-	"$BLENDER" -b --python-exit-code 1 -P "$HERE/$script.py" -- --out "$HERE/out/$name.png" --width 4096 --samples 160 --stone "$stone"
+	"$BLENDER" -b --factory-startup --python-exit-code 1 -P "$HERE/$script.py" -- --out "$HERE/out/$name.png" --width "$WIDTH" --samples 160 --stone "$stone"
 	sips -s format heic -s formatOptions "$HEIC_QUALITY" "$HERE/out/$name.png" --out "$DEST/$name.heic" >/dev/null
 	# Every stone shares one anchors file, so a stone whose anchors differ from one rendered
 	# earlier in this run is an error.
@@ -116,10 +120,10 @@ sky() {
 	local name="$1" file="$2" rotation="$3" strength="$4"
 	rm -f "$HERE/out/$name.png"
 	if [ "$PREVIEW" = 1 ]; then
-		"$BLENDER" -b --python-exit-code 1 -P "$HERE/sky.py" -- --hdri "$file" --rotation "$rotation" --strength "$strength" --out "$HERE/out/${name}_preview.png" --width 2048 --samples 16
+		"$BLENDER" -b --factory-startup --python-exit-code 1 -P "$HERE/sky.py" -- --hdri "$file" --rotation "$rotation" --strength "$strength" --out "$HERE/out/${name}_preview.png" --width 2048 --samples 16
 		return
 	fi
-	"$BLENDER" -b --python-exit-code 1 -P "$HERE/sky.py" -- --hdri "$file" --rotation "$rotation" --strength "$strength" --out "$HERE/out/$name.png" --width 4096 --samples 16
+	"$BLENDER" -b --factory-startup --python-exit-code 1 -P "$HERE/sky.py" -- --hdri "$file" --rotation "$rotation" --strength "$strength" --out "$HERE/out/$name.png" --width "$WIDTH" --samples 16
 	sips -s format heic -s formatOptions "$HEIC_QUALITY" "$HERE/out/$name.png" --out "$DEST/$name.heic" >/dev/null
 	echo "Wrote $DEST/$name.heic"
 }
@@ -130,10 +134,10 @@ painted() {
 	local name="$1" script="$2"
 	rm -f "$HERE/out/$name.png"
 	if [ "$PREVIEW" = 1 ]; then
-		"$BLENDER" -b --python-exit-code 1 -P "$HERE/$script.py" -- --out "$HERE/out/${name}_preview.png" --width 2048 --samples 32
+		"$BLENDER" -b --factory-startup --python-exit-code 1 -P "$HERE/$script.py" -- --out "$HERE/out/${name}_preview.png" --width 2048 --samples 32
 		return
 	fi
-	"$BLENDER" -b --python-exit-code 1 -P "$HERE/$script.py" -- --out "$HERE/out/$name.png" --width 4096 --samples 128
+	"$BLENDER" -b --factory-startup --python-exit-code 1 -P "$HERE/$script.py" -- --out "$HERE/out/$name.png" --width "$WIDTH" --samples 128
 	sips -s format heic -s formatOptions "$HEIC_QUALITY" "$HERE/out/$name.png" --out "$DEST/$name.heic" >/dev/null
 	echo "Wrote $DEST/$name.heic"
 }
@@ -144,10 +148,10 @@ view() {
 	local name="$1" script="$2" file="$3" rotation="$4" strength="$5"
 	rm -f "$HERE/out/$name.png"
 	if [ "$PREVIEW" = 1 ]; then
-		"$BLENDER" -b --python-exit-code 1 -P "$HERE/$script.py" -- --hdri "$file" --rotation "$rotation" --strength "$strength" --out "$HERE/out/${name}_preview.png" --width 2048 --samples 32
+		"$BLENDER" -b --factory-startup --python-exit-code 1 -P "$HERE/$script.py" -- --hdri "$file" --rotation "$rotation" --strength "$strength" --out "$HERE/out/${name}_preview.png" --width 2048 --samples 32
 		return
 	fi
-	"$BLENDER" -b --python-exit-code 1 -P "$HERE/$script.py" -- --hdri "$file" --rotation "$rotation" --strength "$strength" --out "$HERE/out/$name.png" --width 4096 --samples 128
+	"$BLENDER" -b --factory-startup --python-exit-code 1 -P "$HERE/$script.py" -- --hdri "$file" --rotation "$rotation" --strength "$strength" --out "$HERE/out/$name.png" --width "$WIDTH" --samples 128
 	sips -s format heic -s formatOptions "$HEIC_QUALITY" "$HERE/out/$name.png" --out "$DEST/$name.heic" >/dev/null
 	echo "Wrote $DEST/$name.heic"
 }

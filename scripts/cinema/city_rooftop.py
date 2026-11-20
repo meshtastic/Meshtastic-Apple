@@ -32,6 +32,7 @@ from mathutils import Matrix, Vector
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from room_base import (  # noqa: E402
+    bulb_material,
     CACHE,
     EYE_HEIGHT,
     anchor,
@@ -520,7 +521,7 @@ def string_lights():
     across over the seat, with a warm bulb every 40 cm."""
     wire = material("Festoon", (0.02, 0.02, 0.02), 0.6)
     pole = steel("LightPole", (0.1, 0.1, 0.1), 0.5)
-    bulb = glowing("Bulb", (1, 0.72, 0.4), 18)
+    bulb = bulb_material((1, 0.72, 0.4))
     rng = random.Random(3)
     back = [(-HALF + 0.2, -HALF + 0.2), (HALF - 0.2, -HALF + 0.2)]
     for bx, by in back:
@@ -542,7 +543,7 @@ def string_lights():
             cylinder("FestoonWire", 0.004, p, q, wire, segments=6)
         for p in points[1:-1]:
             cylinder("BulbSocket", 0.012, p, p - Vector((0, 0, 0.05)), wire, segments=8)
-            glow = sphere("Bulb", 0.03, p - Vector((0, 0, 0.08)), bulb, segments=10)
+            glow = sphere("Bulb", 0.03, p - Vector((0, 0, 0.08)), bulb, segments=32)
             glow.visible_shadow = False
             # A few of the bulbs light the deck; all of them would cost the render for no more light.
             lit += 1
