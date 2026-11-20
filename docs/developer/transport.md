@@ -104,6 +104,14 @@ During an explicit radio switch from the Connect view, the app uses the same con
 
 This refresh is only enabled for the switch-radio flow. Automatic reconnects and ordinary connects continue using the standard transport handshake without forcing a hardware catalog refresh.
 
+### BLE Connect Requests After a Failed Attempt
+
+Core Bluetooth never gives up on a connect request by itself. If one is left pending after the attempt that made it fails, it connects the radio whenever the radio comes back in range, with nothing in the app waiting for it. A connected radio stops advertising, so the app can't find it either. So when a connect attempt fails or is cancelled after asking to connect, `BLETransport.connect(to:)` cancels the request with `cancelPeripheralConnection`. It skips this when Bluetooth is off, since iOS has already dropped the request. A failed attempt's continuation is cleared before this cleanup runs, so `connect(to:)` turns new attempts away as busy until it has returned; otherwise the cleanup could cancel a newer attempt's request.
+
+If a connection still arrives with nothing waiting for it, `handleDidConnect` closes it. It leaves it alone during state restoration, because iOS can finish its own reconnect before the restore code has set the active connection.
+
+Cancelling a request also reports a disconnect, and that can arrive after the next attempt to the same radio has started. `handlePeripheralDisconnect` ignores a disconnect when the peripheral already shows as connecting or connected, so the old attempt's disconnect doesn't fail the new one.
+
 ### BLE Pairing PIN Handshake
 
 A first-ever connection to an encrypted radio makes iOS present a 6-digit pairing PIN sheet. `BLEConnection` gates connect-completion on that bond so the sheet is not torn down before the user can respond:

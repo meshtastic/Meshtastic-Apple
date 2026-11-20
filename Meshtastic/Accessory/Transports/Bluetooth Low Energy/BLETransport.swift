@@ -32,6 +32,10 @@ actor BLETransport: Transport {
 	private var connectingPeripheral: CBPeripheral?
 	private var activeConnection: BLEConnection?
 	private var connectContinuation: CheckedContinuation<BLEConnection, Error>?
+	/// Set for the whole of `connect(to:)`. A failed attempt's continuation is cleared before its
+	/// catch runs, so this is what turns a new attempt away until then; otherwise that catch would
+	/// cancel the new attempt's request and clear its state.
+	private var connectAttemptInProgress = false
 	private var restoredConnectContinuation: CheckedContinuation<Void, Error>?
 	private var setupCompleteGate: AsyncGate
 	private var restoreInProgress: Bool = false
@@ -59,7 +63,8 @@ actor BLETransport: Transport {
 	private var cleanupTask: Task<Void, Never>?
 	private var scanningPausedForConnection = false
 	private let discoverySetupHandler: (@Sendable () async -> Void)?
-	
+	private let restoredNodeNames: @Sendable (Int64) async -> (longName: String?, shortName: String?)
+
 	// Transport properties
 	let supportsManualConnection: Bool = false
 	let requiresPeriodicHeartbeat = false
@@ -69,13 +74,17 @@ actor BLETransport: Transport {
 	///   authorization already does. Tests that drive `handleCentralState` directly need this: a
 	///   real manager reports the host's actual Bluetooth state on its own schedule, and that
 	///   incidental value lands in `status` at an unpredictable point mid-test.
+	/// - Parameter restoredNodeNames: Looks up a restored radio's names by node number. Tests pass
+	///   their own to hold a state restore partway through.
 	init(
 		createCentralManagerImmediately: Bool = true,
 		centralManager: CBCentralManager? = nil,
-		discoverySetupHandler: (@Sendable () async -> Void)? = nil
+		discoverySetupHandler: (@Sendable () async -> Void)? = nil,
+		restoredNodeNames: @escaping @Sendable (Int64) async -> (longName: String?, shortName: String?) = { await BLETransport.nodeNamesFromStore($0) }
 	) {
 		self.centralManager = centralManager
 		self.discoverySetupHandler = discoverySetupHandler
+		self.restoredNodeNames = restoredNodeNames
 		self.discoveredPeripherals = [:]
 		self.discoveredDeviceContinuation = nil
 		self.delegate = BLEDelegate()
@@ -374,9 +383,11 @@ actor BLETransport: Transport {
 	}
 
 	func connect(to device: Device) async throws -> any Connection {
-		guard activeConnection == nil, connectContinuation == nil else {
+		guard activeConnection == nil, connectContinuation == nil, !connectAttemptInProgress else {
 			throw AccessoryError.connectionFailed("BLE transport is busy: already connecting or connected")
 		}
+		connectAttemptInProgress = true
+		defer { connectAttemptInProgress = false }
 
 		pauseScanningForConnection()
 		guard let peripheral = resolvePeripheral(for: device) else {
@@ -384,6 +395,7 @@ actor BLETransport: Transport {
 			throw AccessoryError.connectionFailed("Peripheral not found")
 		}
 		
+		var connectRequested = false
 		do {
 			let returnConnection = try await withTaskCancellationHandler {
 				let newConnection: BLEConnection = try await withCheckedThrowingContinuation { cont in
@@ -399,6 +411,7 @@ actor BLETransport: Transport {
 						return
 					}
 					centralManager.connect(peripheral)
+					connectRequested = true
 				}
 				self.activeConnection = newConnection
 				return newConnection
@@ -410,12 +423,25 @@ actor BLETransport: Transport {
 			Logger.transport.debug("🛜 [BLE] Connect complete.")
 			return returnConnection
 		} catch {
+			// Core Bluetooth never gives up on a connect request by itself. Left pending, it
+			// connects the radio when it comes back in range with nothing here waiting for it,
+			// and the radio stops advertising, so the app can't find it either. Turning Bluetooth
+			// off already drops the request, and Core Bluetooth rejects the cancel then.
+			if connectRequested, centralManager?.state == .poweredOn {
+				centralManager?.cancelPeripheralConnection(peripheral)
+			}
 			connectionDidDisconnect(fromPeripheral: peripheral)
 			throw error
 		}
 	}
 
 	func handlePeripheralDisconnect(peripheral: CBPeripheral) {
+		// Cancelling a connect request also reports a disconnect. If a newer connect to the same
+		// radio has started by the time it gets here, it belongs to the old attempt.
+		if peripheral.state == .connecting || peripheral.state == .connected {
+			Logger.transport.debug("🛜 [BLETransport] Ignoring disconnect for \(peripheral.name ?? "Unknown", privacy: .public); a newer connect is under way")
+			return
+		}
 		if let continuation = self.connectContinuation,
 		   self.connectingPeripheral?.identifier == peripheral.identifier {
 			// Disconnect arrived while still waiting for didConnect — resume the
@@ -487,6 +513,14 @@ actor BLETransport: Transport {
 		guard let cont = connectContinuation,
 			  let connPeripheral = connectingPeripheral,
 			  peripheral.identifier == connPeripheral.identifier else {
+			// During a restore, iOS can finish its own reconnect before the restore code has set
+			// activeConnection, so leave that link alone.
+			if activeConnection == nil, !restoreInProgress {
+				// A connect request outlived the attempt that made it. Nothing would ever use or
+				// close this link, so close it and let the radio advertise again.
+				Logger.transport.error("🛜 [BLE] \(peripheral.name ?? "Unknown", privacy: .public) connected with no connect waiting for it; disconnecting")
+				central.cancelPeripheralConnection(peripheral)
+			}
 			return
 		}
 		let connection = BLEConnection(peripheral: peripheral, central: central, transport: self)
@@ -512,6 +546,25 @@ actor BLETransport: Transport {
 		self.connectingPeripheral = nil
 	}
 	
+	/// Reads a restored radio's names from the app's store.
+	static func nodeNamesFromStore(_ nodeNum: Int64) async -> (longName: String?, shortName: String?) {
+		await MainActor.run {
+			do {
+				let descriptor = FetchDescriptor<NodeInfoEntity>(
+					predicate: #Predicate { $0.num == nodeNum }
+				)
+				let context = PersistenceController.shared.context
+				let fetchedNodes = try context.fetch(descriptor)
+				if let first = fetchedNodes.first {
+					return (first.user?.longName, first.user?.shortName)
+				}
+			} catch {
+				// No-op
+			}
+			return (nil, nil)
+		}
+	}
+
 	func handleWillRestoreState(dict: [String: Any], central: CBCentralManager) async {
 		/// GVH - To test this you need to simulate the app getting killed in the background by the OS you can do this by stopping  the debugger while the app is connected to a device in the background
 		/// You will see Message from debugger: killed after you see this message, power off and back on your meshtastic device, bring the app back to the foreground and
@@ -536,26 +589,11 @@ actor BLETransport: Transport {
 		
 		// Get the device name
 		if let nodeNum {
-			let nodeNumVal = Int64(nodeNum)
-			let names: (String?, String?) = await MainActor.run {
-				do {
-					let descriptor = FetchDescriptor<NodeInfoEntity>(
-						predicate: #Predicate { $0.num == nodeNumVal }
-					)
-					let context = PersistenceController.shared.context
-					let fetchedNodes = try context.fetch(descriptor)
-					if let first = fetchedNodes.first {
-						return (first.user?.longName, first.user?.shortName)
-					}
-				} catch {
-					// No-op
-				}
-				return (nil, nil)
-			}
-			if let longName = names.0 {
+			let names = await restoredNodeNames(nodeNum)
+			if let longName = names.longName {
 				device.longName = longName
 			}
-			if let shortName = names.1 {
+			if let shortName = names.shortName {
 				device.shortName = shortName
 			}
 		}
