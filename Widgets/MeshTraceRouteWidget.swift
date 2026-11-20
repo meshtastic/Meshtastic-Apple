@@ -233,8 +233,7 @@ private struct RouteTallView: View {
 			RouteHeader(route: route, compact: false)
 			RouteTitle(route: route, font: .title3.weight(.semibold), lineLimit: 2)
 			if let map {
-				RouteMapImage(image: map)
-					.frame(maxWidth: .infinity, maxHeight: .infinity)
+				RouteMapFill(image: map)
 			}
 			StatTiles(route: route)
 			VStack(alignment: .leading, spacing: 8) {
@@ -253,36 +252,41 @@ private struct RouteTallView: View {
 }
 
 #if os(visionOS)
-/// The board-sized print for a wall on Vision Pro: the map on the left, the
-/// route beside it. Seen from across the room the system asks for less
-/// detail, and the board keeps only the map, the title and the age.
+/// The board-sized print for a wall on Vision Pro, laid out like the large
+/// size: the map across the full width, then the stats and both hop chains
+/// on one row. Seen from across the room the system asks for less detail, and
+/// the board keeps only the title, the map and the age.
 private struct RouteBoardView: View {
 	@Environment(\.levelOfDetail) private var levelOfDetail
 	let route: WidgetTraceRoute
 	let map: UIImage?
 
 	var body: some View {
-		HStack(alignment: .top, spacing: 18) {
-			if let map {
-				RouteMapImage(image: map)
-					.frame(maxWidth: .infinity, maxHeight: .infinity)
-			}
-			VStack(alignment: .leading, spacing: 10) {
+		VStack(alignment: .leading, spacing: 12) {
+			HStack(spacing: 8) {
 				RouteHeader(route: route, compact: false)
-				RouteTitle(route: route, font: simplified ? .title.weight(.semibold) : .title3.weight(.semibold), lineLimit: 3)
-				if !simplified {
-					StatTiles(route: route)
-					VStack(alignment: .leading, spacing: 8) {
-						HopChain(stops: route.forward, color: RouteStyle.forward, size: 24)
-						if !route.back.isEmpty {
-							HopChain(stops: route.back, color: RouteStyle.back, size: 24, startRing: .white, endRing: RouteStyle.brand)
-						}
-					}
-				}
-				Spacer(minLength: 0)
+				Spacer(minLength: 8)
 				AgeLine(route: route)
 			}
-			.frame(maxWidth: map == nil ? .infinity : 280, alignment: .leading)
+			RouteTitle(route: route, font: simplified ? .largeTitle.weight(.semibold) : .title2.weight(.semibold), lineLimit: 1)
+			if let map {
+				RouteMapFill(image: map)
+			}
+			if !simplified {
+				HStack(alignment: .center, spacing: 16) {
+					StatTiles(route: route)
+					VStack(alignment: .leading, spacing: 8) {
+						HopChain(stops: route.forward, color: RouteStyle.forward, size: 26)
+						if !route.back.isEmpty {
+							HopChain(stops: route.back, color: RouteStyle.back, size: 26, startRing: .white, endRing: RouteStyle.brand)
+						}
+					}
+					.fixedSize()
+				}
+			}
+			if map == nil {
+				Spacer(minLength: 0)
+			}
 		}
 		.padding(18)
 	}
@@ -292,6 +296,30 @@ private struct RouteBoardView: View {
 #endif
 
 // MARK: Pieces
+
+/// The map filling the space left over rather than sitting in it as a narrow strip, trimming
+/// at most a tenth of the map from any side. The route sits inside about 15% of margin on
+/// each side, so the trim never reaches its endpoints.
+private struct RouteMapFill: View {
+	static let maxTrimPerSide: CGFloat = 0.1
+	let image: UIImage
+
+	var body: some View {
+		GeometryReader { proxy in
+			let space = proxy.size
+			let source = image.size
+			if space.width > 0, space.height > 0, source.width > 0, source.height > 0 {
+				let fit = min(space.width / source.width, space.height / source.height)
+				let fill = max(space.width / source.width, space.height / source.height)
+				let scale = min(fill, fit / (1 - 2 * Self.maxTrimPerSide))
+				RouteMapImage(image: image)
+					.frame(width: source.width * scale, height: source.height * scale)
+					.frame(width: space.width, height: space.height)
+					.clipped()
+			}
+		}
+	}
+}
 
 /// The Meshtastic mark, "Trace Route" in brand green and, for a route seen on
 /// the mesh, an "Observed" tag.

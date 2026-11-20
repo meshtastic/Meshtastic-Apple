@@ -730,4 +730,4 @@ def build():
 
 
 # The dusk forest, turned so the sunset is toward the window and the tower.
-render_room(build, "sunset_forest_4k.hdr", hdri_rotation=200, hdri_strength=0.5)
+render_room(build, "sunset_forest_8k.hdr", hdri_rotation=200, hdri_strength=0.5)
