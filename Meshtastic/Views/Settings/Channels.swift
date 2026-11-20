@@ -130,6 +130,16 @@ struct Channels: View {
 		return primary.index
 	}
 
+	/// The primary channel's key, or `nil` when the radio's primary is not known.
+	private var primaryChannelKey: Data? {
+		guard let primary = displayChannels.first(where: { $0.index == 0 || $0.role == 1 }) else { return nil }
+		return primary.psk ?? Data()
+	}
+
+	private func usesPublicKey(_ psk: Data, role: Int) -> Bool {
+		ChannelIdentity.usesPublicKey(psk, primary: role == 1 ? nil : primaryChannelKey)
+	}
+
 	private var primaryChannelName: String {
 		if let primary = displayChannels.first(where: { $0.index == 0 || $0.role == 1 }),
 		   let name = primary.name,
@@ -182,12 +192,13 @@ struct Channels: View {
 							uplink = channel.uplinkEnabled
 							downlink = channel.downlinkEnabled
 							positionPrecision = Double(channel.positionPrecision)
+							let isPublic = usesPublicKey(channel.psk ?? Data(), role: channelRole)
 							if !supportedVersion && channelRole == 1 {
 								positionPrecision = 32
 								preciseLocation = true
 								positionsEnabled = true
-								if channelKey == "AQ==" {
-									positionPrecision = 14
+								if isPublic {
+									positionPrecision = Double(ChannelIdentity.maxPublicKeyPositionPrecision)
 									preciseLocation = false
 								}
 							} else if !supportedVersion && channelRole == 2 {
@@ -195,10 +206,10 @@ struct Channels: View {
 								preciseLocation = false
 								positionsEnabled = false
 							} else {
-								if channelKey == "AQ==" {
+								if isPublic {
 									preciseLocation = false
-									if (positionPrecision > 0 && positionPrecision < 11) || positionPrecision > 14 {
-										positionPrecision = 14
+									if (positionPrecision > 0 && positionPrecision < 11) || positionPrecision > Double(ChannelIdentity.maxPublicKeyPositionPrecision) {
+										positionPrecision = Double(ChannelIdentity.maxPublicKeyPositionPrecision)
 									}
 								} else if positionPrecision == 32 {
 									preciseLocation = true
@@ -259,7 +270,11 @@ struct Channels: View {
 			.hostedSheet(item: $selectedChannel) { _ in
 				SheetNavigationStack {
 					VStack {
-						ChannelForm(channelIndex: $channelIndex, channelName: $channelName, channelKeySize: $channelKeySize, channelKey: $channelKey, channelRole: $channelRole, uplink: $uplink, downlink: $downlink, positionPrecision: $positionPrecision, preciseLocation: $preciseLocation, positionsEnabled: $positionsEnabled, hasChanges: $hasChanges, hasValidKey: $hasValidKey, supportedVersion: $supportedVersion)
+						ChannelForm(
+							channelIndex: $channelIndex, channelName: $channelName, channelKeySize: $channelKeySize, channelKey: $channelKey, channelRole: $channelRole,
+							uplink: $uplink, downlink: $downlink, positionPrecision: $positionPrecision, preciseLocation: $preciseLocation, positionsEnabled: $positionsEnabled,
+							hasChanges: $hasChanges, hasValidKey: $hasValidKey, supportedVersion: $supportedVersion, primaryKey: primaryChannelKey
+						)
 							.trackScreen(.channelEditor)
 						.onFirstAppear {
 							supportedVersion = accessoryManager.checkIsVersionSupported(forVersion: minimumVersion)
@@ -342,7 +357,10 @@ struct Channels: View {
 		let psk = Data(base64Encoded: channelKey) ?? Data()
 		let uplinkEnabled = uplink
 		let downlinkEnabled = downlink
-		let precision = positionPrecision
+		let precision = Double(ChannelIdentity.onWirePositionPrecision(
+			UInt32(positionPrecision),
+			usesPublicKey: role != 0 && usesPublicKey(psk, role: Int(role))
+		))
 
 		var channel = Channel()
 		channel.index = index
@@ -356,6 +374,9 @@ struct Channels: View {
 		isSavingChannel = true
 		defer { isSavingChannel = false }
 		do {
+			if role == 1 && ChannelIdentity.usesPublicKey(psk) {
+				try await accessoryManager.capSecondariesInheritingPrimaryKey(of: user)
+			}
 			_ = try await accessoryManager.saveChannel(channel: channel, fromUser: user, toUser: user)
 		} catch {
 			Logger.mesh.error("Channel \(channel.index) save failed: \(error.localizedDescription, privacy: .public)")

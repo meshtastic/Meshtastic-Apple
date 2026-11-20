@@ -98,9 +98,19 @@ Every `ToRadio` write also logs its payload size against `maximumWriteValueLengt
 
 `AccessoryManager+Connect` runs connection setup as a sequenced series of steps: transport connect, heartbeat, `wantConfig`, optional database retrieval, and version checks.
 
+If the connection reports an error while a step runs, `SequentialSteps` fails that attempt and retries, even when the step finishes instead of stopping on cancellation. A disconnect that arrives after the last step but before the process is cleared closes the connection in `didReceive`. The last step asks the connection whether it is still up and fails the attempt if it isn't. For Bluetooth that's the peripheral's own Core Bluetooth state, so a dropped link is never reported as connected even if its disconnect event was missed. A TCP socket can stay ready until the heartbeat notices a dead link, so over TCP the check only catches a drop the socket already knows about.
+
 During an explicit radio switch from the Connect view, the app uses the same connect pipeline but enables an extra post-config refresh. Once `sendWantConfig()` completes for the newly selected device, the app first applies the bundled `DeviceHardware.json` catalog and bundled device images to SwiftData, then schedules `MeshtasticAPI.shared.refreshDevicesAPIData()` in the background. That network refresh updates the same locally cached hardware catalog from `https://api.meshtastic.org/resource/deviceHardware` without blocking the rest of the connection sequence.
 
 This refresh is only enabled for the switch-radio flow. Automatic reconnects and ordinary connects continue using the standard transport handshake without forcing a hardware catalog refresh.
+
+### BLE Connect Requests After a Failed Attempt
+
+Core Bluetooth never gives up on a connect request by itself. If one is left pending after the attempt that made it fails, it connects the radio whenever the radio comes back in range, with nothing in the app waiting for it. A connected radio stops advertising, so the app can't find it either. So when a connect attempt fails or is cancelled after asking to connect, `BLETransport.connect(to:)` cancels the request with `cancelPeripheralConnection`. It skips this when Bluetooth is off, since iOS has already dropped the request. A failed attempt's continuation is cleared before this cleanup runs, so `connect(to:)` turns new attempts away as busy until it has returned; otherwise the cleanup could cancel a newer attempt's request.
+
+If a connection still arrives with nothing waiting for it, `handleDidConnect` closes it. It leaves it alone during state restoration, because iOS can finish its own reconnect before the restore code has set the active connection.
+
+Cancelling a request also reports a disconnect, and that can arrive after the next attempt to the same radio has started. `handlePeripheralDisconnect` ignores a disconnect when the peripheral already shows as connecting or connected, so the old attempt's disconnect doesn't fail the new one.
 
 ### BLE Pairing PIN Handshake
 

@@ -446,6 +446,7 @@ def book_cover(path, title, line, color, ink, w=880, h=1120):
             row = (row + " " + word).strip()
     rows.append(row)
     draw.multiline_text((w / 2, h * 0.84), "\n".join(rows), fill=ink, font=small, anchor="mm", align="center")
+    image.save(path)
 
 
 # MARK: - Fire lookout

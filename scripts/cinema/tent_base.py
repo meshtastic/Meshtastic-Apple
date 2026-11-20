@@ -23,6 +23,7 @@ from mathutils import Vector
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from room_base import (  # noqa: E402
+    bulb_material,
     CACHE,
     EYE_HEIGHT,
     box,
@@ -569,7 +570,7 @@ def build_plaque(spot):
 # MARK: - Lights
 
 def build_lights():
-    bulb = material("Bulb", (1, 0.75, 0.45), emission=(1, 0.62, 0.3), strength=18)
+    bulb = bulb_material((1, 0.62, 0.3))
     wire = material("Wire", (0.02, 0.02, 0.02), 0.6)
     # A string of bulbs down each side of the roof, drooping between rafters.
     for side in (-1, 1):
@@ -585,7 +586,7 @@ def build_lights():
         for a, b in zip(points, points[1:]):
             cylinder("LightWire", 0.003, a, b, wire, segments=6)
         for p in points:
-            sphere("Bulb", 0.03, (p[0], p[1], p[2] - 0.05), bulb)
+            sphere("Bulb", 0.03, (p[0], p[1], p[2] - 0.05), bulb, segments=32)
     warm = (1.0, 0.70, 0.42)
     for y in (-1.4, 1.4):
         light = bpy.data.lights.new("Work", "POINT")
@@ -637,4 +638,4 @@ def render(furnish, layout=None):
         build_branding(layout)
 
     # The dusk forest, turned so the sunset is toward the open door.
-    render_room(build, "sunset_forest_4k.hdr", hdri_rotation=200, hdri_strength=0.4)
+    render_room(build, "sunset_forest_8k.hdr", hdri_rotation=200, hdri_strength=0.4)

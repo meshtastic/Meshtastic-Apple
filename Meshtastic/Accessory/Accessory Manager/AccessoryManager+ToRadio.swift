@@ -704,8 +704,8 @@ extension AccessoryManager {
 	}
 
 	/// Builds one channel write. Role comes from the slot: index 0 is the primary, the rest are
-	/// secondaries.
-	private func makeChannel(_ settings: ChannelSettings, at index: Int32) -> Channel {
+	/// secondaries. `primaryPSK` is the key a secondary with an empty key will use.
+	private func makeChannel(_ settings: ChannelSettings, at index: Int32, primaryPSK: Data?) -> Channel {
 		var chan = Channel()
 		chan.role = (index == 0) ? .primary : .secondary
 		chan.settings = settings
@@ -717,7 +717,15 @@ extension AccessoryManager {
 			chan.settings.moduleSettings.positionPrecision = 0
 			chan.settings.moduleSettings.isMuted = false
 		}
+		// A channel anyone can decrypt never carries a precise position, whatever the link asked for.
+		chan.capPositionPrecisionForPublicKey(primaryPSK: primaryPSK)
 		return chan
+	}
+
+	/// The stored key of a radio's primary channel, or `nil` when the app holds no primary for it.
+	private func storedPrimaryPSK(in channels: [ChannelEntity]) -> Data? {
+		guard let primary = canonicalValidUniqueChannels(from: channels).first(where: { $0.index == 0 || $0.role == 1 }) else { return nil }
+		return primary.psk ?? Data()
 	}
 
 	public func saveChannelSet(base64UrlString: String, addChannels: Bool = false, okToMQTT: Bool = false) async throws {
@@ -753,6 +761,8 @@ extension AccessoryManager {
 			throw AccessoryError.appError("Channel names must be unique")
 		}
 		let targetChannelIndexes: [Int32]
+		// Added channels are secondaries of the radio's own primary; a replace brings its own.
+		let primaryPSK: Data?
 
 		if addChannels {
 			let fetchMyInfoRequest = FetchDescriptor<MyInfoEntity>(predicate: #Predicate { $0.myNodeNum == deviceNum })
@@ -774,6 +784,7 @@ extension AccessoryManager {
 				throw AccessoryError.appError("Not enough free channel slots")
 			}
 			targetChannelIndexes = Array(freeIndexes.prefix(channelSet.settings.count))
+			primaryPSK = storedPrimaryPSK(in: fetched.channels)
 
 			for cs in channelSet.settings {
 				if fetched.channels.contains(where: { $0.name == cs.name }) {
@@ -787,6 +798,7 @@ extension AccessoryManager {
 				channelSet.loraConfig.txPower = txPower
 			}
 			targetChannelIndexes = channelSet.settings.indices.map { Int32($0) }
+			primaryPSK = channelSet.settings.first?.psk
 		}
 
 		// A replace has to say something about every slot, not just the ones it fills. The radio
@@ -797,7 +809,7 @@ extension AccessoryManager {
 		// triggers.
 		let plannedChannels: [Channel] = {
 			var planned = zip(channelSet.settings, targetChannelIndexes).map { cs, targetIndex in
-				makeChannel(cs, at: targetIndex)
+				makeChannel(cs, at: targetIndex, primaryPSK: primaryPSK)
 			}
 			guard !addChannels else { return planned }
 			let filled = Set(targetChannelIndexes)
@@ -993,12 +1005,36 @@ extension AccessoryManager {
 		}
 	}
 
+	/// Holds every secondary that uses the primary's key to approximate location. Call it before
+	/// writing a public key to the primary: those secondaries become public with it, and the radio
+	/// keeps whatever precision they hold. Throws on the first failed write, so the caller never
+	/// goes on to make the primary public.
+	func capSecondariesInheritingPrimaryKey(of user: UserEntity) async throws {
+		let ceiling = Int32(ChannelIdentity.maxPublicKeyPositionPrecision)
+		let rows = canonicalValidUniqueChannels(from: user.userNode?.myInfo?.channels ?? [])
+		for row in rows where row.role == Int32(Channel.Role.secondary.rawValue) && (row.psk ?? Data()).isEmpty && row.positionPrecision > ceiling {
+			var channel = Channel()
+			channel.index = row.index
+			channel.role = .secondary
+			channel.settings.name = row.name ?? ""
+			channel.settings.uplinkEnabled = row.uplinkEnabled
+			channel.settings.downlinkEnabled = row.downlinkEnabled
+			channel.settings.moduleSettings.positionPrecision = UInt32(ceiling)
+			channel.settings.moduleSettings.isMuted = row.mute
+			_ = try await saveChannel(channel: channel, fromUser: user, toUser: user)
+			row.positionPrecision = ceiling
+			try context.save()
+		}
+	}
+
 	public func saveChannel(
-		channel: Channel,
+		channel requestedChannel: Channel,
 		fromUser: UserEntity,
 		toUser: UserEntity,
 		refreshShareSnapshot: Bool = false
 	) async throws -> Int64 {
+		var channel = requestedChannel
+		channel.capPositionPrecisionForPublicKey(primaryPSK: storedPrimaryPSK(in: toUser.userNode?.myInfo?.channels ?? []))
 		var adminPacket = AdminMessage()
 		adminPacket.setChannel = channel
 		var meshPacket: MeshPacket = MeshPacket()
@@ -1184,6 +1220,9 @@ extension AccessoryManager {
 		// firmware defaults moduleSettings to full precision (32), leaking exact GPS coordinates —
 		// mirrors addBeaconChannel's handling for the same "join someone else's mesh" scenario.
 		channel.settings.moduleSettings.positionPrecision = 0
+		if ChannelIdentity.usesPublicKey(effectivePSK) {
+			try await capSecondariesInheritingPrimaryKey(of: user)
+		}
 		_ = try await saveChannel(channel: channel, fromUser: user, toUser: user)
 
 		// 2. Apply region/preset (reboots). Carry the full existing LoRa config so unrelated fields
