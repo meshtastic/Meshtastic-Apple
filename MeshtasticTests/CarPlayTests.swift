@@ -34,6 +34,38 @@ struct CarPlaySceneDelegateTests {
 }
 #endif
 
+// MARK: - CarPlayWidgetLink Tests
+
+@Suite("CarPlayWidgetLink")
+struct CarPlayWidgetLinkTests {
+
+	private func link(_ string: String) -> CarPlayWidgetLink? {
+		URL(string: string).flatMap(CarPlayWidgetLink.init(url:))
+	}
+
+	@Test func directMessageLinksOpenDirectMessages() {
+		#expect(link("meshtastic:///messages?userNum=1234&messageId=5") == .directMessages)
+	}
+
+	@Test func channelMessageLinksOpenChannels() {
+		#expect(link("meshtastic:///messages?channelId=0&messageId=5") == .channels)
+	}
+
+	@Test func aNodesLinkOpensDirectMessages() {
+		#expect(link("meshtastic:///nodes?nodenum=1234") == .directMessages)
+		#expect(link("meshtastic:///nodes?nodenum=1234&metrics=environment") == .directMessages)
+	}
+
+	@Test func linksWithNoCarPlayScreenOpenNothing() {
+		#expect(link("meshtastic:///connect") == nil)
+		#expect(link("meshtastic:///map") == nil)
+		#expect(link("meshtastic:///map?tracerouteId=3") == nil)
+		#expect(link("meshtastic:///nodes") == nil)
+		#expect(link("meshtastic:///messages") == nil)
+		#expect(link("https://meshtastic.org/messages?userNum=1") == nil)
+	}
+}
+
 // MARK: - CarPlayIntentDonation Tests
 
 @Suite("CarPlayIntentDonation")
