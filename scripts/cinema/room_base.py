@@ -58,6 +58,41 @@ def material(name, color=(0.5, 0.5, 0.5), roughness=0.6, metallic=0.0, emission=
     return mat
 
 
+def bulb_material(color):
+    """A string light's glass. It lights the room at full strength, but the camera sees it only a
+    little brighter than white in the middle, fading toward the edge. Seen at full strength, every
+    pixel a bulb touches came out pure white, so its outline was stair-stepped."""
+    mat = bpy.data.materials.new("Bulb")
+    mat.use_nodes = True
+    nodes, links = mat.node_tree.nodes, mat.node_tree.links
+    nodes.clear()
+    output = nodes.new("ShaderNodeOutputMaterial")
+    color = (*color, 1)
+    lighting = nodes.new("ShaderNodeEmission")
+    lighting.inputs["Color"].default_value = color
+    lighting.inputs["Strength"].default_value = 18
+    seen = nodes.new("ShaderNodeEmission")
+    seen.inputs["Color"].default_value = color
+    # Facing is 0 where the surface faces the camera and 1 at the outline.
+    facing = nodes.new("ShaderNodeLayerWeight")
+    centre = nodes.new("ShaderNodeMath")
+    centre.operation = "SUBTRACT"
+    centre.inputs[0].default_value = 1
+    links.new(facing.outputs["Facing"], centre.inputs[1])
+    falloff = nodes.new("ShaderNodeMapRange")
+    falloff.inputs["To Min"].default_value = 0.4
+    falloff.inputs["To Max"].default_value = 6.0
+    links.new(centre.outputs[0], falloff.inputs["Value"])
+    links.new(falloff.outputs["Result"], seen.inputs["Strength"])
+    path = nodes.new("ShaderNodeLightPath")
+    mix = nodes.new("ShaderNodeMixShader")
+    links.new(path.outputs["Is Camera Ray"], mix.inputs["Fac"])
+    links.new(lighting.outputs[0], mix.inputs[1])
+    links.new(seen.outputs[0], mix.inputs[2])
+    links.new(mix.outputs[0], output.inputs["Surface"])
+    return mat
+
+
 def image_material(name, path, roughness=0.5):
     mat = bpy.data.materials.new(name)
     mat.use_nodes = True

@@ -2,7 +2,7 @@
 
 The 360° images the visionOS cinema wraps around the viewer. Each is rendered in Blender from a script here, so it can be rebuilt and changed, and so we know where every part of it came from.
 
-Run `build.sh` to render them at full size and copy them into `Packages/CinemaContent` as HEIC. Run `build.sh --preview` for a quick 2048-wide render in `out/`. It needs Blender 5.2 or later in /Applications and [uv](https://docs.astral.sh/uv/), which fetches Pillow, numpy and resvg-py for `make_textures.py`.
+Run `build.sh` to render them at full size, 8192 × 4096, and copy them into `Packages/CinemaContent` as HEIC. Run `build.sh --preview` for a quick 2048-wide render in `out/`. It needs Blender 5.2 or later in /Applications and [uv](https://docs.astral.sh/uv/), which fetches Pillow, numpy and resvg-py for `make_textures.py`.
 
 ## How the scenes are built
 
@@ -92,6 +92,12 @@ In the app, Earth behind the cupola is a real globe the app turns, and `space_ea
 `sky_deck.py` builds a glass box cantilevered off the face of one of the tallest towers downtown on `room_base.py`: 6 m across and 5.4 m out from the tower's face, with the seat 2.2 m out. Its floor is glass from just behind the seat to the front wall, a pane in each bay of a grid of slim steel beams kept clear of the line straight down from the seat, with two deep girders under the side walls carrying the box out from the tower; behind the glass the floor is solid back to the core. The front and side walls are glass from floor to ceiling between slim mullions, with a low steel handrail 15 cm inside them. The ceiling is solid with recessed downlights, then a glass strip over the front, through which a mast on the tower's roof shows with the app's Solar Node (`seeed_solar.usdz`) on an arm near its top. Behind the seat is the tower's core, a solid wall with the lift doors, the Meshtastic banner and Chirpy's poster, and the tower's face, dark glass in pale mullions, falls away below it to the street and runs out past the box either side. The screen hangs in front on a plain panel on two rods from the ceiling, 2.65 m out, with the whiteboard the app draws the team roster on to its left, the slate the status board is drawn on to its right, and the print for the latest trace route on the left wall, each hung on two rods and turned to the seat.
 
 The image is a cutout, lit as the city rooftop is, so it shares the rooftop's skies and terrain shading: past the glass, the floor's included, the app puts its clear sky and the real city, or `city_rooftop_sky.heic` with none, whose streets show under the floor.
+
+## Size
+
+Full size is 8192 × 4096. At 4096 × 2048 the lettering on the tent's plaque was soft; at 8192 it is sharp. The tent's HEIC grows from about 380 KB to about 1.2 MB, a render takes about four times as long, and the image takes about 128 MB of memory once loaded instead of 32 MB. Detail seen through a door or window can't be sharper than its HDRI, so the tent's and the shack's "Sunset Forest" is the 8K version.
+
+`build.sh` runs Blender with `--factory-startup`, so a personal startup file, preferences or add-ons can't change a render.
 
 ## HEIC
 
