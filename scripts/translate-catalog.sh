@@ -41,8 +41,11 @@ command -v claude >/dev/null || { echo "Claude Code (claude) not found on PATH."
 MCPBRIDGE="$(xcrun --find mcpbridge 2>/dev/null)" || { echo "mcpbridge not found: select Xcode 27 or later."; exit 1; }
 PLUGIN_DIR="$(xcrun agent plugin path --plugin-format claude)"
 
+# One run per checkout: a second run would snapshot the catalog mid-run and undo the first.
+LOCK="$REPO_ROOT/.translate-catalog.lock"
+mkdir "$LOCK" 2>/dev/null || { echo "Another translation is running in this checkout ($LOCK)."; exit 1; }
 WORK="$(mktemp -d)"
-trap 'rm -rf "$WORK"' EXIT
+trap 'rm -rf "$WORK" "$LOCK"' EXIT
 # Each run's notes on choices worth checking are kept after the script ends.
 LOGS="$(mktemp -d -t "translate-$LOCALE")"
 cp "$CATALOG" "$WORK/before.xcstrings"
@@ -70,16 +73,18 @@ $(cat "$GUIDE")
 PROMPT
 
 previous=""
+failed=false
 for run in $(seq 1 "$MAX_RUNS"); do
   echo "Run $run: translating up to $KEYS_PER_RUN $STATE strings into $LOCALE..."
   claude -p "$(cat "$WORK/prompt.txt")" ${TRANSLATE_MODEL:+--model "$TRANSLATE_MODEL"} \
     --mcp-config "$WORK/mcp.json" --strict-mcp-config --plugin-dir "$PLUGIN_DIR" \
     --allowedTools "mcp__xcode__*" "Skill" "Agent" "Task" "Read" \
-    < /dev/null > "$LOGS/run-$run.log" 2>&1 || true
+    < /dev/null > "$LOGS/run-$run.log" 2>&1 || failed=true
   remaining="$(grep -o 'REMAINING=[0-9]*' "$LOGS/run-$run.log" | tail -1 | cut -d= -f2 || true)"
   if [[ -z "$remaining" ]]; then
     echo "Run $run didn't report what's left. Its output:"
     tail -20 "$LOGS/run-$run.log"
+    failed=true
     break
   fi
   echo "  $remaining left"
@@ -95,5 +100,9 @@ python3 "$REPO_ROOT/scripts/merge-catalog-locale.py" --locale "$LOCALE" \
 # Opening the project makes Xcode resolve packages again; that isn't part of a translation.
 if $RESOLVED_WAS_CLEAN; then
   git -C "$REPO_ROOT" checkout -- "$RESOLVED" 2>/dev/null || true
+fi
+if $failed; then
+  echo "A run failed; any strings it finished were kept. Notes are in $LOGS"
+  exit 1
 fi
 echo "Done. Each run's notes, with choices worth checking, are in $LOGS"

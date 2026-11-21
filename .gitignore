@@ -104,3 +104,5 @@ scripts/protoc-gen-configform-swift/.build/
 
 ## Local signing override (see Config/Local.xcconfig.example)
 Config/Local.xcconfig
+
+.translate-catalog.lock/
