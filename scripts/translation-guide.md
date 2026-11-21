@@ -39,3 +39,10 @@ Bluetooth, IAQ, ATAK, WinTAK, mPWRD-OS, iOS, macOS, CarPlay, SiriKit.
 |---|---|---|
 | de | hop, hops | Hop, Hops (not Sprung, Sprünge) |
 | de | notifications | Mitteilungen |
+| es | you | tú (not usted) |
+| es | mesh | malla |
+| es | hop | salto |
+| es | beacon | baliza |
+| es | preset | preajuste |
+| es | traceroute | rastreo de ruta |
+| es | modem preset names | Kept in English |
