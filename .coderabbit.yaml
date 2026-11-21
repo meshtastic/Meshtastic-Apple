@@ -42,7 +42,7 @@ reviews:
     - "!MeshtasticProtobufs/Sources/**"
     - "!**/*.pb.swift"
     - "!protobufs/**"
-    # Machine-managed translations (scripts/translate-locale.sh). English source
+    # Machine-managed translations (scripts/translate-catalog.sh). English source
     # strings arrive through the Swift diff; the catalog itself is churn.
     - "!**/*.xcstrings"
     - "!**/*.lproj/**"
