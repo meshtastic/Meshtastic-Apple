@@ -26,6 +26,9 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 	// Retained template references so we can call updateSections rather than replacing the whole tree.
 	private var channelsTemplate: CPListTemplate?
 	private var directMessagesTemplate: CPListTemplate?
+	private var tabBarTemplate: CPTabBarTemplate?
+	/// The tab a widget's link asked for before the templates were built.
+	private var pendingWidgetLink: CarPlayWidgetLink?
 	// Tracks which conversation identifiers have already had a compose-contact
 	// intent donated during this CarPlay session so we don't re-donate on every
 	// refresh.
@@ -52,6 +55,34 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 		if interval < 3600 { return String(localized: "\(Int(interval / 60))m ago") }
 		if interval < 86400 { return String(localized: "\(Int(interval / 3600))h ago") }
 		return String(localized: "\(Int(interval / 86400))d ago")
+	}
+
+	// MARK: - Widget Links
+
+	/// A widget tapped on the CarPlay home screen while the CarPlay app wasn't running: its link
+	/// comes with the connection, before the templates exist.
+	func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
+		pendingWidgetLink = connectionOptions.urlContexts.lazy.compactMap { CarPlayWidgetLink(url: $0.url) }.first
+	}
+
+	/// A widget tapped while the CarPlay app is running.
+	func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+		guard let link = URLContexts.lazy.compactMap({ CarPlayWidgetLink(url: $0.url) }).first else { return }
+		if tabBarTemplate == nil {
+			pendingWidgetLink = link
+		} else {
+			show(link)
+		}
+	}
+
+	private func show(_ link: CarPlayWidgetLink) {
+		let template: CPTemplate? = switch link {
+		case .channels: channelsTemplate
+		case .directMessages: directMessagesTemplate
+		}
+		guard let tabBarTemplate, let template else { return }
+		Logger.services.info("🚗 [CarPlay] Widget link opens \(String(describing: link), privacy: .public)")
+		tabBarTemplate.select(template)
 	}
 
 	// MARK: - CPTemplateApplicationSceneDelegate
@@ -111,6 +142,8 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 		donatedReadKeys.removeAll()
 		channelsTemplate = nil
 		directMessagesTemplate = nil
+		tabBarTemplate = nil
+		pendingWidgetLink = nil
 		self.interfaceController = nil
 	}
 
@@ -136,7 +169,12 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate, CPI
 		directMessagesTemplate = dmTemplate
 
 		let tabBar = CPTabBarTemplate(templates: [chTemplate, dmTemplate])
+		tabBarTemplate = tabBar
 		interfaceController?.setRootTemplate(tabBar, animated: animated, completion: nil)
+		if let link = pendingWidgetLink {
+			pendingWidgetLink = nil
+			show(link)
+		}
 	}
 
 	/// Called on subsequent connection-state changes — updates sections in-place
