@@ -9,7 +9,8 @@
 # Requirements:
 #   - Xcode 27 or later, selected with xcode-select or DEVELOPER_DIR, and running.
 #   - Claude Code (`claude`) signed in.
-#   - The first run asks, in Xcode, to approve the agent opening this project.
+#   - The first run in each checkout asks, in Xcode, to approve the agent opening the project
+#     (the Xcode MCP icon in the menu bar). Approve it and run the script again.
 #
 # Strings already translated are never changed. New translations are marked machine
 # translated. Xcode rewrites the whole catalog when it saves, so at the end only this
@@ -75,7 +76,7 @@ for run in $(seq 1 "$MAX_RUNS"); do
     --mcp-config "$WORK/mcp.json" --strict-mcp-config --plugin-dir "$PLUGIN_DIR" \
     --allowedTools "mcp__xcode__*" "Skill" "Agent" "Task" "Read" \
     < /dev/null > "$LOGS/run-$run.log" 2>&1 || true
-  remaining="$(grep -o 'REMAINING=[0-9]*' "$LOGS/run-$run.log" | tail -1 | cut -d= -f2)"
+  remaining="$(grep -o 'REMAINING=[0-9]*' "$LOGS/run-$run.log" | tail -1 | cut -d= -f2 || true)"
   if [[ -z "$remaining" ]]; then
     echo "Run $run didn't report what's left. Its output:"
     tail -20 "$LOGS/run-$run.log"
