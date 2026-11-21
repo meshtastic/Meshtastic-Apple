@@ -27287,12 +27287,6 @@
             "value" : "Survol ADC"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ADC Override"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27327,12 +27321,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Переопределение АЦП"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ADC-överskrivning"
           }
         },
         "sr" : {
@@ -29568,12 +29556,6 @@
             "value" : "Une fois la configuration sauvegardée, le noeud redémarrera."
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "לאחר שמירת הגדרות המכשיר יתחיל מחדש."
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29608,12 +29590,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "После сохранения значений нода перезагрузится."
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Efter att konfigurationsvärdena sparats kommer noden att starta om."
           }
         },
         "sr" : {
@@ -29909,12 +29885,6 @@
             "value" : "Temps d'émission"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "זמן אוויר"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29949,12 +29919,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Эфирное время"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sändningstid"
           }
         },
         "sr" : {
@@ -31686,12 +31650,6 @@
             "value" : "Lumière ambiante"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "תאורת סביבה"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31726,12 +31684,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Окружающее освещение"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Omgivningsbelysning"
           }
         },
         "sr" : {
@@ -31792,12 +31744,6 @@
             "value" : "Configuration de la lumière ambiante"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הגדרות תאורת סביבה"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31832,12 +31778,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Настройка окружающего освещения"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Konfiguration av omgivningsbelysning"
           }
         },
         "sr" : {
@@ -33881,12 +33821,6 @@
             "value" : "Êtes-vous sûr ?"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "האם אתה בטוח?"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33921,12 +33855,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Вы уверены?"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Är du säker?"
           }
         },
         "sr" : {
@@ -34911,12 +34839,6 @@
             "value" : "Radios disponibles"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מכשירים זמינים"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -34951,12 +34873,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Доступные радиостанции"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tillgängliga radioapparater"
           }
         },
         "sr" : {
@@ -35761,12 +35677,6 @@
             "value" : "Batterie"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Battery"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -35801,12 +35711,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Батарея"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Batteri"
           }
         },
         "sr" : {
@@ -35868,12 +35772,6 @@
             "value" : "Niveau de batterie"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "רמת סוללה"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -35908,12 +35806,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Уровень заряда"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Batterinivå"
           }
         },
         "sr" : {
@@ -35975,12 +35867,6 @@
             "value" : "Niveau de batterie %"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "רמת סוללה %"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -36015,12 +35901,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Уровень заряда %"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Batterinivå %"
           }
         },
         "sr" : {
@@ -36076,12 +35956,6 @@
             "value" : "Niveau de batterie %d"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "רמת סוללה %d"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -36116,12 +35990,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Уровень заряда %d"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Batterinivå %d"
           }
         },
         "sr" : {
@@ -36765,12 +36633,6 @@
             "value" : "BLE"
           }
         },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "BLE"
-          }
-        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -37005,12 +36867,6 @@
             "value" : "Le code pin BLE doit avoir 6 chiffres."
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "קוד בלוטוס חייבת להיות בת 6 ספרות."
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -37045,12 +36901,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Длина пин-кода BLE должна быть 6 цифр. "
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "BLE-PIN måste vara 6 siffror lång."
           }
         },
         "sr" : {
@@ -37152,12 +37002,6 @@
             "value" : "Bluetooth"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "בלוטוס"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -37189,12 +37033,6 @@
           }
         },
         "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bluetooth"
-          }
-        },
-        "se" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bluetooth"
@@ -37258,12 +37096,6 @@
             "value" : "Configuration Bluetooth"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הגדרות בלוטוס"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -37298,12 +37130,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Настройка Bluetooth"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bluetooth-konfiguration"
           }
         },
         "sr" : {
@@ -38887,12 +38713,6 @@
             "value" : "Annuler"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "בטל"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -38927,12 +38747,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Отмена"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Avbryt"
           }
         },
         "sr" : {
@@ -39148,12 +38962,6 @@
             "value" : "Messages préformatés"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הודעות קבועות"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -39188,12 +38996,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Сохраненные сообщения"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fördefinierade meddelanden"
           }
         },
         "sr" : {
@@ -39254,12 +39056,6 @@
             "value" : "Configuration des messages préformatés"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הגדרות הודעות קבועות"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -39294,12 +39090,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Конфигурация сохраненных сообщений"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Konfiguration av fördefinierade meddelanden"
           }
         },
         "sr" : {
@@ -40370,12 +40160,6 @@
             "value" : "Canal"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ערוץ"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -40410,12 +40194,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Канал"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kanal"
           }
         },
         "sr" : {
@@ -42399,12 +42177,6 @@
             "value" : "Utilisation du canal"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שימוש ערוץ"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -42439,12 +42211,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Использование канала"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kanalutnyttjande"
           }
         },
         "sr" : {
@@ -42640,12 +42406,6 @@
             "value" : "Canaux"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ערוצים"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -42680,12 +42440,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Каналы"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kanaler"
           }
         },
         "sr" : {
@@ -43591,12 +43345,6 @@
             "value" : "Effacer les données de l'application"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "אפס הגדרות אפליקציה"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -43631,12 +43379,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Очистить данные приложения"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rensa appdata"
           }
         },
         "sr" : {
@@ -44694,12 +44436,6 @@
             "value" : "Fermer"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "סגור"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -44734,12 +44470,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Закрыть"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Stäng"
           }
         },
         "sr" : {
@@ -47091,12 +46821,6 @@
             "value" : "Bluetooth connecté"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מחובר בבלוטוס"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -47131,12 +46855,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Подключено"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bluetooth Ansluten"
           }
         },
         "sr" : {
@@ -47508,12 +47226,6 @@
             "value" : "Connexion . ."
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מתחבר . ."
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -47548,12 +47260,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Подключение . ."
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ansluter..."
           }
         },
         "sr" : {
@@ -48937,12 +48643,6 @@
             "value" : "Copier"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "העתק"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -48977,12 +48677,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Копировать"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kopiera"
           }
         },
         "sr" : {
@@ -51633,12 +51327,6 @@
             "value" : "Par défaut"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ברירת מחדל"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -51673,12 +51361,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "По умолчанию"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Standard"
           }
         },
         "sr" : {
@@ -51870,12 +51552,6 @@
             "value" : "Effacer"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מחק"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -51910,12 +51586,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Удалить"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ta bort"
           }
         },
         "sr" : {
@@ -52258,12 +51928,6 @@
             "value" : "Effacer toutes les mesures de l’appareil?"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "נקה יומן מכשיר?"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -52298,12 +51962,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Удалить все метрики устройства?"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ta bort alla enhetsmätvärden?"
           }
         },
         "sr" : {
@@ -52543,12 +52201,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Удалить все данные о прохожих?"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Radera all paxdata?"
           }
         },
         "sr" : {
@@ -54106,12 +53758,6 @@
             "value" : "Capteur de détection"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "חיישן זיהוי"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -54146,12 +53792,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Датчик обнаружения"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Detektionssensor"
           }
         },
         "sr" : {
@@ -54212,12 +53852,6 @@
             "value" : "Configuration du capteur de détection"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הגדרות חיישן זיהוי"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -54252,12 +53886,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Настройка датчика обнаружения"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Konfiguration av Detektionssensor"
           }
         },
         "sr" : {
@@ -54666,12 +54294,6 @@
             "value" : "Appareil"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מכשיר"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -54706,12 +54328,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Устройство"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enhet"
           }
         },
         "sr" : {
@@ -54772,12 +54388,6 @@
             "value" : "Configuration de l'appareil"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הגדרות מכשיר"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -54812,12 +54422,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Настройка устройства"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enhetskonfiguration"
           }
         },
         "sr" : {
@@ -54913,12 +54517,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Конфигурация устройства"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Enhetsinställningar"
           }
         },
         "sr" : {
@@ -56379,12 +55977,6 @@
             "value" : "Messages directs"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הודעה פרטית"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -56419,12 +56011,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Личные сообщения"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Direktmeddelanden"
           }
         },
         "sr" : {
@@ -56812,12 +56398,6 @@
             "value" : "Désactivé"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "כבוי"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -56852,12 +56432,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Отключен"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Inaktiverad"
           }
         },
         "sr" : {
@@ -56918,12 +56492,6 @@
             "value" : "Déconnecter"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "התנתק"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -56958,12 +56526,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Отключение"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Koppla från"
           }
         },
         "sr" : {
@@ -57318,12 +56880,6 @@
             "value" : "Annuler"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "סגור מקלדת"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -57358,12 +56914,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Отклонить"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Stäng"
           }
         },
         "sr" : {
@@ -57425,12 +56975,6 @@
             "value" : "Écran"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "צג מכשיר"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -57465,12 +57009,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Экран"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Skärm"
           }
         },
         "sr" : {
@@ -57531,12 +57069,6 @@
             "value" : "Configuration de l'écran"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הגדרות צג"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -57571,12 +57103,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Настройки экрана"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Skärmkonfiguration"
           }
         },
         "sr" : {
@@ -60622,12 +60148,6 @@
             "value" : "Écho"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הד"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -60662,12 +60182,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Эхо"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Eko"
           }
         },
         "sr" : {
@@ -62036,12 +61550,6 @@
             "value" : "Activé"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מופעל"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -62076,12 +61584,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Включен"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aktiverad"
           }
         },
         "sr" : {
@@ -62783,12 +62285,6 @@
             "value" : "Encrypté"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מוצפן"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -62823,12 +62319,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Зашифровано"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Krypterad"
           }
         },
         "sr" : {
@@ -66368,12 +65858,6 @@
             "value" : "Notification extérieure"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "נוטיפיקציה חיצונית"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -66408,12 +65892,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Внешние уведомления"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Extern Notifikation"
           }
         },
         "sr" : {
@@ -66474,12 +65952,6 @@
             "value" : "Configuration de la notification extérieure"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הגדרות נוטיפיקציה חיצונית"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -66514,12 +65986,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Настройка внешних уведомлений"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Konfiguration av Extern Notifikation"
           }
         },
         "sr" : {
@@ -68770,12 +68236,6 @@
             "value" : "Terminer"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "סיים"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -68810,12 +68270,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Завершить"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Avsluta"
           }
         },
         "sr" : {
@@ -69546,12 +69000,6 @@
             "value" : "Version du firmware"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "גרסת קושחה"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -69586,12 +69034,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Версия прошивки"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Firmwareversion"
           }
         },
         "sr" : {
@@ -70031,12 +69473,6 @@
             "value" : "Code PIN fixe"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "קוד קבוע"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -70071,12 +69507,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Фиксированный PIN"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fast PIN"
           }
         },
         "sr" : {
@@ -72168,12 +71598,6 @@
             "value" : "Générer un QR Code"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "צור קוד QR"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -72208,12 +71632,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Создать QR-код"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Generera QR-kod"
           }
         },
         "sr" : {
@@ -77541,12 +76959,6 @@
             "value" : "À quelle fréquence pouvons-nous envoyer un message au réseau lorsque des personnes sont détectées?"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "How often we can send a message to the mesh when people are detected."
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -77581,12 +76993,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Как часто мы можем отправлять сообщение в сеть при обнаружении людей."
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hur ofta vi kan skicka ett meddelande till mesh-nätverket när personer upptäcks."
           }
         },
         "sr" : {
@@ -80930,12 +80336,6 @@
             "value" : "Inclure"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "כלול"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -80970,12 +80370,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Включить"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Inkludera"
           }
         },
         "sr" : {
@@ -85036,12 +84430,6 @@
             "value" : "Level"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Level"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -85076,12 +84464,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Уровень"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Level"
           }
         },
         "sr" : {
@@ -88244,12 +87626,6 @@
             "value" : "Enregistrement"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "רישום"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -88284,12 +87660,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ведение журнала"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Loggning"
           }
         },
         "sr" : {
@@ -89046,12 +88416,6 @@
             "value" : "LoRa"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "לורה"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -89083,12 +88447,6 @@
           }
         },
         "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "LoRa"
-          }
-        },
-        "se" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "LoRa"
@@ -89182,12 +88540,6 @@
             "value" : "Configuration LoRa"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הגדרות לורה"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -89222,12 +88574,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Настройка LoRa"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "LoRa Konfiguration"
           }
         },
         "sr" : {
@@ -89656,12 +89002,6 @@
             "value" : "Gérer les canaux"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Manage Channels"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -89696,12 +89036,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Управление каналами"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hantera Kanaler"
           }
         },
         "sr" : {
@@ -90791,12 +90125,6 @@
             "value" : "Superpositions de cartes"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שכבות מפה"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -90831,12 +90159,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Слои карты"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kartöverlägg"
           }
         },
         "sr" : {
@@ -91749,12 +91071,6 @@
             "value" : "Activité en direct du maillage"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "פעילות מש חיה"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -91789,12 +91105,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Текущая активность сети"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mesh Live Aktivitet"
           }
         },
         "sr" : {
@@ -91855,12 +91165,6 @@
             "value" : "Carte de maillage"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מפת מש"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -91895,12 +91199,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Карта сети"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mesh Karta"
           }
         },
         "sr" : {
@@ -92686,12 +91984,6 @@
             "value" : "Code PIN fixe"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "קוד קבוע"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -92726,12 +92018,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Фиксированный PIN"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fast PIN"
           }
         },
         "sr" : {
@@ -92800,12 +92086,6 @@
             "value" : "Mode d'appairage"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מצב הצמדה"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -92840,12 +92120,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Режим сопряжения"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Parläge"
           }
         },
         "sr" : {
@@ -95914,12 +95188,6 @@
             "value" : "Code PIN fixe"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "קוד קבוע"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -95954,12 +95222,6 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Фиксированный PIN"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Fast PIN"
           }
         },
         "sr" : {
@@ -104314,12 +103576,6 @@
             "value" : "Mot de passe"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "סיסמא"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -104354,12 +103610,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Пароль"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lösenord"
           }
         },
         "sr" : {
@@ -104428,12 +103678,6 @@
             "value" : "SSID"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שם רשת וויפי"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -104465,12 +103709,6 @@
           }
         },
         "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SSID"
-          }
-        },
-        "se" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "SSID"
@@ -105100,12 +104338,6 @@
             "value" : "Désactivé"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "כבוי"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -105140,12 +104372,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Отключен"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Inaktiverad"
           }
         },
         "sr" : {
@@ -105214,12 +104440,6 @@
             "value" : "Activé"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מופעל"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -105254,12 +104474,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Включен"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aktiverad"
           }
         },
         "sr" : {
@@ -105856,12 +105070,6 @@
             "value" : "Survol ADC"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ADC Override"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -105896,12 +105104,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Переопределение АЦП"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ADC-överskrivning"
           }
         },
         "sr" : {
@@ -105970,12 +105172,6 @@
             "value" : "Il va mettre tout en veille autant que possible, pour le rôle du tracker et du capteur, cela inclura également la radio LoRa. Ne utilisez pas cette option si vous souhaitez utiliser votre appareil avec les applications du téléphone ou si vous utilisez un appareil sans bouton utilisateur."
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Will sleep everything as much as possible, for the tracker and sensor role this will also include the lora radio. Don't use this setting if you want to use your device with the phone apps or are using a device without a user button."
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -106010,12 +105206,6 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Все устройства будут работать в режиме ожидания, насколько это возможно, в качестве трекера и датчика также будет использоваться радиоприемник lora. Не используйте эту настройку, если вы хотите использовать свое устройство с приложениями для телефона или устройство без пользовательской кнопки."
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Sätter allt i viloläge så mycket som möjligt, för spårnings- och sensorläge kommer detta också inkludera LoRa-radion. Använd inte denna inställning om du vill använda din enhet med mobilappar eller använder en enhet utan en användarknapp."
           }
         },
         "sr" : {
@@ -106084,12 +105274,6 @@
             "value" : "Économie d'énergie"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Power Saving"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -106124,12 +105308,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Энергосбережение"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Strömsparläge"
           }
         },
         "sr" : {
@@ -106192,12 +105370,6 @@
             "value" : "Apagado por pérdida de energía"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Shutdown on Power Loss"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -106232,12 +105404,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Отключение при потере питания"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Stäng av vid Strömförlust"
           }
         },
         "sr" : {
@@ -108604,12 +107770,6 @@
             "value" : "Annuler"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "בטל"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -108644,12 +107804,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Отмена"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Avbryt"
           }
         },
         "sr" : {
@@ -112600,12 +111754,6 @@
             "value" : "Mot de passe"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "סיסמא"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -112640,12 +111788,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Пароль"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lösenord"
           }
         },
         "sr" : {
@@ -112816,12 +111958,6 @@
             "value" : "Proxy client MQTT"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "MQTT Client Proxy"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -112856,12 +111992,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "MQTT клиент-прокси"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "MQTT-klientproxy"
           }
         },
         "sr" : {
@@ -113218,12 +112348,6 @@
             "value" : "Nom d'utilisateur"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שם משתמש"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -113258,12 +112382,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Имя пользователя"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Användarnamn"
           }
         },
         "sr" : {
@@ -113704,12 +112822,6 @@
             "value" : "Lorsque le module de compteur PAX est activé, il compte le nombre de personnes passant par le biais de WiFi et Bluetooth. Les deux WiFi et Bluetooth doivent être désactivés pour que le compteur PAX fonctionne."
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "When enabled the PAX Counter module counts the number of people passing by using WiFi and Bluetooth. Both WiFI and Bluetooth must be disabled for PAX counter to work."
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "needs_review",
@@ -113744,12 +112856,6 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "При включении модуль прохожих подсчитывает количество людей, проходящих мимо, используя Wi-Fi и Bluetooth. Для работы счетчика количества человек как Wi-Fi, так и Bluetooth должны быть отключены."
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "När aktiverad räknar PAX-räknarmodulen antalet personer som passerar med WiFi och Bluetooth. Både WiFi och Bluetooth måste vara aktiverade för att PAX-räknaren ska fungera."
           }
         },
         "sr" : {
@@ -114196,12 +113302,6 @@
             "value" : "Sauvegarder"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שמור"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -114236,12 +113336,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Сохранить"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Spara"
           }
         },
         "sr" : {
@@ -114544,12 +113638,6 @@
             "value" : "Écho"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הד"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -114584,12 +113672,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Эхо"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Eko"
           }
         },
         "sr" : {
@@ -114688,12 +113770,6 @@
             "value" : "Mode"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מצב"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -114728,12 +113804,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Режим"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Läge"
           }
         },
         "sr" : {
@@ -115354,12 +114424,6 @@
             "value" : "Par défaut"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ברירת מחדל"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -115394,12 +114458,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "По умолчанию"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Standard"
           }
         },
         "sr" : {
@@ -115618,12 +114676,6 @@
             "value" : "Délai d'expiration"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "זמן קצוב"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -115658,12 +114710,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Таймаут"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tidsgräns överskriden"
           }
         },
         "sr" : {
@@ -116098,12 +115144,6 @@
             "value" : "Envoyer une impulsion"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שלח דופק"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -116138,12 +115178,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Отправить сердцебиение"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Skicka hjärtslag"
           }
         },
         "sr" : {
@@ -118416,12 +117450,6 @@
             "value" : "Détails du message"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "פרטי הודעה"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -118456,12 +117484,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Детали сообщения"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Meddelandedetaljer"
           }
         },
         "sr" : {
@@ -118944,12 +117966,6 @@
             "value" : "Messages"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הודעות"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -118984,12 +118000,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Сообщения"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Meddelanden"
           }
         },
         "sr" : {
@@ -119713,12 +118723,6 @@
             "value" : "Mode"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מצב"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -119753,12 +118757,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Режим"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Läge"
           }
         },
         "sr" : {
@@ -119948,12 +118946,6 @@
             "value" : "Configuration du module"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הגדרות מודולה"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -119988,12 +118980,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Конфигурация модуля"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Modulkonfiguration"
           }
         },
         "sr" : {
@@ -120446,12 +119432,6 @@
             "value" : "Proxy client MQTT"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "MQTT Client Proxy"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -120486,12 +119466,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "MQTT клиент-прокси"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "MQTT-klientproxy"
           }
         },
         "sr" : {
@@ -120552,12 +119526,6 @@
             "value" : "Configuration MQTT"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הגדרות MQTT"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -120592,12 +119560,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Настройка MQTT"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "MQTT-konfiguration"
           }
         },
         "sr" : {
@@ -121115,12 +120077,6 @@
             "value" : "Multiplicateur"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Multiplier"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -121155,12 +120111,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Множитель"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Multiplikator"
           }
         },
         "sr" : {
@@ -122163,12 +121113,6 @@
             "value" : "Réseau"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "רשת"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -122203,12 +121147,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Сеть"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nätverk"
           }
         },
         "sr" : {
@@ -122269,12 +121207,6 @@
             "value" : "Configuration du réseau"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הגדרות רשת"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -122309,12 +121241,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Настройка сети"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nätverkskonfiguration"
           }
         },
         "sr" : {
@@ -123616,12 +122542,6 @@
             "value" : "Aucun appareil connecté"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "אין מכשיר מחובר"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -123656,12 +122576,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Нет подключенного устройства"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ingen enhet ansluten"
           }
         },
         "sr" : {
@@ -124799,12 +123713,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Нет журналов счетчика PAX"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Inga loggar för PAX-räknare"
           }
         },
         "sr" : {
@@ -126973,12 +125881,6 @@
             "value" : "Noeuds"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מכשירים"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -127007,12 +125909,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ноды"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Noder"
           }
         },
         "sr" : {
@@ -129797,12 +128693,6 @@
             "value" : "Une heure"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שעה אחת"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -129837,12 +128727,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Один час"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "En Timme"
           }
         },
         "sr" : {
@@ -129904,12 +128788,6 @@
             "value" : "Une minute"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "דקה אחת"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -129944,12 +128822,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Одна минута"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "En Minut"
           }
         },
         "sr" : {
@@ -131421,12 +130293,6 @@
             "value" : "Options"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הגדרות"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -131461,12 +130327,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Параметры"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Alternativ"
           }
         },
         "sr" : {
@@ -133059,12 +131919,6 @@
             "value" : "Mode d'appairage"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מצב הצמדה"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -133099,12 +131953,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Режим сопряжения"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Parläge"
           }
         },
         "sr" : {
@@ -133299,12 +132147,6 @@
             "value" : "Mot de passe"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "סיסמא"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -133339,12 +132181,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Пароль"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lösenord"
           }
         },
         "sr" : {
@@ -133422,12 +132258,6 @@
             "value" : "Pause"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הפסק"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -133462,12 +132292,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Пауза"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pausa"
           }
         },
         "sr" : {
@@ -133529,12 +132353,6 @@
             "value" : "Compteur PAX"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PAX Counter"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -133569,12 +132387,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Счетчик прохожих"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PAX Räknare"
           }
         },
         "sr" : {
@@ -133635,12 +132447,6 @@
             "value" : "Configuration du compteur PAX"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PAX Counter Config"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -133675,12 +132481,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Настройка счетчика прохожих"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PAX Räknare Konfiguration"
           }
         },
         "sr" : {
@@ -133769,12 +132569,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Журнал счетчика прохожих"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PAX-räknarens logg"
           }
         },
         "sr" : {
@@ -134095,12 +132889,6 @@
             "value" : "GPS du téléphone"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "GPS מהטלפון"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -134135,12 +132923,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "GPS телефона"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Telefon-GPS"
           }
         },
         "sr" : {
@@ -135648,12 +134430,6 @@
             "value" : "Position"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מיקום"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -135748,12 +134524,6 @@
             "value" : "Configuration de la position"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הגדרות מיקום"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -135788,12 +134558,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Настройка позиции"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Positionskonfiguration"
           }
         },
         "sr" : {
@@ -137261,12 +136025,6 @@
             "value" : "Puissance"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Power"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -137301,12 +136059,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Питание"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ström"
           }
         },
         "sr" : {
@@ -137395,12 +136147,6 @@
             "value" : "Configuration de puissance"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Power Config"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -137435,12 +136181,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Настройки питания"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Strömkonfiguration"
           }
         },
         "sr" : {
@@ -137705,12 +136445,6 @@
             "value" : "Économie d'énergie"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Power Saving"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -137745,12 +136479,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Энергосбережение"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Strömsparläge"
           }
         },
         "sr" : {
@@ -138721,12 +137449,6 @@
             "value" : "Principal"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "עיקרי"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -138761,12 +137483,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Первичный"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Primär"
           }
         },
         "sr" : {
@@ -140613,12 +139329,6 @@
             "value" : "Configuration de la radio"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הגדרות רדיו"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -140653,12 +139363,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Настройка радио"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Radioinställningar"
           }
         },
         "sr" : {
@@ -140817,12 +139521,6 @@
             "value" : "Test de portée"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "בדיקת טווח"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -140857,12 +139555,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Тест дальности"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Räckviddstest"
           }
         },
         "sr" : {
@@ -140923,12 +139615,6 @@
             "value" : "Configuration du test de portée"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הגדרות בדיקת טווח"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -140963,12 +139649,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Настройка теста дальности"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Konfiguration av räckviddstest"
           }
         },
         "sr" : {
@@ -141587,12 +140267,6 @@
             "value" : "Redémarrer"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "התחל מחדש"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -141627,12 +140301,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Перезагрузка"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Starta om"
           }
         },
         "sr" : {
@@ -141769,12 +140437,6 @@
             "value" : "Redémarrer le noeud ?"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "התחל מכשיר מחדש??"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -141809,12 +140471,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Перезагрузить ноду?"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Starta om nod?"
           }
         },
         "sr" : {
@@ -144738,12 +143394,6 @@
             "value" : "Répondre"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "תגובה"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -144778,12 +143428,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ответить"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Svara"
           }
         },
         "sr" : {
@@ -146601,12 +145245,6 @@
             "value" : "Reprendre"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "החל מחדש"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -146641,12 +145279,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Продолжить"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Återuppta"
           }
         },
         "sr" : {
@@ -147589,12 +146221,6 @@
             "value" : "Sonnerie"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "רינגטון"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -147629,12 +146255,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Рингтон"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ringsignal"
           }
         },
         "sr" : {
@@ -147717,12 +146337,6 @@
             "value" : "Configuration du son"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ringtone Config"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -147757,12 +146371,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Настройка рингтона"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ringsignalskonfiguration"
           }
         },
         "sr" : {
@@ -147860,12 +146468,6 @@
             "value" : "Язык передачи рингтона"
           }
         },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Språk för Överföring av Ringsignal"
-          }
-        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -147924,12 +146526,6 @@
             "value" : "Langage de transfert de sonnerie (RTTTL) Sonnerie utilisée par les buzzers externes dans les notifications supportées."
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ringtone Transfer Language(RTTTL) Ringtone String used by supported buzzers in external notifications."
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -147964,12 +146560,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Язык передачи рингтона (RTTTL) - строка рингтона, используемая поддерживаемыми зуммерами во внешних уведомлениях."
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ringsignalöverföringsspråk (RTTTL) Ringsignalsträng som används av stödda buzzers i externa notifikationer."
           }
         },
         "sr" : {
@@ -150232,12 +148822,6 @@
             "value" : "Sauvegarder"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שמור"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -150272,12 +148856,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Сохранить"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Spara"
           }
         },
         "sr" : {
@@ -151766,12 +150344,6 @@
             "value" : "Secondaire"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "משני"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -151806,12 +150378,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Второй"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sekundär"
           }
         },
         "sr" : {
@@ -155165,12 +153731,6 @@
             "value" : "Envoyer une impulsion"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שלח דופק"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -155205,12 +153765,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Отправить сердцебиение"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Skicka hjärtslag"
           }
         },
         "sr" : {
@@ -156215,12 +154769,6 @@
             "value" : "Paquet envoyé avec la position GPS de l'appareil Apple vers le noeud : %@"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "נשלח מיקום ממכשיר האפל למכשיר המשטסטיק: %@"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -156255,12 +154803,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Отправлен пакет позиции с GPS устройства Apple на ноду: %@"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Skickade ett positionspaket från Apple-enhetens GPS till nod: %@"
           }
         },
         "sr" : {
@@ -156510,12 +155052,6 @@
             "value" : "Série"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "סיריאלי"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -156550,12 +155086,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Последовательный порт"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Serie"
           }
         },
         "sr" : {
@@ -156616,12 +155146,6 @@
             "value" : "Configuration série"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "'הגדרות מודולה 'סיריאלי"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -156656,12 +155180,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Настройка последовательного порта"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Seriekonfiguration"
           }
         },
         "sr" : {
@@ -158022,12 +156540,6 @@
             "value" : "Définir la région LoRa"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "בחר אזור לורה"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -158062,12 +156574,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Установить регион LoRa"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ställ in LoRa-region"
           }
         },
         "sr" : {
@@ -158681,12 +157187,6 @@
             "value" : "Réglages"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הגדרות"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -158721,12 +157221,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Настройки"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Inställningar"
           }
         },
         "sr" : {
@@ -159294,12 +157788,6 @@
             "value" : "Partager le QR Code"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שתף ערוצים באמצעות קוד QR"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -159334,12 +157822,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Поделиться QR-кодом"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dela QR-kod"
           }
         },
         "sr" : {
@@ -161826,12 +160308,6 @@
             "value" : "Apagado por pérdida de energía"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Shutdown on Power Loss"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -161866,12 +160342,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Отключение при потере питания"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Stäng av vid Strömförlust"
           }
         },
         "sr" : {
@@ -164886,12 +163356,6 @@
             "value" : "SSID"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שם רשת וויפי"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -164923,12 +163387,6 @@
           }
         },
         "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SSID"
-          }
-        },
-        "se" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "SSID"
@@ -165181,12 +163639,6 @@
             "value" : "Démarrer"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "החל"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -165221,12 +163673,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Начало"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Start"
           }
         },
         "sr" : {
@@ -166707,12 +165153,6 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Abonné"
-          }
-        },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "מחובר למש"
           }
         },
         "it" : {
@@ -168351,12 +166791,6 @@
             "value" : "Réponse de Tapback"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "תגובה מהירה"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -168391,12 +166825,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Обратная связь"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Svarsreaktion"
           }
         },
         "sr" : {
@@ -168569,12 +166997,6 @@
             "value" : "Télémetrie (Capteurs)"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "טלמטריה (חיישנים)"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -168609,12 +167031,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Телеметрия"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Telemetri (Sensorer)"
           }
         },
         "sr" : {
@@ -168675,12 +167091,6 @@
             "value" : "Configuration de télémetrie"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "הגדרות טלמטריה"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -168715,12 +167125,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Настройки телеметрии"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Telemetriinställningar"
           }
         },
         "sr" : {
@@ -168905,12 +167309,6 @@
             "value" : "Dix minutes"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "עשר דקות"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -168945,12 +167343,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Десять минут"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tio Minuter"
           }
         },
         "sr" : {
@@ -173824,12 +172216,6 @@
             "value" : "Trente minutes"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שלושים דקות"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -173864,12 +172250,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Тридцать минут"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Trettio Minuter"
           }
         },
         "sr" : {
@@ -176890,12 +175270,6 @@
             "value" : "Délai d'expiration"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "זמן קצוב"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -176930,12 +175304,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Таймаут"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tidsgräns överskriden"
           }
         },
         "sr" : {
@@ -176996,12 +175364,6 @@
             "value" : "Horodatage"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שעה/תאריך"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -177036,12 +175398,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Отметка времени"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tidsstämpel"
           }
         },
         "sr" : {
@@ -178232,12 +176588,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Всего PAX"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Totalt PAX"
           }
         },
         "sr" : {
@@ -180611,12 +178961,6 @@
             "value" : "Deux heures"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שעתיים"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -180651,12 +178995,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Два часа"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Två Timmar"
           }
         },
         "sr" : {
@@ -181433,12 +179771,6 @@
             "value" : "Inconnu"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "לא ידוע"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -181473,12 +179805,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Неизвестный"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Okänd"
           }
         },
         "sr" : {
@@ -181578,12 +179904,6 @@
             "value" : "Age inconnu"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "גיל לא ידוע"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -181618,12 +179938,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Неизвестный возраст"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Okänd ålder"
           }
         },
         "sr" : {
@@ -182071,12 +180385,6 @@
             "value" : "Désactivé"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "לא נקבע"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -182111,12 +180419,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Не задан"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Återställ"
           }
         },
         "sr" : {
@@ -182768,12 +181070,6 @@
             "value" : "Mettre à jour votre Firmware"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "עדכן קושחה"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -182808,12 +181104,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Обновите прошивку"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Uppdatera din firmware"
           }
         },
         "sr" : {
@@ -184004,12 +182294,6 @@
             "value" : "Время работы"
           }
         },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Drifttid"
-          }
-        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -185063,12 +183347,6 @@
             "value" : "Utilisateur"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "משתמש"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -185103,12 +183381,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Пользователь"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Användare"
           }
         },
         "sr" : {
@@ -185799,12 +184071,6 @@
             "value" : "Nom d'utilisateur"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "שם משתמש"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -185839,12 +184105,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Имя пользователя"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Användarnamn"
           }
         },
         "sr" : {
@@ -187562,12 +185822,6 @@
             "value" : "Tension"
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "וולטז'"
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -187602,12 +185856,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Напряжение"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Spänning"
           }
         },
         "sr" : {
@@ -187854,12 +186102,6 @@
             "value" : "En attente . . ."
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ממתין. . ."
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -187894,12 +186136,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ожидайте"
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Väntar..."
           }
         },
         "sr" : {
@@ -189426,12 +187662,6 @@
             "value" : "Lorsque le module de compteur PAX est activé, il compte le nombre de personnes passant par le biais de WiFi et Bluetooth. Les deux WiFi et Bluetooth doivent être désactivés pour que le compteur PAX fonctionne."
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "When enabled the PAX Counter module counts the number of people passing by using WiFi and Bluetooth. Both WiFI and Bluetooth must be disabled for PAX counter to work."
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -189460,12 +187690,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "При включении модуль прохожих подсчитывает количество людей, проходящих мимо, используя Wi-Fi и Bluetooth. Для работы счетчика количества человек как Wi-Fi, так и Bluetooth должны быть отключены."
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "När aktiverad räknar PAX-räknarmodulen antalet personer som passerar med WiFi och Bluetooth. Både WiFi och Bluetooth måste vara aktiverade för att PAX-räknaren ska fungera."
           }
         },
         "sr" : {
@@ -189994,12 +188218,6 @@
             "value" : "WiFi"
           }
         },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "WiFi"
-          }
-        },
         "sr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -190268,12 +188486,6 @@
             "value" : "Il va mettre tout en veille autant que possible, pour le rôle du tracker et du capteur, cela inclura également la radio LoRa. Ne utilisez pas cette option si vous souhaitez utiliser votre appareil avec les applications du téléphone ou si vous utilisez un appareil sans bouton utilisateur."
           }
         },
-        "he" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Will sleep everything as much as possible, for the tracker and sensor role this will also include the lora radio. Don't use this setting if you want to use your device with the phone apps or are using a device without a user button."
-          }
-        },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
@@ -190308,12 +188520,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Все устройства будут работать в режиме ожидания, насколько это возможно, в качестве трекера и датчика также будет использоваться радиоприемник lora. Не используйте эту настройку, если вы хотите использовать свое устройство с приложениями для телефона или устройство без пользовательской кнопки."
-          }
-        },
-        "se" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sätter allt i viloläge så mycket som möjligt, för spårnings- och sensorläge kommer detta också inkludera LoRa-radion. Använd inte denna inställning om du vill använda din enhet med mobilappar eller använder en enhet utan en användarknapp."
           }
         },
         "sr" : {
