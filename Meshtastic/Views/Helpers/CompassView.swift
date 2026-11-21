@@ -79,7 +79,7 @@ struct CompassView: View {
 		SheetNavigationStack {
 			ZStack {
 				VStack(spacing: 0) {
-				
+
 					if waypointLongName != nil || waypointLocation != nil {
 						Spacer()
 						VStack(spacing: 4) {
@@ -198,8 +198,9 @@ struct CompassView: View {
 				locationsHandler.startLocationUpdates()
 			}
 			.onDisappear {
+				// Location updates are app-wide (map, distances, position sharing) and stay on
+				// once started; only the heading is the compass's own.
 				locationsHandler.stopHeadingUpdates()
-				locationsHandler.stopLocationUpdates()
 			}
 			.navigationTitle("Compass")
 			.if(showsCloseButton) { $0.sheetCloseButton() }
