@@ -27,7 +27,7 @@ No sign-up, no manual work — it just happens in the background while you use t
 
 ## Contributing app translations
 
-Contributing translations helps make Meshtastic accessible to a wider audience. Native speakers can review machine-translated strings for their language directly in Xcode — look for strings marked **Needs Review** and improve anything that sounds unnatural. If you have a Mac with Apple Silicon, you can also run a script that uses on-device Apple Intelligence to generate any missing translations for your language and automatically open a pull request.
+Contributing translations helps make Meshtastic accessible to a wider audience. Native speakers can review machine-translated strings for their language directly in Xcode — look for strings marked **Needs Review** and improve anything that sounds unnatural. Missing strings are filled with Xcode's translation agent, and anyone with Xcode 27 can run it for a language.
 
 ### Review machine translations
 
@@ -41,74 +41,45 @@ Your improvements will be served to every user of that language going forward �
 
 ---
 
-## Generate new translations with a script
+## Generate new translations
+
+New strings are translated with the translation agent built into Xcode 27. It reads each string's comment, the code that uses it and the existing translations, and follows Apple's style guide for the language. The maintainers run it for every language when a release branch is cut.
 
 ### Requirements
 
-Before you start, make sure you have:
+- **Xcode 27 or later**, running
+- **[Claude Code](https://claude.com/product/claude-code)** installed and signed in
 
-- **macOS 26 or later** with Apple Silicon
-- **Apple Intelligence enabled** — System Settings → Apple Intelligence & Siri
-- **[local-localizer](https://github.com/JoshuaSullivan/local-localizer)** installed (see below)
-- **GitHub CLI** installed — `brew install gh` and `gh auth login`
-
-### Install local-localizer
-
-```bash
-git clone https://github.com/JoshuaSullivan/local-localizer.git ~/local-localizer
-cd ~/local-localizer && swift build -c release
-mkdir -p ~/bin && cp .build/release/local-localizer ~/bin/local-localizer
-```
-
-Make sure `~/bin` is on your PATH (add `export PATH="$HOME/bin:$PATH"` to your shell profile if needed).
-
-### Add or complete a locale
-
-Clone the repository, then run the translation script with your locale code:
+### Translate a language
 
 ```bash
 git clone https://github.com/meshtastic/Meshtastic-Apple.git
 cd Meshtastic-Apple
-scripts/translate-locale.sh <locale>
+scripts/translate-catalog.sh <locale>            # fill strings with no translation
+scripts/translate-catalog.sh <locale> --review   # redo strings marked Needs Review
 ```
 
-For example:
+The first run asks you, in Xcode, to let the agent open the project.
 
-```bash
-scripts/translate-locale.sh fr          # French
-scripts/translate-locale.sh de formal   # German, formal register
-scripts/translate-locale.sh ja polite   # Japanese, polite register
-scripts/translate-locale.sh zh-Hant-TW  # Traditional Chinese (Taiwan)
-```
+The script:
 
-The script will:
+1. Translates the strings in batches, 300 at a time, until none are left
+2. Passes the [translation guide](https://github.com/meshtastic/Meshtastic-Apple/blob/main/scripts/translation-guide.md) with every batch: terms to leave in English, the tone for each language, and words already settled
+3. Never changes a string already marked **Reviewed**, and marks new ones **Machine Translated**
+4. Copies only that language back into `Localizable.xcstrings`, since Xcode re-sorts the whole file when it saves
 
-1. Count how many strings are missing or need updating for the locale
-2. Generate a glossary that keeps Meshtastic brand terms (LoRa, MQTT, BLE, TAK, etc.) untranslated
-3. Run local-localizer using on-device Apple Intelligence — no internet or API key needed
-4. Mark every new string as **Needs Review** so native speakers know to check them
-5. Commit the result and open a pull request automatically
+It doesn't commit anything. Check `git diff`, read the notes it saves on choices worth checking, and open a pull request with one language in it. When you settle a term, add it to the translation guide so later runs use it too.
 
-The translation step runs entirely on your device and takes roughly 10–20 minutes for a complete locale.
-
-### Tone options
-
-| Tone | When to use |
-|---|---|
-| `professional` | Default — clear and neutral, suitable for most languages |
-| `formal` | Recommended for German (`de`), French (`fr`), Italian (`it`), Spanish (`es`) — selects the polite second-person form (Sie / vous / Lei / usted) |
-| `polite` | Recommended for Japanese (`ja`) and Korean (`ko`) — selects polite verb forms |
-| `informal` | Casual register |
-| `neutral` | Plain, no register preference |
+You can also open `Localizable.xcstrings` in Xcode, select a language and choose **Generate Translations**, using the coding agent set up in Xcode's Intelligence settings. That doesn't use the translation guide, and Xcode re-sorts the whole file, so the script is the better choice for a pull request.
 
 ### Reviewing translated strings
 
-Once the PR is open, any native speaker can review the translations directly in Xcode:
+Any native speaker can review the translations in Xcode:
 
-1. Open `Meshtastic.xcworkspace`
+1. Open `Meshtastic.xcodeproj`
 2. Select `Localizable.xcstrings` in the project navigator
-3. Filter by your locale and set the state filter to **Needs Review**
-4. Read each string in context, edit if needed, and mark it **Reviewed**
-5. Push your changes to the PR branch
+3. Pick your language and filter to **Machine Translated** or **Needs Review**
+4. Read each string in context, edit it if needed, and mark it **Reviewed**
+5. Open a pull request with your changes
 
 Thank you for helping expand the reach of Meshtastic!
