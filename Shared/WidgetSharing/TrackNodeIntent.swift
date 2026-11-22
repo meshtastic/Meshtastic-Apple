@@ -98,7 +98,7 @@ struct TrackNodeIntent: WidgetConfigurationIntent {
 
 	/// Telemetry readings on the small size; the other sizes don't show them.
 	@Parameter(title: "Readings Shown", default: .two)
-	var smallReadings: SmallWidgetReadings
+	var smallReadings: SmallTrackerReadings
 
 	static var parameterSummary: some ParameterSummary {
 		Switch(.widgetFamily) {
