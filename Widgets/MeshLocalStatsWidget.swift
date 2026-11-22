@@ -150,25 +150,75 @@ struct MeshStatusWidgetView: View {
 private struct SmallView: View {
 	let snapshot: WidgetSnapshot
 
+	// Two columns of short readings under the radio's name, so the square is
+	// used top to bottom: nodes and battery, both utilizations, then unread
+	// messages and uptime.
 	var body: some View {
-		VStack(alignment: .leading, spacing: 4) {
+		VStack(alignment: .leading, spacing: 3) {
 			HStack(spacing: 6) {
 				MeshLogo(height: 13)
-				NodeChip(shortName: snapshot.radioShortName ?? "?", colorSeed: UInt32(truncatingIfNeeded: snapshot.radioNodeNum ?? 0), size: 28)
-				Spacer()
-				ConnectionDot(state: snapshot.connectionState)
+				NodeChip(shortName: snapshot.radioShortName ?? "?", colorSeed: UInt32(truncatingIfNeeded: snapshot.radioNodeNum ?? 0), size: 26)
+				Spacer(minLength: 2)
+				// The footer says when it isn't connected.
+				ConnectionDot(state: snapshot.connectionState, showsLabel: false)
+			}
+			if let name = snapshot.radioLongName {
+				// Two lines rather than cutting a long name short.
+				Text(name)
+					.font(.caption.weight(.semibold))
+					.lineLimit(2)
+					.minimumScaleFactor(0.8)
+					.fixedSize(horizontal: false, vertical: true)
 			}
 			Spacer(minLength: 2)
-			BatteryRow(level: snapshot.radioBatteryLevel, font: .callout)
-			HStack(spacing: 4) {
-				Image(systemName: "dot.radiowaves.left.and.right")
-					.font(.caption2)
-					.widgetAccentable()
-				Text(nodesText(snapshot))
-					.font(.callout.weight(.semibold))
+			Grid(alignment: .leading, horizontalSpacing: 10, verticalSpacing: 3) {
+				GridRow {
+					SmallStat(systemImage: "dot.radiowaves.left.and.right", value: nodesText(snapshot))
+					BatteryRow(level: snapshot.radioBatteryLevel, font: .caption.weight(.semibold), showsPoweredText: false)
+				}
+				if let stats = snapshot.localStats {
+					GridRow {
+						SmallStat(label: "ChUtil", value: percentText(stats.channelUtilization))
+						SmallStat(label: "Air", value: percentText(stats.airUtilTx))
+					}
+				}
+				GridRow {
+					SmallStat(systemImage: "bubble.left", value: "\(snapshot.unreadChannelMessages + snapshot.unreadDirectMessages)")
+					if let uptime = snapshot.localStats?.uptimeSeconds {
+						SmallStat(systemImage: "clock.arrow.circlepath", value: uptimeText(seconds: uptime))
+					}
+				}
 			}
 			UpdatedFooter(snapshot: snapshot)
 		}
+	}
+}
+
+/// One short reading for the small widget: an icon or a short label, then the value.
+private struct SmallStat: View {
+	var systemImage: String?
+	var label: LocalizedStringKey?
+	let value: String
+
+	var body: some View {
+		HStack(spacing: 3) {
+			if let systemImage {
+				Image(systemName: systemImage)
+					.font(.caption2)
+					.foregroundStyle(.secondary)
+					.widgetAccentable()
+			}
+			if let label {
+				Text(label)
+					.font(.caption2)
+					.foregroundStyle(.secondary)
+			}
+			Text(value)
+				.font(.caption.weight(.semibold))
+				.monospacedDigit()
+		}
+		.lineLimit(1)
+		.fixedSize()
 	}
 }
 
@@ -441,17 +491,22 @@ private struct UtilizationGauge: View {
 private struct UpdatedFooter: View {
 	let snapshot: WidgetSnapshot
 
+	// Live age text can't sit in a ViewThatFits (the widget draws black), so the
+	// wording is picked up front: with the state in front there's no room for "Updated".
 	var body: some View {
 		HStack(spacing: 3) {
 			if snapshot.connectionState != .connected {
 				Text(stateText(snapshot.connectionState))
 				Text("·")
+				ageText(snapshot.generatedAt)
+			} else {
+				Text("Updated \(ageText(snapshot.generatedAt))")
 			}
-			Text("Updated \(snapshot.generatedAt, style: .relative) ago")
 		}
 		.font(.caption2)
 		.foregroundStyle(.secondary)
 		.lineLimit(1)
+		.minimumScaleFactor(0.8)
 	}
 }
 
@@ -464,6 +519,11 @@ private func nodesText(_ snapshot: WidgetSnapshot) -> String {
 		return "\(snapshot.totalNodeCount)"
 	}
 	return "\(stats.nodesOnline)/\(stats.nodesTotal)"
+}
+
+/// nil means the radio did not report it; 0% would claim a reading that never arrived.
+private func percentText(_ value: Float?) -> String {
+	value.map { String(format: "%.0f%%", $0) } ?? "--"
 }
 
 private func uptimeText(seconds: Int32) -> String {

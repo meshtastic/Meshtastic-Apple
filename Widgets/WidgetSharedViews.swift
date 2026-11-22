@@ -15,13 +15,15 @@ import WidgetKit
 
 struct ConnectionDot: View {
 	let state: WidgetConnectionState
+	/// Off where another line already says the state, so the dot doesn't crowd the header.
+	var showsLabel = true
 
 	var body: some View {
 		HStack(spacing: 3) {
 			Circle()
 				.fill(state == .connected ? Color.green : (state == .connecting ? Color.orange : Color.secondary))
 				.frame(width: 7, height: 7)
-			if state != .connected {
+			if showsLabel, state != .connected {
 				Text(stateText(state))
 					.font(.caption2)
 					.foregroundStyle(.secondary)
@@ -40,6 +42,16 @@ func stateText(_ state: WidgetConnectionState) -> String {
 	case .disconnected:
 		return String(localized: "Disconnected", comment: "Widget connection state label")
 	}
+}
+
+/// How long ago `date` was, in one unit ("11 min ago"), kept current by the
+/// system. The plain relative style shows two units ("11 min, 5 sec"), which
+/// doesn't fit a small widget's line.
+func ageText(_ date: Date) -> Text {
+	if #available(iOS 18.0, visionOS 2.0, *) {
+		return Text(.currentDate, format: .reference(to: date, allowedFields: [.minute, .hour, .day], maxFieldCount: 1))
+	}
+	return Text("\(Text(date, style: .relative)) ago")
 }
 
 // MARK: - Extra large portrait
@@ -90,6 +102,22 @@ enum ShareCardStyle {
 			LinearGradient(colors: [backgroundTop, backgroundBottom], startPoint: .top, endPoint: .bottom)
 			RadialGradient(colors: [brand.opacity(0.2), .clear], center: .topLeading, startRadius: 0, endRadius: 260)
 		}
+	}
+}
+
+/// The dark fade behind the labels over the top of a full-size small map, so
+/// they read over light map tiles and place names.
+struct SmallMapScrim: View {
+	var body: some View {
+		LinearGradient(
+			stops: [
+				.init(color: ShareCardStyle.backgroundBottom.opacity(0.92), location: 0),
+				.init(color: ShareCardStyle.backgroundBottom.opacity(0.8), location: 0.6),
+				.init(color: ShareCardStyle.backgroundBottom.opacity(0), location: 1)
+			],
+			startPoint: .top,
+			endPoint: .bottom
+		)
 	}
 }
 

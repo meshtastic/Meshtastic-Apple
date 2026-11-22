@@ -366,11 +366,11 @@ private struct TelemetryFooter: View {
 				// turns orange and says so instead.
 				Group {
 					if entry.isStale {
-						Label("Over 2 hours old · \(time, style: .relative) ago", systemImage: "clock.badge.exclamationmark")
+						Label("Over 2 hours old · \(ageText(time))", systemImage: "clock.badge.exclamationmark")
 							.font(.system(size: 9))
 							.foregroundStyle(.orange)
 					} else {
-						Text("Updated \(time, style: .relative) ago")
+						Text("Updated \(ageText(time))")
 							.foregroundStyle(.secondary)
 					}
 				}

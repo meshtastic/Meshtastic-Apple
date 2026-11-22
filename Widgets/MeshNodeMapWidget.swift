@@ -191,33 +191,39 @@ private struct MapSmallView<Map: View>: View {
 	let summary: NodeMapSummary
 	let map: Map
 
+	// The map fills the whole widget. The labels sit over its top edge, which
+	// the framing leaves free of pins; the bottom stays clear for the Maps logo.
 	var body: some View {
-		VStack(alignment: .leading, spacing: 5) {
-			HStack(spacing: 4) {
-				MapHeader(summary: summary, compact: true)
-				Spacer(minLength: 2)
-				AgeLine(summary: summary)
-			}
-			map
-				.frame(maxWidth: .infinity, maxHeight: .infinity)
-			HStack(spacing: 4) {
-				Text("\(summary.onMap) on map")
-					.foregroundStyle(.white)
-				Spacer(minLength: 2)
-				// Disconnected, the online count is stale; say why instead. Down
-				// here so the age line up top keeps its room.
-				if summary.connectionState == .connected {
-					Text("\(summary.online) online")
-						.foregroundStyle(Style.brand)
-				} else {
-					Text(stateText(summary.connectionState))
-						.foregroundStyle(Style.secondaryText)
+		map
+			.frame(maxWidth: .infinity, maxHeight: .infinity)
+			.overlay(alignment: .top) {
+				VStack(alignment: .leading, spacing: 2) {
+					HStack(spacing: 4) {
+						MapHeader(summary: summary, compact: true)
+						Spacer(minLength: 2)
+						AgeLine(summary: summary)
+					}
+					HStack(spacing: 4) {
+						Text("\(summary.onMap) on map")
+							.foregroundStyle(.white)
+						Spacer(minLength: 2)
+						// Disconnected, the online count is stale; say why instead.
+						if summary.connectionState == .connected {
+							Text("\(summary.online) online")
+								.foregroundStyle(Style.brand)
+						} else {
+							Text(stateText(summary.connectionState))
+								.foregroundStyle(Style.secondaryText)
+						}
+					}
+					.font(.caption2.weight(.semibold))
+					.lineLimit(1)
 				}
+				.padding(.horizontal, 12)
+				.padding(.top, 10)
+				.padding(.bottom, 16)
+				.background(SmallMapScrim())
 			}
-			.font(.caption2.weight(.semibold))
-			.lineLimit(1)
-		}
-		.padding(12)
 	}
 }
 
@@ -361,7 +367,7 @@ private struct AgeLine: View {
 
 	var body: some View {
 		if let updatedAt = summary.updatedAt {
-			Text("\(updatedAt, style: .relative) ago")
+			ageText(updatedAt)
 				.font(.caption2)
 				.foregroundStyle(Style.tertiaryText)
 				.lineLimit(1)
