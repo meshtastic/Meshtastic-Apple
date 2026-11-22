@@ -5,7 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 11/11/26.
 //
 //  One node's telemetry as node details' tiles (meshtastic/design#179): every
-//  reading it reports, less any the person hides. Small shows the first two to eight, medium
+//  reading it reports, less any the person hides. Small shows the first two, six or eight, medium
 //  the first four, large four at a time with a page button when there are more;
 //  extra large portrait (iOS 27 and Vision Pro) fits up to six and pages beyond
 //  that, and Vision Pro's extra large board shows eight at a time. It reads the

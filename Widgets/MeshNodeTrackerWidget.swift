@@ -183,10 +183,10 @@ private struct TrackerSmallView: View {
 	let readings: Int
 	let isMissing: Bool
 
-	/// More than three readings need the room: battery and signal move up beside
+	/// Six or eight readings need the room: battery and signal move up beside
 	/// the chip, the name keeps to one line and hops and distance are left to
 	/// the medium size.
-	private var isCompact: Bool { readings > 3 && node?.telemetry != nil }
+	private var isCompact: Bool { readings > 2 && node?.telemetry != nil }
 
 	// The chip and name up top, then battery and signal, hops and distance,
 	// the readings and when it was heard, so the square is used top to bottom.

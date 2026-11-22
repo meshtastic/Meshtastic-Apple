@@ -14,14 +14,12 @@ import AppIntents
 
 enum SmallWidgetReadings: Int, AppEnum {
 	case two = 2
-	case three = 3
 	case six = 6
 	case eight = 8
 
 	static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "Readings Shown")
 	static let caseDisplayRepresentations: [SmallWidgetReadings: DisplayRepresentation] = [
 		.two: "2",
-		.three: "3",
 		.six: "6",
 		.eight: "8"
 	]
