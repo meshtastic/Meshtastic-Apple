@@ -5,7 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 11/11/26.
 //
 //  One node's telemetry as node details' tiles (meshtastic/design#179): every
-//  reading it reports, less any the person hides. Small shows the first, medium
+//  reading it reports, less any the person hides. Small shows the first two to eight, medium
 //  the first four, large four at a time with a page button when there are more;
 //  extra large portrait (iOS 27 and Vision Pro) fits up to six and pages beyond
 //  that, and Vision Pro's extra large board shows eight at a time. It reads the
@@ -28,6 +28,8 @@ struct TelemetryEntry: TimelineEntry {
 	let metrics: [TelemetryMetric]
 	/// The page as stored; each paging size wraps it to its own page count.
 	let storedPage: Int
+	/// Readings on the small size, as set in Edit Widget.
+	var smallReadings = 2
 
 	var telemetry: TelemetrySnapshot? { node?.telemetry }
 
@@ -79,7 +81,7 @@ struct TelemetryProvider: AppIntentTimelineProvider {
 		let node = snapshot?.nodes.first { String($0.num) == configured?.id }
 		let metrics = TelemetryMetric.shown(in: node?.telemetry, hiding: (configuration.hidden ?? []).map(\.metric))
 		let storedPage = configured?.nodeNum.map(TelemetryWidgetPage.storedPage(for:)) ?? 0
-		return TelemetryEntry(date: date, configured: configured, node: node, metrics: metrics, storedPage: storedPage)
+		return TelemetryEntry(date: date, configured: configured, node: node, metrics: metrics, storedPage: storedPage, smallReadings: configuration.smallReadings.rawValue)
 	}
 }
 
@@ -146,7 +148,7 @@ struct TelemetryWidgetView: View {
 					tiles(telemetry)
 						// The large size spaces its tiles from the edges itself.
 						.padding(.horizontal, usesEvenEdges ? 0 : Self.margin)
-					if showsDetail {
+					if showsDetail, showsFooter {
 						TelemetryFooter(entry: entry, page: page, pageCount: pageCount)
 							.padding(.horizontal, Self.margin)
 					}
@@ -189,7 +191,7 @@ struct TelemetryWidgetView: View {
 		} else {
 			switch family {
 			case .systemSmall:
-				grid(Array(entry.metrics.prefix(1)), columns: 1, telemetry: telemetry)
+				bestFitGrid(Array(entry.metrics.prefix(entry.smallReadings)), telemetry: telemetry)
 			case .systemMedium:
 				bestFitGrid(Array(entry.metrics.prefix(4)), telemetry: telemetry)
 			#if os(visionOS)
@@ -239,7 +241,7 @@ struct TelemetryWidgetView: View {
 
 	/// The sizes whose tiles are spaced from the widget's side edges by the grid itself.
 	private var usesEvenEdges: Bool {
-		family == .systemMedium || family == .systemLarge || isExtraLargePortrait
+		family == .systemSmall || family == .systemMedium || family == .systemLarge || isExtraLargePortrait
 	}
 
 	/// Rows of `columns` square tiles, as large as the widget allows and centered.
@@ -320,6 +322,12 @@ struct TelemetryWidgetView: View {
 			Color.clear
 				.aspectRatio(1, contentMode: .fit)
 		}
+	}
+
+	/// More than three readings on the small size need the footer's height for their tiles;
+	/// it stays when the reading is old, so the warning still shows.
+	private var showsFooter: Bool {
+		family != .systemSmall || entry.smallReadings <= 3 || entry.isStale
 	}
 
 	/// Seen from across the room on Vision Pro, the widget keeps the readings

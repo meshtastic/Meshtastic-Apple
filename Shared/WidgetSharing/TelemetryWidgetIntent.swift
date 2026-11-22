@@ -115,4 +115,26 @@ struct TelemetryWidgetIntent: WidgetConfigurationIntent {
 	/// a list filled in from the node, so the list is of readings to leave out rather than to show.
 	@Parameter(title: "Hidden Readings")
 	var hidden: [TelemetryMetricEntity]?
+
+	/// Only the small size has the choice; the larger sizes fit their readings.
+	@Parameter(title: "Readings Shown", default: .two)
+	var smallReadings: SmallWidgetReadings
+
+	static var parameterSummary: some ParameterSummary {
+		Switch(.widgetFamily) {
+			Case(.systemSmall) {
+				Summary {
+					\.$node
+					\.$hidden
+					\.$smallReadings
+				}
+			}
+			DefaultCase {
+				Summary {
+					\.$node
+					\.$hidden
+				}
+			}
+		}
+	}
 }

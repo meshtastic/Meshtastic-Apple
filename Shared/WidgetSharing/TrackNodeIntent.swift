@@ -95,4 +95,24 @@ struct TrackNodeIntent: WidgetConfigurationIntent {
 
 	@Parameter(title: "Node")
 	var node: TrackedNodeEntity?
+
+	/// Telemetry readings on the small size; the other sizes don't show them.
+	@Parameter(title: "Readings Shown", default: .two)
+	var smallReadings: SmallWidgetReadings
+
+	static var parameterSummary: some ParameterSummary {
+		Switch(.widgetFamily) {
+			Case(.systemSmall) {
+				Summary {
+					\.$node
+					\.$smallReadings
+				}
+			}
+			DefaultCase {
+				Summary {
+					\.$node
+				}
+			}
+		}
+	}
 }
