@@ -139,18 +139,18 @@ struct TelemetryWidgetView: View {
 
 	var body: some View {
 		if let configured = entry.configured {
-			VStack(alignment: .leading, spacing: 8) {
+			VStack(alignment: .leading, spacing: isSmall ? 4 : 8) {
 				if showsDetail {
-					TelemetryHeader(configured: configured)
-						.padding(.horizontal, Self.margin)
+					TelemetryHeader(configured: configured, compact: isSmall)
+						.padding(.horizontal, margin)
 				}
 				if let telemetry = entry.telemetry, !entry.metrics.isEmpty {
 					tiles(telemetry)
 						// The large size spaces its tiles from the edges itself.
-						.padding(.horizontal, usesEvenEdges ? 0 : Self.margin)
+						.padding(.horizontal, usesEvenEdges ? 0 : margin)
 					if showsDetail, showsFooter {
 						TelemetryFooter(entry: entry, page: page, pageCount: pageCount)
-							.padding(.horizontal, Self.margin)
+							.padding(.horizontal, margin)
 					}
 				} else {
 					Spacer(minLength: 0)
@@ -158,11 +158,11 @@ struct TelemetryWidgetView: View {
 						.font(.caption)
 						.foregroundStyle(.secondary)
 						.fixedSize(horizontal: false, vertical: true)
-						.padding(.horizontal, Self.margin)
+						.padding(.horizontal, margin)
 					Spacer(minLength: 0)
 				}
 			}
-			.padding(.vertical, Self.margin)
+			.padding(.vertical, margin)
 		} else {
 			VStack(spacing: 6) {
 				Image(systemName: "thermometer.sun")
@@ -294,7 +294,7 @@ struct TelemetryWidgetView: View {
 	private func bestFitGrid(_ metrics: [TelemetryMetric], telemetry: TelemetrySnapshot) -> some View {
 		GeometryReader { geometry in
 			let size = geometry.size
-			let spacing: CGFloat = 8
+			let spacing: CGFloat = isSmall ? 6 : 8
 			let fit = TelemetryWidgetPage.bestFit(count: metrics.count, in: size, spacing: spacing)
 			let gap = (size.width - fit.side * CGFloat(fit.columns)) / CGFloat(fit.columns + 1)
 			VStack(spacing: spacing) {
@@ -324,11 +324,16 @@ struct TelemetryWidgetView: View {
 		}
 	}
 
-	/// More than three readings on the small size need the footer's height for their tiles;
-	/// it stays when the reading is old, so the warning still shows.
+	/// The small size gives the footer's row to the tiles; it comes back when the
+	/// reading is old, so the warning still shows.
 	private var showsFooter: Bool {
-		family != .systemSmall || entry.smallReadings <= 3 || entry.isStale
+		!isSmall || entry.isStale
 	}
+
+	private var isSmall: Bool { family == .systemSmall }
+
+	/// The small size keeps its edges tight so the tiles get the room.
+	private var margin: CGFloat { isSmall ? 10 : Self.margin }
 
 	/// Seen from across the room on Vision Pro, the widget keeps the readings
 	/// and drops the header and footer.
@@ -347,16 +352,22 @@ struct TelemetryWidgetView: View {
 
 private struct TelemetryHeader: View {
 	let configured: TelemetryNodeEntity
+	/// The small size's shorter header, so the tiles get the room.
+	var compact = false
 
 	var body: some View {
-		HStack(spacing: 6) {
-			NodeChip(shortName: configured.shortName, colorSeed: UInt32(truncatingIfNeeded: configured.nodeNum ?? 0), size: 24)
+		HStack(spacing: compact ? 4 : 6) {
+			NodeChip(shortName: configured.shortName, colorSeed: UInt32(truncatingIfNeeded: configured.nodeNum ?? 0), size: compact ? 18 : 24)
+			// A long name wraps to a second line rather than being cut short.
 			Text(configured.longName)
-				.font(.caption.weight(.semibold))
-				.lineLimit(1)
-				.minimumScaleFactor(0.7)
+				.font(compact ? .caption2.weight(.semibold) : .caption.weight(.semibold))
+				.lineLimit(2)
+				.minimumScaleFactor(0.8)
+				.fixedSize(horizontal: false, vertical: true)
+				.layoutPriority(1)
 			Spacer(minLength: 4)
-			MeshLogo(height: 11)
+			MeshLogo(height: compact ? 9 : 11)
+				.fixedSize()
 		}
 	}
 }
