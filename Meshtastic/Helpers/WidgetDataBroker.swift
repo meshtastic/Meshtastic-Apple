@@ -238,7 +238,8 @@ final class WidgetDataBroker {
 			unreadChannelMessages: unreadChannels,
 			unreadDirectMessages: unreadDMs,
 			recentMessages: recent,
-			missingTrackedNodes: missing.isEmpty ? nil : missing
+			missingTrackedNodes: missing.isEmpty ? nil : missing,
+			channels: data.channels.isEmpty ? nil : data.channels
 		)
 		WidgetSnapshotStore.save(snapshot)
 		MeshLiveActivityManager.shared.meshStatusDidUpdate(snapshot)
@@ -271,6 +272,7 @@ final class WidgetDataBroker {
 		var unreadChannels = 0
 		var unreadDMs = 0
 		var recentMessages: [MessageSnapshot] = []
+		var channels: [ChannelSnapshot] = []
 		var telemetryNodes: [Int64] = []
 	}
 
@@ -318,8 +320,14 @@ final class WidgetDataBroker {
 		let present = Set(read.nodes.map(\.num))
 		read.missingTracked = tracked.subtracting(present).sorted()
 		read.totalNodeCount = (try? context.fetchCount(FetchDescriptor<NodeInfoEntity>())) ?? read.nodes.count
-		(read.unreadChannels, read.unreadDMs) = fetchUnreadCounts(context: context)
+		let unread = fetchUnreadCounts(context: context)
+		(read.unreadChannels, read.unreadDMs) = (unread.channels, unread.dms)
 		read.recentMessages = fetchRecentMessages(context: context, radioNum: radioNum)
+		if let radioNum {
+			read.channels = fetchChannelNames(context: context, radioNum: radioNum)
+				.sorted { $0.key < $1.key }
+				.map { ChannelSnapshot(index: $0.key, name: $0.value, unread: unread.byChannel[$0.key] ?? 0) }
+		}
 		return read
 	}
 
@@ -500,16 +508,24 @@ final class WidgetDataBroker {
 
 	/// Same fetch-and-split approach as AppState.refreshBadgeCount — comparing an
 	/// optional relationship to nil inside a #Predicate crashes SwiftData on iOS 26.
-	nonisolated private static func fetchUnreadCounts(context: ModelContext) -> (channels: Int, dms: Int) {
+	/// Unread messages: on channels, in direct messages, and on each channel by index.
+	private struct UnreadCounts {
+		let channels: Int
+		let dms: Int
+		let byChannel: [Int32: Int]
+	}
+
+	nonisolated private static func fetchUnreadCounts(context: ModelContext) -> UnreadCounts {
 		var descriptor = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate<MessageEntity> { $0.isEmoji == false && $0.read == false }
 		)
 		// Loaded with the messages, rather than one at a time below.
 		descriptor.relationshipKeyPathsForPrefetching = [\.toUser]
 		let unread = (try? context.fetch(descriptor)) ?? []
-		let channels = unread.filter { $0.toUser == nil }.count
+		let channelMessages = unread.filter { $0.toUser == nil }
 		let dms = unread.filter { $0.toUser != nil && !$0.admin }.count
-		return (channels, dms)
+		let byChannel = Dictionary(grouping: channelMessages, by: \.channel).mapValues(\.count)
+		return UnreadCounts(channels: channelMessages.count, dms: dms, byChannel: byChannel)
 	}
 
 	/// The radio's channel names by index, fetched rather than read through
@@ -538,18 +554,25 @@ final class WidgetDataBroker {
 			sortBy: [SortDescriptor(\.messageTimestamp, order: .reverse)]
 		)
 		// messageId uniqueness is only enforced per save, so a sent message and
-		// its mesh echo can coexist briefly; fetch extra and dedupe below.
-		descriptor.fetchLimit = 16
+		// its mesh echo can coexist briefly; fetch extra and dedupe below. Extra
+		// again so each channel and the direct messages can have their latest.
+		descriptor.fetchLimit = 200
 		let fetched = (try? context.fetch(descriptor)) ?? []
 
 		let channelNames = radioNum.map { fetchChannelNames(context: context, radioNum: $0) } ?? [:]
 
 		var seenIds = Set<Int64>()
 		var snapshots: [MessageSnapshot] = []
+		// Up to five per conversation: each channel by index, and all direct messages together.
+		var perConversation: [Int32: Int] = [:]
+		let directKey: Int32 = -1
 		for message in fetched {
-			guard snapshots.count < 8 else { break }
-			guard let fromUser = message.fromUser,
+			guard snapshots.count < 40 else { break }
+			let conversation = message.toUser == nil ? message.channel : directKey
+			guard perConversation[conversation, default: 0] < 5,
+				  let fromUser = message.fromUser,
 				  seenIds.insert(message.messageId).inserted else { continue }
+			perConversation[conversation, default: 0] += 1
 			let kind: MessageSnapshot.Kind
 			if let toUser = message.toUser {
 				// Show the conversation partner, not ourselves, for sent DMs.

@@ -56,6 +56,9 @@ enum WidgetTraceRouteStore {
 	static let metaFilename = "widget-traceroute.json"
 	private static let imagePrefix = "widget-traceroute-"
 
+	/// The Trace Route widget's Minimum Hops choices; each keeps its own newest route.
+	static let minimumHopsChoices = [0, 1, 2, 3, 4]
+
 	private static let logger = Logger(
 		subsystem: Bundle.main.bundleIdentifier ?? "Meshtastic",
 		category: "🧩 WidgetSharing"
@@ -65,22 +68,24 @@ enum WidgetTraceRouteStore {
 		FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: WidgetSnapshotStore.appGroupID)
 	}
 
-	/// Images are named for their route, so the sidecar can only ever point at
-	/// its own route's map.
+	/// Images are named for their route, so a sidecar can only ever point at
+	/// its own route's map, and minimums showing the same route share them.
 	static func imageURL(routeId: Int64, shape: WidgetMapShape) -> URL? {
 		containerURL?.appendingPathComponent("\(imagePrefix)\(routeId)-\(shape.rawValue).png")
 	}
 
-	static var metaURL: URL? {
-		containerURL?.appendingPathComponent(metaFilename)
+	/// The sidecar for the newest route with at least `minimumHops` hops; any
+	/// route keeps the original file name.
+	static func metaURL(minimumHops: Int = 0) -> URL? {
+		containerURL?.appendingPathComponent(minimumHops == 0 ? metaFilename : "widget-traceroute-min\(minimumHops).json")
 	}
 
 	/// Writes the images (none when the route has no map), then the sidecar,
-	/// then removes the previous route's images. A failure part way leaves the
+	/// then removes images no sidecar points at. A failure part way leaves the
 	/// old sidecar pointing at the old images. Returns false when anything
 	/// failed, so the renderer can retry.
-	static func save(route: WidgetTraceRoute, images: [WidgetMapShape: Data]) -> Bool {
-		guard let metaURL else {
+	static func save(route: WidgetTraceRoute, images: [WidgetMapShape: Data], minimumHops: Int = 0) -> Bool {
+		guard let metaURL = metaURL(minimumHops: minimumHops) else {
 			logger.warning("No app group container; widget trace route not written.")
 			return false
 		}
@@ -97,20 +102,20 @@ enum WidgetTraceRouteStore {
 			logger.error("Could not write the widget trace route: \(error.localizedDescription, privacy: .public)")
 			return false
 		}
-		removeImages(keeping: route.hasMap ? route.routeId : nil)
+		removeUnusedImages()
 		return true
 	}
 
-	/// Removes the sidecar and every image: no stored route is left to show.
-	static func clear() {
-		if let metaURL {
+	/// Removes one minimum's sidecar, and the images nothing points at any more.
+	static func clear(minimumHops: Int = 0) {
+		if let metaURL = metaURL(minimumHops: minimumHops) {
 			try? FileManager.default.removeItem(at: metaURL)
 		}
-		removeImages(keeping: nil)
+		removeUnusedImages()
 	}
 
-	static func load() -> WidgetTraceRoute? {
-		guard let metaURL, let data = try? Data(contentsOf: metaURL) else { return nil }
+	static func load(minimumHops: Int = 0) -> WidgetTraceRoute? {
+		guard let metaURL = metaURL(minimumHops: minimumHops), let data = try? Data(contentsOf: metaURL) else { return nil }
 		let decoder = JSONDecoder()
 		decoder.dateDecodingStrategy = .millisecondsSince1970
 		guard let route = try? decoder.decode(WidgetTraceRoute.self, from: data),
@@ -123,12 +128,13 @@ enum WidgetTraceRouteStore {
 		return try? Data(contentsOf: url)
 	}
 
-	private static func removeImages(keeping routeId: Int64?) {
+	/// Keeps the images of every route a sidecar points at, and only those.
+	private static func removeUnusedImages() {
 		guard let containerURL,
 			  let names = try? FileManager.default.contentsOfDirectory(atPath: containerURL.path) else { return }
-		let kept = routeId.map { "\(imagePrefix)\($0)-" }
+		let kept = minimumHopsChoices.compactMap { load(minimumHops: $0) }.filter(\.hasMap).map { "\(imagePrefix)\($0.routeId)-" }
 		for name in names where name.hasPrefix(imagePrefix) && name.hasSuffix(".png") {
-			if let kept, name.hasPrefix(kept) { continue }
+			if kept.contains(where: { name.hasPrefix($0) }) { continue }
 			try? FileManager.default.removeItem(at: containerURL.appendingPathComponent(name))
 		}
 	}

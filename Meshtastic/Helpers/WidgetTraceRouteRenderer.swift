@@ -5,7 +5,8 @@
 //  Copyright(c) Garth Vander Houwen 10/16/26.
 //
 //  Renders the trace route widget's map from the most recent trace route,
-//  requested or observed. It reuses the share image: the same model and the
+//  requested or observed, and from the most recent with at least 1, 2, 3 and
+//  4 hops for widgets set to a minimum. It reuses the share image: the same model and the
 //  same map view, sized for the widget — a square for small and medium, a
 //  wide one for large and a tall one for extra large portrait. The route's details go to the store as plain values so
 //  the widget lays them out itself and its times keep aging.
@@ -43,14 +44,20 @@ final class WidgetTraceRouteRenderer {
 		case failed
 	}
 
-	/// The route last written to the store.
-	private var lastSavedKey: String?
-	/// Set when that route was written without its map; the map is retried.
-	private var mapRetryAt: Date?
-	/// When an observed route was last written, for the observed interval.
-	private var lastObservedSaveAt: Date?
-	private var inFlightKey: String?
-	private var renderTask: Task<Void, Never>?
+	/// One Minimum Hops choice's state. Each choice keeps the newest route with
+	/// at least that many hops, so the renderer runs once per choice.
+	private struct Slot {
+		/// The route last written to the store.
+		var lastSavedKey: String?
+		/// Set when that route was written without its map; the map is retried.
+		var mapRetryAt: Date?
+		/// When an observed route was last written, for the observed interval.
+		var lastObservedSaveAt: Date?
+		var inFlightKey: String?
+		var renderTask: Task<Void, Never>?
+	}
+
+	private var slots: [Int: Slot] = [:]
 	/// A refresh held back by the observed interval, run when it lapses so a
 	/// newer observed route isn't lost if nothing else triggers a refresh.
 	private var deferredRefresh: Task<Void, Never>?
@@ -63,28 +70,50 @@ final class WidgetTraceRouteRenderer {
 	}
 
 	/// Called after a trace route is saved, and by the widget broker so a fresh
-	/// install or launch catches up. Cheap when nothing changed: one small fetch.
+	/// install or launch catches up. Cheap when nothing changed: a small fetch
+	/// per Minimum Hops choice.
 	func refresh() {
 		guard !PersistenceController.shared.isProvisionalPendingFirstUnlock else { return }
+		for minimumHops in WidgetTraceRouteStore.minimumHopsChoices {
+			refresh(minimumHops: minimumHops)
+		}
+	}
+
+	private func refresh(minimumHops: Int) {
 		let context = PersistenceController.shared.context
-		guard let route = Self.latestRoute(context: context) else {
-			clearIfNeeded()
+		guard let route = Self.latestRoute(context: context, minimumHops: minimumHops) else {
+			clearIfNeeded(minimumHops: minimumHops)
 			return
 		}
+		var slot = slots[minimumHops] ?? Slot()
+		defer { slots[minimumHops] = slot }
 
 		// Changes when the route gets its response, more hops or position snapshots, or a node's
 		// display name changes.
 		let key = "\(route.id)|\(route.hops.count)|\(route.nodePositions.count)|\(NodeDisplayNameStore.revision)"
-		guard key != inFlightKey else { return }
-		if key == lastSavedKey {
+		guard key != slot.inFlightKey else { return }
+		if key == slot.lastSavedKey {
 			// Already shown; only a map that failed to draw is worth another try.
-			guard let mapRetryAt, Date() >= mapRetryAt else { return }
-		} else if route.observed, let lastObservedSaveAt {
+			guard let mapRetryAt = slot.mapRetryAt, Date() >= mapRetryAt else { return }
+		} else if route.observed, let lastObservedSaveAt = slot.lastObservedSaveAt {
 			let elapsed = Date().timeIntervalSince(lastObservedSaveAt)
 			if elapsed < Self.observedInterval {
 				scheduleDeferredRefresh(after: Self.observedInterval - elapsed)
 				return
 			}
+		}
+
+		// Another choice is drawing this route: wait for it and share its map.
+		if slots.contains(where: { $0.key != minimumHops && $0.value.inFlightKey == key }) { return }
+		// Another choice already shows this route with its map: share it rather than draw it again.
+		if let other = slots.first(where: { $0.key != minimumHops && $0.value.lastSavedKey == key && $0.value.mapRetryAt == nil })?.key,
+		   let stored = WidgetTraceRouteStore.load(minimumHops: other),
+		   WidgetTraceRouteStore.save(route: stored, images: [:], minimumHops: minimumHops) {
+			WidgetCenter.shared.reloadTimelines(ofKind: Self.kind)
+			slot.lastSavedKey = key
+			slot.mapRetryAt = nil
+			if route.observed { slot.lastObservedSaveAt = Date() }
+			return
 		}
 
 		let preset = ModemPresets(rawValue: UserDefaults.modemPreset) ?? .longFast
@@ -100,48 +129,53 @@ final class WidgetTraceRouteRenderer {
 		let details = Self.details(route: route, model: models[.square]!)
 		let observed = route.observed
 
-		inFlightKey = key
-		renderTask?.cancel()
-		renderTask = Task {
-			let outcome = await Self.render(details: details, models: models)
+		slot.inFlightKey = key
+		slot.renderTask?.cancel()
+		slot.renderTask = Task {
+			let outcome = await Self.render(details: details, models: models, minimumHops: minimumHops)
+			var slot = self.slots[minimumHops] ?? Slot()
 			// A superseded render must not commit state for the older route.
 			if !Task.isCancelled {
 				switch outcome {
 				case .saved:
-					self.lastSavedKey = key
-					self.mapRetryAt = nil
+					slot.lastSavedKey = key
+					slot.mapRetryAt = nil
 				case .savedWithoutMap:
-					self.lastSavedKey = key
-					self.mapRetryAt = Date().addingTimeInterval(Self.mapRetryInterval)
+					slot.lastSavedKey = key
+					slot.mapRetryAt = Date().addingTimeInterval(Self.mapRetryInterval)
 				case .failed:
 					break
 				}
 				if outcome != .failed, observed {
-					self.lastObservedSaveAt = Date()
+					slot.lastObservedSaveAt = Date()
 				}
 			}
-			if self.inFlightKey == key {
-				self.inFlightKey = nil
+			if slot.inFlightKey == key {
+				slot.inFlightKey = nil
+			}
+			self.slots[minimumHops] = slot
+			// A choice waiting on this route can now share its map.
+			if outcome == .saved {
+				self.refresh()
 			}
 		}
 	}
 
-	/// No route left to show — the radio was switched, app data cleared or the
-	/// log emptied — so the widget must not keep showing a deleted route.
-	private func clearIfNeeded() {
-		guard lastSavedKey != Self.noRouteKey else { return }
-		renderTask?.cancel()
-		// Cleared here, not in the cancelled task: a handle left set would make
-		// every later deferral look already scheduled.
-		deferredRefresh?.cancel()
-		deferredRefresh = nil
-		inFlightKey = nil
-		if WidgetTraceRouteStore.load() != nil {
-			WidgetTraceRouteStore.clear()
+	/// No route left to show for this choice — the radio was switched, app data
+	/// cleared or the log emptied — so the widget must not keep showing a deleted route.
+	private func clearIfNeeded(minimumHops: Int) {
+		var slot = slots[minimumHops] ?? Slot()
+		guard slot.lastSavedKey != Self.noRouteKey else { return }
+		slot.renderTask?.cancel()
+		slot.renderTask = nil
+		slot.inFlightKey = nil
+		if WidgetTraceRouteStore.load(minimumHops: minimumHops) != nil {
+			WidgetTraceRouteStore.clear(minimumHops: minimumHops)
 			WidgetCenter.shared.reloadTimelines(ofKind: Self.kind)
 		}
-		lastSavedKey = Self.noRouteKey
-		mapRetryAt = nil
+		slot.lastSavedKey = Self.noRouteKey
+		slot.mapRetryAt = nil
+		slots[minimumHops] = slot
 	}
 
 	private func scheduleDeferredRefresh(after delay: TimeInterval) {
@@ -156,13 +190,15 @@ final class WidgetTraceRouteRenderer {
 		}
 	}
 
-	/// The newest route that came back: requested and answered, or observed.
-	/// `response` is a scalar, so the predicate is safe; rate-limited and
+	/// The newest route that came back with at least `minimumHops` hops towards
+	/// its destination: requested and answered, or observed. `response` and
+	/// `hopsTowards` are scalars, so the predicate is safe; rate-limited and
 	/// pending records are skipped in Swift by `state()`. The cinema's trace
-	/// route board shows the same one.
-	static func latestRoute(context: ModelContext) -> TraceRouteEntity? {
+	/// route board shows the newest of any length.
+	static func latestRoute(context: ModelContext, minimumHops: Int = 0) -> TraceRouteEntity? {
+		let minimum = Int32(minimumHops)
 		var descriptor = FetchDescriptor<TraceRouteEntity>(
-			predicate: #Predicate { $0.response == true },
+			predicate: #Predicate { $0.response == true && $0.hopsTowards >= minimum },
 			sortBy: [SortDescriptor(\.time, order: .reverse)]
 		)
 		descriptor.fetchLimit = 5
@@ -221,9 +257,9 @@ final class WidgetTraceRouteRenderer {
 		)
 	}
 
-	private static func render(details: WidgetTraceRoute, models: [WidgetMapShape: TraceRouteShareModel]) async -> Outcome {
+	private static func render(details: WidgetTraceRoute, models: [WidgetMapShape: TraceRouteShareModel], minimumHops: Int) async -> Outcome {
 		guard details.hasMap, models.values.allSatisfy({ $0.map != nil }) else {
-			return save(details, images: [:]) ? .saved : .failed
+			return save(details, images: [:], minimumHops: minimumHops) ? .saved : .failed
 		}
 		var images: [WidgetMapShape: Data] = [:]
 		for (shape, model) in models {
@@ -237,15 +273,15 @@ final class WidgetTraceRouteRenderer {
 				Logger.services.warning("🧩 Widget trace route map render failed; saving the details without a map.")
 				var withoutMap = details
 				withoutMap.hasMap = false
-				return save(withoutMap, images: [:]) ? .savedWithoutMap : .failed
+				return save(withoutMap, images: [:], minimumHops: minimumHops) ? .savedWithoutMap : .failed
 			}
 			images[shape] = data
 		}
-		return save(details, images: images) ? .saved : .failed
+		return save(details, images: images, minimumHops: minimumHops) ? .saved : .failed
 	}
 
-	private static func save(_ details: WidgetTraceRoute, images: [WidgetMapShape: Data]) -> Bool {
-		guard WidgetTraceRouteStore.save(route: details, images: images) else { return false }
+	private static func save(_ details: WidgetTraceRoute, images: [WidgetMapShape: Data], minimumHops: Int) -> Bool {
+		guard WidgetTraceRouteStore.save(route: details, images: images, minimumHops: minimumHops) else { return false }
 		WidgetCenter.shared.reloadTimelines(ofKind: kind)
 		return true
 	}

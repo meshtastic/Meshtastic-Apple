@@ -24,23 +24,27 @@ struct MeshTraceRouteEntry: TimelineEntry {
 	let date: Date
 	let route: WidgetTraceRoute?
 	let isPreview: Bool
+	/// The widget's Minimum Hops setting; 0 is any route.
+	var minimumHops = 0
 }
 
-struct MeshTraceRouteProvider: TimelineProvider {
+struct MeshTraceRouteProvider: AppIntentTimelineProvider {
 	func placeholder(in context: Context) -> MeshTraceRouteEntry {
 		MeshTraceRouteEntry(date: .now, route: WidgetTraceRouteStore.load() ?? .preview, isPreview: true)
 	}
 
-	func getSnapshot(in context: Context, completion: @escaping (MeshTraceRouteEntry) -> Void) {
-		let route = WidgetTraceRouteStore.load() ?? (context.isPreview ? .preview : nil)
-		completion(MeshTraceRouteEntry(date: .now, route: route, isPreview: context.isPreview))
+	func snapshot(for configuration: TraceRouteWidgetIntent, in context: Context) async -> MeshTraceRouteEntry {
+		let minimumHops = configuration.minimumHops.rawValue
+		let route = WidgetTraceRouteStore.load(minimumHops: minimumHops) ?? (context.isPreview ? .preview : nil)
+		return MeshTraceRouteEntry(date: .now, route: route, isPreview: context.isPreview, minimumHops: minimumHops)
 	}
 
 	// A trace route is a moment, not a live value, so there is no stale dim:
 	// the age next to it says how old it is. The app reloads on a new route.
-	func getTimeline(in context: Context, completion: @escaping (Timeline<MeshTraceRouteEntry>) -> Void) {
-		let entry = MeshTraceRouteEntry(date: .now, route: WidgetTraceRouteStore.load(), isPreview: false)
-		completion(Timeline(entries: [entry], policy: .never))
+	func timeline(for configuration: TraceRouteWidgetIntent, in context: Context) async -> Timeline<MeshTraceRouteEntry> {
+		let minimumHops = configuration.minimumHops.rawValue
+		let entry = MeshTraceRouteEntry(date: .now, route: WidgetTraceRouteStore.load(minimumHops: minimumHops), isPreview: false, minimumHops: minimumHops)
+		return Timeline(entries: [entry], policy: .never)
 	}
 }
 
@@ -48,7 +52,7 @@ struct MeshTraceRouteProvider: TimelineProvider {
 
 struct MeshTraceRouteWidget: Widget {
 	var body: some WidgetConfiguration {
-		StaticConfiguration(kind: "MeshTraceRoute", provider: MeshTraceRouteProvider()) { entry in
+		AppIntentConfiguration(kind: "MeshTraceRoute", intent: TraceRouteWidgetIntent.self, provider: MeshTraceRouteProvider()) { entry in
 			MeshTraceRouteWidgetView(entry: entry)
 				.containerBackground(for: .widget) { RouteStyle.background }
 				.environment(\.colorScheme, .dark)
@@ -100,7 +104,7 @@ struct MeshTraceRouteWidgetView: View {
 					.font(.title2)
 					.foregroundStyle(RouteStyle.brand)
 					.widgetAccentable()
-				Text("Run a trace route to see it here")
+				Text(entry.minimumHops > 0 ? "No trace route with \(entry.minimumHops) or more hops yet" : "Run a trace route to see it here")
 					.font(.caption2)
 					.multilineTextAlignment(.center)
 					.foregroundStyle(RouteStyle.secondaryText)

@@ -18,6 +18,48 @@ import WidgetKit
 struct MeshMessagesEntry: TimelineEntry {
 	let date: Date
 	let snapshot: WidgetSnapshot?
+	/// Which messages, as set in Edit Widget; nil is all of them.
+	var source: MessageSourceEntity?
+	var unreadOnly = false
+
+	/// The messages to show, newest first.
+	var messages: [MessageSnapshot] {
+		let all = snapshot?.recentMessages ?? []
+		return all.filter { message in
+			if unreadOnly, !message.isUnread { return false }
+			switch (source?.id, message.kind) {
+			case (nil, _), (MessageSourceEntity.allID, _):
+				return true
+			case (MessageSourceEntity.directID, .directMessage):
+				return true
+			case (_, .channel(let index, _)):
+				return source?.channelIndex == index
+			default:
+				return false
+			}
+		}
+	}
+
+	/// Unread messages in the chosen source.
+	var unreadCount: Int {
+		guard let snapshot else { return 0 }
+		switch source?.id {
+		case nil, MessageSourceEntity.allID:
+			return snapshot.unreadChannelMessages + snapshot.unreadDirectMessages
+		case MessageSourceEntity.directID:
+			return snapshot.unreadDirectMessages
+		default:
+			return snapshot.channels?.first { $0.index == source?.channelIndex }?.unread ?? 0
+		}
+	}
+
+	/// The header's title: the channel's name, or Messages.
+	var title: String {
+		guard let source, source.id != MessageSourceEntity.allID else {
+			return String(localized: "Messages", comment: "Messages widget title")
+		}
+		return source.name
+	}
 
 	/// Staleness is the snapshot's age at the entry's own date — never the
 	/// entry's position in a timeline.
@@ -27,17 +69,17 @@ struct MeshMessagesEntry: TimelineEntry {
 	}
 }
 
-struct MeshMessagesProvider: TimelineProvider {
+struct MeshMessagesProvider: AppIntentTimelineProvider {
 	func placeholder(in context: Context) -> MeshMessagesEntry {
 		MeshMessagesEntry(date: .now, snapshot: .messagesPreview)
 	}
 
-	func getSnapshot(in context: Context, completion: @escaping (MeshMessagesEntry) -> Void) {
+	func snapshot(for configuration: MessagesWidgetIntent, in context: Context) async -> MeshMessagesEntry {
 		let snapshot = context.isPreview ? (WidgetSnapshotStore.load() ?? .messagesPreview) : WidgetSnapshotStore.load()
-		completion(MeshMessagesEntry(date: .now, snapshot: snapshot))
+		return MeshMessagesEntry(date: .now, snapshot: snapshot, source: configuration.source, unreadOnly: configuration.unreadOnly)
 	}
 
-	func getTimeline(in context: Context, completion: @escaping (Timeline<MeshMessagesEntry>) -> Void) {
+	func timeline(for configuration: MessagesWidgetIntent, in context: Context) async -> Timeline<MeshMessagesEntry> {
 		let snapshot = WidgetSnapshotStore.load()
 		let now = Date()
 		// The stale flip belongs two hours after the snapshot was generated, not
@@ -51,10 +93,10 @@ struct MeshMessagesProvider: TimelineProvider {
 			}
 		}
 		let entries = [
-			MeshMessagesEntry(date: now, snapshot: snapshot),
-			MeshMessagesEntry(date: secondDate, snapshot: snapshot)
+			MeshMessagesEntry(date: now, snapshot: snapshot, source: configuration.source, unreadOnly: configuration.unreadOnly),
+			MeshMessagesEntry(date: secondDate, snapshot: snapshot, source: configuration.source, unreadOnly: configuration.unreadOnly)
 		]
-		completion(Timeline(entries: entries, policy: .atEnd))
+		return Timeline(entries: entries, policy: .atEnd)
 	}
 }
 
@@ -62,7 +104,7 @@ struct MeshMessagesProvider: TimelineProvider {
 
 struct MeshMessagesWidget: Widget {
 	var body: some WidgetConfiguration {
-		StaticConfiguration(kind: "MeshMessages", provider: MeshMessagesProvider()) { entry in
+		AppIntentConfiguration(kind: "MeshMessages", intent: MessagesWidgetIntent.self, provider: MeshMessagesProvider()) { entry in
 			MeshMessagesWidgetView(entry: entry)
 				.containerBackground(Color(UIColor.systemBackground), for: .widget)
 		}
@@ -97,14 +139,14 @@ struct MeshMessagesWidgetView: View {
 		switch family {
 		#if os(iOS)
 		case .accessoryInline:
-			MessagesInlineView(snapshot: snapshot)
+			MessagesInlineView(entry: entry)
 		case .accessoryRectangular:
-			MessagesRectangularView(snapshot: snapshot)
+			MessagesRectangularView(entry: entry)
 		#endif
 		case .systemLarge:
-			MessagesListView(snapshot: snapshot, rowLimit: 5)
+			MessagesListView(entry: entry, rowLimit: 5)
 		default:
-			MessagesListView(snapshot: snapshot, rowLimit: 2)
+			MessagesListView(entry: entry, rowLimit: 2)
 		}
 	}
 
@@ -133,35 +175,36 @@ struct MeshMessagesWidgetView: View {
 // MARK: System families
 
 private struct MessagesListView: View {
-	let snapshot: WidgetSnapshot
+	let entry: MeshMessagesEntry
 	let rowLimit: Int
 
 	var body: some View {
 		VStack(alignment: .leading, spacing: 7) {
 			HStack(spacing: 5) {
 				MeshLogo(height: 10)
-				Text("Messages")
+				Text(entry.title)
 					.font(.caption.weight(.semibold))
 					.foregroundStyle(.secondary)
 					.textCase(.uppercase)
+					.lineLimit(1)
 				Spacer()
-				let total = snapshot.unreadChannelMessages + snapshot.unreadDirectMessages
-				if total > 0 {
-					Text("\(total) unread")
+				if entry.unreadCount > 0 {
+					Text("\(entry.unreadCount) unread")
 						.font(.caption.weight(.semibold))
 						.foregroundStyle(Color.accentColor)
 						.widgetAccentable()
+						.fixedSize()
 				}
 			}
-			if snapshot.recentMessages.isEmpty {
+			if entry.messages.isEmpty {
 				Spacer()
-				Text("No messages yet")
+				Text(entry.unreadOnly ? "No unread messages" : "No messages yet")
 					.font(.caption)
 					.foregroundStyle(.secondary)
 					.frame(maxWidth: .infinity, alignment: .center)
 				Spacer()
 			} else {
-				ForEach(snapshot.recentMessages.prefix(rowLimit)) { message in
+				ForEach(entry.messages.prefix(rowLimit)) { message in
 					Link(destination: deepLink(for: message)) {
 						MessageRow(message: message)
 					}
@@ -218,10 +261,10 @@ private struct MessageRow: View {
 // MARK: Accessory families
 
 private struct MessagesInlineView: View {
-	let snapshot: WidgetSnapshot
+	let entry: MeshMessagesEntry
 
 	var body: some View {
-		let total = snapshot.unreadChannelMessages + snapshot.unreadDirectMessages
+		let total = entry.unreadCount
 		if total > 0 {
 			Text("\(Image(systemName: "message.fill")) \(total) unread")
 		} else {
@@ -231,23 +274,24 @@ private struct MessagesInlineView: View {
 }
 
 private struct MessagesRectangularView: View {
-	let snapshot: WidgetSnapshot
+	let entry: MeshMessagesEntry
 
 	var body: some View {
 		VStack(alignment: .leading, spacing: 1) {
 			HStack(spacing: 4) {
 				MeshLogo(height: 9)
-				Text("Messages")
+				Text(entry.title)
 					.font(.headline)
+					.lineLimit(1)
 				Spacer()
-				let total = snapshot.unreadChannelMessages + snapshot.unreadDirectMessages
+				let total = entry.unreadCount
 				if total > 0 {
 					Text("\(total)")
 						.font(.headline)
 				}
 			}
 			.widgetAccentable()
-			if let latest = snapshot.recentMessages.first {
+			if let latest = entry.messages.first {
 				Text(latest.senderLongName)
 					.font(.caption.weight(.semibold))
 					.lineLimit(1)
@@ -263,7 +307,7 @@ private struct MessagesRectangularView: View {
 			}
 		}
 		// A tap opens the conversation of the message shown, like the system widget's rows.
-		.widgetURL(snapshot.recentMessages.first.map(deepLink(for:)))
+		.widgetURL(entry.messages.first.map(deepLink(for:)))
 	}
 }
 

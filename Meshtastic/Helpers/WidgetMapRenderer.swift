@@ -7,7 +7,8 @@
 //  Renders the map widget's images in the app, in the trace route share
 //  image's look: the same dark, muted tiles, node circles in their colors and
 //  the connected radio ringed in brand green — a square for small and medium,
-//  a wide one for large and a tall one for extra large portrait. Renders are throttled, and the throttle only
+//  a wide one for large and a tall one for extra large portrait, for each node
+//  filter (All, Online, Favorites) a widget on a screen uses. Renders are throttled, and the throttle only
 //  advances on success: a failed render (offline launch, snapshotter error)
 //  is retried by the next broker refresh instead of being silently dropped.
 //
@@ -39,19 +40,55 @@ final class WidgetMapRenderer {
 		let coordinate: CLLocationCoordinate2D
 	}
 
-	private var lastSuccessKey: String?
-	private var lastSuccessAt: Date?
-	/// The radio the last written image rings.
-	private var lastSuccessRadioNum: Int64?
-	private var inFlightKey: String?
-	private var renderTask: Task<Void, Never>?
+	/// One node filter's render state; each filter a widget uses has its own map.
+	private struct Slot {
+		var lastSuccessKey: String?
+		var lastSuccessAt: Date?
+		/// The radio the last written image rings.
+		var lastSuccessRadioNum: Int64?
+		var inFlightKey: String?
+		var renderTask: Task<Void, Never>?
+	}
+
+	private var slots: [NodeMapFilter: Slot] = [:]
+	/// The filters set on widgets on a screen; All is always drawn.
+	private var filtersInUse: Set<NodeMapFilter> = [.all]
+	private var filtersCheckedAt: Date?
 
 	/// True while an image is being drawn; the broker leaves the map's reload
 	/// to the render.
-	var isRendering: Bool { inFlightKey != nil }
+	var isRendering: Bool { slots.values.contains { $0.inFlightKey != nil } }
 
 	/// Called by the broker after each snapshot write, with the nodes it wrote.
 	func refresh(nodes: [NodeSnapshot], radioNum: Int64?) {
+		updateFiltersInUse(nodes: nodes, radioNum: radioNum)
+		for filter in NodeMapFilter.allCases where filtersInUse.contains(filter) {
+			refresh(nodes: nodes.filter { filter.includes($0, radioNum: radioNum) }, radioNum: radioNum, filter: filter)
+		}
+	}
+
+	/// Asks iOS which filters the Node Map widgets are set to, at most once a
+	/// minute, and draws any newly used one right away.
+	private func updateFiltersInUse(nodes: [NodeSnapshot], radioNum: Int64?) {
+		if let filtersCheckedAt, Date().timeIntervalSince(filtersCheckedAt) < 60 { return }
+		filtersCheckedAt = Date()
+		WidgetCenter.shared.getCurrentConfigurations { result in
+			guard case .success(let infos) = result else { return }
+			let used = Set(infos.filter { $0.kind == "MeshNodeMap" }.compactMap { info -> NodeMapFilter? in
+				(info.widgetConfigurationIntent(of: NodeMapWidgetIntent.self))?.filter
+			})
+			Task { @MainActor in
+				let filters = used.union([.all])
+				guard filters != self.filtersInUse else { return }
+				self.filtersInUse = filters
+				self.refresh(nodes: nodes, radioNum: radioNum)
+			}
+		}
+	}
+
+	private func refresh(nodes: [NodeSnapshot], radioNum: Int64?, filter: NodeMapFilter) {
+		var slot = slots[filter] ?? Slot()
+		defer { slots[filter] = slot }
 		let pins = Self.localPins(from: nodes)
 		// The radio is part of the key so a radio switch moves the green ring,
 		// and short names are, so a renamed node's circle is redrawn.
@@ -68,30 +105,32 @@ final class WidgetMapRenderer {
 		// floor case retries naturally — the key stays uncommitted, so the
 		// next broker refresh after the floor lapses renders the move. A new
 		// radio skips the floor: the ring and the widget's title must agree.
-		guard key != lastSuccessKey, key != inFlightKey else { return }
-		let radioChanged = lastSuccessKey != nil && radioNum != lastSuccessRadioNum
-		if !radioChanged, let lastSuccessAt, Date().timeIntervalSince(lastSuccessAt) < Self.minimumInterval { return }
+		guard key != slot.lastSuccessKey, key != slot.inFlightKey else { return }
+		let radioChanged = slot.lastSuccessKey != nil && radioNum != slot.lastSuccessRadioNum
+		if !radioChanged, let lastSuccessAt = slot.lastSuccessAt, Date().timeIntervalSince(lastSuccessAt) < Self.minimumInterval { return }
 
-		inFlightKey = key
-		renderTask?.cancel()
-		renderTask = Task { [pins, radioNum] in
-			let rendered = await Self.render(pins: pins, radioNum: radioNum)
+		slot.inFlightKey = key
+		slot.renderTask?.cancel()
+		slot.renderTask = Task { [pins, radioNum] in
+			let rendered = await Self.render(pins: pins, radioNum: radioNum, filter: filter)
+			var slot = self.slots[filter] ?? Slot()
 			// A superseded task must not commit state for its old positions;
 			// the newer render settles the map's reload.
 			if !Task.isCancelled {
 				if rendered {
-					self.lastSuccessKey = key
-					self.lastSuccessAt = Date()
-					self.lastSuccessRadioNum = radioNum
+					slot.lastSuccessKey = key
+					slot.lastSuccessAt = Date()
+					slot.lastSuccessRadioNum = radioNum
 				} else {
 					// Nothing written, so no reload went out; send the one the
 					// broker held back for this render.
 					WidgetDataBroker.shared.sendDeferredMapReload()
 				}
 			}
-			if self.inFlightKey == key {
-				self.inFlightKey = nil
+			if slot.inFlightKey == key {
+				slot.inFlightKey = nil
 			}
+			self.slots[filter] = slot
 		}
 	}
 
@@ -110,7 +149,7 @@ final class WidgetMapRenderer {
 		}
 	}
 
-	private static func render(pins: [MapPin], radioNum: Int64?) async -> Bool {
+	private static func render(pins: [MapPin], radioNum: Int64?, filter: NodeMapFilter) async -> Bool {
 		let meta = WidgetMapMeta(
 			generatedAt: Date(),
 			nodeNums: pins.map(\.node.num),
@@ -126,7 +165,7 @@ final class WidgetMapRenderer {
 			}
 		)
 		guard !pins.isEmpty else {
-			let saved = WidgetMapStore.saveEmpty(meta: meta)
+			let saved = WidgetMapStore.saveEmpty(meta: meta, filter: filter)
 			if saved { WidgetDataBroker.shared.reload(.map) }
 			return saved
 		}
@@ -157,7 +196,7 @@ final class WidgetMapRenderer {
 				guard let png = image.pngData() else { return false }
 				data[shape] = png
 			}
-			return WidgetMapStore.save(images: data, meta: meta)
+			return WidgetMapStore.save(images: data, meta: meta, filter: filter)
 		}.value
 		guard saved, !Task.isCancelled else { return false }
 		WidgetDataBroker.shared.reload(.map)

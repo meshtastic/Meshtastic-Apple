@@ -38,13 +38,24 @@ struct WidgetSnapshot: Codable {
 	let unreadChannelMessages: Int
 	let unreadDirectMessages: Int
 
-	/// Newest first, capped small.
+	/// Newest first: up to five from each channel and from direct messages, so
+	/// a Messages widget set to one of them still has its latest.
 	let recentMessages: [MessageSnapshot]
 
 	/// Nodes a Node Tracker widget is set to that are no longer in the node
 	/// database (deleted, or the radio was switched), with the names they last
 	/// had. Optional so snapshots written before it still decode.
 	var missingTrackedNodes: [MissingNodeSnapshot]?
+
+	/// The radio's channels with their unread counts, for the Messages widget's
+	/// channel choice. Optional so snapshots written before it still decode.
+	var channels: [ChannelSnapshot]?
+}
+
+struct ChannelSnapshot: Codable, Equatable {
+	let index: Int32
+	let name: String
+	let unread: Int
 }
 
 struct MissingNodeSnapshot: Codable {
