@@ -59,9 +59,9 @@ Bluetooth, IAQ, ATAK, WinTAK, mPWRD-OS, iOS, macOS, CarPlay, SiriKit.
 | pl | Off-Grid Messaging | Komunikacja off-grid |
 | pl | Trace Route | Śledzenie trasy |
 | pl | Local Stats | Statystyki lokalne |
-| pl | Device/Power/Environment Metrics | Metryki urządzenia/zasilania/środowiska |
+| pl | Device/Power/Environment Metrics | metryki urządzenia, metryki zasilania, metryki środowiskowe |
 | pl | Host Metrics | Statystyki hosta |
-| pl | logs | logi |
+| pl | logs | logi (for example "Logi metryk urządzenia") |
 | pl | Remote admin | Zdalne zarządzanie |
 | pl | Exchange Positions | Poproś o pozycję |
 | pl | Live Activity | Aktywność na żywo |
