@@ -549,30 +549,44 @@ final class WidgetDataBroker {
 	}
 
 	nonisolated private static func fetchRecentMessages(context: ModelContext, radioNum: Int64?) -> [MessageSnapshot] {
-		var descriptor = FetchDescriptor<MessageEntity>(
-			predicate: #Predicate<MessageEntity> { $0.isEmoji == false && $0.admin == false },
-			sortBy: [SortDescriptor(\.messageTimestamp, order: .reverse)]
-		)
-		// messageId uniqueness is only enforced per save, so a sent message and
-		// its mesh echo can coexist briefly; fetch extra and dedupe below. Extra
-		// again so each channel and the direct messages can have their latest.
-		descriptor.fetchLimit = 200
-		let fetched = (try? context.fetch(descriptor)) ?? []
-
+		func fetch(_ predicate: Predicate<MessageEntity>, limit: Int) -> [MessageEntity] {
+			var descriptor = FetchDescriptor<MessageEntity>(predicate: predicate, sortBy: [SortDescriptor(\.messageTimestamp, order: .reverse)])
+			descriptor.fetchLimit = limit
+			return (try? context.fetch(descriptor)) ?? []
+		}
 		let channelNames = radioNum.map { fetchChannelNames(context: context, radioNum: $0) } ?? [:]
+
+		// The newest messages, which carry the direct messages, then each channel's own
+		// newest so a busy channel can't push a quiet one out, then the unread ones so
+		// Unread Only has them however far back they are. messageId uniqueness is only
+		// enforced per save, so a sent message and its mesh echo can coexist briefly;
+		// they're deduped below.
+		var fetched = fetch(#Predicate { $0.isEmoji == false && $0.admin == false }, limit: 200)
+		for index in channelNames.keys {
+			fetched += fetch(#Predicate { $0.channel == index && $0.isEmoji == false && $0.admin == false }, limit: 20)
+		}
+		fetched += fetch(#Predicate { $0.read == false && $0.isEmoji == false && $0.admin == false }, limit: 100)
+		fetched.sort { $0.messageTimestamp > $1.messageTimestamp }
 
 		var seenIds = Set<Int64>()
 		var snapshots: [MessageSnapshot] = []
-		// Up to five per conversation: each channel by index, and all direct messages together.
-		var perConversation: [Int32: Int] = [:]
+		// Per conversation (each channel by index, and all direct messages together),
+		// the five newest, and up to five more unread ones older than those.
+		var latestCount: [Int32: Int] = [:]
+		var unreadCount: [Int32: Int] = [:]
 		let directKey: Int32 = -1
 		for message in fetched {
-			guard snapshots.count < 40 else { break }
 			let conversation = message.toUser == nil ? message.channel : directKey
-			guard perConversation[conversation, default: 0] < 5,
+			let isLatest = latestCount[conversation, default: 0] < 5
+			let isExtraUnread = !isLatest && !message.read && unreadCount[conversation, default: 0] < 5
+			guard isLatest || isExtraUnread,
 				  let fromUser = message.fromUser,
 				  seenIds.insert(message.messageId).inserted else { continue }
-			perConversation[conversation, default: 0] += 1
+			if isLatest {
+				latestCount[conversation, default: 0] += 1
+			} else {
+				unreadCount[conversation, default: 0] += 1
+			}
 			let kind: MessageSnapshot.Kind
 			if let toUser = message.toUser {
 				// Show the conversation partner, not ourselves, for sent DMs.

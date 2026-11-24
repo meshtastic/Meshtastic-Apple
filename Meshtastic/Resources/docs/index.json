@@ -9,9 +9,9 @@
             "node",
             "app",
             "tap",
+            "screen",
             "connect",
             "bluetooth",
-            "screen",
             "widget",
             "shows",
             "device",
@@ -24,6 +24,7 @@
             "meshtastic",
             "from",
             "widgets",
+            "then",
             "settings",
             "radios",
             "live",
@@ -31,12 +32,11 @@
             "choose",
             "activity",
             "time",
-            "then",
             "small",
             "power",
             "pin"
         ],
-        "charCount": 8793
+        "charCount": 8906
     },
     {
         "id": "carplay",

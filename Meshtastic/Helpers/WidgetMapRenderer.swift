@@ -54,6 +54,9 @@ final class WidgetMapRenderer {
 	/// The filters set on widgets on a screen; All is always drawn.
 	private var filtersInUse: Set<NodeMapFilter> = [.all]
 	private var filtersCheckedAt: Date?
+	/// The broker's latest input, for a filter discovered after it arrived.
+	private var latestNodes: [NodeSnapshot] = []
+	private var latestRadioNum: Int64?
 
 	/// True while an image is being drawn; the broker leaves the map's reload
 	/// to the render.
@@ -61,7 +64,9 @@ final class WidgetMapRenderer {
 
 	/// Called by the broker after each snapshot write, with the nodes it wrote.
 	func refresh(nodes: [NodeSnapshot], radioNum: Int64?) {
-		updateFiltersInUse(nodes: nodes, radioNum: radioNum)
+		latestNodes = nodes
+		latestRadioNum = radioNum
+		updateFiltersInUse()
 		for filter in NodeMapFilter.allCases where filtersInUse.contains(filter) {
 			refresh(nodes: nodes.filter { filter.includes($0, radioNum: radioNum) }, radioNum: radioNum, filter: filter)
 		}
@@ -69,7 +74,7 @@ final class WidgetMapRenderer {
 
 	/// Asks iOS which filters the Node Map widgets are set to, at most once a
 	/// minute, and draws any newly used one right away.
-	private func updateFiltersInUse(nodes: [NodeSnapshot], radioNum: Int64?) {
+	private func updateFiltersInUse() {
 		if let filtersCheckedAt, Date().timeIntervalSince(filtersCheckedAt) < 60 { return }
 		filtersCheckedAt = Date()
 		WidgetCenter.shared.getCurrentConfigurations { result in
@@ -81,7 +86,7 @@ final class WidgetMapRenderer {
 				let filters = used.union([.all])
 				guard filters != self.filtersInUse else { return }
 				self.filtersInUse = filters
-				self.refresh(nodes: nodes, radioNum: radioNum)
+				self.refresh(nodes: self.latestNodes, radioNum: self.latestRadioNum)
 			}
 		}
 	}
@@ -105,7 +110,18 @@ final class WidgetMapRenderer {
 		// floor case retries naturally — the key stays uncommitted, so the
 		// next broker refresh after the floor lapses renders the move. A new
 		// radio skips the floor: the ring and the widget's title must agree.
-		guard key != slot.lastSuccessKey, key != slot.inFlightKey else { return }
+		if key == slot.lastSuccessKey {
+			// Back to what's already drawn, such as a switch back to the previous
+			// radio: a render still drawing something else must not overwrite it.
+			if slot.inFlightKey != nil {
+				slot.renderTask?.cancel()
+				slot.renderTask = nil
+				slot.inFlightKey = nil
+				WidgetDataBroker.shared.sendDeferredMapReload()
+			}
+			return
+		}
+		guard key != slot.inFlightKey else { return }
 		let radioChanged = slot.lastSuccessKey != nil && radioNum != slot.lastSuccessRadioNum
 		if !radioChanged, let lastSuccessAt = slot.lastSuccessAt, Date().timeIntervalSince(lastSuccessAt) < Self.minimumInterval { return }
 

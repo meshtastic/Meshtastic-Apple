@@ -193,7 +193,9 @@ private struct SmallView: View {
 		case .nodes, .unreadMessages: true
 		case .battery: snapshot.radioBatteryLevel != nil
 		case .uptime: snapshot.localStats?.uptimeSeconds != nil
-		default: snapshot.localStats != nil
+		case .channelUtilization: snapshot.localStats?.channelUtilization != nil
+		case .airtime: snapshot.localStats?.airUtilTx != nil
+		case .packetsSent, .packetsReceived, .packetsRelayed, .duplicates: snapshot.localStats != nil
 		}
 	}
 

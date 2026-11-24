@@ -105,13 +105,20 @@ final class WidgetTraceRouteRenderer {
 
 		// Another choice is drawing this route: wait for it and share its map.
 		if slots.contains(where: { $0.key != minimumHops && $0.value.inFlightKey == key }) { return }
-		// Another choice already shows this route with its map: share it rather than draw it again.
-		if let other = slots.first(where: { $0.key != minimumHops && $0.value.lastSavedKey == key && $0.value.mapRetryAt == nil })?.key,
-		   let stored = WidgetTraceRouteStore.load(minimumHops: other),
-		   WidgetTraceRouteStore.save(route: stored, images: [:], minimumHops: minimumHops) {
+		// Another choice already shows this route: share it rather than draw it again.
+		// One saved without its map is shared too, with its retry time, unless this
+		// choice already shows the route that way and is due to retry the map.
+		let alreadyShown = slot.lastSavedKey == key
+		let sharable = slots.first { $0.key != minimumHops && $0.value.lastSavedKey == key && ($0.value.mapRetryAt == nil || !alreadyShown) }
+		if let other = sharable, let stored = WidgetTraceRouteStore.load(minimumHops: other.key) {
+			// A render of an older route for this choice must not overwrite the shared one.
+			slot.renderTask?.cancel()
+			slot.renderTask = nil
+			slot.inFlightKey = nil
+			guard WidgetTraceRouteStore.save(route: stored, images: [:], minimumHops: minimumHops) else { return }
 			WidgetCenter.shared.reloadTimelines(ofKind: Self.kind)
 			slot.lastSavedKey = key
-			slot.mapRetryAt = nil
+			slot.mapRetryAt = other.value.mapRetryAt
 			if route.observed { slot.lastObservedSaveAt = Date() }
 			return
 		}
@@ -154,8 +161,8 @@ final class WidgetTraceRouteRenderer {
 				slot.inFlightKey = nil
 			}
 			self.slots[minimumHops] = slot
-			// A choice waiting on this route can now share its map.
-			if outcome == .saved {
+			// A choice waiting on this route can now share it.
+			if outcome != .failed {
 				self.refresh()
 			}
 		}
