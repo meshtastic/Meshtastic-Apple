@@ -135,31 +135,36 @@ enum WidgetMapStore {
 		FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: WidgetSnapshotStore.appGroupID)
 	}
 
-	static func imageURL(_ shape: WidgetMapShape) -> URL? {
-		containerURL?.appendingPathComponent("widget-map-\(shape.rawValue).png")
+	/// The All map keeps the original file names; the others add their filter.
+	private static func suffix(_ filter: NodeMapFilter) -> String {
+		filter == .all ? "" : "-\(filter.rawValue)"
 	}
 
-	static var metaURL: URL? {
-		containerURL?.appendingPathComponent(metaFilename)
+	static func imageURL(_ shape: WidgetMapShape, filter: NodeMapFilter = .all) -> URL? {
+		containerURL?.appendingPathComponent("widget-map-\(shape.rawValue)\(suffix(filter)).png")
+	}
+
+	static func metaURL(filter: NodeMapFilter = .all) -> URL? {
+		containerURL?.appendingPathComponent(filter == .all ? metaFilename : "widget-map\(suffix(filter)).json")
 	}
 
 	/// Writes the images and then the meta sidecar, and removes the image of
 	/// any shape left out, so the widget doesn't show an older map. Returns
 	/// false when anything failed, so the renderer can retry instead of
 	/// marking success.
-	static func save(images: [WidgetMapShape: Data], meta: WidgetMapMeta) -> Bool {
-		guard let metaURL else {
+	static func save(images: [WidgetMapShape: Data], meta: WidgetMapMeta, filter: NodeMapFilter = .all) -> Bool {
+		guard let metaURL = metaURL(filter: filter) else {
 			logger.warning("No app group container; widget map not written.")
 			return false
 		}
 		do {
 			let options: Data.WritingOptions = [.atomic, .completeFileProtectionUntilFirstUserAuthentication]
 			for (shape, image) in images {
-				guard let url = imageURL(shape) else { return false }
+				guard let url = imageURL(shape, filter: filter) else { return false }
 				try image.write(to: url, options: options)
 			}
 			for shape in WidgetMapShape.allCases where images[shape] == nil {
-				if let url = imageURL(shape) {
+				if let url = imageURL(shape, filter: filter) {
 					try? FileManager.default.removeItem(at: url)
 				}
 			}
@@ -174,10 +179,10 @@ enum WidgetMapStore {
 
 	/// For a mesh with no node positions: no images, a meta that says so —
 	/// the widget then explains instead of prompting to open the app.
-	static func saveEmpty(meta: WidgetMapMeta) -> Bool {
-		guard let metaURL else { return false }
+	static func saveEmpty(meta: WidgetMapMeta, filter: NodeMapFilter = .all) -> Bool {
+		guard let metaURL = metaURL(filter: filter) else { return false }
 		for shape in WidgetMapShape.allCases {
-			if let url = imageURL(shape) {
+			if let url = imageURL(shape, filter: filter) {
 				try? FileManager.default.removeItem(at: url)
 			}
 		}
@@ -190,8 +195,8 @@ enum WidgetMapStore {
 		}
 	}
 
-	static func loadMeta() -> WidgetMapMeta? {
-		guard let metaURL,
+	static func loadMeta(filter: NodeMapFilter = .all) -> WidgetMapMeta? {
+		guard let metaURL = metaURL(filter: filter),
 			  let data = try? Data(contentsOf: metaURL) else { return nil }
 		let decoder = JSONDecoder()
 		decoder.dateDecodingStrategy = .millisecondsSince1970
@@ -200,8 +205,8 @@ enum WidgetMapStore {
 		return meta
 	}
 
-	static func loadImageData(_ shape: WidgetMapShape) -> Data? {
-		guard let url = imageURL(shape) else { return nil }
+	static func loadImageData(_ shape: WidgetMapShape, filter: NodeMapFilter = .all) -> Data? {
+		guard let url = imageURL(shape, filter: filter) else { return nil }
 		return try? Data(contentsOf: url)
 	}
 

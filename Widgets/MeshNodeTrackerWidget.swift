@@ -23,6 +23,8 @@ struct NodeTrackerEntry: TimelineEntry {
 	/// The node's current data, nil when it dropped out of the snapshot.
 	let node: NodeSnapshot?
 	let snapshot: WidgetSnapshot?
+	/// Telemetry readings on the small size, as set in Edit Widget.
+	var smallReadings = 2
 
 	/// The node is no longer in the node database: deleted, or the radio was
 	/// switched. It comes back by itself if the radio hears it again.
@@ -84,7 +86,7 @@ struct NodeTrackerProvider: AppIntentTimelineProvider {
 		// same default the picker offers.
 		let configured = configuration.node ?? snapshot?.nodes.first.map(TrackedNodeEntity.init)
 		let node = snapshot?.nodes.first { String($0.num) == configured?.id }
-		return NodeTrackerEntry(date: date, configured: configured, node: node, snapshot: snapshot)
+		return NodeTrackerEntry(date: date, configured: configured, node: node, snapshot: snapshot, smallReadings: configuration.smallReadings.rawValue)
 	}
 }
 
@@ -140,7 +142,7 @@ struct NodeTrackerWidgetView: View {
 		case .systemMedium:
 			TrackerMediumView(configured: configured, node: entry.node, snapshot: entry.snapshot, isMissing: entry.isMissing)
 		default:
-			TrackerSmallView(configured: configured, node: entry.node, isMissing: entry.isMissing)
+			TrackerSmallView(configured: configured, node: entry.node, snapshot: entry.snapshot, readings: entry.smallReadings, isMissing: entry.isMissing)
 		}
 	}
 
@@ -176,29 +178,122 @@ struct NodeTrackerWidgetView: View {
 private struct TrackerSmallView: View {
 	let configured: TrackedNodeEntity
 	let node: NodeSnapshot?
+	let snapshot: WidgetSnapshot?
+	/// How many telemetry readings to show, two to a row.
+	let readings: Int
 	let isMissing: Bool
 
+	/// Six or eight readings need the room: battery and signal move up beside
+	/// the chip, the name keeps to one line and hops and distance are left to
+	/// the medium size.
+	private var isCompact: Bool { readings > 3 && node?.telemetry != nil }
+
+	// The chip and name up top, then battery and signal, hops and distance,
+	// the readings and when it was heard, so the square is used top to bottom.
 	var body: some View {
-		VStack(alignment: .leading, spacing: 4) {
-			HStack(spacing: 6) {
+		VStack(alignment: .leading, spacing: 3) {
+			HStack(spacing: isCompact ? 4 : 6) {
 				MeshLogo(height: 13)
-				Spacer()
+				NodeChip(shortName: configured.shortName, colorSeed: UInt32(truncatingIfNeeded: configured.nodeNum ?? 0), size: isCompact ? 22 : 26)
+				if isCompact, let node {
+					BatteryRow(level: node.batteryLevel, font: .caption.weight(.semibold), showsPoweredText: false)
+						.fixedSize()
+					SignalBars(rating: node.signalRating, font: .caption2)
+				} else if node?.isFavorite == true {
+					Image(systemName: "star.fill")
+						.font(.caption2)
+						.foregroundStyle(.yellow)
+				}
+				Spacer(minLength: 2)
 				OnlineDot(node: node)
 			}
-			NodeChip(shortName: configured.shortName, colorSeed: UInt32(truncatingIfNeeded: configured.nodeNum ?? 0), size: 30)
-			Text(configured.longName)
-				.font(.callout.weight(.semibold))
-				.lineLimit(1)
+			if isCompact {
+				Text(configured.longName)
+					.font(.caption.weight(.semibold))
+					.lineLimit(1)
+					.minimumScaleFactor(0.6)
+			} else {
+				// Two lines rather than cutting a long name short.
+				Text(configured.longName)
+					.font(.caption.weight(.semibold))
+					.lineLimit(2)
+					.minimumScaleFactor(0.8)
+					.fixedSize(horizontal: false, vertical: true)
+			}
 			Spacer(minLength: 2)
 			if let node {
-				HStack(spacing: 8) {
-					BatteryRow(level: node.batteryLevel, font: .caption)
-					SignalBars(rating: node.signalRating)
+				Grid(alignment: .leading, horizontalSpacing: 10, verticalSpacing: 3) {
+					if !isCompact {
+						GridRow {
+							BatteryRow(level: node.batteryLevel, font: .caption.weight(.semibold), showsPoweredText: false)
+							HStack(spacing: 3) {
+								SignalBars(rating: node.signalRating, font: .caption2)
+								if let snr = node.snr {
+									Text("\(snr, specifier: "%.1f") dB")
+										.font(.caption.weight(.semibold))
+										.monospacedDigit()
+								}
+							}
+						}
+						GridRow {
+							HopsLine(hopsAway: node.hopsAway)
+							if let distance = distanceText(node: node, snapshot: snapshot) {
+								Label(distance, systemImage: "point.topleft.down.to.point.bottomright.curvepath")
+									.font(.caption2)
+									.foregroundStyle(.secondary)
+									.labelStyle(TightLabelStyle())
+							}
+						}
+					}
+					// The first readings the node reports, as the Telemetry widget formats them, two to a row.
+					if let telemetry = node.telemetry {
+						let shown = telemetry.reportedMetrics.prefix(readings).compactMap { metric in
+							metric.reading(in: telemetry).map { (metric, $0) }
+						}
+						ForEach(Array(stride(from: 0, to: shown.count, by: 2)), id: \.self) { start in
+							GridRow {
+								ForEach(shown[start..<min(start + 2, shown.count)], id: \.0) { metric, reading in
+									TrackerReading(metric: metric, reading: reading)
+								}
+							}
+						}
+					}
 				}
+				// Scaled down a little, never cut short, when a row is wider than the widget.
+				.lineLimit(1)
+				.minimumScaleFactor(0.7)
 				HeardFooter(node: node)
 			} else {
 				AbsentNote(isMissing: isMissing, showsHint: true)
 			}
+		}
+	}
+}
+
+/// One telemetry reading: its icon and value with the unit.
+private struct TrackerReading: View {
+	let metric: TelemetryMetric
+	let reading: TelemetryReading
+
+	var body: some View {
+		HStack(spacing: 3) {
+			Image(systemName: metric.systemImage)
+				.font(.caption2)
+				.foregroundStyle(.secondary)
+				.widgetAccentable()
+			Text(reading.value + (reading.unit.map { $0 == "%" || $0.hasPrefix("°") ? $0 : " " + $0 } ?? ""))
+				.font(.caption.weight(.semibold))
+				.monospacedDigit()
+		}
+	}
+}
+
+/// An icon and title with less space between them than the system label, for the small widget.
+private struct TightLabelStyle: LabelStyle {
+	func makeBody(configuration: Configuration) -> some View {
+		HStack(spacing: 3) {
+			configuration.icon
+			configuration.title
 		}
 	}
 }
@@ -258,7 +353,7 @@ private struct TrackerInlineView: View {
 
 	var body: some View {
 		if let node, let lastHeard = node.lastHeard {
-			Text("\(configured.shortName) · \(lastHeard, style: .relative) ago")
+			Text("\(configured.shortName) · \(ageText(lastHeard))")
 		} else if isMissing {
 			Text("\(configured.shortName) · not in node list")
 		} else {
@@ -392,7 +487,7 @@ private struct HeardFooter: View {
 
 	var body: some View {
 		if let lastHeard = node.lastHeard {
-			Text("Heard \(lastHeard, style: .relative) ago")
+			Text("Heard \(ageText(lastHeard))")
 				.font(.caption2)
 				.foregroundStyle(.secondary)
 				.lineLimit(1)

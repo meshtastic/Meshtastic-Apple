@@ -5,7 +5,7 @@
 //  Copyright(c) Garth Vander Houwen 11/11/26.
 //
 //  One node's telemetry as node details' tiles (meshtastic/design#179): every
-//  reading it reports, less any the person hides. Small shows the first, medium
+//  reading it reports, less any the person hides. Small shows the first two, three, six or twelve, medium
 //  the first four, large four at a time with a page button when there are more;
 //  extra large portrait (iOS 27 and Vision Pro) fits up to six and pages beyond
 //  that, and Vision Pro's extra large board shows eight at a time. It reads the
@@ -28,6 +28,8 @@ struct TelemetryEntry: TimelineEntry {
 	let metrics: [TelemetryMetric]
 	/// The page as stored; each paging size wraps it to its own page count.
 	let storedPage: Int
+	/// Readings on the small size, as set in Edit Widget.
+	var smallReadings = 2
 
 	var telemetry: TelemetrySnapshot? { node?.telemetry }
 
@@ -79,7 +81,7 @@ struct TelemetryProvider: AppIntentTimelineProvider {
 		let node = snapshot?.nodes.first { String($0.num) == configured?.id }
 		let metrics = TelemetryMetric.shown(in: node?.telemetry, hiding: (configuration.hidden ?? []).map(\.metric))
 		let storedPage = configured?.nodeNum.map(TelemetryWidgetPage.storedPage(for:)) ?? 0
-		return TelemetryEntry(date: date, configured: configured, node: node, metrics: metrics, storedPage: storedPage)
+		return TelemetryEntry(date: date, configured: configured, node: node, metrics: metrics, storedPage: storedPage, smallReadings: configuration.smallReadings.rawValue)
 	}
 }
 
@@ -137,18 +139,18 @@ struct TelemetryWidgetView: View {
 
 	var body: some View {
 		if let configured = entry.configured {
-			VStack(alignment: .leading, spacing: 8) {
+			VStack(alignment: .leading, spacing: isSmall ? 4 : 8) {
 				if showsDetail {
-					TelemetryHeader(configured: configured)
-						.padding(.horizontal, Self.margin)
+					TelemetryHeader(configured: configured, compact: isSmall)
+						.padding(.horizontal, margin)
 				}
 				if let telemetry = entry.telemetry, !entry.metrics.isEmpty {
 					tiles(telemetry)
 						// The large size spaces its tiles from the edges itself.
-						.padding(.horizontal, usesEvenEdges ? 0 : Self.margin)
-					if showsDetail {
+						.padding(.horizontal, usesEvenEdges ? 0 : margin)
+					if showsDetail, showsFooter {
 						TelemetryFooter(entry: entry, page: page, pageCount: pageCount)
-							.padding(.horizontal, Self.margin)
+							.padding(.horizontal, margin)
 					}
 				} else {
 					Spacer(minLength: 0)
@@ -156,11 +158,11 @@ struct TelemetryWidgetView: View {
 						.font(.caption)
 						.foregroundStyle(.secondary)
 						.fixedSize(horizontal: false, vertical: true)
-						.padding(.horizontal, Self.margin)
+						.padding(.horizontal, margin)
 					Spacer(minLength: 0)
 				}
 			}
-			.padding(.vertical, Self.margin)
+			.padding(.vertical, margin)
 		} else {
 			VStack(spacing: 6) {
 				Image(systemName: "thermometer.sun")
@@ -189,7 +191,7 @@ struct TelemetryWidgetView: View {
 		} else {
 			switch family {
 			case .systemSmall:
-				grid(Array(entry.metrics.prefix(1)), columns: 1, telemetry: telemetry)
+				bestFitGrid(Array(entry.metrics.prefix(entry.smallReadings)), telemetry: telemetry)
 			case .systemMedium:
 				bestFitGrid(Array(entry.metrics.prefix(4)), telemetry: telemetry)
 			#if os(visionOS)
@@ -239,7 +241,7 @@ struct TelemetryWidgetView: View {
 
 	/// The sizes whose tiles are spaced from the widget's side edges by the grid itself.
 	private var usesEvenEdges: Bool {
-		family == .systemMedium || family == .systemLarge || isExtraLargePortrait
+		family == .systemSmall || family == .systemMedium || family == .systemLarge || isExtraLargePortrait
 	}
 
 	/// Rows of `columns` square tiles, as large as the widget allows and centered.
@@ -292,7 +294,7 @@ struct TelemetryWidgetView: View {
 	private func bestFitGrid(_ metrics: [TelemetryMetric], telemetry: TelemetrySnapshot) -> some View {
 		GeometryReader { geometry in
 			let size = geometry.size
-			let spacing: CGFloat = 8
+			let spacing: CGFloat = isSmall ? 6 : 8
 			let fit = TelemetryWidgetPage.bestFit(count: metrics.count, in: size, spacing: spacing)
 			let gap = (size.width - fit.side * CGFloat(fit.columns)) / CGFloat(fit.columns + 1)
 			VStack(spacing: spacing) {
@@ -322,6 +324,17 @@ struct TelemetryWidgetView: View {
 		}
 	}
 
+	/// The small size gives the footer's row to the tiles; it comes back when the
+	/// reading is old, so the warning still shows.
+	private var showsFooter: Bool {
+		!isSmall || entry.isStale
+	}
+
+	private var isSmall: Bool { family == .systemSmall }
+
+	/// The small size keeps its edges tight so the tiles get the room.
+	private var margin: CGFloat { isSmall ? 10 : Self.margin }
+
 	/// Seen from across the room on Vision Pro, the widget keeps the readings
 	/// and drops the header and footer.
 	private var showsDetail: Bool {
@@ -339,16 +352,22 @@ struct TelemetryWidgetView: View {
 
 private struct TelemetryHeader: View {
 	let configured: TelemetryNodeEntity
+	/// The small size's shorter header, so the tiles get the room.
+	var compact = false
 
 	var body: some View {
-		HStack(spacing: 6) {
-			NodeChip(shortName: configured.shortName, colorSeed: UInt32(truncatingIfNeeded: configured.nodeNum ?? 0), size: 24)
+		HStack(spacing: compact ? 4 : 6) {
+			NodeChip(shortName: configured.shortName, colorSeed: UInt32(truncatingIfNeeded: configured.nodeNum ?? 0), size: compact ? 18 : 24)
+			// A long name wraps to a second line rather than being cut short.
 			Text(configured.longName)
-				.font(.caption.weight(.semibold))
-				.lineLimit(1)
-				.minimumScaleFactor(0.7)
+				.font(compact ? .caption2.weight(.semibold) : .caption.weight(.semibold))
+				.lineLimit(2)
+				.minimumScaleFactor(0.8)
+				.fixedSize(horizontal: false, vertical: true)
+				.layoutPriority(1)
 			Spacer(minLength: 4)
-			MeshLogo(height: 11)
+			MeshLogo(height: compact ? 9 : 11)
+				.fixedSize()
 		}
 	}
 }
@@ -366,11 +385,11 @@ private struct TelemetryFooter: View {
 				// turns orange and says so instead.
 				Group {
 					if entry.isStale {
-						Label("Over 2 hours old · \(time, style: .relative) ago", systemImage: "clock.badge.exclamationmark")
+						Label("Over 2 hours old · \(ageText(time))", systemImage: "clock.badge.exclamationmark")
 							.font(.system(size: 9))
 							.foregroundStyle(.orange)
 					} else {
-						Text("Updated \(time, style: .relative) ago")
+						Text("Updated \(ageText(time))")
 							.foregroundStyle(.secondary)
 					}
 				}

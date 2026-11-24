@@ -74,15 +74,24 @@ struct BatteryRow: View {
 	let level: Int32?
 	let font: Font
 	var color: Color = .accentColor
+	/// Off where room is tight: the plug icon alone says it's powered.
+	var showsPoweredText = true
 
 	var body: some View {
 		if let level {
 			HStack(spacing: 3) {
 				BatteryIcon(batteryLevel: level, font: font, color: color)
 					.widgetAccentable()
-				Text(level > 100 ? "Powered" : "\(level)%")
-					.font(font)
+				if level <= 100 {
+					Text("\(level)%")
+						.font(font)
+				} else if showsPoweredText {
+					Text("Powered")
+						.font(font)
+				}
 			}
+			.accessibilityElement(children: .combine)
+			.accessibilityLabel(level > 100 ? Text("Powered") : Text("\(level)%"))
 		}
 	}
 }

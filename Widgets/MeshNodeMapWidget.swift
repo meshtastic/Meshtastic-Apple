@@ -60,6 +60,9 @@ struct MeshNodeMapEntry: TimelineEntry {
 	let meta: WidgetMapMeta?
 	let summary: NodeMapSummary?
 	let isPreview: Bool
+	/// The widget's settings: which nodes, and whether the small size's counts sit over the map.
+	var filter: NodeMapFilter = .all
+	var showsLabels = true
 
 	/// The mesh data, not the image, decides staleness: a mesh where nothing
 	/// moved has an old image and current data.
@@ -69,17 +72,17 @@ struct MeshNodeMapEntry: TimelineEntry {
 	}
 }
 
-struct MeshNodeMapProvider: TimelineProvider {
+struct MeshNodeMapProvider: AppIntentTimelineProvider {
 	func placeholder(in context: Context) -> MeshNodeMapEntry {
-		entry(at: .now, isPreview: true)
+		entry(at: .now, isPreview: true, configuration: NodeMapWidgetIntent())
 	}
 
-	func getSnapshot(in context: Context, completion: @escaping (MeshNodeMapEntry) -> Void) {
-		completion(entry(at: .now, isPreview: context.isPreview))
+	func snapshot(for configuration: NodeMapWidgetIntent, in context: Context) async -> MeshNodeMapEntry {
+		entry(at: .now, isPreview: context.isPreview, configuration: configuration)
 	}
 
-	func getTimeline(in context: Context, completion: @escaping (Timeline<MeshNodeMapEntry>) -> Void) {
-		let first = entry(at: .now, isPreview: false)
+	func timeline(for configuration: NodeMapWidgetIntent, in context: Context) async -> Timeline<MeshNodeMapEntry> {
+		let first = entry(at: .now, isPreview: false, configuration: configuration)
 		let now = Date()
 		// The stale flip belongs two hours after the data was written, not two
 		// hours after this reload.
@@ -92,15 +95,16 @@ struct MeshNodeMapProvider: TimelineProvider {
 		}
 		let entries = [
 			first,
-			MeshNodeMapEntry(date: secondDate, meta: first.meta, summary: first.summary, isPreview: false)
+			MeshNodeMapEntry(date: secondDate, meta: first.meta, summary: first.summary, isPreview: false, filter: first.filter, showsLabels: first.showsLabels)
 		]
-		completion(Timeline(entries: entries, policy: .atEnd))
+		return Timeline(entries: entries, policy: .atEnd)
 	}
 
-	private func entry(at date: Date, isPreview: Bool) -> MeshNodeMapEntry {
-		let meta = WidgetMapStore.loadMeta()
+	private func entry(at date: Date, isPreview: Bool, configuration: NodeMapWidgetIntent) -> MeshNodeMapEntry {
+		let filter = configuration.filter
+		let meta = WidgetMapStore.loadMeta(filter: filter)
 		let summary = meta.map { NodeMapSummary(meta: $0, snapshot: WidgetSnapshotStore.load()) }
-		return MeshNodeMapEntry(date: date, meta: meta, summary: summary, isPreview: isPreview)
+		return MeshNodeMapEntry(date: date, meta: meta, summary: summary, isPreview: isPreview, filter: filter, showsLabels: configuration.showsLabels)
 	}
 }
 
@@ -108,7 +112,7 @@ struct MeshNodeMapProvider: TimelineProvider {
 
 struct MeshNodeMapWidget: Widget {
 	var body: some WidgetConfiguration {
-		StaticConfiguration(kind: "MeshNodeMap", provider: MeshNodeMapProvider()) { entry in
+		AppIntentConfiguration(kind: "MeshNodeMap", intent: NodeMapWidgetIntent.self, provider: MeshNodeMapProvider()) { entry in
 			MeshNodeMapWidgetView(entry: entry)
 				.containerBackground(for: .widget) { Style.background }
 				.environment(\.colorScheme, .dark)
@@ -153,7 +157,12 @@ struct MeshNodeMapWidgetView: View {
 			case .systemMedium:
 				MapMediumView(summary: summary, map: mapView)
 			default:
-				MapSmallView(summary: summary, map: mapView)
+				if entry.showsLabels {
+					MapSmallView(summary: summary, map: mapView)
+				} else {
+					mapView
+						.frame(maxWidth: .infinity, maxHeight: .infinity)
+				}
 			}
 		}
 	}
@@ -166,7 +175,8 @@ struct MeshNodeMapWidgetView: View {
 	/// The rendered map for this size. Until the app renders the tall one, the
 	/// tall size shows the wide one.
 	private var mapImage: UIImage? {
-		let data = WidgetMapStore.loadImageData(shape) ?? (shape == .tall ? WidgetMapStore.loadImageData(.wide) : nil)
+		let data = WidgetMapStore.loadImageData(shape, filter: entry.filter)
+			?? (shape == .tall ? WidgetMapStore.loadImageData(.wide, filter: entry.filter) : nil)
 		return data.flatMap(UIImage.init(data:))
 	}
 
@@ -191,33 +201,39 @@ private struct MapSmallView<Map: View>: View {
 	let summary: NodeMapSummary
 	let map: Map
 
+	// The map fills the whole widget. The labels sit over its top edge, which
+	// the framing leaves free of pins; the bottom stays clear for the Maps logo.
 	var body: some View {
-		VStack(alignment: .leading, spacing: 5) {
-			HStack(spacing: 4) {
-				MapHeader(summary: summary, compact: true)
-				Spacer(minLength: 2)
-				AgeLine(summary: summary)
-			}
-			map
-				.frame(maxWidth: .infinity, maxHeight: .infinity)
-			HStack(spacing: 4) {
-				Text("\(summary.onMap) on map")
-					.foregroundStyle(.white)
-				Spacer(minLength: 2)
-				// Disconnected, the online count is stale; say why instead. Down
-				// here so the age line up top keeps its room.
-				if summary.connectionState == .connected {
-					Text("\(summary.online) online")
-						.foregroundStyle(Style.brand)
-				} else {
-					Text(stateText(summary.connectionState))
-						.foregroundStyle(Style.secondaryText)
+		map
+			.frame(maxWidth: .infinity, maxHeight: .infinity)
+			.overlay(alignment: .top) {
+				VStack(alignment: .leading, spacing: 2) {
+					HStack(spacing: 4) {
+						MapHeader(summary: summary, compact: true)
+						Spacer(minLength: 2)
+						AgeLine(summary: summary)
+					}
+					HStack(spacing: 4) {
+						Text("\(summary.onMap) on map")
+							.foregroundStyle(.white)
+						Spacer(minLength: 2)
+						// Disconnected, the online count is stale; say why instead.
+						if summary.connectionState == .connected {
+							Text("\(summary.online) online")
+								.foregroundStyle(Style.brand)
+						} else {
+							Text(stateText(summary.connectionState))
+								.foregroundStyle(Style.secondaryText)
+						}
+					}
+					.font(.caption2.weight(.semibold))
+					.lineLimit(1)
 				}
+				.padding(.horizontal, 12)
+				.padding(.top, 10)
+				.padding(.bottom, 16)
+				.background(SmallMapScrim())
 			}
-			.font(.caption2.weight(.semibold))
-			.lineLimit(1)
-		}
-		.padding(12)
 	}
 }
 
@@ -361,7 +377,7 @@ private struct AgeLine: View {
 
 	var body: some View {
 		if let updatedAt = summary.updatedAt {
-			Text("\(updatedAt, style: .relative) ago")
+			ageText(updatedAt)
 				.font(.caption2)
 				.foregroundStyle(Style.tertiaryText)
 				.lineLimit(1)

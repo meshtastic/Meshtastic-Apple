@@ -166,7 +166,7 @@ struct WidgetsSheet: View {
 			Text("Home Screen & Lock Screen")
 		} footer: {
 			VStack(alignment: .leading, spacing: 6) {
-				Text("Home Screen: touch and hold an empty spot, tap Edit, then Add Widget, and search for Meshtastic. Lock Screen: touch and hold it, tap Customize, then Lock Screen, tap the widget area and choose Meshtastic. To pick a Node Tracker's node, touch and hold the widget and choose Edit Widget.")
+				Text("Home Screen: touch and hold an empty spot, tap Edit, then Add Widget, and search for Meshtastic. Lock Screen: touch and hold it, tap Customize, then Lock Screen, tap the widget area and choose Meshtastic. To change what a widget shows, touch and hold it on the Home Screen and choose Edit Widget, or on the Lock Screen tap Customize, then Lock Screen, and tap the widget.")
 				Link("Apple's guide to widgets", destination: Self.appleWidgetGuide)
 			}
 		}

@@ -18,6 +18,8 @@ import WidgetKit
 struct MeshStatusEntry: TimelineEntry {
 	let date: Date
 	let snapshot: WidgetSnapshot?
+	/// The small size's readings, in order, as set in Edit Widget.
+	var readings: [MeshStatusReading] = MeshStatusReading.standard
 
 	/// Staleness is the snapshot's age at the entry's own date — never the
 	/// entry's position in a timeline. A position-based flag reset on every
@@ -28,17 +30,17 @@ struct MeshStatusEntry: TimelineEntry {
 	}
 }
 
-struct MeshStatusProvider: TimelineProvider {
+struct MeshStatusProvider: AppIntentTimelineProvider {
 	func placeholder(in context: Context) -> MeshStatusEntry {
 		MeshStatusEntry(date: .now, snapshot: .widgetPreview)
 	}
 
-	func getSnapshot(in context: Context, completion: @escaping (MeshStatusEntry) -> Void) {
+	func snapshot(for configuration: MeshStatusWidgetIntent, in context: Context) async -> MeshStatusEntry {
 		let snapshot = context.isPreview ? (WidgetSnapshotStore.load() ?? .widgetPreview) : WidgetSnapshotStore.load()
-		completion(MeshStatusEntry(date: .now, snapshot: snapshot))
+		return MeshStatusEntry(date: .now, snapshot: snapshot, readings: configuration.readings)
 	}
 
-	func getTimeline(in context: Context, completion: @escaping (Timeline<MeshStatusEntry>) -> Void) {
+	func timeline(for configuration: MeshStatusWidgetIntent, in context: Context) async -> Timeline<MeshStatusEntry> {
 		let snapshot = WidgetSnapshotStore.load()
 		let now = Date()
 		// The stale flip belongs two hours after the snapshot was generated, not
@@ -53,10 +55,10 @@ struct MeshStatusProvider: TimelineProvider {
 			}
 		}
 		let entries = [
-			MeshStatusEntry(date: now, snapshot: snapshot),
-			MeshStatusEntry(date: secondDate, snapshot: snapshot)
+			MeshStatusEntry(date: now, snapshot: snapshot, readings: configuration.readings),
+			MeshStatusEntry(date: secondDate, snapshot: snapshot, readings: configuration.readings)
 		]
-		completion(Timeline(entries: entries, policy: .atEnd))
+		return Timeline(entries: entries, policy: .atEnd)
 	}
 }
 
@@ -64,7 +66,7 @@ struct MeshStatusProvider: TimelineProvider {
 
 struct MeshLocalStatsWidget: Widget {
 	var body: some WidgetConfiguration {
-		StaticConfiguration(kind: "MeshLocalStats", provider: MeshStatusProvider()) { entry in
+		AppIntentConfiguration(kind: "MeshLocalStats", intent: MeshStatusWidgetIntent.self, provider: MeshStatusProvider()) { entry in
 			MeshStatusWidgetView(entry: entry)
 				.containerBackground(Color(UIColor.systemBackground), for: .widget)
 				.widgetURL(URL(string: "meshtastic:///connect"))
@@ -113,7 +115,7 @@ struct MeshStatusWidgetView: View {
 		case .systemLarge:
 			LargeView(snapshot: snapshot)
 		default:
-			SmallView(snapshot: snapshot)
+			SmallView(snapshot: snapshot, readings: entry.readings)
 		}
 	}
 
@@ -149,26 +151,107 @@ struct MeshStatusWidgetView: View {
 
 private struct SmallView: View {
 	let snapshot: WidgetSnapshot
+	let readings: [MeshStatusReading]
 
+	// Two columns of short readings under the radio's name, so the square is
+	// used top to bottom. Which readings, and their order, are set in Edit Widget.
 	var body: some View {
-		VStack(alignment: .leading, spacing: 4) {
+		VStack(alignment: .leading, spacing: 3) {
 			HStack(spacing: 6) {
 				MeshLogo(height: 13)
-				NodeChip(shortName: snapshot.radioShortName ?? "?", colorSeed: UInt32(truncatingIfNeeded: snapshot.radioNodeNum ?? 0), size: 28)
-				Spacer()
-				ConnectionDot(state: snapshot.connectionState)
+				NodeChip(shortName: snapshot.radioShortName ?? "?", colorSeed: UInt32(truncatingIfNeeded: snapshot.radioNodeNum ?? 0), size: 26)
+				Spacer(minLength: 2)
+				// The footer says when it isn't connected.
+				ConnectionDot(state: snapshot.connectionState, showsLabel: false)
+			}
+			if let name = snapshot.radioLongName {
+				// Two lines rather than cutting a long name short.
+				Text(name)
+					.font(.caption.weight(.semibold))
+					.lineLimit(2)
+					.minimumScaleFactor(0.8)
+					.fixedSize(horizontal: false, vertical: true)
 			}
 			Spacer(minLength: 2)
-			BatteryRow(level: snapshot.radioBatteryLevel, font: .callout)
-			HStack(spacing: 4) {
-				Image(systemName: "dot.radiowaves.left.and.right")
-					.font(.caption2)
-					.widgetAccentable()
-				Text(nodesText(snapshot))
-					.font(.callout.weight(.semibold))
+			// The chosen readings, two to a row; ones the radio hasn't reported are skipped.
+			let shown = Array(readings.uniqued().filter { hasValue($0) }.prefix(6))
+			Grid(alignment: .leading, horizontalSpacing: 10, verticalSpacing: 3) {
+				ForEach(Array(stride(from: 0, to: shown.count, by: 2)), id: \.self) { start in
+					GridRow {
+						ForEach(shown[start..<min(start + 2, shown.count)], id: \.self) { reading in
+							cell(reading)
+						}
+					}
+				}
 			}
 			UpdatedFooter(snapshot: snapshot)
 		}
+	}
+
+	private func hasValue(_ reading: MeshStatusReading) -> Bool {
+		switch reading {
+		case .nodes, .unreadMessages: true
+		case .battery: snapshot.radioBatteryLevel != nil
+		case .uptime: snapshot.localStats?.uptimeSeconds != nil
+		case .channelUtilization: snapshot.localStats?.channelUtilization != nil
+		case .airtime: snapshot.localStats?.airUtilTx != nil
+		case .packetsSent, .packetsReceived, .packetsRelayed, .duplicates: snapshot.localStats != nil
+		}
+	}
+
+	@ViewBuilder
+	private func cell(_ reading: MeshStatusReading) -> some View {
+		let stats = snapshot.localStats
+		switch reading {
+		case .nodes:
+			SmallStat(systemImage: "dot.radiowaves.left.and.right", value: nodesText(snapshot))
+		case .battery:
+			BatteryRow(level: snapshot.radioBatteryLevel, font: .caption.weight(.semibold), showsPoweredText: false)
+		case .channelUtilization:
+			SmallStat(label: "ChUtil", value: percentText(stats?.channelUtilization))
+		case .airtime:
+			SmallStat(label: "Air", value: percentText(stats?.airUtilTx))
+		case .unreadMessages:
+			SmallStat(systemImage: "bubble.left", value: "\(snapshot.unreadChannelMessages + snapshot.unreadDirectMessages)")
+		case .uptime:
+			SmallStat(systemImage: "clock.arrow.circlepath", value: stats?.uptimeSeconds.map(uptimeText(seconds:)) ?? "--")
+		case .packetsSent:
+			SmallStat(systemImage: "arrow.up", value: compactCount(stats?.packetsSent))
+		case .packetsReceived:
+			SmallStat(systemImage: "arrow.down", value: compactCount(stats?.packetsReceived))
+		case .packetsRelayed:
+			SmallStat(systemImage: "arrow.triangle.2.circlepath", value: compactCount(stats?.packetsRelayed))
+		case .duplicates:
+			SmallStat(systemImage: "square.on.square", value: compactCount(stats?.packetsReceivedDupe))
+		}
+	}
+}
+
+/// One short reading for the small widget: an icon or a short label, then the value.
+private struct SmallStat: View {
+	var systemImage: String?
+	var label: LocalizedStringKey?
+	let value: String
+
+	var body: some View {
+		HStack(spacing: 3) {
+			if let systemImage {
+				Image(systemName: systemImage)
+					.font(.caption2)
+					.foregroundStyle(.secondary)
+					.widgetAccentable()
+			}
+			if let label {
+				Text(label)
+					.font(.caption2)
+					.foregroundStyle(.secondary)
+			}
+			Text(value)
+				.font(.caption.weight(.semibold))
+				.monospacedDigit()
+		}
+		.lineLimit(1)
+		.fixedSize()
 	}
 }
 
@@ -441,17 +524,22 @@ private struct UtilizationGauge: View {
 private struct UpdatedFooter: View {
 	let snapshot: WidgetSnapshot
 
+	// Live age text can't sit in a ViewThatFits (the widget draws black), so the
+	// wording is picked up front: with the state in front there's no room for "Updated".
 	var body: some View {
 		HStack(spacing: 3) {
 			if snapshot.connectionState != .connected {
 				Text(stateText(snapshot.connectionState))
 				Text("·")
+				ageText(snapshot.generatedAt)
+			} else {
+				Text("Updated \(ageText(snapshot.generatedAt))")
 			}
-			Text("Updated \(snapshot.generatedAt, style: .relative) ago")
 		}
 		.font(.caption2)
 		.foregroundStyle(.secondary)
 		.lineLimit(1)
+		.minimumScaleFactor(0.8)
 	}
 }
 
@@ -464,6 +552,25 @@ private func nodesText(_ snapshot: WidgetSnapshot) -> String {
 		return "\(snapshot.totalNodeCount)"
 	}
 	return "\(stats.nodesOnline)/\(stats.nodesTotal)"
+}
+
+private extension Array where Element: Hashable {
+	/// The elements in order, each once: a reading picked twice shows once.
+	func uniqued() -> [Element] {
+		var seen = Set<Element>()
+		return filter { seen.insert($0).inserted }
+	}
+}
+
+/// A packet count short enough for half the small widget's width: 8.4K, 1.2M.
+private func compactCount(_ value: Int32?) -> String {
+	guard let value else { return "--" }
+	return Int(value).formatted(.number.notation(.compactName))
+}
+
+/// nil means the radio did not report it; 0% would claim a reading that never arrived.
+private func percentText(_ value: Float?) -> String {
+	value.map { String(format: "%.0f%%", $0) } ?? "--"
 }
 
 private func uptimeText(seconds: Int32) -> String {

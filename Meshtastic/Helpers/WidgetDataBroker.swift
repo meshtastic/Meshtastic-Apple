@@ -238,7 +238,8 @@ final class WidgetDataBroker {
 			unreadChannelMessages: unreadChannels,
 			unreadDirectMessages: unreadDMs,
 			recentMessages: recent,
-			missingTrackedNodes: missing.isEmpty ? nil : missing
+			missingTrackedNodes: missing.isEmpty ? nil : missing,
+			channels: data.channels.isEmpty ? nil : data.channels
 		)
 		WidgetSnapshotStore.save(snapshot)
 		MeshLiveActivityManager.shared.meshStatusDidUpdate(snapshot)
@@ -271,6 +272,7 @@ final class WidgetDataBroker {
 		var unreadChannels = 0
 		var unreadDMs = 0
 		var recentMessages: [MessageSnapshot] = []
+		var channels: [ChannelSnapshot] = []
 		var telemetryNodes: [Int64] = []
 	}
 
@@ -318,8 +320,14 @@ final class WidgetDataBroker {
 		let present = Set(read.nodes.map(\.num))
 		read.missingTracked = tracked.subtracting(present).sorted()
 		read.totalNodeCount = (try? context.fetchCount(FetchDescriptor<NodeInfoEntity>())) ?? read.nodes.count
-		(read.unreadChannels, read.unreadDMs) = fetchUnreadCounts(context: context)
+		let unread = fetchUnreadCounts(context: context)
+		(read.unreadChannels, read.unreadDMs) = (unread.channels, unread.dms)
 		read.recentMessages = fetchRecentMessages(context: context, radioNum: radioNum)
+		if let radioNum {
+			read.channels = fetchChannelNames(context: context, radioNum: radioNum)
+				.sorted { $0.key < $1.key }
+				.map { ChannelSnapshot(index: $0.key, name: $0.value, unread: unread.byChannel[$0.key] ?? 0) }
+		}
 		return read
 	}
 
@@ -500,16 +508,24 @@ final class WidgetDataBroker {
 
 	/// Same fetch-and-split approach as AppState.refreshBadgeCount — comparing an
 	/// optional relationship to nil inside a #Predicate crashes SwiftData on iOS 26.
-	nonisolated private static func fetchUnreadCounts(context: ModelContext) -> (channels: Int, dms: Int) {
+	/// Unread messages: on channels, in direct messages, and on each channel by index.
+	private struct UnreadCounts {
+		let channels: Int
+		let dms: Int
+		let byChannel: [Int32: Int]
+	}
+
+	nonisolated private static func fetchUnreadCounts(context: ModelContext) -> UnreadCounts {
 		var descriptor = FetchDescriptor<MessageEntity>(
 			predicate: #Predicate<MessageEntity> { $0.isEmoji == false && $0.read == false }
 		)
 		// Loaded with the messages, rather than one at a time below.
 		descriptor.relationshipKeyPathsForPrefetching = [\.toUser]
 		let unread = (try? context.fetch(descriptor)) ?? []
-		let channels = unread.filter { $0.toUser == nil }.count
+		let channelMessages = unread.filter { $0.toUser == nil }
 		let dms = unread.filter { $0.toUser != nil && !$0.admin }.count
-		return (channels, dms)
+		let byChannel = Dictionary(grouping: channelMessages, by: \.channel).mapValues(\.count)
+		return UnreadCounts(channels: channelMessages.count, dms: dms, byChannel: byChannel)
 	}
 
 	/// The radio's channel names by index, fetched rather than read through
@@ -533,23 +549,44 @@ final class WidgetDataBroker {
 	}
 
 	nonisolated private static func fetchRecentMessages(context: ModelContext, radioNum: Int64?) -> [MessageSnapshot] {
-		var descriptor = FetchDescriptor<MessageEntity>(
-			predicate: #Predicate<MessageEntity> { $0.isEmoji == false && $0.admin == false },
-			sortBy: [SortDescriptor(\.messageTimestamp, order: .reverse)]
-		)
-		// messageId uniqueness is only enforced per save, so a sent message and
-		// its mesh echo can coexist briefly; fetch extra and dedupe below.
-		descriptor.fetchLimit = 16
-		let fetched = (try? context.fetch(descriptor)) ?? []
-
+		func fetch(_ predicate: Predicate<MessageEntity>, limit: Int) -> [MessageEntity] {
+			var descriptor = FetchDescriptor<MessageEntity>(predicate: predicate, sortBy: [SortDescriptor(\.messageTimestamp, order: .reverse)])
+			descriptor.fetchLimit = limit
+			return (try? context.fetch(descriptor)) ?? []
+		}
 		let channelNames = radioNum.map { fetchChannelNames(context: context, radioNum: $0) } ?? [:]
+
+		// The newest messages, which carry the direct messages, then each channel's own
+		// newest so a busy channel can't push a quiet one out, then the unread ones so
+		// Unread Only has them however far back they are. messageId uniqueness is only
+		// enforced per save, so a sent message and its mesh echo can coexist briefly;
+		// they're deduped below.
+		var fetched = fetch(#Predicate { $0.isEmoji == false && $0.admin == false }, limit: 200)
+		for index in channelNames.keys {
+			fetched += fetch(#Predicate { $0.channel == index && $0.isEmoji == false && $0.admin == false }, limit: 20)
+		}
+		fetched += fetch(#Predicate { $0.read == false && $0.isEmoji == false && $0.admin == false }, limit: 100)
+		fetched.sort { $0.messageTimestamp > $1.messageTimestamp }
 
 		var seenIds = Set<Int64>()
 		var snapshots: [MessageSnapshot] = []
+		// Per conversation (each channel by index, and all direct messages together),
+		// the five newest, and up to five more unread ones older than those.
+		var latestCount: [Int32: Int] = [:]
+		var unreadCount: [Int32: Int] = [:]
+		let directKey: Int32 = -1
 		for message in fetched {
-			guard snapshots.count < 8 else { break }
-			guard let fromUser = message.fromUser,
+			let conversation = message.toUser == nil ? message.channel : directKey
+			let isLatest = latestCount[conversation, default: 0] < 5
+			let isExtraUnread = !isLatest && !message.read && unreadCount[conversation, default: 0] < 5
+			guard isLatest || isExtraUnread,
+				  let fromUser = message.fromUser,
 				  seenIds.insert(message.messageId).inserted else { continue }
+			if isLatest {
+				latestCount[conversation, default: 0] += 1
+			} else {
+				unreadCount[conversation, default: 0] += 1
+			}
 			let kind: MessageSnapshot.Kind
 			if let toUser = message.toUser {
 				// Show the conversation partner, not ourselves, for sent DMs.

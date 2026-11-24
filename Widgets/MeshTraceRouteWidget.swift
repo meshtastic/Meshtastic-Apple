@@ -24,23 +24,27 @@ struct MeshTraceRouteEntry: TimelineEntry {
 	let date: Date
 	let route: WidgetTraceRoute?
 	let isPreview: Bool
+	/// The widget's Minimum Hops setting; 0 is any route.
+	var minimumHops = 0
 }
 
-struct MeshTraceRouteProvider: TimelineProvider {
+struct MeshTraceRouteProvider: AppIntentTimelineProvider {
 	func placeholder(in context: Context) -> MeshTraceRouteEntry {
 		MeshTraceRouteEntry(date: .now, route: WidgetTraceRouteStore.load() ?? .preview, isPreview: true)
 	}
 
-	func getSnapshot(in context: Context, completion: @escaping (MeshTraceRouteEntry) -> Void) {
-		let route = WidgetTraceRouteStore.load() ?? (context.isPreview ? .preview : nil)
-		completion(MeshTraceRouteEntry(date: .now, route: route, isPreview: context.isPreview))
+	func snapshot(for configuration: TraceRouteWidgetIntent, in context: Context) async -> MeshTraceRouteEntry {
+		let minimumHops = configuration.minimumHops.rawValue
+		let route = WidgetTraceRouteStore.load(minimumHops: minimumHops) ?? (context.isPreview ? .preview : nil)
+		return MeshTraceRouteEntry(date: .now, route: route, isPreview: context.isPreview, minimumHops: minimumHops)
 	}
 
 	// A trace route is a moment, not a live value, so there is no stale dim:
 	// the age next to it says how old it is. The app reloads on a new route.
-	func getTimeline(in context: Context, completion: @escaping (Timeline<MeshTraceRouteEntry>) -> Void) {
-		let entry = MeshTraceRouteEntry(date: .now, route: WidgetTraceRouteStore.load(), isPreview: false)
-		completion(Timeline(entries: [entry], policy: .never))
+	func timeline(for configuration: TraceRouteWidgetIntent, in context: Context) async -> Timeline<MeshTraceRouteEntry> {
+		let minimumHops = configuration.minimumHops.rawValue
+		let entry = MeshTraceRouteEntry(date: .now, route: WidgetTraceRouteStore.load(minimumHops: minimumHops), isPreview: false, minimumHops: minimumHops)
+		return Timeline(entries: [entry], policy: .never)
 	}
 }
 
@@ -48,7 +52,7 @@ struct MeshTraceRouteProvider: TimelineProvider {
 
 struct MeshTraceRouteWidget: Widget {
 	var body: some WidgetConfiguration {
-		StaticConfiguration(kind: "MeshTraceRoute", provider: MeshTraceRouteProvider()) { entry in
+		AppIntentConfiguration(kind: "MeshTraceRoute", intent: TraceRouteWidgetIntent.self, provider: MeshTraceRouteProvider()) { entry in
 			MeshTraceRouteWidgetView(entry: entry)
 				.containerBackground(for: .widget) { RouteStyle.background }
 				.environment(\.colorScheme, .dark)
@@ -100,7 +104,7 @@ struct MeshTraceRouteWidgetView: View {
 					.font(.title2)
 					.foregroundStyle(RouteStyle.brand)
 					.widgetAccentable()
-				Text("Run a trace route to see it here")
+				Text(entry.minimumHops > 0 ? "No trace route with \(entry.minimumHops) or more hops yet" : "Run a trace route to see it here")
 					.font(.caption2)
 					.multilineTextAlignment(.center)
 					.foregroundStyle(RouteStyle.secondaryText)
@@ -128,33 +132,53 @@ private struct RouteSmallView: View {
 	let route: WidgetTraceRoute
 	let map: UIImage?
 
-	// Header, map and title stacked, so no label sits over the map's circles.
 	var body: some View {
-		VStack(alignment: .leading, spacing: 5) {
-			HStack(spacing: 4) {
-				RouteHeader(route: route, compact: true)
-				Spacer(minLength: 2)
-				AgeLine(route: route)
-			}
-			if let map {
-				RouteMapImage(image: map)
-					.frame(maxWidth: .infinity, maxHeight: .infinity)
-			} else {
+		if let map {
+			// The map fills the whole widget. The labels sit over its top edge,
+			// which the framing leaves free of circles; the bottom stays clear
+			// for the Maps logo.
+			RouteMapImage(image: map)
+				.frame(maxWidth: .infinity, maxHeight: .infinity)
+				.overlay(alignment: .top) {
+					VStack(alignment: .leading, spacing: 2) {
+						header
+						footer
+					}
+					.padding(.horizontal, 12)
+					.padding(.top, 10)
+					.padding(.bottom, 16)
+					.background(SmallMapScrim())
+				}
+		} else {
+			VStack(alignment: .leading, spacing: 5) {
+				header
 				Spacer(minLength: 0)
 				// Endpoints and a relay or two, so the chain fits the small width.
 				HopChain(stops: route.forward, color: RouteStyle.forward, size: 22, maxStops: 4)
 				Spacer(minLength: 0)
+				footer
 			}
-			HStack(spacing: 4) {
-				Text(shortTitle)
-					.font(.caption2.weight(.semibold))
-					.lineLimit(1)
-					.minimumScaleFactor(0.7)
-				Spacer(minLength: 2)
-				HopsLabel(count: route.hopsTowards, color: RouteStyle.forward)
-			}
+			.padding(12)
 		}
-		.padding(12)
+	}
+
+	private var header: some View {
+		HStack(spacing: 4) {
+			RouteHeader(route: route, compact: true)
+			Spacer(minLength: 2)
+			AgeLine(route: route)
+		}
+	}
+
+	private var footer: some View {
+		HStack(spacing: 4) {
+			Text(shortTitle)
+				.font(.caption2.weight(.semibold))
+				.lineLimit(1)
+				.minimumScaleFactor(0.7)
+			Spacer(minLength: 2)
+			HopsLabel(count: route.hopsTowards, color: RouteStyle.forward)
+		}
 	}
 
 	private var shortTitle: String {
@@ -555,7 +579,7 @@ private struct AgeLine: View {
 
 	var body: some View {
 		if let time = route.time {
-			Text("\(time, style: .relative) ago")
+			ageText(time)
 				.font(.caption2)
 				.foregroundStyle(RouteStyle.tertiaryText)
 				.lineLimit(1)

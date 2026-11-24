@@ -310,6 +310,9 @@
         }
       }
     },
+    "%.1f dB" : {
+      "comment" : "Signal-to-noise ratio in decibels"
+    },
     "%@ Current" : {
       "comment" : "Power tile and log column title. %@ is the channel's label, such as Solar or Channel 1.",
       "localizations" : {
@@ -391,6 +394,9 @@
           }
         }
       }
+    },
+    "%@ ago" : {
+      "comment" : "How long ago, on iOS 17. The argument is a relative time."
     },
     "%lld bytes of input dropped, the node is not keeping up" : {
       "localizations" : {
@@ -650,6 +656,15 @@
         }
       }
     },
+    "12" : {
+      "shouldTranslate" : false
+    },
+    "2" : {
+      "shouldTranslate" : false
+    },
+    "3" : {
+      "shouldTranslate" : false
+    },
     "3D model © Meshtastic LLC. The product and its name, logos and marks belong to %@." : {
       "comment" : "Showcase model card: who owns the model and who owns the product; the argument is the maker",
       "localizations" : {
@@ -684,6 +699,15 @@
           }
         }
       }
+    },
+    "4" : {
+      "shouldTranslate" : false
+    },
+    "6" : {
+      "shouldTranslate" : false
+    },
+    "8" : {
+      "shouldTranslate" : false
     },
     "A few settings get your radio talking on the mesh. You can change them later in Settings." : {
       "comment" : "Radio setup intro",
@@ -807,6 +831,12 @@
         }
       }
     },
+    "Air" : {
+      "comment" : "Short label for airtime in a small widget"
+    },
+    "All Messages" : {
+      "comment" : "Messages widget choice"
+    },
     "Also: %@" : {
       "comment" : "Showcase model card: other devices drawn with the same model; the argument is a list of device names",
       "localizations" : {
@@ -841,6 +871,9 @@
           }
         }
       }
+    },
+    "Any" : {
+      "comment" : "Trace Route widget setting: any number of hops"
     },
     "Applies to the next key" : {
       "localizations" : {
@@ -1099,6 +1132,9 @@
         }
       }
     },
+    "ChUtil" : {
+      "comment" : "Short label for channel utilization in a small widget"
+    },
     "Change any of these in Settings." : {
       "comment" : "Radio setup done footer",
       "localizations" : {
@@ -1139,6 +1175,9 @@
           }
         }
       }
+    },
+    "Channel %@" : {
+      "comment" : "A label for a channel index. The argument is the channel index."
     },
     "Channels are encrypted. Your radio shares no location until you turn it on. Public channels can be logged by anyone nearby, so this app only lets them share an approximate location. Your precise location goes only to private channels you choose." : {
       "localizations" : {
@@ -1934,6 +1973,9 @@
         }
       }
     },
+    "Duplicates" : {
+      "comment" : "Mesh Status widget reading"
+    },
     "E-ink screens redraw slowly. Tap Refresh for the latest picture." : {
       "localizations" : {
         "de" : {
@@ -2297,6 +2339,39 @@
         }
       }
     },
+    "Heard %@" : {
+      "comment" : "Node Tracker widget footer. The argument is how long ago, such as 5 minutes ago."
+    },
+    "Minimum Hops" : {
+      "comment" : "Trace Route widget setting"
+    },
+    "No trace route with %lld or more hops yet" : {
+      "comment" : "Trace Route widget, when no route has that many hops. The argument is the minimum."
+    },
+    "No unread messages" : {
+      "comment" : "Messages widget, when set to unread only and nothing is unread"
+    },
+    "Over 2 hours old · %@" : {
+      "comment" : "Telemetry widget warning. The argument is how long ago, such as 3 hours ago."
+    },
+    "Packets Received" : {
+      "comment" : "Mesh Status widget reading"
+    },
+    "Packets Relayed" : {
+      "comment" : "Mesh Status widget reading"
+    },
+    "Packets Sent" : {
+      "comment" : "Mesh Status widget reading"
+    },
+    "Pick the messages to show." : {
+      "comment" : "Messages widget settings description"
+    },
+    "Pick the nodes the map shows." : {
+      "comment" : "Node Map widget settings description"
+    },
+    "Pick the readings the small size shows, in order." : {
+      "comment" : "Mesh Status widget settings description"
+    },
     "Poor" : {
       "comment" : "CO2 level from 2000 to 5000 ppm",
       "localizations" : {
@@ -2331,6 +2406,9 @@
           }
         }
       }
+    },
+    "Reading" : {
+      "comment" : "Mesh Status widget setting: one reading"
     },
     "Reading elevation" : {
       "comment" : "Spatial map loading card: reading heights from the downloaded terrain",
@@ -2367,6 +2445,12 @@
         }
       }
     },
+    "Readings" : {
+      "comment" : "Mesh Status widget setting: the readings the small size shows"
+    },
+    "Readings Shown" : {
+      "comment" : "Widget setting: how many readings the small widget shows"
+    },
     "Searching the Maps" : {
       "comment" : "Cinema loading card: title while the downloaded maps are searched for summits, coastline or buildings",
       "localizations" : {
@@ -2401,6 +2485,12 @@
           }
         }
       }
+    },
+    "Show Labels" : {
+      "comment" : "Node Map widget setting: counts over the map on the small size"
+    },
+    "Show the newest trace route, or the newest with at least this many hops." : {
+      "comment" : "Trace Route widget settings description"
     },
     "Step %lld of %lld: elevation" : {
       "comment" : "Spatial map loading card: which part of the download is running, the elevation data",
@@ -2507,6 +2597,12 @@
         }
       }
     },
+    "Unread Messages" : {
+      "comment" : "Mesh Status widget reading"
+    },
+    "Unread Only" : {
+      "comment" : "Messages widget setting"
+    },
     "Unsafe" : {
       "comment" : "CO2 level from 5000 to 30000 ppm",
       "localizations" : {
@@ -2541,6 +2637,9 @@
           }
         }
       }
+    },
+    "Updated %@" : {
+      "comment" : "Widget footer. The argument is how long ago, such as 11 minutes ago."
     },
     "frequency slot %lld" : {
       "comment" : "Beacon switch prompt; one of the changes listed",
