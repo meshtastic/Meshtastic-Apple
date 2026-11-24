@@ -31,7 +31,8 @@ Bluetooth, IAQ, ATAK, WinTAK, mPWRD-OS, iOS, macOS, CarPlay, SiriKit.
 | pt-BR | Informal, você, matching the Brazilian Meshtastic community |
 | ko | Formal 합쇼체 |
 | es, fr, it, ja, zh-Hans, zh-Hant, zh-Hant-TW | Professional |
-| da, pl, ru, sr, uk | Match the existing community translations |
+| pl | Informal, ty-form, matching the Meshtastic Android Polish translation |
+| da, ru, sr, uk | Match the existing community translations |
 
 ## Settled terms
 
@@ -46,3 +47,23 @@ Bluetooth, IAQ, ATAK, WinTAK, mPWRD-OS, iOS, macOS, CarPlay, SiriKit.
 | es | preset | preajuste |
 | es | traceroute | rastreo de ruta |
 | es | modem preset names | Kept in English |
+| pl | hop, hops | skok, skoki |
+| pl | beacon | beacon (kept in English) |
+| pl | preset, modem preset names | preset, names kept in English |
+| pl | spread factor, coding rate, duty cycle | Kept in English |
+| pl | device roles (CLIENT, ROUTER…) | Kept in English |
+| pl | Store & Forward, PAX Counter, Range Test, Mesh Beacon, Lockdown | Kept in English |
+| pl | node | węzeł |
+| pl | Neighbor Info | Info o sąsiadach |
+| pl | Local Mesh Discovery | Wykrywanie lokalnych sieci |
+| pl | Off-Grid Messaging | Komunikacja off-grid |
+| pl | Trace Route | Śledzenie trasy |
+| pl | Local Stats | Statystyki lokalne |
+| pl | Device/Power/Environment Metrics | Metryki urządzenia/zasilania/środowiska |
+| pl | Host Metrics | Statystyki hosta |
+| pl | logs | logi |
+| pl | Remote admin | Zdalne zarządzanie |
+| pl | Exchange Positions | Poproś o pozycję |
+| pl | Live Activity | Aktywność na żywo |
+| pl | Points of Interest | Ciekawe miejsca |
+| pl | firmware update | aktualizacja oprogramowania |
