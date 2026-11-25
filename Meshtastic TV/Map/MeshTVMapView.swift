@@ -317,6 +317,9 @@ struct MeshTVMapView: UIViewRepresentable {
 	/// MapScreen so the decode survives view updates.
 	var offlineVectors: OfflineVectorTileProvider?
 
+	/// The message to show in a bubble over its sender, or nil. MapScreen paces these.
+	var message: MapMessage?
+
 	/// Drawn only over Standard — Hybrid and Satellite are imagery the vector basemap would hide.
 	private var offlineBasemapVisible: Bool { mkMapType == .standard && offlineVectors != nil }
 
@@ -345,6 +348,10 @@ struct MeshTVMapView: UIViewRepresentable {
 			SelectionHaloView.self,
 			forAnnotationViewWithReuseIdentifier: SelectionHaloView.reuseID
 		)
+		mapView.register(
+			MessageBubbleView.self,
+			forAnnotationViewWithReuseIdentifier: MessageBubbleView.reuseID
+		)
 		context.coordinator.applyInitialRegion(mapView, nodes: nodes)
 		return mapView
 	}
@@ -356,6 +363,7 @@ struct MeshTVMapView: UIViewRepresentable {
 		context.coordinator.applyInitialRegion(mapView, nodes: nodes)
 		context.coordinator.applyRecenter(mapView, token: recenterToken, nodes: nodes)
 		context.coordinator.applySelection(mapView, selectedNodeNum: selectedNodeNum)
+		context.coordinator.applyMessage(mapView, message: message)
 		if let offlineVectors, offlineBasemapVisible {
 			offlineVectors.updateIfNeeded()
 			// tvOS renders against a dark interface, matching the iOS map's dark palette.
@@ -542,6 +550,7 @@ struct MeshTVMapView: UIViewRepresentable {
 			guard token != lastRecenterToken else { return }
 			lastRecenterToken = token
 			guard token > 0 else { return }   // 0 is the initial value, not a request
+			regionBeforeMessages = nil
 			mapView.deselectAnnotation(mapView.selectedAnnotations.first, animated: false)
 			_ = frameAllNodes(mapView, nodes: nodes, animated: true)
 		}
@@ -698,6 +707,9 @@ struct MeshTVMapView: UIViewRepresentable {
 			}
 
 			selectedNum = num
+			// The viewer picked a node while messages were showing; don't pull the camera
+			// back to the old view when the messages end.
+			regionBeforeMessages = nil
 			// The halo is its own never-clustering annotation carrying its own copy of
 			// the node marker — the node's real pin is usually hidden inside a cluster
 			// badge in a dense mesh, so the halo renders the marker itself.
@@ -736,6 +748,55 @@ struct MeshTVMapView: UIViewRepresentable {
 		private var pendingSelectionNum: UInt32?
 		private var pendingSelectionFly: DispatchWorkItem?
 
+		// MARK: Message bubbles
+
+		private var bubbleAnnotation: MessageBubbleAnnotation?
+		/// What the camera showed before the first message moved it; restored when the
+		/// last bubble goes away.
+		private var regionBeforeMessages: MKMapRect?
+		/// Wide enough to keep some of the mesh around the sender in view.
+		private static let messageZoomMeters: CLLocationDistance = 3000
+
+		func applyMessage(_ mapView: MKMapView, message: MapMessage?) {
+			guard message?.id != bubbleAnnotation?.message.id else { return }
+			if let bubbleAnnotation {
+				mapView.removeAnnotation(bubbleAnnotation)
+				self.bubbleAnnotation = nil
+			}
+
+			guard let message else {
+				if let saved = regionBeforeMessages {
+					regionBeforeMessages = nil
+					mapView.setVisibleMapRect(saved, animated: !isBigJump(mapView, target: saved))
+				}
+				return
+			}
+
+			if regionBeforeMessages == nil { regionBeforeMessages = mapView.visibleMapRect }
+			let annotation = MessageBubbleAnnotation(message: message)
+			bubbleAnnotation = annotation
+			mapView.addAnnotation(annotation)
+
+			// Center it in the part of the map the side list doesn't cover, with room
+			// above the pin for the bubble.
+			let originInWindow = mapView.convert(CGPoint.zero, to: nil).x
+			let hiddenLeft = max(0, TVTheme.sideListWidth - originInWindow)
+			let padding = UIEdgeInsets(top: 240, left: hiddenLeft + 40, bottom: 40, right: 40)
+
+			// Zoom in to the sender only if the map is further out than this; never zoom out.
+			// The rect is fitted into the padded area, so cap it at what that area shows now.
+			let center = MKMapPoint(message.coordinate)
+			let pointsPerMeter = MKMapPointsPerMeterAtLatitude(message.coordinate.latitude)
+			let mapPointsPerScreenPoint = mapView.visibleMapRect.size.width / Double(max(1, mapView.bounds.width))
+			let paddedSide = max(1, min(
+				mapView.bounds.height - padding.top - padding.bottom,
+				mapView.bounds.width - padding.left - padding.right
+			))
+			let size = min(mapPointsPerScreenPoint * Double(paddedSide), Self.messageZoomMeters * pointsPerMeter)
+			let rect = MKMapRect(x: center.x - size / 2, y: center.y - size / 2, width: size, height: size)
+			mapView.setVisibleMapRect(rect, edgePadding: padding, animated: !isBigJump(mapView, target: rect))
+		}
+
 		// MARK: MKMapViewDelegate
 
 		func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
@@ -743,6 +804,12 @@ struct MeshTVMapView: UIViewRepresentable {
 			if annotation is SelectionHaloAnnotation {
 				return mapView.dequeueReusableAnnotationView(
 					withIdentifier: SelectionHaloView.reuseID,
+					for: annotation
+				)
+			}
+			if annotation is MessageBubbleAnnotation {
+				return mapView.dequeueReusableAnnotationView(
+					withIdentifier: MessageBubbleView.reuseID,
 					for: annotation
 				)
 			}

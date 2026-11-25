@@ -36,6 +36,17 @@ struct MapScreen: View {
 	@AppStorage("tv.statsBar.enabled") private var statsBarEnabled = true
 	@AppStorage("tv.statsBar.edge") private var statsBarEdge: StatsStripEdge = .top
 
+	/// Incoming messages shown over the map, shared with SettingsView via the same keys.
+	@AppStorage(MessageSettings.enabledKey) private var messagesEnabled = true
+	@AppStorage(MessageSettings.directMessagesKey) private var showDirectMessages = true
+	@AppStorage(MessageSettings.hiddenChannelsKey) private var hiddenChannelsRaw = ""
+	/// The bubble on the map now, and the ones waiting their turn. One at a time, each
+	/// for a fixed time, so a busy mesh can't keep the camera jumping.
+	@State private var shownMessage: MapMessage?
+	@State private var queuedMessages: [MapMessage] = []
+	private static let messageDuration: Duration = .seconds(10)
+	private static let maxQueuedMessages = 5
+
 	// Cached sort/filter results so we don't re-sort 1000+ nodes on every body eval.
 	@State private var sortedNodes: [MeshNode] = []
 	@State private var locatedNodes: [MeshNode] = []
@@ -49,7 +60,8 @@ struct MapScreen: View {
 				nodes: locatedNodes,
 				selectedNodeNum: $selectedNodeNum,
 				recenterToken: recenterToken,
-				offlineVectors: offlineVectors
+				offlineVectors: offlineVectors,
+				message: shownMessage
 			)
 			.ignoresSafeArea()
 			// Overlay, not safeAreaInset: an inset resizes the MKMapView and re-triggers
@@ -70,6 +82,22 @@ struct MapScreen: View {
 				}
 			}
 		}
+		.onChange(of: client.pendingTextMessages.count) { _, count in
+			guard count > 0 else { return }
+			for message in client.takePendingTextMessages() { enqueue(message) }
+		}
+		.onChange(of: messagesEnabled) { _, enabled in
+			if !enabled {
+				queuedMessages = []
+				shownMessage = nil
+			}
+		}
+		.task(id: shownMessage?.id) {
+			guard shownMessage != nil else { return }
+			try? await Task.sleep(for: Self.messageDuration)
+			guard !Task.isCancelled else { return }
+			shownMessage = queuedMessages.isEmpty ? nil : queuedMessages.removeFirst()
+		}
 		.onChange(of: allNodes) { _, newNodes in
 			recomputeNodeLists(from: newNodes)
 		}
@@ -85,6 +113,34 @@ struct MapScreen: View {
 				try? await Task.sleep(for: .seconds(2))
 				pollTick += 1
 			}
+		}
+	}
+
+	private func enqueue(_ message: MeshClient.TextMessage) {
+		guard messagesEnabled,
+		      MessageSettings.shouldShow(
+				message,
+				directMessages: showDirectMessages,
+				hiddenChannels: MessageSettings.hiddenChannels(from: hiddenChannelsRaw)
+		      ),
+		      // Only nodes on the map get a bubble; there's nowhere to point one otherwise.
+		      let node = allNodes.first(where: { $0.num == message.from }),
+		      let coordinate = node.coordinate else { return }
+
+		let mapMessage = MapMessage(
+			id: message.id,
+			num: node.num,
+			senderName: node.displayName,
+			text: message.text,
+			coordinate: coordinate
+		)
+		UIAccessibility.post(notification: .announcement, argument: "\(node.displayName): \(message.text)")
+		if shownMessage == nil {
+			shownMessage = mapMessage
+		} else {
+			queuedMessages.append(mapMessage)
+			// Behind by more than a few: drop the oldest rather than show stale ones.
+			if queuedMessages.count > Self.maxQueuedMessages { queuedMessages.removeFirst() }
 		}
 	}
 
@@ -113,7 +169,7 @@ struct MapScreen: View {
 					}
 					.focused($recenterFocused)
 					NavigationLink {
-						SettingsView()
+						SettingsView(channels: client.channels)
 					} label: {
 						Label("Settings", systemImage: "gearshape")
 					}
