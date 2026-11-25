@@ -162,6 +162,7 @@ extension NodeBackupManager {
 			dst.displayHeight = src.displayHeight
 			dst.displayFormat = src.displayFormat
 			dst.displayPanelClass = src.displayPanelClass
+			dst.bootloaderVersion = src.bootloaderVersion
 			dst.displayHasTouch = src.displayHasTouch
 			if let srcNode = src.metadataNode, let liveNode = nodesByNum[srcNode.num] {
 				dst.metadataNode = liveNode
