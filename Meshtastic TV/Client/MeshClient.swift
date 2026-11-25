@@ -68,6 +68,33 @@ final class MeshClient {
 	}
 	private(set) var stats: ConnectedNodeStats?
 
+	/// A channel configured on the connected radio, for the message settings.
+	struct RadioChannel: Identifiable, Equatable {
+		let index: Int
+		let name: String
+		var id: Int { index }
+	}
+
+	/// The connected radio's enabled channels, from the config dump. Session only.
+	private(set) var channels: [RadioChannel] = []
+
+	/// A text message heard by the connected radio.
+	struct TextMessage: Identifiable, Equatable {
+		let id = UUID()
+		let from: UInt32
+		let text: String
+		let channelIndex: Int
+		let isDirect: Bool
+	}
+
+	/// The most recent text message. The map decides whether to show it.
+	private(set) var latestTextMessage: TextMessage?
+
+	/// Channel names by index as the radio sent them; an empty primary name means
+	/// the radio uses the LoRa preset's name (e.g. "LongFast").
+	private var channelNames: [Int: String] = [:]
+	private var loraPresetName: String?
+
 	/// The tvOS-local SwiftData store the map and list read via `@Query`. Every
 	/// upsert lands here; nothing is kept in memory, so the map survives relaunch.
 	private let context: ModelContext
@@ -103,6 +130,10 @@ final class MeshClient {
 		// Stats and the edition describe one radio's session — they must not survive a switch.
 		stats = nil
 		firmwareEdition = .vanilla
+		channelNames = [:]
+		loraPresetName = nil
+		channels = []
+		latestTextMessage = nil
 		// Note: the persisted node store is intentionally NOT cleared here — keeping
 		// it is what leaves the map populated across relaunches until the radio's
 		// fresh node-DB dump updates it.
@@ -385,6 +416,21 @@ final class MeshClient {
 		case .packet(let packet):
 			ingestPacket(packet)
 
+		case .channel(let channel):
+			let index = Int(channel.index)
+			if channel.role == .disabled {
+				channelNames[index] = nil
+			} else {
+				channelNames[index] = channel.settings.name
+			}
+			rebuildChannels()
+
+		case .config(let config):
+			if case .lora(let lora) = config.payloadVariant {
+				loraPresetName = lora.usePreset ? Self.presetName(lora.modemPreset) : nil
+				rebuildChannels()
+			}
+
 		case .configCompleteID:
 			// Initial dump finished — we have the node database; go live.
 			sessionWasConnected = true
@@ -464,6 +510,8 @@ final class MeshClient {
 			ingestPosition(packet, data)
 		case .telemetryApp:
 			ingestTelemetry(packet, data)
+		case .textMessageApp:
+			ingestText(packet, data)
 		default:
 			break
 		}
@@ -485,6 +533,46 @@ final class MeshClient {
 		node.latitude = latitude
 		node.longitude = longitude
 		node.lastHeard = Date()
+	}
+
+	private func ingestText(_ packet: MeshPacket, _ data: DataMessage) {
+		// Reactions carry a single emoji and point at another message — not worth a bubble.
+		guard data.emoji == 0, packet.from != myNodeNum,
+		      let text = String(data: data.payload, encoding: .utf8)?
+				.trimmingCharacters(in: .whitespacesAndNewlines),
+		      !text.isEmpty else { return }
+		// The radio replays messages it held while no client was connected, with their
+		// original receive time. Those are old news on a live map.
+		if packet.rxTime > 0,
+		   Date().timeIntervalSince1970 - TimeInterval(packet.rxTime) > Self.maxTextMessageAge {
+			return
+		}
+		latestTextMessage = TextMessage(
+			from: packet.from,
+			text: text,
+			channelIndex: Int(packet.channel),
+			isDirect: myNodeNum != nil && packet.to == myNodeNum
+		)
+	}
+
+	private static let maxTextMessageAge: TimeInterval = 5 * 60
+
+	private func rebuildChannels() {
+		let updated = channelNames.keys.sorted().map { index -> RadioChannel in
+			let name = channelNames[index] ?? ""
+			if !name.isEmpty { return RadioChannel(index: index, name: name) }
+			if index == 0 {
+				return RadioChannel(index: index, name: loraPresetName ?? String(localized: "Primary"))
+			}
+			return RadioChannel(index: index, name: String(localized: "Channel \(index)"))
+		}
+		if updated != channels { channels = updated }
+	}
+
+	/// Display name of a LoRa preset as the firmware shows it, e.g. `.longFast` -> "LongFast".
+	private static func presetName(_ preset: Config.LoRaConfig.ModemPreset) -> String {
+		let raw = String(describing: preset)
+		return raw.prefix(1).uppercased() + raw.dropFirst()
 	}
 
 	/// Telemetry from the CONNECTED node feeds the stats strip. Other nodes' telemetry is

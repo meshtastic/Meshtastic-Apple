@@ -4,8 +4,8 @@
 //
 //  Copyright(c) Garth Vander Houwen 7/26/26.
 //
-//  Apple TV settings. Currently just data management — clearing the persisted node
-//  store (see MeshNode). Designed to grow as more tvOS options are added. Pushed as a
+//  Apple TV settings: map appearance, which messages show on the map, the offline
+//  map, and clearing the persisted node store (see MeshNode). Pushed as a
 //  detail from the connect screen and the map's side list, so it does not wrap its own
 //  NavigationStack.
 //
@@ -27,6 +27,12 @@ struct SettingsView: View {
 	/// Mesh stats strip, shared with MapScreen via the same keys.
 	@AppStorage("tv.statsBar.enabled") private var statsBarEnabled = true
 	@AppStorage("tv.statsBar.edge") private var statsBarEdge: StatsStripEdge = .top
+	/// Message bubbles, shared with MapScreen via the same keys.
+	@AppStorage(MessageSettings.enabledKey) private var messagesEnabled = true
+	@AppStorage(MessageSettings.directMessagesKey) private var showDirectMessages = true
+	@AppStorage(MessageSettings.hiddenChannelsKey) private var hiddenChannelsRaw = ""
+	/// The connected radio's channels; empty when not connected.
+	var channels: [MeshClient.RadioChannel] = []
 
 	var body: some View {
 		List {
@@ -53,6 +59,8 @@ struct SettingsView: View {
 				Text("Mesh Stats shows the connected node's mesh totals, radio load and packet counters over the map.")
 			}
 
+			messagesSection
+
 			offlineMapSection
 
 			Section {
@@ -75,6 +83,36 @@ struct SettingsView: View {
 			Button("Cancel", role: .cancel) { }
 		} message: {
 			Text("This permanently removes all \(nodes.count) saved nodes from this device.")
+		}
+	}
+
+	private var messagesSection: some View {
+		Section {
+			Toggle("Show Messages on Map", isOn: $messagesEnabled)
+			Toggle("Direct Messages", isOn: $showDirectMessages)
+				.disabled(!messagesEnabled)
+			ForEach(channels) { channel in
+				Toggle(channel.name, isOn: channelBinding(channel.index))
+					.disabled(!messagesEnabled)
+			}
+		} header: {
+			Text("Messages")
+		} footer: {
+			if channels.isEmpty {
+				Text("When a node on the map sends a message, the map moves to it and shows the message above its pin. Connect to a radio to choose which channels show.")
+			} else {
+				Text("When a node on the map sends a message, the map moves to it and shows the message above its pin.")
+			}
+		}
+	}
+
+	private func channelBinding(_ index: Int) -> Binding<Bool> {
+		Binding {
+			!MessageSettings.hiddenChannels(from: hiddenChannelsRaw).contains(index)
+		} set: { shown in
+			var hidden = MessageSettings.hiddenChannels(from: hiddenChannelsRaw)
+			if shown { hidden.remove(index) } else { hidden.insert(index) }
+			hiddenChannelsRaw = MessageSettings.encode(hidden)
 		}
 	}
 
