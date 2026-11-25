@@ -455,6 +455,7 @@ final class MeshClient {
 			if node.lastHeard != heard { node.lastHeard = heard }
 		}
 		if info.snr != 0, node.snr != info.snr { node.snr = info.snr }
+		if node.isFavorite != info.isFavorite { node.isFavorite = info.isFavorite }
 	}
 
 	private func ingestPacket(_ packet: MeshPacket) {
