@@ -286,7 +286,10 @@ private struct FirmwareContentView: View {
 			// INFO_UF2.TXT before anything is offered for writing.
 			if showsMaintenanceSection {
 				Section {
-					if showsBootloaderUpgrade {
+					if let bootloaderStatus {
+						bootloaderVersionRow(bootloaderStatus)
+					}
+					if showsBootloaderUpgrade && !(bootloaderStatus?.isUpToDate ?? false) {
 						Button {
 							showBootloaderUpgrade = true
 						} label: {
@@ -450,6 +453,40 @@ private struct FirmwareContentView: View {
 	/// any Adafruit-family bootloader, so only the upgrade button carries this gate.
 	var showsBootloaderUpgrade: Bool {
 		OTAFIXBootloader.supportsTarget(firmwareTarget)
+	}
+
+	/// The bootloader the radio reports, against the latest release. Nil when it reports none
+	/// (older firmware), and then the section is as it was before the field existed.
+	var bootloaderStatus: BootloaderStatus? {
+		guard let packed = node.metadata?.bootloaderVersion,
+			  let value = UInt32(exactly: packed) else { return nil }
+		return BootloaderStatus(packed: value, latestTag: MaintenanceUf2ManifestStore.shared.releaseTag)
+	}
+
+	func bootloaderVersionRow(_ status: BootloaderStatus) -> some View {
+		VStack(alignment: .leading, spacing: 12) {
+			VStack(alignment: .leading, spacing: 2) {
+				Text("Current Bootloader Version").font(.caption).foregroundColor(.secondary)
+				switch status.installed {
+				case .olderThanFirstReported:
+					Text("Older than \(BootloaderVersion.firstReported.description)")
+				case .version(let version):
+					Text(verbatim: version.description)
+				}
+			}
+			.accessibilityElement(children: .combine)
+			if let latest = status.latest {
+				VStack(alignment: .leading, spacing: 2) {
+					Text("Latest Bootloader Version").font(.caption).foregroundColor(.secondary)
+					if status.isUpToDate {
+						Text("\(latest.description), up to date")
+					} else {
+						Text(verbatim: latest.description)
+					}
+				}
+				.accessibilityElement(children: .combine)
+			}
+		}
 	}
 
 	var allowedTypes: [UTType] {

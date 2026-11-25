@@ -474,6 +474,9 @@
         }
       }
     },
+    "%@, up to date" : {
+      "comment" : "Firmware screen: the newest bootloader release, when the radio already has it. The argument is a version, such as 2.6.0."
+    },
     "%lld bytes of input dropped, the node is not keeping up" : {
       "localizations" : {
         "de" : {
@@ -2611,6 +2614,9 @@
         }
       }
     },
+    "Current Bootloader Version" : {
+      "comment" : "Firmware screen: label above the radio's installed nRF52 bootloader version"
+    },
     "Custom Modem Settings" : {
       "comment" : "Radio setup preset page row title",
       "localizations" : {
@@ -3476,6 +3482,9 @@
         }
       }
     },
+    "Latest Bootloader Version" : {
+      "comment" : "Firmware screen: label above the newest Meshtastic nRF52 Bootloader release"
+    },
     "Minimum Hops" : {
       "comment" : "Trace Route widget setting",
       "localizations" : {
@@ -3544,6 +3553,9 @@
           }
         }
       }
+    },
+    "Older than %@" : {
+      "comment" : "Firmware screen: the installed bootloader predates the first release that reports its version. The argument is that version, such as 2.6.0."
     },
     "Over 2 hours old · %@" : {
       "comment" : "Telemetry widget warning. The argument is how long ago, such as 3 hours ago.",

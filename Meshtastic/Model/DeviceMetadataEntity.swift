@@ -34,6 +34,9 @@ final class DeviceMetadataEntity {
 	/// Raw `DisplayInfo.PanelClass`.
 	var displayPanelClass: Int32 = 0
 	var displayHasTouch: Bool = false
+	/// `DeviceMetadata.bootloader_version`, packed as `major << 16 | minor << 8 | patch`. Zero means
+	/// not reported: a non-nRF52 radio, or firmware older than the field. See `BootloaderVersion`.
+	var bootloaderVersion: Int64 = 0
 
 	var metadataNode: NodeInfoEntity?
 
@@ -61,6 +64,7 @@ final class DeviceMetadataEntity {
 		displayHeight = Int32(truncatingIfNeeded: display.height)
 		displayFormat = Int32(display.format.rawValue)
 		displayPanelClass = Int32(display.panelClass.rawValue)
+		bootloaderVersion = Int64(metadata.bootloaderVersion)
 		displayHasTouch = display.hasTouch_p
 
 		let lastDotIndex = metadata.firmwareVersion.lastIndex(of: ".")
