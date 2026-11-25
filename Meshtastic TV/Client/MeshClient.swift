@@ -87,8 +87,17 @@ final class MeshClient {
 		let isDirect: Bool
 	}
 
-	/// The most recent text message. The map decides whether to show it.
-	private(set) var latestTextMessage: TextMessage?
+	/// Text messages heard since MapScreen last took them, oldest first. A list rather
+	/// than the latest value alone: several can arrive before SwiftUI next updates.
+	private(set) var pendingTextMessages: [TextMessage] = []
+	private static let maxPendingTextMessages = 20
+
+	/// Hands over the waiting messages, oldest first, and clears the list.
+	func takePendingTextMessages() -> [TextMessage] {
+		let messages = pendingTextMessages
+		if !messages.isEmpty { pendingTextMessages = [] }
+		return messages
+	}
 
 	/// Channel names by index as the radio sent them; an empty primary name means
 	/// the radio uses the LoRa preset's name (e.g. "LongFast").
@@ -133,7 +142,7 @@ final class MeshClient {
 		channelNames = [:]
 		loraPresetName = nil
 		channels = []
-		latestTextMessage = nil
+		pendingTextMessages = []
 		// Note: the persisted node store is intentionally NOT cleared here — keeping
 		// it is what leaves the map populated across relaunches until the radio's
 		// fresh node-DB dump updates it.
@@ -542,17 +551,23 @@ final class MeshClient {
 				.trimmingCharacters(in: .whitespacesAndNewlines),
 		      !text.isEmpty else { return }
 		// The radio replays messages it held while no client was connected, with their
-		// original receive time. Those are old news on a live map.
+		// original receive time. Those are old news on a live map. A radio with no clock
+		// sends rxTime 0 on every packet, live ones included, so 0 can't be treated as a
+		// replay; those messages are shown.
 		if packet.rxTime > 0,
 		   Date().timeIntervalSince1970 - TimeInterval(packet.rxTime) > Self.maxTextMessageAge {
 			return
 		}
-		latestTextMessage = TextMessage(
+		pendingTextMessages.append(TextMessage(
 			from: packet.from,
 			text: text,
 			channelIndex: Int(packet.channel),
 			isDirect: myNodeNum != nil && packet.to == myNodeNum
-		)
+		))
+		// Nothing takes them while the map isn't on screen; keep only the newest.
+		if pendingTextMessages.count > Self.maxPendingTextMessages {
+			pendingTextMessages.removeFirst(pendingTextMessages.count - Self.maxPendingTextMessages)
+		}
 	}
 
 	private static let maxTextMessageAge: TimeInterval = 5 * 60

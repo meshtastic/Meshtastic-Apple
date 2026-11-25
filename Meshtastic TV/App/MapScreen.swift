@@ -82,8 +82,9 @@ struct MapScreen: View {
 				}
 			}
 		}
-		.onChange(of: client.latestTextMessage) { _, message in
-			if let message { enqueue(message) }
+		.onChange(of: client.pendingTextMessages.count) { _, count in
+			guard count > 0 else { return }
+			for message in client.takePendingTextMessages() { enqueue(message) }
 		}
 		.onChange(of: messagesEnabled) { _, enabled in
 			if !enabled {

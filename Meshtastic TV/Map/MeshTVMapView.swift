@@ -777,16 +777,23 @@ struct MeshTVMapView: UIViewRepresentable {
 			bubbleAnnotation = annotation
 			mapView.addAnnotation(annotation)
 
-			// Zoom in to the sender only if the map is further out than this; never zoom out.
-			let center = MKMapPoint(message.coordinate)
-			let pointsPerMeter = MKMapPointsPerMeterAtLatitude(message.coordinate.latitude)
-			let size = min(mapView.visibleMapRect.size.height, Self.messageZoomMeters * pointsPerMeter)
-			let rect = MKMapRect(x: center.x - size / 2, y: center.y - size / 2, width: size, height: size)
 			// Center it in the part of the map the side list doesn't cover, with room
 			// above the pin for the bubble.
 			let originInWindow = mapView.convert(CGPoint.zero, to: nil).x
 			let hiddenLeft = max(0, TVTheme.sideListWidth - originInWindow)
 			let padding = UIEdgeInsets(top: 240, left: hiddenLeft + 40, bottom: 40, right: 40)
+
+			// Zoom in to the sender only if the map is further out than this; never zoom out.
+			// The rect is fitted into the padded area, so cap it at what that area shows now.
+			let center = MKMapPoint(message.coordinate)
+			let pointsPerMeter = MKMapPointsPerMeterAtLatitude(message.coordinate.latitude)
+			let mapPointsPerScreenPoint = mapView.visibleMapRect.size.width / Double(max(1, mapView.bounds.width))
+			let paddedSide = max(1, min(
+				mapView.bounds.height - padding.top - padding.bottom,
+				mapView.bounds.width - padding.left - padding.right
+			))
+			let size = min(mapPointsPerScreenPoint * Double(paddedSide), Self.messageZoomMeters * pointsPerMeter)
+			let rect = MKMapRect(x: center.x - size / 2, y: center.y - size / 2, width: size, height: size)
 			mapView.setVisibleMapRect(rect, edgePadding: padding, animated: !isBigJump(mapView, target: rect))
 		}
 
