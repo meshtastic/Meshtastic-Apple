@@ -145,7 +145,8 @@ final class MeshClient {
 		pendingTextMessages = []
 		// Note: the persisted node store is intentionally NOT cleared here — keeping
 		// it is what leaves the map populated across relaunches until the radio's
-		// fresh node-DB dump updates it.
+		// fresh node-DB dump updates it. A different radio clears it once its myInfo
+		// arrives (clearNodesIfNewRadio), since the host alone doesn't say which radio it is.
 
 		connectionGeneration += 1
 		let generation = connectionGeneration
@@ -416,6 +417,7 @@ final class MeshClient {
 	private func ingest(_ fromRadio: FromRadio, generation: Int) {
 		switch fromRadio.payloadVariant {
 		case .myInfo(let myInfo):
+			clearNodesIfNewRadio(myInfo.myNodeNum)
 			myNodeNum = myInfo.myNodeNum
 			firmwareEdition = myInfo.firmwareEdition
 
@@ -510,10 +512,12 @@ final class MeshClient {
 			if node.lastHeard != heard { node.lastHeard = heard }
 		}
 		if info.snr != 0, node.snr != info.snr { node.snr = info.snr }
+		if node.isFavorite != info.isFavorite { node.isFavorite = info.isFavorite }
 	}
 
 	private func ingestPacket(_ packet: MeshPacket) {
 		guard case .decoded(let data) = packet.payloadVariant else { return }
+		markHeard(packet)
 		switch data.portnum {
 		case .positionApp:
 			ingestPosition(packet, data)
@@ -628,5 +632,43 @@ final class MeshClient {
 		if metrics.hasAirUtilTx { updated.airUtilTx = metrics.airUtilTx }
 		updated.receivedAt = Date()
 		stats = updated
+	}
+}
+
+// MARK: - Node store upkeep
+
+extension MeshClient {
+
+	/// UserDefaults key for the node number of the radio the node store belongs to.
+	static let lastRadioNodeNumKey = "tvLastRadioNodeNum"
+
+	/// The node store is one radio's view of the mesh: its nodes, favorites and last-heard times.
+	/// It's kept across relaunches and reconnects to the same radio, so the map stays populated
+	/// until the node DB dump arrives, and cleared when a different radio connects. The dump that
+	/// follows `myInfo` fills it again.
+	private func clearNodesIfNewRadio(_ nodeNum: UInt32) {
+		let defaults = UserDefaults.standard
+		let previous = defaults.object(forKey: Self.lastRadioNodeNumKey) as? Int
+		defaults.set(Int(nodeNum), forKey: Self.lastRadioNodeNumKey)
+		// No radio recorded yet (first connect, or a store from before this was tracked): keep it.
+		guard let previous, previous != Int(nodeNum) else { return }
+		do {
+			try context.delete(model: MeshNode.self)
+			try context.save()
+			Logger.transport.info("📺 [MeshClient] New radio connected; cleared the node store")
+		} catch {
+			Logger.transport.error("📺 [MeshClient] Failed to clear the node store: \(error.localizedDescription, privacy: .public)")
+		}
+	}
+
+	/// Moves the sender's last-heard time forward for any packet, not just positions, so the list's
+	/// most-recently-heard order reflects telemetry and messages too. Uses the packet's own receive
+	/// time when it has one: the radio replays stored packets after the node DB, and those must not
+	/// count as heard now. Throttled to a minute, like positions, to keep the list @Query quiet.
+	private func markHeard(_ packet: MeshPacket) {
+		let heard = packet.rxTime > 0 ? Date(timeIntervalSince1970: TimeInterval(packet.rxTime)) : Date()
+		let node = node(for: packet.from)
+		if let lastHeard = node.lastHeard, heard.timeIntervalSince(lastHeard) <= 60 { return }
+		node.lastHeard = heard
 	}
 }

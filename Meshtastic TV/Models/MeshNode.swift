@@ -38,6 +38,9 @@ final class MeshNode {
 	/// app's full `DeviceRoles` enum (which isn't in this target).
 	var roleValue: Int?
 	var hwModel: String?
+	/// Favorited on the connected radio (`NodeInfo.isFavorite`). Favorites sort to the
+	/// top of the side list, after the connected radio, as they do on iOS.
+	var isFavorite: Bool = false
 
 	init(num: UInt32) {
 		self.numRaw = Int(num)

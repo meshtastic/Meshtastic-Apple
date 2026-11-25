@@ -145,8 +145,18 @@ struct MapScreen: View {
 	}
 
 	private func recomputeNodeLists(from nodes: [MeshNode]) {
+		// Same order as the iOS node list: the connected radio, then favorites, then
+		// everyone else, most recently heard first.
+		let myNodeNum = client.myNodeNum
 		let newSorted = nodes.sorted {
-			if $0.hasLocation != $1.hasLocation { return $0.hasLocation }
+			let lhsIsMine = $0.num == myNodeNum
+			let rhsIsMine = $1.num == myNodeNum
+			if lhsIsMine != rhsIsMine { return lhsIsMine }
+			if $0.isFavorite != $1.isFavorite { return $0.isFavorite }
+			let lhsHeard = $0.lastHeard ?? .distantPast
+			let rhsHeard = $1.lastHeard ?? .distantPast
+			if lhsHeard != rhsHeard { return lhsHeard > rhsHeard }
+			// Stable tie-break so never-heard nodes don't reshuffle on each refresh.
 			return $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending
 		}
 		let newLocated = nodes.filter(\.hasLocation)
