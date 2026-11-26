@@ -1334,6 +1334,20 @@ struct LoRaChannelCalculatorTests {
 		LoRaConfig.reconcile(&config)
 		#expect(config.channelNum == 15)
 		#expect(LoRaConfig.slotResetNotice(config, previousSlot: 15) == nil)
+
+		var forSave = Config.LoRaConfig()
+		forSave.region = .jp
+		forSave.usePreset = true
+		forSave.modemPreset = .longFast
+		forSave.channelNum = 15
+		let sanitized = LoRaConfig.sanitizedForSave(forSave)
+		#expect(sanitized?.region == .jp)
+		#expect(sanitized?.modemPreset == .longFast)
+		#expect(sanitized?.channelNum == 0)
+
+		var unsupported = Config.LoRaConfig()
+		unsupported.region = .UNRECOGNIZED(999)
+		#expect(LoRaConfig.sanitizedForSave(unsupported) == nil)
 	}
 
 	@MainActor

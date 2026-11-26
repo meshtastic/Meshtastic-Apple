@@ -109,6 +109,15 @@ struct LoRaConfig: View {
 		return slotResetNotice(config, previousSlot: previousSlot)
 	}
 
+	/// Reconciles `config` and checks that the region is writable before saving.
+	/// Returns `nil` when the region is unsupported and the save must be skipped.
+	static func sanitizedForSave(_ config: Config.LoRaConfig) -> Config.LoRaConfig? {
+		var sanitized = config
+		reconcile(&sanitized)
+		guard supportedRegion(sanitized) != nil else { return nil }
+		return sanitized
+	}
+
 	static func canSave(_ config: Config.LoRaConfig, node: NodeInfoEntity?) -> Bool {
 		guard supportedRegion(config) != nil else { return false }
 		if config.overrideFrequency == 0, config.channelNum > 0, config.region != .unset {
@@ -205,9 +214,7 @@ struct LoRaConfig: View {
 										comment: "LoRa save confirmation"),
 			request: accessoryManager.requestLoRaConfig,
 			save: { config, from, to in
-				var sanitized = config
-				Self.reconcile(&sanitized)
-				guard Self.supportedRegion(sanitized) != nil else { return }
+				guard let sanitized = Self.sanitizedForSave(config) else { return }
 				if let deviceNum = accessoryManager.activeDeviceNum,
 				   let connectedNode = getNodeInfo(id: deviceNum, context: context),
 				   connectedNode.num == node?.user?.num ?? 0 {

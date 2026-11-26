@@ -1099,4 +1099,109 @@ extension AccessoryManagerChannelRefreshLifecycleTests {
 		#expect(!sent.contains { self.isGetLoRaConfigPacket($0) != nil })
 		#expect(await connection.sentWantConfigIDs == [UInt32(manager.NONCE_ONLY_DB)])
 	}
+
+	@Test("Stale post-LoRa refresh after reconnect neither dumps DB nor resets the new session tracker")
+	func postLoRaRefreshSkipsDatabaseDumpAfterReconnect() async throws {
+		resetSharedStore()
+		let nodeNum: UInt32 = 0x0010_2815
+		try seedConnectedNode(nodeNum: nodeNum)
+		let connection = ChannelRefreshLifecycleConnection()
+		let manager = makeManager(nodeNum: nodeNum, connection: connection)
+		connectManager(manager, nodeNum: nodeNum, firmwareVersion: "2.8.1")
+
+		var newSessionTask: Task<Void, Never>?
+		defer { newSessionTask?.cancel() }
+		await connection.setOnLoRaConfigRequest {
+			try? await manager.closeConnection()
+			var reconnectedDevice = Device(
+				id: UUID(),
+				name: "Reconnected Radio",
+				transportType: .ble,
+				identifier: "reconnected-radio",
+				connectionState: .connected,
+				num: Int64(nodeNum)
+			)
+			reconnectedDevice.firmwareVersion = "2.8.1"
+			manager.activeConnection = (device: reconnectedDevice, connection: connection)
+			manager.activeDeviceNum = Int64(nodeNum)
+			manager.isConnected = true
+			newSessionTask = manager.refreshNodeDatabaseAfterLoRaChange(after: .seconds(60))
+		}
+
+		let task = try #require(manager.refreshNodeDatabaseAfterLoRaChange(after: .zero))
+		await task.value
+
+		#expect(await connection.sentWantConfigIDs.isEmpty)
+		#expect(!manager.nodeDatabaseDumpInProgress)
+		#expect(manager.awaitingNodeDatabaseAfterLoRaChange)
+	}
+
+	@Test("Stale refresh waking on a new session does not reset the new session tracker")
+	func staleRefreshAfterReconnectPreservesNewTracker() async throws {
+		resetSharedStore()
+		let nodeNum: UInt32 = 0x0010_2817
+		try seedConnectedNode(nodeNum: nodeNum)
+		let connection = ChannelRefreshLifecycleConnection()
+		let manager = makeManager(nodeNum: nodeNum, connection: connection)
+		connectManager(manager, nodeNum: nodeNum, firmwareVersion: "2.8.1")
+		manager.nodeDatabaseDumpInProgress = true
+
+		let staleTask = try #require(manager.refreshNodeDatabaseAfterLoRaChange(after: .zero))
+		await Task.yield()
+
+		try? await manager.closeConnection()
+		var newDevice = Device(
+			id: UUID(),
+			name: "New Session Radio",
+			transportType: .ble,
+			identifier: "new-session-radio",
+			connectionState: .connected,
+			num: Int64(nodeNum)
+		)
+		newDevice.firmwareVersion = "2.8.1"
+		manager.activeConnection = (device: newDevice, connection: connection)
+		manager.activeDeviceNum = Int64(nodeNum)
+		manager.isConnected = true
+		let newSessionTask = manager.refreshNodeDatabaseAfterLoRaChange(after: .seconds(60))
+		defer { newSessionTask?.cancel() }
+
+		await staleTask.value
+
+		#expect(manager.awaitingNodeDatabaseAfterLoRaChange)
+		#expect(await connection.sentToRadios.isEmpty)
+	}
+
+	@Test("Superseded post-LoRa refresh skips database dump while newer change still runs")
+	func postLoRaRefreshSkipsDatabaseDumpWhenSuperseded() async throws {
+		resetSharedStore()
+		let nodeNum: UInt32 = 0x0010_2816
+		try seedConnectedNode(nodeNum: nodeNum)
+		let connection = ChannelRefreshLifecycleConnection()
+		let manager = makeManager(nodeNum: nodeNum, connection: connection)
+		connectManager(manager, nodeNum: nodeNum, firmwareVersion: "2.8.1")
+
+		var newerTask: Task<Void, Never>?
+		await connection.setOnLoRaConfigRequest {
+			guard newerTask == nil else { return }
+			newerTask = manager.refreshNodeDatabaseAfterLoRaChange(after: .zero)
+		}
+		await connection.setOnSend { toRadio in
+			if case let .wantConfigID(id) = toRadio.payloadVariant {
+				while manager.firstDatabaseNodeInfoContinuation == nil {
+					await Task.yield()
+				}
+				await self.completeConfig(manager, id: id)
+			}
+		}
+
+		let staleTask = try #require(manager.refreshNodeDatabaseAfterLoRaChange(after: .zero))
+		await staleTask.value
+		await newerTask?.value
+
+		let sent = await connection.sentToRadios
+		let configRequests = sent.filter { self.isGetLoRaConfigPacket($0) != nil }
+		#expect(configRequests.count == 2)
+		#expect(await connection.sentWantConfigIDs == [UInt32(manager.NONCE_ONLY_DB)])
+		#expect(!manager.nodeDatabaseDumpInProgress)
+	}
 }

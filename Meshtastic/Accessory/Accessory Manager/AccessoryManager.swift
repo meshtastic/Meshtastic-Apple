@@ -612,7 +612,8 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 					try? await Task.sleep(for: .milliseconds(250))
 				}
 			}
-			guard self.isConnected, self.activeConnection?.device.id == sessionID else {
+			guard self.activeConnection?.device.id == sessionID else { return }
+			guard self.isConnected else {
 				if shouldRefreshDatabase {
 					self.loraChangeTracker.reset()
 				}
