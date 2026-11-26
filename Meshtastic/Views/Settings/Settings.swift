@@ -600,6 +600,15 @@ struct Settings: View {
 
 	var developersSection: some View {
 		Section(header: Text("Developers")) {
+			NavigationLink {
+				LabelPrinterTestView()
+			} label: {
+				Label {
+					Text("Label Printer Test")
+				} icon: {
+					Image(systemName: "printer")
+				}
+			}
 			NavigationLink(value: SettingsNavigationState.backupManagement) {
 				Label {
 					Text("Backup Management")
