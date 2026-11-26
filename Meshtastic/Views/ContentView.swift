@@ -56,6 +56,9 @@ struct ContentView: View {
 
 	var body: some View {
 		gatedContent
+			// Every toggle in the app uses the accent color, not the system green. A toggle
+			// style rather than .tint, which would also turn destructive buttons blue.
+			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 			.sheet(
 				isPresented: $isShowingDeviceOnboardingFlow,
 				onDismiss: {

@@ -241,7 +241,7 @@ struct TAKServerConfig: View {
 			Toggle(isOn: $takServer.enabled) {
 				Label("Enable TAK Server", systemImage: "antenna.radiowaves.left.and.right")
 			}
-			.toggleStyle(.switch)
+			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
 			HStack {
 				Label("Port", systemImage: "number")
@@ -265,7 +265,7 @@ struct TAKServerConfig: View {
 						.foregroundColor(.secondary)
 				}
 			}
-			.toggleStyle(.switch)
+			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 			.disabled(takServer.readOnlyMode)
 
 			Toggle(isOn: $takServer.meshToCotEnabled) {
@@ -276,7 +276,7 @@ struct TAKServerConfig: View {
 						.foregroundColor(.secondary)
 				}
 			}
-			.toggleStyle(.switch)
+			.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 			if !channels.isEmpty {
 				Picker(selection: $takServer.channel) {
 					ForEach(channels, id: \.index) { channel in

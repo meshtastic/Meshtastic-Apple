@@ -236,7 +236,7 @@ struct ShareChannels: View {
 			ForEach(shareableChannels, id: \.self) { channel in
 				GridRow {
 					Toggle("Channel \(channel.index) Included", isOn: includeBinding(for: channel.index))
-						.toggleStyle(.switch)
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						.labelsHidden()
 						.disabled(channel.role == 1 && channel.index != 0)
 					Text(channelDisplayName(channel))

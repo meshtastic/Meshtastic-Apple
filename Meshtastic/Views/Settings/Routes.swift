@@ -201,7 +201,7 @@ struct Routes: View {
 								Label("Enabled", systemImage: "point.topleft.filled.down.to.point.bottomright.curvepath")
 								Text("Show on the mesh map.")
 							}
-							.toggleStyle(.switch)
+							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
 							ColorPicker("Color", selection: $color, supportsOpacity: false)
 

@@ -161,6 +161,9 @@ struct MetadataConfigForm<M: ConfigFormMessage, Leading: View, Trailing: View>: 
 			trailing($config)
 				.disabled(!isEditable)
 		}
+		// Settings toggles use the accent color, as the hand-written screens did (#1831).
+		// A toggle style rather than .tint, which would also turn destructive buttons blue.
+		.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 		.dismissesKeyboardOnScroll()
 		.safeAreaInset(edge: .bottom, alignment: .center) {
 			HStack(spacing: 0) {
