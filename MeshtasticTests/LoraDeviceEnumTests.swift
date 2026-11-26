@@ -1179,6 +1179,56 @@ struct LoRaChannelCalculatorTests {
 		#expect(summary?.frequencyText == "906.875 MHz")
 	}
 
+	@Test("Region defaultSlot exceeding numChannels falls back to channel-name hash")
+	func regionDefaultSlotExceedingNumChannelsFallsBackToNameHash() {
+		// ITU_1_2M has defaultSlot 26 for 20 kHz channels, but LongFast (250 kHz) only has 8 slots.
+		let calculator = LoRaChannelCalculator(
+			regionCode: RegionCodes.itu12M.rawValue,
+			usePreset: true,
+			modemPreset: ModemPresets.longFast.rawValue,
+			channelNum: 0,
+			bandwidth: 0,
+			overrideFrequency: 0
+		)
+		let count = calculator.numChannels()
+		#expect(count == 8)
+
+		let effective = calculator.effectiveChannelSlot(primaryName: "LongFast")
+		let named = calculator.slotForChannelName("LongFast")
+		#expect((1...count).contains(effective))
+		#expect(effective != 26)
+		#expect(named == effective)
+	}
+
+	@Test("radioFrequencyMHz returns 0 when calculated center exceeds freqEnd")
+	func radioFrequencyMHzRejectsSlotExceedingFreqEnd() {
+		// EU_866 (865.6–867.6 MHz) with 31.25 kHz custom bandwidth rounds to 5 slots,
+		// but slot 5 centers at 867.678125 MHz (> 867.6 MHz).
+		let calculator = LoRaChannelCalculator(
+			regionCode: RegionCodes.eu866.rawValue,
+			usePreset: false,
+			modemPreset: 0,
+			channelNum: 0,
+			bandwidth: 31,
+			overrideFrequency: 0
+		)
+		#expect(calculator.numChannels() == 5)
+		#expect(calculator.radioFrequencyMHz(slot: 4) > 865.6)
+		#expect(calculator.radioFrequencyMHz(slot: 4) <= 867.6)
+		#expect(calculator.radioFrequencyMHz(slot: 5) == 0)
+
+		let overridden = LoRaChannelCalculator(
+			regionCode: RegionCodes.eu866.rawValue,
+			usePreset: false,
+			modemPreset: 0,
+			channelNum: 5,
+			bandwidth: 31,
+			overrideFrequency: 867.5,
+			frequencyOffset: 0.01
+		)
+		#expect(abs(overridden.radioFrequencyMHz(slot: 5) - 867.51) < 0.001)
+	}
+
 	@Test("Custom bandwidth 0 uses the regional default bandwidth")
 	func customBandwidthZeroUsesRegionalDefault() {
 		let usDefault = LoRaChannelCalculator(
@@ -1191,6 +1241,18 @@ struct LoRaChannelCalculatorTests {
 		)
 		#expect(usDefault.numChannels() == 104)
 		#expect(abs(usDefault.radioFrequencyMHz(slot: 1) - 902.125) < 0.001)
+
+		let kz863Default = LoRaChannelCalculator(
+			regionCode: RegionCodes.kz863.rawValue,
+			usePreset: false,
+			modemPreset: 0,
+			channelNum: 0,
+			bandwidth: 0,
+			overrideFrequency: 0
+		)
+		#expect(Bandwidths.description(forPickerValue: 0, region: .kz863) == "250 kHz")
+		#expect(kz863Default.numChannels() == 20)
+		#expect(abs(kz863Default.radioFrequencyMHz(slot: 1) - 863.125) < 0.001)
 
 		let lora24Default = LoRaChannelCalculator(
 			regionCode: RegionCodes.lora24.rawValue,
@@ -1218,21 +1280,30 @@ struct LoRaChannelCalculatorTests {
 		var config = Config.LoRaConfig()
 		config.region = .jp
 		config.usePreset = true
-		config.modemPreset = .liteSlow
-		config.channelNum = 15
-
 		config.modemPreset = .longFast
-		#expect(!LoRaConfig.canSave(config, node: nil))
-		#expect(LoRaConfig.slotResetNotice(config, previousSlot: 15) == nil)
+
+		// Exact slot boundary: JP LongFast has 12 slots (12 kept, 13 cleared).
+		config.channelNum = 12
+		#expect(LoRaChannelCalculator(config: config).effectiveChannelSlot(primaryName: "LongFast") == 12)
 		LoRaConfig.reconcile(&config)
+		#expect(config.channelNum == 12)
+
+		config.channelNum = 13
+		#expect(!LoRaConfig.canSave(config, node: nil))
+		#expect(LoRaConfig.slotResetNotice(config, previousSlot: 13) == nil)
+		var sessionClearedSlot = 0
+		LoRaConfig.reconcile(&config, clearedSlot: &sessionClearedSlot)
 		#expect(config.channelNum == 0)
+		#expect(sessionClearedSlot == 13)
 		#expect(LoRaConfig.canSave(config, node: nil))
-		#expect(LoRaConfig.slotResetNotice(config, previousSlot: 15) != nil)
+		#expect(LoRaConfig.presetRowSlotResetNotice(config, previousSlot: sessionClearedSlot) != nil)
+		#expect(LoRaConfig.regionRowSlotResetNotice(config, previousSlot: sessionClearedSlot) == nil)
 
 		config.modemPreset = .narrowSlow
 		config.channelNum = 15
-		LoRaConfig.reconcile(&config)
+		LoRaConfig.reconcile(&config, clearedSlot: &sessionClearedSlot)
 		#expect(config.channelNum == 15)
+		#expect(sessionClearedSlot == 0)
 		#expect(LoRaConfig.slotResetNotice(config, previousSlot: 15) == nil)
 
 		config.region = .us
@@ -1250,8 +1321,11 @@ struct LoRaChannelCalculatorTests {
 		#expect(config.channelNum == 5)
 
 		config.channelNum = 15
-		LoRaConfig.reconcile(&config)
+		LoRaConfig.reconcile(&config, clearedSlot: &sessionClearedSlot)
 		#expect(config.channelNum == 0)
+		#expect(sessionClearedSlot == 15)
+		#expect(LoRaConfig.regionRowSlotResetNotice(config, previousSlot: sessionClearedSlot) != nil)
+		#expect(LoRaConfig.presetRowSlotResetNotice(config, previousSlot: sessionClearedSlot) == nil)
 
 		config.usePreset = true
 		config.modemPreset = .longFast
@@ -1263,16 +1337,45 @@ struct LoRaChannelCalculatorTests {
 	}
 
 	@MainActor
-	@Test("TAK shortFast config reconciles out-of-range preserved channelNum")
+	@Test("TAK shortFast config reconciles out-of-range channelNum and preserves valid and explicit frequency settings")
 	func takShortFastReconcilesChannelNum() {
-		let currentLoRa = LoRaConfigEntity()
-		currentLoRa.regionCode = Int32(RegionCodes.jp.rawValue)
-		currentLoRa.channelNum = 15
+		let outOfRange = LoRaConfigEntity()
+		outOfRange.regionCode = Int32(RegionCodes.jp.rawValue)
+		outOfRange.channelNum = 15
 
-		let config = TAKServerManager.shortFastLoRaConfig(preserving: currentLoRa)
-		#expect(config.modemPreset == .shortFast)
-		#expect(config.usePreset)
-		#expect(config.region == .jp)
-		#expect(config.channelNum == 0)
+		let cleared = TAKServerManager.shortFastLoRaConfig(preserving: outOfRange)
+		#expect(cleared.modemPreset == .shortFast)
+		#expect(cleared.usePreset)
+		#expect(cleared.region == .jp)
+		#expect(cleared.channelNum == 0)
+
+		let valid = LoRaConfigEntity()
+		valid.regionCode = Int32(RegionCodes.us.rawValue)
+		valid.channelNum = 20
+		valid.txPower = 27
+		valid.bandwidth = 250
+		valid.codingRate = 5
+		valid.spreadFactor = 11
+		valid.overrideFrequency = 906.875
+		valid.frequencyOffset = 0.01
+
+		let preserved = TAKServerManager.shortFastLoRaConfig(preserving: valid)
+		#expect(preserved.modemPreset == .shortFast)
+		#expect(preserved.region == .us)
+		#expect(preserved.channelNum == 20)
+		#expect(preserved.txPower == 27)
+		#expect(preserved.bandwidth == 250)
+		#expect(preserved.codingRate == 5)
+		#expect(preserved.spreadFactor == 11)
+		#expect(preserved.overrideFrequency == 906.875)
+		#expect(preserved.frequencyOffset == 0.01)
+
+		let fallback = TAKServerManager.shortFastLoRaConfig(preserving: nil)
+		#expect(fallback.modemPreset == .shortFast)
+		#expect(fallback.usePreset)
+		#expect(fallback.txEnabled)
+		#expect(fallback.hopLimit == 3)
+		#expect(fallback.region == .unset)
+		#expect(fallback.channelNum == 0)
 	}
 }

@@ -599,26 +599,40 @@ class AccessoryManager: ObservableObject, MqttClientProxyManagerDelegate {
 	/// `nodeDatabaseSavedAt`, which is what the unheard notice and node rows refresh on.
 	@discardableResult
 	func refreshNodeDatabaseAfterLoRaChange(after delay: Duration = .seconds(2)) -> Task<Void, Never>? {
-		guard reportsHeardOnCurrentLora, isConnected else { return nil }
-		let generation = loraChangeTracker.changed()
+		let shouldRefreshDatabase = reportsHeardOnCurrentLora
+		guard appliesLoRaConfigWithoutReboot || shouldRefreshDatabase, isConnected else { return nil }
+		let sessionID = activeConnection?.device.id
+		let generation = shouldRefreshDatabase ? loraChangeTracker.changed() : nil
 		return Task { @MainActor in
 			// Let the radio finish reprogramming the modem before asking.
 			try? await Task.sleep(for: delay)
-			// One download at a time: the completion doesn't say which request it answers.
-			while self.nodeDatabaseDumpInProgress, self.isConnected {
-				try? await Task.sleep(for: .milliseconds(250))
+			if shouldRefreshDatabase {
+				// One download at a time: the completion doesn't say which request it answers.
+				while self.nodeDatabaseDumpInProgress, self.isConnected, self.activeConnection?.device.id == sessionID {
+					try? await Task.sleep(for: .milliseconds(250))
+				}
 			}
-			guard self.isConnected else {
-				self.loraChangeTracker.reset()
+			guard self.isConnected, self.activeConnection?.device.id == sessionID else {
+				if shouldRefreshDatabase {
+					self.loraChangeTracker.reset()
+				}
 				return
 			}
-			// A newer change is waiting its turn and will ask instead.
-			guard self.loraChangeTracker.request(generation) else { return }
+			if let generation {
+				// A newer change is waiting its turn and will ask instead.
+				guard self.loraChangeTracker.request(generation) else { return }
+			}
 			if let deviceNum = self.activeDeviceNum,
 			   let user = getNodeInfo(id: deviceNum, context: self.context)?.user {
 				// Re-read the radio's LoRa config so any firmware-side clamp replaces the
 				// optimistic copy saved locally.
 				try? await self.requestLoRaConfig(fromUser: user, toUser: user)
+			}
+			guard let generation else { return }
+			guard self.isConnected,
+				  self.activeConnection?.device.id == sessionID,
+				  self.loraChangeTracker.isActiveRequest(generation) else {
+				return
 			}
 			do {
 				try await self.sendWantDatabase(forLoRaChange: generation)

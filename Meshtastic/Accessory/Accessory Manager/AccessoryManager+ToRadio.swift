@@ -3281,7 +3281,7 @@ extension AccessoryManager {
 
 			meshPacket.decoded = dataMessage
 
-			let messageDescription = "🛎️ Requested LoRa Config using an admin key for node: \(toUser.longName ?? "Unknown".localized)"
+			let messageDescription = "🛎️ Requested LoRa Config using an admin key for node: \(toUser.num.toHex())"
 
 			try await sendAdminMessageToRadio(meshPacket: meshPacket, adminDescription: messageDescription)
 		}

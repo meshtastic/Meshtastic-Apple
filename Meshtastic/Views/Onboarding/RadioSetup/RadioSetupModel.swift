@@ -154,7 +154,10 @@ final class RadioSetupModel {
 	var hasChosenRegion: Bool { isRegionSupported && draft.region != .unset }
 
 	var hasLoRaChanges: Bool {
-		draft.region != loaded.region || draft.modemPreset != loaded.modemPreset || draft.usePreset != loaded.usePreset
+		draft.region != loaded.region
+			|| draft.modemPreset != loaded.modemPreset
+			|| draft.usePreset != loaded.usePreset
+			|| draft.channelNum != loaded.channelNum
 	}
 
 	var restartsOnLoRaSave: Bool { hasLoRaChanges && !appliesWithoutReboot }

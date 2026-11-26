@@ -45,6 +45,7 @@ struct LoRaConfig: View {
 	@Environment(\.modelContext) private var context
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 	let node: NodeInfoEntity?
+	@State private var lastClearedSlot = 0
 
 	private typealias F = Config.LoRaConfig.Fields
 
@@ -71,6 +72,19 @@ struct LoRaConfig: View {
 		}
 	}
 
+	/// Reconciles `config` while remembering the last manual slot cleared during this
+	/// edit session so the inline notice appears even when the cleared slot was entered
+	/// before saving.
+	static func reconcile(_ config: inout Config.LoRaConfig, clearedSlot: inout Int) {
+		let before = Int(config.channelNum)
+		reconcile(&config)
+		if before > 0, config.channelNum == 0 {
+			clearedSlot = before
+		} else if config.channelNum > 0 {
+			clearedSlot = 0
+		}
+	}
+
 	/// Explains when a region, preset, or bandwidth change cleared a manual frequency
 	/// slot that does not exist in the new setting. Nil when no slot was reset.
 	static func slotResetNotice(_ config: Config.LoRaConfig, previousSlot: Int) -> String? {
@@ -83,6 +97,16 @@ struct LoRaConfig: View {
 			String(localized: "Frequency slot %lld is not available for this setting (1–%lld) and will reset to Auto (0).",
 				   comment: "LoRa notice when a region, preset, or bandwidth change resets an out-of-range frequency slot; first argument is the previous slot, second is the new maximum slot"),
 			Int64(previousSlot), Int64(maxSlots))
+	}
+
+	static func regionRowSlotResetNotice(_ config: Config.LoRaConfig, previousSlot: Int) -> String? {
+		guard !config.usePreset else { return nil }
+		return slotResetNotice(config, previousSlot: previousSlot)
+	}
+
+	static func presetRowSlotResetNotice(_ config: Config.LoRaConfig, previousSlot: Int) -> String? {
+		guard config.usePreset else { return nil }
+		return slotResetNotice(config, previousSlot: previousSlot)
 	}
 
 	static func canSave(_ config: Config.LoRaConfig, node: NodeInfoEntity?) -> Bool {
@@ -111,7 +135,7 @@ struct LoRaConfig: View {
 		Int32(HardwareModel.tbeam1Watt.rawValue)
 	]
 
-	static func overlay(node: NodeInfoEntity? = nil) -> ConfigFormOverlay<Config.LoRaConfig> {
+	static func overlay(node: NodeInfoEntity? = nil, resetFromSlot: Int = 0) -> ConfigFormOverlay<Config.LoRaConfig> {
 		let custom = ConfigFormCondition<Config.LoRaConfig>.isFalse(F.usePreset)
 		// Hidden on hardware the app has not identified, the same as the other rows that
 		// turn on something the schema cannot see.
@@ -131,10 +155,10 @@ struct LoRaConfig: View {
 				// and a band restricted to licensed operators. Both are about the choice
 				// being made, so they belong beside the picker rather than at the foot of
 				// the screen.
-				.init(F.region, control: .custom { config in AnyView(RegionRow(config: config, node: node)) }),
+				.init(F.region, control: .custom { config in AnyView(RegionRow(config: config, node: node, resetFromSlot: resetFromSlot)) }),
 				.init(F.usePreset, symbol: "list.bullet.rectangle"),
 				.init(F.modemPreset, shownWhen: .isTrue(F.usePreset),
-					  control: .custom { config in AnyView(ModemPresetRow(config: config, node: node)) })
+					  control: .custom { config in AnyView(ModemPresetRow(config: config, node: node, resetFromSlot: resetFromSlot)) })
 			]),
 			.init(title: String(localized: "Advanced", comment: "Settings section"), fields: [
 				.init(F.ignoreMqtt, symbol: "server.rack"),
@@ -174,8 +198,8 @@ struct LoRaConfig: View {
 
 	var body: some View {
 		MetadataConfigForm(
-			node: node, title: "LoRa", overlay: Self.overlay(node: node),
-			reconcile: { config, _ in Self.reconcile(&config) },
+			node: node, title: "LoRa", overlay: Self.overlay(node: node, resetFromSlot: lastClearedSlot),
+			reconcile: { config, _ in Self.reconcile(&config, clearedSlot: &lastClearedSlot) },
 			canSave: { Self.canSave($0, node: node) },
 			confirmationMessage: String(localized: "Your device may reboot after saving.",
 										comment: "LoRa save confirmation"),
@@ -191,6 +215,7 @@ struct LoRaConfig: View {
 				}
 
 				_ = try await accessoryManager.saveLoRaConfig(config: sanitized, fromUser: from, toUser: to)
+				lastClearedSlot = 0
 				// A change to the connected radio applies without a reboot on 2.8, so ask it for the
 				// node database to pick up its answers for the new settings.
 				if to.num == accessoryManager.activeDeviceNum {
@@ -206,6 +231,7 @@ struct LoRaConfig: View {
 private struct RegionRow: View {
 	@Binding var config: Config.LoRaConfig
 	let node: NodeInfoEntity?
+	let resetFromSlot: Int
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 
 	private static let metadata = FieldMetadataRegistry.get("meshtastic.Config.LoRaConfig", tag: 7)
@@ -224,6 +250,10 @@ private struct RegionRow: View {
 		return accessoryManager.loRaRegionPresets[code]
 	}
 
+	private var previousSlot: Int {
+		resetFromSlot > 0 ? resetFromSlot : Int(node?.loRaConfig?.channelNum ?? 0)
+	}
+
 	var body: some View {
 		VStack(alignment: .leading) {
 			Picker(Self.metadata?.label ?? "Region", selection: selection) {
@@ -239,8 +269,7 @@ private struct RegionRow: View {
 			if LoRaRegionValidation.supportedRegion(rawValue: config.region.rawValue) == nil {
 				UnsupportedRegionNotice()
 			}
-			if !config.usePreset,
-			   let notice = LoRaConfig.slotResetNotice(config, previousSlot: Int(node?.loRaConfig?.channelNum ?? 0)) {
+			if let notice = LoRaConfig.regionRowSlotResetNotice(config, previousSlot: previousSlot) {
 				Label {
 					Text(notice)
 						.foregroundColor(.gray)
@@ -298,6 +327,7 @@ struct UnsupportedRegionNotice: View {
 private struct ModemPresetRow: View {
 	@Binding var config: Config.LoRaConfig
 	let node: NodeInfoEntity?
+	let resetFromSlot: Int
 	@EnvironmentObject private var accessoryManager: AccessoryManager
 
 	private static let metadata = FieldMetadataRegistry.get("meshtastic.Config.LoRaConfig", tag: 2)
@@ -317,6 +347,10 @@ private struct ModemPresetRow: View {
 			current: ModemPresets(rawValue: config.modemPreset.rawValue),
 			supports2_8: supports2_8,
 			regionInfo: region.flatMap { accessoryManager.loRaRegionPresets[$0.protoEnumValue()] })
+	}
+
+	private var previousSlot: Int {
+		resetFromSlot > 0 ? resetFromSlot : Int(node?.loRaConfig?.channelNum ?? 0)
 	}
 
 	var body: some View {
@@ -344,7 +378,7 @@ private struct ModemPresetRow: View {
 					Image(systemName: "exclamationmark.triangle.fill").foregroundColor(.orange)
 				}
 			}
-			if let notice = LoRaConfig.slotResetNotice(config, previousSlot: Int(node?.loRaConfig?.channelNum ?? 0)) {
+			if let notice = LoRaConfig.presetRowSlotResetNotice(config, previousSlot: previousSlot) {
 				Label {
 					Text(notice)
 						.foregroundColor(.gray)

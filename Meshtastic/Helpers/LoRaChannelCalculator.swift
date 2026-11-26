@@ -112,7 +112,9 @@ struct LoRaChannelCalculator {
 		let count = numChannels()
 		guard count > 0, slot <= count else { return 0 }
 		let slotWidth = region.spacing + 2 * region.padding + bandwidthMHz
-		return region.freqStart + bandwidthMHz / 2 + region.padding + Double(slot - 1) * slotWidth + frequencyOffset
+		let center = region.freqStart + bandwidthMHz / 2 + region.padding + Double(slot - 1) * slotWidth
+		guard center <= region.freqEnd + 1e-6 else { return 0 }
+		return center + frequencyOffset
 	}
 
 	/// How many frequency slots the region has at this bandwidth.
@@ -143,7 +145,7 @@ struct LoRaChannelCalculator {
 		}
 		switch bandwidth {
 		case 0:
-			return region.wideLoRa ? 0.8125 : 0.25
+			return regionCode == RegionCodes.lora24.rawValue ? 0.8125 : 0.25
 		case 31:
 			return 0.03125
 		case 62:

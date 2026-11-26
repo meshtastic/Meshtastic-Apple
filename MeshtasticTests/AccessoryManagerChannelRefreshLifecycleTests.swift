@@ -21,6 +21,7 @@ private actor ChannelRefreshLifecycleConnection: Connection {
 	private var failNextDrain = false
 	private(set) var failNextLoRaConfigRequest = false
 	private var onSend: (@MainActor @Sendable (ToRadio) async -> Void)?
+	private var onLoRaConfigRequest: (@MainActor @Sendable () async -> Void)?
 
 	func pauseNextWantConfigSend() {
 		pauseNextConfigSend = true
@@ -43,15 +44,29 @@ private actor ChannelRefreshLifecycleConnection: Connection {
 		onSend = handler
 	}
 
+	func setOnLoRaConfigRequest(_ handler: (@MainActor @Sendable () async -> Void)?) {
+		onLoRaConfigRequest = handler
+	}
+
 	func send(_ data: ToRadio) async throws {
 		sentToRadios.append(data)
-		if failNextLoRaConfigRequest,
-		   case let .packet(meshPacket) = data.payloadVariant,
+		let isLoRaRequest: Bool
+		if case let .packet(meshPacket) = data.payloadVariant,
 		   case let .decoded(dataMessage) = meshPacket.payloadVariant,
 		   let admin = try? AdminMessage(serializedBytes: dataMessage.payload),
 		   case .getConfigRequest(.loraConfig) = admin.payloadVariant {
-			failNextLoRaConfigRequest = false
-			throw AccessoryError.ioFailed("Simulated getConfigRequest failure")
+			isLoRaRequest = true
+		} else {
+			isLoRaRequest = false
+		}
+		if isLoRaRequest {
+			if let onLoRaConfigRequest {
+				await onLoRaConfigRequest()
+			}
+			if failNextLoRaConfigRequest {
+				failNextLoRaConfigRequest = false
+				throw AccessoryError.ioFailed("Simulated getConfigRequest failure")
+			}
 		}
 		if case let .wantConfigID(id) = data.payloadVariant {
 			sentWantConfigIDs.append(id)
@@ -881,8 +896,22 @@ extension AccessoryManagerChannelRefreshLifecycleTests {
 		return meshPacket.id
 	}
 
-	@Test("Post-LoRa refresh skips firmware before 2.8.1")
+	@Test("Post-LoRa refresh skips firmware before 2.8.0")
 	func postLoRaRefreshSkipsOlderFirmware() async throws {
+		resetSharedStore()
+		let nodeNum: UInt32 = 0x0010_2726
+		try seedConnectedNode(nodeNum: nodeNum)
+		let connection = ChannelRefreshLifecycleConnection()
+		let manager = makeManager(nodeNum: nodeNum, connection: connection)
+		connectManager(manager, nodeNum: nodeNum, firmwareVersion: "2.7.26")
+
+		let task = manager.refreshNodeDatabaseAfterLoRaChange(after: .zero)
+		#expect(task == nil)
+		#expect(await connection.sentToRadios.isEmpty)
+	}
+
+	@Test("Post-LoRa refresh rereads LoRa config on 2.8.0 without requesting a database dump")
+	func postLoRaRefreshRereadsLoRaConfigOn280WithoutDatabaseDump() async throws {
 		resetSharedStore()
 		let nodeNum: UInt32 = 0x0010_2800
 		try seedConnectedNode(nodeNum: nodeNum)
@@ -890,9 +919,13 @@ extension AccessoryManagerChannelRefreshLifecycleTests {
 		let manager = makeManager(nodeNum: nodeNum, connection: connection)
 		connectManager(manager, nodeNum: nodeNum, firmwareVersion: "2.8.0")
 
-		let task = manager.refreshNodeDatabaseAfterLoRaChange(after: .zero)
-		#expect(task == nil)
-		#expect(await connection.sentToRadios.isEmpty)
+		let task = try #require(manager.refreshNodeDatabaseAfterLoRaChange(after: .zero))
+		await task.value
+
+		let sent = await connection.sentToRadios
+		#expect(sent.contains { self.isGetLoRaConfigPacket($0) != nil })
+		#expect(await connection.sentWantConfigIDs.isEmpty)
+		#expect(!manager.nodeDatabaseDumpInProgress)
 	}
 
 	@Test("Post-LoRa refresh requests LoRa config before database dump")
@@ -1016,6 +1049,54 @@ extension AccessoryManagerChannelRefreshLifecycleTests {
 			#expect(configIndex < dbIndex)
 		}
 		#expect(await !connection.failNextLoRaConfigRequest)
+		#expect(await connection.sentWantConfigIDs == [UInt32(manager.NONCE_ONLY_DB)])
+	}
+
+	@Test("Post-LoRa refresh skips database dump if disconnected during LoRa config fetch")
+	func postLoRaRefreshSkipsDatabaseDumpAfterDisconnect() async throws {
+		resetSharedStore()
+		let nodeNum: UInt32 = 0x0010_2813
+		try seedConnectedNode(nodeNum: nodeNum)
+		let connection = ChannelRefreshLifecycleConnection()
+		let manager = makeManager(nodeNum: nodeNum, connection: connection)
+		connectManager(manager, nodeNum: nodeNum, firmwareVersion: "2.8.1")
+
+		await connection.setOnLoRaConfigRequest {
+			try? await manager.closeConnection()
+			manager.isConnected = false
+		}
+
+		let task = try #require(manager.refreshNodeDatabaseAfterLoRaChange(after: .zero))
+		await task.value
+
+		let sent = await connection.sentToRadios
+		#expect(sent.contains { self.isGetLoRaConfigPacket($0) != nil })
+		#expect(await connection.sentWantConfigIDs.isEmpty)
+		#expect(!manager.nodeDatabaseDumpInProgress)
+	}
+
+	@Test("Post-LoRa refresh still requests database dump when NodeInfo is missing")
+	func postLoRaRefreshSendsDatabaseDumpWhenNodeInfoMissing() async throws {
+		resetSharedStore()
+		let nodeNum: UInt32 = 0x0010_2814
+		let connection = ChannelRefreshLifecycleConnection()
+		let manager = makeManager(nodeNum: nodeNum, connection: connection)
+		connectManager(manager, nodeNum: nodeNum, firmwareVersion: "2.8.1")
+
+		await connection.setOnSend { toRadio in
+			if case let .wantConfigID(id) = toRadio.payloadVariant {
+				while manager.firstDatabaseNodeInfoContinuation == nil {
+					await Task.yield()
+				}
+				await self.completeConfig(manager, id: id)
+			}
+		}
+
+		let task = try #require(manager.refreshNodeDatabaseAfterLoRaChange(after: .zero))
+		await task.value
+
+		let sent = await connection.sentToRadios
+		#expect(!sent.contains { self.isGetLoRaConfigPacket($0) != nil })
 		#expect(await connection.sentWantConfigIDs == [UInt32(manager.NONCE_ONLY_DB)])
 	}
 }

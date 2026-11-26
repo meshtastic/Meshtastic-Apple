@@ -733,20 +733,11 @@ final class TAKServerManager: ObservableObject {
 	// MARK: - Auto-fix Primary Channel
 
 	static func shortFastLoRaConfig(preserving currentLoRa: LoRaConfigEntity?) -> Config.LoRaConfig {
-		var loraConfig = Config.LoRaConfig()
+		var loraConfig = currentLoRa.map(Config.LoRaConfig.init(entity:)) ?? Config.LoRaConfig()
 		loraConfig.modemPreset = .shortFast
 		loraConfig.usePreset = true
 		loraConfig.txEnabled = true
 		loraConfig.hopLimit = 3
-
-		if let currentLoRa {
-			loraConfig.region = Config.LoRaConfig.RegionCode(rawValue: Int(currentLoRa.regionCode)) ?? .unset
-			loraConfig.channelNum = UInt32(currentLoRa.channelNum)
-			loraConfig.txPower = Int32(currentLoRa.txPower)
-			loraConfig.bandwidth = UInt32(currentLoRa.bandwidth)
-			loraConfig.codingRate = UInt32(currentLoRa.codingRate)
-			loraConfig.spreadFactor = UInt32(currentLoRa.spreadFactor)
-		}
 		LoRaConfig.reconcile(&loraConfig)
 		return loraConfig
 	}
