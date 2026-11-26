@@ -114,7 +114,7 @@ struct MapSettingsForm: View {
 						Toggle(isOn: $nodeHistory) {
 							Label("Node History", systemImage: "building.columns.fill")
 						}
-						.toggleStyle(.switch)
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						Toggle(isOn: $enableMapRouteLines) {
 							Label("Route Lines", systemImage: "road.lanes")
 						}
@@ -123,7 +123,7 @@ struct MapSettingsForm: View {
 					Toggle(isOn: $convexHull) {
 						Label("Convex Hull", systemImage: "button.angledbottom.horizontal.right")
 					}
-					.toggleStyle(.switch)
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.onTapGesture {
 						self.convexHull.toggle()
 						UserDefaults.enableMapConvexHull = self.convexHull
@@ -131,7 +131,7 @@ struct MapSettingsForm: View {
 					Toggle(isOn: $traffic) {
 						Label("Traffic", systemImage: "car")
 					}
-					.toggleStyle(.switch)
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.onTapGesture {
 						self.traffic.toggle()
 						UserDefaults.enableMapTraffic = self.traffic

@@ -24,64 +24,64 @@ struct NodeListFilter: View {
 						Label("Via Lora", systemImage: "dot.radiowaves.left.and.right")
 					}
 					.labelStyle(.titleAndIcon)
-					.toggleStyle(.switch)
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
 					Toggle(isOn: $filters.viaMqtt) {
 						Label("Via Mqtt", systemImage: "dot.radiowaves.up.forward")
 					}
-					.toggleStyle(.switch)
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
 
 					Toggle(isOn: $filters.isOnline) {
 						Label("Online", systemImage: "checkmark.circle.fill")
 					}
-					.toggleStyle(.switch)
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
 
 					Toggle(isOn: $filters.hidesUnheardOnCurrentLora) {
 						Label("Hide Not Heard on Current LoRa", systemImage: UnheardOnCurrentLora.systemImage)
 					}
-					.toggleStyle(.switch)
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
 
 					if showsEncryptedFilter {
 						Toggle(isOn: $filters.isSigned) {
 							Label { Text("Signed") } icon: { SignedNodeIcon.image }
 						}
-						.toggleStyle(.switch)
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						.listRowSeparator(.visible)
 
 						Toggle(isOn: $filters.isPkiEncrypted) {
 							Label("Encrypted", systemImage: "lock.fill")
 						}
-						.toggleStyle(.switch)
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						.listRowSeparator(.visible)
 					}
 
 					Toggle(isOn: $filters.isFavorite) {
 						Label("Favorites", systemImage: "star.fill")
 					}
-					.toggleStyle(.switch)
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
 
 					if filterTitle == "Node Filters" {
 						Toggle(isOn: $filters.isIgnored) {
 							Label("Ignored", systemImage: "minus.circle.fill")
 						}
-						.toggleStyle(.switch)
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						.listRowSeparator(.visible)
 
 						Toggle(isOn: $filters.isEnvironment) {
 							Label("Environment", systemImage: "cloud.sun")
 						}
-						.toggleStyle(.switch)
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						.listRowSeparator(.visible)
 					}
 
 					Toggle(isOn: $filters.distanceFilter) {
 						Label("Distance", systemImage: "map")
 					}
-					.toggleStyle(.switch)
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.disabled(LocationsHandler.currentLocation == nil && filters.fallbackLocation == nil)
 					.listRowSeparator(filters.distanceFilter ? .hidden : .visible)
 
@@ -146,7 +146,7 @@ struct NodeListFilter: View {
 					Toggle(isOn: $filters.roleFilter) {
 						Label("Roles", systemImage: "apps.iphone")
 					}
-					.toggleStyle(.switch)
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 
 					if filters.roleFilter {
 						VStack {

@@ -136,7 +136,7 @@ struct WaypointForm: View {
 					Toggle(isOn: $expires) {
 						Label("Expires", systemImage: "clock.badge.xmark")
 					}
-					.toggleStyle(.switch)
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					if expires {
 						DatePicker("Expire", selection: $expire, in: Date.now...)
 							.datePickerStyle(.compact)
@@ -195,16 +195,16 @@ struct WaypointForm: View {
 						Toggle(isOn: $notifyOnEnter) {
 							Label("Notify on Enter", systemImage: "bell")
 						}
-						.toggleStyle(.switch)
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						Toggle(isOn: $notifyOnExit) {
 							Label("Notify on Exit", systemImage: "bell.slash")
 						}
-						.toggleStyle(.switch)
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						if notifyOnEnter || notifyOnExit {
 							Toggle(isOn: $notifyFavoritesOnly) {
 								Label("Favorites Only", systemImage: "star")
 							}
-							.toggleStyle(.switch)
+							.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						}
 					}
 				}

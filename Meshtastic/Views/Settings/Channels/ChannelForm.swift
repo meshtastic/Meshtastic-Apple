@@ -148,7 +148,7 @@ struct ChannelForm: View {
 						Toggle(isOn: $positionsEnabled) {
 							Label(channelRole == 1 ? "Positions Enabled" : "Allow Position Requests", systemImage: positionsEnabled ? "mappin" : "mappin.slash")
 						}
-						.toggleStyle(.switch)
+						.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 						.disabled(!supportedVersion)
 					}
 
@@ -158,7 +158,7 @@ struct ChannelForm: View {
 								Toggle(isOn: $preciseLocation) {
 									Label("Precise Location", systemImage: "scope")
 								}
-								.toggleStyle(.switch)
+								.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 								.disabled(!supportedVersion)
 								.listRowSeparator(.visible)
 								.onChange(of: preciseLocation) { _, pl in
@@ -193,13 +193,13 @@ struct ChannelForm: View {
 					Toggle(isOn: $uplink) {
 						Label("MQTT Uplink Enabled", systemImage: "arrowshape.up")
 					}
-					.toggleStyle(.switch)
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 					.listRowSeparator(.visible)
 
 					Toggle(isOn: $downlink) {
 						Label("MQTT Downlink Enabled", systemImage: "arrowshape.down")
 					}
-					.toggleStyle(.switch)
+					.toggleStyle(SwitchToggleStyle(tint: .accentColor))
 				}
 		}
 		.onChange(of: channelName) {
