@@ -94,7 +94,7 @@ enum NameTagRenderer {
 		if narrow {
 			top = e
 		} else {
-			canvas.band(in: CGRect(x: x, y: e, width: width, height: bandPx), text: "HELLO MY NODE IS", size: 21)
+			canvas.band(in: CGRect(x: x, y: e, width: width, height: bandPx), text: String(localized: "HELLO MY NODE IS", comment: "Printed name tag header"), size: 21)
 			top = e + bandPx
 		}
 

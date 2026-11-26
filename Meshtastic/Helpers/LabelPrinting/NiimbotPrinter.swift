@@ -60,6 +60,11 @@ final class NiimbotPrinter: NSObject, ObservableObject {
 		try await powerOn()
 		central?.stopScan()
 		status = .connecting(target.name ?? "printer")
+		// Nothing from an earlier connection carries over: a half-received reply would eat the
+		// start of the next one, and a stale error packet would fail the first request.
+		parser = NiimbotPacketParser()
+		received = []
+		channel = nil
 		peripheral = target
 		target.delegate = self
 		// CoreBluetooth never gives up on a connection; a printer that's off would hang here.
@@ -171,8 +176,16 @@ final class NiimbotPrinter: NSObject, ObservableObject {
 	private func waitForPage(_ quantity: UInt16) async throws {
 		for _ in 0..<200 {  // about a minute
 			try await Task.sleep(for: .milliseconds(300))
-			if let reply = try? await transceive(.getPrintStatus, [0x01], replyOffset: 16), reply.data.count >= 2,
-			   UInt16(reply.data[0]) << 8 | UInt16(reply.data[1]) >= quantity {
+			let reply: NiimbotPacket
+			do {
+				reply = try await transceive(.getPrintStatus, [0x01], replyOffset: 16)
+			} catch let error as NiimbotPrinterError {
+				// A fault the printer reports (cover open, labels out) is the answer; a
+				// skipped poll from a busy printer is just retried.
+				if case .printer = error { throw error }
+				continue
+			}
+			if reply.data.count >= 2, UInt16(reply.data[0]) << 8 | UInt16(reply.data[1]) >= quantity {
 				return
 			}
 		}
@@ -265,13 +278,25 @@ extension NiimbotPrinter: CBCentralManagerDelegate, CBPeripheralDelegate {
 	}
 
 	nonisolated func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
-		MainActor.assumeIsolated { fail(error ?? CBError(.peripheralDisconnected)) }
+		MainActor.assumeIsolated {
+			guard peripheral.identifier == self.peripheral?.identifier else { return }
+			fail(error ?? CBError(.peripheralDisconnected))
+		}
 	}
 
 	nonisolated func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
 		MainActor.assumeIsolated {
+			// A printer given up on (a timeout, or picking another) disconnects later; that
+			// must not touch the connection that replaced it.
+			guard peripheral.identifier == self.peripheral?.identifier else { return }
 			channel = nil
-			if ready != nil { fail(error ?? CBError(.peripheralDisconnected)) } else { status = .idle }
+			if ready != nil {
+				fail(error ?? CBError(.peripheralDisconnected))
+			} else if case .failed = status {
+				// Keep the failure on screen rather than replacing it with "not connected".
+			} else {
+				status = .idle
+			}
 		}
 	}
 
@@ -299,9 +324,18 @@ extension NiimbotPrinter: CBCentralManagerDelegate, CBPeripheralDelegate {
 		error: Error?
 	) {
 		MainActor.assumeIsolated {
+			guard peripheral.identifier == self.peripheral?.identifier else { return }
+			if let error {
+				// No notifications means no replies: drop the link so the next attempt starts
+				// clean instead of finding a channel and waiting out the timeout.
+				channel = nil
+				central?.cancelPeripheralConnection(peripheral)
+				fail(error)
+				return
+			}
 			guard let ready else { return }
 			self.ready = nil
-			if let error { ready.resume(throwing: error) } else { ready.resume() }
+			ready.resume()
 		}
 	}
 

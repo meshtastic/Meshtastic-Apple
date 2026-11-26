@@ -4284,6 +4284,9 @@
         }
       }
     },
+    "HELLO MY NODE IS" : {
+      "comment" : "Printed name tag header, in capitals like JOIN MY MESH"
+    },
     "JOIN MY MESH" : {
       "comment" : "Printed channel label header, in capitals like HELLO MY NODE IS"
     },
