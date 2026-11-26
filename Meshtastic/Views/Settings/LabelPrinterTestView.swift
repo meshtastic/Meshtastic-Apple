@@ -7,12 +7,16 @@
 
 import CoreBluetooth
 import CoreImage.CIFilterBuiltins
+import MeshtasticProtobufs
+import SwiftData
 import SwiftUI
 
 /// Developers-only check of the Niimbot Bluetooth path: find a printer, connect, and print
 /// a test label with a border, text and a QR, at the D110's 12 mm head.
 struct LabelPrinterTestView: View {
 	@StateObject private var printer = NiimbotPrinter()
+	@EnvironmentObject private var accessoryManager: AccessoryManager
+	@Environment(\.modelContext) private var context
 	@AppStorage("labelPrinterTestLengthMM") private var lengthMM = 40
 	@State private var message: String?
 
@@ -42,16 +46,29 @@ struct LabelPrinterTestView: View {
 				}
 			}
 			Section {
+				Button("Print My Name Tag") {
+					Task { await run { try await printer.printLabel(bitmap(nameTagImage())) } }
+				}
+				.disabled(!isReady || nameTagImage() == nil)
 				Button("Print Test Label") {
-					Task { await run { try await printer.printLabel(testBitmap()) } }
+					Task { await run { try await printer.printLabel(bitmap(testImage())) } }
 				}
 				.disabled(!isReady)
 				if let message {
 					Text(message).foregroundStyle(.secondary)
 				}
 			}
+			if let tag = nameTagImage() {
+				Section("Name Tag") {
+					Image(decorative: tag, scale: 1)
+						.interpolation(.none)
+						.resizable()
+						.aspectRatio(contentMode: .fit)
+						.border(.gray)
+				}
+			}
 			if let preview = testImage() {
-				Section("Preview") {
+				Section("Test Label") {
 					Image(decorative: preview, scale: 1)
 						.interpolation(.none)
 						.resizable()
@@ -93,11 +110,21 @@ struct LabelPrinterTestView: View {
 	/// Label length in dots along the feed, as labeltastic sizes it: 8 per mm less 4 slack.
 	private var lengthDots: Int { lengthMM * 8 - 4 }
 
-	private func testBitmap() throws -> LabelBitmap {
-		guard let image = testImage(), let bitmap = LabelBitmap(readingOrientation: image, headDots: Self.headDots) else {
+	private func bitmap(_ image: CGImage?) throws -> LabelBitmap {
+		guard let image, let bitmap = LabelBitmap(readingOrientation: image, headDots: Self.headDots) else {
 			throw NiimbotPrinterError.noResponse(request: 0)
 		}
 		return bitmap
+	}
+
+	/// The connected radio's name tag, as a contact others can scan.
+	private func nameTagImage() -> CGImage? {
+		guard let num = accessoryManager.activeDeviceNum,
+			  let user = getNodeInfo(id: num, context: context)?.user else { return nil }
+		var node = NodeInfo()
+		node.num = UInt32(truncatingIfNeeded: num)
+		node.user = user.toProto()
+		return NameTagRenderer.image(for: NameTagContent(node: node), lengthDots: lengthDots)
 	}
 
 	/// The test label in reading orientation: lengthDots x 96, one pixel per dot.

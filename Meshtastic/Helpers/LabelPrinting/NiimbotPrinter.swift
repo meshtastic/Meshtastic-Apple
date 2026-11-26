@@ -62,12 +62,31 @@ final class NiimbotPrinter: NSObject, ObservableObject {
 		status = .connecting(target.name ?? "printer")
 		peripheral = target
 		target.delegate = self
+		// CoreBluetooth never gives up on a connection; a printer that's off would hang here.
+		let timeout = Task { [weak self] in
+			try await Task.sleep(for: .seconds(10))
+			guard let self, self.ready != nil else { return }
+			self.central?.cancelPeripheralConnection(target)
+			self.fail(NiimbotPrinterError.noResponse(request: NiimbotRequest.connect.rawValue))
+		}
+		defer { timeout.cancel() }
 		try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
 			ready = continuation
 			central?.connect(target)
 		}
 		status = .ready(target.name ?? "printer")
 	}
+
+	/// Reconnects to a printer found before, by the identifier CoreBluetooth gave it. False
+	/// when this device doesn't know it any more.
+	func connect(identifier: UUID) async throws -> Bool {
+		try await powerOn()
+		guard let known = central?.retrievePeripherals(withIdentifiers: [identifier]).first else { return false }
+		try await connect(known)
+		return true
+	}
+
+	var connectedIdentifier: UUID? { channel == nil ? nil : peripheral?.identifier }
 
 	func disconnect() {
 		if let peripheral { central?.cancelPeripheralConnection(peripheral) }

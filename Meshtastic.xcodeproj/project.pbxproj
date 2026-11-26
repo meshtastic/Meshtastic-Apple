@@ -490,6 +490,16 @@
 			path = Router;
 			sourceTree = "<group>";
 		};
+		A29A1D7F0B7FCF0F74AF547A /* Fonts */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			name = Fonts;
+			path = Fonts;
+			sourceTree = "<group>";
+		};
 		B47C68738DD365F2A873DF1E /* CarPlay */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			explicitFileTypes = {
@@ -858,6 +868,7 @@
 				C9A178D4960C8B5434676256 /* DeviceModels */,
 				6B3F64B089C3A398FEBE6C9C /* docs */,
 				C0810161F73BC57A90E60D0C /* event_firmware.json */,
+				A29A1D7F0B7FCF0F74AF547A /* Fonts */,
 				0846840A4300FE311DCFDA44 /* images */,
 				391CFE3B9D9A0171B3C3C8E9 /* mqtt_roots.json */,
 				B079D165838E646EE754DC6E /* urls.json */,
@@ -1100,6 +1111,7 @@
 				811D897CDBB8285F81701314 /* Enums */,
 				C21C46F8F2BCFF68F31B12C0 /* Export */,
 				11D3172B1FEF230630B7A990 /* Extensions */,
+				A29A1D7F0B7FCF0F74AF547A /* Fonts */,
 				22FDA4B8722F2CC1F4B5A929 /* Helpers */,
 				1A7C0874097266C63EDD8A18 /* Import */,
 				25C42CF0517289648017F9AA /* Intents */,

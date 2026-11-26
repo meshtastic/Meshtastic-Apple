@@ -49,6 +49,7 @@ struct ShareChannels: View {
 	@State var replaceChannels = true
 	var node: NodeInfoEntity?
 	@State private var channelsUrl =  "https://meshtastic.org/e/#"
+	@State private var isPrintingLabel = false
 	var qrCodeImage = QrCodeImage()
 	@State private var showingHelp = false
 
@@ -144,6 +145,16 @@ struct ShareChannels: View {
 									.controlSize(.large)
 									.padding(.bottom)
 
+								Button {
+									isPrintingLabel = true
+								} label: {
+									Label("Print Label", systemImage: "printer")
+								}
+								.buttonStyle(.bordered)
+								.buttonBorderShape(.capsule)
+								.controlSize(.large)
+								.padding(.bottom)
+
 								#if !targetEnvironment(macCatalyst) && !os(visionOS)
 								if #available(iOS 18, *) {
 									NFCWriteButton(
@@ -216,6 +227,9 @@ struct ShareChannels: View {
 			.onChange(of: includeChannel6) { generateChannelSet() }
 			.onChange(of: includeChannel7) { generateChannelSet() }
 			.onChange(of: replaceChannels) { generateChannelSet() }
+			.sheet(isPresented: $isPrintingLabel) {
+				LabelPrintView(channelLabelFor: ChannelLabelContent(url: channelsUrl, channelSet: channelSet, replaces: replaceChannels))
+			}
 			}
 		}
 
